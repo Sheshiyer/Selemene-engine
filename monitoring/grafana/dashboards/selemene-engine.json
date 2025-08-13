@@ -1,0 +1,120 @@
+{
+  "dashboard": {
+    "id": null,
+    "title": "Selemene Engine Dashboard",
+    "tags": ["selemene", "astronomy", "panchanga"],
+    "style": "dark",
+    "timezone": "browser",
+    "panels": [
+      {
+        "id": 1,
+        "title": "Request Rate",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(selemene_requests_total[5m])",
+            "legendFormat": "Requests/sec"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0}
+      },
+      {
+        "id": 2,
+        "title": "Response Time",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, rate(selemene_request_duration_seconds_bucket[5m]))",
+            "legendFormat": "95th percentile"
+          },
+          {
+            "expr": "histogram_quantile(0.50, rate(selemene_request_duration_seconds_bucket[5m]))",
+            "legendFormat": "50th percentile"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0}
+      },
+      {
+        "id": 3,
+        "title": "Calculation Success Rate",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "rate(selemene_calculations_total[5m]) / (rate(selemene_calculations_total[5m]) + rate(selemene_calculation_errors_total[5m])) * 100",
+            "legendFormat": "Success Rate %"
+          }
+        ],
+        "gridPos": {"h": 4, "w": 6, "x": 0, "y": 8}
+      },
+      {
+        "id": 4,
+        "title": "Cache Hit Rate",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "rate(selemene_cache_hits_total[5m]) / (rate(selemene_cache_hits_total[5m]) + rate(selemene_cache_misses_total[5m])) * 100",
+            "legendFormat": "Cache Hit Rate %"
+          }
+        ],
+        "gridPos": {"h": 4, "w": 6, "x": 6, "y": 8}
+      },
+      {
+        "id": 5,
+        "title": "Backend Usage",
+        "type": "piechart",
+        "targets": [
+          {
+            "expr": "rate(selemene_swiss_ephemeris_usage_total[5m])",
+            "legendFormat": "Swiss Ephemeris"
+          },
+          {
+            "expr": "rate(selemene_native_engine_usage_total[5m])",
+            "legendFormat": "Native Engine"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 12}
+      },
+      {
+        "id": 6,
+        "title": "Active Connections",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "selemene_active_connections",
+            "legendFormat": "Active Connections"
+          }
+        ],
+        "gridPos": {"h": 4, "w": 6, "x": 12, "y": 8}
+      },
+      {
+        "id": 7,
+        "title": "Memory Usage",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "selemene_memory_usage_bytes / 1024 / 1024",
+            "legendFormat": "Memory (MB)"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 12}
+      },
+      {
+        "id": 8,
+        "title": "Uptime",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "selemene_uptime_seconds / 3600",
+            "legendFormat": "Uptime (hours)"
+          }
+        ],
+        "gridPos": {"h": 4, "w": 6, "x": 18, "y": 8}
+      }
+    ],
+    "time": {
+      "from": "now-1h",
+      "to": "now"
+    },
+    "refresh": "10s"
+  }
+}
