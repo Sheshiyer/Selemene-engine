@@ -20,6 +20,8 @@ pub enum EngineError {
     RateLimitExceeded,
     #[error("Internal server error: {0}")]
     InternalError(String),
+    #[error("Swiss Ephemeris error: {0}")]
+    SwissEphemerisError(String),
 }
 
 /// Panchanga calculation request
@@ -78,7 +80,7 @@ pub struct TimeZone {
 pub struct JulianDay(pub f64);
 
 impl JulianDay {
-    pub fn from_date_time(dt: DateTime<Utc>) -> Self {
+    pub fn from_date_time(_dt: DateTime<Utc>) -> Self {
         // TODO: Implement proper Julian Day calculation
         Self(2451545.0)
     }
@@ -87,6 +89,39 @@ impl JulianDay {
         // TODO: Implement proper Julian Day to DateTime conversion
         Utc::now()
     }
+}
+
+/// Solar position information
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SolarPosition {
+    pub longitude: f64,
+    pub latitude: f64,
+    pub distance: f64,
+}
+
+/// Lunar position information
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct LunarPosition {
+    pub longitude: f64,
+    pub latitude: f64,
+    pub distance: f64,
+}
+
+/// Planetary position information
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct PlanetaryPosition {
+    pub longitude: f64,
+    pub latitude: f64,
+    pub distance: f64,
+}
+
+/// House system enumeration
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub enum HouseSystem {
+    Placidus,
+    Koch,
+    Equal,
+    WholeSign,
 }
 
 /// Tithi (lunar day) information
@@ -245,4 +280,61 @@ impl<T> ApiResponse<T> {
             timestamp: Utc::now(),
         }
     }
+}
+
+/// Ghati time request
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GhatiTimeRequest {
+    pub utc_time: Option<DateTime<Utc>>,
+    pub location: Coordinates,
+    pub calculation_method: Option<String>,
+    pub precision: Option<String>,
+}
+
+/// Ghati time response
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GhatiTimeResponse {
+    pub ghati: u8,
+    pub pala: u8,
+    pub vipala: u8,
+    pub utc_timestamp: DateTime<Utc>,
+    pub local_time: DateTime<Utc>, // TODO: Convert to local timezone
+    pub calculation_method: String,
+    pub precision: String,
+    pub next_ghati_transition: Option<GhatiTransitionInfo>,
+}
+
+/// Ghati transition information
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GhatiTransitionInfo {
+    pub from_ghati: u8,
+    pub to_ghati: u8,
+    pub transition_time: DateTime<Utc>,
+    pub time_until_transition: String, // Human readable duration
+}
+
+/// Ghati boundaries request
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GhatiBoundariesRequest {
+    pub date: String, // YYYY-MM-DD format
+    pub location: Coordinates,
+    pub calculation_method: Option<String>,
+}
+
+/// Ghati boundaries response
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GhatiBoundariesResponse {
+    pub date: String,
+    pub location: Coordinates,
+    pub boundaries: Vec<GhatiBoundaryInfo>,
+    pub calculation_method: String,
+}
+
+/// Ghati boundary information
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GhatiBoundaryInfo {
+    pub ghati_number: u8,
+    pub utc_timestamp: DateTime<Utc>,
+    pub local_time: DateTime<Utc>, // TODO: Convert to local timezone
+    pub time_since_midnight: String, // Human readable duration
 }

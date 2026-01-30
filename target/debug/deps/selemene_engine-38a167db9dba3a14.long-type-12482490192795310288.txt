@@ -1,2 +1,0 @@
-axum::middleware::FromFn<fn({type error}, Next<{type error}>) -> impl Future<Output = Result<Response<http_body::combinators::box_body::UnsyncBoxBody<axum::body::Bytes, axum::Error>>, reqwest::StatusCode>> {rate_limit_middleware}, (), Route<_>, _>
-axum::middleware::FromFn<fn({type error}, Next<{type error}>) -> impl Future<Output = Result<Response<http_body::combinators::box_body::UnsyncBoxBody<axum::body::Bytes, axum::Error>>, reqwest::StatusCode>> {rate_limit_middleware}, (), Route<_>, _>: tower_service::Service<axum::http::Request<_>>

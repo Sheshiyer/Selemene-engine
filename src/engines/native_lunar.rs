@@ -32,14 +32,19 @@ pub struct LunarState {
 
 /// ELP-2000 calculator for lunar position
 pub struct ELP2000Calculator {
+    #[allow(dead_code)]
     perturbation_terms: Vec<PerturbationTerm>,
+    #[allow(dead_code)]
     coefficients: HashMap<String, f64>,
 }
 
 #[derive(Debug, Clone)]
 struct PerturbationTerm {
+    #[allow(dead_code)]
     coefficient: f64,
+    #[allow(dead_code)]
     argument: f64,
+    #[allow(dead_code)]
     period: f64,
 }
 
@@ -55,7 +60,7 @@ impl ELP2000Calculator {
     pub fn calculate_position(
         &self,
         jd: f64,
-        max_terms: usize,
+        _max_terms: usize,
     ) -> Result<LunarState, LunarEngineError> {
         // TODO: Implement ELP-2000 position calculation
         // For now, return a placeholder calculation
@@ -76,6 +81,7 @@ impl ELP2000Calculator {
 /// Native lunar engine using ELP-2000 theory
 pub struct NativeLunarEngine {
     elp2000_calculator: ELP2000Calculator,
+    #[allow(dead_code)]
     perturbation_series: Vec<PerturbationTerm>,
     high_precision_cache: DashMap<u64, LunarState>,
 }
@@ -124,7 +130,7 @@ impl NativeLunarEngine {
         let mut jd_estimate = current_jd;
         let max_iterations = 20;
         
-        for iteration in 0..max_iterations {
+        for _iteration in 0..max_iterations {
             // Calculate current Sun-Moon difference
             let current_diff = self.calculate_sun_moon_difference(jd_estimate)?;
             let error = current_diff - target_sun_moon_diff;
@@ -154,7 +160,7 @@ impl NativeLunarEngine {
     }
 
     /// Calculate Sun-Moon angular difference
-    fn calculate_sun_moon_difference(&self, jd: f64) -> Result<f64, LunarEngineError> {
+    fn calculate_sun_moon_difference(&self, _jd: f64) -> Result<f64, LunarEngineError> {
         // TODO: Implement Sun-Moon difference calculation
         // This would use both solar and lunar engines
         Ok(0.0)

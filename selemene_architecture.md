@@ -5,10 +5,10 @@
 ### High-Level Architecture
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
-│                              Railway.com Cloud                          │
+│                          Cloud / Hosting Platform                       │
 │  ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐     │
 │  │ Load Balancer   │────│   CDN/Cache     │────│   API Gateway   │     │
-│  │ (Railway Proxy) │    │  (Railway Edge) │    │  (Axum Server)  │     │
+│  │ (Reverse Proxy) │    │  (Edge Cache)   │    │  (Axum Server)  │     │
 │  └─────────────────┘    └─────────────────┘    └─────────────────┘     │
 │                                                         │               │
 │  ┌─────────────────────────────────────────────────────┼─────────────┐ │
@@ -246,324 +246,36 @@ impl NativeLunarEngine {
 }
 ```
 
-## Railway.com Deployment Architecture
+## Deployment Architecture (Platform-agnostic)
 
-### Project Structure
-```
-selemene-engine/
-├── Cargo.toml                 # Rust dependencies
-├── railway.toml              # Railway configuration
-├── Dockerfile                # Multi-stage build
-├── docker-compose.yml        # Local development
-├── .github/workflows/        # CI/CD pipelines
-│   ├── test.yml
-│   ├── deploy-staging.yml
-│   └── deploy-production.yml
-├── src/                      # Rust source code
-│   ├── lib.rs               # Library root
-│   ├── main.rs              # Binary entry point
-│   ├── api/                 # HTTP API layer
-│   ├── engines/             # Calculation engines
-│   ├── cache/               # Caching system
-│   └── config/              # Configuration management
-├── data/                     # Astronomical data
-│   ├── ephemeris/           # Swiss Ephemeris files
-│   ├── constants/           # Calculation constants
-│   └── validation/          # Test data
-├── tests/                    # Test suites
-│   ├── integration/
-│   ├── performance/
-│   └── validation/
-└── docs/                     # Documentation
-    ├── api/
-    ├── deployment/
-    └── cultural-notes/
+Selemene Engine is a standard Rust service. This repository intentionally avoids provider-specific deployment configuration.
+
+### Build and Run
+
+```bash
+# Development
+cargo run
+
+# Release binary
+cargo build --release
+./target/release/selemene-engine
 ```
 
-### Railway.com Configuration
-```toml
-# railway.toml
-[build]
-builder = "dockerfile"
-buildCommand = "cargo build --release"
+### Runtime Configuration
 
-[deploy]
-startCommand = "./target/release/selemene-engine"
-healthcheckPath = "/health"
-healthcheckTimeout = 30
-restartPolicyType = "on_failure"
-restartPolicyMaxRetries = 3
+Configuration is driven via environment variables and the config module in `src/config/`.
 
-# Environment variables
-[environments.production]
-[environments.production.variables]
-RUST_LOG = "info"
-ENVIRONMENT = "production"
-CACHE_SIZE_MB = "512"
-MAX_CONCURRENT_CALCULATIONS = "1000"
+Common variables:
 
-[environments.staging]
-[environments.staging.variables]
-RUST_LOG = "debug"
-ENVIRONMENT = "staging"
-CACHE_SIZE_MB = "256"
-MAX_CONCURRENT_CALCULATIONS = "100"
+- `RUST_LOG` (e.g. `info`, `debug`)
+- `PORT` (defaults to `8080` in the codebase)
+- `SWISS_EPHEMERIS_PATH` (path to ephemeris data files)
+- `REDIS_URL` (optional; used for L2 cache)
+- `DATABASE_URL` (optional; used if database-backed features are enabled)
 
-# Service configuration
-[[services]]
-name = "selemene-api"
-source = "."
+### CI/CD
 
-[services.variables]
-PORT = "8080"
-DATABASE_URL = "${{Postgres.DATABASE_URL}}"
-REDIS_URL = "${{Redis.REDIS_URL}}"
-SWISS_EPHEMERIS_PATH = "/app/data/ephemeris"
-NATIVE_ENGINE_ENABLED = "true"
-CROSS_VALIDATION_ENABLED = "true"
-
-# Resource allocation
-[services.resources]
-memoryLimit = "4Gi"
-cpuLimit = "2000m"
-restartPolicy = "on-failure"
-
-# Horizontal scaling
-[services.scaling]
-minReplicas = 2
-maxReplicas = 10
-targetCPUUtilization = 70
-targetMemoryUtilization = 80
-```
-
-### Multi-Stage Dockerfile
-```dockerfile
-# Build stage
-FROM rust:1.75-slim as builder
-
-# Install build dependencies
-RUN apt-get update && apt-get install -y \
-    pkg-config \
-    libssl-dev \
-    build-essential \
-    curl \
-    && rm -rf /var/lib/apt/lists/*
-
-WORKDIR /app
-
-# Copy dependency files
-COPY Cargo.toml Cargo.lock ./
-
-# Build dependencies (cached layer)
-RUN mkdir src && echo "fn main() {}" > src/main.rs
-RUN cargo build --release
-RUN rm -rf src
-
-# Copy source code
-COPY src ./src
-COPY data ./data
-
-# Build application
-RUN touch src/main.rs && cargo build --release
-
-# Runtime stage
-FROM ubuntu:22.04
-
-# Install runtime dependencies
-RUN apt-get update && apt-get install -y \
-    ca-certificates \
-    libssl3 \
-    curl \
-    && rm -rf /var/lib/apt/lists/*
-
-# Create app user
-RUN useradd --create-home --shell /bin/bash app
-
-WORKDIR /app
-
-# Copy binary and data
-COPY --from=builder /app/target/release/selemene-engine ./
-COPY --from=builder /app/data ./data
-
-# Set ownership
-RUN chown -R app:app /app
-USER app
-
-# Expose port
-EXPOSE 8080
-
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:8080/health || exit 1
-
-# Start application
-CMD ["./selemene-engine"]
-```
-
-### Environment-Specific Configurations
-
-#### Production Configuration
-```yaml
-# config/production.yml
-server:
-  host: "0.0.0.0"
-  port: 8080
-  workers: 8
-
-database:
-  url: "${DATABASE_URL}"
-  max_connections: 20
-  timeout: 30
-
-cache:
-  redis_url: "${REDIS_URL}"
-  size_mb: 512
-  ttl_seconds: 3600
-
-calculation:
-  default_backend: "intelligent"
-  cross_validation_rate: 0.01  # 1% of calculations
-  max_concurrent: 1000
-  timeout_seconds: 30
-
-engines:
-  swiss_ephemeris:
-    enabled: true
-    data_path: "/app/data/ephemeris"
-  native_solar:
-    enabled: true
-    precision: "high"
-  native_lunar:
-    enabled: true
-    precision: "high"
-
-monitoring:
-  metrics_enabled: true
-  tracing_enabled: true
-  log_level: "info"
-```
-
-#### Staging Configuration
-```yaml
-# config/staging.yml
-server:
-  host: "0.0.0.0"
-  port: 8080
-  workers: 4
-
-database:
-  url: "${DATABASE_URL}"
-  max_connections: 10
-  timeout: 30
-
-cache:
-  redis_url: "${REDIS_URL}"
-  size_mb: 256
-  ttl_seconds: 1800
-
-calculation:
-  default_backend: "validated"
-  cross_validation_rate: 0.1   # 10% validation in staging
-  max_concurrent: 100
-  timeout_seconds: 60
-
-engines:
-  swiss_ephemeris:
-    enabled: true
-    data_path: "/app/data/ephemeris"
-  native_solar:
-    enabled: true
-    precision: "extreme"  # Test highest precision
-  native_lunar:
-    enabled: true
-    precision: "extreme"
-
-monitoring:
-  metrics_enabled: true
-  tracing_enabled: true
-  log_level: "debug"
-```
-
-### CI/CD Pipeline
-
-#### GitHub Actions Workflow
-```yaml
-# .github/workflows/deploy-production.yml
-name: Deploy to Production
-
-on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
-
-env:
-  CARGO_TERM_COLOR: always
-
-jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v4
-    
-    - name: Setup Rust
-      uses: dtolnay/rust-toolchain@stable
-      
-    - name: Setup cache
-      uses: Swatinem/rust-cache@v2
-      
-    - name: Run tests
-      run: cargo test --all-features
-      
-    - name: Run integration tests
-      run: cargo test --test integration
-      
-    - name: Run performance tests
-      run: cargo test --test performance --release
-
-  security-audit:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v4
-    - uses: rustsec/audit-check@v1
-
-  deploy-staging:
-    needs: [test, security-audit]
-    if: github.event_name == 'pull_request'
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v4
-    
-    - name: Deploy to Railway Staging
-      uses: railwayapp/railway-deploy@v1
-      with:
-        railway-token: ${{ secrets.RAILWAY_STAGING_TOKEN }}
-        service: selemene-staging
-        
-    - name: Run deployment tests
-      run: |
-        sleep 60  # Wait for deployment
-        curl -f https://selemene-staging.railway.app/health
-
-  deploy-production:
-    needs: [test, security-audit]
-    if: github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v4
-    
-    - name: Deploy to Railway Production
-      uses: railwayapp/railway-deploy@v1
-      with:
-        railway-token: ${{ secrets.RAILWAY_PRODUCTION_TOKEN }}
-        service: selemene-production
-        
-    - name: Verify production deployment
-      run: |
-        sleep 90  # Wait for deployment
-        curl -f https://api.selemene.io/health
-        curl -f https://api.selemene.io/v1/status
-```
+GitHub Actions CI is defined in `.github/workflows/test.yml` and focuses on building, linting, and running tests. Deployment is left to the hosting platform of your choice.
 
 ## Monitoring and Observability
 
@@ -851,4 +563,4 @@ let app = Router::new()
     );
 ```
 
-This architecture provides a robust, scalable foundation for the Selemene Engine on Railway.com, with hybrid calculation backends, comprehensive caching, parallel processing, and production-ready monitoring and security features.
+This architecture provides a robust, scalable foundation for the Selemene Engine, with hybrid calculation backends, comprehensive caching, parallel processing, and production-ready monitoring and security features.

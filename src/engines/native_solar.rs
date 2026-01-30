@@ -29,13 +29,17 @@ pub struct SolarState {
 
 /// VSOP87 calculator for solar system bodies
 pub struct VSOP87Calculator {
+    #[allow(dead_code)]
     coefficients: HashMap<String, Vec<VSOP87Term>>,
 }
 
 #[derive(Debug, Clone)]
 struct VSOP87Term {
+    #[allow(dead_code)]
     a: f64,
+    #[allow(dead_code)]
     b: f64,
+    #[allow(dead_code)]
     c: f64,
 }
 
@@ -62,14 +66,18 @@ impl VSOP87Calculator {
 /// Native solar engine using VSOP87 theory
 pub struct NativeSolarEngine {
     vsop87_calculator: VSOP87Calculator,
+    #[allow(dead_code)]
     perturbation_cache: LruCache<u64, SolarPerturbations>,
+    #[allow(dead_code)]
     coordinate_transformer: CoordinateTransformer,
 }
 
 #[derive(Debug, Clone)]
 struct SolarPerturbations {
     longitude_perturbation: f64,
+    #[allow(dead_code)]
     latitude_perturbation: f64,
+    #[allow(dead_code)]
     distance_perturbation: f64,
 }
 
@@ -85,7 +93,7 @@ impl NativeSolarEngine {
     pub fn new() -> Self {
         Self {
             vsop87_calculator: VSOP87Calculator::new(),
-            perturbation_cache: LruCache::new(1000),
+            perturbation_cache: LruCache::new(std::num::NonZeroUsize::new(1000).unwrap()),
             coordinate_transformer: CoordinateTransformer::new(),
         }
     }
@@ -135,7 +143,7 @@ impl NativeSolarEngine {
     }
 
     /// Calculate major perturbations only (standard precision)
-    fn calculate_major_perturbations(&self, jd: f64) -> Result<SolarPerturbations, SolarEngineError> {
+    fn calculate_major_perturbations(&self, _jd: f64) -> Result<SolarPerturbations, SolarEngineError> {
         // TODO: Implement major perturbation calculations
         Ok(SolarPerturbations {
             longitude_perturbation: 0.0,
@@ -145,7 +153,7 @@ impl NativeSolarEngine {
     }
 
     /// Calculate full perturbations (high precision)
-    fn calculate_full_perturbations(&self, jd: f64) -> Result<SolarPerturbations, SolarEngineError> {
+    fn calculate_full_perturbations(&self, _jd: f64) -> Result<SolarPerturbations, SolarEngineError> {
         // TODO: Implement full perturbation calculations
         Ok(SolarPerturbations {
             longitude_perturbation: 0.0,
@@ -155,7 +163,7 @@ impl NativeSolarEngine {
     }
 
     /// Calculate extended perturbations (extreme precision)
-    fn calculate_extended_perturbations(&self, jd: f64) -> Result<SolarPerturbations, SolarEngineError> {
+    fn calculate_extended_perturbations(&self, _jd: f64) -> Result<SolarPerturbations, SolarEngineError> {
         // TODO: Implement extended perturbation calculations
         Ok(SolarPerturbations {
             longitude_perturbation: 0.0,

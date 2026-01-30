@@ -1,12 +1,14 @@
 use crate::models::{PanchangaRequest, PanchangaResult, EngineError, PrecisionLevel};
-use crate::EngineConfig;
+use crate::config::EngineConfig;
 use super::{
     HybridBackend, NativeSolarEngine, NativeLunarEngine, 
-    SwissEphemerisEngine, ValidationEngine, Backend
+    SwissEphemerisEngine, ValidationEngine, Backend, PanchangaCalculator
 };
 use std::sync::Arc;
 use tokio::sync::RwLock;
 use tracing::{info, warn, error};
+use chrono::{DateTime, NaiveDate, NaiveDateTime, Utc};
+use chrono::TimeZone;
 
 /// Main calculation orchestrator that coordinates all engines
 pub struct CalculationOrchestrator {
@@ -15,6 +17,8 @@ pub struct CalculationOrchestrator {
     native_lunar: NativeLunarEngine,
     swiss_ephemeris: SwissEphemerisEngine,
     validation_engine: ValidationEngine,
+    panchanga_calculator: PanchangaCalculator,
+    #[allow(dead_code)]
     config: Arc<RwLock<EngineConfig>>,
 }
 
@@ -23,16 +27,17 @@ impl CalculationOrchestrator {
         let native_solar = NativeSolarEngine::new();
         let native_lunar = NativeLunarEngine::new();
         
-        let swiss_ephemeris_path = {
-            let config_guard = config.blocking_read();
-            config_guard.engines.swiss_ephemeris.data_path.clone()
-        };
-        let mut swiss_ephemeris = SwissEphemerisEngine::new(swiss_ephemeris_path);
+        let swiss_ephemeris_path = config
+            .try_read()
+            .map(|config_guard| config_guard.swiss_ephemeris_path.clone())
+            .unwrap_or_else(|_| "data/ephemeris".to_string());
+        let swiss_ephemeris = SwissEphemerisEngine::new(swiss_ephemeris_path);
         
-        // Initialize Swiss Ephemeris
-        if let Err(e) = swiss_ephemeris.initialize() {
-            warn!("Failed to initialize Swiss Ephemeris: {}", e);
-        }
+        // Initialize Swiss Ephemeris (synchronous for now)
+        // TODO: Make this async when Swiss Ephemeris is properly implemented
+        // if let Err(e) = swiss_ephemeris.initialize().await {
+        //     warn!("Failed to initialize Swiss Ephemeris: {}", e);
+        // }
         
         let validation_engine = ValidationEngine::new(
             native_solar.clone(),
@@ -40,12 +45,15 @@ impl CalculationOrchestrator {
             swiss_ephemeris.clone(),
         );
 
+        let panchanga_calculator = PanchangaCalculator::new();
+
         Self {
             hybrid_backend: HybridBackend::new(config.clone()),
             native_solar,
             native_lunar,
             swiss_ephemeris,
             validation_engine,
+            panchanga_calculator,
             config,
         }
     }
@@ -150,26 +158,25 @@ impl CalculationOrchestrator {
         // Calculate lunar position
         let lunar_longitude = self.native_lunar.lunar_longitude(jd, precision)?;
         
-        // Calculate Tithi
-        let tithi = self.calculate_tithi(solar_longitude, lunar_longitude);
-        
-        // TODO: Calculate other Panchanga elements
-        // - Nakshatra
-        // - Yoga
-        // - Karana
-        // - Vara (weekday)
+        // Calculate all Panchanga elements
+        let tithi_info = self.panchanga_calculator.calculate_tithi(solar_longitude, lunar_longitude, jd)?;
+        let nakshatra_info = self.panchanga_calculator.calculate_nakshatra(lunar_longitude, jd)?;
+        let yoga_info = self.panchanga_calculator.calculate_yoga(solar_longitude, lunar_longitude, jd)?;
+        let karana_info = self.panchanga_calculator.calculate_karana(solar_longitude, lunar_longitude, jd)?;
+        let vara_info = self.panchanga_calculator.calculate_vara(jd)?;
         
         Ok(PanchangaResult {
             date: request.date.clone(),
-            tithi: Some(tithi),
-            nakshatra: None, // TODO: Implement
-            yoga: None,       // TODO: Implement
-            karana: None,     // TODO: Implement
-            vara: None,       // TODO: Implement
+            tithi: Some(tithi_info.number as f64),
+            nakshatra: Some(nakshatra_info.number as f64),
+            yoga: Some(yoga_info.number as f64),
+            karana: Some(karana_info.number as f64),
+            vara: Some(vara_info.number as f64),
             solar_longitude,
             lunar_longitude,
             precision: precision as u8,
             backend: "native".to_string(),
+            calculation_time: Some(chrono::Utc::now()),
         })
     }
 
@@ -183,25 +190,30 @@ impl CalculationOrchestrator {
         let jd = self.parse_date_to_jd(&request.date)?;
         
         // Calculate solar position
-        let solar_position = self.swiss_ephemeris.calculate_solar_position(jd, precision)?;
+        let solar_position = self.swiss_ephemeris.calculate_solar_position(jd).await?;
         
         // Calculate lunar position
-        let lunar_position = self.swiss_ephemeris.calculate_lunar_position(jd, precision)?;
+        let lunar_position = self.swiss_ephemeris.calculate_lunar_position(jd).await?;
         
-        // Calculate Tithi
-        let tithi = self.calculate_tithi(solar_position.longitude, lunar_position.longitude);
+        // Calculate all Panchanga elements
+        let tithi_info = self.panchanga_calculator.calculate_tithi(solar_position.longitude, lunar_position.longitude, jd)?;
+        let nakshatra_info = self.panchanga_calculator.calculate_nakshatra(lunar_position.longitude, jd)?;
+        let yoga_info = self.panchanga_calculator.calculate_yoga(solar_position.longitude, lunar_position.longitude, jd)?;
+        let karana_info = self.panchanga_calculator.calculate_karana(solar_position.longitude, lunar_position.longitude, jd)?;
+        let vara_info = self.panchanga_calculator.calculate_vara(jd)?;
         
         Ok(PanchangaResult {
             date: request.date.clone(),
-            tithi: Some(tithi),
-            nakshatra: None, // TODO: Implement
-            yoga: None,       // TODO: Implement
-            karana: None,     // TODO: Implement
-            vara: None,       // TODO: Implement
+            tithi: Some(tithi_info.number as f64),
+            nakshatra: Some(nakshatra_info.number as f64),
+            yoga: Some(yoga_info.number as f64),
+            karana: Some(karana_info.number as f64),
+            vara: Some(vara_info.number as f64),
             solar_longitude: solar_position.longitude,
             lunar_longitude: lunar_position.longitude,
             precision: precision as u8,
             backend: "swiss".to_string(),
+            calculation_time: Some(chrono::Utc::now()),
         })
     }
 
@@ -243,15 +255,50 @@ impl CalculationOrchestrator {
         Ok(result)
     }
 
-    fn parse_date_to_jd(&self, date_str: &str) -> Result<f64, EngineError> {
-        // TODO: Implement proper date parsing to Julian Day
-        // For now, return a placeholder
-        Ok(2451545.0) // J2000
+    fn parse_date_to_jd(&self, _date_str: &str) -> Result<f64, EngineError> {
+        Self::parse_date_str_to_julian_day(_date_str)
     }
 
-    fn calculate_tithi(&self, solar_longitude: f64, lunar_longitude: f64) -> f64 {
-        let diff = (lunar_longitude - solar_longitude).rem_euclid(360.0);
-        (diff / 12.0).floor() + 1.0 // Tithi 1-30
+
+}
+
+impl CalculationOrchestrator {
+    fn parse_date_str_to_julian_day(date_str: &str) -> Result<f64, EngineError> {
+        // Accept full RFC3339 timestamps (preferred) or simple YYYY-MM-DD dates.
+        // This keeps existing API requests working while allowing time-precision
+        // requests for Ghati boundary calculations.
+
+        if let Ok(dt) = DateTime::parse_from_rfc3339(date_str) {
+            return Ok(Self::datetime_utc_to_julian_day(dt.with_timezone(&Utc)));
+        }
+
+        // Common non-offset format: "YYYY-MM-DD HH:MM:SS" (assumed UTC)
+        if let Ok(ndt) = NaiveDateTime::parse_from_str(date_str, "%Y-%m-%d %H:%M:%S") {
+            let dt = Utc.from_utc_datetime(&ndt);
+            return Ok(Self::datetime_utc_to_julian_day(dt));
+        }
+
+        // Date-only format: "YYYY-MM-DD" (assumed UTC midnight)
+        if let Ok(date) = NaiveDate::parse_from_str(date_str, "%Y-%m-%d") {
+            let ndt = date
+                .and_hms_opt(0, 0, 0)
+                .ok_or_else(|| EngineError::ValidationError("Invalid date value".to_string()))?;
+            let dt = Utc.from_utc_datetime(&ndt);
+            return Ok(Self::datetime_utc_to_julian_day(dt));
+        }
+
+        Err(EngineError::ValidationError(format!(
+            "Invalid date format. Use RFC3339 (e.g. 2026-01-31T12:34:56Z) or YYYY-MM-DD. Got: {}",
+            date_str
+        )))
+    }
+
+    fn datetime_utc_to_julian_day(dt: DateTime<Utc>) -> f64 {
+        // JD at Unix epoch 1970-01-01T00:00:00Z
+        const JD_UNIX_EPOCH: f64 = 2440587.5;
+        let seconds = dt.timestamp() as f64;
+        let nanos = dt.timestamp_subsec_nanos() as f64;
+        JD_UNIX_EPOCH + (seconds + nanos / 1_000_000_000.0) / 86_400.0
     }
 }
 
@@ -275,5 +322,33 @@ impl CloneEngine for NativeLunarEngine {
 impl CloneEngine for SwissEphemerisEngine {
     fn clone(&self) -> Self {
         SwissEphemerisEngine::new(self.get_data_path().to_string())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn jd_unix_epoch_is_correct() {
+        let jd = CalculationOrchestrator::parse_date_str_to_julian_day("1970-01-01T00:00:00Z")
+            .expect("parse");
+        assert!((jd - 2440587.5).abs() < 1e-9);
+    }
+
+    #[test]
+    fn jd_j2000_is_correct() {
+        // J2000 epoch: 2000-01-01T12:00:00Z == JD 2451545.0
+        let jd = CalculationOrchestrator::parse_date_str_to_julian_day("2000-01-01T12:00:00Z")
+            .expect("parse");
+        assert!((jd - 2451545.0).abs() < 1e-9);
+    }
+
+    #[test]
+    fn date_only_is_midnight_utc() {
+        // Midnight at 2000-01-01 is JD 2451544.5
+        let jd = CalculationOrchestrator::parse_date_str_to_julian_day("2000-01-01")
+            .expect("parse");
+        assert!((jd - 2451544.5).abs() < 1e-9);
     }
 }

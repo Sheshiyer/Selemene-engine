@@ -1,4 +1,4 @@
-use prometheus::{Counter, Histogram, Gauge, Registry};
+use prometheus::{Counter, Histogram, Gauge, Registry, HistogramOpts};
 use std::sync::Arc;
 use lazy_static::lazy_static;
 
@@ -41,9 +41,8 @@ impl EngineMetrics {
             "Total number of requests"
         )?;
         
-        let request_duration = Histogram::new(
-            "selemene_request_duration_seconds",
-            "Request duration in seconds"
+        let request_duration = Histogram::with_opts(
+            HistogramOpts::new("selemene_request_duration_seconds", "Request duration in seconds")
         )?;
         
         let active_connections = Gauge::new(
@@ -56,9 +55,8 @@ impl EngineMetrics {
             "Total number of calculations"
         )?;
         
-        let calculation_duration = Histogram::new(
-            "selemene_calculation_duration_seconds",
-            "Calculation duration in seconds"
+        let calculation_duration = Histogram::with_opts(
+            HistogramOpts::new("selemene_calculation_duration_seconds", "Calculation duration in seconds")
         )?;
         
         let calculation_errors = Counter::new(
@@ -86,14 +84,12 @@ impl EngineMetrics {
             "Total cache misses"
         )?;
         
-        let validation_differences = Histogram::new(
-            "selemene_validation_differences_arcseconds",
-            "Differences between backend calculations in arcseconds"
+        let validation_differences = Histogram::with_opts(
+            HistogramOpts::new("selemene_validation_differences_arcseconds", "Differences between backend calculations in arcseconds")
         )?;
         
-        let precision_achieved = Histogram::new(
-            "selemene_precision_achieved_arcseconds",
-            "Precision achieved in calculations in arcseconds"
+        let precision_achieved = Histogram::with_opts(
+            HistogramOpts::new("selemene_precision_achieved_arcseconds", "Precision achieved in calculations in arcseconds")
         )?;
         
         let memory_usage_bytes = Gauge::new(
@@ -243,7 +239,6 @@ impl MetricsCollector {
     /// Start metrics collection loop
     pub async fn start_collection_loop(&self) {
         let metrics = self.metrics.clone();
-        let start_time = self.start_time;
         
         tokio::spawn(async move {
             let mut interval = tokio::time::interval(std::time::Duration::from_secs(30));

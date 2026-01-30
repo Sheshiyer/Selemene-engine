@@ -1,108 +1,53 @@
 //! Selemene Engine - High-performance astronomical calculation engine
 //! 
-//! This library provides a hybrid backend system combining Swiss Ephemeris
-//! reliability with native VSOP87/ELP-2000 calculation engines for
-//! Panchanga and Vedic astrology calculations.
+//! This library provides a simple API for Panchanga and Vedic astrology calculations.
 
-pub mod api;
-pub mod engines;
-pub mod cache;
-pub mod config;
 pub mod models;
-pub mod utils;
-pub mod metrics;
+pub mod engines;
+pub mod api;
+pub mod cache;
 pub mod auth;
+pub mod metrics;
+pub mod time;
+pub mod utils;
+pub mod config;
+
+// For now, we'll keep this minimal to get a working deployment
+pub mod simple;
+
+pub use simple::*;
 
 use std::sync::Arc;
+use crate::engines::CalculationOrchestrator;
+use crate::cache::CacheManager;
+use crate::config::EngineConfig;
 use tokio::sync::RwLock;
-use serde::{Deserialize, Serialize};
-
-/// Main engine configuration
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct EngineConfig {
-    pub calculation: CalculationConfig,
-    pub cache: CacheConfig,
-    pub engines: EngineBackendConfig,
-    pub server: ServerConfig,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct CalculationConfig {
-    pub default_backend: BackendRoutingStrategy,
-    pub cross_validation_rate: f64,
-    pub max_concurrent: usize,
-    pub timeout_seconds: u64,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct CacheConfig {
-    pub redis_url: String,
-    pub size_mb: usize,
-    pub ttl_seconds: u64,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct EngineBackendConfig {
-    pub swiss_ephemeris: SwissEphemerisConfig,
-    pub native_solar: NativeEngineConfig,
-    pub native_lunar: NativeEngineConfig,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct SwissEphemerisConfig {
-    pub enabled: bool,
-    pub data_path: String,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct NativeEngineConfig {
-    pub enabled: bool,
-    pub precision: PrecisionLevel,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ServerConfig {
-    pub host: String,
-    pub port: u16,
-    pub workers: usize,
-}
-
-#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
-pub enum BackendRoutingStrategy {
-    AlwaysNative,
-    AlwaysSwiss,
-    Intelligent,
-    Validated,
-    PerformanceOptimized,
-}
-
-#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
-pub enum PrecisionLevel {
-    Standard,
-    High,
-    Extreme,
-}
 
 /// Main Selemene Engine struct
 pub struct SelemeneEngine {
+    pub orchestrator: Arc<CalculationOrchestrator>,
+    pub cache_manager: Arc<CacheManager>,
     pub config: Arc<RwLock<EngineConfig>>,
-    // Will be implemented in subsequent modules
 }
 
 impl SelemeneEngine {
-    pub fn new(config: EngineConfig) -> Self {
+    pub fn new(
+        orchestrator: Arc<CalculationOrchestrator>,
+        cache_manager: Arc<CacheManager>,
+        config: Arc<RwLock<EngineConfig>>,
+    ) -> Self {
         Self {
-            config: Arc::new(RwLock::new(config)),
+            orchestrator,
+            cache_manager,
+            config,
         }
     }
-    
-    pub async fn get_config(&self) -> EngineConfig {
-        self.config.read().await.clone()
+
+    pub async fn calculate_panchanga(&self, request: crate::models::PanchangaRequest) -> Result<crate::models::PanchangaResult, crate::models::EngineError> {
+        self.orchestrator.calculate_panchanga(request).await
+    }
+
+    pub async fn get_config(&self) -> tokio::sync::RwLockReadGuard<'_, EngineConfig> {
+        self.config.read().await
     }
 }
-
-/// Re-export main types for convenience
-pub use engines::*;
-pub use models::*;
-pub use cache::*;
-pub use config::*;

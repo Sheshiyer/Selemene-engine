@@ -1,20 +1,19 @@
 use axum::{
-    extract::Request,
     middleware::Next,
     response::Response,
-    http::{StatusCode, HeaderMap},
+    http::{StatusCode, Request},
 };
 use std::time::Instant;
 use tracing::{info, warn, error};
-use governor::{Quota, RateLimiter};
+use governor::{Quota, RateLimiter, DefaultDirectRateLimiter};
 use std::num::NonZeroU32;
 use std::sync::Arc;
 use serde_json::json;
 
 /// Logging middleware for request/response logging
-pub async fn logging_middleware(
-    request: Request,
-    next: Next,
+pub async fn logging_middleware<B>(
+    request: Request<B>,
+    next: Next<B>,
 ) -> Result<Response, StatusCode> {
     let start = Instant::now();
     let method = request.method().clone();
@@ -50,9 +49,9 @@ pub async fn logging_middleware(
 }
 
 /// Authentication middleware
-pub async fn auth_middleware(
-    request: Request,
-    next: Next,
+pub async fn auth_middleware<B>(
+    request: Request<B>,
+    next: Next<B>,
 ) -> Result<Response, StatusCode> {
     let headers = request.headers();
     
@@ -79,12 +78,13 @@ pub async fn auth_middleware(
     }
     
     // Check for API key in query parameters (for GET requests)
-    if let Some(api_key) = request.uri().query()
-        .and_then(|q| url::form_urlencoded::parse(q.as_bytes())
-            .find(|(k, _)| k == "api_key")
-            .map(|(_, v)| v.to_string())) {
-        if validate_api_key(&api_key).await {
-            return Ok(next.run(request).await);
+    if let Some(query) = request.uri().query() {
+        if let Some((_, v)) = url::form_urlencoded::parse(query.as_bytes())
+            .find(|(k, _)| k == "api_key") {
+            let api_key = v.to_string();
+            if validate_api_key(&api_key).await {
+                return Ok(next.run(request).await);
+            }
         }
     }
     
@@ -93,9 +93,9 @@ pub async fn auth_middleware(
 }
 
 /// Rate limiting middleware
-pub async fn rate_limit_middleware(
-    request: Request,
-    next: Next,
+pub async fn rate_limit_middleware<B>(
+    request: Request<B>,
+    next: Next<B>,
 ) -> Result<Response, StatusCode> {
     let client_ip = get_client_ip(&request);
     let endpoint = request.uri().path();
@@ -103,7 +103,7 @@ pub async fn rate_limit_middleware(
     // Create rate limiter based on endpoint and client
     let rate_limiter = get_rate_limiter(endpoint);
     
-    if rate_limiter.check() {
+    if rate_limiter.check().is_ok() {
         Ok(next.run(request).await)
     } else {
         warn!("Rate limit exceeded for client: {} at endpoint: {}", client_ip, endpoint);
@@ -134,7 +134,7 @@ async fn validate_api_key(api_key: &str) -> bool {
 }
 
 /// Get client IP address
-fn get_client_ip(request: &Request) -> String {
+fn get_client_ip<T>(request: &Request<T>) -> String {
     request
         .headers()
         .get("x-forwarded-for")
@@ -152,7 +152,7 @@ fn get_client_ip(request: &Request) -> String {
 }
 
 /// Get rate limiter for specific endpoint
-fn get_rate_limiter(endpoint: &str) -> Arc<RateLimiter> {
+fn get_rate_limiter(endpoint: &str) -> Arc<DefaultDirectRateLimiter> {
     let requests_per_minute = match endpoint {
         "/api/v1/panchanga" => 60,
         "/api/v1/panchanga/batch" => 10,
@@ -175,21 +175,17 @@ fn get_rate_limiter(endpoint: &str) -> Arc<RateLimiter> {
 }
 
 /// Error handling middleware
-pub async fn error_handling_middleware(
-    request: Request,
-    next: Next,
+pub async fn error_handling_middleware<B>(
+    request: Request<B>,
+    next: Next<B>,
 ) -> Result<Response, StatusCode> {
-    match next.run(request).await {
-        Ok(response) => Ok(response),
-        Err(status) => {
-            let error_response = create_error_response(status);
-            Ok(error_response)
-        }
-    }
+    let response = next.run(request).await;
+    Ok(response)
 }
 
 /// Create error response
-fn create_error_response(status: StatusCode) -> Response {
+#[allow(dead_code)]
+fn create_error_response(status: StatusCode) -> Response<axum::body::Body> {
     let error_body = json!({
         "error": {
             "code": status.as_u16(),
@@ -208,9 +204,9 @@ fn create_error_response(status: StatusCode) -> Response {
 }
 
 /// Request validation middleware
-pub async fn validation_middleware(
-    request: Request,
-    next: Next,
+pub async fn validation_middleware<B>(
+    request: Request<B>,
+    next: Next<B>,
 ) -> Result<Response, StatusCode> {
     // TODO: Implement request validation
     // - Check content length
@@ -221,18 +217,18 @@ pub async fn validation_middleware(
 }
 
 /// Compression middleware (handled by tower-http)
-pub async fn compression_middleware(
-    request: Request,
-    next: Next,
+pub async fn compression_middleware<B>(
+    request: Request<B>,
+    next: Next<B>,
 ) -> Result<Response, StatusCode> {
     // Compression is handled by tower-http compression layer
     Ok(next.run(request).await)
 }
 
 /// Caching middleware
-pub async fn caching_middleware(
-    request: Request,
-    next: Next,
+pub async fn caching_middleware<B>(
+    request: Request<B>,
+    next: Next<B>,
 ) -> Result<Response, StatusCode> {
     // TODO: Implement response caching
     // - Check cache headers

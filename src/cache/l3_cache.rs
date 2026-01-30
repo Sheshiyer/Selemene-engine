@@ -1,4 +1,4 @@
-use crate::cache::{CacheKey, CachedResult};
+use crate::cache::CacheKey;
 use crate::models::{PanchangaResult, EngineError};
 use std::collections::HashMap;
 use std::sync::Arc;
@@ -16,7 +16,7 @@ pub struct L3Cache {
 }
 
 #[derive(Debug, Clone, Default)]
-struct L3CacheStats {
+pub(crate) struct L3CacheStats {
     hits: u64,
     misses: u64,
     loads: u64,
@@ -124,7 +124,8 @@ impl L3Cache {
     }
 
     /// Get cache statistics
-    pub async fn get_stats(&self) -> L3CacheStats {
+    #[allow(dead_code)]
+    pub(crate) async fn get_stats(&self) -> L3CacheStats {
         self.stats.read().await.clone()
     }
 

@@ -7,8 +7,7 @@ The Selemene Engine is a high-performance astronomical calculation engine for Pa
 ## Base URL
 
 - **Development**: `http://localhost:8080`
-- **Staging**: `https://selemene-staging.railway.app`
-- **Production**: `https://api.selemene.io`
+- **Production**: `https://<your-domain>`
 
 ## Authentication
 

@@ -1,5 +1,5 @@
 use axum::{
-    extract::{State, Json, Path, Query},
+    extract::{State, Json, Path},
     response::Json as ResponseJson,
     http::StatusCode,
 };
@@ -7,13 +7,12 @@ use serde_json::{json, Value};
 use crate::{
     SelemeneEngine,
     models::*,
-    cache::CacheKey,
+    config::EngineConfig,
 };
 use std::sync::Arc;
-use std::collections::HashMap;
 
 /// Health check endpoint
-pub async fn health_check(State(engine): State<Arc<SelemeneEngine>>) -> ResponseJson<Value> {
+pub async fn health_check(State(_engine): State<Arc<SelemeneEngine>>) -> ResponseJson<Value> {
     let health = HealthStatus {
         status: "healthy".to_string(),
         timestamp: chrono::Utc::now(),
@@ -30,32 +29,25 @@ pub async fn health_check(State(engine): State<Arc<SelemeneEngine>>) -> Response
 }
 
 /// Metrics endpoint
-pub async fn metrics(State(engine): State<Arc<SelemeneEngine>>) -> ResponseJson<Value> {
+pub async fn metrics(State(_engine): State<Arc<SelemeneEngine>>) -> ResponseJson<Value> {
     // Get Prometheus metrics
-    match crate::metrics::REGISTRY.gather() {
-        Ok(metrics) => {
-            use prometheus::Encoder;
-            let mut buffer = Vec::new();
-            let encoder = prometheus::TextEncoder::new();
-            
-            if let Err(e) = encoder.encode(&metrics, &mut buffer) {
-                tracing::error!("Failed to encode metrics: {}", e);
-                return Json(json!({"error": "Failed to encode metrics"}));
-            }
-            
-            let metrics_text = String::from_utf8(buffer)
-                .unwrap_or_else(|_| "Invalid metrics encoding".to_string());
-            
-            Json(json!({
-                "metrics": metrics_text,
-                "format": "prometheus_text"
-            }))
-        }
-        Err(e) => {
-            tracing::error!("Failed to gather metrics: {}", e);
-            Json(json!({"error": "Failed to gather metrics"}))
-        }
+    let metrics = crate::metrics::REGISTRY.gather();
+    use prometheus::Encoder;
+    let mut buffer = Vec::new();
+    let encoder = prometheus::TextEncoder::new();
+    
+    if let Err(e) = encoder.encode(&metrics, &mut buffer) {
+        tracing::error!("Failed to encode metrics: {}", e);
+        return Json(json!({"error": "Failed to encode metrics"}));
     }
+    
+    let metrics_text = String::from_utf8(buffer)
+        .unwrap_or_else(|_| "Invalid metrics encoding".to_string());
+    
+    Json(json!({
+        "metrics": metrics_text,
+        "format": "prometheus_text"
+    }))
 }
 
 /// Status endpoint
@@ -66,7 +58,7 @@ pub async fn status(State(engine): State<Arc<SelemeneEngine>>) -> ResponseJson<V
         "status": "operational",
         "version": env!("CARGO_PKG_VERSION"),
         "uptime": 0, // TODO: Implement uptime tracking
-        "config": config,
+        "config": &*config,
         "timestamp": chrono::Utc::now()
     });
     
@@ -78,23 +70,23 @@ pub async fn calculate_panchanga(
     State(engine): State<Arc<SelemeneEngine>>,
     Json(request): Json<PanchangaRequest>,
 ) -> Result<ResponseJson<Value>, StatusCode> {
-    // TODO: Implement actual calculation using the engine
-    let result = PanchangaResult {
-        date: request.date.clone(),
-        tithi: Some(15.0), // Placeholder
-        nakshatra: Some(20.0), // Placeholder
-        yoga: Some(25.0), // Placeholder
-        karana: Some(7.0), // Placeholder
-        vara: Some(1.0), // Placeholder
-        solar_longitude: 120.0, // Placeholder
-        lunar_longitude: 135.0, // Placeholder
-        precision: 2,
-        backend: "native".to_string(),
-        calculation_time: Some(chrono::Utc::now()),
-    };
-    
-    let response = ApiResponse::success(result);
-    Ok(Json(json!(response)))
+    match engine.calculate_panchanga(request).await {
+        Ok(result) => {
+            let response = json!({
+                "success": true,
+                "data": result,
+                "timestamp": chrono::Utc::now()
+            });
+            Ok(Json(response))
+        }
+        Err(e) => {
+            let response = json!({
+                "error": format!("Calculation failed: {}", e),
+                "timestamp": chrono::Utc::now()
+            });
+            Ok(Json(response))
+        }
+    }
 }
 
 /// Calculate Panchanga for multiple dates in batch
@@ -102,63 +94,71 @@ pub async fn calculate_batch_panchanga(
     State(engine): State<Arc<SelemeneEngine>>,
     Json(batch_request): Json<BatchRequest>,
 ) -> Result<ResponseJson<Value>, StatusCode> {
-    // TODO: Implement batch calculation using the engine
-    let results = vec![
-        PanchangaResult {
-            date: "2025-01-27".to_string(),
-            tithi: Some(15.0),
-            nakshatra: Some(20.0),
-            yoga: Some(25.0),
-            karana: Some(7.0),
-            vara: Some(1.0),
-            solar_longitude: 120.0,
-            lunar_longitude: 135.0,
-            precision: 2,
-            backend: "native".to_string(),
-            calculation_time: Some(chrono::Utc::now()),
-        }
-    ];
+    let start_time = std::time::Instant::now();
+    let mut results = Vec::new();
+    let mut errors = Vec::new();
     
+    for request in batch_request.requests {
+        match engine.calculate_panchanga(request).await {
+            Ok(result) => results.push(result),
+            Err(e) => errors.push(format!("Calculation failed: {}", e)),
+        }
+    }
+    
+    let total_time = start_time.elapsed().as_secs_f64();
     let batch_result = BatchResult {
-        results,
-        total_time: 0.1,
-        success_count: 1,
-        error_count: 0,
-        errors: Vec::new(),
+        results: results.clone(),
+        total_time,
+        success_count: results.len(),
+        error_count: errors.len(),
+        errors,
     };
     
-    let response = ApiResponse::success(batch_result);
-    Ok(Json(json!(response)))
+    let response = json!({
+        "success": true,
+        "data": batch_result,
+        "timestamp": chrono::Utc::now()
+    });
+    Ok(Json(response))
 }
 
 /// Calculate Panchanga for a date range
 pub async fn calculate_panchanga_range(
-    State(engine): State<Arc<SelemeneEngine>>,
-    Json(request): Json<PanchangaRequest>,
+    State(_engine): State<Arc<SelemeneEngine>>,
+    Json(_request): Json<PanchangaRequest>,
 ) -> Result<ResponseJson<Value>, StatusCode> {
     // TODO: Implement range calculation
-    let response = ApiResponse::error("Range calculation not yet implemented".to_string());
-    Ok(Json(json!(response)))
+    let response = json!({
+        "error": "Range calculation not yet implemented",
+        "timestamp": chrono::Utc::now()
+    });
+    Ok(Json(response))
 }
 
 /// Calculate solar position
 pub async fn calculate_solar_position(
-    State(engine): State<Arc<SelemeneEngine>>,
-    Json(request): Json<PanchangaRequest>,
+    State(_engine): State<Arc<SelemeneEngine>>,
+    Json(_request): Json<PanchangaRequest>,
 ) -> Result<ResponseJson<Value>, StatusCode> {
     // TODO: Implement solar position calculation
-    let response = ApiResponse::error("Solar position calculation not yet implemented".to_string());
-    Ok(Json(json!(response)))
+    let response = json!({
+        "error": "Solar position calculation not yet implemented",
+        "timestamp": chrono::Utc::now()
+    });
+    Ok(Json(response))
 }
 
 /// Calculate lunar position
 pub async fn calculate_lunar_position(
-    State(engine): State<Arc<SelemeneEngine>>,
-    Json(request): Json<PanchangaRequest>,
+    State(_engine): State<Arc<SelemeneEngine>>,
+    Json(_request): Json<PanchangaRequest>,
 ) -> Result<ResponseJson<Value>, StatusCode> {
     // TODO: Implement lunar position calculation
-    let response = ApiResponse::error("Lunar position calculation not yet implemented".to_string());
-    Ok(Json(json!(response)))
+    let response = json!({
+        "error": "Lunar position calculation not yet implemented",
+        "timestamp": chrono::Utc::now()
+    });
+    Ok(Json(response))
 }
 
 /// Calculate Tithi
@@ -166,9 +166,32 @@ pub async fn calculate_tithi(
     State(engine): State<Arc<SelemeneEngine>>,
     Json(request): Json<PanchangaRequest>,
 ) -> Result<ResponseJson<Value>, StatusCode> {
-    // TODO: Implement Tithi calculation
-    let response = ApiResponse::error("Tithi calculation not yet implemented".to_string());
-    Ok(Json(json!(response)))
+    match engine.calculate_panchanga(request).await {
+        Ok(result) => {
+            let tithi_result = json!({
+                "date": result.date,
+                "tithi": result.tithi,
+                "solar_longitude": result.solar_longitude,
+                "lunar_longitude": result.lunar_longitude,
+                "precision": result.precision,
+                "backend": result.backend,
+                "calculation_time": result.calculation_time
+            });
+            let response = json!({
+                "success": true,
+                "data": tithi_result,
+                "timestamp": chrono::Utc::now()
+            });
+            Ok(Json(response))
+        }
+        Err(e) => {
+            let response = json!({
+                "error": format!("Tithi calculation failed: {}", e),
+                "timestamp": chrono::Utc::now()
+            });
+            Ok(Json(response))
+        }
+    }
 }
 
 /// Calculate Nakshatra
@@ -176,9 +199,31 @@ pub async fn calculate_nakshatra(
     State(engine): State<Arc<SelemeneEngine>>,
     Json(request): Json<PanchangaRequest>,
 ) -> Result<ResponseJson<Value>, StatusCode> {
-    // TODO: Implement Nakshatra calculation
-    let response = ApiResponse::error("Nakshatra calculation not yet implemented".to_string());
-    Ok(Json(json!(response)))
+    match engine.calculate_panchanga(request).await {
+        Ok(result) => {
+            let nakshatra_result = json!({
+                "date": result.date,
+                "nakshatra": result.nakshatra,
+                "lunar_longitude": result.lunar_longitude,
+                "precision": result.precision,
+                "backend": result.backend,
+                "calculation_time": result.calculation_time
+            });
+            let response = json!({
+                "success": true,
+                "data": nakshatra_result,
+                "timestamp": chrono::Utc::now()
+            });
+            Ok(Json(response))
+        }
+        Err(e) => {
+            let response = json!({
+                "error": format!("Nakshatra calculation failed: {}", e),
+                "timestamp": chrono::Utc::now()
+            });
+            Ok(Json(response))
+        }
+    }
 }
 
 /// Calculate Yoga
@@ -186,9 +231,32 @@ pub async fn calculate_yoga(
     State(engine): State<Arc<SelemeneEngine>>,
     Json(request): Json<PanchangaRequest>,
 ) -> Result<ResponseJson<Value>, StatusCode> {
-    // TODO: Implement Yoga calculation
-    let response = ApiResponse::error("Yoga calculation not yet implemented".to_string());
-    Ok(Json(json!(response)))
+    match engine.calculate_panchanga(request).await {
+        Ok(result) => {
+            let yoga_result = json!({
+                "date": result.date,
+                "yoga": result.yoga,
+                "solar_longitude": result.solar_longitude,
+                "lunar_longitude": result.lunar_longitude,
+                "precision": result.precision,
+                "backend": result.backend,
+                "calculation_time": result.calculation_time
+            });
+            let response = json!({
+                "success": true,
+                "data": yoga_result,
+                "timestamp": chrono::Utc::now()
+            });
+            Ok(Json(response))
+        }
+        Err(e) => {
+            let response = json!({
+                "error": format!("Yoga calculation failed: {}", e),
+                "timestamp": chrono::Utc::now()
+            });
+            Ok(Json(response))
+        }
+    }
 }
 
 /// Calculate Karana
@@ -196,9 +264,32 @@ pub async fn calculate_karana(
     State(engine): State<Arc<SelemeneEngine>>,
     Json(request): Json<PanchangaRequest>,
 ) -> Result<ResponseJson<Value>, StatusCode> {
-    // TODO: Implement Karana calculation
-    let response = ApiResponse::error("Karana calculation not yet implemented".to_string());
-    Ok(Json(json!(response)))
+    match engine.calculate_panchanga(request).await {
+        Ok(result) => {
+            let karana_result = json!({
+                "date": result.date,
+                "karana": result.karana,
+                "solar_longitude": result.solar_longitude,
+                "lunar_longitude": result.lunar_longitude,
+                "precision": result.precision,
+                "backend": result.backend,
+                "calculation_time": result.calculation_time
+            });
+            let response = json!({
+                "success": true,
+                "data": karana_result,
+                "timestamp": chrono::Utc::now()
+            });
+            Ok(Json(response))
+        }
+        Err(e) => {
+            let response = json!({
+                "error": format!("Karana calculation failed: {}", e),
+                "timestamp": chrono::Utc::now()
+            });
+            Ok(Json(response))
+        }
+    }
 }
 
 /// Calculate Vara
@@ -206,33 +297,60 @@ pub async fn calculate_vara(
     State(engine): State<Arc<SelemeneEngine>>,
     Json(request): Json<PanchangaRequest>,
 ) -> Result<ResponseJson<Value>, StatusCode> {
-    // TODO: Implement Vara calculation
-    let response = ApiResponse::error("Vara calculation not yet implemented".to_string());
-    Ok(Json(json!(response)))
+    match engine.calculate_panchanga(request).await {
+        Ok(result) => {
+            let vara_result = json!({
+                "date": result.date,
+                "vara": result.vara,
+                "precision": result.precision,
+                "backend": result.backend,
+                "calculation_time": result.calculation_time
+            });
+            let response = json!({
+                "success": true,
+                "data": vara_result,
+                "timestamp": chrono::Utc::now()
+            });
+            Ok(Json(response))
+        }
+        Err(e) => {
+            let response = json!({
+                "error": format!("Vara calculation failed: {}", e),
+                "timestamp": chrono::Utc::now()
+            });
+            Ok(Json(response))
+        }
+    }
 }
 
 /// Calculate houses
 pub async fn calculate_houses(
-    State(engine): State<Arc<SelemeneEngine>>,
-    Json(request): Json<PanchangaRequest>,
+    State(_engine): State<Arc<SelemeneEngine>>,
+    Json(_request): Json<PanchangaRequest>,
 ) -> Result<ResponseJson<Value>, StatusCode> {
     // TODO: Implement house calculation
-    let response = ApiResponse::error("House calculation not yet implemented".to_string());
-    Ok(Json(json!(response)))
+    let response = json!({
+        "error": "House calculation not yet implemented",
+        "timestamp": chrono::Utc::now()
+    });
+    Ok(Json(response))
 }
 
 /// Calculate planetary positions
 pub async fn calculate_planetary_positions(
-    State(engine): State<Arc<SelemeneEngine>>,
-    Json(request): Json<PanchangaRequest>,
+    State(_engine): State<Arc<SelemeneEngine>>,
+    Json(_request): Json<PanchangaRequest>,
 ) -> Result<ResponseJson<Value>, StatusCode> {
     // TODO: Implement planetary position calculation
-    let response = ApiResponse::error("Planetary position calculation not yet implemented".to_string());
-    Ok(Json(json!(response)))
+    let response = json!({
+        "error": "Planetary position calculation not yet implemented",
+        "timestamp": chrono::Utc::now()
+    });
+    Ok(Json(response))
 }
 
 /// Get cache statistics
-pub async fn get_cache_stats(State(engine): State<Arc<SelemeneEngine>>) -> ResponseJson<Value> {
+pub async fn get_cache_stats(State(_engine): State<Arc<SelemeneEngine>>) -> ResponseJson<Value> {
     // TODO: Implement cache statistics
     let stats = json!({
         "l1_hits": 0,
@@ -247,7 +365,7 @@ pub async fn get_cache_stats(State(engine): State<Arc<SelemeneEngine>>) -> Respo
 }
 
 /// Clear cache
-pub async fn clear_cache(State(engine): State<Arc<SelemeneEngine>>) -> ResponseJson<Value> {
+pub async fn clear_cache(State(_engine): State<Arc<SelemeneEngine>>) -> ResponseJson<Value> {
     // TODO: Implement cache clearing
     let response = json!({
         "message": "Cache cleared successfully",
@@ -258,7 +376,7 @@ pub async fn clear_cache(State(engine): State<Arc<SelemeneEngine>>) -> ResponseJ
 }
 
 /// Get engine statistics
-pub async fn get_engine_stats(State(engine): State<Arc<SelemeneEngine>>) -> ResponseJson<Value> {
+pub async fn get_engine_stats(State(_engine): State<Arc<SelemeneEngine>>) -> ResponseJson<Value> {
     // TODO: Implement engine statistics
     let stats = json!({
         "total_calculations": 0,
@@ -278,13 +396,13 @@ pub async fn get_engine_stats(State(engine): State<Arc<SelemeneEngine>>) -> Resp
 /// Get engine configuration
 pub async fn get_engine_config(State(engine): State<Arc<SelemeneEngine>>) -> ResponseJson<Value> {
     let config = engine.get_config().await;
-    Json(json!(config))
+    Json(json!(&*config))
 }
 
 /// Update engine configuration
 pub async fn update_engine_config(
-    State(engine): State<Arc<SelemeneEngine>>,
-    Json(config): Json<EngineConfig>,
+    State(_engine): State<Arc<SelemeneEngine>>,
+    Json(_config): Json<EngineConfig>,
 ) -> ResponseJson<Value> {
     // TODO: Implement configuration update
     let response = json!({
@@ -296,45 +414,45 @@ pub async fn update_engine_config(
 }
 
 // Admin handlers (placeholder implementations)
-pub async fn list_users(State(engine): State<Arc<SelemeneEngine>>) -> ResponseJson<Value> {
+pub async fn list_users(State(_engine): State<Arc<SelemeneEngine>>) -> ResponseJson<Value> {
     Json(json!({"users": []}))
 }
 
-pub async fn create_user(State(engine): State<Arc<SelemeneEngine>>) -> ResponseJson<Value> {
+pub async fn create_user(State(_engine): State<Arc<SelemeneEngine>>) -> ResponseJson<Value> {
     Json(json!({"message": "User created"}))
 }
 
-pub async fn get_user(State(engine): State<Arc<SelemeneEngine>>, Path(id): Path<String>) -> ResponseJson<Value> {
+pub async fn get_user(State(_engine): State<Arc<SelemeneEngine>>, Path(id): Path<String>) -> ResponseJson<Value> {
     Json(json!({"id": id, "message": "User details"}))
 }
 
-pub async fn update_user(State(engine): State<Arc<SelemeneEngine>>, Path(id): Path<String>) -> ResponseJson<Value> {
+pub async fn update_user(State(_engine): State<Arc<SelemeneEngine>>, Path(id): Path<String>) -> ResponseJson<Value> {
     Json(json!({"id": id, "message": "User updated"}))
 }
 
-pub async fn delete_user(State(engine): State<Arc<SelemeneEngine>>, Path(id): Path<String>) -> ResponseJson<Value> {
+pub async fn delete_user(State(_engine): State<Arc<SelemeneEngine>>, Path(id): Path<String>) -> ResponseJson<Value> {
     Json(json!({"id": id, "message": "User deleted"}))
 }
 
-pub async fn get_analytics(State(engine): State<Arc<SelemeneEngine>>) -> ResponseJson<Value> {
+pub async fn get_analytics(State(_engine): State<Arc<SelemeneEngine>>) -> ResponseJson<Value> {
     Json(json!({"analytics": {}}))
 }
 
-pub async fn trigger_maintenance(State(engine): State<Arc<SelemeneEngine>>) -> ResponseJson<Value> {
+pub async fn trigger_maintenance(State(_engine): State<Arc<SelemeneEngine>>) -> ResponseJson<Value> {
     Json(json!({"message": "Maintenance triggered"}))
 }
 
 // WebSocket handlers (placeholder implementations)
-pub async fn panchanga_websocket(State(engine): State<Arc<SelemeneEngine>>) -> ResponseJson<Value> {
+pub async fn panchanga_websocket(State(_engine): State<Arc<SelemeneEngine>>) -> ResponseJson<Value> {
     Json(json!({"message": "WebSocket endpoint"}))
 }
 
-pub async fn notifications_websocket(State(engine): State<Arc<SelemeneEngine>>) -> ResponseJson<Value> {
+pub async fn notifications_websocket(State(_engine): State<Arc<SelemeneEngine>>) -> ResponseJson<Value> {
     Json(json!({"message": "Notifications WebSocket endpoint"}))
 }
 
 /// Performance optimization handler
-pub async fn optimize_performance(State(engine): State<Arc<SelemeneEngine>>) -> ResponseJson<Value> {
+pub async fn optimize_performance(State(_engine): State<Arc<SelemeneEngine>>) -> ResponseJson<Value> {
     // TODO: Implement actual performance optimization
     // This would use the PerformanceOptimizer to optimize cache and routing
     let response = json!({
@@ -352,7 +470,7 @@ pub async fn optimize_performance(State(engine): State<Arc<SelemeneEngine>>) -> 
 }
 
 /// Run performance benchmarks
-pub async fn run_benchmarks(State(engine): State<Arc<SelemeneEngine>>) -> ResponseJson<Value> {
+pub async fn run_benchmarks(State(_engine): State<Arc<SelemeneEngine>>) -> ResponseJson<Value> {
     // TODO: Implement actual benchmark execution
     // This would use the PerformanceOptimizer to run comprehensive benchmarks
     let response = json!({
@@ -362,10 +480,25 @@ pub async fn run_benchmarks(State(engine): State<Arc<SelemeneEngine>>) -> Respon
             "single_calculation": "0.5ms",
             "batch_calculation": "45.2ms",
             "cache_performance": "0.1ms",
-            "memory_usage": "2.3ms"
-        },
+                    "memory_usage": "2.3ms"
+    },
+    "timestamp": chrono::Utc::now()
+});
+
+Json(response)
+}
+
+/// Validate Panchanga calculation
+pub async fn validate_panchanga(
+    State(_engine): State<Arc<SelemeneEngine>>,
+    Json(request): Json<PanchangaRequest>,
+) -> Result<ResponseJson<Value>, StatusCode> {
+    // TODO: Implement validation logic
+    let response = json!({
+        "message": "Validation completed",
+        "request": request,
         "timestamp": chrono::Utc::now()
     });
     
-    Json(response)
+    Ok(Json(response))
 }

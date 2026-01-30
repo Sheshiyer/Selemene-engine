@@ -1,5 +1,8 @@
 use crate::models::{PrecisionLevel, EngineError};
 use super::{NativeSolarEngine, NativeLunarEngine, SwissEphemerisEngine};
+use super::native_solar::SolarEngineError;
+use super::native_lunar::LunarEngineError;
+use super::swiss_ephemeris::SwissEphemerisError;
 
 /// Validation engine errors
 #[derive(Debug, thiserror::Error)]
@@ -15,6 +18,24 @@ pub enum ValidationEngineError {
 impl From<ValidationEngineError> for EngineError {
     fn from(err: ValidationEngineError) -> Self {
         EngineError::ValidationError(err.to_string())
+    }
+}
+
+impl From<SolarEngineError> for ValidationEngineError {
+    fn from(err: SolarEngineError) -> Self {
+        ValidationEngineError::ValidationFailed(err.to_string())
+    }
+}
+
+impl From<LunarEngineError> for ValidationEngineError {
+    fn from(err: LunarEngineError) -> Self {
+        ValidationEngineError::ValidationFailed(err.to_string())
+    }
+}
+
+impl From<SwissEphemerisError> for ValidationEngineError {
+    fn from(err: SwissEphemerisError) -> Self {
+        ValidationEngineError::ValidationFailed(err.to_string())
     }
 }
 
@@ -56,7 +77,7 @@ impl ValidationEngine {
         let native_longitude = self.native_solar.solar_longitude(jd, precision)?;
         
         // Calculate with Swiss Ephemeris
-        let swiss_position = self.swiss_ephemeris.calculate_solar_position(jd, precision)?;
+        let swiss_position = self.swiss_ephemeris.calculate_solar_position(jd).await?;
         
         // Compare results
         let difference = (native_longitude - swiss_position.longitude).abs();
@@ -91,7 +112,7 @@ impl ValidationEngine {
         let native_longitude = self.native_lunar.lunar_longitude(jd, precision)?;
         
         // Calculate with Swiss Ephemeris
-        let swiss_position = self.swiss_ephemeris.calculate_lunar_position(jd, precision)?;
+        let swiss_position = self.swiss_ephemeris.calculate_lunar_position(jd).await?;
         
         // Compare results
         let difference = (native_longitude - swiss_position.longitude).abs();
@@ -128,8 +149,8 @@ impl ValidationEngine {
         let native_diff = (lunar_longitude - solar_longitude).rem_euclid(360.0);
         
         // Calculate with Swiss Ephemeris
-        let swiss_solar = self.swiss_ephemeris.calculate_solar_position(jd, precision)?;
-        let swiss_lunar = self.swiss_ephemeris.calculate_lunar_position(jd, precision)?;
+        let swiss_solar = self.swiss_ephemeris.calculate_solar_position(jd).await?;
+        let swiss_lunar = self.swiss_ephemeris.calculate_lunar_position(jd).await?;
         let swiss_diff = (swiss_lunar.longitude - swiss_solar.longitude).rem_euclid(360.0);
         
         // Compare results

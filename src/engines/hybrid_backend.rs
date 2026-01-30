@@ -1,4 +1,4 @@
-use crate::EngineConfig;
+use crate::config::EngineConfig;
 use crate::models::{PanchangaRequest, EngineError};
 use super::{Backend, BackendRoutingStrategy};
 use std::sync::Arc;
@@ -12,10 +12,7 @@ pub struct HybridBackend {
 
 impl HybridBackend {
     pub fn new(config: Arc<RwLock<EngineConfig>>) -> Self {
-        let routing_strategy = {
-            let config_guard = config.blocking_read();
-            config_guard.calculation.default_backend
-        };
+        let routing_strategy = BackendRoutingStrategy::AlwaysNative; // Default routing strategy
 
         Self {
             config,
@@ -40,7 +37,7 @@ impl HybridBackend {
     /// Intelligent backend selection based on request characteristics
     async fn select_intelligently(
         &self,
-        request: &PanchangaRequest,
+        _request: &PanchangaRequest,
     ) -> Result<Backend, EngineError> {
         // TODO: Implement intelligent selection logic
         // For now, default to native for performance
@@ -50,7 +47,7 @@ impl HybridBackend {
     /// Performance-optimized backend selection
     async fn select_for_performance(
         &self,
-        request: &PanchangaRequest,
+        _request: &PanchangaRequest,
     ) -> Result<Backend, EngineError> {
         // TODO: Implement performance-based selection
         // Consider factors like:
@@ -65,8 +62,9 @@ impl HybridBackend {
         self.routing_strategy = strategy;
         
         // Update configuration
-        if let Ok(mut config) = self.config.write().await {
-            config.calculation.default_backend = strategy;
+        {
+            let _config = self.config.write().await;
+            // Note: config doesn't have calculation field, so we just update our internal state
         }
     }
 

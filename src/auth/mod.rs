@@ -53,7 +53,7 @@ impl AuthService {
         Self {
             jwt_secret,
             api_keys: Arc::new(RwLock::new(HashMap::new())),
-            jwt_validation,
+            jwt_validation: validation,
         }
     }
 
@@ -96,14 +96,18 @@ impl AuthService {
             }
             
             // Update last used timestamp
+            let user_id = key_info.user_id.clone();
+            let tier = key_info.tier.clone();
+            let permissions = key_info.permissions.clone();
+            let rate_limit = key_info.rate_limit;
             drop(keys);
             self.update_api_key_usage(api_key).await?;
             
             Ok(AuthUser {
-                user_id: key_info.user_id.clone(),
-                tier: key_info.tier.clone(),
-                permissions: key_info.permissions.clone(),
-                rate_limit: key_info.rate_limit,
+                user_id,
+                tier,
+                permissions,
+                rate_limit,
             })
         } else {
             Err(EngineError::AuthError("Invalid API key".to_string()))
@@ -241,7 +245,7 @@ impl UserRateLimiter {
         
         if let Some((count, window_start)) = limits.get_mut(user_id) {
             // Check if window has reset (1 minute)
-            if now - window_start > Duration::minutes(1) {
+            if now - *window_start > Duration::minutes(1) {
                 *count = 1;
                 *window_start = now;
                 true

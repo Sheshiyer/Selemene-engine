@@ -14,7 +14,7 @@ pub struct L1Cache {
 }
 
 #[derive(Debug, Clone, Default)]
-struct L1CacheStats {
+pub(crate) struct L1CacheStats {
     hits: u64,
     misses: u64,
     evictions: u64,
@@ -114,7 +114,8 @@ impl L1Cache {
     }
 
     /// Get cache statistics
-    pub async fn get_stats(&self) -> L1CacheStats {
+    #[allow(dead_code)]
+    pub(crate) async fn get_stats(&self) -> L1CacheStats {
         self.stats.read().await.clone()
     }
 
@@ -135,7 +136,7 @@ impl L1Cache {
 
     /// Ensure enough space is available by evicting least recently used entries
     async fn ensure_space(&self, required_bytes: usize) -> Result<(), EngineError> {
-        let mut current_size = self.current_size_bytes.read().await;
+        let current_size = self.current_size_bytes.read().await;
         
         if *current_size + required_bytes <= self.max_size_bytes {
             return Ok(());

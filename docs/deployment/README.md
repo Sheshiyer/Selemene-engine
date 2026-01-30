@@ -2,13 +2,11 @@
 
 ## Overview
 
-This guide covers deploying the Selemene Engine to various environments, from local development to production on Railway.com.
+This guide covers running and deploying Selemene Engine in a platform-agnostic way.
 
 ## Prerequisites
 
 - **Rust 1.75+** - [Install Rust](https://rustup.rs/)
-- **Docker** - [Install Docker](https://docs.docker.com/get-docker/)
-- **Railway CLI** - [Install Railway CLI](https://docs.railway.app/develop/cli)
 - **Git** - [Install Git](https://git-scm.com/)
 
 ## Local Development
@@ -24,37 +22,22 @@ This guide covers deploying the Selemene Engine to various environments, from lo
 2. **Set environment variables**
    ```bash
    export RUST_LOG=debug
-   export ENVIRONMENT=development
-   export HOST=0.0.0.0
    export PORT=8080
-   export REDIS_URL=redis://localhost:6379
-   export DATABASE_URL=postgresql://postgres:password@localhost:5432/selemene
+   # Optional integrations (enable if you have these services available)
+   # export REDIS_URL=redis://localhost:6379
+   # export DATABASE_URL=postgresql://postgres:password@localhost:5432/selemene
+   # export SWISS_EPHEMERIS_PATH=./data/ephemeris
    ```
 
-3. **Run with Docker Compose**
-   ```bash
-   docker-compose up -d
-   ```
-
-4. **Start the engine**
+3. **Start the engine**
    ```bash
    cargo run
    ```
 
-5. **Verify deployment**
+4. **Verify**
    ```bash
    curl http://localhost:8080/health
    ```
-
-### Docker Compose Services
-
-The `docker-compose.yml` includes:
-
-- **selemene-engine**: Main application
-- **postgres**: PostgreSQL database
-- **redis**: Redis cache
-- **prometheus**: Metrics collection
-- **grafana**: Monitoring dashboard
 
 ### Environment Variables
 
@@ -73,90 +56,22 @@ The `docker-compose.yml` includes:
 | `CACHE_SIZE_MB` | L1 cache size in MB | `256` |
 | `MAX_CONCURRENT_CALCULATIONS` | Max concurrent calculations | `100` |
 
-## Railway.com Deployment
+## Deployment
 
-### Staging Environment
-
-1. **Login to Railway**
-   ```bash
-   railway login
-   ```
-
-2. **Deploy to staging**
-   ```bash
-   ./scripts/deploy-staging.sh
-   ```
-
-3. **Verify staging deployment**
-   ```bash
-   curl https://selemene-staging.railway.app/health
-   ```
-
-### Production Environment
-
-1. **Deploy to production**
-   ```bash
-   ./scripts/deploy-production.sh
-   ```
-
-2. **Verify production deployment**
-   ```bash
-   curl https://api.selemene.io/health
-   ```
-
-### Railway Configuration
-
-The `railway.toml` file configures:
-
-- **Build settings**: Dockerfile-based builds
-- **Deploy settings**: Health checks, restart policies
-- **Environment variables**: Production and staging configurations
-- **Service scaling**: Horizontal scaling policies
-- **Resource limits**: CPU and memory constraints
-
-## Docker Deployment
-
-### Building the Image
+### Build a Release Binary
 
 ```bash
-# Build for local use
-docker build -t selemene-engine:latest .
-
-# Build for production
-docker build --target runtime -t selemene-engine:prod .
+cargo build --release
+./target/release/selemene-engine
 ```
 
-### Running the Container
+### Containerization
 
-```bash
-# Basic run
-docker run -p 8080:8080 selemene-engine:latest
+This repository does not ship provider-specific deployment assets. If you want to run in containers, create your own Dockerfile (or equivalent) that:
 
-# With environment variables
-docker run -p 8080:8080 \
-  -e RUST_LOG=info \
-  -e ENVIRONMENT=production \
-  -e REDIS_URL=redis://redis:6379 \
-  selemene-engine:latest
-
-# With volume mounts
-docker run -p 8080:8080 \
-  -v $(pwd)/data:/app/data \
-  -v $(pwd)/logs:/app/logs \
-  selemene-engine:latest
-```
-
-### Multi-stage Dockerfile
-
-The Dockerfile uses multi-stage builds:
-
-1. **Builder stage**: Compiles Rust application
-2. **Runtime stage**: Minimal runtime image
-
-Benefits:
-- Smaller production images
-- Faster builds with caching
-- Security through minimal attack surface
+- Builds the release binary
+- Copies the `data/` directory if you need ephemeris files
+- Sets `PORT` and any required environment variables
 
 ## CI/CD Pipeline
 
@@ -170,18 +85,6 @@ The project includes automated CI/CD workflows:
 - Runs security audits with `cargo audit`
 - Checks code quality with Clippy and rustfmt
 - Builds release binary and checks size
-
-#### Staging Deployment (`.github/workflows/deploy-staging.yml`)
-- Triggers on push to `develop`
-- Runs tests and security audits
-- Deploys to Railway staging
-- Performs post-deployment verification
-
-#### Production Deployment (`.github/workflows/deploy-production.yml`)
-- Triggers on push to `main` or release
-- Comprehensive testing and validation
-- Deploys to Railway production
-- Extensive post-deployment verification
 
 ### Automated Testing
 
@@ -241,10 +144,10 @@ Health check endpoints:
 
 ```bash
 # Run cache optimization
-curl -X POST https://api.selemene.io/api/v1/performance/optimize
+curl -X POST http://localhost:8080/api/v1/performance/optimize
 
 # Run benchmarks
-curl -X POST https://api.selemene.io/api/v1/performance/benchmark
+curl -X POST http://localhost:8080/api/v1/performance/benchmark
 ```
 
 ### Local Benchmarking
@@ -274,18 +177,12 @@ curl -X POST https://api.selemene.io/api/v1/performance/benchmark
 
 3. **Database connection issues**
    ```bash
-   # Check database status
-   docker-compose ps postgres
-   
-   # Check logs
-   docker-compose logs postgres
+   # Verify DATABASE_URL and connectivity (example for psql)
+   psql "$DATABASE_URL" -c 'select 1'
    ```
 
 4. **Redis connection issues**
    ```bash
-   # Check Redis status
-   docker-compose ps redis
-   
    # Test Redis connection
    redis-cli ping
    ```
@@ -295,25 +192,19 @@ curl -X POST https://api.selemene.io/api/v1/performance/benchmark
 ```bash
 # Set debug logging
 export RUST_LOG=debug
-
-# View application logs
-docker-compose logs -f selemene-engine
-
-# View specific service logs
-docker-compose logs -f postgres
-docker-compose logs -f redis
 ```
 
 ### Performance Issues
 
 1. **Check cache hit rates**
    ```bash
-   curl https://api.selemene.io/api/v1/cache/stats
+   curl http://localhost:8080/api/v1/cache/stats
    ```
 
 2. **Monitor system resources**
    ```bash
-   docker stats
+   # Use your platform tooling (top/htop, container metrics, etc.)
+   top
    ```
 
 3. **Run performance benchmarks**
@@ -325,15 +216,7 @@ docker-compose logs -f redis
 
 ### Horizontal Scaling
 
-Railway.com supports automatic scaling:
-
-```toml
-# railway.toml
-[services.selemene-api.scaling]
-min_instances = 2
-max_instances = 10
-target_cpu_utilization = 70
-```
+The engine is designed to scale horizontally behind a load balancer. Use your hosting platform’s autoscaling primitives and ensure any shared state is externalized (e.g., Redis for shared cache layers).
 
 ### Load Balancing
 
@@ -362,7 +245,6 @@ The engine supports multiple instances behind a load balancer:
 ### Secrets Management
 
 - Environment variable-based configuration
-- Railway.com secrets management
 - No hardcoded secrets in code
 
 ## Backup and Recovery
@@ -370,11 +252,11 @@ The engine supports multiple instances behind a load balancer:
 ### Database Backups
 
 ```bash
-# Create backup
-docker-compose exec postgres pg_dump -U postgres selemene > backup.sql
+# Create backup (example)
+pg_dump "$DATABASE_URL" > backup.sql
 
-# Restore backup
-docker-compose exec -T postgres psql -U postgres selemene < backup.sql
+# Restore backup (example)
+psql "$DATABASE_URL" < backup.sql
 ```
 
 ### Configuration Backups

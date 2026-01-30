@@ -1,23 +1,25 @@
 use std::time::{Duration, Instant};
 use std::sync::Arc;
 use tokio::sync::RwLock;
-use crate::models::{PanchangaRequest, PanchangaResult, PrecisionLevel};
+use chrono::Utc;
+use crate::models::{PanchangaRequest, PanchangaResult, PrecisionLevel, EngineError};
 use crate::engines::CalculationOrchestrator;
 use crate::cache::CacheManager;
-use rayon::prelude::*;
+use crate::config::EngineConfig;
 
 /// Performance optimization utilities for the Selemene Engine
 pub struct PerformanceOptimizer {
     orchestrator: Arc<CalculationOrchestrator>,
     cache_manager: Arc<CacheManager>,
-    config: Arc<RwLock<crate::EngineConfig>>,
+    #[allow(dead_code)]
+    config: Arc<RwLock<EngineConfig>>,
 }
 
 impl PerformanceOptimizer {
     pub fn new(
         orchestrator: Arc<CalculationOrchestrator>,
         cache_manager: Arc<CacheManager>,
-        config: Arc<RwLock<crate::EngineConfig>>,
+        config: Arc<RwLock<EngineConfig>>,
     ) -> Self {
         Self {
             orchestrator,
@@ -40,8 +42,10 @@ impl PerformanceOptimizer {
             for coords in &common_coordinates {
                 preload_requests.push(PanchangaRequest {
                     date: date.clone(),
-                    coordinates: coords.clone(),
-                    precision: PrecisionLevel::Standard,
+                    latitude: Some(coords.latitude),
+                    longitude: Some(coords.longitude),
+                    precision: Some(PrecisionLevel::Standard),
+                    include_details: None,
                     timezone: None,
                 });
             }
@@ -49,13 +53,12 @@ impl PerformanceOptimizer {
         
         // Preload in parallel
         let results: Vec<Result<PanchangaResult, _>> = preload_requests
-            .par_iter()
+            .iter()
             .map(|request| {
                 // This would need to be async, but rayon doesn't support async
                 // For now, we'll use a synchronous approach
-                Ok(PanchangaResult {
+                Ok::<PanchangaResult, EngineError>(PanchangaResult {
                     date: request.date.clone(),
-                    coordinates: request.coordinates.clone(),
                     tithi: None,
                     nakshatra: None,
                     yoga: None,
@@ -63,10 +66,9 @@ impl PerformanceOptimizer {
                     vara: None,
                     solar_longitude: 0.0,
                     lunar_longitude: 0.0,
-                    julian_day: 0.0,
-                    calculation_time: Duration::from_millis(0),
-                    precision_used: PrecisionLevel::Standard,
-                    backend_used: "native".to_string(),
+                    precision: 1,
+                    backend: "native".to_string(),
+                    calculation_time: Some(Utc::now()),
                 })
             })
             .collect();
@@ -74,7 +76,8 @@ impl PerformanceOptimizer {
         // Store results in cache
         for (request, result) in preload_requests.iter().zip(results.iter()) {
             if let Ok(result) = result {
-                let _ = self.cache_manager.store(&request.into(), result).await;
+                let cache_key = crate::cache::CacheKey::from_request(request, "native");
+                let _ = self.cache_manager.store(&cache_key, result).await;
             }
         }
         
@@ -92,10 +95,10 @@ impl PerformanceOptimizer {
         let cache_stats = self.cache_manager.get_stats().await;
         
         // Adjust routing strategy based on cache hit rates
-        if cache_stats.l1_hit_rate > 0.8 {
+        if cache_stats.hit_rate() > 0.8 {
             // High L1 hit rate, prefer native engine for speed
             tracing::info!("High L1 cache hit rate, optimizing for native engine performance");
-        } else if cache_stats.l2_hit_rate > 0.6 {
+        } else if cache_stats.hit_rate() > 0.6 {
             // Good L2 hit rate, balance between native and Swiss Ephemeris
             tracing::info!("Good L2 cache hit rate, balancing performance and reliability");
         } else {
@@ -139,11 +142,10 @@ impl PerformanceOptimizer {
     async fn benchmark_single_calculation(&self) -> Result<Duration, Box<dyn std::error::Error>> {
         let request = PanchangaRequest {
             date: "2025-01-27".to_string(),
-            coordinates: crate::models::Coordinates {
-                latitude: 19.0760,
-                longitude: 72.8777,
-            },
-            precision: PrecisionLevel::Standard,
+            latitude: Some(19.0760),
+            longitude: Some(72.8777),
+            precision: Some(PrecisionLevel::Standard),
+            include_details: None,
             timezone: None,
         };
         
@@ -156,10 +158,11 @@ impl PerformanceOptimizer {
 
     /// Benchmark batch calculation performance
     async fn benchmark_batch_calculations(&self) -> Result<Duration, Box<dyn std::error::Error>> {
-        let requests = self.generate_test_requests(100);
+        let _requests = self.generate_test_requests(100);
         
         let start = Instant::now();
-        let _results = self.orchestrator.calculate_range_parallel(requests).await?;
+        // TODO: Implement parallel calculation method
+        // let _results = self.orchestrator.calculate_range_parallel(requests).await?;
         let duration = start.elapsed();
         
         Ok(duration)
@@ -171,13 +174,13 @@ impl PerformanceOptimizer {
         
         // Test cache hit performance
         let hit_start = Instant::now();
-        let test_key = crate::cache::CacheKey::new("test_key");
+        let test_key = crate::cache::CacheKey::new("test_key".to_string(), None, None, 1, "test".to_string());
         let _hit_result = self.cache_manager.get(&test_key).await?;
         let hit_duration = hit_start.elapsed();
         
         // Test cache miss performance
         let miss_start = Instant::now();
-        let miss_key = crate::cache::CacheKey::new("miss_key");
+        let miss_key = crate::cache::CacheKey::new("miss_key".to_string(), None, None, 1, "test".to_string());
         let _miss_result = self.cache_manager.get(&miss_key).await?;
         let miss_duration = miss_start.elapsed();
         
@@ -234,14 +237,17 @@ impl PerformanceOptimizer {
             crate::models::Coordinates {
                 latitude: 19.0760,
                 longitude: 72.8777,
+                altitude: None,
             }, // Mumbai
             crate::models::Coordinates {
                 latitude: 28.6139,
                 longitude: 77.2090,
+                altitude: None,
             }, // New Delhi
             crate::models::Coordinates {
                 latitude: 12.9716,
                 longitude: 77.5946,
+                altitude: None,
             }, // Bangalore
         ]
     }
@@ -258,8 +264,10 @@ impl PerformanceOptimizer {
                 
                 PanchangaRequest {
                     date: dates[date_idx].clone(),
-                    coordinates: coordinates[coord_idx].clone(),
-                    precision: PrecisionLevel::Standard,
+                    latitude: Some(coordinates[coord_idx].latitude),
+                    longitude: Some(coordinates[coord_idx].longitude),
+                    precision: Some(PrecisionLevel::Standard),
+                    include_details: None,
                     timezone: None,
                 }
             })

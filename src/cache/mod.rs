@@ -1,6 +1,4 @@
 use crate::models::{PanchangaRequest, PanchangaResult, EngineError};
-use dashmap::DashMap;
-use redis::AsyncCommands;
 use std::sync::Arc;
 use tokio::sync::RwLock;
 use serde::{Serialize, Deserialize};
@@ -15,7 +13,7 @@ use l2_cache::L2Cache;
 use l3_cache::L3Cache;
 
 /// Cache key for storing results
-#[derive(Debug, Clone, Hash, Eq, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CacheKey {
     pub date: String,
     pub latitude: Option<f64>,
@@ -24,7 +22,39 @@ pub struct CacheKey {
     pub backend: String,
 }
 
+impl std::hash::Hash for CacheKey {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        self.date.hash(state);
+        self.latitude.map(|f| f.to_bits()).hash(state);
+        self.longitude.map(|f| f.to_bits()).hash(state);
+        self.precision.hash(state);
+        self.backend.hash(state);
+    }
+}
+
+impl PartialEq for CacheKey {
+    fn eq(&self, other: &Self) -> bool {
+        self.date == other.date &&
+        self.latitude.map(|f| f.to_bits()) == other.latitude.map(|f| f.to_bits()) &&
+        self.longitude.map(|f| f.to_bits()) == other.longitude.map(|f| f.to_bits()) &&
+        self.precision == other.precision &&
+        self.backend == other.backend
+    }
+}
+
+impl Eq for CacheKey {}
+
 impl CacheKey {
+    pub fn new(date: String, latitude: Option<f64>, longitude: Option<f64>, precision: u8, backend: String) -> Self {
+        Self {
+            date,
+            latitude,
+            longitude,
+            precision,
+            backend,
+        }
+    }
+
     pub fn from_request(request: &PanchangaRequest, backend: &str) -> Self {
         Self {
             date: request.date.clone(),
@@ -37,12 +67,24 @@ impl CacheKey {
 }
 
 /// Cached calculation result
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone)]
 pub struct CachedResult {
     pub result: PanchangaResult,
     pub created_at: Instant,
     pub accessed_at: Instant,
     pub access_count: u64,
+}
+
+impl CachedResult {
+    pub fn new(result: PanchangaResult) -> Self {
+        let now = Instant::now();
+        Self {
+            result,
+            created_at: now,
+            accessed_at: now,
+            access_count: 0,
+        }
+    }
 }
 
 /// Cache statistics

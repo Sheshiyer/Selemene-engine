@@ -1,5 +1,5 @@
 use selemene_engine::models::{PanchangaRequest, PanchangaResult, PrecisionLevel};
-use std::f64::consts::PI;
+use selemene_engine::engines::PanchangaCalculator;
 
 /// Test data for validation
 const TEST_DATES: &[&str] = &[
@@ -71,26 +71,35 @@ async fn test_lunar_position_accuracy() {
 /// Test Tithi calculations
 #[tokio::test]
 async fn test_tithi_accuracy() {
+    let calculator = PanchangaCalculator::new();
+    
     // Test that Tithi values are within expected range (1-30)
     for date in TEST_DATES {
         for &(lat, lon) in TEST_COORDINATES {
-            let request = PanchangaRequest {
-                date: date.to_string(),
-                latitude: Some(lat),
-                longitude: Some(lon),
-                timezone: None,
-                precision: Some(PrecisionLevel::High),
-                include_details: Some(false),
-            };
+            // Use known solar and lunar longitudes for testing
+            let solar_longitude = 120.0;
+            let lunar_longitude = 135.0;
+            let jd = 2451545.0; // J2000
             
-            // TODO: Replace with actual calculation when engine is implemented
-            let tithi = 15.0; // Placeholder value
-            
-            assert!(
-                tithi >= 1.0 && tithi <= 30.0,
-                "Tithi {} for date {} at coordinates ({}, {}) is out of range",
-                tithi, date, lat, lon
-            );
+            match calculator.calculate_tithi(solar_longitude, lunar_longitude, jd) {
+                Ok(tithi_info) => {
+                    assert!(
+                        tithi_info.number >= 1 && tithi_info.number <= 30,
+                        "Tithi {} for date {} at coordinates ({}, {}) is out of range",
+                        tithi_info.number, date, lat, lon
+                    );
+                    
+                    // Verify tithi name is not empty
+                    assert!(
+                        !tithi_info.name.is_empty(),
+                        "Tithi name should not be empty for date {}",
+                        date
+                    );
+                }
+                Err(e) => {
+                    panic!("Tithi calculation failed for date {}: {}", date, e);
+                }
+            }
         }
     }
 }
@@ -98,26 +107,148 @@ async fn test_tithi_accuracy() {
 /// Test Nakshatra calculations
 #[tokio::test]
 async fn test_nakshatra_accuracy() {
+    let calculator = PanchangaCalculator::new();
+    
     // Test that Nakshatra values are within expected range (1-27)
     for date in TEST_DATES {
         for &(lat, lon) in TEST_COORDINATES {
-            let request = PanchangaRequest {
-                date: date.to_string(),
-                latitude: Some(lat),
-                longitude: Some(lon),
-                timezone: None,
-                precision: Some(PrecisionLevel::High),
-                include_details: Some(false),
-            };
+            let lunar_longitude = 135.0;
+            let jd = 2451545.0; // J2000
             
-            // TODO: Replace with actual calculation when engine is implemented
-            let nakshatra = 20.0; // Placeholder value
+            match calculator.calculate_nakshatra(lunar_longitude, jd) {
+                Ok(nakshatra_info) => {
+                    assert!(
+                        nakshatra_info.number >= 1 && nakshatra_info.number <= 27,
+                        "Nakshatra {} for date {} at coordinates ({}, {}) is out of range",
+                        nakshatra_info.number, date, lat, lon
+                    );
+                    
+                    // Verify nakshatra name and ruler are not empty
+                    assert!(
+                        !nakshatra_info.name.is_empty(),
+                        "Nakshatra name should not be empty for date {}",
+                        date
+                    );
+                    
+                    assert!(
+                        !nakshatra_info.ruler.is_empty(),
+                        "Nakshatra ruler should not be empty for date {}",
+                        date
+                    );
+                }
+                Err(e) => {
+                    panic!("Nakshatra calculation failed for date {}: {}", date, e);
+                }
+            }
+        }
+    }
+}
+
+/// Test Yoga calculations
+#[tokio::test]
+async fn test_yoga_accuracy() {
+    let calculator = PanchangaCalculator::new();
+    
+    // Test that Yoga values are within expected range (1-27)
+    for date in TEST_DATES {
+        for &(lat, lon) in TEST_COORDINATES {
+            let solar_longitude = 120.0;
+            let lunar_longitude = 135.0;
+            let jd = 2451545.0; // J2000
             
-            assert!(
-                nakshatra >= 1.0 && nakshatra <= 27.0,
-                "Nakshatra {} for date {} at coordinates ({}, {}) is out of range",
-                nakshatra, date, lat, lon
-            );
+            match calculator.calculate_yoga(solar_longitude, lunar_longitude, jd) {
+                Ok(yoga_info) => {
+                    assert!(
+                        yoga_info.number >= 1 && yoga_info.number <= 27,
+                        "Yoga {} for date {} at coordinates ({}, {}) is out of range",
+                        yoga_info.number, date, lat, lon
+                    );
+                    
+                    // Verify yoga name is not empty
+                    assert!(
+                        !yoga_info.name.is_empty(),
+                        "Yoga name should not be empty for date {}",
+                        date
+                    );
+                }
+                Err(e) => {
+                    panic!("Yoga calculation failed for date {}: {}", date, e);
+                }
+            }
+        }
+    }
+}
+
+/// Test Karana calculations
+#[tokio::test]
+async fn test_karana_accuracy() {
+    let calculator = PanchangaCalculator::new();
+    
+    // Test that Karana values are within expected range (1-60)
+    for date in TEST_DATES {
+        for &(lat, lon) in TEST_COORDINATES {
+            let solar_longitude = 120.0;
+            let lunar_longitude = 135.0;
+            let jd = 2451545.0; // J2000
+            
+            match calculator.calculate_karana(solar_longitude, lunar_longitude, jd) {
+                Ok(karana_info) => {
+                    assert!(
+                        karana_info.number >= 1 && karana_info.number <= 60,
+                        "Karana {} for date {} at coordinates ({}, {}) is out of range",
+                        karana_info.number, date, lat, lon
+                    );
+                    
+                    // Verify karana name is not empty
+                    assert!(
+                        !karana_info.name.is_empty(),
+                        "Karana name should not be empty for date {}",
+                        date
+                    );
+                }
+                Err(e) => {
+                    panic!("Karana calculation failed for date {}: {}", date, e);
+                }
+            }
+        }
+    }
+}
+
+/// Test Vara calculations
+#[tokio::test]
+async fn test_vara_accuracy() {
+    let calculator = PanchangaCalculator::new();
+    
+    // Test that Vara values are within expected range (1-7)
+    for date in TEST_DATES {
+        for &(lat, lon) in TEST_COORDINATES {
+            let jd = 2451545.0; // J2000
+            
+            match calculator.calculate_vara(jd) {
+                Ok(vara_info) => {
+                    assert!(
+                        vara_info.number >= 1 && vara_info.number <= 7,
+                        "Vara {} for date {} at coordinates ({}, {}) is out of range",
+                        vara_info.number, date, lat, lon
+                    );
+                    
+                    // Verify vara name and ruler are not empty
+                    assert!(
+                        !vara_info.name.is_empty(),
+                        "Vara name should not be empty for date {}",
+                        date
+                    );
+                    
+                    assert!(
+                        !vara_info.ruler.is_empty(),
+                        "Vara ruler should not be empty for date {}",
+                        date
+                    );
+                }
+                Err(e) => {
+                    panic!("Vara calculation failed for date {}: {}", date, e);
+                }
+            }
         }
     }
 }
@@ -179,16 +310,9 @@ async fn test_date_validation() {
     ];
     
     for date in valid_dates {
-        // TODO: Implement actual date validation
         assert!(
-            date.len() == 10,
-            "Date {} should be 10 characters long",
-            date
-        );
-        
-        assert!(
-            date.contains('-'),
-            "Date {} should contain hyphens",
+            chrono::NaiveDate::parse_from_str(date, "%Y-%m-%d").is_ok(),
+            "Date {} should be valid YYYY-MM-DD",
             date
         );
     }
@@ -204,10 +328,8 @@ async fn test_date_validation() {
     ];
     
     for date in invalid_dates {
-        // TODO: Implement actual date validation
-        let is_valid = date.len() == 10 && date.contains('-');
         assert!(
-            !is_valid,
+            chrono::NaiveDate::parse_from_str(date, "%Y-%m-%d").is_err(),
             "Date {} should be invalid",
             date
         );
@@ -236,28 +358,60 @@ async fn test_precision_validation() {
 /// Test mathematical consistency
 #[tokio::test]
 async fn test_mathematical_consistency() {
+    let calculator = PanchangaCalculator::new();
+    
     // Test that Tithi calculation is consistent
     // Tithi = (Lunar Longitude - Solar Longitude) / 12 degrees
     for date in TEST_DATES {
         for &(lat, lon) in TEST_COORDINATES {
-            // TODO: Replace with actual calculations when engine is implemented
-            let solar_longitude = 120.0; // Placeholder
-            let lunar_longitude = 135.0; // Placeholder
+            let solar_longitude = 120.0;
+            let lunar_longitude = 135.0;
+            let jd = 2451545.0; // J2000
             
-            let tithi_diff = lunar_longitude - solar_longitude;
-            let tithi = (tithi_diff / 12.0).floor() + 1.0;
+            match calculator.calculate_tithi(solar_longitude, lunar_longitude, jd) {
+                Ok(tithi_info) => {
+                    let tithi_diff = (lunar_longitude - solar_longitude).rem_euclid(360.0_f64);
+                    let expected_tithi = (tithi_diff / 12.0_f64).floor() + 1.0_f64;
+                    let actual_tithi = tithi_info.number as f64;
+                    
+                    // Allow for small floating point differences
+                    let tolerance = 0.001;
+                    assert!(
+                        (expected_tithi - actual_tithi).abs() < tolerance,
+                        "Tithi calculation inconsistency: expected {}, actual {}",
+                        expected_tithi, actual_tithi
+                    );
+                }
+                Err(e) => {
+                    panic!("Tithi calculation failed for date {}: {}", date, e);
+                }
+            }
+        }
+    }
+    
+    // Test that Nakshatra calculation is consistent
+    // Each nakshatra spans 13.333... degrees (360/27)
+    for date in TEST_DATES {
+        for &(lat, lon) in TEST_COORDINATES {
+            let lunar_longitude = 135.0;
+            let jd = 2451545.0; // J2000
             
-            // Verify Tithi calculation
-            let expected_tithi_diff = (tithi - 1.0) * 12.0;
-            let actual_tithi_diff = lunar_longitude - solar_longitude;
-            
-            // Allow for small floating point differences
-            let tolerance = 0.001;
-            assert!(
-                (expected_tithi_diff - actual_tithi_diff).abs() < tolerance,
-                "Tithi calculation inconsistency: expected diff {}, actual diff {}",
-                expected_tithi_diff, actual_tithi_diff
-            );
+            match calculator.calculate_nakshatra(lunar_longitude, jd) {
+                Ok(nakshatra_info) => {
+                    let nakshatra_span = 360.0_f64 / 27.0_f64;
+                    let expected_nakshatra = (lunar_longitude / nakshatra_span).floor() as u8 + 1;
+                    let actual_nakshatra = nakshatra_info.number;
+                    
+                    assert_eq!(
+                        expected_nakshatra, actual_nakshatra,
+                        "Nakshatra calculation inconsistency: expected {}, actual {}",
+                        expected_nakshatra, actual_nakshatra
+                    );
+                }
+                Err(e) => {
+                    panic!("Nakshatra calculation failed for date {}: {}", date, e);
+                }
+            }
         }
     }
 }
