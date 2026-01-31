@@ -1,0 +1,12 @@
+[package]
+name = "noesis-auth"
+version = "0.1.0"
+edition = "2021"
+description = "Authentication and authorization (JWT + API keys) for Noesis platform"
+
+[dependencies]
+noesis-core = { path = "../noesis-core" }
+chrono = { version = "0.4", features = ["serde"] }
+jsonwebtoken = "9.2"
+serde = { version = "1.0", features = ["derive"] }
+tokio = { version = "1.0", features = ["sync"] }

@@ -1,0 +1,243 @@
+{
+  "mediapipe_landmarks": {
+    "total_points": 468,
+    "description": "MediaPipe Face Mesh provides 468 3D facial landmarks for comprehensive analysis",
+    "coordinate_system": "Normalized coordinates (0-1) relative to image dimensions"
+  },
+  "traditional_mapping": {
+    "twelve_houses_landmarks": {
+      "ming_gong": {
+        "name": "命宫 - Life Palace",
+        "primary_landmarks": [9, 10, 151, 337, 299, 333, 298, 301],
+        "region": "forehead_center",
+        "description": "Central forehead area representing life destiny"
+      },
+      "cai_bo_gong": {
+        "name": "財帛宫 - Wealth Palace", 
+        "primary_landmarks": [1, 2, 5, 4, 6, 19, 20, 94, 125],
+        "region": "nose_area",
+        "description": "Nose area representing wealth and material fortune"
+      },
+      "xiong_di_gong": {
+        "name": "兄弟宫 - Siblings Palace",
+        "primary_landmarks": [46, 53, 52, 65, 55, 70, 63, 105, 66, 107, 276, 283, 282, 295, 285, 300, 293, 334, 296, 336],
+        "region": "eyebrow_area",
+        "description": "Eyebrow area representing sibling and friend relationships"
+      },
+      "tian_zhai_gong": {
+        "name": "田宅宫 - Property Palace",
+        "primary_landmarks": [27, 28, 29, 30, 247, 246, 161, 160, 159, 158, 157, 173, 133, 155, 154, 153, 145, 144, 163, 7],
+        "region": "upper_eyelids",
+        "description": "Upper eyelid area representing property and real estate"
+      },
+      "nan_nv_gong": {
+        "name": "男女宫 - Children Palace",
+        "primary_landmarks": [116, 117, 118, 119, 120, 121, 128, 126, 142, 36, 205, 206, 207, 213, 192, 147, 187, 207, 213, 192],
+        "region": "under_eye_area",
+        "description": "Under-eye area representing children and fertility"
+      },
+      "nu_pu_gong": {
+        "name": "奴僕宫 - Servants Palace",
+        "primary_landmarks": [116, 117, 118, 119, 120, 121, 128, 126, 142, 36, 205, 206, 207, 213, 192, 147, 187, 207, 213, 192],
+        "region": "lower_cheeks",
+        "description": "Lower cheek area representing subordinate relationships"
+      },
+      "qi_qie_gong": {
+        "name": "妻妾宫 - Spouse Palace",
+        "primary_landmarks": [33, 7, 163, 144, 145, 153, 154, 155, 133, 173, 157, 158, 159, 160, 161, 246],
+        "region": "eye_corners",
+        "description": "Eye corner area representing marriage and spouse"
+      },
+      "ji_e_gong": {
+        "name": "疾厄宫 - Health Palace",
+        "primary_landmarks": [6, 51, 48, 115, 131, 134, 102, 49, 220, 305, 290, 328, 326, 2, 97, 99, 68, 104],
+        "region": "nose_bridge",
+        "description": "Nose bridge area representing health and constitution"
+      },
+      "qian_yi_gong": {
+        "name": "遷移宫 - Travel Palace",
+        "primary_landmarks": [21, 54, 103, 67, 109, 10, 151, 337, 299, 333, 298, 301, 284, 332, 297, 338, 10, 151],
+        "region": "temples",
+        "description": "Temple area representing travel and migration"
+      },
+      "guan_lu_gong": {
+        "name": "官祿宫 - Career Palace",
+        "primary_landmarks": [9, 10, 151, 337, 299, 333, 298, 301, 284, 332, 297, 338, 10, 151, 9, 10],
+        "region": "mid_forehead",
+        "description": "Mid-forehead area representing career and official position"
+      },
+      "fu_de_gong": {
+        "name": "福德宫 - Fortune Palace",
+        "primary_landmarks": [175, 199, 200, 16, 17, 18, 175, 199, 200, 16, 17, 18, 175, 199, 200, 16],
+        "region": "chin_area",
+        "description": "Chin area representing overall fortune and happiness"
+      },
+      "xiang_mao_gong": {
+        "name": "相貌宫 - Appearance Palace",
+        "primary_landmarks": "all_landmarks",
+        "region": "overall_face",
+        "description": "Overall facial harmony representing appearance and social impression"
+      }
+    },
+    "five_elements_landmarks": {
+      "wood_indicators": {
+        "landmarks": [9, 10, 151, 337, 299, 333, 298, 301, 175, 199, 200, 16, 17, 18],
+        "features": ["forehead_prominence", "jawline_strength", "face_length"],
+        "description": "Landmarks indicating Wood element constitution"
+      },
+      "fire_indicators": {
+        "landmarks": [33, 7, 163, 144, 145, 153, 154, 155, 133, 173, 175, 199, 200, 16, 17, 18],
+        "features": ["eye_brightness", "pointed_chin", "triangular_face"],
+        "description": "Landmarks indicating Fire element constitution"
+      },
+      "earth_indicators": {
+        "landmarks": [116, 117, 118, 119, 120, 121, 128, 126, 142, 36, 205, 206, 207, 213, 192, 147],
+        "features": ["cheek_fullness", "square_face", "stable_features"],
+        "description": "Landmarks indicating Earth element constitution"
+      },
+      "metal_indicators": {
+        "landmarks": [1, 2, 5, 4, 6, 19, 20, 94, 125, 6, 51, 48, 115, 131, 134, 102],
+        "features": ["nose_prominence", "refined_features", "oval_face"],
+        "description": "Landmarks indicating Metal element constitution"
+      },
+      "water_indicators": {
+        "landmarks": [175, 199, 200, 16, 17, 18, 116, 117, 118, 119, 120, 121, 128, 126],
+        "features": ["round_face", "soft_features", "full_lower_face"],
+        "description": "Landmarks indicating Water element constitution"
+      }
+    }
+  },
+  "proportional_analysis": {
+    "face_thirds": {
+      "upper_third": {
+        "landmarks": [9, 10, 151, 337, 299, 333, 298, 301],
+        "region": "hairline_to_eyebrows",
+        "significance": "Early life and intellectual capacity"
+      },
+      "middle_third": {
+        "landmarks": [46, 53, 52, 65, 55, 70, 1, 2, 5, 4, 6, 19, 20],
+        "region": "eyebrows_to_nose_base",
+        "significance": "Middle age and social relationships"
+      },
+      "lower_third": {
+        "landmarks": [175, 199, 200, 16, 17, 18, 175, 199, 200],
+        "region": "nose_base_to_chin",
+        "significance": "Later life and material fortune"
+      }
+    },
+    "golden_ratio_points": {
+      "facial_width": {
+        "landmarks": [21, 251, 54, 284, 103, 332, 67, 297],
+        "measurement": "Widest points of face",
+        "ideal_ratio": 1.618
+      },
+      "facial_length": {
+        "landmarks": [9, 10, 175, 199, 200, 16, 17, 18],
+        "measurement": "Forehead to chin length",
+        "ideal_ratio": 1.618
+      },
+      "eye_spacing": {
+        "landmarks": [33, 7, 163, 362, 398, 384, 385, 386, 387, 388, 466],
+        "measurement": "Distance between eye centers",
+        "ideal_ratio": "One eye width between eyes"
+      }
+    }
+  },
+  "age_point_landmarks": {
+    "early_years": {
+      "ages": "1-14",
+      "landmarks": [9, 10, 151, 337, 299, 333, 298, 301],
+      "region": "upper_forehead"
+    },
+    "youth": {
+      "ages": "15-28", 
+      "landmarks": [9, 10, 151, 337, 299, 333, 298, 301, 46, 53, 52, 65],
+      "region": "mid_forehead_eyebrows"
+    },
+    "prime": {
+      "ages": "29-42",
+      "landmarks": [33, 7, 163, 144, 145, 153, 154, 155, 133, 173],
+      "region": "eye_area"
+    },
+    "maturity": {
+      "ages": "43-56",
+      "landmarks": [1, 2, 5, 4, 6, 19, 20, 94, 125, 6, 51, 48],
+      "region": "nose_area"
+    },
+    "wisdom": {
+      "ages": "57-70",
+      "landmarks": [175, 199, 200, 16, 17, 18, 175, 199, 200],
+      "region": "mouth_chin_area"
+    },
+    "elder": {
+      "ages": "71-100",
+      "landmarks": [175, 199, 200, 16, 17, 18, 116, 117, 118, 119],
+      "region": "jaw_neck_area"
+    }
+  },
+  "health_indicators": {
+    "constitutional_strength": {
+      "landmarks": [6, 51, 48, 115, 131, 134, 102, 49, 220, 305],
+      "features": ["nose_bridge_strength", "overall_bone_structure"],
+      "significance": "Overall constitutional health"
+    },
+    "vitality_indicators": {
+      "landmarks": [33, 7, 163, 362, 398, 384, 385, 386, 387, 388],
+      "features": ["eye_brightness", "skin_luster", "facial_color"],
+      "significance": "Current vitality and energy levels"
+    },
+    "organ_correlations": {
+      "liver_wood": {
+        "landmarks": [46, 53, 52, 65, 55, 70, 63, 105, 66, 107],
+        "region": "eyebrow_area",
+        "health_aspect": "Liver and gallbladder function"
+      },
+      "heart_fire": {
+        "landmarks": [33, 7, 163, 144, 145, 153, 154, 155, 133, 173],
+        "region": "eye_area",
+        "health_aspect": "Heart and circulation"
+      },
+      "spleen_earth": {
+        "landmarks": [116, 117, 118, 119, 120, 121, 128, 126, 142, 36],
+        "region": "cheek_area",
+        "health_aspect": "Spleen and stomach function"
+      },
+      "lung_metal": {
+        "landmarks": [1, 2, 5, 4, 6, 19, 20, 94, 125],
+        "region": "nose_area",
+        "health_aspect": "Lung and respiratory function"
+      },
+      "kidney_water": {
+        "landmarks": [175, 199, 200, 16, 17, 18, 175, 199, 200],
+        "region": "chin_jaw_area",
+        "health_aspect": "Kidney and bladder function"
+      }
+    }
+  },
+  "analysis_guidelines": {
+    "landmark_quality_assessment": {
+      "clarity": "Clear, well-defined landmarks indicate good health",
+      "symmetry": "Symmetrical landmarks suggest internal balance",
+      "proportion": "Proportional landmarks indicate harmonious development",
+      "color": "Healthy color at landmark areas shows vitality"
+    },
+    "measurement_principles": {
+      "relative_positioning": "Compare landmark positions to facial proportions",
+      "distance_ratios": "Measure distances between key landmarks",
+      "angle_analysis": "Analyze angles formed by landmark triangles",
+      "symmetry_evaluation": "Compare left and right side landmark positions"
+    },
+    "integration_methods": {
+      "traditional_modern": "Combine traditional knowledge with modern landmark detection",
+      "holistic_analysis": "Consider all landmarks together for complete picture",
+      "constitutional_typing": "Use landmark patterns to determine constitutional type",
+      "temporal_mapping": "Map landmarks to age points for timing analysis"
+    }
+  },
+  "privacy_considerations": {
+    "data_handling": "Facial landmarks are processed locally when possible",
+    "storage_policy": "Biometric data storage requires explicit user consent",
+    "anonymization": "Landmark data can be anonymized for analysis",
+    "consent_requirements": "Clear consent needed for biometric processing"
+  }
+}

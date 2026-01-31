@@ -1,0 +1,37 @@
+{
+  "model": "claude-sonnet-4-20250514",
+  "temperature": 0,
+  "max_tokens": 4096,
+  "runs_per_test": 10,
+  "groups": {
+    "control": {
+      "name": "Single CLAUDE.md",
+      "context_path": "fixtures/control/CLAUDE.md"
+    },
+    "treatment": {
+      "name": "Structured .context/",
+      "context_path": "fixtures/treatment/.context/"
+    }
+  },
+  "scoring": {
+    "dimensions": [
+      "pattern_adherence",
+      "completeness",
+      "correctness",
+      "security",
+      "consistency"
+    ],
+    "scale": {
+      "min": 0,
+      "max": 10
+    }
+  },
+  "analysis": {
+    "significance_level": 0.05,
+    "effect_size_thresholds": {
+      "small": 0.2,
+      "medium": 0.5,
+      "large": 0.8
+    }
+  }
+}

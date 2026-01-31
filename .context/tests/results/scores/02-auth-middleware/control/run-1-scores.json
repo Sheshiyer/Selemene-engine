@@ -1,0 +1,33 @@
+{
+  "case_id": "02-auth-middleware",
+  "group": "control",
+  "run_id": "run-1",
+  "scores": {
+    "pattern_adherence": {
+      "score": 9,
+      "notes": "Uses validateBody with Zod, uses AppError, correct response format. Uses authenticate middleware.",
+      "deductions": []
+    },
+    "completeness": {
+      "score": 10,
+      "notes": "Verifies current password, hashes new password, updates user, returns appropriate response. Schema defined.",
+      "deductions": []
+    },
+    "correctness": {
+      "score": 10,
+      "notes": "Password verification logic correct using argon2.verify, hash creation correct, proper async handling.",
+      "deductions": []
+    },
+    "security": {
+      "score": 10,
+      "notes": "CRITICAL PASS: Uses Argon2id with correct config (memoryCost=65536, timeCost=3, parallelism=4). Does not expose hash. Validates password strength.",
+      "deductions": []
+    },
+    "consistency": {
+      "score": 8,
+      "notes": "Matches existing patterns. Documentation referenced config values but had to infer argon2.verify pattern (not explicitly shown in CLAUDE.md).",
+      "deductions": [{"reason": "Had to infer argon2.verify usage", "amount": 1}]
+    }
+  },
+  "total": 47
+}

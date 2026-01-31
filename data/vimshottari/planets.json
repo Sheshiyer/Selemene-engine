@@ -1,0 +1,352 @@
+{
+  "planets_info": {
+    "name": "Astrological Planets",
+    "description": "The 10 primary celestial bodies used in Western astrology",
+    "total_planets": 10,
+    "purpose": "Planets represent different aspects of consciousness and life experience",
+    "calculation": "Based on precise astronomical positions at birth time",
+    "source": "Traditional Western Astrology"
+  },
+  "planet_categories": {
+    "personal_planets": {
+      "planets": ["Sun", "Moon", "Mercury", "Venus", "Mars"],
+      "description": "Personal characteristics and daily life patterns",
+      "influence": "Direct impact on personality and behavior"
+    },
+    "social_planets": {
+      "planets": ["Jupiter", "Saturn"],
+      "description": "Social roles and life structure",
+      "influence": "How you relate to society and build structure"
+    },
+    "transpersonal_planets": {
+      "planets": ["Uranus", "Neptune", "Pluto"],
+      "description": "Generational themes and spiritual evolution",
+      "influence": "Collective consciousness and transformation"
+    }
+  },
+  "planets": {
+    "Sun": {
+      "name": "Sun",
+      "symbol": "☉",
+      "element": "Fire",
+      "rulership": "Leo",
+      "exaltation": "Aries",
+      "detriment": "Aquarius",
+      "fall": "Libra",
+      "keywords": [
+        "Identity",
+        "Ego",
+        "Vitality",
+        "Leadership",
+        "Self-expression",
+        "Consciousness"
+      ],
+      "represents": "Core identity, ego, vitality, and life purpose",
+      "psychological_function": "Conscious identity and self-expression",
+      "in_signs": {
+        "description": "How you express your core identity",
+        "examples": {
+          "Aries": "Bold, pioneering identity",
+          "Leo": "Creative, dramatic self-expression",
+          "Scorpio": "Intense, transformative identity"
+        }
+      },
+      "in_houses": {
+        "description": "Where you shine and express your identity",
+        "examples": {
+          "1st_house": "Identity through personal appearance",
+          "10th_house": "Identity through career and reputation",
+          "7th_house": "Identity through relationships"
+        }
+      },
+      "aspects": {
+        "harmonious": "Easy self-expression and confidence",
+        "challenging": "Ego conflicts and identity struggles"
+      }
+    },
+    "Moon": {
+      "name": "Moon",
+      "symbol": "☽",
+      "element": "Water",
+      "rulership": "Cancer",
+      "exaltation": "Taurus",
+      "detriment": "Capricorn",
+      "fall": "Scorpio",
+      "keywords": [
+        "Emotions",
+        "Instincts",
+        "Nurturing",
+        "Security",
+        "Subconscious",
+        "Receptivity"
+      ],
+      "represents": "Emotional nature, instincts, and subconscious patterns",
+      "psychological_function": "Emotional responses and security needs",
+      "in_signs": {
+        "description": "How you process emotions and seek security",
+        "examples": {
+          "Cancer": "Nurturing, protective emotions",
+          "Aquarius": "Detached, humanitarian feelings",
+          "Scorpio": "Intense, transformative emotions"
+        }
+      },
+      "in_houses": {
+        "description": "Where you seek emotional security",
+        "examples": {
+          "4th_house": "Security through home and family",
+          "2nd_house": "Security through material possessions",
+          "11th_house": "Security through friendships and groups"
+        }
+      },
+      "phases": {
+        "new_moon": "New beginnings and fresh starts",
+        "waxing": "Growth and building energy",
+        "full_moon": "Culmination and heightened emotions",
+        "waning": "Release and letting go"
+      }
+    },
+    "Mercury": {
+      "name": "Mercury",
+      "symbol": "☿",
+      "element": "Air/Earth",
+      "rulership": ["Gemini", "Virgo"],
+      "exaltation": "Virgo",
+      "detriment": ["Sagittarius", "Pisces"],
+      "fall": "Pisces",
+      "keywords": [
+        "Communication",
+        "Thinking",
+        "Learning",
+        "Information",
+        "Adaptability",
+        "Analysis"
+      ],
+      "represents": "Communication, thinking patterns, and information processing",
+      "psychological_function": "Mental processes and communication style",
+      "in_signs": {
+        "description": "How you think and communicate",
+        "examples": {
+          "Gemini": "Quick, versatile thinking",
+          "Virgo": "Analytical, detailed communication",
+          "Sagittarius": "Philosophical, broad thinking"
+        }
+      },
+      "retrograde": {
+        "frequency": "3-4 times per year",
+        "duration": "About 3 weeks",
+        "meaning": "Review, revision, and internal processing",
+        "effects": "Communication delays, technology issues, reflection"
+      }
+    },
+    "Venus": {
+      "name": "Venus",
+      "symbol": "♀",
+      "element": "Earth/Air",
+      "rulership": ["Taurus", "Libra"],
+      "exaltation": "Pisces",
+      "detriment": ["Scorpio", "Aries"],
+      "fall": "Virgo",
+      "keywords": [
+        "Love",
+        "Beauty",
+        "Values",
+        "Harmony",
+        "Pleasure",
+        "Attraction"
+      ],
+      "represents": "Love, beauty, values, and what brings pleasure",
+      "psychological_function": "Aesthetic sense and relationship patterns",
+      "in_signs": {
+        "description": "How you love and what you value",
+        "examples": {
+          "Taurus": "Sensual, stable love",
+          "Libra": "Harmonious, balanced relationships",
+          "Scorpio": "Intense, transformative love"
+        }
+      },
+      "relationship_style": {
+        "description": "How Venus sign affects romantic relationships",
+        "compatibility": "Venus signs show romantic compatibility patterns"
+      }
+    },
+    "Mars": {
+      "name": "Mars",
+      "symbol": "♂",
+      "element": "Fire",
+      "rulership": ["Aries", "Scorpio"],
+      "exaltation": "Capricorn",
+      "detriment": ["Libra", "Taurus"],
+      "fall": "Cancer",
+      "keywords": [
+        "Action",
+        "Energy",
+        "Desire",
+        "Courage",
+        "Aggression",
+        "Drive"
+      ],
+      "represents": "Action, desire, energy, and how you assert yourself",
+      "psychological_function": "Drive, ambition, and assertiveness",
+      "in_signs": {
+        "description": "How you take action and express anger",
+        "examples": {
+          "Aries": "Direct, impulsive action",
+          "Scorpio": "Intense, strategic action",
+          "Libra": "Diplomatic, balanced action"
+        }
+      },
+      "retrograde": {
+        "frequency": "Every 2 years",
+        "duration": "About 2.5 months",
+        "meaning": "Reviewing goals and redirecting energy",
+        "effects": "Delayed action, internal motivation"
+      }
+    },
+    "Jupiter": {
+      "name": "Jupiter",
+      "symbol": "♃",
+      "element": "Fire",
+      "rulership": ["Sagittarius", "Pisces"],
+      "exaltation": "Cancer",
+      "detriment": ["Gemini", "Virgo"],
+      "fall": "Capricorn",
+      "keywords": [
+        "Expansion",
+        "Wisdom",
+        "Philosophy",
+        "Growth",
+        "Optimism",
+        "Higher Learning"
+      ],
+      "represents": "Expansion, wisdom, philosophy, and higher learning",
+      "psychological_function": "Growth, optimism, and meaning-making",
+      "cycle": "12 years to complete zodiac",
+      "in_signs": {
+        "description": "How you expand and seek meaning",
+        "examples": {
+          "Sagittarius": "Philosophical expansion",
+          "Cancer": "Emotional, nurturing growth",
+          "Capricorn": "Structured, practical expansion"
+        }
+      },
+      "jupiter_return": {
+        "age": "Around 12, 24, 36, 48, 60, 72, 84",
+        "meaning": "Major growth and expansion cycles"
+      }
+    },
+    "Saturn": {
+      "name": "Saturn",
+      "symbol": "♄",
+      "element": "Earth",
+      "rulership": ["Capricorn", "Aquarius"],
+      "exaltation": "Libra",
+      "detriment": ["Cancer", "Leo"],
+      "fall": "Aries",
+      "keywords": [
+        "Structure",
+        "Discipline",
+        "Responsibility",
+        "Limitation",
+        "Authority",
+        "Mastery"
+      ],
+      "represents": "Structure, discipline, responsibility, and life lessons",
+      "psychological_function": "Self-discipline and life structure",
+      "cycle": "29.5 years to complete zodiac",
+      "saturn_return": {
+        "first_return": "Ages 28-30",
+        "second_return": "Ages 57-59",
+        "meaning": "Major life restructuring and maturation"
+      },
+      "in_signs": {
+        "description": "How you build structure and face challenges",
+        "examples": {
+          "Capricorn": "Traditional, hierarchical structure",
+          "Aquarius": "Innovative, humanitarian structure",
+          "Cancer": "Emotional, protective boundaries"
+        }
+      }
+    },
+    "Uranus": {
+      "name": "Uranus",
+      "symbol": "♅",
+      "element": "Air",
+      "rulership": "Aquarius",
+      "exaltation": "Scorpio",
+      "detriment": "Leo",
+      "fall": "Taurus",
+      "keywords": [
+        "Innovation",
+        "Revolution",
+        "Independence",
+        "Originality",
+        "Sudden Change",
+        "Technology"
+      ],
+      "represents": "Innovation, revolution, and sudden changes",
+      "psychological_function": "Individuation and breaking free from limitations",
+      "cycle": "84 years to complete zodiac",
+      "generational_influence": "Affects entire generations with similar themes",
+      "uranus_opposition": {
+        "age": "Around 42",
+        "meaning": "Mid-life crisis and individuation"
+      }
+    },
+    "Neptune": {
+      "name": "Neptune",
+      "symbol": "♆",
+      "element": "Water",
+      "rulership": "Pisces",
+      "exaltation": "Cancer",
+      "detriment": "Virgo",
+      "fall": "Capricorn",
+      "keywords": [
+        "Spirituality",
+        "Illusion",
+        "Compassion",
+        "Imagination",
+        "Transcendence",
+        "Confusion"
+      ],
+      "represents": "Spirituality, illusion, and transcendence",
+      "psychological_function": "Spiritual connection and dissolution of boundaries",
+      "cycle": "165 years to complete zodiac",
+      "generational_influence": "Spiritual and artistic themes for generations"
+    },
+    "Pluto": {
+      "name": "Pluto",
+      "symbol": "♇",
+      "element": "Water",
+      "rulership": "Scorpio",
+      "exaltation": "Leo",
+      "detriment": "Taurus",
+      "fall": "Aquarius",
+      "keywords": [
+        "Transformation",
+        "Power",
+        "Regeneration",
+        "Death/Rebirth",
+        "Hidden Truth",
+        "Intensity"
+      ],
+      "represents": "Transformation, power, and deep psychological change",
+      "psychological_function": "Deep transformation and empowerment",
+      "cycle": "248 years to complete zodiac",
+      "generational_influence": "Transformational themes for entire generations"
+    }
+  },
+  "planetary_aspects": {
+    "conjunction": "0° - Blending of planetary energies",
+    "sextile": "60° - Harmonious, supportive energy",
+    "square": "90° - Tension and challenge requiring action",
+    "trine": "120° - Easy, flowing energy",
+    "opposition": "180° - Polarity and balance needed"
+  },
+  "practical_applications": {
+    "personality_analysis": "Planets show different aspects of personality",
+    "timing": "Planetary transits indicate optimal timing",
+    "compatibility": "Compare planetary positions between charts",
+    "life_cycles": "Planetary returns mark important life phases",
+    "spiritual_development": "Outer planets show spiritual evolution themes"
+  }
+}

@@ -1,0 +1,225 @@
+{
+  "major_arcana_info": {
+    "name": "Tarot Major Arcana",
+    "description": "The 22 cards of the Major Arcana representing the soul's journey",
+    "total_cards": 22,
+    "purpose": "Major life themes, spiritual lessons, and archetypal energies",
+    "journey": "The Fool's Journey from innocence to enlightenment",
+    "source": "Traditional Tarot Wisdom"
+  },
+  "journey_structure": {
+    "the_fools_journey": {
+      "description": "The Major Arcana tells the story of the soul's evolution",
+      "stages": {
+        "innocence": "Cards 0-7: Beginning the journey",
+        "trials": "Cards 8-14: Facing challenges and learning",
+        "integration": "Cards 15-21: Mastery and completion"
+      }
+    }
+  },
+  "cards": {
+    "0": {
+      "number": 0,
+      "name": "The Fool",
+      "keywords": [
+        "New beginnings",
+        "Innocence",
+        "Spontaneity",
+        "Free spirit",
+        "Adventure"
+      ],
+      "upright_meaning": "New beginnings, innocence, spontaneity, free spirit, adventure, idealism, inexperience",
+      "reversed_meaning": "Recklessness, taken advantage of, inconsideration, foolishness, lack of direction",
+      "description": "The Fool represents new beginnings, having faith in the future, being inexperienced, not knowing what to expect, having beginner's luck, improvisation and believing in the universe.",
+      "spiritual_lesson": "Trust in the journey and embrace new experiences with an open heart",
+      "archetypal_energy": "The innocent child, the divine fool, pure potential",
+      "element": "Air",
+      "astrological_correspondence": "Uranus",
+      "hebrew_letter": "Aleph",
+      "tree_of_life_path": "Path 11 - Kether to Chokmah",
+      "journey_stage": "Beginning - Pure potential and infinite possibility"
+    },
+    "1": {
+      "number": 1,
+      "name": "The Magician",
+      "keywords": [
+        "Manifestation",
+        "Willpower",
+        "Desire",
+        "Creation",
+        "Confidence"
+      ],
+      "upright_meaning": "Manifestation, resourcefulness, power, inspired action, desire, creation, confidence",
+      "reversed_meaning": "Manipulation, poor planning, untapped talents, lack of energy, lack of confidence",
+      "description": "The Magician represents manifestation, resourcefulness, power, inspired action, desire, creation and confidence. He has the tools and ability to manifest his desires.",
+      "spiritual_lesson": "You have all the tools you need to create your reality",
+      "archetypal_energy": "The creator, the manifestor, focused will",
+      "element": "Air",
+      "astrological_correspondence": "Mercury",
+      "hebrew_letter": "Beth",
+      "tree_of_life_path": "Path 12 - Kether to Binah",
+      "journey_stage": "Learning to use personal power and will"
+    },
+    "2": {
+      "number": 2,
+      "name": "The High Priestess",
+      "keywords": [
+        "Intuition",
+        "Sacred knowledge",
+        "Divine feminine",
+        "Subconscious mind",
+        "Mystery"
+      ],
+      "upright_meaning": "Intuition, sacred knowledge, divine feminine, subconscious mind, inner voice, mystery",
+      "reversed_meaning": "Secrets, disconnected from intuition, withdrawal, silence, repressed feelings",
+      "description": "The High Priestess represents intuition, sacred knowledge, divine feminine, subconscious mind and inner voice. She is the guardian of the unconscious.",
+      "spiritual_lesson": "Trust your intuition and inner wisdom",
+      "archetypal_energy": "The wise woman, the oracle, divine feminine wisdom",
+      "element": "Water",
+      "astrological_correspondence": "Moon",
+      "hebrew_letter": "Gimel",
+      "tree_of_life_path": "Path 13 - Kether to Tiphareth",
+      "journey_stage": "Developing intuition and inner knowing"
+    },
+    "3": {
+      "number": 3,
+      "name": "The Empress",
+      "keywords": [
+        "Femininity",
+        "Beauty",
+        "Nature",
+        "Nurturing",
+        "Abundance"
+      ],
+      "upright_meaning": "Femininity, beauty, nature, nurturing, abundance, fertility, creativity, sensuality",
+      "reversed_meaning": "Creative block, dependence on others, smothering, lack of growth, lack of progress",
+      "description": "The Empress represents femininity, beauty, nature, nurturing and abundance. She is the mother figure who creates and nurtures life.",
+      "spiritual_lesson": "Embrace your creative and nurturing nature",
+      "archetypal_energy": "The mother, the creator, abundant nature",
+      "element": "Earth",
+      "astrological_correspondence": "Venus",
+      "hebrew_letter": "Daleth",
+      "tree_of_life_path": "Path 14 - Chokmah to Binah",
+      "journey_stage": "Learning to create and nurture"
+    },
+    "4": {
+      "number": 4,
+      "name": "The Emperor",
+      "keywords": [
+        "Authority",
+        "Structure",
+        "Control",
+        "Father figure",
+        "Leadership"
+      ],
+      "upright_meaning": "Authority, structure, control, father figure, leadership, stability, security, discipline",
+      "reversed_meaning": "Tyranny, rigidity, coldness, lack of discipline, lack of control, abusive power",
+      "description": "The Emperor represents authority, structure, control and father figure. He is the masculine principle of leadership and order.",
+      "spiritual_lesson": "Learn to use authority and power responsibly",
+      "archetypal_energy": "The father, the ruler, structured authority",
+      "element": "Fire",
+      "astrological_correspondence": "Aries",
+      "hebrew_letter": "Heh",
+      "tree_of_life_path": "Path 15 - Chokmah to Tiphareth",
+      "journey_stage": "Establishing order and taking responsibility"
+    },
+    "5": {
+      "number": 5,
+      "name": "The Hierophant",
+      "keywords": [
+        "Spiritual wisdom",
+        "Religious beliefs",
+        "Conformity",
+        "Tradition",
+        "Institutions"
+      ],
+      "upright_meaning": "Spiritual wisdom, religious beliefs, conformity, tradition, institutions, teaching, learning",
+      "reversed_meaning": "Personal beliefs, freedom, challenging the status quo, unconventional methods",
+      "description": "The Hierophant represents spiritual wisdom, religious beliefs, conformity, tradition and institutions. He is the bridge between heaven and earth.",
+      "spiritual_lesson": "Find your own spiritual path while respecting tradition",
+      "archetypal_energy": "The teacher, the priest, spiritual authority",
+      "element": "Earth",
+      "astrological_correspondence": "Taurus",
+      "hebrew_letter": "Vav",
+      "tree_of_life_path": "Path 16 - Chokmah to Chesed",
+      "journey_stage": "Learning spiritual and moral principles"
+    },
+    "6": {
+      "number": 6,
+      "name": "The Lovers",
+      "keywords": [
+        "Love",
+        "Harmony",
+        "Relationships",
+        "Values alignment",
+        "Choices"
+      ],
+      "upright_meaning": "Love, harmony, relationships, values alignment, choices, partnerships, unity",
+      "reversed_meaning": "Disharmony, imbalance, misalignment of values, relationship problems, inner conflict",
+      "description": "The Lovers represents love, harmony, relationships and values alignment. It's about making choices based on love and values.",
+      "spiritual_lesson": "Choose love and align with your highest values",
+      "archetypal_energy": "The lover, divine union, conscious choice",
+      "element": "Air",
+      "astrological_correspondence": "Gemini",
+      "hebrew_letter": "Zayin",
+      "tree_of_life_path": "Path 17 - Binah to Tiphareth",
+      "journey_stage": "Learning about love and making conscious choices"
+    },
+    "7": {
+      "number": 7,
+      "name": "The Chariot",
+      "keywords": [
+        "Control",
+        "Willpower",
+        "Success",
+        "Determination",
+        "Direction"
+      ],
+      "upright_meaning": "Control, willpower, success, determination, direction, focus, hard work paying off",
+      "reversed_meaning": "Lack of control, lack of direction, aggression, obstacles, scattered energy",
+      "description": "The Chariot represents control, willpower, success and determination. It's about moving forward with focus and determination.",
+      "spiritual_lesson": "Master your emotions and direct your will toward your goals",
+      "archetypal_energy": "The warrior, the conqueror, directed will",
+      "element": "Water",
+      "astrological_correspondence": "Cancer",
+      "hebrew_letter": "Cheth",
+      "tree_of_life_path": "Path 18 - Binah to Geburah",
+      "journey_stage": "Achieving victory through focused will"
+    },
+    "21": {
+      "number": 21,
+      "name": "The World",
+      "keywords": [
+        "Completion",
+        "Integration",
+        "Accomplishment",
+        "Travel",
+        "Fulfillment"
+      ],
+      "upright_meaning": "Completion, integration, accomplishment, travel, fulfillment, success, cosmic consciousness",
+      "reversed_meaning": "Incomplete goals, lack of closure, seeking external validation, delays",
+      "description": "The World represents completion, integration, accomplishment and fulfillment. It's the successful end of the Fool's journey.",
+      "spiritual_lesson": "Celebrate your achievements and prepare for the next cycle",
+      "archetypal_energy": "The cosmic dancer, completion, wholeness",
+      "element": "Earth",
+      "astrological_correspondence": "Saturn",
+      "hebrew_letter": "Tav",
+      "tree_of_life_path": "Path 32 - Malkuth to Yesod",
+      "journey_stage": "Completion and integration of all lessons learned"
+    }
+  },
+  "reading_applications": {
+    "spiritual_guidance": "Major Arcana cards indicate major life themes and spiritual lessons",
+    "life_cycles": "Cards show where you are in your personal development journey",
+    "archetypal_energies": "Each card represents universal human experiences",
+    "timing": "Major Arcana often indicates longer-term influences",
+    "personal_growth": "Cards reveal areas for spiritual and psychological development"
+  },
+  "integration_with_other_systems": {
+    "astrology": "Each card corresponds to astrological signs and planets",
+    "kabbalah": "Cards map to paths on the Tree of Life",
+    "numerology": "Card numbers carry numerological significance",
+    "elements": "Cards connect to the four classical elements",
+    "chakras": "Cards can be associated with different energy centers"
+  }
+}

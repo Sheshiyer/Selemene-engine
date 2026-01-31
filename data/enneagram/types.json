@@ -1,0 +1,718 @@
+{
+  "enneagram_info": {
+    "name": "Enneagram Personality System",
+    "description": "The nine personality types with wings, arrows, and instinctual variants",
+    "total_types": 9,
+    "source": "Traditional Enneagram wisdom with modern psychological insights",
+    "centers": ["Body", "Heart", "Head"]
+  },
+  "types": {
+    "1": {
+      "number": 1,
+      "name": "The Perfectionist",
+      "alternative_names": ["The Reformer", "The Idealist"],
+      "center": "Body",
+      "core_motivation": "To be good, right, perfect, and to improve everything",
+      "core_fear": "Being corrupt, evil, or defective",
+      "core_desire": "To be good, to have integrity, to be balanced",
+      "basic_proposition": "You are good or okay if you do what is right",
+      "vice": "Anger",
+      "virtue": "Serenity",
+      "passion": "Resentment",
+      "fixation": "Perfectionism",
+      "holy_idea": "Holy Perfection",
+      "trap": "Perfection",
+      "wings": {
+        "9": {
+          "name": "1w9 - The Idealist",
+          "description": "More withdrawn, objective, and principled. Seeks to create a perfect world through systematic improvement.",
+          "traits": ["methodical", "reserved", "principled", "systematic"]
+        },
+        "2": {
+          "name": "1w2 - The Advocate", 
+          "description": "More interpersonal, helpful, and critical. Seeks to improve others and society through direct action.",
+          "traits": ["helpful", "critical", "interpersonal", "reforming"]
+        }
+      },
+      "arrows": {
+        "integration": {
+          "direction": 7,
+          "name": "Integration to Seven",
+          "description": "When healthy, Ones become more spontaneous, joyful, and accepting of imperfection. They embrace life's possibilities.",
+          "healthy_traits": ["spontaneous", "joyful", "optimistic", "accepting"]
+        },
+        "disintegration": {
+          "direction": 4,
+          "name": "Disintegration to Four", 
+          "description": "When stressed, Ones become moody, irrational, and self-pitying. They may become depressed and withdrawn.",
+          "stress_traits": ["moody", "irrational", "self-pitying", "depressed"]
+        }
+      },
+      "levels_of_development": {
+        "healthy": {
+          "1": "The Wise Realist - Discerning, noble, and morally heroic",
+          "2": "The Reasonable Person - Rational, principled, and purposeful", 
+          "3": "The Principled Teacher - Orderly, well-organized, and self-disciplined"
+        },
+        "average": {
+          "4": "The Idealistic Reformer - Dissatisfied with reality, becoming critical",
+          "5": "The Orderly Person - Highly controlled, rigid, and perfectionistic",
+          "6": "The Judgmental Perfectionist - Critical of others, impatient, and inflexible"
+        },
+        "unhealthy": {
+          "7": "The Intolerant Misanthrope - Highly critical, intolerant, and inflexible",
+          "8": "The Obsessive Hypocrite - Obsessive about imperfection in others",
+          "9": "The Punitive Avenger - Severe depression, nervous breakdowns, suicide attempts"
+        }
+      },
+      "instinctual_variants": {
+        "self_preservation": {
+          "name": "SP One - Anxiety",
+          "description": "Focuses on personal security and getting things right in their environment",
+          "traits": ["anxious", "worried", "controlling", "perfectionistic about details"]
+        },
+        "social": {
+          "name": "SO One - Inadaptability", 
+          "description": "Focuses on being the perfect member of groups and society",
+          "traits": ["rigid", "critical of others", "morally superior", "reforming"]
+        },
+        "sexual": {
+          "name": "SX One - Jealousy",
+          "description": "Focuses on perfecting intimate relationships and being the ideal partner",
+          "traits": ["jealous", "possessive", "intense", "perfectionistic about relationships"]
+        }
+      },
+      "growth_recommendations": [
+        "Practice accepting 'good enough' rather than perfect",
+        "Learn to express anger directly rather than through criticism",
+        "Develop spontaneity and playfulness",
+        "Practice self-compassion and forgiveness",
+        "Embrace the beauty of imperfection"
+      ],
+      "keywords": ["perfectionist", "principled", "reformer", "critical", "idealistic"]
+    },
+    "2": {
+      "number": 2,
+      "name": "The Helper",
+      "alternative_names": ["The Giver", "The People Pleaser"],
+      "center": "Heart",
+      "core_motivation": "To feel loved and needed and to express their feelings for others",
+      "core_fear": "Being unloved or unwanted for themselves alone",
+      "core_desire": "To feel loved",
+      "basic_proposition": "You are good or okay if you are loved by others and are close to them",
+      "vice": "Pride",
+      "virtue": "Humility",
+      "passion": "Flattery",
+      "fixation": "Flattery",
+      "holy_idea": "Holy Will/Freedom",
+      "trap": "Freedom",
+      "wings": {
+        "1": {
+          "name": "2w1 - The Servant",
+          "description": "More critical, controlling, and people-focused. Serves others but with high standards.",
+          "traits": ["serving", "critical", "controlling", "principled"]
+        },
+        "3": {
+          "name": "2w3 - The Host/Hostess",
+          "description": "More ambitious, image-conscious, and seductive. Helps others to gain recognition.",
+          "traits": ["ambitious", "charming", "image-conscious", "seductive"]
+        }
+      },
+      "arrows": {
+        "integration": {
+          "direction": 4,
+          "name": "Integration to Four",
+          "description": "When healthy, Twos become more self-aware, creative, and emotionally honest about their own needs.",
+          "healthy_traits": ["self-aware", "creative", "emotionally honest", "authentic"]
+        },
+        "disintegration": {
+          "direction": 8,
+          "name": "Disintegration to Eight",
+          "description": "When stressed, Twos become demanding, controlling, and manipulative. They may become aggressive.",
+          "stress_traits": ["demanding", "controlling", "manipulative", "aggressive"]
+        }
+      },
+      "levels_of_development": {
+        "healthy": {
+          "1": "The Disinterested Altruist - Unconditionally loving, humble, and giving",
+          "2": "The Caring Person - Empathetic, compassionate, and feeling for others",
+          "3": "The Supportive Friend - Supportive, encouraging, and helpful"
+        },
+        "average": {
+          "4": "The Effusive Friend - Wants to be closer to others, intrusive",
+          "5": "The Possessive Friend - Increasingly possessive and controlling",
+          "6": "The Self-Important Saint - Self-important and overbearing"
+        },
+        "unhealthy": {
+          "7": "The Self-Deceptive Manipulator - Manipulative and self-deceptive",
+          "8": "The Coercive Dominator - Dominating and coercive",
+          "9": "The Psychosomatic Victim - Chronic health problems, victimization"
+        }
+      },
+      "instinctual_variants": {
+        "self_preservation": {
+          "name": "SP Two - Privilege",
+          "description": "Focuses on being special and privileged in relationships",
+          "traits": ["childlike", "seductive", "entitled", "demanding special treatment"]
+        },
+        "social": {
+          "name": "SO Two - Ambition",
+          "description": "Focuses on being important and influential in groups",
+          "traits": ["ambitious", "influential", "group-oriented", "status-conscious"]
+        },
+        "sexual": {
+          "name": "SX Two - Seduction",
+          "description": "Focuses on being irresistible and attractive to specific individuals",
+          "traits": ["seductive", "attractive", "intense", "focused on one-to-one connections"]
+        }
+      },
+      "growth_recommendations": [
+        "Learn to recognize and express your own needs",
+        "Practice receiving help from others",
+        "Develop healthy boundaries in relationships",
+        "Cultivate self-love independent of others' approval",
+        "Practice saying no without guilt"
+      ],
+      "keywords": ["helper", "caring", "interpersonal", "generous", "people-pleasing"]
+    },
+    "3": {
+      "number": 3,
+      "name": "The Achiever",
+      "alternative_names": ["The Performer", "The Motivator"],
+      "center": "Heart",
+      "core_motivation": "To feel valuable and worthwhile, to be affirmed, to distinguish themselves from others",
+      "core_fear": "Being worthless or without value apart from their achievements",
+      "core_desire": "To feel valuable and worthwhile",
+      "basic_proposition": "You are good or okay if you are successful and others think well of you",
+      "vice": "Deceit",
+      "virtue": "Truthfulness",
+      "passion": "Vanity",
+      "fixation": "Vanity",
+      "holy_idea": "Holy Harmony/Hope/Law",
+      "trap": "Efficiency",
+      "wings": {
+        "2": {
+          "name": "3w2 - The Charmer",
+          "description": "More interpersonal, helpful, and people-focused. Achieves through relationships.",
+          "traits": ["charming", "interpersonal", "helpful", "people-focused"]
+        },
+        "4": {
+          "name": "3w4 - The Professional",
+          "description": "More introverted, artistic, and pretentious. Achieves through creative expression.",
+          "traits": ["artistic", "introverted", "pretentious", "creative"]
+        }
+      },
+      "arrows": {
+        "integration": {
+          "direction": 6,
+          "name": "Integration to Six",
+          "description": "When healthy, Threes become more cooperative, committed, and loyal to something greater than themselves.",
+          "healthy_traits": ["cooperative", "committed", "loyal", "team-oriented"]
+        },
+        "disintegration": {
+          "direction": 9,
+          "name": "Disintegration to Nine",
+          "description": "When stressed, Threes become apathetic, listless, and disengaged. They may become depressed.",
+          "stress_traits": ["apathetic", "listless", "disengaged", "depressed"]
+        }
+      },
+      "levels_of_development": {
+        "healthy": {
+          "1": "The Outstanding Person - Self-accepting, authentic, and inspiring",
+          "2": "The Adaptable Person - Self-assured, energetic, and competent",
+          "3": "The Outstanding Paragon - Ambitious, competent, and energetic"
+        },
+        "average": {
+          "4": "The Competitive Status-Seeker - Highly concerned with performance and image",
+          "5": "The Image-Conscious Pragmatist - Calculating and losing touch with feelings",
+          "6": "The Self-Promoting Narcissist - Grandiose, exhibitionistic, and arrogant"
+        },
+        "unhealthy": {
+          "7": "The Unprincipled Opportunist - Unscrupulous, exploitative, and opportunistic",
+          "8": "The Malicious Deceiver - Devious, deceptive, and vindictive",
+          "9": "The Monomaniacal Psychopath - Relentless, obsessive, and potentially dangerous"
+        }
+      },
+      "instinctual_variants": {
+        "self_preservation": {
+          "name": "SP Three - Security",
+          "description": "Focuses on material security and being a good, normal person",
+          "traits": ["security-focused", "material", "good person image", "workaholic"]
+        },
+        "social": {
+          "name": "SO Three - Prestige",
+          "description": "Focuses on social status, prestige, and being admired by groups",
+          "traits": ["status-conscious", "prestigious", "group-admired", "influential"]
+        },
+        "sexual": {
+          "name": "SX Three - Charisma",
+          "description": "Focuses on being attractive and desirable to specific individuals",
+          "traits": ["charismatic", "attractive", "desirable", "magnetic"]
+        }
+      },
+      "growth_recommendations": [
+        "Learn to value yourself apart from achievements",
+        "Practice being authentic rather than performing",
+        "Slow down and connect with your feelings",
+        "Develop genuine relationships beyond networking",
+        "Embrace failure as a learning opportunity"
+      ],
+      "keywords": ["achiever", "ambitious", "adaptable", "driven", "image-conscious"]
+    },
+    "4": {
+      "number": 4,
+      "name": "The Individualist",
+      "alternative_names": ["The Artist", "The Romantic"],
+      "center": "Heart",
+      "core_motivation": "To find themselves and their significance, to create an identity from their inner experience",
+      "core_fear": "Having no identity or personal significance",
+      "core_desire": "To find themselves and their significance",
+      "basic_proposition": "You are good or okay if you are true to yourself",
+      "vice": "Envy",
+      "virtue": "Equanimity",
+      "passion": "Melancholy",
+      "fixation": "Melancholy",
+      "holy_idea": "Holy Origin",
+      "trap": "Authenticity",
+      "wings": {
+        "3": {
+          "name": "4w3 - The Aristocrat",
+          "description": "More ambitious, extroverted, and image-conscious. Seeks to be unique and successful.",
+          "traits": ["ambitious", "extroverted", "image-conscious", "dramatic"]
+        },
+        "5": {
+          "name": "4w5 - The Bohemian",
+          "description": "More withdrawn, intellectual, and unconventional. Seeks to be unique and authentic.",
+          "traits": ["withdrawn", "intellectual", "unconventional", "creative"]
+        }
+      },
+      "arrows": {
+        "integration": {
+          "direction": 1,
+          "name": "Integration to One",
+          "description": "When healthy, Fours become more objective, principled, and self-disciplined. They focus on others.",
+          "healthy_traits": ["objective", "principled", "self-disciplined", "focused"]
+        },
+        "disintegration": {
+          "direction": 2,
+          "name": "Disintegration to Two",
+          "description": "When stressed, Fours become clingy, dependent, and manipulative. They seek others to rescue them.",
+          "stress_traits": ["clingy", "dependent", "manipulative", "needy"]
+        }
+      },
+      "instinctual_variants": {
+        "self_preservation": {
+          "name": "SP Four - Tenacity",
+          "description": "Focuses on enduring suffering and being strong despite pain",
+          "traits": ["tenacious", "enduring", "stoic", "long-suffering"]
+        },
+        "social": {
+          "name": "SO Four - Shame",
+          "description": "Focuses on being different from and superior to others",
+          "traits": ["shameful", "superior", "different", "comparing"]
+        },
+        "sexual": {
+          "name": "SX Four - Competition",
+          "description": "Focuses on being more special and intense than others",
+          "traits": ["competitive", "intense", "special", "dramatic"]
+        }
+      },
+      "growth_recommendations": [
+        "Practice gratitude for what you have",
+        "Focus on others rather than yourself",
+        "Develop discipline and follow through",
+        "Accept ordinary moments as valuable",
+        "Build stable routines and commitments"
+      ],
+      "keywords": ["individualist", "creative", "emotionally honest", "moody", "self-aware"]
+    },
+    "5": {
+      "number": 5,
+      "name": "The Investigator",
+      "alternative_names": ["The Thinker", "The Observer"],
+      "center": "Head",
+      "core_motivation": "To be capable and competent, to understand the environment, to have everything figured out",
+      "core_fear": "Being useless, helpless, or incapable",
+      "core_desire": "To be capable and competent",
+      "basic_proposition": "You are good or okay if you have mastered something",
+      "vice": "Avarice",
+      "virtue": "Non-attachment",
+      "passion": "Stinginess",
+      "fixation": "Stinginess",
+      "holy_idea": "Holy Omniscience",
+      "trap": "Observer",
+      "wings": {
+        "4": {
+          "name": "5w4 - The Iconoclast",
+          "description": "More creative, intuitive, and expressive. Seeks knowledge through personal experience.",
+          "traits": ["creative", "intuitive", "expressive", "artistic"]
+        },
+        "6": {
+          "name": "5w6 - The Problem Solver",
+          "description": "More practical, loyal, and anxious. Seeks knowledge for security and problem-solving.",
+          "traits": ["practical", "loyal", "anxious", "systematic"]
+        }
+      },
+      "arrows": {
+        "integration": {
+          "direction": 8,
+          "name": "Integration to Eight",
+          "description": "When healthy, Fives become more confident, decisive, and action-oriented. They engage with the world.",
+          "healthy_traits": ["confident", "decisive", "action-oriented", "engaged"]
+        },
+        "disintegration": {
+          "direction": 7,
+          "name": "Disintegration to Seven",
+          "description": "When stressed, Fives become scattered, impulsive, and hyperactive. They may become manic.",
+          "stress_traits": ["scattered", "impulsive", "hyperactive", "manic"]
+        }
+      },
+      "instinctual_variants": {
+        "self_preservation": {
+          "name": "SP Five - Castle",
+          "description": "Focuses on creating a safe, private space with minimal needs",
+          "traits": ["private", "minimal", "safe space", "hermit-like"]
+        },
+        "social": {
+          "name": "SO Five - Totem",
+          "description": "Focuses on finding their place and role in groups through expertise",
+          "traits": ["expert", "specialized", "group role", "knowledgeable"]
+        },
+        "sexual": {
+          "name": "SX Five - Confidence",
+          "description": "Focuses on finding the ideal partner or connection through shared interests",
+          "traits": ["confident", "searching", "ideal connection", "intense interests"]
+        }
+      },
+      "growth_recommendations": [
+        "Practice engaging with others regularly",
+        "Take action on your ideas and insights",
+        "Share your knowledge and expertise",
+        "Develop emotional intelligence",
+        "Trust your body and instincts"
+      ],
+      "keywords": ["investigator", "perceptive", "innovative", "secretive", "isolated"]
+    },
+    "6": {
+      "number": 6,
+      "name": "The Loyalist",
+      "alternative_names": ["The Skeptic", "The Guardian"],
+      "center": "Head",
+      "core_motivation": "To have security and support, to have guidance, to test the attitudes of others",
+      "core_fear": "Being without support or guidance",
+      "core_desire": "To have security and support",
+      "basic_proposition": "You are good or okay if you do what you are supposed to do",
+      "vice": "Fear",
+      "virtue": "Courage",
+      "passion": "Cowardice",
+      "fixation": "Cowardice",
+      "holy_idea": "Holy Faith",
+      "trap": "Security",
+      "wings": {
+        "5": {
+          "name": "6w5 - The Defender",
+          "description": "More withdrawn, intense, and independent. Seeks security through knowledge and preparation.",
+          "traits": ["withdrawn", "intense", "independent", "prepared"]
+        },
+        "7": {
+          "name": "6w7 - The Buddy",
+          "description": "More outgoing, playful, and optimistic. Seeks security through relationships and fun.",
+          "traits": ["outgoing", "playful", "optimistic", "social"]
+        }
+      },
+      "arrows": {
+        "integration": {
+          "direction": 9,
+          "name": "Integration to Nine",
+          "description": "When healthy, Sixes become more relaxed, optimistic, and trusting. They find inner peace.",
+          "healthy_traits": ["relaxed", "optimistic", "trusting", "peaceful"]
+        },
+        "disintegration": {
+          "direction": 3,
+          "name": "Disintegration to Three",
+          "description": "When stressed, Sixes become competitive, arrogant, and aggressive. They may become workaholics.",
+          "stress_traits": ["competitive", "arrogant", "aggressive", "workaholic"]
+        }
+      },
+      "instinctual_variants": {
+        "self_preservation": {
+          "name": "SP Six - Warmth",
+          "description": "Focuses on creating security through alliances and being likeable",
+          "traits": ["warm", "likeable", "alliance-building", "friendly"]
+        },
+        "social": {
+          "name": "SO Six - Duty",
+          "description": "Focuses on being a good member of groups and following rules",
+          "traits": ["dutiful", "rule-following", "group-oriented", "responsible"]
+        },
+        "sexual": {
+          "name": "SX Six - Strength",
+          "description": "Focuses on being strong and intimidating to ward off threats",
+          "traits": ["strong", "intimidating", "counterphobic", "rebellious"]
+        }
+      },
+      "growth_recommendations": [
+        "Learn to trust your own inner guidance",
+        "Practice making decisions without seeking approval",
+        "Develop confidence in your abilities",
+        "Question authority when appropriate",
+        "Cultivate faith and optimism"
+      ],
+      "keywords": ["loyalist", "responsible", "anxious", "suspicious", "committed"]
+    },
+    "7": {
+      "number": 7,
+      "name": "The Enthusiast",
+      "alternative_names": ["The Adventurer", "The Epicure"],
+      "center": "Head",
+      "core_motivation": "To maintain their happiness and keep themselves occupied and engaged",
+      "core_fear": "Being trapped, deprived, or in pain",
+      "core_desire": "To maintain their happiness and satisfaction",
+      "basic_proposition": "You are good or okay if you take care of yourself and get what you need",
+      "vice": "Gluttony",
+      "virtue": "Sobriety",
+      "passion": "Planning",
+      "fixation": "Planning",
+      "holy_idea": "Holy Wisdom/Work/Plan",
+      "trap": "Idealism",
+      "wings": {
+        "6": {
+          "name": "7w6 - The Entertainer",
+          "description": "More responsible, loyal, and anxious. Seeks adventure within secure relationships.",
+          "traits": ["responsible", "loyal", "anxious", "entertaining"]
+        },
+        "8": {
+          "name": "7w8 - The Realist",
+          "description": "More aggressive, materialistic, and workaholic. Seeks adventure through power and control.",
+          "traits": ["aggressive", "materialistic", "workaholic", "intense"]
+        }
+      },
+      "arrows": {
+        "integration": {
+          "direction": 5,
+          "name": "Integration to Five",
+          "description": "When healthy, Sevens become more focused, profound, and fascinated by knowledge and understanding.",
+          "healthy_traits": ["focused", "profound", "studious", "contemplative"]
+        },
+        "disintegration": {
+          "direction": 1,
+          "name": "Disintegration to One",
+          "description": "When stressed, Sevens become perfectionistic, critical, and impatient. They become rigid.",
+          "stress_traits": ["perfectionistic", "critical", "impatient", "rigid"]
+        }
+      },
+      "instinctual_variants": {
+        "self_preservation": {
+          "name": "SP Seven - Keepers of the Castle",
+          "description": "Focuses on creating networks and opportunities for security and pleasure",
+          "traits": ["networking", "opportunistic", "pleasure-seeking", "security-focused"]
+        },
+        "social": {
+          "name": "SO Seven - Sacrifice",
+          "description": "Focuses on being of service to others and making the world better",
+          "traits": ["service-oriented", "idealistic", "world-improving", "sacrificing"]
+        },
+        "sexual": {
+          "name": "SX Seven - Suggestibility",
+          "description": "Focuses on being fascinated and inspired by people and experiences",
+          "traits": ["fascinated", "inspired", "suggestible", "enthusiastic"]
+        }
+      },
+      "growth_recommendations": [
+        "Practice staying with difficult emotions",
+        "Develop depth and follow through on commitments",
+        "Learn to be present rather than planning ahead",
+        "Cultivate gratitude for what you have",
+        "Practice moderation and self-discipline"
+      ],
+      "keywords": ["enthusiast", "spontaneous", "versatile", "scattered", "acquisitive"]
+    },
+    "8": {
+      "number": 8,
+      "name": "The Challenger",
+      "alternative_names": ["The Leader", "The Protector"],
+      "center": "Body",
+      "core_motivation": "To be self-reliant and in control of their own life and destiny",
+      "core_fear": "Being controlled or vulnerable to others",
+      "core_desire": "To be self-reliant and in control",
+      "basic_proposition": "You are good or okay if you are strong and in control of your situation",
+      "vice": "Lust",
+      "virtue": "Innocence",
+      "passion": "Vengeance",
+      "fixation": "Vengeance",
+      "holy_idea": "Holy Truth",
+      "trap": "Justice",
+      "wings": {
+        "7": {
+          "name": "8w7 - The Maverick",
+          "description": "More enthusiastic, aggressive, and materialistic. Seeks control through adventure and excess.",
+          "traits": ["enthusiastic", "aggressive", "materialistic", "adventurous"]
+        },
+        "9": {
+          "name": "8w9 - The Bear",
+          "description": "More withdrawn, stubborn, and complacent. Seeks control through steady pressure.",
+          "traits": ["withdrawn", "stubborn", "complacent", "steady"]
+        }
+      },
+      "arrows": {
+        "integration": {
+          "direction": 2,
+          "name": "Integration to Two",
+          "description": "When healthy, Eights become more caring, helpful, and generous. They use their power to help others.",
+          "healthy_traits": ["caring", "helpful", "generous", "protective"]
+        },
+        "disintegration": {
+          "direction": 5,
+          "name": "Disintegration to Five",
+          "description": "When stressed, Eights become secretive, withdrawn, and paranoid. They isolate themselves.",
+          "stress_traits": ["secretive", "withdrawn", "paranoid", "isolated"]
+        }
+      },
+      "instinctual_variants": {
+        "self_preservation": {
+          "name": "SP Eight - Satisfaction",
+          "description": "Focuses on getting what they need and want for survival and comfort",
+          "traits": ["satisfaction-seeking", "materialistic", "comfort-focused", "hedonistic"]
+        },
+        "social": {
+          "name": "SO Eight - Solidarity",
+          "description": "Focuses on protecting and fighting for their group or cause",
+          "traits": ["protective", "group-oriented", "fighting", "solidarity"]
+        },
+        "sexual": {
+          "name": "SX Eight - Possession",
+          "description": "Focuses on possessing and controlling their intimate relationships",
+          "traits": ["possessive", "controlling", "intense", "passionate"]
+        }
+      },
+      "growth_recommendations": [
+        "Practice vulnerability and asking for help",
+        "Learn to control your intensity and anger",
+        "Develop empathy and consideration for others",
+        "Practice patience and listening",
+        "Use your power to serve rather than dominate"
+      ],
+      "keywords": ["challenger", "powerful", "dominating", "self-confident", "confrontational"]
+    },
+    "9": {
+      "number": 9,
+      "name": "The Peacemaker",
+      "alternative_names": ["The Mediator", "The Harmonizer"],
+      "center": "Body",
+      "core_motivation": "To maintain their inner and outer peace and to avoid conflict",
+      "core_fear": "Loss of connection and fragmentation of their world",
+      "core_desire": "To have inner and outer peace",
+      "basic_proposition": "You are good or okay if those around you are good or okay",
+      "vice": "Sloth",
+      "virtue": "Right Action",
+      "passion": "Indolence",
+      "fixation": "Indolence",
+      "holy_idea": "Holy Love",
+      "trap": "Seeker",
+      "wings": {
+        "8": {
+          "name": "9w8 - The Referee",
+          "description": "More assertive, energetic, and confrontational. Seeks peace through strength.",
+          "traits": ["assertive", "energetic", "confrontational", "strong"]
+        },
+        "1": {
+          "name": "9w1 - The Dreamer",
+          "description": "More idealistic, critical, and perfectionistic. Seeks peace through order.",
+          "traits": ["idealistic", "critical", "perfectionistic", "orderly"]
+        }
+      },
+      "arrows": {
+        "integration": {
+          "direction": 3,
+          "name": "Integration to Three",
+          "description": "When healthy, Nines become more focused, energetic, and goal-oriented. They take action.",
+          "healthy_traits": ["focused", "energetic", "goal-oriented", "active"]
+        },
+        "disintegration": {
+          "direction": 6,
+          "name": "Disintegration to Six",
+          "description": "When stressed, Nines become anxious, worried, and dependent. They seek external support.",
+          "stress_traits": ["anxious", "worried", "dependent", "reactive"]
+        }
+      },
+      "instinctual_variants": {
+        "self_preservation": {
+          "name": "SP Nine - Appetite",
+          "description": "Focuses on personal comfort, routines, and physical well-being",
+          "traits": ["comfort-seeking", "routine-oriented", "physical", "appetitive"]
+        },
+        "social": {
+          "name": "SO Nine - Participation",
+          "description": "Focuses on belonging to groups and being included",
+          "traits": ["group-belonging", "inclusive", "participating", "social"]
+        },
+        "sexual": {
+          "name": "SX Nine - Union",
+          "description": "Focuses on merging with others and losing themselves in relationships",
+          "traits": ["merging", "union-seeking", "other-focused", "boundary-less"]
+        }
+      },
+      "growth_recommendations": [
+        "Practice taking action on your own priorities",
+        "Learn to express your opinions and preferences",
+        "Develop your own agenda rather than going along",
+        "Practice saying no when appropriate",
+        "Cultivate self-awareness and personal goals"
+      ],
+      "keywords": ["peacemaker", "easygoing", "self-effacing", "accommodating", "complacent"]
+    }
+  },
+  "centers": {
+    "body": {
+      "name": "Body Center",
+      "types": [8, 9, 1],
+      "core_emotion": "Anger",
+      "focus": "Control and autonomy",
+      "description": "Body types are concerned with control, resistance, and autonomy"
+    },
+    "heart": {
+      "name": "Heart Center",
+      "types": [2, 3, 4],
+      "core_emotion": "Shame",
+      "focus": "Identity and image",
+      "description": "Heart types are concerned with identity, image, and being valued"
+    },
+    "head": {
+      "name": "Head Center",
+      "types": [5, 6, 7],
+      "core_emotion": "Fear",
+      "focus": "Security and certainty",
+      "description": "Head types are concerned with security, guidance, and having support"
+    }
+  },
+  "assessment_questions": [
+    {
+      "question": "When facing a problem, I tend to:",
+      "options": {
+        "1": "Look for the right way to solve it",
+        "2": "Think about how it affects others",
+        "3": "Focus on achieving the best outcome",
+        "4": "Consider what it means about me",
+        "5": "Analyze it thoroughly before acting",
+        "6": "Seek advice or support from others",
+        "7": "Look for multiple solutions and options",
+        "8": "Take direct action to fix it",
+        "9": "Hope it resolves itself naturally"
+      }
+    },
+    {
+      "question": "My greatest fear is:",
+      "options": {
+        "1": "Being corrupt or making mistakes",
+        "2": "Being unloved or rejected",
+        "3": "Being worthless or without value",
+        "4": "Having no identity or significance",
+        "5": "Being incompetent or invaded",
+        "6": "Being without support or guidance",
+        "7": "Being trapped or deprived",
+        "8": "Being controlled or vulnerable",
+        "9": "Loss of connection or conflict"
+      }
+    }
+  ]
+}

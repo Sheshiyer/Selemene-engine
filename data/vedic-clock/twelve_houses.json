@@ -1,0 +1,318 @@
+{
+  "houses": {
+    "ming_gong": {
+      "name": "命宫",
+      "english_name": "Life Palace",
+      "location": "forehead_center",
+      "significance": "Overall life destiny and character foundation",
+      "traditional_meaning": "The Life Palace represents the core essence of a person's destiny, character, and overall life path. It is considered the most important house in face reading.",
+      "positive_indicators": [
+        "Wide and clear forehead",
+        "No lines or blemishes",
+        "Good proportion to face",
+        "Bright and lustrous appearance"
+      ],
+      "negative_indicators": [
+        "Narrow or cramped forehead",
+        "Deep lines or scars",
+        "Dull or dark appearance",
+        "Disproportionate size"
+      ],
+      "life_aspects": [
+        "Personal character",
+        "Life direction",
+        "Leadership ability",
+        "Overall fortune"
+      ]
+    },
+    "cai_bo_gong": {
+      "name": "財帛宫",
+      "english_name": "Wealth Palace",
+      "location": "nose_area",
+      "significance": "Material wealth and financial fortune",
+      "traditional_meaning": "The Wealth Palace indicates a person's ability to accumulate and manage wealth, as well as their relationship with material possessions.",
+      "positive_indicators": [
+        "Well-formed and prominent nose",
+        "Straight bridge",
+        "Full and rounded tip",
+        "Good proportion to face"
+      ],
+      "negative_indicators": [
+        "Crooked or broken nose bridge",
+        "Pointed or sharp tip",
+        "Too small or too large",
+        "Visible veins or blemishes"
+      ],
+      "life_aspects": [
+        "Financial success",
+        "Material accumulation",
+        "Business acumen",
+        "Resource management"
+      ]
+    },
+    "xiong_di_gong": {
+      "name": "兄弟宫",
+      "english_name": "Siblings Palace",
+      "location": "eyebrow_area",
+      "significance": "Relationships with siblings and close friends",
+      "traditional_meaning": "The Siblings Palace reveals the quality of relationships with siblings, close friends, and peer support networks.",
+      "positive_indicators": [
+        "Well-shaped and defined eyebrows",
+        "Appropriate thickness",
+        "Good color and luster",
+        "Symmetrical appearance"
+      ],
+      "negative_indicators": [
+        "Sparse or missing eyebrows",
+        "Uneven or asymmetrical",
+        "Too thick or too thin",
+        "Scars or gaps"
+      ],
+      "life_aspects": [
+        "Sibling relationships",
+        "Friendship quality",
+        "Peer support",
+        "Social cooperation"
+      ]
+    },
+    "tian_zhai_gong": {
+      "name": "田宅宫",
+      "english_name": "Property Palace",
+      "location": "upper_eyelids",
+      "significance": "Property, real estate, and ancestral home",
+      "traditional_meaning": "The Property Palace indicates fortune related to real estate, property ownership, and connection to ancestral heritage.",
+      "positive_indicators": [
+        "Full and well-formed upper eyelids",
+        "Healthy color",
+        "No drooping or sagging",
+        "Smooth appearance"
+      ],
+      "negative_indicators": [
+        "Sunken or hollow eyelids",
+        "Dark circles or discoloration",
+        "Excessive drooping",
+        "Visible veins or lines"
+      ],
+      "life_aspects": [
+        "Real estate fortune",
+        "Property ownership",
+        "Ancestral connections",
+        "Home stability"
+      ]
+    },
+    "nan_nv_gong": {
+      "name": "男女宫",
+      "english_name": "Children Palace",
+      "location": "under_eye_area",
+      "significance": "Children, fertility, and creative projects",
+      "traditional_meaning": "The Children Palace reveals fortune related to children, fertility, creativity, and the ability to nurture new projects or ideas.",
+      "positive_indicators": [
+        "Full and smooth under-eye area",
+        "Good color and luster",
+        "No bags or dark circles",
+        "Youthful appearance"
+      ],
+      "negative_indicators": [
+        "Deep bags or pouches",
+        "Dark circles or discoloration",
+        "Lines or wrinkles",
+        "Sunken appearance"
+      ],
+      "life_aspects": [
+        "Children and fertility",
+        "Creative projects",
+        "Nurturing ability",
+        "Legacy creation"
+      ]
+    },
+    "nu_pu_gong": {
+      "name": "奴僕宫",
+      "english_name": "Servants Palace",
+      "location": "lower_cheeks",
+      "significance": "Relationships with subordinates and support network",
+      "traditional_meaning": "The Servants Palace indicates the quality of relationships with subordinates, employees, and those who provide support.",
+      "positive_indicators": [
+        "Full and well-rounded cheeks",
+        "Good muscle tone",
+        "Healthy color",
+        "Symmetrical appearance"
+      ],
+      "negative_indicators": [
+        "Sunken or hollow cheeks",
+        "Poor muscle tone",
+        "Asymmetrical appearance",
+        "Visible lines or sagging"
+      ],
+      "life_aspects": [
+        "Leadership support",
+        "Employee relations",
+        "Service quality",
+        "Assistance from others"
+      ]
+    },
+    "qi_qie_gong": {
+      "name": "妻妾宫",
+      "english_name": "Spouse Palace",
+      "location": "eye_corners",
+      "significance": "Marriage, spouse, and romantic relationships",
+      "traditional_meaning": "The Spouse Palace reveals the quality of marriage, romantic relationships, and partnership potential.",
+      "positive_indicators": [
+        "Smooth eye corners",
+        "No deep lines or wrinkles",
+        "Good color and luster",
+        "Symmetrical appearance"
+      ],
+      "negative_indicators": [
+        "Deep crow's feet",
+        "Dark spots or discoloration",
+        "Drooping corners",
+        "Asymmetrical lines"
+      ],
+      "life_aspects": [
+        "Marriage quality",
+        "Romantic relationships",
+        "Partnership harmony",
+        "Emotional intimacy"
+      ]
+    },
+    "ji_e_gong": {
+      "name": "疾厄宫",
+      "english_name": "Health Palace",
+      "location": "nose_bridge",
+      "significance": "Health, illness, and physical constitution",
+      "traditional_meaning": "The Health Palace indicates overall health, susceptibility to illness, and constitutional strength.",
+      "positive_indicators": [
+        "Straight and strong nose bridge",
+        "Good width and height",
+        "No breaks or indentations",
+        "Healthy color"
+      ],
+      "negative_indicators": [
+        "Broken or crooked bridge",
+        "Too narrow or weak",
+        "Visible lines or marks",
+        "Poor color or luster"
+      ],
+      "life_aspects": [
+        "Physical health",
+        "Constitutional strength",
+        "Disease resistance",
+        "Recovery ability"
+      ]
+    },
+    "qian_yi_gong": {
+      "name": "遷移宫",
+      "english_name": "Travel Palace",
+      "location": "temples",
+      "significance": "Travel, migration, and environmental changes",
+      "traditional_meaning": "The Travel Palace indicates fortune related to travel, relocation, and adaptation to new environments.",
+      "positive_indicators": [
+        "Full and well-formed temples",
+        "Good color and luster",
+        "No indentations or hollows",
+        "Symmetrical appearance"
+      ],
+      "negative_indicators": [
+        "Sunken or hollow temples",
+        "Dark spots or discoloration",
+        "Visible veins",
+        "Asymmetrical appearance"
+      ],
+      "life_aspects": [
+        "Travel fortune",
+        "Relocation success",
+        "Environmental adaptation",
+        "Change management"
+      ]
+    },
+    "guan_lu_gong": {
+      "name": "官祿宫",
+      "english_name": "Career Palace",
+      "location": "mid_forehead",
+      "significance": "Career, official position, and social status",
+      "traditional_meaning": "The Career Palace reveals potential for career success, official recognition, and social advancement.",
+      "positive_indicators": [
+        "Prominent and clear mid-forehead",
+        "Good width and height",
+        "No lines or blemishes",
+        "Bright appearance"
+      ],
+      "negative_indicators": [
+        "Narrow or cramped area",
+        "Deep lines or wrinkles",
+        "Dark spots or marks",
+        "Dull appearance"
+      ],
+      "life_aspects": [
+        "Career advancement",
+        "Official recognition",
+        "Social status",
+        "Professional success"
+      ]
+    },
+    "fu_de_gong": {
+      "name": "福德宫",
+      "english_name": "Fortune Palace",
+      "location": "chin_area",
+      "significance": "Overall fortune, happiness, and spiritual cultivation",
+      "traditional_meaning": "The Fortune Palace indicates overall life fortune, happiness, and capacity for spiritual development.",
+      "positive_indicators": [
+        "Full and well-formed chin",
+        "Good proportion to face",
+        "Smooth appearance",
+        "Healthy color"
+      ],
+      "negative_indicators": [
+        "Weak or receding chin",
+        "Pointed or sharp appearance",
+        "Lines or indentations",
+        "Poor color or luster"
+      ],
+      "life_aspects": [
+        "Overall fortune",
+        "Life happiness",
+        "Spiritual development",
+        "Inner peace"
+      ]
+    },
+    "xiang_mao_gong": {
+      "name": "相貌宫",
+      "english_name": "Appearance Palace",
+      "location": "overall_face",
+      "significance": "Physical appearance and social impression",
+      "traditional_meaning": "The Appearance Palace represents overall facial harmony, attractiveness, and the impression made on others.",
+      "positive_indicators": [
+        "Harmonious facial proportions",
+        "Good symmetry",
+        "Healthy complexion",
+        "Pleasant overall appearance"
+      ],
+      "negative_indicators": [
+        "Disproportionate features",
+        "Poor symmetry",
+        "Unhealthy complexion",
+        "Unbalanced appearance"
+      ],
+      "life_aspects": [
+        "Social impression",
+        "Physical attractiveness",
+        "Charisma",
+        "Public image"
+      ]
+    }
+  },
+  "analysis_principles": {
+    "harmony": "Overall facial harmony is more important than individual features",
+    "proportion": "Proper proportions indicate balanced life aspects",
+    "symmetry": "Facial symmetry suggests internal balance and health",
+    "color": "Healthy color and luster indicate vitality and good fortune",
+    "clarity": "Clear, unblemished features suggest smooth life path"
+  },
+  "traditional_wisdom": [
+    "The face is a map of one's destiny and character",
+    "Changes in facial features reflect changes in life circumstances",
+    "Cultivation of virtue can improve facial appearance over time",
+    "The 12 Houses system provides comprehensive life analysis",
+    "Face reading should be used for guidance, not judgment"
+  ]
+}

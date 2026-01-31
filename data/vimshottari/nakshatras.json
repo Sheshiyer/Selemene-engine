@@ -1,0 +1,505 @@
+{
+  "nakshatras_info": {
+    "name": "Vedic Nakshatras",
+    "description": "The 27 lunar mansions of Vedic astrology",
+    "total_nakshatras": 27,
+    "source": "Traditional Vedic astrology"
+  },
+  "nakshatras": {
+    "1": {
+      "number": 1,
+      "name": "Ashwini",
+      "start_degree": 0.0,
+      "end_degree": 13.333333,
+      "ruling_planet": "Ketu",
+      "deity": "Ashwini Kumaras (Divine Physicians)",
+      "symbol": "Horse's Head",
+      "nature": "Divine",
+      "gana": "Deva",
+      "qualities": [
+        "healing",
+        "speed",
+        "pioneering",
+        "medicine",
+        "transportation"
+      ],
+      "description": "The star of transport and healing. Ashwini natives are quick, pioneering, and have natural healing abilities. They are the cosmic physicians who bring swift action and miraculous cures."
+    },
+    "2": {
+      "number": 2,
+      "name": "Bharani",
+      "start_degree": 13.333333,
+      "end_degree": 26.666666,
+      "ruling_planet": "Venus",
+      "deity": "Yama (God of Death and Dharma)",
+      "symbol": "Yoni (Female Reproductive Organ)",
+      "nature": "Human",
+      "gana": "Manushya",
+      "qualities": [
+        "creativity",
+        "fertility",
+        "transformation",
+        "moral values",
+        "endurance"
+      ],
+      "description": "The star of restraint and moral values. Bharani represents the power to bear and create life, as well as the wisdom to know when to let go. It governs birth, death, and transformation."
+    },
+    "3": {
+      "number": 3,
+      "name": "Krittika",
+      "start_degree": 26.666666,
+      "end_degree": 39.999999,
+      "ruling_planet": "Sun",
+      "deity": "Agni (Fire God)",
+      "symbol": "Razor or Flame",
+      "nature": "Demonic",
+      "gana": "Rakshasa",
+      "qualities": [
+        "purification",
+        "sharp intellect",
+        "leadership",
+        "cutting through illusion",
+        "fame"
+      ],
+      "description": "The star of fire and purification. Krittika natives have sharp intellect and the power to cut through illusion. They are natural leaders who can burn away impurities and illuminate truth."
+    },
+    "4": {
+      "number": 4,
+      "name": "Rohini",
+      "start_degree": 39.999999,
+      "end_degree": 53.333332,
+      "ruling_planet": "Moon",
+      "deity": "Brahma (Creator God)",
+      "symbol": "Ox Cart or Chariot",
+      "nature": "Human",
+      "gana": "Manushya",
+      "qualities": [
+        "beauty",
+        "fertility",
+        "prosperity",
+        "artistic talent",
+        "growth"
+      ],
+      "description": "The star of ascent and growth. Rohini is considered the most beautiful and fertile nakshatra. It represents material prosperity, artistic talents, and the power to create and nurture."
+    },
+    "5": {
+      "number": 5,
+      "name": "Mrigashira",
+      "start_degree": 53.333332,
+      "end_degree": 66.666665,
+      "ruling_planet": "Mars",
+      "deity": "Soma (Moon God)",
+      "symbol": "Deer's Head",
+      "nature": "Divine",
+      "gana": "Deva",
+      "qualities": [
+        "seeking",
+        "curiosity",
+        "gentleness",
+        "exploration",
+        "research"
+      ],
+      "description": "The star of searching and seeking. Mrigashira natives are eternal seekers of knowledge and truth. They have a gentle, curious nature and are always exploring new territories of experience."
+    },
+    "6": {
+      "number": 6,
+      "name": "Ardra",
+      "start_degree": 66.666665,
+      "end_degree": 79.999998,
+      "ruling_planet": "Rahu",
+      "deity": "Rudra (Storm God)",
+      "symbol": "Teardrop or Diamond",
+      "nature": "Human",
+      "gana": "Manushya",
+      "qualities": [
+        "transformation",
+        "destruction",
+        "renewal",
+        "emotional depth",
+        "research"
+      ],
+      "description": "The star of sorrow and destruction that leads to renewal. Ardra brings storms that clear away the old to make way for the new. It represents the power of transformation through crisis."
+    },
+    "7": {
+      "number": 7,
+      "name": "Punarvasu",
+      "start_degree": 79.999998,
+      "end_degree": 93.333331,
+      "ruling_planet": "Jupiter",
+      "deity": "Aditi (Mother of Gods)",
+      "symbol": "Bow and Quiver",
+      "nature": "Divine",
+      "gana": "Deva",
+      "qualities": [
+        "renewal",
+        "restoration",
+        "resilience",
+        "nurturing",
+        "return"
+      ],
+      "description": "The star of renewal and return. Punarvasu represents the power to restore and regenerate. Natives have the ability to bounce back from setbacks and help others do the same."
+    },
+    "8": {
+      "number": 8,
+      "name": "Pushya",
+      "start_degree": 93.333331,
+      "end_degree": 106.666664,
+      "ruling_planet": "Saturn",
+      "deity": "Brihaspati (Guru of Gods)",
+      "symbol": "Cow's Udder or Lotus",
+      "nature": "Divine",
+      "gana": "Deva",
+      "qualities": [
+        "nourishment",
+        "wisdom",
+        "teaching",
+        "spirituality",
+        "auspiciousness"
+      ],
+      "description": "The star of nourishment and spiritual guidance. Pushya is considered the most auspicious nakshatra for spiritual growth. It represents wisdom, teaching, and the ability to nourish others."
+    },
+    "9": {
+      "number": 9,
+      "name": "Ashlesha",
+      "start_degree": 106.666664,
+      "end_degree": 119.999997,
+      "ruling_planet": "Mercury",
+      "deity": "Nagas (Serpent Deities)",
+      "symbol": "Coiled Serpent",
+      "nature": "Demonic",
+      "gana": "Rakshasa",
+      "qualities": [
+        "mysticism",
+        "intuition",
+        "hypnotic power",
+        "kundalini",
+        "transformation"
+      ],
+      "description": "The star of embrace and kundalini power. Ashlesha represents the serpent energy that can either bind or liberate. It governs hypnotic powers, intuition, and mystical abilities."
+    },
+    "10": {
+      "number": 10,
+      "name": "Magha",
+      "start_degree": 119.999997,
+      "end_degree": 133.33333,
+      "ruling_planet": "Ketu",
+      "deity": "Pitrs (Ancestors)",
+      "symbol": "Royal Throne",
+      "nature": "Divine",
+      "gana": "Deva",
+      "qualities": [
+        "transformation",
+        "growth",
+        "wisdom",
+        "spiritual development"
+      ],
+      "description": "The star of power and ancestral connection. Magha natives have natural authority and strong connection to their lineage."
+    },
+    "11": {
+      "number": 11,
+      "name": "Purva Phalguni",
+      "start_degree": 133.33333,
+      "end_degree": 146.666663,
+      "ruling_planet": "Venus",
+      "deity": "Bhaga (God of Fortune)",
+      "symbol": "Front Legs of Bed",
+      "nature": "Human",
+      "gana": "Manushya",
+      "qualities": [
+        "transformation",
+        "growth",
+        "wisdom",
+        "spiritual development"
+      ],
+      "description": "The star of procreation and pleasure. Represents creativity, luxury, and the enjoyment of life's pleasures."
+    },
+    "12": {
+      "number": 12,
+      "name": "Uttara Phalguni",
+      "start_degree": 146.666663,
+      "end_degree": 159.999996,
+      "ruling_planet": "Sun",
+      "deity": "Aryaman (God of Contracts)",
+      "symbol": "Back Legs of Bed",
+      "nature": "Demonic",
+      "gana": "Rakshasa",
+      "qualities": [
+        "transformation",
+        "growth",
+        "wisdom",
+        "spiritual development"
+      ],
+      "description": "The star of patronage and friendship. Represents loyalty, service, and the ability to form lasting partnerships."
+    },
+    "13": {
+      "number": 13,
+      "name": "Hasta",
+      "start_degree": 159.999996,
+      "end_degree": 173.333329,
+      "ruling_planet": "Moon",
+      "deity": "Savitar (Sun God)",
+      "symbol": "Hand or Fist",
+      "nature": "Divine",
+      "gana": "Deva",
+      "qualities": [
+        "transformation",
+        "growth",
+        "wisdom",
+        "spiritual development"
+      ],
+      "description": "The star of the hand and skill. Represents craftsmanship, dexterity, and the power to manifest through skillful action."
+    },
+    "14": {
+      "number": 14,
+      "name": "Chitra",
+      "start_degree": 173.333329,
+      "end_degree": 186.666662,
+      "ruling_planet": "Mars",
+      "deity": "Tvashtar (Divine Architect)",
+      "symbol": "Bright Jewel or Pearl",
+      "nature": "Human",
+      "gana": "Manushya",
+      "qualities": [
+        "transformation",
+        "growth",
+        "wisdom",
+        "spiritual development"
+      ],
+      "description": "The star of opportunity and craftsmanship. Represents artistic ability, beauty, and the power to create magnificent works."
+    },
+    "15": {
+      "number": 15,
+      "name": "Swati",
+      "start_degree": 186.666662,
+      "end_degree": 199.99999499999998,
+      "ruling_planet": "Rahu",
+      "deity": "Vayu (Wind God)",
+      "symbol": "Young Shoot Blown by Wind",
+      "nature": "Demonic",
+      "gana": "Rakshasa",
+      "qualities": [
+        "transformation",
+        "growth",
+        "wisdom",
+        "spiritual development"
+      ],
+      "description": "The star of independence and flexibility. Represents freedom, adaptability, and the power to move with changing circumstances."
+    },
+    "16": {
+      "number": 16,
+      "name": "Vishakha",
+      "start_degree": 199.99999499999998,
+      "end_degree": 213.333328,
+      "ruling_planet": "Jupiter",
+      "deity": "Indra-Agni (King of Gods and Fire)",
+      "symbol": "Triumphal Arch",
+      "nature": "Divine",
+      "gana": "Deva",
+      "qualities": [
+        "transformation",
+        "growth",
+        "wisdom",
+        "spiritual development"
+      ],
+      "description": "The star of purpose and determination. Represents goal achievement, ambition, and the power to overcome obstacles."
+    },
+    "17": {
+      "number": 17,
+      "name": "Anuradha",
+      "start_degree": 213.333328,
+      "end_degree": 226.666661,
+      "ruling_planet": "Saturn",
+      "deity": "Mitra (God of Friendship)",
+      "symbol": "Lotus Flower",
+      "nature": "Human",
+      "gana": "Manushya",
+      "qualities": [
+        "transformation",
+        "growth",
+        "wisdom",
+        "spiritual development"
+      ],
+      "description": "The star of success and friendship. Represents devotion, cooperation, and the power to achieve through relationships."
+    },
+    "18": {
+      "number": 18,
+      "name": "Jyeshtha",
+      "start_degree": 226.666661,
+      "end_degree": 239.999994,
+      "ruling_planet": "Mercury",
+      "deity": "Indra (King of Gods)",
+      "symbol": "Circular Amulet",
+      "nature": "Demonic",
+      "gana": "Rakshasa",
+      "qualities": [
+        "transformation",
+        "growth",
+        "wisdom",
+        "spiritual development"
+      ],
+      "description": "The star of seniority and protection. Represents authority, responsibility, and the power to protect and guide others."
+    },
+    "19": {
+      "number": 19,
+      "name": "Mula",
+      "start_degree": 239.999994,
+      "end_degree": 253.333327,
+      "ruling_planet": "Ketu",
+      "deity": "Nirriti (Goddess of Destruction)",
+      "symbol": "Bundle of Roots",
+      "nature": "Divine",
+      "gana": "Deva",
+      "qualities": [
+        "transformation",
+        "growth",
+        "wisdom",
+        "spiritual development"
+      ],
+      "description": "The star of foundation and investigation. Represents the power to get to the root of matters and destroy what is false."
+    },
+    "20": {
+      "number": 20,
+      "name": "Purva Ashadha",
+      "start_degree": 253.333327,
+      "end_degree": 266.66666,
+      "ruling_planet": "Venus",
+      "deity": "Apas (Water Goddess)",
+      "symbol": "Elephant Tusk",
+      "nature": "Human",
+      "gana": "Manushya",
+      "qualities": [
+        "transformation",
+        "growth",
+        "wisdom",
+        "spiritual development"
+      ],
+      "description": "The star of invincibility and purification. Represents the power to cleanse and the strength that cannot be defeated."
+    },
+    "21": {
+      "number": 21,
+      "name": "Uttara Ashadha",
+      "start_degree": 266.66666,
+      "end_degree": 279.999993,
+      "ruling_planet": "Sun",
+      "deity": "Vishvadevas (Universal Gods)",
+      "symbol": "Elephant Tusk",
+      "nature": "Demonic",
+      "gana": "Rakshasa",
+      "qualities": [
+        "transformation",
+        "growth",
+        "wisdom",
+        "spiritual development"
+      ],
+      "description": "The star of victory and final achievement. Represents ultimate success and the power to achieve lasting victory."
+    },
+    "22": {
+      "number": 22,
+      "name": "Shravana",
+      "start_degree": 279.999993,
+      "end_degree": 293.333326,
+      "ruling_planet": "Moon",
+      "deity": "Vishnu (Preserver God)",
+      "symbol": "Ear or Three Footprints",
+      "nature": "Divine",
+      "gana": "Deva",
+      "qualities": [
+        "transformation",
+        "growth",
+        "wisdom",
+        "spiritual development"
+      ],
+      "description": "The star of learning and connection. Represents the power of listening, learning, and connecting with divine wisdom."
+    },
+    "23": {
+      "number": 23,
+      "name": "Dhanishta",
+      "start_degree": 293.333326,
+      "end_degree": 306.666659,
+      "ruling_planet": "Mars",
+      "deity": "Vasus (Eight Gods of Elements)",
+      "symbol": "Drum or Flute",
+      "nature": "Human",
+      "gana": "Manushya",
+      "qualities": [
+        "transformation",
+        "growth",
+        "wisdom",
+        "spiritual development"
+      ],
+      "description": "The star of symphony and wealth. Represents musical ability, rhythm, and the power to create harmony and prosperity."
+    },
+    "24": {
+      "number": 24,
+      "name": "Shatabhisha",
+      "start_degree": 306.666659,
+      "end_degree": 319.999992,
+      "ruling_planet": "Rahu",
+      "deity": "Varuna (God of Waters)",
+      "symbol": "Empty Circle",
+      "nature": "Demonic",
+      "gana": "Rakshasa",
+      "qualities": [
+        "transformation",
+        "growth",
+        "wisdom",
+        "spiritual development"
+      ],
+      "description": "The star of healing and mysticism. Represents the power of healing, research, and uncovering hidden mysteries."
+    },
+    "25": {
+      "number": 25,
+      "name": "Purva Bhadrapada",
+      "start_degree": 319.999992,
+      "end_degree": 333.333325,
+      "ruling_planet": "Jupiter",
+      "deity": "Aja Ekapada (One-footed Goat)",
+      "symbol": "Front Legs of Funeral Cot",
+      "nature": "Divine",
+      "gana": "Deva",
+      "qualities": [
+        "transformation",
+        "growth",
+        "wisdom",
+        "spiritual development"
+      ],
+      "description": "The star of burning and purification. Represents the power to burn away negativity and transform through spiritual fire."
+    },
+    "26": {
+      "number": 26,
+      "name": "Uttara Bhadrapada",
+      "start_degree": 333.333325,
+      "end_degree": 346.666658,
+      "ruling_planet": "Saturn",
+      "deity": "Ahir Budhnya (Serpent of the Deep)",
+      "symbol": "Back Legs of Funeral Cot",
+      "nature": "Human",
+      "gana": "Manushya",
+      "qualities": [
+        "transformation",
+        "growth",
+        "wisdom",
+        "spiritual development"
+      ],
+      "description": "The star of depth and cosmic connection. Represents the power to access deep wisdom and cosmic consciousness."
+    },
+    "27": {
+      "number": 27,
+      "name": "Revati",
+      "start_degree": 346.666658,
+      "end_degree": 359.99999099999997,
+      "ruling_planet": "Mercury",
+      "deity": "Pushan (Nourisher God)",
+      "symbol": "Fish or Drum",
+      "nature": "Demonic",
+      "gana": "Rakshasa",
+      "qualities": [
+        "transformation",
+        "growth",
+        "wisdom",
+        "spiritual development"
+      ],
+      "description": "The star of wealth and journey's end. Represents completion, nourishment, and the power to guide others to their destination."
+    }
+  }
+}

@@ -1,0 +1,11 @@
+[package]
+name = "noesis-metrics"
+version = "0.1.0"
+edition = "2021"
+description = "Prometheus metrics collection for Noesis platform"
+
+[dependencies]
+prometheus = "0.13"
+lazy_static = "1.4"
+tokio = { version = "1.0", features = ["time", "rt"] }
+tracing = "0.1"

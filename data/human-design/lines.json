@@ -1,0 +1,272 @@
+{
+  "lines_info": {
+    "name": "Human Design Lines",
+    "description": "The 6 lines that provide detailed expression for each gate",
+    "total_lines": 6,
+    "purpose": "Lines show the specific way a gate's energy is expressed",
+    "calculation": "Determined by precise planetary positions within each gate",
+    "source": "Human Design System by Ra Uru Hu"
+  },
+  "line_structure": {
+    "lower_trigram": {
+      "lines": [1, 2, 3],
+      "description": "Personal, individual expression",
+      "theme": "How you personally express the gate's energy"
+    },
+    "upper_trigram": {
+      "lines": [4, 5, 6],
+      "description": "Transpersonal, collective expression", 
+      "theme": "How you express the gate's energy in relationship to others"
+    }
+  },
+  "lines": {
+    "1": {
+      "name": "Line 1 - The Investigator",
+      "theme": "Foundation and Security",
+      "description": "The foundation line that seeks security through investigation and understanding",
+      "characteristics": [
+        "Needs solid foundation before acting",
+        "Research and study oriented",
+        "Security through knowledge",
+        "Introspective and thorough"
+      ],
+      "energy_pattern": "Inward focused, building foundation",
+      "relationship_style": "Bonds through shared learning and investigation",
+      "career_approach": "Needs to understand thoroughly before committing",
+      "decision_making": "Must research and understand all aspects",
+      "challenges": [
+        "Insecurity when foundation is weak",
+        "Paralysis from over-researching",
+        "Difficulty acting without complete knowledge"
+      ],
+      "gifts": [
+        "Deep expertise and knowledge",
+        "Solid foundations for others",
+        "Thorough understanding"
+      ],
+      "keywords": [
+        "Foundation",
+        "Investigation", 
+        "Security",
+        "Research",
+        "Thoroughness"
+      ]
+    },
+    "2": {
+      "name": "Line 2 - The Hermit",
+      "theme": "Natural Talent and Calling",
+      "description": "The natural talent line that needs to be called out by others",
+      "characteristics": [
+        "Natural gifts and abilities",
+        "Needs to be recognized and called",
+        "Prefers solitude for development",
+        "Shy about their talents"
+      ],
+      "energy_pattern": "Natural flow, needs external recognition",
+      "relationship_style": "Must be called out and recognized",
+      "career_approach": "Talents must be recognized by others",
+      "decision_making": "Responds to being called for their gifts",
+      "challenges": [
+        "Being called for wrong things",
+        "Hiding natural talents",
+        "Not being properly recognized"
+      ],
+      "gifts": [
+        "Natural genius and talent",
+        "Effortless abilities",
+        "Innate wisdom"
+      ],
+      "keywords": [
+        "Natural talent",
+        "Calling",
+        "Recognition",
+        "Hermit",
+        "Genius"
+      ]
+    },
+    "3": {
+      "name": "Line 3 - The Martyr",
+      "theme": "Trial and Error",
+      "description": "The experimental line that learns through trial and error",
+      "characteristics": [
+        "Experimental approach to life",
+        "Learns through mistakes",
+        "Resilient and adaptable",
+        "Bonds through shared experiences"
+      ],
+      "energy_pattern": "Trial and error, experimental",
+      "relationship_style": "Bonds through shared experiences and mistakes",
+      "career_approach": "Learns through doing and experimenting",
+      "decision_making": "Must try things to know if they work",
+      "challenges": [
+        "Pessimism from repeated failures",
+        "Others expecting them to know without trying",
+        "Impatience with trial and error process"
+      ],
+      "gifts": [
+        "Practical wisdom from experience",
+        "Resilience and adaptability",
+        "Knowing what doesn't work"
+      ],
+      "keywords": [
+        "Trial and error",
+        "Experimentation",
+        "Resilience",
+        "Experience",
+        "Adaptation"
+      ]
+    },
+    "4": {
+      "name": "Line 4 - The Opportunist",
+      "theme": "Network and Influence",
+      "description": "The network line that succeeds through relationships and influence",
+      "characteristics": [
+        "Network and relationship focused",
+        "Influential through connections",
+        "Friendly and social",
+        "Opportunities through others"
+      ],
+      "energy_pattern": "Externally focused, relationship building",
+      "relationship_style": "Deep friendships and network connections",
+      "career_approach": "Success through network and relationships",
+      "decision_making": "Considers impact on network and relationships",
+      "challenges": [
+        "Exhaustion from maintaining network",
+        "Difficulty saying no to network demands",
+        "Superficial relationships"
+      ],
+      "gifts": [
+        "Natural networking abilities",
+        "Influential communication",
+        "Building bridges between people"
+      ],
+      "keywords": [
+        "Network",
+        "Influence",
+        "Relationships",
+        "Opportunities",
+        "Friendship"
+      ]
+    },
+    "5": {
+      "name": "Line 5 - The Heretic",
+      "theme": "Projection and Solutions",
+      "description": "The projection line that provides universal solutions",
+      "characteristics": [
+        "Projected upon to provide solutions",
+        "Practical and solution-oriented",
+        "Often misunderstood",
+        "Universal applications"
+      ],
+      "energy_pattern": "Projected upon, solution providing",
+      "relationship_style": "Others project expectations and solutions onto them",
+      "career_approach": "Called upon to solve problems and provide solutions",
+      "decision_making": "Must consider projections and expectations of others",
+      "challenges": [
+        "Heavy projections from others",
+        "Blame when solutions don't work",
+        "Paranoia from misunderstanding"
+      ],
+      "gifts": [
+        "Universal solutions",
+        "Practical problem-solving",
+        "Ability to help many people"
+      ],
+      "keywords": [
+        "Projection",
+        "Solutions",
+        "Universal",
+        "Practical",
+        "Heretic"
+      ]
+    },
+    "6": {
+      "name": "Line 6 - The Role Model",
+      "theme": "Three Life Phases",
+      "description": "The role model line that lives in three distinct life phases",
+      "characteristics": [
+        "Three distinct life phases",
+        "Natural authority and wisdom",
+        "Optimistic and idealistic",
+        "Becomes role model for others"
+      ],
+      "energy_pattern": "Three phase evolution: experimentation, withdrawal, wisdom",
+      "relationship_style": "Evolves from experimental to wise guide",
+      "career_approach": "Three phases of career development",
+      "decision_making": "Changes approach based on life phase",
+      "life_phases": {
+        "phase_1": {
+          "age_range": "Birth to ~30 (Saturn Return)",
+          "theme": "Experimentation like Line 3",
+          "characteristics": [
+            "Trial and error approach",
+            "Learning through experience",
+            "Making mistakes and learning",
+            "Experimental relationships"
+          ]
+        },
+        "phase_2": {
+          "age_range": "30 to ~50 (Chiron Return)",
+          "theme": "Withdrawal and Observation",
+          "characteristics": [
+            "Stepping back from experimentation",
+            "Observing and learning",
+            "Developing wisdom",
+            "More selective in relationships"
+          ]
+        },
+        "phase_3": {
+          "age_range": "50+ (Post-Chiron)",
+          "theme": "Wisdom and Role Model",
+          "characteristics": [
+            "Sharing wisdom and experience",
+            "Natural role model authority",
+            "Optimistic perspective",
+            "Guiding others"
+          ]
+        }
+      },
+      "challenges": [
+        "Disappointment when ideals aren't met",
+        "Pressure to be perfect role model",
+        "Impatience with life phase timing"
+      ],
+      "gifts": [
+        "Authentic wisdom from experience",
+        "Natural role model authority",
+        "Optimistic perspective on life"
+      ],
+      "keywords": [
+        "Role model",
+        "Three phases",
+        "Wisdom",
+        "Authority",
+        "Optimism"
+      ]
+    }
+  },
+  "line_combinations": {
+    "profile_formation": "Conscious line + Unconscious line = Profile (e.g., 2/4, 6/3)",
+    "personality_design": "Personality line is conscious, Design line is unconscious",
+    "life_theme": "Profile combination creates overall life theme and approach"
+  },
+  "practical_applications": {
+    "understanding_expression": "Lines show how you specifically express each gate",
+    "relationship_compatibility": "Line combinations affect relationship dynamics",
+    "career_guidance": "Lines indicate optimal work approaches and environments",
+    "personal_development": "Understanding lines helps optimize personal growth",
+    "decision_making": "Lines influence how you best make decisions"
+  },
+  "line_interactions": {
+    "harmonic_lines": {
+      "1_4": "Foundation and Network - Research shared through relationships",
+      "2_5": "Natural talent projected as universal solutions",
+      "3_6": "Experience leading to wisdom and role modeling"
+    },
+    "challenging_combinations": {
+      "1_3": "Foundation vs experimentation tension",
+      "2_4": "Hermit nature vs network demands",
+      "5_6": "Projection vs role model authority"
+    }
+  }
+}

@@ -1,0 +1,359 @@
+{
+  "elements": {
+    "wood": {
+      "name": "木",
+      "english_name": "Wood",
+      "season": "Spring",
+      "direction": "East",
+      "color": "Green",
+      "emotion": "Anger/Kindness",
+      "organ_system": "Liver/Gallbladder",
+      "facial_characteristics": {
+        "face_shape": "Rectangular or oval",
+        "forehead": "High and prominent",
+        "eyebrows": "Strong and well-defined",
+        "eyes": "Long and narrow",
+        "nose": "Straight and prominent",
+        "mouth": "Well-proportioned",
+        "chin": "Strong and angular",
+        "overall": "Strong, angular features with good bone structure"
+      },
+      "constitutional_traits": {
+        "physical": [
+          "Tall and lean build",
+          "Good flexibility and muscle tone",
+          "Strong bone structure",
+          "Quick movements and gestures"
+        ],
+        "mental": [
+          "Natural leader and pioneer",
+          "Strong-willed and determined",
+          "Creative and visionary",
+          "Good planning and organizational skills"
+        ],
+        "emotional": [
+          "Passionate and enthusiastic",
+          "Can be impatient or irritable",
+          "Strong sense of justice",
+          "Protective of others"
+        ]
+      },
+      "health_tendencies": {
+        "strengths": [
+          "Strong liver and gallbladder function",
+          "Good detoxification ability",
+          "Excellent flexibility and mobility",
+          "Strong immune response"
+        ],
+        "vulnerabilities": [
+          "Prone to tension headaches",
+          "May experience muscle stiffness",
+          "Susceptible to stress-related disorders",
+          "Can have digestive issues when stressed"
+        ],
+        "recommendations": [
+          "Regular exercise to channel energy",
+          "Stress management techniques",
+          "Avoid excessive alcohol",
+          "Practice patience and flexibility"
+        ]
+      }
+    },
+    "fire": {
+      "name": "火",
+      "english_name": "Fire",
+      "season": "Summer",
+      "direction": "South",
+      "color": "Red",
+      "emotion": "Joy/Overexcitement",
+      "organ_system": "Heart/Small Intestine",
+      "facial_characteristics": {
+        "face_shape": "Triangular or heart-shaped",
+        "forehead": "Wide at temples",
+        "eyebrows": "Arched and expressive",
+        "eyes": "Bright and sparkling",
+        "nose": "Pointed or upturned",
+        "mouth": "Full lips, expressive",
+        "chin": "Pointed or narrow",
+        "overall": "Animated features with bright, lively expression"
+      },
+      "constitutional_traits": {
+        "physical": [
+          "Medium build with good circulation",
+          "Warm body temperature",
+          "Quick and animated movements",
+          "Expressive gestures and posture"
+        ],
+        "mental": [
+          "Enthusiastic and charismatic",
+          "Quick thinking and articulate",
+          "Creative and inspirational",
+          "Good communication skills"
+        ],
+        "emotional": [
+          "Joyful and optimistic",
+          "Social and outgoing",
+          "Can be impulsive or scattered",
+          "Seeks excitement and stimulation"
+        ]
+      },
+      "health_tendencies": {
+        "strengths": [
+          "Strong heart and circulation",
+          "Good energy and vitality",
+          "Excellent social connections",
+          "Natural healing ability"
+        ],
+        "vulnerabilities": [
+          "Prone to anxiety and restlessness",
+          "May experience insomnia",
+          "Susceptible to heart palpitations",
+          "Can have blood pressure issues"
+        ],
+        "recommendations": [
+          "Calming meditation practices",
+          "Regular sleep schedule",
+          "Heart-healthy diet",
+          "Avoid excessive stimulation"
+        ]
+      }
+    },
+    "earth": {
+      "name": "土",
+      "english_name": "Earth",
+      "season": "Late Summer",
+      "direction": "Center",
+      "color": "Yellow",
+      "emotion": "Worry/Pensiveness",
+      "organ_system": "Spleen/Stomach",
+      "facial_characteristics": {
+        "face_shape": "Square or round",
+        "forehead": "Broad and stable",
+        "eyebrows": "Thick and straight",
+        "eyes": "Round and steady",
+        "nose": "Full and well-proportioned",
+        "mouth": "Full and stable",
+        "chin": "Square and solid",
+        "overall": "Stable, grounded features with good proportion"
+      },
+      "constitutional_traits": {
+        "physical": [
+          "Solid, sturdy build",
+          "Good physical endurance",
+          "Steady, deliberate movements",
+          "Strong digestive system"
+        ],
+        "mental": [
+          "Practical and realistic",
+          "Good memory and concentration",
+          "Methodical and thorough",
+          "Reliable and dependable"
+        ],
+        "emotional": [
+          "Stable and nurturing",
+          "Loyal and supportive",
+          "Can be worrisome or anxious",
+          "Seeks security and stability"
+        ]
+      },
+      "health_tendencies": {
+        "strengths": [
+          "Strong digestive system",
+          "Good physical stamina",
+          "Stable blood sugar levels",
+          "Excellent recovery ability"
+        ],
+        "vulnerabilities": [
+          "Prone to digestive issues when stressed",
+          "May experience weight fluctuations",
+          "Susceptible to worry and overthinking",
+          "Can have sluggish metabolism"
+        ],
+        "recommendations": [
+          "Regular meal times",
+          "Grounding exercises",
+          "Avoid excessive worry",
+          "Maintain stable routines"
+        ]
+      }
+    },
+    "metal": {
+      "name": "金",
+      "english_name": "Metal",
+      "season": "Autumn",
+      "direction": "West",
+      "color": "White",
+      "emotion": "Grief/Righteousness",
+      "organ_system": "Lung/Large Intestine",
+      "facial_characteristics": {
+        "face_shape": "Oval or diamond-shaped",
+        "forehead": "High and refined",
+        "eyebrows": "Thin and well-shaped",
+        "eyes": "Clear and penetrating",
+        "nose": "Prominent and well-defined",
+        "mouth": "Thin and precise",
+        "chin": "Pointed or refined",
+        "overall": "Refined, aristocratic features with clear definition"
+      },
+      "constitutional_traits": {
+        "physical": [
+          "Lean and refined build",
+          "Good posture and bearing",
+          "Precise and controlled movements",
+          "Strong respiratory system"
+        ],
+        "mental": [
+          "Organized and disciplined",
+          "Analytical and logical",
+          "High standards and attention to detail",
+          "Good judgment and discrimination"
+        ],
+        "emotional": [
+          "Reserved and dignified",
+          "Values quality and excellence",
+          "Can be perfectionist or critical",
+          "Seeks order and refinement"
+        ]
+      },
+      "health_tendencies": {
+        "strengths": [
+          "Strong lung and respiratory function",
+          "Good immune system",
+          "Excellent elimination processes",
+          "Natural detoxification ability"
+        ],
+        "vulnerabilities": [
+          "Prone to respiratory issues",
+          "May experience skin problems",
+          "Susceptible to grief and melancholy",
+          "Can have elimination difficulties"
+        ],
+        "recommendations": [
+          "Deep breathing exercises",
+          "Clean air and environment",
+          "Emotional expression and release",
+          "Avoid excessive criticism"
+        ]
+      }
+    },
+    "water": {
+      "name": "水",
+      "english_name": "Water",
+      "season": "Winter",
+      "direction": "North",
+      "color": "Black/Blue",
+      "emotion": "Fear/Wisdom",
+      "organ_system": "Kidney/Bladder",
+      "facial_characteristics": {
+        "face_shape": "Round or pear-shaped",
+        "forehead": "Rounded and full",
+        "eyebrows": "Soft and curved",
+        "eyes": "Deep and mysterious",
+        "nose": "Soft and rounded",
+        "mouth": "Full and soft",
+        "chin": "Round and full",
+        "overall": "Soft, flowing features with depth and mystery"
+      },
+      "constitutional_traits": {
+        "physical": [
+          "Soft, flowing build",
+          "Good fluid balance",
+          "Graceful, flowing movements",
+          "Strong kidney and bladder function"
+        ],
+        "mental": [
+          "Deep thinker and philosopher",
+          "Intuitive and wise",
+          "Good memory and learning ability",
+          "Contemplative and reflective"
+        ],
+        "emotional": [
+          "Calm and adaptable",
+          "Emotionally deep and sensitive",
+          "Can be fearful or withdrawn",
+          "Seeks wisdom and understanding"
+        ]
+      },
+      "health_tendencies": {
+        "strengths": [
+          "Strong kidney and bladder function",
+          "Good fluid regulation",
+          "Excellent adaptation ability",
+          "Natural longevity potential"
+        ],
+        "vulnerabilities": [
+          "Prone to fatigue and low energy",
+          "May experience bone and joint issues",
+          "Susceptible to fear and anxiety",
+          "Can have reproductive system issues"
+        ],
+        "recommendations": [
+          "Adequate rest and recovery",
+          "Kidney-nourishing foods",
+          "Gentle, flowing exercises",
+          "Avoid excessive fear and stress"
+        ]
+      }
+    }
+  },
+  "constitutional_combinations": {
+    "wood_fire": {
+      "name": "Wood-Fire Dynamic Type",
+      "characteristics": "Creative leadership with passionate expression",
+      "strengths": ["Dynamic energy", "Creative vision", "Natural charisma"],
+      "challenges": ["Can be impulsive", "May burn out quickly", "Needs balance"]
+    },
+    "wood_earth": {
+      "name": "Wood-Earth Grounded Type",
+      "characteristics": "Practical leadership with steady growth",
+      "strengths": ["Stable growth", "Practical vision", "Reliable leadership"],
+      "challenges": ["May be too cautious", "Can resist change", "Needs flexibility"]
+    },
+    "fire_earth": {
+      "name": "Fire-Earth Warm Type",
+      "characteristics": "Nurturing enthusiasm with stable foundation",
+      "strengths": ["Warm leadership", "Stable enthusiasm", "Good support network"],
+      "challenges": ["May worry too much", "Can be overly protective", "Needs boundaries"]
+    },
+    "metal_water": {
+      "name": "Metal-Water Flowing Type",
+      "characteristics": "Refined wisdom with adaptive intelligence",
+      "strengths": ["Deep wisdom", "Refined judgment", "Adaptive strategies"],
+      "challenges": ["May be too reserved", "Can be overly critical", "Needs expression"]
+    },
+    "earth_metal": {
+      "name": "Earth-Metal Solid Type",
+      "characteristics": "Practical precision with stable foundation",
+      "strengths": ["Solid reliability", "Precise execution", "Stable systems"],
+      "challenges": ["May be inflexible", "Can be overly rigid", "Needs creativity"]
+    }
+  },
+  "analysis_methods": {
+    "facial_mapping": {
+      "forehead": "Wood element dominance",
+      "eyes_temples": "Fire element expression",
+      "cheeks_nose": "Earth element stability",
+      "nose_bridge": "Metal element refinement",
+      "chin_jaw": "Water element depth"
+    },
+    "proportional_analysis": {
+      "face_length_width_ratio": "Constitutional type indicator",
+      "upper_middle_lower_thirds": "Element balance assessment",
+      "feature_prominence": "Element strength measurement",
+      "symmetry_balance": "Overall harmony evaluation"
+    },
+    "color_luster_analysis": {
+      "healthy_glow": "Strong constitutional energy",
+      "dull_appearance": "Weakened element energy",
+      "color_variations": "Element imbalances",
+      "clarity_brightness": "Overall vitality assessment"
+    }
+  },
+  "traditional_wisdom": [
+    "The Five Elements are the foundation of all constitutional analysis",
+    "Each person contains all five elements in different proportions",
+    "Constitutional balance leads to optimal health and happiness",
+    "Understanding your constitution guides lifestyle choices",
+    "Facial features reflect internal constitutional patterns"
+  ]
+}

@@ -1,0 +1,935 @@
+{
+  "schema_version": "1.0",
+  "assumptions": [
+    "Supabase project and Vercel deployment targets are available",
+    "Hospitable API access token and webhook credentials will be provided",
+    "Turno integration is mediated exclusively through Hospitable",
+    "DesignSpec.md is the source of truth for UI layouts and components",
+    "Engineering team uses Bun, Next.js 14 App Router, Tailwind, Zustand, React Query"
+  ],
+  "risks": [
+    "External API rate limits or schema changes may disrupt sync reliability",
+    "RLS policy misconfigurations could block access or leak data",
+    "Realtime subscriptions and optimistic updates may create race conditions",
+    "Large dataset performance may require additional indexing and caching"
+  ],
+  "phases": [
+    {
+      "phase_id": "P0",
+      "name": "Foundation & Architecture",
+      "objective": "Establish project scaffolding, architecture alignment, and platform readiness.",
+      "sprints": [
+        {
+          "sprint_id": "S1",
+          "duration_weeks": 2,
+          "focus": "Repo setup, architecture alignment, and platform foundations",
+          "tasks": [
+            {
+              "id": "P0-S1-01",
+              "title": "Confirm requirements and scope against DesignSpec and ProjectArchitecture",
+              "area": "product",
+              "owner_role": "Tech Lead",
+              "est_hours": 6,
+              "dependencies": [],
+              "deliverable": "Scope confirmation notes and feature checklist",
+              "acceptance": "Checklist maps every major feature to a sprint"
+            },
+            {
+              "id": "P0-S1-02",
+              "title": "Define codebase module boundaries and folder structure",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 6,
+              "dependencies": ["P0-S1-01"],
+              "deliverable": "Documented package/layout structure aligned with architecture patterns",
+              "acceptance": "Structure supports API, services, repositories, and UI separation"
+            },
+            {
+              "id": "P0-S1-03",
+              "title": "Bootstrap Supabase local dev and environment configuration",
+              "area": "infra",
+              "owner_role": "DevOps",
+              "est_hours": 8,
+              "dependencies": ["P0-S1-01"],
+              "deliverable": "Working local Supabase project and env file template",
+              "acceptance": "Local stack starts successfully and connects from Next.js"
+            },
+            {
+              "id": "P0-S1-04",
+              "title": "Establish linting, formatting, and basic CI pipeline",
+              "area": "infra",
+              "owner_role": "DevOps",
+              "est_hours": 8,
+              "dependencies": ["P0-S1-01"],
+              "deliverable": "CI workflow running lint and tests on PRs",
+              "acceptance": "CI fails on lint/test violations"
+            },
+            {
+              "id": "P0-S1-05",
+              "title": "Create initial DB schema blueprint from architecture mapping",
+              "area": "data",
+              "owner_role": "Backend Eng",
+              "est_hours": 10,
+              "dependencies": ["P0-S1-01"],
+              "deliverable": "Schema blueprint for core entities and relationships",
+              "acceptance": "Blueprint includes properties, reservations, cleaning_jobs, tasks, inventory, users, roles, audit_log"
+            },
+            {
+              "id": "P0-S1-06",
+              "title": "Design RBAC model and RLS policy plan",
+              "area": "data",
+              "owner_role": "Backend Eng",
+              "est_hours": 8,
+              "dependencies": ["P0-S1-05"],
+              "deliverable": "RBAC matrix and RLS policy outline",
+              "acceptance": "Policies cover Admin, Manager, Staff, Cleaner, Owner roles"
+            },
+            {
+              "id": "P0-S1-07",
+              "title": "Define API error format and error code mapping",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 6,
+              "dependencies": ["P0-S1-01"],
+              "deliverable": "Standard error response model and code list",
+              "acceptance": "Matches .context/errors.md format and prefixes"
+            },
+            {
+              "id": "P0-S1-08",
+              "title": "Implement API header validation middleware skeleton",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 6,
+              "dependencies": ["P0-S1-07"],
+              "deliverable": "Middleware enforcing required headers and request IDs",
+              "acceptance": "Requests without required headers receive standardized errors"
+            },
+            {
+              "id": "P0-S1-09",
+              "title": "Set up logging/audit strategy and log schemas",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 8,
+              "dependencies": ["P0-S1-05"],
+              "deliverable": "Audit log schema and logging conventions",
+              "acceptance": "Audit log entries capture actor, action, resource, timestamp"
+            },
+            {
+              "id": "P0-S1-10",
+              "title": "Configure Tailwind tokens from DesignSpec",
+              "area": "frontend",
+              "owner_role": "Frontend Eng",
+              "est_hours": 8,
+              "dependencies": ["P0-S1-01"],
+              "deliverable": "Tailwind config with colors, typography, spacing, shadows",
+              "acceptance": "Tokens map to DesignSpec sections 2.x"
+            },
+            {
+              "id": "P0-S1-11",
+              "title": "Establish base Next.js App Router layout structure",
+              "area": "frontend",
+              "owner_role": "Frontend Eng",
+              "est_hours": 6,
+              "dependencies": ["P0-S1-10"],
+              "deliverable": "Root layout with app shell placeholders",
+              "acceptance": "Layout renders sidebar/header slots"
+            },
+            {
+              "id": "P0-S1-12",
+              "title": "Set up feature flag framework and naming conventions",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 6,
+              "dependencies": ["P0-S1-01"],
+              "deliverable": "Feature flag registry and evaluation helper",
+              "acceptance": "Flags follow .context/feature-flags.md"
+            },
+            {
+              "id": "P0-S1-13",
+              "title": "Define testing harness structure and tooling",
+              "area": "qa",
+              "owner_role": "QA",
+              "est_hours": 6,
+              "dependencies": ["P0-S1-04"],
+              "deliverable": "tests/ directory scaffold with unit/integration/e2e",
+              "acceptance": "Test runner executes a sample test in CI"
+            },
+            {
+              "id": "P0-S1-14",
+              "title": "Create API client service abstraction contract",
+              "area": "frontend",
+              "owner_role": "Frontend Eng",
+              "est_hours": 6,
+              "dependencies": ["P0-S1-08"],
+              "deliverable": "Typed API client interface for frontend use",
+              "acceptance": "Client supports auth headers and error mapping"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "phase_id": "P1",
+      "name": "Data Layer & Integrations",
+      "objective": "Build core schema, policies, and external sync foundations.",
+      "sprints": [
+        {
+          "sprint_id": "S2",
+          "duration_weeks": 2,
+          "focus": "Schema migrations, RLS, and external sync foundations",
+          "tasks": [
+            {
+              "id": "P1-S2-01",
+              "title": "Implement migrations for core entities",
+              "area": "data",
+              "owner_role": "Backend Eng",
+              "est_hours": 12,
+              "dependencies": ["P0-S1-05"],
+              "deliverable": "Supabase migrations for properties, reservations, cleaning_jobs",
+              "acceptance": "Tables created with required fields and constraints"
+            },
+            {
+              "id": "P1-S2-02",
+              "title": "Add migrations for tasks, inventory, owners, users, roles",
+              "area": "data",
+              "owner_role": "Backend Eng",
+              "est_hours": 12,
+              "dependencies": ["P1-S2-01"],
+              "deliverable": "Supabase migrations for ops and RBAC tables",
+              "acceptance": "RBAC tables connect users, roles, and permissions"
+            },
+            {
+              "id": "P1-S2-03",
+              "title": "Add audit_log, sync_log, notifications, user_sessions tables",
+              "area": "data",
+              "owner_role": "Backend Eng",
+              "est_hours": 10,
+              "dependencies": ["P1-S2-02"],
+              "deliverable": "Migrations for system logging and notifications",
+              "acceptance": "Audit and sync logs include indexes for filtering"
+            },
+            {
+              "id": "P1-S2-04",
+              "title": "Implement RLS policies for all primary tables",
+              "area": "data",
+              "owner_role": "Backend Eng",
+              "est_hours": 12,
+              "dependencies": ["P0-S1-06", "P1-S2-03"],
+              "deliverable": "RLS policies aligned to RBAC matrix",
+              "acceptance": "Policies allow/deny as defined in ProjectArchitecture"
+            },
+            {
+              "id": "P1-S2-05",
+              "title": "Create indexes and performance hints for hot queries",
+              "area": "data",
+              "owner_role": "Backend Eng",
+              "est_hours": 8,
+              "dependencies": ["P1-S2-03"],
+              "deliverable": "Index migrations for reservations, tasks, cleaning_jobs",
+              "acceptance": "Query plans show index usage for primary filters"
+            },
+            {
+              "id": "P1-S2-06",
+              "title": "Seed roles and permissions with initial data",
+              "area": "data",
+              "owner_role": "Backend Eng",
+              "est_hours": 6,
+              "dependencies": ["P1-S2-02"],
+              "deliverable": "Seed script for roles and permissions",
+              "acceptance": "Roles match RBAC hierarchy in ProjectArchitecture"
+            },
+            {
+              "id": "P1-S2-07",
+              "title": "Generate typed database definitions from schema",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 4,
+              "dependencies": ["P1-S2-03"],
+              "deliverable": "Generated TypeScript types from Supabase",
+              "acceptance": "Types are used in API services"
+            },
+            {
+              "id": "P1-S2-08",
+              "title": "Create Hospitable API client wrapper with rate limiting",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 10,
+              "dependencies": ["P0-S1-02"],
+              "deliverable": "HTTP client module for Hospitable v2",
+              "acceptance": "Client supports auth headers and retries"
+            },
+            {
+              "id": "P1-S2-09",
+              "title": "Implement hospitable-sync edge function skeleton",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 10,
+              "dependencies": ["P1-S2-01", "P1-S2-08"],
+              "deliverable": "Edge function entry with logging and sync loop",
+              "acceptance": "Function runs locally and logs sync start/end"
+            },
+            {
+              "id": "P1-S2-10",
+              "title": "Implement webhook-handler edge function skeleton",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 8,
+              "dependencies": ["P1-S2-03", "P1-S2-08"],
+              "deliverable": "Webhook handler entry with event routing",
+              "acceptance": "Handler records events in sync_log"
+            },
+            {
+              "id": "P1-S2-11",
+              "title": "Add webhook signature verification and replay protection",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 6,
+              "dependencies": ["P1-S2-10"],
+              "deliverable": "Verification middleware",
+              "acceptance": "Invalid signatures return 401 with error code"
+            },
+            {
+              "id": "P1-S2-12",
+              "title": "Implement turno-sync bridge logic via Hospitable",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 8,
+              "dependencies": ["P1-S2-10"],
+              "deliverable": "Cleaning updates from Hospitable mapped to cleaning_jobs",
+              "acceptance": "Cleaning status updates persist in DB"
+            },
+            {
+              "id": "P1-S2-13",
+              "title": "Configure cron schedule for background jobs",
+              "area": "infra",
+              "owner_role": "DevOps",
+              "est_hours": 6,
+              "dependencies": ["P1-S2-09"],
+              "deliverable": "Cron configuration for sync/report/cleanup",
+              "acceptance": "Scheduled jobs visible in Supabase or platform config"
+            },
+            {
+              "id": "P1-S2-14",
+              "title": "Create daily-report, notifications, analytics, cleanup function stubs",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 10,
+              "dependencies": ["P1-S2-13"],
+              "deliverable": "Edge function stubs with logging",
+              "acceptance": "Functions deploy without runtime errors"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "phase_id": "P2",
+      "name": "API & Services",
+      "objective": "Deliver backend endpoints, business logic, and audit instrumentation.",
+      "sprints": [
+        {
+          "sprint_id": "S3",
+          "duration_weeks": 2,
+          "focus": "API routes, services, and business logic",
+          "tasks": [
+            {
+              "id": "P2-S3-01",
+              "title": "Implement auth endpoints (login/logout/refresh/me)",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 10,
+              "dependencies": ["P0-S1-08", "P1-S2-02"],
+              "deliverable": "Auth route handlers wired to Supabase Auth",
+              "acceptance": "JWT issuance and refresh flows pass integration tests"
+            },
+            {
+              "id": "P2-S3-02",
+              "title": "Build properties endpoints with filtering and pagination",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 12,
+              "dependencies": ["P1-S2-01"],
+              "deliverable": "GET /properties, GET /properties/:id",
+              "acceptance": "Endpoints support filters and pagination headers"
+            },
+            {
+              "id": "P2-S3-03",
+              "title": "Add property linked endpoints (reservations, tasks, inventory)",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 8,
+              "dependencies": ["P2-S3-02", "P1-S2-02"],
+              "deliverable": "Property subresource endpoints",
+              "acceptance": "Linked data scopes to property id"
+            },
+            {
+              "id": "P2-S3-04",
+              "title": "Implement reservations endpoints and notes update",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 10,
+              "dependencies": ["P1-S2-01"],
+              "deliverable": "GET /reservations, GET /reservations/:id, PATCH notes",
+              "acceptance": "Notes update is audited and RLS-protected"
+            },
+            {
+              "id": "P2-S3-05",
+              "title": "Implement cleaning jobs endpoints and status updates",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 10,
+              "dependencies": ["P1-S2-01", "P1-S2-12"],
+              "deliverable": "GET /cleaning, GET /cleaning/:id, PATCH status",
+              "acceptance": "Status changes write to audit_log"
+            },
+            {
+              "id": "P2-S3-06",
+              "title": "Implement task CRUD and completion endpoints",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 12,
+              "dependencies": ["P1-S2-02"],
+              "deliverable": "Tasks API with create/update/delete/complete",
+              "acceptance": "Soft delete and completion behave as specified"
+            },
+            {
+              "id": "P2-S3-07",
+              "title": "Implement inventory list, alerts, and update endpoints",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 8,
+              "dependencies": ["P1-S2-02"],
+              "deliverable": "Inventory endpoints including low stock alerts",
+              "acceptance": "Alerts filter by threshold and property"
+            },
+            {
+              "id": "P2-S3-08",
+              "title": "Implement admin users management endpoints",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 10,
+              "dependencies": ["P1-S2-02"],
+              "deliverable": "User CRUD endpoints with role assignment",
+              "acceptance": "Admin-only access enforced by RLS and middleware"
+            },
+            {
+              "id": "P2-S3-09",
+              "title": "Implement roles management endpoints",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 8,
+              "dependencies": ["P1-S2-06"],
+              "deliverable": "Roles list/create/update API",
+              "acceptance": "Role changes update permission mappings"
+            },
+            {
+              "id": "P2-S3-10",
+              "title": "Implement audit log querying endpoint",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 6,
+              "dependencies": ["P1-S2-03"],
+              "deliverable": "GET /audit with filter params",
+              "acceptance": "Supports date, user, action, resource filters"
+            },
+            {
+              "id": "P2-S3-11",
+              "title": "Implement sync status and manual trigger endpoints",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 6,
+              "dependencies": ["P1-S2-09"],
+              "deliverable": "POST /sync/hospitable, GET /sync/status",
+              "acceptance": "Manual trigger records sync_log entry"
+            },
+            {
+              "id": "P2-S3-12",
+              "title": "Add request validation and standardized error responses",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 10,
+              "dependencies": ["P0-S1-07"],
+              "deliverable": "Validation middleware and error mapper",
+              "acceptance": "All endpoints return consistent error format"
+            },
+            {
+              "id": "P2-S3-13",
+              "title": "Add pagination, sorting, and filtering utilities",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 8,
+              "dependencies": ["P0-S1-08"],
+              "deliverable": "Reusable query helpers for list endpoints",
+              "acceptance": "List endpoints emit Link and X-Total-Count headers"
+            },
+            {
+              "id": "P2-S3-14",
+              "title": "Instrument domain events and audit logging hooks",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 8,
+              "dependencies": ["P0-S1-09"],
+              "deliverable": "Event publish hooks for key domain mutations",
+              "acceptance": "Create/update/delete actions emit audit events"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "phase_id": "P3",
+      "name": "Frontend & UX",
+      "objective": "Deliver UI foundation and all feature pages per DesignSpec.",
+      "sprints": [
+        {
+          "sprint_id": "S4",
+          "duration_weeks": 2,
+          "focus": "Frontend foundation, shared components, and auth",
+          "tasks": [
+            {
+              "id": "P3-S4-01",
+              "title": "Implement app shell with sidebar and header navigation",
+              "area": "frontend",
+              "owner_role": "Frontend Eng",
+              "est_hours": 10,
+              "dependencies": ["P0-S1-11"],
+              "deliverable": "Responsive app shell with navigation slots",
+              "acceptance": "Sidebar items reflect DesignSpec nav structure"
+            },
+            {
+              "id": "P3-S4-02",
+              "title": "Add auth session provider and route protection",
+              "area": "frontend",
+              "owner_role": "Frontend Eng",
+              "est_hours": 10,
+              "dependencies": ["P2-S3-01"],
+              "deliverable": "Session context and protected routes",
+              "acceptance": "Unauthenticated users redirected to login"
+            },
+            {
+              "id": "P3-S4-03",
+              "title": "Implement RBAC-based UI gating",
+              "area": "frontend",
+              "owner_role": "Frontend Eng",
+              "est_hours": 6,
+              "dependencies": ["P3-S4-02"],
+              "deliverable": "Permission-aware navigation and page guards",
+              "acceptance": "Admin-only pages hidden for non-admin users"
+            },
+            {
+              "id": "P3-S4-04",
+              "title": "Wire API client with React Query",
+              "area": "frontend",
+              "owner_role": "Frontend Eng",
+              "est_hours": 8,
+              "dependencies": ["P0-S1-14", "P2-S3-13"],
+              "deliverable": "Query/mutation setup with caching defaults",
+              "acceptance": "Queries share standardized error handling"
+            },
+            {
+              "id": "P3-S4-05",
+              "title": "Implement global UI state with Zustand",
+              "area": "frontend",
+              "owner_role": "Frontend Eng",
+              "est_hours": 6,
+              "dependencies": ["P0-S1-11"],
+              "deliverable": "Stores for filters, modals, and UI state",
+              "acceptance": "State shared across pages without prop drilling"
+            },
+            {
+              "id": "P3-S4-06",
+              "title": "Build button, input, select, and form components",
+              "area": "frontend",
+              "owner_role": "Frontend Eng",
+              "est_hours": 12,
+              "dependencies": ["P0-S1-10"],
+              "deliverable": "Reusable form components with variants",
+              "acceptance": "Components match DesignSpec and UI patterns"
+            },
+            {
+              "id": "P3-S4-07",
+              "title": "Build data table and list components",
+              "area": "frontend",
+              "owner_role": "Frontend Eng",
+              "est_hours": 10,
+              "dependencies": ["P3-S4-06"],
+              "deliverable": "Data table with sorting and pagination UI",
+              "acceptance": "Tables support empty/loading states"
+            },
+            {
+              "id": "P3-S4-08",
+              "title": "Build card, badge, and stat components",
+              "area": "frontend",
+              "owner_role": "Frontend Eng",
+              "est_hours": 8,
+              "dependencies": ["P3-S4-06"],
+              "deliverable": "Cards and badges for dashboard and boards",
+              "acceptance": "Components match DesignSpec tokens"
+            },
+            {
+              "id": "P3-S4-09",
+              "title": "Implement modal and dialog system",
+              "area": "frontend",
+              "owner_role": "Frontend Eng",
+              "est_hours": 8,
+              "dependencies": ["P3-S4-06"],
+              "deliverable": "Modal framework with accessibility support",
+              "acceptance": "Focus trap and ESC to close are supported"
+            },
+            {
+              "id": "P3-S4-10",
+              "title": "Add toast and notification UI pattern",
+              "area": "frontend",
+              "owner_role": "Frontend Eng",
+              "est_hours": 6,
+              "dependencies": ["P3-S4-06"],
+              "deliverable": "Toast system for success/error messages",
+              "acceptance": "Notifications appear on mutation results"
+            },
+            {
+              "id": "P3-S4-11",
+              "title": "Implement loading, error, and empty states",
+              "area": "frontend",
+              "owner_role": "Frontend Eng",
+              "est_hours": 6,
+              "dependencies": ["P3-S4-04"],
+              "deliverable": "Standard UI states across components",
+              "acceptance": "All pages show consistent loading and error UI"
+            },
+            {
+              "id": "P3-S4-12",
+              "title": "Add breadcrumb and user menu components",
+              "area": "frontend",
+              "owner_role": "Frontend Eng",
+              "est_hours": 6,
+              "dependencies": ["P3-S4-01"],
+              "deliverable": "Breadcrumbs and user dropdown menu",
+              "acceptance": "Navigation matches DesignSpec structure"
+            },
+            {
+              "id": "P3-S4-13",
+              "title": "Implement realtime subscription utilities",
+              "area": "frontend",
+              "owner_role": "Frontend Eng",
+              "est_hours": 8,
+              "dependencies": ["P1-S2-01"],
+              "deliverable": "Realtime hooks for reservations, cleaning, tasks",
+              "acceptance": "Updates render without page reload"
+            },
+            {
+              "id": "P3-S4-14",
+              "title": "Apply accessibility baseline (keyboard, ARIA, contrast)",
+              "area": "frontend",
+              "owner_role": "Frontend Eng",
+              "est_hours": 8,
+              "dependencies": ["P3-S4-06"],
+              "deliverable": "Accessibility fixes across shared components",
+              "acceptance": "Key components pass WCAG 2.1 AA checks"
+            }
+          ]
+        },
+        {
+          "sprint_id": "S5",
+          "duration_weeks": 2,
+          "focus": "Feature pages per DesignSpec",
+          "tasks": [
+            {
+              "id": "P3-S5-01",
+              "title": "Implement Dashboard Home page",
+              "area": "frontend",
+              "owner_role": "Frontend Eng",
+              "est_hours": 12,
+              "dependencies": ["P3-S4-07", "P2-S3-02", "P2-S3-04", "P2-S3-05", "P2-S3-06"],
+              "deliverable": "Dashboard page with stats, operations, cleaning board, tasks",
+              "acceptance": "Dashboard matches DesignSpec 4.1 layout"
+            },
+            {
+              "id": "P3-S5-02",
+              "title": "Implement Properties list page with filters",
+              "area": "frontend",
+              "owner_role": "Frontend Eng",
+              "est_hours": 10,
+              "dependencies": ["P2-S3-02", "P3-S4-07"],
+              "deliverable": "Properties list with search and filter controls",
+              "acceptance": "Filters update query results and pagination"
+            },
+            {
+              "id": "P3-S5-03",
+              "title": "Implement Property detail view",
+              "area": "frontend",
+              "owner_role": "Frontend Eng",
+              "est_hours": 10,
+              "dependencies": ["P2-S3-02", "P2-S3-03", "P3-S4-09"],
+              "deliverable": "Property detail modal/page with reservations and tasks",
+              "acceptance": "Detail view matches DesignSpec 4.2"
+            },
+            {
+              "id": "P3-S5-04",
+              "title": "Implement Reservations list page",
+              "area": "frontend",
+              "owner_role": "Frontend Eng",
+              "est_hours": 10,
+              "dependencies": ["P2-S3-04", "P3-S4-07"],
+              "deliverable": "Reservations list with tabs and filters",
+              "acceptance": "Tabs and filters match DesignSpec 4.3"
+            },
+            {
+              "id": "P3-S5-05",
+              "title": "Implement Reservation detail view",
+              "area": "frontend",
+              "owner_role": "Frontend Eng",
+              "est_hours": 10,
+              "dependencies": ["P2-S3-04", "P3-S4-09"],
+              "deliverable": "Reservation detail with timeline and notes",
+              "acceptance": "Detail view matches DesignSpec 4.3"
+            },
+            {
+              "id": "P3-S5-06",
+              "title": "Implement Cleaning Board (kanban)",
+              "area": "frontend",
+              "owner_role": "Frontend Eng",
+              "est_hours": 14,
+              "dependencies": ["P2-S3-05", "P3-S4-08"],
+              "deliverable": "Drag-and-drop cleaning board",
+              "acceptance": "Statuses update on drag and persist to API"
+            },
+            {
+              "id": "P3-S5-07",
+              "title": "Implement Cleaning detail modal",
+              "area": "frontend",
+              "owner_role": "Frontend Eng",
+              "est_hours": 10,
+              "dependencies": ["P3-S5-06", "P3-S4-09"],
+              "deliverable": "Cleaning job modal with checklist and photos",
+              "acceptance": "Modal matches DesignSpec 4.4"
+            },
+            {
+              "id": "P3-S5-08",
+              "title": "Implement Tasks page list and filters",
+              "area": "frontend",
+              "owner_role": "Frontend Eng",
+              "est_hours": 10,
+              "dependencies": ["P2-S3-06", "P3-S4-07"],
+              "deliverable": "Tasks list with tabs, filters, bulk actions",
+              "acceptance": "List matches DesignSpec 4.5"
+            },
+            {
+              "id": "P3-S5-09",
+              "title": "Implement Task create/edit modal",
+              "area": "frontend",
+              "owner_role": "Frontend Eng",
+              "est_hours": 10,
+              "dependencies": ["P3-S5-08", "P3-S4-09"],
+              "deliverable": "Task creation and edit modal",
+              "acceptance": "Form fields match DesignSpec 4.5"
+            },
+            {
+              "id": "P3-S5-10",
+              "title": "Implement Inventory page and alerts",
+              "area": "frontend",
+              "owner_role": "Frontend Eng",
+              "est_hours": 8,
+              "dependencies": ["P2-S3-07", "P3-S4-07"],
+              "deliverable": "Inventory list with low-stock alerts",
+              "acceptance": "Alerts render as in DesignSpec 4.6"
+            },
+            {
+              "id": "P3-S5-11",
+              "title": "Implement Users management page",
+              "area": "frontend",
+              "owner_role": "Frontend Eng",
+              "est_hours": 8,
+              "dependencies": ["P2-S3-08", "P3-S4-07"],
+              "deliverable": "User list with filters and add user flow",
+              "acceptance": "Page matches DesignSpec 4.7"
+            },
+            {
+              "id": "P3-S5-12",
+              "title": "Implement Roles management page",
+              "area": "frontend",
+              "owner_role": "Frontend Eng",
+              "est_hours": 8,
+              "dependencies": ["P2-S3-09", "P3-S4-07"],
+              "deliverable": "Roles list and edit flow",
+              "acceptance": "Page matches DesignSpec 4.8"
+            },
+            {
+              "id": "P3-S5-13",
+              "title": "Implement Audit Log page",
+              "area": "frontend",
+              "owner_role": "Frontend Eng",
+              "est_hours": 8,
+              "dependencies": ["P2-S3-10", "P3-S4-07"],
+              "deliverable": "Audit log filters and table",
+              "acceptance": "Page matches DesignSpec 4.9"
+            },
+            {
+              "id": "P3-S5-14",
+              "title": "Implement Integrations settings placeholder",
+              "area": "frontend",
+              "owner_role": "Frontend Eng",
+              "est_hours": 6,
+              "dependencies": ["P3-S4-01"],
+              "deliverable": "Admin integrations page skeleton",
+              "acceptance": "Page routes and layout align with settings nav"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "phase_id": "P4",
+      "name": "Quality, Performance & Release",
+      "objective": "Harden, test, and deploy the system.",
+      "sprints": [
+        {
+          "sprint_id": "S6",
+          "duration_weeks": 2,
+          "focus": "Testing, performance tuning, and go-live",
+          "tasks": [
+            {
+              "id": "P4-S6-01",
+              "title": "Implement unit tests for core services",
+              "area": "qa",
+              "owner_role": "QA",
+              "est_hours": 12,
+              "dependencies": ["P2-S3-06"],
+              "deliverable": "Unit tests for task/reservation/cleaning services",
+              "acceptance": "Unit tests cover happy-path and error cases"
+            },
+            {
+              "id": "P4-S6-02",
+              "title": "Implement integration tests for API endpoints",
+              "area": "qa",
+              "owner_role": "QA",
+              "est_hours": 12,
+              "dependencies": ["P2-S3-01", "P2-S3-06"],
+              "deliverable": "Integration test suite for API routes",
+              "acceptance": "Tests validate auth, errors, and response shapes"
+            },
+            {
+              "id": "P4-S6-03",
+              "title": "Add migration test suite and CI hook",
+              "area": "qa",
+              "owner_role": "QA",
+              "est_hours": 8,
+              "dependencies": ["P1-S2-03", "P0-S1-04"],
+              "deliverable": "Migration tests running in CI",
+              "acceptance": "CI fails if migrations are invalid or out of order"
+            },
+            {
+              "id": "P4-S6-04",
+              "title": "Implement E2E tests for critical flows",
+              "area": "qa",
+              "owner_role": "QA",
+              "est_hours": 14,
+              "dependencies": ["P3-S5-01", "P3-S5-08"],
+              "deliverable": "E2E tests for login, dashboard, and task flow",
+              "acceptance": "E2E suite runs in CI with stable results"
+            },
+            {
+              "id": "P4-S6-05",
+              "title": "Harden security headers and auth edge cases",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 8,
+              "dependencies": ["P2-S3-01"],
+              "deliverable": "Security headers and auth safeguards",
+              "acceptance": "Headers match security guidelines and audits"
+            },
+            {
+              "id": "P4-S6-06",
+              "title": "Optimize database queries and indexes",
+              "area": "data",
+              "owner_role": "Backend Eng",
+              "est_hours": 10,
+              "dependencies": ["P1-S2-05", "P2-S3-13"],
+              "deliverable": "Query optimization changes",
+              "acceptance": "Critical list pages render within target latency"
+            },
+            {
+              "id": "P4-S6-07",
+              "title": "Implement caching strategy for high-traffic endpoints",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 8,
+              "dependencies": ["P2-S3-13"],
+              "deliverable": "Caching layer for list endpoints",
+              "acceptance": "Cache invalidation on writes verified"
+            },
+            {
+              "id": "P4-S6-08",
+              "title": "Add monitoring and alerting integrations",
+              "area": "infra",
+              "owner_role": "DevOps",
+              "est_hours": 8,
+              "dependencies": ["P0-S1-09"],
+              "deliverable": "Monitoring dashboard and alert rules",
+              "acceptance": "Alerts fire on failed sync and error rate spikes"
+            },
+            {
+              "id": "P4-S6-09",
+              "title": "Validate realtime subscriptions and optimistic updates",
+              "area": "frontend",
+              "owner_role": "Frontend Eng",
+              "est_hours": 8,
+              "dependencies": ["P3-S4-13", "P3-S5-06"],
+              "deliverable": "Realtime UX validation and fixes",
+              "acceptance": "No duplicate or stale state after updates"
+            },
+            {
+              "id": "P4-S6-10",
+              "title": "Finalize daily-report and notifications functions",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 10,
+              "dependencies": ["P1-S2-14"],
+              "deliverable": "Daily ops summary and overdue alerts",
+              "acceptance": "Reports generated on schedule"
+            },
+            {
+              "id": "P4-S6-11",
+              "title": "Configure deployment pipeline and env validation",
+              "area": "infra",
+              "owner_role": "DevOps",
+              "est_hours": 8,
+              "dependencies": ["P0-S1-04"],
+              "deliverable": "Vercel deployment with env checks",
+              "acceptance": "Deploys fail if required env vars missing"
+            },
+            {
+              "id": "P4-S6-12",
+              "title": "Create runbooks for sync, incidents, and migrations",
+              "area": "product",
+              "owner_role": "Tech Lead",
+              "est_hours": 8,
+              "dependencies": ["P1-S2-09", "P1-S2-03"],
+              "deliverable": "Operational runbooks",
+              "acceptance": "Runbooks cover incident response and rollback"
+            },
+            {
+              "id": "P4-S6-13",
+              "title": "Execute performance and load verification",
+              "area": "qa",
+              "owner_role": "QA",
+              "est_hours": 8,
+              "dependencies": ["P4-S6-06", "P4-S6-07"],
+              "deliverable": "Performance test results and tuning report",
+              "acceptance": "Meets DesignSpec performance targets"
+            },
+            {
+              "id": "P4-S6-14",
+              "title": "Go-live checklist and data backfill plan",
+              "area": "product",
+              "owner_role": "Tech Lead",
+              "est_hours": 6,
+              "dependencies": ["P4-S6-11"],
+              "deliverable": "Release checklist and data backfill steps",
+              "acceptance": "Checklist approved and ready for launch"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,48 @@
+{
+  "templates_info": {
+    "name": "Sacred Geometry Templates",
+    "description": "Mathematical templates for sacred geometric forms",
+    "source": "Traditional sacred geometry"
+  },
+  "templates": {
+    "flower_of_life": {
+      "name": "Flower of Life",
+      "description": "Ancient symbol of creation and life",
+      "circles": 19,
+      "radius_ratio": 1.0,
+      "construction": "Overlapping circles in hexagonal pattern",
+      "meaning": "Unity of all life and creation"
+    },
+    "metatrons_cube": {
+      "name": "Metatron's Cube",
+      "description": "Contains all five Platonic solids",
+      "vertices": 13,
+      "lines": 78,
+      "construction": "Connect centers of Flower of Life circles",
+      "meaning": "Divine blueprint of creation"
+    },
+    "golden_spiral": {
+      "name": "Golden Spiral",
+      "description": "Spiral based on golden ratio",
+      "ratio": 1.618033988749,
+      "construction": "Fibonacci rectangle spiral",
+      "meaning": "Natural growth and harmony"
+    },
+    "vesica_piscis": {
+      "name": "Vesica Piscis",
+      "description": "Intersection of two circles",
+      "circles": 2,
+      "overlap_ratio": 0.5,
+      "construction": "Two circles with centers on each other's circumference",
+      "meaning": "Divine feminine and creation"
+    },
+    "sri_yantra": {
+      "name": "Sri Yantra",
+      "description": "Sacred Hindu geometric form",
+      "triangles": 9,
+      "circles": 3,
+      "construction": "Interlocking triangles and circles",
+      "meaning": "Divine cosmic energy"
+    }
+  }
+}

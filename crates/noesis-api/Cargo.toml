@@ -1,0 +1,30 @@
+[package]
+name = "noesis-api"
+version = "0.1.0"
+edition = "2021"
+description = "HTTP API server for the Tryambakam Noesis platform"
+
+[[bin]]
+name = "noesis-server"
+path = "src/main.rs"
+
+[dependencies]
+noesis-core = { path = "../noesis-core" }
+noesis-cache = { path = "../noesis-cache" }
+noesis-auth = { path = "../noesis-auth" }
+noesis-metrics = { path = "../noesis-metrics" }
+noesis-orchestrator = { path = "../noesis-orchestrator" }
+noesis-bridge = { path = "../noesis-bridge" }
+noesis-witness = { path = "../noesis-witness" }
+engine-panchanga = { path = "../engine-panchanga" }
+engine-numerology = { path = "../engine-numerology" }
+engine-biorhythm = { path = "../engine-biorhythm" }
+axum = { version = "0.7", features = ["json", "macros"] }
+tokio = { version = "1.0", features = ["full"] }
+tower = "0.5"
+tower-http = { version = "0.6", features = ["cors", "trace"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+chrono = { version = "0.4", features = ["serde"] }
+tracing = "0.1"
+tracing-subscriber = "0.3"

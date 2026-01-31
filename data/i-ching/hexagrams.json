@@ -1,0 +1,1906 @@
+{
+  "hexagram_info": {
+    "name": "I-Ching Hexagrams",
+    "description": "The 64 hexagrams of the I-Ching with meanings and interpretations",
+    "total_hexagrams": 64,
+    "source": "Traditional I-Ching wisdom"
+  },
+  "hexagrams": {
+    "1": {
+      "number": 1,
+      "name": "The Creative",
+      "chinese": "乾 (Qián)",
+      "trigrams": [
+        "Heaven",
+        "Heaven"
+      ],
+      "binary": "111111",
+      "keywords": [
+        "creativity",
+        "strength",
+        "leadership",
+        "initiative"
+      ],
+      "judgment": "The Creative works sublime success, furthering through perseverance.",
+      "image": "The movement of heaven is full of power. Thus the superior man makes himself strong and untiring.",
+      "meaning": "Pure creative energy, the power of the heavens, leadership and initiative. This hexagram represents the masculine principle, strength, and the ability to create and lead.",
+      "divination": "Great success is possible through persistent effort. Take the lead and act with confidence.",
+      "changing_lines": {
+        "1": "Hidden dragon. Do not act.",
+        "2": "Dragon appearing in the field. It furthers one to see the great man.",
+        "3": "All day long the superior man is creatively active. At nightfall his mind is still beset with cares. Danger. No blame.",
+        "4": "Wavering flight over the depths. No blame.",
+        "5": "Flying dragon in the heavens. It furthers one to see the great man.",
+        "6": "Arrogant dragon will have cause to repent."
+      }
+    },
+    "2": {
+      "number": 2,
+      "name": "The Receptive",
+      "chinese": "坤 (Kūn)",
+      "trigrams": [
+        "Earth",
+        "Earth"
+      ],
+      "binary": "000000",
+      "keywords": [
+        "receptivity",
+        "yielding",
+        "nurturing",
+        "devotion"
+      ],
+      "judgment": "The Receptive brings about sublime success, furthering through the perseverance of a mare.",
+      "image": "The earth's condition is receptive devotion. Thus the superior man who has breadth of character carries the outer world.",
+      "meaning": "Pure receptive energy, the power of the earth, yielding and nurturing. This hexagram represents the feminine principle, devotion, and the ability to support and nurture.",
+      "divination": "Success comes through receptivity and cooperation. Support others and allow things to unfold naturally.",
+      "changing_lines": {
+        "1": "When there is hoarfrost underfoot, solid ice is not far off.",
+        "2": "Straight, square, great. Without purpose, yet nothing remains unfurthered.",
+        "3": "Hidden lines. One is able to remain persevering. If by chance you are in the service of a king, seek not works but bring to completion.",
+        "4": "A tied-up sack. No blame, no praise.",
+        "5": "A yellow lower garment brings supreme good fortune.",
+        "6": "Dragons fight in the meadow. Their blood is black and yellow."
+      }
+    },
+    "3": {
+      "number": 3,
+      "name": "Difficulty at the Beginning",
+      "chinese": "屯 (Zhūn)",
+      "trigrams": [
+        "Water",
+        "Thunder"
+      ],
+      "binary": "010001",
+      "keywords": [
+        "difficulty",
+        "birth",
+        "struggle",
+        "perseverance"
+      ],
+      "judgment": "Difficulty at the Beginning works sublime success, furthering through perseverance.",
+      "image": "Clouds and thunder: the image of Difficulty at the Beginning. Thus the superior man brings order out of confusion.",
+      "meaning": "Initial difficulties that must be overcome. Like birth pangs, these struggles are necessary for new growth and development.",
+      "divination": "Persist through initial difficulties. What seems chaotic now will lead to order and success.",
+      "changing_lines": {
+        "1": "Hesitation and hindrance. It furthers one to remain persevering. It furthers one to appoint helpers.",
+        "2": "Difficulties pile up. Horse and wagon part. He is not a robber; he wants to woo when the time comes.",
+        "3": "Whoever hunts deer without the forester only loses his way in the forest.",
+        "4": "Horse and wagon part. Strive for union. To go brings good fortune. Everything acts to further.",
+        "5": "Difficulties in blessing. A little perseverance brings good fortune. Great perseverance brings misfortune.",
+        "6": "Horse and wagon part. Bloody tears flow."
+      }
+    },
+    "4": {
+      "number": 4,
+      "name": "Youthful Folly",
+      "chinese": "蒙 (Méng)",
+      "trigrams": [
+        "Mountain",
+        "Water"
+      ],
+      "binary": "100010",
+      "keywords": [
+        "inexperience",
+        "learning",
+        "teaching",
+        "guidance"
+      ],
+      "judgment": "Youthful Folly has success. It is not I who seek the young fool; the young fool seeks me.",
+      "image": "A spring wells up at the foot of the mountain: the image of Youth. Thus the superior man fosters his character by thoroughness in all that he does.",
+      "meaning": "The need for learning and guidance. Inexperience that can be transformed through proper teaching and sincere seeking.",
+      "divination": "Seek guidance from those wiser than yourself. Be humble and willing to learn.",
+      "changing_lines": {
+        "1": "To make a fool develop it furthers one to apply discipline.",
+        "2": "To bear with fools in kindliness brings good fortune.",
+        "3": "Take not a maiden who, when she sees a man of bronze, loses possession of herself.",
+        "4": "Entangled folly brings humiliation.",
+        "5": "Childlike folly brings good fortune.",
+        "6": "In punishing folly it does not further one to commit transgressions."
+      }
+    },
+    "5": {
+      "number": 5,
+      "name": "Waiting",
+      "chinese": "需 (Xū)",
+      "trigrams": [
+        "Water",
+        "Heaven"
+      ],
+      "binary": "010111",
+      "keywords": [
+        "patience",
+        "nourishment",
+        "confidence",
+        "timing"
+      ],
+      "judgment": "Waiting. If you are sincere, you have light and success. Perseverance brings good fortune.",
+      "image": "Clouds rise up to heaven: the image of Waiting. Thus the superior man eats and drinks, is joyous and of good cheer.",
+      "meaning": "The wisdom of waiting for the right moment. Patience and confidence in the natural timing of events.",
+      "divination": "Wait patiently for the right moment. Maintain your strength and confidence while you wait.",
+      "changing_lines": {
+        "1": "Waiting in the meadow. It furthers one to abide in what endures. No blame.",
+        "2": "Waiting on the sand. There is some gossip. The end brings good fortune.",
+        "3": "Waiting in the mud brings about the arrival of the enemy.",
+        "4": "Waiting in blood. Get out of the pit.",
+        "5": "Waiting at meat and drink. Perseverance brings good fortune.",
+        "6": "One falls into the pit. Three uninvited guests arrive. Honor them, and in the end there will be good fortune."
+      }
+    },
+    "6": {
+      "number": 6,
+      "name": "Conflict",
+      "chinese": "訟 (Sòng)",
+      "trigrams": [
+        "Heaven",
+        "Water"
+      ],
+      "binary": "111010",
+      "keywords": [
+        "conflict",
+        "opposition",
+        "legal matters",
+        "caution"
+      ],
+      "judgment": "Conflict. You are sincere and are being obstructed. A cautious halt halfway brings good fortune.",
+      "image": "Heaven and water go their opposite ways: the image of Conflict. Thus in all his transactions the superior man carefully considers the beginning.",
+      "meaning": "Unavoidable conflict that requires careful handling. The importance of seeking resolution rather than victory.",
+      "divination": "Approach conflicts with caution and wisdom. Seek mediation rather than confrontation.",
+      "changing_lines": {
+        "1": "If one does not perpetuate the affair, there is a little gossip. In the end, good fortune comes.",
+        "2": "One cannot engage in conflict; one returns home, gives way.",
+        "3": "To nourish oneself on ancient virtue induces perseverance. Danger. In the end, good fortune comes.",
+        "4": "One cannot engage in conflict. One turns back and submits to fate, changes one's attitude.",
+        "5": "To contend before him brings supreme good fortune.",
+        "6": "Even if by chance a leather belt is bestowed on one, by the end of a morning it will have been snatched away three times."
+      }
+    },
+    "7": {
+      "number": 7,
+      "name": "The Army",
+      "chinese": "師 (Shī)",
+      "trigrams": [
+        "Earth",
+        "Water"
+      ],
+      "binary": "000010",
+      "keywords": [
+        "leadership",
+        "discipline",
+        "organization",
+        "collective action"
+      ],
+      "judgment": "The Army. The army needs a persevering man. Good fortune without blame.",
+      "image": "In the middle of the earth is water: the image of the Army. Thus the superior man increases his masses by generosity toward the people.",
+      "meaning": "Organized collective action under disciplined leadership. The army represents the need for structure, hierarchy, and coordinated effort to achieve common goals. Like water contained within the earth, this hexagram teaches the importance of channeling collective energy through proper organization and moral leadership.",
+      "divination": "Success requires disciplined organization and moral leadership. Gather your resources, establish clear hierarchy, and lead by example. The situation calls for collective action under unified command.",
+      "changing_lines": {
+        "1": "Line 1 of hexagram 7: Beginning movement.",
+        "2": "Line 2 of hexagram 7: Development phase.",
+        "3": "Line 3 of hexagram 7: Transition point.",
+        "4": "Line 4 of hexagram 7: Approaching completion.",
+        "5": "Line 5 of hexagram 7: Peak influence.",
+        "6": "Line 6 of hexagram 7: Completion and transformation."
+      }
+    },
+    "8": {
+      "number": 8,
+      "name": "Holding Together",
+      "chinese": "比 (Bǐ)",
+      "trigrams": [
+        "Water",
+        "Earth"
+      ],
+      "binary": "010000",
+      "keywords": [
+        "unity",
+        "alliance",
+        "cooperation",
+        "mutual support"
+      ],
+      "judgment": "Holding Together brings good fortune. Inquire of the oracle once again whether you possess sublimity, constancy, and perseverance; then there is no blame.",
+      "image": "On the earth is water: the image of Holding Together. Thus the kings of antiquity bestowed the different states as fiefs and cultivated friendly relations with the feudal lords.",
+      "meaning": "The power of unity and mutual support through shared values. This hexagram represents the magnetic force that draws people together in common cause. Like water flowing over the earth, it shows how natural affinity creates lasting bonds and collective strength.",
+      "divination": "Seek genuine alliance and mutual support. Build relationships based on shared values and common purpose. Unity of spirit creates invincible strength.",
+      "changing_lines": {
+        "1": "Line 1 of hexagram 8: Beginning movement.",
+        "2": "Line 2 of hexagram 8: Development phase.",
+        "3": "Line 3 of hexagram 8: Transition point.",
+        "4": "Line 4 of hexagram 8: Approaching completion.",
+        "5": "Line 5 of hexagram 8: Peak influence.",
+        "6": "Line 6 of hexagram 8: Completion and transformation."
+      }
+    },
+    "9": {
+      "number": 9,
+      "name": "The Taming Power of the Small",
+      "chinese": "小畜 (Xiǎo Chù)",
+      "trigrams": [
+        "Earth",
+        "Heaven"
+      ],
+      "binary": "001000",
+      "keywords": [
+        "transformation",
+        "change",
+        "wisdom",
+        "guidance"
+      ],
+      "judgment": "Hexagram 9 brings guidance through wisdom.",
+      "image": "The image of Hexagram 9 teaches the superior man.",
+      "meaning": "Gentle, persistent influence that gradually shapes and refines. Small but consistent efforts accumulate over time to create significant change. Like wind moving across heaven, this represents the power of subtle influence and gradual cultivation.",
+      "divination": "Use gentle persistence rather than force. Small, consistent efforts will eventually succeed. Cultivate patience and trust in gradual progress.",
+      "changing_lines": {
+        "1": "Line 1 of hexagram 9: Beginning movement.",
+        "2": "Line 2 of hexagram 9: Development phase.",
+        "3": "Line 3 of hexagram 9: Transition point.",
+        "4": "Line 4 of hexagram 9: Approaching completion.",
+        "5": "Line 5 of hexagram 9: Peak influence.",
+        "6": "Line 6 of hexagram 9: Completion and transformation."
+      }
+    },
+    "10": {
+      "number": 10,
+      "name": "Treading",
+      "chinese": "履 (Lǚ)",
+      "trigrams": [
+        "Heaven",
+        "Lake"
+      ],
+      "binary": "111011",
+      "keywords": [
+        "conduct",
+        "proper behavior",
+        "caution",
+        "respect"
+      ],
+      "judgment": "Treading. Treading upon the tail of the tiger. It does not bite the man. Success.",
+      "image": "Heaven above, the lake below: the image of Treading. Thus the superior man discriminates between high and low, and thereby fortifies the thinking of the people.",
+      "meaning": "Proper conduct and careful behavior in dangerous situations. This hexagram teaches the importance of knowing one's place and acting with appropriate respect and caution. Like treading on a tiger's tail without being bitten, success comes through understanding boundaries and maintaining proper relationships.",
+      "divination": "Proceed with caution and respect. Know your place and act appropriately. Dangerous situations can be navigated safely through proper conduct.",
+      "changing_lines": {
+        "1": "Simple conduct. Progress without blame.",
+        "2": "Treading a smooth, level course. The perseverance of a dark man brings good fortune.",
+        "3": "A one-eyed man is able to see, a lame man is able to tread. He treads on the tail of the tiger. The tiger bites the man. Misfortune.",
+        "4": "He treads on the tail of the tiger. Caution and circumspection lead ultimately to good fortune.",
+        "5": "Resolute conduct. Perseverance with awareness of danger.",
+        "6": "Look to your conduct and weigh the favorable signs. When everything is fulfilled, supreme good fortune comes."
+      }
+    },
+    "11": {
+      "number": 11,
+      "name": "Peace",
+      "chinese": "泰 (Tài)",
+      "trigrams": [
+        "Earth",
+        "Heaven"
+      ],
+      "binary": "000111",
+      "keywords": [
+        "harmony",
+        "prosperity",
+        "balance",
+        "good fortune"
+      ],
+      "judgment": "Peace. The small departs, the great approaches. Good fortune. Success.",
+      "image": "Heaven and earth unite: the image of Peace. Thus the ruler divides and completes the course of heaven and earth, and so aids the people.",
+      "meaning": "A time of harmony, prosperity, and perfect balance between opposing forces. Heaven and earth are in communion, creating ideal conditions for growth and success. This represents the golden mean where all elements work together in perfect harmony.",
+      "divination": "A time of great fortune and harmony. Embrace this period of balance and use it wisely to build lasting foundations.",
+      "changing_lines": {
+        "1": "When ribbon grass is pulled up, the sod comes with it. Each according to his kind. Undertakings bring good fortune.",
+        "2": "Bearing with the uncultured in gentleness, fording the river with resolution, not neglecting what is distant, not regarding one's companions. Thus one may manage to walk in the middle.",
+        "3": "No plain not followed by a slope. No going not followed by a return. He who remains persevering in danger is without blame.",
+        "4": "He flutters down, not boasting of his wealth, together with his neighbor, guileless and sincere.",
+        "5": "The sovereign I gives his daughter in marriage. This brings blessing and supreme good fortune.",
+        "6": "The wall falls back into the moat. Use no army now. Make your commands known within your own town. Perseverance brings humiliation."
+      }
+    },
+    "12": {
+      "number": 12,
+      "name": "Standstill",
+      "chinese": "否 (Pǐ)",
+      "trigrams": [
+        "Heaven",
+        "Earth"
+      ],
+      "binary": "111000",
+      "keywords": [
+        "stagnation",
+        "obstruction",
+        "withdrawal",
+        "patience"
+      ],
+      "judgment": "Standstill. Evil people do not further the perseverance of the superior man. The great departs; the small approaches.",
+      "image": "Heaven and earth do not unite: the image of Standstill. Thus the superior man falls back upon his inner worth in order to escape the difficulties.",
+      "meaning": "A time of stagnation and obstruction where communication breaks down and progress is blocked. Heaven and earth are separated, creating disharmony. This is a time for inner cultivation and patient endurance rather than external action.",
+      "divination": "Accept this period of stagnation with patience. Focus on inner development and wait for conditions to improve. Do not force action.",
+      "changing_lines": {
+        "1": "When ribbon grass is pulled up, the sod comes with it. Each according to his kind. Perseverance brings good fortune and success.",
+        "2": "They bear and endure; this means good fortune for inferior people. The standstill serves to help the great man to attain success.",
+        "3": "They bear shame.",
+        "4": "He who acts at the command of the highest remains without blame. Those of like mind partake of the blessing.",
+        "5": "Standstill is giving way. Good fortune for the great man. 'What if it should fail, what if it should fail?' In this way he ties it to a cluster of mulberry shoots.",
+        "6": "The standstill comes to an end. First standstill, then good fortune."
+      }
+    },
+    "13": {
+      "number": 13,
+      "name": "Fellowship with Men",
+      "chinese": "同人 (Tóng Rén)",
+      "trigrams": [
+        "Heaven",
+        "Fire"
+      ],
+      "binary": "111101",
+      "keywords": [
+        "fellowship",
+        "community",
+        "cooperation",
+        "unity"
+      ],
+      "judgment": "Fellowship with Men in the open. Success. It furthers one to cross the great water. The perseverance of the superior man furthers.",
+      "image": "Heaven together with fire: the image of Fellowship with Men. Thus the superior man organizes the clans and makes distinctions between things.",
+      "meaning": "True fellowship and community based on shared principles and common goals. This hexagram represents the power of unity and cooperation when people come together with sincere hearts and noble purposes. Like fire reaching toward heaven, genuine fellowship elevates all participants.",
+      "divination": "Seek genuine fellowship and cooperation. Unite with others who share your values and goals. Great achievements are possible through collective effort.",
+      "changing_lines": {
+        "1": "Fellowship with men at the gate. No blame.",
+        "2": "Fellowship with men in the clan. Humiliation.",
+        "3": "He hides weapons in the thicket; he climbs the high hill in front of it. For three years he does not rise up.",
+        "4": "He climbs up on his wall; he cannot attack. Good fortune.",
+        "5": "Men bound in fellowship first weep and lament, but afterward they laugh. After great struggles they succeed in meeting.",
+        "6": "Fellowship with men in the meadow. No remorse."
+      }
+    },
+    "14": {
+      "number": 14,
+      "name": "Possession in Great Measure",
+      "chinese": "大有 (Dà Yǒu)",
+      "trigrams": [
+        "Fire",
+        "Heaven"
+      ],
+      "binary": "101111",
+      "keywords": [
+        "abundance",
+        "prosperity",
+        "great possession",
+        "responsibility"
+      ],
+      "judgment": "Possession in Great Measure. Supreme success.",
+      "image": "Fire in heaven above: the image of Possession in Great Measure. Thus the superior man curbs evil and furthers good, and thereby obeys the benevolent will of heaven.",
+      "meaning": "Great abundance and prosperity, but with the responsibility that comes with wealth and power. This hexagram represents the peak of material success and the wisdom needed to use it well. Like fire illuminating heaven, great possession should serve to benefit all.",
+      "divination": "A time of great abundance and success. Use your prosperity wisely and responsibly. Share your good fortune and remain humble.",
+      "changing_lines": {
+        "1": "No relationship with what is harmful. There is no blame in this. If one remains conscious of difficulty, one remains without blame.",
+        "2": "A big wagon for loading. One may undertake something. No blame.",
+        "3": "A prince offers it to the Son of Heaven. A petty man cannot do this.",
+        "4": "He makes a difference between himself and his neighbor. No blame.",
+        "5": "He whose truth is accessible, yet dignified, has good fortune.",
+        "6": "He is blessed by heaven. Good fortune. Nothing that does not further."
+      }
+    },
+    "15": {
+      "number": 15,
+      "name": "Modesty",
+      "chinese": "謙 (Qiān)",
+      "trigrams": [
+        "Earth",
+        "Mountain"
+      ],
+      "binary": "000100",
+      "keywords": [
+        "humility",
+        "modesty",
+        "balance",
+        "virtue"
+      ],
+      "judgment": "Modesty creates success. The superior man carries things through.",
+      "image": "Within the earth, a mountain: the image of Modesty. Thus the superior man reduces that which is too much, and augments that which is too little.",
+      "meaning": "True modesty and humility that brings lasting success. This hexagram represents the virtue of knowing one's place and not overreaching. Like a mountain hidden within the earth, true greatness often conceals itself in humble appearance.",
+      "divination": "Practice genuine humility and modesty. True strength lies in restraint and balance. Success comes through virtue, not force.",
+      "changing_lines": {
+        "1": "A superior man modest about his modesty may cross the great water. Good fortune.",
+        "2": "Modesty that comes to expression. Perseverance brings good fortune.",
+        "3": "A superior man of modesty and merit carries things to conclusion. Good fortune.",
+        "4": "Nothing that would not further modesty in movement.",
+        "5": "No boasting of wealth before one's neighbor. It is favorable to attack with force. Nothing that would not further.",
+        "6": "Modesty that comes to expression. It is favorable to set armies marching to chastise one's own city and one's country."
+      }
+    },
+    "16": {
+      "number": 16,
+      "name": "Enthusiasm",
+      "chinese": "豫 (Yù)",
+      "trigrams": [
+        "Earth",
+        "Thunder"
+      ],
+      "binary": "000001",
+      "keywords": [
+        "enthusiasm",
+        "joy",
+        "harmony",
+        "preparation"
+      ],
+      "judgment": "Enthusiasm. It furthers one to install helpers and to set armies marching.",
+      "image": "Thunder comes resounding out of the earth: the image of Enthusiasm. Thus the ancient kings made music in order to honor merit, and offered it with splendor to the Supreme Deity.",
+      "meaning": "Joyful enthusiasm and harmonious cooperation that inspires others to action. This hexagram represents the power of positive energy and shared excitement that can mobilize great collective efforts. Like thunder emerging from the earth, enthusiasm awakens and energizes.",
+      "divination": "Harness the power of enthusiasm and positive energy. Inspire others through your joy and conviction. This is a time for bold action and celebration.",
+      "changing_lines": {
+        "1": "Enthusiasm that expresses itself brings misfortune.",
+        "2": "Firm as a rock. Not a whole day. Perseverance brings good fortune.",
+        "3": "Enthusiasm that looks upward creates remorse. Hesitation brings remorse.",
+        "4": "The source of enthusiasm. He achieves great things. Doubt not. You gather friends around you as a hair clasp gathers the hair.",
+        "5": "Persistently ill, and still does not die.",
+        "6": "Deluded enthusiasm. But if after completion one changes, there is no blame."
+      }
+    },
+    "17": {
+      "number": 17,
+      "name": "Following",
+      "chinese": "隨 (Suí)",
+      "trigrams": [
+        "Lake",
+        "Thunder"
+      ],
+      "binary": "011001",
+      "keywords": [
+        "following",
+        "adaptation",
+        "flexibility",
+        "leadership"
+      ],
+      "judgment": "Following has supreme success. Perseverance furthers. No blame.",
+      "image": "Thunder in the middle of the lake: the image of Following. Thus the superior man at nightfall goes indoors for rest and recuperation.",
+      "meaning": "The wisdom of knowing when to lead and when to follow. This hexagram teaches the importance of adaptability and the ability to respond appropriately to changing circumstances. True leadership sometimes requires following, and true following can guide leadership.",
+      "divination": "Be flexible and adaptable. Know when to lead and when to follow. Success comes through understanding the natural flow of events.",
+      "changing_lines": {
+        "1": "The standard is changing. Perseverance brings good fortune. To go outside the door in company produces deeds.",
+        "2": "If one clings to the little boy, one loses the strong man.",
+        "3": "If one clings to the strong man, one loses the little boy. Through following one finds what one seeks.",
+        "4": "Following creates success. Perseverance brings misfortune. To go one's way with sincerity brings clarity. How could there be blame in this?",
+        "5": "Sincere in the good. Good fortune.",
+        "6": "He meets with strong commitment. He is still further bound. The king introduces him to the Western Mountain."
+      }
+    },
+    "18": {
+      "number": 18,
+      "name": "Work on What Has Been Spoiled",
+      "chinese": "蠱 (Gǔ)",
+      "trigrams": [
+        "Mountain",
+        "Wind"
+      ],
+      "binary": "100011",
+      "keywords": [
+        "decay",
+        "corruption",
+        "repair",
+        "renewal"
+      ],
+      "judgment": "Work on What Has Been Spoiled has supreme success. It furthers one to cross the great water. Before the starting point, three days. After the starting point, three days.",
+      "image": "The wind blows low on the mountain: the image of Decay. Thus the superior man stirs up the people and strengthens their spirit.",
+      "meaning": "Addressing corruption, decay, and problems that have been allowed to fester. This hexagram represents the necessary work of cleaning up, repairing, and renewing what has been damaged or neglected. Like wind stirring up stagnant air on a mountain, action is needed to restore vitality.",
+      "divination": "Face problems that have been neglected. Take responsibility for cleaning up and repairing what has been damaged. Renewal requires effort and commitment.",
+      "changing_lines": {
+        "1": "Setting right what has been spoiled by the father. If there is a son, no blame rests upon the departed father. Danger. In the end, good fortune.",
+        "2": "Setting right what has been spoiled by the mother. One must not be too persevering.",
+        "3": "Setting right what has been spoiled by the father. There will be little remorse. No great blame.",
+        "4": "Tolerating what has been spoiled by the father. In continuing one sees humiliation.",
+        "5": "Setting right what has been spoiled by the father. One meets with praise.",
+        "6": "He does not serve kings and princes, sets himself higher goals."
+      }
+    },
+    "19": {
+      "number": 19,
+      "name": "Approach",
+      "chinese": "臨 (Lín)",
+      "trigrams": [
+        "Earth",
+        "Lake"
+      ],
+      "binary": "000011",
+      "keywords": [
+        "approach",
+        "advance",
+        "leadership",
+        "influence"
+      ],
+      "judgment": "Approach has supreme success. Perseverance furthers. When the eighth month comes, there will be misfortune.",
+      "image": "The earth above the lake: the image of Approach. Thus the superior man is inexhaustible in his will to teach, and without limits in his tolerance and protection of the people.",
+      "meaning": "The approach of something significant, often representing the advance of positive forces or the emergence of leadership. This hexagram indicates a time of growing influence and expanding possibilities, but also warns of the cyclical nature of fortune.",
+      "divination": "A time of advancing fortune and growing influence. Take advantage of this positive momentum, but remain aware that conditions will eventually change.",
+      "changing_lines": {
+        "1": "Joint approach. Perseverance brings good fortune.",
+        "2": "Joint approach. Good fortune. Everything furthers.",
+        "3": "Comfortable approach. Nothing that would further. If one is induced to grieve over it, one becomes free of blame.",
+        "4": "Complete approach. No blame.",
+        "5": "Wise approach. This is right for a great prince. Good fortune.",
+        "6": "Great-hearted approach. Good fortune. No blame."
+      }
+    },
+    "20": {
+      "number": 20,
+      "name": "Contemplation",
+      "chinese": "觀 (Guān)",
+      "trigrams": [
+        "Wind",
+        "Earth"
+      ],
+      "binary": "110000",
+      "keywords": [
+        "contemplation",
+        "observation",
+        "reflection",
+        "understanding"
+      ],
+      "judgment": "Contemplation. The ablution has been made, but not yet the offering. Full of trust they look up to him.",
+      "image": "The wind blows over the earth: the image of Contemplation. Thus the kings of old visited the regions of the world, contemplated the people, and gave instruction.",
+      "meaning": "Deep contemplation and careful observation that leads to understanding and wisdom. This hexagram represents the power of mindful awareness and the importance of stepping back to gain perspective. Like wind moving over earth, contemplation reveals the true nature of things.",
+      "divination": "Take time for deep reflection and observation. Step back from action to gain perspective and understanding. Wisdom comes through contemplation.",
+      "changing_lines": {
+        "1": "Boy-like contemplation. For an inferior man, no blame. For a superior man, humiliation.",
+        "2": "Contemplation through the crack of the door. Furthering for the perseverance of a woman.",
+        "3": "Contemplation of my life decides the choice between advance and retreat.",
+        "4": "Contemplation of the light of the kingdom. It furthers one to exert influence as the guest of a king.",
+        "5": "Contemplation of my life. The superior man is without blame.",
+        "6": "Contemplation of his life. The superior man is without blame."
+      }
+    },
+    "21": {
+      "number": 21,
+      "name": "Biting Through",
+      "chinese": "噬嗑 (Shì Kè)",
+      "trigrams": [
+        "Fire",
+        "Thunder"
+      ],
+      "binary": "101001",
+      "keywords": [
+        "decision",
+        "breakthrough",
+        "justice",
+        "punishment"
+      ],
+      "judgment": "Biting Through has success. It is favorable to let justice be administered.",
+      "image": "Thunder and lightning: the image of Biting Through. Thus the kings of former times made firm the laws through clearly defined penalties.",
+      "meaning": "Breaking through obstacles and making decisive action. This hexagram represents the need to bite through problems that block progress, often requiring firm justice or decisive intervention. Like thunder and lightning working together, swift and clear action resolves difficult situations.",
+      "divination": "Take decisive action to break through obstacles. Justice and firm resolution are needed. Don't let problems fester - address them directly.",
+      "changing_lines": {
+        "1": "His feet are fastened in the stocks, so that his toes disappear. No blame.",
+        "2": "Bites through tender meat, so that his nose disappears. No blame.",
+        "3": "Bites on old dried meat and strikes on something poisonous. Slight humiliation. No blame.",
+        "4": "Bites on dried gristly meat. Receives metal arrows. It furthers one to be mindful of difficulties and to be persevering. Good fortune.",
+        "5": "Bites on dried lean meat. Receives yellow gold. Perseveringly aware of danger. No blame.",
+        "6": "His neck is fastened in the wooden cangue, so that his ears disappear. Misfortune."
+      }
+    },
+    "22": {
+      "number": 22,
+      "name": "Grace",
+      "chinese": "賁 (Bì)",
+      "trigrams": [
+        "Mountain",
+        "Fire"
+      ],
+      "binary": "100101",
+      "keywords": [
+        "beauty",
+        "elegance",
+        "refinement",
+        "culture"
+      ],
+      "judgment": "Grace has success. In small matters it is favorable to undertake something.",
+      "image": "Fire at the foot of the mountain: the image of Grace. Thus does the superior man proceed when clearing up current affairs. But he dare not decide controversial issues in this way.",
+      "meaning": "Beauty, elegance, and cultural refinement that enhances but does not replace substance. This hexagram teaches that while grace and beauty are important, they should complement rather than substitute for genuine worth. Like fire illuminating a mountain, grace reveals and enhances what is already there.",
+      "divination": "Focus on refinement and beauty in small matters. Enhance what you have rather than trying to create something from nothing. Style should support substance.",
+      "changing_lines": {
+        "1": "He lends grace to his toes, leaves the carriage, and walks.",
+        "2": "Lends grace to the beard on his chin.",
+        "3": "Graceful and moist. Constant perseverance brings good fortune.",
+        "4": "Grace or simplicity? A white horse comes as if on wings. He is not a robber, he will woo at the right time.",
+        "5": "Grace in hills and gardens. The roll of silk is meager and small. Humiliation, but in the end good fortune.",
+        "6": "Simple grace. No blame."
+      }
+    },
+    "23": {
+      "number": 23,
+      "name": "Splitting Apart",
+      "chinese": "剝 (Bō)",
+      "trigrams": [
+        "Mountain",
+        "Earth"
+      ],
+      "binary": "100000",
+      "keywords": [
+        "decay",
+        "disintegration",
+        "erosion",
+        "patience"
+      ],
+      "judgment": "Splitting Apart. It does not further one to go anywhere.",
+      "image": "The mountain rests on the earth: the image of Splitting Apart. Thus those above can ensure their position only by giving generously to those below.",
+      "meaning": "A time of decay and disintegration where things fall apart naturally. This hexagram represents the inevitable process of decline that precedes renewal. Like a mountain being slowly eroded by earth, sometimes we must accept the natural process of dissolution.",
+      "divination": "Accept this time of decline and disintegration. Do not fight the natural process. Conserve your energy and wait for the cycle to turn toward renewal.",
+      "changing_lines": {
+        "1": "The leg of the bed is split. Those who persevere are destroyed. Misfortune.",
+        "2": "The bed is split at the edge. Those who persevere are destroyed. Misfortune.",
+        "3": "He splits with them. No blame.",
+        "4": "The bed is split up to the skin. Misfortune.",
+        "5": "A shoal of fishes. Favor comes through the court ladies. Everything acts to further.",
+        "6": "There is a large fruit still uneaten. The superior man receives a carriage. The house of the inferior man is split apart."
+      }
+    },
+    "24": {
+      "number": 24,
+      "name": "Return",
+      "chinese": "復 (Fù)",
+      "trigrams": [
+        "Earth",
+        "Thunder"
+      ],
+      "binary": "000001",
+      "keywords": [
+        "return",
+        "renewal",
+        "revival",
+        "turning point"
+      ],
+      "judgment": "Return. Success. Going out and coming in without error. Friends come without blame. To and fro goes the way. On the seventh day comes return. It furthers one to have somewhere to go.",
+      "image": "Thunder within the earth: the image of the Turning Point. Thus the kings of antiquity closed the passes at the time of solstice.",
+      "meaning": "The turning point where decline reverses into growth and renewal. This hexagram represents the natural cycle of return after a period of withdrawal or decay. Like thunder stirring within the earth, new life begins to emerge from apparent dormancy.",
+      "divination": "A time of renewal and fresh beginnings. The cycle is turning in your favor. New opportunities and energy are emerging after a difficult period.",
+      "changing_lines": {
+        "1": "Return from a short distance. No need for remorse. Great good fortune.",
+        "2": "Quiet return. Good fortune.",
+        "3": "Repeated return. Danger. No blame.",
+        "4": "Walking in the midst of others, one returns alone.",
+        "5": "Noblehearted return. No remorse.",
+        "6": "Missing the return. Misfortune. Misfortune from within and without. If armies are set marching in this way, one will in the end suffer a great defeat, disastrous for the ruler of the country. For ten years it will not be possible to attack again."
+      }
+    },
+    "25": {
+      "number": 25,
+      "name": "Innocence",
+      "chinese": "無妄 (Wú Wàng)",
+      "trigrams": [
+        "Heaven",
+        "Thunder"
+      ],
+      "binary": "111001",
+      "keywords": [
+        "innocence",
+        "spontaneity",
+        "naturalness",
+        "sincerity"
+      ],
+      "judgment": "Innocence. Supreme success. Perseverance furthers. If someone is not as he should be, he has misfortune, and it does not further him to undertake anything.",
+      "image": "Under heaven thunder rolls: All things attain the natural state of innocence. Thus the kings of old, rich in virtue, and in harmony with the time, fostered and nourished all beings.",
+      "meaning": "Natural innocence and spontaneous action that flows from genuine sincerity. This hexagram represents the power of acting from one's true nature without artifice or calculation. Like thunder under heaven, innocent action has natural power and authenticity.",
+      "divination": "Act from your natural, sincere self. Avoid artifice and calculation. True power comes from authentic, innocent action aligned with your genuine nature.",
+      "changing_lines": {
+        "1": "Innocent behavior brings good fortune.",
+        "2": "If one does not count on the harvest while plowing, nor on the use of the ground while clearing it, it furthers one to undertake something.",
+        "3": "Undeserved misfortune. The cow that was tethered by someone is the wanderer's gain, the citizen's loss.",
+        "4": "He who can be persevering remains without blame.",
+        "5": "Use no medicine in an illness incurred through no fault of your own. It will pass of itself.",
+        "6": "Innocent action brings misfortune. Nothing furthers."
+      }
+    },
+    "26": {
+      "number": 26,
+      "name": "The Taming Power of the Great",
+      "chinese": "大畜 (Dà Chù)",
+      "trigrams": [
+        "Mountain",
+        "Heaven"
+      ],
+      "binary": "100111",
+      "keywords": [
+        "restraint",
+        "accumulation",
+        "potential",
+        "cultivation"
+      ],
+      "judgment": "The Taming Power of the Great. Perseverance furthers. Not eating at home brings good fortune. It furthers one to cross the great water.",
+      "image": "Heaven within the mountain: the image of the Taming Power of the Great. Thus the superior man learns many sayings of antiquity and many deeds of the past, in order to strengthen his character.",
+      "meaning": "Great restraining power that accumulates energy and potential for significant achievement. This hexagram represents the wisdom of holding back and building strength before taking major action. Like heaven contained within a mountain, great power is cultivated through patient restraint.",
+      "divination": "Build your strength and accumulate resources. This is a time for preparation and cultivation rather than immediate action. Great achievements require great preparation.",
+      "changing_lines": {
+        "1": "Danger is at hand. It furthers one to desist.",
+        "2": "The axletrees are taken from the wagon.",
+        "3": "A good horse that follows others. Awareness of danger, with perseverance, furthers. Practice chariot driving and armed defense daily.",
+        "4": "The headboard of a young bull. Great good fortune.",
+        "5": "The tusk of a gelded boar. Good fortune.",
+        "6": "One attains the way of heaven. Success."
+      }
+    },
+    "27": {
+      "number": 27,
+      "name": "The Corners of the Mouth",
+      "chinese": "頤 (Yí)",
+      "trigrams": [
+        "Mountain",
+        "Thunder"
+      ],
+      "binary": "100001",
+      "keywords": [
+        "nourishment",
+        "sustenance",
+        "care",
+        "responsibility"
+      ],
+      "judgment": "The Corners of the Mouth. Perseverance brings good fortune. Pay heed to the providing of nourishment and to what a man seeks to fill his own mouth with.",
+      "image": "At the foot of the mountain, thunder: the image of Providing Nourishment. Thus the superior man is careful of his words and temperate in eating and drinking.",
+      "meaning": "Proper nourishment and the responsibility of providing for others. This hexagram teaches about both physical and spiritual sustenance, emphasizing the importance of what we take in and what we give out. Like thunder at the foot of a mountain, nourishment should be both powerful and grounded.",
+      "divination": "Pay attention to what nourishes you and what you provide to others. Be mindful of your words and consumption. True nourishment supports growth and well-being.",
+      "changing_lines": {
+        "1": "You let your magic tortoise go, and look at me with the corners of your mouth drooping. Misfortune.",
+        "2": "Turning to the summit for nourishment, deviating from the path to seek nourishment from the hill. Continuing to do this brings misfortune.",
+        "3": "Turning away from nourishment. Perseverance brings misfortune. Do not act thus for ten years. Nothing serves to further.",
+        "4": "Turning to the summit for provision of nourishment brings good fortune. Spying about with sharp eyes like a tiger with insatiable craving. No blame.",
+        "5": "Turning away from the path. To remain persevering brings good fortune. One should not cross the great water.",
+        "6": "The source of nourishment. Awareness of danger brings good fortune. It furthers one to cross the great water."
+      }
+    },
+    "28": {
+      "number": 28,
+      "name": "Preponderance of the Great",
+      "chinese": "大過 (Dà Guò)",
+      "trigrams": [
+        "Lake",
+        "Wind"
+      ],
+      "binary": "011110",
+      "keywords": [
+        "excess",
+        "critical mass",
+        "breakthrough",
+        "extraordinary"
+      ],
+      "judgment": "Preponderance of the Great. The ridgepole sags to the breaking point. It furthers one to have somewhere to go. Success.",
+      "image": "The lake rises above the trees: the image of Preponderance of the Great. Thus the superior man, when he stands alone, is unconcerned, and if he has to renounce the world, he is undaunted.",
+      "meaning": "Extraordinary circumstances that require exceptional measures. This hexagram represents situations where normal approaches are insufficient and bold, unconventional action is needed. Like a lake rising above trees, the situation has reached critical mass.",
+      "divination": "Extraordinary times require extraordinary measures. Be prepared to take bold action and make significant changes. The situation has reached a critical point that demands decisive response.",
+      "changing_lines": {
+        "1": "To spread white rushes underneath. No blame.",
+        "2": "A dry poplar sprouts at the root. An older man takes a young wife. Everything furthers.",
+        "3": "The ridgepole sags to the breaking point. Misfortune.",
+        "4": "The ridgepole is braced. Good fortune. If there are ulterior motives, it is humiliating.",
+        "5": "A withered poplar puts forth flowers. An older woman takes a husband. No blame. No praise.",
+        "6": "One must go through the water. It goes over one's head. Misfortune. No blame."
+      }
+    },
+    "29": {
+      "number": 29,
+      "name": "The Abysmal",
+      "chinese": "坎 (Kǎn)",
+      "trigrams": [
+        "Water",
+        "Water"
+      ],
+      "binary": "010010",
+      "keywords": [
+        "danger",
+        "abyss",
+        "challenge",
+        "perseverance"
+      ],
+      "judgment": "The Abysmal repeated. If you are sincere, you have success in your heart, and whatever you do succeeds.",
+      "image": "Water flows on uninterruptedly and reaches its goal: the image of the Abysmal repeated. Thus the superior man walks in lasting virtue and carries on the business of teaching.",
+      "meaning": "Facing danger and difficulty with courage and persistence. This hexagram represents the challenge of navigating through dangerous or difficult circumstances. Like water flowing through obstacles, success comes through maintaining direction and persistence despite dangers.",
+      "divination": "Face dangers with courage and sincerity. Maintain your course despite obstacles. Like water, persistence and adaptability will eventually overcome all barriers.",
+      "changing_lines": {
+        "1": "Repetition of the abyss. In the abyss one falls into a pit. Misfortune.",
+        "2": "The abyss is dangerous. One should strive to reach small things only.",
+        "3": "Forward and backward, abyss on abyss. In danger like this, pause at first and wait, otherwise you will fall into a pit in the abyss.",
+        "4": "A jug of wine, a bowl of rice with it; earthen vessels simply handed in through the window. There is certainly no blame in this.",
+        "5": "The abyss is not filled to overflowing, it is filled only to the rim. No blame.",
+        "6": "Bound with cords and ropes, shut in between thorn-hedged prison walls: for three years one does not find the way. Misfortune."
+      }
+    },
+    "30": {
+      "number": 30,
+      "name": "The Clinging",
+      "chinese": "離 (Lí)",
+      "trigrams": [
+        "Fire",
+        "Fire"
+      ],
+      "binary": "101101",
+      "keywords": [
+        "clarity",
+        "illumination",
+        "attachment",
+        "dependence"
+      ],
+      "judgment": "The Clinging. Perseverance furthers. It brings success. Care of the cow brings good fortune.",
+      "image": "That which is bright rises twice: the image of Fire. Thus the great man, by perpetuating this brightness, illumines the four quarters of the world.",
+      "meaning": "Clarity, illumination, and the power of consciousness that brings understanding. This hexagram represents the need to cling to what is right and true, while providing light and guidance to others. Like fire that must attach to fuel to burn, we must find proper foundations for our clarity.",
+      "divination": "Seek clarity and understanding. Attach yourself to what is true and beneficial. Use your insight to illuminate the path for others while maintaining your own inner light.",
+      "changing_lines": {
+        "1": "The footprints run crisscross. If one is seriously intent, no blame.",
+        "2": "Yellow light. Supreme good fortune.",
+        "3": "In the light of the setting sun, men either beat the pot and sing or loudly bewail the approach of old age. Misfortune.",
+        "4": "Its coming is sudden; it flames up, dies down, is thrown away.",
+        "5": "Tears in floods, sighing and lamenting. Good fortune.",
+        "6": "The king uses him to march forth and chastise. Then it is best to kill the leaders and take captive the followers. No blame."
+      }
+    },
+    "31": {
+      "number": 31,
+      "name": "Influence",
+      "chinese": "咸 (Xián)",
+      "trigrams": [
+        "Lake",
+        "Mountain"
+      ],
+      "binary": "011100",
+      "keywords": [
+        "influence",
+        "attraction",
+        "courtship",
+        "mutual response"
+      ],
+      "judgment": "Influence. Success. Perseverance furthers. To take a maiden to wife brings good fortune.",
+      "image": "A lake on the mountain: the image of Influence. Thus the superior man encourages people to approach him by his readiness to receive them.",
+      "meaning": "Mutual influence and attraction between complementary forces. This hexagram represents the power of gentle influence and the natural attraction between opposites. Like a lake reflecting the mountain above, true influence is based on receptivity and mutual response.",
+      "divination": "Exercise gentle influence through receptivity and openness. True power comes through attraction rather than force. Be open to mutual influence and connection.",
+      "changing_lines": {
+        "1": "The influence shows itself in the big toe.",
+        "2": "The influence shows itself in the calves of the legs. Misfortune. Tarrying brings good fortune.",
+        "3": "The influence shows itself in the thighs. Holds to that which follows it. To continue is humiliating.",
+        "4": "Perseverance brings good fortune. Remorse disappears. If a man is agitated in mind, and his thoughts go hither and thither, only those friends on whom he fixes his conscious thoughts will follow.",
+        "5": "The influence shows itself in the back of the neck. No remorse.",
+        "6": "The influence shows itself in the jaws, cheeks, and tongue."
+      }
+    },
+    "32": {
+      "number": 32,
+      "name": "Duration",
+      "chinese": "恆 (Héng)",
+      "trigrams": [
+        "Thunder",
+        "Wind"
+      ],
+      "binary": "001011",
+      "keywords": [
+        "duration",
+        "perseverance",
+        "constancy",
+        "endurance"
+      ],
+      "judgment": "Duration. Success. No blame. Perseverance furthers. It furthers one to have somewhere to go.",
+      "image": "Thunder and wind: the image of Duration. Thus the superior man stands firm and does not change his direction.",
+      "meaning": "The power of endurance and lasting commitment that creates stability and long-term success. This hexagram represents the importance of consistency and perseverance in achieving meaningful goals. Like thunder and wind working together, duration requires both power and flexibility.",
+      "divination": "Maintain consistency and perseverance in your efforts. True success comes through sustained commitment over time. Stay true to your principles while adapting to circumstances.",
+      "changing_lines": {
+        "1": "Seeking duration too hastily brings misfortune persistently. Nothing that would further.",
+        "2": "Remorse disappears.",
+        "3": "He who does not give duration to his character meets with disgrace. Persistent humiliation.",
+        "4": "No game in the field.",
+        "5": "Giving duration to one's character through perseverance. This is good fortune for a woman, misfortune for a man.",
+        "6": "Restlessness as an enduring condition brings misfortune."
+      }
+    },
+    "33": {
+      "number": 33,
+      "name": "Retreat",
+      "chinese": "遯 (Dùn)",
+      "trigrams": [
+        "Heaven",
+        "Mountain"
+      ],
+      "binary": "111100",
+      "keywords": [
+        "retreat",
+        "withdrawal",
+        "strategic retreat",
+        "timing"
+      ],
+      "judgment": "Retreat. Success. In what is small, perseverance furthers.",
+      "image": "Mountain under heaven: the image of Retreat. Thus the superior man keeps the inferior man at a distance, not angrily but with reserve.",
+      "meaning": "Strategic withdrawal and the wisdom of knowing when to retreat. This hexagram represents the importance of recognizing when conditions are unfavorable and making a timely withdrawal to preserve strength for better opportunities. Like a mountain standing firm under heaven, retreat can be a position of strength.",
+      "divination": "Recognize when retreat is the wisest course. Withdraw strategically to preserve your strength and wait for better conditions. Sometimes stepping back is the path to ultimate success.",
+      "changing_lines": {
+        "1": "At the tail in retreat. This is dangerous. One must not wish to undertake anything.",
+        "2": "He holds him fast with yellow oxhide. No one can tear him loose.",
+        "3": "A halted retreat is nerve-wracking and dangerous. To retain people as men- and maidservants brings good fortune.",
+        "4": "Voluntary retreat brings good fortune to the superior man and downfall to the inferior man.",
+        "5": "Friendly retreat. Perseverance brings good fortune.",
+        "6": "Cheerful retreat. Everything serves to further."
+      }
+    },
+    "34": {
+      "number": 34,
+      "name": "The Power of the Great",
+      "chinese": "大壯 (Dà Zhuàng)",
+      "trigrams": [
+        "Thunder",
+        "Heaven"
+      ],
+      "binary": "001111",
+      "keywords": [
+        "great power",
+        "strength",
+        "vigor",
+        "righteousness"
+      ],
+      "judgment": "The Power of the Great. Perseverance furthers.",
+      "image": "Thunder in the sky above: the image of the Power of the Great. Thus the superior man does not tread upon paths that do not accord with established order.",
+      "meaning": "Great power and strength that must be used righteously and with restraint. This hexagram represents the peak of strength and vigor, but warns against the misuse of power. Like thunder in heaven, great power should serve higher purposes and maintain proper order.",
+      "divination": "You possess great strength and power. Use it wisely and righteously. Great power brings great responsibility - act with integrity and restraint.",
+      "changing_lines": {
+        "1": "Power in the toes. Continuing brings misfortune. This is certain.",
+        "2": "Perseverance brings good fortune.",
+        "3": "The inferior man works through power. The superior man does not act thus. To continue is dangerous. A goat butts against a hedge and gets its horns entangled.",
+        "4": "Perseverance brings good fortune. Remorse disappears. The hedge opens; there is no entanglement. Power depends upon the axle of a big cart.",
+        "5": "Loses the goat with ease. No remorse.",
+        "6": "A goat butts against a hedge. It cannot go backward, it cannot go forward. Nothing serves to further. If one notes the difficulty, this brings good fortune."
+      }
+    },
+    "35": {
+      "number": 35,
+      "name": "Progress",
+      "chinese": "晉 (Jìn)",
+      "trigrams": [
+        "Fire",
+        "Earth"
+      ],
+      "binary": "101000",
+      "keywords": [
+        "progress",
+        "advancement",
+        "promotion",
+        "recognition"
+      ],
+      "judgment": "Progress. The powerful prince is honored with horses in large numbers. In a single day he is granted audience three times.",
+      "image": "The sun rises over the earth: the image of Progress. Thus the superior man himself brightens his bright virtue.",
+      "meaning": "Steady progress and advancement through merit and virtue. This hexagram represents the natural rise of talent and the recognition that comes to those who cultivate themselves. Like the sun rising over earth, progress should be steady, natural, and illuminating.",
+      "divination": "A time of advancement and recognition. Your efforts are bearing fruit and progress is natural. Continue to cultivate your abilities and virtue.",
+      "changing_lines": {
+        "1": "Progressing, but turned back. Perseverance brings good fortune. If one meets with no confidence, one should remain calm. No mistake.",
+        "2": "Progressing, but in sorrow. Perseverance brings good fortune. Then one receives great happiness from one's ancestress.",
+        "3": "All are in accord. Remorse disappears.",
+        "4": "Progress like a hamster. Perseverance brings danger.",
+        "5": "Remorse disappears. Take not gain and loss to heart. Undertakings bring good fortune. Everything serves to further.",
+        "6": "Making progress with the horns is permissible only for the purpose of punishing one's own city. To be conscious of danger brings good fortune. No blame. Perseverance brings humiliation."
+      }
+    },
+    "36": {
+      "number": 36,
+      "name": "Darkening of the Light",
+      "chinese": "明夷 (Míng Yí)",
+      "trigrams": [
+        "Earth",
+        "Fire"
+      ],
+      "binary": "000101",
+      "keywords": [
+        "darkening",
+        "oppression",
+        "concealment",
+        "perseverance"
+      ],
+      "judgment": "Darkening of the Light. In adversity it furthers one to be persevering.",
+      "image": "The light has sunk into the earth: the image of Darkening of the Light. Thus does the superior man live with the great mass: he veils his light, yet still shines.",
+      "meaning": "A time of darkness and oppression where wisdom must be concealed to survive. This hexagram represents periods when truth and virtue are suppressed, requiring patience and inner strength. Like light buried in earth, wisdom must sometimes be hidden but never extinguished.",
+      "divination": "Endure this dark period with patience and inner strength. Conceal your light when necessary but never let it be extinguished. Better times will come.",
+      "changing_lines": {
+        "1": "Darkening of the light during flight. He lowers his wings. The superior man does not eat for three days on his wanderings. But he has somewhere to go. The host has occasion to gossip about him.",
+        "2": "Darkening of the light injures him in the left thigh. He gives aid with the strength of a horse. Good fortune.",
+        "3": "Darkening of the light during the hunt in the south. Their great leader is captured. One must not expect perseverance too soon.",
+        "4": "He penetrates the left side of the belly. One gets at the very heart of the darkening of the light.",
+        "5": "Darkening of the light as with Prince Chi. Perseverance furthers.",
+        "6": "Not light but darkness. First he climbed up to heaven, then he plunged into the depths of the earth."
+      }
+    },
+    "37": {
+      "number": 37,
+      "name": "The Family",
+      "chinese": "家人 (Jiā Rén)",
+      "trigrams": [
+        "Wind",
+        "Fire"
+      ],
+      "binary": "110101",
+      "keywords": [
+        "family",
+        "household",
+        "relationships",
+        "order"
+      ],
+      "judgment": "The Family. The perseverance of the woman furthers.",
+      "image": "Wind comes forth from fire: the image of the Family. Thus the superior man has substance in his words and duration in his way of life.",
+      "meaning": "Proper relationships and order within the family and close community. This hexagram emphasizes the importance of maintaining harmony through defined roles and mutual respect. Like wind emerging from fire, family relationships should be both warm and directed.",
+      "divination": "Focus on family relationships and close bonds. Establish proper order and mutual respect. Strong families create strong communities.",
+      "changing_lines": {
+        "1": "Firm seclusion within the family. Remorse disappears.",
+        "2": "She should not follow her whims. She must attend within to the food. Perseverance brings good fortune.",
+        "3": "When tempers flare up in the family, too great severity brings remorse. Good fortune nonetheless.",
+        "4": "She is the treasure of the house. Great good fortune.",
+        "5": "As a king he approaches his family. Fear not. Good fortune.",
+        "6": "His work commands respect. In the end good fortune comes."
+      }
+    },
+    "38": {
+      "number": 38,
+      "name": "Opposition",
+      "chinese": "睽 (Kuí)",
+      "trigrams": [
+        "Fire",
+        "Lake"
+      ],
+      "binary": "101011",
+      "keywords": [
+        "opposition",
+        "estrangement",
+        "misunderstanding",
+        "small matters"
+      ],
+      "judgment": "Opposition. In small matters, good fortune.",
+      "image": "Above, fire; below, the lake: the image of Opposition. Thus amid all fellowship the superior man retains his individuality.",
+      "meaning": "Natural opposition and the challenge of maintaining unity despite differences. This hexagram teaches that opposition can be constructive when handled properly. Like fire and water, opposing forces can coexist and even complement each other in small matters.",
+      "divination": "Accept natural differences and opposition. Focus on small matters where harmony is possible. Maintain your individuality while seeking common ground.",
+      "changing_lines": {
+        "1": "Remorse disappears. If you lose your horse, do not run after it; it will come back of its own accord.",
+        "2": "One meets his lord in a narrow street. No blame.",
+        "3": "One sees the wagon dragged back, the oxen halted, a man's hair and nose cut off. Not a good beginning, but a good end.",
+        "4": "Isolated through opposition, one meets a like-minded man with whom one can associate in good faith. Despite the danger, no blame.",
+        "5": "Remorse disappears. The companion bites his way through the wrappings. If one goes to him, how could it be a mistake?",
+        "6": "Isolated through opposition, one sees one's companion as a pig covered with dirt, as a wagon full of devils. First one draws a bow against him, then one lays the bow aside."
+      }
+    },
+    "39": {
+      "number": 39,
+      "name": "Obstruction",
+      "chinese": "蹇 (Jiǎn)",
+      "trigrams": [
+        "Water",
+        "Mountain"
+      ],
+      "binary": "010100",
+      "keywords": [
+        "obstruction",
+        "difficulty",
+        "limping",
+        "perseverance"
+      ],
+      "judgment": "Obstruction. The southwest furthers. The northeast does not further. It furthers one to see the great man. Perseverance brings good fortune.",
+      "image": "Water on the mountain: the image of Obstruction. Thus the superior man turns his attention to himself and molds his character.",
+      "meaning": "Obstacles and difficulties that require patience and inner development. This hexagram represents times when external progress is blocked, making it necessary to focus on inner cultivation. Like water blocked by a mountain, we must find alternative paths or wait for conditions to change.",
+      "divination": "Face obstacles with patience and inner strength. Use this time for self-development and character building. Seek guidance from wise advisors.",
+      "changing_lines": {
+        "1": "Going leads to obstruction, coming meets with praise.",
+        "2": "The king's servant is beset by obstruction upon obstruction, but it is not his own fault.",
+        "3": "Going leads to obstructions; hence he comes back.",
+        "4": "Going leads to obstructions, coming leads to union.",
+        "5": "In the midst of the greatest obstructions, friends come.",
+        "6": "Going leads to obstructions, coming leads to great good fortune. It furthers one to see the great man."
+      }
+    },
+    "40": {
+      "number": 40,
+      "name": "Deliverance",
+      "chinese": "解 (Xiè)",
+      "trigrams": [
+        "Thunder",
+        "Water"
+      ],
+      "binary": "001010",
+      "keywords": [
+        "deliverance",
+        "liberation",
+        "release",
+        "resolution"
+      ],
+      "judgment": "Deliverance. The southwest furthers. If there is no longer anything where one has to go, return brings good fortune. If there is still something where one has to go, hastening brings good fortune.",
+      "image": "Thunder and rain set in: the image of Deliverance. Thus the superior man pardons mistakes and forgives misdeeds.",
+      "meaning": "Liberation from difficulties and the resolution of problems. This hexagram represents the moment when obstacles are overcome and freedom is restored. Like thunder and rain clearing the air, deliverance brings relief and new possibilities.",
+      "divination": "Liberation and relief are at hand. Obstacles are being removed. Act swiftly when the opportunity arises, but also know when to rest and consolidate gains.",
+      "changing_lines": {
+        "1": "Without blame.",
+        "2": "One kills three foxes in the field and receives a yellow arrow. Perseverance brings good fortune.",
+        "3": "If a man carries a burden on his back and nonetheless rides in a carriage, he thereby encourages robbers to draw near.",
+        "4": "Deliver yourself from your great toe. Then the companion comes, and him you can trust.",
+        "5": "If only the superior man can deliver himself, it brings good fortune. Thus he proves to inferior men that he is in earnest.",
+        "6": "A prince shoots at a hawk on a high wall. He kills it. Everything serves to further."
+      }
+    },
+    "41": {
+      "number": 41,
+      "name": "Decrease",
+      "chinese": "損 (Sǔn)",
+      "trigrams": [
+        "Mountain",
+        "Lake"
+      ],
+      "binary": "100011",
+      "keywords": [
+        "decrease",
+        "reduction",
+        "sacrifice",
+        "simplicity"
+      ],
+      "judgment": "Decrease combined with sincerity brings about supreme good fortune without blame. One may be persevering in this. It furthers one to undertake something. How is this to be carried out? One may use two small bowls for the sacrifice.",
+      "image": "At the foot of the mountain, the lake: the image of Decrease. Thus the superior man controls his anger and restrains his instincts.",
+      "meaning": "The wisdom of voluntary reduction and simplification. This hexagram teaches that sometimes we must decrease the lower to strengthen the higher, or sacrifice the immediate for the lasting. Like a lake at the foot of a mountain, decrease can create depth and stability.",
+      "divination": "Simplify and reduce what is unnecessary. Make conscious sacrifices for higher purposes. Sometimes less is more, and reduction leads to greater strength.",
+      "changing_lines": {
+        "1": "Going quickly when one's tasks are finished is without blame. But one must reflect on how much one may decrease others.",
+        "2": "Perseverance furthers. To undertake something brings misfortune. Without decreasing oneself, one is able to bring increase to others.",
+        "3": "When three people journey together, their number decreases by one. When one man journeys alone, he finds a companion.",
+        "4": "If a man decreases his faults, it makes the other hasten to come and rejoice. No blame.",
+        "5": "Someone does indeed increase him. Ten pairs of tortoises cannot oppose it. Supreme good fortune.",
+        "6": "If one is increased without depriving others, there is no blame. Perseverance brings good fortune. It furthers one to undertake something."
+      }
+    },
+    "42": {
+      "number": 42,
+      "name": "Increase",
+      "chinese": "益 (Yì)",
+      "trigrams": [
+        "Wind",
+        "Thunder"
+      ],
+      "binary": "110001",
+      "keywords": [
+        "increase",
+        "benefit",
+        "growth",
+        "advantage"
+      ],
+      "judgment": "Increase. It furthers one to undertake something. It furthers one to cross the great water.",
+      "image": "Wind and thunder: the image of Increase. Thus the superior man: if he sees good, he imitates it; if he has faults, he rids himself of them.",
+      "meaning": "Natural increase and beneficial growth that comes from proper action and timing. This hexagram represents periods of expansion and development when conditions favor progress. Like wind and thunder working together, increase comes through dynamic action and natural force.",
+      "divination": "A time of growth and beneficial increase. Take advantage of favorable conditions to expand and develop. Imitate what is good and eliminate what is harmful.",
+      "changing_lines": {
+        "1": "It furthers one to accomplish great deeds. Supreme good fortune. No blame.",
+        "2": "Someone does indeed increase him; ten pairs of tortoises cannot oppose it. Constant perseverance brings good fortune.",
+        "3": "One is enriched through unfortunate events. No blame, if you are sincere and walk in the middle.",
+        "4": "If you walk in the middle and report to the prince, he will follow. It furthers one to be used in the removal of the capital.",
+        "5": "If in truth you have a kind heart, ask not. Supreme good fortune. Truly, kindness will be recognized as your virtue.",
+        "6": "He brings increase to no one. Indeed, someone even strikes him. He does not keep his heart constantly steady. Misfortune."
+      }
+    },
+    "43": {
+      "number": 43,
+      "name": "Breakthrough",
+      "chinese": "夬 (Guài)",
+      "trigrams": [
+        "Lake",
+        "Heaven"
+      ],
+      "binary": "011111",
+      "keywords": [
+        "breakthrough",
+        "resolution",
+        "determination",
+        "decisiveness"
+      ],
+      "judgment": "Breakthrough. One must resolutely make the matter known at the court of the king. It must be announced truthfully. Danger. It is necessary to notify one's own city. It does not further to resort to arms.",
+      "image": "The lake has risen up to heaven: the image of Breakthrough. Thus the superior man dispenses riches downward and refrains from resting on his virtue.",
+      "meaning": "Decisive breakthrough and the resolution of long-standing problems through determined action. This hexagram represents the moment when accumulated pressure finally breaks through resistance. Like a lake rising to heaven, breakthrough requires both power and proper direction.",
+      "divination": "The time for decisive action has come. Break through obstacles with determination and truth. Be prepared for the consequences of your breakthrough.",
+      "changing_lines": {
+        "1": "Mighty in the forward-striding toes. When one goes and is not equal to the task, one makes a mistake.",
+        "2": "A cry of alarm. Arms at evening and at night. Fear nothing.",
+        "3": "To be powerful in the cheekbones brings misfortune. The superior man is firmly resolved.",
+        "4": "There is no skin on his thighs, and walking comes hard. If a man were to let himself be led like a sheep, remorse would disappear.",
+        "5": "In dealing with weeds, firm resolution is necessary. Walking in the middle remains free of blame.",
+        "6": "No cry. In the end misfortune comes."
+      }
+    },
+    "44": {
+      "number": 44,
+      "name": "Coming to Meet",
+      "chinese": "姤 (Gòu)",
+      "trigrams": [
+        "Heaven",
+        "Wind"
+      ],
+      "binary": "111110",
+      "keywords": [
+        "coming to meet",
+        "encounter",
+        "temptation",
+        "caution"
+      ],
+      "judgment": "Coming to Meet. The maiden is powerful. One should not marry such a maiden.",
+      "image": "Under heaven, wind: the image of Coming to Meet. Thus does the prince act when disseminating his commands and proclaiming them to the four quarters of heaven.",
+      "meaning": "An unexpected encounter or meeting that requires careful handling. This hexagram warns about the power of seemingly weak influences that can have strong effects. Like wind under heaven, some encounters can spread influence far and wide.",
+      "divination": "Be cautious about new encounters and influences. Not all meetings are beneficial. Maintain your principles when faced with temptation or pressure.",
+      "changing_lines": {
+        "1": "It must be checked with a brake of bronze. Perseverance brings good fortune.",
+        "2": "There is a fish in the tank. No blame. Does not further guests.",
+        "3": "There is no skin on his thighs, and walking comes hard. If one is mindful of the danger, no great mistake is made.",
+        "4": "No fish in the tank. This leads to misfortune.",
+        "5": "A melon covered with willow leaves. Hidden lines. Then it drops down to one from heaven.",
+        "6": "He comes to meet with his horns. Humiliation. No blame."
+      }
+    },
+    "45": {
+      "number": 45,
+      "name": "Gathering Together",
+      "chinese": "萃 (Cuì)",
+      "trigrams": [
+        "Lake",
+        "Earth"
+      ],
+      "binary": "011000",
+      "keywords": [
+        "gathering",
+        "collection",
+        "assembly",
+        "unity"
+      ],
+      "judgment": "Gathering Together. Success. The king approaches his temple. It furthers one to see the great man. This brings success. Perseverance furthers.",
+      "image": "Over the earth, the lake: the image of Gathering Together. Thus the superior man renews his weapons in order to meet the unforeseen.",
+      "meaning": "The power of gathering people and resources together for a common purpose. This hexagram represents successful assembly and organization that creates strength through unity. Like a lake gathering water from the earth, collective effort achieves what individuals cannot.",
+      "divination": "Gather people and resources for a common purpose. Unity creates strength. Prepare well for collective action and maintain group harmony.",
+      "changing_lines": {
+        "1": "If you are sincere, but not to the end, there will sometimes be confusion, sometimes gathering together.",
+        "2": "Letting oneself be drawn brings good fortune and remains blameless. If one is sincere, it furthers one to bring even a small offering.",
+        "3": "Gathering together amid sighs. Nothing that would further. Going is without blame. Slight humiliation.",
+        "4": "Great good fortune. No blame.",
+        "5": "If in gathering together one has position, this brings no blame. If there are some who are not yet sincerely in the work, sublime and enduring perseverance is needed.",
+        "6": "Lamenting and sighing, floods of tears. No blame."
+      }
+    },
+    "46": {
+      "number": 46,
+      "name": "Pushing Upward",
+      "chinese": "升 (Shēng)",
+      "trigrams": [
+        "Earth",
+        "Wind"
+      ],
+      "binary": "000110",
+      "keywords": [
+        "pushing upward",
+        "ascent",
+        "growth",
+        "advancement"
+      ],
+      "judgment": "Pushing Upward has supreme success. One must see the great man. Fear not. Departure toward the south brings good fortune.",
+      "image": "Within the earth, wood grows: the image of Pushing Upward. Thus the superior man of devoted character heaps up small things in order to achieve something high and great.",
+      "meaning": "Gradual but steady advancement and growth through persistent effort. This hexagram represents natural development and the accumulation of small gains that lead to significant achievement. Like wood growing within the earth, progress comes through patient cultivation.",
+      "divination": "Steady advancement through persistent effort. Build gradually and consistently. Small steps lead to great achievements over time.",
+      "changing_lines": {
+        "1": "Pushing upward that meets with confidence brings great good fortune.",
+        "2": "If one is sincere, it furthers one to bring even a small offering. No blame.",
+        "3": "One pushes upward into an empty city.",
+        "4": "The king offers him Mount Ch'i. Good fortune. No blame.",
+        "5": "Perseverance brings good fortune. One pushes upward by steps.",
+        "6": "Pushing upward in darkness. It furthers one to be unremittingly persevering."
+      }
+    },
+    "47": {
+      "number": 47,
+      "name": "Oppression",
+      "chinese": "困 (Kùn)",
+      "trigrams": [
+        "Lake",
+        "Water"
+      ],
+      "binary": "011010",
+      "keywords": [
+        "oppression",
+        "exhaustion",
+        "adversity",
+        "endurance"
+      ],
+      "judgment": "Oppression. Success. Perseverance. The great man brings about good fortune. No blame. When one has something to say, it is not believed.",
+      "image": "There is no water in the lake: the image of Exhaustion. Thus the superior man stakes his life on following his will.",
+      "meaning": "A time of severe limitation and exhaustion where resources are depleted and options are few. This hexagram represents the challenge of maintaining integrity and purpose during difficult times. Like a lake without water, we must find inner resources when external support fails.",
+      "divination": "Endure this difficult period with patience and inner strength. Maintain your principles despite adversity. True character is revealed in times of oppression.",
+      "changing_lines": {
+        "1": "One sits oppressed under a bare tree and strays into a gloomy valley. For three years one sees nothing.",
+        "2": "One is oppressed while at meat and drink. The man with the scarlet knee bands is just coming. It furthers one to offer sacrifice.",
+        "3": "A man permits himself to be oppressed by stone, and leans on thorns and thistles. He enters the house and does not see his wife. Misfortune.",
+        "4": "He comes very quietly, oppressed in a golden carriage. Humiliation, but the end is reached.",
+        "5": "His nose and feet are cut off. Oppression at the hands of the man with the purple knee bands. Joy comes softly.",
+        "6": "He is oppressed by creeping vines. He moves uncertainly and says, 'Movement brings remorse.' If one feels remorse over this and makes a start, good fortune comes."
+      }
+    },
+    "48": {
+      "number": 48,
+      "name": "The Well",
+      "chinese": "井 (Jǐng)",
+      "trigrams": [
+        "Water",
+        "Wind"
+      ],
+      "binary": "010110",
+      "keywords": [
+        "the well",
+        "source",
+        "nourishment",
+        "community"
+      ],
+      "judgment": "The Well. The town may be changed, but the well cannot be changed. It neither decreases nor increases. They come and go and draw from the well.",
+      "image": "Water over wood: the image of the Well. Thus the superior man encourages the people at their work, and exhorts them to help one another.",
+      "meaning": "The unchanging source of nourishment and wisdom that serves the community. This hexagram represents the fundamental resources and values that sustain life and society. Like a well that provides water regardless of who draws from it, some things remain constant and essential.",
+      "divination": "Return to fundamental sources of nourishment and wisdom. Provide for the community's needs. Some things are unchanging and essential - recognize and preserve them.",
+      "changing_lines": {
+        "1": "One does not drink the mud of the well. No animals come to an old well.",
+        "2": "At the wellhole one shoots fishes. The jug is broken and leaks.",
+        "3": "The well is cleaned, but no one drinks from it. This is my heart's sorrow, for one might draw from it.",
+        "4": "The well is being lined. No blame.",
+        "5": "In the well there is a clear, cold spring from which one can drink.",
+        "6": "One draws from the well without hindrance. It is dependable. Supreme good fortune."
+      }
+    },
+    "49": {
+      "number": 49,
+      "name": "Revolution",
+      "chinese": "革 (Gé)",
+      "trigrams": [
+        "Lake",
+        "Fire"
+      ],
+      "binary": "011101",
+      "keywords": [
+        "revolution",
+        "change",
+        "transformation",
+        "renewal"
+      ],
+      "judgment": "Revolution. On your own day you are believed. Supreme success, furthering through perseverance. Remorse disappears.",
+      "image": "Fire in the lake: the image of Revolution. Thus the superior man sets the calendar in order and makes the seasons clear.",
+      "meaning": "Fundamental change and transformation that renews and revitalizes. This hexagram represents revolutionary change that sweeps away the old to make way for the new. Like fire in a lake, revolution brings dramatic transformation through the meeting of opposing forces.",
+      "divination": "The time for fundamental change has come. Embrace transformation and renewal. Old ways must give way to new approaches for progress to occur.",
+      "changing_lines": {
+        "1": "Wrapped in the hide of a yellow cow.",
+        "2": "When one's own day comes, one may create revolution. Starting brings good fortune. No blame.",
+        "3": "Starting brings misfortune. Perseverance brings danger. When talk of revolution has gone the rounds three times, one may commit himself, and men will believe him.",
+        "4": "Remorse disappears. Men believe him. Changing the form of government brings good fortune.",
+        "5": "The great man changes like a tiger. Even before he questions the oracle he is believed.",
+        "6": "The superior man changes like a panther. The inferior man molts in the face. Starting brings misfortune."
+      }
+    },
+    "50": {
+      "number": 50,
+      "name": "The Cauldron",
+      "chinese": "鼎 (Dǐng)",
+      "trigrams": [
+        "Fire",
+        "Wind"
+      ],
+      "binary": "101110",
+      "keywords": [
+        "nourishment",
+        "transformation",
+        "culture",
+        "refinement"
+      ],
+      "judgment": "The Cauldron. Supreme good fortune. Success.",
+      "image": "Fire over wood: the image of the Cauldron. Thus the superior man consolidates his fate by making his position correct.",
+      "meaning": "Transformation through nourishment and cultural refinement. This hexagram represents the vessel that transforms raw materials into nourishment, symbolizing cultural and spiritual development. Like fire over wood in a cauldron, proper transformation requires both fuel and container.",
+      "divination": "Focus on transformation and refinement. Provide nourishment for growth and development. Cultural and spiritual advancement comes through proper preparation and dedication.",
+      "changing_lines": {
+        "1": "A ting with legs upturned. Furthers removal of stagnating stuff. One takes a concubine for the sake of her son. No blame.",
+        "2": "There is food in the ting. My comrades are envious, but they cannot harm me. Good fortune.",
+        "3": "The handle of the ting is altered. One is impeded in his way of life. The fat of the pheasant is not eaten.",
+        "4": "The legs of the ting are broken. The prince's meal is spilled and his person is soiled. Misfortune.",
+        "5": "The ting has yellow handles, golden carrying rings. Perseverance furthers.",
+        "6": "The ting has rings of jade. Great good fortune. Nothing that would not act to further."
+      }
+    },
+    "51": {
+      "number": 51,
+      "name": "The Arousing",
+      "chinese": "震 (Zhèn)",
+      "trigrams": [
+        "Thunder",
+        "Thunder"
+      ],
+      "binary": "001001",
+      "keywords": [
+        "shock",
+        "thunder",
+        "movement",
+        "awakening"
+      ],
+      "judgment": "Shock brings success. Shock comes—oh, oh! Laughing words—ha, ha! The shock terrifies for a hundred miles, and he does not let fall the sacrificial spoon and chalice.",
+      "image": "Thunder repeated: the image of Shock. Thus in fear and trembling the superior man sets his life in order and examines himself.",
+      "meaning": "Sudden shock and awakening that brings movement and change. This hexagram represents the power of thunder to shake us from complacency and initiate necessary action. Like repeated thunder, shock can be both terrifying and awakening.",
+      "divination": "Prepare for sudden changes and shocks. Use these disruptions as opportunities for growth and awakening. Maintain your composure during turbulent times.",
+      "changing_lines": {
+        "1": "Shock comes—oh, oh! Then follow laughing words—ha, ha! Good fortune.",
+        "2": "Shock comes bringing danger. A hundred thousand times you lose your treasures and must climb the nine hills.",
+        "3": "Shock comes and makes one distraught. If shock spurs to action, one remains free of misfortune.",
+        "4": "Shock is mired.",
+        "5": "Shock goes hither and thither. Danger. However, nothing at all is lost. Yet there are things to be done.",
+        "6": "Shock brings ruin and terrified gazing around. Going ahead brings misfortune."
+      }
+    },
+    "52": {
+      "number": 52,
+      "name": "Keeping Still",
+      "chinese": "艮 (Gèn)",
+      "trigrams": [
+        "Mountain",
+        "Mountain"
+      ],
+      "binary": "100100",
+      "keywords": [
+        "stillness",
+        "meditation",
+        "rest",
+        "contemplation"
+      ],
+      "judgment": "Keeping Still. Keeping his back still so that he no longer feels his body. He goes into his courtyard and does not see his people. No blame.",
+      "image": "Mountains standing close together: the image of Keeping Still. Thus the superior man does not permit his thoughts to go beyond his situation.",
+      "meaning": "The power of stillness and meditation that brings inner peace and clarity. This hexagram teaches the importance of knowing when to stop and be still. Like mountains standing together, stillness provides stability and perspective.",
+      "divination": "Practice stillness and meditation. Know when to stop and rest. Inner peace comes through learning to be still and present in the moment.",
+      "changing_lines": {
+        "1": "Keeping his toes still. No blame. Continued perseverance furthers.",
+        "2": "Keeping his calves still. He cannot rescue him whom he follows. His heart is not glad.",
+        "3": "Keeping his hips still. Making his sacrum stiff. Dangerous. The heart suffocates.",
+        "4": "Keeping his trunk still. No blame.",
+        "5": "Keeping his jaws still. The words have order. Remorse disappears.",
+        "6": "Noblehearted keeping still. Good fortune."
+      }
+    },
+    "53": {
+      "number": 53,
+      "name": "Development",
+      "chinese": "漸 (Jiàn)",
+      "trigrams": [
+        "Wind",
+        "Mountain"
+      ],
+      "binary": "110100",
+      "keywords": [
+        "gradual progress",
+        "development",
+        "steady advance",
+        "patience"
+      ],
+      "judgment": "Development. The maiden is given in marriage. Good fortune. Perseverance furthers.",
+      "image": "On the mountain, a tree: the image of Development. Thus the superior man abides in dignity and virtue, in order to improve the mores.",
+      "meaning": "Gradual, steady development that follows natural patterns and timing. This hexagram represents organic growth that cannot be rushed but proceeds according to its own natural rhythm. Like a tree growing on a mountain, development requires patience and proper conditions.",
+      "divination": "Progress comes through gradual, steady development. Be patient and allow natural timing to unfold. Consistent effort over time yields lasting results.",
+      "changing_lines": {
+        "1": "The wild goose gradually draws near the shore. The young son is in danger. There is talk. No blame.",
+        "2": "The wild goose gradually draws near the cliff. Eating and drinking in peace and concord. Good fortune.",
+        "3": "The wild goose gradually draws near the plateau. The man goes forth and does not return. The woman carries a child but does not bring it forth.",
+        "4": "The wild goose gradually draws near the tree. Perhaps it will find a flat branch. No blame.",
+        "5": "The wild goose gradually draws near the summit. For three years the woman has no child. In the end nothing can hinder her. Good fortune.",
+        "6": "The wild goose gradually draws near the cloud heights. Its feathers can be used for the sacred dance. Good fortune."
+      }
+    },
+    "54": {
+      "number": 54,
+      "name": "The Marrying Maiden",
+      "chinese": "歸妹 (Guī Mèi)",
+      "trigrams": [
+        "Thunder",
+        "Lake"
+      ],
+      "binary": "001011",
+      "keywords": [
+        "improper relationships",
+        "subordination",
+        "unfavorable position",
+        "caution"
+      ],
+      "judgment": "The Marrying Maiden. Undertakings bring misfortune. Nothing that would further.",
+      "image": "Thunder over the lake: the image of the Marrying Maiden. Thus the superior man understands the transitory in the light of the eternity of the end.",
+      "meaning": "Relationships or situations that appear attractive but lack proper foundation or timing. This hexagram warns against entering into arrangements that place one in a subordinate or unfavorable position. Like thunder over a lake, the situation may be dramatic but unstable.",
+      "divination": "Be cautious about new relationships or arrangements. What appears attractive may lack proper foundation. Avoid subordinate positions that compromise your integrity.",
+      "changing_lines": {
+        "1": "The marrying maiden as a concubine. A lame man who is able to tread. Undertakings bring good fortune.",
+        "2": "A one-eyed man who is able to see. The perseverance of a solitary man furthers.",
+        "3": "The marrying maiden as a slave. She marries as a concubine.",
+        "4": "The marrying maiden draws out the allotted time. A late marriage comes in due course.",
+        "5": "The sovereign I gave his daughter in marriage. The embroidered garments of the princess were not as gorgeous as those of the serving maid.",
+        "6": "The woman holds the basket, but there are no fruits in it. The man stabs the sheep, but no blood flows. Nothing that acts to further."
+      }
+    },
+    "55": {
+      "number": 55,
+      "name": "Abundance",
+      "chinese": "豐 (Fēng)",
+      "trigrams": [
+        "Thunder",
+        "Fire"
+      ],
+      "binary": "001101",
+      "keywords": [
+        "abundance",
+        "fullness",
+        "prosperity",
+        "peak"
+      ],
+      "judgment": "Abundance has success. The king attains abundance. Be not sad. Be like the sun at midday.",
+      "image": "Both thunder and lightning come: the image of Abundance. Thus the superior man decides lawsuits and carries out punishments.",
+      "meaning": "The peak of abundance and prosperity, but also the warning that such peaks are temporary. This hexagram represents the height of success and the responsibility that comes with it. Like the sun at midday, abundance is powerful but must be used wisely.",
+      "divination": "You are at a peak of abundance and success. Use this prosperity wisely and responsibly. Remember that abundance is temporary and prepare for future changes.",
+      "changing_lines": {
+        "1": "When a man meets his destined ruler, they can be together ten days, and it is not a mistake. Going meets with recognition.",
+        "2": "The curtain is of such fullness that the polestars can be seen at noon. Through going one meets with mistrust and hate.",
+        "3": "The underbrush is of such abundance that the small stars can be seen at noon. He breaks his right arm. No blame.",
+        "4": "The curtain is of such fullness that the polestars can be seen at noon. He meets his ruler, who is of like kind. Good fortune.",
+        "5": "Lines are coming, blessing and fame draw near. Good fortune.",
+        "6": "His house is in a state of abundance. He screens off his family. He peers through the gate and no longer perceives anyone. For three years he sees nothing. Misfortune."
+      }
+    },
+    "56": {
+      "number": 56,
+      "name": "The Wanderer",
+      "chinese": "旅 (Lǚ)",
+      "trigrams": [
+        "Fire",
+        "Mountain"
+      ],
+      "binary": "101100",
+      "keywords": [
+        "travel",
+        "wandering",
+        "stranger",
+        "temporary"
+      ],
+      "judgment": "The Wanderer. Success through smallness. Perseverance brings good fortune to the wanderer.",
+      "image": "Fire on the mountain: the image of the Wanderer. Thus the superior man is clear-minded and cautious in imposing penalties, and protracts no lawsuits.",
+      "meaning": "The condition of being a stranger or traveler who must rely on adaptability and modest behavior. This hexagram represents temporary situations where one lacks permanent roots or established position. Like fire on a mountain, the wanderer must be self-contained yet visible.",
+      "divination": "Adapt to your temporary situation with modesty and caution. Success comes through small, careful steps rather than grand gestures. Maintain your integrity while being flexible.",
+      "changing_lines": {
+        "1": "If the wanderer busies himself with trivial things, he draws down misfortune upon himself.",
+        "2": "The wanderer comes to an inn. He has his property with him. He wins the steadfastness of a young servant.",
+        "3": "The wanderer's inn burns down. He loses the steadfastness of his young servant. Danger.",
+        "4": "The wanderer rests in a shelter. He obtains his property and an ax. My heart is not glad.",
+        "5": "He shoots a pheasant. It drops with the first arrow. In the end this brings both praise and office.",
+        "6": "The bird's nest burns up. The wanderer laughs at first, then must needs lament and weep. Through carelessness he loses his cow. Misfortune."
+      }
+    },
+    "57": {
+      "number": 57,
+      "name": "The Gentle",
+      "chinese": "巽 (Xùn)",
+      "trigrams": [
+        "Wind",
+        "Wind"
+      ],
+      "binary": "110110",
+      "keywords": [
+        "gentleness",
+        "penetration",
+        "influence",
+        "persistence"
+      ],
+      "judgment": "The Gentle. Success through what is small. It furthers one to have somewhere to go. It furthers one to see the great man.",
+      "image": "Winds following one upon the other: the image of the Gently Penetrating. Thus the superior man spreads his commands abroad and carries out his undertakings.",
+      "meaning": "Gentle but persistent influence that penetrates gradually and thoroughly. This hexagram represents the power of consistent, gentle pressure that can accomplish what force cannot. Like wind that penetrates everywhere, gentleness can be more effective than force.",
+      "divination": "Use gentle, persistent influence rather than force. Small, consistent efforts will penetrate resistance and achieve lasting results. Be patient and persistent.",
+      "changing_lines": {
+        "1": "In advancing and in retreating, the perseverance of a warrior furthers.",
+        "2": "Penetration under the bed. Priests and magicians are used in confusing number. Good fortune. No blame.",
+        "3": "Repeated penetration. Humiliation.",
+        "4": "Remorse vanishes. During the hunt three kinds of game are caught.",
+        "5": "Perseverance brings good fortune. Remorse vanishes. Nothing that does not further.",
+        "6": "Penetration under the bed. He loses his property and his ax. Perseverance brings misfortune."
+      }
+    },
+    "58": {
+      "number": 58,
+      "name": "The Joyous",
+      "chinese": "兌 (Duì)",
+      "trigrams": [
+        "Lake",
+        "Lake"
+      ],
+      "binary": "011011",
+      "keywords": [
+        "joy",
+        "pleasure",
+        "satisfaction",
+        "cheerfulness"
+      ],
+      "judgment": "The Joyous. Success. Perseverance is favorable.",
+      "image": "Lakes resting one on the other: the image of the Joyous. Thus the superior man joins with his friends for discussion and practice.",
+      "meaning": "True joy and satisfaction that comes from inner harmony and shared fellowship. This hexagram represents the happiness that arises from genuine contentment and positive relationships. Like lakes reflecting each other, joy is enhanced when shared.",
+      "divination": "Cultivate genuine joy and positive relationships. Share your happiness with others and find satisfaction in simple pleasures. True joy comes from inner contentment.",
+      "changing_lines": {
+        "1": "Contented joyousness. Good fortune.",
+        "2": "Sincere joyousness. Good fortune. Remorse disappears.",
+        "3": "Coming joyousness. Misfortune.",
+        "4": "Joyousness that is weighed is not at peace. After ridding himself of mistakes a man has joy.",
+        "5": "Sincerity toward disintegrating influences is dangerous.",
+        "6": "Seductive joyousness."
+      }
+    },
+    "59": {
+      "number": 59,
+      "name": "Dispersion",
+      "chinese": "渙 (Huàn)",
+      "trigrams": [
+        "Wind",
+        "Water"
+      ],
+      "binary": "110010",
+      "keywords": [
+        "dispersion",
+        "dissolution",
+        "scattering",
+        "reunification"
+      ],
+      "judgment": "Dispersion. Success. The king approaches his temple. It furthers one to cross the great water. Perseverance furthers.",
+      "image": "The wind drives over the water: the image of Dispersion. Thus the kings of old sacrificed to the Lord and built temples.",
+      "meaning": "The dissolution of rigid structures and the scattering of stagnant energy to allow for renewal and reunification. This hexagram represents the necessary breaking up of old patterns to create space for new growth. Like wind over water, dispersion can be both destructive and cleansing.",
+      "divination": "Allow old structures to dissolve naturally. Sometimes scattering is necessary before reunification can occur. Focus on spiritual and community values during times of change.",
+      "changing_lines": {
+        "1": "He brings help with the strength of a horse. Good fortune.",
+        "2": "At the dissolution he hurries to that which supports him. Remorse disappears.",
+        "3": "He dissolves his self. No remorse.",
+        "4": "He dissolves his bond with his group. Supreme good fortune. Dispersion leads in turn to accumulation.",
+        "5": "His loud cries are as dissolving as sweat. Dissolution! A king abides without blame.",
+        "6": "He dissolves his blood. Departing, keeping at a distance, going out, is without blame."
+      }
+    },
+    "60": {
+      "number": 60,
+      "name": "Limitation",
+      "chinese": "節 (Jié)",
+      "trigrams": [
+        "Water",
+        "Lake"
+      ],
+      "binary": "010011",
+      "keywords": [
+        "limitation",
+        "moderation",
+        "restraint",
+        "boundaries"
+      ],
+      "judgment": "Limitation. Success. Galling limitation must not be persevered in.",
+      "image": "Water over lake: the image of Limitation. Thus the superior man creates number and measure, and examines the nature of virtue and correct conduct.",
+      "meaning": "The wisdom of setting proper limits and boundaries that create order and prevent excess. This hexagram teaches that limitations, when properly applied, create freedom and success. Like water contained by a lake, proper boundaries enable rather than restrict.",
+      "divination": "Set appropriate limits and boundaries. Moderation and restraint lead to success. Avoid both excess and overly harsh restrictions.",
+      "changing_lines": {
+        "1": "Not going out of the door and the courtyard is without blame.",
+        "2": "Not going out of the gate and the courtyard brings misfortune.",
+        "3": "He who knows no limitation will have cause to lament. No blame.",
+        "4": "Contented limitation. Success.",
+        "5": "Sweet limitation brings good fortune. Going brings esteem.",
+        "6": "Galling limitation. Perseverance brings misfortune. Remorse disappears."
+      }
+    },
+    "61": {
+      "number": 61,
+      "name": "Inner Truth",
+      "chinese": "中孚 (Zhōng Fú)",
+      "trigrams": [
+        "Wind",
+        "Lake"
+      ],
+      "binary": "110011",
+      "keywords": [
+        "inner truth",
+        "sincerity",
+        "confidence",
+        "trust"
+      ],
+      "judgment": "Inner Truth. Pigs and fishes. Good fortune. It furthers one to cross the great water. Perseverance furthers.",
+      "image": "Wind over lake: the image of Inner Truth. Thus the superior man discusses criminal cases in order to delay executions.",
+      "meaning": "The power of inner sincerity and truth that can influence even the most unlikely subjects. This hexagram represents the magnetic force of genuine authenticity that creates trust and understanding. Like wind over a lake, inner truth creates gentle but profound influence.",
+      "divination": "Cultivate inner sincerity and truth. Authentic communication can reach anyone. Trust in the power of genuine honesty and openness.",
+      "changing_lines": {
+        "1": "Being prepared brings good fortune. If there are secret designs, it is disquieting.",
+        "2": "A crane calling in the shade. Its young answers it. I have a good goblet. I will share it with you.",
+        "3": "He finds a companion. Now he beats the drum, now he stops. Now he sobs, now he sings.",
+        "4": "The moon nearly at the full. The team horse goes astray. No blame.",
+        "5": "He possesses truth, which links together. No blame.",
+        "6": "Cockcrow penetrating to heaven. Perseverance brings misfortune."
+      }
+    },
+    "62": {
+      "number": 62,
+      "name": "Preponderance of the Small",
+      "chinese": "小過 (Xiǎo Guò)",
+      "trigrams": [
+        "Thunder",
+        "Mountain"
+      ],
+      "binary": "001100",
+      "keywords": [
+        "small exceeding",
+        "modesty",
+        "careful action",
+        "attention to detail"
+      ],
+      "judgment": "Preponderance of the Small. Success. Perseverance furthers. Small things may be done; great things should not be done.",
+      "image": "Thunder on the mountain: the image of Preponderance of the Small. Thus in his conduct the superior man gives preponderance to reverence. In bereavement he gives preponderance to grief. In his expenditures he gives preponderance to thrift.",
+      "meaning": "A time when small, careful actions are more appropriate than grand gestures. This hexagram emphasizes the importance of attention to detail and modest behavior. Like thunder echoing in mountains, small actions can have significant effects when properly applied.",
+      "divination": "Focus on small, careful actions rather than grand plans. Pay attention to details and act with modesty. Success comes through careful, measured steps.",
+      "changing_lines": {
+        "1": "A bird in flight brings misfortune.",
+        "2": "She passes by her ancestor and meets her ancestress. He does not reach his prince and meets his official. No blame.",
+        "3": "If one is not extremely careful, somebody may come up from behind and strike him. Misfortune.",
+        "4": "No blame. He meets him without passing by. Going brings danger. One must be on guard. Do not act. Be constantly persevering.",
+        "5": "Dense clouds, no rain from our western region. The prince shoots and hits him who is in the cave.",
+        "6": "He passes him by, not meeting him. The bird flies away. Misfortune. This means bad luck and injury."
+      }
+    },
+    "63": {
+      "number": 63,
+      "name": "After Completion",
+      "chinese": "既濟 (Jì Jì)",
+      "trigrams": [
+        "Water",
+        "Fire"
+      ],
+      "binary": "010101",
+      "keywords": [
+        "completion",
+        "success",
+        "order",
+        "vigilance"
+      ],
+      "judgment": "After Completion. Success in small matters. Perseverance furthers. At the beginning good fortune, at the end disorder.",
+      "image": "Water over fire: the image of the condition after completion. Thus the superior man takes thought of misfortune and arms himself against it in advance.",
+      "meaning": "The state after achieving completion or success, when vigilance is needed to maintain what has been accomplished. This hexagram warns that completion brings its own challenges and the need for continued attention. Like water over fire, balance must be carefully maintained.",
+      "divination": "Success has been achieved, but remain vigilant. Completion brings new challenges. Maintain what you have accomplished through continued careful attention.",
+      "changing_lines": {
+        "1": "He brakes his wheels. Wets his tail. No blame.",
+        "2": "The woman loses the curtain of her carriage. Do not run after it; on the seventh day you will get it.",
+        "3": "The Illustrious Ancestor disciplines the Devil's Country. After three years he conquers it. Inferior people must not be employed.",
+        "4": "The finest clothes turn to rags. Be careful all day long.",
+        "5": "The neighbor in the east who slaughters an ox does not attain as much real happiness as the neighbor in the west with his small offering.",
+        "6": "He gets his head in the water. Danger."
+      }
+    },
+    "64": {
+      "number": 64,
+      "name": "Before Completion",
+      "chinese": "未濟 (Wèi Jì)",
+      "trigrams": [
+        "Fire",
+        "Water"
+      ],
+      "binary": "101010",
+      "keywords": [
+        "before completion",
+        "transition",
+        "potential",
+        "careful progress"
+      ],
+      "judgment": "Before Completion. Success. But if the little fox, after nearly completing the crossing, gets his tail in the water, there is nothing that would further.",
+      "image": "Fire over water: the image of the condition before completion. Thus the superior man is careful in the differentiation of things, so that each finds its place.",
+      "meaning": "The state before completion when careful progress is needed to achieve success. This hexagram represents the delicate final phase of any endeavor when success is within reach but not yet secured. Like fire over water, the elements are not yet in harmony.",
+      "divination": "Success is within reach but not yet achieved. Proceed carefully and avoid premature celebration. Complete your efforts with the same care you began them.",
+      "changing_lines": {
+        "1": "He gets his tail in the water. Humiliating.",
+        "2": "He brakes his wheels. Perseverance brings good fortune.",
+        "3": "Before completion, attack brings misfortune. It furthers one to cross the great water.",
+        "4": "Perseverance brings good fortune. Remorse disappears. Shock, in order to subdue the Devil's Country. For three years, great realms are awarded.",
+        "5": "Perseverance brings good fortune. No remorse. The light of the superior man is true. Good fortune.",
+        "6": "There is drinking of wine in genuine confidence. No blame. But if one wets his head, he loses it, in truth."
+      }
+    }
+  },
+  "trigrams": {
+    "Heaven": {
+      "chinese": "乾 (Qián)",
+      "binary": "111",
+      "element": "Metal",
+      "attribute": "Strong",
+      "family": "Father",
+      "direction": "Northwest",
+      "season": "Late Autumn",
+      "meaning": "Creative force, strength, leadership"
+    },
+    "Earth": {
+      "chinese": "坤 (Kūn)",
+      "binary": "000",
+      "element": "Earth",
+      "attribute": "Yielding",
+      "family": "Mother",
+      "direction": "Southwest",
+      "season": "Late Summer",
+      "meaning": "Receptive force, nurturing, devotion"
+    },
+    "Thunder": {
+      "chinese": "震 (Zhèn)",
+      "binary": "001",
+      "element": "Wood",
+      "attribute": "Arousing",
+      "family": "Eldest Son",
+      "direction": "East",
+      "season": "Spring",
+      "meaning": "Movement, shock, awakening"
+    },
+    "Water": {
+      "chinese": "坎 (Kǎn)",
+      "binary": "010",
+      "element": "Water",
+      "attribute": "Dangerous",
+      "family": "Middle Son",
+      "direction": "North",
+      "season": "Winter",
+      "meaning": "Depth, danger, flowing"
+    },
+    "Mountain": {
+      "chinese": "艮 (Gèn)",
+      "binary": "100",
+      "element": "Earth",
+      "attribute": "Keeping Still",
+      "family": "Youngest Son",
+      "direction": "Northeast",
+      "season": "Late Winter",
+      "meaning": "Stillness, meditation, boundaries"
+    },
+    "Wind": {
+      "chinese": "巽 (Xùn)",
+      "binary": "011",
+      "element": "Wood",
+      "attribute": "Gentle",
+      "family": "Eldest Daughter",
+      "direction": "Southeast",
+      "season": "Early Summer",
+      "meaning": "Penetration, gentleness, gradual progress"
+    },
+    "Fire": {
+      "chinese": "離 (Lí)",
+      "binary": "101",
+      "element": "Fire",
+      "attribute": "Clinging",
+      "family": "Middle Daughter",
+      "direction": "South",
+      "season": "Summer",
+      "meaning": "Light, clarity, beauty"
+    },
+    "Lake": {
+      "chinese": "兌 (Duì)",
+      "binary": "110",
+      "element": "Metal",
+      "attribute": "Joyous",
+      "family": "Youngest Daughter",
+      "direction": "West",
+      "season": "Autumn",
+      "meaning": "Joy, pleasure, communication"
+    }
+  },
+  "methods": {
+    "coins": {
+      "name": "Three Coins Method",
+      "description": "Traditional method using three coins, tossed six times",
+      "probabilities": {
+        "6": 0.125,
+        "7": 0.375,
+        "8": 0.375,
+        "9": 0.125
+      }
+    },
+    "yarrow": {
+      "name": "Yarrow Stalks Method",
+      "description": "Traditional method using 50 yarrow stalks",
+      "probabilities": {
+        "6": 0.0625,
+        "7": 0.4375,
+        "8": 0.4375,
+        "9": 0.0625
+      }
+    }
+  }
+}

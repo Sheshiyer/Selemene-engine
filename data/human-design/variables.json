@@ -1,0 +1,673 @@
+{
+  "variables_info": {
+    "name": "Human Design Variables",
+    "description": "The 6 Variables representing advanced differentiation in Human Design",
+    "total_variables": 6,
+    "purpose": "Variables show how to optimize your unique expression and environment",
+    "calculation": "Based on precise planetary positions and advanced Human Design mechanics",
+    "source": "Human Design System by Ra Uru Hu - Advanced Studies"
+  },
+  "variable_structure": {
+    "primary_health": {
+      "digestion": "How you best process food and information",
+      "environment": "The physical environment that supports you"
+    },
+    "cognitive_architecture": {
+      "motivation": "What drives you at the deepest level",
+      "perspective": "How you naturally see and process the world"
+    },
+    "awareness": {
+      "cognition": "How your mind processes information",
+      "sense": "Your primary sense for navigating reality"
+    }
+  },
+  "variables": {
+    "Digestion": {
+      "name": "Digestion (Determination)",
+      "category": "Primary Health",
+      "description": "How you best process food, information, and experiences for optimal health and clarity",
+      "importance": "Fundamental to physical and mental well-being",
+      "types": {
+        "Appetite": {
+          "name": "Appetite",
+          "description": "Eat only when you have a clear appetite for specific foods",
+          "characteristics": [
+            "Wait for clear hunger signals",
+            "Eat what your body specifically craves",
+            "Avoid eating without appetite",
+            "Trust your body's wisdom"
+          ],
+          "practical_tips": [
+            "Don't eat by the clock",
+            "Wait for genuine hunger",
+            "Honor specific food cravings",
+            "Avoid forcing meals"
+          ]
+        },
+        "Taste": {
+          "name": "Taste",
+          "description": "Focus on the taste and flavor of food, eat what tastes good to you",
+          "characteristics": [
+            "Prioritize foods that taste good",
+            "Avoid bland or unappetizing food",
+            "Trust your taste preferences",
+            "Enjoy the sensory experience"
+          ],
+          "practical_tips": [
+            "Choose foods you genuinely enjoy",
+            "Avoid eating food that doesn't taste good",
+            "Pay attention to flavors",
+            "Make meals pleasurable"
+          ]
+        },
+        "Thirst": {
+          "name": "Thirst",
+          "description": "Drink when thirsty, focus on liquid intake and hydration",
+          "characteristics": [
+            "Pay attention to thirst signals",
+            "Prioritize proper hydration",
+            "Drink when body asks for it",
+            "Focus on liquid nourishment"
+          ],
+          "practical_tips": [
+            "Drink when genuinely thirsty",
+            "Pay attention to hydration needs",
+            "Choose beverages mindfully",
+            "Don't force liquid intake"
+          ]
+        },
+        "Touch": {
+          "name": "Touch",
+          "description": "Pay attention to the texture and physical sensation of food",
+          "characteristics": [
+            "Focus on food textures",
+            "Eat with your hands when appropriate",
+            "Pay attention to temperature",
+            "Trust tactile preferences"
+          ],
+          "practical_tips": [
+            "Notice how food feels",
+            "Choose textures you enjoy",
+            "Pay attention to temperature preferences",
+            "Use touch to guide food choices"
+          ]
+        },
+        "Sound": {
+          "name": "Sound",
+          "description": "Eat in environments with appropriate sound, avoid noisy eating",
+          "characteristics": [
+            "Pay attention to eating environment sounds",
+            "Avoid noisy restaurants when possible",
+            "Create peaceful eating spaces",
+            "Notice how sound affects digestion"
+          ],
+          "practical_tips": [
+            "Eat in quiet environments",
+            "Avoid loud, chaotic eating spaces",
+            "Create peaceful meal atmospheres",
+            "Notice sound's impact on appetite"
+          ]
+        },
+        "Light": {
+          "name": "Light",
+          "description": "Eat in appropriate lighting conditions, pay attention to visual environment",
+          "characteristics": [
+            "Eat in well-lit environments",
+            "Pay attention to visual appeal of food",
+            "Avoid eating in darkness",
+            "Create visually pleasing meals"
+          ],
+          "practical_tips": [
+            "Eat in good lighting",
+            "Make food visually appealing",
+            "Avoid dark eating environments",
+            "Pay attention to food presentation"
+          ]
+        }
+      }
+    },
+    "Environment": {
+      "name": "Environment",
+      "category": "Primary Health", 
+      "description": "The physical environment and conditions that support your optimal functioning",
+      "importance": "Critical for energy, health, and life satisfaction",
+      "types": {
+        "Cave": {
+          "name": "Cave",
+          "description": "Thrive in enclosed, protected, womb-like environments",
+          "characteristics": [
+            "Prefer enclosed spaces",
+            "Feel safe in protected environments",
+            "Avoid wide open spaces",
+            "Need sense of containment"
+          ],
+          "optimal_environments": [
+            "Small, cozy rooms",
+            "Enclosed offices",
+            "Protected outdoor spaces",
+            "Intimate settings"
+          ],
+          "avoid": [
+            "Large open spaces",
+            "Exposed environments",
+            "Overwhelming spaces",
+            "Unprotected areas"
+          ]
+        },
+        "Market": {
+          "name": "Market",
+          "description": "Thrive in busy, active, social environments with lots of activity",
+          "characteristics": [
+            "Energized by activity",
+            "Thrive in busy environments",
+            "Need social stimulation",
+            "Enjoy bustling atmospheres"
+          ],
+          "optimal_environments": [
+            "Busy cafes and restaurants",
+            "Active workplaces",
+            "Social gatherings",
+            "Urban environments"
+          ],
+          "avoid": [
+            "Isolated quiet spaces",
+            "Empty environments",
+            "Overly peaceful settings",
+            "Solitary locations"
+          ]
+        },
+        "Kitchen": {
+          "name": "Kitchen",
+          "description": "Thrive in warm, nurturing, family-oriented environments",
+          "characteristics": [
+            "Need warm, welcoming spaces",
+            "Thrive around family energy",
+            "Enjoy nurturing environments",
+            "Feel best in homey settings"
+          ],
+          "optimal_environments": [
+            "Family homes",
+            "Warm, welcoming offices",
+            "Community centers",
+            "Nurturing spaces"
+          ],
+          "avoid": [
+            "Cold, sterile environments",
+            "Unwelcoming spaces",
+            "Harsh atmospheres",
+            "Unfriendly settings"
+          ]
+        },
+        "Mountain": {
+          "name": "Mountain",
+          "description": "Thrive in elevated, high-perspective environments with views",
+          "characteristics": [
+            "Need elevated perspectives",
+            "Thrive with views and vistas",
+            "Prefer higher altitudes",
+            "Enjoy expansive outlooks"
+          ],
+          "optimal_environments": [
+            "High floors in buildings",
+            "Mountain locations",
+            "Elevated workspaces",
+            "Spaces with views"
+          ],
+          "avoid": [
+            "Basement environments",
+            "Low-lying areas",
+            "Spaces without views",
+            "Confined low spaces"
+          ]
+        },
+        "Valley": {
+          "name": "Valley",
+          "description": "Thrive in low, grounded, flowing environments near water",
+          "characteristics": [
+            "Need grounded, low environments",
+            "Thrive near water",
+            "Prefer flowing, natural settings",
+            "Feel best in valleys and lowlands"
+          ],
+          "optimal_environments": [
+            "Ground floor spaces",
+            "Near rivers or lakes",
+            "Valley locations",
+            "Flowing, natural environments"
+          ],
+          "avoid": [
+            "High, elevated spaces",
+            "Dry, arid environments",
+            "Rigid, structured settings",
+            "Mountain-top locations"
+          ]
+        },
+        "Shore": {
+          "name": "Shore",
+          "description": "Thrive at the meeting place of different elements or environments",
+          "characteristics": [
+            "Need transitional spaces",
+            "Thrive at boundaries",
+            "Enjoy meeting places",
+            "Feel best at edges and transitions"
+          ],
+          "optimal_environments": [
+            "Beaches and shorelines",
+            "Transition zones",
+            "Border areas",
+            "Meeting places between different environments"
+          ],
+          "avoid": [
+            "Uniform environments",
+            "Single-element spaces",
+            "Monotonous settings",
+            "Non-transitional areas"
+          ]
+        }
+      }
+    },
+    "Motivation": {
+      "name": "Motivation",
+      "category": "Cognitive Architecture",
+      "description": "What drives you at the deepest level and motivates your actions",
+      "importance": "Understanding your core drive and what truly motivates you",
+      "types": {
+        "Fear": {
+          "name": "Fear",
+          "description": "Motivated by avoiding what you fear, moving away from danger",
+          "characteristics": [
+            "Motivated by avoiding problems",
+            "Strong survival instincts",
+            "Excellent at identifying risks",
+            "Protective and cautious"
+          ],
+          "healthy_expression": [
+            "Wise caution and preparation",
+            "Excellent risk assessment",
+            "Protective of others",
+            "Practical safety measures"
+          ],
+          "shadow_expression": [
+            "Paralysis from fear",
+            "Excessive worry",
+            "Avoiding necessary risks",
+            "Limiting life experiences"
+          ]
+        },
+        "Hope": {
+          "name": "Hope",
+          "description": "Motivated by positive possibilities and future potential",
+          "characteristics": [
+            "Driven by optimistic visions",
+            "Focus on positive outcomes",
+            "Inspiring and uplifting",
+            "Future-oriented thinking"
+          ],
+          "healthy_expression": [
+            "Inspiring optimism",
+            "Creating positive visions",
+            "Motivating others",
+            "Building toward better futures"
+          ],
+          "shadow_expression": [
+            "Unrealistic expectations",
+            "Avoiding present reality",
+            "Disappointment when hopes don't manifest",
+            "Ignoring practical concerns"
+          ]
+        },
+        "Desire": {
+          "name": "Desire",
+          "description": "Motivated by what you want and are attracted to",
+          "characteristics": [
+            "Driven by attractions and wants",
+            "Strong pull toward desired outcomes",
+            "Passionate and focused",
+            "Goal-oriented action"
+          ],
+          "healthy_expression": [
+            "Clear goal setting",
+            "Passionate pursuit",
+            "Manifesting desires",
+            "Focused achievement"
+          ],
+          "shadow_expression": [
+            "Attachment to outcomes",
+            "Frustration when desires aren't met",
+            "Ignoring consequences",
+            "Selfish pursuit"
+          ]
+        },
+        "Need": {
+          "name": "Need",
+          "description": "Motivated by what is necessary and required",
+          "characteristics": [
+            "Driven by practical necessities",
+            "Focus on essential requirements",
+            "Responsible and dutiful",
+            "Meeting basic needs first"
+          ],
+          "healthy_expression": [
+            "Practical responsibility",
+            "Meeting essential needs",
+            "Reliable and dependable",
+            "Ensuring security"
+          ],
+          "shadow_expression": [
+            "Limiting beliefs about scarcity",
+            "Focusing only on survival",
+            "Ignoring higher aspirations",
+            "Excessive worry about needs"
+          ]
+        },
+        "Guilt": {
+          "name": "Guilt",
+          "description": "Motivated by making amends and correcting past mistakes",
+          "characteristics": [
+            "Driven by desire to make things right",
+            "Strong sense of responsibility",
+            "Corrective action orientation",
+            "Learning from mistakes"
+          ],
+          "healthy_expression": [
+            "Taking responsibility",
+            "Making amends",
+            "Learning from errors",
+            "Ethical behavior"
+          ],
+          "shadow_expression": [
+            "Excessive guilt and shame",
+            "Self-punishment",
+            "Inability to forgive self",
+            "Paralysis from past mistakes"
+          ]
+        },
+        "Innocence": {
+          "name": "Innocence",
+          "description": "Motivated by pure, unconditioned natural expression",
+          "characteristics": [
+            "Driven by natural authenticity",
+            "Unconditioned responses",
+            "Pure, innocent expression",
+            "Natural spontaneity"
+          ],
+          "healthy_expression": [
+            "Authentic natural expression",
+            "Spontaneous responses",
+            "Pure intentions",
+            "Unconditioned wisdom"
+          ],
+          "shadow_expression": [
+            "Naivety and gullibility",
+            "Lack of practical wisdom",
+            "Vulnerability to manipulation",
+            "Avoiding necessary learning"
+          ]
+        }
+      }
+    },
+    "Perspective": {
+      "name": "Perspective",
+      "category": "Cognitive Architecture",
+      "description": "How you naturally see and process the world around you",
+      "importance": "Your natural viewpoint and way of perceiving reality",
+      "types": {
+        "Personal": {
+          "name": "Personal",
+          "description": "See the world through personal, individual lens",
+          "characteristics": [
+            "Individual perspective",
+            "Personal viewpoint",
+            "Subjective experience",
+            "Self-focused awareness"
+          ],
+          "strengths": [
+            "Deep personal insight",
+            "Individual authenticity",
+            "Personal truth",
+            "Unique viewpoint"
+          ]
+        },
+        "Transpersonal": {
+          "name": "Transpersonal",
+          "description": "See beyond the personal to universal patterns",
+          "characteristics": [
+            "Universal perspective",
+            "Beyond personal viewpoint",
+            "Collective awareness",
+            "Transpersonal insight"
+          ],
+          "strengths": [
+            "Universal understanding",
+            "Collective wisdom",
+            "Beyond personal limitations",
+            "Broader perspective"
+          ]
+        }
+      }
+    },
+    "Cognition": {
+      "name": "Cognition",
+      "category": "Awareness",
+      "description": "How your mind processes information and makes sense of reality",
+      "importance": "Your natural cognitive processing style",
+      "types": {
+        "Smell": {
+          "name": "Smell",
+          "description": "Process information through intuitive, instinctual knowing",
+          "characteristics": [
+            "Intuitive processing",
+            "Instinctual knowing",
+            "Subtle awareness",
+            "Survival-based cognition"
+          ],
+          "strengths": [
+            "Intuitive insights",
+            "Instinctual wisdom",
+            "Subtle perception",
+            "Survival intelligence"
+          ]
+        },
+        "Taste": {
+          "name": "Taste",
+          "description": "Process information through discrimination and discernment",
+          "characteristics": [
+            "Discriminating awareness",
+            "Discerning judgment",
+            "Quality assessment",
+            "Refined perception"
+          ],
+          "strengths": [
+            "Excellent discernment",
+            "Quality recognition",
+            "Refined judgment",
+            "Discriminating wisdom"
+          ]
+        },
+        "Outer_Vision": {
+          "name": "Outer Vision",
+          "description": "Process information through external observation and seeing",
+          "characteristics": [
+            "External observation",
+            "Visual processing",
+            "Seeing patterns",
+            "Outer awareness"
+          ],
+          "strengths": [
+            "Pattern recognition",
+            "Visual intelligence",
+            "External awareness",
+            "Observational skills"
+          ]
+        },
+        "Inner_Vision": {
+          "name": "Inner Vision",
+          "description": "Process information through internal visualization and insight",
+          "characteristics": [
+            "Internal visualization",
+            "Inner seeing",
+            "Imaginative processing",
+            "Visionary awareness"
+          ],
+          "strengths": [
+            "Visionary insights",
+            "Creative visualization",
+            "Inner wisdom",
+            "Imaginative intelligence"
+          ]
+        },
+        "Feeling": {
+          "name": "Feeling",
+          "description": "Process information through emotional and feeling awareness",
+          "characteristics": [
+            "Emotional processing",
+            "Feeling-based knowing",
+            "Empathic awareness",
+            "Heart-centered cognition"
+          ],
+          "strengths": [
+            "Emotional intelligence",
+            "Empathic understanding",
+            "Heart wisdom",
+            "Feeling-based insights"
+          ]
+        },
+        "Touch": {
+          "name": "Touch",
+          "description": "Process information through physical and tactile awareness",
+          "characteristics": [
+            "Tactile processing",
+            "Physical awareness",
+            "Hands-on learning",
+            "Embodied cognition"
+          ],
+          "strengths": [
+            "Practical intelligence",
+            "Hands-on wisdom",
+            "Physical awareness",
+            "Embodied knowing"
+          ]
+        }
+      }
+    },
+    "Sense": {
+      "name": "Sense",
+      "category": "Awareness",
+      "description": "Your primary sense for navigating and understanding reality",
+      "importance": "The sense that provides your most reliable information",
+      "types": {
+        "Smell": {
+          "name": "Smell",
+          "description": "Navigate reality primarily through smell and instinctual awareness",
+          "characteristics": [
+            "Instinctual navigation",
+            "Survival-based awareness",
+            "Subtle environmental cues",
+            "Primitive wisdom"
+          ],
+          "practical_applications": [
+            "Trust gut instincts",
+            "Pay attention to environmental cues",
+            "Use instinctual awareness",
+            "Trust survival instincts"
+          ]
+        },
+        "Taste": {
+          "name": "Taste",
+          "description": "Navigate reality through taste and discrimination",
+          "characteristics": [
+            "Discriminating awareness",
+            "Quality assessment",
+            "Refined judgment",
+            "Discerning navigation"
+          ],
+          "practical_applications": [
+            "Trust your discernment",
+            "Assess quality carefully",
+            "Use refined judgment",
+            "Discriminate wisely"
+          ]
+        },
+        "Outer_Vision": {
+          "name": "Outer Vision",
+          "description": "Navigate reality primarily through external sight and observation",
+          "characteristics": [
+            "Visual navigation",
+            "External observation",
+            "Pattern recognition",
+            "Seeing-based awareness"
+          ],
+          "practical_applications": [
+            "Trust what you see",
+            "Use visual information",
+            "Observe patterns",
+            "Navigate through sight"
+          ]
+        },
+        "Inner_Vision": {
+          "name": "Inner Vision",
+          "description": "Navigate reality through inner sight and visualization",
+          "characteristics": [
+            "Inner sight navigation",
+            "Visionary awareness",
+            "Imaginative guidance",
+            "Internal visualization"
+          ],
+          "practical_applications": [
+            "Trust inner visions",
+            "Use visualization",
+            "Follow imaginative insights",
+            "Navigate through inner sight"
+          ]
+        },
+        "Feeling": {
+          "name": "Feeling",
+          "description": "Navigate reality primarily through feeling and emotional awareness",
+          "characteristics": [
+            "Feeling-based navigation",
+            "Emotional guidance",
+            "Heart-centered awareness",
+            "Empathic sensing"
+          ],
+          "practical_applications": [
+            "Trust your feelings",
+            "Use emotional guidance",
+            "Navigate through heart",
+            "Follow feeling awareness"
+          ]
+        },
+        "Touch": {
+          "name": "Touch",
+          "description": "Navigate reality through touch and physical sensation",
+          "characteristics": [
+            "Tactile navigation",
+            "Physical awareness",
+            "Hands-on guidance",
+            "Embodied sensing"
+          ],
+          "practical_applications": [
+            "Trust physical sensations",
+            "Use hands-on approach",
+            "Navigate through touch",
+            "Follow bodily awareness"
+          ]
+        }
+      }
+    }
+  },
+  "practical_applications": {
+    "health_optimization": "Use Digestion and Environment variables for optimal health",
+    "life_direction": "Use Motivation and Perspective for life choices",
+    "decision_making": "Use Cognition and Sense for processing information",
+    "environment_design": "Create spaces that support your Environment variable",
+    "nutrition": "Follow your Digestion variable for optimal eating",
+    "career_choices": "Align work with your Motivation and Environment"
+  },
+  "integration_notes": {
+    "advanced_level": "Variables are for advanced Human Design students",
+    "experimentation": "Experiment with variables to find what works",
+    "not_rules": "Variables are guidelines, not rigid rules",
+    "personal_authority": "Always follow your personal authority first",
+    "gradual_implementation": "Implement variables gradually over time"
+  }
+}

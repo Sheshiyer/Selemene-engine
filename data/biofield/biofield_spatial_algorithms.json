@@ -1,0 +1,202 @@
+{
+  "spatial_algorithms": {
+    "description": "Spatial analysis algorithms for biofield PIP image processing",
+    "version": "1.0.0"
+  },
+  "light_quanta_density": {
+    "algorithm": "threshold_based_counting",
+    "parameters": {
+      "threshold_method": "adaptive_gaussian",
+      "block_size": 11,
+      "c_constant": 2,
+      "min_area": 5
+    },
+    "description": "Counts light quanta above adaptive threshold",
+    "units": "quanta_per_unit_area"
+  },
+  "normalized_area": {
+    "algorithm": "contour_area_ratio",
+    "parameters": {
+      "contour_method": "cv2.RETR_EXTERNAL",
+      "approximation": "cv2.CHAIN_APPROX_SIMPLE",
+      "min_contour_area": 10
+    },
+    "description": "Ratio of light pattern area to total image area",
+    "units": "ratio"
+  },
+  "average_intensity": {
+    "algorithm": "weighted_mean_intensity",
+    "parameters": {
+      "weight_function": "gaussian",
+      "sigma": 1.0,
+      "normalization": "min_max"
+    },
+    "description": "Weighted average intensity of light patterns",
+    "units": "normalized_intensity"
+  },
+  "inner_noise": {
+    "algorithm": "local_variance_analysis",
+    "parameters": {
+      "window_size": 5,
+      "overlap": 0.5,
+      "variance_threshold": 0.1
+    },
+    "description": "Variability in light patterns within local regions",
+    "units": "variance_coefficient"
+  },
+  "energy_analysis": {
+    "algorithm": "integrated_energy_calculation",
+    "parameters": {
+      "integration_method": "simpson",
+      "energy_bands": ["low", "medium", "high"],
+      "frequency_ranges": [0.1, 0.5, 1.0]
+    },
+    "description": "Total integrated emission energy across frequency bands",
+    "units": "energy_units"
+  },
+  "entropy_form_coefficient": {
+    "algorithm": "shannon_entropy_calculation",
+    "parameters": {
+      "histogram_bins": 256,
+      "smoothing_kernel": "gaussian",
+      "kernel_size": 3
+    },
+    "description": "Pattern irregularity using Shannon entropy",
+    "units": "bits"
+  },
+  "fractal_dimension": {
+    "algorithm": "box_counting_method",
+    "parameters": {
+      "box_sizes": [1, 2, 4, 8, 16, 32, 64],
+      "threshold": 0.5,
+      "regression_method": "least_squares"
+    },
+    "description": "Spatial complexity using box counting fractal dimension",
+    "units": "dimension"
+  },
+  "correlation_dimension": {
+    "algorithm": "grassberger_procaccia",
+    "parameters": {
+      "embedding_dimension": 3,
+      "radius_range": [0.01, 1.0],
+      "radius_steps": 50,
+      "correlation_integral": "standard"
+    },
+    "description": "Non-linear complexity using correlation dimension",
+    "units": "dimension"
+  },
+  "body_symmetry": {
+    "algorithm": "bilateral_correlation",
+    "parameters": {
+      "symmetry_axis": "vertical_center",
+      "correlation_method": "pearson",
+      "preprocessing": "gaussian_blur",
+      "blur_sigma": 1.0
+    },
+    "description": "Left/right body symmetry analysis",
+    "units": "correlation_coefficient"
+  },
+  "contour_complexity": {
+    "algorithm": "perimeter_area_ratio",
+    "parameters": {
+      "contour_method": "cv2.RETR_TREE",
+      "approximation": "cv2.CHAIN_APPROX_NONE",
+      "smoothing": "gaussian",
+      "smoothing_iterations": 2
+    },
+    "description": "Bio-energy field boundary complexity",
+    "units": "complexity_ratio"
+  },
+  "pattern_regularity": {
+    "algorithm": "autocorrelation_analysis",
+    "parameters": {
+      "lag_range": [1, 50],
+      "correlation_threshold": 0.7,
+      "periodicity_detection": "fft_based",
+      "window_function": "hanning"
+    },
+    "description": "Coherent emission uniformity measurement",
+    "units": "regularity_coefficient"
+  },
+  "preprocessing": {
+    "noise_reduction": {
+      "algorithm": "bilateral_filter",
+      "parameters": {
+        "d": 9,
+        "sigma_color": 75,
+        "sigma_space": 75
+      }
+    },
+    "edge_enhancement": {
+      "algorithm": "unsharp_mask",
+      "parameters": {
+        "kernel_size": 5,
+        "sigma": 1.0,
+        "amount": 1.5,
+        "threshold": 0
+      }
+    },
+    "calibration": {
+      "auto_calibration": {
+        "white_balance": "gray_world",
+        "exposure_correction": "histogram_equalization",
+        "gamma_correction": 1.0
+      },
+      "manual_calibration": {
+        "reference_points": "user_defined",
+        "calibration_targets": ["white", "black", "gray"],
+        "interpolation_method": "bilinear"
+      }
+    }
+  },
+  "quality_assessment": {
+    "image_quality_metrics": {
+      "sharpness": {
+        "algorithm": "laplacian_variance",
+        "threshold": 100
+      },
+      "contrast": {
+        "algorithm": "rms_contrast",
+        "normalization": "min_max"
+      },
+      "noise_level": {
+        "algorithm": "noise_estimation",
+        "method": "median_absolute_deviation"
+      },
+      "exposure": {
+        "algorithm": "histogram_analysis",
+        "optimal_range": [0.1, 0.9]
+      }
+    }
+  },
+  "validation": {
+    "reference_standards": {
+      "phantom_images": "standardized_test_patterns",
+      "calibration_targets": "known_energy_sources",
+      "baseline_measurements": "control_subjects"
+    },
+    "accuracy_metrics": {
+      "repeatability": "coefficient_of_variation",
+      "reproducibility": "inter_operator_agreement",
+      "sensitivity": "minimum_detectable_change",
+      "specificity": "false_positive_rate"
+    }
+  },
+  "integration_parameters": {
+    "face_reading_correlation": {
+      "constitutional_mapping": "five_elements_correspondence",
+      "symmetry_validation": "twelve_houses_alignment",
+      "energy_correlation": "constitutional_vitality"
+    },
+    "vedic_correlation": {
+      "panchanga_alignment": "elemental_correspondence",
+      "planetary_influence": "energy_modulation",
+      "timing_optimization": "cosmic_rhythm_sync"
+    },
+    "tcm_correlation": {
+      "organ_clock_mapping": "energy_meridian_flow",
+      "elemental_balance": "five_element_harmony",
+      "qi_assessment": "energy_circulation_patterns"
+    }
+  }
+}

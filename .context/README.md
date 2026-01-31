@@ -1,0 +1,827 @@
+# The .context method
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Stars](https://img.shields.io/github/stars/andrefigueira/.context?style=social)](https://github.com/andrefigueira/.context/stargazers)
+[![Documentation](https://img.shields.io/badge/docs-substrate-blue.svg)](./.context/)
+
+> **TL;DR**: Give AI tools a brain dump of your project so they stop guessing. A `.context/` folder with structured docs = AI that actually understands your codebase.
+
+A complete "Documentation as Code as Context" template implementing the Substrate Methodology. Transform any software project into a self-documenting, AI-optimized codebase with modular, Git-native documentation that serves as a living knowledge base.
+
+## What is the Substrate Methodology?
+
+The Substrate Methodology addresses the problem of outdated documentation and AI hallucinations by creating a structured, domain-organized documentation system in a `.context/` directory. This approach:
+
+- **Reduces documentation drift** by keeping docs in Git alongside code
+- **Provides context that reduces AI hallucinations** through structured, project-specific information
+- **Supports faster onboarding** with comprehensive domain knowledge
+- **Captures decision history** for future reference
+- **Helps teams scale** with consistent, documented patterns
+
+## Quick Start
+
+1. **Clone and customize:**
+   ```bash
+   git clone https://github.com/andrefigueira/.context.git your-project
+   cd your-project
+   rm -rf .git && git init
+   ```
+
+2. **Customize the template:**
+   - Replace `[Your Project Name]` placeholders
+   - Update code examples for your stack
+   - Modify domains in `.context/` to match your architecture
+
+3. **Start documenting:**
+   ```bash
+   # Edit the entry point
+   vim .context/substrate.md
+   
+   # Add your first domain documentation
+   vim .context/architecture/overview.md
+   ```
+
+4. **Generate your substrate with AI:**
+   Use the comprehensive AI prompt below to create domain-specific documentation for your project. See [AI-Assisted Substrate Generation](#ai-assisted-substrate-generation) section for the complete prompt.
+
+## Why This Matters
+
+Modern software development faces a documentation crisis:
+- Most developers work with outdated or incomplete docs
+- AI tools hallucinate when missing context
+- Knowledge silos slow team velocity
+- Onboarding takes weeks instead of days
+
+The Substrate Methodology transforms documentation from a burden into a force multiplier, creating a comprehensive knowledge base that grows with your codebase.
+
+## Before & After
+
+**Without .context:**
+```
+Prompt: "Add a password reset endpoint"
+
+AI output: Generic implementation, wrong auth pattern,
+missing your error codes, doesn't match your architecture.
+You spend 30 min fixing it.
+```
+
+**With .context:**
+```
+Prompt: "Add a password reset endpoint"
+
+AI output: Uses your JWT pattern, your error codes (AUTH_*),
+your service/repository layers, your validation approach.
+Ready to use.
+```
+
+The difference is context. AI tools are capable. They just don't know your project.
+
+## Minimal Starter (5 Files)
+
+Don't have time for 47 files? Start with these 5:
+
+| File | Purpose | Time |
+|------|---------|------|
+| `substrate.md` | Entry point, project overview | 15 min |
+| `ai-rules.md` | Hard constraints (naming, patterns) | 20 min |
+| `anti-patterns.md` | What NOT to do | 15 min |
+| `architecture/overview.md` | System design, layers | 30 min |
+| `glossary.md` | Your terminology | 10 min |
+
+That's 90 minutes to massively improve AI output. Add more files as needed.
+
+## Adding to Existing Projects
+
+Already have a codebase? Here's how to retrofit:
+
+1. **Create the folder:**
+   ```bash
+   mkdir -p .context/architecture .context/auth .context/api .context/database
+   ```
+
+2. **Generate initial substrate with AI:**
+   ```
+   Analyze this codebase and generate .context/ documentation following
+   the structure at https://github.com/andrefigueira/.context
+
+   Focus on:
+   - Current architecture and patterns
+   - Authentication approach
+   - API conventions
+   - Database schema
+   - Naming conventions
+   - Known technical debt
+   ```
+
+3. **Review and refine** - AI gets you 80%, you refine the rest
+
+4. **Validate regularly** - Use the [Hot Tip prompt](#hot-tip-iterate-on-your-context) to keep it accurate
+
+## Add the Badge
+
+Using .context in your project? Add the badge:
+
+```markdown
+[![.context](https://img.shields.io/badge/.context-method-blue)](https://github.com/andrefigueira/.context)
+```
+
+[![.context](https://img.shields.io/badge/.context-method-blue)](https://github.com/andrefigueira/.context)
+
+## How the .context Method Works with AI Tools
+
+The `.context/` folder is the core of this methodology. It contains your structured documentation. But different AI tools need different ways to discover and use this context.
+
+### The Entry Point Problem
+
+AI tools need to know your `.context/` folder exists and how to use it. This is solved differently depending on your tool:
+
+| AI Tool | Entry Point | How It Works |
+|---------|-------------|--------------|
+| **Claude Code** (Anthropic CLI) | `CLAUDE.md` | Auto-loaded at session start. Claude Code reads this file automatically and follows its instructions to reference `.context/` files. |
+| **Other AI tools** (ChatGPT, Cursor, Copilot, generic Claude) | `agents.md` | Manual inclusion. You copy relevant `.context/` files into your prompts following the patterns in agents.md. |
+
+### Why Two Files?
+
+**CLAUDE.md** is a Claude Code feature. When you start a Claude Code session, it automatically reads `CLAUDE.md` from your project root and treats it as persistent instructions. This means Claude Code will automatically know to check `.context/` files before generating code.
+
+**agents.md** exists for AI tools that don't have this auto-discovery feature. It documents how to manually feed context into your prompts for consistent results.
+
+### The Relationship
+
+```
+┌─────────────────────────────────────────────────────┐
+│                  .context/ folder                    │
+│         (Your structured documentation)              │
+│                                                      │
+│  substrate.md, architecture/, auth/, api/, etc.     │
+└─────────────────────────────────────────────────────┘
+                         ▲
+                         │
+         ┌───────────────┴───────────────┐
+         │                               │
+    ┌────┴────┐                    ┌─────┴─────┐
+    │CLAUDE.md│                    │ agents.md │
+    │         │                    │           │
+    │ Claude  │                    │  Other    │
+    │  Code   │                    │ AI Tools  │
+    │(auto)   │                    │ (manual)  │
+    └─────────┘                    └───────────┘
+```
+
+Both files point to the same `.context/` documentation. They're just different bridges for different tools.
+
+## FAQ
+
+### Why do I need `.context/` if I already have `CLAUDE.md` or `agents.md`?
+
+`CLAUDE.md` and `agents.md` are entry points, not the knowledge itself. They're like the table of contents in a book. The `.context/` folder is the actual book.
+
+Without `.context/`, your `CLAUDE.md` becomes a flat list of instructions with no depth. The AI reads "use JWT authentication" but has no reference for *your* JWT implementation, *your* token lifetimes, *your* refresh strategy, *your* error codes.
+
+The power is in the structured knowledge that lives in `.context/`. The entry point files just tell AI tools where to find it.
+
+### What is "crystallized knowledge" and why does it matter?
+
+When your team discusses architecture, debates patterns, and makes decisions, that knowledge exists as fluid conversation. It lives in Slack threads, meeting notes, pull request comments, and people's heads.
+
+**Crystallized knowledge** is that same information solidified into permanent, structured reference material. The `.context/` folder captures decisions *after* they've been made, patterns *after* they've been validated, and constraints *after* they've been learned the hard way.
+
+This matters because:
+- **Fluid knowledge disappears** when people leave or forget
+- **AI tools can't read Slack history** or attend your meetings
+- **New team members** can't absorb years of tribal knowledge
+- **Your future self** won't remember why that weird pattern exists
+
+Crystallizing knowledge into `.context/` makes it permanent, searchable, and AI-consumable.
+
+### Isn't this just markdown files? What makes it different?
+
+The files are markdown. The value is in the **structure and interconnection**.
+
+Consider the difference:
+- **Flat docs**: A single README with everything in one place
+- **Wiki-style**: Separate pages with no clear relationships
+- **Substrate**: Domain-organized, cross-referenced, with explicit hierarchies
+
+The `.context/` structure encodes relationships:
+- `auth/security.md` links to `architecture/patterns.md` for error handling
+- `api/endpoints.md` references `database/models.md` for validation rules
+- `decisions/001-jwt.md` explains why `auth/overview.md` uses that approach
+
+AI tools follow these connections. When you ask about authentication, the AI doesn't just read one file. It traverses related context across domains. The structure *is* the intelligence.
+
+### How is this different from just good comments in code?
+
+Comments explain *what* code does. `.context/` explains:
+- **Why** the code exists (decision rationale)
+- **What else** relates to it (cross-domain connections)
+- **What not to do** (anti-patterns and boundaries)
+- **How it evolved** (decision history)
+
+Code comments are local. Substrate context is global. When AI generates new code, it needs to understand the whole system, not just the function it's modifying.
+
+### Does the AI actually use all these files?
+
+Not all at once. The methodology works through selective loading:
+
+1. **Entry point** (`CLAUDE.md` / `agents.md`) tells AI where context lives
+2. **Task determines scope**: Auth work? Load `auth/*.md`. API work? Load `api/*.md`
+3. **Cross-references expand context**: If `auth/security.md` mentions password hashing, AI knows to check related patterns
+4. **AI builds mental model**: The interconnected structure helps AI reason about your system holistically
+
+The files are modular by design. You don't dump everything into context. You load what's relevant, and the structure helps AI find related information.
+
+### Why not just let AI figure out my codebase by reading the source?
+
+AI *can* read source code. But code tells you *what* exists, not:
+- Why it was built that way
+- What alternatives were rejected
+- What constraints shaped the design
+- What patterns must be followed for new code
+- What mistakes have been made before
+
+Source code is implementation. `.context/` is intent, rationale, and institutional knowledge. Both are needed for AI to generate code that actually fits your project.
+
+## Hot Tip: Iterate on Your .context
+
+Your `.context/` folder is a living document. Once you've created it, have your AI agent review and validate it against your actual codebase. This catches gaps, outdated information, and opportunities to add richer context.
+
+Use this prompt to validate and improve your substrate:
+
+```
+Review my .context/ documentation against the actual codebase. For each domain file:
+
+1. **Accuracy check**: Does the documentation match the current implementation? Flag any outdated patterns, deprecated approaches, or missing features.
+
+2. **Completeness check**: What's documented in the code but missing from .context/? Look for:
+   - Undocumented API endpoints
+   - Missing error handling patterns
+   - Security measures not captured
+   - Database fields/tables not in schema docs
+   - UI components without documentation
+
+3. **Richness check**: Where could the documentation be more useful? Consider:
+   - Adding more code examples
+   - Including edge cases and error scenarios
+   - Documenting "why" decisions were made (Decision History sections)
+   - Adding Mermaid diagrams for complex flows
+
+4. **Consistency check**: Are naming conventions, patterns, and terminology consistent across all .context/ files?
+
+Provide a prioritized list of improvements with specific suggestions for each.
+```
+
+Run this periodically (monthly or after major features) to keep your substrate accurate and valuable.
+
+## Real-World Example
+
+See the methodology in action: [.context-designs](https://github.com/andrefigueira/.context-designs) - A complete UI component library built with Tailwind CSS using the .context method. This project demonstrates how documentation-as-context enables consistent design system implementation and AI-assisted component generation.
+
+## Structure Overview
+
+```
+README.md                     # Project introduction and quick start
+CLAUDE.md                     # Claude Code configuration (use this if using Claude Code CLI)
+agents.md                     # AI agent usage patterns (use this for other AI tools)
+.context/
+├── substrate.md              # Entry point and methodology guide
+│
+├── # AI-Specific Context
+├── ai-rules.md               # Hard constraints for AI code generation
+├── glossary.md               # Project-specific terminology
+├── anti-patterns.md          # What NOT to do (with examples)
+├── boundaries.md             # What AI should/shouldn't modify
+├── debt.md                   # Known technical debt registry
+│
+├── # Operational
+├── workflows.md              # Step-by-step development guides
+├── env.md                    # Environment variables documentation
+├── errors.md                 # Error codes catalog
+├── testing.md                # Testing strategy and standards
+├── performance.md            # Performance budgets and guidelines
+├── dependencies.md           # Approved packages and libraries
+├── code-review.md            # Code review checklist
+├── monitoring.md             # Logging, metrics, observability
+├── events.md                 # Domain events catalog
+├── feature-flags.md          # Feature flag patterns
+├── versioning.md             # API versioning strategy
+├── changelog.md              # Substrate evolution log
+│
+├── # Prompts
+├── prompts/                  # Pre-built AI prompts
+│   ├── new-endpoint.md      # Adding API endpoints
+│   ├── new-feature.md       # Implementing features
+│   ├── fix-bug.md           # Debugging issues
+│   ├── refactor.md          # Refactoring code
+│   ├── review.md            # Code review
+│   ├── security-audit.md    # Security review
+│   ├── performance.md       # Performance optimization
+│   └── documentation.md     # Writing docs
+│
+├── # Decisions
+├── decisions/                # Architecture Decision Records
+│   └── [ADR files]
+│
+├── # Domain Documentation
+├── architecture/             # System design and patterns
+├── auth/                     # Authentication and security
+├── api/                      # API reference and examples
+├── database/                 # Data models and migrations
+├── ui/                       # Frontend and design system
+├── seo/                      # Search engine optimization
+└── guidelines.md             # Development workflows and standards
+```
+
+Each domain contains modular Markdown files optimized for:
+- **Human readability** with clear structure
+- **AI consumption** with parseable formats
+- **Version control** with Git integration
+- **Extensibility** for project-specific needs
+
+## Features
+
+- ✅ **Modular Documentation**: Domain-organized for precise context
+- ✅ **AI-Optimized Format**: Structured for LLM consumption
+- ✅ **Decision History**: Captures rationale and trade-offs
+- ✅ **Code Examples**: Real patterns for immediate use
+- ✅ **Mermaid Diagrams**: Visual architecture documentation
+- ✅ **Generic Template**: Adaptable to any tech stack
+- ✅ **MIT Licensed**: Free for commercial use
+
+## Usage Patterns
+
+### For Development Teams
+```bash
+# Before implementing auth
+cat .context/auth/*.md > context.txt
+# Use context.txt with your preferred AI tool for implementation guidance
+```
+
+### For Onboarding
+```bash
+# New developer orientation
+cat .context/substrate.md .context/architecture/overview.md
+```
+
+### For AI-Assisted Development
+```bash
+# Context-aware code generation
+echo "Based on the following documentation, implement user registration:" && \
+cat .context/auth/integration.md .context/database/models.md
+```
+
+## AI-Assisted Substrate Generation
+
+**Recommended Approach**: Instead of manually writing documentation, use AI to generate comprehensive substrate documentation tailored to your specific project. This ensures consistency with the methodology while adapting to your unique architecture, tech stack, and business domain.
+
+### Complete AI Generation Prompt
+
+Copy and paste this prompt into your preferred AI tool (Claude, GPT-4, etc.) to generate substrate documentation for your project:
+
+```
+You are an expert technical writer specializing in the "Documentation as Code as Context" methodology. Create comprehensive substrate documentation following the exact structure and quality standards of this template: https://github.com/andrefigueira/.context
+
+PROJECT CONTEXT:
+- Project Name: [YOUR PROJECT NAME]
+- Tech Stack: [YOUR TECH STACK - e.g., Node.js/Express, React, PostgreSQL, Redis]
+- Architecture Pattern: [YOUR PATTERN - e.g., microservices, monolith, serverless]
+- Authentication Method: [YOUR AUTH - e.g., OAuth2, JWT, session-based]
+- Database Type: [YOUR DB - e.g., PostgreSQL, MongoDB, MySQL]
+- Target Audience: [YOUR USERS - e.g., internal APIs, public SaaS, enterprise]
+
+REQUIREMENTS:
+1. Generate content for ALL substrate domains: architecture, auth, api, database, guidelines
+2. Use my specific tech stack and adapt all code examples accordingly
+3. Include actual implementation patterns, not generic advice
+4. Add decision rationale sections explaining "why" choices were made
+5. Include Mermaid diagrams for architecture flows and database schemas
+6. Provide realistic error handling patterns
+7. Include performance considerations and security measures
+8. Add specific testing strategies for my tech stack
+9. Include deployment procedures for my infrastructure
+
+STRUCTURE TO FOLLOW:
+Create these files with comprehensive, production-ready content:
+
+substrate.md - Entry point with navigation and AI usage patterns
+architecture/
+├── overview.md - System architecture with Mermaid diagrams
+├── dependencies.md - Dependency injection patterns for my stack
+└── patterns.md - Code organization and error handling
+
+auth/
+├── overview.md - Authentication flow for my auth method
+├── integration.md - Framework integration patterns
+└── security.md - Security model and threat mitigation
+
+api/
+├── endpoints.md - API reference with my actual endpoints
+├── headers.md - HTTP headers and middleware patterns
+└── examples.md - Client implementations for my stack
+
+database/
+├── schema.md - Database schema with ERD for my data model
+├── models.md - Data models and validation for my stack
+└── migrations.md - Migration strategy for my database
+
+ui/
+├── overview.md - Component architecture, design tokens, specifications
+└── patterns.md - UI implementation patterns, forms, modals, data display
+
+seo/
+└── overview.md - Meta tags, structured data schemas, Core Web Vitals
+
+guidelines.md - Development workflow and deployment for my stack
+
+QUALITY STANDARDS:
+- Each file should be 400-800 words with practical examples
+- Include 2-3 realistic code snippets per file using my tech stack
+- Add "Decision History & Trade-offs" sections explaining architectural choices
+- Use consistent technical terminology throughout
+- Include specific performance benchmarks and security considerations
+- Provide actionable implementation guidance, not theoretical concepts
+
+EXAMPLE OUTPUT QUALITY:
+Reference the template structure at https://github.com/andrefigueira/.context but adapt ALL content to my specific project. Don't copy generic examples - create realistic implementations for my exact tech stack and business domain.
+
+START WITH: substrate.md as the entry point, then generate each domain systematically.
+```
+
+### Usage Instructions
+
+1. **Replace the bracketed placeholders** with your specific project details
+2. **Paste the prompt** into your AI tool of choice
+3. **Generate each domain** systematically (start with substrate.md)
+4. **Review and refine** the generated content for accuracy
+5. **Iterate on specific sections** that need more detail
+
+### Example Customization
+
+For a Node.js/Express API project:
+```
+PROJECT CONTEXT:
+- Project Name: TaskFlow API
+- Tech Stack: Node.js, Express.js, TypeScript, PostgreSQL, Redis, Docker
+- Architecture Pattern: Layered monolith with clear service boundaries
+- Authentication Method: JWT with refresh tokens
+- Database Type: PostgreSQL with Prisma ORM
+- Target Audience: Internal microservice for task management SaaS
+```
+
+### AI Tool Recommendations
+
+- **Claude (Anthropic)**: Excellent for following complex instructions and maintaining consistency
+- **GPT-4 (OpenAI)**: Great for code examples and technical accuracy
+- **Cursor/Continue**: IDE integration for iterative refinement
+
+### Quality Assurance
+
+After AI generation:
+1. **Validate code examples** actually work with your stack
+2. **Test database schemas** match your actual data model  
+3. **Verify security patterns** align with your compliance requirements
+4. **Update decision rationale** to reflect your specific constraints
+5. **Add team-specific conventions** not captured in the template
+
+This AI-assisted approach typically produces 80-90% complete documentation that requires minimal manual refinement, compared to weeks of manual documentation work.
+
+## Contributing
+
+We welcome contributions to improve the Substrate Methodology template:
+
+1. **Fork** the repository
+2. **Create** a feature branch (`git checkout -b feature/amazing-domain`)
+3. **Document** your changes in the relevant `.context/` files
+4. **Submit** a pull request
+
+### Contribution Guidelines
+
+- Follow the established documentation structure
+- Include decision rationale for changes
+- Add code examples for new patterns
+- Update the main README if adding new domains
+- Ensure Markdown follows consistent formatting
+
+## Community
+
+- 🐛 **Report issues**: [GitHub Issues](https://github.com/andrefigueira/.context/issues)
+- 💬 **Discussions**: [GitHub Discussions](https://github.com/andrefigueira/.context/discussions)
+- 📖 **Documentation**: [Substrate Methodology Guide](./.context/substrate.md)
+
+## License
+
+MIT License - see [LICENSE](LICENSE) file for details.
+
+## Adapting to Your Tech Stack
+
+The template uses Go code examples but is designed to be adapted to any technology. Below are complete examples showing how patterns translate across languages.
+
+### TypeScript/Node.js Example
+
+**Domain Error Pattern**
+```typescript
+// types/errors.ts
+export class DomainError extends Error {
+  constructor(
+    public code: string,
+    public message: string,
+    public statusCode: number = 500,
+    public details?: Record<string, unknown>
+  ) {
+    super(message);
+    this.name = 'DomainError';
+  }
+}
+
+export const Errors = {
+  UserNotFound: new DomainError('USER_NOT_FOUND', 'User not found', 404),
+  InvalidEmail: new DomainError('INVALID_EMAIL', 'Invalid email format', 400),
+  DuplicateEmail: new DomainError('DUPLICATE_EMAIL', 'Email already exists', 409),
+} as const;
+```
+
+**Repository Pattern**
+```typescript
+// repositories/user.repository.ts
+export interface UserRepository {
+  create(user: CreateUserDTO): Promise<User>;
+  findById(id: string): Promise<User | null>;
+  findByEmail(email: string): Promise<User | null>;
+  update(id: string, data: UpdateUserDTO): Promise<User>;
+  delete(id: string): Promise<void>;
+}
+
+export class PrismaUserRepository implements UserRepository {
+  constructor(private prisma: PrismaClient) {}
+
+  async create(data: CreateUserDTO): Promise<User> {
+    return this.prisma.user.create({ data });
+  }
+
+  async findByEmail(email: string): Promise<User | null> {
+    return this.prisma.user.findUnique({ where: { email } });
+  }
+}
+```
+
+**Service Layer**
+```typescript
+// services/user.service.ts
+export class UserService {
+  constructor(
+    private userRepo: UserRepository,
+    private validator: UserValidator,
+    private cache: CacheService
+  ) {}
+
+  async createUser(req: CreateUserRequest): Promise<User> {
+    await this.validator.validateCreateUser(req);
+
+    const existing = await this.userRepo.findByEmail(req.email);
+    if (existing) throw Errors.DuplicateEmail;
+
+    const user = await this.userRepo.create({
+      email: req.email,
+      name: req.name,
+      status: 'active',
+    });
+
+    await this.cache.set(`user:${user.id}`, user, 3600);
+    return user;
+  }
+}
+```
+
+### Python Example
+
+**Domain Error Pattern**
+```python
+# errors.py
+from dataclasses import dataclass
+from typing import Optional, Dict, Any
+
+@dataclass
+class DomainError(Exception):
+    code: str
+    message: str
+    status_code: int = 500
+    details: Optional[Dict[str, Any]] = None
+
+class Errors:
+    USER_NOT_FOUND = DomainError("USER_NOT_FOUND", "User not found", 404)
+    INVALID_EMAIL = DomainError("INVALID_EMAIL", "Invalid email format", 400)
+    DUPLICATE_EMAIL = DomainError("DUPLICATE_EMAIL", "Email already exists", 409)
+```
+
+**Repository Pattern**
+```python
+# repositories/user_repository.py
+from abc import ABC, abstractmethod
+from typing import Optional
+from models import User, CreateUserDTO
+
+class UserRepository(ABC):
+    @abstractmethod
+    async def create(self, user: CreateUserDTO) -> User: ...
+
+    @abstractmethod
+    async def find_by_id(self, id: str) -> Optional[User]: ...
+
+    @abstractmethod
+    async def find_by_email(self, email: str) -> Optional[User]: ...
+
+class SQLAlchemyUserRepository(UserRepository):
+    def __init__(self, session: AsyncSession):
+        self.session = session
+
+    async def create(self, data: CreateUserDTO) -> User:
+        user = User(**data.dict())
+        self.session.add(user)
+        await self.session.commit()
+        await self.session.refresh(user)
+        return user
+
+    async def find_by_email(self, email: str) -> Optional[User]:
+        result = await self.session.execute(
+            select(User).where(User.email == email)
+        )
+        return result.scalar_one_or_none()
+```
+
+**Service Layer**
+```python
+# services/user_service.py
+class UserService:
+    def __init__(
+        self,
+        user_repo: UserRepository,
+        validator: UserValidator,
+        cache: CacheService
+    ):
+        self.user_repo = user_repo
+        self.validator = validator
+        self.cache = cache
+
+    async def create_user(self, req: CreateUserRequest) -> User:
+        await self.validator.validate_create_user(req)
+
+        existing = await self.user_repo.find_by_email(req.email)
+        if existing:
+            raise Errors.DUPLICATE_EMAIL
+
+        user = await self.user_repo.create(CreateUserDTO(
+            email=req.email,
+            name=req.name,
+            status="active"
+        ))
+
+        await self.cache.set(f"user:{user.id}", user, ttl=3600)
+        return user
+```
+
+### Java/Spring Boot Example
+
+**Domain Error Pattern**
+```java
+// exceptions/DomainError.java
+@Getter
+public class DomainError extends RuntimeException {
+    private final String code;
+    private final int statusCode;
+    private final Map<String, Object> details;
+
+    public DomainError(String code, String message, int statusCode) {
+        super(message);
+        this.code = code;
+        this.statusCode = statusCode;
+        this.details = new HashMap<>();
+    }
+
+    public static final DomainError USER_NOT_FOUND =
+        new DomainError("USER_NOT_FOUND", "User not found", 404);
+    public static final DomainError DUPLICATE_EMAIL =
+        new DomainError("DUPLICATE_EMAIL", "Email already exists", 409);
+}
+```
+
+**Repository Pattern**
+```java
+// repositories/UserRepository.java
+@Repository
+public interface UserRepository extends JpaRepository<User, UUID> {
+    Optional<User> findByEmail(String email);
+    List<User> findByStatus(UserStatus status);
+}
+```
+
+**Service Layer**
+```java
+// services/UserService.java
+@Service
+@RequiredArgsConstructor
+public class UserService {
+    private final UserRepository userRepository;
+    private final UserValidator validator;
+    private final CacheService cache;
+
+    @Transactional
+    public User createUser(CreateUserRequest request) {
+        validator.validateCreateUser(request);
+
+        userRepository.findByEmail(request.getEmail())
+            .ifPresent(u -> { throw DomainError.DUPLICATE_EMAIL; });
+
+        User user = User.builder()
+            .email(request.getEmail())
+            .name(request.getName())
+            .status(UserStatus.ACTIVE)
+            .build();
+
+        User saved = userRepository.save(user);
+        cache.set("user:" + saved.getId(), saved, Duration.ofHours(1));
+        return saved;
+    }
+}
+```
+
+### Framework-Specific Authentication
+
+**Express.js JWT Middleware**
+```typescript
+// middleware/auth.ts
+export const authMiddleware = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const token = req.headers.authorization?.replace('Bearer ', '');
+  if (!token) return res.status(401).json({ error: 'No token provided' });
+
+  try {
+    const payload = jwt.verify(token, process.env.JWT_SECRET!) as JwtPayload;
+    req.user = await userService.findById(payload.sub);
+    next();
+  } catch {
+    res.status(401).json({ error: 'Invalid token' });
+  }
+};
+```
+
+**FastAPI Dependency Injection**
+```python
+# dependencies/auth.py
+async def get_current_user(
+    token: str = Depends(oauth2_scheme),
+    user_service: UserService = Depends(get_user_service)
+) -> User:
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
+        user = await user_service.find_by_id(payload["sub"])
+        if not user:
+            raise HTTPException(status_code=401, detail="User not found")
+        return user
+    except JWTError:
+        raise HTTPException(status_code=401, detail="Invalid token")
+```
+
+**Spring Security Filter**
+```java
+// security/JwtAuthFilter.java
+@Component
+@RequiredArgsConstructor
+public class JwtAuthFilter extends OncePerRequestFilter {
+    private final JwtService jwtService;
+    private final UserService userService;
+
+    @Override
+    protected void doFilterInternal(
+        HttpServletRequest request,
+        HttpServletResponse response,
+        FilterChain chain
+    ) throws ServletException, IOException {
+        String token = extractToken(request);
+        if (token != null && jwtService.isValid(token)) {
+            String userId = jwtService.extractSubject(token);
+            User user = userService.findById(UUID.fromString(userId));
+            var auth = new UsernamePasswordAuthenticationToken(
+                user, null, user.getAuthorities()
+            );
+            SecurityContextHolder.getContext().setAuthentication(auth);
+        }
+        chain.doFilter(request, response);
+    }
+}
+```
+
+## Inspiration
+
+Based on the ["Documentation as Code as Context" methodology](https://buildingbetter.tech/p/documentation-as-code-as-context) by Building Better. This template transforms that philosophy into a practical, ready-to-use system for any software project.
+
+### Related Projects
+- 📖 [Original methodology article](https://buildingbetter.tech/p/documentation-as-code-as-context) - The foundational concept behind this template
+- 🤖 [Your AI sucks because you suck at prompting](https://buildingbetter.tech/p/your-ai-sucks-because-you-suck-at) - Why context matters for AI effectiveness
+- 🧠 [Information Substrate Convergence](https://github.com/andrefigueira/information-substrate-convergence) - Advanced implementation and research
+
+---
+
+**Ready to transform your documentation?** Start with `.context/substrate.md` and experience the difference of having your codebase document itself.

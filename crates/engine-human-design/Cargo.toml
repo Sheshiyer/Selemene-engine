@@ -1,0 +1,13 @@
+[package]
+name = "engine-human-design"
+version = "0.1.0"
+edition = "2021"
+description = "Human Design consciousness engine — 88° solar arc, gates, channels, centers"
+
+[dependencies]
+noesis-core = { path = "../noesis-core" }
+async-trait = "0.1"
+chrono = { version = "0.4", features = ["serde"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+lazy_static = "1.4"

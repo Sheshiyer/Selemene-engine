@@ -1,0 +1,271 @@
+{
+  "temporal_algorithms": {
+    "description": "Temporal dynamics analysis algorithms for biofield assessment",
+    "version": "1.0.0"
+  },
+  "hurst_exponent": {
+    "algorithm": "rescaled_range_analysis",
+    "parameters": {
+      "min_window": 10,
+      "max_window": 1000,
+      "window_steps": 20,
+      "detrending": "linear"
+    },
+    "description": "Long-term correlation analysis using R/S method",
+    "units": "exponent",
+    "interpretation": {
+      "range": [0, 1],
+      "meaning": {
+        "0.5": "random_walk",
+        "> 0.5": "persistent_long_memory",
+        "< 0.5": "anti_persistent_mean_reverting"
+      }
+    }
+  },
+  "lyapunov_exponent": {
+    "algorithm": "wolf_method",
+    "parameters": {
+      "embedding_dimension": 3,
+      "time_delay": 1,
+      "evolution_time": 10,
+      "replacement_threshold": 0.1
+    },
+    "description": "Pattern stability assessment using largest Lyapunov exponent",
+    "units": "per_time_unit",
+    "interpretation": {
+      "positive": "chaotic_unstable",
+      "zero": "marginally_stable",
+      "negative": "stable_convergent"
+    }
+  },
+  "dfa_analysis": {
+    "algorithm": "detrended_fluctuation_analysis",
+    "parameters": {
+      "min_box_size": 4,
+      "max_box_size": 256,
+      "box_steps": 20,
+      "detrending_order": 1,
+      "overlap": 0.5
+    },
+    "description": "Power-law correlation detection in fluctuations",
+    "units": "scaling_exponent",
+    "interpretation": {
+      "range": [0, 2],
+      "meaning": {
+        "0.5": "white_noise",
+        "1.0": "pink_noise",
+        "1.5": "brownian_motion"
+      }
+    }
+  },
+  "bifurcation_analysis": {
+    "algorithm": "parameter_sweep_method",
+    "parameters": {
+      "parameter_range": [0.1, 4.0],
+      "parameter_steps": 1000,
+      "transient_skip": 100,
+      "sample_points": 100,
+      "stability_threshold": 0.01
+    },
+    "description": "Energetic state transition point detection",
+    "units": "bifurcation_parameter",
+    "interpretation": {
+      "fixed_point": "stable_state",
+      "period_doubling": "transition_to_chaos",
+      "chaos": "complex_dynamics"
+    }
+  },
+  "recurrence_analysis": {
+    "algorithm": "recurrence_quantification_analysis",
+    "parameters": {
+      "embedding_dimension": 3,
+      "time_delay": 1,
+      "recurrence_threshold": 0.1,
+      "minimum_line_length": 2,
+      "theiler_window": 1
+    },
+    "description": "Cyclic pattern detection and quantification",
+    "units": "recurrence_measures",
+    "metrics": {
+      "recurrence_rate": "percentage_of_recurrent_points",
+      "determinism": "percentage_of_diagonal_lines",
+      "laminarity": "percentage_of_vertical_lines",
+      "entropy": "shannon_entropy_of_line_lengths"
+    }
+  },
+  "nonlinear_mapping": {
+    "algorithm": "phase_space_reconstruction",
+    "parameters": {
+      "embedding_dimension": 3,
+      "time_delay": 1,
+      "manifold_dimension": 2,
+      "neighborhood_size": 10,
+      "prediction_horizon": 5
+    },
+    "description": "Manifold structure analysis in phase space",
+    "units": "embedding_coordinates",
+    "analysis": {
+      "attractor_dimension": "fractal_dimension_of_attractor",
+      "lyapunov_spectrum": "full_spectrum_of_exponents",
+      "poincare_sections": "cross_sectional_analysis"
+    }
+  },
+  "temporal_preprocessing": {
+    "signal_conditioning": {
+      "filtering": {
+        "low_pass": {
+          "cutoff_frequency": 0.5,
+          "filter_order": 4,
+          "filter_type": "butterworth"
+        },
+        "high_pass": {
+          "cutoff_frequency": 0.01,
+          "filter_order": 2,
+          "filter_type": "butterworth"
+        },
+        "band_pass": {
+          "low_cutoff": 0.01,
+          "high_cutoff": 0.5,
+          "filter_order": 4
+        }
+      },
+      "detrending": {
+        "method": "polynomial",
+        "order": 1,
+        "window_size": 100
+      },
+      "normalization": {
+        "method": "z_score",
+        "robust": true,
+        "outlier_threshold": 3
+      }
+    },
+    "artifact_removal": {
+      "outlier_detection": {
+        "method": "modified_z_score",
+        "threshold": 3.5,
+        "window_size": 50
+      },
+      "noise_reduction": {
+        "method": "wavelet_denoising",
+        "wavelet": "db4",
+        "levels": 4,
+        "threshold_method": "soft"
+      }
+    }
+  },
+  "temporal_features": {
+    "statistical_moments": {
+      "mean": "first_moment",
+      "variance": "second_central_moment",
+      "skewness": "third_standardized_moment",
+      "kurtosis": "fourth_standardized_moment"
+    },
+    "frequency_domain": {
+      "power_spectral_density": {
+        "method": "welch",
+        "window": "hanning",
+        "overlap": 0.5,
+        "nfft": 256
+      },
+      "spectral_centroid": "frequency_weighted_mean",
+      "spectral_bandwidth": "frequency_spread",
+      "spectral_rolloff": "frequency_below_85_percent_energy"
+    },
+    "time_domain": {
+      "zero_crossing_rate": "sign_changes_per_second",
+      "energy": "sum_of_squared_amplitudes",
+      "entropy": "spectral_entropy",
+      "autocorrelation": "self_similarity_measure"
+    }
+  },
+  "stability_assessment": {
+    "short_term_stability": {
+      "window_size": 10,
+      "overlap": 0.8,
+      "stability_metric": "coefficient_of_variation",
+      "threshold": 0.1
+    },
+    "medium_term_stability": {
+      "window_size": 100,
+      "overlap": 0.5,
+      "stability_metric": "trend_analysis",
+      "threshold": 0.05
+    },
+    "long_term_stability": {
+      "window_size": 1000,
+      "overlap": 0.2,
+      "stability_metric": "stationarity_test",
+      "threshold": 0.01
+    }
+  },
+  "pattern_recognition": {
+    "periodic_patterns": {
+      "algorithm": "autocorrelation_peaks",
+      "parameters": {
+        "min_period": 2,
+        "max_period": 100,
+        "peak_threshold": 0.7,
+        "prominence": 0.1
+      }
+    },
+    "quasi_periodic_patterns": {
+      "algorithm": "spectral_analysis",
+      "parameters": {
+        "frequency_resolution": 0.01,
+        "harmonic_tolerance": 0.05,
+        "minimum_harmonics": 3
+      }
+    },
+    "chaotic_patterns": {
+      "algorithm": "correlation_dimension",
+      "parameters": {
+        "embedding_dimension": 10,
+        "radius_range": [0.001, 1.0],
+        "radius_steps": 100
+      }
+    }
+  },
+  "validation_metrics": {
+    "reproducibility": {
+      "test_retest_correlation": 0.8,
+      "coefficient_of_variation": 0.15,
+      "intraclass_correlation": 0.75
+    },
+    "sensitivity": {
+      "minimum_detectable_change": 0.05,
+      "signal_to_noise_ratio": 10,
+      "dynamic_range": 60
+    },
+    "specificity": {
+      "false_positive_rate": 0.05,
+      "false_negative_rate": 0.1,
+      "accuracy": 0.9
+    }
+  },
+  "integration_temporal": {
+    "vedic_timing": {
+      "panchanga_cycles": {
+        "tithi_correlation": "lunar_phase_alignment",
+        "nakshatra_correlation": "stellar_influence",
+        "yoga_correlation": "cosmic_combination",
+        "karana_correlation": "half_tithi_effect",
+        "vara_correlation": "planetary_day_influence"
+      }
+    },
+    "tcm_timing": {
+      "organ_clock_cycles": {
+        "2_hour_cycles": "organ_activity_peaks",
+        "daily_rhythm": "circadian_alignment",
+        "seasonal_cycles": "elemental_transitions",
+        "lunar_cycles": "yin_yang_fluctuations"
+      }
+    },
+    "biorhythm_cycles": {
+      "physical_cycle": "23_day_period",
+      "emotional_cycle": "28_day_period",
+      "intellectual_cycle": "33_day_period",
+      "intuitive_cycle": "38_day_period"
+    }
+  }
+}
