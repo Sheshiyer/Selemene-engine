@@ -1,0 +1,104 @@
+# Build artifacts
+target/
+**/target/
+*.o
+*.so
+*.dylib
+*.dll
+*.exe
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Git
+.git/
+.gitignore
+.github/
+
+# Documentation (except README)
+*.md
+!README.md
+docs/
+selemene_architecture.md
+CODEBASE_SUMMARY.md
+PROJECT_SUMMARY.md
+AUTH_IMPLEMENTATION_SUMMARY.md
+GHATI_API_DOCUMENTATION.md
+GHATI_CALCULATION_STANDARDS.md
+IMPLEMENTATION_SUMMARY_W1_S2_04_05.md
+IMPROVEMENT_ANALYSIS.md
+LEGACY_API_IMPLEMENTATION.md
+QUICK_REFERENCE_AUTH.md
+RATE_LIMIT_IMPLEMENTATION.md
+memory.md
+todo.md
+
+# Environment and secrets
+.env
+.env.*
+*.pem
+*.key
+*.crt
+
+# Test files
+tests/
+**/tests/
+test_*.sh
+*.test.js
+*.spec.js
+
+# Node.js
+node_modules/
+npm-debug.log
+yarn-error.log
+package-lock.json
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+venv/
+env/
+
+# Docker
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.bak
+*.swp
+
+# Benchmarks (optionally exclude)
+benches/
+
+# Examples and demos
+examples/
+standalone_demo/
+standalone_demo.rs
+
+# Monitoring
+monitoring/
+
+# TypeScript engines (if not needed in container)
+ts-engines/
+
+# Legacy code
+legacy/
+
+# Claude context
+.claude/
+.context/

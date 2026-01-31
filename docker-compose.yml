@@ -1,0 +1,117 @@
+version: '3.8'
+
+services:
+  # Redis cache service
+  redis:
+    image: redis:7-alpine
+    container_name: noesis-redis
+    ports:
+      - "6379:6379"
+    networks:
+      - noesis-network
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+
+  # PostgreSQL database service
+  postgres:
+    image: postgres:16-alpine
+    container_name: noesis-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-noesis}
+      POSTGRES_USER: ${POSTGRES_USER:-noesis_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-noesis_password}
+      POSTGRES_HOST_AUTH_METHOD: ${POSTGRES_HOST_AUTH_METHOD:-scram-sha-256}
+    networks:
+      - noesis-network
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-noesis_user} -d ${POSTGRES_DB:-noesis}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+
+  # Noesis API service
+  noesis-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: noesis-api
+    ports:
+      - "8080:8080"
+    environment:
+      # Server configuration
+      RUST_LOG: ${RUST_LOG:-info}
+      SERVER_HOST: ${SERVER_HOST:-0.0.0.0}
+      SERVER_PORT: ${SERVER_PORT:-8080}
+      
+      # Database configuration
+      DATABASE_URL: postgresql://${POSTGRES_USER:-noesis_user}:${POSTGRES_PASSWORD:-noesis_password}@postgres:5432/${POSTGRES_DB:-noesis}
+      
+      # Redis configuration
+      REDIS_URL: redis://redis:6379
+      REDIS_POOL_SIZE: ${REDIS_POOL_SIZE:-10}
+      
+      # Cache configuration
+      CACHE_L1_SIZE: ${CACHE_L1_SIZE:-268435456}
+      CACHE_L1_TTL: ${CACHE_L1_TTL:-3600}
+      CACHE_L2_TTL: ${CACHE_L2_TTL:-86400}
+      
+      # Authentication
+      JWT_SECRET: ${JWT_SECRET:-development_secret_change_in_production}
+      JWT_EXPIRY: ${JWT_EXPIRY:-3600}
+      
+      # Swiss Ephemeris
+      SWISS_EPHEMERIS_PATH: ${SWISS_EPHEMERIS_PATH:-/app/data/ephemeris}
+      
+      # Data paths
+      DATA_PATH: /app/data
+      WISDOM_DOCS_PATH: /app/data/wisdom-docs
+      
+      # Rate limiting
+      RATE_LIMIT_REQUESTS: ${RATE_LIMIT_REQUESTS:-100}
+      RATE_LIMIT_WINDOW: ${RATE_LIMIT_WINDOW:-60}
+      
+      # Feature flags
+      ENABLE_METRICS: ${ENABLE_METRICS:-true}
+      ENABLE_WITNESS: ${ENABLE_WITNESS:-true}
+    networks:
+      - noesis-network
+    volumes:
+      # Mount ephemeris data if you have large files
+      - ephemeris-data:/app/data/ephemeris
+    depends_on:
+      redis:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+networks:
+  noesis-network:
+    driver: bridge
+
+volumes:
+  redis-data:
+    driver: local
+  postgres-data:
+    driver: local
+  ephemeris-data:
+    driver: local

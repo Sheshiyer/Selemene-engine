@@ -384,6 +384,22 @@ impl WorkflowOrchestrator {
             .map(|w| (w.id.clone(), w))
             .collect()
     }
+
+    // -- Health check -----------------------------------------------------
+
+    /// Readiness check for probe endpoint
+    /// 
+    /// TODO: Implement full readiness check that verifies:
+    /// - Engine registry has at least one engine loaded
+    /// - All critical engines are initialized and responsive
+    /// - Required workflows are properly defined
+    pub async fn is_ready(&self) -> Result<bool, EngineError> {
+        // Placeholder: Check if we have engines and workflows loaded
+        // Full implementation should verify individual engine health
+        let has_engines = !self.registry.is_empty();
+        let has_workflows = !self.workflows.is_empty();
+        Ok(has_engines && has_workflows)
+    }
 }
 
 impl Default for WorkflowOrchestrator {

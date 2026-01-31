@@ -19,6 +19,7 @@ pub struct Claims {
     pub iat: usize,            // Issued at
     pub tier: String,          // User tier (free, premium, enterprise)
     pub permissions: Vec<String>, // User permissions
+    pub consciousness_level: u8,  // User consciousness level (0-5)
 }
 
 /// API key structure
@@ -32,6 +33,7 @@ pub struct ApiKey {
     pub expires_at: Option<DateTime<Utc>>,
     pub last_used: Option<DateTime<Utc>>,
     pub rate_limit: u32,       // Requests per minute
+    pub consciousness_level: u8, // User consciousness level (0-5)
 }
 
 /// User authentication information
@@ -41,6 +43,7 @@ pub struct AuthUser {
     pub tier: String,
     pub permissions: Vec<String>,
     pub rate_limit: u32,
+    pub consciousness_level: u8,
 }
 
 /// Authentication service
@@ -85,6 +88,7 @@ impl AuthService {
             tier: claims.tier,
             permissions: claims.permissions,
             rate_limit,
+            consciousness_level: claims.consciousness_level,
         })
     }
 
@@ -105,6 +109,7 @@ impl AuthService {
             let tier = key_info.tier.clone();
             let permissions = key_info.permissions.clone();
             let rate_limit = key_info.rate_limit;
+            let consciousness_level = key_info.consciousness_level;
             drop(keys);
             self.update_api_key_usage(api_key).await?;
 
@@ -113,6 +118,7 @@ impl AuthService {
                 tier,
                 permissions,
                 rate_limit,
+                consciousness_level,
             })
         } else {
             Err(EngineError::AuthError("Invalid API key".to_string()))
@@ -120,7 +126,7 @@ impl AuthService {
     }
 
     /// Generate JWT token
-    pub fn generate_jwt_token(&self, user_id: &str, tier: &str, permissions: &[String]) -> Result<String, EngineError> {
+    pub fn generate_jwt_token(&self, user_id: &str, tier: &str, permissions: &[String], consciousness_level: u8) -> Result<String, EngineError> {
         let now = Utc::now();
         let exp = (now + Duration::hours(24)).timestamp() as usize; // 24 hour expiration
 
@@ -130,6 +136,7 @@ impl AuthService {
             iat: now.timestamp() as usize,
             tier: tier.to_string(),
             permissions: permissions.to_vec(),
+            consciousness_level,
         };
 
         let encoding_key = EncodingKey::from_secret(self.jwt_secret.as_ref());

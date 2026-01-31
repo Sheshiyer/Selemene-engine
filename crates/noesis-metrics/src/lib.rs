@@ -54,6 +54,10 @@ pub struct NoesisMetrics {
     pub engine_calculations_total: IntCounterVec,
     /// Calculation duration broken down by `engine_id` label.
     pub engine_calculation_duration: HistogramVec,
+    /// Total calculations broken down by `engine_id` and `status` labels.
+    pub engine_calculation_status_total: IntCounterVec,
+    /// Total calculation errors broken down by `engine_id` and `error_type` labels.
+    pub engine_calculation_errors_total: IntCounterVec,
 }
 
 impl NoesisMetrics {
@@ -155,6 +159,22 @@ impl NoesisMetrics {
             &["engine_id"],
         )?;
 
+        let engine_calculation_status_total = IntCounterVec::new(
+            Opts::new(
+                "noesis_engine_calculation_status_total",
+                "Total calculations per engine by status",
+            ),
+            &["engine_id", "status"],
+        )?;
+
+        let engine_calculation_errors_total = IntCounterVec::new(
+            Opts::new(
+                "noesis_engine_calculation_errors_total",
+                "Total calculation errors per engine by error type",
+            ),
+            &["engine_id", "error_type"],
+        )?;
+
         // -- Register everything with the Prometheus registry ----------------
         REGISTRY.register(Box::new(requests_total.clone()))?;
         REGISTRY.register(Box::new(request_duration.clone()))?;
@@ -173,6 +193,8 @@ impl NoesisMetrics {
         REGISTRY.register(Box::new(uptime_seconds.clone()))?;
         REGISTRY.register(Box::new(engine_calculations_total.clone()))?;
         REGISTRY.register(Box::new(engine_calculation_duration.clone()))?;
+        REGISTRY.register(Box::new(engine_calculation_status_total.clone()))?;
+        REGISTRY.register(Box::new(engine_calculation_errors_total.clone()))?;
 
         Ok(Self {
             requests_total,
@@ -192,6 +214,8 @@ impl NoesisMetrics {
             uptime_seconds,
             engine_calculations_total,
             engine_calculation_duration,
+            engine_calculation_status_total,
+            engine_calculation_errors_total,
         })
     }
 
@@ -224,6 +248,26 @@ impl NoesisMetrics {
         self.engine_calculation_duration
             .with_label_values(&[engine_id])
             .observe(duration);
+    }
+
+    /// Record a per-engine calculation with status.
+    pub fn record_engine_calculation_with_status(&self, engine_id: &str, status: &str, duration: f64) {
+        self.engine_calculations_total
+            .with_label_values(&[engine_id])
+            .inc();
+        self.engine_calculation_duration
+            .with_label_values(&[engine_id])
+            .observe(duration);
+        self.engine_calculation_status_total
+            .with_label_values(&[engine_id, status])
+            .inc();
+    }
+
+    /// Record a per-engine calculation error.
+    pub fn record_engine_calculation_error(&self, engine_id: &str, error_type: &str) {
+        self.engine_calculation_errors_total
+            .with_label_values(&[engine_id, error_type])
+            .inc();
     }
 
     /// Record a calculation error.

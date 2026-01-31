@@ -200,6 +200,34 @@ impl CacheManager {
         *stats = CacheStats::default();
     }
 
+    /// Clear only the L1 (in-memory) layer.
+    pub async fn clear_l1(&self) -> Result<(), EngineError> {
+        self.l1_cache.clear().await
+    }
+
+    /// Clear only the L2 (Redis) layer.
+    pub async fn clear_l2(&self) -> Result<(), EngineError> {
+        self.l2_cache.clear().await
+    }
+
+    /// Clear only the L3 (disk) layer.
+    pub async fn clear_l3(&self) -> Result<(), EngineError> {
+        self.l3_cache.clear().await
+    }
+
+    /// Store a value across all three layers (L1, L2, L3).
+    pub async fn store_all_layers(&self, key: &CacheKey, value: &Value) -> Result<(), EngineError> {
+        self.l1_cache.store(key, value).await?;
+        self.l2_cache.store(key, value).await?;
+        self.l3_cache.store(key, value).await?;
+        Ok(())
+    }
+
+    /// Get the number of entries in the L1 cache.
+    pub fn l1_entry_count(&self) -> usize {
+        self.l1_cache.get_entry_count()
+    }
+
     /// Preload common calculations into the cache (engine-specific hook).
     pub async fn preload_common_calculations(&self) -> Result<(), EngineError> {
         // Hook for engines to preload frequently-requested results.
@@ -210,5 +238,17 @@ impl CacheManager {
     pub async fn optimize(&self) -> Result<(), EngineError> {
         // Hook for LRU tuning, TTL adjustment, memory compaction.
         Ok(())
+    }
+
+    /// Health check for readiness probe
+    /// 
+    /// TODO: Implement full health check that verifies:
+    /// - L1 cache is responsive
+    /// - L2 Redis connection is alive (if configured)
+    /// - L3 disk cache is accessible (if enabled)
+    pub async fn health_check(&self) -> Result<bool, EngineError> {
+        // Placeholder: Always return Ok for now
+        // Full implementation should check Redis connection and cache responsiveness
+        Ok(true)
     }
 }

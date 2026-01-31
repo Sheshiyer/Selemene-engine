@@ -1,45 +1,64 @@
 //! Human Design Gate Sequence Mapping
-//! Based on the I-Ching wheel and zodiac positions.
+//!
+//! CRITICAL: Uses SEQUENTIAL gate numbering (1→64) around the zodiac wheel.
+//! This is NOT the I-Ching King Wen sequence — that's a common mistake.
+//!
+//! Gate calculation:
+//! - 360° / 64 gates = 5.625° per gate
+//! - Gate 1 starts at 0° Aries (spring equinox)
+//! - Gates increment sequentially around the zodiac (1, 2, 3, ..., 64)
+//!
+//! Line calculation:
+//! - 5.625° / 6 lines = 0.9375° per line
+//! - Lines numbered 1-6 within each gate
 
-use std::collections::HashMap;
-use lazy_static::lazy_static;
+const DEGREES_PER_GATE: f64 = 360.0 / 64.0; // 5.625°
+const DEGREES_PER_LINE: f64 = DEGREES_PER_GATE / 6.0; // 0.9375°
 
-lazy_static! {
-    /// Gate sequence per zodiac sign (30° each).
-    /// Each sign contains approximately 5.33 gates.
-    static ref ZODIAC_GATE_SEQUENCE: HashMap<&'static str, Vec<u8>> = {
-        let mut m = HashMap::new();
-        // Aries (0° - 30°)
-        m.insert("aries", vec![25, 51, 21, 26]);
-        // Taurus (30° - 60°)
-        m.insert("taurus", vec![27, 24, 2, 23]);
-        // Gemini (60° - 90°)
-        m.insert("gemini", vec![8, 20, 16, 35]);
-        // Cancer (90° - 120°)
-        m.insert("cancer", vec![45, 12, 15, 52]);
-        // Leo (120° - 150°)
-        m.insert("leo", vec![39, 53, 62, 56]);
-        // Virgo (150° - 180°)
-        m.insert("virgo", vec![31, 33, 7, 4]);
-        // Libra (180° - 210°)
-        m.insert("libra", vec![29, 59, 40, 64]);
-        // Scorpio (210° - 240°)
-        m.insert("scorpio", vec![47, 6, 46, 18]);
-        // Sagittarius (240° - 270°)
-        m.insert("sagittarius", vec![48, 57, 32, 50]);
-        // Capricorn (270° - 300°)
-        m.insert("capricorn", vec![28, 44, 1, 43]);
-        // Aquarius (300° - 330°)
-        m.insert("aquarius", vec![14, 34, 9, 5]);
-        // Pisces (330° - 360°)
-        m.insert("pisces", vec![26, 11, 10, 58]);
-        m
-    };
+/// Convert zodiac longitude to Human Design gate number (1-64).
+///
+/// Gates are numbered SEQUENTIALLY around the zodiac wheel starting at 0° Aries.
+/// This is NOT the King Wen I-Ching sequence.
+///
+/// # Arguments
+/// * `longitude` - Longitude in degrees (0-360)
+///
+/// # Returns
+/// Gate number (1-64)
+pub fn longitude_to_gate(longitude: f64) -> u8 {
+    // Normalize longitude to 0-360
+    let normalized = longitude.rem_euclid(360.0);
+    
+    // Calculate gate number: divide by 5.625° and add 1
+    // Gates 1-64 correspond to 0°-5.625°, 5.625°-11.25°, etc.
+    let gate = (normalized / DEGREES_PER_GATE).floor() as u8 + 1;
+    
+    // Clamp to 1-64 (should not be necessary, but safety check)
+    gate.clamp(1, 64)
+}
 
-    static ref ZODIAC_SIGNS: Vec<&'static str> = vec![
-        "aries", "taurus", "gemini", "cancer", "leo", "virgo",
-        "libra", "scorpio", "sagittarius", "capricorn", "aquarius", "pisces"
-    ];
+/// Convert zodiac longitude to Human Design line number (1-6) within a gate.
+///
+/// Each gate is divided into 6 lines of 0.9375° each.
+///
+/// # Arguments
+/// * `longitude` - Longitude in degrees (0-360)
+/// * `gate` - Gate number (1-64) for validation
+///
+/// # Returns
+/// Line number (1-6)
+pub fn longitude_to_line(longitude: f64, _gate: u8) -> u8 {
+    // Normalize longitude to 0-360
+    let normalized = longitude.rem_euclid(360.0);
+    
+    // Find position within the current gate
+    let position_in_gate = normalized % DEGREES_PER_GATE;
+    
+    // Calculate line number: divide by 0.9375° and add 1
+    let line = (position_in_gate / DEGREES_PER_LINE).floor() as u8 + 1;
+    
+    // Clamp to 1-6
+    line.clamp(1, 6)
 }
 
 /// Convert zodiac longitude to Human Design gate and line.
@@ -50,67 +69,9 @@ lazy_static! {
 /// # Returns
 /// A tuple of (gate_number, line_number) where gate is 1-64 and line is 1-6
 pub fn longitude_to_gate_and_line(longitude: f64) -> (u8, u8) {
-    // Normalize longitude to 0-360
-    let normalized_longitude = longitude % 360.0;
-
-    // Determine zodiac sign (30° each)
-    let sign_index = (normalized_longitude / 30.0).floor() as usize;
-    let position_in_sign = normalized_longitude % 30.0;
-
-    // Get gates for this sign
-    let sign_gates = if sign_index < ZODIAC_SIGNS.len() {
-        let sign_name = ZODIAC_SIGNS[sign_index];
-        ZODIAC_GATE_SEQUENCE.get(sign_name).unwrap()
-    } else {
-        // Fallback for edge cases
-        &vec![1, 2, 3, 4]
-    };
-
-    // Calculate which gate within the sign
-    let degrees_per_gate = 30.0 / sign_gates.len() as f64;
-    let gate_index = (position_in_sign / degrees_per_gate).floor() as usize;
-
-    // Ensure we don't exceed the available gates
-    let gate_index = gate_index.min(sign_gates.len() - 1);
-    let gate_number = sign_gates[gate_index];
-
-    // Calculate line within the gate (6 lines per gate)
-    let position_in_gate = position_in_sign % degrees_per_gate;
-    let line_size = degrees_per_gate / 6.0;
-    let line_number = (position_in_gate / line_size).floor() as u8 + 1;
-
-    // Ensure line is between 1-6
-    let line_number = line_number.clamp(1, 6);
-
-    (gate_number, line_number)
-}
-
-/// Calculate color and tone from longitude position.
-///
-/// # Arguments
-/// * `longitude` - Longitude in degrees
-/// * `gate_number` - Gate number (1-64)
-/// * `line_number` - Line number (1-6)
-///
-/// # Returns
-/// A tuple of (color, tone) both 1-6
-///
-/// Note: This is a simplified calculation. The actual calculation would
-/// require more precise ephemeris data.
-pub fn longitude_to_color_and_tone(longitude: f64, _gate_number: u8, _line_number: u8) -> (u8, u8) {
-    // Use fractional part for sub-divisions
-    let fractional_degrees = (longitude * 1000.0) % 1000.0;
-
-    // Color (1-6) - each line has 6 colors
-    let color = ((fractional_degrees / 1000.0) * 6.0).floor() as u8 + 1;
-    let color = color.clamp(1, 6);
-
-    // Tone (1-6) - each color has 6 tones
-    let tone_fraction = ((fractional_degrees * 6.0) % 1000.0) / 1000.0;
-    let tone = (tone_fraction * 6.0).floor() as u8 + 1;
-    let tone = tone.clamp(1, 6);
-
-    (color, tone)
+    let gate = longitude_to_gate(longitude);
+    let line = longitude_to_line(longitude, gate);
+    (gate, line)
 }
 
 #[cfg(test)]
@@ -118,57 +79,103 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_longitude_to_gate_and_line() {
-        // Test with known positions
-        let test_cases = vec![
-            (140.0935, "Current Sun position"),
-            (19.6875, "Expected Gate 4 center"),
-            (272.8125, "Expected Gate 49 center"),
-        ];
-
-        for (longitude, description) in test_cases {
-            let (gate, line) = longitude_to_gate_and_line(longitude);
-            let (color, tone) = longitude_to_color_and_tone(longitude, gate, line);
-
-            // Ensure values are in valid ranges
-            assert!(gate >= 1 && gate <= 64, "Gate must be between 1-64");
-            assert!(line >= 1 && line <= 6, "Line must be between 1-6");
-            assert!(color >= 1 && color <= 6, "Color must be between 1-6");
-            assert!(tone >= 1 && tone <= 6, "Tone must be between 1-6");
-
-            println!("{}: {:.4}° → Gate {}.{}.{}.{}", description, longitude, gate, line, color, tone);
-        }
+    fn test_sequential_gate_mapping() {
+        // Test that gates increment sequentially from 0° Aries
+        assert_eq!(longitude_to_gate(0.0), 1, "0° Aries should be Gate 1");
+        assert_eq!(longitude_to_gate(5.625), 2, "5.625° should be Gate 2");
+        assert_eq!(longitude_to_gate(11.25), 3, "11.25° should be Gate 3");
+        assert_eq!(longitude_to_gate(16.875), 4, "16.875° should be Gate 4");
+        
+        // Test middle of zodiac
+        assert_eq!(longitude_to_gate(180.0), 33, "180° should be Gate 33");
+        
+        // Test near end of zodiac
+        assert_eq!(longitude_to_gate(354.375), 64, "354.375° should be Gate 64");
+        assert_eq!(longitude_to_gate(359.9), 64, "359.9° should be Gate 64");
     }
 
     #[test]
-    fn test_zodiac_boundary() {
-        // Test at zodiac sign boundaries
-        let (gate_0, _line_0) = longitude_to_gate_and_line(0.0);
-        assert_eq!(gate_0, 25); // First gate in Aries
+    fn test_line_calculation() {
+        // Test line boundaries within Gate 1 (0° - 5.625°)
+        assert_eq!(longitude_to_line(0.0, 1), 1, "Start of gate should be line 1");
+        assert_eq!(longitude_to_line(0.9375, 1), 2, "0.9375° should be line 2");
+        assert_eq!(longitude_to_line(1.875, 1), 3, "1.875° should be line 3");
+        assert_eq!(longitude_to_line(2.8125, 1), 4, "2.8125° should be line 4");
+        assert_eq!(longitude_to_line(3.75, 1), 5, "3.75° should be line 5");
+        assert_eq!(longitude_to_line(4.6875, 1), 6, "4.6875° should be line 6");
+        
+        // Test line in middle gate
+        assert_eq!(longitude_to_line(180.0, 33), 1, "Start of Gate 33 should be line 1");
+        assert_eq!(longitude_to_line(184.6875, 33), 6, "End of Gate 33 should be line 6");
+    }
 
-        let (gate_30, _) = longitude_to_gate_and_line(30.0);
-        assert_eq!(gate_30, 27); // First gate in Taurus
-
-        let (gate_60, _) = longitude_to_gate_and_line(60.0);
-        assert_eq!(gate_60, 8); // First gate in Gemini
+    #[test]
+    fn test_gate_and_line_combined() {
+        // Test 10° Aries (should be Gate 2 or 3)
+        let (gate, line) = longitude_to_gate_and_line(10.0);
+        assert!(gate >= 1 && gate <= 64, "Gate must be 1-64");
+        assert!(line >= 1 && line <= 6, "Line must be 1-6");
+        assert_eq!(gate, 2, "10° should be Gate 2");
+        
+        // Test 0° Aries
+        let (gate, line) = longitude_to_gate_and_line(0.0);
+        assert_eq!(gate, 1, "0° Aries should be Gate 1");
+        assert_eq!(line, 1, "0° Aries should be Line 1");
+        
+        // Test 180° (middle of zodiac)
+        let (gate, line) = longitude_to_gate_and_line(180.0);
+        assert_eq!(gate, 33, "180° should be Gate 33");
+        assert_eq!(line, 1, "180° exactly should be Line 1");
     }
 
     #[test]
     fn test_normalization() {
         // Test that values beyond 360 normalize correctly
-        let (gate_1, line_1) = longitude_to_gate_and_line(140.0);
-        let (gate_2, line_2) = longitude_to_gate_and_line(500.0); // 140 + 360
+        let (gate_1, line_1) = longitude_to_gate_and_line(10.0);
+        let (gate_2, line_2) = longitude_to_gate_and_line(370.0); // 10 + 360
+        let (gate_3, line_3) = longitude_to_gate_and_line(-350.0); // 10 - 360
 
-        assert_eq!(gate_1, gate_2);
-        assert_eq!(line_1, line_2);
+        assert_eq!(gate_1, gate_2, "360° rotation should give same gate");
+        assert_eq!(line_1, line_2, "360° rotation should give same line");
+        assert_eq!(gate_1, gate_3, "Negative angles should normalize correctly");
+        assert_eq!(line_1, line_3, "Negative angles should normalize correctly");
+    }
+
+    #[test]
+    fn test_all_gates_sequential() {
+        // Verify that as we move through 360°, gates increment from 1 to 64
+        let mut prev_gate = 0u8;
+        for i in 0..64 {
+            let longitude = i as f64 * DEGREES_PER_GATE + 0.1; // Slightly into each gate
+            let gate = longitude_to_gate(longitude);
+            
+            if i == 0 {
+                assert_eq!(gate, 1, "First gate should be 1");
+            } else {
+                assert_eq!(gate, prev_gate + 1, "Gates should increment sequentially");
+            }
+            prev_gate = gate;
+        }
+        assert_eq!(prev_gate, 64, "Last gate should be 64");
     }
 
     #[test]
     fn test_line_range() {
         // Test various positions to ensure lines stay in 1-6 range
         for i in 0..360 {
-            let (_, line) = longitude_to_gate_and_line(i as f64);
+            let (gate, line) = longitude_to_gate_and_line(i as f64);
+            assert!(gate >= 1 && gate <= 64, "Gate {} out of range at {}°", gate, i);
             assert!(line >= 1 && line <= 6, "Line {} out of range at {}°", line, i);
+        }
+    }
+
+    #[test]
+    fn test_gate_boundaries() {
+        // Test exact gate boundaries
+        for gate_num in 1..=64 {
+            let gate_start = (gate_num - 1) as f64 * DEGREES_PER_GATE;
+            let gate = longitude_to_gate(gate_start);
+            assert_eq!(gate, gate_num, "Gate boundary at {:.4}° should be Gate {}", gate_start, gate_num);
         }
     }
 }

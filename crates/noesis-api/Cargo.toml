@@ -9,7 +9,7 @@ name = "noesis-server"
 path = "src/main.rs"
 
 [dependencies]
-noesis-core = { path = "../noesis-core" }
+noesis-core = { path = "../noesis-core", features = ["openapi"] }
 noesis-cache = { path = "../noesis-cache" }
 noesis-auth = { path = "../noesis-auth" }
 noesis-metrics = { path = "../noesis-metrics" }
@@ -19,6 +19,9 @@ noesis-witness = { path = "../noesis-witness" }
 engine-panchanga = { path = "../engine-panchanga" }
 engine-numerology = { path = "../engine-numerology" }
 engine-biorhythm = { path = "../engine-biorhythm" }
+engine-human-design = { path = "../engine-human-design" }
+engine-gene-keys = { path = "../engine-gene-keys" }
+engine-vimshottari = { path = "../engine-vimshottari" }
 axum = { version = "0.7", features = ["json", "macros"] }
 tokio = { version = "1.0", features = ["full"] }
 tower = "0.5"
@@ -27,4 +30,21 @@ serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 chrono = { version = "0.4", features = ["serde"] }
 tracing = "0.1"
-tracing-subscriber = "0.3"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "fmt", "json"] }
+dashmap = "5.5"
+utoipa = { version = "4", features = ["axum_extras", "chrono"] }
+utoipa-swagger-ui = { version = "7", features = ["axum"] }
+
+[dev-dependencies]
+tower = { version = "0.5", features = ["util"] }
+http-body-util = "0.1"
+futures = "0.3"
+noesis-core = { path = "../noesis-core", features = ["openapi"] }
+noesis-auth = { path = "../noesis-auth" }
+noesis-orchestrator = { path = "../noesis-orchestrator" }
+async-trait = "0.1"
+criterion = { version = "0.5", features = ["async_tokio"] }
+
+[[bench]]
+name = "engine_comparison"
+harness = false

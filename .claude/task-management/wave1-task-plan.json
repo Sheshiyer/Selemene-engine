@@ -1,0 +1,1056 @@
+{
+  "schema_version": "1.0",
+  "project": {
+    "name": "Tryambakam Noesis - Selemene Engine Transformation",
+    "repo_root": "/Volumes/madara/2026/witnessos/Selemene-engine",
+    "generated_on": "2026-01-30",
+    "generated_by": "task-master-planner + ultrathink synthesis",
+    "current_status": "Halfway through crystalline-giggling-trinket plan. Foundation complete, complex engines pending.",
+    "completed_work": [
+      "Workspace structure created (17 crates)",
+      "noesis-core implemented (ConsciousnessEngine trait, types, errors)",
+      "Shared services migrated (cache, auth, metrics)",
+      "engine-panchanga refactored and working",
+      "engine-numerology implemented",
+      "engine-biorhythm implemented",
+      "noesis-orchestrator implemented with parallel execution",
+      "noesis-bridge implemented (TypeScript HTTP adapter)",
+      "noesis-api partially implemented (routes structure)"
+    ],
+    "assumptions": [
+      "Swiss Ephemeris data files available in data/ephemeris/",
+      "35 wisdom-docs JSON files present in data/wisdom-docs/",
+      "Redis available for L2 cache (or mock for dev)",
+      "Bun runtime available for TypeScript engines",
+      "Evolution-docs available at /Volumes/madara/2026/twc-vault/01-Projects/tryambakam-noesis/evolution-docs/",
+      "Team familiar with Rust async patterns (Tokio)",
+      "100% accuracy validation against reference Human Design charts available"
+    ],
+    "risks": [
+      "Swiss Ephemeris async initialization still needs refactor (documented limitation)",
+      "HD astronomical accuracy requires careful validation against professional software",
+      "TypeScript<->Rust bridge adds latency (acceptable for archetypal engines)",
+      "Wisdom data schema changes would require Serde struct updates",
+      "Cache invalidation strategy needs finalization for L2/L3 tiers"
+    ],
+    "waves": {
+      "wave1": {
+        "name": "Wave 1: Complete API + Complex Astronomical Engines",
+        "duration_weeks": "8-10 weeks",
+        "focus": "Finish noesis-api, implement HD/Gene Keys/Vimshottari with astronomical accuracy",
+        "deliverables": [
+          "Full API routes with legacy endpoint preservation",
+          "Human Design engine with 100% accuracy validation",
+          "Gene Keys engine (HD-dependent)",
+          "Vimshottari Dasha engine with 120-year timeline",
+          "Integration tests for all complex engines",
+          "Accuracy validation suite against reference data"
+        ]
+      },
+      "wave2": {
+        "name": "Wave 2: TypeScript Engines + Workflows + Polish",
+        "duration_weeks": "6-8 weeks",
+        "focus": "TypeScript engines, multi-engine workflows, VedicClock/Biofield/Face Reading, production readiness",
+        "deliverables": [
+          "5 TypeScript engines operational via bridge",
+          "6 pre-defined workflows with synthesis",
+          "VedicClock-TCM integration engine",
+          "Biofield + Face Reading engines",
+          "Comprehensive E2E tests",
+          "Production deployment config",
+          "Monitoring + observability",
+          "Documentation updates"
+        ]
+      }
+    }
+  },
+  "phases": [
+    {
+      "phase_id": "W1-P1",
+      "name": "Wave 1 Phase 1: Complete noesis-api",
+      "objective": "Finish API server implementation with all routes, middleware, and legacy endpoint preservation",
+      "sprints": [
+        {
+          "sprint_id": "W1-S1",
+          "duration_weeks": 2,
+          "focus": "API routes + handlers + middleware",
+          "tasks": [
+            {
+              "id": "W1-S1-01",
+              "title": "Complete engine calculation route handler",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 6,
+              "dependencies": [],
+              "deliverable": "POST /api/v1/engines/:engine_id/calculate handler fully implemented with error handling",
+              "acceptance": "Can call any registered engine via HTTP, returns EngineOutput JSON"
+            },
+            {
+              "id": "W1-S1-02",
+              "title": "Implement engine info route handler",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 4,
+              "dependencies": ["W1-S1-01"],
+              "deliverable": "GET /api/v1/engines/:engine_id/info returns engine metadata",
+              "acceptance": "Returns engine_id, name, required_phase, description"
+            },
+            {
+              "id": "W1-S1-03",
+              "title": "Implement list engines route handler",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 4,
+              "dependencies": ["W1-S1-02"],
+              "deliverable": "GET /api/v1/engines returns all registered engines",
+              "acceptance": "JSON array of all available engines with metadata"
+            },
+            {
+              "id": "W1-S1-04",
+              "title": "Implement workflow execution route handler",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 8,
+              "dependencies": ["W1-S1-01"],
+              "deliverable": "POST /api/v1/workflows/:workflow_id/execute handler with parallel engine execution",
+              "acceptance": "Can execute predefined workflows, returns WorkflowOutput with synthesized results"
+            },
+            {
+              "id": "W1-S1-05",
+              "title": "Implement workflow info route handler",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 3,
+              "dependencies": ["W1-S1-04"],
+              "deliverable": "GET /api/v1/workflows/:workflow_id/info returns workflow metadata",
+              "acceptance": "Returns workflow_id, name, engines_used, description"
+            },
+            {
+              "id": "W1-S1-06",
+              "title": "Implement list workflows route handler",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 3,
+              "dependencies": ["W1-S1-05"],
+              "deliverable": "GET /api/v1/workflows returns all available workflows",
+              "acceptance": "JSON array of 6 predefined workflows with metadata"
+            },
+            {
+              "id": "W1-S1-07",
+              "title": "Preserve legacy Panchanga endpoint",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 4,
+              "dependencies": ["W1-S1-01"],
+              "deliverable": "POST /panchanga/calculate continues working with existing request/response format",
+              "acceptance": "Existing Panchanga clients see no breaking changes"
+            },
+            {
+              "id": "W1-S1-08",
+              "title": "Preserve legacy Ghati endpoints",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 4,
+              "dependencies": ["W1-S1-07"],
+              "deliverable": "All /ghati/* endpoints continue working",
+              "acceptance": "GET /ghati/current and other ghati routes functional"
+            },
+            {
+              "id": "W1-S1-09",
+              "title": "Implement auth middleware for engine routes",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 6,
+              "dependencies": ["W1-S1-03"],
+              "deliverable": "JWT + API key validation middleware on /api/v1/* routes",
+              "acceptance": "Unauthorized requests return 401, valid tokens/keys proceed"
+            },
+            {
+              "id": "W1-S1-10",
+              "title": "Implement consciousness level access control",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 5,
+              "dependencies": ["W1-S1-09"],
+              "deliverable": "Middleware checks user consciousness_level >= engine.required_phase()",
+              "acceptance": "Users below required level get 403 with descriptive message"
+            },
+            {
+              "id": "W1-S1-11",
+              "title": "Implement CORS middleware for API routes",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 3,
+              "dependencies": ["W1-S1-10"],
+              "deliverable": "CORS headers configured for cross-origin requests",
+              "acceptance": "Frontend can call API from different origin"
+            },
+            {
+              "id": "W1-S1-12",
+              "title": "Implement request logging middleware",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 4,
+              "dependencies": [],
+              "deliverable": "Structured JSON logging for all requests with timing",
+              "acceptance": "Logs include: method, path, status, duration_ms, user_id"
+            },
+            {
+              "id": "W1-S1-13",
+              "title": "Implement metrics middleware for engine calls",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 5,
+              "dependencies": ["W1-S1-01"],
+              "deliverable": "Prometheus metrics for engine calculations (latency, count, errors)",
+              "acceptance": "Metrics endpoint shows engine_calculation_duration_seconds histogram"
+            },
+            {
+              "id": "W1-S1-14",
+              "title": "Implement error response standardization",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 4,
+              "dependencies": ["W1-S1-01"],
+              "deliverable": "Consistent ErrorResponse struct for all API errors",
+              "acceptance": "All errors return JSON with error_code, message, details fields"
+            },
+            {
+              "id": "W1-S1-15",
+              "title": "Write integration tests for API routes",
+              "area": "qa",
+              "owner_role": "QA Eng",
+              "est_hours": 8,
+              "dependencies": ["W1-S1-06", "W1-S1-14"],
+              "deliverable": "Integration test suite covering all API endpoints",
+              "acceptance": "Tests pass for happy path + error cases on all routes"
+            }
+          ]
+        },
+        {
+          "sprint_id": "W1-S2",
+          "duration_weeks": 2,
+          "focus": "API server infrastructure + health/monitoring",
+          "tasks": [
+            {
+              "id": "W1-S2-01",
+              "title": "Implement health check endpoint",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 4,
+              "dependencies": [],
+              "deliverable": "GET /health returns service health status",
+              "acceptance": "Returns 200 OK with {status: healthy, uptime, version}"
+            },
+            {
+              "id": "W1-S2-02",
+              "title": "Implement readiness probe endpoint",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 5,
+              "dependencies": ["W1-S2-01"],
+              "deliverable": "GET /ready checks Redis, DB connections before returning ready",
+              "acceptance": "Returns 503 if dependencies unavailable, 200 if ready"
+            },
+            {
+              "id": "W1-S2-03",
+              "title": "Implement Prometheus metrics endpoint",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 4,
+              "dependencies": [],
+              "deliverable": "GET /metrics returns Prometheus-formatted metrics",
+              "acceptance": "Scrape endpoint works with Prometheus, shows custom metrics"
+            },
+            {
+              "id": "W1-S2-04",
+              "title": "Configure graceful shutdown handling",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 6,
+              "dependencies": [],
+              "deliverable": "Server handles SIGTERM gracefully, drains connections",
+              "acceptance": "No connection errors during rolling deployment"
+            },
+            {
+              "id": "W1-S2-05",
+              "title": "Implement request timeout middleware",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 4,
+              "dependencies": [],
+              "deliverable": "Requests timeout after 30s (configurable)",
+              "acceptance": "Long-running calculations return 504 Gateway Timeout"
+            },
+            {
+              "id": "W1-S2-06",
+              "title": "Implement rate limiting middleware",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 6,
+              "dependencies": [],
+              "deliverable": "Rate limit by API key/user_id (e.g., 100 req/min)",
+              "acceptance": "Excessive requests return 429 Too Many Requests"
+            },
+            {
+              "id": "W1-S2-07",
+              "title": "Configure environment-based settings",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 5,
+              "dependencies": [],
+              "deliverable": "Config struct loads from ENV vars (host, port, redis_url, etc)",
+              "acceptance": "Server configurable via env without code changes"
+            },
+            {
+              "id": "W1-S2-08",
+              "title": "Write main.rs server entrypoint",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 4,
+              "dependencies": ["W1-S2-07"],
+              "deliverable": "noesis-api binary starts Axum server with all routes",
+              "acceptance": "cargo run -p noesis-api starts server on configured port"
+            },
+            {
+              "id": "W1-S2-09",
+              "title": "Implement OpenAPI/Swagger docs generation",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 8,
+              "dependencies": ["W1-S1-06"],
+              "deliverable": "GET /api/docs serves interactive Swagger UI",
+              "acceptance": "API docs auto-generated from route definitions"
+            },
+            {
+              "id": "W1-S2-10",
+              "title": "Create Docker container for noesis-api",
+              "area": "infra",
+              "owner_role": "DevOps",
+              "est_hours": 6,
+              "dependencies": ["W1-S2-08"],
+              "deliverable": "Dockerfile builds minimal Rust image with noesis-api binary",
+              "acceptance": "docker build succeeds, container runs server"
+            },
+            {
+              "id": "W1-S2-11",
+              "title": "Write docker-compose for local development",
+              "area": "infra",
+              "owner_role": "DevOps",
+              "est_hours": 5,
+              "dependencies": ["W1-S2-10"],
+              "deliverable": "docker-compose.yml with API + Redis + Postgres",
+              "acceptance": "docker-compose up starts full stack locally"
+            },
+            {
+              "id": "W1-S2-12",
+              "title": "Configure structured logging with tracing",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 6,
+              "dependencies": [],
+              "deliverable": "tracing subscriber configured with JSON formatter",
+              "acceptance": "Logs are structured JSON with span context"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "phase_id": "W1-P2",
+      "name": "Wave 1 Phase 2: Human Design Engine (Astronomical Accuracy)",
+      "objective": "Implement Human Design engine with 100% accuracy validated against professional software",
+      "sprints": [
+        {
+          "sprint_id": "W1-S3",
+          "duration_weeks": 2,
+          "focus": "HD core calculation engine",
+          "tasks": [
+            {
+              "id": "W1-S3-01",
+              "title": "Define Human Design data structures",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 6,
+              "dependencies": [],
+              "deliverable": "Rust structs for HDChart, Gate, Center, Channel, Profile, Type, Authority",
+              "acceptance": "Serde-compatible structs matching wisdom-docs schema"
+            },
+            {
+              "id": "W1-S3-02",
+              "title": "Load HD wisdom data at startup",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 5,
+              "dependencies": ["W1-S3-01"],
+              "deliverable": "lazy_static loading of 12 HD JSON files into typed HashMap",
+              "acceptance": "GATES, CENTERS, CHANNELS, etc. available as static refs"
+            },
+            {
+              "id": "W1-S3-03",
+              "title": "Implement Design time calculation (88-day solar arc)",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 6,
+              "dependencies": [],
+              "deliverable": "Function calculates Design time as birth_time - 88 days",
+              "acceptance": "Design time matches professional HD software within 1 hour"
+            },
+            {
+              "id": "W1-S3-04",
+              "title": "Implement sequential gate mapping (1-64)",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 7,
+              "dependencies": ["W1-S3-02"],
+              "deliverable": "longitude_to_gate() uses 360/64 = 5.625° per gate sequentially",
+              "acceptance": "Gate numbers increment 1→64 around zodiac, NOT King Wen sequence"
+            },
+            {
+              "id": "W1-S3-05",
+              "title": "Implement line calculation within gates",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 4,
+              "dependencies": ["W1-S3-04"],
+              "deliverable": "Calculate line number (1-6) from position within gate's 5.625° arc",
+              "acceptance": "Lines progress 1→6 within each gate"
+            },
+            {
+              "id": "W1-S3-06",
+              "title": "Implement Personality Sun/Earth calculation",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 6,
+              "dependencies": ["W1-S3-04", "W1-S3-05"],
+              "deliverable": "Calculate Personality Sun gate/line, Earth = Sun + 180°",
+              "acceptance": "Sun and Earth are opposite (180° apart)"
+            },
+            {
+              "id": "W1-S3-07",
+              "title": "Implement Design Sun/Earth calculation",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 6,
+              "dependencies": ["W1-S3-03", "W1-S3-06"],
+              "deliverable": "Calculate Design Sun/Earth at Design time (88 days before birth)",
+              "acceptance": "Design positions independent of Personality positions"
+            },
+            {
+              "id": "W1-S3-08",
+              "title": "Implement all 13 planetary activations",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 8,
+              "dependencies": ["W1-S3-07"],
+              "deliverable": "Calculate gate/line for Sun, Earth, Moon, North Node, South Node, Mercury, Venus, Mars, Jupiter, Saturn, Uranus, Neptune, Pluto (Personality + Design = 26 total)",
+              "acceptance": "All 26 activations calculated using Swiss Ephemeris"
+            },
+            {
+              "id": "W1-S3-09",
+              "title": "Implement center definition logic",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 7,
+              "dependencies": ["W1-S3-08"],
+              "deliverable": "Determine which of 9 centers are defined based on activated gates",
+              "acceptance": "Centers defined when connected by channel (both gates activated)"
+            },
+            {
+              "id": "W1-S3-10",
+              "title": "Implement channel activation detection",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 6,
+              "dependencies": ["W1-S3-09"],
+              "deliverable": "Find all 36 channels where both gates are activated",
+              "acceptance": "Active channels listed with source (Personality/Design/Both)"
+            },
+            {
+              "id": "W1-S3-11",
+              "title": "Implement Type determination",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 7,
+              "dependencies": ["W1-S3-09"],
+              "deliverable": "Determine Type based on Sacral and throat/motor connections",
+              "acceptance": "Correctly identifies Generator, Manifestor, Manifesting Generator, Projector, Reflector"
+            },
+            {
+              "id": "W1-S3-12",
+              "title": "Implement Authority determination",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 8,
+              "dependencies": ["W1-S3-09"],
+              "deliverable": "Determine Authority based on center definition hierarchy",
+              "acceptance": "Correctly identifies Emotional, Sacral, Splenic, Ego, Self-Projected, Environmental, Lunar"
+            },
+            {
+              "id": "W1-S3-13",
+              "title": "Implement Profile calculation",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 5,
+              "dependencies": ["W1-S3-06", "W1-S3-07"],
+              "deliverable": "Profile = Personality Sun line / Design Sun line (e.g., 6/2)",
+              "acceptance": "12 possible profiles (1/3, 1/4, 2/4, 2/5, 3/5, 3/6, 4/6, 4/1, 5/1, 5/2, 6/2, 6/3)"
+            },
+            {
+              "id": "W1-S3-14",
+              "title": "Implement Definition type determination",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 6,
+              "dependencies": ["W1-S3-10"],
+              "deliverable": "Determine if Single, Split, Triple Split, or Quadruple Split Definition",
+              "acceptance": "Definition type matches professional software"
+            }
+          ]
+        },
+        {
+          "sprint_id": "W1-S4",
+          "duration_weeks": 2,
+          "focus": "HD validation + witness prompts + integration",
+          "tasks": [
+            {
+              "id": "W1-S4-01",
+              "title": "Create reference chart test dataset",
+              "area": "qa",
+              "owner_role": "QA Eng",
+              "est_hours": 8,
+              "dependencies": [],
+              "deliverable": "10+ reference charts from professional HD software with all expected values",
+              "acceptance": "JSON file with birth_date/time/location and expected gate/line/type/authority for each"
+            },
+            {
+              "id": "W1-S4-02",
+              "title": "Write accuracy validation tests for Sun/Earth",
+              "area": "qa",
+              "owner_role": "QA Eng",
+              "est_hours": 6,
+              "dependencies": ["W1-S3-08", "W1-S4-01"],
+              "deliverable": "Unit tests validating Personality + Design Sun/Earth against references",
+              "acceptance": "100% match on Sun/Earth gate/line for all reference charts"
+            },
+            {
+              "id": "W1-S4-03",
+              "title": "Write accuracy validation tests for Type",
+              "area": "qa",
+              "owner_role": "QA Eng",
+              "est_hours": 5,
+              "dependencies": ["W1-S3-11", "W1-S4-01"],
+              "deliverable": "Unit tests validating Type determination",
+              "acceptance": "100% match on Type for all reference charts"
+            },
+            {
+              "id": "W1-S4-04",
+              "title": "Write accuracy validation tests for Authority",
+              "area": "qa",
+              "owner_role": "QA Eng",
+              "est_hours": 5,
+              "dependencies": ["W1-S3-12", "W1-S4-01"],
+              "deliverable": "Unit tests validating Authority determination",
+              "acceptance": "100% match on Authority for all reference charts"
+            },
+            {
+              "id": "W1-S4-05",
+              "title": "Write accuracy validation tests for Profile",
+              "area": "qa",
+              "owner_role": "QA Eng",
+              "est_hours": 4,
+              "dependencies": ["W1-S3-13", "W1-S4-01"],
+              "deliverable": "Unit tests validating Profile calculation",
+              "acceptance": "100% match on Profile for all reference charts"
+            },
+            {
+              "id": "W1-S4-06",
+              "title": "Write accuracy validation tests for Centers",
+              "area": "qa",
+              "owner_role": "QA Eng",
+              "est_hours": 6,
+              "dependencies": ["W1-S3-09", "W1-S4-01"],
+              "deliverable": "Unit tests validating center definition",
+              "acceptance": "100% match on defined/undefined centers for all reference charts"
+            },
+            {
+              "id": "W1-S4-07",
+              "title": "Write accuracy validation tests for Channels",
+              "area": "qa",
+              "owner_role": "QA Eng",
+              "est_hours": 6,
+              "dependencies": ["W1-S3-10", "W1-S4-01"],
+              "deliverable": "Unit tests validating channel activation",
+              "acceptance": "100% match on active channels for all reference charts"
+            },
+            {
+              "id": "W1-S4-08",
+              "title": "Implement HD witness prompt generation",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 7,
+              "dependencies": ["W1-S3-14"],
+              "deliverable": "generate_witness_prompt() creates level-appropriate self-inquiry questions",
+              "acceptance": "Prompts reference Type, Authority, Profile, Strategy in inquiry format"
+            },
+            {
+              "id": "W1-S4-09",
+              "title": "Implement ConsciousnessEngine trait for HD",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 6,
+              "dependencies": ["W1-S3-14", "W1-S4-08"],
+              "deliverable": "HumanDesignEngine implements calculate(), validate(), cache_key()",
+              "acceptance": "Can be registered with orchestrator, callable via API"
+            },
+            {
+              "id": "W1-S4-10",
+              "title": "Register HD engine with orchestrator",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 4,
+              "dependencies": ["W1-S4-09"],
+              "deliverable": "HumanDesignEngine added to orchestrator's engine registry",
+              "acceptance": "POST /api/v1/engines/human-design/calculate works"
+            },
+            {
+              "id": "W1-S4-11",
+              "title": "Write integration tests for HD engine via API",
+              "area": "qa",
+              "owner_role": "QA Eng",
+              "est_hours": 7,
+              "dependencies": ["W1-S4-10"],
+              "deliverable": "Integration tests calling HD engine through API",
+              "acceptance": "End-to-end tests pass for HD chart generation"
+            },
+            {
+              "id": "W1-S4-12",
+              "title": "Write HD engine documentation",
+              "area": "product",
+              "owner_role": "Tech Writer",
+              "est_hours": 6,
+              "dependencies": ["W1-S4-10"],
+              "deliverable": ".context/engines/human-design.md with calculation details",
+              "acceptance": "Documents sequential gate mapping, 88-day arc, coordinate offsets"
+            },
+            {
+              "id": "W1-S4-13",
+              "title": "Benchmark HD calculation performance",
+              "area": "qa",
+              "owner_role": "QA Eng",
+              "est_hours": 5,
+              "dependencies": ["W1-S4-10"],
+              "deliverable": "Criterion benchmark for HD chart generation",
+              "acceptance": "HD chart calculates in <100ms on standard hardware"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "phase_id": "W1-P3",
+      "name": "Wave 1 Phase 3: Gene Keys + Vimshottari Engines",
+      "objective": "Implement Gene Keys (HD-dependent) and Vimshottari Dasha (120-year timeline) engines",
+      "sprints": [
+        {
+          "sprint_id": "W1-S5",
+          "duration_weeks": 2,
+          "focus": "Gene Keys engine implementation",
+          "tasks": [
+            {
+              "id": "W1-S5-01",
+              "title": "Define Gene Keys data structures",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 5,
+              "dependencies": [],
+              "deliverable": "Rust structs for GeneKey with shadow/gift/siddhi fields",
+              "acceptance": "Serde struct matching wisdom-docs/gene_keys/archetypes.json schema"
+            },
+            {
+              "id": "W1-S5-02",
+              "title": "Load Gene Keys wisdom data at startup",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 4,
+              "dependencies": ["W1-S5-01"],
+              "deliverable": "lazy_static HashMap<u8, GeneKey> from archetypes.json",
+              "acceptance": "All 64 Gene Keys loaded with full shadow/gift/siddhi text"
+            },
+            {
+              "id": "W1-S5-03",
+              "title": "Implement Gene Keys activation from HD gates",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 6,
+              "dependencies": ["W1-S5-02"],
+              "deliverable": "Map HD gate activations to Gene Keys (1:1 correspondence)",
+              "acceptance": "Gate 17 → Gene Key 17, preserving line and Personality/Design source"
+            },
+            {
+              "id": "W1-S5-04",
+              "title": "Implement Gene Keys Activation Sequence",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 7,
+              "dependencies": ["W1-S5-03"],
+              "deliverable": "Calculate Life's Work, Evolution, Radiance, Purpose sequences",
+              "acceptance": "4 sequences derived from Personality Sun, Earth, Design Sun, Earth"
+            },
+            {
+              "id": "W1-S5-05",
+              "title": "Implement consciousness frequency assessment",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 6,
+              "dependencies": ["W1-S5-04"],
+              "deliverable": "Map user's current state to shadow/gift/siddhi frequency per key",
+              "acceptance": "Returns assessment indicating shadow dominance vs gift emergence"
+            },
+            {
+              "id": "W1-S5-06",
+              "title": "Implement transformation pathway guidance",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 7,
+              "dependencies": ["W1-S5-05"],
+              "deliverable": "Generate transformation map: Shadow → Gift → Siddhi for each active key",
+              "acceptance": "Provides specific practices/inquiries for frequency shifts"
+            },
+            {
+              "id": "W1-S5-07",
+              "title": "Implement Gene Keys witness prompt generation",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 6,
+              "dependencies": ["W1-S5-06"],
+              "deliverable": "Generate prompts specific to shadow/gift/siddhi recognition",
+              "acceptance": "Prompts invite witnessing unconscious patterns (shadow) without identifying"
+            },
+            {
+              "id": "W1-S5-08",
+              "title": "Implement ConsciousnessEngine trait for Gene Keys",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 5,
+              "dependencies": ["W1-S5-07"],
+              "deliverable": "GeneKeysEngine implements trait, depends on HD for gate activations",
+              "acceptance": "Can calculate Gene Keys chart given HD gates or birth data"
+            },
+            {
+              "id": "W1-S5-09",
+              "title": "Register Gene Keys engine with orchestrator",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 4,
+              "dependencies": ["W1-S5-08"],
+              "deliverable": "GeneKeysEngine added to registry",
+              "acceptance": "POST /api/v1/engines/gene-keys/calculate works"
+            },
+            {
+              "id": "W1-S5-10",
+              "title": "Write integration tests for Gene Keys engine",
+              "area": "qa",
+              "owner_role": "QA Eng",
+              "est_hours": 6,
+              "dependencies": ["W1-S5-09"],
+              "deliverable": "Test Gene Keys calculation via API",
+              "acceptance": "Returns valid Gene Keys chart with shadow/gift/siddhi for all activations"
+            },
+            {
+              "id": "W1-S5-11",
+              "title": "Validate Gene Keys archetypal depth preservation",
+              "area": "qa",
+              "owner_role": "QA Eng",
+              "est_hours": 5,
+              "dependencies": ["W1-S5-10"],
+              "deliverable": "Verify full shadow/gift/siddhi text returned, not summaries",
+              "acceptance": "Response includes complete archetypal descriptions from wisdom-docs"
+            }
+          ]
+        },
+        {
+          "sprint_id": "W1-S6",
+          "duration_weeks": 2,
+          "focus": "Vimshottari Dasha engine implementation",
+          "tasks": [
+            {
+              "id": "W1-S6-01",
+              "title": "Define Vimshottari data structures",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 6,
+              "dependencies": [],
+              "deliverable": "Rust structs for Mahadasha, Antardasha, Pratyantardasha with dates",
+              "acceptance": "Serde structs for 120-year timeline with nested periods"
+            },
+            {
+              "id": "W1-S6-02",
+              "title": "Load Vimshottari wisdom data at startup",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 4,
+              "dependencies": ["W1-S6-01"],
+              "deliverable": "lazy_static loading of vimshottari_periods.json and nakshatras.json",
+              "acceptance": "Period lengths and nakshatra rulers available"
+            },
+            {
+              "id": "W1-S6-03",
+              "title": "Implement birth nakshatra calculation",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 6,
+              "dependencies": ["W1-S6-02"],
+              "deliverable": "Calculate Moon's nakshatra at birth using Swiss Ephemeris",
+              "acceptance": "Birth nakshatra determines starting Mahadasha lord"
+            },
+            {
+              "id": "W1-S6-04",
+              "title": "Implement Mahadasha period calculation",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 8,
+              "dependencies": ["W1-S6-03"],
+              "deliverable": "Calculate 9 Mahadasha periods starting from birth nakshatra",
+              "acceptance": "120-year cycle: Sun(6y), Moon(10y), Mars(7y), Rahu(18y), Jupiter(16y), Saturn(19y), Mercury(17y), Ketu(7y), Venus(20y)"
+            },
+            {
+              "id": "W1-S6-05",
+              "title": "Implement balance of dasha at birth",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 7,
+              "dependencies": ["W1-S6-04"],
+              "deliverable": "Calculate remaining balance of starting Mahadasha based on Moon position in nakshatra",
+              "acceptance": "Partial first Mahadasha correctly calculated"
+            },
+            {
+              "id": "W1-S6-06",
+              "title": "Implement Antardasha calculation",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 8,
+              "dependencies": ["W1-S6-04"],
+              "deliverable": "Subdivide each Mahadasha into 9 Antardashas",
+              "acceptance": "Each Mahadasha contains correct Antardasha sequence with dates"
+            },
+            {
+              "id": "W1-S6-07",
+              "title": "Implement Pratyantardasha calculation",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 7,
+              "dependencies": ["W1-S6-06"],
+              "deliverable": "Subdivide each Antardasha into 9 Pratyantar dashas",
+              "acceptance": "Three-level nested dasha structure complete"
+            },
+            {
+              "id": "W1-S6-08",
+              "title": "Implement current dasha period detection",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 6,
+              "dependencies": ["W1-S6-07"],
+              "deliverable": "Given current date, return active Maha/Antar/Pratyantardasha",
+              "acceptance": "Correctly identifies current period at any date"
+            },
+            {
+              "id": "W1-S6-09",
+              "title": "Implement upcoming transitions calculation",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 5,
+              "dependencies": ["W1-S6-08"],
+              "deliverable": "Calculate next N dasha transitions with dates",
+              "acceptance": "Returns upcoming period changes for planning"
+            },
+            {
+              "id": "W1-S6-10",
+              "title": "Add planetary quality descriptions",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 5,
+              "dependencies": ["W1-S6-02"],
+              "deliverable": "Enrich each period with planet's qualities/themes from wisdom data",
+              "acceptance": "Dasha periods include descriptive text (e.g., Jupiter: expansion, wisdom)"
+            },
+            {
+              "id": "W1-S6-11",
+              "title": "Implement Vimshottari witness prompt generation",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 6,
+              "dependencies": ["W1-S6-10"],
+              "deliverable": "Generate prompts asking user to witness current dasha themes",
+              "acceptance": "Prompts reference current period energy without prescribing actions"
+            },
+            {
+              "id": "W1-S6-12",
+              "title": "Implement ConsciousnessEngine trait for Vimshottari",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 5,
+              "dependencies": ["W1-S6-11"],
+              "deliverable": "VimshottariEngine implements trait",
+              "acceptance": "Returns 120-year timeline + current period + witness prompt"
+            },
+            {
+              "id": "W1-S6-13",
+              "title": "Register Vimshottari engine with orchestrator",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 4,
+              "dependencies": ["W1-S6-12"],
+              "deliverable": "VimshottariEngine added to registry",
+              "acceptance": "POST /api/v1/engines/vimshottari/calculate works"
+            },
+            {
+              "id": "W1-S6-14",
+              "title": "Write integration tests for Vimshottari engine",
+              "area": "qa",
+              "owner_role": "QA Eng",
+              "est_hours": 7,
+              "dependencies": ["W1-S6-13"],
+              "deliverable": "Test dasha calculation via API with known birth dates",
+              "acceptance": "Validates dasha periods match Vedic astrology references"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "phase_id": "W1-P4",
+      "name": "Wave 1 Phase 4: Integration Testing + Documentation",
+      "objective": "Comprehensive testing of Wave 1 deliverables, performance validation, documentation",
+      "sprints": [
+        {
+          "sprint_id": "W1-S7",
+          "duration_weeks": 2,
+          "focus": "End-to-end testing + performance",
+          "tasks": [
+            {
+              "id": "W1-S7-01",
+              "title": "Write E2E test for full HD chart via API",
+              "area": "qa",
+              "owner_role": "QA Eng",
+              "est_hours": 6,
+              "dependencies": ["W1-S4-10"],
+              "deliverable": "Complete workflow: HTTP request → HD chart calculation → cache → response",
+              "acceptance": "E2E test covers auth, calculation, caching, metrics"
+            },
+            {
+              "id": "W1-S7-02",
+              "title": "Write E2E test for Gene Keys via API",
+              "area": "qa",
+              "owner_role": "QA Eng",
+              "est_hours": 5,
+              "dependencies": ["W1-S5-09"],
+              "deliverable": "E2E test for Gene Keys calculation",
+              "acceptance": "Validates shadow/gift/siddhi returned correctly"
+            },
+            {
+              "id": "W1-S7-03",
+              "title": "Write E2E test for Vimshottari via API",
+              "area": "qa",
+              "owner_role": "QA Eng",
+              "est_hours": 5,
+              "dependencies": ["W1-S6-13"],
+              "deliverable": "E2E test for dasha timeline calculation",
+              "acceptance": "Validates 120-year timeline structure"
+            },
+            {
+              "id": "W1-S7-04",
+              "title": "Write cache hit rate verification tests",
+              "area": "qa",
+              "owner_role": "QA Eng",
+              "est_hours": 6,
+              "dependencies": ["W1-S7-01"],
+              "deliverable": "Test identical requests hit cache (L1→L2→L3 cascade)",
+              "acceptance": "Second identical request returns cached result <10ms"
+            },
+            {
+              "id": "W1-S7-05",
+              "title": "Write parallel workflow execution test",
+              "area": "qa",
+              "owner_role": "QA Eng",
+              "est_hours": 7,
+              "dependencies": ["W1-S1-04"],
+              "deliverable": "Test that multi-engine workflows use tokio::join! parallelism",
+              "acceptance": "3-engine workflow completes in ~max(engine_time), not sum"
+            },
+            {
+              "id": "W1-S7-06",
+              "title": "Benchmark HD calculation performance",
+              "area": "qa",
+              "owner_role": "QA Eng",
+              "est_hours": 5,
+              "dependencies": ["W1-S4-10"],
+              "deliverable": "Criterion benchmark for HD chart generation",
+              "acceptance": "<100ms per chart on standard hardware"
+            },
+            {
+              "id": "W1-S7-07",
+              "title": "Benchmark Gene Keys calculation performance",
+              "area": "qa",
+              "owner_role": "QA Eng",
+              "est_hours": 4,
+              "dependencies": ["W1-S5-09"],
+              "deliverable": "Criterion benchmark for Gene Keys",
+              "acceptance": "<50ms per calculation (simpler than HD)"
+            },
+            {
+              "id": "W1-S7-08",
+              "title": "Benchmark Vimshottari calculation performance",
+              "area": "qa",
+              "owner_role": "QA Eng",
+              "est_hours": 5,
+              "dependencies": ["W1-S6-13"],
+              "deliverable": "Criterion benchmark for 120-year dasha timeline",
+              "acceptance": "<200ms for full timeline generation"
+            },
+            {
+              "id": "W1-S7-09",
+              "title": "Load test API with concurrent requests",
+              "area": "qa",
+              "owner_role": "QA Eng",
+              "est_hours": 7,
+              "dependencies": ["W1-S7-06"],
+              "deliverable": "Use k6/locust to test 100 concurrent users",
+              "acceptance": "API maintains <500ms p95 latency under load"
+            },
+            {
+              "id": "W1-S7-10",
+              "title": "Test cache invalidation strategies",
+              "area": "qa",
+              "owner_role": "QA Eng",
+              "est_hours": 6,
+              "dependencies": ["W1-S7-04"],
+              "deliverable": "Verify TTL expiration, manual invalidation work correctly",
+              "acceptance": "Expired entries recalculated, manual clear works"
+            },
+            {
+              "id": "W1-S7-11",
+              "title": "Test error handling and recovery",
+              "area": "qa",
+              "owner_role": "QA Eng",
+              "est_hours": 6,
+              "dependencies": ["W1-S1-14"],
+              "deliverable": "Test invalid input, missing data, network failures",
+              "acceptance": "All error cases return structured ErrorResponse"
+            },
+            {
+              "id": "W1-S7-12",
+              "title": "Update .context documentation with Wave 1 learnings",
+              "area": "product",
+              "owner_role": "Tech Writer",
+              "est_hours": 8,
+              "dependencies": ["W1-S7-11"],
+              "deliverable": "Update .context/engines/ and .context/architecture/ with implementation details",
+              "acceptance": "Documentation reflects actual implementation patterns"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

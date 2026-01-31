@@ -9,11 +9,21 @@ use axum::{
     http::Method,
 };
 use tower_http::cors::{CorsLayer, Any};
+use tower::ServiceBuilder;
+use tower_http::timeout::TimeoutLayer;
 use crate::SelemeneEngine;
 use std::sync::Arc;
+use std::time::Duration;
 
 /// Create the main API router
 pub fn create_api_router(engine: Arc<SelemeneEngine>) -> Router {
+    // Get timeout from environment or use default (30 seconds)
+    let timeout_secs = std::env::var("REQUEST_TIMEOUT_SECS")
+        .ok()
+        .and_then(|s| s.parse().ok())
+        .unwrap_or(30);
+    let timeout = Duration::from_secs(timeout_secs);
+
     // CORS configuration
     let cors = CorsLayer::new()
         .allow_methods([Method::GET, Method::POST, Method::PUT, Method::DELETE])
@@ -26,7 +36,11 @@ pub fn create_api_router(engine: Arc<SelemeneEngine>) -> Router {
         .route("/health", axum::routing::get(handlers::health_check))
         .route("/metrics", axum::routing::get(handlers::metrics))
         .route("/status", axum::routing::get(handlers::status))
-        .layer(cors)
+        .layer(
+            ServiceBuilder::new()
+                .layer(TimeoutLayer::new(timeout))
+                .layer(cors)
+        )
         // TODO: Fix middleware compatibility issues
         // .layer(axum::middleware::from_fn(middleware::logging_middleware))
         // .layer(axum::middleware::from_fn(middleware::auth_middleware))

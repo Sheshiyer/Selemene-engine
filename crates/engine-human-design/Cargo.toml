@@ -8,6 +8,17 @@ description = "Human Design consciousness engine — 88° solar arc, gates, chan
 noesis-core = { path = "../noesis-core" }
 async-trait = "0.1"
 chrono = { version = "0.4", features = ["serde"] }
+chrono-tz = "0.10"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 lazy_static = "1.4"
+swisseph = "0.1"
+thiserror = "1.0"
+
+[dev-dependencies]
+criterion = { version = "0.5", features = ["async_tokio"] }
+tokio = { version = "1.43", features = ["full"] }
+
+[[bench]]
+name = "hd_performance"
+harness = false

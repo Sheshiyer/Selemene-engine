@@ -1,0 +1,130 @@
+[
+  {
+    "name": "Reference 1 - Classic Generator",
+    "description": "Gates 17/18/45/26 — Opinion-Correction/Gathering-Taming",
+    "hd_gates": {
+      "personality_sun": 17,
+      "personality_earth": 18,
+      "design_sun": 45,
+      "design_earth": 26
+    },
+    "expected": {
+      "lifes_work": [17, 18],
+      "evolution": [45, 26],
+      "radiance": [17, 45],
+      "purpose": [18, 26]
+    }
+  },
+  {
+    "name": "Reference 2 - Creative Visionary",
+    "description": "Gates 1/2/13/7 — Creative-Receptive/Listening-Role of Self",
+    "hd_gates": {
+      "personality_sun": 1,
+      "personality_earth": 2,
+      "design_sun": 13,
+      "design_earth": 7
+    },
+    "expected": {
+      "lifes_work": [1, 2],
+      "evolution": [13, 7],
+      "radiance": [1, 13],
+      "purpose": [2, 7]
+    }
+  },
+  {
+    "name": "Reference 3 - Gate Boundaries",
+    "description": "Gates 64/63/1/2 — High-end and low-end gate numbers",
+    "hd_gates": {
+      "personality_sun": 64,
+      "personality_earth": 63,
+      "design_sun": 1,
+      "design_earth": 2
+    },
+    "expected": {
+      "lifes_work": [64, 63],
+      "evolution": [1, 2],
+      "radiance": [64, 1],
+      "purpose": [63, 2]
+    }
+  },
+  {
+    "name": "Reference 4 - Leadership Channel",
+    "description": "Gates 33/19/7/13 — Retreat-Approach/Role of Self-Listening",
+    "hd_gates": {
+      "personality_sun": 33,
+      "personality_earth": 19,
+      "design_sun": 7,
+      "design_earth": 13
+    },
+    "expected": {
+      "lifes_work": [33, 19],
+      "evolution": [7, 13],
+      "radiance": [33, 7],
+      "purpose": [19, 13]
+    }
+  },
+  {
+    "name": "Reference 5 - Emotional Wave",
+    "description": "Gates 36/6/55/49 — Crisis-Friction/Abundance-Revolution",
+    "hd_gates": {
+      "personality_sun": 36,
+      "personality_earth": 6,
+      "design_sun": 55,
+      "design_earth": 49
+    },
+    "expected": {
+      "lifes_work": [36, 6],
+      "evolution": [55, 49],
+      "radiance": [36, 55],
+      "purpose": [6, 49]
+    }
+  },
+  {
+    "name": "Reference 6 - Sacral Power",
+    "description": "Gates 5/35/14/8 — Fixed Rhythms-Change/Power Skills-Contribution",
+    "hd_gates": {
+      "personality_sun": 5,
+      "personality_earth": 35,
+      "design_sun": 14,
+      "design_earth": 8
+    },
+    "expected": {
+      "lifes_work": [5, 35],
+      "evolution": [14, 8],
+      "radiance": [5, 14],
+      "purpose": [35, 8]
+    }
+  },
+  {
+    "name": "Reference 7 - Root Pressure",
+    "description": "Gates 41/31/53/42 — Decrease-Influence/Beginnings-Completion",
+    "hd_gates": {
+      "personality_sun": 41,
+      "personality_earth": 31,
+      "design_sun": 53,
+      "design_earth": 42
+    },
+    "expected": {
+      "lifes_work": [41, 31],
+      "evolution": [53, 42],
+      "radiance": [41, 53],
+      "purpose": [31, 42]
+    }
+  },
+  {
+    "name": "Reference 8 - Splenic Awareness",
+    "description": "Gates 48/21/57/51 — Depth-Control/Intuition-Shock",
+    "hd_gates": {
+      "personality_sun": 48,
+      "personality_earth": 21,
+      "design_sun": 57,
+      "design_earth": 51
+    },
+    "expected": {
+      "lifes_work": [48, 21],
+      "evolution": [57, 51],
+      "radiance": [48, 57],
+      "purpose": [21, 51]
+    }
+  }
+]

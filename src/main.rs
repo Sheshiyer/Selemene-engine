@@ -9,6 +9,7 @@ use std::sync::Arc;
 use std::time::Duration;
 use tracing_subscriber;
 use tokio::sync::RwLock;
+use tokio::signal;
 
 use selemene_engine::{
     SelemeneEngine,
@@ -43,7 +44,7 @@ async fn main() {
         .route("/api/v1/panchanga", post(calculate_panchanga))
         .route("/test/birth-data", get(test_birth_data));
 
-    // Run it
+    // Run it with graceful shutdown
     let port: u16 = std::env::var("PORT")
         .ok()
         .and_then(|p| p.parse().ok())
@@ -51,10 +52,49 @@ async fn main() {
     let addr = SocketAddr::from(([0, 0, 0, 0], port));
     tracing::info!("listening on {}", addr);
     
-    axum::Server::bind(&addr)
+    // Configure server with graceful shutdown
+    let server = axum::Server::bind(&addr)
         .serve(app.into_make_service())
-        .await
-        .unwrap();
+        .with_graceful_shutdown(shutdown_signal());
+    
+    tracing::info!("Server started. Press Ctrl+C to shut down gracefully.");
+    
+    if let Err(e) = server.await {
+        tracing::error!("Server error: {}", e);
+    }
+    
+    tracing::info!("Server shut down gracefully.");
+}
+
+/// Listens for SIGTERM and SIGINT signals for graceful shutdown
+async fn shutdown_signal() {
+    let ctrl_c = async {
+        signal::ctrl_c()
+            .await
+            .expect("failed to install Ctrl+C handler");
+    };
+
+    #[cfg(unix)]
+    let terminate = async {
+        signal::unix::signal(signal::unix::SignalKind::terminate())
+            .expect("failed to install signal handler")
+            .recv()
+            .await;
+    };
+
+    #[cfg(not(unix))]
+    let terminate = std::future::pending::<()>();
+
+    tokio::select! {
+        _ = ctrl_c => {
+            tracing::info!("Received SIGINT (Ctrl+C), starting graceful shutdown...");
+        },
+        _ = terminate => {
+            tracing::info!("Received SIGTERM, starting graceful shutdown...");
+        },
+    }
+    
+    tracing::info!("Graceful shutdown initiated. Waiting for in-flight requests to complete...");
 }
 
 async fn root() -> &'static str {

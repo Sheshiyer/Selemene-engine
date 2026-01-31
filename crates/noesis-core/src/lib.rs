@@ -11,6 +11,9 @@ pub use error::*;
 
 use async_trait::async_trait;
 
+#[cfg(feature = "openapi")]
+use utoipa::ToSchema;
+
 /// The universal trait that all consciousness engines must implement.
 ///
 /// Rust engines implement this directly. TypeScript engines are wrapped
@@ -39,8 +42,12 @@ pub trait ConsciousnessEngine: Send + Sync {
 
 /// Result of validating an engine output
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+#[cfg_attr(feature = "openapi", derive(ToSchema))]
 pub struct ValidationResult {
+    /// Whether the output is valid
     pub valid: bool,
+    /// Confidence level (0.0-1.0)
     pub confidence: f64,
+    /// Validation messages or warnings
     pub messages: Vec<String>,
 }

@@ -6,7 +6,16 @@ description = "Gene Keys consciousness engine — Shadow-Gift-Siddhi transformat
 
 [dependencies]
 noesis-core = { path = "../noesis-core" }
+engine-human-design = { path = "../engine-human-design" }
 async-trait = "0.1"
 chrono = { version = "0.4", features = ["serde"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
+
+[dev-dependencies]
+tokio = { version = "1.43", features = ["full", "test-util"] }
+criterion = { version = "0.5", features = ["async_tokio"] }
+
+[[bench]]
+name = "gk_performance"
+harness = false
