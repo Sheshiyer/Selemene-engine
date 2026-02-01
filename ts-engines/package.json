@@ -1,0 +1,23 @@
+{
+  "name": "noesis-ts-engines",
+  "version": "1.0.0",
+  "description": "TypeScript consciousness engines for Tryambakam Noesis",
+  "type": "module",
+  "scripts": {
+    "dev": "bun run --watch src/index.ts",
+    "start": "bun run src/index.ts",
+    "test": "bun test",
+    "lint": "biome check src/",
+    "format": "biome format --write src/"
+  },
+  "dependencies": {
+    "elysia": "^1.0.0"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^1.5.0",
+    "@types/bun": "^1.0.0"
+  },
+  "engines": {
+    "bun": ">=1.0.0"
+  }
+}

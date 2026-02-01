@@ -108,10 +108,14 @@ pub fn calculate_design_time(
     
     // Calculate Sun's longitude at birth
     let birth_jd = datetime_to_julian_day(&birth_time);
-    let target_longitude = calculate_sun_longitude(birth_jd)?;
+    let birth_longitude = calculate_sun_longitude(birth_jd)?;
     
-    // Initial estimate: 88 days before birth
-    // Average solar year is ~365.25 days, so 88 days ≈ 88.0 days
+    // Design time is when the Sun was 88 DEGREES behind the birth position
+    // This is NOT the same as 88 days - it's based on solar arc
+    // Target longitude = birth_longitude - 88° (going backwards in the zodiac)
+    let target_longitude = (birth_longitude - 88.0).rem_euclid(360.0);
+    
+    // Initial estimate: ~88-92 days before birth (Sun moves ~1° per day)
     let initial_estimate = birth_time - Duration::days(88);
     
     // Perform iterative refinement using binary search

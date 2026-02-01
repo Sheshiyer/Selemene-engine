@@ -8,6 +8,8 @@ description = "Workflow orchestrator for parallel multi-engine execution"
 noesis-core = { path = "../noesis-core" }
 noesis-cache = { path = "../noesis-cache" }
 noesis-witness = { path = "../noesis-witness" }
+noesis-bridge = { path = "../noesis-bridge" }
+engine-biofield = { path = "../engine-biofield" }
 tokio = { version = "1.0", features = ["full"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
@@ -15,3 +17,10 @@ tracing = "0.1"
 futures = "0.3"
 chrono = { version = "0.4", features = ["serde"] }
 async-trait = "0.1"
+
+[dev-dependencies]
+criterion = { version = "0.5", features = ["async_tokio"] }
+
+[[bench]]
+name = "workflow_bench"
+harness = false

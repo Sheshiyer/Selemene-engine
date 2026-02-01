@@ -1,0 +1,127 @@
+{
+  "human_design": {
+    "user_nyc_1990": {
+      "input": {
+        "date": "1990-01-15",
+        "time": "14:30",
+        "latitude": 40.7128,
+        "longitude": -74.006,
+        "timezone": "America/New_York"
+      },
+      "expected": {
+        "hd_type": "Generator",
+        "authority": "Emotional",
+        "profile": "4/6",
+        "personality_sun_gate": 61,
+        "design_sun_gate": 38,
+        "defined_centers_count": 5
+      },
+      "source": "Human Design calculation reference",
+      "tolerance": {
+        "gate": 0,
+        "line": 0
+      }
+    }
+  },
+  "vimshottari": {
+    "moon_125_degrees": {
+      "input": {
+        "moon_longitude": 125.0,
+        "birth_date": "1985-06-15"
+      },
+      "expected": {
+        "birth_nakshatra": "Magha",
+        "nakshatra_number": 10,
+        "starting_dasha": "Ketu",
+        "mahadasha_sequence": ["Ketu", "Venus", "Sun", "Moon", "Mars", "Rahu", "Jupiter", "Saturn", "Mercury"]
+      },
+      "source": "Traditional Vimshottari calculation"
+    },
+    "moon_0_degrees": {
+      "input": {
+        "moon_longitude": 0.0,
+        "birth_date": "1990-01-01"
+      },
+      "expected": {
+        "birth_nakshatra": "Ashwini",
+        "nakshatra_number": 1,
+        "starting_dasha": "Ketu"
+      }
+    },
+    "moon_359_degrees": {
+      "input": {
+        "moon_longitude": 359.9,
+        "birth_date": "1990-01-01"
+      },
+      "expected": {
+        "birth_nakshatra": "Revati",
+        "nakshatra_number": 27,
+        "starting_dasha": "Mercury"
+      }
+    }
+  },
+  "gene_keys": {
+    "gates_17_18_45_26": {
+      "input": {
+        "hd_gates": {
+          "personality_sun": 17,
+          "personality_earth": 18,
+          "design_sun": 45,
+          "design_earth": 26
+        }
+      },
+      "expected": {
+        "lifes_work_key": 17,
+        "evolution_key": 18,
+        "radiance_key": 45,
+        "purpose_key": 26,
+        "shadow_17": "Opinion",
+        "gift_17": "Far-sightedness",
+        "siddhi_17": "Omniscience"
+      },
+      "source": "Gene Keys reference data"
+    }
+  },
+  "panchanga": {
+    "reference_date_2024_01_15": {
+      "input": {
+        "date": "2024-01-15",
+        "time": "12:00",
+        "latitude": 12.9716,
+        "longitude": 77.5946,
+        "timezone": "Asia/Kolkata"
+      },
+      "expected": {
+        "weekday": "Monday",
+        "paksha": "Shukla",
+        "tithi_name_contains": "Panchami"
+      },
+      "tolerance": {
+        "tithi_index": 1,
+        "nakshatra_index": 1
+      }
+    }
+  },
+  "numerology": {
+    "user_1990_01_15": {
+      "input": {
+        "date": "1990-01-15",
+        "name": "Test User"
+      },
+      "expected": {
+        "life_path": 8,
+        "calculation": "1+9+9+0+0+1+1+5=26=2+6=8"
+      }
+    },
+    "master_number_11": {
+      "input": {
+        "date": "2000-02-29",
+        "name": "Master Eleven"
+      },
+      "expected": {
+        "life_path": 6,
+        "calculation": "2+0+0+0+0+2+2+9=15=6"
+      }
+    }
+  }
+}

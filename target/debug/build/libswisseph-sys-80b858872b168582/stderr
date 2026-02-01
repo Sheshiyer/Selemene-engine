@@ -1,4 +1,0 @@
-fatal: not a git repository (or any of the parent directories): .git
-error: 'rustfmt' is not installed for the toolchain 'stable-aarch64-apple-darwin'.
-To install, run `rustup component add rustfmt`
-Failed to run rustfmt: Internal rustfmt error (non-fatal, continuing)

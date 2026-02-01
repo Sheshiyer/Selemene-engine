@@ -16,6 +16,64 @@ lazy_static! {
 }
 
 // ---------------------------------------------------------------------------
+// OpenTelemetry Tracing Configuration
+// ---------------------------------------------------------------------------
+
+/// Initialize OpenTelemetry tracing with OTLP exporter (Jaeger compatible).
+///
+/// Call this once at application startup to enable distributed tracing.
+/// Traces will be exported to the configured OTLP endpoint (default: Jaeger).
+///
+/// # Arguments
+/// * `service_name` - Name of the service for trace identification
+/// * `otlp_endpoint` - OTLP gRPC endpoint (e.g., "http://jaeger:4317")
+///
+/// # Example
+/// ```rust,no_run
+/// noesis_metrics::init_otel_tracing("noesis-api", "http://localhost:4317").await?;
+/// ```
+pub async fn init_otel_tracing(
+    service_name: &str,
+    otlp_endpoint: &str,
+) -> Result<opentelemetry_sdk::trace::Tracer, Box<dyn std::error::Error + Send + Sync>> {
+    use opentelemetry_otlp::WithExportConfig;
+    use opentelemetry_sdk::{runtime, trace as sdktrace, Resource};
+    use opentelemetry::KeyValue;
+    
+    let tracer = opentelemetry_otlp::new_pipeline()
+        .tracing()
+        .with_exporter(
+            opentelemetry_otlp::new_exporter()
+                .tonic()
+                .with_endpoint(otlp_endpoint),
+        )
+        .with_trace_config(
+            sdktrace::Config::default()
+                .with_resource(Resource::new(vec![
+                    KeyValue::new("service.name", service_name.to_string()),
+                    KeyValue::new("service.version", env!("CARGO_PKG_VERSION")),
+                ]))
+                .with_sampler(sdktrace::Sampler::AlwaysOn),
+        )
+        .install_batch(runtime::Tokio)?;
+    
+    tracing::info!(
+        "OpenTelemetry tracing initialized: service={}, endpoint={}",
+        service_name,
+        otlp_endpoint
+    );
+    
+    Ok(tracer)
+}
+
+/// Shutdown OpenTelemetry tracing gracefully.
+/// Call this before application exit to ensure all spans are exported.
+pub fn shutdown_tracing() {
+    opentelemetry::global::shutdown_tracer_provider();
+    tracing::info!("OpenTelemetry tracing shut down");
+}
+
+// ---------------------------------------------------------------------------
 // NoesisMetrics
 // ---------------------------------------------------------------------------
 

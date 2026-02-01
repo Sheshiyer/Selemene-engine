@@ -224,6 +224,8 @@ pub fn create_router(state: AppState, config: &ApiConfig) -> Router {
     // Now add stateful routes
     base
         .route("/health", get(health_handler))
+        .route("/health/live", get(health_handler))  // Kubernetes liveness probe
+        .route("/health/ready", get(readiness_handler))  // Kubernetes readiness probe
         .route("/ready", get(readiness_handler))
         .route("/metrics", get(metrics_handler))
         .nest("/api/v1", api_v1)
@@ -1009,6 +1011,12 @@ pub fn build_app_state(config: &ApiConfig) -> AppState {
     // Register Vimshottari Dasha engine with HD dependency (Phase 2)
     let vim_engine = Arc::new(engine_vimshottari::VimshottariEngine::with_hd_engine(hd_engine));
     orchestrator.register_engine(vim_engine);
+
+    // Register Biofield engine (Phase 1 - somatic awareness) - returns mock data
+    orchestrator.register_engine(Arc::new(engine_biofield::BiofieldEngine::new()));
+
+    // Register VedicClock-TCM engine (Phase 0 - available to all)
+    orchestrator.register_engine(Arc::new(engine_vedic_clock::VedicClockEngine::new()));
 
     // -- Cache --
     let redis_url = config.redis_url.clone().unwrap_or_else(|| String::new());

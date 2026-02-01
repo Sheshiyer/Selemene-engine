@@ -1,0 +1,220 @@
+name: CD - Build & Deploy
+
+on:
+  push:
+    branches: [ main ]
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deployment environment'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - staging
+          - production
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME_API: ${{ github.repository_owner }}/selemene-engine
+  IMAGE_NAME_TS: ${{ github.repository_owner }}/selemene-ts-engines
+
+jobs:
+  # Build and push Rust API Docker image
+  build-api:
+    name: Build API Image
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      image-tag: ${{ steps.meta.outputs.tags }}
+      image-digest: ${{ steps.build.outputs.digest }}
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_API }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=sha,prefix=sha-
+            type=raw,value=latest,enable={{is_default_branch}}
+      
+      - name: Build and push
+        id: build
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile.prod
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          platforms: linux/amd64,linux/arm64
+      
+      - name: Check image size
+        run: |
+          docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_API }}:${{ github.sha }}
+          SIZE=$(docker image inspect ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_API }}:${{ github.sha }} --format='{{.Size}}')
+          SIZE_MB=$((SIZE / 1024 / 1024))
+          echo "Image size: ${SIZE_MB}MB"
+          if [ $SIZE_MB -gt 500 ]; then
+            echo "::warning::Image size (${SIZE_MB}MB) exceeds 500MB target"
+          fi
+
+  # Build and push TypeScript engines Docker image
+  build-ts-engines:
+    name: Build TS Engines Image
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      image-tag: ${{ steps.meta.outputs.tags }}
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_TS }}
+          tags: |
+            type=ref,event=branch
+            type=semver,pattern={{version}}
+            type=sha,prefix=sha-
+            type=raw,value=latest,enable={{is_default_branch}}
+      
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: ./ts-engines
+          file: ./ts-engines/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # Deploy to Kubernetes
+  deploy:
+    name: Deploy to Kubernetes
+    runs-on: ubuntu-latest
+    needs: [build-api, build-ts-engines]
+    if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
+    environment:
+      name: ${{ github.event.inputs.environment || 'staging' }}
+      url: https://api.selemene.witnessos.io
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'v1.28.0'
+      
+      - name: Set up Kustomize
+        uses: imranismail/setup-kustomize@v2
+      
+      - name: Configure kubectl
+        run: |
+          echo "${{ secrets.KUBECONFIG }}" | base64 -d > kubeconfig.yaml
+          echo "KUBECONFIG=$(pwd)/kubeconfig.yaml" >> $GITHUB_ENV
+        if: ${{ secrets.KUBECONFIG != '' }}
+      
+      - name: Update image tags
+        run: |
+          cd k8s
+          kustomize edit set image \
+            ghcr.io/witnessos/selemene-engine=${{ env.REGISTRY }}/${{ env.IMAGE_NAME_API }}:sha-${{ github.sha }} \
+            ghcr.io/witnessos/selemene-ts-engines=${{ env.REGISTRY }}/${{ env.IMAGE_NAME_TS }}:sha-${{ github.sha }}
+      
+      - name: Validate manifests
+        run: |
+          cd k8s
+          kustomize build . > /tmp/manifests.yaml
+          kubectl apply --dry-run=client -f /tmp/manifests.yaml
+      
+      - name: Deploy to cluster
+        run: |
+          cd k8s
+          kustomize build . | kubectl apply -f -
+        if: ${{ env.KUBECONFIG != '' }}
+      
+      - name: Wait for rollout
+        run: |
+          kubectl rollout status deployment/selemene-api -n selemene --timeout=300s
+          kubectl rollout status deployment/selemene-ts-engines -n selemene --timeout=300s
+        if: ${{ env.KUBECONFIG != '' }}
+      
+      - name: Verify deployment
+        run: |
+          # Check pods are running
+          kubectl get pods -n selemene -l app=selemene
+          
+          # Check endpoints are ready
+          kubectl get endpoints -n selemene
+        if: ${{ env.KUBECONFIG != '' }}
+
+  # Create GitHub Release for tags
+  release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    needs: [build-api, deploy]
+    if: startsWith(github.ref, 'refs/tags/v')
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          generate_release_notes: true
+          body: |
+            ## Docker Images
+            
+            - API: `${{ env.REGISTRY }}/${{ env.IMAGE_NAME_API }}:${{ github.ref_name }}`
+            - TS Engines: `${{ env.REGISTRY }}/${{ env.IMAGE_NAME_TS }}:${{ github.ref_name }}`
+            
+            ## Deploy
+            
+            ```bash
+            # Pull latest images
+            docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_API }}:${{ github.ref_name }}
+            docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_TS }}:${{ github.ref_name }}
+            
+            # Or deploy to Kubernetes
+            kubectl set image deployment/selemene-api \
+              selemene-api=${{ env.REGISTRY }}/${{ env.IMAGE_NAME_API }}:${{ github.ref_name }} \
+              -n selemene
+            ```

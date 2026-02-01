@@ -17,11 +17,41 @@
 //! Phase gating is enforced at execution time: an engine will only run if
 //! `engine.required_phase() <= user_phase`. Otherwise `EngineError::PhaseAccessDenied`
 //! is returned.
+//!
+//! # TypeScript Engine Bridge
+//!
+//! The orchestrator can register TypeScript-based engines via `noesis-bridge`.
+//! Use `register_bridge_engines()` or `register_bridge_engines_from_env()` to
+//! automatically register all TS engines (tarot, i-ching, enneagram, sacred-geometry, sigil-forge).
+
+// Workflow module with full spectrum, caching, and synthesis
+pub mod workflow;
 
 pub use noesis_core::{
     ConsciousnessEngine, EngineError, EngineInput, EngineOutput,
     WorkflowDefinition, WorkflowResult,
 };
+
+// Re-export workflow types
+pub use workflow::{
+    EngineCategory, FullSpectrumConfig, FullSpectrumResult, FullSpectrumWorkflow,
+    WorkflowCache, WorkflowCacheKey, WorkflowTtl,
+    // New workflow infrastructure
+    WorkflowExecutor, WorkflowRegistry, WorkflowOutput,
+    Theme, ExtAlignment as Alignment, ExtTension as Tension,
+    WitnessPrompt, InquiryType, TemporalWindow, SynthesisType,
+};
+pub use workflow::models::SynthesisResult;
+pub use workflow::synthesis::{
+    CrossEngineTheme, FullSpectrumSynthesizer, ThemeCategory,
+    BirthBlueprintSynthesizer, DailyPracticeSynthesizer, Synthesizer,
+};
+
+// Re-export bridge types for convenience
+pub use noesis_bridge::{BridgeEngine, BridgeManager, DEFAULT_TS_SERVER_URL};
+
+// Re-export engine types for convenience
+pub use engine_biofield::BiofieldEngine;
 
 use chrono::Utc;
 use futures::future::join_all;
@@ -132,6 +162,49 @@ impl WorkflowOrchestrator {
     pub fn register_workflow(&mut self, workflow: WorkflowDefinition) {
         info!(workflow_id = %workflow.id, "Registering workflow");
         self.workflows.insert(workflow.id.clone(), workflow);
+    }
+
+    // -- Bridge engine registration ----------------------------------------
+
+    /// Register all TypeScript engines from a BridgeManager.
+    ///
+    /// This registers: tarot, i-ching, enneagram, sacred-geometry, sigil-forge.
+    pub fn register_bridge_engines(&mut self, manager: &BridgeManager) {
+        info!(
+            base_url = %manager.base_url(),
+            "Registering TypeScript bridge engines"
+        );
+        for engine in manager.engines() {
+            self.register_engine(engine);
+        }
+    }
+
+    /// Register TypeScript engines using the `TS_ENGINES_URL` environment variable,
+    /// falling back to the default URL (localhost:3001) if not set.
+    ///
+    /// Returns the BridgeManager for optional health checking.
+    pub fn register_bridge_engines_from_env(&mut self) -> BridgeManager {
+        let manager = BridgeManager::from_env();
+        self.register_bridge_engines(&manager);
+        manager
+    }
+
+    /// Register a single TypeScript engine by creating a bridge.
+    ///
+    /// # Arguments
+    /// * `engine_id` - The engine identifier (e.g., "tarot")
+    /// * `engine_name` - Human-readable name (e.g., "Tarot")
+    /// * `required_phase` - Minimum consciousness phase (0-5)
+    /// * `base_url` - URL of the TypeScript server
+    pub fn register_bridge_engine(
+        &mut self,
+        engine_id: &str,
+        engine_name: &str,
+        required_phase: u8,
+        base_url: &str,
+    ) {
+        let engine = BridgeEngine::new(engine_id, engine_name, required_phase, base_url);
+        self.register_engine(Arc::new(engine));
     }
 
     // -- Single-engine execution -------------------------------------------

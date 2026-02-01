@@ -1,6 +1,7 @@
 pub mod routes;
 pub mod middleware;
 pub mod handlers;
+pub mod health;
 pub mod ghati_handlers;
 pub mod ghati_panchanga_handlers;
 
@@ -34,6 +35,8 @@ pub fn create_api_router(engine: Arc<SelemeneEngine>) -> Router {
     Router::<Arc<SelemeneEngine>>::new()
         .nest("/api/v1", routes::create_v1_routes())
         .route("/health", axum::routing::get(handlers::health_check))
+        .route("/health/live", axum::routing::get(health::liveness_probe))
+        .route("/health/ready", axum::routing::get(health::readiness_probe))
         .route("/metrics", axum::routing::get(handlers::metrics))
         .route("/status", axum::routing::get(handlers::status))
         .layer(

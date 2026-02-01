@@ -1,0 +1,206 @@
+groups:
+  - name: noesis-api-alerts
+    interval: 30s
+    rules:
+      # High Error Rate Alert
+      - alert: NoesisHighErrorRate
+        expr: |
+          (
+            rate(noesis_calculation_errors_total[5m]) 
+            / rate(noesis_calculations_total[5m])
+          ) > 0.05
+        for: 5m
+        labels:
+          severity: critical
+          service: noesis-api
+        annotations:
+          summary: "Noesis API error rate exceeds 5%"
+          description: "Error rate is {{ $value | humanizePercentage }} over the last 5 minutes"
+
+      # High Latency Alert (P95 > 2s)
+      - alert: NoesisHighLatency
+        expr: |
+          histogram_quantile(0.95, 
+            rate(noesis_request_duration_seconds_bucket[5m])
+          ) > 2
+        for: 5m
+        labels:
+          severity: warning
+          service: noesis-api
+        annotations:
+          summary: "Noesis API P95 latency exceeds 2 seconds"
+          description: "P95 latency is {{ $value | humanizeDuration }}"
+
+      # Low Cache Hit Rate Alert
+      - alert: NoesisLowCacheHitRate
+        expr: |
+          (
+            rate(noesis_cache_hits_total[10m]) 
+            / (rate(noesis_cache_hits_total[10m]) + rate(noesis_cache_misses_total[10m]))
+          ) < 0.70
+        for: 10m
+        labels:
+          severity: warning
+          service: noesis-cache
+        annotations:
+          summary: "Noesis cache hit rate below 70%"
+          description: "Cache hit rate is {{ $value | humanizePercentage }}"
+
+      # API Down Alert
+      - alert: NoesisAPIDown
+        expr: up{job="noesis-api"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: noesis-api
+        annotations:
+          summary: "Noesis API is down"
+          description: "Noesis API instance {{ $labels.instance }} is unreachable"
+
+      # High Memory Usage
+      - alert: NoesisHighMemoryUsage
+        expr: noesis_memory_usage_bytes > 1073741824
+        for: 5m
+        labels:
+          severity: warning
+          service: noesis-api
+        annotations:
+          summary: "Noesis API memory usage exceeds 1GB"
+          description: "Memory usage is {{ $value | humanize1024 }}B"
+
+      # Calculation Duration Spike
+      - alert: NoesisSlowCalculations
+        expr: |
+          histogram_quantile(0.99, 
+            rate(noesis_calculation_duration_seconds_bucket[5m])
+          ) > 5
+        for: 5m
+        labels:
+          severity: warning
+          service: noesis-engine
+        annotations:
+          summary: "Noesis calculation P99 exceeds 5 seconds"
+          description: "P99 calculation duration is {{ $value | humanizeDuration }}"
+
+      # Engine-specific error rate
+      - alert: NoesisEngineHighErrorRate
+        expr: |
+          rate(noesis_engine_calculation_errors_total[5m]) > 0.1
+        for: 5m
+        labels:
+          severity: warning
+          service: noesis-engine
+        annotations:
+          summary: "Engine {{ $labels.engine_id }} has high error rate"
+          description: "Engine {{ $labels.engine_id }} error rate: {{ $value }}/sec (type: {{ $labels.error_type }})"
+
+  - name: noesis-infrastructure-alerts
+    interval: 30s
+    rules:
+      # Redis Connection Failures
+      - alert: NoesisRedisConnectionFailure
+        expr: redis_connected_clients == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: redis
+        annotations:
+          summary: "Redis has no connected clients"
+          description: "Redis instance {{ $labels.instance }} has 0 connected clients"
+
+      # Redis Memory Usage High
+      - alert: NoesisRedisHighMemory
+        expr: redis_memory_used_bytes / redis_memory_max_bytes > 0.90
+        for: 5m
+        labels:
+          severity: warning
+          service: redis
+        annotations:
+          summary: "Redis memory usage exceeds 90%"
+          description: "Redis memory is {{ $value | humanizePercentage }} utilized"
+
+      # Postgres Connections Exhausted
+      - alert: NoesisPostgresConnectionsHigh
+        expr: |
+          pg_stat_activity_count / pg_settings_max_connections > 0.80
+        for: 5m
+        labels:
+          severity: warning
+          service: postgres
+        annotations:
+          summary: "PostgreSQL connection usage exceeds 80%"
+          description: "{{ $value | humanizePercentage }} of connections are in use"
+
+      # Postgres Replication Lag
+      - alert: NoesisPostgresReplicationLag
+        expr: pg_replication_lag > 30
+        for: 5m
+        labels:
+          severity: warning
+          service: postgres
+        annotations:
+          summary: "PostgreSQL replication lag exceeds 30 seconds"
+          description: "Replication lag is {{ $value }} seconds"
+
+      # High CPU Usage (via node exporter)
+      - alert: NoesisHighCPUUsage
+        expr: |
+          100 - (avg by(instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+        for: 10m
+        labels:
+          severity: warning
+          service: infrastructure
+        annotations:
+          summary: "High CPU usage detected"
+          description: "CPU usage is {{ $value | humanize }}%"
+
+      # Disk Space Low
+      - alert: NoesisDiskSpaceLow
+        expr: |
+          (node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"}) * 100 < 15
+        for: 5m
+        labels:
+          severity: warning
+          service: infrastructure
+        annotations:
+          summary: "Disk space running low"
+          description: "Only {{ $value | humanize }}% disk space remaining"
+
+  - name: noesis-pod-alerts
+    interval: 30s
+    rules:
+      # Pod Restart Count High (Kubernetes)
+      - alert: NoesisPodRestartHigh
+        expr: |
+          increase(kube_pod_container_status_restarts_total{namespace="noesis"}[10m]) > 3
+        for: 1m
+        labels:
+          severity: warning
+          service: kubernetes
+        annotations:
+          summary: "Pod {{ $labels.pod }} restarted more than 3 times in 10 minutes"
+          description: "Container {{ $labels.container }} in pod {{ $labels.pod }} has {{ $value }} restarts"
+
+      # Pod Not Ready
+      - alert: NoesisPodNotReady
+        expr: |
+          kube_pod_status_ready{namespace="noesis", condition="true"} == 0
+        for: 5m
+        labels:
+          severity: critical
+          service: kubernetes
+        annotations:
+          summary: "Pod {{ $labels.pod }} is not ready"
+          description: "Pod {{ $labels.pod }} has been in a non-ready state for more than 5 minutes"
+
+      # Container OOMKilled
+      - alert: NoesisContainerOOMKilled
+        expr: |
+          kube_pod_container_status_last_terminated_reason{namespace="noesis", reason="OOMKilled"} == 1
+        for: 0m
+        labels:
+          severity: critical
+          service: kubernetes
+        annotations:
+          summary: "Container {{ $labels.container }} was OOMKilled"
+          description: "Container {{ $labels.container }} in pod {{ $labels.pod }} was terminated due to OOM"

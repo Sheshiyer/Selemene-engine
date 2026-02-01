@@ -1,0 +1,96 @@
+# =============================================================================
+# Production Multi-Stage Dockerfile for Selemene Engine (noesis-api)
+# Target size: <500MB
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Stage 1: Builder - Compile Rust binary
+# -----------------------------------------------------------------------------
+FROM rust:1.75-slim AS builder
+
+WORKDIR /build
+
+# Install build dependencies
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    pkg-config \
+    libssl-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy workspace configuration first (for layer caching)
+COPY Cargo.toml Cargo.lock ./
+
+# Copy all workspace crates
+COPY crates/ ./crates/
+
+# Copy legacy crate if exists
+COPY legacy/ ./legacy/ 2>/dev/null || mkdir -p ./legacy
+
+# Copy source directory
+COPY src/ ./src/
+
+# Build release binary with optimizations
+RUN cargo build --release --bin noesis-server && \
+    strip /build/target/release/noesis-server
+
+# -----------------------------------------------------------------------------
+# Stage 2: Runtime - Minimal production image
+# -----------------------------------------------------------------------------
+FROM debian:bookworm-slim AS runtime
+
+# Labels for container metadata
+LABEL org.opencontainers.image.title="Selemene Engine" \
+      org.opencontainers.image.description="High-performance astronomical calculation engine for Vedic astrology" \
+      org.opencontainers.image.vendor="WitnessOS" \
+      org.opencontainers.image.version="0.1.0"
+
+WORKDIR /app
+
+# Install minimal runtime dependencies
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    ca-certificates \
+    libssl3 \
+    curl \
+    && rm -rf /var/lib/apt/lists/* \
+    && rm -rf /var/cache/apt/*
+
+# Create non-root user for security
+RUN useradd -r -s /bin/false -u 1000 appuser && \
+    mkdir -p /app/data && \
+    chown -R appuser:appuser /app
+
+# Copy binary from builder
+COPY --from=builder /build/target/release/noesis-server /app/noesis-server
+
+# Copy Swiss Ephemeris data files
+COPY --chown=appuser:appuser data/ephemeris/ /app/data/ephemeris/
+
+# Copy wisdom-docs JSON files
+COPY --chown=appuser:appuser data/wisdom-docs/ /app/data/wisdom-docs/
+
+# Copy additional data directories
+COPY --chown=appuser:appuser data/constants/ /app/data/constants/ 2>/dev/null || true
+COPY --chown=appuser:appuser data/validation/ /app/data/validation/ 2>/dev/null || true
+COPY --chown=appuser:appuser data/gene-keys/ /app/data/gene-keys/ 2>/dev/null || true
+COPY --chown=appuser:appuser data/human-design/ /app/data/human-design/ 2>/dev/null || true
+
+# Set environment variables
+ENV RUST_LOG=info \
+    DATA_PATH=/app/data \
+    SWISS_EPHEMERIS_PATH=/app/data/ephemeris \
+    HOST=0.0.0.0 \
+    PORT=8080
+
+# Expose API port
+EXPOSE 8080
+
+# Switch to non-root user
+USER appuser
+
+# Health check using the new endpoints
+HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
+    CMD curl -sf http://localhost:8080/health/live || exit 1
+
+# Run the server
+ENTRYPOINT ["/app/noesis-server"]

@@ -41,9 +41,45 @@ impl EphemerisCalculator {
     /// Create new calculator
     /// 
     /// # Arguments
-    /// * `data_path` - Path to Swiss Ephemeris data files (use "" for built-in)
+    /// * `data_path` - Path to Swiss Ephemeris data files (use "" for default)
+    /// 
+    /// If path is empty, checks SWISS_EPHE_PATH env var, then tries common locations:
+    /// - ./data/ephemeris
+    /// - ../data/ephemeris (for crate tests)
+    /// - /Volumes/madara/2026/witnessos/Selemene-engine/data/ephemeris (absolute fallback)
     pub fn new(data_path: impl Into<String>) -> Self {
-        let data_path = data_path.into();
+        let mut data_path = data_path.into();
+        
+        // If empty, try to find ephemeris data
+        if data_path.is_empty() {
+            // Check environment variable first
+            if let Ok(env_path) = std::env::var("SWISS_EPHE_PATH") {
+                if std::path::Path::new(&env_path).exists() {
+                    data_path = env_path;
+                }
+            }
+            
+            // Try common relative paths
+            if data_path.is_empty() {
+                let candidates = [
+                    "data/ephemeris",
+                    "./data/ephemeris",
+                    "../data/ephemeris",
+                    "../../data/ephemeris",
+                    "../../../data/ephemeris",
+                    "/Volumes/madara/2026/witnessos/Selemene-engine/data/ephemeris",
+                ];
+                
+                for candidate in candidates {
+                    let path = std::path::Path::new(candidate);
+                    if path.exists() && path.join("sepl_18.se1").exists() {
+                        data_path = candidate.to_string();
+                        break;
+                    }
+                }
+            }
+        }
+        
         swisseph::swe::set_ephe_path(&data_path);
         Self { data_path }
     }

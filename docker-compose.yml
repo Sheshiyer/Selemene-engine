@@ -86,6 +86,11 @@ services:
       # Feature flags
       ENABLE_METRICS: ${ENABLE_METRICS:-true}
       ENABLE_WITNESS: ${ENABLE_WITNESS:-true}
+      
+      # Observability / OpenTelemetry
+      OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT:-http://jaeger:4317}
+      OTEL_SERVICE_NAME: ${OTEL_SERVICE_NAME:-noesis-api}
+      LOG_FORMAT: ${LOG_FORMAT:-json}
     networks:
       - noesis-network
     volumes:

@@ -1,0 +1,43 @@
+[workspace]
+resolver = "2"
+members = [
+    # Shared services
+    "crates/noesis-core",
+    "crates/noesis-cache",
+    "crates/noesis-auth",
+    "crates/noesis-metrics",
+    "crates/noesis-witness",
+    "crates/noesis-orchestrator",
+    "crates/noesis-bridge",
+    "crates/noesis-api",
+
+    # Rust consciousness engines
+    "crates/engine-panchanga",
+    "crates/engine-numerology",
+    "crates/engine-biorhythm",
+    "crates/engine-human-design",
+    "crates/engine-vimshottari",
+    "crates/engine-gene-keys",
+    "crates/engine-vedic-clock",
+    "crates/engine-biofield",
+    "crates/engine-face-reading",
+
+    # Legacy Selemene package (kept during migration)
+    "legacy",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = true
+
+[profile.dev]
+opt-level = 0
+debug = true

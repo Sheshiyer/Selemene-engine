@@ -1,0 +1,140 @@
+{
+  "common_response_schema": {
+    "required_fields": ["engine_id", "witness_prompt", "result", "metadata"],
+    "metadata_required": ["calculation_time_ms"]
+  },
+  "engines": {
+    "human-design": {
+      "required_phase": 1,
+      "result_schema": {
+        "required": ["hd_type", "authority", "profile", "defined_centers", "active_channels", "personality_activations", "design_activations"],
+        "hd_types": ["Generator", "Manifesting Generator", "Manifestor", "Projector", "Reflector"],
+        "authorities": ["Emotional", "Sacral", "Splenic", "Ego", "Self-Projected", "Environmental", "Lunar", "None"],
+        "profiles": ["1/3", "1/4", "2/4", "2/5", "3/5", "3/6", "4/6", "4/1", "5/1", "5/2", "6/2", "6/3"],
+        "centers": ["head", "ajna", "throat", "g-center", "heart", "sacral", "root", "spleen", "solar-plexus"]
+      }
+    },
+    "gene-keys": {
+      "required_phase": 2,
+      "result_schema": {
+        "required": ["activation_sequence", "active_keys", "frequency_assessments"],
+        "activation_sequence_required": ["lifes_work", "evolution", "radiance", "purpose"],
+        "key_range": [1, 64]
+      }
+    },
+    "vimshottari": {
+      "required_phase": 2,
+      "result_schema": {
+        "required": ["timeline", "birth_nakshatra", "current_period"],
+        "timeline_required": ["total_years", "mahadashas"],
+        "mahadasha_count": 9,
+        "total_years": 120,
+        "planets": ["Sun", "Moon", "Mars", "Rahu", "Jupiter", "Saturn", "Mercury", "Ketu", "Venus"],
+        "nakshatras": ["Ashwini", "Bharani", "Krittika", "Rohini", "Mrigashira", "Ardra", "Punarvasu", "Pushya", "Ashlesha", "Magha", "Purva Phalguni", "Uttara Phalguni", "Hasta", "Chitra", "Swati", "Vishakha", "Anuradha", "Jyeshtha", "Mula", "Purva Ashadha", "Uttara Ashadha", "Shravana", "Dhanishta", "Shatabhisha", "Purva Bhadrapada", "Uttara Bhadrapada", "Revati"]
+      }
+    },
+    "panchanga": {
+      "required_phase": 0,
+      "result_schema": {
+        "required": ["tithi", "nakshatra", "yoga", "karana", "weekday"],
+        "tithi_range": [1, 30],
+        "nakshatra_count": 27,
+        "yoga_count": 27,
+        "karana_count": 11
+      }
+    },
+    "numerology": {
+      "required_phase": 0,
+      "result_schema": {
+        "required": ["life_path", "expression", "soul_urge", "personality"],
+        "number_range": [1, 33]
+      }
+    },
+    "biorhythm": {
+      "required_phase": 0,
+      "result_schema": {
+        "required": ["physical", "emotional", "intellectual"],
+        "cycle_range": [-1.0, 1.0]
+      }
+    },
+    "vedic-clock": {
+      "required_phase": 1,
+      "result_schema": {
+        "required": ["current_muhurta", "hora_lord", "auspicious_times"]
+      }
+    },
+    "biofield": {
+      "required_phase": 1,
+      "result_schema": {
+        "required": ["energy_centers", "field_assessment"]
+      }
+    },
+    "face-reading": {
+      "required_phase": 2,
+      "result_schema": {
+        "required": ["facial_analysis", "element_balance"]
+      }
+    },
+    "tarot": {
+      "required_phase": 1,
+      "is_typescript": true,
+      "result_schema": {
+        "required": ["cards", "spread_type", "interpretation"]
+      }
+    },
+    "i-ching": {
+      "required_phase": 1,
+      "is_typescript": true,
+      "result_schema": {
+        "required": ["hexagram", "lines", "interpretation"]
+      }
+    },
+    "enneagram": {
+      "required_phase": 1,
+      "is_typescript": true,
+      "result_schema": {
+        "required": ["type", "wing", "instinct"]
+      }
+    },
+    "sacred-geometry": {
+      "required_phase": 2,
+      "is_typescript": true,
+      "result_schema": {
+        "required": ["pattern", "resonance", "interpretation"]
+      }
+    },
+    "sigil-forge": {
+      "required_phase": 2,
+      "is_typescript": true,
+      "result_schema": {
+        "required": ["sigil", "intention", "activation"]
+      }
+    }
+  },
+  "workflows": {
+    "birth-blueprint": {
+      "engines": ["numerology", "human-design", "gene-keys", "panchanga"],
+      "description": "Comprehensive birth chart analysis"
+    },
+    "daily-practice": {
+      "engines": ["panchanga", "vedic-clock", "biorhythm"],
+      "description": "Daily practice recommendations"
+    },
+    "decision-support": {
+      "engines": ["tarot", "i-ching", "numerology"],
+      "description": "Decision support through divination"
+    },
+    "self-inquiry": {
+      "engines": ["gene-keys", "enneagram", "human-design"],
+      "description": "Deep self-inquiry and shadow work"
+    },
+    "creative-expression": {
+      "engines": ["sacred-geometry", "sigil-forge", "tarot"],
+      "description": "Creative and symbolic work"
+    },
+    "full-spectrum": {
+      "engines": ["human-design", "gene-keys", "vimshottari", "panchanga", "numerology", "biorhythm", "vedic-clock", "biofield", "tarot", "i-ching", "enneagram", "sacred-geometry", "sigil-forge"],
+      "description": "All engines comprehensive analysis"
+    }
+  }
+}

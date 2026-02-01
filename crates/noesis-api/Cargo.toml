@@ -22,6 +22,8 @@ engine-biorhythm = { path = "../engine-biorhythm" }
 engine-human-design = { path = "../engine-human-design" }
 engine-gene-keys = { path = "../engine-gene-keys" }
 engine-vimshottari = { path = "../engine-vimshottari" }
+engine-biofield = { path = "../engine-biofield" }
+engine-vedic-clock = { path = "../engine-vedic-clock" }
 axum = { version = "0.7", features = ["json", "macros"] }
 tokio = { version = "1.0", features = ["full"] }
 tower = "0.5"
@@ -31,9 +33,15 @@ serde_json = "1.0"
 chrono = { version = "0.4", features = ["serde"] }
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter", "fmt", "json"] }
+tracing-opentelemetry = { version = "0.22", optional = true }
+opentelemetry = { version = "0.21", optional = true }
 dashmap = "5.5"
 utoipa = { version = "4", features = ["axum_extras", "chrono"] }
 utoipa-swagger-ui = { version = "7", features = ["axum"] }
+
+[features]
+default = []
+otel = ["tracing-opentelemetry", "opentelemetry"]
 
 [dev-dependencies]
 tower = { version = "0.5", features = ["util"] }

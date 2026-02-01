@@ -2,12 +2,19 @@
 
 ## Overview
 
-The Selemene Engine is a high-performance astronomical calculation engine for Panchanga and Vedic astrology. This API provides comprehensive access to astronomical calculations, caching, and performance optimization features.
+The Selemene Engine is a high-performance consciousness calculation platform combining 14 engines (Vedic astrology, Human Design, Gene Keys, Tarot, and more) with multi-engine workflow orchestration. This API provides comprehensive access to astronomical calculations, consciousness systems, and synthesis capabilities.
 
 ## Base URL
 
 - **Development**: `http://localhost:8080`
+- **TypeScript Engines**: `http://localhost:3001` (bridged automatically)
 - **Production**: `https://<your-domain>`
+
+## Related Documentation
+
+- [Engine Endpoints](./engines.md) - Individual engine calculations
+- [Workflow Endpoints](./workflows.md) - Multi-engine orchestration
+- [Authentication](./authentication.md) - JWT and API key auth
 
 ## Authentication
 

@@ -1,0 +1,361 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-config
+  namespace: noesis
+data:
+  # Primary configuration
+  postgresql-primary.conf: |
+    # Connection Settings
+    listen_addresses = '*'
+    port = 5432
+    max_connections = 200
+    
+    # Memory Settings
+    shared_buffers = 256MB
+    effective_cache_size = 768MB
+    work_mem = 4MB
+    maintenance_work_mem = 64MB
+    
+    # WAL Settings for Replication
+    wal_level = replica
+    max_wal_senders = 10
+    wal_keep_size = 1GB
+    hot_standby = on
+    
+    # Checkpoints
+    checkpoint_completion_target = 0.9
+    checkpoint_timeout = 10min
+    max_wal_size = 2GB
+    min_wal_size = 512MB
+    
+    # Logging
+    logging_collector = on
+    log_directory = 'pg_log'
+    log_filename = 'postgresql-%Y-%m-%d_%H%M%S.log'
+    log_statement = 'ddl'
+    log_min_duration_statement = 1000
+    
+    # Replication Slots (for guaranteed WAL retention)
+    max_replication_slots = 10
+    
+    # Synchronous Replication (optional - uncomment for sync replication)
+    # synchronous_commit = on
+    # synchronous_standby_names = 'replica1'
+    
+  # Replica configuration
+  postgresql-replica.conf: |
+    # Connection Settings
+    listen_addresses = '*'
+    port = 5432
+    max_connections = 200
+    
+    # Memory Settings
+    shared_buffers = 256MB
+    effective_cache_size = 768MB
+    work_mem = 4MB
+    maintenance_work_mem = 64MB
+    
+    # Replication Settings
+    hot_standby = on
+    hot_standby_feedback = on
+    wal_receiver_status_interval = 10s
+    max_standby_streaming_delay = 30s
+    max_standby_archive_delay = 30s
+    
+    # Logging
+    logging_collector = on
+    log_directory = 'pg_log'
+    log_filename = 'postgresql-%Y-%m-%d_%H%M%S.log'
+    
+  # Host-based authentication
+  pg_hba.conf: |
+    # TYPE  DATABASE        USER            ADDRESS                 METHOD
+    local   all             all                                     trust
+    host    all             all             127.0.0.1/32            scram-sha-256
+    host    all             all             ::1/128                 scram-sha-256
+    host    all             all             0.0.0.0/0               scram-sha-256
+    host    replication     replicator      0.0.0.0/0               scram-sha-256
+    
+  # Init script for replication user
+  init-replication.sql: |
+    -- Create replication user
+    DO $$
+    BEGIN
+      IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'replicator') THEN
+        CREATE ROLE replicator WITH REPLICATION LOGIN PASSWORD 'replicator_password';
+      END IF;
+    END
+    $$;
+    
+    -- Create replication slot for replica
+    SELECT pg_create_physical_replication_slot('replica_slot', true)
+    WHERE NOT EXISTS (SELECT 1 FROM pg_replication_slots WHERE slot_name = 'replica_slot');
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: postgres-secrets
+  namespace: noesis
+type: Opaque
+stringData:
+  POSTGRES_USER: noesis_user
+  POSTGRES_PASSWORD: noesis_password
+  POSTGRES_DB: noesis
+  REPLICATOR_PASSWORD: replicator_password
+
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgres-primary
+  namespace: noesis
+spec:
+  serviceName: postgres-primary
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+      role: primary
+  template:
+    metadata:
+      labels:
+        app: postgres
+        role: primary
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:16-alpine
+          ports:
+            - containerPort: 5432
+              name: postgres
+          envFrom:
+            - secretRef:
+                name: postgres-secrets
+          env:
+            - name: POSTGRES_HOST_AUTH_METHOD
+              value: scram-sha-256
+            - name: POSTGRES_INITDB_ARGS
+              value: "--auth-host=scram-sha-256"
+          volumeMounts:
+            - name: postgres-data
+              mountPath: /var/lib/postgresql/data
+            - name: postgres-config
+              mountPath: /etc/postgresql/conf.d
+            - name: init-scripts
+              mountPath: /docker-entrypoint-initdb.d
+          args:
+            - -c
+            - config_file=/etc/postgresql/conf.d/postgresql-primary.conf
+            - -c
+            - hba_file=/etc/postgresql/conf.d/pg_hba.conf
+          resources:
+            requests:
+              cpu: 250m
+              memory: 512Mi
+            limits:
+              cpu: 1000m
+              memory: 1Gi
+          livenessProbe:
+            exec:
+              command:
+                - pg_isready
+                - -U
+                - noesis_user
+                - -d
+                - noesis
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            exec:
+              command:
+                - pg_isready
+                - -U
+                - noesis_user
+                - -d
+                - noesis
+            initialDelaySeconds: 5
+            periodSeconds: 5
+      volumes:
+        - name: postgres-config
+          configMap:
+            name: postgres-config
+            items:
+              - key: postgresql-primary.conf
+                path: postgresql-primary.conf
+              - key: pg_hba.conf
+                path: pg_hba.conf
+        - name: init-scripts
+          configMap:
+            name: postgres-config
+            items:
+              - key: init-replication.sql
+                path: init-replication.sql
+  volumeClaimTemplates:
+    - metadata:
+        name: postgres-data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 10Gi
+
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgres-replica
+  namespace: noesis
+spec:
+  serviceName: postgres-replica
+  replicas: 2
+  selector:
+    matchLabels:
+      app: postgres
+      role: replica
+  template:
+    metadata:
+      labels:
+        app: postgres
+        role: replica
+    spec:
+      initContainers:
+        - name: init-replica
+          image: postgres:16-alpine
+          command:
+            - bash
+            - -c
+            - |
+              if [ -z "$(ls -A /var/lib/postgresql/data)" ]; then
+                echo "Initializing replica from primary..."
+                PGPASSWORD=$REPLICATOR_PASSWORD pg_basebackup \
+                  -h postgres-primary \
+                  -U replicator \
+                  -D /var/lib/postgresql/data \
+                  -Fp -Xs -R -P
+              else
+                echo "Data directory already initialized"
+              fi
+          env:
+            - name: REPLICATOR_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secrets
+                  key: REPLICATOR_PASSWORD
+          volumeMounts:
+            - name: postgres-data
+              mountPath: /var/lib/postgresql/data
+      containers:
+        - name: postgres
+          image: postgres:16-alpine
+          ports:
+            - containerPort: 5432
+              name: postgres
+          envFrom:
+            - secretRef:
+                name: postgres-secrets
+          volumeMounts:
+            - name: postgres-data
+              mountPath: /var/lib/postgresql/data
+            - name: postgres-config
+              mountPath: /etc/postgresql/conf.d
+          args:
+            - -c
+            - config_file=/etc/postgresql/conf.d/postgresql-replica.conf
+            - -c
+            - hba_file=/etc/postgresql/conf.d/pg_hba.conf
+          resources:
+            requests:
+              cpu: 250m
+              memory: 512Mi
+            limits:
+              cpu: 1000m
+              memory: 1Gi
+          livenessProbe:
+            exec:
+              command:
+                - pg_isready
+                - -U
+                - noesis_user
+                - -d
+                - noesis
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            exec:
+              command:
+                - pg_isready
+                - -U
+                - noesis_user
+                - -d
+                - noesis
+            initialDelaySeconds: 5
+            periodSeconds: 5
+      volumes:
+        - name: postgres-config
+          configMap:
+            name: postgres-config
+            items:
+              - key: postgresql-replica.conf
+                path: postgresql-replica.conf
+              - key: pg_hba.conf
+                path: pg_hba.conf
+  volumeClaimTemplates:
+    - metadata:
+        name: postgres-data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 10Gi
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-primary
+  namespace: noesis
+spec:
+  type: ClusterIP
+  ports:
+    - port: 5432
+      targetPort: 5432
+      name: postgres
+  selector:
+    app: postgres
+    role: primary
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-replica
+  namespace: noesis
+spec:
+  type: ClusterIP
+  ports:
+    - port: 5432
+      targetPort: 5432
+      name: postgres
+  selector:
+    app: postgres
+    role: replica
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-read
+  namespace: noesis
+  annotations:
+    description: "Load-balanced read endpoint across all replicas"
+spec:
+  type: ClusterIP
+  ports:
+    - port: 5432
+      targetPort: 5432
+      name: postgres
+  selector:
+    app: postgres
+    role: replica

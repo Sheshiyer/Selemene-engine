@@ -1,10 +1,35 @@
-/.github
-/Cargo.lock
-/Cargo.toml
-/railway.toml
-node_modules
-node_modules
-node_modules
-node_modules
-node_modules
-node_modules
+# Build artifacts
+/target/
+/ts-engines/node_modules/
+/node_modules/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+logs/
+
+# Cache
+.cache/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Test artifacts
+/coverage/
+*.profraw
+
+# Ephemeris data (large files)
+# data/ephemeris/*.se1  # Keep in repo for reproducibility
+
+# User data
+.about_me/
