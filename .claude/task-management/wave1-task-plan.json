@@ -726,7 +726,7 @@
               "dependencies": ["W1-S5-06"],
               "deliverable": "Generate prompts specific to shadow/gift/siddhi recognition",
               "acceptance": "Prompts invite witnessing unconscious patterns (shadow) without identifying"
-            },
+            },``
             {
               "id": "W1-S5-08",
               "title": "Implement ConsciousnessEngine trait for Gene Keys",
