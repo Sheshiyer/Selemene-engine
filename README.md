@@ -10,6 +10,8 @@
                                                                   
                     ༺═──────────────────────────────────────────═༻
 
+![Noesis Living System](docs/assets/images/noesis-hero.png)
+
                              ╱▔▔▔▔▔▔▔▔▔▔▔╲
                         ╱▔▔▔╱  14 ENGINES  ╲▔▔▔╲
                    ╱▔▔▔╱   6 WORKFLOWS   ╲▔▔▔╲
@@ -31,6 +33,8 @@ This is a **living computational mirror** that reflects patterns across 14 ancie
 **The witness doesn't predict. It observes. It asks. It reflects.**
 
 ### The Architecture of Witnessing
+
+![Noesis Architecture](docs/assets/images/noesis-architecture.png)
 
 ```
            ┌─────────────── The Question ───────────────┐
