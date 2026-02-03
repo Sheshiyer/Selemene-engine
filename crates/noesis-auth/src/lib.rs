@@ -6,6 +6,9 @@
 use noesis_core::EngineError;
 use jsonwebtoken::{decode, DecodingKey, Validation, Algorithm, encode, EncodingKey, Header};
 use serde::{Deserialize, Serialize};
+
+pub mod password;
+
 use std::collections::HashMap;
 use std::sync::Arc;
 use tokio::sync::RwLock;

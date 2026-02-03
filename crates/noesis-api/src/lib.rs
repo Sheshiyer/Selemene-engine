@@ -7,6 +7,7 @@
 mod config;
 mod logging;
 mod middleware;
+mod handlers;
 
 // Re-export configuration and logging for main.rs
 pub use config::ApiConfig;
@@ -24,6 +25,7 @@ use axum::{
 use chrono::Timelike;
 use noesis_auth::{AuthService, AuthUser};
 use noesis_cache::CacheManager;
+use noesis_data::repositories::user_repository::UserRepository;
 use noesis_core::{EngineError, EngineInput, EngineOutput, ValidationResult, WorkflowResult};
 use noesis_metrics::NoesisMetrics;
 use noesis_orchestrator::WorkflowOrchestrator;
@@ -34,6 +36,7 @@ use tower_http::cors::CorsLayer;
 use tower_http::trace::TraceLayer;
 use utoipa::{OpenApi, ToSchema};
 use utoipa_swagger_ui::SwaggerUi;
+use sqlx::postgres::PgPoolOptions;
 
 // ---------------------------------------------------------------------------
 // OpenAPI documentation
@@ -128,6 +131,7 @@ pub struct AppState {
     pub cache: Arc<CacheManager>,
     pub auth: Arc<AuthService>,
     pub metrics: Arc<NoesisMetrics>,
+    pub user_repository: Arc<UserRepository>,
     pub startup_time: Instant,
 }
 
@@ -188,6 +192,9 @@ pub fn create_router(state: AppState, config: &ApiConfig) -> Router {
         config.rate_limit_window_secs,
     ));
     
+    let auth_routes = Router::new()
+         .route("/auth/register", post(handlers::auth::register));
+
     let api_v1 = Router::new()
         .route("/status", get(status_handler))
         .route("/engines", get(list_engines_handler))
@@ -208,7 +215,8 @@ pub fn create_router(state: AppState, config: &ApiConfig) -> Router {
         .layer(axum_middleware::from_fn_with_state(
             auth_state,
             middleware::auth_middleware,
-        ));
+        ))
+        .merge(auth_routes);
 
     // Legacy endpoints for backward compatibility with old Selemene API
     let legacy = Router::new()
@@ -993,7 +1001,7 @@ async fn legacy_ghati_current_handler(
 ///
 /// # Returns
 /// Configured `AppState` with orchestrator, cache, auth, and metrics
-pub fn build_app_state(config: &ApiConfig) -> AppState {
+pub async fn build_app_state(config: &ApiConfig) -> AppState {
     // -- Orchestrator with engines --
     let mut orchestrator = WorkflowOrchestrator::new();
     orchestrator.register_engine(Arc::new(engine_panchanga::PanchangaEngine::new()));
@@ -1030,6 +1038,15 @@ pub fn build_app_state(config: &ApiConfig) -> AppState {
     // -- Auth --
     let auth = AuthService::new(config.jwt_secret.clone());
 
+    // -- Database --
+    let pool = PgPoolOptions::new()
+        .max_connections(5)
+        .connect(&config.database_url)
+        .await
+        .expect("Failed to create database pool");
+
+    let user_repository = Arc::new(UserRepository::new(pool));
+
     // -- Metrics --
     let metrics = NoesisMetrics::new().expect("Failed to initialise NoesisMetrics");
 
@@ -1038,6 +1055,7 @@ pub fn build_app_state(config: &ApiConfig) -> AppState {
         cache: Arc::new(cache),
         auth: Arc::new(auth),
         metrics: Arc::new(metrics),
+        user_repository,
         startup_time: Instant::now(),
     }
 }

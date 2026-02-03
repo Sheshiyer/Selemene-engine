@@ -10,6 +10,7 @@ path = "src/main.rs"
 
 [dependencies]
 noesis-core = { path = "../noesis-core", features = ["openapi"] }
+noesis-data = { path = "../noesis-data" }
 noesis-cache = { path = "../noesis-cache" }
 noesis-auth = { path = "../noesis-auth" }
 noesis-metrics = { path = "../noesis-metrics" }

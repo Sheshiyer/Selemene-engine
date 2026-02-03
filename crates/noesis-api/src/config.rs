@@ -16,6 +16,9 @@ pub struct ApiConfig {
     
     /// JWT secret for token signing (required, no default in production)
     pub jwt_secret: String,
+
+    /// Database URL for PostgreSQL (required)
+    pub database_url: String,
     
     /// Redis connection URL for L2 cache (optional, None disables Redis)
     pub redis_url: Option<String>,
@@ -81,6 +84,11 @@ impl ApiConfig {
             tracing::warn!("JWT_SECRET not set, using development default (DO NOT USE IN PRODUCTION)");
             "noesis-dev-secret-change-in-production".to_string()
         });
+
+        let database_url = env::var("DATABASE_URL").unwrap_or_else(|_| {
+             tracing::warn!("DATABASE_URL not set, using default local postgres");
+             "postgres://postgres:postgres@localhost:5432/noesis".to_string()
+        });
         
         let redis_url = env::var("REDIS_URL").ok();
         
@@ -116,6 +124,7 @@ impl ApiConfig {
             host,
             port,
             jwt_secret,
+            database_url,
             redis_url,
             allowed_origins,
             rate_limit_requests,

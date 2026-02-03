@@ -14,6 +14,7 @@ resolver = "2"
 members = [
     # Shared services
     "crates/noesis-core",
+    "crates/noesis-data",
     "crates/noesis-cache",
     "crates/noesis-auth",
     "crates/noesis-metrics",

@@ -35,7 +35,7 @@ async fn main() {
     }
 
     // Build application state with orchestrator, cache, auth, metrics
-    let state = build_app_state(&config);
+    let state = build_app_state(&config).await;
     tracing::info!("Application state initialized");
 
     // Create the Axum router with all routes and middleware
