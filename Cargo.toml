@@ -22,6 +22,7 @@ members = [
     "crates/noesis-bridge",
     "crates/noesis-api",
     "crates/noesis-vedic-api",
+    "crates/noesis-western-api",
     "crates/noesis-integration",
     # Vedic astrology API integration (FreeAstrologyAPI.com)
 

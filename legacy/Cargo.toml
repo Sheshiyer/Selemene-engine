@@ -1,5 +1,5 @@
 [package]
-name = "selemene-engine"
+name = "selemene-engine-legacy"
 version = "0.1.0"
 edition = "2021"
 authors = ["Selemene Team"]
