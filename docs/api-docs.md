@@ -1,0 +1,16 @@
+https://freeastrologyapi.com/api-reference/planets
+https://freeastrologyapi.com/api-reference/planets/extended
+https://freeastrologyapi.com/api-reference/horoscope-chart-svg-code
+https://freeastrologyapi.com/api-reference/navamsa-chart-url
+https://freeastrologyapi.com/api-reference/getsunriseandset
+https://freeastrologyapi.com/api-reference/tithi-durations
+https://freeastrologyapi.com/api-reference/nakshatra-durations
+https://freeastrologyapi.com/api-reference/yoga-durations
+https://freeastrologyapi.com/api-reference/karana-durations
+https://freeastrologyapi.com/api-reference/lunarmonthinfo
+https://freeastrologyapi.com/api-reference/rituinfo
+https://freeastrologyapi.com/api-reference/vimsottari/maha-dasas
+https://freeastrologyapi.com/api-reference/vimsottari/maha-dasas-and-antar-dasas
+https://freeastrologyapi.com/api-reference/vimsottari/dasa-information
+https://freeastrologyapi.com/api-reference/shadbala/shadbala-summary
+https://freeastrologyapi.com/api-reference/shadbala/shadbala-break-up

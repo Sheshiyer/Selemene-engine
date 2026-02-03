@@ -1,0 +1,52 @@
+[package]
+name = "noesis-vedic-api"
+version = "0.1.0"
+edition = "2021"
+authors = ["Tryambakam Noesis Team"]
+description = "FreeAstrologyAPI.com integration for Vedic astrology calculations"
+license = "MIT"
+repository = "https://github.com/tryambakam/noesis"
+
+[dependencies]
+# Async runtime
+tokio = { version = "1.35", features = ["full"] }
+async-trait = "0.1"
+
+# HTTP client
+reqwest = { version = "0.11", features = ["json", "rustls-tls"], default-features = false }
+
+# Serialization
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+# Error handling
+thiserror = "1.0"
+anyhow = "1.0"
+
+# Time handling
+chrono = { version = "0.4", features = ["serde"] }
+
+# Caching
+lru = "0.12"
+
+# Configuration
+config = "0.14"
+
+# Tracing/Logging
+tracing = "0.1"
+
+# Retry logic
+tokio-retry = "0.3"
+
+# Circuit breaker
+backoff = { version = "0.4", features = ["tokio"] }
+
+[dev-dependencies]
+tokio-test = "0.4"
+wiremock = "0.6"
+mockall = "0.12"
+noesis-vedic-api = { path = ".", features = ["mocks"] }
+
+[features]
+default = []
+mocks = []

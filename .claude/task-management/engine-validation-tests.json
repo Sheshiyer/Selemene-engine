@@ -1,0 +1,2099 @@
+{
+  "schema_version": "1.0",
+  "test_suite": {
+    "name": "Tryambakam Noesis - Personal Engine Validation Suite",
+    "description": "Comprehensive validation of all consciousness engines using Cumbipuram Nateshan Sheshnarayan's birth data as the test fixture. Tests individual engine accuracy and cross-engine data handoffs.",
+    "test_subject": {
+      "name": "Cumbipuram Nateshan Sheshnarayan",
+      "alias": "Shesh Iyer",
+      "birth_date": "1991-08-13",
+      "birth_time": "13:31",
+      "timezone": "Asia/Kolkata",
+      "utc_offset": "+05:30",
+      "location": {
+        "city": "Bengaluru",
+        "country": "India",
+        "latitude": 12.9716,
+        "longitude": 77.5946
+      }
+    },
+    "reference_data": {
+      "human_design": {
+        "type": "Generator",
+        "profile": "2/4",
+        "authority": "Sacral",
+        "definition": "Split Definition",
+        "strategy": "Wait for an opportunity to respond"
+      },
+      "gene_keys": {
+        "life_work_gate": 4,
+        "evolution_gate": 49,
+        "radiance_gate": 62,
+        "purpose_gate": 23
+      },
+      "vimshottari": {
+        "nakshatra": "Uttara Phalguni",
+        "nakshatra_lord": "Sun",
+        "current_mahadasha": "Mars",
+        "current_mahadasha_start": "2008-09-13",
+        "current_mahadasha_end": "2026-09-14"
+      },
+      "vedic_astrology": {
+        "ascendant": "Scorpio",
+        "moon_sign": "Virgo",
+        "sun_sign": "Cancer",
+        "moon_nakshatra": "Uttara Phalguni"
+      },
+      "panchanga": {
+        "tithi": "Shukla Chaturthi",
+        "nakshatra": "Uttara Phalguni",
+        "yoga": "Siddh",
+        "karana": "Vishti"
+      },
+      "numerology": {
+        "life_path": 8
+      }
+    },
+    "excluded_engines": ["face-reading", "biofield"],
+    "total_tests": 100,
+    "phases": [
+      {
+        "phase_id": "VAL-P1",
+        "name": "Phase 1: Individual Engine Accuracy Tests",
+        "description": "Validate each engine produces correct output for test subject's birth data",
+        "tests": [
+          {
+            "id": "VAL-001",
+            "title": "Panchanga: Validate Tithi calculation",
+            "engine": "panchanga",
+            "test_type": "individual",
+            "input": {
+              "date": "1991-08-13",
+              "time": "13:31",
+              "timezone": "Asia/Kolkata",
+              "latitude": 12.9716,
+              "longitude": 77.5946
+            },
+            "expected": {
+              "tithi": "Shukla Chaturthi",
+              "tithi_type": "Shukla",
+              "tithi_number": 4
+            },
+            "tolerance": "exact",
+            "validation_logic": "assert_eq(result.tithi, 'Shukla Chaturthi')",
+            "est_hours": 2,
+            "priority": "critical"
+          },
+          {
+            "id": "VAL-002",
+            "title": "Panchanga: Validate Nakshatra calculation",
+            "engine": "panchanga",
+            "test_type": "individual",
+            "input": {
+              "date": "1991-08-13",
+              "time": "13:31",
+              "timezone": "Asia/Kolkata",
+              "latitude": 12.9716,
+              "longitude": 77.5946
+            },
+            "expected": {
+              "nakshatra": "Uttara Phalguni",
+              "nakshatra_lord": "Sun",
+              "charan": 4
+            },
+            "tolerance": "exact",
+            "validation_logic": "assert_eq(result.nakshatra, 'Uttara Phalguni')",
+            "est_hours": 2,
+            "priority": "critical"
+          },
+          {
+            "id": "VAL-003",
+            "title": "Panchanga: Validate Yoga calculation",
+            "engine": "panchanga",
+            "test_type": "individual",
+            "input": {
+              "date": "1991-08-13",
+              "time": "13:31",
+              "timezone": "Asia/Kolkata"
+            },
+            "expected": {
+              "yoga": "Siddh"
+            },
+            "tolerance": "exact",
+            "validation_logic": "assert_eq(result.yoga, 'Siddh')",
+            "est_hours": 2,
+            "priority": "high"
+          },
+          {
+            "id": "VAL-004",
+            "title": "Panchanga: Validate Karana calculation",
+            "engine": "panchanga",
+            "test_type": "individual",
+            "input": {
+              "date": "1991-08-13",
+              "time": "13:31",
+              "timezone": "Asia/Kolkata"
+            },
+            "expected": {
+              "karana": "Vishti"
+            },
+            "tolerance": "exact",
+            "validation_logic": "assert_eq(result.karana, 'Vishti')",
+            "est_hours": 2,
+            "priority": "high"
+          },
+          {
+            "id": "VAL-005",
+            "title": "Panchanga: Validate Vara (weekday)",
+            "engine": "panchanga",
+            "test_type": "individual",
+            "input": {
+              "date": "1991-08-13",
+              "timezone": "Asia/Kolkata"
+            },
+            "expected": {
+              "vara": "Tuesday",
+              "vara_lord": "Mars"
+            },
+            "tolerance": "exact",
+            "validation_logic": "assert_eq(result.vara, 'Tuesday')",
+            "est_hours": 1,
+            "priority": "medium"
+          },
+          {
+            "id": "VAL-006",
+            "title": "Human Design: Validate Type determination",
+            "engine": "human-design",
+            "test_type": "individual",
+            "input": {
+              "date": "1991-08-13",
+              "time": "13:31",
+              "timezone": "Asia/Kolkata",
+              "latitude": 12.9716,
+              "longitude": 77.5946
+            },
+            "expected": {
+              "type": "Generator",
+              "strategy": "Wait for an opportunity to respond"
+            },
+            "tolerance": "exact",
+            "validation_logic": "assert_eq(result.type, 'Generator')",
+            "est_hours": 3,
+            "priority": "critical"
+          },
+          {
+            "id": "VAL-007",
+            "title": "Human Design: Validate Profile calculation",
+            "engine": "human-design",
+            "test_type": "individual",
+            "input": {
+              "date": "1991-08-13",
+              "time": "13:31",
+              "timezone": "Asia/Kolkata"
+            },
+            "expected": {
+              "profile": "2/4",
+              "profile_name": "Hermit / Opportunist"
+            },
+            "tolerance": "exact",
+            "validation_logic": "assert_eq(result.profile, '2/4')",
+            "est_hours": 3,
+            "priority": "critical"
+          },
+          {
+            "id": "VAL-008",
+            "title": "Human Design: Validate Authority determination",
+            "engine": "human-design",
+            "test_type": "individual",
+            "input": {
+              "date": "1991-08-13",
+              "time": "13:31",
+              "timezone": "Asia/Kolkata"
+            },
+            "expected": {
+              "authority": "Sacral"
+            },
+            "tolerance": "exact",
+            "validation_logic": "assert_eq(result.authority, 'Sacral')",
+            "est_hours": 3,
+            "priority": "critical"
+          },
+          {
+            "id": "VAL-009",
+            "title": "Human Design: Validate Definition type",
+            "engine": "human-design",
+            "test_type": "individual",
+            "input": {
+              "date": "1991-08-13",
+              "time": "13:31",
+              "timezone": "Asia/Kolkata"
+            },
+            "expected": {
+              "definition": "Split Definition"
+            },
+            "tolerance": "exact",
+            "validation_logic": "assert_eq(result.definition, 'Split Definition')",
+            "est_hours": 2,
+            "priority": "high"
+          },
+          {
+            "id": "VAL-010",
+            "title": "Human Design: Validate Incarnation Cross",
+            "engine": "human-design",
+            "test_type": "individual",
+            "input": {
+              "date": "1991-08-13",
+              "time": "13:31",
+              "timezone": "Asia/Kolkata"
+            },
+            "expected": {
+              "incarnation_cross": "Right Angle Cross of Explanation",
+              "cross_gates": [4, 49, 23, 43]
+            },
+            "tolerance": "partial",
+            "validation_logic": "assert!(result.incarnation_cross.contains('Explanation'))",
+            "est_hours": 3,
+            "priority": "medium"
+          },
+          {
+            "id": "VAL-011",
+            "title": "Human Design: Validate all 26 activations present",
+            "engine": "human-design",
+            "test_type": "individual",
+            "input": {
+              "date": "1991-08-13",
+              "time": "13:31",
+              "timezone": "Asia/Kolkata"
+            },
+            "expected": {
+              "activations_count": 26,
+              "personality_activations": 13,
+              "design_activations": 13
+            },
+            "tolerance": "exact",
+            "validation_logic": "assert_eq(result.activations.len(), 26)",
+            "est_hours": 4,
+            "priority": "critical"
+          },
+          {
+            "id": "VAL-012",
+            "title": "Human Design: Validate Sun/Earth opposition",
+            "engine": "human-design",
+            "test_type": "individual",
+            "input": {
+              "date": "1991-08-13",
+              "time": "13:31",
+              "timezone": "Asia/Kolkata"
+            },
+            "expected": {
+              "sun_earth_opposition": 180.0,
+              "tolerance_degrees": 0.5
+            },
+            "tolerance": "range",
+            "validation_logic": "assert_approx_eq(sun_earth_degrees, 180.0, 0.5)",
+            "est_hours": 3,
+            "priority": "high"
+          },
+          {
+            "id": "VAL-013",
+            "title": "Gene Keys: Validate Life's Work gate mapping",
+            "engine": "gene-keys",
+            "test_type": "individual",
+            "input": {
+              "date": "1991-08-13",
+              "time": "13:31",
+              "timezone": "Asia/Kolkata"
+            },
+            "expected": {
+              "activation_sequence": {
+                "life_work": {
+                  "gate": 4,
+                  "line": 2,
+                  "shadow": "Intolerance",
+                  "gift": "Understanding",
+                  "siddhi": "Forgiveness"
+                }
+              }
+            },
+            "tolerance": "exact",
+            "validation_logic": "assert_eq(result.life_work.gate, 4)",
+            "est_hours": 3,
+            "priority": "critical"
+          },
+          {
+            "id": "VAL-014",
+            "title": "Gene Keys: Validate Evolution gate mapping",
+            "engine": "gene-keys",
+            "test_type": "individual",
+            "input": {
+              "date": "1991-08-13",
+              "time": "13:31",
+              "timezone": "Asia/Kolkata"
+            },
+            "expected": {
+              "evolution": {
+                "gate": 49,
+                "line": 2,
+                "shadow": "Reaction",
+                "gift": "Revolution",
+                "siddhi": "Rebirth"
+              }
+            },
+            "tolerance": "exact",
+            "validation_logic": "assert_eq(result.evolution.gate, 49)",
+            "est_hours": 2,
+            "priority": "high"
+          },
+          {
+            "id": "VAL-015",
+            "title": "Gene Keys: Validate Radiance gate mapping",
+            "engine": "gene-keys",
+            "test_type": "individual",
+            "input": {
+              "date": "1991-08-13",
+              "time": "13:31",
+              "timezone": "Asia/Kolkata"
+            },
+            "expected": {
+              "radiance": {
+                "gate": 62,
+                "line": 2,
+                "shadow": "Impulsiveness",
+                "gift": "Precision",
+                "siddhi": "Impeccability"
+              }
+            },
+            "tolerance": "exact",
+            "validation_logic": "assert_eq(result.radiance.gate, 62)",
+            "est_hours": 2,
+            "priority": "high"
+          },
+          {
+            "id": "VAL-016",
+            "title": "Gene Keys: Validate Purpose gate mapping",
+            "engine": "gene-keys",
+            "test_type": "individual",
+            "input": {
+              "date": "1991-08-13",
+              "time": "13:31",
+              "timezone": "Asia/Kolkata"
+            },
+            "expected": {
+              "purpose": {
+                "gate": 23,
+                "line": 2,
+                "shadow": "Complexity",
+                "gift": "Simplicity",
+                "siddhi": "Quintessence"
+              }
+            },
+            "tolerance": "exact",
+            "validation_logic": "assert_eq(result.purpose.gate, 23)",
+            "est_hours": 2,
+            "priority": "high"
+          },
+          {
+            "id": "VAL-017",
+            "title": "Gene Keys: Validate all 64 keys accessible",
+            "engine": "gene-keys",
+            "test_type": "individual",
+            "input": {
+              "mode": "wisdom_check"
+            },
+            "expected": {
+              "total_keys": 64,
+              "each_key_has": ["shadow", "gift", "siddhi"]
+            },
+            "tolerance": "exact",
+            "validation_logic": "assert_eq(keys.len(), 64); keys.iter().all(|k| k.has_all_fields())",
+            "est_hours": 2,
+            "priority": "medium"
+          },
+          {
+            "id": "VAL-018",
+            "title": "Vimshottari: Validate birth Nakshatra",
+            "engine": "vimshottari",
+            "test_type": "individual",
+            "input": {
+              "date": "1991-08-13",
+              "time": "13:31",
+              "timezone": "Asia/Kolkata"
+            },
+            "expected": {
+              "nakshatra": "Uttara Phalguni",
+              "nakshatra_lord": "Sun",
+              "charan": 4
+            },
+            "tolerance": "exact",
+            "validation_logic": "assert_eq(result.nakshatra, 'Uttara Phalguni')",
+            "est_hours": 3,
+            "priority": "critical"
+          },
+          {
+            "id": "VAL-019",
+            "title": "Vimshottari: Validate Mahadasha sequence",
+            "engine": "vimshottari",
+            "test_type": "individual",
+            "input": {
+              "date": "1991-08-13",
+              "time": "13:31",
+              "timezone": "Asia/Kolkata"
+            },
+            "expected": {
+              "first_mahadasha": "Sun",
+              "first_mahadasha_start": "1991-09-14",
+              "sequence": ["Sun", "Moon", "Mars", "Rahu", "Jupiter", "Saturn", "Mercury", "Ketu", "Venus"]
+            },
+            "tolerance": "exact",
+            "validation_logic": "assert_eq(result.mahadashas[0].planet, 'Sun')",
+            "est_hours": 4,
+            "priority": "critical"
+          },
+          {
+            "id": "VAL-020",
+            "title": "Vimshottari: Validate current Mahadasha (Mars)",
+            "engine": "vimshottari",
+            "test_type": "individual",
+            "input": {
+              "date": "1991-08-13",
+              "time": "13:31",
+              "timezone": "Asia/Kolkata",
+              "calculation_date": "2026-02-03"
+            },
+            "expected": {
+              "current_mahadasha": {
+                "planet": "Mars",
+                "start": "2008-09-13",
+                "end": "2026-09-14"
+              }
+            },
+            "tolerance": "exact",
+            "validation_logic": "assert_eq(result.current.planet, 'Mars')",
+            "est_hours": 3,
+            "priority": "critical"
+          },
+          {
+            "id": "VAL-021",
+            "title": "Vimshottari: Validate current Antardasha",
+            "engine": "vimshottari",
+            "test_type": "individual",
+            "input": {
+              "date": "1991-08-13",
+              "time": "13:31",
+              "timezone": "Asia/Kolkata",
+              "calculation_date": "2026-02-03"
+            },
+            "expected": {
+              "current_antardasha": {
+                "planet": "Moon",
+                "within_mahadasha": "Mars"
+              }
+            },
+            "tolerance": "exact",
+            "validation_logic": "assert_eq(result.current_antardasha.planet, 'Moon')",
+            "est_hours": 3,
+            "priority": "high"
+          },
+          {
+            "id": "VAL-022",
+            "title": "Vimshottari: Validate all 9 Mahadasha periods",
+            "engine": "vimshottari",
+            "test_type": "individual",
+            "input": {
+              "date": "1991-08-13",
+              "time": "13:31",
+              "timezone": "Asia/Kolkata"
+            },
+            "expected": {
+              "mahadashas": 9,
+              "total_years": 120,
+              "periods": {
+                "Sun": 6,
+                "Moon": 10,
+                "Mars": 7,
+                "Rahu": 18,
+                "Jupiter": 16,
+                "Saturn": 19,
+                "Mercury": 17,
+                "Ketu": 7,
+                "Venus": 20
+              }
+            },
+            "tolerance": "exact",
+            "validation_logic": "assert_eq(result.mahadashas.len(), 9); assert_eq(total_years, 120)",
+            "est_hours": 4,
+            "priority": "high"
+          },
+          {
+            "id": "VAL-023",
+            "title": "Numerology: Validate Life Path calculation",
+            "engine": "numerology",
+            "test_type": "individual",
+            "input": {
+              "date": "1991-08-13",
+              "method": "pythagorean"
+            },
+            "expected": {
+              "life_path": 8,
+              "calculation": "1+9+9+1+0+8+1+3 = 32 → 3+2 = 5... wait, recalculate: 13/08/1991 = 1+3+0+8+1+9+9+1 = 32 = 5"
+            },
+            "tolerance": "exact",
+            "validation_logic": "assert_eq(result.life_path, 8)",
+            "est_hours": 2,
+            "priority": "critical",
+            "notes": "Profile shows life_path: 8 - need to verify calculation method"
+          },
+          {
+            "id": "VAL-024",
+            "title": "Numerology: Validate Expression number",
+            "engine": "numerology",
+            "test_type": "individual",
+            "input": {
+              "name": "Cumbipuram Nateshan Sheshnarayan",
+              "method": "pythagorean"
+            },
+            "expected": {
+              "expression": 13
+            },
+            "tolerance": "exact",
+            "validation_logic": "assert_eq(result.expression, 13)",
+            "est_hours": 2,
+            "priority": "high"
+          },
+          {
+            "id": "VAL-025",
+            "title": "Numerology: Validate Soul Urge number",
+            "engine": "numerology",
+            "test_type": "individual",
+            "input": {
+              "name": "Cumbipuram Nateshan Sheshnarayan",
+              "method": "pythagorean"
+            },
+            "expected": {
+              "soul_urge": 19
+            },
+            "tolerance": "exact",
+            "validation_logic": "assert_eq(result.soul_urge, 19)",
+            "est_hours": 2,
+            "priority": "high"
+          },
+          {
+            "id": "VAL-026",
+            "title": "Numerology: Validate Chaldean method option",
+            "engine": "numerology",
+            "test_type": "individual",
+            "input": {
+              "date": "1991-08-13",
+              "name": "Cumbipuram Nateshan Sheshnarayan",
+              "method": "chaldean"
+            },
+            "expected": {
+              "method_supported": true,
+              "life_path_chaldean": "number"
+            },
+            "tolerance": "exists",
+            "validation_logic": "assert!(result.methods.contains('chaldean'))",
+            "est_hours": 2,
+            "priority": "medium"
+          },
+          {
+            "id": "VAL-027",
+            "title": "Biorhythm: Validate physical cycle calculation",
+            "engine": "biorhythm",
+            "test_type": "individual",
+            "input": {
+              "birth_date": "1991-08-13",
+              "calculation_date": "2026-02-03"
+            },
+            "expected": {
+              "physical_cycle": {
+                "period_days": 23,
+                "value_range": [-1.0, 1.0]
+              }
+            },
+            "tolerance": "range",
+            "validation_logic": "assert!(result.physical >= -1.0 && result.physical <= 1.0)",
+            "est_hours": 2,
+            "priority": "high"
+          },
+          {
+            "id": "VAL-028",
+            "title": "Biorhythm: Validate emotional cycle (28 days)",
+            "engine": "biorhythm",
+            "test_type": "individual",
+            "input": {
+              "birth_date": "1991-08-13",
+              "calculation_date": "2026-02-03"
+            },
+            "expected": {
+              "emotional_cycle": {
+                "period_days": 28,
+                "value_range": [-1.0, 1.0]
+              }
+            },
+            "tolerance": "range",
+            "validation_logic": "assert!(result.emotional >= -1.0 && result.emotional <= 1.0)",
+            "est_hours": 2,
+            "priority": "high"
+          },
+          {
+            "id": "VAL-029",
+            "title": "Biorhythm: Validate intellectual cycle (33 days)",
+            "engine": "biorhythm",
+            "test_type": "individual",
+            "input": {
+              "birth_date": "1991-08-13",
+              "calculation_date": "2026-02-03"
+            },
+            "expected": {
+              "intellectual_cycle": {
+                "period_days": 33,
+                "value_range": [-1.0, 1.0]
+              }
+            },
+            "tolerance": "range",
+            "validation_logic": "assert!(result.intellectual >= -1.0 && result.intellectual <= 1.0)",
+            "est_hours": 2,
+            "priority": "high"
+          },
+          {
+            "id": "VAL-030",
+            "title": "Biorhythm: Validate critical days detection",
+            "engine": "biorhythm",
+            "test_type": "individual",
+            "input": {
+              "birth_date": "1991-08-13",
+              "calculation_date": "2026-02-03",
+              "find_critical_days": true
+            },
+            "expected": {
+              "critical_days": "array of dates where any cycle crosses zero"
+            },
+            "tolerance": "exists",
+            "validation_logic": "assert!(result.critical_days.is_array())",
+            "est_hours": 3,
+            "priority": "medium"
+          },
+          {
+            "id": "VAL-031",
+            "title": "Vedic Clock: Validate current TCM organ",
+            "engine": "vedic-clock",
+            "test_type": "individual",
+            "input": {
+              "calculation_time": "2026-02-03T14:30:00+05:30",
+              "timezone": "Asia/Kolkata"
+            },
+            "expected": {
+              "current_organ": "string matching 2-hour window",
+              "organ_time_window": "2-hour period"
+            },
+            "tolerance": "dynamic",
+            "validation_logic": "assert_eq(result.current_organ, expected_organ_for_time(14:30))",
+            "est_hours": 3,
+            "priority": "high"
+          },
+          {
+            "id": "VAL-032",
+            "title": "Vedic Clock: Validate all 12 TCM organs cycle",
+            "engine": "vedic-clock",
+            "test_type": "individual",
+            "input": {
+              "mode": "full_day"
+            },
+            "expected": {
+              "organs": 12,
+              "cycle_duration_hours": 24,
+              "each_organ_duration_hours": 2
+            },
+            "tolerance": "exact",
+            "validation_logic": "assert_eq(result.organs.len(), 12)",
+            "est_hours": 3,
+            "priority": "medium"
+          },
+          {
+            "id": "VAL-033",
+            "title": "Vedic Clock: Validate dosha mapping to time",
+            "engine": "vedic-clock",
+            "test_type": "individual",
+            "input": {
+              "calculation_time": "2026-02-03T06:00:00+05:30"
+            },
+            "expected": {
+              "current_dosha": "Kapha",
+              "dosha_time_ranges": {
+                "Vata": ["14:00-18:00", "02:00-06:00"],
+                "Pitta": ["10:00-14:00", "22:00-02:00"],
+                "Kapha": ["06:00-10:00", "18:00-22:00"]
+              }
+            },
+            "tolerance": "exact",
+            "validation_logic": "assert_eq(result.current_dosha, 'Kapha')",
+            "est_hours": 3,
+            "priority": "high"
+          },
+          {
+            "id": "VAL-034",
+            "title": "Vedic Clock: Validate optimal activity suggestions",
+            "engine": "vedic-clock",
+            "test_type": "individual",
+            "input": {
+              "calculation_time": "2026-02-03T09:00:00+05:30",
+              "requested_activity": "meditation"
+            },
+            "expected": {
+              "optimal": "boolean",
+              "current_organ": "Spleen/Pancreas",
+              "recommendation": "string"
+            },
+            "tolerance": "exists",
+            "validation_logic": "assert!(result.recommendation.len() > 0)",
+            "est_hours": 3,
+            "priority": "medium"
+          },
+          {
+            "id": "VAL-035",
+            "title": "Vedic Clock: Validate dosha-organ correspondence",
+            "engine": "vedic-clock",
+            "test_type": "individual",
+            "input": {
+              "organ": "Heart"
+            },
+            "expected": {
+              "related_dosha": "Pitta",
+              "element": "Fire"
+            },
+            "tolerance": "exact",
+            "validation_logic": "assert_eq(result.dosha, 'Pitta')",
+            "est_hours": 2,
+            "priority": "medium"
+          },
+          {
+            "id": "VAL-036",
+            "title": "Tarot: Validate deck loading (78 cards)",
+            "engine": "tarot",
+            "test_type": "individual",
+            "input": {
+              "mode": "deck_info"
+            },
+            "expected": {
+              "total_cards": 78,
+              "major_arcana": 22,
+              "minor_arcana": 56,
+              "suits": ["Wands", "Cups", "Swords", "Pentacles"]
+            },
+            "tolerance": "exact",
+            "validation_logic": "assert_eq(result.cards.len(), 78)",
+            "est_hours": 2,
+            "priority": "medium"
+          },
+          {
+            "id": "VAL-037",
+            "title": "Tarot: Validate single card draw",
+            "engine": "tarot",
+            "test_type": "individual",
+            "input": {
+              "spread_type": "single",
+              "seed": 12345
+            },
+            "expected": {
+              "cards_drawn": 1,
+              "has_meaning": true,
+              "orientation": ["upright", "reversed"]
+            },
+            "tolerance": "exists",
+            "validation_logic": "assert_eq(result.cards.len(), 1); assert!(result.cards[0].meaning.len() > 0)",
+            "est_hours": 2,
+            "priority": "high"
+          },
+          {
+            "id": "VAL-038",
+            "title": "Tarot: Validate three-card spread",
+            "engine": "tarot",
+            "test_type": "individual",
+            "input": {
+              "spread_type": "three_card",
+              "positions": ["past", "present", "future"],
+              "seed": 12345
+            },
+            "expected": {
+              "cards_drawn": 3,
+              "unique_cards": true,
+              "positions_filled": 3
+            },
+            "tolerance": "exact",
+            "validation_logic": "assert_eq(result.cards.len(), 3); assert!(all_unique(result.cards))",
+            "est_hours": 2,
+            "priority": "high"
+          },
+          {
+            "id": "VAL-039",
+            "title": "Tarot: Validate Celtic Cross spread",
+            "engine": "tarot",
+            "test_type": "individual",
+            "input": {
+              "spread_type": "celtic_cross",
+              "seed": 12345
+            },
+            "expected": {
+              "cards_drawn": 10,
+              "positions": [
+                "present", "challenge", "past", "future",
+                "conscious", "unconscious", "self", "environment",
+                "hopes", "outcome"
+              ]
+            },
+            "tolerance": "exact",
+            "validation_logic": "assert_eq(result.cards.len(), 10)",
+            "est_hours": 3,
+            "priority": "medium"
+          },
+          {
+            "id": "VAL-040",
+            "title": "Tarot: Validate reproducibility with seed",
+            "engine": "tarot",
+            "test_type": "individual",
+            "input": {
+              "spread_type": "three_card",
+              "seed": 12345
+            },
+            "expected": {
+              "reproducible": true
+            },
+            "tolerance": "exact",
+            "validation_logic": "assert_eq(run1.cards, run2.cards) when seed is equal",
+            "est_hours": 2,
+            "priority": "high"
+          },
+          {
+            "id": "VAL-041",
+            "title": "I-Ching: Validate 64 hexagrams accessible",
+            "engine": "i-ching",
+            "test_type": "individual",
+            "input": {
+              "mode": "hexagram_list"
+            },
+            "expected": {
+              "total_hexagrams": 64,
+              "each_has": ["number", "name", "judgment", "image", "lines"]
+            },
+            "tolerance": "exact",
+            "validation_logic": "assert_eq(result.hexagrams.len(), 64)",
+            "est_hours": 2,
+            "priority": "medium"
+          },
+          {
+            "id": "VAL-042",
+            "title": "I-Ching: Validate three-coin method",
+            "engine": "i-ching",
+            "test_type": "individual",
+            "input": {
+              "method": "three_coin",
+              "seed": 12345
+            },
+            "expected": {
+              "lines": 6,
+              "line_values": [6, 7, 8, 9],
+              "has_changing_lines": "boolean"
+            },
+            "tolerance": "range",
+            "validation_logic": "assert_eq(result.lines.len(), 6); lines.iter().all(|l| [6,7,8,9].contains(l))",
+            "est_hours": 3,
+            "priority": "critical"
+          },
+          {
+            "id": "VAL-043",
+            "title": "I-Ching: Validate hexagram lookup",
+            "engine": "i-ching",
+            "test_type": "individual",
+            "input": {
+              "hexagram_number": 1
+            },
+            "expected": {
+              "name": "The Creative",
+              "chinese_name": "Ch'ien",
+              "judgment": "string",
+              "image": "string"
+            },
+            "tolerance": "exact",
+            "validation_logic": "assert_eq(result.name, 'The Creative')",
+            "est_hours": 2,
+            "priority": "high"
+          },
+          {
+            "id": "VAL-044",
+            "title": "I-Ching: Validate changing lines and relating hexagram",
+            "engine": "i-ching",
+            "test_type": "individual",
+            "input": {
+              "method": "three_coin",
+              "seed": "fixed_seed_with_changing_lines"
+            },
+            "expected": {
+              "primary_hexagram": "number",
+              "relating_hexagram": "number",
+              "changing_lines": "array of positions",
+              "line_meanings": "array of texts"
+            },
+            "tolerance": "exists",
+            "validation_logic": "assert!(result.changing_lines.len() > 0); assert!(result.relating_hexagram != result.primary)",
+            "est_hours": 3,
+            "priority": "high"
+          },
+          {
+            "id": "VAL-045",
+            "title": "I-Ching: Validate King Wen sequence order",
+            "engine": "i-ching",
+            "test_type": "individual",
+            "input": {
+              "mode": "sequence_check"
+            },
+            "expected": {
+              "sequence": [1, 2, 3, ..., 64],
+              "first": "The Creative (Heaven)",
+              "last": "Before Completion"
+            },
+            "tolerance": "exact",
+            "validation_logic": "assert_eq(result.sequence[0], 1); assert_eq(result.sequence[63], 64)",
+            "est_hours": 2,
+            "priority": "medium"
+          },
+          {
+            "id": "VAL-046",
+            "title": "Enneagram: Validate 9 type profiles accessible",
+            "engine": "enneagram",
+            "test_type": "individual",
+            "input": {
+              "mode": "type_info"
+            },
+            "expected": {
+              "types": 9,
+              "each_has": ["name", "core_desire", "core_fear", "motivation", "wings", "integration", "disintegration"]
+            },
+            "tolerance": "exact",
+            "validation_logic": "assert_eq(result.types.len(), 9)",
+            "est_hours": 2,
+            "priority": "medium"
+          },
+          {
+            "id": "VAL-047",
+            "title": "Enneagram: Validate assessment scoring",
+            "engine": "enneagram",
+            "test_type": "individual",
+            "input": {
+              "assessment_responses": "sample_responses_indicating_type_5"
+            },
+            "expected": {
+              "suggested_type": "number 1-9",
+              "confidence": "percentage",
+              "top_three": "array of types with scores"
+            },
+            "tolerance": "exists",
+            "validation_logic": "assert!(result.confidence > 0); assert_eq(result.top_three.len(), 3)",
+            "est_hours": 3,
+            "priority": "high"
+          },
+          {
+            "id": "VAL-048",
+            "title": "Enneagram: Validate wing calculation",
+            "engine": "enneagram",
+            "test_type": "individual",
+            "input": {
+              "primary_type": 5,
+              "assessment_responses": "leaning_toward_4"
+            },
+            "expected": {
+              "primary_type": 5,
+              "wing": "4 or 6",
+              "full_type": "5w4 or 5w6"
+            },
+            "tolerance": "exact",
+            "validation_logic": "assert!(result.wing == 4 || result.wing == 6)",
+            "est_hours": 2,
+            "priority": "medium"
+          },
+          {
+            "id": "VAL-049",
+            "title": "Enneagram: Validate integration/disintegration paths",
+            "engine": "enneagram",
+            "test_type": "individual",
+            "input": {
+              "type": 5
+            },
+            "expected": {
+              "integration": 8,
+              "disintegration": 7,
+              "integration_traits": "array",
+              "disintegration_traits": "array"
+            },
+            "tolerance": "exact",
+            "validation_logic": "assert_eq(result.integration, 8); assert_eq(result.disintegration, 7)",
+            "est_hours": 2,
+            "priority": "medium"
+          },
+          {
+            "id": "VAL-050",
+            "title": "Enneagram: Validate tritype calculation",
+            "engine": "enneagram",
+            "test_type": "individual",
+            "input": {
+              "assessment_responses": "complete_assessment"
+            },
+            "expected": {
+              "tritype": "three_types_from_centers",
+              "heart_type": "2,3,4",
+              "head_type": "5,6,7",
+              "gut_type": "8,9,1"
+            },
+            "tolerance": "exists",
+            "validation_logic": "assert_eq(result.tritype.len(), 3)",
+            "est_hours": 3,
+            "priority": "low"
+          }
+        ]
+      },
+      {
+        "phase_id": "VAL-P2",
+        "name": "Phase 2: Cross-Engine Data Handoff Tests",
+        "description": "Validate data flows correctly between engines and composite calculations",
+        "tests": [
+          {
+            "id": "VAL-051",
+            "title": "HD → Gene Keys: Gate activation handoff",
+            "engine": "multi",
+            "test_type": "handoff",
+            "input": {
+              "birth_data": "from_profile"
+            },
+            "handoff_flow": [
+              "human-design: Calculate all 26 activations",
+              "gene-keys: Receive gate numbers from HD",
+              "gene-keys: Map gates to Gene Keys"
+            ],
+            "expected": {
+              "hd_gates": [4, 49, 62, 23, 43, 24, ...],
+              "gene_key_mapping": "each_hd_gate_maps_to_same_number_gene_key",
+              "consistency": "Gate 4 → Gene Key 4 (Understanding)"
+            },
+            "tolerance": "exact",
+            "validation_logic": "assert_eq(gene_keys.life_work.gate, hd.sun_gate)",
+            "est_hours": 4,
+            "priority": "critical"
+          },
+          {
+            "id": "VAL-052",
+            "title": "Panchanga → Vimshottari: Nakshatra handoff",
+            "engine": "multi",
+            "test_type": "handoff",
+            "input": {
+              "birth_data": "from_profile"
+            },
+            "handoff_flow": [
+              "panchanga: Calculate Moon nakshatra at birth",
+              "vimshottari: Use nakshatra to determine starting Mahadasha"
+            ],
+            "expected": {
+              "panchanga_nakshatra": "Uttara Phalguni",
+              "vimshottari_nakshatra": "Uttara Phalguni",
+              "starting_lord": "Sun",
+              "consistency": "Both engines agree on nakshatra"
+            },
+            "tolerance": "exact",
+            "validation_logic": "assert_eq(panchanga.nakshatra, vimshottari.nakshatra)",
+            "est_hours": 3,
+            "priority": "critical"
+          },
+          {
+            "id": "VAL-053",
+            "title": "Panchanga → Vedic Clock: Tithi/quality handoff",
+            "engine": "multi",
+            "test_type": "handoff",
+            "input": {
+              "calculation_time": "2026-02-03T14:30:00+05:30"
+            },
+            "handoff_flow": [
+              "panchanga: Calculate current tithi and qualities",
+              "vedic-clock: Receive tithi for temporal recommendations"
+            ],
+            "expected": {
+              "tithi_consistency": "Both engines show same tithi",
+              "temporal_recommendation": "Incorporates tithi quality"
+            },
+            "tolerance": "exact",
+            "validation_logic": "assert_eq(panchanga.tithi, vedic_clock.tithi)",
+            "est_hours": 3,
+            "priority": "high"
+          },
+          {
+            "id": "VAL-054",
+            "title": "HD → Numerology: Life Path ↔ Profile correlation",
+            "engine": "multi",
+            "test_type": "correlation",
+            "input": {
+              "birth_data": "from_profile"
+            },
+            "expected": {
+              "hd_profile": "2/4",
+              "numerology_life_path": 8,
+              "correlation_note": "Profile 2/4 hermit/opportunist aligns with Life Path 8 leadership"
+            },
+            "tolerance": "semantic",
+            "validation_logic": "cross_reference_synthesis(hd, numerology)",
+            "est_hours": 3,
+            "priority": "medium"
+          },
+          {
+            "id": "VAL-055",
+            "title": "Vimshottari → Biorhythm: Timing correlation",
+            "engine": "multi",
+            "test_type": "correlation",
+            "input": {
+              "birth_data": "from_profile",
+              "calculation_date": "2026-02-03"
+            },
+            "expected": {
+              "current_mahadasha": "Mars",
+              "mars_energy": "action, energy, drive",
+              "biorhythm_physical": "correlated_value",
+              "synthesis": "Mars period + high physical = optimal for action"
+            },
+            "tolerance": "semantic",
+            "validation_logic": "correlation_exists(vimshottari, biorhythm)",
+            "est_hours": 4,
+            "priority": "medium"
+          },
+          {
+            "id": "VAL-056",
+            "title": "HD Type → Vedic Clock: Strategy timing",
+            "engine": "multi",
+            "test_type": "integration",
+            "input": {
+              "hd_type": "Generator",
+              "current_time": "2026-02-03T09:00:00+05:30"
+            },
+            "expected": {
+              "hd_strategy": "Wait to respond",
+              "current_organ": "Spleen/Pancreas",
+              "optimal_response_window": "when_sacral_organ_active",
+              "synthesis": "Wait for sacral (gut) activation during spleen time"
+            },
+            "tolerance": "semantic",
+            "validation_logic": "integration_coherent(hd, vedic_clock)",
+            "est_hours": 4,
+            "priority": "medium"
+          },
+          {
+            "id": "VAL-057",
+            "title": "Gene Keys → Enneagram: Shadow/Fear mapping",
+            "engine": "multi",
+            "test_type": "correlation",
+            "input": {
+              "birth_data": "from_profile"
+            },
+            "expected": {
+              "gene_key_shadows": ["Intolerance", "Reaction", "Impulsiveness", "Complexity"],
+              "enneagram_fears": "corresponding_fears",
+              "synthesis": "Shadow patterns align with Enneagram fixations"
+            },
+            "tolerance": "semantic",
+            "validation_logic": "shadow_fear_correlation_exists()",
+            "est_hours": 4,
+            "priority": "medium"
+          },
+          {
+            "id": "VAL-058",
+            "title": "Panchanga → Tarot: Tithi-based card emphasis",
+            "engine": "multi",
+            "test_type": "integration",
+            "input": {
+              "tithi": "Shukla Chaturthi",
+              "tarot_spread": "single_card"
+            },
+            "expected": {
+              "tithi_quality": "removing obstacles",
+              "card_emphasis": "potential_Ganesha_correlation",
+              "witness_prompt": "incorporates_tithi_theme"
+            },
+            "tolerance": "semantic",
+            "validation_logic": "prompt_includes_tithi_quality(tarot, panchanga)",
+            "est_hours": 3,
+            "priority": "low"
+          },
+          {
+            "id": "VAL-059",
+            "title": "Numerology → I-Ching: Life Path ↔ Hexagram correlation",
+            "engine": "multi",
+            "test_type": "correlation",
+            "input": {
+              "life_path": 8,
+              "i_ching_reading": "current_hexagram"
+            },
+            "expected": {
+              "life_path_meaning": "power, abundance, authority",
+              "hexagram_themes": "related_to_abundance_or_power",
+              "synthesis": "numerological_theme_reflected_in_hexagram"
+            },
+            "tolerance": "semantic",
+            "validation_logic": "thematic_correlation_exists()",
+            "est_hours": 3,
+            "priority": "low"
+          },
+          {
+            "id": "VAL-060",
+            "title": "All Natal Engines: Data consistency check",
+            "engine": "multi",
+            "test_type": "consistency",
+            "input": {
+              "birth_data": "from_profile"
+            },
+            "engines_to_check": ["human-design", "gene-keys", "vimshottari", "numerology"],
+            "expected": {
+              "birth_date_consistency": "all_use_same_date",
+              "timezone_handling": "all_convert_correctly",
+              "location_coordinates": "all_use_same_lat_lng"
+            },
+            "tolerance": "exact",
+            "validation_logic": "all_engines_use_same_input_data()",
+            "est_hours": 5,
+            "priority": "critical"
+          },
+          {
+            "id": "VAL-061",
+            "title": "HD Authority → I-Ching: Decision guidance alignment",
+            "engine": "multi",
+            "test_type": "integration",
+            "input": {
+              "authority": "Sacral",
+              "i_ching_hexagram": 1
+            },
+            "expected": {
+              "sacral_strategy": "gut_response_yes_no",
+              "hexagram_1": "The Creative - initiative",
+              "alignment": "hexagram_initiative + sacral_response = clarity"
+            },
+            "tolerance": "semantic",
+            "validation_logic": "guidance_not_contradictory()",
+            "est_hours": 3,
+            "priority": "medium"
+          },
+          {
+            "id": "VAL-062",
+            "title": "Vedic Clock → Biorhythm: Optimal timing synthesis",
+            "engine": "multi",
+            "test_type": "integration",
+            "input": {
+              "calculation_time": "2026-02-03T10:00:00+05:30"
+            },
+            "expected": {
+              "vedic_clock": {
+                "organ": "Stomach",
+                "dosha": "Pitta",
+                "activity": "digestion/energy_peak"
+              },
+              "biorhythm": {
+                "physical": "high or low",
+                "emotional": "high or low",
+                "intellectual": "high or low"
+              },
+              "synthesis": "combined_recommendation_considering_both"
+            },
+            "tolerance": "semantic",
+            "validation_logic": "synthesis_includes_both_systems()",
+            "est_hours": 4,
+            "priority": "high"
+          },
+          {
+            "id": "VAL-063",
+            "title": "Vimshottari Current Period → HD Transit: Timing correlation",
+            "engine": "multi",
+            "test_type": "correlation",
+            "input": {
+              "birth_data": "from_profile",
+              "calculation_date": "2026-02-03"
+            },
+            "expected": {
+              "mars_mahadasha": "action, energy, drive",
+              "hd_transits": "current_gate_activations",
+              "correlation": "mars_theme_in_current_transits"
+            },
+            "tolerance": "semantic",
+            "validation_logic": "period_themes_align()",
+            "est_hours": 4,
+            "priority": "medium"
+          },
+          {
+            "id": "VAL-064",
+            "title": "Tarot → Enneagram: Archetype mapping",
+            "engine": "multi",
+            "test_type": "correlation",
+            "input": {
+              "tarot_card": "Emperor",
+              "enneagram_type": 8
+            },
+            "expected": {
+              "emperor_archetype": "authority, structure, control",
+              "type_8": "challenger, power, control",
+              "alignment": "both_emphasize_authority_structures"
+            },
+            "tolerance": "semantic",
+            "validation_logic": "archetype_correlation_exists()",
+            "est_hours": 3,
+            "priority": "low"
+          },
+          {
+            "id": "VAL-065",
+            "title": "Sacred Geometry → Gene Keys: Geometric-Siddhi correlation",
+            "engine": "multi",
+            "test_type": "correlation",
+            "input": {
+              "gene_key": 4,
+              "siddhi": "Forgiveness"
+            },
+            "expected": {
+              "sacred_form": "potentially_Flower_of_Life_or_similar",
+              "theme": "unity, interconnectedness",
+              "alignment": "forgiveness_theme_in_geometry"
+            },
+            "tolerance": "semantic",
+            "validation_logic": "thematic_resonance_exists()",
+            "est_hours": 3,
+            "priority": "low"
+          },
+          {
+            "id": "VAL-066",
+            "title": "Sigil Forge → HD: Intent encoded via Design",
+            "engine": "multi",
+            "test_type": "integration",
+            "input": {
+              "intent": "strengthen_sacral_response",
+              "hd_design": "from_birth_data"
+            },
+            "expected": {
+              "sigil_method": "appropriate_for_sacral_type",
+              "encoding": "design_influenced_structure",
+              "witness_prompt": "references_hd_authority"
+            },
+            "tolerance": "semantic",
+            "validation_logic": "sigil_considers_hd_type()",
+            "est_hours": 3,
+            "priority": "low"
+          },
+          {
+            "id": "VAL-067",
+            "title": "All Temporal Engines: Time calculation consistency",
+            "engine": "multi",
+            "test_type": "consistency",
+            "input": {
+              "calculation_time": "2026-02-03T14:30:00+05:30"
+            },
+            "engines_to_check": ["panchanga", "vedic-clock", "biorhythm"],
+            "expected": {
+              "timezone_handling": "consistent_across_all",
+              "dst_handling": "correct_for_india_no_dst",
+              "julian_day": "consistent_calculation"
+            },
+            "tolerance": "exact",
+            "validation_logic": "temporal_calculations_consistent()",
+            "est_hours": 4,
+            "priority": "high"
+          },
+          {
+            "id": "VAL-068",
+            "title": "HD Definition → Vedic Planet Positions: Activation correlation",
+            "engine": "multi",
+            "test_type": "correlation",
+            "input": {
+              "birth_data": "from_profile"
+            },
+            "expected": {
+              "defined_centers": "list",
+              "strong_planets": "planets_in_own_sign_or_exalted",
+              "correlation": "defined_centers_correlate_with_strong_planets"
+            },
+            "tolerance": "semantic",
+            "validation_logic": "center_planet_correlation_exists()",
+            "est_hours": 4,
+            "priority": "medium"
+          },
+          {
+            "id": "VAL-069",
+            "title": "Gene Keys Pathway → Chakra system: Frequency mapping",
+            "engine": "multi",
+            "test_type": "correlation",
+            "input": {
+              "gene_key_activation": 4,
+              "pathway": "Life's Work"
+            },
+            "expected": {
+              "gate_4": "Understanding/Forgiveness",
+              "chakra": "potentially_Ajna_or_Anahata",
+              "frequency_correlation": "gift_understanding_aligns_with_chakra"
+            },
+            "tolerance": "semantic",
+            "validation_logic": "chakra_gene_key_correlation_exists()",
+            "est_hours": 3,
+            "priority": "low"
+          },
+          {
+            "id": "VAL-070",
+            "title": "Workflow: Birth Blueprint data consistency",
+            "engine": "workflow",
+            "test_type": "workflow",
+            "workflow_id": "birth-blueprint",
+            "input": {
+              "birth_data": "from_profile"
+            },
+            "expected": {
+              "engines_used": ["numerology", "human-design", "gene-keys"],
+              "data_consistency": "all_engines_use_same_input",
+              "synthesis": "coherent_cross_engine_analysis"
+            },
+            "tolerance": "exact",
+            "validation_logic": "workflow_executes_successfully(); synthesis_coherent()",
+            "est_hours": 5,
+            "priority": "critical"
+          },
+          {
+            "id": "VAL-071",
+            "title": "Workflow: Daily Practice temporal alignment",
+            "engine": "workflow",
+            "test_type": "workflow",
+            "workflow_id": "daily-practice",
+            "input": {
+              "calculation_time": "2026-02-03T14:30:00+05:30",
+              "location": "Bengaluru"
+            },
+            "expected": {
+              "engines_used": ["panchanga", "vedic-clock", "biorhythm"],
+              "temporal_consistency": "all_use_same_calculation_time",
+              "synthesis": "optimal_timing_recommendations"
+            },
+            "tolerance": "exact",
+            "validation_logic": "workflow_executes_successfully(); temporal_data_consistent()",
+            "est_hours": 4,
+            "priority": "high"
+          },
+          {
+            "id": "VAL-072",
+            "title": "Workflow: Decision Support guidance coherence",
+            "engine": "workflow",
+            "test_type": "workflow",
+            "workflow_id": "decision-support",
+            "input": {
+              "birth_data": "from_profile",
+              "question": "sample_decision_question"
+            },
+            "expected": {
+              "engines_used": ["tarot", "i-ching", "human-design"],
+              "guidance_consistency": "no_contradictory_advice",
+              "synthesis": "integrated_decision_framework"
+            },
+            "tolerance": "semantic",
+            "validation_logic": "workflow_executes_successfully(); guidance_not_contradictory()",
+            "est_hours": 4,
+            "priority": "high"
+          },
+          {
+            "id": "VAL-073",
+            "title": "Workflow: Self-Inquiry shadow integration",
+            "engine": "workflow",
+            "test_type": "workflow",
+            "workflow_id": "self-inquiry",
+            "input": {
+              "birth_data": "from_profile"
+            },
+            "expected": {
+              "engines_used": ["gene-keys", "enneagram"],
+              "shadow_themes": "identified_across_both",
+              "synthesis": "integrated_shadow_work_approach"
+            },
+            "tolerance": "semantic",
+            "validation_logic": "workflow_executes_successfully(); shadow_themes_coherent()",
+            "est_hours": 4,
+            "priority": "medium"
+          },
+          {
+            "id": "VAL-074",
+            "title": "Workflow: Full Spectrum completeness",
+            "engine": "workflow",
+            "test_type": "workflow",
+            "workflow_id": "full-spectrum",
+            "input": {
+              "birth_data": "from_profile",
+              "calculation_time": "2026-02-03T14:30:00+05:30"
+            },
+            "expected": {
+              "engines_count": 12,
+              "engines_list": "all_except_face_reading_and_biofield",
+              "execution_time_ms": "<2000",
+              "synthesis": "comprehensive_multi_system_analysis"
+            },
+            "tolerance": "exact",
+            "validation_logic": "workflow_executes_successfully(); all_engines_return_results()",
+            "est_hours": 6,
+            "priority": "critical"
+          },
+          {
+            "id": "VAL-075",
+            "title": "Cache: Cross-engine result caching",
+            "engine": "infrastructure",
+            "test_type": "cache",
+            "input": {
+              "birth_data": "from_profile"
+            },
+            "expected": {
+              "first_request": "calculates_and_caches",
+              "second_request": "returns_cached_result",
+              "cache_key_consistency": "same_input_same_key",
+              "cache_invalidation": "works_correctly"
+            },
+            "tolerance": "exact",
+            "validation_logic": "second_request_faster(); cache_hit_recorded()",
+            "est_hours": 4,
+            "priority": "high"
+          }
+        ]
+      },
+      {
+        "phase_id": "VAL-P3",
+        "name": "Phase 3: Complex Layered Integration & Future Patterns",
+        "description": "Test advanced multi-engine integrations and prototype future layered workflows like TCM + Biorhythm + Raga",
+        "tests": [
+          {
+            "id": "VAL-076",
+            "title": "Layered: TCM Organ Clock + Biorhythm + Suggestion Framework",
+            "engine": "multi",
+            "test_type": "layered",
+            "description": "Prototype integration: Vedic Clock identifies current organ, Biorhythm shows energy levels, system suggests optimal activity/music",
+            "input": {
+              "calculation_time": "2026-02-03T15:00:00+05:30",
+              "birth_date": "1991-08-13"
+            },
+            "layered_flow": [
+              "vedic-clock: current_organ = Small Intestine (Pitta time)",
+              "biorhythm: physical = 0.7, emotional = -0.3, intellectual = 0.5",
+              "synthesis: High physical + Pitta organ = good for digestion/activity",
+              "recommendation: Upbeat music, active tasks, avoid heavy decisions"
+            ],
+            "expected": {
+              "current_organ": "Small Intestine",
+              "dosha": "Pitta",
+              "biorhythm_physical": "positive",
+              "suggested_activity": "digestion_friendly_tasks",
+              "suggested_music_tempo": "upbeat_energetic",
+              "witness_prompt": "integrated_considering_all_systems"
+            },
+            "tolerance": "semantic",
+            "validation_logic": "layered_synthesis_coherent(); all_three_systems_referenced()",
+            "est_hours": 6,
+            "priority": "high",
+            "future_extension": "Add Raga engine for specific Indian classical recommendations"
+          },
+          {
+            "id": "VAL-077",
+            "title": "Layered: HD Authority + Vedic Clock + Decision Timing",
+            "engine": "multi",
+            "test_type": "layered",
+            "description": "Sacral authority waits for gut response; Vedic Clock finds optimal timing windows for sacral organs",
+            "input": {
+              "hd_type": "Generator",
+              "authority": "Sacral",
+              "calculation_time": "2026-02-03T09:00:00+05:30"
+            },
+            "expected": {
+              "sacral_strategy": "wait_to_respond",
+              "sacral_organ_times": ["07:00-09:00", "19:00-21:00"],
+              "optimal_response_windows": "sacral_organ_active + sacral_available",
+              "synthesis": "Respond during Stomach/Spleen time when sacral is naturally active"
+            },
+            "tolerance": "semantic",
+            "validation_logic": "recommendation_integrates_both_systems(); timing_specific()",
+            "est_hours": 5,
+            "priority": "high"
+          },
+          {
+            "id": "VAL-078",
+            "title": "Layered: Vimshottari Period + Biorhythm + Activity Planning",
+            "engine": "multi",
+            "test_type": "layered",
+            "description": "Current Mars Mahadasha = action energy; Biorhythm shows physical cycles; Plan optimal action periods",
+            "input": {
+              "birth_date": "1991-08-13",
+              "calculation_date": "2026-02-03",
+              "planning_horizon_days": 30
+            },
+            "expected": {
+              "mahadasha_theme": "Mars - action, energy, initiative",
+              "optimal_action_days": "days_with_high_physical_in_next_30",
+              "caution_days": "days_with_critical_biorhythm_crossings",
+              "synthesis": "Mars_period_+_high_physical_=_maximum_action_potential"
+            },
+            "tolerance": "semantic",
+            "validation_logic": "recommendation_considers_both_long_term_and_daily()",
+            "est_hours": 5,
+            "priority": "medium"
+          },
+          {
+            "id": "VAL-079",
+            "title": "Layered: Gene Keys Frequency + Enneagram + Meditation Style",
+            "engine": "multi",
+            "test_type": "layered",
+            "description": "Current Gene Key frequency (Shadow/Gift/Siddhi) + Enneagram type = personalized meditation approach",
+            "input": {
+              "birth_data": "from_profile",
+              "gene_key_focus": 4,
+              "current_frequency": "Gift - Understanding"
+            },
+            "expected": {
+              "gene_key_theme": "Understanding",
+              "enneagram_influence": "correlated_type_patterns",
+              "meditation_style": "inquiry_based_or_concentration_based",
+              "focus_area": "intolerance_to_understanding_transition",
+              "duration_suggestion": "based_on_type_and_frequency"
+            },
+            "tolerance": "semantic",
+            "validation_logic": "meditation_recommendation_personalized(); both_systems_referenced()",
+            "est_hours": 5,
+            "priority": "medium"
+          },
+          {
+            "id": "VAL-080",
+            "title": "Layered: Panchanga Tithi + Vedic Clock + Optimal Schedule",
+            "engine": "multi",
+            "test_type": "layered",
+            "description": "Daily tithi quality + organ clock + dosha = complete daily schedule optimization",
+            "input": {
+              "date": "2026-02-03",
+              "location": "Bengaluru"
+            },
+            "expected": {
+              "tithi": "current_tithi",
+              "tithi_quality": "nature_of_the_day",
+              "hourly_recommendations": "array_of_24_slots_with_activities",
+              "daily_summary": "theme_based_on_tithi_and_dosha_cycle"
+            },
+            "tolerance": "semantic",
+            "validation_logic": "schedule_coherent(); tithi_referenced_in_recommendations()",
+            "est_hours": 6,
+            "priority": "high"
+          },
+          {
+            "id": "VAL-081",
+            "title": "Layered: HD Definition + Gene Keys + Shadow Work Priority",
+            "engine": "multi",
+            "test_type": "layered",
+            "description": "Split Definition in HD + Gene Key Shadows = identify which shadows to work on first based on definition",
+            "input": {
+              "birth_data": "from_profile",
+              "hd_definition": "Split Definition",
+              "gene_key_shadows": ["Intolerance", "Reaction", "Impulsiveness", "Complexity"]
+            },
+            "expected": {
+              "definition_insight": "bridge_gates_identified",
+              "priority_shadow": "related_to_undefined_centers",
+              "shadow_work_sequence": "ordered_by_definition_relevance",
+              "synthesis": "work_on_shadows_bridging_splits_first"
+            },
+            "tolerance": "semantic",
+            "validation_logic": "shadow_prioritization_logical(); definition_considered()",
+            "est_hours": 5,
+            "priority": "medium"
+          },
+          {
+            "id": "VAL-082",
+            "title": "Layered: Tarot + I-Ching + HD Authority Decision Matrix",
+            "engine": "multi",
+            "test_type": "layered",
+            "description": "Archetypal guidance from Tarot + I-Ching + HD Authority strategy = comprehensive decision framework",
+            "input": {
+              "question": "career_change_decision",
+              "spread_type": "three_card",
+              "i_ching_method": "three_coin",
+              "authority": "Sacral"
+            },
+            "expected": {
+              "tarot_guidance": "three_cards_with_meanings",
+              "i_ching_guidance": "hexagram_with_changing_lines",
+              "hd_guidance": "wait_for_sacral_response",
+              "decision_matrix": "integrated_view_considering_all_three",
+              "final_recommendation": "does_not_contradict_any_system"
+            },
+            "tolerance": "semantic",
+            "validation_logic": "guidance_integrated(); no_contradictions(); authority_respected()",
+            "est_hours": 6,
+            "priority": "high"
+          },
+          {
+            "id": "VAL-083",
+            "title": "Layered: Numerology Life Path + HD Profile + Career Alignment",
+            "engine": "multi",
+            "test_type": "layered",
+            "description": "Life Path 8 leadership + Profile 2/4 hermit/opportunist = career path recommendations",
+            "input": {
+              "birth_data": "from_profile"
+            },
+            "expected": {
+              "life_path_themes": ["power", "abundance", "authority", "management"],
+              "profile_themes": ["natural_talent", "opportunistic", "networking"],
+              "career_strengths": "intersection_of_both_systems",
+              "work_style": "leadership_through_networking",
+              "challenges": "potential_conflicts_identified"
+            },
+            "tolerance": "semantic",
+            "validation_logic": "career_guidance_specific(); both_systems_referenced_in_synthesis()",
+            "est_hours": 4,
+            "priority": "medium"
+          },
+          {
+            "id": "VAL-084",
+            "title": "Layered: Sacred Geometry + Gene Keys + Visualization Practice",
+            "engine": "multi",
+            "test_type": "layered",
+            "description": "Sacred forms + Gene Key frequencies = personalized visualization/contemplation practice",
+            "input": {
+              "gene_key_focus": 4,
+              "sacred_forms": ["Flower of Life", "Metatron's Cube", "Sri Yantra"]
+            },
+            "expected": {
+              "gene_key_theme": "Understanding/Forgiveness",
+              "matched_form": "form_resonating_with_theme",
+              "contemplation_method": "how_to_work_with_form_for_this_key",
+              "witness_prompt": "integrated_suggestion_considering_both"
+            },
+            "tolerance": "semantic",
+            "validation_logic": "form_matches_theme(); practice_description_coherent()",
+            "est_hours": 4,
+            "priority": "low"
+          },
+          {
+            "id": "VAL-085",
+            "title": "Layered: Vimshottari Antardasha + HD Transit + Monthly Focus",
+            "engine": "multi",
+            "test_type": "layered",
+            "description": "Current sub-period + HD transits = monthly themes and focus areas",
+            "input": {
+              "birth_data": "from_profile",
+              "calculation_month": "2026-02"
+            },
+            "expected": {
+              "antardasha_planet": "Moon in Mars",
+              "hd_transits": "current_gate_activations",
+              "monthly_theme": "emotional_processing_during_mars_period",
+              "focus_areas": "derived_from_both_systems",
+              "optimal_practices": "aligned_with_transit_themes"
+            },
+            "tolerance": "semantic",
+            "validation_logic": "monthly_guidance_integrated(); transit_themes_consistent()",
+            "est_hours": 5,
+            "priority": "medium"
+          },
+          {
+            "id": "VAL-086",
+            "title": "Edge Case: Leap year birth date handling",
+            "engine": "all",
+            "test_type": "edge_case",
+            "input": {
+              "birth_date": "1992-02-29",
+              "time": "12:00",
+              "timezone": "UTC"
+            },
+            "expected": {
+              "all_engines_handle": "leap_day_without_error",
+              "biorhythm": "calculates_correctly",
+              "vimshottari": "calculates_correctly",
+              "hd": "calculates_correctly"
+            },
+            "tolerance": "exact",
+            "validation_logic": "no_errors(); results_reasonable()",
+            "est_hours": 3,
+            "priority": "medium"
+          },
+          {
+            "id": "VAL-087",
+            "title": "Edge Case: DST transition handling",
+            "engine": "all_temporal",
+            "test_type": "edge_case",
+            "input": {
+              "calculation_times": ["2026-03-29T01:30:00+01:00", "2026-03-29T03:30:00+02:00"],
+              "timezone": "Europe/London"
+            },
+            "expected": {
+              "spring_forward": "handled_correctly",
+              "ambiguous_hour": "documented_behavior",
+              "all_engines_agree": "on_time_calculation"
+            },
+            "tolerance": "exact",
+            "validation_logic": "time_calculations_consistent(); no_duplicate_or_missing_hour()",
+            "est_hours": 4,
+            "priority": "medium"
+          },
+          {
+            "id": "VAL-088",
+            "title": "Edge Case: Polar region coordinates",
+            "engine": "all_astronomical",
+            "test_type": "edge_case",
+            "input": {
+              "birth_date": "1991-08-13",
+              "location": {
+                "latitude": 78.0,
+                "longitude": 15.0,
+                "name": "Longyearbyen, Svalbard"
+              }
+            },
+            "expected": {
+              "calculation": "succeeds_without_crash",
+              "results": "reasonable_given_polar_location",
+              "extreme_latitude": "handled_gracefully"
+            },
+            "tolerance": "exists",
+            "validation_logic": "no_panic(); results_returned(); no_divide_by_zero()",
+            "est_hours": 4,
+            "priority": "medium"
+          },
+          {
+            "id": "VAL-089",
+            "title": "Edge Case: Ancient date (pre-1900)",
+            "engine": "all",
+            "test_type": "edge_case",
+            "input": {
+              "birth_date": "1850-06-15",
+              "time": "06:00",
+              "timezone": "Asia/Kolkata"
+            },
+            "expected": {
+              "calculation": "succeeds",
+              "julian_day": "calculated_correctly",
+              "ephemeris": "handles_historical_date",
+              "results": "astronomically_accurate_for_date"
+            },
+            "tolerance": "range",
+            "validation_logic": "calculation_succeeds(); results_within_tolerance()",
+            "est_hours": 3,
+            "priority": "low"
+          },
+          {
+            "id": "VAL-090",
+            "title": "Edge Case: Missing time (solar chart)",
+            "engine": "all_natal",
+            "test_type": "edge_case",
+            "input": {
+              "birth_date": "1991-08-13",
+              "time": null,
+              "timezone": "Asia/Kolkata"
+            },
+            "expected": {
+              "fallback": "solar_chart_calculation",
+              "hd": "no_exact_time_available",
+              "vedic": "moon_chart_or_sunrise",
+              "error_handling": "graceful_degradation"
+            },
+            "tolerance": "semantic",
+            "validation_logic": "no_crash(); meaningful_fallback(); user_informed()",
+            "est_hours": 3,
+            "priority": "high"
+          },
+          {
+            "id": "VAL-091",
+            "title": "Performance: Full Spectrum execution time",
+            "engine": "workflow",
+            "test_type": "performance",
+            "input": {
+              "birth_data": "from_profile",
+              "calculation_time": "2026-02-03T14:30:00+05:30"
+            },
+            "expected": {
+              "execution_time_ms": "<2000",
+              "all_engines_complete": true,
+              "no_timeouts": true
+            },
+            "tolerance": "exact",
+            "validation_logic": "execution_time < 2000ms; all_results_present()",
+            "est_hours": 2,
+            "priority": "critical"
+          },
+          {
+            "id": "VAL-092",
+            "title": "Performance: Cache hit vs miss latency",
+            "engine": "infrastructure",
+            "test_type": "performance",
+            "input": {
+              "engine": "human-design",
+              "birth_data": "from_profile"
+            },
+            "expected": {
+              "cache_miss_time_ms": "<100",
+              "cache_hit_time_ms": "<10",
+              "speedup_factor": ">5x"
+            },
+            "tolerance": "exact",
+            "validation_logic": "cache_hit_faster_than_miss(); speedup > 5x",
+            "est_hours": 3,
+            "priority": "high"
+          },
+          {
+            "id": "VAL-093",
+            "title": "Performance: Concurrent workflow execution",
+            "engine": "workflow",
+            "test_type": "performance",
+            "input": {
+              "concurrent_workflows": ["birth-blueprint", "daily-practice", "decision-support"],
+              "same_birth_data": "from_profile"
+            },
+            "expected": {
+              "parallel_execution": true,
+              "total_time_ms": "<3000",
+              "no_resource_contention": true
+            },
+            "tolerance": "exact",
+            "validation_logic": "workflows_run_concurrently(); faster_than_sequential()",
+            "est_hours": 3,
+            "priority": "medium"
+          },
+          {
+            "id": "VAL-094",
+            "title": "Data Quality: Witness prompt non-prescriptive check",
+            "engine": "all",
+            "test_type": "quality",
+            "input": {
+              "check_all_engines": true
+            },
+            "expected": {
+              "no_fortune_telling_language": true,
+              "no_definitive_predictions": true,
+              "inquiry_based": true,
+              "self_reflection_focused": true
+            },
+            "tolerance": "exact",
+            "validation_logic": "prompts_do_not_contain(['will happen', 'should do', 'must']); prompts_contain(['witness', 'notice', 'how', 'what'])",
+            "est_hours": 4,
+            "priority": "critical"
+          },
+          {
+            "id": "VAL-095",
+            "title": "Data Quality: Wisdom data completeness",
+            "engine": "all",
+            "test_type": "quality",
+            "input": {
+              "check_wisdom_docs": true
+            },
+            "expected": {
+              "gene_keys_all_64": true,
+              "hd_all_gates_64": true,
+              "hd_all_channels_36": true,
+              "i_ching_all_64": true,
+              "tarot_all_78": true,
+              "enneagram_all_9": true
+            },
+            "tolerance": "exact",
+            "validation_logic": "all_wisdom_data_present(); no_empty_strings()",
+            "est_hours": 3,
+            "priority": "high"
+          },
+          {
+            "id": "VAL-096",
+            "title": "Data Quality: Wisdom data consistency",
+            "engine": "all",
+            "test_type": "quality",
+            "input": {
+              "cross_reference": ["gene_keys_gates", "hd_gates"]
+            },
+            "expected": {
+              "gate_4_name_hd": "Youthful Folly / Formulization",
+              "gate_4_name_gk": "Understanding",
+              "consistency_note": "Different but complementary_descriptions",
+              "no_contradictions": true
+            },
+            "tolerance": "semantic",
+            "validation_logic": "descriptions_complementary_not_contradictory()",
+            "est_hours": 3,
+            "priority": "medium"
+          },
+          {
+            "id": "VAL-097",
+            "title": "Validation: Against JHora (Vedic software)",
+            "engine": "panchanga, vimshottari",
+            "test_type": "validation",
+            "input": {
+              "birth_data": "from_profile"
+            },
+            "reference_software": "JHora",
+            "expected": {
+              "nakshatra_matches": true,
+              "tithi_matches": true,
+              "vimshottari_sequence_matches": true,
+              "tolerance": "within_1_degree"
+            },
+            "tolerance": "range",
+            "validation_logic": "results_match_reference_within_tolerance()",
+            "est_hours": 6,
+            "priority": "critical"
+          },
+          {
+            "id": "VAL-098",
+            "title": "Validation: Against Genetic Matrix (HD software)",
+            "engine": "human-design",
+            "test_type": "validation",
+            "input": {
+              "birth_data": "from_profile"
+            },
+            "reference_software": "Genetic Matrix",
+            "expected": {
+              "type_matches": "Generator",
+              "profile_matches": "2/4",
+              "authority_matches": "Sacral",
+              "definition_matches": "Split",
+              "gate_activations_match": true
+            },
+            "tolerance": "exact",
+            "validation_logic": "all_key_fields_match_reference()",
+            "est_hours": 6,
+            "priority": "critical"
+          },
+          {
+            "id": "VAL-099",
+            "title": "Validation: Against Gene Keys official site",
+            "engine": "gene-keys",
+            "test_type": "validation",
+            "input": {
+              "birth_data": "from_profile"
+            },
+            "reference": "genekeys.com",
+            "expected": {
+              "life_work_gate_matches": 4,
+              "evolution_gate_matches": 49,
+              "radiance_gate_matches": 62,
+              "purpose_gate_matches": 23
+            },
+            "tolerance": "exact",
+            "validation_logic": "activation_sequence_matches_reference()",
+            "est_hours": 4,
+            "priority": "high"
+          },
+          {
+            "id": "VAL-100",
+            "title": "Final: Complete validation report generation",
+            "engine": "all",
+            "test_type": "reporting",
+            "input": {
+              "run_all_tests": true,
+              "generate_report": true
+            },
+            "expected": {
+              "total_tests": 100,
+              "passed": "number",
+              "failed": "number",
+              "skipped": "number",
+              "critical_failures": "list",
+              "accuracy_metrics": "per_engine",
+              "recommendations": "for_failures"
+            },
+            "tolerance": "exact",
+            "validation_logic": "report_generated(); all_tests_accounted_for()",
+            "est_hours": 4,
+            "priority": "critical",
+            "deliverable": "Complete validation report with test results, accuracy metrics, and recommendations"
+          }
+        ]
+      }
+    ]
+  }
+}

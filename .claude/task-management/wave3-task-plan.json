@@ -1,0 +1,1935 @@
+{
+  "schema_version": "1.0",
+  "project": {
+    "name": "Tryambakam Noesis - Wave 3: Advanced Features & Ecosystem",
+    "repo_root": "/Volumes/madara/2026/witnessos/Selemene-engine",
+    "generated_on": "2026-02-03",
+    "generated_by": "task-master-planner + systems engineering synthesis",
+    "wave": 3,
+    "depends_on_wave": 2,
+    "prerequisites": [
+      "All 14 consciousness engines operational",
+      "6 multi-engine workflows implemented",
+      "Production infrastructure deployed",
+      "Comprehensive test suite passing",
+      "API documentation complete"
+    ],
+    "assumptions": [
+      "User base scaling to 10K+ users",
+      "PostgreSQL for user data persistence",
+      "Redis Streams for real-time events",
+      "WebSocket support for live updates",
+      "ML/AI models can be hosted externally",
+      "Mobile SDKs target iOS 15+ / Android 10+",
+      "Compliance requirements: GDPR, CCPA"
+    ],
+    "risks": [
+      "User data privacy requires careful handling",
+      "Real-time features may impact performance",
+      "ML recommendations need bias mitigation",
+      "Mobile SDK maintenance overhead",
+      "Third-party integration reliability"
+    ]
+  },
+  "phases": [
+    {
+      "phase_id": "W3-P1",
+      "name": "Wave 3 Phase 1: User Management & Personalization",
+      "objective": "Implement comprehensive user profiles, history tracking, and personalized experiences",
+      "sprints": [
+        {
+          "sprint_id": "W3-S1",
+          "duration_weeks": 2,
+          "focus": "User profiles and authentication enhancement",
+          "tasks": [
+            {
+              "id": "W3-S1-01",
+              "title": "Design user profile data model",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 8,
+              "dependencies": [],
+              "deliverable": "PostgreSQL schema for user profiles with birth data, preferences, settings",
+              "acceptance": "Schema supports timezone, location, privacy settings, notification preferences"
+            },
+            {
+              "id": "W3-S1-02",
+              "title": "Implement user registration endpoint",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 6,
+              "dependencies": ["W3-S1-01"],
+              "deliverable": "POST /api/v1/auth/register with email/password validation",
+              "acceptance": "Creates user record, returns JWT, validates email format"
+            },
+            {
+              "id": "W3-S1-03",
+              "title": "Implement user login with JWT refresh",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 6,
+              "dependencies": ["W3-S1-02"],
+              "deliverable": "Login with access token + refresh token pattern",
+              "acceptance": "Short-lived access tokens, long-lived refresh tokens, rotation on use"
+            },
+            {
+              "id": "W3-S1-04",
+              "title": "Implement password reset flow",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 6,
+              "dependencies": ["W3-S1-03"],
+              "deliverable": "Secure password reset via email token",
+              "acceptance": "Time-limited reset tokens, secure token generation, email integration"
+            },
+            {
+              "id": "W3-S1-05",
+              "title": "Create user profile GET endpoint",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 4,
+              "dependencies": ["W3-S1-02"],
+              "deliverable": "GET /api/v1/users/me returns current user profile",
+              "acceptance": "Returns birth data, preferences, consciousness level, created_at"
+            },
+            {
+              "id": "W3-S1-06",
+              "title": "Create user profile UPDATE endpoint",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 5,
+              "dependencies": ["W3-S1-05"],
+              "deliverable": "PATCH /api/v1/users/me for profile updates",
+              "acceptance": "Partial updates, validation, audit logging of changes"
+            },
+            {
+              "id": "W3-S1-07",
+              "title": "Implement birth data validation",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 6,
+              "dependencies": ["W3-S1-01"],
+              "deliverable": "Comprehensive birth data validation (date range, coordinates, timezone)",
+              "acceptance": "Rejects impossible dates, validates lat/lng ranges, verifies timezone"
+            },
+            {
+              "id": "W3-S1-08",
+              "title": "Implement OAuth2 integration (Google)",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 8,
+              "dependencies": ["W3-S1-02"],
+              "deliverable": "Google OAuth2 login option",
+              "acceptance": "Users can sign up/login with Google, profile data synced"
+            },
+            {
+              "id": "W3-S1-09",
+              "title": "Implement OAuth2 integration (Apple)",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 8,
+              "dependencies": ["W3-S1-08"],
+              "deliverable": "Sign in with Apple support",
+              "acceptance": "Apple OAuth flow, hide email support, iOS compatibility"
+            },
+            {
+              "id": "W3-S1-10",
+              "title": "Create consciousness level progression system",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 10,
+              "dependencies": ["W3-S1-05"],
+              "deliverable": "Track user engagement, calculate consciousness level 0-5",
+              "acceptance": "Levels based on usage patterns, reflection completions, time spent"
+            },
+            {
+              "id": "W3-S1-11",
+              "title": "Write user management tests",
+              "area": "qa",
+              "owner_role": "QA Eng",
+              "est_hours": 8,
+              "dependencies": ["W3-S1-06"],
+              "deliverable": "Unit and integration tests for all user endpoints",
+              "acceptance": "90%+ coverage, edge cases tested, auth flows verified"
+            },
+            {
+              "id": "W3-S1-12",
+              "title": "Document user management API",
+              "area": "product",
+              "owner_role": "Tech Writer",
+              "est_hours": 6,
+              "dependencies": ["W3-S1-11"],
+              "deliverable": "API docs for auth and user endpoints",
+              "acceptance": "Curl examples, response schemas, error codes documented"
+            }
+          ]
+        },
+        {
+          "sprint_id": "W3-S2",
+          "duration_weeks": 2,
+          "focus": "Calculation history and favorites",
+          "tasks": [
+            {
+              "id": "W3-S2-01",
+              "title": "Design calculation history schema",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 6,
+              "dependencies": ["W3-S1-01"],
+              "deliverable": "PostgreSQL schema for storing user calculation history",
+              "acceptance": "Links to user_id, stores engine_id, input, output summary, timestamp"
+            },
+            {
+              "id": "W3-S2-02",
+              "title": "Implement automatic history tracking",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 6,
+              "dependencies": ["W3-S2-01"],
+              "deliverable": "Middleware to log all engine calculations to history",
+              "acceptance": "Every calculation saved, async logging, no performance impact"
+            },
+            {
+              "id": "W3-S2-03",
+              "title": "Create history listing endpoint",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 6,
+              "dependencies": ["W3-S2-02"],
+              "deliverable": "GET /api/v1/users/me/history with pagination",
+              "acceptance": "Paginated results, filter by engine, sort by date, search capability"
+            },
+            {
+              "id": "W3-S2-04",
+              "title": "Implement history detail retrieval",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 5,
+              "dependencies": ["W3-S2-03"],
+              "deliverable": "GET /api/v1/users/me/history/:id for full calculation details",
+              "acceptance": "Returns complete calculation output, ownership verified"
+            },
+            {
+              "id": "W3-S2-05",
+              "title": "Implement history deletion",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 4,
+              "dependencies": ["W3-S2-03"],
+              "deliverable": "DELETE endpoint for history entries",
+              "acceptance": "Soft delete with recovery period, hard delete after 30 days"
+            },
+            {
+              "id": "W3-S2-06",
+              "title": "Design favorites/bookmarks system",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 5,
+              "dependencies": ["W3-S2-01"],
+              "deliverable": "Schema for user favorites with categories and notes",
+              "acceptance": "Users can save calculations, add notes, organize by category"
+            },
+            {
+              "id": "W3-S2-07",
+              "title": "Implement add to favorites",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 5,
+              "dependencies": ["W3-S2-06"],
+              "deliverable": "POST endpoint to save calculation to favorites",
+              "acceptance": "Creates favorite from history or directly, with custom notes"
+            },
+            {
+              "id": "W3-S2-08",
+              "title": "Implement favorites management",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 6,
+              "dependencies": ["W3-S2-07"],
+              "deliverable": "CRUD endpoints for favorites with categories",
+              "acceptance": "List, update notes, change category, remove favorites"
+            },
+            {
+              "id": "W3-S2-09",
+              "title": "Create insights from history",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 10,
+              "dependencies": ["W3-S2-02"],
+              "deliverable": "Generate usage insights and patterns from user history",
+              "acceptance": "Most used engines, calculation frequency, preferred times"
+            },
+            {
+              "id": "W3-S2-10",
+              "title": "Implement data export (GDPR)",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 8,
+              "dependencies": ["W3-S2-03"],
+              "deliverable": "Export all user data as JSON download",
+              "acceptance": "Complete data export including history, favorites, profile"
+            },
+            {
+              "id": "W3-S2-11",
+              "title": "Write history and favorites tests",
+              "area": "qa",
+              "owner_role": "QA Eng",
+              "est_hours": 8,
+              "dependencies": ["W3-S2-08"],
+              "deliverable": "Test suite for history and favorites functionality",
+              "acceptance": "All CRUD operations tested, pagination verified, privacy ensured"
+            },
+            {
+              "id": "W3-S2-12",
+              "title": "Document history and favorites API",
+              "area": "product",
+              "owner_role": "Tech Writer",
+              "est_hours": 5,
+              "dependencies": ["W3-S2-11"],
+              "deliverable": "API documentation for history and favorites endpoints",
+              "acceptance": "Examples for all endpoints, pagination explained"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "phase_id": "W3-P2",
+      "name": "Wave 3 Phase 2: Real-time Features & Collaboration",
+      "objective": "Implement WebSocket support, live updates, and collaborative features",
+      "sprints": [
+        {
+          "sprint_id": "W3-S3",
+          "duration_weeks": 2,
+          "focus": "WebSocket infrastructure and real-time updates",
+          "tasks": [
+            {
+              "id": "W3-S3-01",
+              "title": "Design WebSocket architecture",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 8,
+              "dependencies": [],
+              "deliverable": "WebSocket connection handling, message protocol, room management",
+              "acceptance": "Scalable to 10K concurrent connections, message types defined"
+            },
+            {
+              "id": "W3-S3-02",
+              "title": "Implement WebSocket connection handling",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 10,
+              "dependencies": ["W3-S3-01"],
+              "deliverable": "Axum WebSocket upgrade handler with auth",
+              "acceptance": "JWT validation on connection, connection pooling, heartbeat"
+            },
+            {
+              "id": "W3-S3-03",
+              "title": "Implement real-time engine updates",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 8,
+              "dependencies": ["W3-S3-02"],
+              "deliverable": "Push engine calculation updates to connected clients",
+              "acceptance": "Calculation start/progress/complete events sent via WebSocket"
+            },
+            {
+              "id": "W3-S3-04",
+              "title": "Implement live Vedic clock updates",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 8,
+              "dependencies": ["W3-S3-02"],
+              "deliverable": "Real-time TCM organ clock and dosha transitions",
+              "acceptance": "Updates every minute on organ transitions, dosha changes"
+            },
+            {
+              "id": "W3-S3-05",
+              "title": "Implement notification system",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 10,
+              "deliverable": "User notification framework with preferences",
+              "acceptance": "In-app notifications, email notifications, preference management"
+            },
+            {
+              "id": "W3-S3-06",
+              "title": "Create daily guidance notification",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 6,
+              "dependencies": ["W3-S3-05"],
+              "deliverable": "Scheduled daily insights based on user preferences",
+              "acceptance": "Cron job sends daily guidance at user-preferred time"
+            },
+            {
+              "id": "W3-S3-07",
+              "title": "Create transit alert notifications",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 10,
+              "dependencies": ["W3-S3-05"],
+              "deliverable": "Alert users of significant astrological transits",
+              "acceptance": "Detects major transits, sends advance notifications"
+            },
+            {
+              "id": "W3-S3-08",
+              "title": "Implement Redis Streams for events",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 8,
+              "dependencies": ["W3-S3-01"],
+              "deliverable": "Event streaming infrastructure with Redis Streams",
+              "acceptance": "Pub/sub for real-time events, persistence, consumer groups"
+            },
+            {
+              "id": "W3-S3-09",
+              "title": "Write WebSocket integration tests",
+              "area": "qa",
+              "owner_role": "QA Eng",
+              "est_hours": 8,
+              "dependencies": ["W3-S3-04"],
+              "deliverable": "Test suite for WebSocket functionality",
+              "acceptance": "Connection, auth, message flow, reconnection tested"
+            },
+            {
+              "id": "W3-S3-10",
+              "title": "Document WebSocket protocol",
+              "area": "product",
+              "owner_role": "Tech Writer",
+              "est_hours": 6,
+              "dependencies": ["W3-S3-09"],
+              "deliverable": "WebSocket API documentation with message formats",
+              "acceptance": "All message types documented with examples"
+            }
+          ]
+        },
+        {
+          "sprint_id": "W3-S4",
+          "duration_weeks": 2,
+          "focus": "Collaborative features and sharing",
+          "tasks": [
+            {
+              "id": "W3-S4-01",
+              "title": "Design sharing system",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 6,
+              "dependencies": [],
+              "deliverable": "Schema for shareable links with access controls",
+              "acceptance": "Public, private, password-protected share options"
+            },
+            {
+              "id": "W3-S4-02",
+              "title": "Implement calculation sharing",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 8,
+              "dependencies": ["W3-S4-01"],
+              "deliverable": "Generate shareable links for calculations",
+              "acceptance": "Unique tokens, expiration dates, view tracking"
+            },
+            {
+              "id": "W3-S4-03",
+              "title": "Implement shared calculation viewer",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 6,
+              "dependencies": ["W3-S4-02"],
+              "deliverable": "Public endpoint to view shared calculations",
+              "acceptance": "Clean view of calculation without auth, privacy controls respected"
+            },
+            {
+              "id": "W3-S4-04",
+              "title": "Create comparison feature schema",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 5,
+              "dependencies": ["W3-S4-01"],
+              "deliverable": "Data model for storing compatibility comparisons",
+              "acceptance": "Supports 2+ people, multiple comparison types"
+            },
+            {
+              "id": "W3-S4-05",
+              "title": "Implement Human Design compatibility",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 12,
+              "dependencies": ["W3-S4-04"],
+              "deliverable": "HD chart comparison with composite analysis",
+              "acceptance": "Electromagnetic, compromise, dominance, companion analysis"
+            },
+            {
+              "id": "W3-S4-06",
+              "title": "Implement astrological synastry",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 10,
+              "dependencies": ["W3-S4-04"],
+              "deliverable": "Vedic astrology compatibility analysis",
+              "acceptance": "Kuta matching, Ashtakoot analysis, planetary friendships"
+            },
+            {
+              "id": "W3-S4-07",
+              "title": "Create relationship workflow",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 8,
+              "dependencies": ["W3-S4-05", "W3-S4-06"],
+              "deliverable": "Multi-engine relationship analysis workflow",
+              "acceptance": "Combines HD, astrology, numerology for relationship insights"
+            },
+            {
+              "id": "W3-S4-08",
+              "title": "Implement group calculations",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 10,
+              "dependencies": ["W3-S4-04"],
+              "deliverable": "Support for 3+ person group analysis",
+              "acceptance": "Family charts, team dynamics, group compatibility"
+            },
+            {
+              "id": "W3-S4-09",
+              "title": "Write collaboration tests",
+              "area": "qa",
+              "owner_role": "QA Eng",
+              "est_hours": 8,
+              "dependencies": ["W3-S4-08"],
+              "deliverable": "Tests for sharing and comparison features",
+              "acceptance": "Privacy, access control, comparison accuracy verified"
+            },
+            {
+              "id": "W3-S4-10",
+              "title": "Document collaboration API",
+              "area": "product",
+              "owner_role": "Tech Writer",
+              "est_hours": 5,
+              "dependencies": ["W3-S4-09"],
+              "deliverable": "API docs for sharing and comparison endpoints",
+              "acceptance": "Examples for all sharing and comparison features"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "phase_id": "W3-P3",
+      "name": "Wave 3 Phase 3: Analytics & Machine Learning",
+      "objective": "Implement usage analytics, pattern recognition, and AI-powered insights",
+      "sprints": [
+        {
+          "sprint_id": "W3-S5",
+          "duration_weeks": 2,
+          "focus": "Analytics infrastructure and dashboards",
+          "tasks": [
+            {
+              "id": "W3-S5-01",
+              "title": "Design analytics data warehouse",
+              "area": "data",
+              "owner_role": "Data Eng",
+              "est_hours": 10,
+              "dependencies": [],
+              "deliverable": "Schema for analytics data with event tracking",
+              "acceptance": "Supports user behavior, engine usage, performance metrics"
+            },
+            {
+              "id": "W3-S5-02",
+              "title": "Implement event tracking system",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 8,
+              "dependencies": ["W3-S5-01"],
+              "deliverable": "Async event collection and storage",
+              "acceptance": "Tracks page views, engine usage, workflow execution, zero impact"
+            },
+            {
+              "id": "W3-S5-03",
+              "title": "Create analytics aggregation pipeline",
+              "area": "data",
+              "owner_role": "Data Eng",
+              "est_hours": 10,
+              "dependencies": ["W3-S5-02"],
+              "deliverable": "Daily/hourly aggregation jobs for metrics",
+              "acceptance": "Aggregated tables for fast querying, scheduled jobs"
+            },
+            {
+              "id": "W3-S5-04",
+              "title": "Build admin analytics dashboard API",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 10,
+              "dependencies": ["W3-S5-03"],
+              "deliverable": "API endpoints for admin dashboard metrics",
+              "acceptance": "User growth, engine popularity, performance metrics endpoints"
+            },
+            {
+              "id": "W3-S5-05",
+              "title": "Implement user-facing insights API",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 8,
+              "dependencies": ["W3-S5-02"],
+              "deliverable": "Personal analytics for users about their usage",
+              "acceptance": "Most used engines, calculation patterns, time trends"
+            },
+            {
+              "id": "W3-S5-06",
+              "title": "Create anomaly detection for engine performance",
+              "area": "data",
+              "owner_role": "Data Eng",
+              "est_hours": 10,
+              "dependencies": ["W3-S5-03"],
+              "deliverable": "Detect unusual patterns in engine performance",
+              "acceptance": "Alerts on latency spikes, error rate increases"
+            },
+            {
+              "id": "W3-S5-07",
+              "title": "Implement cohort analysis",
+              "area": "data",
+              "owner_role": "Data Eng",
+              "est_hours": 8,
+              "dependencies": ["W3-S5-03"],
+              "deliverable": "User cohort tracking and retention metrics",
+              "acceptance": "Cohort tables, retention curves, engagement tracking"
+            },
+            {
+              "id": "W3-S5-08",
+              "title": "Write analytics tests",
+              "area": "qa",
+              "owner_role": "QA Eng",
+              "est_hours": 6,
+              "dependencies": ["W3-S5-04"],
+              "deliverable": "Test suite for analytics pipeline",
+              "acceptance": "Event tracking, aggregation, API endpoints tested"
+            },
+            {
+              "id": "W3-S5-09",
+              "title": "Document analytics system",
+              "area": "product",
+              "owner_role": "Tech Writer",
+              "est_hours": 5,
+              "dependencies": ["W3-S5-08"],
+              "deliverable": "Documentation for analytics schema and API",
+              "acceptance": "Schema diagrams, API examples, event types documented"
+            }
+          ]
+        },
+        {
+          "sprint_id": "W3-S6",
+          "duration_weeks": 2,
+          "focus": "ML-powered features and recommendations",
+          "tasks": [
+            {
+              "id": "W3-S6-01",
+              "title": "Design recommendation engine architecture",
+              "area": "data",
+              "owner_role": "ML Eng",
+              "est_hours": 10,
+              "dependencies": [],
+              "deliverable": "Architecture for ML-based engine recommendations",
+              "acceptance": "Feature store, model serving, A/B testing framework"
+            },
+            {
+              "id": "W3-S6-02",
+              "title": "Implement engine recommendation based on history",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 10,
+              "dependencies": ["W3-S6-01"],
+              "deliverable": "Recommend engines based on user patterns",
+              "acceptance": "Collaborative filtering, content-based recommendations"
+            },
+            {
+              "id": "W3-S6-03",
+              "title": "Implement workflow recommendation",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 8,
+              "dependencies": ["W3-S6-02"],
+              "deliverable": "Suggest workflows based on user context",
+              "acceptance": "Time-based, history-based, goal-based suggestions"
+            },
+            {
+              "id": "W3-S6-04",
+              "title": "Create pattern recognition for themes",
+              "area": "data",
+              "owner_role": "ML Eng",
+              "est_hours": 12,
+              "dependencies": ["W3-S6-01"],
+              "deliverable": "NLP model to extract and cluster themes from results",
+              "acceptance": "Theme clustering, similarity scoring, trend detection"
+            },
+            {
+              "id": "W3-S6-05",
+              "title": "Implement LLM integration for insights",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 10,
+              "dependencies": ["W3-S6-04"],
+              "deliverable": "OpenAI/Anthropic integration for enhanced interpretations",
+              "acceptance": "Optional AI-enhanced witness prompts, configurable"
+            },
+            {
+              "id": "W3-S6-06",
+              "title": "Create personalized daily guidance ML model",
+              "area": "data",
+              "owner_role": "ML Eng",
+              "est_hours": 14,
+              "dependencies": ["W3-S6-04"],
+              "deliverable": "Model for personalized daily guidance generation",
+              "acceptance": "Trained on user feedback, improves over time"
+            },
+            {
+              "id": "W3-S6-07",
+              "title": "Implement feedback collection system",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 6,
+              "dependencies": ["W3-S6-05"],
+              "deliverable": "Collect user feedback on calculations and insights",
+              "acceptance": "Rating system, text feedback, feedback storage"
+            },
+            {
+              "id": "W3-S6-08",
+              "title": "Create A/B testing framework",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 10,
+              "dependencies": ["W3-S6-01"],
+              "deliverable": "Feature flag and A/B testing system",
+              "acceptance": "Split traffic, measure outcomes, statistical significance"
+            },
+            {
+              "id": "W3-S6-09",
+              "title": "Write ML feature tests",
+              "area": "qa",
+              "owner_role": "QA Eng",
+              "est_hours": 8,
+              "dependencies": ["W3-S6-06"],
+              "deliverable": "Tests for ML-powered features",
+              "acceptance": "Recommendation quality, feedback flow, A/B tests verified"
+            },
+            {
+              "id": "W3-S6-10",
+              "title": "Document ML features",
+              "area": "product",
+              "owner_role": "Tech Writer",
+              "est_hours": 6,
+              "dependencies": ["W3-S6-09"],
+              "deliverable": "Documentation for ML features and recommendations",
+              "acceptance": "How recommendations work, privacy considerations, opt-out"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "phase_id": "W3-P4",
+      "name": "Wave 3 Phase 4: Mobile SDKs & Client Libraries",
+      "objective": "Build official SDKs for iOS, Android, and web clients",
+      "sprints": [
+        {
+          "sprint_id": "W3-S7",
+          "duration_weeks": 2,
+          "focus": "iOS SDK development",
+          "tasks": [
+            {
+              "id": "W3-S7-01",
+              "title": "Design iOS SDK architecture",
+              "area": "frontend",
+              "owner_role": "iOS Eng",
+              "est_hours": 8,
+              "dependencies": [],
+              "deliverable": "Swift SDK structure with async/await support",
+              "acceptance": "Clean API design, Combine support, Swift 5.9+"
+            },
+            {
+              "id": "W3-S7-02",
+              "title": "Implement iOS SDK authentication",
+              "area": "frontend",
+              "owner_role": "iOS Eng",
+              "est_hours": 8,
+              "dependencies": ["W3-S7-01"],
+              "deliverable": "Login, token management, keychain storage",
+              "acceptance": "Secure token storage, automatic refresh, biometric auth"
+            },
+            {
+              "id": "W3-S7-03",
+              "title": "Implement iOS SDK engine client",
+              "area": "frontend",
+              "owner_role": "iOS Eng",
+              "est_hours": 10,
+              "dependencies": ["W3-S7-02"],
+              "deliverable": "Engine calculation client with types",
+              "acceptance": "All engines accessible, type-safe responses, error handling"
+            },
+            {
+              "id": "W3-S7-04",
+              "title": "Implement iOS SDK caching",
+              "area": "frontend",
+              "owner_role": "iOS Eng",
+              "est_hours": 8,
+              "dependencies": ["W3-S7-03"],
+              "deliverable": "Local cache for calculations and user data",
+              "acceptance": "Core Data/SQLite cache, TTL support, offline mode"
+            },
+            {
+              "id": "W3-S7-05",
+              "title": "Implement iOS WebSocket client",
+              "area": "frontend",
+              "owner_role": "iOS Eng",
+              "est_hours": 8,
+              "dependencies": ["W3-S7-03"],
+              "deliverable": "Real-time updates via WebSocket",
+              "acceptance": "Connection management, reconnection, message handling"
+            },
+            {
+              "id": "W3-S7-06",
+              "title": "Create iOS SDK example app",
+              "area": "frontend",
+              "owner_role": "iOS Eng",
+              "est_hours": 10,
+              "dependencies": ["W3-S7-05"],
+              "deliverable": "Sample iOS app demonstrating SDK features",
+              "acceptance": "All major features demonstrated, SwiftUI interface"
+            },
+            {
+              "id": "W3-S7-07",
+              "title": "Write iOS SDK documentation",
+              "area": "product",
+              "owner_role": "Tech Writer",
+              "est_hours": 8,
+              "dependencies": ["W3-S7-06"],
+              "deliverable": "iOS SDK README, API docs, integration guide",
+              "acceptance": "CocoaPods/SPM installation, usage examples, API reference"
+            },
+            {
+              "id": "W3-S7-08",
+              "title": "Package iOS SDK for distribution",
+              "area": "frontend",
+              "owner_role": "iOS Eng",
+              "est_hours": 6,
+              "dependencies": ["W3-S7-06"],
+              "deliverable": "CocoaPods podspec and Swift Package Manager support",
+              "acceptance": "Published to CocoaPods trunk, SPM compatible"
+            }
+          ]
+        },
+        {
+          "sprint_id": "W3-S8",
+          "duration_weeks": 2,
+          "focus": "Android SDK and web client",
+          "tasks": [
+            {
+              "id": "W3-S8-01",
+              "title": "Design Android SDK architecture",
+              "area": "frontend",
+              "owner_role": "Android Eng",
+              "est_hours": 8,
+              "dependencies": [],
+              "deliverable": "Kotlin SDK with coroutines and Flow",
+              "acceptance": "Clean API, Kotlin 1.9+, coroutines support"
+            },
+            {
+              "id": "W3-S8-02",
+              "title": "Implement Android SDK authentication",
+              "area": "frontend",
+              "owner_role": "Android Eng",
+              "est_hours": 8,
+              "dependencies": ["W3-S8-01"],
+              "deliverable": "Auth with encrypted token storage",
+              "acceptance": "EncryptedSharedPreferences, auto refresh, biometric"
+            },
+            {
+              "id": "W3-S8-03",
+              "title": "Implement Android SDK engine client",
+              "area": "frontend",
+              "owner_role": "Android Eng",
+              "est_hours": 10,
+              "dependencies": ["W3-S8-02"],
+              "deliverable": "Type-safe engine calculation client",
+              "acceptance": "All engines accessible, data classes, error handling"
+            },
+            {
+              "id": "W3-S8-04",
+              "title": "Implement Android SDK caching",
+              "area": "frontend",
+              "owner_role": "Android Eng",
+              "est_hours": 8,
+              "dependencies": ["W3-S8-03"],
+              "deliverable": "Room database cache for offline support",
+              "acceptance": "Local persistence, TTL, offline mode"
+            },
+            {
+              "id": "W3-S8-05",
+              "title": "Create Android SDK example app",
+              "area": "frontend",
+              "owner_role": "Android Eng",
+              "est_hours": 10,
+              "dependencies": ["W3-S8-04"],
+              "deliverable": "Sample Android app with Compose UI",
+              "acceptance": "Jetpack Compose, all features demonstrated"
+            },
+            {
+              "id": "W3-S8-06",
+              "title": "Create JavaScript/TypeScript client library",
+              "area": "frontend",
+              "owner_role": "Frontend Eng",
+              "est_hours": 10,
+              "dependencies": [],
+              "deliverable": "npm package for web/React/React Native",
+              "acceptance": "TypeScript types, axios client, React hooks"
+            },
+            {
+              "id": "W3-S8-07",
+              "title": "Write Android SDK documentation",
+              "area": "product",
+              "owner_role": "Tech Writer",
+              "est_hours": 6,
+              "dependencies": ["W3-S8-05"],
+              "deliverable": "Android SDK docs and integration guide",
+              "acceptance": "Maven Central setup, usage examples, API reference"
+            },
+            {
+              "id": "W3-S8-08",
+              "title": "Write JavaScript client documentation",
+              "area": "product",
+              "owner_role": "Tech Writer",
+              "est_hours": 5,
+              "dependencies": ["W3-S8-06"],
+              "deliverable": "npm package README and docs",
+              "acceptance": "Installation, React integration, API reference"
+            },
+            {
+              "id": "W3-S8-09",
+              "title": "Package Android SDK for Maven Central",
+              "area": "frontend",
+              "owner_role": "Android Eng",
+              "est_hours": 6,
+              "dependencies": ["W3-S8-05"],
+              "deliverable": "Published to Maven Central",
+              "acceptance": "Gradle dependency available, signed artifacts"
+            },
+            {
+              "id": "W3-S8-10",
+              "title": "Publish JavaScript client to npm",
+              "area": "frontend",
+              "owner_role": "Frontend Eng",
+              "est_hours": 4,
+              "dependencies": ["W3-S8-06"],
+              "deliverable": "Published npm package",
+              "acceptance": "npm install @tryambakam/noesis-client works"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "phase_id": "W3-P5",
+      "name": "Wave 3 Phase 5: Advanced Security & Compliance",
+      "objective": "Implement enterprise-grade security, audit logging, and compliance features",
+      "sprints": [
+        {
+          "sprint_id": "W3-S9",
+          "duration_weeks": 2,
+          "focus": "Security hardening and audit logging",
+          "tasks": [
+            {
+              "id": "W3-S9-01",
+              "title": "Implement comprehensive audit logging",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 10,
+              "dependencies": [],
+              "deliverable": "Audit trail for all sensitive operations",
+              "acceptance": "User actions, admin actions, data access logged immutably"
+            },
+            {
+              "id": "W3-S9-02",
+              "title": "Implement data encryption at rest",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 8,
+              "dependencies": [],
+              "deliverable": "Field-level encryption for sensitive data",
+              "acceptance": "Birth data encrypted, key rotation support"
+            },
+            {
+              "id": "W3-S9-03",
+              "title": "Implement API key versioning and rotation",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 8,
+              "dependencies": [],
+              "deliverable": "API key lifecycle management",
+              "acceptance": "Versioned keys, graceful rotation, revocation"
+            },
+            {
+              "id": "W3-S9-04",
+              "title": "Create admin panel API",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 12,
+              "dependencies": ["W3-S9-01"],
+              "deliverable": "Admin endpoints for user management, system monitoring",
+              "acceptance": "Role-based admin access, audit review, user management"
+            },
+            {
+              "id": "W3-S9-05",
+              "title": "Implement rate limit per-engine",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 6,
+              "dependencies": [],
+              "deliverable": "Different rate limits for different engines",
+              "acceptance": "Heavy engines (HD) lower limit, light engines higher"
+            },
+            {
+              "id": "W3-S9-06",
+              "title": "Implement request signing for webhooks",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 8,
+              "dependencies": [],
+              "deliverable": "HMAC signature verification for webhooks",
+              "acceptance": "Signed payloads, signature verification, replay protection"
+            },
+            {
+              "id": "W3-S9-07",
+              "title": "Create security scanning automation",
+              "area": "infra",
+              "owner_role": "DevOps",
+              "est_hours": 8,
+              "dependencies": [],
+              "deliverable": "CI security scanning with cargo-audit, dependency check",
+              "acceptance": "Automated vulnerability scanning on every build"
+            },
+            {
+              "id": "W3-S9-08",
+              "title": "Implement DDoS protection",
+              "area": "infra",
+              "owner_role": "DevOps",
+              "est_hours": 6,
+              "dependencies": [],
+              "deliverable": "Rate limiting at edge, IP blocking",
+              "acceptance": "CloudFlare/AWS Shield integration, automatic mitigation"
+            },
+            {
+              "id": "W3-S9-09",
+              "title": "Write security documentation",
+              "area": "product",
+              "owner_role": "Tech Writer",
+              "est_hours": 6,
+              "dependencies": ["W3-S9-04"],
+              "deliverable": "Security guide for developers and users",
+              "acceptance": "Data handling, encryption, compliance info"
+            },
+            {
+              "id": "W3-S9-10",
+              "title": "Conduct penetration testing",
+              "area": "qa",
+              "owner_role": "Security Eng",
+              "est_hours": 16,
+              "dependencies": ["W3-S9-07"],
+              "deliverable": "Third-party penetration test report",
+              "acceptance": "Professional pentest, critical issues remediated"
+            }
+          ]
+        },
+        {
+          "sprint_id": "W3-S10",
+          "duration_weeks": 2,
+          "focus": "Compliance and data governance",
+          "tasks": [
+            {
+              "id": "W3-S10-01",
+              "title": "Implement GDPR right to erasure",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 8,
+              "dependencies": ["W3-S2-05"],
+              "deliverable": "Complete account deletion with data purging",
+              "acceptance": "All user data deleted, backups purged after retention"
+            },
+            {
+              "id": "W3-S10-02",
+              "title": "Implement GDPR data portability",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 6,
+              "dependencies": ["W3-S2-10"],
+              "deliverable": "Machine-readable data export (JSON/XML)",
+              "acceptance": "Structured export suitable for import elsewhere"
+            },
+            {
+              "id": "W3-S10-03",
+              "title": "Create privacy policy enforcement",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 6,
+              "dependencies": [],
+              "deliverable": "Consent tracking and privacy settings",
+              "acceptance": "Granular consent, opt-out respected, consent history"
+            },
+            {
+              "id": "W3-S10-04",
+              "title": "Implement data retention policies",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 8,
+              "dependencies": ["W3-S10-01"],
+              "deliverable": "Automated data retention and purging",
+              "acceptance": "Configurable retention, automatic cleanup, audit logs"
+            },
+            {
+              "id": "W3-S10-05",
+              "title": "Create compliance reporting",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 8,
+              "dependencies": ["W3-S9-01"],
+              "deliverable": "Compliance dashboard and reports",
+              "acceptance": "GDPR metrics, data subject request tracking"
+            },
+            {
+              "id": "W3-S10-06",
+              "title": "Implement cookie consent management",
+              "area": "frontend",
+              "owner_role": "Frontend Eng",
+              "est_hours": 6,
+              "dependencies": ["W3-S10-03"],
+              "deliverable": "Cookie consent banner and preference center",
+              "acceptance": "GDPR compliant, granular controls, remembers choice"
+            },
+            {
+              "id": "W3-S10-07",
+              "title": "Write compliance documentation",
+              "area": "product",
+              "owner_role": "Tech Writer",
+              "est_hours": 8,
+              "dependencies": ["W3-S10-05"],
+              "deliverable": "GDPR compliance guide, DPA, security overview",
+              "acceptance": "Legal review passed, published on website"
+            },
+            {
+              "id": "W3-S10-08",
+              "title": "Create incident response plan",
+              "area": "product",
+              "owner_role": "Tech Writer",
+              "est_hours": 6,
+              "dependencies": ["W3-S9-10"],
+              "deliverable": "Documented incident response procedures",
+              "acceptance": "Breach notification, escalation, recovery procedures"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "phase_id": "W3-P6",
+      "name": "Wave 3 Phase 6: New Engine Types & Advanced Features",
+      "objective": "Add new consciousness engines and advanced calculation features",
+      "sprints": [
+        {
+          "sprint_id": "W3-S11",
+          "duration_weeks": 2,
+          "focus": "New astrological engines",
+          "tasks": [
+            {
+              "id": "W3-S11-01",
+              "title": "Implement Planetary Hours engine",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 10,
+              "dependencies": [],
+              "deliverable": "Chaldean planetary hours calculation",
+              "acceptance": "Day/night hour calculation, planetary rulership, optimal timing"
+            },
+            {
+              "id": "W3-S11-02",
+              "title": "Implement Electional Astrology engine",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 14,
+              "dependencies": ["W3-S11-01"],
+              "deliverable": "Muhurta - optimal timing selection",
+              "acceptance": "Tithi/constellation analysis for specific activities"
+            },
+            {
+              "id": "W3-S11-03",
+              "title": "Implement Transit tracking engine",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 12,
+              "dependencies": [],
+              "deliverable": "Planetary transits to natal chart",
+              "acceptance": "Current transits, upcoming, aspect detection"
+            },
+            {
+              "id": "W3-S11-04",
+              "title": "Implement Progressions engine",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 10,
+              "dependencies": ["W3-S11-03"],
+              "deliverable": "Secondary progressions calculation",
+              "acceptance": "Day for a year progressions, progressed chart"
+            },
+            {
+              "id": "W3-S11-05",
+              "title": "Implement Solar Return engine",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 8,
+              "dependencies": ["W3-S11-03"],
+              "deliverable": "Varsha Phal - annual solar return",
+              "acceptance": "Yearly predictions based on solar return chart"
+            },
+            {
+              "id": "W3-S11-06",
+              "title": "Create new engines integration tests",
+              "area": "qa",
+              "owner_role": "QA Eng",
+              "est_hours": 10,
+              "dependencies": ["W3-S11-05"],
+              "deliverable": "Tests for all new astrological engines",
+              "acceptance": "Accuracy validation against reference data"
+            },
+            {
+              "id": "W3-S11-07",
+              "title": "Document new engines",
+              "area": "product",
+              "owner_role": "Tech Writer",
+              "est_hours": 6,
+              "dependencies": ["W3-S11-06"],
+              "deliverable": "Context docs for planetary hours, electional, transits",
+              "acceptance": "Calculation methods, use cases, examples"
+            }
+          ]
+        },
+        {
+          "sprint_id": "W3-S12",
+          "duration_weeks": 2,
+          "focus": "Advanced HD and esoteric engines",
+          "tasks": [
+            {
+              "id": "W3-S12-01",
+              "title": "Implement HD Transit tracking",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 10,
+              "dependencies": ["W3-S11-03"],
+              "deliverable": "Human Design daily transits and conditioning",
+              "acceptance": "Sun/Earth transits, gate activations, conditioning themes"
+            },
+            {
+              "id": "W3-S12-02",
+              "title": "Implement HD Cycle tracking",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 10,
+              "dependencies": ["W3-S12-01"],
+              "deliverable": "Saturn return, Uranus opposition, Kiron return",
+              "acceptance": "Life cycle tracking with timing and themes"
+            },
+            {
+              "id": "W3-S12-03",
+              "title": "Implement Gene Keys Hologenetic Profile",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 10,
+              "dependencies": [],
+              "deliverable": "Full hologenetic profile with spheres",
+              "acceptance": "12 sphere calculations, Venus sequence"
+            },
+            {
+              "id": "W3-S12-04",
+              "title": "Implement Asteroid astrology engine",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 10,
+              "dependencies": [],
+              "deliverable": "Ceres, Pallas, Juno, Vesta, Chiron calculations",
+              "acceptance": "Asteroid positions, aspects, meanings"
+            },
+            {
+              "id": "W3-S12-05",
+              "title": "Implement Fixed Stars engine",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 10,
+              "dependencies": [],
+              "deliverable": "Major fixed star alignments",
+              "acceptance": "Aldebaran, Regulus, Spica, etc. parans and alignments"
+            },
+            {
+              "id": "W3-S12-06",
+              "title": "Create esoteric engines tests",
+              "area": "qa",
+              "owner_role": "QA Eng",
+              "est_hours": 8,
+              "dependencies": ["W3-S12-05"],
+              "deliverable": "Tests for HD cycles and esoteric features",
+              "acceptance": "Transit accuracy, cycle timing verified"
+            },
+            {
+              "id": "W3-S12-07",
+              "title": "Document esoteric engines",
+              "area": "product",
+              "owner_role": "Tech Writer",
+              "est_hours": 6,
+              "dependencies": ["W3-S12-06"],
+              "deliverable": "Context docs for HD transits, cycles, asteroids",
+              "acceptance": "Advanced features explained with examples"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "phase_id": "W3-P7",
+      "name": "Wave 3 Phase 7: Integration Ecosystem",
+      "objective": "Build third-party integrations and developer platform",
+      "sprints": [
+        {
+          "sprint_id": "W3-S13",
+          "duration_weeks": 2,
+          "focus": "Third-party integrations",
+          "tasks": [
+            {
+              "id": "W3-S13-01",
+              "title": "Implement Google Calendar integration",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 10,
+              "dependencies": [],
+              "deliverable": "Sync optimal timings to Google Calendar",
+              "acceptance": "OAuth, event creation, transit-based reminders"
+            },
+            {
+              "id": "W3-S13-02",
+              "title": "Implement Apple Calendar integration",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 8,
+              "dependencies": ["W3-S13-01"],
+              "deliverable": "Apple Calendar sync via CalDAV",
+              "acceptance": "iCloud calendar integration, event sync"
+            },
+            {
+              "id": "W3-S13-03",
+              "title": "Implement Zapier integration",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 10,
+              "dependencies": [],
+              "deliverable": "Zapier app for no-code workflows",
+              "acceptance": "Triggers and actions, published Zapier app"
+            },
+            {
+              "id": "W3-S13-04",
+              "title": "Implement webhook system",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 10,
+              "dependencies": [],
+              "deliverable": "User-configurable webhooks for events",
+              "acceptance": "Event subscriptions, delivery retry, signing"
+            },
+            {
+              "id": "W3-S13-05",
+              "title": "Implement Slack integration",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 8,
+              "dependencies": ["W3-S13-04"],
+              "deliverable": "Slack bot for daily guidance",
+              "acceptance": "/command support, scheduled messages, team features"
+            },
+            {
+              "id": "W3-S13-06",
+              "title": "Implement wearable device integration",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 12,
+              "dependencies": [],
+              "deliverable": "Apple Health / Google Fit correlation",
+              "acceptance": "Activity data correlation with biorhythms, sleep analysis"
+            },
+            {
+              "id": "W3-S13-07",
+              "title": "Write integration documentation",
+              "area": "product",
+              "owner_role": "Tech Writer",
+              "est_hours": 6,
+              "dependencies": ["W3-S13-06"],
+              "deliverable": "Integration guides for all platforms",
+              "acceptance": "Setup instructions, OAuth flows, examples"
+            }
+          ]
+        },
+        {
+          "sprint_id": "W3-S14",
+          "duration_weeks": 2,
+          "focus": "Developer platform",
+          "tasks": [
+            {
+              "id": "W3-S14-01",
+              "title": "Create developer portal",
+              "area": "frontend",
+              "owner_role": "Frontend Eng",
+              "est_hours": 12,
+              "dependencies": [],
+              "deliverable": "Web portal for API key management, docs",
+              "acceptance": "Registration, key management, usage dashboard"
+            },
+            {
+              "id": "W3-S14-02",
+              "title": "Implement sandbox environment",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 10,
+              "dependencies": [],
+              "deliverable": "Isolated sandbox API for testing",
+              "acceptance": "Separate data, rate limits, test data"
+            },
+            {
+              "id": "W3-S14-03",
+              "title": "Create API playground",
+              "area": "frontend",
+              "owner_role": "Frontend Eng",
+              "est_hours": 10,
+              "dependencies": ["W3-S14-01"],
+              "deliverable": "Interactive API explorer",
+              "acceptance": "Try-it-now feature, request/response visible"
+            },
+            {
+              "id": "W3-S14-04",
+              "title": "Implement usage quotas and billing",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 12,
+              "dependencies": [],
+              "deliverable": "Tiered pricing with usage tracking",
+              "acceptance": "Free/pro/enterprise tiers, Stripe integration"
+            },
+            {
+              "id": "W3-S14-05",
+              "title": "Create partner program API",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 8,
+              "dependencies": ["W3-S14-04"],
+              "deliverable": "White-label API for partners",
+              "acceptance": "Custom branding, delegated auth, analytics"
+            },
+            {
+              "id": "W3-S14-06",
+              "title": "Write developer documentation",
+              "area": "product",
+              "owner_role": "Tech Writer",
+              "est_hours": 10,
+              "dependencies": ["W3-S14-05"],
+              "deliverable": "Complete developer guide and API reference",
+              "acceptance": "Getting started, authentication, all endpoints"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "phase_id": "W3-P8",
+      "name": "Wave 3 Phase 8: Performance & Scale",
+      "objective": "Optimize performance for 100K+ users and global deployment",
+      "sprints": [
+        {
+          "sprint_id": "W3-S15",
+          "duration_weeks": 2,
+          "focus": "Performance optimization",
+          "tasks": [
+            {
+              "id": "W3-S15-01",
+              "title": "Implement query optimization",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 10,
+              "dependencies": [],
+              "deliverable": "Database query analysis and optimization",
+              "acceptance": "Slow query elimination, index optimization"
+            },
+            {
+              "id": "W3-S15-02",
+              "title": "Implement connection pooling",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 6,
+              "dependencies": [],
+              "deliverable": "Optimized Postgres and Redis connection pools",
+              "acceptance": "Pool sizing, connection reuse, health checks"
+            },
+            {
+              "id": "W3-S15-03",
+              "title": "Implement request batching",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 8,
+              "dependencies": [],
+              "deliverable": "Multi-calculation batch endpoint",
+              "acceptance": "Batch multiple calculations in single request"
+            },
+            {
+              "id": "W3-S15-04",
+              "title": "Implement CDN for static assets",
+              "area": "infra",
+              "owner_role": "DevOps",
+              "est_hours": 6,
+              "dependencies": [],
+              "deliverable": "CloudFront/CloudFlare CDN configuration",
+              "acceptance": "Global edge caching, SSL, compression"
+            },
+            {
+              "id": "W3-S15-05",
+              "title": "Implement database read replicas",
+              "area": "infra",
+              "owner_role": "DevOps",
+              "est_hours": 8,
+              "dependencies": [],
+              "deliverable": "Read replica configuration for scaling",
+              "acceptance": "Read queries routed to replicas, lag monitoring"
+            },
+            {
+              "id": "W3-S15-06",
+              "title": "Implement caching layer optimization",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 8,
+              "dependencies": [],
+              "deliverable": "Optimize L1/L2/L3 cache hit rates",
+              "acceptance": "95%+ hit rate on hot data, eviction policies"
+            },
+            {
+              "id": "W3-S15-07",
+              "title": "Implement async calculation queue",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 10,
+              "dependencies": [],
+              "deliverable": "Redis-based queue for heavy calculations",
+              "acceptance": "Background processing, job status tracking"
+            },
+            {
+              "id": "W3-S15-08",
+              "title": "Create performance benchmarks",
+              "area": "qa",
+              "owner_role": "QA Eng",
+              "est_hours": 8,
+              "dependencies": [],
+              "deliverable": "Comprehensive performance test suite",
+              "acceptance": "Baseline metrics, regression detection"
+            },
+            {
+              "id": "W3-S15-09",
+              "title": "Write performance optimization guide",
+              "area": "product",
+              "owner_role": "Tech Writer",
+              "est_hours": 5,
+              "dependencies": ["W3-S15-08"],
+              "deliverable": "Performance tuning documentation",
+              "acceptance": "Best practices, monitoring, troubleshooting"
+            }
+          ]
+        },
+        {
+          "sprint_id": "W3-S16",
+          "duration_weeks": 2,
+          "focus": "Global scale and reliability",
+          "tasks": [
+            {
+              "id": "W3-S16-01",
+              "title": "Implement multi-region deployment",
+              "area": "infra",
+              "owner_role": "DevOps",
+              "est_hours": 12,
+              "dependencies": [],
+              "deliverable": "Deploy to multiple regions (US, EU, Asia)",
+              "acceptance": "Geo-routing, data residency compliance"
+            },
+            {
+              "id": "W3-S16-02",
+              "title": "Implement disaster recovery",
+              "area": "infra",
+              "owner_role": "DevOps",
+              "est_hours": 10,
+              "dependencies": [],
+              "deliverable": "Automated backup and recovery procedures",
+              "acceptance": "RPO < 1 hour, RTO < 4 hours, tested monthly"
+            },
+            {
+              "id": "W3-S16-03",
+              "title": "Implement circuit breakers",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 8,
+              "dependencies": [],
+              "deliverable": "Circuit breaker pattern for external services",
+              "acceptance": "Fail-fast, graceful degradation, auto-recovery"
+            },
+            {
+              "id": "W3-S16-04",
+              "title": "Implement chaos engineering",
+              "area": "infra",
+              "owner_role": "DevOps",
+              "est_hours": 8,
+              "dependencies": [],
+              "deliverable": "Automated chaos tests in staging",
+              "acceptance": "Regular failure injection, recovery validation"
+            },
+            {
+              "id": "W3-S16-05",
+              "title": "Implement advanced monitoring",
+              "area": "infra",
+              "owner_role": "DevOps",
+              "est_hours": 8,
+              "dependencies": [],
+              "deliverable": "SLO tracking and error budgeting",
+              "acceptance": "99.9% availability SLO, burn rate alerts"
+            },
+            {
+              "id": "W3-S16-06",
+              "title": "Create capacity planning automation",
+              "area": "infra",
+              "owner_role": "DevOps",
+              "est_hours": 6,
+              "dependencies": [],
+              "deliverable": "Auto-scaling policies and capacity forecasting",
+              "acceptance": "Predictive scaling, cost optimization"
+            },
+            {
+              "id": "W3-S16-07",
+              "title": "Write runbooks for all services",
+              "area": "product",
+              "owner_role": "Tech Writer",
+              "est_hours": 10,
+              "dependencies": [],
+              "deliverable": "Operational runbooks for on-call",
+              "acceptance": "Every service has runbook, common issues covered"
+            },
+            {
+              "id": "W3-S16-08",
+              "title": "Conduct load test to 100K users",
+              "area": "qa",
+              "owner_role": "QA Eng",
+              "est_hours": 12,
+              "dependencies": [],
+              "deliverable": "Load test validation at 100K concurrent users",
+              "acceptance": "System stable, latency < 500ms p95"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "phase_id": "W3-P9",
+      "name": "Wave 3 Phase 9: Documentation & Community",
+      "objective": "Complete documentation and build developer community",
+      "sprints": [
+        {
+          "sprint_id": "W3-S17",
+          "duration_weeks": 2,
+          "focus": "Documentation completion",
+          "tasks": [
+            {
+              "id": "W3-S17-01",
+              "title": "Create comprehensive API reference",
+              "area": "product",
+              "owner_role": "Tech Writer",
+              "est_hours": 12,
+              "dependencies": [],
+              "deliverable": "Complete OpenAPI 3.0 specification",
+              "acceptance": "All endpoints, schemas, examples documented"
+            },
+            {
+              "id": "W3-S17-02",
+              "title": "Write integration guides",
+              "area": "product",
+              "owner_role": "Tech Writer",
+              "est_hours": 10,
+              "dependencies": [],
+              "deliverable": "Step-by-step guides for common integrations",
+              "acceptance": "Web, mobile, webhook integration guides"
+            },
+            {
+              "id": "W3-S17-03",
+              "title": "Create video tutorials",
+              "area": "product",
+              "owner_role": "Tech Writer",
+              "est_hours": 12,
+              "dependencies": [],
+              "deliverable": "Video tutorial series for developers",
+              "acceptance": "Getting started, authentication, common patterns"
+            },
+            {
+              "id": "W3-S17-04",
+              "title": "Write architecture decision records",
+              "area": "product",
+              "owner_role": "Tech Writer",
+              "est_hours": 8,
+              "dependencies": [],
+              "deliverable": "Document all major architecture decisions",
+              "acceptance": "ADRs for key design choices, rationale"
+            },
+            {
+              "id": "W3-S17-05",
+              "title": "Create troubleshooting guide",
+              "area": "product",
+              "owner_role": "Tech Writer",
+              "est_hours": 8,
+              "dependencies": [],
+              "deliverable": "Comprehensive troubleshooting documentation",
+              "acceptance": "Common errors, solutions, debugging steps"
+            },
+            {
+              "id": "W3-S17-06",
+              "title": "Write contribution guidelines",
+              "area": "product",
+              "owner_role": "Tech Writer",
+              "est_hours": 6,
+              "dependencies": [],
+              "deliverable": "CONTRIBUTING.md and development setup",
+              "acceptance": "PR process, code standards, local setup"
+            },
+            {
+              "id": "W3-S17-07",
+              "title": "Create changelog process",
+              "area": "product",
+              "owner_role": "Tech Writer",
+              "est_hours": 4,
+              "dependencies": [],
+              "deliverable": "Automated changelog generation",
+              "acceptance": "Keep a Changelog format, automated releases"
+            }
+          ]
+        },
+        {
+          "sprint_id": "W3-S18",
+          "duration_weeks": 2,
+          "focus": "Community and ecosystem",
+          "tasks": [
+            {
+              "id": "W3-S18-01",
+              "title": "Create example applications",
+              "area": "frontend",
+              "owner_role": "Frontend Eng",
+              "est_hours": 12,
+              "dependencies": [],
+              "deliverable": "3 complete example apps (web, iOS, Android)",
+              "acceptance": "Open source, well-documented, demonstrate features"
+            },
+            {
+              "id": "W3-S18-02",
+              "title": "Set up community Discord/Forum",
+              "area": "product",
+              "owner_role": "Community Manager",
+              "est_hours": 6,
+              "dependencies": [],
+              "deliverable": "Developer community platform",
+              "acceptance": "Channels, moderation, welcome bot"
+            },
+            {
+              "id": "W3-S18-03",
+              "title": "Create plugin system",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 14,
+              "dependencies": [],
+              "deliverable": "Extensible plugin architecture for custom engines",
+              "acceptance": "Plugin API, lifecycle management, examples"
+            },
+            {
+              "id": "W3-S18-04",
+              "title": "Launch partner program",
+              "area": "product",
+              "owner_role": "Community Manager",
+              "est_hours": 8,
+              "dependencies": [],
+              "deliverable": "Formal partner program with benefits",
+              "acceptance": "Application process, tiers, support"
+            },
+            {
+              "id": "W3-S18-05",
+              "title": "Create certification program",
+              "area": "product",
+              "owner_role": "Community Manager",
+              "est_hours": 10,
+              "dependencies": [],
+              "deliverable": "Developer certification for API proficiency",
+              "acceptance": "Exam, certification, badge program"
+            },
+            {
+              "id": "W3-S18-06",
+              "title": "Plan and execute launch event",
+              "area": "product",
+              "owner_role": "Community Manager",
+              "est_hours": 12,
+              "dependencies": [],
+              "deliverable": "Public launch event for Wave 3 features",
+              "acceptance": "Webinar, demo, Q&A, press release"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "phase_id": "W3-P10",
+      "name": "Wave 3 Phase 10: Final Integration & Launch",
+      "objective": "Final testing, integration, and production launch of Wave 3",
+      "sprints": [
+        {
+          "sprint_id": "W3-S19",
+          "duration_weeks": 2,
+          "focus": "Integration testing and QA",
+          "tasks": [
+            {
+              "id": "W3-S19-01",
+              "title": "Execute full integration test suite",
+              "area": "qa",
+              "owner_role": "QA Eng",
+              "est_hours": 16,
+              "dependencies": [],
+              "deliverable": "End-to-end test of all Wave 3 features",
+              "acceptance": "All critical paths tested, 95%+ pass rate"
+            },
+            {
+              "id": "W3-S19-02",
+              "title": "Perform security audit",
+              "area": "qa",
+              "owner_role": "Security Eng",
+              "est_hours": 16,
+              "dependencies": [],
+              "deliverable": "Comprehensive security review",
+              "acceptance": "No critical vulnerabilities, medium issues tracked"
+            },
+            {
+              "id": "W3-S19-03",
+              "title": "Conduct accessibility audit",
+              "area": "qa",
+              "owner_role": "QA Eng",
+              "est_hours": 8,
+              "dependencies": [],
+              "deliverable": "WCAG 2.1 AA compliance verification",
+              "acceptance": "Automated + manual testing, issues remediated"
+            },
+            {
+              "id": "W3-S19-04",
+              "title": "Perform data migration testing",
+              "area": "qa",
+              "owner_role": "QA Eng",
+              "est_hours": 8,
+              "dependencies": [],
+              "deliverable": "Verify data migration from Wave 2",
+              "acceptance": "Zero data loss, integrity verified"
+            },
+            {
+              "id": "W3-S19-05",
+              "title": "Execute performance validation",
+              "area": "qa",
+              "owner_role": "QA Eng",
+              "est_hours": 8,
+              "dependencies": [],
+              "deliverable": "Load and stress testing final validation",
+              "acceptance": "SLAs met under expected load"
+            },
+            {
+              "id": "W3-S19-06",
+              "title": "Create rollback procedures",
+              "area": "infra",
+              "owner_role": "DevOps",
+              "est_hours": 6,
+              "dependencies": [],
+              "deliverable": "Documented rollback plan for all services",
+              "acceptance": "Tested rollback, < 30 min recovery"
+            }
+          ]
+        },
+        {
+          "sprint_id": "W3-S20",
+          "duration_weeks": 2,
+          "focus": "Launch and post-launch",
+          "tasks": [
+            {
+              "id": "W3-S20-01",
+              "title": "Execute phased rollout",
+              "area": "infra",
+              "owner_role": "DevOps",
+              "est_hours": 10,
+              "dependencies": ["W3-S19-06"],
+              "deliverable": "Canary deployment to production",
+              "acceptance": "1% → 10% → 50% → 100% rollout with monitoring"
+            },
+            {
+              "id": "W3-S20-02",
+              "title": "Monitor production metrics",
+              "area": "infra",
+              "owner_role": "DevOps",
+              "est_hours": 8,
+              "dependencies": ["W3-S20-01"],
+              "deliverable": "24/7 monitoring during launch week",
+              "acceptance": "Dashboards, alerts, on-call rotation"
+            },
+            {
+              "id": "W3-S20-03",
+              "title": "Collect and analyze user feedback",
+              "area": "product",
+              "owner_role": "Product Manager",
+              "est_hours": 6,
+              "dependencies": ["W3-S20-01"],
+              "deliverable": "Feedback collection and analysis",
+              "acceptance": "NPS survey, feedback categorization, action items"
+            },
+            {
+              "id": "W3-S20-04",
+              "title": "Create post-launch hotfix process",
+              "area": "infra",
+              "owner_role": "DevOps",
+              "est_hours": 4,
+              "dependencies": ["W3-S20-01"],
+              "deliverable": "Fast-track hotfix deployment process",
+              "acceptance": "Emergency deployment, < 1 hour to production"
+            },
+            {
+              "id": "W3-S20-05",
+              "title": "Write Wave 3 retrospective",
+              "area": "product",
+              "owner_role": "Product Manager",
+              "est_hours": 6,
+              "dependencies": ["W3-S20-03"],
+              "deliverable": "Detailed retrospective document",
+              "acceptance": "Wins, lessons learned, improvement actions"
+            },
+            {
+              "id": "W3-S20-06",
+              "title": "Update all documentation for launch",
+              "area": "product",
+              "owner_role": "Tech Writer",
+              "est_hours": 8,
+              "dependencies": ["W3-S20-01"],
+              "deliverable": "Final documentation updates",
+              "acceptance": "All docs current, changelog updated"
+            },
+            {
+              "id": "W3-S20-07",
+              "title": "Celebrate team and communicate success",
+              "area": "product",
+              "owner_role": "Product Manager",
+              "est_hours": 4,
+              "dependencies": ["W3-S20-05"],
+              "deliverable": "Team recognition and public communication",
+              "acceptance": "Internal celebration, blog post, social media"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

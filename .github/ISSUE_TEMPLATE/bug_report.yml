@@ -1,0 +1,99 @@
+name: Bug Report
+description: File a bug report for Selemene Engine
+title: "[BUG] "
+labels: ["bug", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting a bug! Please fill out the sections below.
+
+  - type: dropdown
+    id: engine
+    attributes:
+      label: Affected Engine
+      description: Which consciousness engine is affected?
+      options:
+        - Human Design
+        - Gene Keys
+        - Vimshottari Dasha
+        - Panchanga
+        - Numerology
+        - Biorhythm
+        - Vedic Clock
+        - Biofield
+        - Face Reading
+        - Integration Layer
+        - API/Core
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Bug Description
+      description: Clear description of what the bug is
+      placeholder: "Example: Vimshottari dasha calculation returns incorrect sub-periods for birth dates before 1950"
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to Reproduce
+      description: How can we reproduce this?
+      placeholder: |
+        1. Send POST request to /api/v1/vimshottari with birth_date: "1945-01-15"
+        2. Observe sub-period calculations
+        3. Compare with reference ephemeris
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      description: What should happen?
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual Behavior
+      description: What actually happens?
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: What version of Selemene Engine?
+      placeholder: "v2.1.0"
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: OS, Docker version, etc.
+      placeholder: |
+        - OS: macOS 14.2
+        - Docker: 24.0.6
+        - Deployment: Local / Docker / Cloud
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant Logs
+      description: Please paste any relevant logs
+      render: shell
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional Context
+      description: Any other context about the problem

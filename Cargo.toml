@@ -1,3 +1,14 @@
+[package]
+name = "selemene-engine"
+version = "2.1.0"
+edition = "2021"
+authors = ["Selemene Team"]
+description = "High-performance consciousness calculation engine with 14+ systems"
+repository = "https://github.com/Sheshiyer/Selemene-engine"
+license = "MIT"
+keywords = ["astrology", "consciousness", "vedic", "human-design", "gene-keys"]
+categories = ["science", "api-bindings"]
+
 [workspace]
 resolver = "2"
 members = [
@@ -10,6 +21,9 @@ members = [
     "crates/noesis-orchestrator",
     "crates/noesis-bridge",
     "crates/noesis-api",
+    "crates/noesis-vedic-api",
+    "crates/noesis-integration",
+    # Vedic astrology API integration (FreeAstrologyAPI.com)
 
     # Rust consciousness engines
     "crates/engine-panchanga",

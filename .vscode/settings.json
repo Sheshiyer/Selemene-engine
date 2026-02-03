@@ -2,5 +2,8 @@
     "chat.tools.terminal.autoApprove": {
         "cargo run": true
     },
-    "git.ignoreLimitWarning": true
+    "git.ignoreLimitWarning": true,
+    "chat.viewWelcome.enabled": true,
+    "inlineChat.enableV2": true,
+    "inlineChat.notebookAgent": true
 }

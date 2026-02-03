@@ -628,3 +628,234 @@ The Tryambakam Noesis engine is now production-ready with:
   3. Checks: env var `SWISS_EPHE_PATH`, then relative paths, then absolute fallback
 - **Result**: All 72 HD tests now passing
 - **Note**: Tests must run single-threaded (`--test-threads=1`) due to Swiss Ephemeris thread safety
+
+## [2026-02-03 09:48:58] Task Completed: Codebase indexing and analysis
+- **Outcome**: Task marked complete and archived from todo list
+- **Breakthrough**: N/A (historical task already documented)
+- **Errors Fixed**: None
+- **Code Changes**: None in this update
+- **Next Dependencies**: Historical context only
+
+## [2026-02-03 09:48:58] Task Completed: Index and analyze codebase structure
+- **Outcome**: Task marked complete and archived from todo list
+- **Breakthrough**: N/A (historical task already documented)
+- **Errors Fixed**: None
+- **Code Changes**: None in this update
+- **Next Dependencies**: Historical context only
+
+## [2026-02-03 09:48:58] Task Completed: Create comprehensive codebase summary
+- **Outcome**: Task marked complete and archived from todo list
+- **Breakthrough**: N/A (historical task already documented)
+- **Errors Fixed**: None
+- **Code Changes**: None in this update
+- **Next Dependencies**: Historical context only
+
+## [2026-02-03 09:48:58] Task Completed: Identify areas for improvement and optimization
+- **Outcome**: Task marked complete and archived from todo list
+- **Breakthrough**: N/A (historical task already documented)
+- **Errors Fixed**: None
+- **Code Changes**: None in this update
+- **Next Dependencies**: Historical context only
+
+## [2026-02-03 09:48:58] Task Completed: Update project documentation and architecture
+- **Outcome**: Task marked complete and archived from todo list
+- **Breakthrough**: N/A (historical task already documented)
+- **Errors Fixed**: None
+- **Code Changes**: None in this update
+- **Next Dependencies**: Historical context only
+
+## [2026-02-03 09:48:58] Task Completed: Define Ghati Calculation Standards
+- **Outcome**: Task marked complete and archived from todo list
+- **Breakthrough**: N/A (historical task already documented)
+- **Errors Fixed**: None
+- **Code Changes**: None in this update
+- **Next Dependencies**: Historical context only
+
+## [2026-02-03 09:48:58] Task Completed: Implement Core Time Conversion
+- **Outcome**: Task marked complete and archived from todo list
+- **Breakthrough**: N/A (historical task already documented)
+- **Errors Fixed**: None
+- **Code Changes**: None in this update
+- **Next Dependencies**: Historical context only
+
+## [2026-02-03 09:48:58] Task Completed: Integrate with Panchanga
+- **Outcome**: Task marked complete and archived from todo list
+- **Breakthrough**: N/A (historical task already documented)
+- **Errors Fixed**: None
+- **Code Changes**: None in this update
+- **Next Dependencies**: Historical context only
+
+## [2026-02-03 09:48:58] Task Completed: Add Real-Time Features
+- **Outcome**: Task marked complete and archived from todo list
+- **Breakthrough**: N/A (historical task already documented)
+- **Errors Fixed**: None
+- **Code Changes**: None in this update
+- **Next Dependencies**: Historical context only
+
+## [2026-02-03 09:48:58] Task Completed: Create API Endpoints
+- **Outcome**: Task marked complete and archived from todo list
+- **Breakthrough**: N/A (historical task already documented)
+- **Errors Fixed**: None
+- **Code Changes**: None in this update
+- **Next Dependencies**: Historical context only
+
+## [2026-02-03 09:51:42] Task Completed: FAPI-007 Add request/response logging
+- **Outcome**: Added logging helpers and wired client request/response logging with masked API key
+- **Breakthrough**: Centralized structured logging for requests, responses, and errors
+- **Errors Fixed**: None
+- **Code Changes**: Added `crates/noesis-vedic-api/src/logging.rs`; updated `crates/noesis-vedic-api/src/lib.rs`; updated `crates/noesis-vedic-api/src/client.rs`
+- **Next Dependencies**: Client unit tests (FAPI-010) can now assert logging without exposing secrets
+
+## [2026-02-03 09:54:25] Task Completed: FAPI-010 Client unit tests
+- **Outcome**: Added wiremock-based integration tests covering auth header, success parsing, and error mapping
+- **Breakthrough**: Deterministic Panchang response test data constructed directly from domain types
+- **Errors Fixed**: None
+- **Code Changes**: Added `crates/noesis-vedic-api/tests/client_tests.rs`
+- **Next Dependencies**: Panchang DTO/tests and higher-level integration tests can reuse fixtures
+
+## [2026-02-03 10:28:46] Task Completed: FAPI-028 Panchang DTO
+- **Outcome**: Added comprehensive request/response DTOs for Panchang payloads
+- **Breakthrough**: Defined flexible response envelope with optional data/result/output variants
+- **Errors Fixed**: None
+- **Code Changes**: Added `crates/noesis-vedic-api/src/panchang/dto.rs`; updated `crates/noesis-vedic-api/src/panchang/mod.rs`
+- **Next Dependencies**: Panchang API integration tests can serialize/deserialize DTOs
+
+## [2026-02-03 10:30:06] Task Completed: FAPI-029 Panchang API integration tests
+- **Outcome**: Added cached Panchang integration tests verifying cache reuse and date-based keying
+- **Breakthrough**: Wiremock used to validate request count without external API
+- **Errors Fixed**: None
+- **Code Changes**: Added `crates/noesis-vedic-api/tests/panchang_tests.rs`
+- **Next Dependencies**: Vimshottari query/enrichment and validation tests
+
+## [2026-02-03 10:31:32] Task Completed: FAPI-041 Vimshottari query
+- **Outcome**: Added query helpers to locate dasha period/lord by date
+- **Breakthrough**: Recursive traversal supports nested sub-periods by level
+- **Errors Fixed**: None
+- **Code Changes**: Added `crates/noesis-vedic-api/src/vimshottari/query.rs`, `crates/noesis-vedic-api/src/vimshottari/mod.rs`, updated `crates/noesis-vedic-api/src/lib.rs`
+- **Next Dependencies**: Vimshottari validation tests and enrichment can use query helpers
+
+## [2026-02-03 10:32:19] Task Completed: FAPI-042 Vimshottari validation tests
+- **Outcome**: Added validation tests for dasha period and lord lookup by date
+- **Breakthrough**: Test fixture models nested Mahadasha/Antardasha periods
+- **Errors Fixed**: None
+- **Code Changes**: Added `crates/noesis-vedic-api/tests/vimshottari_validation.rs`
+- **Next Dependencies**: Vimshottari enrichment module
+
+## [2026-02-03 10:33:53] Task Completed: FAPI-043 Vimshottari enrichment
+- **Outcome**: Added enrichment layer for dasha periods backed by embedded wisdom data
+- **Breakthrough**: Compile-time embedding of vimshottari_periods.json with OnceLock caching
+- **Errors Fixed**: None
+- **Code Changes**: Added `crates/noesis-vedic-api/src/vimshottari/enrichment.rs`
+- **Next Dependencies**: Birth chart dignities/status/aspects
+
+## [2026-02-03 10:35:20] Task Completed: FAPI-049 Birth chart dignities
+- **Outcome**: Added dignity computation for planets (exalted/debilitated/moolatrikona/own/neutral)
+- **Breakthrough**: Centralized dignity helpers with chart-wide aggregation
+- **Errors Fixed**: None
+- **Code Changes**: Added `crates/noesis-vedic-api/src/birth_chart/dignities.rs`, `crates/noesis-vedic-api/src/birth_chart/mod.rs`; updated `crates/noesis-vedic-api/src/lib.rs`
+- **Next Dependencies**: Retrograde/combust status and aspect calculations
+
+## [2026-02-03 10:36:19] Task Completed: FAPI-050 Birth chart retrograde/combust status
+- **Outcome**: Added status helpers for retrograde and combustion with angular orb calculation
+- **Breakthrough**: Combustion thresholds encoded per planet with reusable distance helper
+- **Errors Fixed**: None
+- **Code Changes**: Added `crates/noesis-vedic-api/src/birth_chart/status.rs`
+- **Next Dependencies**: Aspect calculations and birth chart validations
+
+## [2026-02-03 10:37:11] Task Completed: FAPI-051 Birth chart aspects
+- **Outcome**: Added aspect detection with orb thresholds for major aspects
+- **Breakthrough**: Centralized aspect calculations with reusable angular distance helper
+- **Errors Fixed**: None
+- **Code Changes**: Added `crates/noesis-vedic-api/src/birth_chart/aspects.rs`
+- **Next Dependencies**: Birth chart validation tests
+
+## [2026-02-03 10:38:15] Task Completed: FAPI-052 Birth chart validation tests
+- **Outcome**: Added validation tests covering dignities, combustion, and aspects
+- **Breakthrough**: Compact fixture chart exercises all birth chart helper modules
+- **Errors Fixed**: None
+- **Code Changes**: Added `crates/noesis-vedic-api/tests/birth_chart_validation.rs`
+- **Next Dependencies**: Navamsa types/mappers and varga implementations
+
+## [2026-02-03 10:39:15] Task Completed: FAPI-053 Navamsa types
+- **Outcome**: Added Navamsa DTO types and Vargas module scaffold
+- **Breakthrough**: Unified varga entry point for upcoming D9/D12/D7 work
+- **Errors Fixed**: None
+- **Code Changes**: Added `crates/noesis-vedic-api/src/vargas/navamsa_types.rs`, `crates/noesis-vedic-api/src/vargas/mod.rs`; updated `crates/noesis-vedic-api/src/lib.rs`
+- **Next Dependencies**: Navamsa mappers and varga implementations
+
+## [2026-02-03 10:40:20] Task Completed: FAPI-055 Navamsa mappers
+- **Outcome**: Added DTO-to-domain mapping for Navamsa chart with sign parsing
+- **Breakthrough**: Centralized mapping preserves vargottama and lagna from API DTOs
+- **Errors Fixed**: None
+- **Code Changes**: Added `crates/noesis-vedic-api/src/vargas/navamsa_mappers.rs`
+- **Next Dependencies**: D12/D7 varga implementations and Navamsa validation tests
+
+## [2026-02-03 10:41:11] Task Completed: FAPI-059 D12 (Dwadasamsa) implementation
+- **Outcome**: Added Dwadasamsa chart model and calculation helper
+- **Breakthrough**: Deterministic D12 sign mapping per 2.5° division
+- **Errors Fixed**: None
+- **Code Changes**: Added `crates/noesis-vedic-api/src/vargas/dwadasamsa.rs`
+- **Next Dependencies**: D7 Saptamsa implementation and Navamsa validation tests
+
+## [2026-02-03 10:41:56] Task Completed: FAPI-060 D7 (Saptamsa) implementation
+- **Outcome**: Added Saptamsa chart model and calculation helper with odd/even sign logic
+- **Breakthrough**: Encoded Aries/Libra start rule for D7 mapping
+- **Errors Fixed**: None
+- **Code Changes**: Added `crates/noesis-vedic-api/src/vargas/saptamsa.rs`
+- **Next Dependencies**: Navamsa validation tests and progression features
+
+## [2026-02-03 10:42:35] Task Completed: FAPI-062 Navamsa validation tests
+- **Outcome**: Added Navamsa calculation and DTO mapping tests
+- **Breakthrough**: Validated D9 sign calculation via built-in helper
+- **Errors Fixed**: None
+- **Code Changes**: Added `crates/noesis-vedic-api/tests/navamsa_tests.rs`
+- **Next Dependencies**: Progression types and API implementation
+
+## [2026-02-03 10:43:32] Task Completed: FAPI-079 Progression types
+- **Outcome**: Added progression request/response types and module scaffolding
+- **Breakthrough**: Defined core progression methods for secondary and solar-arc progressions
+- **Errors Fixed**: None
+- **Code Changes**: Added `crates/noesis-vedic-api/src/progressions/types.rs`, `crates/noesis-vedic-api/src/progressions/mod.rs`; updated `crates/noesis-vedic-api/src/lib.rs`
+- **Next Dependencies**: Progression API implementation
+
+## [2026-02-03 10:44:33] Task Completed: FAPI-080 Progression API
+- **Outcome**: Implemented progression calculation with solar arc/secondary approximations
+- **Breakthrough**: Progressed planet longitudes derived from birth chart + year offset
+- **Errors Fixed**: None
+- **Code Changes**: Added `crates/noesis-vedic-api/src/progressions/api.rs`
+- **Next Dependencies**: Vedic clock API integrations
+
+## [2026-02-03 10:48:21] Task Completed: FAPI-087 Vedic clock organ clock API integration
+- **Outcome**: Added async API-backed temporal recommendation helper using FreeAstrologyAPI Panchang
+- **Breakthrough**: Converted Panchang tithi/nakshatra into organ clock indices for recommendation
+- **Errors Fixed**: None
+- **Code Changes**: Added `crates/engine-vedic-clock/src/organ_clock.rs`; updated `crates/engine-vedic-clock/src/lib.rs`; updated `crates/engine-vedic-clock/Cargo.toml`
+- **Next Dependencies**: Hora/Choghadiya integration and unified service layer
+
+## [2026-02-03 10:48:21] Task Completed: FAPI-088 Vedic clock hora integration
+- **Outcome**: Added Hora-based activity recommendation mapper
+- **Breakthrough**: Reused Hora planet activity lists to enrich Vedic clock activities
+- **Errors Fixed**: None
+- **Code Changes**: Added `crates/engine-vedic-clock/src/hora_integration.rs`; updated `crates/engine-vedic-clock/src/lib.rs`
+- **Next Dependencies**: Choghadiya and Panchang integration
+
+## [2026-02-03 10:48:21] Task Completed: FAPI-089 Vedic clock choghadiya integration
+- **Outcome**: Added Choghadiya-based activity recommendation mapper
+- **Breakthrough**: Mapped ActivityCategory into readable labels for recommendations
+- **Errors Fixed**: None
+- **Code Changes**: Added `crates/engine-vedic-clock/src/choghadiya_integration.rs`; updated `crates/engine-vedic-clock/src/lib.rs`
+- **Next Dependencies**: Panchang integration combining Hora + Choghadiya
+
+## [2026-02-03 10:48:21] Task Completed: FAPI-090 Vedic clock panchang integration
+- **Outcome**: Added CompletePanchang-to-TemporalRecommendation aggregator
+- **Breakthrough**: Combined organ clock, Hora, and Choghadiya recommendations into one output
+- **Errors Fixed**: None
+- **Code Changes**: Added `crates/engine-vedic-clock/src/panchang_integration.rs`; updated `crates/engine-vedic-clock/src/lib.rs`
+- **Next Dependencies**: Unified Vedic API service and integration tests
+
+## [2026-02-03 10:50:00] Task Completed: FAPI-092 Unified Vedic API service
+- **Outcome**: Added VedicApiService wrapper to centralize cached client access
+- **Breakthrough**: Consolidated Panchang/Dasha/Chart/Navamsa access through single service API
+- **Errors Fixed**: None
+- **Code Changes**: Added `crates/noesis-vedic-api/src/service.rs`; updated `crates/noesis-vedic-api/src/lib.rs`
+- **Next Dependencies**: Test mocks and integration tests
