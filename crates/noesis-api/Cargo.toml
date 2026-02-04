@@ -26,7 +26,9 @@ engine-vimshottari = { path = "../engine-vimshottari" }
 engine-biofield = { path = "../engine-biofield" }
 engine-vedic-clock = { path = "../engine-vedic-clock" }
 axum = { version = "0.7", features = ["json", "macros"] }
+uuid = { version = "1.7", features = ["serde", "v4"] }
 tokio = { version = "1.0", features = ["full"] }
+sqlx = { version = "0.7", features = ["postgres", "runtime-tokio-rustls", "uuid", "chrono", "json", "macros"] }
 tower = "0.5"
 tower-http = { version = "0.6", features = ["cors", "trace"] }
 serde = { version = "1.0", features = ["derive"] }

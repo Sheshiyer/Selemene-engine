@@ -12,24 +12,26 @@ use axum::{
     http::{header, Request, StatusCode},
     Router,
 };
-use noesis_api::{build_app_state, create_router, ApiConfig};
+use noesis_api::{build_app_state_lazy_db, create_router, ApiConfig};
 use noesis_auth::AuthService;
 use serde_json::{json, Value};
-use std::sync::OnceLock;
+use tokio::sync::OnceCell;
 use tower::ServiceExt;
 
 // ---------------------------------------------------------------------------
 // Test fixtures
 // ---------------------------------------------------------------------------
 
-static WORKFLOW_TEST_ROUTER: OnceLock<Router> = OnceLock::new();
+static WORKFLOW_TEST_ROUTER: OnceCell<Router> = OnceCell::const_new();
 
-fn get_test_router() -> &'static Router {
-    WORKFLOW_TEST_ROUTER.get_or_init(|| {
-        let config = ApiConfig::from_env();
-        let state = build_app_state(&config);
-        create_router(state, &config)
-    })
+async fn get_test_router() -> &'static Router {
+    WORKFLOW_TEST_ROUTER
+        .get_or_init(|| async {
+            let config = ApiConfig::from_env();
+            let state = build_app_state_lazy_db(&config).await;
+            create_router(state, &config)
+        })
+        .await
 }
 
 fn generate_test_token(consciousness_level: u8) -> String {
@@ -152,7 +154,7 @@ fn create_vimshottari_input_with_moon() -> Value {
 
 #[tokio::test]
 async fn test_engine_list_includes_gene_keys_and_vimshottari() {
-    let router = get_test_router();
+    let router = get_test_router().await;
     let token = generate_test_token(5);
 
     let (status, body) = authenticated_get(router, "/api/v1/engines", &token).await;
@@ -180,7 +182,7 @@ async fn test_engine_list_includes_gene_keys_and_vimshottari() {
 
 #[tokio::test]
 async fn test_gene_keys_engine_info() {
-    let router = get_test_router();
+    let router = get_test_router().await;
     let token = generate_test_token(5);
 
     let (status, body) =
@@ -194,7 +196,7 @@ async fn test_gene_keys_engine_info() {
 
 #[tokio::test]
 async fn test_vimshottari_engine_info() {
-    let router = get_test_router();
+    let router = get_test_router().await;
     let token = generate_test_token(5);
 
     let (status, body) =
@@ -212,7 +214,7 @@ async fn test_vimshottari_engine_info() {
 
 #[tokio::test]
 async fn test_gene_keys_calculate_with_gates() {
-    let router = get_test_router();
+    let router = get_test_router().await;
     let token = generate_test_token(5);
     let input = create_gene_keys_input_with_gates();
 
@@ -277,7 +279,7 @@ async fn test_gene_keys_calculate_with_gates() {
 
 #[tokio::test]
 async fn test_vimshottari_calculate_with_moon_longitude() {
-    let router = get_test_router();
+    let router = get_test_router().await;
     let token = generate_test_token(5);
     let input = create_vimshottari_input_with_moon();
 
@@ -359,7 +361,7 @@ async fn test_vimshottari_calculate_with_moon_longitude() {
 
 #[tokio::test]
 async fn test_birth_blueprint_workflow_includes_gene_keys() {
-    let router = get_test_router();
+    let router = get_test_router().await;
     let token = generate_test_token(5);
 
     // Check workflow definition
@@ -392,7 +394,7 @@ async fn test_birth_blueprint_workflow_includes_gene_keys() {
 
 #[tokio::test]
 async fn test_full_spectrum_workflow_includes_new_engines() {
-    let router = get_test_router();
+    let router = get_test_router().await;
     let token = generate_test_token(5);
 
     let (status, body) = authenticated_get(
@@ -420,7 +422,7 @@ async fn test_full_spectrum_workflow_includes_new_engines() {
 
 #[tokio::test]
 async fn test_self_inquiry_workflow_includes_gene_keys() {
-    let router = get_test_router();
+    let router = get_test_router().await;
     let token = generate_test_token(5);
 
     let (status, body) = authenticated_get(
@@ -444,7 +446,7 @@ async fn test_self_inquiry_workflow_includes_gene_keys() {
 
 #[tokio::test]
 async fn test_birth_blueprint_workflow_execute() {
-    let router = get_test_router();
+    let router = get_test_router().await;
     let token = generate_test_token(5);
     let input = create_birth_input();
 
@@ -512,7 +514,7 @@ async fn test_birth_blueprint_workflow_execute() {
 
 #[tokio::test]
 async fn test_gene_keys_phase_gated_at_level_1() {
-    let router = get_test_router();
+    let router = get_test_router().await;
     let token = generate_test_token(1); // Phase 1 - below gene-keys requirement of 2
     let input = create_gene_keys_input_with_gates();
 
@@ -535,7 +537,7 @@ async fn test_gene_keys_phase_gated_at_level_1() {
 
 #[tokio::test]
 async fn test_vimshottari_phase_gated_at_level_1() {
-    let router = get_test_router();
+    let router = get_test_router().await;
     let token = generate_test_token(1);
     let input = create_vimshottari_input_with_moon();
 
@@ -562,7 +564,7 @@ async fn test_vimshottari_phase_gated_at_level_1() {
 
 #[tokio::test]
 async fn test_health_shows_engine_count() {
-    let router = get_test_router();
+    let router = get_test_router().await;
 
     let request = Request::builder()
         .method("GET")

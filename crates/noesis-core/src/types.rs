@@ -16,15 +16,21 @@ pub struct EngineInput {
     #[cfg_attr(feature = "openapi", schema(nullable = true))]
     pub birth_data: Option<BirthData>,
     /// Current timestamp for time-based calculations
+    #[serde(default = "default_current_time")]
     pub current_time: DateTime<Utc>,
     /// Geographic location
     #[cfg_attr(feature = "openapi", schema(nullable = true))]
     pub location: Option<Coordinates>,
     /// Calculation precision level
+    #[serde(default)]
     pub precision: Precision,
     /// Engine-specific options
     #[serde(default)]
     pub options: HashMap<String, Value>,
+}
+
+fn default_current_time() -> DateTime<Utc> {
+    Utc::now()
 }
 
 /// Output from any consciousness engine

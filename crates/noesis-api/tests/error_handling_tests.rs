@@ -9,25 +9,27 @@ use axum::{
     http::{header, Request, StatusCode},
     Router,
 };
-use noesis_api::{build_app_state, create_router, ApiConfig};
+use noesis_api::{build_app_state_lazy_db, create_router, ApiConfig};
 use noesis_auth::AuthService;
 use noesis_core::EngineInput;
 use serde_json::{json, Value};
-use std::sync::OnceLock;
+use tokio::sync::OnceCell;
 use tower::ServiceExt;
 
 // ---------------------------------------------------------------------------
 // Test fixtures (shared singleton router)
 // ---------------------------------------------------------------------------
 
-static ERROR_TEST_ROUTER: OnceLock<Router> = OnceLock::new();
+static ERROR_TEST_ROUTER: OnceCell<Router> = OnceCell::const_new();
 
-fn get_router() -> &'static Router {
-    ERROR_TEST_ROUTER.get_or_init(|| {
-        let config = ApiConfig::from_env();
-        let state = build_app_state(&config);
-        create_router(state, &config)
-    })
+async fn get_router() -> &'static Router {
+    ERROR_TEST_ROUTER
+        .get_or_init(|| async {
+            let config = ApiConfig::from_env();
+            let state = build_app_state_lazy_db(&config).await;
+            create_router(state, &config)
+        })
+        .await
 }
 
 fn generate_token(consciousness_level: u8) -> String {
@@ -71,7 +73,7 @@ async fn send_authenticated(
     token: &str,
     body: Option<Value>,
 ) -> (StatusCode, axum::http::HeaderMap, Value) {
-    let router = get_router();
+    let router = get_router().await;
     let request_builder = Request::builder()
         .method(method)
         .uri(uri)
@@ -108,7 +110,7 @@ async fn send_unauthenticated(
     uri: &str,
     body: Option<Value>,
 ) -> (StatusCode, axum::http::HeaderMap, Value) {
-    let router = get_router();
+    let router = get_router().await;
     let request_builder = Request::builder()
         .method(method)
         .uri(uri)
@@ -358,7 +360,7 @@ async fn test_workflow_info_not_found() {
 #[tokio::test]
 async fn test_malformed_json_body() {
     // Send completely invalid JSON
-    let router = get_router();
+    let router = get_router().await;
     let token = generate_token(5);
 
     let request = Request::builder()
@@ -616,7 +618,7 @@ async fn test_health_endpoint_no_auth_required() {
 
 #[tokio::test]
 async fn test_metrics_endpoint_no_auth_required() {
-    let router = get_router();
+    let router = get_router().await;
 
     let request = Request::builder()
         .method("GET")

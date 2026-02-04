@@ -14,14 +14,19 @@ pub struct User {
     pub consciousness_level: i32,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
+    pub reset_token: Option<String>,
+    pub reset_token_expires_at: Option<DateTime<Utc>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, FromRow)]
 pub struct UserProfile {
     pub user_id: Uuid,
-    pub birth_date: DateTime<Utc>,
-    // Storing complex types as JSONB
-    pub birth_location: serde_json::Value, 
+    pub birth_date: Option<chrono::NaiveDate>,
+    pub birth_time: Option<chrono::NaiveTime>,
+    pub birth_location_lat: Option<f64>, // using f64 for DECIMAL
+    pub birth_location_lng: Option<f64>,
+    pub birth_location_name: Option<String>,
+    pub timezone: Option<String>,
     pub preferences: serde_json::Value,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,

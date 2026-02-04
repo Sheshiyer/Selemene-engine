@@ -17,11 +17,13 @@ use axum::{
     http::{Request, StatusCode, header},
     Router,
 };
-use noesis_api::{build_app_state, create_router, ApiConfig};
+use noesis_api::{build_app_state_lazy_db, create_router, ApiConfig};
 use noesis_auth::AuthService;
 use noesis_core::EngineInput;
 use serde_json::{json, Value};
-use std::sync::OnceLock;
+use tokio::sync::OnceCell;
+use tokio::sync::Semaphore;
+use std::sync::{Arc, OnceLock};
 use tower::ServiceExt;
 
 // ===========================================================================
@@ -29,16 +31,36 @@ use tower::ServiceExt;
 // ===========================================================================
 
 /// Global test router -- created once and shared across all tests.
-/// Uses OnceLock for thread-safe lazy initialization.
-static E2E_TEST_ROUTER: OnceLock<Router> = OnceLock::new();
+static E2E_TEST_ROUTER: OnceCell<Router> = OnceCell::const_new();
+
+/// Serialize all router requests across tests.
+///
+/// The E2E suite shares a single router + engine registry. Some engine dependencies
+/// (or transitive dependencies) appear to be non-thread-safe under concurrent access
+/// and can crash the process (SIGSEGV). We avoid that by ensuring only one request
+/// is executed at a time across the whole test binary.
+static E2E_REQUEST_LOCK: OnceLock<Arc<Semaphore>> = OnceLock::new();
+
+async fn e2e_request_permit() -> tokio::sync::OwnedSemaphorePermit {
+    let semaphore = E2E_REQUEST_LOCK
+        .get_or_init(|| Arc::new(Semaphore::new(1)))
+        .clone();
+
+    semaphore
+        .acquire_owned()
+        .await
+        .expect("failed to acquire E2E request permit")
+}
 
 /// Get or create the singleton test router with all engines registered.
-fn get_router() -> &'static Router {
-    E2E_TEST_ROUTER.get_or_init(|| {
-        let config = ApiConfig::from_env();
-        let state = build_app_state(&config);
-        create_router(state, &config)
-    })
+async fn get_router() -> &'static Router {
+    E2E_TEST_ROUTER
+        .get_or_init(|| async {
+            let config = ApiConfig::from_env();
+            let state = build_app_state_lazy_db(&config).await;
+            create_router(state, &config)
+        })
+        .await
 }
 
 /// Generate a valid JWT token with a specific consciousness level.
@@ -85,7 +107,8 @@ async fn authed_request(
     token: &str,
     body: Option<Value>,
 ) -> (StatusCode, Value) {
-    let router = get_router();
+    let _permit = e2e_request_permit().await;
+    let router = get_router().await;
     let builder = Request::builder()
         .method(method)
         .uri(uri)
@@ -114,7 +137,8 @@ async fn unauthed_request(
     uri: &str,
     body: Option<Value>,
 ) -> (StatusCode, Value) {
-    let router = get_router();
+    let _permit = e2e_request_permit().await;
+    let router = get_router().await;
     let builder = Request::builder()
         .method(method)
         .uri(uri)
@@ -142,7 +166,8 @@ async fn unauthed_request(
 
 /// Fetch /metrics and return the raw text body.
 async fn fetch_metrics_text() -> String {
-    let router = get_router();
+    let _permit = e2e_request_permit().await;
+    let router = get_router().await;
     let req = Request::builder()
         .method("GET")
         .uri("/metrics")

@@ -8,6 +8,7 @@ mod config;
 mod logging;
 mod middleware;
 mod handlers;
+pub mod error;
 
 // Re-export configuration and logging for main.rs
 pub use config::ApiConfig;
@@ -193,9 +194,13 @@ pub fn create_router(state: AppState, config: &ApiConfig) -> Router {
     ));
     
     let auth_routes = Router::new()
-         .route("/auth/register", post(handlers::auth::register));
+         .route("/auth/register", post(handlers::auth::register))
+         .route("/auth/login", post(handlers::auth::login))
+         .route("/auth/forgot-password", post(handlers::auth::forgot_password))
+         .route("/auth/reset-password", post(handlers::auth::reset_password));
 
     let api_v1 = Router::new()
+        .route("/users/me", get(handlers::users::get_me).patch(handlers::users::update_me))
         .route("/status", get(status_handler))
         .route("/engines", get(list_engines_handler))
         .route("/engines/:engine_id/calculate", post(calculate_handler))
@@ -304,11 +309,11 @@ struct WorkflowInfoResponse {
 }
 
 #[derive(Serialize, ToSchema)]
-struct ErrorResponse {
-    error: String,
-    error_code: String,
+pub struct ErrorResponse {
+    pub error: String,
+    pub error_code: String,
     #[serde(skip_serializing_if = "Option::is_none")]
-    details: Option<serde_json::Value>,
+    pub details: Option<serde_json::Value>,
 }
 
 // ---------------------------------------------------------------------------
@@ -727,7 +732,7 @@ async fn workflow_info_handler(
 // Error mapping
 // ---------------------------------------------------------------------------
 
-fn engine_error_to_response(err: EngineError) -> (StatusCode, Json<ErrorResponse>) {
+pub fn engine_error_to_response(err: EngineError) -> (StatusCode, Json<ErrorResponse>) {
     let (status, error_code, message, details) = match &err {
         EngineError::EngineNotFound(id) => (
             StatusCode::NOT_FOUND,
@@ -1044,6 +1049,68 @@ pub async fn build_app_state(config: &ApiConfig) -> AppState {
         .connect(&config.database_url)
         .await
         .expect("Failed to create database pool");
+
+    let user_repository = Arc::new(UserRepository::new(pool));
+
+    // -- Metrics --
+    let metrics = NoesisMetrics::new().expect("Failed to initialise NoesisMetrics");
+
+    AppState {
+        orchestrator: Arc::new(orchestrator),
+        cache: Arc::new(cache),
+        auth: Arc::new(auth),
+        metrics: Arc::new(metrics),
+        user_repository,
+        startup_time: Instant::now(),
+    }
+}
+
+/// Build `AppState` but create the PostgreSQL pool lazily (no network connection during init).
+///
+/// This is primarily intended for integration/E2E tests that don't exercise DB-backed
+/// endpoints but still need a fully constructed `AppState`.
+pub async fn build_app_state_lazy_db(config: &ApiConfig) -> AppState {
+    // -- Orchestrator with engines --
+    let mut orchestrator = WorkflowOrchestrator::new();
+    orchestrator.register_engine(Arc::new(engine_panchanga::PanchangaEngine::new()));
+    orchestrator.register_engine(Arc::new(engine_numerology::NumerologyEngine::new()));
+    orchestrator.register_engine(Arc::new(engine_biorhythm::BiorhythmEngine::new()));
+
+    // Register HD engine (Phase 1)
+    let hd_engine = Arc::new(engine_human_design::HumanDesignEngine::new());
+    orchestrator.register_engine(hd_engine.clone());
+
+    // Register Gene Keys engine with HD dependency (Phase 2)
+    let gk_engine = Arc::new(engine_gene_keys::GeneKeysEngine::with_hd_engine(hd_engine.clone()));
+    orchestrator.register_engine(gk_engine);
+
+    // Register Vimshottari Dasha engine with HD dependency (Phase 2)
+    let vim_engine = Arc::new(engine_vimshottari::VimshottariEngine::with_hd_engine(hd_engine));
+    orchestrator.register_engine(vim_engine);
+
+    // Register Biofield engine (Phase 1 - somatic awareness) - returns mock data
+    orchestrator.register_engine(Arc::new(engine_biofield::BiofieldEngine::new()));
+
+    // Register VedicClock-TCM engine (Phase 0 - available to all)
+    orchestrator.register_engine(Arc::new(engine_vedic_clock::VedicClockEngine::new()));
+
+    // -- Cache --
+    let redis_url = config.redis_url.clone().unwrap_or_else(|| String::new());
+    let cache = CacheManager::new(
+        redis_url,                 // Redis URL from config
+        100,                       // L1: 100 MB
+        Duration::from_secs(3600), // L2 TTL: 1 hour
+        false,                     // L3 disabled
+    );
+
+    // -- Auth --
+    let auth = AuthService::new(config.jwt_secret.clone());
+
+    // -- Database (lazy pool) --
+    let pool = PgPoolOptions::new()
+        .max_connections(5)
+        .connect_lazy(&config.database_url)
+        .expect("Failed to create lazy database pool");
 
     let user_repository = Arc::new(UserRepository::new(pool));
 

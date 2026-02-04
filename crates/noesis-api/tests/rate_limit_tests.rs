@@ -5,9 +5,12 @@ use axum::{
     http::{Request, StatusCode},
 };
 use noesis_api::create_router;
+use noesis_api::ApiConfig;
 use noesis_auth::{ApiKey, AuthService};
 use noesis_cache::CacheManager;
+use noesis_data::repositories::user_repository::UserRepository;
 use noesis_orchestrator::WorkflowOrchestrator;
+use sqlx::postgres::PgPoolOptions;
 use tower::ServiceExt;
 use chrono::{Utc, Duration as ChronoDuration};
 use std::sync::Arc;
@@ -17,7 +20,7 @@ use std::sync::Once;
 static INIT_METRICS: Once = Once::new();
 
 /// Build app state for testing (with proper metrics initialization)
-fn build_test_app_state() -> noesis_api::AppState {
+fn build_test_app_state() -> (noesis_api::AppState, ApiConfig) {
     // -- Orchestrator with engines --
     let mut orchestrator = WorkflowOrchestrator::new();
     orchestrator.register_engine(Arc::new(engine_panchanga::PanchangaEngine::new()));
@@ -36,6 +39,32 @@ fn build_test_app_state() -> noesis_api::AppState {
     let jwt_secret = "test-secret-for-integration-tests".to_string();
     let auth = AuthService::new(jwt_secret);
 
+    // -- Config --
+    // Use DATABASE_URL if present; otherwise use a dummy URL for connect_lazy.
+    let database_url = std::env::var("DATABASE_URL")
+        .unwrap_or_else(|_| "postgres://localhost/noesis_test".to_string());
+    let config = ApiConfig {
+        host: "127.0.0.1".to_string(),
+        port: 0,
+        jwt_secret: "test-secret-for-integration-tests".to_string(),
+        database_url: database_url.clone(),
+        redis_url: None,
+        allowed_origins: vec![],
+        rate_limit_requests: 100,
+        rate_limit_window_secs: 60,
+        request_timeout_secs: 30,
+        log_level: "info".to_string(),
+        log_format: "pretty".to_string(),
+    };
+
+    // -- User repository --
+    // Rate-limit tests don't hit DB-backed endpoints; use a lazy pool.
+    let pool = PgPoolOptions::new()
+        .max_connections(1)
+        .connect_lazy(&database_url)
+        .expect("Invalid DATABASE_URL");
+    let user_repository = Arc::new(UserRepository::new(pool));
+
     // -- Metrics -- initialize only once globally
     static mut METRICS: Option<Arc<noesis_metrics::NoesisMetrics>> = None;
     let metrics = unsafe {
@@ -47,13 +76,16 @@ fn build_test_app_state() -> noesis_api::AppState {
         METRICS.as_ref().unwrap().clone()
     };
 
-    noesis_api::AppState {
+    let state = noesis_api::AppState {
         orchestrator: Arc::new(orchestrator),
         cache: Arc::new(cache),
         auth: Arc::new(auth),
         metrics,
+        user_repository,
         startup_time: Instant::now(),
-    }
+    };
+
+    (state, config)
 }
 
 /// Test helper to create a test API key with specific rate limit
@@ -78,9 +110,9 @@ async fn create_test_api_key(auth: &Arc<AuthService>, user_id: &str, rate_limit:
 
 #[tokio::test]
 async fn test_rate_limit_allows_requests_under_limit() {
-    let state = build_test_app_state();
+    let (state, config) = build_test_app_state();
     let api_key = create_test_api_key(&state.auth, "user1", 5).await;
-    let app = create_router(state);
+    let app = create_router(state, &config);
     
     // Make 5 requests (all should succeed)
     for i in 0..5 {
@@ -119,9 +151,9 @@ async fn test_rate_limit_allows_requests_under_limit() {
 
 #[tokio::test]
 async fn test_rate_limit_blocks_requests_over_limit() {
-    let state = build_test_app_state();
+    let (state, config) = build_test_app_state();
     let api_key = create_test_api_key(&state.auth, "user2", 3).await;
-    let app = create_router(state);
+    let app = create_router(state, &config);
     
     // Make 3 requests (should all succeed)
     for _ in 0..3 {
@@ -166,10 +198,10 @@ async fn test_rate_limit_blocks_requests_over_limit() {
 
 #[tokio::test]
 async fn test_rate_limit_per_user_isolation() {
-    let state = build_test_app_state();
+    let (state, config) = build_test_app_state();
     let api_key1 = create_test_api_key(&state.auth, "user3", 2).await;
     let api_key2 = create_test_api_key(&state.auth, "user4", 2).await;
-    let app = create_router(state);
+    let app = create_router(state, &config);
     
     // User1 makes 2 requests (reaches limit)
     for _ in 0..2 {
@@ -210,8 +242,8 @@ async fn test_rate_limit_per_user_isolation() {
 
 #[tokio::test]
 async fn test_rate_limit_skips_public_routes() {
-    let state = build_test_app_state();
-    let app = create_router(state);
+    let (state, config) = build_test_app_state();
+    let app = create_router(state, &config);
     
     // Make multiple requests to /health without authentication
     for _ in 0..10 {
@@ -235,9 +267,9 @@ async fn test_rate_limit_skips_public_routes() {
 
 #[tokio::test]
 async fn test_rate_limit_response_format() {
-    let state = build_test_app_state();
+    let (state, config) = build_test_app_state();
     let api_key = create_test_api_key(&state.auth, "user5", 1).await;
-    let app = create_router(state);
+    let app = create_router(state, &config);
     
     // First request succeeds
     let request = Request::builder()
@@ -277,10 +309,10 @@ async fn test_rate_limit_response_format() {
 
 #[tokio::test]
 async fn test_rate_limit_default_100_per_minute() {
-    let state = build_test_app_state();
+    let (state, config) = build_test_app_state();
     // Create API key with rate_limit = 0 (should use default 100)
     let api_key = create_test_api_key(&state.auth, "user6", 0).await;
-    let app = create_router(state);
+    let app = create_router(state, &config);
     
     let request = Request::builder()
         .uri("/api/v1/status")
