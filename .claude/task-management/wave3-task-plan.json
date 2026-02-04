@@ -78,7 +78,7 @@
             {
               "id": "W3-S1-04",
               "title": "Implement password reset flow",
-              "status": "in-progress",
+              "status": "completed",
               "area": "backend",
               "owner_role": "Backend Eng",
               "est_hours": 6,
@@ -111,6 +111,7 @@
             {
               "id": "W3-S1-07",
               "title": "Implement birth data validation",
+              "status": "completed",
               "area": "backend",
               "owner_role": "Backend Eng",
               "est_hours": 6,
@@ -121,6 +122,8 @@
             {
               "id": "W3-S1-08",
               "title": "Implement OAuth2 integration (Google)",
+              "status": "deferred",
+              "notes": "Deferred to Beta phase. Will use modern auth framework (Auth0, etc.)",
               "area": "backend",
               "owner_role": "Backend Eng",
               "est_hours": 8,
@@ -131,6 +134,8 @@
             {
               "id": "W3-S1-09",
               "title": "Implement OAuth2 integration (Apple)",
+              "status": "deferred",
+              "notes": "Deferred to Beta phase. Will use modern auth framework (Auth0, etc.)",
               "area": "backend",
               "owner_role": "Backend Eng",
               "est_hours": 8,
@@ -141,6 +146,7 @@
             {
               "id": "W3-S1-10",
               "title": "Create consciousness level progression system",
+              "status": "completed",
               "area": "backend",
               "owner_role": "Backend Eng",
               "est_hours": 10,
