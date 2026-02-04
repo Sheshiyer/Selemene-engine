@@ -158,7 +158,7 @@ pub async fn reset_password(
     Json(payload): Json<ResetPasswordRequest>,
 ) -> Result<Response, ApiError> {
     // 1. Verify token
-    let user = state.user_repository.get_user_by_reset_token(&payload.token).await
+    let user = state.user_repository.find_user_by_reset_token(&payload.token).await
         .map_err(|e| EngineError::InternalError(format!("Database error: {}", e)))?
         .ok_or_else(|| EngineError::AuthError("Invalid or expired password reset token".to_string()))?;
 

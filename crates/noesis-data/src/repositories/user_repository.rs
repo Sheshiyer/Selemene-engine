@@ -187,8 +187,8 @@ impl UserRepository {
         Ok(profile)
     }
 
-    pub async fn set_password_reset_token(&self, email: &str, token: &str, expires_at: DateTime<Utc>) -> Result<(), Error> {
-        sqlx::query(
+    pub async fn set_password_reset_token(&self, email: &str, token: &str, expires_at: DateTime<Utc>) -> Result<bool, Error> {
+        let result = sqlx::query(
             "UPDATE users SET reset_token = $1, reset_token_expires_at = $2 WHERE email = $3"
         )
         .bind(token)
@@ -196,8 +196,33 @@ impl UserRepository {
         .bind(email)
         .execute(&self.pool)
         .await?;
+        
+        // Return true if any row was updated (user found)
+        Ok(result.rows_affected() > 0)
+    }
+
+    pub async fn find_user_by_reset_token(&self, token: &str) -> Result<Option<User>, Error> {
+        sqlx::query_as::<_, User>(
+            "SELECT * FROM users WHERE reset_token = $1 AND reset_token_expires_at > $2"
+        )
+        .bind(token)
+        .bind(Utc::now())
+        .fetch_optional(&self.pool)
+        .await
+    }
+
+    pub async fn update_password(&self, user_id: Uuid, password_hash: &str) -> Result<(), Error> {
+        sqlx::query(
+            "UPDATE users SET password_hash = $1, reset_token = NULL, reset_token_expires_at = NULL, updated_at = $2 WHERE id = $3"
+        )
+        .bind(password_hash)
+        .bind(Utc::now())
+        .bind(user_id)
+        .execute(&self.pool)
+        .await?;
         Ok(())
     }
+}
 
     pub async fn get_user_by_reset_token(&self, token: &str) -> Result<Option<User>, Error> {
         sqlx::query_as::<_, User>(

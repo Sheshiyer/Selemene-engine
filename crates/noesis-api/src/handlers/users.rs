@@ -97,6 +97,11 @@ impl UpdateUserRequest {
                 return Err(EngineError::ValidationError("Invalid email format".into()));
             }
         }
+        if let Some(date) = self.birth_date {
+            if date.year() < 1000 || date.year() > 3000 {
+                return Err(EngineError::ValidationError(format!("Birth year {} out of supported range (1000-3000)", date.year()).into()));
+            }
+        }
         if let Some(lat) = self.birth_location_lat {
             if lat < -90.0 || lat > 90.0 {
                 return Err(EngineError::ValidationError("Latitude must be between -90 and 90".into()));
