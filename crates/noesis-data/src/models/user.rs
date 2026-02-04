@@ -12,6 +12,7 @@ pub struct User {
     pub full_name: String,
     pub tier: String, // e.g., "Free", "Basic", "Premium"
     pub consciousness_level: i32,
+    pub experience_points: i32,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
     pub reset_token: Option<String>,

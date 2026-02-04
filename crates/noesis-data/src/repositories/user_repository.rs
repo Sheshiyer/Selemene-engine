@@ -222,26 +222,42 @@ impl UserRepository {
         .await?;
         Ok(())
     }
-}
 
-    pub async fn get_user_by_reset_token(&self, token: &str) -> Result<Option<User>, Error> {
-        sqlx::query_as::<_, User>(
-            "SELECT * FROM users WHERE reset_token = $1 AND reset_token_expires_at > $2"
+    pub async fn add_experience(&self, user_id: Uuid, amount: i32, action: &str) -> Result<User, Error> {
+        // Log the progression event
+        sqlx::query(
+            "INSERT INTO progression_logs (user_id, xp_amount, action_type, metadata) 
+             VALUES ($1, $2, $3, $4)"
         )
-        .bind(token)
-        .bind(Utc::now())
-        .fetch_optional(&self.pool)
-        .await
-    }
-
-    pub async fn update_password(&self, user_id: Uuid, password_hash: &str) -> Result<(), Error> {
-         sqlx::query(
-            "UPDATE users SET password_hash = $1, reset_token = NULL, reset_token_expires_at = NULL WHERE id = $2"
-        )
-        .bind(password_hash)
         .bind(user_id)
+        .bind(amount)
+        .bind(action)
+        .bind(serde_json::json!({
+            "timestamp": Utc::now().to_rfc3339()
+        }))
         .execute(&self.pool)
         .await?;
-        Ok(())
+
+        // Atomic update of user XP and level calculation
+        // Level logic is dynamic, but we might want to store it if complex. 
+        // For now, we update XP. The Level is derived from XP in the application layer usually, 
+        // or we can add a generated column. But per requirements, just XP tracking is key.
+        let updated_user = sqlx::query_as::<_, User>(
+            r#"
+            UPDATE users 
+            SET 
+                experience_points = COALESCE(experience_points, 0) + $1,
+                updated_at = $2
+            WHERE id = $3
+            RETURNING *
+            "#
+        )
+        .bind(amount)
+        .bind(Utc::now())
+        .bind(user_id)
+        .fetch_one(&self.pool)
+        .await?;
+
+        Ok(updated_user)
     }
 }
