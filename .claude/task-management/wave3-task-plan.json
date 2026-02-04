@@ -45,6 +45,7 @@
             {
               "id": "W3-S1-01",
               "title": "Design user profile data model",
+              "status": "completed",
               "area": "backend",
               "owner_role": "Backend Eng",
               "est_hours": 8,
@@ -55,6 +56,7 @@
             {
               "id": "W3-S1-02",
               "title": "Implement user registration endpoint",
+              "status": "completed",
               "area": "backend",
               "owner_role": "Backend Eng",
               "est_hours": 6,
@@ -65,6 +67,7 @@
             {
               "id": "W3-S1-03",
               "title": "Implement user login with JWT refresh",
+              "status": "completed",
               "area": "backend",
               "owner_role": "Backend Eng",
               "est_hours": 6,
@@ -75,6 +78,7 @@
             {
               "id": "W3-S1-04",
               "title": "Implement password reset flow",
+              "status": "in-progress",
               "area": "backend",
               "owner_role": "Backend Eng",
               "est_hours": 6,
@@ -85,6 +89,7 @@
             {
               "id": "W3-S1-05",
               "title": "Create user profile GET endpoint",
+              "status": "completed",
               "area": "backend",
               "owner_role": "Backend Eng",
               "est_hours": 4,
@@ -95,6 +100,7 @@
             {
               "id": "W3-S1-06",
               "title": "Create user profile UPDATE endpoint",
+              "status": "completed",
               "area": "backend",
               "owner_role": "Backend Eng",
               "est_hours": 5,
