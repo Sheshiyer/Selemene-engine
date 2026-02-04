@@ -7,7 +7,7 @@ use serde::{Deserialize, Serialize};
 use crate::{AppState, error::ApiError};
 use noesis_core::EngineError;
 use noesis_auth::AuthUser;
-use chrono::{NaiveDate, NaiveTime};
+use chrono::{NaiveDate, NaiveTime, Datelike};
 
 #[derive(Serialize)]
 pub struct UserResponse {
@@ -16,6 +16,7 @@ pub struct UserResponse {
     pub full_name: String,
     pub tier: String,
     pub consciousness_level: i32,
+    pub experience_points: i32,
     pub birth_date: Option<NaiveDate>,
     pub birth_time: Option<NaiveTime>,
     pub birth_location: Option<LocationResponse>,
@@ -80,6 +81,7 @@ pub async fn get_me(
         full_name: user.full_name,
         tier: user.tier,
         consciousness_level: user.consciousness_level,
+        experience_points: user.experience_points,
         birth_date,
         birth_time,
         birth_location,
