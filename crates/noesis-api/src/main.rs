@@ -8,20 +8,47 @@ use tokio::net::TcpListener;
 
 #[tokio::main]
 async fn main() {
-    // Load configuration from environment
-    let config = ApiConfig::from_env();
-    
-    // Validate configuration
+    // Load configuration from environment (fail fast on missing required vars)
+    let config = match ApiConfig::from_env() {
+        Ok(c) => c,
+        Err(e) => {
+            eprintln!("Configuration error: {}", e);
+            std::process::exit(1);
+        }
+    };
+
+    // Validate configuration (warn on weak settings, reject invalid combos)
     if let Err(e) = config.validate() {
         eprintln!("Configuration validation failed: {}", e);
         std::process::exit(1);
     }
-    
+
+    // Initialize Sentry error tracking (no-op if SENTRY_DSN is unset)
+    let _sentry_guard = sentry::init((
+        std::env::var("SENTRY_DSN").ok(),
+        sentry::ClientOptions {
+            release: sentry::release_name!(),
+            environment: Some(
+                std::env::var("RUST_ENV")
+                    .unwrap_or_else(|_| "development".into())
+                    .into(),
+            ),
+            traces_sample_rate: 0.1,
+            ..Default::default()
+        },
+    ));
+
     // Initialize structured logging based on config
     if config.log_format == "json" {
         init_tracing_json(&config.log_level);
     } else {
         init_tracing(&config.log_level);
+    }
+
+    if sentry::Hub::current().client().map_or(false, |c| c.is_enabled()) {
+        tracing::info!("Sentry error tracking enabled");
+    } else {
+        tracing::info!("Sentry error tracking disabled (no SENTRY_DSN)");
     }
 
     tracing::info!("Starting Noesis API server");

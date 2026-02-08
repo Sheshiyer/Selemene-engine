@@ -31,6 +31,8 @@ tokio = { version = "1.0", features = ["full"] }
 sqlx = { version = "0.7", features = ["postgres", "runtime-tokio-rustls", "uuid", "chrono", "json", "macros"] }
 tower = "0.5"
 tower-http = { version = "0.6", features = ["cors", "trace"] }
+sentry = "0.34"
+sentry-tower = { version = "0.34", features = ["http"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 chrono = { version = "0.4", features = ["serde"] }
