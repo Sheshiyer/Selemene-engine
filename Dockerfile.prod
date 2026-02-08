@@ -7,12 +7,14 @@
 # -----------------------------------------------------------------------------
 # Stage 1: Builder — build the workspace
 # -----------------------------------------------------------------------------
-FROM rust:1.84-slim AS builder
+FROM rust:1.89-slim AS builder
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     pkg-config \
     libssl-dev \
+    clang \
+    libclang-dev \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /build
@@ -20,6 +22,7 @@ WORKDIR /build
 # Copy workspace manifests and all crates
 COPY Cargo.toml Cargo.lock ./
 COPY crates/ ./crates/
+COPY data/ ./data/
 
 # Build the noesis-server binary
 RUN cargo build --release --bin noesis-server && \
