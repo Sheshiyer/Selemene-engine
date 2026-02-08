@@ -1,40 +1,60 @@
 # =============================================================================
 # Production Multi-Stage Dockerfile for Selemene Engine (noesis-api)
+# Uses cargo-chef for dependency layer caching (529 deps + LTO = slow without it)
 # Target size: <500MB
 # =============================================================================
 
 # -----------------------------------------------------------------------------
-# Stage 1: Builder - Compile Rust binary
+# Stage 1: Chef base — install cargo-chef on top of Rust toolchain
 # -----------------------------------------------------------------------------
-FROM rust:1.75-slim AS builder
+FROM rust:1.75-slim AS chef
 
-WORKDIR /build
-
-# Install build dependencies
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     pkg-config \
     libssl-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy workspace configuration first (for layer caching)
+RUN cargo install cargo-chef --locked
+
+WORKDIR /build
+
+# -----------------------------------------------------------------------------
+# Stage 2: Planner — generate dependency recipe from workspace manifests
+# Only re-runs when Cargo.toml or Cargo.lock change
+# -----------------------------------------------------------------------------
+FROM chef AS planner
+
+# Copy workspace root manifests
 COPY Cargo.toml Cargo.lock ./
 
-# Copy all workspace crates
+# Copy all workspace crate manifests and source (chef needs real source to plan)
 COPY crates/ ./crates/
-
-# Copy legacy crate if exists
-COPY legacy/ ./legacy/ 2>/dev/null || mkdir -p ./legacy
-
-# Copy source directory
 COPY src/ ./src/
 
-# Build release binary with optimizations
+RUN cargo chef prepare --recipe-path recipe.json
+
+# -----------------------------------------------------------------------------
+# Stage 3: Builder — cook dependencies (cached), then build application
+# The cook step is the cache key: only invalidated by recipe.json changes
+# (i.e., Cargo.toml/Cargo.lock changes). Source code changes skip this layer.
+# -----------------------------------------------------------------------------
+FROM chef AS builder
+
+# Cook dependencies — this is the expensive cached layer
+COPY --from=planner /build/recipe.json recipe.json
+RUN cargo chef cook --release --recipe-path recipe.json
+
+# Now copy actual source and build the application binary
+COPY Cargo.toml Cargo.lock ./
+COPY crates/ ./crates/
+COPY src/ ./src/
+
 RUN cargo build --release --bin noesis-server && \
     strip /build/target/release/noesis-server
 
 # -----------------------------------------------------------------------------
-# Stage 2: Runtime - Minimal production image
+# Stage 4: Runtime — minimal production image
 # -----------------------------------------------------------------------------
 FROM debian:bookworm-slim AS runtime
 
@@ -69,11 +89,11 @@ COPY --chown=appuser:appuser data/ephemeris/ /app/data/ephemeris/
 # Copy wisdom-docs JSON files
 COPY --chown=appuser:appuser data/wisdom-docs/ /app/data/wisdom-docs/
 
-# Copy additional data directories
-COPY --chown=appuser:appuser data/constants/ /app/data/constants/ 2>/dev/null || true
-COPY --chown=appuser:appuser data/validation/ /app/data/validation/ 2>/dev/null || true
-COPY --chown=appuser:appuser data/gene-keys/ /app/data/gene-keys/ 2>/dev/null || true
-COPY --chown=appuser:appuser data/human-design/ /app/data/human-design/ 2>/dev/null || true
+# Copy additional data directories (all exist in the repo)
+COPY --chown=appuser:appuser data/constants/ /app/data/constants/
+COPY --chown=appuser:appuser data/validation/ /app/data/validation/
+COPY --chown=appuser:appuser data/gene-keys/ /app/data/gene-keys/
+COPY --chown=appuser:appuser data/human-design/ /app/data/human-design/
 
 # Set environment variables
 ENV RUST_LOG=info \
