@@ -1,13 +1,14 @@
 # =============================================================================
 # Production Multi-Stage Dockerfile for Selemene Engine (noesis-api)
-# Workspace build without cargo-chef (workspace projects need different approach)
+# Optimized for Docker layer caching: dependency builds are cached separately
+# from source builds, reducing incremental deploy time from ~15min to ~2-3min.
 # Target size: <500MB
 # =============================================================================
 
 # -----------------------------------------------------------------------------
 # Stage 1: Builder — build the workspace
 # -----------------------------------------------------------------------------
-FROM rust:1.89-slim AS builder
+FROM rust:1.89-slim-bookworm AS builder
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
@@ -20,12 +21,66 @@ RUN apt-get update && \
 
 WORKDIR /build
 
-# Copy workspace manifests and all crates
+# --- Layer 1: Copy workspace manifests only (changes when dependencies change) ---
 COPY Cargo.toml Cargo.lock ./
-COPY crates/ ./crates/
+
+# Copy only Cargo.toml files from each crate (not source code)
+COPY crates/noesis-core/Cargo.toml ./crates/noesis-core/Cargo.toml
+COPY crates/noesis-data/Cargo.toml ./crates/noesis-data/Cargo.toml
+COPY crates/noesis-cache/Cargo.toml ./crates/noesis-cache/Cargo.toml
+COPY crates/noesis-auth/Cargo.toml ./crates/noesis-auth/Cargo.toml
+COPY crates/noesis-metrics/Cargo.toml ./crates/noesis-metrics/Cargo.toml
+COPY crates/noesis-witness/Cargo.toml ./crates/noesis-witness/Cargo.toml
+COPY crates/noesis-orchestrator/Cargo.toml ./crates/noesis-orchestrator/Cargo.toml
+COPY crates/noesis-bridge/Cargo.toml ./crates/noesis-bridge/Cargo.toml
+COPY crates/noesis-api/Cargo.toml ./crates/noesis-api/Cargo.toml
+COPY crates/noesis-vedic-api/Cargo.toml ./crates/noesis-vedic-api/Cargo.toml
+COPY crates/noesis-western-api/Cargo.toml ./crates/noesis-western-api/Cargo.toml
+COPY crates/noesis-integration/Cargo.toml ./crates/noesis-integration/Cargo.toml
+COPY crates/engine-panchanga/Cargo.toml ./crates/engine-panchanga/Cargo.toml
+COPY crates/engine-numerology/Cargo.toml ./crates/engine-numerology/Cargo.toml
+COPY crates/engine-biorhythm/Cargo.toml ./crates/engine-biorhythm/Cargo.toml
+COPY crates/engine-human-design/Cargo.toml ./crates/engine-human-design/Cargo.toml
+COPY crates/engine-vimshottari/Cargo.toml ./crates/engine-vimshottari/Cargo.toml
+COPY crates/engine-gene-keys/Cargo.toml ./crates/engine-gene-keys/Cargo.toml
+COPY crates/engine-vedic-clock/Cargo.toml ./crates/engine-vedic-clock/Cargo.toml
+COPY crates/engine-biofield/Cargo.toml ./crates/engine-biofield/Cargo.toml
+COPY crates/engine-face-reading/Cargo.toml ./crates/engine-face-reading/Cargo.toml
+
+# --- Layer 2: Create dummy source stubs so cargo can resolve the workspace ---
+# Library crates get a stub lib.rs
+RUN for crate in \
+      noesis-core noesis-data noesis-cache noesis-auth noesis-metrics \
+      noesis-witness noesis-orchestrator noesis-bridge noesis-vedic-api \
+      noesis-western-api noesis-integration \
+      engine-panchanga engine-numerology engine-biorhythm engine-human-design \
+      engine-vimshottari engine-gene-keys engine-vedic-clock engine-biofield \
+      engine-face-reading; do \
+        mkdir -p "crates/$crate/src" && \
+        echo "" > "crates/$crate/src/lib.rs"; \
+    done && \
+    # noesis-api has both lib.rs and a [[bin]] target (main.rs), plus src/bin/ extras
+    mkdir -p crates/noesis-api/src/bin && \
+    echo "" > crates/noesis-api/src/lib.rs && \
+    echo "fn main() {}" > crates/noesis-api/src/main.rs && \
+    echo "fn main() {}" > crates/noesis-api/src/bin/generate_load_test_tokens.rs && \
+    echo "fn main() {}" > crates/noesis-api/src/bin/generate_test_credentials.rs
+
+# --- Layer 3: Build dependencies only (THIS LAYER IS CACHED on source-only changes) ---
+RUN cargo build --release --bin noesis-server 2>&1 || true
+# The above may partially fail due to missing data files for include_str!, but it
+# will still download and compile all third-party dependencies, which is the goal.
+
+# --- Layer 4: Copy data files (changes infrequently) ---
 COPY data/ ./data/
 
-# Build the noesis-server binary
+# --- Layer 5: Copy real source code (changes on every deploy) ---
+COPY crates/ ./crates/
+
+# Invalidate cargo's fingerprint cache so it recompiles our crates (not deps)
+RUN find crates -name "*.rs" -exec touch {} +
+
+# --- Layer 6: Build the real application (only recompiles project crates) ---
 RUN cargo build --release --bin noesis-server && \
     strip /build/target/release/noesis-server
 

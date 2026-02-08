@@ -142,7 +142,30 @@ JWT_SECRET=your_secret_key_here
 
 # Data
 SWISS_EPHEMERIS_PATH=/app/data/ephemeris
+
+# FreeAstrologyAPI Integration (required for Vedic API features)
+FREE_ASTROLOGY_API_KEY=your_api_key_here
+FREE_ASTROLOGY_API_BASE_URL=https://json.freeastrologyapi.com
+FREE_ASTROLOGY_API_TIMEOUT=30
+VEDIC_ENGINE_PROVIDER=api
+VEDIC_ENGINE_FALLBACK_ENABLED=true
 ```
+
+### FreeAstrologyAPI Configuration
+
+The API key is passed via environment variable and is **never baked into Docker images**.
+
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `FREE_ASTROLOGY_API_KEY` | Yes | none | API key from freeastrologyapi.com |
+| `FREE_ASTROLOGY_API_BASE_URL` | No | `https://json.freeastrologyapi.com` | API base URL |
+| `FREE_ASTROLOGY_API_TIMEOUT` | No | `30` | Request timeout in seconds |
+| `FREE_ASTROLOGY_API_RETRY_COUNT` | No | `3` | Retry attempts on failure |
+| `VEDIC_ENGINE_PROVIDER` | No | `api` | Engine provider (`api` or `native`) |
+| `VEDIC_ENGINE_FALLBACK_ENABLED` | No | `true` | Fall back to native on API failure |
+| `VEDIC_ENGINE_FALLBACK_ON_RATE_LIMIT` | No | `true` | Fall back when rate limited |
+
+**Security**: The API key is loaded from `.env` file at runtime via Docker Compose `env_file` directive. Never commit `.env` to version control.
 
 ## Health Checks
 
@@ -291,6 +314,62 @@ docker-compose run --rm noesis-api cargo test --test integration_tests
     │  (Cache) │         │   (DB)   │
     └──────────┘         └──────────┘
 ```
+
+## Railway Deployment
+
+The project is configured for Railway deployment using `Dockerfile.prod` (see `railway.toml`).
+
+### Adding Environment Variables in Railway Dashboard
+
+1. Go to [Railway Dashboard](https://railway.app/dashboard)
+2. Select your Selemene Engine project
+3. Click on the service -> **Variables** tab
+4. Add these **required** variables:
+
+| Variable | Value | Notes |
+|----------|-------|-------|
+| `FREE_ASTROLOGY_API_KEY` | Your API key | Get from https://freeastrologyapi.com |
+| `JWT_SECRET` | Strong random string | `openssl rand -base64 32` |
+| `DATABASE_URL` | Supabase connection string | From Supabase Dashboard |
+
+5. Railway auto-injects `REDIS_URL` if you provision the Redis add-on
+
+### Railway CLI Setup (Automated)
+
+For automated setup with all variables:
+
+```bash
+# Install and authenticate Railway CLI
+npm install -g @railway/cli
+railway login
+
+# Link to your project
+railway link
+
+# Run the setup script (prompts for credentials)
+./scripts/railway-setup.sh
+```
+
+### Railway Deployment Workflow
+
+```bash
+# Deploy via CLI
+railway up
+
+# Or push to GitHub (auto-deploys if webhook configured)
+git push origin main
+
+# Monitor
+railway logs
+railway status
+```
+
+### Railway Security Notes
+
+- Environment variables are encrypted at rest in Railway
+- `FREE_ASTROLOGY_API_KEY` is set via Railway Dashboard or CLI, never in code
+- `Dockerfile.prod` does NOT contain any secrets or API keys
+- The `railway.toml` only references the Dockerfile path, not credentials
 
 ## Support
 
