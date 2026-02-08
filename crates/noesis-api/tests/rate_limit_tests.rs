@@ -47,7 +47,7 @@ fn build_test_app_state() -> (noesis_api::AppState, ApiConfig) {
         host: "127.0.0.1".to_string(),
         port: 0,
         jwt_secret: "test-secret-for-integration-tests".to_string(),
-        database_url: database_url.clone(),
+        database_url: Some(database_url.clone()),
         redis_url: None,
         allowed_origins: vec![],
         rate_limit_requests: 100,

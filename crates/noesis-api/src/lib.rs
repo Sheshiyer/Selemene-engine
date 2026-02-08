@@ -33,6 +33,7 @@ use noesis_orchestrator::WorkflowOrchestrator;
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 use std::time::{Duration, Instant};
+use sentry_tower::{NewSentryLayer, SentryHttpLayer};
 use tower_http::cors::CorsLayer;
 use tower_http::trace::TraceLayer;
 use utoipa::{OpenApi, ToSchema};
@@ -244,6 +245,8 @@ pub fn create_router(state: AppState, config: &ApiConfig) -> Router {
         .nest("/api/v1", api_v1)
         .nest("/api/legacy", legacy)
         .layer(axum_middleware::from_fn(middleware::request_logging_middleware))
+        .layer(SentryHttpLayer::with_transaction())
+        .layer(NewSentryLayer::new_from_top())
         .layer(TraceLayer::new_for_http())
         .layer(create_cors_layer(config.allowed_origins.clone()))
         .with_state(state)
@@ -733,6 +736,9 @@ async fn workflow_info_handler(
 // ---------------------------------------------------------------------------
 
 pub fn engine_error_to_response(err: EngineError) -> (StatusCode, Json<ErrorResponse>) {
+    // Capture server errors (5xx) to Sentry with context
+    let err_display = err.to_string();
+
     let (status, error_code, message, details) = match &err {
         EngineError::EngineNotFound(id) => (
             StatusCode::NOT_FOUND,
@@ -810,6 +816,14 @@ pub fn engine_error_to_response(err: EngineError) -> (StatusCode, Json<ErrorResp
             Some(serde_json::json!({ "internal_message": msg })),
         ),
     };
+
+    // Report server errors (5xx) to Sentry for visibility
+    if status.is_server_error() {
+        sentry::configure_scope(|scope| {
+            scope.set_tag("error_code", &error_code);
+        });
+        sentry::capture_message(&err_display, sentry::Level::Error);
+    }
 
     (
         status,
@@ -1040,17 +1054,45 @@ pub async fn build_app_state(config: &ApiConfig) -> AppState {
         false,                   // L3 disabled
     );
 
-    // -- Database --
-    let pool = PgPoolOptions::new()
-        .max_connections(5)
-        .connect(&config.database_url)
+    // -- Database (optional — server runs in degraded mode without it) --
+    let pool = if let Some(ref db_url) = config.database_url {
+        match tokio::time::timeout(
+            Duration::from_secs(5),
+            PgPoolOptions::new().max_connections(5).connect(db_url),
+        )
         .await
-        .expect("Failed to create database pool");
+        {
+            Ok(Ok(pool)) => {
+                tracing::info!("Database pool connected");
+                Some(pool)
+            }
+            Ok(Err(e)) => {
+                tracing::warn!("Database connection failed (running without DB): {}", e);
+                None
+            }
+            Err(_) => {
+                tracing::warn!("Database connection timed out after 5s (running without DB)");
+                None
+            }
+        }
+    } else {
+        tracing::warn!("No DATABASE_URL configured — auth endpoints unavailable");
+        None
+    };
 
-    // -- Auth (Postgres-backed API key validation) --
-    let auth = AuthService::with_pool(config.jwt_secret.clone(), Some(pool.clone()));
+    // -- Auth (Postgres-backed API key validation, or degraded without DB) --
+    let auth = AuthService::with_pool(config.jwt_secret.clone(), pool.clone());
 
-    let user_repository = Arc::new(UserRepository::new(pool));
+    let user_repository = Arc::new(UserRepository::new(
+        pool.unwrap_or_else(|| {
+            // Create a lazy pool with a dummy URL — queries will fail at runtime,
+            // but the server can still boot and serve non-DB endpoints.
+            PgPoolOptions::new()
+                .max_connections(1)
+                .connect_lazy("postgres://localhost/noesis_unavailable")
+                .expect("Failed to create placeholder pool")
+        }),
+    ));
 
     // -- Metrics --
     let metrics = NoesisMetrics::new().expect("Failed to initialise NoesisMetrics");
@@ -1103,16 +1145,25 @@ pub async fn build_app_state_lazy_db(config: &ApiConfig) -> AppState {
         false,                     // L3 disabled
     );
 
-    // -- Database (lazy pool) --
-    let pool = PgPoolOptions::new()
-        .max_connections(5)
-        .connect_lazy(&config.database_url)
-        .expect("Failed to create lazy database pool");
+    // -- Database (lazy pool, optional) --
+    let pool = config.database_url.as_ref().map(|db_url| {
+        PgPoolOptions::new()
+            .max_connections(5)
+            .connect_lazy(db_url)
+            .expect("Failed to create lazy database pool")
+    });
 
-    // -- Auth (lazy Postgres-backed API key validation) --
-    let auth = AuthService::with_pool(config.jwt_secret.clone(), Some(pool.clone()));
+    // -- Auth (lazy Postgres-backed API key validation, or degraded without DB) --
+    let auth = AuthService::with_pool(config.jwt_secret.clone(), pool.clone());
 
-    let user_repository = Arc::new(UserRepository::new(pool));
+    let user_repository = Arc::new(UserRepository::new(
+        pool.unwrap_or_else(|| {
+            PgPoolOptions::new()
+                .max_connections(1)
+                .connect_lazy("postgres://localhost/noesis_unavailable")
+                .expect("Failed to create placeholder pool")
+        }),
+    ));
 
     // -- Metrics --
     let metrics = NoesisMetrics::new().expect("Failed to initialise NoesisMetrics");

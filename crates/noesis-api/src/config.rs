@@ -3,6 +3,7 @@
 //! Loads configuration from environment variables with sensible defaults
 //! for development and production environments.
 
+use noesis_core::EngineError;
 use std::env;
 
 /// API server configuration loaded from environment variables
@@ -17,8 +18,8 @@ pub struct ApiConfig {
     /// JWT secret for token signing (required, no default in production)
     pub jwt_secret: String,
 
-    /// Database URL for PostgreSQL (required)
-    pub database_url: String,
+    /// Database URL for PostgreSQL (optional — server starts in degraded mode without it)
+    pub database_url: Option<String>,
     
     /// Redis connection URL for L2 cache (optional, None disables Redis)
     pub redis_url: Option<String>,
@@ -58,45 +59,58 @@ impl ApiConfig {
     /// - `LOG_FORMAT`: Log format "pretty" or "json" (default: "pretty")
     ///
     /// # Returns
-    /// Configured `ApiConfig` instance
-    ///
-    /// # Panics
-    /// Panics if `JWT_SECRET` is not set and app is running in production mode
-    /// (determined by `RUST_ENV=production` or absence of dev default)
-    pub fn from_env() -> Self {
+    /// `Ok(ApiConfig)` on success, `Err(EngineError::ConfigError)` when:
+    /// - `JWT_SECRET` is missing and `RUST_ENV=production`
+    /// - `DATABASE_URL` is set but does not start with `postgresql://` or `postgres://`
+    pub fn from_env() -> Result<Self, EngineError> {
+        let is_production = env::var("RUST_ENV")
+            .map(|e| e == "production")
+            .unwrap_or(false);
+
         let host = env::var("HOST").unwrap_or_else(|_| "0.0.0.0".to_string());
-        
+
         let port = env::var("PORT")
             .ok()
             .and_then(|p| p.parse().ok())
             .unwrap_or(8080);
-        
+
         // JWT secret handling: require in production, allow default in dev
-        let jwt_secret = env::var("JWT_SECRET").unwrap_or_else(|_| {
-            let is_production = env::var("RUST_ENV")
-                .map(|e| e == "production")
-                .unwrap_or(false);
-            
-            if is_production {
-                panic!("JWT_SECRET must be set in production environment");
+        let jwt_secret = match env::var("JWT_SECRET") {
+            Ok(secret) => secret,
+            Err(_) if is_production => {
+                return Err(EngineError::ConfigError(
+                    "JWT_SECRET is required when RUST_ENV=production".to_string(),
+                ));
             }
-            
-            tracing::warn!("JWT_SECRET not set, using development default (DO NOT USE IN PRODUCTION)");
-            "noesis-dev-secret-change-in-production".to_string()
-        });
-
-        let database_url = env::var("DATABASE_URL").unwrap_or_else(|_| {
-            let is_production = env::var("RUST_ENV")
-                .map(|e| e == "production")
-                .unwrap_or(false);
-
-            if is_production {
-                panic!("DATABASE_URL must be set in production environment");
+            Err(_) => {
+                tracing::warn!("JWT_SECRET not set, using development default (DO NOT USE IN PRODUCTION)");
+                "noesis-dev-secret-change-in-production".to_string()
             }
+        };
 
-            tracing::warn!("DATABASE_URL not set, using default local postgres");
-            "postgres://postgres:postgres@localhost:5432/noesis".to_string()
-        });
+        // DATABASE_URL handling: optional — server starts in degraded mode without it
+        let database_url = match env::var("DATABASE_URL") {
+            Ok(url) => {
+                // Validate format early (fail fast on obviously wrong URLs)
+                if !url.starts_with("postgresql://") && !url.starts_with("postgres://") {
+                    return Err(EngineError::ConfigError(
+                        format!(
+                            "DATABASE_URL must start with postgresql:// or postgres://, got: {}...",
+                            &url[..url.len().min(20)]
+                        ),
+                    ));
+                }
+                Some(url)
+            }
+            Err(_) if is_production => {
+                tracing::warn!("DATABASE_URL not set in production — auth endpoints will be unavailable");
+                None
+            }
+            Err(_) => {
+                tracing::warn!("DATABASE_URL not set — auth endpoints will be unavailable");
+                None
+            }
+        };
         
         let redis_url = env::var("REDIS_URL").ok();
         
@@ -128,7 +142,7 @@ impl ApiConfig {
         let log_format = env::var("LOG_FORMAT")
             .unwrap_or_else(|_| "pretty".to_string());
         
-        Self {
+        Ok(Self {
             host,
             port,
             jwt_secret,
@@ -140,7 +154,7 @@ impl ApiConfig {
             request_timeout_secs,
             log_level,
             log_format,
-        }
+        })
     }
     
     /// Validate the configuration
@@ -170,12 +184,14 @@ impl ApiConfig {
             );
         }
         
-        // Validate DATABASE_URL format
-        if !self.database_url.starts_with("postgresql://") && !self.database_url.starts_with("postgres://") {
-            return Err(format!(
-                "DATABASE_URL must start with 'postgresql://' or 'postgres://', got: {}...",
-                &self.database_url[..self.database_url.len().min(20)]
-            ));
+        // Validate DATABASE_URL format (if set)
+        if let Some(ref db_url) = self.database_url {
+            if !db_url.starts_with("postgresql://") && !db_url.starts_with("postgres://") {
+                return Err(format!(
+                    "DATABASE_URL must start with 'postgresql://' or 'postgres://', got: {}...",
+                    &db_url[..db_url.len().min(20)]
+                ));
+            }
         }
 
         // Validate port range
@@ -227,7 +243,7 @@ mod tests {
             host: "127.0.0.1".to_string(),
             port: 3000,
             jwt_secret: "test-secret-at-least-32-chars-long".to_string(),
-            database_url: "postgres://localhost/test".to_string(),
+            database_url: Some("postgres://localhost/test".to_string()),
             redis_url: None,
             allowed_origins: vec![],
             rate_limit_requests: 100,
@@ -246,7 +262,7 @@ mod tests {
             host: "0.0.0.0".to_string(),
             port: 8080,
             jwt_secret: "test-secret-at-least-32-chars-long".to_string(),
-            database_url: "postgres://localhost/test".to_string(),
+            database_url: Some("postgres://localhost/test".to_string()),
             redis_url: None,
             allowed_origins: vec![],
             rate_limit_requests: 100,
@@ -265,7 +281,7 @@ mod tests {
             host: "0.0.0.0".to_string(),
             port: 8080,
             jwt_secret: "test-secret-at-least-32-chars-long".to_string(),
-            database_url: "mysql://localhost/test".to_string(),
+            database_url: Some("mysql://localhost/test".to_string()),
             redis_url: None,
             allowed_origins: vec![],
             rate_limit_requests: 100,
@@ -285,7 +301,7 @@ mod tests {
                 host: "0.0.0.0".to_string(),
                 port: 8080,
                 jwt_secret: "test-secret-at-least-32-chars-long".to_string(),
-                database_url: url.to_string(),
+                database_url: Some(url.to_string()),
                 redis_url: None,
                 allowed_origins: vec![],
                 rate_limit_requests: 100,
@@ -305,7 +321,7 @@ mod tests {
             host: "0.0.0.0".to_string(),
             port: 8080,
             jwt_secret: "test-secret-at-least-32-chars-long".to_string(),
-            database_url: "postgres://localhost/test".to_string(),
+            database_url: Some("postgres://localhost/test".to_string()),
             redis_url: None,
             allowed_origins: vec![],
             rate_limit_requests: 100,
