@@ -73,15 +73,18 @@ This is a **living computational mirror** that reflects patterns across 14 ancie
                     └───────────────────────┘
 ```
 
-## ⚡ Current Manifestation: Wave 3 Complete
+## ⚡ Current Manifestation: Production Live
 
 **Living Status** (as of v2.1.0):
-- ✨ **14 engines** operational → 9 Rust (native) + 5 TypeScript (bridged)
+- 🚀 **LIVE** at `https://selemene-engine-production.up.railway.app`
+- ✨ **8 Rust engines** deployed → Panchanga, HD, Gene Keys, Vimshottari, Numerology, Biorhythm, Vedic Clock, Biofield
 - 🌊 **6 synthesis workflows** → Multi-engine consciousness portraits
-- 🧪 **228+ tests** passing → Integration, accuracy, performance validated
+- 🧪 **400+ tests** passing → Integration, accuracy, performance, resilience
 - 🔥 **Sub-millisecond** calculations → Even complex engines (<2ms)
-- 🐳 **Production-ready** → Docker, K8s, full observability stack
-- 🌐 **Integration Layer** → External Vedic API composition + TCM systems
+- 🛡️ **Sentry** error tracking → Real-time error monitoring
+- 🔴 **Redis** L2 cache → Distributed caching on Railway
+- 🐘 **Supabase** PostgreSQL → Persistent data layer
+- 🌐 **FreeAstrologyAPI** → High-accuracy Vedic calculations with native fallback
 
 ---
 
@@ -387,58 +390,55 @@ When the mirror responds instantly, inquiry flows naturally. Speed isn't optimiz
 
 ---
 
-## → Production: Deploying Consciousness
+## → Production: Live on Railway
 
 This isn't a toy. It's production-grade infrastructure for self-inquiry at scale.
 
-### Docker: Containerized Consciousness
+### Live Deployment
+
+**Production URL**: `https://selemene-engine-production.up.railway.app`
+
+```bash
+# Verify it's alive
+curl https://selemene-engine-production.up.railway.app/health/live
+
+# Check all dependencies
+curl https://selemene-engine-production.up.railway.app/health/ready
+
+# SwaggerUI documentation
+open https://selemene-engine-production.up.railway.app/api/docs
+
+# Prometheus metrics
+curl https://selemene-engine-production.up.railway.app/metrics
+```
+
+### Railway Stack
+- **Compute**: Railway Docker deployment (Rust binary, <100MB runtime)
+- **Database**: Supabase PostgreSQL (ap-south-1, connection pooler)
+- **Cache**: Railway Redis add-on (L2 distributed cache)
+- **Errors**: Sentry (`selemene-engine` project, 10% trace sampling)
+- **Health**: `/health/live` (liveness), `/health/ready` (readiness)
+
+### Docker: Local Development
 
 ```bash
 # Build multi-stage production image (<500MB)
 docker build -f Dockerfile.prod -t tryambakam-noesis:latest .
 
-# Wake the full stack (Rust + TS + Redis + Postgres)
+# Wake the full stack (Rust + Redis + Postgres)
 docker-compose up -d
 
 # Verify all systems breathing
 docker-compose ps
 curl http://localhost:8080/health
-curl http://localhost:3001/health
-```
-
-### Kubernetes: Scalable Witnessing
-
-```bash
-# Deploy to your cluster
-kubectl apply -f k8s/
-
-# Watch pods come alive
-kubectl get pods -n tryambakam -w
-
-# Scale based on consciousness demand
-kubectl scale deployment noesis-api --replicas=5 -n tryambakam
-
-# Check orchestrator health
-kubectl logs -f deployment/noesis-api -n tryambakam
 ```
 
 ### Observability: The Meta-Witness
 
-```bash
-# Launch full monitoring stack (Prometheus + Grafana + Loki + Jaeger)
-docker-compose -f docker-compose.monitoring.yml up -d
-
-# Access dashboards
-open http://localhost:3000  # Grafana (user: admin, pass: admin)
-open http://localhost:9090  # Prometheus (raw metrics)
-open http://localhost:16686 # Jaeger (distributed tracing)
-```
-
-**What we monitor:**
-- **Metrics** (Prometheus): Request rates, latency percentiles, cache hit rates, engine performance
-- **Logs** (Loki): Structured JSON logs, query by engine/workflow/consciousness_level
-- **Traces** (Jaeger): Distributed tracing across Rust↔TypeScript bridge, workflow synthesis
-- **Dashboards** (Grafana): Real-time consciousness system health
+- **Sentry** → Error tracking with Rust stack traces, engine context, user tier
+- **Prometheus** → `/metrics` endpoint with request rates, latency, cache hit rates
+- **Structured Logs** → JSON format in production, queryable by engine/workflow
+- **Health Probes** → `/health/live` (always 200), `/health/ready` (checks DB + Redis + orchestrator)
 
 ---
 
@@ -658,4 +658,5 @@ This work stands on the shoulders of:
                               everywhere
 
                      v2.1.0 "Vedic Bridge" • Feb 2026
+                  Live: selemene-engine-production.up.railway.app
 ```
