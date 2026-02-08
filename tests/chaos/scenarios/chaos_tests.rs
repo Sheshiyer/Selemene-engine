@@ -28,7 +28,7 @@ static CHAOS_ROUTER: OnceLock<Router> = OnceLock::new();
 
 fn get_router() -> &'static Router {
     CHAOS_ROUTER.get_or_init(|| {
-        let config = ApiConfig::from_env();
+        let config = ApiConfig::from_env().expect("failed to load test config");
         let state = build_app_state(&config);
         create_router(state, &config)
     })

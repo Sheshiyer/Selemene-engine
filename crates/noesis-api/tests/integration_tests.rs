@@ -33,7 +33,7 @@ static TEST_ROUTER: OnceCell<Router> = OnceCell::const_new();
 async fn get_test_router() -> &'static Router {
     TEST_ROUTER
         .get_or_init(|| async {
-            let config = noesis_api::ApiConfig::from_env();
+            let config = noesis_api::ApiConfig::from_env().expect("failed to load test config");
             let state = build_app_state_lazy_db(&config).await;
             create_router(state, &config)
         })

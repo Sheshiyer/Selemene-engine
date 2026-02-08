@@ -27,7 +27,7 @@ static WORKFLOW_TEST_ROUTER: OnceCell<Router> = OnceCell::const_new();
 async fn get_test_router() -> &'static Router {
     WORKFLOW_TEST_ROUTER
         .get_or_init(|| async {
-            let config = ApiConfig::from_env();
+            let config = ApiConfig::from_env().expect("failed to load test config");
             let state = build_app_state_lazy_db(&config).await;
             create_router(state, &config)
         })

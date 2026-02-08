@@ -2,6 +2,67 @@
 
 All notable changes to the Tryambakam Noesis Engine project.
 
+## [2.1.0] - 2026-02-09
+
+### Added
+
+#### Phase 10: FreeAstrologyAPI Integration (18 tasks completed)
+
+**noesis-vedic-api Crate**
+- FreeAstrologyAPI.com integration for high-accuracy Vedic astrology calculations
+- `VedicApiService` as the unified entry point with metrics, fallback, and resilience
+- `CachedVedicClient` with LRU caching and daily rate limit tracking (50/day)
+- Complete Panchang support: Tithi, Nakshatra, Yoga, Karana, Vara, Muhurtas, Hora, Choghadiya
+- Vimshottari Dasha at all 4 levels (Maha, Antar, Pratyantar, Sookshma)
+- Birth Chart (Rashi D1) and Navamsa Chart (D9)
+- Advanced modules: Yogas, Shadbala, Ashtakavarga, Transits, Eclipses, Festivals
+
+**Test Infrastructure (174 tests)**
+- Comprehensive test mocks (37 tests) for CI/CD without API keys
+- Validation tests (51 tests) against JHora, Swiss Ephemeris, and Shesh's birth profile
+- Integration tests (86 tests) covering end-to-end flows, error handling, and resilience
+
+**Fallback and Resilience (FAPI-098, FAPI-105)**
+- Automatic native calculation fallback when API is unavailable
+- `FallbackCalculator` for approximate Panchang, Dasha, and Birth Chart
+- `RateLimitHandler` for HTTP 429 responses with exponential backoff
+- Retry-After header support with configurable delay cap (60s max)
+- Circuit breaker pattern to prevent cascading failures
+
+**Metrics and Monitoring (FAPI-099)**
+- Prometheus-compatible metrics export (11 metric families)
+- API call counts, cache hit/miss ratios, response time histograms
+- Error counts by type, fallback trigger counts by reason
+- JSON summary export for logging and health checks
+
+**Rate Limit Handling (FAPI-105)**
+- Client-side daily quota tracking (50 calls/day with 5-request safety buffer)
+- Server-side 429 handling with exponential backoff (1s, 2s, 4s... up to 60s)
+- Retry-After header respected when present
+
+**Docker and Deployment (FAPI-103, FAPI-104)**
+- Docker configuration for Railway deployment (`Dockerfile.prod`, `railway.toml`)
+- Health check endpoint support (`/health/live`)
+- Environment variable configuration for all API settings
+
+**Batch and Versioning (FAPI-106, FAPI-107)**
+- Batch Panchang request support via `batch_panchang()`
+- API version routing with deprecation headers (`X-API-Version`, `Sunset-Notice`)
+
+**Documentation**
+- Comprehensive README for noesis-vedic-api crate
+- Migration guide: Native engines to FreeAstrologyAPI (`docs/MIGRATION_TO_FREE_ASTROLOGY_API.md`)
+- Internal migration guide: v1 (VedicApiClient) to v2 (VedicApiService) (`MIGRATION.md`)
+
+### Changed
+- `noesis-vedic-api` version bumped to 0.1.0 (initial release of crate)
+
+### Migration
+- See [Migration Guide](docs/MIGRATION_TO_FREE_ASTROLOGY_API.md) for migrating from native engines
+- See [crates/noesis-vedic-api/MIGRATION.md](crates/noesis-vedic-api/MIGRATION.md) for v1-to-v2 internal migration
+
+---
+
 ## [2.0.0] - 2026-02-01
 
 ### Added
@@ -102,6 +163,7 @@ All notable changes to the Tryambakam Noesis Engine project.
 
 | Version | Date | Engines | Tests | Highlights |
 |---------|------|---------|-------|------------|
+| 2.1.0 | 2026-02-09 | 14 + API | 402+ | FreeAstrologyAPI integration, metrics, resilience |
 | 2.0.0 | 2026-02-01 | 14 | 228+ | Wave 2 complete, workflows, production ready |
 | 1.1.0 | 2026-01-31 | 6 | 100+ | Wave 1 complete, all core engines |
 | 1.0.0 | 2025-08-13 | 1 | 20+ | Initial release, Panchanga only |

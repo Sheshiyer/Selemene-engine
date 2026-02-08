@@ -56,7 +56,7 @@ async fn e2e_request_permit() -> tokio::sync::OwnedSemaphorePermit {
 async fn get_router() -> &'static Router {
     E2E_TEST_ROUTER
         .get_or_init(|| async {
-            let config = ApiConfig::from_env();
+            let config = ApiConfig::from_env().expect("failed to load test config");
             let state = build_app_state_lazy_db(&config).await;
             create_router(state, &config)
         })
