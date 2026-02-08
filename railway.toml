@@ -1,0 +1,43 @@
+[build]
+# Use Metal build environment for faster builds
+builder = "NIXPACKS"
+# Dockerfile is auto-detected, but we can specify it explicitly
+dockerfilePath = "Dockerfile.prod"
+
+[deploy]
+# Start command - Railway will use the Dockerfile's ENTRYPOINT by default
+# startCommand = "/app/noesis-server"  # Uncomment if you need to override
+
+# Healthcheck endpoint - Railway will call this before marking deployment as successful
+healthcheckPath = "/health/live"
+healthcheckTimeout = 300  # 5 minutes for initial startup (Rust app takes time)
+
+# Restart policy - restart on failure
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 3
+
+[deploy.watch]
+# Watch paths - trigger deployment only when these files change
+# This prevents unnecessary rebuilds when docs/tests change
+include = [
+  "src/**",
+  "crates/**",
+  "data/**",
+  "Cargo.toml",
+  "Cargo.lock",
+  "Dockerfile.prod",
+  ".dockerignore"
+]
+
+# Ignore these paths - won't trigger deployments
+exclude = [
+  "*.md",
+  "docs/**",
+  "tests/**",
+  "benches/**",
+  ".claude/**",
+  ".context/**",
+  ".github/**",
+  "*.test.*",
+  "*.spec.*"
+]
