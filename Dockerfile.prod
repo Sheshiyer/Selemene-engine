@@ -1,13 +1,13 @@
 # =============================================================================
 # Production Multi-Stage Dockerfile for Selemene Engine (noesis-api)
-# Uses cargo-chef for dependency layer caching (529 deps + LTO = slow without it)
+# Workspace build without cargo-chef (workspace projects need different approach)
 # Target size: <500MB
 # =============================================================================
 
 # -----------------------------------------------------------------------------
-# Stage 1: Chef base — install cargo-chef on top of Rust toolchain
+# Stage 1: Builder — build the workspace
 # -----------------------------------------------------------------------------
-FROM rust:1.83-slim AS chef
+FROM rust:1.84-slim AS builder
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
@@ -15,46 +15,18 @@ RUN apt-get update && \
     libssl-dev \
     && rm -rf /var/lib/apt/lists/*
 
-RUN cargo install cargo-chef --locked
-
 WORKDIR /build
 
-# -----------------------------------------------------------------------------
-# Stage 2: Planner — generate dependency recipe from workspace manifests
-# Only re-runs when Cargo.toml or Cargo.lock change
-# -----------------------------------------------------------------------------
-FROM chef AS planner
-
-# Copy workspace root manifests
-COPY Cargo.toml Cargo.lock ./
-
-# Copy all workspace crate manifests and source (chef needs real source to plan)
-COPY crates/ ./crates/
-COPY src/ ./src/
-
-RUN cargo chef prepare --recipe-path recipe.json
-
-# -----------------------------------------------------------------------------
-# Stage 3: Builder — cook dependencies (cached), then build application
-# The cook step is the cache key: only invalidated by recipe.json changes
-# (i.e., Cargo.toml/Cargo.lock changes). Source code changes skip this layer.
-# -----------------------------------------------------------------------------
-FROM chef AS builder
-
-# Cook dependencies — this is the expensive cached layer
-COPY --from=planner /build/recipe.json recipe.json
-RUN cargo chef cook --release --recipe-path recipe.json
-
-# Now copy actual source and build the application binary
+# Copy workspace manifests and all crates
 COPY Cargo.toml Cargo.lock ./
 COPY crates/ ./crates/
-COPY src/ ./src/
 
+# Build the noesis-server binary
 RUN cargo build --release --bin noesis-server && \
     strip /build/target/release/noesis-server
 
 # -----------------------------------------------------------------------------
-# Stage 4: Runtime — minimal production image
+# Stage 2: Runtime — minimal production image
 # -----------------------------------------------------------------------------
 FROM debian:bookworm-slim AS runtime
 
