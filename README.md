@@ -85,10 +85,32 @@ This is a **living computational mirror** that reflects patterns across 14 ancie
 
 ---
 
+## → Binaries: Which Server to Run?
+
+This workspace contains **one production binary**:
+
+### `noesis-server` (Production) ⭐
+- **Location**: `crates/noesis-api/src/main.rs`
+- **Port**: 8080
+- **Features**: Full production stack
+  - JWT + API key authentication
+  - Rate limiting (per-user sliding window)
+  - Prometheus metrics (`/metrics`)
+  - SwaggerUI documentation (`/api/docs`)
+  - Health check endpoints (`/health`, `/health/ready`)
+  - 3-layer caching (L1 memory, L2 Redis, L3 disk)
+  - Graceful shutdown handling
+- **Use for**: Production deployments, Railway, Kubernetes, Docker
+- **Built by**: `Dockerfile.prod`
+
+**This is the binary you should deploy.**
+
+---
+
 ## → Quickstart: Awakening the System
 
 ```bash
-# 1. Wake the Rust core (noesis-api: port 8080)
+# 1. Wake the Rust core (noesis-server: port 8080)
 cargo build --release
 cargo run --bin noesis-server
 
