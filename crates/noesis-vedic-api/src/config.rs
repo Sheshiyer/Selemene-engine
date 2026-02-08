@@ -8,27 +8,30 @@ use crate::error::{Result, VedicApiError};
 pub struct Config {
     /// API key for FreeAstrologyAPI.com
     pub api_key: String,
-    
+
     /// Base URL for the API
     pub base_url: String,
-    
+
     /// Request timeout in seconds
     pub timeout_seconds: u64,
-    
+
     /// Number of retry attempts
     pub retry_count: u32,
-    
+
     /// Cache TTL in seconds for birth data (infinite = 0)
     pub cache_ttl_birth_data: u64,
-    
+
     /// Cache TTL in seconds for daily data
     pub cache_ttl_daily: u64,
-    
+
     /// Provider type: "api" or "native"
     pub provider: ProviderType,
-    
+
     /// Enable fallback to native calculations
     pub fallback_enabled: bool,
+
+    /// Rate limit backoff configuration for 429 responses (FAPI-105)
+    pub rate_limit: crate::rate_limit::RateLimitConfig,
 }
 
 /// Provider type for Vedic calculations
@@ -73,6 +76,7 @@ impl Config {
             cache_ttl_daily: 86400,  // 24 hours
             provider: ProviderType::Api,
             fallback_enabled: true,
+            rate_limit: crate::rate_limit::RateLimitConfig::default(),
         }
     }
     
@@ -116,7 +120,9 @@ impl Config {
             .ok()
             .map(|s| s.parse().unwrap_or(true))
             .unwrap_or(true);
-        
+
+        let rate_limit = crate::rate_limit::RateLimitConfig::from_env();
+
         Ok(Self {
             api_key,
             base_url,
@@ -126,6 +132,7 @@ impl Config {
             cache_ttl_daily,
             provider,
             fallback_enabled,
+            rate_limit,
         })
     }
     
@@ -176,6 +183,7 @@ impl Default for Config {
             cache_ttl_daily: 86400,
             provider: ProviderType::Api,
             fallback_enabled: true,
+            rate_limit: crate::rate_limit::RateLimitConfig::default(),
         }
     }
 }

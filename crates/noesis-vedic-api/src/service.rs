@@ -17,14 +17,16 @@ use crate::{
     panchang::{Panchang, CompletePanchang, PanchangQuery},
     dasha::{VimshottariDasha, DashaLevel},
     chart::{BirthChart, NavamsaChart},
-    metrics::{NoesisMetrics, error_type_label},
+    metrics::{NoesisMetrics, error_type_label, fallback_reason_label},
     resilience::{FallbackChain, FallbackSource, ResilienceMetrics, BackoffConfig},
     batch::{BatchScheduler, BatchConfig, BatchRequest, BatchResultValue},
+    fallback::FallbackCalculator,
 };
 
 #[derive(Debug, Clone)]
 pub struct VedicApiService {
     client: CachedVedicClient,
+    fallback: FallbackCalculator,
     metrics: Arc<NoesisMetrics>,
     resilience_metrics: Arc<ResilienceMetrics>,
 }
@@ -33,6 +35,17 @@ impl VedicApiService {
     pub fn new(client: CachedVedicClient) -> Self {
         Self {
             client,
+            fallback: FallbackCalculator::from_env(),
+            metrics: Arc::new(NoesisMetrics::new()),
+            resilience_metrics: Arc::new(ResilienceMetrics::new()),
+        }
+    }
+
+    /// Create with explicit fallback configuration.
+    pub fn with_fallback(client: CachedVedicClient, fallback_enabled: bool) -> Self {
+        Self {
+            client,
+            fallback: FallbackCalculator::new(fallback_enabled),
             metrics: Arc::new(NoesisMetrics::new()),
             resilience_metrics: Arc::new(ResilienceMetrics::new()),
         }
@@ -42,6 +55,7 @@ impl VedicApiService {
     pub fn with_metrics(client: CachedVedicClient, metrics: Arc<NoesisMetrics>) -> Self {
         Self {
             client,
+            fallback: FallbackCalculator::from_env(),
             metrics,
             resilience_metrics: Arc::new(ResilienceMetrics::new()),
         }
@@ -60,6 +74,11 @@ impl VedicApiService {
 
     pub fn client(&self) -> &CachedVedicClient {
         &self.client
+    }
+
+    /// Get a reference to the fallback calculator.
+    pub fn fallback(&self) -> &FallbackCalculator {
+        &self.fallback
     }
 
     /// Get a reference to the metrics collector.
@@ -225,6 +244,147 @@ impl VedicApiService {
         result
     }
 
+    // ==================== Fallback-Aware Methods (FAPI-098) ====================
+
+    /// Get Panchang with automatic fallback to native calculation on API failure.
+    ///
+    /// If the API call fails with a fallback-eligible error (network, 5xx, rate limit)
+    /// and the fallback calculator is enabled, computes the result locally.
+    pub async fn panchang_with_fallback(
+        &self,
+        year: i32,
+        month: u32,
+        day: u32,
+        hour: u32,
+        minute: u32,
+        second: u32,
+        lat: f64,
+        lng: f64,
+        tzone: f64,
+    ) -> Result<Panchang> {
+        let start = Instant::now();
+        self.metrics.record_api_call("panchang").await;
+
+        let result = self.client
+            .get_panchang(year, month, day, hour, minute, second, lat, lng, tzone)
+            .await;
+
+        match result {
+            Ok(data) => {
+                self.record_result("panchang", &Ok::<_, crate::VedicApiError>(()) , start).await;
+                Ok(data)
+            }
+            Err(ref e) if e.should_fallback() && self.fallback.is_enabled() => {
+                let reason = fallback_reason_label(e);
+                warn!(
+                    endpoint = "panchang",
+                    error = %e,
+                    fallback_reason = reason,
+                    "API failed, using native fallback"
+                );
+                self.metrics.record_fallback_trigger("panchang").await;
+                self.metrics.record_fallback_reason(reason).await;
+                self.resilience_metrics.record_native_fallback();
+                self.fallback.calculate_panchang(year, month, day, hour, minute, second, lat, lng, tzone)
+            }
+            Err(e) => {
+                self.record_result::<()>("panchang", &Err(e.clone()), start).await;
+                Err(e)
+            }
+        }
+    }
+
+    /// Get Vimshottari Dasha with automatic fallback to native calculation.
+    pub async fn vimshottari_dasha_with_fallback(
+        &self,
+        year: i32,
+        month: u32,
+        day: u32,
+        hour: u32,
+        minute: u32,
+        second: u32,
+        lat: f64,
+        lng: f64,
+        tzone: f64,
+        level: DashaLevel,
+    ) -> Result<VimshottariDasha> {
+        let start = Instant::now();
+        self.metrics.record_api_call("vimshottari_dasha").await;
+
+        let result = self.client
+            .get_vimshottari_dasha(year, month, day, hour, minute, second, lat, lng, tzone, level)
+            .await;
+
+        match result {
+            Ok(data) => {
+                self.record_result("vimshottari_dasha", &Ok::<_, crate::VedicApiError>(()), start).await;
+                Ok(data)
+            }
+            Err(ref e) if e.should_fallback() && self.fallback.is_enabled() => {
+                let reason = fallback_reason_label(e);
+                warn!(
+                    endpoint = "vimshottari_dasha",
+                    error = %e,
+                    fallback_reason = reason,
+                    "API failed, using native fallback"
+                );
+                self.metrics.record_fallback_trigger("vimshottari_dasha").await;
+                self.metrics.record_fallback_reason(reason).await;
+                self.resilience_metrics.record_native_fallback();
+                self.fallback.calculate_vimshottari(year, month, day, hour, minute, second, lat, lng, tzone, level)
+            }
+            Err(e) => {
+                self.record_result::<()>("vimshottari_dasha", &Err(e.clone()), start).await;
+                Err(e)
+            }
+        }
+    }
+
+    /// Get Birth Chart with automatic fallback to native calculation.
+    pub async fn birth_chart_with_fallback(
+        &self,
+        year: i32,
+        month: u32,
+        day: u32,
+        hour: u32,
+        minute: u32,
+        second: u32,
+        lat: f64,
+        lng: f64,
+        tzone: f64,
+    ) -> Result<BirthChart> {
+        let start = Instant::now();
+        self.metrics.record_api_call("birth_chart").await;
+
+        let result = self.client
+            .get_birth_chart(year, month, day, hour, minute, second, lat, lng, tzone)
+            .await;
+
+        match result {
+            Ok(data) => {
+                self.record_result("birth_chart", &Ok::<_, crate::VedicApiError>(()), start).await;
+                Ok(data)
+            }
+            Err(ref e) if e.should_fallback() && self.fallback.is_enabled() => {
+                let reason = fallback_reason_label(e);
+                warn!(
+                    endpoint = "birth_chart",
+                    error = %e,
+                    fallback_reason = reason,
+                    "API failed, using native fallback"
+                );
+                self.metrics.record_fallback_trigger("birth_chart").await;
+                self.metrics.record_fallback_reason(reason).await;
+                self.resilience_metrics.record_native_fallback();
+                self.fallback.calculate_birth_chart(year, month, day, hour, minute, second, lat, lng, tzone)
+            }
+            Err(e) => {
+                self.record_result::<()>("birth_chart", &Err(e.clone()), start).await;
+                Err(e)
+            }
+        }
+    }
+
     /// Export metrics in Prometheus text exposition format.
     ///
     /// Serve this from your `/metrics` HTTP endpoint for Prometheus scraping.
@@ -283,10 +443,13 @@ impl VedicApiService {
                 // Track fallback triggers specifically
                 if err.should_fallback() {
                     self.metrics.record_fallback_trigger(endpoint).await;
+                    let reason = fallback_reason_label(err);
+                    self.metrics.record_fallback_reason(reason).await;
                     self.resilience_metrics.record_native_fallback();
                     warn!(
                         endpoint = endpoint,
                         error_type = label,
+                        fallback_reason = reason,
                         "Fallback triggered"
                     );
                 }

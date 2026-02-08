@@ -89,6 +89,9 @@ pub mod service;
 // Resilience layer: fallback chain + exponential backoff (FAPI-098, FAPI-105)
 pub mod resilience;
 
+// Native fallback calculator (FAPI-098)
+pub mod fallback;
+
 // Batch request optimization (FAPI-106)
 pub mod batch;
 
@@ -118,6 +121,9 @@ pub mod progressions;
 
 // Panchang modules
 pub mod panchang;
+
+// HTTP 429 rate limit handling with exponential backoff (FAPI-105)
+pub mod rate_limit;
 
 // Retry logic with exponential backoff (FAPI-006)
 pub mod retry;
@@ -174,12 +180,17 @@ pub mod types;
 #[cfg(any(test, feature = "mocks"))]
 pub mod mocks;
 
+// Shesh-specific test mocks (FAPI-093) for CI/CD without API keys
+#[cfg(any(test, feature = "test-mocks"))]
+pub mod test_mocks;
+
 // Re-export main types
 pub use config::{Config, ProviderType};
 pub use error::{VedicApiError, VedicApiResult, Result};
 pub use client::VedicApiClient;
 pub use cache::ApiCache;
 pub use rate_limiter::{RateLimiter, RateLimitStatus};
+pub use rate_limit::{RateLimitConfig, RateLimitHandler};
 pub use cached_client::CachedVedicClient;
 pub use service::VedicApiService;
 

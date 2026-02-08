@@ -33,6 +33,7 @@ pub struct CachedVedicClient {
     cache: ApiCache,
     rate_limiter: RateLimiter,
     config: Config,
+    fallback: crate::fallback::FallbackCalculator,
 }
 
 impl CachedVedicClient {
@@ -41,13 +42,15 @@ impl CachedVedicClient {
         let inner = VedicApiClient::new(config.clone());
         let cache = ApiCache::new();
         let rate_limiter = RateLimiter::new();
-        
+        let fallback = crate::fallback::FallbackCalculator::new(config.fallback_enabled);
+
         info!("CachedVedicClient initialized with rate limiting and caching");
-        
+
         Self {
             inner,
             cache,
             rate_limiter,
+            fallback,
             config,
         }
     }
@@ -632,84 +635,56 @@ impl CachedVedicClient {
     
     // ==================== FALLBACK METHODS ====================
     
-    /// Fallback to native Panchang calculation
+    /// Fallback to native Panchang calculation via FallbackCalculator (FAPI-098)
     async fn fallback_panchang(
         &self,
-        _year: i32,
-        _month: u32,
-        _day: u32,
-        _hour: u32,
-        _minute: u32,
-        _second: u32,
-        _lat: f64,
-        _lng: f64,
-        _tzone: f64,
+        year: i32,
+        month: u32,
+        day: u32,
+        hour: u32,
+        minute: u32,
+        second: u32,
+        lat: f64,
+        lng: f64,
+        tzone: f64,
     ) -> Result<Panchang> {
-        if !self.config.fallback_enabled {
-            return Err(VedicApiError::RateLimit { retry_after: Some(3600) });
-        }
-        
         warn!("Falling back to native Panchang calculation");
-        
-        // TODO: Integrate with native engine-panchanga
-        // For now, return error
-        Err(VedicApiError::FallbackFailed {
-            api_error: Box::new(VedicApiError::RateLimit { retry_after: Some(3600) }),
-            native_error: "Native fallback not yet implemented".to_string(),
-        })
+        self.fallback.calculate_panchang(year, month, day, hour, minute, second, lat, lng, tzone)
     }
-    
-    /// Fallback to native Dasha calculation
+
+    /// Fallback to native Dasha calculation via FallbackCalculator (FAPI-098)
     async fn fallback_dasha(
         &self,
-        _year: i32,
-        _month: u32,
-        _day: u32,
-        _hour: u32,
-        _minute: u32,
-        _second: u32,
-        _lat: f64,
-        _lng: f64,
-        _tzone: f64,
-        _level: DashaLevel,
+        year: i32,
+        month: u32,
+        day: u32,
+        hour: u32,
+        minute: u32,
+        second: u32,
+        lat: f64,
+        lng: f64,
+        tzone: f64,
+        level: DashaLevel,
     ) -> Result<VimshottariDasha> {
-        if !self.config.fallback_enabled {
-            return Err(VedicApiError::RateLimit { retry_after: Some(3600) });
-        }
-        
         warn!("Falling back to native Dasha calculation");
-        
-        // TODO: Integrate with native engine-vimshottari
-        Err(VedicApiError::FallbackFailed {
-            api_error: Box::new(VedicApiError::RateLimit { retry_after: Some(3600) }),
-            native_error: "Native fallback not yet implemented".to_string(),
-        })
+        self.fallback.calculate_vimshottari(year, month, day, hour, minute, second, lat, lng, tzone, level)
     }
-    
-    /// Fallback to native birth chart calculation
+
+    /// Fallback to native birth chart calculation via FallbackCalculator (FAPI-098)
     async fn fallback_birth_chart(
         &self,
-        _year: i32,
-        _month: u32,
-        _day: u32,
-        _hour: u32,
-        _minute: u32,
-        _second: u32,
-        _lat: f64,
-        _lng: f64,
-        _tzone: f64,
+        year: i32,
+        month: u32,
+        day: u32,
+        hour: u32,
+        minute: u32,
+        second: u32,
+        lat: f64,
+        lng: f64,
+        tzone: f64,
     ) -> Result<BirthChart> {
-        if !self.config.fallback_enabled {
-            return Err(VedicApiError::RateLimit { retry_after: Some(3600) });
-        }
-        
         warn!("Falling back to native birth chart calculation");
-        
-        // TODO: This would require native calculation
-        Err(VedicApiError::FallbackFailed {
-            api_error: Box::new(VedicApiError::RateLimit { retry_after: Some(3600) }),
-            native_error: "Native fallback not yet implemented".to_string(),
-        })
+        self.fallback.calculate_birth_chart(year, month, day, hour, minute, second, lat, lng, tzone)
     }
 }
 

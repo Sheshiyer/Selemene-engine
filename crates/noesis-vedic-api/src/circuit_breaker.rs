@@ -198,6 +198,21 @@ impl CircuitBreaker {
         info!("Circuit breaker manually reset");
     }
 
+    /// Get the current state as a Prometheus gauge value.
+    /// Closed = 0, HalfOpen = 1, Open = 2.
+    ///
+    /// Use this to update `NoesisMetrics::set_circuit_breaker_state()`:
+    /// ```ignore
+    /// metrics.set_circuit_breaker_state(cb.state_gauge());
+    /// ```
+    pub fn state_gauge(&self) -> u64 {
+        match self.state() {
+            CircuitState::Closed => 0,
+            CircuitState::HalfOpen => 1,
+            CircuitState::Open => 2,
+        }
+    }
+
     /// Get circuit breaker metrics
     pub fn metrics(&self) -> CircuitBreakerMetrics {
         CircuitBreakerMetrics {
@@ -333,5 +348,27 @@ mod tests {
         let metrics = cb.metrics();
         assert_eq!(metrics.total_calls, 1);
         assert_eq!(metrics.total_failures, 1);
+    }
+
+    #[test]
+    fn test_state_gauge_values() {
+        let config = CircuitBreakerConfig {
+            failure_threshold: 1,
+            recovery_timeout: Duration::from_secs(60),
+            ..Default::default()
+        };
+        let cb = CircuitBreaker::new(config);
+
+        // Closed = 0
+        assert_eq!(cb.state_gauge(), 0);
+
+        // Open = 2
+        cb.record_failure();
+        assert_eq!(cb.state(), CircuitState::Open);
+        assert_eq!(cb.state_gauge(), 2);
+
+        // Reset back to closed = 0
+        cb.reset();
+        assert_eq!(cb.state_gauge(), 0);
     }
 }

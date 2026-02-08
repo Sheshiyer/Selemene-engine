@@ -891,6 +891,7 @@ pub fn mock_config(base_url: &str) -> crate::Config {
         cache_ttl_daily: 86400,
         provider: crate::config::ProviderType::Api,
         fallback_enabled: false,
+        rate_limit: crate::rate_limit::RateLimitConfig::default(),
     }
 }
 

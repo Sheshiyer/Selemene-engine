@@ -63,6 +63,22 @@ pub const ERROR_TYPES: &[&str] = &[
     "fallback_failed",
 ];
 
+/// Fallback reason labels for the fallback-by-reason counter.
+pub const FALLBACK_REASONS: &[&str] = &[
+    "network",
+    "5xx",
+    "429",
+    "circuit_open",
+    "timeout",
+    "unknown",
+];
+
+/// Retry result labels.
+pub const RETRY_RESULTS: &[&str] = &[
+    "success_after_retry",
+    "exhausted",
+];
+
 /// Thread-safe atomic counter.
 #[derive(Debug)]
 struct Counter {
@@ -167,7 +183,7 @@ impl Clone for Histogram {
 /// All operations are lock-free using atomic counters. The only lock is
 /// on the endpoint/error maps for dynamic label insertion, guarded by RwLock
 /// so reads (the hot path during export) never block writes.
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub struct NoesisMetrics {
     /// API call counts keyed by endpoint name.
     api_calls: Arc<RwLock<HashMap<String, Counter>>>,
@@ -181,6 +197,12 @@ pub struct NoesisMetrics {
     response_times: Arc<RwLock<HashMap<String, Histogram>>>,
     /// Error counts keyed by error type.
     error_counts: Arc<RwLock<HashMap<String, Counter>>>,
+    /// Fallback triggers keyed by reason (network, 5xx, 429, circuit_open).
+    fallback_reasons: Arc<RwLock<HashMap<String, Counter>>>,
+    /// Circuit breaker state: 0=closed, 1=half_open, 2=open.
+    circuit_breaker_state: AtomicU64,
+    /// Retry attempt counts keyed by result (success_after_retry, exhausted).
+    retry_results: Arc<RwLock<HashMap<String, Counter>>>,
     /// Total successful API responses.
     total_success: Counter,
     /// Total failed API responses.
@@ -197,6 +219,9 @@ impl NoesisMetrics {
             fallback_triggers: Arc::new(RwLock::new(HashMap::new())),
             response_times: Arc::new(RwLock::new(HashMap::new())),
             error_counts: Arc::new(RwLock::new(HashMap::new())),
+            fallback_reasons: Arc::new(RwLock::new(HashMap::new())),
+            circuit_breaker_state: AtomicU64::new(0),
+            retry_results: Arc::new(RwLock::new(HashMap::new())),
             total_success: Counter::new(),
             total_errors: Counter::new(),
         };
@@ -259,6 +284,35 @@ impl NoesisMetrics {
         self.total_success.increment();
     }
 
+    /// Record a fallback trigger by reason (e.g., "network", "5xx", "429", "circuit_open").
+    pub async fn record_fallback_reason(&self, reason: &str) {
+        let mut map = self.fallback_reasons.write().await;
+        map.entry(reason.to_string())
+            .or_insert_with(Counter::new)
+            .increment();
+    }
+
+    /// Update the circuit breaker state gauge.
+    /// Values: 0 = closed, 1 = half_open, 2 = open.
+    pub fn set_circuit_breaker_state(&self, state: u64) {
+        self.circuit_breaker_state.store(state, Ordering::Relaxed);
+    }
+
+    /// Get current circuit breaker state gauge value.
+    pub fn get_circuit_breaker_state(&self) -> u64 {
+        self.circuit_breaker_state.load(Ordering::Relaxed)
+    }
+
+    /// Record a retry attempt result.
+    /// Use "success_after_retry" when a retry eventually succeeds,
+    /// or "exhausted" when all retries are used up.
+    pub async fn record_retry_result(&self, result: &str) {
+        let mut map = self.retry_results.write().await;
+        map.entry(result.to_string())
+            .or_insert_with(Counter::new)
+            .increment();
+    }
+
     // ==================== Query Methods ====================
 
     /// Get total API calls for a specific endpoint.
@@ -299,6 +353,18 @@ impl NoesisMetrics {
     /// Get total error responses.
     pub fn get_total_errors(&self) -> u64 {
         self.total_errors.get()
+    }
+
+    /// Get fallback count for a specific reason.
+    pub async fn get_fallback_reason_count(&self, reason: &str) -> u64 {
+        let map = self.fallback_reasons.read().await;
+        map.get(reason).map(|c| c.get()).unwrap_or(0)
+    }
+
+    /// Get retry result count.
+    pub async fn get_retry_result_count(&self, result: &str) -> u64 {
+        let map = self.retry_results.read().await;
+        map.get(result).map(|c| c.get()).unwrap_or(0)
     }
 
     /// Calculate cache hit ratio for a specific endpoint (0.0 to 1.0).
@@ -463,6 +529,54 @@ impl NoesisMetrics {
             }
         }
 
+        // Cache hit rate gauge (derived from hits and misses)
+        output.push_str("# HELP noesis_cache_hit_rate Overall cache hit rate (0.0-1.0)\n");
+        output.push_str("# TYPE noesis_cache_hit_rate gauge\n");
+        output.push_str(&format!(
+            "noesis_cache_hit_rate {:.4}\n",
+            self.overall_cache_hit_ratio().await
+        ));
+
+        // Fallback triggers by reason
+        output.push_str("# HELP noesis_fallback_by_reason_total Fallback triggers by reason\n");
+        output.push_str("# TYPE noesis_fallback_by_reason_total counter\n");
+        {
+            let map = self.fallback_reasons.read().await;
+            let mut entries: Vec<_> = map.iter().collect();
+            entries.sort_by_key(|(k, _)| (*k).clone());
+            for (reason, counter) in entries {
+                output.push_str(&format!(
+                    "noesis_fallback_by_reason_total{{reason=\"{}\"}} {}\n",
+                    reason,
+                    counter.get()
+                ));
+            }
+        }
+
+        // Circuit breaker state gauge
+        output.push_str("# HELP noesis_circuit_breaker_state Circuit breaker state (0=closed, 1=half_open, 2=open)\n");
+        output.push_str("# TYPE noesis_circuit_breaker_state gauge\n");
+        output.push_str(&format!(
+            "noesis_circuit_breaker_state {}\n",
+            self.circuit_breaker_state.load(Ordering::Relaxed)
+        ));
+
+        // Retry results
+        output.push_str("# HELP noesis_retry_results_total Retry outcomes by result\n");
+        output.push_str("# TYPE noesis_retry_results_total counter\n");
+        {
+            let map = self.retry_results.read().await;
+            let mut entries: Vec<_> = map.iter().collect();
+            entries.sort_by_key(|(k, _)| (*k).clone());
+            for (result, counter) in entries {
+                output.push_str(&format!(
+                    "noesis_retry_results_total{{result=\"{}\"}} {}\n",
+                    result,
+                    counter.get()
+                ));
+            }
+        }
+
         output
     }
 
@@ -473,6 +587,8 @@ impl NoesisMetrics {
         let cache_misses_map = self.cache_misses.read().await;
         let fallback_map = self.fallback_triggers.read().await;
         let error_map = self.error_counts.read().await;
+        let fallback_reason_map = self.fallback_reasons.read().await;
+        let retry_map = self.retry_results.read().await;
 
         let api_calls: HashMap<String, u64> = api_calls_map
             .iter()
@@ -499,13 +615,33 @@ impl NoesisMetrics {
             .map(|(k, v)| (k.clone(), v.get()))
             .collect();
 
+        let fallback_reasons: HashMap<String, u64> = fallback_reason_map
+            .iter()
+            .map(|(k, v)| (k.clone(), v.get()))
+            .collect();
+
+        let retry_results: HashMap<String, u64> = retry_map
+            .iter()
+            .map(|(k, v)| (k.clone(), v.get()))
+            .collect();
+
+        let cb_state = match self.circuit_breaker_state.load(Ordering::Relaxed) {
+            0 => "closed",
+            1 => "half_open",
+            2 => "open",
+            _ => "unknown",
+        };
+
         serde_json::json!({
             "api_calls": api_calls,
             "cache_hits": cache_hits,
             "cache_misses": cache_misses,
             "cache_hit_ratio": self.overall_cache_hit_ratio().await,
             "fallback_triggers": fallbacks,
+            "fallback_reasons": fallback_reasons,
             "errors": errors,
+            "circuit_breaker_state": cb_state,
+            "retry_results": retry_results,
             "total_success": self.total_success.get(),
             "total_errors": self.total_errors.get(),
         })
@@ -519,8 +655,29 @@ impl NoesisMetrics {
         self.fallback_triggers.write().await.clear();
         self.response_times.write().await.clear();
         self.error_counts.write().await.clear();
+        self.fallback_reasons.write().await.clear();
+        self.circuit_breaker_state.store(0, Ordering::Relaxed);
+        self.retry_results.write().await.clear();
         self.total_success.reset();
         self.total_errors.reset();
+    }
+}
+
+impl Clone for NoesisMetrics {
+    fn clone(&self) -> Self {
+        Self {
+            api_calls: Arc::clone(&self.api_calls),
+            cache_hits: Arc::clone(&self.cache_hits),
+            cache_misses: Arc::clone(&self.cache_misses),
+            fallback_triggers: Arc::clone(&self.fallback_triggers),
+            response_times: Arc::clone(&self.response_times),
+            error_counts: Arc::clone(&self.error_counts),
+            fallback_reasons: Arc::clone(&self.fallback_reasons),
+            circuit_breaker_state: AtomicU64::new(self.circuit_breaker_state.load(Ordering::Relaxed)),
+            retry_results: Arc::clone(&self.retry_results),
+            total_success: self.total_success.clone(),
+            total_errors: self.total_errors.clone(),
+        }
     }
 }
 
@@ -548,6 +705,31 @@ pub fn error_type_label(err: &crate::error::VedicApiError) -> &'static str {
         VedicApiError::Timeout(_) => "timeout",
         VedicApiError::RateLimited { .. } => "rate_limited",
         VedicApiError::ServiceUnavailable(_) => "service_unavailable",
+    }
+}
+
+/// Classify a VedicApiError into its fallback reason string.
+/// Used for the `noesis_fallback_by_reason_total` counter.
+pub fn fallback_reason_label(err: &crate::error::VedicApiError) -> &'static str {
+    use crate::error::VedicApiError;
+    match err {
+        VedicApiError::Network { .. } | VedicApiError::NetworkError(_) => "network",
+        VedicApiError::Api { status_code, .. } if *status_code >= 500 => "5xx",
+        VedicApiError::RateLimit { .. } | VedicApiError::RateLimited { .. } => "429",
+        VedicApiError::CircuitBreakerOpen => "circuit_open",
+        VedicApiError::Timeout(_) => "timeout",
+        _ => "unknown",
+    }
+}
+
+/// Map a CircuitState to its numeric gauge value for Prometheus.
+/// Closed = 0, HalfOpen = 1, Open = 2.
+pub fn circuit_state_to_gauge(state: &crate::circuit_breaker::CircuitState) -> u64 {
+    use crate::circuit_breaker::CircuitState;
+    match state {
+        CircuitState::Closed => 0,
+        CircuitState::HalfOpen => 1,
+        CircuitState::Open => 2,
     }
 }
 
@@ -848,5 +1030,197 @@ mod tests {
 
         assert_eq!(metrics.get_api_calls("panchang").await, 100);
         assert_eq!(metrics.get_cache_hits("panchang").await, 100);
+    }
+
+    // ==================== FAPI-099 New Metric Tests ====================
+
+    #[tokio::test]
+    async fn test_fallback_reason_counting() {
+        let metrics = NoesisMetrics::new();
+
+        metrics.record_fallback_reason("network").await;
+        metrics.record_fallback_reason("network").await;
+        metrics.record_fallback_reason("5xx").await;
+        metrics.record_fallback_reason("429").await;
+        metrics.record_fallback_reason("circuit_open").await;
+
+        assert_eq!(metrics.get_fallback_reason_count("network").await, 2);
+        assert_eq!(metrics.get_fallback_reason_count("5xx").await, 1);
+        assert_eq!(metrics.get_fallback_reason_count("429").await, 1);
+        assert_eq!(metrics.get_fallback_reason_count("circuit_open").await, 1);
+        assert_eq!(metrics.get_fallback_reason_count("nonexistent").await, 0);
+    }
+
+    #[test]
+    fn test_circuit_breaker_state_gauge() {
+        let metrics = NoesisMetrics::new();
+
+        // Default is closed (0)
+        assert_eq!(metrics.get_circuit_breaker_state(), 0);
+
+        // Set to open (2)
+        metrics.set_circuit_breaker_state(2);
+        assert_eq!(metrics.get_circuit_breaker_state(), 2);
+
+        // Set to half_open (1)
+        metrics.set_circuit_breaker_state(1);
+        assert_eq!(metrics.get_circuit_breaker_state(), 1);
+
+        // Back to closed (0)
+        metrics.set_circuit_breaker_state(0);
+        assert_eq!(metrics.get_circuit_breaker_state(), 0);
+    }
+
+    #[tokio::test]
+    async fn test_retry_result_counting() {
+        let metrics = NoesisMetrics::new();
+
+        metrics.record_retry_result("success_after_retry").await;
+        metrics.record_retry_result("success_after_retry").await;
+        metrics.record_retry_result("exhausted").await;
+
+        assert_eq!(metrics.get_retry_result_count("success_after_retry").await, 2);
+        assert_eq!(metrics.get_retry_result_count("exhausted").await, 1);
+        assert_eq!(metrics.get_retry_result_count("nonexistent").await, 0);
+    }
+
+    #[tokio::test]
+    async fn test_prometheus_export_includes_new_metrics() {
+        let metrics = NoesisMetrics::new();
+
+        // Record some data for the new metrics
+        metrics.record_fallback_reason("network").await;
+        metrics.record_fallback_reason("5xx").await;
+        metrics.set_circuit_breaker_state(2);
+        metrics.record_retry_result("success_after_retry").await;
+        metrics.record_retry_result("exhausted").await;
+
+        // Record cache data for hit rate gauge
+        metrics.record_cache_hit("panchang").await;
+        metrics.record_cache_hit("panchang").await;
+        metrics.record_cache_hit("panchang").await;
+        metrics.record_cache_miss("panchang").await;
+
+        let output = metrics.export_prometheus().await;
+
+        // Cache hit rate gauge
+        assert!(output.contains("# HELP noesis_cache_hit_rate"), "Missing cache_hit_rate HELP");
+        assert!(output.contains("# TYPE noesis_cache_hit_rate gauge"), "Missing cache_hit_rate TYPE");
+        assert!(output.contains("noesis_cache_hit_rate 0.75"), "Cache hit rate should be 0.75");
+
+        // Fallback by reason
+        assert!(output.contains("# HELP noesis_fallback_by_reason_total"), "Missing fallback_by_reason HELP");
+        assert!(output.contains("# TYPE noesis_fallback_by_reason_total counter"), "Missing fallback_by_reason TYPE");
+        assert!(output.contains("noesis_fallback_by_reason_total{reason=\"network\"} 1"), "Missing network fallback");
+        assert!(output.contains("noesis_fallback_by_reason_total{reason=\"5xx\"} 1"), "Missing 5xx fallback");
+
+        // Circuit breaker state
+        assert!(output.contains("# HELP noesis_circuit_breaker_state"), "Missing circuit_breaker_state HELP");
+        assert!(output.contains("# TYPE noesis_circuit_breaker_state gauge"), "Missing circuit_breaker_state TYPE");
+        assert!(output.contains("noesis_circuit_breaker_state 2"), "Circuit breaker should be open (2)");
+
+        // Retry results
+        assert!(output.contains("# HELP noesis_retry_results_total"), "Missing retry_results HELP");
+        assert!(output.contains("# TYPE noesis_retry_results_total counter"), "Missing retry_results TYPE");
+        assert!(output.contains("noesis_retry_results_total{result=\"success_after_retry\"} 1"), "Missing success_after_retry");
+        assert!(output.contains("noesis_retry_results_total{result=\"exhausted\"} 1"), "Missing exhausted");
+    }
+
+    #[tokio::test]
+    async fn test_json_summary_includes_new_metrics() {
+        let metrics = NoesisMetrics::new();
+
+        metrics.record_fallback_reason("network").await;
+        metrics.set_circuit_breaker_state(1);
+        metrics.record_retry_result("exhausted").await;
+
+        let json = metrics.export_json_summary().await;
+
+        assert_eq!(json["fallback_reasons"]["network"], 1);
+        assert_eq!(json["circuit_breaker_state"], "half_open");
+        assert_eq!(json["retry_results"]["exhausted"], 1);
+    }
+
+    #[tokio::test]
+    async fn test_reset_clears_new_metrics() {
+        let metrics = NoesisMetrics::new();
+
+        metrics.record_fallback_reason("network").await;
+        metrics.set_circuit_breaker_state(2);
+        metrics.record_retry_result("exhausted").await;
+
+        metrics.reset().await;
+
+        assert_eq!(metrics.get_fallback_reason_count("network").await, 0);
+        assert_eq!(metrics.get_circuit_breaker_state(), 0);
+        assert_eq!(metrics.get_retry_result_count("exhausted").await, 0);
+    }
+
+    #[test]
+    fn test_fallback_reason_label_mapping() {
+        use crate::error::VedicApiError;
+
+        assert_eq!(
+            fallback_reason_label(&VedicApiError::Network { message: "timeout".into() }),
+            "network"
+        );
+        assert_eq!(
+            fallback_reason_label(&VedicApiError::NetworkError("err".into())),
+            "network"
+        );
+        assert_eq!(
+            fallback_reason_label(&VedicApiError::Api { status_code: 502, message: "bad gw".into() }),
+            "5xx"
+        );
+        assert_eq!(
+            fallback_reason_label(&VedicApiError::RateLimit { retry_after: None }),
+            "429"
+        );
+        assert_eq!(
+            fallback_reason_label(&VedicApiError::RateLimited { retry_after_seconds: Some(60) }),
+            "429"
+        );
+        assert_eq!(
+            fallback_reason_label(&VedicApiError::CircuitBreakerOpen),
+            "circuit_open"
+        );
+        assert_eq!(
+            fallback_reason_label(&VedicApiError::Timeout("slow".into())),
+            "timeout"
+        );
+        assert_eq!(
+            fallback_reason_label(&VedicApiError::Parse { message: "bad".into() }),
+            "unknown"
+        );
+    }
+
+    #[test]
+    fn test_circuit_state_to_gauge() {
+        use crate::circuit_breaker::CircuitState;
+
+        assert_eq!(circuit_state_to_gauge(&CircuitState::Closed), 0);
+        assert_eq!(circuit_state_to_gauge(&CircuitState::HalfOpen), 1);
+        assert_eq!(circuit_state_to_gauge(&CircuitState::Open), 2);
+    }
+
+    #[tokio::test]
+    async fn test_concurrent_new_metrics() {
+        let metrics = Arc::new(NoesisMetrics::new());
+        let mut handles = Vec::new();
+
+        for _ in 0..50 {
+            let m = metrics.clone();
+            handles.push(tokio::spawn(async move {
+                m.record_fallback_reason("network").await;
+                m.record_retry_result("success_after_retry").await;
+            }));
+        }
+
+        for handle in handles {
+            handle.await.unwrap();
+        }
+
+        assert_eq!(metrics.get_fallback_reason_count("network").await, 50);
+        assert_eq!(metrics.get_retry_result_count("success_after_retry").await, 50);
     }
 }

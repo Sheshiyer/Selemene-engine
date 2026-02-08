@@ -458,7 +458,7 @@ impl FallbackChain {
 // ====================== ASTRONOMICAL HELPERS ======================
 
 /// Compute Julian Day Number from calendar date
-fn julian_day_number(year: i32, month: u32, day: u32) -> f64 {
+pub fn julian_day_number(year: i32, month: u32, day: u32) -> f64 {
     let y = year as f64;
     let m = month as f64;
     let d = day as f64;
@@ -475,7 +475,7 @@ fn julian_day_number(year: i32, month: u32, day: u32) -> f64 {
 }
 
 /// Approximate sun longitude (degrees) for a given JDN
-fn approximate_sun_longitude(jdn: f64) -> f64 {
+pub fn approximate_sun_longitude(jdn: f64) -> f64 {
     let t = (jdn - 2451545.0) / 36525.0; // Julian centuries from J2000
     let mean_anomaly = (357.5291 + 35999.0503 * t) % 360.0;
     let mean_lng = (280.4664 + 36000.7698 * t) % 360.0;
@@ -485,7 +485,7 @@ fn approximate_sun_longitude(jdn: f64) -> f64 {
 }
 
 /// Get zodiac sign name from ecliptic longitude
-fn sign_from_longitude(lng: f64) -> &'static str {
+pub fn sign_from_longitude(lng: f64) -> &'static str {
     let index = ((lng % 360.0) / 30.0).floor() as usize;
     const SIGNS: [&str; 12] = [
         "Aries", "Taurus", "Gemini", "Cancer", "Leo", "Virgo",
@@ -495,7 +495,7 @@ fn sign_from_longitude(lng: f64) -> &'static str {
 }
 
 /// Approximate sunrise time string for a latitude and JDN
-fn approximate_sunrise(lat: f64, jdn: f64) -> String {
+pub fn approximate_sunrise(lat: f64, jdn: f64) -> String {
     // Simplified sunrise calculation
     let day_of_year = ((jdn - julian_day_number(2024, 1, 1)) % 365.25) as f64;
     let declination = 23.45 * ((360.0 / 365.0 * (day_of_year + 284.0)).to_radians().sin());
@@ -516,7 +516,7 @@ fn approximate_sunrise(lat: f64, jdn: f64) -> String {
 }
 
 /// Approximate sunset time string for a latitude and JDN
-fn approximate_sunset(lat: f64, jdn: f64) -> String {
+pub fn approximate_sunset(lat: f64, jdn: f64) -> String {
     let day_of_year = ((jdn - julian_day_number(2024, 1, 1)) % 365.25) as f64;
     let declination = 23.45 * ((360.0 / 365.0 * (day_of_year + 284.0)).to_radians().sin());
     let lat_rad = lat.to_radians();

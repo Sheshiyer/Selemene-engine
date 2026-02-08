@@ -45,8 +45,10 @@ backoff = { version = "0.4", features = ["tokio"] }
 tokio-test = "0.4"
 wiremock = "0.6"
 mockall = "0.12"
-noesis-vedic-api = { path = ".", features = ["mocks"] }
+noesis-vedic-api = { path = ".", features = ["mocks", "test-mocks"] }
 
 [features]
 default = []
 mocks = []
+test-mocks = []
+real-api = []

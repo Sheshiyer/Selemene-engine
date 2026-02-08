@@ -2,14 +2,16 @@
 
 use chrono::{Datelike, Timelike};
 use reqwest::{Client, RequestBuilder, Response, header};
+use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
 use tracing::{debug, info, warn, error};
 
 use crate::{
-    config::Config, 
-    error::Result, 
+    config::Config,
+    error::Result,
     error::VedicApiError,
     logging,
+    rate_limit::RateLimitHandler,
     panchang::Panchang,
     dasha::{VimshottariDasha, DashaLevel},
     chart::{BirthChart, NavamsaChart},
@@ -20,6 +22,7 @@ use crate::{
 pub struct VedicApiClient {
     config: Config,
     http_client: Client,
+    rate_limit_handler: Arc<Mutex<RateLimitHandler>>,
 }
 
 impl VedicApiClient {
@@ -28,17 +31,22 @@ impl VedicApiClient {
         let http_client = Client::builder()
             .timeout(Duration::from_secs(config.timeout_seconds))
             .user_agent(format!(
-                "noesis-vedic-api/{}", 
+                "noesis-vedic-api/{}",
                 crate::VERSION
             ))
             .build()
             .expect("Failed to build HTTP client");
-        
+
+        let rate_limit_handler = Arc::new(Mutex::new(
+            RateLimitHandler::new(config.rate_limit.clone()),
+        ));
+
         info!("VedicApiClient initialized with base_url: {}", config.base_url);
-        
+
         Self {
             config,
             http_client,
+            rate_limit_handler,
         }
     }
     
@@ -66,6 +74,56 @@ impl VedicApiClient {
             .bearer_auth(&self.config.api_key)
     }
     
+    /// Execute a request with automatic 429 retry using exponential backoff.
+    ///
+    /// The `build_request_fn` closure is called to (re)build the request on
+    /// each attempt. This is needed because `RequestBuilder` is consumed on
+    /// send and cannot be retried directly.
+    ///
+    /// On success, the rate limit handler is reset.
+    /// On 429, the handler records the event, sleeps for the backoff delay
+    /// (respecting Retry-After header), and retries.
+    /// On non-429 errors or retry exhaustion, the error is returned.
+    pub async fn execute_with_retry<F>(&self, build_request_fn: F) -> Result<Response>
+    where
+        F: Fn() -> RequestBuilder,
+    {
+        loop {
+            let request = build_request_fn();
+            match self.execute_request(request).await {
+                Ok(response) => {
+                    // Success - reset the rate limit handler
+                    if let Ok(mut handler) = self.rate_limit_handler.lock() {
+                        handler.reset();
+                    }
+                    return Ok(response);
+                }
+                Err(VedicApiError::RateLimit { retry_after }) => {
+                    let (should_retry, delay) = {
+                        let mut handler = self.rate_limit_handler.lock()
+                            .map_err(|_| VedicApiError::Network {
+                                message: "Rate limit handler lock poisoned".to_string(),
+                            })?;
+                        handler.record_429(retry_after);
+                        let should = handler.should_retry();
+                        let delay = handler.next_backoff_delay();
+                        (should, delay)
+                    };
+
+                    if !should_retry {
+                        warn!("429 retries exhausted, returning rate limit error");
+                        return Err(VedicApiError::RateLimit { retry_after });
+                    }
+
+                    info!("429 received, backing off for {:?} before retry", delay);
+                    tokio::time::sleep(delay).await;
+                    // Loop continues with a fresh request
+                }
+                Err(other) => return Err(other),
+            }
+        }
+    }
+
     /// Execute a request and handle common errors
     async fn execute_request(&self, request: RequestBuilder) -> Result<Response> {
         let (log_url, log_method) = match request.try_clone().and_then(|req| req.build().ok()) {
@@ -152,7 +210,7 @@ impl VedicApiClient {
         tzone: f64,
     ) -> Result<Panchang> {
         info!("Fetching Panchang for {}/{}/{} {}:{}:{}", year, month, day, hour, minute, second);
-        
+
         let params = serde_json::json!({
             "year": year,
             "month": month,
@@ -168,18 +226,18 @@ impl VedicApiClient {
                 "ayanamsha": "lahiri"
             }
         });
-        
-        let request = self.build_request(reqwest::Method::POST, "panchang")
-            .json(&params);
-        
-        let response = self.execute_request(request).await?;
+
+        let response = self.execute_with_retry(|| {
+            self.build_request(reqwest::Method::POST, "panchang")
+                .json(&params)
+        }).await?;
         let panchang: Panchang = response.json().await?;
-        
-        info!("Panchang retrieved: Tithi={}, Nakshatra={}", 
-            panchang.tithi.name(), 
+
+        info!("Panchang retrieved: Tithi={}, Nakshatra={}",
+            panchang.tithi.name(),
             panchang.nakshatra.name()
         );
-        
+
         Ok(panchang)
     }
     
@@ -252,15 +310,15 @@ impl VedicApiClient {
                 "ayanamsha": "lahiri"
             }
         });
-        
-        let request = self.build_request(reqwest::Method::POST, "vimshottari-dasha")
-            .json(&params);
-        
-        let response = self.execute_request(request).await?;
+
+        let response = self.execute_with_retry(|| {
+            self.build_request(reqwest::Method::POST, "vimshottari-dasha")
+                .json(&params)
+        }).await?;
         let dasha: VimshottariDasha = response.json().await?;
-        
+
         info!("Vimshottari Dasha retrieved with {} mahadashas", dasha.mahadashas.len());
-        
+
         Ok(dasha)
     }
     
@@ -280,7 +338,7 @@ impl VedicApiClient {
         tzone: f64,
     ) -> Result<BirthChart> {
         info!("Fetching birth chart for {}/{}/{}", year, month, day);
-        
+
         let params = serde_json::json!({
             "year": year,
             "month": month,
@@ -297,15 +355,15 @@ impl VedicApiClient {
                 "house_system": "placidus"
             }
         });
-        
-        let request = self.build_request(reqwest::Method::POST, "horoscope-chart")
-            .json(&params);
-        
-        let response = self.execute_request(request).await?;
+
+        let response = self.execute_with_retry(|| {
+            self.build_request(reqwest::Method::POST, "horoscope-chart")
+                .json(&params)
+        }).await?;
         let chart: BirthChart = response.json().await?;
-        
+
         info!("Birth chart retrieved: Ascendant={}", chart.ascendant.sign.as_str());
-        
+
         Ok(chart)
     }
     
@@ -323,7 +381,7 @@ impl VedicApiClient {
         tzone: f64,
     ) -> Result<NavamsaChart> {
         info!("Fetching Navamsa chart");
-        
+
         let params = serde_json::json!({
             "year": year,
             "month": month,
@@ -339,13 +397,13 @@ impl VedicApiClient {
                 "ayanamsha": "lahiri"
             }
         });
-        
-        let request = self.build_request(reqwest::Method::POST, "navamsa-chart")
-            .json(&params);
-        
-        let response = self.execute_request(request).await?;
+
+        let response = self.execute_with_retry(|| {
+            self.build_request(reqwest::Method::POST, "navamsa-chart")
+                .json(&params)
+        }).await?;
         let chart: NavamsaChart = response.json().await?;
-        
+
         Ok(chart)
     }
     
@@ -354,22 +412,23 @@ impl VedicApiClient {
     /// Health check - verify API is accessible
     pub async fn health_check(&self) -> Result<bool> {
         debug!("Performing health check");
-        
-        // Use a simple Panchang request as health check
-        let request = self.build_request(reqwest::Method::POST, "panchang")
-            .json(&serde_json::json!({
-                "year": 2024,
-                "month": 1,
-                "date": 1,
-                "hours": 12,
-                "minutes": 0,
-                "seconds": 0,
-                "latitude": 28.6139,
-                "longitude": 77.2090,
-                "timezone": 5.5
-            }));
-        
-        match self.execute_request(request).await {
+
+        let health_body = serde_json::json!({
+            "year": 2024,
+            "month": 1,
+            "date": 1,
+            "hours": 12,
+            "minutes": 0,
+            "seconds": 0,
+            "latitude": 28.6139,
+            "longitude": 77.2090,
+            "timezone": 5.5
+        });
+
+        match self.execute_with_retry(|| {
+            self.build_request(reqwest::Method::POST, "panchang")
+                .json(&health_body)
+        }).await {
             Ok(_) => {
                 info!("Health check passed");
                 Ok(true)
@@ -388,26 +447,29 @@ impl VedicApiClient {
         Ok(None)
     }
     
-    /// Make a POST request to the given path with JSON body
+    /// Make a POST request to the given path with JSON body (with 429 retry)
     pub async fn post<T: serde::de::DeserializeOwned, B: serde::Serialize>(
         &self,
         path: &str,
         body: B,
     ) -> Result<T> {
-        let request = self.build_request(reqwest::Method::POST, path)
-            .json(&body);
-        let response = self.execute_request(request).await?;
+        let body_value = serde_json::to_value(&body)?;
+        let response = self.execute_with_retry(|| {
+            self.build_request(reqwest::Method::POST, path)
+                .json(&body_value)
+        }).await?;
         let result: T = response.json().await?;
         Ok(result)
     }
-    
-    /// Make a GET request to the given path
+
+    /// Make a GET request to the given path (with 429 retry)
     pub async fn get<T: serde::de::DeserializeOwned>(
         &self,
         path: &str,
     ) -> Result<T> {
-        let request = self.build_request(reqwest::Method::GET, path);
-        let response = self.execute_request(request).await?;
+        let response = self.execute_with_retry(|| {
+            self.build_request(reqwest::Method::GET, path)
+        }).await?;
         let result: T = response.json().await?;
         Ok(result)
     }
