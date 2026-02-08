@@ -37,9 +37,6 @@ members = [
     "crates/engine-vedic-clock",
     "crates/engine-biofield",
     "crates/engine-face-reading",
-
-    # Legacy Selemene package (kept during migration)
-    "legacy",
 ]
 
 [workspace.package]
