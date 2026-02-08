@@ -1,0 +1,518 @@
+{
+  "schema_version": "1.0",
+  "project": {
+    "name": "Selemene Engine MVP Deployment",
+    "repo_root": "Selemene-engine",
+    "generated_on": "2026-02-08",
+    "generated_by": "task-master-planner",
+    "target_infrastructure": "Railway + Supabase + Observability Stack",
+    "budget_target": "$37-47/month (Railway Hobby $5 + $6 usage + Supabase Pro $25 + domain $1)",
+    "user_scale": "<50 test users",
+    "assumptions": [
+      "Railway Hobby plan ($5/month base + usage) provides sufficient compute for MVP scale",
+      "Supabase Pro plan handles <50 concurrent users with Supavisor pooling",
+      "FreeAstrologyAPI.com free tier (50 req/day) sufficient with caching + fallback",
+      "Existing CI/CD pipeline (GitHub Actions) requires no changes",
+      "TypeScript engines may be deferred if only Rust engines needed for MVP",
+      "Test users will use API keys, not OAuth/social login",
+      "Single-region deployment sufficient for initial test group",
+      "Railway's Docker layer caching works as expected for Rust builds"
+    ],
+    "risks": [
+      "Auth migration from in-memory to Postgres introduces database dependency on critical path",
+      "Railway cold starts after idle periods may cause 3-5s first-request latency",
+      "FreeAstrologyAPI rate limit exhaustion if test users burst requests",
+      "Supabase connection limit (200) could be hit without proper pooling configuration",
+      "Initial Docker build on Railway takes 10-15 minutes (mitigated by cache optimization)",
+      "Swiss Ephemeris data files increase Docker image size (mitigated by multi-stage build)"
+    ]
+  },
+  "phases": [
+    {
+      "phase_id": "P1",
+      "name": "Phase 1: Foundation - Database & Core Infrastructure",
+      "objective": "Migrate auth to persistent storage, deploy to Railway with Redis, establish production-grade database layer",
+      "duration_weeks": 1,
+      "sprints": [
+        {
+          "sprint_id": "S1",
+          "duration_weeks": 1,
+          "focus": "Supabase Integration & Railway Deployment",
+          "tasks": [
+            {
+              "id": "P1-S1-01",
+              "title": "Create Supabase project and provision database",
+              "area": "infra",
+              "owner_role": "DevOps",
+              "est_hours": 2,
+              "dependencies": [],
+              "deliverable": "Supabase project created with connection string and credentials",
+              "acceptance": "Can connect to Supabase Postgres via psql with provided DATABASE_URL"
+            },
+            {
+              "id": "P1-S1-02",
+              "title": "Design and create database schema (api_keys, users, usage_logs)",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 4,
+              "dependencies": ["P1-S1-01"],
+              "deliverable": "SQL migration files for api_keys (with key_hash SHA-256, user_id, tier, permissions JSONB, consciousness_level, rate_limit, created_at, expires_at, last_used, is_active), users (user_id UUID, email, tier, consciousness_level, created_at), usage_logs (user_id, engine_id, workflow_id, status, duration_ms, created_at, partitioned by month)",
+              "acceptance": "All tables created with proper indexes (key_hash indexed), foreign keys (api_keys.user_id → users.user_id), and usage_logs partitioned by month"
+            },
+            {
+              "id": "P1-S1-03",
+              "title": "Add sqlx dependencies to noesis-auth crate",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 2,
+              "dependencies": ["P1-S1-02"],
+              "deliverable": "noesis-auth/Cargo.toml updated with sqlx, sqlx-postgres, and compile-time query checking enabled",
+              "acceptance": "cargo build --package noesis-auth succeeds with sqlx dependencies"
+            },
+            {
+              "id": "P1-S1-04",
+              "title": "Create sqlx migration files and embed in binary",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 3,
+              "dependencies": ["P1-S1-03"],
+              "deliverable": "migrations/ directory with .sql files, sqlx::migrate!() macro in AuthService::new() to run migrations on startup",
+              "acceptance": "Application startup automatically applies migrations to Supabase database without manual intervention"
+            },
+            {
+              "id": "P1-S1-05",
+              "title": "Refactor AuthService from HashMap to PgPool-backed",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 8,
+              "dependencies": ["P1-S1-04"],
+              "deliverable": "AuthService::validate_api_key() queries Postgres (SELECT * FROM api_keys WHERE key_hash = $1 AND is_active = true AND (expires_at IS NULL OR expires_at > NOW())), updates last_used asynchronously, keeps validate_jwt_token() unchanged",
+              "acceptance": "API key validation works against Supabase, last_used timestamp updates on each request, JWT validation remains stateless"
+            },
+            {
+              "id": "P1-S1-06",
+              "title": "Add DATABASE_URL to ApiConfig with validation",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 3,
+              "dependencies": ["P1-S1-05"],
+              "deliverable": "ApiConfig::from_env() reads DATABASE_URL (optional for dev, required when RUST_ENV=production), validates connection string format (must start with postgresql:// or postgres://)",
+              "acceptance": "Application fails fast with clear error message when DATABASE_URL missing in production mode, gracefully falls back to in-memory auth in development"
+            },
+            {
+              "id": "P1-S1-07",
+              "title": "Create API key seeding script (seed_api_keys.rs)",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 4,
+              "dependencies": ["P1-S1-06"],
+              "deliverable": "CLI tool that generates 32-char random API keys, stores SHA-256 hash in Supabase, outputs plaintext keys once (cannot be recovered)",
+              "acceptance": "Running seed_api_keys generates 5 test keys, inserts into database, prints plaintext keys to stdout, subsequent runs generate new keys without conflicts"
+            },
+            {
+              "id": "P1-S1-08",
+              "title": "Write unit tests for Postgres-backed AuthService",
+              "area": "qa",
+              "owner_role": "Backend Eng",
+              "est_hours": 6,
+              "dependencies": ["P1-S1-07"],
+              "deliverable": "Test suite covering: valid key validation, expired key rejection, inactive key rejection, last_used update, concurrent validation requests, database connection failure handling",
+              "acceptance": "cargo test --package noesis-auth passes with 90%+ coverage on AuthService methods"
+            },
+            {
+              "id": "P1-S1-09",
+              "title": "Create railway.toml configuration",
+              "area": "infra",
+              "owner_role": "DevOps",
+              "est_hours": 2,
+              "dependencies": [],
+              "deliverable": "railway.toml specifying Dockerfile.prod, PORT=8080, health check endpoint /health (30s interval, 5s timeout, 3 retries), restart policy always, Railway region selection",
+              "acceptance": "Railway auto-detects configuration and uses specified Dockerfile and health check settings"
+            },
+            {
+              "id": "P1-S1-10",
+              "title": "Optimize Dockerfile.prod for Railway build cache",
+              "area": "infra",
+              "owner_role": "DevOps",
+              "est_hours": 4,
+              "dependencies": ["P1-S1-09"],
+              "deliverable": "Restructured Dockerfile.prod: copy Cargo.toml/Cargo.lock first, run cargo build with dummy src/main.rs to cache dependencies, then copy actual source and rebuild",
+              "acceptance": "Incremental Railway deploys complete in 2-3 minutes (down from 10-15 minutes) due to Docker layer caching"
+            },
+            {
+              "id": "P1-S1-11",
+              "title": "Configure Railway environment variables",
+              "area": "infra",
+              "owner_role": "DevOps",
+              "est_hours": 3,
+              "dependencies": ["P1-S1-10"],
+              "deliverable": "All production env vars set in Railway dashboard: RUST_ENV=production, JWT_SECRET (64-char random), DATABASE_URL (Supabase with ?sslmode=require), LOG_FORMAT=json, RUST_LOG=info, ALLOWED_ORIGINS, FREE_ASTROLOGY_API_KEY, VEDIC_ENGINE_PROVIDER=api, VEDIC_ENGINE_FALLBACK_ENABLED=true",
+              "acceptance": "All required env vars present in Railway, secrets marked as sensitive, application config validates successfully"
+            },
+            {
+              "id": "P1-S1-12",
+              "title": "Provision Railway Redis add-on",
+              "area": "infra",
+              "owner_role": "DevOps",
+              "est_hours": 1,
+              "dependencies": ["P1-S1-11"],
+              "deliverable": "Redis add-on provisioned in Railway project, REDIS_URL auto-injected into application environment",
+              "acceptance": "Application logs show L2 cache (Redis) activated on startup, cache operations succeed"
+            },
+            {
+              "id": "P1-S1-13",
+              "title": "Deploy to Railway and verify health endpoints",
+              "area": "infra",
+              "owner_role": "DevOps",
+              "est_hours": 4,
+              "dependencies": ["P1-S1-12"],
+              "deliverable": "Application deployed to Railway, accessible via Railway-provided URL",
+              "acceptance": "curl https://<railway-url>/health returns 200 with engines_loaded=9 and workflows_loaded=6; /health/ready shows redis=ok and orchestrator=ready; /metrics returns Prometheus format; /api/docs loads SwaggerUI"
+            },
+            {
+              "id": "P1-S1-14",
+              "title": "Test authenticated API request with seeded key",
+              "area": "qa",
+              "owner_role": "QA",
+              "est_hours": 3,
+              "dependencies": ["P1-S1-13"],
+              "deliverable": "Verification that API key authentication works end-to-end on Railway deployment",
+              "acceptance": "POST /api/v1/engines/numerology/calculate with X-API-Key header returns valid calculation (not 401/500), rate limiting works (101st request returns 429), API key persists across container restarts"
+            },
+            {
+              "id": "P1-S1-15",
+              "title": "Test workflow execution on Railway",
+              "area": "qa",
+              "owner_role": "QA",
+              "est_hours": 2,
+              "dependencies": ["P1-S1-14"],
+              "deliverable": "Verification that multi-engine workflows execute correctly on Railway",
+              "acceptance": "POST /api/v1/workflows/self-inquiry/execute returns synthesized results from Gene Keys + Enneagram engines, parallel execution completes in <2 seconds"
+            },
+            {
+              "id": "P1-S1-16",
+              "title": "Document Phase 1 deployment and create runbook",
+              "area": "product",
+              "owner_role": "Tech Writer",
+              "est_hours": 4,
+              "dependencies": ["P1-S1-15"],
+              "deliverable": "Deployment runbook covering: Railway setup, Supabase configuration, environment variables, health check verification, troubleshooting common issues",
+              "acceptance": "Another engineer can follow runbook to replicate deployment from scratch"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "phase_id": "P2",
+      "name": "Phase 2: Production Readiness - Observability, Domain, & User Onboarding",
+      "objective": "Add production-grade observability (Sentry, Posthog, BetterStack), configure custom domain, build user onboarding flow",
+      "duration_weeks": 2,
+      "sprints": [
+        {
+          "sprint_id": "S1",
+          "duration_weeks": 1,
+          "focus": "DNS, Error Tracking, and Analytics",
+          "tasks": [
+            {
+              "id": "P2-S1-01",
+              "title": "Register domain and configure Cloudflare DNS",
+              "area": "infra",
+              "owner_role": "DevOps",
+              "est_hours": 2,
+              "dependencies": [],
+              "deliverable": "Domain (tryambakam.space) registered, CNAME record pointing to Railway URL, Cloudflare proxy enabled (orange cloud), SSL mode set to Full (strict)",
+              "acceptance": "https://tryambakam.space resolves to Railway deployment with valid SSL certificate"
+            },
+            {
+              "id": "P2-S1-02",
+              "title": "Configure Cloudflare caching rules",
+              "area": "infra",
+              "owner_role": "DevOps",
+              "est_hours": 2,
+              "dependencies": ["P2-S1-01"],
+              "deliverable": "Page rules: /health cached 30s, /api/docs and /api/openapi.json cached 1h, /api/v1/* bypass cache",
+              "acceptance": "Health check responses show X-Cache: HIT after first request, API responses always show X-Cache: MISS"
+            },
+            {
+              "id": "P2-S1-03",
+              "title": "Update ALLOWED_ORIGINS for production domain",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 1,
+              "dependencies": ["P2-S1-02"],
+              "deliverable": "Railway env var ALLOWED_ORIGINS updated to include https://tryambakam.space",
+              "acceptance": "CORS preflight requests from production domain succeed, localhost origins still work for development"
+            },
+            {
+              "id": "P2-S1-04",
+              "title": "Create Sentry project and obtain DSN",
+              "area": "infra",
+              "owner_role": "DevOps",
+              "est_hours": 1,
+              "dependencies": [],
+              "deliverable": "Sentry project created for Selemene Engine, DSN obtained",
+              "acceptance": "Sentry dashboard accessible, DSN ready for integration"
+            },
+            {
+              "id": "P2-S1-05",
+              "title": "Add sentry-rust and sentry-tower dependencies",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 2,
+              "dependencies": ["P2-S1-04"],
+              "deliverable": "noesis-api/Cargo.toml updated with sentry = 0.34 and sentry-tower = { version = 0.34, features = [http] }",
+              "acceptance": "cargo build --package noesis-api succeeds with Sentry dependencies"
+            },
+            {
+              "id": "P2-S1-06",
+              "title": "Initialize Sentry in main.rs before tracing",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 3,
+              "dependencies": ["P2-S1-05"],
+              "deliverable": "Sentry guard initialized in main.rs after ApiConfig::from_env() with release name, 10% trace sampling, environment from RUST_ENV, optional DSN (graceful no-op when absent)",
+              "acceptance": "Application starts successfully with and without SENTRY_DSN, Sentry captures panics and errors when DSN present"
+            },
+            {
+              "id": "P2-S1-07",
+              "title": "Integrate SentryHttpLayer with Axum middleware",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 4,
+              "dependencies": ["P2-S1-06"],
+              "deliverable": "SentryHttpLayer added to router layer stack outside auth/rate limit layers, ErrorResponse fields (error_code, details) piped into Sentry context via configure_scope(), fingerprinting added for EngineError variants",
+              "acceptance": "Sentry captures errors from all middleware layers, events include engine_id, user tier, consciousness_level context, errors grouped by engine + error_type"
+            },
+            {
+              "id": "P2-S1-08",
+              "title": "Add SENTRY_DSN to Railway environment",
+              "area": "infra",
+              "owner_role": "DevOps",
+              "est_hours": 1,
+              "dependencies": ["P2-S1-07"],
+              "deliverable": "SENTRY_DSN environment variable set in Railway as secret",
+              "acceptance": "Sentry dashboard shows events from Railway deployment, stack traces include Rust source context"
+            },
+            {
+              "id": "P2-S1-09",
+              "title": "Test Sentry error capture with forced 500",
+              "area": "qa",
+              "owner_role": "QA",
+              "est_hours": 2,
+              "dependencies": ["P2-S1-08"],
+              "deliverable": "Verification that Sentry captures and reports errors correctly",
+              "acceptance": "Triggering a forced 500 error creates Sentry issue with full stack trace, user context, and engine metadata"
+            },
+            {
+              "id": "P2-S1-10",
+              "title": "Create Posthog project and obtain API key",
+              "area": "infra",
+              "owner_role": "DevOps",
+              "est_hours": 1,
+              "dependencies": [],
+              "deliverable": "Posthog project created, API key obtained",
+              "acceptance": "Posthog dashboard accessible, API key ready for integration"
+            },
+            {
+              "id": "P2-S1-11",
+              "title": "Implement Posthog analytics middleware",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 6,
+              "dependencies": ["P2-S1-10"],
+              "deliverable": "Axum middleware that fires Posthog events asynchronously (spawn Tokio task) via HTTP capture API: engine_calculation (engine_id, user_id, tier, consciousness_level, status_code, duration_ms, cache_hit), workflow_execution (workflow_id, user_id, tier, engines_count, engines_succeeded, engines_failed, total_duration_ms), auth_failure (auth_method, error_reason, ip_hash), rate_limit_hit (user_id, tier, limit, window_seconds)",
+              "acceptance": "Posthog dashboard shows events from API requests, analytics never block response path (async fire-and-forget), failed Posthog requests log warning but don't affect user experience"
+            },
+            {
+              "id": "P2-S1-12",
+              "title": "Add POSTHOG_API_KEY to Railway environment",
+              "area": "infra",
+              "owner_role": "DevOps",
+              "est_hours": 1,
+              "dependencies": ["P2-S1-11"],
+              "deliverable": "POSTHOG_API_KEY environment variable set in Railway, middleware becomes no-op when absent",
+              "acceptance": "Posthog dashboard shows engine usage events, workflow executions, auth failures, and rate limit hits from production traffic"
+            },
+            {
+              "id": "P2-S1-13",
+              "title": "Configure BetterStack uptime monitors",
+              "area": "infra",
+              "owner_role": "DevOps",
+              "est_hours": 2,
+              "dependencies": ["P2-S1-03"],
+              "deliverable": "BetterStack monitors created for https://tryambakam.space: /health (3-minute interval), /health/ready (5-minute interval), alerts configured for email/Slack",
+              "acceptance": "BetterStack dashboard shows green status for both monitors, test alert triggers successfully"
+            },
+            {
+              "id": "P2-S1-14",
+              "title": "Enable BetterStack public status page",
+              "area": "infra",
+              "owner_role": "DevOps",
+              "est_hours": 1,
+              "dependencies": ["P2-S1-13"],
+              "deliverable": "Public status page enabled at status.tryambakam.space (or BetterStack subdomain)",
+              "acceptance": "Status page accessible to unauthenticated users, shows current uptime and incident history"
+            }
+          ]
+        },
+        {
+          "sprint_id": "S2",
+          "duration_weeks": 1,
+          "focus": "User Onboarding & API Key Management",
+          "tasks": [
+            {
+              "id": "P2-S2-01",
+              "title": "Design admin API key generation endpoint",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 3,
+              "dependencies": [],
+              "deliverable": "API spec for POST /api/v1/admin/keys endpoint: request body {user_id, tier, consciousness_level, expires_in_days}, response {api_key, expires_at, note}, protected by admin:keys permission or master admin API key",
+              "acceptance": "OpenAPI spec updated with admin endpoint documentation"
+            },
+            {
+              "id": "P2-S2-02",
+              "title": "Implement admin key generation endpoint",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 6,
+              "dependencies": ["P2-S2-01"],
+              "deliverable": "POST /api/v1/admin/keys handler that generates 32-char random key (nsk_ prefix), hashes with SHA-256, inserts into Supabase api_keys table, returns plaintext key once with warning message",
+              "acceptance": "Admin can generate keys via API, plaintext key returned only once, subsequent requests to same endpoint generate new keys, non-admin users receive 403"
+            },
+            {
+              "id": "P2-S2-03",
+              "title": "Add admin key revocation endpoint",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 4,
+              "dependencies": ["P2-S2-02"],
+              "deliverable": "POST /api/v1/admin/keys/:key_id/revoke endpoint that sets is_active=false in database",
+              "acceptance": "Revoked keys immediately fail authentication, revocation logged in usage_logs"
+            },
+            {
+              "id": "P2-S2-04",
+              "title": "Add admin key listing endpoint",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 3,
+              "dependencies": ["P2-S2-03"],
+              "deliverable": "GET /api/v1/admin/keys endpoint that returns list of all API keys with metadata (user_id, tier, created_at, last_used, is_active) but NOT plaintext keys or hashes",
+              "acceptance": "Admin can view all keys, pagination works for >100 keys, response includes usage statistics"
+            },
+            {
+              "id": "P2-S2-05",
+              "title": "Write admin endpoint integration tests",
+              "area": "qa",
+              "owner_role": "Backend Eng",
+              "est_hours": 4,
+              "dependencies": ["P2-S2-04"],
+              "deliverable": "Test suite covering: key generation with valid admin auth, key generation with non-admin auth (403), key revocation, key listing, expired key handling",
+              "acceptance": "cargo test --package noesis-api --test admin_endpoints passes all tests"
+            },
+            {
+              "id": "P2-S2-06",
+              "title": "Create test user onboarding documentation",
+              "area": "product",
+              "owner_role": "Tech Writer",
+              "est_hours": 4,
+              "dependencies": ["P2-S2-05"],
+              "deliverable": "Single-page markdown doc: API key usage (X-API-Key header), available engines and workflows, SwaggerUI URL, 3 working curl examples (engine calculation, workflow execution, health check), rate limits, support contact",
+              "acceptance": "Test user can follow documentation to make first successful API request within 5 minutes"
+            },
+            {
+              "id": "P2-S2-07",
+              "title": "Generate initial test user API keys",
+              "area": "infra",
+              "owner_role": "DevOps",
+              "est_hours": 2,
+              "dependencies": ["P2-S2-06"],
+              "deliverable": "5 test user API keys generated via admin endpoint, stored securely, ready for distribution",
+              "acceptance": "All 5 keys validate successfully, each has appropriate tier and consciousness_level"
+            },
+            {
+              "id": "P2-S2-08",
+              "title": "Create usage monitoring dashboard query",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 3,
+              "dependencies": ["P2-S2-07"],
+              "deliverable": "SQL query for Supabase dashboard showing: requests per user, most-used engines, average response time, error rate, cache hit rate",
+              "acceptance": "Dashboard query runs in <1 second, provides actionable insights on API usage patterns"
+            },
+            {
+              "id": "P2-S2-09",
+              "title": "Test end-to-end user journey",
+              "area": "qa",
+              "owner_role": "QA",
+              "est_hours": 4,
+              "dependencies": ["P2-S2-08"],
+              "deliverable": "Complete user journey test: receive API key, read documentation, make first engine request, make workflow request, hit rate limit, check status page",
+              "acceptance": "All steps complete successfully, documentation is clear, error messages are helpful"
+            },
+            {
+              "id": "P2-S2-10",
+              "title": "Verify 24-hour uptime and observability",
+              "area": "qa",
+              "owner_role": "DevOps",
+              "est_hours": 2,
+              "dependencies": ["P2-S2-09"],
+              "deliverable": "24-hour monitoring period showing: BetterStack 100% uptime, Sentry capturing errors, Posthog tracking events, Railway logs structured JSON",
+              "acceptance": "All observability tools show healthy metrics, no critical errors, response times <500ms p95"
+            },
+            {
+              "id": "P2-S2-11",
+              "title": "Create MVP deployment retrospective document",
+              "area": "product",
+              "owner_role": "Tech Writer",
+              "est_hours": 3,
+              "dependencies": ["P2-S2-10"],
+              "deliverable": "Retrospective covering: what went well, what could be improved, lessons learned, recommendations for scaling beyond MVP",
+              "acceptance": "Document provides clear insights for future deployment phases"
+            },
+            {
+              "id": "P2-S2-12",
+              "title": "Onboard first 3 test users",
+              "area": "product",
+              "owner_role": "Product Manager",
+              "est_hours": 4,
+              "dependencies": ["P2-S2-11"],
+              "deliverable": "3 test users onboarded with API keys, documentation shared, initial feedback collected",
+              "acceptance": "All 3 users successfully make authenticated API requests, provide feedback on documentation and API usability"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "total_phases": 2,
+    "total_sprints": 3,
+    "total_tasks": 42,
+    "total_estimated_hours": 126,
+    "estimated_duration_weeks": 3,
+    "success_criteria": [
+      "curl https://tryambakam.space/health returns 200 OK with engine and workflow counts",
+      "curl https://tryambakam.space/health/ready shows Redis=ok, orchestrator=ready",
+      "API key persists across container restarts (Supabase-backed auth)",
+      "Full engine calculation (POST /api/v1/engines/human-design/calculate) completes with valid API key",
+      "Workflow execution (POST /api/v1/workflows/self-inquiry/execute) synthesizes results from multiple engines",
+      "Sentry captures and reports forced 500 error with full context",
+      "Posthog shows engine usage events in dashboard",
+      "BetterStack shows 100% uptime over 24 hours",
+      "SwaggerUI at /api/docs accessible from production domain",
+      "At least 3 test users have received API keys and successfully made authenticated requests"
+    ],
+    "out_of_scope": [
+      "User-facing frontend (API-only MVP)",
+      "Supabase Auth integration (API keys sufficient for <50 users)",
+      "Kubernetes deployment (Railway Docker abstraction appropriate for MVP scale)",
+      "CI/CD pipeline changes (existing GitHub Actions sufficient)",
+      "Performance optimization (sub-2ms engine latency already achieved)",
+      "Multi-region deployment (single region sufficient for test group)",
+      "Log aggregation beyond Railway (Railway + Sentry + Posthog sufficient)",
+      "TypeScript engine deployment (deferred unless required for MVP)"
+    ]
+  }
+}

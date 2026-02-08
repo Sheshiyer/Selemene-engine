@@ -12,7 +12,7 @@ path = "src/main.rs"
 noesis-core = { path = "../noesis-core", features = ["openapi"] }
 noesis-data = { path = "../noesis-data" }
 noesis-cache = { path = "../noesis-cache" }
-noesis-auth = { path = "../noesis-auth" }
+noesis-auth = { path = "../noesis-auth", features = ["postgres"] }
 noesis-metrics = { path = "../noesis-metrics" }
 noesis-orchestrator = { path = "../noesis-orchestrator" }
 noesis-bridge = { path = "../noesis-bridge" }

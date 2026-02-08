@@ -2,6 +2,10 @@
 //!
 //! Migrated from the original Selemene Engine auth system.
 //! Provides Claims, ApiKey, AuthUser, AuthService, UserRateLimiter, and TierLimits.
+//!
+//! When the `postgres` feature is enabled, AuthService can validate API keys
+//! against a PostgreSQL database (api_keys table). Falls back to in-memory
+//! HashMap when no database pool is configured.
 
 use noesis_core::EngineError;
 use jsonwebtoken::{decode, DecodingKey, Validation, Algorithm, encode, EncodingKey, Header};
@@ -13,6 +17,12 @@ use std::collections::HashMap;
 use std::sync::Arc;
 use tokio::sync::RwLock;
 use chrono::{DateTime, Utc, Duration};
+
+#[cfg(feature = "postgres")]
+use sha2::{Sha256, Digest};
+
+#[cfg(feature = "postgres")]
+use sqlx::PgPool;
 
 /// JWT claims structure
 #[derive(Debug, Serialize, Deserialize)]
@@ -49,14 +59,38 @@ pub struct AuthUser {
     pub consciousness_level: u8,
 }
 
+/// Row returned by the api_keys Postgres query
+#[cfg(feature = "postgres")]
+#[derive(Debug, sqlx::FromRow)]
+#[allow(dead_code)]
+struct ApiKeyRecord {
+    pub id: uuid::Uuid,
+    pub key_hash: String,
+    pub user_id: uuid::Uuid,
+    pub tier: String,
+    pub permissions: serde_json::Value,
+    pub consciousness_level: i32,
+    pub rate_limit: i32,
+    pub created_at: DateTime<Utc>,
+    pub expires_at: Option<DateTime<Utc>>,
+    pub last_used: Option<DateTime<Utc>>,
+    pub is_active: bool,
+}
+
 /// Authentication service
 pub struct AuthService {
     jwt_secret: String,
     api_keys: Arc<RwLock<HashMap<String, ApiKey>>>,
     jwt_validation: Validation,
+    #[cfg(feature = "postgres")]
+    pool: Option<PgPool>,
 }
 
 impl AuthService {
+    /// Create a new AuthService with in-memory API key storage only.
+    ///
+    /// This constructor is backward-compatible with all existing call sites.
+    /// For Postgres-backed key validation, use `with_pool()` instead.
     pub fn new(jwt_secret: String) -> Self {
         let mut validation = Validation::new(Algorithm::HS256);
         validation.set_required_spec_claims(&["exp", "iat", "sub"]);
@@ -65,6 +99,25 @@ impl AuthService {
             jwt_secret,
             api_keys: Arc::new(RwLock::new(HashMap::new())),
             jwt_validation: validation,
+            #[cfg(feature = "postgres")]
+            pool: None,
+        }
+    }
+
+    /// Create a new AuthService with an optional Postgres connection pool.
+    ///
+    /// When `pool` is Some, API key validation queries the `api_keys` table first.
+    /// Falls back to the in-memory HashMap if the pool is None or if the query fails.
+    #[cfg(feature = "postgres")]
+    pub fn with_pool(jwt_secret: String, pool: Option<PgPool>) -> Self {
+        let mut validation = Validation::new(Algorithm::HS256);
+        validation.set_required_spec_claims(&["exp", "iat", "sub"]);
+
+        Self {
+            jwt_secret,
+            api_keys: Arc::new(RwLock::new(HashMap::new())),
+            jwt_validation: validation,
+            pool,
         }
     }
 
@@ -95,8 +148,23 @@ impl AuthService {
         })
     }
 
-    /// Validate API key
+    /// Validate API key.
+    ///
+    /// When the `postgres` feature is enabled and a pool is configured, queries
+    /// the database first. Falls back to in-memory HashMap otherwise.
     pub async fn validate_api_key(&self, api_key: &str) -> Result<AuthUser, EngineError> {
+        // Try Postgres first if available
+        #[cfg(feature = "postgres")]
+        if let Some(pool) = &self.pool {
+            return self.validate_from_postgres(pool, api_key).await;
+        }
+
+        // Fallback to in-memory HashMap
+        self.validate_from_memory(api_key).await
+    }
+
+    /// Validate an API key from the in-memory HashMap (original behavior).
+    async fn validate_from_memory(&self, api_key: &str) -> Result<AuthUser, EngineError> {
         let keys = self.api_keys.read().await;
 
         if let Some(key_info) = keys.get(api_key) {
@@ -126,6 +194,54 @@ impl AuthService {
         } else {
             Err(EngineError::AuthError("Invalid API key".to_string()))
         }
+    }
+
+    /// Validate an API key against the PostgreSQL api_keys table.
+    ///
+    /// Hashes the raw key with SHA-256, queries for an active non-expired row,
+    /// and spawns an async task to update `last_used` without blocking the caller.
+    #[cfg(feature = "postgres")]
+    async fn validate_from_postgres(&self, pool: &PgPool, api_key: &str) -> Result<AuthUser, EngineError> {
+        let key_hash = sha256_hex(api_key);
+
+        // Query with 5-second timeout
+        let record = tokio::time::timeout(
+            std::time::Duration::from_secs(5),
+            sqlx::query_as::<_, ApiKeyRecord>(
+                "SELECT id, key_hash, user_id, tier, permissions, consciousness_level, \
+                 rate_limit, created_at, expires_at, last_used, is_active \
+                 FROM api_keys \
+                 WHERE key_hash = $1 AND is_active = true \
+                   AND (expires_at IS NULL OR expires_at > NOW())"
+            )
+            .bind(&key_hash)
+            .fetch_one(pool)
+        )
+        .await
+        .map_err(|_| EngineError::AuthError("API key validation timed out".to_string()))?
+        .map_err(|e| EngineError::AuthError(format!("API key not found or expired: {}", e)))?;
+
+        // Update last_used asynchronously (fire-and-forget)
+        let pool_clone = pool.clone();
+        let key_hash_clone = key_hash.clone();
+        tokio::spawn(async move {
+            let _ = sqlx::query("UPDATE api_keys SET last_used = NOW() WHERE key_hash = $1")
+                .bind(&key_hash_clone)
+                .execute(&pool_clone)
+                .await;
+        });
+
+        // Parse permissions from JSONB
+        let permissions: Vec<String> = serde_json::from_value(record.permissions)
+            .unwrap_or_default();
+
+        Ok(AuthUser {
+            user_id: record.user_id.to_string(),
+            tier: record.tier,
+            permissions,
+            rate_limit: record.rate_limit as u32,
+            consciousness_level: record.consciousness_level as u8,
+        })
     }
 
     /// Generate JWT token
@@ -230,6 +346,22 @@ impl AuthService {
             },
         }
     }
+
+    /// Get a reference to the connection pool (if available).
+    #[cfg(feature = "postgres")]
+    pub fn pool(&self) -> Option<&PgPool> {
+        self.pool.as_ref()
+    }
+}
+
+/// Compute SHA-256 hex digest of the given input string.
+///
+/// Used to hash raw API keys before storing or querying them.
+#[cfg(feature = "postgres")]
+pub fn sha256_hex(input: &str) -> String {
+    let mut hasher = Sha256::new();
+    hasher.update(input.as_bytes());
+    format!("{:x}", hasher.finalize())
 }
 
 /// Tier limits for different user levels

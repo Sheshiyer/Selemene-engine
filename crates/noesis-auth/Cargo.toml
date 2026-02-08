@@ -4,10 +4,30 @@ version = "0.1.0"
 edition = "2021"
 description = "Authentication and authorization (JWT + API keys) for Noesis platform"
 
+[features]
+default = []
+postgres = ["sqlx"]
+
 [dependencies]
 noesis-core = { path = "../noesis-core" }
 chrono = { version = "0.4", features = ["serde"] }
 jsonwebtoken = "9.2"
 serde = { version = "1.0", features = ["derive"] }
-tokio = { version = "1.0", features = ["sync"] }
+serde_json = "1.0"
+tokio = { version = "1.0", features = ["sync", "time", "rt"] }
 argon2 = { version = "0.5", features = ["std"] }
+uuid = { version = "1.7", features = ["serde", "v4"] }
+sha2 = "0.10"
+hex = "0.4"
+rand = "0.8"
+
+# Optional: Postgres-backed auth (enable with `features = ["postgres"]`)
+sqlx = { version = "0.7", features = ["postgres", "runtime-tokio-rustls", "uuid", "chrono", "json", "macros"], optional = true }
+
+[[example]]
+name = "seed_api_keys"
+required-features = ["postgres"]
+
+[dev-dependencies]
+tokio = { version = "1.0", features = ["full"] }
+futures = "0.3"

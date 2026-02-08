@@ -86,8 +86,16 @@ impl ApiConfig {
         });
 
         let database_url = env::var("DATABASE_URL").unwrap_or_else(|_| {
-             tracing::warn!("DATABASE_URL not set, using default local postgres");
-             "postgres://postgres:postgres@localhost:5432/noesis".to_string()
+            let is_production = env::var("RUST_ENV")
+                .map(|e| e == "production")
+                .unwrap_or(false);
+
+            if is_production {
+                panic!("DATABASE_URL must be set in production environment");
+            }
+
+            tracing::warn!("DATABASE_URL not set, using default local postgres");
+            "postgres://postgres:postgres@localhost:5432/noesis".to_string()
         });
         
         let redis_url = env::var("REDIS_URL").ok();
@@ -162,6 +170,14 @@ impl ApiConfig {
             );
         }
         
+        // Validate DATABASE_URL format
+        if !self.database_url.starts_with("postgresql://") && !self.database_url.starts_with("postgres://") {
+            return Err(format!(
+                "DATABASE_URL must start with 'postgresql://' or 'postgres://', got: {}...",
+                &self.database_url[..self.database_url.len().min(20)]
+            ));
+        }
+
         // Validate port range
         if self.port < 1024 {
             tracing::warn!(
@@ -243,6 +259,46 @@ mod tests {
         assert!(config.validate().is_err());
     }
     
+    #[test]
+    fn test_validate_invalid_database_url() {
+        let config = ApiConfig {
+            host: "0.0.0.0".to_string(),
+            port: 8080,
+            jwt_secret: "test-secret-at-least-32-chars-long".to_string(),
+            database_url: "mysql://localhost/test".to_string(),
+            redis_url: None,
+            allowed_origins: vec![],
+            rate_limit_requests: 100,
+            rate_limit_window_secs: 60,
+            request_timeout_secs: 30,
+            log_level: "info".to_string(),
+            log_format: "pretty".to_string(),
+        };
+
+        assert!(config.validate().is_err());
+    }
+
+    #[test]
+    fn test_validate_valid_database_url_variants() {
+        for url in &["postgres://localhost/test", "postgresql://localhost/test"] {
+            let config = ApiConfig {
+                host: "0.0.0.0".to_string(),
+                port: 8080,
+                jwt_secret: "test-secret-at-least-32-chars-long".to_string(),
+                database_url: url.to_string(),
+                redis_url: None,
+                allowed_origins: vec![],
+                rate_limit_requests: 100,
+                rate_limit_window_secs: 60,
+                request_timeout_secs: 30,
+                log_level: "info".to_string(),
+                log_format: "pretty".to_string(),
+            };
+
+            assert!(config.validate().is_ok(), "should accept DATABASE_URL: {}", url);
+        }
+    }
+
     #[test]
     fn test_validate_invalid_timeout() {
         let config = ApiConfig {

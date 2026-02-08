@@ -1040,15 +1040,15 @@ pub async fn build_app_state(config: &ApiConfig) -> AppState {
         false,                   // L3 disabled
     );
 
-    // -- Auth --
-    let auth = AuthService::new(config.jwt_secret.clone());
-
     // -- Database --
     let pool = PgPoolOptions::new()
         .max_connections(5)
         .connect(&config.database_url)
         .await
         .expect("Failed to create database pool");
+
+    // -- Auth (Postgres-backed API key validation) --
+    let auth = AuthService::with_pool(config.jwt_secret.clone(), Some(pool.clone()));
 
     let user_repository = Arc::new(UserRepository::new(pool));
 
@@ -1103,14 +1103,14 @@ pub async fn build_app_state_lazy_db(config: &ApiConfig) -> AppState {
         false,                     // L3 disabled
     );
 
-    // -- Auth --
-    let auth = AuthService::new(config.jwt_secret.clone());
-
     // -- Database (lazy pool) --
     let pool = PgPoolOptions::new()
         .max_connections(5)
         .connect_lazy(&config.database_url)
         .expect("Failed to create lazy database pool");
+
+    // -- Auth (lazy Postgres-backed API key validation) --
+    let auth = AuthService::with_pool(config.jwt_secret.clone(), Some(pool.clone()));
 
     let user_repository = Arc::new(UserRepository::new(pool));
 
