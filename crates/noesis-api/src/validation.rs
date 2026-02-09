@@ -7,7 +7,7 @@
 //! - Field-level validation rules
 
 use axum::{
-    extract::{Request, State},
+    extract::Request,
     http::{StatusCode, header},
     middleware::Next,
     response::{Response, IntoResponse},
