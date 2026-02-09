@@ -99,6 +99,20 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
+  # Secret scanning
+  secrets:
+    name: Secret Scanning
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: TruffleHog secret scan
+        uses: trufflesecurity/trufflehog@main
+        with:
+          extra_args: --only-verified
+
   # Build check
   build:
     name: Build

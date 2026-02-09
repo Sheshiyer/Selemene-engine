@@ -85,8 +85,10 @@ echo ""
 echo "🚀 Configuring Railway environment variables..."
 echo ""
 
-# JWT Secret (already generated)
-JWT_SECRET="yM9HmenTks5FCXMsgXcUrjkhRLSu2CnGCU6egQcODcSdgSa87p7K4nToBg2XULKd"
+# JWT Secret — generate a unique secret for your deployment:
+#   openssl rand -base64 48
+# Then set it via Railway dashboard or uncomment and paste below:
+JWT_SECRET="${JWT_SECRET:?ERROR: JWT_SECRET must be set. Generate one with: openssl rand -base64 48}"
 
 # Set all environment variables using Railway CLI
 railway variables \

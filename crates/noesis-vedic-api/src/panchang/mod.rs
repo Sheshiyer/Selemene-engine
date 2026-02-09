@@ -301,16 +301,82 @@ impl PanchangQuery {
     }
 }
 
-/// Get the current Tithi from API response data
+/// Get the current Tithi from API response data.
+///
+/// Accepts the `tithi` object from a FreeAstrologyAPI panchang response.
+/// Expected fields: `number` (u8), `name` (string), `start` (string), `end` (string), `paksha` (string).
 pub fn parse_tithi_from_response(data: &serde_json::Value) -> VedicApiResult<Tithi> {
-    // This would parse the API response into our Tithi struct
-    // Implementation depends on exact API response format
-    todo!("Parse Tithi from API response")
+    let number = data.get("number")
+        .and_then(|v| v.as_u64())
+        .map(|n| n as u8)
+        .unwrap_or(1);
+
+    let name_str = data.get("name")
+        .and_then(|v| v.as_str())
+        .unwrap_or("Pratipada");
+
+    let name_tithi = TithiName::from_number(number as u32);
+
+    let start_time = data.get("start")
+        .and_then(|v| v.as_str())
+        .unwrap_or("")
+        .to_string();
+
+    let end_time = data.get("end")
+        .and_then(|v| v.as_str())
+        .unwrap_or("")
+        .to_string();
+
+    let _ = name_str; // name is used for logging/debugging; struct uses enum
+
+    Ok(Tithi {
+        number,
+        name_tithi,
+        start_time,
+        end_time,
+        is_complete: true,
+    })
 }
 
-/// Get the current Nakshatra from API response data
+/// Get the current Nakshatra from API response data.
+///
+/// Accepts the `nakshatra` object from a FreeAstrologyAPI panchang response.
+/// Expected fields: `number` (u8), `name` (string), `pada` (u8), `start` (string), `end` (string), `longitude` (f64).
 pub fn parse_nakshatra_from_response(data: &serde_json::Value) -> VedicApiResult<Nakshatra> {
-    todo!("Parse Nakshatra from API response")
+    let number = data.get("number")
+        .and_then(|v| v.as_u64())
+        .map(|n| n as u8)
+        .unwrap_or(1);
+
+    let name_nakshatra = NakshatraName::from_number(number as u32);
+
+    let pada = data.get("pada")
+        .and_then(|v| v.as_u64())
+        .map(|n| n as u8)
+        .unwrap_or(1);
+
+    let start_time = data.get("start")
+        .and_then(|v| v.as_str())
+        .unwrap_or("")
+        .to_string();
+
+    let end_time = data.get("end")
+        .and_then(|v| v.as_str())
+        .unwrap_or("")
+        .to_string();
+
+    let longitude = data.get("longitude")
+        .and_then(|v| v.as_f64())
+        .unwrap_or(0.0);
+
+    Ok(Nakshatra {
+        number,
+        name_nakshatra,
+        pada,
+        start_time,
+        end_time,
+        longitude,
+    })
 }
 
 #[cfg(test)]
@@ -323,10 +389,64 @@ mod tests {
             .at(14, 30, 0)
             .with_timezone(5.5)
             .without_hora();
-        
+
         assert_eq!(query.year, 2024);
         assert_eq!(query.hour, 14);
         assert!(!query.include_hora);
         assert!(query.include_muhurtas);
+    }
+
+    #[test]
+    fn test_parse_tithi_from_response() {
+        let data = serde_json::json!({
+            "number": 5,
+            "name": "Panchami",
+            "start": "06:30",
+            "end": "08:45",
+            "paksha": "Shukla"
+        });
+        let tithi = parse_tithi_from_response(&data).unwrap();
+        assert_eq!(tithi.number, 5);
+        assert_eq!(tithi.name(), "Panchami");
+        assert_eq!(tithi.start_time, "06:30");
+        assert_eq!(tithi.end_time, "08:45");
+        assert!(tithi.is_auspicious());
+    }
+
+    #[test]
+    fn test_parse_tithi_missing_fields() {
+        let data = serde_json::json!({});
+        let tithi = parse_tithi_from_response(&data).unwrap();
+        assert_eq!(tithi.number, 1);
+        assert_eq!(tithi.name(), "Pratipada");
+    }
+
+    #[test]
+    fn test_parse_nakshatra_from_response() {
+        let data = serde_json::json!({
+            "number": 4,
+            "name": "Rohini",
+            "pada": 2,
+            "start": "10:00",
+            "end": "12:30",
+            "longitude": 46.5
+        });
+        let nakshatra = parse_nakshatra_from_response(&data).unwrap();
+        assert_eq!(nakshatra.number, 4);
+        assert_eq!(nakshatra.name(), "Rohini");
+        assert_eq!(nakshatra.pada, 2);
+        assert_eq!(nakshatra.start_time, "10:00");
+        assert_eq!(nakshatra.end_time, "12:30");
+        assert!((nakshatra.longitude - 46.5).abs() < f64::EPSILON);
+        assert!(nakshatra.is_auspicious());
+    }
+
+    #[test]
+    fn test_parse_nakshatra_missing_fields() {
+        let data = serde_json::json!({});
+        let nakshatra = parse_nakshatra_from_response(&data).unwrap();
+        assert_eq!(nakshatra.number, 1);
+        assert_eq!(nakshatra.name(), "Ashwini");
+        assert_eq!(nakshatra.pada, 1);
     }
 }

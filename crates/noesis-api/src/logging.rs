@@ -107,14 +107,10 @@ pub async fn init_tracing_with_otel(
     otlp_endpoint: &str,
 ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     use tracing_opentelemetry::OpenTelemetryLayer;
-    use opentelemetry::trace::TracerProvider;
-    
-    // Initialize OpenTelemetry tracer
-    noesis_metrics::init_tracing(service_name, otlp_endpoint).await?;
-    
-    let tracer = opentelemetry::global::tracer_provider()
-        .tracer(service_name.to_string());
-    
+
+    // Initialize OpenTelemetry tracer via noesis-metrics
+    let tracer = noesis_metrics::init_otel_tracing(service_name, otlp_endpoint).await?;
+
     let env_filter = EnvFilter::try_from_default_env()
         .unwrap_or_else(|_| EnvFilter::new(log_level));
 
@@ -139,6 +135,6 @@ pub async fn init_tracing_with_otel(
         service_name,
         otlp_endpoint
     );
-    
+
     Ok(())
 }
