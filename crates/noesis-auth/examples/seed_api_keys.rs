@@ -1,13 +1,15 @@
-//! Seed API keys into the PostgreSQL api_keys table.
+//! Seed a default admin user and API keys into the PostgreSQL database.
 //!
-//! Generates 5 random API keys, hashes them with SHA-256, and inserts them
-//! into the database. The raw keys are printed once -- they cannot be recovered.
+//! Creates one admin user (admin@tryambakam.com) with an Argon2-hashed password,
+//! then generates 5 API keys linked to that user via FK. The raw password and
+//! API keys are printed once — they cannot be recovered from the database.
 //!
 //! Usage:
 //!   DATABASE_URL=postgres://... cargo run --package noesis-auth --features postgres --example seed_api_keys
 
-use sha2::{Sha256, Digest};
+use noesis_auth::password::hash_password;
 use rand::Rng;
+use sha2::{Digest, Sha256};
 use sqlx::PgPool;
 
 fn generate_random_key(length: usize) -> String {
@@ -24,38 +26,152 @@ fn sha256_hex(input: &str) -> String {
     format!("{:x}", hasher.finalize())
 }
 
+/// Tiers and permissions for the 5 seeded API keys.
+struct KeySpec {
+    tier: &'static str,
+    permissions: Vec<&'static str>,
+    consciousness_level: i32,
+    rate_limit: i32,
+}
+
+fn key_specs() -> Vec<KeySpec> {
+    vec![
+        KeySpec {
+            tier: "enterprise",
+            permissions: vec![
+                "basic:access",
+                "panchanga:read",
+                "panchanga:batch",
+                "numerology:read",
+                "biorhythm:read",
+                "human-design:read",
+                "gene-keys:read",
+                "vimshottari:read",
+                "admin:users",
+                "admin:analytics",
+            ],
+            consciousness_level: 5,
+            rate_limit: 10000,
+        },
+        KeySpec {
+            tier: "premium",
+            permissions: vec![
+                "basic:access",
+                "panchanga:read",
+                "panchanga:batch",
+                "numerology:read",
+                "biorhythm:read",
+                "human-design:read",
+                "gene-keys:read",
+                "vimshottari:read",
+            ],
+            consciousness_level: 3,
+            rate_limit: 1000,
+        },
+        KeySpec {
+            tier: "premium",
+            permissions: vec![
+                "basic:access",
+                "panchanga:read",
+                "numerology:read",
+                "biorhythm:read",
+            ],
+            consciousness_level: 2,
+            rate_limit: 1000,
+        },
+        KeySpec {
+            tier: "free",
+            permissions: vec!["basic:access", "panchanga:read"],
+            consciousness_level: 0,
+            rate_limit: 100,
+        },
+        KeySpec {
+            tier: "free",
+            permissions: vec!["basic:access", "panchanga:read"],
+            consciousness_level: 0,
+            rate_limit: 100,
+        },
+    ]
+}
+
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let database_url = std::env::var("DATABASE_URL")
-        .expect("DATABASE_URL environment variable must be set");
+    let database_url =
+        std::env::var("DATABASE_URL").expect("DATABASE_URL environment variable must be set");
 
     let pool = PgPool::connect(&database_url).await?;
 
-    println!("Generating 5 API keys...\n");
+    // ── 1. Create admin user ────────────────────────────────────────
+    let admin_email = "admin@tryambakam.com";
+    let admin_password = generate_random_key(24); // secure random password
+    let password_hash = hash_password(&admin_password)
+        .map_err(|e| format!("Failed to hash password: {}", e))?;
 
-    for i in 1..=5 {
-        // Generate random 32-char key prefixed with "nk_" for easy identification
+    let user_id: uuid::Uuid = sqlx::query_scalar(
+        "INSERT INTO users (email, password_hash, full_name, tier, consciousness_level) \
+         VALUES ($1, $2, $3, $4, $5) \
+         ON CONFLICT (email) DO UPDATE SET password_hash = $2, tier = $4, consciousness_level = $5 \
+         RETURNING id",
+    )
+    .bind(admin_email)
+    .bind(&password_hash)
+    .bind("Tryambakam Admin")
+    .bind("enterprise")
+    .bind(5_i32)
+    .fetch_one(&pool)
+    .await?;
+
+    println!("════════════════════════════════════════════════");
+    println!("  ADMIN USER CREATED");
+    println!("════════════════════════════════════════════════");
+    println!("  Email:    {}", admin_email);
+    println!("  Password: {}", admin_password);
+    println!("  User ID:  {}", user_id);
+    println!("  Tier:     enterprise");
+    println!("════════════════════════════════════════════════\n");
+
+    // ── 2. Create API keys linked to admin user ─────────────────────
+    let specs = key_specs();
+
+    println!("Generating {} API keys...\n", specs.len());
+
+    for (i, spec) in specs.iter().enumerate() {
         let raw_key = format!("nk_{}", generate_random_key(32));
         let key_hash = sha256_hex(&raw_key);
+        let permissions = serde_json::json!(spec.permissions);
 
-        // Insert into database with default tier and permissions
         sqlx::query(
             "INSERT INTO api_keys (key_hash, user_id, tier, permissions, consciousness_level, rate_limit, is_active) \
-             VALUES ($1, gen_random_uuid(), $2, $3, $4, $5, true)"
+             VALUES ($1, $2, $3, $4, $5, $6, true) \
+             ON CONFLICT (key_hash) DO NOTHING",
         )
         .bind(&key_hash)
-        .bind("free")
-        .bind(serde_json::json!(["basic:access", "panchanga:read"]))
-        .bind(0_i32)
-        .bind(100_i32)
+        .bind(user_id)
+        .bind(spec.tier)
+        .bind(&permissions)
+        .bind(spec.consciousness_level)
+        .bind(spec.rate_limit)
         .execute(&pool)
         .await?;
 
-        println!("Key {}: {}", i, raw_key);
-        println!("   Hash: {}\n", key_hash);
+        println!(
+            "Key {} [{}]: {}",
+            i + 1,
+            spec.tier,
+            raw_key
+        );
+        println!("   Hash: {}", key_hash);
+        println!(
+            "   Permissions: {:?}",
+            spec.permissions
+        );
+        println!();
     }
 
-    println!("SAVE THESE KEYS -- they cannot be recovered from the database.");
+    println!("════════════════════════════════════════════════");
+    println!("  SAVE THESE CREDENTIALS — THEY CANNOT BE");
+    println!("  RECOVERED FROM THE DATABASE.");
+    println!("════════════════════════════════════════════════");
 
     Ok(())
 }

@@ -264,8 +264,35 @@ impl AuthService {
             .map_err(|e| EngineError::AuthError(format!("Failed to generate JWT: {}", e)))
     }
 
-    /// Add API key
+    /// Add API key.
+    ///
+    /// When a Postgres pool is available, also inserts the key (SHA-256 hashed)
+    /// into the `api_keys` table for persistence across restarts.
+    /// The in-memory HashMap is always updated for fast validation fallback.
     pub async fn add_api_key(&self, api_key: ApiKey) -> Result<(), EngineError> {
+        #[cfg(feature = "postgres")]
+        if let Some(pool) = &self.pool {
+            let key_hash = sha256_hex(&api_key.key);
+            let user_id: uuid::Uuid = api_key
+                .user_id
+                .parse()
+                .map_err(|_| EngineError::AuthError("Invalid user_id UUID".into()))?;
+            sqlx::query(
+                "INSERT INTO api_keys (key_hash, user_id, tier, permissions, consciousness_level, rate_limit, is_active) \
+                 VALUES ($1, $2, $3, $4, $5, $6, true) \
+                 ON CONFLICT (key_hash) DO NOTHING",
+            )
+            .bind(&key_hash)
+            .bind(user_id)
+            .bind(&api_key.tier)
+            .bind(serde_json::json!(&api_key.permissions))
+            .bind(api_key.consciousness_level as i32)
+            .bind(api_key.rate_limit as i32)
+            .execute(pool)
+            .await
+            .map_err(|e| EngineError::AuthError(format!("Failed to insert API key: {}", e)))?;
+        }
+
         let mut keys = self.api_keys.write().await;
         keys.insert(api_key.key.clone(), api_key);
         Ok(())
