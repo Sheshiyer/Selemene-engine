@@ -47,20 +47,44 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+      postgres:
+        image: postgres:16-alpine
+        ports:
+          - 5432:5432
+        env:
+          POSTGRES_DB: noesis_test
+          POSTGRES_USER: noesis_test
+          POSTGRES_PASSWORD: noesis_test_password
+        options: >-
+          --health-cmd "pg_isready -U noesis_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
-      
+
       - name: Setup cache
         uses: Swatinem/rust-cache@v2
-      
+
+      - name: Apply database migrations
+        run: |
+          for migration in migrations/*.sql; do
+            if [ -f "$migration" ]; then
+              PGPASSWORD=noesis_test_password psql -h localhost -U noesis_test -d noesis_test -f "$migration" || true
+            fi
+          done
+        env:
+          PGPASSWORD: noesis_test_password
+
       - name: Run unit tests
         run: cargo test --all-features --lib
         env:
           REDIS_URL: redis://localhost:6379
-      
+          DATABASE_URL: postgresql://noesis_test:noesis_test_password@localhost:5432/noesis_test
+
       - name: Run doc tests
         run: cargo test --doc
 
@@ -74,19 +98,41 @@ jobs:
         image: redis:7-alpine
         ports:
           - 6379:6379
+      postgres:
+        image: postgres:16-alpine
+        ports:
+          - 5432:5432
+        env:
+          POSTGRES_DB: noesis_test
+          POSTGRES_USER: noesis_test
+          POSTGRES_PASSWORD: noesis_test_password
+        options: >-
+          --health-cmd "pg_isready -U noesis_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
-      
+
       - name: Setup cache
         uses: Swatinem/rust-cache@v2
-      
+
+      - name: Apply database migrations
+        run: |
+          for migration in migrations/*.sql; do
+            if [ -f "$migration" ]; then
+              PGPASSWORD=noesis_test_password psql -h localhost -U noesis_test -d noesis_test -f "$migration" || true
+            fi
+          done
+
       - name: Run integration tests
         run: cargo test --test '*' -- --test-threads=1
         env:
           REDIS_URL: redis://localhost:6379
+          DATABASE_URL: postgresql://noesis_test:noesis_test_password@localhost:5432/noesis_test
         continue-on-error: true
 
   # Security audit

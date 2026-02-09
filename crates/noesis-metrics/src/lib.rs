@@ -396,8 +396,15 @@ impl MetricsCollector {
 
     /// Collect and update system metrics once.
     pub async fn collect_system_metrics(&self) -> Result<(), Box<dyn std::error::Error>> {
-        let memory_usage = 0.0; // TODO: Implement actual memory monitoring
-        let cpu_usage = 0.0; // TODO: Implement actual CPU monitoring
+        let mut sys = sysinfo::System::new();
+        sys.refresh_memory();
+        sys.refresh_cpu_usage();
+        // Brief sleep to let CPU sampling stabilize
+        tokio::time::sleep(std::time::Duration::from_millis(200)).await;
+        sys.refresh_cpu_usage();
+
+        let memory_usage = sys.used_memory() as f64;
+        let cpu_usage = sys.global_cpu_usage() as f64;
         let uptime = self.start_time.elapsed().as_secs_f64();
 
         self.metrics
@@ -409,16 +416,18 @@ impl MetricsCollector {
     /// Spawn a background task that collects system metrics every 30 seconds.
     pub async fn start_collection_loop(&self) {
         let metrics = self.metrics.clone();
+        let start_time = self.start_time;
 
         tokio::spawn(async move {
             let mut interval =
                 tokio::time::interval(std::time::Duration::from_secs(30));
+            let mut sys = sysinfo::System::new();
 
             loop {
                 interval.tick().await;
 
                 if let Err(e) =
-                    Self::collect_system_metrics_static(metrics.clone()).await
+                    Self::collect_system_metrics_loop(&mut sys, metrics.clone(), start_time).await
                 {
                     tracing::warn!("Failed to collect system metrics: {}", e);
                 }
@@ -426,12 +435,17 @@ impl MetricsCollector {
         });
     }
 
-    async fn collect_system_metrics_static(
+    async fn collect_system_metrics_loop(
+        sys: &mut sysinfo::System,
         metrics: Arc<NoesisMetrics>,
+        start_time: std::time::Instant,
     ) -> Result<(), Box<dyn std::error::Error>> {
-        let memory_usage = 0.0; // TODO: Implement actual memory monitoring
-        let cpu_usage = 0.0; // TODO: Implement actual CPU monitoring
-        let uptime = 0.0; // TODO: Implement actual uptime tracking
+        sys.refresh_memory();
+        sys.refresh_cpu_usage();
+
+        let memory_usage = sys.used_memory() as f64;
+        let cpu_usage = sys.global_cpu_usage() as f64;
+        let uptime = start_time.elapsed().as_secs_f64();
 
         metrics.update_system_metrics(memory_usage, cpu_usage, uptime);
 
