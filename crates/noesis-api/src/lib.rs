@@ -57,6 +57,12 @@ use sqlx::postgres::PgPoolOptions;
         list_workflows_handler,
         workflow_execute_handler,
         workflow_info_handler,
+        handlers::users::get_me,
+        handlers::users::update_me,
+        handlers::auth::register,
+        handlers::auth::login,
+        handlers::auth::forgot_password,
+        handlers::auth::reset_password,
     ),
     components(
         schemas(
@@ -73,12 +79,25 @@ use sqlx::postgres::PgPoolOptions;
             WorkflowListResponse,
             WorkflowInfoResponse,
             ErrorResponse,
+            handlers::users::UserResponse,
+            handlers::users::LocationResponse,
+            handlers::users::UpdateUserRequest,
+            handlers::auth::RegisterRequest,
+            handlers::auth::RegisterResponse,
+            handlers::auth::LoginRequest,
+            handlers::auth::LoginResponse,
+            handlers::auth::ForgotPasswordRequest,
+            handlers::auth::ForgotPasswordResponse,
+            handlers::auth::ResetPasswordRequest,
+            handlers::auth::ResetPasswordResponse,
         )
     ),
     tags(
         (name = "health", description = "Health check and monitoring endpoints"),
         (name = "engines", description = "Single engine calculation endpoints"),
         (name = "workflows", description = "Multi-engine workflow execution endpoints"),
+        (name = "users", description = "User profile management endpoints"),
+        (name = "auth", description = "Authentication endpoints (register, login, password reset)"),
     ),
     modifiers(&SecurityAddon),
     info(
@@ -269,6 +288,7 @@ struct HealthResponse {
 struct ReadinessResponse {
     redis: String,
     orchestrator: String,
+    vedic_api: String,
     overall_status: String,
 }
 
@@ -369,12 +389,40 @@ async fn readiness_handler(State(state): State<AppState>) -> impl IntoResponse {
         _ => "not_ready",
     };
 
+    // Check FreeAstrologyAPI connectivity (lightweight HEAD-like probe, 2s timeout)
+    let vedic_api_status = match std::env::var("FREE_ASTROLOGY_API_KEY") {
+        Ok(key) if !key.is_empty() => {
+            let base_url = std::env::var("FREE_ASTROLOGY_API_BASE_URL")
+                .unwrap_or_else(|_| "https://json.freeastrologyapi.com".to_string());
+            match reqwest::Client::builder()
+                .timeout(Duration::from_secs(2))
+                .build()
+            {
+                Ok(client) => {
+                    // Use a minimal GET to the base URL to verify reachability
+                    // without consuming API quota (no POST to a calculation endpoint)
+                    match client.get(&base_url).send().await {
+                        Ok(resp) if resp.status().is_success() || resp.status().is_client_error() => {
+                            // Any HTTP response (even 4xx) means the service is reachable
+                            "healthy"
+                        }
+                        Ok(_) => "degraded",
+                        Err(_) => "degraded",
+                    }
+                }
+                Err(_) => "degraded",
+            }
+        }
+        _ => "unconfigured",
+    };
+
     let overall_ready = redis_status == "ok" && orchestrator_status == "ready";
     let overall_status = if overall_ready { "ready" } else { "not_ready" };
 
     let response = ReadinessResponse {
         redis: redis_status.to_string(),
         orchestrator: orchestrator_status.to_string(),
+        vedic_api: vedic_api_status.to_string(),
         overall_status: overall_status.to_string(),
     };
 
@@ -387,6 +435,16 @@ async fn readiness_handler(State(state): State<AppState>) -> impl IntoResponse {
 
 /// GET /metrics -- Prometheus metrics endpoint
 async fn metrics_handler(State(state): State<AppState>) -> impl IntoResponse {
+    // Sync per-layer cache stats before encoding so Prometheus sees fresh values
+    let cache_stats = state.cache.get_stats().await;
+    state.metrics.update_cache_layer_stats(
+        cache_stats.l1_hits,
+        cache_stats.l2_hits,
+        cache_stats.l3_hits,
+        cache_stats.cache_misses,
+        cache_stats.total_requests,
+    );
+
     match state.metrics.get_metrics_text() {
         Ok(text) => (StatusCode::OK, text).into_response(),
         Err(e) => (

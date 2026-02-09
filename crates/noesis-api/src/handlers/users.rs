@@ -4,12 +4,13 @@ use axum::{
     http::StatusCode,
 };
 use serde::{Deserialize, Serialize};
+use utoipa::ToSchema;
 use crate::{AppState, error::ApiError};
 use noesis_core::EngineError;
 use noesis_auth::AuthUser;
 use chrono::{NaiveDate, NaiveTime, Datelike};
 
-#[derive(Serialize)]
+#[derive(Serialize, ToSchema)]
 pub struct UserResponse {
     pub id: String,
     pub email: String,
@@ -24,14 +25,14 @@ pub struct UserResponse {
     pub preferences: serde_json::Value,
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, ToSchema)]
 pub struct LocationResponse {
     pub lat: f64,
     pub lng: f64,
     pub name: Option<String>,
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, ToSchema)]
 pub struct UpdateUserRequest {
     pub full_name: Option<String>,
     pub email: Option<String>,
@@ -44,6 +45,21 @@ pub struct UpdateUserRequest {
     pub preferences: Option<serde_json::Value>,
 }
 
+/// GET /api/v1/users/me -- get the authenticated user's profile
+#[utoipa::path(
+    get,
+    path = "/api/v1/users/me",
+    tag = "users",
+    responses(
+        (status = 200, description = "User profile retrieved", body = UserResponse),
+        (status = 401, description = "Unauthorized", body = crate::ErrorResponse),
+        (status = 500, description = "Internal server error", body = crate::ErrorResponse),
+    ),
+    security(
+        ("bearer_auth" = []),
+        ("api_key" = [])
+    )
+)]
 pub async fn get_me(
     State(state): State<AppState>,
     Extension(auth_user): Extension<AuthUser>,
@@ -123,6 +139,23 @@ impl UpdateUserRequest {
     }
 }
 
+/// PATCH /api/v1/users/me -- update the authenticated user's profile
+#[utoipa::path(
+    patch,
+    path = "/api/v1/users/me",
+    tag = "users",
+    request_body = UpdateUserRequest,
+    responses(
+        (status = 200, description = "Profile updated successfully"),
+        (status = 401, description = "Unauthorized", body = crate::ErrorResponse),
+        (status = 422, description = "Validation error", body = crate::ErrorResponse),
+        (status = 500, description = "Internal server error", body = crate::ErrorResponse),
+    ),
+    security(
+        ("bearer_auth" = []),
+        ("api_key" = [])
+    )
+)]
 pub async fn update_me(
     State(state): State<AppState>,
     Extension(auth_user): Extension<AuthUser>,

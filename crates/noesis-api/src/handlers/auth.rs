@@ -5,6 +5,7 @@ use axum::{
 };
 use serde::{Deserialize, Serialize};
 use serde_json::json;
+use utoipa::ToSchema;
 use noesis_auth::password::{hash_password, verify_password};
 use crate::AppState;
 use crate::error::ApiError;
@@ -13,26 +14,26 @@ use chrono::{Utc, Duration};
 use uuid::Uuid;
 use tracing::info;
 
-#[derive(Deserialize)]
+#[derive(Deserialize, ToSchema)]
 pub struct RegisterRequest {
     pub email: String,
     pub password: String,
     pub full_name: String,
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, ToSchema)]
 pub struct RegisterResponse {
     pub id: String,
     pub message: String,
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, ToSchema)]
 pub struct LoginRequest {
     pub email: String,
     pub password: String,
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, ToSchema)]
 pub struct LoginResponse {
     pub token: String,
     pub user_id: String,
@@ -40,27 +41,40 @@ pub struct LoginResponse {
     pub tier: String,
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, ToSchema)]
 pub struct ForgotPasswordRequest {
     pub email: String,
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, ToSchema)]
 pub struct ForgotPasswordResponse {
     pub message: String,
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, ToSchema)]
 pub struct ResetPasswordRequest {
     pub token: String,
     pub new_password: String,
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, ToSchema)]
 pub struct ResetPasswordResponse {
     pub message: String,
 }
 
+/// POST /api/v1/auth/register -- create a new user account
+#[utoipa::path(
+    post,
+    path = "/api/v1/auth/register",
+    tag = "auth",
+    request_body = RegisterRequest,
+    responses(
+        (status = 201, description = "User created successfully", body = RegisterResponse),
+        (status = 401, description = "User already exists", body = crate::ErrorResponse),
+        (status = 422, description = "Invalid request body", body = crate::ErrorResponse),
+        (status = 500, description = "Internal server error", body = crate::ErrorResponse),
+    )
+)]
 pub async fn register(
     State(state): State<AppState>,
     Json(payload): Json<RegisterRequest>,
@@ -92,6 +106,19 @@ pub async fn register(
     Ok((StatusCode::CREATED, Json(response)).into_response())
 }
 
+/// POST /api/v1/auth/login -- authenticate and receive a JWT token
+#[utoipa::path(
+    post,
+    path = "/api/v1/auth/login",
+    tag = "auth",
+    request_body = LoginRequest,
+    responses(
+        (status = 200, description = "Login successful", body = LoginResponse),
+        (status = 401, description = "Invalid credentials", body = crate::ErrorResponse),
+        (status = 422, description = "Invalid request body", body = crate::ErrorResponse),
+        (status = 500, description = "Internal server error", body = crate::ErrorResponse),
+    )
+)]
 pub async fn login(
     State(state): State<AppState>,
     Json(payload): Json<LoginRequest>,
@@ -131,6 +158,18 @@ pub async fn login(
     Ok((StatusCode::OK, Json(response)).into_response())
 }
 
+/// POST /api/v1/auth/forgot-password -- request a password reset token
+#[utoipa::path(
+    post,
+    path = "/api/v1/auth/forgot-password",
+    tag = "auth",
+    request_body = ForgotPasswordRequest,
+    responses(
+        (status = 200, description = "Reset link sent (if account exists)", body = ForgotPasswordResponse),
+        (status = 422, description = "Invalid request body", body = crate::ErrorResponse),
+        (status = 500, description = "Internal server error", body = crate::ErrorResponse),
+    )
+)]
 pub async fn forgot_password(
     State(state): State<AppState>,
     Json(payload): Json<ForgotPasswordRequest>,
@@ -153,6 +192,19 @@ pub async fn forgot_password(
     Ok((StatusCode::OK, Json(response)).into_response())
 }
 
+/// POST /api/v1/auth/reset-password -- reset password using a valid token
+#[utoipa::path(
+    post,
+    path = "/api/v1/auth/reset-password",
+    tag = "auth",
+    request_body = ResetPasswordRequest,
+    responses(
+        (status = 200, description = "Password reset successfully", body = ResetPasswordResponse),
+        (status = 401, description = "Invalid or expired token", body = crate::ErrorResponse),
+        (status = 422, description = "Invalid request body", body = crate::ErrorResponse),
+        (status = 500, description = "Internal server error", body = crate::ErrorResponse),
+    )
+)]
 pub async fn reset_password(
     State(state): State<AppState>,
     Json(payload): Json<ResetPasswordRequest>,
