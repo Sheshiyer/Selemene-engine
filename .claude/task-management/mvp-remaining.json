@@ -18,7 +18,7 @@
           "title": "Rotate JWT secret, remove hardcoded value from scripts",
           "source": "P0-S1-01",
           "estimate_hours": 2,
-          "status": "pending",
+          "status": "done",
           "priority": "P0",
           "description": "The JWT secret is hardcoded in deployment/test scripts. Rotate to a new secret and ensure it's only loaded from environment variables."
         },
@@ -27,7 +27,7 @@
           "title": "Fix OpenTelemetry version mismatch in Cargo.toml",
           "source": "P0-S1-03",
           "estimate_hours": 4,
-          "status": "pending",
+          "status": "done",
           "priority": "P0",
           "description": "OpenTelemetry crate versions are mismatched across workspace members, causing compilation warnings and potential runtime issues. Align all otel crates to compatible versions."
         },
@@ -36,7 +36,7 @@
           "title": "Fix noesis-vedic-api todo!() panics (lines 308, 313)",
           "source": "P0-S1-04",
           "estimate_hours": 4,
-          "status": "pending",
+          "status": "done",
           "priority": "P0",
           "description": "Two todo!() macros in noesis-vedic-api will panic at runtime if those code paths are hit. Replace with proper error handling or implement the missing logic."
         },
@@ -45,7 +45,7 @@
           "title": "Improve CI secret scanning (beyond rustsec)",
           "source": "P0-S1-05",
           "estimate_hours": 2,
-          "status": "pending",
+          "status": "done",
           "priority": "P0",
           "description": "Current CI only runs cargo-audit (rustsec). Add secret scanning (e.g., trufflehog or gitleaks) to catch hardcoded credentials in source."
         }
@@ -61,7 +61,7 @@
           "title": "Re-enable Redis L2 cache operations (8 TODOs)",
           "source": "P1-S1-01",
           "estimate_hours": 12,
-          "status": "pending",
+          "status": "done",
           "priority": "P1",
           "description": "There are 8 TODO comments in the cache crate where Redis L2 operations are stubbed out. Implement the actual Redis get/set/invalidate logic using the existing redis connection pool."
         },
@@ -70,7 +70,7 @@
           "title": "Add PostgreSQL service to CI pipeline",
           "source": "P1-S1-02",
           "estimate_hours": 4,
-          "status": "pending",
+          "status": "done",
           "priority": "P1",
           "description": "CI currently has no PostgreSQL service, so sqlx integration tests are skipped. Add a Postgres service container to the GitHub Actions workflow."
         },
@@ -79,7 +79,7 @@
           "title": "Fix integration test SIGTRAP on cleanup",
           "source": "P1-S1-03",
           "estimate_hours": 8,
-          "status": "pending",
+          "status": "done",
           "priority": "P1",
           "description": "Integration tests pass individually but SIGTRAP during cleanup when run together. Likely a double-free or connection pool teardown issue. Investigate and fix."
         },
@@ -88,7 +88,7 @@
           "title": "Add Redis L2 cache integration tests",
           "source": "P1-S1-06",
           "estimate_hours": 6,
-          "status": "pending",
+          "status": "done",
           "priority": "P1",
           "description": "After MVP-05 re-enables Redis L2, add integration tests that verify cache hit/miss/invalidation behavior with a real Redis instance."
         },
@@ -97,7 +97,7 @@
           "title": "Commit P1-S2 observability changes (already written)",
           "source": "new",
           "estimate_hours": 1,
-          "status": "pending",
+          "status": "done",
           "priority": "P1",
           "description": "Observability improvements (metrics, cache instrumentation) are already written but uncommitted in the working tree. Review and commit them."
         },
@@ -106,7 +106,7 @@
           "title": "Add FreeAstrologyAPI health check to readiness probe",
           "source": "P1-S2-05",
           "estimate_hours": 3,
-          "status": "pending",
+          "status": "done",
           "priority": "P1",
           "description": "The /health/ready endpoint checks DB and Redis but not the FreeAstrologyAPI dependency. Add a lightweight health check for the external API."
         }
@@ -122,7 +122,7 @@
           "title": "Implement decision-support workflow synthesizer",
           "source": "P2-S1-01",
           "estimate_hours": 8,
-          "status": "pending",
+          "status": "done",
           "priority": "P2",
           "description": "Implement the decision-support workflow that synthesizes outputs from multiple engines (panchanga, numerology, human-design) into actionable decision guidance."
         },
@@ -131,7 +131,7 @@
           "title": "Implement self-inquiry workflow synthesizer",
           "source": "P2-S1-02",
           "estimate_hours": 8,
-          "status": "pending",
+          "status": "done",
           "priority": "P2",
           "description": "Implement the self-inquiry workflow that combines gene-keys, human-design, and numerology engines for introspective guidance."
         },
@@ -140,7 +140,7 @@
           "title": "Implement creative-expression workflow synthesizer",
           "source": "P2-S1-03",
           "estimate_hours": 8,
-          "status": "pending",
+          "status": "done",
           "priority": "P2",
           "description": "Implement the creative-expression workflow synthesizer that combines relevant engine outputs for creative/artistic guidance."
         },
@@ -149,7 +149,7 @@
           "title": "Implement full-spectrum workflow synthesizer",
           "source": "P2-S1-04",
           "estimate_hours": 12,
-          "status": "pending",
+          "status": "done",
           "priority": "P2",
           "description": "Implement the full-spectrum workflow that orchestrates all engines together for comprehensive life guidance synthesis."
         },
@@ -158,7 +158,7 @@
           "title": "Standardize consciousness level integration",
           "source": "P2-S1-05",
           "estimate_hours": 10,
-          "status": "pending",
+          "status": "done",
           "priority": "P2",
           "description": "Standardize how consciousness levels (from gene-keys, human-design) are represented and integrated across all workflow synthesizers."
         },
@@ -167,7 +167,7 @@
           "title": "Add workflow synthesis integration tests",
           "source": "P2-S1-06",
           "estimate_hours": 8,
-          "status": "pending",
+          "status": "done",
           "priority": "P2",
           "description": "Write integration tests for all four workflow synthesizers, verifying correct engine orchestration and output synthesis."
         }
@@ -183,7 +183,7 @@
           "title": "Write user management endpoint tests",
           "source": "W3-S1-11",
           "estimate_hours": 8,
-          "status": "pending",
+          "status": "done",
           "priority": "P2",
           "description": "Write comprehensive tests for user management API endpoints (CRUD, password change, profile update, etc.)."
         },
@@ -192,7 +192,7 @@
           "title": "Update OpenAPI spec for all endpoints",
           "source": "P3-S1-10",
           "estimate_hours": 6,
-          "status": "pending",
+          "status": "done",
           "priority": "P2",
           "description": "Update the OpenAPI specification to accurately document all current endpoints, request/response schemas, and authentication requirements."
         },
@@ -201,7 +201,7 @@
           "title": "Core engine validation tests (panchang, HD, numerology accuracy)",
           "source": "VAL-P1 subset",
           "estimate_hours": 10,
-          "status": "pending",
+          "status": "done",
           "priority": "P2",
           "description": "Write validation tests for core engine accuracy: panchanga tithi/nakshatra calculations, Human Design type/authority/profile, and numerology life path/expression numbers against known reference data."
         }
@@ -217,7 +217,7 @@
           "title": "End-to-end Railway deploy validation",
           "source": "mvp-deploy",
           "estimate_hours": 4,
-          "status": "pending",
+          "status": "done",
           "priority": "P1",
           "description": "Perform a full end-to-end deployment to Railway, verifying health checks, env var loading, graceful degradation, and core API functionality."
         },
@@ -226,7 +226,7 @@
           "title": "Basic load test baseline (k6 or similar)",
           "source": "W3-S15-08 overlap",
           "estimate_hours": 4,
-          "status": "pending",
+          "status": "done",
           "priority": "P2",
           "description": "Establish a baseline load test using k6 or similar tool. Target: confirm the server handles expected MVP traffic without errors or degradation."
         },
@@ -235,7 +235,7 @@
           "title": "Verify release pipeline end-to-end",
           "source": "P0-S1-06",
           "estimate_hours": 2,
-          "status": "pending",
+          "status": "done",
           "priority": "P1",
           "description": "Verify the full CI/CD release pipeline: push to main -> CI passes -> Docker build -> Railway deploy -> health check green."
         }
