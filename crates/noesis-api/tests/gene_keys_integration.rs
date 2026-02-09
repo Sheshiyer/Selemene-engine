@@ -12,40 +12,21 @@ use axum::{
     http::{Request, StatusCode, header},
     Router,
 };
-use noesis_api::{build_app_state_lazy_db, create_router, ApiConfig};
-use noesis_auth::AuthService;
 use serde_json::{json, Value};
-use tokio::sync::OnceCell;
 use tower::ServiceExt;
 
-// ---------------------------------------------------------------------------
-// Test fixtures
-// ---------------------------------------------------------------------------
+mod common;
 
-static TEST_ROUTER: OnceCell<Router> = OnceCell::const_new();
+// ---------------------------------------------------------------------------
+// Test fixtures -- delegates to shared common module
+// ---------------------------------------------------------------------------
 
 async fn get_test_router() -> &'static Router {
-    TEST_ROUTER
-        .get_or_init(|| async {
-            let config = ApiConfig::from_env().expect("failed to load test config");
-            let state = build_app_state_lazy_db(&config).await;
-            create_router(state, &config)
-        })
-        .await
+    common::get_router().await
 }
 
 fn generate_test_token(consciousness_level: u8) -> String {
-    let jwt_secret = std::env::var("JWT_SECRET")
-        .unwrap_or_else(|_| "noesis-dev-secret-change-in-production".to_string());
-    let auth = AuthService::new(jwt_secret);
-    
-    auth.generate_jwt_token(
-        "test-user-gene-keys",
-        "premium",
-        &["read".to_string(), "write".to_string()],
-        consciousness_level,
-    )
-    .expect("Failed to generate test JWT")
+    common::generate_test_token(consciousness_level)
 }
 
 async fn make_authenticated_request(
@@ -69,14 +50,14 @@ async fn make_authenticated_request(
 
     let request = request_builder.body(body).unwrap();
     let response = router.clone().oneshot(request).await.unwrap();
-    
+
     let status = response.status();
     let body_bytes = axum::body::to_bytes(response.into_body(), usize::MAX)
         .await
         .unwrap();
     let body_json: Value = serde_json::from_slice(&body_bytes)
         .unwrap_or_else(|_| json!({"raw": String::from_utf8_lossy(&body_bytes).to_string()}));
-    
+
     (status, body_json)
 }
 

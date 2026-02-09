@@ -12,39 +12,22 @@ use axum::{
     http::{header, Request, StatusCode},
     Router,
 };
-use noesis_api::{build_app_state_lazy_db, create_router, ApiConfig};
-use noesis_auth::AuthService;
 use serde_json::{json, Value};
-use tokio::sync::OnceCell;
+use serial_test::serial;
 use tower::ServiceExt;
 
-// ---------------------------------------------------------------------------
-// Test fixtures
-// ---------------------------------------------------------------------------
+mod common;
 
-static WORKFLOW_TEST_ROUTER: OnceCell<Router> = OnceCell::const_new();
+// ---------------------------------------------------------------------------
+// Test fixtures -- delegates to shared common module
+// ---------------------------------------------------------------------------
 
 async fn get_test_router() -> &'static Router {
-    WORKFLOW_TEST_ROUTER
-        .get_or_init(|| async {
-            let config = ApiConfig::from_env().expect("failed to load test config");
-            let state = build_app_state_lazy_db(&config).await;
-            create_router(state, &config)
-        })
-        .await
+    common::get_router().await
 }
 
 fn generate_test_token(consciousness_level: u8) -> String {
-    let jwt_secret = std::env::var("JWT_SECRET")
-        .unwrap_or_else(|_| "noesis-dev-secret-change-in-production".to_string());
-    let auth = AuthService::new(jwt_secret);
-    auth.generate_jwt_token(
-        "test-user-workflow",
-        "premium",
-        &["read".to_string(), "write".to_string()],
-        consciousness_level,
-    )
-    .expect("Failed to generate test JWT")
+    common::generate_test_token(consciousness_level)
 }
 
 async fn authenticated_post(

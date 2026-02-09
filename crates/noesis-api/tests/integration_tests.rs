@@ -15,44 +15,25 @@ use axum::{
     http::{Request, StatusCode, header},
     Router,
 };
-use noesis_api::{build_app_state_lazy_db, create_router};
-use noesis_auth::AuthService;
 use noesis_core::EngineInput;
 use serde_json::{json, Value};
-use tokio::sync::OnceCell;
+use serial_test::serial;
 use tower::ServiceExt; // For `oneshot`
 
+mod common;
+
 // ---------------------------------------------------------------------------
-// Test fixtures
+// Test fixtures -- delegates to shared common module
 // ---------------------------------------------------------------------------
 
-/// Global test router - created once and shared across all tests
-static TEST_ROUTER: OnceCell<Router> = OnceCell::const_new();
-
-/// Get or create the test router (singleton pattern)
+/// Get the shared test router (single instance per binary).
 async fn get_test_router() -> &'static Router {
-    TEST_ROUTER
-        .get_or_init(|| async {
-            let config = noesis_api::ApiConfig::from_env().expect("failed to load test config");
-            let state = build_app_state_lazy_db(&config).await;
-            create_router(state, &config)
-        })
-        .await
+    common::get_router().await
 }
 
-/// Generate a valid JWT token for testing with specific consciousness level
+/// Generate a valid JWT token for testing with specific consciousness level.
 fn generate_test_token(consciousness_level: u8) -> String {
-    let jwt_secret = std::env::var("JWT_SECRET")
-        .unwrap_or_else(|_| "noesis-dev-secret-change-in-production".to_string());
-    let auth = AuthService::new(jwt_secret);
-    
-    auth.generate_jwt_token(
-        "test-user-123",
-        "premium",
-        &["read".to_string(), "write".to_string()],
-        consciousness_level,
-    )
-    .expect("Failed to generate test JWT")
+    common::generate_test_token(consciousness_level)
 }
 
 /// Generate a test engine input for birth data calculations
@@ -690,6 +671,7 @@ async fn test_status_endpoint_with_auth() {
 }
 
 #[tokio::test]
+#[serial]
 async fn test_concurrent_engine_calculations() {
     let token = generate_test_token(5);
     let input = create_test_birth_input();
@@ -1065,6 +1047,7 @@ async fn test_hd_engine_validate_known_chart() {
 // ---------------------------------------------------------------------------
 
 #[tokio::test]
+#[serial]
 async fn test_hd_to_gene_keys_workflow() {
     // Test workflow: Calculate HD chart → derive Gene Keys from HD gates
     let router = get_test_router().await;
@@ -1219,6 +1202,7 @@ async fn test_hd_to_gene_keys_workflow() {
 }
 
 #[tokio::test]
+#[serial]
 async fn test_gene_keys_directly_from_birth_data() {
     // Test Mode 1: birth_data → calculate HD internally → derive Gene Keys
     let router = get_test_router().await;
@@ -1283,6 +1267,7 @@ async fn test_gene_keys_directly_from_birth_data() {
 }
 
 #[tokio::test]
+#[serial]
 async fn test_gene_keys_consciousness_level_affects_witness_prompt() {
     // Validate that different consciousness levels produce different witness prompts
     let router = get_test_router().await;

@@ -17,6 +17,8 @@ use std::sync::Arc;
 use std::time::{Duration, Instant};
 use std::sync::Once;
 
+mod test_helpers;
+
 static INIT_METRICS: Once = Once::new();
 
 /// Build app state for testing (with proper metrics initialization)
@@ -36,7 +38,7 @@ fn build_test_app_state() -> (noesis_api::AppState, ApiConfig) {
     );
 
     // -- Auth --
-    let jwt_secret = "test-secret-for-integration-tests".to_string();
+    let jwt_secret = test_helpers::TEST_JWT_SECRET.to_string();
     let auth = AuthService::new(jwt_secret);
 
     // -- Config --
@@ -46,7 +48,7 @@ fn build_test_app_state() -> (noesis_api::AppState, ApiConfig) {
     let config = ApiConfig {
         host: "127.0.0.1".to_string(),
         port: 0,
-        jwt_secret: "test-secret-for-integration-tests".to_string(),
+        jwt_secret: test_helpers::TEST_JWT_SECRET.to_string(),
         database_url: Some(database_url.clone()),
         redis_url: None,
         allowed_origins: vec![],

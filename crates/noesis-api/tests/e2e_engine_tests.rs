@@ -17,21 +17,18 @@ use axum::{
     http::{Request, StatusCode, header},
     Router,
 };
-use noesis_api::{build_app_state_lazy_db, create_router, ApiConfig};
-use noesis_auth::AuthService;
 use noesis_core::EngineInput;
 use serde_json::{json, Value};
-use tokio::sync::OnceCell;
+use serial_test::serial;
 use tokio::sync::Semaphore;
 use std::sync::{Arc, OnceLock};
 use tower::ServiceExt;
 
-// ===========================================================================
-// Shared test utilities
-// ===========================================================================
+mod common;
 
-/// Global test router -- created once and shared across all tests.
-static E2E_TEST_ROUTER: OnceCell<Router> = OnceCell::const_new();
+// ===========================================================================
+// Shared test utilities -- delegates to common module
+// ===========================================================================
 
 /// Serialize all router requests across tests.
 ///
@@ -52,52 +49,19 @@ async fn e2e_request_permit() -> tokio::sync::OwnedSemaphorePermit {
         .expect("failed to acquire E2E request permit")
 }
 
-/// Get or create the singleton test router with all engines registered.
+/// Get the shared singleton test router.
 async fn get_router() -> &'static Router {
-    E2E_TEST_ROUTER
-        .get_or_init(|| async {
-            let config = ApiConfig::from_env().expect("failed to load test config");
-            let state = build_app_state_lazy_db(&config).await;
-            create_router(state, &config)
-        })
-        .await
+    common::get_router().await
 }
 
 /// Generate a valid JWT token with a specific consciousness level.
 fn test_jwt(consciousness_level: u8) -> String {
-    let jwt_secret = std::env::var("JWT_SECRET")
-        .unwrap_or_else(|_| "noesis-dev-secret-change-in-production".to_string());
-    let auth = AuthService::new(jwt_secret);
-    auth.generate_jwt_token(
-        "e2e-test-user",
-        "premium",
-        &["read".to_string(), "write".to_string()],
-        consciousness_level,
-    )
-    .expect("Failed to generate test JWT")
+    common::generate_test_token(consciousness_level)
 }
 
 /// Reference birth data: 1990-01-15 14:30 UTC at New York coordinates.
-/// Chosen because it produces stable, well-known outputs across all three engines.
 fn reference_birth_input() -> EngineInput {
-    EngineInput {
-        birth_data: Some(noesis_core::BirthData {
-            name: Some("E2E Reference".to_string()),
-            date: "1990-01-15".to_string(),
-            time: Some("14:30".to_string()),
-            latitude: 40.7128,
-            longitude: -74.0060,
-            timezone: "America/New_York".to_string(),
-        }),
-        current_time: chrono::Utc::now(),
-        location: Some(noesis_core::Coordinates {
-            latitude: 40.7128,
-            longitude: -74.0060,
-            altitude: None,
-        }),
-        precision: noesis_core::Precision::Standard,
-        options: std::collections::HashMap::new(),
-    }
+    common::reference_birth_input()
 }
 
 /// Make an authenticated HTTP request through the Axum router.
