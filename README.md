@@ -24,6 +24,20 @@
 
 ```
 
+## → New Here? Start Here.
+
+**[API Quickstart Guide](docs/API_QUICKSTART.md)** — Zero to first API call in 5 minutes. Covers auth, request format, every engine, and workflows.
+
+**Terminal Explorer** — Interactive CLI for exploring the API:
+```bash
+export NOESIS_API_KEY="nk_your_key_here"
+./scripts/explore-api.sh
+```
+
+**Swagger UI** — [selemene-engine-production.up.railway.app/api/docs](https://selemene-engine-production.up.railway.app/api/docs)
+
+---
+
 ## → What Is This?
 
 Not a prediction engine. Not fortune-telling software. Not your fate determined by algorithms.

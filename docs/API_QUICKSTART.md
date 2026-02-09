@@ -1,0 +1,300 @@
+# Noesis API — Quickstart Guide
+
+> Zero to first API call in 5 minutes. Terminal-first.
+
+## Base URL
+
+```
+https://selemene-engine-production.up.railway.app
+```
+
+## Step 1: Get an API Key
+
+API keys are prefixed with `nk_` and authenticate via the `X-API-Key` header.
+
+**For development/testing**, run the seed script against your database:
+
+```bash
+DATABASE_URL="your-postgres-url" \
+  cargo run --package noesis-auth --features postgres --example seed_api_keys
+```
+
+This creates an admin user and 5 API keys across tiers (enterprise, premium, free). Save the output — keys cannot be recovered.
+
+**Set your key as an environment variable** for convenience:
+
+```bash
+export NOESIS_API_KEY="nk_your_key_here"
+```
+
+## Step 2: Verify Connection
+
+```bash
+# Health check (no auth required)
+curl -s https://selemene-engine-production.up.railway.app/health/live | python3 -m json.tool
+```
+
+```json
+{
+    "status": "ok",
+    "version": "0.1.0",
+    "engines_loaded": 8,
+    "workflows_loaded": 6
+}
+```
+
+## Step 3: List Available Engines
+
+```bash
+curl -s https://selemene-engine-production.up.railway.app/api/v1/engines \
+  -H "X-API-Key: $NOESIS_API_KEY" | python3 -m json.tool
+```
+
+```json
+{
+    "engines": [
+        "biofield", "biorhythm", "gene-keys", "human-design",
+        "numerology", "panchanga", "vedic-clock", "vimshottari"
+    ]
+}
+```
+
+## Step 4: Make Your First Calculation
+
+Every engine accepts the same request shape: `EngineInput`.
+
+```bash
+curl -s -X POST https://selemene-engine-production.up.railway.app/api/v1/engines/numerology/calculate \
+  -H "X-API-Key: $NOESIS_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "birth_data": {
+      "name": "Test User",
+      "date": "1991-08-13",
+      "time": "13:31",
+      "latitude": 12.9716,
+      "longitude": 77.5946,
+      "timezone": "Asia/Kolkata"
+    }
+  }' | python3 -m json.tool
+```
+
+Response (truncated):
+```json
+{
+    "engine_id": "numerology",
+    "result": {
+        "life_path": { "value": 5, "meaning": "Freedom, change, adventure" },
+        "expression": { "value": 1, "meaning": "Leadership, independence, pioneering" },
+        "soul_urge": { "value": 5, "meaning": "Freedom, change, adventure" },
+        "personality": { "value": 5, "meaning": "Freedom, change, adventure" },
+        "birthday": { "value": 4, "meaning": "Structure, discipline, foundation" }
+    },
+    "witness_prompt": "...",
+    "consciousness_level": 0,
+    "metadata": { "calculation_time_ms": 0, "backend": "native" }
+}
+```
+
+## Request Format: `EngineInput`
+
+All engine `/calculate` endpoints accept the same JSON body:
+
+```jsonc
+{
+    // Required for birth-chart engines (numerology, human-design, gene-keys, etc.)
+    "birth_data": {
+        "name": "string (optional)",       // Used by numerology
+        "date": "YYYY-MM-DD",             // Required
+        "time": "HH:MM (optional)",        // Required for HD, vimshottari
+        "latitude": 12.9716,              // Decimal degrees
+        "longitude": 77.5946,             // Decimal degrees
+        "timezone": "Asia/Kolkata"         // IANA timezone
+    },
+
+    // Auto-set to now if omitted
+    "current_time": "2026-02-09T00:00:00Z",
+
+    // Optional geographic override
+    "location": { "latitude": 12.9716, "longitude": 77.5946 },
+
+    // Calculation precision: "standard" (default), "high", "extreme"
+    "precision": "standard",
+
+    // Engine-specific options (varies by engine)
+    "options": {}
+}
+```
+
+## Engine Reference
+
+| Engine | Required Fields | What It Returns |
+|--------|----------------|-----------------|
+| **numerology** | `birth_data.date`, `birth_data.name` | Life path, expression, soul urge, personality numbers |
+| **biorhythm** | `birth_data.date` | Physical/emotional/intellectual cycles, forecast, critical days |
+| **human-design** | `birth_data.date`, `time`, lat/lng, tz | Type, strategy, authority, profile, centers, gates |
+| **gene-keys** | `birth_data.date`, `time`, lat/lng, tz | 4 activation sequences (Shadow/Gift/Siddhi) |
+| **vimshottari** | `birth_data.date`, `time`, lat/lng, tz | Current dasha periods (Maha/Antar/Pratyantar) |
+| **panchanga** | `birth_data.date`, lat/lng, tz | Tithi, nakshatra, yoga, karana, vara |
+| **vedic-clock** | (uses `current_time`) | TCM organ clock, Ayurvedic dosha timing |
+| **biofield** | `birth_data.date` | Chakra readings (stub) |
+
+## Try Each Engine
+
+```bash
+# Biorhythm — just needs a birth date
+curl -s -X POST .../api/v1/engines/biorhythm/calculate \
+  -H "X-API-Key: $NOESIS_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"birth_data":{"date":"1991-08-13","latitude":12.97,"longitude":77.59,"timezone":"Asia/Kolkata"}}' \
+  | python3 -m json.tool
+
+# Human Design — needs exact birth time
+curl -s -X POST .../api/v1/engines/human-design/calculate \
+  -H "X-API-Key: $NOESIS_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"birth_data":{"date":"1991-08-13","time":"13:31","latitude":12.9716,"longitude":77.5946,"timezone":"Asia/Kolkata"}}' \
+  | python3 -m json.tool
+
+# Vedic Clock — uses current time, no birth data needed
+curl -s -X POST .../api/v1/engines/vedic-clock/calculate \
+  -H "X-API-Key: $NOESIS_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{}' \
+  | python3 -m json.tool
+```
+
+Replace `...` with the base URL.
+
+## Workflows (Multi-Engine Synthesis)
+
+Workflows combine multiple engines into a single response.
+
+```bash
+# List available workflows
+curl -s .../api/v1/workflows \
+  -H "X-API-Key: $NOESIS_API_KEY" | python3 -m json.tool
+```
+
+| Workflow | Engines | Purpose |
+|----------|---------|---------|
+| **birth-blueprint** | numerology + human-design + vimshottari | Core identity mapping |
+| **daily-practice** | panchanga + vedic-clock + biorhythm | Daily rhythm & timing |
+| **decision-support** | tarot + i-ching + HD authority | Multi-perspective guidance |
+| **self-inquiry** | gene-keys + enneagram | Shadow work + patterns |
+| **creative-expression** | sigil-forge + sacred-geometry | Intent visualization |
+| **full-spectrum** | all 14 engines | Complete consciousness portrait |
+
+```bash
+# Execute a workflow
+curl -s -X POST .../api/v1/workflows/birth-blueprint/execute \
+  -H "X-API-Key: $NOESIS_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "birth_data": {
+      "date": "1991-08-13",
+      "time": "13:31",
+      "latitude": 12.9716,
+      "longitude": 77.5946,
+      "timezone": "Asia/Kolkata"
+    }
+  }' | python3 -m json.tool
+```
+
+## Authentication
+
+Two methods:
+
+| Method | Header | Use Case |
+|--------|--------|----------|
+| **API Key** | `X-API-Key: nk_...` | Server-to-server, scripts, CLI |
+| **JWT Token** | `Authorization: Bearer <token>` | User sessions (login flow) |
+
+### API Key Tiers
+
+| Tier | Rate Limit | Features |
+|------|-----------|----------|
+| **free** | 60 req/min | Basic access, panchanga |
+| **premium** | 1,000 req/min | All engines, batch operations |
+| **enterprise** | 10,000 req/min | Everything + admin endpoints |
+
+### Error Responses
+
+```json
+// 401 — Missing or invalid auth
+{
+    "error": "Invalid or expired API key",
+    "error_code": "UNAUTHORIZED",
+    "details": { "auth_method": "api_key" }
+}
+
+// 429 — Rate limited
+{
+    "error": "Rate limit exceeded",
+    "error_code": "RATE_LIMITED"
+}
+
+// 500 — Calculation error (usually bad input)
+{
+    "error": "Calculation error: birth_data is required for numerology",
+    "error_code": "CALCULATION_ERROR"
+}
+```
+
+## Interactive API Docs (Swagger)
+
+Full OpenAPI documentation with try-it-out:
+
+```
+https://selemene-engine-production.up.railway.app/api/docs
+```
+
+Open this in a browser to explore all endpoints interactively.
+
+## Terminal Explorer Script
+
+For a richer terminal experience, use the included explorer:
+
+```bash
+./scripts/explore-api.sh
+```
+
+This gives you a menu-driven interface to explore engines, run calculations, and see formatted responses — all from the terminal.
+
+## Quick Reference
+
+```bash
+# Set your key once
+export NOESIS_API_KEY="nk_your_key_here"
+export NOESIS_URL="https://selemene-engine-production.up.railway.app"
+
+# Health
+curl -s $NOESIS_URL/health/live | python3 -m json.tool
+
+# List engines
+curl -s $NOESIS_URL/api/v1/engines -H "X-API-Key: $NOESIS_API_KEY"
+
+# Calculate (any engine)
+curl -s -X POST $NOESIS_URL/api/v1/engines/{engine_id}/calculate \
+  -H "X-API-Key: $NOESIS_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"birth_data":{...}}'
+
+# Engine info
+curl -s $NOESIS_URL/api/v1/engines/{engine_id}/info -H "X-API-Key: $NOESIS_API_KEY"
+
+# List workflows
+curl -s $NOESIS_URL/api/v1/workflows -H "X-API-Key: $NOESIS_API_KEY"
+
+# Execute workflow
+curl -s -X POST $NOESIS_URL/api/v1/workflows/{workflow_id}/execute \
+  -H "X-API-Key: $NOESIS_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"birth_data":{...}}'
+
+# Swagger UI
+open $NOESIS_URL/api/docs
+
+# Prometheus metrics
+curl -s $NOESIS_URL/metrics
+```
