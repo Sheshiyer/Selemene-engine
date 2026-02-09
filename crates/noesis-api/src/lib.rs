@@ -9,6 +9,12 @@ mod logging;
 mod middleware;
 mod handlers;
 pub mod error;
+pub mod validation;
+pub mod error_enhancer;
+pub mod api_docs;
+
+#[cfg(test)]
+pub mod test_utils;
 
 // Re-export configuration and logging for main.rs
 pub use config::ApiConfig;
