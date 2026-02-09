@@ -240,15 +240,11 @@ impl CacheManager {
         Ok(())
     }
 
-    /// Health check for readiness probe
-    /// 
-    /// TODO: Implement full health check that verifies:
-    /// - L1 cache is responsive
-    /// - L2 Redis connection is alive (if configured)
-    /// - L3 disk cache is accessible (if enabled)
+    /// Health check for readiness probe.
+    ///
+    /// Verifies L2 Redis is reachable (if configured). L1 (in-memory) is always
+    /// available, and L3 (disk) is best-effort, so only Redis matters here.
     pub async fn health_check(&self) -> Result<bool, EngineError> {
-        // Placeholder: Always return Ok for now
-        // Full implementation should check Redis connection and cache responsiveness
-        Ok(true)
+        Ok(self.l2_cache.is_available().await)
     }
 }

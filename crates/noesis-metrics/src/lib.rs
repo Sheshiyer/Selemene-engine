@@ -5,7 +5,8 @@
 //! calculation counters and duration histograms keyed by `engine_id`.
 
 use prometheus::{
-    Counter, Gauge, Histogram, HistogramOpts, HistogramVec, IntCounterVec, Opts, Registry,
+    Counter, Gauge, Histogram, HistogramOpts, HistogramVec, IntCounterVec, IntGauge, IntGaugeVec,
+    Opts, Registry,
 };
 use std::sync::Arc;
 
@@ -116,6 +117,16 @@ pub struct NoesisMetrics {
     pub engine_calculation_status_total: IntCounterVec,
     /// Total calculation errors broken down by `engine_id` and `error_type` labels.
     pub engine_calculation_errors_total: IntCounterVec,
+
+    // -- Per-layer cache metrics -----------------------------------------------
+    /// Cumulative cache hits broken down by `layer` label (l1, l2, l3).
+    pub cache_layer_hits: IntGaugeVec,
+    /// Cumulative cache misses across all layers.
+    pub cache_layer_misses: IntGauge,
+    /// Total cache lookup requests.
+    pub cache_layer_requests: IntGauge,
+    /// Computed cache hit rate (0.0–1.0).
+    pub cache_hit_rate: Gauge,
 }
 
 impl NoesisMetrics {
@@ -233,6 +244,30 @@ impl NoesisMetrics {
             &["engine_id", "error_type"],
         )?;
 
+        // -- Per-layer cache metrics -----------------------------------------
+        let cache_layer_hits = IntGaugeVec::new(
+            Opts::new(
+                "noesis_cache_layer_hits_total",
+                "Cumulative cache hits per layer",
+            ),
+            &["layer"],
+        )?;
+
+        let cache_layer_misses = IntGauge::new(
+            "noesis_cache_layer_misses_total",
+            "Cumulative cache misses across all layers",
+        )?;
+
+        let cache_layer_requests = IntGauge::new(
+            "noesis_cache_layer_requests_total",
+            "Total cache lookup requests",
+        )?;
+
+        let cache_hit_rate = Gauge::new(
+            "noesis_cache_hit_rate",
+            "Cache hit rate (0.0-1.0)",
+        )?;
+
         // -- Register everything with the Prometheus registry ----------------
         REGISTRY.register(Box::new(requests_total.clone()))?;
         REGISTRY.register(Box::new(request_duration.clone()))?;
@@ -253,6 +288,10 @@ impl NoesisMetrics {
         REGISTRY.register(Box::new(engine_calculation_duration.clone()))?;
         REGISTRY.register(Box::new(engine_calculation_status_total.clone()))?;
         REGISTRY.register(Box::new(engine_calculation_errors_total.clone()))?;
+        REGISTRY.register(Box::new(cache_layer_hits.clone()))?;
+        REGISTRY.register(Box::new(cache_layer_misses.clone()))?;
+        REGISTRY.register(Box::new(cache_layer_requests.clone()))?;
+        REGISTRY.register(Box::new(cache_hit_rate.clone()))?;
 
         Ok(Self {
             requests_total,
@@ -274,6 +313,10 @@ impl NoesisMetrics {
             engine_calculation_duration,
             engine_calculation_status_total,
             engine_calculation_errors_total,
+            cache_layer_hits,
+            cache_layer_misses,
+            cache_layer_requests,
+            cache_hit_rate,
         })
     }
 
@@ -363,6 +406,29 @@ impl NoesisMetrics {
     /// Update the active connections gauge.
     pub fn update_active_connections(&self, count: f64) {
         self.active_connections.set(count);
+    }
+
+    /// Update per-layer cache statistics from a `CacheStats` snapshot.
+    ///
+    /// Call this before encoding metrics (e.g. in the `/metrics` handler) to
+    /// ensure Prometheus scrapes see fresh values.
+    pub fn update_cache_layer_stats(
+        &self,
+        l1_hits: u64,
+        l2_hits: u64,
+        l3_hits: u64,
+        misses: u64,
+        total_requests: u64,
+    ) {
+        self.cache_layer_hits.with_label_values(&["l1"]).set(l1_hits as i64);
+        self.cache_layer_hits.with_label_values(&["l2"]).set(l2_hits as i64);
+        self.cache_layer_hits.with_label_values(&["l3"]).set(l3_hits as i64);
+        self.cache_layer_misses.set(misses as i64);
+        self.cache_layer_requests.set(total_requests as i64);
+        if total_requests > 0 {
+            let rate = (l1_hits + l2_hits + l3_hits) as f64 / total_requests as f64;
+            self.cache_hit_rate.set(rate);
+        }
     }
 
     /// Encode all registered metrics in Prometheus text exposition format.

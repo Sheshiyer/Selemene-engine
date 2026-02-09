@@ -72,7 +72,7 @@ services:
       CACHE_L2_TTL: ${CACHE_L2_TTL:-86400}
 
       # Authentication
-      JWT_SECRET: ${JWT_SECRET:-development_secret_change_in_production}
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET must be set}
       JWT_EXPIRY: ${JWT_EXPIRY:-3600}
 
       # Swiss Ephemeris
