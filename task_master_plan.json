@@ -1,0 +1,660 @@
+{
+  "schema_version": "1.0",
+  "project": {
+    "name": "Selemene Engine",
+    "repo_root": "/Volumes/madara/2026/witnessos/Selemene-engine",
+    "generated_on": "2026-02-09",
+    "generated_by": "task-master-planner",
+    "assumptions": [
+      "Railway remains the primary deployment target",
+      "Supabase PostgreSQL stays as the auth/data backend",
+      "FreeAstrologyAPI free tier (50 req/day) is sufficient for current traffic",
+      "TypeScript engines (Tarot, I-Ching, Enneagram, Sacred Geometry, Sigil Forge) decision deferred to Phase 3",
+      "Single developer (Shesh) is primary contributor; est_hours reflect solo pace",
+      "Swiss Ephemeris data files are stable and won't need updates",
+      "No breaking API changes — all improvements are additive or behind feature flags"
+    ],
+    "risks": [
+      "Hardcoded JWT secret in railway-setup.sh — anyone with repo access can forge tokens",
+      "OpenTelemetry version mismatch blocks observability feature enablement",
+      "Release pipeline binary name mismatch means no automated GitHub Releases",
+      "Redis L2 disabled — cache misses fall through to recalculation, higher latency under load",
+      "Integration test SIGTRAP masked by continue-on-error — real failures may be hidden",
+      "FreeAstrologyAPI rate limit (50/day) could become bottleneck if traffic grows",
+      "noesis-vedic-api has 2 todo!() calls that will panic on certain API response formats"
+    ]
+  },
+  "phases": [
+    {
+      "phase_id": "P0",
+      "name": "Critical Security & Pipeline Fixes",
+      "objective": "Eliminate security vulnerabilities, fix broken CI/CD pipelines, and ensure the release process works end-to-end",
+      "sprints": [
+        {
+          "sprint_id": "S1",
+          "duration_weeks": 1,
+          "focus": "Security hardening and pipeline repair",
+          "tasks": [
+            {
+              "id": "P0-S1-01",
+              "title": "Rotate JWT secret and remove hardcoded value",
+              "area": "infra",
+              "owner_role": "DevOps",
+              "est_hours": 2,
+              "dependencies": [],
+              "deliverable": "New JWT secret generated via `openssl rand -base64 48`, set in Railway dashboard, hardcoded value removed from `scripts/railway-setup.sh:89`",
+              "acceptance": "No JWT secrets exist in any committed file and production tokens validate with the new secret"
+            },
+            {
+              "id": "P0-S1-02",
+              "title": "Fix release workflow binary name mismatch",
+              "area": "infra",
+              "owner_role": "DevOps",
+              "est_hours": 1,
+              "dependencies": [],
+              "deliverable": "`.github/workflows/release.yml` updated to package `noesis-server` instead of `selemene-engine`",
+              "acceptance": "A test tag push produces a GitHub Release with correctly named binaries for all 3 platforms"
+            },
+            {
+              "id": "P0-S1-03",
+              "title": "Fix OpenTelemetry version mismatch",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 4,
+              "dependencies": [],
+              "deliverable": "Aligned `opentelemetry` and `tracing-opentelemetry` versions in `noesis-api/Cargo.toml`",
+              "acceptance": "`cargo build --features otel` compiles without errors and `logging.rs` OpenTelemetry setup initializes"
+            },
+            {
+              "id": "P0-S1-04",
+              "title": "Fix noesis-vedic-api todo!() panics",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 4,
+              "dependencies": [],
+              "deliverable": "Replace 2 `todo!()` calls in `noesis-vedic-api/src/panchang/mod.rs` (lines 308, 313) with proper Tithi/Nakshatra parsing",
+              "acceptance": "All FreeAstrologyAPI response formats parse without panicking and tests cover the new code paths"
+            },
+            {
+              "id": "P0-S1-05",
+              "title": "Add secret scanning to CI",
+              "area": "infra",
+              "owner_role": "DevOps",
+              "est_hours": 2,
+              "dependencies": ["P0-S1-01"],
+              "deliverable": "GitHub secret scanning or `trufflehog` step added to `test.yml` workflow",
+              "acceptance": "CI fails if any committed file contains patterns matching API keys, JWT secrets, or database credentials"
+            },
+            {
+              "id": "P0-S1-06",
+              "title": "Verify release pipeline end-to-end",
+              "area": "qa",
+              "owner_role": "QA",
+              "est_hours": 2,
+              "dependencies": ["P0-S1-02"],
+              "deliverable": "Successful test release (v0.1.1-rc1) with binaries for Linux x86_64, macOS x86_64, macOS ARM64",
+              "acceptance": "GitHub Release page shows 3 downloadable binaries and Docker image is pushed to ghcr.io"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "phase_id": "P1",
+      "name": "Infrastructure Hardening",
+      "objective": "Re-enable Redis L2 cache, fix CI gaps, align Docker configs, and implement real system metrics",
+      "sprints": [
+        {
+          "sprint_id": "S1",
+          "duration_weeks": 2,
+          "focus": "Cache and CI infrastructure",
+          "tasks": [
+            {
+              "id": "P1-S1-01",
+              "title": "Re-enable Redis L2 cache operations",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 12,
+              "dependencies": [],
+              "deliverable": "All 8 TODO markers in `noesis-cache` resolved with working Redis GET/SET/EXPIRE operations",
+              "acceptance": "Cache hit/miss metrics show L2 Redis serving cached responses and latency drops measurably for repeated requests"
+            },
+            {
+              "id": "P1-S1-02",
+              "title": "Add PostgreSQL service to CI",
+              "area": "infra",
+              "owner_role": "DevOps",
+              "est_hours": 4,
+              "dependencies": [],
+              "deliverable": "PostgreSQL service container added to `.github/workflows/test.yml` with migrations auto-applied",
+              "acceptance": "Auth integration tests run in CI against real Postgres and pass without `continue-on-error`"
+            },
+            {
+              "id": "P1-S1-03",
+              "title": "Fix integration test SIGTRAP on cleanup",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 8,
+              "dependencies": ["P1-S1-02"],
+              "deliverable": "Root cause of SIGTRAP identified and fixed, `continue-on-error: true` removed from CI",
+              "acceptance": "Integration test suite completes cleanly (exit 0) with no signal crashes"
+            },
+            {
+              "id": "P1-S1-04",
+              "title": "Implement real CPU and memory metrics",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 6,
+              "dependencies": [],
+              "deliverable": "Replace `0.0` stubs in `noesis-metrics` (lines 399-400, 432-434) with `sysinfo` or `/proc` readings",
+              "acceptance": "`/metrics` endpoint returns non-zero CPU and memory values that match system state"
+            },
+            {
+              "id": "P1-S1-05",
+              "title": "Align Docker development and production configs",
+              "area": "infra",
+              "owner_role": "DevOps",
+              "est_hours": 4,
+              "dependencies": [],
+              "deliverable": "`docker-compose.yml` updated to use `Dockerfile.prod` or a clearly documented dev/prod distinction",
+              "acceptance": "`docker-compose up` builds with same Rust version as production and uses `/health/live` for health checks"
+            },
+            {
+              "id": "P1-S1-06",
+              "title": "Add Redis L2 cache integration tests",
+              "area": "qa",
+              "owner_role": "Backend Eng",
+              "est_hours": 6,
+              "dependencies": ["P1-S1-01"],
+              "deliverable": "Integration tests verifying L1->L2->L3 cache flow, TTL expiry, and cache invalidation",
+              "acceptance": "Tests pass in CI with Redis service container and demonstrate correct cache hierarchy behavior"
+            }
+          ]
+        },
+        {
+          "sprint_id": "S2",
+          "duration_weeks": 2,
+          "focus": "Observability and monitoring",
+          "tasks": [
+            {
+              "id": "P1-S2-01",
+              "title": "Enable OpenTelemetry tracing in production",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 8,
+              "dependencies": ["P0-S1-03"],
+              "deliverable": "OpenTelemetry feature enabled in production build with OTLP exporter configured",
+              "acceptance": "Traces appear in Sentry or a configured OTLP backend with request spans for engine calculations"
+            },
+            {
+              "id": "P1-S2-02",
+              "title": "Add per-engine calculation latency histograms",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 4,
+              "dependencies": ["P1-S1-04"],
+              "deliverable": "Prometheus histograms recording calculation time per engine ID",
+              "acceptance": "`/metrics` shows `engine_calculation_duration_seconds` histogram with labels for each engine"
+            },
+            {
+              "id": "P1-S2-03",
+              "title": "Add cache hit rate metrics",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 4,
+              "dependencies": ["P1-S1-01"],
+              "deliverable": "Prometheus counters for L1/L2/L3 cache hits and misses",
+              "acceptance": "`/metrics` shows `cache_hits_total` and `cache_misses_total` counters with layer labels"
+            },
+            {
+              "id": "P1-S2-04",
+              "title": "Create Grafana dashboard template",
+              "area": "infra",
+              "owner_role": "DevOps",
+              "est_hours": 6,
+              "dependencies": ["P1-S2-02", "P1-S2-03"],
+              "deliverable": "JSON dashboard template with panels for request rate, latency p50/p95/p99, cache hit rates, and system resources",
+              "acceptance": "Dashboard imports into Grafana and displays live data from the `/metrics` endpoint"
+            },
+            {
+              "id": "P1-S2-05",
+              "title": "Add health check for FreeAstrologyAPI availability",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 4,
+              "dependencies": [],
+              "deliverable": "`/health/ready` includes FreeAstrologyAPI status check with rate limit remaining",
+              "acceptance": "Readiness probe reports API status and remaining daily quota in health response"
+            },
+            {
+              "id": "P1-S2-06",
+              "title": "Add alerting rules for critical thresholds",
+              "area": "infra",
+              "owner_role": "DevOps",
+              "est_hours": 4,
+              "dependencies": ["P1-S2-04"],
+              "deliverable": "Alerting rules for: error rate >5%, p95 latency >500ms, FreeAstrologyAPI quota <10 remaining",
+              "acceptance": "Test alerts fire correctly when thresholds are breached and route to configured notification channel"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "phase_id": "P2",
+      "name": "Product Completeness",
+      "objective": "Complete workflow synthesizers, build admin API, implement consciousness level consistency, and achieve full product functionality",
+      "sprints": [
+        {
+          "sprint_id": "S1",
+          "duration_weeks": 2,
+          "focus": "Workflow synthesis and consciousness levels",
+          "tasks": [
+            {
+              "id": "P2-S1-01",
+              "title": "Implement decision-support workflow synthesizer",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 8,
+              "dependencies": [],
+              "deliverable": "Synthesis logic that combines Tarot + I-Ching + HD Authority into multi-perspective guidance",
+              "acceptance": "Workflow returns synthesized output with cross-engine correlations, not just concatenated engine results"
+            },
+            {
+              "id": "P2-S1-02",
+              "title": "Implement self-inquiry workflow synthesizer",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 8,
+              "dependencies": [],
+              "deliverable": "Synthesis logic combining Gene Keys shadow-gift-siddhi with Enneagram type patterns",
+              "acceptance": "Workflow identifies shadow patterns that correlate between Gene Keys and Enneagram and produces witness prompts"
+            },
+            {
+              "id": "P2-S1-03",
+              "title": "Implement creative-expression workflow synthesizer",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 8,
+              "dependencies": [],
+              "deliverable": "Synthesis logic combining Sigil Forge intent with Sacred Geometry patterns",
+              "acceptance": "Workflow returns a unified creative expression combining symbolic intent with geometric structure"
+            },
+            {
+              "id": "P2-S1-04",
+              "title": "Implement full-spectrum workflow synthesizer",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 12,
+              "dependencies": ["P2-S1-01", "P2-S1-02", "P2-S1-03"],
+              "deliverable": "Meta-synthesizer that produces a unified consciousness portrait from all engine outputs",
+              "acceptance": "Workflow returns a coherent narrative tying all engine results together with appropriate witness prompt"
+            },
+            {
+              "id": "P2-S1-05",
+              "title": "Standardize consciousness level integration across engines",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 10,
+              "dependencies": [],
+              "deliverable": "All 7 real engines use consciousness level (0-5) to calibrate witness prompt depth and interpretation detail",
+              "acceptance": "Same birth data at level 0 vs level 3 produces measurably different witness prompts across all engines"
+            },
+            {
+              "id": "P2-S1-06",
+              "title": "Add workflow synthesis integration tests",
+              "area": "qa",
+              "owner_role": "Backend Eng",
+              "est_hours": 8,
+              "dependencies": ["P2-S1-04"],
+              "deliverable": "Integration tests for all 6 workflows verifying synthesis output structure and cross-engine correlations",
+              "acceptance": "All 6 workflows produce valid synthesized output with tests covering edge cases"
+            }
+          ]
+        },
+        {
+          "sprint_id": "S2",
+          "duration_weeks": 2,
+          "focus": "Admin API and user management",
+          "tasks": [
+            {
+              "id": "P2-S2-01",
+              "title": "Build admin user management endpoints",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 12,
+              "dependencies": [],
+              "deliverable": "REST endpoints: GET/POST/PUT/DELETE `/api/v1/admin/users` with RBAC (enterprise tier only)",
+              "acceptance": "Admin can list, create, update, and deactivate users via API with proper authorization checks"
+            },
+            {
+              "id": "P2-S2-02",
+              "title": "Build admin API key management endpoints",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 8,
+              "dependencies": ["P2-S2-01"],
+              "deliverable": "REST endpoints: GET/POST/DELETE `/api/v1/admin/api-keys` using the dual-write `add_api_key()`",
+              "acceptance": "Admin can create and revoke API keys via API, keys immediately work for auth and revocations take effect"
+            },
+            {
+              "id": "P2-S2-03",
+              "title": "Build usage analytics endpoint",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 8,
+              "dependencies": ["P2-S2-01"],
+              "deliverable": "GET `/api/v1/admin/usage` returning per-key request counts, engine breakdown, and rate limit status",
+              "acceptance": "Endpoint returns accurate usage data from partitioned `usage_logs` table for a given time range"
+            },
+            {
+              "id": "P2-S2-04",
+              "title": "Implement user progression tracking",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 8,
+              "dependencies": ["P2-S1-05"],
+              "deliverable": "Logic that tracks user engagement and adjusts consciousness_level based on usage patterns",
+              "acceptance": "User's consciousness_level increments after sustained engagement thresholds and witness prompts adapt"
+            },
+            {
+              "id": "P2-S2-05",
+              "title": "Add password reset flow",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 6,
+              "dependencies": [],
+              "deliverable": "POST `/api/v1/auth/forgot-password` and POST `/api/v1/auth/reset-password` using existing migration schema",
+              "acceptance": "User can request a reset token and use it to set a new password within the token's expiry window"
+            },
+            {
+              "id": "P2-S2-06",
+              "title": "Add admin endpoint authorization tests",
+              "area": "qa",
+              "owner_role": "Backend Eng",
+              "est_hours": 6,
+              "dependencies": ["P2-S2-02"],
+              "deliverable": "Tests verifying admin endpoints reject non-enterprise tier keys and unauthorized users",
+              "acceptance": "Free and premium tier keys receive 403 on admin endpoints, enterprise keys succeed"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "phase_id": "P3",
+      "name": "Polish & Code Quality",
+      "objective": "Clean up warnings, prune dead code, consolidate documentation, and improve developer experience",
+      "sprints": [
+        {
+          "sprint_id": "S1",
+          "duration_weeks": 2,
+          "focus": "Code cleanup and warning elimination",
+          "tasks": [
+            {
+              "id": "P3-S1-01",
+              "title": "Fix 67 noesis-vedic-api warnings",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 4,
+              "dependencies": [],
+              "deliverable": "All unused imports, variables, and dead code in `noesis-vedic-api` cleaned up",
+              "acceptance": "`cargo clippy -p noesis-vedic-api` produces zero warnings"
+            },
+            {
+              "id": "P3-S1-02",
+              "title": "Fix 12 engine-vedic-clock warnings",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 2,
+              "dependencies": [],
+              "deliverable": "All warnings in `engine-vedic-clock` resolved",
+              "acceptance": "`cargo clippy -p engine-vedic-clock` produces zero warnings"
+            },
+            {
+              "id": "P3-S1-03",
+              "title": "Fix 4 engine-vimshottari warnings",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 1,
+              "dependencies": [],
+              "deliverable": "All warnings in `engine-vimshottari` resolved",
+              "acceptance": "`cargo clippy -p engine-vimshottari` produces zero warnings"
+            },
+            {
+              "id": "P3-S1-04",
+              "title": "Add clippy zero-warnings CI gate",
+              "area": "infra",
+              "owner_role": "DevOps",
+              "est_hours": 2,
+              "dependencies": ["P3-S1-01", "P3-S1-02", "P3-S1-03"],
+              "deliverable": "CI lint job uses `clippy -- -D warnings` to fail on any new warnings",
+              "acceptance": "PRs with new warnings are blocked by CI and the codebase stays warning-free"
+            },
+            {
+              "id": "P3-S1-05",
+              "title": "Evaluate and decide on TypeScript engines",
+              "area": "product",
+              "owner_role": "Backend Eng",
+              "est_hours": 4,
+              "dependencies": [],
+              "deliverable": "Decision document: deploy TS server, rewrite in Rust, or remove scaffolding",
+              "acceptance": "Written decision with rationale and action items committed to `.context/decisions/`"
+            },
+            {
+              "id": "P3-S1-06",
+              "title": "Remove or archive root binary prototype",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 2,
+              "dependencies": [],
+              "deliverable": "`archive/root-binary-prototype/` either moved to a tagged commit or deleted",
+              "acceptance": "33 archived files no longer in the active codebase and workspace compiles without them"
+            },
+            {
+              "id": "P3-S1-07",
+              "title": "Consolidate Redis documentation",
+              "area": "infra",
+              "owner_role": "DevOps",
+              "est_hours": 2,
+              "dependencies": [],
+              "deliverable": "4 separate Redis markdown files in `scripts/` consolidated into one operational runbook",
+              "acceptance": "Single Redis operational guide covers setup, cleanup, and troubleshooting"
+            },
+            {
+              "id": "P3-S1-08",
+              "title": "Evaluate noesis-data crate necessity",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 4,
+              "dependencies": [],
+              "deliverable": "Decision to either build out `noesis-data` as the repository layer or fold its User model into `noesis-auth`",
+              "acceptance": "Written decision committed and no orphaned data access patterns remain"
+            },
+            {
+              "id": "P3-S1-09",
+              "title": "Prune stale .context reports",
+              "area": "product",
+              "owner_role": "Backend Eng",
+              "est_hours": 4,
+              "dependencies": [],
+              "deliverable": "Obsolete agent reports and phase completion docs identified and removed from `.context/reports/`",
+              "acceptance": "Remaining `.context/` files are current, relevant, and total size reduced by at least 30%"
+            },
+            {
+              "id": "P3-S1-10",
+              "title": "Update Swagger/OpenAPI spec completeness",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 6,
+              "dependencies": [],
+              "deliverable": "All endpoints documented in OpenAPI with request/response schemas, examples, and error codes",
+              "acceptance": "Swagger UI shows complete documentation for every route including admin endpoints"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "phase_id": "P4",
+      "name": "Growth & Expansion",
+      "objective": "Build user-facing features, implement real stub engines, add SDK generation, and prepare for scale",
+      "sprints": [
+        {
+          "sprint_id": "S1",
+          "duration_weeks": 2,
+          "focus": "User-facing features and rate limiting improvements",
+          "tasks": [
+            {
+              "id": "P4-S1-01",
+              "title": "Implement per-endpoint rate limiting weights",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 8,
+              "dependencies": [],
+              "deliverable": "Rate limiter applies configurable weights per endpoint (e.g., full-spectrum counts as 8 requests)",
+              "acceptance": "Full-spectrum workflow consumes 8x rate limit tokens vs single engine calculation"
+            },
+            {
+              "id": "P4-S1-02",
+              "title": "Build self-service API key management page",
+              "area": "frontend",
+              "owner_role": "Frontend Eng",
+              "est_hours": 16,
+              "dependencies": ["P2-S2-02"],
+              "deliverable": "Web page where authenticated users can create, view, and revoke their own API keys",
+              "acceptance": "User can login, see their keys (masked), create new ones, and revoke existing ones"
+            },
+            {
+              "id": "P4-S1-03",
+              "title": "Build usage dashboard page",
+              "area": "frontend",
+              "owner_role": "Frontend Eng",
+              "est_hours": 16,
+              "dependencies": ["P2-S2-03"],
+              "deliverable": "Web dashboard showing request counts, engine usage breakdown, rate limit status per key",
+              "acceptance": "Dashboard displays real-time usage data with daily/weekly/monthly aggregation views"
+            },
+            {
+              "id": "P4-S1-04",
+              "title": "Create 2027 usage_logs partitions",
+              "area": "data",
+              "owner_role": "Backend Eng",
+              "est_hours": 2,
+              "dependencies": [],
+              "deliverable": "Monthly partitions `usage_logs_2027_01` through `usage_logs_2027_12` created",
+              "acceptance": "INSERT into usage_logs with 2027 timestamps succeeds without partition errors"
+            },
+            {
+              "id": "P4-S1-05",
+              "title": "Document partition maintenance procedure",
+              "area": "data",
+              "owner_role": "Backend Eng",
+              "est_hours": 2,
+              "dependencies": ["P4-S1-04"],
+              "deliverable": "Runbook for creating annual partitions and archiving old data",
+              "acceptance": "Any developer can follow the runbook to create next year's partitions"
+            },
+            {
+              "id": "P4-S1-06",
+              "title": "Add batch calculation endpoint",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 8,
+              "dependencies": [],
+              "deliverable": "POST `/api/v1/engines/batch` accepting multiple engine IDs and returning parallel results",
+              "acceptance": "Single request calculates 3+ engines in parallel and returns all results in one response"
+            }
+          ]
+        },
+        {
+          "sprint_id": "S2",
+          "duration_weeks": 2,
+          "focus": "SDK generation and external integrations",
+          "tasks": [
+            {
+              "id": "P4-S2-01",
+              "title": "Generate Python SDK from OpenAPI spec",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 8,
+              "dependencies": ["P3-S1-10"],
+              "deliverable": "Auto-generated Python client library published to PyPI or available via `pip install`",
+              "acceptance": "Python developers can `pip install noesis-sdk` and make typed API calls"
+            },
+            {
+              "id": "P4-S2-02",
+              "title": "Generate JavaScript/TypeScript SDK from OpenAPI spec",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 8,
+              "dependencies": ["P3-S1-10"],
+              "deliverable": "Auto-generated JS/TS client library published to npm",
+              "acceptance": "JS developers can `npm install @noesis/sdk` and make typed API calls"
+            },
+            {
+              "id": "P4-S2-03",
+              "title": "Implement webhook notification system",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 12,
+              "dependencies": [],
+              "deliverable": "POST `/api/v1/webhooks` to register URLs, automatic POST to registered URLs on calculation completion",
+              "acceptance": "Registered webhook receives POST with calculation result within 5s of completion"
+            },
+            {
+              "id": "P4-S2-04",
+              "title": "Implement biofield engine with real calculations",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 16,
+              "dependencies": [],
+              "deliverable": "Biofield engine replaced from mock data to algorithmic chakra energy calculations based on birth chart",
+              "acceptance": "Different birth data produces different chakra readings with reproducible results"
+            },
+            {
+              "id": "P4-S2-05",
+              "title": "Add TypeScript engine deployment or Rust rewrite",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 16,
+              "dependencies": ["P3-S1-05"],
+              "deliverable": "Based on P3-S1-05 decision: either Bun/Elysia server deployed alongside Rust, or TS engines rewritten in Rust",
+              "acceptance": "All 5 TS engines (Tarot, I-Ching, Enneagram, Sacred Geometry, Sigil Forge) are reachable from production API"
+            },
+            {
+              "id": "P4-S2-06",
+              "title": "Add Supabase RLS policies",
+              "area": "data",
+              "owner_role": "Backend Eng",
+              "est_hours": 8,
+              "dependencies": [],
+              "deliverable": "Row-level security policies on users, api_keys, and usage_logs tables",
+              "acceptance": "Direct Supabase access (bypassing API) respects user isolation and admin-only operations"
+            },
+            {
+              "id": "P4-S2-07",
+              "title": "Load testing and performance baseline",
+              "area": "qa",
+              "owner_role": "QA",
+              "est_hours": 8,
+              "dependencies": ["P1-S1-01"],
+              "deliverable": "Load test results for 100, 500, 1000 concurrent users with latency percentiles and error rates",
+              "acceptance": "Production handles 500 concurrent users at p95 <200ms with <1% error rate"
+            },
+            {
+              "id": "P4-S2-08",
+              "title": "Write contributor onboarding guide",
+              "area": "product",
+              "owner_role": "Backend Eng",
+              "est_hours": 4,
+              "dependencies": [],
+              "deliverable": "CONTRIBUTING.md covering dev setup, testing, PR process, and architecture overview",
+              "acceptance": "New contributor can go from clone to running tests in under 15 minutes following the guide"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

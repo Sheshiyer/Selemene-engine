@@ -1,676 +1,322 @@
-```
-                    ༺═──────────────────────────────────────────═༻
-                                                                  
-                           ◈  त्र्यम्बकम्  ◈                          
-                        TRYAMBAKAM NOESIS                        
-                                                                  
-                    "What sees when you stop predicting?"        
-                                                                  
-                         ∴ The Three-Eyed Witness ∴              
-                                                                  
-                    ༺═──────────────────────────────────────────═༻
+<p align="center">
+  <strong>Tryambakam Noesis</strong><br>
+  <em>The Three-Eyed Witness</em>
+</p>
 
-![Noesis Living System](docs/assets/images/noesis-hero.png)
+<p align="center">
+  <a href="https://github.com/Sheshiyer/Selemene-engine/actions"><img src="https://img.shields.io/github/actions/workflow/status/Sheshiyer/Selemene-engine/test.yml?style=flat-square&label=tests" alt="Tests"></a>
+  &nbsp;
+  <img src="https://img.shields.io/badge/Rust-1.70+-CE422B?style=flat-square&logo=rust&logoColor=white" alt="Rust">
+  &nbsp;
+  <img src="https://img.shields.io/badge/license-MIT-blue?style=flat-square" alt="License">
+  &nbsp;
+  <a href="https://selemene-engine-production.up.railway.app/health/live"><img src="https://img.shields.io/badge/status-live-brightgreen?style=flat-square" alt="Live"></a>
+</p>
 
-                             ╱▔▔▔▔▔▔▔▔▔▔▔╲
-                        ╱▔▔▔╱  14 ENGINES  ╲▔▔▔╲
-                   ╱▔▔▔╱   6 WORKFLOWS   ╲▔▔▔╲
-              ╱▔▔▔╱     SYNTHESIS LAYER     ╲▔▔▔╲
-         ╱▔▔▔╱          CONSCIOUSNESS          ╲▔▔▔╲
-    ════════════════════════════════════════════════════
+<p align="center">
+  <img src="https://img.shields.io/badge/engines-8-orange?style=flat-square" alt="Engines">
+  &nbsp;
+  <img src="https://img.shields.io/badge/workflows-6-blueviolet?style=flat-square" alt="Workflows">
+  &nbsp;
+  <img src="https://img.shields.io/badge/Axum-HTTP-teal?style=flat-square" alt="Axum">
+  &nbsp;
+  <img src="https://img.shields.io/badge/Supabase-Postgres-3ECF8E?style=flat-square&logo=supabase&logoColor=white" alt="Supabase">
+  &nbsp;
+  <img src="https://img.shields.io/badge/Railway-deployed-0B0D0E?style=flat-square&logo=railway&logoColor=white" alt="Railway">
+</p>
 
-    Vedic Astrology ∘ Human Design ∘ Gene Keys ∘ I-Ching
-    Tarot ∘ Vimshottari ∘ Numerology ∘ Enneagram ∘ More
+---
 
-```
+A computational mirror for self-inquiry. 8 engines rooted in Vedic, numerological, and consciousness traditions — not to predict your future, but to reflect patterns worth witnessing.
 
-## → New Here? Start Here.
+**What makes this different**: Every response includes a *witness prompt* — a question calibrated to your consciousness level. You don't get answers. You get better questions.
 
-**[API Quickstart Guide](docs/API_QUICKSTART.md)** — Zero to first API call in 5 minutes. Covers auth, request format, every engine, and workflows.
+---
 
-**Terminal Explorer** — Interactive CLI for exploring the API:
+## Get Started
+
+**[API Quickstart Guide](docs/API_QUICKSTART.md)** — Zero to first API call in 5 minutes.
+
+**[Interactive Explorer](scripts/explore-api.sh)** — Terminal-based menu for exploring every engine.
+
+**[Swagger UI](https://selemene-engine-production.up.railway.app/api/docs)** — Full interactive API documentation.
+
+### First Call in 30 Seconds
+
 ```bash
+# Set your API key
 export NOESIS_API_KEY="nk_your_key_here"
-./scripts/explore-api.sh
-```
 
-**Swagger UI** — [selemene-engine-production.up.railway.app/api/docs](https://selemene-engine-production.up.railway.app/api/docs)
-
----
-
-## → What Is This?
-
-Not a prediction engine. Not fortune-telling software. Not your fate determined by algorithms.
-
-This is a **living computational mirror** that reflects patterns across 14 ancient wisdom traditions, synthesizes them through 6 multi-engine workflows, and generates **non-prescriptive witness prompts** for self-inquiry. You don't get answers—you get better questions.
-
-**The witness doesn't predict. It observes. It asks. It reflects.**
-
-### The Architecture of Witnessing
-
-![Noesis Architecture](docs/assets/images/noesis-architecture.png)
-
-```
-           ┌─────────────── The Question ───────────────┐
-           │    "Who am I in this moment?"              │
-           └────────────────────┬───────────────────────┘
-                                │
-                    ┌───────────▼───────────┐
-                    │   NOESIS ORCHESTRATOR  │  ← Parallel synthesis
-                    │   Consciousness Layer  │     Multi-engine fusion
-                    └───────────┬───────────┘
-                                │
-              ┌─────────────────┼─────────────────┐
-              │                 │                 │
-     ┌────────▼────────┐ ┌─────▼─────┐ ┌────────▼────────┐
-     │  Rust Engines   │ │ TS Engines│ │  Integration    │
-     │  (9 systems)    │ │ (5 systems)│ │   APIs          │
-     │                 │ │            │ │                 │
-     │ • Panchanga     │ │ • Tarot    │ │ • FreeAstro API │
-     │ • Human Design  │ │ • I-Ching  │ │ • Vedic Data    │
-     │ • Gene Keys     │ │ • Enneagram│ │ • TCM Systems   │
-     │ • Vimshottari   │ │ • Geometry │ │                 │
-     │ • Numerology    │ │ • Sigils   │ │                 │
-     │ • Biorhythm     │ │            │ │                 │
-     │ • Vedic Clock   │ │            │ │                 │
-     │ • Biofield      │ │            │ │                 │
-     │ • Face Reading  │ │            │ │                 │
-     └─────────────────┘ └───────────┘ └─────────────────┘
-              │                 │                 │
-              └─────────────────┼─────────────────┘
-                                │
-                    ┌───────────▼───────────┐
-                    │   3-LAYER CACHE       │  ← Sub-millisecond
-                    │   L1: Memory (LRU)    │     response times
-                    │   L2: Redis (Dist)    │     95%+ hit rate
-                    │   L3: Disk (Archive)  │
-                    └───────────────────────┘
-```
-
-## ⚡ Current Manifestation: Production Live
-
-**Living Status** (as of v2.1.0):
-- 🚀 **LIVE** at `https://selemene-engine-production.up.railway.app`
-- ✨ **8 Rust engines** deployed → Panchanga, HD, Gene Keys, Vimshottari, Numerology, Biorhythm, Vedic Clock, Biofield
-- 🌊 **6 synthesis workflows** → Multi-engine consciousness portraits
-- 🧪 **400+ tests** passing → Integration, accuracy, performance, resilience
-- 🔥 **Sub-millisecond** calculations → Even complex engines (<2ms)
-- 🛡️ **Sentry** error tracking → Real-time error monitoring
-- 🔴 **Redis** L2 cache → Distributed caching on Railway
-- 🐘 **Supabase** PostgreSQL → Persistent data layer
-- 🌐 **FreeAstrologyAPI** → High-accuracy Vedic calculations with native fallback
-
----
-
-## → Binaries: Which Server to Run?
-
-This workspace contains **one production binary**:
-
-### `noesis-server` (Production) ⭐
-- **Location**: `crates/noesis-api/src/main.rs`
-- **Port**: 8080
-- **Features**: Full production stack
-  - JWT + API key authentication
-  - Rate limiting (per-user sliding window)
-  - Prometheus metrics (`/metrics`)
-  - SwaggerUI documentation (`/api/docs`)
-  - Health check endpoints (`/health`, `/health/ready`)
-  - 3-layer caching (L1 memory, L2 Redis, L3 disk)
-  - Graceful shutdown handling
-- **Use for**: Production deployments, Railway, Kubernetes, Docker
-- **Built by**: `Dockerfile.prod`
-
-**This is the binary you should deploy.**
-
----
-
-## → Quickstart: Awakening the System
-
-```bash
-# 1. Wake the Rust core (noesis-server: port 8080)
-cargo build --release
-cargo run --bin noesis-server
-
-# 2. Activate TypeScript engines (port 3001)
-cd ts-engines && bun install && bun run src/index.ts
-
-# 3. Verify consciousness (health endpoints)
-curl http://localhost:8080/health    # Rust: Panchanga, HD, Gene Keys, Vimshottari...
-curl http://localhost:3001/health    # TypeScript: Tarot, I-Ching, Enneagram...
-
-# 4. Run tests (validate the mirror)
-cargo test -- --test-threads=1       # Rust engines
-cd ts-engines && bun test            # TypeScript engines
-
-# 5. Or just wake everything at once
-docker-compose up -d                 # Full stack: Rust + TS + Redis + Postgres
-```
-
-**First Inquiry** (try this):
-```bash
-curl -X POST http://localhost:8080/api/v1/workflows/self-inquiry \
+# Ask the mirror a question
+curl -s -X POST https://selemene-engine-production.up.railway.app/api/v1/engines/numerology/calculate \
+  -H "X-API-Key: $NOESIS_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
     "birth_data": {
+      "name": "Your Name",
       "date": "1991-08-13",
       "time": "13:31",
       "latitude": 12.9716,
       "longitude": 77.5946,
       "timezone": "Asia/Kolkata"
+    }
+  }' | python3 -m json.tool
+```
+
+```json
+{
+    "engine_id": "numerology",
+    "result": {
+        "life_path": { "value": 5, "meaning": "Freedom, change, adventure" },
+        "expression": { "value": 1, "meaning": "Leadership, independence, pioneering" },
+        "soul_urge": { "value": 5, "meaning": "Freedom, change, adventure" }
     },
-    "consciousness_level": 3,
-    "question": "What patterns am I witnessing today?"
-  }'
+    "witness_prompt": "What patterns arise when freedom meets discipline?",
+    "consciousness_level": 0,
+    "metadata": { "calculation_time_ms": 0, "backend": "native" }
+}
 ```
 
 ---
 
-## → The 14 Engines: Fractal Perspectives
+## The 8 Engines
 
-Each engine is a lens. A different frequency. A unique way of seeing the same moment.
+Each engine is a different lens on the same moment. All return sub-millisecond calculations.
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                        Client Request                            │
-└─────────────────────────────────────────────────────────────────┘
-                               │
-                               ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                 Rust API (selemene-engine:8080)                  │
-│  Endpoints: /health, /api/v1/panchanga, /engines, /workflows    │
-│  Features: Auth (JWT/API Key), Rate Limiting, 3-Layer Cache     │
-└─────────────────────────────────────────────────────────────────┘
-                               │
-           ┌───────────────────┼───────────────────┐
-           ▼                   ▼                   ▼
-┌──────────────────┐  ┌──────────────────┐  ┌──────────────────┐
-│   Rust Engines   │  │   TS Engines     │  │   Orchestrator   │
-│   (9 engines)    │  │   (5 engines)    │  │   + Workflows    │
-│                  │  │   Port: 3001     │  │                  │
-└──────────────────┘  └──────────────────┘  └──────────────────┘
+| Engine | What It Witnesses | Key Input |
+|--------|-------------------|-----------|
+| **Panchanga** | Vedic time — tithi, nakshatra, yoga, karana, vara. The breath of cosmic rhythm. | `date`, lat/lng, timezone |
+| **Human Design** | Your bodygraph — type, strategy, authority, profile, 9 centers, 26 gates. Genetic imprint as circuit. | `date`, `time`, lat/lng, timezone |
+| **Gene Keys** | Shadow, Gift, Siddhi frequencies across 4 activation sequences. Potentials witnessed through contemplation. | `date`, `time`, lat/lng, timezone |
+| **Vimshottari** | 120-year planetary timeline. 729 nested dasha periods. Your current moment in the grand cycle. | `date`, `time`, lat/lng, timezone |
+| **Numerology** | Life path, expression, soul urge, personality — Pythagorean + Chaldean systems. | `date`, `name` |
+| **Biorhythm** | Physical (23d), emotional (28d), intellectual (33d) sine waves. Your energetic weather. | `date` |
+| **Vedic Clock** | TCM organ meridian clock + Ayurvedic dosha timing. The intelligence of *when*. | `current_time` (auto) |
+| **Biofield** | Chakra energy readings. The subtle body as data. | `date` |
 
-crates/
-  noesis-orchestrator/   Parallel engine execution + 6 workflow synthesis
-  noesis-bridge/         HTTP bridge for Rust↔TypeScript communication
-  engine-human-design/   HD chart (type, authority, profile, centers)
-  engine-gene-keys/      Shadow-Gift-Siddhi activation sequences
-  engine-vimshottari/    120-year planetary dasha periods
-  engine-vedic-clock/    TCM organ clock + Ayurvedic doshas
-  engine-biofield/       Chakra readings (stub)
-  engine-face-reading/   Physiognomy analysis (stub)
+### Request Format
 
-ts-engines/
-  tarot/                 78 cards, 5 spread types, witness prompts
-  i-ching/               64 hexagrams, changing lines, nuclear hexagrams
-  enneagram/             9 types, wings, integration/disintegration
-  sacred-geometry/       Geometric form meditation (stub)
-  sigil-forge/           Intent-based sigil creation (stub)
+All engines accept the same `EngineInput` shape:
+
+```jsonc
+{
+    "birth_data": {
+        "name": "string",              // Used by numerology
+        "date": "YYYY-MM-DD",          // Required
+        "time": "HH:MM",              // Required for HD, gene-keys, vimshottari
+        "latitude": 12.9716,           // Decimal degrees
+        "longitude": 77.5946,          // Decimal degrees
+        "timezone": "Asia/Kolkata"     // IANA timezone
+    },
+    "precision": "standard"            // "standard" | "high" | "extreme"
+}
 ```
 
-## The 14 Engines
+### Try Each Engine
 
-### Rust Engines (9) → Native Performance, <2ms
+```bash
+BASE="https://selemene-engine-production.up.railway.app/api/v1"
 
-| Engine | ⚡ Speed | 🎯 What It Witnesses |
-|--------|---------|---------------------|
-| **Panchanga** | <1ms | Vedic time itself—tithi (lunar day), nakshatra (star mansion), yoga (solar-lunar union), karana (half-tithis), vara (weekday). The breath of cosmic rhythm. |
-| **Human Design** | 1.31ms | Your genetic imprint: Type (strategy), Authority (decision-making), Profile (role), 9 Centers, 26 Gates activated at birth and 88° before (design time). The bodygraph as circuit. |
-| **Gene Keys** | 0.012ms | Shadow→Gift→Siddhi frequencies across 4 activation sequences. Not states, but *potentials* witnessed through contemplation. The evolutionary spiral. |
-| **Vimshottari** | <1ms | 120-year planetary timeline. 729 nested periods (Maha→Antar→Pratyantar). Binary search finds your *current moment* in the grand cycle. Time as nested fractals. |
-| **Numerology** | <1ms | Name and birth date reduced to archetypal numbers. Pythagorean + Chaldean systems. The mathematics of identity. |
-| **Biorhythm** | <1ms | Physical (23-day), Emotional (28-day), Intellectual (33-day) sine waves since birth. Your energetic weather pattern. |
-| **Vedic Clock** | <1ms | TCM organ meridian clock + Ayurvedic dosha timing. When is the body most receptive? The intelligence of timing. |
-| **Biofield** | <1ms | Chakra energy readings (currently stub with mock data—future: biometric integration). |
-| **Face Reading** | <1ms | Physiognomy analysis (stub—future: CV-based facial feature extraction). |
+# Numerology — needs name + date
+curl -s -X POST $BASE/engines/numerology/calculate \
+  -H "X-API-Key: $NOESIS_API_KEY" -H "Content-Type: application/json" \
+  -d '{"birth_data":{"name":"Test","date":"1991-08-13","latitude":12.97,"longitude":77.59,"timezone":"Asia/Kolkata"}}'
 
-### TypeScript Engines (5) → Symbolic Interpretation
+# Biorhythm — just a birth date
+curl -s -X POST $BASE/engines/biorhythm/calculate \
+  -H "X-API-Key: $NOESIS_API_KEY" -H "Content-Type: application/json" \
+  -d '{"birth_data":{"date":"1991-08-13","latitude":12.97,"longitude":77.59,"timezone":"Asia/Kolkata"}}'
 
-| Engine | 🎴 What It Reveals |
-|--------|-------------------|
-| **Tarot** | 78-card Rider-Waite-Smith deck. 5 spread types (Celtic Cross, Past-Present-Future, Single Card, Yes/No, 5-Card). Archetypal image as mirror. Witness prompts adapted to consciousness level. |
-| **I-Ching** | 64 hexagrams cast from moment or question. Changing lines reveal transformation. Relating hexagram shows outcome. Nuclear hexagrams expose hidden dynamics. Ancient change oracle. |
-| **Enneagram** | 9 personality types, wings, integration/disintegration paths (stress/growth). Not a box—a map of patterns. Where you contract, where you expand. |
-| **Sacred Geometry** | Geometric forms (Flower of Life, Metatron's Cube, etc.) as meditation seeds. Currently stub—future: visual mandalas + contemplation prompts. |
-| **Sigil Forge** | Intent→Symbol transformation. Turn questions into visual glyphs. Currently stub—future: algorithmic sigil generation from semantic analysis. |
+# Human Design — needs exact birth time
+curl -s -X POST $BASE/engines/human-design/calculate \
+  -H "X-API-Key: $NOESIS_API_KEY" -H "Content-Type: application/json" \
+  -d '{"birth_data":{"date":"1991-08-13","time":"13:31","latitude":12.9716,"longitude":77.5946,"timezone":"Asia/Kolkata"}}'
 
-### Integration APIs → External Data Streams
-
-| System | 🌐 Source | Purpose |
-|--------|----------|---------|
-| **FreeAstrology API** | freeastrologyapi.com | 15+ Vedic endpoints: Panchang, Hora, Choghadiya, Muhurta, Vargas, Transits, Shadbala, Ashtakavarga. High-precision fallback for native calculations. |
-| **TCM Integration** | Vedic Clock synthesis | Traditional Chinese Medicine organ clock overlaid with Vedic timing. East meets East. |
+# Vedic Clock — uses current time, no birth data needed
+curl -s -X POST $BASE/engines/vedic-clock/calculate \
+  -H "X-API-Key: $NOESIS_API_KEY" -H "Content-Type: application/json" \
+  -d '{}'
+```
 
 ---
 
-## → The 6 Workflows: Synthesis as Emergence
+## The 6 Workflows
 
-These aren't pipelines. They're **synthesis rituals**—multi-engine orchestrations that create emergent understanding.
+Workflows synthesize multiple engines into emergent understanding. Not pipelines — *synthesis rituals*.
 
+| Workflow | Engines | What Emerges |
+|----------|---------|--------------|
+| **`birth-blueprint`** | Numerology + Human Design + Vimshottari | Your natal imprint — life path numbers, bodygraph, 120-year timeline |
+| **`daily-practice`** | Panchanga + Vedic Clock + Biorhythm | Optimal timing — cosmic tide aligned with personal rhythm |
+| **`decision-support`** | Tarot + I-Ching + HD Authority | Multi-perspective guidance — not "what to do" but "what to notice" |
+| **`self-inquiry`** | Gene Keys + Enneagram | Shadow work meets personality patterns — where you contract, where you expand |
+| **`creative-expression`** | Sigil Forge + Sacred Geometry | Intent made visible — symbols as seeds, geometry as meditation |
+| **`full-spectrum`** | All 14 Engines | Complete consciousness portrait — every lens, every frequency |
+
+```bash
+# Execute a workflow
+curl -s -X POST $BASE/workflows/birth-blueprint/execute \
+  -H "X-API-Key: $NOESIS_API_KEY" -H "Content-Type: application/json" \
+  -d '{"birth_data":{"date":"1991-08-13","time":"13:31","latitude":12.9716,"longitude":77.5946,"timezone":"Asia/Kolkata"}}'
 ```
-     ┌──────────────────────────────────────────────────┐
-     │  Workflow = Multiple Engines + Parallel Exec +   │
-     │  Pattern Recognition + Consciousness Adaptation  │
-     └──────────────────────────────────────────────────┘
-```
-
-| Workflow | Engines Synthesized | What Emerges |
-|----------|---------------------|--------------|
-| **`birth-blueprint`** | Numerology + Human Design + Vimshottari | Your natal imprint: life path numbers, HD bodygraph, 120-year dasha timeline. The architecture of a lifetime. |
-| **`daily-practice`** | Panchanga + Vedic Clock + Biorhythm | Optimal timing for action. When is the cosmic tide aligned with your personal rhythm? The art of *when*. |
-| **`decision-support`** | Tarot + I-Ching + HD Authority | Multi-perspective guidance. Not "what to do" but "what to notice." Your authority + archetypal wisdom + change dynamics. |
-| **`self-inquiry`** | Gene Keys + Enneagram | Shadow work meets personality patterns. Where are you contracting? Where can you expand? The mirror of transformation. |
-| **`creative-expression`** | Sigil Forge + Sacred Geometry | Intent made visible. Symbols as seeds. Geometry as meditation. The language before words. |
-| **`full-spectrum`** | **All 14 Engines** | The complete consciousness portrait. Every lens, every frequency, every pattern synthesized into one living map. Not for the faint of heart. |
 
 ---
 
-## → Consciousness Levels: Adaptive Witnessing
+## Consciousness Levels
 
-The system doesn't give the same answer to everyone. It **adapts witness prompts** based on your relationship with consciousness.
-
-```
-Level 0-1: Shadow Awareness    →  "Notice when this pattern arises..."
-Level 2-3: Gift Integration     →  "How might you express this quality?"
-Level 4-5: Siddhi Embodiment    →  "What sees through this form?"
-```
+The system adapts witness prompts based on your relationship with awareness.
 
 | Level | State | Prompt Calibration |
 |-------|-------|-------------------|
-| **0** | Dormant | Observational. "What sensations arise when you feel [pattern]?" Basic somatic awareness. |
-| **1** | Glimpsing | Reflective. "When does [pattern] show up in your life?" Pattern recognition begins. |
-| **2** | Practicing | Inquiry-based. "What might [pattern] be protecting?" Self-questioning deepens. |
-| **3** | Integrated | Self-authorship. "How do you choose to work with [pattern]?" Conscious choice emerges. |
-| **4-5** | Embodied | Open awareness. "What witnesses [pattern] arising?" The observer observed. |
+| **0** | Dormant | Observational. *"What sensations arise when you feel this pattern?"* |
+| **1** | Glimpsing | Reflective. *"When does this pattern show up in your life?"* |
+| **2** | Practicing | Inquiry-based. *"What might this pattern be protecting?"* |
+| **3** | Integrated | Self-authorship. *"How do you choose to work with this pattern?"* |
+| **4-5** | Embodied | Open awareness. *"What witnesses this pattern arising?"* |
 
-**This isn't gamification. It's meeting you where you are.**
-
----
-
-## → API as Inquiry Interface
-
-Every endpoint is a question. Every response is a reflection.
-
-### Human Design: "What is my genetic strategy?"
-
-```bash
-curl -X POST http://localhost:8080/api/v1/engines/human-design/calculate \
-  -H "Content-Type: application/json" \
-  -d '{
-    "birth_data": {
-      "date": "1991-08-13",
-      "time": "13:31",
-      "latitude": 12.9716,
-      "longitude": 77.5946,
-      "timezone": "Asia/Kolkata"
-    },
-    "consciousness_level": 3
-  }'
-
-# Returns: Type, Strategy, Authority, Profile, Centers, 26 Gates (Personality + Design)
-```
-
-### Gene Keys: "What frequencies am I carrying?"
-
-```bash
-curl -X POST http://localhost:8080/api/v1/engines/gene-keys/calculate \
-  -H "Content-Type: application/json" \
-  -d '{
-    "birth_data": { ... },
-    "consciousness_level": 2
-  }'
-
-# Returns: 4 Activation Sequences (Life's Work, Evolution, Radiance, Purpose)
-#          Each with Shadow-Gift-Siddhi contemplations
-```
-
-### Tarot: "What wants to be seen?"
-
-```bash
-curl -X POST http://localhost:3001/engines/tarot/calculate \
-  -H "Content-Type: application/json" \
-  -d '{
-    "consciousness_level": 3,
-    "parameters": {"spread_type": "celtic_cross"},
-    "question": "What is asking for my attention?"
-  }'
-
-# Returns: 10-card Celtic Cross spread with position meanings + witness prompts
-```
-
-### I-Ching: "What is the nature of this moment?"
-
-```bash
-curl -X POST http://localhost:3001/engines/i-ching/calculate \
-  -H "Content-Type: application/json" \
-  -d '{
-    "consciousness_level": 4,
-    "question": "What is unfolding?"
-  }'
-
-# Returns: Primary hexagram, changing lines, relating hexagram, nuclear hexagrams
-#          Transformation dynamics + contemplation seeds
-```
-
-### Vimshottari: "Where am I in the cycle?"
-
-```bash
-curl -X POST http://localhost:8080/api/v1/engines/vimshottari/calculate \
-  -H "Content-Type: application/json" \
-  -d '{
-    "birth_data": {
-      "date": "1991-08-13",
-      "moon_longitude": 127.45
-    },
-    "current_date": "2026-02-03"
-  }'
-
-# Returns: Current Mahadasha → Antardasha → Pratyantardasha
-#          Upcoming transitions, planetary energies
-```
-
-### Full Workflow: "Show me everything"
-
-```bash
-curl -X POST http://localhost:8080/api/v1/workflows/full-spectrum \
-  -H "Content-Type: application/json" \
-  -d '{
-    "birth_data": { ... },
-    "consciousness_level": 3,
-    "question": "What is my relationship with this moment?"
-  }'
-
-# Returns: All 14 engines synthesized into one consciousness map
-#          Parallel execution, sub-200ms total time
-```
+This isn't gamification. It's meeting you where you are.
 
 ---
 
-## → Performance: The Speed of Reflection
+## Authentication
 
-When the mirror responds instantly, inquiry flows naturally. Speed isn't optimization—it's respect for consciousness.
+| Method | Header | Use Case |
+|--------|--------|----------|
+| API Key | `X-API-Key: nk_...` | Server-to-server, scripts, CLI |
+| JWT | `Authorization: Bearer <token>` | User sessions (login flow) |
 
-| Metric | Target | Reality | Δ |
-|--------|--------|---------|---|
-| **Human Design** | <100ms | 1.31ms | **76x faster** |
-| **Gene Keys** | <50ms | 0.012ms | **4,166x faster** |
-| **Vimshottari** | <200ms | <1ms | **200x faster** |
-| **Tarot Reading** | <100ms | <10ms | **10x faster** |
-| **I-Ching** | <100ms | <5ms | **20x faster** |
-| **API p95** | <500ms | <100ms | **5x faster** |
-| **Cache Hit Rate** | >80% | >95% | **19% better** |
-| **Parallel Workflow** | <1s | <200ms | **5x faster** |
+### Tiers
 
-**Why it matters**: Sub-millisecond response times mean you can iterate on questions. Ask, refine, ask again. Thinking speed.
+| Tier | Rate Limit | Access |
+|------|-----------|--------|
+| `free` | 60 req/min | Basic engines |
+| `premium` | 1,000 req/min | All engines + batch |
+| `enterprise` | 10,000 req/min | Everything + admin |
+
+### Seed API Keys
+
+```bash
+DATABASE_URL="your-postgres-url" \
+  cargo run --package noesis-auth --features postgres --example seed_api_keys
+```
+
+Creates an admin user (`admin@tryambakam.com`) + 5 API keys across tiers. Keys print once and cannot be recovered.
 
 ---
 
-## → Production: Live on Railway
+## Architecture
 
-This isn't a toy. It's production-grade infrastructure for self-inquiry at scale.
-
-### Live Deployment
-
-**Production URL**: `https://selemene-engine-production.up.railway.app`
-
-```bash
-# Verify it's alive
-curl https://selemene-engine-production.up.railway.app/health/live
-
-# Check all dependencies
-curl https://selemene-engine-production.up.railway.app/health/ready
-
-# SwaggerUI documentation
-open https://selemene-engine-production.up.railway.app/api/docs
-
-# Prometheus metrics
-curl https://selemene-engine-production.up.railway.app/metrics
+```
+crates/
+  noesis-api/             Axum HTTP server (the binary you deploy)
+  noesis-orchestrator/    Multi-engine parallel execution + workflow synthesis
+  noesis-auth/            JWT + API key auth (Postgres-backed)
+  noesis-cache/           3-layer cache (L1 memory, L2 Redis, L3 disk)
+  noesis-metrics/         Prometheus instrumentation
+  noesis-core/            Shared types (EngineInput, EngineOutput, BirthData)
+  noesis-vedic-api/       FreeAstrologyAPI client (15+ Vedic endpoints)
+  engine-panchanga/       Vedic calendar calculations
+  engine-human-design/    HD bodygraph (26 gates, 9 centers, profile)
+  engine-gene-keys/       Shadow-Gift-Siddhi activation sequences
+  engine-vimshottari/     120-year nested dasha periods
+  engine-numerology/      Pythagorean + Chaldean number systems
+  engine-biorhythm/       3 biological cycles (P/E/I)
+  engine-vedic-clock/     TCM organ clock + Ayurvedic timing
+  engine-biofield/        Chakra readings
 ```
 
-### Railway Stack
-- **Compute**: Railway Docker deployment (Rust binary, <100MB runtime)
-- **Database**: Supabase PostgreSQL (ap-south-1, connection pooler)
-- **Cache**: Railway Redis add-on (L2 distributed cache)
-- **Errors**: Sentry (`selemene-engine` project, 10% trace sampling)
-- **Health**: `/health/live` (liveness), `/health/ready` (readiness)
+### Performance
 
-### Docker: Local Development
+| Engine | Calculation Time |
+|--------|-----------------|
+| Gene Keys | 0.012ms |
+| Panchanga | <1ms |
+| Numerology | <1ms |
+| Biorhythm | <1ms |
+| Vimshottari | <1ms |
+| Human Design | 1.31ms |
+| API p95 | <100ms |
+| Workflow (parallel) | <200ms |
+
+---
+
+## Production Stack
+
+| Component | Technology |
+|-----------|------------|
+| **Compute** | [Railway](https://railway.app) — Docker, <100MB runtime |
+| **Database** | [Supabase](https://supabase.com) PostgreSQL (ap-south-1) |
+| **Cache** | Railway Redis (L2) + in-memory LRU (L1) |
+| **Errors** | [Sentry](https://sentry.io) (10% trace sampling) |
+| **Metrics** | Prometheus (`/metrics`) |
+| **Docs** | Swagger UI (`/api/docs`) |
+
+### Endpoints
+
+| Path | Auth | Purpose |
+|------|------|---------|
+| `/health/live` | No | Liveness probe — always 200 |
+| `/health/ready` | No | Readiness — checks DB, Redis, orchestrator |
+| `/api/docs` | No | Swagger UI |
+| `/metrics` | No | Prometheus metrics |
+| `/api/v1/engines` | Yes | List engines |
+| `/api/v1/engines/:id/calculate` | Yes | Run calculation |
+| `/api/v1/engines/:id/info` | Yes | Engine metadata |
+| `/api/v1/workflows` | Yes | List workflows |
+| `/api/v1/workflows/:id/execute` | Yes | Execute workflow |
+
+---
+
+## Local Development
 
 ```bash
-# Build multi-stage production image (<500MB)
-docker build -f Dockerfile.prod -t tryambakam-noesis:latest .
+# Build and run
+cargo build --release
+cargo run --bin noesis-server
 
-# Wake the full stack (Rust + Redis + Postgres)
+# Run tests
+cargo test -- --test-threads=1
+
+# Docker
 docker-compose up -d
-
-# Verify all systems breathing
-docker-compose ps
-curl http://localhost:8080/health
 ```
 
-### Observability: The Meta-Witness
+### Environment
 
-- **Sentry** → Error tracking with Rust stack traces, engine context, user tier
-- **Prometheus** → `/metrics` endpoint with request rates, latency, cache hit rates
-- **Structured Logs** → JSON format in production, queryable by engine/workflow
-- **Health Probes** → `/health/live` (always 200), `/health/ready` (checks DB + Redis + orchestrator)
+Copy `.env.example` to `.env` and fill in values. Required:
+- `RUST_ENV` — `development` or `production`
+- `JWT_SECRET` — signing key for JWT tokens
+- `DATABASE_URL` — Postgres connection string (optional — runs degraded without DB)
 
----
-
-## → Testing: Validating the Mirror
-
-```bash
-# Test all Rust engines (single-threaded for Swiss Ephemeris thread safety)
-cargo test -- --test-threads=1
-
-# Test specific engine
-cargo test -p engine-human-design -- --test-threads=1
-cargo test -p engine-gene-keys
-cargo test -p noesis-orchestrator
-
-# Test TypeScript engines
-cd ts-engines && bun test
-
-# Test integration layer
-cargo test -p noesis-integration
-
-# E2E: Full workflow tests
-./tests/e2e/run_e2e.sh
-
-# Load testing (k6)
-k6 run tests/load/full_spectrum_workflow.js
-
-# Chaos testing
-./tests/chaos/kill_random_service.sh
-```
-
-**228+ tests validate**:
-- Individual engine accuracy (HD gates, Gene Keys contemplations, Vimshottari periods)
-- Cross-engine synthesis (workflow outputs)
-- Performance benchmarks (sub-millisecond targets)
-- Cache behavior (L1/L2/L3 hit rates)
-- API contracts (request/response schemas)
-- Resilience (circuit breakers, retries, fallbacks)
+See [`.env.example`](.env.example) for the full list.
 
 ---
 
-## → The Living Codebase: Fractal Organization
+## Documentation
 
-```
-Tryambakam-Noesis/
-│
-├── crates/                      ← Rust engines (native performance)
-│   ├── noesis-api/              → Main HTTP server (Axum)
-│   ├── noesis-orchestrator/     → Multi-engine synthesis + workflows
-│   ├── noesis-bridge/           → Rust ↔ TypeScript communication
-│   ├── noesis-integration/      → External API composition layer
-│   ├── noesis-vedic-api/        → FreeAstrology API client (15+ endpoints)
-│   ├── noesis-cache/            → 3-layer cache (L1/L2/L3)
-│   ├── noesis-auth/             → JWT + API key authentication
-│   ├── noesis-metrics/          → Prometheus metrics
-│   │
-│   ├── engine-panchanga/        → Vedic calendar calculations
-│   ├── engine-human-design/     → HD bodygraph (26 gates, centers, profile)
-│   ├── engine-gene-keys/        → Shadow-Gift-Siddhi sequences
-│   ├── engine-vimshottari/      → 120-year planetary periods
-│   ├── engine-numerology/       → Life path, expression, soul urge numbers
-│   ├── engine-biorhythm/        → 3 biological cycles (P/E/I)
-│   ├── engine-vedic-clock/      → TCM organ clock + Ayurvedic timing
-│   ├── engine-biofield/         → Chakra readings (stub)
-│   └── engine-face-reading/     → Physiognomy analysis (stub)
-│
-├── ts-engines/                  ← TypeScript engines (symbolic interpretation)
-│   └── src/engines/
-│       ├── tarot/               → 78 cards, 5 spread types, archetypal prompts
-│       ├── i-ching/             → 64 hexagrams, changing lines, transformations
-│       ├── enneagram/           → 9 types, wings, integration/disintegration
-│       ├── sacred-geometry/     → Geometric meditation seeds (stub)
-│       └── sigil-forge/         → Intent → Symbol transformation (stub)
-│
-├── .context/                    ← Living documentation (the system's memory)
-│   ├── architecture/            → System design, patterns, decisions
-│   ├── engines/                 → Per-engine deep dives
-│   ├── reports/                 → Wave completions, agent reports
-│   ├── documentation/           → Guides, API docs, features
-│   └── scripts/                 → Test runners, verification tools
-│
-├── data/                        ← Engine data files
-│   ├── ephemeris/               → Swiss Ephemeris planetary data
-│   ├── gene-keys/               → 64 Gene Keys archetypal descriptions
-│   ├── tarot/                   → Card meanings, spreads, witness prompts
-│   └── i-ching/                 → Hexagram texts, line interpretations
-│
-├── k8s/                         ← Kubernetes manifests
-├── monitoring/                  ← Prometheus, Grafana, Loki configs
-├── tests/                       ← E2E, load, chaos, security tests
-│
-├── Dockerfile.prod              ← Multi-stage production build
-├── docker-compose.yml           ← Local development stack
-└── docker-compose.monitoring.yml ← Full observability stack
-```
+| Guide | Purpose |
+|-------|---------|
+| **[API Quickstart](docs/API_QUICKSTART.md)** | Zero to first call |
+| **[Swagger UI](https://selemene-engine-production.up.railway.app/api/docs)** | Interactive API explorer |
+| **[Terminal Explorer](scripts/explore-api.sh)** | CLI-based API exploration |
+| **[Architecture](.context/documentation/architecture/selemene_architecture.md)** | System design |
+| **[Deployment](docs/deployment/README.md)** | Production deployment guide |
 
 ---
 
-## → Documentation: The Knowledge Web
-
-**Dive Deeper**:
-- 📐 [System Architecture](.context/documentation/architecture/selemene_architecture.md) - The living blueprint
-- 🧬 [Human Design Engine](.context/engines/human-design.md) - Rave Mandala calculations
-- 🔑 [Gene Keys Engine](.context/engines/gene-keys.md) - Frequency contemplations
-- ⏳ [Vimshottari Engine](.context/engines/vimshottari.md) - Nested time cycles
-- 🎴 [Tarot API](docs/api/tarot.md) - Card meanings, spreads, witness prompts
-- ☯️ [I-Ching API](docs/api/i-ching.md) - Hexagram interpretations
-- 🐳 [Deployment Guide](docs/deployment/README.md) - Production deployment
-- 🔧 [API Reference](docs/api/README.md) - Complete endpoint documentation
-- 📝 [Project Memory](memory.md) - Full development history (every decision, every iteration)
-- 📊 [Wave 3 Report](.context/reports/phases/WAVE3_COMPLETION_REPORT.md) - Latest completion status
-
----
-
-## → Tech Stack: The Computational Substrate
-
-**What runs beneath the witness?**
-
-### Rust Core (Speed, Safety, Concurrency)
-- **Framework**: Axum (async HTTP on Tokio runtime)
-- **Ephemeris**: Swiss Ephemeris (`swisseph` crate) for astronomical precision
-- **Cache**: 3-layer architecture
-  - L1: DashMap (lock-free in-memory LRU, <1ms)
-  - L2: Redis (distributed cache, <10ms)
-  - L3: Disk (precomputed archives, <50ms)
-- **Auth**: JWT tokens + API keys (role-based access)
-- **Metrics**: Prometheus (native instrumentation)
-- **Logging**: Structured JSON logs (tracing crate)
-- **Testing**: Cargo test + integration test suites
-
-### TypeScript Engines (Symbolic Fluidity)
-- **Runtime**: Bun (fast startup, native TypeScript)
-- **Framework**: Elysia (type-safe HTTP)
-- **Testing**: Bun test (native test runner)
-- **Bridge**: HTTP client calling Rust API for coordination
-
-### Infrastructure (Operational Resilience)
-- **Container**: Docker multi-stage builds (<500MB images)
-- **Orchestration**: Kubernetes (StatefulSets for cache, Deployments for API)
-- **CI/CD**: GitHub Actions (build → test → release automation)
-- **Monitoring**:
-  - Prometheus (metrics scraping + alerting)
-  - Grafana (dashboards + visualization)
-  - Loki (log aggregation)
-  - Jaeger (distributed tracing)
-- **Storage**: PostgreSQL (user data), Redis (cache), Disk (ephemeris + archives)
-
----
-
-## → Contributing: Join the Inquiry
-
-This is an **open contemplation**. Your perspective adds to the mirror.
-
-```bash
-# 1. Fork the repository
-git clone https://github.com/yourusername/Selemene-engine.git
-
-# 2. Create a branch (name it with intention)
-git checkout -b feature/what-you-see
-
-# 3. Make your changes (code, docs, tests—all valid contributions)
-
-# 4. Validate the mirror still reflects accurately
-cargo test -- --test-threads=1
-cd ts-engines && bun test
-
-# 5. Commit with clarity
-git commit -m "What this change witnesses"
-
-# 6. Share your reflection
-git push origin feature/what-you-see
-
-# 7. Open a Pull Request (tell us what you saw)
-```
-
-**Areas seeking contribution:**
-- 🧘 New engines (Kabbalah Tree of Life? Mayan Tzolkin? Your tradition?)
-- 🎨 Visualization (D3.js charts, mandala generators, interactive bodygraphs)
-- 📊 Data (more Gene Keys contemplations, deeper I-Ching commentaries)
-- 🔬 Accuracy (validate calculations against traditional sources)
-- 📚 Documentation (explain the unexplainable)
-- 🐛 Bug reports (what breaks the reflection?)
-
----
-
-## → License & Acknowledgment
-
-**MIT License** - See [LICENSE](LICENSE)
+## Acknowledgments
 
 This work stands on the shoulders of:
-- **Ra Uru Hu** (Human Design System)
-- **Richard Rudd** (Gene Keys transmission)
-- **B.V. Raman** (Vedic astrology systematization)
-- **Maharishi Parashara** (Vimshottari Dasha system)
-- **Wilhelm/Baynes** (I-Ching translation)
-- **Arthur Edward Waite & Pamela Colman Smith** (Rider-Waite Tarot)
-- **Oscar Ichazo & Claudio Naranjo** (Enneagram psychology)
-- **Swiss Ephemeris Team** (astronomical calculations)
-- **All who witness without claiming to predict**
+
+- **Maharishi Parashara** — Vimshottari Dasha system
+- **Ra Uru Hu** — Human Design System
+- **Richard Rudd** — Gene Keys transmission
+- **B.V. Raman** — Vedic astrology systematization
+- **Swiss Ephemeris Team** — astronomical calculations
 
 ---
 
-```
-                    ༺═──────────────────────────────────────────═༻
-                                                                  
-                    "The three eyes see: past, present, future.
-                     But the witness sees all three as now."
-                                                                  
-                           ∴ Tryambakam ∴                         
-                        The Three-Eyed One                        
-                                                                  
-                    Not prediction. Reflection. Inquiry. Witness.
-                                                                  
-                    ༺═──────────────────────────────────────────═༻
-
-                              Made with ∞ 
-                         for consciousness explorers
-                              everywhere
-
-                     v2.1.0 "Vedic Bridge" • Feb 2026
-                  Live: selemene-engine-production.up.railway.app
-```
+<p align="center">
+  <strong>MIT License</strong><br>
+  <em>Not prediction. Reflection. Inquiry. Witness.</em>
+</p>
