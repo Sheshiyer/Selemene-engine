@@ -299,6 +299,7 @@ See [`.env.example`](.env.example) for the full list.
 | **[API Quickstart](docs/API_QUICKSTART.md)** | Zero to first call |
 | **[Swagger UI](https://selemene-engine-production.up.railway.app/api/docs)** | Interactive API explorer |
 | **[Terminal Explorer](scripts/explore-api.sh)** | CLI-based API exploration |
+| **[Agent Bridge CLI](bridges/cli/README.md)** | `npx @selemene/bridge init` — generate tool defs for Claude, OpenAI, LangChain |
 | **[Architecture](.context/documentation/architecture/selemene_architecture.md)** | System design |
 | **[Deployment](docs/deployment/README.md)** | Production deployment guide |
 
