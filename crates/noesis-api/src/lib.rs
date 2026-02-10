@@ -26,7 +26,11 @@ use chrono::Timelike;
 use noesis_auth::{AuthService, AuthUser};
 use noesis_cache::CacheManager;
 use noesis_core::{EngineError, EngineInput, EngineOutput, ValidationResult, WorkflowResult};
+use noesis_data::models::reading::NewReading;
+use noesis_data::repositories::readings_repository::ReadingsRepository;
+use noesis_data::repositories::usage_repository::UsageRepository;
 use noesis_data::repositories::user_repository::UserRepository;
+use sha2::{Digest, Sha256};
 use noesis_metrics::NoesisMetrics;
 use noesis_orchestrator::WorkflowOrchestrator;
 use sentry_tower::{NewSentryLayer, SentryHttpLayer};
@@ -148,6 +152,8 @@ pub struct AppState {
     pub auth: Arc<AuthService>,
     pub metrics: Arc<NoesisMetrics>,
     pub user_repository: Arc<UserRepository>,
+    pub readings_repository: Option<Arc<ReadingsRepository>>,
+    pub usage_repository: Option<Arc<UsageRepository>>,
     pub startup_time: Instant,
 }
 
@@ -233,6 +239,9 @@ pub fn create_router(state: AppState, config: &ApiConfig) -> Router {
             post(workflow_execute_handler),
         )
         .route("/workflows/:workflow_id/info", get(workflow_info_handler))
+        .route("/readings", get(list_readings_handler))
+        .route("/readings/stats", get(readings_stats_handler))
+        .route("/readings/:reading_id", get(get_reading_handler))
         // Layers are applied bottom-to-top, so rate_limit runs AFTER auth
         .layer(axum_middleware::from_fn_with_state(
             rate_limiter,
@@ -517,6 +526,9 @@ async fn calculate_handler(
 ) -> Result<Json<EngineOutput>, (StatusCode, Json<ErrorResponse>)> {
     let start = Instant::now();
 
+    // Capture input for persistence before it's moved into the engine
+    let input_json = serde_json::to_value(&input).unwrap_or_default();
+
     // Execute engine with user's consciousness level
     let result = state
         .orchestrator
@@ -524,6 +536,8 @@ async fn calculate_handler(
         .await;
 
     let duration_secs = start.elapsed().as_secs_f64();
+    let duration_ms = duration_secs * 1000.0;
+    let user_id_str = user.user_id.clone();
 
     match result {
         Ok(output) => {
@@ -532,6 +546,45 @@ async fn calculate_handler(
                 "success",
                 duration_secs,
             );
+
+            // Fire-and-forget: persist reading, log usage, award XP
+            if let Ok(uid) = uuid::Uuid::parse_str(&user_id_str) {
+                let input_hash = format!("{:x}", Sha256::digest(input_json.to_string().as_bytes()));
+                let reading = NewReading {
+                    user_id: uid,
+                    engine_id: engine_id.clone(),
+                    workflow_id: None,
+                    input_hash,
+                    input_data: input_json,
+                    result_data: serde_json::to_value(&output).unwrap_or_default(),
+                    witness_prompt: Some(output.witness_prompt.clone()),
+                    consciousness_level: output.consciousness_level as i16,
+                    calculation_time_ms: Some(duration_ms),
+                };
+                let readings_repo = state.readings_repository.clone();
+                let usage_repo = state.usage_repository.clone();
+                let user_repo = state.user_repository.clone();
+                let eid = engine_id.clone();
+                tokio::spawn(async move {
+                    if let Some(repo) = readings_repo {
+                        if let Err(e) = repo.save_reading(&reading).await {
+                            tracing::warn!("Failed to persist reading: {}", e);
+                        }
+                    }
+                    if let Some(repo) = usage_repo {
+                        if let Err(e) = repo
+                            .log_usage(uid, Some(&eid), None, "success", duration_ms as i32)
+                            .await
+                        {
+                            tracing::warn!("Failed to log usage: {}", e);
+                        }
+                    }
+                    if let Err(e) = user_repo.add_experience(uid, 10, "engine_calculation").await {
+                        tracing::warn!("Failed to award XP: {}", e);
+                    }
+                });
+            }
+
             Ok(Json(output))
         }
         Err(e) => {
@@ -540,6 +593,19 @@ async fn calculate_handler(
                 "failure",
                 duration_secs,
             );
+
+            // Log failed usage
+            if let Ok(uid) = uuid::Uuid::parse_str(&user_id_str) {
+                let usage_repo = state.usage_repository.clone();
+                let eid = engine_id.clone();
+                tokio::spawn(async move {
+                    if let Some(repo) = usage_repo {
+                        let _ = repo
+                            .log_usage(uid, Some(&eid), None, "failure", duration_ms as i32)
+                            .await;
+                    }
+                });
+            }
 
             let error_type = match &e {
                 EngineError::EngineNotFound(_) => "not_found",
@@ -695,6 +761,9 @@ async fn workflow_execute_handler(
 ) -> Result<Json<noesis_core::WorkflowResult>, (StatusCode, Json<ErrorResponse>)> {
     let start = Instant::now();
 
+    // Capture input for persistence before it's moved into the workflow
+    let input_json = serde_json::to_value(&input).unwrap_or_default();
+
     // Execute workflow with user's consciousness level
     let result = state
         .orchestrator
@@ -702,6 +771,8 @@ async fn workflow_execute_handler(
         .await;
 
     let duration_secs = start.elapsed().as_secs_f64();
+    let duration_ms = duration_secs * 1000.0;
+    let user_id_str = user.user_id.clone();
 
     // Use workflow_id prefixed to distinguish from engine calculations
     let workflow_label = format!("workflow:{}", workflow_id);
@@ -713,6 +784,48 @@ async fn workflow_execute_handler(
                 "success",
                 duration_secs,
             );
+
+            // Fire-and-forget: persist reading, log usage, award XP (25 for workflow)
+            if let Ok(uid) = uuid::Uuid::parse_str(&user_id_str) {
+                let input_hash = format!("{:x}", Sha256::digest(input_json.to_string().as_bytes()));
+                let reading = NewReading {
+                    user_id: uid,
+                    engine_id: format!("workflow:{}", workflow_id),
+                    workflow_id: Some(workflow_id.clone()),
+                    input_hash,
+                    input_data: input_json,
+                    result_data: serde_json::to_value(&workflow_result).unwrap_or_default(),
+                    witness_prompt: None,
+                    consciousness_level: user.consciousness_level as i16,
+                    calculation_time_ms: Some(duration_ms),
+                };
+                let readings_repo = state.readings_repository.clone();
+                let usage_repo = state.usage_repository.clone();
+                let user_repo = state.user_repository.clone();
+                let wid = workflow_id.clone();
+                tokio::spawn(async move {
+                    if let Some(repo) = readings_repo {
+                        if let Err(e) = repo.save_reading(&reading).await {
+                            tracing::warn!("Failed to persist workflow reading: {}", e);
+                        }
+                    }
+                    if let Some(repo) = usage_repo {
+                        if let Err(e) = repo
+                            .log_usage(uid, None, Some(&wid), "success", duration_ms as i32)
+                            .await
+                        {
+                            tracing::warn!("Failed to log workflow usage: {}", e);
+                        }
+                    }
+                    if let Err(e) = user_repo
+                        .add_experience(uid, 25, "workflow_execution")
+                        .await
+                    {
+                        tracing::warn!("Failed to award workflow XP: {}", e);
+                    }
+                });
+            }
+
             Ok(Json(workflow_result))
         }
         Err(e) => {
@@ -721,6 +834,19 @@ async fn workflow_execute_handler(
                 "failure",
                 duration_secs,
             );
+
+            // Log failed usage
+            if let Ok(uid) = uuid::Uuid::parse_str(&user_id_str) {
+                let usage_repo = state.usage_repository.clone();
+                let wid = workflow_id.clone();
+                tokio::spawn(async move {
+                    if let Some(repo) = usage_repo {
+                        let _ = repo
+                            .log_usage(uid, None, Some(&wid), "failure", duration_ms as i32)
+                            .await;
+                    }
+                });
+            }
 
             let error_type = match &e {
                 EngineError::WorkflowNotFound(_) => "not_found",
@@ -809,6 +935,215 @@ async fn workflow_info_handler(
         description: workflow.description.clone(),
         engine_ids: workflow.engine_ids.clone(),
     }))
+}
+
+// ---------------------------------------------------------------------------
+// Readings / history handlers
+// ---------------------------------------------------------------------------
+
+#[derive(Deserialize)]
+struct ReadingsQuery {
+    engine_id: Option<String>,
+    limit: Option<i64>,
+    offset: Option<i64>,
+}
+
+#[derive(Serialize)]
+struct ReadingsListResponse {
+    readings: Vec<noesis_data::models::reading::Reading>,
+    total: i64,
+    limit: i64,
+    offset: i64,
+}
+
+#[derive(Serialize)]
+struct ReadingsStatsEntry {
+    engine_id: String,
+    count: i64,
+}
+
+#[derive(Serialize)]
+struct ReadingsStatsResponse {
+    stats: Vec<ReadingsStatsEntry>,
+    total: i64,
+}
+
+/// GET /api/v1/readings -- paginated list of user's readings
+async fn list_readings_handler(
+    State(state): State<AppState>,
+    Extension(user): Extension<AuthUser>,
+    axum::extract::Query(params): axum::extract::Query<ReadingsQuery>,
+) -> Result<Json<ReadingsListResponse>, (StatusCode, Json<ErrorResponse>)> {
+    let repo = state.readings_repository.as_ref().ok_or_else(|| {
+        (
+            StatusCode::SERVICE_UNAVAILABLE,
+            Json(ErrorResponse {
+                error: "Database not available".to_string(),
+                error_code: "DB_UNAVAILABLE".to_string(),
+                details: None,
+            }),
+        )
+    })?;
+
+    let uid = uuid::Uuid::parse_str(&user.user_id).map_err(|_| {
+        (
+            StatusCode::BAD_REQUEST,
+            Json(ErrorResponse {
+                error: "Invalid user ID".to_string(),
+                error_code: "INVALID_USER_ID".to_string(),
+                details: None,
+            }),
+        )
+    })?;
+
+    let limit = params.limit.unwrap_or(20).min(100);
+    let offset = params.offset.unwrap_or(0);
+    let engine_filter = params.engine_id.as_deref();
+
+    let readings = repo
+        .list_readings(uid, engine_filter, limit, offset)
+        .await
+        .map_err(|e| {
+            (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                Json(ErrorResponse {
+                    error: format!("Failed to fetch readings: {}", e),
+                    error_code: "DB_ERROR".to_string(),
+                    details: None,
+                }),
+            )
+        })?;
+
+    let total = repo
+        .count_readings(uid, engine_filter)
+        .await
+        .map_err(|e| {
+            (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                Json(ErrorResponse {
+                    error: format!("Failed to count readings: {}", e),
+                    error_code: "DB_ERROR".to_string(),
+                    details: None,
+                }),
+            )
+        })?;
+
+    Ok(Json(ReadingsListResponse {
+        readings,
+        total,
+        limit,
+        offset,
+    }))
+}
+
+/// GET /api/v1/readings/:reading_id -- single reading (user-scoped)
+async fn get_reading_handler(
+    State(state): State<AppState>,
+    Extension(user): Extension<AuthUser>,
+    Path(reading_id): Path<uuid::Uuid>,
+) -> Result<Json<noesis_data::models::reading::Reading>, (StatusCode, Json<ErrorResponse>)> {
+    let repo = state.readings_repository.as_ref().ok_or_else(|| {
+        (
+            StatusCode::SERVICE_UNAVAILABLE,
+            Json(ErrorResponse {
+                error: "Database not available".to_string(),
+                error_code: "DB_UNAVAILABLE".to_string(),
+                details: None,
+            }),
+        )
+    })?;
+
+    let uid = uuid::Uuid::parse_str(&user.user_id).map_err(|_| {
+        (
+            StatusCode::BAD_REQUEST,
+            Json(ErrorResponse {
+                error: "Invalid user ID".to_string(),
+                error_code: "INVALID_USER_ID".to_string(),
+                details: None,
+            }),
+        )
+    })?;
+
+    let reading = repo.get_reading(reading_id, uid).await.map_err(|e| {
+        (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            Json(ErrorResponse {
+                error: format!("Failed to fetch reading: {}", e),
+                error_code: "DB_ERROR".to_string(),
+                details: None,
+            }),
+        )
+    })?;
+
+    reading.ok_or_else(|| {
+        (
+            StatusCode::NOT_FOUND,
+            Json(ErrorResponse {
+                error: "Reading not found".to_string(),
+                error_code: "READING_NOT_FOUND".to_string(),
+                details: Some(serde_json::json!({ "reading_id": reading_id })),
+            }),
+        )
+    }).map(Json)
+}
+
+/// GET /api/v1/readings/stats -- count of readings per engine
+async fn readings_stats_handler(
+    State(state): State<AppState>,
+    Extension(user): Extension<AuthUser>,
+) -> Result<Json<ReadingsStatsResponse>, (StatusCode, Json<ErrorResponse>)> {
+    let repo = state.readings_repository.as_ref().ok_or_else(|| {
+        (
+            StatusCode::SERVICE_UNAVAILABLE,
+            Json(ErrorResponse {
+                error: "Database not available".to_string(),
+                error_code: "DB_UNAVAILABLE".to_string(),
+                details: None,
+            }),
+        )
+    })?;
+
+    let uid = uuid::Uuid::parse_str(&user.user_id).map_err(|_| {
+        (
+            StatusCode::BAD_REQUEST,
+            Json(ErrorResponse {
+                error: "Invalid user ID".to_string(),
+                error_code: "INVALID_USER_ID".to_string(),
+                details: None,
+            }),
+        )
+    })?;
+
+    // Get total count
+    let total = repo.count_readings(uid, None).await.map_err(|e| {
+        (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            Json(ErrorResponse {
+                error: format!("Failed to count readings: {}", e),
+                error_code: "DB_ERROR".to_string(),
+                details: None,
+            }),
+        )
+    })?;
+
+    // Get per-engine stats
+    let rows = repo.count_by_engine(uid).await.map_err(|e| {
+        (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            Json(ErrorResponse {
+                error: format!("Failed to fetch stats: {}", e),
+                error_code: "DB_ERROR".to_string(),
+                details: None,
+            }),
+        )
+    })?;
+
+    let stats = rows
+        .into_iter()
+        .map(|(engine_id, count)| ReadingsStatsEntry { engine_id, count })
+        .collect();
+
+    Ok(Json(ReadingsStatsResponse { stats, total }))
 }
 
 // ---------------------------------------------------------------------------
@@ -1182,6 +1517,14 @@ pub async fn build_app_state(config: &ApiConfig) -> AppState {
     // -- Auth (Postgres-backed API key validation, or degraded without DB) --
     let auth = AuthService::with_pool(config.jwt_secret.clone(), pool.clone());
 
+    // -- Persistence repos (only available when DB is connected) --
+    let readings_repository = pool
+        .as_ref()
+        .map(|p| Arc::new(ReadingsRepository::new(p.clone())));
+    let usage_repository = pool
+        .as_ref()
+        .map(|p| Arc::new(UsageRepository::new(p.clone())));
+
     let user_repository = Arc::new(UserRepository::new(pool.unwrap_or_else(|| {
         // Create a lazy pool with a dummy URL — queries will fail at runtime,
         // but the server can still boot and serve non-DB endpoints.
@@ -1200,6 +1543,8 @@ pub async fn build_app_state(config: &ApiConfig) -> AppState {
         auth: Arc::new(auth),
         metrics: Arc::new(metrics),
         user_repository,
+        readings_repository,
+        usage_repository,
         startup_time: Instant::now(),
     }
 }
@@ -1257,6 +1602,14 @@ pub async fn build_app_state_lazy_db(config: &ApiConfig) -> AppState {
     // -- Auth (lazy Postgres-backed API key validation, or degraded without DB) --
     let auth = AuthService::with_pool(config.jwt_secret.clone(), pool.clone());
 
+    // -- Persistence repos (only available when DB is configured) --
+    let readings_repository = pool
+        .as_ref()
+        .map(|p| Arc::new(ReadingsRepository::new(p.clone())));
+    let usage_repository = pool
+        .as_ref()
+        .map(|p| Arc::new(UsageRepository::new(p.clone())));
+
     let user_repository = Arc::new(UserRepository::new(pool.unwrap_or_else(|| {
         PgPoolOptions::new()
             .max_connections(1)
@@ -1273,6 +1626,8 @@ pub async fn build_app_state_lazy_db(config: &ApiConfig) -> AppState {
         auth: Arc::new(auth),
         metrics: Arc::new(metrics),
         user_repository,
+        readings_repository,
+        usage_repository,
         startup_time: Instant::now(),
     }
 }
