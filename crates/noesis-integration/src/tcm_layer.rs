@@ -132,8 +132,21 @@ impl TCMElement {
         }
     }
     
-    /// Get controlling element (grandmother)
+    /// Get the element that controls this element (Ke cycle parent/grandmother)
+    /// Wood is controlled by Metal, Fire by Water, Earth by Wood, Metal by Fire, Water by Earth
     pub fn controlling_element(&self) -> TCMElement {
+        match self {
+            TCMElement::Wood => TCMElement::Metal,    // Metal controls Wood
+            TCMElement::Fire => TCMElement::Water,    // Water controls Fire
+            TCMElement::Earth => TCMElement::Wood,    // Wood controls Earth
+            TCMElement::Metal => TCMElement::Fire,    // Fire controls Metal
+            TCMElement::Water => TCMElement::Earth,   // Earth controls Water
+        }
+    }
+
+    /// Get the element this element controls (Ke cycle child)
+    /// Wood controls Earth, Fire controls Metal, Earth controls Water, Metal controls Wood, Water controls Fire
+    pub fn controlled_element(&self) -> TCMElement {
         match self {
             TCMElement::Wood => TCMElement::Earth,
             TCMElement::Fire => TCMElement::Metal,
@@ -142,7 +155,7 @@ impl TCMElement {
             TCMElement::Water => TCMElement::Fire,
         }
     }
-    
+
     /// Get generated element (child)
     pub fn generated_element(&self) -> TCMElement {
         match self {
@@ -347,11 +360,14 @@ impl TCMAnalysis {
     }
     
     /// Calculate dominant and secondary elements
+    ///
+    /// Seasonal boundaries aligned with calculate_seasonal_influence():
+    /// Spring (Feb-Apr): Wood, Summer (May-Aug): Fire, Autumn (Sep-Nov): Metal, Winter (Dec-Jan): Water
+    /// August is late summer but still Fire-dominant with Earth as secondary influence.
     fn calculate_elements(birth_month: u32) -> (TCMElement, TCMElement) {
         match birth_month {
             2 | 3 | 4 => (TCMElement::Wood, TCMElement::Fire),      // Spring
-            5 | 6 | 7 => (TCMElement::Fire, TCMElement::Earth),      // Summer
-            8 => (TCMElement::Earth, TCMElement::Metal),             // Late summer
+            5 | 6 | 7 | 8 => (TCMElement::Fire, TCMElement::Earth), // Summer (including late summer)
             9 | 10 | 11 => (TCMElement::Metal, TCMElement::Water),   // Autumn
             12 | 1 => (TCMElement::Water, TCMElement::Wood),         // Winter
             _ => (TCMElement::Earth, TCMElement::Metal),
@@ -366,8 +382,8 @@ impl TCMAnalysis {
             0.8
         } else if element == dominant.1 {
             0.6
-        } else if element == dominant.0.controlling_element() {
-            0.3 // Controlling element is weaker
+        } else if element == dominant.0.controlled_element() {
+            0.3 // Over-controlled element is weaker
         } else {
             0.5
         }
@@ -381,32 +397,40 @@ impl TCMAnalysis {
         let mut vulnerable = Vec::new();
         let mut strong = Vec::new();
         
-        // Organs of the dominant element are generally strong
+        // Organs of the dominant element are strong.
+        // Wu Xing Ke (controlling) cycle: dominant element over-controls its target,
+        // making those organs vulnerable.
+        // Wood → Earth, Fire → Metal, Earth → Water, Metal → Wood, Water → Fire
         match dominant {
             TCMElement::Wood => {
                 strong.push(TCMOrgan::Liver);
                 strong.push(TCMOrgan::GallBladder);
-                vulnerable.push(TCMOrgan::Lungs); // Controlled by Wood
+                vulnerable.push(TCMOrgan::Spleen);  // Wood over-controls Earth
+                vulnerable.push(TCMOrgan::Stomach);
             }
             TCMElement::Fire => {
                 strong.push(TCMOrgan::Heart);
                 strong.push(TCMOrgan::SmallIntestine);
-                vulnerable.push(TCMOrgan::Kidneys); // Controlled by Fire
+                vulnerable.push(TCMOrgan::Lungs);          // Fire over-controls Metal
+                vulnerable.push(TCMOrgan::LargeIntestine);
             }
             TCMElement::Earth => {
                 strong.push(TCMOrgan::Spleen);
                 strong.push(TCMOrgan::Stomach);
-                vulnerable.push(TCMOrgan::Liver); // Controlled by Earth
+                vulnerable.push(TCMOrgan::Kidneys);  // Earth over-controls Water
+                vulnerable.push(TCMOrgan::Bladder);
             }
             TCMElement::Metal => {
                 strong.push(TCMOrgan::Lungs);
                 strong.push(TCMOrgan::LargeIntestine);
-                vulnerable.push(TCMOrgan::Heart); // Controlled by Metal
+                vulnerable.push(TCMOrgan::Liver);      // Metal over-controls Wood
+                vulnerable.push(TCMOrgan::GallBladder);
             }
             TCMElement::Water => {
                 strong.push(TCMOrgan::Kidneys);
                 strong.push(TCMOrgan::Bladder);
-                vulnerable.push(TCMOrgan::Spleen); // Controlled by Water
+                vulnerable.push(TCMOrgan::Heart);          // Water over-controls Fire
+                vulnerable.push(TCMOrgan::SmallIntestine);
             }
         }
         

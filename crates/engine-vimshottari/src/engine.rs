@@ -354,9 +354,10 @@ impl ConsciousnessEngine for VimshottariEngine {
         if let Some(timeline) = output.result.get("timeline") {
             if let Some(mahadashas) = timeline.get("mahadashas") {
                 if let Some(arr) = mahadashas.as_array() {
-                    if arr.len() != 9 {
+                    // 120-year cycle: 9 mahadashas when first is full, 10 when partial
+                    if arr.len() < 9 || arr.len() > 10 {
                         messages.push(format!(
-                            "Expected 9 mahadashas, found {}",
+                            "Expected 9-10 mahadashas, found {}",
                             arr.len()
                         ));
                         valid = false;
@@ -503,10 +504,11 @@ mod tests {
         assert!(!output.witness_prompt.is_empty(), "Witness prompt should not be empty");
         assert_eq!(output.consciousness_level, 3); // Default
 
-        // Check timeline structure
+        // Check timeline structure (9-10 mahadashas for 120-year coverage)
         let timeline = output.result.get("timeline").expect("should have timeline");
         let mahadashas = timeline.get("mahadashas").expect("should have mahadashas");
-        assert_eq!(mahadashas.as_array().unwrap().len(), 9);
+        let maha_count = mahadashas.as_array().unwrap().len();
+        assert!(maha_count >= 9 && maha_count <= 10, "Expected 9-10 mahadashas, got {}", maha_count);
 
         // Check birth nakshatra
         let nak = output.result.get("birth_nakshatra").expect("should have birth_nakshatra");
@@ -526,10 +528,11 @@ mod tests {
         assert_eq!(output.engine_id, "vimshottari");
         assert!(!output.witness_prompt.is_empty());
 
-        // Timeline should have 9 mahadashas
+        // Timeline should have 9-10 mahadashas (120-year coverage)
         let timeline = output.result.get("timeline").unwrap();
         let mahadashas = timeline.get("mahadashas").unwrap().as_array().unwrap();
-        assert_eq!(mahadashas.len(), 9);
+        assert!(mahadashas.len() >= 9 && mahadashas.len() <= 10,
+                "Expected 9-10 mahadashas, got {}", mahadashas.len());
     }
 
     #[tokio::test]

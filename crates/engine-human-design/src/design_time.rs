@@ -29,8 +29,12 @@ pub enum DesignTimeError {
 ///
 /// # Arguments
 /// * `ephe_path` - Path to Swiss Ephemeris data files (e.g., "/path/to/ephe")
+///
+/// This is idempotent — the actual C library initialization happens at most once
+/// via the EphemerisCalculator's Once guard. This function exists for API compatibility.
 pub fn initialize_ephemeris(ephe_path: &str) {
-    swe::set_ephe_path(ephe_path);
+    // Delegate to EphemerisCalculator which uses the Once guard
+    let _ = crate::ephemeris::EphemerisCalculator::new(ephe_path);
 }
 
 /// Calculate the Julian Day for a given DateTime<Utc>
@@ -39,8 +43,9 @@ fn datetime_to_julian_day(dt: &DateTime<Utc>) -> f64 {
     let month = dt.month() as i32;
     let day = dt.day() as i32;
     let hour = dt.hour() as f64 + (dt.minute() as f64 / 60.0) + (dt.second() as f64 / 3600.0);
-    
-    // gregorian flag = 1 for Gregorian calendar
+
+    // Serialize access to Swiss Ephemeris C library
+    let _guard = crate::ephemeris::EPHE_MUTEX.lock().unwrap();
     swe::julday(year, month, day, hour, 1)
 }
 
@@ -66,9 +71,9 @@ fn julian_day_to_datetime(jd: f64) -> DateTime<Utc> {
 /// Sun's longitude in degrees (0-360), or error
 fn calculate_sun_longitude(jd: f64) -> Result<f64, DesignTimeError> {
     let flags = Seflg::SWIEPH; // Use Swiss Ephemeris
-    
-    // calc_ut returns Result<Out<[f64; 6], i32>, String>
-    // where Out has fields: out (the array) and code (status code)
+
+    // Serialize access to Swiss Ephemeris C library
+    let _guard = crate::ephemeris::EPHE_MUTEX.lock().unwrap();
     match swe::calc_ut(jd, Body::Sun as u32, flags.into()) {
         Ok(result) => {
             // result.out[0] contains the ecliptic longitude

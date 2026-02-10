@@ -110,7 +110,7 @@ pub fn calculate_dasha_balance(
     balance_years
 }
 
-/// W1-S6-04: Generate 9 Mahadasha periods (120-year cycle)
+/// W1-S6-04: Generate Mahadasha periods covering a full 120-year cycle
 ///
 /// # Arguments
 /// * `birth_time` - Birth date and time (UTC)
@@ -118,36 +118,49 @@ pub fn calculate_dasha_balance(
 /// * `balance_years` - Remaining years of first Mahadasha
 ///
 /// # Returns
-/// Vec of 9 Mahadasha periods with calculated dates
+/// Vec of Mahadasha periods totalling exactly 120 years from birth
 ///
 /// # Logic
 /// 1. First Mahadasha is partial (balance_years duration)
-/// 2. Cycle through all 9 planets in fixed order
-/// 3. Each subsequent Mahadasha uses full period
-/// 4. Calculate exact start/end dates for each
+/// 2. Cycle through planets in Vimshottari order
+/// 3. Continue past 9 planets if needed to reach 120 years
+/// 4. Last Mahadasha may be partial to cap at exactly 120 years
+/// 5. Uses second-level precision to avoid day-truncation drift
 pub fn calculate_mahadashas(
     birth_time: DateTime<Utc>,
     starting_planet: VedicPlanet,
     balance_years: f64,
 ) -> Vec<Mahadasha> {
+    const CYCLE_YEARS: f64 = 120.0;
+
     let mut mahadashas = Vec::new();
     let mut current_date = birth_time;
     let mut current_planet = starting_planet;
-    
-    // Generate 9 Mahadashas
-    for i in 0..9 {
-        let duration_years = if i == 0 {
-            // First Mahadasha uses balance
-            balance_years
+    let mut total_years = 0.0;
+    let mut is_first = true;
+
+    loop {
+        let remaining = CYCLE_YEARS - total_years;
+        if remaining <= 0.001 {
+            break; // Close enough to 120 years
+        }
+
+        let full_period = current_planet.period_years() as f64;
+        let duration_years = if is_first {
+            is_first = false;
+            balance_years.min(remaining)
         } else {
-            // Subsequent use full periods
-            current_planet.period_years() as f64
+            full_period.min(remaining)
         };
-        
-        // Calculate end date
-        let days = (duration_years * 365.25) as i64;
-        let end_date = current_date + Duration::days(days);
-        
+
+        if duration_years <= 0.001 {
+            break;
+        }
+
+        // Use seconds precision to avoid day-truncation drift
+        let duration_seconds = (duration_years * 365.25 * 86400.0) as i64;
+        let end_date = current_date + Duration::seconds(duration_seconds);
+
         mahadashas.push(Mahadasha {
             planet: current_planet,
             start_date: current_date,
@@ -164,12 +177,12 @@ pub fn calculate_mahadashas(
                 challenges: vec![],
             },
         });
-        
-        // Move to next period
+
+        total_years += duration_years;
         current_date = end_date;
         current_planet = current_planet.next_planet();
     }
-    
+
     mahadashas
 }
 
@@ -200,10 +213,11 @@ pub fn calculate_antardashas(mahadasha: &Mahadasha) -> Vec<crate::models::Antard
     for _ in 0..9 {
         // Duration formula: (Mahadasha_years × Antardasha_planet_years) / 120
         let antar_duration_years = (mahadasha.duration_years * planet.period_years() as f64) / 120.0;
-        let antar_duration_days = antar_duration_years * 365.25;
-        
-        let end_date = current_start + Duration::days(antar_duration_days as i64);
-        
+
+        // Use seconds precision to avoid day-truncation drift
+        let antar_duration_seconds = (antar_duration_years * 365.25 * 86400.0) as i64;
+        let end_date = current_start + Duration::seconds(antar_duration_seconds);
+
         antardashas.push(Antardasha {
             planet,
             start_date: current_start,
@@ -211,11 +225,11 @@ pub fn calculate_antardashas(mahadasha: &Mahadasha) -> Vec<crate::models::Antard
             duration_years: antar_duration_years,
             pratyantardashas: vec![], // Will be filled by W1-S6-07
         });
-        
+
         current_start = end_date;
         planet = planet.next_planet();
     }
-    
+
     antardashas
 }
 
@@ -247,20 +261,22 @@ pub fn calculate_pratyantardashas(antardasha: &crate::models::Antardasha) -> Vec
         // Duration formula: (Antardasha_years × Pratyantardasha_planet_years) / 120
         let pratyantar_duration_years = (antardasha.duration_years * planet.period_years() as f64) / 120.0;
         let pratyantar_duration_days = pratyantar_duration_years * 365.25;
-        
-        let end_date = current_start + Duration::days(pratyantar_duration_days as i64);
-        
+
+        // Use seconds precision to avoid day-truncation drift
+        let pratyantar_duration_seconds = (pratyantar_duration_days * 86400.0) as i64;
+        let end_date = current_start + Duration::seconds(pratyantar_duration_seconds);
+
         pratyantardashas.push(Pratyantardasha {
             planet,
             start_date: current_start,
             end_date,
             duration_days: pratyantar_duration_days,
         });
-        
+
         current_start = end_date;
         planet = planet.next_planet();
     }
-    
+
     pratyantardashas
 }
 
@@ -598,17 +614,38 @@ mod tests {
         let birth = Utc.with_ymd_and_hms(1985, 6, 15, 14, 30, 0).unwrap();
         let starting_planet = VedicPlanet::Ketu;
         let balance = 4.375; // From example
-        
+
         let mahadashas = calculate_mahadashas(birth, starting_planet, balance);
-        
-        assert_eq!(mahadashas.len(), 9);
-        
+
+        // With partial first dasha (4.375 < 7), we need 10 mahadashas to reach 120 years
+        assert_eq!(mahadashas.len(), 10, "Partial first dasha needs 10 mahadashas for 120-year coverage");
+
         // Verify first has balance duration
         assert!((mahadashas[0].duration_years - 4.375).abs() < 0.01);
-        
-        // Calculate total duration
+
+        // Verify last is the wrap-around: Ketu again with elapsed portion (7 - 4.375 = 2.625)
+        assert_eq!(mahadashas[9].planet, VedicPlanet::Ketu);
+        assert!((mahadashas[9].duration_years - 2.625).abs() < 0.01,
+                "Last Mahadasha should be ~2.625 years, got {}", mahadashas[9].duration_years);
+
+        // Calculate total duration — should be exactly 120 years
         let total: f64 = mahadashas.iter().map(|m| m.duration_years).sum();
-        assert!((total - 120.0).abs() < 0.1, "Total should be 120 years, got {}", total);
+        assert!((total - 120.0).abs() < 0.01, "Total should be 120 years, got {}", total);
+    }
+
+    #[test]
+    fn test_120_year_cycle_full_balance() {
+        // When balance equals full period, exactly 9 mahadashas suffice
+        let birth = Utc.with_ymd_and_hms(2000, 1, 1, 0, 0, 0).unwrap();
+        let starting_planet = VedicPlanet::Sun;
+        let balance = 6.0; // Full Sun period
+
+        let mahadashas = calculate_mahadashas(birth, starting_planet, balance);
+
+        assert_eq!(mahadashas.len(), 9, "Full first dasha needs exactly 9 mahadashas");
+
+        let total: f64 = mahadashas.iter().map(|m| m.duration_years).sum();
+        assert!((total - 120.0).abs() < 0.01, "Total should be 120 years, got {}", total);
     }
 
     #[test]
@@ -637,16 +674,16 @@ mod tests {
         let birth = Utc.with_ymd_and_hms(2000, 1, 1, 0, 0, 0).unwrap();
         let starting_planet = VedicPlanet::Sun;
         let balance = 3.0;
-        
+
         let mahadashas = calculate_mahadashas(birth, starting_planet, balance);
-        
-        // First ends after balance period
-        let first_end = birth + Duration::days((3.0 * 365.25) as i64);
+
+        // First ends after balance period (seconds precision)
+        let first_end = birth + Duration::seconds((3.0 * 365.25 * 86400.0) as i64);
         assert_eq!(mahadashas[0].end_date, first_end);
-        
+
         // Second starts where first ends
         assert_eq!(mahadashas[1].start_date, mahadashas[0].end_date);
-        
+
         // All should be continuous
         for i in 1..mahadashas.len() {
             assert_eq!(mahadashas[i].start_date, mahadashas[i-1].end_date);
@@ -841,10 +878,10 @@ mod tests {
         // Verify first starts at Mahadasha start
         assert_eq!(antardashas[0].start_date, maha.start_date);
         
-        // Verify last ends at Mahadasha end (within 1 day tolerance for rounding)
+        // Verify last ends near Mahadasha end (seconds-level precision now)
         let last_end = antardashas[8].end_date;
-        let diff_days = (last_end - maha.end_date).num_days().abs();
-        assert!(diff_days <= 1, "Last Antardasha should end at Mahadasha end, diff: {} days", diff_days);
+        let diff_seconds = (last_end - maha.end_date).num_seconds().abs();
+        assert!(diff_seconds <= 10, "Last Antardasha should end at Mahadasha end, diff: {} seconds", diff_seconds);
     }
 
     // ============ W1-S6-07 TESTS: PRATYANTARDASHA ============
@@ -963,16 +1000,17 @@ mod tests {
         // Generate complete chart
         let birth = Utc.with_ymd_and_hms(1985, 6, 15, 14, 30, 0).unwrap();
         let mahadashas = calculate_mahadashas(birth, VedicPlanet::Ketu, 4.375);
-        
+
         let complete = calculate_complete_timeline(mahadashas);
-        
-        // Verify structure
-        assert_eq!(complete.len(), 9, "Should have 9 Mahadashas");
-        
+
+        // With partial first dasha, we get 10 mahadashas for 120-year coverage
+        assert!(complete.len() >= 9 && complete.len() <= 10,
+                "Should have 9-10 Mahadashas, got {}", complete.len());
+
         for (i, maha) in complete.iter().enumerate() {
-            assert_eq!(maha.antardashas.len(), 9, 
+            assert_eq!(maha.antardashas.len(), 9,
                       "Mahadasha {} should have 9 Antardashas", i);
-            
+
             for (j, antar) in maha.antardashas.iter().enumerate() {
                 assert_eq!(antar.pratyantardashas.len(), 9,
                           "Mahadasha {} Antardasha {} should have 9 Pratyantardashas", i, j);
@@ -982,21 +1020,23 @@ mod tests {
 
     #[test]
     fn test_complete_timeline_total_pratyantardashas() {
-        // Generate complete chart
+        // Generate complete chart — Jupiter balance=10 < full 16, so 10 mahadashas
         let birth = Utc.with_ymd_and_hms(1985, 6, 15, 14, 30, 0).unwrap();
         let mahadashas = calculate_mahadashas(birth, VedicPlanet::Jupiter, 10.0);
-        
+
         let complete = calculate_complete_timeline(mahadashas);
-        
+
         // Count total Pratyantardashas
         let total_pratyantar: usize = complete.iter()
             .map(|maha| maha.antardashas.iter()
                 .map(|antar| antar.pratyantardashas.len())
                 .sum::<usize>())
             .sum();
-        
-        // Should be 9 × 9 × 9 = 729
-        assert_eq!(total_pratyantar, 729, "Should have 729 total Pratyantardashas (9×9×9)");
+
+        // Each Mahadasha has 9×9=81 pratyantardashas. With 10 mahadashas: 810
+        let expected = complete.len() * 9 * 9;
+        assert_eq!(total_pratyantar, expected,
+                  "Should have {} total Pratyantardashas ({}×9×9)", expected, complete.len());
     }
 
     #[test]
@@ -1107,14 +1147,15 @@ mod tests {
         let mahadashas = calculate_mahadashas(birth, starting_planet, balance);
         let complete = calculate_complete_timeline(mahadashas);
         
-        // Count total pratyantardashas: should be 9 × 9 × 9 = 729
+        // Count total pratyantardashas: N mahadashas × 9 antardashas × 9 pratyantardashas
         let mut total_periods = 0;
         for maha in &complete {
             for antar in &maha.antardashas {
                 total_periods += antar.pratyantardashas.len();
             }
         }
-        assert_eq!(total_periods, 729);
+        let expected = complete.len() * 9 * 9;
+        assert_eq!(total_periods, expected);
         
         // Test search at various points
         let test_times = vec![

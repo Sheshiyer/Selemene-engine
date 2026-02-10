@@ -4,6 +4,16 @@
 
 use chrono::{DateTime, Utc, Timelike, Datelike};
 use noesis_core::EngineError;
+use std::sync::{Mutex, Once};
+
+/// Global guard ensuring Swiss Ephemeris path is set exactly once.
+static EPHE_INIT: Once = Once::new();
+
+/// Global mutex serializing ALL Swiss Ephemeris C library access.
+/// The swisseph C library uses static buffers and global state that are not
+/// thread-safe. Concurrent calls to set_ephe_path or calc_ut will corrupt
+/// memory and cause SIGSEGV/SIGABRT.
+pub static EPHE_MUTEX: Mutex<()> = Mutex::new(());
 
 /// Planet identifiers for Swiss Ephemeris
 #[derive(Debug, Clone, Copy)]
@@ -80,7 +90,12 @@ impl EphemerisCalculator {
             }
         }
         
-        swisseph::swe::set_ephe_path(&data_path);
+        // Guard: set_ephe_path must be called exactly once across all threads.
+        let path_for_init = data_path.clone();
+        EPHE_INIT.call_once(|| {
+            let _guard = EPHE_MUTEX.lock().unwrap();
+            swisseph::swe::set_ephe_path(&path_for_init);
+        });
         Self { data_path }
     }
 
@@ -98,6 +113,9 @@ impl EphemerisCalculator {
     }
 
     /// Calculate position for a single planet
+    ///
+    /// All Swiss Ephemeris C library calls are serialized via EPHE_MUTEX
+    /// to prevent SIGSEGV from concurrent access to static C buffers.
     pub fn get_planet_position(
         &self,
         planet: HDPlanet,
@@ -131,6 +149,8 @@ impl EphemerisCalculator {
             });
         }
 
+        // Serialize access to the Swiss Ephemeris C library
+        let _guard = EPHE_MUTEX.lock().unwrap();
         match swisseph::swe::calc_ut(jd, planet_id as u32, flags) {
             Ok(result) => Ok(PlanetPosition {
                 longitude: result.out[0],

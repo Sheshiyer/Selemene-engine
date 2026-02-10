@@ -797,9 +797,10 @@ async fn test_vimshottari_full_timeline_e2e() {
     let timeline = &body["result"]["timeline"];
     assert_eq!(timeline["total_years"], 120);
 
-    // Exactly 9 mahadashas
+    // 9 or 10 mahadashas (10 when first period is partial, requiring an extra to reach 120 years)
     let mahadashas = timeline["mahadashas"].as_array().unwrap();
-    assert_eq!(mahadashas.len(), 9, "Expected 9 mahadashas, got {}", mahadashas.len());
+    assert!(mahadashas.len() >= 9 && mahadashas.len() <= 10,
+        "Expected 9-10 mahadashas, got {}", mahadashas.len());
 
     // Each mahadasha has planet, start_date, end_date, duration_years
     for (i, maha) in mahadashas.iter().enumerate() {
@@ -893,11 +894,12 @@ async fn test_vimshottari_moon_longitude_mode() {
     assert_eq!(nak["name"], "Magha");
     assert_eq!(nak["number"], 10);
 
-    // Timeline should have 9 mahadashas
+    // Timeline should have 9-10 mahadashas
     let mahadashas = body["result"]["timeline"]["mahadashas"]
         .as_array()
         .unwrap();
-    assert_eq!(mahadashas.len(), 9);
+    assert!(mahadashas.len() >= 9 && mahadashas.len() <= 10,
+        "Expected 9-10 mahadashas, got {}", mahadashas.len());
 }
 
 /// Vimshottari E2E: Auth required -- 401.
@@ -1028,14 +1030,13 @@ async fn test_vimshottari_date_continuity() {
     let mahadashas = body["result"]["timeline"]["mahadashas"]
         .as_array()
         .unwrap();
-    assert_eq!(mahadashas.len(), 9);
+    assert!(mahadashas.len() >= 9 && mahadashas.len() <= 10,
+        "Expected 9-10 mahadashas, got {}", mahadashas.len());
 
     // Verify total duration sums to approximately 120 years.
     // NOTE: The first mahadasha is a partial period (dasha balance),
-    // so the actual total from birth is less than 120. The 9 mahadasha
-    // "duration_years" fields represent the FULL period durations,
-    // but the first is truncated by balance. We verify the sum of full
-    // durations equals 120.
+    // so the actual total from birth is less than 120. The mahadasha
+    // "duration_years" fields represent the actual partial/full durations.
     let total: f64 = mahadashas
         .iter()
         .map(|m| m["duration_years"].as_f64().unwrap_or(0.0))

@@ -297,11 +297,12 @@ async fn test_vimshottari_calculate_with_moon_longitude() {
         "Should be 120-year cycle"
     );
 
-    // Verify 9 mahadashas
+    // Verify 9-10 mahadashas (10 when first period is partial)
     let mahadashas = timeline["mahadashas"]
         .as_array()
         .expect("mahadashas should be array");
-    assert_eq!(mahadashas.len(), 9, "Should have 9 mahadashas");
+    assert!(mahadashas.len() >= 9 && mahadashas.len() <= 10,
+        "Should have 9-10 mahadashas, got {}", mahadashas.len());
 
     // Verify each mahadasha has required fields
     for (i, maha) in mahadashas.iter().enumerate() {
