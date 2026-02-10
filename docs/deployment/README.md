@@ -15,8 +15,8 @@ This guide covers running and deploying Selemene Engine in a platform-agnostic w
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/selemene/selemene-engine.git
-   cd selemene-engine
+   git clone https://github.com/Sheshiyer/Selemene-engine.git
+   cd Selemene-engine
    ```
 
 2. **Set environment variables**
@@ -36,25 +36,23 @@ This guide covers running and deploying Selemene Engine in a platform-agnostic w
 
 4. **Verify**
    ```bash
-   curl http://localhost:8080/health
+   curl http://localhost:8080/health/live
    ```
 
 ### Environment Variables
 
 | Variable | Description | Default |
 |----------|-------------|---------|
+| `RUST_ENV` | Environment (`development` / `production`) | `development` |
 | `RUST_LOG` | Logging level | `info` |
-| `ENVIRONMENT` | Environment name | `development` |
 | `HOST` | Bind host | `0.0.0.0` |
 | `PORT` | Bind port | `8080` |
-| `WORKERS` | Number of worker threads | `4` |
-| `REDIS_URL` | Redis connection URL | `redis://localhost:6379` |
-| `DATABASE_URL` | PostgreSQL connection URL | `postgresql://postgres:password@localhost:5432/selemene` |
+| `JWT_SECRET` | JWT signing key (required) | — |
+| `DATABASE_URL` | PostgreSQL connection URL (optional — runs degraded without DB) | — |
+| `REDIS_URL` | Redis connection URL (optional — in-memory fallback) | — |
+| `SENTRY_DSN` | Sentry error tracking DSN (optional) | — |
 | `SWISS_EPHEMERIS_PATH` | Path to Swiss Ephemeris data | `/app/data/ephemeris` |
-| `NATIVE_ENGINE_ENABLED` | Enable native engines | `true` |
-| `CROSS_VALIDATION_ENABLED` | Enable cross-validation | `true` |
-| `CACHE_SIZE_MB` | L1 cache size in MB | `256` |
-| `MAX_CONCURRENT_CALCULATIONS` | Max concurrent calculations | `100` |
+| `FREE_ASTROLOGY_API_KEY` | FreeAstrologyAPI.com key (optional) | — |
 
 ## Deployment
 
@@ -62,7 +60,7 @@ This guide covers running and deploying Selemene Engine in a platform-agnostic w
 
 ```bash
 cargo build --release
-./target/release/selemene-engine
+./target/release/noesis-server
 ```
 
 ### Containerization
@@ -134,21 +132,11 @@ Pre-configured dashboards include:
 
 Health check endpoints:
 
-- `/health`: Basic health status
-- `/status`: Detailed system status
+- `/health/live`: Liveness probe — always returns 200
+- `/health/ready`: Readiness probe — checks DB, Redis, orchestrator
 - `/metrics`: Prometheus metrics
 
 ## Performance Optimization
-
-### Cache Optimization
-
-```bash
-# Run cache optimization
-curl -X POST http://localhost:8080/api/v1/performance/optimize
-
-# Run benchmarks
-curl -X POST http://localhost:8080/api/v1/performance/benchmark
-```
 
 ### Local Benchmarking
 
@@ -287,7 +275,4 @@ psql "$DATABASE_URL" < backup.sql
 
 ### Support Resources
 
-- **Documentation**: [https://docs.selemene.io](https://docs.selemene.io)
-- **GitHub Issues**: [https://github.com/selemene/selemene-engine](https://github.com/selemene/selemene-engine)
-- **Support Email**: support@selemene.io
-- **Status Page**: [https://status.selemene.io](https://status.selemene.io)
+- **GitHub Issues**: [https://github.com/Sheshiyer/Selemene-engine/issues](https://github.com/Sheshiyer/Selemene-engine/issues)

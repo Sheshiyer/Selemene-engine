@@ -116,22 +116,24 @@ agent = Agent(role="Vedic Analyst", tools=tools)
 
 The bridge covers all 14 Selemene consciousness engines:
 
-| # | Engine | Source | Description |
-|---|--------|--------|-------------|
-| 1 | Panchanga | Rust | Vedic calendar (tithi, nakshatra, yoga, karana) |
-| 2 | Numerology | Rust | Pythagorean + Chaldean number analysis |
-| 3 | Biorhythm | Rust | Physical, emotional, intellectual cycles |
-| 4 | Human Design | Rust | Ra Uru Hu's system — type, authority, profile |
-| 5 | Gene Keys | Rust | Richard Rudd's 64 keys — shadow, gift, siddhi |
-| 6 | Vimshottari | Rust | Vedic planetary period system |
-| 7 | Biofield | Rust | Energy body resonance patterns |
-| 8 | Vedic Clock | Rust | Muhurta, hora, ghati time divisions |
-| 9 | Tarot | Rust | Archetypal card readings |
-| 10 | Natal Chart | TS | Full birth chart calculation |
-| 11 | Transit | TS | Current planetary transits |
-| 12 | Compatibility | TS | Synastry and composite charts |
-| 13 | Divisional | TS | D9, D10 and other divisional charts |
-| 14 | Dasha | TS | Extended dasha calculations |
+| # | Engine | Source | Status | Description |
+|---|--------|--------|--------|-------------|
+| 1 | Panchanga | Rust | Live | Vedic calendar (tithi, nakshatra, yoga, karana) |
+| 2 | Numerology | Rust | Live | Pythagorean + Chaldean number analysis |
+| 3 | Biorhythm | Rust | Live | Physical, emotional, intellectual cycles |
+| 4 | Human Design | Rust | Live | Ra Uru Hu's system — type, authority, profile |
+| 5 | Gene Keys | Rust | Live | Richard Rudd's 64 keys — shadow, gift, siddhi |
+| 6 | Vimshottari | Rust | Live | Vedic planetary period system |
+| 7 | Biofield | Rust | Live | Energy body resonance patterns |
+| 8 | Vedic Clock | Rust | Live | Muhurta, hora, ghati time divisions |
+| 9 | Tarot | Rust | Scaffold | Archetypal card readings |
+| 10 | Natal Chart | TS | Scaffold | Full birth chart calculation |
+| 11 | Transit | TS | Scaffold | Current planetary transits |
+| 12 | Compatibility | TS | Scaffold | Synastry and composite charts |
+| 13 | Divisional | TS | Scaffold | D9, D10 and other divisional charts |
+| 14 | Dasha | TS | Scaffold | Extended dasha calculations |
+
+*TypeScript engines require a running TS server at the configured URL. If the TS server is not available, the CLI will generate tools for the available Rust engines only.*
 
 Plus 6 orchestrated workflows (witness, snapshot, compass, timeline, compatibility, transit).
 

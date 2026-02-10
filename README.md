@@ -6,7 +6,7 @@
 <p align="center">
   <a href="https://github.com/Sheshiyer/Selemene-engine/actions"><img src="https://img.shields.io/github/actions/workflow/status/Sheshiyer/Selemene-engine/test.yml?style=flat-square&label=tests" alt="Tests"></a>
   &nbsp;
-  <img src="https://img.shields.io/badge/Rust-1.70+-CE422B?style=flat-square&logo=rust&logoColor=white" alt="Rust">
+  <img src="https://img.shields.io/badge/Rust-1.75+-CE422B?style=flat-square&logo=rust&logoColor=white" alt="Rust">
   &nbsp;
   <img src="https://img.shields.io/badge/license-MIT-blue?style=flat-square" alt="License">
   &nbsp;
@@ -152,6 +152,8 @@ Workflows synthesize multiple engines into emergent understanding. Not pipelines
 | **`self-inquiry`** | Gene Keys + Enneagram | Shadow work meets personality patterns — where you contract, where you expand |
 | **`creative-expression`** | Sigil Forge + Sacred Geometry | Intent made visible — symbols as seeds, geometry as meditation |
 | **`full-spectrum`** | All 14 Engines | Complete consciousness portrait — every lens, every frequency |
+
+*Workflows referencing TypeScript engines (Tarot, I-Ching, Enneagram, Sacred Geometry, Sigil Forge) require the TS engines server. See [Bridge CLI](bridges/cli/README.md) for setup.*
 
 ```bash
 # Execute a workflow
