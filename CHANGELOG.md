@@ -2,18 +2,20 @@
 
 All notable changes to the Tryambakam Noesis Engine project.
 
-## [2.1.1] - 2026-02-10
+## [2.3.0] - 2026-02-10
 
 ### Added
 - Universal Agent Bridge — Python generators for Claude, OpenAI, LangChain tool definitions from OpenAPI specs
 - `@selemene/bridge` CLI — interactive TypeScript CLI (`npx @selemene/bridge init`) for zero-Python tool generation
 - Universal Tool Server (FastAPI/MCP-compatible) scaffold
 - Cron job scaffolds (daily witness, hourly panchanga)
+- `llms.txt` and `.well-known/agent.json` for AI agent discovery (llms.txt spec + Google A2A protocol)
 
 ### Fixed
 - Sprint 1 Aleph Launch — 5 P0 bug fixes + assessment tasks
 
 ### Changed
+- Official domain `selemene.tryambakam.space` patched into all docs and scripts
 - MVP task tracking (22 tasks marked done)
 
 ---
@@ -179,7 +181,7 @@ All notable changes to the Tryambakam Noesis Engine project.
 
 | Version | Date | Engines | Tests | Highlights |
 |---------|------|---------|-------|------------|
-| 2.1.1 | 2026-02-10 | 14 + API | 402+ | Agent Bridge CLI, Sprint 1 fixes, MVP complete |
+| 2.3.0 | 2026-02-10 | 14 + API | 402+ | Agent Bridge CLI, AI discovery files, custom domain |
 | 2.1.0 | 2026-02-09 | 14 + API | 402+ | FreeAstrologyAPI integration, metrics, resilience |
 | 2.0.0 | 2026-02-01 | 14 | 228+ | Wave 2 complete, workflows, production ready |
 | 1.1.0 | 2026-01-31 | 6 | 100+ | Wave 1 complete, all core engines |

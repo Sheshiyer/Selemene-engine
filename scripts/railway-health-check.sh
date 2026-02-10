@@ -6,7 +6,7 @@
 
 set -e
 
-URL="${1:-https://selemene-engine-production.up.railway.app/health/live}"
+URL="${1:-https://selemene.tryambakam.space/health/live}"
 MAX_ATTEMPTS=3
 DELAYS=(0 10 30)  # Retry delays in seconds
 

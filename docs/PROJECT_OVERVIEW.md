@@ -270,5 +270,5 @@ The most impactful improvements are: rotating the exposed JWT secret (security),
 **Total LOC**: ~54,000 Rust + ~2,000 TypeScript scaffolding
 **Tests**: 1,321+ functions across 41 files
 **Engines**: 7 real + 2 stubs
-**Live**: https://selemene-engine-production.up.railway.app
+**Live**: https://selemene.tryambakam.space
 **Auth**: Working end-to-end with Supabase PostgreSQL

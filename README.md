@@ -10,7 +10,7 @@
   &nbsp;
   <img src="https://img.shields.io/badge/license-MIT-blue?style=flat-square" alt="License">
   &nbsp;
-  <a href="https://selemene-engine-production.up.railway.app/health/live"><img src="https://img.shields.io/badge/status-live-brightgreen?style=flat-square" alt="Live"></a>
+  <a href="https://selemene.tryambakam.space/health/live"><img src="https://img.shields.io/badge/status-live-brightgreen?style=flat-square" alt="Live"></a>
 </p>
 
 <p align="center">
@@ -39,7 +39,7 @@ A computational mirror for self-inquiry. 8 engines rooted in Vedic, numerologica
 
 **[Interactive Explorer](scripts/explore-api.sh)** — Terminal-based menu for exploring every engine.
 
-**[Swagger UI](https://selemene-engine-production.up.railway.app/api/docs)** — Full interactive API documentation.
+**[Swagger UI](https://selemene.tryambakam.space/api/docs)** — Full interactive API documentation.
 
 ### First Call in 30 Seconds
 
@@ -48,7 +48,7 @@ A computational mirror for self-inquiry. 8 engines rooted in Vedic, numerologica
 export NOESIS_API_KEY="nk_your_key_here"
 
 # Ask the mirror a question
-curl -s -X POST https://selemene-engine-production.up.railway.app/api/v1/engines/numerology/calculate \
+curl -s -X POST https://selemene.tryambakam.space/api/v1/engines/numerology/calculate \
   -H "X-API-Key: $NOESIS_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
@@ -115,7 +115,7 @@ All engines accept the same `EngineInput` shape:
 ### Try Each Engine
 
 ```bash
-BASE="https://selemene-engine-production.up.railway.app/api/v1"
+BASE="https://selemene.tryambakam.space/api/v1"
 
 # Numerology — needs name + date
 curl -s -X POST $BASE/engines/numerology/calculate \
@@ -299,7 +299,7 @@ See [`.env.example`](.env.example) for the full list.
 | Guide | Purpose |
 |-------|---------|
 | **[API Quickstart](docs/API_QUICKSTART.md)** | Zero to first call |
-| **[Swagger UI](https://selemene-engine-production.up.railway.app/api/docs)** | Interactive API explorer |
+| **[Swagger UI](https://selemene.tryambakam.space/api/docs)** | Interactive API explorer |
 | **[Terminal Explorer](scripts/explore-api.sh)** | CLI-based API exploration |
 | **[Agent Bridge CLI](bridges/cli/README.md)** | `npx @selemene/bridge init` — generate tool defs for Claude, OpenAI, LangChain |
 | **[Architecture](.context/documentation/architecture/selemene_architecture.md)** | System design |

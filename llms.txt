@@ -1,0 +1,38 @@
+# Selemene Engine
+
+> Computational mirror for self-inquiry. 8 live Vedic/consciousness engines with sub-ms calculations. REST API with witness prompts calibrated to consciousness level.
+
+Selemene Engine is a high-performance Rust API serving 8 calculation engines rooted in Vedic, numerological, and consciousness traditions. Each response includes a witness prompt — a question calibrated to your awareness level.
+
+## API Documentation
+
+- [OpenAPI Spec](https://selemene.tryambakam.space/api/openapi.json): Full machine-readable API specification
+- [Swagger UI](https://selemene.tryambakam.space/api/docs): Interactive API explorer
+- [API Quickstart](https://github.com/Sheshiyer/Selemene-engine/blob/main/docs/API_QUICKSTART.md): Zero to first call
+
+## Authentication
+
+- [Auth Guide](https://github.com/Sheshiyer/Selemene-engine/blob/main/README.md#authentication): API Key (X-API-Key header) or JWT Bearer token
+
+## Engines
+
+- [Panchanga](https://selemene.tryambakam.space/api/v1/engines/panchanga/info): Vedic calendar — tithi, nakshatra, yoga, karana
+- [Human Design](https://selemene.tryambakam.space/api/v1/engines/human-design/info): Bodygraph — type, strategy, authority, profile
+- [Gene Keys](https://selemene.tryambakam.space/api/v1/engines/gene-keys/info): Shadow-Gift-Siddhi activation sequences
+- [Vimshottari](https://selemene.tryambakam.space/api/v1/engines/vimshottari/info): 120-year planetary dasha timeline
+- [Numerology](https://selemene.tryambakam.space/api/v1/engines/numerology/info): Life path, expression, soul urge numbers
+- [Biorhythm](https://selemene.tryambakam.space/api/v1/engines/biorhythm/info): Physical, emotional, intellectual cycles
+- [Vedic Clock](https://selemene.tryambakam.space/api/v1/engines/vedic-clock/info): Muhurta, hora, dosha timing
+- [Biofield](https://selemene.tryambakam.space/api/v1/engines/biofield/info): Chakra energy readings
+
+## Workflows
+
+- [Birth Blueprint](https://selemene.tryambakam.space/api/v1/workflows/birth-blueprint/info): Numerology + Human Design + Vimshottari
+- [Daily Practice](https://selemene.tryambakam.space/api/v1/workflows/daily-practice/info): Panchanga + Vedic Clock + Biorhythm
+- [Full Spectrum](https://selemene.tryambakam.space/api/v1/workflows/full-spectrum/info): All engines combined
+
+## Optional
+
+- [Bridge CLI](https://github.com/Sheshiyer/Selemene-engine/blob/main/bridges/cli/README.md): Generate tool definitions for Claude, OpenAI, LangChain
+- [Deployment Guide](https://github.com/Sheshiyer/Selemene-engine/blob/main/docs/deployment/README.md): Self-hosting instructions
+- [Changelog](https://github.com/Sheshiyer/Selemene-engine/blob/main/CHANGELOG.md): Version history

@@ -245,7 +245,7 @@ After pushing `railway.toml`:
 
 2. **Verify healthcheck:**
    ```bash
-   curl https://selemene-engine-production.up.railway.app/health/live
+   curl https://selemene.tryambakam.space/health/live
    ```
    Should return: `{"status":"healthy"}`
 

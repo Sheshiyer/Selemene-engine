@@ -217,7 +217,7 @@ wrangler login
 # Add CNAME record pointing to Railway
 wrangler dns add tryambakam.space --type CNAME --name @ --content [RAILWAY_URL] --proxied true
 
-# Example Railway URL format: selemene-engine-production.up.railway.app
+# Example Railway URL format: selemene.tryambakam.space
 ```
 
 ### Option 2: Cloudflare Dashboard (Manual)

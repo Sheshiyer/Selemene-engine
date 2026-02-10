@@ -5,7 +5,7 @@
 ## Base URL
 
 ```
-https://selemene-engine-production.up.railway.app
+https://selemene.tryambakam.space
 ```
 
 ## Step 1: Get an API Key
@@ -31,7 +31,7 @@ export NOESIS_API_KEY="nk_your_key_here"
 
 ```bash
 # Health check (no auth required)
-curl -s https://selemene-engine-production.up.railway.app/health/live | python3 -m json.tool
+curl -s https://selemene.tryambakam.space/health/live | python3 -m json.tool
 ```
 
 ```json
@@ -46,7 +46,7 @@ curl -s https://selemene-engine-production.up.railway.app/health/live | python3 
 ## Step 3: List Available Engines
 
 ```bash
-curl -s https://selemene-engine-production.up.railway.app/api/v1/engines \
+curl -s https://selemene.tryambakam.space/api/v1/engines \
   -H "X-API-Key: $NOESIS_API_KEY" | python3 -m json.tool
 ```
 
@@ -64,7 +64,7 @@ curl -s https://selemene-engine-production.up.railway.app/api/v1/engines \
 Every engine accepts the same request shape: `EngineInput`.
 
 ```bash
-curl -s -X POST https://selemene-engine-production.up.railway.app/api/v1/engines/numerology/calculate \
+curl -s -X POST https://selemene.tryambakam.space/api/v1/engines/numerology/calculate \
   -H "X-API-Key: $NOESIS_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
@@ -246,7 +246,7 @@ Two methods:
 Full OpenAPI documentation with try-it-out:
 
 ```
-https://selemene-engine-production.up.railway.app/api/docs
+https://selemene.tryambakam.space/api/docs
 ```
 
 Open this in a browser to explore all endpoints interactively.
@@ -266,7 +266,7 @@ This gives you a menu-driven interface to explore engines, run calculations, and
 ```bash
 # Set your key once
 export NOESIS_API_KEY="nk_your_key_here"
-export NOESIS_URL="https://selemene-engine-production.up.railway.app"
+export NOESIS_URL="https://selemene.tryambakam.space"
 
 # Health
 curl -s $NOESIS_URL/health/live | python3 -m json.tool

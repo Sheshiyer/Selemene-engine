@@ -19,7 +19,7 @@ BLUE="\033[34m"
 WHITE="\033[37m"
 
 # ── Config ────────────────────────────────────────────────────
-DEFAULT_URL="https://selemene-engine-production.up.railway.app"
+DEFAULT_URL="https://selemene.tryambakam.space"
 BASE_URL="${NOESIS_URL:-$DEFAULT_URL}"
 API_KEY="${NOESIS_API_KEY:-}"
 
