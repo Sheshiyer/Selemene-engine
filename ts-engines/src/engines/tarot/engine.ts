@@ -2,9 +2,9 @@
  * TarotEngine - Consciousness engine implementation for tarot readings
  */
 
-import type { ConsciousnessEngine, EngineMetadata, EngineInput, EngineOutput } from '../../types'
-import { SpreadType, parseSpreadType, SPREAD_DEFINITIONS } from './spreads'
+import type { ConsciousnessEngine, EngineInput, EngineMetadata, EngineOutput } from '../../types'
 import { performReading } from './reading'
+import { SPREAD_DEFINITIONS, SpreadType, parseSpreadType } from './spreads'
 import { generateQuestionBasedPrompts } from './witness'
 
 export class TarotEngine implements ConsciousnessEngine {

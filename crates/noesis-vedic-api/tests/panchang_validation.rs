@@ -635,15 +635,17 @@ fn test_complete_panchang_validation_all_dates() {
             panchang.tithi.name_tithi == tithi_name_from_str(&test_date.expected.tithi.name);
         let nakshatra_ok = panchang.nakshatra.name_nakshatra
             == nakshatra_name_from_str(&test_date.expected.nakshatra.name);
-        let yoga_ok =
-            panchang.yoga.name_yoga == yoga_name_from_str(&test_date.expected.yoga.name);
+        let yoga_ok = panchang.yoga.name_yoga == yoga_name_from_str(&test_date.expected.yoga.name);
         let karana_ok =
             panchang.karana.name_karana == karana_name_from_str(&test_date.expected.karana.name);
         let vara_ok = panchang.vara == vara_from_str(&test_date.expected.vara);
 
         if tithi_ok && nakshatra_ok && yoga_ok && karana_ok && vara_ok {
             pass_count += 1;
-            println!("  [PASS] {} - All five Panchang elements match", test_date.id);
+            println!(
+                "  [PASS] {} - All five Panchang elements match",
+                test_date.id
+            );
         } else {
             let mut issues = vec![];
             if !tithi_ok {
@@ -661,11 +663,7 @@ fn test_complete_panchang_validation_all_dates() {
             if !vara_ok {
                 issues.push("vara");
             }
-            let msg = format!(
-                "[{}] Discrepancies in: {}",
-                test_date.id,
-                issues.join(", ")
-            );
+            let msg = format!("[{}] Discrepancies in: {}", test_date.id, issues.join(", "));
             println!("  [WARN] {}", msg);
             discrepancies.push(msg);
         }
@@ -710,7 +708,7 @@ fn test_tithi_ruling_planet_correctness() {
         (12, "Jupiter"),
         (13, "Venus"),
         (14, "Saturn"),
-        (15, "Sun"),  // Purnima/Amavasya
+        (15, "Sun"), // Purnima/Amavasya
     ];
 
     for (number, expected_ruler) in &expected_rulers {

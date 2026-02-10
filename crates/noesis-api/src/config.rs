@@ -11,34 +11,34 @@ use std::env;
 pub struct ApiConfig {
     /// Server host address (default: "0.0.0.0")
     pub host: String,
-    
+
     /// Server port (default: 8080)
     pub port: u16,
-    
+
     /// JWT secret for token signing (required, no default in production)
     pub jwt_secret: String,
 
     /// Database URL for PostgreSQL (optional — server starts in degraded mode without it)
     pub database_url: Option<String>,
-    
+
     /// Redis connection URL for L2 cache (optional, None disables Redis)
     pub redis_url: Option<String>,
-    
+
     /// Allowed CORS origins (comma-separated list)
     pub allowed_origins: Vec<String>,
-    
+
     /// Rate limit: max requests per window (default: 100)
     pub rate_limit_requests: u32,
-    
+
     /// Rate limit: window duration in seconds (default: 60)
     pub rate_limit_window_secs: u64,
-    
+
     /// Request timeout in seconds (default: 30)
     pub request_timeout_secs: u64,
-    
+
     /// Log level (default: "info")
     pub log_level: String,
-    
+
     /// Log format: "pretty" or "json" (default: "pretty" for dev, "json" for prod)
     pub log_format: String,
 }
@@ -83,7 +83,9 @@ impl ApiConfig {
                 ));
             }
             Err(_) => {
-                tracing::warn!("JWT_SECRET not set, using development default (DO NOT USE IN PRODUCTION)");
+                tracing::warn!(
+                    "JWT_SECRET not set, using development default (DO NOT USE IN PRODUCTION)"
+                );
                 "noesis-dev-secret-change-in-production".to_string()
             }
         };
@@ -93,17 +95,17 @@ impl ApiConfig {
             Ok(url) => {
                 // Validate format early (fail fast on obviously wrong URLs)
                 if !url.starts_with("postgresql://") && !url.starts_with("postgres://") {
-                    return Err(EngineError::ConfigError(
-                        format!(
-                            "DATABASE_URL must start with postgresql:// or postgres://, got: {}...",
-                            &url[..url.len().min(20)]
-                        ),
-                    ));
+                    return Err(EngineError::ConfigError(format!(
+                        "DATABASE_URL must start with postgresql:// or postgres://, got: {}...",
+                        &url[..url.len().min(20)]
+                    )));
                 }
                 Some(url)
             }
             Err(_) if is_production => {
-                tracing::warn!("DATABASE_URL not set in production — auth endpoints will be unavailable");
+                tracing::warn!(
+                    "DATABASE_URL not set in production — auth endpoints will be unavailable"
+                );
                 None
             }
             Err(_) => {
@@ -111,37 +113,36 @@ impl ApiConfig {
                 None
             }
         };
-        
+
         let redis_url = env::var("REDIS_URL").ok();
-        
+
         let allowed_origins = env::var("ALLOWED_ORIGINS")
             .unwrap_or_else(|_| "http://localhost:3000,http://localhost:5173".to_string())
             .split(',')
             .map(|s| s.trim().to_string())
             .filter(|s| !s.is_empty())
             .collect();
-        
+
         let rate_limit_requests = env::var("RATE_LIMIT_REQUESTS")
             .ok()
             .and_then(|r| r.parse().ok())
             .unwrap_or(100);
-        
+
         let rate_limit_window_secs = env::var("RATE_LIMIT_WINDOW_SECS")
             .ok()
             .and_then(|w| w.parse().ok())
             .unwrap_or(60);
-        
+
         let request_timeout_secs = env::var("REQUEST_TIMEOUT_SECS")
             .ok()
             .and_then(|t| t.parse().ok())
             .unwrap_or(30);
-        
-        let log_level = env::var("RUST_LOG")
-            .unwrap_or_else(|_| "info,noesis_api=debug".to_string());
-        
-        let log_format = env::var("LOG_FORMAT")
-            .unwrap_or_else(|_| "pretty".to_string());
-        
+
+        let log_level =
+            env::var("RUST_LOG").unwrap_or_else(|_| "info,noesis_api=debug".to_string());
+
+        let log_format = env::var("LOG_FORMAT").unwrap_or_else(|_| "pretty".to_string());
+
         Ok(Self {
             host,
             port,
@@ -156,7 +157,7 @@ impl ApiConfig {
             log_format,
         })
     }
-    
+
     /// Validate the configuration
     ///
     /// Checks for common configuration errors and logs warnings for
@@ -170,12 +171,12 @@ impl ApiConfig {
             let is_production = env::var("RUST_ENV")
                 .map(|e| e == "production")
                 .unwrap_or(false);
-            
+
             if is_production {
                 return Err("JWT_SECRET must not use default value in production".to_string());
             }
         }
-        
+
         // Validate JWT secret length (minimum 32 characters recommended)
         if self.jwt_secret.len() < 32 {
             tracing::warn!(
@@ -183,7 +184,7 @@ impl ApiConfig {
                 self.jwt_secret.len()
             );
         }
-        
+
         // Validate DATABASE_URL format (if set)
         if let Some(ref db_url) = self.database_url {
             if !db_url.starts_with("postgresql://") && !db_url.starts_with("postgres://") {
@@ -201,21 +202,21 @@ impl ApiConfig {
                 self.port
             );
         }
-        
+
         // Validate rate limit settings
         if self.rate_limit_requests == 0 {
             tracing::warn!("Rate limit requests set to 0, effectively blocking all requests");
         }
-        
+
         if self.rate_limit_window_secs == 0 {
             return Err("Rate limit window cannot be 0 seconds".to_string());
         }
-        
+
         // Validate timeout
         if self.request_timeout_secs == 0 {
             return Err("Request timeout cannot be 0 seconds".to_string());
         }
-        
+
         // Validate log format
         if self.log_format != "pretty" && self.log_format != "json" {
             tracing::warn!(
@@ -223,10 +224,10 @@ impl ApiConfig {
                 self.log_format
             );
         }
-        
+
         Ok(())
     }
-    
+
     /// Get the server bind address as a string
     pub fn bind_address(&self) -> String {
         format!("{}:{}", self.host, self.port)
@@ -236,7 +237,7 @@ impl ApiConfig {
 #[cfg(test)]
 mod tests {
     use super::*;
-    
+
     #[test]
     fn test_bind_address() {
         let config = ApiConfig {
@@ -252,10 +253,10 @@ mod tests {
             log_level: "info".to_string(),
             log_format: "pretty".to_string(),
         };
-        
+
         assert_eq!(config.bind_address(), "127.0.0.1:3000");
     }
-    
+
     #[test]
     fn test_validate_invalid_window() {
         let config = ApiConfig {
@@ -271,10 +272,10 @@ mod tests {
             log_level: "info".to_string(),
             log_format: "pretty".to_string(),
         };
-        
+
         assert!(config.validate().is_err());
     }
-    
+
     #[test]
     fn test_validate_invalid_database_url() {
         let config = ApiConfig {
@@ -311,7 +312,11 @@ mod tests {
                 log_format: "pretty".to_string(),
             };
 
-            assert!(config.validate().is_ok(), "should accept DATABASE_URL: {}", url);
+            assert!(
+                config.validate().is_ok(),
+                "should accept DATABASE_URL: {}",
+                url
+            );
         }
     }
 
@@ -330,7 +335,7 @@ mod tests {
             log_level: "info".to_string(),
             log_format: "pretty".to_string(),
         };
-        
+
         assert!(config.validate().is_err());
     }
 }

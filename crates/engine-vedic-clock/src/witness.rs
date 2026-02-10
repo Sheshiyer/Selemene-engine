@@ -3,7 +3,7 @@
 //! Non-prescriptive, inquiry-based prompts that invite self-observation
 //! of energy patterns throughout the day.
 
-use crate::models::{Organ, Dosha};
+use crate::models::{Dosha, Organ};
 use rand::prelude::IndexedRandom;
 
 /// Generate a witness prompt based on current organ and dosha
@@ -29,16 +29,18 @@ pub fn generate_witness_prompt(organ: &Organ, dosha: &Dosha, consciousness_level
 fn generate_awareness_prompt(organ: &Organ, dosha: &Dosha) -> String {
     let prompts = get_awareness_prompts(organ);
     let dosha_prompts = get_dosha_awareness_prompts(dosha);
-    
+
     // Select one from each category
-    let organ_prompt = prompts.choose(&mut rand::rng())
+    let organ_prompt = prompts
+        .choose(&mut rand::rng())
         .copied()
         .unwrap_or("What do you notice about your energy right now?");
-    
-    let dosha_prompt = dosha_prompts.choose(&mut rand::rng())
+
+    let dosha_prompt = dosha_prompts
+        .choose(&mut rand::rng())
         .copied()
         .unwrap_or("");
-    
+
     if dosha_prompt.is_empty() {
         organ_prompt.to_string()
     } else {
@@ -51,15 +53,17 @@ fn generate_awareness_prompt(organ: &Organ, dosha: &Dosha) -> String {
 fn generate_observation_prompt(organ: &Organ, dosha: &Dosha) -> String {
     let prompts = get_observation_prompts(organ);
     let dosha_prompts = get_dosha_observation_prompts(dosha);
-    
-    let organ_prompt = prompts.choose(&mut rand::rng())
+
+    let organ_prompt = prompts
+        .choose(&mut rand::rng())
         .copied()
         .unwrap_or("What patterns do you notice in your energy at this time of day?");
-    
-    let dosha_prompt = dosha_prompts.choose(&mut rand::rng())
+
+    let dosha_prompt = dosha_prompts
+        .choose(&mut rand::rng())
         .copied()
         .unwrap_or("");
-    
+
     if dosha_prompt.is_empty() {
         organ_prompt.to_string()
     } else {
@@ -72,15 +76,17 @@ fn generate_observation_prompt(organ: &Organ, dosha: &Dosha) -> String {
 fn generate_integration_prompt(organ: &Organ, dosha: &Dosha) -> String {
     let prompts = get_integration_prompts(organ);
     let dosha_prompts = get_dosha_integration_prompts(dosha);
-    
-    let organ_prompt = prompts.choose(&mut rand::rng())
+
+    let organ_prompt = prompts
+        .choose(&mut rand::rng())
         .copied()
         .unwrap_or("What remains constant as the cycles of time move through you?");
-    
-    let dosha_prompt = dosha_prompts.choose(&mut rand::rng())
+
+    let dosha_prompt = dosha_prompts
+        .choose(&mut rand::rng())
         .copied()
         .unwrap_or("");
-    
+
     if dosha_prompt.is_empty() {
         organ_prompt.to_string()
     } else {
@@ -380,10 +386,22 @@ mod tests {
             let awareness = get_awareness_prompts(&organ);
             let observation = get_observation_prompts(&organ);
             let integration = get_integration_prompts(&organ);
-            
-            assert!(!awareness.is_empty(), "{:?} should have awareness prompts", organ);
-            assert!(!observation.is_empty(), "{:?} should have observation prompts", organ);
-            assert!(!integration.is_empty(), "{:?} should have integration prompts", organ);
+
+            assert!(
+                !awareness.is_empty(),
+                "{:?} should have awareness prompts",
+                organ
+            );
+            assert!(
+                !observation.is_empty(),
+                "{:?} should have observation prompts",
+                organ
+            );
+            assert!(
+                !integration.is_empty(),
+                "{:?} should have integration prompts",
+                organ
+            );
         }
     }
 
@@ -393,10 +411,22 @@ mod tests {
             let awareness = get_dosha_awareness_prompts(&dosha);
             let observation = get_dosha_observation_prompts(&dosha);
             let integration = get_dosha_integration_prompts(&dosha);
-            
-            assert!(!awareness.is_empty(), "{:?} should have awareness prompts", dosha);
-            assert!(!observation.is_empty(), "{:?} should have observation prompts", dosha);
-            assert!(!integration.is_empty(), "{:?} should have integration prompts", dosha);
+
+            assert!(
+                !awareness.is_empty(),
+                "{:?} should have awareness prompts",
+                dosha
+            );
+            assert!(
+                !observation.is_empty(),
+                "{:?} should have observation prompts",
+                dosha
+            );
+            assert!(
+                !integration.is_empty(),
+                "{:?} should have integration prompts",
+                dosha
+            );
         }
     }
 
@@ -404,9 +434,9 @@ mod tests {
     fn test_prompts_are_non_prescriptive() {
         // Check that prompts don't use prescriptive language
         let prescriptive_words = ["should", "must", "need to", "have to", "ought"];
-        
+
         let prompt = generate_witness_prompt(&Organ::Heart, &Dosha::Pitta, 3);
-        
+
         for word in prescriptive_words {
             assert!(
                 !prompt.to_lowercase().contains(word),

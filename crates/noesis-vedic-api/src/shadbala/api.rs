@@ -5,9 +5,12 @@
 use chrono::NaiveDateTime;
 use serde::{Deserialize, Serialize};
 
-use crate::error::{VedicApiError, VedicApiResult};
+use super::types::{
+    required_shadbala, ChartStrength, PlanetShadbala, ShadbalaAnalysis, ShadbalaComponent,
+    ShadbalaValue,
+};
 use crate::client::VedicApiClient;
-use super::types::{ShadbalaAnalysis, PlanetShadbala, ShadbalaValue, ShadbalaComponent, ChartStrength, required_shadbala};
+use crate::error::{VedicApiError, VedicApiResult};
 
 /// Request for Shadbala calculation
 #[derive(Debug, Clone, Serialize)]
@@ -61,53 +64,87 @@ impl VedicApiClient {
     /// Get Shadbala analysis
     ///
     /// FAPI-068: GET /shadbala endpoint
-    pub async fn get_shadbala(&self, request: &ShadbalaRequest) -> VedicApiResult<ShadbalaApiResponse> {
+    pub async fn get_shadbala(
+        &self,
+        request: &ShadbalaRequest,
+    ) -> VedicApiResult<ShadbalaApiResponse> {
         let response = self.post("/shadbala", request).await?;
-        serde_json::from_value(response)
-            .map_err(|e| VedicApiError::ParseError(format!("Failed to parse shadbala response: {}", e)))
+        serde_json::from_value(response).map_err(|e| {
+            VedicApiError::ParseError(format!("Failed to parse shadbala response: {}", e))
+        })
     }
 }
 
 /// Map API response to internal analysis
 pub fn map_shadbala_response(response: ShadbalaApiResponse) -> ShadbalaAnalysis {
-    let planets: Vec<PlanetShadbala> = response.planets.iter().map(|p| {
-        let required = required_shadbala(&p.name);
-        let ratio = p.total / required;
-        
-        PlanetShadbala {
-            planet: p.name.clone(),
-            components: vec![
-                ShadbalaValue { component: ShadbalaComponent::SthanaBala, rupas: p.sthana_bala, shashtiamsas: p.sthana_bala * 60.0 },
-                ShadbalaValue { component: ShadbalaComponent::DigBala, rupas: p.dig_bala, shashtiamsas: p.dig_bala * 60.0 },
-                ShadbalaValue { component: ShadbalaComponent::KalaBala, rupas: p.kala_bala, shashtiamsas: p.kala_bala * 60.0 },
-                ShadbalaValue { component: ShadbalaComponent::ChestaBala, rupas: p.chesta_bala, shashtiamsas: p.chesta_bala * 60.0 },
-                ShadbalaValue { component: ShadbalaComponent::NaisargikaBala, rupas: p.naisargika_bala, shashtiamsas: p.naisargika_bala * 60.0 },
-                ShadbalaValue { component: ShadbalaComponent::DrikBala, rupas: p.drik_bala, shashtiamsas: p.drik_bala * 60.0 },
-            ],
-            total_rupas: p.total,
-            total_shashtiamsas: p.total * 60.0,
-            required_minimum: required,
-            strength_ratio: ratio,
-            is_strong: ratio >= 1.0,
-        }
-    }).collect();
-    
-    let strongest = planets.iter()
+    let planets: Vec<PlanetShadbala> = response
+        .planets
+        .iter()
+        .map(|p| {
+            let required = required_shadbala(&p.name);
+            let ratio = p.total / required;
+
+            PlanetShadbala {
+                planet: p.name.clone(),
+                components: vec![
+                    ShadbalaValue {
+                        component: ShadbalaComponent::SthanaBala,
+                        rupas: p.sthana_bala,
+                        shashtiamsas: p.sthana_bala * 60.0,
+                    },
+                    ShadbalaValue {
+                        component: ShadbalaComponent::DigBala,
+                        rupas: p.dig_bala,
+                        shashtiamsas: p.dig_bala * 60.0,
+                    },
+                    ShadbalaValue {
+                        component: ShadbalaComponent::KalaBala,
+                        rupas: p.kala_bala,
+                        shashtiamsas: p.kala_bala * 60.0,
+                    },
+                    ShadbalaValue {
+                        component: ShadbalaComponent::ChestaBala,
+                        rupas: p.chesta_bala,
+                        shashtiamsas: p.chesta_bala * 60.0,
+                    },
+                    ShadbalaValue {
+                        component: ShadbalaComponent::NaisargikaBala,
+                        rupas: p.naisargika_bala,
+                        shashtiamsas: p.naisargika_bala * 60.0,
+                    },
+                    ShadbalaValue {
+                        component: ShadbalaComponent::DrikBala,
+                        rupas: p.drik_bala,
+                        shashtiamsas: p.drik_bala * 60.0,
+                    },
+                ],
+                total_rupas: p.total,
+                total_shashtiamsas: p.total * 60.0,
+                required_minimum: required,
+                strength_ratio: ratio,
+                is_strong: ratio >= 1.0,
+            }
+        })
+        .collect();
+
+    let strongest = planets
+        .iter()
         .max_by(|a, b| a.strength_ratio.partial_cmp(&b.strength_ratio).unwrap())
         .map(|p| p.planet.clone())
         .unwrap_or_default();
-    
-    let weakest = planets.iter()
+
+    let weakest = planets
+        .iter()
         .min_by(|a, b| a.strength_ratio.partial_cmp(&b.strength_ratio).unwrap())
         .map(|p| p.planet.clone())
         .unwrap_or_default();
-    
+
     let avg_ratio: f64 = if !planets.is_empty() {
         planets.iter().map(|p| p.strength_ratio).sum::<f64>() / planets.len() as f64
     } else {
         0.0
     };
-    
+
     ShadbalaAnalysis {
         planets,
         strongest_planet: strongest,
@@ -128,7 +165,7 @@ mod tests {
             NaiveTime::from_hms_opt(10, 30, 0).unwrap(),
         );
         let request = ShadbalaRequest::new(dt, 12.97, 77.59, 5.5);
-        
+
         assert_eq!(request.birth_date, "1990-06-15");
     }
 }

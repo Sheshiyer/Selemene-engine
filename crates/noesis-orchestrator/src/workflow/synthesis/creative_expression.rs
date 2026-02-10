@@ -5,7 +5,7 @@
 
 use super::Synthesizer;
 use crate::workflow::models::{
-    Alignment, SynthesisResult, Tension, Theme, WitnessPrompt, InquiryType,
+    Alignment, InquiryType, SynthesisResult, Tension, Theme, WitnessPrompt,
 };
 use noesis_core::{EngineInput, EngineOutput};
 use serde_json::{json, Value};
@@ -62,15 +62,22 @@ impl CreativeExpressionSynthesis {
     pub fn generate_witness_prompts(sigil_data: &Value, geo_data: &Value) -> Vec<WitnessPrompt> {
         let mut prompts = Vec::new();
 
-        let intention = sigil_data.get("distilled")
+        let intention = sigil_data
+            .get("distilled")
             .or_else(|| sigil_data.get("intention"))
             .and_then(|v| v.as_str())
             .unwrap_or("your intention");
-        
-        let form = geo_data.get("form").and_then(|v| v.as_str()).unwrap_or("the sacred form");
+
+        let form = geo_data
+            .get("form")
+            .and_then(|v| v.as_str())
+            .unwrap_or("the sacred form");
 
         prompts.push(WitnessPrompt::new(
-            format!("What emerges when you hold '{}' while contemplating {}?", intention, form),
+            format!(
+                "What emerges when you hold '{}' while contemplating {}?",
+                intention, form
+            ),
             InquiryType::Integration,
         ));
 
@@ -99,14 +106,21 @@ impl CreativeExpressionSynthesis {
 
     /// Generate creative direction from combined data
     pub fn generate_creative_direction(sigil_data: &Value, geo_data: &Value) -> Value {
-        let intention = sigil_data.get("distilled")
+        let intention = sigil_data
+            .get("distilled")
             .or_else(|| sigil_data.get("intention"))
             .and_then(|v| v.as_str())
             .unwrap_or("your intention");
-        
-        let form = geo_data.get("form").and_then(|v| v.as_str()).unwrap_or("sacred form");
-        let description = geo_data.get("visual_description").and_then(|v| v.as_str()).unwrap_or("");
-        
+
+        let form = geo_data
+            .get("form")
+            .and_then(|v| v.as_str())
+            .unwrap_or("sacred form");
+        let description = geo_data
+            .get("visual_description")
+            .and_then(|v| v.as_str())
+            .unwrap_or("");
+
         json!({
             "core_direction": format!("Channel '{}' through the lens of the {}", intention, form),
             "visual_anchor": description,
@@ -121,12 +135,21 @@ impl CreativeExpressionSynthesis {
         let form = geo.get("form").and_then(|v| v.as_str()).unwrap_or("");
 
         match energy {
-            "expansive" => approaches.push("Work outward from center, allowing forms to multiply and grow".to_string()),
-            "concentrating" => approaches.push("Distill and refine, reducing to essential elements".to_string()),
-            "flowing" => approaches.push("Allow continuous movement, embrace impermanence in form".to_string()),
-            "protective" => approaches.push("Create boundaries and containers, define sacred space".to_string()),
-            "transformative" => approaches.push("Work with before/after, thresholds, and liminal spaces".to_string()),
-            "restorative" => approaches.push("Focus on harmony, balance, and natural proportions".to_string()),
+            "expansive" => approaches
+                .push("Work outward from center, allowing forms to multiply and grow".to_string()),
+            "concentrating" => {
+                approaches.push("Distill and refine, reducing to essential elements".to_string())
+            }
+            "flowing" => approaches
+                .push("Allow continuous movement, embrace impermanence in form".to_string()),
+            "protective" => {
+                approaches.push("Create boundaries and containers, define sacred space".to_string())
+            }
+            "transformative" => approaches
+                .push("Work with before/after, thresholds, and liminal spaces".to_string()),
+            "restorative" => {
+                approaches.push("Focus on harmony, balance, and natural proportions".to_string())
+            }
             _ => approaches.push("Begin with emptiness, allow the form to emerge".to_string()),
         }
 
@@ -146,10 +169,19 @@ impl CreativeExpressionSynthesis {
         };
 
         let result = &output.result;
-        let intention = result.get("intention").or_else(|| result.get("original_intention")).cloned().unwrap_or(json!(""));
-        let distilled = result.get("distilled").or_else(|| result.get("distilled_intention")).or_else(|| result.get("essence")).cloned().unwrap_or(json!(""));
+        let intention = result
+            .get("intention")
+            .or_else(|| result.get("original_intention"))
+            .cloned()
+            .unwrap_or(json!(""));
+        let distilled = result
+            .get("distilled")
+            .or_else(|| result.get("distilled_intention"))
+            .or_else(|| result.get("essence"))
+            .cloned()
+            .unwrap_or(json!(""));
         let method = result.get("method").cloned().unwrap_or(json!("unknown"));
-        
+
         let keywords = Self::extract_keywords(&intention, &distilled);
         let energy = Self::determine_energy_quality(&intention);
 
@@ -165,9 +197,30 @@ impl CreativeExpressionSynthesis {
 
     fn extract_keywords(intention: &Value, distilled: &Value) -> Vec<String> {
         let mut keywords = Vec::new();
-        let text = format!("{} {}", intention.as_str().unwrap_or(""), distilled.as_str().unwrap_or("")).to_lowercase();
+        let text = format!(
+            "{} {}",
+            intention.as_str().unwrap_or(""),
+            distilled.as_str().unwrap_or("")
+        )
+        .to_lowercase();
 
-        let creative_words = ["create", "manifest", "express", "flow", "inspire", "transform", "birth", "grow", "expand", "connect", "illuminate", "reveal", "awaken", "heal", "balance"];
+        let creative_words = [
+            "create",
+            "manifest",
+            "express",
+            "flow",
+            "inspire",
+            "transform",
+            "birth",
+            "grow",
+            "expand",
+            "connect",
+            "illuminate",
+            "reveal",
+            "awaken",
+            "heal",
+            "balance",
+        ];
         for word in creative_words {
             if text.contains(word) {
                 keywords.push(word.to_string());
@@ -178,14 +231,23 @@ impl CreativeExpressionSynthesis {
 
     fn determine_energy_quality(intention: &Value) -> &'static str {
         let text = intention.as_str().unwrap_or("").to_lowercase();
-        
-        if text.contains("expand") || text.contains("grow") || text.contains("increase") { "expansive" }
-        else if text.contains("focus") || text.contains("concentrate") || text.contains("distill") { "concentrating" }
-        else if text.contains("flow") || text.contains("release") || text.contains("let go") { "flowing" }
-        else if text.contains("protect") || text.contains("shield") || text.contains("boundary") { "protective" }
-        else if text.contains("transform") || text.contains("change") || text.contains("shift") { "transformative" }
-        else if text.contains("heal") || text.contains("restore") || text.contains("balance") { "restorative" }
-        else { "generative" }
+
+        if text.contains("expand") || text.contains("grow") || text.contains("increase") {
+            "expansive"
+        } else if text.contains("focus") || text.contains("concentrate") || text.contains("distill")
+        {
+            "concentrating"
+        } else if text.contains("flow") || text.contains("release") || text.contains("let go") {
+            "flowing"
+        } else if text.contains("protect") || text.contains("shield") || text.contains("boundary") {
+            "protective"
+        } else if text.contains("transform") || text.contains("change") || text.contains("shift") {
+            "transformative"
+        } else if text.contains("heal") || text.contains("restore") || text.contains("balance") {
+            "restorative"
+        } else {
+            "generative"
+        }
     }
 
     fn extract_geometry_data(output: Option<&EngineOutput>) -> Value {
@@ -194,9 +256,21 @@ impl CreativeExpressionSynthesis {
         };
 
         let result = &output.result;
-        let form = result.get("form").or_else(|| result.get("selected_form")).or_else(|| result.get("geometry")).cloned().unwrap_or(json!("unknown"));
-        let qualities = result.get("qualities").or_else(|| result.get("properties")).cloned().unwrap_or(json!([]));
-        let meditation = result.get("meditation").or_else(|| result.get("contemplation")).cloned();
+        let form = result
+            .get("form")
+            .or_else(|| result.get("selected_form"))
+            .or_else(|| result.get("geometry"))
+            .cloned()
+            .unwrap_or(json!("unknown"));
+        let qualities = result
+            .get("qualities")
+            .or_else(|| result.get("properties"))
+            .cloned()
+            .unwrap_or(json!([]));
+        let meditation = result
+            .get("meditation")
+            .or_else(|| result.get("contemplation"))
+            .cloned();
 
         json!({
             "available": true,
@@ -209,18 +283,32 @@ impl CreativeExpressionSynthesis {
 
     fn get_form_description(form: &Value) -> &'static str {
         let form_str = form.as_str().unwrap_or("").to_lowercase();
-        
+
         match form_str.as_str() {
-            s if s.contains("circle") => "A single, perfect circle representing wholeness and unity",
-            s if s.contains("vesica") => "Two overlapping circles creating an almond-shaped intersection",
+            s if s.contains("circle") => {
+                "A single, perfect circle representing wholeness and unity"
+            }
+            s if s.contains("vesica") => {
+                "Two overlapping circles creating an almond-shaped intersection"
+            }
             s if s.contains("seed") => "Seven circles arranged in perfect hexagonal symmetry",
-            s if s.contains("flower") => "Nineteen overlapping circles in perfect rotational harmony",
-            s if s.contains("metatron") => "Thirteen circles with all interconnecting lines revealed",
-            s if s.contains("sri") || s.contains("yantra") => "Nine interlocking triangles forming 43 smaller triangles",
+            s if s.contains("flower") => {
+                "Nineteen overlapping circles in perfect rotational harmony"
+            }
+            s if s.contains("metatron") => {
+                "Thirteen circles with all interconnecting lines revealed"
+            }
+            s if s.contains("sri") || s.contains("yantra") => {
+                "Nine interlocking triangles forming 43 smaller triangles"
+            }
             s if s.contains("torus") => "A donut-shaped field of continuous energy flow",
-            s if s.contains("fibonacci") || s.contains("spiral") => "A spiral expanding in golden ratio proportions",
-            s if s.contains("merkaba") => "Two interlocking tetrahedra forming a three-dimensional star",
-            _ => "A sacred geometric form with mathematical precision and symbolic meaning"
+            s if s.contains("fibonacci") || s.contains("spiral") => {
+                "A spiral expanding in golden ratio proportions"
+            }
+            s if s.contains("merkaba") => {
+                "Two interlocking tetrahedra forming a three-dimensional star"
+            }
+            _ => "A sacred geometric form with mathematical precision and symbolic meaning",
         }
     }
 
@@ -232,14 +320,20 @@ impl CreativeExpressionSynthesis {
 
         if let Some(distilled) = data.get("distilled").and_then(|v| v.as_str()) {
             if !distilled.is_empty() {
-                let mut theme = Theme::new(format!("Distilled Intention: {}", distilled), "Core intention condensed to essence");
+                let mut theme = Theme::new(
+                    format!("Distilled Intention: {}", distilled),
+                    "Core intention condensed to essence",
+                );
                 theme.add_source("sigil-forge");
                 themes.push(theme);
             }
         }
 
         if let Some(energy) = data.get("energy").and_then(|v| v.as_str()) {
-            let mut theme = Theme::new(format!("Energy Quality: {}", energy), format!("The {} nature of this creative impulse", energy));
+            let mut theme = Theme::new(
+                format!("Energy Quality: {}", energy),
+                format!("The {} nature of this creative impulse", energy),
+            );
             theme.add_source("sigil-forge");
             themes.push(theme);
         }
@@ -253,15 +347,25 @@ impl CreativeExpressionSynthesis {
         }
 
         if let Some(form) = data.get("form").and_then(|v| v.as_str()) {
-            let mut theme = Theme::new(format!("Sacred Form: {}", form), Self::get_form_description(&json!(form)).to_string());
+            let mut theme = Theme::new(
+                format!("Sacred Form: {}", form),
+                Self::get_form_description(&json!(form)).to_string(),
+            );
             theme.add_source("sacred-geometry");
             themes.push(theme);
         }
 
         if let Some(qualities) = data.get("qualities").and_then(|v| v.as_array()) {
-            let quality_strs: Vec<&str> = qualities.iter().filter_map(|q| q.as_str()).take(3).collect();
+            let quality_strs: Vec<&str> = qualities
+                .iter()
+                .filter_map(|q| q.as_str())
+                .take(3)
+                .collect();
             if !quality_strs.is_empty() {
-                let mut theme = Theme::new("Form Qualities", format!("Qualities: {}", quality_strs.join(", ")));
+                let mut theme = Theme::new(
+                    "Form Qualities",
+                    format!("Qualities: {}", quality_strs.join(", ")),
+                );
                 theme.add_source("sacred-geometry");
                 themes.push(theme);
             }
@@ -276,12 +380,23 @@ impl CreativeExpressionSynthesis {
         let qualities = geo.get("qualities").and_then(|v| v.as_array());
 
         let form_energy_map: HashMap<&str, &str> = [
-            ("expansive", "fibonacci"), ("expansive", "spiral"), ("expansive", "flower"),
-            ("concentrating", "circle"), ("concentrating", "sri"),
-            ("flowing", "torus"), ("protective", "metatron"), ("protective", "merkaba"),
-            ("transformative", "vesica"), ("transformative", "merkaba"),
-            ("restorative", "seed"), ("restorative", "flower"), ("generative", "seed"),
-        ].iter().cloned().collect();
+            ("expansive", "fibonacci"),
+            ("expansive", "spiral"),
+            ("expansive", "flower"),
+            ("concentrating", "circle"),
+            ("concentrating", "sri"),
+            ("flowing", "torus"),
+            ("protective", "metatron"),
+            ("protective", "merkaba"),
+            ("transformative", "vesica"),
+            ("transformative", "merkaba"),
+            ("restorative", "seed"),
+            ("restorative", "flower"),
+            ("generative", "seed"),
+        ]
+        .iter()
+        .cloned()
+        .collect();
 
         let form_lower = form.to_lowercase();
         for (energy, form_key) in &form_energy_map {
@@ -289,26 +404,36 @@ impl CreativeExpressionSynthesis {
                 alignments.push(
                     Alignment::new(
                         "Energy-Form Alignment",
-                        format!("The {} energy aligns naturally with the {} form", sigil_energy, form)
+                        format!(
+                            "The {} energy aligns naturally with the {} form",
+                            sigil_energy, form
+                        ),
                     )
                     .with_engines(vec!["sigil-forge".into(), "sacred-geometry".into()])
-                    .with_confidence(0.8)
+                    .with_confidence(0.8),
                 );
                 break;
             }
         }
 
-        if let (Some(keywords), Some(quals)) = (sigil.get("keywords").and_then(|v| v.as_array()), qualities) {
+        if let (Some(keywords), Some(quals)) =
+            (sigil.get("keywords").and_then(|v| v.as_array()), qualities)
+        {
             for keyword in keywords.iter().filter_map(|k| k.as_str()) {
                 for quality in quals.iter().filter_map(|q| q.as_str()) {
-                    if keyword.to_lowercase().contains(&quality.to_lowercase()) || quality.to_lowercase().contains(&keyword.to_lowercase()) {
+                    if keyword.to_lowercase().contains(&quality.to_lowercase())
+                        || quality.to_lowercase().contains(&keyword.to_lowercase())
+                    {
                         alignments.push(
                             Alignment::new(
                                 format!("Shared Resonance: {}", keyword),
-                                format!("'{}' appears in both intention and form qualities", keyword)
+                                format!(
+                                    "'{}' appears in both intention and form qualities",
+                                    keyword
+                                ),
                             )
                             .with_engines(vec!["sigil-forge".into(), "sacred-geometry".into()])
-                            .with_confidence(0.7)
+                            .with_confidence(0.7),
                         );
                     }
                 }
@@ -325,23 +450,26 @@ impl CreativeExpressionSynthesis {
         tensions.push(
             Tension::new(
                 "Formless to Form",
-                "The dance between intention (formless) and geometry (precise form)"
+                "The dance between intention (formless) and geometry (precise form)",
             )
             .with_perspectives("sigil-forge", "intention", "sacred-geometry", "form")
             .with_integration_hint(format!(
                 "Your intention seeks expression, while {} provides structure. \
-                 What emerges in the creative tension between chaos and order?", form
-            ))
+                 What emerges in the creative tension between chaos and order?",
+                form
+            )),
         );
 
         if energy == "expansive" && form.to_lowercase().contains("circle") {
             tensions.push(
                 Tension::new(
                     "Expansion vs Containment",
-                    "Expansive energy meeting containing form"
+                    "Expansive energy meeting containing form",
                 )
                 .with_perspectives("sigil-forge", "expansive", "sacred-geometry", "containing")
-                .with_integration_hint("How does infinite expansion express through finite boundary?")
+                .with_integration_hint(
+                    "How does infinite expansion express through finite boundary?",
+                ),
             );
         }
         tensions
@@ -396,8 +524,11 @@ mod tests {
             witness_prompt: "What does this sigil evoke?".to_string(),
             consciousness_level: 1,
             metadata: CalculationMetadata {
-                calculation_time_ms: 5.0, backend: "bridge".to_string(),
-                precision_achieved: "standard".to_string(), cached: false, timestamp: Utc::now(),
+                calculation_time_ms: 5.0,
+                backend: "bridge".to_string(),
+                precision_achieved: "standard".to_string(),
+                cached: false,
+                timestamp: Utc::now(),
             },
         }
     }
@@ -413,16 +544,22 @@ mod tests {
             witness_prompt: "What do you see in this form?".to_string(),
             consciousness_level: 1,
             metadata: CalculationMetadata {
-                calculation_time_ms: 8.0, backend: "bridge".to_string(),
-                precision_achieved: "standard".to_string(), cached: false, timestamp: Utc::now(),
+                calculation_time_ms: 8.0,
+                backend: "bridge".to_string(),
+                precision_achieved: "standard".to_string(),
+                cached: false,
+                timestamp: Utc::now(),
             },
         }
     }
 
     fn test_input() -> EngineInput {
         EngineInput {
-            birth_data: None, current_time: Utc::now(), location: None,
-            precision: noesis_core::Precision::Standard, options: HashMap::new(),
+            birth_data: None,
+            current_time: Utc::now(),
+            location: None,
+            precision: noesis_core::Precision::Standard,
+            options: HashMap::new(),
         }
     }
 
@@ -439,7 +576,13 @@ mod tests {
 
     #[test]
     fn test_energy_determination() {
-        assert_eq!(CreativeExpressionSynthesis::determine_energy_quality(&json!("expand my vision")), "expansive");
-        assert_eq!(CreativeExpressionSynthesis::determine_energy_quality(&json!("protect my space")), "protective");
+        assert_eq!(
+            CreativeExpressionSynthesis::determine_energy_quality(&json!("expand my vision")),
+            "expansive"
+        );
+        assert_eq!(
+            CreativeExpressionSynthesis::determine_energy_quality(&json!("protect my space")),
+            "protective"
+        );
     }
 }

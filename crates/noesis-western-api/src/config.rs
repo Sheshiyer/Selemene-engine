@@ -1,5 +1,5 @@
-use std::env;
 use crate::error::{Result, WesternApiError};
+use std::env;
 
 #[derive(Debug, Clone)]
 pub struct Config {
@@ -18,12 +18,13 @@ impl Config {
     }
 
     pub fn from_env() -> Result<Self> {
-        let api_key = env::var("FREE_ASTROLOGY_API_KEY")
-            .map_err(|_| WesternApiError::ConfigError("FREE_ASTROLOGY_API_KEY not set".to_string()))?;
-            
+        let api_key = env::var("FREE_ASTROLOGY_API_KEY").map_err(|_| {
+            WesternApiError::ConfigError("FREE_ASTROLOGY_API_KEY not set".to_string())
+        })?;
+
         let base_url = env::var("FREE_ASTROLOGY_API_BASE_URL")
             .unwrap_or_else(|_| "https://json.freeastrologyapi.com".to_string());
-            
+
         Ok(Self {
             api_key,
             base_url,

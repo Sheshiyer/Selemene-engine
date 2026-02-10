@@ -10,8 +10,8 @@
 //! This is distinct from `rate_limiter.rs` which tracks daily quota (50/day).
 //! This module handles *server-side* rate limiting (429 Too Many Requests).
 
-use std::time::Duration;
 use chrono::{DateTime, Utc};
+use std::time::Duration;
 use tracing::{debug, warn};
 
 /// Configuration for 429 rate limit backoff behavior.
@@ -126,8 +126,7 @@ impl RateLimitHandler {
     pub fn next_backoff_delay(&self) -> Duration {
         // Retry-After header takes precedence
         if let Some(retry_after_secs) = self.last_retry_after {
-            let capped = retry_after_secs
-                .min(self.config.max_delay_ms / 1000);
+            let capped = retry_after_secs.min(self.config.max_delay_ms / 1000);
             debug!(
                 "Using Retry-After header: {}s (capped to {}s)",
                 retry_after_secs, capped
@@ -136,8 +135,7 @@ impl RateLimitHandler {
         }
 
         // Exponential backoff: base_delay * 2^retry_count
-        let delay_ms = self.config.base_delay_ms as f64
-            * 2.0_f64.powi(self.retry_count as i32);
+        let delay_ms = self.config.base_delay_ms as f64 * 2.0_f64.powi(self.retry_count as i32);
         let capped_ms = (delay_ms as u64).min(self.config.max_delay_ms);
 
         debug!(

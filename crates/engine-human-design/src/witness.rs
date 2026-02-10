@@ -7,7 +7,7 @@
 //! - Profile
 //! - Definition patterns
 
-use crate::{HDChart, HDType, Authority, Profile, Definition};
+use crate::{Authority, Definition, HDChart, HDType};
 
 /// Generate a consciousness-oriented witness prompt based on HD chart and level.
 ///
@@ -49,8 +49,11 @@ fn generate_basic_witness(chart: &HDChart) -> String {
 /// Level 3-4: Intermediate awareness (Profile + Authority dynamics)
 fn generate_intermediate_witness(chart: &HDChart) -> String {
     // Profile-based prompts
-    let profile_key = format!("{}/{}", chart.profile.conscious_line, chart.profile.unconscious_line);
-    
+    let profile_key = format!(
+        "{}/{}",
+        chart.profile.conscious_line, chart.profile.unconscious_line
+    );
+
     let profile_prompt = match profile_key.as_str() {
         "1/3" => "How do you experience the dance between deep investigation and experiential learning through trial and error?",
         "1/4" => "Where do you notice your need for solid foundation meeting your natural gift for sharing within networks?",
@@ -66,7 +69,7 @@ fn generate_intermediate_witness(chart: &HDChart) -> String {
         "6/3" => "How do you dance between objective observation and the pull to experiment directly with life?",
         _ => "How do you experience the interplay between your conscious and unconscious life themes?",
     };
-    
+
     profile_prompt.to_string()
 }
 
@@ -96,7 +99,7 @@ fn generate_advanced_witness(chart: &HDChart) -> String {
             "How do you experience the full lunar cycle revealing consistent truth beyond transient impressions?"
         }
     };
-    
+
     // Add definition awareness if applicable
     let definition_layer = match chart.definition {
         Definition::Split => " And how do you notice the bridging energy when others enter your field, connecting what feels separate?",
@@ -105,17 +108,22 @@ fn generate_advanced_witness(chart: &HDChart) -> String {
         Definition::NoDefinition => " And what is it like to be completely open, sampling and reflecting the energy around you?",
         Definition::Single => "",
     };
-    
+
     format!("{}{}", authority_prompt, definition_layer)
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::collections::HashMap;
     use crate::{Center, CenterState};
-    
-    fn create_test_chart(hd_type: HDType, authority: Authority, profile: Profile, definition: Definition) -> HDChart {
+    use std::collections::HashMap;
+
+    fn create_test_chart(
+        hd_type: HDType,
+        authority: Authority,
+        profile: Profile,
+        definition: Definition,
+    ) -> HDChart {
         HDChart {
             personality_activations: vec![],
             design_activations: vec![],
@@ -127,68 +135,104 @@ mod tests {
             definition,
         }
     }
-    
+
     #[test]
     fn test_basic_generator_prompt() {
         let chart = create_test_chart(
             HDType::Generator,
             Authority::Sacral,
-            Profile { conscious_line: 1, unconscious_line: 3 },
+            Profile {
+                conscious_line: 1,
+                unconscious_line: 3,
+            },
             Definition::Single,
         );
-        
+
         let prompt = generate_witness_prompt(&chart, 1);
         assert!(prompt.contains("wait to respond"));
         assert!(!prompt.is_empty());
     }
-    
+
     #[test]
     fn test_intermediate_profile_prompt() {
         let chart = create_test_chart(
             HDType::Projector,
             Authority::Splenic,
-            Profile { conscious_line: 6, unconscious_line: 2 },
+            Profile {
+                conscious_line: 6,
+                unconscious_line: 2,
+            },
             Definition::Single,
         );
-        
+
         let prompt = generate_witness_prompt(&chart, 3);
         assert!(prompt.contains("roof observing") || prompt.contains("called down"));
         assert!(!prompt.is_empty());
     }
-    
+
     #[test]
     fn test_advanced_authority_prompt() {
         let chart = create_test_chart(
             HDType::Generator,
             Authority::Emotional,
-            Profile { conscious_line: 3, unconscious_line: 5 },
+            Profile {
+                conscious_line: 3,
+                unconscious_line: 5,
+            },
             Definition::Split,
         );
-        
+
         let prompt = generate_witness_prompt(&chart, 5);
         assert!(prompt.contains("wave") || prompt.contains("emotional"));
         assert!(prompt.contains("bridging"));
         assert!(!prompt.is_empty());
     }
-    
+
     #[test]
     fn test_all_prompts_non_empty() {
-        let types = [HDType::Generator, HDType::ManifestingGenerator, HDType::Projector, HDType::Manifestor, HDType::Reflector];
-        let authorities = [Authority::Sacral, Authority::Emotional, Authority::Splenic, Authority::Heart, Authority::GCenter, Authority::Mental, Authority::Lunar];
-        
+        let types = [
+            HDType::Generator,
+            HDType::ManifestingGenerator,
+            HDType::Projector,
+            HDType::Manifestor,
+            HDType::Reflector,
+        ];
+        let authorities = [
+            Authority::Sacral,
+            Authority::Emotional,
+            Authority::Splenic,
+            Authority::Heart,
+            Authority::GCenter,
+            Authority::Mental,
+            Authority::Lunar,
+        ];
+
         for hd_type in &types {
             for authority in &authorities {
                 let chart = create_test_chart(
                     *hd_type,
                     *authority,
-                    Profile { conscious_line: 1, unconscious_line: 3 },
+                    Profile {
+                        conscious_line: 1,
+                        unconscious_line: 3,
+                    },
                     Definition::Single,
                 );
-                
+
                 for level in 0..=5 {
                     let prompt = generate_witness_prompt(&chart, level);
-                    assert!(!prompt.is_empty(), "Empty prompt for {:?}, {:?}, level {}", hd_type, authority, level);
-                    assert!(prompt.ends_with('?'), "Prompt should be a question: {}", prompt);
+                    assert!(
+                        !prompt.is_empty(),
+                        "Empty prompt for {:?}, {:?}, level {}",
+                        hd_type,
+                        authority,
+                        level
+                    );
+                    assert!(
+                        prompt.ends_with('?'),
+                        "Prompt should be a question: {}",
+                        prompt
+                    );
                 }
             }
         }

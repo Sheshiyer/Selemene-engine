@@ -3,26 +3,28 @@
 //! W1-S7-07: Criterion benchmarks for Gene Keys engine subsystems.
 //! Targets: Full chart <50ms, Activation sequences <5ms, Frequency assessment <5ms.
 
-use criterion::{black_box, criterion_group, criterion_main, Criterion, BenchmarkId};
-use engine_gene_keys::{
-    GeneKeysEngine, ConsciousnessEngine, EngineInput,
-    ActivationSequence, GeneKeysChart, GeneKeyActivation, ActivationSource,
-    assess_frequencies, generate_transformation_pathways, generate_complete_pathways,
-    generate_witness_prompt, get_gene_key,
-};
 use chrono::Utc;
+use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion};
+use engine_gene_keys::{
+    assess_frequencies, generate_complete_pathways, generate_transformation_pathways,
+    generate_witness_prompt, get_gene_key, ActivationSequence, ActivationSource,
+    ConsciousnessEngine, EngineInput, GeneKeyActivation, GeneKeysChart, GeneKeysEngine,
+};
 use serde_json::json;
 use std::collections::HashMap;
 
 /// Helper: create EngineInput with hd_gates (Mode 2)
 fn create_engine_input(ps: u8, pe: u8, ds: u8, de: u8) -> EngineInput {
     let mut options = HashMap::new();
-    options.insert("hd_gates".to_string(), json!({
-        "personality_sun": ps,
-        "personality_earth": pe,
-        "design_sun": ds,
-        "design_earth": de
-    }));
+    options.insert(
+        "hd_gates".to_string(),
+        json!({
+            "personality_sun": ps,
+            "personality_earth": pe,
+            "design_sun": ds,
+            "design_earth": de
+        }),
+    );
 
     EngineInput {
         birth_data: None,
@@ -166,13 +168,9 @@ fn bench_gene_key_lookup_individual(c: &mut Criterion) {
     let mut group = c.benchmark_group("gk_individual_lookup");
 
     for key_num in [1u8, 16, 32, 48, 64] {
-        group.bench_with_input(
-            BenchmarkId::from_parameter(key_num),
-            &key_num,
-            |b, &num| {
-                b.iter(|| black_box(get_gene_key(black_box(num))))
-            },
-        );
+        group.bench_with_input(BenchmarkId::from_parameter(key_num), &key_num, |b, &num| {
+            b.iter(|| black_box(get_gene_key(black_box(num))))
+        });
     }
     group.finish();
 }
@@ -183,15 +181,9 @@ fn bench_frequency_levels(c: &mut Criterion) {
     let mut group = c.benchmark_group("gk_frequency_by_level");
 
     for level in [1u8, 3, 5] {
-        group.bench_with_input(
-            BenchmarkId::from_parameter(level),
-            &level,
-            |b, &lvl| {
-                b.iter(|| {
-                    black_box(assess_frequencies(black_box(&chart), Some(lvl)))
-                })
-            },
-        );
+        group.bench_with_input(BenchmarkId::from_parameter(level), &level, |b, &lvl| {
+            b.iter(|| black_box(assess_frequencies(black_box(&chart), Some(lvl))))
+        });
     }
     group.finish();
 }

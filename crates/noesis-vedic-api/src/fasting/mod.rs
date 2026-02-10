@@ -2,13 +2,13 @@
 //!
 //! FAPI-117: Hindu fasting days and observances
 
-pub mod types;
 pub mod calendar;
 pub mod rules;
+pub mod types;
 
-pub use types::*;
 pub use calendar::*;
 pub use rules::*;
+pub use types::*;
 
 use chrono::NaiveDate;
 use serde::{Deserialize, Serialize};

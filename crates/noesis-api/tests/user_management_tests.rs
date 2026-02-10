@@ -11,7 +11,7 @@
 
 use axum::{
     body::Body,
-    http::{Request, StatusCode, header},
+    http::{header, Request, StatusCode},
     Router,
 };
 use serde_json::{json, Value};
@@ -117,13 +117,8 @@ fn is_db_unavailable(status: StatusCode) -> bool {
 async fn test_get_me_no_auth_returns_401() {
     let router = get_test_router().await;
 
-    let (status, body) = make_unauthenticated_request(
-        router,
-        "GET",
-        "/api/v1/users/me",
-        None,
-    )
-    .await;
+    let (status, body) =
+        make_unauthenticated_request(router, "GET", "/api/v1/users/me", None).await;
 
     assert_eq!(status, StatusCode::UNAUTHORIZED);
     assert_eq!(body["error_code"], "UNAUTHORIZED");
@@ -138,18 +133,15 @@ async fn test_get_me_valid_token() {
     let router = get_test_router().await;
     let token = generate_test_token(5);
 
-    let (status, body) = make_authenticated_request(
-        router,
-        "GET",
-        "/api/v1/users/me",
-        &token,
-        None,
-    )
-    .await;
+    let (status, body) =
+        make_authenticated_request(router, "GET", "/api/v1/users/me", &token, None).await;
 
     if is_db_unavailable(status) {
         // DB not available -- graceful skip
-        eprintln!("SKIP: GET /api/v1/users/me -- DB not available (status {})", status);
+        eprintln!(
+            "SKIP: GET /api/v1/users/me -- DB not available (status {})",
+            status
+        );
         return;
     }
 
@@ -178,13 +170,8 @@ async fn test_update_me_no_auth_returns_401() {
         "full_name": "New Name"
     });
 
-    let (status, body) = make_unauthenticated_request(
-        router,
-        "PATCH",
-        "/api/v1/users/me",
-        Some(payload),
-    )
-    .await;
+    let (status, body) =
+        make_unauthenticated_request(router, "PATCH", "/api/v1/users/me", Some(payload)).await;
 
     assert_eq!(status, StatusCode::UNAUTHORIZED);
     assert_eq!(body["error_code"], "UNAUTHORIZED");
@@ -204,17 +191,15 @@ async fn test_update_me_valid_token_valid_body() {
         "timezone": "America/New_York"
     });
 
-    let (status, body) = make_authenticated_request(
-        router,
-        "PATCH",
-        "/api/v1/users/me",
-        &token,
-        Some(payload),
-    )
-    .await;
+    let (status, body) =
+        make_authenticated_request(router, "PATCH", "/api/v1/users/me", &token, Some(payload))
+            .await;
 
     if is_db_unavailable(status) {
-        eprintln!("SKIP: PATCH /api/v1/users/me -- DB not available (status {})", status);
+        eprintln!(
+            "SKIP: PATCH /api/v1/users/me -- DB not available (status {})",
+            status
+        );
         return;
     }
 
@@ -244,17 +229,15 @@ async fn test_update_me_invalid_email_returns_422() {
         "email": "not-an-email"
     });
 
-    let (status, body) = make_authenticated_request(
-        router,
-        "PATCH",
-        "/api/v1/users/me",
-        &token,
-        Some(payload),
-    )
-    .await;
+    let (status, body) =
+        make_authenticated_request(router, "PATCH", "/api/v1/users/me", &token, Some(payload))
+            .await;
 
     if is_db_unavailable(status) {
-        eprintln!("SKIP: PATCH /api/v1/users/me invalid email -- DB not available (status {})", status);
+        eprintln!(
+            "SKIP: PATCH /api/v1/users/me invalid email -- DB not available (status {})",
+            status
+        );
         return;
     }
 
@@ -283,17 +266,15 @@ async fn test_update_me_invalid_latitude_returns_422() {
         "birth_location_lat": 999.0
     });
 
-    let (status, body) = make_authenticated_request(
-        router,
-        "PATCH",
-        "/api/v1/users/me",
-        &token,
-        Some(payload),
-    )
-    .await;
+    let (status, body) =
+        make_authenticated_request(router, "PATCH", "/api/v1/users/me", &token, Some(payload))
+            .await;
 
     if is_db_unavailable(status) {
-        eprintln!("SKIP: PATCH /api/v1/users/me invalid lat -- DB not available (status {})", status);
+        eprintln!(
+            "SKIP: PATCH /api/v1/users/me invalid lat -- DB not available (status {})",
+            status
+        );
         return;
     }
 
@@ -320,13 +301,8 @@ async fn test_register_missing_fields_returns_422() {
         "email": "test@example.com"
     });
 
-    let (status, _body) = make_unauthenticated_request(
-        router,
-        "POST",
-        "/api/v1/auth/register",
-        Some(payload),
-    )
-    .await;
+    let (status, _body) =
+        make_unauthenticated_request(router, "POST", "/api/v1/auth/register", Some(payload)).await;
 
     // Axum returns 422 when JSON deserialization fails (missing required fields)
     assert_eq!(
@@ -351,16 +327,14 @@ async fn test_register_valid_fields() {
         "full_name": "Integration Test"
     });
 
-    let (status, body) = make_unauthenticated_request(
-        router,
-        "POST",
-        "/api/v1/auth/register",
-        Some(payload),
-    )
-    .await;
+    let (status, body) =
+        make_unauthenticated_request(router, "POST", "/api/v1/auth/register", Some(payload)).await;
 
     if is_db_unavailable(status) {
-        eprintln!("SKIP: POST /api/v1/auth/register -- DB not available (status {})", status);
+        eprintln!(
+            "SKIP: POST /api/v1/auth/register -- DB not available (status {})",
+            status
+        );
         return;
     }
 
@@ -388,16 +362,14 @@ async fn test_login_wrong_credentials_returns_401() {
         "password": "WrongPassword123"
     });
 
-    let (status, body) = make_unauthenticated_request(
-        router,
-        "POST",
-        "/api/v1/auth/login",
-        Some(payload),
-    )
-    .await;
+    let (status, body) =
+        make_unauthenticated_request(router, "POST", "/api/v1/auth/login", Some(payload)).await;
 
     if is_db_unavailable(status) {
-        eprintln!("SKIP: POST /api/v1/auth/login -- DB not available (status {})", status);
+        eprintln!(
+            "SKIP: POST /api/v1/auth/login -- DB not available (status {})",
+            status
+        );
         return;
     }
 
@@ -424,13 +396,8 @@ async fn test_login_missing_fields_returns_422() {
         "email": "test@example.com"
     });
 
-    let (status, _body) = make_unauthenticated_request(
-        router,
-        "POST",
-        "/api/v1/auth/login",
-        Some(payload),
-    )
-    .await;
+    let (status, _body) =
+        make_unauthenticated_request(router, "POST", "/api/v1/auth/login", Some(payload)).await;
 
     // Axum returns 422 when JSON deserialization fails (missing required fields)
     assert_eq!(

@@ -6,8 +6,8 @@
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-use crate::{LayeredInsight, UnifiedRecommendation};
 use crate::analysis::Priority;
+use crate::{LayeredInsight, UnifiedRecommendation};
 
 /// Engine for synthesizing multi-system insights
 pub struct SynthesisEngine {
@@ -67,11 +67,11 @@ pub struct SystemContribution {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum Timeframe {
-    Immediate,    // Today
-    ShortTerm,    // This week
-    MediumTerm,   // This month
-    LongTerm,     // This year
-    LifePhase,    // Current major period
+    Immediate,  // Today
+    ShortTerm,  // This week
+    MediumTerm, // This month
+    LongTerm,   // This year
+    LifePhase,  // Current major period
 }
 
 impl SynthesisEngine {
@@ -83,26 +83,26 @@ impl SynthesisEngine {
         weights.insert("tcm".to_string(), 0.2);
         weights.insert("numerology".to_string(), 0.15);
         weights.insert("biorhythm".to_string(), 0.1);
-        
+
         Self {
             system_weights: weights,
             confidence_threshold: 0.6,
         }
     }
-    
+
     /// Set custom weight for a system
     pub fn with_weight(mut self, system: &str, weight: f64) -> Self {
         self.system_weights.insert(system.to_string(), weight);
         self
     }
-    
+
     /// Synthesize insights from layered inputs
     pub fn synthesize(&self, insights: &[LayeredInsight]) -> Vec<SynthesizedInsight> {
         let mut synthesized = Vec::new();
-        
+
         for insight in insights {
             let confidence = self.calculate_confidence(insight);
-            
+
             if confidence >= self.confidence_threshold {
                 synthesized.push(SynthesizedInsight {
                     id: format!("insight_{}", synthesized.len()),
@@ -132,45 +132,47 @@ impl SynthesisEngine {
                 });
             }
         }
-        
+
         // Sort by confidence
         synthesized.sort_by(|a, b| b.confidence.partial_cmp(&a.confidence).unwrap());
-        
+
         synthesized
     }
-    
+
     /// Calculate confidence score for an insight
     fn calculate_confidence(&self, insight: &LayeredInsight) -> f64 {
         let mut score = 0.5; // Base score
-        
+
         // Boost for supporting factors
         score += insight.supporting_factors.len() as f64 * 0.1;
-        
+
         // Penalty for challenging factors
         score -= insight.challenging_factors.len() as f64 * 0.05;
-        
+
         // Boost for having recommendations
         if !insight.recommendations.is_empty() {
             score += 0.1;
         }
-        
-        (score as f64).min(1.0).max(0.0)
+
+        score.clamp(0.0, 1.0)
     }
-    
+
     /// Categorize an insight area
     fn categorize(&self, area: &str) -> InsightCategory {
         match area.to_lowercase().as_str() {
             a if a.contains("career") || a.contains("purpose") => InsightCategory::Career,
             a if a.contains("health") || a.contains("vitality") => InsightCategory::Health,
             a if a.contains("relationship") || a.contains("love") => InsightCategory::Relationships,
-            a if a.contains("spiritual") || a.contains("meditation") => InsightCategory::Spirituality,
+            a if a.contains("spiritual") || a.contains("meditation") => {
+                InsightCategory::Spirituality
+            }
             a if a.contains("money") || a.contains("finance") => InsightCategory::Finances,
             a if a.contains("growth") || a.contains("personal") => InsightCategory::PersonalGrowth,
             a if a.contains("creative") || a.contains("expression") => InsightCategory::Creativity,
             _ => InsightCategory::LifePurpose,
         }
     }
-    
+
     /// Determine timeframe based on area
     fn determine_timeframe(&self, area: &str) -> Timeframe {
         match area.to_lowercase().as_str() {
@@ -181,22 +183,24 @@ impl SynthesisEngine {
             _ => Timeframe::MediumTerm,
         }
     }
-    
+
     /// Generate a witness prompt from synthesized insights
     pub fn generate_witness_prompt(&self, insights: &[SynthesizedInsight]) -> String {
         let mut prompt = String::from("# Multi-System Synthesis\n\n");
-        
+
         for insight in insights.iter().take(3) {
             prompt.push_str(&format!("## {}\n", insight.theme));
             prompt.push_str(&format!("{}\n\n", insight.description));
             prompt.push_str("**Sources:** ");
-            
-            let sources: Vec<String> = insight.sources.iter()
+
+            let sources: Vec<String> = insight
+                .sources
+                .iter()
                 .map(|s| format!("{} ({}%)", s.system, (s.weight * 100.0) as i32))
                 .collect();
             prompt.push_str(&sources.join(", "));
             prompt.push_str("\n\n");
-            
+
             if !insight.actions.is_empty() {
                 prompt.push_str("**Actions:**\n");
                 for action in &insight.actions {
@@ -205,19 +209,19 @@ impl SynthesisEngine {
                 prompt.push('\n');
             }
         }
-        
+
         prompt.push_str("\n*Witness this synthesis and notice which insights resonate with your current experience.*");
-        
+
         prompt
     }
-    
+
     /// Prioritize recommendations from multiple sources
     pub fn prioritize_recommendations(
         &self,
         recommendations: &[UnifiedRecommendation],
     ) -> Vec<UnifiedRecommendation> {
         let mut prioritized = recommendations.to_vec();
-        
+
         // Sort by priority
         prioritized.sort_by(|a, b| {
             let priority_order = |p: &Priority| match p {
@@ -228,36 +232,36 @@ impl SynthesisEngine {
             };
             priority_order(&a.priority).cmp(&priority_order(&b.priority))
         });
-        
+
         prioritized
     }
-    
+
     /// Find patterns across multiple analyses
     pub fn find_patterns(&self, insights: &[LayeredInsight]) -> Vec<Pattern> {
         let mut patterns = Vec::new();
-        
+
         // Look for common themes
         let mut theme_counts: HashMap<String, usize> = HashMap::new();
         for insight in insights {
             *theme_counts.entry(insight.area.clone()).or_insert(0) += 1;
         }
-        
+
         // Extract patterns from repeated themes
         for (theme, count) in theme_counts {
             if count > 1 {
                 patterns.push(Pattern {
                     name: format!("Recurring theme: {}", theme),
                     description: format!("This theme appears {} times across analyses", count),
-                    significance: if count >= 3 { 
-                        PatternSignificance::High 
-                    } else { 
-                        PatternSignificance::Medium 
+                    significance: if count >= 3 {
+                        PatternSignificance::High
+                    } else {
+                        PatternSignificance::Medium
                     },
                     related_areas: vec![theme],
                 });
             }
         }
-        
+
         patterns
     }
 }
@@ -306,47 +310,55 @@ pub fn generate_comprehensive_report(
     patterns: &[Pattern],
 ) -> String {
     let mut report = String::from("# Comprehensive Multi-System Analysis Report\n\n");
-    
+
     // Summary
     report.push_str("## Summary\n\n");
     report.push_str(&format!("- **Total Insights:** {}\n", insights.len()));
     report.push_str(&format!("- **Patterns Detected:** {}\n", patterns.len()));
-    report.push_str(&format!("- **Average Confidence:** {:.0}%\n\n", 
-        if insights.is_empty() { 
-            0.0 
-        } else { 
-            insights.iter().map(|i| i.confidence).sum::<f64>() / insights.len() as f64 * 100.0 
+    report.push_str(&format!(
+        "- **Average Confidence:** {:.0}%\n\n",
+        if insights.is_empty() {
+            0.0
+        } else {
+            insights.iter().map(|i| i.confidence).sum::<f64>() / insights.len() as f64 * 100.0
         }
     ));
-    
+
     // Key Insights
     report.push_str("## Key Insights\n\n");
     for (i, insight) in insights.iter().take(5).enumerate() {
         report.push_str(&format!("### {}. {}\n", i + 1, insight.theme));
-        report.push_str(&format!("**Confidence:** {:.0}%\n\n", insight.confidence * 100.0));
+        report.push_str(&format!(
+            "**Confidence:** {:.0}%\n\n",
+            insight.confidence * 100.0
+        ));
         report.push_str(&format!("{}\n\n", insight.description));
     }
-    
+
     // Patterns
     if !patterns.is_empty() {
         report.push_str("## Detected Patterns\n\n");
         for pattern in patterns {
-            report.push_str(&format!("- **{}**: {}\n", pattern.name, pattern.description));
+            report.push_str(&format!(
+                "- **{}**: {}\n",
+                pattern.name, pattern.description
+            ));
         }
         report.push('\n');
     }
-    
+
     // Recommendations
     report.push_str("## Priority Recommendations\n\n");
-    let all_actions: Vec<String> = insights.iter()
+    let all_actions: Vec<String> = insights
+        .iter()
         .flat_map(|i| i.actions.clone())
         .take(7)
         .collect();
-    
+
     for (i, action) in all_actions.iter().enumerate() {
         report.push_str(&format!("{}. {}\n", i + 1, action));
     }
-    
+
     report
 }
 
@@ -363,16 +375,22 @@ mod tests {
     #[test]
     fn test_categorization() {
         let engine = SynthesisEngine::new();
-        
+
         assert_eq!(engine.categorize("Career Growth"), InsightCategory::Career);
-        assert_eq!(engine.categorize("Physical Health"), InsightCategory::Health);
-        assert_eq!(engine.categorize("Love Life"), InsightCategory::Relationships);
+        assert_eq!(
+            engine.categorize("Physical Health"),
+            InsightCategory::Health
+        );
+        assert_eq!(
+            engine.categorize("Love Life"),
+            InsightCategory::Relationships
+        );
     }
 
     #[test]
     fn test_confidence_calculation() {
         let engine = SynthesisEngine::new();
-        
+
         let insight = LayeredInsight {
             area: "Test".to_string(),
             vedic_perspective: "Test".to_string(),
@@ -383,7 +401,7 @@ mod tests {
             challenging_factors: vec!["X".to_string()],
             recommendations: vec!["Do this".to_string()],
         };
-        
+
         let confidence = engine.calculate_confidence(&insight);
         assert!(confidence > 0.5);
         assert!(confidence <= 1.0);
@@ -392,7 +410,7 @@ mod tests {
     #[test]
     fn test_pattern_detection() {
         let engine = SynthesisEngine::new();
-        
+
         let insights = vec![
             LayeredInsight {
                 area: "Career".to_string(),
@@ -425,7 +443,7 @@ mod tests {
                 recommendations: vec![],
             },
         ];
-        
+
         let patterns = engine.find_patterns(&insights);
         assert!(!patterns.is_empty());
         assert!(patterns.iter().any(|p| p.name.contains("Career")));

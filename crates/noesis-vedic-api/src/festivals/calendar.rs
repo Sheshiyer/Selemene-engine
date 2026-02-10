@@ -1,7 +1,7 @@
 //! Festival calendar calculations
 
-use chrono::{NaiveDate, Datelike};
 use super::{Festival, FestivalCategory, FestivalList, PanchangCriteria};
+use chrono::{Datelike, NaiveDate};
 
 /// Get festivals for a date range
 pub fn get_festivals_for_range(
@@ -10,19 +10,19 @@ pub fn get_festivals_for_range(
     region: Option<&str>,
 ) -> FestivalList {
     let mut festivals = get_all_major_festivals(from_date.year());
-    
+
     // Filter by date range
     festivals.retain(|f| f.date >= from_date && f.date <= to_date);
-    
+
     // Filter by region if specified
     if let Some(reg) = region {
         festivals.retain(|f| {
             f.regions.is_empty() || f.regions.iter().any(|r| r.eq_ignore_ascii_case(reg))
         });
     }
-    
+
     let total_count = festivals.len();
-    
+
     FestivalList {
         from_date,
         to_date,
@@ -40,7 +40,8 @@ pub fn get_all_major_festivals(year: i32) -> Vec<Festival> {
             category: FestivalCategory::Major,
             deity: Some("Sun".to_string()),
             regions: vec!["All India".to_string()],
-            description: "Sun's transition into Capricorn (Makar). Marks end of winter solstice.".to_string(),
+            description: "Sun's transition into Capricorn (Makar). Marks end of winter solstice."
+                .to_string(),
             rituals: vec![
                 "Til-gul offerings".to_string(),
                 "Kite flying".to_string(),
@@ -165,7 +166,7 @@ mod tests {
     fn test_festival_range() {
         let from = NaiveDate::from_ymd_opt(2024, 1, 1).unwrap();
         let to = NaiveDate::from_ymd_opt(2024, 12, 31).unwrap();
-        
+
         let list = get_festivals_for_range(from, to, None);
         assert!(list.total_count >= 5);
     }

@@ -12,19 +12,19 @@
 //! - **CreativeExpressionSynthesis**: Combines Sigil and Sacred Geometry for creative direction
 //! - **FullSpectrumSynthesizer**: Integrates all engines
 
-pub mod full_spectrum;
 pub mod birth_blueprint;
+pub mod creative_expression;
 pub mod daily_practice;
 pub mod decision_support;
+pub mod full_spectrum;
 pub mod self_inquiry;
-pub mod creative_expression;
 
-pub use full_spectrum::{CrossEngineTheme, FullSpectrumSynthesizer, ThemeCategory};
 pub use birth_blueprint::BirthBlueprintSynthesizer;
+pub use creative_expression::CreativeExpressionSynthesis;
 pub use daily_practice::DailyPracticeSynthesizer;
 pub use decision_support::DecisionSupportSynthesis;
+pub use full_spectrum::{CrossEngineTheme, FullSpectrumSynthesizer, ThemeCategory};
 pub use self_inquiry::SelfInquirySynthesis;
-pub use creative_expression::CreativeExpressionSynthesis;
 
 use crate::workflow::models::SynthesisResult as ExtSynthesisResult;
 use noesis_core::{EngineInput, EngineOutput};

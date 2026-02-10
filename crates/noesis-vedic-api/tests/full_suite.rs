@@ -18,10 +18,8 @@
 // ===========================================================================
 
 mod unit_smoke_tests {
-    use noesis_vedic_api::{
-        VedicApiError, Config, VERSION,
-    };
     use noesis_vedic_api::config::ProviderType;
+    use noesis_vedic_api::{Config, VedicApiError, VERSION};
 
     #[test]
     fn test_version_is_set() {
@@ -41,34 +39,47 @@ mod unit_smoke_tests {
     #[test]
     fn test_provider_type_roundtrip() {
         assert_eq!("api".parse::<ProviderType>().unwrap(), ProviderType::Api);
-        assert_eq!("native".parse::<ProviderType>().unwrap(), ProviderType::Native);
+        assert_eq!(
+            "native".parse::<ProviderType>().unwrap(),
+            ProviderType::Native
+        );
         assert_eq!(format!("{}", ProviderType::Api), "api");
     }
 
     #[test]
     fn test_error_display_and_classification() {
-        let network_err = VedicApiError::Network { message: "timeout".to_string() };
+        let network_err = VedicApiError::Network {
+            message: "timeout".to_string(),
+        };
         assert!(network_err.is_retryable());
         assert!(network_err.should_fallback());
         assert!(network_err.status_code().is_none());
         assert!(format!("{}", network_err).contains("timeout"));
 
-        let rate_err = VedicApiError::RateLimit { retry_after: Some(60) };
+        let rate_err = VedicApiError::RateLimit {
+            retry_after: Some(60),
+        };
         assert!(rate_err.is_retryable());
         assert!(rate_err.should_fallback());
         assert_eq!(rate_err.status_code(), Some(429));
 
-        let api_err = VedicApiError::Api { status_code: 500, message: "down".to_string() };
+        let api_err = VedicApiError::Api {
+            status_code: 500,
+            message: "down".to_string(),
+        };
         assert!(api_err.is_retryable());
         assert!(api_err.should_fallback());
 
         let config_err = VedicApiError::Configuration {
-            field: "key".to_string(), message: "missing".to_string(),
+            field: "key".to_string(),
+            message: "missing".to_string(),
         };
         assert!(!config_err.is_retryable());
         assert!(!config_err.should_fallback());
 
-        let parse_err = VedicApiError::Parse { message: "bad".to_string() };
+        let parse_err = VedicApiError::Parse {
+            message: "bad".to_string(),
+        };
         assert!(!parse_err.is_retryable());
         assert!(!parse_err.should_fallback());
 
@@ -160,13 +171,13 @@ mod mock_data_integrity {
 
 #[cfg(any(test, feature = "test-mocks"))]
 mod shesh_mock_verification {
-    use noesis_vedic_api::test_mocks::{
-        shesh_panchang, shesh_vimshottari_dasha, shesh_birth_chart, shesh_navamsa_chart,
-        MockApiClient,
-    };
     use noesis_vedic_api::chart::ZodiacSign;
     use noesis_vedic_api::dasha::DashaPlanet;
-    use noesis_vedic_api::panchang::{Vara, Paksha};
+    use noesis_vedic_api::panchang::{Paksha, Vara};
+    use noesis_vedic_api::test_mocks::{
+        shesh_birth_chart, shesh_navamsa_chart, shesh_panchang, shesh_vimshottari_dasha,
+        MockApiClient,
+    };
 
     #[test]
     fn test_shesh_panchang_identity() {
@@ -230,8 +241,8 @@ mod shesh_mock_verification {
 // ===========================================================================
 
 mod fallback_verification {
-    use noesis_vedic_api::fallback::FallbackCalculator;
     use noesis_vedic_api::dasha::DashaLevel;
+    use noesis_vedic_api::fallback::FallbackCalculator;
 
     #[test]
     fn test_fallback_enabled_panchang() {
@@ -246,7 +257,16 @@ mod fallback_verification {
     fn test_fallback_enabled_dasha() {
         let calc = FallbackCalculator::new(true);
         let result = calc.calculate_vimshottari(
-            1990, 6, 15, 10, 30, 0, 28.61, 77.23, 5.5, DashaLevel::Mahadasha,
+            1990,
+            6,
+            15,
+            10,
+            30,
+            0,
+            28.61,
+            77.23,
+            5.5,
+            DashaLevel::Mahadasha,
         );
         assert!(result.is_ok());
         assert_eq!(result.unwrap().mahadashas.len(), 9);
@@ -263,9 +283,15 @@ mod fallback_verification {
     #[test]
     fn test_fallback_disabled_all_fail() {
         let calc = FallbackCalculator::new(false);
-        assert!(calc.calculate_panchang(2024, 1, 1, 12, 0, 0, 0.0, 0.0, 0.0).is_err());
-        assert!(calc.calculate_vimshottari(1990, 1, 1, 12, 0, 0, 0.0, 0.0, 0.0, DashaLevel::Mahadasha).is_err());
-        assert!(calc.calculate_birth_chart(1990, 1, 1, 12, 0, 0, 0.0, 0.0, 0.0).is_err());
+        assert!(calc
+            .calculate_panchang(2024, 1, 1, 12, 0, 0, 0.0, 0.0, 0.0)
+            .is_err());
+        assert!(calc
+            .calculate_vimshottari(1990, 1, 1, 12, 0, 0, 0.0, 0.0, 0.0, DashaLevel::Mahadasha)
+            .is_err());
+        assert!(calc
+            .calculate_birth_chart(1990, 1, 1, 12, 0, 0, 0.0, 0.0, 0.0)
+            .is_err());
     }
 }
 
@@ -338,10 +364,10 @@ mod retry_verification {
 // ===========================================================================
 
 mod integration_smoke_tests {
-    use wiremock::{Mock, MockServer, ResponseTemplate};
-    use wiremock::matchers::{method, path};
-    use noesis_vedic_api::{CachedVedicClient, VedicApiService, mocks};
     use noesis_vedic_api::dasha::DashaLevel;
+    use noesis_vedic_api::{mocks, CachedVedicClient, VedicApiService};
+    use wiremock::matchers::{method, path};
+    use wiremock::{Mock, MockServer, ResponseTemplate};
 
     fn test_service(base_url: &str) -> VedicApiService {
         let config = mocks::mock_config(base_url);
@@ -368,14 +394,23 @@ mod integration_smoke_tests {
         let server = MockServer::start().await;
         Mock::given(method("POST"))
             .and(path("/vimshottari-dasha"))
-            .respond_with(
-                ResponseTemplate::new(200).set_body_json(mocks::mock_vimshottari_dasha()),
-            )
+            .respond_with(ResponseTemplate::new(200).set_body_json(mocks::mock_vimshottari_dasha()))
             .mount(&server)
             .await;
 
         let result = test_service(&server.uri())
-            .vimshottari_dasha(1991, 8, 13, 13, 31, 0, 12.9716, 77.5946, 5.5, DashaLevel::Mahadasha)
+            .vimshottari_dasha(
+                1991,
+                8,
+                13,
+                13,
+                31,
+                0,
+                12.9716,
+                77.5946,
+                5.5,
+                DashaLevel::Mahadasha,
+            )
             .await;
         assert!(result.is_ok());
     }
@@ -385,9 +420,7 @@ mod integration_smoke_tests {
         let server = MockServer::start().await;
         Mock::given(method("POST"))
             .and(path("/horoscope-chart"))
-            .respond_with(
-                ResponseTemplate::new(200).set_body_json(mocks::mock_birth_chart()),
-            )
+            .respond_with(ResponseTemplate::new(200).set_body_json(mocks::mock_birth_chart()))
             .mount(&server)
             .await;
 
@@ -402,9 +435,7 @@ mod integration_smoke_tests {
         let server = MockServer::start().await;
         Mock::given(method("POST"))
             .and(path("/navamsa-chart"))
-            .respond_with(
-                ResponseTemplate::new(200).set_body_json(mocks::mock_navamsa_chart()),
-            )
+            .respond_with(ResponseTemplate::new(200).set_body_json(mocks::mock_navamsa_chart()))
             .mount(&server)
             .await;
 

@@ -2,7 +2,7 @@
 //!
 //! Provides clean API for calculating all 13 planetary positions needed for HD charts.
 
-use chrono::{DateTime, Utc, Timelike, Datelike};
+use chrono::{DateTime, Datelike, Timelike, Utc};
 use noesis_core::EngineError;
 use std::sync::{Mutex, Once};
 
@@ -28,18 +28,18 @@ pub enum HDPlanet {
     Uranus = 7,
     Neptune = 8,
     Pluto = 9,
-    NorthNode = 10,    // True Node (better for HD)
-    SouthNode = -10,   // Calculated as opposite of North Node
-    Earth = 14,        // Geo-centric Earth position
+    NorthNode = 10,  // True Node (better for HD)
+    SouthNode = -10, // Calculated as opposite of North Node
+    Earth = 14,      // Geo-centric Earth position
 }
 
 /// Planetary position result
 #[derive(Debug, Clone)]
 pub struct PlanetPosition {
-    pub longitude: f64,  // 0-360 degrees
-    pub latitude: f64,   // degrees
-    pub distance: f64,   // AU
-    pub speed: f64,      // degrees per day
+    pub longitude: f64, // 0-360 degrees
+    pub latitude: f64,  // degrees
+    pub distance: f64,  // AU
+    pub speed: f64,     // degrees per day
 }
 
 /// Swiss Ephemeris calculator for Human Design
@@ -49,17 +49,17 @@ pub struct EphemerisCalculator {
 
 impl EphemerisCalculator {
     /// Create new calculator
-    /// 
+    ///
     /// # Arguments
     /// * `data_path` - Path to Swiss Ephemeris data files (use "" for default)
-    /// 
+    ///
     /// If path is empty, checks SWISS_EPHE_PATH env var, then tries common locations:
     /// - ./data/ephemeris
     /// - ../data/ephemeris (for crate tests)
     /// - /Volumes/madara/2026/witnessos/Selemene-engine/data/ephemeris (absolute fallback)
     pub fn new(data_path: impl Into<String>) -> Self {
         let mut data_path = data_path.into();
-        
+
         // If empty, try to find ephemeris data
         if data_path.is_empty() {
             // Check environment variable first
@@ -68,7 +68,7 @@ impl EphemerisCalculator {
                     data_path = env_path;
                 }
             }
-            
+
             // Try common relative paths
             if data_path.is_empty() {
                 let candidates = [
@@ -79,7 +79,7 @@ impl EphemerisCalculator {
                     "../../../data/ephemeris",
                     "/Volumes/madara/2026/witnessos/Selemene-engine/data/ephemeris",
                 ];
-                
+
                 for candidate in candidates {
                     let path = std::path::Path::new(candidate);
                     if path.exists() && path.join("sepl_18.se1").exists() {
@@ -89,7 +89,7 @@ impl EphemerisCalculator {
                 }
             }
         }
-        
+
         // Guard: set_ephe_path must be called exactly once across all threads.
         let path_for_init = data_path.clone();
         EPHE_INIT.call_once(|| {
@@ -104,9 +104,7 @@ impl EphemerisCalculator {
         let year = dt.year();
         let month = dt.month() as i32;
         let day = dt.day() as i32;
-        let hour = dt.hour() as f64 
-            + dt.minute() as f64 / 60.0 
-            + dt.second() as f64 / 3600.0;
+        let hour = dt.hour() as f64 + dt.minute() as f64 / 60.0 + dt.second() as f64 / 3600.0;
 
         // Use Swiss Ephemeris built-in Julian Day calculation
         swisseph::swe::julday(year, month, day, hour, 1)
@@ -116,6 +114,7 @@ impl EphemerisCalculator {
     ///
     /// All Swiss Ephemeris C library calls are serialized via EPHE_MUTEX
     /// to prevent SIGSEGV from concurrent access to static C buffers.
+    #[allow(clippy::only_used_in_recursion)]
     pub fn get_planet_position(
         &self,
         planet: HDPlanet,

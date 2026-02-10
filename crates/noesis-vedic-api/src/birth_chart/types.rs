@@ -125,17 +125,28 @@ impl Planet {
     /// Get all classical planets (no nodes or ascendant)
     pub fn classical() -> [Planet; 7] {
         [
-            Planet::Sun, Planet::Moon, Planet::Mars,
-            Planet::Mercury, Planet::Jupiter, Planet::Venus, Planet::Saturn,
+            Planet::Sun,
+            Planet::Moon,
+            Planet::Mars,
+            Planet::Mercury,
+            Planet::Jupiter,
+            Planet::Venus,
+            Planet::Saturn,
         ]
     }
 
     /// Get all planets including nodes
     pub fn all_grahas() -> [Planet; 9] {
         [
-            Planet::Sun, Planet::Moon, Planet::Mars, Planet::Mercury,
-            Planet::Jupiter, Planet::Venus, Planet::Saturn,
-            Planet::Rahu, Planet::Ketu,
+            Planet::Sun,
+            Planet::Moon,
+            Planet::Mars,
+            Planet::Mercury,
+            Planet::Jupiter,
+            Planet::Venus,
+            Planet::Saturn,
+            Planet::Rahu,
+            Planet::Ketu,
         ]
     }
 }
@@ -199,7 +210,7 @@ pub fn calculate_dignity(planet: Planet, sign: ZodiacSign) -> Dignity {
     if is_exalted {
         return Dignity::Exalted;
     }
-    
+
     // Debilitation
     let is_debilitated = match planet {
         Planet::Sun => sign == ZodiacSign::Libra,
@@ -214,7 +225,7 @@ pub fn calculate_dignity(planet: Planet, sign: ZodiacSign) -> Dignity {
     if is_debilitated {
         return Dignity::Debilitated;
     }
-    
+
     // Own sign
     let is_own_sign = match planet {
         Planet::Sun => sign == ZodiacSign::Leo,
@@ -229,7 +240,7 @@ pub fn calculate_dignity(planet: Planet, sign: ZodiacSign) -> Dignity {
     if is_own_sign {
         return Dignity::OwnSign;
     }
-    
+
     Dignity::Neutral
 }
 
@@ -347,11 +358,20 @@ mod tests {
         assert_eq!(Planet::classical().len(), 7);
         assert_eq!(Planet::all_grahas().len(), 9);
     }
-    
+
     #[test]
     fn test_dignity_calculation() {
-        assert_eq!(calculate_dignity(Planet::Sun, ZodiacSign::Aries), Dignity::Exalted);
-        assert_eq!(calculate_dignity(Planet::Sun, ZodiacSign::Libra), Dignity::Debilitated);
-        assert_eq!(calculate_dignity(Planet::Sun, ZodiacSign::Leo), Dignity::OwnSign);
+        assert_eq!(
+            calculate_dignity(Planet::Sun, ZodiacSign::Aries),
+            Dignity::Exalted
+        );
+        assert_eq!(
+            calculate_dignity(Planet::Sun, ZodiacSign::Libra),
+            Dignity::Debilitated
+        );
+        assert_eq!(
+            calculate_dignity(Planet::Sun, ZodiacSign::Leo),
+            Dignity::OwnSign
+        );
     }
 }

@@ -18,7 +18,7 @@
 
 use super::Synthesizer;
 use crate::workflow::models::{
-    Alignment, SynthesisResult, Tension, Theme, WitnessPrompt, InquiryType,
+    Alignment, InquiryType, SynthesisResult, Tension, Theme, WitnessPrompt,
 };
 use noesis_core::{EngineInput, EngineOutput};
 use serde_json::{json, Value};
@@ -64,7 +64,11 @@ impl Synthesizer for DecisionSupportSynthesis {
         // Find alignments
         alignments.extend(Self::find_directional_alignment(&tarot_data, &iching_data));
         alignments.extend(Self::find_archetypal_echoes(&tarot_data, &iching_data));
-        alignments.extend(Self::find_authority_alignment(&hd_data, &tarot_data, &iching_data));
+        alignments.extend(Self::find_authority_alignment(
+            &hd_data,
+            &tarot_data,
+            &iching_data,
+        ));
 
         // Find tensions (framed as multiple perspectives)
         tensions.extend(Self::find_temporal_tensions(&tarot_data, &iching_data));
@@ -93,20 +97,35 @@ impl DecisionSupportSynthesis {
 
         // Authority-based prompt
         if let Some(auth) = hd_data.get("authority").and_then(|v| v.as_str()) {
-            prompts.push(WitnessPrompt::new(
-                format!("What does your {} sense about this decision?", auth.replace("_", " ").replace("-", " ")),
-                InquiryType::PatternNoticing,
-            ).with_context("HD Authority"));
+            prompts.push(
+                WitnessPrompt::new(
+                    format!(
+                        "What does your {} sense about this decision?",
+                        auth.replace("_", " ").replace("-", " ")
+                    ),
+                    InquiryType::PatternNoticing,
+                )
+                .with_context("HD Authority"),
+            );
         }
 
         // Card and hexagram contemplation
         if let (Some(cards), Some(hex_name)) = (
-            tarot_data.get("cards").and_then(|c| c.as_array()).and_then(|a| a.first()),
-            iching_data.get("name").and_then(|n| n.as_str())
+            tarot_data
+                .get("cards")
+                .and_then(|c| c.as_array())
+                .and_then(|a| a.first()),
+            iching_data.get("name").and_then(|n| n.as_str()),
         ) {
-            let card_name = cards.get("name").and_then(|n| n.as_str()).unwrap_or("the card");
+            let card_name = cards
+                .get("name")
+                .and_then(|n| n.as_str())
+                .unwrap_or("the card");
             prompts.push(WitnessPrompt::new(
-                format!("How do the images of {} and {} sit together in you?", card_name, hex_name),
+                format!(
+                    "How do the images of {} and {} sit together in you?",
+                    card_name, hex_name
+                ),
                 InquiryType::TensionExploration,
             ));
         }
@@ -135,9 +154,10 @@ impl DecisionSupportSynthesis {
         let result = &output.result;
         let cards = result.get("cards").cloned().unwrap_or(json!([]));
         let spread_type = result.get("spread").cloned().unwrap_or(json!("unknown"));
-        
+
         let major_arcana: Vec<&Value> = if let Some(cards_arr) = cards.as_array() {
-            cards_arr.iter()
+            cards_arr
+                .iter()
                 .filter(|c| c.get("arcana").and_then(|a| a.as_str()) == Some("major"))
                 .collect()
         } else {
@@ -158,15 +178,29 @@ impl DecisionSupportSynthesis {
     }
 
     fn infer_tarot_direction(result: &Value) -> String {
-        let action_cards = ["The Chariot", "Strength", "The Magician", "Wheel of Fortune", "The Sun"];
-        let wait_cards = ["The Hermit", "The Hanged Man", "The High Priestess", "The Moon", "Four of Swords"];
-        
+        let action_cards = [
+            "The Chariot",
+            "Strength",
+            "The Magician",
+            "Wheel of Fortune",
+            "The Sun",
+        ];
+        let wait_cards = [
+            "The Hermit",
+            "The Hanged Man",
+            "The High Priestess",
+            "The Moon",
+            "Four of Swords",
+        ];
+
         let cards_text = result.to_string().to_lowercase();
-        
-        let action_score: i32 = action_cards.iter()
+
+        let action_score: i32 = action_cards
+            .iter()
             .filter(|c| cards_text.contains(&c.to_lowercase()))
             .count() as i32;
-        let wait_score: i32 = wait_cards.iter()
+        let wait_score: i32 = wait_cards
+            .iter()
             .filter(|c| cards_text.contains(&c.to_lowercase()))
             .count() as i32;
 
@@ -206,10 +240,8 @@ impl DecisionSupportSynthesis {
     fn infer_iching_direction(hexagram: &Value, _changing_lines: &Value) -> String {
         let action_hexagrams = [1, 3, 14, 25, 34, 42, 43, 49];
         let wait_hexagrams = [2, 5, 23, 27, 33, 52, 53, 62];
-        
-        let number = hexagram.get("number")
-            .and_then(|n| n.as_i64())
-            .unwrap_or(0) as i32;
+
+        let number = hexagram.get("number").and_then(|n| n.as_i64()).unwrap_or(0) as i32;
 
         if action_hexagrams.contains(&number) {
             "action".to_string()
@@ -226,12 +258,14 @@ impl DecisionSupportSynthesis {
         };
 
         let result = &output.result;
-        let authority = result.get("authority")
+        let authority = result
+            .get("authority")
             .or_else(|| result.get("chart").and_then(|c| c.get("authority")))
             .cloned()
             .unwrap_or(json!("unknown"));
-        
-        let hd_type = result.get("type")
+
+        let hd_type = result
+            .get("type")
             .or_else(|| result.get("chart").and_then(|c| c.get("type")))
             .cloned()
             .unwrap_or(json!("unknown"));
@@ -263,27 +297,40 @@ impl DecisionSupportSynthesis {
 
     fn authority_guidance(authority: &str) -> &'static str {
         match authority {
-            s if s.contains("sacral") => "Trust your gut response - the immediate yes/no that arises",
-            s if s.contains("emotional") || s.contains("solar plexus") => "Wait for emotional clarity - decisions improve over time",
+            s if s.contains("sacral") => {
+                "Trust your gut response - the immediate yes/no that arises"
+            }
+            s if s.contains("emotional") || s.contains("solar plexus") => {
+                "Wait for emotional clarity - decisions improve over time"
+            }
             s if s.contains("splenic") => "Trust instant knowing - the body's survival wisdom",
-            s if s.contains("ego") || s.contains("heart") => "Check if you truly have the will/desire for this",
+            s if s.contains("ego") || s.contains("heart") => {
+                "Check if you truly have the will/desire for this"
+            }
             s if s.contains("self-projected") => "Talk it through - hear yourself speak about it",
-            s if s.contains("mental") || s.contains("outer") => "Discuss with trusted others - reflect on their mirrors",
-            s if s.contains("lunar") || s.contains("moon") => "Allow a full lunar cycle - patterns reveal over time",
+            s if s.contains("mental") || s.contains("outer") => {
+                "Discuss with trusted others - reflect on their mirrors"
+            }
+            s if s.contains("lunar") || s.contains("moon") => {
+                "Allow a full lunar cycle - patterns reveal over time"
+            }
             _ => "Notice what arises without forcing a decision",
         }
     }
 
     fn extract_tarot_themes(data: &Value) -> Vec<Theme> {
         let mut themes = Vec::new();
-        
+
         if data.get("available").and_then(|v| v.as_bool()) != Some(true) {
             return themes;
         }
 
         if let Some(count) = data.get("major_arcana_count").and_then(|v| v.as_i64()) {
             if count > 0 {
-                let mut theme = Theme::new("Archetypal Forces", "Significant archetypal energies at play in this decision");
+                let mut theme = Theme::new(
+                    "Archetypal Forces",
+                    "Significant archetypal energies at play in this decision",
+                );
                 theme.add_source("tarot");
                 themes.push(theme);
             }
@@ -292,7 +339,7 @@ impl DecisionSupportSynthesis {
         if let Some(dir) = data.get("direction").and_then(|v| v.as_str()) {
             let mut theme = Theme::new(
                 format!("Tarot Direction: {}", dir),
-                format!("Cards suggest a '{}' orientation", dir)
+                format!("Cards suggest a '{}' orientation", dir),
             );
             theme.add_source("tarot");
             themes.push(theme);
@@ -303,13 +350,16 @@ impl DecisionSupportSynthesis {
 
     fn extract_iching_themes(data: &Value) -> Vec<Theme> {
         let mut themes = Vec::new();
-        
+
         if data.get("available").and_then(|v| v.as_bool()) != Some(true) {
             return themes;
         }
 
         if let Some(name) = data.get("name").and_then(|v| v.as_str()) {
-            let mut theme = Theme::new(format!("Hexagram: {}", name), format!("I-Ching reveals {}", name));
+            let mut theme = Theme::new(
+                format!("Hexagram: {}", name),
+                format!("I-Ching reveals {}", name),
+            );
             theme.add_source("i-ching");
             themes.push(theme);
         }
@@ -327,7 +377,7 @@ impl DecisionSupportSynthesis {
 
     fn extract_authority_themes(data: &Value) -> Vec<Theme> {
         let mut themes = Vec::new();
-        
+
         if data.get("available").and_then(|v| v.as_bool()) != Some(true) {
             return themes;
         }
@@ -335,7 +385,7 @@ impl DecisionSupportSynthesis {
         if let Some(auth) = data.get("authority").and_then(|v| v.as_str()) {
             let mut theme = Theme::new(
                 format!("Authority: {}", auth),
-                format!("Decision-making through {} authority", auth)
+                format!("Decision-making through {} authority", auth),
             );
             theme.add_source("human-design");
             themes.push(theme);
@@ -355,10 +405,10 @@ impl DecisionSupportSynthesis {
                 alignments.push(
                     Alignment::new(
                         "Directional Alignment",
-                        format!("Both systems suggest a '{}' orientation", t)
+                        format!("Both systems suggest a '{}' orientation", t),
                     )
                     .with_engines(vec!["tarot".into(), "i-ching".into()])
-                    .with_confidence(0.8)
+                    .with_confidence(0.8),
                 );
             }
         }
@@ -387,10 +437,10 @@ impl DecisionSupportSynthesis {
                 alignments.push(
                     Alignment::new(
                         format!("Archetypal Echo: {}", theme),
-                        format!("Shared theme of {} across both systems", theme)
+                        format!("Shared theme of {} across both systems", theme),
                     )
                     .with_engines(vec!["tarot".into(), "i-ching".into()])
-                    .with_confidence(0.7)
+                    .with_confidence(0.7),
                 );
             }
         }
@@ -401,30 +451,41 @@ impl DecisionSupportSynthesis {
     fn find_authority_alignment(hd: &Value, tarot: &Value, iching: &Value) -> Vec<Alignment> {
         let mut alignments = Vec::new();
 
-        let decision_style = hd.get("decision_style").and_then(|v| v.as_str()).unwrap_or("unknown");
-        let tarot_dir = tarot.get("direction").and_then(|v| v.as_str()).unwrap_or("unknown");
-        let iching_dir = iching.get("direction").and_then(|v| v.as_str()).unwrap_or("unknown");
+        let decision_style = hd
+            .get("decision_style")
+            .and_then(|v| v.as_str())
+            .unwrap_or("unknown");
+        let tarot_dir = tarot
+            .get("direction")
+            .and_then(|v| v.as_str())
+            .unwrap_or("unknown");
+        let iching_dir = iching
+            .get("direction")
+            .and_then(|v| v.as_str())
+            .unwrap_or("unknown");
 
-        if (decision_style == "body" || decision_style == "body-instinct") && tarot_dir == "action" {
+        if (decision_style == "body" || decision_style == "body-instinct") && tarot_dir == "action"
+        {
             alignments.push(
                 Alignment::new(
                     "Body-Action Alignment",
-                    "Body-based authority aligns with action-oriented cards"
+                    "Body-based authority aligns with action-oriented cards",
                 )
                 .with_engines(vec!["human-design".into(), "tarot".into()])
-                .with_confidence(0.75)
+                .with_confidence(0.75),
             );
         }
 
-        if (decision_style == "emotional-body" || decision_style == "time-based") 
-            && (tarot_dir == "wait" || iching_dir == "wait") {
+        if (decision_style == "emotional-body" || decision_style == "time-based")
+            && (tarot_dir == "wait" || iching_dir == "wait")
+        {
             alignments.push(
                 Alignment::new(
                     "Patience Alignment",
-                    "Time-based authority aligns with patience guidance"
+                    "Time-based authority aligns with patience guidance",
                 )
                 .with_engines(vec!["human-design".into(), "i-ching".into()])
-                .with_confidence(0.75)
+                .with_confidence(0.75),
             );
         }
 
@@ -440,16 +501,13 @@ impl DecisionSupportSynthesis {
         if let (Some(t), Some(i)) = (tarot_dir, iching_dir) {
             if (t == "action" && i == "wait") || (t == "wait" && i == "action") {
                 tensions.push(
-                    Tension::new(
-                        "Timing Perspectives",
-                        "Different perspectives on timing"
-                    )
-                    .with_perspectives("tarot", t, "i-ching", i)
-                    .with_integration_hint(format!(
-                        "Tarot points toward '{}' while I-Ching suggests '{}'. \
+                    Tension::new("Timing Perspectives", "Different perspectives on timing")
+                        .with_perspectives("tarot", t, "i-ching", i)
+                        .with_integration_hint(format!(
+                            "Tarot points toward '{}' while I-Ching suggests '{}'. \
                          What does each perspective illuminate about your situation?",
-                        t, i
-                    ))
+                            t, i
+                        )),
                 );
             }
         }
@@ -460,20 +518,26 @@ impl DecisionSupportSynthesis {
     fn find_body_mind_tensions(hd: &Value, tarot: &Value) -> Vec<Tension> {
         let mut tensions = Vec::new();
 
-        let decision_style = hd.get("decision_style").and_then(|v| v.as_str()).unwrap_or("unknown");
-        let tarot_dir = tarot.get("direction").and_then(|v| v.as_str()).unwrap_or("unknown");
+        let decision_style = hd
+            .get("decision_style")
+            .and_then(|v| v.as_str())
+            .unwrap_or("unknown");
+        let tarot_dir = tarot
+            .get("direction")
+            .and_then(|v| v.as_str())
+            .unwrap_or("unknown");
 
         if decision_style == "mind-reflective" && tarot_dir == "action" {
             tensions.push(
                 Tension::new(
                     "Reflection vs Action",
-                    "Reflective authority meets action-oriented imagery"
+                    "Reflective authority meets action-oriented imagery",
                 )
                 .with_perspectives("human-design", "mind-reflective", "tarot", "action")
                 .with_integration_hint(
                     "Your design suggests processing through reflection with others, \
-                     while the cards show action energy. How might you honor both?"
-                )
+                     while the cards show action energy. How might you honor both?",
+                ),
             );
         }
 
@@ -481,13 +545,13 @@ impl DecisionSupportSynthesis {
             tensions.push(
                 Tension::new(
                     "Body vs Stillness",
-                    "Body-based authority meets contemplative imagery"
+                    "Body-based authority meets contemplative imagery",
                 )
                 .with_perspectives("human-design", "body-based", "tarot", "wait")
                 .with_integration_hint(
                     "Your sacral responds in the moment, yet the cards suggest stillness. \
-                     What does your body know that your mind hasn't caught up with?"
-                )
+                     What does your body know that your mind hasn't caught up with?",
+                ),
             );
         }
 
@@ -620,8 +684,17 @@ mod tests {
 
     #[test]
     fn test_authority_categorization() {
-        assert_eq!(DecisionSupportSynthesis::categorize_authority("sacral"), "body");
-        assert_eq!(DecisionSupportSynthesis::categorize_authority("emotional"), "emotional-body");
-        assert_eq!(DecisionSupportSynthesis::categorize_authority("splenic"), "body-instinct");
+        assert_eq!(
+            DecisionSupportSynthesis::categorize_authority("sacral"),
+            "body"
+        );
+        assert_eq!(
+            DecisionSupportSynthesis::categorize_authority("emotional"),
+            "emotional-body"
+        );
+        assert_eq!(
+            DecisionSupportSynthesis::categorize_authority("splenic"),
+            "body-instinct"
+        );
     }
 }

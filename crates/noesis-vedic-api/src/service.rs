@@ -12,15 +12,17 @@ use std::sync::Arc;
 use std::time::Instant;
 use tracing::{debug, warn};
 
+type BatchPanchangRequests = Vec<(i32, u32, u32, u32, u32, u32, f64, f64, f64)>;
+
 use crate::{
-    CachedVedicClient, Config, Result,
-    panchang::{Panchang, CompletePanchang, PanchangQuery},
-    dasha::{VimshottariDasha, DashaLevel},
+    batch::BatchRequest,
     chart::{BirthChart, NavamsaChart},
-    metrics::{NoesisMetrics, error_type_label, fallback_reason_label},
-    resilience::{FallbackChain, FallbackSource, ResilienceMetrics, BackoffConfig},
-    batch::{BatchScheduler, BatchConfig, BatchRequest, BatchResultValue},
+    dasha::{DashaLevel, VimshottariDasha},
     fallback::FallbackCalculator,
+    metrics::{error_type_label, fallback_reason_label, NoesisMetrics},
+    panchang::{CompletePanchang, Panchang, PanchangQuery},
+    resilience::ResilienceMetrics,
+    CachedVedicClient, Config, Result,
 };
 
 #[derive(Debug, Clone)]
@@ -98,19 +100,16 @@ impl VedicApiService {
 
     /// Execute a batch of panchang requests with coalescing and cache optimization.
     /// Returns results in the same order as the input date tuples.
-    pub async fn batch_panchang(
-        &self,
-        requests: Vec<(i32, u32, u32, u32, u32, u32, f64, f64, f64)>,
-    ) -> Vec<Result<Panchang>> {
-        let batch_requests: Vec<BatchRequest> = requests
+    pub async fn batch_panchang(&self, requests: BatchPanchangRequests) -> Vec<Result<Panchang>> {
+        let _batch_requests: Vec<BatchRequest> = requests
             .iter()
             .map(|&(y, mo, d, h, mi, s, lat, lng, tz)| {
                 BatchRequest::panchang(y, mo, d, h, mi, s, lat, lng, tz)
             })
             .collect();
 
-        let config = Config::new(""); // BatchScheduler needs its own client
-        // For now, execute sequentially through the existing client with metrics
+        let _config = Config::new(""); // BatchScheduler needs its own client
+                                       // For now, execute sequentially through the existing client with metrics
         let mut results = Vec::with_capacity(requests.len());
         for (y, mo, d, h, mi, s, lat, lng, tz) in requests {
             results.push(self.panchang(y, mo, d, h, mi, s, lat, lng, tz).await);
@@ -133,7 +132,8 @@ impl VedicApiService {
         let start = Instant::now();
         self.metrics.record_api_call("panchang").await;
 
-        let result = self.client
+        let result = self
+            .client
             .get_panchang(year, month, day, hour, minute, second, lat, lng, tzone)
             .await;
 
@@ -156,11 +156,13 @@ impl VedicApiService {
         let start = Instant::now();
         self.metrics.record_api_call("complete_panchang").await;
 
-        let result = self.client
+        let result = self
+            .client
             .get_complete_panchang(year, month, day, hour, minute, second, lat, lng, tzone)
             .await;
 
-        self.record_result("complete_panchang", &result, start).await;
+        self.record_result("complete_panchang", &result, start)
+            .await;
         result
     }
 
@@ -170,7 +172,8 @@ impl VedicApiService {
 
         let result = self.client.get_panchang_with_query(query).await;
 
-        self.record_result("complete_panchang", &result, start).await;
+        self.record_result("complete_panchang", &result, start)
+            .await;
         result
     }
 
@@ -190,11 +193,15 @@ impl VedicApiService {
         let start = Instant::now();
         self.metrics.record_api_call("vimshottari_dasha").await;
 
-        let result = self.client
-            .get_vimshottari_dasha(year, month, day, hour, minute, second, lat, lng, tzone, level)
+        let result = self
+            .client
+            .get_vimshottari_dasha(
+                year, month, day, hour, minute, second, lat, lng, tzone, level,
+            )
             .await;
 
-        self.record_result("vimshottari_dasha", &result, start).await;
+        self.record_result("vimshottari_dasha", &result, start)
+            .await;
         result
     }
 
@@ -213,7 +220,8 @@ impl VedicApiService {
         let start = Instant::now();
         self.metrics.record_api_call("birth_chart").await;
 
-        let result = self.client
+        let result = self
+            .client
             .get_birth_chart(year, month, day, hour, minute, second, lat, lng, tzone)
             .await;
 
@@ -236,7 +244,8 @@ impl VedicApiService {
         let start = Instant::now();
         self.metrics.record_api_call("navamsa_chart").await;
 
-        let result = self.client
+        let result = self
+            .client
             .get_navamsa_chart(year, month, day, hour, minute, second, lat, lng, tzone)
             .await;
 
@@ -265,13 +274,15 @@ impl VedicApiService {
         let start = Instant::now();
         self.metrics.record_api_call("panchang").await;
 
-        let result = self.client
+        let result = self
+            .client
             .get_panchang(year, month, day, hour, minute, second, lat, lng, tzone)
             .await;
 
         match result {
             Ok(data) => {
-                self.record_result("panchang", &Ok::<_, crate::VedicApiError>(()) , start).await;
+                self.record_result("panchang", &Ok::<_, crate::VedicApiError>(()), start)
+                    .await;
                 Ok(data)
             }
             Err(ref e) if e.should_fallback() && self.fallback.is_enabled() => {
@@ -285,10 +296,12 @@ impl VedicApiService {
                 self.metrics.record_fallback_trigger("panchang").await;
                 self.metrics.record_fallback_reason(reason).await;
                 self.resilience_metrics.record_native_fallback();
-                self.fallback.calculate_panchang(year, month, day, hour, minute, second, lat, lng, tzone)
+                self.fallback
+                    .calculate_panchang(year, month, day, hour, minute, second, lat, lng, tzone)
             }
             Err(e) => {
-                self.record_result::<()>("panchang", &Err(e.clone()), start).await;
+                self.record_result::<()>("panchang", &Err(e.clone()), start)
+                    .await;
                 Err(e)
             }
         }
@@ -311,13 +324,21 @@ impl VedicApiService {
         let start = Instant::now();
         self.metrics.record_api_call("vimshottari_dasha").await;
 
-        let result = self.client
-            .get_vimshottari_dasha(year, month, day, hour, minute, second, lat, lng, tzone, level)
+        let result = self
+            .client
+            .get_vimshottari_dasha(
+                year, month, day, hour, minute, second, lat, lng, tzone, level,
+            )
             .await;
 
         match result {
             Ok(data) => {
-                self.record_result("vimshottari_dasha", &Ok::<_, crate::VedicApiError>(()), start).await;
+                self.record_result(
+                    "vimshottari_dasha",
+                    &Ok::<_, crate::VedicApiError>(()),
+                    start,
+                )
+                .await;
                 Ok(data)
             }
             Err(ref e) if e.should_fallback() && self.fallback.is_enabled() => {
@@ -328,13 +349,18 @@ impl VedicApiService {
                     fallback_reason = reason,
                     "API failed, using native fallback"
                 );
-                self.metrics.record_fallback_trigger("vimshottari_dasha").await;
+                self.metrics
+                    .record_fallback_trigger("vimshottari_dasha")
+                    .await;
                 self.metrics.record_fallback_reason(reason).await;
                 self.resilience_metrics.record_native_fallback();
-                self.fallback.calculate_vimshottari(year, month, day, hour, minute, second, lat, lng, tzone, level)
+                self.fallback.calculate_vimshottari(
+                    year, month, day, hour, minute, second, lat, lng, tzone, level,
+                )
             }
             Err(e) => {
-                self.record_result::<()>("vimshottari_dasha", &Err(e.clone()), start).await;
+                self.record_result::<()>("vimshottari_dasha", &Err(e.clone()), start)
+                    .await;
                 Err(e)
             }
         }
@@ -356,13 +382,15 @@ impl VedicApiService {
         let start = Instant::now();
         self.metrics.record_api_call("birth_chart").await;
 
-        let result = self.client
+        let result = self
+            .client
             .get_birth_chart(year, month, day, hour, minute, second, lat, lng, tzone)
             .await;
 
         match result {
             Ok(data) => {
-                self.record_result("birth_chart", &Ok::<_, crate::VedicApiError>(()), start).await;
+                self.record_result("birth_chart", &Ok::<_, crate::VedicApiError>(()), start)
+                    .await;
                 Ok(data)
             }
             Err(ref e) if e.should_fallback() && self.fallback.is_enabled() => {
@@ -376,10 +404,12 @@ impl VedicApiService {
                 self.metrics.record_fallback_trigger("birth_chart").await;
                 self.metrics.record_fallback_reason(reason).await;
                 self.resilience_metrics.record_native_fallback();
-                self.fallback.calculate_birth_chart(year, month, day, hour, minute, second, lat, lng, tzone)
+                self.fallback
+                    .calculate_birth_chart(year, month, day, hour, minute, second, lat, lng, tzone)
             }
             Err(e) => {
-                self.record_result::<()>("birth_chart", &Err(e.clone()), start).await;
+                self.record_result::<()>("birth_chart", &Err(e.clone()), start)
+                    .await;
                 Err(e)
             }
         }
@@ -416,12 +446,7 @@ impl VedicApiService {
     // ==================== Internal Helpers ====================
 
     /// Record the result of an operation: timing, success/error, error classification.
-    async fn record_result<T>(
-        &self,
-        endpoint: &str,
-        result: &Result<T>,
-        start: Instant,
-    ) {
+    async fn record_result<T>(&self, endpoint: &str, result: &Result<T>, start: Instant) {
         let duration = start.elapsed();
         self.metrics.record_response_time(endpoint, duration).await;
 

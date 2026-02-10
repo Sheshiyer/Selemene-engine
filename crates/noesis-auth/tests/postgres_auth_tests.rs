@@ -12,8 +12,8 @@
 
 #[cfg(feature = "postgres")]
 mod postgres_tests {
-    use noesis_auth::{sha256_hex, AuthService, ApiKey};
     use chrono::Utc;
+    use noesis_auth::{sha256_hex, ApiKey, AuthService};
     use std::time::Duration;
 
     // ---------------------------------------------------------------------------
@@ -89,7 +89,10 @@ mod postgres_tests {
     fn test_sha256_hex_known_vector() {
         // SHA-256 of "" = e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
         let hash = sha256_hex("");
-        assert_eq!(hash, "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855");
+        assert_eq!(
+            hash,
+            "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        );
     }
 
     // ---------------------------------------------------------------------------
@@ -150,7 +153,9 @@ mod postgres_tests {
         let secret = "test-jwt-secret-at-least-32-chars-long".to_string();
         let auth = AuthService::with_pool(secret.clone(), None);
 
-        let token = auth.generate_jwt_token("user-1", "free", &["basic:access".to_string()], 0).unwrap();
+        let token = auth
+            .generate_jwt_token("user-1", "free", &["basic:access".to_string()], 0)
+            .unwrap();
         let user = auth.validate_jwt_token(&token).await.unwrap();
         assert_eq!(user.user_id, "user-1");
         assert_eq!(user.tier, "free");
@@ -249,9 +254,10 @@ mod postgres_tests {
         };
 
         let raw_key = insert_test_key(&pool, "enterprise", true, None).await;
-        let auth = std::sync::Arc::new(
-            AuthService::with_pool("secret".to_string(), Some(pool.clone()))
-        );
+        let auth = std::sync::Arc::new(AuthService::with_pool(
+            "secret".to_string(),
+            Some(pool.clone()),
+        ));
 
         let mut handles = Vec::new();
         for _ in 0..10 {
@@ -279,7 +285,9 @@ mod postgres_tests {
         };
 
         let auth = AuthService::with_pool("secret".to_string(), Some(pool));
-        let result = auth.validate_api_key("totally-fake-key-that-does-not-exist").await;
+        let result = auth
+            .validate_api_key("totally-fake-key-that-does-not-exist")
+            .await;
         assert!(result.is_err());
     }
 }

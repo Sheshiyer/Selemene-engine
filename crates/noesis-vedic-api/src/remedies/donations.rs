@@ -30,7 +30,8 @@ pub fn get_donation_for_planet(planet: &str) -> DonationRecommendation {
             ],
             day: "Monday".to_string(),
             to_whom: "Mother, elderly women, or those in need".to_string(),
-            benefits: "Mental peace, emotional stability, good relationship with mother".to_string(),
+            benefits: "Mental peace, emotional stability, good relationship with mother"
+                .to_string(),
         },
         "mars" => DonationRecommendation {
             planet: "Mars".to_string(),
@@ -43,7 +44,8 @@ pub fn get_donation_for_planet(planet: &str) -> DonationRecommendation {
             ],
             day: "Tuesday".to_string(),
             to_whom: "Soldiers, police, or young men".to_string(),
-            benefits: "Reduces aggression, protects from accidents, success in competition".to_string(),
+            benefits: "Reduces aggression, protects from accidents, success in competition"
+                .to_string(),
         },
         "mercury" => DonationRecommendation {
             planet: "Mercury".to_string(),

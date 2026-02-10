@@ -1,7 +1,6 @@
 //! Vimshottari Dasha types and calculations
 
 use serde::{Deserialize, Serialize};
-use chrono::{DateTime, Utc, NaiveDate};
 
 /// Complete Vimshottari Dasha system for a birth chart
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -65,13 +64,13 @@ impl DashaPeriod {
     pub fn contains_date(&self, date: &str) -> bool {
         date >= self.start_date.as_str() && date <= self.end_date.as_str()
     }
-    
+
     /// Get progress percentage at a given date
     pub fn progress_at(&self, date: &str) -> Option<f64> {
         if !self.contains_date(date) {
             return None;
         }
-        
+
         // Simplified calculation - would need proper date parsing
         Some(0.5) // Placeholder
     }
@@ -104,7 +103,7 @@ impl DashaLevel {
             DashaLevel::Praana => 5,
         }
     }
-    
+
     /// Get display name
     pub fn as_str(&self) -> &'static str {
         match self {
@@ -115,7 +114,7 @@ impl DashaLevel {
             DashaLevel::Praana => "Praana",
         }
     }
-    
+
     /// Get parent level
     pub fn parent(&self) -> Option<DashaLevel> {
         match self {
@@ -167,17 +166,17 @@ impl DashaPlanet {
             DashaPlanet::Mercury => 17.0,
         }
     }
-    
+
     /// Get period in months
     pub fn full_period_months(&self) -> f64 {
         self.full_period_years() * 12.0
     }
-    
+
     /// Get period in days (approximate)
     pub fn full_period_days(&self) -> f64 {
         self.full_period_years() * 365.25
     }
-    
+
     /// Get display name
     pub fn as_str(&self) -> &'static str {
         match self {
@@ -192,7 +191,7 @@ impl DashaPlanet {
             DashaPlanet::Mercury => "Mercury",
         }
     }
-    
+
     /// Get symbol
     pub fn symbol(&self) -> &'static str {
         match self {
@@ -207,30 +206,37 @@ impl DashaPlanet {
             DashaPlanet::Mercury => "☿",
         }
     }
-    
+
     /// Get nature (benefic, malefic, neutral)
     pub fn nature(&self) -> &'static str {
         match self {
-            DashaPlanet::Jupiter | DashaPlanet::Venus | DashaPlanet::Moon | DashaPlanet::Mercury => "benefic",
-            DashaPlanet::Saturn | DashaPlanet::Mars | DashaPlanet::Rahu | DashaPlanet::Ketu => "malefic",
+            DashaPlanet::Jupiter
+            | DashaPlanet::Venus
+            | DashaPlanet::Moon
+            | DashaPlanet::Mercury => "benefic",
+            DashaPlanet::Saturn | DashaPlanet::Mars | DashaPlanet::Rahu | DashaPlanet::Ketu => {
+                "malefic"
+            }
             DashaPlanet::Sun => "neutral",
         }
     }
-    
+
     /// Check if this planet is benefic
     pub fn is_benefic(&self) -> bool {
-        matches!(self, 
+        matches!(
+            self,
             DashaPlanet::Jupiter | DashaPlanet::Venus | DashaPlanet::Moon | DashaPlanet::Mercury
         )
     }
-    
+
     /// Check if this planet is malefic
     pub fn is_malefic(&self) -> bool {
-        matches!(self,
+        matches!(
+            self,
             DashaPlanet::Saturn | DashaPlanet::Mars | DashaPlanet::Rahu | DashaPlanet::Ketu
         )
     }
-    
+
     /// Get ruling Nakshatras
     pub fn ruling_nakshatras(&self) -> Vec<&'static str> {
         match self {
@@ -260,23 +266,24 @@ impl DashaTree {
     /// Get current running dashas at a specific date
     pub fn at_date(&self, date: &str) -> Option<CurrentDashas> {
         // Find the mahadasha
-        let mahadasha = self.mahadashas.iter()
-            .find(|m| m.contains_date(date))?;
-        
+        let mahadasha = self.mahadashas.iter().find(|m| m.contains_date(date))?;
+
         // Find antardasha within mahadasha
-        let antardasha = mahadasha.sub_periods.as_ref()
+        let antardasha = mahadasha
+            .sub_periods
+            .as_ref()
             .and_then(|subs| subs.iter().find(|a| a.contains_date(date)));
-        
+
         // Find pratyantardasha within antardasha
         let pratyantardasha = antardasha
             .and_then(|a| a.sub_periods.as_ref())
             .and_then(|subs| subs.iter().find(|p| p.contains_date(date)));
-        
+
         // Find sookshma within pratyantardasha
         let sookshma = pratyantardasha
             .and_then(|p| p.sub_periods.as_ref())
             .and_then(|subs| subs.iter().find(|s| s.contains_date(date)));
-        
+
         Some(CurrentDashas {
             mahadasha: mahadasha.clone(),
             antardasha: antardasha.cloned(),
@@ -284,7 +291,7 @@ impl DashaTree {
             sookshma: sookshma.cloned(),
         })
     }
-    
+
     /// Get summary for a date
     pub fn summary_at(&self, date: &str) -> String {
         match self.at_date(date) {
@@ -326,21 +333,21 @@ impl CurrentDashas {
         }
         &self.mahadasha
     }
-    
+
     /// Format as standard dasha notation (MD-AD-PD)
     pub fn to_notation(&self) -> String {
         let mut parts = vec![format!("{}", self.mahadasha.planet.as_str())];
-        
+
         if let Some(ref ant) = self.antardasha {
-            parts.push(format!("{}", ant.planet.as_str()));
+            parts.push(ant.planet.as_str().to_string());
         }
         if let Some(ref prat) = self.pratyantardasha {
-            parts.push(format!("{}", prat.planet.as_str()));
+            parts.push(prat.planet.as_str().to_string());
         }
         if let Some(ref sook) = self.sookshma {
-            parts.push(format!("{}", sook.planet.as_str()));
+            parts.push(sook.planet.as_str().to_string());
         }
-        
+
         parts.join("-")
     }
 }
@@ -360,9 +367,9 @@ pub const DASHA_SEQUENCE: [DashaPlanet; 9] = [
 
 /// Calculate balance of dasha based on Moon's position in nakshatra
 pub fn calculate_dasha_balance(
-    nakshatra: u8,  // 1-27
-    pada: u8,       // 1-4
-    moon_longitude: f64,
+    nakshatra: u8, // 1-27
+    pada: u8,      // 1-4
+    _moon_longitude: f64,
 ) -> DashaBalance {
     // Find starting planet based on nakshatra
     // Each planet rules 3 nakshatras
@@ -377,14 +384,14 @@ pub fn calculate_dasha_balance(
         7 => DashaPlanet::Saturn,
         _ => DashaPlanet::Mercury,
     };
-    
+
     // Calculate balance based on pada (quarter)
     // If born in 1st pada = full period remaining
     // If born in 4th pada = 1/4 period remaining
     let total_period = start_planet.full_period_years();
     let balance_fraction = (5 - pada) as f64 / 4.0; // 1st pada = 1.0, 4th pada = 0.25
     let years_remaining = total_period * balance_fraction;
-    
+
     DashaBalance {
         planet: start_planet,
         years_remaining,
@@ -451,7 +458,7 @@ mod tests {
             pratyantardasha: None,
             sookshma: None,
         };
-        
+
         assert_eq!(dashas.to_notation(), "Mars-Saturn");
     }
 }

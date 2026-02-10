@@ -3,32 +3,28 @@
 //! Shadow-Gift-Siddhi transformation framework.
 //! Maps HD gate activations to Gene Keys and calculates the 4 Core Activation Sequences.
 
-pub mod models;
-pub mod mapping;
-pub mod wisdom;
-pub mod frequency;
-pub mod transformation;
-pub mod witness;
 pub mod engine;
+pub mod frequency;
+pub mod mapping;
+pub mod models;
+pub mod transformation;
+pub mod wisdom;
+pub mod witness;
 
-pub use models::{
-    ActivationSequence, ActivationSource, GeneKey, GeneKeyActivation, GeneKeysChart,
-    GeneKeysData, GeneKeysInfo,
-};
+pub use engine::GeneKeysEngine;
+pub use frequency::{assess_frequencies, Frequency, FrequencyAssessment, RecognitionPrompts};
 pub use mapping::{
+    calculate_activation_sequences, extract_sun_earth_gates, find_activation_by_planet,
     map_hd_to_gene_keys,
-    calculate_activation_sequences,
-    find_activation_by_planet,
-    extract_sun_earth_gates,
 };
-pub use wisdom::{gene_keys, get_gene_key};
-pub use frequency::{
-    Frequency, FrequencyAssessment, RecognitionPrompts, assess_frequencies,
+pub use models::{
+    ActivationSequence, ActivationSource, GeneKey, GeneKeyActivation, GeneKeysChart, GeneKeysData,
+    GeneKeysInfo,
 };
 pub use transformation::{
-    TransformationPathway, generate_transformation_pathways, generate_complete_pathways,
+    generate_complete_pathways, generate_transformation_pathways, TransformationPathway,
 };
+pub use wisdom::{gene_keys, get_gene_key};
 pub use witness::generate_witness_prompt;
-pub use engine::GeneKeysEngine;
 
 pub use noesis_core::{ConsciousnessEngine, EngineError, EngineInput, EngineOutput};

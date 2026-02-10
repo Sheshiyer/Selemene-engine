@@ -3,7 +3,7 @@
 use super::EclipseType;
 
 /// Get astrological effects based on eclipse sign
-pub fn get_sign_effects(sign: &str, eclipse_type: &EclipseType) -> Vec<String> {
+pub fn get_sign_effects(sign: &str, _eclipse_type: &EclipseType) -> Vec<String> {
     let base_effects = match sign {
         "Aries" => vec![
             "Self-identity and physical health focus",
@@ -67,7 +67,7 @@ pub fn get_sign_effects(sign: &str, eclipse_type: &EclipseType) -> Vec<String> {
         ],
         _ => vec!["General transformation period"],
     };
-    
+
     base_effects.into_iter().map(String::from).collect()
 }
 
@@ -102,7 +102,8 @@ pub fn get_nakshatra_effects(nakshatra: &str) -> String {
         "Uttara Bhadrapada" => "Stability after storms. Wisdom gained.",
         "Revati" => "Journeys and completions. Safe passage.",
         _ => "General transformative influences.",
-    }.to_string()
+    }
+    .to_string()
 }
 
 /// Get remedies for eclipse
@@ -114,9 +115,12 @@ pub fn get_eclipse_remedies(eclipse_type: &EclipseType) -> Vec<String> {
         "Take bath after eclipse ends".to_string(),
         "Donate food and essentials to needy".to_string(),
     ];
-    
+
     match eclipse_type {
-        EclipseType::SolarTotal | EclipseType::SolarPartial | EclipseType::SolarAnnular | EclipseType::SolarHybrid => {
+        EclipseType::SolarTotal
+        | EclipseType::SolarPartial
+        | EclipseType::SolarAnnular
+        | EclipseType::SolarHybrid => {
             remedies.push("Chant Aditya Hridayam".to_string());
             remedies.push("Offer water (arghya) to Sun after eclipse".to_string());
         }
@@ -125,7 +129,7 @@ pub fn get_eclipse_remedies(eclipse_type: &EclipseType) -> Vec<String> {
             remedies.push("Offer milk to Shiva lingam".to_string());
         }
     }
-    
+
     remedies
 }
 

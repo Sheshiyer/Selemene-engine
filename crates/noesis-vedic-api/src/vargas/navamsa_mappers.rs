@@ -1,14 +1,10 @@
 //! Mapping helpers for Navamsa DTOs
 
-use crate::chart::{NavamsaChart, NavamsaPosition, NativeInfo, ZodiacSign};
+use crate::chart::{NativeInfo, NavamsaChart, NavamsaPosition, ZodiacSign};
 use crate::vargas::navamsa_types::{NavamsaChartDto, NavamsaPositionDto};
 
 pub fn map_navamsa_chart(dto: &NavamsaChartDto, source: NativeInfo) -> NavamsaChart {
-    let positions = dto
-        .positions
-        .iter()
-        .map(map_position)
-        .collect::<Vec<_>>();
+    let positions = dto.positions.iter().map(map_position).collect::<Vec<_>>();
 
     let vargottama = dto.vargottama.clone().unwrap_or_default();
 

@@ -101,10 +101,7 @@ pub fn get_fasting_rules(fast_type: &FastType) -> FastingRules {
                 "Milk products".to_string(),
                 "Nuts".to_string(),
             ],
-            restricted: vec![
-                "All grains".to_string(),
-                "Flour products".to_string(),
-            ],
+            restricted: vec!["All grains".to_string(), "Flour products".to_string()],
             breaking_guidelines: vec!["Break at prescribed time".to_string()],
             health_notes: vec!["Manageable for most people".to_string()],
             spiritual_benefits: vec!["Purification and discipline".to_string()],
@@ -134,7 +131,10 @@ pub fn get_fasting_rules(fast_type: &FastType) -> FastingRules {
             name: "Partial Fast".to_string(),
             description: "Reduced eating, typically one meal".to_string(),
             duration: "Varies".to_string(),
-            allowed: vec!["Light sattvic food".to_string(), "As per specific vrat".to_string()],
+            allowed: vec![
+                "Light sattvic food".to_string(),
+                "As per specific vrat".to_string(),
+            ],
             restricted: vec!["Heavy meals".to_string(), "Non-veg".to_string()],
             breaking_guidelines: vec!["Follow specific vrat rules".to_string()],
             health_notes: vec!["Easiest to follow".to_string()],
@@ -166,9 +166,15 @@ pub fn can_observe_fast(
     match fast_type {
         FastType::Nirjala => {
             if is_pregnant {
-                (false, "Nirjala fast not recommended during pregnancy".to_string())
-            } else if age < 12 || age > 70 {
-                (false, "Nirjala fast not recommended for this age group".to_string())
+                (
+                    false,
+                    "Nirjala fast not recommended during pregnancy".to_string(),
+                )
+            } else if !(12..=70).contains(&age) {
+                (
+                    false,
+                    "Nirjala fast not recommended for this age group".to_string(),
+                )
             } else if has_health_issues {
                 (false, "Consult doctor before Nirjala fast".to_string())
             } else {
@@ -177,7 +183,10 @@ pub fn can_observe_fast(
         }
         FastType::Phalahara | FastType::Ekadashi => {
             if is_pregnant {
-                (true, "Can observe with modifications - ensure adequate nutrition".to_string())
+                (
+                    true,
+                    "Can observe with modifications - ensure adequate nutrition".to_string(),
+                )
             } else {
                 (true, "Safe to observe".to_string())
             }
@@ -200,7 +209,7 @@ mod tests {
     fn test_can_observe() {
         let (can, _) = can_observe_fast(&FastType::Nirjala, 30, false, false);
         assert!(can);
-        
+
         let (can, _) = can_observe_fast(&FastType::Nirjala, 30, true, false);
         assert!(!can);
     }

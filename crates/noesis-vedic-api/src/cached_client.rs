@@ -1,5 +1,5 @@
 //! Cached API client with rate limiting for FreeAstrologyAPI.com
-//! 
+//!
 //! This client combines:
 //! - Aggressive caching (minimize API calls)
 //! - Rate limiting (respect 50/day, 1/sec)
@@ -10,20 +10,18 @@ use chrono::Datelike;
 use tracing::{debug, info, warn};
 
 use crate::{
-    config::Config, 
-    error::Result, 
-    error::VedicApiError,
-    client::VedicApiClient,
-    cache::{ApiCache, birth_key, panchang_key},
-    rate_limiter::{RateLimiter, RateLimitStatus},
-    panchang::{
-        Panchang, CompletePanchang, PanchangMetadata, PanchangQuery,
-        MuhurtaCollection, Muhurta, MuhurtaNature,
-        AbhijitMuhurta, RahuKalam, YamaGandam, GulikaKaal, BrahmaMuhurta, AmritKaal,
-        HoraTimings, ChoghadiyaTimings,
-    },
-    dasha::{VimshottariDasha, DashaLevel},
+    cache::{birth_key, panchang_key, ApiCache},
     chart::{BirthChart, NavamsaChart},
+    client::VedicApiClient,
+    config::Config,
+    dasha::{DashaLevel, VimshottariDasha},
+    error::Result,
+    error::VedicApiError,
+    panchang::{
+        ChoghadiyaTimings, CompletePanchang, HoraTimings, Muhurta, MuhurtaCollection, Panchang,
+        PanchangMetadata, PanchangQuery,
+    },
+    rate_limiter::{RateLimitStatus, RateLimiter},
 };
 
 /// Enhanced client with caching and rate limiting
@@ -32,6 +30,7 @@ pub struct CachedVedicClient {
     inner: VedicApiClient,
     cache: ApiCache,
     rate_limiter: RateLimiter,
+    #[allow(dead_code)]
     config: Config,
     fallback: crate::fallback::FallbackCalculator,
 }
@@ -54,13 +53,13 @@ impl CachedVedicClient {
             config,
         }
     }
-    
+
     /// Create from environment
     pub fn from_env() -> Result<Self> {
         let config = Config::from_env()?;
         Ok(Self::new(config))
     }
-    
+
     /// Get Panchang with caching
     pub async fn get_panchang(
         &self,
@@ -76,32 +75,35 @@ impl CachedVedicClient {
     ) -> Result<Panchang> {
         // Generate cache key (date + location, not time)
         let cache_key = panchang_key(year, month, day, lat, lng);
-        
+
         // Try cache first
         if let Some(cached) = self.cache.get_panchang(&cache_key).await {
             debug!("Panchang cache hit for {}", cache_key);
             return Ok(cached);
         }
-        
+
         debug!("Panchang cache miss, fetching from API");
-        
+
         // Check rate limit
         if !self.rate_limiter.can_request() {
             warn!("Rate limit reached, trying fallback");
-            return self.fallback_panchang(year, month, day, hour, minute, second, lat, lng, tzone).await;
+            return self
+                .fallback_panchang(year, month, day, hour, minute, second, lat, lng, tzone)
+                .await;
         }
-        
+
         // Fetch from API
-        let panchang = self.inner.get_panchang(
-            year, month, day, hour, minute, second, lat, lng, tzone
-        ).await?;
-        
+        let panchang = self
+            .inner
+            .get_panchang(year, month, day, hour, minute, second, lat, lng, tzone)
+            .await?;
+
         // Store in cache
         self.cache.set_panchang(&cache_key, panchang.clone()).await;
-        
+
         Ok(panchang)
     }
-    
+
     /// Get Vimshottari Dasha with caching
     pub async fn get_vimshottari_dasha(
         &self,
@@ -117,36 +119,44 @@ impl CachedVedicClient {
         level: DashaLevel,
     ) -> Result<VimshottariDasha> {
         // Generate cache key (birth data + level)
-        let cache_key = format!("{}:{:?}", 
+        let cache_key = format!(
+            "{}:{:?}",
             birth_key(year, month, day, hour, minute, lat, lng),
             level
         );
-        
+
         // Try cache first
         if let Some(cached) = self.cache.get_dasha(&cache_key).await {
             debug!("Dasha cache hit for {}", cache_key);
             return Ok(cached);
         }
-        
+
         debug!("Dasha cache miss, fetching from API");
-        
+
         // Check rate limit
         if !self.rate_limiter.can_request() {
             warn!("Rate limit reached, trying fallback");
-            return self.fallback_dasha(year, month, day, hour, minute, second, lat, lng, tzone, level).await;
+            return self
+                .fallback_dasha(
+                    year, month, day, hour, minute, second, lat, lng, tzone, level,
+                )
+                .await;
         }
-        
+
         // Fetch from API
-        let dasha = self.inner.get_vimshottari_dasha(
-            year, month, day, hour, minute, second, lat, lng, tzone, level
-        ).await?;
-        
+        let dasha = self
+            .inner
+            .get_vimshottari_dasha(
+                year, month, day, hour, minute, second, lat, lng, tzone, level,
+            )
+            .await?;
+
         // Store in cache (infinite TTL)
         self.cache.set_dasha(&cache_key, dasha.clone()).await;
-        
+
         Ok(dasha)
     }
-    
+
     /// Get Birth Chart with caching
     pub async fn get_birth_chart(
         &self,
@@ -161,32 +171,35 @@ impl CachedVedicClient {
         tzone: f64,
     ) -> Result<BirthChart> {
         let cache_key = birth_key(year, month, day, hour, minute, lat, lng);
-        
+
         // Try cache first
         if let Some(cached) = self.cache.get_birth_chart(&cache_key).await {
             debug!("Birth chart cache hit");
             return Ok(cached);
         }
-        
+
         debug!("Birth chart cache miss");
-        
+
         // Check rate limit
         if !self.rate_limiter.can_request() {
             warn!("Rate limit reached, trying fallback");
-            return self.fallback_birth_chart(year, month, day, hour, minute, second, lat, lng, tzone).await;
+            return self
+                .fallback_birth_chart(year, month, day, hour, minute, second, lat, lng, tzone)
+                .await;
         }
-        
+
         // Fetch from API
-        let chart = self.inner.get_birth_chart(
-            year, month, day, hour, minute, second, lat, lng, tzone
-        ).await?;
-        
+        let chart = self
+            .inner
+            .get_birth_chart(year, month, day, hour, minute, second, lat, lng, tzone)
+            .await?;
+
         // Store in cache (infinite TTL)
         self.cache.set_birth_chart(&cache_key, chart.clone()).await;
-        
+
         Ok(chart)
     }
-    
+
     /// Get Navamsa chart
     pub async fn get_navamsa_chart(
         &self,
@@ -202,16 +215,18 @@ impl CachedVedicClient {
     ) -> Result<NavamsaChart> {
         // For now, fetch directly (can be optimized later)
         if !self.rate_limiter.can_request() {
-            return Err(VedicApiError::RateLimit { retry_after: Some(3600) });
+            return Err(VedicApiError::RateLimit {
+                retry_after: Some(3600),
+            });
         }
-        
-        self.inner.get_navamsa_chart(
-            year, month, day, hour, minute, second, lat, lng, tzone
-        ).await
+
+        self.inner
+            .get_navamsa_chart(year, month, day, hour, minute, second, lat, lng, tzone)
+            .await
     }
 
     // ==================== PHASE 2: PANCHANG EXTENSIONS ====================
-    
+
     /// Get Complete Panchang with all sub-systems (Muhurtas, Hora, Choghadiya)
     pub async fn get_complete_panchang(
         &self,
@@ -226,17 +241,21 @@ impl CachedVedicClient {
         tzone: f64,
     ) -> Result<CompletePanchang> {
         // Get base Panchang (cached)
-        let panchang = self.get_panchang(year, month, day, hour, minute, second, lat, lng, tzone).await?;
-        
+        let panchang = self
+            .get_panchang(year, month, day, hour, minute, second, lat, lng, tzone)
+            .await?;
+
         // Get day of week for Muhurta and Choghadiya calculations
         let day_of_week = panchang.vara.as_str();
         let sunrise = &panchang.day_boundaries.sunrise;
         let sunset = &panchang.day_boundaries.sunset;
         let next_sunrise = &panchang.day_boundaries.next_sunrise;
-        
+
         // Build Muhurtas
-        let muhurtas = self.calculate_muhurtas(day_of_week, sunrise, sunset).await?;
-        
+        let muhurtas = self
+            .calculate_muhurtas(day_of_week, sunrise, sunset)
+            .await?;
+
         // Build Hora timings
         let hora_timings = crate::panchang::hora::calculate_hora_timings(
             day_of_week,
@@ -244,7 +263,7 @@ impl CachedVedicClient {
             sunset,
             next_sunrise,
         );
-        
+
         // Build Choghadiya
         let choghadiya = crate::panchang::choghadiya::calculate_choghadiya(
             day_of_week,
@@ -252,7 +271,7 @@ impl CachedVedicClient {
             sunset,
             next_sunrise,
         );
-        
+
         let metadata = PanchangMetadata {
             source: "FreeAstrologyAPI.com".to_string(),
             calculated_at: chrono::Utc::now().to_rfc3339(),
@@ -260,7 +279,7 @@ impl CachedVedicClient {
             timezone: tzone,
             dst_active: false,
         };
-        
+
         Ok(CompletePanchang {
             panchang,
             muhurtas,
@@ -269,7 +288,7 @@ impl CachedVedicClient {
             metadata,
         })
     }
-    
+
     /// Get Complete Panchang using query builder
     pub async fn get_panchang_with_query(&self, query: &PanchangQuery) -> Result<CompletePanchang> {
         self.get_complete_panchang(
@@ -282,9 +301,10 @@ impl CachedVedicClient {
             query.latitude,
             query.longitude,
             query.timezone,
-        ).await
+        )
+        .await
     }
-    
+
     /// Get only Muhurtas for a day
     pub async fn get_muhurtas(
         &self,
@@ -296,15 +316,17 @@ impl CachedVedicClient {
         tzone: f64,
     ) -> Result<MuhurtaCollection> {
         // Get Panchang to extract day info
-        let panchang = self.get_panchang(year, month, day, 12, 0, 0, lat, lng, tzone).await?;
-        
+        let panchang = self
+            .get_panchang(year, month, day, 12, 0, 0, lat, lng, tzone)
+            .await?;
+
         let day_of_week = panchang.vara.as_str();
         let sunrise = &panchang.day_boundaries.sunrise;
         let sunset = &panchang.day_boundaries.sunset;
-        
+
         self.calculate_muhurtas(day_of_week, sunrise, sunset).await
     }
-    
+
     /// Get Hora (planetary hours) timings
     pub async fn get_hora_timings(
         &self,
@@ -316,13 +338,15 @@ impl CachedVedicClient {
         tzone: f64,
     ) -> Result<HoraTimings> {
         // Get Panchang for sunrise/sunset info
-        let panchang = self.get_panchang(year, month, day, 12, 0, 0, lat, lng, tzone).await?;
-        
+        let panchang = self
+            .get_panchang(year, month, day, 12, 0, 0, lat, lng, tzone)
+            .await?;
+
         let day_of_week = panchang.vara.as_str();
         let sunrise = &panchang.day_boundaries.sunrise;
         let sunset = &panchang.day_boundaries.sunset;
         let next_sunrise = &panchang.day_boundaries.next_sunrise;
-        
+
         Ok(crate::panchang::hora::calculate_hora_timings(
             day_of_week,
             sunrise,
@@ -330,7 +354,7 @@ impl CachedVedicClient {
             next_sunrise,
         ))
     }
-    
+
     /// Get Choghadiya timings
     pub async fn get_choghadiya(
         &self,
@@ -342,13 +366,15 @@ impl CachedVedicClient {
         tzone: f64,
     ) -> Result<ChoghadiyaTimings> {
         // Get Panchang for timing info
-        let panchang = self.get_panchang(year, month, day, 12, 0, 0, lat, lng, tzone).await?;
-        
+        let panchang = self
+            .get_panchang(year, month, day, 12, 0, 0, lat, lng, tzone)
+            .await?;
+
         let day_of_week = panchang.vara.as_str();
         let sunrise = &panchang.day_boundaries.sunrise;
         let sunset = &panchang.day_boundaries.sunset;
         let next_sunrise = &panchang.day_boundaries.next_sunrise;
-        
+
         Ok(crate::panchang::choghadiya::calculate_choghadiya(
             day_of_week,
             sunrise,
@@ -356,7 +382,7 @@ impl CachedVedicClient {
             next_sunrise,
         ))
     }
-    
+
     /// Get current Muhurta at a specific time
     pub async fn get_current_muhurta(
         &self,
@@ -369,7 +395,7 @@ impl CachedVedicClient {
         tzone: f64,
     ) -> Result<Option<Muhurta>> {
         let muhurtas = self.get_muhurtas(year, month, day, lat, lng, tzone).await?;
-        
+
         // Check each Muhurta
         if let Some(ref amrit) = muhurtas.amrit_kaal {
             if is_time_in_range(time, &amrit.start, &amrit.end) {
@@ -396,10 +422,10 @@ impl CachedVedicClient {
                 return Ok(Some(gulika.clone()));
             }
         }
-        
+
         Ok(None)
     }
-    
+
     /// Get favorable Muhurtas for a specific activity
     pub async fn get_favorable_muhurtas(
         &self,
@@ -411,9 +437,9 @@ impl CachedVedicClient {
         tzone: f64,
     ) -> Result<Vec<Muhurta>> {
         let muhurtas = self.get_muhurtas(year, month, day, lat, lng, tzone).await?;
-        
+
         let mut favorable = Vec::new();
-        
+
         if let Some(ref amrit) = muhurtas.amrit_kaal {
             if amrit.nature.is_good_for_starting() {
                 favorable.push(amrit.clone());
@@ -429,10 +455,10 @@ impl CachedVedicClient {
                 favorable.push(brahma.clone());
             }
         }
-        
+
         Ok(favorable)
     }
-    
+
     /// Internal: Calculate Muhurtas
     async fn calculate_muhurtas(
         &self,
@@ -441,7 +467,7 @@ impl CachedVedicClient {
         _sunset: &str,
     ) -> Result<MuhurtaCollection> {
         use crate::panchang::muhurta::*;
-        
+
         // Calculate Rahu Kalam
         let rahu = RahuKalam::for_day(day_of_week, sunrise, _sunset);
         let rahu_muhurta = Muhurta {
@@ -459,7 +485,7 @@ impl CachedVedicClient {
                 "Marriage".to_string(),
             ],
         };
-        
+
         // Calculate Yama Gandam
         let yama = YamaGandam::for_day(day_of_week);
         let yama_muhurta = Muhurta {
@@ -475,7 +501,7 @@ impl CachedVedicClient {
                 "New beginnings".to_string(),
             ],
         };
-        
+
         // Calculate Gulika Kaal
         let gulika = GulikaKaal::for_day(day_of_week);
         let gulika_muhurta = Muhurta {
@@ -486,12 +512,9 @@ impl CachedVedicClient {
             nature: MuhurtaNature::Inauspicious,
             ruler: "Gulika".to_string(),
             suitable_activities: vec!["Building construction".to_string()],
-            avoid_activities: vec![
-                "New ventures".to_string(),
-                "Starting journeys".to_string(),
-            ],
+            avoid_activities: vec!["New ventures".to_string(), "Starting journeys".to_string()],
         };
-        
+
         // Abhijit Muhurta (approximately 11:40 AM to 12:20 PM)
         let abhijit_muhurta = Muhurta {
             name: "Abhijit Muhurta".to_string(),
@@ -507,7 +530,7 @@ impl CachedVedicClient {
             ],
             avoid_activities: vec![],
         };
-        
+
         // Amrit Kaal (varies by day, simplified)
         let amrit_muhurta = Muhurta {
             name: "Amrit Kaal".to_string(),
@@ -523,7 +546,7 @@ impl CachedVedicClient {
             ],
             avoid_activities: vec![],
         };
-        
+
         // Brahma Muhurta (approx 1h 36m before sunrise)
         let brahma_muhurta = Muhurta {
             name: "Brahma Muhurta".to_string(),
@@ -540,7 +563,7 @@ impl CachedVedicClient {
             ],
             avoid_activities: vec!["Sleep".to_string()],
         };
-        
+
         Ok(MuhurtaCollection {
             abhijit: Some(abhijit_muhurta),
             amrit_kaal: Some(amrit_muhurta),
@@ -552,7 +575,7 @@ impl CachedVedicClient {
             brahma_muhurta: Some(brahma_muhurta),
         })
     }
-    
+
     /// Health check - verifies API connectivity
     pub async fn health_check(&self) -> bool {
         // Simple check - try to make a lightweight request
@@ -564,12 +587,12 @@ impl CachedVedicClient {
     pub async fn rate_limit_status(&self) -> RateLimitStatus {
         self.rate_limiter.status()
     }
-    
+
     /// Get cache stats
     pub async fn cache_stats(&self) -> crate::cache::CacheStats {
         self.cache.stats().await
     }
-    
+
     /// Get combined status report
     pub async fn status_report(&self) -> StatusReport {
         StatusReport {
@@ -577,7 +600,7 @@ impl CachedVedicClient {
             cache: self.cache_stats().await,
         }
     }
-    
+
     /// Pre-fetch data for upcoming days
     /// Useful for warming cache with important dates
     pub async fn prefetch_panchang(
@@ -591,50 +614,59 @@ impl CachedVedicClient {
         tzone: f64,
     ) -> u32 {
         let mut fetched = 0;
-        
+
         info!("Pre-fetching {} days of Panchang data", days);
-        
+
         for i in 0..days {
             let date = chrono::NaiveDate::from_ymd_opt(start_year, start_month, start_day)
                 .unwrap()
                 .checked_add_signed(chrono::Duration::days(i as i64))
                 .unwrap();
-            
+
             // Check if already cached
             let key = panchang_key(date.year(), date.month(), date.day(), lat, lng);
             if self.cache.get_panchang(&key).await.is_some() {
                 continue;
             }
-            
+
             // Check rate limit
             if !self.rate_limiter.can_request() {
                 warn!("Rate limit reached during pre-fetch, stopping");
                 break;
             }
-            
+
             // Fetch
-            match self.get_panchang(
-                date.year(), date.month(), date.day(),
-                12, 0, 0, // noon
-                lat, lng, tzone
-            ).await {
+            match self
+                .get_panchang(
+                    date.year(),
+                    date.month(),
+                    date.day(),
+                    12,
+                    0,
+                    0, // noon
+                    lat,
+                    lng,
+                    tzone,
+                )
+                .await
+            {
                 Ok(_) => fetched += 1,
                 Err(e) => {
                     warn!("Failed to fetch Panchang for {}: {}", date, e);
                     break;
                 }
             }
-            
+
             // Small delay to respect rate limit
             tokio::time::sleep(tokio::time::Duration::from_millis(1100)).await;
         }
-        
+
         info!("Pre-fetched {} days of Panchang data", fetched);
         fetched
     }
-    
+
     // ==================== FALLBACK METHODS ====================
-    
+
     /// Fallback to native Panchang calculation via FallbackCalculator (FAPI-098)
     async fn fallback_panchang(
         &self,
@@ -649,7 +681,8 @@ impl CachedVedicClient {
         tzone: f64,
     ) -> Result<Panchang> {
         warn!("Falling back to native Panchang calculation");
-        self.fallback.calculate_panchang(year, month, day, hour, minute, second, lat, lng, tzone)
+        self.fallback
+            .calculate_panchang(year, month, day, hour, minute, second, lat, lng, tzone)
     }
 
     /// Fallback to native Dasha calculation via FallbackCalculator (FAPI-098)
@@ -667,7 +700,9 @@ impl CachedVedicClient {
         level: DashaLevel,
     ) -> Result<VimshottariDasha> {
         warn!("Falling back to native Dasha calculation");
-        self.fallback.calculate_vimshottari(year, month, day, hour, minute, second, lat, lng, tzone, level)
+        self.fallback.calculate_vimshottari(
+            year, month, day, hour, minute, second, lat, lng, tzone, level,
+        )
     }
 
     /// Fallback to native birth chart calculation via FallbackCalculator (FAPI-098)
@@ -684,7 +719,8 @@ impl CachedVedicClient {
         tzone: f64,
     ) -> Result<BirthChart> {
         warn!("Falling back to native birth chart calculation");
-        self.fallback.calculate_birth_chart(year, month, day, hour, minute, second, lat, lng, tzone)
+        self.fallback
+            .calculate_birth_chart(year, month, day, hour, minute, second, lat, lng, tzone)
     }
 }
 
@@ -698,10 +734,13 @@ pub struct StatusReport {
 impl std::fmt::Display for StatusReport {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         writeln!(f, "=== Vedic API Status ===")?;
-        writeln!(f, "Rate: {}/{} used, {} remaining", 
+        writeln!(
+            f,
+            "Rate: {}/{} used, {} remaining",
             self.rate_limit.used_today,
             self.rate_limit.daily_limit,
-            self.rate_limit.effective_remaining)?;
+            self.rate_limit.effective_remaining
+        )?;
         writeln!(f, "{}", self.cache)?;
         Ok(())
     }
@@ -744,7 +783,7 @@ mod tests {
                 birth_chart_entries: 2,
             },
         };
-        
+
         let output = format!("{}", report);
         assert!(output.contains("Vedic API Status"));
         assert!(output.contains("90.9%"));

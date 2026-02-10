@@ -27,16 +27,18 @@
 //! let output = engine.calculate(input).await?;
 //! ```
 
+pub mod engine;
+pub mod mock;
 pub mod models;
 pub mod wisdom;
-pub mod mock;
 pub mod witness;
-pub mod engine;
 
-pub use models::{BiofieldMetrics, BiofieldAnalysis, ChakraReading, Chakra};
-pub use wisdom::{ChakraWisdom, MetricInterpretation, get_chakra_wisdom, get_metric_interpretation};
-pub use mock::{generate_mock_metrics, generate_metrics_for_user};
-pub use witness::{generate_witness_prompts, generate_witness_prompt};
 pub use engine::BiofieldEngine;
+pub use mock::{generate_metrics_for_user, generate_mock_metrics};
+pub use models::{BiofieldAnalysis, BiofieldMetrics, Chakra, ChakraReading};
+pub use wisdom::{
+    get_chakra_wisdom, get_metric_interpretation, ChakraWisdom, MetricInterpretation,
+};
+pub use witness::{generate_witness_prompt, generate_witness_prompts};
 
 pub use noesis_core::{ConsciousnessEngine, EngineError, EngineInput, EngineOutput};

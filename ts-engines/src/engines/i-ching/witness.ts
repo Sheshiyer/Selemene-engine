@@ -3,8 +3,8 @@
  */
 
 import type { WitnessPrompt } from '../../types'
-import type { Hexagram } from './wisdom'
 import { SeededRandom, getDefaultSeed } from '../../utils/random'
+import type { Hexagram } from './wisdom'
 
 const HEXAGRAM_TEMPLATES = [
   'What does {name} illuminate about your current situation?',

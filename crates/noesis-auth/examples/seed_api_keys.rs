@@ -104,8 +104,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // ── 1. Create admin user ────────────────────────────────────────
     let admin_email = "admin@tryambakam.com";
     let admin_password = generate_random_key(24); // secure random password
-    let password_hash = hash_password(&admin_password)
-        .map_err(|e| format!("Failed to hash password: {}", e))?;
+    let password_hash =
+        hash_password(&admin_password).map_err(|e| format!("Failed to hash password: {}", e))?;
 
     let user_id: uuid::Uuid = sqlx::query_scalar(
         "INSERT INTO users (email, password_hash, full_name, tier, consciousness_level) \
@@ -154,17 +154,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .execute(&pool)
         .await?;
 
-        println!(
-            "Key {} [{}]: {}",
-            i + 1,
-            spec.tier,
-            raw_key
-        );
+        println!("Key {} [{}]: {}", i + 1, spec.tier, raw_key);
         println!("   Hash: {}", key_hash);
-        println!(
-            "   Permissions: {:?}",
-            spec.permissions
-        );
+        println!("   Permissions: {:?}", spec.permissions);
         println!();
     }
 

@@ -3,9 +3,9 @@
 //! Provides functions to determine the active organ window
 //! based on current time and timezone.
 
-use chrono::{DateTime, Timelike, Utc};
 use crate::models::OrganWindow;
 use crate::wisdom::get_organ_for_hour;
+use chrono::{DateTime, Timelike, Utc};
 
 /// Get the organ window for the current datetime in a specific timezone
 ///
@@ -31,16 +31,16 @@ pub fn get_current_organ(datetime: DateTime<Utc>, timezone_offset: i32) -> Organ
 pub fn get_local_hour(datetime: DateTime<Utc>, timezone_offset: i32) -> u8 {
     let utc_hour = datetime.hour() as i32;
     let utc_minute = datetime.minute() as i32;
-    
+
     // Convert to total minutes from midnight UTC
     let total_utc_minutes = utc_hour * 60 + utc_minute;
-    
+
     // Add timezone offset
     let total_local_minutes = total_utc_minutes + timezone_offset;
-    
+
     // Handle day wraparound
     let normalized_minutes = ((total_local_minutes % (24 * 60)) + (24 * 60)) % (24 * 60);
-    
+
     // Convert back to hour
     (normalized_minutes / 60) as u8
 }
@@ -56,7 +56,7 @@ pub fn get_local_hour(datetime: DateTime<Utc>, timezone_offset: i32) -> u8 {
 pub fn minutes_until_next_transition(datetime: DateTime<Utc>, timezone_offset: i32) -> u32 {
     let local_hour = get_local_hour(datetime, timezone_offset);
     let local_minute = datetime.minute();
-    
+
     // Find the next transition hour (organs change on odd hours: 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 1)
     let next_transition_hour = match local_hour {
         0 => 1,
@@ -74,14 +74,14 @@ pub fn minutes_until_next_transition(datetime: DateTime<Utc>, timezone_offset: i
         23 => 1, // Wraps to next day
         _ => 1,
     };
-    
+
     let hours_until = if next_transition_hour <= local_hour {
         // Wraps to next day
         (24 - local_hour as u32) + next_transition_hour as u32
     } else {
         (next_transition_hour - local_hour) as u32
     };
-    
+
     // Calculate total minutes
     hours_until * 60 - local_minute
 }
@@ -97,23 +97,21 @@ pub fn minutes_until_next_transition(datetime: DateTime<Utc>, timezone_offset: i
 pub fn get_window_progress(datetime: DateTime<Utc>, timezone_offset: i32) -> f64 {
     let local_hour = get_local_hour(datetime, timezone_offset);
     let local_minute = datetime.minute();
-    
+
     // Each window is 2 hours (120 minutes)
     // Find which hour within the 2-hour window we're in
     let window_start_hour = match local_hour {
-        0 => 23,     // Gallbladder window (23-1)
+        0 => 23,              // Gallbladder window (23-1)
         h if h % 2 == 1 => h, // Odd hours are window starts
-        h => h - 1,   // Even hours are in the second hour of window
+        h => h - 1,           // Even hours are in the second hour of window
     };
-    
+
     let minutes_into_window = if local_hour == window_start_hour {
         local_minute
-    } else if local_hour == 0 && window_start_hour == 23 {
-        60 + local_minute
     } else {
         60 + local_minute
     };
-    
+
     minutes_into_window as f64 / 120.0
 }
 

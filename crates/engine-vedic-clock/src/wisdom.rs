@@ -204,7 +204,7 @@ pub fn organ_clock() -> Vec<OrganWindow> {
 /// Get the organ window for a specific hour
 pub fn get_organ_for_hour(hour: u8) -> OrganWindow {
     let clock = organ_clock();
-    
+
     // Handle the special wrap-around case for Gallbladder (23-1)
     match hour {
         3..=4 => clock[0].clone(),   // Lung
@@ -228,7 +228,9 @@ pub fn get_organ_element(organ: &Organ) -> Element {
     match organ {
         Organ::Lung | Organ::LargeIntestine => Element::Metal,
         Organ::Stomach | Organ::Spleen => Element::Earth,
-        Organ::Heart | Organ::SmallIntestine | Organ::Pericardium | Organ::TripleWarmer => Element::Fire,
+        Organ::Heart | Organ::SmallIntestine | Organ::Pericardium | Organ::TripleWarmer => {
+            Element::Fire
+        }
         Organ::Bladder | Organ::Kidney => Element::Water,
         Organ::Gallbladder | Organ::Liver => Element::Wood,
     }
@@ -265,7 +267,7 @@ mod tests {
     #[test]
     fn test_organ_clock_covers_24_hours() {
         let clock = organ_clock();
-        
+
         // Each window should be 2 hours
         for window in &clock {
             let duration = if window.end_hour < window.start_hour {
@@ -274,7 +276,11 @@ mod tests {
             } else {
                 window.end_hour - window.start_hour
             };
-            assert_eq!(duration, 2, "Window for {:?} should be 2 hours", window.organ);
+            assert_eq!(
+                duration, 2,
+                "Window for {:?} should be 2 hours",
+                window.organ
+            );
         }
     }
 
@@ -311,8 +317,11 @@ mod tests {
     fn test_each_organ_has_activities() {
         let clock = organ_clock();
         for window in &clock {
-            assert!(!window.recommended_activities.is_empty(),
-                "{:?} should have recommended activities", window.organ);
+            assert!(
+                !window.recommended_activities.is_empty(),
+                "{:?} should have recommended activities",
+                window.organ
+            );
         }
     }
 }

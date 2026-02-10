@@ -3,11 +3,11 @@
 //! All 13 consciousness engines implement the `ConsciousnessEngine` trait defined here.
 //! This crate provides the universal interface, shared types, and error definitions.
 
-pub mod types;
 pub mod error;
+pub mod types;
 
-pub use types::*;
 pub use error::*;
+pub use types::*;
 
 use async_trait::async_trait;
 

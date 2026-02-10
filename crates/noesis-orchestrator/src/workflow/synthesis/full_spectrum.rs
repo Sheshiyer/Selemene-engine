@@ -30,24 +30,62 @@ impl ThemeCategory {
     pub fn keywords(&self) -> &'static [&'static str] {
         match self {
             Self::Identity => &[
-                "type", "path", "number", "profile", "nature", "essence",
-                "personality", "character", "archetype", "core",
+                "type",
+                "path",
+                "number",
+                "profile",
+                "nature",
+                "essence",
+                "personality",
+                "character",
+                "archetype",
+                "core",
             ],
             Self::Timing => &[
-                "time", "day", "period", "cycle", "phase", "moment",
-                "auspicious", "favorable", "muhurta", "karana",
+                "time",
+                "day",
+                "period",
+                "cycle",
+                "phase",
+                "moment",
+                "auspicious",
+                "favorable",
+                "muhurta",
+                "karana",
             ],
             Self::Shadow => &[
-                "shadow", "fear", "challenge", "growth", "lesson",
-                "obstacle", "resistance", "blind spot", "trigger",
+                "shadow",
+                "fear",
+                "challenge",
+                "growth",
+                "lesson",
+                "obstacle",
+                "resistance",
+                "blind spot",
+                "trigger",
             ],
             Self::Gift => &[
-                "gift", "strength", "talent", "channel", "gate",
-                "potential", "ability", "virtue", "blessing",
+                "gift",
+                "strength",
+                "talent",
+                "channel",
+                "gate",
+                "potential",
+                "ability",
+                "virtue",
+                "blessing",
             ],
             Self::Direction => &[
-                "direction", "guidance", "path", "advice", "counsel",
-                "movement", "action", "decision", "choice", "next step",
+                "direction",
+                "guidance",
+                "path",
+                "advice",
+                "counsel",
+                "movement",
+                "action",
+                "decision",
+                "choice",
+                "next step",
             ],
         }
     }
@@ -131,45 +169,93 @@ impl ThemeVocabulary {
         let mut synonyms = HashMap::new();
 
         // Leadership/Authority variants
-        for term in &["leader", "authority", "commanding", "executive", "boss", "chief"] {
+        for term in &[
+            "leader",
+            "authority",
+            "commanding",
+            "executive",
+            "boss",
+            "chief",
+        ] {
             synonyms.insert(term.to_string(), "leadership".to_string());
         }
 
         // Creativity variants
-        for term in &["creative", "artistic", "imaginative", "inventive", "innovative"] {
+        for term in &[
+            "creative",
+            "artistic",
+            "imaginative",
+            "inventive",
+            "innovative",
+        ] {
             synonyms.insert(term.to_string(), "creativity".to_string());
         }
 
         // Introspection variants
         for term in &[
-            "introspection", "reflection", "contemplation", "inner work",
-            "self-reflection", "meditation", "inner journey",
+            "introspection",
+            "reflection",
+            "contemplation",
+            "inner work",
+            "self-reflection",
+            "meditation",
+            "inner journey",
         ] {
             synonyms.insert(term.to_string(), "introspection".to_string());
         }
 
         // Communication variants
-        for term in &["communication", "expression", "speaking", "voice", "articulation"] {
+        for term in &[
+            "communication",
+            "expression",
+            "speaking",
+            "voice",
+            "articulation",
+        ] {
             synonyms.insert(term.to_string(), "communication".to_string());
         }
 
         // Transformation variants
-        for term in &["transformation", "change", "evolution", "metamorphosis", "shift"] {
+        for term in &[
+            "transformation",
+            "change",
+            "evolution",
+            "metamorphosis",
+            "shift",
+        ] {
             synonyms.insert(term.to_string(), "transformation".to_string());
         }
 
         // Intuition variants
-        for term in &["intuition", "instinct", "gut feeling", "inner knowing", "sixth sense"] {
+        for term in &[
+            "intuition",
+            "instinct",
+            "gut feeling",
+            "inner knowing",
+            "sixth sense",
+        ] {
             synonyms.insert(term.to_string(), "intuition".to_string());
         }
 
         // Discipline variants
-        for term in &["discipline", "structure", "order", "routine", "organization"] {
+        for term in &[
+            "discipline",
+            "structure",
+            "order",
+            "routine",
+            "organization",
+        ] {
             synonyms.insert(term.to_string(), "discipline".to_string());
         }
 
         // Connection variants
-        for term in &["connection", "relationship", "bonding", "partnership", "union"] {
+        for term in &[
+            "connection",
+            "relationship",
+            "bonding",
+            "partnership",
+            "union",
+        ] {
             synonyms.insert(term.to_string(), "connection".to_string());
         }
 
@@ -179,10 +265,7 @@ impl ThemeVocabulary {
     /// Normalize a term to its canonical form
     pub fn normalize(&self, term: &str) -> String {
         let lower = term.to_lowercase();
-        self.synonyms
-            .get(&lower)
-            .cloned()
-            .unwrap_or_else(|| lower)
+        self.synonyms.get(&lower).cloned().unwrap_or(lower)
     }
 }
 
@@ -214,7 +297,10 @@ impl FullSpectrumSynthesizer {
     }
 
     /// Extract themes from a single engine output
-    fn extract_themes_from_output(&self, output: &EngineOutput) -> Vec<(String, ThemeCategory, f32)> {
+    fn extract_themes_from_output(
+        &self,
+        output: &EngineOutput,
+    ) -> Vec<(String, ThemeCategory, f32)> {
         let mut themes = Vec::new();
 
         // Extract from result JSON
@@ -284,11 +370,14 @@ impl FullSpectrumSynthesizer {
     }
 
     /// Check if a JSON value contains a keyword
+    #[allow(clippy::only_used_in_recursion)]
     fn value_contains_keyword(&self, value: &Value, keyword: &str) -> bool {
         match value {
             Value::String(s) => s.to_lowercase().contains(keyword),
             Value::Array(arr) => arr.iter().any(|v| self.value_contains_keyword(v, keyword)),
-            Value::Object(obj) => obj.values().any(|v| self.value_contains_keyword(v, keyword)),
+            Value::Object(obj) => obj
+                .values()
+                .any(|v| self.value_contains_keyword(v, keyword)),
             _ => false,
         }
     }
@@ -336,7 +425,10 @@ impl FullSpectrumSynthesizer {
                 continue; // Skip themes from single engine
             }
 
-            let category = theme_categories.get(&theme).copied().unwrap_or(ThemeCategory::Identity);
+            let category = theme_categories
+                .get(&theme)
+                .copied()
+                .unwrap_or(ThemeCategory::Identity);
             let strength = source_count as f32 / total_engines.max(1) as f32;
             let is_primary = source_count >= self.primary_threshold;
 
@@ -367,7 +459,8 @@ impl FullSpectrumSynthesizer {
         secondary_themes.sort_by(|a, b| b.strength.partial_cmp(&a.strength).unwrap());
 
         // Generate category summaries
-        let category_summaries = self.generate_category_summaries(&primary_themes, &secondary_themes);
+        let category_summaries =
+            self.generate_category_summaries(&primary_themes, &secondary_themes);
 
         // Collect witness prompts
         let witness_prompts: Vec<String> = primary_themes
@@ -510,7 +603,11 @@ impl FullSpectrumSynthesizer {
             );
         }
 
-        let theme_list: Vec<_> = primary_themes.iter().take(3).map(|t| t.theme.as_str()).collect();
+        let theme_list: Vec<_> = primary_themes
+            .iter()
+            .take(3)
+            .map(|t| t.theme.as_str())
+            .collect();
 
         format!(
             "Across {} consciousness systems, {} primary themes emerged: {}. \
@@ -600,10 +697,12 @@ mod tests {
         // The synthesizer detects themes based on category keywords (gift, shadow, path, etc.)
         // "gift" appears in numerology (gifts array) and gene-keys (gift field)
         // So we should find a theme related to gifts
-        let all_themes: Vec<_> = synthesis.primary_themes.iter()
+        let all_themes: Vec<_> = synthesis
+            .primary_themes
+            .iter()
             .chain(synthesis.secondary_themes.iter())
             .collect();
-        
+
         // At minimum we should detect "gift" as appearing in 2 engines
         assert!(
             !all_themes.is_empty() || synthesis.engines_analyzed > 0,
@@ -621,16 +720,14 @@ mod tests {
     #[test]
     fn test_narrative_generation() {
         let synthesizer = FullSpectrumSynthesizer::new();
-        let themes = vec![
-            CrossEngineTheme {
-                theme: "leadership".to_string(),
-                sources: vec![],
-                strength: 0.5,
-                category: ThemeCategory::Gift,
-                is_primary: true,
-                witness_prompt: None,
-            },
-        ];
+        let themes = vec![CrossEngineTheme {
+            theme: "leadership".to_string(),
+            sources: vec![],
+            strength: 0.5,
+            category: ThemeCategory::Gift,
+            is_primary: true,
+            witness_prompt: None,
+        }];
 
         let narrative = synthesizer.generate_narrative(&themes, 5);
         assert!(narrative.contains("5 consciousness systems"));

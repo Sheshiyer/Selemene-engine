@@ -3,31 +3,36 @@
 //! FAPI-047: Map planet positions to internal model
 //! FAPI-048: Map house cusps to internal model
 
-use crate::error::VedicApiResult;
 use super::api::{
-    BirthChartApiResponse, PlanetApiResponse, HouseApiResponse,
-    parse_planet, parse_sign,
+    parse_planet, parse_sign, BirthChartApiResponse, HouseApiResponse, PlanetApiResponse,
 };
-use super::types::{BirthChart, PlanetPosition, HouseCusp, Planet, ZodiacSign, calculate_dignity};
+use super::types::{calculate_dignity, BirthChart, HouseCusp, Planet, PlanetPosition, ZodiacSign};
+use crate::error::VedicApiResult;
 
 /// Map complete birth chart API response to internal model
 pub fn map_birth_chart_response(response: BirthChartApiResponse) -> VedicApiResult<BirthChart> {
-    let planets = response.planets.iter()
+    let planets = response
+        .planets
+        .iter()
         .filter_map(|p| map_planet_position(p).ok())
         .collect::<Vec<_>>();
 
-    let houses = response.houses.iter()
+    let houses = response
+        .houses
+        .iter()
         .map(map_house_cusp)
         .collect::<VedicApiResult<Vec<_>>>()?;
 
     let ascendant_sign = parse_sign(&response.ascendant.sign)?;
-    
+
     // Extract signs before moving planets
-    let moon_sign = planets.iter()
+    let moon_sign = planets
+        .iter()
         .find(|p| p.planet == Planet::Moon)
         .map(|p| p.sign)
         .unwrap_or(ZodiacSign::Aries);
-    let sun_sign = planets.iter()
+    let sun_sign = planets
+        .iter()
         .find(|p| p.planet == Planet::Sun)
         .map(|p| p.sign)
         .unwrap_or(ZodiacSign::Aries);
@@ -57,7 +62,7 @@ pub fn map_planet_position(planet: &PlanetApiResponse) -> VedicApiResult<PlanetP
     let planet_enum = parse_planet(&planet.name)?;
     let sign = parse_sign(&planet.sign)?;
     let is_retrograde = planet.is_retrograde.unwrap_or(false);
-    
+
     // Calculate dignity
     let dignity = calculate_dignity(planet_enum, sign);
 
@@ -67,7 +72,10 @@ pub fn map_planet_position(planet: &PlanetApiResponse) -> VedicApiResult<PlanetP
         degree: planet.degree,
         longitude: planet.longitude,
         house: planet.house,
-        nakshatra: planet.nakshatra.clone().unwrap_or_else(|| "Unknown".to_string()),
+        nakshatra: planet
+            .nakshatra
+            .clone()
+            .unwrap_or_else(|| "Unknown".to_string()),
         pada: planet.nakshatra_pada.unwrap_or(1),
         is_retrograde,
         is_combust: false, // Will be calculated separately
@@ -92,7 +100,8 @@ pub fn map_house_cusp(house: &HouseApiResponse) -> VedicApiResult<HouseCusp> {
 
 /// Map multiple planet positions
 pub fn map_planet_positions(planets: &[PlanetApiResponse]) -> Vec<PlanetPosition> {
-    planets.iter()
+    planets
+        .iter()
         .filter_map(|p| map_planet_position(p).ok())
         .collect()
 }

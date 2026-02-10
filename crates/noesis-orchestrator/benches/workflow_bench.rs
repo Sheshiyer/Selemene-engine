@@ -7,13 +7,11 @@
 
 use async_trait::async_trait;
 use chrono::Utc;
-use criterion::{black_box, criterion_group, criterion_main, Criterion, BenchmarkId};
+use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion};
 use noesis_core::{
     CalculationMetadata, EngineError, EngineInput, EngineOutput, Precision, ValidationResult,
 };
-use noesis_orchestrator::{
-    ConsciousnessEngine, FullSpectrumWorkflow, WorkflowOrchestrator,
-};
+use noesis_orchestrator::{ConsciousnessEngine, FullSpectrumWorkflow, WorkflowOrchestrator};
 use std::collections::HashMap;
 use std::sync::Arc;
 use std::time::Duration;
@@ -137,9 +135,8 @@ fn bench_full_spectrum(c: &mut Criterion) {
 
         group.bench_function("14_engines_zero_delay", |b| {
             b.iter(|| {
-                runtime.block_on(async {
-                    black_box(workflow.execute(input.clone()).await.unwrap())
-                })
+                runtime
+                    .block_on(async { black_box(workflow.execute(input.clone()).await.unwrap()) })
             })
         });
     }
@@ -148,16 +145,16 @@ fn bench_full_spectrum(c: &mut Criterion) {
     {
         let mut engines: HashMap<String, Arc<dyn ConsciousnessEngine>> = HashMap::new();
         for id in &engine_ids {
-            engines.insert(id.to_string(), Arc::new(BenchMockEngine::new(id, 1000))); // 1ms
+            engines.insert(id.to_string(), Arc::new(BenchMockEngine::new(id, 1000)));
+            // 1ms
         }
         let workflow = FullSpectrumWorkflow::new(engines);
         let input = bench_input();
 
         group.bench_function("14_engines_1ms_each", |b| {
             b.iter(|| {
-                runtime.block_on(async {
-                    black_box(workflow.execute(input.clone()).await.unwrap())
-                })
+                runtime
+                    .block_on(async { black_box(workflow.execute(input.clone()).await.unwrap()) })
             })
         });
     }
@@ -166,16 +163,16 @@ fn bench_full_spectrum(c: &mut Criterion) {
     {
         let mut engines: HashMap<String, Arc<dyn ConsciousnessEngine>> = HashMap::new();
         for id in &engine_ids {
-            engines.insert(id.to_string(), Arc::new(BenchMockEngine::new(id, 10000))); // 10ms
+            engines.insert(id.to_string(), Arc::new(BenchMockEngine::new(id, 10000)));
+            // 10ms
         }
         let workflow = FullSpectrumWorkflow::new(engines);
         let input = bench_input();
 
         group.bench_function("14_engines_10ms_each", |b| {
             b.iter(|| {
-                runtime.block_on(async {
-                    black_box(workflow.execute(input.clone()).await.unwrap())
-                })
+                runtime
+                    .block_on(async { black_box(workflow.execute(input.clone()).await.unwrap()) })
             })
         });
     }
@@ -194,9 +191,20 @@ fn bench_individual_workflows(c: &mut Criterion) {
 
     // Register all engines with 1ms simulated delay
     let all_engines = [
-        "numerology", "human-design", "gene-keys", "panchanga", "vedic-clock",
-        "biorhythm", "vimshottari", "tarot", "i-ching", "enneagram",
-        "sigil-forge", "sacred-geometry", "biofield", "face-reading",
+        "numerology",
+        "human-design",
+        "gene-keys",
+        "panchanga",
+        "vedic-clock",
+        "biorhythm",
+        "vimshottari",
+        "tarot",
+        "i-ching",
+        "enneagram",
+        "sigil-forge",
+        "sacred-geometry",
+        "biofield",
+        "face-reading",
     ];
 
     for id in all_engines {
@@ -227,7 +235,7 @@ fn bench_individual_workflows(c: &mut Criterion) {
                             orchestrator
                                 .execute_workflow(workflow_id, input.clone(), 5)
                                 .await
-                                .unwrap()
+                                .unwrap(),
                         )
                     })
                 })
@@ -253,7 +261,8 @@ fn bench_scaling(c: &mut Criterion) {
         let mut engines: HashMap<String, Arc<dyn ConsciousnessEngine>> = HashMap::new();
         for i in 0..engine_count {
             let id = format!("engine-{}", i);
-            engines.insert(id.clone(), Arc::new(BenchMockEngine::new(&id, 1000))); // 1ms each
+            engines.insert(id.clone(), Arc::new(BenchMockEngine::new(&id, 1000)));
+            // 1ms each
         }
 
         let workflow = FullSpectrumWorkflow::new(engines);
@@ -304,20 +313,12 @@ fn bench_cache(c: &mut Criterion) {
 
     group.bench_function("cache_hit", |b| {
         let key = WorkflowCacheKey::new("test", 500, "v1");
-        b.iter(|| {
-            runtime.block_on(async {
-                black_box(cache.get(&key).await)
-            })
-        })
+        b.iter(|| runtime.block_on(async { black_box(cache.get(&key).await) }))
     });
 
     group.bench_function("cache_miss", |b| {
         let key = WorkflowCacheKey::new("test", 99999, "v1");
-        b.iter(|| {
-            runtime.block_on(async {
-                black_box(cache.get(&key).await)
-            })
-        })
+        b.iter(|| runtime.block_on(async { black_box(cache.get(&key).await) }))
     });
 
     group.bench_function("cache_set", |b| {

@@ -9,7 +9,7 @@
 
 use axum::{
     body::Body,
-    http::{Request, StatusCode, header},
+    http::{header, Request, StatusCode},
     Router,
 };
 use serde_json::{json, Value};
@@ -70,7 +70,7 @@ async fn test_gene_keys_with_birth_data() {
     // Test Mode 1: birth_data → HD → Gene Keys
     let router = get_test_router().await;
     let token = generate_test_token(3); // consciousness level 3
-    
+
     let request_body = json!({
         "birth_data": {
             "date": "1985-06-15",
@@ -83,21 +83,24 @@ async fn test_gene_keys_with_birth_data() {
             "consciousness_level": 3
         }
     });
-    
+
     let (status, response) = make_authenticated_request(
         router,
         "POST",
         "/api/v1/engines/gene-keys/calculate",
         &token,
         Some(request_body),
-    ).await;
-    
+    )
+    .await;
+
     // Mode 1 is allowed to fail with a known limitation: GK calls HD internally and
     // round-trips HD chart JSON back into a struct.
     if status == StatusCode::INTERNAL_SERVER_ERROR {
         let err = response["error"].as_str().unwrap_or("");
         assert!(
-            err.contains("parse HD chart") || err.contains("Failed to parse HD chart") || err.contains("Calculation error"),
+            err.contains("parse HD chart")
+                || err.contains("Failed to parse HD chart")
+                || err.contains("Calculation error"),
             "Unexpected error: {}",
             err
         );
@@ -108,36 +111,53 @@ async fn test_gene_keys_with_birth_data() {
 
     // Validate structure
     assert_eq!(response["engine_id"], "gene-keys");
-    assert!(!response["witness_prompt"].as_str().unwrap_or("").is_empty(), "Rule 5: witness_prompt must be present");
-    
+    assert!(
+        !response["witness_prompt"].as_str().unwrap_or("").is_empty(),
+        "Rule 5: witness_prompt must be present"
+    );
+
     // Validate witness_prompt is an inquiry
     let witness_prompt = response["witness_prompt"].as_str().unwrap();
-    assert!(witness_prompt.contains("?"), "Witness prompt must be an inquiry");
-    
+    assert!(
+        witness_prompt.contains("?"),
+        "Witness prompt must be an inquiry"
+    );
+
     // Validate data structure
     let result = &response["result"];
     assert!(result.is_object(), "result field must be an object");
-    
+
     // Validate activation_sequence
     let activation_sequence = &result["activation_sequence"];
     assert!(activation_sequence["lifes_work"].is_array());
-    assert_eq!(activation_sequence["lifes_work"].as_array().unwrap().len(), 2);
+    assert_eq!(
+        activation_sequence["lifes_work"].as_array().unwrap().len(),
+        2
+    );
     assert!(activation_sequence["evolution"].is_array());
-    assert_eq!(activation_sequence["evolution"].as_array().unwrap().len(), 2);
+    assert_eq!(
+        activation_sequence["evolution"].as_array().unwrap().len(),
+        2
+    );
     assert!(activation_sequence["radiance"].is_array());
     assert_eq!(activation_sequence["radiance"].as_array().unwrap().len(), 2);
     assert!(activation_sequence["purpose"].is_array());
     assert_eq!(activation_sequence["purpose"].as_array().unwrap().len(), 2);
-    
+
     // Validate active_keys contains at least 4 keys (Sun/Earth personality/design minimum)
-    let active_keys = result["active_keys"].as_array().expect("active_keys must be array");
-    assert!(active_keys.len() >= 4, "Should have at least 4 active keys (Sun/Earth P/D)");
-    
+    let active_keys = result["active_keys"]
+        .as_array()
+        .expect("active_keys must be array");
+    assert!(
+        active_keys.len() >= 4,
+        "Should have at least 4 active keys (Sun/Earth P/D)"
+    );
+
     // Validate each key has proper structure
     for key in active_keys {
         assert!(key["key_number"].is_number());
         let key_num = key["key_number"].as_u64().unwrap();
-        assert!(key_num >= 1 && key_num <= 64, "Key number must be 1-64");
+        assert!((1..=64).contains(&key_num), "Key number must be 1-64");
         assert!(key["shadow"].is_string());
         assert!(key["gift"].is_string());
         assert!(key["siddhi"].is_string());
@@ -149,7 +169,7 @@ async fn test_gene_keys_with_hd_gates() {
     // Test Mode 2: direct hd_gates input
     let router = get_test_router().await;
     let token = generate_test_token(4);
-    
+
     let request_body = json!({
         "options": {
             "hd_gates": {
@@ -161,31 +181,32 @@ async fn test_gene_keys_with_hd_gates() {
             "consciousness_level": 4
         }
     });
-    
+
     let (status, response) = make_authenticated_request(
         router,
         "POST",
         "/api/v1/engines/gene-keys/calculate",
         &token,
         Some(request_body),
-    ).await;
-    
+    )
+    .await;
+
     assert_eq!(status, StatusCode::OK, "Response: {:?}", response);
-    
+
     let activation_sequence = &response["result"]["activation_sequence"];
-    
+
     // Validate Life's Work (Personality Sun + Earth)
     assert_eq!(activation_sequence["lifes_work"][0].as_u64().unwrap(), 17);
     assert_eq!(activation_sequence["lifes_work"][1].as_u64().unwrap(), 18);
-    
+
     // Validate Evolution (Design Sun + Earth)
     assert_eq!(activation_sequence["evolution"][0].as_u64().unwrap(), 1);
     assert_eq!(activation_sequence["evolution"][1].as_u64().unwrap(), 2);
-    
+
     // Validate Radiance (P Sun + D Sun)
     assert_eq!(activation_sequence["radiance"][0].as_u64().unwrap(), 17);
     assert_eq!(activation_sequence["radiance"][1].as_u64().unwrap(), 1);
-    
+
     // Validate Purpose (P Earth + D Earth)
     assert_eq!(activation_sequence["purpose"][0].as_u64().unwrap(), 18);
     assert_eq!(activation_sequence["purpose"][1].as_u64().unwrap(), 2);
@@ -195,18 +216,18 @@ async fn test_gene_keys_with_hd_gates() {
 async fn test_consciousness_level_adaptation() {
     // Test witness prompts adapt to consciousness levels
     let router = get_test_router().await;
-    
+
     let test_levels = vec![
-        (2, "shadow-focused"), 
-        (3, "gift-focused"), 
-        (6, "siddhi-focused")
+        (2, "shadow-focused"),
+        (3, "gift-focused"),
+        (6, "siddhi-focused"),
     ];
-    
+
     let mut prompts = Vec::new();
-    
+
     for (level, _description) in test_levels {
         let token = generate_test_token(level);
-        
+
         let request_body = json!({
             "options": {
                 "hd_gates": {
@@ -218,28 +239,38 @@ async fn test_consciousness_level_adaptation() {
                 "consciousness_level": level
             }
         });
-        
+
         let (status, response) = make_authenticated_request(
             router,
             "POST",
             "/api/v1/engines/gene-keys/calculate",
             &token,
             Some(request_body),
-        ).await;
+        )
+        .await;
 
         assert_eq!(status, StatusCode::OK, "Response: {:?}", response);
-        
+
         let prompt = response["witness_prompt"].as_str().unwrap().to_string();
         prompts.push(prompt);
     }
-    
+
     // Validate prompts are different for different consciousness levels
-    assert_ne!(prompts[0], prompts[1], "Shadow vs Gift prompts should differ");
-    assert_ne!(prompts[1], prompts[2], "Gift vs Siddhi prompts should differ");
-    
+    assert_ne!(
+        prompts[0], prompts[1],
+        "Shadow vs Gift prompts should differ"
+    );
+    assert_ne!(
+        prompts[1], prompts[2],
+        "Gift vs Siddhi prompts should differ"
+    );
+
     // Validate all prompts are inquiries
     for prompt in &prompts {
-        assert!(prompt.contains("?"), "All witness prompts must be inquiries");
+        assert!(
+            prompt.contains("?"),
+            "All witness prompts must be inquiries"
+        );
     }
 }
 
@@ -248,34 +279,41 @@ async fn test_gene_keys_requires_input() {
     // Test error case: no birth_data AND no hd_gates
     let router = get_test_router().await;
     let token = generate_test_token(3);
-    
+
     let request_body = json!({
         "options": {
             "consciousness_level": 3
         }
     });
-    
+
     let (status, response) = make_authenticated_request(
         router,
         "POST",
         "/api/v1/engines/gene-keys/calculate",
         &token,
         Some(request_body),
-    ).await;
-    
+    )
+    .await;
+
     // Should return 422 Unprocessable Entity or 400 Bad Request
     assert!(
         status == StatusCode::UNPROCESSABLE_ENTITY || status == StatusCode::BAD_REQUEST,
-        "Expected 422 or 400, got {}: {:?}", status, response
+        "Expected 422 or 400, got {}: {:?}",
+        status,
+        response
     );
-    
+
     // Error message should indicate missing input
-    let error_msg = response["error"].as_str()
+    let error_msg = response["error"]
+        .as_str()
         .or_else(|| response["message"].as_str())
         .unwrap_or("");
     assert!(
-        error_msg.contains("birth_data") || error_msg.contains("hd_gates") || error_msg.contains("input"),
-        "Error should mention missing input: {}", error_msg
+        error_msg.contains("birth_data")
+            || error_msg.contains("hd_gates")
+            || error_msg.contains("input"),
+        "Error should mention missing input: {}",
+        error_msg
     );
 }
 
@@ -285,7 +323,7 @@ async fn test_consciousness_level_check() {
     // Gene Keys requires phase 2+
     let router = get_test_router().await;
     let token = generate_test_token(1); // Level 1, below required phase
-    
+
     let request_body = json!({
         "options": {
             "hd_gates": {
@@ -297,23 +335,27 @@ async fn test_consciousness_level_check() {
             "consciousness_level": 3
         }
     });
-    
+
     let (status, response) = make_authenticated_request(
         router,
         "POST",
         "/api/v1/engines/gene-keys/calculate",
         &token,
         Some(request_body),
-    ).await;
-    
+    )
+    .await;
+
     // Should return 403 Forbidden if authorization middleware active
     // Or 200 if middleware not enforcing (acceptable for local dev)
     if status == StatusCode::FORBIDDEN {
-        let error_msg = response["error"].as_str()
+        let error_msg = response["error"]
+            .as_str()
             .or_else(|| response["message"].as_str())
             .unwrap_or("");
         assert!(
-            error_msg.contains("consciousness") || error_msg.contains("level") || error_msg.contains("phase"),
+            error_msg.contains("consciousness")
+                || error_msg.contains("level")
+                || error_msg.contains("phase"),
             "Error should mention consciousness level requirement"
         );
     }
@@ -325,7 +367,7 @@ async fn test_witness_prompt_inquiry_format() {
     // Validate witness_prompt contains inquiry and references Gene Keys
     let router = get_test_router().await;
     let token = generate_test_token(3);
-    
+
     let request_body = json!({
         "options": {
             "hd_gates": {
@@ -337,35 +379,40 @@ async fn test_witness_prompt_inquiry_format() {
             "consciousness_level": 3
         }
     });
-    
+
     let (status, response) = make_authenticated_request(
         router,
         "POST",
         "/api/v1/engines/gene-keys/calculate",
         &token,
         Some(request_body),
-    ).await;
-    
+    )
+    .await;
+
     assert_eq!(status, StatusCode::OK);
-    
+
     let witness_prompt = response["witness_prompt"].as_str().unwrap();
-    
+
     // Must be an inquiry
-    assert!(witness_prompt.contains("?"), "Witness prompt must contain question mark");
-    
+    assert!(
+        witness_prompt.contains("?"),
+        "Witness prompt must contain question mark"
+    );
+
     // Should reference Gene Keys by number or name
-    let has_number_ref = witness_prompt.contains("17") || 
-                         witness_prompt.contains("18") || 
-                         witness_prompt.contains("21") || 
-                         witness_prompt.contains("48");
-    let has_key_ref = witness_prompt.to_lowercase().contains("gene key") ||
-                      witness_prompt.to_lowercase().contains("shadow") ||
-                      witness_prompt.to_lowercase().contains("gift") ||
-                      witness_prompt.to_lowercase().contains("siddhi");
-    
+    let has_number_ref = witness_prompt.contains("17")
+        || witness_prompt.contains("18")
+        || witness_prompt.contains("21")
+        || witness_prompt.contains("48");
+    let has_key_ref = witness_prompt.to_lowercase().contains("gene key")
+        || witness_prompt.to_lowercase().contains("shadow")
+        || witness_prompt.to_lowercase().contains("gift")
+        || witness_prompt.to_lowercase().contains("siddhi");
+
     assert!(
         has_number_ref || has_key_ref,
-        "Witness prompt should reference specific Gene Keys: {}", witness_prompt
+        "Witness prompt should reference specific Gene Keys: {}",
+        witness_prompt
     );
 }
 
@@ -376,7 +423,7 @@ async fn test_archetypal_depth_in_output() {
     // not long-form descriptions.
     let router = get_test_router().await;
     let token = generate_test_token(3);
-    
+
     let request_body = json!({
         "options": {
             "hd_gates": {
@@ -388,25 +435,27 @@ async fn test_archetypal_depth_in_output() {
             "consciousness_level": 3
         }
     });
-    
+
     let (status, response) = make_authenticated_request(
         router,
         "POST",
         "/api/v1/engines/gene-keys/calculate",
         &token,
         Some(request_body),
-    ).await;
-    
+    )
+    .await;
+
     assert_eq!(status, StatusCode::OK);
-    
+
     let result = &response["result"];
     let active_keys = result["active_keys"].as_array().unwrap();
-    
+
     // Find Gene Key 1 in active_keys
-    let key_1 = active_keys.iter()
+    let key_1 = active_keys
+        .iter()
         .find(|k| k["key_number"] == 1)
         .expect("Gene Key 1 should be in active keys");
-    
+
     // Validate archetypal fields exist
     let shadow_desc = key_1["shadow"].as_str().unwrap_or("");
     let gift_desc = key_1["gift"].as_str().unwrap_or("");
@@ -431,7 +480,7 @@ async fn test_invalid_gate_numbers() {
     // Test validation of gate number ranges
     let router = get_test_router().await;
     let token = generate_test_token(3);
-    
+
     let request_body = json!({
         "options": {
             "hd_gates": {
@@ -443,15 +492,16 @@ async fn test_invalid_gate_numbers() {
             "consciousness_level": 3
         }
     });
-    
+
     let (status, _response) = make_authenticated_request(
         router,
         "POST",
         "/api/v1/engines/gene-keys/calculate",
         &token,
         Some(request_body),
-    ).await;
-    
+    )
+    .await;
+
     assert!(
         status == StatusCode::UNPROCESSABLE_ENTITY || status == StatusCode::BAD_REQUEST,
         "Expected validation error for invalid gate number"

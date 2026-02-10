@@ -1,6 +1,6 @@
-use noesis_vedic_api::chart::{NavamsaChart, NativeInfo, ZodiacSign};
-use noesis_vedic_api::vargas::navamsa_types::{NavamsaChartDto, NavamsaPositionDto};
+use noesis_vedic_api::chart::{NativeInfo, NavamsaChart, ZodiacSign};
 use noesis_vedic_api::vargas::navamsa_mappers::map_navamsa_chart;
+use noesis_vedic_api::vargas::navamsa_types::{NavamsaChartDto, NavamsaPositionDto};
 
 #[test]
 fn test_navamsa_calculation() {

@@ -2,9 +2,9 @@
 //!
 //! FAPI-078: Calculate upcoming transit dates
 
-use chrono::{NaiveDate, Duration};
-use super::types::{SignificantDate, AspectNature};
+use super::types::{AspectNature, SignificantDate};
 use crate::birth_chart::types::Planet;
+use chrono::{Duration, NaiveDate};
 
 /// Calculate upcoming significant transit dates
 pub fn calculate_upcoming_transits(
@@ -14,10 +14,10 @@ pub fn calculate_upcoming_transits(
 ) -> Vec<SignificantDate> {
     let mut dates = vec![];
     let end_date = current_date + Duration::days(days_ahead);
-    
+
     // This is a simplified calculation
     // Real implementation would need ephemeris data
-    
+
     // Approximate daily motion of planets
     let planet_speeds = [
         (Planet::Sun, 1.0),
@@ -28,19 +28,19 @@ pub fn calculate_upcoming_transits(
         (Planet::Jupiter, 0.083),
         (Planet::Saturn, 0.033),
     ];
-    
+
     // Find potential aspects
-    for (transiting, speed) in planet_speeds.iter() {
-        for (natal, natal_long) in natal_positions {
+    for (transiting, _speed) in planet_speeds.iter() {
+        for (natal, _natal_long) in natal_positions {
             // Skip same planet
             if transiting == natal {
                 continue;
             }
-            
+
             // Check for conjunction (simplified)
             // In real implementation, calculate exact date of aspect
             let aspect_date = current_date + Duration::days(30); // Placeholder
-            
+
             if aspect_date <= end_date {
                 let nature = if matches!(transiting, Planet::Jupiter | Planet::Venus) {
                     AspectNature::Benefic
@@ -49,7 +49,7 @@ pub fn calculate_upcoming_transits(
                 } else {
                     AspectNature::Neutral
                 };
-                
+
                 dates.push(SignificantDate {
                     date: aspect_date,
                     event: format!("{} conjuncts natal {}", transiting, natal),
@@ -59,7 +59,7 @@ pub fn calculate_upcoming_transits(
             }
         }
     }
-    
+
     // Sort by date
     dates.sort_by_key(|d| d.date);
     dates
@@ -89,39 +89,31 @@ pub fn get_retrograde_periods(planet: Planet, year: i32) -> Vec<(NaiveDate, Naiv
         }
         Planet::Venus => {
             // Venus retrogrades once every ~18 months for ~40 days
-            vec![
-                (
-                    NaiveDate::from_ymd_opt(year, 7, 22).unwrap(),
-                    NaiveDate::from_ymd_opt(year, 9, 3).unwrap(),
-                ),
-            ]
+            vec![(
+                NaiveDate::from_ymd_opt(year, 7, 22).unwrap(),
+                NaiveDate::from_ymd_opt(year, 9, 3).unwrap(),
+            )]
         }
         Planet::Mars => {
             // Mars retrogrades once every ~2 years for ~2 months
-            vec![
-                (
-                    NaiveDate::from_ymd_opt(year, 10, 30).unwrap(),
-                    NaiveDate::from_ymd_opt(year + 1, 1, 12).unwrap(),
-                ),
-            ]
+            vec![(
+                NaiveDate::from_ymd_opt(year, 10, 30).unwrap(),
+                NaiveDate::from_ymd_opt(year + 1, 1, 12).unwrap(),
+            )]
         }
         Planet::Jupiter => {
             // Jupiter retrogrades once per year for ~4 months
-            vec![
-                (
-                    NaiveDate::from_ymd_opt(year, 9, 4).unwrap(),
-                    NaiveDate::from_ymd_opt(year + 1, 1, 1).unwrap(),
-                ),
-            ]
+            vec![(
+                NaiveDate::from_ymd_opt(year, 9, 4).unwrap(),
+                NaiveDate::from_ymd_opt(year + 1, 1, 1).unwrap(),
+            )]
         }
         Planet::Saturn => {
             // Saturn retrogrades once per year for ~4.5 months
-            vec![
-                (
-                    NaiveDate::from_ymd_opt(year, 6, 29).unwrap(),
-                    NaiveDate::from_ymd_opt(year, 11, 15).unwrap(),
-                ),
-            ]
+            vec![(
+                NaiveDate::from_ymd_opt(year, 6, 29).unwrap(),
+                NaiveDate::from_ymd_opt(year, 11, 15).unwrap(),
+            )]
         }
         _ => vec![],
     }
@@ -130,7 +122,7 @@ pub fn get_retrograde_periods(planet: Planet, year: i32) -> Vec<(NaiveDate, Naiv
 /// Calculate when a planet enters a sign (approximate)
 pub fn calculate_sign_ingress(
     planet: Planet,
-    target_sign: u8,
+    _target_sign: u8,
     from_date: NaiveDate,
 ) -> Option<NaiveDate> {
     // Approximate time for planet to traverse one sign
@@ -144,7 +136,7 @@ pub fn calculate_sign_ingress(
         Planet::Saturn => 912,
         _ => return None,
     };
-    
+
     // This is a placeholder - real calculation needs ephemeris
     Some(from_date + Duration::days(days_per_sign as i64))
 }

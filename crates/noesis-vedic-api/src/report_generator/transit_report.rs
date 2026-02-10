@@ -9,7 +9,7 @@ pub fn generate_transit_report(
     details: &BirthDetails,
     from_date: NaiveDate,
     to_date: NaiveDate,
-    config: &ReportConfig,
+    _config: &ReportConfig,
 ) -> GeneratedReport {
     let sections = vec![
         ReportSectionContent {
@@ -35,7 +35,8 @@ pub fn generate_transit_report(
         },
         ReportSectionContent {
             title: "Saturn Transit".to_string(),
-            content: "Saturn transits bring discipline, challenges, and karmic lessons.".to_string(),
+            content: "Saturn transits bring discipline, challenges, and karmic lessons."
+                .to_string(),
             key_points: vec![
                 "Sade Sati status if applicable".to_string(),
                 "Saturn aspects to natal planets".to_string(),
@@ -62,7 +63,7 @@ pub fn generate_transit_report(
             chart_data: None,
         },
     ];
-    
+
     GeneratedReport {
         title: format!("Transit Report for {}", details.name),
         subject_name: details.name.clone(),

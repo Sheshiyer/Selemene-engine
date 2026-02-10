@@ -27,7 +27,7 @@ impl HoraPlanet {
             HoraPlanet::Saturn => "Saturn",
         }
     }
-    
+
     /// Get Chaldean order sequence
     pub fn chaldean_sequence() -> &'static [HoraPlanet] {
         &[
@@ -40,7 +40,7 @@ impl HoraPlanet {
             HoraPlanet::Moon,
         ]
     }
-    
+
     /// Get day ruler for weekday (0 = Sunday)
     pub fn day_ruler(weekday: u8) -> HoraPlanet {
         match weekday % 7 {
@@ -54,7 +54,7 @@ impl HoraPlanet {
             _ => HoraPlanet::Sun,
         }
     }
-    
+
     /// Get favorable activities for this hora
     pub fn favorable_activities(&self) -> Vec<&'static str> {
         match self {

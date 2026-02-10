@@ -7,9 +7,7 @@
 
 use super::Synthesizer;
 use crate::workflow::daily_practice::{BiorhythmData, PanchangaData, VedicClockData};
-use crate::workflow::models::{
-    Alignment, SynthesisResult as ExtSynthesisResult, Tension, Theme,
-};
+use crate::workflow::models::{Alignment, SynthesisResult as ExtSynthesisResult, Tension, Theme};
 
 // Re-export for trait impl
 pub type SynthesisResult = ExtSynthesisResult;
@@ -28,11 +26,11 @@ impl Synthesizer for DailyPracticeSynthesizer {
         let panchanga = results
             .get("panchanga")
             .and_then(|o| PanchangaData::from_json(&o.result));
-        
+
         let vedic_clock = results
             .get("vedic-clock")
             .and_then(|o| VedicClockData::from_json(&o.result));
-        
+
         let biorhythm = results
             .get("biorhythm")
             .and_then(|o| BiorhythmData::from_json(&o.result));
@@ -77,11 +75,13 @@ impl Synthesizer for DailyPracticeSynthesizer {
             if sources.len() >= 2 {
                 let theme = Theme::new(
                     category.clone(),
-                    format!("Multiple systems support {}", category.to_lowercase())
-                ).with_sources(
-                    sources.iter()
+                    format!("Multiple systems support {}", category.to_lowercase()),
+                )
+                .with_sources(
+                    sources
+                        .iter()
                         .map(|s| s.split(':').next().unwrap_or("unknown").to_string())
-                        .collect()
+                        .collect(),
                 );
                 themes.push(theme);
             }
@@ -106,7 +106,14 @@ impl Synthesizer for DailyPracticeSynthesizer {
         }
 
         // Generate summary
-        let summary = generate_daily_summary(&panchanga, &vedic_clock, &biorhythm, &themes, &alignments, &tensions);
+        let summary = generate_daily_summary(
+            &panchanga,
+            &vedic_clock,
+            &biorhythm,
+            &themes,
+            &alignments,
+            &tensions,
+        );
 
         SynthesisResult {
             themes,
@@ -120,20 +127,36 @@ impl Synthesizer for DailyPracticeSynthesizer {
 /// Categorize an activity into broad themes
 fn categorize_activity(activity: &str) -> String {
     let lower = activity.to_lowercase();
-    
-    if lower.contains("physical") || lower.contains("exercise") || lower.contains("movement") || lower.contains("yoga") {
+
+    if lower.contains("physical")
+        || lower.contains("exercise")
+        || lower.contains("movement")
+        || lower.contains("yoga")
+    {
         "Physical Activity".to_string()
     } else if lower.contains("creative") || lower.contains("expression") || lower.contains("art") {
         "Creative Expression".to_string()
-    } else if lower.contains("learn") || lower.contains("study") || lower.contains("mental") || lower.contains("focus") {
+    } else if lower.contains("learn")
+        || lower.contains("study")
+        || lower.contains("mental")
+        || lower.contains("focus")
+    {
         "Mental Work".to_string()
-    } else if lower.contains("social") || lower.contains("relationship") || lower.contains("connect") || lower.contains("meeting") {
+    } else if lower.contains("social")
+        || lower.contains("relationship")
+        || lower.contains("connect")
+        || lower.contains("meeting")
+    {
         "Social Connection".to_string()
-    } else if lower.contains("spiritual") || lower.contains("meditation") || lower.contains("practice") {
+    } else if lower.contains("spiritual")
+        || lower.contains("meditation")
+        || lower.contains("practice")
+    {
         "Spiritual Practice".to_string()
     } else if lower.contains("rest") || lower.contains("recovery") || lower.contains("easy") {
         "Rest & Recovery".to_string()
-    } else if lower.contains("decision") || lower.contains("important") || lower.contains("venture") {
+    } else if lower.contains("decision") || lower.contains("important") || lower.contains("venture")
+    {
         "Important Decisions".to_string()
     } else if lower.contains("beginning") || lower.contains("start") || lower.contains("new") {
         "New Beginnings".to_string()
@@ -175,10 +198,10 @@ fn find_energy_alignment(
         Some(
             Alignment::new(
                 "Favorable timing",
-                "Multiple systems indicate supportive conditions for action"
+                "Multiple systems indicate supportive conditions for action",
             )
             .with_engines(high_energy_systems)
-            .with_confidence(0.8)
+            .with_confidence(0.8),
         )
     } else {
         None
@@ -190,8 +213,14 @@ fn find_activity_alignment(
     panchanga: &Option<PanchangaData>,
     vedic_clock: &Option<VedicClockData>,
 ) -> Option<Alignment> {
-    let panch_activities = panchanga.as_ref().map(|p| p.recommended_activities()).unwrap_or_default();
-    let vc_activities = vedic_clock.as_ref().map(|v| v.optimal_activities()).unwrap_or_default();
+    let panch_activities = panchanga
+        .as_ref()
+        .map(|p| p.recommended_activities())
+        .unwrap_or_default();
+    let vc_activities = vedic_clock
+        .as_ref()
+        .map(|v| v.optimal_activities())
+        .unwrap_or_default();
 
     // Check for overlapping activity types
     let panch_lower: Vec<String> = panch_activities.iter().map(|a| a.to_lowercase()).collect();
@@ -210,10 +239,10 @@ fn find_activity_alignment(
         Some(
             Alignment::new(
                 format!("Activity alignment: {}", common[0]),
-                "Panchanga and Vedic Clock agree on optimal activities"
+                "Panchanga and Vedic Clock agree on optimal activities",
             )
             .with_engines(vec!["panchanga".to_string(), "vedic-clock".to_string()])
-            .with_confidence(0.75)
+            .with_confidence(0.75),
         )
     } else {
         None
@@ -240,18 +269,21 @@ fn find_energy_tension(
         return Some(
             Tension::new(
                 "Energy vs Timing",
-                "Your physical biorhythm is low during an active time period"
+                "Your physical biorhythm is low during an active time period",
             )
             .with_perspectives(
                 "biorhythm",
-                format!("Physical cycle at {:.1} - rest recommended", bio.physical.value),
+                format!(
+                    "Physical cycle at {:.1} - rest recommended",
+                    bio.physical.value
+                ),
                 "vedic-clock",
-                "Pitta time suggests focused activity"
+                "Pitta time suggests focused activity",
             )
             .with_integration_hint(
                 "Honor your body's need for gentleness while staying mentally engaged. \
-                Light mental work or contemplation may bridge both needs."
-            )
+                Light mental work or contemplation may bridge both needs.",
+            ),
         );
     }
 
@@ -260,18 +292,21 @@ fn find_energy_tension(
         return Some(
             Tension::new(
                 "Mental Capacity vs Task",
-                "Intellectual cycle low during recommended mental work period"
+                "Intellectual cycle low during recommended mental work period",
             )
             .with_perspectives(
                 "biorhythm",
-                format!("Intellectual cycle at {:.1} - routine tasks preferred", bio.intellectual.value),
+                format!(
+                    "Intellectual cycle at {:.1} - routine tasks preferred",
+                    bio.intellectual.value
+                ),
                 "vedic-clock",
-                format!("Recommends: {}", vc.recommended_activity)
+                format!("Recommends: {}", vc.recommended_activity),
             )
             .with_integration_hint(
                 "Use this time for review and consolidation rather than new learning. \
-                Your subconscious continues processing even when surface clarity is low."
-            )
+                Your subconscious continues processing even when surface clarity is low.",
+            ),
         );
     }
 
@@ -291,39 +326,43 @@ fn find_rhythm_tension(
         return Some(
             Tension::new(
                 "Personal vs Cosmic Rhythm",
-                "High personal energy during depleted cosmic timing"
+                "High personal energy during depleted cosmic timing",
             )
             .with_perspectives(
                 "panchanga",
-                format!("{} is a Rikta tithi - not ideal for new ventures", panch.tithi.name),
+                format!(
+                    "{} is a Rikta tithi - not ideal for new ventures",
+                    panch.tithi.name
+                ),
                 "biorhythm",
-                format!("Your cycles show {:.1} composite energy", bio.composite)
+                format!("Your cycles show {:.1} composite energy", bio.composite),
             )
             .with_integration_hint(
                 "Channel your high energy into completion and clearing rather than initiation. \
-                Great day for finishing projects, resolving issues, or deep cleaning."
-            )
+                Great day for finishing projects, resolving issues, or deep cleaning.",
+            ),
         );
     }
 
     // Auspicious day but critical biorhythm
-    let is_auspicious = panch.tithi.quality.contains("Nanda") || panch.tithi.quality.contains("Bhadra");
+    let is_auspicious =
+        panch.tithi.quality.contains("Nanda") || panch.tithi.quality.contains("Bhadra");
     if is_auspicious && bio.has_critical_day() {
         return Some(
             Tension::new(
                 "Cosmic Support vs Personal Threshold",
-                "Auspicious timing meets critical day in your cycles"
+                "Auspicious timing meets critical day in your cycles",
             )
             .with_perspectives(
                 "panchanga",
                 format!("{} - generally favorable for action", panch.tithi.name),
                 "biorhythm",
-                "Critical day - heightened sensitivity and variability"
+                "Critical day - heightened sensitivity and variability",
             )
             .with_integration_hint(
                 "Critical days are pivot points. The auspicious timing may help navigate \
-                the transition. Stay present and make decisions with extra awareness."
-            )
+                the transition. Stay present and make decisions with extra awareness.",
+            ),
         );
     }
 
@@ -345,9 +384,7 @@ fn generate_daily_summary(
     if let Some(ref panch) = panchanga {
         parts.push(format!(
             "Today is {} ({}) with {} Nakshatra",
-            panch.tithi.name,
-            panch.tithi.quality,
-            panch.nakshatra.name
+            panch.tithi.name, panch.tithi.quality, panch.nakshatra.name
         ));
     }
 
@@ -368,7 +405,10 @@ fn generate_daily_summary(
         } else {
             "balanced"
         };
-        parts.push(format!("Your biorhythm composite is {} ({:.1})", state, bio.composite));
+        parts.push(format!(
+            "Your biorhythm composite is {} ({:.1})",
+            state, bio.composite
+        ));
     }
 
     // Supported activities
@@ -378,7 +418,7 @@ fn generate_daily_summary(
         .take(2)
         .map(|t| t.name.as_str())
         .collect();
-    
+
     if !strong_themes.is_empty() {
         parts.push(format!(
             "Multiple systems support: {}",
@@ -390,7 +430,11 @@ fn generate_daily_summary(
     if !alignments.is_empty() {
         parts.push(format!(
             "Favorable conditions: {}",
-            alignments.iter().map(|a| a.aspect.as_str()).collect::<Vec<_>>().join(", ")
+            alignments
+                .iter()
+                .map(|a| a.aspect.as_str())
+                .collect::<Vec<_>>()
+                .join(", ")
         ));
     }
 
@@ -398,7 +442,11 @@ fn generate_daily_summary(
     if !tensions.is_empty() {
         parts.push(format!(
             "Navigate: {}",
-            tensions.iter().map(|t| t.aspect.as_str()).collect::<Vec<_>>().join(", ")
+            tensions
+                .iter()
+                .map(|t| t.aspect.as_str())
+                .collect::<Vec<_>>()
+                .join(", ")
         ));
     }
 
@@ -429,41 +477,59 @@ mod tests {
     #[test]
     fn synthesize_daily_practice() {
         let mut results = HashMap::new();
-        
-        results.insert("panchanga".to_string(), mock_output("panchanga", json!({
-            "tithi": {
-                "name": "Shukla Panchami",
-                "number": 5,
-                "paksha": "Shukla"
-            },
-            "nakshatra": {
-                "name": "Rohini",
-                "number": 4,
-                "quality": "Fixed",
-                "deity": "Brahma"
-            },
-            "yoga": "Shiva",
-            "karana": "Bava",
-            "vara": "Thursday"
-        })));
-        
-        results.insert("vedic-clock".to_string(), mock_output("vedic-clock", json!({
-            "ghati": 25,
-            "pala": 30,
-            "muhurta": {
-                "name": "Abhijit",
-                "quality": "Auspicious"
-            },
-            "active_organ": "Heart",
-            "dosha": "Pitta",
-            "recommended_activity": "Important meetings"
-        })));
-        
-        results.insert("biorhythm".to_string(), mock_output("biorhythm", json!({
-            "physical": 0.7,
-            "emotional": 0.5,
-            "intellectual": 0.3
-        })));
+
+        results.insert(
+            "panchanga".to_string(),
+            mock_output(
+                "panchanga",
+                json!({
+                    "tithi": {
+                        "name": "Shukla Panchami",
+                        "number": 5,
+                        "paksha": "Shukla"
+                    },
+                    "nakshatra": {
+                        "name": "Rohini",
+                        "number": 4,
+                        "quality": "Fixed",
+                        "deity": "Brahma"
+                    },
+                    "yoga": "Shiva",
+                    "karana": "Bava",
+                    "vara": "Thursday"
+                }),
+            ),
+        );
+
+        results.insert(
+            "vedic-clock".to_string(),
+            mock_output(
+                "vedic-clock",
+                json!({
+                    "ghati": 25,
+                    "pala": 30,
+                    "muhurta": {
+                        "name": "Abhijit",
+                        "quality": "Auspicious"
+                    },
+                    "active_organ": "Heart",
+                    "dosha": "Pitta",
+                    "recommended_activity": "Important meetings"
+                }),
+            ),
+        );
+
+        results.insert(
+            "biorhythm".to_string(),
+            mock_output(
+                "biorhythm",
+                json!({
+                    "physical": 0.7,
+                    "emotional": 0.5,
+                    "intellectual": 0.3
+                }),
+            ),
+        );
 
         let input = EngineInput {
             birth_data: None,
@@ -477,15 +543,21 @@ mod tests {
 
         // Should have found some alignments
         assert!(!synthesis.alignments.is_empty() || !synthesis.themes.is_empty());
-        
+
         // Summary should not be empty
         assert!(!synthesis.summary.is_empty());
     }
 
     #[test]
     fn categorize_activities() {
-        assert_eq!(categorize_activity("Physical exercise"), "Physical Activity");
-        assert_eq!(categorize_activity("Creative expression"), "Creative Expression");
+        assert_eq!(
+            categorize_activity("Physical exercise"),
+            "Physical Activity"
+        );
+        assert_eq!(
+            categorize_activity("Creative expression"),
+            "Creative Expression"
+        );
         assert_eq!(categorize_activity("Learning new skills"), "Mental Work");
         assert_eq!(categorize_activity("Rest and recovery"), "Rest & Recovery");
     }

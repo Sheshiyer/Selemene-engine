@@ -4,6 +4,9 @@ version = "0.1.0"
 edition = "2021"
 description = "VedicClock-TCM consciousness engine — organ clock + Vedic time integration"
 
+[features]
+openapi = []
+
 [dependencies]
 noesis-core = { path = "../noesis-core" }
 async-trait = "0.1"

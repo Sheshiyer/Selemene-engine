@@ -221,14 +221,16 @@ struct PlanetaryActivationsFile {
 }
 
 fn load_wisdom_file<T: for<'de> Deserialize<'de>>(path: &str) -> Result<T, String> {
-    let content = std::fs::read_to_string(path)
-        .map_err(|e| format!("Failed to read {}: {}", path, e))?;
-    serde_json::from_str(&content)
-        .map_err(|e| format!("Failed to parse {}: {}", path, e))
+    let content =
+        std::fs::read_to_string(path).map_err(|e| format!("Failed to read {}: {}", path, e))?;
+    serde_json::from_str(&content).map_err(|e| format!("Failed to parse {}: {}", path, e))
 }
 
 pub fn load_gates() -> HashMap<String, GateWisdom> {
-    let path = concat!(env!("CARGO_MANIFEST_DIR"), "/../../data/human-design/gates.json");
+    let path = concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/../../data/human-design/gates.json"
+    );
     load_wisdom_file::<GatesFile>(path)
         .map(|f| f.gates)
         .unwrap_or_else(|e| {
@@ -238,7 +240,10 @@ pub fn load_gates() -> HashMap<String, GateWisdom> {
 }
 
 pub fn load_centers() -> HashMap<String, CenterWisdom> {
-    let path = concat!(env!("CARGO_MANIFEST_DIR"), "/../../data/human-design/centers.json");
+    let path = concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/../../data/human-design/centers.json"
+    );
     load_wisdom_file::<CentersFile>(path)
         .map(|f| f.centers)
         .unwrap_or_else(|e| {
@@ -248,7 +253,10 @@ pub fn load_centers() -> HashMap<String, CenterWisdom> {
 }
 
 pub fn load_channels() -> HashMap<String, ChannelWisdom> {
-    let path = concat!(env!("CARGO_MANIFEST_DIR"), "/../../data/human-design/channels.json");
+    let path = concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/../../data/human-design/channels.json"
+    );
     load_wisdom_file::<ChannelsFile>(path)
         .map(|f| f.channels)
         .unwrap_or_else(|e| {
@@ -258,7 +266,10 @@ pub fn load_channels() -> HashMap<String, ChannelWisdom> {
 }
 
 pub fn load_types() -> HashMap<String, TypeWisdom> {
-    let path = concat!(env!("CARGO_MANIFEST_DIR"), "/../../data/human-design/types.json");
+    let path = concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/../../data/human-design/types.json"
+    );
     load_wisdom_file::<TypesFile>(path)
         .map(|f| f.types)
         .unwrap_or_else(|e| {
@@ -268,7 +279,10 @@ pub fn load_types() -> HashMap<String, TypeWisdom> {
 }
 
 pub fn load_authorities() -> HashMap<String, AuthorityWisdom> {
-    let path = concat!(env!("CARGO_MANIFEST_DIR"), "/../../data/human-design/authorities.json");
+    let path = concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/../../data/human-design/authorities.json"
+    );
     load_wisdom_file::<AuthoritiesFile>(path)
         .map(|f| f.authorities)
         .unwrap_or_else(|e| {
@@ -278,7 +292,10 @@ pub fn load_authorities() -> HashMap<String, AuthorityWisdom> {
 }
 
 pub fn load_profiles() -> HashMap<String, ProfileWisdom> {
-    let path = concat!(env!("CARGO_MANIFEST_DIR"), "/../../data/human-design/profiles.json");
+    let path = concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/../../data/human-design/profiles.json"
+    );
     load_wisdom_file::<ProfilesFile>(path)
         .map(|f| f.profiles)
         .unwrap_or_else(|e| {
@@ -288,7 +305,10 @@ pub fn load_profiles() -> HashMap<String, ProfileWisdom> {
 }
 
 pub fn load_lines() -> HashMap<String, LineWisdom> {
-    let path = concat!(env!("CARGO_MANIFEST_DIR"), "/../../data/human-design/lines.json");
+    let path = concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/../../data/human-design/lines.json"
+    );
     load_wisdom_file::<LinesFile>(path)
         .map(|f| f.lines)
         .unwrap_or_else(|e| {
@@ -298,7 +318,10 @@ pub fn load_lines() -> HashMap<String, LineWisdom> {
 }
 
 pub fn load_definitions() -> HashMap<String, DefinitionWisdom> {
-    let path = concat!(env!("CARGO_MANIFEST_DIR"), "/../../data/human-design/definitions.json");
+    let path = concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/../../data/human-design/definitions.json"
+    );
     load_wisdom_file::<DefinitionsFile>(path)
         .map(|f| f.definition_types)
         .unwrap_or_else(|e| {
@@ -308,7 +331,10 @@ pub fn load_definitions() -> HashMap<String, DefinitionWisdom> {
 }
 
 pub fn load_circuitry() -> HashMap<String, CircuitryWisdom> {
-    let path = concat!(env!("CARGO_MANIFEST_DIR"), "/../../data/human-design/circuitry.json");
+    let path = concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/../../data/human-design/circuitry.json"
+    );
     load_wisdom_file::<CircuitryFile>(path)
         .map(|f| f.circuits)
         .unwrap_or_else(|e| {
@@ -318,7 +344,10 @@ pub fn load_circuitry() -> HashMap<String, CircuitryWisdom> {
 }
 
 pub fn load_incarnation_crosses() -> HashMap<String, IncarnationCrossWisdom> {
-    let path = concat!(env!("CARGO_MANIFEST_DIR"), "/../../data/human-design/incarnation_crosses.json");
+    let path = concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/../../data/human-design/incarnation_crosses.json"
+    );
     load_wisdom_file::<IncarnationCrossesFile>(path)
         .map(|f| f.crosses)
         .unwrap_or_else(|e| {
@@ -328,7 +357,10 @@ pub fn load_incarnation_crosses() -> HashMap<String, IncarnationCrossWisdom> {
 }
 
 pub fn load_variables() -> HashMap<String, VariableWisdom> {
-    let path = concat!(env!("CARGO_MANIFEST_DIR"), "/../../data/human-design/variables.json");
+    let path = concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/../../data/human-design/variables.json"
+    );
     load_wisdom_file::<VariablesFile>(path)
         .map(|f| f.variables)
         .unwrap_or_else(|e| {
@@ -338,7 +370,10 @@ pub fn load_variables() -> HashMap<String, VariableWisdom> {
 }
 
 pub fn load_planetary_activations() -> HashMap<String, PlanetaryActivationWisdom> {
-    let path = concat!(env!("CARGO_MANIFEST_DIR"), "/../../data/human-design/planetary_activations.json");
+    let path = concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/../../data/human-design/planetary_activations.json"
+    );
     load_wisdom_file::<PlanetaryActivationsFile>(path)
         .map(|f| f.planets)
         .unwrap_or_else(|e| {

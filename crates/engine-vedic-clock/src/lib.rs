@@ -24,37 +24,43 @@
 //! let output = engine.calculate(input).await?;
 //! ```
 
-pub mod models;
-pub mod wisdom;
 pub mod calculator;
-pub mod dosha;
-pub mod panchanga_qualities;
-pub mod integration;
-pub mod organ_clock;
-pub mod hora_integration;
 pub mod choghadiya_integration;
-pub mod panchang_integration;
-pub mod recommendations;
-pub mod witness;
+pub mod dosha;
 pub mod engine;
+pub mod hora_integration;
+pub mod integration;
+pub mod models;
+pub mod organ_clock;
+pub mod panchang_integration;
+pub mod panchanga_qualities;
+pub mod recommendations;
+pub mod wisdom;
+pub mod witness;
 
 // Re-export main types
+pub use calculator::{get_current_organ, get_local_hour, minutes_until_next_transition};
+pub use choghadiya_integration::recommendations_from_choghadiya;
+pub use dosha::{
+    calculate_dosha_organ_harmony, dosha_times, get_dosha_for_hour, get_organ_dosha_affinity,
+};
+pub use engine::VedicClockEngine;
+pub use hora_integration::recommendations_from_hora;
+pub use integration::{
+    get_activity_favorability, get_temporal_recommendation, synthesize_organ_dosha,
+};
 pub use models::{
     Activity, ActivityRecommendation, Dosha, DoshaTime, Element, Organ, OrganWindow,
     TemporalRecommendation, TimeWindow, UpcomingTransition, VedicClockResult,
 };
-pub use wisdom::{get_organ_for_hour, organ_clock, get_organ_element, get_opposing_organ};
-pub use calculator::{get_current_organ, get_local_hour, minutes_until_next_transition};
-pub use dosha::{dosha_times, get_dosha_for_hour, get_organ_dosha_affinity, calculate_dosha_organ_harmony};
-pub use panchanga_qualities::{get_combined_quality, get_tithi_quality, PanchangaQuality, QualityRating};
-pub use integration::{get_temporal_recommendation, get_activity_favorability, synthesize_organ_dosha};
 pub use organ_clock::get_temporal_recommendation_with_api;
-pub use hora_integration::recommendations_from_hora;
-pub use choghadiya_integration::recommendations_from_choghadiya;
 pub use panchang_integration::recommendation_from_complete_panchang;
-pub use recommendations::{get_optimal_timing, get_best_time, is_favorable_now};
+pub use panchanga_qualities::{
+    get_combined_quality, get_tithi_quality, PanchangaQuality, QualityRating,
+};
+pub use recommendations::{get_best_time, get_optimal_timing, is_favorable_now};
+pub use wisdom::{get_opposing_organ, get_organ_element, get_organ_for_hour, organ_clock};
 pub use witness::generate_witness_prompt;
-pub use engine::VedicClockEngine;
 
 // Re-export core traits
 pub use noesis_core::{ConsciousnessEngine, EngineError, EngineInput, EngineOutput};

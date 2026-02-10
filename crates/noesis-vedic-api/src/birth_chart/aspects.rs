@@ -89,7 +89,11 @@ fn aspect_between(a: &PlanetPosition, b: &PlanetPosition) -> Option<Aspect> {
 
 fn angular_distance(a: f64, b: f64) -> f64 {
     let diff = (a - b).abs() % 360.0;
-    if diff > 180.0 { 360.0 - diff } else { diff }
+    if diff > 180.0 {
+        360.0 - diff
+    } else {
+        diff
+    }
 }
 
 #[cfg(test)]

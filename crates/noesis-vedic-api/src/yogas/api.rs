@@ -5,9 +5,9 @@
 use chrono::NaiveDateTime;
 use serde::{Deserialize, Serialize};
 
-use crate::error::{VedicApiError, VedicApiResult};
+use super::types::{DetectedYoga, YogaAnalysis, YogaCategory, YogaStrength};
 use crate::client::VedicApiClient;
-use super::types::{YogaAnalysis, DetectedYoga, YogaCategory, YogaStrength};
+use crate::error::{VedicApiError, VedicApiResult};
 
 /// Request for yoga detection
 #[derive(Debug, Clone, Serialize)]
@@ -74,7 +74,10 @@ impl VedicApiClient {
     /// Get yoga analysis
     ///
     /// FAPI-064: GET /yogas endpoint
-    pub async fn get_yogas(&self, request: &YogaDetectionRequest) -> VedicApiResult<YogaApiResponse> {
+    pub async fn get_yogas(
+        &self,
+        request: &YogaDetectionRequest,
+    ) -> VedicApiResult<YogaApiResponse> {
         let response = self.post("/yogas", request).await?;
         serde_json::from_value(response)
             .map_err(|e| VedicApiError::ParseError(format!("Failed to parse yoga response: {}", e)))
@@ -84,13 +87,15 @@ impl VedicApiClient {
 /// Map API response to internal analysis
 pub fn map_yoga_response(response: YogaApiResponse) -> YogaAnalysis {
     let mut analysis = YogaAnalysis::empty();
-    
+
     for item in response.yogas {
         let category = parse_yoga_category(&item.category);
-        let strength = item.strength.as_ref()
+        let strength = item
+            .strength
+            .as_ref()
             .map(|s| parse_yoga_strength(s))
             .unwrap_or(YogaStrength::Partial);
-        
+
         let yoga = DetectedYoga {
             name: item.name,
             category,
@@ -101,13 +106,13 @@ pub fn map_yoga_response(response: YogaApiResponse) -> YogaAnalysis {
             results: item.results.unwrap_or_default(),
             activation_periods: vec![],
         };
-        
+
         analysis.add_yoga(yoga);
     }
-    
+
     analysis.calculate_score();
     analysis.generate_summary();
-    
+
     analysis
 }
 
@@ -146,7 +151,7 @@ mod tests {
             NaiveTime::from_hms_opt(10, 30, 0).unwrap(),
         );
         let request = YogaDetectionRequest::new(dt, 12.97, 77.59, 5.5);
-        
+
         assert_eq!(request.birth_date, "1990-06-15");
     }
 

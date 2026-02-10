@@ -278,8 +278,7 @@ fn test_vimshottari_total_cycle_120_years() {
 
     let total: f64 = DASHA_SEQUENCE.iter().map(|p| p.full_period_years()).sum();
     assert_eq!(
-        total,
-        reference.dasha_sequence_validation.total_cycle_years as f64,
+        total, reference.dasha_sequence_validation.total_cycle_years as f64,
         "Total Vimshottari cycle must be {} years",
         reference.dasha_sequence_validation.total_cycle_years
     );
@@ -732,18 +731,10 @@ fn test_dasha_planet_ruling_nakshatras() {
     }
 
     // Verify specific well-known associations
-    assert!(DashaPlanet::Ketu
-        .ruling_nakshatras()
-        .contains(&"Ashwini"));
-    assert!(DashaPlanet::Venus
-        .ruling_nakshatras()
-        .contains(&"Bharani"));
-    assert!(DashaPlanet::Mercury
-        .ruling_nakshatras()
-        .contains(&"Revati"));
-    assert!(DashaPlanet::Saturn
-        .ruling_nakshatras()
-        .contains(&"Pushya"));
+    assert!(DashaPlanet::Ketu.ruling_nakshatras().contains(&"Ashwini"));
+    assert!(DashaPlanet::Venus.ruling_nakshatras().contains(&"Bharani"));
+    assert!(DashaPlanet::Mercury.ruling_nakshatras().contains(&"Revati"));
+    assert!(DashaPlanet::Saturn.ruling_nakshatras().contains(&"Pushya"));
 
     println!("  [PASS] All 9 planet nakshatra lordships verified (27 nakshatras total)");
 }

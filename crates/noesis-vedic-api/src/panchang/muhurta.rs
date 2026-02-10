@@ -4,7 +4,6 @@
 //! favorable or unfavorable for various activities.
 
 use serde::{Deserialize, Serialize};
-use chrono::NaiveTime;
 
 /// Collection of all Muhurta timings for a day
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
@@ -74,20 +73,23 @@ impl MuhurtaNature {
             MuhurtaNature::VeryInauspicious => "very_inauspicious",
         }
     }
-    
+
     /// Check if this Muhurta is good for starting new activities
     pub fn is_good_for_starting(&self) -> bool {
         matches!(self, MuhurtaNature::Auspicious | MuhurtaNature::Favorable)
     }
-    
+
     /// Check if this Muhurta should be avoided
     pub fn should_avoid(&self) -> bool {
-        matches!(self, MuhurtaNature::Inauspicious | MuhurtaNature::VeryInauspicious)
+        matches!(
+            self,
+            MuhurtaNature::Inauspicious | MuhurtaNature::VeryInauspicious
+        )
     }
 }
 
 /// Abhijit Muhurta - The victorious midday period
-/// 
+///
 /// This is one of the most auspicious Muhurtas, occurring around midday.
 /// It is considered favorable for all activities, especially important beginnings.
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -111,7 +113,7 @@ impl AbhijitMuhurta {
 }
 
 /// Rahu Kalam - Rahu period
-/// 
+///
 /// This period is ruled by Rahu (North Node) and is considered
 /// inauspicious for starting new ventures. It varies by day of week.
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -124,7 +126,7 @@ pub struct RahuKalam {
 
 impl RahuKalam {
     /// Get Rahu Kalam times for each day of the week
-    /// 
+    ///
     /// Rahu Kalam is approximately 1.5 hours long and occurs at different times:
     /// - Sunday: 4:30 PM - 6:00 PM
     /// - Monday: 7:30 AM - 9:00 AM
@@ -133,7 +135,7 @@ impl RahuKalam {
     /// - Thursday: 1:30 PM - 3:00 PM
     /// - Friday: 10:30 AM - 12:00 PM
     /// - Saturday: 9:00 AM - 10:30 AM
-    pub fn for_day(day: &str, sunrise: &str, sunset: &str) -> Self {
+    pub fn for_day(day: &str, _sunrise: &str, _sunset: &str) -> Self {
         // Simplified calculation - actual implementation would use sunrise/sunset
         let (start, end) = match day.to_lowercase().as_str() {
             "sunday" | "sun" => ("16:30", "18:00"),
@@ -145,7 +147,7 @@ impl RahuKalam {
             "saturday" | "sat" => ("09:00", "10:30"),
             _ => ("12:00", "13:30"), // Default to Wednesday
         };
-        
+
         Self {
             start: start.to_string(),
             end: end.to_string(),
@@ -156,7 +158,7 @@ impl RahuKalam {
 }
 
 /// Yama Gandam - Yama period
-/// 
+///
 /// Ruled by Yama (lord of death), this period should be avoided
 /// for important activities.
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -180,7 +182,7 @@ impl YamaGandam {
             "saturday" | "sat" => ("13:30", "15:00"),
             _ => ("12:00", "13:30"),
         };
-        
+
         Self {
             start: start.to_string(),
             end: end.to_string(),
@@ -191,7 +193,7 @@ impl YamaGandam {
 }
 
 /// Gulika Kaal - Gulika period
-/// 
+///
 /// Gulika is the son of Saturn and this period is considered inauspicious.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GulikaKaal {
@@ -213,7 +215,7 @@ impl GulikaKaal {
             "saturday" | "sat" => ("06:00", "07:30"),
             _ => ("12:00", "13:30"),
         };
-        
+
         Self {
             start: start.to_string(),
             end: end.to_string(),
@@ -224,7 +226,7 @@ impl GulikaKaal {
 }
 
 /// Brahma Muhurta - Creator's time
-/// 
+///
 /// Approximately 1 hour 36 minutes before sunrise.
 /// Considered the most auspicious time for meditation and spiritual practices.
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -244,13 +246,14 @@ impl BrahmaMuhurta {
             start: "04:24".to_string(), // Example for 6:00 AM sunrise
             end: sunrise.to_string(),
             duration_minutes: 96,
-            description: "Creator's time - ideal for meditation and spiritual practices".to_string(),
+            description: "Creator's time - ideal for meditation and spiritual practices"
+                .to_string(),
         }
     }
 }
 
 /// Amrit Kaal - Nectar time
-/// 
+///
 /// A highly auspicious period for starting new ventures.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AmritKaal {
@@ -274,16 +277,16 @@ impl AmritKaal {
 /// Helper functions for Muhurta calculations
 pub mod utils {
     use super::*;
-    
+
     /// Check if current time falls within a Muhurta
     pub fn is_within_muhurta(current_time: &str, muhurta: &Muhurta) -> bool {
         current_time >= muhurta.start.as_str() && current_time <= muhurta.end.as_str()
     }
-    
+
     /// Get all inauspicious periods for the day
     pub fn get_inauspicious_periods(muhurtas: &MuhurtaCollection) -> Vec<&Muhurta> {
         let mut periods = Vec::new();
-        
+
         if let Some(ref rahu) = muhurtas.rahu_kalam {
             if rahu.nature.should_avoid() {
                 periods.push(rahu);
@@ -309,14 +312,14 @@ pub mod utils {
                 periods.push(varjyam);
             }
         }
-        
+
         periods
     }
-    
+
     /// Get all auspicious periods for the day
     pub fn get_auspicious_periods(muhurtas: &MuhurtaCollection) -> Vec<&Muhurta> {
         let mut periods = Vec::new();
-        
+
         if let Some(ref abhijit) = muhurtas.abhijit {
             if abhijit.nature.is_good_for_starting() {
                 periods.push(abhijit);
@@ -332,7 +335,7 @@ pub mod utils {
                 periods.push(brahma);
             }
         }
-        
+
         periods
     }
 }
@@ -353,7 +356,7 @@ mod tests {
         let rahu = RahuKalam::for_day("Sunday", "06:00", "18:00");
         assert_eq!(rahu.start, "16:30");
         assert_eq!(rahu.end, "18:00");
-        
+
         let rahu_mon = RahuKalam::for_day("Monday", "06:00", "18:00");
         assert_eq!(rahu_mon.start, "07:30");
     }

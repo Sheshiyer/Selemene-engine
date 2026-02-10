@@ -5,7 +5,6 @@
 //! and related information.
 
 use serde::{Deserialize, Serialize};
-use crate::error::VedicApiResult;
 
 /// Complete Panchang data for a specific date/time/location
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -38,35 +37,35 @@ impl Panchang {
     /// Check if the current time is auspicious for starting new activities
     pub fn is_auspicious(&self) -> bool {
         let mut score = 0;
-        
+
         // Check Tithi
         if self.tithi.is_auspicious() {
             score += 1;
         }
-        
+
         // Check Nakshatra
         if self.nakshatra.is_auspicious() {
             score += 1;
         }
-        
+
         // Check Yoga
         if self.yoga.is_auspicious() {
             score += 1;
         }
-        
+
         // Check Karana
         if self.karana.is_auspicious() {
             score += 1;
         }
-        
+
         // Check Vara
         if self.vara.is_auspicious() {
             score += 1;
         }
-        
+
         score >= 3
     }
-    
+
     /// Get a summary string for the Panchang
     pub fn summary(&self) -> String {
         format!(
@@ -78,21 +77,14 @@ impl Panchang {
             self.karana.name()
         )
     }
-    
+
     /// Get the ruling planets for the day
     pub fn ruling_planets(&self) -> Vec<&'static str> {
-        let mut rulers = vec![];
-        
-        // Vara lord
-        rulers.push(self.vara.ruling_planet());
-        
-        // Nakshatra lord
-        rulers.push(self.nakshatra.ruling_planet());
-        
-        // Tithi lord (approximate)
-        rulers.push(self.tithi.ruling_planet());
-        
-        rulers
+        vec![
+            self.vara.ruling_planet(),
+            self.nakshatra.ruling_planet(),
+            self.tithi.ruling_planet(),
+        ]
     }
 }
 
@@ -155,7 +147,7 @@ impl HinduMonth {
             HinduMonth::Phalguna => "Phalguna",
         }
     }
-    
+
     pub fn number(&self) -> u8 {
         match self {
             HinduMonth::Chaitra => 1,
@@ -203,18 +195,25 @@ impl Tithi {
     pub fn name(&self) -> &'static str {
         self.name_tithi.as_str()
     }
-    
+
     /// Check if this tithi is auspicious
     pub fn is_auspicious(&self) -> bool {
         use TithiName::*;
         matches!(
             self.name_tithi,
-            Pratipada | Dwitiya | Tritiya | Panchami |
-            Saptami | Dashami | Ekadashi | Trayodashi |
-            Purnima | Amavasya
+            Pratipada
+                | Dwitiya
+                | Tritiya
+                | Panchami
+                | Saptami
+                | Dashami
+                | Ekadashi
+                | Trayodashi
+                | Purnima
+                | Amavasya
         )
     }
-    
+
     /// Get ruling planet of the tithi
     pub fn ruling_planet(&self) -> &'static str {
         match (self.number - 1) % 7 {
@@ -272,7 +271,7 @@ impl TithiName {
             TithiName::Amavasya => "Amavasya",
         }
     }
-    
+
     /// Get the number (1-15)
     pub fn number(&self) -> u8 {
         match self {
@@ -339,24 +338,36 @@ impl Nakshatra {
     pub fn name(&self) -> &'static str {
         self.name_nakshatra.as_str()
     }
-    
+
     /// Check if this nakshatra is auspicious
     pub fn is_auspicious(&self) -> bool {
         use NakshatraName::*;
         matches!(
             self.name_nakshatra,
-            Ashwini | Rohini | Mrigashira | Pushya |
-            UttaraPhalguni | Hasta | Chitra | Swati |
-            Anuradha | Mula | UttaraAshadha | Shravana |
-            Dhanishta | Shatabhisha | UttaraBhadrapada | Revati
+            Ashwini
+                | Rohini
+                | Mrigashira
+                | Pushya
+                | UttaraPhalguni
+                | Hasta
+                | Chitra
+                | Swati
+                | Anuradha
+                | Mula
+                | UttaraAshadha
+                | Shravana
+                | Dhanishta
+                | Shatabhisha
+                | UttaraBhadrapada
+                | Revati
         )
     }
-    
+
     /// Get ruling planet
     pub fn ruling_planet(&self) -> &'static str {
         self.name_nakshatra.ruler()
     }
-    
+
     /// Get deity
     pub fn deity(&self) -> &'static str {
         self.name_nakshatra.deity()
@@ -428,22 +439,30 @@ impl NakshatraName {
             NakshatraName::Revati => "Revati",
         }
     }
-    
+
     /// Get ruling planet (Vimshottari dasha lord)
     pub fn ruler(&self) -> &'static str {
         match self {
-            NakshatraName::Krittika | NakshatraName::UttaraPhalguni | NakshatraName::UttaraAshadha => "Sun",
+            NakshatraName::Krittika
+            | NakshatraName::UttaraPhalguni
+            | NakshatraName::UttaraAshadha => "Sun",
             NakshatraName::Rohini | NakshatraName::Hasta | NakshatraName::Shravana => "Moon",
             NakshatraName::Mrigashira | NakshatraName::Chitra | NakshatraName::Dhanishta => "Mars",
             NakshatraName::Ashlesha | NakshatraName::Jyeshtha | NakshatraName::Revati => "Mercury",
-            NakshatraName::Punarvasu | NakshatraName::Vishakha | NakshatraName::PurvaBhadrapada => "Jupiter",
-            NakshatraName::Bharani | NakshatraName::PurvaPhalguni | NakshatraName::PurvaAshadha => "Venus",
-            NakshatraName::Pushya | NakshatraName::Anuradha | NakshatraName::UttaraBhadrapada => "Saturn",
+            NakshatraName::Punarvasu | NakshatraName::Vishakha | NakshatraName::PurvaBhadrapada => {
+                "Jupiter"
+            }
+            NakshatraName::Bharani | NakshatraName::PurvaPhalguni | NakshatraName::PurvaAshadha => {
+                "Venus"
+            }
+            NakshatraName::Pushya | NakshatraName::Anuradha | NakshatraName::UttaraBhadrapada => {
+                "Saturn"
+            }
             NakshatraName::Ashwini | NakshatraName::Magha | NakshatraName::Mula => "Ketu",
             NakshatraName::Ardra | NakshatraName::Swati | NakshatraName::Shatabhisha => "Rahu",
         }
     }
-    
+
     /// Get NakshatraName from number (1-27)
     pub fn from_number(n: u32) -> Self {
         match n.min(27) {
@@ -528,18 +547,32 @@ impl Yoga {
     pub fn name(&self) -> &'static str {
         self.name_yoga.as_str()
     }
-    
+
     pub fn is_auspicious(&self) -> bool {
         use YogaName::*;
         matches!(
             self.name_yoga,
-            Preeti | Ayushman | Saubhagya | Shobhana | Sukarma |
-            Dhriti | Vriddhi | Harshana | Siddhi | Vyatipata |
-            Variyan | Shiva | Siddha | Sadhya | Shubha | Shukla |
-            Brahma | Indra
+            Preeti
+                | Ayushman
+                | Saubhagya
+                | Shobhana
+                | Sukarma
+                | Dhriti
+                | Vriddhi
+                | Harshana
+                | Siddhi
+                | Vyatipata
+                | Variyan
+                | Shiva
+                | Siddha
+                | Sadhya
+                | Shubha
+                | Shukla
+                | Brahma
+                | Indra
         )
     }
-    
+
     /// Get nature of the yoga
     pub fn nature(&self) -> &'static str {
         self.name_yoga.nature()
@@ -611,7 +644,7 @@ impl YogaName {
             YogaName::Vaidhriti => "Vaidhriti",
         }
     }
-    
+
     /// Get YogaName from number (1-27)
     pub fn from_number(n: u32) -> Self {
         match n.min(27) {
@@ -649,20 +682,37 @@ impl YogaName {
     pub fn nature(&self) -> &'static str {
         match self {
             // Good yogas
-            YogaName::Preeti | YogaName::Ayushman | YogaName::Saubhagya |
-            YogaName::Shobhana | YogaName::Sukarma | YogaName::Dhriti |
-            YogaName::Vriddhi | YogaName::Harshana | YogaName::Siddhi |
-            YogaName::Variyan | YogaName::Shiva | YogaName::Siddha |
-            YogaName::Sadhya | YogaName::Shubha | YogaName::Shukla |
-            YogaName::Brahma | YogaName::Indra => "auspicious",
-            
+            YogaName::Preeti
+            | YogaName::Ayushman
+            | YogaName::Saubhagya
+            | YogaName::Shobhana
+            | YogaName::Sukarma
+            | YogaName::Dhriti
+            | YogaName::Vriddhi
+            | YogaName::Harshana
+            | YogaName::Siddhi
+            | YogaName::Variyan
+            | YogaName::Shiva
+            | YogaName::Siddha
+            | YogaName::Sadhya
+            | YogaName::Shubha
+            | YogaName::Shukla
+            | YogaName::Brahma
+            | YogaName::Indra => "auspicious",
+
             // Mixed
             YogaName::Dhruva => "mixed",
-            
+
             // Bad yogas
-            YogaName::Vishkumbha | YogaName::Atiganda | YogaName::Shoola |
-            YogaName::Ganda | YogaName::Vyaghaata | YogaName::Vajra |
-            YogaName::Vyatipata | YogaName::Parigha | YogaName::Vaidhriti => "inauspicious",
+            YogaName::Vishkumbha
+            | YogaName::Atiganda
+            | YogaName::Shoola
+            | YogaName::Ganda
+            | YogaName::Vyaghaata
+            | YogaName::Vajra
+            | YogaName::Vyatipata
+            | YogaName::Parigha
+            | YogaName::Vaidhriti => "inauspicious",
         }
     }
 }
@@ -684,7 +734,7 @@ impl Karana {
     pub fn name(&self) -> &'static str {
         self.name_karana.as_str()
     }
-    
+
     pub fn is_auspicious(&self) -> bool {
         use KaranaType::*;
         matches!(self.karana_type, Fixed | Movable)
@@ -786,7 +836,7 @@ impl Vara {
             Vara::Saturday => "Saturday",
         }
     }
-    
+
     pub fn from_number(n: u8) -> Option<Self> {
         match n {
             1 => Some(Vara::Monday),
@@ -799,7 +849,7 @@ impl Vara {
             _ => None,
         }
     }
-    
+
     /// Get ruling planet
     pub fn ruling_planet(&self) -> &'static str {
         match self {
@@ -812,12 +862,12 @@ impl Vara {
             Vara::Saturday => "Saturn",
         }
     }
-    
+
     /// Check if this day is generally auspicious
     pub fn is_auspicious(&self) -> bool {
         !matches!(self, Vara::Saturday | Vara::Tuesday)
     }
-    
+
     /// Get day number (1=Monday, 7=Sunday)
     pub fn number(&self) -> u8 {
         match self {
@@ -849,7 +899,7 @@ impl Paksha {
             Paksha::Krishna => "Krishna",
         }
     }
-    
+
     /// Get English name
     pub fn english(&self) -> &'static str {
         match self {
@@ -892,7 +942,7 @@ pub struct DayBoundaries {
     pub sunrise: String,
     pub sunset: String,
     pub next_sunrise: String,
-    pub day_duration: String,  // HH:MM format
+    pub day_duration: String,   // HH:MM format
     pub night_duration: String, // HH:MM format
 }
 

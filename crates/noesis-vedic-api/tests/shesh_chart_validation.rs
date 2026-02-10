@@ -539,11 +539,7 @@ fn test_shesh_birth_vara() {
     let reference = load_shesh_reference();
     let panchang = build_shesh_panchang(&reference);
 
-    assert_eq!(
-        panchang.vara,
-        Vara::Sunday,
-        "July 15, 1990 was a Sunday"
-    );
+    assert_eq!(panchang.vara, Vara::Sunday, "July 15, 1990 was a Sunday");
     assert_eq!(
         panchang.vara.ruling_planet(),
         "Sun",
@@ -567,13 +563,13 @@ fn test_shesh_birth_panchang_complete() {
 
     // Verify summary contains all five elements
     assert!(summary.contains("Navami"), "Summary should contain tithi");
-    assert!(summary.contains("Revati"), "Summary should contain nakshatra");
+    assert!(
+        summary.contains("Revati"),
+        "Summary should contain nakshatra"
+    );
     assert!(summary.contains("Parigha"), "Summary should contain yoga");
     assert!(summary.contains("Gara"), "Summary should contain karana");
-    assert!(
-        summary.contains("Krishna"),
-        "Summary should contain paksha"
-    );
+    assert!(summary.contains("Krishna"), "Summary should contain paksha");
 
     // Check auspiciousness
     let is_auspicious = panchang.is_auspicious();
@@ -941,8 +937,7 @@ fn test_shesh_moon_longitude_in_revati() {
     let revati_end = 360.0;
 
     assert!(
-        panchang.nakshatra.longitude >= revati_start
-            && panchang.nakshatra.longitude <= revati_end,
+        panchang.nakshatra.longitude >= revati_start && panchang.nakshatra.longitude <= revati_end,
         "Moon longitude {:.1} should be within Revati range ({:.2} - {:.0})",
         panchang.nakshatra.longitude,
         revati_start,
@@ -968,20 +963,43 @@ fn test_shesh_complete_validation_report() {
     println!("\n========================================");
     println!("  SHESH BIRTH CHART VALIDATION REPORT");
     println!("========================================");
-    println!("  Birth: {} {} IST", reference.birth_data.date, reference.birth_data.time);
+    println!(
+        "  Birth: {} {} IST",
+        reference.birth_data.date, reference.birth_data.time
+    );
     println!(
         "  Location: {} ({}, {})",
-        reference.birth_data.location.name,
-        SHESH_LATITUDE,
-        SHESH_LONGITUDE
+        reference.birth_data.location.name, SHESH_LATITUDE, SHESH_LONGITUDE
     );
     println!("----------------------------------------");
     println!("  PANCHANG AT BIRTH:");
-    println!("    Tithi:     {} {} (#{}/30)", panchang.paksha.as_str(), panchang.tithi.name(), panchang.tithi.number);
-    println!("    Nakshatra: {} pada {} (#{}/27)", panchang.nakshatra.name(), panchang.nakshatra.pada, panchang.nakshatra.number);
-    println!("    Yoga:      {} ({})", panchang.yoga.name(), panchang.yoga.nature());
-    println!("    Karana:    {} ({:?})", panchang.karana.name(), panchang.karana.karana_type);
-    println!("    Vara:      {} ({})", panchang.vara.as_str(), panchang.vara.ruling_planet());
+    println!(
+        "    Tithi:     {} {} (#{}/30)",
+        panchang.paksha.as_str(),
+        panchang.tithi.name(),
+        panchang.tithi.number
+    );
+    println!(
+        "    Nakshatra: {} pada {} (#{}/27)",
+        panchang.nakshatra.name(),
+        panchang.nakshatra.pada,
+        panchang.nakshatra.number
+    );
+    println!(
+        "    Yoga:      {} ({})",
+        panchang.yoga.name(),
+        panchang.yoga.nature()
+    );
+    println!(
+        "    Karana:    {} ({:?})",
+        panchang.karana.name(),
+        panchang.karana.karana_type
+    );
+    println!(
+        "    Vara:      {} ({})",
+        panchang.vara.as_str(),
+        panchang.vara.ruling_planet()
+    );
     println!("----------------------------------------");
     println!("  VIMSHOTTARI DASHA:");
     println!(
@@ -1016,7 +1034,10 @@ fn test_shesh_complete_validation_report() {
     println!("========================================\n");
 
     // Final assertion - all data is consistent
-    assert_eq!(panchang.nakshatra.ruling_planet(), dasha.balance.planet.as_str());
+    assert_eq!(
+        panchang.nakshatra.ruling_planet(),
+        dasha.balance.planet.as_str()
+    );
     assert_eq!(dasha.mahadashas[0].planet, DashaPlanet::Mercury);
     assert_eq!(panchang.vara, Vara::Sunday);
 }

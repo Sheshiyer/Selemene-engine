@@ -2,10 +2,10 @@
 //!
 //! Planetary point system for transit analysis
 
-pub mod types;
 pub mod api;
 pub mod totals;
+pub mod types;
 
-pub use types::*;
 pub use api::*;
 pub use totals::*;
+pub use types::*;

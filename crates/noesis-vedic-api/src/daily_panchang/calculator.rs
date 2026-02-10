@@ -1,7 +1,7 @@
 //! Daily panchang calculator
 
-use chrono::{NaiveDate, Datelike};
-use super::{DailyPanchang, TimePeriod, TithiInfo, NakshatraInfo, YogaInfo, KaranaInfo};
+use super::{DailyPanchang, KaranaInfo, NakshatraInfo, TimePeriod, TithiInfo, YogaInfo};
+use chrono::{Datelike, NaiveDate};
 
 /// Calculate daily panchang for a given date and location
 pub fn calculate_daily_panchang(
@@ -13,16 +13,16 @@ pub fn calculate_daily_panchang(
     // Calculate sunrise/sunset (simplified - would use actual astronomical calculation)
     let sunrise = calculate_sunrise(date, latitude, longitude, timezone);
     let sunset = calculate_sunset(date, latitude, longitude, timezone);
-    
+
     // Get vara (weekday)
     let vara = get_vara(date);
-    
+
     // Calculate Rahu Kalam based on weekday
     let rahu_kalam = calculate_rahu_kalam(&vara, &sunrise, &sunset);
     let yama_gandam = calculate_yama_gandam(&vara, &sunrise, &sunset);
     let gulika_kaal = calculate_gulika_kaal(&vara, &sunrise, &sunset);
     let auspicious_periods = calculate_abhijit(&sunrise, &sunset);
-    
+
     DailyPanchang {
         date,
         vara,
@@ -78,7 +78,15 @@ fn calculate_sunset(_date: NaiveDate, lat: f64, _lon: f64, _tz: f64) -> String {
 }
 
 fn get_vara(date: NaiveDate) -> String {
-    let weekdays = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+    let weekdays = [
+        "Sunday",
+        "Monday",
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday",
+        "Saturday",
+    ];
     weekdays[date.weekday().num_days_from_sunday() as usize].to_string()
 }
 
@@ -94,7 +102,7 @@ fn calculate_rahu_kalam(vara: &str, sunrise: &str, _sunset: &str) -> TimePeriod 
         "Saturday" => (6.0, 7.5),
         _ => (4.5, 6.0),
     };
-    
+
     TimePeriod {
         name: "Rahu Kalam".to_string(),
         start: format_time_offset(sunrise, start_offset),
@@ -114,7 +122,7 @@ fn calculate_yama_gandam(vara: &str, sunrise: &str, _sunset: &str) -> TimePeriod
         "Saturday" => (4.5, 6.0),
         _ => (3.0, 4.5),
     };
-    
+
     TimePeriod {
         name: "Yama Gandam".to_string(),
         start: format_time_offset(sunrise, start_offset),
@@ -134,7 +142,7 @@ fn calculate_gulika_kaal(vara: &str, sunrise: &str, _sunset: &str) -> TimePeriod
         "Saturday" => (0.0, 1.5),
         _ => (6.0, 7.5),
     };
-    
+
     TimePeriod {
         name: "Gulika Kaal".to_string(),
         start: format_time_offset(sunrise, start_offset),
@@ -143,7 +151,7 @@ fn calculate_gulika_kaal(vara: &str, sunrise: &str, _sunset: &str) -> TimePeriod
     }
 }
 
-fn calculate_abhijit(sunrise: &str, sunset: &str) -> Vec<TimePeriod> {
+fn calculate_abhijit(_sunrise: &str, _sunset: &str) -> Vec<TimePeriod> {
     // Abhijit muhurta is around solar noon
     vec![TimePeriod {
         name: "Abhijit Muhurta".to_string(),
@@ -155,15 +163,17 @@ fn calculate_abhijit(sunrise: &str, sunset: &str) -> Vec<TimePeriod> {
 
 fn format_time_offset(base_time: &str, hours_offset: f64) -> String {
     let parts: Vec<&str> = base_time.split(':').collect();
-    if parts.len() < 2 { return base_time.to_string(); }
-    
+    if parts.len() < 2 {
+        return base_time.to_string();
+    }
+
     let base_hour: u32 = parts[0].parse().unwrap_or(6);
     let base_min: u32 = parts[1].parse().unwrap_or(0);
-    
+
     let total_minutes = (base_hour * 60 + base_min) + (hours_offset * 60.0) as u32;
     let new_hour = (total_minutes / 60) % 24;
     let new_min = total_minutes % 60;
-    
+
     format!("{:02}:{:02}", new_hour, new_min)
 }
 

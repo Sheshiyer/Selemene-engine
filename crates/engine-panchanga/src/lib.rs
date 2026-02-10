@@ -211,15 +211,13 @@ pub fn calculate_julian_day(date: &str, time: &str, tz_offset_hours: f64) -> f64
     let utc_minute = minute;
 
     // Meeus Julian Day formula (approximate)
-    let jd = 367.0 * year as f64
-        - (7.0 * (year as f64 + ((month + 9) as f64 / 12.0).floor()) / 4.0).floor()
+
+    367.0 * year as f64 - (7.0 * (year as f64 + ((month + 9) as f64 / 12.0).floor()) / 4.0).floor()
         + (275.0 * month as f64 / 9.0).floor()
         + day as f64
         + 1721013.5
         + utc_hour / 24.0
-        + utc_minute / 1440.0;
-
-    jd
+        + utc_minute / 1440.0
 }
 
 /// Calculate apparent solar longitude (degrees, 0..360) for a given JD.
@@ -237,10 +235,7 @@ pub fn calculate_solar_position(jd: f64) -> f64 {
 /// Calculate apparent lunar longitude (degrees, 0..360) for a given JD.
 pub fn calculate_lunar_position(jd: f64) -> f64 {
     let t = (jd - 2451545.0) / 36525.0;
-    let l = 218.3164477
-        + 481267.88123421 * t
-        - 0.0015786 * t * t
-        + t * t * t / 538841.0
+    let l = 218.3164477 + 481267.88123421 * t - 0.0015786 * t * t + t * t * t / 538841.0
         - t * t * t * t / 65194000.0;
     let l = l % 360.0;
     if l < 0.0 {
@@ -530,9 +525,7 @@ impl ConsciousnessEngine for PanchangaEngine {
     fn cache_key(&self, input: &EngineInput) -> String {
         let birth = input.birth_data.as_ref();
         let date = birth.map(|b| b.date.as_str()).unwrap_or("");
-        let time = birth
-            .and_then(|b| b.time.as_deref())
-            .unwrap_or("12:00");
+        let time = birth.and_then(|b| b.time.as_deref()).unwrap_or("12:00");
         let lat = birth.map(|b| b.latitude).unwrap_or(0.0);
         let lon = birth.map(|b| b.longitude).unwrap_or(0.0);
 

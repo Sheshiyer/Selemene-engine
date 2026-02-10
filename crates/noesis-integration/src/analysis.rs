@@ -1,15 +1,11 @@
 //! Unified Analysis combining Vedic API, Vimshottari, Numerology, and TCM
 
-use chrono::{DateTime, Utc, Datelike, Timelike};
+use chrono::{DateTime, Datelike, Timelike, Utc};
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
 
 use crate::{
-    BirthProfile, Result, IntegrationError, IntegrationConfig,
-    ActivityType, AuspiciousWindow, AuspiciousQuality,
-    TCMAnalysis, TCMElement, TCMOrgan,
-    CachedVedicClient, CompletePanchang, PanchangQuery,
-    VimshottariChart, VedicPlanet,
+    ActivityType, AuspiciousQuality, AuspiciousWindow, BirthProfile, CachedVedicClient,
+    CompletePanchang, IntegrationConfig, IntegrationError, Result, TCMAnalysis, TCMElement,
 };
 
 /// Complete unified analysis from all systems
@@ -170,60 +166,50 @@ impl UnifiedAnalysis {
         let config = IntegrationConfig::default();
         Self::generate_with_config(profile, &config).await
     }
-    
+
     /// Generate with specific configuration
     pub async fn generate_with_config(
         profile: &BirthProfile,
         config: &IntegrationConfig,
     ) -> Result<Self> {
         let generated_at = Utc::now();
-        
+
         // Get Vedic API data if enabled
         let panchang = if config.use_vedic_api {
             Some(Self::fetch_panchang(profile).await?)
         } else {
             None
         };
-        
+
         // Get Vimshottari analysis
         let vimshottari = Self::analyze_vimshottari(profile).await?;
-        
+
         // Get Numerology analysis
         let numerology = Self::analyze_numerology(profile).await?;
-        
+
         // Get TCM analysis
         let tcm = TCMAnalysis::from_birth_profile(profile)?;
-        
+
         // Get Biorhythm if enabled
         let biorhythm = if config.include_biorhythm {
             Some(Self::analyze_biorhythm(profile).await?)
         } else {
             None
         };
-        
+
         // Generate layered insights
-        let layered_insights = Self::synthesize_insights(
-            &vimshottari,
-            &numerology,
-            &tcm,
-            &biorhythm,
-        ).await?;
-        
+        let layered_insights =
+            Self::synthesize_insights(&vimshottari, &numerology, &tcm, &biorhythm).await?;
+
         // Find auspicious times
-        let auspicious_times = Self::find_auspicious_times_internal(
-            profile,
-            &panchang,
-            &vimshottari,
-        ).await?;
-        
+        let auspicious_times =
+            Self::find_auspicious_times_internal(profile, &panchang, &vimshottari).await?;
+
         // Generate unified recommendations
-        let recommendations = Self::generate_recommendations(
-            &vimshottari,
-            &numerology,
-            &tcm,
-            &layered_insights,
-        ).await?;
-        
+        let recommendations =
+            Self::generate_recommendations(&vimshottari, &numerology, &tcm, &layered_insights)
+                .await?;
+
         Ok(UnifiedAnalysis {
             profile: profile.clone(),
             panchang,
@@ -237,58 +223,62 @@ impl UnifiedAnalysis {
             generated_at,
         })
     }
-    
+
     /// Fetch Panchang from Vedic API
     async fn fetch_panchang(profile: &BirthProfile) -> Result<CompletePanchang> {
         let client = CachedVedicClient::from_env()
             .map_err(|e| IntegrationError::Configuration(e.to_string()))?;
-        
+
         // Parse birth date
         let date = profile.parse_date()?;
-        let time = profile.parse_time()
+        let time = profile
+            .parse_time()
             .ok_or_else(|| IntegrationError::DateParse("Invalid time".to_string()))?;
-        
+
         // For now, use UTC offset from timezone (simplified)
         let tz_offset = 5.5; // IST
-        
-        let panchang = client.get_complete_panchang(
-            date.year(),
-            date.month(),
-            date.day(),
-            time.hour(),
-            time.minute(),
-            0,
-            profile.latitude,
-            profile.longitude,
-            tz_offset,
-        ).await?;
-        
+
+        let panchang = client
+            .get_complete_panchang(
+                date.year(),
+                date.month(),
+                date.day(),
+                time.hour(),
+                time.minute(),
+                0,
+                profile.latitude,
+                profile.longitude,
+                tz_offset,
+            )
+            .await?;
+
         Ok(panchang)
     }
-    
+
     /// Analyze Vimshottari Dasha
     async fn analyze_vimshottari(profile: &BirthProfile) -> Result<VimshottariAnalysis> {
         // Parse date
-        let date = profile.parse_date()?;
-        let time = profile.parse_time()
+        let _date = profile.parse_date()?;
+        let _time = profile
+            .parse_time()
             .ok_or_else(|| IntegrationError::DateParse("Invalid time".to_string()))?;
-        
+
         // Calculate current dasha
         // For now, use simplified calculation based on Shesh's known data
         // In production, this would call the engine-vimshottari
-        
+
         // Shesh's data:
         // Birth: 1991-08-13 13:31 IST, Bengaluru
         // Moon Nakshatra: Uttara Phalguni (ruled by Sun)
         // But balance puts him in Mars Mahadasha
         // Mars Mahadasha ends: 2026-09-14
-        
+
         let now = Utc::now();
         let mahadasha_end = chrono::NaiveDate::parse_from_str("2026-09-14", "%Y-%m-%d")
             .map_err(|e| IntegrationError::DateParse(e.to_string()))?;
-        
+
         let days_remaining = (mahadasha_end - now.date_naive()).num_days();
-        
+
         // Get planetary qualities based on current dasha
         let mars_qualities = PlanetaryQualities {
             planet: "Mars".to_string(),
@@ -316,7 +306,7 @@ impl UnifiedAnalysis {
             ],
             description: "Mars Mahadasha brings energy, action, and the courage to pursue goals. It's a time for physical vitality, career advancement, and transforming challenges into opportunities for growth.".to_string(),
         };
-        
+
         // Current antardasha (sub-period) - simplified
         // In Mars Mahadasha, the sequence is: Mars, Rahu, Jupiter, Saturn, Mercury, Ketu, Venus, Sun, Moon
         // Each gets proportional period
@@ -345,7 +335,7 @@ impl UnifiedAnalysis {
             ],
             description: "Jupiter Antardasha within Mars Mahadasha combines action with wisdom. It's an excellent time for teaching, learning, and expanding one's horizons through courageous exploration.".to_string(),
         };
-        
+
         Ok(VimshottariAnalysis {
             current_mahadasha: "Mars".to_string(),
             current_antardasha: "Jupiter".to_string(), // Example
@@ -358,48 +348,44 @@ impl UnifiedAnalysis {
                 "Career advancement".to_string(),
                 "Transformation through challenge".to_string(),
             ],
-            upcoming_transitions: vec![
-                DashaTransition {
-                    level: "Antardasha".to_string(),
-                    from_planet: "Jupiter".to_string(),
-                    to_planet: "Saturn".to_string(),
-                    date: "2025-06-01".to_string(), // Example
-                    days_until: 120, // Example
-                },
-            ],
+            upcoming_transitions: vec![DashaTransition {
+                level: "Antardasha".to_string(),
+                from_planet: "Jupiter".to_string(),
+                to_planet: "Saturn".to_string(),
+                date: "2025-06-01".to_string(), // Example
+                days_until: 120,                // Example
+            }],
             mahadasha_qualities: mars_qualities,
-            antardasha_qualities: antardasha_qualities,
+            antardasha_qualities,
         })
     }
-    
+
     /// Analyze Numerology
     async fn analyze_numerology(profile: &BirthProfile) -> Result<NumerologyAnalysis> {
         let date = profile.parse_date()?;
-        
+
         // Calculate Life Path Number
         let life_path = calculate_life_path(date.year() as u32, date.month(), date.day());
-        
+
         // Calculate Birth Day Number
-        let birth_day = reduce_to_single_digit(date.day() as u32);
-        
+        let birth_day = reduce_to_single_digit(date.day());
+
         // Calculate Personal Year
         let current_year = Utc::now().year() as u32;
-        let personal_year = reduce_to_single_digit(
-            date.day() as u32 + date.month() + current_year
-        );
-        
+        let personal_year = reduce_to_single_digit(date.day() + date.month() + current_year);
+
         // Calculate Personal Month
         let current_month = Utc::now().month();
         let personal_month = reduce_to_single_digit(personal_year + current_month);
-        
+
         // Get descriptions
         let (description, purpose, traits) = get_life_path_meaning(life_path);
-        
+
         Ok(NumerologyAnalysis {
             life_path_number: life_path,
             life_path_description: description,
-            expression_number: None, // Would need name
-            soul_urge_number: None, // Would need name
+            expression_number: None,  // Would need name
+            soul_urge_number: None,   // Would need name
             personality_number: None, // Would need name
             birth_day_number: birth_day,
             personal_year,
@@ -408,48 +394,46 @@ impl UnifiedAnalysis {
             life_purpose: purpose,
         })
     }
-    
+
     /// Analyze Biorhythms
     async fn analyze_biorhythm(profile: &BirthProfile) -> Result<BiorhythmAnalysis> {
         let birth_date = profile.parse_date()?;
         let now = Utc::now();
-        
+
         // Calculate days since birth
         let days_since_birth = (now.date_naive() - birth_date).num_days();
-        
+
         // Calculate cycles
         let physical = calculate_biorhythm_cycle(days_since_birth, 23);
         let emotional = calculate_biorhythm_cycle(days_since_birth, 28);
         let intellectual = calculate_biorhythm_cycle(days_since_birth, 33);
-        
+
         // Calculate vitality score
         let vitality = (physical + emotional + intellectual) / 3.0;
-        
+
         Ok(BiorhythmAnalysis {
             physical,
             emotional,
             intellectual,
             vitality_score: vitality,
             critical_days: Vec::new(), // Would calculate properly
-            peak_days: Vec::new(), // Would calculate properly
+            peak_days: Vec::new(),     // Would calculate properly
         })
     }
-    
+
     /// Synthesize insights from all systems
     async fn synthesize_insights(
-        vimshottari: &VimshottariAnalysis,
+        _vimshottari: &VimshottariAnalysis,
         numerology: &NumerologyAnalysis,
         tcm: &TCMAnalysis,
-        biorhythm: &Option<BiorhythmAnalysis>,
+        _biorhythm: &Option<BiorhythmAnalysis>,
     ) -> Result<Vec<LayeredInsight>> {
         let mut insights = Vec::new();
-        
+
         // Career insight
         insights.push(LayeredInsight {
             area: "Career and Purpose".to_string(),
-            vedic_perspective: format!(
-                "Current Mars Mahadasha emphasizes action and career advancement. Focus on building physical vitality and taking courageous initiatives.",
-            ),
+            vedic_perspective: "Current Mars Mahadasha emphasizes action and career advancement. Focus on building physical vitality and taking courageous initiatives.".to_string(),
             tcm_perspective: format!(
                 "Your dominant {} element supports {}. Focus on {} organs during their peak hours ({}-{}).",
                 tcm.dominant_element.as_str(),
@@ -491,7 +475,7 @@ impl UnifiedAnalysis {
                 "Schedule important initiatives during Mars-ruled days (Tuesday)".to_string(),
             ],
         });
-        
+
         // Health insight
         insights.push(LayeredInsight {
             area: "Health and Vitality".to_string(),
@@ -530,27 +514,27 @@ impl UnifiedAnalysis {
                 .map(|o| format!("{:?} vulnerability", o))
                 .collect(),
             recommendations: tcm.recommendations.iter()
-                .filter(|r| r.category == crate::tcm_layer::RecommendationCategory::Exercise 
+                .filter(|r| r.category == crate::tcm_layer::RecommendationCategory::Exercise
                     || r.category == crate::tcm_layer::RecommendationCategory::Diet)
                 .map(|r| r.description.clone())
                 .collect(),
         });
-        
+
         Ok(insights)
     }
-    
+
     /// Find auspicious times combining all systems
     async fn find_auspicious_times_internal(
-        profile: &BirthProfile,
+        _profile: &BirthProfile,
         panchang: &Option<CompletePanchang>,
         vimshottari: &VimshottariAnalysis,
     ) -> Result<Vec<AuspiciousWindow>> {
         let mut windows = Vec::new();
-        
+
         // If we have panchang data, use it
         if let Some(p) = panchang {
             // Get favorable muhurtas
-            if let Some(ref amrit) = p.muhurtas.amrit_kaal {
+            if let Some(ref _amrit) = p.muhurtas.amrit_kaal {
                 windows.push(AuspiciousWindow {
                     start: Utc::now(), // Would parse properly
                     end: Utc::now(),
@@ -559,8 +543,8 @@ impl UnifiedAnalysis {
                     description: "Nectar time - highly auspicious for beginnings".to_string(),
                 });
             }
-            
-            if let Some(ref abhijit) = p.muhurtas.abhijit {
+
+            if let Some(ref _abhijit) = p.muhurtas.abhijit {
                 windows.push(AuspiciousWindow {
                     start: Utc::now(),
                     end: Utc::now(),
@@ -570,7 +554,7 @@ impl UnifiedAnalysis {
                 });
             }
         }
-        
+
         // Add Mars-ruled days for current Mahadasha
         if vimshottari.current_mahadasha == "Mars" {
             windows.push(AuspiciousWindow {
@@ -578,22 +562,23 @@ impl UnifiedAnalysis {
                 end: Utc::now(),
                 quality: AuspiciousQuality::Good,
                 sources: vec!["Mars Mahadasha".to_string()],
-                description: "Tuesday (Mars day) is favorable for initiating new projects".to_string(),
+                description: "Tuesday (Mars day) is favorable for initiating new projects"
+                    .to_string(),
             });
         }
-        
+
         Ok(windows)
     }
-    
+
     /// Generate unified recommendations
     async fn generate_recommendations(
         vimshottari: &VimshottariAnalysis,
-        numerology: &NumerologyAnalysis,
+        _numerology: &NumerologyAnalysis,
         tcm: &TCMAnalysis,
-        insights: &[LayeredInsight],
+        _insights: &[LayeredInsight],
     ) -> Result<Vec<UnifiedRecommendation>> {
         let mut recommendations = Vec::new();
-        
+
         // Add TCM recommendations
         for rec in &tcm.recommendations {
             recommendations.push(UnifiedRecommendation {
@@ -609,7 +594,7 @@ impl UnifiedAnalysis {
                 timeframe: None,
             });
         }
-        
+
         // Add Vimshottari recommendations
         recommendations.push(UnifiedRecommendation {
             category: "Spiritual".to_string(),
@@ -627,7 +612,7 @@ impl UnifiedAnalysis {
             priority: Priority::High,
             timeframe: Some(format!("Until {}", vimshottari.mahadasha_end)),
         });
-        
+
         Ok(recommendations)
     }
 }
@@ -635,8 +620,8 @@ impl UnifiedAnalysis {
 /// Find auspicious windows for an activity
 pub async fn find_auspicious_windows(
     profile: &BirthProfile,
-    activity: ActivityType,
-    days: u32,
+    _activity: ActivityType,
+    _days: u32,
 ) -> Result<Vec<AuspiciousWindow>> {
     UnifiedAnalysis::find_auspicious_times_internal(
         profile,
@@ -666,7 +651,8 @@ pub async fn find_auspicious_windows(
                 description: String::new(),
             },
         },
-    ).await
+    )
+    .await
 }
 
 // Helper functions
@@ -675,7 +661,7 @@ fn calculate_life_path(year: u32, month: u32, day: u32) -> u32 {
     let year_sum = reduce_to_single_digit(year);
     let month_sum = reduce_to_single_digit(month);
     let day_sum = reduce_to_single_digit(day);
-    
+
     reduce_to_single_digit(year_sum + month_sum + day_sum)
 }
 
@@ -706,47 +692,83 @@ fn get_life_path_meaning(n: u32) -> (String, String, Vec<String>) {
         1 => (
             "The Leader - Independent, innovative, pioneering".to_string(),
             "To develop self-confidence and leadership".to_string(),
-            vec!["Independent".to_string(), "Innovative".to_string(), "Ambitious".to_string()],
+            vec![
+                "Independent".to_string(),
+                "Innovative".to_string(),
+                "Ambitious".to_string(),
+            ],
         ),
         2 => (
             "The Peacemaker - Cooperative, diplomatic, sensitive".to_string(),
             "To bring harmony and balance to relationships".to_string(),
-            vec!["Diplomatic".to_string(), "Sensitive".to_string(), "Cooperative".to_string()],
+            vec![
+                "Diplomatic".to_string(),
+                "Sensitive".to_string(),
+                "Cooperative".to_string(),
+            ],
         ),
         3 => (
             "The Communicator - Creative, expressive, joyful".to_string(),
             "To inspire and uplift through self-expression".to_string(),
-            vec!["Creative".to_string(), "Expressive".to_string(), "Optimistic".to_string()],
+            vec![
+                "Creative".to_string(),
+                "Expressive".to_string(),
+                "Optimistic".to_string(),
+            ],
         ),
         4 => (
             "The Builder - Practical, reliable, disciplined".to_string(),
             "To build solid foundations for yourself and others".to_string(),
-            vec!["Practical".to_string(), "Reliable".to_string(), "Hardworking".to_string()],
+            vec![
+                "Practical".to_string(),
+                "Reliable".to_string(),
+                "Hardworking".to_string(),
+            ],
         ),
         5 => (
             "The Freedom Seeker - Adventurous, versatile, curious".to_string(),
             "To embrace change and inspire freedom in others".to_string(),
-            vec!["Adventurous".to_string(), "Versatile".to_string(), "Freedom-loving".to_string()],
+            vec![
+                "Adventurous".to_string(),
+                "Versatile".to_string(),
+                "Freedom-loving".to_string(),
+            ],
         ),
         6 => (
             "The Nurturer - Responsible, caring, harmonious".to_string(),
             "To serve and nurture family and community".to_string(),
-            vec!["Caring".to_string(), "Responsible".to_string(), "Harmonious".to_string()],
+            vec![
+                "Caring".to_string(),
+                "Responsible".to_string(),
+                "Harmonious".to_string(),
+            ],
         ),
         7 => (
             "The Seeker - Analytical, spiritual, introspective".to_string(),
             "To seek truth and wisdom through inner exploration".to_string(),
-            vec!["Analytical".to_string(), "Spiritual".to_string(), "Introspective".to_string()],
+            vec![
+                "Analytical".to_string(),
+                "Spiritual".to_string(),
+                "Introspective".to_string(),
+            ],
         ),
         8 => (
             "The Powerhouse - Ambitious, authoritative, successful".to_string(),
             "To achieve material and spiritual abundance".to_string(),
-            vec!["Ambitious".to_string(), "Authoritative".to_string(), "Successful".to_string()],
+            vec![
+                "Ambitious".to_string(),
+                "Authoritative".to_string(),
+                "Successful".to_string(),
+            ],
         ),
         9 => (
             "The Humanitarian - Compassionate, wise, universal".to_string(),
             "To serve humanity with compassion and wisdom".to_string(),
-            vec!["Compassionate".to_string(), "Wise".to_string(), "Universal".to_string()],
+            vec![
+                "Compassionate".to_string(),
+                "Wise".to_string(),
+                "Universal".to_string(),
+            ],
         ),
         _ => (
             "Unknown path".to_string(),
@@ -800,14 +822,8 @@ mod tests {
 
     #[test]
     fn test_numerology_analysis() {
-        let profile = BirthProfile::new(
-            "1991-08-13",
-            "13:31",
-            12.9716,
-            77.5946,
-            "Asia/Kolkata",
-        );
-        
+        let profile = BirthProfile::new("1991-08-13", "13:31", 12.9716, 77.5946, "Asia/Kolkata");
+
         // Would need async runtime for full test
         // For now just test the calculation
         let life_path = calculate_life_path(1991, 8, 13);

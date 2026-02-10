@@ -13,7 +13,6 @@ use axum::{
     Router,
 };
 use serde_json::{json, Value};
-use serial_test::serial;
 use tower::ServiceExt;
 
 mod common;
@@ -53,19 +52,14 @@ async fn authenticated_post(
     let json: Value = if body_bytes.is_empty() {
         json!({})
     } else {
-        serde_json::from_slice(&body_bytes).unwrap_or_else(|_| {
-            json!({"raw": String::from_utf8_lossy(&body_bytes).to_string()})
-        })
+        serde_json::from_slice(&body_bytes)
+            .unwrap_or_else(|_| json!({"raw": String::from_utf8_lossy(&body_bytes).to_string()}))
     };
 
     (status, json)
 }
 
-async fn authenticated_get(
-    router: &Router,
-    uri: &str,
-    token: &str,
-) -> (StatusCode, Value) {
+async fn authenticated_get(router: &Router, uri: &str, token: &str) -> (StatusCode, Value) {
     let request = Request::builder()
         .method("GET")
         .uri(uri)
@@ -168,8 +162,7 @@ async fn test_gene_keys_engine_info() {
     let router = get_test_router().await;
     let token = generate_test_token(5);
 
-    let (status, body) =
-        authenticated_get(router, "/api/v1/engines/gene-keys/info", &token).await;
+    let (status, body) = authenticated_get(router, "/api/v1/engines/gene-keys/info", &token).await;
 
     assert_eq!(status, StatusCode::OK);
     assert_eq!(body["engine_id"].as_str().unwrap(), "gene-keys");
@@ -201,13 +194,8 @@ async fn test_gene_keys_calculate_with_gates() {
     let token = generate_test_token(5);
     let input = create_gene_keys_input_with_gates();
 
-    let (status, body) = authenticated_post(
-        router,
-        "/api/v1/engines/gene-keys/calculate",
-        &token,
-        input,
-    )
-    .await;
+    let (status, body) =
+        authenticated_post(router, "/api/v1/engines/gene-keys/calculate", &token, input).await;
 
     assert_eq!(
         status,
@@ -301,8 +289,11 @@ async fn test_vimshottari_calculate_with_moon_longitude() {
     let mahadashas = timeline["mahadashas"]
         .as_array()
         .expect("mahadashas should be array");
-    assert!(mahadashas.len() >= 9 && mahadashas.len() <= 10,
-        "Should have 9-10 mahadashas, got {}", mahadashas.len());
+    assert!(
+        mahadashas.len() >= 9 && mahadashas.len() <= 10,
+        "Should have 9-10 mahadashas, got {}",
+        mahadashas.len()
+    );
 
     // Verify each mahadasha has required fields
     for (i, maha) in mahadashas.iter().enumerate() {
@@ -349,12 +340,8 @@ async fn test_birth_blueprint_workflow_includes_gene_keys() {
     let token = generate_test_token(5);
 
     // Check workflow definition
-    let (status, body) = authenticated_get(
-        router,
-        "/api/v1/workflows/birth-blueprint/info",
-        &token,
-    )
-    .await;
+    let (status, body) =
+        authenticated_get(router, "/api/v1/workflows/birth-blueprint/info", &token).await;
 
     assert_eq!(status, StatusCode::OK);
     let engine_ids = body["engine_ids"]
@@ -381,12 +368,8 @@ async fn test_full_spectrum_workflow_includes_new_engines() {
     let router = get_test_router().await;
     let token = generate_test_token(5);
 
-    let (status, body) = authenticated_get(
-        router,
-        "/api/v1/workflows/full-spectrum/info",
-        &token,
-    )
-    .await;
+    let (status, body) =
+        authenticated_get(router, "/api/v1/workflows/full-spectrum/info", &token).await;
 
     assert_eq!(status, StatusCode::OK);
     let engine_ids = body["engine_ids"]
@@ -409,12 +392,8 @@ async fn test_self_inquiry_workflow_includes_gene_keys() {
     let router = get_test_router().await;
     let token = generate_test_token(5);
 
-    let (status, body) = authenticated_get(
-        router,
-        "/api/v1/workflows/self-inquiry/info",
-        &token,
-    )
-    .await;
+    let (status, body) =
+        authenticated_get(router, "/api/v1/workflows/self-inquiry/info", &token).await;
 
     assert_eq!(status, StatusCode::OK);
     let engine_ids = body["engine_ids"]
@@ -502,13 +481,8 @@ async fn test_gene_keys_phase_gated_at_level_1() {
     let token = generate_test_token(1); // Phase 1 - below gene-keys requirement of 2
     let input = create_gene_keys_input_with_gates();
 
-    let (status, body) = authenticated_post(
-        router,
-        "/api/v1/engines/gene-keys/calculate",
-        &token,
-        input,
-    )
-    .await;
+    let (status, body) =
+        authenticated_post(router, "/api/v1/engines/gene-keys/calculate", &token, input).await;
 
     assert_eq!(
         status,

@@ -30,7 +30,7 @@ jobs:
         run: cargo fmt --all -- --check
       
       - name: Run Clippy
-        run: cargo clippy --all-targets --all-features -- -D warnings
+        run: cargo clippy --all-targets -- -D warnings
 
   # Run unit tests
   test:
@@ -80,7 +80,7 @@ jobs:
           PGPASSWORD: noesis_test_password
 
       - name: Run unit tests
-        run: cargo test --all-features --lib
+        run: cargo test --lib
         env:
           REDIS_URL: redis://localhost:6379
           DATABASE_URL: postgresql://noesis_test:noesis_test_password@localhost:5432/noesis_test

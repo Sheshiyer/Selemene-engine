@@ -4,10 +4,10 @@
 //! Uses seeded random for reproducibility.
 
 use chrono::Utc;
-use rand::{Rng, SeedableRng};
 use rand::rngs::StdRng;
+use rand::{Rng, SeedableRng};
 
-use crate::models::{BiofieldMetrics, ChakraReading, Chakra};
+use crate::models::{BiofieldMetrics, Chakra, ChakraReading};
 
 /// Generate mock biofield metrics with optional seed for reproducibility
 ///
@@ -21,24 +21,19 @@ pub fn generate_mock_metrics(seed: Option<u64>) -> BiofieldMetrics {
         Some(s) => StdRng::seed_from_u64(s),
         None => StdRng::from_entropy(),
     };
-    
+
     // Generate base metrics within realistic ranges
     let fractal_dimension = generate_fractal_dimension(&mut rng);
     let entropy = generate_entropy(&mut rng);
     let coherence = generate_coherence(&mut rng);
     let symmetry = generate_symmetry(&mut rng);
-    
+
     // Calculate composite vitality index
-    let vitality_index = calculate_vitality_index(
-        fractal_dimension,
-        entropy,
-        coherence,
-        symmetry,
-    );
-    
+    let vitality_index = calculate_vitality_index(fractal_dimension, entropy, coherence, symmetry);
+
     // Generate chakra readings
     let chakra_readings = generate_chakra_readings(&mut rng);
-    
+
     BiofieldMetrics {
         fractal_dimension,
         entropy,
@@ -91,14 +86,10 @@ fn calculate_vitality_index(
 ) -> f64 {
     // Normalize fractal dimension to 0-1 scale
     let fd_normalized = (fractal_dimension - 1.0).clamp(0.0, 1.0);
-    
+
     // Weights: coherence (0.3), fractal (0.3), entropy (0.2), symmetry (0.2)
-    let weighted_sum = 
-        coherence * 0.30 +
-        fd_normalized * 0.30 +
-        entropy * 0.20 +
-        symmetry * 0.20;
-    
+    let weighted_sum = coherence * 0.30 + fd_normalized * 0.30 + entropy * 0.20 + symmetry * 0.20;
+
     // Apply slight non-linearity to spread values
     (weighted_sum.powf(0.9)).clamp(0.0, 1.0)
 }
@@ -116,7 +107,7 @@ fn generate_chakra_reading(rng: &mut StdRng, chakra: Chakra) -> ChakraReading {
     let activity_level = rng.gen_range(0.3..0.9);
     let balance = rng.gen_range(-0.5..0.5);
     let color_intensity = generate_color_intensity(rng, chakra, activity_level);
-    
+
     ChakraReading {
         chakra,
         activity_level,
@@ -136,7 +127,7 @@ fn generate_color_intensity(rng: &mut StdRng, chakra: Chakra, activity: f64) -> 
         Chakra::ThirdEye => "indigo",
         Chakra::Crown => "violet",
     };
-    
+
     let intensity = if activity > 0.7 {
         "bright"
     } else if activity > 0.5 {
@@ -146,7 +137,7 @@ fn generate_color_intensity(rng: &mut StdRng, chakra: Chakra, activity: f64) -> 
     } else {
         "faint"
     };
-    
+
     // Occasionally add variation
     let variant = if rng.gen_bool(0.2) {
         match rng.gen_range(0..3) {
@@ -157,78 +148,93 @@ fn generate_color_intensity(rng: &mut StdRng, chakra: Chakra, activity: f64) -> 
     } else {
         ""
     };
-    
+
     format!("{} {}{}", intensity, base_color, variant)
 }
 
 /// Generate mock metrics based on a user ID for consistent personal readings
 pub fn generate_metrics_for_user(user_id: &str) -> BiofieldMetrics {
     // Create seed from user ID hash
-    let seed = user_id.bytes().fold(0u64, |acc, b| acc.wrapping_mul(31).wrapping_add(b as u64));
+    let seed = user_id
+        .bytes()
+        .fold(0u64, |acc, b| acc.wrapping_mul(31).wrapping_add(b as u64));
     generate_mock_metrics(Some(seed))
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    
+
     #[test]
     fn test_generate_mock_metrics_seeded() {
         let metrics1 = generate_mock_metrics(Some(42));
         let metrics2 = generate_mock_metrics(Some(42));
-        
+
         assert_eq!(metrics1.fractal_dimension, metrics2.fractal_dimension);
         assert_eq!(metrics1.entropy, metrics2.entropy);
         assert_eq!(metrics1.coherence, metrics2.coherence);
         assert_eq!(metrics1.symmetry, metrics2.symmetry);
     }
-    
+
     #[test]
     fn test_generate_mock_metrics_different_seeds() {
         let metrics1 = generate_mock_metrics(Some(42));
         let metrics2 = generate_mock_metrics(Some(123));
-        
+
         // Very unlikely to be exactly equal with different seeds
         assert_ne!(metrics1.fractal_dimension, metrics2.fractal_dimension);
     }
-    
+
     #[test]
     fn test_metrics_in_valid_ranges() {
         for seed in 0..100 {
             let metrics = generate_mock_metrics(Some(seed));
-            
-            assert!(metrics.fractal_dimension >= 1.0 && metrics.fractal_dimension <= 2.0,
-                "fractal_dimension {} out of range", metrics.fractal_dimension);
-            assert!(metrics.entropy >= 0.0 && metrics.entropy <= 1.0,
-                "entropy {} out of range", metrics.entropy);
-            assert!(metrics.coherence >= 0.0 && metrics.coherence <= 1.0,
-                "coherence {} out of range", metrics.coherence);
-            assert!(metrics.symmetry >= 0.0 && metrics.symmetry <= 1.0,
-                "symmetry {} out of range", metrics.symmetry);
-            assert!(metrics.vitality_index >= 0.0 && metrics.vitality_index <= 1.0,
-                "vitality_index {} out of range", metrics.vitality_index);
+
+            assert!(
+                metrics.fractal_dimension >= 1.0 && metrics.fractal_dimension <= 2.0,
+                "fractal_dimension {} out of range",
+                metrics.fractal_dimension
+            );
+            assert!(
+                metrics.entropy >= 0.0 && metrics.entropy <= 1.0,
+                "entropy {} out of range",
+                metrics.entropy
+            );
+            assert!(
+                metrics.coherence >= 0.0 && metrics.coherence <= 1.0,
+                "coherence {} out of range",
+                metrics.coherence
+            );
+            assert!(
+                metrics.symmetry >= 0.0 && metrics.symmetry <= 1.0,
+                "symmetry {} out of range",
+                metrics.symmetry
+            );
+            assert!(
+                metrics.vitality_index >= 0.0 && metrics.vitality_index <= 1.0,
+                "vitality_index {} out of range",
+                metrics.vitality_index
+            );
         }
     }
-    
+
     #[test]
     fn test_chakra_readings_complete() {
         let metrics = generate_mock_metrics(Some(42));
         assert_eq!(metrics.chakra_readings.len(), 7);
-        
+
         for reading in &metrics.chakra_readings {
             assert!(reading.activity_level >= 0.0 && reading.activity_level <= 1.0);
             assert!(reading.balance >= -1.0 && reading.balance <= 1.0);
             assert!(!reading.color_intensity.is_empty());
         }
     }
-    
+
     #[test]
     fn test_chakra_readings_have_all_chakras() {
         let metrics = generate_mock_metrics(Some(42));
-        let chakras: Vec<Chakra> = metrics.chakra_readings.iter()
-            .map(|r| r.chakra)
-            .collect();
-        
+        let chakras: Vec<Chakra> = metrics.chakra_readings.iter().map(|r| r.chakra).collect();
+
         assert!(chakras.contains(&Chakra::Root));
         assert!(chakras.contains(&Chakra::Sacral));
         assert!(chakras.contains(&Chakra::SolarPlexus));
@@ -237,25 +243,31 @@ mod tests {
         assert!(chakras.contains(&Chakra::ThirdEye));
         assert!(chakras.contains(&Chakra::Crown));
     }
-    
+
     #[test]
     fn test_vitality_index_calculation() {
         // Optimal values should give high vitality
         let high_vitality = calculate_vitality_index(1.5, 0.55, 0.7, 0.8);
-        assert!(high_vitality > 0.5, "Optimal values should give vitality > 0.5");
-        
+        assert!(
+            high_vitality > 0.5,
+            "Optimal values should give vitality > 0.5"
+        );
+
         // Low values should give lower vitality
         let low_vitality = calculate_vitality_index(1.1, 0.2, 0.3, 0.3);
-        assert!(low_vitality < high_vitality, "Low values should give lower vitality");
+        assert!(
+            low_vitality < high_vitality,
+            "Low values should give lower vitality"
+        );
     }
-    
+
     #[test]
     fn test_generate_metrics_for_user() {
         let metrics1 = generate_metrics_for_user("user123");
         let metrics2 = generate_metrics_for_user("user123");
-        
+
         assert_eq!(metrics1.fractal_dimension, metrics2.fractal_dimension);
-        
+
         let metrics3 = generate_metrics_for_user("differentuser");
         assert_ne!(metrics1.fractal_dimension, metrics3.fractal_dimension);
     }

@@ -12,33 +12,35 @@
 //! - **Creative Expression**: Generative guidance (sigil-forge, sacred-geometry)
 //! - **Full Spectrum**: All-engine integration
 
-pub mod cache;
-pub mod full_spectrum;
-pub mod synthesis;
-pub mod models;
-pub mod registry;
-pub mod executor;
 pub mod birth_blueprint;
+pub mod cache;
+pub mod creative_expression;
 pub mod daily_practice;
 pub mod decision_support;
+pub mod executor;
+pub mod full_spectrum;
+pub mod models;
+pub mod registry;
 pub mod self_inquiry;
-pub mod creative_expression;
+pub mod synthesis;
 pub mod witness;
 
 // Re-export primary types
 pub use cache::{WorkflowCache, WorkflowCacheKey, WorkflowTtl};
-pub use full_spectrum::{EngineCategory, FullSpectrumConfig, FullSpectrumResult, FullSpectrumWorkflow};
+pub use executor::WorkflowExecutor;
+pub use full_spectrum::{
+    EngineCategory, FullSpectrumConfig, FullSpectrumResult, FullSpectrumWorkflow,
+};
 pub use models::{
-    Theme, Alignment as ExtAlignment, Tension as ExtTension, 
-    WitnessPrompt, InquiryType, TemporalWindow, WorkflowOutput,
+    Alignment as ExtAlignment, InquiryType, TemporalWindow, Tension as ExtTension, Theme,
+    WitnessPrompt, WorkflowOutput,
 };
 pub use registry::WorkflowRegistry;
-pub use executor::WorkflowExecutor;
 
 // Re-export workflow implementations
+pub use creative_expression::CreativeExpressionWorkflow;
 pub use decision_support::DecisionSupportWorkflow;
 pub use self_inquiry::SelfInquiryWorkflow;
-pub use creative_expression::CreativeExpressionWorkflow;
 
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -64,7 +66,7 @@ pub enum SynthesisType {
 }
 
 /// Result of synthesizing multiple engine outputs (legacy format)
-/// 
+///
 /// Note: New workflows should use `models::SynthesisResult` which has
 /// stronger typed themes, alignments, and tensions.
 #[derive(Debug, Clone, Serialize, Deserialize)]

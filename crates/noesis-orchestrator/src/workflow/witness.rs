@@ -27,7 +27,10 @@ pub fn generate_workflow_witness_prompts(
 
     // Generate integration prompt if there are alignments
     if !synthesis.alignments.is_empty() {
-        prompts.push(generate_alignment_prompt(&synthesis.alignments, consciousness_level));
+        prompts.push(generate_alignment_prompt(
+            &synthesis.alignments,
+            consciousness_level,
+        ));
     }
 
     // Generate a general synthesis prompt
@@ -40,10 +43,7 @@ pub fn generate_workflow_witness_prompts(
 }
 
 /// Generate prompt for a cross-engine theme
-fn generate_theme_prompt(
-    theme: &crate::workflow::models::Theme,
-    level: u8,
-) -> WitnessPrompt {
+fn generate_theme_prompt(theme: &crate::workflow::models::Theme, level: u8) -> WitnessPrompt {
     let sources_text = if theme.sources.len() > 1 {
         format!("{} different lenses", theme.sources.len())
     } else {
@@ -73,15 +73,11 @@ fn generate_theme_prompt(
         ),
     };
 
-    WitnessPrompt::new(text, InquiryType::PatternNoticing)
-        .with_context(theme.name.clone())
+    WitnessPrompt::new(text, InquiryType::PatternNoticing).with_context(theme.name.clone())
 }
 
 /// Generate prompt for a tension between systems
-fn generate_tension_prompt(
-    tension: &crate::workflow::models::Tension,
-    level: u8,
-) -> WitnessPrompt {
+fn generate_tension_prompt(tension: &crate::workflow::models::Tension, level: u8) -> WitnessPrompt {
     let (system_a, _view_a) = &tension.perspective_a;
     let (system_b, _view_b) = &tension.perspective_b;
 
@@ -108,8 +104,7 @@ fn generate_tension_prompt(
         ),
     };
 
-    WitnessPrompt::new(text, InquiryType::TensionExploration)
-        .with_context(tension.aspect.clone())
+    WitnessPrompt::new(text, InquiryType::TensionExploration).with_context(tension.aspect.clone())
 }
 
 /// Generate prompt for alignments across systems
@@ -250,23 +245,23 @@ mod tests {
 
     fn sample_synthesis() -> SynthesisResult {
         SynthesisResult {
-            themes: vec![
-                Theme::new("Leadership", "Natural leadership abilities")
-                    .with_sources(vec!["numerology".into(), "human-design".into()]),
-            ],
-            alignments: vec![
-                Alignment::new("Leadership alignment", "Both systems emphasize initiating")
-                    .with_engines(vec!["numerology".into(), "human-design".into()]),
-            ],
-            tensions: vec![
-                Tension::new("Visibility vs Introspection", "Inner need meets outer design")
-                    .with_perspectives(
-                        "numerology",
-                        "Soul Urge 7 seeks depth",
-                        "human-design",
-                        "Manifestor designed for impact",
-                    ),
-            ],
+            themes: vec![Theme::new("Leadership", "Natural leadership abilities")
+                .with_sources(vec!["numerology".into(), "human-design".into()])],
+            alignments: vec![Alignment::new(
+                "Leadership alignment",
+                "Both systems emphasize initiating",
+            )
+            .with_engines(vec!["numerology".into(), "human-design".into()])],
+            tensions: vec![Tension::new(
+                "Visibility vs Introspection",
+                "Inner need meets outer design",
+            )
+            .with_perspectives(
+                "numerology",
+                "Soul Urge 7 seeks depth",
+                "human-design",
+                "Manifestor designed for impact",
+            )],
             summary: "Test summary".to_string(),
         }
     }
@@ -301,9 +296,9 @@ mod tests {
     fn theme_prompt_includes_context() {
         let theme = Theme::new("Creativity", "Creative expression")
             .with_sources(vec!["numerology".into(), "gene-keys".into()]);
-        
+
         let prompt = generate_theme_prompt(&theme, 1);
-        
+
         assert!(prompt.context.is_some());
         assert_eq!(prompt.context.unwrap(), "Creativity");
     }
@@ -312,9 +307,9 @@ mod tests {
     fn tension_prompt_references_both_systems() {
         let tension = Tension::new("Test Tension", "Description")
             .with_perspectives("system-a", "view a", "system-b", "view b");
-        
+
         let prompt = generate_tension_prompt(&tension, 1);
-        
+
         assert!(prompt.text.contains("system-a"));
         assert!(prompt.text.contains("system-b"));
     }
@@ -326,7 +321,7 @@ mod tests {
         for i in 0..10 {
             synthesis.themes.push(
                 Theme::new(format!("Theme{}", i), "Description")
-                    .with_sources(vec!["a".into(), "b".into()])
+                    .with_sources(vec!["a".into(), "b".into()]),
             );
         }
 

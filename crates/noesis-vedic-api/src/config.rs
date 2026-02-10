@@ -1,7 +1,7 @@
 //! Configuration for FreeAstrologyAPI.com integration
 
-use std::env;
 use crate::error::{Result, VedicApiError};
+use std::env;
 
 /// Configuration for the Vedic API client
 #[derive(Debug, Clone)]
@@ -54,7 +54,7 @@ impl std::fmt::Display for ProviderType {
 
 impl std::str::FromStr for ProviderType {
     type Err = String;
-    
+
     fn from_str(s: &str) -> std::result::Result<Self, Self::Err> {
         match s.to_lowercase().as_str() {
             "api" => Ok(ProviderType::Api),
@@ -79,7 +79,7 @@ impl Config {
             rate_limit: crate::rate_limit::RateLimitConfig::default(),
         }
     }
-    
+
     /// Load configuration from environment variables
     pub fn from_env() -> Result<Self> {
         let api_key = env::var("FREE_ASTROLOGY_API_KEY")
@@ -87,35 +87,35 @@ impl Config {
                 field: "FREE_ASTROLOGY_API_KEY".to_string(),
                 message: "API key not found in environment. Get your free key at https://freeastrologyapi.com".to_string(),
             })?;
-        
+
         let base_url = env::var("FREE_ASTROLOGY_API_BASE_URL")
             .unwrap_or_else(|_| crate::API_BASE_URL.to_string());
-        
+
         let timeout_seconds = env::var("FREE_ASTROLOGY_API_TIMEOUT")
             .ok()
             .and_then(|s| s.parse().ok())
             .unwrap_or(30);
-        
+
         let retry_count = env::var("FREE_ASTROLOGY_API_RETRY_COUNT")
             .ok()
             .and_then(|s| s.parse().ok())
             .unwrap_or(3);
-        
+
         let cache_ttl_birth_data = env::var("FREE_ASTROLOGY_CACHE_BIRTH_TTL")
             .ok()
             .and_then(|s| s.parse().ok())
             .unwrap_or(0);
-        
+
         let cache_ttl_daily = env::var("FREE_ASTROLOGY_CACHE_DAILY_TTL")
             .ok()
             .and_then(|s| s.parse().ok())
             .unwrap_or(86400);
-        
+
         let provider = env::var("VEDIC_ENGINE_PROVIDER")
             .ok()
             .and_then(|s| s.parse().ok())
             .unwrap_or(ProviderType::Api);
-        
+
         let fallback_enabled = env::var("VEDIC_ENGINE_FALLBACK_ENABLED")
             .ok()
             .map(|s| s.parse().unwrap_or(true))
@@ -135,38 +135,39 @@ impl Config {
             rate_limit,
         })
     }
-    
+
     /// Check if the API provider is enabled
     pub fn is_api_enabled(&self) -> bool {
         matches!(self.provider, ProviderType::Api)
     }
-    
+
     /// Set the base URL (useful for testing)
     pub fn with_base_url(mut self, url: impl Into<String>) -> Self {
         self.base_url = url.into();
         self
     }
-    
+
     /// Set the timeout
     pub fn with_timeout(mut self, seconds: u64) -> Self {
         self.timeout_seconds = seconds;
         self
     }
-    
+
     /// Set retry count
     pub fn with_retry_count(mut self, count: u32) -> Self {
         self.retry_count = count;
         self
     }
-    
+
     /// Mask the API key for logging
     pub fn masked_api_key(&self) -> String {
         if self.api_key.len() <= 8 {
             "***".to_string()
         } else {
-            format!("{}...{}", 
-                &self.api_key[..4], 
-                &self.api_key[self.api_key.len()-4..]
+            format!(
+                "{}...{}",
+                &self.api_key[..4],
+                &self.api_key[self.api_key.len() - 4..]
             )
         }
     }
@@ -211,7 +212,10 @@ mod tests {
     #[test]
     fn test_provider_type_from_str() {
         assert_eq!("api".parse::<ProviderType>().unwrap(), ProviderType::Api);
-        assert_eq!("native".parse::<ProviderType>().unwrap(), ProviderType::Native);
+        assert_eq!(
+            "native".parse::<ProviderType>().unwrap(),
+            ProviderType::Native
+        );
         assert!("invalid".parse::<ProviderType>().is_err());
     }
 }

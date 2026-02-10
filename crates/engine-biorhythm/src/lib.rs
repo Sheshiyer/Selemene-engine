@@ -130,21 +130,25 @@ fn phase_label(value: f64, days_alive: i64, period: f64) -> String {
 /// Peak occurs when days_alive / period = 0.25 + n for integer n.
 fn days_until_peak(days_alive: i64, period: f64) -> i64 {
     let current_phase = (days_alive as f64 % period) / period; // 0..1
-    // Peak is at phase = 0.25
+                                                               // Peak is at phase = 0.25
     let distance = if current_phase <= 0.25 {
         0.25 - current_phase
     } else {
         1.25 - current_phase
     };
     let days = (distance * period).ceil() as i64;
-    if days == 0 { period as i64 } else { days }
+    if days == 0 {
+        period as i64
+    } else {
+        days
+    }
 }
 
 /// Days until the next zero crossing.
 /// Zero crossings occur at phase = 0.0 and phase = 0.5.
 fn days_until_critical(days_alive: i64, period: f64) -> i64 {
     let current_phase = (days_alive as f64 % period) / period; // 0..1
-    // Zero crossings at 0.0 and 0.5
+                                                               // Zero crossings at 0.0 and 0.5
     let targets = [0.5, 1.0]; // next crossings relative to current position
     let mut min_days = i64::MAX;
     for &target in &targets {
@@ -276,10 +280,7 @@ fn generate_witness_prompt(result: &BiorhythmResult) -> String {
 
     let base = format!(
         "Your {} cycle is at {:.0}% while {} is at {:.0}%.",
-        highest.0,
-        highest.1,
-        lowest.0,
-        lowest.1,
+        highest.0, highest.1, lowest.0, lowest.1,
     );
 
     let reflection = if any_critical {
@@ -308,9 +309,8 @@ fn generate_witness_prompt(result: &BiorhythmResult) -> String {
 
 /// Parse a YYYY-MM-DD date string into NaiveDate.
 fn parse_date(date_str: &str) -> Result<NaiveDate, EngineError> {
-    NaiveDate::parse_from_str(date_str, "%Y-%m-%d").map_err(|e| {
-        EngineError::CalculationError(format!("Invalid date '{}': {}", date_str, e))
-    })
+    NaiveDate::parse_from_str(date_str, "%Y-%m-%d")
+        .map_err(|e| EngineError::CalculationError(format!("Invalid date '{}': {}", date_str, e)))
 }
 
 // ---------------------------------------------------------------------------
@@ -450,7 +450,10 @@ impl ConsciousnessEngine for BiorhythmEngine {
         ] {
             if cycle.value < -1.0 || cycle.value > 1.0 {
                 valid = false;
-                messages.push(format!("{} value {} out of [-1, 1] range", name, cycle.value));
+                messages.push(format!(
+                    "{} value {} out of [-1, 1] range",
+                    name, cycle.value
+                ));
             }
             if cycle.percentage < 0.0 || cycle.percentage > 100.0 {
                 valid = false;
@@ -468,7 +471,7 @@ impl ConsciousnessEngine for BiorhythmEngine {
             ("wisdom", bio_result.wisdom),
             ("overall_energy", bio_result.overall_energy),
         ] {
-            if val < 0.0 || val > 100.0 {
+            if !(0.0..=100.0).contains(&val) {
                 valid = false;
                 messages.push(format!("{} value {} out of [0, 100] range", name, val));
             }
@@ -495,7 +498,11 @@ impl ConsciousnessEngine for BiorhythmEngine {
             hasher.update(bd.date.as_bytes());
         }
 
-        let target_date = input.current_time.date_naive().format("%Y-%m-%d").to_string();
+        let target_date = input
+            .current_time
+            .date_naive()
+            .format("%Y-%m-%d")
+            .to_string();
         hasher.update(target_date.as_bytes());
 
         if let Some(forecast) = input.options.get("forecast_days") {

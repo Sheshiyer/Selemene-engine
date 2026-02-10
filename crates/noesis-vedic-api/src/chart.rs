@@ -28,37 +28,35 @@ pub struct BirthChart {
 impl BirthChart {
     /// Get planet by name
     pub fn get_planet(&self, name: &str) -> Option<&PlanetPosition> {
-        self.planets.iter().find(|p| p.name.eq_ignore_ascii_case(name))
+        self.planets
+            .iter()
+            .find(|p| p.name.eq_ignore_ascii_case(name))
     }
-    
+
     /// Get planets in a house
     pub fn planets_in_house(&self, house: u8) -> Vec<&PlanetPosition> {
-        self.planets.iter()
-            .filter(|p| p.house == house)
-            .collect()
+        self.planets.iter().filter(|p| p.house == house).collect()
     }
-    
+
     /// Get planets in a sign
     pub fn planets_in_sign(&self, sign: ZodiacSign) -> Vec<&PlanetPosition> {
-        self.planets.iter()
-            .filter(|p| p.sign == sign)
-            .collect()
+        self.planets.iter().filter(|p| p.sign == sign).collect()
     }
-    
+
     /// Get ascendant lord
     pub fn ascendant_lord(&self) -> Option<&PlanetPosition> {
         let asc_sign = self.ascendant.sign;
         let lord = asc_sign.ruler();
         self.get_planet(lord)
     }
-    
+
     /// Get 9th lord (Bhagya/Dharma)
     pub fn ninth_lord(&self) -> Option<&PlanetPosition> {
         let ninth_sign = ZodiacSign::from_index((self.ascendant.sign.index() + 8) % 12);
         let lord = ninth_sign.ruler();
         self.get_planet(lord)
     }
-    
+
     /// Get 10th lord (Karma/Career)
     pub fn tenth_lord(&self) -> Option<&PlanetPosition> {
         let tenth_sign = ZodiacSign::from_index((self.ascendant.sign.index() + 9) % 12);
@@ -111,13 +109,13 @@ impl PlanetPosition {
     pub fn full_longitude(&self) -> f64 {
         (self.sign.index() as f64 * 30.0) + self.degree
     }
-    
+
     /// Check if planet is in own sign
     pub fn in_own_sign(&self) -> bool {
         let ruler = self.sign.ruler();
         self.name.eq_ignore_ascii_case(ruler)
     }
-    
+
     /// Check if planet is exalted
     pub fn is_exalted(&self) -> bool {
         let exaltation_degree = match self.name.to_lowercase().as_str() {
@@ -130,11 +128,11 @@ impl PlanetPosition {
             "saturn" => (ZodiacSign::Libra, 20.0),
             _ => return false,
         };
-        
-        self.sign == exaltation_degree.0 && 
-        (self.degree - exaltation_degree.1).abs() < 5.0 // Within 5° of exaltation point
+
+        self.sign == exaltation_degree.0 && (self.degree - exaltation_degree.1).abs() < 5.0
+        // Within 5° of exaltation point
     }
-    
+
     /// Check if planet is debilitated
     pub fn is_debilitated(&self) -> bool {
         let debilitation_sign = match self.name.to_lowercase().as_str() {
@@ -147,10 +145,10 @@ impl PlanetPosition {
             "saturn" => ZodiacSign::Aries,
             _ => return false,
         };
-        
+
         self.sign == debilitation_sign
     }
-    
+
     /// Check if in friend's sign
     pub fn in_friend_sign(&self, friends: &[&str]) -> bool {
         let ruler = self.sign.ruler();
@@ -237,7 +235,7 @@ impl ZodiacSign {
             ZodiacSign::Pisces => 11,
         }
     }
-    
+
     /// Create from index
     pub fn from_index(idx: usize) -> Self {
         match idx % 12 {
@@ -255,7 +253,7 @@ impl ZodiacSign {
             _ => ZodiacSign::Pisces,
         }
     }
-    
+
     /// Get sign name
     pub fn as_str(&self) -> &'static str {
         match self {
@@ -273,7 +271,7 @@ impl ZodiacSign {
             ZodiacSign::Pisces => "Pisces",
         }
     }
-    
+
     /// Get symbol
     pub fn symbol(&self) -> &'static str {
         match self {
@@ -291,7 +289,7 @@ impl ZodiacSign {
             ZodiacSign::Pisces => "♓",
         }
     }
-    
+
     /// Get ruling planet
     pub fn ruler(&self) -> &'static str {
         match self {
@@ -309,7 +307,7 @@ impl ZodiacSign {
             ZodiacSign::Pisces => "Jupiter",
         }
     }
-    
+
     /// Get element
     pub fn element(&self) -> &'static str {
         match self {
@@ -319,13 +317,20 @@ impl ZodiacSign {
             ZodiacSign::Cancer | ZodiacSign::Scorpio | ZodiacSign::Pisces => "Water",
         }
     }
-    
+
     /// Get modality
     pub fn modality(&self) -> &'static str {
         match self {
-            ZodiacSign::Aries | ZodiacSign::Cancer | ZodiacSign::Libra | ZodiacSign::Capricorn => "Cardinal",
-            ZodiacSign::Taurus | ZodiacSign::Leo | ZodiacSign::Scorpio | ZodiacSign::Aquarius => "Fixed",
-            ZodiacSign::Gemini | ZodiacSign::Virgo | ZodiacSign::Sagittarius | ZodiacSign::Pisces => "Mutable",
+            ZodiacSign::Aries | ZodiacSign::Cancer | ZodiacSign::Libra | ZodiacSign::Capricorn => {
+                "Cardinal"
+            }
+            ZodiacSign::Taurus | ZodiacSign::Leo | ZodiacSign::Scorpio | ZodiacSign::Aquarius => {
+                "Fixed"
+            }
+            ZodiacSign::Gemini
+            | ZodiacSign::Virgo
+            | ZodiacSign::Sagittarius
+            | ZodiacSign::Pisces => "Mutable",
         }
     }
 }
@@ -384,7 +389,7 @@ pub struct NavamsaPosition {
 
 impl NavamsaChart {
     /// Calculate Navamsa sign from Rashi position
-    /// 
+    ///
     /// Navamsa division:
     /// - Movable signs (1,4,7,10): start from Aries
     /// - Fixed signs (2,5,8,11): start from Leo  
@@ -392,19 +397,21 @@ impl NavamsaChart {
     pub fn calculate_navamsa(rashi_sign: ZodiacSign, degree: f64) -> ZodiacSign {
         // Each navamsa is 3°20' (1/9th of 30°)
         let navamsa_number = (degree / (30.0 / 9.0)) as usize;
-        
+
         let start_index = match rashi_sign.modality() {
-            "Cardinal" => 0,  // Start from Aries
-            "Fixed" => 4,     // Start from Leo
-            _ => 8,           // Start from Sagittarius (Mutable/Dual)
+            "Cardinal" => 0, // Start from Aries
+            "Fixed" => 4,    // Start from Leo
+            _ => 8,          // Start from Sagittarius (Mutable/Dual)
         };
-        
+
         ZodiacSign::from_index(start_index + navamsa_number)
     }
-    
+
     /// Check if a planet is Vargottama
     pub fn is_vargottama(&self, planet_name: &str) -> bool {
-        self.vargottama.iter().any(|p| p.eq_ignore_ascii_case(planet_name))
+        self.vargottama
+            .iter()
+            .any(|p| p.eq_ignore_ascii_case(planet_name))
     }
 }
 
@@ -443,7 +450,7 @@ mod tests {
             speed: 0.5,
             latitude: 0.0,
         };
-        
+
         assert!(pos.in_own_sign()); // Mars rules Aries
     }
 
@@ -459,7 +466,7 @@ mod tests {
             is_panapara: false,
             is_apoklima: false,
         };
-        
+
         assert_eq!(house.same_type(), vec![1, 5, 9]);
     }
 
@@ -468,12 +475,12 @@ mod tests {
         // Test: 0° Aries should be in first navamsa = Aries
         let navamsa = NavamsaChart::calculate_navamsa(ZodiacSign::Aries, 0.0);
         assert_eq!(navamsa, ZodiacSign::Aries);
-        
+
         // Test: 10° Aries (cardinal sign starts from Aries)
         // 10° / 3.33° = 3rd navamsa (index 3) → Aries + 3 = Cancer
         let navamsa = NavamsaChart::calculate_navamsa(ZodiacSign::Aries, 10.0);
         assert_eq!(navamsa, ZodiacSign::Cancer);
-        
+
         // Test: 10° Taurus (fixed sign starts from Leo)
         // 10° = 3rd navamsa (index 3) → Leo + 3 = Scorpio
         let navamsa = NavamsaChart::calculate_navamsa(ZodiacSign::Taurus, 10.0);

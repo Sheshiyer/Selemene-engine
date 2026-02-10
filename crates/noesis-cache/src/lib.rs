@@ -108,12 +108,7 @@ pub struct CacheManager {
 }
 
 impl CacheManager {
-    pub fn new(
-        redis_url: String,
-        l1_size_mb: usize,
-        l2_ttl: Duration,
-        l3_enabled: bool,
-    ) -> Self {
+    pub fn new(redis_url: String, l1_size_mb: usize, l2_ttl: Duration, l3_enabled: bool) -> Self {
         Self {
             l1_cache: Arc::new(L1Cache::new(l1_size_mb)),
             l2_cache: Arc::new(L2Cache::new(redis_url, l2_ttl)),
@@ -168,7 +163,11 @@ impl CacheManager {
     }
 
     /// Store a value in L3 (precomputed / persistent).
-    pub async fn store_precomputed(&self, key: &CacheKey, value: &Value) -> Result<(), EngineError> {
+    pub async fn store_precomputed(
+        &self,
+        key: &CacheKey,
+        value: &Value,
+    ) -> Result<(), EngineError> {
         self.l3_cache.store(key, value).await?;
         Ok(())
     }

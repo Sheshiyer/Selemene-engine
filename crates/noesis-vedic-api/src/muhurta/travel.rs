@@ -6,14 +6,19 @@ use super::types::MuhurtaQuality;
 
 /// Nakshatras favorable for travel
 const TRAVEL_GOOD_NAKSHATRAS: &[&str] = &[
-    "Ashwini", "Mrigashira", "Punarvasu", "Pushya", "Hasta",
-    "Anuradha", "Shravana", "Revati",
+    "Ashwini",
+    "Mrigashira",
+    "Punarvasu",
+    "Pushya",
+    "Hasta",
+    "Anuradha",
+    "Shravana",
+    "Revati",
 ];
 
 /// Nakshatras to avoid for travel
 const TRAVEL_BAD_NAKSHATRAS: &[&str] = &[
-    "Bharani", "Krittika", "Ardra", "Ashlesha", "Magha",
-    "Vishakha", "Jyeshtha", "Mula",
+    "Bharani", "Krittika", "Ardra", "Ashlesha", "Magha", "Vishakha", "Jyeshtha", "Mula",
 ];
 
 /// Directions favorable on each weekday (Panchak)
@@ -40,7 +45,7 @@ pub fn evaluate_travel_muhurta(
     let mut score: i32 = 50;
     let mut favorable = vec![];
     let mut unfavorable = vec![];
-    
+
     // Check Nakshatra
     if TRAVEL_GOOD_NAKSHATRAS.iter().any(|n| nakshatra.contains(n)) {
         score += 20;
@@ -49,7 +54,7 @@ pub fn evaluate_travel_muhurta(
         score -= 20;
         unfavorable.push(format!("{} is not ideal for travel", nakshatra));
     }
-    
+
     // Check Vara
     match vara.to_lowercase().as_str() {
         "sunday" | "wednesday" | "thursday" | "friday" => {
@@ -66,13 +71,13 @@ pub fn evaluate_travel_muhurta(
         }
         _ => {}
     }
-    
+
     // Check Rahu Kalam
     if has_rahu_kalam {
         score -= 25;
         unfavorable.push("Never start travel during Rahu Kalam".to_string());
     }
-    
+
     // Check direction compatibility
     if let Some(direction) = travel_direction {
         if let Some(good_dir) = get_favorable_direction(vara) {
@@ -82,9 +87,9 @@ pub fn evaluate_travel_muhurta(
             }
         }
     }
-    
+
     let final_score = score.clamp(0, 100) as u8;
-    
+
     let quality = if final_score >= 70 {
         MuhurtaQuality::Excellent
     } else if final_score >= 50 {
@@ -96,7 +101,7 @@ pub fn evaluate_travel_muhurta(
     } else {
         MuhurtaQuality::Avoid
     };
-    
+
     (quality, final_score, favorable, unfavorable)
 }
 
@@ -106,7 +111,7 @@ pub fn travel_safety_tips(quality: MuhurtaQuality) -> Vec<String> {
         "Offer prayers before starting journey".to_string(),
         "Carry some dry fruits and water".to_string(),
     ];
-    
+
     match quality {
         MuhurtaQuality::Excellent | MuhurtaQuality::Good => {
             tips.push("This is an auspicious time to begin travel".to_string());
@@ -121,14 +126,19 @@ pub fn travel_safety_tips(quality: MuhurtaQuality) -> Vec<String> {
             tips.push("Avoid traveling alone".to_string());
         }
     }
-    
+
     tips
 }
 
 /// Check for Panchak dosha (certain nakshatras to avoid)
 pub fn check_panchak(nakshatra: &str) -> bool {
-    let panchak_nakshatras = ["Dhanishta", "Shatabhisha", "Purva Bhadrapada", 
-                             "Uttara Bhadrapada", "Revati"];
+    let panchak_nakshatras = [
+        "Dhanishta",
+        "Shatabhisha",
+        "Purva Bhadrapada",
+        "Uttara Bhadrapada",
+        "Revati",
+    ];
     panchak_nakshatras.iter().any(|n| nakshatra.contains(n))
 }
 
@@ -144,13 +154,9 @@ mod tests {
 
     #[test]
     fn test_travel_muhurta() {
-        let (quality, score, favorable, _) = evaluate_travel_muhurta(
-            "Pushya",
-            "Thursday",
-            false,
-            Some("East"),
-        );
-        
+        let (quality, score, favorable, _) =
+            evaluate_travel_muhurta("Pushya", "Thursday", false, Some("East"));
+
         assert!(score >= 60);
         assert!(!favorable.is_empty());
     }

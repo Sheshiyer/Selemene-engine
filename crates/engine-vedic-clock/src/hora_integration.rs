@@ -4,11 +4,18 @@ use noesis_vedic_api::panchang::HoraTimings;
 
 use crate::models::ActivityRecommendation;
 
-pub fn recommendations_from_hora(horas: &HoraTimings, current_time: &str) -> Vec<ActivityRecommendation> {
+pub fn recommendations_from_hora(
+    horas: &HoraTimings,
+    current_time: &str,
+) -> Vec<ActivityRecommendation> {
     let mut recommendations = Vec::new();
 
     if let Some(current) = horas.get_current_hora(current_time) {
-        let quality = if current.is_favorable { "favorable" } else { "neutral" };
+        let quality = if current.is_favorable {
+            "favorable"
+        } else {
+            "neutral"
+        };
 
         for activity in current.ruler.suitable_activities() {
             recommendations.push(ActivityRecommendation {

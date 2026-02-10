@@ -2,13 +2,13 @@
 //!
 //! FAPI-115: Hindu calendar festivals and events
 
-pub mod types;
 pub mod calendar;
 pub mod regional;
+pub mod types;
 
-pub use types::*;
 pub use calendar::*;
 pub use regional::*;
+pub use types::*;
 
 use chrono::NaiveDate;
 use serde::{Deserialize, Serialize};

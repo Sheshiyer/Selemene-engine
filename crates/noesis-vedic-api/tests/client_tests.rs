@@ -1,12 +1,11 @@
+use wiremock::matchers::{header, method, path};
 use wiremock::{Mock, MockServer, ResponseTemplate};
-use wiremock::matchers::{method, path, header};
 
-use noesis_vedic_api::{Config, VedicApiClient, VedicApiError};
 use noesis_vedic_api::panchang::{
-    Panchang, DateInfo, Location, Tithi, TithiName, Nakshatra, NakshatraName,
-    Yoga, YogaName, Karana, KaranaName, KaranaType, Vara, Paksha,
-    PlanetaryPositions, PlanetPosition, DayBoundaries,
+    DateInfo, DayBoundaries, Karana, KaranaName, KaranaType, Location, Nakshatra, NakshatraName,
+    Paksha, Panchang, PlanetPosition, PlanetaryPositions, Tithi, TithiName, Vara, Yoga, YogaName,
 };
+use noesis_vedic_api::{Config, VedicApiClient, VedicApiError};
 
 fn sample_planet(name: &str, sign: &str, nakshatra: &str) -> PlanetPosition {
     PlanetPosition {

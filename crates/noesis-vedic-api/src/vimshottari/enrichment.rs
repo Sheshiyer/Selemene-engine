@@ -43,7 +43,10 @@ static WISDOM_DATA: OnceLock<VimshottariWisdomData> = OnceLock::new();
 
 fn load_wisdom() -> &'static VimshottariWisdomData {
     WISDOM_DATA.get_or_init(|| {
-        let raw = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../data/vimshottari/vimshottari_periods.json"));
+        let raw = include_str!(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/../../data/vimshottari/vimshottari_periods.json"
+        ));
         serde_json::from_str(raw).expect("Invalid vimshottari_periods.json")
     })
 }
@@ -82,23 +85,38 @@ pub fn enrich_period(period: &DashaPeriod) -> DashaEnrichment {
     DashaEnrichment {
         planet: period.planet,
         element: info.as_ref().map(|p| p.element.clone()),
-        qualities: info.as_ref().map(|p| p.qualities.clone()).unwrap_or_default(),
+        qualities: info
+            .as_ref()
+            .map(|p| p.qualities.clone())
+            .unwrap_or_default(),
         themes: info.as_ref().map(|p| p.themes.clone()).unwrap_or_default(),
-        consciousness_lessons: qualities.as_ref().map(|q| q.consciousness_lessons.clone()).unwrap_or_default(),
-        optimal_practices: qualities.as_ref().map(|q| q.optimal_practices.clone()).unwrap_or_default(),
-        challenges: qualities.as_ref().map(|q| q.challenges.clone()).unwrap_or_default(),
+        consciousness_lessons: qualities
+            .as_ref()
+            .map(|q| q.consciousness_lessons.clone())
+            .unwrap_or_default(),
+        optimal_practices: qualities
+            .as_ref()
+            .map(|q| q.optimal_practices.clone())
+            .unwrap_or_default(),
+        challenges: qualities
+            .as_ref()
+            .map(|q| q.challenges.clone())
+            .unwrap_or_default(),
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::dasha::{DashaLevel, DashaPlanet, DashaPeriod};
+    use crate::dasha::{DashaLevel, DashaPeriod, DashaPlanet};
 
     #[test]
     fn test_period_info_loads() {
         let info = period_info(DashaPlanet::Mars).expect("Mars info");
-        assert!(info.qualities.iter().any(|q| q.to_lowercase().contains("courage")));
+        assert!(info
+            .qualities
+            .iter()
+            .any(|q| q.to_lowercase().contains("courage")));
     }
 
     #[test]

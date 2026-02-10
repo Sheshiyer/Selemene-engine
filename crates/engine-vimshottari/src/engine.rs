@@ -6,24 +6,19 @@
 //! 2. moon_longitude provided in options -> derive nakshatra directly
 
 use async_trait::async_trait;
-use chrono::{NaiveDate, NaiveTime, NaiveDateTime, TimeZone, Utc};
+use chrono::{NaiveDate, NaiveDateTime, NaiveTime, TimeZone, Utc};
 use noesis_core::{
-    ConsciousnessEngine, EngineError, EngineInput, EngineOutput, ValidationResult,
-    CalculationMetadata,
+    CalculationMetadata, ConsciousnessEngine, EngineError, EngineInput, EngineOutput,
+    ValidationResult,
 };
 use serde_json::{json, Value};
 use std::sync::Arc;
 use std::time::Instant;
 
 use crate::calculator::{
-    calculate_birth_nakshatra,
-    calculate_dasha_balance,
-    calculate_mahadashas,
-    calculate_complete_timeline,
-    find_current_period,
-    calculate_upcoming_transitions,
-    enrich_period_with_qualities,
-    get_nakshatra_from_longitude,
+    calculate_birth_nakshatra, calculate_complete_timeline, calculate_dasha_balance,
+    calculate_mahadashas, calculate_upcoming_transitions, enrich_period_with_qualities,
+    find_current_period, get_nakshatra_from_longitude,
 };
 use crate::witness::generate_witness_prompt;
 
@@ -59,17 +54,16 @@ impl VimshottariEngine {
         date_str: &str,
         time_str: Option<&str>,
     ) -> Result<chrono::DateTime<Utc>, EngineError> {
-        let date = NaiveDate::parse_from_str(date_str, "%Y-%m-%d")
-            .map_err(|e| EngineError::CalculationError(
-                format!("Invalid date format '{}': {}", date_str, e)
-            ))?;
+        let date = NaiveDate::parse_from_str(date_str, "%Y-%m-%d").map_err(|e| {
+            EngineError::CalculationError(format!("Invalid date format '{}': {}", date_str, e))
+        })?;
 
         let time = if let Some(t) = time_str {
             NaiveTime::parse_from_str(t, "%H:%M")
                 .or_else(|_| NaiveTime::parse_from_str(t, "%H:%M:%S"))
-                .map_err(|e| EngineError::CalculationError(
-                    format!("Invalid time format '{}': {}", t, e)
-                ))?
+                .map_err(|e| {
+                    EngineError::CalculationError(format!("Invalid time format '{}': {}", t, e))
+                })?
         } else {
             NaiveTime::from_hms_opt(12, 0, 0).unwrap() // Default to noon
         };
@@ -85,20 +79,24 @@ impl VimshottariEngine {
         let longitude = options
             .get("moon_longitude")
             .and_then(|v| v.as_f64())
-            .ok_or_else(|| EngineError::CalculationError(
-                "Missing or invalid 'moon_longitude' in options".to_string()
-            ))?;
+            .ok_or_else(|| {
+                EngineError::CalculationError(
+                    "Missing or invalid 'moon_longitude' in options".to_string(),
+                )
+            })?;
 
         if !(0.0..360.0).contains(&longitude) {
-            return Err(EngineError::CalculationError(
-                format!("moon_longitude must be 0-360, got {}", longitude)
-            ));
+            return Err(EngineError::CalculationError(format!(
+                "moon_longitude must be 0-360, got {}",
+                longitude
+            )));
         }
 
         Ok(longitude)
     }
 
     /// Serialize the complete timeline into a JSON Value for the EngineOutput
+    #[allow(clippy::too_many_arguments)]
     fn serialize_timeline(
         birth_time: chrono::DateTime<Utc>,
         nakshatra_name: &str,
@@ -110,15 +108,18 @@ impl VimshottariEngine {
         enrichment: Option<&crate::models::PeriodEnrichment>,
     ) -> Value {
         // Serialize mahadashas (top level only to keep output manageable)
-        let maha_json: Vec<Value> = mahadashas.iter().map(|m| {
-            json!({
-                "planet": m.planet.as_str(),
-                "start_date": m.start_date.to_rfc3339(),
-                "end_date": m.end_date.to_rfc3339(),
-                "duration_years": m.duration_years,
-                "antardasha_count": m.antardashas.len(),
+        let maha_json: Vec<Value> = mahadashas
+            .iter()
+            .map(|m| {
+                json!({
+                    "planet": m.planet.as_str(),
+                    "start_date": m.start_date.to_rfc3339(),
+                    "end_date": m.end_date.to_rfc3339(),
+                    "duration_years": m.duration_years,
+                    "antardasha_count": m.antardashas.len(),
+                })
             })
-        }).collect();
+            .collect();
 
         let current_json = current_period.map(|cp| {
             json!({
@@ -143,15 +144,18 @@ impl VimshottariEngine {
             })
         });
 
-        let upcoming_json: Vec<Value> = upcoming.iter().map(|t| {
-            json!({
-                "type": format!("{:?}", t.transition_type),
-                "from_planet": t.from_planet.as_str(),
-                "to_planet": t.to_planet.as_str(),
-                "date": t.transition_date.to_rfc3339(),
-                "days_until": t.days_until,
+        let upcoming_json: Vec<Value> = upcoming
+            .iter()
+            .map(|t| {
+                json!({
+                    "type": format!("{:?}", t.transition_type),
+                    "from_planet": t.from_planet.as_str(),
+                    "to_planet": t.to_planet.as_str(),
+                    "date": t.transition_date.to_rfc3339(),
+                    "days_until": t.days_until,
+                })
             })
-        }).collect();
+            .collect();
 
         let enrichment_json = enrichment.map(|e| {
             json!({
@@ -209,22 +213,16 @@ impl ConsciousnessEngine for VimshottariEngine {
         // Determine Moon longitude and birth time
         let (moon_longitude, birth_time, backend) = if let Some(ref birth_data) = input.birth_data {
             // Mode 1: Calculate from birth_data using Swiss Ephemeris
-            let utc_dt = Self::parse_birth_datetime(
-                &birth_data.date,
-                birth_data.time.as_deref(),
-            )?;
+            let utc_dt = Self::parse_birth_datetime(&birth_data.date, birth_data.time.as_deref())?;
 
-            let _nakshatra = calculate_birth_nakshatra(utc_dt, "")
-                .map_err(|e| EngineError::CalculationError(
-                    format!("Failed to calculate birth nakshatra: {}", e)
-                ))?;
+            let _nakshatra = calculate_birth_nakshatra(utc_dt, "").map_err(|e| {
+                EngineError::CalculationError(format!("Failed to calculate birth nakshatra: {}", e))
+            })?;
 
             // Get precise Moon longitude from Swiss Ephemeris
             let ephe = engine_human_design::ephemeris::EphemerisCalculator::new("");
-            let moon_pos = ephe.get_planet_position(
-                engine_human_design::ephemeris::HDPlanet::Moon,
-                &utc_dt,
-            )?;
+            let moon_pos =
+                ephe.get_planet_position(engine_human_design::ephemeris::HDPlanet::Moon, &utc_dt)?;
 
             (moon_pos.longitude, utc_dt, "swiss-ephemeris")
         } else if input.options.contains_key("moon_longitude") {
@@ -232,18 +230,19 @@ impl ConsciousnessEngine for VimshottariEngine {
             let longitude = Self::extract_moon_longitude(&input.options)?;
 
             // Extract birth date from options or use a default
-            let date_str = input.options.get("birth_date")
+            let date_str = input
+                .options
+                .get("birth_date")
                 .and_then(|v| v.as_str())
                 .unwrap_or("2000-01-01");
-            let time_str = input.options.get("birth_time")
-                .and_then(|v| v.as_str());
+            let time_str = input.options.get("birth_time").and_then(|v| v.as_str());
 
             let birth_time = Self::parse_birth_datetime(date_str, time_str)?;
 
             (longitude, birth_time, "moon-longitude")
         } else {
             return Err(EngineError::CalculationError(
-                "Vimshottari requires either birth_data or moon_longitude in options".to_string()
+                "Vimshottari requires either birth_data or moon_longitude in options".to_string(),
             ));
         };
 
@@ -254,11 +253,7 @@ impl ConsciousnessEngine for VimshottariEngine {
         let balance = calculate_dasha_balance(moon_longitude, nakshatra);
 
         // Step 3: Generate 9 Mahadashas
-        let mahadashas = calculate_mahadashas(
-            birth_time,
-            nakshatra.ruling_planet,
-            balance,
-        );
+        let mahadashas = calculate_mahadashas(birth_time, nakshatra.ruling_planet, balance);
 
         // Step 4: Build complete 3-level timeline (729 Pratyantardashas)
         let complete_timeline = calculate_complete_timeline(mahadashas);
@@ -280,7 +275,9 @@ impl ConsciousnessEngine for VimshottariEngine {
         });
 
         // Step 8: Get consciousness level
-        let consciousness_level = input.options.get("consciousness_level")
+        let consciousness_level = input
+            .options
+            .get("consciousness_level")
             .and_then(|v| v.as_u64())
             .map(|v| v as u8)
             .unwrap_or(3); // Default to intermediate
@@ -301,7 +298,7 @@ impl ConsciousnessEngine for VimshottariEngine {
         // Ensure witness prompt is non-empty
         if witness_prompt.is_empty() {
             return Err(EngineError::CalculationError(
-                "Witness prompt generation failed: empty result".to_string()
+                "Witness prompt generation failed: empty result".to_string(),
             ));
         }
 
@@ -356,10 +353,7 @@ impl ConsciousnessEngine for VimshottariEngine {
                 if let Some(arr) = mahadashas.as_array() {
                     // 120-year cycle: 9 mahadashas when first is full, 10 when partial
                     if arr.len() < 9 || arr.len() > 10 {
-                        messages.push(format!(
-                            "Expected 9-10 mahadashas, found {}",
-                            arr.len()
-                        ));
+                        messages.push(format!("Expected 9-10 mahadashas, found {}", arr.len()));
                         valid = false;
                     }
                 } else {
@@ -418,7 +412,9 @@ impl ConsciousnessEngine for VimshottariEngine {
                 birth_data.longitude
             )
         } else if let Ok(lng) = Self::extract_moon_longitude(&input.options) {
-            let date = input.options.get("birth_date")
+            let date = input
+                .options
+                .get("birth_date")
                 .and_then(|v| v.as_str())
                 .unwrap_or("unknown");
             format!("vim:moon:{:.6}:{}", lng, date)
@@ -437,18 +433,9 @@ mod tests {
     /// Helper: create input with moon_longitude in options (Mode 2)
     fn create_test_input_with_moon_longitude(longitude: f64) -> EngineInput {
         let mut options = HashMap::new();
-        options.insert(
-            "moon_longitude".to_string(),
-            json!(longitude),
-        );
-        options.insert(
-            "birth_date".to_string(),
-            json!("1985-06-15"),
-        );
-        options.insert(
-            "birth_time".to_string(),
-            json!("14:30"),
-        );
+        options.insert("moon_longitude".to_string(), json!(longitude));
+        options.insert("birth_date".to_string(), json!("1985-06-15"));
+        options.insert("birth_time".to_string(), json!("14:30"));
 
         EngineInput {
             birth_data: None,
@@ -497,21 +484,35 @@ mod tests {
         let input = create_test_input_with_moon_longitude(125.0); // Magha nakshatra
 
         let result = engine.calculate(input).await;
-        assert!(result.is_ok(), "Calculation should succeed: {:?}", result.err());
+        assert!(
+            result.is_ok(),
+            "Calculation should succeed: {:?}",
+            result.err()
+        );
 
         let output = result.unwrap();
         assert_eq!(output.engine_id, "vimshottari");
-        assert!(!output.witness_prompt.is_empty(), "Witness prompt should not be empty");
+        assert!(
+            !output.witness_prompt.is_empty(),
+            "Witness prompt should not be empty"
+        );
         assert_eq!(output.consciousness_level, 3); // Default
 
         // Check timeline structure (9-10 mahadashas for 120-year coverage)
         let timeline = output.result.get("timeline").expect("should have timeline");
         let mahadashas = timeline.get("mahadashas").expect("should have mahadashas");
         let maha_count = mahadashas.as_array().unwrap().len();
-        assert!(maha_count >= 9 && maha_count <= 10, "Expected 9-10 mahadashas, got {}", maha_count);
+        assert!(
+            maha_count >= 9 && maha_count <= 10,
+            "Expected 9-10 mahadashas, got {}",
+            maha_count
+        );
 
         // Check birth nakshatra
-        let nak = output.result.get("birth_nakshatra").expect("should have birth_nakshatra");
+        let nak = output
+            .result
+            .get("birth_nakshatra")
+            .expect("should have birth_nakshatra");
         assert_eq!(nak.get("name").unwrap().as_str().unwrap(), "Magha");
         assert_eq!(nak.get("number").unwrap().as_u64().unwrap(), 10);
     }
@@ -522,7 +523,11 @@ mod tests {
         let input = create_test_input_with_birth_data();
 
         let result = engine.calculate(input).await;
-        assert!(result.is_ok(), "Calculation with birth_data should succeed: {:?}", result.err());
+        assert!(
+            result.is_ok(),
+            "Calculation with birth_data should succeed: {:?}",
+            result.err()
+        );
 
         let output = result.unwrap();
         assert_eq!(output.engine_id, "vimshottari");
@@ -531,8 +536,11 @@ mod tests {
         // Timeline should have 9-10 mahadashas (120-year coverage)
         let timeline = output.result.get("timeline").unwrap();
         let mahadashas = timeline.get("mahadashas").unwrap().as_array().unwrap();
-        assert!(mahadashas.len() >= 9 && mahadashas.len() <= 10,
-                "Expected 9-10 mahadashas, got {}", mahadashas.len());
+        assert!(
+            mahadashas.len() >= 9 && mahadashas.len() <= 10,
+            "Expected 9-10 mahadashas, got {}",
+            mahadashas.len()
+        );
     }
 
     #[tokio::test]
@@ -541,7 +549,11 @@ mod tests {
         let input = create_test_input_with_birth_data();
 
         let key = engine.cache_key(&input);
-        assert!(key.starts_with("vim:"), "Cache key should start with 'vim:': {}", key);
+        assert!(
+            key.starts_with("vim:"),
+            "Cache key should start with 'vim:': {}",
+            key
+        );
         assert!(key.contains("1985-06-15"), "Cache key should contain date");
         assert!(key.contains("14:30"), "Cache key should contain time");
     }
@@ -552,7 +564,11 @@ mod tests {
         let input = create_test_input_with_moon_longitude(125.0);
 
         let key = engine.cache_key(&input);
-        assert!(key.starts_with("vim:moon:"), "Cache key should start with 'vim:moon:': {}", key);
+        assert!(
+            key.starts_with("vim:moon:"),
+            "Cache key should start with 'vim:moon:': {}",
+            key
+        );
         assert!(key.contains("125"), "Cache key should contain longitude");
     }
 
@@ -574,7 +590,11 @@ mod tests {
         let output = engine.calculate(input).await.unwrap();
 
         let validation = engine.validate(&output).await.unwrap();
-        assert!(validation.valid, "Valid output should pass validation: {:?}", validation.messages);
+        assert!(
+            validation.valid,
+            "Valid output should pass validation: {:?}",
+            validation.messages
+        );
         assert_eq!(validation.confidence, 1.0);
     }
 
@@ -673,7 +693,9 @@ mod tests {
     async fn test_consciousness_level_from_options() {
         let engine = VimshottariEngine::new();
         let mut input = create_test_input_with_moon_longitude(200.0);
-        input.options.insert("consciousness_level".to_string(), json!(5));
+        input
+            .options
+            .insert("consciousness_level".to_string(), json!(5));
 
         let output = engine.calculate(input).await.unwrap();
         assert_eq!(output.consciousness_level, 5);
@@ -694,13 +716,23 @@ mod tests {
         let nak1 = output1.result["birth_nakshatra"]["name"].as_str().unwrap();
         let nak2 = output2.result["birth_nakshatra"]["name"].as_str().unwrap();
 
-        assert_ne!(nak1, nak2, "Different longitudes should produce different nakshatras");
+        assert_ne!(
+            nak1, nak2,
+            "Different longitudes should produce different nakshatras"
+        );
         assert_eq!(nak1, "Ashwini");
         assert_eq!(nak2, "Rohini");
 
         // First mahadasha planet should differ
-        let planet1 = output1.result["timeline"]["mahadashas"][0]["planet"].as_str().unwrap();
-        let planet2 = output2.result["timeline"]["mahadashas"][0]["planet"].as_str().unwrap();
-        assert_ne!(planet1, planet2, "Different nakshatras should have different starting planets");
+        let planet1 = output1.result["timeline"]["mahadashas"][0]["planet"]
+            .as_str()
+            .unwrap();
+        let planet2 = output2.result["timeline"]["mahadashas"][0]["planet"]
+            .as_str()
+            .unwrap();
+        assert_ne!(
+            planet1, planet2,
+            "Different nakshatras should have different starting planets"
+        );
     }
 }

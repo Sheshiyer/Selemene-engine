@@ -3,9 +3,9 @@
  * Prompts INVITE reflection without telling the user what to do
  */
 
-import { SeededRandom, getDefaultSeed } from '../../utils/random'
 import type { WitnessPrompt } from '../../types'
-import type { TarotReading, PositionReading } from './reading'
+import { SeededRandom, getDefaultSeed } from '../../utils/random'
+import type { PositionReading, TarotReading } from './reading'
 import { getKeyCards } from './reading'
 
 /**

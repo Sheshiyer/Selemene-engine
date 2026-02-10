@@ -2,7 +2,7 @@
 //!
 //! FAPI-081: Define Muhurta calculation types
 
-use chrono::{NaiveDate, NaiveDateTime, NaiveTime};
+use chrono::{NaiveDate, NaiveDateTime};
 use serde::{Deserialize, Serialize};
 
 /// Type of activity for Muhurta selection

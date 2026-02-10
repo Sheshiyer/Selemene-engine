@@ -2,18 +2,17 @@
 //!
 //! FAPI-111: Comprehensive astrological report generation
 
-use chrono::{NaiveDate, NaiveDateTime};
 use serde::{Deserialize, Serialize};
 
-pub mod types;
 pub mod birth_report;
 pub mod compatibility_report;
 pub mod transit_report;
+pub mod types;
 
-pub use types::*;
 pub use birth_report::*;
 pub use compatibility_report::*;
 pub use transit_report::*;
+pub use types::*;
 
 /// Report section type
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -30,18 +29,13 @@ pub enum ReportSection {
 }
 
 /// Report format
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
 pub enum ReportFormat {
+    #[default]
     Text,
     Html,
     Json,
     Pdf,
-}
-
-impl Default for ReportFormat {
-    fn default() -> Self {
-        ReportFormat::Text
-    }
 }
 
 /// Report configuration
@@ -74,16 +68,11 @@ impl Default for ReportConfig {
 }
 
 /// Detail level for reports
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
 pub enum DetailLevel {
     Brief,
+    #[default]
     Standard,
     Detailed,
     Expert,
-}
-
-impl Default for DetailLevel {
-    fn default() -> Self {
-        DetailLevel::Standard
-    }
 }

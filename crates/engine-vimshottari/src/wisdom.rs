@@ -1,7 +1,6 @@
 //! Wisdom data structures for JSON deserialization
 
-use crate::models::VedicPlanet;
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 
 /// Root structure for vimshottari_periods.json
 #[derive(Debug, Clone, Deserialize)]

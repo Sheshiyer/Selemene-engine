@@ -59,7 +59,9 @@ fn is_moolatrikona(planet: &PlanetPosition) -> bool {
         "sun" => planet.sign == ZodiacSign::Leo && planet.degree <= 20.0,
         "moon" => planet.sign == ZodiacSign::Taurus && planet.degree >= 4.0,
         "mars" => planet.sign == ZodiacSign::Aries && planet.degree <= 12.0,
-        "mercury" => planet.sign == ZodiacSign::Virgo && planet.degree >= 16.0 && planet.degree <= 20.0,
+        "mercury" => {
+            planet.sign == ZodiacSign::Virgo && planet.degree >= 16.0 && planet.degree <= 20.0
+        }
         "jupiter" => planet.sign == ZodiacSign::Sagittarius && planet.degree <= 10.0,
         "venus" => planet.sign == ZodiacSign::Libra && planet.degree <= 15.0,
         "saturn" => planet.sign == ZodiacSign::Aquarius && planet.degree <= 20.0,

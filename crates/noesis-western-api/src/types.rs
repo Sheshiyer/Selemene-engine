@@ -40,7 +40,7 @@ pub struct HouseData {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct WesternPlanetsResponse {
     pub output: Vec<PlanetData>, // Placeholder structure
-    // We'll refine this once we see actual API output or use serde_json::Value
+                                 // We'll refine this once we see actual API output or use serde_json::Value
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

@@ -25,20 +25,17 @@ use std::sync::atomic::{AtomicU64, Ordering};
 use tracing::warn;
 
 use crate::{
-    panchang::*,
-    panchang::data::PlanetPosition as PanchangPlanetPos,
-    dasha::{
-        VimshottariDasha, DashaPeriod, DashaLevel, DashaPlanet,
-        DASHA_SEQUENCE, calculate_dasha_balance,
-    },
     chart::{
-        BirthChart, NativeInfo, PlanetPosition, HousePosition, HouseType,
-        AscendantInfo, MoonInfo, SpecialPoints, ZodiacSign,
+        AscendantInfo, BirthChart, HousePosition, HouseType, MoonInfo, NativeInfo, SpecialPoints,
+        ZodiacSign,
     },
-    error::{VedicApiError, Result},
+    dasha::{calculate_dasha_balance, DashaLevel, DashaPeriod, VimshottariDasha, DASHA_SEQUENCE},
+    error::{Result, VedicApiError},
+    panchang::data::PlanetPosition as PanchangPlanetPos,
+    panchang::*,
     resilience::{
-        julian_day_number, approximate_sun_longitude, sign_from_longitude,
-        approximate_sunrise, approximate_sunset,
+        approximate_sun_longitude, approximate_sunrise, approximate_sunset, julian_day_number,
+        sign_from_longitude,
     },
 };
 
@@ -129,9 +126,9 @@ impl FallbackCalculator {
         year: i32,
         month: u32,
         day: u32,
-        hour: u32,
-        minute: u32,
-        second: u32,
+        _hour: u32,
+        _minute: u32,
+        _second: u32,
         lat: f64,
         lng: f64,
         tzone: f64,
@@ -140,8 +137,11 @@ impl FallbackCalculator {
         self.record_invocation();
 
         warn!(
-            year = year, month = month, day = day,
-            lat = lat, lng = lng,
+            year = year,
+            month = month,
+            day = day,
+            lat = lat,
+            lng = lng,
             "Fallback: computing native Panchang"
         );
 
@@ -150,9 +150,13 @@ impl FallbackCalculator {
         // Tithi from synodic month
         let lunar_age = positive_mod(jdn - 2451550.1, 29.530588);
         let tithi_num = ((lunar_age / 29.530588) * 30.0).floor() as u32 + 1;
-        let tithi_num = tithi_num.min(30).max(1);
+        let tithi_num = tithi_num.clamp(1, 30);
         let tithi_name = TithiName::from_number(tithi_num);
-        let paksha = if tithi_num <= 15 { Paksha::Shukla } else { Paksha::Krishna };
+        let paksha = if tithi_num <= 15 {
+            Paksha::Shukla
+        } else {
+            Paksha::Krishna
+        };
 
         // Nakshatra from approximate Moon longitude
         let moon_lng = positive_mod(lunar_age * 13.176, 360.0);
@@ -272,19 +276,21 @@ impl FallbackCalculator {
         year: i32,
         month: u32,
         day: u32,
-        hour: u32,
-        minute: u32,
-        second: u32,
-        lat: f64,
-        lng: f64,
-        tzone: f64,
-        level: DashaLevel,
+        _hour: u32,
+        _minute: u32,
+        _second: u32,
+        _lat: f64,
+        _lng: f64,
+        _tzone: f64,
+        _level: DashaLevel,
     ) -> Result<VimshottariDasha> {
         self.guard()?;
         self.record_invocation();
 
         warn!(
-            year = year, month = month, day = day,
+            year = year,
+            month = month,
+            day = day,
             "Fallback: computing native Vimshottari Dasha"
         );
 
@@ -385,7 +391,9 @@ impl FallbackCalculator {
         self.record_invocation();
 
         warn!(
-            year = year, month = month, day = day,
+            year = year,
+            month = month,
+            day = day,
             "Fallback: computing native birth chart"
         );
 
@@ -399,7 +407,8 @@ impl FallbackCalculator {
         let ut_hours = hour_decimal - tzone;
         // Simplified GMST approximation
         let t = (jdn - 2451545.0) / 36525.0;
-        let gmst_hours = (6.697375 + 2400.0513369 * t + 0.0000258622 * t * t + ut_hours * 1.00273790935) % 24.0;
+        let gmst_hours =
+            (6.697375 + 2400.0513369 * t + 0.0000258622 * t * t + ut_hours * 1.00273790935) % 24.0;
         let lst_hours = (gmst_hours + lng / 15.0 + 24.0) % 24.0;
         let asc_lng = (lst_hours * 15.0) % 360.0;
 
@@ -417,7 +426,7 @@ impl FallbackCalculator {
         let asc_nak_name = NakshatraName::from_number(asc_nak_num);
         let asc_pada = ((asc_lng % 13.333) / 3.333).floor() as u8 + 1;
 
-        let sun_sign = ZodiacSign::from_index((sun_lng / 30.0) as usize);
+        let _sun_sign = ZodiacSign::from_index((sun_lng / 30.0) as usize);
 
         // Build planet positions (Sun + Moon are real; others use mean longitude stubs)
         let planets = vec![
@@ -514,7 +523,7 @@ fn jdn_to_date_string(jdn: f64) -> String {
 }
 
 /// Build a PlanetPosition for the birth chart from longitude
-fn make_planet(name: &str, longitude: f64, jdn: f64) -> crate::chart::PlanetPosition {
+fn make_planet(name: &str, longitude: f64, _jdn: f64) -> crate::chart::PlanetPosition {
     let sign = ZodiacSign::from_index((longitude / 30.0) as usize);
     let degree = longitude % 30.0;
     let nakshatra_num = ((longitude / 13.333).floor() as u32 + 1).min(27);
@@ -574,7 +583,11 @@ mod tests {
     fn test_panchang_produces_valid_data() {
         let calc = FallbackCalculator::new(true);
         let result = calc.calculate_panchang(2024, 1, 15, 12, 0, 0, 12.97, 77.59, 5.5);
-        assert!(result.is_ok(), "Panchang fallback should succeed: {:?}", result.err());
+        assert!(
+            result.is_ok(),
+            "Panchang fallback should succeed: {:?}",
+            result.err()
+        );
 
         let panchang = result.unwrap();
         assert_eq!(panchang.date.year, 2024);
@@ -591,9 +604,22 @@ mod tests {
     fn test_vimshottari_produces_valid_data() {
         let calc = FallbackCalculator::new(true);
         let result = calc.calculate_vimshottari(
-            1990, 6, 15, 10, 30, 0, 28.61, 77.23, 5.5, DashaLevel::Mahadasha,
+            1990,
+            6,
+            15,
+            10,
+            30,
+            0,
+            28.61,
+            77.23,
+            5.5,
+            DashaLevel::Mahadasha,
         );
-        assert!(result.is_ok(), "Dasha fallback should succeed: {:?}", result.err());
+        assert!(
+            result.is_ok(),
+            "Dasha fallback should succeed: {:?}",
+            result.err()
+        );
 
         let dasha = result.unwrap();
         assert_eq!(dasha.mahadashas.len(), 9, "Should have 9 Mahadashas");
@@ -616,7 +642,16 @@ mod tests {
     fn test_vimshottari_disabled_returns_error() {
         let calc = FallbackCalculator::new(false);
         let result = calc.calculate_vimshottari(
-            1990, 1, 1, 12, 0, 0, 28.61, 77.23, 5.5, DashaLevel::Mahadasha,
+            1990,
+            1,
+            1,
+            12,
+            0,
+            0,
+            28.61,
+            77.23,
+            5.5,
+            DashaLevel::Mahadasha,
         );
         assert!(result.is_err());
     }
@@ -624,10 +659,12 @@ mod tests {
     #[test]
     fn test_birth_chart_produces_valid_data() {
         let calc = FallbackCalculator::new(true);
-        let result = calc.calculate_birth_chart(
-            1990, 6, 15, 10, 30, 0, 28.61, 77.23, 5.5,
+        let result = calc.calculate_birth_chart(1990, 6, 15, 10, 30, 0, 28.61, 77.23, 5.5);
+        assert!(
+            result.is_ok(),
+            "Birth chart fallback should succeed: {:?}",
+            result.err()
         );
-        assert!(result.is_ok(), "Birth chart fallback should succeed: {:?}", result.err());
 
         let chart = result.unwrap();
         assert_eq!(chart.native.birth_date, "1990-06-15");
@@ -648,9 +685,7 @@ mod tests {
     #[test]
     fn test_birth_chart_disabled_returns_error() {
         let calc = FallbackCalculator::new(false);
-        let result = calc.calculate_birth_chart(
-            1990, 1, 1, 12, 0, 0, 28.61, 77.23, 5.5,
-        );
+        let result = calc.calculate_birth_chart(1990, 1, 1, 12, 0, 0, 28.61, 77.23, 5.5);
         assert!(result.is_err());
     }
 
@@ -662,7 +697,18 @@ mod tests {
         let _ = calc.calculate_panchang(2024, 1, 1, 12, 0, 0, 12.97, 77.59, 5.5);
         assert_eq!(calc.invocation_count(), 1);
 
-        let _ = calc.calculate_vimshottari(1990, 1, 1, 12, 0, 0, 28.61, 77.23, 5.5, DashaLevel::Mahadasha);
+        let _ = calc.calculate_vimshottari(
+            1990,
+            1,
+            1,
+            12,
+            0,
+            0,
+            28.61,
+            77.23,
+            5.5,
+            DashaLevel::Mahadasha,
+        );
         assert_eq!(calc.invocation_count(), 2);
 
         let _ = calc.calculate_birth_chart(1990, 1, 1, 12, 0, 0, 28.61, 77.23, 5.5);

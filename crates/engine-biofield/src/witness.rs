@@ -10,21 +10,21 @@ use crate::models::{BiofieldAnalysis, BiofieldMetrics, Chakra, ChakraReading};
 /// Returns 3-4 non-prescriptive prompts for somatic awareness
 pub fn generate_witness_prompts(analysis: &BiofieldAnalysis) -> Vec<String> {
     let mut prompts = Vec::new();
-    
+
     // Always include a general body awareness prompt
     prompts.push(generate_general_awareness_prompt());
-    
+
     // Add prompt based on overall metrics
     prompts.push(generate_metrics_prompt(&analysis.metrics));
-    
+
     // Add chakra-specific prompt if there's notable activity
     if let Some(chakra_prompt) = generate_chakra_prompt(&analysis.metrics.chakra_readings) {
         prompts.push(chakra_prompt);
     }
-    
+
     // Add a closing integrative prompt
     prompts.push(generate_integrative_prompt(&analysis.metrics));
-    
+
     prompts
 }
 
@@ -70,17 +70,20 @@ fn generate_metrics_prompt(metrics: &BiofieldMetrics) -> String {
 /// Generate prompt based on chakra readings
 fn generate_chakra_prompt(readings: &[ChakraReading]) -> Option<String> {
     // Find the chakra with lowest activity
-    let lowest = readings.iter()
+    let lowest = readings
+        .iter()
         .min_by(|a, b| a.activity_level.partial_cmp(&b.activity_level).unwrap())?;
-    
+
     // Find the chakra with highest activity
-    let highest = readings.iter()
+    let highest = readings
+        .iter()
         .max_by(|a, b| a.activity_level.partial_cmp(&b.activity_level).unwrap())?;
-    
+
     // Find most imbalanced chakra
-    let most_imbalanced = readings.iter()
+    let most_imbalanced = readings
+        .iter()
         .max_by(|a, b| a.balance.abs().partial_cmp(&b.balance.abs()).unwrap())?;
-    
+
     // Generate prompt based on patterns
     if lowest.activity_level < 0.4 {
         Some(generate_low_activity_prompt(lowest.chakra))
@@ -90,9 +93,12 @@ fn generate_chakra_prompt(readings: &[ChakraReading]) -> Option<String> {
         Some(generate_balance_prompt(most_imbalanced))
     } else {
         // Return a general chakra awareness prompt
-        Some("If you bring attention to your spine, from its base to your crown, \
+        Some(
+            "If you bring attention to your spine, from its base to your crown, \
               what do you notice along this central axis? \
-              Where does your attention naturally rest?".to_string())
+              Where does your attention naturally rest?"
+                .to_string(),
+        )
     }
 }
 
@@ -107,7 +113,7 @@ fn generate_low_activity_prompt(chakra: Chakra) -> String {
         Chakra::ThirdEye => "the space between your eyebrows",
         Chakra::Crown => "the top of your head",
     };
-    
+
     format!(
         "Bring gentle attention to {}. \
          What sensations are present there? \
@@ -127,7 +133,7 @@ fn generate_high_activity_prompt(chakra: Chakra) -> String {
         Chakra::ThirdEye => "the area between your eyebrows",
         Chakra::Crown => "the crown of your head",
     };
-    
+
     format!(
         "Notice the energy you feel in {}. \
          What is the quality of this aliveness? \
@@ -139,9 +145,17 @@ fn generate_high_activity_prompt(chakra: Chakra) -> String {
 /// Generate prompt for imbalanced chakra
 fn generate_balance_prompt(reading: &ChakraReading) -> String {
     let chakra_name = reading.chakra.name();
-    let side = if reading.balance > 0.0 { "right" } else { "left" };
-    let other_side = if reading.balance > 0.0 { "left" } else { "right" };
-    
+    let side = if reading.balance > 0.0 {
+        "right"
+    } else {
+        "left"
+    };
+    let other_side = if reading.balance > 0.0 {
+        "left"
+    } else {
+        "right"
+    };
+
     format!(
         "In the {} area, notice if there's any difference between {} and {}. \
          What quality does each side carry? \
@@ -188,7 +202,7 @@ mod tests {
     use super::*;
     use crate::mock::generate_mock_metrics;
     use crate::models::BiofieldAnalysis;
-    
+
     fn create_test_analysis() -> BiofieldAnalysis {
         BiofieldAnalysis {
             metrics: generate_mock_metrics(Some(42)),
@@ -197,35 +211,35 @@ mod tests {
             is_mock_data: true,
         }
     }
-    
+
     #[test]
     fn test_generate_witness_prompts() {
         let analysis = create_test_analysis();
         let prompts = generate_witness_prompts(&analysis);
-        
+
         assert!(prompts.len() >= 3, "Should generate at least 3 prompts");
         assert!(prompts.len() <= 4, "Should generate at most 4 prompts");
-        
+
         for prompt in &prompts {
             assert!(!prompt.is_empty(), "Prompts should not be empty");
             assert!(prompt.contains("?"), "Prompts should be questions");
         }
     }
-    
+
     #[test]
     fn test_generate_witness_prompt_single() {
         let analysis = create_test_analysis();
         let prompt = generate_witness_prompt(&analysis);
-        
+
         assert!(!prompt.is_empty());
         assert!(prompt.contains("?"));
     }
-    
+
     #[test]
     fn test_prompts_are_non_prescriptive() {
         let analysis = create_test_analysis();
         let prompts = generate_witness_prompts(&analysis);
-        
+
         for prompt in &prompts {
             // Should not contain prescriptive language
             let prescriptive_words = ["should", "must", "need to", "have to", "try to"];
@@ -239,7 +253,7 @@ mod tests {
             }
         }
     }
-    
+
     #[test]
     fn test_prompts_vary_with_metrics() {
         // High coherence metrics
@@ -251,7 +265,7 @@ mod tests {
             areas_of_attention: vec![],
             is_mock_data: true,
         };
-        
+
         // Low coherence metrics
         let mut low_coherence = generate_mock_metrics(Some(42));
         low_coherence.coherence = 0.25;
@@ -261,18 +275,21 @@ mod tests {
             areas_of_attention: vec![],
             is_mock_data: true,
         };
-        
+
         let prompts1 = generate_witness_prompts(&analysis1);
         let prompts2 = generate_witness_prompts(&analysis2);
-        
+
         // Should have different metric-based prompts
-        assert_ne!(prompts1[1], prompts2[1], "Different metrics should yield different prompts");
+        assert_ne!(
+            prompts1[1], prompts2[1],
+            "Different metrics should yield different prompts"
+        );
     }
-    
+
     #[test]
     fn test_chakra_prompts_reference_body_areas() {
         let body_terms = ["spine", "chest", "throat", "belly", "head", "brow"];
-        
+
         // Generate prompts for different chakra configurations
         let mut found_body_reference = false;
         for seed in 0..10 {
@@ -283,7 +300,7 @@ mod tests {
                 is_mock_data: true,
             };
             let prompt = generate_witness_prompt(&analysis);
-            
+
             for term in body_terms {
                 if prompt.to_lowercase().contains(term) {
                     found_body_reference = true;
@@ -291,14 +308,17 @@ mod tests {
                 }
             }
         }
-        
-        assert!(found_body_reference, "Some prompts should reference body areas");
+
+        assert!(
+            found_body_reference,
+            "Some prompts should reference body areas"
+        );
     }
-    
+
     #[test]
     fn test_template_prompts() {
         assert!(!SOMATIC_AWARENESS_TEMPLATES.is_empty());
-        
+
         for template in SOMATIC_AWARENESS_TEMPLATES {
             assert!(template.contains("?"), "Templates should be questions");
         }

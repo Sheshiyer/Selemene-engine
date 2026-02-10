@@ -7,10 +7,8 @@
 //! 3. Frequency assessments exist for all active keys
 //! 4. Engine validation passes
 
-use engine_gene_keys::{
-    GeneKeysEngine, ConsciousnessEngine, EngineInput,
-};
 use chrono::Utc;
+use engine_gene_keys::{ConsciousnessEngine, EngineInput, GeneKeysEngine};
 use serde::Deserialize;
 use serde_json::{json, Value};
 use std::collections::HashMap;
@@ -46,12 +44,15 @@ fn load_reference_charts() -> Vec<ReferenceChart> {
 
 fn create_input_from_gates(gates: &HdGates) -> EngineInput {
     let mut options = HashMap::new();
-    options.insert("hd_gates".to_string(), json!({
-        "personality_sun": gates.personality_sun,
-        "personality_earth": gates.personality_earth,
-        "design_sun": gates.design_sun,
-        "design_earth": gates.design_earth
-    }));
+    options.insert(
+        "hd_gates".to_string(),
+        json!({
+            "personality_sun": gates.personality_sun,
+            "personality_earth": gates.personality_earth,
+            "design_sun": gates.design_sun,
+            "design_earth": gates.design_earth
+        }),
+    );
 
     EngineInput {
         birth_data: None,
@@ -69,83 +70,118 @@ async fn validate_reference_chart(index: usize) {
     let input = create_input_from_gates(&chart.hd_gates);
 
     // Calculate
-    let output = engine.calculate(input).await
+    let output = engine
+        .calculate(input)
+        .await
         .unwrap_or_else(|e| panic!("[{}] Calculation failed: {:?}", chart.name, e));
 
     // Verify activation sequences
-    let seq = output.result.get("activation_sequence")
+    let seq = output
+        .result
+        .get("activation_sequence")
         .unwrap_or_else(|| panic!("[{}] Missing activation_sequence", chart.name));
 
     let lifes_work = seq.get("lifes_work").unwrap();
     assert_eq!(
-        (lifes_work[0].as_u64().unwrap() as u8, lifes_work[1].as_u64().unwrap() as u8),
+        (
+            lifes_work[0].as_u64().unwrap() as u8,
+            lifes_work[1].as_u64().unwrap() as u8
+        ),
         (chart.expected.lifes_work[0], chart.expected.lifes_work[1]),
-        "[{}] Life's Work mismatch", chart.name
+        "[{}] Life's Work mismatch",
+        chart.name
     );
 
     let evolution = seq.get("evolution").unwrap();
     assert_eq!(
-        (evolution[0].as_u64().unwrap() as u8, evolution[1].as_u64().unwrap() as u8),
+        (
+            evolution[0].as_u64().unwrap() as u8,
+            evolution[1].as_u64().unwrap() as u8
+        ),
         (chart.expected.evolution[0], chart.expected.evolution[1]),
-        "[{}] Evolution mismatch", chart.name
+        "[{}] Evolution mismatch",
+        chart.name
     );
 
     let radiance = seq.get("radiance").unwrap();
     assert_eq!(
-        (radiance[0].as_u64().unwrap() as u8, radiance[1].as_u64().unwrap() as u8),
+        (
+            radiance[0].as_u64().unwrap() as u8,
+            radiance[1].as_u64().unwrap() as u8
+        ),
         (chart.expected.radiance[0], chart.expected.radiance[1]),
-        "[{}] Radiance mismatch", chart.name
+        "[{}] Radiance mismatch",
+        chart.name
     );
 
     let purpose = seq.get("purpose").unwrap();
     assert_eq!(
-        (purpose[0].as_u64().unwrap() as u8, purpose[1].as_u64().unwrap() as u8),
+        (
+            purpose[0].as_u64().unwrap() as u8,
+            purpose[1].as_u64().unwrap() as u8
+        ),
         (chart.expected.purpose[0], chart.expected.purpose[1]),
-        "[{}] Purpose mismatch", chart.name
+        "[{}] Purpose mismatch",
+        chart.name
     );
 
     // Verify witness prompt is non-empty
     assert!(
         !output.witness_prompt.is_empty(),
-        "[{}] Witness prompt is empty", chart.name
+        "[{}] Witness prompt is empty",
+        chart.name
     );
 
     // Verify witness prompt contains question marks (inquiry format)
     assert!(
         output.witness_prompt.contains('?'),
-        "[{}] Witness prompt should be inquiry format", chart.name
+        "[{}] Witness prompt should be inquiry format",
+        chart.name
     );
 
     // Verify frequency assessments exist
-    let freq = output.result.get("frequency_assessments")
+    let freq = output
+        .result
+        .get("frequency_assessments")
         .unwrap_or_else(|| panic!("[{}] Missing frequency_assessments", chart.name));
-    let freq_array = freq.as_array()
+    let freq_array = freq
+        .as_array()
         .unwrap_or_else(|| panic!("[{}] frequency_assessments is not an array", chart.name));
     assert!(
         !freq_array.is_empty(),
-        "[{}] frequency_assessments is empty", chart.name
+        "[{}] frequency_assessments is empty",
+        chart.name
     );
 
     // Verify active_keys exist
-    let active_keys = output.result.get("active_keys")
+    let active_keys = output
+        .result
+        .get("active_keys")
         .unwrap_or_else(|| panic!("[{}] Missing active_keys", chart.name));
-    let keys_array = active_keys.as_array()
+    let keys_array = active_keys
+        .as_array()
         .unwrap_or_else(|| panic!("[{}] active_keys is not an array", chart.name));
     assert_eq!(
-        keys_array.len(), 4,
-        "[{}] Expected 4 active keys (Sun/Earth pairs)", chart.name
+        keys_array.len(),
+        4,
+        "[{}] Expected 4 active keys (Sun/Earth pairs)",
+        chart.name
     );
 
     // Verify engine validation passes
-    let validation = engine.validate(&output).await
+    let validation = engine
+        .validate(&output)
+        .await
         .unwrap_or_else(|e| panic!("[{}] Validation call failed: {:?}", chart.name, e));
     assert!(
         validation.valid,
-        "[{}] Validation failed: {:?}", chart.name, validation.messages
+        "[{}] Validation failed: {:?}",
+        chart.name, validation.messages
     );
     assert_eq!(
         validation.confidence, 1.0,
-        "[{}] Expected confidence 1.0", chart.name
+        "[{}] Expected confidence 1.0",
+        chart.name
     );
 }
 

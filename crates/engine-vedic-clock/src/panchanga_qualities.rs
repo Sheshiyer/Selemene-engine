@@ -50,96 +50,151 @@ impl QualityRating {
 /// Tithi (lunar day) qualities - simplified set
 pub fn tithi_qualities() -> Vec<(&'static str, PanchangaQuality)> {
     vec![
-        ("Pratipada", PanchangaQuality {
-            rating: QualityRating::Good,
-            description: "First lunar day - new beginnings".to_string(),
-            favorable_for: vec!["Starting projects".to_string(), "New ventures".to_string()],
-            avoid: vec!["Major decisions".to_string()],
-        }),
-        ("Dwitiya", PanchangaQuality {
-            rating: QualityRating::Good,
-            description: "Second lunar day - foundation building".to_string(),
-            favorable_for: vec!["Planning".to_string(), "Foundation work".to_string()],
-            avoid: vec!["Confrontation".to_string()],
-        }),
-        ("Tritiya", PanchangaQuality {
-            rating: QualityRating::Excellent,
-            description: "Third lunar day - auspicious".to_string(),
-            favorable_for: vec!["All auspicious activities".to_string(), "Travel".to_string()],
-            avoid: vec![],
-        }),
-        ("Chaturthi", PanchangaQuality {
-            rating: QualityRating::Neutral,
-            description: "Fourth lunar day - mixed energy".to_string(),
-            favorable_for: vec!["Spiritual practices".to_string()],
-            avoid: vec!["Travel".to_string(), "Starting new things".to_string()],
-        }),
-        ("Panchami", PanchangaQuality {
-            rating: QualityRating::Good,
-            description: "Fifth lunar day - learning".to_string(),
-            favorable_for: vec!["Education".to_string(), "Learning".to_string(), "Arts".to_string()],
-            avoid: vec![],
-        }),
-        ("Shashthi", PanchangaQuality {
-            rating: QualityRating::Challenging,
-            description: "Sixth lunar day - caution needed".to_string(),
-            favorable_for: vec!["Fasting".to_string(), "Purification".to_string()],
-            avoid: vec!["Major undertakings".to_string()],
-        }),
-        ("Saptami", PanchangaQuality {
-            rating: QualityRating::Good,
-            description: "Seventh lunar day - positive energy".to_string(),
-            favorable_for: vec!["Travel".to_string(), "Vehicle purchase".to_string()],
-            avoid: vec![],
-        }),
-        ("Ashtami", PanchangaQuality {
-            rating: QualityRating::Challenging,
-            description: "Eighth lunar day - intense energy".to_string(),
-            favorable_for: vec!["Meditation".to_string(), "Tantric practices".to_string()],
-            avoid: vec!["Material activities".to_string()],
-        }),
-        ("Navami", PanchangaQuality {
-            rating: QualityRating::Challenging,
-            description: "Ninth lunar day - destructive energy".to_string(),
-            favorable_for: vec!["Ending things".to_string(), "Letting go".to_string()],
-            avoid: vec!["Starting new things".to_string()],
-        }),
-        ("Dashami", PanchangaQuality {
-            rating: QualityRating::Excellent,
-            description: "Tenth lunar day - very auspicious".to_string(),
-            favorable_for: vec!["All activities".to_string(), "Especially religious".to_string()],
-            avoid: vec![],
-        }),
-        ("Ekadashi", PanchangaQuality {
-            rating: QualityRating::Good,
-            description: "Eleventh lunar day - spiritual".to_string(),
-            favorable_for: vec!["Fasting".to_string(), "Spiritual practices".to_string()],
-            avoid: vec!["Heavy eating".to_string()],
-        }),
-        ("Dwadashi", PanchangaQuality {
-            rating: QualityRating::Good,
-            description: "Twelfth lunar day - completion".to_string(),
-            favorable_for: vec!["Breaking fast".to_string(), "Charity".to_string()],
-            avoid: vec![],
-        }),
-        ("Trayodashi", PanchangaQuality {
-            rating: QualityRating::Good,
-            description: "Thirteenth lunar day - favorable".to_string(),
-            favorable_for: vec!["Friendship".to_string(), "Travel".to_string()],
-            avoid: vec![],
-        }),
-        ("Chaturdashi", PanchangaQuality {
-            rating: QualityRating::Challenging,
-            description: "Fourteenth lunar day - intense".to_string(),
-            favorable_for: vec!["Shiva worship".to_string(), "Endings".to_string()],
-            avoid: vec!["Beginnings".to_string()],
-        }),
-        ("Purnima/Amavasya", PanchangaQuality {
-            rating: QualityRating::Neutral,
-            description: "Full/New Moon - powerful energy".to_string(),
-            favorable_for: vec!["Meditation".to_string(), "Rituals".to_string()],
-            avoid: vec!["Impulsive decisions".to_string()],
-        }),
+        (
+            "Pratipada",
+            PanchangaQuality {
+                rating: QualityRating::Good,
+                description: "First lunar day - new beginnings".to_string(),
+                favorable_for: vec!["Starting projects".to_string(), "New ventures".to_string()],
+                avoid: vec!["Major decisions".to_string()],
+            },
+        ),
+        (
+            "Dwitiya",
+            PanchangaQuality {
+                rating: QualityRating::Good,
+                description: "Second lunar day - foundation building".to_string(),
+                favorable_for: vec!["Planning".to_string(), "Foundation work".to_string()],
+                avoid: vec!["Confrontation".to_string()],
+            },
+        ),
+        (
+            "Tritiya",
+            PanchangaQuality {
+                rating: QualityRating::Excellent,
+                description: "Third lunar day - auspicious".to_string(),
+                favorable_for: vec![
+                    "All auspicious activities".to_string(),
+                    "Travel".to_string(),
+                ],
+                avoid: vec![],
+            },
+        ),
+        (
+            "Chaturthi",
+            PanchangaQuality {
+                rating: QualityRating::Neutral,
+                description: "Fourth lunar day - mixed energy".to_string(),
+                favorable_for: vec!["Spiritual practices".to_string()],
+                avoid: vec!["Travel".to_string(), "Starting new things".to_string()],
+            },
+        ),
+        (
+            "Panchami",
+            PanchangaQuality {
+                rating: QualityRating::Good,
+                description: "Fifth lunar day - learning".to_string(),
+                favorable_for: vec![
+                    "Education".to_string(),
+                    "Learning".to_string(),
+                    "Arts".to_string(),
+                ],
+                avoid: vec![],
+            },
+        ),
+        (
+            "Shashthi",
+            PanchangaQuality {
+                rating: QualityRating::Challenging,
+                description: "Sixth lunar day - caution needed".to_string(),
+                favorable_for: vec!["Fasting".to_string(), "Purification".to_string()],
+                avoid: vec!["Major undertakings".to_string()],
+            },
+        ),
+        (
+            "Saptami",
+            PanchangaQuality {
+                rating: QualityRating::Good,
+                description: "Seventh lunar day - positive energy".to_string(),
+                favorable_for: vec!["Travel".to_string(), "Vehicle purchase".to_string()],
+                avoid: vec![],
+            },
+        ),
+        (
+            "Ashtami",
+            PanchangaQuality {
+                rating: QualityRating::Challenging,
+                description: "Eighth lunar day - intense energy".to_string(),
+                favorable_for: vec!["Meditation".to_string(), "Tantric practices".to_string()],
+                avoid: vec!["Material activities".to_string()],
+            },
+        ),
+        (
+            "Navami",
+            PanchangaQuality {
+                rating: QualityRating::Challenging,
+                description: "Ninth lunar day - destructive energy".to_string(),
+                favorable_for: vec!["Ending things".to_string(), "Letting go".to_string()],
+                avoid: vec!["Starting new things".to_string()],
+            },
+        ),
+        (
+            "Dashami",
+            PanchangaQuality {
+                rating: QualityRating::Excellent,
+                description: "Tenth lunar day - very auspicious".to_string(),
+                favorable_for: vec![
+                    "All activities".to_string(),
+                    "Especially religious".to_string(),
+                ],
+                avoid: vec![],
+            },
+        ),
+        (
+            "Ekadashi",
+            PanchangaQuality {
+                rating: QualityRating::Good,
+                description: "Eleventh lunar day - spiritual".to_string(),
+                favorable_for: vec!["Fasting".to_string(), "Spiritual practices".to_string()],
+                avoid: vec!["Heavy eating".to_string()],
+            },
+        ),
+        (
+            "Dwadashi",
+            PanchangaQuality {
+                rating: QualityRating::Good,
+                description: "Twelfth lunar day - completion".to_string(),
+                favorable_for: vec!["Breaking fast".to_string(), "Charity".to_string()],
+                avoid: vec![],
+            },
+        ),
+        (
+            "Trayodashi",
+            PanchangaQuality {
+                rating: QualityRating::Good,
+                description: "Thirteenth lunar day - favorable".to_string(),
+                favorable_for: vec!["Friendship".to_string(), "Travel".to_string()],
+                avoid: vec![],
+            },
+        ),
+        (
+            "Chaturdashi",
+            PanchangaQuality {
+                rating: QualityRating::Challenging,
+                description: "Fourteenth lunar day - intense".to_string(),
+                favorable_for: vec!["Shiva worship".to_string(), "Endings".to_string()],
+                avoid: vec!["Beginnings".to_string()],
+            },
+        ),
+        (
+            "Purnima/Amavasya",
+            PanchangaQuality {
+                rating: QualityRating::Neutral,
+                description: "Full/New Moon - powerful energy".to_string(),
+                favorable_for: vec!["Meditation".to_string(), "Rituals".to_string()],
+                avoid: vec!["Impulsive decisions".to_string()],
+            },
+        ),
     ]
 }
 
@@ -153,12 +208,12 @@ pub fn get_tithi_quality(tithi_index: u8) -> PanchangaQuality {
 /// Simplified Nakshatra (lunar mansion) quality categories
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum NakshatraCategory {
-    Fixed,      // Stability, permanence
-    Movable,    // Travel, change
-    Sharp,      // Force, power
-    Soft,       // Gentle activities
-    Dreadful,   // Destruction, endings
-    Mixed,      // Various activities
+    Fixed,    // Stability, permanence
+    Movable,  // Travel, change
+    Sharp,    // Force, power
+    Soft,     // Gentle activities
+    Dreadful, // Destruction, endings
+    Mixed,    // Various activities
 }
 
 impl NakshatraCategory {
@@ -167,31 +222,51 @@ impl NakshatraCategory {
             NakshatraCategory::Fixed => PanchangaQuality {
                 rating: QualityRating::Good,
                 description: "Fixed nakshatra - stability".to_string(),
-                favorable_for: vec!["Foundation work".to_string(), "Permanent structures".to_string(), "Establishing routines".to_string()],
+                favorable_for: vec![
+                    "Foundation work".to_string(),
+                    "Permanent structures".to_string(),
+                    "Establishing routines".to_string(),
+                ],
                 avoid: vec!["Travel".to_string(), "Major changes".to_string()],
             },
             NakshatraCategory::Movable => PanchangaQuality {
                 rating: QualityRating::Good,
                 description: "Movable nakshatra - change".to_string(),
-                favorable_for: vec!["Travel".to_string(), "Starting journeys".to_string(), "Vehicle use".to_string()],
+                favorable_for: vec![
+                    "Travel".to_string(),
+                    "Starting journeys".to_string(),
+                    "Vehicle use".to_string(),
+                ],
                 avoid: vec!["Permanent commitments".to_string()],
             },
             NakshatraCategory::Sharp => PanchangaQuality {
                 rating: QualityRating::Neutral,
                 description: "Sharp nakshatra - power".to_string(),
-                favorable_for: vec!["Competitive activities".to_string(), "Surgery".to_string(), "Breaking habits".to_string()],
+                favorable_for: vec![
+                    "Competitive activities".to_string(),
+                    "Surgery".to_string(),
+                    "Breaking habits".to_string(),
+                ],
                 avoid: vec!["Gentle activities".to_string(), "Romance".to_string()],
             },
             NakshatraCategory::Soft => PanchangaQuality {
                 rating: QualityRating::Excellent,
                 description: "Soft nakshatra - gentle".to_string(),
-                favorable_for: vec!["Arts".to_string(), "Romance".to_string(), "Healing".to_string(), "Creative work".to_string()],
+                favorable_for: vec![
+                    "Arts".to_string(),
+                    "Romance".to_string(),
+                    "Healing".to_string(),
+                    "Creative work".to_string(),
+                ],
                 avoid: vec!["Harsh activities".to_string()],
             },
             NakshatraCategory::Dreadful => PanchangaQuality {
                 rating: QualityRating::Challenging,
                 description: "Dreadful nakshatra - endings".to_string(),
-                favorable_for: vec!["Destruction of negativity".to_string(), "Releasing".to_string()],
+                favorable_for: vec![
+                    "Destruction of negativity".to_string(),
+                    "Releasing".to_string(),
+                ],
                 avoid: vec!["Beginnings".to_string(), "Important decisions".to_string()],
             },
             NakshatraCategory::Mixed => PanchangaQuality {
@@ -287,7 +362,7 @@ mod tests {
     fn test_get_tithi_quality() {
         let quality = get_tithi_quality(0); // Pratipada
         assert_eq!(quality.rating, QualityRating::Good);
-        
+
         let quality = get_tithi_quality(2); // Tritiya
         assert_eq!(quality.rating, QualityRating::Excellent);
     }
@@ -296,7 +371,7 @@ mod tests {
     fn test_nakshatra_categories() {
         let soft = NakshatraCategory::Soft.quality();
         assert_eq!(soft.rating, QualityRating::Excellent);
-        
+
         let dreadful = NakshatraCategory::Dreadful.quality();
         assert_eq!(dreadful.rating, QualityRating::Challenging);
     }
@@ -305,12 +380,14 @@ mod tests {
     fn test_combined_quality() {
         // With both values
         let combined = get_combined_quality(Some(2), Some(3)); // Tritiya + Soft
-        assert!(combined.rating == QualityRating::Excellent || combined.rating == QualityRating::Good);
-        
+        assert!(
+            combined.rating == QualityRating::Excellent || combined.rating == QualityRating::Good
+        );
+
         // With only tithi
         let tithi_only = get_combined_quality(Some(0), None);
         assert_eq!(tithi_only.rating, QualityRating::Good);
-        
+
         // With neither
         let none = get_combined_quality(None, None);
         assert_eq!(none.rating, QualityRating::Neutral);

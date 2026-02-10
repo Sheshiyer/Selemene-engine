@@ -3,12 +3,7 @@
 //! Initializes structured logging with tracing-subscriber.
 //! Logs include span context (trace_id, span_id), timestamps, and module paths.
 
-use tracing_subscriber::{
-    fmt,
-    layer::SubscriberExt,
-    util::SubscriberInitExt,
-    EnvFilter,
-};
+use tracing_subscriber::{fmt, layer::SubscriberExt, util::SubscriberInitExt, EnvFilter};
 
 /// Initialize the tracing subscriber with structured logging.
 ///
@@ -28,18 +23,18 @@ use tracing_subscriber::{
 /// noesis_api::init_tracing("info,noesis_api=debug");
 /// ```
 pub fn init_tracing(log_level: &str) {
-    let env_filter = EnvFilter::try_from_default_env()
-        .unwrap_or_else(|_| EnvFilter::new(log_level));
+    let env_filter =
+        EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new(log_level));
 
     tracing_subscriber::registry()
         .with(env_filter)
         .with(
             fmt::layer()
-                .with_target(true)       // Include module path (e.g., noesis_api::middleware)
-                .with_thread_ids(false)  // Exclude thread IDs for cleaner output
-                .with_line_number(true)  // Include line numbers for debugging
-                .with_file(false)        // Exclude file paths to reduce noise
-                .pretty(),               // Pretty formatter for development
+                .with_target(true) // Include module path (e.g., noesis_api::middleware)
+                .with_thread_ids(false) // Exclude thread IDs for cleaner output
+                .with_line_number(true) // Include line numbers for debugging
+                .with_file(false) // Exclude file paths to reduce noise
+                .pretty(), // Pretty formatter for development
         )
         .init();
 
@@ -65,8 +60,8 @@ pub fn init_tracing(log_level: &str) {
 /// noesis_api::init_tracing_json("info");
 /// ```
 pub fn init_tracing_json(log_level: &str) {
-    let env_filter = EnvFilter::try_from_default_env()
-        .unwrap_or_else(|_| EnvFilter::new(log_level));
+    let env_filter =
+        EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new(log_level));
 
     tracing_subscriber::registry()
         .with(env_filter)
@@ -77,13 +72,16 @@ pub fn init_tracing_json(log_level: &str) {
                 .with_line_number(true)
                 .with_file(false)
                 .with_span_events(fmt::format::FmtSpan::CLOSE) // Log span close events with duration
-                .json()  // JSON formatter for production
-                .flatten_event(true)  // Flatten span context into event
-                .with_current_span(true),  // Include current span info
+                .json() // JSON formatter for production
+                .flatten_event(true) // Flatten span context into event
+                .with_current_span(true), // Include current span info
         )
         .init();
 
-    tracing::info!("Tracing initialized with JSON formatter, level: {}", log_level);
+    tracing::info!(
+        "Tracing initialized with JSON formatter, level: {}",
+        log_level
+    );
 }
 
 /// Initialize tracing with JSON formatter and OpenTelemetry integration.
@@ -111,8 +109,8 @@ pub async fn init_tracing_with_otel(
     // Initialize OpenTelemetry tracer via noesis-metrics
     let tracer = noesis_metrics::init_otel_tracing(service_name, otlp_endpoint).await?;
 
-    let env_filter = EnvFilter::try_from_default_env()
-        .unwrap_or_else(|_| EnvFilter::new(log_level));
+    let env_filter =
+        EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new(log_level));
 
     tracing_subscriber::registry()
         .with(env_filter)

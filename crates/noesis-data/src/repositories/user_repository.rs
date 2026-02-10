@@ -1,7 +1,7 @@
-use sqlx::{PgPool, Error};
-use uuid::Uuid;
-use chrono::{Utc, DateTime, NaiveDate, NaiveTime};
 use crate::models::user::{User, UserProfile};
+use chrono::{DateTime, NaiveDate, NaiveTime, Utc};
+use sqlx::{Error, PgPool};
+use uuid::Uuid;
 
 pub struct UserRepository {
     pool: PgPool,
@@ -40,27 +40,24 @@ impl UserRepository {
     }
 
     pub async fn get_user_by_email(&self, email: &str) -> Result<Option<User>, Error> {
-        let user = sqlx::query_as::<_, User>(
-            "SELECT * FROM users WHERE email = $1"
-        )
-        .bind(email)
-        .fetch_optional(&self.pool)
-        .await?;
+        let user = sqlx::query_as::<_, User>("SELECT * FROM users WHERE email = $1")
+            .bind(email)
+            .fetch_optional(&self.pool)
+            .await?;
 
         Ok(user)
     }
 
     pub async fn get_user_by_id(&self, id: Uuid) -> Result<Option<User>, Error> {
-        let user = sqlx::query_as::<_, User>(
-            "SELECT * FROM users WHERE id = $1"
-        )
-        .bind(id)
-        .fetch_optional(&self.pool)
-        .await?;
+        let user = sqlx::query_as::<_, User>("SELECT * FROM users WHERE id = $1")
+            .bind(id)
+            .fetch_optional(&self.pool)
+            .await?;
 
         Ok(user)
     }
 
+    #[allow(clippy::too_many_arguments)]
     pub async fn create_profile(
         &self,
         user_id: Uuid,
@@ -80,7 +77,7 @@ impl UserRepository {
             )
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
             RETURNING *
-            "#
+            "#,
         )
         .bind(user_id)
         .bind(birth_date)
@@ -99,19 +96,17 @@ impl UserRepository {
     }
 
     pub async fn get_profile(&self, user_id: Uuid) -> Result<Option<UserProfile>, Error> {
-         sqlx::query_as::<_, UserProfile>(
-            "SELECT * FROM user_profiles WHERE user_id = $1"
-        )
-        .bind(user_id)
-        .fetch_optional(&self.pool)
-        .await
+        sqlx::query_as::<_, UserProfile>("SELECT * FROM user_profiles WHERE user_id = $1")
+            .bind(user_id)
+            .fetch_optional(&self.pool)
+            .await
     }
 
     pub async fn update_user(
-        &self, 
-        user_id: Uuid, 
-        full_name: Option<String>, 
-        email: Option<String>
+        &self,
+        user_id: Uuid,
+        full_name: Option<String>,
+        email: Option<String>,
     ) -> Result<User, Error> {
         let user = sqlx::query_as::<_, User>(
             r#"
@@ -122,7 +117,7 @@ impl UserRepository {
                 updated_at = $4
             WHERE id = $1
             RETURNING *
-            "#
+            "#,
         )
         .bind(user_id)
         .bind(full_name)
@@ -130,10 +125,11 @@ impl UserRepository {
         .bind(Utc::now())
         .fetch_one(&self.pool)
         .await?;
-        
+
         Ok(user)
     }
 
+    #[allow(clippy::too_many_arguments)]
     pub async fn update_profile(
         &self,
         user_id: Uuid,
@@ -145,14 +141,14 @@ impl UserRepository {
         timezone: Option<String>,
         preferences: Option<serde_json::Value>,
     ) -> Result<UserProfile, Error> {
-        // We use COALESCE for optional updates. 
+        // We use COALESCE for optional updates.
         // Note: For JSONB, COALESCE works to replace the whole object if provided.
         // Merging JSONB would require jsonb_concat or similar. Here we assume full replacement of preferences field if provided.
-        
-        // We try to UPDATE. If no row exists, we should probably CREATE one? 
+
+        // We try to UPDATE. If no row exists, we should probably CREATE one?
         // Or assume profile exists. Let's assume profile exists or we handle that in logic.
         // Actually, upsert (INSERT ... ON CONFLICT DO UPDATE) is safer for 1:1 profiles.
-        
+
         let profile = sqlx::query_as::<_, UserProfile>(
             r#"
             INSERT INTO user_profiles (
@@ -187,23 +183,28 @@ impl UserRepository {
         Ok(profile)
     }
 
-    pub async fn set_password_reset_token(&self, email: &str, token: &str, expires_at: DateTime<Utc>) -> Result<bool, Error> {
+    pub async fn set_password_reset_token(
+        &self,
+        email: &str,
+        token: &str,
+        expires_at: DateTime<Utc>,
+    ) -> Result<bool, Error> {
         let result = sqlx::query(
-            "UPDATE users SET reset_token = $1, reset_token_expires_at = $2 WHERE email = $3"
+            "UPDATE users SET reset_token = $1, reset_token_expires_at = $2 WHERE email = $3",
         )
         .bind(token)
         .bind(expires_at)
         .bind(email)
         .execute(&self.pool)
         .await?;
-        
+
         // Return true if any row was updated (user found)
         Ok(result.rows_affected() > 0)
     }
 
     pub async fn find_user_by_reset_token(&self, token: &str) -> Result<Option<User>, Error> {
         sqlx::query_as::<_, User>(
-            "SELECT * FROM users WHERE reset_token = $1 AND reset_token_expires_at > $2"
+            "SELECT * FROM users WHERE reset_token = $1 AND reset_token_expires_at > $2",
         )
         .bind(token)
         .bind(Utc::now())
@@ -223,11 +224,16 @@ impl UserRepository {
         Ok(())
     }
 
-    pub async fn add_experience(&self, user_id: Uuid, amount: i32, action: &str) -> Result<User, Error> {
+    pub async fn add_experience(
+        &self,
+        user_id: Uuid,
+        amount: i32,
+        action: &str,
+    ) -> Result<User, Error> {
         // Log the progression event
         sqlx::query(
             "INSERT INTO progression_logs (user_id, xp_amount, action_type, metadata) 
-             VALUES ($1, $2, $3, $4)"
+             VALUES ($1, $2, $3, $4)",
         )
         .bind(user_id)
         .bind(amount)
@@ -239,8 +245,8 @@ impl UserRepository {
         .await?;
 
         // Atomic update of user XP and level calculation
-        // Level logic is dynamic, but we might want to store it if complex. 
-        // For now, we update XP. The Level is derived from XP in the application layer usually, 
+        // Level logic is dynamic, but we might want to store it if complex.
+        // For now, we update XP. The Level is derived from XP in the application layer usually,
         // or we can add a generated column. But per requirements, just XP tracking is key.
         let updated_user = sqlx::query_as::<_, User>(
             r#"
@@ -250,7 +256,7 @@ impl UserRepository {
                 updated_at = $2
             WHERE id = $3
             RETURNING *
-            "#
+            "#,
         )
         .bind(amount)
         .bind(Utc::now())

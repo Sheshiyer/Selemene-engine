@@ -52,32 +52,66 @@ impl PanchangaData {
         let nakshatra_val = value.get("nakshatra")?;
 
         let tithi = TithiInfo {
-            name: tithi_val.get("name").and_then(|v| v.as_str()).unwrap_or("Unknown").to_string(),
-            number: tithi_val.get("number").and_then(|v| v.as_u64()).unwrap_or(0) as u8,
-            paksha: tithi_val.get("paksha").and_then(|v| v.as_str()).unwrap_or("Unknown").to_string(),
-            quality: tithi_quality(tithi_val.get("number").and_then(|v| v.as_u64()).unwrap_or(0) as u8),
+            name: tithi_val
+                .get("name")
+                .and_then(|v| v.as_str())
+                .unwrap_or("Unknown")
+                .to_string(),
+            number: tithi_val
+                .get("number")
+                .and_then(|v| v.as_u64())
+                .unwrap_or(0) as u8,
+            paksha: tithi_val
+                .get("paksha")
+                .and_then(|v| v.as_str())
+                .unwrap_or("Unknown")
+                .to_string(),
+            quality: tithi_quality(
+                tithi_val
+                    .get("number")
+                    .and_then(|v| v.as_u64())
+                    .unwrap_or(0) as u8,
+            ),
         };
 
         let nakshatra = NakshatraInfo {
-            name: nakshatra_val.get("name").and_then(|v| v.as_str()).unwrap_or("Unknown").to_string(),
-            number: nakshatra_val.get("number").and_then(|v| v.as_u64()).unwrap_or(0) as u8,
-            quality: nakshatra_val.get("quality").and_then(|v| v.as_str()).unwrap_or("Unknown").to_string(),
-            ruling_deity: nakshatra_val.get("deity").and_then(|v| v.as_str()).unwrap_or("Unknown").to_string(),
+            name: nakshatra_val
+                .get("name")
+                .and_then(|v| v.as_str())
+                .unwrap_or("Unknown")
+                .to_string(),
+            number: nakshatra_val
+                .get("number")
+                .and_then(|v| v.as_u64())
+                .unwrap_or(0) as u8,
+            quality: nakshatra_val
+                .get("quality")
+                .and_then(|v| v.as_str())
+                .unwrap_or("Unknown")
+                .to_string(),
+            ruling_deity: nakshatra_val
+                .get("deity")
+                .and_then(|v| v.as_str())
+                .unwrap_or("Unknown")
+                .to_string(),
         };
 
-        let yoga = value.get("yoga")
+        let yoga = value
+            .get("yoga")
             .and_then(|v| v.get("name").or(Some(v)))
             .and_then(|v| v.as_str())
             .unwrap_or("Unknown")
             .to_string();
 
-        let karana = value.get("karana")
+        let karana = value
+            .get("karana")
             .and_then(|v| v.get("name").or(Some(v)))
             .and_then(|v| v.as_str())
             .unwrap_or("Unknown")
             .to_string();
 
-        let vara = value.get("vara")
+        let vara = value
+            .get("vara")
             .or_else(|| value.get("weekday"))
             .and_then(|v| v.as_str())
             .unwrap_or("Unknown")
@@ -112,8 +146,12 @@ impl PanchangaData {
             "tuesday" | "mangalvar" => activities.push("Physical activity, courage".to_string()),
             "wednesday" | "budhvar" => activities.push("Learning, communication".to_string()),
             "thursday" | "guruvar" => activities.push("Teaching, spiritual practice".to_string()),
-            "friday" | "shukravar" => activities.push("Creative expression, relationships".to_string()),
-            "saturday" | "shanivar" => activities.push("Discipline, organization, service".to_string()),
+            "friday" | "shukravar" => {
+                activities.push("Creative expression, relationships".to_string())
+            }
+            "saturday" | "shanivar" => {
+                activities.push("Discipline, organization, service".to_string())
+            }
             _ => {}
         }
 
@@ -139,25 +177,30 @@ impl VedicClockData {
         Some(Self {
             current_ghati: value.get("ghati").and_then(|v| v.as_u64()).unwrap_or(0) as u8,
             current_pala: value.get("pala").and_then(|v| v.as_u64()).unwrap_or(0) as u8,
-            current_muhurta: value.get("muhurta")
+            current_muhurta: value
+                .get("muhurta")
                 .and_then(|v| v.get("name").or(Some(v)))
                 .and_then(|v| v.as_str())
                 .unwrap_or("Unknown")
                 .to_string(),
-            muhurta_quality: value.get("muhurta")
+            muhurta_quality: value
+                .get("muhurta")
                 .and_then(|v| v.get("quality"))
                 .and_then(|v| v.as_str())
                 .unwrap_or("Neutral")
                 .to_string(),
-            active_organ: value.get("active_organ")
+            active_organ: value
+                .get("active_organ")
                 .and_then(|v| v.as_str())
                 .unwrap_or("Unknown")
                 .to_string(),
-            dosha_time: value.get("dosha")
+            dosha_time: value
+                .get("dosha")
                 .and_then(|v| v.as_str())
                 .unwrap_or("Unknown")
                 .to_string(),
-            recommended_activity: value.get("recommended_activity")
+            recommended_activity: value
+                .get("recommended_activity")
                 .and_then(|v| v.as_str())
                 .unwrap_or("")
                 .to_string(),
@@ -209,17 +252,26 @@ pub struct BiorhythmData {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CycleData {
-    pub value: f64,      // -1.0 to 1.0
-    pub phase: String,   // "High", "Low", "Critical", "Rising", "Falling"
+    pub value: f64,    // -1.0 to 1.0
+    pub phase: String, // "High", "Low", "Critical", "Rising", "Falling"
     pub description: String,
 }
 
 impl BiorhythmData {
     /// Extract from engine output JSON
     pub fn from_json(value: &Value) -> Option<Self> {
-        let physical_val = value.get("physical").and_then(|v| v.as_f64()).unwrap_or(0.0);
-        let emotional_val = value.get("emotional").and_then(|v| v.as_f64()).unwrap_or(0.0);
-        let intellectual_val = value.get("intellectual").and_then(|v| v.as_f64()).unwrap_or(0.0);
+        let physical_val = value
+            .get("physical")
+            .and_then(|v| v.as_f64())
+            .unwrap_or(0.0);
+        let emotional_val = value
+            .get("emotional")
+            .and_then(|v| v.as_f64())
+            .unwrap_or(0.0);
+        let intellectual_val = value
+            .get("intellectual")
+            .and_then(|v| v.as_f64())
+            .unwrap_or(0.0);
 
         Some(Self {
             physical: CycleData {
@@ -258,7 +310,10 @@ impl BiorhythmData {
 
         // Intellectual activities
         if self.intellectual.value > 0.3 {
-            activities.push(("Complex problem solving".to_string(), self.intellectual.value));
+            activities.push((
+                "Complex problem solving".to_string(),
+                self.intellectual.value,
+            ));
             activities.push(("Learning new skills".to_string(), self.intellectual.value));
         }
 
@@ -272,8 +327,8 @@ impl BiorhythmData {
 
     /// Check if any cycle is critical (near zero crossing)
     pub fn has_critical_day(&self) -> bool {
-        self.physical.value.abs() < 0.1 
-            || self.emotional.value.abs() < 0.1 
+        self.physical.value.abs() < 0.1
+            || self.emotional.value.abs() < 0.1
             || self.intellectual.value.abs() < 0.1
     }
 }
@@ -344,7 +399,11 @@ fn tithi_quality(number: u8) -> String {
 }
 
 /// Create input specifically for Daily Practice workflow
-pub fn create_daily_practice_input(current_time: DateTime<Utc>, latitude: f64, longitude: f64) -> EngineInput {
+pub fn create_daily_practice_input(
+    current_time: DateTime<Utc>,
+    latitude: f64,
+    longitude: f64,
+) -> EngineInput {
     EngineInput {
         birth_data: None,
         current_time,
@@ -440,9 +499,21 @@ mod tests {
     #[test]
     fn biorhythm_critical_day() {
         let data = BiorhythmData {
-            physical: CycleData { value: 0.05, phase: "Critical".to_string(), description: String::new() },
-            emotional: CycleData { value: 0.5, phase: "High".to_string(), description: String::new() },
-            intellectual: CycleData { value: 0.5, phase: "High".to_string(), description: String::new() },
+            physical: CycleData {
+                value: 0.05,
+                phase: "Critical".to_string(),
+                description: String::new(),
+            },
+            emotional: CycleData {
+                value: 0.5,
+                phase: "High".to_string(),
+                description: String::new(),
+            },
+            intellectual: CycleData {
+                value: 0.5,
+                phase: "High".to_string(),
+                description: String::new(),
+            },
             composite: 0.35,
         };
 

@@ -7,12 +7,12 @@ use std::future::Future;
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::time::{Duration, Instant};
 
-use tracing::{debug, info, warn, error};
+use tracing::{debug, error, info, warn};
 
 use crate::{
-    Config, VedicApiClient, VedicApiError,
-    cache::{ApiCache, panchang_key},
+    cache::{panchang_key, ApiCache},
     panchang::Panchang,
+    Config, VedicApiClient, VedicApiError,
 };
 
 // ====================== EXPONENTIAL BACKOFF (FAPI-105) ======================
@@ -58,8 +58,8 @@ impl ExponentialBackoff {
 
     /// Calculate the delay for a given attempt number (0-indexed)
     pub fn delay_for_attempt(&self, attempt: u32) -> Duration {
-        let delay_ms = self.config.initial_delay_ms as f64
-            * self.config.multiplier.powi(attempt as i32);
+        let delay_ms =
+            self.config.initial_delay_ms as f64 * self.config.multiplier.powi(attempt as i32);
         let capped_ms = delay_ms.min(self.config.max_delay_ms as f64) as u64;
 
         if self.config.jitter {
@@ -270,12 +270,12 @@ impl FallbackChain {
                 self.metrics.record_api_success();
                 // Populate cache for next time
                 self.cache.set_panchang(&cache_key, panchang.clone()).await;
-                return Ok(FallbackResult {
+                Ok(FallbackResult {
                     value: panchang,
                     source: FallbackSource::Api,
                     attempts,
                     total_duration: start.elapsed(),
-                });
+                })
             }
             Err(api_err) => {
                 warn!("Fallback chain: API failed ({}), trying native", api_err);
@@ -284,32 +284,34 @@ impl FallbackChain {
                 // ---- Step 3: Native calculation fallback ----
                 if self.config.fallback_enabled {
                     attempts += 1;
-                    match self.native_panchang(year, month, day, hour, minute, second, lat, lng, tzone) {
+                    match self
+                        .native_panchang(year, month, day, hour, minute, second, lat, lng, tzone)
+                    {
                         Ok(panchang) => {
                             info!("Fallback chain: native calculation success");
                             self.metrics.record_native_fallback();
                             // Cache the native result too
                             self.cache.set_panchang(&cache_key, panchang.clone()).await;
-                            return Ok(FallbackResult {
+                            Ok(FallbackResult {
                                 value: panchang,
                                 source: FallbackSource::NativeCalculation,
                                 attempts,
                                 total_duration: start.elapsed(),
-                            });
+                            })
                         }
                         Err(native_err) => {
                             error!(
                                 "Fallback chain: all sources failed. API: {}, Native: {}",
                                 api_err, native_err
                             );
-                            return Err(VedicApiError::FallbackFailed {
+                            Err(VedicApiError::FallbackFailed {
                                 api_error: Box::new(api_err),
                                 native_error: native_err,
-                            });
+                            })
                         }
                     }
                 } else {
-                    return Err(api_err);
+                    Err(api_err)
                 }
             }
         }
@@ -337,7 +339,7 @@ impl FallbackChain {
         // Approximate tithi from lunar phase (synodic month ~ 29.53 days)
         let lunar_age = (jdn - 2451550.1) % 29.530588; // Reference new moon
         let tithi_num = ((lunar_age / 29.530588) * 30.0).floor() as u32 + 1;
-        let tithi_num = tithi_num.min(30).max(1);
+        let tithi_num = tithi_num.clamp(1, 30);
         let tithi_name = TithiName::from_number(tithi_num);
         let paksha = if tithi_num <= 15 {
             Paksha::Shukla
@@ -467,9 +469,7 @@ pub fn julian_day_number(year: i32, month: u32, day: u32) -> f64 {
     let yy = y + 4800.0 - a;
     let mm = m + 12.0 * a - 3.0;
 
-    d + ((153.0 * mm + 2.0) / 5.0).floor() + 365.0 * yy
-        + (yy / 4.0).floor()
-        - (yy / 100.0).floor()
+    d + ((153.0 * mm + 2.0) / 5.0).floor() + 365.0 * yy + (yy / 4.0).floor() - (yy / 100.0).floor()
         + (yy / 400.0).floor()
         - 32045.0
 }
@@ -488,8 +488,18 @@ pub fn approximate_sun_longitude(jdn: f64) -> f64 {
 pub fn sign_from_longitude(lng: f64) -> &'static str {
     let index = ((lng % 360.0) / 30.0).floor() as usize;
     const SIGNS: [&str; 12] = [
-        "Aries", "Taurus", "Gemini", "Cancer", "Leo", "Virgo",
-        "Libra", "Scorpio", "Sagittarius", "Capricorn", "Aquarius", "Pisces",
+        "Aries",
+        "Taurus",
+        "Gemini",
+        "Cancer",
+        "Leo",
+        "Virgo",
+        "Libra",
+        "Scorpio",
+        "Sagittarius",
+        "Capricorn",
+        "Aquarius",
+        "Pisces",
     ];
     SIGNS[index.min(11)]
 }
@@ -497,7 +507,7 @@ pub fn sign_from_longitude(lng: f64) -> &'static str {
 /// Approximate sunrise time string for a latitude and JDN
 pub fn approximate_sunrise(lat: f64, jdn: f64) -> String {
     // Simplified sunrise calculation
-    let day_of_year = ((jdn - julian_day_number(2024, 1, 1)) % 365.25) as f64;
+    let day_of_year = (jdn - julian_day_number(2024, 1, 1)) % 365.25;
     let declination = 23.45 * ((360.0 / 365.0 * (day_of_year + 284.0)).to_radians().sin());
     let lat_rad = lat.to_radians();
     let decl_rad = declination.to_radians();
@@ -517,7 +527,7 @@ pub fn approximate_sunrise(lat: f64, jdn: f64) -> String {
 
 /// Approximate sunset time string for a latitude and JDN
 pub fn approximate_sunset(lat: f64, jdn: f64) -> String {
-    let day_of_year = ((jdn - julian_day_number(2024, 1, 1)) % 365.25) as f64;
+    let day_of_year = (jdn - julian_day_number(2024, 1, 1)) % 365.25;
     let declination = 23.45 * ((360.0 / 365.0 * (day_of_year + 284.0)).to_radians().sin());
     let lat_rad = lat.to_radians();
     let decl_rad = declination.to_radians();
@@ -601,9 +611,7 @@ impl ResilienceMetrics {
 
     /// Calculate fallback rate as a percentage of total handled requests
     pub fn fallback_rate(&self) -> f64 {
-        let total = self.api_successes()
-            + self.api_failures()
-            + self.native_fallbacks();
+        let total = self.api_successes() + self.api_failures() + self.native_fallbacks();
         if total == 0 {
             return 0.0;
         }
@@ -735,7 +743,10 @@ mod tests {
         // Bangalore at equinox-ish
         let sunrise = approximate_sunrise(12.97, julian_day_number(2024, 3, 20));
         // Should be roughly 6:00-6:30
-        assert!(sunrise.starts_with("06:") || sunrise.starts_with("05:"),
-            "Sunrise at lat 12.97 should be around 6am, got {}", sunrise);
+        assert!(
+            sunrise.starts_with("06:") || sunrise.starts_with("05:"),
+            "Sunrise at lat 12.97 should be around 6am, got {}",
+            sunrise
+        );
     }
 }

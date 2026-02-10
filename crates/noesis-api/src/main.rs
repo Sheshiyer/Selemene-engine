@@ -45,16 +45,23 @@ async fn main() {
         init_tracing(&config.log_level);
     }
 
-    if sentry::Hub::current().client().map_or(false, |c| c.is_enabled()) {
+    if sentry::Hub::current()
+        .client()
+        .is_some_and(|c| c.is_enabled())
+    {
         tracing::info!("Sentry error tracking enabled");
     } else {
         tracing::info!("Sentry error tracking disabled (no SENTRY_DSN)");
     }
 
     tracing::info!("Starting Noesis API server");
-    tracing::info!("Configuration loaded: host={}, port={}, log_format={}", 
-        config.host, config.port, config.log_format);
-    
+    tracing::info!(
+        "Configuration loaded: host={}, port={}, log_format={}",
+        config.host,
+        config.port,
+        config.log_format
+    );
+
     if config.redis_url.is_some() {
         tracing::info!("Redis cache enabled");
     } else {
@@ -72,13 +79,11 @@ async fn main() {
     // Bind to configured address
     let addr = config.bind_address();
     tracing::info!("Binding to {}", addr);
-    
-    let listener = TcpListener::bind(&addr)
-        .await
-        .unwrap_or_else(|e| {
-            tracing::error!("Failed to bind TCP listener to {}: {}", addr, e);
-            std::process::exit(1);
-        });
+
+    let listener = TcpListener::bind(&addr).await.unwrap_or_else(|e| {
+        tracing::error!("Failed to bind TCP listener to {}: {}", addr, e);
+        std::process::exit(1);
+    });
 
     tracing::info!("Noesis API server listening on {}", addr);
     tracing::info!("Health check: http://{}/health", addr);
@@ -86,7 +91,5 @@ async fn main() {
     tracing::info!("API v1: http://{}/api/v1/status", addr);
 
     // Start the server
-    axum::serve(listener, app)
-        .await
-        .expect("Server error");
+    axum::serve(listener, app).await.expect("Server error");
 }

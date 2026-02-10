@@ -19,8 +19,8 @@ use chrono::NaiveDate;
 
 use noesis_vedic_api::dasha::{DashaLevel, DashaPlanet, VimshottariDasha};
 use noesis_vedic_api::test_mocks::{
-    shesh_vimshottari_dasha, SHESH_DAY, SHESH_HOUR, SHESH_LAT, SHESH_LNG,
-    SHESH_MINUTE, SHESH_MONTH, SHESH_YEAR,
+    shesh_vimshottari_dasha, SHESH_DAY, SHESH_HOUR, SHESH_LAT, SHESH_LNG, SHESH_MINUTE,
+    SHESH_MONTH, SHESH_YEAR,
 };
 use noesis_vedic_api::vimshottari::query::dasha_lord_by_date;
 
@@ -196,10 +196,7 @@ fn fapi096_mahadasha_sequence_from_sun() {
     }
 
     let planets: Vec<&str> = dasha.mahadashas.iter().map(|m| m.planet.as_str()).collect();
-    println!(
-        "  [PASS] Mahadasha sequence: {}",
-        planets.join(" -> ")
-    );
+    println!("  [PASS] Mahadasha sequence: {}", planets.join(" -> "));
 }
 
 #[test]
@@ -388,7 +385,10 @@ fn fapi096_mahadasha_durations_match_standard() {
         total
     );
 
-    println!("  [PASS] All Mahadasha durations match standard Vimshottari periods (total: {:.0} years)", total);
+    println!(
+        "  [PASS] All Mahadasha durations match standard Vimshottari periods (total: {:.0} years)",
+        total
+    );
 }
 
 #[test]
@@ -535,20 +535,33 @@ fn fapi096_complete_vimshottari_validation_report() {
     println!("\n========================================");
     println!("  FAPI-096: VIMSHOTTARI vs REFERENCE");
     println!("========================================");
-    println!("  Birth: {}-{:02}-{:02} {:02}:{:02}:{:02}",
-        SHESH_YEAR, SHESH_MONTH, SHESH_DAY, SHESH_HOUR, SHESH_MINUTE, 0);
+    println!(
+        "  Birth: {}-{:02}-{:02} {:02}:{:02}:{:02}",
+        SHESH_YEAR, SHESH_MONTH, SHESH_DAY, SHESH_HOUR, SHESH_MINUTE, 0
+    );
     println!("  Location: Bangalore ({}, {})", SHESH_LAT, SHESH_LNG);
-    println!("  Moon Nakshatra: {} (ruler: {})",
-        dasha.moon_nakshatra, dasha.balance.planet.as_str());
-    println!("  Dasha Balance: {:.1} years of {}",
-        dasha.balance.years_remaining, dasha.balance.planet.as_str());
+    println!(
+        "  Moon Nakshatra: {} (ruler: {})",
+        dasha.moon_nakshatra,
+        dasha.balance.planet.as_str()
+    );
+    println!(
+        "  Dasha Balance: {:.1} years of {}",
+        dasha.balance.years_remaining,
+        dasha.balance.planet.as_str()
+    );
     println!("----------------------------------------");
-    println!("  Mahadasha Comparison (tolerance: {} days):", tolerance_days);
+    println!(
+        "  Mahadasha Comparison (tolerance: {} days):",
+        tolerance_days
+    );
 
     let mut all_pass = true;
     for (actual, expected) in dasha.mahadashas.iter().zip(expected_list.iter()) {
-        let (start_ok, start_diff) = dates_within_days(&actual.start_date, expected.start_date, tolerance_days);
-        let (end_ok, end_diff) = dates_within_days(&actual.end_date, expected.end_date, tolerance_days);
+        let (start_ok, start_diff) =
+            dates_within_days(&actual.start_date, expected.start_date, tolerance_days);
+        let (end_ok, end_diff) =
+            dates_within_days(&actual.end_date, expected.end_date, tolerance_days);
 
         let status = if start_ok && end_ok { "PASS" } else { "FAIL" };
         if !start_ok || !end_ok {

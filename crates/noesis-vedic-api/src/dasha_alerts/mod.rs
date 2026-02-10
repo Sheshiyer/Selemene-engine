@@ -2,13 +2,13 @@
 //!
 //! FAPI-114: Dasha transition alerts and notifications
 
-pub mod types;
 pub mod monitor;
 pub mod notifications;
+pub mod types;
 
-pub use types::*;
 pub use monitor::*;
 pub use notifications::*;
+pub use types::*;
 
 use chrono::NaiveDate;
 use serde::{Deserialize, Serialize};

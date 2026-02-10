@@ -7,9 +7,9 @@
 
 pub use crate::resilience::{BackoffConfig, ExponentialBackoff};
 
+use crate::error::VedicApiError;
 use std::future::Future;
 use std::time::Duration;
-use crate::error::VedicApiError;
 
 /// Retry configuration with sensible defaults for astrology API
 #[derive(Debug, Clone)]
@@ -89,10 +89,7 @@ pub fn is_retryable(error: &VedicApiError) -> bool {
 }
 
 /// Execute an async operation with retry logic
-pub async fn with_retry<F, Fut, T>(
-    config: &RetryConfig,
-    operation: F,
-) -> Result<T, VedicApiError>
+pub async fn with_retry<F, Fut, T>(config: &RetryConfig, operation: F) -> Result<T, VedicApiError>
 where
     F: Fn() -> Fut,
     Fut: Future<Output = Result<T, VedicApiError>>,
@@ -137,10 +134,12 @@ mod tests {
     #[test]
     fn test_is_retryable() {
         assert!(is_retryable(&VedicApiError::Timeout("test".to_string())));
-        assert!(is_retryable(&VedicApiError::NetworkError("connection reset".to_string())));
-        assert!(!is_retryable(&VedicApiError::InvalidInput { 
-            field: "date".to_string(), 
-            message: "bad date".to_string() 
+        assert!(is_retryable(&VedicApiError::NetworkError(
+            "connection reset".to_string()
+        )));
+        assert!(!is_retryable(&VedicApiError::InvalidInput {
+            field: "date".to_string(),
+            message: "bad date".to_string()
         }));
     }
 }

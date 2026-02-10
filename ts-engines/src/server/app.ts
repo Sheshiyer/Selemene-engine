@@ -1,5 +1,5 @@
-import { Elysia, t } from 'elysia'
 import { swagger } from '@elysiajs/swagger'
+import { Elysia, t } from 'elysia'
 import type { EngineInput, ErrorResponse, HealthResponse } from '../types'
 import { registry } from './registry'
 
@@ -10,16 +10,19 @@ const startTime = Date.now()
  */
 export function createServer() {
   const app = new Elysia()
-    .use(swagger({
-      documentation: {
-        info: {
-          title: 'Noesis TS Engines API',
-          version: '1.0.0',
-          description: 'TypeScript consciousness engines for Tryambakam Noesis — tarot, i-ching, enneagram, sacred-geometry, sigil-forge'
-        }
-      },
-      path: '/docs'
-    }))
+    .use(
+      swagger({
+        documentation: {
+          info: {
+            title: 'Noesis TS Engines API',
+            version: '1.0.0',
+            description:
+              'TypeScript consciousness engines for Tryambakam Noesis — tarot, i-ching, enneagram, sacred-geometry, sigil-forge',
+          },
+        },
+        path: '/docs',
+      }),
+    )
     // Health check endpoint
     .get(
       '/health',
@@ -56,7 +59,7 @@ export function createServer() {
             error_code: 'ENGINE_NOT_FOUND',
           } as ErrorResponse
         }
-        return engine.metadata() as any
+        return engine.metadata() as unknown
       },
       {
         params: t.Object({

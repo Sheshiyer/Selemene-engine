@@ -10,9 +10,9 @@
 //!
 //! Accuracy requirement: within 1 hour of professional Human Design software.
 
-use chrono::{DateTime, Utc, Duration, Timelike, Datelike, TimeZone};
-use swisseph::{Body, Seflg};
+use chrono::{DateTime, Datelike, Duration, TimeZone, Timelike, Utc};
 use swisseph::swe;
+use swisseph::{Body, Seflg};
 
 /// Error type for Design Time calculation
 #[derive(Debug, thiserror::Error)]
@@ -50,15 +50,16 @@ fn datetime_to_julian_day(dt: &DateTime<Utc>) -> f64 {
 }
 
 /// Convert Julian Day back to DateTime<Utc>
+#[allow(dead_code)]
 fn julian_day_to_datetime(jd: f64) -> DateTime<Utc> {
     // Simplified conversion (could be more precise with swe::revjul)
     // For now, use a baseline and add days
     let j2000 = 2451545.0; // JD for 2000-01-01 12:00:00
     let days_since_j2000 = jd - j2000;
-    
+
     let base = Utc.with_ymd_and_hms(2000, 1, 1, 12, 0, 0).unwrap();
     let duration = Duration::milliseconds((days_since_j2000 * 86400.0 * 1000.0) as i64);
-    
+
     base + duration
 }
 
@@ -79,9 +80,7 @@ fn calculate_sun_longitude(jd: f64) -> Result<f64, DesignTimeError> {
             // result.out[0] contains the ecliptic longitude
             Ok(result.out[0])
         }
-        Err(e) => {
-            Err(DesignTimeError::SwissEphemerisError(e))
-        }
+        Err(e) => Err(DesignTimeError::SwissEphemerisError(e)),
     }
 }
 
@@ -110,22 +109,22 @@ pub fn calculate_design_time(
     if let Some(path) = ephe_path {
         initialize_ephemeris(path);
     }
-    
+
     // Calculate Sun's longitude at birth
     let birth_jd = datetime_to_julian_day(&birth_time);
     let birth_longitude = calculate_sun_longitude(birth_jd)?;
-    
+
     // Design time is when the Sun was 88 DEGREES behind the birth position
     // This is NOT the same as 88 days - it's based on solar arc
     // Target longitude = birth_longitude - 88° (going backwards in the zodiac)
     let target_longitude = (birth_longitude - 88.0).rem_euclid(360.0);
-    
+
     // Initial estimate: ~88-92 days before birth (Sun moves ~1° per day)
     let initial_estimate = birth_time - Duration::days(88);
-    
+
     // Perform iterative refinement using binary search
     let design_time = refine_design_time(initial_estimate, target_longitude)?;
-    
+
     Ok(design_time)
 }
 
@@ -144,29 +143,30 @@ fn refine_design_time(
     const MAX_ITERATIONS: usize = 50;
     const TOLERANCE_DEGREES: f64 = 0.001; // ~3.6 arcseconds (~0.24 seconds of time)
     const TOLERANCE_SECONDS: i64 = 3600; // 1 hour in seconds
-    
+
     // Search bounds: ±3 days from initial estimate
     let mut lower_bound = initial_estimate - Duration::days(3);
     let mut upper_bound = initial_estimate + Duration::days(3);
-    
+
     for _iteration in 0..MAX_ITERATIONS {
         // Try the midpoint
         let midpoint = lower_bound + (upper_bound - lower_bound) / 2;
         let midpoint_jd = datetime_to_julian_day(&midpoint);
         let midpoint_longitude = calculate_sun_longitude(midpoint_jd)?;
-        
+
         // Calculate longitude difference (accounting for 360° wrap)
         let diff = longitude_difference(midpoint_longitude, target_longitude);
-        
+
         // Check convergence
         if diff.abs() < TOLERANCE_DEGREES {
             // Additional check: ensure we're within 1 hour
             let time_diff = (midpoint - initial_estimate).num_seconds().abs();
-            if time_diff < TOLERANCE_SECONDS * 24 * 3 { // Within ±3 days is reasonable
+            if time_diff < TOLERANCE_SECONDS * 24 * 3 {
+                // Within ±3 days is reasonable
                 return Ok(midpoint);
             }
         }
-        
+
         // Adjust search bounds
         // Sun moves ~1° per day, so if we're ahead in longitude, we need to go earlier in time
         if diff > 0.0 {
@@ -176,13 +176,13 @@ fn refine_design_time(
             // Current longitude is behind target, need to go later
             lower_bound = midpoint;
         }
-        
+
         // Check if bounds are too close (converged)
         if (upper_bound - lower_bound).num_seconds() < 60 {
             return Ok(midpoint);
         }
     }
-    
+
     Err(DesignTimeError::ConvergenceError(MAX_ITERATIONS))
 }
 
@@ -198,7 +198,7 @@ fn refine_design_time(
 /// Signed difference (-180 to +180 degrees)
 fn longitude_difference(lon1: f64, lon2: f64) -> f64 {
     let mut diff = lon1 - lon2;
-    
+
     // Normalize to -180 to +180
     while diff > 180.0 {
         diff -= 360.0;
@@ -206,7 +206,7 @@ fn longitude_difference(lon1: f64, lon2: f64) -> f64 {
     while diff < -180.0 {
         diff += 360.0;
     }
-    
+
     diff
 }
 
@@ -230,8 +230,12 @@ mod tests {
         // JD should be approximately 2451545.0
         let dt = Utc.with_ymd_and_hms(2000, 1, 1, 12, 0, 0).unwrap();
         let jd = datetime_to_julian_day(&dt);
-        
-        assert!((jd - 2451545.0).abs() < 0.01, "JD calculation incorrect: got {}", jd);
+
+        assert!(
+            (jd - 2451545.0).abs() < 0.01,
+            "JD calculation incorrect: got {}",
+            jd
+        );
     }
 
     #[test]
@@ -239,19 +243,22 @@ mod tests {
     fn test_calculate_design_time() {
         // Test with a known birth time
         let birth_time = Utc.with_ymd_and_hms(1990, 6, 15, 14, 30, 0).unwrap();
-        
+
         // This test requires Swiss Ephemeris data files
         // In production, set the path to your ephe directory
         let ephe_path = "/path/to/ephe";
-        
+
         let result = calculate_design_time(birth_time, Some(ephe_path));
-        
+
         if let Ok(design_time) = result {
             // Design time should be approximately 88 days before birth
             let diff_days = (birth_time - design_time).num_days();
-            assert!(diff_days >= 85 && diff_days <= 91, 
-                "Design time should be ~88 days before birth, got {} days", diff_days);
-            
+            assert!(
+                diff_days >= 85 && diff_days <= 91,
+                "Design time should be ~88 days before birth, got {} days",
+                diff_days
+            );
+
             println!("Birth time: {}", birth_time);
             println!("Design time: {}", design_time);
             println!("Difference: {} days", diff_days);
@@ -265,7 +272,7 @@ mod tests {
         // Test that design time is approximately 88 days before birth
         let birth_time = Utc.with_ymd_and_hms(2000, 1, 1, 0, 0, 0).unwrap();
         let expected_design = birth_time - Duration::days(88);
-        
+
         // Verify the expected range
         let diff = (birth_time - expected_design).num_days();
         assert_eq!(diff, 88, "Expected ~88 days difference");
@@ -277,9 +284,13 @@ mod tests {
         let original = Utc.with_ymd_and_hms(2020, 6, 15, 18, 30, 45).unwrap();
         let jd = datetime_to_julian_day(&original);
         let converted = julian_day_to_datetime(jd);
-        
+
         // Should be within 1 second
         let diff = (original - converted).num_seconds().abs();
-        assert!(diff <= 1, "Roundtrip conversion failed: {} seconds difference", diff);
+        assert!(
+            diff <= 1,
+            "Roundtrip conversion failed: {} seconds difference",
+            diff
+        );
     }
 }

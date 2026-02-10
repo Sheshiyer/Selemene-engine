@@ -200,7 +200,7 @@ pub fn get_all_nakshatra_syllables() -> Vec<NakshatraSyllables> {
 /// Get syllables for a specific nakshatra
 pub fn get_syllables_for_nakshatra(nakshatra: &str, pada: u8) -> Vec<String> {
     let all = get_all_nakshatra_syllables();
-    
+
     all.iter()
         .find(|n| n.nakshatra.eq_ignore_ascii_case(nakshatra))
         .map(|n| n.get_syllables_for_pada(pada).to_vec())

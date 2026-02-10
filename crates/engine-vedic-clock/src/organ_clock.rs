@@ -1,6 +1,6 @@
 //! Organ clock integration with FreeAstrologyAPI Panchang
 
-use chrono::{DateTime, Utc, Timelike, Datelike};
+use chrono::{DateTime, Datelike, Timelike, Utc};
 
 use noesis_vedic_api::{CachedVedicClient, VedicApiError};
 

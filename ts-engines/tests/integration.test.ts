@@ -3,15 +3,15 @@
  * Tests all 5 engines: Tarot, I-Ching, Enneagram, Sacred Geometry, Sigil Forge
  */
 
-import { describe, it, expect, beforeAll, afterAll } from 'bun:test'
+import { afterAll, beforeAll, describe, expect, it } from 'bun:test'
 import { createServer, registry } from '../src/server'
 
-// Import and register engines
-import { TarotEngine } from '../src/engines/tarot'
-import { IChingEngine } from '../src/engines/i-ching'
 import { EnneagramEngine } from '../src/engines/enneagram'
+import { IChingEngine } from '../src/engines/i-ching'
 import { SacredGeometryEngine } from '../src/engines/sacred-geometry'
 import { SigilForgeEngine } from '../src/engines/sigil-forge'
+// Import and register engines
+import { TarotEngine } from '../src/engines/tarot'
 
 const TEST_PORT = 3099
 let server: ReturnType<typeof createServer> | null = null
@@ -21,7 +21,7 @@ let baseUrl: string
 async function apiCall(
   method: 'GET' | 'POST',
   path: string,
-  body?: Record<string, unknown>
+  body?: Record<string, unknown>,
 ): Promise<{ status: number; data: unknown }> {
   const url = `${baseUrl}${path}`
   const options: RequestInit = {
@@ -141,9 +141,15 @@ describe('Tarot Engine', () => {
       seed,
     })
     // Same seed should produce same cards
-    expect((data1 as any).result.positions[0].card.id).toBe((data2 as any).result.positions[0].card.id)
-    expect((data1 as any).result.positions[1].card.id).toBe((data2 as any).result.positions[1].card.id)
-    expect((data1 as any).result.positions[2].card.id).toBe((data2 as any).result.positions[2].card.id)
+    expect((data1 as any).result.positions[0].card.id).toBe(
+      (data2 as any).result.positions[0].card.id,
+    )
+    expect((data1 as any).result.positions[1].card.id).toBe(
+      (data2 as any).result.positions[1].card.id,
+    )
+    expect((data1 as any).result.positions[2].card.id).toBe(
+      (data2 as any).result.positions[2].card.id,
+    )
   })
 
   it('witness prompts are non-empty', async () => {

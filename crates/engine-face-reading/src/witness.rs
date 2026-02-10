@@ -44,10 +44,7 @@ pub fn generate_witness_prompts(
 }
 
 /// Generate a single witness prompt (for engine output)
-pub fn generate_single_witness_prompt(
-    analysis: &FaceAnalysis,
-    consciousness_level: u8,
-) -> String {
+pub fn generate_single_witness_prompt(analysis: &FaceAnalysis, consciousness_level: u8) -> String {
     let prompts = generate_witness_prompts(analysis, consciousness_level, None);
     prompts.into_iter().next().unwrap_or_else(|| {
         "What do you notice when you look at your reflection with curiosity rather than judgment?".to_string()
@@ -158,7 +155,8 @@ fn generate_integration_prompts(analysis: &FaceAnalysis, rng: &mut ChaCha8Rng) -
 
     // Body-mind connection
     prompts.push(
-        "What connection do you notice between how your face feels and your current state of mind?".to_string()
+        "What connection do you notice between how your face feels and your current state of mind?"
+            .to_string(),
     );
 
     prompts
@@ -184,11 +182,19 @@ mod tests {
     #[test]
     fn test_generate_witness_prompts_count() {
         let analysis = generate_mock_analysis(Some(42));
-        
+
         for level in 0..=6 {
             let prompts = generate_witness_prompts(&analysis, level, Some(42));
-            assert!(prompts.len() >= 3, "Level {} should have at least 3 prompts", level);
-            assert!(prompts.len() <= 4, "Level {} should have at most 4 prompts", level);
+            assert!(
+                prompts.len() >= 3,
+                "Level {} should have at least 3 prompts",
+                level
+            );
+            assert!(
+                prompts.len() <= 4,
+                "Level {} should have at most 4 prompts",
+                level
+            );
         }
     }
 
@@ -196,9 +202,13 @@ mod tests {
     fn test_prompts_are_questions() {
         let analysis = generate_mock_analysis(Some(123));
         let prompts = generate_witness_prompts(&analysis, 3, Some(123));
-        
+
         for prompt in &prompts {
-            assert!(prompt.contains('?'), "Prompt should be a question: {}", prompt);
+            assert!(
+                prompt.contains('?'),
+                "Prompt should be a question: {}",
+                prompt
+            );
         }
     }
 
@@ -206,7 +216,7 @@ mod tests {
     fn test_single_witness_prompt() {
         let analysis = generate_mock_analysis(Some(999));
         let prompt = generate_single_witness_prompt(&analysis, 3);
-        
+
         assert!(!prompt.is_empty());
         assert!(prompt.contains('?'));
     }
@@ -214,33 +224,53 @@ mod tests {
     #[test]
     fn test_level_appropriate_content() {
         let analysis = generate_mock_analysis(Some(42));
-        
+
         // Foundational level should mention observation
         let low_prompts = generate_witness_prompts(&analysis, 1, Some(42));
-        let has_basic_observation = low_prompts.iter().any(|p| 
-            p.contains("notice") || p.contains("observe") || p.contains("look")
+        let has_basic_observation = low_prompts
+            .iter()
+            .any(|p| p.contains("notice") || p.contains("observe") || p.contains("look"));
+        assert!(
+            has_basic_observation,
+            "Low level should have observation prompts"
         );
-        assert!(has_basic_observation, "Low level should have observation prompts");
-        
+
         // High level should have transcendent content
         let high_prompts = generate_witness_prompts(&analysis, 6, Some(42));
-        let has_transcendent = high_prompts.iter().any(|p| 
-            p.contains("essence") || p.contains("journey") || 
-            p.contains("wisdom") || p.contains("compassion")
+        let has_transcendent = high_prompts.iter().any(|p| {
+            p.contains("essence")
+                || p.contains("journey")
+                || p.contains("wisdom")
+                || p.contains("compassion")
+        });
+        assert!(
+            has_transcendent,
+            "High level should have transcendent prompts"
         );
-        assert!(has_transcendent, "High level should have transcendent prompts");
     }
 
     #[test]
     fn test_prompts_non_prescriptive() {
         let analysis = generate_mock_analysis(Some(42));
         let prompts = generate_witness_prompts(&analysis, 3, Some(42));
-        
+
         for prompt in &prompts {
             // Should not contain diagnostic language
-            assert!(!prompt.contains("you have"), "Prompt should not diagnose: {}", prompt);
-            assert!(!prompt.contains("you should"), "Prompt should not prescribe: {}", prompt);
-            assert!(!prompt.contains("you must"), "Prompt should not command: {}", prompt);
+            assert!(
+                !prompt.contains("you have"),
+                "Prompt should not diagnose: {}",
+                prompt
+            );
+            assert!(
+                !prompt.contains("you should"),
+                "Prompt should not prescribe: {}",
+                prompt
+            );
+            assert!(
+                !prompt.contains("you must"),
+                "Prompt should not command: {}",
+                prompt
+            );
         }
     }
 
@@ -248,16 +278,27 @@ mod tests {
     fn test_prompts_reference_analysis() {
         let analysis = generate_mock_analysis(Some(42));
         let prompts = generate_witness_prompts(&analysis, 3, Some(42));
-        
+
         // At least one prompt should reference specific analysis elements
-        let dosha_name = analysis.constitution.primary_dosha.display_name().to_lowercase();
-        let element_name = analysis.constitution.tcm_element.display_name().to_lowercase();
-        
+        let dosha_name = analysis
+            .constitution
+            .primary_dosha
+            .display_name()
+            .to_lowercase();
+        let element_name = analysis
+            .constitution
+            .tcm_element
+            .display_name()
+            .to_lowercase();
+
         let references_analysis = prompts.iter().any(|p| {
             let lower = p.to_lowercase();
             lower.contains(&dosha_name) || lower.contains(&element_name)
         });
-        
-        assert!(references_analysis, "At least one prompt should reference the analysis");
+
+        assert!(
+            references_analysis,
+            "At least one prompt should reference the analysis"
+        );
     }
 }

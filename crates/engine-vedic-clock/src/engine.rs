@@ -6,8 +6,8 @@
 use async_trait::async_trait;
 use chrono::Utc;
 use noesis_core::{
-    ConsciousnessEngine, EngineError, EngineInput, EngineOutput, ValidationResult,
-    CalculationMetadata,
+    CalculationMetadata, ConsciousnessEngine, EngineError, EngineInput, EngineOutput,
+    ValidationResult,
 };
 use serde_json::{json, Value};
 use std::time::Instant;
@@ -15,7 +15,7 @@ use std::time::Instant;
 use crate::calculator::{get_current_organ, get_local_hour};
 use crate::dosha::get_dosha_for_hour;
 use crate::integration::{get_temporal_recommendation, synthesize_organ_dosha};
-use crate::models::{Activity, VedicClockResult, UpcomingTransition};
+use crate::models::{Activity, UpcomingTransition, VedicClockResult};
 use crate::recommendations::{get_optimal_timing, is_favorable_now};
 use crate::witness::generate_witness_prompt;
 
@@ -37,7 +37,8 @@ impl VedicClockEngine {
     /// Extract timezone offset from input options
     /// Defaults to 0 (UTC) if not provided
     fn get_timezone_offset(options: &std::collections::HashMap<String, Value>) -> i32 {
-        options.get("timezone_offset")
+        options
+            .get("timezone_offset")
             .and_then(|v| v.as_i64())
             .map(|v| v as i32)
             .unwrap_or(0)
@@ -45,7 +46,8 @@ impl VedicClockEngine {
 
     /// Extract optional activity from input options
     fn get_activity(options: &std::collections::HashMap<String, Value>) -> Option<Activity> {
-        options.get("activity")
+        options
+            .get("activity")
             .and_then(|v| v.as_str())
             .and_then(|s| match s.to_lowercase().as_str() {
                 "meditation" => Some(Activity::Meditation),
@@ -60,11 +62,15 @@ impl VedicClockEngine {
     }
 
     /// Extract optional Panchanga indices from options
-    fn get_panchanga_indices(options: &std::collections::HashMap<String, Value>) -> (Option<u8>, Option<u8>) {
-        let tithi = options.get("tithi_index")
+    fn get_panchanga_indices(
+        options: &std::collections::HashMap<String, Value>,
+    ) -> (Option<u8>, Option<u8>) {
+        let tithi = options
+            .get("tithi_index")
             .and_then(|v| v.as_u64())
             .map(|v| v as u8);
-        let nakshatra = options.get("nakshatra_index")
+        let nakshatra = options
+            .get("nakshatra_index")
             .and_then(|v| v.as_u64())
             .map(|v| v as u8);
         (tithi, nakshatra)
@@ -106,7 +112,7 @@ impl VedicClockEngine {
         if let Some(activity) = activity {
             let optimal_times = get_optimal_timing(activity, datetime, timezone_offset);
             let (is_favorable, reason) = is_favorable_now(activity, datetime, timezone_offset);
-            
+
             output["activity_timing"] = json!({
                 "activity": activity.display_name(),
                 "is_favorable_now": is_favorable,
@@ -140,7 +146,7 @@ impl VedicClockEngine {
         // Look ahead 6 hours for transitions
         for offset in 1..=6 {
             let future_hour = (current_hour as u32 + offset as u32) % 24;
-            
+
             // Check if this is an organ transition (odd hours: 1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23)
             if future_hour % 2 == 1 {
                 let new_organ = crate::wisdom::get_organ_for_hour(future_hour as u8);
@@ -205,12 +211,8 @@ impl ConsciousnessEngine for VedicClockEngine {
         let current_dosha = get_dosha_for_hour(local_hour);
 
         // Get temporal recommendation
-        let recommendation = get_temporal_recommendation(
-            datetime,
-            timezone_offset,
-            tithi,
-            nakshatra,
-        );
+        let recommendation =
+            get_temporal_recommendation(datetime, timezone_offset, tithi, nakshatra);
 
         // Get upcoming transitions
         let upcoming = Some(Self::get_upcoming_transitions(datetime, timezone_offset));
@@ -225,7 +227,9 @@ impl ConsciousnessEngine for VedicClockEngine {
         };
 
         // Generate witness prompt
-        let consciousness_level = input.options.get("consciousness_level")
+        let consciousness_level = input
+            .options
+            .get("consciousness_level")
             .and_then(|v| v.as_u64())
             .map(|v| v as u8)
             .unwrap_or(2);
@@ -239,7 +243,7 @@ impl ConsciousnessEngine for VedicClockEngine {
         // Ensure witness prompt is non-empty
         if witness_prompt.is_empty() {
             return Err(EngineError::CalculationError(
-                "Witness prompt generation failed: empty result".to_string()
+                "Witness prompt generation failed: empty result".to_string(),
             ));
         }
 
@@ -316,11 +320,7 @@ impl ConsciousnessEngine for VedicClockEngine {
 
         format!(
             "vedic-clock:h{}:tz{}:a{:?}:t{:?}:n{:?}",
-            hour_bucket,
-            timezone_offset,
-            activity,
-            tithi,
-            nakshatra
+            hour_bucket, timezone_offset, activity, tithi, nakshatra
         )
     }
 }
@@ -328,8 +328,8 @@ impl ConsciousnessEngine for VedicClockEngine {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::collections::HashMap;
     use noesis_core::Precision;
+    use std::collections::HashMap;
 
     fn create_test_input() -> EngineInput {
         let mut options = HashMap::new();
@@ -429,7 +429,7 @@ mod tests {
 
         let output = EngineOutput {
             engine_id: "vedic-clock".to_string(),
-            result: json!({}), // Missing fields
+            result: json!({}),              // Missing fields
             witness_prompt: "".to_string(), // Empty
             consciousness_level: 2,
             metadata: CalculationMetadata {
@@ -472,9 +472,15 @@ mod tests {
         assert!(VedicClockEngine::get_activity(&options).is_none());
 
         options.insert("activity".to_string(), json!("meditation"));
-        assert_eq!(VedicClockEngine::get_activity(&options), Some(Activity::Meditation));
+        assert_eq!(
+            VedicClockEngine::get_activity(&options),
+            Some(Activity::Meditation)
+        );
 
         options.insert("activity".to_string(), json!("EXERCISE"));
-        assert_eq!(VedicClockEngine::get_activity(&options), Some(Activity::Exercise));
+        assert_eq!(
+            VedicClockEngine::get_activity(&options),
+            Some(Activity::Exercise)
+        );
     }
 }

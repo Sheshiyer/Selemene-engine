@@ -1,7 +1,7 @@
 //! Request/response logging helpers for FreeAstrologyAPI.com
 
-use std::time::Duration;
 use reqwest::{Method, StatusCode};
+use std::time::Duration;
 use tracing::{debug, info, warn};
 
 pub fn log_request(method: &Method, url: &str, masked_key: &str) {

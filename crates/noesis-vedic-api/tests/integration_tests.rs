@@ -7,14 +7,11 @@
 //! - Rate limiter interaction
 //! - Parallel-safe isolated test execution
 
-use wiremock::{Mock, MockServer, ResponseTemplate};
 use wiremock::matchers::{method, path};
+use wiremock::{Mock, MockServer, ResponseTemplate};
 
-use noesis_vedic_api::{
-    Config, CachedVedicClient, VedicApiService, VedicApiError,
-    mocks,
-};
 use noesis_vedic_api::dasha::DashaLevel;
+use noesis_vedic_api::{mocks, CachedVedicClient, Config, VedicApiError, VedicApiService};
 
 // ===========================================================================
 // Test helpers
@@ -44,9 +41,7 @@ mod panchang_tests {
 
         Mock::given(method("POST"))
             .and(path("/panchang"))
-            .respond_with(
-                ResponseTemplate::new(200).set_body_json(mocks::mock_panchang()),
-            )
+            .respond_with(ResponseTemplate::new(200).set_body_json(mocks::mock_panchang()))
             .expect(1)
             .mount(&server)
             .await;
@@ -56,7 +51,11 @@ mod panchang_tests {
             .panchang(2024, 1, 15, 12, 0, 0, 12.9716, 77.5946, 5.5)
             .await;
 
-        assert!(result.is_ok(), "Panchang fetch should succeed: {:?}", result.err());
+        assert!(
+            result.is_ok(),
+            "Panchang fetch should succeed: {:?}",
+            result.err()
+        );
         let panchang = result.unwrap();
         assert_eq!(panchang.date.year, 2024);
         assert_eq!(panchang.tithi.name(), "Panchami");
@@ -69,9 +68,7 @@ mod panchang_tests {
 
         Mock::given(method("POST"))
             .and(path("/panchang"))
-            .respond_with(
-                ResponseTemplate::new(200).set_body_json(mocks::mock_panchang()),
-            )
+            .respond_with(ResponseTemplate::new(200).set_body_json(mocks::mock_panchang()))
             .expect(1) // Only ONE request should reach the server
             .mount(&server)
             .await;
@@ -103,9 +100,7 @@ mod panchang_tests {
 
         Mock::given(method("POST"))
             .and(path("/panchang"))
-            .respond_with(
-                ResponseTemplate::new(200).set_body_json(mocks::mock_panchang()),
-            )
+            .respond_with(ResponseTemplate::new(200).set_body_json(mocks::mock_panchang()))
             .expect(2) // Two distinct dates -> two API calls
             .mount(&server)
             .await;
@@ -133,9 +128,10 @@ mod panchang_tests {
 
         Mock::given(method("POST"))
             .and(path("/panchang"))
-            .respond_with(ResponseTemplate::new(500).set_body_string(
-                mocks::mock_error_json(500, "Internal server error"),
-            ))
+            .respond_with(
+                ResponseTemplate::new(500)
+                    .set_body_string(mocks::mock_error_json(500, "Internal server error")),
+            )
             .mount(&server)
             .await;
 
@@ -160,9 +156,7 @@ mod panchang_tests {
 
         Mock::given(method("POST"))
             .and(path("/panchang"))
-            .respond_with(
-                ResponseTemplate::new(401).set_body_string("Unauthorized"),
-            )
+            .respond_with(ResponseTemplate::new(401).set_body_string("Unauthorized"))
             .mount(&server)
             .await;
 
@@ -186,9 +180,7 @@ mod panchang_tests {
 
         Mock::given(method("POST"))
             .and(path("/panchang"))
-            .respond_with(
-                ResponseTemplate::new(429).set_body_string("Too many requests"),
-            )
+            .respond_with(ResponseTemplate::new(429).set_body_string("Too many requests"))
             .mount(&server)
             .await;
 
@@ -218,20 +210,32 @@ mod dasha_tests {
 
         Mock::given(method("POST"))
             .and(path("/vimshottari-dasha"))
-            .respond_with(
-                ResponseTemplate::new(200)
-                    .set_body_json(mocks::mock_vimshottari_dasha()),
-            )
+            .respond_with(ResponseTemplate::new(200).set_body_json(mocks::mock_vimshottari_dasha()))
             .expect(1)
             .mount(&server)
             .await;
 
         let service = test_service(&server.uri());
         let result = service
-            .vimshottari_dasha(1991, 8, 13, 13, 31, 0, 12.9716, 77.5946, 5.5, DashaLevel::Mahadasha)
+            .vimshottari_dasha(
+                1991,
+                8,
+                13,
+                13,
+                31,
+                0,
+                12.9716,
+                77.5946,
+                5.5,
+                DashaLevel::Mahadasha,
+            )
             .await;
 
-        assert!(result.is_ok(), "Dasha fetch should succeed: {:?}", result.err());
+        assert!(
+            result.is_ok(),
+            "Dasha fetch should succeed: {:?}",
+            result.err()
+        );
         let dasha = result.unwrap();
         assert_eq!(dasha.moon_nakshatra, "Pushya");
         assert!(!dasha.mahadashas.is_empty());
@@ -243,10 +247,7 @@ mod dasha_tests {
 
         Mock::given(method("POST"))
             .and(path("/vimshottari-dasha"))
-            .respond_with(
-                ResponseTemplate::new(200)
-                    .set_body_json(mocks::mock_vimshottari_dasha()),
-            )
+            .respond_with(ResponseTemplate::new(200).set_body_json(mocks::mock_vimshottari_dasha()))
             .expect(1)
             .mount(&server)
             .await;
@@ -255,13 +256,35 @@ mod dasha_tests {
 
         // First call: cache miss
         let r1 = client
-            .get_vimshottari_dasha(1991, 8, 13, 13, 31, 0, 12.9716, 77.5946, 5.5, DashaLevel::Mahadasha)
+            .get_vimshottari_dasha(
+                1991,
+                8,
+                13,
+                13,
+                31,
+                0,
+                12.9716,
+                77.5946,
+                5.5,
+                DashaLevel::Mahadasha,
+            )
             .await;
         assert!(r1.is_ok());
 
         // Second call: cache hit (same birth data + level)
         let r2 = client
-            .get_vimshottari_dasha(1991, 8, 13, 13, 31, 0, 12.9716, 77.5946, 5.5, DashaLevel::Mahadasha)
+            .get_vimshottari_dasha(
+                1991,
+                8,
+                13,
+                13,
+                31,
+                0,
+                12.9716,
+                77.5946,
+                5.5,
+                DashaLevel::Mahadasha,
+            )
             .await;
         assert!(r2.is_ok());
 
@@ -276,10 +299,7 @@ mod dasha_tests {
 
         Mock::given(method("POST"))
             .and(path("/vimshottari-dasha"))
-            .respond_with(
-                ResponseTemplate::new(200)
-                    .set_body_json(mocks::mock_vimshottari_dasha()),
-            )
+            .respond_with(ResponseTemplate::new(200).set_body_json(mocks::mock_vimshottari_dasha()))
             .expect(2)
             .mount(&server)
             .await;
@@ -287,11 +307,33 @@ mod dasha_tests {
         let client = test_client(&server.uri());
 
         let _ = client
-            .get_vimshottari_dasha(1991, 8, 13, 13, 31, 0, 12.9716, 77.5946, 5.5, DashaLevel::Mahadasha)
+            .get_vimshottari_dasha(
+                1991,
+                8,
+                13,
+                13,
+                31,
+                0,
+                12.9716,
+                77.5946,
+                5.5,
+                DashaLevel::Mahadasha,
+            )
             .await;
 
         let _ = client
-            .get_vimshottari_dasha(1991, 8, 13, 13, 31, 0, 12.9716, 77.5946, 5.5, DashaLevel::Antardasha)
+            .get_vimshottari_dasha(
+                1991,
+                8,
+                13,
+                13,
+                31,
+                0,
+                12.9716,
+                77.5946,
+                5.5,
+                DashaLevel::Antardasha,
+            )
             .await;
 
         let stats = client.cache_stats().await;
@@ -304,15 +346,24 @@ mod dasha_tests {
 
         Mock::given(method("POST"))
             .and(path("/vimshottari-dasha"))
-            .respond_with(
-                ResponseTemplate::new(500).set_body_string("Server error"),
-            )
+            .respond_with(ResponseTemplate::new(500).set_body_string("Server error"))
             .mount(&server)
             .await;
 
         let service = test_service(&server.uri());
         let result = service
-            .vimshottari_dasha(1991, 8, 13, 13, 31, 0, 12.9716, 77.5946, 5.5, DashaLevel::Mahadasha)
+            .vimshottari_dasha(
+                1991,
+                8,
+                13,
+                13,
+                31,
+                0,
+                12.9716,
+                77.5946,
+                5.5,
+                DashaLevel::Mahadasha,
+            )
             .await;
 
         assert!(result.is_err());
@@ -332,10 +383,7 @@ mod birth_chart_tests {
 
         Mock::given(method("POST"))
             .and(path("/horoscope-chart"))
-            .respond_with(
-                ResponseTemplate::new(200)
-                    .set_body_json(mocks::mock_birth_chart()),
-            )
+            .respond_with(ResponseTemplate::new(200).set_body_json(mocks::mock_birth_chart()))
             .expect(1)
             .mount(&server)
             .await;
@@ -345,7 +393,11 @@ mod birth_chart_tests {
             .birth_chart(1991, 8, 13, 13, 31, 0, 12.9716, 77.5946, 5.5)
             .await;
 
-        assert!(result.is_ok(), "Birth chart fetch should succeed: {:?}", result.err());
+        assert!(
+            result.is_ok(),
+            "Birth chart fetch should succeed: {:?}",
+            result.err()
+        );
         let chart = result.unwrap();
         assert_eq!(chart.ascendant.sign.as_str(), "Aries");
         assert!(!chart.planets.is_empty());
@@ -358,10 +410,7 @@ mod birth_chart_tests {
 
         Mock::given(method("POST"))
             .and(path("/horoscope-chart"))
-            .respond_with(
-                ResponseTemplate::new(200)
-                    .set_body_json(mocks::mock_birth_chart()),
-            )
+            .respond_with(ResponseTemplate::new(200).set_body_json(mocks::mock_birth_chart()))
             .expect(1)
             .mount(&server)
             .await;
@@ -419,10 +468,7 @@ mod navamsa_tests {
 
         Mock::given(method("POST"))
             .and(path("/navamsa-chart"))
-            .respond_with(
-                ResponseTemplate::new(200)
-                    .set_body_json(mocks::mock_navamsa_chart()),
-            )
+            .respond_with(ResponseTemplate::new(200).set_body_json(mocks::mock_navamsa_chart()))
             .expect(1)
             .mount(&server)
             .await;
@@ -432,7 +478,11 @@ mod navamsa_tests {
             .navamsa_chart(1991, 8, 13, 13, 31, 0, 12.9716, 77.5946, 5.5)
             .await;
 
-        assert!(result.is_ok(), "Navamsa chart should succeed: {:?}", result.err());
+        assert!(
+            result.is_ok(),
+            "Navamsa chart should succeed: {:?}",
+            result.err()
+        );
         let chart = result.unwrap();
         assert_eq!(chart.d9_lagna.as_str(), "Sagittarius");
         assert!(!chart.navamsa_positions.is_empty());
@@ -470,9 +520,7 @@ mod cache_behavior_tests {
 
         Mock::given(method("POST"))
             .and(path("/panchang"))
-            .respond_with(
-                ResponseTemplate::new(200).set_body_json(mocks::mock_panchang()),
-            )
+            .respond_with(ResponseTemplate::new(200).set_body_json(mocks::mock_panchang()))
             .expect(2) // Two separate clients, two API calls
             .mount(&server)
             .await;
@@ -504,47 +552,76 @@ mod cache_behavior_tests {
 
         Mock::given(method("POST"))
             .and(path("/panchang"))
-            .respond_with(
-                ResponseTemplate::new(200).set_body_json(mocks::mock_panchang()),
-            )
+            .respond_with(ResponseTemplate::new(200).set_body_json(mocks::mock_panchang()))
             .mount(&server)
             .await;
 
         Mock::given(method("POST"))
             .and(path("/vimshottari-dasha"))
-            .respond_with(
-                ResponseTemplate::new(200)
-                    .set_body_json(mocks::mock_vimshottari_dasha()),
-            )
+            .respond_with(ResponseTemplate::new(200).set_body_json(mocks::mock_vimshottari_dasha()))
             .mount(&server)
             .await;
 
         Mock::given(method("POST"))
             .and(path("/horoscope-chart"))
-            .respond_with(
-                ResponseTemplate::new(200)
-                    .set_body_json(mocks::mock_birth_chart()),
-            )
+            .respond_with(ResponseTemplate::new(200).set_body_json(mocks::mock_birth_chart()))
             .mount(&server)
             .await;
 
         let client = test_client(&server.uri());
 
         // Miss x3
-        let _ = client.get_panchang(2024, 1, 15, 12, 0, 0, 12.9716, 77.5946, 5.5).await;
-        let _ = client.get_vimshottari_dasha(1991, 8, 13, 13, 31, 0, 12.9716, 77.5946, 5.5, DashaLevel::Mahadasha).await;
-        let _ = client.get_birth_chart(1991, 8, 13, 13, 31, 0, 12.9716, 77.5946, 5.5).await;
+        let _ = client
+            .get_panchang(2024, 1, 15, 12, 0, 0, 12.9716, 77.5946, 5.5)
+            .await;
+        let _ = client
+            .get_vimshottari_dasha(
+                1991,
+                8,
+                13,
+                13,
+                31,
+                0,
+                12.9716,
+                77.5946,
+                5.5,
+                DashaLevel::Mahadasha,
+            )
+            .await;
+        let _ = client
+            .get_birth_chart(1991, 8, 13, 13, 31, 0, 12.9716, 77.5946, 5.5)
+            .await;
 
         // Hit x3
-        let _ = client.get_panchang(2024, 1, 15, 14, 0, 0, 12.9716, 77.5946, 5.5).await;
-        let _ = client.get_vimshottari_dasha(1991, 8, 13, 13, 31, 0, 12.9716, 77.5946, 5.5, DashaLevel::Mahadasha).await;
-        let _ = client.get_birth_chart(1991, 8, 13, 13, 31, 0, 12.9716, 77.5946, 5.5).await;
+        let _ = client
+            .get_panchang(2024, 1, 15, 14, 0, 0, 12.9716, 77.5946, 5.5)
+            .await;
+        let _ = client
+            .get_vimshottari_dasha(
+                1991,
+                8,
+                13,
+                13,
+                31,
+                0,
+                12.9716,
+                77.5946,
+                5.5,
+                DashaLevel::Mahadasha,
+            )
+            .await;
+        let _ = client
+            .get_birth_chart(1991, 8, 13, 13, 31, 0, 12.9716, 77.5946, 5.5)
+            .await;
 
         let stats = client.cache_stats().await;
         assert_eq!(stats.misses, 3, "Should have 3 misses");
         assert_eq!(stats.hits, 3, "Should have 3 hits");
         assert_eq!(stats.total, 6);
-        assert!((stats.hit_rate - 50.0).abs() < 0.1, "Hit rate should be 50%");
+        assert!(
+            (stats.hit_rate - 50.0).abs() < 0.1,
+            "Hit rate should be 50%"
+        );
         assert_eq!(stats.panchang_entries, 1);
         assert_eq!(stats.dasha_entries, 1);
         assert_eq!(stats.birth_chart_entries, 1);
@@ -556,20 +633,23 @@ mod cache_behavior_tests {
 
         Mock::given(method("POST"))
             .and(path("/panchang"))
-            .respond_with(
-                ResponseTemplate::new(200).set_body_json(mocks::mock_panchang()),
-            )
+            .respond_with(ResponseTemplate::new(200).set_body_json(mocks::mock_panchang()))
             .mount(&server)
             .await;
 
         let client1 = test_client(&server.uri());
         let client2 = test_client(&server.uri());
 
-        let _ = client1.get_panchang(2024, 1, 15, 12, 0, 0, 12.9716, 77.5946, 5.5).await;
+        let _ = client1
+            .get_panchang(2024, 1, 15, 12, 0, 0, 12.9716, 77.5946, 5.5)
+            .await;
 
         // Client2 should not see Client1's cache
         let stats2 = client2.cache_stats().await;
-        assert_eq!(stats2.panchang_entries, 0, "Client2 should have empty cache");
+        assert_eq!(
+            stats2.panchang_entries, 0,
+            "Client2 should have empty cache"
+        );
     }
 }
 
@@ -648,29 +728,73 @@ mod error_handling_tests {
 
     #[test]
     fn test_error_retryable_classification() {
-        assert!(VedicApiError::Network { message: "timeout".to_string() }.is_retryable());
+        assert!(VedicApiError::Network {
+            message: "timeout".to_string()
+        }
+        .is_retryable());
         assert!(VedicApiError::RateLimit { retry_after: None }.is_retryable());
-        assert!(VedicApiError::Api { status_code: 502, message: "bad gw".to_string() }.is_retryable());
-        assert!(!VedicApiError::Api { status_code: 400, message: "bad req".to_string() }.is_retryable());
-        assert!(!VedicApiError::Configuration { field: "k".to_string(), message: "m".to_string() }.is_retryable());
-        assert!(!VedicApiError::Parse { message: "bad json".to_string() }.is_retryable());
+        assert!(VedicApiError::Api {
+            status_code: 502,
+            message: "bad gw".to_string()
+        }
+        .is_retryable());
+        assert!(!VedicApiError::Api {
+            status_code: 400,
+            message: "bad req".to_string()
+        }
+        .is_retryable());
+        assert!(!VedicApiError::Configuration {
+            field: "k".to_string(),
+            message: "m".to_string()
+        }
+        .is_retryable());
+        assert!(!VedicApiError::Parse {
+            message: "bad json".to_string()
+        }
+        .is_retryable());
     }
 
     #[test]
     fn test_error_fallback_classification() {
-        assert!(VedicApiError::Network { message: "timeout".to_string() }.should_fallback());
+        assert!(VedicApiError::Network {
+            message: "timeout".to_string()
+        }
+        .should_fallback());
         assert!(VedicApiError::CircuitBreakerOpen.should_fallback());
-        assert!(VedicApiError::RateLimit { retry_after: Some(60) }.should_fallback());
-        assert!(VedicApiError::Api { status_code: 503, message: "down".to_string() }.should_fallback());
-        assert!(!VedicApiError::Api { status_code: 400, message: "bad".to_string() }.should_fallback());
-        assert!(!VedicApiError::Configuration { field: "x".to_string(), message: "y".to_string() }.should_fallback());
-        assert!(!VedicApiError::InvalidInput { field: "lat".to_string(), message: "bad".to_string() }.should_fallback());
+        assert!(VedicApiError::RateLimit {
+            retry_after: Some(60)
+        }
+        .should_fallback());
+        assert!(VedicApiError::Api {
+            status_code: 503,
+            message: "down".to_string()
+        }
+        .should_fallback());
+        assert!(!VedicApiError::Api {
+            status_code: 400,
+            message: "bad".to_string()
+        }
+        .should_fallback());
+        assert!(!VedicApiError::Configuration {
+            field: "x".to_string(),
+            message: "y".to_string()
+        }
+        .should_fallback());
+        assert!(!VedicApiError::InvalidInput {
+            field: "lat".to_string(),
+            message: "bad".to_string()
+        }
+        .should_fallback());
     }
 
     #[test]
     fn test_error_status_code() {
         assert_eq!(
-            VedicApiError::Api { status_code: 404, message: "not found".to_string() }.status_code(),
+            VedicApiError::Api {
+                status_code: 404,
+                message: "not found".to_string()
+            }
+            .status_code(),
             Some(404)
         );
         assert_eq!(
@@ -678,7 +802,10 @@ mod error_handling_tests {
             Some(429)
         );
         assert_eq!(
-            VedicApiError::Network { message: "timeout".to_string() }.status_code(),
+            VedicApiError::Network {
+                message: "timeout".to_string()
+            }
+            .status_code(),
             None
         );
     }
@@ -697,7 +824,9 @@ mod error_handling_tests {
     #[test]
     fn test_fallback_error_chains_display() {
         let err = VedicApiError::FallbackFailed {
-            api_error: Box::new(VedicApiError::RateLimit { retry_after: Some(3600) }),
+            api_error: Box::new(VedicApiError::RateLimit {
+                retry_after: Some(3600),
+            }),
             native_error: "Not implemented".to_string(),
         };
         let display = format!("{}", err);
@@ -756,9 +885,7 @@ mod service_wrapper_tests {
 
         Mock::given(method("POST"))
             .and(path("/panchang"))
-            .respond_with(
-                ResponseTemplate::new(200).set_body_json(mocks::mock_panchang()),
-            )
+            .respond_with(ResponseTemplate::new(200).set_body_json(mocks::mock_panchang()))
             .expect(1)
             .mount(&server)
             .await;
@@ -776,10 +903,7 @@ mod service_wrapper_tests {
 
         Mock::given(method("POST"))
             .and(path("/horoscope-chart"))
-            .respond_with(
-                ResponseTemplate::new(200)
-                    .set_body_json(mocks::mock_birth_chart()),
-            )
+            .respond_with(ResponseTemplate::new(200).set_body_json(mocks::mock_birth_chart()))
             .expect(1)
             .mount(&server)
             .await;
@@ -797,10 +921,7 @@ mod service_wrapper_tests {
 
         Mock::given(method("POST"))
             .and(path("/navamsa-chart"))
-            .respond_with(
-                ResponseTemplate::new(200)
-                    .set_body_json(mocks::mock_navamsa_chart()),
-            )
+            .respond_with(ResponseTemplate::new(200).set_body_json(mocks::mock_navamsa_chart()))
             .expect(1)
             .mount(&server)
             .await;
@@ -818,17 +939,25 @@ mod service_wrapper_tests {
 
         Mock::given(method("POST"))
             .and(path("/vimshottari-dasha"))
-            .respond_with(
-                ResponseTemplate::new(200)
-                    .set_body_json(mocks::mock_vimshottari_dasha()),
-            )
+            .respond_with(ResponseTemplate::new(200).set_body_json(mocks::mock_vimshottari_dasha()))
             .expect(1)
             .mount(&server)
             .await;
 
         let service = test_service(&server.uri());
         let result = service
-            .vimshottari_dasha(1991, 8, 13, 13, 31, 0, 12.9716, 77.5946, 5.5, DashaLevel::Mahadasha)
+            .vimshottari_dasha(
+                1991,
+                8,
+                13,
+                13,
+                31,
+                0,
+                12.9716,
+                77.5946,
+                5.5,
+                DashaLevel::Mahadasha,
+            )
             .await;
         assert!(result.is_ok());
     }
@@ -1066,7 +1195,7 @@ mod circuit_breaker_tests {
 // ===========================================================================
 
 mod retry_logic_tests {
-    use noesis_vedic_api::retry::{RetryConfig, is_retryable, with_retry};
+    use noesis_vedic_api::retry::{is_retryable, with_retry, RetryConfig};
     use noesis_vedic_api::VedicApiError;
     use std::sync::atomic::{AtomicU32, Ordering};
     use std::sync::Arc;
@@ -1096,10 +1225,16 @@ mod retry_logic_tests {
     #[test]
     fn test_retryable_error_classification() {
         // Retryable errors
-        assert!(is_retryable(&VedicApiError::NetworkError("timeout".to_string())));
+        assert!(is_retryable(&VedicApiError::NetworkError(
+            "timeout".to_string()
+        )));
         assert!(is_retryable(&VedicApiError::Timeout("slow".to_string())));
-        assert!(is_retryable(&VedicApiError::RateLimited { retry_after_seconds: Some(60) }));
-        assert!(is_retryable(&VedicApiError::ServiceUnavailable("503".to_string())));
+        assert!(is_retryable(&VedicApiError::RateLimited {
+            retry_after_seconds: Some(60)
+        }));
+        assert!(is_retryable(&VedicApiError::ServiceUnavailable(
+            "503".to_string()
+        )));
 
         // Non-retryable errors
         assert!(!is_retryable(&VedicApiError::InvalidInput {
@@ -1118,10 +1253,7 @@ mod retry_logic_tests {
     #[tokio::test]
     async fn test_retry_succeeds_on_first_try() {
         let config = RetryConfig::quick();
-        let result = with_retry(&config, || async {
-            Ok::<_, VedicApiError>(42)
-        })
-        .await;
+        let result = with_retry(&config, || async { Ok::<_, VedicApiError>(42) }).await;
         assert_eq!(result.unwrap(), 42);
     }
 
@@ -1137,7 +1269,9 @@ mod retry_logic_tests {
                 let n = a.fetch_add(1, Ordering::SeqCst);
                 if n < 2 {
                     // Use the struct variant Network{} which is matched by is_retryable()
-                    Err(VedicApiError::Network { message: "transient".to_string() })
+                    Err(VedicApiError::Network {
+                        message: "transient".to_string(),
+                    })
                 } else {
                     Ok(99)
                 }
@@ -1160,7 +1294,9 @@ mod retry_logic_tests {
             async move {
                 a.fetch_add(1, Ordering::SeqCst);
                 // Use the struct variant Network{} which is retryable
-                Err(VedicApiError::Network { message: "persistent".to_string() })
+                Err(VedicApiError::Network {
+                    message: "persistent".to_string(),
+                })
             }
         })
         .await;
@@ -1223,9 +1359,7 @@ mod fallback_service_tests {
 
         Mock::given(method("POST"))
             .and(path("/panchang"))
-            .respond_with(
-                ResponseTemplate::new(200).set_body_json(mocks::mock_panchang()),
-            )
+            .respond_with(ResponseTemplate::new(200).set_body_json(mocks::mock_panchang()))
             .expect(1)
             .mount(&server)
             .await;
@@ -1258,7 +1392,11 @@ mod fallback_service_tests {
             .await;
 
         // Should succeed via native fallback
-        assert!(result.is_ok(), "Fallback should provide data: {:?}", result.err());
+        assert!(
+            result.is_ok(),
+            "Fallback should provide data: {:?}",
+            result.err()
+        );
         let panchang = result.unwrap();
         assert_eq!(panchang.date.year, 2024);
         assert_eq!(panchang.date.month, 1);
@@ -1278,12 +1416,24 @@ mod fallback_service_tests {
         let service = test_service_with_fallback(&server.uri());
         let result = service
             .vimshottari_dasha_with_fallback(
-                1991, 9, 14, 9, 30, 0, 12.9716, 77.5946, 5.5,
+                1991,
+                9,
+                14,
+                9,
+                30,
+                0,
+                12.9716,
+                77.5946,
+                5.5,
                 DashaLevel::Mahadasha,
             )
             .await;
 
-        assert!(result.is_ok(), "Dasha fallback should succeed: {:?}", result.err());
+        assert!(
+            result.is_ok(),
+            "Dasha fallback should succeed: {:?}",
+            result.err()
+        );
         let dasha = result.unwrap();
         assert_eq!(dasha.mahadashas.len(), 9);
     }
@@ -1303,7 +1453,11 @@ mod fallback_service_tests {
             .birth_chart_with_fallback(1991, 9, 14, 9, 30, 0, 12.9716, 77.5946, 5.5)
             .await;
 
-        assert!(result.is_ok(), "Birth chart fallback should succeed: {:?}", result.err());
+        assert!(
+            result.is_ok(),
+            "Birth chart fallback should succeed: {:?}",
+            result.err()
+        );
         let chart = result.unwrap();
         assert_eq!(chart.houses.len(), 12);
         assert!(!chart.planets.is_empty());
@@ -1354,7 +1508,10 @@ mod fallback_service_tests {
             .panchang_with_fallback(2024, 1, 15, 12, 0, 0, 12.9716, 77.5946, 5.5)
             .await;
 
-        assert!(result.is_err(), "Should propagate error when fallback is disabled");
+        assert!(
+            result.is_err(),
+            "Should propagate error when fallback is disabled"
+        );
     }
 }
 
@@ -1364,8 +1521,8 @@ mod fallback_service_tests {
 
 mod metrics_integration_tests {
     use super::*;
-    use std::sync::Arc;
     use noesis_vedic_api::metrics::NoesisMetrics;
+    use std::sync::Arc;
 
     #[tokio::test]
     async fn test_service_records_api_call_metrics() {
@@ -1373,9 +1530,7 @@ mod metrics_integration_tests {
 
         Mock::given(method("POST"))
             .and(path("/panchang"))
-            .respond_with(
-                ResponseTemplate::new(200).set_body_json(mocks::mock_panchang()),
-            )
+            .respond_with(ResponseTemplate::new(200).set_body_json(mocks::mock_panchang()))
             .mount(&server)
             .await;
 
@@ -1429,9 +1584,7 @@ mod metrics_integration_tests {
 
         Mock::given(method("POST"))
             .and(path("/panchang"))
-            .respond_with(
-                ResponseTemplate::new(200).set_body_json(mocks::mock_panchang()),
-            )
+            .respond_with(ResponseTemplate::new(200).set_body_json(mocks::mock_panchang()))
             .mount(&server)
             .await;
 
@@ -1454,9 +1607,7 @@ mod metrics_integration_tests {
 
         Mock::given(method("POST"))
             .and(path("/panchang"))
-            .respond_with(
-                ResponseTemplate::new(200).set_body_json(mocks::mock_panchang()),
-            )
+            .respond_with(ResponseTemplate::new(200).set_body_json(mocks::mock_panchang()))
             .mount(&server)
             .await;
 
@@ -1483,9 +1634,7 @@ mod metrics_integration_tests {
 
         Mock::given(method("POST"))
             .and(path("/panchang"))
-            .respond_with(
-                ResponseTemplate::new(200).set_body_json(mocks::mock_panchang()),
-            )
+            .respond_with(ResponseTemplate::new(200).set_body_json(mocks::mock_panchang()))
             .mount(&server)
             .await;
 
@@ -1504,8 +1653,8 @@ mod metrics_integration_tests {
 // ===========================================================================
 
 mod fallback_calculator_tests {
-    use noesis_vedic_api::fallback::FallbackCalculator;
     use noesis_vedic_api::dasha::DashaLevel;
+    use noesis_vedic_api::fallback::FallbackCalculator;
 
     #[test]
     fn test_fallback_panchang_happy_path() {
@@ -1522,7 +1671,16 @@ mod fallback_calculator_tests {
     fn test_fallback_vimshottari_happy_path() {
         let calc = FallbackCalculator::new(true);
         let result = calc.calculate_vimshottari(
-            1991, 9, 14, 9, 30, 0, 12.97, 77.59, 5.5, DashaLevel::Mahadasha,
+            1991,
+            9,
+            14,
+            9,
+            30,
+            0,
+            12.97,
+            77.59,
+            5.5,
+            DashaLevel::Mahadasha,
         );
         assert!(result.is_ok());
         let d = result.unwrap();
@@ -1533,9 +1691,7 @@ mod fallback_calculator_tests {
     #[test]
     fn test_fallback_birth_chart_happy_path() {
         let calc = FallbackCalculator::new(true);
-        let result = calc.calculate_birth_chart(
-            1991, 9, 14, 9, 30, 0, 12.97, 77.59, 5.5,
-        );
+        let result = calc.calculate_birth_chart(1991, 9, 14, 9, 30, 0, 12.97, 77.59, 5.5);
         assert!(result.is_ok());
         let c = result.unwrap();
         assert_eq!(c.houses.len(), 12);
@@ -1545,9 +1701,15 @@ mod fallback_calculator_tests {
     #[test]
     fn test_fallback_disabled_returns_error() {
         let calc = FallbackCalculator::new(false);
-        assert!(calc.calculate_panchang(2024, 1, 1, 12, 0, 0, 12.97, 77.59, 5.5).is_err());
-        assert!(calc.calculate_vimshottari(1990, 1, 1, 12, 0, 0, 28.0, 77.0, 5.5, DashaLevel::Mahadasha).is_err());
-        assert!(calc.calculate_birth_chart(1990, 1, 1, 12, 0, 0, 28.0, 77.0, 5.5).is_err());
+        assert!(calc
+            .calculate_panchang(2024, 1, 1, 12, 0, 0, 12.97, 77.59, 5.5)
+            .is_err());
+        assert!(calc
+            .calculate_vimshottari(1990, 1, 1, 12, 0, 0, 28.0, 77.0, 5.5, DashaLevel::Mahadasha)
+            .is_err());
+        assert!(calc
+            .calculate_birth_chart(1990, 1, 1, 12, 0, 0, 28.0, 77.0, 5.5)
+            .is_err());
     }
 
     #[test]
@@ -1558,7 +1720,18 @@ mod fallback_calculator_tests {
         let _ = calc.calculate_panchang(2024, 1, 1, 12, 0, 0, 12.97, 77.59, 5.5);
         assert_eq!(calc.invocation_count(), 1);
 
-        let _ = calc.calculate_vimshottari(1990, 1, 1, 12, 0, 0, 28.0, 77.0, 5.5, DashaLevel::Mahadasha);
+        let _ = calc.calculate_vimshottari(
+            1990,
+            1,
+            1,
+            12,
+            0,
+            0,
+            28.0,
+            77.0,
+            5.5,
+            DashaLevel::Mahadasha,
+        );
         assert_eq!(calc.invocation_count(), 2);
 
         calc.reset_count();
@@ -1600,9 +1773,7 @@ mod batch_integration_tests {
 
         Mock::given(method("POST"))
             .and(path("/panchang"))
-            .respond_with(
-                ResponseTemplate::new(200).set_body_json(mocks::mock_panchang()),
-            )
+            .respond_with(ResponseTemplate::new(200).set_body_json(mocks::mock_panchang()))
             .mount(&server)
             .await;
 
@@ -1625,11 +1796,10 @@ mod batch_integration_tests {
 
 #[cfg(any(test, feature = "test-mocks"))]
 mod mock_client_integration_tests {
-    use noesis_vedic_api::test_mocks::{
-        MockApiClient, MockResponses,
-        SHESH_YEAR, SHESH_MONTH, SHESH_DAY,
-    };
     use noesis_vedic_api::chart::ZodiacSign;
+    use noesis_vedic_api::test_mocks::{
+        MockApiClient, MockResponses, SHESH_DAY, SHESH_MONTH, SHESH_YEAR,
+    };
 
     #[test]
     fn test_mock_api_client_panchang() {
@@ -1814,12 +1984,12 @@ mod resilience_chain_tests {
 /// Run with: `cargo test --features real-api -p noesis-vedic-api --test integration_tests real_api_tests`
 #[cfg(feature = "real-api")]
 mod real_api_tests {
-    use noesis_vedic_api::{Config, CachedVedicClient, VedicApiService};
     use noesis_vedic_api::dasha::DashaLevel;
+    use noesis_vedic_api::{CachedVedicClient, Config, VedicApiService};
 
     fn create_real_service() -> VedicApiService {
-        let config = Config::from_env()
-            .expect("FREE_ASTROLOGY_API_KEY must be set for real-api tests");
+        let config =
+            Config::from_env().expect("FREE_ASTROLOGY_API_KEY must be set for real-api tests");
         VedicApiService::new(CachedVedicClient::new(config))
     }
 
@@ -1829,7 +1999,11 @@ mod real_api_tests {
         let result = service
             .panchang(2024, 1, 15, 12, 0, 0, 12.9716, 77.5946, 5.5)
             .await;
-        assert!(result.is_ok(), "Real API panchang should succeed: {:?}", result.err());
+        assert!(
+            result.is_ok(),
+            "Real API panchang should succeed: {:?}",
+            result.err()
+        );
         let p = result.unwrap();
         assert_eq!(p.date.year, 2024);
     }
@@ -1839,11 +2013,23 @@ mod real_api_tests {
         let service = create_real_service();
         let result = service
             .vimshottari_dasha(
-                1991, 9, 14, 9, 30, 0, 12.9716, 77.5946, 5.5,
+                1991,
+                9,
+                14,
+                9,
+                30,
+                0,
+                12.9716,
+                77.5946,
+                5.5,
                 DashaLevel::Mahadasha,
             )
             .await;
-        assert!(result.is_ok(), "Real API dasha should succeed: {:?}", result.err());
+        assert!(
+            result.is_ok(),
+            "Real API dasha should succeed: {:?}",
+            result.err()
+        );
         let d = result.unwrap();
         assert!(!d.mahadashas.is_empty());
     }
@@ -1854,7 +2040,11 @@ mod real_api_tests {
         let result = service
             .birth_chart(1991, 9, 14, 9, 30, 0, 12.9716, 77.5946, 5.5)
             .await;
-        assert!(result.is_ok(), "Real API birth chart should succeed: {:?}", result.err());
+        assert!(
+            result.is_ok(),
+            "Real API birth chart should succeed: {:?}",
+            result.err()
+        );
         let c = result.unwrap();
         assert!(!c.planets.is_empty());
         assert_eq!(c.houses.len(), 12);

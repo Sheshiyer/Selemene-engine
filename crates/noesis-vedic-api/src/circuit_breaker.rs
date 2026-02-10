@@ -57,7 +57,7 @@ pub struct CircuitBreaker {
     success_count: AtomicU32,
     last_failure_time: RwLock<Option<Instant>>,
     opened_at: RwLock<Option<Instant>>,
-    
+
     // Metrics
     total_calls: AtomicU64,
     total_failures: AtomicU64,
@@ -93,9 +93,9 @@ impl CircuitBreaker {
     /// Check if the circuit allows a request to proceed
     pub fn allow_request(&self) -> bool {
         self.total_calls.fetch_add(1, Ordering::Relaxed);
-        
+
         let current_state = *self.state.read().unwrap();
-        
+
         match current_state {
             CircuitState::Closed => true,
             CircuitState::Open => {
@@ -126,7 +126,7 @@ impl CircuitBreaker {
     /// Record a successful call
     pub fn record_success(&self) {
         let current_state = *self.state.read().unwrap();
-        
+
         match current_state {
             CircuitState::Closed => {
                 // Reset failure count on success
@@ -150,13 +150,13 @@ impl CircuitBreaker {
     /// Record a failed call
     pub fn record_failure(&self) {
         self.total_failures.fetch_add(1, Ordering::Relaxed);
-        
+
         let current_state = *self.state.read().unwrap();
         let now = Instant::now();
-        
+
         // Update last failure time
         *self.last_failure_time.write().unwrap() = Some(now);
-        
+
         match current_state {
             CircuitState::Closed => {
                 // Check if we should reset the failure window
@@ -166,7 +166,7 @@ impl CircuitBreaker {
                         return;
                     }
                 }
-                
+
                 let failures = self.failure_count.fetch_add(1, Ordering::Relaxed) + 1;
                 if failures >= self.config.failure_threshold {
                     // Open the circuit
@@ -226,7 +226,7 @@ impl CircuitBreaker {
 
     fn transition_to(&self, new_state: CircuitState) {
         let mut state = self.state.write().unwrap();
-        
+
         match new_state {
             CircuitState::Open => {
                 *self.opened_at.write().unwrap() = Some(Instant::now());
@@ -241,7 +241,7 @@ impl CircuitBreaker {
                 self.success_count.store(0, Ordering::Relaxed);
             }
         }
-        
+
         *state = new_state;
     }
 }
@@ -314,11 +314,11 @@ mod tests {
     #[test]
     fn test_success_resets_failure_count() {
         let cb = CircuitBreaker::with_defaults();
-        
+
         cb.record_failure();
         cb.record_failure();
         cb.record_success();
-        
+
         assert_eq!(cb.failure_count.load(Ordering::Relaxed), 0);
         assert_eq!(cb.state(), CircuitState::Closed);
     }

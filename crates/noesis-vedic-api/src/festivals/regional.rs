@@ -15,9 +15,7 @@ pub fn get_regional_festivals(year: i32, region: &str) -> Vec<Festival> {
         "west" | "west india" | "gujarat" | "maharashtra" | "rajasthan" => {
             get_west_indian_festivals(year)
         }
-        "east" | "east india" | "bengal" | "odisha" | "assam" => {
-            get_east_indian_festivals(year)
-        }
+        "east" | "east india" | "bengal" | "odisha" | "assam" => get_east_indian_festivals(year),
         _ => vec![],
     }
 }
@@ -49,7 +47,11 @@ fn get_south_indian_festivals(year: i32) -> Vec<Festival> {
             date: NaiveDate::from_ymd_opt(year, 4, 9).unwrap(),
             category: FestivalCategory::Regional,
             deity: Some("Brahma".to_string()),
-            regions: vec!["Karnataka".to_string(), "Andhra Pradesh".to_string(), "Telangana".to_string()],
+            regions: vec![
+                "Karnataka".to_string(),
+                "Andhra Pradesh".to_string(),
+                "Telangana".to_string(),
+            ],
             description: "Telugu and Kannada New Year.".to_string(),
             rituals: vec![
                 "Bevu-Bella (neem and jaggery)".to_string(),
@@ -94,7 +96,11 @@ fn get_north_indian_festivals(year: i32) -> Vec<Festival> {
             date: NaiveDate::from_ymd_opt(year, 11, 7).unwrap(),
             category: FestivalCategory::Regional,
             deity: Some("Surya".to_string()),
-            regions: vec!["Bihar".to_string(), "Jharkhand".to_string(), "Eastern UP".to_string()],
+            regions: vec![
+                "Bihar".to_string(),
+                "Jharkhand".to_string(),
+                "Eastern UP".to_string(),
+            ],
             description: "Sun worship festival. Four-day rigorous fasting.".to_string(),
             rituals: vec![
                 "Standing in water".to_string(),
@@ -190,8 +196,13 @@ fn get_east_indian_festivals(year: i32) -> Vec<Festival> {
             date: NaiveDate::from_ymd_opt(year, 10, 10).unwrap(),
             category: FestivalCategory::Regional,
             deity: Some("Durga".to_string()),
-            regions: vec!["Bengal".to_string(), "Odisha".to_string(), "Assam".to_string()],
-            description: "Five-day worship of Goddess Durga. Biggest festival of Bengal.".to_string(),
+            regions: vec![
+                "Bengal".to_string(),
+                "Odisha".to_string(),
+                "Assam".to_string(),
+            ],
+            description: "Five-day worship of Goddess Durga. Biggest festival of Bengal."
+                .to_string(),
             rituals: vec![
                 "Pandal visits".to_string(),
                 "Kumari puja".to_string(),
@@ -238,7 +249,7 @@ mod tests {
         let south = get_regional_festivals(2024, "South India");
         assert!(!south.is_empty());
         assert!(south.iter().any(|f| f.name == "Pongal"));
-        
+
         let north = get_regional_festivals(2024, "North");
         assert!(north.iter().any(|f| f.name == "Chhath Puja"));
     }

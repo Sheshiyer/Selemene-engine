@@ -35,10 +35,10 @@ impl WorkflowTtl {
     /// Get the duration for this TTL type
     pub fn duration(&self) -> Duration {
         match self {
-            Self::Natal => Duration::from_secs(24 * 60 * 60),      // 24 hours
-            Self::Temporal => Duration::from_secs(60 * 60),        // 1 hour
-            Self::Archetypal => Duration::from_secs(15 * 60),      // 15 minutes
-            Self::FullSpectrum => Duration::from_secs(60 * 60),    // 1 hour
+            Self::Natal => Duration::from_secs(24 * 60 * 60), // 24 hours
+            Self::Temporal => Duration::from_secs(60 * 60),   // 1 hour
+            Self::Archetypal => Duration::from_secs(15 * 60), // 15 minutes
+            Self::FullSpectrum => Duration::from_secs(60 * 60), // 1 hour
             Self::Custom(d) => *d,
         }
     }
@@ -113,9 +113,7 @@ impl WorkflowCacheKey {
     pub fn to_string_key(&self) -> String {
         format!(
             "workflow:{}:{}:{}",
-            self.workflow_id,
-            self.input_hash,
-            self.engine_versions
+            self.workflow_id, self.input_hash, self.engine_versions
         )
     }
 }
@@ -385,7 +383,9 @@ mod tests {
         let key = WorkflowCacheKey::new("test-workflow", 12345, "v1");
         let result = mock_result("test-workflow");
 
-        cache.set(key.clone(), result.clone(), Duration::from_secs(60)).await;
+        cache
+            .set(key.clone(), result.clone(), Duration::from_secs(60))
+            .await;
 
         let cached = cache.get(&key).await;
         assert!(cached.is_some());
@@ -399,7 +399,9 @@ mod tests {
         let result = mock_result("test-workflow");
 
         // Set with very short TTL
-        cache.set(key.clone(), result, Duration::from_millis(1)).await;
+        cache
+            .set(key.clone(), result, Duration::from_millis(1))
+            .await;
 
         // Wait for expiration
         tokio::time::sleep(Duration::from_millis(10)).await;
@@ -416,9 +418,27 @@ mod tests {
         let key2 = WorkflowCacheKey::new("birth-blueprint", 222, "v1");
         let key3 = WorkflowCacheKey::new("daily-practice", 333, "v1");
 
-        cache.set(key1.clone(), mock_result("birth-blueprint"), Duration::from_secs(60)).await;
-        cache.set(key2.clone(), mock_result("birth-blueprint"), Duration::from_secs(60)).await;
-        cache.set(key3.clone(), mock_result("daily-practice"), Duration::from_secs(60)).await;
+        cache
+            .set(
+                key1.clone(),
+                mock_result("birth-blueprint"),
+                Duration::from_secs(60),
+            )
+            .await;
+        cache
+            .set(
+                key2.clone(),
+                mock_result("birth-blueprint"),
+                Duration::from_secs(60),
+            )
+            .await;
+        cache
+            .set(
+                key3.clone(),
+                mock_result("daily-practice"),
+                Duration::from_secs(60),
+            )
+            .await;
 
         cache.invalidate_workflow("birth-blueprint").await;
 
@@ -436,7 +456,13 @@ mod tests {
         cache.get(&key).await;
 
         // Set and hit
-        cache.set(key.clone(), mock_result("test-workflow"), Duration::from_secs(60)).await;
+        cache
+            .set(
+                key.clone(),
+                mock_result("test-workflow"),
+                Duration::from_secs(60),
+            )
+            .await;
         cache.get(&key).await;
         cache.get(&key).await;
 
@@ -488,8 +514,17 @@ mod tests {
         assert_eq!(WorkflowTtl::Temporal.duration(), Duration::from_secs(3600));
         assert_eq!(WorkflowTtl::Archetypal.duration(), Duration::from_secs(900));
 
-        assert_eq!(WorkflowTtl::for_workflow("birth-blueprint"), WorkflowTtl::Natal);
-        assert_eq!(WorkflowTtl::for_workflow("daily-practice"), WorkflowTtl::Temporal);
-        assert_eq!(WorkflowTtl::for_workflow("decision-support"), WorkflowTtl::Archetypal);
+        assert_eq!(
+            WorkflowTtl::for_workflow("birth-blueprint"),
+            WorkflowTtl::Natal
+        );
+        assert_eq!(
+            WorkflowTtl::for_workflow("daily-practice"),
+            WorkflowTtl::Temporal
+        );
+        assert_eq!(
+            WorkflowTtl::for_workflow("decision-support"),
+            WorkflowTtl::Archetypal
+        );
     }
 }

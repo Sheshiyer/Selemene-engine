@@ -91,7 +91,7 @@ pub struct SelfInquiryWorkflow;
 impl SelfInquiryWorkflow {
     /// Workflow identifier
     pub const ID: &'static str = "self-inquiry";
-    
+
     /// Required consciousness phase
     pub const REQUIRED_PHASE: u8 = 2;
 
@@ -102,11 +102,9 @@ impl SelfInquiryWorkflow {
             name: "Self Inquiry".to_string(),
             description: "Deep self-inquiry combining Gene Keys frequency bands \
                          with Enneagram core patterns for shadow work and \
-                         pattern recognition".to_string(),
-            engine_ids: vec![
-                "gene-keys".to_string(),
-                "enneagram".to_string(),
-            ],
+                         pattern recognition"
+                .to_string(),
+            engine_ids: vec!["gene-keys".to_string(), "enneagram".to_string()],
             synthesis_type: SynthesisType::SelfInquiry,
             required_phase: Self::REQUIRED_PHASE,
             default_options: Self::default_options(),
@@ -121,28 +119,38 @@ impl SelfInquiryWorkflow {
     /// Default options for the workflow
     pub fn default_options() -> HashMap<String, Value> {
         let mut opts = HashMap::new();
-        opts.insert("spheres".to_string(), json!([
-            "life_work", "evolution", "radiance", "purpose"
-        ]));
+        opts.insert(
+            "spheres".to_string(),
+            json!(["life_work", "evolution", "radiance", "purpose"]),
+        );
         opts.insert("include_shadow_gift_siddhi".to_string(), json!(true));
         opts
     }
 
     /// Prepare engine-specific options from workflow input
-    pub fn prepare_engine_options(input: &SelfInquiryInput) -> HashMap<String, HashMap<String, Value>> {
+    pub fn prepare_engine_options(
+        input: &SelfInquiryInput,
+    ) -> HashMap<String, HashMap<String, Value>> {
         let mut engine_opts = HashMap::new();
 
         // Gene Keys options
         let mut gk_opts = HashMap::new();
-        gk_opts.insert("birth_datetime".to_string(), json!(input.birth_datetime.clone()));
+        gk_opts.insert(
+            "birth_datetime".to_string(),
+            json!(input.birth_datetime.clone()),
+        );
         gk_opts.insert("latitude".to_string(), json!(input.birth_location.latitude));
-        gk_opts.insert("longitude".to_string(), json!(input.birth_location.longitude));
+        gk_opts.insert(
+            "longitude".to_string(),
+            json!(input.birth_location.longitude),
+        );
         if let Some(ref tz) = input.birth_location.timezone {
             gk_opts.insert("timezone".to_string(), json!(tz));
         }
-        gk_opts.insert("spheres".to_string(), json!([
-            "life_work", "evolution", "radiance", "purpose"
-        ]));
+        gk_opts.insert(
+            "spheres".to_string(),
+            json!(["life_work", "evolution", "radiance", "purpose"]),
+        );
         engine_opts.insert("gene-keys".to_string(), gk_opts);
 
         // Enneagram options
@@ -154,7 +162,10 @@ impl SelfInquiryWorkflow {
             enn_opts.insert("mode".to_string(), json!("assessment"));
         }
         enn_opts.insert("include_wings".to_string(), json!(true));
-        enn_opts.insert("include_integration_disintegration".to_string(), json!(true));
+        enn_opts.insert(
+            "include_integration_disintegration".to_string(),
+            json!(true),
+        );
         engine_opts.insert("enneagram".to_string(), enn_opts);
 
         engine_opts
@@ -192,7 +203,10 @@ impl SelfInquiryWorkflow {
                     ("g", "Distract myself with new activities"),
                     ("h", "Become more controlling and confrontational"),
                     ("i", "Go along to keep the peace"),
-                ].into_iter().map(|(k, v)| (k.to_string(), v.to_string())).collect(),
+                ]
+                .into_iter()
+                .map(|(k, v)| (k.to_string(), v.to_string()))
+                .collect(),
             },
             AssessmentQuestion {
                 id: "q2".to_string(),
@@ -207,7 +221,10 @@ impl SelfInquiryWorkflow {
                     ("g", "To be happy and avoid pain"),
                     ("h", "To protect myself and be in control"),
                     ("i", "To have inner peace and harmony"),
-                ].into_iter().map(|(k, v)| (k.to_string(), v.to_string())).collect(),
+                ]
+                .into_iter()
+                .map(|(k, v)| (k.to_string(), v.to_string()))
+                .collect(),
             },
         ]
     }
@@ -257,10 +274,10 @@ mod tests {
         };
 
         let opts = SelfInquiryWorkflow::prepare_engine_options(&input);
-        
+
         assert!(opts.contains_key("gene-keys"));
         assert_eq!(opts["gene-keys"]["latitude"], json!(12.9716));
-        
+
         assert!(opts.contains_key("enneagram"));
         assert_eq!(opts["enneagram"]["type"], json!(4));
         assert_eq!(opts["enneagram"]["mode"], json!("analysis"));
@@ -280,7 +297,7 @@ mod tests {
         };
 
         let opts = SelfInquiryWorkflow::prepare_engine_options(&input);
-        
+
         assert!(opts.contains_key("enneagram"));
         assert_eq!(opts["enneagram"]["mode"], json!("assessment"));
         assert!(!opts["enneagram"].contains_key("type"));
@@ -290,7 +307,7 @@ mod tests {
     fn test_assessment_questions() {
         let questions = SelfInquiryWorkflow::get_enneagram_assessment_questions();
         assert!(!questions.is_empty());
-        
+
         for q in questions {
             assert!(!q.text.is_empty());
             assert_eq!(q.options.len(), 9); // 9 Enneagram types

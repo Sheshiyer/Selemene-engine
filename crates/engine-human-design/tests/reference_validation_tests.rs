@@ -11,11 +11,11 @@
 //! - W1-S4-06: Centers validation
 //! - W1-S4-07: Channels validation
 
-use engine_human_design::{generate_hd_chart, HDType, Authority, Planet};
 use chrono::{TimeZone, Utc};
+use engine_human_design::{generate_hd_chart, Authority, HDType, Planet};
 use serde::{Deserialize, Serialize};
-use std::fs;
 use std::collections::HashMap;
+use std::fs;
 
 #[derive(Debug, Deserialize, Serialize)]
 struct ReferenceDataset {
@@ -70,13 +70,14 @@ fn parse_birth_datetime(date_str: &str, time_str: &str) -> chrono::DateTime<Utc>
     let year = parts[0].parse::<i32>().unwrap();
     let month = parts[1].parse::<u32>().unwrap();
     let day = parts[2].parse::<u32>().unwrap();
-    
+
     let time_parts: Vec<&str> = time_str.split(':').collect();
     let hour = time_parts[0].parse::<u32>().unwrap();
     let minute = time_parts[1].parse::<u32>().unwrap();
     let second = time_parts[2].parse::<u32>().unwrap();
-    
-    Utc.with_ymd_and_hms(year, month, day, hour, minute, second).unwrap()
+
+    Utc.with_ymd_and_hms(year, month, day, hour, minute, second)
+        .unwrap()
 }
 
 fn type_string_to_enum(s: &str) -> HDType {
@@ -116,18 +117,18 @@ impl ValidationStats {
     fn new() -> Self {
         Self::default()
     }
-    
+
     fn record_pass(&mut self) {
         self.total += 1;
         self.passed += 1;
     }
-    
+
     fn record_fail(&mut self, chart_name: &str, reason: String) {
         self.total += 1;
         self.failed += 1;
         self.errors.push(format!("{}: {}", chart_name, reason));
     }
-    
+
     fn pass_rate(&self) -> f64 {
         if self.total == 0 {
             0.0
@@ -135,10 +136,13 @@ impl ValidationStats {
             (self.passed as f64 / self.total as f64) * 100.0
         }
     }
-    
+
     fn print_summary(&self, category: &str) {
         println!("\n=== {} ===", category);
-        println!("Total: {}, Passed: {}, Failed: {}", self.total, self.passed, self.failed);
+        println!(
+            "Total: {}, Passed: {}, Failed: {}",
+            self.total, self.passed, self.failed
+        );
         println!("Pass Rate: {:.1}%", self.pass_rate());
         if !self.errors.is_empty() {
             println!("\nFailures:");
@@ -155,22 +159,25 @@ impl ValidationStats {
 fn test_w1_s4_02_sun_earth_validation() {
     let dataset = load_reference_charts();
     let mut stats = ValidationStats::new();
-    
+
     println!("\n╔═══════════════════════════════════════════════════════════╗");
     println!("║         W1-S4-02: Sun/Earth Validation Test              ║");
     println!("╚═══════════════════════════════════════════════════════════╝");
-    
+
     for chart_ref in dataset.charts.iter() {
         let birth_time = parse_birth_datetime(&chart_ref.birth_date, &chart_ref.birth_time);
-        
+
         match generate_hd_chart(birth_time, "") {
             Ok(result) => {
                 let mut chart_passed = true;
                 let mut failures = Vec::new();
-                
+
                 // Check Personality Sun
-                if let Some(p_sun) = result.personality_activations.iter()
-                    .find(|a| matches!(a.planet, Planet::Sun)) {
+                if let Some(p_sun) = result
+                    .personality_activations
+                    .iter()
+                    .find(|a| matches!(a.planet, Planet::Sun))
+                {
                     if p_sun.gate != chart_ref.expected.personality_sun.gate {
                         chart_passed = false;
                         failures.push(format!(
@@ -186,10 +193,13 @@ fn test_w1_s4_02_sun_earth_validation() {
                         ));
                     }
                 }
-                
+
                 // Check Personality Earth
-                if let Some(p_earth) = result.personality_activations.iter()
-                    .find(|a| matches!(a.planet, Planet::Earth)) {
+                if let Some(p_earth) = result
+                    .personality_activations
+                    .iter()
+                    .find(|a| matches!(a.planet, Planet::Earth))
+                {
                     if p_earth.gate != chart_ref.expected.personality_earth.gate {
                         chart_passed = false;
                         failures.push(format!(
@@ -205,10 +215,13 @@ fn test_w1_s4_02_sun_earth_validation() {
                         ));
                     }
                 }
-                
+
                 // Check Design Sun
-                if let Some(d_sun) = result.design_activations.iter()
-                    .find(|a| matches!(a.planet, Planet::Sun)) {
+                if let Some(d_sun) = result
+                    .design_activations
+                    .iter()
+                    .find(|a| matches!(a.planet, Planet::Sun))
+                {
                     if d_sun.gate != chart_ref.expected.design_sun.gate {
                         chart_passed = false;
                         failures.push(format!(
@@ -224,10 +237,13 @@ fn test_w1_s4_02_sun_earth_validation() {
                         ));
                     }
                 }
-                
+
                 // Check Design Earth
-                if let Some(d_earth) = result.design_activations.iter()
-                    .find(|a| matches!(a.planet, Planet::Earth)) {
+                if let Some(d_earth) = result
+                    .design_activations
+                    .iter()
+                    .find(|a| matches!(a.planet, Planet::Earth))
+                {
                     if d_earth.gate != chart_ref.expected.design_earth.gate {
                         chart_passed = false;
                         failures.push(format!(
@@ -243,7 +259,7 @@ fn test_w1_s4_02_sun_earth_validation() {
                         ));
                     }
                 }
-                
+
                 if chart_passed {
                     stats.record_pass();
                     println!("  ✅ {}", chart_ref.name);
@@ -261,9 +277,9 @@ fn test_w1_s4_02_sun_earth_validation() {
             }
         }
     }
-    
+
     stats.print_summary("W1-S4-02: Sun/Earth Validation");
-    
+
     // Assert at least 80% pass rate for Sun/Earth (core calculation)
     assert!(
         stats.pass_rate() >= 80.0,
@@ -278,28 +294,30 @@ fn test_w1_s4_02_sun_earth_validation() {
 fn test_w1_s4_03_type_validation() {
     let dataset = load_reference_charts();
     let mut stats = ValidationStats::new();
-    
+
     println!("\n╔═══════════════════════════════════════════════════════════╗");
     println!("║            W1-S4-03: Type Validation Test                ║");
     println!("╚═══════════════════════════════════════════════════════════╝");
-    
+
     for chart_ref in dataset.charts.iter() {
         let birth_time = parse_birth_datetime(&chart_ref.birth_date, &chart_ref.birth_time);
-        
+
         match generate_hd_chart(birth_time, "") {
             Ok(result) => {
                 let expected_type = type_string_to_enum(&chart_ref.expected.hd_type);
-                
+
                 if result.hd_type == expected_type {
                     stats.record_pass();
                     println!("  ✅ {} - {:?}", chart_ref.name, result.hd_type);
                 } else {
                     stats.record_fail(
                         &chart_ref.name,
-                        format!("expected {:?}, got {:?}", expected_type, result.hd_type)
+                        format!("expected {:?}, got {:?}", expected_type, result.hd_type),
                     );
-                    println!("  ❌ {} - expected {:?}, got {:?}", 
-                        chart_ref.name, expected_type, result.hd_type);
+                    println!(
+                        "  ❌ {} - expected {:?}, got {:?}",
+                        chart_ref.name, expected_type, result.hd_type
+                    );
                 }
             }
             Err(e) => {
@@ -308,9 +326,9 @@ fn test_w1_s4_03_type_validation() {
             }
         }
     }
-    
+
     stats.print_summary("W1-S4-03: Type Validation");
-    
+
     // Type validation expected to be lower due to incomplete wisdom data
     // Target: 50-70% (depends on channel completeness)
     assert!(
@@ -326,28 +344,33 @@ fn test_w1_s4_03_type_validation() {
 fn test_w1_s4_04_authority_validation() {
     let dataset = load_reference_charts();
     let mut stats = ValidationStats::new();
-    
+
     println!("\n╔═══════════════════════════════════════════════════════════╗");
     println!("║         W1-S4-04: Authority Validation Test              ║");
     println!("╚═══════════════════════════════════════════════════════════╝");
-    
+
     for chart_ref in dataset.charts.iter() {
         let birth_time = parse_birth_datetime(&chart_ref.birth_date, &chart_ref.birth_time);
-        
+
         match generate_hd_chart(birth_time, "") {
             Ok(result) => {
                 let expected_authority = authority_string_to_enum(&chart_ref.expected.authority);
-                
+
                 if result.authority == expected_authority {
                     stats.record_pass();
                     println!("  ✅ {} - {:?}", chart_ref.name, result.authority);
                 } else {
                     stats.record_fail(
                         &chart_ref.name,
-                        format!("expected {:?}, got {:?}", expected_authority, result.authority)
+                        format!(
+                            "expected {:?}, got {:?}",
+                            expected_authority, result.authority
+                        ),
                     );
-                    println!("  ❌ {} - expected {:?}, got {:?}", 
-                        chart_ref.name, expected_authority, result.authority);
+                    println!(
+                        "  ❌ {} - expected {:?}, got {:?}",
+                        chart_ref.name, expected_authority, result.authority
+                    );
                 }
             }
             Err(e) => {
@@ -356,9 +379,9 @@ fn test_w1_s4_04_authority_validation() {
             }
         }
     }
-    
+
     stats.print_summary("W1-S4-04: Authority Validation");
-    
+
     // Authority validation depends on center definitions (wisdom data)
     // Target: 50-70%
     assert!(
@@ -374,31 +397,36 @@ fn test_w1_s4_04_authority_validation() {
 fn test_w1_s4_05_profile_validation() {
     let dataset = load_reference_charts();
     let mut stats = ValidationStats::new();
-    
+
     println!("\n╔═══════════════════════════════════════════════════════════╗");
     println!("║          W1-S4-05: Profile Validation Test               ║");
     println!("╚═══════════════════════════════════════════════════════════╝");
-    
+
     for chart_ref in dataset.charts.iter() {
         let birth_time = parse_birth_datetime(&chart_ref.birth_date, &chart_ref.birth_time);
-        
+
         match generate_hd_chart(birth_time, "") {
             Ok(result) => {
-                let actual_profile = format!("{}/{}", 
-                    result.profile.conscious_line, 
-                    result.profile.unconscious_line
+                let actual_profile = format!(
+                    "{}/{}",
+                    result.profile.conscious_line, result.profile.unconscious_line
                 );
-                
+
                 if actual_profile == chart_ref.expected.profile {
                     stats.record_pass();
                     println!("  ✅ {} - {}", chart_ref.name, actual_profile);
                 } else {
                     stats.record_fail(
                         &chart_ref.name,
-                        format!("expected {}, got {}", chart_ref.expected.profile, actual_profile)
+                        format!(
+                            "expected {}, got {}",
+                            chart_ref.expected.profile, actual_profile
+                        ),
                     );
-                    println!("  ❌ {} - expected {}, got {}", 
-                        chart_ref.name, chart_ref.expected.profile, actual_profile);
+                    println!(
+                        "  ❌ {} - expected {}, got {}",
+                        chart_ref.name, chart_ref.expected.profile, actual_profile
+                    );
                 }
             }
             Err(e) => {
@@ -407,9 +435,9 @@ fn test_w1_s4_05_profile_validation() {
             }
         }
     }
-    
+
     stats.print_summary("W1-S4-05: Profile Validation");
-    
+
     // Profile should be 100% accurate (just Sun line numbers)
     assert!(
         stats.pass_rate() >= 80.0,
@@ -424,44 +452,54 @@ fn test_w1_s4_05_profile_validation() {
 fn test_w1_s4_07_channels_validation() {
     let dataset = load_reference_charts();
     let mut stats = ValidationStats::new();
-    
+
     println!("\n╔═══════════════════════════════════════════════════════════╗");
     println!("║         W1-S4-07: Channels Validation Test               ║");
     println!("╚═══════════════════════════════════════════════════════════╝");
-    
+
     for chart_ref in dataset.charts.iter() {
         let birth_time = parse_birth_datetime(&chart_ref.birth_date, &chart_ref.birth_time);
-        
+
         match generate_hd_chart(birth_time, "") {
             Ok(result) => {
-                let mut actual_channels: Vec<String> = result.channels.iter()
+                let mut actual_channels: Vec<String> = result
+                    .channels
+                    .iter()
                     .map(|ch| format!("{}-{}", ch.gate1, ch.gate2))
                     .collect();
                 actual_channels.sort();
-                
+
                 let mut expected_channels = chart_ref.expected.active_channels.clone();
                 expected_channels.sort();
-                
+
                 if actual_channels == expected_channels {
                     stats.record_pass();
-                    println!("  ✅ {} - {} channels", chart_ref.name, actual_channels.len());
+                    println!(
+                        "  ✅ {} - {} channels",
+                        chart_ref.name,
+                        actual_channels.len()
+                    );
                 } else {
-                    let missing: Vec<_> = expected_channels.iter()
+                    let missing: Vec<_> = expected_channels
+                        .iter()
                         .filter(|e| !actual_channels.contains(e))
                         .collect();
-                    let extra: Vec<_> = actual_channels.iter()
+                    let extra: Vec<_> = actual_channels
+                        .iter()
                         .filter(|a| !expected_channels.contains(a))
                         .collect();
-                    
+
                     let mut msg = String::new();
                     if !missing.is_empty() {
                         msg.push_str(&format!("missing {:?}", missing));
                     }
                     if !extra.is_empty() {
-                        if !msg.is_empty() { msg.push_str(", "); }
+                        if !msg.is_empty() {
+                            msg.push_str(", ");
+                        }
                         msg.push_str(&format!("extra {:?}", extra));
                     }
-                    
+
                     stats.record_fail(&chart_ref.name, msg.clone());
                     println!("  ❌ {} - {}", chart_ref.name, msg);
                 }
@@ -472,9 +510,9 @@ fn test_w1_s4_07_channels_validation() {
             }
         }
     }
-    
+
     stats.print_summary("W1-S4-07: Channels Validation");
-    
+
     // Channels depend on incomplete wisdom data (5/36 channels loaded)
     // Target: 30-50%
     assert!(
@@ -490,46 +528,55 @@ fn test_w1_s4_07_channels_validation() {
 fn test_w1_s4_06_centers_validation() {
     let dataset = load_reference_charts();
     let mut stats = ValidationStats::new();
-    
+
     println!("\n╔═══════════════════════════════════════════════════════════╗");
     println!("║         W1-S4-06: Centers Validation Test                ║");
     println!("╚═══════════════════════════════════════════════════════════╝");
-    
+
     for chart_ref in dataset.charts.iter() {
         let birth_time = parse_birth_datetime(&chart_ref.birth_date, &chart_ref.birth_time);
-        
+
         match generate_hd_chart(birth_time, "") {
             Ok(result) => {
-                let mut actual_centers: Vec<String> = result.centers.iter()
+                let mut actual_centers: Vec<String> = result
+                    .centers
+                    .iter()
                     .filter(|(_, info)| info.defined)
                     .map(|(center, _)| format!("{:?}", center))
                     .collect();
                 actual_centers.sort();
-                
+
                 let mut expected_centers = chart_ref.expected.defined_centers.clone();
                 expected_centers.sort();
-                
+
                 if actual_centers == expected_centers {
                     stats.record_pass();
-                    println!("  ✅ {} - {} defined centers", 
-                        chart_ref.name, actual_centers.len());
+                    println!(
+                        "  ✅ {} - {} defined centers",
+                        chart_ref.name,
+                        actual_centers.len()
+                    );
                 } else {
-                    let missing: Vec<_> = expected_centers.iter()
+                    let missing: Vec<_> = expected_centers
+                        .iter()
                         .filter(|e| !actual_centers.contains(e))
                         .collect();
-                    let extra: Vec<_> = actual_centers.iter()
+                    let extra: Vec<_> = actual_centers
+                        .iter()
                         .filter(|a| !expected_centers.contains(a))
                         .collect();
-                    
+
                     let mut msg = String::new();
                     if !missing.is_empty() {
                         msg.push_str(&format!("missing {:?}", missing));
                     }
                     if !extra.is_empty() {
-                        if !msg.is_empty() { msg.push_str(", "); }
+                        if !msg.is_empty() {
+                            msg.push_str(", ");
+                        }
                         msg.push_str(&format!("extra {:?}", extra));
                     }
-                    
+
                     stats.record_fail(&chart_ref.name, msg.clone());
                     println!("  ❌ {} - {}", chart_ref.name, msg);
                 }
@@ -540,9 +587,9 @@ fn test_w1_s4_06_centers_validation() {
             }
         }
     }
-    
+
     stats.print_summary("W1-S4-06: Centers Validation");
-    
+
     // Centers depend on incomplete wisdom data
     // Target: 30-50%
     assert!(
@@ -557,12 +604,12 @@ fn test_w1_s4_06_centers_validation() {
 #[test]
 fn test_comprehensive_validation_report() {
     let dataset = load_reference_charts();
-    
+
     println!("\n╔═══════════════════════════════════════════════════════════╗");
     println!("║      COMPREHENSIVE VALIDATION REPORT (All Tests)        ║");
     println!("╚═══════════════════════════════════════════════════════════╝");
     println!("\nTotal Reference Charts: {}", dataset.charts.len());
-    
+
     // Track overall statistics
     let mut overall_stats = HashMap::new();
     overall_stats.insert("sun_earth", ValidationStats::new());
@@ -571,10 +618,10 @@ fn test_comprehensive_validation_report() {
     overall_stats.insert("profile", ValidationStats::new());
     overall_stats.insert("centers", ValidationStats::new());
     overall_stats.insert("channels", ValidationStats::new());
-    
+
     for chart_ref in dataset.charts.iter() {
         let birth_time = parse_birth_datetime(&chart_ref.birth_date, &chart_ref.birth_time);
-        
+
         match generate_hd_chart(birth_time, "") {
             Ok(chart) => {
                 // Sun/Earth validation
@@ -582,69 +629,87 @@ fn test_comprehensive_validation_report() {
                 if sun_earth_ok {
                     overall_stats.get_mut("sun_earth").unwrap().record_pass();
                 } else {
-                    overall_stats.get_mut("sun_earth").unwrap()
+                    overall_stats
+                        .get_mut("sun_earth")
+                        .unwrap()
                         .record_fail(&chart_ref.name, "Sun/Earth mismatch".to_string());
                 }
-                
+
                 // Type validation
                 let expected_type = type_string_to_enum(&chart_ref.expected.hd_type);
                 if chart.hd_type == expected_type {
                     overall_stats.get_mut("type").unwrap().record_pass();
                 } else {
-                    overall_stats.get_mut("type").unwrap()
-                        .record_fail(&chart_ref.name, 
-                            format!("expected {:?}, got {:?}", expected_type, chart.hd_type));
+                    overall_stats.get_mut("type").unwrap().record_fail(
+                        &chart_ref.name,
+                        format!("expected {:?}, got {:?}", expected_type, chart.hd_type),
+                    );
                 }
-                
+
                 // Authority validation
                 let expected_auth = authority_string_to_enum(&chart_ref.expected.authority);
                 if chart.authority == expected_auth {
                     overall_stats.get_mut("authority").unwrap().record_pass();
                 } else {
-                    overall_stats.get_mut("authority").unwrap()
-                        .record_fail(&chart_ref.name, 
-                            format!("expected {:?}, got {:?}", expected_auth, chart.authority));
+                    overall_stats.get_mut("authority").unwrap().record_fail(
+                        &chart_ref.name,
+                        format!("expected {:?}, got {:?}", expected_auth, chart.authority),
+                    );
                 }
-                
+
                 // Profile validation
-                let actual_profile = format!("{}/{}", 
-                    chart.profile.conscious_line, chart.profile.unconscious_line);
+                let actual_profile = format!(
+                    "{}/{}",
+                    chart.profile.conscious_line, chart.profile.unconscious_line
+                );
                 if actual_profile == chart_ref.expected.profile {
                     overall_stats.get_mut("profile").unwrap().record_pass();
                 } else {
-                    overall_stats.get_mut("profile").unwrap()
-                        .record_fail(&chart_ref.name, 
-                            format!("expected {}, got {}", chart_ref.expected.profile, actual_profile));
+                    overall_stats.get_mut("profile").unwrap().record_fail(
+                        &chart_ref.name,
+                        format!(
+                            "expected {}, got {}",
+                            chart_ref.expected.profile, actual_profile
+                        ),
+                    );
                 }
-                
+
                 // Centers validation
-                let mut actual_centers: Vec<String> = chart.centers.iter()
+                let mut actual_centers: Vec<String> = chart
+                    .centers
+                    .iter()
                     .filter(|(_, info)| info.defined)
                     .map(|(center, _)| format!("{:?}", center))
                     .collect();
                 actual_centers.sort();
                 let mut expected_centers = chart_ref.expected.defined_centers.clone();
                 expected_centers.sort();
-                
+
                 if actual_centers == expected_centers {
                     overall_stats.get_mut("centers").unwrap().record_pass();
                 } else {
-                    overall_stats.get_mut("centers").unwrap()
+                    overall_stats
+                        .get_mut("centers")
+                        .unwrap()
                         .record_fail(&chart_ref.name, "Centers mismatch".to_string());
                 }
-                
+
                 // Channels validation
-                let mut actual_channels: Vec<String> = chart.channels.iter()
+                let mut actual_channels: Vec<String> = chart
+                    .channels
+                    .iter()
                     .map(|ch| format!("{}-{}", ch.gate1, ch.gate2))
                     .collect();
                 actual_channels.sort();
                 let mut expected_channels = chart_ref.expected.active_channels.clone();
                 expected_channels.sort();
-                
+
                 if actual_channels == expected_channels {
                     overall_stats.get_mut("channels").unwrap().record_pass();
                 } else {
-                    overall_stats.get_mut("channels").unwrap()
+                    overall_stats
+                        .get_mut("channels")
+                        .unwrap()
                         .record_fail(&chart_ref.name, "Channels mismatch".to_string());
                 }
             }
@@ -656,80 +721,91 @@ fn test_comprehensive_validation_report() {
             }
         }
     }
-    
+
     // Print summary for all categories
     println!("\n\n╔═══════════════════════════════════════════════════════════╗");
     println!("║                  VALIDATION SUMMARY                      ║");
     println!("╚═══════════════════════════════════════════════════════════╝\n");
-    
-    println!("W1-S4-02 (Sun/Earth):  Pass Rate: {:.1}% ({}/{})", 
+
+    println!(
+        "W1-S4-02 (Sun/Earth):  Pass Rate: {:.1}% ({}/{})",
         overall_stats["sun_earth"].pass_rate(),
         overall_stats["sun_earth"].passed,
-        overall_stats["sun_earth"].total);
-    
-    println!("W1-S4-03 (Type):       Pass Rate: {:.1}% ({}/{})", 
+        overall_stats["sun_earth"].total
+    );
+
+    println!(
+        "W1-S4-03 (Type):       Pass Rate: {:.1}% ({}/{})",
         overall_stats["type"].pass_rate(),
         overall_stats["type"].passed,
-        overall_stats["type"].total);
-    
-    println!("W1-S4-04 (Authority):  Pass Rate: {:.1}% ({}/{})", 
+        overall_stats["type"].total
+    );
+
+    println!(
+        "W1-S4-04 (Authority):  Pass Rate: {:.1}% ({}/{})",
         overall_stats["authority"].pass_rate(),
         overall_stats["authority"].passed,
-        overall_stats["authority"].total);
-    
-    println!("W1-S4-05 (Profile):    Pass Rate: {:.1}% ({}/{})", 
+        overall_stats["authority"].total
+    );
+
+    println!(
+        "W1-S4-05 (Profile):    Pass Rate: {:.1}% ({}/{})",
         overall_stats["profile"].pass_rate(),
         overall_stats["profile"].passed,
-        overall_stats["profile"].total);
-    
-    println!("W1-S4-06 (Centers):    Pass Rate: {:.1}% ({}/{})", 
+        overall_stats["profile"].total
+    );
+
+    println!(
+        "W1-S4-06 (Centers):    Pass Rate: {:.1}% ({}/{})",
         overall_stats["centers"].pass_rate(),
         overall_stats["centers"].passed,
-        overall_stats["centers"].total);
-    
-    println!("W1-S4-07 (Channels):   Pass Rate: {:.1}% ({}/{})", 
+        overall_stats["centers"].total
+    );
+
+    println!(
+        "W1-S4-07 (Channels):   Pass Rate: {:.1}% ({}/{})",
         overall_stats["channels"].pass_rate(),
         overall_stats["channels"].passed,
-        overall_stats["channels"].total);
-    
+        overall_stats["channels"].total
+    );
+
     // Overall pass rate (average across all categories)
-    let avg_pass_rate: f64 = overall_stats.values()
-        .map(|s| s.pass_rate())
-        .sum::<f64>() / overall_stats.len() as f64;
-    
+    let avg_pass_rate: f64 =
+        overall_stats.values().map(|s| s.pass_rate()).sum::<f64>() / overall_stats.len() as f64;
+
     println!("\n═══════════════════════════════════════════════════════════");
     println!("Overall Average Pass Rate: {:.1}%", avg_pass_rate);
     println!("═══════════════════════════════════════════════════════════\n");
-    
+
     // Print readiness assessment
     println!("\n╔═══════════════════════════════════════════════════════════╗");
     println!("║              READINESS ASSESSMENT                        ║");
     println!("╚═══════════════════════════════════════════════════════════╝\n");
-    
+
     if overall_stats["sun_earth"].pass_rate() >= 80.0 {
         println!("✅ Core calculations (Sun/Earth) READY");
     } else {
         println!("⚠️  Core calculations (Sun/Earth) NEEDS WORK");
     }
-    
+
     if overall_stats["profile"].pass_rate() >= 80.0 {
         println!("✅ Profile calculations READY");
     } else {
         println!("⚠️  Profile calculations NEEDS WORK");
     }
-    
+
     if overall_stats["type"].pass_rate() >= 50.0 {
         println!("✅ Type determination ACCEPTABLE (wisdom data limited)");
     } else {
         println!("⚠️  Type determination NEEDS REVIEW");
     }
-    
+
     if overall_stats["authority"].pass_rate() >= 50.0 {
         println!("✅ Authority determination ACCEPTABLE (wisdom data limited)");
     } else {
         println!("⚠️  Authority determination NEEDS REVIEW");
     }
-    
+
     println!("\n🔧 Expected limitations due to incomplete wisdom data:");
     println!("   - Only 5/36 channels loaded in wisdom database");
     println!("   - Centers/Channels validation limited by available data");
@@ -738,24 +814,32 @@ fn test_comprehensive_validation_report() {
 
 // Helper function to validate all Sun/Earth activations
 fn validate_sun_earth(chart: &engine_human_design::HDChart, expected: &ExpectedResults) -> bool {
-    let p_sun = chart.personality_activations.iter()
+    let p_sun = chart
+        .personality_activations
+        .iter()
         .find(|a| matches!(a.planet, Planet::Sun));
-    let p_earth = chart.personality_activations.iter()
+    let p_earth = chart
+        .personality_activations
+        .iter()
         .find(|a| matches!(a.planet, Planet::Earth));
-    let d_sun = chart.design_activations.iter()
+    let d_sun = chart
+        .design_activations
+        .iter()
         .find(|a| matches!(a.planet, Planet::Sun));
-    let d_earth = chart.design_activations.iter()
+    let d_earth = chart
+        .design_activations
+        .iter()
         .find(|a| matches!(a.planet, Planet::Earth));
-    
+
     if let (Some(ps), Some(pe), Some(ds), Some(de)) = (p_sun, p_earth, d_sun, d_earth) {
-        ps.gate == expected.personality_sun.gate &&
-        ps.line == expected.personality_sun.line &&
-        pe.gate == expected.personality_earth.gate &&
-        pe.line == expected.personality_earth.line &&
-        ds.gate == expected.design_sun.gate &&
-        ds.line == expected.design_sun.line &&
-        de.gate == expected.design_earth.gate &&
-        de.line == expected.design_earth.line
+        ps.gate == expected.personality_sun.gate
+            && ps.line == expected.personality_sun.line
+            && pe.gate == expected.personality_earth.gate
+            && pe.line == expected.personality_earth.line
+            && ds.gate == expected.design_sun.gate
+            && ds.line == expected.design_sun.line
+            && de.gate == expected.design_earth.gate
+            && de.line == expected.design_earth.line
     } else {
         false
     }

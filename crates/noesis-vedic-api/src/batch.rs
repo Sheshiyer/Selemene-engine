@@ -15,12 +15,12 @@ use tokio::sync::RwLock;
 use tracing::{debug, info};
 
 use crate::{
-    Config, VedicApiClient, VedicApiError,
-    cache::{ApiCache, panchang_key, birth_key},
-    panchang::Panchang,
-    dasha::{VimshottariDasha, DashaLevel},
+    cache::{birth_key, panchang_key, ApiCache},
     chart::BirthChart,
-    resilience::{ExponentialBackoff, BackoffConfig},
+    dasha::{DashaLevel, VimshottariDasha},
+    panchang::Panchang,
+    resilience::{BackoffConfig, ExponentialBackoff},
+    Config, VedicApiClient, VedicApiError,
 };
 
 // ====================== CONFIGURATION ======================
@@ -79,41 +79,80 @@ pub struct BatchRequest {
 impl BatchRequest {
     /// Create a Panchang batch request
     pub fn panchang(
-        year: i32, month: u32, day: u32,
-        hour: u32, minute: u32, second: u32,
-        lat: f64, lng: f64, tzone: f64,
+        year: i32,
+        month: u32,
+        day: u32,
+        hour: u32,
+        minute: u32,
+        second: u32,
+        lat: f64,
+        lng: f64,
+        tzone: f64,
     ) -> Self {
         Self {
             request_type: RequestType::Panchang,
-            year, month, day, hour, minute, second,
-            lat, lng, tzone,
+            year,
+            month,
+            day,
+            hour,
+            minute,
+            second,
+            lat,
+            lng,
+            tzone,
         }
     }
 
     /// Create a BirthChart batch request
     pub fn birth_chart(
-        year: i32, month: u32, day: u32,
-        hour: u32, minute: u32, second: u32,
-        lat: f64, lng: f64, tzone: f64,
+        year: i32,
+        month: u32,
+        day: u32,
+        hour: u32,
+        minute: u32,
+        second: u32,
+        lat: f64,
+        lng: f64,
+        tzone: f64,
     ) -> Self {
         Self {
             request_type: RequestType::BirthChart,
-            year, month, day, hour, minute, second,
-            lat, lng, tzone,
+            year,
+            month,
+            day,
+            hour,
+            minute,
+            second,
+            lat,
+            lng,
+            tzone,
         }
     }
 
     /// Create a Dasha batch request
     pub fn dasha(
-        year: i32, month: u32, day: u32,
-        hour: u32, minute: u32, second: u32,
-        lat: f64, lng: f64, tzone: f64,
+        year: i32,
+        month: u32,
+        day: u32,
+        hour: u32,
+        minute: u32,
+        second: u32,
+        lat: f64,
+        lng: f64,
+        tzone: f64,
         level: DashaLevel,
     ) -> Self {
         Self {
             request_type: RequestType::Dasha(level),
-            year, month, day, hour, minute, second,
-            lat, lng, tzone,
+            year,
+            month,
+            day,
+            hour,
+            minute,
+            second,
+            lat,
+            lng,
+            tzone,
         }
     }
 
@@ -123,13 +162,27 @@ impl BatchRequest {
             RequestType::Panchang => {
                 panchang_key(self.year, self.month, self.day, self.lat, self.lng)
             }
-            RequestType::BirthChart => {
-                birth_key(self.year, self.month, self.day, self.hour, self.minute, self.lat, self.lng)
-            }
+            RequestType::BirthChart => birth_key(
+                self.year,
+                self.month,
+                self.day,
+                self.hour,
+                self.minute,
+                self.lat,
+                self.lng,
+            ),
             RequestType::Dasha(level) => {
                 format!(
                     "{}:{:?}",
-                    birth_key(self.year, self.month, self.day, self.hour, self.minute, self.lat, self.lng),
+                    birth_key(
+                        self.year,
+                        self.month,
+                        self.day,
+                        self.hour,
+                        self.minute,
+                        self.lat,
+                        self.lng
+                    ),
                     level
                 )
             }
@@ -141,6 +194,7 @@ impl BatchRequest {
 
 /// Result for a single request within a batch
 #[derive(Debug, Clone)]
+#[allow(clippy::large_enum_variant)]
 pub enum BatchResultValue {
     Panchang(Panchang),
     BirthChart(BirthChart),
@@ -306,34 +360,27 @@ impl BatchScheduler {
                 let r = req_clone.clone();
                 async move {
                     match r.request_type {
-                        RequestType::Panchang => {
-                            c.get_panchang(
-                                r.year, r.month, r.day,
-                                r.hour, r.minute, r.second,
-                                r.lat, r.lng, r.tzone,
+                        RequestType::Panchang => c
+                            .get_panchang(
+                                r.year, r.month, r.day, r.hour, r.minute, r.second, r.lat, r.lng,
+                                r.tzone,
                             )
                             .await
-                            .map(BatchResultValue::Panchang)
-                        }
-                        RequestType::BirthChart => {
-                            c.get_birth_chart(
-                                r.year, r.month, r.day,
-                                r.hour, r.minute, r.second,
-                                r.lat, r.lng, r.tzone,
+                            .map(BatchResultValue::Panchang),
+                        RequestType::BirthChart => c
+                            .get_birth_chart(
+                                r.year, r.month, r.day, r.hour, r.minute, r.second, r.lat, r.lng,
+                                r.tzone,
                             )
                             .await
-                            .map(BatchResultValue::BirthChart)
-                        }
-                        RequestType::Dasha(level) => {
-                            c.get_vimshottari_dasha(
-                                r.year, r.month, r.day,
-                                r.hour, r.minute, r.second,
-                                r.lat, r.lng, r.tzone,
-                                level,
+                            .map(BatchResultValue::BirthChart),
+                        RequestType::Dasha(level) => c
+                            .get_vimshottari_dasha(
+                                r.year, r.month, r.day, r.hour, r.minute, r.second, r.lat, r.lng,
+                                r.tzone, level,
                             )
                             .await
-                            .map(BatchResultValue::Dasha)
-                        }
+                            .map(BatchResultValue::Dasha),
                     }
                 }
             })
@@ -359,9 +406,7 @@ impl BatchScheduler {
             }
             RequestType::BirthChart => {
                 let key = birth_key(
-                    req.year, req.month, req.day,
-                    req.hour, req.minute,
-                    req.lat, req.lng,
+                    req.year, req.month, req.day, req.hour, req.minute, req.lat, req.lng,
                 );
                 self.cache
                     .get_birth_chart(&key)
@@ -372,9 +417,7 @@ impl BatchScheduler {
                 let key = format!(
                     "{}:{:?}",
                     birth_key(
-                        req.year, req.month, req.day,
-                        req.hour, req.minute,
-                        req.lat, req.lng,
+                        req.year, req.month, req.day, req.hour, req.minute, req.lat, req.lng,
                     ),
                     level
                 );
@@ -395,9 +438,7 @@ impl BatchScheduler {
             }
             BatchResultValue::BirthChart(c) => {
                 let key = birth_key(
-                    req.year, req.month, req.day,
-                    req.hour, req.minute,
-                    req.lat, req.lng,
+                    req.year, req.month, req.day, req.hour, req.minute, req.lat, req.lng,
                 );
                 self.cache.set_birth_chart(&key, c.clone()).await;
             }
@@ -405,9 +446,7 @@ impl BatchScheduler {
                 let key = format!(
                     "{}:{:?}",
                     birth_key(
-                        req.year, req.month, req.day,
-                        req.hour, req.minute,
-                        req.lat, req.lng,
+                        req.year, req.month, req.day, req.hour, req.minute, req.lat, req.lng,
                     ),
                     req.request_type
                 );
@@ -464,7 +503,18 @@ mod tests {
     #[test]
     fn test_batch_request_dasha_key() {
         let r1 = BatchRequest::dasha(1990, 1, 1, 12, 0, 0, 28.6, 77.2, 5.5, DashaLevel::Mahadasha);
-        let r2 = BatchRequest::dasha(1990, 1, 1, 12, 0, 0, 28.6, 77.2, 5.5, DashaLevel::Antardasha);
+        let r2 = BatchRequest::dasha(
+            1990,
+            1,
+            1,
+            12,
+            0,
+            0,
+            28.6,
+            77.2,
+            5.5,
+            DashaLevel::Antardasha,
+        );
         assert_ne!(r1.cache_key(), r2.cache_key());
     }
 }

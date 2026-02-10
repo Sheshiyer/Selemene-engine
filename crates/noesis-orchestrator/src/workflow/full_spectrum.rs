@@ -201,10 +201,7 @@ impl FullSpectrumWorkflow {
                 engine_id,
                 category,
                 output: None,
-                error: Some(format!(
-                    "Timeout after {:?}",
-                    self.config.engine_timeout
-                )),
+                error: Some(format!("Timeout after {:?}", self.config.engine_timeout)),
                 execution_time_ms,
                 is_stub: false,
             },
@@ -467,8 +464,14 @@ mod tests {
     #[tokio::test]
     async fn test_full_spectrum_parallel_execution() {
         let mut engines: HashMap<String, Arc<dyn ConsciousnessEngine>> = HashMap::new();
-        engines.insert("numerology".into(), Arc::new(MockEngine::new("numerology", 0)));
-        engines.insert("human-design".into(), Arc::new(MockEngine::new("human-design", 0)));
+        engines.insert(
+            "numerology".into(),
+            Arc::new(MockEngine::new("numerology", 0)),
+        );
+        engines.insert(
+            "human-design".into(),
+            Arc::new(MockEngine::new("human-design", 0)),
+        );
         engines.insert("tarot".into(), Arc::new(MockEngine::new("tarot", 0)));
 
         let workflow = FullSpectrumWorkflow::new(engines);
@@ -484,7 +487,10 @@ mod tests {
     #[tokio::test]
     async fn test_handles_engine_failure() {
         let mut engines: HashMap<String, Arc<dyn ConsciousnessEngine>> = HashMap::new();
-        engines.insert("numerology".into(), Arc::new(MockEngine::new("numerology", 0)));
+        engines.insert(
+            "numerology".into(),
+            Arc::new(MockEngine::new("numerology", 0)),
+        );
         engines.insert("failing".into(), Arc::new(MockEngine::failing("failing")));
 
         let workflow = FullSpectrumWorkflow::new(engines);
@@ -538,8 +544,14 @@ mod tests {
     #[tokio::test]
     async fn test_category_filtering() {
         let mut engines: HashMap<String, Arc<dyn ConsciousnessEngine>> = HashMap::new();
-        engines.insert("numerology".into(), Arc::new(MockEngine::new("numerology", 0)));
-        engines.insert("panchanga".into(), Arc::new(MockEngine::new("panchanga", 0)));
+        engines.insert(
+            "numerology".into(),
+            Arc::new(MockEngine::new("numerology", 0)),
+        );
+        engines.insert(
+            "panchanga".into(),
+            Arc::new(MockEngine::new("panchanga", 0)),
+        );
         engines.insert("tarot".into(), Arc::new(MockEngine::new("tarot", 0)));
 
         let workflow = FullSpectrumWorkflow::new(engines);

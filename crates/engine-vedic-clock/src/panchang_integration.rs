@@ -1,13 +1,13 @@
 //! Combine organ clock recommendations with Panchang/Hora/Choghadiya data
 
-use chrono::{DateTime, Utc, Timelike};
+use chrono::{DateTime, Timelike, Utc};
 
 use noesis_vedic_api::panchang::CompletePanchang;
 
+use crate::choghadiya_integration::recommendations_from_choghadiya;
+use crate::hora_integration::recommendations_from_hora;
 use crate::integration::get_temporal_recommendation;
 use crate::models::TemporalRecommendation;
-use crate::hora_integration::recommendations_from_hora;
-use crate::choghadiya_integration::recommendations_from_choghadiya;
 
 pub fn recommendation_from_complete_panchang(
     datetime: DateTime<Utc>,
@@ -24,20 +24,21 @@ pub fn recommendation_from_complete_panchang(
         Some(nakshatra_index),
     );
 
-    let current_time = chrono::NaiveTime::from_hms_opt(
-        datetime.hour(),
-        datetime.minute(),
-        datetime.second(),
-    )
-    .map(|t| t.format("%H:%M").to_string())
-    .unwrap_or_else(|| "00:00".to_string());
+    let current_time =
+        chrono::NaiveTime::from_hms_opt(datetime.hour(), datetime.minute(), datetime.second())
+            .map(|t| t.format("%H:%M").to_string())
+            .unwrap_or_else(|| "00:00".to_string());
 
+    recommendation.activities.extend(recommendations_from_hora(
+        &panchang.hora_timings,
+        &current_time,
+    ));
     recommendation
         .activities
-        .extend(recommendations_from_hora(&panchang.hora_timings, &current_time));
-    recommendation
-        .activities
-        .extend(recommendations_from_choghadiya(&panchang.choghadiya, &current_time));
+        .extend(recommendations_from_choghadiya(
+            &panchang.choghadiya,
+            &current_time,
+        ));
 
     recommendation
 }

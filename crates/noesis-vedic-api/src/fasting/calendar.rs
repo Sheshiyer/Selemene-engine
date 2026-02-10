@@ -1,21 +1,21 @@
 //! Fasting calendar
 
-use chrono::{NaiveDate, Datelike};
-use super::{FastingDay, FastType, MonthlyFastingSchedule};
+use super::{FastType, FastingDay, MonthlyFastingSchedule};
+use chrono::NaiveDate;
 
 /// Get fasting days for a month
 pub fn get_monthly_fasting_schedule(year: i32, month: u32) -> MonthlyFastingSchedule {
     let ekadashis = get_ekadashis_for_month(year, month);
     let pradosh_vrats = get_pradosh_for_month(year, month);
     let special_vrats = get_special_vrats_for_month(year, month);
-    
+
     let mut all_days = vec![];
     all_days.extend(ekadashis.clone());
     all_days.extend(pradosh_vrats.clone());
     all_days.extend(special_vrats.clone());
-    
+
     all_days.sort_by_key(|d| d.date);
-    
+
     MonthlyFastingSchedule {
         year,
         month,
@@ -30,15 +30,13 @@ pub fn get_monthly_fasting_schedule(year: i32, month: u32) -> MonthlyFastingSche
 pub fn get_ekadashis_for_month(year: i32, month: u32) -> Vec<FastingDay> {
     // Approximate - would use actual tithi calculation
     let mut ekadashis = vec![];
-    
+
     // Two Ekadashis per month (Shukla and Krishna paksha)
-    let date1 = NaiveDate::from_ymd_opt(year, month, 11).unwrap_or(
-        NaiveDate::from_ymd_opt(year, month, 1).unwrap()
-    );
-    let date2 = NaiveDate::from_ymd_opt(year, month, 26).unwrap_or(
-        NaiveDate::from_ymd_opt(year, month, 20).unwrap()
-    );
-    
+    let date1 = NaiveDate::from_ymd_opt(year, month, 11)
+        .unwrap_or(NaiveDate::from_ymd_opt(year, month, 1).unwrap());
+    let date2 = NaiveDate::from_ymd_opt(year, month, 26)
+        .unwrap_or(NaiveDate::from_ymd_opt(year, month, 20).unwrap());
+
     ekadashis.push(FastingDay {
         date: date1,
         name: "Shukla Ekadashi".to_string(),
@@ -65,7 +63,7 @@ pub fn get_ekadashis_for_month(year: i32, month: u32) -> Vec<FastingDay> {
             "Om Namo Bhagavate Vasudevaya".to_string(),
         ],
     });
-    
+
     ekadashis.push(FastingDay {
         date: date2,
         name: "Krishna Ekadashi".to_string(),
@@ -86,20 +84,18 @@ pub fn get_ekadashis_for_month(year: i32, month: u32) -> Vec<FastingDay> {
         benefits: "Destroys sins, grants moksha, pleases Lord Vishnu".to_string(),
         mantras: vec!["Om Namo Narayanaya".to_string()],
     });
-    
+
     ekadashis
 }
 
 /// Get Pradosh vrat dates
 pub fn get_pradosh_for_month(year: i32, month: u32) -> Vec<FastingDay> {
     // Pradosh is on Trayodashi (13th tithi)
-    let date1 = NaiveDate::from_ymd_opt(year, month, 13).unwrap_or(
-        NaiveDate::from_ymd_opt(year, month, 1).unwrap()
-    );
-    let date2 = NaiveDate::from_ymd_opt(year, month, 28).unwrap_or(
-        NaiveDate::from_ymd_opt(year, month, 20).unwrap()
-    );
-    
+    let date1 = NaiveDate::from_ymd_opt(year, month, 13)
+        .unwrap_or(NaiveDate::from_ymd_opt(year, month, 1).unwrap());
+    let date2 = NaiveDate::from_ymd_opt(year, month, 28)
+        .unwrap_or(NaiveDate::from_ymd_opt(year, month, 20).unwrap());
+
     vec![
         FastingDay {
             date: date1,
@@ -131,7 +127,7 @@ pub fn get_pradosh_for_month(year: i32, month: u32) -> Vec<FastingDay> {
 /// Get special vrats for a month
 pub fn get_special_vrats_for_month(year: i32, month: u32) -> Vec<FastingDay> {
     let mut special = vec![];
-    
+
     // Add Purnima (full moon) vrat
     if let Some(date) = NaiveDate::from_ymd_opt(year, month, 15) {
         special.push(FastingDay {
@@ -147,7 +143,7 @@ pub fn get_special_vrats_for_month(year: i32, month: u32) -> Vec<FastingDay> {
             mantras: vec!["Om Som Somaya Namah".to_string()],
         });
     }
-    
+
     // Add Amavasya (new moon) vrat
     if let Some(date) = NaiveDate::from_ymd_opt(year, month, 1) {
         special.push(FastingDay {
@@ -163,7 +159,7 @@ pub fn get_special_vrats_for_month(year: i32, month: u32) -> Vec<FastingDay> {
             mantras: vec!["Om Pitru Devaya Namah".to_string()],
         });
     }
-    
+
     special
 }
 

@@ -2,15 +2,15 @@
  * Tarot Reading - Performs readings with spread layouts
  */
 
-import { loadTarotDeck, type TarotCard } from './wisdom'
-import { drawCardsForSpread, type DrawnCard } from './shuffle'
+import { type DrawnCard, drawCardsForSpread } from './shuffle'
 import {
+  type SpreadPosition,
   SpreadType,
   getSpreadDefinition,
   getSpreadPositionCount,
   parseSpreadType,
-  type SpreadPosition,
 } from './spreads'
+import { type TarotCard, loadTarotDeck } from './wisdom'
 
 export interface PositionReading {
   position: SpreadPosition

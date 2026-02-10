@@ -174,15 +174,31 @@ pub fn get_gemstone_for_planet(planet: &str) -> GemstoneRecommendation {
 }
 
 /// Check if gemstone is suitable (basic rules)
-pub fn is_gemstone_suitable(planet: &str, is_benefic: bool, is_well_placed: bool) -> (bool, String) {
+pub fn is_gemstone_suitable(
+    _planet: &str,
+    is_benefic: bool,
+    is_well_placed: bool,
+) -> (bool, String) {
     if is_benefic && is_well_placed {
-        (true, "Gemstone is recommended to strengthen this benefic planet.".to_string())
+        (
+            true,
+            "Gemstone is recommended to strengthen this benefic planet.".to_string(),
+        )
     } else if is_benefic && !is_well_placed {
-        (true, "Gemstone may help strengthen the weakened benefic planet.".to_string())
+        (
+            true,
+            "Gemstone may help strengthen the weakened benefic planet.".to_string(),
+        )
     } else if !is_benefic && is_well_placed {
-        (false, "Malefic planet is already strong. Gemstone not recommended.".to_string())
+        (
+            false,
+            "Malefic planet is already strong. Gemstone not recommended.".to_string(),
+        )
     } else {
-        (false, "Weak malefic planet. Consult astrologer before wearing gemstone.".to_string())
+        (
+            false,
+            "Weak malefic planet. Consult astrologer before wearing gemstone.".to_string(),
+        )
     }
 }
 

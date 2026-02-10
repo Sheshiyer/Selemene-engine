@@ -46,7 +46,10 @@ impl DashaAlert {
     ) -> Self {
         let alert_date = transition_date - chrono::Duration::days(days_before as i64);
         Self {
-            id: format!("{}_{}_{}_{}", transition_type, from_lord, to_lord, alert_date),
+            id: format!(
+                "{}_{}_{}_{}",
+                transition_type, from_lord, to_lord, alert_date
+            ),
             transition_type: transition_type.to_string(),
             from_lord: from_lord.to_string(),
             to_lord: to_lord.to_string(),

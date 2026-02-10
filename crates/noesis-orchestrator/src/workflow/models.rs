@@ -40,6 +40,7 @@ pub struct SynthesisResult {
     pub summary: String,
 }
 
+#[allow(clippy::derivable_impls)]
 impl Default for SynthesisResult {
     fn default() -> Self {
         Self {
@@ -243,9 +244,12 @@ mod tests {
 
     #[test]
     fn theme_strength_calculation() {
-        let theme = Theme::new("Leadership", "Natural leadership abilities")
-            .with_sources(vec!["numerology".into(), "human-design".into(), "vimshottari".into()]);
-        
+        let theme = Theme::new("Leadership", "Natural leadership abilities").with_sources(vec![
+            "numerology".into(),
+            "human-design".into(),
+            "vimshottari".into(),
+        ]);
+
         assert_eq!(theme.strength, 0.6); // 3/5
     }
 
@@ -254,7 +258,7 @@ mod tests {
         let mut theme = Theme::new("Creativity", "Creative expression");
         theme.add_source("numerology");
         theme.add_source("human-design");
-        
+
         assert_eq!(theme.sources.len(), 2);
         assert_eq!(theme.strength, 0.4); // 2/5
     }
@@ -263,9 +267,10 @@ mod tests {
     fn witness_prompt_with_context() {
         let prompt = WitnessPrompt::new(
             "What do you notice about how Leadership appears across these lenses?",
-            InquiryType::PatternNoticing
-        ).with_context("Leadership theme");
-        
+            InquiryType::PatternNoticing,
+        )
+        .with_context("Leadership theme");
+
         assert!(prompt.context.is_some());
     }
 }

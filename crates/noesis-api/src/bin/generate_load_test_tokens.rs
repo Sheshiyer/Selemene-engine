@@ -20,9 +20,9 @@ fn main() {
         let token = auth_service
             .generate_jwt_token(
                 &format!("loadtest_user_{}", i),
-                "enterprise",                              // 10000 req/min
-                &vec!["basic:access".to_string(), "panchanga:read".to_string()],
-                5,                                          // max consciousness level
+                "enterprise", // 10000 req/min
+                &["basic:access".to_string(), "panchanga:read".to_string()],
+                5, // max consciousness level
             )
             .expect("Failed to generate JWT token");
 

@@ -72,7 +72,11 @@ mod tests {
                 days_remaining: 0.0,
                 total_period_years: 7.0,
             },
-            mahadashas: vec![sample_period(DashaLevel::Mahadasha, "2020-01-01", "2027-01-01")],
+            mahadashas: vec![sample_period(
+                DashaLevel::Mahadasha,
+                "2020-01-01",
+                "2027-01-01",
+            )],
             current_mahadasha: sample_period(DashaLevel::Mahadasha, "2020-01-01", "2027-01-01"),
             current_antardasha: None,
             current_pratyantardasha: None,

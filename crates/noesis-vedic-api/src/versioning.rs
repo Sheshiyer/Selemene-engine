@@ -118,7 +118,8 @@ impl ApiVersion {
         if self.is_deprecated() {
             Some(format!(
                 "API {} is deprecated. Please migrate to {}. See MIGRATION.md for details.",
-                self, Self::CURRENT
+                self,
+                Self::CURRENT
             ))
         } else {
             None
@@ -146,8 +147,7 @@ impl ApiVersion {
     /// ```
     pub fn strip_prefix<'a>(&self, path: &'a str) -> Option<&'a str> {
         let prefix = self.path_prefix();
-        if path.starts_with(prefix) {
-            let rest = &path[prefix.len()..];
+        if let Some(rest) = path.strip_prefix(prefix) {
             if rest.is_empty() {
                 Some("/")
             } else {
@@ -268,9 +268,7 @@ pub struct VersionResolution {
 impl VersionResolution {
     /// Get HTTP headers that should be added to the response.
     pub fn response_headers(&self) -> Vec<(String, String)> {
-        let mut headers = vec![
-            ("X-API-Version".to_string(), self.version.to_string()),
-        ];
+        let mut headers = vec![("X-API-Version".to_string(), self.version.to_string())];
 
         if self.deprecated {
             headers.push(("Deprecation".to_string(), "true".to_string()));
@@ -279,7 +277,10 @@ impl VersionResolution {
             }
             headers.push((
                 "Link".to_string(),
-                format!("<{}>; rel=\"successor-version\"", ApiVersion::CURRENT.path_prefix()),
+                format!(
+                    "<{}>; rel=\"successor-version\"",
+                    ApiVersion::CURRENT.path_prefix()
+                ),
             ));
         }
 
@@ -381,7 +382,10 @@ mod tests {
     #[test]
     fn test_version_from_path() {
         assert_eq!(ApiVersion::from_path("/v1/panchang"), Some(ApiVersion::V1));
-        assert_eq!(ApiVersion::from_path("/v2/birth_chart"), Some(ApiVersion::V2));
+        assert_eq!(
+            ApiVersion::from_path("/v2/birth_chart"),
+            Some(ApiVersion::V2)
+        );
         assert_eq!(ApiVersion::from_path("/v1"), Some(ApiVersion::V1));
         assert_eq!(ApiVersion::from_path("/v2"), Some(ApiVersion::V2));
         assert_eq!(ApiVersion::from_path("/panchang"), None);
@@ -418,7 +422,10 @@ mod tests {
     #[test]
     fn test_deprecation_notice() {
         assert!(ApiVersion::V1.deprecation_notice().is_some());
-        assert!(ApiVersion::V1.deprecation_notice().unwrap().contains("MIGRATION.md"));
+        assert!(ApiVersion::V1
+            .deprecation_notice()
+            .unwrap()
+            .contains("MIGRATION.md"));
         assert!(ApiVersion::V2.deprecation_notice().is_none());
     }
 
@@ -430,8 +437,14 @@ mod tests {
 
     #[test]
     fn test_strip_prefix() {
-        assert_eq!(ApiVersion::V1.strip_prefix("/v1/panchang"), Some("/panchang"));
-        assert_eq!(ApiVersion::V2.strip_prefix("/v2/birth_chart"), Some("/birth_chart"));
+        assert_eq!(
+            ApiVersion::V1.strip_prefix("/v1/panchang"),
+            Some("/panchang")
+        );
+        assert_eq!(
+            ApiVersion::V2.strip_prefix("/v2/birth_chart"),
+            Some("/birth_chart")
+        );
         assert_eq!(ApiVersion::V1.strip_prefix("/v2/panchang"), None);
         assert_eq!(ApiVersion::V1.strip_prefix("/v1"), Some("/"));
     }
@@ -503,10 +516,16 @@ mod tests {
         };
 
         let headers = resolution.response_headers();
-        assert!(headers.iter().any(|(k, v)| k == "X-API-Version" && v == "v1"));
-        assert!(headers.iter().any(|(k, v)| k == "Deprecation" && v == "true"));
+        assert!(headers
+            .iter()
+            .any(|(k, v)| k == "X-API-Version" && v == "v1"));
+        assert!(headers
+            .iter()
+            .any(|(k, v)| k == "Deprecation" && v == "true"));
         assert!(headers.iter().any(|(k, _)| k == "Sunset-Notice"));
-        assert!(headers.iter().any(|(k, v)| k == "Link" && v.contains("successor-version")));
+        assert!(headers
+            .iter()
+            .any(|(k, v)| k == "Link" && v.contains("successor-version")));
     }
 
     #[test]
@@ -520,7 +539,9 @@ mod tests {
 
         let headers = resolution.response_headers();
         assert_eq!(headers.len(), 1);
-        assert!(headers.iter().any(|(k, v)| k == "X-API-Version" && v == "v2"));
+        assert!(headers
+            .iter()
+            .any(|(k, v)| k == "X-API-Version" && v == "v2"));
     }
 
     #[test]

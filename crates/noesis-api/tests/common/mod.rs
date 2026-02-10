@@ -56,8 +56,7 @@ pub async fn get_router() -> &'static Router {
 
 /// Generate a valid JWT token for testing with a specific consciousness level.
 pub fn generate_test_token(consciousness_level: u8) -> String {
-    let jwt_secret =
-        std::env::var("JWT_SECRET").unwrap_or_else(|_| TEST_JWT_SECRET.to_string());
+    let jwt_secret = std::env::var("JWT_SECRET").unwrap_or_else(|_| TEST_JWT_SECRET.to_string());
     let auth = AuthService::new(jwt_secret);
 
     auth.generate_jwt_token(
@@ -92,7 +91,11 @@ pub async fn make_authenticated_request(
         None => Body::empty(),
     };
 
-    let response = router.clone().oneshot(builder.body(body).unwrap()).await.unwrap();
+    let response = router
+        .clone()
+        .oneshot(builder.body(body).unwrap())
+        .await
+        .unwrap();
     let status = response.status();
     let bytes = axum::body::to_bytes(response.into_body(), usize::MAX)
         .await
@@ -124,7 +127,11 @@ pub async fn make_authenticated_request_with_headers(
         None => Body::empty(),
     };
 
-    let response = router.clone().oneshot(builder.body(body).unwrap()).await.unwrap();
+    let response = router
+        .clone()
+        .oneshot(builder.body(body).unwrap())
+        .await
+        .unwrap();
     let status = response.status();
     let headers = response.headers().clone();
     let bytes = axum::body::to_bytes(response.into_body(), usize::MAX)
@@ -155,7 +162,11 @@ pub async fn make_unauthenticated_request(
         None => Body::empty(),
     };
 
-    let response = router.clone().oneshot(builder.body(body).unwrap()).await.unwrap();
+    let response = router
+        .clone()
+        .oneshot(builder.body(body).unwrap())
+        .await
+        .unwrap();
     let status = response.status();
     let bytes = axum::body::to_bytes(response.into_body(), usize::MAX)
         .await
@@ -185,7 +196,11 @@ pub async fn make_unauthenticated_request_with_headers(
         None => Body::empty(),
     };
 
-    let response = router.clone().oneshot(builder.body(body).unwrap()).await.unwrap();
+    let response = router
+        .clone()
+        .oneshot(builder.body(body).unwrap())
+        .await
+        .unwrap();
     let status = response.status();
     let headers = response.headers().clone();
     let bytes = axum::body::to_bytes(response.into_body(), usize::MAX)

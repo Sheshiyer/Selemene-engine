@@ -200,7 +200,7 @@ mod tests {
             saturn_sign: "Aquarius".to_string(),
             moon_sign: "Aquarius".to_string(),
         };
-        
+
         assert!(status.is_active);
         assert_eq!(status.phase, Some(SadeSatiPhase::Peak));
     }

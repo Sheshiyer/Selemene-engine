@@ -37,8 +37,8 @@ pub struct FastingReminder {
 pub struct FastingPreferences {
     pub observe_ekadashi: bool,
     pub observe_pradosh: bool,
-    pub observe_monday: bool,  // Shiva vrat
-    pub observe_saturday: bool,  // Saturn vrat
+    pub observe_monday: bool,   // Shiva vrat
+    pub observe_saturday: bool, // Saturn vrat
     pub observe_tuesday: bool,  // Hanuman vrat
     pub custom_vrats: Vec<String>,
 }

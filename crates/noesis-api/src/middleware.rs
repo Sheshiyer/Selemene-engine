@@ -2,19 +2,19 @@
 
 use axum::{
     extract::{Request, State},
-    http::{StatusCode, header::AUTHORIZATION},
+    http::{header::AUTHORIZATION, StatusCode},
     middleware::Next,
-    response::{Response, IntoResponse},
+    response::{IntoResponse, Response},
     Json,
 };
+use chrono::{DateTime, Duration, Utc};
+use dashmap::DashMap;
+use noesis_auth::{AuthService, AuthUser};
+use noesis_metrics::NoesisMetrics;
+use serde::Serialize;
 use std::sync::Arc;
 use std::time::Instant;
 use tracing::{info, info_span, Instrument};
-use noesis_metrics::NoesisMetrics;
-use noesis_auth::{AuthService, AuthUser};
-use serde::Serialize;
-use dashmap::DashMap;
-use chrono::{DateTime, Utc, Duration};
 
 /// Request logging middleware that captures timing and structured request metadata.
 ///
@@ -30,7 +30,7 @@ pub async fn request_logging_middleware(req: Request, next: Next) -> Response {
     let start = Instant::now();
     let method = req.method().clone();
     let path = req.uri().path().to_string();
-    
+
     // Extract user_id from request extensions if authentication middleware set it
     // For now, we'll check if it's in headers (e.g., X-User-Id set by upstream auth)
     let user_id = req
@@ -51,7 +51,7 @@ pub async fn request_logging_middleware(req: Request, next: Next) -> Response {
     async move {
         // Process the request
         let response = next.run(req).await;
-        
+
         // Calculate duration
         let duration_ms = start.elapsed().as_millis() as u64;
         let status = response.status().as_u16();
@@ -77,6 +77,7 @@ pub async fn request_logging_middleware(req: Request, next: Next) -> Response {
 /// - `engine_calculation_errors_total` counter (labeled by engine_id, error_type)
 ///
 /// This middleware should wrap handlers that extract engine_id from path or state.
+#[allow(dead_code)]
 pub async fn metrics_middleware(
     metrics: Arc<NoesisMetrics>,
     engine_id: String,
@@ -84,24 +85,24 @@ pub async fn metrics_middleware(
     next: Next,
 ) -> Response {
     let start = Instant::now();
-    
+
     // Process the request
     let response = next.run(req).await;
-    
+
     // Calculate duration
     let duration_secs = start.elapsed().as_secs_f64();
     let status = response.status();
-    
+
     // Determine status label (success/failure)
     let status_label = if status.is_success() {
         "success"
     } else {
         "failure"
     };
-    
+
     // Record metrics
     metrics.record_engine_calculation_with_status(&engine_id, status_label, duration_secs);
-    
+
     // If it's an error, record error type
     if !status.is_success() {
         let error_type = match status {
@@ -113,10 +114,10 @@ pub async fn metrics_middleware(
             StatusCode::TOO_MANY_REQUESTS => "rate_limit",
             _ => "internal_error",
         };
-        
+
         metrics.record_engine_calculation_error(&engine_id, error_type);
     }
-    
+
     response
 }
 
@@ -227,7 +228,7 @@ impl RateLimiter {
             window_seconds: 60,
         }
     }
-    
+
     /// Create a new rate limiter with custom config
     pub fn new_with_config(default_limit: u32, window_seconds: u64) -> Self {
         Self {
@@ -241,27 +242,33 @@ impl RateLimiter {
     /// Returns (is_allowed, remaining, reset_timestamp)
     fn check_and_update(&self, user_id: &str, rate_limit: u32) -> (bool, u32, i64) {
         let now = Utc::now();
-        
+
         // Use entry API for atomic check-and-update
-        let mut entry = self.user_windows.entry(user_id.to_string()).or_insert((0, now));
+        let mut entry = self
+            .user_windows
+            .entry(user_id.to_string())
+            .or_insert((0, now));
         let (count, window_start) = entry.value_mut();
-        
+
         // Check if window has expired (1 minute sliding window)
         if now - *window_start > Duration::seconds(self.window_seconds) {
             // Reset window
             *count = 1;
             *window_start = now;
-            let reset_timestamp = (*window_start + Duration::seconds(self.window_seconds)).timestamp();
+            let reset_timestamp =
+                (*window_start + Duration::seconds(self.window_seconds)).timestamp();
             (true, rate_limit.saturating_sub(1), reset_timestamp)
         } else if *count < rate_limit {
             // Within window and under limit
             *count += 1;
             let remaining = rate_limit.saturating_sub(*count);
-            let reset_timestamp = (*window_start + Duration::seconds(self.window_seconds)).timestamp();
+            let reset_timestamp =
+                (*window_start + Duration::seconds(self.window_seconds)).timestamp();
             (true, remaining, reset_timestamp)
         } else {
             // Rate limit exceeded
-            let reset_timestamp = (*window_start + Duration::seconds(self.window_seconds)).timestamp();
+            let reset_timestamp =
+                (*window_start + Duration::seconds(self.window_seconds)).timestamp();
             (false, 0, reset_timestamp)
         }
     }
@@ -296,28 +303,32 @@ pub async fn rate_limit_middleware(
 ) -> Result<Response, (StatusCode, Json<ErrorResponse>)> {
     // Check if user is authenticated (AuthUser extension present)
     let user = req.extensions().get::<AuthUser>().cloned();
-    
+
     // Skip rate limiting for unauthenticated requests (public routes)
     let Some(auth_user) = user else {
         return Ok(next.run(req).await);
     };
-    
+
     // Get rate limit (from user or use default 100)
     let rate_limit = if auth_user.rate_limit > 0 {
         auth_user.rate_limit
     } else {
         limiter.default_limit
     };
-    
+
     // Check rate limit
-    let (allowed, remaining, reset_timestamp) = limiter.check_and_update(&auth_user.user_id, rate_limit);
-    
+    let (allowed, remaining, reset_timestamp) =
+        limiter.check_and_update(&auth_user.user_id, rate_limit);
+
     if !allowed {
         // Rate limit exceeded - return 429 with headers
         let mut response = (
             StatusCode::TOO_MANY_REQUESTS,
             Json(ErrorResponse {
-                error: format!("Rate limit exceeded. Maximum {} requests per minute allowed.", rate_limit),
+                error: format!(
+                    "Rate limit exceeded. Maximum {} requests per minute allowed.",
+                    rate_limit
+                ),
                 error_code: "RATE_LIMIT_EXCEEDED".to_string(),
                 details: Some(serde_json::json!({
                     "limit": rate_limit,
@@ -325,23 +336,33 @@ pub async fn rate_limit_middleware(
                     "reset_at": reset_timestamp,
                 })),
             }),
-        ).into_response();
-        
+        )
+            .into_response();
+
         // Add rate limit headers
         let headers = response.headers_mut();
         headers.insert("X-RateLimit-Limit", rate_limit.to_string().parse().unwrap());
         headers.insert("X-RateLimit-Remaining", "0".parse().unwrap());
-        headers.insert("X-RateLimit-Reset", reset_timestamp.to_string().parse().unwrap());
-        
+        headers.insert(
+            "X-RateLimit-Reset",
+            reset_timestamp.to_string().parse().unwrap(),
+        );
+
         return Ok(response);
     }
-    
+
     // Request allowed - process and add rate limit headers to response
     let mut response = next.run(req).await;
     let headers = response.headers_mut();
     headers.insert("X-RateLimit-Limit", rate_limit.to_string().parse().unwrap());
-    headers.insert("X-RateLimit-Remaining", remaining.to_string().parse().unwrap());
-    headers.insert("X-RateLimit-Reset", reset_timestamp.to_string().parse().unwrap());
-    
+    headers.insert(
+        "X-RateLimit-Remaining",
+        remaining.to_string().parse().unwrap(),
+    );
+    headers.insert(
+        "X-RateLimit-Reset",
+        reset_timestamp.to_string().parse().unwrap(),
+    );
+
     Ok(response)
 }

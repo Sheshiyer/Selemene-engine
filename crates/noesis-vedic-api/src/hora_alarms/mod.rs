@@ -2,13 +2,13 @@
 //!
 //! FAPI-113: Planetary hour notifications and alarms
 
-pub mod types;
 pub mod calculator;
 pub mod scheduler;
+pub mod types;
 
-pub use types::*;
 pub use calculator::*;
 pub use scheduler::*;
+pub use types::*;
 
 use chrono::{NaiveDateTime, NaiveTime};
 use serde::{Deserialize, Serialize};

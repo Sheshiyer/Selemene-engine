@@ -77,22 +77,31 @@ impl BirthData {
     pub fn validate(&self) -> Result<(), String> {
         // Validate Latitude (-90 to 90)
         if !(self.latitude >= -90.0 && self.latitude <= 90.0) {
-           return Err(format!("Invalid latitude: {}. Must be between -90 and 90.", self.latitude));
+            return Err(format!(
+                "Invalid latitude: {}. Must be between -90 and 90.",
+                self.latitude
+            ));
         }
 
         // Validate Longitude (-180 to 180)
         if !(self.longitude >= -180.0 && self.longitude <= 180.0) {
-           return Err(format!("Invalid longitude: {}. Must be between -180 and 180.", self.longitude));
+            return Err(format!(
+                "Invalid longitude: {}. Must be between -180 and 180.",
+                self.longitude
+            ));
         }
 
         // Validate Date (basic format check YYYY-MM-DD)
-        if self.date.len() != 10 || self.date.chars().nth(4) != Some('-') || self.date.chars().nth(7) != Some('-') {
-             return Err("Invalid date format. Expected YYYY-MM-DD.".to_string());
+        if self.date.len() != 10
+            || self.date.chars().nth(4) != Some('-')
+            || self.date.chars().nth(7) != Some('-')
+        {
+            return Err("Invalid date format. Expected YYYY-MM-DD.".to_string());
         }
-        
+
         // Check realistic year (1000 - 3000)
         if let Ok(year) = self.date[0..4].parse::<i32>() {
-            if year < 1000 || year > 3000 {
+            if !(1000..=3000).contains(&year) {
                 return Err(format!("Year {} out of supported range (1000-3000)", year));
             }
         } else {
@@ -101,7 +110,7 @@ impl BirthData {
 
         // Validate Timezone (basic check)
         if self.timezone.trim().is_empty() {
-             return Err("Timezone is required".to_string());
+            return Err("Timezone is required".to_string());
         }
 
         Ok(())
@@ -124,16 +133,12 @@ pub struct Coordinates {
 /// Calculation precision levels
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord)]
 #[cfg_attr(feature = "openapi", derive(ToSchema))]
+#[derive(Default)]
 pub enum Precision {
+    #[default]
     Standard = 1,
     High = 2,
     Extreme = 3,
-}
-
-impl Default for Precision {
-    fn default() -> Self {
-        Precision::Standard
-    }
 }
 
 /// Metadata about how a calculation was performed

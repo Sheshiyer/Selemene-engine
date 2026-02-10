@@ -5,9 +5,9 @@
 use chrono::NaiveDateTime;
 use serde::{Deserialize, Serialize};
 
-use crate::error::{VedicApiError, VedicApiResult};
+use super::types::{PlanetAshtakavarga, SarvaAshtakavarga};
 use crate::client::VedicApiClient;
-use super::types::{SarvaAshtakavarga, PlanetAshtakavarga};
+use crate::error::{VedicApiError, VedicApiResult};
 
 /// Request for Ashtakavarga calculation
 #[derive(Debug, Clone, Serialize)]
@@ -63,37 +63,41 @@ impl VedicApiClient {
     /// Get Ashtakavarga analysis
     ///
     /// FAPI-071: GET /ashtakavarga endpoint
-    pub async fn get_ashtakavarga(&self, request: &AshtakavargaRequest) -> VedicApiResult<AshtakavargaApiResponse> {
+    pub async fn get_ashtakavarga(
+        &self,
+        request: &AshtakavargaRequest,
+    ) -> VedicApiResult<AshtakavargaApiResponse> {
         let response = self.post("/ashtakavarga", request).await?;
-        serde_json::from_value(response)
-            .map_err(|e| VedicApiError::ParseError(format!("Failed to parse ashtakavarga response: {}", e)))
+        serde_json::from_value(response).map_err(|e| {
+            VedicApiError::ParseError(format!("Failed to parse ashtakavarga response: {}", e))
+        })
     }
 }
 
 /// Map API response to internal Sarva Ashtakavarga
 pub fn map_ashtakavarga_response(response: AshtakavargaApiResponse) -> SarvaAshtakavarga {
     let mut sarva = SarvaAshtakavarga::empty();
-    
+
     for planet in response.planets {
         let mut av = PlanetAshtakavarga::empty(&planet.name);
-        
+
         for (i, points) in planet.points.iter().enumerate() {
             if i < 12 {
                 av.sign_points[i] = *points;
             }
         }
         av.total_points = planet.total;
-        
+
         sarva.planets.push(av);
     }
-    
+
     for (i, points) in response.sarva.points.iter().enumerate() {
         if i < 12 {
             sarva.sarva_points[i] = *points;
         }
     }
     sarva.grand_total = response.sarva.total;
-    
+
     sarva
 }
 
@@ -109,7 +113,7 @@ mod tests {
             NaiveTime::from_hms_opt(10, 30, 0).unwrap(),
         );
         let request = AshtakavargaRequest::new(dt, 12.97, 77.59, 5.5);
-        
+
         assert_eq!(request.birth_date, "1990-06-15");
     }
 }

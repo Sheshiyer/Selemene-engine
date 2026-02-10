@@ -1,7 +1,7 @@
 //! Eclipse calculator
 
+use super::{EclipseEvent, EclipseType, LocalEclipseVisibility, VedicEclipseEffects};
 use chrono::{NaiveDate, NaiveDateTime, NaiveTime};
-use super::{EclipseEvent, EclipseType, VedicEclipseEffects, LocalEclipseVisibility};
 
 /// Get eclipses for a year
 pub fn get_eclipses_for_year(year: i32) -> Vec<EclipseEvent> {
@@ -33,7 +33,11 @@ pub fn get_eclipses_for_year(year: i32) -> Vec<EclipseEvent> {
             totality_duration: None,
             zodiac_sign: "Virgo".to_string(),
             nakshatra: "Hasta".to_string(),
-            visibility: vec!["Americas".to_string(), "Europe".to_string(), "Africa".to_string()],
+            visibility: vec![
+                "Americas".to_string(),
+                "Europe".to_string(),
+                "Africa".to_string(),
+            ],
             magnitude: -0.132,
             saros: 113,
             vedic_effects: create_vedic_effects("Virgo", "Hasta", false),
@@ -63,7 +67,11 @@ pub fn get_eclipses_for_year(year: i32) -> Vec<EclipseEvent> {
             totality_duration: Some("1h 3m".to_string()),
             zodiac_sign: "Pisces".to_string(),
             nakshatra: "Uttara Bhadrapada".to_string(),
-            visibility: vec!["Americas".to_string(), "Europe".to_string(), "Africa".to_string()],
+            visibility: vec![
+                "Americas".to_string(),
+                "Europe".to_string(),
+                "Africa".to_string(),
+            ],
             magnitude: 1.0364,
             saros: 118,
             vedic_effects: create_vedic_effects("Pisces", "Uttara Bhadrapada", false),
@@ -73,7 +81,7 @@ pub fn get_eclipses_for_year(year: i32) -> Vec<EclipseEvent> {
 
 fn create_vedic_effects(sign: &str, nakshatra: &str, is_solar: bool) -> VedicEclipseEffects {
     let opposite_sign = get_opposite_sign(sign);
-    
+
     let general = if is_solar {
         format!(
             "Solar eclipse in {} affects leadership, government, and ego matters. \
@@ -87,7 +95,7 @@ fn create_vedic_effects(sign: &str, nakshatra: &str, is_solar: bool) -> VedicEcl
             sign, sign, opposite_sign
         )
     };
-    
+
     VedicEclipseEffects {
         affected_signs: vec![sign.to_string(), opposite_sign.to_string()],
         affected_nakshatras: vec![nakshatra.to_string()],
@@ -125,7 +133,8 @@ fn get_opposite_sign(sign: &str) -> String {
         "Aquarius" => "Leo",
         "Pisces" => "Virgo",
         _ => "Unknown",
-    }.to_string()
+    }
+    .to_string()
 }
 
 /// Calculate local visibility
@@ -136,26 +145,48 @@ pub fn calculate_local_visibility(
 ) -> LocalEclipseVisibility {
     // Simplified visibility calculation
     // In production, this would use proper astronomical algorithms
-    
+
     let is_visible = eclipse.visibility.iter().any(|v| {
         // Very simplified region check
         match v.as_str() {
-            "North America" => latitude > 15.0 && latitude < 70.0 && longitude < -50.0 && longitude > -170.0,
-            "South America" => latitude > -60.0 && latitude < 15.0 && longitude < -30.0 && longitude > -90.0,
+            "North America" => {
+                latitude > 15.0 && latitude < 70.0 && longitude < -50.0 && longitude > -170.0
+            }
+            "South America" => {
+                latitude > -60.0 && latitude < 15.0 && longitude < -30.0 && longitude > -90.0
+            }
             "Europe" => latitude > 35.0 && latitude < 70.0 && longitude > -10.0 && longitude < 40.0,
-            "Africa" => latitude > -35.0 && latitude < 35.0 && longitude > -20.0 && longitude < 55.0,
+            "Africa" => {
+                latitude > -35.0 && latitude < 35.0 && longitude > -20.0 && longitude < 55.0
+            }
             "Asia" => latitude > 5.0 && latitude < 70.0 && longitude > 40.0 && longitude < 150.0,
             "Americas" => longitude < -30.0 && longitude > -170.0,
             _ => false,
         }
     });
-    
+
     LocalEclipseVisibility {
         is_visible,
-        visibility_type: if is_visible { "Partial".to_string() } else { "Not visible".to_string() },
-        start_time: if is_visible { Some(eclipse.maximum_time) } else { None },
-        maximum_time: if is_visible { Some(eclipse.maximum_time) } else { None },
-        end_time: if is_visible { Some(eclipse.maximum_time) } else { None },
+        visibility_type: if is_visible {
+            "Partial".to_string()
+        } else {
+            "Not visible".to_string()
+        },
+        start_time: if is_visible {
+            Some(eclipse.maximum_time)
+        } else {
+            None
+        },
+        maximum_time: if is_visible {
+            Some(eclipse.maximum_time)
+        } else {
+            None
+        },
+        end_time: if is_visible {
+            Some(eclipse.maximum_time)
+        } else {
+            None
+        },
         obscuration: if is_visible { Some(0.7) } else { None },
     }
 }
@@ -168,7 +199,9 @@ mod tests {
     fn test_get_eclipses() {
         let eclipses = get_eclipses_for_year(2024);
         assert!(!eclipses.is_empty());
-        assert!(eclipses.iter().any(|e| matches!(e.eclipse_type, EclipseType::SolarTotal)));
+        assert!(eclipses
+            .iter()
+            .any(|e| matches!(e.eclipse_type, EclipseType::SolarTotal)));
     }
 
     #[test]

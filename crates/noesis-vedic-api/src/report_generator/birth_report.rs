@@ -5,17 +5,14 @@ use super::{DetailLevel, ReportConfig, ReportSection};
 use chrono::Utc;
 
 /// Generate a birth chart report
-pub fn generate_birth_report(
-    details: &BirthDetails,
-    config: &ReportConfig,
-) -> GeneratedReport {
+pub fn generate_birth_report(details: &BirthDetails, config: &ReportConfig) -> GeneratedReport {
     let mut sections = vec![];
-    
+
     for section in &config.sections {
         let content = generate_section(section, details, config.detail_level);
         sections.push(content);
     }
-    
+
     GeneratedReport {
         title: format!("Birth Chart Report for {}", details.name),
         subject_name: details.name.clone(),
@@ -29,7 +26,7 @@ pub fn generate_birth_report(
 fn generate_section(
     section: &ReportSection,
     details: &BirthDetails,
-    detail_level: DetailLevel,
+    _detail_level: DetailLevel,
 ) -> ReportSectionContent {
     match section {
         ReportSection::PersonalInfo => ReportSectionContent {
@@ -47,7 +44,8 @@ fn generate_section(
         },
         ReportSection::BirthChart => ReportSectionContent {
             title: "Birth Chart (Rashi)".to_string(),
-            content: "The birth chart shows the position of planets at the time of birth.".to_string(),
+            content: "The birth chart shows the position of planets at the time of birth."
+                .to_string(),
             key_points: vec![
                 "Ascendant determines physical appearance and personality".to_string(),
                 "Moon sign indicates emotional nature".to_string(),
@@ -76,7 +74,8 @@ fn generate_section(
         },
         ReportSection::DivisionalCharts => ReportSectionContent {
             title: "Divisional Charts (Vargas)".to_string(),
-            content: "Divisional charts provide deeper insights into specific life areas.".to_string(),
+            content: "Divisional charts provide deeper insights into specific life areas."
+                .to_string(),
             key_points: vec![
                 "Navamsa (D9): Marriage and dharma".to_string(),
                 "Dasamsa (D10): Career and profession".to_string(),
@@ -147,10 +146,10 @@ mod tests {
             timezone: 5.5,
             place_name: Some("Bangalore".to_string()),
         };
-        
+
         let config = ReportConfig::default();
         let report = generate_birth_report(&details, &config);
-        
+
         assert_eq!(report.subject_name, "Test Person");
         assert!(!report.sections.is_empty());
     }

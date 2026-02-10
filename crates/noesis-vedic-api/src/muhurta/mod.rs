@@ -2,16 +2,16 @@
 //!
 //! Electional astrology for auspicious timing
 
-pub mod types;
 pub mod api;
-pub mod marriage;
 pub mod business;
-pub mod travel;
 pub mod general;
+pub mod marriage;
+pub mod travel;
+pub mod types;
 
-pub use types::*;
 pub use api::*;
-pub use marriage::*;
 pub use business::*;
-pub use travel::*;
 pub use general::*;
+pub use marriage::*;
+pub use travel::*;
+pub use types::*;

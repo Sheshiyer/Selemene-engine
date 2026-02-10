@@ -43,11 +43,7 @@ impl WorkflowRegistry {
             name: "Daily Practice".into(),
             description: "Daily rhythm optimization through temporal analysis".into(),
             required_phase: 0,
-            engine_ids: vec![
-                "panchanga".into(),
-                "vedic-clock".into(),
-                "biorhythm".into(),
-            ],
+            engine_ids: vec!["panchanga".into(), "vedic-clock".into(), "biorhythm".into()],
             synthesis_type: SynthesisType::DailyPractice,
             default_options: HashMap::new(),
         });
@@ -58,11 +54,7 @@ impl WorkflowRegistry {
             name: "Decision Support".into(),
             description: "Multi-system decision mirrors for clarity".into(),
             required_phase: 1,
-            engine_ids: vec![
-                "tarot".into(),
-                "i-ching".into(),
-                "human-design".into(),
-            ],
+            engine_ids: vec!["tarot".into(), "i-ching".into(), "human-design".into()],
             synthesis_type: SynthesisType::DecisionSupport,
             default_options: HashMap::new(),
         });
@@ -73,10 +65,7 @@ impl WorkflowRegistry {
             name: "Self-Inquiry".into(),
             description: "Deep self-consciousness exploration and shadow work".into(),
             required_phase: 2,
-            engine_ids: vec![
-                "gene-keys".into(),
-                "enneagram".into(),
-            ],
+            engine_ids: vec!["gene-keys".into(), "enneagram".into()],
             synthesis_type: SynthesisType::SelfInquiry,
             default_options: HashMap::new(),
         });
@@ -87,10 +76,7 @@ impl WorkflowRegistry {
             name: "Creative Expression".into(),
             description: "Creative and aesthetic exploration through symbols".into(),
             required_phase: 1,
-            engine_ids: vec![
-                "sigil-forge".into(),
-                "sacred-geometry".into(),
-            ],
+            engine_ids: vec!["sigil-forge".into(), "sacred-geometry".into()],
             synthesis_type: SynthesisType::CreativeExpression,
             default_options: HashMap::new(),
         });
@@ -188,9 +174,12 @@ mod tests {
     fn get_birth_blueprint() {
         let registry = WorkflowRegistry::new();
         let wf = registry.get("birth-blueprint").unwrap();
-        
+
         assert_eq!(wf.name, "Birth Blueprint");
-        assert_eq!(wf.engine_ids, vec!["numerology", "human-design", "vimshottari"]);
+        assert_eq!(
+            wf.engine_ids,
+            vec!["numerology", "human-design", "vimshottari"]
+        );
         assert_eq!(wf.synthesis_type, SynthesisType::BirthBlueprint);
     }
 
@@ -198,7 +187,7 @@ mod tests {
     fn get_daily_practice() {
         let registry = WorkflowRegistry::new();
         let wf = registry.get("daily-practice").unwrap();
-        
+
         assert_eq!(wf.engine_ids, vec!["panchanga", "vedic-clock", "biorhythm"]);
         assert_eq!(wf.synthesis_type, SynthesisType::DailyPractice);
     }
@@ -206,11 +195,11 @@ mod tests {
     #[test]
     fn list_for_phase_filters() {
         let registry = WorkflowRegistry::new();
-        
+
         // Phase 0 should get birth-blueprint and daily-practice
         let phase0 = registry.list_for_phase(0);
         assert_eq!(phase0.len(), 2);
-        
+
         // Phase 3 should get all
         let phase3 = registry.list_for_phase(3);
         assert_eq!(phase3.len(), 6);
@@ -220,7 +209,7 @@ mod tests {
     fn full_spectrum_has_all_engines() {
         let registry = WorkflowRegistry::new();
         let wf = registry.get("full-spectrum").unwrap();
-        
+
         assert!(wf.engine_ids.len() >= 11);
         assert!(wf.engine_ids.contains(&"numerology".to_string()));
         assert!(wf.engine_ids.contains(&"tarot".to_string()));
@@ -229,7 +218,7 @@ mod tests {
     #[test]
     fn custom_workflow_registration() {
         let mut registry = WorkflowRegistry::new();
-        
+
         registry.register(ExtendedWorkflowDefinition {
             id: "custom".into(),
             name: "Custom Workflow".into(),

@@ -13,28 +13,20 @@
 //! let chart = mocks::mock_birth_chart();
 //! ```
 
-use crate::panchang::{
-    Panchang, CompletePanchang, PanchangMetadata,
-    DateInfo, Location, DayBoundaries, PlanetaryPositions,
-    Tithi, TithiName, Nakshatra, NakshatraName,
-    Yoga, YogaName, Karana, KaranaName, KaranaType,
-    Vara, Paksha,
-    MuhurtaCollection, Muhurta, MuhurtaNature,
-    HoraTimings, Hora,
-    ChoghadiyaTimings, Choghadiya, ChoghadiyaName, ChoghadiyaNature,
+use crate::chart::{
+    AscendantInfo, BirthChart, HousePosition, HouseType, MoonInfo, NativeInfo, NavamsaChart,
+    NavamsaPosition, PlanetPosition as ChartPlanetPosition, SpecialPoints, ZodiacSign,
 };
+use crate::dasha::{DashaBalance, DashaLevel, DashaPeriod, DashaPlanet, VimshottariDasha};
+use crate::error::VedicApiError;
 use crate::panchang::data::PlanetPosition;
 use crate::panchang::hora::Planet as HoraPlanet;
-use crate::dasha::{
-    VimshottariDasha, DashaPeriod, DashaLevel, DashaPlanet, DashaBalance,
+use crate::panchang::{
+    Choghadiya, ChoghadiyaName, ChoghadiyaNature, ChoghadiyaTimings, CompletePanchang, DateInfo,
+    DayBoundaries, Hora, HoraTimings, Karana, KaranaName, KaranaType, Location, Muhurta,
+    MuhurtaCollection, MuhurtaNature, Nakshatra, NakshatraName, Paksha, Panchang, PanchangMetadata,
+    PlanetaryPositions, Tithi, TithiName, Vara, Yoga, YogaName,
 };
-use crate::chart::{
-    BirthChart, NavamsaChart, NativeInfo, AscendantInfo, MoonInfo,
-    SpecialPoints, HousePosition, HouseType,
-    PlanetPosition as ChartPlanetPosition, NavamsaPosition,
-    ZodiacSign,
-};
-use crate::error::VedicApiError;
 
 // ---------------------------------------------------------------------------
 // Constants: Bangalore, India test fixture
@@ -242,10 +234,7 @@ pub fn mock_muhurta_collection() -> MuhurtaCollection {
             duration_minutes: 40,
             nature: MuhurtaNature::Auspicious,
             ruler: "Mercury".to_string(),
-            suitable_activities: vec![
-                "All activities".to_string(),
-                "New beginnings".to_string(),
-            ],
+            suitable_activities: vec!["All activities".to_string(), "New beginnings".to_string()],
             avoid_activities: vec![],
         }),
         amrit_kaal: Some(Muhurta {
@@ -255,10 +244,7 @@ pub fn mock_muhurta_collection() -> MuhurtaCollection {
             duration_minutes: 90,
             nature: MuhurtaNature::Auspicious,
             ruler: "Moon".to_string(),
-            suitable_activities: vec![
-                "New ventures".to_string(),
-                "Purchases".to_string(),
-            ],
+            suitable_activities: vec!["New ventures".to_string(), "Purchases".to_string()],
             avoid_activities: vec![],
         }),
         rahu_kalam: Some(Muhurta {
@@ -303,10 +289,7 @@ pub fn mock_muhurta_collection() -> MuhurtaCollection {
             duration_minutes: 96,
             nature: MuhurtaNature::Auspicious,
             ruler: "Brahma".to_string(),
-            suitable_activities: vec![
-                "Meditation".to_string(),
-                "Spiritual practices".to_string(),
-            ],
+            suitable_activities: vec!["Meditation".to_string(), "Spiritual practices".to_string()],
             avoid_activities: vec!["Sleep".to_string()],
         }),
     }
@@ -319,17 +302,33 @@ pub fn mock_muhurta_collection() -> MuhurtaCollection {
 /// Create mock HoraTimings for a Monday
 pub fn mock_hora_timings() -> HoraTimings {
     let day_planets = [
-        HoraPlanet::Moon, HoraPlanet::Saturn, HoraPlanet::Jupiter,
-        HoraPlanet::Mars, HoraPlanet::Sun, HoraPlanet::Venus,
-        HoraPlanet::Mercury, HoraPlanet::Moon, HoraPlanet::Saturn,
-        HoraPlanet::Jupiter, HoraPlanet::Mars, HoraPlanet::Sun,
+        HoraPlanet::Moon,
+        HoraPlanet::Saturn,
+        HoraPlanet::Jupiter,
+        HoraPlanet::Mars,
+        HoraPlanet::Sun,
+        HoraPlanet::Venus,
+        HoraPlanet::Mercury,
+        HoraPlanet::Moon,
+        HoraPlanet::Saturn,
+        HoraPlanet::Jupiter,
+        HoraPlanet::Mars,
+        HoraPlanet::Sun,
     ];
 
     let night_planets = [
-        HoraPlanet::Venus, HoraPlanet::Mercury, HoraPlanet::Moon,
-        HoraPlanet::Saturn, HoraPlanet::Jupiter, HoraPlanet::Mars,
-        HoraPlanet::Sun, HoraPlanet::Venus, HoraPlanet::Mercury,
-        HoraPlanet::Moon, HoraPlanet::Saturn, HoraPlanet::Jupiter,
+        HoraPlanet::Venus,
+        HoraPlanet::Mercury,
+        HoraPlanet::Moon,
+        HoraPlanet::Saturn,
+        HoraPlanet::Jupiter,
+        HoraPlanet::Mars,
+        HoraPlanet::Sun,
+        HoraPlanet::Venus,
+        HoraPlanet::Mercury,
+        HoraPlanet::Moon,
+        HoraPlanet::Saturn,
+        HoraPlanet::Jupiter,
     ];
 
     let day_horas: Vec<Hora> = day_planets
@@ -920,7 +919,10 @@ mod tests {
         assert_eq!(p.paksha, Paksha::Shukla);
         assert_eq!(p.tithi.name(), "Panchami");
         assert_eq!(p.nakshatra.name(), "Pushya");
-        assert!(p.is_auspicious(), "Monday Shukla Panchami Pushya should be auspicious");
+        assert!(
+            p.is_auspicious(),
+            "Monday Shukla Panchami Pushya should be auspicious"
+        );
     }
 
     #[test]
@@ -1001,7 +1003,10 @@ mod tests {
         assert_eq!(c.night.len(), 8);
         assert_eq!(c.day_of_week, "Monday");
         let favorable = c.get_favorable();
-        assert!(!favorable.is_empty(), "Should have at least one favorable choghadiya");
+        assert!(
+            !favorable.is_empty(),
+            "Should have at least one favorable choghadiya"
+        );
     }
 
     #[test]

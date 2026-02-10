@@ -37,10 +37,10 @@ pub async fn init_otel_tracing(
     service_name: &str,
     otlp_endpoint: &str,
 ) -> Result<opentelemetry_sdk::trace::Tracer, Box<dyn std::error::Error + Send + Sync>> {
+    use opentelemetry::KeyValue;
     use opentelemetry_otlp::WithExportConfig;
     use opentelemetry_sdk::{runtime, trace as sdktrace, Resource};
-    use opentelemetry::KeyValue;
-    
+
     let tracer = opentelemetry_otlp::new_pipeline()
         .tracing()
         .with_exporter(
@@ -57,13 +57,13 @@ pub async fn init_otel_tracing(
                 .with_sampler(sdktrace::Sampler::AlwaysOn),
         )
         .install_batch(runtime::Tokio)?;
-    
+
     tracing::info!(
         "OpenTelemetry tracing initialized: service={}, endpoint={}",
         service_name,
         otlp_endpoint
     );
-    
+
     Ok(tracer)
 }
 
@@ -132,26 +132,19 @@ pub struct NoesisMetrics {
 impl NoesisMetrics {
     pub fn new() -> Result<Self, Box<dyn std::error::Error>> {
         // -- Request metrics -------------------------------------------------
-        let requests_total = Counter::new(
-            "noesis_requests_total",
-            "Total number of requests",
-        )?;
+        let requests_total = Counter::new("noesis_requests_total", "Total number of requests")?;
 
         let request_duration = Histogram::with_opts(HistogramOpts::new(
             "noesis_request_duration_seconds",
             "Request duration in seconds",
         ))?;
 
-        let active_connections = Gauge::new(
-            "noesis_active_connections",
-            "Number of active connections",
-        )?;
+        let active_connections =
+            Gauge::new("noesis_active_connections", "Number of active connections")?;
 
         // -- Calculation metrics (aggregate) ---------------------------------
-        let calculations_total = Counter::new(
-            "noesis_calculations_total",
-            "Total number of calculations",
-        )?;
+        let calculations_total =
+            Counter::new("noesis_calculations_total", "Total number of calculations")?;
 
         let calculation_duration = Histogram::with_opts(HistogramOpts::new(
             "noesis_calculation_duration_seconds",
@@ -174,15 +167,9 @@ impl NoesisMetrics {
             "Total usage of native engines",
         )?;
 
-        let cache_hits = Counter::new(
-            "noesis_cache_hits_total",
-            "Total cache hits",
-        )?;
+        let cache_hits = Counter::new("noesis_cache_hits_total", "Total cache hits")?;
 
-        let cache_misses = Counter::new(
-            "noesis_cache_misses_total",
-            "Total cache misses",
-        )?;
+        let cache_misses = Counter::new("noesis_cache_misses_total", "Total cache misses")?;
 
         // -- Accuracy metrics ------------------------------------------------
         let validation_differences = Histogram::with_opts(HistogramOpts::new(
@@ -196,20 +183,11 @@ impl NoesisMetrics {
         ))?;
 
         // -- System metrics --------------------------------------------------
-        let memory_usage_bytes = Gauge::new(
-            "noesis_memory_usage_bytes",
-            "Memory usage in bytes",
-        )?;
+        let memory_usage_bytes = Gauge::new("noesis_memory_usage_bytes", "Memory usage in bytes")?;
 
-        let cpu_usage_percent = Gauge::new(
-            "noesis_cpu_usage_percent",
-            "CPU usage percentage",
-        )?;
+        let cpu_usage_percent = Gauge::new("noesis_cpu_usage_percent", "CPU usage percentage")?;
 
-        let uptime_seconds = Gauge::new(
-            "noesis_uptime_seconds",
-            "Uptime in seconds",
-        )?;
+        let uptime_seconds = Gauge::new("noesis_uptime_seconds", "Uptime in seconds")?;
 
         // -- Per-engine metrics (NEW) ----------------------------------------
         let engine_calculations_total = IntCounterVec::new(
@@ -263,10 +241,7 @@ impl NoesisMetrics {
             "Total cache lookup requests",
         )?;
 
-        let cache_hit_rate = Gauge::new(
-            "noesis_cache_hit_rate",
-            "Cache hit rate (0.0-1.0)",
-        )?;
+        let cache_hit_rate = Gauge::new("noesis_cache_hit_rate", "Cache hit rate (0.0-1.0)")?;
 
         // -- Register everything with the Prometheus registry ----------------
         REGISTRY.register(Box::new(requests_total.clone()))?;
@@ -352,7 +327,12 @@ impl NoesisMetrics {
     }
 
     /// Record a per-engine calculation with status.
-    pub fn record_engine_calculation_with_status(&self, engine_id: &str, status: &str, duration: f64) {
+    pub fn record_engine_calculation_with_status(
+        &self,
+        engine_id: &str,
+        status: &str,
+        duration: f64,
+    ) {
         self.engine_calculations_total
             .with_label_values(&[engine_id])
             .inc();
@@ -392,12 +372,7 @@ impl NoesisMetrics {
     }
 
     /// Update system-level gauges.
-    pub fn update_system_metrics(
-        &self,
-        memory_bytes: f64,
-        cpu_percent: f64,
-        uptime_secs: f64,
-    ) {
+    pub fn update_system_metrics(&self, memory_bytes: f64, cpu_percent: f64, uptime_secs: f64) {
         self.memory_usage_bytes.set(memory_bytes);
         self.cpu_usage_percent.set(cpu_percent);
         self.uptime_seconds.set(uptime_secs);
@@ -420,9 +395,15 @@ impl NoesisMetrics {
         misses: u64,
         total_requests: u64,
     ) {
-        self.cache_layer_hits.with_label_values(&["l1"]).set(l1_hits as i64);
-        self.cache_layer_hits.with_label_values(&["l2"]).set(l2_hits as i64);
-        self.cache_layer_hits.with_label_values(&["l3"]).set(l3_hits as i64);
+        self.cache_layer_hits
+            .with_label_values(&["l1"])
+            .set(l1_hits as i64);
+        self.cache_layer_hits
+            .with_label_values(&["l2"])
+            .set(l2_hits as i64);
+        self.cache_layer_hits
+            .with_label_values(&["l3"])
+            .set(l3_hits as i64);
         self.cache_layer_misses.set(misses as i64);
         self.cache_layer_requests.set(total_requests as i64);
         if total_requests > 0 {
@@ -485,8 +466,7 @@ impl MetricsCollector {
         let start_time = self.start_time;
 
         tokio::spawn(async move {
-            let mut interval =
-                tokio::time::interval(std::time::Duration::from_secs(30));
+            let mut interval = tokio::time::interval(std::time::Duration::from_secs(30));
             let mut sys = sysinfo::System::new();
 
             loop {

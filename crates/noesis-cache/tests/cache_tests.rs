@@ -36,7 +36,10 @@ fn test_cache_manager_l1_only() -> CacheManager {
 
 /// Generate a deterministic cache key with a given engine prefix and index.
 fn make_key(engine: &str, index: u32) -> CacheKey {
-    CacheKey::new(format!("{}:birth:1990-01-15T14:30:lat12.97:lon77.59:idx{}", engine, index))
+    CacheKey::new(format!(
+        "{}:birth:1990-01-15T14:30:lat12.97:lon77.59:idx{}",
+        engine, index
+    ))
 }
 
 /// Generate a test JSON value of roughly `size_hint` bytes.
@@ -191,7 +194,10 @@ async fn test_cache_key_determinism() {
     let key2 = CacheKey::new("hd:1990-01-15T14:30:lat12.97:lon77.59");
     let key3 = CacheKey::new("hd:1985-06-15T10:00:lat40.71:lon-74.01");
 
-    assert_eq!(key1.hash, key2.hash, "Same raw input must produce same hash");
+    assert_eq!(
+        key1.hash, key2.hash,
+        "Same raw input must produce same hash"
+    );
     assert_eq!(key1.raw, key2.raw);
     assert_ne!(
         key1.hash, key3.hash,
@@ -224,7 +230,11 @@ async fn test_cache_warmup_performance() {
     let avg_ms = total.as_millis() as f64 / count as f64;
 
     let stats = cm.get_stats().await;
-    assert_eq!(stats.l1_hits, count as u64, "All {} should be L1 hits", count);
+    assert_eq!(
+        stats.l1_hits, count as u64,
+        "All {} should be L1 hits",
+        count
+    );
     assert_eq!(stats.cache_misses, 0);
     let hit_rate = stats.hit_rate();
     assert!(
@@ -652,7 +662,10 @@ async fn test_l3_promotes_to_l1() {
     cm.reset_stats().await;
     let _ = cm.get(&key).await.unwrap();
     let stats = cm.get_stats().await;
-    assert_eq!(stats.l1_hits, 1, "After L3 promotion, next get should hit L1");
+    assert_eq!(
+        stats.l1_hits, 1,
+        "After L3 promotion, next get should hit L1"
+    );
     assert_eq!(stats.l3_hits, 0);
 }
 

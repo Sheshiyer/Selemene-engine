@@ -1,13 +1,15 @@
-use noesis_western_api::{WesternApiClient, Config, types::WesternRequest};
+use noesis_western_api::{types::WesternRequest, Config, WesternApiClient};
 use std::env;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Load API key from env
     dotenv::dotenv().ok();
-    
+
     let config = Config::from_env().unwrap_or_else(|_| {
-        println!("Warning: FREE_ASTROLOGY_API_KEY not set. Using dummy key for dry run build check.");
+        println!(
+            "Warning: FREE_ASTROLOGY_API_KEY not set. Using dummy key for dry run build check."
+        );
         Config::new("dummy_key".to_string())
     });
 

@@ -6,26 +6,40 @@ use super::types::MuhurtaQuality;
 
 /// Tithis favorable for business
 const BUSINESS_GOOD_TITHIS: &[&str] = &[
-    "Dwitiya", "Tritiya", "Panchami", "Saptami", "Dashami",
-    "Ekadashi", "Trayodashi", "Purnima",
+    "Dwitiya",
+    "Tritiya",
+    "Panchami",
+    "Saptami",
+    "Dashami",
+    "Ekadashi",
+    "Trayodashi",
+    "Purnima",
 ];
 
 /// Nakshatras favorable for business
 const BUSINESS_GOOD_NAKSHATRAS: &[&str] = &[
-    "Ashwini", "Rohini", "Mrigashira", "Punarvasu", "Pushya",
-    "Hasta", "Chitra", "Swati", "Anuradha", "Shravana", "Dhanishta", "Revati",
+    "Ashwini",
+    "Rohini",
+    "Mrigashira",
+    "Punarvasu",
+    "Pushya",
+    "Hasta",
+    "Chitra",
+    "Swati",
+    "Anuradha",
+    "Shravana",
+    "Dhanishta",
+    "Revati",
 ];
 
 /// Days favorable for business
-const BUSINESS_GOOD_DAYS: &[&str] = &[
-    "Wednesday", "Thursday", "Friday",
-];
+const BUSINESS_GOOD_DAYS: &[&str] = &["Wednesday", "Thursday", "Friday"];
 
 /// Evaluate business muhurta score
 pub fn evaluate_business_muhurta(
     tithi: &str,
     nakshatra: &str,
-    yoga: &str,
+    _yoga: &str,
     vara: &str,
     has_rahu_kalam: bool,
     hora_lord: &str,
@@ -33,28 +47,34 @@ pub fn evaluate_business_muhurta(
     let mut score: i32 = 50;
     let mut favorable = vec![];
     let mut unfavorable = vec![];
-    
+
     // Check Tithi
     if BUSINESS_GOOD_TITHIS.iter().any(|t| tithi.contains(t)) {
         score += 10;
         favorable.push(format!("{} is favorable for business", tithi));
     }
-    
+
     // Check Nakshatra
-    if BUSINESS_GOOD_NAKSHATRAS.iter().any(|n| nakshatra.contains(n)) {
+    if BUSINESS_GOOD_NAKSHATRAS
+        .iter()
+        .any(|n| nakshatra.contains(n))
+    {
         score += 15;
         favorable.push(format!("{} supports business activities", nakshatra));
     }
-    
+
     // Check Vara (weekday)
-    if BUSINESS_GOOD_DAYS.iter().any(|d| vara.eq_ignore_ascii_case(d)) {
+    if BUSINESS_GOOD_DAYS
+        .iter()
+        .any(|d| vara.eq_ignore_ascii_case(d))
+    {
         score += 10;
         favorable.push(format!("{} is excellent for business", vara));
     } else if vara.eq_ignore_ascii_case("Saturday") {
         score -= 10;
         unfavorable.push("Saturday requires caution for new ventures".to_string());
     }
-    
+
     // Check Hora Lord
     match hora_lord.to_lowercase().as_str() {
         "mercury" => {
@@ -83,15 +103,15 @@ pub fn evaluate_business_muhurta(
         }
         _ => {}
     }
-    
+
     // Check Rahu Kalam
     if has_rahu_kalam {
         score -= 20;
         unfavorable.push("Rahu Kalam - avoid starting new business".to_string());
     }
-    
+
     let final_score = score.clamp(0, 100) as u8;
-    
+
     let quality = if final_score >= 75 {
         MuhurtaQuality::Excellent
     } else if final_score >= 55 {
@@ -103,7 +123,7 @@ pub fn evaluate_business_muhurta(
     } else {
         MuhurtaQuality::Avoid
     };
-    
+
     (quality, final_score, favorable, unfavorable)
 }
 
@@ -116,7 +136,7 @@ pub fn business_recommendation(activity_type: &str, quality: MuhurtaQuality) -> 
         MuhurtaQuality::NotRecommended => "Not ideal for",
         MuhurtaQuality::Avoid => "Avoid this time for",
     };
-    
+
     format!("{} {}.", base, activity_type)
 }
 
@@ -165,9 +185,12 @@ mod tests {
             false,
             "Mercury",
         );
-        
+
         assert!(score >= 60);
-        assert!(matches!(quality, MuhurtaQuality::Excellent | MuhurtaQuality::Good));
+        assert!(matches!(
+            quality,
+            MuhurtaQuality::Excellent | MuhurtaQuality::Good
+        ));
         assert!(favorable.len() >= 2);
     }
 

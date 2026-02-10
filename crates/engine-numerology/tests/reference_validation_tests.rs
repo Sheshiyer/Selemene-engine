@@ -12,8 +12,8 @@
 //!
 //! Master numbers (11, 22, 33) are preserved during reduction.
 
-use engine_numerology::{ConsciousnessEngine, EngineInput, NumerologyEngine};
 use chrono::Utc;
+use engine_numerology::{ConsciousnessEngine, EngineInput, NumerologyEngine};
 use noesis_core::Precision;
 use serde_json::Value;
 use std::collections::HashMap;
@@ -41,15 +41,20 @@ fn make_input(name: &str, date: &str) -> EngineInput {
 
 async fn compute_life_path(name: &str, date: &str) -> u32 {
     let engine = NumerologyEngine::new();
-    let output = engine.calculate(make_input(name, date)).await
+    let output = engine
+        .calculate(make_input(name, date))
+        .await
         .unwrap_or_else(|e| panic!("Calculation failed for {} ({}): {:?}", name, date, e));
-    output.result["life_path"]["value"].as_u64()
+    output.result["life_path"]["value"]
+        .as_u64()
         .unwrap_or_else(|| panic!("Missing life_path.value for {}", name)) as u32
 }
 
 async fn compute_all(name: &str, date: &str) -> Value {
     let engine = NumerologyEngine::new();
-    let output = engine.calculate(make_input(name, date)).await
+    let output = engine
+        .calculate(make_input(name, date))
+        .await
         .unwrap_or_else(|e| panic!("Calculation failed for {} ({}): {:?}", name, date, e));
     output.result
 }
@@ -179,7 +184,8 @@ async fn test_life_path_all_reference_charts() {
     }
 
     assert_eq!(
-        fail_count, 0,
+        fail_count,
+        0,
         "{} of {} life path calculations failed",
         fail_count,
         charts.len()
@@ -197,11 +203,7 @@ async fn test_expression_number_john_doe() {
     let expr = result["expression"]["value"].as_u64().unwrap() as u32;
 
     // "John Doe": J(1)+O(6)+H(8)+N(5)+D(4)+O(6)+E(5) = 35 -> 8
-    assert_eq!(
-        expr, 8,
-        "John Doe expression should be 8, got {}",
-        expr
-    );
+    assert_eq!(expr, 8, "John Doe expression should be 8, got {}", expr);
 }
 
 #[tokio::test]
@@ -210,11 +212,7 @@ async fn test_expression_number_alice_smith() {
     let expr = result["expression"]["value"].as_u64().unwrap() as u32;
 
     // "Alice Smith": A(1)+L(3)+I(9)+C(3)+E(5)+S(1)+M(4)+I(9)+T(2)+H(8) = 45 -> 9
-    assert_eq!(
-        expr, 9,
-        "Alice Smith expression should be 9, got {}",
-        expr
-    );
+    assert_eq!(expr, 9, "Alice Smith expression should be 9, got {}", expr);
 }
 
 // ---------------------------------------------------------------------------
@@ -227,11 +225,7 @@ async fn test_soul_urge_john_doe() {
     let su = result["soul_urge"]["value"].as_u64().unwrap() as u32;
 
     // "John Doe" vowels: O(6) + O(6) + E(5) = 17 -> 8
-    assert_eq!(
-        su, 8,
-        "John Doe soul urge should be 8, got {}",
-        su
-    );
+    assert_eq!(su, 8, "John Doe soul urge should be 8, got {}", su);
 }
 
 // ---------------------------------------------------------------------------
@@ -244,11 +238,7 @@ async fn test_personality_john_doe() {
     let pers = result["personality"]["value"].as_u64().unwrap() as u32;
 
     // "John Doe" consonants: J(1)+H(8)+N(5)+D(4) = 18 -> 9
-    assert_eq!(
-        pers, 9,
-        "John Doe personality should be 9, got {}",
-        pers
-    );
+    assert_eq!(pers, 9, "John Doe personality should be 9, got {}", pers);
 }
 
 // ---------------------------------------------------------------------------
@@ -284,10 +274,14 @@ async fn test_engine_validation_passes_for_all_references() {
 
     for chart in &reference_charts() {
         let input = make_input(chart.name, chart.date);
-        let output = engine.calculate(input).await
+        let output = engine
+            .calculate(input)
+            .await
             .unwrap_or_else(|e| panic!("Calculation failed for {}: {:?}", chart.name, e));
 
-        let validation = engine.validate(&output).await
+        let validation = engine
+            .validate(&output)
+            .await
             .unwrap_or_else(|e| panic!("Validation call failed for {}: {:?}", chart.name, e));
 
         assert!(
@@ -316,23 +310,49 @@ async fn test_output_has_all_required_fields() {
         .unwrap();
 
     assert_eq!(output.engine_id, "numerology");
-    assert!(!output.witness_prompt.is_empty(), "Witness prompt must be non-empty");
+    assert!(
+        !output.witness_prompt.is_empty(),
+        "Witness prompt must be non-empty"
+    );
     assert_eq!(output.consciousness_level, 0);
     assert_eq!(output.metadata.backend, "native-rust");
 
     // Verify all 6 core numbers are present
     let result = &output.result;
-    for field in &["life_path", "expression", "soul_urge", "personality", "birthday", "chaldean_name"] {
+    for field in &[
+        "life_path",
+        "expression",
+        "soul_urge",
+        "personality",
+        "birthday",
+        "chaldean_name",
+    ] {
         assert!(
             result.get(field).is_some(),
             "Missing field '{}' in output",
             field
         );
         let num = &result[field];
-        assert!(num["value"].is_number(), "'{}' should have numeric value", field);
-        assert!(num["is_master"].is_boolean(), "'{}' should have is_master flag", field);
-        assert!(num["reduction_chain"].is_array(), "'{}' should have reduction_chain", field);
-        assert!(num["meaning"].is_string(), "'{}' should have meaning string", field);
+        assert!(
+            num["value"].is_number(),
+            "'{}' should have numeric value",
+            field
+        );
+        assert!(
+            num["is_master"].is_boolean(),
+            "'{}' should have is_master flag",
+            field
+        );
+        assert!(
+            num["reduction_chain"].is_array(),
+            "'{}' should have reduction_chain",
+            field
+        );
+        assert!(
+            num["meaning"].is_string(),
+            "'{}' should have meaning string",
+            field
+        );
     }
 }
 
@@ -345,7 +365,11 @@ async fn test_birthday_number_day_15() {
     let result = compute_all("Test", "1990-01-15").await;
     let birthday = result["birthday"]["value"].as_u64().unwrap() as u32;
     // Day 15: 1+5 = 6
-    assert_eq!(birthday, 6, "Birthday number for day 15 should be 6, got {}", birthday);
+    assert_eq!(
+        birthday, 6,
+        "Birthday number for day 15 should be 6, got {}",
+        birthday
+    );
 }
 
 #[tokio::test]
@@ -353,10 +377,17 @@ async fn test_birthday_number_day_22_master() {
     let result = compute_all("Test", "1990-01-22").await;
     let birthday = result["birthday"]["value"].as_u64().unwrap() as u32;
     // Day 22 is a master number
-    assert_eq!(birthday, 22, "Birthday number for day 22 should be master 22, got {}", birthday);
+    assert_eq!(
+        birthday, 22,
+        "Birthday number for day 22 should be master 22, got {}",
+        birthday
+    );
 
     let is_master = result["birthday"]["is_master"].as_bool().unwrap();
-    assert!(is_master, "Day 22 birthday should be flagged as master number");
+    assert!(
+        is_master,
+        "Day 22 birthday should be flagged as master number"
+    );
 }
 
 // ---------------------------------------------------------------------------
@@ -368,5 +399,9 @@ async fn test_chaldean_name_john() {
     let result = compute_all("John", "1990-01-01").await;
     let chaldean = result["chaldean_name"]["value"].as_u64().unwrap() as u32;
     // "John" Chaldean: J(1)+O(7)+H(5)+N(5) = 18 -> 9
-    assert_eq!(chaldean, 9, "John Chaldean name should be 9, got {}", chaldean);
+    assert_eq!(
+        chaldean, 9,
+        "John Chaldean name should be 9, got {}",
+        chaldean
+    );
 }

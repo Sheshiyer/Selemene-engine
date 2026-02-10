@@ -48,7 +48,7 @@ impl Planet {
             Planet::Saturn => "Saturn",
         }
     }
-    
+
     /// Get the symbol of the planet
     pub fn symbol(&self) -> &'static str {
         match self {
@@ -61,7 +61,7 @@ impl Planet {
             Planet::Saturn => "♄",
         }
     }
-    
+
     /// Get activities suitable for this planet's Hora
     pub fn suitable_activities(&self) -> Vec<&'static str> {
         match self {
@@ -125,7 +125,7 @@ impl Planet {
             ],
         }
     }
-    
+
     /// Get activities to avoid in this planet's Hora
     pub fn activities_to_avoid(&self) -> Vec<&'static str> {
         match self {
@@ -158,32 +158,40 @@ pub struct HoraTimings {
 impl HoraTimings {
     /// Get the current Hora based on time
     pub fn get_current_hora(&self, current_time: &str) -> Option<&Hora> {
-        let all_horas: Vec<&Hora> = self.day_horas.iter()
+        let all_horas: Vec<&Hora> = self
+            .day_horas
+            .iter()
             .chain(self.night_horas.iter())
             .collect();
-        
-        all_horas.iter()
+
+        all_horas
+            .iter()
             .find(|h| current_time >= h.start.as_str() && current_time <= h.end.as_str())
             .copied()
     }
-    
+
     /// Get Horas ruled by a specific planet
     pub fn get_horas_by_planet(&self, planet: Planet) -> Vec<&Hora> {
-        let all_horas: Vec<&Hora> = self.day_horas.iter()
+        let all_horas: Vec<&Hora> = self
+            .day_horas
+            .iter()
             .chain(self.night_horas.iter())
             .collect();
-        
-        all_horas.into_iter()
+
+        all_horas
+            .into_iter()
             .filter(|h| h.ruler == planet)
             .collect()
     }
-    
+
     /// Get favorable Horas for a specific activity type
     pub fn get_favorable_horas(&self, activity_type: ActivityType) -> Vec<&Hora> {
-        let all_horas: Vec<&Hora> = self.day_horas.iter()
+        let all_horas: Vec<&Hora> = self
+            .day_horas
+            .iter()
             .chain(self.night_horas.iter())
             .collect();
-        
+
         let preferred_planet = match activity_type {
             ActivityType::Business => Planet::Mercury,
             ActivityType::Romance => Planet::Venus,
@@ -196,12 +204,13 @@ impl HoraTimings {
             ActivityType::HardWork => Planet::Saturn,
             ActivityType::NewBeginnings => Planet::Sun,
         };
-        
-        all_horas.into_iter()
+
+        all_horas
+            .into_iter()
             .filter(|h| h.ruler == preferred_planet)
             .collect()
     }
-    
+
     /// Get total count
     pub fn total_horas(&self) -> usize {
         self.day_horas.len() + self.night_horas.len()
@@ -241,12 +250,12 @@ impl HoraSequence {
             _ => Planet::Sun,
         }
     }
-    
+
     /// Generate the 24 Hora sequence for a given day
     /// The sequence is: Sun → Venus → Mercury → Moon → Saturn → Jupiter → Mars → repeat
     pub fn generate_sequence(day: &str) -> Vec<Planet> {
         let start = Self::get_starting_planet(day);
-        let sequence_order = vec![
+        let sequence_order = [
             Planet::Sun,
             Planet::Venus,
             Planet::Mercury,
@@ -255,25 +264,23 @@ impl HoraSequence {
             Planet::Jupiter,
             Planet::Mars,
         ];
-        
+
         // Find starting position
-        let start_idx = sequence_order.iter()
-            .position(|&p| p == start)
-            .unwrap_or(0);
-        
+        let start_idx = sequence_order.iter().position(|&p| p == start).unwrap_or(0);
+
         // Generate 24 Horas by cycling through the sequence
         let mut horas = Vec::with_capacity(24);
         for i in 0..24 {
             let idx = (start_idx + i) % 7;
             horas.push(sequence_order[idx]);
         }
-        
+
         horas
     }
 }
 
 /// Calculate Hora timings for a day
-/// 
+///
 /// Day Horas = time between sunrise and sunset divided by 12
 /// Night Horas = time between sunset and next sunrise divided by 12
 pub fn calculate_hora_timings(
@@ -283,11 +290,11 @@ pub fn calculate_hora_timings(
     next_sunrise: &str,
 ) -> HoraTimings {
     let sequence = HoraSequence::generate_sequence(day);
-    
+
     // Parse times (simplified - assumes HH:MM format)
     let day_horas = calculate_period_horas(&sequence[0..12], sunrise, sunset, 1);
     let night_horas = calculate_period_horas(&sequence[12..24], sunset, next_sunrise, 13);
-    
+
     HoraTimings {
         day_horas,
         night_horas,
@@ -300,21 +307,21 @@ pub fn calculate_hora_timings(
 /// Calculate Horas for a single period (day or night)
 fn calculate_period_horas(
     planets: &[Planet],
-    start_time: &str,
-    end_time: &str,
+    _start_time: &str,
+    _end_time: &str,
     start_number: u8,
 ) -> Vec<Hora> {
     let mut horas = Vec::new();
-    
+
     // Simplified calculation - in real implementation would parse times
     // and divide the period into 12 equal parts
-    let duration_minutes = 60; // Simplified: 1 hour per Hora
-    
+    let _duration_minutes = 60; // Simplified: 1 hour per Hora
+
     for (i, planet) in planets.iter().enumerate() {
         let hora_num = start_number + i as u8;
         let start_hour = hora_num - 1;
         let end_hour = hora_num;
-        
+
         let quality = match planet {
             Planet::Sun => "Power and authority",
             Planet::Moon => "Change and receptivity",
@@ -324,9 +331,9 @@ fn calculate_period_horas(
             Planet::Venus => "Pleasure and harmony",
             Planet::Saturn => "Restriction and discipline",
         };
-        
+
         let is_favorable = !matches!(planet, Planet::Saturn);
-        
+
         horas.push(Hora {
             number: hora_num,
             ruler: *planet,
@@ -336,7 +343,7 @@ fn calculate_period_horas(
             quality: quality.to_string(),
         });
     }
-    
+
     horas
 }
 
@@ -348,11 +355,11 @@ pub fn find_favorable_windows(
 ) -> Vec<(String, String)> {
     let favorable = hora_timings.get_favorable_horas(activity);
     let mut windows = Vec::new();
-    
+
     // Group consecutive favorable Horas
     let mut current_start: Option<&Hora> = None;
     let mut count = 0;
-    
+
     for hora in &favorable {
         if current_start.is_none() {
             current_start = Some(*hora);
@@ -360,14 +367,14 @@ pub fn find_favorable_windows(
         } else {
             count += 1;
         }
-        
+
         if count >= min_consecutive_hours {
             if let Some(start) = current_start {
                 windows.push((start.start.clone(), hora.end.clone()));
             }
         }
     }
-    
+
     windows
 }
 
@@ -387,10 +394,10 @@ mod tests {
         let sunday_seq = HoraSequence::generate_sequence("Sunday");
         assert_eq!(sunday_seq.len(), 24);
         assert_eq!(sunday_seq[0], Planet::Sun); // Sunday starts with Sun
-        
+
         let monday_seq = HoraSequence::generate_sequence("Monday");
         assert_eq!(monday_seq[0], Planet::Moon); // Monday starts with Moon
-        
+
         let saturday_seq = HoraSequence::generate_sequence("Saturday");
         assert_eq!(saturday_seq[0], Planet::Saturn); // Saturday starts with Saturn
     }
@@ -412,9 +419,13 @@ mod tests {
     #[test]
     fn test_activity_preferences() {
         let activities = Planet::Venus.suitable_activities();
-        assert!(activities.iter().any(|a| a.contains("Romance") || a.contains("romance")));
-        
+        assert!(activities
+            .iter()
+            .any(|a| a.contains("Romance") || a.contains("romance")));
+
         let activities = Planet::Mercury.suitable_activities();
-        assert!(activities.iter().any(|a| a.contains("Business") || a.contains("business")));
+        assert!(activities
+            .iter()
+            .any(|a| a.contains("Business") || a.contains("business")));
     }
 }

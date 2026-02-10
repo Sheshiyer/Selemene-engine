@@ -2,15 +2,15 @@
 //!
 //! FAPI-119, FAPI-120: Vedic remedies and gemstone recommendations
 
-pub mod types;
+pub mod donations;
 pub mod gemstones;
 pub mod mantras;
-pub mod donations;
+pub mod types;
 
-pub use types::*;
+pub use donations::*;
 pub use gemstones::*;
 pub use mantras::*;
-pub use donations::*;
+pub use types::*;
 
 use serde::{Deserialize, Serialize};
 

@@ -7,19 +7,19 @@
 //! against a PostgreSQL database (api_keys table). Falls back to in-memory
 //! HashMap when no database pool is configured.
 
+use jsonwebtoken::{decode, encode, Algorithm, DecodingKey, EncodingKey, Header, Validation};
 use noesis_core::EngineError;
-use jsonwebtoken::{decode, DecodingKey, Validation, Algorithm, encode, EncodingKey, Header};
 use serde::{Deserialize, Serialize};
 
 pub mod password;
 
+use chrono::{DateTime, Duration, Utc};
 use std::collections::HashMap;
 use std::sync::Arc;
 use tokio::sync::RwLock;
-use chrono::{DateTime, Utc, Duration};
 
 #[cfg(feature = "postgres")]
-use sha2::{Sha256, Digest};
+use sha2::{Digest, Sha256};
 
 #[cfg(feature = "postgres")]
 use sqlx::PgPool;
@@ -27,10 +27,10 @@ use sqlx::PgPool;
 /// JWT claims structure
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Claims {
-    pub sub: String,           // Subject (user ID)
-    pub exp: usize,            // Expiration time
-    pub iat: usize,            // Issued at
-    pub tier: String,          // User tier (free, premium, enterprise)
+    pub sub: String,              // Subject (user ID)
+    pub exp: usize,               // Expiration time
+    pub iat: usize,               // Issued at
+    pub tier: String,             // User tier (free, premium, enterprise)
     pub permissions: Vec<String>, // User permissions
     pub consciousness_level: u8,  // User consciousness level (0-5)
 }
@@ -45,7 +45,7 @@ pub struct ApiKey {
     pub created_at: DateTime<Utc>,
     pub expires_at: Option<DateTime<Utc>>,
     pub last_used: Option<DateTime<Utc>>,
-    pub rate_limit: u32,       // Requests per minute
+    pub rate_limit: u32,         // Requests per minute
     pub consciousness_level: u8, // User consciousness level (0-5)
 }
 
@@ -201,7 +201,11 @@ impl AuthService {
     /// Hashes the raw key with SHA-256, queries for an active non-expired row,
     /// and spawns an async task to update `last_used` without blocking the caller.
     #[cfg(feature = "postgres")]
-    async fn validate_from_postgres(&self, pool: &PgPool, api_key: &str) -> Result<AuthUser, EngineError> {
+    async fn validate_from_postgres(
+        &self,
+        pool: &PgPool,
+        api_key: &str,
+    ) -> Result<AuthUser, EngineError> {
         let key_hash = sha256_hex(api_key);
 
         // Query with 5-second timeout
@@ -212,10 +216,10 @@ impl AuthService {
                  rate_limit, created_at, expires_at, last_used, is_active \
                  FROM api_keys \
                  WHERE key_hash = $1 AND is_active = true \
-                   AND (expires_at IS NULL OR expires_at > NOW())"
+                   AND (expires_at IS NULL OR expires_at > NOW())",
             )
             .bind(&key_hash)
-            .fetch_one(pool)
+            .fetch_one(pool),
         )
         .await
         .map_err(|_| EngineError::AuthError("API key validation timed out".to_string()))?
@@ -232,8 +236,8 @@ impl AuthService {
         });
 
         // Parse permissions from JSONB
-        let permissions: Vec<String> = serde_json::from_value(record.permissions)
-            .unwrap_or_default();
+        let permissions: Vec<String> =
+            serde_json::from_value(record.permissions).unwrap_or_default();
 
         Ok(AuthUser {
             user_id: record.user_id.to_string(),
@@ -245,7 +249,13 @@ impl AuthService {
     }
 
     /// Generate JWT token
-    pub fn generate_jwt_token(&self, user_id: &str, tier: &str, permissions: &[String], consciousness_level: u8) -> Result<String, EngineError> {
+    pub fn generate_jwt_token(
+        &self,
+        user_id: &str,
+        tier: &str,
+        permissions: &[String],
+        consciousness_level: u8,
+    ) -> Result<String, EngineError> {
         let now = Utc::now();
         let exp = (now + Duration::hours(24)).timestamp() as usize; // 24 hour expiration
 
@@ -317,10 +327,10 @@ impl AuthService {
     /// Get rate limit for user tier
     fn get_rate_limit_for_tier(&self, tier: &str) -> u32 {
         match tier {
-            "free" => 60,        // 60 requests per minute
-            "premium" => 1000,   // 1000 requests per minute
+            "free" => 60,          // 60 requests per minute
+            "premium" => 1000,     // 1000 requests per minute
             "enterprise" => 10000, // 10000 requests per minute
-            _ => 10,             // Default: 10 requests per minute
+            _ => 10,               // Default: 10 requests per minute
         }
     }
 
@@ -341,7 +351,9 @@ impl AuthService {
         };
 
         // Check if user has any of the required permissions
-        endpoint_permissions.iter().any(|perm| Self::has_permission(user, perm))
+        endpoint_permissions
+            .iter()
+            .any(|perm| Self::has_permission(user, perm))
     }
 
     /// Get user tier limits
@@ -402,7 +414,15 @@ pub struct TierLimits {
 
 /// Rate limiter for individual users
 pub struct UserRateLimiter {
-    user_limits: Arc<RwLock<HashMap<String, (u32, DateTime<Utc>)>>>,
+    user_limits: Arc<RwLock<UserLimitMap>>,
+}
+
+type UserLimitMap = HashMap<String, (u32, DateTime<Utc>)>;
+
+impl Default for UserRateLimiter {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl UserRateLimiter {

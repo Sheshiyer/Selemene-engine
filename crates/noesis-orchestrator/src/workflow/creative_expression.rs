@@ -80,14 +80,48 @@ impl SacredForm {
         match self {
             SacredForm::Circle => &["unity", "wholeness", "cycles", "eternity", "completion"],
             SacredForm::VesicaPiscis => &["intersection", "birth", "duality", "feminine", "portal"],
-            SacredForm::SeedOfLife => &["creation", "potential", "genesis", "beginning", "fertility"],
-            SacredForm::FlowerOfLife => &["interconnection", "infinite", "patterns", "life", "growth"],
-            SacredForm::MetatronsCube => &["universal truth", "balance", "harmony", "divine", "protection"],
-            SacredForm::SriYantra => &["supreme energy", "manifestation", "cosmos", "enlightenment", "abundance"],
+            SacredForm::SeedOfLife => {
+                &["creation", "potential", "genesis", "beginning", "fertility"]
+            }
+            SacredForm::FlowerOfLife => {
+                &["interconnection", "infinite", "patterns", "life", "growth"]
+            }
+            SacredForm::MetatronsCube => &[
+                "universal truth",
+                "balance",
+                "harmony",
+                "divine",
+                "protection",
+            ],
+            SacredForm::SriYantra => &[
+                "supreme energy",
+                "manifestation",
+                "cosmos",
+                "enlightenment",
+                "abundance",
+            ],
             SacredForm::Torus => &["flow", "energy", "self-sustaining", "dynamic", "renewal"],
-            SacredForm::FibonacciSpiral => &["natural growth", "golden ratio", "expansion", "evolution", "beauty"],
-            SacredForm::Merkaba => &["light body", "interdimensional", "ascension", "protection", "transport"],
-            SacredForm::PlatonicSolids => &["elements", "structure", "foundation", "primal", "mathematical"],
+            SacredForm::FibonacciSpiral => &[
+                "natural growth",
+                "golden ratio",
+                "expansion",
+                "evolution",
+                "beauty",
+            ],
+            SacredForm::Merkaba => &[
+                "light body",
+                "interdimensional",
+                "ascension",
+                "protection",
+                "transport",
+            ],
+            SacredForm::PlatonicSolids => &[
+                "elements",
+                "structure",
+                "foundation",
+                "primal",
+                "mathematical",
+            ],
         }
     }
 }
@@ -131,7 +165,7 @@ pub struct CreativeExpressionWorkflow;
 impl CreativeExpressionWorkflow {
     /// Workflow identifier
     pub const ID: &'static str = "creative-expression";
-    
+
     /// Required consciousness phase
     pub const REQUIRED_PHASE: u8 = 1;
 
@@ -142,11 +176,9 @@ impl CreativeExpressionWorkflow {
             name: "Creative Expression".to_string(),
             description: "Generative creative guidance combining Sigil Forge \
                          intention processing with Sacred Geometry forms for \
-                         creative inspiration and direction".to_string(),
-            engine_ids: vec![
-                "sigil-forge".to_string(),
-                "sacred-geometry".to_string(),
-            ],
+                         creative inspiration and direction"
+                .to_string(),
+            engine_ids: vec!["sigil-forge".to_string(), "sacred-geometry".to_string()],
             synthesis_type: SynthesisType::CreativeExpression,
             required_phase: Self::REQUIRED_PHASE,
             default_options: Self::default_options(),
@@ -167,7 +199,9 @@ impl CreativeExpressionWorkflow {
     }
 
     /// Prepare engine-specific options from workflow input
-    pub fn prepare_engine_options(input: &CreativeExpressionInput) -> HashMap<String, HashMap<String, Value>> {
+    pub fn prepare_engine_options(
+        input: &CreativeExpressionInput,
+    ) -> HashMap<String, HashMap<String, Value>> {
         let mut engine_opts = HashMap::new();
 
         // Sigil Forge options
@@ -207,7 +241,10 @@ impl CreativeExpressionWorkflow {
             .collect();
 
         if available.is_empty() {
-            Err(vec!["sigil-forge".to_string(), "sacred-geometry".to_string()])
+            Err(vec![
+                "sigil-forge".to_string(),
+                "sacred-geometry".to_string(),
+            ])
         } else {
             Ok(())
         }
@@ -216,20 +253,30 @@ impl CreativeExpressionWorkflow {
     /// Suggest a sacred form based on intention keywords
     pub fn suggest_form(intention: &str) -> SacredForm {
         let lower = intention.to_lowercase();
-        
+
         if lower.contains("begin") || lower.contains("start") || lower.contains("new") {
             SacredForm::SeedOfLife
         } else if lower.contains("grow") || lower.contains("evolve") || lower.contains("expand") {
             SacredForm::FibonacciSpiral
-        } else if lower.contains("connect") || lower.contains("relation") || lower.contains("community") {
+        } else if lower.contains("connect")
+            || lower.contains("relation")
+            || lower.contains("community")
+        {
             SacredForm::FlowerOfLife
-        } else if lower.contains("balance") || lower.contains("harmony") || lower.contains("truth") {
+        } else if lower.contains("balance") || lower.contains("harmony") || lower.contains("truth")
+        {
             SacredForm::MetatronsCube
-        } else if lower.contains("manifest") || lower.contains("create") || lower.contains("abundance") {
+        } else if lower.contains("manifest")
+            || lower.contains("create")
+            || lower.contains("abundance")
+        {
             SacredForm::SriYantra
         } else if lower.contains("flow") || lower.contains("energy") || lower.contains("renew") {
             SacredForm::Torus
-        } else if lower.contains("transform") || lower.contains("transcend") || lower.contains("ascend") {
+        } else if lower.contains("transform")
+            || lower.contains("transcend")
+            || lower.contains("ascend")
+        {
             SacredForm::Merkaba
         } else if lower.contains("complete") || lower.contains("whole") || lower.contains("unity") {
             SacredForm::Circle
@@ -274,11 +321,14 @@ mod tests {
         };
 
         let opts = CreativeExpressionWorkflow::prepare_engine_options(&input);
-        
+
         assert!(opts.contains_key("sigil-forge"));
-        assert_eq!(opts["sigil-forge"]["intention"], json!("Manifest creative abundance"));
+        assert_eq!(
+            opts["sigil-forge"]["intention"],
+            json!("Manifest creative abundance")
+        );
         assert_eq!(opts["sigil-forge"]["method"], json!("geometric"));
-        
+
         assert!(opts.contains_key("sacred-geometry"));
         assert_eq!(opts["sacred-geometry"]["form"], json!("sri_yantra"));
     }
@@ -293,7 +343,7 @@ mod tests {
         };
 
         let opts = CreativeExpressionWorkflow::prepare_engine_options(&input);
-        
+
         assert!(opts.contains_key("sigil-forge"));
         assert!(opts.contains_key("sacred-geometry"));
         assert_eq!(opts["sacred-geometry"]["auto_select"], json!(true));
@@ -329,7 +379,10 @@ mod tests {
 
     #[test]
     fn test_sigil_method_str() {
-        assert_eq!(SigilMethod::LetterElimination.as_str(), "letter_elimination");
+        assert_eq!(
+            SigilMethod::LetterElimination.as_str(),
+            "letter_elimination"
+        );
         assert_eq!(SigilMethod::Geometric.as_str(), "geometric");
         assert_eq!(SigilMethod::Automatic.as_str(), "automatic");
     }

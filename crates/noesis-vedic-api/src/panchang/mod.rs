@@ -37,10 +37,10 @@ pub mod hora;
 pub mod choghadiya;
 
 // Re-export main types for convenience
-pub use data::*;
-pub use muhurta::*;
-pub use hora::*;
 pub use choghadiya::*;
+pub use data::*;
+pub use hora::*;
+pub use muhurta::*;
 
 use crate::error::VedicApiResult;
 
@@ -80,24 +80,36 @@ impl CompletePanchang {
         let mut good_muhrutas = vec![];
         let mut good_choghadiyas = vec![];
         let mut good_horas = vec![];
-        
+
         // Collect good Muhurtas
         if let Some(ref amrit) = self.muhurtas.amrit_kaal {
             if amrit.nature.is_good_for_starting() {
-                good_muhrutas.push(("Amrit Kaal".to_string(), amrit.start.clone(), amrit.end.clone()));
+                good_muhrutas.push((
+                    "Amrit Kaal".to_string(),
+                    amrit.start.clone(),
+                    amrit.end.clone(),
+                ));
             }
         }
         if let Some(ref abhijit) = self.muhurtas.abhijit {
             if abhijit.nature.is_good_for_starting() {
-                good_muhrutas.push(("Abhijit".to_string(), abhijit.start.clone(), abhijit.end.clone()));
+                good_muhrutas.push((
+                    "Abhijit".to_string(),
+                    abhijit.start.clone(),
+                    abhijit.end.clone(),
+                ));
             }
         }
         if let Some(ref brahma) = self.muhurtas.brahma_muhurta {
             if brahma.nature.is_good_for_starting() {
-                good_muhrutas.push(("Brahma Muhurta".to_string(), brahma.start.clone(), brahma.end.clone()));
+                good_muhrutas.push((
+                    "Brahma Muhurta".to_string(),
+                    brahma.start.clone(),
+                    brahma.end.clone(),
+                ));
             }
         }
-        
+
         // Collect good Choghadiyas
         for choghadiya in &self.choghadiya.day {
             if choghadiya.nature.is_favorable() {
@@ -108,7 +120,7 @@ impl CompletePanchang {
                 ));
             }
         }
-        
+
         // Collect good Horas
         for hora in &self.hora_timings.day_horas {
             if hora.is_favorable {
@@ -119,32 +131,49 @@ impl CompletePanchang {
                 ));
             }
         }
-        
+
         AuspiciousTimesSummary {
             muhurtas: good_muhrutas,
             choghadiyas: good_choghadiyas,
             horas: good_horas,
         }
     }
-    
+
     /// Get inauspicious times to avoid
     pub fn inauspicious_times_summary(&self) -> InauspiciousTimesSummary {
         let mut bad_muhrutas = vec![];
         let mut bad_choghadiyas = vec![];
-        
+
         // Collect bad Muhurtas
         if let Some(ref rahu) = self.muhurtas.rahu_kalam {
-            bad_muhrutas.push(("Rahu Kalam".to_string(), rahu.start.clone(), rahu.end.clone()));
+            bad_muhrutas.push((
+                "Rahu Kalam".to_string(),
+                rahu.start.clone(),
+                rahu.end.clone(),
+            ));
         }
         if let Some(ref yama) = self.muhurtas.yama_gandam {
-            bad_muhrutas.push(("Yama Gandam".to_string(), yama.start.clone(), yama.end.clone()));
+            bad_muhrutas.push((
+                "Yama Gandam".to_string(),
+                yama.start.clone(),
+                yama.end.clone(),
+            ));
         }
         if let Some(ref gulika) = self.muhurtas.gulika_kaal {
-            bad_muhrutas.push(("Gulika Kaal".to_string(), gulika.start.clone(), gulika.end.clone()));
+            bad_muhrutas.push((
+                "Gulika Kaal".to_string(),
+                gulika.start.clone(),
+                gulika.end.clone(),
+            ));
         }
-        
+
         // Collect bad Choghadiyas
-        for choghadiya in self.choghadiya.day.iter().chain(self.choghadiya.night.iter()) {
+        for choghadiya in self
+            .choghadiya
+            .day
+            .iter()
+            .chain(self.choghadiya.night.iter())
+        {
             if !choghadiya.nature.is_favorable() {
                 bad_choghadiyas.push((
                     choghadiya.name.as_str().to_string(),
@@ -153,13 +182,13 @@ impl CompletePanchang {
                 ));
             }
         }
-        
+
         InauspiciousTimesSummary {
             muhurtas: bad_muhrutas,
             choghadiyas: bad_choghadiyas,
         }
     }
-    
+
     /// Check if a specific time is good for starting something new
     pub fn is_good_for_starting(&self, time: &str) -> bool {
         // Check Choghadiya
@@ -168,7 +197,7 @@ impl CompletePanchang {
                 return false;
             }
         }
-        
+
         // Check Muhurtas
         if let Some(ref rahu) = self.muhurtas.rahu_kalam {
             if time >= rahu.start.as_str() && time <= rahu.end.as_str() {
@@ -185,22 +214,25 @@ impl CompletePanchang {
                 return false;
             }
         }
-        
+
         true
     }
-    
+
     /// Get best time for a specific activity type
-    pub fn best_time_for(&self, activity: choghadiya::ActivityCategory) -> Option<(String, String)> {
+    pub fn best_time_for(
+        &self,
+        activity: choghadiya::ActivityCategory,
+    ) -> Option<(String, String)> {
         // First check Choghadiya recommendations
         if let Some(best) = self.choghadiya.find_best_for_activity(activity) {
             return Some((best.start.clone(), best.end.clone()));
         }
-        
+
         // Then check Muhurtas
         match activity {
-            choghadiya::ActivityCategory::StartingNew | 
-            choghadiya::ActivityCategory::Business |
-            choghadiya::ActivityCategory::Purchasing => {
+            choghadiya::ActivityCategory::StartingNew
+            | choghadiya::ActivityCategory::Business
+            | choghadiya::ActivityCategory::Purchasing => {
                 if let Some(ref abhijit) = self.muhurtas.abhijit {
                     return Some((abhijit.start.clone(), abhijit.end.clone()));
                 }
@@ -212,7 +244,7 @@ impl CompletePanchang {
             }
             _ => {}
         }
-        
+
         None
     }
 }
@@ -267,7 +299,7 @@ impl PanchangQuery {
             include_choghadiya: true,
         }
     }
-    
+
     /// Set the time of day
     pub fn at(mut self, hour: u32, minute: u32, second: u32) -> Self {
         self.hour = hour;
@@ -275,25 +307,25 @@ impl PanchangQuery {
         self.second = second;
         self
     }
-    
+
     /// Set the timezone
     pub fn with_timezone(mut self, tz: f64) -> Self {
         self.timezone = tz;
         self
     }
-    
+
     /// Disable Muhurta calculations
     pub fn without_muhurtas(mut self) -> Self {
         self.include_muhurtas = false;
         self
     }
-    
+
     /// Disable Hora calculations
     pub fn without_hora(mut self) -> Self {
         self.include_hora = false;
         self
     }
-    
+
     /// Disable Choghadiya calculations
     pub fn without_choghadiya(mut self) -> Self {
         self.include_choghadiya = false;
@@ -306,23 +338,27 @@ impl PanchangQuery {
 /// Accepts the `tithi` object from a FreeAstrologyAPI panchang response.
 /// Expected fields: `number` (u8), `name` (string), `start` (string), `end` (string), `paksha` (string).
 pub fn parse_tithi_from_response(data: &serde_json::Value) -> VedicApiResult<Tithi> {
-    let number = data.get("number")
+    let number = data
+        .get("number")
         .and_then(|v| v.as_u64())
         .map(|n| n as u8)
         .unwrap_or(1);
 
-    let name_str = data.get("name")
+    let name_str = data
+        .get("name")
         .and_then(|v| v.as_str())
         .unwrap_or("Pratipada");
 
     let name_tithi = TithiName::from_number(number as u32);
 
-    let start_time = data.get("start")
+    let start_time = data
+        .get("start")
         .and_then(|v| v.as_str())
         .unwrap_or("")
         .to_string();
 
-    let end_time = data.get("end")
+    let end_time = data
+        .get("end")
         .and_then(|v| v.as_str())
         .unwrap_or("")
         .to_string();
@@ -343,29 +379,34 @@ pub fn parse_tithi_from_response(data: &serde_json::Value) -> VedicApiResult<Tit
 /// Accepts the `nakshatra` object from a FreeAstrologyAPI panchang response.
 /// Expected fields: `number` (u8), `name` (string), `pada` (u8), `start` (string), `end` (string), `longitude` (f64).
 pub fn parse_nakshatra_from_response(data: &serde_json::Value) -> VedicApiResult<Nakshatra> {
-    let number = data.get("number")
+    let number = data
+        .get("number")
         .and_then(|v| v.as_u64())
         .map(|n| n as u8)
         .unwrap_or(1);
 
     let name_nakshatra = NakshatraName::from_number(number as u32);
 
-    let pada = data.get("pada")
+    let pada = data
+        .get("pada")
         .and_then(|v| v.as_u64())
         .map(|n| n as u8)
         .unwrap_or(1);
 
-    let start_time = data.get("start")
+    let start_time = data
+        .get("start")
         .and_then(|v| v.as_str())
         .unwrap_or("")
         .to_string();
 
-    let end_time = data.get("end")
+    let end_time = data
+        .get("end")
         .and_then(|v| v.as_str())
         .unwrap_or("")
         .to_string();
 
-    let longitude = data.get("longitude")
+    let longitude = data
+        .get("longitude")
         .and_then(|v| v.as_f64())
         .unwrap_or(0.0);
 

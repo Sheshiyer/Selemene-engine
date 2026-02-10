@@ -168,10 +168,7 @@ impl ConsciousnessEngine for BridgeEngine {
     }
 
     async fn calculate(&self, input: EngineInput) -> Result<EngineOutput, EngineError> {
-        let url = format!(
-            "{}/engines/{}/calculate",
-            self.base_url, self.engine_id
-        );
+        let url = format!("{}/engines/{}/calculate", self.base_url, self.engine_id);
 
         debug!(
             engine = %self.engine_id,
@@ -198,15 +195,11 @@ impl ConsciousnessEngine for BridgeEngine {
                     warn!(engine = %self.engine_id, %url, "Bridge connection refused");
                     EngineError::BridgeError(format!(
                         "Connection to {} refused (is the TS server running at {}?)",
-                        self.engine_id,
-                        self.base_url
+                        self.engine_id, self.base_url
                     ))
                 } else {
                     warn!(engine = %self.engine_id, error = %e, "Bridge HTTP error");
-                    EngineError::BridgeError(format!(
-                        "HTTP request to {} failed: {}",
-                        url, e
-                    ))
+                    EngineError::BridgeError(format!("HTTP request to {} failed: {}", url, e))
                 }
             })?;
 
@@ -220,24 +213,23 @@ impl ConsciousnessEngine for BridgeEngine {
                 "bridge calculate returned non-2xx"
             );
             return Err(EngineError::BridgeError(format!(
-                "Engine {} returned {}: {}", self.engine_id, status, body
+                "Engine {} returned {}: {}",
+                self.engine_id, status, body
             )));
         }
 
         info!(engine = %self.engine_id, "Bridge calculate succeeded");
-        
+
         response.json::<EngineOutput>().await.map_err(|e| {
             EngineError::BridgeError(format!(
-                "Failed to deserialize EngineOutput from {}: {}", self.engine_id, e
+                "Failed to deserialize EngineOutput from {}: {}",
+                self.engine_id, e
             ))
         })
     }
 
     async fn validate(&self, output: &EngineOutput) -> Result<ValidationResult, EngineError> {
-        let url = format!(
-            "{}/engines/{}/validate",
-            self.base_url, self.engine_id
-        );
+        let url = format!("{}/engines/{}/validate", self.base_url, self.engine_id);
 
         debug!(engine = %self.engine_id, %url, "bridge validate request");
 
@@ -257,14 +249,10 @@ impl ConsciousnessEngine for BridgeEngine {
                 } else if e.is_connect() {
                     EngineError::BridgeError(format!(
                         "Connection to {} refused (is the TS server running at {}?)",
-                        self.engine_id,
-                        self.base_url
+                        self.engine_id, self.base_url
                     ))
                 } else {
-                    EngineError::BridgeError(format!(
-                        "HTTP request to {} failed: {}",
-                        url, e
-                    ))
+                    EngineError::BridgeError(format!("HTTP request to {} failed: {}", url, e))
                 }
             })?;
 
@@ -278,13 +266,15 @@ impl ConsciousnessEngine for BridgeEngine {
                 "bridge validate returned non-2xx"
             );
             return Err(EngineError::BridgeError(format!(
-                "Engine {} validate returned {}: {}", self.engine_id, status, body
+                "Engine {} validate returned {}: {}",
+                self.engine_id, status, body
             )));
         }
 
         response.json::<ValidationResult>().await.map_err(|e| {
             EngineError::BridgeError(format!(
-                "Failed to deserialize ValidationResult from {}: {}", self.engine_id, e
+                "Failed to deserialize ValidationResult from {}: {}",
+                self.engine_id, e
             ))
         })
     }
@@ -337,8 +327,8 @@ impl BridgeManager {
     /// Create a new manager using the `TS_ENGINES_URL` environment variable,
     /// or falling back to the default URL if not set.
     pub fn from_env() -> Self {
-        let url = std::env::var("TS_ENGINES_URL")
-            .unwrap_or_else(|_| DEFAULT_TS_SERVER_URL.to_string());
+        let url =
+            std::env::var("TS_ENGINES_URL").unwrap_or_else(|_| DEFAULT_TS_SERVER_URL.to_string());
         info!(url = %url, "BridgeManager loading from environment");
         Self::new(url)
     }
@@ -386,7 +376,8 @@ impl BridgeManager {
             Ok(())
         } else {
             Err(EngineError::BridgeError(format!(
-                "Health check returned {}", response.status()
+                "Health check returned {}",
+                response.status()
             )))
         }
     }
@@ -404,8 +395,8 @@ impl BridgeManager {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::collections::HashMap;
     use chrono::Utc;
+    use std::collections::HashMap;
 
     fn test_input() -> EngineInput {
         EngineInput {
@@ -523,14 +514,16 @@ mod tests {
         // Use a port that's almost certainly not running anything
         let engine = BridgeEngine::new("test", "Test", 0, "http://localhost:59999");
         let input = test_input();
-        
+
         let result = engine.calculate(input).await;
         assert!(result.is_err());
-        
+
         let err = result.unwrap_err();
         match err {
             EngineError::BridgeError(msg) => {
-                assert!(msg.contains("Connection") || msg.contains("refused") || msg.contains("failed"));
+                assert!(
+                    msg.contains("Connection") || msg.contains("refused") || msg.contains("failed")
+                );
             }
             _ => panic!("Expected BridgeError, got {:?}", err),
         }

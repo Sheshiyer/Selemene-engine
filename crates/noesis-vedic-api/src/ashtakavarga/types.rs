@@ -27,7 +27,7 @@ impl PlanetAshtakavarga {
 
     /// Get points for a specific sign (1-indexed)
     pub fn points_in_sign(&self, sign: u8) -> u8 {
-        if sign >= 1 && sign <= 12 {
+        if (1..=12).contains(&sign) {
             self.sign_points[(sign - 1) as usize]
         } else {
             0
@@ -63,7 +63,7 @@ impl SarvaAshtakavarga {
 
     /// Get combined points for a sign
     pub fn points_in_sign(&self, sign: u8) -> u8 {
-        if sign >= 1 && sign <= 12 {
+        if (1..=12).contains(&sign) {
             self.sarva_points[(sign - 1) as usize]
         } else {
             0
@@ -74,7 +74,7 @@ impl SarvaAshtakavarga {
     pub fn calculate_from_planets(&mut self) {
         self.sarva_points = [0; 12];
         self.grand_total = 0;
-        
+
         for planet in &self.planets {
             for (i, points) in planet.sign_points.iter().enumerate() {
                 self.sarva_points[i] += points;
@@ -168,7 +168,7 @@ mod tests {
         let mut av = PlanetAshtakavarga::empty("Sun");
         av.sign_points = [5, 6, 4, 3, 5, 4, 6, 5, 4, 5, 6, 3];
         av.recalculate_total();
-        
+
         assert_eq!(av.total_points, 56);
         assert_eq!(av.points_in_sign(1), 5);
         assert_eq!(av.points_in_sign(2), 6);
@@ -177,21 +177,30 @@ mod tests {
     #[test]
     fn test_sarva_ashtakavarga() {
         let mut sarva = SarvaAshtakavarga::empty();
-        
+
         let mut sun_av = PlanetAshtakavarga::empty("Sun");
         sun_av.sign_points = [4; 12];
         sun_av.recalculate_total();
-        
+
         sarva.add_planet(sun_av);
-        
+
         assert_eq!(sarva.points_in_sign(1), 4);
         assert_eq!(sarva.grand_total, 48);
     }
 
     #[test]
     fn test_strength_category() {
-        assert_eq!(StrengthCategory::from_sarva_points(40), StrengthCategory::Excellent);
-        assert_eq!(StrengthCategory::from_sarva_points(32), StrengthCategory::Good);
-        assert_eq!(StrengthCategory::from_sarva_points(20), StrengthCategory::VeryWeak);
+        assert_eq!(
+            StrengthCategory::from_sarva_points(40),
+            StrengthCategory::Excellent
+        );
+        assert_eq!(
+            StrengthCategory::from_sarva_points(32),
+            StrengthCategory::Good
+        );
+        assert_eq!(
+            StrengthCategory::from_sarva_points(20),
+            StrengthCategory::VeryWeak
+        );
     }
 }

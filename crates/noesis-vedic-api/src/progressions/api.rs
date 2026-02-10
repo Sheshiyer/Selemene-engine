@@ -4,24 +4,27 @@ use chrono::NaiveDate;
 
 use crate::chart::{BirthChart, ZodiacSign};
 use crate::error::VedicApiError;
-use crate::progressions::types::{ProgressionChart, ProgressionMethod, ProgressedPlanet};
+use crate::progressions::types::{ProgressedPlanet, ProgressionChart, ProgressionMethod};
 
 pub fn calculate_progression(
     chart: &BirthChart,
     target_date: &str,
     method: ProgressionMethod,
 ) -> Result<ProgressionChart, VedicApiError> {
-    let birth_date = NaiveDate::parse_from_str(&chart.native.birth_date, "%Y-%m-%d")
-        .map_err(|e| VedicApiError::InvalidInput {
-            field: "birth_date".to_string(),
-            message: e.to_string(),
+    let birth_date =
+        NaiveDate::parse_from_str(&chart.native.birth_date, "%Y-%m-%d").map_err(|e| {
+            VedicApiError::InvalidInput {
+                field: "birth_date".to_string(),
+                message: e.to_string(),
+            }
         })?;
 
-    let target_date = NaiveDate::parse_from_str(target_date, "%Y-%m-%d")
-        .map_err(|e| VedicApiError::InvalidInput {
+    let target_date = NaiveDate::parse_from_str(target_date, "%Y-%m-%d").map_err(|e| {
+        VedicApiError::InvalidInput {
             field: "target_date".to_string(),
             message: e.to_string(),
-        })?;
+        }
+    })?;
 
     let years = (target_date - birth_date).num_days() as f64 / 365.25;
     let arc = match method {
@@ -58,7 +61,10 @@ pub fn calculate_progression(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::chart::{BirthChart, NativeInfo, PlanetPosition, HousePosition, HouseType, AscendantInfo, MoonInfo, SpecialPoints};
+    use crate::chart::{
+        AscendantInfo, BirthChart, HousePosition, HouseType, MoonInfo, NativeInfo, PlanetPosition,
+        SpecialPoints,
+    };
 
     fn sample_chart() -> BirthChart {
         BirthChart {
@@ -120,7 +126,8 @@ mod tests {
     #[test]
     fn test_calculate_progression() {
         let chart = sample_chart();
-        let result = calculate_progression(&chart, "2001-08-13", ProgressionMethod::SolarArc).unwrap();
+        let result =
+            calculate_progression(&chart, "2001-08-13", ProgressionMethod::SolarArc).unwrap();
         assert_eq!(result.planets.len(), 1);
     }
 }

@@ -1,18 +1,17 @@
-use axum::{
-    extract::{State, Json},
-    response::{IntoResponse, Response},
-    http::StatusCode,
-};
-use serde::{Deserialize, Serialize};
-use serde_json::json;
-use utoipa::ToSchema;
-use noesis_auth::password::{hash_password, verify_password};
-use crate::AppState;
 use crate::error::ApiError;
+use crate::AppState;
+use axum::{
+    extract::{Json, State},
+    http::StatusCode,
+    response::{IntoResponse, Response},
+};
+use chrono::{Duration, Utc};
+use noesis_auth::password::{hash_password, verify_password};
 use noesis_core::EngineError;
-use chrono::{Utc, Duration};
-use uuid::Uuid;
+use serde::{Deserialize, Serialize};
 use tracing::info;
+use utoipa::ToSchema;
+use uuid::Uuid;
 
 #[derive(Deserialize, ToSchema)]
 pub struct RegisterRequest {
@@ -80,7 +79,10 @@ pub async fn register(
     Json(payload): Json<RegisterRequest>,
 ) -> Result<Response, ApiError> {
     // Check if user exists
-    let existing_user = state.user_repository.get_user_by_email(&payload.email).await
+    let existing_user = state
+        .user_repository
+        .get_user_by_email(&payload.email)
+        .await
         .map_err(|e| EngineError::InternalError(format!("Database error checking user: {}", e)))?;
 
     if existing_user.is_some() {
@@ -91,11 +93,11 @@ pub async fn register(
     let password_hash = hash_password(&payload.password)?;
 
     // Create user
-    let user = state.user_repository.create_user(
-        &payload.email,
-        &password_hash,
-        &payload.full_name
-    ).await.map_err(|e| EngineError::InternalError(format!("Failed to create user: {}", e)))?;
+    let user = state
+        .user_repository
+        .create_user(&payload.email, &password_hash, &payload.full_name)
+        .await
+        .map_err(|e| EngineError::InternalError(format!("Failed to create user: {}", e)))?;
 
     // Return 201 Created with ID
     let response = RegisterResponse {
@@ -124,13 +126,16 @@ pub async fn login(
     Json(payload): Json<LoginRequest>,
 ) -> Result<Response, ApiError> {
     // 1. Get user by email
-    let user = state.user_repository.get_user_by_email(&payload.email).await
+    let user = state
+        .user_repository
+        .get_user_by_email(&payload.email)
+        .await
         .map_err(|e| EngineError::InternalError(format!("Database error: {}", e)))?
         .ok_or_else(|| EngineError::AuthError("Invalid email or password".to_string()))?;
 
     // 2. Verify password
     let valid_password = verify_password(&payload.password, &user.password_hash)?;
-    
+
     if !valid_password {
         return Err(EngineError::AuthError("Invalid email or password".to_string()).into());
     }
@@ -139,12 +144,12 @@ pub async fn login(
     // We'll give them standard permissions based on tier for now
     let permissions = vec!["basic:access".to_string()];
     let consciousness_level = user.consciousness_level as u8;
-    
+
     let token = state.auth.generate_jwt_token(
         &user.id.to_string(),
         &user.tier,
         &permissions,
-        consciousness_level
+        consciousness_level,
     )?;
 
     // 4. Return token
@@ -179,14 +184,21 @@ pub async fn forgot_password(
     let expires_at = Utc::now() + Duration::hours(1);
 
     // Save to DB
-    state.user_repository.set_password_reset_token(&payload.email, &token, expires_at).await
+    state
+        .user_repository
+        .set_password_reset_token(&payload.email, &token, expires_at)
+        .await
         .map_err(|e| EngineError::InternalError(format!("Database error: {}", e)))?;
 
     // Log the token for development
-    info!("Password reset requested for {}. Token: {}", payload.email, token);
+    info!(
+        "Password reset requested for {}. Token: {}",
+        payload.email, token
+    );
 
     let response = ForgotPasswordResponse {
-        message: "If an account exists with this email, a password reset link has been sent.".to_string(),
+        message: "If an account exists with this email, a password reset link has been sent."
+            .to_string(),
     };
 
     Ok((StatusCode::OK, Json(response)).into_response())
@@ -210,15 +222,23 @@ pub async fn reset_password(
     Json(payload): Json<ResetPasswordRequest>,
 ) -> Result<Response, ApiError> {
     // 1. Verify token
-    let user = state.user_repository.find_user_by_reset_token(&payload.token).await
+    let user = state
+        .user_repository
+        .find_user_by_reset_token(&payload.token)
+        .await
         .map_err(|e| EngineError::InternalError(format!("Database error: {}", e)))?
-        .ok_or_else(|| EngineError::AuthError("Invalid or expired password reset token".to_string()))?;
+        .ok_or_else(|| {
+            EngineError::AuthError("Invalid or expired password reset token".to_string())
+        })?;
 
     // 2. Hash new password
     let password_hash = hash_password(&payload.new_password)?;
 
     // 3. Update password
-    state.user_repository.update_password(user.id, &password_hash).await
+    state
+        .user_repository
+        .update_password(user.id, &password_hash)
+        .await
         .map_err(|e| EngineError::InternalError(format!("Database error: {}", e)))?;
 
     let response = ResetPasswordResponse {

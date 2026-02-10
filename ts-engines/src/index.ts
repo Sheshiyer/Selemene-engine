@@ -10,12 +10,12 @@
 
 import { createServer, registry } from './server'
 
-// Import and register engines
-import { TarotEngine } from './engines/tarot'
-import { IChingEngine } from './engines/i-ching'
 import { EnneagramEngine } from './engines/enneagram'
+import { IChingEngine } from './engines/i-ching'
 import { SacredGeometryEngine } from './engines/sacred-geometry'
 import { SigilForgeEngine } from './engines/sigil-forge'
+// Import and register engines
+import { TarotEngine } from './engines/tarot'
 
 // Register engines
 registry.register(new TarotEngine())
@@ -24,7 +24,7 @@ registry.register(new EnneagramEngine())
 registry.register(new SacredGeometryEngine())
 registry.register(new SigilForgeEngine())
 
-const PORT = process.env.PORT ? parseInt(process.env.PORT) : 3001
+const PORT = process.env.PORT ? Number.parseInt(process.env.PORT) : 3001
 
 const app = createServer()
 

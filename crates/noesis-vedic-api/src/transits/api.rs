@@ -5,9 +5,8 @@
 use chrono::{NaiveDate, NaiveDateTime};
 use serde::{Deserialize, Serialize};
 
-use crate::error::{VedicApiError, VedicApiResult};
 use crate::client::VedicApiClient;
-use super::types::{TransitEvent, TransitAnalysis};
+use crate::error::{VedicApiError, VedicApiResult};
 
 /// Request for transit calculation
 #[derive(Debug, Clone, Serialize)]
@@ -99,10 +98,14 @@ impl VedicApiClient {
     /// Get transit analysis
     ///
     /// FAPI-074: GET /transits endpoint
-    pub async fn get_transits(&self, request: &TransitRequest) -> VedicApiResult<TransitApiResponse> {
+    pub async fn get_transits(
+        &self,
+        request: &TransitRequest,
+    ) -> VedicApiResult<TransitApiResponse> {
         let response = self.post("/transits", request).await?;
-        serde_json::from_value(response)
-            .map_err(|e| VedicApiError::ParseError(format!("Failed to parse transit response: {}", e)))
+        serde_json::from_value(response).map_err(|e| {
+            VedicApiError::ParseError(format!("Failed to parse transit response: {}", e))
+        })
     }
 
     /// Get current transits for a birth chart
@@ -131,9 +134,9 @@ mod tests {
             NaiveTime::from_hms_opt(10, 30, 0).unwrap(),
         );
         let transit = NaiveDate::from_ymd_opt(2024, 1, 15).unwrap();
-        
+
         let request = TransitRequest::new(birth, 12.97, 77.59, 5.5, transit);
-        
+
         assert_eq!(request.birth_date, "1990-06-15");
         assert_eq!(request.transit_date, "2024-01-15");
     }

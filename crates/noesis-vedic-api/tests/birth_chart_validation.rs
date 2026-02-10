@@ -1,9 +1,9 @@
-use noesis_vedic_api::birth_chart::dignities::{chart_dignities, DignityStatus};
-use noesis_vedic_api::birth_chart::status::{compute_statuses};
 use noesis_vedic_api::birth_chart::aspects::{calculate_aspects, AspectType};
+use noesis_vedic_api::birth_chart::dignities::{chart_dignities, DignityStatus};
+use noesis_vedic_api::birth_chart::status::compute_statuses;
 use noesis_vedic_api::chart::{
-    BirthChart, NativeInfo, PlanetPosition, HousePosition, HouseType,
-    AscendantInfo, MoonInfo, SpecialPoints, ZodiacSign,
+    AscendantInfo, BirthChart, HousePosition, HouseType, MoonInfo, NativeInfo, PlanetPosition,
+    SpecialPoints, ZodiacSign,
 };
 
 fn planet(name: &str, sign: ZodiacSign, degree: f64, house: u8) -> PlanetPosition {
@@ -26,7 +26,7 @@ fn planet(name: &str, sign: ZodiacSign, degree: f64, house: u8) -> PlanetPositio
 fn sample_chart() -> BirthChart {
     let planets = vec![
         planet("Sun", ZodiacSign::Aries, 10.0, 1),
-        planet("Moon", ZodiacSign::Leo, 10.0, 5),  // 120° from Sun (Trine)
+        planet("Moon", ZodiacSign::Leo, 10.0, 5), // 120° from Sun (Trine)
         planet("Mercury", ZodiacSign::Aries, 12.0, 1),
         planet("Venus", ZodiacSign::Taurus, 20.0, 2),
     ];
@@ -86,7 +86,10 @@ fn test_chart_dignities() {
 fn test_chart_statuses_combust() {
     let chart = sample_chart();
     let statuses = compute_statuses(&chart);
-    let mercury = statuses.iter().find(|s| s.planet == "Mercury").expect("mercury");
+    let mercury = statuses
+        .iter()
+        .find(|s| s.planet == "Mercury")
+        .expect("mercury");
     assert!(mercury.is_combust);
 }
 
@@ -95,8 +98,9 @@ fn test_chart_aspects() {
     let chart = sample_chart();
     let aspects = calculate_aspects(&chart);
     let has_trine = aspects.iter().any(|a| {
-        a.aspect_type == AspectType::Trine &&
-        ((a.planet_a == "Sun" && a.planet_b == "Moon") || (a.planet_a == "Moon" && a.planet_b == "Sun"))
+        a.aspect_type == AspectType::Trine
+            && ((a.planet_a == "Sun" && a.planet_b == "Moon")
+                || (a.planet_a == "Moon" && a.planet_b == "Sun"))
     });
     assert!(has_trine, "expected Sun-Moon trine");
 }

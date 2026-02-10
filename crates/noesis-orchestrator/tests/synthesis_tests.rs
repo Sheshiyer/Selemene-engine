@@ -13,14 +13,13 @@
 
 use chrono::Utc;
 use noesis_core::{CalculationMetadata, EngineInput, EngineOutput, Precision};
-use noesis_orchestrator::{
-    BirthBlueprintSynthesizer, DailyPracticeSynthesizer,
-    FullSpectrumSynthesizer, Synthesizer,
-};
 use noesis_orchestrator::workflow::synthesis::{
     CreativeExpressionSynthesis, DecisionSupportSynthesis, SelfInquirySynthesis,
 };
 use noesis_orchestrator::FullSpectrumResult;
+use noesis_orchestrator::{
+    BirthBlueprintSynthesizer, DailyPracticeSynthesizer, FullSpectrumSynthesizer, Synthesizer,
+};
 use serde_json::json;
 use std::collections::HashMap;
 
@@ -62,27 +61,45 @@ fn test_input() -> EngineInput {
 fn birth_blueprint_life_path_1_manifestor_produces_leadership_theme() {
     let mut results = HashMap::new();
 
-    results.insert("numerology".to_string(), mock_output("numerology", json!({
-        "life_path": 1,
-        "expression_number": 8,
-        "soul_urge": 5
-    })));
+    results.insert(
+        "numerology".to_string(),
+        mock_output(
+            "numerology",
+            json!({
+                "life_path": 1,
+                "expression_number": 8,
+                "soul_urge": 5
+            }),
+        ),
+    );
 
-    results.insert("human-design".to_string(), mock_output("human-design", json!({
-        "type": "Manifestor",
-        "authority": "Emotional",
-        "profile": "1/3",
-        "defined_centers": ["G Center", "Throat"],
-        "undefined_centers": ["Head", "Ajna"]
-    })));
+    results.insert(
+        "human-design".to_string(),
+        mock_output(
+            "human-design",
+            json!({
+                "type": "Manifestor",
+                "authority": "Emotional",
+                "profile": "1/3",
+                "defined_centers": ["G Center", "Throat"],
+                "undefined_centers": ["Head", "Ajna"]
+            }),
+        ),
+    );
 
-    results.insert("vimshottari".to_string(), mock_output("vimshottari", json!({
-        "current_dasha": {
-            "mahadasha": "Sun",
-            "antardasha": "Moon",
-            "years_remaining": 4.5
-        }
-    })));
+    results.insert(
+        "vimshottari".to_string(),
+        mock_output(
+            "vimshottari",
+            json!({
+                "current_dasha": {
+                    "mahadasha": "Sun",
+                    "antardasha": "Moon",
+                    "years_remaining": 4.5
+                }
+            }),
+        ),
+    );
 
     let synthesis = BirthBlueprintSynthesizer::synthesize(&results, &test_input());
 
@@ -123,29 +140,38 @@ fn birth_blueprint_life_path_1_manifestor_produces_leadership_theme() {
     );
 
     // Summary must be non-empty
-    assert!(
-        !synthesis.summary.is_empty(),
-        "Summary should not be empty"
-    );
+    assert!(!synthesis.summary.is_empty(), "Summary should not be empty");
 }
 
 #[test]
 fn birth_blueprint_soul_urge_7_manifestor_produces_visibility_tension() {
     let mut results = HashMap::new();
 
-    results.insert("numerology".to_string(), mock_output("numerology", json!({
-        "life_path": 1,
-        "expression_number": 8,
-        "soul_urge": 7
-    })));
+    results.insert(
+        "numerology".to_string(),
+        mock_output(
+            "numerology",
+            json!({
+                "life_path": 1,
+                "expression_number": 8,
+                "soul_urge": 7
+            }),
+        ),
+    );
 
-    results.insert("human-design".to_string(), mock_output("human-design", json!({
-        "type": "Manifestor",
-        "authority": "Emotional",
-        "profile": "1/3",
-        "defined_centers": ["G Center", "Throat"],
-        "undefined_centers": []
-    })));
+    results.insert(
+        "human-design".to_string(),
+        mock_output(
+            "human-design",
+            json!({
+                "type": "Manifestor",
+                "authority": "Emotional",
+                "profile": "1/3",
+                "defined_centers": ["G Center", "Throat"],
+                "undefined_centers": []
+            }),
+        ),
+    );
 
     let synthesis = BirthBlueprintSynthesizer::synthesize(&results, &test_input());
 
@@ -155,13 +181,18 @@ fn birth_blueprint_soul_urge_7_manifestor_produces_visibility_tension() {
         "Soul Urge 7 + Manifestor should produce visibility/introspection tension"
     );
 
-    let visibility_tension = synthesis.tensions.iter().find(|t| {
-        t.aspect.contains("Visibility") || t.aspect.contains("Introspection")
-    });
+    let visibility_tension = synthesis
+        .tensions
+        .iter()
+        .find(|t| t.aspect.contains("Visibility") || t.aspect.contains("Introspection"));
     assert!(
         visibility_tension.is_some(),
         "Should find visibility/introspection tension. Tensions: {:?}",
-        synthesis.tensions.iter().map(|t| &t.aspect).collect::<Vec<_>>()
+        synthesis
+            .tensions
+            .iter()
+            .map(|t| &t.aspect)
+            .collect::<Vec<_>>()
     );
 
     let tension = visibility_tension.unwrap();
@@ -175,38 +206,61 @@ fn birth_blueprint_soul_urge_7_manifestor_produces_visibility_tension() {
 fn birth_blueprint_sun_dasha_g_center_alignment() {
     let mut results = HashMap::new();
 
-    results.insert("numerology".to_string(), mock_output("numerology", json!({
-        "life_path": 3,
-        "expression_number": 5,
-        "soul_urge": 2
-    })));
+    results.insert(
+        "numerology".to_string(),
+        mock_output(
+            "numerology",
+            json!({
+                "life_path": 3,
+                "expression_number": 5,
+                "soul_urge": 2
+            }),
+        ),
+    );
 
-    results.insert("human-design".to_string(), mock_output("human-design", json!({
-        "type": "Generator",
-        "authority": "Sacral",
-        "profile": "2/4",
-        "defined_centers": ["G Center", "Sacral"],
-        "undefined_centers": ["Head"]
-    })));
+    results.insert(
+        "human-design".to_string(),
+        mock_output(
+            "human-design",
+            json!({
+                "type": "Generator",
+                "authority": "Sacral",
+                "profile": "2/4",
+                "defined_centers": ["G Center", "Sacral"],
+                "undefined_centers": ["Head"]
+            }),
+        ),
+    );
 
-    results.insert("vimshottari".to_string(), mock_output("vimshottari", json!({
-        "current_dasha": {
-            "mahadasha": "Sun",
-            "antardasha": "Venus",
-            "years_remaining": 3.0
-        }
-    })));
+    results.insert(
+        "vimshottari".to_string(),
+        mock_output(
+            "vimshottari",
+            json!({
+                "current_dasha": {
+                    "mahadasha": "Sun",
+                    "antardasha": "Venus",
+                    "years_remaining": 3.0
+                }
+            }),
+        ),
+    );
 
     let synthesis = BirthBlueprintSynthesizer::synthesize(&results, &test_input());
 
     // Sun dasha + defined G Center should produce an identity alignment
-    let identity_alignment = synthesis.alignments.iter().find(|a| {
-        a.aspect.contains("Identity") || a.aspect.contains("identity")
-    });
+    let identity_alignment = synthesis
+        .alignments
+        .iter()
+        .find(|a| a.aspect.contains("Identity") || a.aspect.contains("identity"));
     assert!(
         identity_alignment.is_some(),
         "Sun dasha + G Center should produce identity alignment. Alignments: {:?}",
-        synthesis.alignments.iter().map(|a| &a.aspect).collect::<Vec<_>>()
+        synthesis
+            .alignments
+            .iter()
+            .map(|a| &a.aspect)
+            .collect::<Vec<_>>()
     );
 }
 
@@ -215,11 +269,17 @@ fn birth_blueprint_partial_results_still_produces_output() {
     let mut results = HashMap::new();
 
     // Only numerology -- no HD, no vimshottari
-    results.insert("numerology".to_string(), mock_output("numerology", json!({
-        "life_path": 9,
-        "expression_number": 6,
-        "soul_urge": 3
-    })));
+    results.insert(
+        "numerology".to_string(),
+        mock_output(
+            "numerology",
+            json!({
+                "life_path": 9,
+                "expression_number": 6,
+                "soul_urge": 3
+            }),
+        ),
+    );
 
     let synthesis = BirthBlueprintSynthesizer::synthesize(&results, &test_input());
 
@@ -241,40 +301,58 @@ fn birth_blueprint_partial_results_still_produces_output() {
 fn daily_practice_produces_activity_recommendations() {
     let mut results = HashMap::new();
 
-    results.insert("panchanga".to_string(), mock_output("panchanga", json!({
-        "tithi": {
-            "name": "Shukla Panchami",
-            "number": 5,
-            "paksha": "Shukla"
-        },
-        "nakshatra": {
-            "name": "Rohini",
-            "number": 4,
-            "quality": "Fixed",
-            "deity": "Brahma"
-        },
-        "yoga": "Shiva",
-        "karana": "Bava",
-        "vara": "Thursday"
-    })));
+    results.insert(
+        "panchanga".to_string(),
+        mock_output(
+            "panchanga",
+            json!({
+                "tithi": {
+                    "name": "Shukla Panchami",
+                    "number": 5,
+                    "paksha": "Shukla"
+                },
+                "nakshatra": {
+                    "name": "Rohini",
+                    "number": 4,
+                    "quality": "Fixed",
+                    "deity": "Brahma"
+                },
+                "yoga": "Shiva",
+                "karana": "Bava",
+                "vara": "Thursday"
+            }),
+        ),
+    );
 
-    results.insert("vedic-clock".to_string(), mock_output("vedic-clock", json!({
-        "ghati": 25,
-        "pala": 30,
-        "muhurta": {
-            "name": "Abhijit",
-            "quality": "Auspicious"
-        },
-        "active_organ": "Heart",
-        "dosha": "Pitta",
-        "recommended_activity": "Important meetings"
-    })));
+    results.insert(
+        "vedic-clock".to_string(),
+        mock_output(
+            "vedic-clock",
+            json!({
+                "ghati": 25,
+                "pala": 30,
+                "muhurta": {
+                    "name": "Abhijit",
+                    "quality": "Auspicious"
+                },
+                "active_organ": "Heart",
+                "dosha": "Pitta",
+                "recommended_activity": "Important meetings"
+            }),
+        ),
+    );
 
-    results.insert("biorhythm".to_string(), mock_output("biorhythm", json!({
-        "physical": 0.7,
-        "emotional": 0.5,
-        "intellectual": 0.3
-    })));
+    results.insert(
+        "biorhythm".to_string(),
+        mock_output(
+            "biorhythm",
+            json!({
+                "physical": 0.7,
+                "emotional": 0.5,
+                "intellectual": 0.3
+            }),
+        ),
+    );
 
     let synthesis = DailyPracticeSynthesizer::synthesize(&results, &test_input());
 
@@ -291,7 +369,9 @@ fn daily_practice_produces_activity_recommendations() {
         "Summary should describe daily conditions"
     );
     assert!(
-        synthesis.summary.contains("Shukla Panchami") || synthesis.summary.contains("Pitta") || synthesis.summary.contains("Rohini"),
+        synthesis.summary.contains("Shukla Panchami")
+            || synthesis.summary.contains("Pitta")
+            || synthesis.summary.contains("Rohini"),
         "Summary should reference at least one temporal condition. Got: {}",
         synthesis.summary
     );
@@ -309,31 +389,48 @@ fn daily_practice_energy_tension_low_physical_pitta_time() {
         "vara": "Tuesday"
     })));
 
-    results.insert("vedic-clock".to_string(), mock_output("vedic-clock", json!({
-        "ghati": 30,
-        "pala": 0,
-        "muhurta": { "name": "Madhyahna", "quality": "Neutral" },
-        "active_organ": "Heart",
-        "dosha": "Pitta",
-        "recommended_activity": "Focused work"
-    })));
+    results.insert(
+        "vedic-clock".to_string(),
+        mock_output(
+            "vedic-clock",
+            json!({
+                "ghati": 30,
+                "pala": 0,
+                "muhurta": { "name": "Madhyahna", "quality": "Neutral" },
+                "active_organ": "Heart",
+                "dosha": "Pitta",
+                "recommended_activity": "Focused work"
+            }),
+        ),
+    );
 
-    results.insert("biorhythm".to_string(), mock_output("biorhythm", json!({
-        "physical": -0.5,
-        "emotional": 0.5,
-        "intellectual": 0.5
-    })));
+    results.insert(
+        "biorhythm".to_string(),
+        mock_output(
+            "biorhythm",
+            json!({
+                "physical": -0.5,
+                "emotional": 0.5,
+                "intellectual": 0.5
+            }),
+        ),
+    );
 
     let synthesis = DailyPracticeSynthesizer::synthesize(&results, &test_input());
 
     // Low physical (-0.5) + Pitta time should produce energy tension
-    let energy_tension = synthesis.tensions.iter().find(|t| {
-        t.aspect.contains("Energy") || t.aspect.contains("energy")
-    });
+    let energy_tension = synthesis
+        .tensions
+        .iter()
+        .find(|t| t.aspect.contains("Energy") || t.aspect.contains("energy"));
     assert!(
         energy_tension.is_some(),
         "Low physical biorhythm during Pitta time should create tension. Tensions: {:?}",
-        synthesis.tensions.iter().map(|t| &t.aspect).collect::<Vec<_>>()
+        synthesis
+            .tensions
+            .iter()
+            .map(|t| &t.aspect)
+            .collect::<Vec<_>>()
     );
 }
 
@@ -350,20 +447,32 @@ fn daily_practice_rikta_tithi_high_biorhythm_tension() {
         "vara": "Wednesday"
     })));
 
-    results.insert("vedic-clock".to_string(), mock_output("vedic-clock", json!({
-        "ghati": 20,
-        "pala": 15,
-        "muhurta": { "name": "Vijaya", "quality": "Neutral" },
-        "active_organ": "Liver",
-        "dosha": "Kapha",
-        "recommended_activity": "Physical exercise"
-    })));
+    results.insert(
+        "vedic-clock".to_string(),
+        mock_output(
+            "vedic-clock",
+            json!({
+                "ghati": 20,
+                "pala": 15,
+                "muhurta": { "name": "Vijaya", "quality": "Neutral" },
+                "active_organ": "Liver",
+                "dosha": "Kapha",
+                "recommended_activity": "Physical exercise"
+            }),
+        ),
+    );
 
-    results.insert("biorhythm".to_string(), mock_output("biorhythm", json!({
-        "physical": 0.8,
-        "emotional": 0.6,
-        "intellectual": 0.4
-    })));
+    results.insert(
+        "biorhythm".to_string(),
+        mock_output(
+            "biorhythm",
+            json!({
+                "physical": 0.8,
+                "emotional": 0.6,
+                "intellectual": 0.4
+            }),
+        ),
+    );
 
     let synthesis = DailyPracticeSynthesizer::synthesize(&results, &test_input());
 
@@ -374,7 +483,11 @@ fn daily_practice_rikta_tithi_high_biorhythm_tension() {
     assert!(
         rhythm_tension.is_some(),
         "Rikta tithi + high biorhythm should produce rhythm tension. Tensions: {:?}",
-        synthesis.tensions.iter().map(|t| &t.aspect).collect::<Vec<_>>()
+        synthesis
+            .tensions
+            .iter()
+            .map(|t| &t.aspect)
+            .collect::<Vec<_>>()
     );
 }
 
@@ -386,24 +499,42 @@ fn daily_practice_rikta_tithi_high_biorhythm_tension() {
 fn decision_support_tarot_iching_hd_produces_themes_and_summary() {
     let mut results = HashMap::new();
 
-    results.insert("tarot".to_string(), mock_output("tarot", json!({
-        "spread": "THREE_CARD",
-        "cards": [
-            { "name": "The Hermit", "position": "past", "arcana": "major" },
-            { "name": "The Chariot", "position": "present", "arcana": "major" },
-            { "name": "Three of Cups", "position": "future", "arcana": "minor" }
-        ]
-    })));
+    results.insert(
+        "tarot".to_string(),
+        mock_output(
+            "tarot",
+            json!({
+                "spread": "THREE_CARD",
+                "cards": [
+                    { "name": "The Hermit", "position": "past", "arcana": "major" },
+                    { "name": "The Chariot", "position": "present", "arcana": "major" },
+                    { "name": "Three of Cups", "position": "future", "arcana": "minor" }
+                ]
+            }),
+        ),
+    );
 
-    results.insert("i-ching".to_string(), mock_output("i-ching", json!({
-        "hexagram": { "number": 5, "name": "Waiting" },
-        "changing_lines": [2, 5]
-    })));
+    results.insert(
+        "i-ching".to_string(),
+        mock_output(
+            "i-ching",
+            json!({
+                "hexagram": { "number": 5, "name": "Waiting" },
+                "changing_lines": [2, 5]
+            }),
+        ),
+    );
 
-    results.insert("human-design".to_string(), mock_output("human-design", json!({
-        "authority": "sacral",
-        "type": "Generator"
-    })));
+    results.insert(
+        "human-design".to_string(),
+        mock_output(
+            "human-design",
+            json!({
+                "authority": "sacral",
+                "type": "Generator"
+            }),
+        ),
+    );
 
     let synthesis = DecisionSupportSynthesis::synthesize(&results, &test_input());
 
@@ -414,9 +545,10 @@ fn decision_support_tarot_iching_hd_produces_themes_and_summary() {
     );
 
     // Should have major arcana theme (2 major arcana cards)
-    let archetypal = synthesis.themes.iter().find(|t| {
-        t.name.contains("Archetypal") || t.name.contains("archetypal")
-    });
+    let archetypal = synthesis
+        .themes
+        .iter()
+        .find(|t| t.name.contains("Archetypal") || t.name.contains("archetypal"));
     assert!(
         archetypal.is_some(),
         "2 major arcana cards should produce archetypal theme. Themes: {:?}",
@@ -440,34 +572,58 @@ fn decision_support_directional_alignment_both_action() {
     let mut results = HashMap::new();
 
     // The Chariot = action card
-    results.insert("tarot".to_string(), mock_output("tarot", json!({
-        "spread": "SINGLE",
-        "cards": [
-            { "name": "The Chariot", "position": "present", "arcana": "major" }
-        ]
-    })));
+    results.insert(
+        "tarot".to_string(),
+        mock_output(
+            "tarot",
+            json!({
+                "spread": "SINGLE",
+                "cards": [
+                    { "name": "The Chariot", "position": "present", "arcana": "major" }
+                ]
+            }),
+        ),
+    );
 
     // Hexagram 1 = action hexagram
-    results.insert("i-ching".to_string(), mock_output("i-ching", json!({
-        "hexagram": { "number": 1, "name": "The Creative" },
-        "changing_lines": []
-    })));
+    results.insert(
+        "i-ching".to_string(),
+        mock_output(
+            "i-ching",
+            json!({
+                "hexagram": { "number": 1, "name": "The Creative" },
+                "changing_lines": []
+            }),
+        ),
+    );
 
-    results.insert("human-design".to_string(), mock_output("human-design", json!({
-        "authority": "sacral",
-        "type": "Generator"
-    })));
+    results.insert(
+        "human-design".to_string(),
+        mock_output(
+            "human-design",
+            json!({
+                "authority": "sacral",
+                "type": "Generator"
+            }),
+        ),
+    );
 
     let synthesis = DecisionSupportSynthesis::synthesize(&results, &test_input());
 
     // Both tarot (Chariot=action) and I-Ching (hex 1=action) point to action
     let directional = synthesis.alignments.iter().find(|a| {
-        a.aspect.contains("Directional") || a.aspect.contains("Action") || a.aspect.contains("Body-Action")
+        a.aspect.contains("Directional")
+            || a.aspect.contains("Action")
+            || a.aspect.contains("Body-Action")
     });
     assert!(
         directional.is_some(),
         "Chariot + Hex 1 should produce directional/action alignment. Alignments: {:?}",
-        synthesis.alignments.iter().map(|a| &a.aspect).collect::<Vec<_>>()
+        synthesis
+            .alignments
+            .iter()
+            .map(|a| &a.aspect)
+            .collect::<Vec<_>>()
     );
 }
 
@@ -480,9 +636,8 @@ fn decision_support_produces_witness_prompts() {
     });
     let iching_data = json!({ "name": "Waiting" });
 
-    let prompts = DecisionSupportSynthesis::generate_witness_prompts(
-        &hd_data, &tarot_data, &iching_data,
-    );
+    let prompts =
+        DecisionSupportSynthesis::generate_witness_prompts(&hd_data, &tarot_data, &iching_data);
 
     assert!(
         !prompts.is_empty(),
@@ -490,9 +645,9 @@ fn decision_support_produces_witness_prompts() {
     );
 
     // Should have a body-awareness prompt
-    let body_prompt = prompts.iter().find(|p| {
-        p.text.contains("body") || p.text.contains("sensation")
-    });
+    let body_prompt = prompts
+        .iter()
+        .find(|p| p.text.contains("body") || p.text.contains("sensation"));
     assert!(
         body_prompt.is_some(),
         "Should include body-awareness prompt. Prompts: {:?}",
@@ -505,12 +660,18 @@ fn decision_support_handles_missing_engines() {
     let mut results = HashMap::new();
 
     // Only tarot -- no I-Ching, no HD
-    results.insert("tarot".to_string(), mock_output("tarot", json!({
-        "spread": "SINGLE",
-        "cards": [
-            { "name": "The Magician", "position": "present", "arcana": "major" }
-        ]
-    })));
+    results.insert(
+        "tarot".to_string(),
+        mock_output(
+            "tarot",
+            json!({
+                "spread": "SINGLE",
+                "cards": [
+                    { "name": "The Magician", "position": "present", "arcana": "major" }
+                ]
+            }),
+        ),
+    );
 
     let synthesis = DecisionSupportSynthesis::synthesize(&results, &test_input());
 
@@ -529,30 +690,42 @@ fn decision_support_handles_missing_engines() {
 fn self_inquiry_gene_keys_enneagram_produces_shadow_themes() {
     let mut results = HashMap::new();
 
-    results.insert("gene-keys".to_string(), mock_output("gene-keys", json!({
-        "spheres": {
-            "life_work": {
-                "gene_key": 55,
-                "shadow": "Victimization",
-                "gift": "Freedom",
-                "siddhi": "Freedom"
-            },
-            "evolution": {
-                "gene_key": 59,
-                "shadow": "Dishonesty",
-                "gift": "Intimacy",
-                "siddhi": "Transparency"
-            }
-        }
-    })));
+    results.insert(
+        "gene-keys".to_string(),
+        mock_output(
+            "gene-keys",
+            json!({
+                "spheres": {
+                    "life_work": {
+                        "gene_key": 55,
+                        "shadow": "Victimization",
+                        "gift": "Freedom",
+                        "siddhi": "Freedom"
+                    },
+                    "evolution": {
+                        "gene_key": 59,
+                        "shadow": "Dishonesty",
+                        "gift": "Intimacy",
+                        "siddhi": "Transparency"
+                    }
+                }
+            }),
+        ),
+    );
 
-    results.insert("enneagram".to_string(), mock_output("enneagram", json!({
-        "type": 4,
-        "core_fear": "having no identity",
-        "core_weakness": "envy",
-        "healthy_traits": ["creative", "authentic", "compassion"],
-        "integration": 1
-    })));
+    results.insert(
+        "enneagram".to_string(),
+        mock_output(
+            "enneagram",
+            json!({
+                "type": 4,
+                "core_fear": "having no identity",
+                "core_weakness": "envy",
+                "healthy_traits": ["creative", "authentic", "compassion"],
+                "integration": 1
+            }),
+        ),
+    );
 
     let synthesis = SelfInquirySynthesis::synthesize(&results, &test_input());
 
@@ -563,9 +736,10 @@ fn self_inquiry_gene_keys_enneagram_produces_shadow_themes() {
     );
 
     // Should find shadow theme from Gene Keys
-    let shadow_theme = synthesis.themes.iter().find(|t| {
-        t.name.contains("Shadow") || t.name.contains("shadow")
-    });
+    let shadow_theme = synthesis
+        .themes
+        .iter()
+        .find(|t| t.name.contains("Shadow") || t.name.contains("shadow"));
     assert!(
         shadow_theme.is_some(),
         "Should find shadow theme from Gene Keys. Themes: {:?}",
@@ -573,9 +747,10 @@ fn self_inquiry_gene_keys_enneagram_produces_shadow_themes() {
     );
 
     // Should find enneagram type theme
-    let enn_theme = synthesis.themes.iter().find(|t| {
-        t.name.contains("Enneagram") || t.name.contains("Individualist")
-    });
+    let enn_theme = synthesis
+        .themes
+        .iter()
+        .find(|t| t.name.contains("Enneagram") || t.name.contains("Individualist"));
     assert!(
         enn_theme.is_some(),
         "Should find Enneagram type theme. Themes: {:?}",
@@ -595,30 +770,42 @@ fn self_inquiry_shadow_fear_alignment() {
 
     // Gene Key 55 shadow = "Victimization" contains no direct mapping,
     // but envy maps to Type 4
-    results.insert("gene-keys".to_string(), mock_output("gene-keys", json!({
-        "spheres": {
-            "life_work": {
-                "gene_key": 44,
-                "shadow": "Interference",
-                "gift": "Teamwork",
-                "siddhi": "Synarchy"
-            },
-            "evolution": {
-                "gene_key": 1,
-                "shadow": "Entropy",
-                "gift": "Freshness",
-                "siddhi": "Beauty"
-            }
-        }
-    })));
+    results.insert(
+        "gene-keys".to_string(),
+        mock_output(
+            "gene-keys",
+            json!({
+                "spheres": {
+                    "life_work": {
+                        "gene_key": 44,
+                        "shadow": "Interference",
+                        "gift": "Teamwork",
+                        "siddhi": "Synarchy"
+                    },
+                    "evolution": {
+                        "gene_key": 1,
+                        "shadow": "Entropy",
+                        "gift": "Freshness",
+                        "siddhi": "Beauty"
+                    }
+                }
+            }),
+        ),
+    );
 
-    results.insert("enneagram".to_string(), mock_output("enneagram", json!({
-        "type": 4,
-        "core_fear": "having no identity",
-        "core_weakness": "envy",
-        "healthy_traits": ["creative"],
-        "integration": 1
-    })));
+    results.insert(
+        "enneagram".to_string(),
+        mock_output(
+            "enneagram",
+            json!({
+                "type": 4,
+                "core_fear": "having no identity",
+                "core_weakness": "envy",
+                "healthy_traits": ["creative"],
+                "integration": 1
+            }),
+        ),
+    );
 
     let synthesis = SelfInquirySynthesis::synthesize(&results, &test_input());
 
@@ -629,23 +816,33 @@ fn self_inquiry_shadow_fear_alignment() {
     );
 
     // Should find the shadow-gift journey tension
-    let shadow_gift = synthesis.tensions.iter().find(|t| {
-        t.aspect.contains("Shadow") && t.aspect.contains("Gift")
-    });
+    let shadow_gift = synthesis
+        .tensions
+        .iter()
+        .find(|t| t.aspect.contains("Shadow") && t.aspect.contains("Gift"));
     assert!(
         shadow_gift.is_some(),
         "Should find Shadow-Gift Journey tension. Tensions: {:?}",
-        synthesis.tensions.iter().map(|t| &t.aspect).collect::<Vec<_>>()
+        synthesis
+            .tensions
+            .iter()
+            .map(|t| &t.aspect)
+            .collect::<Vec<_>>()
     );
 
     // Should find core type tension
-    let core_tension = synthesis.tensions.iter().find(|t| {
-        t.aspect.contains("Core Type")
-    });
+    let core_tension = synthesis
+        .tensions
+        .iter()
+        .find(|t| t.aspect.contains("Core Type"));
     assert!(
         core_tension.is_some(),
         "Should find Core Type Tension. Tensions: {:?}",
-        synthesis.tensions.iter().map(|t| &t.aspect).collect::<Vec<_>>()
+        synthesis
+            .tensions
+            .iter()
+            .map(|t| &t.aspect)
+            .collect::<Vec<_>>()
     );
 }
 
@@ -653,35 +850,52 @@ fn self_inquiry_shadow_fear_alignment() {
 fn self_inquiry_siddhi_integration_alignment() {
     let mut results = HashMap::new();
 
-    results.insert("gene-keys".to_string(), mock_output("gene-keys", json!({
-        "spheres": {
-            "life_work": {
-                "gene_key": 22,
-                "shadow": "Dishonour",
-                "gift": "Graciousness",
-                "siddhi": "Grace"
-            }
-        }
-    })));
+    results.insert(
+        "gene-keys".to_string(),
+        mock_output(
+            "gene-keys",
+            json!({
+                "spheres": {
+                    "life_work": {
+                        "gene_key": 22,
+                        "shadow": "Dishonour",
+                        "gift": "Graciousness",
+                        "siddhi": "Grace"
+                    }
+                }
+            }),
+        ),
+    );
 
-    results.insert("enneagram".to_string(), mock_output("enneagram", json!({
-        "type": 9,
-        "core_fear": "loss of connection",
-        "core_weakness": "sloth",
-        "healthy_traits": ["peaceful", "accepting"],
-        "integration": 3
-    })));
+    results.insert(
+        "enneagram".to_string(),
+        mock_output(
+            "enneagram",
+            json!({
+                "type": 9,
+                "core_fear": "loss of connection",
+                "core_weakness": "sloth",
+                "healthy_traits": ["peaceful", "accepting"],
+                "integration": 3
+            }),
+        ),
+    );
 
     let synthesis = SelfInquirySynthesis::synthesize(&results, &test_input());
 
     // With both siddhi and integration present, should find highest potential alignment
-    let potential = synthesis.alignments.iter().find(|a| {
-        a.aspect.contains("Potential") || a.aspect.contains("Highest")
-    });
+    let potential = synthesis
+        .alignments
+        .iter()
+        .find(|a| a.aspect.contains("Potential") || a.aspect.contains("Highest"));
     assert!(
         potential.is_some(),
         "Siddhi + integration point should produce Highest Potential alignment. Alignments: {:?}",
-        synthesis.alignments.iter().map(|a| &a.aspect).collect::<Vec<_>>()
+        synthesis
+            .alignments
+            .iter()
+            .map(|a| &a.aspect)
+            .collect::<Vec<_>>()
     );
 }
 
@@ -693,17 +907,29 @@ fn self_inquiry_siddhi_integration_alignment() {
 fn creative_expression_sigil_geometry_produces_themes() {
     let mut results = HashMap::new();
 
-    results.insert("sigil-forge".to_string(), mock_output("sigil-forge", json!({
-        "intention": "Manifest creative abundance in my life",
-        "distilled": "CREATE ABUNDANCE",
-        "method": "letter_elimination"
-    })));
+    results.insert(
+        "sigil-forge".to_string(),
+        mock_output(
+            "sigil-forge",
+            json!({
+                "intention": "Manifest creative abundance in my life",
+                "distilled": "CREATE ABUNDANCE",
+                "method": "letter_elimination"
+            }),
+        ),
+    );
 
-    results.insert("sacred-geometry".to_string(), mock_output("sacred-geometry", json!({
-        "form": "Seed of Life",
-        "qualities": ["creation", "potential", "genesis"],
-        "meditation": "Contemplate the seven circles"
-    })));
+    results.insert(
+        "sacred-geometry".to_string(),
+        mock_output(
+            "sacred-geometry",
+            json!({
+                "form": "Seed of Life",
+                "qualities": ["creation", "potential", "genesis"],
+                "meditation": "Contemplate the seven circles"
+            }),
+        ),
+    );
 
     let synthesis = CreativeExpressionSynthesis::synthesize(&results, &test_input());
 
@@ -724,9 +950,10 @@ fn creative_expression_sigil_geometry_produces_themes() {
     );
 
     // Should have sacred form theme
-    let form_theme = synthesis.themes.iter().find(|t| {
-        t.name.contains("Seed") || t.name.contains("Form") || t.name.contains("form")
-    });
+    let form_theme = synthesis
+        .themes
+        .iter()
+        .find(|t| t.name.contains("Seed") || t.name.contains("Form") || t.name.contains("form"));
     assert!(
         form_theme.is_some(),
         "Should find sacred form theme. Themes: {:?}",
@@ -742,24 +969,37 @@ fn creative_expression_keyword_quality_shared_resonance() {
     let mut results = HashMap::new();
 
     // "heal" intention -> restorative energy; qualities include "healing" -> shared resonance
-    results.insert("sigil-forge".to_string(), mock_output("sigil-forge", json!({
-        "intention": "Heal and restore my inner balance",
-        "distilled": "RESTORE BALANCE",
-        "method": "letter_elimination"
-    })));
+    results.insert(
+        "sigil-forge".to_string(),
+        mock_output(
+            "sigil-forge",
+            json!({
+                "intention": "Heal and restore my inner balance",
+                "distilled": "RESTORE BALANCE",
+                "method": "letter_elimination"
+            }),
+        ),
+    );
 
-    results.insert("sacred-geometry".to_string(), mock_output("sacred-geometry", json!({
-        "form": "Seed of Life",
-        "qualities": ["creation", "potential", "healing"],
-        "meditation": "Seven circles of creation"
-    })));
+    results.insert(
+        "sacred-geometry".to_string(),
+        mock_output(
+            "sacred-geometry",
+            json!({
+                "form": "Seed of Life",
+                "qualities": ["creation", "potential", "healing"],
+                "meditation": "Seven circles of creation"
+            }),
+        ),
+    );
 
     let synthesis = CreativeExpressionSynthesis::synthesize(&results, &test_input());
 
     // "heal" keyword in intention matches "healing" quality -> Shared Resonance alignment
-    let alignment = synthesis.alignments.iter().find(|a| {
-        a.aspect.contains("Resonance") || a.aspect.contains("heal")
-    });
+    let alignment = synthesis
+        .alignments
+        .iter()
+        .find(|a| a.aspect.contains("Resonance") || a.aspect.contains("heal"));
     assert!(
         alignment.is_some(),
         "Heal keyword + healing quality should produce shared resonance alignment. Alignments: {:?}",
@@ -782,28 +1022,45 @@ fn creative_expression_keyword_quality_shared_resonance() {
 fn creative_expression_formless_to_form_tension() {
     let mut results = HashMap::new();
 
-    results.insert("sigil-forge".to_string(), mock_output("sigil-forge", json!({
-        "intention": "Express my truth",
-        "distilled": "TRUTH",
-        "method": "letter_elimination"
-    })));
+    results.insert(
+        "sigil-forge".to_string(),
+        mock_output(
+            "sigil-forge",
+            json!({
+                "intention": "Express my truth",
+                "distilled": "TRUTH",
+                "method": "letter_elimination"
+            }),
+        ),
+    );
 
-    results.insert("sacred-geometry".to_string(), mock_output("sacred-geometry", json!({
-        "form": "Circle",
-        "qualities": ["wholeness", "unity"],
-        "meditation": "The perfect circle"
-    })));
+    results.insert(
+        "sacred-geometry".to_string(),
+        mock_output(
+            "sacred-geometry",
+            json!({
+                "form": "Circle",
+                "qualities": ["wholeness", "unity"],
+                "meditation": "The perfect circle"
+            }),
+        ),
+    );
 
     let synthesis = CreativeExpressionSynthesis::synthesize(&results, &test_input());
 
     // Should always have the Formless-to-Form tension
-    let formless = synthesis.tensions.iter().find(|t| {
-        t.aspect.contains("Formless") || t.aspect.contains("Form")
-    });
+    let formless = synthesis
+        .tensions
+        .iter()
+        .find(|t| t.aspect.contains("Formless") || t.aspect.contains("Form"));
     assert!(
         formless.is_some(),
         "Should find Formless to Form tension. Tensions: {:?}",
-        synthesis.tensions.iter().map(|t| &t.aspect).collect::<Vec<_>>()
+        synthesis
+            .tensions
+            .iter()
+            .map(|t| &t.aspect)
+            .collect::<Vec<_>>()
     );
 }
 
@@ -823,7 +1080,8 @@ fn creative_expression_generates_creative_direction() {
         "visual_description": "A spiral expanding in golden ratio proportions"
     });
 
-    let direction = CreativeExpressionSynthesis::generate_creative_direction(&sigil_data, &geo_data);
+    let direction =
+        CreativeExpressionSynthesis::generate_creative_direction(&sigil_data, &geo_data);
 
     assert!(
         direction.get("core_direction").is_some(),
@@ -834,7 +1092,9 @@ fn creative_expression_generates_creative_direction() {
         "Should produce creative_prompt"
     );
 
-    let approaches = direction.get("suggested_approach").and_then(|v| v.as_array());
+    let approaches = direction
+        .get("suggested_approach")
+        .and_then(|v| v.as_array());
     assert!(
         approaches.is_some() && !approaches.unwrap().is_empty(),
         "Should produce suggested approaches"
@@ -852,26 +1112,41 @@ fn full_spectrum_cross_engine_theme_detection() {
     let mut successful_outputs = HashMap::new();
 
     // All three engines mention "gift" or "leadership" via category keywords
-    successful_outputs.insert("numerology".to_string(), mock_output(
-        "numerology",
-        json!({ "life_path": 1, "gifts": ["leadership", "creativity"] }),
-    ));
-    successful_outputs.insert("human-design".to_string(), mock_output(
-        "human-design",
-        json!({ "type": "Manifestor", "authority": "Emotional" }),
-    ));
-    successful_outputs.insert("gene-keys".to_string(), mock_output(
-        "gene-keys",
-        json!({ "shadow": "Control", "gift": "Leadership" }),
-    ));
-    successful_outputs.insert("panchanga".to_string(), mock_output(
-        "panchanga",
-        json!({ "tithi": "Shukla Panchami", "nakshatra": "Rohini" }),
-    ));
-    successful_outputs.insert("vimshottari".to_string(), mock_output(
-        "vimshottari",
-        json!({ "current_dasha": { "mahadasha": "Sun", "antardasha": "Moon" } }),
-    ));
+    successful_outputs.insert(
+        "numerology".to_string(),
+        mock_output(
+            "numerology",
+            json!({ "life_path": 1, "gifts": ["leadership", "creativity"] }),
+        ),
+    );
+    successful_outputs.insert(
+        "human-design".to_string(),
+        mock_output(
+            "human-design",
+            json!({ "type": "Manifestor", "authority": "Emotional" }),
+        ),
+    );
+    successful_outputs.insert(
+        "gene-keys".to_string(),
+        mock_output(
+            "gene-keys",
+            json!({ "shadow": "Control", "gift": "Leadership" }),
+        ),
+    );
+    successful_outputs.insert(
+        "panchanga".to_string(),
+        mock_output(
+            "panchanga",
+            json!({ "tithi": "Shukla Panchami", "nakshatra": "Rohini" }),
+        ),
+    );
+    successful_outputs.insert(
+        "vimshottari".to_string(),
+        mock_output(
+            "vimshottari",
+            json!({ "current_dasha": { "mahadasha": "Sun", "antardasha": "Moon" } }),
+        ),
+    );
 
     let result = FullSpectrumResult {
         execution_id: "test-full".to_string(),
@@ -886,12 +1161,20 @@ fn full_spectrum_cross_engine_theme_detection() {
 
     let synthesis = synthesizer.synthesize(&result);
 
-    assert_eq!(synthesis.engines_analyzed, 5, "Should analyze all 5 engines");
-    assert!(!synthesis.narrative.is_empty(), "Should produce a narrative");
+    assert_eq!(
+        synthesis.engines_analyzed, 5,
+        "Should analyze all 5 engines"
+    );
+    assert!(
+        !synthesis.narrative.is_empty(),
+        "Should produce a narrative"
+    );
 
     // With 5+ engines, we should find at least some cross-engine themes
     // "gift" keyword appears in numerology (gifts array) and gene-keys (gift field)
-    let all_themes: Vec<_> = synthesis.primary_themes.iter()
+    let all_themes: Vec<_> = synthesis
+        .primary_themes
+        .iter()
         .chain(synthesis.secondary_themes.iter())
         .collect();
 
@@ -900,12 +1183,14 @@ fn full_spectrum_cross_engine_theme_detection() {
         assert!(
             theme.strength > 0.0,
             "Theme '{}' should have strength > 0, got {}",
-            theme.theme, theme.strength
+            theme.theme,
+            theme.strength
         );
         assert!(
             theme.sources.len() >= 2,
             "Cross-engine theme '{}' should have at least 2 sources, got {}",
-            theme.theme, theme.sources.len()
+            theme.theme,
+            theme.sources.len()
         );
     }
 }
@@ -917,18 +1202,27 @@ fn full_spectrum_primary_themes_have_witness_prompts() {
     let mut successful_outputs = HashMap::new();
 
     // "path" keyword should be detected across multiple engines
-    successful_outputs.insert("numerology".to_string(), mock_output(
-        "numerology",
-        json!({ "life_path": 6, "path_description": "The Nurturer" }),
-    ));
-    successful_outputs.insert("human-design".to_string(), mock_output(
-        "human-design",
-        json!({ "type": "Generator", "path": "Sacral response" }),
-    ));
-    successful_outputs.insert("gene-keys".to_string(), mock_output(
-        "gene-keys",
-        json!({ "shadow": "Impatience", "gift": "Patience", "path": "Gene Keys Golden Path" }),
-    ));
+    successful_outputs.insert(
+        "numerology".to_string(),
+        mock_output(
+            "numerology",
+            json!({ "life_path": 6, "path_description": "The Nurturer" }),
+        ),
+    );
+    successful_outputs.insert(
+        "human-design".to_string(),
+        mock_output(
+            "human-design",
+            json!({ "type": "Generator", "path": "Sacral response" }),
+        ),
+    );
+    successful_outputs.insert(
+        "gene-keys".to_string(),
+        mock_output(
+            "gene-keys",
+            json!({ "shadow": "Impatience", "gift": "Patience", "path": "Gene Keys Golden Path" }),
+        ),
+    );
 
     let result = FullSpectrumResult {
         execution_id: "test-prompts".to_string(),
@@ -964,11 +1258,23 @@ fn full_spectrum_confidence_above_zero_with_results() {
     let synthesizer = FullSpectrumSynthesizer::new();
 
     let mut successful_outputs = HashMap::new();
-    for id in &["numerology", "human-design", "panchanga", "biorhythm", "gene-keys"] {
-        successful_outputs.insert(id.to_string(), mock_output(id, json!({
-            "type": "mock",
-            "gift": "awareness"
-        })));
+    for id in &[
+        "numerology",
+        "human-design",
+        "panchanga",
+        "biorhythm",
+        "gene-keys",
+    ] {
+        successful_outputs.insert(
+            id.to_string(),
+            mock_output(
+                id,
+                json!({
+                    "type": "mock",
+                    "gift": "awareness"
+                }),
+            ),
+        );
     }
 
     let result = FullSpectrumResult {
@@ -1015,7 +1321,10 @@ fn full_spectrum_empty_results_produces_fallback_narrative() {
 
     assert_eq!(synthesis.engines_analyzed, 0);
     assert!(synthesis.primary_themes.is_empty());
-    assert!(!synthesis.narrative.is_empty(), "Should have fallback narrative");
+    assert!(
+        !synthesis.narrative.is_empty(),
+        "Should have fallback narrative"
+    );
 }
 
 // ===========================================================================
@@ -1050,18 +1359,33 @@ fn all_synthesizers_produce_nonempty_summary_with_full_data() {
 
     // Birth Blueprint
     let mut birth_results = HashMap::new();
-    birth_results.insert("numerology".to_string(), mock_output("numerology", json!({
-        "life_path": 5, "expression_number": 3, "soul_urge": 9
-    })));
-    birth_results.insert("human-design".to_string(), mock_output("human-design", json!({
-        "type": "Manifesting Generator", "authority": "Sacral", "profile": "3/5",
-        "defined_centers": ["Root", "Sacral", "Throat"], "undefined_centers": ["Head"]
-    })));
+    birth_results.insert(
+        "numerology".to_string(),
+        mock_output(
+            "numerology",
+            json!({
+                "life_path": 5, "expression_number": 3, "soul_urge": 9
+            }),
+        ),
+    );
+    birth_results.insert(
+        "human-design".to_string(),
+        mock_output(
+            "human-design",
+            json!({
+                "type": "Manifesting Generator", "authority": "Sacral", "profile": "3/5",
+                "defined_centers": ["Root", "Sacral", "Throat"], "undefined_centers": ["Head"]
+            }),
+        ),
+    );
     birth_results.insert("vimshottari".to_string(), mock_output("vimshottari", json!({
         "current_dasha": { "mahadasha": "Jupiter", "antardasha": "Saturn", "years_remaining": 5.0 }
     })));
     let birth = BirthBlueprintSynthesizer::synthesize(&birth_results, &input);
-    assert!(!birth.summary.is_empty(), "Birth Blueprint summary is empty");
+    assert!(
+        !birth.summary.is_empty(),
+        "Birth Blueprint summary is empty"
+    );
 
     // Daily Practice
     let mut daily_results = HashMap::new();
@@ -1070,29 +1394,59 @@ fn all_synthesizers_produce_nonempty_summary_with_full_data() {
         "nakshatra": { "name": "Swati", "number": 15, "quality": "Movable", "deity": "Vayu" },
         "yoga": "Siddha", "karana": "Bava", "vara": "Friday"
     })));
-    daily_results.insert("vedic-clock".to_string(), mock_output("vedic-clock", json!({
-        "ghati": 10, "pala": 45,
-        "muhurta": { "name": "Brahma", "quality": "Auspicious" },
-        "active_organ": "Lungs", "dosha": "Vata", "recommended_activity": "Creative work"
-    })));
-    daily_results.insert("biorhythm".to_string(), mock_output("biorhythm", json!({
-        "physical": 0.9, "emotional": 0.8, "intellectual": 0.7
-    })));
+    daily_results.insert(
+        "vedic-clock".to_string(),
+        mock_output(
+            "vedic-clock",
+            json!({
+                "ghati": 10, "pala": 45,
+                "muhurta": { "name": "Brahma", "quality": "Auspicious" },
+                "active_organ": "Lungs", "dosha": "Vata", "recommended_activity": "Creative work"
+            }),
+        ),
+    );
+    daily_results.insert(
+        "biorhythm".to_string(),
+        mock_output(
+            "biorhythm",
+            json!({
+                "physical": 0.9, "emotional": 0.8, "intellectual": 0.7
+            }),
+        ),
+    );
     let daily = DailyPracticeSynthesizer::synthesize(&daily_results, &input);
     assert!(!daily.summary.is_empty(), "Daily Practice summary is empty");
 
     // Decision Support
     let mut dec_results = HashMap::new();
-    dec_results.insert("tarot".to_string(), mock_output("tarot", json!({
-        "spread": "SINGLE",
-        "cards": [{ "name": "The Sun", "position": "present", "arcana": "major" }]
-    })));
-    dec_results.insert("i-ching".to_string(), mock_output("i-ching", json!({
-        "hexagram": { "number": 14, "name": "Great Possession" }, "changing_lines": []
-    })));
-    dec_results.insert("human-design".to_string(), mock_output("human-design", json!({
-        "authority": "emotional", "type": "Projector"
-    })));
+    dec_results.insert(
+        "tarot".to_string(),
+        mock_output(
+            "tarot",
+            json!({
+                "spread": "SINGLE",
+                "cards": [{ "name": "The Sun", "position": "present", "arcana": "major" }]
+            }),
+        ),
+    );
+    dec_results.insert(
+        "i-ching".to_string(),
+        mock_output(
+            "i-ching",
+            json!({
+                "hexagram": { "number": 14, "name": "Great Possession" }, "changing_lines": []
+            }),
+        ),
+    );
+    dec_results.insert(
+        "human-design".to_string(),
+        mock_output(
+            "human-design",
+            json!({
+                "authority": "emotional", "type": "Projector"
+            }),
+        ),
+    );
     let dec = DecisionSupportSynthesis::synthesize(&dec_results, &input);
     assert!(!dec.summary.is_empty(), "Decision Support summary is empty");
 
@@ -1112,14 +1466,29 @@ fn all_synthesizers_produce_nonempty_summary_with_full_data() {
 
     // Creative Expression
     let mut ce_results = HashMap::new();
-    ce_results.insert("sigil-forge".to_string(), mock_output("sigil-forge", json!({
-        "intention": "Transform my relationship with fear",
-        "distilled": "TRANSFORM FEAR", "method": "letter_elimination"
-    })));
-    ce_results.insert("sacred-geometry".to_string(), mock_output("sacred-geometry", json!({
-        "form": "Merkaba", "qualities": ["transformation", "balance", "protection"],
-        "meditation": "The star tetrahedron"
-    })));
+    ce_results.insert(
+        "sigil-forge".to_string(),
+        mock_output(
+            "sigil-forge",
+            json!({
+                "intention": "Transform my relationship with fear",
+                "distilled": "TRANSFORM FEAR", "method": "letter_elimination"
+            }),
+        ),
+    );
+    ce_results.insert(
+        "sacred-geometry".to_string(),
+        mock_output(
+            "sacred-geometry",
+            json!({
+                "form": "Merkaba", "qualities": ["transformation", "balance", "protection"],
+                "meditation": "The star tetrahedron"
+            }),
+        ),
+    );
     let ce = CreativeExpressionSynthesis::synthesize(&ce_results, &input);
-    assert!(!ce.summary.is_empty(), "Creative Expression summary is empty");
+    assert!(
+        !ce.summary.is_empty(),
+        "Creative Expression summary is empty"
+    );
 }

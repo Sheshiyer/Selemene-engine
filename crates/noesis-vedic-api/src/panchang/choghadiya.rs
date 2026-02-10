@@ -23,43 +23,35 @@ pub struct ChoghadiyaTimings {
 impl ChoghadiyaTimings {
     /// Get the current Choghadiya based on time
     pub fn get_current(&self, current_time: &str) -> Option<&Choghadiya> {
-        let all: Vec<&Choghadiya> = self.day.iter()
-            .chain(self.night.iter())
-            .collect();
-        
+        let all: Vec<&Choghadiya> = self.day.iter().chain(self.night.iter()).collect();
+
         all.iter()
             .find(|c| current_time >= c.start.as_str() && current_time <= c.end.as_str())
             .copied()
     }
-    
+
     /// Get all favorable Choghadiyas for starting new activities
     pub fn get_favorable(&self) -> Vec<&Choghadiya> {
-        let all: Vec<&Choghadiya> = self.day.iter()
-            .chain(self.night.iter())
-            .collect();
-        
+        let all: Vec<&Choghadiya> = self.day.iter().chain(self.night.iter()).collect();
+
         all.into_iter()
             .filter(|c| c.nature.is_favorable())
             .collect()
     }
-    
+
     /// Get all unfavorable Choghadiyas to avoid
     pub fn get_unfavorable(&self) -> Vec<&Choghadiya> {
-        let all: Vec<&Choghadiya> = self.day.iter()
-            .chain(self.night.iter())
-            .collect();
-        
+        let all: Vec<&Choghadiya> = self.day.iter().chain(self.night.iter()).collect();
+
         all.into_iter()
             .filter(|c| !c.nature.is_favorable())
             .collect()
     }
-    
+
     /// Find best Choghadiya for a specific type of activity
     pub fn find_best_for_activity(&self, activity_type: ActivityCategory) -> Option<&Choghadiya> {
-        let all: Vec<&Choghadiya> = self.day.iter()
-            .chain(self.night.iter())
-            .collect();
-        
+        let all: Vec<&Choghadiya> = self.day.iter().chain(self.night.iter()).collect();
+
         all.into_iter()
             .filter(|c| c.suitable_for.contains(&activity_type))
             .max_by_key(|c| c.nature.score())
@@ -124,7 +116,7 @@ impl ChoghadiyaName {
             ChoghadiyaName::KalPeriod => "Kal",
         }
     }
-    
+
     /// Get meaning/description
     pub fn meaning(&self) -> &'static str {
         match self {
@@ -154,7 +146,7 @@ impl ChoghadiyaNature {
     pub fn is_favorable(&self) -> bool {
         matches!(self, ChoghadiyaNature::Good)
     }
-    
+
     /// Get numerical score for ranking (higher is better)
     pub fn score(&self) -> u8 {
         match self {
@@ -163,7 +155,7 @@ impl ChoghadiyaNature {
             ChoghadiyaNature::Bad => 1,
         }
     }
-    
+
     pub fn as_str(&self) -> &'static str {
         match self {
             ChoghadiyaNature::Good => "good",
@@ -202,7 +194,7 @@ pub enum ActivityCategory {
 }
 
 /// Day-wise Choghadiya sequences
-/// 
+///
 /// Each day of the week has a different starting Choghadiya.
 /// The sequence is always: UD → CH → LA → AM → KA → SH → RO (for day)
 /// and: SH → AM → CH → RO → LA → UD → KA (for night)
@@ -210,10 +202,10 @@ pub struct ChoghadiyaSequence;
 
 impl ChoghadiyaSequence {
     /// Get the day sequence for a given day of week
-    /// 
+    ///
     /// The pattern repeats every 7 periods for the day
     pub fn get_day_sequence(day: &str) -> Vec<(ChoghadiyaName, ChoghadiyaNature, &'static str)> {
-        let base_sequence = vec![
+        let base_sequence = [
             (ChoghadiyaName::Udveg, ChoghadiyaNature::Bad, "Mercury"),
             (ChoghadiyaName::Char, ChoghadiyaNature::Medium, "Venus"),
             (ChoghadiyaName::Labh, ChoghadiyaNature::Good, "Jupiter"),
@@ -222,7 +214,7 @@ impl ChoghadiyaSequence {
             (ChoghadiyaName::Shubh, ChoghadiyaNature::Good, "Sun"),
             (ChoghadiyaName::Rog, ChoghadiyaNature::Bad, "Mars"),
         ];
-        
+
         // Each day starts at a different position in the sequence
         let start_offset = match day.to_lowercase().as_str() {
             "sunday" | "sun" => 5,    // Starts with Shubh
@@ -234,20 +226,20 @@ impl ChoghadiyaSequence {
             "saturday" | "sat" => 4,  // Starts with Kaal
             _ => 0,
         };
-        
+
         // Generate 8 periods (some Choghadiyas repeat)
         let mut sequence = Vec::with_capacity(8);
         for i in 0..8 {
             let idx = (start_offset + i) % 7;
             sequence.push(base_sequence[idx]);
         }
-        
+
         sequence
     }
-    
+
     /// Get the night sequence for a given day of week
     pub fn get_night_sequence(day: &str) -> Vec<(ChoghadiyaName, ChoghadiyaNature, &'static str)> {
-        let base_sequence = vec![
+        let base_sequence = [
             (ChoghadiyaName::Shubh, ChoghadiyaNature::Good, "Sun"),
             (ChoghadiyaName::Amrit, ChoghadiyaNature::Good, "Moon"),
             (ChoghadiyaName::Char, ChoghadiyaNature::Medium, "Venus"),
@@ -256,7 +248,7 @@ impl ChoghadiyaSequence {
             (ChoghadiyaName::Labh, ChoghadiyaNature::Good, "Jupiter"),
             (ChoghadiyaName::Udveg, ChoghadiyaNature::Bad, "Mercury"),
         ];
-        
+
         let start_offset = match day.to_lowercase().as_str() {
             "sunday" | "sun" => 0,    // Starts with Shubh
             "monday" | "mon" => 1,    // Starts with Amrit
@@ -267,13 +259,13 @@ impl ChoghadiyaSequence {
             "saturday" | "sat" => 4,  // Starts with Kaal
             _ => 0,
         };
-        
+
         let mut sequence = Vec::with_capacity(8);
         for i in 0..8 {
             let idx = (start_offset + i) % 7;
             sequence.push(base_sequence[idx]);
         }
-        
+
         sequence
     }
 }
@@ -297,10 +289,7 @@ pub fn get_suitable_activities(name: ChoghadiyaName) -> Vec<ActivityCategory> {
             ActivityCategory::StartingNew,
             ActivityCategory::Medical,
         ],
-        ChoghadiyaName::Char => vec![
-            ActivityCategory::Travel,
-            ActivityCategory::Purchasing,
-        ],
+        ChoghadiyaName::Char => vec![ActivityCategory::Travel, ActivityCategory::Purchasing],
         ChoghadiyaName::Rog => vec![
             ActivityCategory::Medical, // Only good for taking medicine
         ],
@@ -342,14 +331,12 @@ pub fn get_activities_to_avoid(name: ChoghadiyaName) -> Vec<ActivityCategory> {
             ActivityCategory::Business,
             ActivityCategory::Marriage,
         ],
-        ChoghadiyaName::KalPeriod => vec![
-            ActivityCategory::StartingNew,
-        ],
+        ChoghadiyaName::KalPeriod => vec![ActivityCategory::StartingNew],
     }
 }
 
 /// Calculate Choghadiya timings
-/// 
+///
 /// Day Choghadiya = (Sunset - Sunrise) / 8
 /// Night Choghadiya = (Next Sunrise - Sunset) / 8
 pub fn calculate_choghadiya(
@@ -360,19 +347,11 @@ pub fn calculate_choghadiya(
 ) -> ChoghadiyaTimings {
     let day_sequence = ChoghadiyaSequence::get_day_sequence(day);
     let night_sequence = ChoghadiyaSequence::get_night_sequence(day);
-    
-    let day_choghadiyas = calculate_period_choghadiya(
-        &day_sequence,
-        sunrise,
-        sunset,
-    );
-    
-    let night_choghadiyas = calculate_period_choghadiya(
-        &night_sequence,
-        sunset,
-        next_sunrise,
-    );
-    
+
+    let day_choghadiyas = calculate_period_choghadiya(&day_sequence, sunrise, sunset);
+
+    let night_choghadiyas = calculate_period_choghadiya(&night_sequence, sunset, next_sunrise);
+
     ChoghadiyaTimings {
         day: day_choghadiyas,
         night: night_choghadiyas,
@@ -385,19 +364,19 @@ pub fn calculate_choghadiya(
 /// Calculate Choghadiyas for a single period
 fn calculate_period_choghadiya(
     sequence: &[(ChoghadiyaName, ChoghadiyaNature, &'static str)],
-    start_time: &str,
-    end_time: &str,
+    _start_time: &str,
+    _end_time: &str,
 ) -> Vec<Choghadiya> {
     let mut choghadiyas = Vec::new();
-    
+
     // Simplified: assumes each Choghadiya is approximately 90 minutes
     // (12 hours / 8 = 1.5 hours)
     let duration_minutes = 90;
-    
+
     for (i, (name, nature, ruler)) in sequence.iter().enumerate() {
-        let start_hour = i * 1 + 6; // Simplified calculation
+        let start_hour = i + 6; // Simplified calculation
         let end_hour = start_hour + 1;
-        
+
         choghadiyas.push(Choghadiya {
             name: *name,
             start: format!("{:02}:00", start_hour),
@@ -409,7 +388,7 @@ fn calculate_period_choghadiya(
             avoid: get_activities_to_avoid(*name),
         });
     }
-    
+
     choghadiyas
 }
 
@@ -419,11 +398,13 @@ pub fn get_recommendations(
     activity: ActivityCategory,
 ) -> Vec<Recommendation> {
     let mut recommendations = Vec::new();
-    
-    let all: Vec<&Choghadiya> = choghadiyas.day.iter()
+
+    let all: Vec<&Choghadiya> = choghadiyas
+        .day
+        .iter()
         .chain(choghadiyas.night.iter())
         .collect();
-    
+
     for choghadiya in all {
         let score = if choghadiya.suitable_for.contains(&activity) {
             3
@@ -432,7 +413,7 @@ pub fn get_recommendations(
         } else {
             1
         };
-        
+
         if score > 0 {
             recommendations.push(Recommendation {
                 choghadiya_name: choghadiya.name.as_str().to_string(),
@@ -443,10 +424,10 @@ pub fn get_recommendations(
             });
         }
     }
-    
+
     // Sort by score descending
     recommendations.sort_by(|a, b| b.score.cmp(&a.score));
-    
+
     recommendations
 }
 
@@ -475,10 +456,10 @@ mod tests {
     fn test_day_sequences() {
         let sunday = ChoghadiyaSequence::get_day_sequence("Sunday");
         assert_eq!(sunday[0].0, ChoghadiyaName::Shubh);
-        
+
         let monday = ChoghadiyaSequence::get_day_sequence("Monday");
         assert_eq!(monday[0].0, ChoghadiyaName::Amrit);
-        
+
         let saturday = ChoghadiyaSequence::get_day_sequence("Saturday");
         assert_eq!(saturday[0].0, ChoghadiyaName::Kaal);
     }
@@ -500,7 +481,7 @@ mod tests {
     fn test_suitable_activities() {
         let activities = get_suitable_activities(ChoghadiyaName::Amrit);
         assert!(activities.contains(&ActivityCategory::Any));
-        
+
         let activities = get_suitable_activities(ChoghadiyaName::Char);
         assert!(activities.contains(&ActivityCategory::Travel));
     }

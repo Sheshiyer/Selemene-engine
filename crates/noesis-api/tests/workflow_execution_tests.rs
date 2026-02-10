@@ -129,12 +129,9 @@ fn test_input() -> EngineInput {
 /// Build an orchestrator with 3 delay engines registered for birth-blueprint.
 fn build_parallel_orchestrator(delay: Duration) -> WorkflowOrchestrator {
     let mut orchestrator = WorkflowOrchestrator::new();
-    orchestrator
-        .register_engine(Arc::new(DelayMockEngine::new("numerology", 0, delay)));
-    orchestrator
-        .register_engine(Arc::new(DelayMockEngine::new("human-design", 0, delay)));
-    orchestrator
-        .register_engine(Arc::new(DelayMockEngine::new("gene-keys", 0, delay)));
+    orchestrator.register_engine(Arc::new(DelayMockEngine::new("numerology", 0, delay)));
+    orchestrator.register_engine(Arc::new(DelayMockEngine::new("human-design", 0, delay)));
+    orchestrator.register_engine(Arc::new(DelayMockEngine::new("gene-keys", 0, delay)));
     orchestrator
 }
 
@@ -293,15 +290,9 @@ async fn test_workflow_partial_failure_graceful_degradation() {
     let mut orchestrator = WorkflowOrchestrator::new();
 
     // Register numerology and human-design as working, gene-keys as failing
-    orchestrator
-        .register_engine(Arc::new(DelayMockEngine::new("numerology", 0, delay)));
-    orchestrator
-        .register_engine(Arc::new(DelayMockEngine::new("human-design", 0, delay)));
-    orchestrator.register_engine(Arc::new(DelayMockEngine::failing(
-        "gene-keys",
-        0,
-        delay,
-    )));
+    orchestrator.register_engine(Arc::new(DelayMockEngine::new("numerology", 0, delay)));
+    orchestrator.register_engine(Arc::new(DelayMockEngine::new("human-design", 0, delay)));
+    orchestrator.register_engine(Arc::new(DelayMockEngine::failing("gene-keys", 0, delay)));
 
     let result = orchestrator
         .execute_workflow("birth-blueprint", test_input(), 5)
@@ -336,21 +327,9 @@ async fn test_workflow_all_engines_fail_still_succeeds() {
     let delay = Duration::from_millis(10);
     let mut orchestrator = WorkflowOrchestrator::new();
 
-    orchestrator.register_engine(Arc::new(DelayMockEngine::failing(
-        "numerology",
-        0,
-        delay,
-    )));
-    orchestrator.register_engine(Arc::new(DelayMockEngine::failing(
-        "human-design",
-        0,
-        delay,
-    )));
-    orchestrator.register_engine(Arc::new(DelayMockEngine::failing(
-        "gene-keys",
-        0,
-        delay,
-    )));
+    orchestrator.register_engine(Arc::new(DelayMockEngine::failing("numerology", 0, delay)));
+    orchestrator.register_engine(Arc::new(DelayMockEngine::failing("human-design", 0, delay)));
+    orchestrator.register_engine(Arc::new(DelayMockEngine::failing("gene-keys", 0, delay)));
 
     let result = orchestrator
         .execute_workflow("birth-blueprint", test_input(), 5)
@@ -368,12 +347,9 @@ async fn test_workflow_phase_gated_engines_skipped() {
     let delay = Duration::from_millis(10);
     let mut orchestrator = WorkflowOrchestrator::new();
 
-    orchestrator
-        .register_engine(Arc::new(DelayMockEngine::new("numerology", 0, delay)));
-    orchestrator
-        .register_engine(Arc::new(DelayMockEngine::new("human-design", 1, delay)));
-    orchestrator
-        .register_engine(Arc::new(DelayMockEngine::new("gene-keys", 3, delay)));
+    orchestrator.register_engine(Arc::new(DelayMockEngine::new("numerology", 0, delay)));
+    orchestrator.register_engine(Arc::new(DelayMockEngine::new("human-design", 1, delay)));
+    orchestrator.register_engine(Arc::new(DelayMockEngine::new("gene-keys", 3, delay)));
 
     // User at phase 1 -- gene-keys (phase 3) should be skipped
     let result = orchestrator
@@ -397,6 +373,7 @@ async fn test_workflow_concurrent_execution() {
     let delay = Duration::from_millis(50);
     let orchestrator = Arc::new(build_parallel_orchestrator(delay));
 
+    #[allow(clippy::type_complexity)]
     let mut workflows: Vec<
         std::pin::Pin<
             Box<dyn std::future::Future<Output = Result<noesis_core::WorkflowResult, EngineError>>>,
@@ -457,8 +434,7 @@ async fn test_workflow_missing_engines_skipped() {
     let mut orchestrator = WorkflowOrchestrator::new();
 
     // Only register numerology; human-design and gene-keys are missing
-    orchestrator
-        .register_engine(Arc::new(DelayMockEngine::new("numerology", 0, delay)));
+    orchestrator.register_engine(Arc::new(DelayMockEngine::new("numerology", 0, delay)));
 
     let result = orchestrator
         .execute_workflow("birth-blueprint", test_input(), 5)

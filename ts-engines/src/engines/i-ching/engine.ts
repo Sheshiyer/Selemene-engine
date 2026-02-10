@@ -2,10 +2,10 @@
  * IChingEngine - Consciousness engine for I-Ching divination
  */
 
-import type { ConsciousnessEngine, EngineMetadata, EngineInput, EngineOutput } from '../../types'
+import type { ConsciousnessEngine, EngineInput, EngineMetadata, EngineOutput } from '../../types'
+import { SeededRandom, getDefaultSeed } from '../../utils/random'
 import { HEXAGRAMS, getHexagramByNumber } from './wisdom'
 import { generateWitnessPrompts } from './witness'
-import { SeededRandom, getDefaultSeed } from '../../utils/random'
 
 export class IChingEngine implements ConsciousnessEngine {
   metadata(): EngineMetadata {
@@ -49,7 +49,10 @@ export class IChingEngine implements ConsciousnessEngine {
       primaryNumber = rng.nextInt(1, 64)
     }
 
-    const primary = getHexagramByNumber(primaryNumber)!
+    const primary = getHexagramByNumber(primaryNumber)
+    if (!primary) {
+      throw new Error(`Invalid hexagram number: ${primaryNumber}`)
+    }
 
     // Cast changing lines (each line has ~25% chance of being changing in three-coin method)
     const changingLines: number[] = []

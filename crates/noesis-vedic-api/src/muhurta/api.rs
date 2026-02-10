@@ -5,9 +5,9 @@
 use chrono::NaiveDate;
 use serde::{Deserialize, Serialize};
 
-use crate::error::{VedicApiError, VedicApiResult};
+use super::types::{MuhurtaActivity, MuhurtaQuality, MuhurtaResults, SelectedMuhurta};
 use crate::client::VedicApiClient;
-use super::types::{MuhurtaActivity, MuhurtaResults, SelectedMuhurta, MuhurtaQuality};
+use crate::error::{VedicApiError, VedicApiResult};
 
 /// Request for Muhurta calculation
 #[derive(Debug, Clone, Serialize)]
@@ -82,10 +82,14 @@ impl VedicApiClient {
     /// Get Muhurta for an activity
     ///
     /// FAPI-082: GET /muhurta endpoint
-    pub async fn get_muhurta(&self, request: &MuhurtaRequest) -> VedicApiResult<MuhurtaApiResponse> {
+    pub async fn get_muhurta(
+        &self,
+        request: &MuhurtaRequest,
+    ) -> VedicApiResult<MuhurtaApiResponse> {
         let response = self.post("/muhurta", request).await?;
-        serde_json::from_value(response)
-            .map_err(|e| VedicApiError::ParseError(format!("Failed to parse muhurta response: {}", e)))
+        serde_json::from_value(response).map_err(|e| {
+            VedicApiError::ParseError(format!("Failed to parse muhurta response: {}", e))
+        })
     }
 
     /// Find marriage muhurtas
@@ -130,13 +134,18 @@ impl VedicApiClient {
 }
 
 /// Map API response to internal results
-pub fn map_muhurta_response(response: MuhurtaApiResponse, activity: MuhurtaActivity) -> MuhurtaResults {
-    let muhurtas: Vec<SelectedMuhurta> = response.muhurtas.iter()
+pub fn map_muhurta_response(
+    response: MuhurtaApiResponse,
+    activity: MuhurtaActivity,
+) -> MuhurtaResults {
+    let muhurtas: Vec<SelectedMuhurta> = response
+        .muhurtas
+        .iter()
         .filter_map(|m| {
             let date = chrono::NaiveDate::parse_from_str(&m.date, "%Y-%m-%d").ok()?;
             let start_time = chrono::NaiveTime::parse_from_str(&m.start_time, "%H:%M").ok()?;
             let end_time = chrono::NaiveTime::parse_from_str(&m.end_time, "%H:%M").ok()?;
-            
+
             Some(SelectedMuhurta {
                 start_time: chrono::NaiveDateTime::new(date, start_time),
                 end_time: chrono::NaiveDateTime::new(date, end_time),
@@ -153,14 +162,16 @@ pub fn map_muhurta_response(response: MuhurtaApiResponse, activity: MuhurtaActiv
             })
         })
         .collect();
-    
-    let excellent_count = muhurtas.iter()
+
+    let excellent_count = muhurtas
+        .iter()
         .filter(|m| m.quality == MuhurtaQuality::Excellent)
         .count();
-    let good_count = muhurtas.iter()
+    let good_count = muhurtas
+        .iter()
         .filter(|m| m.quality == MuhurtaQuality::Good)
         .count();
-    
+
     MuhurtaResults {
         activity,
         from_date: chrono::NaiveDate::from_ymd_opt(2024, 1, 1).unwrap(),
@@ -191,16 +202,9 @@ mod tests {
     fn test_muhurta_request() {
         let from = NaiveDate::from_ymd_opt(2024, 1, 1).unwrap();
         let to = NaiveDate::from_ymd_opt(2024, 1, 31).unwrap();
-        
-        let request = MuhurtaRequest::new(
-            MuhurtaActivity::Marriage,
-            from,
-            to,
-            12.97,
-            77.59,
-            5.5,
-        );
-        
+
+        let request = MuhurtaRequest::new(MuhurtaActivity::Marriage, from, to, 12.97, 77.59, 5.5);
+
         assert_eq!(request.activity, "marriage");
     }
 }

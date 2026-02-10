@@ -36,7 +36,9 @@ use tokio::sync::RwLock;
 
 /// Histogram bucket boundaries in milliseconds for response time tracking.
 /// Covers the range from fast cache hits (1ms) to slow API calls (30s+).
-const HISTOGRAM_BUCKETS_MS: &[u64] = &[1, 5, 10, 25, 50, 100, 250, 500, 1000, 2500, 5000, 10000, 30000];
+const HISTOGRAM_BUCKETS_MS: &[u64] = &[
+    1, 5, 10, 25, 50, 100, 250, 500, 1000, 2500, 5000, 10000, 30000,
+];
 
 /// All known endpoint names for consistent labeling.
 pub const ENDPOINTS: &[&str] = &[
@@ -74,10 +76,7 @@ pub const FALLBACK_REASONS: &[&str] = &[
 ];
 
 /// Retry result labels.
-pub const RETRY_RESULTS: &[&str] = &[
-    "success_after_retry",
-    "exhausted",
-];
+pub const RETRY_RESULTS: &[&str] = &["success_after_retry", "exhausted"];
 
 /// Thread-safe atomic counter.
 #[derive(Debug)]
@@ -126,7 +125,10 @@ struct Histogram {
 
 impl Histogram {
     fn new() -> Self {
-        let buckets = HISTOGRAM_BUCKETS_MS.iter().map(|_| AtomicU64::new(0)).collect();
+        let buckets = HISTOGRAM_BUCKETS_MS
+            .iter()
+            .map(|_| AtomicU64::new(0))
+            .collect();
         Self {
             buckets,
             sum_us: AtomicU64::new(0),
@@ -167,7 +169,9 @@ impl Histogram {
 
 impl Clone for Histogram {
     fn clone(&self) -> Self {
-        let buckets = self.buckets.iter()
+        let buckets = self
+            .buckets
+            .iter()
             .map(|b| AtomicU64::new(b.load(Ordering::Relaxed)))
             .collect();
         Self {
@@ -212,7 +216,7 @@ pub struct NoesisMetrics {
 impl NoesisMetrics {
     /// Create a new metrics collector with pre-initialized endpoint counters.
     pub fn new() -> Self {
-        let metrics = Self {
+        Self {
             api_calls: Arc::new(RwLock::new(HashMap::new())),
             cache_hits: Arc::new(RwLock::new(HashMap::new())),
             cache_misses: Arc::new(RwLock::new(HashMap::new())),
@@ -224,8 +228,7 @@ impl NoesisMetrics {
             retry_results: Arc::new(RwLock::new(HashMap::new())),
             total_success: Counter::new(),
             total_errors: Counter::new(),
-        };
-        metrics
+        }
     }
 
     // ==================== Recording Methods ====================
@@ -673,7 +676,9 @@ impl Clone for NoesisMetrics {
             response_times: Arc::clone(&self.response_times),
             error_counts: Arc::clone(&self.error_counts),
             fallback_reasons: Arc::clone(&self.fallback_reasons),
-            circuit_breaker_state: AtomicU64::new(self.circuit_breaker_state.load(Ordering::Relaxed)),
+            circuit_breaker_state: AtomicU64::new(
+                self.circuit_breaker_state.load(Ordering::Relaxed),
+            ),
             retry_results: Arc::clone(&self.retry_results),
             total_success: self.total_success.clone(),
             total_errors: self.total_errors.clone(),
@@ -865,9 +870,15 @@ mod tests {
     async fn test_response_time_histogram() {
         let metrics = NoesisMetrics::new();
 
-        metrics.record_response_time("panchang", Duration::from_millis(5)).await;
-        metrics.record_response_time("panchang", Duration::from_millis(50)).await;
-        metrics.record_response_time("panchang", Duration::from_millis(500)).await;
+        metrics
+            .record_response_time("panchang", Duration::from_millis(5))
+            .await;
+        metrics
+            .record_response_time("panchang", Duration::from_millis(50))
+            .await;
+        metrics
+            .record_response_time("panchang", Duration::from_millis(500))
+            .await;
 
         // Verify the Prometheus export contains histogram data
         let output = metrics.export_prometheus().await;
@@ -895,7 +906,9 @@ mod tests {
         metrics.record_fallback_trigger("panchang").await;
         metrics.record_error("network").await;
         metrics.record_success();
-        metrics.record_response_time("panchang", Duration::from_millis(100)).await;
+        metrics
+            .record_response_time("panchang", Duration::from_millis(100))
+            .await;
 
         let output = metrics.export_prometheus().await;
 
@@ -920,7 +933,8 @@ mod tests {
         assert!(output.contains("noesis_responses_total{status=\"error\"} 1"));
 
         assert!(output.contains("# TYPE noesis_response_time_seconds histogram"));
-        assert!(output.contains("noesis_response_time_seconds_bucket{endpoint=\"panchang\",le=\"+Inf\"} 1"));
+        assert!(output
+            .contains("noesis_response_time_seconds_bucket{endpoint=\"panchang\",le=\"+Inf\"} 1"));
     }
 
     #[tokio::test]
@@ -966,7 +980,9 @@ mod tests {
         use crate::error::VedicApiError;
 
         assert_eq!(
-            error_type_label(&VedicApiError::Network { message: "test".into() }),
+            error_type_label(&VedicApiError::Network {
+                message: "test".into()
+            }),
             "network"
         );
         assert_eq!(
@@ -985,7 +1001,9 @@ mod tests {
             "configuration"
         );
         assert_eq!(
-            error_type_label(&VedicApiError::Parse { message: "x".into() }),
+            error_type_label(&VedicApiError::Parse {
+                message: "x".into()
+            }),
             "parse"
         );
     }
@@ -995,20 +1013,31 @@ mod tests {
         let metrics = NoesisMetrics::new();
 
         // Record values that fall into different buckets
-        metrics.record_response_time("test", Duration::from_millis(1)).await;   // <= 1ms bucket
-        metrics.record_response_time("test", Duration::from_millis(50)).await;  // <= 50ms bucket
-        metrics.record_response_time("test", Duration::from_millis(5000)).await; // <= 5000ms bucket
+        metrics
+            .record_response_time("test", Duration::from_millis(1))
+            .await; // <= 1ms bucket
+        metrics
+            .record_response_time("test", Duration::from_millis(50))
+            .await; // <= 50ms bucket
+        metrics
+            .record_response_time("test", Duration::from_millis(5000))
+            .await; // <= 5000ms bucket
 
         let output = metrics.export_prometheus().await;
 
         // The 1ms observation should be in the 1ms bucket
-        assert!(output.contains("noesis_response_time_seconds_bucket{endpoint=\"test\",le=\"0.001\"} 1"));
+        assert!(output
+            .contains("noesis_response_time_seconds_bucket{endpoint=\"test\",le=\"0.001\"} 1"));
         // The 50ms observation should be in the 50ms bucket (plus the 1ms one)
-        assert!(output.contains("noesis_response_time_seconds_bucket{endpoint=\"test\",le=\"0.050\"} 2"));
+        assert!(output
+            .contains("noesis_response_time_seconds_bucket{endpoint=\"test\",le=\"0.050\"} 2"));
         // The 5000ms observation should be in the 5000ms bucket (plus the previous ones)
-        assert!(output.contains("noesis_response_time_seconds_bucket{endpoint=\"test\",le=\"5.000\"} 3"));
+        assert!(output
+            .contains("noesis_response_time_seconds_bucket{endpoint=\"test\",le=\"5.000\"} 3"));
         // +Inf should contain all 3
-        assert!(output.contains("noesis_response_time_seconds_bucket{endpoint=\"test\",le=\"+Inf\"} 3"));
+        assert!(
+            output.contains("noesis_response_time_seconds_bucket{endpoint=\"test\",le=\"+Inf\"} 3")
+        );
     }
 
     #[tokio::test]
@@ -1079,7 +1108,10 @@ mod tests {
         metrics.record_retry_result("success_after_retry").await;
         metrics.record_retry_result("exhausted").await;
 
-        assert_eq!(metrics.get_retry_result_count("success_after_retry").await, 2);
+        assert_eq!(
+            metrics.get_retry_result_count("success_after_retry").await,
+            2
+        );
         assert_eq!(metrics.get_retry_result_count("exhausted").await, 1);
         assert_eq!(metrics.get_retry_result_count("nonexistent").await, 0);
     }
@@ -1104,26 +1136,68 @@ mod tests {
         let output = metrics.export_prometheus().await;
 
         // Cache hit rate gauge
-        assert!(output.contains("# HELP noesis_cache_hit_rate"), "Missing cache_hit_rate HELP");
-        assert!(output.contains("# TYPE noesis_cache_hit_rate gauge"), "Missing cache_hit_rate TYPE");
-        assert!(output.contains("noesis_cache_hit_rate 0.75"), "Cache hit rate should be 0.75");
+        assert!(
+            output.contains("# HELP noesis_cache_hit_rate"),
+            "Missing cache_hit_rate HELP"
+        );
+        assert!(
+            output.contains("# TYPE noesis_cache_hit_rate gauge"),
+            "Missing cache_hit_rate TYPE"
+        );
+        assert!(
+            output.contains("noesis_cache_hit_rate 0.75"),
+            "Cache hit rate should be 0.75"
+        );
 
         // Fallback by reason
-        assert!(output.contains("# HELP noesis_fallback_by_reason_total"), "Missing fallback_by_reason HELP");
-        assert!(output.contains("# TYPE noesis_fallback_by_reason_total counter"), "Missing fallback_by_reason TYPE");
-        assert!(output.contains("noesis_fallback_by_reason_total{reason=\"network\"} 1"), "Missing network fallback");
-        assert!(output.contains("noesis_fallback_by_reason_total{reason=\"5xx\"} 1"), "Missing 5xx fallback");
+        assert!(
+            output.contains("# HELP noesis_fallback_by_reason_total"),
+            "Missing fallback_by_reason HELP"
+        );
+        assert!(
+            output.contains("# TYPE noesis_fallback_by_reason_total counter"),
+            "Missing fallback_by_reason TYPE"
+        );
+        assert!(
+            output.contains("noesis_fallback_by_reason_total{reason=\"network\"} 1"),
+            "Missing network fallback"
+        );
+        assert!(
+            output.contains("noesis_fallback_by_reason_total{reason=\"5xx\"} 1"),
+            "Missing 5xx fallback"
+        );
 
         // Circuit breaker state
-        assert!(output.contains("# HELP noesis_circuit_breaker_state"), "Missing circuit_breaker_state HELP");
-        assert!(output.contains("# TYPE noesis_circuit_breaker_state gauge"), "Missing circuit_breaker_state TYPE");
-        assert!(output.contains("noesis_circuit_breaker_state 2"), "Circuit breaker should be open (2)");
+        assert!(
+            output.contains("# HELP noesis_circuit_breaker_state"),
+            "Missing circuit_breaker_state HELP"
+        );
+        assert!(
+            output.contains("# TYPE noesis_circuit_breaker_state gauge"),
+            "Missing circuit_breaker_state TYPE"
+        );
+        assert!(
+            output.contains("noesis_circuit_breaker_state 2"),
+            "Circuit breaker should be open (2)"
+        );
 
         // Retry results
-        assert!(output.contains("# HELP noesis_retry_results_total"), "Missing retry_results HELP");
-        assert!(output.contains("# TYPE noesis_retry_results_total counter"), "Missing retry_results TYPE");
-        assert!(output.contains("noesis_retry_results_total{result=\"success_after_retry\"} 1"), "Missing success_after_retry");
-        assert!(output.contains("noesis_retry_results_total{result=\"exhausted\"} 1"), "Missing exhausted");
+        assert!(
+            output.contains("# HELP noesis_retry_results_total"),
+            "Missing retry_results HELP"
+        );
+        assert!(
+            output.contains("# TYPE noesis_retry_results_total counter"),
+            "Missing retry_results TYPE"
+        );
+        assert!(
+            output.contains("noesis_retry_results_total{result=\"success_after_retry\"} 1"),
+            "Missing success_after_retry"
+        );
+        assert!(
+            output.contains("noesis_retry_results_total{result=\"exhausted\"} 1"),
+            "Missing exhausted"
+        );
     }
 
     #[tokio::test]
@@ -1161,7 +1235,9 @@ mod tests {
         use crate::error::VedicApiError;
 
         assert_eq!(
-            fallback_reason_label(&VedicApiError::Network { message: "timeout".into() }),
+            fallback_reason_label(&VedicApiError::Network {
+                message: "timeout".into()
+            }),
             "network"
         );
         assert_eq!(
@@ -1169,7 +1245,10 @@ mod tests {
             "network"
         );
         assert_eq!(
-            fallback_reason_label(&VedicApiError::Api { status_code: 502, message: "bad gw".into() }),
+            fallback_reason_label(&VedicApiError::Api {
+                status_code: 502,
+                message: "bad gw".into()
+            }),
             "5xx"
         );
         assert_eq!(
@@ -1177,7 +1256,9 @@ mod tests {
             "429"
         );
         assert_eq!(
-            fallback_reason_label(&VedicApiError::RateLimited { retry_after_seconds: Some(60) }),
+            fallback_reason_label(&VedicApiError::RateLimited {
+                retry_after_seconds: Some(60)
+            }),
             "429"
         );
         assert_eq!(
@@ -1189,7 +1270,9 @@ mod tests {
             "timeout"
         );
         assert_eq!(
-            fallback_reason_label(&VedicApiError::Parse { message: "bad".into() }),
+            fallback_reason_label(&VedicApiError::Parse {
+                message: "bad".into()
+            }),
             "unknown"
         );
     }
@@ -1221,6 +1304,9 @@ mod tests {
         }
 
         assert_eq!(metrics.get_fallback_reason_count("network").await, 50);
-        assert_eq!(metrics.get_retry_result_count("success_after_retry").await, 50);
+        assert_eq!(
+            metrics.get_retry_result_count("success_after_retry").await,
+            50
+        );
     }
 }

@@ -6,27 +6,21 @@
 pub use noesis_core::{ConsciousnessEngine, EngineError, EngineInput, EngineOutput};
 
 // Core modules
-pub mod models;
 pub mod calculator;
+pub mod engine;
+pub mod models;
 pub mod wisdom;
 pub mod wisdom_data;
 pub mod witness;
-pub mod engine;
 
 pub use engine::VimshottariEngine;
 
 // Re-exports
+pub use calculator::{
+    calculate_antardashas, calculate_birth_nakshatra, calculate_complete_timeline,
+    calculate_dasha_balance, calculate_mahadashas, calculate_pratyantardashas,
+    enrich_period_with_qualities, get_nakshatra, get_nakshatra_from_longitude,
+};
 pub use models::*;
 pub use wisdom_data::*;
-pub use calculator::{
-    calculate_birth_nakshatra,
-    calculate_dasha_balance,
-    calculate_mahadashas,
-    calculate_antardashas,
-    calculate_pratyantardashas,
-    calculate_complete_timeline,
-    get_nakshatra_from_longitude,
-    get_nakshatra,
-    enrich_period_with_qualities,
-};
 pub use witness::generate_witness_prompt;

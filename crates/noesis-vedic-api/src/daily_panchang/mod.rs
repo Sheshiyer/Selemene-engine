@@ -2,13 +2,13 @@
 //!
 //! FAPI-112: Daily panchang and calendar service
 
-pub mod types;
 pub mod calculator;
 pub mod formatter;
+pub mod types;
 
-pub use types::*;
 pub use calculator::*;
 pub use formatter::*;
+pub use types::*;
 
 use chrono::NaiveDate;
 use serde::{Deserialize, Serialize};
@@ -68,7 +68,7 @@ pub struct TimePeriod {
 pub struct TithiInfo {
     pub name: String,
     pub number: u8,
-    pub paksha: String,  // Shukla or Krishna
+    pub paksha: String, // Shukla or Krishna
     pub end_time: String,
     pub deity: String,
 }

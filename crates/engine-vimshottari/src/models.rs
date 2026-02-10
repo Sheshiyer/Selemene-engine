@@ -48,11 +48,11 @@ pub enum VedicPlanet {
     Sun,
     Moon,
     Mars,
-    Rahu,    // North Node
+    Rahu, // North Node
     Jupiter,
     Saturn,
     Mercury,
-    Ketu,    // South Node
+    Ketu, // South Node
     Venus,
 }
 
@@ -103,6 +103,7 @@ impl VedicPlanet {
     }
 
     /// Parse planet from string
+    #[allow(clippy::should_implement_trait)]
     pub fn from_str(s: &str) -> Option<VedicPlanet> {
         match s {
             "Sun" => Some(VedicPlanet::Sun),

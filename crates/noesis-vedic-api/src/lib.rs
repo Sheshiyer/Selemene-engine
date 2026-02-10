@@ -8,6 +8,8 @@
 //! - Muhurta calculations (Abhijit, Rahu Kalam, Yama Gandam, etc.)
 //! - Hora (planetary hours)
 //! - Choghadiya timings
+
+#![allow(clippy::too_many_arguments)]
 //!
 //! # Quick Start
 //!
@@ -185,94 +187,81 @@ pub mod mocks;
 pub mod test_mocks;
 
 // Re-export main types
-pub use config::{Config, ProviderType};
-pub use error::{VedicApiError, VedicApiResult, Result};
-pub use client::VedicApiClient;
 pub use cache::ApiCache;
-pub use rate_limiter::{RateLimiter, RateLimitStatus};
-pub use rate_limit::{RateLimitConfig, RateLimitHandler};
 pub use cached_client::CachedVedicClient;
+pub use client::VedicApiClient;
+pub use config::{Config, ProviderType};
+pub use error::{Result, VedicApiError, VedicApiResult};
+pub use rate_limit::{RateLimitConfig, RateLimitHandler};
+pub use rate_limiter::{RateLimitStatus, RateLimiter};
 pub use service::VedicApiService;
 
 // Re-export Dasha types
-pub use dasha::{
-    VimshottariDasha,
-    DashaPeriod,
-    DashaLevel,
-    DashaPlanet,
-    DashaTree,
-};
+pub use dasha::{DashaLevel, DashaPeriod, DashaPlanet, DashaTree, VimshottariDasha};
 
 // Re-export Chart types
-pub use chart::{
-    BirthChart,
-    NavamsaChart,
-    PlanetPosition,
-    HousePosition,
-    ZodiacSign,
-};
+pub use chart::{BirthChart, HousePosition, NavamsaChart, PlanetPosition, ZodiacSign};
 
 // Re-export Panchang types
 pub use panchang::{
-    // Core data
-    Panchang,
+    AbhijitMuhurta,
+    ActivityCategory as ChoghadiyaActivity,
+    ActivityType as HoraActivity,
+
+    AmritKaal,
+
+    BrahmaMuhurta,
+    Choghadiya,
+    ChoghadiyaName,
+    ChoghadiyaNature,
+    // Choghadiya
+    ChoghadiyaTimings,
     CompletePanchang,
-    PanchangMetadata,
-    PanchangQuery,
     DateInfo,
-    Location,
     DayBoundaries,
-    PlanetaryPositions,
+    GulikaKaal,
     HinduDate,
     HinduMonth,
-    
-    // Tithi
-    Tithi,
-    TithiName,
-    
-    // Nakshatra
-    Nakshatra,
-    NakshatraName,
-    
-    // Yoga
-    Yoga,
-    YogaName,
-    
+
+    Hora,
+    // Hora
+    HoraTimings,
     // Karana
     Karana,
     KaranaName,
     KaranaType,
-    
-    // Vara
-    Vara,
-    
-    // Paksha
-    Paksha,
-    
+
+    Location,
+    Muhurta,
     // Muhurtas
     MuhurtaCollection,
-    Muhurta,
     MuhurtaNature,
-    AbhijitMuhurta,
-    RahuKalam,
-    YamaGandam,
-    GulikaKaal,
-    BrahmaMuhurta,
-    AmritKaal,
-    
-    // Hora
-    HoraTimings,
-    Hora,
+    // Nakshatra
+    Nakshatra,
+    NakshatraName,
+
+    // Paksha
+    Paksha,
+
+    // Core data
+    Panchang,
+    PanchangMetadata,
+    PanchangQuery,
     Planet as HoraPlanet,
-    ActivityType as HoraActivity,
-    
-    // Choghadiya
-    ChoghadiyaTimings,
-    Choghadiya,
-    ChoghadiyaName,
-    ChoghadiyaNature,
-    ActivityCategory as ChoghadiyaActivity,
+    PlanetaryPositions,
+    RahuKalam,
     Recommendation as ChoghadiyaRecommendation,
+    // Tithi
+    Tithi,
+    TithiName,
+
+    // Vara
+    Vara,
+
+    YamaGandam,
+    // Yoga
+    Yoga,
+    YogaName,
 };
 
 /// Version of this crate

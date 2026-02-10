@@ -25,12 +25,14 @@ pub struct L2Cache {
 
 impl L2Cache {
     pub fn new(redis_url: String, ttl: Duration) -> Self {
-        let client = redis::Client::open(redis_url.as_str())
-            .unwrap_or_else(|e| {
-                tracing::warn!("Failed to create Redis client: {}. L2 cache will be unavailable.", e);
-                // Create a client with a dummy URL — is_available() will return false
-                redis::Client::open("redis://invalid").expect("dummy client")
-            });
+        let client = redis::Client::open(redis_url.as_str()).unwrap_or_else(|e| {
+            tracing::warn!(
+                "Failed to create Redis client: {}. L2 cache will be unavailable.",
+                e
+            );
+            // Create a client with a dummy URL — is_available() will return false
+            redis::Client::open("redis://invalid").expect("dummy client")
+        });
         Self { client, ttl }
     }
 
@@ -154,9 +156,7 @@ impl L2Cache {
 
         let values = results
             .into_iter()
-            .map(|opt| {
-                opt.and_then(|s| serde_json::from_str(&s).ok())
-            })
+            .map(|opt| opt.and_then(|s| serde_json::from_str(&s).ok()))
             .collect();
 
         Ok(values)
@@ -169,7 +169,7 @@ impl L2Cache {
             None => return Ok(()),
         };
 
-        let ttl_secs = self.ttl.as_secs() as u64;
+        let ttl_secs = self.ttl.as_secs();
 
         // Use a pipeline for atomicity and performance
         let mut pipe = redis::pipe();
@@ -194,9 +194,8 @@ impl L2Cache {
     pub async fn is_available(&self) -> bool {
         match self.conn().await {
             Some(mut conn) => {
-                let result: redis::RedisResult<String> = redis::cmd("PING")
-                    .query_async(&mut conn)
-                    .await;
+                let result: redis::RedisResult<String> =
+                    redis::cmd("PING").query_async(&mut conn).await;
                 result.is_ok()
             }
             None => false,

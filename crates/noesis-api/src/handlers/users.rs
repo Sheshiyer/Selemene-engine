@@ -1,14 +1,14 @@
+use crate::{error::ApiError, AppState};
 use axum::{
-    extract::{State, Json, Extension},
-    response::{IntoResponse, Response},
+    extract::{Extension, Json, State},
     http::StatusCode,
+    response::{IntoResponse, Response},
 };
+use chrono::{Datelike, NaiveDate, NaiveTime};
+use noesis_auth::AuthUser;
+use noesis_core::EngineError;
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
-use crate::{AppState, error::ApiError};
-use noesis_core::EngineError;
-use noesis_auth::AuthUser;
-use chrono::{NaiveDate, NaiveTime, Datelike};
 
 #[derive(Serialize, ToSchema)]
 pub struct UserResponse {
@@ -68,12 +68,18 @@ pub async fn get_me(
     let user_uuid = uuid::Uuid::parse_str(&auth_user.user_id)
         .map_err(|_| EngineError::AuthError("Invalid user ID in token".to_string()))?;
 
-    let user = state.user_repository.get_user_by_id(user_uuid).await
+    let user = state
+        .user_repository
+        .get_user_by_id(user_uuid)
+        .await
         .map_err(|e| EngineError::InternalError(format!("Database error: {}", e)))?
         .ok_or_else(|| EngineError::AuthError("User not found".to_string()))?;
 
     // Fetch profile
-    let profile = state.user_repository.get_profile(user_uuid).await
+    let profile = state
+        .user_repository
+        .get_profile(user_uuid)
+        .await
         .map_err(|e| EngineError::InternalError(format!("Database error: {}", e)))?;
 
     // Construct response
@@ -82,10 +88,16 @@ pub async fn get_me(
             p.birth_date,
             p.birth_time,
             if let (Some(lat), Some(lng)) = (p.birth_location_lat, p.birth_location_lng) {
-                Some(LocationResponse { lat, lng, name: p.birth_location_name })
-            } else { None },
+                Some(LocationResponse {
+                    lat,
+                    lng,
+                    name: p.birth_location_name,
+                })
+            } else {
+                None
+            },
             p.timezone,
-            p.preferences
+            p.preferences,
         )
     } else {
         (None, None, None, None, serde_json::json!({}))
@@ -117,22 +129,31 @@ impl UpdateUserRequest {
         }
         if let Some(date) = self.birth_date {
             if date.year() < 1000 || date.year() > 3000 {
-                return Err(EngineError::ValidationError(format!("Birth year {} out of supported range (1000-3000)", date.year()).into()));
+                return Err(EngineError::ValidationError(format!(
+                    "Birth year {} out of supported range (1000-3000)",
+                    date.year()
+                )));
             }
         }
         if let Some(lat) = self.birth_location_lat {
-            if lat < -90.0 || lat > 90.0 {
-                return Err(EngineError::ValidationError("Latitude must be between -90 and 90".into()));
+            if !(-90.0..=90.0).contains(&lat) {
+                return Err(EngineError::ValidationError(
+                    "Latitude must be between -90 and 90".into(),
+                ));
             }
         }
         if let Some(lng) = self.birth_location_lng {
-            if lng < -180.0 || lng > 180.0 {
-                return Err(EngineError::ValidationError("Longitude must be between -180 and 180".into()));
+            if !(-180.0..=180.0).contains(&lng) {
+                return Err(EngineError::ValidationError(
+                    "Longitude must be between -180 and 180".into(),
+                ));
             }
         }
         if let Some(tz) = &self.timezone {
             if tz.trim().is_empty() {
-                return Err(EngineError::ValidationError("Timezone cannot be empty".into()));
+                return Err(EngineError::ValidationError(
+                    "Timezone cannot be empty".into(),
+                ));
             }
         }
         Ok(())
@@ -163,35 +184,48 @@ pub async fn update_me(
 ) -> Result<Response, ApiError> {
     payload.validate()?;
 
-     let user_uuid = uuid::Uuid::parse_str(&auth_user.user_id)
+    let user_uuid = uuid::Uuid::parse_str(&auth_user.user_id)
         .map_err(|_| EngineError::AuthError("Invalid user ID in token".to_string()))?;
 
     // Update User table fields
     if payload.full_name.is_some() || payload.email.is_some() {
-        state.user_repository.update_user(user_uuid, payload.full_name, payload.email).await
+        state
+            .user_repository
+            .update_user(user_uuid, payload.full_name, payload.email)
+            .await
             .map_err(|e| EngineError::InternalError(format!("Database error: {}", e)))?;
     }
 
     // Update Profile table fields
-    if payload.birth_date.is_some() || payload.birth_time.is_some() || 
-       payload.birth_location_lat.is_some() || payload.birth_location_lng.is_some() || 
-       payload.birth_location_name.is_some() || payload.timezone.is_some() || 
-       payload.preferences.is_some() {
-        
-        state.user_repository.update_profile(
-            user_uuid,
-            payload.birth_date,
-            payload.birth_time,
-            payload.birth_location_lat,
-            payload.birth_location_lng,
-            payload.birth_location_name,
-            payload.timezone,
-            payload.preferences,
-        ).await
-        .map_err(|e| EngineError::InternalError(format!("Database error: {}", e)))?;
+    if payload.birth_date.is_some()
+        || payload.birth_time.is_some()
+        || payload.birth_location_lat.is_some()
+        || payload.birth_location_lng.is_some()
+        || payload.birth_location_name.is_some()
+        || payload.timezone.is_some()
+        || payload.preferences.is_some()
+    {
+        state
+            .user_repository
+            .update_profile(
+                user_uuid,
+                payload.birth_date,
+                payload.birth_time,
+                payload.birth_location_lat,
+                payload.birth_location_lng,
+                payload.birth_location_name,
+                payload.timezone,
+                payload.preferences,
+            )
+            .await
+            .map_err(|e| EngineError::InternalError(format!("Database error: {}", e)))?;
     }
 
-    Ok((StatusCode::OK, Json(serde_json::json!({"message": "Profile updated successfully"}))).into_response())
+    Ok((
+        StatusCode::OK,
+        Json(serde_json::json!({"message": "Profile updated successfully"})),
+    )
+        .into_response())
 }
 
 #[cfg(test)]
@@ -230,7 +264,7 @@ mod tests {
             ..req_base()
         };
         assert!(bad_lng.validate().is_err());
-        
+
         let empty_tz = UpdateUserRequest {
             timezone: Some("   ".to_string()),
             ..req_base()

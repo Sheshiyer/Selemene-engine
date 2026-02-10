@@ -45,16 +45,17 @@ pub fn calculate_numerology(name: &str) -> u8 {
             val % 9
         })
         .sum();
-    
+
     // Reduce to single digit
     let mut result = sum;
     while result > 9 {
-        result = result.to_string()
+        result = result
+            .to_string()
             .chars()
             .map(|c| c.to_digit(10).unwrap_or(0))
             .sum();
     }
-    
+
     result as u8
 }
 

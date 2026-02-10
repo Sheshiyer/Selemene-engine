@@ -7,26 +7,32 @@ use chrono::Utc;
 /// Compatibility score categories
 #[derive(Debug, Clone, Copy)]
 pub struct CompatibilityScores {
-    pub varna: u8,     // 1 point
-    pub vashya: u8,    // 2 points
-    pub tara: u8,      // 3 points
-    pub yoni: u8,      // 4 points
+    pub varna: u8,        // 1 point
+    pub vashya: u8,       // 2 points
+    pub tara: u8,         // 3 points
+    pub yoni: u8,         // 4 points
     pub graha_maitri: u8, // 5 points
-    pub gana: u8,      // 6 points
-    pub bhakoot: u8,   // 7 points
-    pub nadi: u8,      // 8 points
+    pub gana: u8,         // 6 points
+    pub bhakoot: u8,      // 7 points
+    pub nadi: u8,         // 8 points
 }
 
 impl CompatibilityScores {
     pub fn total(&self) -> u8 {
-        self.varna + self.vashya + self.tara + self.yoni + 
-        self.graha_maitri + self.gana + self.bhakoot + self.nadi
+        self.varna
+            + self.vashya
+            + self.tara
+            + self.yoni
+            + self.graha_maitri
+            + self.gana
+            + self.bhakoot
+            + self.nadi
     }
-    
+
     pub fn max_possible() -> u8 {
         36 // Maximum Ashtakoot score
     }
-    
+
     pub fn percentage(&self) -> f32 {
         (self.total() as f32 / Self::max_possible() as f32) * 100.0
     }
@@ -35,17 +41,14 @@ impl CompatibilityScores {
 /// Generate compatibility report
 pub fn generate_compatibility_report(
     pair: &CompatibilityPair,
-    config: &ReportConfig,
+    _config: &ReportConfig,
 ) -> GeneratedReport {
     let sections = vec![
         ReportSectionContent {
             title: "Partner Details".to_string(),
             content: format!(
                 "Person 1: {}\nBirth: {}\n\nPerson 2: {}\nBirth: {}",
-                pair.person1.name,
-                pair.person1.datetime,
-                pair.person2.name,
-                pair.person2.datetime
+                pair.person1.name, pair.person1.datetime, pair.person2.name, pair.person2.datetime
             ),
             key_points: vec![],
             chart_data: None,
@@ -67,7 +70,8 @@ pub fn generate_compatibility_report(
         },
         ReportSectionContent {
             title: "Dosha Analysis".to_string(),
-            content: "Checking for Manglik (Mars) dosha and other compatibility factors.".to_string(),
+            content: "Checking for Manglik (Mars) dosha and other compatibility factors."
+                .to_string(),
             key_points: vec![
                 "Manglik dosha must be matched between partners".to_string(),
                 "Nadi dosha can be cancelled under certain conditions".to_string(),
@@ -85,15 +89,19 @@ pub fn generate_compatibility_report(
             chart_data: None,
         },
     ];
-    
+
     GeneratedReport {
-        title: format!("Compatibility Report: {} & {}", pair.person1.name, pair.person2.name),
+        title: format!(
+            "Compatibility Report: {} & {}",
+            pair.person1.name, pair.person2.name
+        ),
         subject_name: format!("{} & {}", pair.person1.name, pair.person2.name),
         birth_datetime: pair.person1.datetime,
         generated_at: Utc::now().naive_utc(),
         sections,
         summary: "This compatibility analysis provides insights into the relationship potential. \
-                  A score above 18 is generally considered favorable for marriage.".to_string(),
+                  A score above 18 is generally considered favorable for marriage."
+            .to_string(),
     }
 }
 
@@ -124,7 +132,7 @@ mod tests {
             bhakoot: 7,
             nadi: 8,
         };
-        
+
         assert_eq!(scores.total(), 36);
         assert_eq!(scores.percentage(), 100.0);
     }

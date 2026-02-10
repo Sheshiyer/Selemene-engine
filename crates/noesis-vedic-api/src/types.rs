@@ -16,7 +16,7 @@ impl Coordinates {
             longitude: lng,
         }
     }
-    
+
     pub fn validate(&self) -> Result<(), String> {
         if self.latitude < -90.0 || self.latitude > 90.0 {
             return Err(format!("Invalid latitude: {}", self.latitude));
@@ -64,11 +64,14 @@ impl BirthData {
             timezone_offset: tz,
         }
     }
-    
+
     /// Convert to chrono::NaiveDateTime
     pub fn to_datetime(&self) -> Option<chrono::NaiveDateTime> {
-        chrono::NaiveDate::from_ymd_opt(self.year, self.month, self.day)?
-            .and_hms_opt(self.hour, self.minute, self.second)
+        chrono::NaiveDate::from_ymd_opt(self.year, self.month, self.day)?.and_hms_opt(
+            self.hour,
+            self.minute,
+            self.second,
+        )
     }
 }
 
@@ -128,7 +131,8 @@ impl Planet {
             Planet::Ketu => "Ketu",
         }
     }
-    
+
+    #[allow(clippy::should_implement_trait)]
     pub fn from_str(s: &str) -> Option<Self> {
         match s.to_lowercase().as_str() {
             "sun" | "surya" => Some(Planet::Sun),
@@ -179,7 +183,7 @@ impl ZodiacSign {
             ZodiacSign::Pisces => "Pisces",
         }
     }
-    
+
     pub fn from_index(index: u8) -> Option<Self> {
         match index {
             0 => Some(ZodiacSign::Aries),
@@ -207,10 +211,10 @@ mod tests {
     fn test_coordinates_validation() {
         let valid = Coordinates::new(12.9716, 77.5946);
         assert!(valid.validate().is_ok());
-        
+
         let invalid_lat = Coordinates::new(95.0, 77.5946);
         assert!(invalid_lat.validate().is_err());
-        
+
         let invalid_lng = Coordinates::new(12.9716, 200.0);
         assert!(invalid_lng.validate().is_err());
     }

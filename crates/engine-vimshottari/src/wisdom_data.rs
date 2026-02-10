@@ -1,6 +1,6 @@
 //! Static wisdom data loaded at startup
 
-use crate::models::{Nakshatra, PlanetaryQualities, PlanetaryPeriodQualities, VedicPlanet};
+use crate::models::{Nakshatra, PlanetaryPeriodQualities, PlanetaryQualities, VedicPlanet};
 use crate::wisdom::*;
 use lazy_static::lazy_static;
 use std::collections::HashMap;
@@ -34,7 +34,7 @@ lazy_static! {
     /// Planetary period qualities for consciousness work
     pub static ref PLANETARY_PERIOD_QUALITIES: HashMap<VedicPlanet, PlanetaryPeriodQualities> = {
         let mut map = HashMap::new();
-        
+
         map.insert(VedicPlanet::Sun, PlanetaryPeriodQualities {
             planet: VedicPlanet::Sun,
             themes: vec![
@@ -64,7 +64,7 @@ lazy_static! {
             ],
             description: "The Sun's period brings themes of self-expression, vitality, and authority. This is a time to step into your power, take on leadership roles, and let your authentic light shine. The soul seeks recognition and purpose. Watch for ego inflation and conflicts with authority figures. Use this time to strengthen your core identity and radiate your unique gifts into the world.".to_string(),
         });
-        
+
         map.insert(VedicPlanet::Moon, PlanetaryPeriodQualities {
             planet: VedicPlanet::Moon,
             themes: vec![
@@ -94,7 +94,7 @@ lazy_static! {
             ],
             description: "The Moon's period emphasizes emotional depth, nurturing, and domestic harmony. This is a time to tend to your inner world, strengthen family bonds, and trust your intuitive guidance. The mind becomes more sensitive and receptive. Watch for emotional overwhelm and dependency patterns. Use this period to honor your feelings, create a sense of home, and connect with the rhythms of your inner tides.".to_string(),
         });
-        
+
         map.insert(VedicPlanet::Mars, PlanetaryPeriodQualities {
             planet: VedicPlanet::Mars,
             themes: vec![
@@ -124,7 +124,7 @@ lazy_static! {
             ],
             description: "Mars's period brings dynamic energy, courage, and the drive to take action. This is a time of initiative, physical pursuits, and facing challenges head-on. The warrior within awakens. Watch for anger, impulsiveness, and unnecessary conflicts. Use this fiery period to build strength, assert healthy boundaries, accomplish ambitious goals, and transform raw energy into focused achievement. Act with courage but temper with wisdom.".to_string(),
         });
-        
+
         map.insert(VedicPlanet::Mercury, PlanetaryPeriodQualities {
             planet: VedicPlanet::Mercury,
             themes: vec![
@@ -154,7 +154,7 @@ lazy_static! {
             ],
             description: "Mercury's period emphasizes intellect, communication, and versatile learning. This is a time to develop skills, engage in commerce, and refine your powers of expression. The mind becomes sharp and curious. Watch for mental restlessness, overthinking, and scattered focus. Use this mercurial period to read, write, study, network, negotiate, and master the art of clear communication. Curiosity becomes your greatest teacher.".to_string(),
         });
-        
+
         map.insert(VedicPlanet::Jupiter, PlanetaryPeriodQualities {
             planet: VedicPlanet::Jupiter,
             themes: vec![
@@ -184,7 +184,7 @@ lazy_static! {
             ],
             description: "Jupiter's period brings growth, wisdom, and expansive opportunities. This is a time of learning, teaching, travel, and spiritual development. Luck and grace often flow more freely. Watch for over-optimism, excessive indulgence, and unrealistic expectations. Use this benefic period to study philosophy, share knowledge, expand your worldview, cultivate faith, and grow in both outer achievement and inner understanding. Wisdom becomes your wealth.".to_string(),
         });
-        
+
         map.insert(VedicPlanet::Venus, PlanetaryPeriodQualities {
             planet: VedicPlanet::Venus,
             themes: vec![
@@ -214,7 +214,7 @@ lazy_static! {
             ],
             description: "Venus's period brings themes of love, beauty, pleasure, and harmonious relationships. This is a time to enjoy life's comforts, create art, deepen romantic connections, and cultivate aesthetic refinement. The heart opens and attracts. Watch for overindulgence, vanity, and excessive attachment to material comforts. Use this graceful period to honor beauty, build meaningful relationships, express creativity, and find balance between worldly pleasure and spiritual depth.".to_string(),
         });
-        
+
         map.insert(VedicPlanet::Saturn, PlanetaryPeriodQualities {
             planet: VedicPlanet::Saturn,
             themes: vec![
@@ -244,7 +244,7 @@ lazy_static! {
             ],
             description: "Saturn's period brings discipline, responsibility, and karmic lessons. This is a time of maturation, facing limitations, and building enduring structures through sustained effort. Growth comes through challenges. Watch for depression, isolation, and excessive restriction. Use this demanding period to develop patience, accept responsibility, honor commitments, face your shadows, and transform obstacles into stepping stones. Through discipline comes liberation. What you build now lasts.".to_string(),
         });
-        
+
         map.insert(VedicPlanet::Rahu, PlanetaryPeriodQualities {
             planet: VedicPlanet::Rahu,
             themes: vec![
@@ -274,7 +274,7 @@ lazy_static! {
             ],
             description: "Rahu's period brings intense ambition, innovation, and desire for worldly success. This is a time of breaking conventions, embracing foreign connections, and pursuing unconventional paths. The North Node pulls you toward destiny. Watch for obsession, deception, and ethical compromises in pursuit of goals. Use this transformative period to innovate, think outside boundaries, embrace diversity, and channel ambition toward meaningful achievement. Desire can fuel evolution or create suffering.".to_string(),
         });
-        
+
         map.insert(VedicPlanet::Ketu, PlanetaryPeriodQualities {
             planet: VedicPlanet::Ketu,
             themes: vec![
@@ -304,7 +304,7 @@ lazy_static! {
             ],
             description: "Ketu's period brings spirituality, detachment, and liberation from worldly desires. This is a time of introspection, mystical experiences, and releasing what no longer serves. The South Node dissolves material attachments. Watch for isolation, confusion, and loss of direction. Use this subtle period to meditate, develop intuition, heal karmic patterns, surrender control, and discover that true freedom lies not in accumulation but in letting go. Emptiness becomes fullness.".to_string(),
         });
-        
+
         map
     };
 }
@@ -322,8 +322,8 @@ pub fn init_wisdom() {
 /// Load period durations for all 9 planets
 fn load_periods() -> HashMap<VedicPlanet, u8> {
     let json_str = include_str!("../../../data/vimshottari/dasha_periods.json");
-    let data: DashaPeriodsData = serde_json::from_str(json_str)
-        .expect("Failed to parse dasha_periods.json");
+    let data: DashaPeriodsData =
+        serde_json::from_str(json_str).expect("Failed to parse dasha_periods.json");
 
     data.mahadasha_periods
         .iter()
@@ -336,10 +336,11 @@ fn load_periods() -> HashMap<VedicPlanet, u8> {
 /// Load all 27 nakshatras
 fn load_nakshatras() -> Vec<Nakshatra> {
     let json_str = include_str!("../../../data/vimshottari/nakshatras.json");
-    let data: NakshatrasData = serde_json::from_str(json_str)
-        .expect("Failed to parse nakshatras.json");
+    let data: NakshatrasData =
+        serde_json::from_str(json_str).expect("Failed to parse nakshatras.json");
 
-    let mut nakshatras: Vec<_> = data.nakshatras
+    let mut nakshatras: Vec<_> = data
+        .nakshatras
         .into_iter()
         .filter_map(|(_, entry)| {
             VedicPlanet::from_str(&entry.ruling_planet).map(|planet| Nakshatra {
@@ -364,8 +365,8 @@ fn load_nakshatras() -> Vec<Nakshatra> {
 /// Load planetary qualities
 fn load_qualities() -> HashMap<VedicPlanet, PlanetaryQualities> {
     let json_str = include_str!("../../../data/vimshottari/vimshottari_periods.json");
-    let data: VimshottariPeriodsData = serde_json::from_str(json_str)
-        .expect("Failed to parse vimshottari_periods.json");
+    let data: VimshottariPeriodsData =
+        serde_json::from_str(json_str).expect("Failed to parse vimshottari_periods.json");
 
     let mut qualities = HashMap::new();
 
@@ -407,8 +408,8 @@ fn load_qualities() -> HashMap<VedicPlanet, PlanetaryQualities> {
 /// Load nakshatra to ruling planet mapping
 fn load_nakshatra_rulers() -> HashMap<u8, VedicPlanet> {
     let json_str = include_str!("../../../data/vimshottari/dasha_periods.json");
-    let data: DashaPeriodsData = serde_json::from_str(json_str)
-        .expect("Failed to parse dasha_periods.json");
+    let data: DashaPeriodsData =
+        serde_json::from_str(json_str).expect("Failed to parse dasha_periods.json");
 
     data.nakshatra_rulers
         .iter()
@@ -423,9 +424,9 @@ fn load_nakshatra_rulers() -> HashMap<u8, VedicPlanet> {
 /// Get nakshatra from Moon longitude (0-360°)
 pub fn get_nakshatra_from_longitude(longitude: f64) -> Option<&'static Nakshatra> {
     let normalized = longitude.rem_euclid(360.0);
-    NAKSHATRAS.iter().find(|nak| {
-        normalized >= nak.start_degree && normalized < nak.end_degree
-    })
+    NAKSHATRAS
+        .iter()
+        .find(|nak| normalized >= nak.start_degree && normalized < nak.end_degree)
 }
 
 /// Get nakshatra by number (1-27)

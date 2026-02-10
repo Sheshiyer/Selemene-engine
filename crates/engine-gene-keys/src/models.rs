@@ -8,43 +8,43 @@ use std::collections::HashMap;
 pub struct GeneKey {
     /// Gene Key number (1-64)
     pub number: u8,
-    
+
     /// Name of the Gene Key (e.g., "The Creative")
     pub name: String,
-    
+
     /// Shadow frequency - reactive unconscious pattern
     pub shadow: String,
-    
+
     /// Gift frequency - constructive conscious expression
     pub gift: String,
-    
+
     /// Siddhi frequency - transcendent realization
     pub siddhi: String,
-    
+
     /// Full shadow description (preserved archetypal depth)
     pub shadow_description: String,
-    
+
     /// Full gift description (preserved archetypal depth)
     pub gift_description: String,
-    
+
     /// Full siddhi description (preserved archetypal depth)
     pub siddhi_description: String,
-    
+
     /// Programming partner gate (opposite in wheel)
     pub programming_partner: Option<u8>,
-    
+
     /// Codon sequence
     pub codon: Option<String>,
-    
+
     /// Amino acid
     pub amino_acid: Option<String>,
-    
+
     /// Physiology reference
     pub physiology: Option<String>,
-    
+
     /// Keywords for this Gene Key
     pub keywords: Vec<String>,
-    
+
     /// Life theme statement
     pub life_theme: Option<String>,
 }
@@ -115,7 +115,7 @@ impl ActivationSource {
                 | Self::PersonalityPluto
         )
     }
-    
+
     /// Returns true if this is a design activation
     pub fn is_design(&self) -> bool {
         matches!(
@@ -172,7 +172,7 @@ impl ActivationSequence {
 pub struct GeneKeysChart {
     /// The four primary activation sequences
     pub activation_sequence: ActivationSequence,
-    
+
     /// All active Gene Keys from HD gates
     pub active_keys: Vec<GeneKeyActivation>,
 }
@@ -193,7 +193,6 @@ pub struct GeneKeysInfo {
     pub source: String,
     pub sequences: Vec<String>,
 }
-
 
 impl ActivationSource {
     /// Create source from planet and is_design flag

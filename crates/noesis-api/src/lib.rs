@@ -5,10 +5,10 @@
 //! JSON endpoints under `/api/v1/`.
 
 mod config;
+pub mod error;
+mod handlers;
 mod logging;
 mod middleware;
-mod handlers;
-pub mod error;
 
 // Re-export configuration and logging for main.rs
 pub use config::ApiConfig;
@@ -20,25 +20,24 @@ use axum::{
     middleware as axum_middleware,
     response::IntoResponse,
     routing::{get, post},
-    Extension,
-    Router,
+    Extension, Router,
 };
 use chrono::Timelike;
 use noesis_auth::{AuthService, AuthUser};
 use noesis_cache::CacheManager;
-use noesis_data::repositories::user_repository::UserRepository;
 use noesis_core::{EngineError, EngineInput, EngineOutput, ValidationResult, WorkflowResult};
+use noesis_data::repositories::user_repository::UserRepository;
 use noesis_metrics::NoesisMetrics;
 use noesis_orchestrator::WorkflowOrchestrator;
+use sentry_tower::{NewSentryLayer, SentryHttpLayer};
 use serde::{Deserialize, Serialize};
+use sqlx::postgres::PgPoolOptions;
 use std::sync::Arc;
 use std::time::{Duration, Instant};
-use sentry_tower::{NewSentryLayer, SentryHttpLayer};
 use tower_http::cors::CorsLayer;
 use tower_http::trace::TraceLayer;
 use utoipa::{OpenApi, ToSchema};
 use utoipa_swagger_ui::SwaggerUi;
-use sqlx::postgres::PgPoolOptions;
 
 // ---------------------------------------------------------------------------
 // OpenAPI documentation
@@ -111,7 +110,7 @@ use sqlx::postgres::PgPoolOptions;
 )]
 struct ApiDoc;
 
-use utoipa::openapi::security::{HttpAuthScheme, HttpBuilder, SecurityScheme, ApiKey, ApiKeyValue};
+use utoipa::openapi::security::{ApiKey, ApiKeyValue, HttpAuthScheme, HttpBuilder, SecurityScheme};
 use utoipa::Modify;
 
 struct SecurityAddon;
@@ -126,16 +125,12 @@ impl Modify for SecurityAddon {
                         .scheme(HttpAuthScheme::Bearer)
                         .bearer_format("JWT")
                         .description(Some("JWT token obtained from authentication endpoint"))
-                        .build()
+                        .build(),
                 ),
             );
             components.add_security_scheme(
                 "api_key",
-                SecurityScheme::ApiKey(
-                    ApiKey::Header(
-                        ApiKeyValue::new("X-API-Key")
-                    )
-                ),
+                SecurityScheme::ApiKey(ApiKey::Header(ApiKeyValue::new("X-API-Key"))),
             );
         }
     }
@@ -206,21 +201,27 @@ fn create_cors_layer(allowed_origins: Vec<String>) -> CorsLayer {
 /// * `config` - API configuration with CORS, rate limiting, etc.
 pub fn create_router(state: AppState, config: &ApiConfig) -> Router {
     let auth_state = state.auth.clone();
-    
+
     // Create rate limiter with config values
     let rate_limiter = Arc::new(middleware::RateLimiter::new_with_config(
         config.rate_limit_requests,
         config.rate_limit_window_secs,
     ));
-    
+
     let auth_routes = Router::new()
-         .route("/auth/register", post(handlers::auth::register))
-         .route("/auth/login", post(handlers::auth::login))
-         .route("/auth/forgot-password", post(handlers::auth::forgot_password))
-         .route("/auth/reset-password", post(handlers::auth::reset_password));
+        .route("/auth/register", post(handlers::auth::register))
+        .route("/auth/login", post(handlers::auth::login))
+        .route(
+            "/auth/forgot-password",
+            post(handlers::auth::forgot_password),
+        )
+        .route("/auth/reset-password", post(handlers::auth::reset_password));
 
     let api_v1 = Router::new()
-        .route("/users/me", get(handlers::users::get_me).patch(handlers::users::update_me))
+        .route(
+            "/users/me",
+            get(handlers::users::get_me).patch(handlers::users::update_me),
+        )
         .route("/status", get(status_handler))
         .route("/engines", get(list_engines_handler))
         .route("/engines/:engine_id/calculate", post(calculate_handler))
@@ -249,21 +250,20 @@ pub fn create_router(state: AppState, config: &ApiConfig) -> Router {
         .route("/ghati/current", get(legacy_ghati_current_handler));
 
     // Start with a base router and merge docs first (both have () state)
-    let base = Router::new().merge(
-        SwaggerUi::new("/api/docs")
-            .url("/api/openapi.json", ApiDoc::openapi())
-    );
+    let base = Router::new()
+        .merge(SwaggerUi::new("/api/docs").url("/api/openapi.json", ApiDoc::openapi()));
 
     // Now add stateful routes
-    base
-        .route("/health", get(health_handler))
-        .route("/health/live", get(health_handler))  // Kubernetes liveness probe
-        .route("/health/ready", get(readiness_handler))  // Kubernetes readiness probe
+    base.route("/health", get(health_handler))
+        .route("/health/live", get(health_handler)) // Kubernetes liveness probe
+        .route("/health/ready", get(readiness_handler)) // Kubernetes readiness probe
         .route("/ready", get(readiness_handler))
         .route("/metrics", get(metrics_handler))
         .nest("/api/v1", api_v1)
         .nest("/api/legacy", legacy)
-        .layer(axum_middleware::from_fn(middleware::request_logging_middleware))
+        .layer(axum_middleware::from_fn(
+            middleware::request_logging_middleware,
+        ))
         .layer(SentryHttpLayer::with_transaction())
         .layer(NewSentryLayer::new_from_top())
         .layer(TraceLayer::new_for_http())
@@ -402,7 +402,9 @@ async fn readiness_handler(State(state): State<AppState>) -> impl IntoResponse {
                     // Use a minimal GET to the base URL to verify reachability
                     // without consuming API quota (no POST to a calculation endpoint)
                     match client.get(&base_url).send().await {
-                        Ok(resp) if resp.status().is_success() || resp.status().is_client_error() => {
+                        Ok(resp)
+                            if resp.status().is_success() || resp.status().is_client_error() =>
+                        {
                             // Any HTTP response (even 4xx) means the service is reachable
                             "healthy"
                         }
@@ -514,23 +516,31 @@ async fn calculate_handler(
     Json(input): Json<EngineInput>,
 ) -> Result<Json<EngineOutput>, (StatusCode, Json<ErrorResponse>)> {
     let start = Instant::now();
-    
+
     // Execute engine with user's consciousness level
     let result = state
         .orchestrator
         .execute_engine(&engine_id, input, user.consciousness_level)
         .await;
-    
+
     let duration_secs = start.elapsed().as_secs_f64();
-    
+
     match result {
         Ok(output) => {
-            state.metrics.record_engine_calculation_with_status(&engine_id, "success", duration_secs);
+            state.metrics.record_engine_calculation_with_status(
+                &engine_id,
+                "success",
+                duration_secs,
+            );
             Ok(Json(output))
         }
         Err(e) => {
-            state.metrics.record_engine_calculation_with_status(&engine_id, "failure", duration_secs);
-            
+            state.metrics.record_engine_calculation_with_status(
+                &engine_id,
+                "failure",
+                duration_secs,
+            );
+
             let error_type = match &e {
                 EngineError::EngineNotFound(_) => "not_found",
                 EngineError::PhaseAccessDenied { .. } => "forbidden",
@@ -539,8 +549,10 @@ async fn calculate_handler(
                 EngineError::ValidationError(_) => "validation_error",
                 _ => "internal_error",
             };
-            
-            state.metrics.record_engine_calculation_error(&engine_id, error_type);
+
+            state
+                .metrics
+                .record_engine_calculation_error(&engine_id, error_type);
             Err(engine_error_to_response(e))
         }
     }
@@ -588,7 +600,7 @@ async fn validate_handler(
         .validate(&output)
         .await
         .map(Json)
-        .map_err(|e| engine_error_to_response(e))
+        .map_err(engine_error_to_response)
 }
 
 /// GET /api/v1/engines/:engine_id/info -- engine metadata
@@ -682,26 +694,34 @@ async fn workflow_execute_handler(
     Json(input): Json<EngineInput>,
 ) -> Result<Json<noesis_core::WorkflowResult>, (StatusCode, Json<ErrorResponse>)> {
     let start = Instant::now();
-    
+
     // Execute workflow with user's consciousness level
     let result = state
         .orchestrator
         .execute_workflow(&workflow_id, input, user.consciousness_level)
         .await;
-    
+
     let duration_secs = start.elapsed().as_secs_f64();
-    
+
     // Use workflow_id prefixed to distinguish from engine calculations
     let workflow_label = format!("workflow:{}", workflow_id);
-    
+
     match result {
         Ok(workflow_result) => {
-            state.metrics.record_engine_calculation_with_status(&workflow_label, "success", duration_secs);
+            state.metrics.record_engine_calculation_with_status(
+                &workflow_label,
+                "success",
+                duration_secs,
+            );
             Ok(Json(workflow_result))
         }
         Err(e) => {
-            state.metrics.record_engine_calculation_with_status(&workflow_label, "failure", duration_secs);
-            
+            state.metrics.record_engine_calculation_with_status(
+                &workflow_label,
+                "failure",
+                duration_secs,
+            );
+
             let error_type = match &e {
                 EngineError::WorkflowNotFound(_) => "not_found",
                 EngineError::PhaseAccessDenied { .. } => "forbidden",
@@ -710,8 +730,10 @@ async fn workflow_execute_handler(
                 EngineError::ValidationError(_) => "validation_error",
                 _ => "internal_error",
             };
-            
-            state.metrics.record_engine_calculation_error(&workflow_label, error_type);
+
+            state
+                .metrics
+                .record_engine_calculation_error(&workflow_label, error_type);
             Err(engine_error_to_response(e))
         }
     }
@@ -900,7 +922,7 @@ pub fn engine_error_to_response(err: EngineError) -> (StatusCode, Json<ErrorResp
 /// Legacy request format for Panchanga calculations from old Selemene API
 #[derive(Deserialize)]
 struct LegacyPanchangaRequest {
-    date: String,        // YYYY-MM-DD
+    date: String,         // YYYY-MM-DD
     time: Option<String>, // HH:MM
     latitude: f64,
     longitude: f64,
@@ -966,23 +988,38 @@ async fn legacy_panchanga_handler(
 
     // Extract PanchangaResult from engine output
     let panchanga_result: serde_json::Value = output.result;
-    
+
     // Convert to legacy response format
     let legacy_response = LegacyPanchangaResponse {
         tithi_index: panchanga_result["tithi_index"].as_u64().unwrap_or(0) as u8,
-        tithi_name: panchanga_result["tithi_name"].as_str().unwrap_or("").to_string(),
+        tithi_name: panchanga_result["tithi_name"]
+            .as_str()
+            .unwrap_or("")
+            .to_string(),
         tithi_value: panchanga_result["tithi_value"].as_f64().unwrap_or(0.0),
         nakshatra_index: panchanga_result["nakshatra_index"].as_u64().unwrap_or(0) as u8,
-        nakshatra_name: panchanga_result["nakshatra_name"].as_str().unwrap_or("").to_string(),
+        nakshatra_name: panchanga_result["nakshatra_name"]
+            .as_str()
+            .unwrap_or("")
+            .to_string(),
         nakshatra_value: panchanga_result["nakshatra_value"].as_f64().unwrap_or(0.0),
         yoga_index: panchanga_result["yoga_index"].as_u64().unwrap_or(0) as u8,
-        yoga_name: panchanga_result["yoga_name"].as_str().unwrap_or("").to_string(),
+        yoga_name: panchanga_result["yoga_name"]
+            .as_str()
+            .unwrap_or("")
+            .to_string(),
         yoga_value: panchanga_result["yoga_value"].as_f64().unwrap_or(0.0),
         karana_index: panchanga_result["karana_index"].as_u64().unwrap_or(0) as u8,
-        karana_name: panchanga_result["karana_name"].as_str().unwrap_or("").to_string(),
+        karana_name: panchanga_result["karana_name"]
+            .as_str()
+            .unwrap_or("")
+            .to_string(),
         karana_value: panchanga_result["karana_value"].as_f64().unwrap_or(0.0),
         vara_index: panchanga_result["vara_index"].as_u64().unwrap_or(0) as u8,
-        vara_name: panchanga_result["vara_name"].as_str().unwrap_or("").to_string(),
+        vara_name: panchanga_result["vara_name"]
+            .as_str()
+            .unwrap_or("")
+            .to_string(),
         solar_longitude: panchanga_result["solar_longitude"].as_f64().unwrap_or(0.0),
         lunar_longitude: panchanga_result["lunar_longitude"].as_f64().unwrap_or(0.0),
         julian_day: panchanga_result["julian_day"].as_f64().unwrap_or(0.0),
@@ -1050,11 +1087,11 @@ async fn legacy_ghati_current_handler(
     // In Vedic time, 1 day = 60 ghatis, 1 ghati = 24 minutes
     let panchanga_result: serde_json::Value = output.result;
     let _tithi_value = panchanga_result["tithi_value"].as_f64().unwrap_or(0.0);
-    
+
     // Calculate ghati from time of day (simplified - using hour of day)
     let hour_of_day = now.hour() as f64 + (now.minute() as f64 / 60.0);
     let ghati_value = (hour_of_day / 24.0) * 60.0;
-    
+
     let ghati = ghati_value.floor() as u8;
     let pala = ((ghati_value.fract() * 60.0).floor()) as u8;
     let vipala = ((ghati_value.fract() * 60.0).fract() * 60.0).floor() as u8;
@@ -1084,17 +1121,21 @@ pub async fn build_app_state(config: &ApiConfig) -> AppState {
     orchestrator.register_engine(Arc::new(engine_panchanga::PanchangaEngine::new()));
     orchestrator.register_engine(Arc::new(engine_numerology::NumerologyEngine::new()));
     orchestrator.register_engine(Arc::new(engine_biorhythm::BiorhythmEngine::new()));
-    
+
     // Register HD engine (Phase 1)
     let hd_engine = Arc::new(engine_human_design::HumanDesignEngine::new());
     orchestrator.register_engine(hd_engine.clone());
-    
+
     // Register Gene Keys engine with HD dependency (Phase 2)
-    let gk_engine = Arc::new(engine_gene_keys::GeneKeysEngine::with_hd_engine(hd_engine.clone()));
+    let gk_engine = Arc::new(engine_gene_keys::GeneKeysEngine::with_hd_engine(
+        hd_engine.clone(),
+    ));
     orchestrator.register_engine(gk_engine);
 
     // Register Vimshottari Dasha engine with HD dependency (Phase 2)
-    let vim_engine = Arc::new(engine_vimshottari::VimshottariEngine::with_hd_engine(hd_engine));
+    let vim_engine = Arc::new(engine_vimshottari::VimshottariEngine::with_hd_engine(
+        hd_engine,
+    ));
     orchestrator.register_engine(vim_engine);
 
     // Register Biofield engine (Phase 1 - somatic awareness) - returns mock data
@@ -1104,12 +1145,12 @@ pub async fn build_app_state(config: &ApiConfig) -> AppState {
     orchestrator.register_engine(Arc::new(engine_vedic_clock::VedicClockEngine::new()));
 
     // -- Cache --
-    let redis_url = config.redis_url.clone().unwrap_or_else(|| String::new());
+    let redis_url = config.redis_url.clone().unwrap_or_default();
     let cache = CacheManager::new(
-        redis_url,               // Redis URL from config
-        100,                     // L1: 100 MB
+        redis_url,                 // Redis URL from config
+        100,                       // L1: 100 MB
         Duration::from_secs(3600), // L2 TTL: 1 hour
-        false,                   // L3 disabled
+        false,                     // L3 disabled
     );
 
     // -- Database (optional — server runs in degraded mode without it) --
@@ -1141,16 +1182,14 @@ pub async fn build_app_state(config: &ApiConfig) -> AppState {
     // -- Auth (Postgres-backed API key validation, or degraded without DB) --
     let auth = AuthService::with_pool(config.jwt_secret.clone(), pool.clone());
 
-    let user_repository = Arc::new(UserRepository::new(
-        pool.unwrap_or_else(|| {
-            // Create a lazy pool with a dummy URL — queries will fail at runtime,
-            // but the server can still boot and serve non-DB endpoints.
-            PgPoolOptions::new()
-                .max_connections(1)
-                .connect_lazy("postgres://localhost/noesis_unavailable")
-                .expect("Failed to create placeholder pool")
-        }),
-    ));
+    let user_repository = Arc::new(UserRepository::new(pool.unwrap_or_else(|| {
+        // Create a lazy pool with a dummy URL — queries will fail at runtime,
+        // but the server can still boot and serve non-DB endpoints.
+        PgPoolOptions::new()
+            .max_connections(1)
+            .connect_lazy("postgres://localhost/noesis_unavailable")
+            .expect("Failed to create placeholder pool")
+    })));
 
     // -- Metrics --
     let metrics = NoesisMetrics::new().expect("Failed to initialise NoesisMetrics");
@@ -1181,11 +1220,15 @@ pub async fn build_app_state_lazy_db(config: &ApiConfig) -> AppState {
     orchestrator.register_engine(hd_engine.clone());
 
     // Register Gene Keys engine with HD dependency (Phase 2)
-    let gk_engine = Arc::new(engine_gene_keys::GeneKeysEngine::with_hd_engine(hd_engine.clone()));
+    let gk_engine = Arc::new(engine_gene_keys::GeneKeysEngine::with_hd_engine(
+        hd_engine.clone(),
+    ));
     orchestrator.register_engine(gk_engine);
 
     // Register Vimshottari Dasha engine with HD dependency (Phase 2)
-    let vim_engine = Arc::new(engine_vimshottari::VimshottariEngine::with_hd_engine(hd_engine));
+    let vim_engine = Arc::new(engine_vimshottari::VimshottariEngine::with_hd_engine(
+        hd_engine,
+    ));
     orchestrator.register_engine(vim_engine);
 
     // Register Biofield engine (Phase 1 - somatic awareness) - returns mock data
@@ -1195,7 +1238,7 @@ pub async fn build_app_state_lazy_db(config: &ApiConfig) -> AppState {
     orchestrator.register_engine(Arc::new(engine_vedic_clock::VedicClockEngine::new()));
 
     // -- Cache --
-    let redis_url = config.redis_url.clone().unwrap_or_else(|| String::new());
+    let redis_url = config.redis_url.clone().unwrap_or_default();
     let cache = CacheManager::new(
         redis_url,                 // Redis URL from config
         100,                       // L1: 100 MB
@@ -1214,14 +1257,12 @@ pub async fn build_app_state_lazy_db(config: &ApiConfig) -> AppState {
     // -- Auth (lazy Postgres-backed API key validation, or degraded without DB) --
     let auth = AuthService::with_pool(config.jwt_secret.clone(), pool.clone());
 
-    let user_repository = Arc::new(UserRepository::new(
-        pool.unwrap_or_else(|| {
-            PgPoolOptions::new()
-                .max_connections(1)
-                .connect_lazy("postgres://localhost/noesis_unavailable")
-                .expect("Failed to create placeholder pool")
-        }),
-    ));
+    let user_repository = Arc::new(UserRepository::new(pool.unwrap_or_else(|| {
+        PgPoolOptions::new()
+            .max_connections(1)
+            .connect_lazy("postgres://localhost/noesis_unavailable")
+            .expect("Failed to create placeholder pool")
+    })));
 
     // -- Metrics --
     let metrics = NoesisMetrics::new().expect("Failed to initialise NoesisMetrics");

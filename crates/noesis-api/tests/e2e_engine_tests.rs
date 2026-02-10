@@ -14,14 +14,13 @@
 
 use axum::{
     body::Body,
-    http::{Request, StatusCode, header},
+    http::{header, Request, StatusCode},
     Router,
 };
 use noesis_core::EngineInput;
 use serde_json::{json, Value};
-use serial_test::serial;
-use tokio::sync::Semaphore;
 use std::sync::{Arc, OnceLock};
+use tokio::sync::Semaphore;
 use tower::ServiceExt;
 
 mod common;
@@ -84,9 +83,15 @@ async fn authed_request(
         None => Body::empty(),
     };
 
-    let response = router.clone().oneshot(builder.body(body).unwrap()).await.unwrap();
+    let response = router
+        .clone()
+        .oneshot(builder.body(body).unwrap())
+        .await
+        .unwrap();
     let status = response.status();
-    let bytes = axum::body::to_bytes(response.into_body(), usize::MAX).await.unwrap();
+    let bytes = axum::body::to_bytes(response.into_body(), usize::MAX)
+        .await
+        .unwrap();
     let json: Value = if bytes.is_empty() {
         json!({})
     } else {
@@ -96,11 +101,7 @@ async fn authed_request(
 }
 
 /// Make an unauthenticated HTTP request through the Axum router.
-async fn unauthed_request(
-    method: &str,
-    uri: &str,
-    body: Option<Value>,
-) -> (StatusCode, Value) {
+async fn unauthed_request(method: &str, uri: &str, body: Option<Value>) -> (StatusCode, Value) {
     let _permit = e2e_request_permit().await;
     let router = get_router().await;
     let builder = Request::builder()
@@ -113,9 +114,15 @@ async fn unauthed_request(
         None => Body::empty(),
     };
 
-    let response = router.clone().oneshot(builder.body(body).unwrap()).await.unwrap();
+    let response = router
+        .clone()
+        .oneshot(builder.body(body).unwrap())
+        .await
+        .unwrap();
     let status = response.status();
-    let bytes = axum::body::to_bytes(response.into_body(), usize::MAX).await.unwrap();
+    let bytes = axum::body::to_bytes(response.into_body(), usize::MAX)
+        .await
+        .unwrap();
     let json: Value = if bytes.is_empty() {
         json!({})
     } else {
@@ -139,7 +146,9 @@ async fn fetch_metrics_text() -> String {
         .unwrap();
     let resp = router.clone().oneshot(req).await.unwrap();
     assert_eq!(resp.status(), StatusCode::OK);
-    let bytes = axum::body::to_bytes(resp.into_body(), usize::MAX).await.unwrap();
+    let bytes = axum::body::to_bytes(resp.into_body(), usize::MAX)
+        .await
+        .unwrap();
     String::from_utf8(bytes.to_vec()).unwrap()
 }
 
@@ -179,10 +188,22 @@ async fn test_hd_full_chart_e2e() {
     assert!(result["hd_type"].is_string(), "Missing hd_type");
     assert!(result["authority"].is_string(), "Missing authority");
     assert!(result["profile"].is_string(), "Missing profile");
-    assert!(result["defined_centers"].is_array(), "Missing defined_centers");
-    assert!(result["active_channels"].is_array(), "Missing active_channels");
-    assert!(result["personality_activations"].is_object(), "Missing personality_activations");
-    assert!(result["design_activations"].is_object(), "Missing design_activations");
+    assert!(
+        result["defined_centers"].is_array(),
+        "Missing defined_centers"
+    );
+    assert!(
+        result["active_channels"].is_array(),
+        "Missing active_channels"
+    );
+    assert!(
+        result["personality_activations"].is_object(),
+        "Missing personality_activations"
+    );
+    assert!(
+        result["design_activations"].is_object(),
+        "Missing design_activations"
+    );
 
     // Personality activations should include sun and earth at minimum
     assert!(
@@ -356,12 +377,36 @@ async fn test_hd_idempotent_results() {
 
     // Both must be valid HD charts with all required fields
     for (label, body) in [("first", &body1), ("second", &body2)] {
-        assert_eq!(body["engine_id"], "human-design", "{} missing engine_id", label);
-        assert!(body["result"]["hd_type"].is_string(), "{} missing hd_type", label);
-        assert!(body["result"]["authority"].is_string(), "{} missing authority", label);
-        assert!(body["result"]["profile"].is_string(), "{} missing profile", label);
-        assert!(body["result"]["defined_centers"].is_array(), "{} missing defined_centers", label);
-        assert!(!body["witness_prompt"].as_str().unwrap_or("").is_empty(), "{} empty witness", label);
+        assert_eq!(
+            body["engine_id"], "human-design",
+            "{} missing engine_id",
+            label
+        );
+        assert!(
+            body["result"]["hd_type"].is_string(),
+            "{} missing hd_type",
+            label
+        );
+        assert!(
+            body["result"]["authority"].is_string(),
+            "{} missing authority",
+            label
+        );
+        assert!(
+            body["result"]["profile"].is_string(),
+            "{} missing profile",
+            label
+        );
+        assert!(
+            body["result"]["defined_centers"].is_array(),
+            "{} missing defined_centers",
+            label
+        );
+        assert!(
+            !body["witness_prompt"].as_str().unwrap_or("").is_empty(),
+            "{} empty witness",
+            label
+        );
     }
 
     // Engine ID must always match
@@ -373,13 +418,8 @@ async fn test_hd_idempotent_results() {
 async fn test_hd_engine_info() {
     let token = test_jwt(5);
 
-    let (status, body) = authed_request(
-        "GET",
-        "/api/v1/engines/human-design/info",
-        &token,
-        None,
-    )
-    .await;
+    let (status, body) =
+        authed_request("GET", "/api/v1/engines/human-design/info", &token, None).await;
 
     assert_eq!(status, StatusCode::OK);
     assert_eq!(body["engine_id"], "human-design");
@@ -444,13 +484,29 @@ async fn test_gene_keys_full_chart_e2e_mode2() {
 
     // active_keys with shadow/gift/siddhi
     let keys = body["result"]["active_keys"].as_array().unwrap();
-    assert!(keys.len() >= 4, "Expected at least 4 active keys, got {}", keys.len());
+    assert!(
+        keys.len() >= 4,
+        "Expected at least 4 active keys, got {}",
+        keys.len()
+    );
 
     for key in keys {
         assert!(key["key_number"].is_number(), "Missing key_number");
-        assert!(key["shadow"].is_string(), "Missing shadow for key {:?}", key["key_number"]);
-        assert!(key["gift"].is_string(), "Missing gift for key {:?}", key["key_number"]);
-        assert!(key["siddhi"].is_string(), "Missing siddhi for key {:?}", key["key_number"]);
+        assert!(
+            key["shadow"].is_string(),
+            "Missing shadow for key {:?}",
+            key["key_number"]
+        );
+        assert!(
+            key["gift"].is_string(),
+            "Missing gift for key {:?}",
+            key["key_number"]
+        );
+        assert!(
+            key["siddhi"].is_string(),
+            "Missing siddhi for key {:?}",
+            key["key_number"]
+        );
     }
 
     // frequency_assessments present (archetypal depth preserved)
@@ -496,7 +552,7 @@ async fn test_gene_keys_hd_integration_mode() {
             "POST",
             "/api/v1/engines/human-design/calculate",
             &token,
-            Some(serde_json::to_value(&reference_birth_input()).unwrap()),
+            Some(serde_json::to_value(reference_birth_input()).unwrap()),
         )
         .await;
         assert_eq!(hd_status, StatusCode::OK);
@@ -515,12 +571,15 @@ async fn test_gene_keys_hd_integration_mode() {
             .unwrap() as u8;
 
         let mut gk_opts = std::collections::HashMap::new();
-        gk_opts.insert("hd_gates".to_string(), json!({
-            "personality_sun": p_sun,
-            "personality_earth": p_earth,
-            "design_sun": d_sun,
-            "design_earth": d_earth,
-        }));
+        gk_opts.insert(
+            "hd_gates".to_string(),
+            json!({
+                "personality_sun": p_sun,
+                "personality_earth": p_earth,
+                "design_sun": d_sun,
+                "design_earth": d_earth,
+            }),
+        );
 
         let gk_input = EngineInput {
             birth_data: None,
@@ -538,7 +597,12 @@ async fn test_gene_keys_hd_integration_mode() {
         )
         .await;
 
-        assert_eq!(gk_status, StatusCode::OK, "GK Mode 2 fallback failed: {:?}", gk_body);
+        assert_eq!(
+            gk_status,
+            StatusCode::OK,
+            "GK Mode 2 fallback failed: {:?}",
+            gk_body
+        );
         assert_eq!(gk_body["engine_id"], "gene-keys");
     } else {
         // Mode 1 succeeded -- validate full response
@@ -548,11 +612,18 @@ async fn test_gene_keys_hd_integration_mode() {
 
         let seq = &body["result"]["activation_sequence"];
         for field in &["lifes_work", "evolution", "radiance", "purpose"] {
-            assert!(seq[field].is_array(), "Missing {} in activation_sequence", field);
+            assert!(
+                seq[field].is_array(),
+                "Missing {} in activation_sequence",
+                field
+            );
         }
 
         let keys = body["result"]["active_keys"].as_array().unwrap();
-        assert!(keys.len() >= 4, "Expected at least 4 active keys from birth_data");
+        assert!(
+            keys.len() >= 4,
+            "Expected at least 4 active keys from birth_data"
+        );
     }
 }
 
@@ -560,10 +631,13 @@ async fn test_gene_keys_hd_integration_mode() {
 #[tokio::test]
 async fn test_gene_keys_auth_required() {
     let mut options = std::collections::HashMap::new();
-    options.insert("hd_gates".to_string(), json!({
-        "personality_sun": 1, "personality_earth": 2,
-        "design_sun": 3, "design_earth": 4
-    }));
+    options.insert(
+        "hd_gates".to_string(),
+        json!({
+            "personality_sun": 1, "personality_earth": 2,
+            "design_sun": 3, "design_earth": 4
+        }),
+    );
 
     let input = EngineInput {
         birth_data: None,
@@ -590,10 +664,13 @@ async fn test_gene_keys_phase_gating() {
     let token = test_jwt(1); // Phase 1, but GK requires 2
 
     let mut options = std::collections::HashMap::new();
-    options.insert("hd_gates".to_string(), json!({
-        "personality_sun": 1, "personality_earth": 2,
-        "design_sun": 3, "design_earth": 4
-    }));
+    options.insert(
+        "hd_gates".to_string(),
+        json!({
+            "personality_sun": 1, "personality_earth": 2,
+            "design_sun": 3, "design_earth": 4
+        }),
+    );
 
     let input = EngineInput {
         birth_data: None,
@@ -652,12 +729,15 @@ async fn test_gene_keys_invalid_gate_range() {
     let token = test_jwt(5);
 
     let mut options = std::collections::HashMap::new();
-    options.insert("hd_gates".to_string(), json!({
-        "personality_sun": 65, // Invalid
-        "personality_earth": 18,
-        "design_sun": 45,
-        "design_earth": 26
-    }));
+    options.insert(
+        "hd_gates".to_string(),
+        json!({
+            "personality_sun": 65, // Invalid
+            "personality_earth": 18,
+            "design_sun": 45,
+            "design_earth": 26
+        }),
+    );
 
     let input = EngineInput {
         birth_data: None,
@@ -689,10 +769,13 @@ async fn test_gene_keys_idempotent_results() {
     let token = test_jwt(5);
 
     let mut options = std::collections::HashMap::new();
-    options.insert("hd_gates".to_string(), json!({
-        "personality_sun": 10, "personality_earth": 20,
-        "design_sun": 30, "design_earth": 40
-    }));
+    options.insert(
+        "hd_gates".to_string(),
+        json!({
+            "personality_sun": 10, "personality_earth": 20,
+            "design_sun": 30, "design_earth": 40
+        }),
+    );
 
     let input = EngineInput {
         birth_data: None,
@@ -733,13 +816,8 @@ async fn test_gene_keys_idempotent_results() {
 async fn test_gene_keys_engine_info() {
     let token = test_jwt(5);
 
-    let (status, body) = authed_request(
-        "GET",
-        "/api/v1/engines/gene-keys/info",
-        &token,
-        None,
-    )
-    .await;
+    let (status, body) =
+        authed_request("GET", "/api/v1/engines/gene-keys/info", &token, None).await;
 
     assert_eq!(status, StatusCode::OK);
     assert_eq!(body["engine_id"], "gene-keys");
@@ -799,8 +877,11 @@ async fn test_vimshottari_full_timeline_e2e() {
 
     // 9 or 10 mahadashas (10 when first period is partial, requiring an extra to reach 120 years)
     let mahadashas = timeline["mahadashas"].as_array().unwrap();
-    assert!(mahadashas.len() >= 9 && mahadashas.len() <= 10,
-        "Expected 9-10 mahadashas, got {}", mahadashas.len());
+    assert!(
+        mahadashas.len() >= 9 && mahadashas.len() <= 10,
+        "Expected 9-10 mahadashas, got {}",
+        mahadashas.len()
+    );
 
     // Each mahadasha has planet, start_date, end_date, duration_years
     for (i, maha) in mahadashas.iter().enumerate() {
@@ -886,7 +967,12 @@ async fn test_vimshottari_moon_longitude_mode() {
     )
     .await;
 
-    assert_eq!(status, StatusCode::OK, "Vimshottari Mode 2 failed: {:?}", body);
+    assert_eq!(
+        status,
+        StatusCode::OK,
+        "Vimshottari Mode 2 failed: {:?}",
+        body
+    );
     assert_eq!(body["engine_id"], "vimshottari");
 
     // Verify nakshatra is Magha (10th nakshatra, 120-133.33 degrees)
@@ -895,11 +981,12 @@ async fn test_vimshottari_moon_longitude_mode() {
     assert_eq!(nak["number"], 10);
 
     // Timeline should have 9-10 mahadashas
-    let mahadashas = body["result"]["timeline"]["mahadashas"]
-        .as_array()
-        .unwrap();
-    assert!(mahadashas.len() >= 9 && mahadashas.len() <= 10,
-        "Expected 9-10 mahadashas, got {}", mahadashas.len());
+    let mahadashas = body["result"]["timeline"]["mahadashas"].as_array().unwrap();
+    assert!(
+        mahadashas.len() >= 9 && mahadashas.len() <= 10,
+        "Expected 9-10 mahadashas, got {}",
+        mahadashas.len()
+    );
 }
 
 /// Vimshottari E2E: Auth required -- 401.
@@ -1027,11 +1114,12 @@ async fn test_vimshottari_date_continuity() {
 
     assert_eq!(status, StatusCode::OK);
 
-    let mahadashas = body["result"]["timeline"]["mahadashas"]
-        .as_array()
-        .unwrap();
-    assert!(mahadashas.len() >= 9 && mahadashas.len() <= 10,
-        "Expected 9-10 mahadashas, got {}", mahadashas.len());
+    let mahadashas = body["result"]["timeline"]["mahadashas"].as_array().unwrap();
+    assert!(
+        mahadashas.len() >= 9 && mahadashas.len() <= 10,
+        "Expected 9-10 mahadashas, got {}",
+        mahadashas.len()
+    );
 
     // Verify total duration sums to approximately 120 years.
     // NOTE: The first mahadasha is a partial period (dasha balance),
@@ -1104,13 +1192,8 @@ async fn test_vimshottari_idempotent_results() {
 async fn test_vimshottari_engine_info() {
     let token = test_jwt(5);
 
-    let (status, body) = authed_request(
-        "GET",
-        "/api/v1/engines/vimshottari/info",
-        &token,
-        None,
-    )
-    .await;
+    let (status, body) =
+        authed_request("GET", "/api/v1/engines/vimshottari/info", &token, None).await;
 
     assert_eq!(status, StatusCode::OK);
     assert_eq!(body["engine_id"], "vimshottari");
@@ -1127,22 +1210,25 @@ async fn test_vimshottari_engine_info() {
 async fn test_all_three_engines_registered() {
     let token = test_jwt(5);
 
-    let (status, body) = authed_request(
-        "GET",
-        "/api/v1/engines",
-        &token,
-        None,
-    )
-    .await;
+    let (status, body) = authed_request("GET", "/api/v1/engines", &token, None).await;
 
     assert_eq!(status, StatusCode::OK);
 
     let engines = body["engines"].as_array().unwrap();
     let engine_ids: Vec<&str> = engines.iter().filter_map(|v| v.as_str()).collect();
 
-    assert!(engine_ids.contains(&"human-design"), "human-design not in engine list");
-    assert!(engine_ids.contains(&"gene-keys"), "gene-keys not in engine list");
-    assert!(engine_ids.contains(&"vimshottari"), "vimshottari not in engine list");
+    assert!(
+        engine_ids.contains(&"human-design"),
+        "human-design not in engine list"
+    );
+    assert!(
+        engine_ids.contains(&"gene-keys"),
+        "gene-keys not in engine list"
+    );
+    assert!(
+        engine_ids.contains(&"vimshottari"),
+        "vimshottari not in engine list"
+    );
 }
 
 /// Metrics: After calculations, Prometheus metrics contain engine data.
@@ -1152,10 +1238,13 @@ async fn test_metrics_contain_engine_calculations() {
     let token = test_jwt(5);
 
     let mut options = std::collections::HashMap::new();
-    options.insert("hd_gates".to_string(), json!({
-        "personality_sun": 5, "personality_earth": 10,
-        "design_sun": 15, "design_earth": 20
-    }));
+    options.insert(
+        "hd_gates".to_string(),
+        json!({
+            "personality_sun": 5, "personality_earth": 10,
+            "design_sun": 15, "design_earth": 20
+        }),
+    );
 
     let input = EngineInput {
         birth_data: None,
@@ -1229,14 +1318,17 @@ async fn test_concurrent_multi_engine_calculations() {
     let token = test_jwt(5);
 
     // HD uses ephemeris (may fail under contention)
-    let hd_input = serde_json::to_value(&reference_birth_input()).unwrap();
+    let hd_input = serde_json::to_value(reference_birth_input()).unwrap();
 
     // GK uses hd_gates mode (no ephemeris)
     let mut gk_options = std::collections::HashMap::new();
-    gk_options.insert("hd_gates".to_string(), json!({
-        "personality_sun": 7, "personality_earth": 13,
-        "design_sun": 25, "design_earth": 46
-    }));
+    gk_options.insert(
+        "hd_gates".to_string(),
+        json!({
+            "personality_sun": 7, "personality_earth": 13,
+            "design_sun": 25, "design_earth": 46
+        }),
+    );
     let gk_input = serde_json::to_value(&EngineInput {
         birth_data: None,
         current_time: chrono::Utc::now(),
@@ -1265,9 +1357,24 @@ async fn test_concurrent_multi_engine_calculations() {
 
     // Run all three concurrently
     let (hd_result, gk_result, vim_result) = tokio::join!(
-        authed_request("POST", "/api/v1/engines/human-design/calculate", &token1, Some(hd_input)),
-        authed_request("POST", "/api/v1/engines/gene-keys/calculate", &token2, Some(gk_input)),
-        authed_request("POST", "/api/v1/engines/vimshottari/calculate", &token3, Some(vim_input)),
+        authed_request(
+            "POST",
+            "/api/v1/engines/human-design/calculate",
+            &token1,
+            Some(hd_input)
+        ),
+        authed_request(
+            "POST",
+            "/api/v1/engines/gene-keys/calculate",
+            &token2,
+            Some(gk_input)
+        ),
+        authed_request(
+            "POST",
+            "/api/v1/engines/vimshottari/calculate",
+            &token3,
+            Some(vim_input)
+        ),
     );
 
     // HD may fail under concurrent ephemeris contention -- accept 200 or 500
@@ -1278,8 +1385,18 @@ async fn test_concurrent_multi_engine_calculations() {
     );
 
     // GK and Vimshottari (non-ephemeris modes) must always succeed
-    assert_eq!(gk_result.0, StatusCode::OK, "GK concurrent calc failed: {:?}", gk_result.1);
-    assert_eq!(vim_result.0, StatusCode::OK, "Vim concurrent calc failed: {:?}", vim_result.1);
+    assert_eq!(
+        gk_result.0,
+        StatusCode::OK,
+        "GK concurrent calc failed: {:?}",
+        gk_result.1
+    );
+    assert_eq!(
+        vim_result.0,
+        StatusCode::OK,
+        "Vim concurrent calc failed: {:?}",
+        vim_result.1
+    );
 
     // Verify engine IDs for successful responses
     if hd_result.0 == StatusCode::OK {

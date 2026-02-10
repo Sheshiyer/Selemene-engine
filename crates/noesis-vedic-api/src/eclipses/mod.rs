@@ -2,13 +2,13 @@
 //!
 //! FAPI-116: Solar and lunar eclipse calculations
 
-pub mod types;
 pub mod calculator;
 pub mod effects;
+pub mod types;
 
-pub use types::*;
 pub use calculator::*;
 pub use effects::*;
+pub use types::*;
 
 use chrono::{NaiveDate, NaiveDateTime};
 use serde::{Deserialize, Serialize};
@@ -86,9 +86,9 @@ pub struct VedicEclipseEffects {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct LocalEclipseVisibility {
     pub is_visible: bool,
-    pub visibility_type: String,  // Total, Partial, Not visible
+    pub visibility_type: String, // Total, Partial, Not visible
     pub start_time: Option<NaiveDateTime>,
     pub maximum_time: Option<NaiveDateTime>,
     pub end_time: Option<NaiveDateTime>,
-    pub obscuration: Option<f64>,  // Percentage for partial
+    pub obscuration: Option<f64>, // Percentage for partial
 }

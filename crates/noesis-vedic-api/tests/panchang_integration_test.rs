@@ -1,5 +1,5 @@
 //! Integration tests for Panchang endpoints
-//! 
+//!
 //! These tests verify that:
 //! 1. The Panchang data structures are correct
 //! 2. Muhurta calculations work
@@ -17,11 +17,11 @@ fn test_tithi_creation() {
         end_time: "18:00".to_string(),
         is_complete: true,
     };
-    
+
     assert_eq!(tithi.number, 1);
     assert_eq!(tithi.name(), "Pratipada");
     assert!(tithi.is_auspicious());
-    
+
     // Test inauspicious tithi - Chaturthi
     let chaturthi = Tithi {
         number: 4,
@@ -43,7 +43,7 @@ fn test_nakshatra_ruler() {
         end_time: "18:00".to_string(),
         longitude: 156.0,
     };
-    
+
     assert_eq!(nakshatra.name(), "Uttara Phalguni");
     assert_eq!(nakshatra.ruling_planet(), "Sun");
     assert!(nakshatra.is_auspicious());
@@ -71,7 +71,7 @@ fn test_yoga_nature() {
         start_time: "06:00".to_string(),
         end_time: "06:00".to_string(),
     };
-    
+
     assert_eq!(yoga.name(), "Shiva");
     assert_eq!(yoga.nature(), "auspicious");
     assert!(yoga.is_auspicious());
@@ -85,7 +85,7 @@ fn test_karana_type() {
         start_time: "06:00".to_string(),
         end_time: "18:00".to_string(),
     };
-    
+
     assert_eq!(karana.name(), "Bava");
     assert!(karana.is_auspicious());
 }
@@ -93,19 +93,19 @@ fn test_karana_type() {
 #[test]
 fn test_muhurta_calculations() {
     use muhurta::*;
-    
+
     // Test Rahu Kalam for different days
     let rahu_sunday = RahuKalam::for_day("Sunday", "06:00", "18:00");
     assert_eq!(rahu_sunday.start, "16:30");
     assert_eq!(rahu_sunday.end, "18:00");
-    
+
     let rahu_monday = RahuKalam::for_day("Monday", "06:00", "18:00");
     assert_eq!(rahu_monday.start, "07:30");
-    
+
     // Test Yama Gandam
     let yama_tuesday = YamaGandam::for_day("Tuesday");
     assert_eq!(yama_tuesday.start, "09:00");
-    
+
     // Test Gulika Kaal
     let gulika_saturday = GulikaKaal::for_day("Saturday");
     assert_eq!(gulika_saturday.start, "06:00");
@@ -114,16 +114,16 @@ fn test_muhurta_calculations() {
 #[test]
 fn test_hora_sequence() {
     use hora::*;
-    
+
     // Sunday should start with Sun
     let sunday_sequence = HoraSequence::generate_sequence("Sunday");
     assert_eq!(sunday_sequence[0], Planet::Sun);
     assert_eq!(sunday_sequence.len(), 24);
-    
+
     // Monday should start with Moon
     let monday_sequence = HoraSequence::generate_sequence("Monday");
     assert_eq!(monday_sequence[0], Planet::Moon);
-    
+
     // Saturday should start with Saturn
     let saturday_sequence = HoraSequence::generate_sequence("Saturday");
     assert_eq!(saturday_sequence[0], Planet::Saturn);
@@ -132,11 +132,11 @@ fn test_hora_sequence() {
 #[test]
 fn test_choghadiya_sequence() {
     use choghadiya::*;
-    
+
     // Sunday day starts with Shubh
     let sunday_day = ChoghadiyaSequence::get_day_sequence("Sunday");
     assert_eq!(sunday_day[0].0, ChoghadiyaName::Shubh);
-    
+
     // Saturday day starts with Kaal
     let saturday_day = ChoghadiyaSequence::get_day_sequence("Saturday");
     assert_eq!(saturday_day[0].0, ChoghadiyaName::Kaal);
@@ -145,18 +145,20 @@ fn test_choghadiya_sequence() {
 #[test]
 fn test_dasha_planet() {
     use noesis_vedic_api::dasha::*;
-    
+
     // Test periods
     assert_eq!(DashaPlanet::Sun.full_period_years(), 6.0);
     assert_eq!(DashaPlanet::Moon.full_period_years(), 10.0);
     assert_eq!(DashaPlanet::Saturn.full_period_years(), 19.0);
-    
+
     // Test nature
     assert!(DashaPlanet::Jupiter.is_benefic());
     assert!(DashaPlanet::Saturn.is_malefic());
-    
+
     // Test rulers
-    assert!(DashaPlanet::Mars.ruling_nakshatras().contains(&"Mrigashira"));
+    assert!(DashaPlanet::Mars
+        .ruling_nakshatras()
+        .contains(&"Mrigashira"));
 }
 
 #[test]
@@ -165,7 +167,7 @@ fn test_panchang_query_builder() {
         .at(14, 30, 0)
         .with_timezone(5.5)
         .without_hora();
-    
+
     assert_eq!(query.year, 2024);
     assert_eq!(query.month, 1);
     assert_eq!(query.day, 15);
@@ -178,12 +180,12 @@ fn test_panchang_query_builder() {
 #[test]
 fn test_zodiac_sign() {
     use noesis_vedic_api::chart::ZodiacSign;
-    
+
     assert_eq!(ZodiacSign::Aries.index(), 0);
     assert_eq!(ZodiacSign::Aries.ruler(), "Mars");
     assert_eq!(ZodiacSign::Leo.element(), "Fire");
     assert_eq!(ZodiacSign::Taurus.modality(), "Fixed");
-    
+
     // Test wraparound
     assert_eq!(ZodiacSign::from_index(12), ZodiacSign::Aries);
 }

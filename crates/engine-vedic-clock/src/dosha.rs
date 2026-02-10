@@ -94,13 +94,13 @@ pub fn dosha_times() -> Vec<DoshaTime> {
 /// Get the dosha for a specific hour
 pub fn get_dosha_for_hour(hour: u8) -> DoshaTime {
     match hour {
-        2..=5 => dosha_times()[0].clone(),   // Vata AM
-        6..=9 => dosha_times()[1].clone(),   // Kapha AM
-        10..=13 => dosha_times()[2].clone(), // Pitta midday
-        14..=17 => dosha_times()[3].clone(), // Vata PM
-        18..=21 => dosha_times()[4].clone(), // Kapha PM
+        2..=5 => dosha_times()[0].clone(),           // Vata AM
+        6..=9 => dosha_times()[1].clone(),           // Kapha AM
+        10..=13 => dosha_times()[2].clone(),         // Pitta midday
+        14..=17 => dosha_times()[3].clone(),         // Vata PM
+        18..=21 => dosha_times()[4].clone(),         // Kapha PM
         22..=23 | 0..=1 => dosha_times()[5].clone(), // Pitta night
-        _ => dosha_times()[0].clone(), // Default
+        _ => dosha_times()[0].clone(),               // Default
     }
 }
 
@@ -116,14 +116,14 @@ pub fn get_organ_dosha_affinity(organ: &Organ) -> Dosha {
         Organ::LargeIntestine => Dosha::Vata,
         Organ::Bladder => Dosha::Vata,
         Organ::Kidney => Dosha::Vata,
-        
+
         // Pitta-dominant organs (transformation, metabolism, heat)
         Organ::Stomach => Dosha::Pitta,
         Organ::SmallIntestine => Dosha::Pitta,
         Organ::Heart => Dosha::Pitta,
         Organ::Liver => Dosha::Pitta,
         Organ::Gallbladder => Dosha::Pitta,
-        
+
         // Kapha-dominant organs (structure, protection, fluids)
         Organ::Lung => Dosha::Kapha,
         Organ::Spleen => Dosha::Kapha,
@@ -168,7 +168,7 @@ pub fn get_dosha_balancing_tips(dosha: &Dosha) -> Vec<&'static str> {
 /// organ time is with the current dosha time
 pub fn calculate_dosha_organ_harmony(organ: &Organ, dosha: &Dosha) -> f64 {
     let organ_affinity = get_organ_dosha_affinity(organ);
-    
+
     if organ_affinity == *dosha {
         // Perfect alignment - organ's dosha matches current dosha
         1.0

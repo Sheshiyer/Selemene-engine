@@ -17,10 +17,9 @@
 use noesis_vedic_api::chart::ZodiacSign;
 use noesis_vedic_api::dasha::{DashaLevel, DashaPlanet};
 use noesis_vedic_api::test_mocks::{
-    shesh_birth_chart, shesh_navamsa_chart, shesh_panchang, shesh_vimshottari_dasha,
-    MockApiClient, MockResponses,
-    SHESH_DAY, SHESH_HOUR, SHESH_LAT, SHESH_LNG, SHESH_MINUTE, SHESH_MONTH, SHESH_SECOND,
-    SHESH_TZONE, SHESH_YEAR,
+    shesh_birth_chart, shesh_navamsa_chart, shesh_panchang, shesh_vimshottari_dasha, MockApiClient,
+    MockResponses, SHESH_DAY, SHESH_HOUR, SHESH_LAT, SHESH_LNG, SHESH_MINUTE, SHESH_MONTH,
+    SHESH_SECOND, SHESH_TZONE, SHESH_YEAR,
 };
 use noesis_vedic_api::vimshottari::query::dasha_lord_by_date;
 
@@ -51,8 +50,10 @@ fn fapi097_birth_data_constants_correct() {
     assert!((SHESH_LNG - 77.5946).abs() < 0.001, "Bangalore longitude");
     assert!((SHESH_TZONE - 5.5).abs() < 0.001, "IST timezone");
 
-    println!("  [PASS] Birth data constants: 1991-09-14 09:30 AM IST, Bangalore ({}, {})",
-        SHESH_LAT, SHESH_LNG);
+    println!(
+        "  [PASS] Birth data constants: 1991-09-14 09:30 AM IST, Bangalore ({}, {})",
+        SHESH_LAT, SHESH_LNG
+    );
 }
 
 // ---------------------------------------------------------------------------
@@ -168,8 +169,7 @@ fn fapi097_sun_mahadasha_starts_at_birth() {
     assert_eq!(
         dasha.mahadashas[0].start_date, EXPECTED_SUN_MD_START,
         "Sun Mahadasha should start on {}, got {}",
-        EXPECTED_SUN_MD_START,
-        dasha.mahadashas[0].start_date
+        EXPECTED_SUN_MD_START, dasha.mahadashas[0].start_date
     );
 
     assert_eq!(
@@ -213,7 +213,9 @@ fn fapi097_all_nine_planets_present() {
     );
 
     let planet_names: Vec<&str> = chart.planets.iter().map(|p| p.name.as_str()).collect();
-    for expected in &["Sun", "Moon", "Mars", "Mercury", "Jupiter", "Venus", "Saturn", "Rahu", "Ketu"] {
+    for expected in &[
+        "Sun", "Moon", "Mars", "Mercury", "Jupiter", "Venus", "Saturn", "Rahu", "Ketu",
+    ] {
         assert!(
             planet_names.contains(expected),
             "Planet {} missing from chart",
@@ -249,7 +251,9 @@ fn fapi097_sun_in_leo() {
 #[test]
 fn fapi097_jupiter_exalted_in_cancer() {
     let chart = shesh_birth_chart();
-    let jupiter = chart.get_planet("Jupiter").expect("Jupiter should be in chart");
+    let jupiter = chart
+        .get_planet("Jupiter")
+        .expect("Jupiter should be in chart");
 
     assert_eq!(
         jupiter.sign,
@@ -270,9 +274,15 @@ fn fapi097_jupiter_exalted_in_cancer() {
 #[test]
 fn fapi097_mercury_exalted_in_virgo() {
     let chart = shesh_birth_chart();
-    let mercury = chart.get_planet("Mercury").expect("Mercury should be in chart");
+    let mercury = chart
+        .get_planet("Mercury")
+        .expect("Mercury should be in chart");
 
-    assert_eq!(mercury.sign, ZodiacSign::Virgo, "Mercury should be in Virgo");
+    assert_eq!(
+        mercury.sign,
+        ZodiacSign::Virgo,
+        "Mercury should be in Virgo"
+    );
     assert!(mercury.is_exalted(), "Mercury is exalted in Virgo");
     assert_eq!(mercury.house, 11, "Mercury should be in 11th house");
 
@@ -287,9 +297,15 @@ fn fapi097_mercury_exalted_in_virgo() {
 #[test]
 fn fapi097_saturn_own_sign_retrograde() {
     let chart = shesh_birth_chart();
-    let saturn = chart.get_planet("Saturn").expect("Saturn should be in chart");
+    let saturn = chart
+        .get_planet("Saturn")
+        .expect("Saturn should be in chart");
 
-    assert_eq!(saturn.sign, ZodiacSign::Capricorn, "Saturn should be in Capricorn");
+    assert_eq!(
+        saturn.sign,
+        ZodiacSign::Capricorn,
+        "Saturn should be in Capricorn"
+    );
     assert!(saturn.in_own_sign(), "Saturn in Capricorn is in own sign");
     assert!(saturn.is_retrograde, "Saturn should be retrograde");
     assert_eq!(saturn.house, 3, "Saturn should be in 3rd house");
@@ -391,11 +407,9 @@ fn fapi097_dasha_chart_consistency() {
 
     // Moon nakshatra in dasha should match chart
     assert_eq!(
-        dasha.moon_nakshatra,
-        chart.moon.nakshatra,
+        dasha.moon_nakshatra, chart.moon.nakshatra,
         "Dasha moon nakshatra ({}) should match chart ({})",
-        dasha.moon_nakshatra,
-        chart.moon.nakshatra
+        dasha.moon_nakshatra, chart.moon.nakshatra
     );
 
     // Nakshatra ruler should be Sun (Uttara Phalguni -> Sun)
@@ -463,16 +477,28 @@ fn fapi097_mock_api_client_returns_correct_profile() {
 fn fapi097_mock_responses_json_well_formed() {
     // Verify all JSON mock responses are valid
     let panchang_val = MockResponses::panchang_response();
-    assert!(panchang_val.is_object(), "Panchang response should be a JSON object");
+    assert!(
+        panchang_val.is_object(),
+        "Panchang response should be a JSON object"
+    );
 
     let dasha_val = MockResponses::vimshottari_response();
-    assert!(dasha_val.is_object(), "Dasha response should be a JSON object");
+    assert!(
+        dasha_val.is_object(),
+        "Dasha response should be a JSON object"
+    );
 
     let chart_val = MockResponses::birth_chart_response();
-    assert!(chart_val.is_object(), "Chart response should be a JSON object");
+    assert!(
+        chart_val.is_object(),
+        "Chart response should be a JSON object"
+    );
 
     let navamsa_val = MockResponses::navamsa_response();
-    assert!(navamsa_val.is_object(), "Navamsa response should be a JSON object");
+    assert!(
+        navamsa_val.is_object(),
+        "Navamsa response should be a JSON object"
+    );
 
     // Verify string versions are non-empty
     assert!(!MockResponses::panchang_json().is_empty());
@@ -536,8 +562,10 @@ fn fapi097_complete_shesh_profile_report() {
     println!("\n========================================");
     println!("  FAPI-097: SHESH PROFILE VALIDATION");
     println!("========================================");
-    println!("  Birth: {}-{:02}-{:02} {:02}:{:02}:{:02} IST",
-        SHESH_YEAR, SHESH_MONTH, SHESH_DAY, SHESH_HOUR, SHESH_MINUTE, SHESH_SECOND);
+    println!(
+        "  Birth: {}-{:02}-{:02} {:02}:{:02}:{:02} IST",
+        SHESH_YEAR, SHESH_MONTH, SHESH_DAY, SHESH_HOUR, SHESH_MINUTE, SHESH_SECOND
+    );
     println!("  Location: Bangalore ({}, {})", SHESH_LAT, SHESH_LNG);
     println!("  Timezone: IST (UTC+{:.1})", SHESH_TZONE);
     println!("----------------------------------------");
@@ -550,11 +578,32 @@ fn fapi097_complete_shesh_profile_report() {
     let start_ok = dasha.mahadashas[0].start_date == EXPECTED_SUN_MD_START;
 
     println!("  PROFILE ATTRIBUTES:");
-    println!("    Ascendant:    {} - {}", chart.ascendant.sign.as_str(), if asc_ok { "EXACT MATCH" } else { "MISMATCH" });
-    println!("    Moon Sign:    {} - {}", chart.moon.sign.as_str(), if moon_ok { "EXACT MATCH" } else { "MISMATCH" });
-    println!("    Nakshatra:    {} pada {} - {}", chart.moon.nakshatra, chart.moon.pada, if nak_ok { "EXACT MATCH" } else { "MISMATCH" });
-    println!("    Birth Dasha:  {} - {}", dasha.balance.planet.as_str(), if dasha_ok { "EXACT MATCH" } else { "MISMATCH" });
-    println!("    MD Start:     {} - {}", dasha.mahadashas[0].start_date, if start_ok { "EXACT MATCH" } else { "MISMATCH" });
+    println!(
+        "    Ascendant:    {} - {}",
+        chart.ascendant.sign.as_str(),
+        if asc_ok { "EXACT MATCH" } else { "MISMATCH" }
+    );
+    println!(
+        "    Moon Sign:    {} - {}",
+        chart.moon.sign.as_str(),
+        if moon_ok { "EXACT MATCH" } else { "MISMATCH" }
+    );
+    println!(
+        "    Nakshatra:    {} pada {} - {}",
+        chart.moon.nakshatra,
+        chart.moon.pada,
+        if nak_ok { "EXACT MATCH" } else { "MISMATCH" }
+    );
+    println!(
+        "    Birth Dasha:  {} - {}",
+        dasha.balance.planet.as_str(),
+        if dasha_ok { "EXACT MATCH" } else { "MISMATCH" }
+    );
+    println!(
+        "    MD Start:     {} - {}",
+        dasha.mahadashas[0].start_date,
+        if start_ok { "EXACT MATCH" } else { "MISMATCH" }
+    );
 
     println!("----------------------------------------");
     println!("  PLANETARY DIGNITIES:");
@@ -579,8 +628,14 @@ fn fapi097_complete_shesh_profile_report() {
             dignity = "neutral".to_string();
         }
 
-        println!("    {}: {} {:.1} deg (house {}) [{}]",
-            planet.name, planet.sign.as_str(), planet.degree, planet.house, dignity);
+        println!(
+            "    {}: {} {:.1} deg (house {}) [{}]",
+            planet.name,
+            planet.sign.as_str(),
+            planet.degree,
+            planet.house,
+            dignity
+        );
     }
 
     println!("----------------------------------------");
@@ -592,7 +647,10 @@ fn fapi097_complete_shesh_profile_report() {
 
     let cross_ok = panchang.nakshatra.name() == chart.moon.nakshatra
         && chart.moon.nakshatra == dasha.moon_nakshatra;
-    println!("    Cross-consistency: {}", if cross_ok { "PASS" } else { "FAIL" });
+    println!(
+        "    Cross-consistency: {}",
+        if cross_ok { "PASS" } else { "FAIL" }
+    );
 
     println!("========================================");
     let all_ok = asc_ok && moon_ok && nak_ok && dasha_ok && start_ok && cross_ok;

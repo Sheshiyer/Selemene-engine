@@ -119,14 +119,11 @@ impl ConsciousnessEngine for FaceReadingEngine {
         let start = Instant::now();
 
         // Extract optional seed for reproducibility
-        let seed = input
-            .options
-            .get("seed")
-            .and_then(|v| v.as_u64());
+        let seed = input.options.get("seed").and_then(|v| v.as_u64());
 
         // For future implementation: check for image data
-        let _has_image = input.options.contains_key("image_data")
-            || input.options.contains_key("image_url");
+        let _has_image =
+            input.options.contains_key("image_data") || input.options.contains_key("image_url");
 
         // Generate mock analysis (in future, this would process actual image)
         let analysis = generate_mock_analysis(seed);
@@ -207,7 +204,9 @@ impl ConsciousnessEngine for FaceReadingEngine {
 
         // Check traditions are listed
         if output.result.get("traditions").is_none() {
-            messages.push("Missing 'traditions' field - should list face reading traditions".to_string());
+            messages.push(
+                "Missing 'traditions' field - should list face reading traditions".to_string(),
+            );
             valid = false;
         }
 
@@ -232,7 +231,10 @@ impl ConsciousnessEngine for FaceReadingEngine {
             format!("face-reading:mock:seed:{}", seed)
         } else {
             // Without seed, each call is unique (timestamp-based)
-            format!("face-reading:mock:{}", Utc::now().timestamp_nanos_opt().unwrap_or(0))
+            format!(
+                "face-reading:mock:{}",
+                Utc::now().timestamp_nanos_opt().unwrap_or(0)
+            )
         }
     }
 }
@@ -240,8 +242,8 @@ impl ConsciousnessEngine for FaceReadingEngine {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::collections::HashMap;
     use noesis_core::Precision;
+    use std::collections::HashMap;
 
     fn create_test_input() -> EngineInput {
         EngineInput {
@@ -256,7 +258,7 @@ mod tests {
     fn create_seeded_input(seed: u64) -> EngineInput {
         let mut options = HashMap::new();
         options.insert("seed".to_string(), json!(seed));
-        
+
         EngineInput {
             birth_data: None,
             current_time: Utc::now(),
@@ -284,9 +286,10 @@ mod tests {
 
         let output = result.unwrap();
         assert_eq!(output.engine_id, "face-reading");
-        
+
         // Check it's marked as mock data
-        let is_mock = output.result
+        let is_mock = output
+            .result
             .get("analysis")
             .and_then(|a| a.get("is_mock_data"))
             .and_then(|v| v.as_bool());
@@ -322,13 +325,16 @@ mod tests {
 
         let output = engine.calculate(input).await.unwrap();
         assert!(!output.witness_prompt.is_empty());
-        assert!(output.witness_prompt.contains('?'), "Witness prompt should be a question");
+        assert!(
+            output.witness_prompt.contains('?'),
+            "Witness prompt should be a question"
+        );
     }
 
     #[tokio::test]
     async fn test_seeded_reproducibility() {
         let engine = FaceReadingEngine::new();
-        
+
         let output1 = engine.calculate(create_seeded_input(12345)).await.unwrap();
         let output2 = engine.calculate(create_seeded_input(12345)).await.unwrap();
 
@@ -346,14 +352,18 @@ mod tests {
         let output = engine.calculate(input).await.unwrap();
         let validation = engine.validate(&output).await.unwrap();
 
-        assert!(validation.valid, "Validation should pass: {:?}", validation.messages);
+        assert!(
+            validation.valid,
+            "Validation should pass: {:?}",
+            validation.messages
+        );
         assert_eq!(validation.confidence, 1.0);
     }
 
     #[tokio::test]
     async fn test_validation_fails_for_empty_prompt() {
         let engine = FaceReadingEngine::new();
-        
+
         let output = EngineOutput {
             engine_id: "face-reading".to_string(),
             result: json!({
@@ -418,12 +428,10 @@ mod tests {
 
         let output = engine.calculate(input).await.unwrap();
         let traditions = output.result.get("traditions").unwrap().as_array().unwrap();
-        
+
         assert!(traditions.len() >= 3);
-        let tradition_strs: Vec<&str> = traditions.iter()
-            .filter_map(|v| v.as_str())
-            .collect();
-        
+        let tradition_strs: Vec<&str> = traditions.iter().filter_map(|v| v.as_str()).collect();
+
         assert!(tradition_strs.iter().any(|t| t.contains("Mian Xiang")));
         assert!(tradition_strs.iter().any(|t| t.contains("Ayurvedic")));
         assert!(tradition_strs.iter().any(|t| t.contains("Physiognomy")));

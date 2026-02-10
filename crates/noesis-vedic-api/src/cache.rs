@@ -1,5 +1,5 @@
 //! Aggressive caching layer for FreeAstrologyAPI.com
-//! 
+//!
 //! Strategy: With 50 requests/day limit, we cache aggressively:
 //! - Birth charts: Forever (birth data never changes)
 //! - Panchang: 24 hours (same date/location)
@@ -11,11 +11,11 @@ use std::hash::Hash;
 use std::sync::Arc;
 use tokio::sync::RwLock;
 use tokio::time::{Duration, Instant};
-use tracing::{debug, info, warn};
+use tracing::{debug, info};
 
-use crate::panchang::Panchang;
-use crate::dasha::VimshottariDasha;
 use crate::chart::BirthChart;
+use crate::dasha::VimshottariDasha;
+use crate::panchang::Panchang;
 
 /// Cache entry with expiration
 #[derive(Debug, Clone)]
@@ -33,11 +33,11 @@ impl<T> CacheEntry<T> {
             access_count: 1,
         }
     }
-    
+
     fn is_expired(&self) -> bool {
         Instant::now() > self.expires_at
     }
-    
+
     fn touch(&mut self) {
         self.access_count += 1;
     }
@@ -50,12 +50,12 @@ pub struct ApiCache {
     panchang: Arc<RwLock<HashMap<String, CacheEntry<Panchang>>>>,
     dasha: Arc<RwLock<HashMap<String, CacheEntry<VimshottariDasha>>>>,
     birth_chart: Arc<RwLock<HashMap<String, CacheEntry<BirthChart>>>>,
-    
+
     // TTL configuration
     ttl_panchang: Duration,
-    ttl_dasha: Duration,  // 0 = infinite
-    ttl_birth_chart: Duration,  // 0 = infinite
-    
+    ttl_dasha: Duration,       // 0 = infinite
+    ttl_birth_chart: Duration, // 0 = infinite
+
     // Stats
     hits: Arc<RwLock<u64>>,
     misses: Arc<RwLock<u64>>,
@@ -65,12 +65,12 @@ impl ApiCache {
     /// Create cache with free plan optimized settings
     pub fn new() -> Self {
         Self::with_ttls(
-            Duration::from_secs(86400),  // 24h for Panchang
-            Duration::from_secs(0),      // Infinite for Dasha
-            Duration::from_secs(0),      // Infinite for Birth Chart
+            Duration::from_secs(86400), // 24h for Panchang
+            Duration::from_secs(0),     // Infinite for Dasha
+            Duration::from_secs(0),     // Infinite for Birth Chart
         )
     }
-    
+
     /// Create with custom TTLs
     pub fn with_ttls(
         panchang_ttl: Duration,
@@ -83,7 +83,7 @@ impl ApiCache {
             dasha_ttl.as_secs(),
             birth_chart_ttl.as_secs()
         );
-        
+
         Self {
             panchang: Arc::new(RwLock::new(HashMap::new())),
             dasha: Arc::new(RwLock::new(HashMap::new())),
@@ -95,22 +95,23 @@ impl ApiCache {
             misses: Arc::new(RwLock::new(0)),
         }
     }
-    
+
     /// Get Panchang from cache
     pub async fn get_panchang(&self, key: &str) -> Option<Panchang> {
         self.get(&self.panchang, &key.to_string()).await
     }
-    
+
     /// Store Panchang in cache
     pub async fn set_panchang(&self, key: &str, value: Panchang) {
-        self.set(&self.panchang, key.to_string(), value, self.ttl_panchang).await;
+        self.set(&self.panchang, key.to_string(), value, self.ttl_panchang)
+            .await;
     }
-    
+
     /// Get Dasha from cache
     pub async fn get_dasha(&self, key: &str) -> Option<VimshottariDasha> {
         self.get(&self.dasha, &key.to_string()).await
     }
-    
+
     /// Store Dasha in cache
     pub async fn set_dasha(&self, key: &str, value: VimshottariDasha) {
         let ttl = if self.ttl_dasha.as_secs() == 0 {
@@ -120,12 +121,12 @@ impl ApiCache {
         };
         self.set(&self.dasha, key.to_string(), value, ttl).await;
     }
-    
+
     /// Get Birth Chart from cache
     pub async fn get_birth_chart(&self, key: &str) -> Option<BirthChart> {
         self.get(&self.birth_chart, &key.to_string()).await
     }
-    
+
     /// Store Birth Chart in cache
     pub async fn set_birth_chart(&self, key: &str, value: BirthChart) {
         let ttl = if self.ttl_birth_chart.as_secs() == 0 {
@@ -133,21 +134,18 @@ impl ApiCache {
         } else {
             self.ttl_birth_chart
         };
-        self.set(&self.birth_chart, key.to_string(), value, ttl).await;
+        self.set(&self.birth_chart, key.to_string(), value, ttl)
+            .await;
     }
-    
+
     /// Generic get from cache
-    async fn get<K, V>(
-        &self,
-        cache: &Arc<RwLock<HashMap<K, CacheEntry<V>>>>,
-        key: &K,
-    ) -> Option<V>
+    async fn get<K, V>(&self, cache: &Arc<RwLock<HashMap<K, CacheEntry<V>>>>, key: &K) -> Option<V>
     where
         K: Eq + Hash,
         V: Clone,
     {
         let mut cache = cache.write().await;
-        
+
         if let Some(entry) = cache.get_mut(key) {
             if entry.is_expired() {
                 debug!("Cache entry expired, removing");
@@ -155,17 +153,17 @@ impl ApiCache {
                 self.increment_misses().await;
                 return None;
             }
-            
+
             entry.touch();
             self.increment_hits().await;
             debug!("Cache hit, access count: {}", entry.access_count);
             return Some(entry.value.clone());
         }
-        
+
         self.increment_misses().await;
         None
     }
-    
+
     /// Generic set in cache
     async fn set<K, V>(
         &self,
@@ -181,19 +179,19 @@ impl ApiCache {
         cache.insert(key, entry);
         debug!("Cached entry with TTL {:?}", ttl);
     }
-    
+
     /// Increment hit counter
     async fn increment_hits(&self) {
         let mut hits = self.hits.write().await;
         *hits += 1;
     }
-    
+
     /// Increment miss counter
     async fn increment_misses(&self) {
         let mut misses = self.misses.write().await;
         *misses += 1;
     }
-    
+
     /// Get cache statistics
     pub async fn stats(&self) -> CacheStats {
         let hits = *self.hits.read().await;
@@ -204,7 +202,7 @@ impl ApiCache {
         } else {
             0.0
         };
-        
+
         CacheStats {
             hits,
             misses,
@@ -215,7 +213,7 @@ impl ApiCache {
             birth_chart_entries: self.birth_chart.read().await.len(),
         }
     }
-    
+
     /// Clear all caches
     pub async fn clear(&self) {
         info!("Clearing all caches");
@@ -225,19 +223,19 @@ impl ApiCache {
         *self.hits.write().await = 0;
         *self.misses.write().await = 0;
     }
-    
+
     /// Clean expired entries
     pub async fn clean_expired(&self) {
         debug!("Cleaning expired cache entries");
-        
+
         let now = Instant::now();
-        
+
         // Clean Panchang
         {
             let mut cache = self.panchang.write().await;
             cache.retain(|_, entry| entry.expires_at > now);
         }
-        
+
         // Note: Dasha and Birth Chart have very long TTLs, rarely need cleaning
     }
 }
@@ -288,13 +286,7 @@ pub fn birth_key(
 }
 
 /// Generate cache key for daily Panchang
-pub fn panchang_key(
-    year: i32,
-    month: u32,
-    day: u32,
-    lat: f64,
-    lng: f64,
-) -> String {
+pub fn panchang_key(year: i32, month: u32, day: u32, lat: f64, lng: f64) -> String {
     format!(
         "panchang:{}-{:02}-{:02}:{:.4}:{:.4}",
         year, month, day, lat, lng
@@ -309,10 +301,10 @@ mod tests {
     async fn test_cache_hit_miss() {
         let cache = ApiCache::new();
         let key = "test_key";
-        
+
         // Miss
         assert!(cache.get_panchang(key).await.is_none());
-        
+
         // Set
         let panchang = Panchang {
             date: crate::panchang::DateInfo {
@@ -397,11 +389,11 @@ mod tests {
             ayanamsa: 24.0,
         };
         cache.set_panchang(key, panchang.clone()).await;
-        
+
         // Hit
         let result = cache.get_panchang(key).await;
         assert!(result.is_some());
-        
+
         // Check stats
         let stats = cache.stats().await;
         assert_eq!(stats.hits, 1);

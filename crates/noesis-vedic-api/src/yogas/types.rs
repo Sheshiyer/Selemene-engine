@@ -125,7 +125,7 @@ impl YogaAnalysis {
     /// Calculate total yoga score
     pub fn calculate_score(&mut self) {
         let mut score = 0.0;
-        
+
         for yoga in &self.yogas {
             let base = match yoga.category {
                 YogaCategory::RajYoga => 10.0,
@@ -135,17 +135,17 @@ impl YogaAnalysis {
                 YogaCategory::ArishtaYoga | YogaCategory::PapaYoga => -5.0,
                 _ => 3.0,
             };
-            
+
             let multiplier = match yoga.strength {
                 YogaStrength::Full => 1.0,
                 YogaStrength::Partial => 0.5,
                 YogaStrength::Weak => 0.25,
                 YogaStrength::Cancelled => 0.0,
             };
-            
+
             score += base * multiplier;
         }
-        
+
         self.total_yoga_score = score;
     }
 
@@ -154,19 +154,28 @@ impl YogaAnalysis {
         let raj_count = self.raj_yogas.len();
         let dhana_count = self.dhana_yogas.len();
         let mahapurusha_count = self.mahapurusha_yogas.len();
-        
+
         let mut parts = vec![];
-        
+
         if raj_count > 0 {
-            parts.push(format!("{} Raj Yoga(s) indicating success and authority", raj_count));
+            parts.push(format!(
+                "{} Raj Yoga(s) indicating success and authority",
+                raj_count
+            ));
         }
         if dhana_count > 0 {
-            parts.push(format!("{} Dhana Yoga(s) indicating wealth potential", dhana_count));
+            parts.push(format!(
+                "{} Dhana Yoga(s) indicating wealth potential",
+                dhana_count
+            ));
         }
         if mahapurusha_count > 0 {
-            parts.push(format!("{} Mahapurusha Yoga(s) indicating special qualities", mahapurusha_count));
+            parts.push(format!(
+                "{} Mahapurusha Yoga(s) indicating special qualities",
+                mahapurusha_count
+            ));
         }
-        
+
         self.summary = if parts.is_empty() {
             "No major yogas detected.".to_string()
         } else {
@@ -188,7 +197,7 @@ mod tests {
     #[test]
     fn test_yoga_analysis_add() {
         let mut analysis = YogaAnalysis::empty();
-        
+
         let yoga = DetectedYoga {
             name: "Gaja Kesari".to_string(),
             category: YogaCategory::RajYoga,
@@ -199,9 +208,9 @@ mod tests {
             results: "Fame and recognition".to_string(),
             activation_periods: vec!["Moon dasha".to_string()],
         };
-        
+
         analysis.add_yoga(yoga);
-        
+
         assert_eq!(analysis.yogas.len(), 1);
         assert_eq!(analysis.raj_yogas.len(), 1);
     }
@@ -209,7 +218,7 @@ mod tests {
     #[test]
     fn test_yoga_score_calculation() {
         let mut analysis = YogaAnalysis::empty();
-        
+
         analysis.add_yoga(DetectedYoga {
             name: "Test Raj".to_string(),
             category: YogaCategory::RajYoga,
@@ -220,7 +229,7 @@ mod tests {
             results: String::new(),
             activation_periods: vec![],
         });
-        
+
         analysis.calculate_score();
         assert_eq!(analysis.total_yoga_score, 10.0);
     }

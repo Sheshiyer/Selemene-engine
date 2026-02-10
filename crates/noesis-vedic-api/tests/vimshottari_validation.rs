@@ -1,7 +1,15 @@
-use noesis_vedic_api::dasha::{DashaLevel, DashaPeriod, DashaPlanet, DashaBalance, VimshottariDasha};
+use noesis_vedic_api::dasha::{
+    DashaBalance, DashaLevel, DashaPeriod, DashaPlanet, VimshottariDasha,
+};
 use noesis_vedic_api::vimshottari::query::{dasha_lord_by_date, dasha_period_by_date};
 
-fn period(planet: DashaPlanet, level: DashaLevel, start: &str, end: &str, subs: Option<Vec<DashaPeriod>>) -> DashaPeriod {
+fn period(
+    planet: DashaPlanet,
+    level: DashaLevel,
+    start: &str,
+    end: &str,
+    subs: Option<Vec<DashaPeriod>>,
+) -> DashaPeriod {
     DashaPeriod {
         planet,
         level,

@@ -1,10 +1,13 @@
 //! Choghadiya-based recommendations for Vedic clock
 
-use noesis_vedic_api::panchang::{ChoghadiyaTimings, ActivityCategory};
+use noesis_vedic_api::panchang::{ActivityCategory, ChoghadiyaTimings};
 
 use crate::models::ActivityRecommendation;
 
-pub fn recommendations_from_choghadiya(timings: &ChoghadiyaTimings, current_time: &str) -> Vec<ActivityRecommendation> {
+pub fn recommendations_from_choghadiya(
+    timings: &ChoghadiyaTimings,
+    current_time: &str,
+) -> Vec<ActivityRecommendation> {
     let mut recommendations = Vec::new();
 
     if let Some(current) = timings.get_current(current_time) {

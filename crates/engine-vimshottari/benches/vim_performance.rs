@@ -3,21 +3,15 @@
 //! W1-S7-08: Criterion benchmarks for Vimshottari engine subsystems.
 //! Targets: Full 120y timeline <200ms, 729 pratyantardashas <100ms, current period <5ms.
 
-use criterion::{black_box, criterion_group, criterion_main, Criterion, BenchmarkId};
-use engine_vimshottari::{
-    VimshottariEngine, ConsciousnessEngine, EngineInput,
-    calculate_birth_nakshatra,
-    calculate_dasha_balance,
-    calculate_mahadashas,
-    calculate_antardashas,
-    calculate_complete_timeline,
-    get_nakshatra_from_longitude,
-    get_nakshatra,
-    enrich_period_with_qualities,
-    VedicPlanet, Mahadasha,
-};
-use engine_vimshottari::calculator::{find_current_period, calculate_upcoming_transitions};
 use chrono::{Duration, TimeZone, Utc};
+use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion};
+use engine_vimshottari::calculator::{calculate_upcoming_transitions, find_current_period};
+use engine_vimshottari::{
+    calculate_antardashas, calculate_birth_nakshatra, calculate_complete_timeline,
+    calculate_dasha_balance, calculate_mahadashas, enrich_period_with_qualities, get_nakshatra,
+    get_nakshatra_from_longitude, ConsciousnessEngine, EngineInput, Mahadasha, VedicPlanet,
+    VimshottariEngine,
+};
 use noesis_core::Precision;
 use serde_json::json;
 use std::collections::HashMap;
@@ -60,9 +54,7 @@ fn bench_full_120year_timeline(c: &mut Criterion) {
 
 fn bench_nakshatra_from_longitude(c: &mut Criterion) {
     c.bench_function("vim_nakshatra_from_longitude", |b| {
-        b.iter(|| {
-            black_box(get_nakshatra_from_longitude(black_box(125.0)))
-        })
+        b.iter(|| black_box(get_nakshatra_from_longitude(black_box(125.0))))
     });
 }
 
@@ -70,9 +62,7 @@ fn bench_nakshatra_calculation_ephe(c: &mut Criterion) {
     let birth_time = Utc.with_ymd_and_hms(1985, 6, 15, 14, 30, 0).unwrap();
 
     c.bench_function("vim_nakshatra_from_ephemeris", |b| {
-        b.iter(|| {
-            black_box(calculate_birth_nakshatra(black_box(birth_time), ""))
-        })
+        b.iter(|| black_box(calculate_birth_nakshatra(black_box(birth_time), "")))
     });
 }
 
@@ -81,7 +71,10 @@ fn bench_dasha_balance(c: &mut Criterion) {
 
     c.bench_function("vim_dasha_balance", |b| {
         b.iter(|| {
-            black_box(calculate_dasha_balance(black_box(125.0), black_box(nakshatra)))
+            black_box(calculate_dasha_balance(
+                black_box(125.0),
+                black_box(nakshatra),
+            ))
         })
     });
 }
@@ -121,9 +114,7 @@ fn bench_729_pratyantardashas(c: &mut Criterion) {
     let mahadashas = calculate_mahadashas(birth, VedicPlanet::Ketu, 4.375);
 
     c.bench_function("vim_729_pratyantardashas", |b| {
-        b.iter(|| {
-            black_box(calculate_complete_timeline(black_box(mahadashas.clone())))
-        })
+        b.iter(|| black_box(calculate_complete_timeline(black_box(mahadashas.clone()))))
     });
 }
 
@@ -134,7 +125,10 @@ fn bench_current_period_detection(c: &mut Criterion) {
 
     c.bench_function("vim_current_period_search", |b| {
         b.iter(|| {
-            black_box(find_current_period(black_box(&complete), black_box(query_time)))
+            black_box(find_current_period(
+                black_box(&complete),
+                black_box(query_time),
+            ))
         })
     });
 }
@@ -150,11 +144,7 @@ fn bench_current_period_positions(c: &mut Criterion) {
         group.bench_with_input(
             BenchmarkId::from_parameter(format!("{}y", years_offset)),
             &query_time,
-            |b, &qt| {
-                b.iter(|| {
-                    black_box(find_current_period(black_box(&complete), black_box(qt)))
-                })
-            },
+            |b, &qt| b.iter(|| black_box(find_current_period(black_box(&complete), black_box(qt)))),
         );
     }
     group.finish();
@@ -203,18 +193,12 @@ fn bench_different_nakshatras(c: &mut Criterion) {
     let birth = Utc.with_ymd_and_hms(1985, 6, 15, 14, 30, 0).unwrap();
 
     for (name, longitude) in [("Ashwini", 5.0), ("Magha", 125.0), ("Mula", 245.0)] {
-        group.bench_with_input(
-            BenchmarkId::from_parameter(name),
-            &longitude,
-            |b, &lng| {
-                let nak = get_nakshatra_from_longitude(lng);
-                let balance = calculate_dasha_balance(lng, nak);
-                let mahadashas = calculate_mahadashas(birth, nak.ruling_planet, balance);
-                b.iter(|| {
-                    black_box(calculate_complete_timeline(black_box(mahadashas.clone())))
-                })
-            },
-        );
+        group.bench_with_input(BenchmarkId::from_parameter(name), &longitude, |b, &lng| {
+            let nak = get_nakshatra_from_longitude(lng);
+            let balance = calculate_dasha_balance(lng, nak);
+            let mahadashas = calculate_mahadashas(birth, nak.ruling_planet, balance);
+            b.iter(|| black_box(calculate_complete_timeline(black_box(mahadashas.clone()))))
+        });
     }
     group.finish();
 }

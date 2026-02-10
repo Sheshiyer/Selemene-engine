@@ -28,23 +28,34 @@
 pub mod workflow;
 
 pub use noesis_core::{
-    ConsciousnessEngine, EngineError, EngineInput, EngineOutput,
-    WorkflowDefinition, WorkflowResult,
+    ConsciousnessEngine, EngineError, EngineInput, EngineOutput, WorkflowDefinition, WorkflowResult,
 };
 
 // Re-export workflow types
-pub use workflow::{
-    EngineCategory, FullSpectrumConfig, FullSpectrumResult, FullSpectrumWorkflow,
-    WorkflowCache, WorkflowCacheKey, WorkflowTtl,
-    // New workflow infrastructure
-    WorkflowExecutor, WorkflowRegistry, WorkflowOutput,
-    Theme, ExtAlignment as Alignment, ExtTension as Tension,
-    WitnessPrompt, InquiryType, TemporalWindow, SynthesisType,
-};
 pub use workflow::models::SynthesisResult;
 pub use workflow::synthesis::{
-    CrossEngineTheme, FullSpectrumSynthesizer, ThemeCategory,
-    BirthBlueprintSynthesizer, DailyPracticeSynthesizer, Synthesizer,
+    BirthBlueprintSynthesizer, CrossEngineTheme, DailyPracticeSynthesizer, FullSpectrumSynthesizer,
+    Synthesizer, ThemeCategory,
+};
+pub use workflow::{
+    EngineCategory,
+    ExtAlignment as Alignment,
+    ExtTension as Tension,
+    FullSpectrumConfig,
+    FullSpectrumResult,
+    FullSpectrumWorkflow,
+    InquiryType,
+    SynthesisType,
+    TemporalWindow,
+    Theme,
+    WitnessPrompt,
+    WorkflowCache,
+    WorkflowCacheKey,
+    // New workflow infrastructure
+    WorkflowExecutor,
+    WorkflowOutput,
+    WorkflowRegistry,
+    WorkflowTtl,
 };
 
 // Re-export bridge types for convenience
@@ -58,7 +69,7 @@ use futures::future::join_all;
 use std::collections::HashMap;
 use std::sync::Arc;
 use std::time::Instant;
-use tracing::{info, warn, instrument};
+use tracing::{info, instrument, warn};
 
 // ---------------------------------------------------------------------------
 // EngineRegistry
@@ -286,10 +297,7 @@ impl WorkflowOrchestrator {
                         None => {
                             warn!(engine_id = %eid_owned, "Engine not found in registry, skipping");
                             let err = EngineError::EngineNotFound(eid_owned.clone());
-                            return (
-                                eid_owned,
-                                Err(err),
-                            );
+                            return (eid_owned, Err(err));
                         }
                     };
 
@@ -395,39 +403,25 @@ impl WorkflowOrchestrator {
                 id: "daily-practice".into(),
                 name: "Daily Practice".into(),
                 description: "Daily rhythm and awareness tools".into(),
-                engine_ids: vec![
-                    "panchanga".into(),
-                    "vedic-clock".into(),
-                    "biorhythm".into(),
-                ],
+                engine_ids: vec!["panchanga".into(), "vedic-clock".into(), "biorhythm".into()],
             },
             WorkflowDefinition {
                 id: "decision-support".into(),
                 name: "Decision Support".into(),
                 description: "Multi-system decision mirrors".into(),
-                engine_ids: vec![
-                    "tarot".into(),
-                    "i-ching".into(),
-                    "human-design".into(),
-                ],
+                engine_ids: vec!["tarot".into(), "i-ching".into(), "human-design".into()],
             },
             WorkflowDefinition {
                 id: "self-inquiry".into(),
                 name: "Self-Inquiry".into(),
                 description: "Deep self-consciousness exploration".into(),
-                engine_ids: vec![
-                    "gene-keys".into(),
-                    "enneagram".into(),
-                ],
+                engine_ids: vec!["gene-keys".into(), "enneagram".into()],
             },
             WorkflowDefinition {
                 id: "creative-expression".into(),
                 name: "Creative Expression".into(),
                 description: "Creative and aesthetic exploration".into(),
-                engine_ids: vec![
-                    "sigil-forge".into(),
-                    "sacred-geometry".into(),
-                ],
+                engine_ids: vec!["sigil-forge".into(), "sacred-geometry".into()],
             },
             WorkflowDefinition {
                 id: "full-spectrum".into(),
@@ -452,16 +446,13 @@ impl WorkflowOrchestrator {
             },
         ];
 
-        definitions
-            .into_iter()
-            .map(|w| (w.id.clone(), w))
-            .collect()
+        definitions.into_iter().map(|w| (w.id.clone(), w)).collect()
     }
 
     // -- Health check -----------------------------------------------------
 
     /// Readiness check for probe endpoint
-    /// 
+    ///
     /// TODO: Implement full readiness check that verifies:
     /// - Engine registry has at least one engine loaded
     /// - All critical engines are initialized and responsive
@@ -666,7 +657,10 @@ mod tests {
         let orchestrator = WorkflowOrchestrator::new();
         let wf = orchestrator.get_workflow("birth-blueprint").unwrap();
         assert_eq!(wf.name, "Birth Blueprint");
-        assert_eq!(wf.engine_ids, vec!["numerology", "human-design", "gene-keys"]);
+        assert_eq!(
+            wf.engine_ids,
+            vec!["numerology", "human-design", "gene-keys"]
+        );
     }
 
     #[test]

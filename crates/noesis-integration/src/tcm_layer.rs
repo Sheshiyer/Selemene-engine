@@ -36,11 +36,11 @@ pub struct TCMAnalysis {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum TCMElement {
-    Wood,   // Growth, expansion (Jupiter)
-    Fire,   // Transformation, passion (Sun, Mars)
-    Earth,  // Nurturing, stability (Saturn)
-    Metal,  // Structure, clarity (Venus)
-    Water,  // Flow, wisdom (Moon, Mercury)
+    Wood,  // Growth, expansion (Jupiter)
+    Fire,  // Transformation, passion (Sun, Mars)
+    Earth, // Nurturing, stability (Saturn)
+    Metal, // Structure, clarity (Venus)
+    Water, // Flow, wisdom (Moon, Mercury)
 }
 
 impl TCMElement {
@@ -54,7 +54,7 @@ impl TCMElement {
             TCMElement::Water => vec!["Moon", "Mercury"],
         }
     }
-    
+
     /// Get the season associated with this element
     pub fn season(&self) -> &'static str {
         match self {
@@ -65,7 +65,7 @@ impl TCMElement {
             TCMElement::Water => "Winter",
         }
     }
-    
+
     /// Get the direction
     pub fn direction(&self) -> &'static str {
         match self {
@@ -76,7 +76,7 @@ impl TCMElement {
             TCMElement::Water => "North",
         }
     }
-    
+
     /// Get the color
     pub fn color(&self) -> &'static str {
         match self {
@@ -87,7 +87,7 @@ impl TCMElement {
             TCMElement::Water => "Black/Blue",
         }
     }
-    
+
     /// Get the emotion
     pub fn emotion(&self) -> &'static str {
         match self {
@@ -98,7 +98,7 @@ impl TCMElement {
             TCMElement::Water => "Fear/Wisdom",
         }
     }
-    
+
     /// Get taste
     pub fn taste(&self) -> &'static str {
         match self {
@@ -109,7 +109,7 @@ impl TCMElement {
             TCMElement::Water => "Salty",
         }
     }
-    
+
     /// Get element name as string
     pub fn as_str(&self) -> &'static str {
         match self {
@@ -120,7 +120,7 @@ impl TCMElement {
             TCMElement::Water => "Water",
         }
     }
-    
+
     /// Get generating element (mother)
     pub fn generating_element(&self) -> TCMElement {
         match self {
@@ -131,16 +131,16 @@ impl TCMElement {
             TCMElement::Water => TCMElement::Metal,
         }
     }
-    
+
     /// Get the element that controls this element (Ke cycle parent/grandmother)
     /// Wood is controlled by Metal, Fire by Water, Earth by Wood, Metal by Fire, Water by Earth
     pub fn controlling_element(&self) -> TCMElement {
         match self {
-            TCMElement::Wood => TCMElement::Metal,    // Metal controls Wood
-            TCMElement::Fire => TCMElement::Water,    // Water controls Fire
-            TCMElement::Earth => TCMElement::Wood,    // Wood controls Earth
-            TCMElement::Metal => TCMElement::Fire,    // Fire controls Metal
-            TCMElement::Water => TCMElement::Earth,   // Earth controls Water
+            TCMElement::Wood => TCMElement::Metal,  // Metal controls Wood
+            TCMElement::Fire => TCMElement::Water,  // Water controls Fire
+            TCMElement::Earth => TCMElement::Wood,  // Wood controls Earth
+            TCMElement::Metal => TCMElement::Fire,  // Fire controls Metal
+            TCMElement::Water => TCMElement::Earth, // Earth controls Water
         }
     }
 
@@ -179,7 +179,7 @@ pub enum TCMOrgan {
     Lungs,
     Kidneys,
     Pericardium,
-    
+
     // Yang organs (Fu) - hollow, transform substances
     SmallIntestine,
     GallBladder,
@@ -194,48 +194,52 @@ impl TCMOrgan {
     pub fn element(&self) -> TCMElement {
         match self {
             TCMOrgan::Liver | TCMOrgan::GallBladder => TCMElement::Wood,
-            TCMOrgan::Heart | TCMOrgan::SmallIntestine | TCMOrgan::Pericardium | TCMOrgan::TripleBurner => TCMElement::Fire,
+            TCMOrgan::Heart
+            | TCMOrgan::SmallIntestine
+            | TCMOrgan::Pericardium
+            | TCMOrgan::TripleBurner => TCMElement::Fire,
             TCMOrgan::Spleen | TCMOrgan::Stomach => TCMElement::Earth,
             TCMOrgan::Lungs | TCMOrgan::LargeIntestine => TCMElement::Metal,
             TCMOrgan::Kidneys | TCMOrgan::Bladder => TCMElement::Water,
         }
     }
-    
+
     /// Check if this is a Yin organ
     pub fn is_yin(&self) -> bool {
-        matches!(self,
-            TCMOrgan::Heart |
-            TCMOrgan::Liver |
-            TCMOrgan::Spleen |
-            TCMOrgan::Lungs |
-            TCMOrgan::Kidneys |
-            TCMOrgan::Pericardium
+        matches!(
+            self,
+            TCMOrgan::Heart
+                | TCMOrgan::Liver
+                | TCMOrgan::Spleen
+                | TCMOrgan::Lungs
+                | TCMOrgan::Kidneys
+                | TCMOrgan::Pericardium
         )
     }
-    
+
     /// Check if this is a Yang organ
     pub fn is_yang(&self) -> bool {
         !self.is_yin()
     }
-    
+
     /// Get the meridian hours (when this organ is most active)
     pub fn peak_hours(&self) -> (u8, u8) {
         match self {
-            TCMOrgan::Lungs => (3, 5),          // 3-5 AM
-            TCMOrgan::LargeIntestine => (5, 7), // 5-7 AM
-            TCMOrgan::Stomach => (7, 9),        // 7-9 AM
-            TCMOrgan::Spleen => (9, 11),        // 9-11 AM
-            TCMOrgan::Heart => (11, 13),        // 11 AM-1 PM
+            TCMOrgan::Lungs => (3, 5),            // 3-5 AM
+            TCMOrgan::LargeIntestine => (5, 7),   // 5-7 AM
+            TCMOrgan::Stomach => (7, 9),          // 7-9 AM
+            TCMOrgan::Spleen => (9, 11),          // 9-11 AM
+            TCMOrgan::Heart => (11, 13),          // 11 AM-1 PM
             TCMOrgan::SmallIntestine => (13, 15), // 1-3 PM
-            TCMOrgan::Bladder => (15, 17),      // 3-5 PM
-            TCMOrgan::Kidneys => (17, 19),      // 5-7 PM
-            TCMOrgan::Pericardium => (19, 21),  // 7-9 PM
-            TCMOrgan::TripleBurner => (21, 23), // 9-11 PM
-            TCMOrgan::GallBladder => (23, 1),   // 11 PM-1 AM
-            TCMOrgan::Liver => (1, 3),          // 1-3 AM
+            TCMOrgan::Bladder => (15, 17),        // 3-5 PM
+            TCMOrgan::Kidneys => (17, 19),        // 5-7 PM
+            TCMOrgan::Pericardium => (19, 21),    // 7-9 PM
+            TCMOrgan::TripleBurner => (21, 23),   // 9-11 PM
+            TCMOrgan::GallBladder => (23, 1),     // 11 PM-1 AM
+            TCMOrgan::Liver => (1, 3),            // 1-3 AM
         }
     }
-    
+
     /// Get paired organ (Yin-Yang pair)
     pub fn paired_organ(&self) -> TCMOrgan {
         match self {
@@ -278,14 +282,14 @@ pub struct OptimalTimeWindow {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum ConstitutionalType {
-    Balanced,           // Neutral
-    QiDeficient,        // Earth/Metal weakness
-    YangDeficient,      // Fire/Kidney yang weakness
-    YinDeficient,       // Water/Kidney yin weakness
-    PhlegmDampness,     // Earth/Spleen excess
-    DampHeat,           // Earth/Liver damp heat
-    BloodStasis,        // Heart/Liver stagnation
-    QiStagnation,       // Liver Wood stagnation
+    Balanced,            // Neutral
+    QiDeficient,         // Earth/Metal weakness
+    YangDeficient,       // Fire/Kidney yang weakness
+    YinDeficient,        // Water/Kidney yin weakness
+    PhlegmDampness,      // Earth/Spleen excess
+    DampHeat,            // Earth/Liver damp heat
+    BloodStasis,         // Heart/Liver stagnation
+    QiStagnation,        // Liver Wood stagnation
     SpecialConstitution, // Unique pattern
 }
 
@@ -328,24 +332,39 @@ impl TCMAnalysis {
         // Parse birth date to determine seasonal influence
         let date = profile.parse_date()?;
         let month = date.month();
-        
+
         // Determine dominant element based on birth month and other factors
         let (dominant, secondary) = Self::calculate_elements(month);
-        
+
         // Calculate element balance
         let mut element_balance = HashMap::new();
-        element_balance.insert(TCMElement::Wood, Self::element_score(month, TCMElement::Wood));
-        element_balance.insert(TCMElement::Fire, Self::element_score(month, TCMElement::Fire));
-        element_balance.insert(TCMElement::Earth, Self::element_score(month, TCMElement::Earth));
-        element_balance.insert(TCMElement::Metal, Self::element_score(month, TCMElement::Metal));
-        element_balance.insert(TCMElement::Water, Self::element_score(month, TCMElement::Water));
-        
+        element_balance.insert(
+            TCMElement::Wood,
+            Self::element_score(month, TCMElement::Wood),
+        );
+        element_balance.insert(
+            TCMElement::Fire,
+            Self::element_score(month, TCMElement::Fire),
+        );
+        element_balance.insert(
+            TCMElement::Earth,
+            Self::element_score(month, TCMElement::Earth),
+        );
+        element_balance.insert(
+            TCMElement::Metal,
+            Self::element_score(month, TCMElement::Metal),
+        );
+        element_balance.insert(
+            TCMElement::Water,
+            Self::element_score(month, TCMElement::Water),
+        );
+
         // Determine vulnerable and strong organs
         let (vulnerable, strong) = Self::determine_organ_balance(&dominant, &element_balance);
-        
+
         // Generate recommendations
         let recommendations = Self::generate_recommendations(&dominant, &vulnerable);
-        
+
         Ok(TCMAnalysis {
             dominant_element: dominant,
             secondary_element: secondary,
@@ -358,7 +377,7 @@ impl TCMAnalysis {
             recommendations,
         })
     }
-    
+
     /// Calculate dominant and secondary elements
     ///
     /// Seasonal boundaries aligned with calculate_seasonal_influence():
@@ -366,18 +385,18 @@ impl TCMAnalysis {
     /// August is late summer but still Fire-dominant with Earth as secondary influence.
     fn calculate_elements(birth_month: u32) -> (TCMElement, TCMElement) {
         match birth_month {
-            2 | 3 | 4 => (TCMElement::Wood, TCMElement::Fire),      // Spring
-            5 | 6 | 7 | 8 => (TCMElement::Fire, TCMElement::Earth), // Summer (including late summer)
-            9 | 10 | 11 => (TCMElement::Metal, TCMElement::Water),   // Autumn
-            12 | 1 => (TCMElement::Water, TCMElement::Wood),         // Winter
+            2..=4 => (TCMElement::Wood, TCMElement::Fire), // Spring
+            5..=8 => (TCMElement::Fire, TCMElement::Earth), // Summer (including late summer)
+            9..=11 => (TCMElement::Metal, TCMElement::Water), // Autumn
+            12 | 1 => (TCMElement::Water, TCMElement::Wood), // Winter
             _ => (TCMElement::Earth, TCMElement::Metal),
         }
     }
-    
+
     /// Calculate element score based on birth month
     fn element_score(birth_month: u32, element: TCMElement) -> f64 {
         let dominant = Self::calculate_elements(birth_month);
-        
+
         if element == dominant.0 {
             0.8
         } else if element == dominant.1 {
@@ -388,7 +407,7 @@ impl TCMAnalysis {
             0.5
         }
     }
-    
+
     /// Determine organ balance
     fn determine_organ_balance(
         dominant: &TCMElement,
@@ -396,7 +415,7 @@ impl TCMAnalysis {
     ) -> (Vec<TCMOrgan>, Vec<TCMOrgan>) {
         let mut vulnerable = Vec::new();
         let mut strong = Vec::new();
-        
+
         // Organs of the dominant element are strong.
         // Wu Xing Ke (controlling) cycle: dominant element over-controls its target,
         // making those organs vulnerable.
@@ -405,38 +424,38 @@ impl TCMAnalysis {
             TCMElement::Wood => {
                 strong.push(TCMOrgan::Liver);
                 strong.push(TCMOrgan::GallBladder);
-                vulnerable.push(TCMOrgan::Spleen);  // Wood over-controls Earth
+                vulnerable.push(TCMOrgan::Spleen); // Wood over-controls Earth
                 vulnerable.push(TCMOrgan::Stomach);
             }
             TCMElement::Fire => {
                 strong.push(TCMOrgan::Heart);
                 strong.push(TCMOrgan::SmallIntestine);
-                vulnerable.push(TCMOrgan::Lungs);          // Fire over-controls Metal
+                vulnerable.push(TCMOrgan::Lungs); // Fire over-controls Metal
                 vulnerable.push(TCMOrgan::LargeIntestine);
             }
             TCMElement::Earth => {
                 strong.push(TCMOrgan::Spleen);
                 strong.push(TCMOrgan::Stomach);
-                vulnerable.push(TCMOrgan::Kidneys);  // Earth over-controls Water
+                vulnerable.push(TCMOrgan::Kidneys); // Earth over-controls Water
                 vulnerable.push(TCMOrgan::Bladder);
             }
             TCMElement::Metal => {
                 strong.push(TCMOrgan::Lungs);
                 strong.push(TCMOrgan::LargeIntestine);
-                vulnerable.push(TCMOrgan::Liver);      // Metal over-controls Wood
+                vulnerable.push(TCMOrgan::Liver); // Metal over-controls Wood
                 vulnerable.push(TCMOrgan::GallBladder);
             }
             TCMElement::Water => {
                 strong.push(TCMOrgan::Kidneys);
                 strong.push(TCMOrgan::Bladder);
-                vulnerable.push(TCMOrgan::Heart);          // Water over-controls Fire
+                vulnerable.push(TCMOrgan::Heart); // Water over-controls Fire
                 vulnerable.push(TCMOrgan::SmallIntestine);
             }
         }
-        
+
         (vulnerable, strong)
     }
-    
+
     /// Calculate seasonal influence
     fn calculate_seasonal_influence(month: u32) -> SeasonalInfluence {
         let (season, element) = match month {
@@ -447,7 +466,7 @@ impl TCMAnalysis {
             12 | 1 | 2 => ("Winter", TCMElement::Water),
             _ => ("Unknown", TCMElement::Earth),
         };
-        
+
         let vulnerable = match element {
             TCMElement::Wood => vec![TCMOrgan::Liver, TCMOrgan::GallBladder],
             TCMElement::Fire => vec![TCMOrgan::Heart, TCMOrgan::SmallIntestine],
@@ -455,12 +474,12 @@ impl TCMAnalysis {
             TCMElement::Metal => vec![TCMOrgan::Lungs, TCMOrgan::LargeIntestine],
             TCMElement::Water => vec![TCMOrgan::Kidneys, TCMOrgan::Bladder],
         };
-        
+
         let recommendations = vec![
             format!("Focus on {} element foods and activities", element.as_str()),
             format!("Support your {} organs", element.as_str()),
         ];
-        
+
         SeasonalInfluence {
             current_season: season.to_string(),
             dominant_element: element,
@@ -468,11 +487,11 @@ impl TCMAnalysis {
             recommendations,
         }
     }
-    
+
     /// Calculate optimal times based on dominant element
     fn calculate_optimal_times(dominant: &TCMElement) -> Vec<OptimalTimeWindow> {
         let mut times = Vec::new();
-        
+
         // Add time windows for the dominant element's organs
         match dominant {
             TCMElement::Wood => {
@@ -499,7 +518,8 @@ impl TCMAnalysis {
                     start_hour: 7,
                     end_hour: 11,
                     associated_organ: TCMOrgan::Stomach,
-                    description: "Stomach and Spleen time - best for eating and studying".to_string(),
+                    description: "Stomach and Spleen time - best for eating and studying"
+                        .to_string(),
                 });
             }
             TCMElement::Metal => {
@@ -508,7 +528,8 @@ impl TCMAnalysis {
                     start_hour: 3,
                     end_hour: 7,
                     associated_organ: TCMOrgan::Lungs,
-                    description: "Lung time - best for breathing exercises and organization".to_string(),
+                    description: "Lung time - best for breathing exercises and organization"
+                        .to_string(),
                 });
             }
             TCMElement::Water => {
@@ -521,10 +542,10 @@ impl TCMAnalysis {
                 });
             }
         }
-        
+
         times
     }
-    
+
     /// Determine constitutional type
     fn determine_constitution(
         dominant: &TCMElement,
@@ -569,14 +590,14 @@ impl TCMAnalysis {
             }
         }
     }
-    
+
     /// Generate recommendations based on TCM analysis
     fn generate_recommendations(
         dominant: &TCMElement,
         vulnerable: &[TCMOrgan],
     ) -> Vec<TCMRecommendation> {
         let mut recommendations = Vec::new();
-        
+
         // Diet recommendations
         recommendations.push(TCMRecommendation {
             category: RecommendationCategory::Diet,
@@ -584,7 +605,7 @@ impl TCMAnalysis {
             priority: Priority::High,
             element: Some(*dominant),
         });
-        
+
         // Exercise recommendations
         let exercise_rec = match dominant {
             TCMElement::Wood => "Gentle stretching and outdoor activities",
@@ -599,17 +620,22 @@ impl TCMAnalysis {
             priority: Priority::Medium,
             element: Some(*dominant),
         });
-        
+
         // Sleep recommendations
-        if vulnerable.iter().any(|o| *o == TCMOrgan::Kidneys || *o == TCMOrgan::Liver) {
+        if vulnerable
+            .iter()
+            .any(|o| *o == TCMOrgan::Kidneys || *o == TCMOrgan::Liver)
+        {
             recommendations.push(TCMRecommendation {
                 category: RecommendationCategory::Sleep,
-                description: "Prioritize sleep before 11 PM to support Kidney and Liver restoration".to_string(),
+                description:
+                    "Prioritize sleep before 11 PM to support Kidney and Liver restoration"
+                        .to_string(),
                 priority: Priority::High,
                 element: Some(TCMElement::Water),
             });
         }
-        
+
         recommendations
     }
 }
@@ -622,10 +648,10 @@ mod tests {
     fn test_element_relationships() {
         // Wood generates Fire
         assert_eq!(TCMElement::Wood.generated_element(), TCMElement::Fire);
-        
+
         // Fire is controlled by Water
         assert_eq!(TCMElement::Fire.controlling_element(), TCMElement::Water);
-        
+
         // Water is generated by Metal
         assert_eq!(TCMElement::Metal.generated_element(), TCMElement::Water);
     }
@@ -644,7 +670,7 @@ mod tests {
         let (start, end) = TCMOrgan::Liver.peak_hours();
         assert_eq!(start, 1);
         assert_eq!(end, 3);
-        
+
         let (start, end) = TCMOrgan::Heart.peak_hours();
         assert_eq!(start, 11);
         assert_eq!(end, 13);
@@ -653,15 +679,15 @@ mod tests {
     #[test]
     fn test_tcm_analysis_from_profile() {
         let profile = BirthProfile::new(
-            "1991-08-13",  // August - Summer/Fire
+            "1991-08-13", // August - Summer/Fire
             "13:31",
             12.9716,
             77.5946,
             "Asia/Kolkata",
         );
-        
+
         let analysis = TCMAnalysis::from_birth_profile(&profile).unwrap();
-        
+
         // August should give Fire as dominant
         assert_eq!(analysis.dominant_element, TCMElement::Fire);
         assert_eq!(analysis.seasonal_influence.current_season, "Summer");

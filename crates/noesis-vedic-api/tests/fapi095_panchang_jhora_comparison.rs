@@ -14,13 +14,13 @@
 //!
 //! Run with: cargo test --package noesis-vedic-api --test fapi095_panchang_jhora_comparison
 
+use noesis_vedic_api::panchang::data::{PlanetPosition, PlanetaryPositions};
 use noesis_vedic_api::panchang::{
     DateInfo, DayBoundaries, Karana, KaranaName, KaranaType, Location, Nakshatra, NakshatraName,
     Panchang, Tithi, TithiName, Vara, Yoga, YogaName,
 };
-use noesis_vedic_api::panchang::data::{PlanetPosition, PlanetaryPositions};
-use noesis_vedic_api::Paksha;
 use noesis_vedic_api::test_mocks::{shesh_panchang, SHESH_LAT, SHESH_LNG, SHESH_TZONE};
+use noesis_vedic_api::Paksha;
 
 // ---------------------------------------------------------------------------
 // JHora reference data for 2026-02-08, 12:00 UTC, Bangalore
@@ -467,14 +467,60 @@ fn fapi095_complete_panchang_validation_report() {
     let birth_vara_match = birth_panchang.vara == ref_birth.vara;
 
     println!("  Date: {} (Shesh birth)", ref_birth.date);
-    println!("    Tithi:     {} - {}", birth_panchang.tithi.name(), if birth_tithi_match { "MATCH" } else { "DEVIATION" });
-    println!("    Nakshatra: {} - {}", birth_panchang.nakshatra.name(), if birth_nak_match { "MATCH" } else { "DEVIATION" });
-    println!("    Yoga:      {} - {}", birth_panchang.yoga.name(), if birth_yoga_match { "MATCH" } else { "DEVIATION" });
-    println!("    Karana:    {} - {}", birth_panchang.karana.name(), if birth_karana_match { "MATCH" } else { "DEVIATION" });
-    println!("    Vara:      {} - {}", birth_panchang.vara.as_str(), if birth_vara_match { "MATCH" } else { "DEVIATION" });
+    println!(
+        "    Tithi:     {} - {}",
+        birth_panchang.tithi.name(),
+        if birth_tithi_match {
+            "MATCH"
+        } else {
+            "DEVIATION"
+        }
+    );
+    println!(
+        "    Nakshatra: {} - {}",
+        birth_panchang.nakshatra.name(),
+        if birth_nak_match {
+            "MATCH"
+        } else {
+            "DEVIATION"
+        }
+    );
+    println!(
+        "    Yoga:      {} - {}",
+        birth_panchang.yoga.name(),
+        if birth_yoga_match {
+            "MATCH"
+        } else {
+            "DEVIATION"
+        }
+    );
+    println!(
+        "    Karana:    {} - {}",
+        birth_panchang.karana.name(),
+        if birth_karana_match {
+            "MATCH"
+        } else {
+            "DEVIATION"
+        }
+    );
+    println!(
+        "    Vara:      {} - {}",
+        birth_panchang.vara.as_str(),
+        if birth_vara_match {
+            "MATCH"
+        } else {
+            "DEVIATION"
+        }
+    );
 
-    assert!(birth_tithi_match && birth_nak_match && birth_yoga_match && birth_karana_match && birth_vara_match,
-        "1991-09-14: Not all 5 panchang elements match JHora reference");
+    assert!(
+        birth_tithi_match
+            && birth_nak_match
+            && birth_yoga_match
+            && birth_karana_match
+            && birth_vara_match,
+        "1991-09-14: Not all 5 panchang elements match JHora reference"
+    );
 
     // 2026-02-08 validation
     let ref_today = &references[1];
@@ -485,14 +531,61 @@ fn fapi095_complete_panchang_validation_report() {
     let today_vara_match = today_panchang.vara == ref_today.vara;
 
     println!("\n  Date: {} (today)", ref_today.date);
-    println!("    Tithi:     {} {} - {}", today_panchang.paksha.as_str(), today_panchang.tithi.name(), if today_tithi_match { "MATCH" } else { "DEVIATION" });
-    println!("    Nakshatra: {} - {}", today_panchang.nakshatra.name(), if today_nak_match { "MATCH" } else { "DEVIATION" });
-    println!("    Yoga:      {} - {}", today_panchang.yoga.name(), if today_yoga_match { "MATCH" } else { "DEVIATION" });
-    println!("    Karana:    {} - {}", today_panchang.karana.name(), if today_karana_match { "MATCH" } else { "DEVIATION" });
-    println!("    Vara:      {} - {}", today_panchang.vara.as_str(), if today_vara_match { "MATCH" } else { "DEVIATION" });
+    println!(
+        "    Tithi:     {} {} - {}",
+        today_panchang.paksha.as_str(),
+        today_panchang.tithi.name(),
+        if today_tithi_match {
+            "MATCH"
+        } else {
+            "DEVIATION"
+        }
+    );
+    println!(
+        "    Nakshatra: {} - {}",
+        today_panchang.nakshatra.name(),
+        if today_nak_match {
+            "MATCH"
+        } else {
+            "DEVIATION"
+        }
+    );
+    println!(
+        "    Yoga:      {} - {}",
+        today_panchang.yoga.name(),
+        if today_yoga_match {
+            "MATCH"
+        } else {
+            "DEVIATION"
+        }
+    );
+    println!(
+        "    Karana:    {} - {}",
+        today_panchang.karana.name(),
+        if today_karana_match {
+            "MATCH"
+        } else {
+            "DEVIATION"
+        }
+    );
+    println!(
+        "    Vara:      {} - {}",
+        today_panchang.vara.as_str(),
+        if today_vara_match {
+            "MATCH"
+        } else {
+            "DEVIATION"
+        }
+    );
 
-    assert!(today_tithi_match && today_nak_match && today_yoga_match && today_karana_match && today_vara_match,
-        "2026-02-08: Not all 5 panchang elements match JHora reference");
+    assert!(
+        today_tithi_match
+            && today_nak_match
+            && today_yoga_match
+            && today_karana_match
+            && today_vara_match,
+        "2026-02-08: Not all 5 panchang elements match JHora reference"
+    );
 
     println!("\n  ACCURACY: 2/2 dates passed all checks (100%)");
     println!("  THRESHOLD: Tithi/Nakshatra within 1 unit - PASSED");

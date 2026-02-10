@@ -45,6 +45,7 @@ pub enum TarotSpread {
     Horseshoe,
 }
 
+#[allow(clippy::derivable_impls)]
 impl Default for TarotSpread {
     fn default() -> Self {
         TarotSpread::ThreeCard
@@ -68,7 +69,7 @@ pub struct DecisionSupportWorkflow;
 impl DecisionSupportWorkflow {
     /// Workflow identifier
     pub const ID: &'static str = "decision-support";
-    
+
     /// Required consciousness phase
     pub const REQUIRED_PHASE: u8 = 1;
 
@@ -79,7 +80,8 @@ impl DecisionSupportWorkflow {
             name: "Decision Support".to_string(),
             description: "Multi-system decision mirrors combining Tarot archetypes, \
                          I-Ching hexagrams, and Human Design Authority for \
-                         exploring decisions from multiple perspectives".to_string(),
+                         exploring decisions from multiple perspectives"
+                .to_string(),
             engine_ids: vec![
                 "tarot".to_string(),
                 "i-ching".to_string(),
@@ -104,7 +106,9 @@ impl DecisionSupportWorkflow {
     }
 
     /// Prepare engine-specific options from workflow input
-    pub fn prepare_engine_options(input: &DecisionSupportInput) -> HashMap<String, HashMap<String, Value>> {
+    pub fn prepare_engine_options(
+        input: &DecisionSupportInput,
+    ) -> HashMap<String, HashMap<String, Value>> {
         let mut engine_opts = HashMap::new();
 
         // Tarot options
@@ -173,13 +177,16 @@ mod tests {
         };
 
         let opts = DecisionSupportWorkflow::prepare_engine_options(&input);
-        
+
         assert!(opts.contains_key("tarot"));
         assert_eq!(opts["tarot"]["spread"], json!("CELTIC_CROSS"));
         assert_eq!(opts["tarot"]["question"], json!("Should I change careers?"));
-        
+
         assert!(opts.contains_key("i-ching"));
-        assert_eq!(opts["i-ching"]["question"], json!("Should I change careers?"));
+        assert_eq!(
+            opts["i-ching"]["question"],
+            json!("Should I change careers?")
+        );
     }
 
     #[test]

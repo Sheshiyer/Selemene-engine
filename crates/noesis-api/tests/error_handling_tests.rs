@@ -161,13 +161,8 @@ async fn test_unauthorized_no_token_workflow_execute() {
 
 #[tokio::test]
 async fn test_unauthorized_invalid_jwt_token() {
-    let (status, _, body) = send_authenticated(
-        "GET",
-        "/api/v1/engines",
-        "invalid.jwt.token",
-        None,
-    )
-    .await;
+    let (status, _, body) =
+        send_authenticated("GET", "/api/v1/engines", "invalid.jwt.token", None).await;
 
     assert_eq!(status, StatusCode::UNAUTHORIZED);
     assert_eq!(body["error_code"], "UNAUTHORIZED");
@@ -207,10 +202,7 @@ async fn test_phase_access_denied_human_design() {
     );
     assert_eq!(body["error_code"], "PHASE_ACCESS_DENIED");
     assert!(
-        body["error"]
-            .as_str()
-            .unwrap()
-            .contains("phase"),
+        body["error"].as_str().unwrap().contains("phase"),
         "Error should mention phase/consciousness level: {}",
         body["error"]
     );
@@ -323,13 +315,8 @@ async fn test_engine_info_not_found() {
 async fn test_workflow_info_not_found() {
     let token = generate_token(5);
 
-    let (status, _, body) = send_authenticated(
-        "GET",
-        "/api/v1/workflows/fake-workflow/info",
-        &token,
-        None,
-    )
-    .await;
+    let (status, _, body) =
+        send_authenticated("GET", "/api/v1/workflows/fake-workflow/info", &token, None).await;
 
     assert_eq!(status, StatusCode::NOT_FOUND);
     assert_eq!(body["error_code"], "WORKFLOW_NOT_FOUND");
@@ -436,8 +423,7 @@ async fn test_rate_limit_headers_present() {
     // A single authenticated request should include rate limit headers
     let token = generate_token(5);
 
-    let (status, headers, _body) =
-        send_authenticated("GET", "/api/v1/engines", &token, None).await;
+    let (status, headers, _body) = send_authenticated("GET", "/api/v1/engines", &token, None).await;
 
     assert_eq!(status, StatusCode::OK);
     assert!(

@@ -1,8 +1,8 @@
 //! Dasha notification generation
 
-use chrono::NaiveDate;
-use super::{DashaAlertConfig, DashaTransitionEvent, DashaTransitionType, TransitionSignificance};
 use super::types::DashaAlert;
+use super::{DashaAlertConfig, DashaTransitionEvent, DashaTransitionType, TransitionSignificance};
+use chrono::NaiveDate;
 
 /// Generate alerts for upcoming transitions
 pub fn generate_alerts(
@@ -11,11 +11,11 @@ pub fn generate_alerts(
     today: NaiveDate,
 ) -> Vec<DashaAlert> {
     let mut alerts = Vec::new();
-    
+
     if !config.enabled {
         return alerts;
     }
-    
+
     for transition in transitions {
         let alert_days = match transition.transition_type {
             DashaTransitionType::Mahadasha => &config.mahadasha_alert_days,
@@ -29,10 +29,10 @@ pub fn generate_alerts(
             }
             DashaTransitionType::Sookshmadasha => continue,
         };
-        
+
         for &days in alert_days {
             let alert_date = transition.transition_date - chrono::Duration::days(days as i64);
-            
+
             if alert_date == today {
                 let type_str = match transition.transition_type {
                     DashaTransitionType::Mahadasha => "Mahadasha",
@@ -40,7 +40,7 @@ pub fn generate_alerts(
                     DashaTransitionType::Pratyantardasha => "Pratyantardasha",
                     DashaTransitionType::Sookshmadasha => "Sookshmadasha",
                 };
-                
+
                 alerts.push(DashaAlert::new(
                     type_str,
                     &transition.from_lord,
@@ -51,7 +51,7 @@ pub fn generate_alerts(
             }
         }
     }
-    
+
     alerts
 }
 
@@ -69,7 +69,7 @@ pub fn format_notification(
         DashaTransitionType::Pratyantardasha => "Pratyantardasha",
         DashaTransitionType::Sookshmadasha => "Sookshmadasha",
     };
-    
+
     let urgency = match days_until {
         0 => "TODAY!",
         1 => "Tomorrow!",
@@ -78,22 +78,19 @@ pub fn format_notification(
         31..=90 => "In the coming months",
         _ => "In the future",
     };
-    
+
     let significance_note = match significance {
         TransitionSignificance::Major => "This is a MAJOR transition.",
         TransitionSignificance::Moderate => "A moderate shift in energy.",
         TransitionSignificance::Minor => "A subtle change.",
     };
-    
+
     format!(
         "🌟 {} Transition {} 🌟\n\
          {} → {}\n\
          Days until change: {}\n\n\
          {}",
-        type_name, urgency,
-        from_lord, to_lord,
-        days_until,
-        significance_note
+        type_name, urgency, from_lord, to_lord, days_until, significance_note
     )
 }
 
@@ -145,7 +142,7 @@ mod tests {
             7,
             TransitionSignificance::Major,
         );
-        
+
         assert!(msg.contains("Mahadasha"));
         assert!(msg.contains("Jupiter"));
         assert!(msg.contains("Saturn"));

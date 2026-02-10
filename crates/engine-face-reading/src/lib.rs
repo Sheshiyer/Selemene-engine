@@ -39,21 +39,21 @@
 //! }
 //! ```
 
+pub mod engine;
+pub mod mock;
 pub mod models;
 pub mod wisdom;
-pub mod mock;
 pub mod witness;
-pub mod engine;
 
 // Re-export main types
-pub use models::{
-    BodyType, ConstitutionAnalysis, Dosha, Element, ElementalBalance,
-    FaceAnalysis, FaceZone, HealthIndicator, PersonalityTrait,
-};
-pub use wisdom::{FaceZoneWisdom, ZoneIndicator, get_zone_wisdom, all_zone_wisdom};
-pub use mock::generate_mock_analysis;
-pub use witness::{generate_witness_prompts, generate_single_witness_prompt};
 pub use engine::FaceReadingEngine;
+pub use mock::generate_mock_analysis;
+pub use models::{
+    BodyType, ConstitutionAnalysis, Dosha, Element, ElementalBalance, FaceAnalysis, FaceZone,
+    HealthIndicator, PersonalityTrait,
+};
+pub use wisdom::{all_zone_wisdom, get_zone_wisdom, FaceZoneWisdom, ZoneIndicator};
+pub use witness::{generate_single_witness_prompt, generate_witness_prompts};
 
 // Re-export core types
 pub use noesis_core::{ConsciousnessEngine, EngineError, EngineInput, EngineOutput};

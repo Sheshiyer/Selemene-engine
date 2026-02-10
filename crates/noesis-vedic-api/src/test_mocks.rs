@@ -21,21 +21,15 @@
 //! let mock_client = MockApiClient::new();
 //! ```
 
-use crate::panchang::{
-    Panchang, DateInfo, Location, DayBoundaries, PlanetaryPositions,
-    Tithi, TithiName, Nakshatra, NakshatraName,
-    Yoga, YogaName, Karana, KaranaName, KaranaType,
-    Vara, Paksha,
-};
-use crate::panchang::data::PlanetPosition as PanchangPlanetPosition;
-use crate::dasha::{
-    VimshottariDasha, DashaPeriod, DashaLevel, DashaPlanet, DashaBalance,
-};
 use crate::chart::{
-    BirthChart, NavamsaChart, NativeInfo, AscendantInfo, MoonInfo,
-    SpecialPoints, HousePosition, HouseType,
-    PlanetPosition as ChartPlanetPosition, NavamsaPosition,
-    ZodiacSign,
+    AscendantInfo, BirthChart, HousePosition, HouseType, MoonInfo, NativeInfo, NavamsaChart,
+    NavamsaPosition, PlanetPosition as ChartPlanetPosition, SpecialPoints, ZodiacSign,
+};
+use crate::dasha::{DashaBalance, DashaLevel, DashaPeriod, DashaPlanet, VimshottariDasha};
+use crate::panchang::data::PlanetPosition as PanchangPlanetPosition;
+use crate::panchang::{
+    DateInfo, DayBoundaries, Karana, KaranaName, KaranaType, Location, Nakshatra, NakshatraName,
+    Paksha, Panchang, PlanetaryPositions, Tithi, TithiName, Vara, Yoga, YogaName,
 };
 
 // ---------------------------------------------------------------------------
@@ -81,8 +75,7 @@ impl MockResponses {
     /// - Karana: Taitila
     /// - Vara: Saturday
     pub fn panchang_response() -> serde_json::Value {
-        serde_json::to_value(shesh_panchang())
-            .expect("Panchang serialization must succeed")
+        serde_json::to_value(shesh_panchang()).expect("Panchang serialization must succeed")
     }
 
     /// Mock Vimshottari Dasha response for Shesh's birth data
@@ -91,8 +84,7 @@ impl MockResponses {
     /// Sequence: Sun 6yr -> Moon 10yr -> Mars 7yr -> Rahu 18yr -> ...
     /// Sun Mahadasha: 1991-09-14 to 1997-09-13
     pub fn vimshottari_response() -> serde_json::Value {
-        serde_json::to_value(shesh_vimshottari_dasha())
-            .expect("Dasha serialization must succeed")
+        serde_json::to_value(shesh_vimshottari_dasha()).expect("Dasha serialization must succeed")
     }
 
     /// Mock Birth Chart (D1) response for Shesh
@@ -101,8 +93,7 @@ impl MockResponses {
     /// Moon: Virgo (Uttara Phalguni Nakshatra)
     /// All 9 Vedic planets positioned
     pub fn birth_chart_response() -> serde_json::Value {
-        serde_json::to_value(shesh_birth_chart())
-            .expect("BirthChart serialization must succeed")
+        serde_json::to_value(shesh_birth_chart()).expect("BirthChart serialization must succeed")
     }
 
     /// Mock Navamsa (D9) chart response for Shesh
@@ -716,7 +707,7 @@ pub fn shesh_birth_chart() -> BirthChart {
             rashi_lord: "Mercury".to_string(),
         },
         special_points: SpecialPoints {
-            lagna: 225.3, // Scorpio 15.3 deg = 210 + 15.3
+            lagna: 225.3,           // Scorpio 15.3 deg = 210 + 15.3
             midheaven: Some(147.0), // Near Leo cusp
             part_of_fortune: Some(169.5),
         },
@@ -947,7 +938,9 @@ mod tests {
     #[test]
     fn test_shesh_dasha_mars_mahadasha_dates() {
         let d = shesh_vimshottari_dasha();
-        let mars_maha = d.mahadashas.iter()
+        let mars_maha = d
+            .mahadashas
+            .iter()
             .find(|m| m.planet == DashaPlanet::Mars)
             .expect("Mars mahadasha should exist");
         assert_eq!(mars_maha.start_date, "2008-09-13");
@@ -958,17 +951,20 @@ mod tests {
         let d = shesh_vimshottari_dasha();
         assert_eq!(d.mahadashas.len(), 9);
         let planets: Vec<DashaPlanet> = d.mahadashas.iter().map(|m| m.planet).collect();
-        assert_eq!(planets, vec![
-            DashaPlanet::Sun,
-            DashaPlanet::Moon,
-            DashaPlanet::Mars,
-            DashaPlanet::Rahu,
-            DashaPlanet::Jupiter,
-            DashaPlanet::Saturn,
-            DashaPlanet::Mercury,
-            DashaPlanet::Ketu,
-            DashaPlanet::Venus,
-        ]);
+        assert_eq!(
+            planets,
+            vec![
+                DashaPlanet::Sun,
+                DashaPlanet::Moon,
+                DashaPlanet::Mars,
+                DashaPlanet::Rahu,
+                DashaPlanet::Jupiter,
+                DashaPlanet::Saturn,
+                DashaPlanet::Mercury,
+                DashaPlanet::Ketu,
+                DashaPlanet::Venus,
+            ]
+        );
     }
 
     #[test]
@@ -1010,9 +1006,7 @@ mod tests {
     #[test]
     fn test_shesh_chart_all_nine_planets() {
         let c = shesh_birth_chart();
-        let planet_names: Vec<&str> = c.planets.iter()
-            .map(|p| p.name.as_str())
-            .collect();
+        let planet_names: Vec<&str> = c.planets.iter().map(|p| p.name.as_str()).collect();
         assert!(planet_names.contains(&"Sun"));
         assert!(planet_names.contains(&"Moon"));
         assert!(planet_names.contains(&"Mars"));

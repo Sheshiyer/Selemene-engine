@@ -14,17 +14,17 @@ pub fn analyze_jupiter_transit(
     let jupiter_num = jupiter_sign.number();
     let asc_num = ascendant_sign.number();
     let moon_num = moon_sign.number();
-    
+
     let from_asc = ((jupiter_num as i8 - asc_num as i8).rem_euclid(12) + 1) as u8;
     let from_moon = ((jupiter_num as i8 - moon_num as i8).rem_euclid(12) + 1) as u8;
-    
+
     let quality = determine_jupiter_quality(from_asc, from_moon);
     let affected_areas = get_affected_areas(from_asc);
-    
+
     JupiterTransitStatus {
         current_sign: jupiter_sign.to_string(),
         from_ascendant: from_asc,
-        from_moon: from_moon,
+        from_moon,
         quality,
         affected_areas,
     }
@@ -35,10 +35,10 @@ fn determine_jupiter_quality(from_asc: u8, from_moon: u8) -> TransitQuality {
     // Favorable houses from Ascendant: 2, 5, 7, 9, 11
     // Favorable houses from Moon: 2, 5, 7, 9, 11
     let favorable_houses = [2, 5, 7, 9, 11];
-    
+
     let asc_favorable = favorable_houses.contains(&from_asc);
     let moon_favorable = favorable_houses.contains(&from_moon);
-    
+
     match (asc_favorable, moon_favorable) {
         (true, true) => TransitQuality::Excellent,
         (true, false) | (false, true) => TransitQuality::Good,
@@ -126,7 +126,7 @@ fn get_affected_areas(from_ascendant: u8) -> Vec<String> {
 /// Get Jupiter transit predictions
 pub fn jupiter_transit_predictions(status: &JupiterTransitStatus) -> Vec<String> {
     let mut predictions = vec![];
-    
+
     match status.quality {
         TransitQuality::Excellent => {
             predictions.push("Highly favorable period for growth and expansion".to_string());
@@ -149,7 +149,7 @@ pub fn jupiter_transit_predictions(status: &JupiterTransitStatus) -> Vec<String>
             predictions.push("Good for introspection and spiritual growth".to_string());
         }
     }
-    
+
     predictions
 }
 
@@ -164,7 +164,7 @@ mod tests {
             ZodiacSign::Leo, // Jupiter in 9th from Leo - excellent
             ZodiacSign::Scorpio,
         );
-        
+
         assert_eq!(status.from_ascendant, 9);
         assert!(!status.affected_areas.is_empty());
     }
@@ -174,7 +174,7 @@ mod tests {
         // Jupiter in 9th from ascendant and 5th from Moon - excellent
         let quality = determine_jupiter_quality(9, 5);
         assert_eq!(quality, TransitQuality::Excellent);
-        
+
         // Jupiter in 6th from both - difficult
         let quality = determine_jupiter_quality(6, 6);
         assert_eq!(quality, TransitQuality::Difficult);

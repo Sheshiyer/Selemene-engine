@@ -209,10 +209,7 @@ fn calculate_life_path(date: &str) -> Result<NumerologyNumber, EngineError> {
 
 /// Expression (Destiny) Number: full name reduced via Pythagorean mapping.
 fn calculate_expression(name: &str) -> NumerologyNumber {
-    let raw_sum: u32 = name
-        .chars()
-        .filter_map(pythagorean_value)
-        .sum();
+    let raw_sum: u32 = name.chars().filter_map(pythagorean_value).sum();
     NumerologyNumber::from_raw(raw_sum)
 }
 
@@ -290,18 +287,18 @@ impl NumerologyEngine {
     }
 
     fn compute(&self, input: &EngineInput) -> Result<NumerologyResult, EngineError> {
-        let birth = input
-            .birth_data
-            .as_ref()
-            .ok_or_else(|| EngineError::CalculationError("birth_data is required for numerology".into()))?;
+        let birth = input.birth_data.as_ref().ok_or_else(|| {
+            EngineError::CalculationError("birth_data is required for numerology".into())
+        })?;
 
-        let name = birth
-            .name
-            .as_deref()
-            .ok_or_else(|| EngineError::CalculationError("name is required for numerology calculations".into()))?;
+        let name = birth.name.as_deref().ok_or_else(|| {
+            EngineError::CalculationError("name is required for numerology calculations".into())
+        })?;
 
         if name.trim().is_empty() {
-            return Err(EngineError::CalculationError("name must not be empty".into()));
+            return Err(EngineError::CalculationError(
+                "name must not be empty".into(),
+            ));
         }
 
         let date = &birth.date;

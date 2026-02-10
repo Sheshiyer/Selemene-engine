@@ -9,8 +9,8 @@
 use async_trait::async_trait;
 use chrono::Utc;
 use noesis_core::{
-    BirthData, CalculationMetadata, Coordinates, EngineError, EngineInput, EngineOutput,
-    Precision, ValidationResult,
+    BirthData, CalculationMetadata, Coordinates, EngineError, EngineInput, EngineOutput, Precision,
+    ValidationResult,
 };
 use noesis_orchestrator::{
     ConsciousnessEngine, EngineCategory, FullSpectrumConfig, FullSpectrumResult,
@@ -181,24 +181,60 @@ fn create_full_spectrum_engines() -> HashMap<String, Arc<dyn ConsciousnessEngine
 
     // Add all 14 engines
     let engine_configs = [
-        ("numerology", json!({"life_path": 6, "gifts": ["leadership", "creativity"]})),
-        ("human-design", json!({"type": "Generator", "authority": "Sacral"})),
-        ("gene-keys", json!({"shadow": "Control", "gift": "Leadership", "siddhi": "Mastery"})),
-        ("panchanga", json!({"tithi": "Shukla Panchami", "nakshatra": "Rohini"})),
-        ("vedic-clock", json!({"muhurta": "Vijaya", "favorable": true})),
-        ("biorhythm", json!({"physical": 0.8, "emotional": 0.5, "intellectual": -0.2})),
-        ("vimshottari", json!({"dasha": "Jupiter", "antardasha": "Venus"})),
-        ("tarot", json!({"card": "The Magician", "position": "upright"})),
+        (
+            "numerology",
+            json!({"life_path": 6, "gifts": ["leadership", "creativity"]}),
+        ),
+        (
+            "human-design",
+            json!({"type": "Generator", "authority": "Sacral"}),
+        ),
+        (
+            "gene-keys",
+            json!({"shadow": "Control", "gift": "Leadership", "siddhi": "Mastery"}),
+        ),
+        (
+            "panchanga",
+            json!({"tithi": "Shukla Panchami", "nakshatra": "Rohini"}),
+        ),
+        (
+            "vedic-clock",
+            json!({"muhurta": "Vijaya", "favorable": true}),
+        ),
+        (
+            "biorhythm",
+            json!({"physical": 0.8, "emotional": 0.5, "intellectual": -0.2}),
+        ),
+        (
+            "vimshottari",
+            json!({"dasha": "Jupiter", "antardasha": "Venus"}),
+        ),
+        (
+            "tarot",
+            json!({"card": "The Magician", "position": "upright"}),
+        ),
         ("i-ching", json!({"hexagram": 1, "name": "The Creative"})),
         ("enneagram", json!({"type": 8, "wing": 9})),
-        ("sigil-forge", json!({"sigil": "creation", "intent": "clarity"})),
+        (
+            "sigil-forge",
+            json!({"sigil": "creation", "intent": "clarity"}),
+        ),
         ("sacred-geometry", json!({"pattern": "Flower of Life"})),
-        ("biofield", json!({"aura": "green", "chakras": ["heart", "throat"]})),
-        ("face-reading", json!({"element": "Fire", "characteristics": ["strong jaw"]})),
+        (
+            "biofield",
+            json!({"aura": "green", "chakras": ["heart", "throat"]}),
+        ),
+        (
+            "face-reading",
+            json!({"element": "Fire", "characteristics": ["strong jaw"]}),
+        ),
     ];
 
     for (id, result) in engine_configs {
-        engines.insert(id.to_string(), Arc::new(MockEngine::new(id).with_result(result)));
+        engines.insert(
+            id.to_string(),
+            Arc::new(MockEngine::new(id).with_result(result)),
+        );
     }
 
     engines
@@ -230,21 +266,24 @@ async fn test_birth_blueprint_with_synthesis() {
     let mut engines: HashMap<String, Arc<dyn ConsciousnessEngine>> = HashMap::new();
     engines.insert(
         "numerology".to_string(),
-        Arc::new(MockEngine::new("numerology").with_result(
-            json!({"life_path": 1, "gifts": ["leadership", "innovation"]}),
-        )),
+        Arc::new(
+            MockEngine::new("numerology")
+                .with_result(json!({"life_path": 1, "gifts": ["leadership", "innovation"]})),
+        ),
     );
     engines.insert(
         "human-design".to_string(),
-        Arc::new(MockEngine::new("human-design").with_result(
-            json!({"type": "Manifestor", "channels": ["leadership"]}),
-        )),
+        Arc::new(
+            MockEngine::new("human-design")
+                .with_result(json!({"type": "Manifestor", "channels": ["leadership"]})),
+        ),
     );
     engines.insert(
         "gene-keys".to_string(),
-        Arc::new(MockEngine::new("gene-keys").with_result(
-            json!({"gift": "Leadership", "shadow": "Control"}),
-        )),
+        Arc::new(
+            MockEngine::new("gene-keys")
+                .with_result(json!({"gift": "Leadership", "shadow": "Control"})),
+        ),
     );
 
     let workflow = FullSpectrumWorkflow::new(engines);
@@ -261,7 +300,10 @@ async fn test_birth_blueprint_with_synthesis() {
         "Should analyze all 3 engines"
     );
     // At least verify synthesis produces some output
-    assert!(!synthesis.narrative.is_empty(), "Should produce synthesis narrative");
+    assert!(
+        !synthesis.narrative.is_empty(),
+        "Should produce synthesis narrative"
+    );
 }
 
 // ---------------------------------------------------------------------------
@@ -395,7 +437,10 @@ async fn test_workflow_handles_engine_failure() {
         .execute_workflow("birth-blueprint", create_birth_input(), 5)
         .await;
 
-    assert!(result.is_ok(), "Workflow should succeed despite engine failure");
+    assert!(
+        result.is_ok(),
+        "Workflow should succeed despite engine failure"
+    );
     let output = result.unwrap();
 
     // Two engines succeeded, one failed
@@ -546,7 +591,10 @@ async fn test_workflow_cache_ttl() {
     assert_eq!(WorkflowTtl::Natal.duration(), Duration::from_secs(86400));
     assert_eq!(WorkflowTtl::Temporal.duration(), Duration::from_secs(3600));
     assert_eq!(WorkflowTtl::Archetypal.duration(), Duration::from_secs(900));
-    assert_eq!(WorkflowTtl::FullSpectrum.duration(), Duration::from_secs(3600));
+    assert_eq!(
+        WorkflowTtl::FullSpectrum.duration(),
+        Duration::from_secs(3600)
+    );
 }
 
 #[tokio::test]
@@ -565,9 +613,15 @@ async fn test_workflow_cache_invalidation() {
         timestamp: Utc::now(),
     };
 
-    cache.set(key1.clone(), result.clone(), Duration::from_secs(60)).await;
-    cache.set(key2.clone(), result.clone(), Duration::from_secs(60)).await;
-    cache.set(key3.clone(), result.clone(), Duration::from_secs(60)).await;
+    cache
+        .set(key1.clone(), result.clone(), Duration::from_secs(60))
+        .await;
+    cache
+        .set(key2.clone(), result.clone(), Duration::from_secs(60))
+        .await;
+    cache
+        .set(key3.clone(), result.clone(), Duration::from_secs(60))
+        .await;
 
     cache.invalidate_workflow("birth-blueprint").await;
 
@@ -582,12 +636,30 @@ async fn test_workflow_cache_invalidation() {
 
 #[tokio::test]
 async fn test_engine_category_assignment() {
-    assert_eq!(EngineCategory::from_engine_id("numerology"), EngineCategory::Natal);
-    assert_eq!(EngineCategory::from_engine_id("human-design"), EngineCategory::Natal);
-    assert_eq!(EngineCategory::from_engine_id("panchanga"), EngineCategory::Temporal);
-    assert_eq!(EngineCategory::from_engine_id("tarot"), EngineCategory::Archetypal);
-    assert_eq!(EngineCategory::from_engine_id("biofield"), EngineCategory::Somatic);
-    assert_eq!(EngineCategory::from_engine_id("sigil-forge"), EngineCategory::Creative);
+    assert_eq!(
+        EngineCategory::from_engine_id("numerology"),
+        EngineCategory::Natal
+    );
+    assert_eq!(
+        EngineCategory::from_engine_id("human-design"),
+        EngineCategory::Natal
+    );
+    assert_eq!(
+        EngineCategory::from_engine_id("panchanga"),
+        EngineCategory::Temporal
+    );
+    assert_eq!(
+        EngineCategory::from_engine_id("tarot"),
+        EngineCategory::Archetypal
+    );
+    assert_eq!(
+        EngineCategory::from_engine_id("biofield"),
+        EngineCategory::Somatic
+    );
+    assert_eq!(
+        EngineCategory::from_engine_id("sigil-forge"),
+        EngineCategory::Creative
+    );
 }
 
 #[tokio::test]
@@ -680,9 +752,15 @@ async fn test_synthesis_theme_detection() {
     let synthesis = synthesizer.synthesize(&result);
 
     // The synthesizer should analyze all engines and produce some output
-    assert!(synthesis.engines_analyzed == 3, "Should analyze all 3 engines");
+    assert!(
+        synthesis.engines_analyzed == 3,
+        "Should analyze all 3 engines"
+    );
     // Even if no cross-engine themes are detected, narrative should be non-empty
-    assert!(!synthesis.narrative.is_empty(), "Should produce a narrative");
+    assert!(
+        !synthesis.narrative.is_empty(),
+        "Should produce a narrative"
+    );
 }
 
 #[tokio::test]

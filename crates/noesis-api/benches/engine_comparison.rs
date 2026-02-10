@@ -3,12 +3,12 @@
 //! Side-by-side comparison of all 3 Wave 1 Phase 2 engines.
 //! Uses Mode 2 (pre-computed inputs) for fair comparison.
 
-use criterion::{black_box, criterion_group, criterion_main, Criterion};
-use engine_human_design::HumanDesignEngine;
-use engine_gene_keys::GeneKeysEngine;
-use engine_vimshottari::VimshottariEngine;
-use noesis_core::{ConsciousnessEngine, EngineInput, BirthData, Precision};
 use chrono::Utc;
+use criterion::{black_box, criterion_group, criterion_main, Criterion};
+use engine_gene_keys::GeneKeysEngine;
+use engine_human_design::HumanDesignEngine;
+use engine_vimshottari::VimshottariEngine;
+use noesis_core::{BirthData, ConsciousnessEngine, EngineInput, Precision};
 use serde_json::json;
 use std::collections::HashMap;
 
@@ -31,12 +31,15 @@ fn create_hd_input() -> EngineInput {
 
 fn create_gk_input() -> EngineInput {
     let mut options = HashMap::new();
-    options.insert("hd_gates".to_string(), json!({
-        "personality_sun": 17,
-        "personality_earth": 18,
-        "design_sun": 45,
-        "design_earth": 26
-    }));
+    options.insert(
+        "hd_gates".to_string(),
+        json!({
+            "personality_sun": 17,
+            "personality_earth": 18,
+            "design_sun": 45,
+            "design_earth": 26
+        }),
+    );
 
     EngineInput {
         birth_data: None,
@@ -105,7 +108,9 @@ fn compare_validation(c: &mut Criterion) {
 
     let hd_output = rt.block_on(hd_engine.calculate(create_hd_input())).unwrap();
     let gk_output = rt.block_on(gk_engine.calculate(create_gk_input())).unwrap();
-    let vim_output = rt.block_on(vim_engine.calculate(create_vim_input())).unwrap();
+    let vim_output = rt
+        .block_on(vim_engine.calculate(create_vim_input()))
+        .unwrap();
 
     let mut group = c.benchmark_group("validation_comparison");
 
@@ -133,9 +138,5 @@ fn compare_validation(c: &mut Criterion) {
     group.finish();
 }
 
-criterion_group!(
-    comparison_benches,
-    compare_engines,
-    compare_validation,
-);
+criterion_group!(comparison_benches, compare_engines, compare_validation,);
 criterion_main!(comparison_benches);

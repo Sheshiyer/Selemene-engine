@@ -2,12 +2,12 @@
 //!
 //! FAPI-046: Implement GET /horoscope-chart endpoint
 
-use chrono::{NaiveDateTime, NaiveTime};
+use chrono::NaiveDateTime;
 use serde::{Deserialize, Serialize};
 
-use crate::error::{VedicApiError, VedicApiResult};
+use super::types::{Planet, ZodiacSign};
 use crate::client::VedicApiClient;
-use super::types::{Planet, ZodiacSign, BirthChart, PlanetPosition, HouseCusp, Dignity};
+use crate::error::{VedicApiError, VedicApiResult};
 
 /// Request for birth chart calculation
 #[derive(Debug, Clone, Serialize)]
@@ -120,10 +120,14 @@ impl VedicApiClient {
     /// Get birth chart from API with request object
     ///
     /// FAPI-046: Implement GET /horoscope-chart endpoint
-    pub async fn fetch_birth_chart(&self, request: &BirthChartRequest) -> VedicApiResult<BirthChartApiResponse> {
+    pub async fn fetch_birth_chart(
+        &self,
+        request: &BirthChartRequest,
+    ) -> VedicApiResult<BirthChartApiResponse> {
         let response = self.post("/horoscope-chart", request).await?;
-        serde_json::from_value(response)
-            .map_err(|e| VedicApiError::ParseError(format!("Failed to parse birth chart response: {}", e)))
+        serde_json::from_value(response).map_err(|e| {
+            VedicApiError::ParseError(format!("Failed to parse birth chart response: {}", e))
+        })
     }
 
     /// Convenience method for getting a birth chart with common defaults
@@ -152,7 +156,10 @@ pub fn parse_planet(name: &str) -> VedicApiResult<Planet> {
         "rahu" => Ok(Planet::Rahu),
         "ketu" => Ok(Planet::Ketu),
         "ascendant" | "lagna" => Ok(Planet::Ascendant),
-        _ => Err(VedicApiError::ParseError(format!("Unknown planet: {}", name))),
+        _ => Err(VedicApiError::ParseError(format!(
+            "Unknown planet: {}",
+            name
+        ))),
     }
 }
 
@@ -187,7 +194,7 @@ mod tests {
             NaiveTime::from_hms_opt(10, 30, 0).unwrap(),
         );
         let request = BirthChartRequest::new(dt, 12.97, 77.59, 5.5);
-        
+
         assert_eq!(request.birth_date, "1990-06-15");
         assert_eq!(request.birth_time, "10:30:00");
         assert_eq!(request.ayanamsa, Some("lahiri".to_string()));

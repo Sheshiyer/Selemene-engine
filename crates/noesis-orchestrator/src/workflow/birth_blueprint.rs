@@ -33,11 +33,13 @@ impl NumerologyData {
     /// Extract from engine output JSON
     pub fn from_json(value: &Value) -> Option<Self> {
         let life_path = value.get("life_path")?.as_u64()? as u8;
-        let expression = value.get("expression_number")
+        let expression = value
+            .get("expression_number")
             .or_else(|| value.get("expression"))
             .and_then(|v| v.as_u64())
             .unwrap_or(0) as u8;
-        let soul_urge = value.get("soul_urge_number")
+        let soul_urge = value
+            .get("soul_urge_number")
             .or_else(|| value.get("soul_urge"))
             .and_then(|v| v.as_u64())
             .unwrap_or(0) as u8;
@@ -55,9 +57,18 @@ impl NumerologyData {
     /// Get key themes from numerology
     pub fn themes(&self) -> Vec<(String, String)> {
         vec![
-            (self.life_path_name.clone(), format!("Life Path {}: {}", self.life_path, self.life_path_name)),
-            (self.expression_name.clone(), format!("Expression {}: {}", self.expression, self.expression_name)),
-            (self.soul_urge_name.clone(), format!("Soul Urge {}: {}", self.soul_urge, self.soul_urge_name)),
+            (
+                self.life_path_name.clone(),
+                format!("Life Path {}: {}", self.life_path, self.life_path_name),
+            ),
+            (
+                self.expression_name.clone(),
+                format!("Expression {}: {}", self.expression, self.expression_name),
+            ),
+            (
+                self.soul_urge_name.clone(),
+                format!("Soul Urge {}: {}", self.soul_urge, self.soul_urge_name),
+            ),
         ]
     }
 }
@@ -75,29 +86,42 @@ pub struct HumanDesignData {
 impl HumanDesignData {
     /// Extract from engine output JSON
     pub fn from_json(value: &Value) -> Option<Self> {
-        let hd_type = value.get("type")
+        let hd_type = value
+            .get("type")
             .and_then(|v| v.as_str())
             .map(|s| s.to_string())
             .unwrap_or_else(|| "Unknown".to_string());
-        
-        let authority = value.get("authority")
+
+        let authority = value
+            .get("authority")
             .and_then(|v| v.as_str())
             .map(|s| s.to_string())
             .unwrap_or_default();
 
-        let profile = value.get("profile")
+        let profile = value
+            .get("profile")
             .and_then(|v| v.as_str())
             .map(|s| s.to_string())
             .unwrap_or_default();
 
-        let defined_centers = value.get("defined_centers")
+        let defined_centers = value
+            .get("defined_centers")
             .and_then(|v| v.as_array())
-            .map(|arr| arr.iter().filter_map(|v| v.as_str().map(|s| s.to_string())).collect())
+            .map(|arr| {
+                arr.iter()
+                    .filter_map(|v| v.as_str().map(|s| s.to_string()))
+                    .collect()
+            })
             .unwrap_or_default();
 
-        let undefined_centers = value.get("undefined_centers")
+        let undefined_centers = value
+            .get("undefined_centers")
             .and_then(|v| v.as_array())
-            .map(|arr| arr.iter().filter_map(|v| v.as_str().map(|s| s.to_string())).collect())
+            .map(|arr| {
+                arr.iter()
+                    .filter_map(|v| v.as_str().map(|s| s.to_string()))
+                    .collect()
+            })
             .unwrap_or_default();
 
         Some(Self {
@@ -112,23 +136,44 @@ impl HumanDesignData {
     /// Get key themes from Human Design
     pub fn themes(&self) -> Vec<(String, String)> {
         let mut themes = vec![];
-        
+
         // Type-based themes
         match self.hd_type.as_str() {
-            "Manifestor" => themes.push(("Leadership".to_string(), "Manifestor: Initiates and impacts".to_string())),
-            "Generator" | "Manifesting Generator" => themes.push(("Response".to_string(), "Generator: Life force through response".to_string())),
-            "Projector" => themes.push(("Recognition".to_string(), "Projector: Guides through recognition".to_string())),
-            "Reflector" => themes.push(("Reflection".to_string(), "Reflector: Mirrors the community".to_string())),
+            "Manifestor" => themes.push((
+                "Leadership".to_string(),
+                "Manifestor: Initiates and impacts".to_string(),
+            )),
+            "Generator" | "Manifesting Generator" => themes.push((
+                "Response".to_string(),
+                "Generator: Life force through response".to_string(),
+            )),
+            "Projector" => themes.push((
+                "Recognition".to_string(),
+                "Projector: Guides through recognition".to_string(),
+            )),
+            "Reflector" => themes.push((
+                "Reflection".to_string(),
+                "Reflector: Mirrors the community".to_string(),
+            )),
             _ => {}
         }
 
         // Authority-based themes
         if self.authority.contains("Emotional") || self.authority.contains("Solar Plexus") {
-            themes.push(("Emotional Clarity".to_string(), "Emotional Authority: Wait for clarity over time".to_string()));
+            themes.push((
+                "Emotional Clarity".to_string(),
+                "Emotional Authority: Wait for clarity over time".to_string(),
+            ));
         } else if self.authority.contains("Sacral") {
-            themes.push(("Gut Response".to_string(), "Sacral Authority: Trust gut responses".to_string()));
+            themes.push((
+                "Gut Response".to_string(),
+                "Sacral Authority: Trust gut responses".to_string(),
+            ));
         } else if self.authority.contains("Splenic") {
-            themes.push(("Intuition".to_string(), "Splenic Authority: Instant intuitive knowing".to_string()));
+            themes.push((
+                "Intuition".to_string(),
+                "Splenic Authority: Instant intuitive knowing".to_string(),
+            ));
         }
 
         themes
@@ -149,26 +194,34 @@ impl VimshottariData {
     /// Extract from engine output JSON
     pub fn from_json(value: &Value) -> Option<Self> {
         let current = value.get("current_dasha")?;
-        
-        let mahadasha = current.get("mahadasha")
-            .and_then(|v| v.as_str())
-            .map(|s| s.to_string())
-            .unwrap_or_default();
-        
-        let antardasha = current.get("antardasha")
+
+        let mahadasha = current
+            .get("mahadasha")
             .and_then(|v| v.as_str())
             .map(|s| s.to_string())
             .unwrap_or_default();
 
-        let years_remaining = current.get("years_remaining")
+        let antardasha = current
+            .get("antardasha")
+            .and_then(|v| v.as_str())
+            .map(|s| s.to_string())
+            .unwrap_or_default();
+
+        let years_remaining = current
+            .get("years_remaining")
             .and_then(|v| v.as_f64())
             .unwrap_or(0.0);
 
         let lord = dasha_lord(&mahadasha);
 
-        let transitions = value.get("upcoming_transitions")
+        let transitions = value
+            .get("upcoming_transitions")
             .and_then(|v| v.as_array())
-            .map(|arr| arr.iter().filter_map(|v| v.as_str().map(|s| s.to_string())).collect())
+            .map(|arr| {
+                arr.iter()
+                    .filter_map(|v| v.as_str().map(|s| s.to_string()))
+                    .collect()
+            })
             .unwrap_or_default();
 
         Some(Self {
@@ -183,18 +236,45 @@ impl VimshottariData {
     /// Get key themes from current dasha
     pub fn themes(&self) -> Vec<(String, String)> {
         let mut themes = vec![];
-        
+
         // Dasha lord themes
         match self.current_mahadasha_lord.as_str() {
-            "Sun" => themes.push(("Leadership".to_string(), "Sun Dasha: Period of authority and visibility".to_string())),
-            "Moon" => themes.push(("Emotional Growth".to_string(), "Moon Dasha: Period of emotional development".to_string())),
-            "Mars" => themes.push(("Action".to_string(), "Mars Dasha: Period of energy and initiative".to_string())),
-            "Mercury" => themes.push(("Communication".to_string(), "Mercury Dasha: Period of learning and expression".to_string())),
-            "Jupiter" => themes.push(("Expansion".to_string(), "Jupiter Dasha: Period of growth and wisdom".to_string())),
-            "Venus" => themes.push(("Harmony".to_string(), "Venus Dasha: Period of relationships and beauty".to_string())),
-            "Saturn" => themes.push(("Discipline".to_string(), "Saturn Dasha: Period of structure and responsibility".to_string())),
-            "Rahu" => themes.push(("Transformation".to_string(), "Rahu Dasha: Period of unconventional growth".to_string())),
-            "Ketu" => themes.push(("Release".to_string(), "Ketu Dasha: Period of spiritual liberation".to_string())),
+            "Sun" => themes.push((
+                "Leadership".to_string(),
+                "Sun Dasha: Period of authority and visibility".to_string(),
+            )),
+            "Moon" => themes.push((
+                "Emotional Growth".to_string(),
+                "Moon Dasha: Period of emotional development".to_string(),
+            )),
+            "Mars" => themes.push((
+                "Action".to_string(),
+                "Mars Dasha: Period of energy and initiative".to_string(),
+            )),
+            "Mercury" => themes.push((
+                "Communication".to_string(),
+                "Mercury Dasha: Period of learning and expression".to_string(),
+            )),
+            "Jupiter" => themes.push((
+                "Expansion".to_string(),
+                "Jupiter Dasha: Period of growth and wisdom".to_string(),
+            )),
+            "Venus" => themes.push((
+                "Harmony".to_string(),
+                "Venus Dasha: Period of relationships and beauty".to_string(),
+            )),
+            "Saturn" => themes.push((
+                "Discipline".to_string(),
+                "Saturn Dasha: Period of structure and responsibility".to_string(),
+            )),
+            "Rahu" => themes.push((
+                "Transformation".to_string(),
+                "Rahu Dasha: Period of unconventional growth".to_string(),
+            )),
+            "Ketu" => themes.push((
+                "Release".to_string(),
+                "Ketu Dasha: Period of spiritual liberation".to_string(),
+            )),
             _ => {}
         }
 

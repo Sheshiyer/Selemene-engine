@@ -69,7 +69,7 @@ impl PlanetShadbala {
     pub fn get_component(&self, component: ShadbalaComponent) -> Option<&ShadbalaValue> {
         self.components.iter().find(|c| c.component == component)
     }
-    
+
     /// Calculate strength percentage
     pub fn strength_percentage(&self) -> f64 {
         self.strength_ratio * 100.0
@@ -152,9 +152,18 @@ mod tests {
 
     #[test]
     fn test_chart_strength_from_ratio() {
-        assert_eq!(ChartStrength::from_average_ratio(1.6), ChartStrength::VeryStrong);
-        assert_eq!(ChartStrength::from_average_ratio(1.0), ChartStrength::Average);
-        assert_eq!(ChartStrength::from_average_ratio(0.5), ChartStrength::VeryWeak);
+        assert_eq!(
+            ChartStrength::from_average_ratio(1.6),
+            ChartStrength::VeryStrong
+        );
+        assert_eq!(
+            ChartStrength::from_average_ratio(1.0),
+            ChartStrength::Average
+        );
+        assert_eq!(
+            ChartStrength::from_average_ratio(0.5),
+            ChartStrength::VeryWeak
+        );
     }
 
     #[test]

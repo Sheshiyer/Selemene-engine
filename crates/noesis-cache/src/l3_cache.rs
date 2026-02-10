@@ -52,8 +52,8 @@ pub struct L3Cache {
 
 impl L3Cache {
     pub fn new(enabled: bool) -> Self {
-        let cache_dir = std::env::var("L3_CACHE_DIR")
-            .unwrap_or_else(|_| "./data/precomputed".to_string());
+        let cache_dir =
+            std::env::var("L3_CACHE_DIR").unwrap_or_else(|_| "./data/precomputed".to_string());
 
         Self {
             enabled,
@@ -85,7 +85,10 @@ impl L3Cache {
 
         // Disk
         if let Some(value) = self.load_from_disk(key).await? {
-            self.memory_cache.write().await.insert(key.clone(), value.clone());
+            self.memory_cache
+                .write()
+                .await
+                .insert(key.clone(), value.clone());
             let mut stats = self.stats.write().await;
             stats.hits += 1;
             stats.loads += 1;
@@ -103,7 +106,10 @@ impl L3Cache {
             return Ok(());
         }
 
-        self.memory_cache.write().await.insert(key.clone(), value.clone());
+        self.memory_cache
+            .write()
+            .await
+            .insert(key.clone(), value.clone());
         self.save_to_disk(key, value).await?;
 
         let mut stats = self.stats.write().await;
@@ -175,7 +181,9 @@ impl L3Cache {
         let memory_entries = self.memory_cache.read().await.len();
 
         let disk_entries = if Path::new(&self.cache_dir).exists() {
-            fs::read_dir(&self.cache_dir).map(|e| e.count()).unwrap_or(0)
+            fs::read_dir(&self.cache_dir)
+                .map(|e| e.count())
+                .unwrap_or(0)
         } else {
             0
         };
@@ -220,8 +228,9 @@ impl L3Cache {
     }
 
     async fn save_to_disk(&self, key: &CacheKey, value: &Value) -> Result<(), EngineError> {
-        fs::create_dir_all(&self.cache_dir)
-            .map_err(|e| EngineError::CacheError(format!("Failed to create cache directory: {}", e)))?;
+        fs::create_dir_all(&self.cache_dir).map_err(|e| {
+            EngineError::CacheError(format!("Failed to create cache directory: {}", e))
+        })?;
 
         let file_path = self.cache_file_path(key);
         let content = serde_json::to_string_pretty(value)
@@ -236,16 +245,18 @@ impl L3Cache {
     async fn remove_from_disk(&self, key: &CacheKey) -> Result<(), EngineError> {
         let file_path = self.cache_file_path(key);
         if Path::new(&file_path).exists() {
-            fs::remove_file(&file_path)
-                .map_err(|e| EngineError::CacheError(format!("Failed to remove cache file: {}", e)))?;
+            fs::remove_file(&file_path).map_err(|e| {
+                EngineError::CacheError(format!("Failed to remove cache file: {}", e))
+            })?;
         }
         Ok(())
     }
 
     async fn clear_disk_cache(&self) -> Result<(), EngineError> {
         if Path::new(&self.cache_dir).exists() {
-            fs::remove_dir_all(&self.cache_dir)
-                .map_err(|e| EngineError::CacheError(format!("Failed to clear cache dir: {}", e)))?;
+            fs::remove_dir_all(&self.cache_dir).map_err(|e| {
+                EngineError::CacheError(format!("Failed to clear cache dir: {}", e))
+            })?;
         }
         Ok(())
     }

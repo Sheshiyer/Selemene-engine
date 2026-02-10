@@ -2,13 +2,13 @@
 //!
 //! FAPI-118: Vedic naming suggestions based on birth nakshatra
 
-pub mod types;
 pub mod generator;
 pub mod syllables;
+pub mod types;
 
-pub use types::*;
 pub use generator::*;
 pub use syllables::*;
+pub use types::*;
 
 use serde::{Deserialize, Serialize};
 

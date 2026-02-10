@@ -11,7 +11,7 @@
 
 use super::Synthesizer;
 use crate::workflow::models::{
-    Alignment, SynthesisResult, Tension, Theme, WitnessPrompt, InquiryType,
+    Alignment, InquiryType, SynthesisResult, Tension, Theme, WitnessPrompt,
 };
 use noesis_core::{EngineInput, EngineOutput};
 use serde_json::{json, Value};
@@ -72,32 +72,47 @@ impl SelfInquirySynthesis {
         let mut prompts = Vec::new();
 
         if let Some(shadow) = gk_data.get("primary_shadow").and_then(|v| v.as_str()) {
-            prompts.push(WitnessPrompt::new(
-                format!("Where do you notice '{}' arising in daily life?", shadow.to_lowercase()),
-                InquiryType::PatternNoticing,
-            ).with_context("Gene Keys Shadow"));
+            prompts.push(
+                WitnessPrompt::new(
+                    format!(
+                        "Where do you notice '{}' arising in daily life?",
+                        shadow.to_lowercase()
+                    ),
+                    InquiryType::PatternNoticing,
+                )
+                .with_context("Gene Keys Shadow"),
+            );
         }
 
         if let Some(t) = enn_data.get("type").and_then(|v| v.as_i64()) {
             let (fear, _, _) = Self::get_core_pattern(Some(t));
-            prompts.push(WitnessPrompt::new(
-                format!("What happens in your body when '{}' is triggered?", fear),
-                InquiryType::PatternNoticing,
-            ).with_context("Enneagram Core Fear"));
+            prompts.push(
+                WitnessPrompt::new(
+                    format!("What happens in your body when '{}' is triggered?", fear),
+                    InquiryType::PatternNoticing,
+                )
+                .with_context("Enneagram Core Fear"),
+            );
         }
 
         if let Some(weakness) = enn_data.get("core_weakness").and_then(|v| v.as_str()) {
             prompts.push(WitnessPrompt::new(
-                format!("Can you observe '{}' without trying to fix it?", weakness.to_lowercase()),
+                format!(
+                    "Can you observe '{}' without trying to fix it?",
+                    weakness.to_lowercase()
+                ),
                 InquiryType::PerspectiveShift,
             ));
         }
 
         if let Some(gift) = gk_data.get("primary_gift").and_then(|v| v.as_str()) {
-            prompts.push(WitnessPrompt::new(
-                format!("When does '{}' naturally emerge without effort?", gift),
-                InquiryType::Understanding,
-            ).with_context("Gene Keys Gift"));
+            prompts.push(
+                WitnessPrompt::new(
+                    format!("When does '{}' naturally emerge without effort?", gift),
+                    InquiryType::Understanding,
+                )
+                .with_context("Gene Keys Gift"),
+            );
         }
 
         prompts.push(WitnessPrompt::new(
@@ -156,14 +171,40 @@ impl SelfInquirySynthesis {
         };
 
         let result = &output.result;
-        let etype = result.get("type").or_else(|| result.get("enneagram_type")).cloned().unwrap_or(json!(null));
-        let core_fear = result.get("core_fear").or_else(|| result.get("fear")).cloned().unwrap_or(json!(null));
-        let core_desire = result.get("core_desire").or_else(|| result.get("desire")).cloned().unwrap_or(json!(null));
-        let core_weakness = result.get("core_weakness").or_else(|| result.get("weakness")).or_else(|| result.get("passion")).cloned().unwrap_or(json!(null));
-        let healthy_traits = result.get("healthy_traits").or_else(|| result.get("growth_traits")).cloned().unwrap_or(json!([]));
-        let integration = result.get("integration").or_else(|| result.get("integration_point")).cloned();
+        let etype = result
+            .get("type")
+            .or_else(|| result.get("enneagram_type"))
+            .cloned()
+            .unwrap_or(json!(null));
+        let core_fear = result
+            .get("core_fear")
+            .or_else(|| result.get("fear"))
+            .cloned()
+            .unwrap_or(json!(null));
+        let core_desire = result
+            .get("core_desire")
+            .or_else(|| result.get("desire"))
+            .cloned()
+            .unwrap_or(json!(null));
+        let core_weakness = result
+            .get("core_weakness")
+            .or_else(|| result.get("weakness"))
+            .or_else(|| result.get("passion"))
+            .cloned()
+            .unwrap_or(json!(null));
+        let healthy_traits = result
+            .get("healthy_traits")
+            .or_else(|| result.get("growth_traits"))
+            .cloned()
+            .unwrap_or(json!([]));
+        let integration = result
+            .get("integration")
+            .or_else(|| result.get("integration_point"))
+            .cloned();
 
-        let type_num = etype.as_i64().or_else(|| etype.as_str().and_then(|s| s.parse().ok()));
+        let type_num = etype
+            .as_i64()
+            .or_else(|| etype.as_str().and_then(|s| s.parse().ok()));
 
         json!({
             "available": type_num.is_some(),
@@ -179,16 +220,26 @@ impl SelfInquirySynthesis {
 
     fn get_type_name(type_num: Option<i64>) -> &'static str {
         match type_num {
-            Some(1) => "The Reformer", Some(2) => "The Helper", Some(3) => "The Achiever",
-            Some(4) => "The Individualist", Some(5) => "The Investigator", Some(6) => "The Loyalist",
-            Some(7) => "The Enthusiast", Some(8) => "The Challenger", Some(9) => "The Peacemaker",
+            Some(1) => "The Reformer",
+            Some(2) => "The Helper",
+            Some(3) => "The Achiever",
+            Some(4) => "The Individualist",
+            Some(5) => "The Investigator",
+            Some(6) => "The Loyalist",
+            Some(7) => "The Enthusiast",
+            Some(8) => "The Challenger",
+            Some(9) => "The Peacemaker",
             _ => "Unknown",
         }
     }
 
     fn get_core_pattern(type_num: Option<i64>) -> (&'static str, &'static str, &'static str) {
         match type_num {
-            Some(1) => ("being corrupt/defective", "goodness/integrity", "resentment"),
+            Some(1) => (
+                "being corrupt/defective",
+                "goodness/integrity",
+                "resentment",
+            ),
             Some(2) => ("being unwanted/unloved", "being loved", "pride"),
             Some(3) => ("being worthless", "being valuable", "deceit"),
             Some(4) => ("having no identity", "being unique", "envy"),
@@ -228,14 +279,20 @@ impl SelfInquirySynthesis {
         }
 
         if let Some(shadow) = data.get("primary_shadow").and_then(|v| v.as_str()) {
-            let mut theme = Theme::new(format!("Shadow: {}", shadow), format!("Primary shadow pattern: {}", shadow));
+            let mut theme = Theme::new(
+                format!("Shadow: {}", shadow),
+                format!("Primary shadow pattern: {}", shadow),
+            );
             theme.add_source("gene-keys");
             themes.push(theme);
         }
 
         if let Some(shadows) = data.get("shadows").and_then(|v| v.as_array()) {
             if shadows.len() > 1 {
-                let mut theme = Theme::new("Multiple Shadows", format!("{} shadow frequencies identified", shadows.len()));
+                let mut theme = Theme::new(
+                    "Multiple Shadows",
+                    format!("{} shadow frequencies identified", shadows.len()),
+                );
                 theme.add_source("gene-keys");
                 themes.push(theme);
             }
@@ -251,14 +308,20 @@ impl SelfInquirySynthesis {
 
         if let Some(name) = data.get("type_name").and_then(|v| v.as_str()) {
             if name != "Unknown" {
-                let mut theme = Theme::new(format!("Enneagram: {}", name), format!("Core type pattern: {}", name));
+                let mut theme = Theme::new(
+                    format!("Enneagram: {}", name),
+                    format!("Core type pattern: {}", name),
+                );
                 theme.add_source("enneagram");
                 themes.push(theme);
             }
         }
 
         if let Some(weakness) = data.get("core_weakness").and_then(|v| v.as_str()) {
-            let mut theme = Theme::new(format!("Core Passion: {}", weakness), format!("The passion of {}", weakness));
+            let mut theme = Theme::new(
+                format!("Core Passion: {}", weakness),
+                format!("The passion of {}", weakness),
+            );
             theme.add_source("enneagram");
             themes.push(theme);
         }
@@ -269,7 +332,7 @@ impl SelfInquirySynthesis {
         let mut alignments = Vec::new();
         let type_num = enn.get("type").and_then(|v| v.as_i64());
         let shadows_text = gk.to_string().to_lowercase();
-        
+
         if let Some(t) = type_num {
             let mapping = Self::get_shadow_fear_mapping();
             for (shadow_key, types) in &mapping {
@@ -278,10 +341,13 @@ impl SelfInquirySynthesis {
                     alignments.push(
                         Alignment::new(
                             "Shadow-Fear Resonance",
-                            format!("Gene Keys shadow of '{}' resonates with Type {} fear of {}", shadow_key, t, fear)
+                            format!(
+                                "Gene Keys shadow of '{}' resonates with Type {} fear of {}",
+                                shadow_key, t, fear
+                            ),
                         )
                         .with_engines(vec!["gene-keys".into(), "enneagram".into()])
-                        .with_confidence(0.75)
+                        .with_confidence(0.75),
                     );
                 }
             }
@@ -297,17 +363,28 @@ impl SelfInquirySynthesis {
         if let (Some(g), Some(h)) = (gift, healthy) {
             let gift_lower = g.to_lowercase();
             let healthy_text = h.to_string().to_lowercase();
-            let common_themes = ["compassion", "wisdom", "presence", "authenticity", "courage", "peace", "clarity", "love", "truth", "acceptance"];
+            let common_themes = [
+                "compassion",
+                "wisdom",
+                "presence",
+                "authenticity",
+                "courage",
+                "peace",
+                "clarity",
+                "love",
+                "truth",
+                "acceptance",
+            ];
 
             for theme in common_themes {
                 if gift_lower.contains(theme) && healthy_text.contains(theme) {
                     alignments.push(
                         Alignment::new(
                             format!("Shared Quality: {}", theme),
-                            format!("Both systems point to {} as a growth quality", theme)
+                            format!("Both systems point to {} as a growth quality", theme),
                         )
                         .with_engines(vec!["gene-keys".into(), "enneagram".into()])
-                        .with_confidence(0.7)
+                        .with_confidence(0.7),
                     );
                 }
             }
@@ -358,13 +435,14 @@ impl SelfInquirySynthesis {
             tensions.push(
                 Tension::new(
                     "Core Type Tension",
-                    format!("Type {} fundamental polarity", t)
+                    format!("Type {} fundamental polarity", t),
                 )
                 .with_perspectives("enneagram", fear, "enneagram", desire)
                 .with_integration_hint(format!(
                     "The fear of '{}' and desire for '{}' create a fundamental tension. \
-                     What happens when you simply witness both without trying to resolve them?", fear, desire
-                ))
+                     What happens when you simply witness both without trying to resolve them?",
+                    fear, desire
+                )),
             );
         }
         tensions
@@ -382,24 +460,37 @@ impl SelfInquirySynthesis {
 
         if let Some(shadow) = gk.get("primary_shadow").and_then(|v| v.as_str()) {
             if let Some(gift) = gk.get("primary_gift").and_then(|v| v.as_str()) {
-                parts.push(format!("Gene Keys reveals the {} → {} frequency journey", shadow, gift));
+                parts.push(format!(
+                    "Gene Keys reveals the {} → {} frequency journey",
+                    shadow, gift
+                ));
             }
         }
 
         if let Some(name) = enn.get("type_name").and_then(|v| v.as_str()) {
             if name != "Unknown" {
-                parts.push(format!("Enneagram {} patterns offer complementary insight", name));
+                parts.push(format!(
+                    "Enneagram {} patterns offer complementary insight",
+                    name
+                ));
             }
         }
 
         if !alignments.is_empty() {
-            parts.push(format!("{} alignments found between systems", alignments.len()));
+            parts.push(format!(
+                "{} alignments found between systems",
+                alignments.len()
+            ));
         }
 
         if parts.is_empty() {
-            "Partial synthesis available—additional engine outputs will enrich the inquiry".to_string()
+            "Partial synthesis available—additional engine outputs will enrich the inquiry"
+                .to_string()
         } else {
-            format!("{}. These maps are invitations to witness, not prescriptions to follow.", parts.join(". "))
+            format!(
+                "{}. These maps are invitations to witness, not prescriptions to follow.",
+                parts.join(". ")
+            )
         }
     }
 }
@@ -422,8 +513,11 @@ mod tests {
             witness_prompt: "What frequency are you operating from?".to_string(),
             consciousness_level: 2,
             metadata: CalculationMetadata {
-                calculation_time_ms: 25.0, backend: "native".to_string(),
-                precision_achieved: "standard".to_string(), cached: false, timestamp: Utc::now(),
+                calculation_time_ms: 25.0,
+                backend: "native".to_string(),
+                precision_achieved: "standard".to_string(),
+                cached: false,
+                timestamp: Utc::now(),
             },
         }
     }
@@ -439,16 +533,22 @@ mod tests {
             witness_prompt: "What is your true identity?".to_string(),
             consciousness_level: 1,
             metadata: CalculationMetadata {
-                calculation_time_ms: 12.0, backend: "bridge".to_string(),
-                precision_achieved: "standard".to_string(), cached: false, timestamp: Utc::now(),
+                calculation_time_ms: 12.0,
+                backend: "bridge".to_string(),
+                precision_achieved: "standard".to_string(),
+                cached: false,
+                timestamp: Utc::now(),
             },
         }
     }
 
     fn test_input() -> EngineInput {
         EngineInput {
-            birth_data: None, current_time: Utc::now(), location: None,
-            precision: noesis_core::Precision::Standard, options: HashMap::new(),
+            birth_data: None,
+            current_time: Utc::now(),
+            location: None,
+            precision: noesis_core::Precision::Standard,
+            options: HashMap::new(),
         }
     }
 
@@ -466,6 +566,9 @@ mod tests {
     #[test]
     fn test_type_names() {
         assert_eq!(SelfInquirySynthesis::get_type_name(Some(1)), "The Reformer");
-        assert_eq!(SelfInquirySynthesis::get_type_name(Some(4)), "The Individualist");
+        assert_eq!(
+            SelfInquirySynthesis::get_type_name(Some(4)),
+            "The Individualist"
+        );
     }
 }

@@ -14,7 +14,7 @@ use noesis_core::{EngineError, EngineInput, EngineOutput};
 use std::collections::HashMap;
 use std::sync::Arc;
 use std::time::Instant;
-use tracing::{info, warn, instrument};
+use tracing::{info, instrument, warn};
 
 /// Executes workflows with parallel engine execution and synthesis
 pub struct WorkflowExecutor {
@@ -177,12 +177,8 @@ impl WorkflowExecutor {
         input: &EngineInput,
     ) -> SynthesisResult {
         match synthesis_type {
-            SynthesisType::BirthBlueprint => {
-                BirthBlueprintSynthesizer::synthesize(results, input)
-            }
-            SynthesisType::DailyPractice => {
-                DailyPracticeSynthesizer::synthesize(results, input)
-            }
+            SynthesisType::BirthBlueprint => BirthBlueprintSynthesizer::synthesize(results, input),
+            SynthesisType::DailyPractice => DailyPracticeSynthesizer::synthesize(results, input),
             // TODO: Implement other synthesizers
             _ => self.generic_synthesis(results),
         }
@@ -191,7 +187,7 @@ impl WorkflowExecutor {
     /// Generic synthesis for unimplemented types
     fn generic_synthesis(&self, results: &HashMap<String, EngineOutput>) -> SynthesisResult {
         let engine_names: Vec<String> = results.keys().cloned().collect();
-        
+
         SynthesisResult {
             themes: Vec::new(),
             alignments: Vec::new(),
@@ -250,7 +246,10 @@ mod tests {
             self.phase
         }
 
-        async fn calculate(&self, _input: EngineInput) -> Result<EngineOutput, noesis_core::EngineError> {
+        async fn calculate(
+            &self,
+            _input: EngineInput,
+        ) -> Result<EngineOutput, noesis_core::EngineError> {
             Ok(EngineOutput {
                 engine_id: self.id.clone(),
                 result: serde_json::json!({ "mock": true }),
@@ -266,7 +265,10 @@ mod tests {
             })
         }
 
-        async fn validate(&self, _output: &EngineOutput) -> Result<ValidationResult, noesis_core::EngineError> {
+        async fn validate(
+            &self,
+            _output: &EngineOutput,
+        ) -> Result<ValidationResult, noesis_core::EngineError> {
             Ok(ValidationResult {
                 valid: true,
                 confidence: 1.0,
@@ -339,7 +341,10 @@ mod tests {
 
         assert!(matches!(
             result,
-            Err(EngineError::PhaseAccessDenied { required: 3, current: 1 })
+            Err(EngineError::PhaseAccessDenied {
+                required: 3,
+                current: 1
+            })
         ));
     }
 }

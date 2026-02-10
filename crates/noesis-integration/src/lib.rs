@@ -33,43 +33,41 @@
 //! }
 //! ```
 
-use chrono::{DateTime, Utc, Datelike, Timelike};
+use chrono::{DateTime, Datelike, Timelike, Utc};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
 pub mod analysis;
+pub mod synthesis;
 pub mod tcm_layer;
 pub mod verification;
-pub mod synthesis;
 
-pub use analysis::{UnifiedAnalysis, LayeredInsight, UnifiedRecommendation, Priority as AnalysisPriority};
+pub use analysis::{
+    LayeredInsight, Priority as AnalysisPriority, UnifiedAnalysis, UnifiedRecommendation,
+};
+pub use synthesis::SynthesisEngine;
 pub use tcm_layer::{TCMAnalysis, TCMElement, TCMOrgan};
 pub use verification::{BirthProfile, DataVerifier, VerificationResult};
-pub use synthesis::SynthesisEngine;
 
 /// Re-export key types from Vedic API
 pub use noesis_vedic_api::{
-    CachedVedicClient,
-    panchang::{
-        CompletePanchang, Panchang, PanchangQuery,
-        MuhurtaCollection, HoraTimings, ChoghadiyaTimings,
-        Tithi, Nakshatra, Yoga, Karana, Vara, Paksha,
-    },
-    dasha::{VimshottariDasha, DashaPeriod, DashaPlanet, DashaLevel},
     chart::{BirthChart, NavamsaChart, ZodiacSign},
+    dasha::{DashaLevel, DashaPeriod, DashaPlanet, VimshottariDasha},
+    panchang::{
+        ChoghadiyaTimings, CompletePanchang, HoraTimings, Karana, MuhurtaCollection, Nakshatra,
+        Paksha, Panchang, PanchangQuery, Tithi, Vara, Yoga,
+    },
+    CachedVedicClient,
 };
 
 /// Re-export from Vimshottari engine
 pub use engine_vimshottari::{
-    VimshottariChart, Mahadasha, Antardasha, Pratyantardasha,
-    VedicPlanet, Nakshatra as VimshottariNakshatra,
-    CurrentPeriod, PlanetaryQualities,
+    Antardasha, CurrentPeriod, Mahadasha, Nakshatra as VimshottariNakshatra, PlanetaryQualities,
+    Pratyantardasha, VedicPlanet, VimshottariChart,
 };
 
 /// Re-export from Numerology engine
-pub use engine_numerology::{
-    NumerologyEngine, NumerologyNumber, NumerologyResult,
-};
+pub use engine_numerology::{NumerologyEngine, NumerologyNumber, NumerologyResult};
 
 /// Version of this crate
 pub const VERSION: &str = env!("CARGO_PKG_VERSION");
@@ -82,19 +80,19 @@ pub type Result<T> = std::result::Result<T, IntegrationError>;
 pub enum IntegrationError {
     #[error("Vedic API error: {0}")]
     VedicApi(#[from] noesis_vedic_api::VedicApiError),
-    
+
     #[error("Engine error: {0}")]
     Engine(String),
-    
+
     #[error("Verification failed: {0}")]
     Verification(String),
-    
+
     #[error("Date parsing error: {0}")]
     DateParse(String),
-    
+
     #[error("Configuration error: {0}")]
     Configuration(String),
-    
+
     #[error("Synthesis error: {0}")]
     Synthesis(String),
 }
@@ -146,35 +144,31 @@ pub async fn generate_unified_analysis(
 }
 
 /// Verify birth data against multiple calculation sources
-pub async fn verify_birth_data(
-    profile: &BirthProfile,
-) -> Result<VerificationResult> {
+pub async fn verify_birth_data(profile: &BirthProfile) -> Result<VerificationResult> {
     let verifier = DataVerifier::new();
     verifier.verify(profile).await
 }
 
 /// Get current Panchang with all Muhurtas for a location
-pub async fn get_current_panchang(
-    lat: f64,
-    lng: f64,
-    tz: f64,
-) -> Result<CompletePanchang> {
+pub async fn get_current_panchang(lat: f64, lng: f64, tz: f64) -> Result<CompletePanchang> {
     let client = CachedVedicClient::from_env()
         .map_err(|e| IntegrationError::Configuration(e.to_string()))?;
-    
+
     let now = Utc::now();
-    let panchang = client.get_complete_panchang(
-        now.year(),
-        now.month(),
-        now.day(),
-        now.hour() as u32,
-        now.minute() as u32,
-        now.second() as u32,
-        lat,
-        lng,
-        tz,
-    ).await?;
-    
+    let panchang = client
+        .get_complete_panchang(
+            now.year(),
+            now.month(),
+            now.day(),
+            now.hour(),
+            now.minute(),
+            now.second(),
+            lat,
+            lng,
+            tz,
+        )
+        .await?;
+
     Ok(panchang)
 }
 
@@ -233,14 +227,8 @@ mod tests {
 
     #[test]
     fn test_birth_profile_creation() {
-        let profile = BirthProfile::new(
-            "1991-08-13",
-            "13:31",
-            12.9716,
-            77.5946,
-            "Asia/Kolkata",
-        );
-        
+        let profile = BirthProfile::new("1991-08-13", "13:31", 12.9716, 77.5946, "Asia/Kolkata");
+
         assert_eq!(profile.date, "1991-08-13");
         assert_eq!(profile.time, Some("13:31".to_string()));
     }

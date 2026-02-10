@@ -20,8 +20,7 @@ export const HEXAGRAMS: Hexagram[] = [
     name: 'The Creative',
     chineseName: '乾 (Qián)',
     meaning: 'Pure yang energy, heaven, creative power, strong action',
-    judgment:
-      'The Creative works sublime success, furthering through perseverance.',
+    judgment: 'The Creative works sublime success, furthering through perseverance.',
     image:
       'The movement of heaven is full of power. Thus the superior person makes themselves strong and untiring.',
     lines: [true, true, true, true, true, true],
@@ -42,8 +41,7 @@ export const HEXAGRAMS: Hexagram[] = [
     name: 'Difficulty at the Beginning',
     chineseName: '屯 (Zhūn)',
     meaning: 'Initial difficulties, birth pangs, gathering resources',
-    judgment:
-      'Difficulty at the Beginning works supreme success, furthering through perseverance.',
+    judgment: 'Difficulty at the Beginning works supreme success, furthering through perseverance.',
     image: 'Clouds and thunder: the image of Difficulty at the Beginning.',
     lines: [true, false, false, false, true, false],
   },
@@ -82,8 +80,7 @@ export const HEXAGRAMS: Hexagram[] = [
     name: 'The Army',
     chineseName: '師 (Shī)',
     meaning: 'Organized force, discipline, leadership',
-    judgment:
-      'The Army. The army needs perseverance and a strong man. Good fortune without blame.',
+    judgment: 'The Army. The army needs perseverance and a strong man. Good fortune without blame.',
     image: 'In the middle of the earth is water: the image of the Army.',
     lines: [false, true, false, false, false, false],
   },
@@ -92,8 +89,7 @@ export const HEXAGRAMS: Hexagram[] = [
     name: 'Holding Together',
     chineseName: '比 (Bǐ)',
     meaning: 'Union, seeking connection, forming alliances',
-    judgment:
-      'Holding Together brings good fortune. Inquire of the oracle once again.',
+    judgment: 'Holding Together brings good fortune. Inquire of the oracle once again.',
     image: 'On the earth is water: the image of Holding Together.',
     lines: [false, false, false, false, true, false],
   },
@@ -108,14 +104,7 @@ for (let i = 9; i <= 64; i++) {
     meaning: `Meaning for hexagram ${i} (stub data)`,
     judgment: `The judgment for hexagram ${i}.`,
     image: `The image for hexagram ${i}.`,
-    lines: [
-      (i & 1) > 0,
-      (i & 2) > 0,
-      (i & 4) > 0,
-      (i & 8) > 0,
-      (i & 16) > 0,
-      (i & 32) > 0,
-    ],
+    lines: [(i & 1) > 0, (i & 2) > 0, (i & 4) > 0, (i & 8) > 0, (i & 16) > 0, (i & 32) > 0],
   })
 }
 

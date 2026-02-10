@@ -5,15 +5,13 @@
 use async_trait::async_trait;
 use chrono::{NaiveDate, NaiveTime, TimeZone, Utc};
 use noesis_core::{
-    ConsciousnessEngine, EngineError, EngineInput, EngineOutput, ValidationResult,
-    CalculationMetadata,
+    CalculationMetadata, ConsciousnessEngine, EngineError, EngineInput, EngineOutput,
+    ValidationResult,
 };
 use serde_json::json;
 use std::time::Instant;
 
-use crate::{
-    generate_hd_chart, initialize_ephemeris, witness::generate_witness_prompt, HDChart,
-};
+use crate::{generate_hd_chart, initialize_ephemeris, witness::generate_witness_prompt, HDChart};
 
 /// Human Design consciousness engine implementing the universal trait
 pub struct HumanDesignEngine {
@@ -31,22 +29,22 @@ impl HumanDesignEngine {
     }
 
     /// Convert EngineInput to HD calculation parameters
-    fn extract_birth_params(input: &EngineInput) -> Result<(NaiveDate, NaiveTime, String, f64, f64), EngineError> {
-        let birth_data = input
-            .birth_data
-            .as_ref()
-            .ok_or_else(|| EngineError::ValidationError("birth_data required for Human Design".to_string()))?;
+    fn extract_birth_params(
+        input: &EngineInput,
+    ) -> Result<(NaiveDate, NaiveTime, String, f64, f64), EngineError> {
+        let birth_data = input.birth_data.as_ref().ok_or_else(|| {
+            EngineError::ValidationError("birth_data required for Human Design".to_string())
+        })?;
 
         // Parse date
         let date = NaiveDate::parse_from_str(&birth_data.date, "%Y-%m-%d")
             .map_err(|e| EngineError::ValidationError(format!("Invalid date format: {}", e)))?;
 
         // Parse time
-        let time_str = birth_data
-            .time
-            .as_ref()
-            .ok_or_else(|| EngineError::ValidationError("birth_time required for Human Design".to_string()))?;
-        
+        let time_str = birth_data.time.as_ref().ok_or_else(|| {
+            EngineError::ValidationError("birth_time required for Human Design".to_string())
+        })?;
+
         let time = NaiveTime::parse_from_str(time_str, "%H:%M")
             .or_else(|_| NaiveTime::parse_from_str(time_str, "%H:%M:%S"))
             .map_err(|e| EngineError::ValidationError(format!("Invalid time format: {}", e)))?;
@@ -61,20 +59,23 @@ impl HumanDesignEngine {
     /// Serialize HDChart to JSON value
     fn serialize_chart(chart: &HDChart) -> serde_json::Value {
         // Extract defined centers as an array
-        let defined_centers: Vec<String> = chart.centers
+        let defined_centers: Vec<String> = chart
+            .centers
             .iter()
             .filter(|(_, state)| state.defined)
             .map(|(center, _)| format!("{:?}", center))
             .collect();
-        
+
         // Format channels as "gate1-gate2" strings
-        let active_channels: Vec<String> = chart.channels
+        let active_channels: Vec<String> = chart
+            .channels
             .iter()
             .map(|ch| format!("{}-{}", ch.gate1, ch.gate2))
             .collect();
-        
+
         // Convert activations to a more readable format
-        let personality_activations: serde_json::Map<String, serde_json::Value> = chart.personality_activations
+        let personality_activations: serde_json::Map<String, serde_json::Value> = chart
+            .personality_activations
             .iter()
             .map(|act| {
                 let key = format!("{:?}", act.planet).to_lowercase();
@@ -86,8 +87,9 @@ impl HumanDesignEngine {
                 (key, value)
             })
             .collect();
-        
-        let design_activations: serde_json::Map<String, serde_json::Value> = chart.design_activations
+
+        let design_activations: serde_json::Map<String, serde_json::Value> = chart
+            .design_activations
             .iter()
             .map(|act| {
                 let key = format!("{:?}", act.planet).to_lowercase();
@@ -99,7 +101,7 @@ impl HumanDesignEngine {
                 (key, value)
             })
             .collect();
-        
+
         json!({
             "hd_type": format!("{:?}", chart.hd_type),
             "authority": format!("{:?}", chart.authority),
@@ -137,7 +139,7 @@ impl ConsciousnessEngine for HumanDesignEngine {
         let start = Instant::now();
 
         // Extract birth parameters from input
-        let (date, time, timezone_str, latitude, longitude) = Self::extract_birth_params(&input)?;
+        let (date, time, timezone_str, _latitude, _longitude) = Self::extract_birth_params(&input)?;
 
         // Initialize ephemeris (idempotent operation)
         initialize_ephemeris("");
@@ -156,8 +158,9 @@ impl ConsciousnessEngine for HumanDesignEngine {
         let utc_dt = local_dt.with_timezone(&Utc);
 
         // Generate HD chart
-        let chart = generate_hd_chart(utc_dt, "")
-            .map_err(|e| EngineError::CalculationError(format!("Chart generation failed: {}", e)))?;
+        let chart = generate_hd_chart(utc_dt, "").map_err(|e| {
+            EngineError::CalculationError(format!("Chart generation failed: {}", e))
+        })?;
 
         // Get consciousness level from input options or default to 1
         let consciousness_level = input
@@ -222,7 +225,10 @@ impl ConsciousnessEngine for HumanDesignEngine {
 
         // Check consciousness level is in valid range
         if output.consciousness_level > 5 {
-            messages.push(format!("Invalid consciousness_level: {}", output.consciousness_level));
+            messages.push(format!(
+                "Invalid consciousness_level: {}",
+                output.consciousness_level
+            ));
             valid = false;
         }
 
@@ -287,7 +293,7 @@ mod tests {
     async fn test_cache_key_generation() {
         let engine = HumanDesignEngine::new();
         let input = create_test_input();
-        
+
         let key = engine.cache_key(&input);
         assert!(key.starts_with("hd:"));
         assert!(key.contains("1987-01-01"));
@@ -299,7 +305,7 @@ mod tests {
         let input = create_test_input();
         let result = HumanDesignEngine::extract_birth_params(&input);
         assert!(result.is_ok());
-        
+
         let (date, time, tz, lat, lon) = result.unwrap();
         assert_eq!(date.to_string(), "1987-01-01");
         assert_eq!(time.format("%H:%M").to_string(), "12:00");
@@ -313,7 +319,7 @@ mod tests {
         let engine = HumanDesignEngine::new();
         let mut input = create_test_input();
         input.birth_data = None;
-        
+
         let result = engine.calculate(input).await;
         assert!(result.is_err());
     }
@@ -334,11 +340,11 @@ mod tests {
                 timestamp: Utc::now(),
             },
         };
-        
+
         let result = engine.validate(&output).await.unwrap();
         assert!(!result.valid);
         assert!(result.messages.iter().any(|m| m.contains("empty")));
-        
+
         // Fix it
         output.witness_prompt = "Test question?".to_string();
         let result = engine.validate(&output).await.unwrap();

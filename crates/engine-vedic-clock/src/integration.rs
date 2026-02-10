@@ -3,11 +3,11 @@
 //! Combines the organ clock system with Vedic Panchanga elements
 //! to provide enhanced temporal recommendations.
 
-use chrono::{DateTime, Utc};
-use crate::models::{OrganWindow, TemporalRecommendation, ActivityRecommendation};
 use crate::calculator::get_current_organ;
 use crate::dosha::get_dosha_for_hour;
+use crate::models::{ActivityRecommendation, OrganWindow, TemporalRecommendation};
 use crate::panchanga_qualities::{get_combined_quality, PanchangaQuality, QualityRating};
+use chrono::{DateTime, Utc};
 
 /// Generate a complete temporal recommendation for the current time
 ///
@@ -25,15 +25,19 @@ pub fn get_temporal_recommendation(
     let organ = get_current_organ(datetime, timezone_offset);
     let local_hour = crate::calculator::get_local_hour(datetime, timezone_offset);
     let dosha = get_dosha_for_hour(local_hour);
-    
+
     // Get Panchanga quality if available
     let panchanga = get_combined_quality(tithi_index, nakshatra_index);
-    
+
     // Generate activity recommendations based on organ + dosha + panchanga
     let activities = generate_activities(&organ, &panchanga);
-    
+
     let panchanga_quality = if tithi_index.is_some() || nakshatra_index.is_some() {
-        Some(format!("{}: {}", panchanga.rating.display(), panchanga.description))
+        Some(format!(
+            "{}: {}",
+            panchanga.rating.display(),
+            panchanga.description
+        ))
     } else {
         None
     };
@@ -48,9 +52,12 @@ pub fn get_temporal_recommendation(
 }
 
 /// Generate activity recommendations based on organ and panchanga
-fn generate_activities(organ: &OrganWindow, panchanga: &PanchangaQuality) -> Vec<ActivityRecommendation> {
+fn generate_activities(
+    organ: &OrganWindow,
+    panchanga: &PanchangaQuality,
+) -> Vec<ActivityRecommendation> {
     let mut activities = Vec::new();
-    
+
     // Add organ-based recommendations
     for activity in &organ.recommended_activities {
         let quality = match panchanga.rating {
@@ -59,7 +66,7 @@ fn generate_activities(organ: &OrganWindow, panchanga: &PanchangaQuality) -> Vec
             QualityRating::Neutral => "neutral",
             QualityRating::Challenging => "use caution",
         };
-        
+
         activities.push(ActivityRecommendation {
             activity: activity.clone(),
             quality: quality.to_string(),
@@ -71,10 +78,13 @@ fn generate_activities(organ: &OrganWindow, panchanga: &PanchangaQuality) -> Vec
             ),
         });
     }
-    
+
     // Add Panchanga-favorable activities
     for favorable in &panchanga.favorable_for {
-        if !activities.iter().any(|a| a.activity.to_lowercase() == favorable.to_lowercase()) {
+        if !activities
+            .iter()
+            .any(|a| a.activity.to_lowercase() == favorable.to_lowercase())
+        {
             activities.push(ActivityRecommendation {
                 activity: favorable.clone(),
                 quality: "panchanga-favored".to_string(),
@@ -82,7 +92,7 @@ fn generate_activities(organ: &OrganWindow, panchanga: &PanchangaQuality) -> Vec
             });
         }
     }
-    
+
     // Add cautions for Panchanga-unfavorable activities
     for avoid in &panchanga.avoid {
         activities.push(ActivityRecommendation {
@@ -91,7 +101,7 @@ fn generate_activities(organ: &OrganWindow, panchanga: &PanchangaQuality) -> Vec
             reason: format!("Panchanga advises caution: {}", panchanga.description),
         });
     }
-    
+
     activities
 }
 
@@ -110,56 +120,50 @@ pub fn get_activity_favorability(
     panchanga: &PanchangaQuality,
 ) -> f64 {
     let activity_lower = activity.to_lowercase();
-    
+
     // Check if activity is in organ's recommended activities
-    let organ_bonus: f64 = if organ.recommended_activities
-        .iter()
-        .any(|a| a.to_lowercase().contains(&activity_lower) || activity_lower.contains(&a.to_lowercase()))
-    {
+    let organ_bonus: f64 = if organ.recommended_activities.iter().any(|a| {
+        a.to_lowercase().contains(&activity_lower) || activity_lower.contains(&a.to_lowercase())
+    }) {
         0.3
     } else {
         0.0
     };
-    
+
     // Check if activity is favorable per Panchanga
-    let panchanga_bonus: f64 = if panchanga.favorable_for
-        .iter()
-        .any(|f| f.to_lowercase().contains(&activity_lower) || activity_lower.contains(&f.to_lowercase()))
-    {
+    let panchanga_bonus: f64 = if panchanga.favorable_for.iter().any(|f| {
+        f.to_lowercase().contains(&activity_lower) || activity_lower.contains(&f.to_lowercase())
+    }) {
         0.2
     } else {
         0.0
     };
-    
+
     // Check if activity should be avoided
-    let avoid_penalty: f64 = if panchanga.avoid
-        .iter()
-        .any(|a| a.to_lowercase().contains(&activity_lower) || activity_lower.contains(&a.to_lowercase()))
-    {
+    let avoid_penalty: f64 = if panchanga.avoid.iter().any(|a| {
+        a.to_lowercase().contains(&activity_lower) || activity_lower.contains(&a.to_lowercase())
+    }) {
         -0.3
     } else {
         0.0
     };
-    
+
     // Base score from Panchanga rating
     let base_score = panchanga.rating.to_score();
-    
+
     // Calculate final score (clamped to 0.0-1.0)
     (base_score + organ_bonus + panchanga_bonus + avoid_penalty).clamp(0.0, 1.0)
 }
 
 /// Synthesize organ clock with dosha time for enhanced recommendation
-pub fn synthesize_organ_dosha(
-    datetime: DateTime<Utc>,
-    timezone_offset: i32,
-) -> String {
+pub fn synthesize_organ_dosha(datetime: DateTime<Utc>, timezone_offset: i32) -> String {
     let organ = get_current_organ(datetime, timezone_offset);
     let local_hour = crate::calculator::get_local_hour(datetime, timezone_offset);
     let dosha = get_dosha_for_hour(local_hour);
-    
+
     // Calculate harmony between organ and dosha
     let harmony = crate::dosha::calculate_dosha_organ_harmony(&organ.organ, &dosha.dosha);
-    
+
     let harmony_desc = if harmony >= 0.8 {
         "harmonious"
     } else if harmony >= 0.5 {
@@ -167,7 +171,7 @@ pub fn synthesize_organ_dosha(
     } else {
         "transitional"
     };
-    
+
     format!(
         "{} ({}) time during {} period - {} energy. {}",
         organ.organ.display_name(),
@@ -187,7 +191,7 @@ mod tests {
     fn test_get_temporal_recommendation_basic() {
         let dt = Utc.with_ymd_and_hms(2024, 1, 1, 8, 0, 0).unwrap();
         let rec = get_temporal_recommendation(dt, 0, None, None);
-        
+
         assert_eq!(rec.organ, crate::models::Organ::Stomach);
         assert!(!rec.activities.is_empty());
         assert!(rec.panchanga_quality.is_none());
@@ -197,7 +201,7 @@ mod tests {
     fn test_get_temporal_recommendation_with_panchanga() {
         let dt = Utc.with_ymd_and_hms(2024, 1, 1, 8, 0, 0).unwrap();
         let rec = get_temporal_recommendation(dt, 0, Some(2), Some(3)); // Tritiya + Soft
-        
+
         assert!(rec.panchanga_quality.is_some());
         let quality = rec.panchanga_quality.unwrap();
         assert!(quality.contains("Excellent") || quality.contains("Good"));
@@ -207,31 +211,35 @@ mod tests {
     fn test_generate_activities() {
         let organ = crate::wisdom::get_organ_for_hour(8); // Stomach
         let panchanga = get_combined_quality(Some(2), None);
-        
+
         let activities = generate_activities(&organ, &panchanga);
         assert!(!activities.is_empty());
-        
+
         // Should have eating-related activity during Stomach time
-        assert!(activities.iter().any(|a| 
-            a.activity.to_lowercase().contains("eat") || 
-            a.activity.to_lowercase().contains("nourish")));
+        assert!(activities
+            .iter()
+            .any(|a| a.activity.to_lowercase().contains("eat")
+                || a.activity.to_lowercase().contains("nourish")));
     }
 
     #[test]
     fn test_activity_favorability() {
         let organ = crate::wisdom::get_organ_for_hour(8); // Stomach
         let panchanga = get_combined_quality(Some(2), None); // Tritiya (auspicious)
-        
+
         // Eating should be favorable during Stomach time
         let eating_score = get_activity_favorability("eating", &organ, &panchanga);
-        assert!(eating_score > 0.5, "Eating should be favorable during Stomach time");
+        assert!(
+            eating_score > 0.5,
+            "Eating should be favorable during Stomach time"
+        );
     }
 
     #[test]
     fn test_synthesize_organ_dosha() {
         let dt = Utc.with_ymd_and_hms(2024, 1, 1, 8, 0, 0).unwrap();
         let synthesis = synthesize_organ_dosha(dt, 0);
-        
+
         assert!(synthesis.contains("Stomach"));
         assert!(synthesis.contains("Earth"));
     }

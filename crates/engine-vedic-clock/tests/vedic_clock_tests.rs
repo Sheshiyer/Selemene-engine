@@ -6,15 +6,13 @@
 //! - Activity recommendations
 //! - Witness prompt generation
 
-use engine_vedic_clock::{
-    VedicClockEngine, ConsciousnessEngine, EngineInput,
-    Organ, Dosha, Element, Activity,
-    get_organ_for_hour, get_dosha_for_hour, organ_clock, dosha_times,
-    get_optimal_timing, is_favorable_now, get_best_time,
-    generate_witness_prompt, get_organ_element, get_opposing_organ,
-    calculate_dosha_organ_harmony, get_temporal_recommendation,
-};
 use chrono::{TimeZone, Utc};
+use engine_vedic_clock::{
+    calculate_dosha_organ_harmony, dosha_times, generate_witness_prompt, get_best_time,
+    get_dosha_for_hour, get_opposing_organ, get_optimal_timing, get_organ_element,
+    get_organ_for_hour, get_temporal_recommendation, is_favorable_now, organ_clock, Activity,
+    ConsciousnessEngine, Dosha, Element, EngineInput, Organ, VedicClockEngine,
+};
 use noesis_core::Precision;
 use serde_json::json;
 use std::collections::HashMap;
@@ -102,7 +100,7 @@ fn test_organ_clock_has_12_organs() {
 #[test]
 fn test_each_organ_window_is_2_hours() {
     let clock = organ_clock();
-    
+
     for window in clock {
         let duration = if window.end_hour < window.start_hour {
             (24 - window.start_hour) + window.end_hour
@@ -129,11 +127,11 @@ fn test_dosha_specific_mappings() {
     // Vata: 2-6 AM and 2-6 PM (14-18)
     assert_eq!(get_dosha_for_hour(3).dosha, Dosha::Vata);
     assert_eq!(get_dosha_for_hour(15).dosha, Dosha::Vata);
-    
+
     // Kapha: 6-10 AM and 6-10 PM (18-22)
     assert_eq!(get_dosha_for_hour(7).dosha, Dosha::Kapha);
     assert_eq!(get_dosha_for_hour(19).dosha, Dosha::Kapha);
-    
+
     // Pitta: 10 AM-2 PM and 10 PM-2 AM
     assert_eq!(get_dosha_for_hour(11).dosha, Dosha::Pitta);
     assert_eq!(get_dosha_for_hour(23).dosha, Dosha::Pitta);
@@ -155,8 +153,11 @@ fn test_dosha_periods_are_4_hours() {
 fn test_dosha_organ_harmony() {
     // Perfect harmony when organ dosha matches time dosha
     let harmony = calculate_dosha_organ_harmony(&Organ::Lung, &Dosha::Kapha);
-    assert!((harmony - 1.0).abs() < 0.001, "Lung (Kapha) should have perfect harmony during Kapha time");
-    
+    assert!(
+        (harmony - 1.0).abs() < 0.001,
+        "Lung (Kapha) should have perfect harmony during Kapha time"
+    );
+
     // Imperfect but non-zero harmony for mismatches
     let harmony = calculate_dosha_organ_harmony(&Organ::Heart, &Dosha::Vata);
     assert!(harmony > 0.0 && harmony < 1.0);
@@ -169,7 +170,7 @@ fn test_dosha_organ_harmony() {
 #[test]
 fn test_optimal_timing_returns_results() {
     let dt = Utc.with_ymd_and_hms(2024, 1, 1, 10, 0, 0).unwrap();
-    
+
     for activity in [
         Activity::Meditation,
         Activity::Exercise,
@@ -192,7 +193,7 @@ fn test_optimal_timing_returns_results() {
 fn test_optimal_timing_sorted_by_quality() {
     let dt = Utc.with_ymd_and_hms(2024, 1, 1, 10, 0, 0).unwrap();
     let windows = get_optimal_timing(Activity::Work, dt, 0);
-    
+
     for i in 1..windows.len() {
         assert!(
             windows[i - 1].quality >= windows[i].quality,
@@ -206,7 +207,10 @@ fn test_eating_favorable_during_stomach_time() {
     // 8 AM is Stomach time
     let dt = Utc.with_ymd_and_hms(2024, 1, 1, 8, 0, 0).unwrap();
     let (favorable, _reason) = is_favorable_now(Activity::Eating, dt, 0);
-    assert!(favorable, "Eating should be favorable during Stomach time (7-9 AM)");
+    assert!(
+        favorable,
+        "Eating should be favorable during Stomach time (7-9 AM)"
+    );
 }
 
 #[test]
@@ -224,7 +228,10 @@ fn test_work_favorable_during_spleen_time() {
     // 10 AM is Spleen time - good for mental work
     let dt = Utc.with_ymd_and_hms(2024, 1, 1, 10, 0, 0).unwrap();
     let (favorable, _) = is_favorable_now(Activity::Work, dt, 0);
-    assert!(favorable, "Work should be favorable during Spleen time (9-11 AM)");
+    assert!(
+        favorable,
+        "Work should be favorable during Spleen time (9-11 AM)"
+    );
 }
 
 #[test]
@@ -239,8 +246,16 @@ fn test_best_time_returns_valid_window() {
         Activity::Social,
     ] {
         let best = get_best_time(activity);
-        assert!(best.quality > 0.0, "{:?} should have positive quality", activity);
-        assert!(!best.reason.is_empty(), "{:?} should have a reason", activity);
+        assert!(
+            best.quality > 0.0,
+            "{:?} should have positive quality",
+            activity
+        );
+        assert!(
+            !best.reason.is_empty(),
+            "{:?} should have a reason",
+            activity
+        );
     }
 }
 
@@ -257,7 +272,10 @@ fn test_witness_prompts_are_questions() {
                 assert!(
                     prompt.contains("?"),
                     "Prompt for {:?}/{:?}/level {} should be a question: {}",
-                    organ, dosha, level, prompt
+                    organ,
+                    dosha,
+                    level,
+                    prompt
                 );
             }
         }
@@ -267,16 +285,17 @@ fn test_witness_prompts_are_questions() {
 #[test]
 fn test_witness_prompts_non_prescriptive() {
     let prescriptive_words = ["should", "must", "need to", "have to", "ought"];
-    
+
     for organ in Organ::all_in_cycle_order() {
         for dosha in [Dosha::Vata, Dosha::Pitta, Dosha::Kapha] {
             let prompt = generate_witness_prompt(&organ, &dosha, 3);
-            
+
             for word in prescriptive_words {
                 assert!(
                     !prompt.to_lowercase().contains(word),
                     "Prompt should not contain prescriptive '{}': {}",
-                    word, prompt
+                    word,
+                    prompt
                 );
             }
         }
@@ -287,16 +306,16 @@ fn test_witness_prompts_non_prescriptive() {
 fn test_witness_prompts_vary_by_level() {
     let organ = Organ::Heart;
     let dosha = Dosha::Pitta;
-    
+
     let awareness = generate_witness_prompt(&organ, &dosha, 1);
     let observation = generate_witness_prompt(&organ, &dosha, 3);
     let integration = generate_witness_prompt(&organ, &dosha, 5);
-    
+
     // All should be non-empty and questions
     assert!(!awareness.is_empty());
     assert!(!observation.is_empty());
     assert!(!integration.is_empty());
-    
+
     // They might be different (though randomness means they could occasionally be same)
     // Just verify they're all valid questions
     assert!(awareness.contains("?"));
@@ -312,10 +331,10 @@ fn test_witness_prompts_vary_by_level() {
 async fn test_engine_calculate_basic() {
     let engine = VedicClockEngine::new();
     let input = create_test_input(0);
-    
+
     let result = engine.calculate(input).await;
     assert!(result.is_ok(), "Engine calculation should succeed");
-    
+
     let output = result.unwrap();
     assert_eq!(output.engine_id, "vedic-clock");
     assert!(!output.witness_prompt.is_empty());
@@ -327,11 +346,11 @@ async fn test_engine_calculate_basic() {
 #[tokio::test]
 async fn test_engine_with_timezone() {
     let engine = VedicClockEngine::new();
-    
+
     // Test with IST timezone (+330 minutes)
     let mut options = HashMap::new();
     options.insert("timezone_offset".to_string(), json!(330));
-    
+
     let input = EngineInput {
         birth_data: None,
         current_time: Utc.with_ymd_and_hms(2024, 1, 1, 4, 0, 0).unwrap(), // 4 AM UTC = 9:30 AM IST
@@ -339,10 +358,10 @@ async fn test_engine_with_timezone() {
         precision: Precision::Standard,
         options,
     };
-    
+
     let result = engine.calculate(input).await;
     assert!(result.is_ok());
-    
+
     let output = result.unwrap();
     // At 9:30 AM IST, should be Spleen time
     let organ = output.result.get("current_organ").unwrap();
@@ -353,11 +372,11 @@ async fn test_engine_with_timezone() {
 #[tokio::test]
 async fn test_engine_with_activity() {
     let engine = VedicClockEngine::new();
-    
+
     let mut options = HashMap::new();
     options.insert("timezone_offset".to_string(), json!(0));
     options.insert("activity".to_string(), json!("meditation"));
-    
+
     let input = EngineInput {
         birth_data: None,
         current_time: Utc::now(),
@@ -365,27 +384,30 @@ async fn test_engine_with_activity() {
         precision: Precision::Standard,
         options,
     };
-    
+
     let result = engine.calculate(input).await;
     assert!(result.is_ok());
-    
+
     let output = result.unwrap();
     assert!(output.result.get("activity_timing").is_some());
-    
+
     let timing = output.result.get("activity_timing").unwrap();
-    assert_eq!(timing.get("activity").unwrap().as_str().unwrap(), "Meditation");
+    assert_eq!(
+        timing.get("activity").unwrap().as_str().unwrap(),
+        "Meditation"
+    );
     assert!(timing.get("optimal_windows").is_some());
 }
 
 #[tokio::test]
 async fn test_engine_with_panchanga() {
     let engine = VedicClockEngine::new();
-    
+
     let mut options = HashMap::new();
     options.insert("timezone_offset".to_string(), json!(0));
     options.insert("tithi_index".to_string(), json!(2)); // Tritiya
     options.insert("nakshatra_index".to_string(), json!(3));
-    
+
     let input = EngineInput {
         birth_data: None,
         current_time: Utc::now(),
@@ -393,10 +415,10 @@ async fn test_engine_with_panchanga() {
         precision: Precision::Standard,
         options,
     };
-    
+
     let result = engine.calculate(input).await;
     assert!(result.is_ok());
-    
+
     let output = result.unwrap();
     let recommendation = output.result.get("recommendation").unwrap();
     let panchanga = recommendation.get("panchanga_quality");
@@ -408,10 +430,10 @@ async fn test_engine_with_panchanga() {
 async fn test_engine_validation() {
     let engine = VedicClockEngine::new();
     let input = create_test_input(0);
-    
+
     let output = engine.calculate(input).await.unwrap();
     let validation = engine.validate(&output).await.unwrap();
-    
+
     assert!(validation.valid);
     assert!((validation.confidence - 1.0).abs() < 0.001);
 }
@@ -420,10 +442,10 @@ async fn test_engine_validation() {
 async fn test_engine_cache_key_deterministic() {
     let engine = VedicClockEngine::new();
     let input = create_test_input(0);
-    
+
     let key1 = engine.cache_key(&input);
     let key2 = engine.cache_key(&input);
-    
+
     assert_eq!(key1, key2, "Cache key should be deterministic");
 }
 
@@ -431,13 +453,16 @@ async fn test_engine_cache_key_deterministic() {
 async fn test_engine_upcoming_transitions() {
     let engine = VedicClockEngine::new();
     let input = create_test_input(0);
-    
+
     let output = engine.calculate(input).await.unwrap();
     let upcoming = output.result.get("upcoming_transitions");
-    
+
     assert!(upcoming.is_some(), "Should include upcoming transitions");
     let transitions = upcoming.unwrap().as_array().unwrap();
-    assert!(!transitions.is_empty(), "Should have at least one upcoming transition");
+    assert!(
+        !transitions.is_empty(),
+        "Should have at least one upcoming transition"
+    );
 }
 
 // =============================================================================
@@ -448,7 +473,7 @@ async fn test_engine_upcoming_transitions() {
 fn test_temporal_recommendation_complete() {
     let dt = Utc.with_ymd_and_hms(2024, 1, 1, 10, 0, 0).unwrap();
     let rec = get_temporal_recommendation(dt, 0, Some(2), Some(3));
-    
+
     // Check all fields are populated
     assert!(!rec.time_window.is_empty());
     assert!(!rec.activities.is_empty());
@@ -459,7 +484,7 @@ fn test_temporal_recommendation_complete() {
 fn test_temporal_recommendation_without_panchanga() {
     let dt = Utc.with_ymd_and_hms(2024, 1, 1, 10, 0, 0).unwrap();
     let rec = get_temporal_recommendation(dt, 0, None, None);
-    
+
     assert!(!rec.time_window.is_empty());
     assert!(!rec.activities.is_empty());
     assert!(rec.panchanga_quality.is_none());
@@ -472,7 +497,7 @@ fn test_temporal_recommendation_without_panchanga() {
 fn create_test_input(timezone_offset: i32) -> EngineInput {
     let mut options = HashMap::new();
     options.insert("timezone_offset".to_string(), json!(timezone_offset));
-    
+
     EngineInput {
         birth_data: None,
         current_time: Utc::now(),

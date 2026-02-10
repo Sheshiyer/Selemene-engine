@@ -1,24 +1,23 @@
 //! Tests for the resilience layer: fallback chain, exponential backoff, batch requests
 //! FAPI-098, FAPI-105, FAPI-106
 
-use std::sync::Arc;
 use std::sync::atomic::{AtomicU32, Ordering};
+use std::sync::Arc;
 use std::time::{Duration, Instant};
 
-use wiremock::{Mock, MockServer, ResponseTemplate};
 use wiremock::matchers::{method, path};
+use wiremock::{Mock, MockServer, ResponseTemplate};
 
-use noesis_vedic_api::{Config, VedicApiClient, VedicApiError};
+use noesis_vedic_api::batch::{BatchConfig, BatchRequest, BatchScheduler};
 use noesis_vedic_api::panchang::{
-    Panchang, DateInfo, Location, Tithi, TithiName, Nakshatra, NakshatraName,
-    Yoga, YogaName, Karana, KaranaName, KaranaType, Vara, Paksha,
-    PlanetaryPositions, PlanetPosition, DayBoundaries,
+    DateInfo, DayBoundaries, Karana, KaranaName, KaranaType, Location, Nakshatra, NakshatraName,
+    Paksha, Panchang, PlanetPosition, PlanetaryPositions, Tithi, TithiName, Vara, Yoga, YogaName,
 };
 use noesis_vedic_api::resilience::{
-    ExponentialBackoff, BackoffConfig, FallbackChain, FallbackResult, FallbackSource,
+    BackoffConfig, ExponentialBackoff, FallbackChain, FallbackResult, FallbackSource,
     ResilienceMetrics,
 };
-use noesis_vedic_api::batch::{BatchScheduler, BatchConfig, BatchRequest};
+use noesis_vedic_api::{Config, VedicApiClient, VedicApiError};
 
 // ====================== TEST HELPERS ======================
 
@@ -333,7 +332,10 @@ fn test_fallback_result_source_tracking() {
         attempts: 3,
         total_duration: Duration::from_millis(200),
     };
-    assert!(matches!(native_result.source, FallbackSource::NativeCalculation));
+    assert!(matches!(
+        native_result.source,
+        FallbackSource::NativeCalculation
+    ));
 }
 
 #[test]
@@ -585,13 +587,17 @@ async fn test_batch_scheduler_uses_cache() {
     let scheduler = BatchScheduler::new(config, BatchConfig::default());
 
     // First batch - hits API
-    let req1 = vec![BatchRequest::panchang(2024, 1, 1, 12, 0, 0, 12.97, 77.59, 5.5)];
+    let req1 = vec![BatchRequest::panchang(
+        2024, 1, 1, 12, 0, 0, 12.97, 77.59, 5.5,
+    )];
     let results1 = scheduler.execute_batch(req1).await;
     assert_eq!(results1.len(), 1);
     assert!(results1[0].is_ok());
 
     // Second batch - same request should hit cache
-    let req2 = vec![BatchRequest::panchang(2024, 1, 1, 12, 0, 0, 12.97, 77.59, 5.5)];
+    let req2 = vec![BatchRequest::panchang(
+        2024, 1, 1, 12, 0, 0, 12.97, 77.59, 5.5,
+    )];
     let results2 = scheduler.execute_batch(req2).await;
     assert_eq!(results2.len(), 1);
     assert!(results2[0].is_ok());
