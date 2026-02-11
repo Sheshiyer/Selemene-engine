@@ -1,0 +1,38 @@
+[build]
+# Use Nixpacks builder (auto-detects Bun)
+builder = "NIXPACKS"
+# Specify the Dockerfile for TS engines
+dockerfilePath = "ts-engines/Dockerfile"
+# Set build context to root so we can access ts-engines/
+buildContext = "."
+
+[deploy]
+# Start command (Dockerfile already defines this, but explicit is good)
+# startCommand = "bun run src/index.ts"  # Uncomment if needed
+
+# Healthcheck endpoint - Railway will call this before marking deployment as successful
+healthcheckPath = "/health"
+healthcheckTimeout = 60  # Bun starts fast
+
+# Restart policy
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 3
+
+[deploy.watch]
+# Watch paths - trigger deployment only when TS engines change
+include = [
+  "ts-engines/**",
+  "package.json",
+  "bun.lock"
+]
+
+# Ignore these paths
+exclude = [
+  "*.md",
+  "docs/**",
+  "tests/**",
+  ".github/**",
+  "crates/**",
+  "src/**",
+  "Cargo.toml"
+]

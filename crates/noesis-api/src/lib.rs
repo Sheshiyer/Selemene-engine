@@ -1481,6 +1481,17 @@ pub async fn build_app_state(config: &ApiConfig) -> AppState {
     // Register VedicClock-TCM engine (Phase 0 - available to all)
     orchestrator.register_engine(Arc::new(engine_vedic_clock::VedicClockEngine::new()));
 
+    // -- TypeScript Engines (via HTTP bridge) --
+    let bridge_manager = noesis_bridge::BridgeManager::from_env();
+    if bridge_manager.is_available().await {
+        tracing::info!("TS engines connected at {}", bridge_manager.base_url());
+        for engine in bridge_manager.engines() {
+            orchestrator.register_engine(engine);
+        }
+    } else {
+        tracing::warn!("TS engines unavailable at {} - Rust engines only", bridge_manager.base_url());
+    }
+
     // -- Cache --
     let redis_url = config.redis_url.clone().unwrap_or_default();
     let cache = CacheManager::new(
@@ -1583,6 +1594,17 @@ pub async fn build_app_state_lazy_db(config: &ApiConfig) -> AppState {
 
     // Register VedicClock-TCM engine (Phase 0 - available to all)
     orchestrator.register_engine(Arc::new(engine_vedic_clock::VedicClockEngine::new()));
+
+    // -- TypeScript Engines (via HTTP bridge) --
+    let bridge_manager = noesis_bridge::BridgeManager::from_env();
+    if bridge_manager.is_available().await {
+        tracing::info!("TS engines connected at {}", bridge_manager.base_url());
+        for engine in bridge_manager.engines() {
+            orchestrator.register_engine(engine);
+        }
+    } else {
+        tracing::warn!("TS engines unavailable at {} - Rust engines only", bridge_manager.base_url());
+    }
 
     // -- Cache --
     let redis_url = config.redis_url.clone().unwrap_or_default();

@@ -22,13 +22,18 @@ use async_trait::async_trait;
 use sha2::{Digest, Sha256};
 use tracing::{debug, info, warn};
 
+use crate::ts_client::TsEngineResponse;
+
 pub mod error;
 pub mod python_client;
+pub mod ts_client;
 pub use error::BridgeError;
 pub use python_client::PythonServiceClient;
+pub use ts_client::{TsHealthResponse, WitnessPrompt};
 
 pub use noesis_core::{
-    ConsciousnessEngine, EngineError, EngineInput, EngineOutput, ValidationResult,
+    CalculationMetadata, ConsciousnessEngine, EngineError, EngineInput, EngineOutput,
+    ValidationResult,
 };
 
 /// Default URL for the TypeScript engines server.
@@ -121,7 +126,7 @@ impl BridgeEngine {
 
     /// Create an I Ching engine bridge with custom URL.
     pub fn i_ching_with_url(base_url: impl Into<String>) -> Self {
-        Self::new("i-ching", "I Ching", 1, base_url)
+        Self::new("i-ching", "I Ching", 0, base_url)
     }
 
     /// Create an Enneagram engine bridge with default URL.
@@ -141,7 +146,7 @@ impl BridgeEngine {
 
     /// Create a Sacred Geometry engine bridge with custom URL.
     pub fn sacred_geometry_with_url(base_url: impl Into<String>) -> Self {
-        Self::new("sacred-geometry", "Sacred Geometry", 2, base_url)
+        Self::new("sacred-geometry", "Sacred Geometry", 0, base_url)
     }
 
     /// Create a Sigil Forge engine bridge with default URL.
@@ -151,7 +156,7 @@ impl BridgeEngine {
 
     /// Create a Sigil Forge engine bridge with custom URL.
     pub fn sigil_forge_with_url(base_url: impl Into<String>) -> Self {
-        Self::new("sigil-forge", "Sigil Forge", 3, base_url)
+        Self::new("sigil-forge", "Sigil Forge", 1, base_url)
     }
 }
 
@@ -170,6 +175,8 @@ impl ConsciousnessEngine for BridgeEngine {
     }
 
     async fn calculate(&self, input: EngineInput) -> Result<EngineOutput, EngineError> {
+        use crate::ts_client::TsEngineRequest;
+        
         let url = format!("{}/engines/{}/calculate", self.base_url, self.engine_id);
 
         debug!(
@@ -179,10 +186,18 @@ impl ConsciousnessEngine for BridgeEngine {
             "bridge calculate request"
         );
 
+        // Convert EngineInput to TsEngineRequest format
+        let ts_request = TsEngineRequest {
+            consciousness_level: self.required_phase,
+            parameters: input.options.clone(),
+            seed: None,
+            question: None,
+        };
+
         let response = self
             .client
             .post(&url)
-            .json(&input)
+            .json(&ts_request)
             .send()
             .await
             .map_err(|e| {
@@ -220,13 +235,38 @@ impl ConsciousnessEngine for BridgeEngine {
             )));
         }
 
-        info!(engine = %self.engine_id, "Bridge calculate succeeded");
-
-        response.json::<EngineOutput>().await.map_err(|e| {
+        let ts_response = response.json::<TsEngineResponse>().await.map_err(|e| {
             EngineError::BridgeError(format!(
-                "Failed to deserialize EngineOutput from {}: {}",
+                "Failed to deserialize TsEngineResponse from {}: {}",
                 self.engine_id, e
             ))
+        })?;
+
+        info!(
+            engine = %self.engine_id,
+            processing_time_ms = ts_response.processing_time_ms,
+            "Bridge calculate succeeded"
+        );
+
+        // Convert TsEngineResponse to EngineOutput
+        use chrono::Utc;
+        
+        Ok(EngineOutput {
+            engine_id: ts_response.engine_id,
+            result: ts_response.result,
+            witness_prompt: ts_response
+                .witness_prompts
+                .first()
+                .map(|p| p.prompt.clone())
+                .unwrap_or_else(|| "What does this reveal to you?".to_string()),
+            consciousness_level: self.required_phase,
+            metadata: CalculationMetadata {
+                calculation_time_ms: ts_response.processing_time_ms as f64,
+                backend: "typescript".to_string(),
+                precision_achieved: "exact".to_string(),
+                cached: false,
+                timestamp: Utc::now(),
+            },
         })
     }
 

@@ -23,9 +23,9 @@ FROM oven/bun:1-alpine AS runtime
 
 WORKDIR /app
 
-# Create non-root user
-RUN addgroup -g 1000 appgroup && \
-    adduser -u 1000 -G appgroup -s /bin/sh -D appuser
+# Create non-root user (skip if group/user already exists)
+RUN addgroup -g 1001 appgroup 2>/dev/null || true && \
+    adduser -u 1001 -G appgroup -s /bin/sh -D appuser 2>/dev/null || true
 
 # Copy dependencies and source from builder
 COPY --from=builder /build/node_modules ./node_modules

@@ -116,6 +116,11 @@ services:
       VEDIC_ENGINE_PROVIDER: ${VEDIC_ENGINE_PROVIDER:-api}
       VEDIC_ENGINE_FALLBACK_ENABLED: ${VEDIC_ENGINE_FALLBACK_ENABLED:-true}
       VEDIC_ENGINE_FALLBACK_ON_RATE_LIMIT: ${VEDIC_ENGINE_FALLBACK_ON_RATE_LIMIT:-true}
+
+      # TypeScript Engines Service
+      TS_ENGINES_URL: ${TS_ENGINES_URL:-http://ts-engines:3001}
+      TS_ENGINES_TIMEOUT: ${TS_ENGINES_TIMEOUT:-30}
+      TS_ENGINES_RETRY_COUNT: ${TS_ENGINES_RETRY_COUNT:-3}
     networks:
       - noesis-network
     volumes:
@@ -168,6 +173,27 @@ services:
       - noesis-network
     healthcheck:
       test: ["CMD", "curl", "-sf", "http://localhost:8002/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+    restart: unless-stopped
+
+  # TypeScript sidecar: Archetypal engines service
+  ts-engines:
+    build:
+      context: ./ts-engines
+      dockerfile: Dockerfile
+    container_name: noesis-ts-engines
+    ports:
+      - "3001:3001"
+    environment:
+      NODE_ENV: production
+      PORT: 3001
+    networks:
+      - noesis-network
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3001/health"]
       interval: 30s
       timeout: 10s
       retries: 3
