@@ -272,12 +272,6 @@ Workflows synthesize multiple engines into emergent understanding. Not pipelines
 
 <br>
 
-<p align="center">
-  <img src="docs/assets/images/noesis-ecosystem.png" alt="Noesis Ecosystem" width="680">
-</p>
-
-<br>
-
 <table>
 <tr>
 <td width="50%">
