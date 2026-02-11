@@ -40,18 +40,12 @@ impl ReadingsRepository {
     }
 
     /// Fetch a single reading by ID, scoped to a user.
-    pub async fn get_reading(
-        &self,
-        id: Uuid,
-        user_id: Uuid,
-    ) -> Result<Option<Reading>, Error> {
-        sqlx::query_as::<_, Reading>(
-            "SELECT * FROM readings WHERE id = $1 AND user_id = $2",
-        )
-        .bind(id)
-        .bind(user_id)
-        .fetch_optional(&self.pool)
-        .await
+    pub async fn get_reading(&self, id: Uuid, user_id: Uuid) -> Result<Option<Reading>, Error> {
+        sqlx::query_as::<_, Reading>("SELECT * FROM readings WHERE id = $1 AND user_id = $2")
+            .bind(id)
+            .bind(user_id)
+            .fetch_optional(&self.pool)
+            .await
     }
 
     /// List readings for a user, with optional engine filter and pagination.
@@ -95,10 +89,7 @@ impl ReadingsRepository {
     }
 
     /// Count readings per engine for a user. Returns (engine_id, count) pairs.
-    pub async fn count_by_engine(
-        &self,
-        user_id: Uuid,
-    ) -> Result<Vec<(String, i64)>, Error> {
+    pub async fn count_by_engine(&self, user_id: Uuid) -> Result<Vec<(String, i64)>, Error> {
         sqlx::query_as::<_, (String, i64)>(
             "SELECT engine_id, COUNT(*) as count FROM readings WHERE user_id = $1 GROUP BY engine_id ORDER BY count DESC",
         )
@@ -122,12 +113,10 @@ impl ReadingsRepository {
             .fetch_one(&self.pool)
             .await
         } else {
-            sqlx::query_scalar::<_, i64>(
-                "SELECT COUNT(*) FROM readings WHERE user_id = $1",
-            )
-            .bind(user_id)
-            .fetch_one(&self.pool)
-            .await
+            sqlx::query_scalar::<_, i64>("SELECT COUNT(*) FROM readings WHERE user_id = $1")
+                .bind(user_id)
+                .fetch_one(&self.pool)
+                .await
         }
     }
 }

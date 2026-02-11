@@ -30,11 +30,11 @@ use noesis_data::models::reading::NewReading;
 use noesis_data::repositories::readings_repository::ReadingsRepository;
 use noesis_data::repositories::usage_repository::UsageRepository;
 use noesis_data::repositories::user_repository::UserRepository;
-use sha2::{Digest, Sha256};
 use noesis_metrics::NoesisMetrics;
 use noesis_orchestrator::WorkflowOrchestrator;
 use sentry_tower::{NewSentryLayer, SentryHttpLayer};
 use serde::{Deserialize, Serialize};
+use sha2::{Digest, Sha256};
 use sqlx::postgres::PgPoolOptions;
 use std::sync::Arc;
 use std::time::{Duration, Instant};
@@ -579,7 +579,10 @@ async fn calculate_handler(
                             tracing::warn!("Failed to log usage: {}", e);
                         }
                     }
-                    if let Err(e) = user_repo.add_experience(uid, 10, "engine_calculation").await {
+                    if let Err(e) = user_repo
+                        .add_experience(uid, 10, "engine_calculation")
+                        .await
+                    {
                         tracing::warn!("Failed to award XP: {}", e);
                     }
                 });
@@ -1014,19 +1017,16 @@ async fn list_readings_handler(
             )
         })?;
 
-    let total = repo
-        .count_readings(uid, engine_filter)
-        .await
-        .map_err(|e| {
-            (
-                StatusCode::INTERNAL_SERVER_ERROR,
-                Json(ErrorResponse {
-                    error: format!("Failed to count readings: {}", e),
-                    error_code: "DB_ERROR".to_string(),
-                    details: None,
-                }),
-            )
-        })?;
+    let total = repo.count_readings(uid, engine_filter).await.map_err(|e| {
+        (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            Json(ErrorResponse {
+                error: format!("Failed to count readings: {}", e),
+                error_code: "DB_ERROR".to_string(),
+                details: None,
+            }),
+        )
+    })?;
 
     Ok(Json(ReadingsListResponse {
         readings,
@@ -1075,16 +1075,18 @@ async fn get_reading_handler(
         )
     })?;
 
-    reading.ok_or_else(|| {
-        (
-            StatusCode::NOT_FOUND,
-            Json(ErrorResponse {
-                error: "Reading not found".to_string(),
-                error_code: "READING_NOT_FOUND".to_string(),
-                details: Some(serde_json::json!({ "reading_id": reading_id })),
-            }),
-        )
-    }).map(Json)
+    reading
+        .ok_or_else(|| {
+            (
+                StatusCode::NOT_FOUND,
+                Json(ErrorResponse {
+                    error: "Reading not found".to_string(),
+                    error_code: "READING_NOT_FOUND".to_string(),
+                    details: Some(serde_json::json!({ "reading_id": reading_id })),
+                }),
+            )
+        })
+        .map(Json)
 }
 
 /// GET /api/v1/readings/stats -- count of readings per engine
