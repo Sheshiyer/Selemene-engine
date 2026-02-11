@@ -33,13 +33,6 @@ COPY --from=builder /build/package.json ./
 COPY --from=builder /build/src ./src
 COPY --from=builder /build/tsconfig.json ./
 
-# Copy engine data directories
-COPY --from=builder /build/enneagram ./enneagram
-COPY --from=builder /build/i-ching ./i-ching
-COPY --from=builder /build/tarot ./tarot
-COPY --from=builder /build/sacred-geometry ./sacred-geometry
-COPY --from=builder /build/sigil-forge ./sigil-forge
-
 # Set environment variables
 ENV NODE_ENV=production \
     PORT=3001
