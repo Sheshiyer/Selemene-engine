@@ -1,0 +1,116 @@
+openapi: "3.0.3"
+info:
+  title: "Selemene MediaPipe Face Mesh Service"
+  version: "0.1.0"
+  description: "Python sidecar service for MediaPipe Face Mesh landmark detection. Called by the Rust face-reading engine via HTTP."
+
+servers:
+  - url: http://localhost:8001
+    description: Local development
+
+paths:
+  /health:
+    get:
+      summary: Health check
+      operationId: healthCheck
+      responses:
+        "200":
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthResponse"
+
+  /analyze:
+    post:
+      summary: Analyze face image for landmarks
+      operationId: analyzeFace
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [image]
+              properties:
+                image:
+                  type: string
+                  format: binary
+                  description: "JPEG or PNG face image"
+                options:
+                  type: string
+                  description: "JSON string with analysis options"
+      responses:
+        "200":
+          description: Face landmarks detected
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FaceMeshResponse"
+        "400":
+          description: Invalid image or no face detected
+        "422":
+          description: Image processing failed
+        "503":
+          description: MediaPipe not available
+
+components:
+  schemas:
+    HealthResponse:
+      type: object
+      required: [status, service, version]
+      properties:
+        status: { type: string, enum: [healthy, degraded] }
+        service: { type: string, example: "mediapipe-face-mesh" }
+        version: { type: string, example: "0.1.0" }
+        mediapipe_available: { type: boolean }
+
+    FaceMeshResponse:
+      type: object
+      required: [landmarks, face_detected, processing_time_ms]
+      properties:
+        face_detected: { type: boolean }
+        num_faces: { type: integer }
+        landmarks:
+          type: array
+          items:
+            $ref: "#/components/schemas/Landmark"
+          description: "468 3D facial landmarks"
+        face_oval:
+          type: array
+          items:
+            type: integer
+          description: "Indices forming face oval contour"
+        proportions:
+          $ref: "#/components/schemas/FacialProportions"
+        processing_time_ms: { type: number, format: float }
+        image_quality:
+          $ref: "#/components/schemas/ImageQuality"
+
+    Landmark:
+      type: object
+      required: [x, y, z, index]
+      properties:
+        index: { type: integer, minimum: 0, maximum: 467 }
+        x: { type: number, format: float, description: "Normalized x (0-1)" }
+        y: { type: number, format: float, description: "Normalized y (0-1)" }
+        z: { type: number, format: float, description: "Depth estimate" }
+
+    FacialProportions:
+      type: object
+      properties:
+        golden_ratio_score: { type: number, format: float, minimum: 0, maximum: 1 }
+        symmetry_score: { type: number, format: float, minimum: 0, maximum: 1 }
+        face_width_height_ratio: { type: number, format: float }
+        eye_distance_ratio: { type: number, format: float }
+        nose_mouth_ratio: { type: number, format: float }
+        forehead_ratio: { type: number, format: float }
+        jaw_width_ratio: { type: number, format: float }
+
+    ImageQuality:
+      type: object
+      properties:
+        sharpness: { type: number, format: float }
+        brightness: { type: number, format: float }
+        face_size_ratio: { type: number, format: float, description: "Face area vs image area" }
+        sufficient_quality: { type: boolean }

@@ -1,0 +1,172 @@
+{
+  "metadata": {
+    "system": "Navarasa-Raga",
+    "tradition": "Indian Aesthetics (Bharata Muni's Natyashastra)",
+    "version": "1.0.0",
+    "description": "Maps 9 rasas (emotional essences) to recommended Melakarta ragas with therapeutic applications"
+  },
+  "rasas": [
+    {
+      "id": "shringara",
+      "name": "Shringara",
+      "english": "Love/Beauty",
+      "color": "#FF69B4",
+      "deity": "Vishnu",
+      "element": "water",
+      "dosha_affinity": "kapha",
+      "description": "The rasa of romantic love, beauty, devotion, and aesthetic pleasure",
+      "therapeutic_application": "Heart opening, emotional expression, connection",
+      "consciousness_level_range": [1, 3],
+      "primary_ragas": [
+        { "melakarta_number": 22, "name": "Kharaharapriya", "rationale": "Versatile emotional raga, foundation for love and yearning" },
+        { "melakarta_number": 28, "name": "Harikambhoji", "rationale": "Joyful and celebratory, suitable for love's exuberance" },
+        { "melakarta_number": 65, "name": "Mechakalyani", "rationale": "Expansive beauty, devotional love at its peak" }
+      ],
+      "secondary_ragas": [14, 23, 52, 61, 70]
+    },
+    {
+      "id": "hasya",
+      "name": "Hasya",
+      "english": "Joy/Humor",
+      "color": "#FFFFFF",
+      "deity": "Pramatha",
+      "element": "fire",
+      "dosha_affinity": "pitta",
+      "description": "The rasa of laughter, mirth, playfulness, and light-hearted joy",
+      "therapeutic_application": "Stress relief, lightness, spontaneity",
+      "consciousness_level_range": [0, 2],
+      "primary_ragas": [
+        { "melakarta_number": 29, "name": "Dheerasankarabharanam", "rationale": "Bright major scale, naturally uplifting and joyful" },
+        { "melakarta_number": 58, "name": "Hemavati", "rationale": "Golden quality, warmth and humor" },
+        { "melakarta_number": 28, "name": "Harikambhoji", "rationale": "Playful Mixolydian feel, natural lightness" }
+      ],
+      "secondary_ragas": [16, 30, 46, 66, 71]
+    },
+    {
+      "id": "karuna",
+      "name": "Karuna",
+      "english": "Compassion/Sorrow",
+      "color": "#808080",
+      "deity": "Yama",
+      "element": "water",
+      "dosha_affinity": "kapha",
+      "description": "The rasa of compassion, empathy, tenderness, and gentle sorrow",
+      "therapeutic_application": "Emotional processing, grief work, compassion cultivation",
+      "consciousness_level_range": [2, 4],
+      "primary_ragas": [
+        { "melakarta_number": 20, "name": "Natabhairavi", "rationale": "Natural minor, deeply evocative of tender emotion" },
+        { "melakarta_number": 21, "name": "Keeravani", "rationale": "Harmonic minor, poignant beauty in sorrow" },
+        { "melakarta_number": 8, "name": "Hanumatodi", "rationale": "Phrygian gravity, profound depth of feeling" }
+      ],
+      "secondary_ragas": [15, 44, 45, 55, 57]
+    },
+    {
+      "id": "raudra",
+      "name": "Raudra",
+      "english": "Anger/Fierce",
+      "color": "#FF0000",
+      "deity": "Rudra",
+      "element": "fire",
+      "dosha_affinity": "pitta",
+      "description": "The rasa of righteous anger, intensity, fierce determination",
+      "therapeutic_application": "Boundary setting, energy mobilization, processing anger",
+      "consciousness_level_range": [1, 3],
+      "primary_ragas": [
+        { "melakarta_number": 35, "name": "Shulini", "rationale": "Trident-like intensity, fierce and cutting" },
+        { "melakarta_number": 51, "name": "Kamavardhini", "rationale": "Intensely passionate, drives transformative anger" },
+        { "melakarta_number": 17, "name": "Suryakantam", "rationale": "Solar intensity, blazing clarity" }
+      ],
+      "secondary_ragas": [36, 39, 42, 53, 69]
+    },
+    {
+      "id": "veera",
+      "name": "Veera",
+      "english": "Courage/Heroism",
+      "color": "#FFA500",
+      "deity": "Indra",
+      "element": "fire",
+      "dosha_affinity": "pitta",
+      "description": "The rasa of heroism, valor, confidence, and determined action",
+      "therapeutic_application": "Confidence building, motivation, overcoming fear",
+      "consciousness_level_range": [2, 4],
+      "primary_ragas": [
+        { "melakarta_number": 57, "name": "Simhendramadhyamam", "rationale": "Lion-king raga, powerful and majestic" },
+        { "melakarta_number": 59, "name": "Dharmavati", "rationale": "Righteous action, dharmic courage" },
+        { "melakarta_number": 29, "name": "Dheerasankarabharanam", "rationale": "Courageous beauty in the major scale" }
+      ],
+      "secondary_ragas": [33, 47, 56, 62, 64]
+    },
+    {
+      "id": "bhayanaka",
+      "name": "Bhayanaka",
+      "english": "Fear/Awe",
+      "color": "#000000",
+      "deity": "Kala",
+      "element": "air",
+      "dosha_affinity": "vata",
+      "description": "The rasa of awe, wonder before the vast, confronting the unknown",
+      "therapeutic_application": "Shadow work, facing fears, expanding comfort zone",
+      "consciousness_level_range": [3, 5],
+      "primary_ragas": [
+        { "melakarta_number": 39, "name": "Jhalavarali", "rationale": "Mysterious and rare, evokes confrontation with the unknown" },
+        { "melakarta_number": 45, "name": "Shubhapantuvarali", "rationale": "Deeply contemplative with an edge of awe" },
+        { "melakarta_number": 37, "name": "Salagam", "rationale": "First prati madhyama raga, threshold of transformation" }
+      ],
+      "secondary_ragas": [1, 6, 38, 43, 48]
+    },
+    {
+      "id": "bibhatsa",
+      "name": "Bibhatsa",
+      "english": "Disgust/Dispassion",
+      "color": "#0000FF",
+      "deity": "Shiva",
+      "element": "earth",
+      "dosha_affinity": "kapha",
+      "description": "The rasa of detachment, dispassion, vairagya — seeing through illusion",
+      "therapeutic_application": "Detoxification, letting go, renunciation of harmful patterns",
+      "consciousness_level_range": [3, 5],
+      "primary_ragas": [
+        { "melakarta_number": 1, "name": "Kanakangi", "rationale": "Sparse and austere, strips away embellishment" },
+        { "melakarta_number": 37, "name": "Salagam", "rationale": "Ascetic quality, the beginning of prati madhyama austerity" },
+        { "melakarta_number": 63, "name": "Latangi", "rationale": "Subtle and creeping, reveals what is usually hidden" }
+      ],
+      "secondary_ragas": [2, 7, 38, 40, 49]
+    },
+    {
+      "id": "adbhuta",
+      "name": "Adbhuta",
+      "english": "Wonder/Marvel",
+      "color": "#FFD700",
+      "deity": "Brahma",
+      "element": "ether",
+      "dosha_affinity": "vata",
+      "description": "The rasa of wonder, amazement, curiosity, and awe at creation",
+      "therapeutic_application": "Inspiration, creativity, reconnecting with curiosity",
+      "consciousness_level_range": [2, 5],
+      "primary_ragas": [
+        { "melakarta_number": 15, "name": "Mayamalavagowla", "rationale": "Raga of illusion (maya), wonder at creation's beauty" },
+        { "melakarta_number": 64, "name": "Vachaspati", "rationale": "Lord of speech, articulation of the marvelous" },
+        { "melakarta_number": 68, "name": "Jyotiswarupini", "rationale": "Light-formed, illumination and wonder" }
+      ],
+      "secondary_ragas": [18, 34, 50, 54, 66]
+    },
+    {
+      "id": "shanta",
+      "name": "Shanta",
+      "english": "Peace/Serenity",
+      "color": "#90EE90",
+      "deity": "Narayana",
+      "element": "ether",
+      "dosha_affinity": "tridosha",
+      "description": "The supreme rasa of peace, equanimity, and transcendent serenity. The goal of all other rasas.",
+      "therapeutic_application": "Deep relaxation, meditation, spiritual practice, samadhi",
+      "consciousness_level_range": [4, 5],
+      "primary_ragas": [
+        { "melakarta_number": 29, "name": "Dheerasankarabharanam", "rationale": "Perfect balance of the major scale, supreme equanimity" },
+        { "melakarta_number": 65, "name": "Mechakalyani", "rationale": "Auspicious completeness, transcendent peace" },
+        { "melakarta_number": 22, "name": "Kharaharapriya", "rationale": "Versatile serenity, accepts all emotions equally" }
+      ],
+      "secondary_ragas": [9, 24, 27, 60, 67]
+    }
+  ]
+}

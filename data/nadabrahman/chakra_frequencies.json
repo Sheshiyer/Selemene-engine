@@ -1,0 +1,218 @@
+{
+  "metadata": {
+    "system": "Chakra-Solfeggio-Frequency",
+    "version": "1.0.0",
+    "description": "Maps 7 chakras to Solfeggio frequencies (396Hz-963Hz) with associated ragas, binaural beat parameters, and consciousness mappings for the NadaBrahman sound engine"
+  },
+  "base_frequency": 432,
+  "tuning_system": "Pythagorean/Solfeggio",
+  "chakras": [
+    {
+      "number": 1,
+      "name": "Muladhara",
+      "english": "Root",
+      "location": "Base of spine",
+      "element": "earth",
+      "color": "#FF0000",
+      "solfeggio_frequency": 396,
+      "frequency_range": [380, 410],
+      "note": "C",
+      "mantra": "LAM",
+      "dosha": "kapha",
+      "consciousness_level": 1,
+      "binaural_parameters": {
+        "carrier_hz": 396,
+        "beat_frequency_hz": 4.0,
+        "brainwave_target": "theta",
+        "description": "Grounding, security, survival instinct"
+      },
+      "associated_ragas": [
+        { "melakarta_number": 1, "name": "Kanakangi", "rationale": "First raga, primordial grounding" },
+        { "melakarta_number": 8, "name": "Hanumatodi", "rationale": "Earth-bound Phrygian gravity" },
+        { "melakarta_number": 20, "name": "Natabhairavi", "rationale": "Natural minor stability" }
+      ],
+      "therapeutic_focus": ["grounding", "safety", "stability", "survival"],
+      "imbalance_signs": ["anxiety", "fear", "insecurity", "disconnection"],
+      "witness_prompt": "Notice where your body meets the earth. What support do you feel beneath you?"
+    },
+    {
+      "number": 2,
+      "name": "Svadhisthana",
+      "english": "Sacral",
+      "location": "Lower abdomen",
+      "element": "water",
+      "color": "#FF8C00",
+      "solfeggio_frequency": 417,
+      "frequency_range": [410, 430],
+      "note": "D",
+      "mantra": "VAM",
+      "dosha": "kapha",
+      "consciousness_level": 1,
+      "binaural_parameters": {
+        "carrier_hz": 417,
+        "beat_frequency_hz": 6.0,
+        "brainwave_target": "theta",
+        "description": "Creativity, pleasure, emotional flow"
+      },
+      "associated_ragas": [
+        { "melakarta_number": 22, "name": "Kharaharapriya", "rationale": "Emotional depth and flow" },
+        { "melakarta_number": 14, "name": "Vakulabharanam", "rationale": "Sweet fragrance, sensual beauty" },
+        { "melakarta_number": 52, "name": "Ramapriya", "rationale": "Beloved by Rama, devotional pleasure" }
+      ],
+      "therapeutic_focus": ["creativity", "pleasure", "emotional_flow", "sexuality"],
+      "imbalance_signs": ["guilt", "emotional_numbness", "creative_block"],
+      "witness_prompt": "Allow awareness to settle in the lower belly. What creative impulse stirs there?"
+    },
+    {
+      "number": 3,
+      "name": "Manipura",
+      "english": "Solar Plexus",
+      "location": "Upper abdomen",
+      "element": "fire",
+      "color": "#FFD700",
+      "solfeggio_frequency": 528,
+      "frequency_range": [520, 540],
+      "note": "E",
+      "mantra": "RAM",
+      "dosha": "pitta",
+      "consciousness_level": 2,
+      "binaural_parameters": {
+        "carrier_hz": 528,
+        "beat_frequency_hz": 10.0,
+        "brainwave_target": "alpha",
+        "description": "Personal power, confidence, transformation"
+      },
+      "associated_ragas": [
+        { "melakarta_number": 29, "name": "Dheerasankarabharanam", "rationale": "Major scale confidence and brightness" },
+        { "melakarta_number": 57, "name": "Simhendramadhyamam", "rationale": "Lion-king power and authority" },
+        { "melakarta_number": 17, "name": "Suryakantam", "rationale": "Solar brilliance, fiery determination" }
+      ],
+      "therapeutic_focus": ["willpower", "confidence", "transformation", "digestion"],
+      "imbalance_signs": ["shame", "powerlessness", "anger", "digestive_issues"],
+      "witness_prompt": "Bring attention to the solar plexus. What fire burns there? What does it illuminate?"
+    },
+    {
+      "number": 4,
+      "name": "Anahata",
+      "english": "Heart",
+      "location": "Center of chest",
+      "element": "air",
+      "color": "#00FF00",
+      "solfeggio_frequency": 639,
+      "frequency_range": [630, 650],
+      "note": "F",
+      "mantra": "YAM",
+      "dosha": "vata",
+      "consciousness_level": 3,
+      "binaural_parameters": {
+        "carrier_hz": 639,
+        "beat_frequency_hz": 8.0,
+        "brainwave_target": "alpha",
+        "description": "Love, compassion, connection, harmony"
+      },
+      "associated_ragas": [
+        { "melakarta_number": 65, "name": "Mechakalyani", "rationale": "Expansive love, Lydian elevation" },
+        { "melakarta_number": 23, "name": "Gaurimanohari", "rationale": "Beautiful and gentle, heart opening" },
+        { "melakarta_number": 28, "name": "Harikambhoji", "rationale": "Joyful connection, harmonious" }
+      ],
+      "therapeutic_focus": ["love", "compassion", "forgiveness", "connection"],
+      "imbalance_signs": ["grief", "jealousy", "loneliness", "bitterness"],
+      "witness_prompt": "Rest awareness in the heart space. What opens when you let yourself be held here?"
+    },
+    {
+      "number": 5,
+      "name": "Vishuddha",
+      "english": "Throat",
+      "location": "Throat",
+      "element": "ether",
+      "color": "#00BFFF",
+      "solfeggio_frequency": 741,
+      "frequency_range": [730, 750],
+      "note": "G",
+      "mantra": "HAM",
+      "dosha": "vata",
+      "consciousness_level": 3,
+      "binaural_parameters": {
+        "carrier_hz": 741,
+        "beat_frequency_hz": 12.0,
+        "brainwave_target": "alpha_beta",
+        "description": "Expression, truth, communication, purity"
+      },
+      "associated_ragas": [
+        { "melakarta_number": 64, "name": "Vachaspati", "rationale": "Lord of speech, eloquent expression" },
+        { "melakarta_number": 15, "name": "Mayamalavagowla", "rationale": "Traditional teaching raga, truth transmission" },
+        { "melakarta_number": 56, "name": "Shanmukhapriya", "rationale": "Six-faced beauty, multifaceted expression" }
+      ],
+      "therapeutic_focus": ["expression", "truth", "communication", "purification"],
+      "imbalance_signs": ["suppression", "dishonesty", "throat_tension", "fear_of_speaking"],
+      "witness_prompt": "Notice the throat space. What truth wants to be spoken? What song wants to emerge?"
+    },
+    {
+      "number": 6,
+      "name": "Ajna",
+      "english": "Third Eye",
+      "location": "Between eyebrows",
+      "element": "light",
+      "color": "#4B0082",
+      "solfeggio_frequency": 852,
+      "frequency_range": [840, 860],
+      "note": "A",
+      "mantra": "OM",
+      "dosha": "vata",
+      "consciousness_level": 4,
+      "binaural_parameters": {
+        "carrier_hz": 852,
+        "beat_frequency_hz": 14.0,
+        "brainwave_target": "beta",
+        "description": "Intuition, insight, vision, clarity"
+      },
+      "associated_ragas": [
+        { "melakarta_number": 68, "name": "Jyotiswarupini", "rationale": "Light-formed, inner vision illumination" },
+        { "melakarta_number": 45, "name": "Shubhapantuvarali", "rationale": "Deep insight, contemplative clarity" },
+        { "melakarta_number": 34, "name": "Vagadheeswari", "rationale": "Lord of the domain of speech, visionary insight" }
+      ],
+      "therapeutic_focus": ["intuition", "insight", "clarity", "imagination"],
+      "imbalance_signs": ["confusion", "delusion", "headaches", "lack_of_vision"],
+      "witness_prompt": "Let awareness gather at the point between the eyebrows. What becomes visible in this inner light?"
+    },
+    {
+      "number": 7,
+      "name": "Sahasrara",
+      "english": "Crown",
+      "location": "Top of head",
+      "element": "consciousness",
+      "color": "#9400D3",
+      "solfeggio_frequency": 963,
+      "frequency_range": [950, 975],
+      "note": "B",
+      "mantra": "Silence",
+      "dosha": "beyond_dosha",
+      "consciousness_level": 5,
+      "binaural_parameters": {
+        "carrier_hz": 963,
+        "beat_frequency_hz": 0.5,
+        "brainwave_target": "delta",
+        "description": "Unity, transcendence, cosmic consciousness"
+      },
+      "associated_ragas": [
+        { "melakarta_number": 29, "name": "Dheerasankarabharanam", "rationale": "Perfect balance, universal harmony" },
+        { "melakarta_number": 65, "name": "Mechakalyani", "rationale": "Supreme auspiciousness, complete transcendence" },
+        { "melakarta_number": 72, "name": "Rasikapriya", "rationale": "Final raga, the connoisseur's completion of the cycle" }
+      ],
+      "therapeutic_focus": ["transcendence", "unity", "enlightenment", "cosmic_connection"],
+      "imbalance_signs": ["disconnection_from_spirit", "nihilism", "materialism"],
+      "witness_prompt": "Allow awareness to expand beyond the body. Who is the one witnessing all of this?"
+    }
+  ],
+  "engine_frequency_map": {
+    "description": "Maps to the frontend AudioReactiveEngineInterface.tsx ENGINE_FREQUENCY_MAPS",
+    "biofield": { "base": 432, "harmonics": [864, 1296] },
+    "nadabrahman": { "base": 528, "harmonics": [1056, 1584] },
+    "panchanga": { "base": 396, "harmonics": [792, 1188] },
+    "numerology": { "base": 741, "harmonics": [1482, 2223] },
+    "human_design": { "base": 639, "harmonics": [1278, 1917] },
+    "gene_keys": { "base": 852, "harmonics": [1704, 2556] },
+    "vedic_clock": { "base": 417, "harmonics": [834, 1251] },
+    "face_reading": { "base": 963, "harmonics": [1926, 2889] }
+  }
+}

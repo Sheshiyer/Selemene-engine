@@ -1,18 +1,18 @@
 <p align="center">
-  <img src="docs/assets/images/2C-glass-logo-nanobananapro-v1.png" alt="Tryambakam Noesis" width="280">
+  <video src="docs/assets/images/engines/logo-wide.mp4" autoplay loop muted playsinline width="560"></video>
 </p>
 
-<h1 align="center">Tryambakam Noesis</h1>
+<h1 align="center">Selemene Engine</h1>
 
 <p align="center">
-  <em>The Three-Eyed Witness</em><br>
-  <sub>Maps, not prescriptions.</sub>
+  <em>High-Performance Consciousness Calculation Engine</em><br>
+  <sub>Part of the Tryambakam Noesis Project</sub>
 </p>
 
 <p align="center">
   <a href="https://selemene.tryambakam.space/health/live"><img src="https://img.shields.io/badge/status-live-1A1A2E?style=for-the-badge&labelColor=B8860B" alt="Live"></a>
   &nbsp;
-  <img src="https://img.shields.io/badge/engines-8-1A1A2E?style=for-the-badge&labelColor=6B6B6B" alt="8 Engines">
+  <img src="https://img.shields.io/badge/engines-15-1A1A2E?style=for-the-badge&labelColor=6B6B6B" alt="15 Engines">
   &nbsp;
   <img src="https://img.shields.io/badge/workflows-6-1A1A2E?style=for-the-badge&labelColor=6B6B6B" alt="6 Workflows">
 </p>
@@ -32,16 +32,16 @@
 <br>
 
 <p align="center">
-  <img src="docs/assets/images/noesis-hero.png" alt="Noesis Architecture" width="720">
+  <img src="docs/assets/images/2C-glass-logo-nanobananapro-v2.png" alt="Noesis Glass Logo" width="560">
 </p>
 
 <br>
 
-> **A computational mirror for self-inquiry.**
+> **High-performance astronomical and consciousness calculation engine.**
 >
-> 8 engines rooted in Vedic, numerological, and consciousness traditions — not to predict your future, but to reflect patterns worth witnessing.
+> 15 engines spanning Vedic astrology, numerology, Human Design, Gene Keys, and esoteric traditions. Built in Rust with sub-millisecond calculations.
 >
-> Every response includes a *witness prompt* — a question calibrated to your consciousness level. You don't get answers. You get better questions.
+> Selemene Engine powers the computational backend of **Tryambakam Noesis** — providing real-time calculations, multi-engine orchestration, and consciousness-calibrated witness prompts.
 
 <br>
 
@@ -107,63 +107,111 @@ curl -s -X POST https://selemene.tryambakam.space/api/v1/engines/numerology/calc
 
 <br>
 
-## ✦ The 8 Engines
+## ✦ The 15 Engines
 
-<p align="center">
-  <img src="docs/assets/images/5D-engine-icons-recraft-v1.png" alt="Engine Icons" width="600">
-</p>
-
-Each engine is a different lens on the same moment. All return **sub-millisecond** calculations.
+15 calculation engines spanning Vedic, Western, and esoteric systems. **Sub-millisecond performance** for all calculations.
 
 <br>
 
+### Rust Engines (10)
+
 <table>
 <tr>
-<td align="center" width="25%">
+<td align="center" width="20%">
 <strong>Panchanga</strong><br>
-<sub>Tithi · Nakshatra · Yoga · Karana · Vara</sub><br>
+<sub>Tithi · Nakshatra · Yoga · Karana</sub><br>
 <code>date, lat/lng</code>
 </td>
-<td align="center" width="25%">
+<td align="center" width="20%">
 <strong>Human Design</strong><br>
-<sub>Type · Strategy · Authority · 9 Centers · 26 Gates</sub><br>
+<sub>Type · Centers · Gates · Profile</sub><br>
 <code>date, time, lat/lng</code>
 </td>
-<td align="center" width="25%">
+<td align="center" width="20%">
 <strong>Gene Keys</strong><br>
-<sub>Shadow · Gift · Siddhi · 4 Sequences</sub><br>
+<sub>Shadow · Gift · Siddhi</sub><br>
 <code>date, time, lat/lng</code>
 </td>
-<td align="center" width="25%">
+<td align="center" width="20%">
 <strong>Vimshottari</strong><br>
-<sub>120-Year Timeline · 729 Nested Periods</sub><br>
+<sub>120-Year Dasha Periods</sub><br>
 <code>date, time, lat/lng</code>
 </td>
-</tr>
-<tr><td colspan="4"><br></td></tr>
-<tr>
-<td align="center" width="25%">
+<td align="center" width="20%">
 <strong>Numerology</strong><br>
-<sub>Life Path · Expression · Soul Urge</sub><br>
+<sub>Life Path · Expression</sub><br>
 <code>date, name</code>
 </td>
-<td align="center" width="25%">
+</tr>
+<tr><td colspan="5"><br></td></tr>
+<tr>
+<td align="center" width="20%">
 <strong>Biorhythm</strong><br>
-<sub>Physical (23d) · Emotional (28d) · Intellectual (33d)</sub><br>
+<sub>Physical · Emotional · Intellectual</sub><br>
 <code>date</code>
 </td>
-<td align="center" width="25%">
+<td align="center" width="20%">
 <strong>Vedic Clock</strong><br>
-<sub>TCM Meridians · Ayurvedic Doshas</sub><br>
+<sub>TCM Meridians · Doshas</sub><br>
 <code>current_time</code>
 </td>
-<td align="center" width="25%">
+<td align="center" width="20%">
 <strong>Biofield</strong><br>
-<sub>Chakra Energy · Subtle Body</sub><br>
-<code>date</code>
+<sub>Chakra · Energy Mapping</sub><br>
+<code>date, time</code>
+</td>
+<td align="center" width="20%">
+<strong>Face Reading</strong><br>
+<sub>Physiognomy Analysis</sub><br>
+<code>image_data</code>
+</td>
+<td align="center" width="20%">
+<strong>Nadabrahman</strong><br>
+<sub>Sound Consciousness</sub><br>
+<code>audio_data</code>
 </td>
 </tr>
 </table>
+
+<br>
+
+### TypeScript Engines (5)
+
+<table>
+<tr>
+<td align="center" width="20%">
+<strong>Tarot</strong><br>
+<sub>78-Card System</sub><br>
+<code>date, question</code>
+</td>
+<td align="center" width="20%">
+<strong>I Ching</strong><br>
+<sub>64 Hexagrams</sub><br>
+<code>question, method</code>
+</td>
+<td align="center" width="20%">
+<strong>Enneagram</strong><br>
+<sub>9 Types · Wings · Tritypes</sub><br>
+<code>date, name</code>
+</td>
+<td align="center" width="20%">
+<strong>Sacred Geometry</strong><br>
+<sub>Platonic Solids · Patterns</sub><br>
+<code>parameters</code>
+</td>
+<td align="center" width="20%">
+<strong>Sigil Forge</strong><br>
+<sub>Intent Manifestation</sub><br>
+<code>intent_text</code>
+</td>
+</tr>
+</table>
+
+<br>
+
+<p align="center">
+  <a href="docs/ENGINES.md"><strong>→ View Detailed Engine Documentation</strong></a>
+</p>
 
 <br>
 
@@ -224,6 +272,12 @@ Workflows synthesize multiple engines into emergent understanding. Not pipelines
 
 <br>
 
+<p align="center">
+  <img src="docs/assets/images/noesis-ecosystem.png" alt="Noesis Ecosystem" width="680">
+</p>
+
+<br>
+
 <table>
 <tr>
 <td width="50%">
@@ -246,7 +300,7 @@ Workflows synthesize multiple engines into emergent understanding. Not pipelines
 **`creative-expression`** — *Sigil Forge + Sacred Geometry*
 > Intent made visible. Symbols as seeds, geometry as meditation.
 
-**`full-spectrum`** — *All 14 Engines*
+**`full-spectrum`** — *All 15 Engines*
 > Complete consciousness portrait. Every lens, every frequency.
 
 </td>
@@ -273,6 +327,12 @@ curl -s -X POST $BASE/workflows/birth-blueprint/execute \
 ## ✦ Consciousness Levels
 
 The system adapts witness prompts based on your relationship with awareness.
+
+<br>
+
+<p align="center">
+  <img src="docs/assets/images/5A-heritage-engraving-recraft-v2.png" alt="Heritage Seal" width="280">
+</p>
 
 <br>
 
@@ -324,6 +384,12 @@ Creates admin user (`admin@tryambakam.com`) + 5 API keys. Keys print once.
 
 <p align="center">
   <img src="docs/assets/images/noesis-architecture.png" alt="Architecture" width="720">
+</p>
+
+<br>
+
+<p align="center">
+  <img src="docs/assets/images/noesis-identifiers.png" alt="Identity System" width="680">
 </p>
 
 <details>
@@ -411,6 +477,46 @@ crates/
 
 ---
 
+## ✦ Physical Embodiments
+
+Beyond code, Noesis manifests in ritual objects and somatic practices.
+
+<br>
+
+<p align="center">
+  <img src="docs/assets/images/4A-ritual-blend-catalog-layout-nanobananapro-v2.png" alt="Ritual Catalog" width="720">
+</p>
+
+<br>
+
+<table>
+<tr>
+<td width="50%" align="center">
+  <img src="docs/assets/images/3A-ritual-kit-nanobananapro-v2.png" alt="Ritual Kit" width="100%">
+  <br><sub><strong>Ritual Kit</strong> — Essential tools for embodied practice</sub>
+</td>
+<td width="50%" align="center">
+  <img src="docs/assets/images/3B-somatic-book-nanobananapro-v2.png" alt="Somatic Book" width="100%">
+  <br><sub><strong>Somatic Grimoire</strong> — Knowledge meets sensation</sub>
+</td>
+</tr>
+<tr><td colspan="2"><br></td></tr>
+<tr>
+<td width="50%" align="center">
+  <img src="docs/assets/images/3C-essential-oil-bottle-nanobananapro-v2.png" alt="Essential Oils" width="100%">
+  <br><sub><strong>Clarity Elixir</strong> — Aromatic anchors for inquiry</sub>
+</td>
+<td width="50%" align="center">
+  <img src="docs/assets/images/4B-ritual-object-flat-lay-nanobananapro-v2.png" alt="Flat Lay" width="100%">
+  <br><sub><strong>Sacred Objects</strong> — Daily practice artifacts</sub>
+</td>
+</tr>
+</table>
+
+<br>
+
+---
+
 ## ✦ Local Development
 
 ```bash
@@ -450,6 +556,22 @@ See [`.env.example`](.env.example) for full list.
 
 ---
 
+## ✦ Brand Identity
+
+<p align="center">
+  <img src="docs/assets/images/2A-brand-kit-bento-nanobananapro-v1.png" alt="Brand Kit" width="720">
+</p>
+
+<br>
+
+<p align="center">
+  <img src="docs/assets/images/5B-campaign-visual-identity-grid-nanobananapro-v2.png" alt="Visual Identity System" width="720">
+</p>
+
+<br>
+
+---
+
 ## ✦ Acknowledgments
 
 <sub>This work stands on the shoulders of **Maharishi Parashara** (Vimshottari Dasha), **Ra Uru Hu** (Human Design), **Richard Rudd** (Gene Keys), **B.V. Raman** (Vedic astrology), and the **Swiss Ephemeris Team**.</sub>
@@ -461,7 +583,7 @@ See [`.env.example`](.env.example) for full list.
 <br>
 
 <p align="center">
-  <img src="docs/assets/images/2B-wax-seal-nanobananapro-v1.png" alt="Seal" width="120">
+  <img src="docs/assets/images/2B-wax-seal-nanobananapro-v2.png" alt="Seal" width="120">
 </p>
 
 <p align="center">

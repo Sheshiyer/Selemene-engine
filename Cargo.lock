@@ -1053,6 +1053,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "engine-nadabrahman"
+version = "0.1.0"
+dependencies = [
+ "async-trait",
+ "chrono",
+ "noesis-core",
+ "serde",
+ "serde_json",
+ "sha2",
+ "tokio",
+]
+
+[[package]]
 name = "engine-numerology"
 version = "0.1.0"
 dependencies = [
@@ -3580,6 +3593,7 @@ dependencies = [
  "js-sys",
  "log",
  "mime",
+ "mime_guess",
  "native-tls",
  "once_cell",
  "percent-encoding",

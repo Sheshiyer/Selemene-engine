@@ -134,6 +134,46 @@ services:
       retries: 3
       start_period: 40s
 
+  # Python sidecar: MediaPipe Face Mesh service
+  mediapipe-service:
+    build:
+      context: ./python-services
+      dockerfile: Dockerfile.mediapipe
+    container_name: noesis-mediapipe
+    ports:
+      - "8001:8001"
+    environment:
+      PYTHONUNBUFFERED: "1"
+    networks:
+      - noesis-network
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:8001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+    restart: unless-stopped
+
+  # Python sidecar: Biofield CV service
+  biofield-cv-service:
+    build:
+      context: ./python-services
+      dockerfile: Dockerfile.biofield
+    container_name: noesis-biofield-cv
+    ports:
+      - "8002:8002"
+    environment:
+      PYTHONUNBUFFERED: "1"
+    networks:
+      - noesis-network
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:8002/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+    restart: unless-stopped
+
 networks:
   noesis-network:
     driver: bridge

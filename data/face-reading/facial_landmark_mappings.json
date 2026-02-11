@@ -32,13 +32,13 @@
       },
       "nan_nv_gong": {
         "name": "男女宫 - Children Palace",
-        "primary_landmarks": [116, 117, 118, 119, 120, 121, 128, 126, 142, 36, 205, 206, 207, 213, 192, 147, 187, 207, 213, 192],
+        "primary_landmarks": [111, 117, 118, 119, 120, 121, 128, 245, 340, 341, 342, 349, 350, 357],
         "region": "under_eye_area",
         "description": "Under-eye area representing children and fertility"
       },
       "nu_pu_gong": {
         "name": "奴僕宫 - Servants Palace",
-        "primary_landmarks": [116, 117, 118, 119, 120, 121, 128, 126, 142, 36, 205, 206, 207, 213, 192, 147, 187, 207, 213, 192],
+        "primary_landmarks": [132, 136, 169, 170, 171, 175, 176, 194, 361, 365, 397, 400, 401, 405, 406, 418],
         "region": "lower_cheeks",
         "description": "Lower cheek area representing subordinate relationships"
       },
@@ -56,25 +56,25 @@
       },
       "qian_yi_gong": {
         "name": "遷移宫 - Travel Palace",
-        "primary_landmarks": [21, 54, 103, 67, 109, 10, 151, 337, 299, 333, 298, 301, 284, 332, 297, 338, 10, 151],
+        "primary_landmarks": [21, 54, 103, 67, 109, 10, 151, 337, 299, 333, 298, 301, 284, 332, 297, 338],
         "region": "temples",
         "description": "Temple area representing travel and migration"
       },
       "guan_lu_gong": {
         "name": "官祿宫 - Career Palace",
-        "primary_landmarks": [9, 10, 151, 337, 299, 333, 298, 301, 284, 332, 297, 338, 10, 151, 9, 10],
+        "primary_landmarks": [9, 10, 151, 337, 299, 333, 298, 301, 284, 332, 297, 338],
         "region": "mid_forehead",
         "description": "Mid-forehead area representing career and official position"
       },
       "fu_de_gong": {
         "name": "福德宫 - Fortune Palace",
-        "primary_landmarks": [175, 199, 200, 16, 17, 18, 175, 199, 200, 16, 17, 18, 175, 199, 200, 16],
+        "primary_landmarks": [175, 199, 200, 16, 17, 18],
         "region": "chin_area",
         "description": "Chin area representing overall fortune and happiness"
       },
       "xiang_mao_gong": {
         "name": "相貌宫 - Appearance Palace",
-        "primary_landmarks": "all_landmarks",
+        "primary_landmarks": [10, 338, 297, 332, 284, 251, 389, 356, 454, 323, 361, 288, 397, 365, 379, 378, 400, 152, 175, 148, 176, 149, 170, 136, 58, 132, 93, 127, 162, 21, 54, 103, 67, 109],
         "region": "overall_face",
         "description": "Overall facial harmony representing appearance and social impression"
       }
@@ -96,7 +96,7 @@
         "description": "Landmarks indicating Earth element constitution"
       },
       "metal_indicators": {
-        "landmarks": [1, 2, 5, 4, 6, 19, 20, 94, 125, 6, 51, 48, 115, 131, 134, 102],
+        "landmarks": [1, 2, 5, 4, 6, 19, 20, 94, 125, 51, 48, 115, 131, 134, 102],
         "features": ["nose_prominence", "refined_features", "oval_face"],
         "description": "Landmarks indicating Metal element constitution"
       },
@@ -120,7 +120,7 @@
         "significance": "Middle age and social relationships"
       },
       "lower_third": {
-        "landmarks": [175, 199, 200, 16, 17, 18, 175, 199, 200],
+        "landmarks": [175, 199, 200, 16, 17, 18],
         "region": "nose_base_to_chin",
         "significance": "Later life and material fortune"
       }
@@ -161,12 +161,12 @@
     },
     "maturity": {
       "ages": "43-56",
-      "landmarks": [1, 2, 5, 4, 6, 19, 20, 94, 125, 6, 51, 48],
+      "landmarks": [1, 2, 5, 4, 6, 19, 20, 94, 125, 51, 48],
       "region": "nose_area"
     },
     "wisdom": {
       "ages": "57-70",
-      "landmarks": [175, 199, 200, 16, 17, 18, 175, 199, 200],
+      "landmarks": [175, 199, 200, 16, 17, 18],
       "region": "mouth_chin_area"
     },
     "elder": {
@@ -208,7 +208,7 @@
         "health_aspect": "Lung and respiratory function"
       },
       "kidney_water": {
-        "landmarks": [175, 199, 200, 16, 17, 18, 175, 199, 200],
+        "landmarks": [175, 199, 200, 16, 17, 18],
         "region": "chin_jaw_area",
         "health_aspect": "Kidney and bladder function"
       }

@@ -23,7 +23,9 @@ use sha2::{Digest, Sha256};
 use tracing::{debug, info, warn};
 
 pub mod error;
+pub mod python_client;
 pub use error::BridgeError;
+pub use python_client::PythonServiceClient;
 
 pub use noesis_core::{
     ConsciousnessEngine, EngineError, EngineInput, EngineOutput, ValidationResult,
