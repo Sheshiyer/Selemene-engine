@@ -1,47 +1,73 @@
 <p align="center">
-  <strong>Tryambakam Noesis</strong><br>
-  <em>The Three-Eyed Witness</em>
+  <img src="docs/assets/images/2C-glass-logo-nanobananapro-v1.png" alt="Tryambakam Noesis" width="280">
+</p>
+
+<h1 align="center">Tryambakam Noesis</h1>
+
+<p align="center">
+  <em>The Three-Eyed Witness</em><br>
+  <sub>Maps, not prescriptions.</sub>
 </p>
 
 <p align="center">
-  <a href="https://github.com/Sheshiyer/Selemene-engine/actions"><img src="https://img.shields.io/github/actions/workflow/status/Sheshiyer/Selemene-engine/test.yml?style=flat-square&label=tests" alt="Tests"></a>
+  <a href="https://selemene.tryambakam.space/health/live"><img src="https://img.shields.io/badge/status-live-1A1A2E?style=for-the-badge&labelColor=B8860B" alt="Live"></a>
   &nbsp;
+  <img src="https://img.shields.io/badge/engines-8-1A1A2E?style=for-the-badge&labelColor=6B6B6B" alt="8 Engines">
+  &nbsp;
+  <img src="https://img.shields.io/badge/workflows-6-1A1A2E?style=for-the-badge&labelColor=6B6B6B" alt="6 Workflows">
+</p>
+
+<p align="center">
   <img src="https://img.shields.io/badge/Rust-1.75+-CE422B?style=flat-square&logo=rust&logoColor=white" alt="Rust">
   &nbsp;
-  <img src="https://img.shields.io/badge/license-MIT-blue?style=flat-square" alt="License">
-  &nbsp;
-  <a href="https://selemene.tryambakam.space/health/live"><img src="https://img.shields.io/badge/status-live-brightgreen?style=flat-square" alt="Live"></a>
-</p>
-
-<p align="center">
-  <img src="https://img.shields.io/badge/engines-8-orange?style=flat-square" alt="Engines">
-  &nbsp;
-  <img src="https://img.shields.io/badge/workflows-6-blueviolet?style=flat-square" alt="Workflows">
-  &nbsp;
-  <img src="https://img.shields.io/badge/Axum-HTTP-teal?style=flat-square" alt="Axum">
+  <img src="https://img.shields.io/badge/Axum-HTTP-1A1A2E?style=flat-square" alt="Axum">
   &nbsp;
   <img src="https://img.shields.io/badge/Supabase-Postgres-3ECF8E?style=flat-square&logo=supabase&logoColor=white" alt="Supabase">
   &nbsp;
   <img src="https://img.shields.io/badge/Railway-deployed-0B0D0E?style=flat-square&logo=railway&logoColor=white" alt="Railway">
+  &nbsp;
+  <img src="https://img.shields.io/badge/license-MIT-blue?style=flat-square" alt="License">
 </p>
 
----
+<br>
 
-A computational mirror for self-inquiry. 8 engines rooted in Vedic, numerological, and consciousness traditions — not to predict your future, but to reflect patterns worth witnessing.
+<p align="center">
+  <img src="docs/assets/images/noesis-hero.png" alt="Noesis Architecture" width="720">
+</p>
 
-**What makes this different**: Every response includes a *witness prompt* — a question calibrated to your consciousness level. You don't get answers. You get better questions.
+<br>
 
----
+> **A computational mirror for self-inquiry.**
+>
+> 8 engines rooted in Vedic, numerological, and consciousness traditions — not to predict your future, but to reflect patterns worth witnessing.
+>
+> Every response includes a *witness prompt* — a question calibrated to your consciousness level. You don't get answers. You get better questions.
 
-## Get Started
+<br>
 
-**[API Quickstart Guide](docs/API_QUICKSTART.md)** — Zero to first API call in 5 minutes.
+## ✦ Quick Start
 
-**[Interactive Explorer](scripts/explore-api.sh)** — Terminal-based menu for exploring every engine.
+<table>
+<tr>
+<td width="33%" align="center">
+<a href="docs/API_QUICKSTART.md"><strong>📖 API Quickstart</strong></a><br>
+<sub>Zero to first call in 5 minutes</sub>
+</td>
+<td width="33%" align="center">
+<a href="scripts/explore-api.sh"><strong>🔮 Terminal Explorer</strong></a><br>
+<sub>Interactive CLI for every engine</sub>
+</td>
+<td width="33%" align="center">
+<a href="https://selemene.tryambakam.space/api/docs"><strong>📜 Swagger UI</strong></a><br>
+<sub>Full API documentation</sub>
+</td>
+</tr>
+</table>
 
-**[Swagger UI](https://selemene.tryambakam.space/api/docs)** — Full interactive API documentation.
+<br>
 
-### First Call in 30 Seconds
+<details>
+<summary><strong>First Call in 30 Seconds</strong></summary>
 
 ```bash
 # Set your API key
@@ -77,24 +103,72 @@ curl -s -X POST https://selemene.tryambakam.space/api/v1/engines/numerology/calc
 }
 ```
 
----
+</details>
 
-## The 8 Engines
+<br>
 
-Each engine is a different lens on the same moment. All return sub-millisecond calculations.
+## ✦ The 8 Engines
 
-| Engine | What It Witnesses | Key Input |
-|--------|-------------------|-----------|
-| **Panchanga** | Vedic time — tithi, nakshatra, yoga, karana, vara. The breath of cosmic rhythm. | `date`, lat/lng, timezone |
-| **Human Design** | Your bodygraph — type, strategy, authority, profile, 9 centers, 26 gates. Genetic imprint as circuit. | `date`, `time`, lat/lng, timezone |
-| **Gene Keys** | Shadow, Gift, Siddhi frequencies across 4 activation sequences. Potentials witnessed through contemplation. | `date`, `time`, lat/lng, timezone |
-| **Vimshottari** | 120-year planetary timeline. 729 nested dasha periods. Your current moment in the grand cycle. | `date`, `time`, lat/lng, timezone |
-| **Numerology** | Life path, expression, soul urge, personality — Pythagorean + Chaldean systems. | `date`, `name` |
-| **Biorhythm** | Physical (23d), emotional (28d), intellectual (33d) sine waves. Your energetic weather. | `date` |
-| **Vedic Clock** | TCM organ meridian clock + Ayurvedic dosha timing. The intelligence of *when*. | `current_time` (auto) |
-| **Biofield** | Chakra energy readings. The subtle body as data. | `date` |
+<p align="center">
+  <img src="docs/assets/images/5D-engine-icons-recraft-v1.png" alt="Engine Icons" width="600">
+</p>
 
-### Request Format
+Each engine is a different lens on the same moment. All return **sub-millisecond** calculations.
+
+<br>
+
+<table>
+<tr>
+<td align="center" width="25%">
+<strong>Panchanga</strong><br>
+<sub>Tithi · Nakshatra · Yoga · Karana · Vara</sub><br>
+<code>date, lat/lng</code>
+</td>
+<td align="center" width="25%">
+<strong>Human Design</strong><br>
+<sub>Type · Strategy · Authority · 9 Centers · 26 Gates</sub><br>
+<code>date, time, lat/lng</code>
+</td>
+<td align="center" width="25%">
+<strong>Gene Keys</strong><br>
+<sub>Shadow · Gift · Siddhi · 4 Sequences</sub><br>
+<code>date, time, lat/lng</code>
+</td>
+<td align="center" width="25%">
+<strong>Vimshottari</strong><br>
+<sub>120-Year Timeline · 729 Nested Periods</sub><br>
+<code>date, time, lat/lng</code>
+</td>
+</tr>
+<tr><td colspan="4"><br></td></tr>
+<tr>
+<td align="center" width="25%">
+<strong>Numerology</strong><br>
+<sub>Life Path · Expression · Soul Urge</sub><br>
+<code>date, name</code>
+</td>
+<td align="center" width="25%">
+<strong>Biorhythm</strong><br>
+<sub>Physical (23d) · Emotional (28d) · Intellectual (33d)</sub><br>
+<code>date</code>
+</td>
+<td align="center" width="25%">
+<strong>Vedic Clock</strong><br>
+<sub>TCM Meridians · Ayurvedic Doshas</sub><br>
+<code>current_time</code>
+</td>
+<td align="center" width="25%">
+<strong>Biofield</strong><br>
+<sub>Chakra Energy · Subtle Body</sub><br>
+<code>date</code>
+</td>
+</tr>
+</table>
+
+<br>
+
+<details>
+<summary><strong>Request Format & Examples</strong></summary>
 
 All engines accept the same `EngineInput` shape:
 
@@ -138,56 +212,93 @@ curl -s -X POST $BASE/engines/vedic-clock/calculate \
   -d '{}'
 ```
 
+</details>
+
+<br>
+
 ---
 
-## The 6 Workflows
+## ✦ The 6 Workflows
 
 Workflows synthesize multiple engines into emergent understanding. Not pipelines — *synthesis rituals*.
 
-| Workflow | Engines | What Emerges |
-|----------|---------|--------------|
-| **`birth-blueprint`** | Numerology + Human Design + Vimshottari | Your natal imprint — life path numbers, bodygraph, 120-year timeline |
-| **`daily-practice`** | Panchanga + Vedic Clock + Biorhythm | Optimal timing — cosmic tide aligned with personal rhythm |
-| **`decision-support`** | Tarot + I-Ching + HD Authority | Multi-perspective guidance — not "what to do" but "what to notice" |
-| **`self-inquiry`** | Gene Keys + Enneagram | Shadow work meets personality patterns — where you contract, where you expand |
-| **`creative-expression`** | Sigil Forge + Sacred Geometry | Intent made visible — symbols as seeds, geometry as meditation |
-| **`full-spectrum`** | All 14 Engines | Complete consciousness portrait — every lens, every frequency |
+<br>
 
-*Workflows referencing TypeScript engines (Tarot, I-Ching, Enneagram, Sacred Geometry, Sigil Forge) require the TS engines server. See [Bridge CLI](bridges/cli/README.md) for setup.*
+<table>
+<tr>
+<td width="50%">
+
+**`birth-blueprint`** — *Numerology + Human Design + Vimshottari*
+> Your natal imprint. Life path numbers, bodygraph, 120-year timeline.
+
+**`daily-practice`** — *Panchanga + Vedic Clock + Biorhythm*
+> Optimal timing. Cosmic tide aligned with personal rhythm.
+
+**`decision-support`** — *Tarot + I-Ching + HD Authority*
+> Multi-perspective guidance. Not "what to do" but "what to notice."
+
+</td>
+<td width="50%">
+
+**`self-inquiry`** — *Gene Keys + Enneagram*
+> Shadow work meets personality. Where you contract, where you expand.
+
+**`creative-expression`** — *Sigil Forge + Sacred Geometry*
+> Intent made visible. Symbols as seeds, geometry as meditation.
+
+**`full-spectrum`** — *All 14 Engines*
+> Complete consciousness portrait. Every lens, every frequency.
+
+</td>
+</tr>
+</table>
+
+<sub>*Workflows referencing TypeScript engines (Tarot, I-Ching, Enneagram, Sacred Geometry, Sigil Forge) require the TS engines server. See [Bridge CLI](bridges/cli/README.md) for setup.*</sub>
+
+<details>
+<summary><strong>Execute a Workflow</strong></summary>
 
 ```bash
-# Execute a workflow
 curl -s -X POST $BASE/workflows/birth-blueprint/execute \
   -H "X-API-Key: $NOESIS_API_KEY" -H "Content-Type: application/json" \
   -d '{"birth_data":{"date":"1991-08-13","time":"13:31","latitude":12.9716,"longitude":77.5946,"timezone":"Asia/Kolkata"}}'
 ```
 
+</details>
+
+<br>
+
 ---
 
-## Consciousness Levels
+## ✦ Consciousness Levels
 
 The system adapts witness prompts based on your relationship with awareness.
 
-| Level | State | Prompt Calibration |
-|-------|-------|-------------------|
-| **0** | Dormant | Observational. *"What sensations arise when you feel this pattern?"* |
-| **1** | Glimpsing | Reflective. *"When does this pattern show up in your life?"* |
-| **2** | Practicing | Inquiry-based. *"What might this pattern be protecting?"* |
-| **3** | Integrated | Self-authorship. *"How do you choose to work with this pattern?"* |
-| **4-5** | Embodied | Open awareness. *"What witnesses this pattern arising?"* |
+<br>
 
-This isn't gamification. It's meeting you where you are.
+| Level | State | Prompt Calibration |
+|:-----:|-------|-------------------|
+| **0** | Dormant | *"What sensations arise when you feel this pattern?"* |
+| **1** | Glimpsing | *"When does this pattern show up in your life?"* |
+| **2** | Practicing | *"What might this pattern be protecting?"* |
+| **3** | Integrated | *"How do you choose to work with this pattern?"* |
+| **4-5** | Embodied | *"What witnesses this pattern arising?"* |
+
+<sub>This isn't gamification. It's meeting you where you are.</sub>
+
+<br>
 
 ---
 
-## Authentication
+## ✦ Authentication
 
 | Method | Header | Use Case |
 |--------|--------|----------|
 | API Key | `X-API-Key: nk_...` | Server-to-server, scripts, CLI |
-| JWT | `Authorization: Bearer <token>` | User sessions (login flow) |
+| JWT | `Authorization: Bearer <token>` | User sessions |
 
-### Tiers
+<details>
+<summary><strong>Rate Limits & Tiers</strong></summary>
 
 | Tier | Rate Limit | Access |
 |------|-----------|--------|
@@ -195,18 +306,28 @@ This isn't gamification. It's meeting you where you are.
 | `premium` | 1,000 req/min | All engines + batch |
 | `enterprise` | 10,000 req/min | Everything + admin |
 
-### Seed API Keys
-
+**Seed API Keys:**
 ```bash
 DATABASE_URL="your-postgres-url" \
   cargo run --package noesis-auth --features postgres --example seed_api_keys
 ```
 
-Creates an admin user (`admin@tryambakam.com`) + 5 API keys across tiers. Keys print once and cannot be recovered.
+Creates admin user (`admin@tryambakam.com`) + 5 API keys. Keys print once.
+
+</details>
+
+<br>
 
 ---
 
-## Architecture
+## ✦ Architecture
+
+<p align="center">
+  <img src="docs/assets/images/noesis-architecture.png" alt="Architecture" width="720">
+</p>
+
+<details>
+<summary><strong>Crate Structure</strong></summary>
 
 ```
 crates/
@@ -227,99 +348,131 @@ crates/
   engine-biofield/        Chakra readings
 ```
 
+</details>
+
+<br>
+
 ### Performance
 
-| Engine | Calculation Time |
-|--------|-----------------|
-| Gene Keys | 0.012ms |
-| Panchanga | <1ms |
-| Numerology | <1ms |
-| Biorhythm | <1ms |
-| Vimshottari | <1ms |
-| Human Design | 1.31ms |
-| API p95 | <100ms |
-| Workflow (parallel) | <200ms |
+| Engine | Time | | Engine | Time |
+|--------|------|-|--------|------|
+| Gene Keys | 0.012ms | | Vimshottari | <1ms |
+| Panchanga | <1ms | | Human Design | 1.31ms |
+| Numerology | <1ms | | **API p95** | <100ms |
+| Biorhythm | <1ms | | **Workflow** | <200ms |
+
+<br>
 
 ---
 
-## Production Stack
+## ✦ Production Stack
+
+<table>
+<tr>
+<td width="50%">
 
 | Component | Technology |
 |-----------|------------|
-| **Compute** | [Railway](https://railway.app) — Docker, <100MB runtime |
-| **Database** | [Supabase](https://supabase.com) PostgreSQL (ap-south-1) |
-| **Cache** | Railway Redis (L2) + in-memory LRU (L1) |
-| **Errors** | [Sentry](https://sentry.io) (10% trace sampling) |
+| **Compute** | [Railway](https://railway.app) |
+| **Database** | [Supabase](https://supabase.com) PostgreSQL |
+| **Cache** | Redis (L2) + LRU (L1) |
+
+</td>
+<td width="50%">
+
+| Component | Technology |
+|-----------|------------|
+| **Errors** | [Sentry](https://sentry.io) |
 | **Metrics** | Prometheus (`/metrics`) |
 | **Docs** | Swagger UI (`/api/docs`) |
 
-### Endpoints
+</td>
+</tr>
+</table>
+
+<details>
+<summary><strong>All Endpoints</strong></summary>
 
 | Path | Auth | Purpose |
-|------|------|---------|
-| `/health/live` | No | Liveness probe — always 200 |
-| `/health/ready` | No | Readiness — checks DB, Redis, orchestrator |
-| `/api/docs` | No | Swagger UI |
-| `/metrics` | No | Prometheus metrics |
-| `/api/v1/engines` | Yes | List engines |
-| `/api/v1/engines/:id/calculate` | Yes | Run calculation |
-| `/api/v1/engines/:id/info` | Yes | Engine metadata |
-| `/api/v1/workflows` | Yes | List workflows |
-| `/api/v1/workflows/:id/execute` | Yes | Execute workflow |
+|------|:----:|---------|
+| `/health/live` | ✗ | Liveness probe |
+| `/health/ready` | ✗ | Readiness check |
+| `/api/docs` | ✗ | Swagger UI |
+| `/metrics` | ✗ | Prometheus metrics |
+| `/api/v1/engines` | ✓ | List engines |
+| `/api/v1/engines/:id/calculate` | ✓ | Run calculation |
+| `/api/v1/engines/:id/info` | ✓ | Engine metadata |
+| `/api/v1/workflows` | ✓ | List workflows |
+| `/api/v1/workflows/:id/execute` | ✓ | Execute workflow |
+
+</details>
+
+<br>
 
 ---
 
-## Local Development
+## ✦ Local Development
 
 ```bash
-# Build and run
-cargo build --release
-cargo run --bin noesis-server
-
-# Run tests
-cargo test -- --test-threads=1
-
-# Docker
-docker-compose up -d
+cargo build --release && cargo run --bin noesis-server   # Build & run
+cargo test -- --test-threads=1                           # Run tests
+docker-compose up -d                                     # Docker
 ```
 
-### Environment
+<details>
+<summary><strong>Environment Setup</strong></summary>
 
-Copy `.env.example` to `.env` and fill in values. Required:
+Copy `.env.example` to `.env`. Required variables:
 - `RUST_ENV` — `development` or `production`
 - `JWT_SECRET` — signing key for JWT tokens
-- `DATABASE_URL` — Postgres connection string (optional — runs degraded without DB)
+- `DATABASE_URL` — Postgres connection (optional — runs degraded without)
 
-See [`.env.example`](.env.example) for the full list.
+See [`.env.example`](.env.example) for full list.
+
+</details>
+
+<br>
 
 ---
 
-## Documentation
+## ✦ Documentation
 
-| Guide | Purpose |
-|-------|---------|
+| | |
+|---|---|
 | **[API Quickstart](docs/API_QUICKSTART.md)** | Zero to first call |
-| **[Swagger UI](https://selemene.tryambakam.space/api/docs)** | Interactive API explorer |
-| **[Terminal Explorer](scripts/explore-api.sh)** | CLI-based API exploration |
-| **[Agent Bridge CLI](bridges/cli/README.md)** | `npx @selemene/bridge init` — generate tool defs for Claude, OpenAI, LangChain |
+| **[Swagger UI](https://selemene.tryambakam.space/api/docs)** | Interactive explorer |
+| **[Terminal Explorer](scripts/explore-api.sh)** | CLI exploration |
+| **[Agent Bridge](bridges/cli/README.md)** | Claude, OpenAI, LangChain tool defs |
 | **[Architecture](.context/documentation/architecture/selemene_architecture.md)** | System design |
-| **[Deployment](docs/deployment/README.md)** | Production deployment guide |
+| **[Deployment](docs/deployment/README.md)** | Production guide |
+
+<br>
 
 ---
 
-## Acknowledgments
+## ✦ Acknowledgments
 
-This work stands on the shoulders of:
+<sub>This work stands on the shoulders of **Maharishi Parashara** (Vimshottari Dasha), **Ra Uru Hu** (Human Design), **Richard Rudd** (Gene Keys), **B.V. Raman** (Vedic astrology), and the **Swiss Ephemeris Team**.</sub>
 
-- **Maharishi Parashara** — Vimshottari Dasha system
-- **Ra Uru Hu** — Human Design System
-- **Richard Rudd** — Gene Keys transmission
-- **B.V. Raman** — Vedic astrology systematization
-- **Swiss Ephemeris Team** — astronomical calculations
+<br>
 
 ---
+
+<br>
+
+<p align="center">
+  <img src="docs/assets/images/2B-wax-seal-nanobananapro-v1.png" alt="Seal" width="120">
+</p>
 
 <p align="center">
   <strong>MIT License</strong><br>
-  <em>Not prediction. Reflection. Inquiry. Witness.</em>
+  <sub>Not prediction. Reflection. Inquiry. Witness.</sub>
+</p>
+
+<p align="center">
+  <sub>
+    <a href="docs/API_QUICKSTART.md">Quickstart</a> · 
+    <a href="https://selemene.tryambakam.space/api/docs">API Docs</a> · 
+    <a href="bridges/cli/README.md">Agent Bridge</a>
+  </sub>
 </p>
