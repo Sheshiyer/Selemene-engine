@@ -75,7 +75,7 @@ Foundation for Vedic predictive timing.
 <table>
 <tr>
 <td width="50%" align="center">
-  <video src="assets/images/engines/numerology-engine.mp4" autoplay loop muted playsinline width="100%"></video>
+  <img src="assets/images/engines/numerology-engine-thumb.png" alt="Numerology Engine" width="100%">
 </td>
 <td width="50%">
 
@@ -103,7 +103,7 @@ Foundation for Vedic predictive timing.
 <table>
 <tr>
 <td width="50%" align="center">
-  <video src="assets/images/engines/biorhythm-engine.mp4" autoplay loop muted playsinline width="100%"></video>
+  <img src="assets/images/engines/biorhythm-engine-thumb.png" alt="Biorhythm Engine" width="100%">
 </td>
 <td width="50%">
 
@@ -130,7 +130,7 @@ Foundation for Vedic predictive timing.
 <table>
 <tr>
 <td width="50%" align="center">
-  <video src="assets/images/engines/tcm-organ-engine.mp4" autoplay loop muted playsinline width="100%"></video>
+  <img src="assets/images/engines/tcm-organ-engine-thumb.png" alt="Vedic Clock Engine" width="100%">
 </td>
 <td width="50%">
 
@@ -156,7 +156,7 @@ Foundation for Vedic predictive timing.
 <table>
 <tr>
 <td width="50%" align="center">
-  <video src="assets/images/engines/chakra-kosha-engine.mp4" autoplay loop muted playsinline width="100%"></video>
+  <img src="assets/images/engines/chakra-kosha-engine-thumb.png" alt="Biofield Engine" width="100%">
 </td>
 <td width="50%">
 
@@ -215,7 +215,7 @@ Esoteric calculation engines built in TypeScript, bridged to main Rust API.
 <table>
 <tr>
 <td width="50%" align="center">
-  <video src="assets/images/engines/tarot-engine.mp4" autoplay loop muted playsinline width="100%"></video>
+  <img src="assets/images/engines/tarot-engine-thumb.png" alt="Tarot Engine" width="100%">
 </td>
 <td width="50%">
 
@@ -253,7 +253,7 @@ Traditional Book of Changes divination system.
 <table>
 <tr>
 <td width="50%" align="center">
-  <video src="assets/images/engines/enneagram-engine.mp4" autoplay loop muted playsinline width="100%"></video>
+  <img src="assets/images/engines/enneagram-engine-thumb.png" alt="Enneagram Engine" width="100%">
 </td>
 <td width="50%">
 
@@ -309,7 +309,7 @@ Combines Austin Osman Spare's method with planetary and angelic signatures.
 <table>
 <tr>
 <td width="50%" align="center">
-  <video src="assets/images/engines/astrocartography-engine.mp4" autoplay loop muted playsinline width="100%"></video>
+  <img src="assets/images/engines/astrocartography-engine-thumb.png" alt="Astrocartography Engine" width="100%">
 </td>
 <td width="50%">
 
@@ -335,7 +335,7 @@ Combines Austin Osman Spare's method with planetary and angelic signatures.
 <table>
 <tr>
 <td width="50%" align="center">
-  <video src="assets/images/engines/hrv-engine.mp4" autoplay loop muted playsinline width="100%"></video>
+  <img src="assets/images/engines/hrv-engine-thumb.png" alt="HRV Engine" width="100%">
 </td>
 <td width="50%">
 
@@ -361,7 +361,7 @@ Combines Austin Osman Spare's method with planetary and angelic signatures.
 <table>
 <tr>
 <td width="50%" align="center">
-  <video src="assets/images/engines/Nakshatra-engine.mp4" autoplay loop muted playsinline width="100%"></video>
+  <img src="assets/images/engines/Nakshatra-engine-thumb.png" alt="Nakshatra Engine" width="100%">
 </td>
 <td width="50%">
 
@@ -388,7 +388,7 @@ Combines Austin Osman Spare's method with planetary and angelic signatures.
 <table>
 <tr>
 <td width="50%" align="center">
-  <video src="assets/images/engines/biofield-raaga-engine.mp4" autoplay loop muted playsinline width="100%"></video>
+  <img src="assets/images/engines/biofield-raaga-engine-thumb.png" alt="Biofield-Raaga Engine" width="100%">
 </td>
 <td width="50%">
 
