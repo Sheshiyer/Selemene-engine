@@ -12,7 +12,7 @@
 <p align="center">
   <a href="https://selemene.tryambakam.space/health/live"><img src="https://img.shields.io/badge/status-live-1A1A2E?style=for-the-badge&labelColor=B8860B" alt="Live"></a>
   &nbsp;
-  <img src="https://img.shields.io/badge/engines-15-1A1A2E?style=for-the-badge&labelColor=6B6B6B" alt="15 Engines">
+  <img src="https://img.shields.io/badge/engines-16-1A1A2E?style=for-the-badge&labelColor=6B6B6B" alt="16 Engines">
   &nbsp;
   <img src="https://img.shields.io/badge/workflows-6-1A1A2E?style=for-the-badge&labelColor=6B6B6B" alt="6 Workflows">
 </p>
@@ -39,7 +39,7 @@
 
 > **High-performance astronomical and consciousness calculation engine.**
 >
-> 15 engines spanning Vedic astrology, numerology, Human Design, Gene Keys, and esoteric traditions. Built in Rust with sub-millisecond calculations.
+> 16 engines spanning Vedic astrology, planetary transits, numerology, Human Design, Gene Keys, and esoteric traditions. Built in Rust with sub-millisecond calculations.
 >
 > Selemene Engine powers the computational backend of **Tryambakam Noesis** — providing real-time calculations, multi-engine orchestration, and consciousness-calibrated witness prompts.
 
@@ -107,13 +107,13 @@ curl -s -X POST https://selemene.tryambakam.space/api/v1/engines/numerology/calc
 
 <br>
 
-## ✦ The 15 Engines
+## ✦ The 16 Engines
 
-15 calculation engines spanning Vedic, Western, and esoteric systems. **Sub-millisecond performance** for all calculations.
+16 calculation engines spanning Vedic, Western, and esoteric systems. **Sub-millisecond performance** for all calculations.
 
 <br>
 
-### Rust Engines (10)
+### Rust Engines (11)
 
 <table>
 <tr>
@@ -157,8 +157,8 @@ curl -s -X POST https://selemene.tryambakam.space/api/v1/engines/numerology/calc
 </td>
 <td align="center" width="20%">
 <strong>Biofield</strong><br>
-<sub>Chakra · Energy Mapping</sub><br>
-<code>date, time</code>
+<sub>Vedic Chakra · Birth-Data Analysis</sub><br>
+<code>date, time, lat/lng</code>
 </td>
 <td align="center" width="20%">
 <strong>Face Reading</strong><br>
@@ -170,6 +170,18 @@ curl -s -X POST https://selemene.tryambakam.space/api/v1/engines/numerology/calc
 <sub>Sound Consciousness</sub><br>
 <code>audio_data</code>
 </td>
+</tr>
+<tr><td colspan="5"><br></td></tr>
+<tr>
+<td align="center" width="20%">
+<strong>Transits</strong><br>
+<sub>Planetary Transits · Sade Sati</sub><br>
+<code>date, time, lat/lng</code>
+</td>
+<td align="center" width="20%"></td>
+<td align="center" width="20%"></td>
+<td align="center" width="20%"></td>
+<td align="center" width="20%"></td>
 </tr>
 </table>
 
@@ -294,7 +306,7 @@ Workflows synthesize multiple engines into emergent understanding. Not pipelines
 **`creative-expression`** — *Sigil Forge + Sacred Geometry*
 > Intent made visible. Symbols as seeds, geometry as meditation.
 
-**`full-spectrum`** — *All 15 Engines*
+**`full-spectrum`** — *All 16 Engines*
 > Complete consciousness portrait. Every lens, every frequency.
 
 </td>
@@ -405,7 +417,10 @@ crates/
   engine-numerology/      Pythagorean + Chaldean number systems
   engine-biorhythm/       3 biological cycles (P/E/I)
   engine-vedic-clock/     TCM organ clock + Ayurvedic timing
-  engine-biofield/        Chakra readings
+  engine-biofield/        Vedic birth-data-driven chakra & biofield analysis
+  engine-face-reading/    Physiognomy analysis (stub)
+  engine-nadabrahman/     Sound consciousness (stub)
+  engine-transits/        Planetary transits, aspects & Sade Sati
 ```
 
 </details>

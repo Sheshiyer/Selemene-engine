@@ -2,11 +2,11 @@
   <img src="assets/images/2C-glass-logo-nanobananapro-v2.png" alt="Selemene Engine" width="400">
 </p>
 
-<h1 align="center">The 15 Engines</h1>
+<h1 align="center">The 16 Engines</h1>
 
 <p align="center">
-  <em>Fifteen calculation systems. Sub-millisecond precision.</em><br>
-  <sub>10 Rust engines + 5 TypeScript engines</sub>
+  <em>Sixteen calculation systems. Sub-millisecond precision.</em><br>
+  <sub>11 Rust engines + 5 TypeScript engines</sub>
 </p>
 
 <br>
@@ -15,7 +15,7 @@
 
 <br>
 
-# Rust Engines (10)
+# Rust Engines (11)
 
 High-performance native calculation engines built in Rust with sub-millisecond performance.
 
@@ -148,9 +148,9 @@ Foundation for Vedic predictive timing.
 
 ## 8. Biofield Engine
 
-**Chakra & Subtle Body Mapping** — 7 chakras, 5 koshas, energy distribution patterns.
+**Vedic Birth-Data Biofield Analysis** — Real planetary position-driven chakra readings using Navagraha dignity, aspects, and temporal transit modulation.
 
-**Input:** `date, time`  
+**Input:** `date, time, lat/lng`
 **Endpoint:** `POST /api/v1/biofield/calculate`
 
 <table>
@@ -160,12 +160,12 @@ Foundation for Vedic predictive timing.
 </td>
 <td width="50%">
 
-### Mappings
-- Primary chakra activation
-- Kosha layer emphasis (Annamaya → Anandamaya)
-- Energy distribution across 7 centers
-- Developmental sequence
-- Blockage patterns
+### Calculations
+- 7 chakra readings via planet-chakra correspondences (Vedic Jyotish)
+- Fractal dimension, entropy, coherence, symmetry metrics
+- Planetary dignity (exaltation → debilitation) + aspect scoring
+- Temporal modulation: Moon transit, lunar phase, day-of-week Vara
+- Falls back to mock data when no birth_data provided
 
 </td>
 </tr>
@@ -195,6 +195,22 @@ Maps voice characteristics to raaga resonance and chakra activations.
 
 <br>
 
+## 11. Transits Engine
+
+**Planetary transits & Sade Sati** — Current planetary positions, natal-to-transit aspects, and Saturn's 7.5-year Sade Sati cycle detection.
+
+**Input:** `date, time, lat/lng`
+**Endpoint:** `POST /api/v1/transits/calculate`
+
+### Returns
+- Current positions of all 9 Navagraha (Swiss Ephemeris)
+- Transit-to-natal aspects (conjunction, trine, square, sextile, opposition)
+- Sade Sati phase detection (rising, peak, setting)
+- Retrograde status for all planets
+- Witness prompts calibrated to active transits
+
+<br>
+
 ---
 
 <br>
@@ -205,7 +221,7 @@ Esoteric calculation engines built in TypeScript, bridged to main Rust API.
 
 <br>
 
-## 11. Tarot Engine
+## 12. Tarot Engine
 
 **78-card system** — Birth cards, yearly cycles, archetypal progression through Major Arcana.
 
@@ -232,7 +248,7 @@ Esoteric calculation engines built in TypeScript, bridged to main Rust API.
 
 <br>
 
-## 12. I Ching Engine
+## 13. I Ching Engine
 
 **64 hexagrams** — Oracle casting via yarrow stalk, coin, or digital methods. Interprets changing lines and transformations.
 
@@ -243,7 +259,7 @@ Traditional Book of Changes divination system.
 
 <br>
 
-## 13. Enneagram Engine
+## 14. Enneagram Engine
 
 **9 personality types** — Core type, wing, tritype, integration/disintegration arrows, instinctual variants.
 
@@ -271,7 +287,7 @@ Traditional Book of Changes divination system.
 
 <br>
 
-## 14. Sacred Geometry Engine
+## 15. Sacred Geometry Engine
 
 **Platonic solids & geometric patterns** — Generates sacred geometry constructions, calculates proportions (phi, pi, √2), and maps to energetic resonances.
 
@@ -282,7 +298,7 @@ Includes Flower of Life, Metatron's Cube, Sri Yantra, Golden Spiral.
 
 <br>
 
-## 15. Sigil Forge Engine
+## 16. Sigil Forge Engine
 
 **Intent manifestation** — Transforms text intentions into visual sigils using letter reduction, geometric encoding, and symbolic transformation methods.
 
