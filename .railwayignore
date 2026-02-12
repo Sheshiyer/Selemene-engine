@@ -1,0 +1,51 @@
+# Rust artifacts (57GB!)
+target/
+**/target/
+
+# Git history (2.5GB)
+.git/
+
+# Large directories not needed for TS engines
+docs/
+standalone_demo/
+monitoring/
+reports/
+k8s/
+python-services/
+bridges/
+examples/
+crates/
+
+# Node modules (will be installed during build)
+node_modules/
+**/node_modules/
+
+# Build artifacts
+*.o
+*.so
+*.dylib
+dist/
+build/
+
+# Documentation
+*.md
+!README.md
+
+# Tests
+tests/
+**/tests/
+
+# Environment
+.env
+.env.*
+
+# IDE and context
+.vscode/
+.idea/
+.DS_Store
+.context/
+.claude/
+
+# Logs
+*.log
+logs/

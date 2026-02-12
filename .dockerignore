@@ -93,8 +93,8 @@ standalone_demo.rs
 # Monitoring
 monitoring/
 
-# TypeScript engines (if not needed in container)
-ts-engines/
+# TypeScript engines (needed for ts-engines deployment)
+# ts-engines/
 
 # Legacy code
 legacy/
