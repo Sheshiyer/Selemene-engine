@@ -29,11 +29,8 @@ RUN apt-get update && \
 # Copy binary from builder
 COPY --from=builder /build/target/release/noesis-server /app/noesis-server
 
-# Copy data directories
-COPY data/ephemeris/ /app/data/ephemeris/
-COPY data/wisdom-docs/ /app/data/wisdom-docs/
-COPY data/constants/ /app/data/constants/
-COPY data/validation/ /app/data/validation/
+# Copy all data directories in one pass
+COPY data/ /app/data/
 
 # Set environment variables
 ENV RUST_LOG=info
