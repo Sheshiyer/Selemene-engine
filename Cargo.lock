@@ -986,10 +986,12 @@ version = "0.1.0"
 dependencies = [
  "async-trait",
  "chrono",
+ "engine-human-design",
  "noesis-core",
  "rand 0.8.5",
  "serde",
  "serde_json",
+ "sha2",
  "tokio",
 ]
 
@@ -1088,6 +1090,21 @@ dependencies = [
  "serde",
  "serde_json",
  "sha2",
+ "tokio",
+]
+
+[[package]]
+name = "engine-transits"
+version = "0.1.0"
+dependencies = [
+ "async-trait",
+ "chrono",
+ "engine-human-design",
+ "noesis-core",
+ "serde",
+ "serde_json",
+ "sha2",
+ "thiserror 1.0.69",
  "tokio",
 ]
 
@@ -2271,10 +2288,13 @@ dependencies = [
  "dashmap",
  "engine-biofield",
  "engine-biorhythm",
+ "engine-face-reading",
  "engine-gene-keys",
  "engine-human-design",
+ "engine-nadabrahman",
  "engine-numerology",
  "engine-panchanga",
+ "engine-transits",
  "engine-vedic-clock",
  "engine-vimshottari",
  "futures",

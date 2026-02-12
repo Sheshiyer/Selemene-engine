@@ -1,7 +1,7 @@
 //! ConsciousnessEngine implementation for Biofield
 //!
-//! Stub implementation that returns mock biofield data.
-//! Full implementation requires PIP (Polycontrast Interference Photography) hardware.
+//! Routes to Vedic birth-data-driven analysis when birth_data is provided,
+//! falls back to mock data when absent.
 
 use async_trait::async_trait;
 use chrono::Utc;
@@ -10,20 +10,23 @@ use noesis_core::{
     ValidationResult,
 };
 use serde_json::{json, Value};
+use sha2::{Digest, Sha256};
 use std::time::Instant;
 
 use crate::mock::{generate_metrics_for_user, generate_mock_metrics};
 use crate::models::{BiofieldAnalysis, BiofieldMetrics};
+use crate::vedic::{VedicAnalysisResult, VedicBiofieldAnalyzer, generate_vedic_witness_prompt};
 use crate::wisdom::{get_chakra_wisdom, get_metric_interpretation};
 use crate::witness::generate_witness_prompt;
 
 /// Biofield consciousness engine
 ///
-/// Analyzes biofield energy patterns from PIP device data.
-/// Currently returns mock data - full implementation requires hardware.
+/// Analyzes biofield energy patterns using Vedic planetary correspondences
+/// when birth data is provided, or returns mock data as fallback.
 pub struct BiofieldEngine {
     engine_id: String,
     engine_name: String,
+    analyzer: VedicBiofieldAnalyzer,
 }
 
 impl BiofieldEngine {
@@ -32,14 +35,14 @@ impl BiofieldEngine {
         Self {
             engine_id: "biofield".to_string(),
             engine_name: "Biofield".to_string(),
+            analyzer: VedicBiofieldAnalyzer::new(),
         }
     }
 
-    /// Generate interpretation text from metrics
-    fn generate_interpretation(metrics: &BiofieldMetrics) -> String {
+    /// Generate interpretation text from mock metrics
+    fn generate_mock_interpretation(metrics: &BiofieldMetrics) -> String {
         let mut parts = Vec::new();
 
-        // Interpret vitality
         if metrics.vitality_index > 0.7 {
             parts.push("Overall vitality appears strong".to_string());
         } else if metrics.vitality_index < 0.4 {
@@ -48,31 +51,31 @@ impl BiofieldEngine {
             parts.push("Vitality is in a moderate range".to_string());
         }
 
-        // Interpret coherence
         if let Some(interp) = get_metric_interpretation("coherence") {
             if metrics.coherence < interp.optimal_range.0 {
-                parts.push("Coherence patterns suggest potential for more integration".to_string());
+                parts.push(
+                    "Coherence patterns suggest potential for more integration".to_string(),
+                );
             } else if metrics.coherence > interp.optimal_range.1 {
-                parts.push("Coherence is notably high, suggesting aligned energy flow".to_string());
+                parts.push(
+                    "Coherence is notably high, suggesting aligned energy flow".to_string(),
+                );
             }
         }
 
-        // Interpret symmetry
         if metrics.symmetry < 0.5 {
             parts.push("Left-right balance shows some asymmetry".to_string());
         }
 
-        // Note about mock data
         parts.push("Note: This interpretation is based on simulated data".to_string());
 
         parts.join(". ") + "."
     }
 
-    /// Identify areas that may benefit from attention
-    fn identify_areas_of_attention(metrics: &BiofieldMetrics) -> Vec<String> {
+    /// Identify areas that may benefit from attention (mock path)
+    fn identify_mock_areas_of_attention(metrics: &BiofieldMetrics) -> Vec<String> {
         let mut areas = Vec::new();
 
-        // Check each chakra
         for reading in &metrics.chakra_readings {
             if reading.activity_level < 0.4 {
                 if let Some(wisdom) = get_chakra_wisdom(reading.chakra) {
@@ -97,7 +100,6 @@ impl BiofieldEngine {
             }
         }
 
-        // Check overall metrics
         if metrics.coherence < 0.4 {
             areas.push("Overall coherence may benefit from grounding practices".to_string());
         }
@@ -113,32 +115,36 @@ impl BiofieldEngine {
         areas
     }
 
-    /// Perform the biofield analysis (currently returns mock data)
-    fn analyze(&self, input: &EngineInput) -> Result<BiofieldAnalysis, EngineError> {
-        // Get seed from options if provided for reproducible results
+    /// Perform biofield analysis — routes to Vedic or mock path
+    fn analyze(&self, input: &EngineInput) -> Result<AnalysisOutcome, EngineError> {
+        // If birth_data is provided, use real Vedic analysis
+        if let Some(birth_data) = &input.birth_data {
+            let result = self.analyzer.analyze(birth_data, input.current_time)?;
+            return Ok(AnalysisOutcome::Vedic(result));
+        }
+
+        // Fall back to mock data
         let seed = input.options.get("seed").and_then(|v| v.as_u64());
+        let metrics =
+            if let Some(user_id) = input.options.get("user_id").and_then(|v| v.as_str()) {
+                generate_metrics_for_user(user_id)
+            } else {
+                generate_mock_metrics(seed)
+            };
 
-        // Or use user_id for consistent personal readings
-        let metrics = if let Some(user_id) = input.options.get("user_id").and_then(|v| v.as_str()) {
-            generate_metrics_for_user(user_id)
-        } else {
-            generate_mock_metrics(seed)
-        };
+        let interpretation = Self::generate_mock_interpretation(&metrics);
+        let areas_of_attention = Self::identify_mock_areas_of_attention(&metrics);
 
-        let interpretation = Self::generate_interpretation(&metrics);
-        let areas_of_attention = Self::identify_areas_of_attention(&metrics);
-
-        Ok(BiofieldAnalysis {
+        Ok(AnalysisOutcome::Mock(BiofieldAnalysis {
             metrics,
             interpretation,
             areas_of_attention,
             is_mock_data: true,
-        })
+        }))
     }
 
     /// Serialize analysis result to JSON
     fn serialize_result(analysis: &BiofieldAnalysis) -> Value {
-        // Serialize chakra readings with additional metadata
         let chakra_readings: Vec<Value> = analysis
             .metrics
             .chakra_readings
@@ -152,7 +158,6 @@ impl BiofieldEngine {
                     "color_intensity": r.color_intensity,
                 });
 
-                // Add wisdom data if available
                 if let Some(wisdom) = get_chakra_wisdom(r.chakra) {
                     reading["location"] = json!(wisdom.location);
                     reading["element"] = json!(wisdom.element);
@@ -179,6 +184,12 @@ impl BiofieldEngine {
     }
 }
 
+/// Internal enum to carry analysis result + optional Vedic context
+enum AnalysisOutcome {
+    Vedic(VedicAnalysisResult),
+    Mock(BiofieldAnalysis),
+}
+
 impl Default for BiofieldEngine {
     fn default() -> Self {
         Self::new()
@@ -202,20 +213,31 @@ impl ConsciousnessEngine for BiofieldEngine {
     async fn calculate(&self, input: EngineInput) -> Result<EngineOutput, EngineError> {
         let start = Instant::now();
 
-        // Perform analysis
-        let analysis = self.analyze(&input)?;
+        let outcome = self.analyze(&input)?;
 
-        // Generate witness prompt
-        let witness_prompt = generate_witness_prompt(&analysis);
+        let (analysis, witness_prompt, backend, precision) = match &outcome {
+            AnalysisOutcome::Vedic(vedic_result) => {
+                let prompt =
+                    generate_vedic_witness_prompt(&vedic_result.analysis, &vedic_result.context);
+                (
+                    &vedic_result.analysis,
+                    prompt,
+                    "vedic-ephemeris",
+                    format!("{:?}", input.precision),
+                )
+            }
+            AnalysisOutcome::Mock(mock_analysis) => {
+                let prompt = generate_witness_prompt(mock_analysis);
+                (mock_analysis, prompt, "mock", "simulated".to_string())
+            }
+        };
 
-        // Ensure witness prompt is non-empty
         if witness_prompt.is_empty() {
             return Err(EngineError::CalculationError(
                 "Witness prompt generation failed: empty result".to_string(),
             ));
         }
 
-        // Get consciousness level from input
         let consciousness_level = input
             .options
             .get("consciousness_level")
@@ -225,19 +247,24 @@ impl ConsciousnessEngine for BiofieldEngine {
 
         let elapsed = start.elapsed();
 
-        // Build result with mock notice
-        let mut result = Self::serialize_result(&analysis);
-        result["notice"] = json!(
-            "This is simulated data. Full biofield analysis requires PIP hardware integration."
-        );
-        result["future_capabilities"] = json!([
-            "Real-time biofield imaging",
-            "Chakra activity measurement",
-            "Aura color spectrum analysis",
-            "Energy flow pattern tracking",
-            "Biofield coherence monitoring",
-            "Before/after intervention comparison",
-        ]);
+        let mut result = Self::serialize_result(analysis);
+
+        if analysis.is_mock_data {
+            result["notice"] = json!(
+                "This is simulated data. Full biofield analysis requires PIP hardware integration."
+            );
+            result["future_capabilities"] = json!([
+                "Real-time biofield imaging",
+                "Chakra activity measurement",
+                "Aura color spectrum analysis",
+                "Energy flow pattern tracking",
+                "Biofield coherence monitoring",
+                "Before/after intervention comparison",
+            ]);
+            result["computation_mode"] = json!("mock");
+        } else {
+            result["computation_mode"] = json!("vedic");
+        }
 
         Ok(EngineOutput {
             engine_id: self.engine_id.clone(),
@@ -246,10 +273,11 @@ impl ConsciousnessEngine for BiofieldEngine {
             consciousness_level,
             metadata: CalculationMetadata {
                 calculation_time_ms: elapsed.as_secs_f64() * 1000.0,
-                backend: "mock".to_string(),
-                precision_achieved: "simulated".to_string(),
+                backend: backend.to_string(),
+                precision_achieved: precision,
                 cached: false,
                 timestamp: Utc::now(),
+                engine_version: env!("CARGO_PKG_VERSION").to_string(),
             },
         })
     }
@@ -258,13 +286,11 @@ impl ConsciousnessEngine for BiofieldEngine {
         let mut messages = Vec::new();
         let mut valid = true;
 
-        // Check witness prompt is non-empty
         if output.witness_prompt.is_empty() {
             messages.push("Witness prompt is empty".to_string());
             valid = false;
         }
 
-        // Check result has expected fields
         if output.result.get("metrics").is_none() {
             messages.push("Missing 'metrics' field in result".to_string());
             valid = false;
@@ -275,13 +301,11 @@ impl ConsciousnessEngine for BiofieldEngine {
             valid = false;
         }
 
-        // Check is_mock_data flag is present
         if output.result.get("is_mock_data").is_none() {
             messages.push("Missing 'is_mock_data' flag".to_string());
             valid = false;
         }
 
-        // Validate metrics are in range
         if let Some(metrics) = output.result.get("metrics") {
             if let Some(fd) = metrics.get("fractal_dimension").and_then(|v| v.as_f64()) {
                 if !(1.0..=2.0).contains(&fd) {
@@ -300,7 +324,6 @@ impl ConsciousnessEngine for BiofieldEngine {
             }
         }
 
-        // Check chakra readings count
         if let Some(readings) = output
             .result
             .get("chakra_readings")
@@ -325,13 +348,25 @@ impl ConsciousnessEngine for BiofieldEngine {
     }
 
     fn cache_key(&self, input: &EngineInput) -> String {
-        // Include seed or user_id in cache key for reproducibility
+        // Vedic analysis: cache by birth data + transit hour
+        if let Some(birth_data) = &input.birth_data {
+            let birth_str = format!(
+                "{}_{}",
+                birth_data.date,
+                birth_data.time.as_deref().unwrap_or("12:00")
+            );
+            let transit_hour = input.current_time.format("%Y-%m-%d-%H").to_string();
+            let raw = format!("biofield:vedic:{}:{}", birth_str, transit_hour);
+            let hash = format!("{:x}", Sha256::digest(raw.as_bytes()));
+            return format!("biofield:vedic:{}", hash);
+        }
+
+        // Mock data: existing cache logic
         if let Some(user_id) = input.options.get("user_id").and_then(|v| v.as_str()) {
             format!("biofield:user:{}", user_id)
         } else if let Some(seed) = input.options.get("seed").and_then(|v| v.as_u64()) {
             format!("biofield:seed:{}", seed)
         } else {
-            // No caching for unseeded mock data
             format!(
                 "biofield:random:{}",
                 Utc::now().timestamp_nanos_opt().unwrap_or(0)
@@ -343,7 +378,7 @@ impl ConsciousnessEngine for BiofieldEngine {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use noesis_core::Precision;
+    use noesis_core::{BirthData, Precision};
     use std::collections::HashMap;
 
     fn create_test_input() -> EngineInput {
@@ -356,6 +391,23 @@ mod tests {
             location: None,
             precision: Precision::Standard,
             options,
+        }
+    }
+
+    fn create_vedic_input() -> EngineInput {
+        EngineInput {
+            birth_data: Some(BirthData {
+                name: Some("Test".to_string()),
+                date: "1990-01-01".to_string(),
+                time: Some("14:30".to_string()),
+                latitude: 12.9716,
+                longitude: 77.5946,
+                timezone: "Asia/Kolkata".to_string(),
+            }),
+            current_time: Utc::now(),
+            location: None,
+            precision: Precision::Standard,
+            options: HashMap::new(),
         }
     }
 
@@ -379,7 +431,6 @@ mod tests {
         assert_eq!(output.engine_id, "biofield");
         assert!(!output.witness_prompt.is_empty());
 
-        // Check is_mock_data flag
         let is_mock = output
             .result
             .get("is_mock_data")
@@ -387,14 +438,61 @@ mod tests {
             .unwrap_or(false);
         assert!(is_mock, "Should indicate mock data");
 
-        // Check notice is present
+        assert!(output.result.get("notice").is_some());
+        assert!(output.result.get("future_capabilities").is_some());
+        assert_eq!(
+            output.result.get("computation_mode").and_then(|v| v.as_str()),
+            Some("mock")
+        );
+        assert_eq!(output.metadata.backend, "mock");
+    }
+
+    #[tokio::test]
+    async fn test_calculate_with_birth_data_returns_vedic() {
+        let engine = BiofieldEngine::new();
+        let input = create_vedic_input();
+
+        let result = engine.calculate(input).await;
         assert!(
-            output.result.get("notice").is_some(),
-            "Should have notice about mock data"
+            result.is_ok(),
+            "Vedic calculation should succeed: {:?}",
+            result.err()
         );
 
-        // Check future_capabilities is present
-        assert!(output.result.get("future_capabilities").is_some());
+        let output = result.unwrap();
+        assert_eq!(output.engine_id, "biofield");
+        assert!(!output.witness_prompt.is_empty());
+
+        let is_mock = output
+            .result
+            .get("is_mock_data")
+            .and_then(|v| v.as_bool())
+            .unwrap_or(true);
+        assert!(!is_mock, "Should NOT be mock data when birth_data provided");
+
+        assert_eq!(
+            output.result.get("computation_mode").and_then(|v| v.as_str()),
+            Some("vedic")
+        );
+        assert_eq!(output.metadata.backend, "vedic-ephemeris");
+
+        // Should not have mock notice
+        assert!(output.result.get("notice").is_none());
+    }
+
+    #[tokio::test]
+    async fn test_vedic_output_passes_validation() {
+        let engine = BiofieldEngine::new();
+        let input = create_vedic_input();
+
+        let output = engine.calculate(input).await.unwrap();
+        let validation = engine.validate(&output).await.unwrap();
+
+        assert!(
+            validation.valid,
+            "Vedic output should pass validation: {:?}",
+            validation.messages
+        );
     }
 
     #[tokio::test]
@@ -423,7 +521,6 @@ mod tests {
         let output1 = engine.calculate(input1).await.unwrap();
         let output2 = engine.calculate(input2).await.unwrap();
 
-        // Compare metrics (excluding timestamp)
         let fd1 = output1.result["metrics"]["fractal_dimension"].as_f64();
         let fd2 = output2.result["metrics"]["fractal_dimension"].as_f64();
         assert_eq!(fd1, fd2, "Same seed should produce same results");
@@ -481,7 +578,7 @@ mod tests {
                 "chakra_readings": [],
                 "is_mock_data": true,
             }),
-            witness_prompt: "".to_string(), // Empty!
+            witness_prompt: "".to_string(),
             consciousness_level: 1,
             metadata: CalculationMetadata {
                 calculation_time_ms: 1.0,
@@ -489,6 +586,7 @@ mod tests {
                 precision_achieved: "test".to_string(),
                 cached: false,
                 timestamp: Utc::now(),
+                engine_version: String::new(),
             },
         };
 
@@ -528,6 +626,15 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn test_cache_key_vedic() {
+        let engine = BiofieldEngine::new();
+        let input = create_vedic_input();
+
+        let key = engine.cache_key(&input);
+        assert!(key.starts_with("biofield:vedic:"));
+    }
+
+    #[tokio::test]
     async fn test_output_has_chakra_readings() {
         let engine = BiofieldEngine::new();
         let input = create_test_input();
@@ -542,7 +649,6 @@ mod tests {
 
         assert_eq!(readings.len(), 7, "Should have 7 chakra readings");
 
-        // Check first reading has expected fields
         let first = &readings[0];
         assert!(first.get("chakra").is_some());
         assert!(first.get("activity_level").is_some());

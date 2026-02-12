@@ -15,7 +15,7 @@ pub use config::ApiConfig;
 pub use logging::{init_tracing, init_tracing_json};
 
 use axum::{
-    extract::{Json, Path, State},
+    extract::{DefaultBodyLimit, Json, Path, State},
     http::{HeaderValue, Method, StatusCode},
     middleware as axum_middleware,
     response::IntoResponse,
@@ -66,6 +66,7 @@ use utoipa_swagger_ui::SwaggerUi;
         handlers::auth::login,
         handlers::auth::forgot_password,
         handlers::auth::reset_password,
+        handlers::auth::change_password,
     ),
     components(
         schemas(
@@ -93,6 +94,8 @@ use utoipa_swagger_ui::SwaggerUi;
             handlers::auth::ForgotPasswordResponse,
             handlers::auth::ResetPasswordRequest,
             handlers::auth::ResetPasswordResponse,
+            handlers::auth::ChangePasswordRequest,
+            handlers::auth::ChangePasswordResponse,
         )
     ),
     tags(
@@ -225,6 +228,10 @@ pub fn create_router(state: AppState, config: &ApiConfig) -> Router {
 
     let api_v1 = Router::new()
         .route(
+            "/auth/change-password",
+            post(handlers::auth::change_password),
+        )
+        .route(
             "/users/me",
             get(handlers::users::get_me).patch(handlers::users::update_me),
         )
@@ -244,7 +251,7 @@ pub fn create_router(state: AppState, config: &ApiConfig) -> Router {
         .route("/readings/:reading_id", get(get_reading_handler))
         // Layers are applied bottom-to-top, so rate_limit runs AFTER auth
         .layer(axum_middleware::from_fn_with_state(
-            rate_limiter,
+            rate_limiter.clone(),
             middleware::rate_limit_middleware,
         ))
         .layer(axum_middleware::from_fn_with_state(
@@ -254,9 +261,14 @@ pub fn create_router(state: AppState, config: &ApiConfig) -> Router {
         .merge(auth_routes);
 
     // Legacy endpoints for backward compatibility with old Selemene API
+    // Rate limited by IP (no auth required, but protected against abuse)
     let legacy = Router::new()
         .route("/panchanga/calculate", post(legacy_panchanga_handler))
-        .route("/ghati/current", get(legacy_ghati_current_handler));
+        .route("/ghati/current", get(legacy_ghati_current_handler))
+        .layer(axum_middleware::from_fn_with_state(
+            rate_limiter,
+            middleware::rate_limit_middleware,
+        ));
 
     // Start with a base router and merge docs first (both have () state)
     let base = Router::new()
@@ -276,6 +288,7 @@ pub fn create_router(state: AppState, config: &ApiConfig) -> Router {
         .layer(SentryHttpLayer::with_transaction())
         .layer(NewSentryLayer::new_from_top())
         .layer(TraceLayer::new_for_http())
+        .layer(DefaultBodyLimit::max(2 * 1024 * 1024)) // 2 MB max body size
         .layer(create_cors_layer(config.allowed_origins.clone()))
         .with_state(state)
 }
@@ -458,11 +471,14 @@ async fn metrics_handler(State(state): State<AppState>) -> impl IntoResponse {
 
     match state.metrics.get_metrics_text() {
         Ok(text) => (StatusCode::OK, text).into_response(),
-        Err(e) => (
-            StatusCode::INTERNAL_SERVER_ERROR,
-            format!("Failed to encode metrics: {}", e),
-        )
-            .into_response(),
+        Err(e) => {
+            tracing::error!("Failed to encode metrics: {}", e);
+            (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "Internal metrics error".to_string(),
+            )
+                .into_response()
+        }
     }
 }
 
@@ -1007,10 +1023,11 @@ async fn list_readings_handler(
         .list_readings(uid, engine_filter, limit, offset)
         .await
         .map_err(|e| {
+            tracing::error!("Failed to fetch readings: {}", e);
             (
                 StatusCode::INTERNAL_SERVER_ERROR,
                 Json(ErrorResponse {
-                    error: format!("Failed to fetch readings: {}", e),
+                    error: "Failed to fetch readings".to_string(),
                     error_code: "DB_ERROR".to_string(),
                     details: None,
                 }),
@@ -1018,10 +1035,11 @@ async fn list_readings_handler(
         })?;
 
     let total = repo.count_readings(uid, engine_filter).await.map_err(|e| {
+        tracing::error!("Failed to count readings: {}", e);
         (
             StatusCode::INTERNAL_SERVER_ERROR,
             Json(ErrorResponse {
-                error: format!("Failed to count readings: {}", e),
+                error: "Failed to count readings".to_string(),
                 error_code: "DB_ERROR".to_string(),
                 details: None,
             }),
@@ -1065,10 +1083,11 @@ async fn get_reading_handler(
     })?;
 
     let reading = repo.get_reading(reading_id, uid).await.map_err(|e| {
+        tracing::error!("Failed to fetch reading: {}", e);
         (
             StatusCode::INTERNAL_SERVER_ERROR,
             Json(ErrorResponse {
-                error: format!("Failed to fetch reading: {}", e),
+                error: "Failed to fetch reading".to_string(),
                 error_code: "DB_ERROR".to_string(),
                 details: None,
             }),
@@ -1118,10 +1137,11 @@ async fn readings_stats_handler(
 
     // Get total count
     let total = repo.count_readings(uid, None).await.map_err(|e| {
+        tracing::error!("Failed to count readings: {}", e);
         (
             StatusCode::INTERNAL_SERVER_ERROR,
             Json(ErrorResponse {
-                error: format!("Failed to count readings: {}", e),
+                error: "Failed to count readings".to_string(),
                 error_code: "DB_ERROR".to_string(),
                 details: None,
             }),
@@ -1130,10 +1150,11 @@ async fn readings_stats_handler(
 
     // Get per-engine stats
     let rows = repo.count_by_engine(uid).await.map_err(|e| {
+        tracing::error!("Failed to fetch stats: {}", e);
         (
             StatusCode::INTERNAL_SERVER_ERROR,
             Json(ErrorResponse {
-                error: format!("Failed to fetch stats: {}", e),
+                error: "Failed to fetch stats".to_string(),
                 error_code: "DB_ERROR".to_string(),
                 details: None,
             }),
@@ -1196,41 +1217,41 @@ pub fn engine_error_to_response(err: EngineError) -> (StatusCode, Json<ErrorResp
             err.to_string(),
             Some(serde_json::json!({ "validation_message": msg })),
         ),
-        EngineError::CalculationError(msg) => (
+        EngineError::CalculationError(_) => (
             StatusCode::INTERNAL_SERVER_ERROR,
             "CALCULATION_ERROR".to_string(),
-            err.to_string(),
-            Some(serde_json::json!({ "calculation_message": msg })),
+            "An internal calculation error occurred".to_string(),
+            None,
         ),
-        EngineError::CacheError(msg) => (
+        EngineError::CacheError(_) => (
             StatusCode::INTERNAL_SERVER_ERROR,
             "CACHE_ERROR".to_string(),
-            err.to_string(),
-            Some(serde_json::json!({ "cache_message": msg })),
+            "An internal cache error occurred".to_string(),
+            None,
         ),
-        EngineError::ConfigError(msg) => (
+        EngineError::ConfigError(_) => (
             StatusCode::INTERNAL_SERVER_ERROR,
             "CONFIG_ERROR".to_string(),
-            err.to_string(),
-            Some(serde_json::json!({ "config_message": msg })),
+            "An internal configuration error occurred".to_string(),
+            None,
         ),
-        EngineError::BridgeError(msg) => (
+        EngineError::BridgeError(_) => (
             StatusCode::INTERNAL_SERVER_ERROR,
             "BRIDGE_ERROR".to_string(),
-            err.to_string(),
-            Some(serde_json::json!({ "bridge_message": msg })),
+            "An internal bridge error occurred".to_string(),
+            None,
         ),
-        EngineError::SwissEphemerisError(msg) => (
+        EngineError::SwissEphemerisError(_) => (
             StatusCode::INTERNAL_SERVER_ERROR,
             "SWISS_EPHEMERIS_ERROR".to_string(),
-            err.to_string(),
-            Some(serde_json::json!({ "ephemeris_message": msg })),
+            "An internal ephemeris error occurred".to_string(),
+            None,
         ),
-        EngineError::InternalError(msg) => (
+        EngineError::InternalError(_) => (
             StatusCode::INTERNAL_SERVER_ERROR,
             "INTERNAL_ERROR".to_string(),
-            err.to_string(),
-            Some(serde_json::json!({ "internal_message": msg })),
+            "An internal error occurred".to_string(),
+            None,
         ),
     };
 
@@ -1481,6 +1502,15 @@ pub async fn build_app_state(config: &ApiConfig) -> AppState {
     // Register VedicClock-TCM engine (Phase 0 - available to all)
     orchestrator.register_engine(Arc::new(engine_vedic_clock::VedicClockEngine::new()));
 
+    // Register Face Reading engine (Phase 1 - returns mock data until MediaPipe integration)
+    orchestrator.register_engine(Arc::new(engine_face_reading::FaceReadingEngine::new()));
+
+    // Register NadaBrahman engine (Phase 0 - raga/sound therapy)
+    orchestrator.register_engine(Arc::new(engine_nadabrahman::NadaBrahmanEngine::new()));
+
+    // Register Transits engine (Phase 0 - planetary transit analysis)
+    orchestrator.register_engine(Arc::new(engine_transits::TransitsEngine::new()));
+
     // -- TypeScript Engines (via HTTP bridge) --
     let bridge_manager = noesis_bridge::BridgeManager::from_env();
     if bridge_manager.is_available().await {
@@ -1594,6 +1624,15 @@ pub async fn build_app_state_lazy_db(config: &ApiConfig) -> AppState {
 
     // Register VedicClock-TCM engine (Phase 0 - available to all)
     orchestrator.register_engine(Arc::new(engine_vedic_clock::VedicClockEngine::new()));
+
+    // Register Face Reading engine (Phase 1 - returns mock data until MediaPipe integration)
+    orchestrator.register_engine(Arc::new(engine_face_reading::FaceReadingEngine::new()));
+
+    // Register NadaBrahman engine (Phase 0 - raga/sound therapy)
+    orchestrator.register_engine(Arc::new(engine_nadabrahman::NadaBrahmanEngine::new()));
+
+    // Register Transits engine (Phase 0 - planetary transit analysis)
+    orchestrator.register_engine(Arc::new(engine_transits::TransitsEngine::new()));
 
     // -- TypeScript Engines (via HTTP bridge) --
     let bridge_manager = noesis_bridge::BridgeManager::from_env();

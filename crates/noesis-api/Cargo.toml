@@ -25,6 +25,9 @@ engine-gene-keys = { path = "../engine-gene-keys" }
 engine-vimshottari = { path = "../engine-vimshottari" }
 engine-biofield = { path = "../engine-biofield" }
 engine-vedic-clock = { path = "../engine-vedic-clock" }
+engine-face-reading = { path = "../engine-face-reading" }
+engine-nadabrahman = { path = "../engine-nadabrahman" }
+engine-transits = { path = "../engine-transits" }
 axum = { version = "0.7", features = ["json", "macros"] }
 uuid = { version = "1.7", features = ["serde", "v4"] }
 tokio = { version = "1.0", features = ["full"] }

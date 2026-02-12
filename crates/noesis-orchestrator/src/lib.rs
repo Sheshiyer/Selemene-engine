@@ -437,6 +437,8 @@ impl WorkflowOrchestrator {
                     "vedic-clock".into(),
                     "biofield".into(),
                     "face-reading".into(),
+                    "nadabrahman".into(),
+                    "transits".into(),
                     "tarot".into(),
                     "i-ching".into(),
                     "enneagram".into(),
@@ -546,6 +548,7 @@ mod tests {
                     precision_achieved: "standard".to_string(),
                     cached: false,
                     timestamp: Utc::now(),
+                    engine_version: String::new(),
                 },
             })
         }
@@ -799,7 +802,7 @@ mod tests {
     fn full_spectrum_has_all_engines() {
         let orchestrator = WorkflowOrchestrator::new();
         let wf = orchestrator.get_workflow("full-spectrum").unwrap();
-        assert_eq!(wf.engine_ids.len(), 14);
+        assert_eq!(wf.engine_ids.len(), 16);
     }
 
     #[test]

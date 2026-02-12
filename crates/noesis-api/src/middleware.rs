@@ -211,10 +211,13 @@ pub async fn auth_middleware(
 /// Rate limiter tracking per-user request counts in a sliding window
 #[derive(Clone)]
 pub struct RateLimiter {
-    /// Map of user_id -> (request_count, window_start_time)
+    /// Map of key -> (request_count, window_start_time)
+    /// Keys are either user IDs (authenticated) or "ip:<addr>" (anonymous)
     user_windows: Arc<DashMap<String, (u32, DateTime<Utc>)>>,
-    /// Default rate limit: requests per minute
+    /// Default rate limit for authenticated users: requests per window
     default_limit: u32,
+    /// Rate limit for unauthenticated (IP-based) requests per window
+    anonymous_limit: u32,
     /// Window duration in seconds
     window_seconds: i64,
 }
@@ -225,6 +228,7 @@ impl RateLimiter {
         Self {
             user_windows: Arc::new(DashMap::new()),
             default_limit: 100,
+            anonymous_limit: 30,
             window_seconds: 60,
         }
     }
@@ -234,23 +238,24 @@ impl RateLimiter {
         Self {
             user_windows: Arc::new(DashMap::new()),
             default_limit,
+            anonymous_limit: default_limit.min(30), // anonymous always capped at 30
             window_seconds: window_seconds as i64,
         }
     }
 
     /// Check if request is allowed and update counter
     /// Returns (is_allowed, remaining, reset_timestamp)
-    fn check_and_update(&self, user_id: &str, rate_limit: u32) -> (bool, u32, i64) {
+    fn check_and_update(&self, key: &str, rate_limit: u32) -> (bool, u32, i64) {
         let now = Utc::now();
 
         // Use entry API for atomic check-and-update
         let mut entry = self
             .user_windows
-            .entry(user_id.to_string())
+            .entry(key.to_string())
             .or_insert((0, now));
         let (count, window_start) = entry.value_mut();
 
-        // Check if window has expired (1 minute sliding window)
+        // Check if window has expired
         if now - *window_start > Duration::seconds(self.window_seconds) {
             // Reset window
             *count = 1;
@@ -280,20 +285,50 @@ impl Default for RateLimiter {
     }
 }
 
-/// Rate limiting middleware that enforces per-user request limits.
+/// Extract client IP address from proxy headers or fall back to "unknown".
+///
+/// Checks (in order): X-Forwarded-For, X-Real-IP.
+/// Railway and most reverse proxies set X-Forwarded-For.
+fn extract_client_ip(req: &Request) -> String {
+    // X-Forwarded-For: first IP is the original client
+    if let Some(forwarded) = req.headers().get("x-forwarded-for") {
+        if let Ok(val) = forwarded.to_str() {
+            if let Some(first_ip) = val.split(',').next() {
+                let ip = first_ip.trim();
+                if !ip.is_empty() {
+                    return ip.to_string();
+                }
+            }
+        }
+    }
+
+    // X-Real-IP (nginx)
+    if let Some(real_ip) = req.headers().get("x-real-ip") {
+        if let Ok(val) = real_ip.to_str() {
+            let ip = val.trim();
+            if !ip.is_empty() {
+                return ip.to_string();
+            }
+        }
+    }
+
+    "unknown".to_string()
+}
+
+/// Rate limiting middleware that enforces per-user and per-IP request limits.
 ///
 /// Configuration:
-/// - Rate limit: 100 requests per minute (or user-specific from AuthUser)
-/// - Window: 60 seconds sliding window
+/// - Authenticated: user-specific or default 100 requests per minute
+/// - Unauthenticated: 30 requests per minute per IP address
+/// - Window: configurable sliding window (default 60 seconds)
 ///
 /// Behavior:
-/// - Extracts user_id from AuthUser extension (set by auth_middleware)
-/// - Tracks requests per user in sliding time window
+/// - Authenticated requests: keyed by user_id, higher limits
+/// - Unauthenticated requests: keyed by IP address, stricter limits
 /// - Returns 429 Too Many Requests when limit exceeded
-/// - Skips rate limiting if no AuthUser present (public routes)
 ///
 /// Response headers:
-/// - X-RateLimit-Limit: Maximum requests per minute
+/// - X-RateLimit-Limit: Maximum requests per window
 /// - X-RateLimit-Remaining: Remaining requests in current window
 /// - X-RateLimit-Reset: Unix timestamp when window resets
 pub async fn rate_limit_middleware(
@@ -301,24 +336,27 @@ pub async fn rate_limit_middleware(
     req: Request,
     next: Next,
 ) -> Result<Response, (StatusCode, Json<ErrorResponse>)> {
-    // Check if user is authenticated (AuthUser extension present)
+    // Determine rate limit key and limit based on authentication status
     let user = req.extensions().get::<AuthUser>().cloned();
 
-    // Skip rate limiting for unauthenticated requests (public routes)
-    let Some(auth_user) = user else {
-        return Ok(next.run(req).await);
-    };
-
-    // Get rate limit (from user or use default 100)
-    let rate_limit = if auth_user.rate_limit > 0 {
-        auth_user.rate_limit
-    } else {
-        limiter.default_limit
+    let (key, rate_limit) = match user {
+        Some(auth_user) => {
+            let limit = if auth_user.rate_limit > 0 {
+                auth_user.rate_limit
+            } else {
+                limiter.default_limit
+            };
+            (auth_user.user_id, limit)
+        }
+        None => {
+            // Unauthenticated: rate limit by IP
+            let ip = extract_client_ip(&req);
+            (format!("ip:{}", ip), limiter.anonymous_limit)
+        }
     };
 
     // Check rate limit
-    let (allowed, remaining, reset_timestamp) =
-        limiter.check_and_update(&auth_user.user_id, rate_limit);
+    let (allowed, remaining, reset_timestamp) = limiter.check_and_update(&key, rate_limit);
 
     if !allowed {
         // Rate limit exceeded - return 429 with headers
@@ -326,8 +364,8 @@ pub async fn rate_limit_middleware(
             StatusCode::TOO_MANY_REQUESTS,
             Json(ErrorResponse {
                 error: format!(
-                    "Rate limit exceeded. Maximum {} requests per minute allowed.",
-                    rate_limit
+                    "Rate limit exceeded. Maximum {} requests per {} seconds allowed.",
+                    rate_limit, limiter.window_seconds
                 ),
                 error_code: "RATE_LIMIT_EXCEEDED".to_string(),
                 details: Some(serde_json::json!({

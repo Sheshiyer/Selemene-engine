@@ -364,6 +364,7 @@ impl ConsciousnessEngine for NumerologyEngine {
                 precision_achieved: "exact".into(),
                 cached: false,
                 timestamp: Utc::now(),
+                engine_version: env!("CARGO_PKG_VERSION").to_string(),
             },
         })
     }

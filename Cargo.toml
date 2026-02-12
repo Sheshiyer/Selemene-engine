@@ -27,6 +27,7 @@ members = [
     "crates/engine-biofield",
     "crates/engine-face-reading",
     "crates/engine-nadabrahman",
+    "crates/engine-transits",
 ]
 default-members = ["crates/noesis-api"]
 

@@ -30,6 +30,7 @@
 pub mod engine;
 pub mod mock;
 pub mod models;
+pub mod vedic;
 pub mod wisdom;
 pub mod witness;
 

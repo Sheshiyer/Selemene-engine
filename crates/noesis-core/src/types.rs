@@ -155,6 +155,9 @@ pub struct CalculationMetadata {
     pub cached: bool,
     /// Timestamp of calculation
     pub timestamp: DateTime<Utc>,
+    /// Engine version (from crate Cargo.toml)
+    #[serde(default)]
+    pub engine_version: String,
 }
 
 /// Multi-engine workflow definition

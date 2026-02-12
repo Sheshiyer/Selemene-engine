@@ -1094,14 +1094,13 @@ async fn test_hd_to_gene_keys_workflow() {
         // In many dev/CI environments Swiss Ephemeris data files are not present,
         // so HD chart calculation may fail. Treat this as an environment limitation
         // rather than a functional regression of the API surface.
-        let err = hd_response["error"].as_str().unwrap_or("");
+        // Note: error messages are sanitized (no internal details leak to clients).
+        let err_code = hd_response["error_code"].as_str().unwrap_or("");
         assert!(
             hd_status == StatusCode::INTERNAL_SERVER_ERROR
-                && (err.contains("SwissEph")
-                    || err.contains("Swiss Ephemeris")
-                    || err.contains("sepl_")
-                    || err.contains("file")
-                    || err.contains("PATH")),
+                && (err_code == "CALCULATION_ERROR"
+                    || err_code == "SWISS_EPHEMERIS_ERROR"
+                    || err_code == "INTERNAL_ERROR"),
             "Unexpected HD failure status/body: status={:?} body={:?}",
             hd_status,
             hd_response
@@ -1256,13 +1255,12 @@ async fn test_gene_keys_directly_from_birth_data() {
     if status == StatusCode::INTERNAL_SERVER_ERROR {
         // Known limitation: Mode 1 requires HD chart JSON round-trip.
         // If that fails, Mode 2 (hd_gates) is the recommended approach.
-        let err = response["error"].as_str().unwrap_or("");
+        // Note: error messages are sanitized (no internal details leak to clients).
+        let err_code = response["error_code"].as_str().unwrap_or("");
         assert!(
-            err.contains("parse HD chart")
-                || err.contains("Failed to parse HD chart")
-                || err.contains("Calculation error"),
-            "Unexpected error: {}",
-            err
+            err_code == "CALCULATION_ERROR" || err_code == "INTERNAL_ERROR",
+            "Unexpected error code: {}",
+            err_code
         );
         return;
     }

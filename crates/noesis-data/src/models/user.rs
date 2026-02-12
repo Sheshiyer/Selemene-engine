@@ -17,6 +17,9 @@ pub struct User {
     pub updated_at: DateTime<Utc>,
     pub reset_token: Option<String>,
     pub reset_token_expires_at: Option<DateTime<Utc>>,
+    pub last_login_at: Option<DateTime<Utc>>,
+    pub failed_login_attempts: i32,
+    pub locked_until: Option<DateTime<Utc>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, FromRow)]

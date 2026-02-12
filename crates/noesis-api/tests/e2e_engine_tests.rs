@@ -538,12 +538,13 @@ async fn test_gene_keys_hd_integration_mode() {
 
     if status == StatusCode::INTERNAL_SERVER_ERROR {
         // Known limitation: HD chart JSON round-trip may fail if the serialization
-        // format diverges from the HDChart struct. Verify error message is specific.
-        let err = body["error"].as_str().unwrap_or("");
+        // format diverges from the HDChart struct. Verify error code is specific.
+        // Note: error messages are sanitized (no internal details leak to clients).
+        let err_code = body["error_code"].as_str().unwrap_or("");
         assert!(
-            err.contains("parse HD chart") || err.contains("Calculation error"),
-            "Unexpected error: {}",
-            err
+            err_code == "CALCULATION_ERROR" || err_code == "INTERNAL_ERROR",
+            "Unexpected error code: {}",
+            err_code
         );
 
         // Fallback: verify Mode 2 (hd_gates) works as an alternative workflow.

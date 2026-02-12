@@ -448,6 +448,7 @@ impl ConsciousnessEngine for PanchangaEngine {
                 precision_achieved: format!("{:?}", input.precision),
                 cached: false,
                 timestamp: Utc::now(),
+                engine_version: env!("CARGO_PKG_VERSION").to_string(),
             },
         })
     }

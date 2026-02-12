@@ -39,6 +39,7 @@ fn mock_output(engine_id: &str, result: serde_json::Value) -> EngineOutput {
             precision_achieved: "standard".to_string(),
             cached: false,
             timestamp: Utc::now(),
+            engine_version: String::new(),
         },
     }
 }

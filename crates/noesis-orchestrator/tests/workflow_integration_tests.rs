@@ -106,6 +106,7 @@ impl ConsciousnessEngine for MockEngine {
                 precision_achieved: "standard".to_string(),
                 cached: false,
                 timestamp: Utc::now(),
+                engine_version: String::new(),
             },
         })
     }
@@ -702,6 +703,7 @@ async fn test_synthesis_theme_detection() {
                 precision_achieved: "standard".to_string(),
                 cached: false,
                 timestamp: Utc::now(),
+                engine_version: String::new(),
             },
         },
     );
@@ -718,6 +720,7 @@ async fn test_synthesis_theme_detection() {
                 precision_achieved: "standard".to_string(),
                 cached: false,
                 timestamp: Utc::now(),
+                engine_version: String::new(),
             },
         },
     );
@@ -734,6 +737,7 @@ async fn test_synthesis_theme_detection() {
                 precision_achieved: "standard".to_string(),
                 cached: false,
                 timestamp: Utc::now(),
+                engine_version: String::new(),
             },
         },
     );

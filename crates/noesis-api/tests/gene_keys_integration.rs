@@ -95,14 +95,13 @@ async fn test_gene_keys_with_birth_data() {
 
     // Mode 1 is allowed to fail with a known limitation: GK calls HD internally and
     // round-trips HD chart JSON back into a struct.
+    // Note: error messages are sanitized (no internal details leak to clients).
     if status == StatusCode::INTERNAL_SERVER_ERROR {
-        let err = response["error"].as_str().unwrap_or("");
+        let err_code = response["error_code"].as_str().unwrap_or("");
         assert!(
-            err.contains("parse HD chart")
-                || err.contains("Failed to parse HD chart")
-                || err.contains("Calculation error"),
-            "Unexpected error: {}",
-            err
+            err_code == "CALCULATION_ERROR" || err_code == "INTERNAL_ERROR",
+            "Unexpected error code: {}",
+            err_code
         );
         return;
     }

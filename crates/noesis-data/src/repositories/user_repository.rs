@@ -224,6 +224,62 @@ impl UserRepository {
         Ok(())
     }
 
+    /// Update last_login_at timestamp and reset failed login tracking.
+    /// Called on every successful login.
+    pub async fn update_last_login(&self, user_id: Uuid) -> Result<(), Error> {
+        sqlx::query(
+            "UPDATE users SET last_login_at = $1, failed_login_attempts = 0, locked_until = NULL WHERE id = $2",
+        )
+        .bind(Utc::now())
+        .bind(user_id)
+        .execute(&self.pool)
+        .await?;
+        Ok(())
+    }
+
+    /// Atomically increment failed login attempts and lock account if threshold reached.
+    /// Returns (new_attempt_count, locked_until).
+    pub async fn increment_failed_login(
+        &self,
+        user_id: Uuid,
+        lock_until: DateTime<Utc>,
+    ) -> Result<(i32, Option<DateTime<Utc>>), Error> {
+        let row = sqlx::query_as::<_, (i32, Option<DateTime<Utc>>)>(
+            r#"
+            UPDATE users SET
+                failed_login_attempts = failed_login_attempts + 1,
+                locked_until = CASE
+                    WHEN failed_login_attempts + 1 >= 5 THEN $1
+                    ELSE locked_until
+                END
+            WHERE id = $2
+            RETURNING failed_login_attempts, locked_until
+            "#,
+        )
+        .bind(lock_until)
+        .bind(user_id)
+        .fetch_one(&self.pool)
+        .await?;
+
+        Ok(row)
+    }
+
+    /// Update password for an authenticated user (change-password flow).
+    /// Does NOT clear reset_token — that's for the reset-password flow only.
+    pub async fn update_password_authenticated(
+        &self,
+        user_id: Uuid,
+        password_hash: &str,
+    ) -> Result<(), Error> {
+        sqlx::query("UPDATE users SET password_hash = $1, updated_at = $2 WHERE id = $3")
+            .bind(password_hash)
+            .bind(Utc::now())
+            .bind(user_id)
+            .execute(&self.pool)
+            .await?;
+        Ok(())
+    }
+
     pub async fn add_experience(
         &self,
         user_id: Uuid,

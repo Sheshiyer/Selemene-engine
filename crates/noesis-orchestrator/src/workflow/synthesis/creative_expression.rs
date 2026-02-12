@@ -529,6 +529,7 @@ mod tests {
                 precision_achieved: "standard".to_string(),
                 cached: false,
                 timestamp: Utc::now(),
+                engine_version: String::new(),
             },
         }
     }
@@ -549,6 +550,7 @@ mod tests {
                 precision_achieved: "standard".to_string(),
                 cached: false,
                 timestamp: Utc::now(),
+                engine_version: String::new(),
             },
         }
     }

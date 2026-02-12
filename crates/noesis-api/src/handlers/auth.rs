@@ -4,12 +4,13 @@ use axum::{
     extract::{Json, State},
     http::StatusCode,
     response::{IntoResponse, Response},
+    Extension,
 };
 use chrono::{Duration, Utc};
 use noesis_auth::password::{hash_password, verify_password};
+use noesis_auth::AuthUser;
 use noesis_core::EngineError;
 use serde::{Deserialize, Serialize};
-use tracing::info;
 use utoipa::ToSchema;
 use uuid::Uuid;
 
@@ -61,6 +62,48 @@ pub struct ResetPasswordResponse {
     pub message: String,
 }
 
+#[derive(Deserialize, ToSchema)]
+pub struct ChangePasswordRequest {
+    pub current_password: String,
+    pub new_password: String,
+}
+
+#[derive(Serialize, ToSchema)]
+pub struct ChangePasswordResponse {
+    pub message: String,
+}
+
+/// Validate password meets minimum strength requirements.
+///
+/// Rules:
+/// - At least 8 characters
+/// - At least 1 uppercase letter
+/// - At least 1 lowercase letter
+/// - At least 1 digit
+fn validate_password_strength(password: &str) -> Result<(), EngineError> {
+    if password.len() < 8 {
+        return Err(EngineError::ValidationError(
+            "Password must be at least 8 characters long".to_string(),
+        ));
+    }
+    if !password.chars().any(|c| c.is_uppercase()) {
+        return Err(EngineError::ValidationError(
+            "Password must contain at least one uppercase letter".to_string(),
+        ));
+    }
+    if !password.chars().any(|c| c.is_lowercase()) {
+        return Err(EngineError::ValidationError(
+            "Password must contain at least one lowercase letter".to_string(),
+        ));
+    }
+    if !password.chars().any(|c| c.is_ascii_digit()) {
+        return Err(EngineError::ValidationError(
+            "Password must contain at least one digit".to_string(),
+        ));
+    }
+    Ok(())
+}
+
 /// POST /api/v1/auth/register -- create a new user account
 #[utoipa::path(
     post,
@@ -89,6 +132,9 @@ pub async fn register(
         return Err(EngineError::AuthError("User already exists".to_string()).into());
     }
 
+    // Validate password strength
+    validate_password_strength(&payload.password)?;
+
     // Hash password
     let password_hash = hash_password(&payload.password)?;
 
@@ -98,6 +144,8 @@ pub async fn register(
         .create_user(&payload.email, &password_hash, &payload.full_name)
         .await
         .map_err(|e| EngineError::InternalError(format!("Failed to create user: {}", e)))?;
+
+    tracing::info!(event = "auth.register", user_id = %user.id, email = %payload.email, "User registered");
 
     // Return 201 Created with ID
     let response = RegisterResponse {
@@ -126,22 +174,71 @@ pub async fn login(
     Json(payload): Json<LoginRequest>,
 ) -> Result<Response, ApiError> {
     // 1. Get user by email
-    let user = state
+    let user_opt = state
         .user_repository
         .get_user_by_email(&payload.email)
         .await
-        .map_err(|e| EngineError::InternalError(format!("Database error: {}", e)))?
-        .ok_or_else(|| EngineError::AuthError("Invalid email or password".to_string()))?;
+        .map_err(|e| EngineError::InternalError(format!("Database error: {}", e)))?;
 
-    // 2. Verify password
-    let valid_password = verify_password(&payload.password, &user.password_hash)?;
+    // 2. Verify password (constant-time: always run Argon2 to prevent timing-based email enumeration)
+    let user = match user_opt {
+        Some(user) => {
+            // Check account lockout before verifying password
+            if let Some(locked_until) = user.locked_until {
+                if locked_until > Utc::now() {
+                    let retry_after = (locked_until - Utc::now()).num_seconds().max(1);
+                    tracing::warn!(
+                        event = "auth.login_failure",
+                        email = %payload.email,
+                        reason = "account_locked",
+                        "Login attempt on locked account"
+                    );
+                    return Err(EngineError::AuthError(format!(
+                        "Account temporarily locked. Try again in {} seconds",
+                        retry_after
+                    ))
+                    .into());
+                }
+            }
 
-    if !valid_password {
-        return Err(EngineError::AuthError("Invalid email or password".to_string()).into());
-    }
+            let valid_password = verify_password(&payload.password, &user.password_hash)?;
+            if !valid_password {
+                // Increment failed attempts (fire-and-forget via DB)
+                let lock_until = Utc::now() + Duration::minutes(15);
+                let _ = state
+                    .user_repository
+                    .increment_failed_login(user.id, lock_until)
+                    .await;
 
-    // 3. Generate JWT token
-    // We'll give them standard permissions based on tier for now
+                tracing::warn!(
+                    event = "auth.login_failure",
+                    email = %payload.email,
+                    reason = "invalid_password",
+                    "Failed login attempt"
+                );
+                return Err(
+                    EngineError::AuthError("Invalid email or password".to_string()).into(),
+                );
+            }
+            user
+        }
+        None => {
+            // Perform dummy hash to equalize timing — prevents email enumeration
+            let _ = hash_password("dummy-password-for-timing");
+            tracing::warn!(
+                event = "auth.login_failure",
+                email = %payload.email,
+                reason = "user_not_found",
+                "Login attempt for non-existent user"
+            );
+            return Err(EngineError::AuthError("Invalid email or password".to_string()).into());
+        }
+    };
+
+    // 3. Update last login + reset failed attempts
+    let _ = state.user_repository.update_last_login(user.id).await;
+
+    // 4. Generate JWT token
     let permissions = vec!["basic:access".to_string()];
     let consciousness_level = user.consciousness_level as u8;
 
@@ -152,7 +249,9 @@ pub async fn login(
         consciousness_level,
     )?;
 
-    // 4. Return token
+    tracing::info!(event = "auth.login_success", user_id = %user.id, email = %user.email, "User logged in");
+
+    // 5. Return token
     let response = LoginResponse {
         token,
         user_id: user.id.to_string(),
@@ -190,11 +289,8 @@ pub async fn forgot_password(
         .await
         .map_err(|e| EngineError::InternalError(format!("Database error: {}", e)))?;
 
-    // Log the token for development
-    info!(
-        "Password reset requested for {}. Token: {}",
-        payload.email, token
-    );
+    // Log the reset request (never log the token itself — it's a credential)
+    tracing::info!(event = "auth.password_reset_requested", email = %payload.email, "Password reset requested");
 
     let response = ForgotPasswordResponse {
         message: "If an account exists with this email, a password reset link has been sent."
@@ -231,18 +327,81 @@ pub async fn reset_password(
             EngineError::AuthError("Invalid or expired password reset token".to_string())
         })?;
 
-    // 2. Hash new password
+    // 2. Validate new password strength
+    validate_password_strength(&payload.new_password)?;
+
+    // 3. Hash new password
     let password_hash = hash_password(&payload.new_password)?;
 
-    // 3. Update password
+    // 4. Update password
     state
         .user_repository
         .update_password(user.id, &password_hash)
         .await
         .map_err(|e| EngineError::InternalError(format!("Database error: {}", e)))?;
 
+    tracing::info!(event = "auth.password_reset_completed", user_id = %user.id, "Password reset completed");
+
     let response = ResetPasswordResponse {
         message: "Password has been successfully reset.".to_string(),
+    };
+
+    Ok((StatusCode::OK, Json(response)).into_response())
+}
+
+/// POST /api/v1/auth/change-password -- change password while authenticated
+#[utoipa::path(
+    post,
+    path = "/api/v1/auth/change-password",
+    tag = "auth",
+    request_body = ChangePasswordRequest,
+    security(("bearer_auth" = [])),
+    responses(
+        (status = 200, description = "Password changed successfully", body = ChangePasswordResponse),
+        (status = 401, description = "Invalid current password or not authenticated", body = crate::ErrorResponse),
+        (status = 422, description = "New password does not meet requirements", body = crate::ErrorResponse),
+        (status = 500, description = "Internal server error", body = crate::ErrorResponse),
+    )
+)]
+pub async fn change_password(
+    State(state): State<AppState>,
+    Extension(auth_user): Extension<AuthUser>,
+    Json(payload): Json<ChangePasswordRequest>,
+) -> Result<Response, ApiError> {
+    // 1. Fetch user from DB
+    let user_id = auth_user
+        .user_id
+        .parse::<Uuid>()
+        .map_err(|_| EngineError::AuthError("Invalid user ID in token".to_string()))?;
+
+    let user = state
+        .user_repository
+        .get_user_by_id(user_id)
+        .await
+        .map_err(|e| EngineError::InternalError(format!("Database error: {}", e)))?
+        .ok_or_else(|| EngineError::AuthError("User not found".to_string()))?;
+
+    // 2. Verify current password
+    let valid = verify_password(&payload.current_password, &user.password_hash)?;
+    if !valid {
+        return Err(EngineError::AuthError("Current password is incorrect".to_string()).into());
+    }
+
+    // 3. Validate new password strength
+    validate_password_strength(&payload.new_password)?;
+
+    // 4. Hash and update
+    let password_hash = hash_password(&payload.new_password)?;
+    state
+        .user_repository
+        .update_password_authenticated(user_id, &password_hash)
+        .await
+        .map_err(|e| EngineError::InternalError(format!("Database error: {}", e)))?;
+
+    tracing::info!(event = "auth.password_changed", user_id = %user_id, "Password changed");
+
+    let response = ChangePasswordResponse {
+        message: "Password changed successfully".to_string(),
     };
 
     Ok((StatusCode::OK, Json(response)).into_response())

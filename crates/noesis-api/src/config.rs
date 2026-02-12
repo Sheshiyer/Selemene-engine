@@ -177,8 +177,19 @@ impl ApiConfig {
             }
         }
 
-        // Validate JWT secret length (minimum 32 characters recommended)
+        // Validate JWT secret length (minimum 32 characters required in production)
         if self.jwt_secret.len() < 32 {
+            let is_production = env::var("RUST_ENV")
+                .map(|e| e == "production")
+                .unwrap_or(false);
+
+            if is_production {
+                return Err(format!(
+                    "JWT_SECRET must be at least 32 characters in production (currently {})",
+                    self.jwt_secret.len()
+                ));
+            }
+
             tracing::warn!(
                 "JWT_SECRET is only {} characters long, recommend at least 32 characters for security",
                 self.jwt_secret.len()
