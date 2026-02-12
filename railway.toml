@@ -1,6 +1,6 @@
 [build]
 # Use Metal build environment for faster builds
-builder = "NIXPACKS"
+builder = "DOCKERFILE"
 # Dockerfile is auto-detected, but we can specify it explicitly
 dockerfilePath = "Dockerfile.prod"
 

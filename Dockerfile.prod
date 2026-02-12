@@ -46,6 +46,8 @@ COPY crates/engine-gene-keys/Cargo.toml ./crates/engine-gene-keys/Cargo.toml
 COPY crates/engine-vedic-clock/Cargo.toml ./crates/engine-vedic-clock/Cargo.toml
 COPY crates/engine-biofield/Cargo.toml ./crates/engine-biofield/Cargo.toml
 COPY crates/engine-face-reading/Cargo.toml ./crates/engine-face-reading/Cargo.toml
+COPY crates/engine-nadabrahman/Cargo.toml ./crates/engine-nadabrahman/Cargo.toml
+COPY crates/engine-transits/Cargo.toml ./crates/engine-transits/Cargo.toml
 
 # --- Layer 2: Create dummy source stubs so cargo can resolve the workspace ---
 # Library crates get a stub lib.rs
@@ -55,7 +57,7 @@ RUN for crate in \
       noesis-western-api noesis-integration \
       engine-panchanga engine-numerology engine-biorhythm engine-human-design \
       engine-vimshottari engine-gene-keys engine-vedic-clock engine-biofield \
-      engine-face-reading; do \
+      engine-face-reading engine-nadabrahman engine-transits; do \
         mkdir -p "crates/$crate/src" && \
         echo "" > "crates/$crate/src/lib.rs"; \
     done && \
