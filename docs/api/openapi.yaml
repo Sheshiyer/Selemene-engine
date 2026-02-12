@@ -1,0 +1,654 @@
+openapi: 3.0.3
+info:
+  title: Selemene Engine API
+  version: 1.0.0
+  description: |
+    High-performance consciousness calculation platform combining 14 engines (Vedic astrology, Human Design, 
+    Gene Keys, Tarot, I-Ching, Enneagram, Sacred Geometry, and more) with multi-engine workflow orchestration.
+    
+    ## Features
+    - **14 Consciousness Engines**: Vedic astrology, Human Design, Gene Keys, Tarot, I-Ching, Enneagram, and more
+    - **Hybrid Calculation Backend**: Native VSOP87/ELP-2000 engines with Swiss Ephemeris fallback
+    - **Three-Layer Caching**: L1 (in-memory), L2 (Redis), L3 (disk) for optimal performance
+    - **Multi-Engine Workflows**: Orchestrate complex calculations across multiple engines
+    - **Real-Time Updates**: WebSocket support for live Panchanga and event tracking
+    
+  contact:
+    name: Selemene Engine Support
+    email: support@selemene.io
+    url: https://docs.selemene.io
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: http://localhost:8080
+    description: Development server (Rust/Axum - Panchanga/Vedic calculations)
+  - url: http://localhost:3001
+    description: TypeScript engines server (Bun - 14 consciousness engines)
+  - url: https://api.selemene.io
+    description: Production server
+
+tags:
+  - name: Health
+    description: Health checks and system status
+  - name: Panchanga
+    description: Five elements of Vedic calendar
+  - name: Solar & Lunar
+    description: Solar and lunar position calculations
+  - name: Engines
+    description: Individual consciousness engine endpoints
+  - name: Workflows
+    description: Multi-engine orchestration workflows
+  - name: Cache
+    description: Cache management and statistics
+  - name: Performance
+    description: Performance optimization and benchmarking
+
+paths:
+  /health:
+    get:
+      tags: [Health]
+      summary: Health check
+      description: Check the health status of all engine components
+      operationId: getHealth
+      responses:
+        '200':
+          description: System is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+
+  /api/v1/panchanga:
+    post:
+      tags: [Panchanga]
+      summary: Calculate Panchanga
+      description: Calculate the five elements (Tithi, Nakshatra, Yoga, Karana, Vara) for a given date and location
+      operationId: calculatePanchanga
+      security:
+        - BearerAuth: []
+        - ApiKeyAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PanchangaRequest'
+      responses:
+        '200':
+          description: Panchanga calculated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PanchangaResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/RateLimitExceeded'
+
+  /api/v1/panchanga/batch:
+    post:
+      tags: [Panchanga]
+      summary: Batch calculate Panchanga
+      description: Calculate Panchanga for multiple dates/locations in parallel
+      operationId: batchCalculatePanchanga
+      security:
+        - BearerAuth: []
+        - ApiKeyAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                requests:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/PanchangaRequest'
+              required: [requests]
+      responses:
+        '200':
+          description: Batch calculation completed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/PanchangaResult'
+
+  /api/v1/engines/{engine_name}:
+    post:
+      tags: [Engines]
+      summary: Execute a consciousness engine
+      description: |
+        Execute one of the 14 consciousness engines with the provided input data.
+        
+        Available engines:
+        - **vedic**: Vedic astrology calculations
+        - **human-design**: Human Design chart
+        - **gene-keys**: Gene Keys profile
+        - **tarot**: Tarot readings
+        - **i-ching**: I-Ching hexagrams
+        - **enneagram**: Enneagram personality assessment
+        - **sacred-geometry**: Sacred geometry analysis
+        - **sigil-forge**: Sigil generation
+        - **kabbalah**: Kabbalistic tree of life
+        - **numerology**: Numerology calculations
+        - **runes**: Rune casting
+        - **biorhythm**: Biorhythm cycles
+        - **chakra**: Chakra analysis
+        - **dreamwork**: Dream interpretation
+      operationId: executeEngine
+      security:
+        - BearerAuth: []
+        - ApiKeyAuth: []
+      parameters:
+        - name: engine_name
+          in: path
+          required: true
+          schema:
+            type: string
+            enum: [vedic, human-design, gene-keys, tarot, i-ching, enneagram, sacred-geometry, sigil-forge, kabbalah, numerology, runes, biorhythm, chakra, dreamwork]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EngineInput'
+      responses:
+        '200':
+          description: Engine calculation successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EngineOutput'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '404':
+          description: Engine not found
+
+  /api/v1/workflows:
+    post:
+      tags: [Workflows]
+      summary: Execute a multi-engine workflow
+      description: Orchestrate calculations across multiple engines with dependency management
+      operationId: executeWorkflow
+      security:
+        - BearerAuth: []
+        - ApiKeyAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WorkflowRequest'
+      responses:
+        '200':
+          description: Workflow executed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkflowResponse'
+
+  /api/v1/cache/stats:
+    get:
+      tags: [Cache]
+      summary: Get cache statistics
+      description: Retrieve performance statistics for all three cache layers
+      operationId: getCacheStats
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Cache statistics retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CacheStats'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token obtained from /auth/login
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: Authorization
+      description: 'API key with format: "ApiKey <your_api_key>"'
+
+  schemas:
+    # Core data types
+    Coordinates:
+      type: object
+      description: Geographic coordinates in decimal degrees
+      properties:
+        latitude:
+          type: number
+          format: double
+          minimum: -90
+          maximum: 90
+          example: 19.0760
+          description: Latitude in decimal degrees (North is positive)
+        longitude:
+          type: number
+          format: double
+          minimum: -180
+          maximum: 180
+          example: 72.8777
+          description: Longitude in decimal degrees (East is positive)
+      required: [latitude, longitude]
+
+    BirthData:
+      type: object
+      description: Birth data for astrological calculations
+      properties:
+        date:
+          type: string
+          format: date
+          example: "1990-05-15"
+          description: Date of birth in YYYY-MM-DD format
+        time:
+          type: string
+          format: time
+          example: "14:30:00"
+          description: Time of birth in HH:MM:SS format (24-hour)
+        timezone:
+          type: string
+          example: "Asia/Kolkata"
+          description: IANA timezone identifier
+        coordinates:
+          $ref: '#/components/schemas/Coordinates'
+      required: [date, time, coordinates]
+
+    Precision:
+      type: string
+      enum: [Standard, High, Extreme]
+      description: |
+        Calculation precision level:
+        - **Standard**: ~1 arcminute (fast, suitable for most uses)
+        - **High**: ~0.1 arcminute (slower, for detailed analysis)
+        - **Extreme**: ~0.01 arcminute (slowest, for research/validation)
+      example: Standard
+
+    # Request schemas
+    PanchangaRequest:
+      type: object
+      properties:
+        date:
+          type: string
+          format: date
+          example: "2025-01-27"
+          description: Date for Panchanga calculation
+        coordinates:
+          $ref: '#/components/schemas/Coordinates'
+        precision:
+          $ref: '#/components/schemas/Precision'
+        timezone:
+          type: string
+          example: "Asia/Kolkata"
+          description: Timezone for time calculations
+      required: [date, coordinates]
+
+    EngineInput:
+      type: object
+      description: Input data for consciousness engine calculations
+      properties:
+        birth_data:
+          $ref: '#/components/schemas/BirthData'
+        location:
+          $ref: '#/components/schemas/Coordinates'
+        precision:
+          $ref: '#/components/schemas/Precision'
+        engine_specific:
+          type: object
+          additionalProperties: true
+          description: Engine-specific parameters (varies by engine)
+          example:
+            spread_type: "celtic_cross"
+            question: "What is my life purpose?"
+      required: [birth_data]
+
+    WorkflowRequest:
+      type: object
+      properties:
+        workflow_name:
+          type: string
+          example: "consciousness_synthesis"
+          description: Name of the workflow to execute
+        inputs:
+          type: object
+          additionalProperties: true
+          description: Input data for the workflow
+        engines:
+          type: array
+          items:
+            type: string
+          example: ["vedic", "human-design", "gene-keys"]
+          description: Engines to include in the workflow
+      required: [workflow_name, inputs]
+
+    # Response schemas
+    HealthResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: healthy
+        timestamp:
+          type: string
+          format: date-time
+        version:
+          type: string
+          example: "1.0.0"
+        components:
+          type: object
+          properties:
+            native_engine:
+              type: string
+              example: healthy
+            swiss_ephemeris:
+              type: string
+              example: healthy
+            cache_system:
+              type: string
+              example: healthy
+            database:
+              type: string
+              example: healthy
+
+    PanchangaResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: success
+        data:
+          $ref: '#/components/schemas/PanchangaResult'
+        timestamp:
+          type: string
+          format: date-time
+
+    PanchangaResult:
+      type: object
+      properties:
+        date:
+          type: string
+          format: date
+        coordinates:
+          $ref: '#/components/schemas/Coordinates'
+        tithi:
+          $ref: '#/components/schemas/Tithi'
+        nakshatra:
+          $ref: '#/components/schemas/Nakshatra'
+        yoga:
+          $ref: '#/components/schemas/Yoga'
+        karana:
+          $ref: '#/components/schemas/Karana'
+        vara:
+          $ref: '#/components/schemas/Vara'
+        solar_longitude:
+          type: number
+          format: double
+          description: Solar longitude in degrees
+        lunar_longitude:
+          type: number
+          format: double
+          description: Lunar longitude in degrees
+        calculation_time:
+          type: string
+          example: "0.045s"
+        precision_used:
+          $ref: '#/components/schemas/Precision'
+        backend_used:
+          type: string
+          enum: [native, swiss_ephemeris, validated]
+
+    Tithi:
+      type: object
+      properties:
+        name:
+          type: string
+          example: "Shukla Paksha Pratipada"
+        number:
+          type: integer
+          minimum: 1
+          maximum: 30
+        start_time:
+          type: string
+          format: date-time
+        end_time:
+          type: string
+          format: date-time
+
+    Nakshatra:
+      type: object
+      properties:
+        name:
+          type: string
+          example: "Ashwini"
+        number:
+          type: integer
+          minimum: 1
+          maximum: 27
+        start_time:
+          type: string
+          format: date-time
+        end_time:
+          type: string
+          format: date-time
+        pada:
+          type: integer
+          minimum: 1
+          maximum: 4
+
+    Yoga:
+      type: object
+      properties:
+        name:
+          type: string
+          example: "Vishkumbha"
+        number:
+          type: integer
+          minimum: 1
+          maximum: 27
+        start_time:
+          type: string
+          format: date-time
+        end_time:
+          type: string
+          format: date-time
+
+    Karana:
+      type: object
+      properties:
+        name:
+          type: string
+          example: "Bava"
+        number:
+          type: integer
+          minimum: 1
+          maximum: 11
+        start_time:
+          type: string
+          format: date-time
+        end_time:
+          type: string
+          format: date-time
+
+    Vara:
+      type: object
+      properties:
+        name:
+          type: string
+          example: "Monday"
+        number:
+          type: integer
+          minimum: 0
+          maximum: 6
+
+    EngineOutput:
+      type: object
+      properties:
+        status:
+          type: string
+          example: success
+        engine:
+          type: string
+          example: "tarot"
+        data:
+          type: object
+          additionalProperties: true
+          description: Engine-specific output data
+        metadata:
+          type: object
+          properties:
+            calculation_time:
+              type: string
+            precision_used:
+              $ref: '#/components/schemas/Precision'
+        timestamp:
+          type: string
+          format: date-time
+
+    WorkflowResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: success
+        workflow_name:
+          type: string
+        results:
+          type: object
+          additionalProperties: true
+          description: Results from each engine in the workflow
+        synthesis:
+          type: object
+          additionalProperties: true
+          description: Synthesized insights across engines
+        execution_time:
+          type: string
+          example: "1.234s"
+
+    CacheStats:
+      type: object
+      properties:
+        l1_cache:
+          type: object
+          properties:
+            hits:
+              type: integer
+            misses:
+              type: integer
+            hit_rate:
+              type: number
+              format: double
+            size_mb:
+              type: number
+            entries:
+              type: integer
+        l2_cache:
+          type: object
+          properties:
+            hits:
+              type: integer
+            misses:
+              type: integer
+            hit_rate:
+              type: number
+            ttl_seconds:
+              type: integer
+        l3_cache:
+          type: object
+          properties:
+            hits:
+              type: integer
+            misses:
+              type: integer
+            hit_rate:
+              type: number
+            size_mb:
+              type: number
+        overall:
+          type: object
+          properties:
+            total_hits:
+              type: integer
+            total_misses:
+              type: integer
+            overall_hit_rate:
+              type: number
+
+    ErrorResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: error
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+              enum: [VALIDATION_ERROR, CALCULATION_ERROR, AUTHENTICATION_ERROR, RATE_LIMIT_EXCEEDED, INTERNAL_ERROR, SERVICE_UNAVAILABLE]
+            message:
+              type: string
+              example: "Invalid date format"
+            details:
+              type: string
+              example: "Date must be in YYYY-MM-DD format"
+        timestamp:
+          type: string
+          format: date-time
+
+  responses:
+    ValidationError:
+      description: Invalid input data
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            status: error
+            error:
+              code: VALIDATION_ERROR
+              message: "Invalid coordinates"
+              details: "Latitude must be between -90 and 90"
+
+    Unauthorized:
+      description: Authentication required or invalid credentials
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            status: error
+            error:
+              code: AUTHENTICATION_ERROR
+              message: "Invalid or missing authentication token"
+
+    RateLimitExceeded:
+      description: Rate limit exceeded for the current user tier
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            status: error
+            error:
+              code: RATE_LIMIT_EXCEEDED
+              message: "Rate limit exceeded"
+              details: "Free tier: 100 requests/hour. Upgrade to increase limits."

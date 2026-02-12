@@ -2,15 +2,40 @@
 
 ## Overview
 
-The Selemene Engine is a high-performance consciousness calculation platform combining 14 engines (Vedic astrology, Human Design, Gene Keys, Tarot, and more) with multi-engine workflow orchestration. This API provides comprehensive access to astronomical calculations, consciousness systems, and synthesis capabilities.
+The Selemene Engine is a high-performance consciousness calculation platform combining **14 engines** (Vedic astrology, Human Design, Gene Keys, Tarot, I-Ching, Enneagram, and more) with multi-engine workflow orchestration. This API provides comprehensive access to:
 
-## Base URL
+- **Vedic Panchanga Calculations**: Five elements (Tithi, Nakshatra, Yoga, Karana, Vara)
+- **14 Consciousness Engines**: Complete coverage of consciousness mapping systems
+- **Hybrid Backend Architecture**: Native VSOP87/ELP-2000 + Swiss Ephemeris fallback
+- **Three-Layer Caching**: L1 (in-memory), L2 (Redis), L3 (disk)
+- **Multi-Engine Workflows**: Orchestrate complex synthesis across engines
+- **Real-Time Tracking**: WebSocket support for live updates
 
-- **Development**: `http://localhost:8080`
-- **TypeScript Engines**: `http://localhost:3001` (bridged automatically)
-- **Production**: `https://<your-domain>`
+## Quick Links
 
-## Related Documentation
+- **📖 [OpenAPI 3.0 Specification](./openapi.yaml)** - Complete API reference
+- **🔧 [Engine Endpoints](./engines.md)** - Individual engine calculations
+- **🔄 [Workflow Endpoints](./workflows.md)** - Multi-engine orchestration
+- **🔐 [Authentication](./authentication.md)** - JWT and API key auth
+
+## Base URLs
+
+| Environment | URL | Description |
+|-------------|-----|-------------|
+| **Rust Backend** | `http://localhost:8080` | Panchanga/Vedic calculations (Axum) |
+| **TypeScript Engines** | `http://localhost:3001` | 14 consciousness engines (Bun) |
+| **Production** | `https://api.selemene.io` | Production deployment |
+
+## Interactive API Explorer
+
+View and test the API interactively:
+- **Swagger UI**: Import `openapi.yaml` into [Swagger Editor](https://editor.swagger.io/)
+- **Postman**: Import the OpenAPI spec into Postman
+- **Redoc**: Use [Redoc](https://redocly.github.io/redoc/) for beautiful documentation
+
+---
+
+## Documentation Index
 
 - [Engine Endpoints](./engines.md) - Individual engine calculations
 - [Workflow Endpoints](./workflows.md) - Multi-engine orchestration
