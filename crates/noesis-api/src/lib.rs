@@ -1513,22 +1513,27 @@ pub async fn build_app_state(config: &ApiConfig) -> AppState {
 
     // -- TypeScript Engines (via HTTP bridge) --
     let bridge_manager = noesis_bridge::BridgeManager::from_env();
+    
+    // Always register TS engines so they appear in the API regardless of 
+    // connectivity during startup. They will return a BridgeError if called 
+    // while the TS server is down.
+    for engine in bridge_manager.engines() {
+        orchestrator.register_engine(engine);
+    }
+
     let mut ts_connected = false;
 
-    // Retry connection logic to handle startup race conditions (e.g. on Railway)
-    for attempt in 1..=6 {
+    // Optional connectivity check for logging status
+    for attempt in 1..=3 {
         if bridge_manager.is_available().await {
-            tracing::info!("TS engines connected at {}", bridge_manager.base_url());
-            for engine in bridge_manager.engines() {
-                orchestrator.register_engine(engine);
-            }
+            tracing::info!("TS engines verified at {}", bridge_manager.base_url());
             ts_connected = true;
             break;
         }
 
-        if attempt < 6 {
+        if attempt < 3 {
             tracing::info!(
-                "Waiting for TS engines at {} (attempt {}/6)...",
+                "Checking TS engine connectivity at {} (attempt {}/3)...",
                 bridge_manager.base_url(),
                 attempt
             );
@@ -1538,7 +1543,7 @@ pub async fn build_app_state(config: &ApiConfig) -> AppState {
 
     if !ts_connected {
         tracing::warn!(
-            "TS engines unavailable at {} after retries - Rust engines only",
+            "TS engines registered but unreachable at {} - they will appear in API but return errors if used",
             bridge_manager.base_url()
         );
     }
@@ -1657,22 +1662,27 @@ pub async fn build_app_state_lazy_db(config: &ApiConfig) -> AppState {
 
     // -- TypeScript Engines (via HTTP bridge) --
     let bridge_manager = noesis_bridge::BridgeManager::from_env();
+    
+    // Always register TS engines so they appear in the API regardless of 
+    // connectivity during startup. They will return a BridgeError if called 
+    // while the TS server is down.
+    for engine in bridge_manager.engines() {
+        orchestrator.register_engine(engine);
+    }
+
     let mut ts_connected = false;
 
-    // Retry connection logic to handle startup race conditions (e.g. on Railway)
-    for attempt in 1..=6 {
+    // Optional connectivity check for logging status
+    for attempt in 1..=3 {
         if bridge_manager.is_available().await {
-            tracing::info!("TS engines connected at {}", bridge_manager.base_url());
-            for engine in bridge_manager.engines() {
-                orchestrator.register_engine(engine);
-            }
+            tracing::info!("TS engines verified at {}", bridge_manager.base_url());
             ts_connected = true;
             break;
         }
 
-        if attempt < 6 {
+        if attempt < 3 {
             tracing::info!(
-                "Waiting for TS engines at {} (attempt {}/6)...",
+                "Checking TS engine connectivity at {} (attempt {}/3)...",
                 bridge_manager.base_url(),
                 attempt
             );
@@ -1682,7 +1692,7 @@ pub async fn build_app_state_lazy_db(config: &ApiConfig) -> AppState {
 
     if !ts_connected {
         tracing::warn!(
-            "TS engines unavailable at {} after retries - Rust engines only",
+            "TS engines registered but unreachable at {} - they will appear in API but return errors if used",
             bridge_manager.base_url()
         );
     }
