@@ -7,7 +7,7 @@ use chrono::{DateTime, Datelike, Utc};
 
 use crate::models::BiofieldMetrics;
 
-use super::planetary::{VedicPlanet, VedicPosition, angular_diff};
+use super::planetary::{angular_diff, VedicPlanet, VedicPosition};
 
 /// Apply temporal modulation to natal metrics based on current transits.
 ///
@@ -44,8 +44,12 @@ fn apply_moon_modulation(
     transit_positions: &[VedicPosition],
     natal_positions: &[VedicPosition],
 ) {
-    let transit_moon = transit_positions.iter().find(|p| p.planet == VedicPlanet::Moon);
-    let natal_moon = natal_positions.iter().find(|p| p.planet == VedicPlanet::Moon);
+    let transit_moon = transit_positions
+        .iter()
+        .find(|p| p.planet == VedicPlanet::Moon);
+    let natal_moon = natal_positions
+        .iter()
+        .find(|p| p.planet == VedicPlanet::Moon);
 
     if let (Some(t_moon), Some(n_moon)) = (transit_moon, natal_moon) {
         let angle = angular_diff(t_moon.longitude, n_moon.longitude);
@@ -107,16 +111,10 @@ fn apply_outer_planet_modulation(
 }
 
 /// Retrograde transits slightly reduce coherence
-fn apply_retrograde_modulation(
-    metrics: &mut BiofieldMetrics,
-    transit_positions: &[VedicPosition],
-) {
+fn apply_retrograde_modulation(metrics: &mut BiofieldMetrics, transit_positions: &[VedicPosition]) {
     let retrograde_count = transit_positions
         .iter()
-        .filter(|p| {
-            p.is_retrograde
-                && !matches!(p.planet, VedicPlanet::Rahu | VedicPlanet::Ketu)
-        })
+        .filter(|p| p.is_retrograde && !matches!(p.planet, VedicPlanet::Rahu | VedicPlanet::Ketu))
         .count();
 
     // Each retrograde planet reduces coherence slightly
@@ -129,8 +127,12 @@ fn apply_lunar_phase_modulation(
     metrics: &mut BiofieldMetrics,
     transit_positions: &[VedicPosition],
 ) {
-    let sun = transit_positions.iter().find(|p| p.planet == VedicPlanet::Sun);
-    let moon = transit_positions.iter().find(|p| p.planet == VedicPlanet::Moon);
+    let sun = transit_positions
+        .iter()
+        .find(|p| p.planet == VedicPlanet::Sun);
+    let moon = transit_positions
+        .iter()
+        .find(|p| p.planet == VedicPlanet::Moon);
 
     if let (Some(sun_pos), Some(moon_pos)) = (sun, moon) {
         // Lunar phase: elongation from Sun (0=new, 180=full)
@@ -157,10 +159,7 @@ fn apply_lunar_phase_modulation(
 }
 
 /// Day of week: 2% boost to associated chakra (Vedic Vara system)
-fn apply_day_of_week_modulation(
-    metrics: &mut BiofieldMetrics,
-    current_time: &DateTime<Utc>,
-) {
+fn apply_day_of_week_modulation(metrics: &mut BiofieldMetrics, current_time: &DateTime<Utc>) {
     // Vedic day-planet-chakra mapping:
     // Sunday=Sun→SolarPlexus, Monday=Moon→Sacral, Tuesday=Mars→Root,
     // Wednesday=Mercury→Throat, Thursday=Jupiter→Crown,
@@ -196,9 +195,9 @@ fn clamp_metrics(metrics: &mut BiofieldMetrics) {
 
 #[cfg(test)]
 mod tests {
+    use super::super::planetary::ZodiacSign;
     use super::*;
     use crate::models::{Chakra, ChakraReading};
-    use super::super::planetary::ZodiacSign;
     use chrono::TimeZone;
 
     fn make_test_metrics() -> BiofieldMetrics {
@@ -226,7 +225,11 @@ mod tests {
             planet,
             longitude,
             latitude: 0.0,
-            speed: if planet == VedicPlanet::Saturn { -0.05 } else { 1.0 },
+            speed: if planet == VedicPlanet::Saturn {
+                -0.05
+            } else {
+                1.0
+            },
             sign: ZodiacSign::from_longitude(longitude),
             degree_in_sign: ZodiacSign::degree_in_sign(longitude),
             is_retrograde: planet == VedicPlanet::Saturn,
@@ -280,9 +283,7 @@ mod tests {
             make_transit_position(VedicPlanet::Moon, 90.0), // Moon square natal Moon
         ];
 
-        let natal_positions = vec![
-            make_transit_position(VedicPlanet::Moon, 0.0),
-        ];
+        let natal_positions = vec![make_transit_position(VedicPlanet::Moon, 0.0)];
 
         let mut metrics_a = make_test_metrics();
         let mut metrics_b = make_test_metrics();

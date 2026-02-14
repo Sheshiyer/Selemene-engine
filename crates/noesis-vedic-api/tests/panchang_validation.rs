@@ -332,33 +332,21 @@ fn build_panchang_from_reference(test: &TestDate) -> Panchang {
 
 /// Check whether two tithi numbers are within tolerance (wrapping at 30)
 fn tithi_within_tolerance(actual: u8, expected: u8, tol: u8) -> bool {
-    let diff = if actual > expected {
-        actual - expected
-    } else {
-        expected - actual
-    };
+    let diff = actual.abs_diff(expected);
     let wrap_diff = 30u8.saturating_sub(diff);
     diff <= tol || wrap_diff <= tol
 }
 
 /// Check whether two nakshatra numbers are within tolerance (wrapping at 27)
 fn nakshatra_within_tolerance(actual: u8, expected: u8, tol: u8) -> bool {
-    let diff = if actual > expected {
-        actual - expected
-    } else {
-        expected - actual
-    };
+    let diff = actual.abs_diff(expected);
     let wrap_diff = 27u8.saturating_sub(diff);
     diff <= tol || wrap_diff <= tol
 }
 
 /// Check whether two yoga numbers are within tolerance (wrapping at 27)
 fn yoga_within_tolerance(actual: u8, expected: u8, tol: u8) -> bool {
-    let diff = if actual > expected {
-        actual - expected
-    } else {
-        expected - actual
-    };
+    let diff = actual.abs_diff(expected);
     let wrap_diff = 27u8.saturating_sub(diff);
     diff <= tol || wrap_diff <= tol
 }

@@ -173,11 +173,7 @@ fn jhora_reference_dates() -> Vec<JHoraReference> {
 
 /// Check whether two values are within tolerance (with wrapping support)
 fn within_tolerance(actual: u8, expected: u8, tolerance: u8, wrap: u8) -> bool {
-    let diff = if actual > expected {
-        actual - expected
-    } else {
-        expected - actual
-    };
+    let diff = actual.abs_diff(expected);
     let wrap_diff = wrap.saturating_sub(diff);
     diff <= tolerance || wrap_diff <= tolerance
 }

@@ -66,6 +66,6 @@ mod tests {
     #[test]
     fn test_numerology() {
         let num = calculate_numerology("Rama");
-        assert!(num >= 1 && num <= 9);
+        assert!((1..=9).contains(&num));
     }
 }

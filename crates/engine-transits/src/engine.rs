@@ -57,9 +57,7 @@ impl TransitsEngine {
     fn analyze(&self, input: &EngineInput) -> Result<TransitAnalysisResult, EngineError> {
         // Calculate natal positions (requires birth_data)
         let birth_data = input.birth_data.as_ref().ok_or_else(|| {
-            EngineError::ValidationError(
-                "Transit analysis requires birth_data".to_string(),
-            )
+            EngineError::ValidationError("Transit analysis requires birth_data".to_string())
         })?;
         let birth_dt = Self::parse_birth_datetime(birth_data)?;
 
@@ -258,12 +256,13 @@ impl ConsciousnessEngine for TransitsEngine {
         }
 
         // Check natal positions count
-        if let Some(natal) = output.result.get("natal_positions").and_then(|v| v.as_array()) {
+        if let Some(natal) = output
+            .result
+            .get("natal_positions")
+            .and_then(|v| v.as_array())
+        {
             if natal.len() != 12 {
-                messages.push(format!(
-                    "Expected 12 natal positions, got {}",
-                    natal.len()
-                ));
+                messages.push(format!("Expected 12 natal positions, got {}", natal.len()));
                 valid = false;
             }
         }
@@ -388,7 +387,10 @@ mod tests {
 
         let quality = assess_period_quality(&aspects, &sade_sati, &retrogrades);
         assert!(
-            matches!(quality, PeriodQuality::Challenging | PeriodQuality::Difficult),
+            matches!(
+                quality,
+                PeriodQuality::Challenging | PeriodQuality::Difficult
+            ),
             "Sade Sati + retrogrades should be challenging: {:?}",
             quality
         );

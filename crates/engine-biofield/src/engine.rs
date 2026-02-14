@@ -15,7 +15,7 @@ use std::time::Instant;
 
 use crate::mock::{generate_metrics_for_user, generate_mock_metrics};
 use crate::models::{BiofieldAnalysis, BiofieldMetrics};
-use crate::vedic::{VedicAnalysisResult, VedicBiofieldAnalyzer, generate_vedic_witness_prompt};
+use crate::vedic::{generate_vedic_witness_prompt, VedicAnalysisResult, VedicBiofieldAnalyzer};
 use crate::wisdom::{get_chakra_wisdom, get_metric_interpretation};
 use crate::witness::generate_witness_prompt;
 
@@ -53,13 +53,9 @@ impl BiofieldEngine {
 
         if let Some(interp) = get_metric_interpretation("coherence") {
             if metrics.coherence < interp.optimal_range.0 {
-                parts.push(
-                    "Coherence patterns suggest potential for more integration".to_string(),
-                );
+                parts.push("Coherence patterns suggest potential for more integration".to_string());
             } else if metrics.coherence > interp.optimal_range.1 {
-                parts.push(
-                    "Coherence is notably high, suggesting aligned energy flow".to_string(),
-                );
+                parts.push("Coherence is notably high, suggesting aligned energy flow".to_string());
             }
         }
 
@@ -125,12 +121,11 @@ impl BiofieldEngine {
 
         // Fall back to mock data
         let seed = input.options.get("seed").and_then(|v| v.as_u64());
-        let metrics =
-            if let Some(user_id) = input.options.get("user_id").and_then(|v| v.as_str()) {
-                generate_metrics_for_user(user_id)
-            } else {
-                generate_mock_metrics(seed)
-            };
+        let metrics = if let Some(user_id) = input.options.get("user_id").and_then(|v| v.as_str()) {
+            generate_metrics_for_user(user_id)
+        } else {
+            generate_mock_metrics(seed)
+        };
 
         let interpretation = Self::generate_mock_interpretation(&metrics);
         let areas_of_attention = Self::identify_mock_areas_of_attention(&metrics);
@@ -441,7 +436,10 @@ mod tests {
         assert!(output.result.get("notice").is_some());
         assert!(output.result.get("future_capabilities").is_some());
         assert_eq!(
-            output.result.get("computation_mode").and_then(|v| v.as_str()),
+            output
+                .result
+                .get("computation_mode")
+                .and_then(|v| v.as_str()),
             Some("mock")
         );
         assert_eq!(output.metadata.backend, "mock");
@@ -471,7 +469,10 @@ mod tests {
         assert!(!is_mock, "Should NOT be mock data when birth_data provided");
 
         assert_eq!(
-            output.result.get("computation_mode").and_then(|v| v.as_str()),
+            output
+                .result
+                .get("computation_mode")
+                .and_then(|v| v.as_str()),
             Some("vedic")
         );
         assert_eq!(output.metadata.backend, "vedic-ephemeris");

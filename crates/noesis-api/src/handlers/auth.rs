@@ -216,9 +216,7 @@ pub async fn login(
                     reason = "invalid_password",
                     "Failed login attempt"
                 );
-                return Err(
-                    EngineError::AuthError("Invalid email or password".to_string()).into(),
-                );
+                return Err(EngineError::AuthError("Invalid email or password".to_string()).into());
             }
             user
         }

@@ -29,9 +29,9 @@ pub fn detect_sade_sati(
             let distance = ((saturn_idx - moon_idx + 12) % 12) as u8;
 
             let phase = match distance {
-                11 => Some(SadeSatiPhase::Rising),  // 12th from Moon
-                0 => Some(SadeSatiPhase::Peak),     // Same sign as Moon
-                1 => Some(SadeSatiPhase::Setting),  // 2nd from Moon
+                11 => Some(SadeSatiPhase::Rising), // 12th from Moon
+                0 => Some(SadeSatiPhase::Peak),    // Same sign as Moon
+                1 => Some(SadeSatiPhase::Setting), // 2nd from Moon
                 _ => None,
             };
 

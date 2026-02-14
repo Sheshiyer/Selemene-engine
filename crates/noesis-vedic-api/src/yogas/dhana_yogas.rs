@@ -146,7 +146,6 @@ fn detect_eleventh_house_dhana(chart: &BirthChart) -> Option<DetectedYoga> {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
 
     #[test]
     fn test_dhana_detection_placeholder() {

@@ -187,7 +187,7 @@ mod tests {
 
     #[test]
     fn test_general_muhurta_good() {
-        let (quality, score, favorable, _) =
+        let (_quality, score, favorable, _) =
             evaluate_general_muhurta("Panchami", "Pushya", "Siddhi", "Thursday", false, false);
 
         assert!(score >= 60);
@@ -196,7 +196,7 @@ mod tests {
 
     #[test]
     fn test_general_muhurta_bad() {
-        let (quality, score, _, unfavorable) =
+        let (_quality, score, _, unfavorable) =
             evaluate_general_muhurta("Navami", "Ashlesha", "Ganda", "Saturday", true, true);
 
         assert!(score < 40);

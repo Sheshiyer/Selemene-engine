@@ -1,3 +1,4 @@
+#![allow(dead_code, unused_imports)]
 //! FAPI-096: Vimshottari Dasha Reference Validation Tests
 //!
 //! Validates Vimshottari Dasha calculations against reference birth charts

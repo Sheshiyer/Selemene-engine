@@ -176,7 +176,7 @@ impl ConsciousnessEngine for BridgeEngine {
 
     async fn calculate(&self, input: EngineInput) -> Result<EngineOutput, EngineError> {
         use crate::ts_client::TsEngineRequest;
-        
+
         let url = format!("{}/engines/{}/calculate", self.base_url, self.engine_id);
 
         debug!(
@@ -250,7 +250,7 @@ impl ConsciousnessEngine for BridgeEngine {
 
         // Convert TsEngineResponse to EngineOutput
         use chrono::Utc;
-        
+
         Ok(EngineOutput {
             engine_id: ts_response.engine_id,
             result: ts_response.result,

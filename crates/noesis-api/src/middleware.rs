@@ -249,10 +249,7 @@ impl RateLimiter {
         let now = Utc::now();
 
         // Use entry API for atomic check-and-update
-        let mut entry = self
-            .user_windows
-            .entry(key.to_string())
-            .or_insert((0, now));
+        let mut entry = self.user_windows.entry(key.to_string()).or_insert((0, now));
         let (count, window_start) = entry.value_mut();
 
         // Check if window has expired

@@ -169,7 +169,6 @@ pub fn calculate_ekadhipatya_reduction(sarva: &SarvaAshtakavarga) -> [u8; 12] {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::ashtakavarga::types::PlanetAshtakavarga;
 
     #[test]
     fn test_calculate_analysis() {

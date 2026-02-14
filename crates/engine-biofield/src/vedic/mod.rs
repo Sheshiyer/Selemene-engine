@@ -21,8 +21,8 @@ use self::chakra_map::{
     calculate_fractal_dimension, calculate_symmetry, calculate_vitality_index, chakra_planets,
 };
 use self::planetary::{
-    VedicPlanet, VedicPosition, ZodiacSign, calculate_all_positions, calculate_natal_aspects,
-    calculate_planet_strengths,
+    calculate_all_positions, calculate_natal_aspects, calculate_planet_strengths, VedicPlanet,
+    VedicPosition, ZodiacSign,
 };
 use self::temporal::apply_temporal_modulation;
 
@@ -76,8 +76,7 @@ impl VedicBiofieldAnalyzer {
         let chakra_readings = calculate_all_chakra_readings(&strengths, &natal_aspects);
 
         // 6. Compute global metrics
-        let fractal_dimension =
-            calculate_fractal_dimension(&natal_positions, &natal_aspects);
+        let fractal_dimension = calculate_fractal_dimension(&natal_positions, &natal_aspects);
         let entropy = calculate_entropy(&natal_positions);
         let coherence = calculate_coherence(&natal_aspects);
         let symmetry = calculate_symmetry(&natal_positions, &strengths);
@@ -236,9 +235,7 @@ fn generate_vedic_interpretation(metrics: &BiofieldMetrics, context: &VedicConte
     if metrics.coherence > 0.7 {
         parts.push("Coherence is notably high, suggesting aligned energy flow".to_string());
     } else if metrics.coherence < 0.4 {
-        parts.push(
-            "Coherence patterns suggest potential for more integration".to_string(),
-        );
+        parts.push("Coherence patterns suggest potential for more integration".to_string());
     }
 
     // Symmetry assessment
@@ -448,13 +445,11 @@ mod tests {
         let result2 = analyzer.analyze(&bd, fixed_time).unwrap();
 
         assert_eq!(
-            result1.analysis.metrics.fractal_dimension,
-            result2.analysis.metrics.fractal_dimension,
+            result1.analysis.metrics.fractal_dimension, result2.analysis.metrics.fractal_dimension,
             "Same input should produce same fractal_dimension"
         );
         assert_eq!(
-            result1.analysis.metrics.entropy,
-            result2.analysis.metrics.entropy,
+            result1.analysis.metrics.entropy, result2.analysis.metrics.entropy,
             "Same input should produce same entropy"
         );
     }
@@ -480,10 +475,7 @@ mod tests {
                 .abs()
                 > 0.001;
 
-        assert!(
-            differs,
-            "Different times should produce different metrics"
-        );
+        assert!(differs, "Different times should produce different metrics");
     }
 
     #[test]

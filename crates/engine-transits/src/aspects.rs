@@ -38,7 +38,11 @@ pub fn calculate_aspects_with_orbs(
     }
 
     // Sort by tightest orb first
-    aspects.sort_by(|a, b| a.orb.partial_cmp(&b.orb).unwrap_or(std::cmp::Ordering::Equal));
+    aspects.sort_by(|a, b| {
+        a.orb
+            .partial_cmp(&b.orb)
+            .unwrap_or(std::cmp::Ordering::Equal)
+    });
     aspects
 }
 
@@ -152,7 +156,9 @@ mod tests {
 
         let aspects = calculate_aspects(&transit, &natal);
         assert!(
-            aspects.iter().any(|a| a.aspect_type == AspectType::Conjunction),
+            aspects
+                .iter()
+                .any(|a| a.aspect_type == AspectType::Conjunction),
             "Should detect conjunction at 2 degree orb"
         );
     }
@@ -164,7 +170,9 @@ mod tests {
 
         let aspects = calculate_aspects(&transit, &natal);
         assert!(
-            aspects.iter().any(|a| a.aspect_type == AspectType::Opposition),
+            aspects
+                .iter()
+                .any(|a| a.aspect_type == AspectType::Opposition),
             "Should detect opposition at 3 degree orb"
         );
     }

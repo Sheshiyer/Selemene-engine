@@ -10,13 +10,13 @@
 use chrono::Utc;
 use engine_gene_keys::{ConsciousnessEngine, EngineInput, GeneKeysEngine};
 use serde::Deserialize;
-use serde_json::{json, Value};
+use serde_json::json;
 use std::collections::HashMap;
 
 #[derive(Debug, Deserialize)]
 struct ReferenceChart {
     name: String,
-    description: String,
+    _description: String,
     hd_gates: HdGates,
     expected: ExpectedSequences,
 }

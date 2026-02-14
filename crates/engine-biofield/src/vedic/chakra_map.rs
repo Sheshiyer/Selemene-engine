@@ -6,8 +6,7 @@
 use crate::models::{Chakra, ChakraReading};
 
 use super::planetary::{
-    AspectType, PlanetAspect, PlanetStrength, VedicPlanet, VedicPosition,
-    get_planet_strength,
+    get_planet_strength, AspectType, PlanetAspect, PlanetStrength, VedicPlanet, VedicPosition,
 };
 
 /// Static chakra-planet correspondence
@@ -173,10 +172,7 @@ pub fn calculate_all_chakra_readings(
 ///
 /// diversity_score = (unique_aspect_types/5.0)*0.5 + (occupied_signs/12.0)*0.5
 /// fractal_dimension = 1.0 + diversity_score * 0.8
-pub fn calculate_fractal_dimension(
-    positions: &[VedicPosition],
-    aspects: &[PlanetAspect],
-) -> f64 {
+pub fn calculate_fractal_dimension(positions: &[VedicPosition], aspects: &[PlanetAspect]) -> f64 {
     // Count unique aspect types present
     let mut has_aspect = [false; 5];
     for aspect in aspects {
@@ -276,10 +272,7 @@ pub fn calculate_coherence(aspects: &[PlanetAspect]) -> f64 {
 ///
 /// Signs 0-5 (Aries-Virgo) vs 6-11 (Libra-Pisces).
 /// Equal distribution = 1.0, all in one half = near 0.0.
-pub fn calculate_symmetry(
-    positions: &[VedicPosition],
-    strengths: &[PlanetStrength],
-) -> f64 {
+pub fn calculate_symmetry(positions: &[VedicPosition], strengths: &[PlanetStrength]) -> f64 {
     let mut first_half = 0.0_f64;
     let mut second_half = 0.0_f64;
 
@@ -313,8 +306,8 @@ pub fn calculate_vitality_index(
 
 #[cfg(test)]
 mod tests {
+    use super::super::planetary::{calculate_planet_strengths, ZodiacSign};
     use super::*;
-    use super::super::planetary::{ZodiacSign, calculate_planet_strengths};
 
     fn make_position(planet: VedicPlanet, longitude: f64) -> VedicPosition {
         VedicPosition {
@@ -342,7 +335,7 @@ mod tests {
     #[test]
     fn test_chakra_activity_in_range() {
         let positions = vec![
-            make_position(VedicPlanet::Mars, 0.0),   // Aries (own)
+            make_position(VedicPlanet::Mars, 0.0),     // Aries (own)
             make_position(VedicPlanet::Saturn, 180.0), // Libra (exalted)
         ];
         let aspects = vec![];
@@ -516,7 +509,7 @@ mod tests {
         // Equal strength in both hemispheres
         let positions = vec![
             make_position(VedicPlanet::Sun, 15.0),   // Aries (first half)
-            make_position(VedicPlanet::Moon, 195.0),  // Libra (second half)
+            make_position(VedicPlanet::Moon, 195.0), // Libra (second half)
         ];
         let aspects = vec![];
         let strengths = calculate_planet_strengths(&positions, &aspects);
@@ -532,6 +525,10 @@ mod tests {
     fn test_vitality_index_range() {
         let vitality = calculate_vitality_index(1.5, 0.55, 0.65, 0.75);
         assert!(vitality >= 0.0 && vitality <= 1.0);
-        assert!(vitality > 0.4, "Good values should give decent vitality: {}", vitality);
+        assert!(
+            vitality > 0.4,
+            "Good values should give decent vitality: {}",
+            vitality
+        );
     }
 }

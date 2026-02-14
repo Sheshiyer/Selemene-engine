@@ -154,7 +154,7 @@ mod tests {
 
     #[test]
     fn test_travel_muhurta() {
-        let (quality, score, favorable, _) =
+        let (_quality, score, favorable, _) =
             evaluate_travel_muhurta("Pushya", "Thursday", false, Some("East"));
 
         assert!(score >= 60);

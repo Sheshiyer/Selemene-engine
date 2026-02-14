@@ -219,7 +219,6 @@ fn detect_lakshmi_yoga(chart: &BirthChart) -> Option<DetectedYoga> {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
 
     #[test]
     fn test_mahapurusha_detection() {

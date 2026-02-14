@@ -1,3 +1,4 @@
+#![allow(dead_code, unused_imports)]
 //! FAPI-097: Shesh's Birth Chart Validation Tests
 //!
 //! Validates panchang and dasha calculations using Shesh's birth data as the

@@ -52,7 +52,10 @@ impl VedicPlanet {
 
     /// Whether this planet is naturally benefic in Vedic tradition
     pub fn is_benefic(&self) -> bool {
-        matches!(self, Self::Jupiter | Self::Venus | Self::Moon | Self::Mercury)
+        matches!(
+            self,
+            Self::Jupiter | Self::Venus | Self::Moon | Self::Mercury
+        )
     }
 
     /// Whether this planet is naturally malefic in Vedic tradition

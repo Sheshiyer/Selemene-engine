@@ -14,26 +14,44 @@ use crate::models::{
 /// - 1: Self-reflection (pattern recognition)
 /// - 2: Deep inquiry (archetypal/psychological)
 /// - 3: Transcendent (non-dual awareness)
-pub fn generate_witness_prompt(analysis: &TransitAnalysisResult, consciousness_level: u8) -> String {
+pub fn generate_witness_prompt(
+    analysis: &TransitAnalysisResult,
+    consciousness_level: u8,
+) -> String {
     let mut prompts = Vec::new();
 
     // Sade Sati prompt (always significant when active)
     if analysis.sade_sati.is_active {
-        prompts.push(sade_sati_prompt(&analysis.sade_sati.phase, consciousness_level));
+        prompts.push(sade_sati_prompt(
+            &analysis.sade_sati.phase,
+            consciousness_level,
+        ));
     }
 
     // Retrograde prompt
     if !analysis.retrograde_planets.is_empty() {
-        prompts.push(retrograde_prompt(&analysis.retrograde_planets, consciousness_level));
+        prompts.push(retrograde_prompt(
+            &analysis.retrograde_planets,
+            consciousness_level,
+        ));
     }
 
     // Aspect-based prompts (pick the most significant)
     if let Some(aspect) = analysis.aspects.first() {
-        prompts.push(aspect_prompt(aspect.transiting_planet, aspect.natal_planet, aspect.aspect_type, aspect.nature, consciousness_level));
+        prompts.push(aspect_prompt(
+            aspect.transiting_planet,
+            aspect.natal_planet,
+            aspect.aspect_type,
+            aspect.nature,
+            consciousness_level,
+        ));
     }
 
     // Period quality prompt
-    prompts.push(period_quality_prompt(analysis.period_quality, consciousness_level));
+    prompts.push(period_quality_prompt(
+        analysis.period_quality,
+        consciousness_level,
+    ));
 
     prompts.join("\n\n")
 }
@@ -117,14 +135,21 @@ mod tests {
     use super::*;
     use crate::models::{PlanetaryPosition, SadeSatiStatus, ZodiacSign};
 
-    fn make_minimal_result(sade_sati_active: bool, retrogrades: Vec<TransitPlanet>) -> TransitAnalysisResult {
+    fn make_minimal_result(
+        sade_sati_active: bool,
+        retrogrades: Vec<TransitPlanet>,
+    ) -> TransitAnalysisResult {
         TransitAnalysisResult {
             natal_positions: vec![],
             transit_positions: vec![],
             aspects: vec![],
             sade_sati: SadeSatiStatus {
                 is_active: sade_sati_active,
-                phase: if sade_sati_active { Some(SadeSatiPhase::Peak) } else { None },
+                phase: if sade_sati_active {
+                    Some(SadeSatiPhase::Peak)
+                } else {
+                    None
+                },
                 saturn_sign: ZodiacSign::Aquarius,
                 moon_sign: ZodiacSign::Aquarius,
             },
@@ -144,14 +169,23 @@ mod tests {
     fn test_sade_sati_prompt_included() {
         let result = make_minimal_result(true, vec![]);
         let prompt = generate_witness_prompt(&result, 1);
-        assert!(prompt.contains("Sade Sati"), "Should mention Sade Sati: {}", prompt);
+        assert!(
+            prompt.contains("Sade Sati"),
+            "Should mention Sade Sati: {}",
+            prompt
+        );
     }
 
     #[test]
     fn test_retrograde_prompt_included() {
-        let result = make_minimal_result(false, vec![TransitPlanet::Mercury, TransitPlanet::Saturn]);
+        let result =
+            make_minimal_result(false, vec![TransitPlanet::Mercury, TransitPlanet::Saturn]);
         let prompt = generate_witness_prompt(&result, 0);
-        assert!(prompt.contains("retrograde"), "Should mention retrograde: {}", prompt);
+        assert!(
+            prompt.contains("retrograde"),
+            "Should mention retrograde: {}",
+            prompt
+        );
         assert!(prompt.contains("Mercury"));
         assert!(prompt.contains("Saturn"));
     }
@@ -161,6 +195,9 @@ mod tests {
         let result = make_minimal_result(true, vec![]);
         let p0 = generate_witness_prompt(&result, 0);
         let p2 = generate_witness_prompt(&result, 2);
-        assert_ne!(p0, p2, "Different consciousness levels should produce different prompts");
+        assert_ne!(
+            p0, p2,
+            "Different consciousness levels should produce different prompts"
+        );
     }
 }

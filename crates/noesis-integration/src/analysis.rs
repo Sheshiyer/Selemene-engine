@@ -822,7 +822,7 @@ mod tests {
 
     #[test]
     fn test_numerology_analysis() {
-        let profile = BirthProfile::new("1991-08-13", "13:31", 12.9716, 77.5946, "Asia/Kolkata");
+        let _profile = BirthProfile::new("1991-08-13", "13:31", 12.9716, 77.5946, "Asia/Kolkata");
 
         // Would need async runtime for full test
         // For now just test the calculation

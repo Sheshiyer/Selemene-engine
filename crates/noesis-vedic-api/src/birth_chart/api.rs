@@ -185,7 +185,7 @@ pub fn parse_sign(name: &str) -> VedicApiResult<ZodiacSign> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use chrono::NaiveDate;
+    use chrono::{NaiveDate, NaiveTime};
 
     #[test]
     fn test_birth_chart_request_creation() {

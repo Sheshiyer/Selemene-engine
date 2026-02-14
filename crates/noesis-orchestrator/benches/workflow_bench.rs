@@ -335,7 +335,8 @@ fn bench_cache(c: &mut Criterion) {
                 timestamp: Utc::now(),
             };
             runtime.block_on(async {
-                black_box(cache.set(key, result, Duration::from_secs(60)).await)
+                let _ = cache.set(key, result, Duration::from_secs(60)).await;
+                black_box(())
             })
         })
     });
