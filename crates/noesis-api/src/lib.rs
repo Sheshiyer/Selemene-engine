@@ -1513,13 +1513,34 @@ pub async fn build_app_state(config: &ApiConfig) -> AppState {
 
     // -- TypeScript Engines (via HTTP bridge) --
     let bridge_manager = noesis_bridge::BridgeManager::from_env();
-    if bridge_manager.is_available().await {
-        tracing::info!("TS engines connected at {}", bridge_manager.base_url());
-        for engine in bridge_manager.engines() {
-            orchestrator.register_engine(engine);
+    let mut ts_connected = false;
+
+    // Retry connection logic to handle startup race conditions (e.g. on Railway)
+    for attempt in 1..=6 {
+        if bridge_manager.is_available().await {
+            tracing::info!("TS engines connected at {}", bridge_manager.base_url());
+            for engine in bridge_manager.engines() {
+                orchestrator.register_engine(engine);
+            }
+            ts_connected = true;
+            break;
         }
-    } else {
-        tracing::warn!("TS engines unavailable at {} - Rust engines only", bridge_manager.base_url());
+
+        if attempt < 6 {
+            tracing::info!(
+                "Waiting for TS engines at {} (attempt {}/6)...",
+                bridge_manager.base_url(),
+                attempt
+            );
+            tokio::time::sleep(Duration::from_secs(5)).await;
+        }
+    }
+
+    if !ts_connected {
+        tracing::warn!(
+            "TS engines unavailable at {} after retries - Rust engines only",
+            bridge_manager.base_url()
+        );
     }
 
     // -- Cache --
@@ -1636,13 +1657,34 @@ pub async fn build_app_state_lazy_db(config: &ApiConfig) -> AppState {
 
     // -- TypeScript Engines (via HTTP bridge) --
     let bridge_manager = noesis_bridge::BridgeManager::from_env();
-    if bridge_manager.is_available().await {
-        tracing::info!("TS engines connected at {}", bridge_manager.base_url());
-        for engine in bridge_manager.engines() {
-            orchestrator.register_engine(engine);
+    let mut ts_connected = false;
+
+    // Retry connection logic to handle startup race conditions (e.g. on Railway)
+    for attempt in 1..=6 {
+        if bridge_manager.is_available().await {
+            tracing::info!("TS engines connected at {}", bridge_manager.base_url());
+            for engine in bridge_manager.engines() {
+                orchestrator.register_engine(engine);
+            }
+            ts_connected = true;
+            break;
         }
-    } else {
-        tracing::warn!("TS engines unavailable at {} - Rust engines only", bridge_manager.base_url());
+
+        if attempt < 6 {
+            tracing::info!(
+                "Waiting for TS engines at {} (attempt {}/6)...",
+                bridge_manager.base_url(),
+                attempt
+            );
+            tokio::time::sleep(Duration::from_secs(5)).await;
+        }
+    }
+
+    if !ts_connected {
+        tracing::warn!(
+            "TS engines unavailable at {} after retries - Rust engines only",
+            bridge_manager.base_url()
+        );
     }
 
     // -- Cache --
