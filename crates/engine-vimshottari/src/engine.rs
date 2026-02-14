@@ -504,7 +504,7 @@ mod tests {
         let mahadashas = timeline.get("mahadashas").expect("should have mahadashas");
         let maha_count = mahadashas.as_array().unwrap().len();
         assert!(
-            maha_count >= 9 && maha_count <= 10,
+            (9..=10).contains(&maha_count),
             "Expected 9-10 mahadashas, got {}",
             maha_count
         );

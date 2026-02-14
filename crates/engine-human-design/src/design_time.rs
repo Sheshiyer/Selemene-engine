@@ -254,7 +254,7 @@ mod tests {
             // Design time should be approximately 88 days before birth
             let diff_days = (birth_time - design_time).num_days();
             assert!(
-                diff_days >= 85 && diff_days <= 91,
+                (85..=91).contains(&diff_days),
                 "Design time should be ~88 days before birth, got {} days",
                 diff_days
             );

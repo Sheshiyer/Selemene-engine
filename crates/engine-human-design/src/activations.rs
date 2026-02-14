@@ -430,7 +430,7 @@ mod tests {
                 );
 
                 // Check that all planets are present
-                let expected_planets = vec![
+                let expected_planets = [
                     Planet::Sun,
                     Planet::Earth,
                     Planet::Moon,
@@ -457,17 +457,17 @@ mod tests {
                 // All gates should be 1-64, lines 1-6
                 for act in &activations {
                     assert!(
-                        act.gate >= 1 && act.gate <= 64,
+                        (1..=64).contains(&act.gate),
                         "Gate {} out of range",
                         act.gate
                     );
                     assert!(
-                        act.line >= 1 && act.line <= 6,
+                        (1..=6).contains(&act.line),
                         "Line {} out of range",
                         act.line
                     );
                     assert!(
-                        act.longitude >= 0.0 && act.longitude < 360.0,
+                        (0.0..360.0).contains(&act.longitude),
                         "Longitude {} out of range",
                         act.longitude
                     );
@@ -499,7 +499,7 @@ mod tests {
                 assert_eq!(activations.len(), 13, "Should have 13 design activations");
 
                 // Check that all planets are present
-                let expected_planets = vec![
+                let expected_planets = [
                     Planet::Sun,
                     Planet::Earth,
                     Planet::Moon,
@@ -526,17 +526,17 @@ mod tests {
                 // All gates should be 1-64, lines 1-6
                 for act in &activations {
                     assert!(
-                        act.gate >= 1 && act.gate <= 64,
+                        (1..=64).contains(&act.gate),
                         "Gate {} out of range",
                         act.gate
                     );
                     assert!(
-                        act.line >= 1 && act.line <= 6,
+                        (1..=6).contains(&act.line),
                         "Line {} out of range",
                         act.line
                     );
                     assert!(
-                        act.longitude >= 0.0 && act.longitude < 360.0,
+                        (0.0..360.0).contains(&act.longitude),
                         "Longitude {} out of range",
                         act.longitude
                     );

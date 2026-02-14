@@ -257,7 +257,7 @@ pub fn generate_complete_pathways(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::frequency::{assess_frequencies, RecognitionPrompts};
+    use crate::frequency::assess_frequencies;
     use crate::models::{ActivationSequence, ActivationSource, GeneKeyActivation, GeneKeysChart};
 
     fn create_test_chart() -> GeneKeysChart {

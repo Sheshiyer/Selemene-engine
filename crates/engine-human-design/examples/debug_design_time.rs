@@ -1,4 +1,4 @@
-use chrono::{Duration, TimeZone, Utc};
+use chrono::{TimeZone, Utc};
 use engine_human_design::design_time::calculate_design_time;
 
 fn main() {

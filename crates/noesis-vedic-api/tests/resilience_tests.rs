@@ -513,7 +513,7 @@ async fn test_batch_scheduler_coalesces_identical_requests() {
     let server = MockServer::start().await;
     let sample = sample_panchang();
     let call_count = Arc::new(AtomicU32::new(0));
-    let cc = call_count.clone();
+    let _cc = call_count.clone();
 
     Mock::given(method("POST"))
         .and(path("/panchang"))

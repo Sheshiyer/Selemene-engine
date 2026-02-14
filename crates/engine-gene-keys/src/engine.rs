@@ -398,7 +398,7 @@ impl ConsciousnessEngine for GeneKeysEngine {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use noesis_core::{BirthData, Precision};
+    use noesis_core::Precision;
     use std::collections::HashMap;
 
     fn create_test_input_with_gates() -> EngineInput {

@@ -115,7 +115,7 @@ fn generate_advanced_witness(chart: &HDChart) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{Center, CenterState};
+    use crate::Profile;
     use std::collections::HashMap;
 
     fn create_test_chart(

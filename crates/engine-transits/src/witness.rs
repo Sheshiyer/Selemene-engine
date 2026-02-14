@@ -133,7 +133,7 @@ fn period_quality_prompt(quality: PeriodQuality, level: u8) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::models::{PlanetaryPosition, SadeSatiStatus, ZodiacSign};
+    use crate::models::{SadeSatiStatus, ZodiacSign};
 
     fn make_minimal_result(
         sade_sati_active: bool,

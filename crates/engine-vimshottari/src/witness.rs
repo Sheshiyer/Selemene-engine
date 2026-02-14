@@ -132,6 +132,7 @@ mod tests {
     use crate::models::{
         CurrentAntardasha, CurrentMahadasha, CurrentPratyantardasha, TransitionLevel,
     };
+    use crate::VedicPlanet;
     use chrono::{TimeZone, Utc};
 
     fn create_test_current_period() -> CurrentPeriod {

@@ -1,6 +1,6 @@
 //! Integration tests for Design Time calculation
 
-use chrono::{DateTime, TimeZone, Utc};
+use chrono::{TimeZone, Utc};
 use engine_human_design::design_time::*;
 
 #[test]
@@ -24,7 +24,7 @@ fn test_longitude_difference_wrapper() {
             println!("Difference: {} days", diff_days);
             // If it succeeds, verify it's approximately 88 days
             assert!(
-                diff_days >= 85 && diff_days <= 91,
+                (85..=91).contains(&diff_days),
                 "Design time should be ~88 days before birth, got {} days",
                 diff_days
             );
@@ -45,5 +45,4 @@ fn test_design_time_api_exists() {
     let _result = calculate_design_time(birth_time, None);
 
     // Test passes if we reach here without panic
-    assert!(true);
 }

@@ -116,7 +116,7 @@ pub fn extract_sun_earth_gates(hd_chart: &HDChart) -> Result<(u8, u8, u8, u8), S
 mod tests {
     use super::*;
     use engine_human_design::{
-        Activation, Authority, Center, CenterState, Definition, HDChart, HDType, Planet, Profile,
+        Activation, Authority, Definition, HDChart, HDType, Planet, Profile,
     };
     use std::collections::HashMap;
 

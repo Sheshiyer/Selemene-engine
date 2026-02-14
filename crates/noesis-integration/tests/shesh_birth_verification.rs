@@ -117,7 +117,7 @@ async fn test_shesh_verification() {
 
 #[test]
 fn test_shesh_life_path_number() {
-    let profile = shesh_profile();
+    let _profile = shesh_profile();
 
     // Calculate Life Path Number manually
     // 1991 -> 1+9+9+1 = 20 -> 2+0 = 2

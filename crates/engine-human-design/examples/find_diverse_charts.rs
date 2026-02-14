@@ -1,5 +1,5 @@
 use chrono::{TimeZone, Utc};
-use engine_human_design::{generate_hd_chart, Authority, HDType};
+use engine_human_design::generate_hd_chart;
 use std::collections::{HashMap, HashSet};
 
 fn main() {
@@ -40,10 +40,7 @@ fn main() {
                                         type_str, auth_str, profile_str, channels_count, defined_centers.len()
                                     );
 
-                                    found_types
-                                        .entry(key.clone())
-                                        .or_insert_with(Vec::new)
-                                        .push(entry);
+                                    found_types.entry(key.clone()).or_default().push(entry);
                                     found_authorities.insert(auth_str);
                                     found_profiles.insert(profile_str);
                                 }

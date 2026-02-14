@@ -2,14 +2,14 @@
 //!
 //! Verifies that all 26 activations complete in <50ms
 
-use chrono::{DateTime, TimeZone, Utc};
+use chrono::{TimeZone, Utc};
 use engine_human_design::calculate_all_activations;
 use std::time::Instant;
 
 fn main() {
     println!("=== 26 Planetary Activations Performance Test ===\n");
 
-    let test_dates = vec![
+    let test_dates = [
         Utc.with_ymd_and_hms(1980, 3, 21, 10, 0, 0).unwrap(),
         Utc.with_ymd_and_hms(1990, 5, 15, 14, 30, 0).unwrap(),
         Utc.with_ymd_and_hms(2000, 6, 21, 12, 0, 0).unwrap(),

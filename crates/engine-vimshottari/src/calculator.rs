@@ -1603,7 +1603,7 @@ mod tests {
         let transitions = calculate_upcoming_transitions(&complete, current_time, 10);
 
         // Should get multiple transitions
-        assert!(transitions.len() > 0, "Should have upcoming transitions");
+        assert!(!transitions.is_empty(), "Should have upcoming transitions");
         assert!(transitions.len() <= 10, "Should not exceed requested count");
 
         // Verify chronological order

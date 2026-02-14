@@ -9,9 +9,9 @@
 use chrono::{TimeZone, Utc};
 use engine_vedic_clock::{
     calculate_dosha_organ_harmony, dosha_times, generate_witness_prompt, get_best_time,
-    get_dosha_for_hour, get_opposing_organ, get_optimal_timing, get_organ_element,
-    get_organ_for_hour, get_temporal_recommendation, is_favorable_now, organ_clock, Activity,
-    ConsciousnessEngine, Dosha, Element, EngineInput, Organ, VedicClockEngine,
+    get_dosha_for_hour, get_optimal_timing, get_organ_element, get_organ_for_hour,
+    get_temporal_recommendation, is_favorable_now, organ_clock, Activity, ConsciousnessEngine,
+    Dosha, Element, EngineInput, Organ, VedicClockEngine,
 };
 use noesis_core::Precision;
 use serde_json::json;
@@ -217,7 +217,7 @@ fn test_eating_favorable_during_stomach_time() {
 fn test_meditation_favorable_early_morning() {
     // 4 AM is Lung time - good for meditation
     let dt = Utc.with_ymd_and_hms(2024, 1, 1, 4, 0, 0).unwrap();
-    let (favorable, _) = is_favorable_now(Activity::Meditation, dt, 0);
+    let (_favorable, _) = is_favorable_now(Activity::Meditation, dt, 0);
     // Either favorable or has good windows
     let best = get_best_time(Activity::Meditation);
     assert!(best.quality > 0.0);

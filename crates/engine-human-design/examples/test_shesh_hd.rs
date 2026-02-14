@@ -1,5 +1,5 @@
 use chrono::{TimeZone, Utc};
-use engine_human_design::{generate_hd_chart, Authority, CenterState, HDType, Planet};
+use engine_human_design::{generate_hd_chart, Authority, HDType, Planet};
 
 fn main() {
     // Shesh Iyer birth data:

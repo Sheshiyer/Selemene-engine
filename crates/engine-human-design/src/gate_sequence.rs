@@ -163,14 +163,14 @@ mod tests {
         // Verify that the Rave Mandala contains all 64 gates exactly once
         let mut gate_counts = [0u8; 65]; // index 0 unused, 1-64 for gates
         for &gate in &RAVE_MANDALA_SEQUENCE {
-            assert!(gate >= 1 && gate <= 64, "Gate {} out of range", gate);
+            assert!((1..=64).contains(&gate), "Gate {} out of range", gate);
             gate_counts[gate as usize] += 1;
         }
-        for gate in 1..=64 {
+        for (gate, count) in gate_counts.iter().enumerate().skip(1) {
             assert_eq!(
-                gate_counts[gate], 1,
+                *count, 1,
                 "Gate {} should appear exactly once, found {}",
-                gate, gate_counts[gate]
+                gate, count
             );
         }
     }
@@ -181,13 +181,13 @@ mod tests {
         for i in 0..360 {
             let (gate, line) = longitude_to_gate_and_line(i as f64);
             assert!(
-                gate >= 1 && gate <= 64,
+                (1..=64).contains(&gate),
                 "Gate {} out of range at {}°",
                 gate,
                 i
             );
             assert!(
-                line >= 1 && line <= 6,
+                (1..=6).contains(&line),
                 "Line {} out of range at {}°",
                 line,
                 i
