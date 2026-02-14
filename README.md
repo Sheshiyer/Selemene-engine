@@ -189,6 +189,8 @@ curl -s -X POST https://selemene.tryambakam.space/api/v1/engines/numerology/calc
 
 ### TypeScript Engines (5)
 
+> **Note:** These engines run in a separate `ts-engines` service. The API attempts to connect to them at startup (with 30s retry logic). If the service is unreachable, these endpoints will be unavailable.
+
 <table>
 <tr>
 <td align="center" width="20%">
