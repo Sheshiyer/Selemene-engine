@@ -1513,9 +1513,9 @@ pub async fn build_app_state(config: &ApiConfig) -> AppState {
 
     // -- TypeScript Engines (via HTTP bridge) --
     let bridge_manager = noesis_bridge::BridgeManager::from_env();
-    
-    // Always register TS engines so they appear in the API regardless of 
-    // connectivity during startup. They will return a BridgeError if called 
+
+    // Always register TS engines so they appear in the API regardless of
+    // connectivity during startup. They will return a BridgeError if called
     // while the TS server is down.
     for engine in bridge_manager.engines() {
         orchestrator.register_engine(engine);
@@ -1575,9 +1575,9 @@ pub async fn build_app_state(config: &ApiConfig) -> AppState {
             Duration::from_secs(5),
             PgPoolOptions::new()
                 .max_connections(5)
-                .idle_timeout(Duration::from_secs(300))   // drop idle conns after 5min
-                .acquire_timeout(Duration::from_secs(5))  // fail fast on acquire
-                .test_before_acquire(true)                 // health-check stale conns
+                .idle_timeout(Duration::from_secs(300)) // drop idle conns after 5min
+                .acquire_timeout(Duration::from_secs(5)) // fail fast on acquire
+                .test_before_acquire(true) // health-check stale conns
                 .connect_with(connect_options),
         )
         .await
@@ -1679,9 +1679,9 @@ pub async fn build_app_state_lazy_db(config: &ApiConfig) -> AppState {
 
     // -- TypeScript Engines (via HTTP bridge) --
     let bridge_manager = noesis_bridge::BridgeManager::from_env();
-    
-    // Always register TS engines so they appear in the API regardless of 
-    // connectivity during startup. They will return a BridgeError if called 
+
+    // Always register TS engines so they appear in the API regardless of
+    // connectivity during startup. They will return a BridgeError if called
     // while the TS server is down.
     for engine in bridge_manager.engines() {
         orchestrator.register_engine(engine);
