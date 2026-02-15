@@ -280,6 +280,73 @@ impl UserRepository {
         Ok(())
     }
 
+    /// Auto-populate user profile from birth_data on first engine calculation.
+    /// Uses upsert — safe to call on every request (no-ops if profile already exists
+    /// with the same data). Also updates the user's `full_name` if currently a placeholder.
+    pub async fn ensure_profile_from_birth_data(
+        &self,
+        user_id: Uuid,
+        name: Option<&str>,
+        date: &str,
+        time: Option<&str>,
+        latitude: f64,
+        longitude: f64,
+        timezone: &str,
+    ) -> Result<(), Error> {
+        // Parse date
+        let birth_date = NaiveDate::parse_from_str(date, "%Y-%m-%d").ok();
+        // Parse time (supports HH:MM and HH:MM:SS)
+        let birth_time = time.and_then(|t| {
+            NaiveTime::parse_from_str(t, "%H:%M:%S")
+                .or_else(|_| NaiveTime::parse_from_str(t, "%H:%M"))
+                .ok()
+        });
+
+        // Upsert profile — only fills in missing fields, never overwrites existing data
+        sqlx::query(
+            r#"
+            INSERT INTO user_profiles (
+                user_id, birth_date, birth_time, birth_location_lat, birth_location_lng,
+                timezone, created_at, updated_at
+            )
+            VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW())
+            ON CONFLICT (user_id) DO UPDATE SET
+                birth_date = COALESCE(user_profiles.birth_date, EXCLUDED.birth_date),
+                birth_time = COALESCE(user_profiles.birth_time, EXCLUDED.birth_time),
+                birth_location_lat = COALESCE(user_profiles.birth_location_lat, EXCLUDED.birth_location_lat),
+                birth_location_lng = COALESCE(user_profiles.birth_location_lng, EXCLUDED.birth_location_lng),
+                timezone = COALESCE(user_profiles.timezone, EXCLUDED.timezone),
+                updated_at = NOW()
+            "#,
+        )
+        .bind(user_id)
+        .bind(birth_date)
+        .bind(birth_time)
+        .bind(latitude)
+        .bind(longitude)
+        .bind(timezone)
+        .execute(&self.pool)
+        .await?;
+
+        // Update user's full_name if they have a placeholder name and birth_data provides one
+        if let Some(name) = name {
+            if !name.is_empty() {
+                sqlx::query(
+                    r#"
+                    UPDATE users SET full_name = $1, updated_at = NOW()
+                    WHERE id = $2 AND (full_name IS NULL OR full_name LIKE 'User %')
+                    "#,
+                )
+                .bind(name)
+                .bind(user_id)
+                .execute(&self.pool)
+                .await?;
+            }
+        }
+
+        Ok(())
+    }
+
     pub async fn add_experience(
         &self,
         user_id: Uuid,

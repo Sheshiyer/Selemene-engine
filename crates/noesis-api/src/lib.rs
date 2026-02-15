@@ -545,6 +545,9 @@ async fn calculate_handler(
     // Capture input for persistence before it's moved into the engine
     let input_json = serde_json::to_value(&input).unwrap_or_default();
 
+    // Extract birth_data for profile auto-population (before input is moved)
+    let birth_data_for_profile = input.birth_data.clone();
+
     // Execute engine with user's consciousness level
     let result = state
         .orchestrator
@@ -581,6 +584,7 @@ async fn calculate_handler(
                 let usage_repo = state.usage_repository.clone();
                 let user_repo = state.user_repository.clone();
                 let eid = engine_id.clone();
+                let bd = birth_data_for_profile.clone();
                 tokio::spawn(async move {
                     if let Some(repo) = readings_repo {
                         if let Err(e) = repo.save_reading(&reading).await {
@@ -593,6 +597,23 @@ async fn calculate_handler(
                             .await
                         {
                             tracing::warn!("Failed to log usage: {}", e);
+                        }
+                    }
+                    // Auto-populate user profile from birth_data on first use
+                    if let Some(ref birth_data) = bd {
+                        if let Err(e) = user_repo
+                            .ensure_profile_from_birth_data(
+                                uid,
+                                birth_data.name.as_deref(),
+                                &birth_data.date,
+                                birth_data.time.as_deref(),
+                                birth_data.latitude,
+                                birth_data.longitude,
+                                &birth_data.timezone,
+                            )
+                            .await
+                        {
+                            tracing::warn!("Failed to auto-populate user profile: {}", e);
                         }
                     }
                     if let Err(e) = user_repo
@@ -782,6 +803,7 @@ async fn workflow_execute_handler(
 
     // Capture input for persistence before it's moved into the workflow
     let input_json = serde_json::to_value(&input).unwrap_or_default();
+    let birth_data_for_profile = input.birth_data.clone();
 
     // Execute workflow with user's consciousness level
     let result = state
@@ -822,6 +844,7 @@ async fn workflow_execute_handler(
                 let usage_repo = state.usage_repository.clone();
                 let user_repo = state.user_repository.clone();
                 let wid = workflow_id.clone();
+                let bd = birth_data_for_profile.clone();
                 tokio::spawn(async move {
                     if let Some(repo) = readings_repo {
                         if let Err(e) = repo.save_reading(&reading).await {
@@ -834,6 +857,23 @@ async fn workflow_execute_handler(
                             .await
                         {
                             tracing::warn!("Failed to log workflow usage: {}", e);
+                        }
+                    }
+                    // Auto-populate user profile from birth_data on first use
+                    if let Some(ref birth_data) = bd {
+                        if let Err(e) = user_repo
+                            .ensure_profile_from_birth_data(
+                                uid,
+                                birth_data.name.as_deref(),
+                                &birth_data.date,
+                                birth_data.time.as_deref(),
+                                birth_data.latitude,
+                                birth_data.longitude,
+                                &birth_data.timezone,
+                            )
+                            .await
+                        {
+                            tracing::warn!("Failed to auto-populate user profile: {}", e);
                         }
                     }
                     if let Err(e) = user_repo
