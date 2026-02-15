@@ -376,7 +376,7 @@ The system adapts witness prompts based on your relationship with awareness.
 
 **Seed API Keys:**
 ```bash
-DATABASE_URL="your-postgres-url" \
+DATABASE_URL="your-supabase-postgres-url" \
   cargo run --package noesis-auth --features postgres --example seed_api_keys
 ```
 
@@ -407,22 +407,27 @@ Creates admin user (`admin@tryambakam.com`) + 5 API keys. Keys print once.
 crates/
   noesis-api/             Axum HTTP server (the binary you deploy)
   noesis-orchestrator/    Multi-engine parallel execution + workflow synthesis
-  noesis-auth/            JWT + API key auth (Postgres-backed)
+  noesis-auth/            JWT + API key auth (Supabase Postgres)
   noesis-cache/           3-layer cache (L1 memory, L2 Redis, L3 disk)
   noesis-metrics/         Prometheus instrumentation
   noesis-core/            Shared types (EngineInput, EngineOutput, BirthData)
   noesis-vedic-api/       FreeAstrologyAPI client (15+ Vedic endpoints)
   engine-panchanga/       Vedic calendar calculations
-  engine-human-design/    HD bodygraph (26 gates, 9 centers, profile)
+  engine-human-design/    HD bodygraph (64 gates, 9 centers, profile)
   engine-gene-keys/       Shadow-Gift-Siddhi activation sequences
   engine-vimshottari/     120-year nested dasha periods
   engine-numerology/      Pythagorean + Chaldean number systems
   engine-biorhythm/       3 biological cycles (P/E/I)
   engine-vedic-clock/     TCM organ clock + Ayurvedic timing
   engine-biofield/        Vedic birth-data-driven chakra & biofield analysis
-  engine-face-reading/    Physiognomy analysis (stub)
-  engine-nadabrahman/     Sound consciousness (stub)
+  engine-face-reading/    Physiognomy analysis
+  engine-nadabrahman/     Sound consciousness engine
   engine-transits/        Planetary transits, aspects & Sade Sati
+  noesis-bridge/          Bridge integrations (Claude, OpenAI, LangChain)
+  noesis-data/            Data loading and management
+  noesis-integration/     Integration tests & cross-engine coordination
+  noesis-western-api/     Western astrology API client
+  noesis-witness/         Witness prompt generation & consciousness calibration
 ```
 
 </details>
@@ -542,7 +547,7 @@ docker-compose up -d                                     # Docker
 Copy `.env.example` to `.env`. Required variables:
 - `RUST_ENV` — `development` or `production`
 - `JWT_SECRET` — signing key for JWT tokens
-- `DATABASE_URL` — Postgres connection (optional — runs degraded without)
+- `DATABASE_URL` — Supabase Postgres connection URL (optional — runs degraded without)
 
 See [`.env.example`](.env.example) for full list.
 

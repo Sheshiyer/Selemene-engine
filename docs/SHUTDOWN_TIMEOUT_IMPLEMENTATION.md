@@ -129,10 +129,10 @@ The timeout can be configured at runtime:
 
 ```bash
 # Default: 30 seconds
-cargo run --bin selemene-engine
+cargo run --bin noesis-server
 
 # Custom timeout: 60 seconds
-REQUEST_TIMEOUT_SECS=60 cargo run --bin selemene-engine
+REQUEST_TIMEOUT_SECS=60 cargo run --bin noesis-server
 ```
 
 ## Dependencies
@@ -180,7 +180,7 @@ Use the provided test script:
 #### Graceful Shutdown Test
 ```bash
 # Start server
-cargo run --bin selemene-engine
+cargo run --bin noesis-server
 
 # In another terminal, send SIGTERM
 kill -15 <PID>

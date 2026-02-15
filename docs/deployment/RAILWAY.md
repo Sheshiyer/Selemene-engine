@@ -12,7 +12,7 @@ The Selemene Engine consists of three separate services that must be deployed to
 2.  **`ts-engines` (TypeScript Sidecar)**
     *   **Repo Root:** `ts-engines/` (Uses `railway.ts-engines.toml`)
     *   **Port:** 3001
-    *   **Role:** Handles Tarot, I-Ching, Enneagram, Sacred Geometry.
+    *   **Role:** Handles Tarot, I-Ching, Enneagram, Sacred Geometry, Sigil Forge.
     *   **Dependency:** The Rust API *depends* on this service being available at startup.
 
 3.  **`noesis-redis` (Redis Cache)**

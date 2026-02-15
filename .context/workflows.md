@@ -94,7 +94,7 @@ Workflows combine multiple consciousness engines to provide synthesized, multi-p
 
 ### 6. Full Spectrum (`full-spectrum`)
 
-**Engines:** ALL 14 engines in parallel
+**Engines:** ALL 16 engines in parallel
 
 **Purpose:** Complete self-portrait across all consciousness systems
 
@@ -174,7 +174,7 @@ WorkflowCacheKey {
 
 | Metric | Target | Measured |
 |--------|--------|----------|
-| Full Spectrum (14 engines) | <2 seconds | ~50ms (parallel) |
+| Full Spectrum (16 engines) | <2 seconds | ~50ms (parallel) |
 | Single Workflow (3 engines) | <500ms | ~15ms (parallel) |
 | Cache Hit | <1ms | <0.5ms |
 
@@ -477,7 +477,7 @@ When engines present seemingly contradictory information:
 
 ### Full Spectrum Synthesis
 
-The `FullSpectrumSynthesizer` processes all 14 engines:
+The `FullSpectrumSynthesizer` processes all 16 engines:
 
 ```rust
 pub struct FullSpectrumSynthesizer;

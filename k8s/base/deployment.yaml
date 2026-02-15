@@ -30,7 +30,7 @@ spec:
         fsGroup: 1000
       containers:
         - name: selemene-api
-          image: ghcr.io/witnessos/selemene-engine:latest
+          image: ghcr.io/witnessos/noesis-server:latest
           imagePullPolicy: Always
           ports:
             - name: http

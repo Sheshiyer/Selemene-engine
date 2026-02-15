@@ -176,7 +176,7 @@ ts-engines
 
 ```dockerfile
 # Dockerfile.prod
-FROM rust:1.75 AS builder
+FROM rust:1.89 AS builder
 WORKDIR /app
 COPY . .
 RUN cargo build --release
@@ -187,20 +187,20 @@ RUN apt-get update && apt-get install -y \
     libssl3 \
     && rm -rf /var/lib/apt/lists/*
 
-COPY --from=builder /app/target/release/selemene-engine /usr/local/bin/
+COPY --from=builder /app/target/release/noesis-server /usr/local/bin/
 COPY --from=builder /app/data /app/data
 
 ENV RUST_LOG=info
 ENV SERVER_PORT=8080
 
 EXPOSE 8080
-CMD ["selemene-engine"]
+CMD ["noesis-server"]
 ```
 
 ### Build Production Image
 
 ```bash
-docker build -f Dockerfile.prod -t selemene-engine:latest .
+docker build -f Dockerfile.prod -t noesis-server:latest .
 ```
 
 ---

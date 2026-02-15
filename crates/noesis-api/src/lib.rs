@@ -35,7 +35,7 @@ use noesis_orchestrator::WorkflowOrchestrator;
 use sentry_tower::{NewSentryLayer, SentryHttpLayer};
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
-use sqlx::postgres::PgPoolOptions;
+use sqlx::postgres::{PgConnectOptions, PgPoolOptions};
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 use tower_http::cors::CorsLayer;
@@ -1558,10 +1558,27 @@ pub async fn build_app_state(config: &ApiConfig) -> AppState {
     );
 
     // -- Database (optional — server runs in degraded mode without it) --
+    //
+    // Supabase uses PgBouncer in transaction mode, which conflicts with SQLx
+    // prepared statement caching. Disable the cache to avoid:
+    //   "prepared statement 'sqlx_s_N' already exists"
     let pool = if let Some(ref db_url) = config.database_url {
+        let connect_options: PgConnectOptions = db_url
+            .parse::<PgConnectOptions>()
+            .map(|opts| opts.statement_cache_capacity(0))
+            .unwrap_or_else(|e| {
+                tracing::warn!("Failed to parse DATABASE_URL ({}), using as-is", e);
+                PgConnectOptions::new()
+            });
+
         match tokio::time::timeout(
             Duration::from_secs(5),
-            PgPoolOptions::new().max_connections(5).connect(db_url),
+            PgPoolOptions::new()
+                .max_connections(5)
+                .idle_timeout(Duration::from_secs(300))   // drop idle conns after 5min
+                .acquire_timeout(Duration::from_secs(5))  // fail fast on acquire
+                .test_before_acquire(true)                 // health-check stale conns
+                .connect_with(connect_options),
         )
         .await
         {

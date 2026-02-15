@@ -371,7 +371,7 @@ receivers:
 | Error Rate | <0.1% | >1% |
 | Cache Hit Rate | >80% | <50% |
 | Engine Calculation Time | <100ms | >500ms |
-| Workflow Time (14 engines) | <2s | >5s |
+| Workflow Time (16 engines) | <2s | >5s |
 | Availability | 99.9% | <99% |
 
 ---

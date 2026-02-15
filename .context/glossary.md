@@ -31,7 +31,7 @@ SHA-256 hash of normalized input (date, time, coordinates, precision, engine ID)
 Monorepo structure with multiple related crates sharing `Cargo.toml` dependencies. Enables modular development with shared types.
 
 **ConsciousnessEngine Trait**  
-Core trait implemented by all 13 engines. Defines `calculate()`, `validate()`, and `cache_key()` methods. Enables uniform orchestration and API routing.
+Core trait implemented by all 16 engines. Defines `calculate()`, `validate()`, and `cache_key()` methods. Enables uniform orchestration and API routing.
 
 **EngineError Enum**  
 Structured error type for all engine operations. Variants include `CalculationError`, `ValidationError`, `CacheError`, `AuthenticationError`. Never use `anyhow` in public APIs.
@@ -403,13 +403,13 @@ When 3+ engines independently point to same pattern. Increases confidence in pat
 Current state: Single-crate Rust project providing Panchanga calculations. Named after Dota character (Moon goddess).
 
 **Tryambakam Noesis**  
-Target state: 13-engine consciousness computing platform. Tryambakam = "three-eyed one" (Shiva). Noesis = direct knowing.
+Target state: 16-engine consciousness computing platform. Tryambakam = "three-eyed one" (Shiva). Noesis = direct knowing.
 
 **WitnessOS**  
 Source project from which wisdom data was extracted. Broader consciousness operating system concept.
 
 **Transformation / Evolution**  
-Current phase: Migrating from Selemene (single engine) to Tryambakam (13 engines). Documented in `.claude/crystalline-giggling-trinket.md`.
+Current phase: Migration to Tryambakam complete with 16 engines (11 Rust + 5 TypeScript). Documented in `.claude/crystalline-giggling-trinket.md`.
 
 ---
 

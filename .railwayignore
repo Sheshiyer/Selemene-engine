@@ -5,7 +5,7 @@ target/
 # Git history (2.5GB)
 .git/
 
-# Large directories not needed for TS engines
+# Large directories not needed for the build context
 docs/
 standalone_demo/
 monitoring/
@@ -14,7 +14,6 @@ k8s/
 python-services/
 bridges/
 examples/
-crates/
 
 # Node modules (will be installed during build)
 node_modules/

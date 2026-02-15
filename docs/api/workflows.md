@@ -19,7 +19,7 @@ Workflow endpoints orchestrate multiple engines in parallel, providing synthesiz
 | decision-support | Decision Support | tarot, i-ching, human-design | 15m |
 | self-inquiry | Self-Inquiry | gene-keys, enneagram | 24h |
 | creative-expression | Creative Expression | sigil-forge, sacred-geometry | 15m |
-| full-spectrum | Full Spectrum | All 14 engines | 1h |
+| full-spectrum | Full Spectrum | All 16 engines | 1h |
 
 ---
 
@@ -309,9 +309,9 @@ POST /api/v1/workflows/full-spectrum/execute
 ```
 
 ### Engines
-All 14 engines execute in parallel:
+All 16 engines execute in parallel:
 - numerology, human-design, gene-keys, vimshottari
-- panchanga, vedic-clock, biorhythm
+- panchanga, vedic-clock, biorhythm, nadabrahman, transits
 - tarot, i-ching, enneagram
 - biofield, face-reading
 - sacred-geometry, sigil-forge

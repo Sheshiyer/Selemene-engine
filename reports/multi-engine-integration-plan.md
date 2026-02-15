@@ -9,7 +9,7 @@
 
 ### Available Engines
 
-The Selemene Noesis system has **14 consciousness engines** organized into 5 categories:
+The Selemene Noesis system has **16 consciousness engines** organized into 5 categories:
 
 | Category | Engines | Purpose |
 |----------|---------|---------|
@@ -77,9 +77,9 @@ SYNTHESIS:
            discernment (King of Swords)."
 ```
 
-### 2. Full Spectrum Workflow (14 Engines)
+### 2. Full Spectrum Workflow (16 Engines)
 
-**Engines**: All 14 engines in parallel
+**Engines**: All 16 engines in parallel
 **Purpose**: Complete consciousness portrait
 **Execution Time**: ~5 seconds (all engines run concurrently)
 

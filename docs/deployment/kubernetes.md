@@ -145,7 +145,7 @@ spec:
     spec:
       containers:
       - name: noesis-api
-        image: noesis/selemene-engine:2.0.0
+        image: noesis/noesis-server:2.0.0
         ports:
         - containerPort: 8080
           name: http
@@ -167,13 +167,13 @@ spec:
             memory: "4Gi"
         livenessProbe:
           httpGet:
-            path: /health
+            path: /health/live
             port: 8080
           initialDelaySeconds: 30
           periodSeconds: 10
         readinessProbe:
           httpGet:
-            path: /ready
+            path: /health/ready
             port: 8080
           initialDelaySeconds: 5
           periodSeconds: 5
@@ -413,7 +413,7 @@ resources:
 - ts-engines/
 
 images:
-- name: noesis/selemene-engine
+- name: noesis/noesis-server
   newTag: 2.0.0
 - name: noesis/ts-engines
   newTag: 2.0.0

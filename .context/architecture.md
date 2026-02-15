@@ -33,7 +33,7 @@ Selemene Engine is a high-performance consciousness calculation platform combini
 │  │  │  ┌────────────┐ ┌────────────┐ ┌────────────┐ ┌────────────────────┐ │  │ │
 │  │  │  │ Rust       │ │ Rust       │ │ Rust       │ │ TypeScript Bridge  │ │  │ │
 │  │  │  │ Engines    │ │ Engines    │ │ Engines    │ │ (noesis-bridge)    │ │  │ │
-│  │  │  │ (9 total)  │ │            │ │            │ │ → 5 TS Engines     │ │  │ │
+│  │  │  │ (11 total) │ │            │ │            │ │ → 5 TS Engines     │ │  │ │
 │  │  │  └────────────┘ └────────────┘ └────────────┘ └────────────────────┘ │  │ │
 │  │  └──────────────────────────────────────────────────────────────────────┘  │ │
 │  │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐   │ │
@@ -422,7 +422,7 @@ selemene-engine/
 | Metric | Target | Achieved |
 |--------|--------|----------|
 | Single engine calculation | <100ms | ~1-50ms |
-| Full workflow (14 engines) | <2s | ~50ms (parallel) |
+| Full workflow (16 engines) | <2s | ~50ms (parallel) |
 | Cache hit (L1) | <1ms | <0.5ms |
 | Cache hit (L2/Redis) | <10ms | <5ms |
 | TypeScript bridge overhead | <20ms | ~10-15ms |

@@ -40,11 +40,10 @@ For detailed CLI usage, options, and framework-specific examples, see the [CLI d
 
 ## Engines Covered
 
-The bridge generates tools for all 14 Selemene engines:
+The bridge generates tools for all 16 Noesis engines:
 
-- **8 Rust engines** (live): Panchanga, Numerology, Biorhythm, Human Design, Gene Keys, Vimshottari, Biofield, Vedic Clock
-- **5 TypeScript engines** (require TS server): Natal Chart, Transit, Compatibility, Divisional, Dasha
-- **1 stub** (scaffold): Face Reading
+- **11 Rust engines** (live): Panchanga, Numerology, Biorhythm, Human Design, Gene Keys, Vimshottari, Biofield, Vedic Clock, Face Reading, Nadabrahman, Transits
+- **5 TypeScript engines** (live): Tarot, I-Ching, Enneagram, Sacred Geometry, Sigil Forge
 
 Plus 6 orchestrated workflows.
 

@@ -497,7 +497,7 @@ cargo bench
 |-----------|--------|----------------|
 | Single engine | <100ms | >500ms |
 | Workflow (3 engines) | <500ms | >2s |
-| Full spectrum (14 engines) | <2s | >5s |
+| Full spectrum (16 engines) | <2s | >5s |
 | Cache hit (L1) | <1ms | >10ms |
 | Cache hit (L2) | <10ms | >50ms |
 

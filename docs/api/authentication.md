@@ -19,7 +19,7 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 For server-to-server communication, use the X-API-Key header:
 
 ```
-X-API-Key: sk_live_your_api_key_here
+X-API-Key: nk_your_api_key_here
 ```
 
 ---
@@ -34,7 +34,7 @@ POST /api/v1/auth/token
 ### Request
 ```json
 {
-  "api_key": "sk_live_your_api_key_here"
+  "api_key": "nk_your_api_key_here"
 }
 ```
 
@@ -52,7 +52,7 @@ POST /api/v1/auth/token
 ```bash
 curl -X POST http://localhost:8080/api/v1/auth/token \
   -H "Content-Type: application/json" \
-  -d '{"api_key": "sk_live_your_api_key_here"}'
+  -d '{"api_key": "nk_your_api_key_here"}'
 ```
 
 ---
@@ -141,7 +141,7 @@ Engines require minimum consciousness phase levels:
 | Phase | Access Level | Engines Available |
 |-------|--------------|-------------------|
 | 0 | Public | panchanga, numerology, biorhythm, vedic-clock |
-| 1 | Basic | + human-design, gene-keys, vimshottari, tarot, i-ching, enneagram |
+| 1 | Basic | + human-design, gene-keys, vimshottari, tarot, i-ching, enneagram, nadabrahman, transits |
 | 2 | Intermediate | + biofield, face-reading, sacred-geometry, sigil-forge |
 | 3 | Advanced | Full engine access + advanced features |
 | 4 | Expert | + experimental features |
@@ -265,7 +265,7 @@ Rate limit exceeded:
 ```bash
 TOKEN=$(curl -s -X POST http://localhost:8080/api/v1/auth/token \
   -H "Content-Type: application/json" \
-  -d '{"api_key": "sk_live_xxx"}' | jq -r '.access_token')
+  -d '{"api_key": "nk_xxx"}' | jq -r '.access_token')
 ```
 
 ### 2. Use Token for API Calls

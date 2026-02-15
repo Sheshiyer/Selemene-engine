@@ -66,7 +66,7 @@ Mirror your .claude/skills/ format, but expand tools to cover major Selemene fea
 
 ```markdown
 ---
-description: "Selemene Engine Bridge: Witness cosmic patterns through 14 engines and 6 workflows. Non-prescriptive; generates inquiry prompts."
+description: "Selemene Engine Bridge: Witness cosmic patterns through 16 engines and 6 workflows. Non-prescriptive; generates inquiry prompts."
 tools:
   - name: selemene_health
     description: "Check engine status, loaded engines, and workflows."

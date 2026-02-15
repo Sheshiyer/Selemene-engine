@@ -179,7 +179,8 @@ pub async fn auth_middleware(
                     req.extensions_mut().insert(user);
                     return Ok(next.run(req).await);
                 }
-                Err(_) => {
+                Err(e) => {
+                    tracing::warn!(error = %e, "API key validation failed");
                     return Err((
                         StatusCode::UNAUTHORIZED,
                         Json(ErrorResponse {

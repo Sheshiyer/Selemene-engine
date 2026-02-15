@@ -114,28 +114,30 @@ agent = Agent(role="Vedic Analyst", tools=tools)
 
 ## Engines
 
-The bridge covers all 14 Selemene consciousness engines:
+The bridge covers all 16 Noesis consciousness engines:
 
 | # | Engine | Source | Status | Description |
 |---|--------|--------|--------|-------------|
 | 1 | Panchanga | Rust | Live | Vedic calendar (tithi, nakshatra, yoga, karana) |
 | 2 | Numerology | Rust | Live | Pythagorean + Chaldean number analysis |
 | 3 | Biorhythm | Rust | Live | Physical, emotional, intellectual cycles |
-| 4 | Human Design | Rust | Live | Ra Uru Hu's system — type, authority, profile |
+| 4 | Human Design | Rust | Live | Ra Uru Hu's system — type, authority, profile, 64 gates |
 | 5 | Gene Keys | Rust | Live | Richard Rudd's 64 keys — shadow, gift, siddhi |
-| 6 | Vimshottari | Rust | Live | Vedic planetary period system |
-| 7 | Biofield | Rust | Live | Energy body resonance patterns |
-| 8 | Vedic Clock | Rust | Live | Muhurta, hora, ghati time divisions |
-| 9 | Tarot | Rust | Scaffold | Archetypal card readings |
-| 10 | Natal Chart | TS | Scaffold | Full birth chart calculation |
-| 11 | Transit | TS | Scaffold | Current planetary transits |
-| 12 | Compatibility | TS | Scaffold | Synastry and composite charts |
-| 13 | Divisional | TS | Scaffold | D9, D10 and other divisional charts |
-| 14 | Dasha | TS | Scaffold | Extended dasha calculations |
+| 6 | Vimshottari | Rust | Live | 120-year nested dasha period system |
+| 7 | Biofield | Rust | Live | Chakra & energy body resonance patterns |
+| 8 | Vedic Clock | Rust | Live | Muhurta, hora, ghati + TCM organ clock |
+| 9 | Face Reading | Rust | Live | Physiognomy analysis from birth data |
+| 10 | Nadabrahman | Rust | Live | Sound consciousness & sacred frequency |
+| 11 | Transits | Rust | Live | Planetary transits, aspects & Sade Sati |
+| 12 | Tarot | TS | Live | Archetypal card readings |
+| 13 | I-Ching | TS | Live | Book of Changes hexagram casting |
+| 14 | Enneagram | TS | Live | 9-type personality + wing analysis |
+| 15 | Sacred Geometry | TS | Live | Geometric pattern consciousness mapping |
+| 16 | Sigil Forge | TS | Live | Intention-encoded symbolic generation |
 
-*TypeScript engines require a running TS server at the configured URL. If the TS server is not available, the CLI will generate tools for the available Rust engines only.*
+*TypeScript engines run as a Railway sidecar on port 3001, bridged to Rust via `BridgeEngine`. All 16 engines are accessible through the main Rust API — the TS server is transparent to callers.*
 
-Plus 6 orchestrated workflows (witness, snapshot, compass, timeline, compatibility, transit).
+Plus 6 orchestrated workflows (birth-blueprint, daily-practice, decision-support, self-inquiry, creative-expression, full-spectrum).
 
 ## Config File
 
@@ -165,7 +167,7 @@ The wizard creates `.selemenerc.json` in your project root:
 - Check firewall/network: `curl http://localhost:8080/health/live`
 
 **"Partial connectivity"**
-- The TS engines server is optional. If only Rust is running, you'll get 9 engines instead of 14.
+- The TS engines server is optional. If only Rust is running, you'll get 11 engines instead of 16.
 
 **"No .selemenerc.json found"**
 - Run `npx @selemene/bridge init` first to create the config.

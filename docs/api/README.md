@@ -2,11 +2,11 @@
 
 ## Overview
 
-The Selemene Engine is a high-performance consciousness calculation platform combining **14 engines** (Vedic astrology, Human Design, Gene Keys, Tarot, I-Ching, Enneagram, and more) with multi-engine workflow orchestration. This API provides comprehensive access to:
+The Selemene Engine is a high-performance consciousness calculation platform combining **16 engines** (Vedic astrology, Human Design, Gene Keys, Tarot, I-Ching, Enneagram, and more) with multi-engine workflow orchestration. This API provides comprehensive access to:
 
 - **Vedic Panchanga Calculations**: Five elements (Tithi, Nakshatra, Yoga, Karana, Vara)
-- **14 Consciousness Engines**: Complete coverage of consciousness mapping systems
-- **Hybrid Backend Architecture**: Native VSOP87/ELP-2000 + Swiss Ephemeris fallback
+- **16 Consciousness Engines**: Complete coverage of consciousness mapping systems
+- **Hybrid Backend Architecture**: 11 native Rust engines + 5 TypeScript archetypal engines
 - **Three-Layer Caching**: L1 (in-memory), L2 (Redis), L3 (disk)
 - **Multi-Engine Workflows**: Orchestrate complex synthesis across engines
 - **Real-Time Tracking**: WebSocket support for live updates
@@ -23,8 +23,8 @@ The Selemene Engine is a high-performance consciousness calculation platform com
 | Environment | URL | Description |
 |-------------|-----|-------------|
 | **Rust Backend** | `http://localhost:8080` | Panchanga/Vedic calculations (Axum) |
-| **TypeScript Engines** | `http://localhost:3001` | 14 consciousness engines (Bun) |
-| **Production** | `https://api.selemene.io` | Production deployment |
+| **TypeScript Engines** | `http://localhost:3001` | 5 TypeScript archetypal engines (Bun) |
+| **Production** | `https://selemene.tryambakam.space` | Production deployment |
 
 ## Interactive API Explorer
 
@@ -83,8 +83,8 @@ Check the health status of the engine.
   "timestamp": "2025-01-27T17:00:00Z",
   "version": "1.0.0",
   "components": {
-    "native_engine": "healthy",
-    "swiss_ephemeris": "healthy",
+    "rust_engines": "healthy",
+    "ts_engines": "healthy",
     "cache_system": "healthy",
     "database": "healthy"
   }
@@ -417,14 +417,14 @@ WebSocket endpoints for real-time updates:
 ## SDKs and Libraries
 
 Official client libraries:
-- **Rust**: `selemene-engine-client`
+- **Rust**: `noesis-client`
 - **Python**: `selemene-python`
 - **JavaScript**: `selemene-js`
 - **Go**: `selemene-go`
 
 ## Support
 
-- **Documentation**: [https://docs.selemene.io](https://docs.selemene.io)
-- **API Status**: [https://status.selemene.io](https://status.selemene.io)
-- **Support Email**: support@selemene.io
+- **Documentation**: [https://selemene.tryambakam.space/api/docs](https://selemene.tryambakam.space/api/docs)
+- **API Status**: [https://selemene.tryambakam.space/health/live](https://selemene.tryambakam.space/health/live)
+- **Support Email**: admin@tryambakam.com
 - **GitHub Issues**: [https://github.com/selemene/selemene-engine](https://github.com/selemene/selemene-engine)

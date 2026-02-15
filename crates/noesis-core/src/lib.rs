@@ -1,6 +1,6 @@
 //! Noesis Core — Shared traits and types for the Tryambakam consciousness engine platform
 //!
-//! All 13 consciousness engines implement the `ConsciousnessEngine` trait defined here.
+//! All 16 consciousness engines implement the `ConsciousnessEngine` trait defined here.
 //! This crate provides the universal interface, shared types, and error definitions.
 
 pub mod error;

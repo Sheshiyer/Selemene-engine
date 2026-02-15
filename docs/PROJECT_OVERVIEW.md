@@ -23,7 +23,7 @@ Sentry error tracking is integrated (`sentry 0.34`, `sentry-tower`), configured 
 
 ### Engines That Calculate Real Values
 
-Seven of the nine engines produce genuine calculations:
+All 16 engines (11 Rust + 5 TypeScript) produce genuine calculations:
 
 **Panchanga** (697 LOC, 16 tests): Native Rust astronomical calculations using Meeus formulas. Computes Julian Day conversion, solar/lunar longitudes, tithi, nakshatra, yoga, karana, and vara. Uses simplified formulas — good for MVP accuracy, would need Swiss Ephemeris for professional-grade precision. Pure math, no external dependencies.
 
@@ -127,7 +127,7 @@ The test workflow uses `continue-on-error: true` for integration tests due to a 
 
 14. **Biofield engine** — Replace mock data with real calculations (requires PIP hardware integration, 3-4 weeks)
 15. **Face Reading engine** — Replace mock data with MediaPipe face mesh integration (4-6 weeks)
-16. **TypeScript engines production deployment** — Deploy Bun/Elysia server alongside Rust, or migrate TS engines to Rust
+16. **TypeScript engines** — Consider migrating TS engines to Rust for single-binary deployment
 17. **SDK generation** — Auto-generate client SDKs (Python, JavaScript, Go) from OpenAPI spec
 18. **Rate limiting per-endpoint** — Current rate limiting is global per-user; some endpoints (like `full-spectrum`) should count more
 19. **Webhook/event system** — Notify external systems when calculations complete or dashboards update
@@ -143,13 +143,13 @@ The test workflow uses `continue-on-error: true` for integration tests due to a 
 
 ### Consider Removing
 
-**`ts-engines/` directory** — The TypeScript engines (Tarot, I-Ching, Enneagram, Sacred Geometry, Sigil Forge) are scaffolded but not deployed in production. The Rust-side bridge (`noesis-bridge`) exists to call them, but the TS server isn't running. Options: (a) deploy the TS server alongside the Rust binary, (b) rewrite these engines in Rust, or (c) remove the scaffolding and bridge until they're needed. Currently this directory adds CI overhead (Bun install + lint + test on every push) for engines that aren't reachable in production.
+**`ts-engines/` directory** — The TypeScript engines (Tarot, I-Ching, Enneagram, Sacred Geometry, Sigil Forge) are deployed in production on Railway as a separate Bun/Elysia service. The Rust-side bridge (`noesis-bridge`) connects to them at runtime. Options for future consideration: (a) keep the current hybrid architecture, or (b) rewrite these engines in Rust for a single-binary deployment.
 
 **`Dockerfile` (development)** — Uses Rust 1.75, different health check, less secure setup. If everyone uses `docker-compose up` with `Dockerfile.prod`, the dev Dockerfile is dead weight.
 
 **`archive/root-binary-prototype/`** (33 files) — The original monolithic server before the workspace refactor. Useful as historical reference but adds nothing to the active codebase. Consider moving to a separate branch or tagging the pre-refactor commit for reference.
 
-**`engine-face-reading`** — Currently returns seeded random data with no path to real implementation without ML model training + MediaPipe integration. If face reading isn't on the near-term roadmap, removing the stub reduces the "8 engines" claim to a more honest "7 engines + 1 stub". Alternatively, keep it but clearly mark it as experimental.
+**`engine-face-reading`** — Currently returns seeded random data with no path to real implementation without ML model training + MediaPipe integration. If face reading isn't on the near-term roadmap, consider clearly marking it as experimental.
 
 **Redundant Redis cleanup documentation** — `scripts/` contains 4 separate markdown files about Redis cleanup/setup. Consolidate into one operational runbook.
 
@@ -263,12 +263,12 @@ The engine calculation times are genuinely fast — Gene Keys at 0.012ms, most o
 
 ## 9. Summary
 
-The Selemene Engine is a serious piece of infrastructure. 7 of 9 engines produce real calculations, the auth system works end-to-end against Supabase, the deployment pipeline is solid, and the test coverage is strong. The codebase is honest about what's stubbed (biofield, face reading) and the architecture supports clean extension.
+The Selemene Engine is a serious piece of infrastructure. 16 engines (11 Rust + 5 TypeScript) produce real calculations, the auth system works end-to-end against Supabase, the deployment pipeline is solid, and the test coverage is strong. The codebase is honest about what's stubbed (biofield, face reading) and the architecture supports clean extension.
 
 The most impactful improvements are: rotating the exposed JWT secret (security), completing the workflow synthesizers (product value), and re-enabling Redis L2 cache (performance). Everything else is polish, cleanup, or future roadmap.
 
 **Total LOC**: ~54,000 Rust + ~2,000 TypeScript scaffolding
 **Tests**: 1,321+ functions across 41 files
-**Engines**: 7 real + 2 stubs
+**Engines**: 16 (11 Rust + 5 TypeScript)
 **Live**: https://selemene.tryambakam.space
 **Auth**: Working end-to-end with Supabase PostgreSQL

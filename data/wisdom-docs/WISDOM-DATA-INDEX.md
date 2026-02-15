@@ -8,7 +8,7 @@
 
 ## Overview
 
-This directory contains the complete wisdom data repository extracted from WitnessOS, consolidating all 13 engine systems and their associated data files. These JSON datasets power the archetypal, symbolic, and wisdom-based calculations within WitnessOS engines.
+This directory contains the complete wisdom data repository extracted from WitnessOS, consolidating all 16 engine systems and their associated data files. These JSON datasets power the archetypal, symbolic, and wisdom-based calculations within WitnessOS engines.
 
 ---
 

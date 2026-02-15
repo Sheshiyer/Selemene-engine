@@ -25,6 +25,8 @@ Engine endpoints provide direct access to individual consciousness calculation s
 | vedic-clock | Vedic Clock | 0 |
 | biofield | Biofield | 2 |
 | face-reading | Face Reading | 2 |
+| nadabrahman | Nadabrahman | 1 |
+| transits | Transits | 1 |
 
 ### TypeScript Engines (Bridged)
 

@@ -616,7 +616,7 @@ def get_current_periods(self, birth_date, moon_degree):
 
 ---
 
-### 9-13. Other Engines
+### 9-16. Other Engines
 
 **Biorhythm**: Uses `age_points_mapping.json` for life cycle calculations  
 **Numerology**: Mostly algorithmic, no dedicated data files  

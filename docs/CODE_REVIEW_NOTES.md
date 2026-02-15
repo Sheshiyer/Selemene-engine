@@ -12,8 +12,8 @@ This document captures code review observations and recommendations for the Sele
 
 | Location | TODO | Recommendation |
 |----------|------|----------------|
-| `src/engines/calculation_orchestrator.rs` | Swiss Ephemeris sync initialization | Refactor to async initialization with lazy loading |
-| `src/api/routes.rs` | Real-time tracking routes commented out | Complete implementation or remove dead code |
+| `crates/noesis-orchestrator/` | Swiss Ephemeris sync initialization | Refactor to async initialization with lazy loading |
+| `crates/noesis-api/src/` | Real-time tracking routes commented out | Complete implementation or remove dead code |
 | `crates/noesis-orchestrator/src/lib.rs:463` | `is_ready()` placeholder | Implement full readiness check |
 
 ### Medium Priority
@@ -39,7 +39,7 @@ This document captures code review observations and recommendations for the Sele
 
 ### Commented Routes
 ```rust
-// src/api/routes.rs lines 57-72
+// crates/noesis-api/src/
 // Real-time tracking routes that are fully commented out
 // Either implement or remove before production
 ```
@@ -50,13 +50,8 @@ Several files have unused imports that trigger warnings:
 - Or add `#[allow(unused_imports)]` for intentionally kept imports
 
 ### Legacy Directory
-```
-/legacy/
-```
-Contains old implementation files. Consider:
-- Archiving to separate branch
-- Removing if no longer needed
-- Documenting if kept for reference
+
+The `/legacy/` directory was removed in Sprint 2. No action needed.
 
 ---
 

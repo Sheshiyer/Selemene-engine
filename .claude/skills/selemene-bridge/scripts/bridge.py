@@ -7,14 +7,17 @@ import os
 from urllib.request import Request, urlopen
 from urllib.error import URLError, HTTPError
 
-RUST_URL = os.environ.get("SELEMENE_URL", "http://localhost:8080")
+RUST_URL = os.environ.get("SELEMENE_URL", "https://selemene.tryambakam.space")
 TS_URL = os.environ.get("SELEMENE_TS_URL", "http://localhost:3001")
 API_KEY = os.environ.get("SELEMENE_API_KEY", "")
 
 def _request(url, method="GET", body=None):
-    headers = {"Content-Type": "application/json"}
+    headers = {
+        "Content-Type": "application/json",
+        "User-Agent": "SelemeBridge/1.0",
+    }
     if API_KEY:
-        headers["Authorization"] = f"Bearer {API_KEY}"
+        headers["X-API-Key"] = API_KEY
     data = json.dumps(body).encode() if body else None
     req = Request(url, data=data, headers=headers, method=method)
     try:
@@ -26,29 +29,29 @@ def _request(url, method="GET", body=None):
         return {"error": str(e.reason)}
 
 TOOLS = {
-    "selemene_health": lambda _: _request(f"{RUST_URL}/health"),
+    "selemene_health": lambda _: _request(f"{RUST_URL}/health/live"),
     "selemene_list_engines": lambda _: _request(f"{RUST_URL}/api/v1/engines"),
     "selemene_engine_info": lambda a: _request(f"{RUST_URL}/api/v1/engines/{a['engine_id']}/info"),
     "selemene_calculate": lambda a: _request(
         f"{RUST_URL}/api/v1/engines/{a['engine_id']}/calculate", "POST",
-        {"parameters": a.get("parameters", {}), "consciousness_level": a.get("consciousness_level", 0)}
+        {"birth_data": a.get("birth_data", a.get("parameters", {}))}
     ),
     "selemene_validate": lambda a: _request(
         f"{RUST_URL}/api/v1/engines/{a['engine_id']}/validate", "POST",
-        {"parameters": a.get("parameters", {}), "consciousness_level": a.get("consciousness_level", 0)}
+        {"birth_data": a.get("birth_data", a.get("parameters", {}))}
     ),
     "selemene_list_workflows": lambda _: _request(f"{RUST_URL}/api/v1/workflows"),
     "selemene_workflow_info": lambda a: _request(f"{RUST_URL}/api/v1/workflows/{a['workflow_id']}/info"),
     "selemene_workflow_execute": lambda a: _request(
         f"{RUST_URL}/api/v1/workflows/{a['workflow_id']}/execute", "POST",
-        {"parameters": a.get("parameters", {}), "consciousness_level": a.get("consciousness_level", 0)}
+        {"birth_data": a.get("birth_data", a.get("parameters", {}))}
     ),
     "selemene_ts_health": lambda _: _request(f"{TS_URL}/health"),
     "selemene_ts_list_engines": lambda _: _request(f"{TS_URL}/engines"),
     "selemene_ts_engine_info": lambda a: _request(f"{TS_URL}/engines/{a['engine_id']}/info"),
     "selemene_ts_calculate": lambda a: _request(
         f"{TS_URL}/engines/{a['engine_id']}/calculate", "POST",
-        {"parameters": a.get("parameters", {}), "consciousness_level": a.get("consciousness_level", 0)}
+        {"birth_data": a.get("birth_data", a.get("parameters", {}))}
     ),
 }
 

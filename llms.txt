@@ -1,8 +1,8 @@
 # Selemene Engine
 
-> Computational mirror for self-inquiry. 8 live Vedic/consciousness engines with sub-ms calculations. REST API with witness prompts calibrated to consciousness level.
+> Computational mirror for self-inquiry. 16 live consciousness engines with sub-ms calculations. REST API with witness prompts calibrated to consciousness level.
 
-Selemene Engine is a high-performance Rust API serving 8 calculation engines rooted in Vedic, numerological, and consciousness traditions. Each response includes a witness prompt — a question calibrated to your awareness level.
+Selemene Engine is a high-performance Rust + TypeScript API serving 16 calculation engines (11 Rust + 5 TypeScript) rooted in Vedic, numerological, and consciousness traditions. Each response includes a witness prompt — a question calibrated to your awareness level.
 
 ## API Documentation
 
@@ -24,12 +24,23 @@ Selemene Engine is a high-performance Rust API serving 8 calculation engines roo
 - [Biorhythm](https://selemene.tryambakam.space/api/v1/engines/biorhythm/info): Physical, emotional, intellectual cycles
 - [Vedic Clock](https://selemene.tryambakam.space/api/v1/engines/vedic-clock/info): Muhurta, hora, dosha timing
 - [Biofield](https://selemene.tryambakam.space/api/v1/engines/biofield/info): Chakra energy readings
+- [Face Reading](https://selemene.tryambakam.space/api/v1/engines/face-reading/info): Facial feature analysis and personality insights
+- [Nadabrahman](https://selemene.tryambakam.space/api/v1/engines/nadabrahman/info): Sound and vibration frequency analysis
+- [Transits](https://selemene.tryambakam.space/api/v1/engines/transits/info): Planetary transit calculations and predictions
+- [Enneagram](https://selemene.tryambakam.space/api/v1/engines/enneagram/info): Personality type and growth path mapping
+- [I-Ching](https://selemene.tryambakam.space/api/v1/engines/i-ching/info): Hexagram divination and change patterns
+- [Sacred Geometry](https://selemene.tryambakam.space/api/v1/engines/sacred-geometry/info): Geometric pattern and ratio analysis
+- [Sigil Forge](https://selemene.tryambakam.space/api/v1/engines/sigil-forge/info): Intention sigil creation and activation
+- [Tarot](https://selemene.tryambakam.space/api/v1/engines/tarot/info): Card spread readings and archetypal guidance
 
 ## Workflows
 
 - [Birth Blueprint](https://selemene.tryambakam.space/api/v1/workflows/birth-blueprint/info): Numerology + Human Design + Vimshottari
 - [Daily Practice](https://selemene.tryambakam.space/api/v1/workflows/daily-practice/info): Panchanga + Vedic Clock + Biorhythm
 - [Full Spectrum](https://selemene.tryambakam.space/api/v1/workflows/full-spectrum/info): All engines combined
+- [Decision Support](https://selemene.tryambakam.space/api/v1/workflows/decision-support/info): Multi-engine guidance for choices and timing
+- [Self Inquiry](https://selemene.tryambakam.space/api/v1/workflows/self-inquiry/info): Reflective prompts across consciousness systems
+- [Creative Expression](https://selemene.tryambakam.space/api/v1/workflows/creative-expression/info): Archetypal and symbolic creative guidance
 
 ## Optional
 

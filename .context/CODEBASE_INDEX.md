@@ -16,7 +16,7 @@
 - **Monitoring:** Prometheus + Grafana + Loki + Jaeger
 
 ### Core Components
-1. **14 Consciousness Engines** (9 Rust + 5 TypeScript)
+1. **16 Consciousness Engines** (11 Rust + 5 TypeScript)
 2. **6 Multi-Engine Workflows** (synthesis patterns)
 3. **FreeAstrologyAPI Integration** (Vedic calculations)
 4. **Production Infrastructure** (K8s, CI/CD, monitoring)
@@ -28,7 +28,7 @@
 ```
 Selemene-engine/
 ├── crates/                    # Rust workspace crates
-│   ├── engine-*/             # 9 Rust consciousness engines
+│   ├── engine-*/             # 11 Rust consciousness engines
 │   ├── noesis-api/           # Main HTTP API server
 │   ├── noesis-vedic-api/     # FreeAstrologyAPI client ⭐
 │   ├── noesis-western-api/   # Western astrology API
@@ -296,7 +296,7 @@ tests/
 | `decision-support` | Tarot, I-Ching, HD Authority | Multi-perspective guidance | ✅ |
 | `self-inquiry` | Gene Keys, Enneagram | Shadow work | ✅ |
 | `creative-expression` | Sigil Forge, Sacred Geometry | Generative guidance | ✅ |
-| `full-spectrum` | All 14 engines | Complete self-portrait | ✅ |
+| `full-spectrum` | All 16 engines | Complete self-portrait | ✅ |
 
 **Execution:** Parallel via `futures::join_all`  
 **Synthesis:** Theme extraction, alignment detection, tension framing
@@ -442,7 +442,7 @@ LOG_FORMAT=json
 | Document | Location | Purpose |
 |----------|----------|---------|
 | **Architecture Overview** | `.context/architecture.md` | System design |
-| **Engine Specs** | `.context/engines/*.md` | 14 engine specifications |
+| **Engine Specs** | `.context/engines/*.md` | 16 engine specifications |
 | **API Reference** | `docs/api/` | Endpoint documentation |
 | **Deployment Guide** | `docs/deployment/` | K8s + Docker setup |
 | **Troubleshooting** | `docs/troubleshooting.md` | Common issues |

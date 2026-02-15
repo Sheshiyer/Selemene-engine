@@ -3,20 +3,20 @@ info:
   title: Selemene Engine API
   version: 1.0.0
   description: |
-    High-performance consciousness calculation platform combining 14 engines (Vedic astrology, Human Design, 
+    High-performance consciousness calculation platform combining 16 engines (Vedic astrology, Human Design, 
     Gene Keys, Tarot, I-Ching, Enneagram, Sacred Geometry, and more) with multi-engine workflow orchestration.
     
     ## Features
-    - **14 Consciousness Engines**: Vedic astrology, Human Design, Gene Keys, Tarot, I-Ching, Enneagram, and more
-    - **Hybrid Calculation Backend**: Native VSOP87/ELP-2000 engines with Swiss Ephemeris fallback
+    - **16 Consciousness Engines**: Vedic astrology, Human Design, Gene Keys, Tarot, I-Ching, Enneagram, and more
+    - **Hybrid Calculation Backend**: 11 native Rust engines + 5 TypeScript archetypal engines
     - **Three-Layer Caching**: L1 (in-memory), L2 (Redis), L3 (disk) for optimal performance
     - **Multi-Engine Workflows**: Orchestrate complex calculations across multiple engines
     - **Real-Time Updates**: WebSocket support for live Panchanga and event tracking
     
   contact:
     name: Selemene Engine Support
-    email: support@selemene.io
-    url: https://docs.selemene.io
+    email: admin@tryambakam.com
+    url: https://selemene.tryambakam.space/api/docs
   license:
     name: MIT
     url: https://opensource.org/licenses/MIT
@@ -25,8 +25,8 @@ servers:
   - url: http://localhost:8080
     description: Development server (Rust/Axum - Panchanga/Vedic calculations)
   - url: http://localhost:3001
-    description: TypeScript engines server (Bun - 14 consciousness engines)
-  - url: https://api.selemene.io
+    description: TypeScript engines server (Bun - 5 TypeScript archetypal engines)
+  - url: https://selemene.tryambakam.space
     description: Production server
 
 tags:
@@ -131,23 +131,25 @@ paths:
       tags: [Engines]
       summary: Execute a consciousness engine
       description: |
-        Execute one of the 14 consciousness engines with the provided input data.
+        Execute one of the 16 consciousness engines with the provided input data.
         
         Available engines:
-        - **vedic**: Vedic astrology calculations
-        - **human-design**: Human Design chart
-        - **gene-keys**: Gene Keys profile
-        - **tarot**: Tarot readings
-        - **i-ching**: I-Ching hexagrams
+        - **biofield**: Biofield analysis
+        - **biorhythm**: Biorhythm cycles
         - **enneagram**: Enneagram personality assessment
+        - **face-reading**: Face reading analysis
+        - **gene-keys**: Gene Keys profile
+        - **human-design**: Human Design chart
+        - **i-ching**: I-Ching hexagrams
+        - **nadabrahman**: Nadabrahman sound-consciousness mapping
+        - **numerology**: Numerology calculations
+        - **panchanga**: Vedic Panchanga calculations
         - **sacred-geometry**: Sacred geometry analysis
         - **sigil-forge**: Sigil generation
-        - **kabbalah**: Kabbalistic tree of life
-        - **numerology**: Numerology calculations
-        - **runes**: Rune casting
-        - **biorhythm**: Biorhythm cycles
-        - **chakra**: Chakra analysis
-        - **dreamwork**: Dream interpretation
+        - **tarot**: Tarot readings
+        - **transits**: Planetary transit analysis
+        - **vedic-clock**: Vedic clock time calculations
+        - **vimshottari**: Vimshottari Dasha periods
       operationId: executeEngine
       security:
         - BearerAuth: []
@@ -158,7 +160,7 @@ paths:
           required: true
           schema:
             type: string
-            enum: [vedic, human-design, gene-keys, tarot, i-ching, enneagram, sacred-geometry, sigil-forge, kabbalah, numerology, runes, biorhythm, chakra, dreamwork]
+            enum: [biofield, biorhythm, enneagram, face-reading, gene-keys, human-design, i-ching, nadabrahman, numerology, panchanga, sacred-geometry, sigil-forge, tarot, transits, vedic-clock, vimshottari]
       requestBody:
         required: true
         content:

@@ -7,15 +7,15 @@
 
 ## Overview
 
-Selemene Engine v2.0.0 represents a major evolution from a Vedic astrology calculation engine to a comprehensive consciousness calculation platform. This release introduces 14 integrated engines, 6 predefined workflows, and a synthesis system for cross-engine insights.
+Selemene Engine v2.0.0 represents a major evolution from a Vedic astrology calculation engine to a comprehensive consciousness calculation platform. This release introduces 16 integrated engines, 6 predefined workflows, and a synthesis system for cross-engine insights.
 
 ---
 
 ## What's New
 
-### 14 Consciousness Engines
+### 16 Consciousness Engines
 
-#### Rust Engines (9)
+#### Rust Engines (11)
 
 | Engine | Description | Status |
 |--------|-------------|--------|
@@ -26,6 +26,8 @@ Selemene Engine v2.0.0 represents a major evolution from a Vedic astrology calcu
 | **Numerology** | Western numerology with Life Path, Expression, Soul Urge, Personal Year | Full |
 | **Biorhythm** | Physical/Emotional/Intellectual cycle tracking with forecasting | Full |
 | **Vedic Clock** | Dosha periods, Muhurtas, Ghati time calculations | Full |
+| **Nadabrahman** | Sacred sound frequency and mantra resonance analysis | Full |
+| **Transits** | Planetary transit tracking and aspect calculations | Full |
 | **Biofield** | Chakra and aura energy assessment | Stub |
 | **Face Reading** | Chinese physiognomy feature analysis | Stub |
 
@@ -48,7 +50,7 @@ Selemene Engine v2.0.0 represents a major evolution from a Vedic astrology calcu
 | **Decision Support** | Tarot, I-Ching, Human Design | Multi-perspective decisions |
 | **Self-Inquiry** | Gene Keys, Enneagram | Shadow work and growth |
 | **Creative Expression** | Sigil Forge, Sacred Geometry | Visual/symbolic creation |
-| **Full Spectrum** | All 14 engines | Comprehensive portrait |
+| **Full Spectrum** | All 16 engines | Comprehensive portrait |
 
 ### Synthesis System
 
@@ -212,7 +214,7 @@ If using SDK or client library:
 | Single Panchanga | 45ms | 15ms |
 | Human Design (full) | - | 1.3ms |
 | Gene Keys | - | 0.01ms |
-| Full Spectrum (14 engines) | - | 50ms |
+| Full Spectrum (16 engines) | - | 50ms |
 | Cache hit rate | 70% | 85%+ |
 
 ---

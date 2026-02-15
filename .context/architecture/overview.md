@@ -1,6 +1,6 @@
 # Architecture Overview - Tryambakam Noesis
 
-> **System design and structural patterns** for the 13-engine consciousness computing platform
+> **System design and structural patterns** for the 16-engine consciousness computing platform
 
 **Purpose**: Define high-level architecture, layer responsibilities, and integration patterns  
 **Scope**: Current Selemene → Target Tryambakam transformation  
@@ -262,7 +262,7 @@ use serde_json::Value;
 use chrono::{DateTime, Utc};
 use std::collections::HashMap;
 
-/// Core trait implemented by all 13 engines (Rust + TypeScript via bridge)
+/// Core trait implemented by all 16 engines (Rust + TypeScript via bridge)
 #[async_trait]
 pub trait ConsciousnessEngine: Send + Sync {
     /// Unique identifier (e.g., "panchanga", "human-design")

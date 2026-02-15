@@ -38,7 +38,7 @@ curl -s https://selemene.tryambakam.space/health/live | python3 -m json.tool
 {
     "status": "ok",
     "version": "0.1.0",
-    "engines_loaded": 8,
+    "engines_loaded": 16,
     "workflows_loaded": 6
 }
 ```
@@ -53,8 +53,10 @@ curl -s https://selemene.tryambakam.space/api/v1/engines \
 ```json
 {
     "engines": [
-        "biofield", "biorhythm", "gene-keys", "human-design",
-        "numerology", "panchanga", "vedic-clock", "vimshottari"
+        "biofield", "biorhythm", "enneagram", "face-reading",
+        "gene-keys", "human-design", "i-ching", "nadabrahman",
+        "numerology", "panchanga", "sacred-geometry", "sigil-forge",
+        "tarot", "transits", "vedic-clock", "vimshottari"
     ]
 }
 ```
@@ -130,14 +132,22 @@ All engine `/calculate` endpoints accept the same JSON body:
 
 | Engine | Required Fields | What It Returns |
 |--------|----------------|-----------------|
-| **numerology** | `birth_data.date`, `birth_data.name` | Life path, expression, soul urge, personality numbers |
+| **biofield** | `birth_data.date` | Chakra readings, energy field analysis |
 | **biorhythm** | `birth_data.date` | Physical/emotional/intellectual cycles, forecast, critical days |
-| **human-design** | `birth_data.date`, `time`, lat/lng, tz | Type, strategy, authority, profile, centers, gates |
+| **enneagram** | `birth_data.date`, `birth_data.name` | Enneagram type, wing, instinctual variant, integration/disintegration |
+| **face-reading** | `birth_data.date`, image data | Facial feature analysis, physiognomy insights |
 | **gene-keys** | `birth_data.date`, `time`, lat/lng, tz | 4 activation sequences (Shadow/Gift/Siddhi) |
-| **vimshottari** | `birth_data.date`, `time`, lat/lng, tz | Current dasha periods (Maha/Antar/Pratyantar) |
+| **human-design** | `birth_data.date`, `time`, lat/lng, tz | Type, strategy, authority, profile, centers, gates |
+| **i-ching** | `birth_data.date` | Hexagram casting, changing lines, interpretation |
+| **nadabrahman** | `birth_data.date`, `time` | Sound/vibration analysis, nada yoga frequencies |
+| **numerology** | `birth_data.date`, `birth_data.name` | Life path, expression, soul urge, personality numbers |
 | **panchanga** | `birth_data.date`, lat/lng, tz | Tithi, nakshatra, yoga, karana, vara |
+| **sacred-geometry** | `birth_data.date` | Geometric patterns, sacred number mappings |
+| **sigil-forge** | `options.intent` | Sigil generation from intent statements |
+| **tarot** | `birth_data.date` | Card spreads, birth card, yearly forecast |
+| **transits** | `birth_data.date`, `time`, lat/lng, tz | Current planetary transits relative to natal chart |
 | **vedic-clock** | (uses `current_time`) | TCM organ clock, Ayurvedic dosha timing |
-| **biofield** | `birth_data.date` | Chakra readings (stub) |
+| **vimshottari** | `birth_data.date`, `time`, lat/lng, tz | Current dasha periods (Maha/Antar/Pratyantar) |
 
 ## Try Each Engine
 
@@ -183,7 +193,7 @@ curl -s .../api/v1/workflows \
 | **decision-support** | tarot + i-ching + HD authority | Multi-perspective guidance |
 | **self-inquiry** | gene-keys + enneagram | Shadow work + patterns |
 | **creative-expression** | sigil-forge + sacred-geometry | Intent visualization |
-| **full-spectrum** | all 14 engines | Complete consciousness portrait |
+| **full-spectrum** | all 16 engines | Complete consciousness portrait |
 
 ```bash
 # Execute a workflow

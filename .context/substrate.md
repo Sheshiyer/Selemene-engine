@@ -4,7 +4,7 @@
 
 **Project:** Tryambakam Noesis  
 **Current State:** Selemene Engine (single Panchanga engine in Rust)  
-**Vision:** 13-engine consciousness computing platform for self-consciousness development  
+**Vision:** 16-engine consciousness computing platform for self-consciousness development  
 **Status:** Late development → Transformation phase  
 **Date:** 2026-01-30
 
@@ -12,7 +12,7 @@
 
 ## 🎯 What is Tryambakam Noesis?
 
-Tryambakam Noesis is a **self-consciousness development platform** built on 13 complementary engines that serve as **Decision Mirrors** - they reflect your patterns back to you so you can **witness** them, not prescribe what to do.
+Tryambakam Noesis is a **self-consciousness development platform** built on 16 complementary engines that serve as **Decision Mirrors** - they reflect your patterns back to you so you can **witness** them, not prescribe what to do.
 
 ### Core Philosophy
 
@@ -70,9 +70,9 @@ selemene-engine/
 
 ## 🔮 Target Architecture (Tryambakam Noesis)
 
-### Vision: 13-Engine Consciousness Computing Platform
+### Vision: 16-Engine Consciousness Computing Platform
 
-Transform Selemene into the **core backend for all 13 self-consciousness engines**:
+Transform Selemene into the **core backend for all 16 self-consciousness engines**:
 
 ```
 Cargo Workspace Monorepo
@@ -110,7 +110,7 @@ Cargo Workspace Monorepo
 
 ### The Core Trait: ConsciousnessEngine
 
-All 13 engines (8 Rust + 5 TypeScript) implement:
+All 16 engines (11 Rust + 5 TypeScript) implement:
 
 ```rust
 #[async_trait]
@@ -137,7 +137,7 @@ pub struct EngineOutput {
 
 ---
 
-## 🧬 The 13 Self-Consciousness Engines
+## 🧬 The 16 Self-Consciousness Engines
 
 ### Foundational (Pure Math, No Dependencies)
 1. **Numerology** - Life path patterns (Pythagorean + Chaldean)
@@ -178,7 +178,7 @@ Multi-engine workflows that reveal core patterns through cross-validation:
 3. **decision-support** — Tarot + I-Ching + HD transit (Guidance on this choice)
 4. **self-inquiry** — Gene Keys + Enneagram + Witness prompts (Shadow work)
 5. **creative-expression** — Sigil Forge + Sacred Geometry + Raaga (Generative)
-6. **full-spectrum** — All 13 engines (Complete self-portrait)
+6. **full-spectrum** — All 16 engines (Complete self-portrait)
 
 ---
 
@@ -345,7 +345,7 @@ When asked to implement features, always:
 
 - **Source Evolution Docs**: `/Volumes/madara/2026/twc-vault/01-Projects/tryambakam-noesis/evolution-docs/`
   - `foundational-research.md` - Core philosophy
-  - `core-engine-architecture.md` - 13 engines detailed
+  - `core-engine-architecture.md` - 16 engines detailed
   - `self-consciousness-framework.md` - 5-level consciousness model
   - `technical-learnings.md` - HD astronomical accuracy, VedicClock-TCM integration
   - `IMPLEMENTATION-ROADMAP.md` - Build sequence with timelines
