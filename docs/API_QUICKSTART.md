@@ -11,6 +11,7 @@ https://selemene.tryambakam.space
 ## Step 1: Get an API Key
 
 API keys are prefixed with `nk_` and authenticate via the `X-API-Key` header.
+Each API key is treated as a unique user identity.
 
 **For development/testing**, run the seed script against your database:
 
@@ -64,6 +65,7 @@ curl -s https://selemene.tryambakam.space/api/v1/engines \
 ## Step 4: Make Your First Calculation
 
 Every engine accepts the same request shape: `EngineInput`.
+If `birth_data` is provided, the API auto-populates the user profile tied to that API key.
 
 ```bash
 curl -s -X POST https://selemene.tryambakam.space/api/v1/engines/numerology/calculate \
@@ -120,8 +122,8 @@ All engine `/calculate` endpoints accept the same JSON body:
     // Optional geographic override
     "location": { "latitude": 12.9716, "longitude": 77.5946 },
 
-    // Calculation precision: "standard" (default), "high", "extreme"
-    "precision": "standard",
+    // Calculation precision: "Standard" (default), "High", "Extreme"
+    "precision": "Standard",
 
     // Engine-specific options (varies by engine)
     "options": {}
@@ -222,11 +224,13 @@ Two methods:
 
 ### API Key Tiers
 
-| Tier | Rate Limit | Features |
-|------|-----------|----------|
-| **free** | 60 req/min | Basic access, panchanga |
-| **premium** | 1,000 req/min | All engines, batch operations |
-| **enterprise** | 10,000 req/min | Everything + admin endpoints |
+Tiers are enforced server-side and may vary by deployment.
+
+| Tier | Notes |
+|------|------|
+| **free** | Basic access |
+| **premium** | Full engine access |
+| **enterprise** | Full access + support |
 
 ### Error Responses
 
@@ -241,12 +245,12 @@ Two methods:
 // 429 — Rate limited
 {
     "error": "Rate limit exceeded",
-    "error_code": "RATE_LIMITED"
+  "error_code": "RATE_LIMIT_EXCEEDED"
 }
 
-// 500 — Calculation error (usually bad input)
+// 500 — Calculation error
 {
-    "error": "Calculation error: birth_data is required for numerology",
+  "error": "An internal calculation error occurred",
     "error_code": "CALCULATION_ERROR"
 }
 ```

@@ -26,6 +26,8 @@
   &nbsp;
   <img src="https://img.shields.io/badge/Railway-deployed-0B0D0E?style=flat-square&logo=railway&logoColor=white" alt="Railway">
   &nbsp;
+  <a href="https://openclaw.ai"><img src="https://img.shields.io/badge/OpenClaw-integrated-1A1A2E?style=flat-square&labelColor=0B0D0E" alt="OpenClaw"></a>
+  &nbsp;
   <img src="https://img.shields.io/badge/license-MIT-blue?style=flat-square" alt="License">
 </p>
 

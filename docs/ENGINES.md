@@ -26,7 +26,7 @@ High-performance native calculation engines built in Rust with sub-millisecond p
 **Vedic calendar system** — Calculates the five limbs of time: Tithi, Nakshatra, Yoga, Karana, Vara.
 
 **Input:** `date, lat/lng, timezone`  
-**Endpoint:** `POST /api/v1/panchanga/calculate`
+**Endpoint:** `POST /api/v1/engines/panchanga/calculate`
 
 Foundation for all Vedic timing calculations.
 
@@ -37,7 +37,7 @@ Foundation for all Vedic timing calculations.
 **Complete bodygraph** — Type, Strategy, Authority, 9 Centers, 26 Gates, Profile, Definition.
 
 **Input:** `date, time, lat/lng`  
-**Endpoint:** `POST /api/v1/human-design/calculate`
+**Endpoint:** `POST /api/v1/engines/human-design/calculate`
 
 Synthesizes I Ching, Kabbalah, Chakras, and Astrology.
 
@@ -48,7 +48,7 @@ Synthesizes I Ching, Kabbalah, Chakras, and Astrology.
 **64 Keys** — Shadow → Gift → Siddhi progression across 4 sequences (Activation, Venus, Pearl, Life's Work).
 
 **Input:** `date, time, lat/lng`  
-**Endpoint:** `POST /api/v1/gene-keys/calculate`
+**Endpoint:** `POST /api/v1/engines/gene-keys/calculate`
 
 Maps consciousness evolution through 64 genetic pathways.
 
@@ -59,7 +59,7 @@ Maps consciousness evolution through 64 genetic pathways.
 **120-year timeline** — Nested planetary periods (Mahadasha → Antardasha → 729 total periods).
 
 **Input:** `date, time, lat/lng`  
-**Endpoint:** `POST /api/v1/vimshottari/calculate`
+**Endpoint:** `POST /api/v1/engines/vimshottari/calculate`
 
 Foundation for Vedic predictive timing.
 
@@ -70,7 +70,7 @@ Foundation for Vedic predictive timing.
 **Pythagorean & Chaldean systems** — Life Path, Expression, Soul Urge, Birthday, Personality, Master Numbers.
 
 **Input:** `date, name`  
-**Endpoint:** `POST /api/v1/numerology/calculate`
+**Endpoint:** `POST /api/v1/engines/numerology/calculate`
 
 <table>
 <tr>
@@ -98,7 +98,7 @@ Foundation for Vedic predictive timing.
 **3 biological cycles** — Physical (23-day), Emotional (28-day), Intellectual (33-day).
 
 **Input:** `date`  
-**Endpoint:** `POST /api/v1/biorhythm/calculate`
+**Endpoint:** `POST /api/v1/engines/biorhythm/calculate`
 
 <table>
 <tr>
@@ -125,7 +125,7 @@ Foundation for Vedic predictive timing.
 **TCM Organ Clock + Ayurvedic Doshas** — Maps 24-hour cycle to organ energy peaks and dosha dominance.
 
 **Input:** `current_time`  
-**Endpoint:** `POST /api/v1/vedic-clock/calculate`
+**Endpoint:** `POST /api/v1/engines/vedic-clock/calculate`
 
 <table>
 <tr>
@@ -151,7 +151,7 @@ Foundation for Vedic predictive timing.
 **Vedic Birth-Data Biofield Analysis** — Real planetary position-driven chakra readings using Navagraha dignity, aspects, and temporal transit modulation.
 
 **Input:** `date, time, lat/lng`
-**Endpoint:** `POST /api/v1/biofield/calculate`
+**Endpoint:** `POST /api/v1/engines/biofield/calculate`
 
 <table>
 <tr>
@@ -178,7 +178,7 @@ Foundation for Vedic predictive timing.
 **Physiognomy analysis** — Extracts facial features and maps to personality traits, health indicators, and life patterns.
 
 **Input:** `image_data`  
-**Endpoint:** `POST /api/v1/face-reading/analyze`
+**Endpoint:** `POST /api/v1/engines/face-reading/calculate`
 
 Combines Chinese Mian Xiang with Western physiognomy traditions.
 
@@ -189,7 +189,7 @@ Combines Chinese Mian Xiang with Western physiognomy traditions.
 **Sound consciousness** — Analyzes vocal patterns, frequency signatures, and maps to Vedic sound cosmology (Nada Brahma).
 
 **Input:** `audio_data`  
-**Endpoint:** `POST /api/v1/nadabrahman/analyze`
+**Endpoint:** `POST /api/v1/engines/nadabrahman/calculate`
 
 Maps voice characteristics to raaga resonance and chakra activations.
 
@@ -200,7 +200,7 @@ Maps voice characteristics to raaga resonance and chakra activations.
 **Planetary transits & Sade Sati** — Current planetary positions, natal-to-transit aspects, and Saturn's 7.5-year Sade Sati cycle detection.
 
 **Input:** `date, time, lat/lng`
-**Endpoint:** `POST /api/v1/transits/calculate`
+**Endpoint:** `POST /api/v1/engines/transits/calculate`
 
 ### Returns
 - Current positions of all 9 Navagraha (Swiss Ephemeris)
@@ -226,7 +226,7 @@ Esoteric calculation engines built in TypeScript, bridged to main Rust API.
 **78-card system** — Birth cards, yearly cycles, archetypal progression through Major Arcana.
 
 **Input:** `date, question`  
-**Endpoint:** `POST /api/v1/tarot/calculate`
+**Endpoint:** `POST /api/v1/engines/tarot/calculate`
 
 <table>
 <tr>
@@ -253,7 +253,7 @@ Esoteric calculation engines built in TypeScript, bridged to main Rust API.
 **64 hexagrams** — Oracle casting via yarrow stalk, coin, or digital methods. Interprets changing lines and transformations.
 
 **Input:** `question, casting_method`  
-**Endpoint:** `POST /api/v1/i-ching/cast`
+**Endpoint:** `POST /api/v1/engines/i-ching/calculate`
 
 Traditional Book of Changes divination system.
 
@@ -264,7 +264,7 @@ Traditional Book of Changes divination system.
 **9 personality types** — Core type, wing, tritype, integration/disintegration arrows, instinctual variants.
 
 **Input:** `date, name`  
-**Endpoint:** `POST /api/v1/enneagram/calculate`
+**Endpoint:** `POST /api/v1/engines/enneagram/calculate`
 
 <table>
 <tr>
@@ -292,7 +292,7 @@ Traditional Book of Changes divination system.
 **Platonic solids & geometric patterns** — Generates sacred geometry constructions, calculates proportions (phi, pi, √2), and maps to energetic resonances.
 
 **Input:** `parameters (shape, size, proportions)`  
-**Endpoint:** `POST /api/v1/sacred-geometry/generate`
+**Endpoint:** `POST /api/v1/engines/sacred-geometry/calculate`
 
 Includes Flower of Life, Metatron's Cube, Sri Yantra, Golden Spiral.
 
@@ -303,7 +303,7 @@ Includes Flower of Life, Metatron's Cube, Sri Yantra, Golden Spiral.
 **Intent manifestation** — Transforms text intentions into visual sigils using letter reduction, geometric encoding, and symbolic transformation methods.
 
 **Input:** `intent_text, method (chaos/planetary/angelic)`  
-**Endpoint:** `POST /api/v1/sigil-forge/create`
+**Endpoint:** `POST /api/v1/engines/sigil-forge/calculate`
 
 Combines Austin Osman Spare's method with planetary and angelic signatures.
 

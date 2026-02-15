@@ -1,656 +1,1141 @@
 openapi: 3.0.3
 info:
-  title: Selemene Engine API
-  version: 1.0.0
+  title: Noesis API
+  version: 0.1.0
   description: |
-    High-performance consciousness calculation platform combining 16 engines (Vedic astrology, Human Design, 
-    Gene Keys, Tarot, I-Ching, Enneagram, Sacred Geometry, and more) with multi-engine workflow orchestration.
-    
-    ## Features
-    - **16 Consciousness Engines**: Vedic astrology, Human Design, Gene Keys, Tarot, I-Ching, Enneagram, and more
-    - **Hybrid Calculation Backend**: 11 native Rust engines + 5 TypeScript archetypal engines
-    - **Three-Layer Caching**: L1 (in-memory), L2 (Redis), L3 (disk) for optimal performance
-    - **Multi-Engine Workflows**: Orchestrate complex calculations across multiple engines
-    - **Real-Time Updates**: WebSocket support for live Panchanga and event tracking
-    
-  contact:
-    name: Selemene Engine Support
-    email: admin@tryambakam.com
-    url: https://selemene.tryambakam.space/api/docs
-  license:
-    name: MIT
-    url: https://opensource.org/licenses/MIT
+    High-performance consciousness calculation platform with 16 engines and multi-engine workflows.
 
 servers:
   - url: http://localhost:8080
-    description: Development server (Rust/Axum - Panchanga/Vedic calculations)
-  - url: http://localhost:3001
-    description: TypeScript engines server (Bun - 5 TypeScript archetypal engines)
+    description: Local development (Rust API)
   - url: https://selemene.tryambakam.space
-    description: Production server
+    description: Production
 
 tags:
-  - name: Health
-    description: Health checks and system status
-  - name: Panchanga
-    description: Five elements of Vedic calendar
-  - name: Solar & Lunar
-    description: Solar and lunar position calculations
-  - name: Engines
-    description: Individual consciousness engine endpoints
-  - name: Workflows
-    description: Multi-engine orchestration workflows
-  - name: Cache
-    description: Cache management and statistics
-  - name: Performance
-    description: Performance optimization and benchmarking
+  - name: health
+    description: Health checks and readiness
+  - name: engines
+    description: Single engine calculations
+  - name: workflows
+    description: Multi-engine workflow execution
+  - name: users
+    description: User profile endpoints
+  - name: auth
+    description: Registration and login
+  - name: readings
+    description: Calculation history
+  - name: legacy
+    description: Backward-compatible legacy endpoints
 
 paths:
   /health:
     get:
-      tags: [Health]
+      tags: [health]
       summary: Health check
-      description: Check the health status of all engine components
-      operationId: getHealth
       responses:
-        '200':
-          description: System is healthy
+        "200":
+          description: Service is healthy
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/HealthResponse'
+                $ref: "#/components/schemas/HealthResponse"
 
-  /api/v1/panchanga:
-    post:
-      tags: [Panchanga]
-      summary: Calculate Panchanga
-      description: Calculate the five elements (Tithi, Nakshatra, Yoga, Karana, Vara) for a given date and location
-      operationId: calculatePanchanga
-      security:
-        - BearerAuth: []
-        - ApiKeyAuth: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/PanchangaRequest'
+  /health/live:
+    get:
+      tags: [health]
+      summary: Liveness probe
       responses:
-        '200':
-          description: Panchanga calculated successfully
+        "200":
+          description: Service is healthy
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PanchangaResponse'
-        '400':
-          $ref: '#/components/responses/ValidationError'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '429':
-          $ref: '#/components/responses/RateLimitExceeded'
+                $ref: "#/components/schemas/HealthResponse"
 
-  /api/v1/panchanga/batch:
-    post:
-      tags: [Panchanga]
-      summary: Batch calculate Panchanga
-      description: Calculate Panchanga for multiple dates/locations in parallel
-      operationId: batchCalculatePanchanga
-      security:
-        - BearerAuth: []
-        - ApiKeyAuth: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                requests:
-                  type: array
-                  items:
-                    $ref: '#/components/schemas/PanchangaRequest'
-              required: [requests]
+  /health/ready:
+    get:
+      tags: [health]
+      summary: Readiness probe
       responses:
-        '200':
-          description: Batch calculation completed
+        "200":
+          description: Service is ready
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  status:
-                    type: string
-                    example: success
-                  data:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/PanchangaResult'
+                $ref: "#/components/schemas/ReadinessResponse"
+        "503":
+          description: Service is not ready
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReadinessResponse"
 
-  /api/v1/engines/{engine_name}:
-    post:
-      tags: [Engines]
-      summary: Execute a consciousness engine
-      description: |
-        Execute one of the 16 consciousness engines with the provided input data.
-        
-        Available engines:
-        - **biofield**: Biofield analysis
-        - **biorhythm**: Biorhythm cycles
-        - **enneagram**: Enneagram personality assessment
-        - **face-reading**: Face reading analysis
-        - **gene-keys**: Gene Keys profile
-        - **human-design**: Human Design chart
-        - **i-ching**: I-Ching hexagrams
-        - **nadabrahman**: Nadabrahman sound-consciousness mapping
-        - **numerology**: Numerology calculations
-        - **panchanga**: Vedic Panchanga calculations
-        - **sacred-geometry**: Sacred geometry analysis
-        - **sigil-forge**: Sigil generation
-        - **tarot**: Tarot readings
-        - **transits**: Planetary transit analysis
-        - **vedic-clock**: Vedic clock time calculations
-        - **vimshottari**: Vimshottari Dasha periods
-      operationId: executeEngine
+  /ready:
+    get:
+      tags: [health]
+      summary: Readiness probe (alias)
+      responses:
+        "200":
+          description: Service is ready
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReadinessResponse"
+        "503":
+          description: Service is not ready
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReadinessResponse"
+
+  /metrics:
+    get:
+      tags: [health]
+      summary: Prometheus metrics
+      responses:
+        "200":
+          description: Prometheus metrics text
+          content:
+            text/plain:
+              schema:
+                type: string
+
+  /api/v1/status:
+    get:
+      tags: [health]
+      summary: List engines and workflows
       security:
-        - BearerAuth: []
-        - ApiKeyAuth: []
+        - bearer_auth: []
+        - api_key: []
+      responses:
+        "200":
+          description: List of engines and workflows
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StatusResponse"
+
+  /api/v1/engines:
+    get:
+      tags: [engines]
+      summary: List available engines
+      security:
+        - bearer_auth: []
+        - api_key: []
+      responses:
+        "200":
+          description: List of engine IDs
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EngineListResponse"
+
+  /api/v1/engines/{engine_id}/calculate:
+    post:
+      tags: [engines]
+      summary: Execute a single engine
+      security:
+        - bearer_auth: []
+        - api_key: []
       parameters:
-        - name: engine_name
+        - name: engine_id
           in: path
           required: true
           schema:
             type: string
-            enum: [biofield, biorhythm, enneagram, face-reading, gene-keys, human-design, i-ching, nadabrahman, numerology, panchanga, sacred-geometry, sigil-forge, tarot, transits, vedic-clock, vimshottari]
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/EngineInput'
+              $ref: "#/components/schemas/EngineInput"
       responses:
-        '200':
-          description: Engine calculation successful
+        "200":
+          description: Calculation successful
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/EngineOutput'
-        '400':
-          $ref: '#/components/responses/ValidationError'
-        '404':
-          description: Engine not found
+                $ref: "#/components/schemas/EngineOutput"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        "429":
+          $ref: "#/components/responses/RateLimit"
+
+  /api/v1/engines/{engine_id}/validate:
+    post:
+      tags: [engines]
+      summary: Validate an engine output
+      security:
+        - bearer_auth: []
+        - api_key: []
+      parameters:
+        - name: engine_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EngineOutput"
+      responses:
+        "200":
+          description: Validation result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationResult"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /api/v1/engines/{engine_id}/info:
+    get:
+      tags: [engines]
+      summary: Engine metadata
+      security:
+        - bearer_auth: []
+        - api_key: []
+      parameters:
+        - name: engine_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Engine information
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EngineInfoResponse"
+        "404":
+          $ref: "#/components/responses/NotFound"
 
   /api/v1/workflows:
-    post:
-      tags: [Workflows]
-      summary: Execute a multi-engine workflow
-      description: Orchestrate calculations across multiple engines with dependency management
-      operationId: executeWorkflow
+    get:
+      tags: [workflows]
+      summary: List available workflows
       security:
-        - BearerAuth: []
-        - ApiKeyAuth: []
+        - bearer_auth: []
+        - api_key: []
+      responses:
+        "200":
+          description: List of workflows
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WorkflowListResponse"
+
+  /api/v1/workflows/{workflow_id}/execute:
+    post:
+      tags: [workflows]
+      summary: Execute a workflow
+      security:
+        - bearer_auth: []
+        - api_key: []
+      parameters:
+        - name: workflow_id
+          in: path
+          required: true
+          schema:
+            type: string
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/WorkflowRequest'
+              $ref: "#/components/schemas/EngineInput"
       responses:
-        '200':
-          description: Workflow executed successfully
+        "200":
+          description: Workflow execution successful
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/WorkflowResponse'
+                $ref: "#/components/schemas/WorkflowResult"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        "429":
+          $ref: "#/components/responses/RateLimit"
 
-  /api/v1/cache/stats:
+  /api/v1/workflows/{workflow_id}/info:
     get:
-      tags: [Cache]
-      summary: Get cache statistics
-      description: Retrieve performance statistics for all three cache layers
-      operationId: getCacheStats
+      tags: [workflows]
+      summary: Workflow metadata
       security:
-        - BearerAuth: []
+        - bearer_auth: []
+        - api_key: []
+      parameters:
+        - name: workflow_id
+          in: path
+          required: true
+          schema:
+            type: string
       responses:
-        '200':
-          description: Cache statistics retrieved
+        "200":
+          description: Workflow information
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CacheStats'
+                $ref: "#/components/schemas/WorkflowInfoResponse"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /api/v1/users/me:
+    get:
+      tags: [users]
+      summary: Get current user profile
+      security:
+        - bearer_auth: []
+        - api_key: []
+      responses:
+        "200":
+          description: User profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+    patch:
+      tags: [users]
+      summary: Update current user profile
+      security:
+        - bearer_auth: []
+        - api_key: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateUserRequest"
+      responses:
+        "200":
+          description: Profile updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UpdateUserResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+
+  /api/v1/auth/register:
+    post:
+      tags: [auth]
+      summary: Register a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterRequest"
+      responses:
+        "201":
+          description: User created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RegisterResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+
+  /api/v1/auth/login:
+    post:
+      tags: [auth]
+      summary: Login and receive a JWT token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+      responses:
+        "200":
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoginResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+
+  /api/v1/auth/forgot-password:
+    post:
+      tags: [auth]
+      summary: Request a password reset
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ForgotPasswordRequest"
+      responses:
+        "200":
+          description: Reset request accepted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ForgotPasswordResponse"
+
+  /api/v1/auth/reset-password:
+    post:
+      tags: [auth]
+      summary: Reset password with token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ResetPasswordRequest"
+      responses:
+        "200":
+          description: Password reset
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResetPasswordResponse"
+
+  /api/v1/auth/change-password:
+    post:
+      tags: [auth]
+      summary: Change password for authenticated user
+      security:
+        - bearer_auth: []
+        - api_key: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChangePasswordRequest"
+      responses:
+        "200":
+          description: Password changed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChangePasswordResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+
+  /api/v1/readings:
+    get:
+      tags: [readings]
+      summary: List user readings
+      security:
+        - bearer_auth: []
+        - api_key: []
+      parameters:
+        - name: engine_id
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+        - name: offset
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+      responses:
+        "200":
+          description: Paginated list of readings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReadingsListResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /api/v1/readings/stats:
+    get:
+      tags: [readings]
+      summary: Count readings per engine
+      security:
+        - bearer_auth: []
+        - api_key: []
+      responses:
+        "200":
+          description: Reading stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReadingsStatsResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /api/v1/readings/{reading_id}:
+    get:
+      tags: [readings]
+      summary: Get a single reading
+      security:
+        - bearer_auth: []
+        - api_key: []
+      parameters:
+        - name: reading_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Reading details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Reading"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /api/legacy/panchanga/calculate:
+    post:
+      tags: [legacy]
+      summary: Legacy Panchanga calculation
+      description: Deprecated. Use /api/v1/engines/panchanga/calculate instead.
+      deprecated: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LegacyPanchangaRequest"
+      responses:
+        "200":
+          description: Legacy Panchanga response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LegacyPanchangaResponse"
+
+  /api/legacy/ghati/current:
+    get:
+      tags: [legacy]
+      summary: Legacy Ghati time
+      description: Deprecated. Returns current ghati time using Panchanga.
+      deprecated: true
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LegacyGhatiRequest"
+      responses:
+        "200":
+          description: Ghati time response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LegacyGhatiResponse"
 
 components:
   securitySchemes:
-    BearerAuth:
+    bearer_auth:
       type: http
       scheme: bearer
       bearerFormat: JWT
-      description: JWT token obtained from /auth/login
-    ApiKeyAuth:
+    api_key:
       type: apiKey
       in: header
-      name: Authorization
-      description: 'API key with format: "ApiKey <your_api_key>"'
+      name: X-API-Key
+
+  responses:
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    Forbidden:
+      description: Forbidden
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    NotFound:
+      description: Not found
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    ValidationError:
+      description: Validation error
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    RateLimit:
+      description: Rate limit exceeded
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
 
   schemas:
-    # Core data types
-    Coordinates:
+    EngineInput:
       type: object
-      description: Geographic coordinates in decimal degrees
       properties:
-        latitude:
-          type: number
-          format: double
-          minimum: -90
-          maximum: 90
-          example: 19.0760
-          description: Latitude in decimal degrees (North is positive)
-        longitude:
-          type: number
-          format: double
-          minimum: -180
-          maximum: 180
-          example: 72.8777
-          description: Longitude in decimal degrees (East is positive)
-      required: [latitude, longitude]
+        birth_data:
+          $ref: "#/components/schemas/BirthData"
+        current_time:
+          type: string
+          format: date-time
+        location:
+          $ref: "#/components/schemas/Coordinates"
+        precision:
+          $ref: "#/components/schemas/Precision"
+        options:
+          type: object
+          additionalProperties: true
 
     BirthData:
       type: object
-      description: Birth data for astrological calculations
       properties:
+        name:
+          type: string
+          nullable: true
         date:
           type: string
-          format: date
-          example: "1990-05-15"
-          description: Date of birth in YYYY-MM-DD format
+          example: "1990-01-01"
         time:
           type: string
-          format: time
-          example: "14:30:00"
-          description: Time of birth in HH:MM:SS format (24-hour)
+          nullable: true
+          example: "14:30"
+        latitude:
+          type: number
+          example: 12.9716
+        longitude:
+          type: number
+          example: 77.5946
         timezone:
           type: string
           example: "Asia/Kolkata"
-          description: IANA timezone identifier
-        coordinates:
-          $ref: '#/components/schemas/Coordinates'
-      required: [date, time, coordinates]
+      required: [date, latitude, longitude, timezone]
+
+    Coordinates:
+      type: object
+      properties:
+        latitude:
+          type: number
+        longitude:
+          type: number
+        altitude:
+          type: number
+          nullable: true
+      required: [latitude, longitude]
 
     Precision:
       type: string
       enum: [Standard, High, Extreme]
-      description: |
-        Calculation precision level:
-        - **Standard**: ~1 arcminute (fast, suitable for most uses)
-        - **High**: ~0.1 arcminute (slower, for detailed analysis)
-        - **Extreme**: ~0.01 arcminute (slowest, for research/validation)
-      example: Standard
 
-    # Request schemas
-    PanchangaRequest:
+    CalculationMetadata:
       type: object
       properties:
-        date:
+        calculation_time_ms:
+          type: number
+        backend:
           type: string
-          format: date
-          example: "2025-01-27"
-          description: Date for Panchanga calculation
-        coordinates:
-          $ref: '#/components/schemas/Coordinates'
-        precision:
-          $ref: '#/components/schemas/Precision'
-        timezone:
+        precision_achieved:
           type: string
-          example: "Asia/Kolkata"
-          description: Timezone for time calculations
-      required: [date, coordinates]
+        cached:
+          type: boolean
+        timestamp:
+          type: string
+          format: date-time
+        engine_version:
+          type: string
 
-    EngineInput:
+    EngineOutput:
       type: object
-      description: Input data for consciousness engine calculations
       properties:
-        birth_data:
-          $ref: '#/components/schemas/BirthData'
-        location:
-          $ref: '#/components/schemas/Coordinates'
-        precision:
-          $ref: '#/components/schemas/Precision'
-        engine_specific:
+        engine_id:
+          type: string
+        result:
           type: object
           additionalProperties: true
-          description: Engine-specific parameters (varies by engine)
-          example:
-            spread_type: "celtic_cross"
-            question: "What is my life purpose?"
-      required: [birth_data]
+        witness_prompt:
+          type: string
+        consciousness_level:
+          type: integer
+          format: int32
+        metadata:
+          $ref: "#/components/schemas/CalculationMetadata"
+      required: [engine_id, result, witness_prompt, consciousness_level, metadata]
 
-    WorkflowRequest:
+    ValidationResult:
       type: object
       properties:
-        workflow_name:
-          type: string
-          example: "consciousness_synthesis"
-          description: Name of the workflow to execute
-        inputs:
-          type: object
-          additionalProperties: true
-          description: Input data for the workflow
-        engines:
+        valid:
+          type: boolean
+        confidence:
+          type: number
+        messages:
           type: array
           items:
             type: string
-          example: ["vedic", "human-design", "gene-keys"]
-          description: Engines to include in the workflow
-      required: [workflow_name, inputs]
+      required: [valid, confidence, messages]
 
-    # Response schemas
+    WorkflowResult:
+      type: object
+      properties:
+        workflow_id:
+          type: string
+        engine_outputs:
+          type: object
+          additionalProperties:
+            $ref: "#/components/schemas/EngineOutput"
+        synthesis:
+          type: object
+          nullable: true
+        total_time_ms:
+          type: number
+        timestamp:
+          type: string
+          format: date-time
+      required: [workflow_id, engine_outputs, total_time_ms, timestamp]
+
     HealthResponse:
       type: object
       properties:
         status:
           type: string
-          example: healthy
-        timestamp:
-          type: string
-          format: date-time
         version:
           type: string
-          example: "1.0.0"
-        components:
-          type: object
-          properties:
-            native_engine:
-              type: string
-              example: healthy
-            swiss_ephemeris:
-              type: string
-              example: healthy
-            cache_system:
-              type: string
-              example: healthy
-            database:
-              type: string
-              example: healthy
+        uptime_seconds:
+          type: integer
+        engines_loaded:
+          type: integer
+        workflows_loaded:
+          type: integer
 
-    PanchangaResponse:
+    ReadinessResponse:
       type: object
       properties:
-        status:
+        redis:
           type: string
-          example: success
-        data:
-          $ref: '#/components/schemas/PanchangaResult'
-        timestamp:
+        orchestrator:
+          type: string
+        vedic_api:
+          type: string
+        overall_status:
+          type: string
+
+    StatusResponse:
+      type: object
+      properties:
+        engines:
+          type: array
+          items:
+            type: string
+        workflows:
+          type: array
+          items:
+            $ref: "#/components/schemas/WorkflowSummary"
+
+    WorkflowSummary:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        engine_count:
+          type: integer
+
+    EngineInfoResponse:
+      type: object
+      properties:
+        engine_id:
+          type: string
+        engine_name:
+          type: string
+        required_phase:
+          type: integer
+
+    EngineListResponse:
+      type: object
+      properties:
+        engines:
+          type: array
+          items:
+            type: string
+
+    WorkflowListResponse:
+      type: object
+      properties:
+        workflows:
+          type: array
+          items:
+            $ref: "#/components/schemas/WorkflowSummary"
+
+    WorkflowInfoResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        engine_ids:
+          type: array
+          items:
+            type: string
+
+    UserResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+        full_name:
+          type: string
+        tier:
+          type: string
+        consciousness_level:
+          type: integer
+        experience_points:
+          type: integer
+        birth_date:
+          type: string
+          format: date
+          nullable: true
+        birth_time:
+          type: string
+          format: time
+          nullable: true
+        birth_location:
+          $ref: "#/components/schemas/LocationResponse"
+        timezone:
+          type: string
+          nullable: true
+        preferences:
+          type: object
+          additionalProperties: true
+
+    LocationResponse:
+      type: object
+      properties:
+        lat:
+          type: number
+        lng:
+          type: number
+        name:
+          type: string
+          nullable: true
+
+    UpdateUserRequest:
+      type: object
+      properties:
+        full_name:
+          type: string
+          nullable: true
+        email:
+          type: string
+          nullable: true
+        birth_date:
+          type: string
+          format: date
+          nullable: true
+        birth_time:
+          type: string
+          format: time
+          nullable: true
+        birth_location_lat:
+          type: number
+          nullable: true
+        birth_location_lng:
+          type: number
+          nullable: true
+        birth_location_name:
+          type: string
+          nullable: true
+        timezone:
+          type: string
+          nullable: true
+        preferences:
+          type: object
+          additionalProperties: true
+
+    UpdateUserResponse:
+      type: object
+      properties:
+        message:
+          type: string
+
+    RegisterRequest:
+      type: object
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+        full_name:
+          type: string
+      required: [email, password, full_name]
+
+    RegisterResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        message:
+          type: string
+
+    LoginRequest:
+      type: object
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+      required: [email, password]
+
+    LoginResponse:
+      type: object
+      properties:
+        token:
+          type: string
+        user_id:
+          type: string
+        email:
+          type: string
+        tier:
+          type: string
+
+    ForgotPasswordRequest:
+      type: object
+      properties:
+        email:
+          type: string
+      required: [email]
+
+    ForgotPasswordResponse:
+      type: object
+      properties:
+        message:
+          type: string
+
+    ResetPasswordRequest:
+      type: object
+      properties:
+        token:
+          type: string
+        new_password:
+          type: string
+      required: [token, new_password]
+
+    ResetPasswordResponse:
+      type: object
+      properties:
+        message:
+          type: string
+
+    ChangePasswordRequest:
+      type: object
+      properties:
+        current_password:
+          type: string
+        new_password:
+          type: string
+      required: [current_password, new_password]
+
+    ChangePasswordResponse:
+      type: object
+      properties:
+        message:
+          type: string
+
+    Reading:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        user_id:
+          type: string
+          format: uuid
+        engine_id:
+          type: string
+        workflow_id:
+          type: string
+          nullable: true
+        input_hash:
+          type: string
+        input_data:
+          type: object
+          additionalProperties: true
+        result_data:
+          type: object
+          additionalProperties: true
+        witness_prompt:
+          type: string
+          nullable: true
+        consciousness_level:
+          type: integer
+        calculation_time_ms:
+          type: number
+          nullable: true
+        created_at:
           type: string
           format: date-time
 
-    PanchangaResult:
+    ReadingsListResponse:
+      type: object
+      properties:
+        readings:
+          type: array
+          items:
+            $ref: "#/components/schemas/Reading"
+        total:
+          type: integer
+        limit:
+          type: integer
+        offset:
+          type: integer
+
+    ReadingsStatsEntry:
+      type: object
+      properties:
+        engine_id:
+          type: string
+        count:
+          type: integer
+
+    ReadingsStatsResponse:
+      type: object
+      properties:
+        stats:
+          type: array
+          items:
+            $ref: "#/components/schemas/ReadingsStatsEntry"
+        total:
+          type: integer
+
+    LegacyPanchangaRequest:
       type: object
       properties:
         date:
           type: string
-          format: date
-        coordinates:
-          $ref: '#/components/schemas/Coordinates'
-        tithi:
-          $ref: '#/components/schemas/Tithi'
-        nakshatra:
-          $ref: '#/components/schemas/Nakshatra'
-        yoga:
-          $ref: '#/components/schemas/Yoga'
-        karana:
-          $ref: '#/components/schemas/Karana'
-        vara:
-          $ref: '#/components/schemas/Vara'
+        time:
+          type: string
+          nullable: true
+        latitude:
+          type: number
+        longitude:
+          type: number
+        timezone:
+          type: string
+        name:
+          type: string
+          nullable: true
+      required: [date, latitude, longitude, timezone]
+
+    LegacyPanchangaResponse:
+      type: object
+      properties:
+        tithi_index:
+          type: integer
+        tithi_name:
+          type: string
+        tithi_value:
+          type: number
+        nakshatra_index:
+          type: integer
+        nakshatra_name:
+          type: string
+        nakshatra_value:
+          type: number
+        yoga_index:
+          type: integer
+        yoga_name:
+          type: string
+        yoga_value:
+          type: number
+        karana_index:
+          type: integer
+        karana_name:
+          type: string
+        karana_value:
+          type: number
+        vara_index:
+          type: integer
+        vara_name:
+          type: string
         solar_longitude:
           type: number
-          format: double
-          description: Solar longitude in degrees
         lunar_longitude:
           type: number
-          format: double
-          description: Lunar longitude in degrees
-        calculation_time:
-          type: string
-          example: "0.045s"
-        precision_used:
-          $ref: '#/components/schemas/Precision'
-        backend_used:
-          type: string
-          enum: [native, swiss_ephemeris, validated]
+        julian_day:
+          type: number
 
-    Tithi:
+    LegacyGhatiRequest:
       type: object
       properties:
-        name:
-          type: string
-          example: "Shukla Paksha Pratipada"
-        number:
+        latitude:
+          type: number
+          nullable: true
+        longitude:
+          type: number
+          nullable: true
+
+    LegacyGhatiResponse:
+      type: object
+      properties:
+        ghati:
           type: integer
-          minimum: 1
-          maximum: 30
-        start_time:
-          type: string
-          format: date-time
-        end_time:
-          type: string
-          format: date-time
-
-    Nakshatra:
-      type: object
-      properties:
-        name:
-          type: string
-          example: "Ashwini"
-        number:
+        pala:
           type: integer
-          minimum: 1
-          maximum: 27
-        start_time:
-          type: string
-          format: date-time
-        end_time:
-          type: string
-          format: date-time
-        pada:
+        vipala:
           type: integer
-          minimum: 1
-          maximum: 4
-
-    Yoga:
-      type: object
-      properties:
-        name:
-          type: string
-          example: "Vishkumbha"
-        number:
-          type: integer
-          minimum: 1
-          maximum: 27
-        start_time:
+        utc_timestamp:
           type: string
           format: date-time
-        end_time:
-          type: string
-          format: date-time
-
-    Karana:
-      type: object
-      properties:
-        name:
-          type: string
-          example: "Bava"
-        number:
-          type: integer
-          minimum: 1
-          maximum: 11
-        start_time:
-          type: string
-          format: date-time
-        end_time:
-          type: string
-          format: date-time
-
-    Vara:
-      type: object
-      properties:
-        name:
-          type: string
-          example: "Monday"
-        number:
-          type: integer
-          minimum: 0
-          maximum: 6
-
-    EngineOutput:
-      type: object
-      properties:
-        status:
-          type: string
-          example: success
-        engine:
-          type: string
-          example: "tarot"
-        data:
-          type: object
-          additionalProperties: true
-          description: Engine-specific output data
-        metadata:
-          type: object
-          properties:
-            calculation_time:
-              type: string
-            precision_used:
-              $ref: '#/components/schemas/Precision'
-        timestamp:
-          type: string
-          format: date-time
-
-    WorkflowResponse:
-      type: object
-      properties:
-        status:
-          type: string
-          example: success
-        workflow_name:
-          type: string
-        results:
-          type: object
-          additionalProperties: true
-          description: Results from each engine in the workflow
-        synthesis:
-          type: object
-          additionalProperties: true
-          description: Synthesized insights across engines
-        execution_time:
-          type: string
-          example: "1.234s"
-
-    CacheStats:
-      type: object
-      properties:
-        l1_cache:
-          type: object
-          properties:
-            hits:
-              type: integer
-            misses:
-              type: integer
-            hit_rate:
-              type: number
-              format: double
-            size_mb:
-              type: number
-            entries:
-              type: integer
-        l2_cache:
-          type: object
-          properties:
-            hits:
-              type: integer
-            misses:
-              type: integer
-            hit_rate:
-              type: number
-            ttl_seconds:
-              type: integer
-        l3_cache:
-          type: object
-          properties:
-            hits:
-              type: integer
-            misses:
-              type: integer
-            hit_rate:
-              type: number
-            size_mb:
-              type: number
-        overall:
-          type: object
-          properties:
-            total_hits:
-              type: integer
-            total_misses:
-              type: integer
-            overall_hit_rate:
-              type: number
 
     ErrorResponse:
       type: object
       properties:
-        status:
-          type: string
-          example: error
         error:
-          type: object
-          properties:
-            code:
-              type: string
-              enum: [VALIDATION_ERROR, CALCULATION_ERROR, AUTHENTICATION_ERROR, RATE_LIMIT_EXCEEDED, INTERNAL_ERROR, SERVICE_UNAVAILABLE]
-            message:
-              type: string
-              example: "Invalid date format"
-            details:
-              type: string
-              example: "Date must be in YYYY-MM-DD format"
-        timestamp:
           type: string
-          format: date-time
-
-  responses:
-    ValidationError:
-      description: Invalid input data
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-          example:
-            status: error
-            error:
-              code: VALIDATION_ERROR
-              message: "Invalid coordinates"
-              details: "Latitude must be between -90 and 90"
-
-    Unauthorized:
-      description: Authentication required or invalid credentials
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-          example:
-            status: error
-            error:
-              code: AUTHENTICATION_ERROR
-              message: "Invalid or missing authentication token"
-
-    RateLimitExceeded:
-      description: Rate limit exceeded for the current user tier
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-          example:
-            status: error
-            error:
-              code: RATE_LIMIT_EXCEEDED
-              message: "Rate limit exceeded"
-              details: "Free tier: 100 requests/hour. Upgrade to increase limits."
+        error_code:
+          type: string
+        details:
+          type: object
+          nullable: true
