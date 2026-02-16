@@ -4,6 +4,8 @@
 
 This guide covers running and deploying Selemene Engine in a platform-agnostic way.
 
+Deployment is infrastructure for a reflection-first system: operational reliability supports inquiry surfaces and witness workflows.
+
 ## Prerequisites
 
 - **Rust 1.75+** - [Install Rust](https://rustup.rs/)

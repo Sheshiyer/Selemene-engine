@@ -1,5 +1,7 @@
 # Python Sidecar Services — Integration Guide
 
+These sidecars extend the reflection stack with specialized perception capabilities while keeping the core orchestration model consistent.
+
 ## Architecture
 
 Selemene Engine uses a **sidecar pattern** for computer vision tasks that require Python libraries (MediaPipe, OpenCV). The Rust core communicates with Python services via HTTP on localhost.

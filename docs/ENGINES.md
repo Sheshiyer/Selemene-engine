@@ -5,8 +5,8 @@
 <h1 align="center">The 16 Engines</h1>
 
 <p align="center">
-  <em>Sixteen calculation systems. Sub-millisecond precision.</em><br>
-  <sub>11 Rust engines + 5 TypeScript engines</sub>
+  <em>Sixteen implemented engines acting as mirrors for inquiry and synthesis.</em><br>
+  <sub>13 core symbolic systems, implemented across 16 runtime engines (11 Rust + 5 TypeScript)</sub>
 </p>
 
 <br>
@@ -17,7 +17,11 @@
 
 # Rust Engines (11)
 
+> _Count note: this page lists 16 implemented runtime engines; “13 core symbolic systems” refers to the conceptual core model._
+
 High-performance native calculation engines built in Rust with sub-millisecond performance.
+
+For a body-paced narrative companion to these timing and pattern systems, see [Somatic Canticles](https://1319.tryambakam.space).
 
 <br>
 
@@ -55,6 +59,8 @@ Maps consciousness evolution through 64 genetic pathways.
 <br>
 
 ## 4. Vimshottari Dasha Engine
+
+![Vimshottari poster](assets/images/engines/9A-01-vimshottari-dasha-poster-v1.png)
 
 **120-year timeline** — Nested planetary periods (Mahadasha → Antardasha → 729 total periods).
 

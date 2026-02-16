@@ -1,6 +1,6 @@
 # Purpose
 
-Provide a compact, deterministic API guide for LLMs and agents (Claude Code, OpenClaw, Cursor) to call Noesis safely and consistently.
+Provide a compact, deterministic API guide for LLMs and agents (Claude Code, OpenClaw, Cursor) to interface with Noesis as a reflection system: return patterns to witness, not prescriptions to follow.
 
 # Current State
 

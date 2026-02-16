@@ -1,5 +1,7 @@
 # Railway Deployment Guide
 
+This deployment topology exists to keep mirror-based engine and workflow surfaces resilient in production.
+
 ## Architecture Overview
 
 The Selemene Engine consists of three separate services that must be deployed together on Railway:

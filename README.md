@@ -43,15 +43,83 @@
 
 <br>
 
+<p align="center">
+  <strong>Not prediction. Reflection. Inquiry. Witness.</strong>
+</p>
+
 > **High-performance astronomical and consciousness calculation engine.**
 >
-> 16 engines spanning Vedic astrology, planetary transits, numerology, Human Design, Gene Keys, and esoteric traditions. Built in Rust with sub-millisecond calculations.
+> **Every system you've tried positioned you as user, not author.**
 >
-> Selemene Engine powers the computational backend of **Tryambakam Noesis** — providing real-time calculations, multi-engine orchestration, and consciousness-calibrated witness prompts. OpenClaw integration is now supported for agent workflows.
+> Selemene Engine offers something different: 16 symbolic mirrors that reflect patterns in your birth data, timing, and energetic signature. Not to give answers, but to train self-consciousness.
+>
+> Built in Rust. Sub-millisecond calculations. 100% astronomical accuracy.
+>
+> Part of [Tryambakam Noesis](https://tryambakam.space) — a living inquiry field where success means you outgrow the system.
+
+<br>
+
+## Every System You've Tried...
+
+...positioned you as user, not author.
+
+Apps that gamify meditation. Courses that promise transformation. Retreats that crack you open then leave you alone with the fragments.
+
+Each delivered value while creating dependency.
+
+Selemene offers something different: **16 symbolic mirrors** that reflect patterns in your birth data, timing, and energetic signature. Not to give answers, but to train the capacity to witness yourself.
+
+### Built Different
+- **Sub-millisecond calculations** — Technical rigor in service of inquiry
+- **100% astronomical accuracy** — Human Design validated against Swiss Ephemeris
+- **16 engines, one coherence** — Vedic, Western, and biofield traditions integrated
+- **Anti-dependency design** — Succeeds when you outgrow it
+
+<br>
+
+## The Philosophy
+
+### The Problem
+You've tried the apps. The courses. The retreats.
+
+Each promised clarity while positioning you as dependent user, not sovereign author.
+
+- **Therapy:** Narrates your wounds, but who is the narrator?
+- **Meditation:** Observes thoughts, but who observes the observer?
+- **Productivity:** Optimizes actions, but who chose the target?
+
+### The Alternative
+Selemene doesn't deliver answers. It offers **mirrors** — 16 symbolic lenses calibrated to reflect different frequencies of your pattern.
+
+**Not prediction. Reflection. Inquiry. Witness.**
+
+### Kha-Ba-La: The Three Forces
+Every calculation operates on three co-arising principles:
+
+| Force | Domain | Function |
+|-------|--------|----------|
+| **Kha** (Spirit) | Awareness, witness | The field that observes |
+| **Ba** (Body) | Embodiment, action | Vehicle for knowing → doing |
+| **La** (Inertia) | Resistance, gravity | Friction that gives form |
+
+Your "stuckness" isn't the enemy. It's the necessary resistance that makes authorship possible.
+
+### Self-Consciousness Levels
+The system adapts to your relationship with awareness:
+
+- **Level 0 (Dormant):** "What sensations arise?"
+- **Level 1 (Glimpsing):** "When does this pattern show up?"
+- **Level 2 (Practicing):** "What might this pattern protect?"
+- **Level 3 (Integrated):** "How do you choose to work with this?"
+- **Level 4+ (Embodied):** "What witnesses this pattern arising?"
+
+This isn't gamification. It's meeting you where you are.
 
 <br>
 
 ## ✦ Quick Start
+
+*First call in 30 seconds. Experience the mirror. Not the answer.*
 
 <table>
 <tr>
@@ -173,7 +241,9 @@ cargo run --bin noesis-tui
 
 ## ✦ The 16 Engines
 
-16 calculation engines spanning Vedic, Western, and esoteric systems. **Sub-millisecond performance** for all calculations.
+Each engine is a **mirror**, not a method. They don't predict; they reflect. The value isn't in the calculation — it's in what you witness when you see the pattern.
+
+**Note on Engine Count:** Brand materials reference "13 engines" — the core symbolic system. The codebase implements 16 total: 11 native Rust engines + 5 TypeScript bridges for esoteric systems (Tarot, I-Ching, etc.).
 
 <br>
 
@@ -346,7 +416,9 @@ curl -s -X POST $BASE/engines/vedic-clock/calculate \
 
 ## ✦ The 6 Workflows
 
-Workflows synthesize multiple engines into emergent understanding. Not pipelines — *synthesis rituals*.
+Workflows don't pipeline — they **synthesize**. Not "do this, then this" but "hold these perspectives simultaneously and notice what emerges."
+
+True to the name *Noesis* (the act of knowing), workflows train direct intellectual apprehension — knowing that is aware of itself knowing.
 
 <br>
 
@@ -561,7 +633,7 @@ crates/
 
 ## ✦ Physical Embodiments
 
-Beyond code, Noesis manifests in ritual objects and somatic practices.
+Beyond code, Noesis manifests in ritual objects and somatic practices. Explore [Somatic Canticles](https://1319.tryambakam.space).
 
 <br>
 
@@ -663,6 +735,12 @@ See [`.env.example`](.env.example) for full list.
 <br>
 
 ---
+
+## Not Prediction. Reflection. Inquiry. Witness.
+
+Selemene Engine succeeds when you no longer need it.
+
+That's the point.
 
 <br>
 

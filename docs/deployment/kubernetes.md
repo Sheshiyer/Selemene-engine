@@ -1,5 +1,7 @@
 # Kubernetes Deployment Guide
 
+Kubernetes orchestration here is aimed at resilient availability for reflection-first API and workflow surfaces.
+
 ## Prerequisites
 
 - Kubernetes 1.25+

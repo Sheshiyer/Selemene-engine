@@ -1,5 +1,7 @@
 # Noesis API — Quickstart Guide
 
+> Not prediction. Reflection. Inquiry. Witness.
+>
 > Zero to first API call in 5 minutes. Terminal-first.
 
 ## Base URL
@@ -132,6 +134,8 @@ All engine `/calculate` endpoints accept the same JSON body:
 
 ## Engine Reference
 
+![Vedic engine family icons](assets/images/engines/5D-1-vedic-engine-icons-recraft-v2.png)
+
 | Engine | Required Fields | What It Returns |
 |--------|----------------|-----------------|
 | **biofield** | `birth_data.date` | Chakra readings, energy field analysis |
@@ -181,6 +185,8 @@ Replace `...` with the base URL.
 ## Workflows (Multi-Engine Synthesis)
 
 Workflows combine multiple engines into a single response.
+
+For a body-paced companion surface, see [Somatic Canticles](https://1319.tryambakam.space).
 
 ```bash
 # List available workflows

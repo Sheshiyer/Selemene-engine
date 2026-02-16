@@ -1,5 +1,7 @@
 # Docker Deployment Guide
 
+Containerized deployment ensures consistent runtime behavior for inquiry and witness workflows across environments.
+
 ## Prerequisites
 
 - Docker 20.10+

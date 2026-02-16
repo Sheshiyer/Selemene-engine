@@ -2,8 +2,10 @@
 
 ## Overview
 
-Noesis provides 16 consciousness engines and multi-engine workflows through a unified REST API.
-All engines share a common request shape (`EngineInput`) and return a normalized `EngineOutput`.
+Noesis provides 16 symbolic mirrors and multi-engine workflows through a unified REST API.
+All engines share a common request shape (`EngineInput`) and return a normalized `EngineOutput` for reflection and inquiry.
+
+Not prediction. Reflection. Inquiry. Witness.
 
 ## Quick Links
 

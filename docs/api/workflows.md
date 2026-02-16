@@ -2,7 +2,9 @@
 
 ## Overview
 
-Workflows orchestrate multiple engines in parallel and return a unified `WorkflowResult`.
+Workflows orchestrate multiple mirrors in parallel and return a unified `WorkflowResult` for synthesis, reflection, and inquiry.
+
+For body-paced narrative practice aligned to cycles, see [Somatic Canticles](https://1319.tryambakam.space).
 
 ## Base Path
 
@@ -39,6 +41,8 @@ Workflows accept the same `EngineInput` as engines.
 ```
 
 ## Available Workflows
+
+![Workflow synthesis map](../assets/images/engines/8A-seeker-inner-architecture-nanobananapro-v3.png)
 
 | ID | Engines | Purpose |
 | --- | --- | --- |

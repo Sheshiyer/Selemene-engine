@@ -1,5 +1,7 @@
 # Selemene Engine — Project Overview & Audit
 
+> Technical rigor in service of reflection, inquiry, and self-authorship.
+
 **Date**: 2026-02-09
 **Codebase**: ~54,000 LOC across 18 workspace crates
 **Status**: Production-live on Railway, auth working against Supabase PostgreSQL
@@ -8,6 +10,8 @@
 ---
 
 ## 1. What Is Working
+
+![Noesis system hero](assets/images/noesis-hero.png)
 
 ### Production Infrastructure
 

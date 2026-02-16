@@ -9,6 +9,8 @@
 
 Selemene Engine v3.0.0 delivers two major new crates — the **Rust SDK** (`noesis-sdk`) and an interactive **Terminal TUI** (`noesis-tui`) — alongside OpenClaw integration and agent-ready documentation. Users can now run all 16 engines and 6 workflows from a polished terminal interface without writing any code.
 
+This release expands access to reflective computation — mirrors for inquiry, not prescriptive outputs.
+
 ---
 
 ## What's New

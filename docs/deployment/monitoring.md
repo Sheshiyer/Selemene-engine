@@ -8,6 +8,8 @@ Selemene Engine supports comprehensive observability through:
 - **Jaeger** - Distributed tracing
 - **Loki** - Log aggregation
 
+Observability protects the reliability of reflective outputs by making latency, failure, and degradation visible early.
+
 ## Quick Start
 
 ### Docker Compose

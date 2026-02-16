@@ -4,6 +4,8 @@
 
 The Noesis API implements production-ready CORS (Cross-Origin Resource Sharing) middleware to control which frontend applications can access the API from different origins.
 
+This is an access-control boundary for reliable reflection surfaces, not a change to engine or workflow semantics.
+
 ## Configuration
 
 ### Environment Variable

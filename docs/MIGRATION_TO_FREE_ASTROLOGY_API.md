@@ -2,6 +2,8 @@
 
 This guide covers migrating from Selemene Engine's native Vedic calculation engines (`engine-panchanga`, `engine-vimshottari`) to the FreeAstrologyAPI integration provided by the `noesis-vedic-api` crate.
 
+The migration goal is higher astronomical fidelity for reflection workflows, not prescriptive automation.
+
 ## Table of Contents
 
 - [Why Migrate](#why-migrate)

@@ -1,6 +1,6 @@
 # LangChain/CrewAI Bridge
 
-This directory contains auto-generated LangChain tool definitions for Selemene Engine.
+This directory contains auto-generated LangChain tool definitions for self-authorship and reflection workflows on Selemene Engine.
 
 ## Generating Tools
 

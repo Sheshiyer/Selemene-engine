@@ -1,8 +1,8 @@
 # @selemene/bridge
 
-> CLI tool for setting up Selemene Engine agent bridges — Claude, OpenAI, LangChain.
+> CLI tool for setting up Selemene Engine reflection/self-authorship bridges — Claude, OpenAI, LangChain.
 
-One command to generate tool definitions for any AI framework from a running Selemene Engine instance.
+One command to generate reflection-oriented tool definitions for any AI framework from a running Selemene Engine instance.
 
 ## Quick Start
 

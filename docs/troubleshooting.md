@@ -2,6 +2,8 @@
 
 This guide covers common issues and their solutions when running Selemene Engine.
 
+Operational stability keeps reflective workflows available and trustworthy in practice.
+
 ---
 
 ## 1. Swiss Ephemeris File Not Found

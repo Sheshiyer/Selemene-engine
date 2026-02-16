@@ -9,6 +9,8 @@ Noesis supports two authentication methods:
 
 Each API key is treated as a unique user identity.
 
+Authentication controls access; it does not change the reflection-first behavior of engine and workflow outputs.
+
 ## API Key
 
 Send your key in the `X-API-Key` header:

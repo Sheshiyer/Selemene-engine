@@ -2,8 +2,8 @@
 
 ## Overview
 
-Engine endpoints provide direct access to individual consciousness calculation systems.
-All engines use the shared `EngineInput` schema and return `EngineOutput`.
+Engine endpoints provide direct access to individual symbolic mirrors.
+All engines use the shared `EngineInput` schema and return `EngineOutput` for reflection and inquiry.
 
 ## Base Path
 
@@ -67,6 +67,8 @@ Notes:
 | transits | Transits | 1 |
 
 ### TypeScript Engines (Bridged)
+
+![Bridge engine icon set](../assets/images/engines/5D-3-bridge-engine-icons-recraft-v2.png)
 
 | Engine ID | Name | Required Phase |
 |-----------|------|----------------|

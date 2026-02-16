@@ -4,6 +4,8 @@
 
 This document captures code review observations and recommendations for the Selemene Engine codebase as of Wave 2 completion (2026-01).
 
+Recommendations prioritize reliability and clarity for reflection-first engine and workflow surfaces.
+
 ---
 
 ## TODO Comments to Address

@@ -1,6 +1,6 @@
 # Purpose
 
-Provide a concrete, OpenClaw-ready integration guide for calling Noesis APIs from OpenClaw agents and tools.
+Provide a concrete, OpenClaw-ready integration guide for calling Noesis APIs from OpenClaw agents and tools as reflective interfaces: return patterns to witness, not prescriptions to follow.
 
 # Current State
 

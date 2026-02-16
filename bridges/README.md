@@ -1,6 +1,6 @@
 # Selemene Agent Bridges
 
-Expose Selemene Engine as first-class tools for AI agents. One OpenAPI spec in, framework-native tool definitions out.
+Expose Selemene Engine as reflection-first, self-authorship tools for AI agents. One OpenAPI spec in, framework-native tool definitions out.
 
 ## How It Works
 
