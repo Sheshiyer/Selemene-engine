@@ -2,7 +2,7 @@
 
 use crate::app::{Action, ActiveScreen};
 use crossterm::event::{KeyCode, KeyEvent};
-use noesis_sdk::{KeychainStore, LocalProfile};
+use noesis_sdk::{Config, LocalProfile};
 use ratatui::prelude::*;
 use ratatui::widgets::*;
 
@@ -60,7 +60,7 @@ impl ProfileEditor {
         }
     }
 
-    pub fn draw(&self, frame: &mut Frame, area: Rect, profile: &Option<LocalProfile>) {
+    pub fn draw(&self, frame: &mut Frame, area: Rect, profile: &Option<LocalProfile>, config: &Config) {
         let chunks = Layout::default()
             .direction(Direction::Vertical)
             .constraints([
@@ -99,10 +99,11 @@ impl ProfileEditor {
                     let value = if is_editing {
                         format!("{}_", self.edit_buffer)
                     } else if *field == ProfileField::ApiKey {
-                        // API key is stored in keychain, not in LocalProfile
-                        match KeychainStore::new().get_api_key() {
-                            Ok(Some(_)) => "••••••••".to_string(),
-                            _ => "Not set".to_string(),
+                        // API key lives in ~/.noesis/config.toml
+                        if config.api_key.is_some() {
+                            "••••••••".to_string()
+                        } else {
+                            "Not set".to_string()
                         }
                     } else {
                         self.get_field_value(p, *field)
@@ -226,9 +227,10 @@ impl ProfileEditor {
         &mut self,
         key: KeyEvent,
         profile: &mut Option<LocalProfile>,
+        config: &mut Config,
     ) -> Action {
         if self.editing {
-            return self.handle_edit_key(key, profile);
+            return self.handle_edit_key(key, profile, config);
         }
 
         match key.code {
@@ -271,6 +273,7 @@ impl ProfileEditor {
         &mut self,
         key: KeyEvent,
         profile: &mut Option<LocalProfile>,
+        config: &mut Config,
     ) -> Action {
         match key.code {
             KeyCode::Esc => {
@@ -288,13 +291,17 @@ impl ProfileEditor {
                     if value.is_empty() {
                         self.message = Some("⚠ API key cannot be empty".into());
                     } else {
-                        match KeychainStore::new().store_api_key(&value) {
+                        // Store in ~/.noesis/config.toml (industry standard)
+                        config.api_key = Some(value);
+                        match config.save() {
                             Ok(()) => {
-                                self.message = Some("✓ API Key updated".into());
+                                self.message = Some("✓ API Key saved to ~/.noesis/config.toml".into());
+                                self.edit_buffer.clear();
+                                return Action::ReloadConfig;
                             }
                             Err(e) => {
                                 self.message =
-                                    Some(format!("⚠ Keychain error: {}", e));
+                                    Some(format!("⚠ Save error: {}", e));
                             }
                         }
                     }

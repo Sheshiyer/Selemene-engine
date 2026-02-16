@@ -116,7 +116,7 @@ impl HistoryBrowser {
                     };
 
                     let prefix = if is_selected { "▸ " } else { "  " };
-                    let level_str = format!("  Phase {}", entry.output.consciousness_level);
+                    let level_str = format!("  Phase {}", entry.consciousness_level);
                     let time_str = entry.created_at.format("%Y-%m-%d %H:%M").to_string();
 
                     let content = Line::from(vec![
@@ -192,9 +192,33 @@ impl HistoryBrowser {
             }
             KeyCode::Enter => {
                 if let Some(entry) = self.entries.get(self.selected) {
-                    Action::ShowEngineResult {
-                        engine_id: entry.engine_id.clone(),
-                        output: entry.output.clone(),
+                    // Reconstruct EngineOutput from stored result_data
+                    match serde_json::from_value::<noesis_sdk::EngineOutput>(entry.result_data.clone()) {
+                        Ok(output) => Action::ShowEngineResult {
+                            engine_id: entry.engine_id.clone(),
+                            output,
+                        },
+                        Err(_) => {
+                            // If deserialization fails, build a minimal output
+                            let output = noesis_sdk::EngineOutput {
+                                engine_id: entry.engine_id.clone(),
+                                result: entry.result_data.clone(),
+                                witness_prompt: entry.witness_prompt.clone().unwrap_or_default(),
+                                consciousness_level: entry.consciousness_level as u8,
+                                metadata: noesis_sdk::CalculationMetadata {
+                                    calculation_time_ms: entry.calculation_time_ms.unwrap_or(0.0),
+                                    backend: "stored".into(),
+                                    precision_achieved: "Standard".into(),
+                                    cached: false,
+                                    timestamp: entry.created_at,
+                                    engine_version: String::new(),
+                                },
+                            };
+                            Action::ShowEngineResult {
+                                engine_id: entry.engine_id.clone(),
+                                output,
+                            }
+                        }
                     }
                 } else {
                     Action::None

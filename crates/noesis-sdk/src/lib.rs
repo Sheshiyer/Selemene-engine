@@ -51,7 +51,8 @@ pub use render::{MarkdownRenderer, ReportFormat};
 
 // Re-export core types
 pub use noesis_core::{
-    BirthData, Coordinates, EngineInput, EngineOutput, Precision, WorkflowResult,
+    BirthData, CalculationMetadata, Coordinates, EngineInput, EngineOutput, Precision,
+    WorkflowResult,
 };
 
 /// SDK error type

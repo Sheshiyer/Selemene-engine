@@ -145,7 +145,8 @@ impl NoesisClient {
         }
 
         let response = request.send().await?;
-        self.handle_response(response).await
+        let wrapper: ReadingsListResponse = self.handle_response(response).await?;
+        Ok(wrapper.readings)
     }
 
     /// Get a specific reading by ID.
@@ -257,13 +258,35 @@ pub struct WorkflowInfo {
     pub engine_ids: Vec<String>,
 }
 
-/// A stored reading record.
+/// A stored reading record from the API.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ReadingRecord {
     pub id: String,
+    #[serde(default)]
+    pub user_id: Option<String>,
     pub engine_id: String,
-    pub output: EngineOutput,
+    #[serde(default)]
+    pub workflow_id: Option<String>,
+    pub result_data: serde_json::Value,
+    #[serde(default)]
+    pub witness_prompt: Option<String>,
+    #[serde(default)]
+    pub consciousness_level: i16,
+    #[serde(default)]
+    pub calculation_time_ms: Option<f64>,
     pub created_at: chrono::DateTime<chrono::Utc>,
+}
+
+/// Wrapper for the paginated readings list response.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ReadingsListResponse {
+    pub readings: Vec<ReadingRecord>,
+    #[serde(default)]
+    pub total: u32,
+    #[serde(default)]
+    pub limit: u32,
+    #[serde(default)]
+    pub offset: u32,
 }
 
 #[cfg(test)]

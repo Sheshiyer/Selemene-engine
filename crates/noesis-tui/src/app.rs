@@ -52,6 +52,8 @@ pub enum Action {
     ToggleHelp,
     /// Show an error message to the user
     ShowError(String),
+    /// Reload client configuration (e.g. after API key update)
+    ReloadConfig,
 }
 
 /// Application state
@@ -86,24 +88,12 @@ pub struct App {
 
 impl App {
     /// Create a new app, loading config and profile from disk.
+    ///
+    /// API key resolution (industry standard, like AWS CLI / gh / stripe):
+    /// 1. NOESIS_API_KEY env var (highest priority)
+    /// 2. ~/.noesis/config.toml api_key field
     pub async fn new() -> Self {
         let config = Config::load().unwrap_or_default();
-
-        // Try loading API key from keychain
-        let api_key: Option<String> = noesis_sdk::KeychainStore::new()
-            .get_api_key()
-            .ok()
-            .flatten();
-
-        // Build config with keychain key if present
-        let config = if api_key.is_some() && config.api_key.is_none() {
-            Config {
-                api_key: api_key.clone(),
-                ..config
-            }
-        } else {
-            config
-        };
 
         let client = NoesisClient::new(&config).ok();
         let profile = LocalProfile::load_or_default().ok().flatten();
@@ -196,7 +186,7 @@ impl App {
             ActiveScreen::WorkflowPicker => self.workflow_picker.draw(frame, area),
             ActiveScreen::ResultDisplay => self.result_display.draw(frame, area),
             ActiveScreen::History => self.history.draw(frame, area),
-            ActiveScreen::ProfileEditor => self.profile_editor.draw(frame, area, &self.profile),
+            ActiveScreen::ProfileEditor => self.profile_editor.draw(frame, area, &self.profile, &self.config),
         }
 
         // Draw error bar if present
@@ -212,9 +202,10 @@ impl App {
 
     /// Handle global keybinds. Returns true if app should quit.
     fn handle_global_key(&mut self, key: KeyEvent) -> bool {
-        // Ctrl+C / Ctrl+Q → quit
-        if key.modifiers.contains(KeyModifiers::CONTROL)
-            && (key.code == KeyCode::Char('c') || key.code == KeyCode::Char('q'))
+        // Ctrl+C / Ctrl+Q / q (if in Welcome screen) → quit
+        if (key.modifiers.contains(KeyModifiers::CONTROL)
+            && (key.code == KeyCode::Char('c') || key.code == KeyCode::Char('q')))
+            || (key.code == KeyCode::Char('q') && self.active_screen == ActiveScreen::Welcome)
         {
             return true;
         }
@@ -259,7 +250,7 @@ impl App {
             }
             ActiveScreen::ProfileEditor => {
                 self.profile_editor
-                    .handle_key(key, &mut self.profile)
+                    .handle_key(key, &mut self.profile, &mut self.config)
             }
         }
     }
@@ -300,6 +291,21 @@ impl App {
                 self.result_display.set_workflow_result(workflow_id, result);
                 self.active_screen = ActiveScreen::ResultDisplay;
             }
+            Action::ReloadConfig => {
+                // Reload config from disk (picks up new api_key from config.toml)
+                let new_config = Config::load().unwrap_or_default();
+                self.config = new_config;
+                match NoesisClient::new(&self.config) {
+                    Ok(c) => {
+                        self.client = Some(c);
+                        self.welcome.connected = self.config.api_key.is_some();
+                        info!("Client configuration reloaded");
+                    }
+                    Err(e) => {
+                        self.show_error(format!("Failed to rebuild client: {e}"));
+                    }
+                }
+            }
         }
     }
 
@@ -315,7 +321,7 @@ impl App {
             }
         }
 
-        // Store API key if provided
+        // Store API key if provided — write to ~/.noesis/config.toml
         let api_key_to_store = self
             .onboarding
             .api_key_input
@@ -324,11 +330,10 @@ impl App {
             .cloned();
 
         if let Some(key) = api_key_to_store {
-            let store = noesis_sdk::KeychainStore::new();
-            if let Err(e) = store.store_api_key(&key) {
-                self.show_error(format!("Failed to store API key: {e}"));
-            }
             self.config.api_key = Some(key);
+            if let Err(e) = self.config.save() {
+                self.show_error(format!("Failed to save config: {e}"));
+            }
         }
 
         // Rebuild client with new config
