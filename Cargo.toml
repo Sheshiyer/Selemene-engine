@@ -14,6 +14,8 @@ members = [
     "crates/noesis-vedic-api",
     "crates/noesis-western-api",
     "crates/noesis-integration",
+    # SDK for TUI/Desktop/Agent clients
+    "crates/noesis-sdk",
     # Vedic astrology API integration (FreeAstrologyAPI.com)
 
     # Rust consciousness engines
@@ -63,6 +65,7 @@ tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 # Configuration
 config = "0.14"
 dotenvy = "0.15"
+toml = "0.8"
 
 # Database
 sqlx = { version = "0.7", features = ["runtime-tokio-native-tls", "postgres", "chrono", "uuid"] }
