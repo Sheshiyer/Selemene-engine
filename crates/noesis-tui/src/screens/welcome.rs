@@ -8,6 +8,8 @@ use ratatui::widgets::*;
 
 pub struct WelcomeScreen {
     pub selected: usize,
+    /// Set to true when an API client is connected. Wire in app.rs.
+    pub connected: bool,
 }
 
 const MENU_ITEMS: &[(&str, &str)] = &[
@@ -20,14 +22,17 @@ const MENU_ITEMS: &[(&str, &str)] = &[
 
 impl WelcomeScreen {
     pub fn new() -> Self {
-        Self { selected: 0 }
+        Self {
+            selected: 0,
+            connected: false,
+        }
     }
 
     pub fn draw(&self, frame: &mut Frame, area: Rect, profile: &Option<LocalProfile>) {
         let chunks = Layout::default()
             .direction(Direction::Vertical)
             .constraints([
-                Constraint::Length(8),  // Header
+                Constraint::Length(9),  // Header
                 Constraint::Min(10),   // Menu
                 Constraint::Length(3), // Footer
             ])
@@ -61,7 +66,10 @@ impl WelcomeScreen {
                 "╚═══════════════════════════════════════╝",
                 Style::default().fg(Color::Cyan),
             )),
-            Line::from(""),
+            Line::from(Span::styled(
+                format!("v{}", env!("CARGO_PKG_VERSION")),
+                Style::default().fg(Color::DarkGray),
+            )),
         ];
 
         let greeting = if let Some(ref p) = profile {
@@ -75,6 +83,14 @@ impl WelcomeScreen {
             greeting,
             Style::default().fg(Color::Yellow),
         )));
+
+        // Connection status indicator
+        let (indicator, style) = if self.connected {
+            ("● Connected", Style::default().fg(Color::Green))
+        } else {
+            ("● Offline", Style::default().fg(Color::Red))
+        };
+        lines.push(Line::from(Span::styled(indicator, style)));
 
         let header = Paragraph::new(lines).alignment(Alignment::Center);
         frame.render_widget(header, area);
@@ -157,7 +173,7 @@ impl WelcomeScreen {
                 1 => Action::Navigate(ActiveScreen::WorkflowPicker),
                 2 => Action::Navigate(ActiveScreen::History),
                 3 => Action::Navigate(ActiveScreen::ProfileEditor),
-                4 => Action::Navigate(ActiveScreen::Welcome), // help handled globally
+                4 => Action::ToggleHelp,
                 _ => Action::None,
             },
             KeyCode::Char('e') => Action::Navigate(ActiveScreen::EnginePicker),

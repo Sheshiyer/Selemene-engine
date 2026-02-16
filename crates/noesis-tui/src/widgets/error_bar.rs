@@ -7,7 +7,7 @@ use ratatui::widgets::*;
 pub fn draw_error_bar(frame: &mut Frame, area: Rect, message: &str) {
     let bar_area = Rect {
         x: area.x,
-        y: area.y + area.height.saturating_sub(1),
+        y: area.y + area.height.saturating_sub(2),
         width: area.width,
         height: 1,
     };

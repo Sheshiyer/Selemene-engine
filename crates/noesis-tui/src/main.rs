@@ -5,6 +5,7 @@
 
 mod app;
 mod screens;
+mod utils;
 mod widgets;
 
 use anyhow::Result;

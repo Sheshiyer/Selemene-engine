@@ -48,6 +48,10 @@ pub enum Action {
     },
     /// Quit the application
     Quit,
+    /// Toggle the help overlay
+    ToggleHelp,
+    /// Show an error message to the user
+    ShowError(String),
 }
 
 /// Application state
@@ -60,6 +64,8 @@ pub struct App {
     pub client: Option<NoesisClient>,
     /// User profile (None if not yet created)
     pub profile: Option<LocalProfile>,
+    /// Whether the app should quit
+    pub should_quit: bool,
     /// Whether help overlay is visible
     pub show_help: bool,
     /// Global error message (shown briefly)
@@ -116,15 +122,22 @@ impl App {
             active_screen,
         );
 
+        let is_connected = client.is_some();
+
         Self {
             active_screen,
             config,
             client,
             profile,
             show_help: false,
+            should_quit: false,
             error_message: None,
             error_ticks: 0,
-            welcome: WelcomeScreen::new(),
+            welcome: {
+                let mut w = WelcomeScreen::new();
+                w.connected = is_connected;
+                w
+            },
             onboarding: OnboardingWizard::new(),
             engine_picker: EnginePicker::new(),
             workflow_picker: WorkflowPicker::new(),
@@ -152,6 +165,10 @@ impl App {
                     // Delegate to active screen
                     let action = self.handle_screen_key(key).await;
                     self.handle_action(action).await;
+
+                    if self.should_quit {
+                        break;
+                    }
                 }
             }
 
@@ -252,7 +269,13 @@ impl App {
         match action {
             Action::None => {}
             Action::Quit => {
-                // handled in run loop via global keys
+                self.should_quit = true;
+            }
+            Action::ToggleHelp => {
+                self.show_help = !self.show_help;
+            }
+            Action::ShowError(msg) => {
+                self.show_error(msg);
             }
             Action::Navigate(screen) => {
                 debug!("Navigating to {:?}", screen);
@@ -310,7 +333,10 @@ impl App {
 
         // Rebuild client with new config
         match NoesisClient::new(&self.config) {
-            Ok(c) => self.client = Some(c),
+            Ok(c) => {
+                self.client = Some(c);
+                self.welcome.connected = true;
+            }
             Err(e) => {
                 error!("Failed to create API client: {e}");
                 self.show_error(format!("Client error: {e}"));

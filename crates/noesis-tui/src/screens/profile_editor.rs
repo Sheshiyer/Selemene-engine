@@ -2,7 +2,7 @@
 
 use crate::app::{Action, ActiveScreen};
 use crossterm::event::{KeyCode, KeyEvent};
-use noesis_sdk::LocalProfile;
+use noesis_sdk::{KeychainStore, LocalProfile};
 use ratatui::prelude::*;
 use ratatui::widgets::*;
 
@@ -14,6 +14,7 @@ enum ProfileField {
     Latitude,
     Longitude,
     Timezone,
+    ApiKey,
 }
 
 impl ProfileField {
@@ -25,6 +26,7 @@ impl ProfileField {
             Self::Latitude,
             Self::Longitude,
             Self::Timezone,
+            Self::ApiKey,
         ]
     }
 
@@ -36,6 +38,7 @@ impl ProfileField {
             Self::Latitude => "Latitude",
             Self::Longitude => "Longitude",
             Self::Timezone => "Timezone",
+            Self::ApiKey => "API Key",
         }
     }
 }
@@ -95,6 +98,12 @@ impl ProfileEditor {
 
                     let value = if is_editing {
                         format!("{}_", self.edit_buffer)
+                    } else if *field == ProfileField::ApiKey {
+                        // API key is stored in keychain, not in LocalProfile
+                        match KeychainStore::new().get_api_key() {
+                            Ok(Some(_)) => "••••••••".to_string(),
+                            _ => "Not set".to_string(),
+                        }
                     } else {
                         self.get_field_value(p, *field)
                     };
@@ -206,6 +215,10 @@ impl ProfileEditor {
             ProfileField::Latitude => format!("{:.4}", profile.birth_data.latitude),
             ProfileField::Longitude => format!("{:.4}", profile.birth_data.longitude),
             ProfileField::Timezone => profile.birth_data.timezone.clone(),
+            ProfileField::ApiKey => {
+                // API key is handled separately via keychain — should not be called
+                unreachable!("ApiKey field value is read from keychain, not LocalProfile")
+            }
         }
     }
 
@@ -237,7 +250,14 @@ impl ProfileEditor {
             KeyCode::Enter => {
                 if let Some(ref p) = profile {
                     let field = ProfileField::all()[self.selected_field];
-                    self.edit_buffer = self.get_field_value(p, field);
+                    if field == ProfileField::ApiKey {
+                        self.edit_buffer = String::new();
+                    } else {
+                        self.edit_buffer = self.get_field_value(p, field);
+                        if self.edit_buffer == "Not set" {
+                            self.edit_buffer.clear();
+                        }
+                    }
                     self.editing = true;
                     self.message = None;
                 }
@@ -260,8 +280,29 @@ impl ProfileEditor {
             }
             KeyCode::Enter => {
                 self.editing = false;
+                let field = ProfileField::all()[self.selected_field];
+
+                // API key is stored in keychain, not in LocalProfile
+                if field == ProfileField::ApiKey {
+                    let value = self.edit_buffer.trim().to_string();
+                    if value.is_empty() {
+                        self.message = Some("⚠ API key cannot be empty".into());
+                    } else {
+                        match KeychainStore::new().store_api_key(&value) {
+                            Ok(()) => {
+                                self.message = Some("✓ API Key updated".into());
+                            }
+                            Err(e) => {
+                                self.message =
+                                    Some(format!("⚠ Keychain error: {}", e));
+                            }
+                        }
+                    }
+                    self.edit_buffer.clear();
+                    return Action::None;
+                }
+
                 if let Some(ref mut p) = profile {
-                    let field = ProfileField::all()[self.selected_field];
                     match self.apply_field(p, field) {
                         Ok(()) => {
                             if let Err(e) = p.save() {
@@ -341,6 +382,10 @@ impl ProfileEditor {
                     return Err("Timezone cannot be empty".into());
                 }
                 profile.birth_data.timezone = value;
+            }
+            ProfileField::ApiKey => {
+                // Handled separately in handle_edit_key — should never reach here
+                unreachable!("ApiKey is handled via keychain, not apply_field");
             }
         }
         Ok(())

@@ -1,6 +1,7 @@
 //! Result Display — Styled engine output with witness prompt, consciousness level, export
 
 use crate::app::{Action, ActiveScreen};
+use crate::utils::format_name;
 use crossterm::event::{KeyCode, KeyEvent};
 use noesis_sdk::{EngineOutput, MarkdownRenderer, ReportFormat, WorkflowResult};
 use ratatui::prelude::*;
@@ -105,12 +106,16 @@ impl ResultDisplay {
 
         // Content — render styled text
         let content_lines = self.style_markdown_lines();
+        let total_lines = content_lines.len();
+        let visible_line = (self.scroll_offset as usize).saturating_add(1).min(total_lines);
+        let scroll_indicator = format!(" Line {}/{} ", visible_line, total_lines);
         let content = Paragraph::new(content_lines)
             .scroll((self.scroll_offset, 0))
             .block(
                 Block::default()
                     .borders(Borders::ALL)
                     .border_type(BorderType::Rounded)
+                    .title_bottom(Line::from(scroll_indicator).alignment(Alignment::Right))
                     .border_style(Style::default().fg(Color::DarkGray)),
             )
             .wrap(Wrap { trim: false });
@@ -122,8 +127,10 @@ impl ResultDisplay {
             Span::raw("Scroll  "),
             Span::styled(" e ", Style::default().fg(Color::Green)),
             Span::raw("Export MD  "),
-            Span::styled(" j ", Style::default().fg(Color::Green)),
+            Span::styled(" J ", Style::default().fg(Color::Green)),
             Span::raw("Export JSON  "),
+            Span::styled(" r ", Style::default().fg(Color::Yellow)),
+            Span::raw("Run Again  "),
             Span::styled(" Esc ", Style::default().fg(Color::Red)),
             Span::raw("Back"),
         ];
@@ -247,6 +254,11 @@ impl ResultDisplay {
                 self.export(ReportFormat::Json);
                 Action::None
             }
+            KeyCode::Char('r') => match &self.result {
+                ResultKind::Engine { .. } => Action::Navigate(ActiveScreen::EnginePicker),
+                ResultKind::Workflow { .. } => Action::Navigate(ActiveScreen::WorkflowPicker),
+                ResultKind::None => Action::None,
+            },
             _ => Action::None,
         }
     }
@@ -308,19 +320,6 @@ impl ResultDisplay {
             }
         }
     }
-}
-
-fn format_name(id: &str) -> String {
-    id.split('-')
-        .map(|w| {
-            let mut c = w.chars();
-            match c.next() {
-                None => String::new(),
-                Some(f) => f.to_uppercase().to_string() + c.as_str(),
-            }
-        })
-        .collect::<Vec<_>>()
-        .join(" ")
 }
 
 fn phase_dots(level: u8) -> String {

@@ -1,6 +1,7 @@
 //! History Browser — Browse past readings from the API
 
 use crate::app::{Action, ActiveScreen};
+use crate::utils::format_name;
 use crossterm::event::{KeyCode, KeyEvent};
 use noesis_sdk::{NoesisClient, client::ReadingRecord};
 use ratatui::prelude::*;
@@ -149,6 +150,8 @@ impl HistoryBrowser {
         let footer = Paragraph::new(Line::from(vec![
             Span::styled(" ↑↓ ", Style::default().fg(Color::Yellow)),
             Span::raw("Navigate  "),
+            Span::styled(" Enter ", Style::default().fg(Color::Cyan)),
+            Span::raw("View  "),
             Span::styled(" r ", Style::default().fg(Color::Green)),
             Span::raw("Refresh  "),
             Span::styled(" Esc ", Style::default().fg(Color::Red)),
@@ -187,6 +190,16 @@ impl HistoryBrowser {
                 }
                 Action::None
             }
+            KeyCode::Enter => {
+                if let Some(entry) = self.entries.get(self.selected) {
+                    Action::ShowEngineResult {
+                        engine_id: entry.engine_id.clone(),
+                        output: entry.output.clone(),
+                    }
+                } else {
+                    Action::None
+                }
+            }
             KeyCode::Char('r') => {
                 self.fetch_readings(client).await;
                 Action::None
@@ -220,15 +233,4 @@ impl HistoryBrowser {
     }
 }
 
-fn format_name(id: &str) -> String {
-    id.split('-')
-        .map(|w| {
-            let mut c = w.chars();
-            match c.next() {
-                None => String::new(),
-                Some(f) => f.to_uppercase().to_string() + c.as_str(),
-            }
-        })
-        .collect::<Vec<_>>()
-        .join(" ")
-}
+

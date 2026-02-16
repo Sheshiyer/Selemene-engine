@@ -38,6 +38,7 @@ pub struct EnginePicker {
     pub selected: usize,
     pub loading: bool,
     pub filter: String,
+    pub filtering: bool,
 }
 
 impl EnginePicker {
@@ -46,6 +47,7 @@ impl EnginePicker {
             selected: 0,
             loading: false,
             filter: String::new(),
+            filtering: false,
         }
     }
 
@@ -93,14 +95,21 @@ impl EnginePicker {
         frame.render_widget(title, chunks[0]);
 
         // Filter
-        let filter = Paragraph::new(format!("🔍 {}_", self.filter))
+        let (filter_text, filter_border_color) = if self.filtering {
+            (format!("🔍 {}_", self.filter), Color::Yellow)
+        } else if !self.filter.is_empty() {
+            (format!("🔍 {}", self.filter), Color::DarkGray)
+        } else {
+            ("🔍 Press / to filter...".to_string(), Color::DarkGray)
+        };
+        let filter = Paragraph::new(filter_text)
             .style(Style::default().fg(Color::Yellow))
             .block(
                 Block::default()
                     .borders(Borders::ALL)
                     .border_type(BorderType::Rounded)
                     .title(" Filter ")
-                    .border_style(Style::default().fg(Color::DarkGray)),
+                    .border_style(Style::default().fg(filter_border_color)),
             );
         frame.render_widget(filter, chunks[1]);
 
@@ -156,22 +165,36 @@ impl EnginePicker {
         frame.render_widget(list, chunks[2]);
 
         // Footer
-        let footer = Paragraph::new(Line::from(vec![
-            Span::styled(" ↑↓ ", Style::default().fg(Color::Cyan)),
-            Span::raw("Navigate  "),
-            Span::styled(" Enter ", Style::default().fg(Color::Green)),
-            Span::raw("Calculate  "),
-            Span::styled(" / ", Style::default().fg(Color::Yellow)),
-            Span::raw("Filter  "),
-            Span::styled(" Esc ", Style::default().fg(Color::Red)),
-            Span::raw("Back"),
-        ]))
-        .alignment(Alignment::Center)
-        .block(
-            Block::default()
-                .borders(Borders::TOP)
-                .border_style(Style::default().fg(Color::DarkGray)),
-        );
+        let footer_spans = if self.filtering {
+            vec![
+                Span::styled(" Type ", Style::default().fg(Color::Yellow)),
+                Span::raw("to filter  "),
+                Span::styled(" ↑↓ ", Style::default().fg(Color::Cyan)),
+                Span::raw("Navigate  "),
+                Span::styled(" Enter ", Style::default().fg(Color::Green)),
+                Span::raw("Calculate  "),
+                Span::styled(" Esc ", Style::default().fg(Color::Red)),
+                Span::raw("Cancel"),
+            ]
+        } else {
+            vec![
+                Span::styled(" / ", Style::default().fg(Color::Yellow)),
+                Span::raw("Filter  "),
+                Span::styled(" ↑↓/jk ", Style::default().fg(Color::Cyan)),
+                Span::raw("Navigate  "),
+                Span::styled(" Enter ", Style::default().fg(Color::Green)),
+                Span::raw("Calculate  "),
+                Span::styled(" Esc ", Style::default().fg(Color::Red)),
+                Span::raw("Back"),
+            ]
+        };
+        let footer = Paragraph::new(Line::from(footer_spans))
+            .alignment(Alignment::Center)
+            .block(
+                Block::default()
+                    .borders(Borders::TOP)
+                    .border_style(Style::default().fg(Color::DarkGray)),
+            );
         frame.render_widget(footer, chunks[3]);
     }
 
@@ -181,75 +204,123 @@ impl EnginePicker {
         client: &Option<NoesisClient>,
         profile: &Option<LocalProfile>,
     ) -> Action {
-        match key.code {
-            KeyCode::Esc => {
-                if !self.filter.is_empty() {
+        if self.filtering {
+            // Filtering mode: all chars go to filter, arrows navigate
+            match key.code {
+                KeyCode::Esc => {
                     self.filter.clear();
+                    self.filtering = false;
                     self.selected = 0;
                     Action::None
-                } else {
-                    Action::Navigate(ActiveScreen::Welcome)
                 }
-            }
-            KeyCode::Up | KeyCode::Char('k') => {
-                let count = self.filtered_engines().len();
-                if count > 0 && self.selected > 0 {
-                    self.selected -= 1;
-                }
-                Action::None
-            }
-            KeyCode::Down | KeyCode::Char('j') => {
-                let count = self.filtered_engines().len();
-                if count > 0 && self.selected < count - 1 {
-                    self.selected += 1;
-                }
-                Action::None
-            }
-            KeyCode::Enter => {
-                let engines = self.filtered_engines();
-                if let Some((_, entry)) = engines.get(self.selected) {
-                    if let (Some(client), Some(profile)) = (client, profile) {
-                        let engine_id = entry.id.to_string();
-                        let input = profile.to_engine_input();
-                        self.loading = true;
+                KeyCode::Enter => {
+                    let engines = self.filtered_engines();
+                    if let Some((_, entry)) = engines.get(self.selected) {
+                        if let (Some(client), Some(profile)) = (client, profile) {
+                            let engine_id = entry.id.to_string();
+                            let input = profile.to_engine_input();
+                            self.loading = true;
 
-                        match client.calculate(&engine_id, input).await {
-                            Ok(output) => {
-                                self.loading = false;
-                                return Action::ShowEngineResult {
-                                    engine_id,
-                                    output,
-                                };
+                            match client.calculate(&engine_id, input).await {
+                                Ok(output) => {
+                                    self.loading = false;
+                                    return Action::ShowEngineResult {
+                                        engine_id,
+                                        output,
+                                    };
+                                }
+                                Err(e) => {
+                                    self.loading = false;
+                                    return Action::ShowError(format!("Engine calculation failed: {}", e));
+                                }
                             }
-                            Err(e) => {
-                                self.loading = false;
-                                tracing::error!("Engine calculation failed: {}", e);
-                                // Stay on screen — error will be shown via app.show_error
-                            }
+                        } else if profile.is_none() {
+                            return Action::ShowError("No profile configured. Complete onboarding first.".into());
+                        } else {
+                            return Action::ShowError("No API client. Set an API key first.".into());
                         }
                     }
-                }
-                Action::None
-            }
-            KeyCode::Backspace => {
-                self.filter.pop();
-                self.selected = 0;
-                Action::None
-            }
-            KeyCode::Char(c) => {
-                // Don't filter on vim keys when not in filter mode
-                if c == '/' {
-                    // Already in filter mode implicitly
                     Action::None
-                } else if !self.filter.is_empty() || !matches!(c, 'j' | 'k') {
+                }
+                KeyCode::Up => {
+                    let count = self.filtered_engines().len();
+                    if count > 0 && self.selected > 0 {
+                        self.selected -= 1;
+                    }
+                    Action::None
+                }
+                KeyCode::Down => {
+                    let count = self.filtered_engines().len();
+                    if count > 0 && self.selected < count - 1 {
+                        self.selected += 1;
+                    }
+                    Action::None
+                }
+                KeyCode::Backspace => {
+                    self.filter.pop();
+                    self.selected = 0;
+                    Action::None
+                }
+                KeyCode::Char(c) => {
                     self.filter.push(c);
                     self.selected = 0;
                     Action::None
-                } else {
+                }
+                _ => Action::None,
+            }
+        } else {
+            // Normal mode: j/k navigate, / enters filter mode
+            match key.code {
+                KeyCode::Esc => Action::Navigate(ActiveScreen::Welcome),
+                KeyCode::Up | KeyCode::Char('k') => {
+                    let count = self.filtered_engines().len();
+                    if count > 0 && self.selected > 0 {
+                        self.selected -= 1;
+                    }
                     Action::None
                 }
+                KeyCode::Down | KeyCode::Char('j') => {
+                    let count = self.filtered_engines().len();
+                    if count > 0 && self.selected < count - 1 {
+                        self.selected += 1;
+                    }
+                    Action::None
+                }
+                KeyCode::Enter => {
+                    let engines = self.filtered_engines();
+                    if let Some((_, entry)) = engines.get(self.selected) {
+                        if let (Some(client), Some(profile)) = (client, profile) {
+                            let engine_id = entry.id.to_string();
+                            let input = profile.to_engine_input();
+                            self.loading = true;
+
+                            match client.calculate(&engine_id, input).await {
+                                Ok(output) => {
+                                    self.loading = false;
+                                    return Action::ShowEngineResult {
+                                        engine_id,
+                                        output,
+                                    };
+                                }
+                                Err(e) => {
+                                    self.loading = false;
+                                    return Action::ShowError(format!("Engine calculation failed: {}", e));
+                                }
+                            }
+                        } else if profile.is_none() {
+                            return Action::ShowError("No profile configured. Complete onboarding first.".into());
+                        } else {
+                            return Action::ShowError("No API client. Set an API key first.".into());
+                        }
+                    }
+                    Action::None
+                }
+                KeyCode::Char('/') => {
+                    self.filtering = true;
+                    Action::None
+                }
+                _ => Action::None,
             }
-            _ => Action::None,
         }
     }
 }
