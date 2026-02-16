@@ -38,13 +38,15 @@
 
 pub mod client;
 pub mod config;
+pub mod consciousness;
 pub mod keychain;
 pub mod profile;
 pub mod render;
 
 // Re-exports for convenience
-pub use client::{NoesisClient, NoesisClientBuilder};
+pub use client::{NoesisClient, NoesisClientBuilder, UserProfile};
 pub use config::Config;
+pub use consciousness::ConsciousnessLevel;
 pub use keychain::{CredentialStore, KeychainStore};
 pub use profile::LocalProfile;
 pub use render::{MarkdownRenderer, ReportFormat};

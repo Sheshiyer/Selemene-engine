@@ -96,7 +96,27 @@ impl App {
         let config = Config::load().unwrap_or_default();
 
         let client = NoesisClient::new(&config).ok();
-        let profile = LocalProfile::load_or_default().ok().flatten();
+        let mut profile = LocalProfile::load_or_default().ok().flatten();
+
+        // Sync consciousness level from server (takes max of local vs server)
+        if let (Some(ref c), Some(ref mut p)) = (&client, &mut profile) {
+            match c.get_me().await {
+                Ok(server_profile) => {
+                    let server_level = server_profile.consciousness_level as u8;
+                    if server_level > p.consciousness_level {
+                        info!(
+                            "Consciousness level promoted: {} → {} (server sync)",
+                            p.consciousness_level, server_level
+                        );
+                        p.consciousness_level = server_level;
+                        let _ = p.save(); // persist the upgrade locally
+                    }
+                }
+                Err(e) => {
+                    debug!("Could not sync consciousness level from server: {}", e);
+                }
+            }
+        }
 
         // Determine starting screen
         let active_screen = if profile.is_none() {

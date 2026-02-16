@@ -2,7 +2,7 @@
 
 use crate::app::{Action, ActiveScreen};
 use crossterm::event::{KeyCode, KeyEvent};
-use noesis_sdk::{Config, LocalProfile};
+use noesis_sdk::{consciousness, Config, LocalProfile};
 use ratatui::prelude::*;
 use ratatui::widgets::*;
 
@@ -14,6 +14,7 @@ enum ProfileField {
     Latitude,
     Longitude,
     Timezone,
+    ConsciousnessLevel,
     ApiKey,
 }
 
@@ -26,6 +27,7 @@ impl ProfileField {
             Self::Latitude,
             Self::Longitude,
             Self::Timezone,
+            Self::ConsciousnessLevel,
             Self::ApiKey,
         ]
     }
@@ -38,6 +40,7 @@ impl ProfileField {
             Self::Latitude => "Latitude",
             Self::Longitude => "Longitude",
             Self::Timezone => "Timezone",
+            Self::ConsciousnessLevel => "Awareness",
             Self::ApiKey => "API Key",
         }
     }
@@ -105,6 +108,8 @@ impl ProfileEditor {
                         } else {
                             "Not set".to_string()
                         }
+                    } else if *field == ProfileField::ConsciousnessLevel {
+                        consciousness::level_display(p.consciousness_level)
                     } else {
                         self.get_field_value(p, *field)
                     };
@@ -216,9 +221,11 @@ impl ProfileEditor {
             ProfileField::Latitude => format!("{:.4}", profile.birth_data.latitude),
             ProfileField::Longitude => format!("{:.4}", profile.birth_data.longitude),
             ProfileField::Timezone => profile.birth_data.timezone.clone(),
+            ProfileField::ConsciousnessLevel => {
+                consciousness::level_display(profile.consciousness_level)
+            }
             ProfileField::ApiKey => {
-                // API key is handled separately via keychain — should not be called
-                unreachable!("ApiKey field value is read from keychain, not LocalProfile")
+                unreachable!("ApiKey field value is read from config, not LocalProfile")
             }
         }
     }
@@ -250,8 +257,19 @@ impl ProfileEditor {
                 Action::None
             }
             KeyCode::Enter => {
-                if let Some(ref p) = profile {
+                if let Some(ref mut p) = profile {
                     let field = ProfileField::all()[self.selected_field];
+                    if field == ProfileField::ConsciousnessLevel {
+                        // Cycle consciousness level 0→1→2→3→4→5→0
+                        p.consciousness_level = (p.consciousness_level + 1) % 6;
+                        if let Err(e) = p.save() {
+                            self.message = Some(format!("⚠ Save failed: {}", e));
+                        } else {
+                            let info = consciousness::get_level(p.consciousness_level);
+                            self.message = Some(format!("✓ Set to {} — {}", info.state, info.description));
+                        }
+                        return Action::None;
+                    }
                     if field == ProfileField::ApiKey {
                         self.edit_buffer = String::new();
                     } else {
@@ -390,9 +408,13 @@ impl ProfileEditor {
                 }
                 profile.birth_data.timezone = value;
             }
+            ProfileField::ConsciousnessLevel => {
+                // Handled via Enter cycling in handle_key, not via text edit
+                unreachable!("ConsciousnessLevel is cycled via Enter, not apply_field");
+            }
             ProfileField::ApiKey => {
-                // Handled separately in handle_edit_key — should never reach here
-                unreachable!("ApiKey is handled via keychain, not apply_field");
+                // Handled separately in handle_edit_key
+                unreachable!("ApiKey is handled via config, not apply_field");
             }
         }
         Ok(())

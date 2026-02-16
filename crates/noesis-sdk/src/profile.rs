@@ -28,6 +28,9 @@ pub struct LocalProfile {
     /// Default calculation precision
     #[serde(default)]
     pub default_precision: Precision,
+    /// Consciousness level (0-5): Dormant → Glimpsing → Practicing → Integrated → Embodied
+    #[serde(default)]
+    pub consciousness_level: u8,
     /// Engine-specific preferences
     #[serde(default)]
     pub preferences: HashMap<String, serde_json::Value>,
@@ -46,6 +49,7 @@ impl LocalProfile {
             name: name.into(),
             birth_data,
             default_precision: Precision::Standard,
+            consciousness_level: 0,
             preferences: HashMap::new(),
             created_at: now,
             updated_at: now,

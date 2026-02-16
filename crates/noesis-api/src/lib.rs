@@ -622,6 +622,10 @@ async fn calculate_handler(
                     {
                         tracing::warn!("Failed to award XP: {}", e);
                     }
+                    // Auto-promote consciousness level based on reading count
+                    if let Err(e) = user_repo.promote_consciousness_level(uid).await {
+                        tracing::warn!("Failed to check level promotion: {}", e);
+                    }
                 });
             }
 
@@ -881,6 +885,10 @@ async fn workflow_execute_handler(
                         .await
                     {
                         tracing::warn!("Failed to award workflow XP: {}", e);
+                    }
+                    // Auto-promote consciousness level based on reading count
+                    if let Err(e) = user_repo.promote_consciousness_level(uid).await {
+                        tracing::warn!("Failed to check level promotion: {}", e);
                     }
                 });
             }

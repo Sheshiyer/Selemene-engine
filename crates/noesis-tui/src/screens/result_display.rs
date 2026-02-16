@@ -3,7 +3,7 @@
 use crate::app::{Action, ActiveScreen};
 use crate::utils::format_name;
 use crossterm::event::{KeyCode, KeyEvent};
-use noesis_sdk::{EngineOutput, MarkdownRenderer, ReportFormat, WorkflowResult};
+use noesis_sdk::{consciousness, EngineOutput, MarkdownRenderer, ReportFormat, WorkflowResult};
 use ratatui::prelude::*;
 use ratatui::widgets::*;
 
@@ -67,14 +67,17 @@ impl ResultDisplay {
             .split(area);
 
         // Title bar
-        // Render as u8 phase level
+        // Render with consciousness level name
         let title_text = match &self.result {
             ResultKind::Engine { engine_id, output } => {
+                let level = output.consciousness_level;
+                let level_info = consciousness::get_level(level);
                 format!(
-                    "✦ {} — Phase {}/5 {}",
+                    "✦ {} — {} {} {}",
                     format_name(engine_id),
-                    output.consciousness_level,
-                    phase_dots(output.consciousness_level)
+                    level_info.state,
+                    level_info.dots,
+                    format!("(Phase {}/5)", level),
                 )
             }
             ResultKind::Workflow {
@@ -320,10 +323,4 @@ impl ResultDisplay {
             }
         }
     }
-}
-
-fn phase_dots(level: u8) -> String {
-    let filled = level as usize;
-    let empty = 5_usize.saturating_sub(filled);
-    format!("{}{}", "●".repeat(filled), "○".repeat(empty))
 }

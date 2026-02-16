@@ -3,6 +3,7 @@
 use crate::app::{Action, ActiveScreen};
 use crossterm::event::{KeyCode, KeyEvent};
 use noesis_sdk::LocalProfile;
+use noesis_sdk::consciousness;
 use ratatui::prelude::*;
 use ratatui::widgets::*;
 
@@ -32,7 +33,7 @@ impl WelcomeScreen {
         let chunks = Layout::default()
             .direction(Direction::Vertical)
             .constraints([
-                Constraint::Length(9),  // Header
+                Constraint::Length(10), // Header (with consciousness level)
                 Constraint::Min(10),   // Menu
                 Constraint::Length(3), // Footer
             ])
@@ -83,6 +84,21 @@ impl WelcomeScreen {
             greeting,
             Style::default().fg(Color::Yellow),
         )));
+
+        // Consciousness level indicator
+        if let Some(ref p) = profile {
+            let level_info = consciousness::get_level(p.consciousness_level);
+            lines.push(Line::from(vec![
+                Span::styled(
+                    format!("{} ", level_info.dots),
+                    Style::default().fg(Color::Cyan),
+                ),
+                Span::styled(
+                    level_info.state,
+                    Style::default().fg(Color::Cyan).add_modifier(Modifier::ITALIC),
+                ),
+            ]));
+        }
 
         // Connection status indicator
         let (indicator, style) = if self.connected {

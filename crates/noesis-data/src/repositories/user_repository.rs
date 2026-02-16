@@ -389,4 +389,75 @@ impl UserRepository {
 
         Ok(updated_user)
     }
+
+    /// Count readings and promote consciousness_level if the user qualifies
+    /// for a higher phase. Also cascades to api_keys table.
+    ///
+    /// Thresholds: 5→1, 15→2, 40→3, 80→4, 150→5
+    pub async fn promote_consciousness_level(&self, user_id: Uuid) -> Result<Option<i32>, Error> {
+        // Count total readings for this user
+        let row: (i64,) = sqlx::query_as(
+            "SELECT COUNT(*) FROM readings WHERE user_id = $1",
+        )
+        .bind(user_id)
+        .fetch_one(&self.pool)
+        .await?;
+
+        let reading_count = row.0 as u32;
+
+        // Compute earned level from reading count
+        let earned_level: i32 = match reading_count {
+            n if n >= 150 => 5,
+            n if n >= 80 => 4,
+            n if n >= 40 => 3,
+            n if n >= 15 => 2,
+            n if n >= 5 => 1,
+            _ => 0,
+        };
+
+        // Only promote (never demote) — take max of current and earned
+        let updated = sqlx::query_scalar::<_, i32>(
+            r#"
+            UPDATE users
+            SET consciousness_level = GREATEST(consciousness_level, $1),
+                updated_at = $2
+            WHERE id = $3
+              AND consciousness_level < $1
+            RETURNING consciousness_level
+            "#,
+        )
+        .bind(earned_level)
+        .bind(Utc::now())
+        .bind(user_id)
+        .fetch_optional(&self.pool)
+        .await?;
+
+        // If promoted, cascade to api_keys
+        if let Some(new_level) = updated {
+            sqlx::query(
+                "UPDATE api_keys SET consciousness_level = $1 WHERE user_id = $2 AND consciousness_level < $1",
+            )
+            .bind(new_level)
+            .bind(user_id)
+            .execute(&self.pool)
+            .await?;
+
+            // Log the promotion event
+            sqlx::query(
+                "INSERT INTO progression_logs (user_id, xp_amount, action_type, metadata) VALUES ($1, $2, $3, $4)",
+            )
+            .bind(user_id)
+            .bind(0)
+            .bind("level_promotion")
+            .bind(serde_json::json!({
+                "new_level": new_level,
+                "reading_count": reading_count,
+                "timestamp": Utc::now().to_rfc3339()
+            }))
+            .execute(&self.pool)
+            .await?;
+        }
+
+        Ok(updated)
+    }
 }

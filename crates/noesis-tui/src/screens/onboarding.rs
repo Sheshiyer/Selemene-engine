@@ -5,6 +5,7 @@
 use crate::app::{Action, ActiveScreen};
 use crossterm::event::{KeyCode, KeyEvent};
 use noesis_sdk::{BirthData, LocalProfile};
+use noesis_sdk::consciousness;
 use ratatui::prelude::*;
 use ratatui::widgets::*;
 
@@ -17,6 +18,7 @@ pub enum OnboardingStep {
     Longitude,
     Timezone,
     ApiKey,
+    ConsciousnessLevel,
     Confirm,
 }
 
@@ -29,7 +31,8 @@ impl OnboardingStep {
             Self::Latitude => Self::Longitude,
             Self::Longitude => Self::Timezone,
             Self::Timezone => Self::ApiKey,
-            Self::ApiKey => Self::Confirm,
+            Self::ApiKey => Self::ConsciousnessLevel,
+            Self::ConsciousnessLevel => Self::Confirm,
             Self::Confirm => Self::Confirm,
         }
     }
@@ -43,7 +46,8 @@ impl OnboardingStep {
             Self::Longitude => Self::Latitude,
             Self::Timezone => Self::Longitude,
             Self::ApiKey => Self::Timezone,
-            Self::Confirm => Self::ApiKey,
+            Self::ConsciousnessLevel => Self::ApiKey,
+            Self::Confirm => Self::ConsciousnessLevel,
         }
     }
 
@@ -56,7 +60,8 @@ impl OnboardingStep {
             Self::Longitude => 4,
             Self::Timezone => 5,
             Self::ApiKey => 6,
-            Self::Confirm => 7,
+            Self::ConsciousnessLevel => 7,
+            Self::Confirm => 8,
         }
     }
 
@@ -69,6 +74,7 @@ impl OnboardingStep {
             Self::Longitude => "Birth Longitude (e.g. 77.2090)",
             Self::Timezone => "Timezone (e.g. Asia/Kolkata)",
             Self::ApiKey => "API Key — optional, press Enter to skip",
+            Self::ConsciousnessLevel => "Where are you on the awareness journey?",
             Self::Confirm => "Review & Confirm",
         }
     }
@@ -82,12 +88,13 @@ impl OnboardingStep {
             Self::Longitude => "Decimal degrees. East is positive.",
             Self::Timezone => "IANA timezone (e.g. America/New_York, UTC)",
             Self::ApiKey => "Get one at https://selemene.tryambakam.space",
+            Self::ConsciousnessLevel => "Use ↑↓ to select, Enter to confirm. This isn't gamification — it calibrates your prompts.",
             Self::Confirm => "Press Enter to save, or ← to go back and edit.",
         }
     }
 }
 
-const TOTAL_STEPS: usize = 8;
+const TOTAL_STEPS: usize = 9;
 
 pub struct OnboardingWizard {
     pub step: OnboardingStep,
@@ -99,6 +106,7 @@ pub struct OnboardingWizard {
     pub tz_input: String,
     pub api_key_input: Option<String>,
     key_buffer: String,
+    pub consciousness_level: u8,
     pub error: Option<String>,
 }
 
@@ -114,6 +122,7 @@ impl OnboardingWizard {
             tz_input: "UTC".to_string(),
             api_key_input: None,
             key_buffer: String::new(),
+            consciousness_level: 0,
             error: None,
         }
     }
@@ -195,7 +204,7 @@ impl OnboardingWizard {
                 Constraint::Length(3), // Input
                 Constraint::Length(2), // Hint
                 Constraint::Length(2), // Error
-                Constraint::Min(0),   // Preview (confirm step)
+                Constraint::Min(0),   // Preview (confirm step) / Level picker
             ])
             .split(area);
 
@@ -211,6 +220,9 @@ impl OnboardingWizard {
         if self.step == OnboardingStep::Confirm {
             // Show summary instead of input
             self.draw_confirm(frame, inner[4]);
+        } else if self.step == OnboardingStep::ConsciousnessLevel {
+            // Show level picker in the larger area
+            self.draw_level_picker(frame, inner[1], inner[4]);
         } else {
             // Input field
             let current_value = self.current_input();
@@ -240,6 +252,69 @@ impl OnboardingWizard {
             ));
             frame.render_widget(error, inner[3]);
         }
+    }
+
+    fn draw_level_picker(&self, frame: &mut Frame, compact_area: Rect, detail_area: Rect) {
+        // Show current selection in the compact input area
+        let current = consciousness::get_level(self.consciousness_level);
+        let selection_text = format!(
+            "  {} {} — {}",
+            current.dots, current.state, current.description
+        );
+        let selection = Paragraph::new(Span::styled(
+            selection_text,
+            Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD),
+        ))
+        .block(
+            Block::default()
+                .borders(Borders::ALL)
+                .border_type(BorderType::Rounded)
+                .border_style(Style::default().fg(Color::Cyan)),
+        );
+        frame.render_widget(selection, compact_area);
+
+        // Show all levels in the detail area
+        let items: Vec<ListItem> = consciousness::LEVELS
+            .iter()
+            .map(|lvl| {
+                let is_selected = lvl.level == self.consciousness_level;
+                let prefix = if is_selected { "▸ " } else { "  " };
+                let style = if is_selected {
+                    Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD)
+                } else {
+                    Style::default().fg(Color::White)
+                };
+
+                let content = vec![
+                    Line::from(vec![
+                        Span::styled(
+                            format!("{}{} {}", prefix, lvl.dots, lvl.state),
+                            style,
+                        ),
+                        Span::styled(
+                            format!("  — {}", lvl.description),
+                            Style::default().fg(Color::DarkGray),
+                        ),
+                    ]),
+                    Line::from(Span::styled(
+                        format!("    Prompts: {}", lvl.prompt_style),
+                        Style::default().fg(if is_selected { Color::Yellow } else { Color::DarkGray }),
+                    )),
+                ];
+
+                ListItem::new(content)
+            })
+            .collect();
+
+        let list = List::new(items).block(
+            Block::default()
+                .borders(Borders::ALL)
+                .border_type(BorderType::Rounded)
+                .title(" Awareness Levels ")
+                .title_style(Style::default().fg(Color::Yellow))
+                .border_style(Style::default().fg(Color::DarkGray)),
+        );
+        frame.render_widget(list, detail_area);
     }
 
     fn draw_confirm(&self, frame: &mut Frame, area: Rect) {
@@ -285,6 +360,13 @@ impl OnboardingWizard {
                     Style::default().fg(Color::White),
                 ),
             ]),
+            Line::from(vec![
+                Span::styled("  Awareness: ", Style::default().fg(Color::DarkGray)),
+                Span::styled(
+                    consciousness::level_display(self.consciousness_level),
+                    Style::default().fg(Color::Cyan),
+                ),
+            ]),
         ];
 
         let summary = Paragraph::new(lines).block(
@@ -307,7 +389,7 @@ impl OnboardingWizard {
             OnboardingStep::Longitude => &self.lng_input,
             OnboardingStep::Timezone => &self.tz_input,
             OnboardingStep::ApiKey => &self.key_buffer,
-            OnboardingStep::Confirm => "",
+            OnboardingStep::ConsciousnessLevel | OnboardingStep::Confirm => "",
         }
     }
 
@@ -320,7 +402,7 @@ impl OnboardingWizard {
             OnboardingStep::Longitude => &mut self.lng_input,
             OnboardingStep::Timezone => &mut self.tz_input,
             OnboardingStep::ApiKey => &mut self.key_buffer,
-            OnboardingStep::Confirm => unreachable!(),
+            OnboardingStep::ConsciousnessLevel | OnboardingStep::Confirm => unreachable!(),
         }
     }
 
@@ -362,7 +444,7 @@ impl OnboardingWizard {
                     return Err("Timezone cannot be empty".into());
                 }
             }
-            OnboardingStep::ApiKey | OnboardingStep::Confirm => {}
+            OnboardingStep::ApiKey | OnboardingStep::ConsciousnessLevel | OnboardingStep::Confirm => {}
         }
         Ok(())
     }
@@ -398,14 +480,24 @@ impl OnboardingWizard {
                 self.error = None;
                 self.step = self.step.prev();
             }
+            KeyCode::Up | KeyCode::Char('k') if self.step == OnboardingStep::ConsciousnessLevel => {
+                if self.consciousness_level > 0 {
+                    self.consciousness_level -= 1;
+                }
+            }
+            KeyCode::Down | KeyCode::Char('j') if self.step == OnboardingStep::ConsciousnessLevel => {
+                if self.consciousness_level < 5 {
+                    self.consciousness_level += 1;
+                }
+            }
             KeyCode::Backspace => {
-                if self.step != OnboardingStep::Confirm {
+                if self.step != OnboardingStep::Confirm && self.step != OnboardingStep::ConsciousnessLevel {
                     self.current_input_mut().pop();
                     self.error = None;
                 }
             }
             KeyCode::Char(c) => {
-                if self.step != OnboardingStep::Confirm {
+                if self.step != OnboardingStep::Confirm && self.step != OnboardingStep::ConsciousnessLevel {
                     self.current_input_mut().push(c);
                     self.error = None;
                 }
@@ -433,6 +525,8 @@ impl OnboardingWizard {
             timezone: self.tz_input.clone(),
         };
 
-        Some(LocalProfile::new(&self.name_input, birth_data))
+        let mut profile = LocalProfile::new(&self.name_input, birth_data);
+        profile.consciousness_level = self.consciousness_level;
+        Some(profile)
     }
 }

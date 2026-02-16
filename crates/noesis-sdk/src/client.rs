@@ -169,6 +169,21 @@ impl NoesisClient {
         self.http.get(&url).send().await.is_ok()
     }
 
+    /// Get the authenticated user's server-side profile.
+    /// Returns consciousness_level and experience_points from Supabase.
+    #[instrument(skip(self))]
+    pub async fn get_me(&self) -> Result<UserProfile> {
+        let url = format!("{}/api/v1/users/me", self.base_url);
+
+        let mut request = self.http.get(&url);
+        if let Some(ref key) = self.api_key {
+            request = request.header("X-API-Key", key);
+        }
+
+        let response = request.send().await?;
+        self.handle_response(response).await
+    }
+
     /// Handle API response, parsing JSON or returning an error.
     async fn handle_response<T: for<'de> Deserialize<'de>>(
         &self,
@@ -256,6 +271,23 @@ pub struct WorkflowInfo {
     pub name: String,
     pub description: String,
     pub engine_ids: Vec<String>,
+}
+
+/// Server-side user profile from GET /api/v1/users/me.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct UserProfile {
+    pub id: String,
+    pub email: String,
+    pub full_name: String,
+    pub tier: String,
+    pub consciousness_level: i32,
+    pub experience_points: i32,
+    #[serde(default)]
+    pub birth_date: Option<String>,
+    #[serde(default)]
+    pub birth_time: Option<String>,
+    #[serde(default)]
+    pub timezone: Option<String>,
 }
 
 /// A stored reading record from the API.
