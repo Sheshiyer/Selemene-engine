@@ -16,6 +16,8 @@ members = [
     "crates/noesis-integration",
     # SDK for TUI/Desktop/Agent clients
     "crates/noesis-sdk",
+    # Terminal User Interface
+    "crates/noesis-tui",
     # Vedic astrology API integration (FreeAstrologyAPI.com)
 
     # Rust consciousness engines

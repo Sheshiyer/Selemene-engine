@@ -1,0 +1,43 @@
+[package]
+name = "noesis-tui"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Terminal User Interface for Selemene Engine — Ratatui-based interactive client"
+
+[[bin]]
+name = "noesis-tui"
+path = "src/main.rs"
+
+[dependencies]
+# SDK for API access
+noesis-sdk = { path = "../noesis-sdk" }
+noesis-core = { path = "../noesis-core" }
+
+# TUI framework
+ratatui = "0.29"
+crossterm = { version = "0.28", features = ["event-stream"] }
+
+# Async runtime
+tokio = { workspace = true }
+
+# Serialization
+serde = { workspace = true }
+serde_json = { workspace = true }
+
+# Date/Time
+chrono = { workspace = true }
+
+# Error handling
+thiserror = { workspace = true }
+anyhow = { workspace = true }
+
+# Directories
+dirs = "5"
+
+# Logging
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+
+# Futures
+futures = "0.3"
