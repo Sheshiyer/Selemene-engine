@@ -63,7 +63,7 @@
       "owner_role": "Docs Engineer",
       "est_hours": 1.0,
       "dependencies": ["T03"],
-      "deliverable": "New intro text framing engines as mirrors plus 13-core-vs-16-implemented note.",
+      "deliverable": "New intro text framing engines as mirrors with consistent 16-engine language.",
       "acceptance": "Engines section includes both mirror framing and explicit count clarification text."
     },
     {
@@ -223,7 +223,7 @@
       "owner_role": "Docs Engineer",
       "est_hours": 2.0,
       "dependencies": ["T18"],
-      "deliverable": "Reframed docs/ENGINES.md intro with mirror-based context and 13-core-vs-16-implemented clarification.",
+      "deliverable": "Reframed docs/ENGINES.md intro with mirror-based context and consistent 16-engine language.",
       "acceptance": "ENGINES intro reflects philosophy framing and count distinction without changing engine technical details."
     },
     {

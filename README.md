@@ -243,8 +243,6 @@ cargo run --bin noesis-tui
 
 Each engine is a **mirror**, not a method. They don't predict; they reflect. The value isn't in the calculation — it's in what you witness when you see the pattern.
 
-**Note on Engine Count:** Brand materials reference "13 engines" — the core symbolic system. The codebase implements 16 total: 11 native Rust engines + 5 TypeScript bridges for esoteric systems (Tarot, I-Ching, etc.).
-
 <br>
 
 ### Rust Engines (11)

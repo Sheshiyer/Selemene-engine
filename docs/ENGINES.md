@@ -6,7 +6,7 @@
 
 <p align="center">
   <em>Sixteen implemented engines acting as mirrors for inquiry and synthesis.</em><br>
-  <sub>13 core symbolic systems, implemented across 16 runtime engines (11 Rust + 5 TypeScript)</sub>
+  <sub>16 implemented engines across Rust and TypeScript surfaces</sub>
 </p>
 
 <br>
@@ -16,8 +16,6 @@
 <br>
 
 # Rust Engines (11)
-
-> _Count note: this page lists 16 implemented runtime engines; “13 core symbolic systems” refers to the conceptual core model._
 
 High-performance native calculation engines built in Rust with sub-millisecond performance.
 
