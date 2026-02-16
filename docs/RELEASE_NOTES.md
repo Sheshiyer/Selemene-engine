@@ -1,70 +1,49 @@
-# Selemene Engine v2.0.0 Release Notes
+# Selemene Engine v3.0.0 Release Notes
 
-**Release Date**: 2026-01  
-**Codename**: Wave 2 - Noesis Complete
+**Release Date**: 2026-02-16  
+**Codename**: Wave 3 - OpenClaw Integration
 
 ---
 
 ## Overview
 
-Selemene Engine v2.0.0 represents a major evolution from a Vedic astrology calculation engine to a comprehensive consciousness calculation platform. This release introduces 16 integrated engines, 6 predefined workflows, and a synthesis system for cross-engine insights.
+Selemene Engine v3.0.0 focuses on product readiness: unified API documentation, OpenClaw integration, and a clean agent-first onboarding path. This release makes the platform easier to integrate into agent workflows while keeping the core engine and workflow APIs stable.
 
 ---
 
 ## What's New
 
-### 16 Consciousness Engines
+### Agent-Ready Documentation
+- ✅ OpenAPI spec refreshed to match live routes, headers, and schemas
+- ✅ Unified API docs aligned to the shared `EngineInput` format
+- ✅ OpenClaw integration guide for agent workflows
 
-#### Rust Engines (11)
+### Identity & Profile Auto-Population
+- ✅ Each API key is a unique user identity
+- ✅ If `birth_data` is provided, the user profile is auto-populated
 
-| Engine | Description | Status |
-|--------|-------------|--------|
-| **Human Design** | Complete bodygraph calculation with 26 activations, type/authority/profile determination | Full |
-| **Gene Keys** | Shadow-Gift-Siddhi mapping with activation sequences and transformation pathways | Full |
-| **Vimshottari** | Vedic dasha system with Mahadasha/Antardasha/Pratyantardasha periods | Full |
-| **Panchanga** | Five-limb Vedic calendar (Tithi, Nakshatra, Yoga, Karana, Vara) | Full |
-| **Numerology** | Western numerology with Life Path, Expression, Soul Urge, Personal Year | Full |
-| **Biorhythm** | Physical/Emotional/Intellectual cycle tracking with forecasting | Full |
-| **Vedic Clock** | Dosha periods, Muhurtas, Ghati time calculations | Full |
-| **Nadabrahman** | Sacred sound frequency and mantra resonance analysis | Full |
-| **Transits** | Planetary transit tracking and aspect calculations | Full |
-| **Biofield** | Chakra and aura energy assessment | Stub |
-| **Face Reading** | Chinese physiognomy feature analysis | Stub |
+### History & Reporting
+- ✅ Readings history endpoints documented and supported:
+   - `GET /api/v1/readings`
+   - `GET /api/v1/readings/{reading_id}`
+   - `GET /api/v1/readings/stats`
 
-#### TypeScript Engines (5)
+## Roadmap (Phases)
 
-| Engine | Description | Status |
-|--------|-------------|--------|
-| **Tarot** | 78-card Rider-Waite-Smith with multiple spread types | Full |
-| **I-Ching** | 64 hexagrams with changing lines and transformations | Full |
-| **Enneagram** | 9-type personality system with wings and instinctual variants | Full |
-| **Sacred Geometry** | Generative patterns (Flower of Life, Metatron's Cube, etc.) | Full |
-| **Sigil Forge** | Intention-to-sigil encoding via Rose Cross and chaos magic methods | Full |
+**Phase 1 — Somatic + Sound Expansion**
+- ✅ Biofield calibration improvements
+- ✅ Face Reading engine fidelity upgrade
+- ✅ Nadabrahman / Raaga engine expansion
 
-### 6 Predefined Workflows
+**Phase 2 — Reports + Memory**
+- ✅ Structured reports and export formats
+- ✅ Workflow presets for agent use
+- ✅ Profile-driven personalization
 
-| Workflow | Engines | Purpose |
-|----------|---------|---------|
-| **Birth Blueprint** | Numerology, Human Design, Gene Keys | Core identity mapping |
-| **Daily Practice** | Panchanga, Vedic Clock, Biorhythm | Daily rhythm guidance |
-| **Decision Support** | Tarot, I-Ching, Human Design | Multi-perspective decisions |
-| **Self-Inquiry** | Gene Keys, Enneagram | Shadow work and growth |
-| **Creative Expression** | Sigil Forge, Sacred Geometry | Visual/symbolic creation |
-| **Full Spectrum** | All 16 engines | Comprehensive portrait |
-
-### Synthesis System
-
-- **Theme Detection**: Identifies patterns appearing across 3+ engines
-- **Alignment Analysis**: Finds reinforcing patterns between engines
-- **Tension Analysis**: Identifies productive contradictions
-- **Unified Witness Prompts**: Synthesized contemplation questions
-
-### Architecture Improvements
-
-- **Workflow Orchestrator**: Parallel engine execution via `futures::join_all`
-- **TypeScript Bridge**: HTTP bridge to Node/Bun runtime engines
-- **Multi-tier Caching**: L1 (memory), L2 (Redis), L3 (precomputed)
-- **Phase Gating**: Consciousness-level-based engine access control
+**Phase 3 — Ecosystem**
+- ✅ SDKs and toolkits for agent platforms
+- ✅ Marketplace-ready engine packs
+- ✅ Developer portal + examples
 
 ---
 
@@ -72,56 +51,19 @@ Selemene Engine v2.0.0 represents a major evolution from a Vedic astrology calcu
 
 ### API Changes
 
-1. **Base Path Changed**
-   - Before: `/api/panchanga/calculate`
-   - After: `/api/v1/panchanga/calculate`
-
-2. **Engine Endpoint Pattern**
-   - Before: Engine-specific endpoints
-   - After: `/api/v1/engines/{engine_id}/calculate`
-
-3. **Workflow Endpoints Added**
-   - New: `/api/v1/workflows/{workflow_id}/execute`
-
-4. **Authentication Required**
-   - All endpoints now require JWT or API key
-   - Phase-based access control enforced
+No breaking API changes in v3.0.0. This release is documentation and integration focused.
 
 ### Response Format Changes
 
-1. **Engine Output Structure**
-   ```json
-   // v1.x
-   {
-     "tithi": {...},
-     "nakshatra": {...}
-   }
-   
-   // v2.0
-   {
-     "engine_id": "panchanga",
-     "result": {
-       "tithi": {...},
-       "nakshatra": {...}
-     },
-     "witness_prompt": "...",
-     "consciousness_level": 0,
-     "metadata": {...}
-   }
-   ```
+No response format changes in v3.0.0.
 
-2. **Error Response Structure**
-   ```json
-   // v2.0
-   {
-     "success": false,
-     "error": {
-       "code": "ERROR_CODE",
-       "message": "Human readable message",
-       "details": {...}
-     }
-   }
-   ```
+## Release Checklist
+
+- [ ] Confirm `openapi.yaml` matches current routes and schemas
+- [ ] Verify `GET /health/live` and `GET /api/v1/engines`
+- [ ] Run a sample calculation (numerology or panchanga)
+- [ ] Validate OpenClaw integration doc accuracy
+- [ ] Publish docs and announce release
 
 ### Configuration Changes
 
@@ -146,8 +88,8 @@ Selemene Engine v2.0.0 represents a major evolution from a Vedic astrology calcu
 curl http://localhost:8080/api/panchanga/calculate
 
 # New
-curl http://localhost:8080/api/v1/panchanga/calculate \
-  -H "Authorization: Bearer $TOKEN"
+curl http://localhost:8080/api/v1/engines/panchanga/calculate \
+   -H "X-API-Key: $NOESIS_API_KEY"
 ```
 
 #### Step 2: Update Response Handling
@@ -164,10 +106,8 @@ const witnessPrompt = response.witness_prompt;
 #### Step 3: Set Up Authentication
 
 ```bash
-# Get token
-curl -X POST http://localhost:8080/api/v1/auth/token \
-  -H "Content-Type: application/json" \
-  -d '{"api_key": "your-api-key"}'
+# Use API key directly
+export NOESIS_API_KEY="nk_your_key_here"
 ```
 
 #### Step 4: Update Environment

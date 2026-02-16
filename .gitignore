@@ -33,3 +33,6 @@ Thumbs.db
 
 # User data
 .about_me/
+
+# Local OpenClaw exports
+Openclaw.txt

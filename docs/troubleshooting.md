@@ -345,8 +345,8 @@ swetest -b15.3.1990 -ut14:30 -p0123456789 -fPZS -g, -head
 
 **4. Use validation endpoint:**
 ```bash
-curl -X POST http://localhost:8080/api/v1/panchanga/validate \
-  -H "Authorization: Bearer $TOKEN" \
+curl -X POST http://localhost:8080/api/v1/engines/panchanga/validate \
+  -H "X-API-Key: $NOESIS_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{"...": "..."}'
 ```

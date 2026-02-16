@@ -42,9 +42,10 @@ docker-compose logs -f noesis-api
 curl http://localhost:8080/health
 
 # Test calculation
-curl -X POST http://localhost:8080/api/v1/panchanga/calculate \
+curl -X POST http://localhost:8080/api/v1/engines/panchanga/calculate \
+  -H "X-API-Key: $NOESIS_API_KEY" \
   -H "Content-Type: application/json" \
-  -d '{"current_time": "2025-01-15T12:00:00Z", "location": {"latitude": 28.6, "longitude": 77.2}}'
+  -d '{"birth_data": {"date": "2025-01-15", "latitude": 28.6, "longitude": 77.2, "timezone": "Asia/Kolkata"}}'
 ```
 
 ---

@@ -2,6 +2,19 @@
 
 All notable changes to the Tryambakam Noesis Engine project.
 
+## [3.0.0] - 2026-02-16
+
+### Added
+- OpenClaw integration guide and LLM/agent guide for Noesis APIs
+- OpenAPI spec refreshed to match current routes, headers, and schemas
+
+### Changed
+- API docs aligned with unified `EngineInput` schema and live endpoints
+- API keys treated as unique user identities; profile auto-population from `birth_data`
+
+### Fixed
+- Documentation references to legacy endpoints and auth headers
+
 ## [2.3.0] - 2026-02-10
 
 ### Added

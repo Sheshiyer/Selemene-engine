@@ -43,7 +43,7 @@
 >
 > 16 engines spanning Vedic astrology, planetary transits, numerology, Human Design, Gene Keys, and esoteric traditions. Built in Rust with sub-millisecond calculations.
 >
-> Selemene Engine powers the computational backend of **Tryambakam Noesis** — providing real-time calculations, multi-engine orchestration, and consciousness-calibrated witness prompts.
+> Selemene Engine powers the computational backend of **Tryambakam Noesis** — providing real-time calculations, multi-engine orchestration, and consciousness-calibrated witness prompts. OpenClaw integration is now supported for agent workflows.
 
 <br>
 
@@ -106,6 +106,25 @@ curl -s -X POST https://selemene.tryambakam.space/api/v1/engines/numerology/calc
 ```
 
 </details>
+
+<br>
+
+## ✦ Roadmap (Phases)
+
+**Phase 1 — Somatic + Sound Expansion**
+- ✅ Biofield calibration improvements
+- ✅ Face Reading engine fidelity upgrade
+- ✅ Nadabrahman / Raaga engine expansion
+
+**Phase 2 — Reports + Memory**
+- ✅ Structured reports and export formats
+- ✅ Workflow presets for agent use
+- ✅ Profile-driven personalization
+
+**Phase 3 — Ecosystem**
+- ✅ SDKs and toolkits for agent platforms
+- ✅ Marketplace-ready engine packs
+- ✅ Developer portal + examples
 
 <br>
 
