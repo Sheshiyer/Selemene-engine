@@ -32,12 +32,12 @@ pub const ENGINES: &[&str] = &[
 
 /// List of all available workflows
 pub const WORKFLOWS: &[&str] = &[
+    "birth-blueprint",
     "daily-practice",
-    "birth-chart-analysis",
-    "transit-forecast",
-    "consciousness-calibration",
-    "somatic-inquiry",
-    "shadow-work",
+    "decision-support",
+    "self-inquiry",
+    "creative-expression",
+    "full-spectrum",
 ];
 
 /// High-level client for the Selemene Engine API.
