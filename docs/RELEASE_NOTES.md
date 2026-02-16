@@ -30,20 +30,26 @@ Selemene Engine v3.0.0 focuses on product readiness: unified API documentation, 
 
 ## Roadmap (Phases)
 
-**Phase 1 — Somatic + Sound Expansion**
-- ✅ Biofield calibration improvements
-- ✅ Face Reading engine fidelity upgrade
-- ✅ Nadabrahman / Raaga engine expansion
+**Phase 1 — Onboarding + TUI**
+- ✅ Terminal TUI for non-frontend onboarding and first reading
+- ✅ Profile capture + reuse (birth_data saved locally)
+- ✅ Report export (Markdown) for Somatic Canticles workflows
 
-**Phase 2 — Reports + Memory**
-- ✅ Structured reports and export formats
-- ✅ Workflow presets for agent use
-- ✅ Profile-driven personalization
+**Phase 2 — Desktop Surfaces**
+- ✅ Raycast extension for quick readings (numerology, panchanga, daily-practice)
+- ✅ macOS menu bar applet (daily timing + quick prompts)
+- ✅ Tauri wrapper app for non-technical users
 
-**Phase 3 — Ecosystem**
-- ✅ SDKs and toolkits for agent platforms
-- ✅ Marketplace-ready engine packs
-- ✅ Developer portal + examples
+**Phase 3 — Apple Ecosystem**
+- ✅ Apple Shortcuts actions (run engine/workflow via HTTP)
+- ✅ Apple Watch faces/complications (daily-practice, biorhythm snapshot)
+- ✅ On-device caching for low-connectivity reads
+
+**Integration Notes & Delivery Constraints**
+- All surfaces call the same API endpoints and share `EngineInput`.
+- API keys must be stored securely (Keychain/Shortcuts secure storage).
+- Watch faces are limited to cached summaries and small payloads.
+- Menu bar + Raycast must avoid long-running calls; use workflows where possible.
 
 ---
 
