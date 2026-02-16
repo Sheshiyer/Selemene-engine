@@ -5,6 +5,39 @@ All notable changes to the Tryambakam Noesis Engine project.
 ## [3.0.0] - 2026-02-16
 
 ### Added
+
+**noesis-sdk Crate (P0 Foundation)**
+- `NoesisClient` — HTTP client for all 16 engines and 6 workflows
+- `LocalProfile` — JSON profile persistence at `~/.noesis/profile.json`
+- `KeychainStore` — macOS Keychain API key storage via `keyring` crate
+- `MarkdownRenderer` — Markdown/JSON/Text report rendering with phase indicators
+- `Config` — TOML + environment variable configuration with builder pattern
+- 27 unit tests passing
+
+**noesis-tui Crate (P1 Terminal TUI)**
+- Full Ratatui 0.29 interactive terminal interface (3,300+ lines, 18 files)
+- 7 screens: Welcome, Onboarding (8-step wizard), Engine Picker (16 engines), Workflow Picker (6 workflows), Result Display, History Browser, Profile Editor
+- 3 widgets: Help overlay, error bar, spinner
+- Type-to-filter with `/` activation mode for engine and workflow pickers
+- Styled Markdown rendering with phase dots, consciousness levels, witness prompts
+- Export to Markdown (`e`) and JSON (`J`) from result display
+- Scroll position indicator and re-run keybind (`r`)
+- API key management via keychain in profile editor
+- Connection status indicator and version display on welcome screen
+- Tracing logs to `~/.noesis/logs/tui.log`
+
+**UX Gap Analysis Fixes (18 issues resolved)**
+- C1: Help menu item now toggles help overlay (was navigating to self)
+- C2: `q` shortcut now properly quits via `should_quit` flag
+- C3: Engine/workflow errors surfaced to user via `ShowError` action
+- M1: Profile/client null guards show helpful error messages
+- M2: History Enter key opens selected reading in result display
+- M3: `/` enters explicit filter mode, j/k safe for navigation
+- M4: API key field added to profile editor with keychain integration
+- M5: Workflow picker now has filter support matching engine picker
+- M6: JSON export footer label corrected to show `J` (Shift+J)
+- Plus 8 minor fixes: shared `format_name` utility, error bar positioning, spinner dead-code suppression, version display, connection indicator, scroll position, re-run keybind, edit buffer cleanup
+
 - OpenClaw integration guide and LLM/agent guide for Noesis APIs
 - OpenAPI spec refreshed to match current routes, headers, and schemas
 
@@ -194,6 +227,7 @@ All notable changes to the Tryambakam Noesis Engine project.
 
 | Version | Date | Engines | Tests | Highlights |
 |---------|------|---------|-------|------------|
+| 3.0.0 | 2026-02-16 | 16 | 429+ | SDK + TUI, OpenClaw, UX gap analysis (18 fixes) |
 | 2.3.0 | 2026-02-10 | 14 + API | 402+ | Agent Bridge CLI, AI discovery files, custom domain |
 | 2.1.0 | 2026-02-09 | 14 + API | 402+ | FreeAstrologyAPI integration, metrics, resilience |
 | 2.0.0 | 2026-02-01 | 14 | 228+ | Wave 2 complete, workflows, production ready |

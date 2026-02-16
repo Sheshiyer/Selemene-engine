@@ -15,6 +15,10 @@
   <img src="https://img.shields.io/badge/engines-16-1A1A2E?style=for-the-badge&labelColor=6B6B6B" alt="16 Engines">
   &nbsp;
   <img src="https://img.shields.io/badge/workflows-6-1A1A2E?style=for-the-badge&labelColor=6B6B6B" alt="6 Workflows">
+  &nbsp;
+  <img src="https://img.shields.io/badge/SDK-Rust-CE422B?style=for-the-badge&labelColor=6B6B6B" alt="Rust SDK">
+  &nbsp;
+  <img src="https://img.shields.io/badge/TUI-Ratatui-1A1A2E?style=for-the-badge&labelColor=6B6B6B" alt="TUI">
 </p>
 
 <p align="center">
@@ -51,15 +55,19 @@
 
 <table>
 <tr>
-<td width="33%" align="center">
+<td width="25%" align="center">
 <a href="docs/API_QUICKSTART.md"><strong>📖 API Quickstart</strong></a><br>
 <sub>Zero to first call in 5 minutes</sub>
 </td>
-<td width="33%" align="center">
-<a href="scripts/explore-api.sh"><strong>🔮 Terminal Explorer</strong></a><br>
-<sub>Interactive CLI for every engine</sub>
+<td width="25%" align="center">
+<a href="crates/noesis-tui"><strong>🖥 Terminal TUI</strong></a><br>
+<sub>Interactive Ratatui interface</sub>
 </td>
-<td width="33%" align="center">
+<td width="25%" align="center">
+<a href="scripts/explore-api.sh"><strong>🔮 Terminal Explorer</strong></a><br>
+<sub>CLI for every engine</sub>
+</td>
+<td width="25%" align="center">
 <a href="https://selemene.tryambakam.space/api/docs"><strong>📜 Swagger UI</strong></a><br>
 <sub>Full API documentation</sub>
 </td>
@@ -109,28 +117,57 @@ curl -s -X POST https://selemene.tryambakam.space/api/v1/engines/numerology/calc
 
 <br>
 
-## ✦ Roadmap (Phases)
+## ✦ Noesis SDK & TUI
 
-**Phase 1 — Onboarding + TUI**
-- ✅ Terminal TUI for non-frontend onboarding and first reading
-- ✅ Profile capture + reuse (birth_data saved locally)
-- ✅ Report export (Markdown) for Somatic Canticles workflows
+### Rust SDK (`noesis-sdk`)
 
-**Phase 2 — Desktop Surfaces**
-- ✅ Raycast extension for quick readings (numerology, panchanga, daily-practice)
-- ✅ macOS menu bar applet (daily timing + quick prompts)
-- ✅ Tauri wrapper app for non-technical users
+First-party Rust SDK for interacting with the Selemene API. Use it to build your own tools, integrations, or TUI extensions.
 
-**Phase 3 — Apple Ecosystem**
-- ✅ Apple Shortcuts actions (run engine/workflow via HTTP)
-- ✅ Apple Watch faces/complications (daily-practice, biorhythm snapshot)
-- ✅ On-device caching for low-connectivity reads
+```rust
+use noesis_sdk::{Config, NoesisClient, LocalProfile};
 
-**Integration Notes & Delivery Constraints**
-- All surfaces call the same API endpoints and share `EngineInput`.
-- API keys must be stored securely (Keychain/Shortcuts secure storage).
-- Watch faces are limited to cached summaries and small payloads.
-- Menu bar + Raycast must avoid long-running calls; use workflows where possible.
+let config = Config::load().unwrap_or_default();
+let client = NoesisClient::new(&config)?;
+let profile = LocalProfile::load_or_default()?.unwrap();
+let output = client.calculate("numerology", profile.to_engine_input()).await?;
+println!("{}", MarkdownRenderer::new().render_engine_output(&output));
+```
+
+**Features:** HTTP client for all 16 engines & 6 workflows, local profile management (`~/.noesis/profile.json`), macOS Keychain API key storage, Markdown/JSON report rendering, TOML + env config.
+
+### Terminal TUI (`noesis-tui`)
+
+Full interactive terminal interface built with Ratatui. Run engines, browse workflows, manage your profile, and export reports — all from the terminal.
+
+```bash
+cargo run --bin noesis-tui
+```
+
+**Screens:** Welcome (with connection status) · Onboarding wizard (8-step profile setup) · Engine picker (16 engines, `/` to filter) · Workflow picker (6 workflows) · Result display (styled Markdown, scroll, export) · History browser (past readings) · Profile editor (birth data + API key)
+
+**Keybinds:** `j/k` navigate · `Enter` select · `/` filter · `e` export MD · `J` export JSON · `r` re-run · `?` help overlay · `Ctrl+Q` quit
+
+<br>
+
+## ✦ Roadmap
+
+**P0 — SDK Foundation** ✅
+- `noesis-sdk` crate — HTTP client, profile, keychain, renderer, config
+- 27 tests passing
+
+**P1 — Terminal TUI** ✅
+- `noesis-tui` crate — Ratatui interactive interface (2,829+ lines)
+- All 7 screens + 3 widgets + UX gap analysis fixes (18 issues resolved)
+
+**P2 — Desktop Surfaces** *(planned)*
+- Raycast extension for quick readings
+- macOS menu bar applet
+- Tauri wrapper app
+
+**P3 — Apple Ecosystem** *(planned)*
+- Apple Shortcuts actions
+- Apple Watch complications
+- On-device caching
 
 <br>
 
@@ -450,6 +487,8 @@ crates/
   engine-face-reading/    Physiognomy analysis
   engine-nadabrahman/     Sound consciousness engine
   engine-transits/        Planetary transits, aspects & Sade Sati
+  noesis-sdk/             Rust SDK — HTTP client, profiles, keychain, renderer
+  noesis-tui/             Terminal TUI — Ratatui interactive interface
   noesis-bridge/          Bridge integrations (Claude, OpenAI, LangChain)
   noesis-data/            Data loading and management
   noesis-integration/     Integration tests & cross-engine coordination
@@ -589,6 +628,8 @@ See [`.env.example`](.env.example) for full list.
 | | |
 |---|---|
 | **[API Quickstart](docs/API_QUICKSTART.md)** | Zero to first call |
+| **[Terminal TUI](crates/noesis-tui)** | Interactive terminal interface |
+| **[Rust SDK](crates/noesis-sdk)** | Build your own integrations |
 | **[Swagger UI](https://selemene.tryambakam.space/api/docs)** | Interactive explorer |
 | **[Terminal Explorer](scripts/explore-api.sh)** | CLI exploration |
 | **[Agent Bridge](bridges/cli/README.md)** | Claude, OpenAI, LangChain tool defs |
