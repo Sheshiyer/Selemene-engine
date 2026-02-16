@@ -44,6 +44,17 @@ All notable changes to the Tryambakam Noesis Engine project.
 ### Changed
 - API docs aligned with unified `EngineInput` schema and live endpoints
 - API keys treated as unique user identities; profile auto-population from `birth_data`
+- Philosophy-first messaging realignment across README + docs tiers (user-facing, platform, and operational intros)
+- Engine/workflow framing normalized to mirrors/synthesis language where conceptual
+- Canonical domain policy standardized (`selemene.tryambakam.space`, `tryambakam.space`, `1319.tryambakam.space`)
+
+### Documentation QA Artifacts
+- `docs/DOCS_CONSISTENCY_CHECKLIST_2026-02-16.md`
+- `docs/DOCS_LINK_MAP_2026-02-16.md`
+- `docs/DOCS_VOCAB_LINT_REPORT_2026-02-16.md`
+- `docs/IMAGE_PLACEMENT_STRATEGY_2026-02-16.md`
+- `docs/DOCS_EXTERNAL_LINK_AUDIT_2026-02-16.md`
+- `docs/DOCS_CONSISTENCY_SIGNOFF_2026-02-16.md`
 
 ### Fixed
 - Documentation references to legacy endpoints and auth headers

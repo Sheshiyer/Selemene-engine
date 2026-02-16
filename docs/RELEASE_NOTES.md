@@ -11,9 +11,28 @@ Selemene Engine v3.0.0 delivers two major new crates — the **Rust SDK** (`noes
 
 This release expands access to reflective computation — mirrors for inquiry, not prescriptive outputs.
 
+It also includes a full philosophy-first documentation realignment: README narrative rewrite, docs-wide messaging normalization, canonical link policy enforcement, vocabulary linting, and final QA sign-off artifacts.
+
 ---
 
 ## What's New
+
+### Philosophy-First Documentation Realignment (36-task closeout)
+- `README.md` reframed around authorship, reflection, inquiry, witness
+- Kha-Ba-La model and self-consciousness calibration integrated in core narrative
+- Engines/workflows language normalized from pipeline framing to mirror/synthesis framing
+- Tiered docs consistency pass across user-facing, platform, and ops docs (light-touch for technical runbooks)
+- Canonical domain policy enforced across docs:
+   - `https://selemene.tryambakam.space` (API runtime)
+   - `https://tryambakam.space` (ecosystem context)
+   - `https://1319.tryambakam.space` (Somatic Canticles)
+- QA artifacts published:
+   - `docs/DOCS_CONSISTENCY_CHECKLIST_2026-02-16.md`
+   - `docs/DOCS_LINK_MAP_2026-02-16.md`
+   - `docs/DOCS_VOCAB_LINT_REPORT_2026-02-16.md`
+   - `docs/IMAGE_PLACEMENT_STRATEGY_2026-02-16.md`
+   - `docs/DOCS_EXTERNAL_LINK_AUDIT_2026-02-16.md`
+   - `docs/DOCS_CONSISTENCY_SIGNOFF_2026-02-16.md`
 
 ### Rust SDK (`noesis-sdk`)
 - `NoesisClient` — HTTP client for all 16 engines and 6 workflows

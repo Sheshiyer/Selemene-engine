@@ -5,7 +5,7 @@
 <h1 align="center">Selemene Engine</h1>
 
 <p align="center">
-  <em>High-Performance Consciousness Calculation Engine</em><br>
+  <em>Reflection-First Consciousness Calculation Engine</em><br>
   <sub>Part of the Tryambakam Noesis Project</sub>
 </p>
 
@@ -47,7 +47,7 @@
   <strong>Not prediction. Reflection. Inquiry. Witness.</strong>
 </p>
 
-> **High-performance astronomical and consciousness calculation engine.**
+> **Reflection-first astronomical and consciousness calculation engine.**
 >
 > **Every system you've tried positioned you as user, not author.**
 >
