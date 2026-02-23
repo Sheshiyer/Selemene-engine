@@ -76,6 +76,7 @@ Notes:
 - `GET /health/ready`
 - `GET /ready`
 - `GET /metrics` (Prometheus)
+- `GET /api/v1/status` (list engines and workflows; auth required)
 
 ### Engines
 
