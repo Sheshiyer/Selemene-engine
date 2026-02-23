@@ -201,7 +201,7 @@ curl -s .../api/v1/workflows \
 | **decision-support** | tarot + i-ching + HD authority | Multi-perspective guidance |
 | **self-inquiry** | gene-keys + enneagram | Shadow work + patterns |
 | **creative-expression** | sigil-forge + sacred-geometry | Intent visualization |
-| **full-spectrum** | all 16 engines | Complete consciousness portrait |
+| **full-spectrum** | 14 engines (all except nadabrahman, transits) | Complete consciousness portrait |
 
 ```bash
 # Execute a workflow

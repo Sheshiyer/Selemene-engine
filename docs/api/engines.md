@@ -54,17 +54,17 @@ Notes:
 
 | Engine ID | Name | Required Phase |
 |-----------|------|----------------|
-| human-design | Human Design | 1 |
-| gene-keys | Gene Keys | 1 |
-| vimshottari | Vimshottari Dasha | 1 |
 | panchanga | Panchanga | 0 |
 | numerology | Numerology | 0 |
 | biorhythm | Biorhythm | 0 |
 | vedic-clock | Vedic Clock | 0 |
-| biofield | Biofield | 2 |
-| face-reading | Face Reading | 2 |
-| nadabrahman | Nadabrahman | 1 |
-| transits | Transits | 1 |
+| nadabrahman | Nadabrahman | 0 |
+| transits | Transits | 0 |
+| human-design | Human Design | 1 |
+| biofield | Biofield | 1 |
+| face-reading | Face Reading | 1 |
+| gene-keys | Gene Keys | 2 |
+| vimshottari | Vimshottari Dasha | 2 |
 
 ### TypeScript Engines (Bridged)
 
@@ -72,11 +72,17 @@ Notes:
 
 | Engine ID | Name | Required Phase |
 |-----------|------|----------------|
-| tarot | Tarot | 1 |
-| i-ching | I-Ching | 1 |
+| tarot | Tarot | 0 |
+| i-ching | I-Ching | 0 |
+| sacred-geometry | Sacred Geometry | 0 |
 | enneagram | Enneagram | 1 |
-| sacred-geometry | Sacred Geometry | 2 |
-| sigil-forge | Sigil Forge | 2 |
+| sigil-forge | Sigil Forge | 1 |
+
+---
+
+## Consciousness Phases
+
+Engines are gated by consciousness phase. If your account's level is below an engine's `required_phase`, the API returns `403 PHASE_ACCESS_DENIED`. Levels are promoted automatically based on reading count (see [authentication.md](./authentication.md#consciousness-level--auto-promotion)).
 
 ---
 

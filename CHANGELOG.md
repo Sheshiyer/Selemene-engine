@@ -2,6 +2,21 @@
 
 All notable changes to the Tryambakam Noesis Engine project.
 
+## [3.0.1] - 2026-02-23
+
+### Added
+- Consciousness level auto-promotion: users are promoted based on reading count (5→L1, 15→L2, 40→L3, 80→L4, 150→L5)
+- XP awards: 10 XP per engine calculation, 25 XP per workflow execution
+- Promotion cascades to `api_keys` table and logs to `progression_logs`
+- Documentation for consciousness levels and auto-promotion in `authentication.md` and `engines.md`
+
+### Fixed
+- `engines.md`: corrected `required_phase` for 9 engines (biofield 2→1, face-reading 2→1, nadabrahman 1→0, transits 1→0, gene-keys 1→2, vimshottari 1→2, tarot 1→0, i-ching 1→0, sacred-geometry 2→0, sigil-forge 2→1)
+- `workflows.md`: corrected `birth-blueprint` engine list (`gene-keys` → `vimshottari`)
+- `workflows.md` + `API_QUICKSTART.md`: corrected `full-spectrum` engine count (16 → 14, excludes nadabrahman and transits)
+
+---
+
 ## [3.0.0] - 2026-02-16
 
 ### Added

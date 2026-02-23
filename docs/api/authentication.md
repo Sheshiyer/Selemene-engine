@@ -103,6 +103,23 @@ POST /api/v1/auth/change-password
 }
 ```
 
+## Consciousness Level & Auto-Promotion
+
+Each user starts at consciousness level 0 (Dormant). As you make engine calculations and workflow executions, your level is automatically promoted based on your total reading count:
+
+| Readings | Level | State |
+|----------|-------|-------|
+| 0–4 | 0 | Dormant |
+| 5+ | 1 | Glimpsing |
+| 15+ | 2 | Practicing |
+| 40+ | 3 | Integrated |
+| 80+ | 4 | Embodied |
+| 150+ | 5 | Embodied |
+
+Promotion is automatic and one-way (levels never decrease). Higher levels unlock phase-gated engines and workflows. If your level is below an engine's `required_phase`, the API returns `403` with error code `PHASE_ACCESS_DENIED`.
+
+Each engine calculation awards 10 XP and each workflow execution awards 25 XP. XP is tracked separately from level progression.
+
 ## Error Format
 
 ```json
