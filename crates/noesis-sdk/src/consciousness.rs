@@ -65,11 +65,11 @@ pub const LEVELS: &[ConsciousnessLevel] = &[
 /// Reading count thresholds for auto-promotion.
 /// After N readings, the user is promoted to the corresponding level.
 pub const READING_THRESHOLDS: &[(u32, u8)] = &[
-    (5, 1),    // 5+ readings → Phase 1 (Glimpsing)
-    (15, 2),   // 15+ readings → Phase 2 (Practicing)
-    (40, 3),   // 40+ readings → Phase 3 (Integrated)
-    (80, 4),   // 80+ readings → Phase 4 (Embodied)
-    (150, 5),  // 150+ readings → Phase 5 (Embodied)
+    (5, 1),   // 5+ readings → Phase 1 (Glimpsing)
+    (15, 2),  // 15+ readings → Phase 2 (Practicing)
+    (40, 3),  // 40+ readings → Phase 3 (Integrated)
+    (80, 4),  // 80+ readings → Phase 4 (Embodied)
+    (150, 5), // 150+ readings → Phase 5 (Embodied)
 ];
 
 /// Compute the consciousness level from a reading count.

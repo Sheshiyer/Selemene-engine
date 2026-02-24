@@ -61,7 +61,7 @@ impl ResultDisplay {
             .direction(Direction::Vertical)
             .constraints([
                 Constraint::Length(3), // Title bar
-                Constraint::Min(8),   // Content
+                Constraint::Min(8),    // Content
                 Constraint::Length(3), // Footer
             ])
             .split(area);
@@ -110,7 +110,9 @@ impl ResultDisplay {
         // Content — render styled text
         let content_lines = self.style_markdown_lines();
         let total_lines = content_lines.len();
-        let visible_line = (self.scroll_offset as usize).saturating_add(1).min(total_lines);
+        let visible_line = (self.scroll_offset as usize)
+            .saturating_add(1)
+            .min(total_lines);
         let scroll_indicator = format!(" Line {}/{} ", visible_line, total_lines);
         let content = Paragraph::new(content_lines)
             .scroll((self.scroll_offset, 0))
@@ -219,10 +221,7 @@ impl ResultDisplay {
                             .add_modifier(Modifier::ITALIC),
                     ))
                 } else if line.starts_with("Phase: **") {
-                    Line::from(Span::styled(
-                        line,
-                        Style::default().fg(Color::Green),
-                    ))
+                    Line::from(Span::styled(line, Style::default().fg(Color::Green)))
                 } else {
                     Line::from(Span::raw(line))
                 }
@@ -273,9 +272,7 @@ impl ResultDisplay {
             ResultKind::Engine { engine_id, output } => {
                 let content = match format {
                     ReportFormat::Markdown => renderer.render_engine_output(output),
-                    ReportFormat::Json => {
-                        serde_json::to_string_pretty(output).unwrap_or_default()
-                    }
+                    ReportFormat::Json => serde_json::to_string_pretty(output).unwrap_or_default(),
                     ReportFormat::Text => renderer.render_engine_output(output),
                 };
                 (content, engine_id.clone())
@@ -286,9 +283,7 @@ impl ResultDisplay {
             } => {
                 let content = match format {
                     ReportFormat::Markdown => renderer.render_workflow_result(result),
-                    ReportFormat::Json => {
-                        serde_json::to_string_pretty(result).unwrap_or_default()
-                    }
+                    ReportFormat::Json => serde_json::to_string_pretty(result).unwrap_or_default(),
                     ReportFormat::Text => renderer.render_workflow_result(result),
                 };
                 (content, workflow_id.clone())

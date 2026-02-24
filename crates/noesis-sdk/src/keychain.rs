@@ -166,32 +166,27 @@ impl PlaintextStore {
             return Ok(std::collections::HashMap::new());
         }
 
-        let content = fs::read_to_string(&self.path).map_err(|e| {
-            Error::Credential(format!("Failed to read credentials file: {}", e))
-        })?;
+        let content = fs::read_to_string(&self.path)
+            .map_err(|e| Error::Credential(format!("Failed to read credentials file: {}", e)))?;
 
-        serde_json::from_str(&content).map_err(|e| {
-            Error::Credential(format!("Failed to parse credentials file: {}", e))
-        })
+        serde_json::from_str(&content)
+            .map_err(|e| Error::Credential(format!("Failed to parse credentials file: {}", e)))
     }
 
     fn write_all(&self, creds: &std::collections::HashMap<String, String>) -> Result<()> {
-        let content = serde_json::to_string_pretty(creds).map_err(|e| {
-            Error::Credential(format!("Failed to serialize credentials: {}", e))
-        })?;
+        let content = serde_json::to_string_pretty(creds)
+            .map_err(|e| Error::Credential(format!("Failed to serialize credentials: {}", e)))?;
 
-        fs::write(&self.path, content).map_err(|e| {
-            Error::Credential(format!("Failed to write credentials file: {}", e))
-        })?;
+        fs::write(&self.path, content)
+            .map_err(|e| Error::Credential(format!("Failed to write credentials file: {}", e)))?;
 
         // Set restrictive permissions on Unix
         #[cfg(unix)]
         {
             use std::os::unix::fs::PermissionsExt;
             let perms = fs::Permissions::from_mode(0o600);
-            fs::set_permissions(&self.path, perms).map_err(|e| {
-                Error::Credential(format!("Failed to set file permissions: {}", e))
-            })?;
+            fs::set_permissions(&self.path, perms)
+                .map_err(|e| Error::Credential(format!("Failed to set file permissions: {}", e)))?;
         }
 
         Ok(())

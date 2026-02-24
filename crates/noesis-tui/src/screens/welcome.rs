@@ -2,8 +2,8 @@
 
 use crate::app::{Action, ActiveScreen};
 use crossterm::event::{KeyCode, KeyEvent};
-use noesis_sdk::LocalProfile;
 use noesis_sdk::consciousness;
+use noesis_sdk::LocalProfile;
 use ratatui::prelude::*;
 use ratatui::widgets::*;
 
@@ -14,7 +14,10 @@ pub struct WelcomeScreen {
 }
 
 const MENU_ITEMS: &[(&str, &str)] = &[
-    ("⚡ Run Engine", "Calculate with a single consciousness engine"),
+    (
+        "⚡ Run Engine",
+        "Calculate with a single consciousness engine",
+    ),
     ("🌊 Run Workflow", "Execute a multi-engine workflow"),
     ("📜 History", "Browse past readings"),
     ("👤 Profile", "Edit your birth data and preferences"),
@@ -34,8 +37,8 @@ impl WelcomeScreen {
             .direction(Direction::Vertical)
             .constraints([
                 Constraint::Length(10), // Header (with consciousness level)
-                Constraint::Min(10),   // Menu
-                Constraint::Length(3), // Footer
+                Constraint::Min(10),    // Menu
+                Constraint::Length(3),  // Footer
             ])
             .split(area);
 
@@ -57,7 +60,9 @@ impl WelcomeScreen {
             )),
             Line::from(Span::styled(
                 "║       ✦  NOESIS ENGINE  ✦            ║",
-                Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD),
+                Style::default()
+                    .fg(Color::Cyan)
+                    .add_modifier(Modifier::BOLD),
             )),
             Line::from(Span::styled(
                 "║   Consciousness Calculation Engine    ║",
@@ -95,7 +100,9 @@ impl WelcomeScreen {
                 ),
                 Span::styled(
                     level_info.state,
-                    Style::default().fg(Color::Cyan).add_modifier(Modifier::ITALIC),
+                    Style::default()
+                        .fg(Color::Cyan)
+                        .add_modifier(Modifier::ITALIC),
                 ),
             ]));
         }
@@ -128,7 +135,10 @@ impl WelcomeScreen {
                 let prefix = if i == self.selected { "▸ " } else { "  " };
                 let content = Line::from(vec![
                     Span::styled(format!("{}{}", prefix, label), style),
-                    Span::styled(format!("  — {}", desc), Style::default().fg(Color::DarkGray)),
+                    Span::styled(
+                        format!("  — {}", desc),
+                        Style::default().fg(Color::DarkGray),
+                    ),
                 ]);
 
                 ListItem::new(content)

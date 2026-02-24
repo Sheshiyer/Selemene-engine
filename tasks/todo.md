@@ -29,3 +29,10 @@
 - PR URL: https://github.com/Sheshiyer/Selemene-engine/pull/4
 - Remaining risks:
   - `cargo test --workspace` remains red because `engine-human-design` reference validation tests fail independently of this PR.
+
+## CI Follow-up (2026-02-24)
+- [x] Pull failing GitHub Actions lint logs for PR #4
+- [x] Apply rustfmt changes required by `cargo fmt --all -- --check`
+- [x] Resolve blocking clippy warning in `noesis-data` (`too_many_arguments`)
+- [x] Verify locally: `cargo fmt --all --check` and `cargo clippy --all-targets -- -D warnings`
+- [ ] Push lint-fix commit and watch checks

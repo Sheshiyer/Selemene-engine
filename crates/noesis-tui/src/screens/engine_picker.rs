@@ -16,22 +16,118 @@ struct EngineEntry {
 }
 
 const ENGINE_LIST: &[EngineEntry] = &[
-    EngineEntry { id: "panchanga", name: "Panchanga", icon: "🗓", description: "Vedic calendar — tithi, nakshatra, yoga, karana", category: "Vedic" },
-    EngineEntry { id: "numerology", name: "Numerology", icon: "🔢", description: "Pythagorean + Chaldean number systems", category: "Numbers" },
-    EngineEntry { id: "biorhythm", name: "Biorhythm", icon: "📊", description: "Physical, Emotional, Intellectual cycles", category: "Cycles" },
-    EngineEntry { id: "human-design", name: "Human Design", icon: "🧬", description: "Bodygraph — 64 gates, 9 centers, profile", category: "Design" },
-    EngineEntry { id: "gene-keys", name: "Gene Keys", icon: "🧪", description: "Shadow → Gift → Siddhi activation sequences", category: "Keys" },
-    EngineEntry { id: "vimshottari", name: "Vimshottari", icon: "⏳", description: "120-year nested dasha period analysis", category: "Vedic" },
-    EngineEntry { id: "vedic-clock", name: "Vedic Clock", icon: "🕐", description: "TCM organ clock + Ayurvedic timing", category: "Timing" },
-    EngineEntry { id: "biofield", name: "Biofield", icon: "🌀", description: "Chakra & biofield analysis from birth data", category: "Energy" },
-    EngineEntry { id: "face-reading", name: "Face Reading", icon: "👁", description: "Physiognomy analysis", category: "Body" },
-    EngineEntry { id: "nadabrahman", name: "Nada Brahman", icon: "🔔", description: "Sound consciousness engine", category: "Sound" },
-    EngineEntry { id: "transits", name: "Transits", icon: "🪐", description: "Planetary transits, aspects & Sade Sati", category: "Vedic" },
-    EngineEntry { id: "tarot", name: "Tarot", icon: "🃏", description: "Major & minor arcana readings", category: "Divination" },
-    EngineEntry { id: "i-ching", name: "I Ching", icon: "☯", description: "Book of Changes — hexagram casting", category: "Divination" },
-    EngineEntry { id: "enneagram", name: "Enneagram", icon: "🔮", description: "9-type personality system", category: "Personality" },
-    EngineEntry { id: "sacred-geometry", name: "Sacred Geometry", icon: "📐", description: "Geometric consciousness patterns", category: "Geometry" },
-    EngineEntry { id: "sigil-forge", name: "Sigil Forge", icon: "✡", description: "Consciousness sigil generation", category: "Creation" },
+    EngineEntry {
+        id: "panchanga",
+        name: "Panchanga",
+        icon: "🗓",
+        description: "Vedic calendar — tithi, nakshatra, yoga, karana",
+        category: "Vedic",
+    },
+    EngineEntry {
+        id: "numerology",
+        name: "Numerology",
+        icon: "🔢",
+        description: "Pythagorean + Chaldean number systems",
+        category: "Numbers",
+    },
+    EngineEntry {
+        id: "biorhythm",
+        name: "Biorhythm",
+        icon: "📊",
+        description: "Physical, Emotional, Intellectual cycles",
+        category: "Cycles",
+    },
+    EngineEntry {
+        id: "human-design",
+        name: "Human Design",
+        icon: "🧬",
+        description: "Bodygraph — 64 gates, 9 centers, profile",
+        category: "Design",
+    },
+    EngineEntry {
+        id: "gene-keys",
+        name: "Gene Keys",
+        icon: "🧪",
+        description: "Shadow → Gift → Siddhi activation sequences",
+        category: "Keys",
+    },
+    EngineEntry {
+        id: "vimshottari",
+        name: "Vimshottari",
+        icon: "⏳",
+        description: "120-year nested dasha period analysis",
+        category: "Vedic",
+    },
+    EngineEntry {
+        id: "vedic-clock",
+        name: "Vedic Clock",
+        icon: "🕐",
+        description: "TCM organ clock + Ayurvedic timing",
+        category: "Timing",
+    },
+    EngineEntry {
+        id: "biofield",
+        name: "Biofield",
+        icon: "🌀",
+        description: "Chakra & biofield analysis from birth data",
+        category: "Energy",
+    },
+    EngineEntry {
+        id: "face-reading",
+        name: "Face Reading",
+        icon: "👁",
+        description: "Physiognomy analysis",
+        category: "Body",
+    },
+    EngineEntry {
+        id: "nadabrahman",
+        name: "Nada Brahman",
+        icon: "🔔",
+        description: "Sound consciousness engine",
+        category: "Sound",
+    },
+    EngineEntry {
+        id: "transits",
+        name: "Transits",
+        icon: "🪐",
+        description: "Planetary transits, aspects & Sade Sati",
+        category: "Vedic",
+    },
+    EngineEntry {
+        id: "tarot",
+        name: "Tarot",
+        icon: "🃏",
+        description: "Major & minor arcana readings",
+        category: "Divination",
+    },
+    EngineEntry {
+        id: "i-ching",
+        name: "I Ching",
+        icon: "☯",
+        description: "Book of Changes — hexagram casting",
+        category: "Divination",
+    },
+    EngineEntry {
+        id: "enneagram",
+        name: "Enneagram",
+        icon: "🔮",
+        description: "9-type personality system",
+        category: "Personality",
+    },
+    EngineEntry {
+        id: "sacred-geometry",
+        name: "Sacred Geometry",
+        icon: "📐",
+        description: "Geometric consciousness patterns",
+        category: "Geometry",
+    },
+    EngineEntry {
+        id: "sigil-forge",
+        name: "Sigil Forge",
+        icon: "✡",
+        description: "Consciousness sigil generation",
+        category: "Creation",
+    },
 ];
 
 pub struct EnginePicker {
@@ -74,7 +170,7 @@ impl EnginePicker {
             .constraints([
                 Constraint::Length(3), // Title
                 Constraint::Length(3), // Filter
-                Constraint::Min(8),   // List
+                Constraint::Min(8),    // List
                 Constraint::Length(3), // Footer
             ])
             .split(area);
@@ -130,10 +226,7 @@ impl EnginePicker {
 
                 let prefix = if is_selected { "▸ " } else { "  " };
                 let content = Line::from(vec![
-                    Span::styled(
-                        format!("{}{} {}", prefix, entry.icon, entry.name),
-                        style,
-                    ),
+                    Span::styled(format!("{}{} {}", prefix, entry.icon, entry.name), style),
                     Span::styled(
                         format!("  [{}]", entry.category),
                         Style::default().fg(Color::DarkGray),
@@ -224,20 +317,24 @@ impl EnginePicker {
                             match client.calculate(&engine_id, input).await {
                                 Ok(output) => {
                                     self.loading = false;
-                                    return Action::ShowEngineResult {
-                                        engine_id,
-                                        output,
-                                    };
+                                    return Action::ShowEngineResult { engine_id, output };
                                 }
                                 Err(e) => {
                                     self.loading = false;
-                                    return Action::ShowError(format!("Engine calculation failed: {}", e));
+                                    return Action::ShowError(format!(
+                                        "Engine calculation failed: {}",
+                                        e
+                                    ));
                                 }
                             }
                         } else if profile.is_none() {
-                            return Action::ShowError("No profile configured. Complete onboarding first.".into());
+                            return Action::ShowError(
+                                "No profile configured. Complete onboarding first.".into(),
+                            );
                         } else {
-                            return Action::ShowError("No API client. Set an API key first.".into());
+                            return Action::ShowError(
+                                "No API client. Set an API key first.".into(),
+                            );
                         }
                     }
                     Action::None
@@ -297,20 +394,24 @@ impl EnginePicker {
                             match client.calculate(&engine_id, input).await {
                                 Ok(output) => {
                                     self.loading = false;
-                                    return Action::ShowEngineResult {
-                                        engine_id,
-                                        output,
-                                    };
+                                    return Action::ShowEngineResult { engine_id, output };
                                 }
                                 Err(e) => {
                                     self.loading = false;
-                                    return Action::ShowError(format!("Engine calculation failed: {}", e));
+                                    return Action::ShowError(format!(
+                                        "Engine calculation failed: {}",
+                                        e
+                                    ));
                                 }
                             }
                         } else if profile.is_none() {
-                            return Action::ShowError("No profile configured. Complete onboarding first.".into());
+                            return Action::ShowError(
+                                "No profile configured. Complete onboarding first.".into(),
+                            );
                         } else {
-                            return Action::ShowError("No API client. Set an API key first.".into());
+                            return Action::ShowError(
+                                "No API client. Set an API key first.".into(),
+                            );
                         }
                     }
                     Action::None
