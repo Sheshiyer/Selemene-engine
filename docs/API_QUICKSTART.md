@@ -196,7 +196,7 @@ curl -s .../api/v1/workflows \
 
 | Workflow | Engines | Purpose |
 |----------|---------|---------|
-| **birth-blueprint** | numerology + human-design + vimshottari | Core identity mapping |
+| **birth-blueprint** | numerology + human-design + gene-keys | Core identity mapping |
 | **daily-practice** | panchanga + vedic-clock + biorhythm | Daily rhythm & timing |
 | **decision-support** | tarot + i-ching + HD authority | Multi-perspective guidance |
 | **self-inquiry** | gene-keys + enneagram | Shadow work + patterns |

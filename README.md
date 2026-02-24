@@ -424,8 +424,8 @@ True to the name *Noesis* (the act of knowing), workflows train direct intellect
 <tr>
 <td width="50%">
 
-**`birth-blueprint`** — *Numerology + Human Design + Vimshottari*
-> Your natal imprint. Life path numbers, bodygraph, 120-year timeline.
+**`birth-blueprint`** — *Numerology + Human Design + Gene Keys*
+> Your natal imprint. Life path numbers, bodygraph, activation sequences.
 
 **`daily-practice`** — *Panchanga + Vedic Clock + Biorhythm*
 > Optimal timing. Cosmic tide aligned with personal rhythm.
