@@ -99,7 +99,7 @@ impl WorkflowPicker {
             .constraints([
                 Constraint::Length(3), // Title
                 Constraint::Length(3), // Filter
-                Constraint::Min(8),   // List
+                Constraint::Min(8),    // List
                 Constraint::Length(5), // Detail panel
                 Constraint::Length(3), // Footer
             ])
@@ -186,12 +186,10 @@ impl WorkflowPicker {
         // Detail panel — show engines for selected workflow
         let workflows = self.filtered_workflows();
         if let Some((_, entry)) = workflows.get(self.selected) {
-            let detail = Paragraph::new(vec![
-                Line::from(vec![
-                    Span::styled("Engines: ", Style::default().fg(Color::DarkGray)),
-                    Span::styled(entry.engines, Style::default().fg(Color::Yellow)),
-                ]),
-            ])
+            let detail = Paragraph::new(vec![Line::from(vec![
+                Span::styled("Engines: ", Style::default().fg(Color::DarkGray)),
+                Span::styled(entry.engines, Style::default().fg(Color::Yellow)),
+            ])])
             .block(
                 Block::default()
                     .borders(Borders::ALL)
@@ -270,13 +268,20 @@ impl WorkflowPicker {
                                 }
                                 Err(e) => {
                                     self.loading = false;
-                                    return Action::ShowError(format!("Workflow execution failed: {}", e));
+                                    return Action::ShowError(format!(
+                                        "Workflow execution failed: {}",
+                                        e
+                                    ));
                                 }
                             }
                         } else if profile.is_none() {
-                            return Action::ShowError("No profile configured. Complete onboarding first.".into());
+                            return Action::ShowError(
+                                "No profile configured. Complete onboarding first.".into(),
+                            );
                         } else {
-                            return Action::ShowError("No API client. Set an API key first.".into());
+                            return Action::ShowError(
+                                "No API client. Set an API key first.".into(),
+                            );
                         }
                     }
                     Action::None
@@ -343,13 +348,20 @@ impl WorkflowPicker {
                                 }
                                 Err(e) => {
                                     self.loading = false;
-                                    return Action::ShowError(format!("Workflow execution failed: {}", e));
+                                    return Action::ShowError(format!(
+                                        "Workflow execution failed: {}",
+                                        e
+                                    ));
                                 }
                             }
                         } else if profile.is_none() {
-                            return Action::ShowError("No profile configured. Complete onboarding first.".into());
+                            return Action::ShowError(
+                                "No profile configured. Complete onboarding first.".into(),
+                            );
                         } else {
-                            return Action::ShowError("No API client. Set an API key first.".into());
+                            return Action::ShowError(
+                                "No API client. Set an API key first.".into(),
+                            );
                         }
                     }
                     Action::None

@@ -78,13 +78,11 @@ impl LocalProfile {
         let path = Self::path()?;
         debug!("Loading profile from {:?}", path);
 
-        let content = fs::read_to_string(&path).map_err(|e| {
-            Error::Profile(format!("Failed to read profile at {:?}: {}", path, e))
-        })?;
+        let content = fs::read_to_string(&path)
+            .map_err(|e| Error::Profile(format!("Failed to read profile at {:?}: {}", path, e)))?;
 
-        serde_json::from_str(&content).map_err(|e| {
-            Error::Profile(format!("Failed to parse profile: {}", e))
-        })
+        serde_json::from_str(&content)
+            .map_err(|e| Error::Profile(format!("Failed to parse profile: {}", e)))
     }
 
     /// Load profile if it exists, otherwise create a new empty one.
@@ -109,13 +107,11 @@ impl LocalProfile {
         }
 
         let path = Self::path()?;
-        let content = serde_json::to_string_pretty(self).map_err(|e| {
-            Error::Profile(format!("Failed to serialize profile: {}", e))
-        })?;
+        let content = serde_json::to_string_pretty(self)
+            .map_err(|e| Error::Profile(format!("Failed to serialize profile: {}", e)))?;
 
-        fs::write(&path, content).map_err(|e| {
-            Error::Profile(format!("Failed to write profile: {}", e))
-        })?;
+        fs::write(&path, content)
+            .map_err(|e| Error::Profile(format!("Failed to write profile: {}", e)))?;
 
         info!("Saved profile to {:?}", path);
         Ok(())
@@ -125,9 +121,8 @@ impl LocalProfile {
     pub fn delete() -> Result<()> {
         let path = Self::path()?;
         if path.exists() {
-            fs::remove_file(&path).map_err(|e| {
-                Error::Profile(format!("Failed to delete profile: {}", e))
-            })?;
+            fs::remove_file(&path)
+                .map_err(|e| Error::Profile(format!("Failed to delete profile: {}", e)))?;
             info!("Deleted profile at {:?}", path);
         }
         Ok(())
@@ -181,9 +176,9 @@ impl LocalProfile {
 
     /// Validate the profile data.
     pub fn validate(&self) -> Result<()> {
-        self.birth_data.validate().map_err(|e| {
-            Error::Profile(format!("Invalid birth data: {}", e))
-        })?;
+        self.birth_data
+            .validate()
+            .map_err(|e| Error::Profile(format!("Invalid birth data: {}", e)))?;
 
         if self.name.trim().is_empty() {
             return Err(Error::Profile("Name cannot be empty".into()));
@@ -262,11 +257,21 @@ impl ProfileBuilder {
     }
 
     pub fn build(self) -> Result<LocalProfile> {
-        let name = self.name.ok_or_else(|| Error::Profile("Name is required".into()))?;
-        let date = self.date.ok_or_else(|| Error::Profile("Date is required".into()))?;
-        let latitude = self.latitude.ok_or_else(|| Error::Profile("Latitude is required".into()))?;
-        let longitude = self.longitude.ok_or_else(|| Error::Profile("Longitude is required".into()))?;
-        let timezone = self.timezone.ok_or_else(|| Error::Profile("Timezone is required".into()))?;
+        let name = self
+            .name
+            .ok_or_else(|| Error::Profile("Name is required".into()))?;
+        let date = self
+            .date
+            .ok_or_else(|| Error::Profile("Date is required".into()))?;
+        let latitude = self
+            .latitude
+            .ok_or_else(|| Error::Profile("Latitude is required".into()))?;
+        let longitude = self
+            .longitude
+            .ok_or_else(|| Error::Profile("Longitude is required".into()))?;
+        let timezone = self
+            .timezone
+            .ok_or_else(|| Error::Profile("Timezone is required".into()))?;
 
         let birth_data = BirthData {
             name: Some(name.clone()),
@@ -365,9 +370,7 @@ mod tests {
 
     #[test]
     fn test_profile_builder_missing_field() {
-        let result = ProfileBuilder::new()
-            .name("Incomplete")
-            .build();
+        let result = ProfileBuilder::new().name("Incomplete").build();
 
         assert!(result.is_err());
     }

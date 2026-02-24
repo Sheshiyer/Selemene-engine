@@ -63,12 +63,18 @@ impl ProfileEditor {
         }
     }
 
-    pub fn draw(&self, frame: &mut Frame, area: Rect, profile: &Option<LocalProfile>, config: &Config) {
+    pub fn draw(
+        &self,
+        frame: &mut Frame,
+        area: Rect,
+        profile: &Option<LocalProfile>,
+        config: &Config,
+    ) {
         let chunks = Layout::default()
             .direction(Direction::Vertical)
             .constraints([
                 Constraint::Length(3), // Title
-                Constraint::Min(12),  // Fields
+                Constraint::Min(12),   // Fields
                 Constraint::Length(3), // Message
                 Constraint::Length(3), // Footer
             ])
@@ -133,10 +139,7 @@ impl ProfileEditor {
 
                     let content = Line::from(vec![
                         Span::styled(prefix, label_style),
-                        Span::styled(
-                            format!("{:<12}", field.label()),
-                            label_style,
-                        ),
+                        Span::styled(format!("{:<12}", field.label()), label_style),
                         Span::styled(value, value_style),
                     ]);
 
@@ -175,8 +178,8 @@ impl ProfileEditor {
             } else {
                 Style::default().fg(Color::Red)
             };
-            let message = Paragraph::new(Span::styled(msg.as_str(), style))
-                .alignment(Alignment::Center);
+            let message =
+                Paragraph::new(Span::styled(msg.as_str(), style)).alignment(Alignment::Center);
             frame.render_widget(message, chunks[2]);
         }
 
@@ -266,7 +269,8 @@ impl ProfileEditor {
                             self.message = Some(format!("⚠ Save failed: {}", e));
                         } else {
                             let info = consciousness::get_level(p.consciousness_level);
-                            self.message = Some(format!("✓ Set to {} — {}", info.state, info.description));
+                            self.message =
+                                Some(format!("✓ Set to {} — {}", info.state, info.description));
                         }
                         return Action::None;
                     }
@@ -313,13 +317,13 @@ impl ProfileEditor {
                         config.api_key = Some(value);
                         match config.save() {
                             Ok(()) => {
-                                self.message = Some("✓ API Key saved to ~/.noesis/config.toml".into());
+                                self.message =
+                                    Some("✓ API Key saved to ~/.noesis/config.toml".into());
                                 self.edit_buffer.clear();
                                 return Action::ReloadConfig;
                             }
                             Err(e) => {
-                                self.message =
-                                    Some(format!("⚠ Save error: {}", e));
+                                self.message = Some(format!("⚠ Save error: {}", e));
                             }
                         }
                     }
@@ -333,8 +337,7 @@ impl ProfileEditor {
                             if let Err(e) = p.save() {
                                 self.message = Some(format!("⚠ Save failed: {}", e));
                             } else {
-                                self.message =
-                                    Some(format!("✓ {} updated", field.label()));
+                                self.message = Some(format!("✓ {} updated", field.label()));
                             }
                         }
                         Err(e) => {
@@ -357,11 +360,7 @@ impl ProfileEditor {
         }
     }
 
-    fn apply_field(
-        &self,
-        profile: &mut LocalProfile,
-        field: ProfileField,
-    ) -> Result<(), String> {
+    fn apply_field(&self, profile: &mut LocalProfile, field: ProfileField) -> Result<(), String> {
         let value = self.edit_buffer.trim().to_string();
         match field {
             ProfileField::Name => {
@@ -377,16 +376,11 @@ impl ProfileEditor {
                 profile.birth_data.date = value;
             }
             ProfileField::Time => {
-                if !value.is_empty()
-                    && chrono::NaiveTime::parse_from_str(&value, "%H:%M").is_err()
+                if !value.is_empty() && chrono::NaiveTime::parse_from_str(&value, "%H:%M").is_err()
                 {
                     return Err("Invalid time. Use HH:MM".into());
                 }
-                profile.birth_data.time = if value.is_empty() {
-                    None
-                } else {
-                    Some(value)
-                };
+                profile.birth_data.time = if value.is_empty() { None } else { Some(value) };
             }
             ProfileField::Latitude => {
                 let lat: f64 = value.parse().map_err(|_| "Invalid number")?;

@@ -4,8 +4,8 @@
 
 use crate::app::{Action, ActiveScreen};
 use crossterm::event::{KeyCode, KeyEvent};
-use noesis_sdk::{BirthData, LocalProfile};
 use noesis_sdk::consciousness;
+use noesis_sdk::{BirthData, LocalProfile};
 use ratatui::prelude::*;
 use ratatui::widgets::*;
 
@@ -133,7 +133,7 @@ impl OnboardingWizard {
             .constraints([
                 Constraint::Length(3), // Title
                 Constraint::Length(3), // Progress bar
-                Constraint::Min(10),  // Content
+                Constraint::Min(10),   // Content
                 Constraint::Length(3), // Footer
             ])
             .split(area);
@@ -149,13 +149,21 @@ impl OnboardingWizard {
             ),
         ]))
         .alignment(Alignment::Center)
-        .block(Block::default().borders(Borders::BOTTOM).border_style(Style::default().fg(Color::DarkGray)));
+        .block(
+            Block::default()
+                .borders(Borders::BOTTOM)
+                .border_style(Style::default().fg(Color::DarkGray)),
+        );
         frame.render_widget(title, chunks[0]);
 
         // Progress
         let progress = self.step.index() as f64 / TOTAL_STEPS as f64;
         let gauge = Gauge::default()
-            .block(Block::default().title(format!(" Step {} of {} ", self.step.index() + 1, TOTAL_STEPS)))
+            .block(Block::default().title(format!(
+                " Step {} of {} ",
+                self.step.index() + 1,
+                TOTAL_STEPS
+            )))
             .gauge_style(Style::default().fg(Color::Cyan).bg(Color::DarkGray))
             .ratio(progress)
             .label(format!("{}%", (progress * 100.0) as u16));
@@ -204,7 +212,7 @@ impl OnboardingWizard {
                 Constraint::Length(3), // Input
                 Constraint::Length(2), // Hint
                 Constraint::Length(2), // Error
-                Constraint::Min(0),   // Preview (confirm step) / Level picker
+                Constraint::Min(0),    // Preview (confirm step) / Level picker
             ])
             .split(area);
 
@@ -263,7 +271,9 @@ impl OnboardingWizard {
         );
         let selection = Paragraph::new(Span::styled(
             selection_text,
-            Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD),
+            Style::default()
+                .fg(Color::Cyan)
+                .add_modifier(Modifier::BOLD),
         ))
         .block(
             Block::default()
@@ -280,17 +290,16 @@ impl OnboardingWizard {
                 let is_selected = lvl.level == self.consciousness_level;
                 let prefix = if is_selected { "▸ " } else { "  " };
                 let style = if is_selected {
-                    Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD)
+                    Style::default()
+                        .fg(Color::Cyan)
+                        .add_modifier(Modifier::BOLD)
                 } else {
                     Style::default().fg(Color::White)
                 };
 
                 let content = vec![
                     Line::from(vec![
-                        Span::styled(
-                            format!("{}{} {}", prefix, lvl.dots, lvl.state),
-                            style,
-                        ),
+                        Span::styled(format!("{}{} {}", prefix, lvl.dots, lvl.state), style),
                         Span::styled(
                             format!("  — {}", lvl.description),
                             Style::default().fg(Color::DarkGray),
@@ -298,7 +307,11 @@ impl OnboardingWizard {
                     ]),
                     Line::from(Span::styled(
                         format!("    Prompts: {}", lvl.prompt_style),
-                        Style::default().fg(if is_selected { Color::Yellow } else { Color::DarkGray }),
+                        Style::default().fg(if is_selected {
+                            Color::Yellow
+                        } else {
+                            Color::DarkGray
+                        }),
                     )),
                 ];
 
@@ -427,24 +440,22 @@ impl OnboardingWizard {
                     }
                 }
             }
-            OnboardingStep::Latitude => {
-                match self.lat_input.parse::<f64>() {
-                    Ok(lat) if (-90.0..=90.0).contains(&lat) => {}
-                    _ => return Err("Latitude must be between -90 and 90".into()),
-                }
-            }
-            OnboardingStep::Longitude => {
-                match self.lng_input.parse::<f64>() {
-                    Ok(lng) if (-180.0..=180.0).contains(&lng) => {}
-                    _ => return Err("Longitude must be between -180 and 180".into()),
-                }
-            }
+            OnboardingStep::Latitude => match self.lat_input.parse::<f64>() {
+                Ok(lat) if (-90.0..=90.0).contains(&lat) => {}
+                _ => return Err("Latitude must be between -90 and 90".into()),
+            },
+            OnboardingStep::Longitude => match self.lng_input.parse::<f64>() {
+                Ok(lng) if (-180.0..=180.0).contains(&lng) => {}
+                _ => return Err("Longitude must be between -180 and 180".into()),
+            },
             OnboardingStep::Timezone => {
                 if self.tz_input.trim().is_empty() {
                     return Err("Timezone cannot be empty".into());
                 }
             }
-            OnboardingStep::ApiKey | OnboardingStep::ConsciousnessLevel | OnboardingStep::Confirm => {}
+            OnboardingStep::ApiKey
+            | OnboardingStep::ConsciousnessLevel
+            | OnboardingStep::Confirm => {}
         }
         Ok(())
     }
@@ -485,19 +496,25 @@ impl OnboardingWizard {
                     self.consciousness_level -= 1;
                 }
             }
-            KeyCode::Down | KeyCode::Char('j') if self.step == OnboardingStep::ConsciousnessLevel => {
+            KeyCode::Down | KeyCode::Char('j')
+                if self.step == OnboardingStep::ConsciousnessLevel =>
+            {
                 if self.consciousness_level < 5 {
                     self.consciousness_level += 1;
                 }
             }
             KeyCode::Backspace => {
-                if self.step != OnboardingStep::Confirm && self.step != OnboardingStep::ConsciousnessLevel {
+                if self.step != OnboardingStep::Confirm
+                    && self.step != OnboardingStep::ConsciousnessLevel
+                {
                     self.current_input_mut().pop();
                     self.error = None;
                 }
             }
             KeyCode::Char(c) => {
-                if self.step != OnboardingStep::Confirm && self.step != OnboardingStep::ConsciousnessLevel {
+                if self.step != OnboardingStep::Confirm
+                    && self.step != OnboardingStep::ConsciousnessLevel
+                {
                     self.current_input_mut().push(c);
                     self.error = None;
                 }
