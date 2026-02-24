@@ -44,7 +44,12 @@ export class SigilForgeEngine implements ConsciousnessEngine {
     const startTime = performance.now()
 
     // Extract parameters
-    const intention = input.question ?? (input.parameters.intention as string)
+    const intention =
+      input.question ??
+      (input.parameters.intention as string | undefined) ??
+      (input.parameters.intent as string | undefined) ??
+      (input.parameters.intent_text as string | undefined) ??
+      (input.parameters.question as string | undefined)
     const methodParam = input.parameters.method as string | undefined
     const seed = input.seed ?? getDefaultSeed()
 

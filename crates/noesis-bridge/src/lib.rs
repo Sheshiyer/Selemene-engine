@@ -19,6 +19,7 @@ use std::sync::Arc;
 use std::time::Duration;
 
 use async_trait::async_trait;
+use serde_json::Value;
 use sha2::{Digest, Sha256};
 use tracing::{debug, info, warn};
 
@@ -158,6 +159,30 @@ impl BridgeEngine {
     pub fn sigil_forge_with_url(base_url: impl Into<String>) -> Self {
         Self::new("sigil-forge", "Sigil Forge", 1, base_url)
     }
+
+    fn extract_question(options: &std::collections::HashMap<String, Value>) -> Option<String> {
+        const QUESTION_ALIASES: [&str; 4] = ["question", "intention", "intent", "intent_text"];
+
+        QUESTION_ALIASES.iter().find_map(|key| {
+            options.get(*key).and_then(Value::as_str).and_then(|raw| {
+                let trimmed = raw.trim();
+                if trimmed.is_empty() {
+                    None
+                } else {
+                    Some(trimmed.to_string())
+                }
+            })
+        })
+    }
+
+    fn to_ts_request(&self, input: &EngineInput) -> crate::ts_client::TsEngineRequest {
+        crate::ts_client::TsEngineRequest {
+            consciousness_level: self.required_phase,
+            parameters: input.options.clone(),
+            seed: None,
+            question: Self::extract_question(&input.options),
+        }
+    }
 }
 
 #[async_trait]
@@ -175,8 +200,6 @@ impl ConsciousnessEngine for BridgeEngine {
     }
 
     async fn calculate(&self, input: EngineInput) -> Result<EngineOutput, EngineError> {
-        use crate::ts_client::TsEngineRequest;
-
         let url = format!("{}/engines/{}/calculate", self.base_url, self.engine_id);
 
         debug!(
@@ -187,12 +210,7 @@ impl ConsciousnessEngine for BridgeEngine {
         );
 
         // Convert EngineInput to TsEngineRequest format
-        let ts_request = TsEngineRequest {
-            consciousness_level: self.required_phase,
-            parameters: input.options.clone(),
-            seed: None,
-            question: None,
-        };
+        let ts_request = self.to_ts_request(&input);
 
         let response = self
             .client
@@ -439,6 +457,7 @@ impl BridgeManager {
 mod tests {
     use super::*;
     use chrono::Utc;
+    use serde_json::json;
     use std::collections::HashMap;
 
     fn test_input() -> EngineInput {
@@ -464,7 +483,7 @@ mod tests {
         let engine = BridgeEngine::i_ching();
         assert_eq!(engine.engine_id(), "i-ching");
         assert_eq!(engine.engine_name(), "I Ching");
-        assert_eq!(engine.required_phase(), 1);
+        assert_eq!(engine.required_phase(), 0);
     }
 
     #[test]
@@ -480,7 +499,7 @@ mod tests {
         let engine = BridgeEngine::sacred_geometry();
         assert_eq!(engine.engine_id(), "sacred-geometry");
         assert_eq!(engine.engine_name(), "Sacred Geometry");
-        assert_eq!(engine.required_phase(), 2);
+        assert_eq!(engine.required_phase(), 0);
     }
 
     #[test]
@@ -488,7 +507,7 @@ mod tests {
         let engine = BridgeEngine::sigil_forge();
         assert_eq!(engine.engine_id(), "sigil-forge");
         assert_eq!(engine.engine_name(), "Sigil Forge");
-        assert_eq!(engine.required_phase(), 3);
+        assert_eq!(engine.required_phase(), 1);
     }
 
     #[test]
@@ -530,6 +549,37 @@ mod tests {
             Duration::from_secs(10),
         );
         assert_eq!(engine.timeout, Duration::from_secs(10));
+    }
+
+    #[test]
+    fn bridge_engine_to_ts_request_extracts_question_aliases() {
+        let engine = BridgeEngine::sigil_forge();
+        let mut input = test_input();
+
+        input
+            .options
+            .insert("question".to_string(), json!("What needs form?"));
+        let req = engine.to_ts_request(&input);
+        assert_eq!(req.question.as_deref(), Some("What needs form?"));
+
+        input.options.clear();
+        input
+            .options
+            .insert("intention".to_string(), json!("I am focused"));
+        let req = engine.to_ts_request(&input);
+        assert_eq!(req.question.as_deref(), Some("I am focused"));
+
+        input.options.clear();
+        input.options.insert("intent".to_string(), json!("Clarity"));
+        let req = engine.to_ts_request(&input);
+        assert_eq!(req.question.as_deref(), Some("Clarity"));
+
+        input.options.clear();
+        input
+            .options
+            .insert("intent_text".to_string(), json!("Steady attention"));
+        let req = engine.to_ts_request(&input);
+        assert_eq!(req.question.as_deref(), Some("Steady attention"));
     }
 
     #[test]

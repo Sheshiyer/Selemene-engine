@@ -17,7 +17,6 @@ use std::time::Instant;
 
 use crate::{
     frequency::assess_frequencies,
-    mapping::{calculate_activation_sequences, map_hd_to_gene_keys},
     models::{GeneKeyActivation, GeneKeysChart},
     wisdom::get_gene_key,
     witness::generate_witness_prompt,
@@ -165,6 +164,60 @@ impl GeneKeysEngine {
         })
     }
 
+    fn extract_gate_from_activations(
+        activations: &serde_json::Map<String, Value>,
+        planet: &str,
+        block_name: &str,
+    ) -> Result<u8, EngineError> {
+        let gate = activations
+            .get(planet)
+            .and_then(|v| v.get("gate"))
+            .and_then(|v| v.as_u64())
+            .ok_or_else(|| {
+                EngineError::CalculationError(format!(
+                    "Missing or invalid '{}' gate in {}",
+                    planet, block_name
+                ))
+            })?;
+
+        if !(1..=64).contains(&gate) {
+            return Err(EngineError::CalculationError(format!(
+                "Invalid '{}' gate in {}: {} (must be 1-64)",
+                planet, block_name, gate
+            )));
+        }
+
+        Ok(gate as u8)
+    }
+
+    fn extract_hd_gates_from_hd_result(result: &Value) -> Result<(u8, u8, u8, u8), EngineError> {
+        let personality = result
+            .get("personality_activations")
+            .and_then(|v| v.as_object())
+            .ok_or_else(|| {
+                EngineError::CalculationError(
+                    "HD output missing personality_activations".to_string(),
+                )
+            })?;
+
+        let design = result
+            .get("design_activations")
+            .and_then(|v| v.as_object())
+            .ok_or_else(|| {
+                EngineError::CalculationError("HD output missing design_activations".to_string())
+            })?;
+
+        let personality_sun =
+            Self::extract_gate_from_activations(personality, "sun", "personality_activations")?;
+        let personality_earth =
+            Self::extract_gate_from_activations(personality, "earth", "personality_activations")?;
+        let design_sun = Self::extract_gate_from_activations(design, "sun", "design_activations")?;
+        let design_earth =
+            Self::extract_gate_from_activations(design, "earth", "design_activations")?;
+
+        Ok((personality_sun, personality_earth, design_sun, design_earth))
+    }
+
     /// Serialize GeneKeysChart to JSON value
     fn serialize_chart(chart: &GeneKeysChart) -> Value {
         // Enrich active keys with full Gene Key data
@@ -238,32 +291,15 @@ impl ConsciousnessEngine for GeneKeysEngine {
 
             // Call HD engine to get HD chart
             let hd_output = hd_engine.calculate(input.clone()).await?;
+            let (personality_sun, personality_earth, design_sun, design_earth) =
+                Self::extract_hd_gates_from_hd_result(&hd_output.result)?;
 
-            // Parse HD chart from output
-            let hd_chart: engine_human_design::HDChart = serde_json::from_value(hd_output.result)
-                .map_err(|e| {
-                EngineError::CalculationError(format!("Failed to parse HD chart: {}", e))
-            })?;
-
-            // Map HD to Gene Keys
-            let mut gene_key_activations = map_hd_to_gene_keys(&hd_chart);
-
-            // Enrich with full Gene Key data
-            for activation in &mut gene_key_activations {
-                activation.gene_key_data = get_gene_key(activation.key_number).cloned();
-            }
-
-            let activation_sequence = calculate_activation_sequences(&hd_chart).map_err(|e| {
-                EngineError::CalculationError(format!(
-                    "Failed to calculate activation sequences: {}",
-                    e
-                ))
-            })?;
-
-            GeneKeysChart {
-                activation_sequence,
-                active_keys: gene_key_activations,
-            }
+            Self::create_chart_from_gates(
+                personality_sun,
+                personality_earth,
+                design_sun,
+                design_earth,
+            )?
         } else if input.options.contains_key("hd_gates") {
             // Mode 2: Extract gates from options
             let (ps, pe, ds, de) = Self::extract_hd_gates_from_options(&input.options)?;

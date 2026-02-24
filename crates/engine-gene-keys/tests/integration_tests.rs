@@ -15,6 +15,7 @@ use engine_gene_keys::{
 };
 use serde_json::json;
 use std::collections::HashMap;
+use std::sync::Arc;
 
 // ============================================================================
 // Helper functions
@@ -477,5 +478,43 @@ async fn test_hd_integration_missing_hd_engine() {
         err_msg.contains("HD engine not available"),
         "Error should mention HD engine: {}",
         err_msg
+    );
+}
+
+#[tokio::test]
+async fn test_hd_integration_birth_data_without_optional_name() {
+    // Mode 1: birth_data payload without optional name should still calculate successfully.
+    let hd_engine = Arc::new(engine_human_design::HumanDesignEngine::new());
+    let engine = GeneKeysEngine::with_hd_engine(hd_engine);
+
+    let input = EngineInput {
+        birth_data: Some(noesis_core::BirthData {
+            name: None,
+            date: "1990-06-15".to_string(),
+            time: Some("14:30".to_string()),
+            latitude: 40.7128,
+            longitude: -74.0060,
+            timezone: "America/New_York".to_string(),
+        }),
+        current_time: Utc::now(),
+        location: None,
+        precision: noesis_core::Precision::Standard,
+        options: HashMap::new(),
+    };
+
+    let output = engine
+        .calculate(input)
+        .await
+        .expect("birth_data mode should work without optional name");
+
+    assert_eq!(output.engine_id, "gene-keys");
+    assert_eq!(output.metadata.backend, "hd-derived");
+    assert!(
+        output
+            .result
+            .get("active_keys")
+            .and_then(|v| v.as_array())
+            .is_some(),
+        "Expected active_keys array in result"
     );
 }
