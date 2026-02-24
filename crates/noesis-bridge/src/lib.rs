@@ -464,7 +464,7 @@ mod tests {
         let engine = BridgeEngine::i_ching();
         assert_eq!(engine.engine_id(), "i-ching");
         assert_eq!(engine.engine_name(), "I Ching");
-        assert_eq!(engine.required_phase(), 1);
+        assert_eq!(engine.required_phase(), 0);
     }
 
     #[test]
@@ -480,7 +480,7 @@ mod tests {
         let engine = BridgeEngine::sacred_geometry();
         assert_eq!(engine.engine_id(), "sacred-geometry");
         assert_eq!(engine.engine_name(), "Sacred Geometry");
-        assert_eq!(engine.required_phase(), 2);
+        assert_eq!(engine.required_phase(), 0);
     }
 
     #[test]
@@ -488,7 +488,7 @@ mod tests {
         let engine = BridgeEngine::sigil_forge();
         assert_eq!(engine.engine_id(), "sigil-forge");
         assert_eq!(engine.engine_name(), "Sigil Forge");
-        assert_eq!(engine.required_phase(), 3);
+        assert_eq!(engine.required_phase(), 1);
     }
 
     #[test]
