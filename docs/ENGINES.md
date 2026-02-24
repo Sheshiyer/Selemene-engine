@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/images/2C-glass-logo-nanobananapro-v2.png" alt="Selemene Engine" width="400">
+  <img src="assets/images/engines/2C-stained-glass-logo-nanobananapro-v2.png" alt="Selemene Engine" width="400">
 </p>
 
 <h1 align="center">The 16 Engines</h1>
@@ -21,6 +21,8 @@ High-performance native calculation engines built in Rust with sub-millisecond p
 
 For a body-paced narrative companion to these timing and pattern systems, see [Somatic Canticles](https://1319.tryambakam.space).
 
+![Rust engine families](assets/images/engines/5D-1-vedic-engine-icons-recraft-v2.png)
+
 <br>
 
 ## 1. Panchanga Engine
@@ -36,6 +38,8 @@ Foundation for all Vedic timing calculations.
 
 ## 2. Human Design Engine
 
+![Human Design poster](assets/images/engines/9A-04-human-design-poster-v1.png)
+
 **Complete bodygraph** — Type, Strategy, Authority, 9 Centers, 26 Gates, Profile, Definition.
 
 **Input:** `date, time, lat/lng`  
@@ -46,6 +50,8 @@ Synthesizes I Ching, Kabbalah, Chakras, and Astrology.
 <br>
 
 ## 3. Gene Keys Engine
+
+![Gene Keys poster](assets/images/engines/9A-05-gene-keys-poster-v1.png)
 
 **64 Keys** — Shadow → Gift → Siddhi progression across 4 sequences (Activation, Venus, Pearl, Life's Work).
 
@@ -79,7 +85,7 @@ Foundation for Vedic predictive timing.
 <table>
 <tr>
 <td width="50%" align="center">
-  <img src="assets/images/engines/numerology-engine-thumb.png" alt="Numerology Engine" width="100%">
+  <img src="assets/images/engines/9A-08-numerology-poster-v1.png" alt="Numerology Engine" width="100%">
 </td>
 <td width="50%">
 
@@ -107,7 +113,7 @@ Foundation for Vedic predictive timing.
 <table>
 <tr>
 <td width="50%" align="center">
-  <img src="assets/images/engines/biorhythm-engine-thumb.png" alt="Biorhythm Engine" width="100%">
+  <img src="assets/images/engines/9A-11-biorhythm-engine-poster-v1.png" alt="Biorhythm Engine" width="100%">
 </td>
 <td width="50%">
 
@@ -223,6 +229,8 @@ Maps voice characteristics to raaga resonance and chakra activations.
 
 Esoteric calculation engines built in TypeScript, bridged to main Rust API.
 
+![TypeScript bridge family](assets/images/engines/5D-3-bridge-engine-icons-recraft-v2.png)
+
 <br>
 
 ## 12. Tarot Engine
@@ -235,7 +243,7 @@ Esoteric calculation engines built in TypeScript, bridged to main Rust API.
 <table>
 <tr>
 <td width="50%" align="center">
-  <img src="assets/images/engines/tarot-engine-thumb.png" alt="Tarot Engine" width="100%">
+  <img src="assets/images/engines/9A-09-tarot-poster-v1.png" alt="Tarot Engine" width="100%">
 </td>
 <td width="50%">
 
@@ -273,7 +281,7 @@ Traditional Book of Changes divination system.
 <table>
 <tr>
 <td width="50%" align="center">
-  <img src="assets/images/engines/enneagram-engine-thumb.png" alt="Enneagram Engine" width="100%">
+  <img src="assets/images/engines/9A-07-enneagram-poster-v1.png" alt="Enneagram Engine" width="100%">
 </td>
 <td width="50%">
 

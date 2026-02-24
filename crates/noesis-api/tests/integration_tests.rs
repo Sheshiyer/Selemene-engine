@@ -338,6 +338,66 @@ async fn test_workflow_execute_daily_practice_success() {
     assert!(body["engine_outputs"].is_object());
 }
 
+#[tokio::test]
+async fn test_workflow_info_alias_without_info_suffix_success() {
+    let router = get_test_router().await;
+    let token = generate_test_token(5);
+
+    let (status, body) = make_authenticated_request(
+        router,
+        "GET",
+        "/api/v1/workflows/birth-blueprint",
+        &token,
+        None,
+    )
+    .await;
+
+    assert_eq!(status, StatusCode::OK);
+    assert_eq!(body["id"], "birth-blueprint");
+    assert_eq!(body["name"], "Birth Blueprint");
+    assert!(body["engine_ids"].is_array());
+}
+
+#[tokio::test]
+async fn test_workflow_info_alias_daily_practice_without_info_suffix_success() {
+    let router = get_test_router().await;
+    let token = generate_test_token(5);
+
+    let (status, body) = make_authenticated_request(
+        router,
+        "GET",
+        "/api/v1/workflows/daily-practice",
+        &token,
+        None,
+    )
+    .await;
+
+    assert_eq!(status, StatusCode::OK);
+    assert_eq!(body["id"], "daily-practice");
+    assert_eq!(body["name"], "Daily Practice");
+    assert!(body["engine_ids"].is_array());
+}
+
+#[tokio::test]
+async fn test_workflow_execute_alias_without_execute_suffix_success() {
+    let router = get_test_router().await;
+    let token = generate_test_token(5);
+    let input = create_test_birth_input();
+
+    let (status, body) = make_authenticated_request(
+        router,
+        "POST",
+        "/api/v1/workflows/daily-practice",
+        &token,
+        Some(serde_json::to_value(input).unwrap()),
+    )
+    .await;
+
+    assert_eq!(status, StatusCode::OK);
+    assert_eq!(body["workflow_id"], "daily-practice");
+    assert!(body["engine_outputs"].is_object());
+}
+
 // ---------------------------------------------------------------------------
 // Legacy route tests
 // ---------------------------------------------------------------------------

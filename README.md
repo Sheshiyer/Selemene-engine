@@ -38,7 +38,7 @@
 <br>
 
 <p align="center">
-  <img src="docs/assets/images/2C-glass-logo-nanobananapro-v2.png" alt="Noesis Glass Logo" width="560">
+  <img src="docs/assets/images/engines/2C-stained-glass-logo-nanobananapro-v2.png" alt="Noesis Glass Logo" width="560">
 </p>
 
 <br>
@@ -531,7 +531,14 @@ Creates admin user (`admin@tryambakam.com`) + 5 API keys. Keys print once.
 <br>
 
 <p align="center">
-  <img src="docs/assets/images/noesis-identifiers.png" alt="Identity System" width="680">
+  <img src="docs/assets/images/engines/5D-1-vedic-engine-icons-recraft-v2.png" alt="Vedic Engine Icons" width="330">
+  <img src="docs/assets/images/engines/5D-2-western-engine-icons-recraft-v2.png" alt="Western Engine Icons" width="330">
+</p>
+
+<p align="center">
+  <img src="docs/assets/images/engines/5D-3-bridge-engine-icons-recraft-v2.png" alt="Bridge Engine Icons" width="220">
+  <img src="docs/assets/images/engines/5D-4-biofield-engine-icons-recraft-v2.png" alt="Biofield Engine Icons" width="220">
+  <img src="docs/assets/images/engines/9A-13-biofield-and-raga-poster-v1.png" alt="Resonance Engine Poster" width="220">
 </p>
 
 <details>
@@ -743,7 +750,7 @@ That's the point.
 <br>
 
 <p align="center">
-  <img src="docs/assets/images/2B-wax-seal-nanobananapro-v2.png" alt="Seal" width="120">
+  <img src="docs/assets/images/engines/2B-copper-seal-flux2pro-v2.png" alt="Seal" width="120">
 </p>
 
 <p align="center">

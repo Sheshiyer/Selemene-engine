@@ -242,6 +242,10 @@ pub fn create_router(state: AppState, config: &ApiConfig) -> Router {
         .route("/engines/:engine_id/info", get(engine_info_handler))
         .route("/workflows", get(list_workflows_handler))
         .route(
+            "/workflows/:workflow_id",
+            get(workflow_info_handler).post(workflow_execute_handler),
+        )
+        .route(
             "/workflows/:workflow_id/execute",
             post(workflow_execute_handler),
         )

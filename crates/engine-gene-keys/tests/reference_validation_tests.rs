@@ -16,6 +16,7 @@ use std::collections::HashMap;
 #[derive(Debug, Deserialize)]
 struct ReferenceChart {
     name: String,
+    #[serde(rename = "description")]
     _description: String,
     hd_gates: HdGates,
     expected: ExpectedSequences,

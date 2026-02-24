@@ -28,6 +28,14 @@ sqlx = { version = "0.7", features = ["postgres", "runtime-tokio-rustls", "uuid"
 name = "seed_api_keys"
 required-features = ["postgres"]
 
+[[example]]
+name = "rotate_api_key"
+required-features = ["postgres"]
+
+[[example]]
+name = "issue_api_key_from_existing"
+required-features = ["postgres"]
+
 [dev-dependencies]
 tokio = { version = "1.0", features = ["full"] }
 futures = "0.3"
