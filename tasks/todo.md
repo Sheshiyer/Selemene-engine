@@ -35,4 +35,15 @@
 - [x] Apply rustfmt changes required by `cargo fmt --all -- --check`
 - [x] Resolve blocking clippy warning in `noesis-data` (`too_many_arguments`)
 - [x] Verify locally: `cargo fmt --all --check` and `cargo clippy --all-targets -- -D warnings`
-- [ ] Push lint-fix commit and watch checks
+- [x] Push lint-fix commit and watch checks
+
+## Deploy Fix Cycle (2026-02-24)
+- [ ] Create new deploy-fix branch from `main` (`codex/*`)
+- [ ] Patch/verify compatibility alias for `/api/v1/workflows/{id}` (GET info + POST execute)
+- [ ] Fix `numerology` CALCULATION_ERROR for standard birth payload
+- [ ] Fix `gene-keys` CALCULATION_ERROR for birth-data mode
+- [ ] Fix `sigil-forge` BRIDGE_ERROR path (TS bridge compatibility)
+- [ ] Add/adjust tests for all above fixes
+- [ ] Run lint + targeted tests
+- [ ] Run live smoke checks against production-style payloads
+- [ ] Push branch and open deploy PR to `main`
