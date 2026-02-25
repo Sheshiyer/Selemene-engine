@@ -5,9 +5,13 @@ Provide a compact, deterministic API guide for LLMs and agents (Claude Code, Ope
 # Current State
 
 - Base URL: `https://selemene.tryambakam.space`
-- Auth: `X-API-Key` or `Authorization: Bearer <jwt>`
+- Auth:
+  - `X-API-Key: nk_<api_key>` for API key auth
+  - `Authorization: Bearer <jwt>` for JWT auth
 - Engines: `POST /api/v1/engines/{engine_id}/calculate`
-- Workflows: `POST /api/v1/workflows/{workflow_id}/execute`
+- Workflows:
+  - Canonical: `POST /api/v1/workflows/{workflow_id}/execute`, `GET /api/v1/workflows/{workflow_id}/info`
+  - Compatibility aliases: `POST/GET /api/v1/workflows/{workflow_id}`
 - Shared request schema: `EngineInput`
 - API key is a unique user identity; if `birth_data` is present, user profile is auto-populated.
 
@@ -18,6 +22,7 @@ Provide a compact, deterministic API guide for LLMs and agents (Claude Code, Ope
 3. Prefer `precision: "Standard"` unless a user asks otherwise.
 4. When unsure, include only `birth_data` and omit `options`.
 5. Handle non-200 responses using the standard error schema.
+6. For workflow calls, treat `engine_outputs` as partial-by-design and handle missing engines gracefully.
 
 # Verification
 
@@ -113,3 +118,11 @@ curl -s -X POST https://selemene.tryambakam.space/api/v1/workflows/birth-bluepri
   "details": {"auth_method": "api_key"}
 }
 ```
+
+# Engine Compatibility and Fallbacks
+
+- Numerology requires `birth_data.name`; missing name returns `422 VALIDATION_ERROR`.
+- Sigil Forge intention aliases accepted in `options`: `question`, `intention`, `intent`, `intent_text`.
+- Gene Keys fallback:
+  1. First try `POST /api/v1/engines/gene-keys/calculate` with `birth_data`.
+  2. On `500 CALCULATION_ERROR`, call Human Design, extract Sun/Earth gates, retry Gene Keys with `options.hd_gates`.

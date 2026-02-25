@@ -69,7 +69,10 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
-          platforms: linux/amd64,linux/arm64
+          # swisseph currently fails to compile on arm64 in this Docker build path
+          # (libswisseph-sys pointer type mismatch under buildx/qemu). Keep deploys
+          # deterministic on amd64 until arm64 toolchain/dependency parity is fixed.
+          platforms: linux/amd64
       
       - name: Check image size
         run: |

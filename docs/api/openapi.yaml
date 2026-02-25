@@ -234,6 +234,66 @@ paths:
               schema:
                 $ref: "#/components/schemas/WorkflowListResponse"
 
+  /api/v1/workflows/{workflow_id}:
+    get:
+      tags: [workflows]
+      summary: Workflow metadata (compatibility alias)
+      description: Alias of GET /api/v1/workflows/{workflow_id}/info.
+      security:
+        - bearer_auth: []
+        - api_key: []
+      parameters:
+        - name: workflow_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Workflow information
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WorkflowInfoResponse"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    post:
+      tags: [workflows]
+      summary: Execute workflow (compatibility alias)
+      description: Alias of POST /api/v1/workflows/{workflow_id}/execute.
+      security:
+        - bearer_auth: []
+        - api_key: []
+      parameters:
+        - name: workflow_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EngineInput"
+      responses:
+        "200":
+          description: Workflow execution successful (engine_outputs may be partial)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WorkflowResult"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        "429":
+          $ref: "#/components/responses/RateLimit"
+
   /api/v1/workflows/{workflow_id}/execute:
     post:
       tags: [workflows]
@@ -255,7 +315,7 @@ paths:
               $ref: "#/components/schemas/EngineInput"
       responses:
         "200":
-          description: Workflow execution successful
+          description: Workflow execution successful (engine_outputs may be partial)
           content:
             application/json:
               schema:
@@ -715,6 +775,7 @@ components:
           type: string
         engine_outputs:
           type: object
+          description: Map of successful engine results. Engines that fail or are phase-gated may be omitted.
           additionalProperties:
             $ref: "#/components/schemas/EngineOutput"
         synthesis:

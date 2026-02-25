@@ -15,6 +15,7 @@ Not prediction. Reflection. Inquiry. Witness.
 - **Authentication**: [authentication.md](./authentication.md)
 - **LLM and Agent Guide**: [LLM_AGENT_GUIDE.md](./LLM_AGENT_GUIDE.md)
 - **OpenClaw Integration**: [OPENCLAW_INTEGRATION.md](./OPENCLAW_INTEGRATION.md)
+- **MCP Integration**: [MCP_INTEGRATION.md](./MCP_INTEGRATION.md)
 
 ## Base URLs
 
@@ -87,8 +88,15 @@ Notes:
 ### Workflows
 
 - `GET /api/v1/workflows`
+- `GET /api/v1/workflows/{workflow_id}` (compat alias for `.../info`)
+- `POST /api/v1/workflows/{workflow_id}` (compat alias for `.../execute`)
 - `POST /api/v1/workflows/{workflow_id}/execute`
 - `GET /api/v1/workflows/{workflow_id}/info`
+
+Workflow output contract:
+- `workflow_id` and `total_time_ms` are always present on success.
+- `engine_outputs` contains successful engine results only.
+- For strict completeness checks, compare `engine_outputs` keys to `GET /api/v1/workflows/{workflow_id}/info.engine_ids`.
 
 ### User Profile
 
