@@ -283,6 +283,7 @@ impl UserRepository {
     /// Auto-populate user profile from birth_data on first engine calculation.
     /// Uses upsert — safe to call on every request (no-ops if profile already exists
     /// with the same data). Also updates the user's `full_name` if currently a placeholder.
+    #[allow(clippy::too_many_arguments)]
     pub async fn ensure_profile_from_birth_data(
         &self,
         user_id: Uuid,
@@ -396,12 +397,10 @@ impl UserRepository {
     /// Thresholds: 5→1, 15→2, 40→3, 80→4, 150→5
     pub async fn promote_consciousness_level(&self, user_id: Uuid) -> Result<Option<i32>, Error> {
         // Count total readings for this user
-        let row: (i64,) = sqlx::query_as(
-            "SELECT COUNT(*) FROM readings WHERE user_id = $1",
-        )
-        .bind(user_id)
-        .fetch_one(&self.pool)
-        .await?;
+        let row: (i64,) = sqlx::query_as("SELECT COUNT(*) FROM readings WHERE user_id = $1")
+            .bind(user_id)
+            .fetch_one(&self.pool)
+            .await?;
 
         let reading_count = row.0 as u32;
 

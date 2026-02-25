@@ -12,8 +12,7 @@ impl HelpOverlay {
 
     pub fn draw(&self, frame: &mut Frame, area: Rect) {
         // Semi-transparent background via a clear block
-        let block = Block::default()
-            .style(Style::default().bg(Color::Black));
+        let block = Block::default().style(Style::default().bg(Color::Black));
         frame.render_widget(block, area);
 
         // Center the help panel
@@ -91,10 +90,7 @@ fn section_header(label: &str) -> Line<'_> {
 
 fn shortcut<'a>(key: &'a str, desc: &'a str) -> Line<'a> {
     Line::from(vec![
-        Span::styled(
-            format!("  {:<16}", key),
-            Style::default().fg(Color::Green),
-        ),
+        Span::styled(format!("  {:<16}", key), Style::default().fg(Color::Green)),
         Span::raw(desc),
     ])
 }

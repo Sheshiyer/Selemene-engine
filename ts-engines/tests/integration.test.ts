@@ -13,7 +13,7 @@ import { SigilForgeEngine } from '../src/engines/sigil-forge'
 // Import and register engines
 import { TarotEngine } from '../src/engines/tarot'
 
-const TEST_PORT = 3099
+const TEST_PORT = Number(process.env.TS_ENGINES_TEST_PORT ?? '3099')
 let server: ReturnType<typeof createServer> | null = null
 let baseUrl: string
 
@@ -373,6 +373,33 @@ describe('Sigil Forge Engine', () => {
     expect((data as any).result.method).toBeDefined()
     expect((data as any).result.method.name).toBeDefined()
     expect((data as any).result.method.steps.length).toBeGreaterThan(0)
+  })
+
+  it('accepts question as intention fallback', async () => {
+    const { status, data } = await apiCall('POST', '/engines/sigil-forge/calculate', {
+      consciousness_level: 1,
+      parameters: { question: 'What intention wants embodiment?' },
+    })
+    expect(status).toBe(200)
+    expect((data as any).result.intention).toBe('What intention wants embodiment?')
+  })
+
+  it('accepts legacy intent alias', async () => {
+    const { status, data } = await apiCall('POST', '/engines/sigil-forge/calculate', {
+      consciousness_level: 1,
+      parameters: { intent: 'I anchor creative confidence' },
+    })
+    expect(status).toBe(200)
+    expect((data as any).result.intention).toBe('I anchor creative confidence')
+  })
+
+  it('accepts legacy intent_text alias', async () => {
+    const { status, data } = await apiCall('POST', '/engines/sigil-forge/calculate', {
+      consciousness_level: 1,
+      parameters: { intent_text: 'I complete meaningful work' },
+    })
+    expect(status).toBe(200)
+    expect((data as any).result.intention).toBe('I complete meaningful work')
   })
 
   it('specific method selection works', async () => {

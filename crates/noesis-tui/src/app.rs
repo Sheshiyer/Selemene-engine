@@ -1,12 +1,8 @@
 //! App state and event loop — core TUI runtime
 
 use crate::screens::{
-    engine_picker::EnginePicker,
-    history::HistoryBrowser,
-    onboarding::OnboardingWizard,
-    profile_editor::ProfileEditor,
-    result_display::ResultDisplay,
-    welcome::WelcomeScreen,
+    engine_picker::EnginePicker, history::HistoryBrowser, onboarding::OnboardingWizard,
+    profile_editor::ProfileEditor, result_display::ResultDisplay, welcome::WelcomeScreen,
     workflow_picker::WorkflowPicker,
 };
 use crate::widgets::help::HelpOverlay;
@@ -159,7 +155,10 @@ impl App {
     }
 
     /// Main event loop.
-    pub async fn run(&mut self, terminal: &mut Terminal<CrosstermBackend<std::io::Stdout>>) -> Result<()> {
+    pub async fn run(
+        &mut self,
+        terminal: &mut Terminal<CrosstermBackend<std::io::Stdout>>,
+    ) -> Result<()> {
         loop {
             // Draw
             terminal.draw(|frame| self.draw(frame))?;
@@ -206,7 +205,10 @@ impl App {
             ActiveScreen::WorkflowPicker => self.workflow_picker.draw(frame, area),
             ActiveScreen::ResultDisplay => self.result_display.draw(frame, area),
             ActiveScreen::History => self.history.draw(frame, area),
-            ActiveScreen::ProfileEditor => self.profile_editor.draw(frame, area, &self.profile, &self.config),
+            ActiveScreen::ProfileEditor => {
+                self.profile_editor
+                    .draw(frame, area, &self.profile, &self.config)
+            }
         }
 
         // Draw error bar if present
@@ -251,9 +253,7 @@ impl App {
 
         match self.active_screen {
             ActiveScreen::Welcome => self.welcome.handle_key(key),
-            ActiveScreen::Onboarding => {
-                self.onboarding.handle_key(key, &mut self.config)
-            }
+            ActiveScreen::Onboarding => self.onboarding.handle_key(key, &mut self.config),
             ActiveScreen::EnginePicker => {
                 self.engine_picker
                     .handle_key(key, &self.client, &self.profile)
@@ -265,9 +265,7 @@ impl App {
                     .await
             }
             ActiveScreen::ResultDisplay => self.result_display.handle_key(key),
-            ActiveScreen::History => {
-                self.history.handle_key(key, &self.client).await
-            }
+            ActiveScreen::History => self.history.handle_key(key, &self.client).await,
             ActiveScreen::ProfileEditor => {
                 self.profile_editor
                     .handle_key(key, &mut self.profile, &mut self.config)

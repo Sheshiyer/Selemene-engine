@@ -230,11 +230,7 @@ impl MarkdownRenderer {
     }
 
     /// Render workflow to a specific format.
-    pub fn render_workflow(
-        &self,
-        result: &WorkflowResult,
-        format: ReportFormat,
-    ) -> Result<String> {
+    pub fn render_workflow(&self, result: &WorkflowResult, format: ReportFormat) -> Result<String> {
         match format {
             ReportFormat::Markdown => Ok(self.render_workflow_result(result)),
             ReportFormat::Json => {
@@ -248,7 +244,12 @@ impl MarkdownRenderer {
     fn render_plain_text(&self, output: &EngineOutput) -> String {
         let mut text = String::new();
 
-        writeln!(text, "{} READING", format_engine_name(&output.engine_id).to_uppercase()).unwrap();
+        writeln!(
+            text,
+            "{} READING",
+            format_engine_name(&output.engine_id).to_uppercase()
+        )
+        .unwrap();
         writeln!(text, "{}", "=".repeat(40)).unwrap();
         writeln!(text).unwrap();
 

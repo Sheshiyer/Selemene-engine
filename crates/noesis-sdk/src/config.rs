@@ -201,10 +201,7 @@ impl Config {
 
     /// Get engine-specific config, falling back to defaults.
     pub fn engine_config(&self, engine_id: &str) -> EngineConfig {
-        self.engines
-            .get(engine_id)
-            .cloned()
-            .unwrap_or_default()
+        self.engines.get(engine_id).cloned().unwrap_or_default()
     }
 
     /// Create a builder for programmatic configuration.

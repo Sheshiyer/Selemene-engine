@@ -3,7 +3,7 @@
 use crate::app::{Action, ActiveScreen};
 use crate::utils::format_name;
 use crossterm::event::{KeyCode, KeyEvent};
-use noesis_sdk::{NoesisClient, client::ReadingRecord};
+use noesis_sdk::{client::ReadingRecord, NoesisClient};
 use ratatui::prelude::*;
 use ratatui::widgets::*;
 
@@ -31,7 +31,7 @@ impl HistoryBrowser {
             .direction(Direction::Vertical)
             .constraints([
                 Constraint::Length(3), // Title
-                Constraint::Min(8),   // List
+                Constraint::Min(8),    // List
                 Constraint::Length(3), // Footer
             ])
             .split(area);
@@ -166,11 +166,7 @@ impl HistoryBrowser {
         frame.render_widget(footer, chunks[2]);
     }
 
-    pub async fn handle_key(
-        &mut self,
-        key: KeyEvent,
-        client: &Option<NoesisClient>,
-    ) -> Action {
+    pub async fn handle_key(&mut self, key: KeyEvent, client: &Option<NoesisClient>) -> Action {
         // Auto-load on first visit
         if !self.loaded && !self.loading {
             self.fetch_readings(client).await;
@@ -193,7 +189,9 @@ impl HistoryBrowser {
             KeyCode::Enter => {
                 if let Some(entry) = self.entries.get(self.selected) {
                     // Reconstruct EngineOutput from stored result_data
-                    match serde_json::from_value::<noesis_sdk::EngineOutput>(entry.result_data.clone()) {
+                    match serde_json::from_value::<noesis_sdk::EngineOutput>(
+                        entry.result_data.clone(),
+                    ) {
                         Ok(output) => Action::ShowEngineResult {
                             engine_id: entry.engine_id.clone(),
                             output,
@@ -256,5 +254,3 @@ impl HistoryBrowser {
         self.loaded = true;
     }
 }
-
-

@@ -228,6 +228,35 @@ async fn test_calculate_numerology_success() {
 }
 
 #[tokio::test]
+async fn test_calculate_numerology_without_optional_name_returns_validation_error() {
+    let router = get_test_router().await;
+    let token = generate_test_token(5);
+    let mut input = create_test_birth_input();
+    input.birth_data.as_mut().unwrap().name = None;
+
+    let (status, body) = make_authenticated_request(
+        router,
+        "POST",
+        "/api/v1/engines/numerology/calculate",
+        &token,
+        Some(serde_json::to_value(input).unwrap()),
+    )
+    .await;
+
+    assert_eq!(status, StatusCode::UNPROCESSABLE_ENTITY, "Body: {:?}", body);
+    assert_eq!(body["error_code"], "VALIDATION_ERROR");
+    assert!(
+        body["error"]
+            .as_str()
+            .unwrap_or("")
+            .to_lowercase()
+            .contains("name"),
+        "Expected name validation error, got: {:?}",
+        body
+    );
+}
+
+#[tokio::test]
 async fn test_calculate_biorhythm_success() {
     let router = get_test_router().await;
     let token = generate_test_token(5);
@@ -1311,19 +1340,6 @@ async fn test_gene_keys_directly_from_birth_data() {
         Some(serde_json::to_value(&birth_input).unwrap()),
     )
     .await;
-
-    if status == StatusCode::INTERNAL_SERVER_ERROR {
-        // Known limitation: Mode 1 requires HD chart JSON round-trip.
-        // If that fails, Mode 2 (hd_gates) is the recommended approach.
-        // Note: error messages are sanitized (no internal details leak to clients).
-        let err_code = response["error_code"].as_str().unwrap_or("");
-        assert!(
-            err_code == "CALCULATION_ERROR" || err_code == "INTERNAL_ERROR",
-            "Unexpected error code: {}",
-            err_code
-        );
-        return;
-    }
 
     assert_eq!(
         status,

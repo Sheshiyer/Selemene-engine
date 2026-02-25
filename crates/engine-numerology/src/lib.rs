@@ -288,15 +288,15 @@ impl NumerologyEngine {
 
     fn compute(&self, input: &EngineInput) -> Result<NumerologyResult, EngineError> {
         let birth = input.birth_data.as_ref().ok_or_else(|| {
-            EngineError::CalculationError("birth_data is required for numerology".into())
+            EngineError::ValidationError("birth_data is required for numerology".into())
         })?;
 
         let name = birth.name.as_deref().ok_or_else(|| {
-            EngineError::CalculationError("name is required for numerology calculations".into())
+            EngineError::ValidationError("name is required for numerology calculations".into())
         })?;
 
         if name.trim().is_empty() {
-            return Err(EngineError::CalculationError(
+            return Err(EngineError::ValidationError(
                 "name must not be empty".into(),
             ));
         }
@@ -669,7 +669,11 @@ mod tests {
             options: HashMap::new(),
         };
         let result = engine.calculate(input).await;
-        assert!(result.is_err());
+        assert!(
+            matches!(result, Err(EngineError::ValidationError(_))),
+            "Missing optional name should be reported as validation error, got: {:?}",
+            result
+        );
     }
 
     #[test]

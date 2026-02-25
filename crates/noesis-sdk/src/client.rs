@@ -94,15 +94,8 @@ impl NoesisClient {
 
     /// Execute a multi-engine workflow.
     #[instrument(skip(self, input), fields(workflow_id = %workflow_id))]
-    pub async fn workflow(
-        &self,
-        workflow_id: &str,
-        input: EngineInput,
-    ) -> Result<WorkflowResult> {
-        let url = format!(
-            "{}/api/v1/workflows/{}/execute",
-            self.base_url, workflow_id
-        );
+    pub async fn workflow(&self, workflow_id: &str, input: EngineInput) -> Result<WorkflowResult> {
+        let url = format!("{}/api/v1/workflows/{}/execute", self.base_url, workflow_id);
         debug!("Executing workflow: {}", workflow_id);
 
         let mut request = self.http.post(&url).json(&input);
@@ -194,7 +187,10 @@ impl NoesisClient {
         if status.is_success() {
             response.json::<T>().await.map_err(Error::Http)
         } else {
-            let message = response.text().await.unwrap_or_else(|_| "Unknown error".into());
+            let message = response
+                .text()
+                .await
+                .unwrap_or_else(|_| "Unknown error".into());
             Err(Error::Api {
                 status: status.as_u16(),
                 message,
