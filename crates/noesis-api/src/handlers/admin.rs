@@ -506,6 +506,7 @@ fn forbidden_response(required_permission: &str) -> Response {
     )
 }
 
+#[allow(clippy::result_large_err)]
 fn parse_uuid_or_422(id: &str, field: &str) -> Result<Uuid, Response> {
     Uuid::parse_str(id).map_err(|_| {
         json_error_response(
@@ -578,6 +579,7 @@ fn require_permission_or_forbidden(permissions: &[String], required: &str) -> Op
     }
 }
 
+#[allow(clippy::result_large_err)]
 fn admin_repo_or_503(state: &AppState) -> Result<&AdminRepository, Response> {
     state
         .admin_repository
