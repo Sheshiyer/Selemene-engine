@@ -44,6 +44,7 @@ X-API-Key: nk_<api_key>
 
 Notes:
 - `birth_data` is optional, but required for birth-chart engines.
+- `birth_data.name` is required for numerology.
 - `current_time` defaults to now if omitted.
 - `precision` is one of: `Standard`, `High`, `Extreme`.
 - `options` is engine-specific.
@@ -55,16 +56,16 @@ Notes:
 | Engine ID | Name | Required Phase |
 |-----------|------|----------------|
 | human-design | Human Design | 1 |
-| gene-keys | Gene Keys | 1 |
-| vimshottari | Vimshottari Dasha | 1 |
+| gene-keys | Gene Keys | 2 |
+| vimshottari | Vimshottari Dasha | 2 |
 | panchanga | Panchanga | 0 |
 | numerology | Numerology | 0 |
 | biorhythm | Biorhythm | 0 |
 | vedic-clock | Vedic Clock | 0 |
-| biofield | Biofield | 2 |
-| face-reading | Face Reading | 2 |
-| nadabrahman | Nadabrahman | 1 |
-| transits | Transits | 1 |
+| biofield | Biofield | 1 |
+| face-reading | Face Reading | 1 |
+| nadabrahman | Nadabrahman | 0 |
+| transits | Transits | 0 |
 
 ### TypeScript Engines (Bridged)
 
@@ -72,11 +73,17 @@ Notes:
 
 | Engine ID | Name | Required Phase |
 |-----------|------|----------------|
-| tarot | Tarot | 1 |
-| i-ching | I-Ching | 1 |
+| tarot | Tarot | 0 |
+| i-ching | I-Ching | 0 |
 | enneagram | Enneagram | 1 |
-| sacred-geometry | Sacred Geometry | 2 |
-| sigil-forge | Sigil Forge | 2 |
+| sacred-geometry | Sacred Geometry | 0 |
+| sigil-forge | Sigil Forge | 1 |
+
+Sigil Forge compatibility aliases:
+- `options.question`
+- `options.intention`
+- `options.intent`
+- `options.intent_text`
 
 ---
 
