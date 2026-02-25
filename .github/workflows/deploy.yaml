@@ -76,8 +76,10 @@ jobs:
       
       - name: Check image size
         run: |
-          docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_API }}:${{ github.sha }}
-          SIZE=$(docker image inspect ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_API }}:${{ github.sha }} --format='{{.Size}}')
+          IMAGE_REF=$(echo "${{ steps.meta.outputs.tags }}" | head -n1)
+          echo "Inspecting image: ${IMAGE_REF}"
+          docker pull "${IMAGE_REF}"
+          SIZE=$(docker image inspect "${IMAGE_REF}" --format='{{.Size}}')
           SIZE_MB=$((SIZE / 1024 / 1024))
           echo "Image size: ${SIZE_MB}MB"
           if [ $SIZE_MB -gt 500 ]; then
