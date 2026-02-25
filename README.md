@@ -599,6 +599,7 @@ crates/
 | Component | Technology |
 |-----------|------------|
 | **Compute** | [Railway](https://railway.app) |
+| **Admin Frontend** | [Vercel](https://vercel.com) (`apps/admin-web`) |
 | **Database** | [Supabase](https://supabase.com) PostgreSQL |
 | **Cache** | Redis (L2) + LRU (L1) |
 
@@ -629,6 +630,16 @@ crates/
 | `/api/v1/engines/:id/info` | ✓ | Engine metadata |
 | `/api/v1/workflows` | ✓ | List workflows |
 | `/api/v1/workflows/:id/execute` | ✓ | Execute workflow |
+| `/api/v1/admin/session` | ✓ | Current admin session envelope |
+| `/api/v1/admin/users` | ✓ | List/search users |
+| `/api/v1/admin/users/:user_id/state` | ✓ | Lock/unlock account |
+| `/api/v1/admin/users/:user_id/tier` | ✓ | Update user tier |
+| `/api/v1/admin/users/:user_id/roles` | ✓ | Apply role-derived permissions |
+| `/api/v1/admin/api-keys` | ✓ | List/create API keys |
+| `/api/v1/admin/api-keys/:key_id/revoke` | ✓ | Revoke API key |
+| `/api/v1/admin/api-keys/:key_id/rotate` | ✓ | Rotate API key |
+| `/api/v1/admin/history-sync/*` | ✓ | Drift/device/event sync views |
+| `/api/v1/admin/analytics/*` | ✓ | Summary/timeseries/breakdown/top consumers |
 
 </details>
 
