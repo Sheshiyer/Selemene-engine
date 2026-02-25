@@ -460,3 +460,68 @@ impl UserRepository {
         Ok(updated)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use sqlx::postgres::PgPoolOptions;
+
+    #[tokio::test]
+    async fn add_experience_writes_progression_log_with_generated_id() {
+        let database_url = match std::env::var("DATABASE_URL") {
+            Ok(url) => url,
+            Err(_) => {
+                eprintln!("Skipping DB integration test: DATABASE_URL not set");
+                return;
+            }
+        };
+
+        let pool = PgPoolOptions::new()
+            .max_connections(2)
+            .connect(&database_url)
+            .await
+            .expect("Failed to connect to test database");
+
+        let repo = UserRepository::new(pool.clone());
+        let email = format!("progression-default-{}@example.com", Uuid::new_v4());
+
+        let user = repo
+            .create_user(&email, "test_password_hash", "Progression Test User")
+            .await
+            .expect("Failed to create test user");
+
+        let updated = repo
+            .add_experience(user.id, 7, "calculation")
+            .await
+            .expect("add_experience should succeed with progression_logs UUID default");
+
+        assert_eq!(updated.experience_points, user.experience_points + 7);
+
+        let progression_id: Uuid = sqlx::query_scalar(
+            "SELECT id FROM progression_logs WHERE user_id = $1 ORDER BY created_at DESC LIMIT 1",
+        )
+        .bind(user.id)
+        .fetch_one(&pool)
+        .await
+        .expect("Expected a progression_logs row with generated UUID id");
+
+        assert_ne!(
+            progression_id,
+            Uuid::nil(),
+            "Generated UUID must not be nil"
+        );
+
+        // Cleanup test data
+        sqlx::query("DELETE FROM progression_logs WHERE user_id = $1")
+            .bind(user.id)
+            .execute(&pool)
+            .await
+            .expect("Failed to cleanup progression_logs");
+
+        sqlx::query("DELETE FROM users WHERE id = $1")
+            .bind(user.id)
+            .execute(&pool)
+            .await
+            .expect("Failed to cleanup users");
+    }
+}

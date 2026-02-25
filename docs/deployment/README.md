@@ -86,6 +86,14 @@ The project includes automated CI/CD workflows:
 - Checks code quality with Clippy and rustfmt
 - Builds release binary and checks size
 
+### Migration Authority
+
+Database migration source-of-truth and Supabase alignment policy:
+
+- [DB_MIGRATION_AUTHORITY.md](./DB_MIGRATION_AUTHORITY.md)
+
+Canonical rule: apply runtime schema migrations from root `/migrations` in order.
+
 ### Automated Testing
 
 ```bash
