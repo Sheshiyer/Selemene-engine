@@ -168,11 +168,20 @@ jobs:
             ghcr.io/witnessos/selemene-engine=${{ env.REGISTRY }}/${{ env.IMAGE_NAME_API }}:sha-${{ github.sha }} \
             ghcr.io/witnessos/selemene-ts-engines=${{ env.REGISTRY }}/${{ env.IMAGE_NAME_TS }}:sha-${{ github.sha }}
       
-      - name: Validate manifests
+      - name: Render manifests
         run: |
           cd k8s
           kustomize build . > /tmp/manifests.yaml
+
+      - name: Validate manifests
+        if: env.HAS_KUBECONFIG == 'true'
+        run: |
           kubectl apply --dry-run=client -f /tmp/manifests.yaml
+
+      - name: Skip cluster deploy (no kubeconfig)
+        if: env.HAS_KUBECONFIG != 'true'
+        run: |
+          echo "KUBECONFIG secret is not configured; skipping Kubernetes validation and deploy."
       
       - name: Deploy to cluster
         run: |
