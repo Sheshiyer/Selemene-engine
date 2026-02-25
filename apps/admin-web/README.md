@@ -36,6 +36,12 @@ NEXT_PUBLIC_ADMIN_DEV_MODE=false
 - Root Directory: `apps/admin-web`
 - Build Command: `npm run build`
 - Output: default Next.js output
+- `vercel.json` pins framework preset to Next.js
 - Required env:
   - `NEXT_PUBLIC_API_BASE_URL` -> Railway API base URL
   - `NEXT_PUBLIC_ADMIN_DEV_MODE=false`
+
+Current project wiring:
+
+- Project: `sheshiyers-projects/selemene-admin-dashboard`
+- Production alias: `https://selemene-admin-dashboard.vercel.app`

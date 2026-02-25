@@ -37,3 +37,56 @@
   - `npm --prefix apps/admin-web run typecheck`
   - `npm --prefix apps/admin-web run lint`
   - `npm --prefix apps/admin-web run build`
+
+---
+
+# Task Plan — Admin Dashboard Wave 2 Live Admin Operations
+
+## Checklist
+- [x] Add backend admin APIs for:
+  - [x] users list + status/tier updates
+  - [x] API keys list/create/revoke/rotate
+  - [x] history sync users/devices/events projections
+  - [x] analytics summary/timeseries/breakdown/top-consumers for dashboard charts
+- [x] Wire backend routes/OpenAPI/CORS/AppState dependencies for the new admin endpoints.
+- [x] Add backend tests for all new admin handlers and critical repository queries.
+- [x] Replace frontend placeholders on `/admin/users`, `/admin/api-keys`, `/admin/history-sync`, `/admin/analytics`, and `/admin/dashboard` with live API-driven tables/charts.
+- [x] Add frontend typed API contracts for all new admin endpoints.
+- [x] Run verification gates:
+  - [x] `cargo fmt --all`
+  - [x] `cargo test -p noesis-api --lib -- --nocapture`
+  - [x] `npm --prefix apps/admin-web run typecheck`
+  - [x] `npm --prefix apps/admin-web run lint`
+  - [x] `npm --prefix apps/admin-web run build`
+- [x] Configure/administer Vercel for `apps/admin-web` with production envs targeting Railway API.
+- [x] Run deployed smoke tests on Vercel against Railway API and capture endpoint/UI proof.
+
+## Notes
+- Roles/permissions persistence will use `api_keys.permissions` as current source of truth in this wave unless a dedicated user-roles schema is introduced.
+- History sync views will be derived from current `usage_logs` + `readings` schema in this wave.
+- Keep scope to merge-ready, non-breaking changes for the existing API surface.
+
+## Review (fill after execution)
+- Added backend data layer:
+  - New `AdminRepository` at `crates/noesis-data/src/repositories/admin_repository.rs`
+  - Exported via `crates/noesis-data/src/repositories/mod.rs`
+  - Covers users, key lifecycle, history-sync projections, analytics summaries/timeseries/breakdowns/top-consumers
+- Expanded API surface:
+  - Implemented full `/api/v1/admin/*` handlers in `crates/noesis-api/src/handlers/admin.rs`
+  - Wired routes/OpenAPI/AppState in `crates/noesis-api/src/lib.rs`
+  - Enabled CORS methods for `PATCH` and `PUT`
+  - Added `admin_repository` to app state (prod and lazy builders)
+- Frontend live integration:
+  - Replaced placeholders on users/api-keys/history-sync/analytics/dashboard pages
+  - Added typed API contracts and client methods in `apps/admin-web/src/types/admin.ts` + `apps/admin-web/src/lib/api.ts`
+  - Added charting (`recharts`) and table/action UI styles
+- Deployment:
+  - Created + linked Vercel project `sheshiyers-projects/selemene-admin-dashboard`
+  - Added env vars (`NEXT_PUBLIC_API_BASE_URL`, `NEXT_PUBLIC_ADMIN_DEV_MODE`) for production/preview/development
+  - Added `apps/admin-web/vercel.json` to pin Next.js framework build
+  - Production alias live at `https://selemene-admin-dashboard.vercel.app`
+- Smoke validation:
+  - Frontend deploy routes return `200` (`/admin/login`, `/admin/dashboard`)
+  - Railway health endpoint returns `200`
+  - New Railway admin endpoints currently return `404` (backend deployment to Railway still pending)
+  - Railway CORS still reports `GET,POST,OPTIONS` on live service (new CORS settings not yet deployed)

@@ -19,7 +19,7 @@ use axum::{
     http::{HeaderValue, Method, StatusCode},
     middleware as axum_middleware,
     response::IntoResponse,
-    routing::{get, post},
+    routing::{get, patch, post, put},
     Extension, Router,
 };
 use chrono::Timelike;
@@ -27,6 +27,7 @@ use noesis_auth::{AuthService, AuthUser};
 use noesis_cache::CacheManager;
 use noesis_core::{EngineError, EngineInput, EngineOutput, ValidationResult, WorkflowResult};
 use noesis_data::models::reading::NewReading;
+use noesis_data::repositories::admin_repository::AdminRepository;
 use noesis_data::repositories::readings_repository::ReadingsRepository;
 use noesis_data::repositories::usage_repository::UsageRepository;
 use noesis_data::repositories::user_repository::UserRepository;
@@ -63,6 +64,21 @@ use utoipa_swagger_ui::SwaggerUi;
         handlers::users::get_me,
         handlers::users::update_me,
         handlers::admin::get_session,
+        handlers::admin::list_users,
+        handlers::admin::update_user_state,
+        handlers::admin::update_user_tier,
+        handlers::admin::update_user_roles,
+        handlers::admin::list_api_keys,
+        handlers::admin::create_api_key,
+        handlers::admin::revoke_api_key,
+        handlers::admin::rotate_api_key,
+        handlers::admin::history_sync_users,
+        handlers::admin::history_sync_devices,
+        handlers::admin::history_sync_events,
+        handlers::admin::analytics_summary,
+        handlers::admin::analytics_timeseries,
+        handlers::admin::analytics_breakdown,
+        handlers::admin::analytics_top_consumers,
         handlers::auth::register,
         handlers::auth::login,
         handlers::auth::forgot_password,
@@ -88,6 +104,32 @@ use utoipa_swagger_ui::SwaggerUi;
             handlers::users::LocationResponse,
             handlers::users::UpdateUserRequest,
             handlers::admin::AdminSessionResponse,
+            handlers::admin::AdminUsersResponse,
+            handlers::admin::AdminUserItem,
+            handlers::admin::UpdateUserStateRequest,
+            handlers::admin::UpdateUserStateResponse,
+            handlers::admin::UpdateUserTierRequest,
+            handlers::admin::UpdateUserTierResponse,
+            handlers::admin::UpdateUserRolesRequest,
+            handlers::admin::UpdateUserRolesResponse,
+            handlers::admin::AdminApiKeysResponse,
+            handlers::admin::AdminApiKeyItem,
+            handlers::admin::CreateApiKeyRequest,
+            handlers::admin::CreateApiKeyResponse,
+            handlers::admin::RotateApiKeyResponse,
+            handlers::admin::AdminHistorySyncUsersResponse,
+            handlers::admin::AdminHistorySyncUserItem,
+            handlers::admin::AdminHistorySyncDevicesResponse,
+            handlers::admin::AdminHistorySyncDeviceItem,
+            handlers::admin::AdminHistorySyncEventsResponse,
+            handlers::admin::AdminHistorySyncEventItem,
+            handlers::admin::AdminAnalyticsSummaryResponse,
+            handlers::admin::AdminAnalyticsTimeseriesResponse,
+            handlers::admin::AdminAnalyticsTimeseriesPoint,
+            handlers::admin::AdminAnalyticsBreakdownResponse,
+            handlers::admin::AdminAnalyticsBreakdownEntry,
+            handlers::admin::AdminAnalyticsTopConsumersResponse,
+            handlers::admin::AdminAnalyticsTopConsumerItem,
             handlers::auth::RegisterRequest,
             handlers::auth::RegisterResponse,
             handlers::auth::LoginRequest,
@@ -158,6 +200,7 @@ pub struct AppState {
     pub auth: Arc<AuthService>,
     pub metrics: Arc<NoesisMetrics>,
     pub user_repository: Arc<UserRepository>,
+    pub admin_repository: Option<Arc<AdminRepository>>,
     pub readings_repository: Option<Arc<ReadingsRepository>>,
     pub usage_repository: Option<Arc<UsageRepository>>,
     pub startup_time: Instant,
@@ -173,7 +216,7 @@ pub struct AppState {
 /// * `allowed_origins` - List of allowed origins (e.g., ["http://localhost:3000"])
 ///
 /// Configuration:
-/// - Methods: GET, POST, OPTIONS
+/// - Methods: GET, POST, PATCH, PUT, DELETE, OPTIONS
 /// - Headers: Content-Type, Authorization, X-API-Key
 /// - Credentials: true (for cookie/auth workflows)
 /// - Max Age: 3600 seconds (1 hour)
@@ -192,7 +235,14 @@ fn create_cors_layer(allowed_origins: Vec<String>) -> CorsLayer {
 
     CorsLayer::new()
         .allow_origin(origins)
-        .allow_methods([Method::GET, Method::POST, Method::OPTIONS])
+        .allow_methods([
+            Method::GET,
+            Method::POST,
+            Method::PATCH,
+            Method::PUT,
+            Method::DELETE,
+            Method::OPTIONS,
+        ])
         .allow_headers([
             axum::http::header::CONTENT_TYPE,
             axum::http::header::AUTHORIZATION,
@@ -239,6 +289,59 @@ pub fn create_router(state: AppState, config: &ApiConfig) -> Router {
             get(handlers::users::get_me).patch(handlers::users::update_me),
         )
         .route("/admin/session", get(handlers::admin::get_session))
+        .route("/admin/users", get(handlers::admin::list_users))
+        .route(
+            "/admin/users/:user_id/state",
+            patch(handlers::admin::update_user_state),
+        )
+        .route(
+            "/admin/users/:user_id/tier",
+            patch(handlers::admin::update_user_tier),
+        )
+        .route(
+            "/admin/users/:user_id/roles",
+            put(handlers::admin::update_user_roles),
+        )
+        .route(
+            "/admin/api-keys",
+            get(handlers::admin::list_api_keys).post(handlers::admin::create_api_key),
+        )
+        .route(
+            "/admin/api-keys/:key_id/revoke",
+            post(handlers::admin::revoke_api_key),
+        )
+        .route(
+            "/admin/api-keys/:key_id/rotate",
+            post(handlers::admin::rotate_api_key),
+        )
+        .route(
+            "/admin/history-sync/users",
+            get(handlers::admin::history_sync_users),
+        )
+        .route(
+            "/admin/history-sync/devices",
+            get(handlers::admin::history_sync_devices),
+        )
+        .route(
+            "/admin/history-sync/events",
+            get(handlers::admin::history_sync_events),
+        )
+        .route(
+            "/admin/analytics/summary",
+            get(handlers::admin::analytics_summary),
+        )
+        .route(
+            "/admin/analytics/usage-timeseries",
+            get(handlers::admin::analytics_timeseries),
+        )
+        .route(
+            "/admin/analytics/usage-breakdown",
+            get(handlers::admin::analytics_breakdown),
+        )
+        .route(
+            "/admin/analytics/top-consumers",
+            get(handlers::admin::analytics_top_consumers),
+        )
         .route("/status", get(status_handler))
         .route("/engines", get(list_engines_handler))
         .route("/engines/:engine_id/calculate", post(calculate_handler))
@@ -1660,6 +1763,9 @@ pub async fn build_app_state(config: &ApiConfig) -> AppState {
     let auth = AuthService::with_pool(config.jwt_secret.clone(), pool.clone());
 
     // -- Persistence repos (only available when DB is connected) --
+    let admin_repository = pool
+        .as_ref()
+        .map(|p| Arc::new(AdminRepository::new(p.clone())));
     let readings_repository = pool
         .as_ref()
         .map(|p| Arc::new(ReadingsRepository::new(p.clone())));
@@ -1685,6 +1791,7 @@ pub async fn build_app_state(config: &ApiConfig) -> AppState {
         auth: Arc::new(auth),
         metrics: Arc::new(metrics),
         user_repository,
+        admin_repository,
         readings_repository,
         usage_repository,
         startup_time: Instant::now(),
@@ -1791,6 +1898,9 @@ pub async fn build_app_state_lazy_db(config: &ApiConfig) -> AppState {
     let auth = AuthService::with_pool(config.jwt_secret.clone(), pool.clone());
 
     // -- Persistence repos (only available when DB is configured) --
+    let admin_repository = pool
+        .as_ref()
+        .map(|p| Arc::new(AdminRepository::new(p.clone())));
     let readings_repository = pool
         .as_ref()
         .map(|p| Arc::new(ReadingsRepository::new(p.clone())));
@@ -1814,6 +1924,7 @@ pub async fn build_app_state_lazy_db(config: &ApiConfig) -> AppState {
         auth: Arc::new(auth),
         metrics: Arc::new(metrics),
         user_repository,
+        admin_repository,
         readings_repository,
         usage_repository,
         startup_time: Instant::now(),

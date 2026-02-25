@@ -84,6 +84,7 @@ fn build_test_app_state() -> (noesis_api::AppState, ApiConfig) {
         auth: Arc::new(auth),
         metrics,
         user_repository,
+        admin_repository: None,
         readings_repository: None,
         usage_repository: None,
         startup_time: Instant::now(),

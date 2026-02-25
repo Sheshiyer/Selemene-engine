@@ -1,5 +1,23 @@
 import { getApiBaseUrl } from "@/lib/config";
-import type { AdminSession, ApiErrorPayload, LoginResponse } from "@/types/admin";
+import type {
+  AdminAnalyticsBreakdownResponse,
+  AdminAnalyticsSummaryResponse,
+  AdminAnalyticsTimeseriesResponse,
+  AdminAnalyticsTopConsumersResponse,
+  AdminApiKeysResponse,
+  AdminHistorySyncDevicesResponse,
+  AdminHistorySyncEventsResponse,
+  AdminHistorySyncUsersResponse,
+  AdminSession,
+  AdminUsersResponse,
+  ApiErrorPayload,
+  CreateApiKeyResponse,
+  LoginResponse,
+  RotateApiKeyResponse,
+  UpdateUserRolesResponse,
+  UpdateUserStateResponse,
+  UpdateUserTierResponse
+} from "@/types/admin";
 
 type HttpMethod = "GET" | "POST" | "PATCH" | "PUT" | "DELETE";
 
@@ -51,6 +69,20 @@ async function request<T>(
   return (payload as T) ?? ({} as T);
 }
 
+function buildQuery(params: Record<string, string | number | boolean | undefined>): string {
+  const query = new URLSearchParams();
+
+  for (const [key, value] of Object.entries(params)) {
+    if (value === undefined || value === "") {
+      continue;
+    }
+    query.set(key, String(value));
+  }
+
+  const asString = query.toString();
+  return asString ? `?${asString}` : "";
+}
+
 export async function login(email: string, password: string): Promise<LoginResponse> {
   return request<LoginResponse>("/api/v1/auth/login", {
     method: "POST",
@@ -63,6 +95,215 @@ export async function getAdminSession(token: string): Promise<AdminSession> {
     method: "GET",
     token
   });
+}
+
+export async function getAdminUsers(
+  token: string,
+  params: {
+    query?: string;
+    tier?: string;
+    state?: string;
+    limit?: number;
+    offset?: number;
+  } = {}
+): Promise<AdminUsersResponse> {
+  return request<AdminUsersResponse>(
+    `/api/v1/admin/users${buildQuery({
+      query: params.query,
+      tier: params.tier,
+      state: params.state,
+      limit: params.limit,
+      offset: params.offset
+    })}`,
+    { token }
+  );
+}
+
+export async function updateAdminUserState(
+  token: string,
+  userId: string,
+  payload: {
+    state: "active" | "locked";
+    lock_minutes?: number;
+  }
+): Promise<UpdateUserStateResponse> {
+  return request<UpdateUserStateResponse>(`/api/v1/admin/users/${userId}/state`, {
+    method: "PATCH",
+    token,
+    body: payload
+  });
+}
+
+export async function updateAdminUserTier(
+  token: string,
+  userId: string,
+  payload: { tier: string }
+): Promise<UpdateUserTierResponse> {
+  return request<UpdateUserTierResponse>(`/api/v1/admin/users/${userId}/tier`, {
+    method: "PATCH",
+    token,
+    body: payload
+  });
+}
+
+export async function updateAdminUserRoles(
+  token: string,
+  userId: string,
+  payload: { roles: string[] }
+): Promise<UpdateUserRolesResponse> {
+  return request<UpdateUserRolesResponse>(`/api/v1/admin/users/${userId}/roles`, {
+    method: "PUT",
+    token,
+    body: payload
+  });
+}
+
+export async function getAdminApiKeys(
+  token: string,
+  params: {
+    query?: string;
+    user_id?: string;
+    active_only?: boolean;
+    limit?: number;
+    offset?: number;
+  } = {}
+): Promise<AdminApiKeysResponse> {
+  return request<AdminApiKeysResponse>(
+    `/api/v1/admin/api-keys${buildQuery({
+      query: params.query,
+      user_id: params.user_id,
+      active_only: params.active_only,
+      limit: params.limit,
+      offset: params.offset
+    })}`,
+    { token }
+  );
+}
+
+export async function createAdminApiKey(
+  token: string,
+  payload: {
+    user_id: string;
+    tier?: string;
+    permissions?: string[];
+    consciousness_level?: number;
+    rate_limit?: number;
+    expires_at?: string;
+  }
+): Promise<CreateApiKeyResponse> {
+  return request<CreateApiKeyResponse>("/api/v1/admin/api-keys", {
+    method: "POST",
+    token,
+    body: payload
+  });
+}
+
+export async function revokeAdminApiKey(token: string, keyId: string): Promise<void> {
+  await request<Record<string, unknown>>(`/api/v1/admin/api-keys/${keyId}/revoke`, {
+    method: "POST",
+    token
+  });
+}
+
+export async function rotateAdminApiKey(
+  token: string,
+  keyId: string
+): Promise<RotateApiKeyResponse> {
+  return request<RotateApiKeyResponse>(`/api/v1/admin/api-keys/${keyId}/rotate`, {
+    method: "POST",
+    token
+  });
+}
+
+export async function getHistorySyncUsers(
+  token: string,
+  params: { limit?: number; offset?: number } = {}
+): Promise<AdminHistorySyncUsersResponse> {
+  return request<AdminHistorySyncUsersResponse>(
+    `/api/v1/admin/history-sync/users${buildQuery({
+      limit: params.limit,
+      offset: params.offset
+    })}`,
+    { token }
+  );
+}
+
+export async function getHistorySyncDevices(
+  token: string,
+  params: { limit?: number; offset?: number } = {}
+): Promise<AdminHistorySyncDevicesResponse> {
+  return request<AdminHistorySyncDevicesResponse>(
+    `/api/v1/admin/history-sync/devices${buildQuery({
+      limit: params.limit,
+      offset: params.offset
+    })}`,
+    { token }
+  );
+}
+
+export async function getHistorySyncEvents(
+  token: string,
+  params: { status?: string; limit?: number; offset?: number } = {}
+): Promise<AdminHistorySyncEventsResponse> {
+  return request<AdminHistorySyncEventsResponse>(
+    `/api/v1/admin/history-sync/events${buildQuery({
+      status: params.status,
+      limit: params.limit,
+      offset: params.offset
+    })}`,
+    { token }
+  );
+}
+
+export async function getAnalyticsSummary(
+  token: string,
+  params: { window_hours?: number } = {}
+): Promise<AdminAnalyticsSummaryResponse> {
+  return request<AdminAnalyticsSummaryResponse>(
+    `/api/v1/admin/analytics/summary${buildQuery({
+      window_hours: params.window_hours
+    })}`,
+    { token }
+  );
+}
+
+export async function getAnalyticsTimeseries(
+  token: string,
+  params: { window_hours?: number; bucket?: "hour" | "day" } = {}
+): Promise<AdminAnalyticsTimeseriesResponse> {
+  return request<AdminAnalyticsTimeseriesResponse>(
+    `/api/v1/admin/analytics/usage-timeseries${buildQuery({
+      window_hours: params.window_hours,
+      bucket: params.bucket
+    })}`,
+    { token }
+  );
+}
+
+export async function getAnalyticsBreakdown(
+  token: string,
+  params: { window_hours?: number; limit?: number } = {}
+): Promise<AdminAnalyticsBreakdownResponse> {
+  return request<AdminAnalyticsBreakdownResponse>(
+    `/api/v1/admin/analytics/usage-breakdown${buildQuery({
+      window_hours: params.window_hours,
+      limit: params.limit
+    })}`,
+    { token }
+  );
+}
+
+export async function getAnalyticsTopConsumers(
+  token: string,
+  params: { window_hours?: number; limit?: number } = {}
+): Promise<AdminAnalyticsTopConsumersResponse> {
+  return request<AdminAnalyticsTopConsumersResponse>(
+    `/api/v1/admin/analytics/top-consumers${buildQuery({
+      window_hours: params.window_hours,
+      limit: params.limit
+    })}`,
+    { token }
+  );
 }
 
 export { ApiClientError };
