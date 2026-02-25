@@ -1,4 +1,5 @@
--- Migration: Create readings table for storing engine/workflow calculation results
+-- Migration: 005_readings
+-- Description: Create readings table for storing engine/workflow calculation results
 
 CREATE TABLE IF NOT EXISTS readings (
     id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),

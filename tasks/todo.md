@@ -90,3 +90,32 @@
   - Railway health endpoint returns `200`
   - New Railway admin endpoints currently return `404` (backend deployment to Railway still pending)
   - Railway CORS still reports `GET,POST,OPTIONS` on live service (new CORS settings not yet deployed)
+
+---
+
+# Task Plan — Issue #15 Migration Reconciliation
+
+## Checklist
+- [x] Replace stale Supabase example/partial migrations with canonical-aligned migration set.
+- [x] Ensure Supabase migration order mirrors root `migrations/001..006`.
+- [x] Add a migration drift verification script for root-vs-supabase parity.
+- [x] Add/update minimal docs for the reconciliation workflow.
+- [x] Run verification (`bash scripts/check_migration_drift.sh`) and capture results.
+- [ ] Prepare PR skeleton linked to issue `#15`.
+
+## Notes
+- Scope is issue `#15` only (Wave 1 data foundation migration reconciliation).
+- Keep code changes minimal and non-destructive outside migration assets and docs.
+
+## Review (fill after execution)
+- Replaced non-canonical Supabase migration files:
+  - removed `20260208000001_example_users_table.sql`
+  - replaced legacy `20260210220000_readings_table.sql`
+  - added canonical mirrors for root `001..006` with timestamped Supabase names
+- Added `scripts/check_migration_drift.sh`:
+  - enforces one-to-one root-to-supabase mirror mapping
+  - validates content parity via SHA-256 checks
+  - fails on missing/multiple/mismatched/extra files
+- Added `supabase/README.md` documenting canonical mirror policy and drift-check command.
+- Verification:
+  - `bash scripts/check_migration_drift.sh` passed.
