@@ -147,9 +147,14 @@ jobs:
       
       - name: Configure kubectl
         run: |
-          echo "${{ secrets.KUBECONFIG }}" | base64 -d > kubeconfig.yaml
-          echo "KUBECONFIG=$(pwd)/kubeconfig.yaml" >> $GITHUB_ENV
-        if: ${{ secrets.KUBECONFIG != '' }}
+          if [ -n "${{ secrets.KUBECONFIG }}" ]; then
+            echo "${{ secrets.KUBECONFIG }}" | base64 -d > kubeconfig.yaml
+            echo "KUBECONFIG=$(pwd)/kubeconfig.yaml" >> $GITHUB_ENV
+            echo "HAS_KUBECONFIG=true" >> $GITHUB_ENV
+          else
+            echo "HAS_KUBECONFIG=false" >> $GITHUB_ENV
+            echo "No KUBECONFIG secret configured; skipping cluster deploy steps."
+          fi
       
       - name: Update image tags
         run: |
@@ -168,13 +173,13 @@ jobs:
         run: |
           cd k8s
           kustomize build . | kubectl apply -f -
-        if: ${{ env.KUBECONFIG != '' }}
+        if: env.HAS_KUBECONFIG == 'true'
       
       - name: Wait for rollout
         run: |
           kubectl rollout status deployment/selemene-api -n selemene --timeout=300s
           kubectl rollout status deployment/selemene-ts-engines -n selemene --timeout=300s
-        if: ${{ env.KUBECONFIG != '' }}
+        if: env.HAS_KUBECONFIG == 'true'
       
       - name: Verify deployment
         run: |
@@ -183,7 +188,7 @@ jobs:
           
           # Check endpoints are ready
           kubectl get endpoints -n selemene
-        if: ${{ env.KUBECONFIG != '' }}
+        if: env.HAS_KUBECONFIG == 'true'
 
   # Create GitHub Release for tags
   release:
