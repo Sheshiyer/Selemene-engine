@@ -2,6 +2,17 @@
 
 All notable changes to the Tryambakam Noesis Engine project.
 
+## [3.0.1] - 2026-02-24
+
+### Added
+- Consciousness level auto-promotion docs with reading-count thresholds and XP accrual notes in [authentication.md](docs/api/authentication.md).
+- API surface docs for `GET /api/v1/status` in [docs/api/README.md](docs/api/README.md).
+
+### Fixed
+- Corrected workflow docs to match runtime: `birth-blueprint` uses `numerology + human-design + gene-keys`.
+- Corrected engine `required_phase` values in [docs/api/engines.md](docs/api/engines.md) to match current engine implementations.
+- Updated stale `noesis-bridge` unit tests for TS engine phase values (`i-ching`, `sacred-geometry`, `sigil-forge`).
+
 ## [3.0.0] - 2026-02-16
 
 ### Added
