@@ -29,6 +29,7 @@
 - Updated root docs:
   - Production stack table now explicitly lists Vercel for admin frontend
   - Endpoint list includes `/api/v1/admin/session`
+  - Added ADR: `docs/planning/ADR-0001-admin-web-stack-session.md`
 - Verification:
   - `cargo fmt --all`
   - `cargo test -p noesis-api admin::tests -- --nocapture`
