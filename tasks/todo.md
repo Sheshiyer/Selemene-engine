@@ -101,7 +101,7 @@
 - [x] Add a migration drift verification script for root-vs-supabase parity.
 - [x] Add/update minimal docs for the reconciliation workflow.
 - [x] Run verification (`bash scripts/check_migration_drift.sh`) and capture results.
-- [ ] Prepare PR skeleton linked to issue `#15`.
+- [x] Prepare PR skeleton linked to issue `#15`.
 
 ## Notes
 - Scope is issue `#15` only (Wave 1 data foundation migration reconciliation).
