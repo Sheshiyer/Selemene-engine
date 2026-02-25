@@ -62,6 +62,7 @@ use utoipa_swagger_ui::SwaggerUi;
         workflow_info_handler,
         handlers::users::get_me,
         handlers::users::update_me,
+        handlers::admin::get_session,
         handlers::auth::register,
         handlers::auth::login,
         handlers::auth::forgot_password,
@@ -86,6 +87,7 @@ use utoipa_swagger_ui::SwaggerUi;
             handlers::users::UserResponse,
             handlers::users::LocationResponse,
             handlers::users::UpdateUserRequest,
+            handlers::admin::AdminSessionResponse,
             handlers::auth::RegisterRequest,
             handlers::auth::RegisterResponse,
             handlers::auth::LoginRequest,
@@ -103,6 +105,7 @@ use utoipa_swagger_ui::SwaggerUi;
         (name = "engines", description = "Single engine calculation endpoints"),
         (name = "workflows", description = "Multi-engine workflow execution endpoints"),
         (name = "users", description = "User profile management endpoints"),
+        (name = "admin", description = "Admin session and management surfaces"),
         (name = "auth", description = "Authentication endpoints (register, login, password reset)"),
     ),
     modifiers(&SecurityAddon),
@@ -235,6 +238,7 @@ pub fn create_router(state: AppState, config: &ApiConfig) -> Router {
             "/users/me",
             get(handlers::users::get_me).patch(handlers::users::update_me),
         )
+        .route("/admin/session", get(handlers::admin::get_session))
         .route("/status", get(status_handler))
         .route("/engines", get(list_engines_handler))
         .route("/engines/:engine_id/calculate", post(calculate_handler))

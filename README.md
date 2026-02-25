@@ -599,6 +599,7 @@ crates/
 | Component | Technology |
 |-----------|------------|
 | **Compute** | [Railway](https://railway.app) |
+| **Admin Frontend** | [Vercel](https://vercel.com) (`apps/admin-web`) |
 | **Database** | [Supabase](https://supabase.com) PostgreSQL |
 | **Cache** | Redis (L2) + LRU (L1) |
 
@@ -629,6 +630,7 @@ crates/
 | `/api/v1/engines/:id/info` | ✓ | Engine metadata |
 | `/api/v1/workflows` | ✓ | List workflows |
 | `/api/v1/workflows/:id/execute` | ✓ | Execute workflow |
+| `/api/v1/admin/session` | ✓ | Current admin session envelope |
 
 </details>
 
