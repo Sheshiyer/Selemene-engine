@@ -1,0 +1,74 @@
+name: Plan Issue Sync
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - "docs/planning/*.json"
+      - "scripts/sync-plans-to-github-issues.sh"
+      - "scripts/import-tasks-to-github.sh"
+      - ".github/workflows/plan-issue-sync.yml"
+  workflow_dispatch:
+    inputs:
+      plan_file:
+        description: "Optional single plan file path (example: docs/planning/admin-plan.json)"
+        required: false
+        type: string
+      phase_filter:
+        description: "Optional CSV phase filter (example: P0,P1)"
+        required: false
+        type: string
+      apply:
+        description: "Apply changes (true) or dry-run (false)"
+        required: false
+        default: true
+        type: boolean
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: read
+      repository-projects: write
+    env:
+      GH_TOKEN: ${{ secrets.PLAN_SYNC_TOKEN != '' && secrets.PLAN_SYNC_TOKEN || github.token }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Sync plans to issues
+        shell: bash
+        env:
+          PROJECT_OWNER: ${{ vars.GH_ROADMAP_PROJECT_OWNER }}
+          PROJECT_NUMBER: ${{ vars.GH_ROADMAP_PROJECT_NUMBER }}
+          INPUT_PLAN_FILE: ${{ github.event.inputs.plan_file }}
+          INPUT_PHASE_FILTER: ${{ github.event.inputs.phase_filter }}
+          INPUT_APPLY: ${{ github.event.inputs.apply }}
+        run: |
+          set -euo pipefail
+          chmod +x scripts/sync-plans-to-github-issues.sh scripts/import-tasks-to-github.sh
+
+          APPLY_FLAG="true"
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            APPLY_FLAG="${INPUT_APPLY:-true}"
+          fi
+
+          ARGS=(--repo "${{ github.repository }}")
+          if [[ "${APPLY_FLAG}" == "true" ]]; then
+            ARGS+=(--apply)
+          fi
+          if [[ -n "${INPUT_PLAN_FILE:-}" ]]; then
+            ARGS+=(--plan-file "${INPUT_PLAN_FILE}")
+          fi
+          if [[ -n "${INPUT_PHASE_FILTER:-}" ]]; then
+            ARGS+=(--phase-filter "${INPUT_PHASE_FILTER}")
+          fi
+
+          if [[ -n "${PROJECT_NUMBER:-}" ]]; then
+            OWNER_VALUE="${PROJECT_OWNER:-${{ github.repository_owner }}}"
+            ARGS+=(--project-owner "${OWNER_VALUE}" --project-number "${PROJECT_NUMBER}")
+          fi
+
+          scripts/sync-plans-to-github-issues.sh "${ARGS[@]}"

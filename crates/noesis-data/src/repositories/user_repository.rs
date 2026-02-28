@@ -40,19 +40,129 @@ impl UserRepository {
     }
 
     pub async fn get_user_by_email(&self, email: &str) -> Result<Option<User>, Error> {
-        let user = sqlx::query_as::<_, User>("SELECT * FROM users WHERE email = $1")
-            .bind(email)
-            .fetch_optional(&self.pool)
-            .await?;
+        let primary = sqlx::query_as::<_, User>(
+            r#"
+            SELECT
+                id,
+                email,
+                COALESCE(password_hash, '') AS password_hash,
+                COALESCE(full_name, '') AS full_name,
+                COALESCE(tier, 'free') AS tier,
+                COALESCE(consciousness_level, 0) AS consciousness_level,
+                COALESCE(experience_points, 0) AS experience_points,
+                created_at,
+                updated_at,
+                reset_token,
+                reset_token_expires_at,
+                last_login_at,
+                COALESCE(failed_login_attempts, 0) AS failed_login_attempts,
+                locked_until
+            FROM users
+            WHERE email = $1
+            "#,
+        )
+        .bind(email)
+        .fetch_optional(&self.pool)
+        .await;
+
+        let user = match primary {
+            Ok(user) => user,
+            Err(primary_err) => {
+                let legacy = sqlx::query_as::<_, User>(
+                    r#"
+                    SELECT
+                        id,
+                        email,
+                        password_hash::text AS password_hash,
+                        ''::text AS full_name,
+                        'Free'::text AS tier,
+                        0::integer AS consciousness_level,
+                        0::integer AS experience_points,
+                        NOW() AS created_at,
+                        NOW() AS updated_at,
+                        NULL::text AS reset_token,
+                        NULL::timestamptz AS reset_token_expires_at,
+                        NULL::timestamptz AS last_login_at,
+                        0::integer AS failed_login_attempts,
+                        NULL::timestamptz AS locked_until
+                    FROM users
+                    WHERE email = $1
+                    "#,
+                )
+                .bind(email)
+                .fetch_optional(&self.pool)
+                .await;
+
+                match legacy {
+                    Ok(user) => user,
+                    Err(_) => return Err(primary_err),
+                }
+            }
+        };
 
         Ok(user)
     }
 
     pub async fn get_user_by_id(&self, id: Uuid) -> Result<Option<User>, Error> {
-        let user = sqlx::query_as::<_, User>("SELECT * FROM users WHERE id = $1")
-            .bind(id)
-            .fetch_optional(&self.pool)
-            .await?;
+        let primary = sqlx::query_as::<_, User>(
+            r#"
+            SELECT
+                id,
+                email,
+                COALESCE(password_hash, '') AS password_hash,
+                COALESCE(full_name, '') AS full_name,
+                COALESCE(tier, 'free') AS tier,
+                COALESCE(consciousness_level, 0) AS consciousness_level,
+                COALESCE(experience_points, 0) AS experience_points,
+                created_at,
+                updated_at,
+                reset_token,
+                reset_token_expires_at,
+                last_login_at,
+                COALESCE(failed_login_attempts, 0) AS failed_login_attempts,
+                locked_until
+            FROM users
+            WHERE id = $1
+            "#,
+        )
+        .bind(id)
+        .fetch_optional(&self.pool)
+        .await;
+
+        let user = match primary {
+            Ok(user) => user,
+            Err(primary_err) => {
+                let legacy = sqlx::query_as::<_, User>(
+                    r#"
+                    SELECT
+                        id,
+                        email,
+                        password_hash::text AS password_hash,
+                        ''::text AS full_name,
+                        'Free'::text AS tier,
+                        0::integer AS consciousness_level,
+                        0::integer AS experience_points,
+                        NOW() AS created_at,
+                        NOW() AS updated_at,
+                        NULL::text AS reset_token,
+                        NULL::timestamptz AS reset_token_expires_at,
+                        NULL::timestamptz AS last_login_at,
+                        0::integer AS failed_login_attempts,
+                        NULL::timestamptz AS locked_until
+                    FROM users
+                    WHERE id = $1
+                    "#,
+                )
+                .bind(id)
+                .fetch_optional(&self.pool)
+                .await;
+
+                match legacy {
+                    Ok(user) => user,
+                    Err(_) => return Err(primary_err),
+                }
+            }
+        };
 
         Ok(user)
     }
