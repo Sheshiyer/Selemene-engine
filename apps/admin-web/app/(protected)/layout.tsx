@@ -70,9 +70,14 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
       } catch (err) {
         if (!cancelled) {
           clearAuthToken();
-          if (err instanceof ApiClientError && err.status === 401) {
-            const returnTo = encodeURIComponent(relativePath);
-            router.replace(`/login?redirect=${returnTo}`);
+          if (err instanceof ApiClientError) {
+            if (err.status === 401) {
+              const returnTo = encodeURIComponent(relativePath);
+              router.replace(`/login?redirect=${returnTo}`);
+              return;
+            }
+            setError(err.payload?.error ?? err.message);
+            setLoading(false);
             return;
           }
           setError("Unable to load admin session.");
