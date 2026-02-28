@@ -564,6 +564,14 @@ async fn effective_permissions(
                 EngineError::InternalError(format!("Failed to resolve permissions: {e}"))
             })?;
             permissions.extend(repo_permissions);
+
+            let admin_roles = repo.get_admin_roles(user_id).await.map_err(|e| {
+                EngineError::InternalError(format!("Failed to resolve admin roles: {e}"))
+            })?;
+            if !admin_roles.is_empty() {
+                let role_permissions = permissions_for_roles(&admin_roles);
+                permissions.extend(role_permissions);
+            }
         }
     }
 

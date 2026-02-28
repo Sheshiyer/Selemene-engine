@@ -420,6 +420,25 @@ impl AdminRepository {
         Ok(permissions.into_iter().collect())
     }
 
+    pub async fn get_admin_roles(&self, user_id: Uuid) -> Result<Vec<String>, Error> {
+        let profile_roles = sqlx::query_scalar::<_, Option<Value>>(
+            "SELECT preferences -> 'admin_roles' FROM user_profiles WHERE user_id = $1",
+        )
+        .bind(user_id)
+        .fetch_optional(&self.pool)
+        .await?;
+
+        let mut roles: BTreeSet<String> = BTreeSet::new();
+
+        if let Some(Some(value)) = profile_roles {
+            for role in parse_permissions_value(&value) {
+                roles.insert(role);
+            }
+        }
+
+        Ok(roles.into_iter().collect())
+    }
+
     pub async fn list_api_keys(
         &self,
         query: Option<&str>,
@@ -476,9 +495,15 @@ impl AdminRepository {
             .push(" OFFSET ")
             .push_bind(offset);
 
-        qb.build_query_as::<AdminApiKeyRecord>()
-            .fetch_all(&self.pool)
-            .await
+        let query_result = qb.build_query_as::<AdminApiKeyRecord>().fetch_all(&self.pool).await;
+        match query_result {
+            Ok(rows) => Ok(rows),
+            Err(err) if missing_api_keys_optional_columns(&err) => {
+                self.list_api_keys_legacy(query, user_id, active_only, limit, offset)
+                    .await
+            }
+            Err(err) => Err(err),
+        }
     }
 
     pub async fn count_api_keys(
@@ -511,11 +536,18 @@ impl AdminRepository {
                 .push(")");
         }
 
-        qb.build_query_scalar::<i64>().fetch_one(&self.pool).await
+        let count_result = qb.build_query_scalar::<i64>().fetch_one(&self.pool).await;
+        match count_result {
+            Ok(total) => Ok(total),
+            Err(err) if missing_api_keys_optional_columns(&err) => {
+                self.count_api_keys_legacy(query, user_id, active_only).await
+            }
+            Err(err) => Err(err),
+        }
     }
 
     pub async fn get_api_key(&self, key_id: Uuid) -> Result<Option<AdminApiKeyRecord>, Error> {
-        sqlx::query_as::<_, AdminApiKeyRecord>(
+        let key_result = sqlx::query_as::<_, AdminApiKeyRecord>(
             r#"
             SELECT
                 k.id,
@@ -538,14 +570,34 @@ impl AdminRepository {
         )
         .bind(key_id)
         .fetch_optional(&self.pool)
-        .await
+        .await;
+
+        match key_result {
+            Ok(key) => Ok(key),
+            Err(err) if missing_api_keys_optional_columns(&err) => {
+                self.get_api_key_legacy(key_id).await
+            }
+            Err(err) => Err(err),
+        }
     }
 
     pub async fn create_api_key(
         &self,
         new_key: NewApiKeyRecord,
     ) -> Result<AdminApiKeyRecord, Error> {
-        let key_id = sqlx::query_scalar::<_, Uuid>(
+        let NewApiKeyRecord {
+            key_hash,
+            name,
+            key_prefix,
+            user_id,
+            tier,
+            permissions,
+            consciousness_level,
+            rate_limit,
+            expires_at,
+        } = new_key;
+
+        let key_id_result = sqlx::query_scalar::<_, Uuid>(
             r#"
             INSERT INTO api_keys (
                 key_hash,
@@ -563,17 +615,49 @@ impl AdminRepository {
             RETURNING id
             "#,
         )
-        .bind(new_key.key_hash)
-        .bind(new_key.name)
-        .bind(new_key.key_prefix)
-        .bind(new_key.user_id)
-        .bind(new_key.tier)
-        .bind(new_key.permissions)
-        .bind(new_key.consciousness_level)
-        .bind(new_key.rate_limit)
-        .bind(new_key.expires_at)
+        .bind(key_hash.clone())
+        .bind(name)
+        .bind(key_prefix)
+        .bind(user_id)
+        .bind(tier.clone())
+        .bind(permissions.clone())
+        .bind(consciousness_level)
+        .bind(rate_limit)
+        .bind(expires_at)
         .fetch_one(&self.pool)
-        .await?;
+        .await;
+
+        let key_id = match key_id_result {
+            Ok(id) => id,
+            Err(err) if missing_api_keys_optional_columns(&err) => {
+                sqlx::query_scalar::<_, Uuid>(
+                    r#"
+                    INSERT INTO api_keys (
+                        key_hash,
+                        user_id,
+                        tier,
+                        permissions,
+                        consciousness_level,
+                        rate_limit,
+                        expires_at,
+                        is_active
+                    )
+                    VALUES ($1, $2, $3, $4, $5, $6, $7, true)
+                    RETURNING id
+                    "#,
+                )
+                .bind(key_hash)
+                .bind(user_id)
+                .bind(tier)
+                .bind(permissions)
+                .bind(consciousness_level)
+                .bind(rate_limit)
+                .bind(expires_at)
+                .fetch_one(&self.pool)
+                .await?
+            }
+            Err(err) => return Err(err),
+        };
 
         self.get_api_key(key_id)
             .await?
@@ -598,7 +682,7 @@ impl AdminRepository {
     ) -> Result<Option<AdminApiKeyRecord>, Error> {
         let mut tx = self.pool.begin().await?;
 
-        let existing = sqlx::query_as::<_, ExistingApiKeyRecord>(
+        let existing_result = sqlx::query_as::<_, ExistingApiKeyRecord>(
             r#"
             SELECT user_id, name, tier, permissions, consciousness_level, rate_limit, expires_at
             FROM api_keys
@@ -607,7 +691,19 @@ impl AdminRepository {
         )
         .bind(key_id)
         .fetch_optional(&mut *tx)
-        .await?;
+        .await;
+
+        let existing = match existing_result {
+            Ok(record) => record,
+            Err(err) if missing_api_keys_optional_columns(&err) => {
+                tx.rollback().await?;
+                return self.rotate_api_key_legacy(key_id, new_key_hash).await;
+            }
+            Err(err) => {
+                tx.rollback().await?;
+                return Err(err);
+            }
+        };
 
         let Some(existing) = existing else {
             tx.rollback().await?;
@@ -646,6 +742,183 @@ impl AdminRepository {
         .bind(existing.consciousness_level)
         .bind(existing.rate_limit)
         .bind(existing.expires_at)
+        .fetch_one(&mut *tx)
+        .await?;
+
+        tx.commit().await?;
+
+        self.get_api_key(new_key_id).await
+    }
+
+    async fn list_api_keys_legacy(
+        &self,
+        query: Option<&str>,
+        user_id: Option<Uuid>,
+        active_only: bool,
+        limit: i64,
+        offset: i64,
+    ) -> Result<Vec<AdminApiKeyRecord>, Error> {
+        let mut qb: QueryBuilder<Postgres> = QueryBuilder::new(
+            r#"
+            SELECT
+                k.id,
+                NULL::TEXT AS name,
+                NULL::TEXT AS key_prefix,
+                k.user_id,
+                u.email AS user_email,
+                k.tier,
+                k.permissions,
+                k.consciousness_level,
+                k.rate_limit,
+                k.created_at,
+                k.expires_at,
+                k.last_used,
+                k.is_active
+            FROM api_keys k
+            INNER JOIN users u ON u.id = k.user_id
+            WHERE 1=1
+            "#,
+        );
+
+        if let Some(uid) = user_id {
+            qb.push(" AND k.user_id = ").push_bind(uid);
+        }
+
+        if active_only {
+            qb.push(" AND k.is_active = true");
+        }
+
+        if let Some(q) = query.map(str::trim).filter(|q| !q.is_empty()) {
+            let pattern = format!("%{}%", q);
+            qb.push(" AND (u.email ILIKE ")
+                .push_bind(pattern.clone())
+                .push(" OR k.id::TEXT ILIKE ")
+                .push_bind(pattern.clone())
+                .push(" OR k.user_id::TEXT ILIKE ")
+                .push_bind(pattern)
+                .push(")");
+        }
+
+        qb.push(" ORDER BY k.created_at DESC LIMIT ")
+            .push_bind(limit)
+            .push(" OFFSET ")
+            .push_bind(offset);
+
+        qb.build_query_as::<AdminApiKeyRecord>()
+            .fetch_all(&self.pool)
+            .await
+    }
+
+    async fn count_api_keys_legacy(
+        &self,
+        query: Option<&str>,
+        user_id: Option<Uuid>,
+        active_only: bool,
+    ) -> Result<i64, Error> {
+        let mut qb: QueryBuilder<Postgres> = QueryBuilder::new(
+            "SELECT COUNT(*)::BIGINT FROM api_keys k INNER JOIN users u ON u.id = k.user_id WHERE 1=1",
+        );
+
+        if let Some(uid) = user_id {
+            qb.push(" AND k.user_id = ").push_bind(uid);
+        }
+
+        if active_only {
+            qb.push(" AND k.is_active = true");
+        }
+
+        if let Some(q) = query.map(str::trim).filter(|q| !q.is_empty()) {
+            let pattern = format!("%{}%", q);
+            qb.push(" AND (u.email ILIKE ")
+                .push_bind(pattern.clone())
+                .push(" OR k.id::TEXT ILIKE ")
+                .push_bind(pattern.clone())
+                .push(" OR k.user_id::TEXT ILIKE ")
+                .push_bind(pattern)
+                .push(")");
+        }
+
+        qb.build_query_scalar::<i64>().fetch_one(&self.pool).await
+    }
+
+    async fn get_api_key_legacy(&self, key_id: Uuid) -> Result<Option<AdminApiKeyRecord>, Error> {
+        sqlx::query_as::<_, AdminApiKeyRecord>(
+            r#"
+            SELECT
+                k.id,
+                NULL::TEXT AS name,
+                NULL::TEXT AS key_prefix,
+                k.user_id,
+                u.email AS user_email,
+                k.tier,
+                k.permissions,
+                k.consciousness_level,
+                k.rate_limit,
+                k.created_at,
+                k.expires_at,
+                k.last_used,
+                k.is_active
+            FROM api_keys k
+            INNER JOIN users u ON u.id = k.user_id
+            WHERE k.id = $1
+            "#,
+        )
+        .bind(key_id)
+        .fetch_optional(&self.pool)
+        .await
+    }
+
+    async fn rotate_api_key_legacy(
+        &self,
+        key_id: Uuid,
+        new_key_hash: &str,
+    ) -> Result<Option<AdminApiKeyRecord>, Error> {
+        let mut tx = self.pool.begin().await?;
+
+        let existing = sqlx::query_as::<_, (Uuid, String, Value, i32, i32, Option<DateTime<Utc>>)>(
+            r#"
+            SELECT user_id, tier, permissions, consciousness_level, rate_limit, expires_at
+            FROM api_keys
+            WHERE id = $1 AND is_active = true
+            "#,
+        )
+        .bind(key_id)
+        .fetch_optional(&mut *tx)
+        .await?;
+
+        let Some((user_id, tier, permissions, consciousness_level, rate_limit, expires_at)) = existing else {
+            tx.rollback().await?;
+            return Ok(None);
+        };
+
+        sqlx::query("UPDATE api_keys SET is_active = false WHERE id = $1")
+            .bind(key_id)
+            .execute(&mut *tx)
+            .await?;
+
+        let new_key_id = sqlx::query_scalar::<_, Uuid>(
+            r#"
+            INSERT INTO api_keys (
+                key_hash,
+                user_id,
+                tier,
+                permissions,
+                consciousness_level,
+                rate_limit,
+                expires_at,
+                is_active
+            )
+            VALUES ($1, $2, $3, $4, $5, $6, $7, true)
+            RETURNING id
+            "#,
+        )
+        .bind(new_key_hash)
+        .bind(user_id)
+        .bind(tier)
+        .bind(permissions)
+        .bind(consciousness_level)
+        .bind(rate_limit)
+        .bind(expires_at)
         .fetch_one(&mut *tx)
         .await?;
 
@@ -918,6 +1191,20 @@ impl AdminRepository {
         .fetch_all(&self.pool)
         .await
     }
+}
+
+fn missing_api_keys_optional_columns(err: &Error) -> bool {
+    let Some(db_err) = err.as_database_error() else {
+        return false;
+    };
+
+    if db_err.code().as_deref() != Some("42703") {
+        return false;
+    }
+
+    let message = db_err.message().to_ascii_lowercase();
+    message.contains("api_keys")
+        && (message.contains("name") || message.contains("key_prefix"))
 }
 
 fn parse_permissions_value(value: &Value) -> Vec<String> {
