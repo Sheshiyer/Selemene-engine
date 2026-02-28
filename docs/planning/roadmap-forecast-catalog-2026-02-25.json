@@ -1,0 +1,57 @@
+{
+  "schema_version": "1.0",
+  "generated_on": "2026-02-25",
+  "source": [
+    "README.md roadmap (P2 Desktop Surfaces, P3 Apple Ecosystem)",
+    "User-requested strategic tracks (Mobile App, Solana Payments, NFTs)"
+  ],
+  "tracks": [
+    {
+      "track_id": "admin-panel",
+      "status": "planned",
+      "priority": "critical",
+      "plan_file": "docs/planning/admin-panel-taskmaster-plan-2026-02-25.json",
+      "notes": "Phase-based taskmaster plan exists and Wave 0-1 issues are seeded."
+    },
+    {
+      "track_id": "desktop-surfaces",
+      "status": "planned",
+      "priority": "high",
+      "plan_file": "docs/TASK_PLAN_TUI_RHDUI.json",
+      "notes": "README P2 includes Raycast, menu bar, and Tauri surfaces."
+    },
+    {
+      "track_id": "apple-ecosystem",
+      "status": "planned",
+      "priority": "high",
+      "plan_file": "docs/TASK_PLAN_TUI_RHDUI.json",
+      "notes": "README P3 includes Shortcuts, Apple Watch, and on-device caching."
+    },
+    {
+      "track_id": "mobile-app",
+      "status": "forecasted",
+      "priority": "high",
+      "plan_file": "docs/planning/mobile-app-taskmaster-plan-2026-02-25-draft.json",
+      "notes": "User-requested roadmap expansion; taskmaster draft to be authored next."
+    },
+    {
+      "track_id": "solana-payments",
+      "status": "forecasted",
+      "priority": "high",
+      "plan_file": "docs/planning/solana-payments-taskmaster-plan-2026-02-25-draft.json",
+      "notes": "User-requested payment integration track; include custody, key management, webhook reconciliation, and compliance scope."
+    },
+    {
+      "track_id": "nft-platform",
+      "status": "forecasted",
+      "priority": "medium",
+      "plan_file": "docs/planning/nft-platform-taskmaster-plan-2026-02-25-draft.json",
+      "notes": "User-requested NFT track; define minting model, metadata pipeline, and ownership verification APIs."
+    }
+  ],
+  "next_actions": [
+    "Author three new taskmaster plan JSON files for mobile-app, solana-payments, and nft-platform.",
+    "Merge those plans to main so plan-issue-sync workflow auto-creates roadmap issues.",
+    "Use phase filters to seed waves incrementally (for example P0,P1 first)."
+  ]
+}

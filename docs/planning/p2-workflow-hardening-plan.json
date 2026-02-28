@@ -1,0 +1,915 @@
+{
+  "phase_id": "P2",
+  "name": "Workflow Hardening",
+  "sprint": "S2",
+  "dates": "2026-03-09 to 2026-03-22",
+  "objective": "Add contract tests and validation hardening for all 6 workflows, verify Redis degradation fallback, unify bridge timeout/retry policies, and harden TS sidecar health probes to ensure deterministic, resilient multi-engine orchestration",
+  "gate": "Gate B: All 6 workflow contracts are covered with deterministic fixtures; Redis fallback verified; bridge timeout/retry unified; sidecar health probes passing",
+  "waves": [
+    {
+      "wave_id": "W1",
+      "name": "Foundations — Redis Fallback, Bridge Policy, Sidecar Health",
+      "description": "Establish resilience primitives: verify Redis L2 degradation, unify HTTP bridge timeout/retry across all BridgeEngine calls, and harden TS sidecar health probes with dependency checks",
+      "swarms": [
+        {
+          "swarm_id": "S1",
+          "name": "Redis Degradation Fallback",
+          "description": "N-007: Verify L1-only fallback when Redis is unavailable, add alerting policy for cache degradation",
+          "tasks": [
+            {
+              "id": "P2-W1-S1-01",
+              "title": "Create L2 unavailability test harness",
+              "area": "backend",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 6,
+              "dependencies": [],
+              "deliverable": "Test module in noesis-cache that can simulate Redis connection failure via invalid URL injection",
+              "acceptance": "Test harness compiles and can toggle L2 availability within a single test function",
+              "validation": "cargo test --lib -p noesis-cache -- l2_harness passes with both available and unavailable Redis states"
+            },
+            {
+              "id": "P2-W1-S1-02",
+              "title": "Test L1-only fallback on cache get",
+              "area": "qa",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 6,
+              "dependencies": ["P2-W1-S1-01"],
+              "deliverable": "Integration test proving CacheManager.get returns L1 hits when L2 Redis is unreachable",
+              "acceptance": "Test stores a value in L1, disconnects L2, and successfully retrieves the value from L1 alone",
+              "validation": "cargo test --lib -p noesis-cache -- l1_fallback_get passes"
+            },
+            {
+              "id": "P2-W1-S1-03",
+              "title": "Test L1-only fallback on cache store",
+              "area": "qa",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 4,
+              "dependencies": ["P2-W1-S1-01"],
+              "deliverable": "Integration test proving CacheManager.store succeeds silently when L2 is unavailable and value is still retrievable from L1",
+              "acceptance": "Test calls store with L2 down, verifies no error propagated and L1 contains the value",
+              "validation": "cargo test --lib -p noesis-cache -- l1_fallback_store passes"
+            },
+            {
+              "id": "P2-W1-S1-04",
+              "title": "Test cache stats track L2 misses during degradation",
+              "area": "qa",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 4,
+              "dependencies": ["P2-W1-S1-02"],
+              "deliverable": "Test asserting CacheStats.l2_hits remains 0 and cache_misses increments correctly when Redis is down",
+              "acceptance": "After 10 get operations with L2 down, stats show 0 l2_hits and appropriate miss/l1_hit counts",
+              "validation": "cargo test --lib -p noesis-cache -- degradation_stats passes"
+            },
+            {
+              "id": "P2-W1-S1-05",
+              "title": "Add tracing warn events for Redis degradation",
+              "area": "backend",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 4,
+              "dependencies": ["P2-W1-S1-01"],
+              "deliverable": "Structured tracing::warn events emitted on every L2 connection failure with engine context and retry count",
+              "acceptance": "Running with RUST_LOG=warn shows 'Redis connection unavailable' with structured fields when L2 is unreachable",
+              "validation": "Log output captured in test contains expected warn-level Redis degradation messages"
+            },
+            {
+              "id": "P2-W1-S1-06",
+              "title": "Test health_check reports degraded when Redis is down",
+              "area": "qa",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 4,
+              "dependencies": ["P2-W1-S1-01"],
+              "deliverable": "Test proving CacheManager.health_check returns Ok(false) when L2 is unreachable but L1 is functional",
+              "acceptance": "health_check returns false for L2 down, true when L2 is up, and never returns an Err variant",
+              "validation": "cargo test --lib -p noesis-cache -- health_check_degraded passes"
+            },
+            {
+              "id": "P2-W1-S1-07",
+              "title": "Test L3 disk fallback when both L1 and L2 miss",
+              "area": "qa",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 6,
+              "dependencies": ["P2-W1-S1-01"],
+              "deliverable": "Test that precomputed L3 values are returned and promote to L1 when L2 is unavailable",
+              "acceptance": "A value stored only in L3 is retrievable via CacheManager.get and subsequently appears in L1",
+              "validation": "cargo test --lib -p noesis-cache -- l3_promotion_without_l2 passes"
+            },
+            {
+              "id": "P2-W1-S1-08",
+              "title": "Document Redis fallback alert policy",
+              "area": "infra",
+              "owner_role": "Platform Eng",
+              "est_hours": 4,
+              "dependencies": ["P2-W1-S1-05"],
+              "deliverable": "Runbook documenting Redis degradation detection, alert thresholds (>5 consecutive L2 failures), and recovery procedure",
+              "acceptance": "Runbook exists at docs/runbooks/redis-degradation.md with alert threshold, escalation path, and recovery steps",
+              "validation": "Document reviewed and approved by team lead; references correct tracing field names"
+            }
+          ]
+        },
+        {
+          "swarm_id": "S2",
+          "name": "Bridge Timeout and Retry Policy",
+          "description": "N-011: Unify timeout/retry config across all BridgeEngine HTTP calls with shared policy struct",
+          "tasks": [
+            {
+              "id": "P2-W1-S2-01",
+              "title": "Define BridgeRetryPolicy config struct",
+              "area": "backend",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 6,
+              "dependencies": [],
+              "deliverable": "BridgeRetryPolicy struct in noesis-bridge with max_retries, base_delay_ms, max_delay_ms, timeout_secs, and backoff_factor fields",
+              "acceptance": "Struct compiles with Default impl (3 retries, 100ms base, 2000ms max, 5s timeout, 2.0 backoff) and Serialize/Deserialize",
+              "validation": "cargo test --lib -p noesis-bridge -- retry_policy_default passes with correct field values"
+            },
+            {
+              "id": "P2-W1-S2-02",
+              "title": "Implement exponential backoff retry loop",
+              "area": "backend",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 8,
+              "dependencies": ["P2-W1-S2-01"],
+              "deliverable": "Generic async retry function in noesis-bridge that wraps reqwest calls with exponential backoff per BridgeRetryPolicy",
+              "acceptance": "Retry function accepts a future factory and BridgeRetryPolicy, retries on timeout/connection errors with exponential backoff",
+              "validation": "Unit test with mock server returning 503 twice then 200 passes in under 2 seconds"
+            },
+            {
+              "id": "P2-W1-S2-03",
+              "title": "Integrate retry policy into BridgeEngine::calculate",
+              "area": "backend",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 6,
+              "dependencies": ["P2-W1-S2-02"],
+              "deliverable": "BridgeEngine::calculate uses retry loop instead of single reqwest call; policy configurable via constructor",
+              "acceptance": "BridgeEngine::new accepts optional BridgeRetryPolicy; calculate retries transient failures per policy",
+              "validation": "Existing bridge tests pass; new test verifies retry on simulated timeout"
+            },
+            {
+              "id": "P2-W1-S2-04",
+              "title": "Integrate retry policy into BridgeEngine::validate",
+              "area": "backend",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 4,
+              "dependencies": ["P2-W1-S2-02"],
+              "deliverable": "BridgeEngine::validate uses the same retry loop and shared policy as calculate",
+              "acceptance": "validate retries transient failures using the same BridgeRetryPolicy instance",
+              "validation": "Test simulating validate timeout shows retry behavior"
+            },
+            {
+              "id": "P2-W1-S2-05",
+              "title": "Add environment variable overrides for bridge policy",
+              "area": "backend",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 4,
+              "dependencies": ["P2-W1-S2-01"],
+              "deliverable": "BridgeRetryPolicy::from_env() reads BRIDGE_TIMEOUT_SECS, BRIDGE_MAX_RETRIES, BRIDGE_BACKOFF_BASE_MS from environment",
+              "acceptance": "Setting BRIDGE_TIMEOUT_SECS=10 results in policy.timeout_secs == 10; unset vars use defaults",
+              "validation": "Unit test with env var overrides verifies correct policy construction"
+            },
+            {
+              "id": "P2-W1-S2-06",
+              "title": "Test retry exhaustion returns last error",
+              "area": "qa",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 4,
+              "dependencies": ["P2-W1-S2-03"],
+              "deliverable": "Test proving that after max_retries exhausted, the last EngineError::BridgeError is returned with attempt count in message",
+              "acceptance": "After 3 failed retries, error message contains 'after 3 attempts' and the original error cause",
+              "validation": "cargo test --lib -p noesis-bridge -- retry_exhaustion passes"
+            },
+            {
+              "id": "P2-W1-S2-07",
+              "title": "Test non-retryable errors skip retry loop",
+              "area": "qa",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 4,
+              "dependencies": ["P2-W1-S2-03"],
+              "deliverable": "Test proving that HTTP 400/404/422 responses are not retried and return immediately",
+              "acceptance": "A 400 response from bridge results in immediate EngineError::BridgeError without any retry delay",
+              "validation": "cargo test --lib -p noesis-bridge -- non_retryable_immediate passes"
+            },
+            {
+              "id": "P2-W1-S2-08",
+              "title": "Add retry metrics to BridgeEngine tracing spans",
+              "area": "backend",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 4,
+              "dependencies": ["P2-W1-S2-03"],
+              "deliverable": "Tracing spans on calculate and validate include retry_count and total_elapsed_ms fields",
+              "acceptance": "tracing::info span includes retry_count=2 when 2 retries occurred before success",
+              "validation": "Log output from retry test contains expected structured fields"
+            }
+          ]
+        },
+        {
+          "swarm_id": "S3",
+          "name": "TS Sidecar Health Probes",
+          "description": "N-012: Harden readiness/liveness probes for the Bun TS engine server with per-engine dependency checks",
+          "tasks": [
+            {
+              "id": "P2-W1-S3-01",
+              "title": "Add /health/live liveness endpoint to TS server",
+              "area": "backend",
+              "owner_role": "Backend Eng (TS)",
+              "est_hours": 4,
+              "dependencies": [],
+              "deliverable": "Elysia route /health/live returning 200 with {status: 'alive', uptime_ms} unconditionally",
+              "acceptance": "GET /health/live returns 200 as long as the Bun process is running, regardless of engine state",
+              "validation": "bun test passes for liveness endpoint; curl returns 200"
+            },
+            {
+              "id": "P2-W1-S3-02",
+              "title": "Add /health/ready readiness endpoint with engine checks",
+              "area": "backend",
+              "owner_role": "Backend Eng (TS)",
+              "est_hours": 8,
+              "dependencies": ["P2-W1-S3-01"],
+              "deliverable": "Elysia route /health/ready that iterates all registered engines, calls a lightweight self-check on each, and returns 200 only if all pass",
+              "acceptance": "Returns 200 with per-engine status when all engines healthy; 503 with failed engine details when any engine check fails",
+              "validation": "bun test passes for readiness endpoint with mocked healthy and unhealthy engine states"
+            },
+            {
+              "id": "P2-W1-S3-03",
+              "title": "Add selfCheck method to TS engine interface",
+              "area": "backend",
+              "owner_role": "Backend Eng (TS)",
+              "est_hours": 6,
+              "dependencies": [],
+              "deliverable": "Optional selfCheck(): Promise<{healthy: boolean, detail: string}> method on ConsciousnessEngine TS interface with default healthy implementation",
+              "acceptance": "All 5 TS engines (tarot, i-ching, enneagram, sacred-geometry, sigil-forge) have selfCheck returning healthy: true",
+              "validation": "bun test verifies selfCheck on all 5 engines returns healthy: true"
+            },
+            {
+              "id": "P2-W1-S3-04",
+              "title": "Integrate readiness check into BridgeManager health_check",
+              "area": "backend",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 6,
+              "dependencies": ["P2-W1-S3-02"],
+              "deliverable": "BridgeManager::health_check calls /health/ready instead of /health and parses per-engine status",
+              "acceptance": "BridgeManager returns Ok(()) only when /health/ready returns 200; returns BridgeError with engine details on 503",
+              "validation": "Existing bridge health tests pass; new test verifies degraded response parsing"
+            },
+            {
+              "id": "P2-W1-S3-05",
+              "title": "Add startup readiness gate to TS server",
+              "area": "backend",
+              "owner_role": "Backend Eng (TS)",
+              "est_hours": 4,
+              "dependencies": ["P2-W1-S3-02", "P2-W1-S3-03"],
+              "deliverable": "TS server logs engine registration count at startup and sets an internal ready flag only after all engines register",
+              "acceptance": "/health/ready returns 503 before all engines are registered and 200 after",
+              "validation": "bun test with delayed engine registration verifies readiness timing"
+            },
+            {
+              "id": "P2-W1-S3-06",
+              "title": "Test sidecar probe responses under partial engine failure",
+              "area": "qa",
+              "owner_role": "Backend Eng (TS)",
+              "est_hours": 6,
+              "dependencies": ["P2-W1-S3-02", "P2-W1-S3-03"],
+              "deliverable": "Test suite covering: all healthy, one engine failed, all engines failed, engine recovery scenarios",
+              "acceptance": "4 test cases pass covering all health probe state transitions",
+              "validation": "bun test passes for all probe state transition scenarios"
+            },
+            {
+              "id": "P2-W1-S3-07",
+              "title": "Add /health/engines endpoint listing per-engine status",
+              "area": "backend",
+              "owner_role": "Backend Eng (TS)",
+              "est_hours": 6,
+              "dependencies": ["P2-W1-S3-03"],
+              "deliverable": "Elysia route /health/engines returning individual engine selfCheck results with latency_ms per engine",
+              "acceptance": "GET /health/engines returns JSON array with 5 entries, each containing engine_id, healthy boolean, detail string, and latency_ms",
+              "validation": "bun test passes for /health/engines with mocked healthy and degraded engines"
+            },
+            {
+              "id": "P2-W1-S3-08",
+              "title": "Wire sidecar health into Rust /health/ready endpoint",
+              "area": "backend",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 6,
+              "dependencies": ["P2-W1-S3-04"],
+              "deliverable": "Noesis server /health/ready endpoint includes bridge_status field from BridgeManager::health_check showing TS sidecar availability",
+              "acceptance": "/health/ready response includes bridge_status: available or bridge_status: degraded with engine details",
+              "validation": "cargo test --lib -p noesis-api -- health_ready_bridge passes with mock bridge responses"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "wave_id": "W2",
+      "name": "Contract Tests — All 6 Workflow Contracts with Deterministic Fixtures",
+      "description": "N-008/009/010: Build contract test suites for all 6 workflows with deterministic fixture packs, JSON schema validation, happy path tests, and edge case coverage",
+      "swarms": [
+        {
+          "swarm_id": "S1",
+          "name": "Shared Fixture Infrastructure + Birth-Blueprint + Daily-Practice Contracts",
+          "description": "Build shared test fixture framework, then contract tests for birth-blueprint (numerology, human-design, vimshottari) and daily-practice (panchanga, vedic-clock, biorhythm)",
+          "tasks": [
+            {
+              "id": "P2-W2-S1-01",
+              "title": "Create shared workflow fixture module",
+              "area": "qa",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 8,
+              "dependencies": ["P2-W1-S1-01"],
+              "deliverable": "Reusable test module at tests/fixtures/mod.rs with deterministic EngineInput builders, mock engine factory, and WorkflowOutput assertion helpers",
+              "acceptance": "Module exports fixture_birth_input(), fixture_daily_input(), mock_engine(id, phase, output_json), and assert_workflow_contract(output, schema)",
+              "validation": "cargo test --test fixtures compiles and basic builder tests pass"
+            },
+            {
+              "id": "P2-W2-S1-02",
+              "title": "Define birth-blueprint output JSON schema",
+              "area": "qa",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 6,
+              "dependencies": ["P2-W2-S1-01"],
+              "deliverable": "JSON schema file at tests/contracts/birth-blueprint.schema.json defining required fields: workflow_id, engine_results (numerology, human-design, vimshottari), synthesis, witness_prompts, execution_time_ms, timestamp",
+              "acceptance": "Schema validates a known-good birth-blueprint output and rejects output missing required engine_results keys",
+              "validation": "Schema validation test passes for valid fixture and fails for invalid fixture"
+            },
+            {
+              "id": "P2-W2-S1-03",
+              "title": "Create birth-blueprint deterministic fixtures",
+              "area": "qa",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 6,
+              "dependencies": ["P2-W2-S1-01"],
+              "deliverable": "JSON fixture files for numerology, human-design, and vimshottari engine outputs with deterministic birth data (1990-01-15T14:30, NYC)",
+              "acceptance": "3 fixture files at tests/fixtures/birth-blueprint/ each containing valid EngineOutput JSON matching their engine schema",
+              "validation": "Fixture files deserialize into EngineOutput without error"
+            },
+            {
+              "id": "P2-W2-S1-04",
+              "title": "Implement birth-blueprint happy path contract test",
+              "area": "qa",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 8,
+              "dependencies": ["P2-W2-S1-02", "P2-W2-S1-03"],
+              "deliverable": "Contract test executing birth-blueprint with mock engines loaded from fixtures, asserting output matches JSON schema and synthesis has themes, alignments, and witness_prompts",
+              "acceptance": "Test executes workflow with 3 mock engines, validates output against schema, and checks synthesis fields are non-empty",
+              "validation": "cargo test --test contract_birth_blueprint -- happy_path passes"
+            },
+            {
+              "id": "P2-W2-S1-05",
+              "title": "Implement birth-blueprint edge case contract tests",
+              "area": "qa",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 8,
+              "dependencies": ["P2-W2-S1-04"],
+              "deliverable": "Contract tests covering: missing birth_data, one engine failure, phase-gated engine exclusion, empty options, all engines failing",
+              "acceptance": "5 edge case tests pass covering degraded birth-blueprint execution scenarios",
+              "validation": "cargo test --test contract_birth_blueprint -- edge passes with all 5 cases green"
+            },
+            {
+              "id": "P2-W2-S1-06",
+              "title": "Define daily-practice output JSON schema",
+              "area": "qa",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 6,
+              "dependencies": ["P2-W2-S1-01"],
+              "deliverable": "JSON schema at tests/contracts/daily-practice.schema.json defining required fields including temporal window synthesis",
+              "acceptance": "Schema validates known-good daily-practice output with panchanga, vedic-clock, biorhythm engine results",
+              "validation": "Schema validation test passes for valid fixture and rejects invalid"
+            },
+            {
+              "id": "P2-W2-S1-07",
+              "title": "Create daily-practice deterministic fixtures",
+              "area": "qa",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 6,
+              "dependencies": ["P2-W2-S1-01"],
+              "deliverable": "JSON fixture files for panchanga, vedic-clock, and biorhythm engine outputs with deterministic datetime (2025-01-15T12:00 UTC)",
+              "acceptance": "3 fixture files at tests/fixtures/daily-practice/ each containing valid EngineOutput JSON",
+              "validation": "Fixture files deserialize into EngineOutput without error"
+            },
+            {
+              "id": "P2-W2-S1-08",
+              "title": "Implement daily-practice happy path contract test",
+              "area": "qa",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 8,
+              "dependencies": ["P2-W2-S1-06", "P2-W2-S1-07"],
+              "deliverable": "Contract test executing daily-practice with mock engines, asserting output matches schema and synthesis contains temporal windows",
+              "acceptance": "Test validates schema compliance and checks DailyPracticeSynthesizer produces non-empty themes and summary",
+              "validation": "cargo test --test contract_daily_practice -- happy_path passes"
+            },
+            {
+              "id": "P2-W2-S1-09",
+              "title": "Implement daily-practice edge case contract tests",
+              "area": "qa",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 6,
+              "dependencies": ["P2-W2-S1-08"],
+              "deliverable": "Contract tests covering: future datetime, past datetime, missing location, single engine available, vedic-clock timezone edge case",
+              "acceptance": "5 edge case tests pass covering temporal edge cases in daily-practice workflow",
+              "validation": "cargo test --test contract_daily_practice -- edge passes with all 5 cases green"
+            },
+            {
+              "id": "P2-W2-S1-10",
+              "title": "Test birth-blueprint synthesis determinism with frozen fixtures",
+              "area": "qa",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 6,
+              "dependencies": ["P2-W2-S1-04"],
+              "deliverable": "Test proving BirthBlueprintSynthesizer produces identical SynthesisResult when given identical fixture inputs across 100 runs",
+              "acceptance": "100 iterations of synthesis with same fixtures produce byte-identical JSON output including themes, alignments, and tensions",
+              "validation": "cargo test --test contract_birth_blueprint -- synthesis_determinism passes with 100 identical runs"
+            },
+            {
+              "id": "P2-W2-S1-11",
+              "title": "Test daily-practice synthesis determinism with frozen fixtures",
+              "area": "qa",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 6,
+              "dependencies": ["P2-W2-S1-08"],
+              "deliverable": "Test proving DailyPracticeSynthesizer produces identical SynthesisResult when given identical fixture inputs across 100 runs",
+              "acceptance": "100 iterations of synthesis with same fixtures produce byte-identical JSON output",
+              "validation": "cargo test --test contract_daily_practice -- synthesis_determinism passes with 100 identical runs"
+            }
+          ]
+        },
+        {
+          "swarm_id": "S2",
+          "name": "Decision-Support + Self-Inquiry Contracts",
+          "description": "Contract tests for decision-support (tarot, i-ching, human-design) and self-inquiry (gene-keys, enneagram) workflows",
+          "tasks": [
+            {
+              "id": "P2-W2-S2-01",
+              "title": "Define decision-support output JSON schema",
+              "area": "qa",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 6,
+              "dependencies": ["P2-W2-S1-01"],
+              "deliverable": "JSON schema at tests/contracts/decision-support.schema.json with required tarot, i-ching, human-design results and question context",
+              "acceptance": "Schema requires question field in input and validates engine_results contain bridge-sourced outputs",
+              "validation": "Schema validation test passes for valid fixture with question context"
+            },
+            {
+              "id": "P2-W2-S2-02",
+              "title": "Create decision-support deterministic fixtures",
+              "area": "qa",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 6,
+              "dependencies": ["P2-W2-S1-01"],
+              "deliverable": "JSON fixtures for tarot (seeded 3-card spread), i-ching (seeded hexagram), and human-design authority output",
+              "acceptance": "3 fixture files at tests/fixtures/decision-support/ with deterministic seeded outputs for bridge engines",
+              "validation": "Fixture files deserialize into EngineOutput and contain question context"
+            },
+            {
+              "id": "P2-W2-S2-03",
+              "title": "Implement decision-support happy path contract test",
+              "area": "qa",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 8,
+              "dependencies": ["P2-W2-S2-01", "P2-W2-S2-02"],
+              "deliverable": "Contract test with mock bridge engines returning fixture data, validating synthesis produces decision-relevant alignments",
+              "acceptance": "Test passes with 3 mock engines; output schema validates; synthesis summary references the question context",
+              "validation": "cargo test --test contract_decision_support -- happy_path passes"
+            },
+            {
+              "id": "P2-W2-S2-04",
+              "title": "Implement decision-support edge case contract tests",
+              "area": "qa",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 8,
+              "dependencies": ["P2-W2-S2-03"],
+              "deliverable": "Contract tests covering: missing question option, bridge timeout (tarot unavailable), all TS engines down, empty question string, phase 0 user (only human-design accessible)",
+              "acceptance": "5 edge case tests pass covering bridge failure and input validation scenarios",
+              "validation": "cargo test --test contract_decision_support -- edge passes with all 5 cases green"
+            },
+            {
+              "id": "P2-W2-S2-05",
+              "title": "Define self-inquiry output JSON schema",
+              "area": "qa",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 6,
+              "dependencies": ["P2-W2-S1-01"],
+              "deliverable": "JSON schema at tests/contracts/self-inquiry.schema.json requiring gene-keys shadow/gift/siddhi fields and enneagram type output",
+              "acceptance": "Schema validates self-inquiry output with gene-keys and enneagram engine results containing witness prompts",
+              "validation": "Schema validation test passes for valid self-inquiry fixture"
+            },
+            {
+              "id": "P2-W2-S2-06",
+              "title": "Create self-inquiry deterministic fixtures",
+              "area": "qa",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 6,
+              "dependencies": ["P2-W2-S1-01"],
+              "deliverable": "JSON fixtures for gene-keys (Gate 1 shadow/gift/siddhi) and enneagram (Type 5 with wing/instinct) outputs",
+              "acceptance": "2 fixture files at tests/fixtures/self-inquiry/ with complete engine output structures",
+              "validation": "Fixture files deserialize into EngineOutput with correct gene-keys and enneagram fields"
+            },
+            {
+              "id": "P2-W2-S2-07",
+              "title": "Implement self-inquiry happy path contract test",
+              "area": "qa",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 8,
+              "dependencies": ["P2-W2-S2-05", "P2-W2-S2-06"],
+              "deliverable": "Contract test executing self-inquiry with mock gene-keys and enneagram engines, asserting synthesis produces shadow work tensions",
+              "acceptance": "Test validates schema compliance, synthesis contains tensions between gene-keys shadows and enneagram patterns",
+              "validation": "cargo test --test contract_self_inquiry -- happy_path passes"
+            },
+            {
+              "id": "P2-W2-S2-08",
+              "title": "Implement self-inquiry edge case contract tests",
+              "area": "qa",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 6,
+              "dependencies": ["P2-W2-S2-07"],
+              "deliverable": "Contract tests covering: phase 1 user (gene-keys blocked at phase 2), enneagram bridge failure, both engines fail, missing birth_data for gene-keys",
+              "acceptance": "4 edge case tests pass covering phase gating and bridge failure scenarios",
+              "validation": "cargo test --test contract_self_inquiry -- edge passes with all 4 cases green"
+            },
+            {
+              "id": "P2-W2-S2-09",
+              "title": "Test decision-support synthesis with bridge retry interaction",
+              "area": "qa",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 6,
+              "dependencies": ["P2-W2-S2-03", "P2-W1-S2-03"],
+              "deliverable": "Contract test verifying that when tarot bridge retries succeed on 2nd attempt, the workflow still produces valid synthesis within timeout",
+              "acceptance": "Test with mock tarot failing once then succeeding produces valid decision-support output with retry_count=1 in tracing",
+              "validation": "cargo test --test contract_decision_support -- retry_interaction passes"
+            }
+          ]
+        },
+        {
+          "swarm_id": "S3",
+          "name": "Creative-Expression + Full-Spectrum Contracts",
+          "description": "Contract tests for creative-expression (sigil-forge, sacred-geometry) and full-spectrum (all 14 engines) workflows",
+          "tasks": [
+            {
+              "id": "P2-W2-S3-01",
+              "title": "Define creative-expression output JSON schema",
+              "area": "qa",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 6,
+              "dependencies": ["P2-W2-S1-01"],
+              "deliverable": "JSON schema at tests/contracts/creative-expression.schema.json requiring sigil-forge and sacred-geometry outputs with intention context",
+              "acceptance": "Schema validates creative output with generative data fields from both TS bridge engines",
+              "validation": "Schema validation test passes for valid creative-expression fixture"
+            },
+            {
+              "id": "P2-W2-S3-02",
+              "title": "Create creative-expression deterministic fixtures",
+              "area": "qa",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 6,
+              "dependencies": ["P2-W2-S1-01"],
+              "deliverable": "JSON fixtures for sigil-forge (seeded sigil output) and sacred-geometry (seeded pattern output) engines",
+              "acceptance": "2 fixture files at tests/fixtures/creative-expression/ with deterministic generative outputs",
+              "validation": "Fixture files deserialize into EngineOutput with correct creative fields"
+            },
+            {
+              "id": "P2-W2-S3-03",
+              "title": "Implement creative-expression happy path contract test",
+              "area": "qa",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 8,
+              "dependencies": ["P2-W2-S3-01", "P2-W2-S3-02"],
+              "deliverable": "Contract test with mock sigil-forge and sacred-geometry returning fixture data, validating synthesis combines generative outputs",
+              "acceptance": "Test validates schema, synthesis summary references intention, and both engine outputs present",
+              "validation": "cargo test --test contract_creative_expression -- happy_path passes"
+            },
+            {
+              "id": "P2-W2-S3-04",
+              "title": "Implement creative-expression edge case contract tests",
+              "area": "qa",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 6,
+              "dependencies": ["P2-W2-S3-03"],
+              "deliverable": "Contract tests covering: missing intention, one bridge engine down, both bridges fail, empty parameters, phase 0 user (sigil-forge blocked at phase 1)",
+              "acceptance": "5 edge case tests pass covering TS bridge failure and input edge cases",
+              "validation": "cargo test --test contract_creative_expression -- edge passes with all 5 cases green"
+            },
+            {
+              "id": "P2-W2-S3-05",
+              "title": "Define full-spectrum output JSON schema",
+              "area": "qa",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 8,
+              "dependencies": ["P2-W2-S1-01"],
+              "deliverable": "JSON schema at tests/contracts/full-spectrum.schema.json requiring engine_results as object with at least 6 entries, synthesis with cross-engine themes, and category breakdown",
+              "acceptance": "Schema validates full-spectrum output with 14 engine results and FullSpectrumSynthesizer output format",
+              "validation": "Schema validation test passes for comprehensive full-spectrum fixture"
+            },
+            {
+              "id": "P2-W2-S3-06",
+              "title": "Create full-spectrum deterministic fixtures",
+              "area": "qa",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 8,
+              "dependencies": ["P2-W2-S1-03", "P2-W2-S1-07", "P2-W2-S2-02", "P2-W2-S2-06", "P2-W2-S3-02"],
+              "deliverable": "Composite fixture pack combining all individual workflow fixtures plus biofield and face-reading fixtures for full 14-engine coverage",
+              "acceptance": "14 fixture files at tests/fixtures/full-spectrum/ covering all registered engines in the full-spectrum workflow",
+              "validation": "All 14 fixture files deserialize into EngineOutput; composite fixture covers all engine IDs in full-spectrum registry"
+            },
+            {
+              "id": "P2-W2-S3-07",
+              "title": "Implement full-spectrum happy path contract test",
+              "area": "qa",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 10,
+              "dependencies": ["P2-W2-S3-05", "P2-W2-S3-06"],
+              "deliverable": "Contract test executing full-spectrum with 14 mock engines, validating output matches schema and synthesis covers all engine categories",
+              "acceptance": "Test validates schema, confirms at least 6 cross-engine themes, and checks execution_time_ms is under 30000",
+              "validation": "cargo test --test contract_full_spectrum -- happy_path passes"
+            },
+            {
+              "id": "P2-W2-S3-08",
+              "title": "Implement full-spectrum edge case contract tests",
+              "area": "qa",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 8,
+              "dependencies": ["P2-W2-S3-07"],
+              "deliverable": "Contract tests covering: phase 1 user (only 4 engines accessible), all TS bridges down (9 Rust engines only), half engines failing, phase 3 minimum enforcement",
+              "acceptance": "4 edge case tests pass covering partial execution and phase gating at full-spectrum scale",
+              "validation": "cargo test --test contract_full_spectrum -- edge passes with all 4 cases green"
+            },
+            {
+              "id": "P2-W2-S3-09",
+              "title": "Test creative-expression synthesis determinism with seeded randomness",
+              "area": "qa",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 6,
+              "dependencies": ["P2-W2-S3-03"],
+              "deliverable": "Contract test verifying sigil-forge and sacred-geometry fixtures with seeded randomness produce identical synthesis output across 50 runs",
+              "acceptance": "50 iterations with identical seeds produce byte-identical creative-expression synthesis JSON",
+              "validation": "cargo test --test contract_creative_expression -- synthesis_determinism passes"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "wave_id": "W3",
+      "name": "Selection Matrix, CI Gates, and Verification",
+      "description": "N-027: Backfill engine selection integration tests, add CI gates for contract tests, and produce verification artifact pack",
+      "swarms": [
+        {
+          "swarm_id": "S1",
+          "name": "Engine Selection Integration Tests",
+          "description": "Test the selection matrix: which engines are included in each workflow at each phase level, and verify the WorkflowRegistry correctness",
+          "tasks": [
+            {
+              "id": "P2-W3-S1-01",
+              "title": "Test engine selection matrix for birth-blueprint",
+              "area": "qa",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 6,
+              "dependencies": ["P2-W2-S1-04"],
+              "deliverable": "Integration test verifying birth-blueprint selects exactly numerology, human-design, vimshottari engines and respects phase gating per engine",
+              "acceptance": "Test asserts engine_ids match registry definition, phase 0 user gets numerology only, phase 5 gets all 3",
+              "validation": "cargo test --test selection_matrix -- birth_blueprint passes"
+            },
+            {
+              "id": "P2-W3-S1-02",
+              "title": "Test engine selection matrix for daily-practice",
+              "area": "qa",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 4,
+              "dependencies": ["P2-W2-S1-08"],
+              "deliverable": "Integration test verifying daily-practice selects exactly panchanga, vedic-clock, biorhythm and all are phase 0 accessible",
+              "acceptance": "Test asserts all 3 engines accessible at phase 0 and output contains all 3 engine results",
+              "validation": "cargo test --test selection_matrix -- daily_practice passes"
+            },
+            {
+              "id": "P2-W3-S1-03",
+              "title": "Test engine selection matrix for decision-support",
+              "area": "qa",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 6,
+              "dependencies": ["P2-W2-S2-03"],
+              "deliverable": "Integration test verifying decision-support selects tarot, i-ching, human-design with correct phase requirements per engine",
+              "acceptance": "Test confirms tarot (phase 0), i-ching (phase 0), human-design (phase 0) selection; phase 1 workflow-level requirement enforced",
+              "validation": "cargo test --test selection_matrix -- decision_support passes"
+            },
+            {
+              "id": "P2-W3-S1-04",
+              "title": "Test engine selection matrix for self-inquiry",
+              "area": "qa",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 6,
+              "dependencies": ["P2-W2-S2-07"],
+              "deliverable": "Integration test verifying self-inquiry selects gene-keys (phase 2) and enneagram (phase 1) with correct phase gating",
+              "acceptance": "Phase 1 user gets enneagram only; phase 2+ gets both; phase 0 gets nothing (workflow requires phase 2)",
+              "validation": "cargo test --test selection_matrix -- self_inquiry passes"
+            },
+            {
+              "id": "P2-W3-S1-05",
+              "title": "Test engine selection matrix for creative-expression",
+              "area": "qa",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 4,
+              "dependencies": ["P2-W2-S3-03"],
+              "deliverable": "Integration test verifying creative-expression selects sigil-forge (phase 1) and sacred-geometry (phase 0)",
+              "acceptance": "Phase 0 user gets sacred-geometry only; phase 1+ gets both engines",
+              "validation": "cargo test --test selection_matrix -- creative_expression passes"
+            },
+            {
+              "id": "P2-W3-S1-06",
+              "title": "Test engine selection matrix for full-spectrum",
+              "area": "qa",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 8,
+              "dependencies": ["P2-W2-S3-07"],
+              "deliverable": "Integration test verifying full-spectrum selects all 14 engines and correctly gates by phase (phase 3 required for workflow)",
+              "acceptance": "Phase 3 user gets all 14 engines; phase 2 user gets PhaseAccessDenied; engine count matches registry exactly",
+              "validation": "cargo test --test selection_matrix -- full_spectrum passes"
+            },
+            {
+              "id": "P2-W3-S1-07",
+              "title": "Test registry consistency between WorkflowOrchestrator and WorkflowRegistry",
+              "area": "qa",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 6,
+              "dependencies": [],
+              "deliverable": "Test verifying WorkflowOrchestrator::default_workflows and WorkflowRegistry::register_default_workflows produce equivalent workflow definitions",
+              "acceptance": "Both registries have 6 workflows with matching IDs, engine lists, and phase requirements",
+              "validation": "cargo test --test selection_matrix -- registry_consistency passes"
+            },
+            {
+              "id": "P2-W3-S1-08",
+              "title": "Test list_for_phase across all phase levels 0-5",
+              "area": "qa",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 4,
+              "dependencies": ["P2-W3-S1-07"],
+              "deliverable": "Parameterized test verifying WorkflowRegistry.list_for_phase returns correct workflow count at each phase 0 through 5",
+              "acceptance": "Phase 0: 2 workflows, Phase 1: 4, Phase 2: 5, Phase 3: 6, Phase 4: 6, Phase 5: 6",
+              "validation": "cargo test --test selection_matrix -- phase_progression passes"
+            }
+          ]
+        },
+        {
+          "swarm_id": "S2",
+          "name": "CI Gates and Verification Pack",
+          "description": "Add contract tests to CI pipeline, create Gate B verification checklist, and produce artifact pack",
+          "tasks": [
+            {
+              "id": "P2-W3-S2-01",
+              "title": "Add contract test job to GitHub Actions CI",
+              "area": "infra",
+              "owner_role": "Platform Eng",
+              "est_hours": 6,
+              "dependencies": ["P2-W2-S1-04", "P2-W2-S2-03", "P2-W2-S3-03"],
+              "deliverable": "New 'contract-tests' job in .github/workflows/test.yml running cargo test --test 'contract_*' after unit tests pass",
+              "acceptance": "CI pipeline includes contract-tests job that runs all 6 workflow contract test suites and fails PR if any contract breaks",
+              "validation": "Push with failing contract test shows red CI; push with passing tests shows green"
+            },
+            {
+              "id": "P2-W3-S2-02",
+              "title": "Add selection matrix test job to CI",
+              "area": "infra",
+              "owner_role": "Platform Eng",
+              "est_hours": 4,
+              "dependencies": ["P2-W3-S1-01"],
+              "deliverable": "Selection matrix tests included in the contract-tests CI job, running after contract tests pass",
+              "acceptance": "CI runs selection_matrix tests and blocks merge if engine selection regresses",
+              "validation": "CI log shows selection_matrix tests executing and reporting pass/fail"
+            },
+            {
+              "id": "P2-W3-S2-03",
+              "title": "Create fixture validation CI step",
+              "area": "infra",
+              "owner_role": "Platform Eng",
+              "est_hours": 4,
+              "dependencies": ["P2-W2-S1-01"],
+              "deliverable": "CI step that validates all JSON fixture files under tests/fixtures/ are valid JSON and deserialize into expected Rust types",
+              "acceptance": "CI catches malformed fixture JSON and reports which file failed",
+              "validation": "Intentionally corrupt a fixture file and verify CI fails with clear error"
+            },
+            {
+              "id": "P2-W3-S2-04",
+              "title": "Create Gate B verification checklist",
+              "area": "product",
+              "owner_role": "Platform Eng",
+              "est_hours": 4,
+              "dependencies": ["P2-W3-S2-01", "P2-W3-S2-02"],
+              "deliverable": "Gate B checklist document at docs/gates/gate-b-checklist.md with all 6 workflow contract status, selection matrix status, Redis fallback status, bridge retry status, and sidecar health status",
+              "acceptance": "Checklist has pass/fail entries for each P2 deliverable with links to CI runs and test output",
+              "validation": "All checklist items reference a specific test or CI job by name"
+            },
+            {
+              "id": "P2-W3-S2-05",
+              "title": "Generate contract test coverage report",
+              "area": "qa",
+              "owner_role": "Platform Eng",
+              "est_hours": 6,
+              "dependencies": ["P2-W3-S2-01"],
+              "deliverable": "Coverage report showing contract test coverage per workflow: number of happy path tests, edge case tests, and fixture files per workflow",
+              "acceptance": "Report shows all 6 workflows have at least 1 happy path + 4 edge case tests and at least 2 fixture files each",
+              "validation": "Report generated as markdown at docs/reports/p2-contract-coverage.md with counts per workflow"
+            },
+            {
+              "id": "P2-W3-S2-06",
+              "title": "Verify all contract tests are deterministic",
+              "area": "qa",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 6,
+              "dependencies": ["P2-W2-S1-04", "P2-W2-S1-08", "P2-W2-S2-03", "P2-W2-S2-07", "P2-W2-S3-03", "P2-W2-S3-07"],
+              "deliverable": "Run all contract tests 10 times in CI; no flaky failures; all use fixed seeds and frozen timestamps",
+              "acceptance": "10 consecutive CI runs produce identical test results with 0 failures",
+              "validation": "CI script runs contract tests in loop 10x and reports pass count"
+            },
+            {
+              "id": "P2-W3-S2-07",
+              "title": "Add contract test badge to repository README",
+              "area": "product",
+              "owner_role": "Platform Eng",
+              "est_hours": 4,
+              "dependencies": ["P2-W3-S2-01"],
+              "deliverable": "CI badge in repository root showing contract test status alongside existing lint/test/build badges",
+              "acceptance": "Badge renders on GitHub showing green when contract tests pass and red when they fail",
+              "validation": "Badge URL resolves to correct GitHub Actions workflow status"
+            },
+            {
+              "id": "P2-W3-S2-08",
+              "title": "Document P2 contract testing methodology",
+              "area": "product",
+              "owner_role": "Platform Eng",
+              "est_hours": 6,
+              "dependencies": ["P2-W3-S2-04"],
+              "deliverable": "Technical document at docs/testing/contract-testing-methodology.md explaining fixture-based deterministic contract testing approach, schema validation strategy, and fixture creation guidelines",
+              "acceptance": "Document includes: fixture creation template, schema definition guide, test naming conventions, and CI integration instructions",
+              "validation": "Document reviewed by team and covers all 6 workflow contract patterns"
+            },
+            {
+              "id": "P2-W3-S2-09",
+              "title": "Run full P2 regression suite and produce Gate B sign-off artifact",
+              "area": "qa",
+              "owner_role": "Platform Eng",
+              "est_hours": 6,
+              "dependencies": ["P2-W3-S2-06", "P2-W3-S1-08"],
+              "deliverable": "Single CI run executing all contract tests, selection matrix tests, Redis fallback tests, bridge retry tests, and sidecar probe tests with consolidated pass/fail report",
+              "acceptance": "All tests pass in a single CI run; Gate B checklist has all items marked as passed with CI run link",
+              "validation": "Gate B sign-off artifact committed to docs/gates/gate-b-signoff.json with run ID, timestamp, and per-test results"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "risks": [
+    {
+      "id": "R1",
+      "description": "TS sidecar server changes in W1-S3 may require coordinated deployment with Rust bridge changes in W1-S2",
+      "probability": "medium",
+      "impact": "medium",
+      "mitigation": "BridgeManager::health_check change is backward compatible — new /health/ready endpoint alongside existing /health; rollback safe"
+    },
+    {
+      "id": "R2",
+      "description": "Full-spectrum contract test (W2-S3-07) depends on all 14 engine fixture files being correct simultaneously",
+      "probability": "high",
+      "impact": "low",
+      "mitigation": "Full-spectrum fixtures reuse individual workflow fixtures (composite build in W2-S3-06); only 2 new fixtures needed (biofield, face-reading)"
+    },
+    {
+      "id": "R3",
+      "description": "Exponential backoff retry logic in W1-S2-02 may slow down CI if mock server setup is flaky",
+      "probability": "low",
+      "impact": "medium",
+      "mitigation": "Use BridgeRetryPolicy with max_delay_ms=100 in tests; mock server starts before test; CI timeout at 60s per test"
+    },
+    {
+      "id": "R4",
+      "description": "JSON schema validation approach (serde_json schema check) may be insufficient for complex nested engine output shapes",
+      "probability": "medium",
+      "impact": "medium",
+      "mitigation": "Use jsonschema crate for RFC-compliant validation; fallback to structural assertion macros if schema approach is too rigid"
+    },
+    {
+      "id": "R5",
+      "description": "WorkflowOrchestrator and WorkflowRegistry have divergent engine_ids for birth-blueprint (gene-keys vs vimshottari)",
+      "probability": "high",
+      "impact": "high",
+      "mitigation": "W3-S1-07 (registry consistency test) will catch this divergence early; fix must be applied before contract tests are finalized"
+    },
+    {
+      "id": "R6",
+      "description": "Some TS engine selfCheck implementations may expose flaky behavior under test load",
+      "probability": "low",
+      "impact": "low",
+      "mitigation": "selfCheck is a lightweight no-side-effect check; defaults to healthy: true; can be mocked in integration tests"
+    }
+  ],
+  "verification_strategy": "Gate B verification uses a three-layer approach: (1) Unit-level — each contract test validates against JSON schema with deterministic fixtures; (2) Integration-level — selection matrix tests verify engine routing at every phase level; (3) CI-level — all contract and selection tests run as a blocking CI job on every PR. Determinism is verified by running all contract tests 10x in CI with identical results. The Gate B checklist (docs/gates/gate-b-checklist.md) aggregates all results with links to specific CI runs. Pass criteria: all 6 workflows have passing happy-path and edge-case contract tests, Redis fallback is verified with L1-only operation, bridge retry policy is tested with exhaustion and non-retryable scenarios, and TS sidecar probes respond correctly under partial failure.",
+  "summary": {
+    "total_tasks": 70,
+    "wave_1_tasks": 24,
+    "wave_2_tasks": 29,
+    "wave_3_tasks": 17,
+    "estimated_total_hours": 414,
+    "parallel_tracks": 3,
+    "workflows_covered": ["birth-blueprint", "daily-practice", "decision-support", "self-inquiry", "creative-expression", "full-spectrum"],
+    "engines_covered": {
+      "rust_native": ["numerology", "human-design", "vimshottari", "panchanga", "vedic-clock", "biorhythm", "gene-keys", "biofield", "face-reading"],
+      "ts_bridge": ["tarot", "i-ching", "enneagram", "sacred-geometry", "sigil-forge"]
+    }
+  }
+}
