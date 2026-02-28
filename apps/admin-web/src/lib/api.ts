@@ -21,6 +21,8 @@ import type {
 
 type HttpMethod = "GET" | "POST" | "PATCH" | "PUT" | "DELETE";
 
+const LOCALHOST_HOSTS = new Set(["localhost", "127.0.0.1", "0.0.0.0"]);
+
 class ApiClientError extends Error {
   status: number;
   payload?: ApiErrorPayload;
@@ -33,6 +35,50 @@ class ApiClientError extends Error {
   }
 }
 
+function isBrowserRuntime(): boolean {
+  return typeof window !== "undefined";
+}
+
+function isLikelyProductionOrigin(hostname: string): boolean {
+  return !LOCALHOST_HOSTS.has(hostname);
+}
+
+function assertApiBaseUrlRuntimeSafety(baseUrl: string): void {
+  if (!isBrowserRuntime()) {
+    return;
+  }
+
+  try {
+    const resolved = new URL(baseUrl);
+    if (isLikelyProductionOrigin(window.location.hostname) && LOCALHOST_HOSTS.has(resolved.hostname)) {
+      throw new ApiClientError(
+        "Admin dashboard is misconfigured: NEXT_PUBLIC_API_BASE_URL points to localhost.",
+        500,
+        {
+          error: "Admin dashboard is misconfigured: NEXT_PUBLIC_API_BASE_URL points to localhost.",
+          error_code: "ADMIN_ENV_MISCONFIG",
+          details: {
+            configured_api_base_url: baseUrl,
+            current_origin: window.location.origin
+          }
+        }
+      );
+    }
+  } catch {
+    throw new ApiClientError(
+      "Admin dashboard is misconfigured: NEXT_PUBLIC_API_BASE_URL is not a valid URL.",
+      500,
+      {
+        error: "Admin dashboard is misconfigured: NEXT_PUBLIC_API_BASE_URL is not a valid URL.",
+        error_code: "ADMIN_ENV_MISCONFIG",
+        details: {
+          configured_api_base_url: baseUrl
+        }
+      }
+    );
+  }
+}
+
 async function request<T>(
   path: string,
   options: {
@@ -42,17 +88,34 @@ async function request<T>(
   } = {}
 ): Promise<T> {
   const baseUrl = getApiBaseUrl();
+  assertApiBaseUrlRuntimeSafety(baseUrl);
+
   const url = `${baseUrl}${path}`;
 
-  const response = await fetch(url, {
-    method: options.method ?? "GET",
-    headers: {
-      "Content-Type": "application/json",
-      ...(options.token ? { Authorization: `Bearer ${options.token}` } : {})
-    },
-    body: options.body ? JSON.stringify(options.body) : undefined,
-    cache: "no-store"
-  });
+  let response: Response;
+  try {
+    response = await fetch(url, {
+      method: options.method ?? "GET",
+      headers: {
+        "Content-Type": "application/json",
+        ...(options.token ? { Authorization: `Bearer ${options.token}` } : {})
+      },
+      body: options.body ? JSON.stringify(options.body) : undefined,
+      cache: "no-store"
+    });
+  } catch {
+    throw new ApiClientError(
+      "Unable to reach the API service. Check NEXT_PUBLIC_API_BASE_URL and backend CORS settings.",
+      503,
+      {
+        error: "Unable to reach the API service. Check NEXT_PUBLIC_API_BASE_URL and backend CORS settings.",
+        error_code: "API_UNREACHABLE",
+        details: {
+          api_url: url
+        }
+      }
+    );
+  }
 
   const contentType = response.headers.get("content-type");
   const hasJson = contentType?.includes("application/json");

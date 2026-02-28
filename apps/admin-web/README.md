@@ -5,6 +5,7 @@ This app is the Vercel-hosted admin dashboard for Selemene Engine.
 ## Runtime contract
 
 - App base path: `/admin` (configured in `next.config.mjs`)
+- Root `/` is redirected to `/admin/login` via `next.config.mjs` redirects
 - Backend API origin: `NEXT_PUBLIC_API_BASE_URL`
 - Auth flow:
   - Login: `POST /api/v1/auth/login`
@@ -30,6 +31,8 @@ NEXT_PUBLIC_ADMIN_DEV_MODE=false
 ```
 
 `NEXT_PUBLIC_ADMIN_DEV_MODE=true` allows a `basic:access` token to pass UI route guards for local scaffolding only.
+
+If `NEXT_PUBLIC_API_BASE_URL` is missing in a non-local deployment, login/session calls now fail fast with a clear `ADMIN_ENV_MISCONFIG` error instead of silently targeting `http://localhost:8080`.
 
 ## Vercel setup
 
