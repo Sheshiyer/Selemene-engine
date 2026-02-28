@@ -103,6 +103,8 @@ pub struct AdminApiKeysResponse {
 #[derive(Serialize, ToSchema)]
 pub struct AdminApiKeyItem {
     pub id: String,
+    pub name: Option<String>,
+    pub key_prefix: Option<String>,
     pub user_id: String,
     pub user_email: String,
     pub tier: String,
@@ -118,6 +120,7 @@ pub struct AdminApiKeyItem {
 #[derive(Deserialize, ToSchema)]
 pub struct CreateApiKeyRequest {
     pub user_id: String,
+    pub name: Option<String>,
     pub tier: Option<String>,
     pub permissions: Option<Vec<String>>,
     pub consciousness_level: Option<i32>,
@@ -306,7 +309,9 @@ fn has_permission(permissions: &[String], required: &str) -> bool {
         return true;
     }
 
-    if required.starts_with("admin:analytics:")
+    if (required.starts_with("admin:analytics:")
+        || required.starts_with("admin:system:")
+        || required.starts_with("admin:audit:"))
         && permissions.iter().any(|perm| perm == "admin:analytics")
     {
         return true;
@@ -425,6 +430,35 @@ fn permissions_for_roles(roles: &[String]) -> Vec<String> {
     permissions.into_iter().collect()
 }
 
+fn normalize_effective_permissions(permissions: &[String]) -> Vec<String> {
+    let mut normalized: BTreeSet<String> = permissions.iter().cloned().collect();
+
+    let canonical_permissions = [
+        "admin:analytics:read",
+        "admin:system:read",
+        "admin:audit:list",
+        "admin:users:list",
+        "admin:users:read",
+        "admin:users:suspend",
+        "admin:users:tier:update",
+        "admin:users:roles:update",
+        "admin:keys:list",
+        "admin:keys:create",
+        "admin:keys:revoke",
+        "admin:keys:rotate",
+        "admin:history-sync:read",
+        "admin:history-sync:retry",
+    ];
+
+    for required in canonical_permissions {
+        if has_permission(permissions, required) {
+            normalized.insert(required.to_string());
+        }
+    }
+
+    normalized.into_iter().collect()
+}
+
 fn parse_permissions(value: &Value) -> Vec<String> {
     value
         .as_array()
@@ -533,7 +567,8 @@ async fn effective_permissions(
         }
     }
 
-    Ok(permissions.into_iter().collect())
+    let collected = permissions.into_iter().collect::<Vec<_>>();
+    Ok(normalize_effective_permissions(&collected))
 }
 
 fn map_user_record(record: AdminUserRecord) -> AdminUserItem {
@@ -558,6 +593,8 @@ fn map_user_record(record: AdminUserRecord) -> AdminUserItem {
 fn map_api_key_record(record: AdminApiKeyRecord) -> AdminApiKeyItem {
     AdminApiKeyItem {
         id: record.id.to_string(),
+        name: record.name,
+        key_prefix: record.key_prefix,
         user_id: record.user_id.to_string(),
         user_email: record.user_email,
         tier: record.tier,
@@ -1105,11 +1142,14 @@ pub async fn create_api_key(
 
     let secret_key = generate_secret_api_key();
     let key_hash = sha256_hex(&secret_key);
+    let key_prefix = secret_key[..12.min(secret_key.len())].to_string();
 
     let created = repo
         .create_api_key(
             noesis_data::repositories::admin_repository::NewApiKeyRecord {
                 key_hash,
+                name: payload.name,
+                key_prefix,
                 user_id: user_uuid,
                 tier: tier.clone(),
                 permissions: serde_json::json!(permissions),
@@ -1242,9 +1282,10 @@ pub async fn rotate_api_key(
 
     let secret_key = generate_secret_api_key();
     let key_hash = sha256_hex(&secret_key);
+    let key_prefix = secret_key[..12.min(secret_key.len())].to_string();
 
     let rotated = repo
-        .rotate_api_key(key_uuid, &key_hash)
+        .rotate_api_key(key_uuid, &key_hash, &key_prefix)
         .await
         .map_err(|e| EngineError::InternalError(format!("Failed to rotate api key: {e}")))?;
 
@@ -1801,6 +1842,26 @@ mod tests {
         let permissions = vec!["admin:users".to_string()];
         assert!(has_permission(&permissions, "admin:keys:list"));
         assert!(has_permission(&permissions, "admin:history-sync:read"));
+    }
+
+    #[test]
+    fn legacy_analytics_permission_unlocks_system_and_audit() {
+        let permissions = vec!["admin:analytics".to_string()];
+        let normalized = normalize_effective_permissions(&permissions);
+        assert!(normalized.iter().any(|perm| perm == "admin:analytics:read"));
+        assert!(normalized.iter().any(|perm| perm == "admin:system:read"));
+        assert!(normalized.iter().any(|perm| perm == "admin:audit:list"));
+    }
+
+    #[test]
+    fn legacy_users_permission_normalizes_keys_and_history() {
+        let permissions = vec!["admin:users".to_string()];
+        let normalized = normalize_effective_permissions(&permissions);
+        assert!(normalized.iter().any(|perm| perm == "admin:users:list"));
+        assert!(normalized.iter().any(|perm| perm == "admin:keys:list"));
+        assert!(normalized
+            .iter()
+            .any(|perm| perm == "admin:history-sync:read"));
     }
 
     #[test]
