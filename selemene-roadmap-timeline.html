@@ -1,0 +1,921 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Selemene Engine — Roadmap Timeline</title>
+  <style>
+    :root {
+      --bg: #0f0f1a;
+      --surface: #1a1a2e;
+      --surface-2: #22223a;
+      --border: #2d2d4a;
+      --text: #e0e0f0;
+      --text-dim: #8888aa;
+      --done: #48bb78;
+      --done-bg: rgba(72, 187, 120, 0.15);
+      --progress: #4299e1;
+      --progress-bg: rgba(66, 153, 225, 0.15);
+      --planned: #718096;
+      --planned-bg: rgba(113, 128, 150, 0.12);
+      --milestone: #e53e3e;
+      --accent: #9f7aea;
+      --forecast: #ed8936;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'SF Mono', 'Fira Code', 'JetBrains Mono', monospace;
+      background: var(--bg);
+      color: var(--text);
+      padding: 2rem;
+      max-width: 1400px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+
+    /* Header */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 2.5rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .header h1 {
+      font-size: 1.6rem;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+    }
+    .header h1 span { color: var(--accent); }
+    .header-meta {
+      text-align: right;
+      font-size: 0.8rem;
+      color: var(--text-dim);
+    }
+    .header-meta .date-range {
+      font-size: 0.95rem;
+      color: var(--text);
+      margin-bottom: 0.3rem;
+    }
+
+    /* Progress summary */
+    .progress-summary {
+      display: flex;
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
+    }
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem 1.4rem;
+      min-width: 160px;
+      flex: 1;
+    }
+    .stat-card .label {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-dim);
+      margin-bottom: 0.3rem;
+    }
+    .stat-card .value {
+      font-size: 1.5rem;
+      font-weight: 700;
+    }
+    .stat-card .value.done { color: var(--done); }
+    .stat-card .value.progress { color: var(--progress); }
+    .stat-card .value.planned { color: var(--planned); }
+
+    /* Legend */
+    .legend {
+      display: flex;
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+      font-size: 0.75rem;
+      flex-wrap: wrap;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .legend-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 2px;
+    }
+
+    /* Section titles */
+    .section-title {
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-dim);
+      margin: 2rem 0 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    /* Gantt chart */
+    .gantt {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    .gantt-row {
+      display: grid;
+      grid-template-columns: 260px 1fr 100px;
+      align-items: center;
+      gap: 1rem;
+      padding: 0.6rem 0.8rem;
+      border-radius: 6px;
+      transition: background 0.2s;
+    }
+    .gantt-row:hover { background: var(--surface); }
+
+    .gantt-label {
+      display: flex;
+      flex-direction: column;
+    }
+    .gantt-label .name {
+      font-size: 0.85rem;
+      font-weight: 500;
+    }
+    .gantt-label .desc {
+      font-size: 0.7rem;
+      color: var(--text-dim);
+    }
+
+    .gantt-bar-container {
+      position: relative;
+      height: 24px;
+      background: var(--surface-2);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .gantt-bar {
+      height: 100%;
+      border-radius: 4px;
+      position: relative;
+      transition: width 0.6s ease;
+    }
+    .gantt-bar.done { background: linear-gradient(90deg, #38a169, #48bb78); }
+    .gantt-bar.progress {
+      background: linear-gradient(90deg, #3182ce, #4299e1);
+      animation: pulse 2s ease-in-out infinite;
+    }
+    .gantt-bar.planned { background: var(--planned); opacity: 0.5; }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.75; }
+    }
+
+    /* Bar position (offset from left based on timeline) */
+    .gantt-bar-wrapper {
+      position: absolute;
+      top: 0;
+      height: 100%;
+      display: flex;
+      align-items: center;
+    }
+
+    .gantt-dates {
+      font-size: 0.7rem;
+      color: var(--text-dim);
+      text-align: right;
+      white-space: nowrap;
+    }
+
+    /* Status badge */
+    .status {
+      display: inline-block;
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      padding: 0.15rem 0.5rem;
+      border-radius: 3px;
+      font-weight: 600;
+    }
+    .status.done { background: var(--done-bg); color: var(--done); }
+    .status.progress { background: var(--progress-bg); color: var(--progress); }
+    .status.planned { background: var(--planned-bg); color: var(--planned); }
+
+    /* Milestones */
+    .milestones {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 0.8rem;
+    }
+    .milestone-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--milestone);
+      border-radius: 6px;
+      padding: 0.8rem 1rem;
+      display: flex;
+      gap: 0.8rem;
+      align-items: flex-start;
+    }
+    .milestone-diamond {
+      width: 12px;
+      height: 12px;
+      background: var(--milestone);
+      transform: rotate(45deg);
+      flex-shrink: 0;
+      margin-top: 0.3rem;
+      border-radius: 2px;
+    }
+    .milestone-content .date {
+      font-size: 0.7rem;
+      color: var(--milestone);
+      font-weight: 600;
+      margin-bottom: 0.15rem;
+    }
+    .milestone-content .title {
+      font-size: 0.82rem;
+    }
+
+    /* Strategic tracks */
+    .tracks {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 0.8rem;
+    }
+    .track-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .track-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+    }
+    .track-card.critical::before { background: var(--milestone); }
+    .track-card.high::before { background: var(--forecast); }
+    .track-card.medium::before { background: var(--planned); }
+
+    .track-card .track-name {
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 0.3rem;
+    }
+    .track-card .track-status {
+      font-size: 0.7rem;
+      color: var(--text-dim);
+      margin-bottom: 0.4rem;
+    }
+    .track-card .priority-badge {
+      font-size: 0.6rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 0.1rem 0.4rem;
+      border-radius: 3px;
+      font-weight: 600;
+    }
+    .priority-badge.critical { background: rgba(229, 62, 62, 0.15); color: var(--milestone); }
+    .priority-badge.high { background: rgba(237, 137, 54, 0.15); color: var(--forecast); }
+    .priority-badge.medium { background: var(--planned-bg); color: var(--planned); }
+
+    /* Noesis sprint detail */
+    .sprint-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 0.8rem;
+    }
+    .sprint-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem;
+    }
+    .sprint-card .sprint-name {
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 0.2rem;
+    }
+    .sprint-card .sprint-dates {
+      font-size: 0.7rem;
+      color: var(--text-dim);
+      margin-bottom: 0.6rem;
+    }
+    .sprint-card .sprint-gate {
+      font-size: 0.7rem;
+      color: var(--accent);
+      margin-bottom: 0.5rem;
+    }
+    .task-list {
+      list-style: none;
+      font-size: 0.72rem;
+    }
+    .task-list li {
+      padding: 0.2rem 0;
+      color: var(--text-dim);
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .task-list li .task-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .task-list li .task-dot.done-dot { background: var(--done); }
+    .task-list li .task-dot.progress-dot { background: var(--progress); }
+    .task-list li .task-dot.todo-dot { background: var(--planned); }
+
+    /* Footer */
+    .footer {
+      margin-top: 3rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--border);
+      font-size: 0.7rem;
+      color: var(--text-dim);
+      text-align: center;
+    }
+
+    /* Timeline axis */
+    .timeline-axis {
+      display: grid;
+      grid-template-columns: 260px 1fr 100px;
+      gap: 1rem;
+      padding: 0 0.8rem;
+      margin-bottom: 0.5rem;
+    }
+    .axis-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.65rem;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      position: relative;
+    }
+    .axis-labels::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: var(--border);
+    }
+    .axis-labels span {
+      background: var(--bg);
+      padding: 0 0.3rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Today marker */
+    .today-marker {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: var(--accent);
+      opacity: 0.6;
+      z-index: 2;
+    }
+    .today-label {
+      position: absolute;
+      top: -16px;
+      font-size: 0.55rem;
+      color: var(--accent);
+      transform: translateX(-50%);
+      white-space: nowrap;
+    }
+
+    /* Tooltip */
+    .gantt-row .tooltip {
+      display: none;
+      position: absolute;
+      bottom: calc(100% + 8px);
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.6rem 0.8rem;
+      font-size: 0.72rem;
+      color: var(--text);
+      white-space: nowrap;
+      z-index: 10;
+      pointer-events: none;
+    }
+    .gantt-bar-container:hover .tooltip { display: block; }
+
+    @media (max-width: 900px) {
+      body { padding: 1rem; }
+      .gantt-row {
+        grid-template-columns: 180px 1fr 80px;
+        gap: 0.5rem;
+      }
+      .gantt-label .name { font-size: 0.78rem; }
+      .timeline-axis { grid-template-columns: 180px 1fr 80px; }
+    }
+    @media (max-width: 600px) {
+      .gantt-row {
+        grid-template-columns: 1fr;
+        gap: 0.3rem;
+      }
+      .gantt-dates { text-align: left; }
+      .timeline-axis { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <div class="header">
+    <div>
+      <h1><span>Selemene Engine</span> — Roadmap</h1>
+      <div style="font-size: 0.75rem; color: var(--text-dim); margin-top: 0.3rem;">
+        Vedic Intelligence Platform &middot; Noesis API &middot; Admin Portal
+      </div>
+    </div>
+    <div class="header-meta">
+      <div class="date-range">Jan 2026 &mdash; Q3 2026</div>
+      <div>Generated 2026-02-28</div>
+      <div>12 phases &middot; 9 milestones &middot; 6 tracks</div>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="progress-summary">
+    <div class="stat-card">
+      <div class="label">Completed</div>
+      <div class="value done">5 / 12</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">In Progress</div>
+      <div class="value progress">1</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Planned</div>
+      <div class="value planned">6</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Tasks Shipped</div>
+      <div class="value done">91+</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Current Sprint</div>
+      <div class="value progress">P1-S1</div>
+    </div>
+  </div>
+
+  <!-- Legend -->
+  <div class="legend">
+    <div class="legend-item">
+      <div class="legend-dot" style="background: var(--done);"></div>
+      <span>Complete</span>
+    </div>
+    <div class="legend-item">
+      <div class="legend-dot" style="background: var(--progress);"></div>
+      <span>In Progress</span>
+    </div>
+    <div class="legend-item">
+      <div class="legend-dot" style="background: var(--planned);"></div>
+      <span>Planned</span>
+    </div>
+    <div class="legend-item">
+      <div class="legend-dot" style="background: var(--milestone); transform: rotate(45deg);"></div>
+      <span>Milestone</span>
+    </div>
+    <div class="legend-item">
+      <div class="legend-dot" style="background: var(--accent);"></div>
+      <span>Today</span>
+    </div>
+  </div>
+
+  <!-- Gantt Chart -->
+  <div class="section-title">Gantt Timeline</div>
+
+  <!-- Axis: Jan 2026 through Jul 2026 (approx 180 days) -->
+  <div class="timeline-axis">
+    <div></div>
+    <div class="axis-labels">
+      <span>Jan</span>
+      <span>Feb</span>
+      <span>Mar</span>
+      <span>Apr</span>
+      <span>May</span>
+      <span>Jun</span>
+      <span>Jul</span>
+    </div>
+    <div></div>
+  </div>
+
+  <!-- Timeline start: Jan 1, 2026. End: Jul 31, 2026 = 211 days -->
+  <!-- Today: Feb 28 = day 58 of 211 = 27.5% -->
+  <div class="gantt">
+
+    <!-- Wave 1: Jan 19 - Jan 31 (day 18 to day 30) -->
+    <div class="gantt-row">
+      <div class="gantt-label">
+        <span class="name">Wave 1 — Core Platform</span>
+        <span class="desc">API, Auth, Docker, CORS, Rate Limiting</span>
+      </div>
+      <div class="gantt-bar-container" style="position: relative;">
+        <div class="today-marker" style="left: 27.5%;">
+          <span class="today-label">Feb 28</span>
+        </div>
+        <div class="gantt-bar-wrapper" style="left: 8.5%; width: 5.7%;">
+          <div class="gantt-bar done" style="width: 100%; border-radius: 4px;"></div>
+        </div>
+        <div class="tooltip">91/91 tasks &middot; 100% &middot; ~12 hrs</div>
+      </div>
+      <div class="gantt-dates">
+        <span class="status done">done</span>
+      </div>
+    </div>
+
+    <!-- Wave 2: Jan 31 - Feb 5 (day 30 to day 35) -->
+    <div class="gantt-row">
+      <div class="gantt-label">
+        <span class="name">Wave 2 — HD, Gene Keys, Vimshottari</span>
+        <span class="desc">3 engines, 107+ tests, sub-ms perf</span>
+      </div>
+      <div class="gantt-bar-container" style="position: relative;">
+        <div class="gantt-bar-wrapper" style="left: 14.2%; width: 2.4%;">
+          <div class="gantt-bar done" style="width: 100%;"></div>
+        </div>
+        <div class="tooltip">HD + Gene Keys + Vimshottari engines</div>
+      </div>
+      <div class="gantt-dates">
+        <span class="status done">done</span>
+      </div>
+    </div>
+
+    <!-- Sprint 2: Feb 5 - Feb 11 (day 35 to day 41) -->
+    <div class="gantt-row">
+      <div class="gantt-label">
+        <span class="name">Sprint 2 — Aleph Cleanup</span>
+        <span class="desc">40 files deleted, zero regressions</span>
+      </div>
+      <div class="gantt-bar-container" style="position: relative;">
+        <div class="gantt-bar-wrapper" style="left: 16.6%; width: 2.8%;">
+          <div class="gantt-bar done" style="width: 100%;"></div>
+        </div>
+        <div class="tooltip">13 tasks (ALEPH-12 to ALEPH-24)</div>
+      </div>
+      <div class="gantt-dates">
+        <span class="status done">done</span>
+      </div>
+    </div>
+
+    <!-- v3.0.0: Feb 11 - Feb 16 (day 41 to day 46) -->
+    <div class="gantt-row">
+      <div class="gantt-label">
+        <span class="name">v3.0.0 — SDK + TUI</span>
+        <span class="desc">SDK Foundation, Terminal TUI, OpenClaw</span>
+      </div>
+      <div class="gantt-bar-container" style="position: relative;">
+        <div class="gantt-bar-wrapper" style="left: 19.4%; width: 2.4%;">
+          <div class="gantt-bar done" style="width: 100%;"></div>
+        </div>
+        <div class="tooltip">P0 SDK Foundation + P1 Terminal TUI</div>
+      </div>
+      <div class="gantt-dates">
+        <span class="status done">done</span>
+      </div>
+    </div>
+
+    <!-- Admin Panel: Feb 16 - Feb 28 (day 46 to day 58) -->
+    <div class="gantt-row">
+      <div class="gantt-label">
+        <span class="name">Admin Panel — W1+W2</span>
+        <span class="desc">Bootstrap, Live Ops, Vercel Deploy</span>
+      </div>
+      <div class="gantt-bar-container" style="position: relative;">
+        <div class="gantt-bar-wrapper" style="left: 21.8%; width: 5.7%;">
+          <div class="gantt-bar done" style="width: 100%;"></div>
+        </div>
+        <div class="tooltip">Next.js admin + all API endpoints + Vercel live</div>
+      </div>
+      <div class="gantt-dates">
+        <span class="status done">done</span>
+      </div>
+    </div>
+
+    <!-- P1: Feb 24 - Mar 8 (day 54 to day 66) -->
+    <div class="gantt-row">
+      <div class="gantt-label">
+        <span class="name">P1 — Stabilization Baseline</span>
+        <span class="desc">Orchestrator routing, error mapping, cache normalization</span>
+      </div>
+      <div class="gantt-bar-container" style="position: relative;">
+        <div class="gantt-bar-wrapper" style="left: 25.6%; width: 5.7%;">
+          <div class="gantt-bar progress" style="width: 35%;"></div>
+        </div>
+        <div class="tooltip">S1 &middot; Gate A &middot; 6 tasks (1 done, 2 in-progress, 3 todo)</div>
+      </div>
+      <div class="gantt-dates">
+        <span class="status progress">active</span>
+      </div>
+    </div>
+
+    <!-- P2: Mar 9 - Mar 22 (day 67 to day 80) -->
+    <div class="gantt-row">
+      <div class="gantt-label">
+        <span class="name">P2 — Workflow Hardening</span>
+        <span class="desc">Contract tests, validation, Redis fallback</span>
+      </div>
+      <div class="gantt-bar-container" style="position: relative;">
+        <div class="gantt-bar-wrapper" style="left: 31.3%; width: 6.2%;">
+          <div class="gantt-bar planned" style="width: 100%;"></div>
+        </div>
+        <div class="tooltip">S2 &middot; Gate B &middot; 7 tasks</div>
+      </div>
+      <div class="gantt-dates">
+        <span class="status planned">planned</span>
+      </div>
+    </div>
+
+    <!-- P3: Mar 23 - Apr 5 (day 81 to day 94) -->
+    <div class="gantt-row">
+      <div class="gantt-label">
+        <span class="name">P3 — Bridge Reliability</span>
+        <span class="desc">TS sidecar, circuit-breakers, latency</span>
+      </div>
+      <div class="gantt-bar-container" style="position: relative;">
+        <div class="gantt-bar-wrapper" style="left: 37.9%; width: 6.2%;">
+          <div class="gantt-bar planned" style="width: 100%;"></div>
+        </div>
+        <div class="tooltip">S3 &middot; Gate C &middot; 5 tasks</div>
+      </div>
+      <div class="gantt-dates">
+        <span class="status planned">planned</span>
+      </div>
+    </div>
+
+    <!-- P4: Apr 6 - Apr 19 (day 95 to day 108) -->
+    <div class="gantt-row">
+      <div class="gantt-label">
+        <span class="name">P4 — Performance & Observability</span>
+        <span class="desc">Fan-out, load testing, auth soak, idempotency</span>
+      </div>
+      <div class="gantt-bar-container" style="position: relative;">
+        <div class="gantt-bar-wrapper" style="left: 44.5%; width: 6.2%;">
+          <div class="gantt-bar planned" style="width: 100%;"></div>
+        </div>
+        <div class="tooltip">S4 &middot; Gate D &middot; 6 tasks</div>
+      </div>
+      <div class="gantt-dates">
+        <span class="status planned">planned</span>
+      </div>
+    </div>
+
+    <!-- P5: Apr 20 - May 3 (day 109 to day 122) -->
+    <div class="gantt-row">
+      <div class="gantt-label">
+        <span class="name">P5 — Release Readiness</span>
+        <span class="desc">Canary, smoke automation, runbooks, signoff</span>
+      </div>
+      <div class="gantt-bar-container" style="position: relative;">
+        <div class="gantt-bar-wrapper" style="left: 51.2%; width: 6.2%;">
+          <div class="gantt-bar planned" style="width: 100%;"></div>
+        </div>
+        <div class="tooltip">S5 &middot; Gate E &middot; 5 tasks</div>
+      </div>
+      <div class="gantt-dates">
+        <span class="status planned">planned</span>
+      </div>
+    </div>
+
+    <!-- v2.2.0: May - Jun (day 120 to day 180) -->
+    <div class="gantt-row">
+      <div class="gantt-label">
+        <span class="name">v2.2.0 — Specialized Engines</span>
+        <span class="desc">Numerology, Biorhythm, Biofield</span>
+      </div>
+      <div class="gantt-bar-container" style="position: relative;">
+        <div class="gantt-bar-wrapper" style="left: 56.9%; width: 28.4%;">
+          <div class="gantt-bar planned" style="width: 100%;"></div>
+        </div>
+        <div class="tooltip">Q2 2026 &middot; 3 new calculation engines</div>
+      </div>
+      <div class="gantt-dates">
+        <span class="status planned">Q2</span>
+      </div>
+    </div>
+
+    <!-- v3.0.0 Platform: Jul+ (day 180 to day 211) -->
+    <div class="gantt-row">
+      <div class="gantt-label">
+        <span class="name">v3.0.0 — Platform Launch</span>
+        <span class="desc">Complete platform, all engines live</span>
+      </div>
+      <div class="gantt-bar-container" style="position: relative;">
+        <div class="gantt-bar-wrapper" style="left: 85.3%; width: 14.7%;">
+          <div class="gantt-bar planned" style="width: 100%;"></div>
+        </div>
+        <div class="tooltip">Q3 2026 &middot; Full platform launch</div>
+      </div>
+      <div class="gantt-dates">
+        <span class="status planned">Q3</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Milestones -->
+  <div class="section-title">Key Milestones</div>
+  <div class="milestones">
+    <div class="milestone-card">
+      <div class="milestone-diamond"></div>
+      <div class="milestone-content">
+        <div class="date">Jan 31, 2026</div>
+        <div class="title">Wave 1 Complete (91/91 tasks)</div>
+      </div>
+    </div>
+    <div class="milestone-card">
+      <div class="milestone-diamond"></div>
+      <div class="milestone-content">
+        <div class="date">Feb 11, 2026</div>
+        <div class="title">Sprint 2 — Aleph Cleanup Done</div>
+      </div>
+    </div>
+    <div class="milestone-card">
+      <div class="milestone-diamond"></div>
+      <div class="milestone-content">
+        <div class="date">Feb 16, 2026</div>
+        <div class="title">v3.0.0 Released (SDK + TUI)</div>
+      </div>
+    </div>
+    <div class="milestone-card">
+      <div class="milestone-diamond"></div>
+      <div class="milestone-content">
+        <div class="date">Feb 28, 2026</div>
+        <div class="title">Admin Panel Live + P0 Migration Fix</div>
+      </div>
+    </div>
+    <div class="milestone-card" style="border-left-color: var(--progress);">
+      <div class="milestone-diamond" style="background: var(--progress);"></div>
+      <div class="milestone-content">
+        <div class="date" style="color: var(--progress);">Mar 8, 2026</div>
+        <div class="title">Gate A — Stabilization Baseline</div>
+      </div>
+    </div>
+    <div class="milestone-card" style="border-left-color: var(--planned);">
+      <div class="milestone-diamond" style="background: var(--planned);"></div>
+      <div class="milestone-content">
+        <div class="date" style="color: var(--planned);">Mar 22, 2026</div>
+        <div class="title">Gate B — Workflow Hardening</div>
+      </div>
+    </div>
+    <div class="milestone-card" style="border-left-color: var(--planned);">
+      <div class="milestone-diamond" style="background: var(--planned);"></div>
+      <div class="milestone-content">
+        <div class="date" style="color: var(--planned);">Apr 5, 2026</div>
+        <div class="title">Gate C — Bridge Reliability</div>
+      </div>
+    </div>
+    <div class="milestone-card" style="border-left-color: var(--planned);">
+      <div class="milestone-diamond" style="background: var(--planned);"></div>
+      <div class="milestone-content">
+        <div class="date" style="color: var(--planned);">Apr 19, 2026</div>
+        <div class="title">Gate D — Performance & Observability</div>
+      </div>
+    </div>
+    <div class="milestone-card" style="border-left-color: var(--planned);">
+      <div class="milestone-diamond" style="background: var(--planned);"></div>
+      <div class="milestone-content">
+        <div class="date" style="color: var(--planned);">May 3, 2026</div>
+        <div class="title">Gate E — Release Ready</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Noesis Sprint Detail -->
+  <div class="section-title">Noesis Engineering Sprints — Task Breakdown</div>
+  <div class="sprint-grid">
+
+    <div class="sprint-card">
+      <div class="sprint-name">S1 — Stabilization</div>
+      <div class="sprint-dates">Feb 24 – Mar 8</div>
+      <div class="sprint-gate">Gate A: Orchestrator routing test-enforced</div>
+      <ul class="task-list">
+        <li><span class="task-dot done-dot"></span> N-001 Freeze production baseline</li>
+        <li><span class="task-dot progress-dot"></span> N-002 Enforce orchestrator routing</li>
+        <li><span class="task-dot todo-dot"></span> N-003 Unify EngineError HTTP translation</li>
+        <li><span class="task-dot todo-dot"></span> N-004 Tighten orchestrator validation</li>
+        <li><span class="task-dot todo-dot"></span> N-005 Workflow registry parity</li>
+        <li><span class="task-dot todo-dot"></span> N-006 Normalize cache key builder</li>
+      </ul>
+    </div>
+
+    <div class="sprint-card">
+      <div class="sprint-name">S2 — Workflow Hardening</div>
+      <div class="sprint-dates">Mar 9 – Mar 22</div>
+      <div class="sprint-gate">Gate B: All 6 workflows contract-tested</div>
+      <ul class="task-list">
+        <li><span class="task-dot todo-dot"></span> N-007 Redis degradation fallback</li>
+        <li><span class="task-dot todo-dot"></span> N-008 Contract: birth-blueprint + daily</li>
+        <li><span class="task-dot todo-dot"></span> N-009 Contract: decision + self-inquiry</li>
+        <li><span class="task-dot todo-dot"></span> N-010 Contract: creative + full-spectrum</li>
+        <li><span class="task-dot todo-dot"></span> N-011 Bridge timeout + retry policy</li>
+        <li><span class="task-dot todo-dot"></span> N-012 TS sidecar health probes</li>
+        <li><span class="task-dot todo-dot"></span> N-027 Engine selection tests</li>
+      </ul>
+    </div>
+
+    <div class="sprint-card">
+      <div class="sprint-name">S3 — Bridge Reliability</div>
+      <div class="sprint-dates">Mar 23 – Apr 5</div>
+      <div class="sprint-gate">Gate C: Sidecar circuit-breakers + latency</div>
+      <ul class="task-list">
+        <li><span class="task-dot todo-dot"></span> N-013 Bridge schema parity (5 TS)</li>
+        <li><span class="task-dot todo-dot"></span> N-014 Sidecar circuit-breaker</li>
+        <li><span class="task-dot progress-dot"></span> N-015 Per-engine latency histograms</li>
+        <li><span class="task-dot todo-dot"></span> N-016 Trace correlation API↔sidecar</li>
+        <li><span class="task-dot todo-dot"></span> N-029 TS error taxonomy alignment</li>
+      </ul>
+    </div>
+
+    <div class="sprint-card">
+      <div class="sprint-name">S4 — Performance</div>
+      <div class="sprint-dates">Apr 6 – Apr 19</div>
+      <div class="sprint-gate">Gate D: Load posture + auth soak pass</div>
+      <ul class="task-list">
+        <li><span class="task-dot todo-dot"></span> N-017 Benchmark suite (11 engines)</li>
+        <li><span class="task-dot todo-dot"></span> N-018 Fan-out concurrency tuning</li>
+        <li><span class="task-dot todo-dot"></span> N-019 Mixed workflow load profile</li>
+        <li><span class="task-dot todo-dot"></span> N-020 Auth soak + key rotation</li>
+        <li><span class="task-dot todo-dot"></span> N-021 Idempotency keys</li>
+        <li><span class="task-dot todo-dot"></span> N-022 Validation fixture packs</li>
+        <li><span class="task-dot todo-dot"></span> N-023 Docs: orchestrator-first usage</li>
+      </ul>
+    </div>
+
+    <div class="sprint-card">
+      <div class="sprint-name">S5 — Release Readiness</div>
+      <div class="sprint-dates">Apr 20 – May 3</div>
+      <div class="sprint-gate">Gate E: Canary + smoke + signoff</div>
+      <ul class="task-list">
+        <li><span class="task-dot todo-dot"></span> N-024 Railway post-deploy smoke</li>
+        <li><span class="task-dot todo-dot"></span> N-025 Canary rollout policy</li>
+        <li><span class="task-dot todo-dot"></span> N-026 Orchestrator failure runbook</li>
+        <li><span class="task-dot todo-dot"></span> N-028 Cache invalidation hooks</li>
+        <li><span class="task-dot todo-dot"></span> N-030 Release gate review</li>
+      </ul>
+    </div>
+
+  </div>
+
+  <!-- Strategic Tracks -->
+  <div class="section-title">Strategic Product Tracks</div>
+  <div class="tracks">
+    <div class="track-card critical">
+      <div class="track-name">Admin Panel</div>
+      <div class="track-status">W1+W2 complete &middot; P1-P5 planned</div>
+      <span class="priority-badge critical">critical</span>
+    </div>
+    <div class="track-card high">
+      <div class="track-name">Desktop Surfaces</div>
+      <div class="track-status">Raycast, Menu Bar, Tauri</div>
+      <span class="priority-badge high">high</span>
+    </div>
+    <div class="track-card high">
+      <div class="track-name">Apple Ecosystem</div>
+      <div class="track-status">Shortcuts, Watch, On-device</div>
+      <span class="priority-badge high">high</span>
+    </div>
+    <div class="track-card high">
+      <div class="track-name">Mobile App</div>
+      <div class="track-status">Plan not yet authored</div>
+      <span class="priority-badge high">high &middot; forecasted</span>
+    </div>
+    <div class="track-card high">
+      <div class="track-name">Solana Payments</div>
+      <div class="track-status">Plan not yet authored</div>
+      <span class="priority-badge high">high &middot; forecasted</span>
+    </div>
+    <div class="track-card medium">
+      <div class="track-name">NFT Platform</div>
+      <div class="track-status">Plan not yet authored</div>
+      <span class="priority-badge medium">medium &middot; forecasted</span>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    Selemene Engine &middot; Vedic Intelligence Platform &middot; Generated 2026-02-28 &middot; Data from CONSCIOUSNESS_ROADMAP.md, noesis-roadmap-timeline, admin-panel-taskmaster-plan, roadmap-forecast-catalog
+  </div>
+
+</body>
+</html>

@@ -10,6 +10,12 @@ const nextConfig = {
         destination: "/admin/login",
         permanent: false,
         basePath: false
+      },
+      {
+        source: "/favicon.ico",
+        destination: "/admin/favicon.svg",
+        permanent: false,
+        basePath: false
       }
     ];
   }

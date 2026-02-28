@@ -3,6 +3,10 @@
 ## Project Overview
 This GitHub Project tracks the development of all consciousness engines and integration features in Selemene Engine.
 
+## Interactive Timeline
+- HTML roadmap artifact: [selemene-roadmap-timeline.html](../../selemene-roadmap-timeline.html)
+- Recommended render in Craft Agent: use an `html-preview` block pointing to the absolute file path.
+
 ## Project Structure
 
 ### Views
@@ -123,7 +127,7 @@ This GitHub Project tracks the development of all consciousness engines and inte
 
 ## Integration with JSON Plans
 
-The `.claude/task-management/*.json` files map to GitHub issues:
+The `docs/planning/*.json` taskmaster plan files map to GitHub issues:
 
 1. **Load JSON plans** into GitHub Issues
 2. **Create issues** for each task
@@ -179,5 +183,9 @@ gh project create "Consciousness Engine Roadmap" \
 
 ### Import tasks from JSON
 ```bash
-# See scripts/import-tasks-to-github.sh
+# Canonical script
+scripts/sync-plans-to-github-issues.sh --apply --repo Sheshiyer/Selemene-engine
+
+# Backward-compatible wrapper
+scripts/import-tasks-to-github.sh --apply --repo Sheshiyer/Selemene-engine
 ```

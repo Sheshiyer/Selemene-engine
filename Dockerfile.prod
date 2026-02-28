@@ -71,7 +71,10 @@ RUN for crate in \
     mkdir -p crates/noesis-orchestrator/benches && echo "fn main() {}" > crates/noesis-orchestrator/benches/workflow_bench.rs && \
     mkdir -p crates/noesis-api/benches && echo "fn main() {}" > crates/noesis-api/benches/engine_comparison.rs && \
     mkdir -p crates/engine-vimshottari/benches && echo "fn main() {}" > crates/engine-vimshottari/benches/vim_performance.rs && \
-    mkdir -p crates/noesis-auth/examples && echo "fn main() {}" > crates/noesis-auth/examples/seed_api_keys.rs && \
+    mkdir -p crates/noesis-auth/examples && \
+    echo "fn main() {}" > crates/noesis-auth/examples/seed_api_keys.rs && \
+    echo "fn main() {}" > crates/noesis-auth/examples/rotate_api_key.rs && \
+    echo "fn main() {}" > crates/noesis-auth/examples/issue_api_key_from_existing.rs && \
     mkdir -p crates/engine-gene-keys/benches && echo "fn main() {}" > crates/engine-gene-keys/benches/gk_performance.rs && \
     mkdir -p crates/engine-human-design/benches && echo "fn main() {}" > crates/engine-human-design/benches/hd_performance.rs
 

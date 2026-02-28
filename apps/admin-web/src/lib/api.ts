@@ -247,6 +247,7 @@ export async function createAdminApiKey(
   token: string,
   payload: {
     user_id: string;
+    name?: string;
     tier?: string;
     permissions?: string[];
     consciousness_level?: number;

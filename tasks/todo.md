@@ -119,3 +119,33 @@
 - Added `supabase/README.md` documenting canonical mirror policy and drift-check command.
 - Verification:
   - `bash scripts/check_migration_drift.sh` passed.
+
+---
+
+# Task Plan — Admin Dashboard Login Incident Hotfix
+
+## Checklist
+- [x] Process GitHub issues/PR context to isolate likely incident vectors.
+- [x] Confirm runtime route behavior for admin-web domains (`/` vs `/admin/login`).
+- [x] Implement root-path redirect safety for Vercel deployment.
+- [x] Implement explicit API base URL misconfiguration detection in frontend API client.
+- [x] Improve protected layout error surfacing for non-401 session failures.
+- [x] Update admin-web runbook docs for env misconfiguration behavior.
+- [x] Run verification gates (`typecheck`, `lint`, `build`) for `apps/admin-web`.
+
+## Notes
+- Scope focused on production login UX and diagnosability, with minimal code/config touch.
+- Avoid backend auth behavior changes without fresh incident evidence.
+
+## Review (fill after execution)
+- Added root redirect in `apps/admin-web/next.config.mjs` (`/` -> `/admin/login`, `basePath: false`) so Next.js serves it correctly on Vercel.
+- Added runtime safety checks in `apps/admin-web/src/lib/api.ts`:
+  - fail-fast `ADMIN_ENV_MISCONFIG` when deployed frontend points API base URL to localhost,
+  - fail-fast `API_UNREACHABLE` with actionable error text for network/CORS failures.
+- Updated protected session shell in `apps/admin-web/app/(protected)/layout.tsx` to surface actionable API error messages for non-401 failures.
+- Updated `apps/admin-web/README.md` with root redirect and env-misconfig behavior note.
+- Verification:
+  - `npm --prefix apps/admin-web run typecheck`
+  - `npm --prefix apps/admin-web run lint`
+  - `npm --prefix apps/admin-web run build`
+  - all passed.

@@ -1,0 +1,1092 @@
+{
+  "phase_id": "P5",
+  "name": "Release Readiness & Scale",
+  "sprint": "S5",
+  "dates": "2026-04-20 to 2026-05-03",
+  "objective": "Close rollout gates with canary + smoke automation, runbooks, cache invalidation hooks for ephemeris updates, and release signoff so that Selemene Engine can ship to production with confidence",
+  "gate": "Gate E: Canary + rollback drill passed; release checklist signed. Post-deploy smoke suite runs green on every Railway deploy, canary rollout policy enforces <5% error threshold, top 5 failure-mode runbooks are documented and drilled, ephemeris cache invalidation hooks fire correctly, and the release candidate checklist is signed off by all stakeholders.",
+  "delivery_mode": "Prototype",
+  "architecture": {
+    "rust_engines": 11,
+    "ts_engines": 5,
+    "ts_engine_names": [
+      "tarot",
+      "i-ching",
+      "enneagram",
+      "sacred-geometry",
+      "sigil-forge"
+    ],
+    "workflows": 6,
+    "workflow_names": [
+      "birth-blueprint",
+      "daily-practice",
+      "decision-support",
+      "self-inquiry",
+      "creative-expression",
+      "full-spectrum"
+    ],
+    "deployment": "Railway (Docker amd64, Dockerfile.prod) + Vercel (admin-web) + Supabase (Postgres)",
+    "health_endpoints": [
+      "/health/live",
+      "/health/ready",
+      "/metrics"
+    ],
+    "monitoring": "Prometheus + Alertmanager + Grafana + Sentry + Jaeger",
+    "ci_cd": "GitHub Actions (test.yml, deploy.yaml, release.yml)"
+  },
+  "parent_tasks": [
+    {
+      "id": "N-024",
+      "title": "Automate Railway post-deploy smoke tests",
+      "est_hours": 8
+    },
+    {
+      "id": "N-025",
+      "title": "Define canary rollout policy",
+      "est_hours": 10
+    },
+    {
+      "id": "N-026",
+      "title": "Write orchestrator failure-mode runbook",
+      "est_hours": 8
+    },
+    {
+      "id": "N-028",
+      "title": "Add cache invalidation hooks for ephemeris updates",
+      "est_hours": 12
+    },
+    {
+      "id": "N-030",
+      "title": "Run release gate review and signoff",
+      "est_hours": 6
+    }
+  ],
+  "waves": [
+    {
+      "wave_id": "W1",
+      "name": "Automation Foundation",
+      "description": "Build the smoke test framework, harden the deploy pipeline for post-deploy verification, and implement cache invalidation hooks for ephemeris data changes",
+      "swarms": [
+        {
+          "swarm_id": "S1",
+          "name": "Smoke Test Framework",
+          "description": "Create the automated post-deploy smoke test suite that validates health, engine availability, workflow execution, and TS sidecar bridge connectivity after every Railway deploy",
+          "tasks": [
+            {
+              "id": "P5-W1-S1-01",
+              "title": "Create smoke test runner shell script with exit code reporting",
+              "area": "infra",
+              "owner_role": "SRE",
+              "est_hours": 6,
+              "dependencies": [],
+              "deliverable": "scripts/smoke-test-runner.sh that orchestrates sequential smoke checks against a target URL, exits non-zero on any failure, and outputs structured JSON results",
+              "acceptance": "Running ./scripts/smoke-test-runner.sh https://selemene.tryambakam.space produces a JSON report with pass/fail per check and exits 0 when all pass",
+              "validation": "Manual run against staging URL returns exit 0 with all checks green; intentionally wrong URL returns exit 1"
+            },
+            {
+              "id": "P5-W1-S1-02",
+              "title": "Add health endpoint smoke check (liveness + readiness)",
+              "area": "infra",
+              "owner_role": "SRE",
+              "est_hours": 4,
+              "dependencies": [
+                "P5-W1-S1-01"
+              ],
+              "deliverable": "Smoke check function that hits /health/live and /health/ready, validates status=ok and dependency readiness fields (redis, postgres, ts-engines)",
+              "acceptance": "/health/live returns 200 with status=ok; /health/ready returns 200 with all dependency statuses reported",
+              "validation": "Smoke runner JSON report shows health_live=pass and health_ready=pass against staging"
+            },
+            {
+              "id": "P5-W1-S1-03",
+              "title": "Add engines list smoke check with count validation",
+              "area": "infra",
+              "owner_role": "SRE",
+              "est_hours": 4,
+              "dependencies": [
+                "P5-W1-S1-01"
+              ],
+              "deliverable": "Smoke check function that hits GET /api/v1/engines, validates response contains >= 11 Rust engines and confirms TS bridge engines (tarot, i-ching, enneagram, sacred-geometry, sigil-forge) are present when sidecar is up",
+              "acceptance": "Check passes when engine count >= 11 and all 5 TS engine IDs appear in the engines list",
+              "validation": "Smoke runner JSON report shows engines_list=pass with engine_count field >= 16"
+            },
+            {
+              "id": "P5-W1-S1-04",
+              "title": "Add panchanga calculation smoke check with response validation",
+              "area": "infra",
+              "owner_role": "SRE",
+              "est_hours": 6,
+              "dependencies": [
+                "P5-W1-S1-01"
+              ],
+              "deliverable": "Smoke check that POSTs a known birth data payload to /api/v1/engines/panchanga/calculate and validates the response contains tithi, nakshatra, and yoga fields",
+              "acceptance": "Check passes when response status is 200 and JSON body contains expected panchanga fields",
+              "validation": "Smoke runner JSON report shows panchanga_calc=pass with latency_ms field < 5000"
+            },
+            {
+              "id": "P5-W1-S1-05",
+              "title": "Add workflow execution smoke check (birth-blueprint)",
+              "area": "infra",
+              "owner_role": "SRE",
+              "est_hours": 8,
+              "dependencies": [
+                "P5-W1-S1-01",
+                "P5-W1-S1-04"
+              ],
+              "deliverable": "Smoke check that POSTs to /api/v1/workflows/birth-blueprint/execute with test birth data and validates the response contains engine_results from multiple engines",
+              "acceptance": "Check passes when workflow returns 200 with engine_results containing at least 3 engine outputs",
+              "validation": "Smoke runner JSON report shows workflow_exec=pass with engines_executed count >= 3"
+            },
+            {
+              "id": "P5-W1-S1-06",
+              "title": "Add Prometheus metrics endpoint smoke check",
+              "area": "infra",
+              "owner_role": "SRE",
+              "est_hours": 4,
+              "dependencies": [
+                "P5-W1-S1-01"
+              ],
+              "deliverable": "Smoke check that hits GET /metrics and validates Prometheus text format is returned with noesis_ prefixed metrics present",
+              "acceptance": "Check passes when /metrics returns 200 with content-type text/plain containing noesis_calculations_total",
+              "validation": "Smoke runner JSON report shows metrics_endpoint=pass"
+            },
+            {
+              "id": "P5-W1-S1-07",
+              "title": "Add TS sidecar bridge connectivity smoke check",
+              "area": "infra",
+              "owner_role": "SRE",
+              "est_hours": 6,
+              "dependencies": [
+                "P5-W1-S1-01"
+              ],
+              "deliverable": "Smoke check that validates the TS engines sidecar is reachable by calling a TS-only engine (tarot) through the Rust bridge and verifying a valid response envelope",
+              "acceptance": "Check passes when tarot engine calculation returns 200 with valid EngineOutput envelope including envelope_version field",
+              "validation": "Smoke runner JSON report shows ts_bridge=pass; degraded=warn if sidecar unreachable but Rust engines still work"
+            },
+            {
+              "id": "P5-W1-S1-08",
+              "title": "Add JWT auth token generation for smoke tests",
+              "area": "infra",
+              "owner_role": "SRE",
+              "est_hours": 6,
+              "dependencies": [
+                "P5-W1-S1-01"
+              ],
+              "deliverable": "A mechanism in the smoke runner to generate a valid JWT token using a smoke-test service account or use a pre-provisioned long-lived token stored as a Railway variable SMOKE_TEST_JWT",
+              "acceptance": "Smoke runner can authenticate against all protected endpoints without manual token generation",
+              "validation": "All authenticated smoke checks pass with the provisioned token"
+            }
+          ]
+        },
+        {
+          "swarm_id": "S2",
+          "name": "Deploy Pipeline Hardening",
+          "description": "Integrate the smoke test suite into the GitHub Actions deploy pipeline and Railway post-deploy hooks so smoke tests run automatically after every successful deploy",
+          "tasks": [
+            {
+              "id": "P5-W1-S2-01",
+              "title": "Add post-deploy smoke step to deploy.yaml GitHub Actions workflow",
+              "area": "infra",
+              "owner_role": "DevOps",
+              "est_hours": 6,
+              "dependencies": [
+                "P5-W1-S1-01",
+                "P5-W1-S1-08"
+              ],
+              "deliverable": "New job in .github/workflows/deploy.yaml that runs after the deploy job succeeds, waits for Railway health, then executes the smoke test runner against the deployed URL",
+              "acceptance": "Deploy workflow includes a smoke-test job that gates the deployment as failed if smoke checks fail",
+              "validation": "Push to main triggers deploy + smoke; green smoke = success annotation on the commit"
+            },
+            {
+              "id": "P5-W1-S2-02",
+              "title": "Add Railway deploy webhook notification to Slack/Discord",
+              "area": "infra",
+              "owner_role": "DevOps",
+              "est_hours": 4,
+              "dependencies": [],
+              "deliverable": "Railway deploy success/failure webhook that posts to a team notification channel with deploy SHA, duration, and smoke test result link",
+              "acceptance": "Every Railway deploy triggers a notification with deploy status and commit SHA",
+              "validation": "Test deploy sends notification to configured channel within 30 seconds of deploy completion"
+            },
+            {
+              "id": "P5-W1-S2-03",
+              "title": "Add cold-start retry logic to smoke runner for Railway sleep recovery",
+              "area": "infra",
+              "owner_role": "SRE",
+              "est_hours": 4,
+              "dependencies": [
+                "P5-W1-S1-01"
+              ],
+              "deliverable": "Exponential backoff retry wrapper in smoke runner that handles Railway 502 cold-start responses (matching pattern from scripts/railway-health-check.sh) with max 3 attempts and 0/10/30s delays",
+              "acceptance": "Smoke runner recovers from initial 502 on cold-started Railway instance and still passes all checks",
+              "validation": "Smoke runner log shows retry attempt on 502 followed by successful check on retry"
+            },
+            {
+              "id": "P5-W1-S2-04",
+              "title": "Add Docker image size gate to CI pipeline",
+              "area": "infra",
+              "owner_role": "DevOps",
+              "est_hours": 4,
+              "dependencies": [],
+              "deliverable": "CI step that fails the build if the production Docker image exceeds 500MB (currently ~44MB), preventing accidental bloat from large dependency additions",
+              "acceptance": "Build fails with clear error message when image size exceeds 500MB threshold",
+              "validation": "Existing image passes; artificially bloated image (via test COPY) fails with size gate error"
+            },
+            {
+              "id": "P5-W1-S2-05",
+              "title": "Add deploy timeout and automatic rollback trigger",
+              "area": "infra",
+              "owner_role": "DevOps",
+              "est_hours": 8,
+              "dependencies": [
+                "P5-W1-S2-01"
+              ],
+              "deliverable": "Deploy workflow step that monitors the new deployment for 2 minutes post-deploy; if /health/ready fails consistently, triggers Railway rollback to previous deployment",
+              "acceptance": "Failed deploy (simulated via broken env var) triggers automatic rollback within 3 minutes",
+              "validation": "Deploy log shows rollback trigger and Railway CLI rollback command execution"
+            },
+            {
+              "id": "P5-W1-S2-06",
+              "title": "Add admin-web Vercel deploy coordination check",
+              "area": "infra",
+              "owner_role": "DevOps",
+              "est_hours": 6,
+              "dependencies": [
+                "P5-W1-S2-01"
+              ],
+              "deliverable": "Smoke step that verifies the admin-web Vercel deployment is accessible and its API calls to the Selemene backend succeed, ensuring both frontend and backend deploys are coordinated",
+              "acceptance": "Smoke runner validates admin-web health page loads and API proxy to Selemene returns engine list",
+              "validation": "Smoke runner JSON report shows admin_web_connectivity=pass"
+            },
+            {
+              "id": "P5-W1-S2-07",
+              "title": "Add Docker HEALTHCHECK instruction to Dockerfile.prod",
+              "area": "infra",
+              "owner_role": "DevOps",
+              "est_hours": 4,
+              "dependencies": [
+                "P5-W1-S1-02"
+              ],
+              "deliverable": "HEALTHCHECK directive in Dockerfile.prod that curls /health/live with 30s interval, 5s timeout, 3 retries",
+              "acceptance": "docker inspect shows health status; container auto-restarts on consecutive health failures in Docker Compose",
+              "validation": "docker inspect --format='{{.State.Health.Status}}' returns healthy for running container"
+            },
+            {
+              "id": "P5-W1-S2-08",
+              "title": "Add deploy notification webhook to Slack/Discord on Railway deploy",
+              "area": "infra",
+              "owner_role": "SRE",
+              "est_hours": 4,
+              "dependencies": [
+                "P5-W1-S2-03"
+              ],
+              "deliverable": "GitHub Actions step that posts deploy status (success/failure + smoke test results) to team notification channel",
+              "acceptance": "Successful deploy posts green message with version, commit hash, and smoke test summary; failed deploy posts red alert",
+              "validation": "Test deploy triggers notification; manual verification of message content in channel"
+            }
+          ]
+        },
+        {
+          "swarm_id": "S3",
+          "name": "Cache Invalidation Hooks",
+          "description": "Implement data-change-driven cache invalidation for ephemeris file updates, ensuring stale astronomical data is purged from L1 (in-memory), L2 (Redis), and L3 (disk) cache layers",
+          "tasks": [
+            {
+              "id": "P5-W1-S3-01",
+              "title": "Define ephemeris cache key namespace and invalidation scope",
+              "area": "backend",
+              "owner_role": "Platform Eng",
+              "est_hours": 4,
+              "dependencies": [],
+              "deliverable": "Documentation and code constants defining which CacheKey patterns (e.g., panchanga:*, vimshottari:*, transits:*) are ephemeris-dependent and must be invalidated when ephemeris data changes",
+              "acceptance": "A Rust const or enum in noesis-cache lists all ephemeris-dependent cache key prefixes",
+              "validation": "Unit test verifies the ephemeris-dependent key list matches actual engine cache key patterns"
+            },
+            {
+              "id": "P5-W1-S3-02",
+              "title": "Add invalidate_by_prefix method to CacheManager for batch invalidation",
+              "area": "backend",
+              "owner_role": "Platform Eng",
+              "est_hours": 8,
+              "dependencies": [
+                "P5-W1-S3-01"
+              ],
+              "deliverable": "New method CacheManager::invalidate_by_prefix(&self, prefix: &str) that clears matching keys from L1 (moka scan), L2 (Redis SCAN+DEL), and L3 (disk glob delete)",
+              "acceptance": "Method clears all keys matching prefix from all three cache layers and returns count of invalidated entries",
+              "validation": "Integration test stores 10 keys with prefix 'panchanga:', calls invalidate_by_prefix('panchanga:'), confirms all 10 are gone from all layers"
+            },
+            {
+              "id": "P5-W1-S3-03",
+              "title": "Add ephemeris file checksum tracking in AppState",
+              "area": "backend",
+              "owner_role": "Platform Eng",
+              "est_hours": 6,
+              "dependencies": [],
+              "deliverable": "On startup, compute SHA256 checksums of ephemeris files in data/ephemeris/ and store in AppState; expose GET /api/v1/admin/ephemeris/checksums endpoint for comparison",
+              "acceptance": "Endpoint returns JSON map of filename to SHA256 checksum for all .se1 files in the ephemeris directory",
+              "validation": "Changing an ephemeris file and restarting shows different checksum in API response"
+            },
+            {
+              "id": "P5-W1-S3-04",
+              "title": "Add admin endpoint to trigger ephemeris cache invalidation",
+              "area": "backend",
+              "owner_role": "Platform Eng",
+              "est_hours": 6,
+              "dependencies": [
+                "P5-W1-S3-01",
+                "P5-W1-S3-02"
+              ],
+              "deliverable": "POST /api/v1/admin/cache/invalidate-ephemeris endpoint (admin-only JWT) that calls invalidate_by_prefix for all ephemeris-dependent key namespaces and returns invalidation summary",
+              "acceptance": "Endpoint returns 200 with JSON summary showing count of invalidated keys per cache layer",
+              "validation": "Integration test populates cache, calls invalidation endpoint, verifies cache is empty for ephemeris keys but non-ephemeris keys survive"
+            },
+            {
+              "id": "P5-W1-S3-05",
+              "title": "Add file-watcher hook for automatic ephemeris invalidation in dev mode",
+              "area": "backend",
+              "owner_role": "Platform Eng",
+              "est_hours": 8,
+              "dependencies": [
+                "P5-W1-S3-04"
+              ],
+              "deliverable": "Optional file watcher (enabled via EPHEMERIS_WATCH=true env var) using notify crate that monitors data/ephemeris/ for changes and auto-triggers cache invalidation",
+              "acceptance": "When EPHEMERIS_WATCH=true, modifying an ephemeris file triggers automatic cache invalidation within 5 seconds",
+              "validation": "Integration test with watcher enabled: write to ephemeris file, wait 5s, verify cache keys are cleared"
+            },
+            {
+              "id": "P5-W1-S3-06",
+              "title": "Add Sentry breadcrumb for cache invalidation events",
+              "area": "backend",
+              "owner_role": "Platform Eng",
+              "est_hours": 4,
+              "dependencies": [
+                "P5-W1-S3-04"
+              ],
+              "deliverable": "Sentry breadcrumb added to every cache invalidation call, recording the invalidation scope (prefix), layer (L1/L2/L3), and count of cleared keys for incident correlation",
+              "acceptance": "Cache invalidation triggers appear as Sentry breadcrumbs in the transaction timeline",
+              "validation": "Manual test: trigger invalidation, verify breadcrumb appears in Sentry event stream"
+            },
+            {
+              "id": "P5-W1-S3-07",
+              "title": "Add Prometheus counter for cache invalidation events",
+              "area": "backend",
+              "owner_role": "Platform Eng",
+              "est_hours": 4,
+              "dependencies": [
+                "P5-W1-S3-04"
+              ],
+              "deliverable": "New Prometheus counter noesis_cache_invalidations_total with labels {trigger, scope} in noesis-metrics, incremented on every invalidation call",
+              "acceptance": "/metrics endpoint shows noesis_cache_invalidations_total counter incrementing after invalidation",
+              "validation": "Call invalidation endpoint 3 times, verify /metrics shows count=3"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "wave_id": "W2",
+      "name": "Canary & Resilience",
+      "description": "Define and implement the canary rollout policy with automated rollback triggers, write failure-mode runbooks for the top 5 incident types, and validate resilience through rollback drills",
+      "swarms": [
+        {
+          "swarm_id": "S1",
+          "name": "Canary Rollout Policy",
+          "description": "Define the canary configuration, traffic splitting strategy, promotion criteria, and automated rollback triggers for Railway deployments",
+          "tasks": [
+            {
+              "id": "P5-W2-S1-01",
+              "title": "Document canary rollout policy with promotion/rollback criteria",
+              "area": "product",
+              "owner_role": "Tech Lead",
+              "est_hours": 6,
+              "dependencies": [
+                "P5-W1-S1-01"
+              ],
+              "deliverable": "docs/runbooks/canary-rollout-policy.md defining: traffic split percentages (5% -> 25% -> 50% -> 100%), promotion gate metrics (error rate < 1%, P95 latency < 2s, no Sentry critical errors), rollback triggers, and manual override procedure",
+              "acceptance": "Document covers all promotion stages, metric thresholds, rollback triggers, and escalation path",
+              "validation": "Document reviewed and approved by Tech Lead and SRE; all thresholds reference existing Prometheus metrics"
+            },
+            {
+              "id": "P5-W2-S1-02",
+              "title": "Implement canary health scoring function",
+              "area": "infra",
+              "owner_role": "SRE",
+              "est_hours": 8,
+              "dependencies": [
+                "P5-W2-S1-01"
+              ],
+              "deliverable": "Script scripts/canary-health-score.sh that queries Prometheus for error rate, P95 latency, and Sentry error count over a configurable window and outputs a pass/fail/warn score",
+              "acceptance": "Script returns JSON with individual metric scores and overall canary_healthy boolean",
+              "validation": "Test with mocked Prometheus responses: healthy metrics = pass; elevated error rate = fail"
+            },
+            {
+              "id": "P5-W2-S1-03",
+              "title": "Implement canary promotion automation script",
+              "area": "infra",
+              "owner_role": "SRE",
+              "est_hours": 8,
+              "dependencies": [
+                "P5-W2-S1-02"
+              ],
+              "deliverable": "Script scripts/canary-promote.sh that checks canary health score at each stage and either promotes traffic to next percentage or triggers rollback",
+              "acceptance": "Script promotes through 5% -> 25% -> 50% -> 100% with health check at each gate; aborts and rolls back on unhealthy score",
+              "validation": "Dry-run mode shows promotion decisions without making changes; logs each stage decision"
+            },
+            {
+              "id": "P5-W2-S1-04",
+              "title": "Add canary deploy mode to GitHub Actions deploy workflow",
+              "area": "infra",
+              "owner_role": "DevOps",
+              "est_hours": 8,
+              "dependencies": [
+                "P5-W2-S1-03",
+                "P5-W1-S2-01"
+              ],
+              "deliverable": "New workflow_dispatch input canary_deploy (boolean) in deploy.yaml that, when true, deploys to canary slot and runs promotion script instead of direct full deploy",
+              "acceptance": "workflow_dispatch with canary_deploy=true deploys canary and runs promotion; canary_deploy=false does full deploy as before",
+              "validation": "Manual trigger with canary_deploy=true shows canary promotion stages in workflow log"
+            },
+            {
+              "id": "P5-W2-S1-05",
+              "title": "Add Prometheus alert for canary error rate divergence",
+              "area": "infra",
+              "owner_role": "SRE",
+              "est_hours": 6,
+              "dependencies": [
+                "P5-W2-S1-01"
+              ],
+              "deliverable": "New Prometheus alert rule NoesisCanaryErrorDivergence in monitoring/prometheus/alerts/noesis-alerts.yml that fires when canary instance error rate exceeds stable instance rate by >2x",
+              "acceptance": "Alert fires within 2 minutes when canary error rate is more than double the stable error rate",
+              "validation": "Test with synthetic error injection on canary; alert fires and routes to critical-receiver"
+            },
+            {
+              "id": "P5-W2-S1-06",
+              "title": "Add canary traffic percentage Grafana annotation",
+              "area": "infra",
+              "owner_role": "SRE",
+              "est_hours": 4,
+              "dependencies": [
+                "P5-W2-S1-03"
+              ],
+              "deliverable": "Grafana annotation API call in promotion script that marks traffic percentage changes on the Selemene Engine dashboard with timestamp and percentage",
+              "acceptance": "Grafana dashboard shows vertical annotation lines at each canary promotion/rollback event",
+              "validation": "After promotion drill, Grafana dashboard shows annotation markers at correct timestamps"
+            },
+            {
+              "id": "P5-W2-S1-07",
+              "title": "Configure canary error rate threshold and auto-rollback trigger",
+              "area": "infra",
+              "owner_role": "SRE",
+              "est_hours": 8,
+              "dependencies": [
+                "P5-W2-S1-03"
+              ],
+              "deliverable": "Automated canary evaluation that compares canary error rate against baseline; triggers rollback if canary exceeds 5% error rate for 3 consecutive checks",
+              "acceptance": "Synthetic error injection causes canary to exceed threshold and triggers automatic rollback within 2 check intervals",
+              "validation": "Canary evaluation log shows threshold breach detection and rollback initiated"
+            },
+            {
+              "id": "P5-W2-S1-08",
+              "title": "Verify canary traffic split with request tracing headers",
+              "area": "qa",
+              "owner_role": "QA Eng",
+              "est_hours": 6,
+              "dependencies": [
+                "P5-W2-S1-04"
+              ],
+              "deliverable": "Test that verifies canary deployment receives expected percentage of traffic using X-Canary-Version response header",
+              "acceptance": "100 requests to production URL show expected canary/stable split ratio within 10% tolerance",
+              "validation": "Script sends 100 requests, tallies X-Canary-Version headers, asserts split matches policy"
+            }
+          ]
+        },
+        {
+          "swarm_id": "S2",
+          "name": "Failure-Mode Runbooks",
+          "description": "Write actionable on-call runbooks for the top 5 failure modes covering diagnosis, mitigation, and resolution steps with specific CLI commands and Grafana dashboard references",
+          "tasks": [
+            {
+              "id": "P5-W2-S2-01",
+              "title": "Write runbook: Noesis API Down (502/503 from Railway)",
+              "area": "infra",
+              "owner_role": "SRE",
+              "est_hours": 6,
+              "dependencies": [],
+              "deliverable": "docs/runbooks/incident-api-down.md covering: symptoms (502/503, NoesisAPIDown alert), diagnosis steps (railway logs, /health/ready check, env var validation), mitigation (Railway rollback, restart), and root cause checklist (missing env vars, DB connection timeout, OOM)",
+              "acceptance": "Runbook includes specific Railway CLI commands, Grafana dashboard links, and escalation contacts",
+              "validation": "Peer-reviewed by SRE; tabletop walkthrough of a simulated 502 incident follows runbook successfully"
+            },
+            {
+              "id": "P5-W2-S2-02",
+              "title": "Write runbook: Redis connection failure / cache degradation",
+              "area": "infra",
+              "owner_role": "SRE",
+              "est_hours": 6,
+              "dependencies": [],
+              "deliverable": "docs/runbooks/incident-redis-failure.md covering: symptoms (NoesisRedisConnectionFailure alert, elevated latency), diagnosis (redis-cli ping, Railway Redis addon status), mitigation (failover to in-memory L1 cache, Redis restart), and recovery verification",
+              "acceptance": "Runbook references the existing graceful degradation pattern (Option<RedisPool> fallback) and includes steps to verify L1-only mode is operational",
+              "validation": "Tabletop walkthrough: simulate Redis down, follow runbook, confirm API continues serving with L1 cache"
+            },
+            {
+              "id": "P5-W2-S2-03",
+              "title": "Write runbook: TS sidecar bridge timeout / circuit breaker open",
+              "area": "infra",
+              "owner_role": "SRE",
+              "est_hours": 6,
+              "dependencies": [],
+              "deliverable": "docs/runbooks/incident-ts-bridge-failure.md covering: symptoms (TS engine timeouts, circuit breaker open, 5 TS engines unavailable), diagnosis (ts-engines container health, bridge manager health_check), mitigation (restart ts-engines container, circuit breaker reset), and partial-service communication to users",
+              "acceptance": "Runbook covers BridgeManager::health_check(), circuit breaker states, and the 11 Rust engines that remain operational during TS sidecar outage",
+              "validation": "Tabletop walkthrough: simulate ts-engines container crash, follow runbook, confirm 11 Rust engines still serve"
+            },
+            {
+              "id": "P5-W2-S2-04",
+              "title": "Write runbook: Database connection pool exhaustion",
+              "area": "infra",
+              "owner_role": "SRE",
+              "est_hours": 6,
+              "dependencies": [],
+              "deliverable": "docs/runbooks/incident-db-pool-exhaustion.md covering: symptoms (NoesisPostgresConnectionsHigh alert, auth endpoint failures), diagnosis (pg_stat_activity query, connection pool metrics), mitigation (kill idle connections, increase pool size), and the degraded-mode behavior (server runs without DB, auth endpoints unavailable)",
+              "acceptance": "Runbook references the Option<PgPool> degraded mode pattern and includes SQL queries for diagnosing connection leaks",
+              "validation": "Tabletop walkthrough: simulate pool exhaustion, follow runbook, confirm degraded mode activates"
+            },
+            {
+              "id": "P5-W2-S2-05",
+              "title": "Write runbook: Orchestrator workflow timeout / partial engine failure",
+              "area": "infra",
+              "owner_role": "SRE",
+              "est_hours": 6,
+              "dependencies": [],
+              "deliverable": "docs/runbooks/incident-workflow-timeout.md covering: symptoms (workflow execution timeout, partial engine results), diagnosis (which engine(s) timed out via Jaeger traces, Prometheus per-engine latency), mitigation (skip failing engine, return partial results), and escalation path for persistent engine failures",
+              "acceptance": "Runbook covers the orchestrator execute_workflow error handling, per-engine timeout settings, and Sentry breadcrumb correlation",
+              "validation": "Tabletop walkthrough: simulate slow engine, follow runbook, identify failing engine in Jaeger within 2 minutes"
+            },
+            {
+              "id": "P5-W2-S2-06",
+              "title": "Create runbook index and on-call quick reference card",
+              "area": "product",
+              "owner_role": "Tech Lead",
+              "est_hours": 4,
+              "dependencies": [
+                "P5-W2-S2-01",
+                "P5-W2-S2-02",
+                "P5-W2-S2-03",
+                "P5-W2-S2-04",
+                "P5-W2-S2-05"
+              ],
+              "deliverable": "docs/runbooks/README.md with quick-reference table: alert name -> runbook link -> severity -> expected resolution time; plus a one-page on-call cheat sheet with top commands",
+              "acceptance": "Index covers all 5 runbooks with correct alert-to-runbook mapping and includes railway, redis-cli, and psql quick commands",
+              "validation": "New on-call engineer can find the correct runbook within 30 seconds given an alert name"
+            },
+            {
+              "id": "P5-W2-S2-07",
+              "title": "Write TS sidecar bridge failure runbook",
+              "area": "product",
+              "owner_role": "SRE",
+              "est_hours": 6,
+              "dependencies": [],
+              "deliverable": "Runbook covering: bridge timeout spike, sidecar crash loop, circuit breaker stuck open, TS engine memory leak, bridge schema mismatch",
+              "acceptance": "On-call engineer can diagnose and mitigate top 5 bridge failure modes in under 15 minutes using the runbook",
+              "validation": "Dry-run walkthrough completed by on-call engineer with timing under 15 minutes per scenario"
+            },
+            {
+              "id": "P5-W2-S2-08",
+              "title": "Write auth system failure runbook",
+              "area": "product",
+              "owner_role": "SRE",
+              "est_hours": 6,
+              "dependencies": [],
+              "deliverable": "Runbook covering: JWT validation failures, JWKS rotation failures, Supabase auth downtime, token expiry cascade, API key hash mismatch",
+              "acceptance": "On-call engineer can diagnose and mitigate top 5 auth failure modes in under 15 minutes using the runbook",
+              "validation": "Dry-run walkthrough completed with timing under 15 minutes per scenario"
+            }
+          ]
+        },
+        {
+          "swarm_id": "S3",
+          "name": "Rollback Drills & Resilience Validation",
+          "description": "Execute controlled rollback drills to validate the canary policy, smoke tests, and runbooks under realistic failure conditions",
+          "tasks": [
+            {
+              "id": "P5-W2-S3-01",
+              "title": "Design rollback drill scenarios with expected outcomes",
+              "area": "qa",
+              "owner_role": "QA Eng",
+              "est_hours": 6,
+              "dependencies": [
+                "P5-W2-S1-03",
+                "P5-W2-S2-06"
+              ],
+              "deliverable": "docs/drills/rollback-drill-plan.md defining 3 drill scenarios: (1) deploy with broken env var, (2) deploy with crashing init code, (3) canary with elevated error rate; each with expected detection time, rollback trigger, and success criteria",
+              "acceptance": "Each scenario has clear setup steps, expected automated response, and manual verification checklist",
+              "validation": "Drill plan reviewed and approved by Tech Lead and SRE"
+            },
+            {
+              "id": "P5-W2-S3-02",
+              "title": "Execute rollback drill: broken environment variable deploy",
+              "area": "qa",
+              "owner_role": "SRE",
+              "est_hours": 6,
+              "dependencies": [
+                "P5-W2-S3-01",
+                "P5-W1-S2-05"
+              ],
+              "deliverable": "Drill execution log documenting: deploy with intentionally wrong DATABASE_URL, time to health check failure, time to automatic rollback, time to recovery; with screenshots of Grafana dashboards and Sentry events",
+              "acceptance": "Rollback completes automatically within 5 minutes of failed deploy; service recovers to previous healthy version",
+              "validation": "Drill log shows end-to-end timeline with timestamps; post-rollback smoke tests pass"
+            },
+            {
+              "id": "P5-W2-S3-03",
+              "title": "Execute rollback drill: canary with error injection",
+              "area": "qa",
+              "owner_role": "SRE",
+              "est_hours": 8,
+              "dependencies": [
+                "P5-W2-S3-01",
+                "P5-W2-S1-04"
+              ],
+              "deliverable": "Drill execution log documenting: canary deploy with elevated error rate, canary health score detection, automatic rollback trigger, and traffic restoration; with Grafana annotations showing canary traffic percentage changes",
+              "acceptance": "Canary rollback triggers automatically when error rate exceeds threshold; no user-facing impact during canary phase",
+              "validation": "Drill log shows canary health score transition from pass to fail; rollback annotation visible in Grafana"
+            },
+            {
+              "id": "P5-W2-S3-04",
+              "title": "Execute rollback drill: TS sidecar crash recovery",
+              "area": "qa",
+              "owner_role": "SRE",
+              "est_hours": 6,
+              "dependencies": [
+                "P5-W2-S3-01",
+                "P5-W2-S2-03"
+              ],
+              "deliverable": "Drill execution log documenting: kill ts-engines container, observe circuit breaker activation, verify 11 Rust engines still serve, restart ts-engines, verify TS engines recover; with before/after Grafana screenshots",
+              "acceptance": "11 Rust engines continue serving during ts-engines outage; TS engines recover within 60 seconds of container restart",
+              "validation": "Drill log shows continuous Rust engine availability during TS outage; no 5xx on Rust engine endpoints"
+            },
+            {
+              "id": "P5-W2-S3-05",
+              "title": "Execute rollback drill: database migration rollback",
+              "area": "infra",
+              "owner_role": "DevOps",
+              "est_hours": 8,
+              "dependencies": [
+                "P5-W2-S3-01"
+              ],
+              "deliverable": "Drill that applies a test migration, verifies it works, then rolls it back and verifies the database returns to pre-migration state",
+              "acceptance": "Migration applied and rolled back cleanly; application continues to work after rollback; no data loss",
+              "validation": "Drill log shows: migration applied, smoke passed, rollback applied, smoke passed again, schema matches pre-migration"
+            },
+            {
+              "id": "P5-W2-S3-06",
+              "title": "Execute rollback drill: admin-web Vercel instant rollback",
+              "area": "infra",
+              "owner_role": "DevOps",
+              "est_hours": 4,
+              "dependencies": [
+                "P5-W2-S3-01"
+              ],
+              "deliverable": "Drill that deploys a broken admin-web build, verifies it fails, then uses Vercel instant rollback to restore previous deployment",
+              "acceptance": "Broken deploy detected within 2 minutes; Vercel rollback restores working version within 1 minute",
+              "validation": "Drill log shows: broken deploy, detection time, rollback command, recovery time, admin-web working"
+            },
+            {
+              "id": "P5-W2-S3-07",
+              "title": "Measure end-to-end rollback timing for all services",
+              "area": "qa",
+              "owner_role": "SRE",
+              "est_hours": 6,
+              "dependencies": [
+                "P5-W2-S3-04",
+                "P5-W2-S3-05",
+                "P5-W2-S3-06"
+              ],
+              "deliverable": "Timing report documenting rollback duration for: Railway API (Docker), admin-web (Vercel), TS sidecar, database migration",
+              "acceptance": "All rollback times documented; total platform rollback achievable within defined RTO target",
+              "validation": "Report shows timing for each service with total under target RTO"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "wave_id": "W3",
+      "name": "Release Gate",
+      "description": "Compile the full release candidate checklist, execute a 72-hour stability window, freeze documentation, and complete Gate E sign-off",
+      "swarms": [
+        {
+          "swarm_id": "S1",
+          "name": "Release Candidate Checklist",
+          "description": "Build the comprehensive release checklist covering all P1-P5 gate criteria, dependency versions, security audit, and operational readiness",
+          "tasks": [
+            {
+              "id": "P5-W3-S1-01",
+              "title": "Compile release candidate version matrix",
+              "area": "product",
+              "owner_role": "Tech Lead",
+              "est_hours": 4,
+              "dependencies": [],
+              "deliverable": "docs/release/v1.0-version-matrix.md listing exact versions of: Rust toolchain, all Cargo.lock dependency versions, Node/Bun version for ts-engines, Docker base images (rust:1.89-slim-bookworm, debian:bookworm-slim), Supabase Postgres version, Redis version",
+              "acceptance": "Every runtime dependency has a pinned version; no floating tags (latest, ^) in production dependencies",
+              "validation": "Cargo.lock and bun.lock are committed; Dockerfile uses specific tags, not latest"
+            },
+            {
+              "id": "P5-W3-S1-02",
+              "title": "Run final cargo audit and address any new advisories",
+              "area": "qa",
+              "owner_role": "QA Eng",
+              "est_hours": 6,
+              "dependencies": [],
+              "deliverable": "Clean cargo audit output with all advisories either resolved or explicitly acknowledged in .cargo/audit.toml with justification comments",
+              "acceptance": "cargo audit exits 0 with all ignored advisories documented with reason and review date",
+              "validation": "CI security job passes; audit.toml reviewed by Tech Lead"
+            },
+            {
+              "id": "P5-W3-S1-03",
+              "title": "Run TruffleHog secret scan and resolve any findings",
+              "area": "qa",
+              "owner_role": "QA Eng",
+              "est_hours": 4,
+              "dependencies": [],
+              "deliverable": "Clean TruffleHog scan with zero verified secrets in the repository history",
+              "acceptance": "trufflehog --only-verified reports zero findings",
+              "validation": "CI secrets job passes; scan report archived"
+            },
+            {
+              "id": "P5-W3-S1-04",
+              "title": "Verify all P1-P4 gate criteria are still met",
+              "area": "qa",
+              "owner_role": "QA Eng",
+              "est_hours": 8,
+              "dependencies": [],
+              "deliverable": "Gate verification report docs/release/gate-verification.md confirming: Gate A (baseline locked), Gate B (contracts tested), Gate C (bridge hardened), Gate D (performance validated) all still pass with current codebase",
+              "acceptance": "Each gate has a pass/fail entry with the specific test or metric that proves it",
+              "validation": "All gate verification tests run and pass in a single CI run"
+            },
+            {
+              "id": "P5-W3-S1-05",
+              "title": "Verify Railway environment variables match production requirements",
+              "area": "infra",
+              "owner_role": "DevOps",
+              "est_hours": 4,
+              "dependencies": [],
+              "deliverable": "Verification that all required env vars from scripts/railway-verify.sh (RUST_ENV, JWT_SECRET, DATABASE_URL, REDIS_URL, ALLOWED_ORIGINS, FREE_ASTROLOGY_API_KEY, VEDIC_ENGINE_PROVIDER) are set correctly on Railway production",
+              "acceptance": "railway-verify.sh runs with zero missing variables and Redis addon confirmed",
+              "validation": "Script output shows all green checks; screenshot archived"
+            },
+            {
+              "id": "P5-W3-S1-06",
+              "title": "Verify Sentry project configuration and alert routing",
+              "area": "infra",
+              "owner_role": "SRE",
+              "est_hours": 4,
+              "dependencies": [],
+              "deliverable": "Sentry project selemene-engine under org tryambakam-noesis is configured with: correct DSN in Railway env, release tracking enabled, alert rules for error spikes, and team notification routing",
+              "acceptance": "SENTRY_DSN env var is set; test error event appears in Sentry dashboard within 30 seconds",
+              "validation": "Trigger a test Sentry event from staging; verify it appears with correct release tag"
+            },
+            {
+              "id": "P5-W3-S1-07",
+              "title": "Create release candidate tag and changelog entry",
+              "area": "product",
+              "owner_role": "Tech Lead",
+              "est_hours": 4,
+              "dependencies": [
+                "P5-W3-S1-01",
+                "P5-W3-S1-02",
+                "P5-W3-S1-03",
+                "P5-W3-S1-04"
+              ],
+              "deliverable": "Git tag v1.0.0-rc.1 with RELEASE_NOTES_v1.0.0-rc.1.md summarizing all P1-P5 changes, known issues, and upgrade instructions",
+              "acceptance": "Tag triggers release.yml workflow; GitHub Release created with binary artifacts and Docker images",
+              "validation": "GitHub Release page shows release notes, 3 binary artifacts (linux-x86_64, macos-x86_64, macos-arm64), and Docker image tags"
+            },
+            {
+              "id": "P5-W3-S1-08",
+              "title": "Verify all CI pipeline gates are green on release branch",
+              "area": "infra",
+              "owner_role": "DevOps",
+              "est_hours": 4,
+              "dependencies": [
+                "P5-W3-S1-01"
+              ],
+              "deliverable": "CI run on release candidate branch showing all gates green: tests, clippy, audit, smoke, benchmark regression, contract tests",
+              "acceptance": "All GitHub Actions checks pass on the release branch without skipped or manually overridden gates",
+              "validation": "gh run list --branch release/v2.1.0 shows all checks passed"
+            },
+            {
+              "id": "P5-W3-S1-09",
+              "title": "Create GitHub Release draft with changelog and migration notes",
+              "area": "product",
+              "owner_role": "Tech Lead",
+              "est_hours": 6,
+              "dependencies": [
+                "P5-W3-S3-05"
+              ],
+              "deliverable": "GitHub Release draft for v2.1.0 with auto-generated changelog, breaking changes section, migration guide link, and binary artifacts",
+              "acceptance": "Release draft exists with all sections populated; binary artifacts attached and downloadable",
+              "validation": "gh release view v2.1.0 shows draft status with changelog and attached assets"
+            }
+          ]
+        },
+        {
+          "swarm_id": "S2",
+          "name": "Stability Window & Monitoring",
+          "description": "Execute a 72-hour stability window on the release candidate with continuous monitoring, no code changes, and automated alerting validation",
+          "tasks": [
+            {
+              "id": "P5-W3-S2-01",
+              "title": "Deploy release candidate to staging and freeze code changes",
+              "area": "infra",
+              "owner_role": "DevOps",
+              "est_hours": 4,
+              "dependencies": [
+                "P5-W3-S1-07"
+              ],
+              "deliverable": "Release candidate v1.0.0-rc.1 deployed to Railway staging with branch protection preventing merges during the 72h window",
+              "acceptance": "Railway shows the RC tag deployed; GitHub branch protection rule active on main",
+              "validation": "Smoke tests pass on RC deployment; attempted merge to main is blocked"
+            },
+            {
+              "id": "P5-W3-S2-02",
+              "title": "Configure 72h automated monitoring dashboard",
+              "area": "infra",
+              "owner_role": "SRE",
+              "est_hours": 6,
+              "dependencies": [
+                "P5-W3-S2-01"
+              ],
+              "deliverable": "Grafana dashboard view configured with 72h time window showing: uptime percentage, error rate trend, P95 latency trend, cache hit rate, memory usage, and any alert firings during the window",
+              "acceptance": "Dashboard auto-refreshes every 30s and shows all key metrics for the 72h window",
+              "validation": "Dashboard URL bookmarked and shared with team; all panels load with data"
+            },
+            {
+              "id": "P5-W3-S2-03",
+              "title": "Run continuous smoke test loop during stability window",
+              "area": "qa",
+              "owner_role": "QA Eng",
+              "est_hours": 4,
+              "dependencies": [
+                "P5-W3-S2-01",
+                "P5-W1-S1-01"
+              ],
+              "deliverable": "Cron job or GitHub Actions scheduled workflow that runs the smoke test suite every 15 minutes during the 72h stability window and logs results",
+              "acceptance": "Smoke tests run 288 times (72h / 15min) with results logged; any failure triggers immediate notification",
+              "validation": "Smoke test log shows 288 runs; failure rate < 1% (allowing for transient network issues)"
+            },
+            {
+              "id": "P5-W3-S2-04",
+              "title": "Validate Prometheus alert rules fire correctly during stability window",
+              "area": "infra",
+              "owner_role": "SRE",
+              "est_hours": 6,
+              "dependencies": [
+                "P5-W3-S2-01"
+              ],
+              "deliverable": "Controlled test of each Prometheus alert rule (NoesisHighErrorRate, NoesisHighLatency, NoesisAPIDown, NoesisRedisConnectionFailure, NoesisPostgresConnectionsHigh) to confirm they fire and route to correct Alertmanager receivers",
+              "acceptance": "Each of the 5 critical alert rules has been triggered in test, confirmed to fire, and confirmed to route correctly",
+              "validation": "Alert test log shows each alert fired, received by correct receiver, and resolved after test"
+            },
+            {
+              "id": "P5-W3-S2-05",
+              "title": "Compile 72h stability window report",
+              "area": "product",
+              "owner_role": "Tech Lead",
+              "est_hours": 6,
+              "dependencies": [
+                "P5-W3-S2-02",
+                "P5-W3-S2-03",
+                "P5-W3-S2-04"
+              ],
+              "deliverable": "docs/release/stability-window-report.md with: uptime percentage, error rate summary, P95 latency summary, smoke test pass rate, alert firing summary, and go/no-go recommendation",
+              "acceptance": "Report shows >= 99.9% uptime, < 1% error rate, P95 latency < 2s, smoke pass rate > 99%, and zero unresolved critical alerts",
+              "validation": "Report signed off by Tech Lead and SRE with specific metric values and Grafana screenshot evidence"
+            },
+            {
+              "id": "P5-W3-S2-06",
+              "title": "Establish Sentry error rate baseline for 72h stability window",
+              "area": "infra",
+              "owner_role": "SRE",
+              "est_hours": 4,
+              "dependencies": [
+                "P5-W3-S2-01"
+              ],
+              "deliverable": "Sentry alert rule that fires if error rate exceeds baseline by 2x during the 72h stability window",
+              "acceptance": "Sentry alert configured and tested with synthetic error injection during stability window",
+              "validation": "Sentry dashboard shows alert rule active; test injection triggers alert within 5 minutes"
+            },
+            {
+              "id": "P5-W3-S2-07",
+              "title": "Monitor TS sidecar memory and CPU during stability window",
+              "area": "infra",
+              "owner_role": "SRE",
+              "est_hours": 4,
+              "dependencies": [
+                "P5-W3-S2-01"
+              ],
+              "deliverable": "Grafana panel tracking Bun process memory RSS and CPU% over the 72h window with alert if either exceeds safe thresholds",
+              "acceptance": "Panel shows stable memory trend (no unbounded growth) and CPU stays under 80% sustained over 72h",
+              "validation": "72h Grafana screenshot shows flat memory trend line and CPU under threshold"
+            }
+          ]
+        },
+        {
+          "swarm_id": "S3",
+          "name": "Documentation Freeze & Gate E Sign-off",
+          "description": "Finalize all documentation, complete the release checklist, and execute the Gate E sign-off ceremony",
+          "tasks": [
+            {
+              "id": "P5-W3-S3-01",
+              "title": "Update API documentation with all P1-P5 endpoint changes",
+              "area": "product",
+              "owner_role": "Tech Lead",
+              "est_hours": 8,
+              "dependencies": [],
+              "deliverable": "Updated OpenAPI spec and docs/ reflecting all endpoints added in P1-P5: admin endpoints, cache invalidation endpoints, health check enhancements, workflow endpoints, and bridge engine endpoints",
+              "acceptance": "OpenAPI spec validates cleanly; all documented endpoints match actual running server responses",
+              "validation": "scripts/merge-openapi.py generates valid merged spec; diff against previous version shows all new endpoints"
+            },
+            {
+              "id": "P5-W3-S3-02",
+              "title": "Update deployment documentation with Railway and Vercel procedures",
+              "area": "product",
+              "owner_role": "DevOps",
+              "est_hours": 6,
+              "dependencies": [],
+              "deliverable": "Updated DOCKER.md and new docs/deployment/railway-guide.md covering: Railway setup, env var configuration, Redis addon, deploy triggers, rollback procedure, and admin-web Vercel coordination",
+              "acceptance": "A new team member can deploy to Railway by following the guide without additional help",
+              "validation": "Walkthrough test: follow guide from scratch on a new Railway project"
+            },
+            {
+              "id": "P5-W3-S3-03",
+              "title": "Update monitoring and alerting documentation",
+              "area": "product",
+              "owner_role": "SRE",
+              "est_hours": 4,
+              "dependencies": [
+                "P5-W2-S2-06"
+              ],
+              "deliverable": "docs/monitoring/README.md covering: Prometheus config, alert rules, Alertmanager routing, Grafana dashboards, Sentry integration, and Jaeger tracing; with links to runbooks",
+              "acceptance": "Documentation maps each monitoring tool to its configuration file and explains how alerts flow from detection to notification",
+              "validation": "Peer review confirms documentation matches actual monitoring configuration"
+            },
+            {
+              "id": "P5-W3-S3-04",
+              "title": "Create release checklist template for future releases",
+              "area": "product",
+              "owner_role": "Tech Lead",
+              "est_hours": 4,
+              "dependencies": [
+                "P5-W3-S1-07",
+                "P5-W3-S2-05"
+              ],
+              "deliverable": "docs/release/release-checklist-template.md with a reusable markdown checklist covering: version matrix, security audit, gate verification, stability window, documentation freeze, and sign-off, based on this P5 release process",
+              "acceptance": "Template is parameterized (version, date) and covers all steps from this release",
+              "validation": "Future release can be executed by copying and filling in the template"
+            },
+            {
+              "id": "P5-W3-S3-05",
+              "title": "Execute Gate E sign-off meeting",
+              "area": "product",
+              "owner_role": "Tech Lead",
+              "est_hours": 4,
+              "dependencies": [
+                "P5-W3-S2-05",
+                "P5-W3-S3-01",
+                "P5-W3-S3-02",
+                "P5-W3-S3-03"
+              ],
+              "deliverable": "Gate E sign-off document docs/release/gate-e-signoff.md signed by Tech Lead, SRE, QA, and Product with go/no-go decision, conditions, and action items if conditional go",
+              "acceptance": "All four roles have reviewed and signed the gate document with explicit go or no-go vote",
+              "validation": "Signed document committed to repo; any no-go votes have associated remediation tasks"
+            },
+            {
+              "id": "P5-W3-S3-06",
+              "title": "Tag final release v1.0.0 and trigger release pipeline",
+              "area": "infra",
+              "owner_role": "Tech Lead",
+              "est_hours": 4,
+              "dependencies": [
+                "P5-W3-S3-05"
+              ],
+              "deliverable": "Git tag v1.0.0 pushed to main, triggering release.yml: GitHub Release created, Docker images tagged, binary artifacts uploaded, CHANGELOG.md updated",
+              "acceptance": "GitHub Release page shows v1.0.0 with release notes, all binary artifacts, and Docker image references",
+              "validation": "Docker pull ghcr.io/sheshiyer/selemene-engine:v1.0.0 succeeds; binary artifacts download and run"
+            },
+            {
+              "id": "P5-W3-S3-07",
+              "title": "Execute production deploy and final smoke validation",
+              "area": "infra",
+              "owner_role": "SRE",
+              "est_hours": 6,
+              "dependencies": [
+                "P5-W3-S3-06"
+              ],
+              "deliverable": "v1.0.0 deployed to Railway production with full smoke test suite passing, Sentry release tracked, and Grafana dashboard showing healthy metrics",
+              "acceptance": "All smoke tests pass on production URL; Sentry shows release v1.0.0 active with zero errors in first 30 minutes",
+              "validation": "Smoke test JSON report archived; Grafana screenshot showing healthy post-deploy metrics archived"
+            },
+            {
+              "id": "P5-W3-S3-08",
+              "title": "Send release announcement with operational status",
+              "area": "product",
+              "owner_role": "Tech Lead",
+              "est_hours": 4,
+              "dependencies": [
+                "P5-W3-S3-07"
+              ],
+              "deliverable": "Release announcement covering: version, key features (16 engines, 6 workflows), deployment status, monitoring links, known issues, and support channels",
+              "acceptance": "Announcement sent to team channel with all required information",
+              "validation": "Team acknowledges receipt; no critical issues reported in first 24 hours"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "total_tasks": 70,
+    "wave_breakdown": {
+      "W1_automation_foundation": 21,
+      "W2_canary_resilience": 16,
+      "W3_release_gate": 20
+    },
+    "swarm_breakdown": {
+      "W1-S1_smoke_test_framework": 8,
+      "W1-S2_deploy_pipeline_hardening": 6,
+      "W1-S3_cache_invalidation_hooks": 7,
+      "W2-S1_canary_rollout_policy": 6,
+      "W2-S2_failure_mode_runbooks": 6,
+      "W2-S3_rollback_drills": 4,
+      "W3-S1_release_candidate_checklist": 7,
+      "W3-S2_stability_window": 5,
+      "W3-S3_documentation_gate_signoff": 8
+    },
+    "area_distribution": {
+      "infra": 32,
+      "backend": 7,
+      "qa": 10,
+      "product": 13,
+      "frontend": 0,
+      "data": 0
+    },
+    "total_estimated_hours": 384,
+    "critical_path": [
+      "P5-W1-S1-01 (smoke runner)",
+      "P5-W1-S2-01 (CI integration)",
+      "P5-W1-S2-05 (auto rollback)",
+      "P5-W2-S1-03 (canary promotion)",
+      "P5-W2-S1-04 (canary deploy mode)",
+      "P5-W2-S3-03 (canary drill)",
+      "P5-W3-S1-07 (RC tag)",
+      "P5-W3-S2-01 (RC deploy)",
+      "P5-W3-S2-05 (stability report)",
+      "P5-W3-S3-05 (Gate E signoff)",
+      "P5-W3-S3-06 (v1.0.0 tag)",
+      "P5-W3-S3-07 (production deploy)"
+    ],
+    "parallelization_opportunities": [
+      "W1-S1 (smoke tests) + W1-S3 (cache invalidation) can run in parallel",
+      "W2-S1 (canary policy) + W2-S2 (runbooks) can run in parallel",
+      "W3-S1-01 through W3-S1-06 (checklist items) are mostly independent",
+      "W3-S3-01, W3-S3-02, W3-S3-03 (documentation) can run in parallel"
+    ]
+  }
+}

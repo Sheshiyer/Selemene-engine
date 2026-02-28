@@ -1,12 +1,30 @@
 import { isDevPermissionBypassEnabled } from "@/lib/config";
 
 function hasLegacyAlias(permissions: string[], required: string): boolean {
+  if (permissions.includes("admin:*")) {
+    return true;
+  }
+
   if (required.startsWith("admin:users:") && permissions.includes("admin:users")) {
     return true;
   }
-  if (required === "admin:analytics:read" && permissions.includes("admin:analytics")) {
+
+  if (
+    (required.startsWith("admin:keys:") || required.startsWith("admin:history-sync:")) &&
+    permissions.includes("admin:users")
+  ) {
     return true;
   }
+
+  if (
+    (required.startsWith("admin:analytics:") ||
+      required.startsWith("admin:system:") ||
+      required.startsWith("admin:audit:")) &&
+    permissions.includes("admin:analytics")
+  ) {
+    return true;
+  }
+
   return false;
 }
 

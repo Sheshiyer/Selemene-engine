@@ -46,5 +46,5 @@ If `NEXT_PUBLIC_API_BASE_URL` is missing in a non-local deployment, login/sessio
 
 Current project wiring:
 
-- Project: `sheshiyers-projects/selemene-admin-dashboard`
-- Production alias: `https://selemene-admin-dashboard.vercel.app`
+- Project: `sheshiyers-projects/enantiodromia-engine-dashboard`
+- Production alias: `https://enantiodromia-engine-dashboard.vercel.app`

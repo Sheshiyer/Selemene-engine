@@ -28,6 +28,8 @@ pub struct AdminUserRecord {
 #[derive(Debug, Clone, sqlx::FromRow)]
 pub struct AdminApiKeyRecord {
     pub id: Uuid,
+    pub name: Option<String>,
+    pub key_prefix: Option<String>,
     pub user_id: Uuid,
     pub user_email: String,
     pub tier: String,
@@ -43,6 +45,8 @@ pub struct AdminApiKeyRecord {
 #[derive(Debug, Clone)]
 pub struct NewApiKeyRecord {
     pub key_hash: String,
+    pub name: Option<String>,
+    pub key_prefix: String,
     pub user_id: Uuid,
     pub tier: String,
     pub permissions: Value,
@@ -124,6 +128,7 @@ pub struct AnalyticsTopConsumerRecord {
 #[derive(Debug, sqlx::FromRow)]
 struct ExistingApiKeyRecord {
     user_id: Uuid,
+    name: Option<String>,
     tier: String,
     permissions: Value,
     consciousness_level: i32,
@@ -427,6 +432,8 @@ impl AdminRepository {
             r#"
             SELECT
                 k.id,
+                k.name,
+                k.key_prefix,
                 k.user_id,
                 u.email AS user_email,
                 k.tier,
@@ -458,6 +465,8 @@ impl AdminRepository {
                 .push(" OR k.id::TEXT ILIKE ")
                 .push_bind(pattern.clone())
                 .push(" OR k.user_id::TEXT ILIKE ")
+                .push_bind(pattern.clone())
+                .push(" OR k.name ILIKE ")
                 .push_bind(pattern)
                 .push(")");
         }
@@ -496,6 +505,8 @@ impl AdminRepository {
                 .push(" OR k.id::TEXT ILIKE ")
                 .push_bind(pattern.clone())
                 .push(" OR k.user_id::TEXT ILIKE ")
+                .push_bind(pattern.clone())
+                .push(" OR k.name ILIKE ")
                 .push_bind(pattern)
                 .push(")");
         }
@@ -508,6 +519,8 @@ impl AdminRepository {
             r#"
             SELECT
                 k.id,
+                k.name,
+                k.key_prefix,
                 k.user_id,
                 u.email AS user_email,
                 k.tier,
@@ -536,6 +549,8 @@ impl AdminRepository {
             r#"
             INSERT INTO api_keys (
                 key_hash,
+                name,
+                key_prefix,
                 user_id,
                 tier,
                 permissions,
@@ -544,11 +559,13 @@ impl AdminRepository {
                 expires_at,
                 is_active
             )
-            VALUES ($1, $2, $3, $4, $5, $6, $7, true)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, true)
             RETURNING id
             "#,
         )
         .bind(new_key.key_hash)
+        .bind(new_key.name)
+        .bind(new_key.key_prefix)
         .bind(new_key.user_id)
         .bind(new_key.tier)
         .bind(new_key.permissions)
@@ -577,12 +594,13 @@ impl AdminRepository {
         &self,
         key_id: Uuid,
         new_key_hash: &str,
+        new_key_prefix: &str,
     ) -> Result<Option<AdminApiKeyRecord>, Error> {
         let mut tx = self.pool.begin().await?;
 
         let existing = sqlx::query_as::<_, ExistingApiKeyRecord>(
             r#"
-            SELECT user_id, tier, permissions, consciousness_level, rate_limit, expires_at
+            SELECT user_id, name, tier, permissions, consciousness_level, rate_limit, expires_at
             FROM api_keys
             WHERE id = $1 AND is_active = true
             "#,
@@ -605,6 +623,8 @@ impl AdminRepository {
             r#"
             INSERT INTO api_keys (
                 key_hash,
+                name,
+                key_prefix,
                 user_id,
                 tier,
                 permissions,
@@ -613,11 +633,13 @@ impl AdminRepository {
                 expires_at,
                 is_active
             )
-            VALUES ($1, $2, $3, $4, $5, $6, $7, true)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, true)
             RETURNING id
             "#,
         )
         .bind(new_key_hash)
+        .bind(existing.name)
+        .bind(new_key_prefix)
         .bind(existing.user_id)
         .bind(existing.tier)
         .bind(existing.permissions)

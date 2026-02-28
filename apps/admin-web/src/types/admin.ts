@@ -61,6 +61,8 @@ export interface UpdateUserRolesResponse {
 
 export interface AdminApiKeyItem {
   id: string;
+  name: string | null;
+  key_prefix: string | null;
   user_id: string;
   user_email: string;
   tier: string;

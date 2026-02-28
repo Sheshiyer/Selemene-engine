@@ -1,0 +1,889 @@
+{
+  "version": "3.0.0",
+  "name": "Platform Launch",
+  "target_quarter": "Q3 2026",
+  "objective": "Complete platform launch with all 19 engines at production quality, finalized Rust and TypeScript SDKs, comprehensive API documentation, tiered rate limiting with billing readiness, desktop surface extensions, and public API readiness backed by a security audit",
+  "milestone": "v3.0.0 \u2014 Platform Launch",
+  "delivery_mode": "Prototype",
+  "prerequisites": [
+    "P1 Stabilization Baseline (complete)",
+    "P2 Workflow Hardening (complete)",
+    "P3 Bridge Reliability (complete)",
+    "P4 Performance & Observability (complete)",
+    "P5 Release Readiness (complete)",
+    "v2.2.0 Engine Expansion (complete)"
+  ],
+  "architecture_snapshot": {
+    "rust_engines": 11,
+    "rust_engine_names": [
+      "panchanga",
+      "numerology",
+      "biorhythm",
+      "human-design",
+      "vimshottari",
+      "gene-keys",
+      "vedic-clock",
+      "biofield",
+      "face-reading",
+      "nadabrahman",
+      "transits"
+    ],
+    "ts_engines": 5,
+    "ts_engine_names": [
+      "tarot",
+      "i-ching",
+      "enneagram",
+      "sacred-geometry",
+      "sigil-forge"
+    ],
+    "total_engines": 16,
+    "workflows": 6,
+    "workflow_names": [
+      "birth-blueprint",
+      "daily-practice",
+      "decision-support",
+      "self-inquiry",
+      "creative-expression",
+      "full-spectrum"
+    ],
+    "crates": [
+      "noesis-api",
+      "noesis-auth",
+      "noesis-cache",
+      "noesis-core",
+      "noesis-data",
+      "noesis-metrics",
+      "noesis-orchestrator",
+      "noesis-vedic-api",
+      "noesis-western-api",
+      "noesis-bridge",
+      "noesis-sdk",
+      "noesis-tui",
+      "noesis-witness",
+      "noesis-integration"
+    ],
+    "deployment": "Railway (Docker amd64) + Vercel (admin-web) + Supabase (Postgres + Auth)",
+    "existing_openapi": "utoipa + SwaggerUi at /api/docs",
+    "existing_rate_limit": "DashMap-based in middleware.rs, per-user rate_limit field",
+    "sdk_state": "noesis-sdk crate exists (client, profile, keychain, render, config) \u2014 not published to crates.io"
+  },
+  "known_gaps": [
+    "face-reading engine is mock/stub \u2014 needs MediaPipe or image-analysis backend",
+    "full-spectrum workflow missing nadabrahman and transits engines",
+    "Workflow engine coverage is narrow (birth-blueprint=3, daily-practice=3, decision-support=3, self-inquiry=2, creative-expression=2)",
+    "No TypeScript SDK package",
+    "SDK not published to crates.io",
+    "No tiered rate limiting (free/pro/enterprise)",
+    "UsageRepository is minimal \u2014 only log_usage, no aggregation or billing queries",
+    "No developer portal beyond /api/docs Swagger UI",
+    "No public changelog or migration guide infrastructure"
+  ],
+  "total_tasks": 70,
+  "waves": [
+    {
+      "wave_id": "W1",
+      "name": "Engine Completion & Workflow Expansion",
+      "description": "Bring all engines to production quality, expand workflow engine coverage to leverage the full 16-engine complement, and update synthesis modules for richer multi-engine integration",
+      "swarms": [
+        {
+          "swarm_id": "S1",
+          "name": "Face Reading Production Backend",
+          "description": "Replace face-reading mock/stub with a real image analysis backend, integrating birth-data-based physiognomy traits when no image is provided",
+          "tasks": [
+            {
+              "id": "V30-W1-S1-01",
+              "title": "Research and select face analysis backend (MediaPipe vs ONNX vs API)",
+              "area": "backend",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 8,
+              "dependencies": [],
+              "deliverable": "ADR document in docs/planning/ comparing MediaPipe WASM, ONNX runtime, and external API options with latency, accuracy, and deployment-cost trade-offs",
+              "acceptance": "ADR has at least 3 options evaluated with a clear recommendation and rationale",
+              "validation": "ADR merged to main with team sign-off comment"
+            },
+            {
+              "id": "V30-W1-S1-02",
+              "title": "Implement birth-data-based physiognomy fallback for face-reading engine",
+              "area": "backend",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 12,
+              "dependencies": [
+                "V30-W1-S1-01"
+              ],
+              "deliverable": "engine-face-reading crate calculates constitution/element predictions from birth_data (dosha from date/time, TCM element from numerology mapping) when no image is provided, replacing mock data",
+              "acceptance": "calculate() with birth_data returns is_mock_data=false and constitution fields derived from actual birth data; without birth_data falls back to stub with is_mock_data=true",
+              "validation": "cargo test -p engine-face-reading passes with new birth-data-based tests showing deterministic results for same inputs"
+            },
+            {
+              "id": "V30-W1-S1-03",
+              "title": "Integrate selected image analysis backend into face-reading engine",
+              "area": "backend",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 16,
+              "dependencies": [
+                "V30-W1-S1-02"
+              ],
+              "deliverable": "FaceReadingEngine accepts image_url or image_data in options, invokes the selected backend, and returns real facial landmark analysis mapped to constitution/element/personality models",
+              "acceptance": "calculate() with a test image returns facial analysis with is_mock_data=false, backend!='mock-stub', and all five elemental_balance values derived from actual landmarks",
+              "validation": "Integration test with a sample image returns valid FaceAnalysis; mock backend flag is false; precision_achieved is 'measured'"
+            },
+            {
+              "id": "V30-W1-S1-04",
+              "title": "Add image upload endpoint for face-reading engine",
+              "area": "backend",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 8,
+              "dependencies": [
+                "V30-W1-S1-03"
+              ],
+              "deliverable": "POST /api/v1/engines/face-reading/upload endpoint that accepts multipart/form-data image, stores temporarily, passes to face-reading engine, and returns EngineOutput",
+              "acceptance": "Uploading a JPEG image to the endpoint returns 200 with valid EngineOutput containing facial analysis",
+              "validation": "curl multipart upload to staging returns valid JSON with analysis.constitution fields"
+            }
+          ]
+        },
+        {
+          "swarm_id": "S2",
+          "name": "Engine Refinements & TS Engine Hardening",
+          "description": "Harden TypeScript engines with input validation, error handling, and witness prompt quality; ensure nadabrahman and transits engines have comprehensive test coverage",
+          "tasks": [
+            {
+              "id": "V30-W1-S2-01",
+              "title": "Add input validation and error boundary to tarot TS engine",
+              "area": "backend",
+              "owner_role": "Backend Eng (TypeScript)",
+              "est_hours": 6,
+              "dependencies": [],
+              "deliverable": "Tarot engine validates spread_type option, returns structured errors for invalid inputs, and handles missing birth_data gracefully",
+              "acceptance": "Invalid spread_type returns error with code INVALID_SPREAD_TYPE; missing birth_data still returns a valid reading",
+              "validation": "ts-engines test suite passes with new validation edge case tests"
+            },
+            {
+              "id": "V30-W1-S2-02",
+              "title": "Add input validation and error boundary to i-ching TS engine",
+              "area": "backend",
+              "owner_role": "Backend Eng (TypeScript)",
+              "est_hours": 6,
+              "dependencies": [],
+              "deliverable": "I-Ching engine validates question parameter, returns structured errors for invalid hexagram options, and handles edge cases in line generation",
+              "acceptance": "Empty question returns error with code QUESTION_REQUIRED; all 64 hexagrams are reachable in generation",
+              "validation": "ts-engines test suite passes with i-ching validation tests"
+            },
+            {
+              "id": "V30-W1-S2-03",
+              "title": "Add input validation and error boundary to enneagram TS engine",
+              "area": "backend",
+              "owner_role": "Backend Eng (TypeScript)",
+              "est_hours": 6,
+              "dependencies": [],
+              "deliverable": "Enneagram engine validates type selection (1-9), handles wing calculations, and returns structured errors for out-of-range types",
+              "acceptance": "Type 0 or 10 returns error with code INVALID_ENNEAGRAM_TYPE; valid types 1-9 each return unique wing and growth path data",
+              "validation": "ts-engines test suite passes with enneagram boundary tests"
+            },
+            {
+              "id": "V30-W1-S2-04",
+              "title": "Harden sacred-geometry and sigil-forge TS engines with error boundaries",
+              "area": "backend",
+              "owner_role": "Backend Eng (TypeScript)",
+              "est_hours": 8,
+              "dependencies": [],
+              "deliverable": "Both engines validate input parameters, return structured errors, and handle SVG generation failures gracefully without crashing the sidecar",
+              "acceptance": "Invalid geometry_type in sacred-geometry returns error; sigil-forge with empty intention returns error; neither engine crashes on malformed input",
+              "validation": "ts-engines test suite passes with error boundary tests for both engines"
+            },
+            {
+              "id": "V30-W1-S2-05",
+              "title": "Add comprehensive test suite for nadabrahman engine",
+              "area": "qa",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 8,
+              "dependencies": [],
+              "deliverable": "Unit and integration tests for nadabrahman engine covering frequency calculation, raga mapping, and witness prompt generation for all consciousness levels",
+              "acceptance": "cargo test -p engine-nadabrahman runs 20+ tests covering all public functions with edge cases",
+              "validation": "Test count >= 20 and all pass; code coverage report shows >= 80% line coverage on engine.rs"
+            },
+            {
+              "id": "V30-W1-S2-06",
+              "title": "Add comprehensive test suite for transits engine",
+              "area": "qa",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 8,
+              "dependencies": [],
+              "deliverable": "Unit and integration tests for transits engine covering planetary transit calculations, aspect detection, sade sati detection, and ephemeris lookups",
+              "acceptance": "cargo test -p engine-transits runs 20+ tests covering transit calculations, aspect types, and sade sati periods",
+              "validation": "Test count >= 20 and all pass; known transit dates produce correct planetary positions"
+            },
+            {
+              "id": "V30-W1-S2-07",
+              "title": "Standardize witness prompt quality across all 16 engines",
+              "area": "product",
+              "owner_role": "Product",
+              "est_hours": 12,
+              "dependencies": [
+                "V30-W1-S2-01",
+                "V30-W1-S2-02",
+                "V30-W1-S2-03",
+                "V30-W1-S2-04"
+              ],
+              "deliverable": "Witness prompt audit document and updated prompts for all engines ensuring: non-prescriptive tone, question format, consciousness-level-appropriate depth, and consistent style guide",
+              "acceptance": "All 16 engines generate witness prompts that end with '?' and contain no prescriptive language ('you should', 'you must')",
+              "validation": "Automated test in noesis-integration crate validates witness prompt format across all engines"
+            }
+          ]
+        },
+        {
+          "swarm_id": "S3",
+          "name": "Workflow Expansion & Synthesis Enhancement",
+          "description": "Expand workflow engine coverage to leverage the full engine complement, add nadabrahman and transits to full-spectrum, and enrich synthesis modules",
+          "tasks": [
+            {
+              "id": "V30-W1-S3-01",
+              "title": "Add biofield and face-reading engines to birth-blueprint workflow",
+              "area": "backend",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 8,
+              "dependencies": [
+                "V30-W1-S1-02"
+              ],
+              "deliverable": "birth-blueprint workflow engine_ids extended to include biofield and face-reading; synthesis module updated to incorporate constitutional and biofield data into identity mapping",
+              "acceptance": "WorkflowRegistry birth-blueprint lists 5 engines; birth_blueprint synthesis produces themes covering constitution alongside numerology/HD/vimshottari",
+              "validation": "Registry test updated to assert 5 engines; synthesis integration test produces valid SynthesisResult with biofield and face-reading themes"
+            },
+            {
+              "id": "V30-W1-S3-02",
+              "title": "Add transits and nadabrahman engines to daily-practice workflow",
+              "area": "backend",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 8,
+              "dependencies": [],
+              "deliverable": "daily-practice workflow engine_ids extended to include transits and nadabrahman; synthesis module updated to incorporate planetary transits and sound frequency recommendations",
+              "acceptance": "WorkflowRegistry daily-practice lists 5 engines; daily_practice synthesis includes transit-aware timing recommendations",
+              "validation": "Registry test updated to assert 5 engines; synthesis integration test produces themes referencing transits and sound frequencies"
+            },
+            {
+              "id": "V30-W1-S3-03",
+              "title": "Add enneagram and gene-keys engines to decision-support workflow",
+              "area": "backend",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 8,
+              "dependencies": [],
+              "deliverable": "decision-support workflow engine_ids extended to include enneagram and gene-keys; synthesis module updated to add personality-type and shadow-pattern lenses to decision mirrors",
+              "acceptance": "WorkflowRegistry decision-support lists 5 engines; synthesis produces alignments/tensions between tarot, i-ching, HD, enneagram, and gene-keys",
+              "validation": "Registry test updated to assert 5 engines; synthesis test shows cross-system tension identification between >=3 engines"
+            },
+            {
+              "id": "V30-W1-S3-04",
+              "title": "Add face-reading and biofield engines to self-inquiry workflow",
+              "area": "backend",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 8,
+              "dependencies": [
+                "V30-W1-S1-02"
+              ],
+              "deliverable": "self-inquiry workflow engine_ids extended to include face-reading and biofield; synthesis module updated to add somatic and constitutional self-observation dimensions",
+              "acceptance": "WorkflowRegistry self-inquiry lists 4 engines; synthesis produces inquiry framings that connect gene-keys shadows with constitution/biofield patterns",
+              "validation": "Registry test updated to assert 4 engines; synthesis test validates somatic inquiry prompts are generated"
+            },
+            {
+              "id": "V30-W1-S3-05",
+              "title": "Add nadabrahman and numerology engines to creative-expression workflow",
+              "area": "backend",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 8,
+              "dependencies": [],
+              "deliverable": "creative-expression workflow engine_ids extended to include nadabrahman and numerology; synthesis module generates sound-frequency-aligned creative parameters alongside sigil/geometry",
+              "acceptance": "WorkflowRegistry creative-expression lists 4 engines; synthesis includes frequency and number-pattern creative seeds",
+              "validation": "Registry test updated to assert 4 engines; synthesis test validates sound frequency creative prompts"
+            },
+            {
+              "id": "V30-W1-S3-06",
+              "title": "Add nadabrahman and transits to full-spectrum workflow and update synthesis",
+              "area": "backend",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 10,
+              "dependencies": [],
+              "deliverable": "full-spectrum workflow engine_ids updated to include all 16 engines (currently missing nadabrahman and transits); FullSpectrumWorkflow synthesis updated to categorize and integrate the two new engines",
+              "acceptance": "WorkflowRegistry full-spectrum lists exactly 16 engines; full_spectrum.rs EngineCategory includes Sound and Transits categories",
+              "validation": "Registry test asserts engine_ids.len() == 16; full-spectrum integration test produces synthesis covering all 16 engines"
+            },
+            {
+              "id": "V30-W1-S3-07",
+              "title": "Update all synthesis modules to use typed SynthesisResult consistently",
+              "area": "backend",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 10,
+              "dependencies": [
+                "V30-W1-S3-01",
+                "V30-W1-S3-02",
+                "V30-W1-S3-03",
+                "V30-W1-S3-04",
+                "V30-W1-S3-05",
+                "V30-W1-S3-06"
+              ],
+              "deliverable": "All 6 synthesis modules (birth_blueprint, daily_practice, decision_support, self_inquiry, creative_expression, full_spectrum) use models::SynthesisResult with typed themes, alignments, and tensions instead of LegacySynthesisResult",
+              "acceptance": "No usage of LegacySynthesisResult remains in non-test code; all workflows return WorkflowResult with typed synthesis",
+              "validation": "grep for LegacySynthesisResult in src/ returns zero non-test hits; all workflow integration tests pass"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "wave_id": "W2",
+      "name": "SDK & API Finalization",
+      "description": "Publish the Rust SDK to crates.io, build and publish a TypeScript SDK, finalize OpenAPI spec with per-engine schemas, build a developer portal, and implement tiered rate limiting with usage analytics",
+      "swarms": [
+        {
+          "swarm_id": "S1",
+          "name": "Rust SDK Publication & TypeScript SDK",
+          "description": "Prepare noesis-sdk for crates.io publication and build a TypeScript SDK package for npm",
+          "tasks": [
+            {
+              "id": "V30-W2-S1-01",
+              "title": "Audit and document all noesis-sdk public API surface",
+              "area": "backend",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 8,
+              "dependencies": [],
+              "deliverable": "Complete rustdoc documentation for all public types in noesis-sdk (NoesisClient, LocalProfile, Config, KeychainStore, MarkdownRenderer, ConsciousnessLevel, Error) with examples on every public method",
+              "acceptance": "cargo doc -p noesis-sdk --no-deps generates zero warnings; every public fn has a doc comment with at least one example",
+              "validation": "cargo doc builds clean; manual review confirms example coverage on all public methods"
+            },
+            {
+              "id": "V30-W2-S1-02",
+              "title": "Add retry logic and connection pooling to NoesisClient",
+              "area": "backend",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 8,
+              "dependencies": [],
+              "deliverable": "NoesisClient supports configurable retry (max_retries, backoff_ms) with exponential backoff on 5xx and timeout errors; connection pool size configurable via Config",
+              "acceptance": "Client retries 3 times on 503 with exponential backoff; WireMock test validates retry count and timing",
+              "validation": "cargo test -p noesis-sdk with wiremock tests showing retry behavior on 5xx responses"
+            },
+            {
+              "id": "V30-W2-S1-03",
+              "title": "Implement offline-first profile sync in noesis-sdk",
+              "area": "backend",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 10,
+              "dependencies": [],
+              "deliverable": "LocalProfile supports diff-based sync with server-side profile (GET /api/v1/users/me), conflict resolution strategy (server-wins for consciousness_level, local-wins for birth_data), and last_synced_at timestamp",
+              "acceptance": "profile.sync() uploads local changes and pulls server updates; conflict resolution produces deterministic merge",
+              "validation": "Unit tests with mock server validate sync, conflict resolution, and offline resilience"
+            },
+            {
+              "id": "V30-W2-S1-04",
+              "title": "Prepare noesis-sdk and noesis-core for crates.io publication",
+              "area": "backend",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 8,
+              "dependencies": [
+                "V30-W2-S1-01",
+                "V30-W2-S1-02"
+              ],
+              "deliverable": "Cargo.toml for noesis-core and noesis-sdk updated with crates.io metadata (license, repository, homepage, categories, keywords, readme); path dependencies replaced with version dependencies for published crates; cargo publish --dry-run passes",
+              "acceptance": "cargo publish --dry-run -p noesis-core and -p noesis-sdk both succeed with no errors",
+              "validation": "Dry-run output shows package ready for publication; metadata visible in generated .crate file"
+            },
+            {
+              "id": "V30-W2-S1-05",
+              "title": "Build TypeScript SDK package with typed client and engine models",
+              "area": "frontend",
+              "owner_role": "Frontend Eng",
+              "est_hours": 16,
+              "dependencies": [],
+              "deliverable": "New packages/noesis-sdk-ts package with typed fetch-based client for all 16 engines and 6 workflows, TypeScript interfaces matching EngineInput/EngineOutput/WorkflowResult/BirthData, automatic auth header injection, and configurable base URL",
+              "acceptance": "import { NoesisClient } from '@selemene/sdk' compiles; client.calculate('numerology', input) returns typed EngineOutput; client.workflow('daily-practice', input) returns typed WorkflowResult",
+              "validation": "tsc --noEmit passes; vitest test suite covers all 16 engine calculate calls and 6 workflow calls against mock server"
+            },
+            {
+              "id": "V30-W2-S1-06",
+              "title": "Add TypeScript SDK error handling, retry logic, and rate limit awareness",
+              "area": "frontend",
+              "owner_role": "Frontend Eng",
+              "est_hours": 8,
+              "dependencies": [
+                "V30-W2-S1-05"
+              ],
+              "deliverable": "TS SDK handles API errors with typed SelemeneError class, retries on 5xx with configurable backoff, parses X-RateLimit-* headers and exposes remaining/reset info, and supports AbortController cancellation",
+              "acceptance": "Retry test shows 3 retries on 503; rate limit headers parsed into client.rateLimitInfo; AbortController cancels in-flight requests",
+              "validation": "vitest suite with msw mock server validates retry, rate limit parsing, and cancellation"
+            },
+            {
+              "id": "V30-W2-S1-07",
+              "title": "Write TypeScript SDK README with quickstart, examples, and API reference",
+              "area": "product",
+              "owner_role": "DevRel",
+              "est_hours": 6,
+              "dependencies": [
+                "V30-W2-S1-05",
+                "V30-W2-S1-06"
+              ],
+              "deliverable": "README.md in packages/noesis-sdk-ts with installation instructions, quickstart code for Node.js and browser, all 16 engine examples, workflow examples, error handling patterns, and API reference table",
+              "acceptance": "README contains working code examples that compile against the SDK; all 16 engines and 6 workflows mentioned",
+              "validation": "Code examples extracted and compiled in a test project without errors"
+            }
+          ]
+        },
+        {
+          "swarm_id": "S2",
+          "name": "OpenAPI & Developer Portal",
+          "description": "Finalize the OpenAPI specification with per-engine response schemas, build a developer documentation portal, and create quickstart guides",
+          "tasks": [
+            {
+              "id": "V30-W2-S2-01",
+              "title": "Add per-engine response schemas to OpenAPI spec via utoipa",
+              "area": "backend",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 12,
+              "dependencies": [],
+              "deliverable": "Each engine's result field in EngineOutput gets a dedicated ToSchema struct (PanchangaResult, NumerologyResult, etc.) documented in the OpenAPI spec at /api/openapi.json with field descriptions and examples",
+              "acceptance": "GET /api/openapi.json contains 16 distinct engine result schemas with example values; Swagger UI renders them with expandable field documentation",
+              "validation": "openapi-generator validate on the spec JSON returns zero errors; each engine schema has >= 3 documented fields"
+            },
+            {
+              "id": "V30-W2-S2-02",
+              "title": "Add workflow-specific request/response schemas to OpenAPI spec",
+              "area": "backend",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 8,
+              "dependencies": [
+                "V30-W2-S2-01"
+              ],
+              "deliverable": "Each workflow endpoint in OpenAPI spec has documented request body with required/optional fields, response schema showing engine_outputs map structure, and synthesis schema",
+              "acceptance": "GET /api/openapi.json contains 6 workflow endpoint definitions with typed synthesis schemas",
+              "validation": "openapi-generator validate passes; Swagger UI shows workflow endpoints with try-it-out capability"
+            },
+            {
+              "id": "V30-W2-S2-03",
+              "title": "Add authentication and rate limiting schemas to OpenAPI spec",
+              "area": "backend",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 6,
+              "dependencies": [
+                "V30-W2-S2-01"
+              ],
+              "deliverable": "OpenAPI spec documents JWT Bearer and X-API-Key authentication schemes, rate limit response headers (X-RateLimit-*), and 429 Too Many Requests error schema",
+              "acceptance": "OpenAPI spec contains securitySchemes for Bearer and ApiKey; 429 response documented on all rate-limited endpoints",
+              "validation": "Swagger UI shows lock icon on authenticated endpoints; 429 response visible in endpoint documentation"
+            },
+            {
+              "id": "V30-W2-S2-04",
+              "title": "Build static developer documentation site with Mintlify or Docusaurus",
+              "area": "product",
+              "owner_role": "DevRel",
+              "est_hours": 16,
+              "dependencies": [
+                "V30-W2-S2-01",
+                "V30-W2-S2-02",
+                "V30-W2-S2-03"
+              ],
+              "deliverable": "Developer portal at docs/ directory (deployable to Vercel) with: API overview, authentication guide, engine catalog with descriptions, workflow guide, SDK quickstart for Rust and TypeScript, rate limiting explanation, and embedded OpenAPI explorer",
+              "acceptance": "Site builds and deploys to Vercel preview; contains pages for all 16 engines, 6 workflows, both SDKs, and auth guide",
+              "validation": "Lighthouse accessibility score >= 90; all internal links resolve; code examples compile"
+            },
+            {
+              "id": "V30-W2-S2-05",
+              "title": "Write engine catalog documentation with input/output examples for all 16 engines",
+              "area": "product",
+              "owner_role": "DevRel",
+              "est_hours": 12,
+              "dependencies": [
+                "V30-W2-S2-04"
+              ],
+              "deliverable": "One documentation page per engine in the developer portal with: description, required_phase, input parameters, output schema with example JSON, witness prompt examples at each consciousness level, and common options",
+              "acceptance": "16 engine documentation pages each contain a valid JSON request example and response example",
+              "validation": "Request examples are valid EngineInput JSON; response examples match the engine's OpenAPI schema"
+            },
+            {
+              "id": "V30-W2-S2-06",
+              "title": "Write workflow guide with synthesis explanation and usage patterns",
+              "area": "product",
+              "owner_role": "DevRel",
+              "est_hours": 8,
+              "dependencies": [
+                "V30-W2-S2-04"
+              ],
+              "deliverable": "Workflow documentation section with: overview of 6 workflows, engine composition table, synthesis explanation (themes/alignments/tensions), consciousness phase gating, and complete request/response examples",
+              "acceptance": "Documentation covers all 6 workflows with engine lists, synthesis types, and phase requirements",
+              "validation": "Workflow examples use valid EngineInput and produce documented WorkflowResult structure"
+            }
+          ]
+        },
+        {
+          "swarm_id": "S3",
+          "name": "Rate Limiting Tiers & Usage Analytics",
+          "description": "Implement tiered rate limiting per subscription plan, build usage analytics aggregation, and prepare billing integration hooks",
+          "tasks": [
+            {
+              "id": "V30-W2-S3-01",
+              "title": "Define rate limit tier configuration (free/pro/enterprise)",
+              "area": "backend",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 6,
+              "dependencies": [],
+              "deliverable": "RateLimitTier enum and configuration in noesis-api config with per-tier limits: free (30 req/min, 500/day), pro (200 req/min, 10000/day), enterprise (1000 req/min, unlimited/day); daily quotas tracked alongside per-minute sliding window",
+              "acceptance": "Config loads tier definitions from env vars or defaults; RateLimiter resolves user tier from AuthUser.tier field",
+              "validation": "Unit tests verify correct limits for each tier; config test validates tier parsing"
+            },
+            {
+              "id": "V30-W2-S3-02",
+              "title": "Implement daily quota tracking with Redis-backed counters",
+              "area": "backend",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 10,
+              "dependencies": [
+                "V30-W2-S3-01"
+              ],
+              "deliverable": "Daily quota tracking using Redis INCR with TTL (midnight reset) for authenticated users; in-memory DashMap fallback when Redis unavailable; X-RateLimit-Daily-Remaining and X-RateLimit-Daily-Reset headers added",
+              "acceptance": "Authenticated user hitting daily quota receives 429 with daily quota exceeded message; Redis counter increments on each request; headers show daily remaining",
+              "validation": "Integration test with Redis mock validates daily quota enforcement, header values, and midnight TTL reset"
+            },
+            {
+              "id": "V30-W2-S3-03",
+              "title": "Build usage aggregation queries in UsageRepository",
+              "area": "data",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 10,
+              "dependencies": [],
+              "deliverable": "UsageRepository extended with: get_daily_usage(user_id, date), get_monthly_summary(user_id, month), get_engine_breakdown(user_id, date_range), get_top_users(limit, date_range) using existing usage_logs table",
+              "acceptance": "Each query returns correct aggregations against test data in usage_logs table",
+              "validation": "sqlx integration tests with seeded data validate all 4 aggregation queries return expected counts"
+            },
+            {
+              "id": "V30-W2-S3-04",
+              "title": "Add usage dashboard API endpoints for admin and user self-service",
+              "area": "backend",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 8,
+              "dependencies": [
+                "V30-W2-S3-03"
+              ],
+              "deliverable": "GET /api/v1/users/me/usage (user sees own usage) and GET /api/v1/admin/usage/summary (admin sees platform-wide usage) endpoints returning daily/monthly usage data with engine breakdown",
+              "acceptance": "User endpoint returns their daily and monthly usage; admin endpoint returns top users and engine breakdown",
+              "validation": "API tests with authenticated user and admin tokens validate correct response structures"
+            },
+            {
+              "id": "V30-W2-S3-05",
+              "title": "Add billing event hooks for Stripe integration readiness",
+              "area": "backend",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 8,
+              "dependencies": [
+                "V30-W2-S3-01",
+                "V30-W2-S3-03"
+              ],
+              "deliverable": "BillingEventEmitter trait with emit_usage_event(user_id, engine_id, tier) and emit_quota_exceeded(user_id, tier) methods; NoopBillingEmitter default; StripeWebhookEmitter stub that formats events for future Stripe integration",
+              "acceptance": "BillingEventEmitter is called on each calculation and quota exceeded event; NoopBillingEmitter logs events at debug level",
+              "validation": "Unit tests validate event emission on calculate calls; StripeWebhookEmitter formats correct JSON payload structure"
+            },
+            {
+              "id": "V30-W2-S3-06",
+              "title": "Add usage analytics to admin-web dashboard",
+              "area": "frontend",
+              "owner_role": "Frontend Eng",
+              "est_hours": 12,
+              "dependencies": [
+                "V30-W2-S3-04"
+              ],
+              "deliverable": "Admin-web usage analytics page with: daily request chart (recharts), engine popularity breakdown (pie chart), top users table, and tier distribution; data from GET /api/v1/admin/usage/summary",
+              "acceptance": "Admin dashboard shows usage chart with date range selector, engine breakdown, and top 10 users table",
+              "validation": "Page renders with mock data; API integration shows real data from staging; chart interactions (hover, date range) work"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "wave_id": "W3",
+      "name": "Launch Preparation",
+      "description": "Security audit, desktop surface extensions, marketing site, changelog, migration guides, and public beta launch gate",
+      "swarms": [
+        {
+          "swarm_id": "S1",
+          "name": "Security Audit & Hardening",
+          "description": "Comprehensive security audit of auth, API, and data layers; fix findings; prepare for public exposure",
+          "tasks": [
+            {
+              "id": "V30-W3-S1-01",
+              "title": "Run cargo audit and fix all non-ignored advisories",
+              "area": "infra",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 6,
+              "dependencies": [],
+              "deliverable": "cargo audit runs clean (exit 0) with only pre-approved ignores in .cargo/audit.toml; any new advisories fixed by dependency upgrade or documented with justification",
+              "acceptance": "cargo audit exits 0; any new ignores have documented justification in audit.toml comments",
+              "validation": "CI cargo audit step passes; audit.toml diff reviewed"
+            },
+            {
+              "id": "V30-W3-S1-02",
+              "title": "Audit JWT token handling for OWASP JWT best practices",
+              "area": "backend",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 8,
+              "dependencies": [],
+              "deliverable": "JWT implementation audit against OWASP JWT Cheat Sheet: verify algorithm restriction (no 'none'), token expiry enforcement, refresh token rotation, issuer/audience validation, and key management",
+              "acceptance": "Audit document lists all checks performed with pass/fail; any findings have corresponding fix PRs",
+              "validation": "Security test suite validates: 'none' algorithm rejected, expired tokens rejected, wrong issuer rejected, tampered signature rejected"
+            },
+            {
+              "id": "V30-W3-S1-03",
+              "title": "Add API key scoping and permission model",
+              "area": "backend",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 10,
+              "dependencies": [],
+              "deliverable": "API keys support scoped permissions: engines:read, workflows:execute, readings:read, admin:* with scope validation in auth middleware; api_keys migration adds scopes column",
+              "acceptance": "API key with engines:read scope can call engine endpoints but gets 403 on admin endpoints; scope-less legacy keys get full access for backward compatibility",
+              "validation": "Integration tests validate scope enforcement on all endpoint groups; migration runs cleanly"
+            },
+            {
+              "id": "V30-W3-S1-04",
+              "title": "Audit and harden input validation across all API endpoints",
+              "area": "backend",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 10,
+              "dependencies": [],
+              "deliverable": "All API endpoints validate input size limits (body <= 1MB), string length limits, numeric range bounds, and reject unexpected fields; BirthData.validate() covers all edge cases",
+              "acceptance": "Oversized payloads get 413; strings exceeding 1000 chars get 422; latitude/longitude out of range get 422 with specific field error",
+              "validation": "Fuzzing test with proptest generates random inputs and validates no panics; all validation error tests pass"
+            },
+            {
+              "id": "V30-W3-S1-05",
+              "title": "Add CORS configuration hardening for production domains",
+              "area": "infra",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 4,
+              "dependencies": [],
+              "deliverable": "CORS configuration restricts allowed origins to production domains in RUST_ENV=production (selemene.tryambakam.space, admin domain, SDK origins); wildcard only in development mode",
+              "acceptance": "Production mode rejects requests from non-allowed origins with proper CORS error; development mode allows all origins",
+              "validation": "curl tests with different Origin headers validate CORS behavior in both modes"
+            },
+            {
+              "id": "V30-W3-S1-06",
+              "title": "Implement request signing for SDK-to-API communication",
+              "area": "backend",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 10,
+              "dependencies": [
+                "V30-W2-S1-04"
+              ],
+              "deliverable": "HMAC-SHA256 request signing using API secret key: SDK signs request body + timestamp; server validates signature within 5-minute window; replay attack prevention via nonce tracking",
+              "acceptance": "Signed requests accepted; unsigned requests to signing-required endpoints rejected with 401; replayed requests (same nonce) rejected with 409",
+              "validation": "SDK tests validate signing flow; server tests validate signature verification, timestamp window, and nonce deduplication"
+            },
+            {
+              "id": "V30-W3-S1-07",
+              "title": "Run npm audit on TypeScript sidecar and admin-web dependencies",
+              "area": "infra",
+              "owner_role": "Frontend Eng",
+              "est_hours": 4,
+              "dependencies": [],
+              "deliverable": "npm audit (or bun audit) runs clean on ts-engines and apps/admin-web; critical and high vulnerabilities resolved by upgrade or documented with justification",
+              "acceptance": "npm audit reports zero critical and zero high severity issues in both projects",
+              "validation": "CI npm audit step passes for both projects"
+            }
+          ]
+        },
+        {
+          "swarm_id": "S2",
+          "name": "Desktop Surfaces & Distribution",
+          "description": "Build Raycast extension and macOS menu bar app using the Rust SDK for desktop-native access to Selemene Engine",
+          "tasks": [
+            {
+              "id": "V30-W3-S2-01",
+              "title": "Build Raycast extension with engine quicklaunch and daily practice command",
+              "area": "frontend",
+              "owner_role": "Frontend Eng",
+              "est_hours": 16,
+              "dependencies": [
+                "V30-W2-S1-05"
+              ],
+              "deliverable": "Raycast extension in extensions/raycast/ directory with commands: 'Daily Practice' (runs daily-practice workflow), 'Quick Calculate' (pick engine + birth data from profile), 'Witness Prompt' (shows latest witness prompt); uses TypeScript SDK",
+              "acceptance": "Extension installs in Raycast; Daily Practice command returns synthesis with themes and witness prompts; Quick Calculate shows engine picker with results",
+              "validation": "Manual testing in Raycast shows all 3 commands working against staging API; extension passes Raycast store linting"
+            },
+            {
+              "id": "V30-W3-S2-02",
+              "title": "Build macOS menu bar app scaffold with Tauri and noesis-sdk",
+              "area": "frontend",
+              "owner_role": "Frontend Eng",
+              "est_hours": 16,
+              "dependencies": [
+                "V30-W2-S1-04"
+              ],
+              "deliverable": "Tauri-based macOS menu bar app in apps/menu-bar/ that shows: current panchanga tithi/nakshatra, daily biorhythm status, and latest witness prompt; auto-refreshes hourly; uses noesis-sdk Rust backend",
+              "acceptance": "App appears in macOS menu bar; clicking shows popover with panchanga and biorhythm data; data refreshes when popover opens",
+              "validation": "App builds with cargo tauri build on macOS; menu bar icon visible; popover shows real data from staging API"
+            },
+            {
+              "id": "V30-W3-S2-03",
+              "title": "Add profile configuration and auth flow to menu bar app",
+              "area": "frontend",
+              "owner_role": "Frontend Eng",
+              "est_hours": 8,
+              "dependencies": [
+                "V30-W3-S2-02"
+              ],
+              "deliverable": "Menu bar app settings panel for: API endpoint configuration, API key storage via macOS Keychain (using noesis-sdk KeychainStore), birth data profile setup, and refresh interval",
+              "acceptance": "Settings panel saves API key to Keychain; birth data profile persists across app restarts; custom API endpoint works",
+              "validation": "After configuring API key and birth data, menu bar shows personalized panchanga and biorhythm data"
+            },
+            {
+              "id": "V30-W3-S2-04",
+              "title": "Add CLI installation and update mechanism for noesis-tui",
+              "area": "infra",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 8,
+              "dependencies": [],
+              "deliverable": "GitHub Releases workflow that builds noesis-tui for macOS (arm64, x86_64) and Linux (x86_64); install script (install.sh) that detects platform and downloads correct binary; self-update command in TUI",
+              "acceptance": "curl -sSL install.selemene.dev | sh installs the correct binary; noesis update checks GitHub releases and updates in-place",
+              "validation": "GitHub Actions release workflow produces 3 platform binaries; install script downloads and runs on macOS arm64"
+            }
+          ]
+        },
+        {
+          "swarm_id": "S3",
+          "name": "Marketing, Changelog & Launch Gate",
+          "description": "Marketing site, changelog infrastructure, migration guides, and final launch gate checklist",
+          "tasks": [
+            {
+              "id": "V30-W3-S3-01",
+              "title": "Build marketing landing page with engine showcase and pricing tiers",
+              "area": "frontend",
+              "owner_role": "Frontend Eng",
+              "est_hours": 16,
+              "dependencies": [
+                "V30-W2-S3-01"
+              ],
+              "deliverable": "Static marketing site at apps/marketing-web/ (Next.js/Astro deployable to Vercel) with: hero section, engine showcase grid (16 engines with descriptions), workflow cards, pricing table (free/pro/enterprise), API quickstart code snippet, and CTA to developer portal",
+              "acceptance": "Site builds and deploys to Vercel preview; all 16 engines shown with icons and descriptions; pricing table shows 3 tiers with feature comparison",
+              "validation": "Lighthouse performance >= 90; all links work; responsive on mobile/tablet/desktop"
+            },
+            {
+              "id": "V30-W3-S3-02",
+              "title": "Implement automated changelog generation from git commits",
+              "area": "infra",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 6,
+              "dependencies": [],
+              "deliverable": "GitHub Actions workflow using git-cliff or conventional-changelog that generates CHANGELOG.md from conventional commits on each release tag; changelog includes breaking changes, new features, bug fixes, and engine updates",
+              "acceptance": "Creating a v3.0.0-beta.1 tag triggers changelog generation with categorized entries from commit history",
+              "validation": "Test release tag generates changelog with correct categories; CHANGELOG.md is updated and committed"
+            },
+            {
+              "id": "V30-W3-S3-03",
+              "title": "Write v2-to-v3 API migration guide",
+              "area": "product",
+              "owner_role": "DevRel",
+              "est_hours": 8,
+              "dependencies": [
+                "V30-W2-S2-01",
+                "V30-W2-S3-01"
+              ],
+              "deliverable": "Migration guide document covering: API endpoint changes, new engine additions, workflow engine_ids changes, rate limit tier changes, authentication updates (API key scoping), and SDK migration steps for both Rust and TypeScript",
+              "acceptance": "Guide covers all breaking changes with before/after code examples; linked from developer portal and CHANGELOG",
+              "validation": "Migration code examples compile against v3.0.0 SDK; guide reviewed by at least one external developer"
+            },
+            {
+              "id": "V30-W3-S3-04",
+              "title": "Write engine onboarding guide for contributing new engines",
+              "area": "product",
+              "owner_role": "DevRel",
+              "est_hours": 8,
+              "dependencies": [],
+              "deliverable": "Guide in docs/contributing/ covering: ConsciousnessEngine trait implementation, engine crate scaffold (cargo generate template), witness prompt guidelines, synthesis integration steps, and CI registration checklist",
+              "acceptance": "A developer can follow the guide to scaffold a new engine crate that compiles, passes trait validation, and registers in the orchestrator",
+              "validation": "Guide tested by creating a dummy 'test-engine' crate from scratch following only the guide instructions"
+            },
+            {
+              "id": "V30-W3-S3-05",
+              "title": "Create v3.0.0-beta.1 release candidate with version bumps",
+              "area": "infra",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 6,
+              "dependencies": [
+                "V30-W1-S3-07",
+                "V30-W2-S1-04",
+                "V30-W3-S1-04"
+              ],
+              "deliverable": "All workspace crate versions bumped to 3.0.0-beta.1; ts-engines package.json version bumped; admin-web version bumped; git tag v3.0.0-beta.1 created; GitHub Release with changelog",
+              "acceptance": "cargo build --release succeeds with all crates at 3.0.0-beta.1; git tag exists; GitHub Release published",
+              "validation": "Docker image builds and deploys to Railway staging; all smoke tests pass against staging"
+            },
+            {
+              "id": "V30-W3-S3-06",
+              "title": "Run full end-to-end regression test suite against beta deployment",
+              "area": "qa",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 10,
+              "dependencies": [
+                "V30-W3-S3-05"
+              ],
+              "deliverable": "End-to-end test suite hitting all 16 engine calculate endpoints, all 6 workflow execute endpoints, auth flows (JWT + API key), rate limit validation, and admin endpoints against Railway staging",
+              "acceptance": "All 16 engines return valid EngineOutput; all 6 workflows return valid WorkflowResult with synthesis; auth and rate limit work correctly",
+              "validation": "Test report shows 100% pass rate; no 5xx errors; p95 latency < 3000ms for engine calculations"
+            },
+            {
+              "id": "V30-W3-S3-07",
+              "title": "Conduct load test with tiered rate limits under concurrent users",
+              "area": "qa",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 8,
+              "dependencies": [
+                "V30-W3-S3-05",
+                "V30-W2-S3-02"
+              ],
+              "deliverable": "k6 or drill load test script simulating 50 concurrent free-tier users, 20 pro-tier users, and 5 enterprise-tier users making engine calculations and workflow executions for 10 minutes",
+              "acceptance": "Free-tier users correctly limited to 30 req/min; pro-tier to 200 req/min; no 5xx errors under load; p99 latency < 5000ms",
+              "validation": "Load test report shows correct rate limit enforcement per tier; error rate < 0.1% (excluding expected 429s)"
+            },
+            {
+              "id": "V30-W3-S3-08",
+              "title": "Write operational runbook for v3.0.0 launch day",
+              "area": "infra",
+              "owner_role": "SRE",
+              "est_hours": 6,
+              "dependencies": [
+                "V30-W3-S3-06"
+              ],
+              "deliverable": "Runbook covering: launch sequence (DNS cutover, CDN warm, cache prime), monitoring dashboard links, escalation contacts, rollback procedure (Railway instant rollback + DB migration revert), and post-launch verification steps",
+              "acceptance": "Runbook has step-by-step instructions with specific commands for each action; rollback can be executed in < 5 minutes",
+              "validation": "Dry-run of rollback procedure on staging completes within 5 minutes; all dashboard links resolve"
+            },
+            {
+              "id": "V30-W3-S3-09",
+              "title": "Execute launch gate review checklist and sign-off",
+              "area": "product",
+              "owner_role": "Product",
+              "est_hours": 4,
+              "dependencies": [
+                "V30-W3-S3-06",
+                "V30-W3-S3-07",
+                "V30-W3-S3-08",
+                "V30-W3-S1-02",
+                "V30-W3-S1-03"
+              ],
+              "deliverable": "Launch gate checklist covering: all 16 engines validated, all 6 workflows tested, security audit findings resolved, load test passed, runbook reviewed, SDKs published, documentation live, changelog published, marketing site live",
+              "acceptance": "All checklist items marked complete with evidence links; sign-off from Product, Engineering, and SRE",
+              "validation": "Signed checklist document with timestamps and evidence URLs for each gate item"
+            },
+            {
+              "id": "V30-W3-S3-10",
+              "title": "Tag v3.0.0 final release, publish SDKs, and deploy to production",
+              "area": "infra",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 6,
+              "dependencies": [
+                "V30-W3-S3-09"
+              ],
+              "deliverable": "Git tag v3.0.0; noesis-core and noesis-sdk published to crates.io; @selemene/sdk published to npm; Docker image deployed to Railway production; marketing site and developer portal deployed to Vercel production",
+              "acceptance": "crates.io shows noesis-sdk 3.0.0; npm shows @selemene/sdk 3.0.0; production API returns correct version in /health/live; marketing site and docs are live",
+              "validation": "Production smoke tests pass; SDKs installable from registries; public API accessible"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
