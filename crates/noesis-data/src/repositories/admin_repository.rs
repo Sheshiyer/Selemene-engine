@@ -1232,6 +1232,7 @@ impl AdminRepository {
         .await
     }
 
+    #[allow(clippy::too_many_arguments)]
     pub async fn list_audit_events(
         &self,
         actor: Option<&str>,
