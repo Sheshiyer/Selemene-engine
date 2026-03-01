@@ -368,6 +368,30 @@ railway logs
 railway status
 ```
 
+### GitHub Actions Dual Deploy (Kubernetes + Railway)
+
+The repository workflow at `.github/workflows/deploy.yaml` can deploy to both Kubernetes and Railway from the same trigger (`push` to `main`, or `v*` tags):
+
+- `deploy` job → Kubernetes
+- `deploy-railway` job → Railway
+- `admin-smoke` waits for both deploy jobs before running post-deploy checks
+
+To enable Railway deployment in GitHub Actions, configure these repository secrets:
+
+| Secret | Required | Purpose |
+|--------|----------|---------|
+| `RAILWAY_TOKEN` | Yes | Auth for Railway CLI in CI |
+| `RAILWAY_PROJECT_ID` | Yes | Target Railway project |
+
+Optional repository/environment variables:
+
+| Variable | Default | Purpose |
+|----------|---------|---------|
+| `RAILWAY_ENVIRONMENT` | `production` | Railway environment to deploy |
+| `RAILWAY_SERVICE` | `Selemene-engine` | Railway service name |
+
+If required Railway secrets are missing, the `deploy-railway` job exits early and skips Railway deploy without failing the rest of the pipeline.
+
 ### Railway Security Notes
 
 - Environment variables are encrypted at rest in Railway
