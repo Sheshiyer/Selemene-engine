@@ -2187,7 +2187,7 @@ pub async fn system_services(
     let snapshot = collect_system_runtime_snapshot(&state).await;
     let (limit, offset) = normalize_limit_offset(query.limit, query.offset, 25, 200);
 
-    let mut services = vec![
+    let mut services = [
         AdminSystemServiceItem {
             id: "api".to_string(),
             name: "Noesis API".to_string(),
