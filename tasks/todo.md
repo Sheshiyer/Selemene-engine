@@ -149,3 +149,139 @@
   - `npm --prefix apps/admin-web run lint`
   - `npm --prefix apps/admin-web run build`
   - all passed.
+
+---
+
+# Task Plan — Admin Dashboard Parallel Hardening Pack
+
+## Checklist
+- [x] Add backend fallback for API key list/get queries when optional metadata columns are missing in DB.
+- [x] Add backend fallback for API key create/rotate writes when optional metadata columns are missing in DB.
+- [x] Add admin deployment smoke script for frontend+backend route sanity checks.
+- [x] Refresh admin Vercel deployment runbook with current project/domain and root-directory guidance.
+- [x] Run verification (`cargo check -p noesis-data`, `cargo check -p noesis-api`, script smoke checks).
+
+## Notes
+- Goal: complete high-impact reliability tasks that can land quickly in parallel tracks (backend resilience + deploy observability + docs).
+- Scope intentionally avoids large feature work (audit/system modules, full RBAC redesign, billing integration).
+
+## Review (fill after execution)
+- Updated `crates/noesis-data/src/repositories/admin_repository.rs`:
+  - Added graceful fallback paths for API key list/count/get/create/rotate when `api_keys.name` / `api_keys.key_prefix` columns are missing.
+  - Added legacy query/insert helpers and `missing_api_keys_optional_columns()` detector (`Postgres 42703`) to avoid hard 500s on schema drift.
+- Added `scripts/smoke_admin_web.sh`:
+  - Validates `/admin/login` frontend reachability and backend `/health/live`, `/api/v1/admin/session` (401), `/api/v1/admin/api-keys` (401).
+  - Requires explicit `ADMIN_WEB_URL` and `API_BASE_URL` inputs.
+- Refreshed `docs/deployment/VERCEL_ADMIN_WEB.md`:
+  - Corrected project/env examples, clarified root-directory modes for monorepo vs app-subdir deploys, and documented migration dependency for API keys metadata columns.
+- Verification:
+  - `cargo check -p noesis-data` ✅
+  - `cargo check -p noesis-api` ✅
+  - `ADMIN_WEB_URL=https://144.tryambakam.space API_BASE_URL=https://selemene-engine-production.up.railway.app bash scripts/smoke_admin_web.sh` ✅
+
+---
+
+# Task Plan — Admin System/Audit Completion + Post-Deploy Smoke CI
+
+## Checklist
+- [x] Implement backend admin system endpoints: `/api/v1/admin/system/health`, `/services`, `/workflows`, `/cache` with permission gating.
+- [x] Implement backend audit endpoints: `/api/v1/admin/audit-events`, `/api/v1/admin/audit-events/{event_id}`, `/api/v1/admin/audit-events/actions` with filters/pagination.
+- [x] Wire new admin routes + OpenAPI schemas for system/audit responses.
+- [x] Add frontend typed contracts + API client methods for system/audit endpoints.
+- [x] Replace `/admin/system` and `/admin/audit` placeholders with live API-driven views (loading/empty/error states).
+- [x] Add GitHub Actions post-deploy smoke check step using `scripts/smoke_admin_web.sh` with env-driven URLs.
+- [x] Run verification gates (`cargo fmt`, `cargo check -p noesis-data`, `cargo check -p noesis-api`, `npm --prefix apps/admin-web run typecheck`, `npm --prefix apps/admin-web run lint`, smoke script sanity).
+
+## Notes
+- Favor read-only operational visibility and forensic observability without introducing destructive admin actions.
+- Reuse existing `usage_logs` as immutable event substrate for audit MVP.
+- Keep CI smoke workflow env-driven and skip-safe when URLs are not configured.
+
+## Review (fill after execution)
+- Backend admin system + audit API implementation:
+  - Added system endpoints in `crates/noesis-api/src/handlers/admin.rs`:
+    - `GET /api/v1/admin/system/health`
+    - `GET /api/v1/admin/system/services`
+    - `GET /api/v1/admin/system/workflows`
+    - `GET /api/v1/admin/system/cache`
+  - Added audit endpoints:
+    - `GET /api/v1/admin/audit-events`
+    - `GET /api/v1/admin/audit-events/{event_id}`
+    - `GET /api/v1/admin/audit-events/actions`
+  - Added OpenAPI path/component wiring and route registration in `crates/noesis-api/src/lib.rs`.
+- Data layer updates in `crates/noesis-data/src/repositories/admin_repository.rs`:
+  - Added runtime `ping()` for DB service checks.
+  - Added workflow snapshots (`system_workflow_snapshots`) for system workflows view.
+  - Added audit query methods (`list/count/get events`, `list actions`) over immutable `usage_logs` substrate.
+- Frontend wiring in `apps/admin-web`:
+  - Added typed contracts in `src/types/admin.ts` for system/audit payloads.
+  - Added API client methods in `src/lib/api.ts` for all new system/audit endpoints.
+  - Replaced placeholders with live pages:
+    - `app/(protected)/system/page.tsx`
+    - `app/(protected)/audit/page.tsx`
+- CI/CD post-deploy smoke integration:
+  - Updated `.github/workflows/deploy.yaml` with `admin-smoke` job calling `scripts/smoke_admin_web.sh` when `ADMIN_WEB_URL` + `API_BASE_URL` variables are configured.
+- Verification:
+  - `cargo fmt --all` ✅
+  - `cargo check -p noesis-data` ✅
+  - `cargo check -p noesis-api` ✅
+  - `npm --prefix apps/admin-web run typecheck` ✅
+  - `npm --prefix apps/admin-web run lint` ✅
+  - `npm --prefix apps/admin-web run build` ✅
+  - `ADMIN_WEB_URL=https://144.tryambakam.space API_BASE_URL=https://selemene-engine-production.up.railway.app bash scripts/smoke_admin_web.sh` ✅
+- Live production status (pre-deploy check): newly added endpoints currently return `404` on Railway and require backend deployment of this branch before UI pages can consume them.
+
+---
+
+# Task Plan — Admin UX P0 Parallel Fast-Track
+
+## Checklist
+- [x] Create GitHub issues before implementation for the P0 tracks.
+- [x] Implement URL-synced state for primary admin list surfaces.
+- [x] Implement auto-refresh + last-updated indicators for operational pages.
+- [x] Implement copy/export QoL utilities on key admin tables.
+- [x] Standardize severity/status visual mapping with shared helper.
+- [x] Run verification (`typecheck`, `lint`, `build`, smoke script sanity).
+
+## Notes
+- Issues created first (as requested):
+  - #482 URL-synced table state
+  - #483 Auto-refresh + staleness indicator
+  - #484 Copy/Export utilities
+  - #485 Severity visual language standardization
+  - #486 P0 umbrella tracker
+- Scope focused on frontend/operator QoL, intentionally no new backend contracts in this pass.
+
+## Review (fill after execution)
+- Added reusable admin utilities:
+  - `apps/admin-web/src/lib/url-query.ts`
+  - `apps/admin-web/src/lib/export.ts`
+  - `apps/admin-web/src/lib/status.ts`
+- Applied URL-synced state:
+  - `users` (`query`, `tier`, `state`)
+  - `api-keys` (`query`, `tier`, `status`)
+  - `audit` (`actor`, `action`, `result`, `from`, `to`, `refresh`)
+  - `system` (`window_hours`, `refresh`)
+  - plus refresh sync on `dashboard` + `analytics`
+- Added auto-refresh + last-updated badges:
+  - `dashboard`, `analytics`, `system`, `audit`
+- Added copy/export QoL:
+  - Users: copy user ID, export CSV/JSON
+  - API Keys: copy key/user IDs, export CSV/JSON
+  - Audit: copy actor/request/event IDs, export CSV/JSON
+- Standardized status rendering with shared `statusPillClass()` helper:
+  - `system`, `audit`, `history-sync`, `api-keys`, `users`
+- Added small shared UI affordance:
+  - `.link-btn` style in `apps/admin-web/app/globals.css`
+- Verification:
+  - `npm --prefix apps/admin-web run typecheck` ✅
+  - `npm --prefix apps/admin-web run lint` ✅
+  - `npm --prefix apps/admin-web run build` ✅
+  - `ADMIN_WEB_URL=https://144.tryambakam.space API_BASE_URL=https://selemene-engine-production.up.railway.app bash scripts/smoke_admin_web.sh` ✅
+- Deployment verification pass:
+  - `https://144.tryambakam.space/admin/*` routes return expected 200/307 ✅
+  - Railway `health/live` and existing admin session/api-keys routes return expected 200/401 ✅
+  - Newly added `/api/v1/admin/system/*` and `/api/v1/admin/audit-events*` still return 404 in production (pending branch merge/deploy) ⚠️
+- Issue lifecycle updates:
+  - Closed as completed: `#482`, `#483`, `#484`, `#485`.
+  - Kept umbrella `#486` open pending merge/deploy confirmation.

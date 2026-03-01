@@ -79,6 +79,13 @@ use utoipa_swagger_ui::SwaggerUi;
         handlers::admin::analytics_timeseries,
         handlers::admin::analytics_breakdown,
         handlers::admin::analytics_top_consumers,
+        handlers::admin::system_health,
+        handlers::admin::system_services,
+        handlers::admin::system_workflows,
+        handlers::admin::system_cache,
+        handlers::admin::list_audit_events,
+        handlers::admin::get_audit_event,
+        handlers::admin::list_audit_actions,
         handlers::auth::register,
         handlers::auth::login,
         handlers::auth::forgot_password,
@@ -130,6 +137,17 @@ use utoipa_swagger_ui::SwaggerUi;
             handlers::admin::AdminAnalyticsBreakdownEntry,
             handlers::admin::AdminAnalyticsTopConsumersResponse,
             handlers::admin::AdminAnalyticsTopConsumerItem,
+            handlers::admin::AdminSystemHealthResponse,
+            handlers::admin::AdminSystemSubsystemStatus,
+            handlers::admin::AdminSystemServicesResponse,
+            handlers::admin::AdminSystemServiceItem,
+            handlers::admin::AdminSystemWorkflowsResponse,
+            handlers::admin::AdminSystemWorkflowItem,
+            handlers::admin::AdminSystemCacheResponse,
+            handlers::admin::AdminAuditEventsResponse,
+            handlers::admin::AdminAuditEventItem,
+            handlers::admin::AdminAuditEventDetailResponse,
+            handlers::admin::AdminAuditActionsResponse,
             handlers::auth::RegisterRequest,
             handlers::auth::RegisterResponse,
             handlers::auth::LoginRequest,
@@ -341,6 +359,28 @@ pub fn create_router(state: AppState, config: &ApiConfig) -> Router {
         .route(
             "/admin/analytics/top-consumers",
             get(handlers::admin::analytics_top_consumers),
+        )
+        .route("/admin/system/health", get(handlers::admin::system_health))
+        .route(
+            "/admin/system/services",
+            get(handlers::admin::system_services),
+        )
+        .route(
+            "/admin/system/workflows",
+            get(handlers::admin::system_workflows),
+        )
+        .route("/admin/system/cache", get(handlers::admin::system_cache))
+        .route(
+            "/admin/audit-events",
+            get(handlers::admin::list_audit_events),
+        )
+        .route(
+            "/admin/audit-events/actions",
+            get(handlers::admin::list_audit_actions),
+        )
+        .route(
+            "/admin/audit-events/:event_id",
+            get(handlers::admin::get_audit_event),
         )
         .route("/status", get(status_handler))
         .route("/engines", get(list_engines_handler))

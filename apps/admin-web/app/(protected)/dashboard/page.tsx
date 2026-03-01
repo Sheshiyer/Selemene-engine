@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
   CartesianGrid,
   Line,
@@ -18,11 +19,14 @@ import {
   getAnalyticsTimeseries,
   getAnalyticsTopConsumers
 } from "@/lib/api";
+import { buildQueryString, getNumberParam } from "@/lib/url-query";
 import type {
   AdminAnalyticsSummaryResponse,
   AdminAnalyticsTimeseriesPoint,
   AdminAnalyticsTopConsumerItem
 } from "@/types/admin";
+
+const REFRESH_OPTIONS = [0, 15, 30, 60] as const;
 
 function formatBucket(bucket: string): string {
   const date = new Date(bucket);
@@ -36,15 +40,46 @@ function formatNumber(value: number): string {
   return new Intl.NumberFormat().format(value);
 }
 
+function formatDateTime(value: string | null): string {
+  if (!value) {
+    return "--";
+  }
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return "--";
+  }
+  return date.toLocaleString();
+}
+
 export default function DashboardPage() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  const [autoRefreshSec, setAutoRefreshSec] = useState(() =>
+    getNumberParam(searchParams, "refresh", 0, 0, 60)
+  );
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [lastUpdatedAt, setLastUpdatedAt] = useState<string | null>(null);
 
   const [summary, setSummary] = useState<AdminAnalyticsSummaryResponse | null>(null);
   const [timeseries, setTimeseries] = useState<AdminAnalyticsTimeseriesPoint[]>([]);
   const [topConsumers, setTopConsumers] = useState<AdminAnalyticsTopConsumerItem[]>([]);
 
-  async function loadDashboard() {
+  useEffect(() => {
+    setAutoRefreshSec(getNumberParam(searchParams, "refresh", 0, 0, 60));
+  }, [searchParams]);
+
+  useEffect(() => {
+    const nextQuery = buildQueryString(searchParams, {
+      refresh: autoRefreshSec > 0 ? autoRefreshSec : undefined
+    });
+    router.replace(nextQuery ? `${pathname}?${nextQuery}` : pathname, { scroll: false });
+  }, [autoRefreshSec, pathname, router, searchParams]);
+
+  const loadDashboard = useCallback(async () => {
     const token = getAuthToken();
     if (!token) {
       setError("Missing session token. Please sign in again.");
@@ -65,6 +100,7 @@ export default function DashboardPage() {
       setSummary(summaryResponse);
       setTimeseries(timeseriesResponse.points);
       setTopConsumers(topConsumersResponse.items);
+      setLastUpdatedAt(new Date().toISOString());
     } catch (err) {
       if (err instanceof ApiClientError) {
         setError(err.payload?.error || err.message);
@@ -74,11 +110,21 @@ export default function DashboardPage() {
     } finally {
       setLoading(false);
     }
-  }
+  }, []);
 
   useEffect(() => {
     void loadDashboard();
-  }, []);
+  }, [loadDashboard]);
+
+  useEffect(() => {
+    if (autoRefreshSec <= 0) {
+      return;
+    }
+    const interval = window.setInterval(() => {
+      void loadDashboard();
+    }, autoRefreshSec * 1000);
+    return () => window.clearInterval(interval);
+  }, [autoRefreshSec, loadDashboard]);
 
   return (
     <PageShell
@@ -86,10 +132,25 @@ export default function DashboardPage() {
       summary="Live platform snapshots for active users, request volume, and error posture over the last 24h."
     >
       <div className="panel-inline">
+        <label>
+          Auto refresh
+          <select
+            value={autoRefreshSec}
+            onChange={(event) => setAutoRefreshSec(Number.parseInt(event.target.value, 10))}
+          >
+            {REFRESH_OPTIONS.map((value) => (
+              <option key={value} value={value}>
+                {value === 0 ? "Off" : `${value}s`}
+              </option>
+            ))}
+          </select>
+        </label>
         <button type="button" onClick={() => void loadDashboard()}>
           Refresh
         </button>
       </div>
+
+      <p className="helper">Last updated: {formatDateTime(lastUpdatedAt)}</p>
 
       {error ? <div className="error">{error}</div> : null}
 
