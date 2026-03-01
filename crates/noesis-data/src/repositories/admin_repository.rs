@@ -125,6 +125,29 @@ pub struct AnalyticsTopConsumerRecord {
     pub avg_duration_ms: f64,
 }
 
+#[derive(Debug, Clone, sqlx::FromRow)]
+pub struct SystemWorkflowSnapshotRecord {
+    pub workflow_id: String,
+    pub request_count: i64,
+    pub failure_count: i64,
+    pub last_seen_at: Option<DateTime<Utc>>,
+}
+
+#[derive(Debug, Clone, sqlx::FromRow)]
+pub struct AuditEventRecord {
+    pub event_id: Uuid,
+    pub occurred_at: DateTime<Utc>,
+    pub actor_user_id: Uuid,
+    pub actor_email: String,
+    pub action: String,
+    pub target_type: String,
+    pub target_id: Option<String>,
+    pub result: String,
+    pub duration_ms: i32,
+    pub engine_id: Option<String>,
+    pub workflow_id: Option<String>,
+}
+
 #[derive(Debug, sqlx::FromRow)]
 struct ExistingApiKeyRecord {
     user_id: Uuid,
@@ -1175,6 +1198,203 @@ impl AdminRepository {
         )
         .bind(window_hours)
         .bind(limit)
+        .fetch_all(&self.pool)
+        .await
+    }
+
+    pub async fn ping(&self) -> Result<bool, Error> {
+        sqlx::query_scalar::<_, i32>("SELECT 1")
+            .fetch_one(&self.pool)
+            .await
+            .map(|_| true)
+    }
+
+    pub async fn system_workflow_snapshots(
+        &self,
+        window_hours: i64,
+    ) -> Result<Vec<SystemWorkflowSnapshotRecord>, Error> {
+        sqlx::query_as::<_, SystemWorkflowSnapshotRecord>(
+            r#"
+            SELECT
+                l.workflow_id,
+                COUNT(*)::BIGINT AS request_count,
+                COUNT(*) FILTER (WHERE l.status != 'success')::BIGINT AS failure_count,
+                MAX(l.created_at) AS last_seen_at
+            FROM usage_logs l
+            WHERE l.workflow_id IS NOT NULL
+              AND l.created_at >= NOW() - ($1 * INTERVAL '1 hour')
+            GROUP BY l.workflow_id
+            ORDER BY request_count DESC, l.workflow_id ASC
+            "#,
+        )
+        .bind(window_hours)
+        .fetch_all(&self.pool)
+        .await
+    }
+
+    pub async fn list_audit_events(
+        &self,
+        actor: Option<&str>,
+        action: Option<&str>,
+        result: Option<&str>,
+        from: Option<DateTime<Utc>>,
+        to: Option<DateTime<Utc>>,
+        limit: i64,
+        offset: i64,
+    ) -> Result<Vec<AuditEventRecord>, Error> {
+        let mut qb: QueryBuilder<Postgres> = QueryBuilder::new(
+            r#"
+            SELECT
+                l.id AS event_id,
+                l.created_at AS occurred_at,
+                l.user_id AS actor_user_id,
+                u.email AS actor_email,
+                CASE
+                    WHEN l.workflow_id IS NOT NULL THEN 'workflow.execute'
+                    WHEN l.engine_id IS NOT NULL THEN 'engine.calculate'
+                    ELSE 'request.execute'
+                END AS action,
+                CASE
+                    WHEN l.workflow_id IS NOT NULL THEN 'workflow'
+                    WHEN l.engine_id IS NOT NULL THEN 'engine'
+                    ELSE 'user'
+                END AS target_type,
+                COALESCE(l.workflow_id, l.engine_id, l.user_id::TEXT) AS target_id,
+                l.status AS result,
+                l.duration_ms,
+                l.engine_id,
+                l.workflow_id
+            FROM usage_logs l
+            INNER JOIN users u ON u.id = l.user_id
+            WHERE 1=1
+            "#,
+        );
+
+        if let Some(actor_filter) = actor.map(str::trim).filter(|value| !value.is_empty()) {
+            let pattern = format!("%{}%", actor_filter);
+            qb.push(" AND (u.email ILIKE ")
+                .push_bind(pattern.clone())
+                .push(" OR l.user_id::TEXT ILIKE ")
+                .push_bind(pattern)
+                .push(")");
+        }
+
+        if let Some(action_filter) = action.map(str::trim).filter(|value| !value.is_empty()) {
+            qb.push(" AND (CASE WHEN l.workflow_id IS NOT NULL THEN 'workflow.execute' WHEN l.engine_id IS NOT NULL THEN 'engine.calculate' ELSE 'request.execute' END = ")
+                .push_bind(action_filter)
+                .push(")");
+        }
+
+        if let Some(result_filter) = result.map(str::trim).filter(|value| !value.is_empty()) {
+            qb.push(" AND l.status = ").push_bind(result_filter);
+        }
+
+        if let Some(from_ts) = from {
+            qb.push(" AND l.created_at >= ").push_bind(from_ts);
+        }
+
+        if let Some(to_ts) = to {
+            qb.push(" AND l.created_at < ").push_bind(to_ts);
+        }
+
+        qb.push(" ORDER BY l.created_at DESC LIMIT ")
+            .push_bind(limit)
+            .push(" OFFSET ")
+            .push_bind(offset);
+
+        qb.build_query_as::<AuditEventRecord>()
+            .fetch_all(&self.pool)
+            .await
+    }
+
+    pub async fn count_audit_events(
+        &self,
+        actor: Option<&str>,
+        action: Option<&str>,
+        result: Option<&str>,
+        from: Option<DateTime<Utc>>,
+        to: Option<DateTime<Utc>>,
+    ) -> Result<i64, Error> {
+        let mut qb: QueryBuilder<Postgres> = QueryBuilder::new(
+            "SELECT COUNT(*)::BIGINT FROM usage_logs l INNER JOIN users u ON u.id = l.user_id WHERE 1=1",
+        );
+
+        if let Some(actor_filter) = actor.map(str::trim).filter(|value| !value.is_empty()) {
+            let pattern = format!("%{}%", actor_filter);
+            qb.push(" AND (u.email ILIKE ")
+                .push_bind(pattern.clone())
+                .push(" OR l.user_id::TEXT ILIKE ")
+                .push_bind(pattern)
+                .push(")");
+        }
+
+        if let Some(action_filter) = action.map(str::trim).filter(|value| !value.is_empty()) {
+            qb.push(" AND (CASE WHEN l.workflow_id IS NOT NULL THEN 'workflow.execute' WHEN l.engine_id IS NOT NULL THEN 'engine.calculate' ELSE 'request.execute' END = ")
+                .push_bind(action_filter)
+                .push(")");
+        }
+
+        if let Some(result_filter) = result.map(str::trim).filter(|value| !value.is_empty()) {
+            qb.push(" AND l.status = ").push_bind(result_filter);
+        }
+
+        if let Some(from_ts) = from {
+            qb.push(" AND l.created_at >= ").push_bind(from_ts);
+        }
+
+        if let Some(to_ts) = to {
+            qb.push(" AND l.created_at < ").push_bind(to_ts);
+        }
+
+        qb.build_query_scalar::<i64>().fetch_one(&self.pool).await
+    }
+
+    pub async fn get_audit_event(&self, event_id: Uuid) -> Result<Option<AuditEventRecord>, Error> {
+        sqlx::query_as::<_, AuditEventRecord>(
+            r#"
+            SELECT
+                l.id AS event_id,
+                l.created_at AS occurred_at,
+                l.user_id AS actor_user_id,
+                u.email AS actor_email,
+                CASE
+                    WHEN l.workflow_id IS NOT NULL THEN 'workflow.execute'
+                    WHEN l.engine_id IS NOT NULL THEN 'engine.calculate'
+                    ELSE 'request.execute'
+                END AS action,
+                CASE
+                    WHEN l.workflow_id IS NOT NULL THEN 'workflow'
+                    WHEN l.engine_id IS NOT NULL THEN 'engine'
+                    ELSE 'user'
+                END AS target_type,
+                COALESCE(l.workflow_id, l.engine_id, l.user_id::TEXT) AS target_id,
+                l.status AS result,
+                l.duration_ms,
+                l.engine_id,
+                l.workflow_id
+            FROM usage_logs l
+            INNER JOIN users u ON u.id = l.user_id
+            WHERE l.id = $1
+            "#,
+        )
+        .bind(event_id)
+        .fetch_optional(&self.pool)
+        .await
+    }
+
+    pub async fn list_audit_actions(&self) -> Result<Vec<String>, Error> {
+        sqlx::query_scalar::<_, String>(
+            r#"
+            SELECT DISTINCT
+                CASE
+                    WHEN workflow_id IS NOT NULL THEN 'workflow.execute'
+                    WHEN engine_id IS NOT NULL THEN 'engine.calculate'
+                    ELSE 'request.execute'
+                END AS action
+            FROM usage_logs
+            ORDER BY action ASC
+            "#,
+        )
         .fetch_all(&self.pool)
         .await
     }

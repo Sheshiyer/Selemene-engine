@@ -178,3 +178,53 @@
   - `cargo check -p noesis-data` ✅
   - `cargo check -p noesis-api` ✅
   - `ADMIN_WEB_URL=https://144.tryambakam.space API_BASE_URL=https://selemene-engine-production.up.railway.app bash scripts/smoke_admin_web.sh` ✅
+
+---
+
+# Task Plan — Admin System/Audit Completion + Post-Deploy Smoke CI
+
+## Checklist
+- [x] Implement backend admin system endpoints: `/api/v1/admin/system/health`, `/services`, `/workflows`, `/cache` with permission gating.
+- [x] Implement backend audit endpoints: `/api/v1/admin/audit-events`, `/api/v1/admin/audit-events/{event_id}`, `/api/v1/admin/audit-events/actions` with filters/pagination.
+- [x] Wire new admin routes + OpenAPI schemas for system/audit responses.
+- [x] Add frontend typed contracts + API client methods for system/audit endpoints.
+- [x] Replace `/admin/system` and `/admin/audit` placeholders with live API-driven views (loading/empty/error states).
+- [x] Add GitHub Actions post-deploy smoke check step using `scripts/smoke_admin_web.sh` with env-driven URLs.
+- [x] Run verification gates (`cargo fmt`, `cargo check -p noesis-data`, `cargo check -p noesis-api`, `npm --prefix apps/admin-web run typecheck`, `npm --prefix apps/admin-web run lint`, smoke script sanity).
+
+## Notes
+- Favor read-only operational visibility and forensic observability without introducing destructive admin actions.
+- Reuse existing `usage_logs` as immutable event substrate for audit MVP.
+- Keep CI smoke workflow env-driven and skip-safe when URLs are not configured.
+
+## Review (fill after execution)
+- Backend admin system + audit API implementation:
+  - Added system endpoints in `crates/noesis-api/src/handlers/admin.rs`:
+    - `GET /api/v1/admin/system/health`
+    - `GET /api/v1/admin/system/services`
+    - `GET /api/v1/admin/system/workflows`
+    - `GET /api/v1/admin/system/cache`
+  - Added audit endpoints:
+    - `GET /api/v1/admin/audit-events`
+    - `GET /api/v1/admin/audit-events/{event_id}`
+    - `GET /api/v1/admin/audit-events/actions`
+  - Added OpenAPI path/component wiring and route registration in `crates/noesis-api/src/lib.rs`.
+- Data layer updates in `crates/noesis-data/src/repositories/admin_repository.rs`:
+  - Added runtime `ping()` for DB service checks.
+  - Added workflow snapshots (`system_workflow_snapshots`) for system workflows view.
+  - Added audit query methods (`list/count/get events`, `list actions`) over immutable `usage_logs` substrate.
+- Frontend wiring in `apps/admin-web`:
+  - Added typed contracts in `src/types/admin.ts` for system/audit payloads.
+  - Added API client methods in `src/lib/api.ts` for all new system/audit endpoints.
+  - Replaced placeholders with live pages:
+    - `app/(protected)/system/page.tsx`
+    - `app/(protected)/audit/page.tsx`
+- CI/CD post-deploy smoke integration:
+  - Updated `.github/workflows/deploy.yaml` with `admin-smoke` job calling `scripts/smoke_admin_web.sh` when `ADMIN_WEB_URL` + `API_BASE_URL` variables are configured.
+- Verification:
+  - `cargo fmt --all` ✅
+  - `cargo check -p noesis-data` ✅
+  - `cargo check -p noesis-api` ✅
+  - `npm --prefix apps/admin-web run typecheck` ✅
+  - `npm --prefix apps/admin-web run lint` ✅
+  - `ADMIN_WEB_URL=https://144.tryambakam.space API_BASE_URL=https://selemene-engine-production.up.railway.app bash scripts/smoke_admin_web.sh` ✅

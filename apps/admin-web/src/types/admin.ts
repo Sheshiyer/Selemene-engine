@@ -197,6 +197,97 @@ export interface AdminAnalyticsTopConsumersResponse {
   items: AdminAnalyticsTopConsumerItem[];
 }
 
+export interface AdminSystemSubsystemStatus {
+  name: string;
+  status: string;
+  detail: string;
+  latency_ms: number | null;
+}
+
+export interface AdminSystemHealthResponse {
+  checked_at: string;
+  overall_status: string;
+  uptime_seconds: number;
+  subsystems: AdminSystemSubsystemStatus[];
+}
+
+export interface AdminSystemServiceItem {
+  id: string;
+  name: string;
+  category: string;
+  status: string;
+  detail: string;
+  latency_ms: number | null;
+  error_rate_pct: number | null;
+  updated_at: string;
+}
+
+export interface AdminSystemServicesResponse {
+  items: AdminSystemServiceItem[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+export interface AdminSystemWorkflowItem {
+  workflow_id: string;
+  name: string;
+  engine_count: number;
+  recent_runs: number;
+  failure_runs: number;
+  last_seen_at: string | null;
+  status: string;
+}
+
+export interface AdminSystemWorkflowsResponse {
+  window_hours: number;
+  items: AdminSystemWorkflowItem[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+export interface AdminSystemCacheResponse {
+  checked_at: string;
+  redis_available: boolean;
+  l1_entries: number;
+  total_requests: number;
+  l1_hits: number;
+  l2_hits: number;
+  l3_hits: number;
+  cache_misses: number;
+  hit_rate_pct: number;
+}
+
+export interface AdminAuditEventItem {
+  event_id: string;
+  request_id: string;
+  occurred_at: string;
+  actor_user_id: string;
+  actor_email: string;
+  action: string;
+  target_type: string;
+  target_id: string | null;
+  result: string;
+  duration_ms: number;
+  metadata: Record<string, unknown>;
+}
+
+export interface AdminAuditEventsResponse {
+  items: AdminAuditEventItem[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+export interface AdminAuditEventDetailResponse {
+  event: AdminAuditEventItem;
+}
+
+export interface AdminAuditActionsResponse {
+  actions: string[];
+}
+
 export interface ApiErrorPayload {
   error: string;
   error_code: string;

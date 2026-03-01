@@ -8,11 +8,15 @@ use chrono::{DateTime, Duration, Utc};
 use noesis_auth::{sha256_hex, ApiKey, AuthUser};
 use noesis_core::EngineError;
 use noesis_data::repositories::admin_repository::{
-    AdminApiKeyRecord, AdminRepository, AdminUserRecord,
+    AdminApiKeyRecord, AdminRepository, AdminUserRecord, AuditEventRecord,
+    SystemWorkflowSnapshotRecord,
 };
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
-use std::collections::BTreeSet;
+use std::{
+    collections::{BTreeSet, HashMap},
+    time::Instant,
+};
 use utoipa::ToSchema;
 use uuid::Uuid;
 
@@ -258,6 +262,108 @@ pub struct AdminAnalyticsTopConsumerItem {
     pub avg_duration_ms: f64,
 }
 
+#[derive(Serialize, ToSchema)]
+pub struct AdminSystemHealthResponse {
+    pub checked_at: DateTime<Utc>,
+    pub overall_status: String,
+    pub uptime_seconds: u64,
+    pub subsystems: Vec<AdminSystemSubsystemStatus>,
+}
+
+#[derive(Serialize, ToSchema)]
+pub struct AdminSystemSubsystemStatus {
+    pub name: String,
+    pub status: String,
+    pub detail: String,
+    pub latency_ms: Option<f64>,
+}
+
+#[derive(Serialize, ToSchema)]
+pub struct AdminSystemServicesResponse {
+    pub items: Vec<AdminSystemServiceItem>,
+    pub total: i64,
+    pub limit: i64,
+    pub offset: i64,
+}
+
+#[derive(Clone, Serialize, ToSchema)]
+pub struct AdminSystemServiceItem {
+    pub id: String,
+    pub name: String,
+    pub category: String,
+    pub status: String,
+    pub detail: String,
+    pub latency_ms: Option<f64>,
+    pub error_rate_pct: Option<f64>,
+    pub updated_at: DateTime<Utc>,
+}
+
+#[derive(Serialize, ToSchema)]
+pub struct AdminSystemWorkflowsResponse {
+    pub window_hours: i64,
+    pub items: Vec<AdminSystemWorkflowItem>,
+    pub total: i64,
+    pub limit: i64,
+    pub offset: i64,
+}
+
+#[derive(Clone, Serialize, ToSchema)]
+pub struct AdminSystemWorkflowItem {
+    pub workflow_id: String,
+    pub name: String,
+    pub engine_count: i32,
+    pub recent_runs: i64,
+    pub failure_runs: i64,
+    pub last_seen_at: Option<DateTime<Utc>>,
+    pub status: String,
+}
+
+#[derive(Serialize, ToSchema)]
+pub struct AdminSystemCacheResponse {
+    pub checked_at: DateTime<Utc>,
+    pub redis_available: bool,
+    pub l1_entries: i32,
+    pub total_requests: i64,
+    pub l1_hits: i64,
+    pub l2_hits: i64,
+    pub l3_hits: i64,
+    pub cache_misses: i64,
+    pub hit_rate_pct: f64,
+}
+
+#[derive(Serialize, ToSchema)]
+pub struct AdminAuditEventsResponse {
+    pub items: Vec<AdminAuditEventItem>,
+    pub total: i64,
+    pub limit: i64,
+    pub offset: i64,
+}
+
+#[derive(Serialize, ToSchema)]
+pub struct AdminAuditEventItem {
+    pub event_id: String,
+    pub request_id: String,
+    pub occurred_at: DateTime<Utc>,
+    pub actor_user_id: String,
+    pub actor_email: String,
+    pub action: String,
+    pub target_type: String,
+    pub target_id: Option<String>,
+    pub result: String,
+    pub duration_ms: i32,
+    pub metadata: Value,
+}
+
+#[derive(Serialize, ToSchema)]
+pub struct AdminAuditEventDetailResponse {
+    pub event: AdminAuditEventItem,
+}
+
+#[derive(Serialize, ToSchema)]
+pub struct AdminAuditActionsResponse {
+    pub actions: Vec<String>,
+}
+
 #[derive(Deserialize, Default)]
 pub struct ListUsersQuery {
     pub query: Option<String>,
@@ -294,6 +400,30 @@ pub struct AnalyticsQuery {
     pub window_hours: Option<i64>,
     pub bucket: Option<String>,
     pub limit: Option<i64>,
+}
+
+#[derive(Deserialize, Default)]
+pub struct SystemServicesQuery {
+    pub limit: Option<i64>,
+    pub offset: Option<i64>,
+}
+
+#[derive(Deserialize, Default)]
+pub struct SystemWorkflowsQuery {
+    pub window_hours: Option<i64>,
+    pub limit: Option<i64>,
+    pub offset: Option<i64>,
+}
+
+#[derive(Deserialize, Default)]
+pub struct AuditEventsQuery {
+    pub actor: Option<String>,
+    pub action: Option<String>,
+    pub result: Option<String>,
+    pub from: Option<DateTime<Utc>>,
+    pub to: Option<DateTime<Utc>>,
+    pub limit: Option<i64>,
+    pub offset: Option<i64>,
 }
 
 fn has_permission(permissions: &[String], required: &str) -> bool {
@@ -605,6 +735,152 @@ fn map_api_key_record(record: AdminApiKeyRecord) -> AdminApiKeyItem {
         expires_at: record.expires_at,
         last_used: record.last_used,
         is_active: record.is_active,
+    }
+}
+
+fn map_audit_event_record(record: AuditEventRecord) -> AdminAuditEventItem {
+    AdminAuditEventItem {
+        event_id: record.event_id.to_string(),
+        request_id: record.event_id.to_string(),
+        occurred_at: record.occurred_at,
+        actor_user_id: record.actor_user_id.to_string(),
+        actor_email: record.actor_email,
+        action: record.action,
+        target_type: record.target_type,
+        target_id: record.target_id,
+        result: record.result,
+        duration_ms: record.duration_ms,
+        metadata: serde_json::json!({
+            "engine_id": record.engine_id,
+            "workflow_id": record.workflow_id,
+        }),
+    }
+}
+
+#[derive(Clone)]
+struct RuntimeProbe {
+    status: String,
+    detail: String,
+    latency_ms: Option<f64>,
+}
+
+struct SystemRuntimeSnapshot {
+    checked_at: DateTime<Utc>,
+    api: RuntimeProbe,
+    database: RuntimeProbe,
+    cache: RuntimeProbe,
+    orchestrator: RuntimeProbe,
+    error_rate_pct: Option<f64>,
+}
+
+fn status_priority(status: &str) -> i32 {
+    match status {
+        "unavailable" => 3,
+        "degraded" => 2,
+        _ => 1,
+    }
+}
+
+fn summarize_overall_status(statuses: &[String]) -> String {
+    if statuses.iter().any(|status| status == "unavailable") {
+        "unavailable".to_string()
+    } else if statuses.iter().any(|status| status == "degraded") {
+        "degraded".to_string()
+    } else {
+        "healthy".to_string()
+    }
+}
+
+async fn collect_system_runtime_snapshot(state: &AppState) -> SystemRuntimeSnapshot {
+    let checked_at = Utc::now();
+
+    let api = RuntimeProbe {
+        status: "healthy".to_string(),
+        detail: "API process reachable".to_string(),
+        latency_ms: Some(0.0),
+    };
+
+    let database = if let Some(repo) = state.admin_repository.as_ref() {
+        let started = Instant::now();
+        match repo.ping().await {
+            Ok(true) => RuntimeProbe {
+                status: "healthy".to_string(),
+                detail: "Database responded to ping".to_string(),
+                latency_ms: Some(started.elapsed().as_secs_f64() * 1000.0),
+            },
+            Ok(false) => RuntimeProbe {
+                status: "degraded".to_string(),
+                detail: "Database ping returned unexpected response".to_string(),
+                latency_ms: Some(started.elapsed().as_secs_f64() * 1000.0),
+            },
+            Err(err) => RuntimeProbe {
+                status: "unavailable".to_string(),
+                detail: format!("Database ping failed: {err}"),
+                latency_ms: Some(started.elapsed().as_secs_f64() * 1000.0),
+            },
+        }
+    } else {
+        RuntimeProbe {
+            status: "unavailable".to_string(),
+            detail: "Admin repository not configured".to_string(),
+            latency_ms: None,
+        }
+    };
+
+    let cache_started = Instant::now();
+    let cache = match state.cache.health_check().await {
+        Ok(true) => RuntimeProbe {
+            status: "healthy".to_string(),
+            detail: "Redis cache available".to_string(),
+            latency_ms: Some(cache_started.elapsed().as_secs_f64() * 1000.0),
+        },
+        Ok(false) => RuntimeProbe {
+            status: "degraded".to_string(),
+            detail: "Redis cache unavailable".to_string(),
+            latency_ms: Some(cache_started.elapsed().as_secs_f64() * 1000.0),
+        },
+        Err(err) => RuntimeProbe {
+            status: "unavailable".to_string(),
+            detail: format!("Cache health check failed: {err}"),
+            latency_ms: Some(cache_started.elapsed().as_secs_f64() * 1000.0),
+        },
+    };
+
+    let orchestrator_started = Instant::now();
+    let orchestrator = match state.orchestrator.is_ready().await {
+        Ok(true) => RuntimeProbe {
+            status: "healthy".to_string(),
+            detail: "Workflow orchestrator ready".to_string(),
+            latency_ms: Some(orchestrator_started.elapsed().as_secs_f64() * 1000.0),
+        },
+        Ok(false) => RuntimeProbe {
+            status: "degraded".to_string(),
+            detail: "Workflow orchestrator not ready".to_string(),
+            latency_ms: Some(orchestrator_started.elapsed().as_secs_f64() * 1000.0),
+        },
+        Err(err) => RuntimeProbe {
+            status: "unavailable".to_string(),
+            detail: format!("Workflow orchestrator check failed: {err}"),
+            latency_ms: Some(orchestrator_started.elapsed().as_secs_f64() * 1000.0),
+        },
+    };
+
+    let error_rate_pct = if let Some(repo) = state.admin_repository.as_ref() {
+        repo.analytics_summary(24)
+            .await
+            .map(|summary| summary.error_rate_pct)
+            .ok()
+    } else {
+        None
+    };
+
+    SystemRuntimeSnapshot {
+        checked_at,
+        api,
+        database,
+        cache,
+        orchestrator,
+        error_rate_pct,
     }
 }
 
@@ -1812,6 +2088,533 @@ pub async fn analytics_top_consumers(
         }),
     )
         .into_response())
+}
+
+/// GET /api/v1/admin/system/health -- runtime health view for core subsystems
+#[utoipa::path(
+    get,
+    path = "/api/v1/admin/system/health",
+    tag = "admin",
+    responses(
+        (status = 200, description = "System health snapshot", body = AdminSystemHealthResponse),
+        (status = 403, description = "Forbidden", body = crate::ErrorResponse),
+    ),
+    security(("bearer_auth" = []), ("api_key" = []))
+)]
+pub async fn system_health(
+    State(state): State<AppState>,
+    Extension(auth_user): Extension<AuthUser>,
+) -> Result<Response, ApiError> {
+    let effective_permissions = effective_permissions(&state, &auth_user).await?;
+    if let Some(resp) = require_permission_or_forbidden(&effective_permissions, "admin:system:read")
+    {
+        return Ok(resp);
+    }
+
+    let snapshot = collect_system_runtime_snapshot(&state).await;
+    let subsystem_items = vec![
+        AdminSystemSubsystemStatus {
+            name: "api".to_string(),
+            status: snapshot.api.status.clone(),
+            detail: snapshot.api.detail,
+            latency_ms: snapshot.api.latency_ms,
+        },
+        AdminSystemSubsystemStatus {
+            name: "database".to_string(),
+            status: snapshot.database.status.clone(),
+            detail: snapshot.database.detail,
+            latency_ms: snapshot.database.latency_ms,
+        },
+        AdminSystemSubsystemStatus {
+            name: "cache".to_string(),
+            status: snapshot.cache.status.clone(),
+            detail: snapshot.cache.detail,
+            latency_ms: snapshot.cache.latency_ms,
+        },
+        AdminSystemSubsystemStatus {
+            name: "orchestrator".to_string(),
+            status: snapshot.orchestrator.status.clone(),
+            detail: snapshot.orchestrator.detail,
+            latency_ms: snapshot.orchestrator.latency_ms,
+        },
+    ];
+
+    let overall_status = summarize_overall_status(
+        &subsystem_items
+            .iter()
+            .map(|item| item.status.clone())
+            .collect::<Vec<_>>(),
+    );
+
+    Ok((
+        StatusCode::OK,
+        Json(AdminSystemHealthResponse {
+            checked_at: snapshot.checked_at,
+            overall_status,
+            uptime_seconds: state.startup_time.elapsed().as_secs(),
+            subsystems: subsystem_items,
+        }),
+    )
+        .into_response())
+}
+
+/// GET /api/v1/admin/system/services -- service-level operational statuses
+#[utoipa::path(
+    get,
+    path = "/api/v1/admin/system/services",
+    tag = "admin",
+    params(
+        ("limit" = Option<i64>, Query, description = "Pagination limit"),
+        ("offset" = Option<i64>, Query, description = "Pagination offset"),
+    ),
+    responses(
+        (status = 200, description = "System services snapshot", body = AdminSystemServicesResponse),
+        (status = 403, description = "Forbidden", body = crate::ErrorResponse),
+    ),
+    security(("bearer_auth" = []), ("api_key" = []))
+)]
+pub async fn system_services(
+    State(state): State<AppState>,
+    Extension(auth_user): Extension<AuthUser>,
+    Query(query): Query<SystemServicesQuery>,
+) -> Result<Response, ApiError> {
+    let effective_permissions = effective_permissions(&state, &auth_user).await?;
+    if let Some(resp) = require_permission_or_forbidden(&effective_permissions, "admin:system:read")
+    {
+        return Ok(resp);
+    }
+
+    let snapshot = collect_system_runtime_snapshot(&state).await;
+    let (limit, offset) = normalize_limit_offset(query.limit, query.offset, 25, 200);
+
+    let mut services = vec![
+        AdminSystemServiceItem {
+            id: "api".to_string(),
+            name: "Noesis API".to_string(),
+            category: "application".to_string(),
+            status: snapshot.api.status,
+            detail: snapshot.api.detail,
+            latency_ms: snapshot.api.latency_ms,
+            error_rate_pct: snapshot.error_rate_pct,
+            updated_at: snapshot.checked_at,
+        },
+        AdminSystemServiceItem {
+            id: "database".to_string(),
+            name: "PostgreSQL".to_string(),
+            category: "database".to_string(),
+            status: snapshot.database.status,
+            detail: snapshot.database.detail,
+            latency_ms: snapshot.database.latency_ms,
+            error_rate_pct: None,
+            updated_at: snapshot.checked_at,
+        },
+        AdminSystemServiceItem {
+            id: "cache".to_string(),
+            name: "Redis Cache".to_string(),
+            category: "cache".to_string(),
+            status: snapshot.cache.status,
+            detail: snapshot.cache.detail,
+            latency_ms: snapshot.cache.latency_ms,
+            error_rate_pct: None,
+            updated_at: snapshot.checked_at,
+        },
+        AdminSystemServiceItem {
+            id: "orchestrator".to_string(),
+            name: "Workflow Orchestrator".to_string(),
+            category: "compute".to_string(),
+            status: snapshot.orchestrator.status,
+            detail: snapshot.orchestrator.detail,
+            latency_ms: snapshot.orchestrator.latency_ms,
+            error_rate_pct: None,
+            updated_at: snapshot.checked_at,
+        },
+    ];
+
+    services.sort_by(|a, b| {
+        status_priority(&b.status)
+            .cmp(&status_priority(&a.status))
+            .then_with(|| a.name.cmp(&b.name))
+    });
+
+    let total = services.len() as i64;
+    let start = offset as usize;
+    let end = (offset + limit) as usize;
+    let items = if start >= services.len() {
+        Vec::new()
+    } else {
+        services[start..services.len().min(end)].to_vec()
+    };
+
+    Ok((
+        StatusCode::OK,
+        Json(AdminSystemServicesResponse {
+            items,
+            total,
+            limit,
+            offset,
+        }),
+    )
+        .into_response())
+}
+
+/// GET /api/v1/admin/system/workflows -- workflow runtime snapshots
+#[utoipa::path(
+    get,
+    path = "/api/v1/admin/system/workflows",
+    tag = "admin",
+    params(
+        ("window_hours" = Option<i64>, Query, description = "Lookback window in hours"),
+        ("limit" = Option<i64>, Query, description = "Pagination limit"),
+        ("offset" = Option<i64>, Query, description = "Pagination offset"),
+    ),
+    responses(
+        (status = 200, description = "Workflow runtime snapshots", body = AdminSystemWorkflowsResponse),
+        (status = 403, description = "Forbidden", body = crate::ErrorResponse),
+        (status = 503, description = "Database unavailable", body = crate::ErrorResponse),
+    ),
+    security(("bearer_auth" = []), ("api_key" = []))
+)]
+pub async fn system_workflows(
+    State(state): State<AppState>,
+    Extension(auth_user): Extension<AuthUser>,
+    Query(query): Query<SystemWorkflowsQuery>,
+) -> Result<Response, ApiError> {
+    let effective_permissions = effective_permissions(&state, &auth_user).await?;
+    if let Some(resp) = require_permission_or_forbidden(&effective_permissions, "admin:system:read")
+    {
+        return Ok(resp);
+    }
+
+    let repo = match admin_repo_or_503(&state) {
+        Ok(repo) => repo,
+        Err(resp) => return Ok(resp),
+    };
+
+    let window_hours = query.window_hours.unwrap_or(24).clamp(1, 24 * 30);
+    let (limit, offset) = normalize_limit_offset(query.limit, query.offset, 25, 200);
+
+    let snapshots = repo
+        .system_workflow_snapshots(window_hours)
+        .await
+        .map_err(|e| {
+            EngineError::InternalError(format!("Failed to fetch workflow snapshots: {e}"))
+        })?;
+
+    let snapshot_by_workflow: HashMap<String, SystemWorkflowSnapshotRecord> = snapshots
+        .iter()
+        .map(|snapshot| (snapshot.workflow_id.clone(), snapshot.clone()))
+        .collect();
+
+    let mut workflow_items = state
+        .orchestrator
+        .list_workflows()
+        .iter()
+        .map(|workflow| {
+            let usage = snapshot_by_workflow.get(&workflow.id);
+            let recent_runs = usage.map(|entry| entry.request_count).unwrap_or(0);
+            let failure_runs = usage.map(|entry| entry.failure_count).unwrap_or(0);
+            let status = if recent_runs == 0 {
+                "idle".to_string()
+            } else if failure_runs * 100 >= recent_runs * 20 {
+                "degraded".to_string()
+            } else {
+                "healthy".to_string()
+            };
+
+            AdminSystemWorkflowItem {
+                workflow_id: workflow.id.clone(),
+                name: workflow.name.clone(),
+                engine_count: workflow.engine_ids.len() as i32,
+                recent_runs,
+                failure_runs,
+                last_seen_at: usage.and_then(|entry| entry.last_seen_at),
+                status,
+            }
+        })
+        .collect::<Vec<_>>();
+
+    let known_workflows = workflow_items
+        .iter()
+        .map(|item| item.workflow_id.clone())
+        .collect::<BTreeSet<_>>();
+
+    for snapshot in snapshots {
+        if known_workflows.contains(&snapshot.workflow_id) {
+            continue;
+        }
+
+        let status = if snapshot.request_count == 0 {
+            "idle".to_string()
+        } else if snapshot.failure_count * 100 >= snapshot.request_count * 20 {
+            "degraded".to_string()
+        } else {
+            "healthy".to_string()
+        };
+
+        workflow_items.push(AdminSystemWorkflowItem {
+            workflow_id: snapshot.workflow_id.clone(),
+            name: format!("{} (legacy)", snapshot.workflow_id),
+            engine_count: 0,
+            recent_runs: snapshot.request_count,
+            failure_runs: snapshot.failure_count,
+            last_seen_at: snapshot.last_seen_at,
+            status,
+        });
+    }
+
+    workflow_items.sort_by(|a, b| {
+        b.recent_runs
+            .cmp(&a.recent_runs)
+            .then_with(|| b.last_seen_at.cmp(&a.last_seen_at))
+            .then_with(|| a.workflow_id.cmp(&b.workflow_id))
+    });
+
+    let total = workflow_items.len() as i64;
+    let start = offset as usize;
+    let end = (offset + limit) as usize;
+    let items = if start >= workflow_items.len() {
+        Vec::new()
+    } else {
+        workflow_items[start..workflow_items.len().min(end)].to_vec()
+    };
+
+    Ok((
+        StatusCode::OK,
+        Json(AdminSystemWorkflowsResponse {
+            window_hours,
+            items,
+            total,
+            limit,
+            offset,
+        }),
+    )
+        .into_response())
+}
+
+/// GET /api/v1/admin/system/cache -- cache hit/miss and availability metrics
+#[utoipa::path(
+    get,
+    path = "/api/v1/admin/system/cache",
+    tag = "admin",
+    responses(
+        (status = 200, description = "Cache snapshot", body = AdminSystemCacheResponse),
+        (status = 403, description = "Forbidden", body = crate::ErrorResponse),
+    ),
+    security(("bearer_auth" = []), ("api_key" = []))
+)]
+pub async fn system_cache(
+    State(state): State<AppState>,
+    Extension(auth_user): Extension<AuthUser>,
+) -> Result<Response, ApiError> {
+    let effective_permissions = effective_permissions(&state, &auth_user).await?;
+    if let Some(resp) = require_permission_or_forbidden(&effective_permissions, "admin:system:read")
+    {
+        return Ok(resp);
+    }
+
+    let cache_stats = state.cache.get_stats().await;
+    let redis_available = state.cache.health_check().await.unwrap_or(false);
+
+    Ok((
+        StatusCode::OK,
+        Json(AdminSystemCacheResponse {
+            checked_at: Utc::now(),
+            redis_available,
+            l1_entries: state.cache.l1_entry_count() as i32,
+            total_requests: cache_stats.total_requests as i64,
+            l1_hits: cache_stats.l1_hits as i64,
+            l2_hits: cache_stats.l2_hits as i64,
+            l3_hits: cache_stats.l3_hits as i64,
+            cache_misses: cache_stats.cache_misses as i64,
+            hit_rate_pct: (cache_stats.hit_rate() * 100.0 * 100.0).round() / 100.0,
+        }),
+    )
+        .into_response())
+}
+
+/// GET /api/v1/admin/audit-events -- immutable usage/audit stream
+#[utoipa::path(
+    get,
+    path = "/api/v1/admin/audit-events",
+    tag = "admin",
+    params(
+        ("actor" = Option<String>, Query, description = "Filter by actor email or UUID"),
+        ("action" = Option<String>, Query, description = "Filter by action name"),
+        ("result" = Option<String>, Query, description = "Filter by result status"),
+        ("from" = Option<String>, Query, description = "ISO start timestamp"),
+        ("to" = Option<String>, Query, description = "ISO end timestamp"),
+        ("limit" = Option<i64>, Query, description = "Pagination limit"),
+        ("offset" = Option<i64>, Query, description = "Pagination offset"),
+    ),
+    responses(
+        (status = 200, description = "Audit events", body = AdminAuditEventsResponse),
+        (status = 403, description = "Forbidden", body = crate::ErrorResponse),
+        (status = 503, description = "Database unavailable", body = crate::ErrorResponse),
+    ),
+    security(("bearer_auth" = []), ("api_key" = []))
+)]
+pub async fn list_audit_events(
+    State(state): State<AppState>,
+    Extension(auth_user): Extension<AuthUser>,
+    Query(query): Query<AuditEventsQuery>,
+) -> Result<Response, ApiError> {
+    let effective_permissions = effective_permissions(&state, &auth_user).await?;
+    if let Some(resp) = require_permission_or_forbidden(&effective_permissions, "admin:audit:list")
+    {
+        return Ok(resp);
+    }
+
+    let repo = match admin_repo_or_503(&state) {
+        Ok(repo) => repo,
+        Err(resp) => return Ok(resp),
+    };
+
+    let (limit, offset) = normalize_limit_offset(query.limit, query.offset, 50, 200);
+
+    let action_filter = query
+        .action
+        .as_deref()
+        .map(|action| action.trim().to_ascii_lowercase())
+        .filter(|value| !value.is_empty());
+
+    let result_filter = query
+        .result
+        .as_deref()
+        .map(|result| result.trim().to_ascii_lowercase())
+        .filter(|value| !value.is_empty());
+
+    let events = repo
+        .list_audit_events(
+            query.actor.as_deref(),
+            action_filter.as_deref(),
+            result_filter.as_deref(),
+            query.from,
+            query.to,
+            limit,
+            offset,
+        )
+        .await
+        .map_err(|e| EngineError::InternalError(format!("Failed to list audit events: {e}")))?
+        .into_iter()
+        .map(map_audit_event_record)
+        .collect::<Vec<_>>();
+
+    let total = repo
+        .count_audit_events(
+            query.actor.as_deref(),
+            action_filter.as_deref(),
+            result_filter.as_deref(),
+            query.from,
+            query.to,
+        )
+        .await
+        .map_err(|e| EngineError::InternalError(format!("Failed to count audit events: {e}")))?;
+
+    Ok((
+        StatusCode::OK,
+        Json(AdminAuditEventsResponse {
+            items: events,
+            total,
+            limit,
+            offset,
+        }),
+    )
+        .into_response())
+}
+
+/// GET /api/v1/admin/audit-events/{event_id} -- single audit event detail
+#[utoipa::path(
+    get,
+    path = "/api/v1/admin/audit-events/{event_id}",
+    tag = "admin",
+    params(("event_id" = String, Path, description = "Audit event UUID")),
+    responses(
+        (status = 200, description = "Audit event detail", body = AdminAuditEventDetailResponse),
+        (status = 403, description = "Forbidden", body = crate::ErrorResponse),
+        (status = 404, description = "Event not found", body = crate::ErrorResponse),
+        (status = 422, description = "Validation error", body = crate::ErrorResponse),
+        (status = 503, description = "Database unavailable", body = crate::ErrorResponse),
+    ),
+    security(("bearer_auth" = []), ("api_key" = []))
+)]
+pub async fn get_audit_event(
+    State(state): State<AppState>,
+    Extension(auth_user): Extension<AuthUser>,
+    Path(event_id): Path<String>,
+) -> Result<Response, ApiError> {
+    let effective_permissions = effective_permissions(&state, &auth_user).await?;
+    let can_read = has_permission(&effective_permissions, "admin:audit:read")
+        || has_permission(&effective_permissions, "admin:audit:list");
+    if !can_read {
+        return Ok(forbidden_response("admin:audit:read"));
+    }
+
+    let repo = match admin_repo_or_503(&state) {
+        Ok(repo) => repo,
+        Err(resp) => return Ok(resp),
+    };
+
+    let event_uuid = match parse_uuid_or_422(&event_id, "event_id") {
+        Ok(id) => id,
+        Err(resp) => return Ok(resp),
+    };
+
+    let event = repo
+        .get_audit_event(event_uuid)
+        .await
+        .map_err(|e| EngineError::InternalError(format!("Failed to fetch audit event: {e}")))?;
+
+    let Some(event) = event else {
+        return Ok(json_error_response(
+            StatusCode::NOT_FOUND,
+            "Audit event not found",
+            "NOT_FOUND",
+            Some(serde_json::json!({ "event_id": event_id })),
+        ));
+    };
+
+    Ok((
+        StatusCode::OK,
+        Json(AdminAuditEventDetailResponse {
+            event: map_audit_event_record(event),
+        }),
+    )
+        .into_response())
+}
+
+/// GET /api/v1/admin/audit-events/actions -- distinct action names for filter autocomplete
+#[utoipa::path(
+    get,
+    path = "/api/v1/admin/audit-events/actions",
+    tag = "admin",
+    responses(
+        (status = 200, description = "Audit action values", body = AdminAuditActionsResponse),
+        (status = 403, description = "Forbidden", body = crate::ErrorResponse),
+        (status = 503, description = "Database unavailable", body = crate::ErrorResponse),
+    ),
+    security(("bearer_auth" = []), ("api_key" = []))
+)]
+pub async fn list_audit_actions(
+    State(state): State<AppState>,
+    Extension(auth_user): Extension<AuthUser>,
+) -> Result<Response, ApiError> {
+    let effective_permissions = effective_permissions(&state, &auth_user).await?;
+    if let Some(resp) = require_permission_or_forbidden(&effective_permissions, "admin:audit:list")
+    {
+        return Ok(resp);
+    }
+
+    let repo = match admin_repo_or_503(&state) {
+        Ok(repo) => repo,
+        Err(resp) => return Ok(resp),
+    };
+
+    let actions = repo
+        .list_audit_actions()
+        .await
+        .map_err(|e| EngineError::InternalError(format!("Failed to list audit actions: {e}")))?;
+
+    Ok((StatusCode::OK, Json(AdminAuditActionsResponse { actions })).into_response())
 }
 
 #[cfg(test)]

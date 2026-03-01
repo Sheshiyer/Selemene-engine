@@ -5,10 +5,17 @@ import type {
   AdminAnalyticsTimeseriesResponse,
   AdminAnalyticsTopConsumersResponse,
   AdminApiKeysResponse,
+  AdminAuditActionsResponse,
+  AdminAuditEventDetailResponse,
+  AdminAuditEventsResponse,
   AdminHistorySyncDevicesResponse,
   AdminHistorySyncEventsResponse,
   AdminHistorySyncUsersResponse,
   AdminSession,
+  AdminSystemCacheResponse,
+  AdminSystemHealthResponse,
+  AdminSystemServicesResponse,
+  AdminSystemWorkflowsResponse,
   AdminUsersResponse,
   ApiErrorPayload,
   CreateApiKeyResponse,
@@ -368,6 +375,78 @@ export async function getAnalyticsTopConsumers(
     })}`,
     { token }
   );
+}
+
+export async function getSystemHealth(token: string): Promise<AdminSystemHealthResponse> {
+  return request<AdminSystemHealthResponse>("/api/v1/admin/system/health", { token });
+}
+
+export async function getSystemServices(
+  token: string,
+  params: { limit?: number; offset?: number } = {}
+): Promise<AdminSystemServicesResponse> {
+  return request<AdminSystemServicesResponse>(
+    `/api/v1/admin/system/services${buildQuery({
+      limit: params.limit,
+      offset: params.offset
+    })}`,
+    { token }
+  );
+}
+
+export async function getSystemWorkflows(
+  token: string,
+  params: { window_hours?: number; limit?: number; offset?: number } = {}
+): Promise<AdminSystemWorkflowsResponse> {
+  return request<AdminSystemWorkflowsResponse>(
+    `/api/v1/admin/system/workflows${buildQuery({
+      window_hours: params.window_hours,
+      limit: params.limit,
+      offset: params.offset
+    })}`,
+    { token }
+  );
+}
+
+export async function getSystemCache(token: string): Promise<AdminSystemCacheResponse> {
+  return request<AdminSystemCacheResponse>("/api/v1/admin/system/cache", { token });
+}
+
+export async function getAuditEvents(
+  token: string,
+  params: {
+    actor?: string;
+    action?: string;
+    result?: string;
+    from?: string;
+    to?: string;
+    limit?: number;
+    offset?: number;
+  } = {}
+): Promise<AdminAuditEventsResponse> {
+  return request<AdminAuditEventsResponse>(
+    `/api/v1/admin/audit-events${buildQuery({
+      actor: params.actor,
+      action: params.action,
+      result: params.result,
+      from: params.from,
+      to: params.to,
+      limit: params.limit,
+      offset: params.offset
+    })}`,
+    { token }
+  );
+}
+
+export async function getAuditEvent(
+  token: string,
+  eventId: string
+): Promise<AdminAuditEventDetailResponse> {
+  return request<AdminAuditEventDetailResponse>(`/api/v1/admin/audit-events/${eventId}`, { token });
+}
+
+export async function getAuditActions(token: string): Promise<AdminAuditActionsResponse> {
+  return request<AdminAuditActionsResponse>("/api/v1/admin/audit-events/actions", { token });
 }
 
 export { ApiClientError };
