@@ -227,4 +227,6 @@
   - `cargo check -p noesis-api` ✅
   - `npm --prefix apps/admin-web run typecheck` ✅
   - `npm --prefix apps/admin-web run lint` ✅
+  - `npm --prefix apps/admin-web run build` ✅
   - `ADMIN_WEB_URL=https://144.tryambakam.space API_BASE_URL=https://selemene-engine-production.up.railway.app bash scripts/smoke_admin_web.sh` ✅
+- Live production status (pre-deploy check): newly added endpoints currently return `404` on Railway and require backend deployment of this branch before UI pages can consume them.
