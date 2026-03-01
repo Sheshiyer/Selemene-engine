@@ -278,3 +278,10 @@
   - `npm --prefix apps/admin-web run lint` ✅
   - `npm --prefix apps/admin-web run build` ✅
   - `ADMIN_WEB_URL=https://144.tryambakam.space API_BASE_URL=https://selemene-engine-production.up.railway.app bash scripts/smoke_admin_web.sh` ✅
+- Deployment verification pass:
+  - `https://144.tryambakam.space/admin/*` routes return expected 200/307 ✅
+  - Railway `health/live` and existing admin session/api-keys routes return expected 200/401 ✅
+  - Newly added `/api/v1/admin/system/*` and `/api/v1/admin/audit-events*` still return 404 in production (pending branch merge/deploy) ⚠️
+- Issue lifecycle updates:
+  - Closed as completed: `#482`, `#483`, `#484`, `#485`.
+  - Kept umbrella `#486` open pending merge/deploy confirmation.
