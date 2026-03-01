@@ -99,6 +99,26 @@ Workflow output contract:
 - `engine_outputs` contains successful engine results only.
 - For strict completeness checks, compare `engine_outputs` keys to `GET /api/v1/workflows/{workflow_id}/info.engine_ids`.
 
+### Admin
+
+- `GET /api/v1/admin/session`
+- `GET /api/v1/admin/users`
+- `PATCH /api/v1/admin/users/{user_id}/state`
+- `PATCH /api/v1/admin/users/{user_id}/tier`
+- `PUT /api/v1/admin/users/{user_id}/roles`
+- `GET /api/v1/admin/api-keys`
+- `POST /api/v1/admin/api-keys`
+- `POST /api/v1/admin/api-keys/{key_id}/revoke`
+- `POST /api/v1/admin/api-keys/{key_id}/rotate`
+
+Admin routes are permission-gated. Typical requirements include:
+- `admin:users:list` for user listing
+- `admin:keys:list` for key listing
+- `admin:system:read` for system views
+- `admin:audit:list` for audit views
+
+Use `GET /api/v1/admin/session` to verify the effective permission set for the authenticated user.
+
 ### User Profile
 
 - `GET /api/v1/users/me`

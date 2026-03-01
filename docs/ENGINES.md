@@ -21,8 +21,6 @@ High-performance native calculation engines built in Rust with sub-millisecond p
 
 For a body-paced narrative companion to these timing and pattern systems, see [Somatic Canticles](https://1319.tryambakam.space).
 
-![Rust engine families](assets/images/engines/5D-1-vedic-engine-icons-recraft-v2.png)
-
 <br>
 
 ## 1. Panchanga Engine
@@ -38,8 +36,6 @@ Foundation for all Vedic timing calculations.
 
 ## 2. Human Design Engine
 
-![Human Design poster](assets/images/engines/9A-04-human-design-poster-v1.png)
-
 **Complete bodygraph** — Type, Strategy, Authority, 9 Centers, 26 Gates, Profile, Definition.
 
 **Input:** `date, time, lat/lng`  
@@ -51,8 +47,6 @@ Synthesizes I Ching, Kabbalah, Chakras, and Astrology.
 
 ## 3. Gene Keys Engine
 
-![Gene Keys poster](assets/images/engines/9A-05-gene-keys-poster-v1.png)
-
 **64 Keys** — Shadow → Gift → Siddhi progression across 4 sequences (Activation, Venus, Pearl, Life's Work).
 
 **Input:** `date, time, lat/lng`  
@@ -63,8 +57,6 @@ Maps consciousness evolution through 64 genetic pathways.
 <br>
 
 ## 4. Vimshottari Dasha Engine
-
-![Vimshottari poster](assets/images/engines/9A-01-vimshottari-dasha-poster-v1.png)
 
 **120-year timeline** — Nested planetary periods (Mahadasha → Antardasha → 729 total periods).
 
@@ -82,13 +74,6 @@ Foundation for Vedic predictive timing.
 **Input:** `date, name`  
 **Endpoint:** `POST /api/v1/engines/numerology/calculate`
 
-<table>
-<tr>
-<td width="50%" align="center">
-  <img src="assets/images/engines/9A-08-numerology-poster-v1.png" alt="Numerology Engine" width="100%">
-</td>
-<td width="50%">
-
 ### Key Calculations
 - Life Path Number (birth date reduction)
 - Expression Number (full name)
@@ -96,10 +81,6 @@ Foundation for Vedic predictive timing.
 - Personality (consonants)
 - Birthday Number
 - Master Numbers (11, 22, 33)
-
-</td>
-</tr>
-</table>
 
 <br>
 
@@ -110,23 +91,12 @@ Foundation for Vedic predictive timing.
 **Input:** `date`  
 **Endpoint:** `POST /api/v1/engines/biorhythm/calculate`
 
-<table>
-<tr>
-<td width="50%" align="center">
-  <img src="assets/images/engines/9A-11-biorhythm-engine-poster-v1.png" alt="Biorhythm Engine" width="100%">
-</td>
-<td width="50%">
-
 ### Calculations
 - Current phase for all 3 cycles
 - Critical day detection (zero crossings)
 - Peak and valley predictions
 - Cycle intersection points
 - Energy trend forecasting
-
-</td>
-</tr>
-</table>
 
 <br>
 
@@ -137,22 +107,11 @@ Foundation for Vedic predictive timing.
 **Input:** `current_time`  
 **Endpoint:** `POST /api/v1/engines/vedic-clock/calculate`
 
-<table>
-<tr>
-<td width="50%" align="center">
-  <img src="assets/images/engines/tcm-organ-engine-thumb.png" alt="Vedic Clock Engine" width="100%">
-</td>
-<td width="50%">
-
 ### Returns
 - Current organ energy peak (12 meridians)
 - Dominant dosha (Vata/Pitta/Kapha)
 - Optimal activity recommendations
 - Energy quality of current hour
-
-</td>
-</tr>
-</table>
 
 <br>
 
@@ -163,23 +122,12 @@ Foundation for Vedic predictive timing.
 **Input:** `date, time, lat/lng`
 **Endpoint:** `POST /api/v1/engines/biofield/calculate`
 
-<table>
-<tr>
-<td width="50%" align="center">
-  <img src="assets/images/engines/chakra-kosha-engine-thumb.png" alt="Biofield Engine" width="100%">
-</td>
-<td width="50%">
-
 ### Calculations
 - 7 chakra readings via planet-chakra correspondences (Vedic Jyotish)
 - Fractal dimension, entropy, coherence, symmetry metrics
 - Planetary dignity (exaltation → debilitation) + aspect scoring
 - Temporal modulation: Moon transit, lunar phase, day-of-week Vara
 - Falls back to mock data when no birth_data provided
-
-</td>
-</tr>
-</table>
 
 <br>
 
@@ -229,8 +177,6 @@ Maps voice characteristics to raaga resonance and chakra activations.
 
 Esoteric calculation engines built in TypeScript, bridged to main Rust API.
 
-![TypeScript bridge family](assets/images/engines/5D-3-bridge-engine-icons-recraft-v2.png)
-
 <br>
 
 ## 12. Tarot Engine
@@ -240,23 +186,12 @@ Esoteric calculation engines built in TypeScript, bridged to main Rust API.
 **Input:** `date, question`  
 **Endpoint:** `POST /api/v1/engines/tarot/calculate`
 
-<table>
-<tr>
-<td width="50%" align="center">
-  <img src="assets/images/engines/9A-09-tarot-poster-v1.png" alt="Tarot Engine" width="100%">
-</td>
-<td width="50%">
-
 ### Calculations
 - Birth card(s) from numerology
 - Current year card
 - Life path card sequence
 - Archetypal themes
 - Symbolic inquiry prompts
-
-</td>
-</tr>
-</table>
 
 <br>
 
@@ -278,13 +213,6 @@ Traditional Book of Changes divination system.
 **Input:** `date, name`  
 **Endpoint:** `POST /api/v1/engines/enneagram/calculate`
 
-<table>
-<tr>
-<td width="50%" align="center">
-  <img src="assets/images/engines/9A-07-enneagram-poster-v1.png" alt="Enneagram Engine" width="100%">
-</td>
-<td width="50%">
-
 ### Returns
 - Core type (1-9)
 - Wing tendency
@@ -292,10 +220,6 @@ Traditional Book of Changes divination system.
 - Integration/disintegration paths
 - Instinctual stacking (sp/sx/so)
 - Centers of intelligence
-
-</td>
-</tr>
-</table>
 
 <br>
 
@@ -334,22 +258,11 @@ Combines Austin Osman Spare's method with planetary and angelic signatures.
 **Status:** Partially implemented  
 **Input:** `date, time, birth_location`
 
-<table>
-<tr>
-<td width="50%" align="center">
-  <img src="assets/images/engines/astrocartography-engine-thumb.png" alt="Astrocartography Engine" width="100%">
-</td>
-<td width="50%">
-
 ### Calculations
 - Planetary line crossings (ASC/MC/DSC/IC)
 - Power spot coordinates
 - Relocation chart analysis
 - Travel timing recommendations
-
-</td>
-</tr>
-</table>
 
 <br>
 
@@ -360,22 +273,11 @@ Combines Austin Osman Spare's method with planetary and angelic signatures.
 **Status:** Experimental  
 **Input:** `date, optional_hrv_data`
 
-<table>
-<tr>
-<td width="50%" align="center">
-  <img src="assets/images/engines/hrv-engine-thumb.png" alt="HRV Engine" width="100%">
-</td>
-<td width="50%">
-
 ### Returns
 - Baseline ANS tendency
 - Optimal recovery times
 - Stress resilience patterns
 - Circadian HRV rhythm
-
-</td>
-</tr>
-</table>
 
 <br>
 
@@ -386,23 +288,12 @@ Combines Austin Osman Spare's method with planetary and angelic signatures.
 **Status:** Integrated with Panchanga  
 **Input:** `date, lat/lng`
 
-<table>
-<tr>
-<td width="50%" align="center">
-  <img src="assets/images/engines/Nakshatra-engine-thumb.png" alt="Nakshatra Engine" width="100%">
-</td>
-<td width="50%">
-
 ### Returns
 - Birth nakshatra
 - Pada (quarter within nakshatra)
 - Ruling deity and planet
 - Karmic themes
 - Compatible nakshatras
-
-</td>
-</tr>
-</table>
 
 <br>
 
@@ -413,23 +304,12 @@ Combines Austin Osman Spare's method with planetary and angelic signatures.
 **Status:** In development  
 **Input:** `date, time`
 
-<table>
-<tr>
-<td width="50%" align="center">
-  <img src="assets/images/engines/biofield-raaga-engine-thumb.png" alt="Biofield-Raaga Engine" width="100%">
-</td>
-<td width="50%">
-
 ### Calculations
 - Dominant raaga resonance
 - Biofield layer activations (7 layers)
 - Frequency signatures
 - Time-of-day raaga cycles
 - Sound healing recommendations
-
-</td>
-</tr>
-</table>
 
 <br>
 
@@ -469,6 +349,3 @@ All engines return this unified structure:
 
 <br>
 
-<p align="center">
-  <img src="assets/images/2B-wax-seal-nanobananapro-v2.png" alt="Seal" width="100">
-</p>

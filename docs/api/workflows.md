@@ -50,8 +50,6 @@ Workflows accept the same `EngineInput` as engines.
 
 ## Available Workflows
 
-![Workflow synthesis map](../assets/images/engines/8A-seeker-inner-architecture-nanobananapro-v3.png)
-
 | ID | Engines | Purpose |
 | --- | --- | --- |
 | birth-blueprint | numerology, human-design, gene-keys | Core identity mapping |

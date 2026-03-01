@@ -10,29 +10,13 @@
 </p>
 
 <p align="center">
-  <a href="https://selemene.tryambakam.space/health/live"><img src="https://img.shields.io/badge/status-live-1A1A2E?style=for-the-badge&labelColor=B8860B" alt="Live"></a>
-  &nbsp;
-  <img src="https://img.shields.io/badge/engines-16-1A1A2E?style=for-the-badge&labelColor=6B6B6B" alt="16 Engines">
-  &nbsp;
-  <img src="https://img.shields.io/badge/workflows-6-1A1A2E?style=for-the-badge&labelColor=6B6B6B" alt="6 Workflows">
-  &nbsp;
-  <img src="https://img.shields.io/badge/SDK-Rust-CE422B?style=for-the-badge&labelColor=6B6B6B" alt="Rust SDK">
-  &nbsp;
-  <img src="https://img.shields.io/badge/TUI-Ratatui-1A1A2E?style=for-the-badge&labelColor=6B6B6B" alt="TUI">
-</p>
-
-<p align="center">
-  <img src="https://img.shields.io/badge/Rust-1.75+-CE422B?style=flat-square&logo=rust&logoColor=white" alt="Rust">
-  &nbsp;
-  <img src="https://img.shields.io/badge/Axum-HTTP-1A1A2E?style=flat-square" alt="Axum">
-  &nbsp;
-  <img src="https://img.shields.io/badge/Supabase-Postgres-3ECF8E?style=flat-square&logo=supabase&logoColor=white" alt="Supabase">
-  &nbsp;
-  <img src="https://img.shields.io/badge/Railway-deployed-0B0D0E?style=flat-square&logo=railway&logoColor=white" alt="Railway">
-  &nbsp;
-  <a href="https://openclaw.ai"><img src="https://img.shields.io/badge/OpenClaw-integrated-1A1A2E?style=flat-square&labelColor=0B0D0E" alt="OpenClaw"></a>
-  &nbsp;
-  <img src="https://img.shields.io/badge/license-MIT-blue?style=flat-square" alt="License">
+  <strong>Live:</strong> <a href="https://selemene.tryambakam.space/health/live">selemene.tryambakam.space</a>
+  &nbsp;·&nbsp;
+  <strong>16 engines</strong>
+  &nbsp;·&nbsp;
+  <strong>6 workflows</strong>
+  &nbsp;·&nbsp;
+  <strong>Rust + Axum + Supabase + Railway</strong>
 </p>
 
 <br>
@@ -472,12 +456,6 @@ The system adapts witness prompts based on your relationship with awareness.
 
 <br>
 
-<p align="center">
-  <img src="docs/assets/images/5A-heritage-engraving-recraft-v2.png" alt="Heritage Seal" width="280">
-</p>
-
-<br>
-
 | Level | State | Prompt Calibration |
 |:-----:|-------|-------------------|
 | **0** | Dormant | *"What sensations arise when you feel this pattern?"* |
@@ -524,22 +502,9 @@ Creates admin user (`admin@tryambakam.com`) + 5 API keys. Keys print once.
 
 ## ✦ Architecture
 
-<p align="center">
-  <img src="docs/assets/images/noesis-architecture.png" alt="Architecture" width="720">
-</p>
-
-<br>
-
-<p align="center">
-  <img src="docs/assets/images/engines/5D-1-vedic-engine-icons-recraft-v2.png" alt="Vedic Engine Icons" width="330">
-  <img src="docs/assets/images/engines/5D-2-western-engine-icons-recraft-v2.png" alt="Western Engine Icons" width="330">
-</p>
-
-<p align="center">
-  <img src="docs/assets/images/engines/5D-3-bridge-engine-icons-recraft-v2.png" alt="Bridge Engine Icons" width="220">
-  <img src="docs/assets/images/engines/5D-4-biofield-engine-icons-recraft-v2.png" alt="Biofield Engine Icons" width="220">
-  <img src="docs/assets/images/engines/9A-13-biofield-and-raga-poster-v1.png" alt="Resonance Engine Poster" width="220">
-</p>
+Engine families:
+- Rust native: Panchanga, Human Design, Gene Keys, Vimshottari, Numerology, Biorhythm, Vedic Clock, Biofield, Face Reading, Nadabrahman, Transits
+- TypeScript bridged: Tarot, I-Ching, Enneagram, Sacred Geometry, Sigil Forge
 
 <details>
 <summary><strong>Crate Structure</strong></summary>
@@ -651,37 +616,10 @@ crates/
 
 Beyond code, Noesis manifests in ritual objects and somatic practices. Explore [Somatic Canticles](https://1319.tryambakam.space).
 
-<br>
-
-<p align="center">
-  <img src="docs/assets/images/4A-ritual-blend-catalog-layout-nanobananapro-v2.png" alt="Ritual Catalog" width="720">
-</p>
-
-<br>
-
-<table>
-<tr>
-<td width="50%" align="center">
-  <img src="docs/assets/images/3A-ritual-kit-nanobananapro-v2.png" alt="Ritual Kit" width="100%">
-  <br><sub><strong>Ritual Kit</strong> — Essential tools for embodied practice</sub>
-</td>
-<td width="50%" align="center">
-  <img src="docs/assets/images/3B-somatic-book-nanobananapro-v2.png" alt="Somatic Book" width="100%">
-  <br><sub><strong>Somatic Grimoire</strong> — Knowledge meets sensation</sub>
-</td>
-</tr>
-<tr><td colspan="2"><br></td></tr>
-<tr>
-<td width="50%" align="center">
-  <img src="docs/assets/images/3C-essential-oil-bottle-nanobananapro-v2.png" alt="Essential Oils" width="100%">
-  <br><sub><strong>Clarity Elixir</strong> — Aromatic anchors for inquiry</sub>
-</td>
-<td width="50%" align="center">
-  <img src="docs/assets/images/4B-ritual-object-flat-lay-nanobananapro-v2.png" alt="Flat Lay" width="100%">
-  <br><sub><strong>Sacred Objects</strong> — Daily practice artifacts</sub>
-</td>
-</tr>
-</table>
+- Ritual Kit — essential tools for embodied practice
+- Somatic Grimoire — knowledge meets sensation
+- Clarity Elixir — aromatic anchors for inquiry
+- Sacred Objects — daily practice artifacts
 
 <br>
 
@@ -730,15 +668,7 @@ See [`.env.example`](.env.example) for full list.
 
 ## ✦ Brand Identity
 
-<p align="center">
-  <img src="docs/assets/images/2A-brand-kit-bento-nanobananapro-v1.png" alt="Brand Kit" width="720">
-</p>
-
-<br>
-
-<p align="center">
-  <img src="docs/assets/images/5B-campaign-visual-identity-grid-nanobananapro-v2.png" alt="Visual Identity System" width="720">
-</p>
+Brand and visual identity assets live under `docs/assets/images/` and campaign-ready compositions are maintained in the design pipeline docs.
 
 <br>
 
@@ -759,10 +689,6 @@ Selemene Engine succeeds when you no longer need it.
 That's the point.
 
 <br>
-
-<p align="center">
-  <img src="docs/assets/images/engines/2B-copper-seal-flux2pro-v2.png" alt="Seal" width="120">
-</p>
 
 <p align="center">
   <strong>MIT License</strong><br>

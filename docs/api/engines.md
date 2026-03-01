@@ -69,8 +69,6 @@ Notes:
 
 ### TypeScript Engines (Bridged)
 
-![Bridge engine icon set](../assets/images/engines/5D-3-bridge-engine-icons-recraft-v2.png)
-
 | Engine ID | Name | Required Phase |
 |-----------|------|----------------|
 | tarot | Tarot | 0 |
