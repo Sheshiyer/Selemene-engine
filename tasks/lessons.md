@@ -20,3 +20,9 @@
 - Before advising `Root Directory`, verify the Vercel project is connected to the intended GitHub repository and branch.
 - If build logs show very low file counts and "Root Directory does not exist", suspect repo/link mismatch first.
 - Preserve env values before destructive resets, then re-import with explicit monorepo root selection.
+
+## 2026-03-01 — Console Triage Signal Rule
+
+- In browser console incidents, separate extension/background-frame errors from first-party app/API errors immediately.
+- Prioritize network failures from product domains (e.g., `/api/v1/admin/*` 500s) as root-cause candidates.
+- Treat extension `FrameDoesNotExistError` and `runtime.lastError` lines as likely noise unless reproducible without extensions.

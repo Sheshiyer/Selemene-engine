@@ -149,3 +149,27 @@
   - `npm --prefix apps/admin-web run lint`
   - `npm --prefix apps/admin-web run build`
   - all passed.
+
+---
+
+# Task Plan — Admin API Keys 500 Hotfix
+
+## Checklist
+- [x] Triage console output and isolate actionable failure from browser-extension noise.
+- [x] Identify failing backend endpoint (`GET /api/v1/admin/api-keys`).
+- [x] Harden admin API key list/get queries against legacy nullable data with SQL `COALESCE` defaults.
+- [x] Preserve legacy-column fallback behavior for `name` / `key_prefix` compatibility.
+- [x] Run verification gates (`cargo check -p noesis-data`, `cargo check -p noesis-api`).
+
+## Notes
+- Extension `FrameDoesNotExistError`/`runtime.lastError` messages are non-app noise and not root cause.
+- Primary failure is server-side 500 on API keys query path.
+
+## Review (fill after execution)
+- Updated `crates/noesis-data/src/repositories/admin_repository.rs` API key selects (primary + legacy paths):
+  - `user_email`, `tier`, `permissions`, `consciousness_level`, `rate_limit`, `created_at`, and `is_active` now use defensive `COALESCE` projections.
+  - This prevents decode/runtime query failures when legacy rows contain nullable values in fields now assumed non-null by API models.
+- Verification:
+  - `cargo check -p noesis-data` ✅
+  - `cargo check -p noesis-api` ✅
+  - `cargo test -p noesis-data --lib -- --nocapture` ❌ (fails locally due missing test DB/DATABASE_URL, unrelated compile/runtime regression).

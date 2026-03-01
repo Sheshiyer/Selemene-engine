@@ -454,15 +454,15 @@ impl AdminRepository {
                 k.name,
                 k.key_prefix,
                 k.user_id,
-                u.email AS user_email,
-                k.tier,
-                k.permissions,
-                k.consciousness_level,
-                k.rate_limit,
-                k.created_at,
+                COALESCE(u.email, '') AS user_email,
+                COALESCE(k.tier, 'free') AS tier,
+                COALESCE(k.permissions, '[]'::jsonb) AS permissions,
+                COALESCE(k.consciousness_level, 0)::INTEGER AS consciousness_level,
+                COALESCE(k.rate_limit, 60)::INTEGER AS rate_limit,
+                COALESCE(k.created_at, NOW()) AS created_at,
                 k.expires_at,
                 k.last_used,
-                k.is_active
+                COALESCE(k.is_active, true) AS is_active
             FROM api_keys k
             INNER JOIN users u ON u.id = k.user_id
             WHERE 1=1
@@ -495,7 +495,10 @@ impl AdminRepository {
             .push(" OFFSET ")
             .push_bind(offset);
 
-        let query_result = qb.build_query_as::<AdminApiKeyRecord>().fetch_all(&self.pool).await;
+        let query_result = qb
+            .build_query_as::<AdminApiKeyRecord>()
+            .fetch_all(&self.pool)
+            .await;
         match query_result {
             Ok(rows) => Ok(rows),
             Err(err) if missing_api_keys_optional_columns(&err) => {
@@ -540,7 +543,8 @@ impl AdminRepository {
         match count_result {
             Ok(total) => Ok(total),
             Err(err) if missing_api_keys_optional_columns(&err) => {
-                self.count_api_keys_legacy(query, user_id, active_only).await
+                self.count_api_keys_legacy(query, user_id, active_only)
+                    .await
             }
             Err(err) => Err(err),
         }
@@ -554,15 +558,15 @@ impl AdminRepository {
                 k.name,
                 k.key_prefix,
                 k.user_id,
-                u.email AS user_email,
-                k.tier,
-                k.permissions,
-                k.consciousness_level,
-                k.rate_limit,
-                k.created_at,
+                COALESCE(u.email, '') AS user_email,
+                COALESCE(k.tier, 'free') AS tier,
+                COALESCE(k.permissions, '[]'::jsonb) AS permissions,
+                COALESCE(k.consciousness_level, 0)::INTEGER AS consciousness_level,
+                COALESCE(k.rate_limit, 60)::INTEGER AS rate_limit,
+                COALESCE(k.created_at, NOW()) AS created_at,
                 k.expires_at,
                 k.last_used,
-                k.is_active
+                COALESCE(k.is_active, true) AS is_active
             FROM api_keys k
             INNER JOIN users u ON u.id = k.user_id
             WHERE k.id = $1
@@ -765,15 +769,15 @@ impl AdminRepository {
                 NULL::TEXT AS name,
                 NULL::TEXT AS key_prefix,
                 k.user_id,
-                u.email AS user_email,
-                k.tier,
-                k.permissions,
-                k.consciousness_level,
-                k.rate_limit,
-                k.created_at,
+                COALESCE(u.email, '') AS user_email,
+                COALESCE(k.tier, 'free') AS tier,
+                COALESCE(k.permissions, '[]'::jsonb) AS permissions,
+                COALESCE(k.consciousness_level, 0)::INTEGER AS consciousness_level,
+                COALESCE(k.rate_limit, 60)::INTEGER AS rate_limit,
+                COALESCE(k.created_at, NOW()) AS created_at,
                 k.expires_at,
                 k.last_used,
-                k.is_active
+                COALESCE(k.is_active, true) AS is_active
             FROM api_keys k
             INNER JOIN users u ON u.id = k.user_id
             WHERE 1=1
@@ -849,15 +853,15 @@ impl AdminRepository {
                 NULL::TEXT AS name,
                 NULL::TEXT AS key_prefix,
                 k.user_id,
-                u.email AS user_email,
-                k.tier,
-                k.permissions,
-                k.consciousness_level,
-                k.rate_limit,
-                k.created_at,
+                COALESCE(u.email, '') AS user_email,
+                COALESCE(k.tier, 'free') AS tier,
+                COALESCE(k.permissions, '[]'::jsonb) AS permissions,
+                COALESCE(k.consciousness_level, 0)::INTEGER AS consciousness_level,
+                COALESCE(k.rate_limit, 60)::INTEGER AS rate_limit,
+                COALESCE(k.created_at, NOW()) AS created_at,
                 k.expires_at,
                 k.last_used,
-                k.is_active
+                COALESCE(k.is_active, true) AS is_active
             FROM api_keys k
             INNER JOIN users u ON u.id = k.user_id
             WHERE k.id = $1
@@ -886,7 +890,9 @@ impl AdminRepository {
         .fetch_optional(&mut *tx)
         .await?;
 
-        let Some((user_id, tier, permissions, consciousness_level, rate_limit, expires_at)) = existing else {
+        let Some((user_id, tier, permissions, consciousness_level, rate_limit, expires_at)) =
+            existing
+        else {
             tx.rollback().await?;
             return Ok(None);
         };
@@ -1203,8 +1209,7 @@ fn missing_api_keys_optional_columns(err: &Error) -> bool {
     }
 
     let message = db_err.message().to_ascii_lowercase();
-    message.contains("api_keys")
-        && (message.contains("name") || message.contains("key_prefix"))
+    message.contains("api_keys") && (message.contains("name") || message.contains("key_prefix"))
 }
 
 fn parse_permissions_value(value: &Value) -> Vec<String> {
