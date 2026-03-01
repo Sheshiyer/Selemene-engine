@@ -1,83 +1,74 @@
-# Purpose
+# OpenClaw Integration (Noesis-Tuned)
 
-Provide a concrete, OpenClaw-ready integration guide for calling Noesis APIs from OpenClaw agents and tools as reflective interfaces: return patterns to witness, not prescriptions to follow.
+Use this guide to connect OpenClaw agents to Selemene/Noesis as a reflection interface: return patterns to witness, not prescriptions to follow.
 
-# Current State
+## Integration Surface
 
 - Base URL: `https://selemene.tryambakam.space`
-- Auth header: `X-API-Key: nk_<api_key>`
-- Engine endpoint: `POST /api/v1/engines/{engine_id}/calculate`
-- Workflow endpoints:
-  - Canonical: `POST /api/v1/workflows/{workflow_id}/execute`, `GET /api/v1/workflows/{workflow_id}/info`
-  - Compatibility aliases: `POST/GET /api/v1/workflows/{workflow_id}`
-- Shared request schema: `EngineInput` (see below)
-- API key is a unique user identity; `birth_data` auto-populates the user profile.
+- Auth (preferred for OpenClaw): `X-API-Key: nk_<api_key>`
+- Engine execute: `POST /api/v1/engines/{engine_id}/calculate`
+- Workflow execute: `POST /api/v1/workflows/{workflow_id}/execute`
+- Workflow info: `GET /api/v1/workflows/{workflow_id}/info`
+- Compatibility aliases: `POST/GET /api/v1/workflows/{workflow_id}`
 
-# Required Actions
+All 16 engines are called through the main API endpoint. TypeScript engines are sidecar-bridged internally and are transparent to OpenClaw callers.
 
-1. Store the API key in OpenClaw credentials:
-   - Add `NOESIS_API_KEY` to `~/.openclaw/credentials/<profile>.env`.
-2. Ensure the OpenClaw runtime loads that profile env (preferred):
-   - `openclaw-seed env --root "$(pwd)" --profile <profile>`
-3. Use the Noesis base URL and headers in tool calls:
-   - Header: `X-API-Key: $NOESIS_API_KEY`
-   - Header: `Content-Type: application/json`
-   - Do not send API keys in `Authorization: Bearer`; Bearer is JWT-only.
-4. Use the `EngineInput` JSON body for engines and workflows.
-5. Handle errors using the standard error schema.
+## OpenClaw Skill Alignment
 
-# Verification
+The local OpenClaw `noesis` skill requires:
 
-1. `GET /health/live` returns `{"status":"ok"...}`.
-2. `GET /api/v1/engines` returns 16 engines.
-3. `POST /api/v1/engines/numerology/calculate` succeeds with `engine_id`, `result`, `witness_prompt`.
+- env var: `NOESIS_API_KEY`
 
-# Runtime Contract for OpenClaw Agents
+Skill metadata contract (current local skill):
+- `openclaw.requires.env = ["NOESIS_API_KEY"]`
 
-- `workflow_id` + `total_time_ms` are stable on successful workflow execution.
-- `engine_outputs` may be partial; missing engines are omitted (not null-filled).
-- To enforce strict completeness:
-  1. call `GET /api/v1/workflows/{workflow_id}/info`
-  2. compare `engine_ids` with `engine_outputs` keys
-  3. run fallback calls for missing engines as needed.
+Recommended credential setup:
 
-# Bridge Engine Inputs (TS sidecar)
+1. Add `NOESIS_API_KEY` to `~/.openclaw/credentials/<profile>.env`
+2. Load env for the profile before agent runtime
+3. Ensure Noesis requests include:
+   - `X-API-Key: $NOESIS_API_KEY`
+   - `Content-Type: application/json`
 
-For bridged engines (`tarot`, `i-ching`, `enneagram`, `sacred-geometry`, `sigil-forge`):
-- Pass engine options via `EngineInput.options`.
-- For `sigil-forge`, intention aliases are supported:
-  - `options.question`
-  - `options.intention`
-  - `options.intent`
-  - `options.intent_text`
+Do not send API keys via `Authorization: Bearer`; Bearer is JWT-only.
 
-# Gene Keys Fallback Flow
+## Bridge Tooling in This Repo
 
-If `gene-keys` birth-data mode fails in a workflow or direct call:
+Use these bridge assets when generating OpenClaw-adjacent tool definitions:
 
-1. Call Human Design:
-   - `POST /api/v1/engines/human-design/calculate`
-2. Extract gates from response:
-   - `result.personality_activations.sun.gate`
-   - `result.personality_activations.earth.gate`
-   - `result.design_activations.sun.gate`
-   - `result.design_activations.earth.gate`
-3. Retry Gene Keys in `hd_gates` mode:
+- Bridge overview: `../../bridges/README.md`
+- CLI bridge generator: `../../bridges/cli/README.md`
+- LangChain/CrewAI tools: `../../bridges/langchain/README.md`
 
-```json
-{
-  "options": {
-    "hd_gates": {
-      "personality_sun": 41,
-      "personality_earth": 31,
-      "design_sun": 45,
-      "design_earth": 26
-    }
-  }
-}
-```
+CLI workflow:
 
-# EngineInput
+- `npx @selemene/bridge init` — interactive setup, framework selection, config creation
+- `npx @selemene/bridge generate` — regenerate tools after API changes
+- `npx @selemene/bridge check` — connectivity check
+- `npx @selemene/bridge doctor` — full diagnostics
+
+This bridge path keeps OpenClaw tool contracts synced with live OpenAPI specs.
+
+## Engine + Workflow Coverage
+
+### Engines (16)
+
+Rust-native (11):
+- `panchanga`, `human-design`, `gene-keys`, `vimshottari`, `numerology`, `biorhythm`, `vedic-clock`, `biofield`, `face-reading`, `nadabrahman`, `transits`
+
+TS-bridged (5):
+- `tarot`, `i-ching`, `enneagram`, `sacred-geometry`, `sigil-forge`
+
+### Workflows (6)
+
+- `birth-blueprint`
+- `daily-practice`
+- `decision-support`
+- `self-inquiry`
+- `creative-expression`
+- `full-spectrum`
+
+## Request Contract (`EngineInput`)
 
 ```json
 {
@@ -97,42 +88,71 @@ If `gene-keys` birth-data mode fails in a workflow or direct call:
 ```
 
 Notes:
-- `birth_data` is optional, but required for birth-chart engines.
-- `current_time` defaults to now if omitted.
-- `precision` values: `Standard`, `High`, `Extreme`.
+- `birth_data` is optional globally, but required for birth-chart engines
+- `numerology` requires `birth_data.name`
+- `current_time` defaults to now
+- `precision`: `Standard` | `High` | `Extreme`
 
-# OpenClaw Tool Call Example
+## OpenClaw Runtime Patterns
 
-Use a standard HTTP tool or a custom wrapper. Example request:
+### Deterministic Tool Surface
 
-```http
-POST /api/v1/engines/numerology/calculate
-Host: selemene.tryambakam.space
-X-API-Key: nk_<api_key>
-Content-Type: application/json
+Expose these operations in OpenClaw wrappers:
 
-{"birth_data":{"name":"Test User","date":"1991-08-13","time":"13:31","latitude":12.9716,"longitude":77.5946,"timezone":"Asia/Kolkata"}}
-```
+1. `noesis_list_engines`
+2. `noesis_calculate_engine`
+3. `noesis_list_workflows`
+4. `noesis_workflow_info`
+5. `noesis_execute_workflow`
 
-# Minimal cURL (for tool verification)
+### Partial Workflow Handling
+
+`WorkflowResult.engine_outputs` can be partial by design:
+
+1. fetch expected engine set via workflow info
+2. diff expected vs returned outputs
+3. run fallback single-engine calls for missing outputs
+
+### Bridge Engine Option Rules
+
+For bridged engines (`tarot`, `i-ching`, `enneagram`, `sacred-geometry`, `sigil-forge`), place per-engine values under `options`.
+
+For `sigil-forge`, the following aliases are accepted:
+- `options.question`
+- `options.intention`
+- `options.intent`
+- `options.intent_text`
+
+### Gene Keys Fallback
+
+If direct `gene-keys` birth-data mode errors:
+
+1. call `human-design`
+2. extract Sun/Earth personality + design gates
+3. retry `gene-keys` using `options.hd_gates`
+
+## Verification Checklist (OpenClaw)
+
+1. `GET /health/live` returns status `ok`
+2. `GET /api/v1/engines` returns 16 engine IDs
+3. `POST /api/v1/engines/numerology/calculate` returns `engine_id`, `result`, `witness_prompt`
+4. `POST /api/v1/workflows/birth-blueprint/execute` returns `workflow_id` and `engine_outputs`
+
+## Minimal Verification Calls
 
 ```bash
+curl -s https://selemene.tryambakam.space/health/live
+
+curl -s https://selemene.tryambakam.space/api/v1/engines \
+  -H "X-API-Key: $NOESIS_API_KEY"
+
 curl -s -X POST https://selemene.tryambakam.space/api/v1/engines/numerology/calculate \
   -H "X-API-Key: $NOESIS_API_KEY" \
   -H "Content-Type: application/json" \
-  -d '{
-    "birth_data": {
-      "name": "Test User",
-      "date": "1991-08-13",
-      "time": "13:31",
-      "latitude": 12.9716,
-      "longitude": 77.5946,
-      "timezone": "Asia/Kolkata"
-    }
-  }'
+  -d '{"birth_data":{"name":"Test User","date":"1991-08-13","time":"13:31","latitude":12.9716,"longitude":77.5946,"timezone":"Asia/Kolkata"}}'
 ```
 
-# Error Schema
+## Error Schema
 
 ```json
 {
