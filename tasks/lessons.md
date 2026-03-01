@@ -20,3 +20,9 @@
 - Before advising `Root Directory`, verify the Vercel project is connected to the intended GitHub repository and branch.
 - If build logs show very low file counts and "Root Directory does not exist", suspect repo/link mismatch first.
 - Preserve env values before destructive resets, then re-import with explicit monorepo root selection.
+
+## 2026-03-02 — Schema Drift Diagnosis Rule
+
+- If API endpoint returns 500 and null checks are clean, immediately test for missing columns/indexes expected by latest code.
+- Distinguish **null data shape issues** from **missing schema objects** using `information_schema.columns` before patching query defaults.
+- Add compatibility fallbacks in repository layer for optional, recently introduced columns to reduce incident blast radius during phased migrations.

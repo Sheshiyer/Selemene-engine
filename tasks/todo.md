@@ -149,3 +149,32 @@
   - `npm --prefix apps/admin-web run lint`
   - `npm --prefix apps/admin-web run build`
   - all passed.
+
+---
+
+# Task Plan — Admin Dashboard Parallel Hardening Pack
+
+## Checklist
+- [x] Add backend fallback for API key list/get queries when optional metadata columns are missing in DB.
+- [x] Add backend fallback for API key create/rotate writes when optional metadata columns are missing in DB.
+- [x] Add admin deployment smoke script for frontend+backend route sanity checks.
+- [x] Refresh admin Vercel deployment runbook with current project/domain and root-directory guidance.
+- [x] Run verification (`cargo check -p noesis-data`, `cargo check -p noesis-api`, script smoke checks).
+
+## Notes
+- Goal: complete high-impact reliability tasks that can land quickly in parallel tracks (backend resilience + deploy observability + docs).
+- Scope intentionally avoids large feature work (audit/system modules, full RBAC redesign, billing integration).
+
+## Review (fill after execution)
+- Updated `crates/noesis-data/src/repositories/admin_repository.rs`:
+  - Added graceful fallback paths for API key list/count/get/create/rotate when `api_keys.name` / `api_keys.key_prefix` columns are missing.
+  - Added legacy query/insert helpers and `missing_api_keys_optional_columns()` detector (`Postgres 42703`) to avoid hard 500s on schema drift.
+- Added `scripts/smoke_admin_web.sh`:
+  - Validates `/admin/login` frontend reachability and backend `/health/live`, `/api/v1/admin/session` (401), `/api/v1/admin/api-keys` (401).
+  - Requires explicit `ADMIN_WEB_URL` and `API_BASE_URL` inputs.
+- Refreshed `docs/deployment/VERCEL_ADMIN_WEB.md`:
+  - Corrected project/env examples, clarified root-directory modes for monorepo vs app-subdir deploys, and documented migration dependency for API keys metadata columns.
+- Verification:
+  - `cargo check -p noesis-data` ✅
+  - `cargo check -p noesis-api` ✅
+  - `ADMIN_WEB_URL=https://144.tryambakam.space API_BASE_URL=https://selemene-engine-production.up.railway.app bash scripts/smoke_admin_web.sh` ✅
