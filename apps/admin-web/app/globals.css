@@ -530,6 +530,24 @@ tbody tr:hover {
   border-color: rgba(86, 211, 194, 0.45);
 }
 
+.link-btn {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  background: transparent;
+  color: var(--accent);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.8rem;
+  text-align: left;
+  text-decoration: underline;
+  text-decoration-style: dotted;
+}
+
+.link-btn:hover {
+  color: #9ff0e5;
+}
+
 /* ---- Key prefix ---- */
 .key-prefix {
   font-family: var(--font-mono), monospace;

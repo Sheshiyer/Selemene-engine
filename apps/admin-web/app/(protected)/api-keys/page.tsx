@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { PageShell } from "@/components/page-shell";
 import { getAuthToken } from "@/lib/auth";
 import {
@@ -10,6 +11,9 @@ import {
   revokeAdminApiKey,
   rotateAdminApiKey,
 } from "@/lib/api";
+import { copyToClipboard, exportCsv, exportJson } from "@/lib/export";
+import { statusPillClass } from "@/lib/status";
+import { buildQueryString, getStringParam } from "@/lib/url-query";
 import type { AdminApiKeyItem } from "@/types/admin";
 
 /* ---------- constants ---------- */
@@ -67,10 +71,14 @@ function tierPillClass(tier: string): string {
 /* ---------- page ---------- */
 
 export default function ApiKeysPage() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
   /* --- list state --- */
-  const [query, setQuery] = useState("");
-  const [tierFilter, setTierFilter] = useState("all");
-  const [statusFilter, setStatusFilter] = useState("all");
+  const [query, setQuery] = useState(() => getStringParam(searchParams, "query"));
+  const [tierFilter, setTierFilter] = useState(() => getStringParam(searchParams, "tier", "all"));
+  const [statusFilter, setStatusFilter] = useState(() => getStringParam(searchParams, "status", "all"));
   const [loading, setLoading] = useState(true);
   const [keys, setKeys] = useState<AdminApiKeyItem[]>([]);
   const [total, setTotal] = useState(0);
@@ -123,8 +131,23 @@ export default function ApiKeysPage() {
     [keys]
   );
 
+  useEffect(() => {
+    setQuery(getStringParam(searchParams, "query"));
+    setTierFilter(getStringParam(searchParams, "tier", "all"));
+    setStatusFilter(getStringParam(searchParams, "status", "all"));
+  }, [searchParams]);
+
+  useEffect(() => {
+    const nextQuery = buildQueryString(searchParams, {
+      query,
+      tier: tierFilter !== "all" ? tierFilter : undefined,
+      status: statusFilter !== "all" ? statusFilter : undefined
+    });
+    router.replace(nextQuery ? `${pathname}?${nextQuery}` : pathname, { scroll: false });
+  }, [pathname, query, router, searchParams, statusFilter, tierFilter]);
+
   /* --- data loading --- */
-  async function loadKeys() {
+  const loadKeys = useCallback(async () => {
     const token = getAuthToken();
     if (!token) {
       setError("Missing session token. Please sign in again.");
@@ -151,12 +174,11 @@ export default function ApiKeysPage() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [activeOnly, query]);
 
   useEffect(() => {
     void loadKeys();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [query, statusFilter]);
+  }, [loadKeys]);
 
   /* --- create key --- */
   async function handleCreate() {
@@ -256,11 +278,43 @@ export default function ApiKeysPage() {
   }
 
   /* --- copy to clipboard --- */
-  async function handleCopy() {
+  async function handleCopySecret() {
     if (!secretKey) return;
-    await navigator.clipboard.writeText(secretKey);
+    await copyToClipboard(secretKey);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  }
+
+  async function handleCopyValue(value: string, label: string) {
+    try {
+      await copyToClipboard(value);
+      setSuccess(`${label} copied`);
+      setTimeout(() => setSuccess(null), 1500);
+    } catch {
+      setError("Failed to copy value to clipboard");
+    }
+  }
+
+  function handleExportCsv() {
+    exportCsv(
+      `admin-api-keys-${new Date().toISOString().slice(0, 10)}.csv`,
+      filteredKeys,
+      [
+        { key: "id", header: "Key ID" },
+        { key: "name", header: "Name" },
+        { key: "key_prefix", header: "Prefix" },
+        { key: "user_id", header: "User ID" },
+        { key: "user_email", header: "User Email" },
+        { key: "tier", header: "Tier" },
+        { key: "is_active", header: "Is Active" },
+        { key: "created_at", header: "Created At" },
+        { key: "last_used", header: "Last Used" }
+      ]
+    );
+  }
+
+  function handleExportJson() {
+    exportJson(`admin-api-keys-${new Date().toISOString().slice(0, 10)}.json`, filteredKeys);
   }
 
   /* --- toggle permission --- */
@@ -314,6 +368,12 @@ export default function ApiKeysPage() {
         </label>
         <button type="button" onClick={() => void loadKeys()}>
           Refresh
+        </button>
+        <button type="button" onClick={handleExportCsv} disabled={filteredKeys.length === 0}>
+          Export CSV
+        </button>
+        <button type="button" onClick={handleExportJson} disabled={filteredKeys.length === 0}>
+          Export JSON
         </button>
         <button
           type="button"
@@ -377,12 +437,15 @@ export default function ApiKeysPage() {
               {filteredKeys.map((k) => (
                 <tr key={k.id}>
                   <td>
-                    <div className="table-primary">
-                      {k.name || "Unnamed"}
-                    </div>
-                    <div className="helper">
-                      {formatDateTime(k.created_at)}
-                    </div>
+                    <div className="table-primary">{k.name || "Unnamed"}</div>
+                    <div className="helper">{formatDateTime(k.created_at)}</div>
+                    <button
+                      type="button"
+                      className="link-btn"
+                      onClick={() => void handleCopyValue(k.id, "Key ID")}
+                    >
+                      {k.id}
+                    </button>
                   </td>
                   <td>
                     <span className="key-prefix">
@@ -391,7 +454,13 @@ export default function ApiKeysPage() {
                   </td>
                   <td>
                     <div className="table-primary">{k.user_email}</div>
-                    <div className="helper">{k.user_id.slice(0, 8)}...</div>
+                    <button
+                      type="button"
+                      className="link-btn"
+                      onClick={() => void handleCopyValue(k.user_id, "User ID")}
+                    >
+                      {k.user_id}
+                    </button>
                   </td>
                   <td>
                     <span className={tierPillClass(k.tier)}>{k.tier}</span>
@@ -401,9 +470,7 @@ export default function ApiKeysPage() {
                   </td>
                   <td>{k.rate_limit}/min</td>
                   <td>
-                    <span
-                      className={`pill ${k.is_active ? "ok" : "danger"}`}
-                    >
+                    <span className={statusPillClass(k.is_active ? "active" : "revoked")}>
                       {k.is_active ? "active" : "revoked"}
                     </span>
                   </td>
@@ -573,7 +640,7 @@ export default function ApiKeysPage() {
               <button
                 type="button"
                 className={`copy-btn ${copied ? "copied" : ""}`}
-                onClick={handleCopy}
+                onClick={handleCopySecret}
               >
                 {copied ? "Copied!" : "Copy to clipboard"}
               </button>

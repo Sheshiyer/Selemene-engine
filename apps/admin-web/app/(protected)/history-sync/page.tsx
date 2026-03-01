@@ -9,6 +9,7 @@ import {
   getHistorySyncEvents,
   getHistorySyncUsers
 } from "@/lib/api";
+import { statusPillClass } from "@/lib/status";
 import type {
   AdminHistorySyncDeviceItem,
   AdminHistorySyncEventItem,
@@ -124,17 +125,7 @@ export default function HistorySyncPage() {
                     <div className="helper">{user.user_id}</div>
                   </td>
                   <td>
-                    <span
-                      className={`pill ${
-                        user.status === "lagging"
-                          ? "danger"
-                          : user.status === "synced"
-                            ? "ok"
-                            : "warning"
-                      }`}
-                    >
-                      {user.status}
-                    </span>
+                    <span className={statusPillClass(user.status)}>{user.status}</span>
                   </td>
                   <td>{user.readings_count}</td>
                   <td>{user.usage_events_count}</td>
@@ -180,9 +171,7 @@ export default function HistorySyncPage() {
                     <div className="helper">{device.user_id}</div>
                   </td>
                   <td>
-                    <span className={`pill ${device.status === "active" ? "ok" : "danger"}`}>
-                      {device.status}
-                    </span>
+                    <span className={statusPillClass(device.status)}>{device.status}</span>
                   </td>
                   <td>{device.tier}</td>
                   <td>{device.permission_count}</td>
@@ -226,9 +215,7 @@ export default function HistorySyncPage() {
                   <td>{event.engine_id ?? "--"}</td>
                   <td>{event.workflow_id ?? "--"}</td>
                   <td>
-                    <span className={`pill ${event.status === "success" ? "ok" : "danger"}`}>
-                      {event.status}
-                    </span>
+                    <span className={statusPillClass(event.status)}>{event.status}</span>
                   </td>
                   <td>{event.duration_ms}</td>
                 </tr>

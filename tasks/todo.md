@@ -230,3 +230,51 @@
   - `npm --prefix apps/admin-web run build` ✅
   - `ADMIN_WEB_URL=https://144.tryambakam.space API_BASE_URL=https://selemene-engine-production.up.railway.app bash scripts/smoke_admin_web.sh` ✅
 - Live production status (pre-deploy check): newly added endpoints currently return `404` on Railway and require backend deployment of this branch before UI pages can consume them.
+
+---
+
+# Task Plan — Admin UX P0 Parallel Fast-Track
+
+## Checklist
+- [x] Create GitHub issues before implementation for the P0 tracks.
+- [x] Implement URL-synced state for primary admin list surfaces.
+- [x] Implement auto-refresh + last-updated indicators for operational pages.
+- [x] Implement copy/export QoL utilities on key admin tables.
+- [x] Standardize severity/status visual mapping with shared helper.
+- [x] Run verification (`typecheck`, `lint`, `build`, smoke script sanity).
+
+## Notes
+- Issues created first (as requested):
+  - #482 URL-synced table state
+  - #483 Auto-refresh + staleness indicator
+  - #484 Copy/Export utilities
+  - #485 Severity visual language standardization
+  - #486 P0 umbrella tracker
+- Scope focused on frontend/operator QoL, intentionally no new backend contracts in this pass.
+
+## Review (fill after execution)
+- Added reusable admin utilities:
+  - `apps/admin-web/src/lib/url-query.ts`
+  - `apps/admin-web/src/lib/export.ts`
+  - `apps/admin-web/src/lib/status.ts`
+- Applied URL-synced state:
+  - `users` (`query`, `tier`, `state`)
+  - `api-keys` (`query`, `tier`, `status`)
+  - `audit` (`actor`, `action`, `result`, `from`, `to`, `refresh`)
+  - `system` (`window_hours`, `refresh`)
+  - plus refresh sync on `dashboard` + `analytics`
+- Added auto-refresh + last-updated badges:
+  - `dashboard`, `analytics`, `system`, `audit`
+- Added copy/export QoL:
+  - Users: copy user ID, export CSV/JSON
+  - API Keys: copy key/user IDs, export CSV/JSON
+  - Audit: copy actor/request/event IDs, export CSV/JSON
+- Standardized status rendering with shared `statusPillClass()` helper:
+  - `system`, `audit`, `history-sync`, `api-keys`, `users`
+- Added small shared UI affordance:
+  - `.link-btn` style in `apps/admin-web/app/globals.css`
+- Verification:
+  - `npm --prefix apps/admin-web run typecheck` ✅
+  - `npm --prefix apps/admin-web run lint` ✅
+  - `npm --prefix apps/admin-web run build` ✅
+  - `ADMIN_WEB_URL=https://144.tryambakam.space API_BASE_URL=https://selemene-engine-production.up.railway.app bash scripts/smoke_admin_web.sh` ✅

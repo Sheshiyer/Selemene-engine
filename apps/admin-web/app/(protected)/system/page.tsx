@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { PageShell } from "@/components/page-shell";
 import { getAuthToken } from "@/lib/auth";
 import {
@@ -10,6 +11,8 @@ import {
   getSystemServices,
   getSystemWorkflows
 } from "@/lib/api";
+import { statusPillClass } from "@/lib/status";
+import { buildQueryString, getNumberParam } from "@/lib/url-query";
 import type {
   AdminSystemCacheResponse,
   AdminSystemHealthResponse,
@@ -41,34 +44,48 @@ function formatDuration(seconds: number): string {
   return `${minutes}m`;
 }
 
-function statusPill(status: string): string {
-  switch (status) {
-    case "healthy":
-      return "pill ok";
-    case "degraded":
-    case "idle":
-      return "pill warning";
-    default:
-      return "pill danger";
-  }
-}
+const REFRESH_OPTIONS = [0, 15, 30, 60] as const;
 
 export default function SystemPage() {
-  const [windowHours, setWindowHours] = useState(24);
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  const [windowHours, setWindowHours] = useState(() =>
+    getNumberParam(searchParams, "window_hours", 24, 1, 24 * 30)
+  );
+  const [autoRefreshSec, setAutoRefreshSec] = useState(() =>
+    getNumberParam(searchParams, "refresh", 0, 0, 60)
+  );
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [lastUpdatedAt, setLastUpdatedAt] = useState<string | null>(null);
 
   const [health, setHealth] = useState<AdminSystemHealthResponse | null>(null);
   const [cache, setCache] = useState<AdminSystemCacheResponse | null>(null);
   const [services, setServices] = useState<AdminSystemServiceItem[]>([]);
   const [workflows, setWorkflows] = useState<AdminSystemWorkflowItem[]>([]);
 
+  useEffect(() => {
+    setWindowHours(getNumberParam(searchParams, "window_hours", 24, 1, 24 * 30));
+    setAutoRefreshSec(getNumberParam(searchParams, "refresh", 0, 0, 60));
+  }, [searchParams]);
+
+  useEffect(() => {
+    const nextQuery = buildQueryString(searchParams, {
+      window_hours: windowHours,
+      refresh: autoRefreshSec > 0 ? autoRefreshSec : undefined
+    });
+    router.replace(nextQuery ? `${pathname}?${nextQuery}` : pathname, { scroll: false });
+  }, [autoRefreshSec, pathname, router, searchParams, windowHours]);
+
   const degradedServiceCount = useMemo(
     () => services.filter((service) => service.status !== "healthy").length,
     [services]
   );
 
-  async function loadSystemViews() {
+  const loadSystemViews = useCallback(async () => {
     const token = getAuthToken();
     if (!token) {
       setError("Missing session token. Please sign in again.");
@@ -92,6 +109,7 @@ export default function SystemPage() {
       setServices(servicesResponse.items);
       setWorkflows(workflowsResponse.items);
       setCache(cacheResponse);
+      setLastUpdatedAt(new Date().toISOString());
     } catch (err) {
       if (err instanceof ApiClientError) {
         setError(err.payload?.error || err.message);
@@ -101,12 +119,21 @@ export default function SystemPage() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [windowHours]);
 
   useEffect(() => {
     void loadSystemViews();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [windowHours]);
+  }, [loadSystemViews]);
+
+  useEffect(() => {
+    if (autoRefreshSec <= 0) {
+      return;
+    }
+    const interval = window.setInterval(() => {
+      void loadSystemViews();
+    }, autoRefreshSec * 1000);
+    return () => window.clearInterval(interval);
+  }, [autoRefreshSec, loadSystemViews]);
 
   return (
     <PageShell
@@ -125,10 +152,25 @@ export default function SystemPage() {
             <option value={168}>Last 7 days</option>
           </select>
         </label>
+        <label>
+          Auto refresh
+          <select
+            value={autoRefreshSec}
+            onChange={(event) => setAutoRefreshSec(Number.parseInt(event.target.value, 10))}
+          >
+            {REFRESH_OPTIONS.map((value) => (
+              <option key={value} value={value}>
+                {value === 0 ? "Off" : `${value}s`}
+              </option>
+            ))}
+          </select>
+        </label>
         <button type="button" onClick={() => void loadSystemViews()}>
           Refresh
         </button>
       </div>
+
+      <p className="helper">Last updated: {formatDateTime(lastUpdatedAt)}</p>
 
       {error ? <div className="error">{error}</div> : null}
 
@@ -137,7 +179,7 @@ export default function SystemPage() {
           <div className="label">Overall</div>
           <div className="value">
             {health ? (
-              <span className={statusPill(health.overall_status)}>{health.overall_status}</span>
+              <span className={statusPillClass(health.overall_status)}>{health.overall_status}</span>
             ) : (
               "--"
             )}
@@ -159,7 +201,7 @@ export default function SystemPage() {
           <div className="label">Redis</div>
           <div className="value">
             {cache ? (
-              <span className={`pill ${cache.redis_available ? "ok" : "danger"}`}>
+              <span className={statusPillClass(cache.redis_available ? "healthy" : "unavailable")}>
                 {cache.redis_available ? "available" : "unavailable"}
               </span>
             ) : (
@@ -194,7 +236,7 @@ export default function SystemPage() {
                     <div className="table-primary">{subsystem.name}</div>
                   </td>
                   <td>
-                    <span className={statusPill(subsystem.status)}>{subsystem.status}</span>
+                    <span className={statusPillClass(subsystem.status)}>{subsystem.status}</span>
                   </td>
                   <td>
                     {subsystem.latency_ms === null ? "--" : subsystem.latency_ms.toFixed(1)}
@@ -237,7 +279,7 @@ export default function SystemPage() {
                   </td>
                   <td>{service.category}</td>
                   <td>
-                    <span className={statusPill(service.status)}>{service.status}</span>
+                    <span className={statusPillClass(service.status)}>{service.status}</span>
                   </td>
                   <td>
                     {service.error_rate_pct === null ? "--" : `${service.error_rate_pct.toFixed(2)}%`}
@@ -280,7 +322,7 @@ export default function SystemPage() {
                     <div className="helper">{workflow.workflow_id}</div>
                   </td>
                   <td>
-                    <span className={statusPill(workflow.status)}>{workflow.status}</span>
+                    <span className={statusPillClass(workflow.status)}>{workflow.status}</span>
                   </td>
                   <td>{workflow.recent_runs}</td>
                   <td>{workflow.failure_runs}</td>

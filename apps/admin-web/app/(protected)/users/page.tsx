@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { PageShell } from "@/components/page-shell";
 import { getAuthToken } from "@/lib/auth";
 import {
@@ -10,6 +11,9 @@ import {
   updateAdminUserState,
   updateAdminUserTier
 } from "@/lib/api";
+import { copyToClipboard, exportCsv, exportJson } from "@/lib/export";
+import { statusPillClass } from "@/lib/status";
+import { buildQueryString, getStringParam } from "@/lib/url-query";
 import type { AdminUserItem } from "@/types/admin";
 
 const ROLE_OPTIONS = ["viewer", "support", "admin", "platform-admin"];
@@ -28,9 +32,13 @@ function formatDateTime(value: string | null): string {
 }
 
 export default function UsersPage() {
-  const [query, setQuery] = useState("");
-  const [tierFilter, setTierFilter] = useState("");
-  const [stateFilter, setStateFilter] = useState("");
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  const [query, setQuery] = useState(() => getStringParam(searchParams, "query"));
+  const [tierFilter, setTierFilter] = useState(() => getStringParam(searchParams, "tier"));
+  const [stateFilter, setStateFilter] = useState(() => getStringParam(searchParams, "state"));
 
   const [loading, setLoading] = useState(true);
   const [submittingId, setSubmittingId] = useState<string | null>(null);
@@ -42,12 +50,27 @@ export default function UsersPage() {
   const [tierDrafts, setTierDrafts] = useState<Record<string, string>>({});
   const [roleDrafts, setRoleDrafts] = useState<Record<string, string>>({});
 
+  useEffect(() => {
+    setQuery(getStringParam(searchParams, "query"));
+    setTierFilter(getStringParam(searchParams, "tier"));
+    setStateFilter(getStringParam(searchParams, "state"));
+  }, [searchParams]);
+
+  useEffect(() => {
+    const nextQuery = buildQueryString(searchParams, {
+      query,
+      tier: tierFilter,
+      state: stateFilter
+    });
+    router.replace(nextQuery ? `${pathname}?${nextQuery}` : pathname, { scroll: false });
+  }, [pathname, query, router, searchParams, stateFilter, tierFilter]);
+
   const activeCount = useMemo(
     () => users.filter((user) => user.state === "active").length,
     [users]
   );
 
-  async function loadUsers() {
+  const loadUsers = useCallback(async () => {
     const token = getAuthToken();
     if (!token) {
       setError("Missing session token. Please sign in again.");
@@ -98,12 +121,11 @@ export default function UsersPage() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [query, stateFilter, tierFilter]);
 
   useEffect(() => {
     void loadUsers();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [query, tierFilter, stateFilter]);
+  }, [loadUsers]);
 
   async function handleToggleLock(user: AdminUserItem) {
     const token = getAuthToken();
@@ -198,6 +220,36 @@ export default function UsersPage() {
     }
   }
 
+  async function handleCopy(value: string, label: string) {
+    try {
+      await copyToClipboard(value);
+      setSuccess(`${label} copied`);
+      window.setTimeout(() => setSuccess(null), 1500);
+    } catch {
+      setError("Failed to copy value to clipboard");
+    }
+  }
+
+  function handleExportCsv() {
+    exportCsv(
+      `admin-users-${new Date().toISOString().slice(0, 10)}.csv`,
+      users,
+      [
+        { key: "id", header: "User ID" },
+        { key: "email", header: "Email" },
+        { key: "full_name", header: "Full Name" },
+        { key: "tier", header: "Tier" },
+        { key: "state", header: "State" },
+        { key: "active_key_count", header: "Active Key Count" },
+        { key: "last_login_at", header: "Last Login" }
+      ]
+    );
+  }
+
+  function handleExportJson() {
+    exportJson(`admin-users-${new Date().toISOString().slice(0, 10)}.json`, users);
+  }
+
   return (
     <PageShell
       title="Users"
@@ -230,6 +282,12 @@ export default function UsersPage() {
         </label>
         <button type="button" onClick={() => void loadUsers()}>
           Refresh
+        </button>
+        <button type="button" onClick={handleExportCsv} disabled={users.length === 0}>
+          Export CSV
+        </button>
+        <button type="button" onClick={handleExportJson} disabled={users.length === 0}>
+          Export JSON
         </button>
       </div>
 
@@ -272,7 +330,13 @@ export default function UsersPage() {
                   <td>
                     <div className="table-primary">{user.email}</div>
                     <div className="helper">{user.full_name || "Unnamed"}</div>
-                    <div className="helper">ID: {user.id}</div>
+                    <button
+                      type="button"
+                      className="link-btn"
+                      onClick={() => void handleCopy(user.id, "User ID")}
+                    >
+                      ID: {user.id}
+                    </button>
                   </td>
                   <td>
                     <input
@@ -284,9 +348,7 @@ export default function UsersPage() {
                     />
                   </td>
                   <td>
-                    <span className={`pill ${user.state === "locked" ? "danger" : "ok"}`}>
-                      {user.state}
-                    </span>
+                    <span className={statusPillClass(user.state)}>{user.state}</span>
                   </td>
                   <td>
                     <div className="helper">{user.permissions.join(", ") || "basic:access"}</div>

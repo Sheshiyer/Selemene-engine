@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
   Bar,
   BarChart,
@@ -22,12 +23,15 @@ import {
   getAnalyticsTimeseries,
   getAnalyticsTopConsumers
 } from "@/lib/api";
+import { buildQueryString, getNumberParam } from "@/lib/url-query";
 import type {
   AdminAnalyticsBreakdownEntry,
   AdminAnalyticsSummaryResponse,
   AdminAnalyticsTimeseriesPoint,
   AdminAnalyticsTopConsumerItem
 } from "@/types/admin";
+
+const REFRESH_OPTIONS = [0, 15, 30, 60] as const;
 
 function formatBucket(bucket: string): string {
   const date = new Date(bucket);
@@ -41,11 +45,34 @@ function formatNumber(value: number): string {
   return new Intl.NumberFormat().format(value);
 }
 
+function formatDateTime(value: string | null): string {
+  if (!value) {
+    return "--";
+  }
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return "--";
+  }
+
+  return date.toLocaleString();
+}
+
 export default function AnalyticsPage() {
-  const [windowHours, setWindowHours] = useState(24);
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  const [windowHours, setWindowHours] = useState(() =>
+    getNumberParam(searchParams, "window_hours", 24, 1, 24 * 30)
+  );
+  const [autoRefreshSec, setAutoRefreshSec] = useState(() =>
+    getNumberParam(searchParams, "refresh", 0, 0, 60)
+  );
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [lastUpdatedAt, setLastUpdatedAt] = useState<string | null>(null);
 
   const [summary, setSummary] = useState<AdminAnalyticsSummaryResponse | null>(null);
   const [timeseries, setTimeseries] = useState<AdminAnalyticsTimeseriesPoint[]>([]);
@@ -59,7 +86,20 @@ export default function AnalyticsPage() {
     return ((summary.success_total / summary.requests_total) * 100).toFixed(2);
   }, [summary]);
 
-  async function loadAnalytics() {
+  useEffect(() => {
+    setWindowHours(getNumberParam(searchParams, "window_hours", 24, 1, 24 * 30));
+    setAutoRefreshSec(getNumberParam(searchParams, "refresh", 0, 0, 60));
+  }, [searchParams]);
+
+  useEffect(() => {
+    const nextQuery = buildQueryString(searchParams, {
+      window_hours: windowHours,
+      refresh: autoRefreshSec > 0 ? autoRefreshSec : undefined
+    });
+    router.replace(nextQuery ? `${pathname}?${nextQuery}` : pathname, { scroll: false });
+  }, [autoRefreshSec, pathname, router, searchParams, windowHours]);
+
+  const loadAnalytics = useCallback(async () => {
     const token = getAuthToken();
     if (!token) {
       setError("Missing session token. Please sign in again.");
@@ -86,6 +126,7 @@ export default function AnalyticsPage() {
       setTimeseries(timeseriesResponse.points);
       setEngineBreakdown(breakdownResponse.engines);
       setTopConsumers(topConsumersResponse.items);
+      setLastUpdatedAt(new Date().toISOString());
     } catch (err) {
       if (err instanceof ApiClientError) {
         setError(err.payload?.error || err.message);
@@ -95,12 +136,21 @@ export default function AnalyticsPage() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [windowHours]);
 
   useEffect(() => {
     void loadAnalytics();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [windowHours]);
+  }, [loadAnalytics]);
+
+  useEffect(() => {
+    if (autoRefreshSec <= 0) {
+      return;
+    }
+    const interval = window.setInterval(() => {
+      void loadAnalytics();
+    }, autoRefreshSec * 1000);
+    return () => window.clearInterval(interval);
+  }, [autoRefreshSec, loadAnalytics]);
 
   return (
     <PageShell
@@ -120,10 +170,25 @@ export default function AnalyticsPage() {
             <option value={336}>Last 14 days</option>
           </select>
         </label>
+        <label>
+          Auto refresh
+          <select
+            value={autoRefreshSec}
+            onChange={(event) => setAutoRefreshSec(Number.parseInt(event.target.value, 10))}
+          >
+            {REFRESH_OPTIONS.map((value) => (
+              <option key={value} value={value}>
+                {value === 0 ? "Off" : `${value}s`}
+              </option>
+            ))}
+          </select>
+        </label>
         <button type="button" onClick={() => void loadAnalytics()}>
           Refresh
         </button>
       </div>
+
+      <p className="helper">Last updated: {formatDateTime(lastUpdatedAt)}</p>
 
       {error ? <div className="error">{error}</div> : null}
 
