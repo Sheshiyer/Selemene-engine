@@ -21,7 +21,7 @@ def test_health_returns_correct_service_name() -> None:
 def test_health_returns_version() -> None:
     response = client.get("/health")
     data = response.json()
-    assert data["version"] == "0.1.0"
+    assert data["version"] == "3.0.0"
 
 
 def test_health_includes_mediapipe_availability() -> None:

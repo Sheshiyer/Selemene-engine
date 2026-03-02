@@ -12,7 +12,7 @@ from mediapipe_service.analyze import router as analyze_router
 
 app = FastAPI(
     title="Selemene MediaPipe Face Mesh Service",
-    version="0.1.0",
+    version="3.0.0",
     description="Python sidecar service for MediaPipe Face Mesh landmark detection.",
 )
 

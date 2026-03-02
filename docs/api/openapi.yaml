@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: Noesis API
-  version: 0.1.0
+  version: 3.0.0
   description: |
     High-performance consciousness calculation platform with 16 engines and multi-engine workflows.
 

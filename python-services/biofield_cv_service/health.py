@@ -28,7 +28,7 @@ def health() -> dict:
     resp = HealthResponse(
         status="healthy",
         service="biofield-cv",
-        version="0.1.0",
+        version="3.0.0",
     )
     return {
         **resp.model_dump(),

@@ -1,6 +1,6 @@
 [package]
 name = "noesis-core"
-version = "0.1.0"
+version = "3.0.0"
 edition = "2021"
 description = "Core traits and types for the Tryambakam Noesis consciousness engine platform"
 

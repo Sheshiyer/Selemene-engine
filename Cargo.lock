@@ -1092,7 +1092,7 @@ dependencies = [
 
 [[package]]
 name = "engine-biofield"
-version = "0.1.0"
+version = "3.0.0"
 dependencies = [
  "async-trait",
  "chrono",
@@ -1107,7 +1107,7 @@ dependencies = [
 
 [[package]]
 name = "engine-biorhythm"
-version = "0.1.0"
+version = "3.0.0"
 dependencies = [
  "async-trait",
  "chrono",
@@ -1120,7 +1120,7 @@ dependencies = [
 
 [[package]]
 name = "engine-face-reading"
-version = "0.1.0"
+version = "3.0.0"
 dependencies = [
  "async-trait",
  "chrono",
@@ -1135,7 +1135,7 @@ dependencies = [
 
 [[package]]
 name = "engine-gene-keys"
-version = "0.1.0"
+version = "3.0.0"
 dependencies = [
  "async-trait",
  "chrono",
@@ -1149,7 +1149,7 @@ dependencies = [
 
 [[package]]
 name = "engine-human-design"
-version = "0.1.0"
+version = "3.0.0"
 dependencies = [
  "async-trait",
  "chrono",
@@ -1166,7 +1166,7 @@ dependencies = [
 
 [[package]]
 name = "engine-nadabrahman"
-version = "0.1.0"
+version = "3.0.0"
 dependencies = [
  "async-trait",
  "chrono",
@@ -1179,7 +1179,7 @@ dependencies = [
 
 [[package]]
 name = "engine-numerology"
-version = "0.1.0"
+version = "3.0.0"
 dependencies = [
  "async-trait",
  "chrono",
@@ -1192,7 +1192,7 @@ dependencies = [
 
 [[package]]
 name = "engine-panchanga"
-version = "0.1.0"
+version = "3.0.0"
 dependencies = [
  "async-trait",
  "chrono",
@@ -1205,7 +1205,7 @@ dependencies = [
 
 [[package]]
 name = "engine-transits"
-version = "0.1.0"
+version = "3.0.0"
 dependencies = [
  "async-trait",
  "chrono",
@@ -1220,7 +1220,7 @@ dependencies = [
 
 [[package]]
 name = "engine-vedic-clock"
-version = "0.1.0"
+version = "3.0.0"
 dependencies = [
  "async-trait",
  "chrono",
@@ -1234,7 +1234,7 @@ dependencies = [
 
 [[package]]
 name = "engine-vimshottari"
-version = "0.1.0"
+version = "3.0.0"
 dependencies = [
  "async-trait",
  "chrono",
@@ -2433,7 +2433,7 @@ dependencies = [
 
 [[package]]
 name = "noesis-api"
-version = "0.1.0"
+version = "3.0.0"
 dependencies = [
  "async-trait",
  "axum 0.7.9",
@@ -2483,7 +2483,7 @@ dependencies = [
 
 [[package]]
 name = "noesis-auth"
-version = "0.1.0"
+version = "3.0.0"
 dependencies = [
  "argon2",
  "chrono",
@@ -2502,7 +2502,7 @@ dependencies = [
 
 [[package]]
 name = "noesis-bridge"
-version = "0.1.0"
+version = "3.0.0"
 dependencies = [
  "async-trait",
  "chrono",
@@ -2518,7 +2518,7 @@ dependencies = [
 
 [[package]]
 name = "noesis-cache"
-version = "0.1.0"
+version = "3.0.0"
 dependencies = [
  "dashmap",
  "lru",
@@ -2534,7 +2534,7 @@ dependencies = [
 
 [[package]]
 name = "noesis-core"
-version = "0.1.0"
+version = "3.0.0"
 dependencies = [
  "async-trait",
  "chrono",
@@ -2547,7 +2547,7 @@ dependencies = [
 
 [[package]]
 name = "noesis-data"
-version = "0.1.0"
+version = "3.0.0"
 dependencies = [
  "chrono",
  "noesis-core",
@@ -2562,7 +2562,7 @@ dependencies = [
 
 [[package]]
 name = "noesis-integration"
-version = "0.1.0"
+version = "3.0.0"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -2583,7 +2583,7 @@ dependencies = [
 
 [[package]]
 name = "noesis-metrics"
-version = "0.1.0"
+version = "3.0.0"
 dependencies = [
  "lazy_static",
  "opentelemetry 0.22.0",
@@ -2598,7 +2598,7 @@ dependencies = [
 
 [[package]]
 name = "noesis-orchestrator"
-version = "0.1.0"
+version = "3.0.0"
 dependencies = [
  "async-trait",
  "chrono",
@@ -2617,7 +2617,7 @@ dependencies = [
 
 [[package]]
 name = "noesis-sdk"
-version = "0.1.0"
+version = "3.0.0"
 dependencies = [
  "chrono",
  "config",
@@ -2640,7 +2640,7 @@ dependencies = [
 
 [[package]]
 name = "noesis-tui"
-version = "0.1.0"
+version = "3.0.0"
 dependencies = [
  "anyhow",
  "chrono",
@@ -2660,7 +2660,7 @@ dependencies = [
 
 [[package]]
 name = "noesis-vedic-api"
-version = "0.1.0"
+version = "3.0.0"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -2683,7 +2683,7 @@ dependencies = [
 
 [[package]]
 name = "noesis-western-api"
-version = "0.1.0"
+version = "3.0.0"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -2702,7 +2702,7 @@ dependencies = [
 
 [[package]]
 name = "noesis-witness"
-version = "0.1.0"
+version = "3.0.0"
 dependencies = [
  "noesis-core",
  "serde",

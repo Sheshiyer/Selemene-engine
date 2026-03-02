@@ -1,7 +1,7 @@
 openapi: "3.0.3"
 info:
   title: "Selemene MediaPipe Face Mesh Service"
-  version: "0.1.0"
+  version: "3.0.0"
   description: "Python sidecar service for MediaPipe Face Mesh landmark detection. Called by the Rust face-reading engine via HTTP."
 
 servers:
@@ -62,7 +62,7 @@ components:
       properties:
         status: { type: string, enum: [healthy, degraded] }
         service: { type: string, example: "mediapipe-face-mesh" }
-        version: { type: string, example: "0.1.0" }
+        version: { type: string, example: "3.0.0" }
         mediapipe_available: { type: boolean }
 
     FaceMeshResponse:

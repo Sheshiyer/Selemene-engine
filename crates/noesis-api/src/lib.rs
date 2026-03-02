@@ -171,7 +171,7 @@ use utoipa_swagger_ui::SwaggerUi;
     modifiers(&SecurityAddon),
     info(
         title = "Noesis API",
-        version = "0.1.0",
+        version = "3.0.0",
         description = "HTTP API for the Tryambakam Noesis consciousness engine platform. Provides endpoints for astrological calculations (Panchanga), numerology, biorhythms, and multi-engine workflows.",
         contact(
             name = "Tryambakam Team",
@@ -532,7 +532,7 @@ async fn health_handler(State(state): State<AppState>) -> Json<HealthResponse> {
 
     Json(HealthResponse {
         status: "ok".to_string(),
-        version: "0.1.0".to_string(),
+        version: "3.0.0".to_string(),
         uptime_seconds: uptime,
         engines_loaded,
         workflows_loaded,
