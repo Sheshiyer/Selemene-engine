@@ -1,0 +1,42 @@
+{
+  "name": "@selemene/sdk",
+  "version": "3.0.0",
+  "description": "TypeScript SDK for Selemene Engine",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf dist"
+  },
+  "keywords": [
+    "selemene",
+    "sdk",
+    "typescript",
+    "astrology",
+    "api"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Sheshiyer/Selemene-engine.git"
+  },
+  "homepage": "https://selemene.tryambakam.space",
+  "engines": {
+    "node": ">=18"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.3"
+  }
+}

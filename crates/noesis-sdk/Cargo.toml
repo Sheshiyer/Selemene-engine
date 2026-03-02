@@ -3,7 +3,12 @@ name = "noesis-sdk"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
+repository.workspace = true
+homepage.workspace = true
 description = "Rust SDK for Selemene Engine — typed API client, profile management, credential storage, and report rendering"
+readme = "README.md"
+keywords = ["selemene", "sdk", "astrology", "api-client", "consciousness"]
+categories = ["api-bindings", "asynchronous"]
 
 [features]
 default = ["keychain"]
@@ -11,7 +16,7 @@ keychain = ["keyring"]
 
 [dependencies]
 # Core types from noesis-core
-noesis-core = { path = "../noesis-core" }
+noesis-core = { version = "3.0.0", path = "../noesis-core" }
 
 # Async runtime
 tokio = { workspace = true }

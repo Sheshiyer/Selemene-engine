@@ -2,7 +2,13 @@
 name = "noesis-core"
 version = "3.0.0"
 edition = "2021"
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
 description = "Core traits and types for the Tryambakam Noesis consciousness engine platform"
+readme = "README.md"
+keywords = ["selemene", "sdk", "astrology", "workflow", "consciousness"]
+categories = ["api-bindings", "asynchronous"]
 
 [dependencies]
 async-trait = "0.1"
