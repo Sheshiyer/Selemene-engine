@@ -330,7 +330,7 @@ All engines return this unified structure:
   "metadata": {
     "calculation_time_ms": 0.042,
     "backend": "native",
-    "version": "0.1.0"
+    "version": "3.0.0"
   }
 }
 ```

@@ -40,7 +40,7 @@ curl -s https://selemene.tryambakam.space/health/live | python3 -m json.tool
 ```json
 {
     "status": "ok",
-    "version": "0.1.0",
+    "version": "3.0.0",
     "engines_loaded": 16,
     "workflows_loaded": 6
 }

@@ -285,3 +285,70 @@
 - Issue lifecycle updates:
   - Closed as completed: `#482`, `#483`, `#484`, `#485`.
   - Kept umbrella `#486` open pending merge/deploy confirmation.
+
+---
+
+# Task Plan — v3.0.0 Launch Polish + Issue Status Alignment
+
+## Checklist
+- [x] Re-verify production admin endpoint availability for system/audit routes.
+- [x] Draft launch-day operational runbook with step-by-step commands and rollback drill.
+- [x] Draft launch-gate checklist with evidence placeholders + sign-off section.
+- [x] Draft final release execution checklist (tag, registries, deploy, smoke).
+- [x] Update launch issues `#486`, `#477`, `#478`, `#479` with evidence-backed status comments.
+- [x] Close fully completed issue(s) and leave precise remaining actions on open issues.
+
+## Notes
+- Scope limited to launch polish/docs + GitHub issue hygiene for the v3.0.0 launch track.
+- Do not force-close issues lacking objective evidence for acceptance criteria.
+
+## Review (fill after execution)
+- Production re-verification completed:
+  - `https://selemene-engine-production.up.railway.app/health/live` -> `200`
+  - `https://selemene-engine-production.up.railway.app/api/v1/admin/session` -> `401`
+  - `https://selemene-engine-production.up.railway.app/api/v1/admin/api-keys` -> `401`
+  - `https://selemene-engine-production.up.railway.app/api/v1/admin/system/*` -> `401` (not `404`)
+  - `https://selemene-engine-production.up.railway.app/api/v1/admin/audit-events*` -> `401` (not `404`)
+  - Admin web smoke script passed against production URLs.
+- Added launch polish docs:
+  - `docs/launch/v3.0.0-launch-day-runbook.md`
+  - `docs/launch/v3.0.0-launch-gate-checklist.md`
+  - `docs/launch/v3.0.0-release-execution-checklist.md`
+- Updated GitHub issues with status comments:
+  - `#477` runbook readiness + remaining close conditions
+  - `#478` launch gate evidence/sign-off status
+  - `#479` release execution sequencing + remaining evidence
+- Closed completed issue:
+  - `#486` (admin production blocker resolved)
+- Release preflight blockers documented on launch issues:
+  - Production `/health/live` currently returns `version: 0.1.0` (not `3.0.0`)
+  - Highest git tag present is `v2.4.0` (no `v3.0.0` tag yet)
+  - Launch gate evidence/sign-off remains incomplete for `#478`
+
+---
+
+# Task Plan — v3.0.0 Version Alignment Pass
+
+## Checklist
+- [x] Align Rust workspace + crate package versions from `0.1.0` to `3.0.0`.
+- [x] Align API-reported runtime/openapi version strings to `3.0.0`.
+- [x] Align JS package metadata versions (`apps/admin-web`, `bridges/cli`) to `3.0.0`.
+- [x] Align Python service versions and health/openapi test expectations to `3.0.0`.
+- [x] Run targeted verification across Rust, Python, and admin-web typecheck.
+
+## Notes
+- Scope is version consistency only; no release tag/publish/deploy executed in this pass.
+- `@selemene/sdk` package artifact is still not present in-repo and remains a separate release-track item.
+
+## Review (fill after execution)
+- Updated version metadata to `3.0.0` across:
+  - `Cargo.toml` workspace and all crate package manifests
+  - `crates/noesis-api` OpenAPI info + health endpoint version value
+  - `apps/admin-web/package.json` + lockfile top-level package version
+  - `bridges/cli/package.json` + CLI self-reported version
+  - `python-services` pyproject + service health/openapi/test version values
+  - `Dockerfile.prod` OCI image version label
+- Verification:
+  - `cargo check -p noesis-api` ✅
+  - `pytest -q tests/test_biofield_health.py tests/test_mediapipe_health.py` ✅
+  - `npm run typecheck` (apps/admin-web) ✅

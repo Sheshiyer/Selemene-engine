@@ -1,7 +1,7 @@
 openapi: "3.0.3"
 info:
   title: "Selemene Biofield CV Service"
-  version: "0.1.0"
+  version: "3.0.0"
   description: "Python sidecar service for biofield image analysis using OpenCV. Implements spatial algorithms from biofield_spatial_algorithms.json."
 
 servers:
@@ -65,7 +65,7 @@ components:
       properties:
         status: { type: string, enum: [healthy, degraded] }
         service: { type: string, example: "biofield-cv" }
-        version: { type: string, example: "0.1.0" }
+        version: { type: string, example: "3.0.0" }
         opencv_available: { type: boolean }
         numpy_available: { type: boolean }
 
