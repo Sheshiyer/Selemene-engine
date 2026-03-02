@@ -352,3 +352,59 @@
   - `cargo check -p noesis-api` ✅
   - `pytest -q tests/test_biofield_health.py tests/test_mediapipe_health.py` ✅
   - `npm run typecheck` (apps/admin-web) ✅
+
+---
+
+# Task Plan — Merge + Deploy + Release Tag Execution
+
+## Checklist
+- [x] Merge version-alignment PR into `main`.
+- [x] Verify production deploy result and runtime version.
+- [x] Push release tag `v3.0.0`.
+- [x] Verify GitHub release publication.
+- [x] Re-run production admin smoke checks.
+- [x] Update launch issues with current evidence and blockers.
+
+## Notes
+- Kept launch issues open where acceptance criteria still require external registry evidence/sign-offs.
+
+## Review (fill after execution)
+- Merged PR `#488` into `main`.
+- Pushed tag `v3.0.0` and confirmed GitHub release published.
+- Production health now returns `version: 3.0.0` on `/health/live`.
+- Admin smoke checks passed against production URLs.
+- Confirmed unresolved registry blockers:
+  - crates `noesis-core` and `noesis-sdk` not found on crates.io
+  - npm package `@selemene/sdk` not found on npm
+- Posted status/evidence updates to issues `#477`, `#478`, and `#479`.
+
+---
+
+# Task Plan — Crates Publish Commanding + `@selemene/sdk` Package Target
+
+## Checklist
+- [x] Prepare exact command order for crates.io + npm publishing.
+- [x] Update crate metadata needed for crates.io readiness (`noesis-core`, `noesis-sdk`).
+- [x] Add crate README files for publish metadata completeness.
+- [x] Locate/scaffold intended `@selemene/sdk` package target in repo.
+- [x] Verify new package builds/typechecks and validate publish preconditions.
+
+## Notes
+- `noesis-sdk` dry-run requires `noesis-core@3.0.0` to be indexed first; this is now explicitly encoded in command order.
+
+## Review (fill after execution)
+- Added publish command runbook: `docs/launch/v3.0.0-registry-publish-commands.md`
+- Updated workspace/crate metadata for crates publication readiness:
+  - `Cargo.toml` workspace package now includes repository/homepage
+  - `crates/noesis-core/Cargo.toml` includes readme/keywords/categories + workspace metadata
+  - `crates/noesis-sdk/Cargo.toml` includes readme/keywords/categories + `noesis-core` versioned dependency
+- Added crate README files:
+  - `crates/noesis-core/README.md`
+  - `crates/noesis-sdk/README.md`
+- Scaffolded npm package target at:
+  - `packages/noesis-sdk-ts` (published name `@selemene/sdk`)
+  - includes `package.json`, tsconfig, typed `NoesisClient`, README
+- Verification:
+  - `cargo publish --dry-run --allow-dirty -p noesis-core` ✅
+  - `cargo publish --dry-run --allow-dirty -p noesis-sdk` ⛔ (expected until `noesis-core` is actually published/indexed)
+  - `npm run typecheck` + `npm run build` in `packages/noesis-sdk-ts` ✅
