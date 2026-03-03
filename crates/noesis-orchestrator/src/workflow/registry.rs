@@ -32,6 +32,8 @@ impl WorkflowRegistry {
                 "numerology".into(),
                 "human-design".into(),
                 "vimshottari".into(),
+                "biofield".into(),
+                "face-reading".into(),
             ],
             synthesis_type: SynthesisType::BirthBlueprint,
             default_options: HashMap::new(),
@@ -43,7 +45,13 @@ impl WorkflowRegistry {
             name: "Daily Practice".into(),
             description: "Daily rhythm optimization through temporal analysis".into(),
             required_phase: 0,
-            engine_ids: vec!["panchanga".into(), "vedic-clock".into(), "biorhythm".into()],
+            engine_ids: vec![
+                "panchanga".into(),
+                "vedic-clock".into(),
+                "biorhythm".into(),
+                "transits".into(),
+                "nadabrahman".into(),
+            ],
             synthesis_type: SynthesisType::DailyPractice,
             default_options: HashMap::new(),
         });
@@ -54,7 +62,13 @@ impl WorkflowRegistry {
             name: "Decision Support".into(),
             description: "Multi-system decision mirrors for clarity".into(),
             required_phase: 1,
-            engine_ids: vec!["tarot".into(), "i-ching".into(), "human-design".into()],
+            engine_ids: vec![
+                "tarot".into(),
+                "i-ching".into(),
+                "human-design".into(),
+                "enneagram".into(),
+                "gene-keys".into(),
+            ],
             synthesis_type: SynthesisType::DecisionSupport,
             default_options: HashMap::new(),
         });
@@ -65,7 +79,12 @@ impl WorkflowRegistry {
             name: "Self-Inquiry".into(),
             description: "Deep self-consciousness exploration and shadow work".into(),
             required_phase: 2,
-            engine_ids: vec!["gene-keys".into(), "enneagram".into()],
+            engine_ids: vec![
+                "gene-keys".into(),
+                "enneagram".into(),
+                "face-reading".into(),
+                "biofield".into(),
+            ],
             synthesis_type: SynthesisType::SelfInquiry,
             default_options: HashMap::new(),
         });
@@ -76,7 +95,12 @@ impl WorkflowRegistry {
             name: "Creative Expression".into(),
             description: "Creative and aesthetic exploration through symbols".into(),
             required_phase: 1,
-            engine_ids: vec!["sigil-forge".into(), "sacred-geometry".into()],
+            engine_ids: vec![
+                "sigil-forge".into(),
+                "sacred-geometry".into(),
+                "nadabrahman".into(),
+                "numerology".into(),
+            ],
             synthesis_type: SynthesisType::CreativeExpression,
             default_options: HashMap::new(),
         });
@@ -98,6 +122,8 @@ impl WorkflowRegistry {
                 "gene-keys".into(),
                 "biofield".into(),
                 "face-reading".into(),
+                "transits".into(),
+                "nadabrahman".into(),
                 // TS engines via bridge
                 "tarot".into(),
                 "i-ching".into(),
@@ -178,7 +204,13 @@ mod tests {
         assert_eq!(wf.name, "Birth Blueprint");
         assert_eq!(
             wf.engine_ids,
-            vec!["numerology", "human-design", "vimshottari"]
+            vec![
+                "numerology",
+                "human-design",
+                "vimshottari",
+                "biofield",
+                "face-reading"
+            ]
         );
         assert_eq!(wf.synthesis_type, SynthesisType::BirthBlueprint);
     }
@@ -188,7 +220,16 @@ mod tests {
         let registry = WorkflowRegistry::new();
         let wf = registry.get("daily-practice").unwrap();
 
-        assert_eq!(wf.engine_ids, vec!["panchanga", "vedic-clock", "biorhythm"]);
+        assert_eq!(
+            wf.engine_ids,
+            vec![
+                "panchanga",
+                "vedic-clock",
+                "biorhythm",
+                "transits",
+                "nadabrahman"
+            ]
+        );
         assert_eq!(wf.synthesis_type, SynthesisType::DailyPractice);
     }
 
@@ -210,9 +251,11 @@ mod tests {
         let registry = WorkflowRegistry::new();
         let wf = registry.get("full-spectrum").unwrap();
 
-        assert!(wf.engine_ids.len() >= 11);
+        assert_eq!(wf.engine_ids.len(), 16);
         assert!(wf.engine_ids.contains(&"numerology".to_string()));
         assert!(wf.engine_ids.contains(&"tarot".to_string()));
+        assert!(wf.engine_ids.contains(&"transits".to_string()));
+        assert!(wf.engine_ids.contains(&"nadabrahman".to_string()));
     }
 
     #[test]

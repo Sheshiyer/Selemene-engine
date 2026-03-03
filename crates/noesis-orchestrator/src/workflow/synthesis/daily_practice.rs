@@ -34,6 +34,8 @@ impl Synthesizer for DailyPracticeSynthesizer {
         let biorhythm = results
             .get("biorhythm")
             .and_then(|o| BiorhythmData::from_json(&o.result));
+        let transits = results.get("transits").map(|o| o.result.clone());
+        let nadabrahman = results.get("nadabrahman").map(|o| o.result.clone());
 
         let mut themes = Vec::new();
         let mut alignments = Vec::new();
@@ -87,6 +89,32 @@ impl Synthesizer for DailyPracticeSynthesizer {
             }
         }
 
+        if let Some(ref transits_data) = transits {
+            let mut theme = Theme::new(
+                "Transit-aware timing",
+                "Transits contribute planetary-movement context to daily activity timing",
+            );
+            if transits_data.get("active_transits").is_some()
+                || transits_data.get("transits").is_some()
+            {
+                theme.add_source("transits");
+                themes.push(theme);
+            }
+        }
+
+        if let Some(ref nada_data) = nadabrahman {
+            let mut theme = Theme::new(
+                "Sound-frequency attunement",
+                "Nadabrahman contributes sound/frequency guidance for the day",
+            );
+            if nada_data.get("dominant_frequency").is_some()
+                || nada_data.get("tonal_quality").is_some()
+            {
+                theme.add_source("nadabrahman");
+                themes.push(theme);
+            }
+        }
+
         // Find alignments
         if let Some(alignment) = find_energy_alignment(&panchanga, &vedic_clock, &biorhythm) {
             alignments.push(alignment);
@@ -94,6 +122,31 @@ impl Synthesizer for DailyPracticeSynthesizer {
 
         if let Some(alignment) = find_activity_alignment(&panchanga, &vedic_clock) {
             alignments.push(alignment);
+        }
+
+        if (transits.is_some() && nadabrahman.is_some())
+            || (transits.is_some() && panchanga.is_some())
+            || (nadabrahman.is_some() && vedic_clock.is_some())
+        {
+            alignments.push(
+                Alignment::new(
+                    "Expanded temporal alignment",
+                    "Transit and/or sound-frequency signals reinforce daily timing recommendations",
+                )
+                .with_engines(
+                    vec![
+                        panchanga.as_ref().map(|_| "panchanga".to_string()),
+                        vedic_clock.as_ref().map(|_| "vedic-clock".to_string()),
+                        biorhythm.as_ref().map(|_| "biorhythm".to_string()),
+                        transits.as_ref().map(|_| "transits".to_string()),
+                        nadabrahman.as_ref().map(|_| "nadabrahman".to_string()),
+                    ]
+                    .into_iter()
+                    .flatten()
+                    .collect(),
+                )
+                .with_confidence(0.7),
+            );
         }
 
         // Find tensions

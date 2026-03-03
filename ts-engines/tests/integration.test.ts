@@ -128,6 +128,15 @@ describe('Tarot Engine', () => {
     expect((data as any).result.positions.length).toBe(10)
   })
 
+  it('rejects invalid spread_type with structured 422', async () => {
+    const { status, data } = await apiCall('POST', '/engines/tarot/calculate', {
+      consciousness_level: 0,
+      parameters: { spread: 'not-a-spread' },
+    })
+    expect(status).toBe(422)
+    expect((data as any).error_code).toBe('INVALID_SPREAD_TYPE')
+  })
+
   it('seed produces reproducible results', async () => {
     const seed = 12345
     const { data: data1 } = await apiCall('POST', '/engines/tarot/calculate', {
@@ -196,6 +205,15 @@ describe('I-Ching Engine', () => {
     expect((data as any).result.primary_hexagram.name).toBe('The Creative')
   })
 
+  it('rejects invalid hexagram outside 1-64', async () => {
+    const { status, data } = await apiCall('POST', '/engines/i-ching/calculate', {
+      consciousness_level: 0,
+      parameters: { hexagram: 99 },
+    })
+    expect(status).toBe(422)
+    expect((data as any).error_code).toBe('INVALID_HEXAGRAM')
+  })
+
   it('changing lines produce relating hexagram', async () => {
     // Use a seed that we know produces changing lines
     // Run multiple times to ensure we get one with changing lines
@@ -244,6 +262,15 @@ describe('Enneagram Engine', () => {
     expect((data as any).result.mode).toBe('lookup')
     expect((data as any).result.typeAnalysis.type.number).toBe(4)
     expect((data as any).result.typeAnalysis.type.name).toBe('The Individualist')
+  })
+
+  it('rejects non-adjacent wing for a type', async () => {
+    const { status, data } = await apiCall('POST', '/engines/enneagram/calculate', {
+      consciousness_level: 1,
+      parameters: { type: 4, wing: 7 },
+    })
+    expect(status).toBe(422)
+    expect((data as any).error_code).toBe('INVALID_ENNEAGRAM_WING')
   })
 
   it('assessment scoring works with mock answers', async () => {
@@ -323,6 +350,24 @@ describe('Sacred Geometry Engine', () => {
     expect((data as any).result.form.name).toBe('Flower of Life')
   })
 
+  it('rejects unknown sacred form', async () => {
+    const { status, data } = await apiCall('POST', '/engines/sacred-geometry/calculate', {
+      consciousness_level: 0,
+      parameters: { form: 'invalid-form' },
+    })
+    expect(status).toBe(422)
+    expect((data as any).error_code).toBe('INVALID_SACRED_FORM')
+  })
+
+  it('gracefully rejects malformed SVG template', async () => {
+    const { status, data } = await apiCall('POST', '/engines/sacred-geometry/calculate', {
+      consciousness_level: 0,
+      parameters: { svg_template: '<div>not-svg</div>' },
+    })
+    expect(status).toBe(200)
+    expect((data as any).result.svg_preview.status).toBe('rejected')
+  })
+
   it('meditation guidance included', async () => {
     const { status, data } = await apiCall('POST', '/engines/sacred-geometry/calculate', {
       consciousness_level: 0,
@@ -360,8 +405,9 @@ describe('Sigil Forge Engine', () => {
       consciousness_level: 1,
       parameters: {},
     })
-    expect(status).toBe(500)
+    expect(status).toBe(422)
     expect((data as any).error).toContain('Intention')
+    expect((data as any).error_code).toBe('MISSING_INTENTION')
   })
 
   it('returns method and steps', async () => {
@@ -410,6 +456,24 @@ describe('Sigil Forge Engine', () => {
     expect(status).toBe(200)
     expect((data as any).result.method.id).toBe('rose-wheel')
     expect((data as any).result.method.name).toBe('Rose Wheel (Rosy Cross) Method')
+  })
+
+  it('rejects unknown sigil method', async () => {
+    const { status, data } = await apiCall('POST', '/engines/sigil-forge/calculate', {
+      consciousness_level: 1,
+      parameters: { intention: 'I attract abundance', method: 'bad-method' },
+    })
+    expect(status).toBe(422)
+    expect((data as any).error_code).toBe('INVALID_SIGIL_METHOD')
+  })
+
+  it('gracefully rejects malformed sigil SVG template', async () => {
+    const { status, data } = await apiCall('POST', '/engines/sigil-forge/calculate', {
+      consciousness_level: 1,
+      parameters: { intention: 'I attract abundance', svg_template: '<script>bad</script>' },
+    })
+    expect(status).toBe(200)
+    expect((data as any).result.svg_preview.status).toBe('rejected')
   })
 
   it('word elimination processing works', async () => {

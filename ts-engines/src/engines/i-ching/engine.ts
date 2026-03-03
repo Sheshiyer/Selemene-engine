@@ -3,6 +3,7 @@
  */
 
 import type { ConsciousnessEngine, EngineInput, EngineMetadata, EngineOutput } from '../../types'
+import { EngineValidationError } from '../../utils'
 import { SeededRandom, getDefaultSeed } from '../../utils/random'
 import { HEXAGRAMS, getHexagramByNumber } from './wisdom'
 import { generateWitnessPrompts } from './witness'
@@ -39,11 +40,25 @@ export class IChingEngine implements ConsciousnessEngine {
     const seed = input.seed ?? getDefaultSeed()
     const rng = new SeededRandom(seed)
 
+    const question = input.question ?? (input.parameters.question as string | undefined)
+    if (question !== undefined && question.trim() === '') {
+      throw new EngineValidationError('Question cannot be empty for I-Ching consultation.', 'INVALID_QUESTION', {
+        field: 'question',
+      })
+    }
+
     // Get or cast primary hexagram
     const hexagramParam = input.parameters.hexagram as number | undefined
     let primaryNumber: number
 
-    if (hexagramParam && hexagramParam >= 1 && hexagramParam <= 64) {
+    if (hexagramParam !== undefined) {
+      if (!Number.isInteger(hexagramParam) || hexagramParam < 1 || hexagramParam > 64) {
+        throw new EngineValidationError('Hexagram must be an integer between 1 and 64.', 'INVALID_HEXAGRAM', {
+          provided: hexagramParam,
+          min: 1,
+          max: 64,
+        })
+      }
       primaryNumber = hexagramParam
     } else {
       primaryNumber = rng.nextInt(1, 64)
@@ -51,7 +66,9 @@ export class IChingEngine implements ConsciousnessEngine {
 
     const primary = getHexagramByNumber(primaryNumber)
     if (!primary) {
-      throw new Error(`Invalid hexagram number: ${primaryNumber}`)
+      throw new EngineValidationError(`Invalid hexagram number: ${primaryNumber}`, 'INVALID_HEXAGRAM', {
+        provided: primaryNumber,
+      })
     }
 
     // Cast changing lines (each line has ~25% chance of being changing in three-coin method)

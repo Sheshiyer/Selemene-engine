@@ -26,6 +26,10 @@ pub enum EngineCategory {
     Somatic,
     /// Generative: Sacred Geometry, Sigil Forge
     Creative,
+    /// Sound and vibrational guidance: Nadabrahman
+    Sound,
+    /// Planetary movement context: Transits
+    Transits,
 }
 
 impl EngineCategory {
@@ -37,6 +41,8 @@ impl EngineCategory {
             "tarot" | "i-ching" => Self::Archetypal,
             "biofield" | "face-reading" => Self::Somatic,
             "sacred-geometry" | "sigil-forge" => Self::Creative,
+            "nadabrahman" => Self::Sound,
+            "transits" => Self::Transits,
             _ => Self::Natal, // Default for unknown engines
         }
     }
@@ -49,6 +55,8 @@ impl EngineCategory {
             Self::Archetypal => &["tarot", "i-ching"],
             Self::Somatic => &["biofield", "face-reading"],
             Self::Creative => &["sacred-geometry", "sigil-forge"],
+            Self::Sound => &["nadabrahman"],
+            Self::Transits => &["transits"],
         }
     }
 }

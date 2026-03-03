@@ -662,3 +662,45 @@
 - `cargo doc -p noesis-sdk --no-deps` ✅
 - `npm --prefix docs/portal install` ✅
 - `npm --prefix docs/portal run build` ✅
+
+---
+
+# Task Plan — Wave W1 Final Sweep (v3.0.0 launch)
+
+## Checklist
+- [x] Expand workflow compositions and typed synthesis integration for W1 workflow issues (#433-#439).
+- [x] Harden TS engine validation/error boundaries for tarot, i-ching, enneagram, sacred-geometry, and sigil-forge (#426-#429).
+- [x] Implement face-reading birth-data fallback and non-mock analysis path (#423/#424).
+- [x] Add face-reading image upload API endpoint using multipart handling (#425).
+- [x] Add face-analysis backend decision ADR (#422).
+- [x] Run Rust + TS verification gates and capture evidence.
+
+## Review (fill after execution)
+- Face-reading engine updates (`crates/engine-face-reading/src/engine.rs`):
+  - Added deterministic heuristic analysis backend for image input.
+  - Added birth-data physiognomy fallback path.
+  - Preserved explicit mock fallback when no image/birth_data is provided.
+  - Added tests to verify non-mock outputs for image/birth fallback paths.
+- API upload endpoint (`crates/noesis-api/src/lib.rs` + `Cargo.toml`):
+  - Added authenticated multipart endpoint: `POST /api/v1/engines/face-reading/upload`.
+  - Accepts multipart fields `file` or `image`, executes face-reading engine, returns analysis payload.
+  - Added OpenAPI path/component registration for upload response.
+- TS engines hardening (`ts-engines/src/...`):
+  - Added shared `EngineValidationError` + server-side 422 mapping.
+  - Tarot: strict `spread_type` and question validation.
+  - I-Ching: strict hexagram bounds + question validation.
+  - Enneagram: structured type/wing validation errors.
+  - Sacred/Sigil: strict method/form validation and graceful SVG template boundary handling.
+  - Expanded integration tests for all new validation/error boundary cases.
+- Workflow/synthesis alignment (W1 scope):
+  - Applied previously planned orchestrator workflow and synthesis updates in `crates/noesis-orchestrator/src/workflow/*`.
+- ADR:
+  - Added `docs/planning/ADR-0002-face-analysis-backend.md` documenting phased backend decision and rationale.
+
+## Validation Evidence
+- `cargo fmt` ✅
+- `cargo test -p engine-face-reading` ✅
+- `cargo test -p noesis-orchestrator` ✅
+- `cargo test -p noesis-api --lib` ✅
+- `cargo test -p noesis-api --tests` ⚠️ one pre-existing metrics-registry collision in `billing_hooks_tests` (`AlreadyReg`)
+- `npm --prefix ts-engines test` ✅

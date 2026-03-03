@@ -3,11 +3,29 @@
  */
 
 import type { ConsciousnessEngine, EngineInput, EngineMetadata, EngineOutput } from '../../types'
+import { EngineValidationError } from '../../utils'
 import { SeededRandom, getDefaultSeed } from '../../utils/random'
 import { SACRED_FORMS, getFormById, getFormIds } from './wisdom'
 import { generateWitnessPrompts } from './witness'
 
 export class SacredGeometryEngine implements ConsciousnessEngine {
+  private safeSvgPreview(template?: string): { status: 'absent' | 'accepted' | 'rejected'; reason?: string } {
+    if (!template) {
+      return { status: 'absent' }
+    }
+
+    const trimmed = template.trim().toLowerCase()
+    if (!trimmed.startsWith('<svg') || !trimmed.includes('</svg>')) {
+      return { status: 'rejected', reason: 'Template must be a complete SVG document.' }
+    }
+
+    if (trimmed.includes('<script') || trimmed.includes('onload=')) {
+      return { status: 'rejected', reason: 'SVG template contains disallowed script content.' }
+    }
+
+    return { status: 'accepted' }
+  }
+
   metadata(): EngineMetadata {
     return {
       id: 'sacred-geometry',
@@ -38,13 +56,21 @@ export class SacredGeometryEngine implements ConsciousnessEngine {
     // Extract parameters
     const formParam = input.parameters.form as string | undefined
     const intention = input.question ?? (input.parameters.intention as string | undefined)
+    const svgTemplate = input.parameters.svg_template as string | undefined
     const seed = input.seed ?? getDefaultSeed()
 
     // Select form
     let form = formParam ? getFormById(formParam) : undefined
 
+    if (formParam && !form) {
+      throw new EngineValidationError('Unknown sacred geometry form.', 'INVALID_SACRED_FORM', {
+        provided: formParam,
+        supported: getFormIds(),
+      })
+    }
+
     if (!form) {
-      // Random selection if no valid form specified
+      // Random selection if no form specified
       const rng = new SeededRandom(seed)
       form = rng.pick(SACRED_FORMS)
     }
@@ -53,6 +79,8 @@ export class SacredGeometryEngine implements ConsciousnessEngine {
     const witnessPrompts = generateWitnessPrompts(form, intention, seed)
 
     const endTime = performance.now()
+
+    const svgPreview = this.safeSvgPreview(svgTemplate)
 
     // Build result
     const result = {
@@ -69,6 +97,7 @@ export class SacredGeometryEngine implements ConsciousnessEngine {
         duration_suggestion: '5-15 minutes',
       },
       intention: intention ?? null,
+      svg_preview: svgPreview,
       seed,
     }
 
