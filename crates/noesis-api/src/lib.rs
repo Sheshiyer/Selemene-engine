@@ -239,7 +239,9 @@ use utoipa_swagger_ui::SwaggerUi;
 )]
 struct ApiDoc;
 
+use utoipa::openapi::path::PathItemType;
 use utoipa::openapi::security::{ApiKey, ApiKeyValue, HttpAuthScheme, HttpBuilder, SecurityScheme};
+use utoipa::openapi::{HeaderBuilder, ObjectBuilder, Ref, RefOr, ResponseBuilder, SchemaType};
 use utoipa::Modify;
 
 struct SecurityAddon;
@@ -261,6 +263,86 @@ impl Modify for SecurityAddon {
                 "api_key",
                 SecurityScheme::ApiKey(ApiKey::Header(ApiKeyValue::new("X-API-Key"))),
             );
+        }
+
+        let integer_header_schema = ObjectBuilder::new()
+            .schema_type(SchemaType::Integer)
+            .build();
+
+        let rate_limited_response = ResponseBuilder::new()
+            .description("Rate limit exceeded")
+            .header(
+                "X-RateLimit-Limit",
+                HeaderBuilder::new()
+                    .description(Some("Per-minute quota limit."))
+                    .schema(integer_header_schema.clone())
+                    .build(),
+            )
+            .header(
+                "X-RateLimit-Remaining",
+                HeaderBuilder::new()
+                    .description(Some("Remaining requests in current minute window."))
+                    .schema(integer_header_schema.clone())
+                    .build(),
+            )
+            .header(
+                "X-RateLimit-Reset",
+                HeaderBuilder::new()
+                    .description(Some("UNIX timestamp when minute window resets."))
+                    .schema(integer_header_schema.clone())
+                    .build(),
+            )
+            .header(
+                "X-RateLimit-Daily-Remaining",
+                HeaderBuilder::new()
+                    .description(Some("Remaining requests in current daily window."))
+                    .schema(integer_header_schema.clone())
+                    .build(),
+            )
+            .header(
+                "X-RateLimit-Daily-Reset",
+                HeaderBuilder::new()
+                    .description(Some("UNIX timestamp when daily window resets."))
+                    .schema(integer_header_schema)
+                    .build(),
+            )
+            .content(
+                "application/json",
+                utoipa::openapi::ContentBuilder::new()
+                    .schema(RefOr::Ref(Ref::from_schema_name("ErrorResponse")))
+                    .build(),
+            )
+            .build();
+
+        for path_item in openapi.paths.paths.values_mut() {
+            for method in [
+                PathItemType::Get,
+                PathItemType::Post,
+                PathItemType::Put,
+                PathItemType::Patch,
+                PathItemType::Delete,
+                PathItemType::Head,
+                PathItemType::Options,
+                PathItemType::Trace,
+                PathItemType::Connect,
+            ] {
+                if let Some(operation) = path_item.operations.get_mut(&method) {
+                    let is_secured = operation
+                        .security
+                        .as_ref()
+                        .map(|security| !security.is_empty())
+                        .unwrap_or(false);
+
+                    if !is_secured {
+                        continue;
+                    }
+
+                    operation
+                        .responses
+                        .responses
+                        .insert("429".to_string(), RefOr::T(rate_limited_response.clone()));
+                }
+            }
         }
     }
 }
