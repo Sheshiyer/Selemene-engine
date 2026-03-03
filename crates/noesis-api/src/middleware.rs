@@ -209,38 +209,205 @@ pub async fn auth_middleware(
 // Rate limiting middleware
 // ---------------------------------------------------------------------------
 
+use redis::AsyncCommands;
+
+/// Per-tier request-per-minute and request-per-day limits.
+#[derive(Debug, Clone, Copy)]
+struct TierLimits {
+    per_minute: u32,
+    per_day: u32, // 0 means unlimited
+}
+
+/// Tracks daily quota counters, preferring Redis and falling back to in-memory DashMap.
+#[derive(Clone)]
+struct DailyQuotaTracker {
+    redis_client: Option<redis::Client>,
+    fallback_counts: Arc<DashMap<String, (u32, i64)>>, // key -> (count, reset_ts)
+}
+
+impl DailyQuotaTracker {
+    fn new(redis_url: Option<&str>) -> Self {
+        let redis_client = redis_url.and_then(|url| redis::Client::open(url).ok());
+        Self {
+            redis_client,
+            fallback_counts: Arc::new(DashMap::new()),
+        }
+    }
+
+    fn key_and_reset(user_id: &str) -> (String, i64) {
+        let now = Utc::now();
+        let next_midnight_naive = (now.date_naive() + Duration::days(1))
+            .and_hms_opt(0, 0, 0)
+            .expect("valid midnight");
+        let next_midnight = DateTime::<Utc>::from_naive_utc_and_offset(next_midnight_naive, Utc);
+        let date = now.format("%Y-%m-%d").to_string();
+        (
+            format!("quota:daily:{}:{}", user_id, date),
+            next_midnight.timestamp(),
+        )
+    }
+
+    async fn current_count(&self, user_id: &str) -> u32 {
+        let (key, reset_ts) = Self::key_and_reset(user_id);
+
+        // Try Redis first
+        if let Some(client) = &self.redis_client {
+            if let Ok(mut conn) = client.get_multiplexed_async_connection().await {
+                let count: redis::RedisResult<u32> = conn.get(&key).await;
+                if let Ok(v) = count {
+                    return v;
+                }
+            }
+        }
+
+        // Fallback in-memory
+        if let Some(entry) = self.fallback_counts.get(&key) {
+            let (count, stored_reset) = *entry.value();
+            if Utc::now().timestamp() <= stored_reset {
+                return count;
+            }
+        }
+        // purge stale
+        self.fallback_counts.remove(&key);
+        self.fallback_counts.insert(key, (0, reset_ts));
+        0
+    }
+
+    async fn check_and_increment(&self, user_id: &str, daily_limit: u32) -> (bool, u32, i64, bool) {
+        let (_key, reset_ts) = Self::key_and_reset(user_id);
+
+        // Unlimited daily quota
+        if daily_limit == 0 {
+            return (true, u32::MAX, reset_ts, false);
+        }
+
+        let (key, reset_ts) = Self::key_and_reset(user_id);
+
+        // Prefer Redis for distributed consistency
+        if let Some(client) = &self.redis_client {
+            if let Ok(mut conn) = client.get_multiplexed_async_connection().await {
+                let incr_result: redis::RedisResult<u32> = conn.incr(&key, 1).await;
+                if let Ok(count) = incr_result {
+                    if count == 1 {
+                        let _: redis::RedisResult<()> = redis::cmd("EXPIREAT")
+                            .arg(&key)
+                            .arg(reset_ts)
+                            .query_async(&mut conn)
+                            .await;
+                    }
+
+                    if count > daily_limit {
+                        return (false, 0, reset_ts, false);
+                    }
+
+                    return (true, daily_limit.saturating_sub(count), reset_ts, false);
+                }
+            }
+        }
+
+        // Fallback (single-process) using DashMap
+        let now_ts = Utc::now().timestamp();
+        let mut entry = self.fallback_counts.entry(key).or_insert((0, reset_ts));
+
+        // Reset if stale
+        if now_ts > entry.value().1 {
+            *entry.value_mut() = (0, reset_ts);
+        }
+
+        let (count, stored_reset) = entry.value_mut();
+        *count += 1;
+
+        if *count > daily_limit {
+            return (false, 0, *stored_reset, true);
+        }
+
+        (
+            true,
+            daily_limit.saturating_sub(*count),
+            *stored_reset,
+            true,
+        )
+    }
+}
+
 /// Rate limiter tracking per-user request counts in a sliding window
 #[derive(Clone)]
 pub struct RateLimiter {
     /// Map of key -> (request_count, window_start_time)
     /// Keys are either user IDs (authenticated) or "ip:<addr>" (anonymous)
     user_windows: Arc<DashMap<String, (u32, DateTime<Utc>)>>,
-    /// Default rate limit for authenticated users: requests per window
+    /// Default fallback rate limit for authenticated users: requests per window
     default_limit: u32,
     /// Rate limit for unauthenticated (IP-based) requests per window
     anonymous_limit: u32,
     /// Window duration in seconds
     window_seconds: i64,
+    /// Tiered limits (W2-S3-01)
+    free_limits: TierLimits,
+    pro_limits: TierLimits,
+    enterprise_limits: TierLimits,
+    /// Daily quota tracking (W2-S3-02)
+    daily_quota: DailyQuotaTracker,
 }
 
 impl RateLimiter {
     /// Create a new rate limiter with default 100 req/min and 60 second window
     pub fn new() -> Self {
-        Self {
-            user_windows: Arc::new(DashMap::new()),
-            default_limit: 100,
-            anonymous_limit: 30,
-            window_seconds: 60,
-        }
+        Self::new_with_config(100, 60, None)
     }
 
-    /// Create a new rate limiter with custom config
-    pub fn new_with_config(default_limit: u32, window_seconds: u64) -> Self {
+    /// Create a new rate limiter with custom config.
+    ///
+    /// Tier defaults (env-overridable):
+    /// - free: 30/min, 500/day
+    /// - pro: 200/min, 10_000/day
+    /// - enterprise: 1000/min, unlimited/day (0)
+    pub fn new_with_config(
+        default_limit: u32,
+        window_seconds: u64,
+        redis_url: Option<&str>,
+    ) -> Self {
+        let read_env = |key: &str, default: u32| {
+            std::env::var(key)
+                .ok()
+                .and_then(|v| v.parse::<u32>().ok())
+                .unwrap_or(default)
+        };
+
+        let free_limits = TierLimits {
+            per_minute: read_env("RATE_LIMIT_FREE_PER_MINUTE", 30),
+            per_day: read_env("RATE_LIMIT_FREE_PER_DAY", 500),
+        };
+        let pro_limits = TierLimits {
+            per_minute: read_env("RATE_LIMIT_PRO_PER_MINUTE", 200),
+            per_day: read_env("RATE_LIMIT_PRO_PER_DAY", 10_000),
+        };
+        let enterprise_limits = TierLimits {
+            per_minute: read_env("RATE_LIMIT_ENTERPRISE_PER_MINUTE", 1_000),
+            per_day: read_env("RATE_LIMIT_ENTERPRISE_PER_DAY", 0),
+        };
+
         Self {
             user_windows: Arc::new(DashMap::new()),
             default_limit,
-            anonymous_limit: default_limit.min(30), // anonymous always capped at 30
+            anonymous_limit: free_limits.per_minute.min(30),
             window_seconds: window_seconds as i64,
+            free_limits,
+            pro_limits,
+            enterprise_limits,
+            daily_quota: DailyQuotaTracker::new(redis_url),
+        }
+    }
+
+    fn limits_for_tier(&self, tier: &str) -> TierLimits {
+        match tier.to_ascii_lowercase().as_str() {
+            "free" => self.free_limits,
+            "pro" | "premium" => self.pro_limits,
+            "enterprise" => self.enterprise_limits,
+            _ => TierLimits {
+                per_minute: self.default_limit,
+                per_day: self.free_limits.per_day,
+            },
         }
     }
 
@@ -291,7 +458,7 @@ fn extract_client_ip(req: &Request) -> String {
     // X-Forwarded-For: first IP is the original client
     if let Some(forwarded) = req.headers().get("x-forwarded-for") {
         if let Ok(val) = forwarded.to_str() {
-            if let Some(first_ip) = val.split(',').next() {
+            if let Some(first_ip) = val.split(",").next() {
                 let ip = first_ip.trim();
                 if !ip.is_empty() {
                     return ip.to_string();
@@ -316,89 +483,192 @@ fn extract_client_ip(req: &Request) -> String {
 /// Rate limiting middleware that enforces per-user and per-IP request limits.
 ///
 /// Configuration:
-/// - Authenticated: user-specific or default 100 requests per minute
-/// - Unauthenticated: 30 requests per minute per IP address
+/// - Authenticated: tier-configured requests/min + requests/day
+/// - Unauthenticated: 30 requests/min per IP address
 /// - Window: configurable sliding window (default 60 seconds)
 ///
 /// Behavior:
-/// - Authenticated requests: keyed by user_id, higher limits
+/// - Authenticated requests: keyed by user_id, tier-based limits
 /// - Unauthenticated requests: keyed by IP address, stricter limits
-/// - Returns 429 Too Many Requests when limit exceeded
+/// - Returns 429 Too Many Requests when minute or daily limit exceeded
 ///
 /// Response headers:
-/// - X-RateLimit-Limit: Maximum requests per window
-/// - X-RateLimit-Remaining: Remaining requests in current window
-/// - X-RateLimit-Reset: Unix timestamp when window resets
+/// - X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset
+/// - X-RateLimit-Daily-Remaining, X-RateLimit-Daily-Reset (authenticated)
 pub async fn rate_limit_middleware(
     State(limiter): State<Arc<RateLimiter>>,
     req: Request,
     next: Next,
 ) -> Result<Response, (StatusCode, Json<ErrorResponse>)> {
-    // Determine rate limit key and limit based on authentication status
+    // Determine rate limit key and limits based on authentication status
     let user = req.extensions().get::<AuthUser>().cloned();
 
-    let (key, rate_limit) = match user {
+    let (key, per_minute_limit, daily_limit, auth_user_id) = match user {
         Some(auth_user) => {
-            let limit = if auth_user.rate_limit > 0 {
+            let tier_limits = limiter.limits_for_tier(&auth_user.tier);
+            // Backward compatibility: explicit per-key rate_limit still overrides if set
+            let per_minute_limit = if auth_user.rate_limit > 0 {
                 auth_user.rate_limit
             } else {
-                limiter.default_limit
+                tier_limits.per_minute
             };
-            (auth_user.user_id, limit)
+
+            (
+                auth_user.user_id.clone(),
+                per_minute_limit,
+                tier_limits.per_day,
+                Some(auth_user.user_id),
+            )
         }
         None => {
             // Unauthenticated: rate limit by IP
             let ip = extract_client_ip(&req);
-            (format!("ip:{}", ip), limiter.anonymous_limit)
+            (format!("ip:{}", ip), limiter.anonymous_limit, 0, None)
         }
     };
 
-    // Check rate limit
-    let (allowed, remaining, reset_timestamp) = limiter.check_and_update(&key, rate_limit);
+    // Minute-level check first
+    let (allowed_minute, remaining_minute, minute_reset_timestamp) =
+        limiter.check_and_update(&key, per_minute_limit);
 
-    if !allowed {
-        // Rate limit exceeded - return 429 with headers
+    // Daily headers (authenticated only)
+    let mut daily_remaining: Option<u32> = None;
+    let mut daily_reset_timestamp: Option<i64> = None;
+
+    if let Some(user_id) = &auth_user_id {
+        let current_count = limiter.daily_quota.current_count(user_id).await;
+        let (_, reset_ts) = DailyQuotaTracker::key_and_reset(user_id);
+        daily_reset_timestamp = Some(reset_ts);
+        daily_remaining = Some(if daily_limit == 0 {
+            u32::MAX
+        } else {
+            daily_limit.saturating_sub(current_count.min(daily_limit))
+        });
+    }
+
+    if !allowed_minute {
         let mut response = (
             StatusCode::TOO_MANY_REQUESTS,
             Json(ErrorResponse {
                 error: format!(
                     "Rate limit exceeded. Maximum {} requests per {} seconds allowed.",
-                    rate_limit, limiter.window_seconds
+                    per_minute_limit, limiter.window_seconds
                 ),
                 error_code: "RATE_LIMIT_EXCEEDED".to_string(),
                 details: Some(serde_json::json!({
-                    "limit": rate_limit,
+                    "limit": per_minute_limit,
                     "window_seconds": limiter.window_seconds,
-                    "reset_at": reset_timestamp,
+                    "reset_at": minute_reset_timestamp,
                 })),
             }),
         )
             .into_response();
 
-        // Add rate limit headers
         let headers = response.headers_mut();
-        headers.insert("X-RateLimit-Limit", rate_limit.to_string().parse().unwrap());
+        headers.insert(
+            "X-RateLimit-Limit",
+            per_minute_limit.to_string().parse().unwrap(),
+        );
         headers.insert("X-RateLimit-Remaining", "0".parse().unwrap());
         headers.insert(
             "X-RateLimit-Reset",
-            reset_timestamp.to_string().parse().unwrap(),
+            minute_reset_timestamp.to_string().parse().unwrap(),
         );
+        if let Some(rem) = daily_remaining {
+            headers.insert(
+                "X-RateLimit-Daily-Remaining",
+                rem.to_string().parse().unwrap(),
+            );
+        }
+        if let Some(reset) = daily_reset_timestamp {
+            headers.insert(
+                "X-RateLimit-Daily-Reset",
+                reset.to_string().parse().unwrap(),
+            );
+        }
 
         return Ok(response);
     }
 
-    // Request allowed - process and add rate limit headers to response
+    // Daily check (authenticated users only)
+    if let Some(user_id) = &auth_user_id {
+        let (allowed_daily, remaining_daily, reset_daily, _used_fallback) = limiter
+            .daily_quota
+            .check_and_increment(user_id, daily_limit)
+            .await;
+
+        daily_remaining = Some(remaining_daily);
+        daily_reset_timestamp = Some(reset_daily);
+
+        if !allowed_daily {
+            let mut response = (
+                StatusCode::TOO_MANY_REQUESTS,
+                Json(ErrorResponse {
+                    error: format!(
+                        "Daily quota exceeded. Maximum {} requests per day allowed for your tier.",
+                        daily_limit
+                    ),
+                    error_code: "RATE_LIMIT_EXCEEDED".to_string(),
+                    details: Some(serde_json::json!({
+                        "daily_limit": daily_limit,
+                        "daily_reset_at": reset_daily,
+                        "limit_type": "daily",
+                    })),
+                }),
+            )
+                .into_response();
+
+            let headers = response.headers_mut();
+            headers.insert(
+                "X-RateLimit-Limit",
+                per_minute_limit.to_string().parse().unwrap(),
+            );
+            headers.insert(
+                "X-RateLimit-Remaining",
+                remaining_minute.to_string().parse().unwrap(),
+            );
+            headers.insert(
+                "X-RateLimit-Reset",
+                minute_reset_timestamp.to_string().parse().unwrap(),
+            );
+            headers.insert("X-RateLimit-Daily-Remaining", "0".parse().unwrap());
+            headers.insert(
+                "X-RateLimit-Daily-Reset",
+                reset_daily.to_string().parse().unwrap(),
+            );
+
+            return Ok(response);
+        }
+    }
+
+    // Request allowed - process and add headers
     let mut response = next.run(req).await;
     let headers = response.headers_mut();
-    headers.insert("X-RateLimit-Limit", rate_limit.to_string().parse().unwrap());
+    headers.insert(
+        "X-RateLimit-Limit",
+        per_minute_limit.to_string().parse().unwrap(),
+    );
     headers.insert(
         "X-RateLimit-Remaining",
-        remaining.to_string().parse().unwrap(),
+        remaining_minute.to_string().parse().unwrap(),
     );
     headers.insert(
         "X-RateLimit-Reset",
-        reset_timestamp.to_string().parse().unwrap(),
+        minute_reset_timestamp.to_string().parse().unwrap(),
     );
+
+    if let Some(rem) = daily_remaining {
+        headers.insert(
+            "X-RateLimit-Daily-Remaining",
+            rem.to_string().parse().unwrap(),
+        );
+    }
+    if let Some(reset) = daily_reset_timestamp {
+        headers.insert(
+            "X-RateLimit-Daily-Reset",
+            reset.to_string().parse().unwrap(),
+        );
+    }
 
     Ok(response)
 }

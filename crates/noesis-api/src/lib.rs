@@ -286,6 +286,7 @@ pub fn create_router(state: AppState, config: &ApiConfig) -> Router {
     let rate_limiter = Arc::new(middleware::RateLimiter::new_with_config(
         config.rate_limit_requests,
         config.rate_limit_window_secs,
+        config.redis_url.as_deref(),
     ));
 
     let auth_routes = Router::new()
