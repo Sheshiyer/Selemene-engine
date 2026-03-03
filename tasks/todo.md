@@ -528,3 +528,36 @@
   - `cargo check -p noesis-api` ✅
   - `cargo check -p noesis-api --tests` ✅
   - `cargo test -p noesis-api --test billing_hooks_tests -- --nocapture` ⚠ blocked locally by Xcode license requirement on linker (`xcodebuild -license`)
+
+---
+
+# Task Plan — Wave W2 Per-Engine OpenAPI Schemas (#447)
+
+## Checklist
+- [x] Add 16 dedicated per-engine result schema structs with documented fields/examples.
+- [x] Add OpenAPI union schema for `EngineOutput.result`.
+- [x] Wire engine schema types into API OpenAPI component list.
+- [x] Add OpenAPI regression tests for schema presence and result-field linkage.
+- [x] Run compile/verification commands.
+
+## Notes
+- Kept runtime response shape unchanged (`result: serde_json::Value`), while improving OpenAPI typing via `schema(value_type = EngineResultData)`.
+- Added explicit schema registration so `/api/openapi.json` reliably includes all 16 per-engine schemas.
+
+## Review (fill after execution)
+- Updated `crates/noesis-core/src/types.rs`:
+  - Added 16 per-engine schema structs:
+    - `PanchangaResultSchema`, `NumerologyResultSchema`, `BiorhythmResultSchema`, `HumanDesignResultSchema`, `GeneKeysResultSchema`, `VimshottariResultSchema`, `BiofieldResultSchema`, `VedicClockResultSchema`, `FaceReadingResultSchema`, `NadabrahmanResultSchema`, `TransitsResultSchema`, `EnneagramResultSchema`, `TarotResultSchema`, `IChingResultSchema`, `SacredGeometryResultSchema`, `SigilForgeResultSchema`
+  - Added `EngineResultData` (untagged union enum)
+  - Annotated `EngineOutput.result` with `#[schema(value_type = EngineResultData)]`
+- Updated `crates/noesis-api/src/lib.rs`:
+  - Imported and registered all engine schema types + `EngineResultData` in OpenAPI components.
+- Added test file `crates/noesis-api/tests/openapi_schema_tests.rs`:
+  - asserts 16 per-engine schemas exist in `/api/openapi.json`
+  - asserts each has at least 3 documented fields
+  - asserts `EngineOutput.result` references `EngineResultData`
+- Verification:
+  - `cargo fmt --all` ✅
+  - `cargo check -p noesis-core --features openapi` ✅
+  - `cargo check -p noesis-api` ✅
+  - `cargo check -p noesis-api --tests` ✅
