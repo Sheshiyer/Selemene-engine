@@ -148,6 +148,8 @@ async fn test_admin_usage_summary_response_shape() {
     assert_eq!(status, StatusCode::OK, "Unexpected response: {:?}", body);
     assert!(body["daily"].is_object());
     assert!(body["monthly"].is_object());
+    assert!(body["daily_requests"].is_array());
     assert!(body["engine_breakdown"].is_array());
+    assert!(body["tier_distribution"].is_array());
     assert!(body["top_users"].is_array());
 }

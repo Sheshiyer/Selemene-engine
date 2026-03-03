@@ -6,9 +6,10 @@ import {
   Bar,
   BarChart,
   CartesianGrid,
+  Cell,
   Legend,
-  Line,
-  LineChart,
+  Pie,
+  PieChart,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -16,30 +17,13 @@ import {
 } from "recharts";
 import { PageShell } from "@/components/page-shell";
 import { getAuthToken } from "@/lib/auth";
-import {
-  ApiClientError,
-  getAnalyticsBreakdown,
-  getAnalyticsSummary,
-  getAnalyticsTimeseries,
-  getAnalyticsTopConsumers
-} from "@/lib/api";
+import { ApiClientError, getAdminUsageSummary } from "@/lib/api";
 import { buildQueryString, getNumberParam } from "@/lib/url-query";
-import type {
-  AdminAnalyticsBreakdownEntry,
-  AdminAnalyticsSummaryResponse,
-  AdminAnalyticsTimeseriesPoint,
-  AdminAnalyticsTopConsumerItem
-} from "@/types/admin";
+import type { AdminUsageSummaryResponse } from "@/types/admin";
 
 const REFRESH_OPTIONS = [0, 15, 30, 60] as const;
-
-function formatBucket(bucket: string): string {
-  const date = new Date(bucket);
-  if (Number.isNaN(date.getTime())) {
-    return bucket;
-  }
-  return `${date.getMonth() + 1}/${date.getDate()} ${date.getHours()}:00`;
-}
+const RANGE_DAY_OPTIONS = [7, 14, 30, 60, 90] as const;
+const CHART_COLORS = ["#56d3c2", "#8ac926", "#f9c74f", "#f9844a", "#ef6b73", "#90be6d"];
 
 function formatNumber(value: number): string {
   return new Intl.NumberFormat().format(value);
@@ -49,12 +33,10 @@ function formatDateTime(value: string | null): string {
   if (!value) {
     return "--";
   }
-
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) {
     return "--";
   }
-
   return date.toLocaleString();
 }
 
@@ -63,8 +45,8 @@ export default function AnalyticsPage() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  const [windowHours, setWindowHours] = useState(() =>
-    getNumberParam(searchParams, "window_hours", 24, 1, 24 * 30)
+  const [rangeDays, setRangeDays] = useState(() =>
+    getNumberParam(searchParams, "range_days", 30, 7, 90)
   );
   const [autoRefreshSec, setAutoRefreshSec] = useState(() =>
     getNumberParam(searchParams, "refresh", 0, 0, 60)
@@ -73,33 +55,22 @@ export default function AnalyticsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [lastUpdatedAt, setLastUpdatedAt] = useState<string | null>(null);
-
-  const [summary, setSummary] = useState<AdminAnalyticsSummaryResponse | null>(null);
-  const [timeseries, setTimeseries] = useState<AdminAnalyticsTimeseriesPoint[]>([]);
-  const [engineBreakdown, setEngineBreakdown] = useState<AdminAnalyticsBreakdownEntry[]>([]);
-  const [topConsumers, setTopConsumers] = useState<AdminAnalyticsTopConsumerItem[]>([]);
-
-  const successRate = useMemo(() => {
-    if (!summary || summary.requests_total === 0) {
-      return 0;
-    }
-    return ((summary.success_total / summary.requests_total) * 100).toFixed(2);
-  }, [summary]);
+  const [usage, setUsage] = useState<AdminUsageSummaryResponse | null>(null);
 
   useEffect(() => {
-    setWindowHours(getNumberParam(searchParams, "window_hours", 24, 1, 24 * 30));
+    setRangeDays(getNumberParam(searchParams, "range_days", 30, 7, 90));
     setAutoRefreshSec(getNumberParam(searchParams, "refresh", 0, 0, 60));
   }, [searchParams]);
 
   useEffect(() => {
     const nextQuery = buildQueryString(searchParams, {
-      window_hours: windowHours,
+      range_days: rangeDays,
       refresh: autoRefreshSec > 0 ? autoRefreshSec : undefined
     });
     router.replace(nextQuery ? `${pathname}?${nextQuery}` : pathname, { scroll: false });
-  }, [autoRefreshSec, pathname, router, searchParams, windowHours]);
+  }, [autoRefreshSec, pathname, rangeDays, router, searchParams]);
 
-  const loadAnalytics = useCallback(async () => {
+  const loadUsage = useCallback(async () => {
     const token = getAuthToken();
     if (!token) {
       setError("Missing session token. Please sign in again.");
@@ -111,63 +82,58 @@ export default function AnalyticsPage() {
     setError(null);
 
     try {
-      const [summaryResponse, timeseriesResponse, breakdownResponse, topConsumersResponse] =
-        await Promise.all([
-          getAnalyticsSummary(token, { window_hours: windowHours }),
-          getAnalyticsTimeseries(token, {
-            window_hours: windowHours,
-            bucket: windowHours > 72 ? "day" : "hour"
-          }),
-          getAnalyticsBreakdown(token, { window_hours: windowHours, limit: 8 }),
-          getAnalyticsTopConsumers(token, { window_hours: windowHours, limit: 8 })
-        ]);
+      const response = await getAdminUsageSummary(token, {
+        range_days: rangeDays,
+        engine_limit: 10,
+        top_users_limit: 10
+      });
 
-      setSummary(summaryResponse);
-      setTimeseries(timeseriesResponse.points);
-      setEngineBreakdown(breakdownResponse.engines);
-      setTopConsumers(topConsumersResponse.items);
+      setUsage(response);
       setLastUpdatedAt(new Date().toISOString());
     } catch (err) {
       if (err instanceof ApiClientError) {
         setError(err.payload?.error || err.message);
       } else {
-        setError("Failed to load analytics");
+        setError("Failed to load usage analytics");
       }
     } finally {
       setLoading(false);
     }
-  }, [windowHours]);
+  }, [rangeDays]);
 
   useEffect(() => {
-    void loadAnalytics();
-  }, [loadAnalytics]);
+    void loadUsage();
+  }, [loadUsage]);
 
   useEffect(() => {
     if (autoRefreshSec <= 0) {
       return;
     }
     const interval = window.setInterval(() => {
-      void loadAnalytics();
+      void loadUsage();
     }, autoRefreshSec * 1000);
     return () => window.clearInterval(interval);
-  }, [autoRefreshSec, loadAnalytics]);
+  }, [autoRefreshSec, loadUsage]);
+
+  const chartData = useMemo(() => usage?.daily_requests ?? [], [usage]);
 
   return (
     <PageShell
       title="Usage Analytics"
-      summary="Time-windowed usage, engine segmentation, and top-consumer attribution."
+      summary="Daily request activity, engine popularity, tier distribution, and top users."
     >
       <div className="panel-inline">
         <label>
-          Window
+          Date range
           <select
-            value={windowHours}
-            onChange={(event) => setWindowHours(Number.parseInt(event.target.value, 10))}
+            value={rangeDays}
+            onChange={(event) => setRangeDays(Number.parseInt(event.target.value, 10))}
           >
-            <option value={24}>Last 24 hours</option>
-            <option value={72}>Last 72 hours</option>
-            <option value={168}>Last 7 days</option>
-            <option value={336}>Last 14 days</option>
+            {RANGE_DAY_OPTIONS.map((value) => (
+              <option key={value} value={value}>
+                Last {value} days
+              </option>
+            ))}
           </select>
         </label>
         <label>
@@ -183,7 +149,7 @@ export default function AnalyticsPage() {
             ))}
           </select>
         </label>
-        <button type="button" onClick={() => void loadAnalytics()}>
+        <button type="button" onClick={() => void loadUsage()}>
           Refresh
         </button>
       </div>
@@ -194,28 +160,20 @@ export default function AnalyticsPage() {
 
       <div className="grid metrics">
         <article className="metric">
-          <div className="label">Requests</div>
-          <div className="value">{summary ? formatNumber(summary.requests_total) : "--"}</div>
+          <div className="label">24h Requests</div>
+          <div className="value">{usage ? formatNumber(usage.daily.total) : "--"}</div>
         </article>
         <article className="metric">
-          <div className="label">Error Rate</div>
-          <div className="value">{summary ? `${summary.error_rate_pct.toFixed(2)}%` : "--"}</div>
+          <div className="label">30d Requests</div>
+          <div className="value">{usage ? formatNumber(usage.monthly.total) : "--"}</div>
         </article>
         <article className="metric">
-          <div className="label">Success Rate</div>
-          <div className="value">{summary ? `${successRate}%` : "--"}</div>
+          <div className="label">24h Active Users</div>
+          <div className="value">{usage ? formatNumber(usage.daily.active_users) : "--"}</div>
         </article>
         <article className="metric">
-          <div className="label">P95 (ms)</div>
-          <div className="value">{summary ? summary.p95_duration_ms.toFixed(0) : "--"}</div>
-        </article>
-        <article className="metric">
-          <div className="label">Active Users</div>
-          <div className="value">{summary ? formatNumber(summary.active_users) : "--"}</div>
-        </article>
-        <article className="metric">
-          <div className="label">Unique Keys</div>
-          <div className="value">{summary ? formatNumber(summary.unique_keys) : "--"}</div>
+          <div className="label">30d Active Users</div>
+          <div className="value">{usage ? formatNumber(usage.monthly.active_users) : "--"}</div>
         </article>
       </div>
 
@@ -224,51 +182,12 @@ export default function AnalyticsPage() {
       ) : (
         <>
           <article className="panel chart-panel">
-            <h3>Traffic Over Time</h3>
+            <h3>Daily Requests</h3>
             <div className="chart-wrap">
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={timeseries}>
+                <BarChart data={chartData}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#214247" />
-                  <XAxis
-                    dataKey="bucket_start"
-                    tickFormatter={formatBucket}
-                    stroke="#9cb9b6"
-                    minTickGap={20}
-                  />
-                  <YAxis stroke="#9cb9b6" />
-                  <Tooltip
-                    formatter={(value) => formatNumber(Number(value))}
-                    labelFormatter={(label) => formatBucket(String(label))}
-                  />
-                  <Legend />
-                  <Line
-                    type="monotone"
-                    dataKey="request_count"
-                    name="Requests"
-                    stroke="#56d3c2"
-                    strokeWidth={2}
-                    dot={false}
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="failure_count"
-                    name="Failures"
-                    stroke="#ef6b73"
-                    strokeWidth={2}
-                    dot={false}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-          </article>
-
-          <article className="panel chart-panel">
-            <h3>Engine Breakdown</h3>
-            <div className="chart-wrap">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={engineBreakdown}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#214247" />
-                  <XAxis dataKey="label" stroke="#9cb9b6" />
+                  <XAxis dataKey="day" stroke="#9cb9b6" />
                   <YAxis stroke="#9cb9b6" />
                   <Tooltip formatter={(value) => formatNumber(Number(value))} />
                   <Legend />
@@ -278,34 +197,78 @@ export default function AnalyticsPage() {
             </div>
           </article>
 
+          <div className="grid two-col">
+            <article className="panel chart-panel">
+              <h3>Engine Popularity</h3>
+              <div className="chart-wrap">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={usage?.engine_breakdown ?? []}
+                      dataKey="request_count"
+                      nameKey="engine_id"
+                      outerRadius={110}
+                      label
+                    >
+                      {(usage?.engine_breakdown ?? []).map((entry, index) => (
+                        <Cell key={`${entry.engine_id}-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip formatter={(value) => formatNumber(Number(value))} />
+                    <Legend />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+            </article>
+
+            <article className="panel chart-panel">
+              <h3>Tier Distribution</h3>
+              <div className="chart-wrap">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={usage?.tier_distribution ?? []}
+                      dataKey="request_count"
+                      nameKey="tier"
+                      outerRadius={110}
+                      label
+                    >
+                      {(usage?.tier_distribution ?? []).map((entry, index) => (
+                        <Cell key={`${entry.tier}-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip formatter={(value) => formatNumber(Number(value))} />
+                    <Legend />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+            </article>
+          </div>
+
           <article className="panel">
-            <h3>Top Consumers</h3>
+            <h3>Top 10 Users</h3>
             <div className="table-wrap compact">
               <table>
                 <thead>
                   <tr>
                     <th>User</th>
                     <th>Requests</th>
-                    <th>Failures</th>
-                    <th>Avg Duration (ms)</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {topConsumers.map((item) => (
+                  {(usage?.top_users ?? []).map((item) => (
                     <tr key={item.user_id}>
                       <td>
                         <div className="table-primary">{item.user_email}</div>
                         <div className="helper">{item.user_id}</div>
                       </td>
                       <td>{formatNumber(item.request_count)}</td>
-                      <td>{formatNumber(item.failure_count)}</td>
-                      <td>{item.avg_duration_ms.toFixed(1)}</td>
                     </tr>
                   ))}
-                  {topConsumers.length === 0 ? (
+                  {(usage?.top_users.length ?? 0) === 0 ? (
                     <tr>
-                      <td colSpan={4}>
-                        <p className="helper">No consumers in this time window.</p>
+                      <td colSpan={2}>
+                        <p className="helper">No usage activity in the selected range.</p>
                       </td>
                     </tr>
                   ) : null}

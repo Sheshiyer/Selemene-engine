@@ -444,3 +444,47 @@
   - `cargo fmt --all` ✅
   - `cargo check -p noesis-api` ✅
   - `cargo test -p noesis-api --test usage_analytics_tests -- --nocapture` ✅
+
+---
+
+# Task Plan — Wave W2 Admin Usage Analytics Dashboard (#458)
+
+## Checklist
+- [x] Extend usage summary API payload for dashboard data (`daily_requests`, `tier_distribution`).
+- [x] Add date-range query support (`range_days`) to `/api/v1/admin/usage/summary`.
+- [x] Wire frontend API client/types for new usage summary contract.
+- [x] Update admin analytics page to use `/api/v1/admin/usage/summary`.
+- [x] Add daily request chart, engine popularity pie chart, tier distribution pie chart, top 10 users table.
+- [x] Add date range selector and hover-enabled chart interactions.
+- [x] Run backend and frontend verification gates.
+
+## Notes
+- Kept existing analytics endpoints untouched for backward compatibility.
+- Dashboard now uses usage-summary endpoint as primary source for usage views.
+
+## Review (fill after execution)
+- Backend (`noesis-api` + `noesis-data`):
+  - Extended admin usage response with:
+    - `daily_requests` (time series)
+    - `tier_distribution`
+  - Added `range_days` query support on `/api/v1/admin/usage/summary`
+  - Added repository methods:
+    - `admin_daily_series`
+    - `admin_tier_distribution`
+  - Updated OpenAPI schema registration for new response entities.
+- Frontend (`apps/admin-web`):
+  - Added new API client method: `getAdminUsageSummary`
+  - Added types: `AdminUsageSummaryResponse` and nested usage chart/table types
+  - Reworked `/analytics` page to include:
+    - daily requests bar chart
+    - engine popularity pie chart
+    - tier distribution pie chart
+    - top 10 users table
+    - date range selector + auto-refresh
+- Verification:
+  - `cargo fmt --all` ✅
+  - `cargo check -p noesis-api` ✅
+  - `cargo test -p noesis-api --test usage_analytics_tests -- --nocapture` ✅
+  - `npm --prefix apps/admin-web run typecheck` ✅
+  - `npm --prefix apps/admin-web run lint` ✅
+  - `npm --prefix apps/admin-web run build` ✅

@@ -32,6 +32,16 @@ pub struct AdminUsageTopUser {
     pub request_count: i64,
 }
 
+pub struct AdminUsageDailyPoint {
+    pub day: String,
+    pub request_count: i64,
+}
+
+pub struct AdminUsageTierDistribution {
+    pub tier: String,
+    pub request_count: i64,
+}
+
 impl UsageRepository {
     pub fn new(pool: PgPool) -> Self {
         Self { pool }
@@ -179,6 +189,62 @@ impl UsageRepository {
             .into_iter()
             .map(|(engine_id, request_count)| UsageEngineBreakdown {
                 engine_id,
+                request_count,
+            })
+            .collect())
+    }
+
+    /// Get daily request counts over the last `range_days` days.
+    pub async fn admin_daily_series(
+        &self,
+        range_days: i64,
+    ) -> Result<Vec<AdminUsageDailyPoint>, Error> {
+        let rows = sqlx::query_as::<_, (String, i64)>(
+            r#"
+            SELECT
+                to_char(date_trunc('day', created_at), 'YYYY-MM-DD') AS day,
+                COUNT(*)::BIGINT AS request_count
+            FROM usage_logs
+            WHERE created_at >= NOW() - make_interval(days => $1)
+            GROUP BY date_trunc('day', created_at)
+            ORDER BY date_trunc('day', created_at) ASC
+            "#,
+        )
+        .bind(range_days)
+        .fetch_all(&self.pool)
+        .await?;
+
+        Ok(rows
+            .into_iter()
+            .map(|(day, request_count)| AdminUsageDailyPoint { day, request_count })
+            .collect())
+    }
+
+    /// Get request distribution by user tier over the last `window_hours`.
+    pub async fn admin_tier_distribution(
+        &self,
+        window_hours: i64,
+    ) -> Result<Vec<AdminUsageTierDistribution>, Error> {
+        let rows = sqlx::query_as::<_, (String, i64)>(
+            r#"
+            SELECT
+                COALESCE(NULLIF(lower(u.tier), ''), 'unknown') AS tier,
+                COUNT(*)::BIGINT AS request_count
+            FROM usage_logs l
+            INNER JOIN users u ON u.id = l.user_id
+            WHERE l.created_at >= NOW() - make_interval(hours => $1)
+            GROUP BY COALESCE(NULLIF(lower(u.tier), ''), 'unknown')
+            ORDER BY request_count DESC, tier ASC
+            "#,
+        )
+        .bind(window_hours)
+        .fetch_all(&self.pool)
+        .await?;
+
+        Ok(rows
+            .into_iter()
+            .map(|(tier, request_count)| AdminUsageTierDistribution {
+                tier,
                 request_count,
             })
             .collect())

@@ -284,10 +284,24 @@ pub struct AdminUsageTopUserEntry {
 }
 
 #[derive(Serialize, ToSchema)]
+pub struct AdminUsageDailyPoint {
+    pub day: String,
+    pub request_count: i64,
+}
+
+#[derive(Serialize, ToSchema)]
+pub struct AdminUsageTierEntry {
+    pub tier: String,
+    pub request_count: i64,
+}
+
+#[derive(Serialize, ToSchema)]
 pub struct AdminUsageSummaryResponse {
     pub daily: AdminUsageWindowSummary,
     pub monthly: AdminUsageWindowSummary,
+    pub daily_requests: Vec<AdminUsageDailyPoint>,
     pub engine_breakdown: Vec<AdminUsageEngineEntry>,
+    pub tier_distribution: Vec<AdminUsageTierEntry>,
     pub top_users: Vec<AdminUsageTopUserEntry>,
 }
 
@@ -435,6 +449,7 @@ pub struct AnalyticsQuery {
 pub struct AdminUsageSummaryQuery {
     pub engine_limit: Option<i64>,
     pub top_users_limit: Option<i64>,
+    pub range_days: Option<i64>,
 }
 
 #[derive(Deserialize, Default)]
@@ -1867,7 +1882,8 @@ pub async fn history_sync_events(
     tag = "admin",
     params(
         ("engine_limit" = Option<i64>, Query, description = "Max engine breakdown rows (default 10, max 50)"),
-        ("top_users_limit" = Option<i64>, Query, description = "Max top users rows (default 10, max 100)")
+        ("top_users_limit" = Option<i64>, Query, description = "Max top users rows (default 10, max 100)"),
+        ("range_days" = Option<i64>, Query, description = "Daily chart range in days (7-90, default 30)")
     ),
     responses(
         (status = 200, description = "Usage summary", body = AdminUsageSummaryResponse),
@@ -1895,6 +1911,7 @@ pub async fn usage_summary(
 
     let engine_limit = query.engine_limit.unwrap_or(10).clamp(1, 50);
     let top_users_limit = query.top_users_limit.unwrap_or(10).clamp(1, 100);
+    let range_days = query.range_days.unwrap_or(30).clamp(7, 90);
 
     let daily = usage_repo.admin_usage_summary(24).await.map_err(|e| {
         EngineError::InternalError(format!("Failed to fetch daily usage summary: {e}"))
@@ -1903,6 +1920,19 @@ pub async fn usage_summary(
     let monthly = usage_repo.admin_usage_summary(24 * 30).await.map_err(|e| {
         EngineError::InternalError(format!("Failed to fetch monthly usage summary: {e}"))
     })?;
+
+    let daily_requests = usage_repo
+        .admin_daily_series(range_days)
+        .await
+        .map_err(|e| {
+            EngineError::InternalError(format!("Failed to fetch daily usage series: {e}"))
+        })?
+        .into_iter()
+        .map(|point| AdminUsageDailyPoint {
+            day: point.day,
+            request_count: point.request_count,
+        })
+        .collect::<Vec<_>>();
 
     let engine_breakdown = usage_repo
         .admin_engine_breakdown(24 * 30, engine_limit)
@@ -1913,6 +1943,17 @@ pub async fn usage_summary(
         .into_iter()
         .map(|row| AdminUsageEngineEntry {
             engine_id: row.engine_id,
+            request_count: row.request_count,
+        })
+        .collect::<Vec<_>>();
+
+    let tier_distribution = usage_repo
+        .admin_tier_distribution(24 * 30)
+        .await
+        .map_err(|e| EngineError::InternalError(format!("Failed to fetch tier distribution: {e}")))?
+        .into_iter()
+        .map(|row| AdminUsageTierEntry {
+            tier: row.tier,
             request_count: row.request_count,
         })
         .collect::<Vec<_>>();
@@ -1944,7 +1985,9 @@ pub async fn usage_summary(
                 failure: monthly.failure,
                 active_users: monthly.active_users,
             },
+            daily_requests,
             engine_breakdown,
+            tier_distribution,
             top_users,
         }),
     )
