@@ -73,6 +73,12 @@ use utoipa_swagger_ui::SwaggerUi;
         engine_info_handler,
         list_workflows_handler,
         workflow_execute_handler,
+        birth_blueprint_execute_doc,
+        daily_practice_execute_doc,
+        decision_support_execute_doc,
+        self_inquiry_execute_doc,
+        creative_expression_execute_doc,
+        full_spectrum_execute_doc,
         workflow_info_handler,
         handlers::users::get_me,
         handlers::users::get_my_usage,
@@ -138,6 +144,18 @@ use utoipa_swagger_ui::SwaggerUi;
             EngineListResponse,
             WorkflowListResponse,
             WorkflowInfoResponse,
+            BirthBlueprintSynthesisSchema,
+            DailyPracticeSynthesisSchema,
+            DecisionSupportSynthesisSchema,
+            SelfInquirySynthesisSchema,
+            CreativeExpressionSynthesisSchema,
+            FullSpectrumSynthesisSchema,
+            BirthBlueprintWorkflowResultSchema,
+            DailyPracticeWorkflowResultSchema,
+            DecisionSupportWorkflowResultSchema,
+            SelfInquiryWorkflowResultSchema,
+            CreativeExpressionWorkflowResultSchema,
+            FullSpectrumWorkflowResultSchema,
             ErrorResponse,
             handlers::users::UserResponse,
             handlers::users::LocationResponse,
@@ -546,6 +564,102 @@ struct WorkflowInfoResponse {
     name: String,
     description: String,
     engine_ids: Vec<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+struct BirthBlueprintSynthesisSchema {
+    themes: Vec<String>,
+    alignments: Vec<String>,
+    tensions: Vec<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+struct DailyPracticeSynthesisSchema {
+    practices: Vec<String>,
+    timing_notes: Vec<String>,
+    cautions: Vec<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+struct DecisionSupportSynthesisSchema {
+    options_summary: Vec<String>,
+    decision_lenses: Vec<String>,
+    risks: Vec<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+struct SelfInquirySynthesisSchema {
+    inquiry_threads: Vec<String>,
+    shadow_themes: Vec<String>,
+    reflection_prompts: Vec<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+struct CreativeExpressionSynthesisSchema {
+    creative_seeds: Vec<String>,
+    modality_alignment: Vec<String>,
+    blockers: Vec<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+struct FullSpectrumSynthesisSchema {
+    integrative_themes: Vec<String>,
+    cross_system_alignments: Vec<String>,
+    developmental_edges: Vec<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+struct BirthBlueprintWorkflowResultSchema {
+    workflow_id: String,
+    engine_outputs: std::collections::HashMap<String, EngineOutput>,
+    synthesis: Option<BirthBlueprintSynthesisSchema>,
+    total_time_ms: f64,
+    timestamp: chrono::DateTime<chrono::Utc>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+struct DailyPracticeWorkflowResultSchema {
+    workflow_id: String,
+    engine_outputs: std::collections::HashMap<String, EngineOutput>,
+    synthesis: Option<DailyPracticeSynthesisSchema>,
+    total_time_ms: f64,
+    timestamp: chrono::DateTime<chrono::Utc>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+struct DecisionSupportWorkflowResultSchema {
+    workflow_id: String,
+    engine_outputs: std::collections::HashMap<String, EngineOutput>,
+    synthesis: Option<DecisionSupportSynthesisSchema>,
+    total_time_ms: f64,
+    timestamp: chrono::DateTime<chrono::Utc>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+struct SelfInquiryWorkflowResultSchema {
+    workflow_id: String,
+    engine_outputs: std::collections::HashMap<String, EngineOutput>,
+    synthesis: Option<SelfInquirySynthesisSchema>,
+    total_time_ms: f64,
+    timestamp: chrono::DateTime<chrono::Utc>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+struct CreativeExpressionWorkflowResultSchema {
+    workflow_id: String,
+    engine_outputs: std::collections::HashMap<String, EngineOutput>,
+    synthesis: Option<CreativeExpressionSynthesisSchema>,
+    total_time_ms: f64,
+    timestamp: chrono::DateTime<chrono::Utc>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+struct FullSpectrumWorkflowResultSchema {
+    workflow_id: String,
+    engine_outputs: std::collections::HashMap<String, EngineOutput>,
+    synthesis: Option<FullSpectrumSynthesisSchema>,
+    total_time_ms: f64,
+    timestamp: chrono::DateTime<chrono::Utc>,
 }
 
 #[derive(Serialize, ToSchema)]
@@ -1000,6 +1114,15 @@ async fn workflow_execute_handler(
     Path(workflow_id): Path<String>,
     Json(input): Json<EngineInput>,
 ) -> Result<Json<noesis_core::WorkflowResult>, (StatusCode, Json<ErrorResponse>)> {
+    execute_workflow_by_id(state, user, workflow_id, input).await
+}
+
+async fn execute_workflow_by_id(
+    state: AppState,
+    user: AuthUser,
+    workflow_id: String,
+    input: EngineInput,
+) -> Result<Json<noesis_core::WorkflowResult>, (StatusCode, Json<ErrorResponse>)> {
     let start = Instant::now();
 
     // Capture input for persistence before it's moved into the workflow
@@ -1129,6 +1252,156 @@ async fn workflow_execute_handler(
             Err(engine_error_to_response(e))
         }
     }
+}
+
+/// POST /api/v1/workflows/birth-blueprint/execute -- workflow-specific OpenAPI shape
+#[utoipa::path(
+    post,
+    path = "/api/v1/workflows/birth-blueprint/execute",
+    tag = "workflows",
+    request_body = EngineInput,
+    responses(
+        (status = 200, description = "Birth Blueprint workflow result", body = BirthBlueprintWorkflowResultSchema),
+        (status = 401, description = "Unauthorized", body = ErrorResponse),
+        (status = 403, description = "Forbidden", body = ErrorResponse),
+        (status = 404, description = "Workflow not found", body = ErrorResponse),
+        (status = 422, description = "Validation error", body = ErrorResponse),
+        (status = 429, description = "Rate limit exceeded", body = ErrorResponse),
+    ),
+    security(("bearer_auth" = []), ("api_key" = []))
+)]
+#[allow(dead_code)]
+async fn birth_blueprint_execute_doc(
+    State(state): State<AppState>,
+    Extension(user): Extension<AuthUser>,
+    Json(input): Json<EngineInput>,
+) -> Result<Json<noesis_core::WorkflowResult>, (StatusCode, Json<ErrorResponse>)> {
+    execute_workflow_by_id(state, user, "birth-blueprint".to_string(), input).await
+}
+
+/// POST /api/v1/workflows/daily-practice/execute -- workflow-specific OpenAPI shape
+#[utoipa::path(
+    post,
+    path = "/api/v1/workflows/daily-practice/execute",
+    tag = "workflows",
+    request_body = EngineInput,
+    responses(
+        (status = 200, description = "Daily Practice workflow result", body = DailyPracticeWorkflowResultSchema),
+        (status = 401, description = "Unauthorized", body = ErrorResponse),
+        (status = 403, description = "Forbidden", body = ErrorResponse),
+        (status = 404, description = "Workflow not found", body = ErrorResponse),
+        (status = 422, description = "Validation error", body = ErrorResponse),
+        (status = 429, description = "Rate limit exceeded", body = ErrorResponse),
+    ),
+    security(("bearer_auth" = []), ("api_key" = []))
+)]
+#[allow(dead_code)]
+async fn daily_practice_execute_doc(
+    State(state): State<AppState>,
+    Extension(user): Extension<AuthUser>,
+    Json(input): Json<EngineInput>,
+) -> Result<Json<noesis_core::WorkflowResult>, (StatusCode, Json<ErrorResponse>)> {
+    execute_workflow_by_id(state, user, "daily-practice".to_string(), input).await
+}
+
+/// POST /api/v1/workflows/decision-support/execute -- workflow-specific OpenAPI shape
+#[utoipa::path(
+    post,
+    path = "/api/v1/workflows/decision-support/execute",
+    tag = "workflows",
+    request_body = EngineInput,
+    responses(
+        (status = 200, description = "Decision Support workflow result", body = DecisionSupportWorkflowResultSchema),
+        (status = 401, description = "Unauthorized", body = ErrorResponse),
+        (status = 403, description = "Forbidden", body = ErrorResponse),
+        (status = 404, description = "Workflow not found", body = ErrorResponse),
+        (status = 422, description = "Validation error", body = ErrorResponse),
+        (status = 429, description = "Rate limit exceeded", body = ErrorResponse),
+    ),
+    security(("bearer_auth" = []), ("api_key" = []))
+)]
+#[allow(dead_code)]
+async fn decision_support_execute_doc(
+    State(state): State<AppState>,
+    Extension(user): Extension<AuthUser>,
+    Json(input): Json<EngineInput>,
+) -> Result<Json<noesis_core::WorkflowResult>, (StatusCode, Json<ErrorResponse>)> {
+    execute_workflow_by_id(state, user, "decision-support".to_string(), input).await
+}
+
+/// POST /api/v1/workflows/self-inquiry/execute -- workflow-specific OpenAPI shape
+#[utoipa::path(
+    post,
+    path = "/api/v1/workflows/self-inquiry/execute",
+    tag = "workflows",
+    request_body = EngineInput,
+    responses(
+        (status = 200, description = "Self Inquiry workflow result", body = SelfInquiryWorkflowResultSchema),
+        (status = 401, description = "Unauthorized", body = ErrorResponse),
+        (status = 403, description = "Forbidden", body = ErrorResponse),
+        (status = 404, description = "Workflow not found", body = ErrorResponse),
+        (status = 422, description = "Validation error", body = ErrorResponse),
+        (status = 429, description = "Rate limit exceeded", body = ErrorResponse),
+    ),
+    security(("bearer_auth" = []), ("api_key" = []))
+)]
+#[allow(dead_code)]
+async fn self_inquiry_execute_doc(
+    State(state): State<AppState>,
+    Extension(user): Extension<AuthUser>,
+    Json(input): Json<EngineInput>,
+) -> Result<Json<noesis_core::WorkflowResult>, (StatusCode, Json<ErrorResponse>)> {
+    execute_workflow_by_id(state, user, "self-inquiry".to_string(), input).await
+}
+
+/// POST /api/v1/workflows/creative-expression/execute -- workflow-specific OpenAPI shape
+#[utoipa::path(
+    post,
+    path = "/api/v1/workflows/creative-expression/execute",
+    tag = "workflows",
+    request_body = EngineInput,
+    responses(
+        (status = 200, description = "Creative Expression workflow result", body = CreativeExpressionWorkflowResultSchema),
+        (status = 401, description = "Unauthorized", body = ErrorResponse),
+        (status = 403, description = "Forbidden", body = ErrorResponse),
+        (status = 404, description = "Workflow not found", body = ErrorResponse),
+        (status = 422, description = "Validation error", body = ErrorResponse),
+        (status = 429, description = "Rate limit exceeded", body = ErrorResponse),
+    ),
+    security(("bearer_auth" = []), ("api_key" = []))
+)]
+#[allow(dead_code)]
+async fn creative_expression_execute_doc(
+    State(state): State<AppState>,
+    Extension(user): Extension<AuthUser>,
+    Json(input): Json<EngineInput>,
+) -> Result<Json<noesis_core::WorkflowResult>, (StatusCode, Json<ErrorResponse>)> {
+    execute_workflow_by_id(state, user, "creative-expression".to_string(), input).await
+}
+
+/// POST /api/v1/workflows/full-spectrum/execute -- workflow-specific OpenAPI shape
+#[utoipa::path(
+    post,
+    path = "/api/v1/workflows/full-spectrum/execute",
+    tag = "workflows",
+    request_body = EngineInput,
+    responses(
+        (status = 200, description = "Full Spectrum workflow result", body = FullSpectrumWorkflowResultSchema),
+        (status = 401, description = "Unauthorized", body = ErrorResponse),
+        (status = 403, description = "Forbidden", body = ErrorResponse),
+        (status = 404, description = "Workflow not found", body = ErrorResponse),
+        (status = 422, description = "Validation error", body = ErrorResponse),
+        (status = 429, description = "Rate limit exceeded", body = ErrorResponse),
+    ),
+    security(("bearer_auth" = []), ("api_key" = []))
+)]
+#[allow(dead_code)]
+async fn full_spectrum_execute_doc(
+    State(state): State<AppState>,
+    Extension(user): Extension<AuthUser>,
+    Json(input): Json<EngineInput>,
+) -> Result<Json<noesis_core::WorkflowResult>, (StatusCode, Json<ErrorResponse>)> {
+    execute_workflow_by_id(state, user, "full-spectrum".to_string(), input).await
 }
 
 /// GET /api/v1/workflows -- list all workflow IDs
