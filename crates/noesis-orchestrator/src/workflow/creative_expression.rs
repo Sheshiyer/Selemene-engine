@@ -178,7 +178,12 @@ impl CreativeExpressionWorkflow {
                          intention processing with Sacred Geometry forms for \
                          creative inspiration and direction"
                 .to_string(),
-            engine_ids: vec!["sigil-forge".to_string(), "sacred-geometry".to_string()],
+            engine_ids: vec![
+                "sigil-forge".to_string(),
+                "sacred-geometry".to_string(),
+                "nadabrahman".to_string(),
+                "numerology".to_string(),
+            ],
             synthesis_type: SynthesisType::CreativeExpression,
             required_phase: Self::REQUIRED_PHASE,
             default_options: Self::default_options(),
@@ -228,17 +233,31 @@ impl CreativeExpressionWorkflow {
         geo_opts.insert("include_meditation".to_string(), json!(true));
         engine_opts.insert("sacred-geometry".to_string(), geo_opts);
 
+        let mut nada_opts = HashMap::new();
+        nada_opts.insert("intention".to_string(), json!(input.intention.clone()));
+        engine_opts.insert("nadabrahman".to_string(), nada_opts);
+
+        let mut numerology_opts = HashMap::new();
+        numerology_opts.insert("focus".to_string(), json!("creative_expression"));
+        numerology_opts.insert("intention".to_string(), json!(input.intention.clone()));
+        engine_opts.insert("numerology".to_string(), numerology_opts);
+
         engine_opts
     }
 
     /// Validate that required engines are present in results
     pub fn validate_results(results: &HashMap<String, EngineOutput>) -> Result<(), Vec<String>> {
         // At least one engine should succeed
-        let available: Vec<&str> = ["sigil-forge", "sacred-geometry"]
-            .iter()
-            .filter(|e| results.contains_key(&e.to_string()))
-            .copied()
-            .collect();
+        let available: Vec<&str> = [
+            "sigil-forge",
+            "sacred-geometry",
+            "nadabrahman",
+            "numerology",
+        ]
+        .iter()
+        .filter(|e| results.contains_key(&e.to_string()))
+        .copied()
+        .collect();
 
         if available.is_empty() {
             Err(vec![
@@ -297,9 +316,11 @@ mod tests {
     fn test_definition() {
         let def = CreativeExpressionWorkflow::definition();
         assert_eq!(def.id, "creative-expression");
-        assert_eq!(def.engine_ids.len(), 2);
+        assert_eq!(def.engine_ids.len(), 4);
         assert!(def.engine_ids.contains(&"sigil-forge".to_string()));
         assert!(def.engine_ids.contains(&"sacred-geometry".to_string()));
+        assert!(def.engine_ids.contains(&"nadabrahman".to_string()));
+        assert!(def.engine_ids.contains(&"numerology".to_string()));
         assert_eq!(def.synthesis_type, SynthesisType::CreativeExpression);
         assert_eq!(def.required_phase, 1);
     }
@@ -308,7 +329,7 @@ mod tests {
     fn test_base_definition() {
         let base = CreativeExpressionWorkflow::base_definition();
         assert_eq!(base.id, "creative-expression");
-        assert_eq!(base.engine_ids.len(), 2);
+        assert_eq!(base.engine_ids.len(), 4);
     }
 
     #[test]

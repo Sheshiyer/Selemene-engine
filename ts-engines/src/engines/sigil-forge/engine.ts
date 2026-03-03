@@ -3,6 +3,7 @@
  */
 
 import type { ConsciousnessEngine, EngineInput, EngineMetadata, EngineOutput } from '../../types'
+import { EngineValidationError } from '../../utils'
 import { SeededRandom, getDefaultSeed } from '../../utils/random'
 import {
   CHARGING_METHODS,
@@ -14,6 +15,24 @@ import {
 import { generateWitnessPrompts } from './witness'
 
 export class SigilForgeEngine implements ConsciousnessEngine {
+  private safeSvgPreview(template?: string): { status: 'absent' | 'accepted' | 'rejected'; reason?: string } {
+    if (!template) {
+      return { status: 'absent' }
+    }
+
+    const trimmed = template.trim().toLowerCase()
+    if (!trimmed.startsWith('<svg') || !trimmed.includes('</svg>')) {
+      return { status: 'rejected', reason: 'Template must be a complete SVG document.' }
+    }
+
+    // Prevent scriptable SVG payloads.
+    if (trimmed.includes('<script') || trimmed.includes('onload=')) {
+      return { status: 'rejected', reason: 'SVG template contains disallowed script content.' }
+    }
+
+    return { status: 'accepted' }
+  }
+
   metadata(): EngineMetadata {
     return {
       id: 'sigil-forge',
@@ -51,12 +70,15 @@ export class SigilForgeEngine implements ConsciousnessEngine {
       (input.parameters.intent_text as string | undefined) ??
       (input.parameters.question as string | undefined)
     const methodParam = input.parameters.method as string | undefined
+    const svgTemplate = input.parameters.svg_template as string | undefined
     const seed = input.seed ?? getDefaultSeed()
 
     // Validate intention
     if (!intention || typeof intention !== 'string' || intention.trim() === '') {
-      throw new Error(
+      throw new EngineValidationError(
         'Intention parameter is required. Please provide a present-tense statement of your desire.',
+        'MISSING_INTENTION',
+        { field: 'intention' },
       )
     }
 
@@ -64,6 +86,13 @@ export class SigilForgeEngine implements ConsciousnessEngine {
 
     // Select method
     let method = methodParam ? getMethodById(methodParam) : undefined
+
+    if (methodParam && !method) {
+      throw new EngineValidationError('Unknown sigil method.', 'INVALID_SIGIL_METHOD', {
+        provided: methodParam,
+        supported: getMethodIds(),
+      })
+    }
 
     if (!method) {
       // Auto-select based on intention characteristics
@@ -96,6 +125,8 @@ export class SigilForgeEngine implements ConsciousnessEngine {
       processedLetters ?? undefined,
       seed,
     )
+
+    const svgPreview = this.safeSvgPreview(svgTemplate)
 
     const endTime = performance.now()
 
@@ -130,6 +161,7 @@ export class SigilForgeEngine implements ConsciousnessEngine {
           'Release attachment to outcome',
         ],
       },
+      svg_preview: svgPreview,
       seed,
     }
 

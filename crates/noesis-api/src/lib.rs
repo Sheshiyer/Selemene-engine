@@ -21,7 +21,7 @@ pub use config::ApiConfig;
 pub use logging::{init_tracing, init_tracing_json};
 
 use axum::{
-    extract::{DefaultBodyLimit, Json, Path, State},
+    extract::{DefaultBodyLimit, Json, Multipart, Path, State},
     http::{HeaderValue, Method, StatusCode},
     middleware as axum_middleware,
     response::IntoResponse,
@@ -35,9 +35,9 @@ use noesis_core::{
     BiofieldResultSchema, BiorhythmResultSchema, EngineError, EngineInput, EngineOutput,
     EngineResultData, EnneagramResultSchema, FaceReadingResultSchema, GeneKeysResultSchema,
     HumanDesignResultSchema, IChingResultSchema, NadabrahmanResultSchema, NumerologyResultSchema,
-    PanchangaResultSchema, SacredGeometryResultSchema, SigilForgeResultSchema, TarotResultSchema,
-    TransitsResultSchema, ValidationResult, VedicClockResultSchema, VimshottariResultSchema,
-    WorkflowResult,
+    PanchangaResultSchema, Precision, SacredGeometryResultSchema, SigilForgeResultSchema,
+    TarotResultSchema, TransitsResultSchema, ValidationResult, VedicClockResultSchema,
+    VimshottariResultSchema, WorkflowResult,
 };
 use noesis_data::models::reading::NewReading;
 use noesis_data::repositories::admin_repository::AdminRepository;
@@ -48,6 +48,7 @@ use noesis_metrics::NoesisMetrics;
 use noesis_orchestrator::WorkflowOrchestrator;
 use sentry_tower::{NewSentryLayer, SentryHttpLayer};
 use serde::{Deserialize, Serialize};
+use serde_json::Value;
 use sha2::{Digest, Sha256};
 use sqlx::postgres::{PgConnectOptions, PgPoolOptions};
 use std::sync::Arc;
@@ -69,6 +70,7 @@ use utoipa_swagger_ui::SwaggerUi;
         status_handler,
         list_engines_handler,
         calculate_handler,
+        face_reading_upload_handler,
         validate_handler,
         engine_info_handler,
         list_workflows_handler,
@@ -156,6 +158,7 @@ use utoipa_swagger_ui::SwaggerUi;
             SelfInquiryWorkflowResultSchema,
             CreativeExpressionWorkflowResultSchema,
             FullSpectrumWorkflowResultSchema,
+            FaceUploadResponse,
             ErrorResponse,
             handlers::users::UserResponse,
             handlers::users::LocationResponse,
@@ -529,6 +532,10 @@ pub fn create_router(state: AppState, config: &ApiConfig) -> Router {
         .route("/status", get(status_handler))
         .route("/engines", get(list_engines_handler))
         .route("/engines/:engine_id/calculate", post(calculate_handler))
+        .route(
+            "/engines/face-reading/upload",
+            post(face_reading_upload_handler),
+        )
         .route("/engines/:engine_id/validate", post(validate_handler))
         .route("/engines/:engine_id/info", get(engine_info_handler))
         .route("/workflows", get(list_workflows_handler))
@@ -646,6 +653,14 @@ struct WorkflowInfoResponse {
     name: String,
     description: String,
     engine_ids: Vec<String>,
+}
+
+#[derive(Serialize, ToSchema)]
+struct FaceUploadResponse {
+    engine_id: String,
+    witness_prompt: String,
+    analysis: serde_json::Value,
+    is_mock_data: bool,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
@@ -1059,6 +1074,108 @@ async fn calculate_handler(
             Err(engine_error_to_response(e))
         }
     }
+}
+
+/// POST /api/v1/engines/face-reading/upload -- upload image and run face-reading analysis
+#[utoipa::path(
+    post,
+    path = "/api/v1/engines/face-reading/upload",
+    tag = "engines",
+    request_body(content = String, content_type = "multipart/form-data", description = "Multipart form-data with file field named `file` or `image`"),
+    responses(
+        (status = 200, description = "Face analysis successful", body = FaceUploadResponse),
+        (status = 401, description = "Unauthorized", body = ErrorResponse),
+        (status = 403, description = "Forbidden - Insufficient consciousness phase", body = ErrorResponse),
+        (status = 422, description = "Validation error", body = ErrorResponse),
+    ),
+    security(
+        ("bearer_auth" = []),
+        ("api_key" = [])
+    )
+)]
+async fn face_reading_upload_handler(
+    State(state): State<AppState>,
+    Extension(user): Extension<AuthUser>,
+    mut multipart: Multipart,
+) -> Result<Json<FaceUploadResponse>, (StatusCode, Json<ErrorResponse>)> {
+    let mut image_bytes: Option<Vec<u8>> = None;
+
+    while let Some(field) = multipart.next_field().await.map_err(|e| {
+        (
+            StatusCode::BAD_REQUEST,
+            Json(ErrorResponse {
+                error: format!("Invalid multipart payload: {}", e),
+                error_code: "INVALID_MULTIPART".to_string(),
+                details: None,
+            }),
+        )
+    })? {
+        let field_name = field.name().unwrap_or_default().to_string();
+        if field_name == "file" || field_name == "image" {
+            let bytes = field.bytes().await.map_err(|e| {
+                (
+                    StatusCode::BAD_REQUEST,
+                    Json(ErrorResponse {
+                        error: format!("Failed to read uploaded file: {}", e),
+                        error_code: "INVALID_UPLOAD".to_string(),
+                        details: None,
+                    }),
+                )
+            })?;
+            image_bytes = Some(bytes.to_vec());
+            break;
+        }
+    }
+
+    let image_bytes = image_bytes.ok_or_else(|| {
+        (
+            StatusCode::UNPROCESSABLE_ENTITY,
+            Json(ErrorResponse {
+                error: "No image file found. Provide multipart field named `file` or `image`."
+                    .to_string(),
+                error_code: "MISSING_IMAGE_FILE".to_string(),
+                details: None,
+            }),
+        )
+    })?;
+
+    let mut options = std::collections::HashMap::new();
+    options.insert(
+        "image_data".to_string(),
+        Value::String(String::from_utf8_lossy(&image_bytes).to_string()),
+    );
+
+    let input = EngineInput {
+        birth_data: None,
+        current_time: chrono::Utc::now(),
+        location: None,
+        precision: Precision::Standard,
+        options,
+    };
+
+    let output = state
+        .orchestrator
+        .execute_engine("face-reading", input, user.consciousness_level)
+        .await
+        .map_err(engine_error_to_response)?;
+
+    let analysis = output
+        .result
+        .get("analysis")
+        .cloned()
+        .unwrap_or_else(|| Value::Object(Default::default()));
+
+    let is_mock_data = analysis
+        .get("is_mock_data")
+        .and_then(|v| v.as_bool())
+        .unwrap_or(true);
+
+    Ok(Json(FaceUploadResponse {
+        engine_id: "face-reading".to_string(),
+        witness_prompt: output.witness_prompt,
+        analysis,
+        is_mock_data,
+    }))
 }
 
 /// POST /api/v1/engines/:engine_id/validate -- validate an engine output

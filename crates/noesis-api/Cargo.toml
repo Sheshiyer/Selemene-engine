@@ -28,7 +28,7 @@ engine-vedic-clock = { path = "../engine-vedic-clock" }
 engine-face-reading = { path = "../engine-face-reading" }
 engine-nadabrahman = { path = "../engine-nadabrahman" }
 engine-transits = { path = "../engine-transits" }
-axum = { version = "0.7", features = ["json", "macros"] }
+axum = { version = "0.7", features = ["json", "macros", "multipart"] }
 uuid = { version = "1.7", features = ["serde", "v4"] }
 tokio = { version = "1.0", features = ["full"] }
 sqlx = { version = "0.7", features = ["postgres", "runtime-tokio-rustls", "uuid", "chrono", "json", "macros"] }

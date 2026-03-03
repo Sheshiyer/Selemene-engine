@@ -1,6 +1,7 @@
 import { swagger } from '@elysiajs/swagger'
 import { Elysia, t } from 'elysia'
 import type { EngineInput, ErrorResponse, HealthResponse } from '../types'
+import { isEngineValidationError } from '../utils'
 import { registry } from './registry'
 
 const startTime = Date.now()
@@ -100,6 +101,15 @@ export function createServer() {
           const result = await engine.calculate(body as EngineInput)
           return result
         } catch (err) {
+          if (isEngineValidationError(err)) {
+            set.status = 422
+            return {
+              error: err.message,
+              error_code: err.code,
+              details: err.details,
+            } as ErrorResponse
+          }
+
           set.status = 500
           return {
             error: err instanceof Error ? err.message : 'Unknown error',
