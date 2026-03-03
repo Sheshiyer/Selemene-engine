@@ -138,6 +138,8 @@ use utoipa_swagger_ui::SwaggerUi;
             handlers::admin::AdminUsageWindowSummary,
             handlers::admin::AdminUsageEngineEntry,
             handlers::admin::AdminUsageTopUserEntry,
+            handlers::admin::AdminUsageDailyPoint,
+            handlers::admin::AdminUsageTierEntry,
             handlers::admin::AdminUsageSummaryResponse,
             handlers::admin::AdminAnalyticsSummaryResponse,
             handlers::admin::AdminAnalyticsTimeseriesResponse,

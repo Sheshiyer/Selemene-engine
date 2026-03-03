@@ -16,6 +16,7 @@ import type {
   AdminSystemHealthResponse,
   AdminSystemServicesResponse,
   AdminSystemWorkflowsResponse,
+  AdminUsageSummaryResponse,
   AdminUsersResponse,
   ApiErrorPayload,
   CreateApiKeyResponse,
@@ -321,6 +322,20 @@ export async function getHistorySyncEvents(
       status: params.status,
       limit: params.limit,
       offset: params.offset
+    })}`,
+    { token }
+  );
+}
+
+export async function getAdminUsageSummary(
+  token: string,
+  params: { engine_limit?: number; top_users_limit?: number; range_days?: number } = {}
+): Promise<AdminUsageSummaryResponse> {
+  return request<AdminUsageSummaryResponse>(
+    `/api/v1/admin/usage/summary${buildQuery({
+      engine_limit: params.engine_limit,
+      top_users_limit: params.top_users_limit,
+      range_days: params.range_days
     })}`,
     { token }
   );

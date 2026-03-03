@@ -197,6 +197,43 @@ export interface AdminAnalyticsTopConsumersResponse {
   items: AdminAnalyticsTopConsumerItem[];
 }
 
+export interface AdminUsageWindowSummary {
+  total: number;
+  success: number;
+  failure: number;
+  active_users: number;
+}
+
+export interface AdminUsageDailyPoint {
+  day: string;
+  request_count: number;
+}
+
+export interface AdminUsageEngineEntry {
+  engine_id: string;
+  request_count: number;
+}
+
+export interface AdminUsageTierEntry {
+  tier: string;
+  request_count: number;
+}
+
+export interface AdminUsageTopUserEntry {
+  user_id: string;
+  user_email: string;
+  request_count: number;
+}
+
+export interface AdminUsageSummaryResponse {
+  daily: AdminUsageWindowSummary;
+  monthly: AdminUsageWindowSummary;
+  daily_requests: AdminUsageDailyPoint[];
+  engine_breakdown: AdminUsageEngineEntry[];
+  tier_distribution: AdminUsageTierEntry[];
+  top_users: AdminUsageTopUserEntry[];
+}
+
 export interface AdminSystemSubsystemStatus {
   name: string;
   status: string;
