@@ -408,3 +408,39 @@
   - `cargo publish --dry-run --allow-dirty -p noesis-core` ✅
   - `cargo publish --dry-run --allow-dirty -p noesis-sdk` ⛔ (expected until `noesis-core` is actually published/indexed)
   - `npm run typecheck` + `npm run build` in `packages/noesis-sdk-ts` ✅
+
+---
+
+# Task Plan — Wave W2 Usage Dashboard API Endpoints (#456)
+
+## Checklist
+- [x] Add `GET /api/v1/users/me/usage` endpoint with authenticated self-service usage summary.
+- [x] Add `GET /api/v1/admin/usage/summary` endpoint with admin-gated global usage summary.
+- [x] Extend usage repository with daily/monthly aggregates, engine breakdown, and top-users queries.
+- [x] Wire routes and OpenAPI path/schema registrations.
+- [x] Add integration tests for auth and response shape validation.
+- [x] Run verification gates for noesis-api.
+
+## Notes
+- Kept scope strictly to issue #456 deliverable and acceptance criteria.
+- Reused existing admin permission model (`admin:analytics:read`) for admin endpoint gating.
+
+## Review (fill after execution)
+- Implemented user endpoint in `crates/noesis-api/src/handlers/users.rs`:
+  - `GET /api/v1/users/me/usage`
+  - returns daily/monthly usage counts and per-engine breakdown.
+- Implemented admin endpoint in `crates/noesis-api/src/handlers/admin.rs`:
+  - `GET /api/v1/admin/usage/summary`
+  - returns daily/monthly platform usage, engine breakdown, and top users.
+- Added repository methods in `crates/noesis-data/src/repositories/usage_repository.rs`:
+  - `user_usage_summary`
+  - `user_engine_breakdown`
+  - `admin_usage_summary`
+  - `admin_engine_breakdown`
+  - `admin_top_users`
+- Wired OpenAPI and routes in `crates/noesis-api/src/lib.rs`.
+- Added integration tests in `crates/noesis-api/tests/usage_analytics_tests.rs`.
+- Verification:
+  - `cargo fmt --all` ✅
+  - `cargo check -p noesis-api` ✅
+  - `cargo test -p noesis-api --test usage_analytics_tests -- --nocapture` ✅

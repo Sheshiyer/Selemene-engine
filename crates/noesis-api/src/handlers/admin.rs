@@ -263,6 +263,35 @@ pub struct AdminAnalyticsTopConsumerItem {
 }
 
 #[derive(Serialize, ToSchema)]
+pub struct AdminUsageWindowSummary {
+    pub total: i64,
+    pub success: i64,
+    pub failure: i64,
+    pub active_users: i64,
+}
+
+#[derive(Serialize, ToSchema)]
+pub struct AdminUsageEngineEntry {
+    pub engine_id: String,
+    pub request_count: i64,
+}
+
+#[derive(Serialize, ToSchema)]
+pub struct AdminUsageTopUserEntry {
+    pub user_id: String,
+    pub user_email: String,
+    pub request_count: i64,
+}
+
+#[derive(Serialize, ToSchema)]
+pub struct AdminUsageSummaryResponse {
+    pub daily: AdminUsageWindowSummary,
+    pub monthly: AdminUsageWindowSummary,
+    pub engine_breakdown: Vec<AdminUsageEngineEntry>,
+    pub top_users: Vec<AdminUsageTopUserEntry>,
+}
+
+#[derive(Serialize, ToSchema)]
 pub struct AdminSystemHealthResponse {
     pub checked_at: DateTime<Utc>,
     pub overall_status: String,
@@ -400,6 +429,12 @@ pub struct AnalyticsQuery {
     pub window_hours: Option<i64>,
     pub bucket: Option<String>,
     pub limit: Option<i64>,
+}
+
+#[derive(Deserialize, Default)]
+pub struct AdminUsageSummaryQuery {
+    pub engine_limit: Option<i64>,
+    pub top_users_limit: Option<i64>,
 }
 
 #[derive(Deserialize, Default)]
@@ -1820,6 +1855,97 @@ pub async fn history_sync_events(
             total,
             limit,
             offset,
+        }),
+    )
+        .into_response())
+}
+
+/// GET /api/v1/admin/usage/summary -- usage summary for dashboard views
+#[utoipa::path(
+    get,
+    path = "/api/v1/admin/usage/summary",
+    tag = "admin",
+    params(
+        ("engine_limit" = Option<i64>, Query, description = "Max engine breakdown rows (default 10, max 50)"),
+        ("top_users_limit" = Option<i64>, Query, description = "Max top users rows (default 10, max 100)")
+    ),
+    responses(
+        (status = 200, description = "Usage summary", body = AdminUsageSummaryResponse),
+        (status = 403, description = "Forbidden", body = crate::ErrorResponse),
+        (status = 503, description = "Usage repository unavailable", body = crate::ErrorResponse),
+    ),
+    security(("bearer_auth" = []), ("api_key" = []))
+)]
+pub async fn usage_summary(
+    State(state): State<AppState>,
+    Extension(auth_user): Extension<AuthUser>,
+    Query(query): Query<AdminUsageSummaryQuery>,
+) -> Result<Response, ApiError> {
+    let effective_permissions = effective_permissions(&state, &auth_user).await?;
+    if let Some(resp) =
+        require_permission_or_forbidden(&effective_permissions, "admin:analytics:read")
+    {
+        return Ok(resp);
+    }
+
+    let usage_repo = state
+        .usage_repository
+        .as_ref()
+        .ok_or_else(|| EngineError::InternalError("Usage repository not configured".to_string()))?;
+
+    let engine_limit = query.engine_limit.unwrap_or(10).clamp(1, 50);
+    let top_users_limit = query.top_users_limit.unwrap_or(10).clamp(1, 100);
+
+    let daily = usage_repo.admin_usage_summary(24).await.map_err(|e| {
+        EngineError::InternalError(format!("Failed to fetch daily usage summary: {e}"))
+    })?;
+
+    let monthly = usage_repo.admin_usage_summary(24 * 30).await.map_err(|e| {
+        EngineError::InternalError(format!("Failed to fetch monthly usage summary: {e}"))
+    })?;
+
+    let engine_breakdown = usage_repo
+        .admin_engine_breakdown(24 * 30, engine_limit)
+        .await
+        .map_err(|e| {
+            EngineError::InternalError(format!("Failed to fetch admin engine breakdown: {e}"))
+        })?
+        .into_iter()
+        .map(|row| AdminUsageEngineEntry {
+            engine_id: row.engine_id,
+            request_count: row.request_count,
+        })
+        .collect::<Vec<_>>();
+
+    let top_users = usage_repo
+        .admin_top_users(24 * 30, top_users_limit)
+        .await
+        .map_err(|e| EngineError::InternalError(format!("Failed to fetch top users: {e}")))?
+        .into_iter()
+        .map(|row| AdminUsageTopUserEntry {
+            user_id: row.user_id.to_string(),
+            user_email: row.user_email,
+            request_count: row.request_count,
+        })
+        .collect::<Vec<_>>();
+
+    Ok((
+        StatusCode::OK,
+        Json(AdminUsageSummaryResponse {
+            daily: AdminUsageWindowSummary {
+                total: daily.total,
+                success: daily.success,
+                failure: daily.failure,
+                active_users: daily.active_users,
+            },
+            monthly: AdminUsageWindowSummary {
+                total: monthly.total,
+                success: monthly.success,
+                failure: monthly.failure,
+                active_users: monthly.active_users,
+            },
+            engine_breakdown,
+            top_users,
         }),
     )
         .into_response())
