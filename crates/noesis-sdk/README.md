@@ -4,7 +4,8 @@ Rust SDK for Selemene Engine.
 
 ## Features
 - typed client for engine and workflow APIs
-- profile/config helpers
+- configurable retry/backoff and HTTP connection pooling
+- profile/config helpers and offline-first profile sync
 - optional keychain-backed credential storage
 - report rendering helpers
 
@@ -17,11 +18,15 @@ cargo add noesis-sdk
 ## Usage
 
 ```rust
-use noesis_sdk::NoesisClient;
+use noesis_sdk::{Config, LocalProfile, NoesisClient};
 
-# async fn example() -> Result<(), Box<dyn std::error::Error>> {
-let client = NoesisClient::new("https://selemene-engine-production.up.railway.app")?;
-let _health = client.health().await?;
+# async fn example() -> Result<(), noesis_sdk::Error> {
+let config = Config::load()?;
+let client = NoesisClient::new(&config)?;
+let mut profile = LocalProfile::load()?.unwrap_or_default();
+let _ = profile.sync(&client).await?;
+let output = client.calculate("numerology", profile.to_engine_input()).await?;
+println!("{}", output.witness_prompt);
 # Ok(())
 # }
 ```

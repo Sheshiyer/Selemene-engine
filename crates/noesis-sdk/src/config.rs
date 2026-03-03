@@ -18,6 +18,12 @@ const DEFAULT_API_URL: &str = "https://selemene.tryambakam.space";
 const DEFAULT_TIMEOUT_MS: u64 = 30_000;
 /// Default cache TTL in seconds
 const DEFAULT_CACHE_TTL_SECS: u64 = 300;
+/// Default max retries for retriable HTTP errors
+const DEFAULT_MAX_RETRIES: u32 = 3;
+/// Default exponential backoff base in milliseconds
+const DEFAULT_BACKOFF_MS: u64 = 200;
+/// Default maximum idle connections per host
+const DEFAULT_POOL_MAX_IDLE_PER_HOST: usize = 16;
 /// Config file name
 const CONFIG_FILE: &str = "config.toml";
 /// Noesis directory name
@@ -42,6 +48,18 @@ pub struct Config {
     #[serde(default = "default_cache_ttl")]
     pub cache_ttl_secs: u64,
 
+    /// Maximum retry attempts for retriable errors (5xx, timeout)
+    #[serde(default = "default_max_retries")]
+    pub max_retries: u32,
+
+    /// Base backoff in milliseconds (exponential: base * 2^attempt)
+    #[serde(default = "default_backoff_ms")]
+    pub backoff_ms: u64,
+
+    /// Maximum number of idle pooled connections per host
+    #[serde(default = "default_pool_max_idle_per_host")]
+    pub pool_max_idle_per_host: usize,
+
     /// Whether to enable response caching
     #[serde(default = "default_cache_enabled")]
     pub cache_enabled: bool,
@@ -61,6 +79,18 @@ fn default_timeout_ms() -> u64 {
 
 fn default_cache_ttl() -> u64 {
     DEFAULT_CACHE_TTL_SECS
+}
+
+fn default_max_retries() -> u32 {
+    DEFAULT_MAX_RETRIES
+}
+
+fn default_backoff_ms() -> u64 {
+    DEFAULT_BACKOFF_MS
+}
+
+fn default_pool_max_idle_per_host() -> usize {
+    DEFAULT_POOL_MAX_IDLE_PER_HOST
 }
 
 fn default_cache_enabled() -> bool {
@@ -85,8 +115,13 @@ impl Config {
         config = config.with_env_overrides();
 
         info!(
-            "Config loaded: api_url={}, timeout={}ms, cache={}",
-            config.api_url, config.timeout_ms, config.cache_enabled
+            "Config loaded: api_url={}, timeout={}ms, retries={}, backoff={}ms, pool_idle_per_host={}, cache={}",
+            config.api_url,
+            config.timeout_ms,
+            config.max_retries,
+            config.backoff_ms,
+            config.pool_max_idle_per_host,
+            config.cache_enabled
         );
 
         Ok(config)
@@ -156,6 +191,15 @@ impl Config {
         if other.cache_ttl_secs != DEFAULT_CACHE_TTL_SECS {
             self.cache_ttl_secs = other.cache_ttl_secs;
         }
+        if other.max_retries != DEFAULT_MAX_RETRIES {
+            self.max_retries = other.max_retries;
+        }
+        if other.backoff_ms != DEFAULT_BACKOFF_MS {
+            self.backoff_ms = other.backoff_ms;
+        }
+        if other.pool_max_idle_per_host != DEFAULT_POOL_MAX_IDLE_PER_HOST {
+            self.pool_max_idle_per_host = other.pool_max_idle_per_host;
+        }
         self.cache_enabled = other.cache_enabled;
         self.engines.extend(other.engines);
         self
@@ -191,6 +235,30 @@ impl Config {
             }
         }
 
+        // NOESIS_MAX_RETRIES
+        if let Ok(max_retries) = std::env::var("NOESIS_MAX_RETRIES") {
+            if let Ok(v) = max_retries.parse() {
+                debug!("Using NOESIS_MAX_RETRIES from environment");
+                self.max_retries = v;
+            }
+        }
+
+        // NOESIS_BACKOFF_MS
+        if let Ok(backoff_ms) = std::env::var("NOESIS_BACKOFF_MS") {
+            if let Ok(v) = backoff_ms.parse() {
+                debug!("Using NOESIS_BACKOFF_MS from environment");
+                self.backoff_ms = v;
+            }
+        }
+
+        // NOESIS_POOL_MAX_IDLE_PER_HOST
+        if let Ok(pool_size) = std::env::var("NOESIS_POOL_MAX_IDLE_PER_HOST") {
+            if let Ok(v) = pool_size.parse() {
+                debug!("Using NOESIS_POOL_MAX_IDLE_PER_HOST from environment");
+                self.pool_max_idle_per_host = v;
+            }
+        }
+
         // NOESIS_CACHE_ENABLED
         if let Ok(enabled) = std::env::var("NOESIS_CACHE_ENABLED") {
             self.cache_enabled = enabled.to_lowercase() == "true" || enabled == "1";
@@ -217,6 +285,9 @@ impl Default for Config {
             api_key: None,
             timeout_ms: DEFAULT_TIMEOUT_MS,
             cache_ttl_secs: DEFAULT_CACHE_TTL_SECS,
+            max_retries: DEFAULT_MAX_RETRIES,
+            backoff_ms: DEFAULT_BACKOFF_MS,
+            pool_max_idle_per_host: DEFAULT_POOL_MAX_IDLE_PER_HOST,
             cache_enabled: true,
             engines: HashMap::new(),
         }
@@ -242,6 +313,9 @@ pub struct ConfigBuilder {
     api_key: Option<String>,
     timeout_ms: Option<u64>,
     cache_ttl_secs: Option<u64>,
+    max_retries: Option<u32>,
+    backoff_ms: Option<u64>,
+    pool_max_idle_per_host: Option<usize>,
     cache_enabled: Option<bool>,
     engines: HashMap<String, EngineConfig>,
 }
@@ -271,6 +345,24 @@ impl ConfigBuilder {
         self
     }
 
+    /// Set the maximum number of retries for retriable requests.
+    pub fn max_retries(mut self, retries: u32) -> Self {
+        self.max_retries = Some(retries);
+        self
+    }
+
+    /// Set base backoff in milliseconds for exponential retry backoff.
+    pub fn backoff_ms(mut self, ms: u64) -> Self {
+        self.backoff_ms = Some(ms);
+        self
+    }
+
+    /// Set maximum idle pooled connections per host.
+    pub fn pool_max_idle_per_host(mut self, pool_size: usize) -> Self {
+        self.pool_max_idle_per_host = Some(pool_size);
+        self
+    }
+
     /// Enable or disable caching.
     pub fn cache_enabled(mut self, enabled: bool) -> Self {
         self.cache_enabled = Some(enabled);
@@ -290,6 +382,11 @@ impl ConfigBuilder {
             api_key: self.api_key,
             timeout_ms: self.timeout_ms.unwrap_or(DEFAULT_TIMEOUT_MS),
             cache_ttl_secs: self.cache_ttl_secs.unwrap_or(DEFAULT_CACHE_TTL_SECS),
+            max_retries: self.max_retries.unwrap_or(DEFAULT_MAX_RETRIES),
+            backoff_ms: self.backoff_ms.unwrap_or(DEFAULT_BACKOFF_MS),
+            pool_max_idle_per_host: self
+                .pool_max_idle_per_host
+                .unwrap_or(DEFAULT_POOL_MAX_IDLE_PER_HOST),
             cache_enabled: self.cache_enabled.unwrap_or(true),
             engines: self.engines,
         }
@@ -312,6 +409,13 @@ timeout_ms = 30000
 
 # Response cache TTL in seconds
 cache_ttl_secs = 300
+
+# Retry behavior for 5xx and timeout errors
+max_retries = 3
+backoff_ms = 200
+
+# Connection pool controls
+pool_max_idle_per_host = 16
 
 # Enable response caching
 cache_enabled = true
@@ -338,6 +442,12 @@ mod tests {
         assert_eq!(config.timeout_ms, DEFAULT_TIMEOUT_MS);
         assert!(config.cache_enabled);
         assert!(config.api_key.is_none());
+        assert_eq!(config.max_retries, DEFAULT_MAX_RETRIES);
+        assert_eq!(config.backoff_ms, DEFAULT_BACKOFF_MS);
+        assert_eq!(
+            config.pool_max_idle_per_host,
+            DEFAULT_POOL_MAX_IDLE_PER_HOST
+        );
     }
 
     #[test]
@@ -346,12 +456,18 @@ mod tests {
             .api_url("http://localhost:8080")
             .api_key("test_key")
             .timeout_ms(5000)
+            .max_retries(5)
+            .backoff_ms(150)
+            .pool_max_idle_per_host(24)
             .cache_enabled(false)
             .build();
 
         assert_eq!(config.api_url, "http://localhost:8080");
         assert_eq!(config.api_key, Some("test_key".into()));
         assert_eq!(config.timeout_ms, 5000);
+        assert_eq!(config.max_retries, 5);
+        assert_eq!(config.backoff_ms, 150);
+        assert_eq!(config.pool_max_idle_per_host, 24);
         assert!(!config.cache_enabled);
     }
 

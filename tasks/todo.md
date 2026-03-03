@@ -599,3 +599,66 @@
   - `cargo fmt --all` ✅
   - `cargo check -p noesis-api` ✅
   - `cargo check -p noesis-api --tests` ✅
+
+---
+
+# Task Plan — Finish Remaining Wave W2 (#440 #441 #442 #449 #450 #451 #452)
+
+## Checklist
+- [x] #449 OpenAPI auth + rate-limit schema/docs hardening
+- [x] #441 noesis-sdk retry/backoff + connection pool controls
+- [x] #442 LocalProfile offline-first sync with deterministic conflict policy
+- [x] #440 noesis-sdk API audit doc + rustdoc build verification
+- [x] #450 Docusaurus-based developer portal scaffold under `docs/portal`
+- [x] #451 Engine catalog pages for all 16 engines
+- [x] #452 Workflow guide pages for all 6 workflows with synthesis semantics
+
+## Review
+
+### #449
+- Enhanced OpenAPI `SecurityAddon` to:
+  - keep JWT bearer + X-API-Key schemes documented
+  - auto-insert standardized `429` response with rate-limit headers on all secured operations
+- Added tests: `crates/noesis-api/tests/auth_rate_limit_openapi_tests.rs`
+
+### #441
+- Added retry/pooling config to `noesis-sdk`:
+  - `Config`: `max_retries`, `backoff_ms`, `pool_max_idle_per_host`
+  - env overrides: `NOESIS_MAX_RETRIES`, `NOESIS_BACKOFF_MS`, `NOESIS_POOL_MAX_IDLE_PER_HOST`
+  - `NoesisClient`: exponential backoff retry on `5xx` and transport timeout/connect/request errors
+- Added wiremock retry tests in `crates/noesis-sdk/src/client.rs`
+
+### #442
+- Added profile sync support:
+  - `LocalProfile.last_synced_at`
+  - `LocalProfile::sync(&NoesisClient)`
+  - deterministic conflict policy:
+    - server wins for `consciousness_level`
+    - local wins for `birth_data`
+  - diff-based PATCH payload via `UpdateUserRequest`
+- Added sync tests in `crates/noesis-sdk/src/profile.rs`
+
+### #440
+- Added `crates/noesis-sdk/API_AUDIT.md` with public API audit snapshot + usage examples
+- Updated `crates/noesis-sdk/README.md` to current SDK API (Config-based client + sync)
+
+### #450 #451 #452
+- Added Docusaurus portal at `docs/portal/`
+  - config: `docusaurus.config.ts`, `sidebars.ts`, `package.json`
+  - pages: API overview, authentication, rate limits, SDK quickstarts, OpenAPI explorer
+  - engine catalog: `docs/portal/docs/engines/*.md` (16 engine pages + index)
+  - workflow guide: `docs/portal/docs/workflows/*.md` (6 workflow pages + index)
+  - deployment notes: `docs/portal/README.md`
+
+## Validation Evidence
+- `cargo fmt --all` ✅
+- `cargo check -p noesis-api` ✅
+- `cargo check -p noesis-api --tests` ✅
+- `cargo test -p noesis-api --test workflow_openapi_tests -- --nocapture` ✅
+- `cargo test -p noesis-api --test auth_rate_limit_openapi_tests -- --nocapture` ✅
+- `cargo check -p noesis-sdk` ✅
+- `cargo check -p noesis-sdk --tests` ✅
+- `cargo test -p noesis-sdk -- --nocapture` ✅
+- `cargo doc -p noesis-sdk --no-deps` ✅
+- `npm --prefix docs/portal install` ✅
+- `npm --prefix docs/portal run build` ✅

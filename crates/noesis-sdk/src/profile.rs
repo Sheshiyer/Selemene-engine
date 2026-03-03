@@ -2,7 +2,7 @@
 //!
 //! Stores user profile data locally at `~/.noesis/profile.json`.
 
-use crate::{Error, Result};
+use crate::{client::UpdateUserRequest, Error, NoesisClient, Result};
 use chrono::{DateTime, Utc};
 use noesis_core::{BirthData, Coordinates, EngineInput, Precision};
 use serde::{Deserialize, Serialize};
@@ -34,10 +34,21 @@ pub struct LocalProfile {
     /// Engine-specific preferences
     #[serde(default)]
     pub preferences: HashMap<String, serde_json::Value>,
+    /// When this profile was last synchronized with server-side profile
+    #[serde(default)]
+    pub last_synced_at: Option<DateTime<Utc>>,
     /// When the profile was created
     pub created_at: DateTime<Utc>,
     /// When the profile was last updated
     pub updated_at: DateTime<Utc>,
+}
+
+/// Result summary from LocalProfile sync.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SyncResult {
+    pub pushed_changes: bool,
+    pub pulled_server_state: bool,
+    pub synced_at: DateTime<Utc>,
 }
 
 impl LocalProfile {
@@ -51,6 +62,7 @@ impl LocalProfile {
             default_precision: Precision::Standard,
             consciousness_level: 0,
             preferences: HashMap::new(),
+            last_synced_at: None,
             created_at: now,
             updated_at: now,
         }
@@ -186,6 +198,83 @@ impl LocalProfile {
 
         Ok(())
     }
+
+    /// Sync local profile with server profile using deterministic conflict resolution.
+    ///
+    /// Conflict policy:
+    /// - `consciousness_level`: **server wins**
+    /// - `birth_data`: **local wins**
+    ///
+    /// The method computes a diff against server state and only PATCHes fields that differ.
+    pub async fn sync(&mut self, client: &NoesisClient) -> Result<SyncResult> {
+        let server_profile = client.get_me().await?;
+        let patch = self.build_sync_patch(&server_profile);
+
+        let mut pushed_changes = false;
+        if !patch.is_empty() {
+            client.update_me(&patch).await?;
+            pushed_changes = true;
+        }
+
+        // Deterministic merge policy
+        self.consciousness_level =
+            server_profile.consciousness_level.clamp(0, u8::MAX as i32) as u8;
+
+        let synced_at = Utc::now();
+        self.last_synced_at = Some(synced_at);
+
+        Ok(SyncResult {
+            pushed_changes,
+            pulled_server_state: true,
+            synced_at,
+        })
+    }
+
+    fn build_sync_patch(&self, server_profile: &crate::client::UserProfile) -> UpdateUserRequest {
+        let mut patch = UpdateUserRequest::default();
+
+        // Local profile name wins over server full_name.
+        if !self.name.trim().is_empty() && self.name != server_profile.full_name {
+            patch.full_name = Some(self.name.clone());
+        }
+
+        // Birth data is local-wins.
+        if Some(self.birth_data.date.clone()) != server_profile.birth_date {
+            patch.birth_date = Some(self.birth_data.date.clone());
+        }
+        if self.birth_data.time != server_profile.birth_time {
+            patch.birth_time = self.birth_data.time.clone();
+        }
+
+        let server_lat = server_profile.birth_location.as_ref().map(|loc| loc.lat);
+        let server_lng = server_profile.birth_location.as_ref().map(|loc| loc.lng);
+        let server_loc_name = server_profile
+            .birth_location
+            .as_ref()
+            .and_then(|loc| loc.name.clone());
+
+        if Some(self.birth_data.latitude) != server_lat {
+            patch.birth_location_lat = Some(self.birth_data.latitude);
+        }
+        if Some(self.birth_data.longitude) != server_lng {
+            patch.birth_location_lng = Some(self.birth_data.longitude);
+        }
+        if self.birth_data.name != server_loc_name {
+            patch.birth_location_name = self.birth_data.name.clone();
+        }
+
+        if Some(self.birth_data.timezone.clone()) != server_profile.timezone {
+            patch.timezone = Some(self.birth_data.timezone.clone());
+        }
+
+        let local_preferences =
+            serde_json::to_value(&self.preferences).unwrap_or(serde_json::json!({}));
+        if local_preferences != server_profile.preferences {
+            patch.preferences = Some(local_preferences);
+        }
+
+        patch
+    }
 }
 
 impl Default for LocalProfile {
@@ -297,7 +386,6 @@ impl Default for ProfileBuilder {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use tempfile::tempdir;
 
     fn test_profile() -> LocalProfile {
         LocalProfile::new(
@@ -373,5 +461,133 @@ mod tests {
         let result = ProfileBuilder::new().name("Incomplete").build();
 
         assert!(result.is_err());
+    }
+
+    #[tokio::test]
+    async fn test_sync_pushes_local_birth_data_and_pulls_consciousness_level() {
+        use wiremock::matchers::{header, method, path};
+        use wiremock::{Mock, MockServer, ResponseTemplate};
+
+        let server = MockServer::start().await;
+
+        Mock::given(method("GET"))
+            .and(path("/api/v1/users/me"))
+            .and(header("x-api-key", "test-key"))
+            .respond_with(ResponseTemplate::new(200).set_body_json(serde_json::json!({
+                "id": "u1",
+                "email": "test@example.com",
+                "full_name": "Server Name",
+                "tier": "free",
+                "consciousness_level": 4,
+                "experience_points": 120,
+                "birth_date": "1991-01-01",
+                "birth_time": "12:00:00",
+                "birth_location": {"lat": 10.0, "lng": 20.0, "name": "Server City"},
+                "timezone": "UTC",
+                "preferences": {}
+            })))
+            .mount(&server)
+            .await;
+
+        Mock::given(method("PATCH"))
+            .and(path("/api/v1/users/me"))
+            .and(header("x-api-key", "test-key"))
+            .respond_with(ResponseTemplate::new(200).set_body_json(serde_json::json!({
+                "message": "Profile updated successfully"
+            })))
+            .mount(&server)
+            .await;
+
+        let client = NoesisClient::builder()
+            .base_url(server.uri())
+            .api_key("test-key")
+            .build()
+            .unwrap();
+
+        let mut profile = LocalProfile::new(
+            "Local Name",
+            BirthData {
+                name: Some("Local City".into()),
+                date: "1990-05-15".into(),
+                time: Some("14:30".into()),
+                latitude: 12.9716,
+                longitude: 77.5946,
+                timezone: "Asia/Kolkata".into(),
+            },
+        );
+
+        let sync_result = profile.sync(&client).await.unwrap();
+
+        assert!(sync_result.pushed_changes);
+        assert_eq!(profile.consciousness_level, 4);
+        assert!(profile.last_synced_at.is_some());
+    }
+
+    #[tokio::test]
+    async fn test_sync_no_patch_when_profiles_match() {
+        use wiremock::matchers::{header, method, path};
+        use wiremock::{Mock, MockServer, ResponseTemplate};
+
+        let server = MockServer::start().await;
+
+        Mock::given(method("GET"))
+            .and(path("/api/v1/users/me"))
+            .and(header("x-api-key", "test-key"))
+            .respond_with(ResponseTemplate::new(200).set_body_json(serde_json::json!({
+                "id": "u1",
+                "email": "test@example.com",
+                "full_name": "Local Name",
+                "tier": "free",
+                "consciousness_level": 2,
+                "experience_points": 120,
+                "birth_date": "1990-05-15",
+                "birth_time": "14:30",
+                "birth_location": {"lat": 12.9716, "lng": 77.5946, "name": "Local City"},
+                "timezone": "Asia/Kolkata",
+                "preferences": {}
+            })))
+            .mount(&server)
+            .await;
+
+        let client = NoesisClient::builder()
+            .base_url(server.uri())
+            .api_key("test-key")
+            .build()
+            .unwrap();
+
+        let mut profile = LocalProfile::new(
+            "Local Name",
+            BirthData {
+                name: Some("Local City".into()),
+                date: "1990-05-15".into(),
+                time: Some("14:30".into()),
+                latitude: 12.9716,
+                longitude: 77.5946,
+                timezone: "Asia/Kolkata".into(),
+            },
+        );
+
+        let sync_result = profile.sync(&client).await.unwrap();
+
+        assert!(!sync_result.pushed_changes);
+        assert_eq!(profile.consciousness_level, 2);
+    }
+
+    #[tokio::test]
+    async fn test_sync_offline_resilience_keeps_local_state() {
+        let client = NoesisClient::builder()
+            .base_url("http://127.0.0.1:1")
+            .api_key("test-key")
+            .max_retries(0)
+            .build()
+            .unwrap();
+
+        let mut profile = test_profile();
+        let before = profile.clone();
+
+        let result = profile.sync(&client).await;
+        assert!(result.is_err());
+        assert_eq!(profile.consciousness_level, before.consciousness_level);
+        assert_eq!(profile.last_synced_at, before.last_synced_at);
     }
 }
