@@ -62,6 +62,7 @@ use utoipa_swagger_ui::SwaggerUi;
         workflow_execute_handler,
         workflow_info_handler,
         handlers::users::get_me,
+        handlers::users::get_my_usage,
         handlers::users::update_me,
         handlers::admin::get_session,
         handlers::admin::list_users,
@@ -75,6 +76,7 @@ use utoipa_swagger_ui::SwaggerUi;
         handlers::admin::history_sync_users,
         handlers::admin::history_sync_devices,
         handlers::admin::history_sync_events,
+        handlers::admin::usage_summary,
         handlers::admin::analytics_summary,
         handlers::admin::analytics_timeseries,
         handlers::admin::analytics_breakdown,
@@ -110,6 +112,9 @@ use utoipa_swagger_ui::SwaggerUi;
             handlers::users::UserResponse,
             handlers::users::LocationResponse,
             handlers::users::UpdateUserRequest,
+            handlers::users::UserUsageWindowSummary,
+            handlers::users::UserUsageEngineEntry,
+            handlers::users::UserUsageResponse,
             handlers::admin::AdminSessionResponse,
             handlers::admin::AdminUsersResponse,
             handlers::admin::AdminUserItem,
@@ -130,6 +135,10 @@ use utoipa_swagger_ui::SwaggerUi;
             handlers::admin::AdminHistorySyncDeviceItem,
             handlers::admin::AdminHistorySyncEventsResponse,
             handlers::admin::AdminHistorySyncEventItem,
+            handlers::admin::AdminUsageWindowSummary,
+            handlers::admin::AdminUsageEngineEntry,
+            handlers::admin::AdminUsageTopUserEntry,
+            handlers::admin::AdminUsageSummaryResponse,
             handlers::admin::AdminAnalyticsSummaryResponse,
             handlers::admin::AdminAnalyticsTimeseriesResponse,
             handlers::admin::AdminAnalyticsTimeseriesPoint,
@@ -307,6 +316,7 @@ pub fn create_router(state: AppState, config: &ApiConfig) -> Router {
             "/users/me",
             get(handlers::users::get_me).patch(handlers::users::update_me),
         )
+        .route("/users/me/usage", get(handlers::users::get_my_usage))
         .route("/admin/session", get(handlers::admin::get_session))
         .route("/admin/users", get(handlers::admin::list_users))
         .route(
@@ -345,6 +355,7 @@ pub fn create_router(state: AppState, config: &ApiConfig) -> Router {
             "/admin/history-sync/events",
             get(handlers::admin::history_sync_events),
         )
+        .route("/admin/usage/summary", get(handlers::admin::usage_summary))
         .route(
             "/admin/analytics/summary",
             get(handlers::admin::analytics_summary),
