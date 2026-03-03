@@ -40,6 +40,7 @@ pub struct EngineOutput {
     /// Which engine produced this output
     pub engine_id: String,
     /// Engine-specific result data (each engine defines its own schema)
+    #[cfg_attr(feature = "openapi", schema(value_type = EngineResultData))]
     pub result: Value,
     /// Self-inquiry question generated from the calculation
     pub witness_prompt: String,
@@ -180,4 +181,206 @@ pub struct WorkflowResult {
     pub synthesis: Option<Value>,
     pub total_time_ms: f64,
     pub timestamp: DateTime<Utc>,
+}
+
+// ---------------------------------------------------------------------------
+// OpenAPI-only engine result schemas
+// ---------------------------------------------------------------------------
+
+#[cfg(feature = "openapi")]
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+pub struct PanchangaResultSchema {
+    #[schema(example = "Sunday")]
+    pub vara: String,
+    #[schema(example = "Shukla")]
+    pub paksha: String,
+    #[schema(example = "Punarvasu")]
+    pub nakshatra: String,
+}
+
+#[cfg(feature = "openapi")]
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+pub struct NumerologyResultSchema {
+    #[schema(example = 7)]
+    pub life_path_number: i32,
+    #[schema(example = 3)]
+    pub expression_number: i32,
+    #[schema(example = "Reflective and analytical")]
+    pub core_theme: String,
+}
+
+#[cfg(feature = "openapi")]
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+pub struct BiorhythmResultSchema {
+    #[schema(example = 82.4)]
+    pub physical: f64,
+    #[schema(example = 41.7)]
+    pub emotional: f64,
+    #[schema(example = -15.2)]
+    pub intellectual: f64,
+}
+
+#[cfg(feature = "openapi")]
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+pub struct HumanDesignResultSchema {
+    #[schema(example = "Manifesting Generator")]
+    pub type_name: String,
+    #[schema(example = "Sacral")]
+    pub authority: String,
+    #[schema(example = "Respond then inform")]
+    pub strategy: String,
+}
+
+#[cfg(feature = "openapi")]
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+pub struct GeneKeysResultSchema {
+    #[schema(example = "Gift of Patience")]
+    pub activation_sequence: String,
+    #[schema(example = "Venus Sequence")]
+    pub venus_sequence: String,
+    #[schema(example = "Pearl Sequence")]
+    pub pearl_sequence: String,
+}
+
+#[cfg(feature = "openapi")]
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+pub struct VimshottariResultSchema {
+    #[schema(example = "Jupiter")]
+    pub current_mahadasha: String,
+    #[schema(example = "Saturn")]
+    pub current_antardasha: String,
+    #[schema(example = 1460)]
+    pub days_remaining: i64,
+}
+
+#[cfg(feature = "openapi")]
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+pub struct BiofieldResultSchema {
+    #[schema(example = "earth")]
+    pub dominant_element: String,
+    #[schema(example = 0.72)]
+    pub coherence_score: f64,
+    #[schema(example = "grounding")]
+    pub recommended_practice: String,
+}
+
+#[cfg(feature = "openapi")]
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+pub struct VedicClockResultSchema {
+    #[schema(example = "Brahma Muhurta")]
+    pub current_segment: String,
+    #[schema(example = "Sattva")]
+    pub guna_bias: String,
+    #[schema(example = "06:12")]
+    pub next_transition_local: String,
+}
+
+#[cfg(feature = "openapi")]
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+pub struct FaceReadingResultSchema {
+    #[schema(example = "vata-pitta")]
+    pub constitutional_type: String,
+    #[schema(example = 0.81)]
+    pub confidence: f64,
+    #[schema(example = "soft jawline with high brow curvature")]
+    pub key_observation: String,
+}
+
+#[cfg(feature = "openapi")]
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+pub struct NadabrahmanResultSchema {
+    #[schema(example = 432.0)]
+    pub root_frequency_hz: f64,
+    #[schema(example = "Bhairavi")]
+    pub suggested_raga: String,
+    #[schema(example = "AUM")]
+    pub mantra_seed: String,
+}
+
+#[cfg(feature = "openapi")]
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+pub struct TransitsResultSchema {
+    #[schema(example = "Saturn return window")]
+    pub dominant_transit: String,
+    #[schema(example = "High")]
+    pub intensity: String,
+    #[schema(example = "2026-04-12")]
+    pub next_peak_date: String,
+}
+
+#[cfg(feature = "openapi")]
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+pub struct EnneagramResultSchema {
+    #[schema(example = 4)]
+    pub core_type: i32,
+    #[schema(example = "4w5")]
+    pub wing: String,
+    #[schema(example = "Individualist")]
+    pub archetype: String,
+}
+
+#[cfg(feature = "openapi")]
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+pub struct TarotResultSchema {
+    #[schema(example = "three-card")]
+    pub spread_type: String,
+    #[schema(example = "The Star")]
+    pub focal_card: String,
+    #[schema(example = "Renewed trust in unfolding")]
+    pub synthesis: String,
+}
+
+#[cfg(feature = "openapi")]
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+pub struct IChingResultSchema {
+    #[schema(example = 24)]
+    pub hexagram: i32,
+    #[schema(example = "Return")]
+    pub hexagram_name: String,
+    #[schema(example = "Return to the center before moving outward")]
+    pub guidance: String,
+}
+
+#[cfg(feature = "openapi")]
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+pub struct SacredGeometryResultSchema {
+    #[schema(example = "flower-of-life")]
+    pub pattern: String,
+    #[schema(example = 144)]
+    pub point_count: i32,
+    #[schema(example = "Harmonic expansion")]
+    pub symbolic_theme: String,
+}
+
+#[cfg(feature = "openapi")]
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+pub struct SigilForgeResultSchema {
+    #[schema(example = "SIG-20260303-9A7")]
+    pub sigil_id: String,
+    #[schema(example = "clarity")]
+    pub intention: String,
+    #[schema(example = "M1 L10,2 L15,8 ...")]
+    pub vector_path: String,
+}
+
+#[cfg(feature = "openapi")]
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+#[serde(untagged)]
+pub enum EngineResultData {
+    Panchanga(PanchangaResultSchema),
+    Numerology(NumerologyResultSchema),
+    Biorhythm(BiorhythmResultSchema),
+    HumanDesign(HumanDesignResultSchema),
+    GeneKeys(GeneKeysResultSchema),
+    Vimshottari(VimshottariResultSchema),
+    Biofield(BiofieldResultSchema),
+    VedicClock(VedicClockResultSchema),
+    FaceReading(FaceReadingResultSchema),
+    Nadabrahman(NadabrahmanResultSchema),
+    Transits(TransitsResultSchema),
+    Enneagram(EnneagramResultSchema),
+    Tarot(TarotResultSchema),
+    IChing(IChingResultSchema),
+    SacredGeometry(SacredGeometryResultSchema),
+    SigilForge(SigilForgeResultSchema),
 }

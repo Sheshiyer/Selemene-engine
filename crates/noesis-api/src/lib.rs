@@ -31,7 +31,14 @@ use axum::{
 use chrono::Timelike;
 use noesis_auth::{AuthService, AuthUser};
 use noesis_cache::CacheManager;
-use noesis_core::{EngineError, EngineInput, EngineOutput, ValidationResult, WorkflowResult};
+use noesis_core::{
+    BiofieldResultSchema, BiorhythmResultSchema, EngineError, EngineInput, EngineOutput,
+    EngineResultData, EnneagramResultSchema, FaceReadingResultSchema, GeneKeysResultSchema,
+    HumanDesignResultSchema, IChingResultSchema, NadabrahmanResultSchema, NumerologyResultSchema,
+    PanchangaResultSchema, SacredGeometryResultSchema, SigilForgeResultSchema, TarotResultSchema,
+    TransitsResultSchema, ValidationResult, VedicClockResultSchema, VimshottariResultSchema,
+    WorkflowResult,
+};
 use noesis_data::models::reading::NewReading;
 use noesis_data::repositories::admin_repository::AdminRepository;
 use noesis_data::repositories::readings_repository::ReadingsRepository;
@@ -104,6 +111,23 @@ use utoipa_swagger_ui::SwaggerUi;
         schemas(
             EngineInput,
             EngineOutput,
+            EngineResultData,
+            PanchangaResultSchema,
+            NumerologyResultSchema,
+            BiorhythmResultSchema,
+            HumanDesignResultSchema,
+            GeneKeysResultSchema,
+            VimshottariResultSchema,
+            BiofieldResultSchema,
+            VedicClockResultSchema,
+            FaceReadingResultSchema,
+            NadabrahmanResultSchema,
+            TransitsResultSchema,
+            EnneagramResultSchema,
+            TarotResultSchema,
+            IChingResultSchema,
+            SacredGeometryResultSchema,
+            SigilForgeResultSchema,
             ValidationResult,
             WorkflowResult,
             HealthResponse,
