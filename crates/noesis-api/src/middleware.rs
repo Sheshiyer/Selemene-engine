@@ -1,5 +1,6 @@
 //! Middleware components for request logging, tracing, and response standardization
 
+use crate::billing;
 use axum::{
     extract::{Request, State},
     http::{header::AUTHORIZATION, StatusCode},
@@ -503,7 +504,7 @@ pub async fn rate_limit_middleware(
     // Determine rate limit key and limits based on authentication status
     let user = req.extensions().get::<AuthUser>().cloned();
 
-    let (key, per_minute_limit, daily_limit, auth_user_id) = match user {
+    let (key, per_minute_limit, daily_limit, auth_user_id, auth_tier) = match user {
         Some(auth_user) => {
             let tier_limits = limiter.limits_for_tier(&auth_user.tier);
             // Backward compatibility: explicit per-key rate_limit still overrides if set
@@ -518,12 +519,13 @@ pub async fn rate_limit_middleware(
                 per_minute_limit,
                 tier_limits.per_day,
                 Some(auth_user.user_id),
+                Some(auth_user.tier),
             )
         }
         None => {
             // Unauthenticated: rate limit by IP
             let ip = extract_client_ip(&req);
-            (format!("ip:{}", ip), limiter.anonymous_limit, 0, None)
+            (format!("ip:{}", ip), limiter.anonymous_limit, 0, None, None)
         }
     };
 
@@ -587,6 +589,10 @@ pub async fn rate_limit_middleware(
             );
         }
 
+        if let (Some(user_id), Some(tier)) = (&auth_user_id, &auth_tier) {
+            billing::emit_quota_exceeded(user_id, tier);
+        }
+
         return Ok(response);
     }
 
@@ -636,6 +642,10 @@ pub async fn rate_limit_middleware(
                 "X-RateLimit-Daily-Reset",
                 reset_daily.to_string().parse().unwrap(),
             );
+
+            if let Some(tier) = &auth_tier {
+                billing::emit_quota_exceeded(user_id, tier);
+            }
 
             return Ok(response);
         }

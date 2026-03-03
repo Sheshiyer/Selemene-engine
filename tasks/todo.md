@@ -488,3 +488,43 @@
   - `npm --prefix apps/admin-web run typecheck` ✅
   - `npm --prefix apps/admin-web run lint` ✅
   - `npm --prefix apps/admin-web run build` ✅
+
+---
+
+# Task Plan — Wave W2 Billing Event Hooks (#457)
+
+## Checklist
+- [x] Add `BillingEventEmitter` trait with required methods.
+- [x] Add `NoopBillingEmitter` default that logs events at debug level.
+- [x] Add `StripeWebhookEmitter` stub with JSON payload formatting helpers.
+- [x] Emit usage billing events on each engine/workflow calculation attempt.
+- [x] Emit quota-exceeded billing events on authenticated 429 rate-limit responses.
+- [x] Add tests for Stripe payload format and billing hook emission wiring.
+- [x] Run verification commands.
+
+## Notes
+- Billing hooks are non-blocking instrumentation only (no payment side effects).
+- Existing API behavior remains unchanged; events are emitted in parallel to normal flow.
+
+## Review (fill after execution)
+- Added new module `crates/noesis-api/src/billing.rs`:
+  - `BillingEventEmitter`
+  - `NoopBillingEmitter`
+  - `StripeWebhookEmitter`
+  - global emitter setters and emit helpers
+- Integrated usage event calls in:
+  - `calculate_handler`
+  - `workflow_execute_handler`
+- Integrated quota-exceeded event calls in:
+  - minute-limit 429 path in `rate_limit_middleware`
+  - daily-limit 429 path in `rate_limit_middleware`
+- Added integration test file:
+  - `crates/noesis-api/tests/billing_hooks_tests.rs`
+    - usage event emitted on calculation
+    - quota event emitted on rate-limit exceed
+    - Stripe payload format assertions
+- Verification:
+  - `cargo fmt --all` ✅
+  - `cargo check -p noesis-api` ✅
+  - `cargo check -p noesis-api --tests` ✅
+  - `cargo test -p noesis-api --test billing_hooks_tests -- --nocapture` ⚠ blocked locally by Xcode license requirement on linker (`xcodebuild -license`)

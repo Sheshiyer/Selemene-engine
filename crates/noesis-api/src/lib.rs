@@ -4,11 +4,17 @@
 //! All engine calculations and workflow executions are exposed through versioned
 //! JSON endpoints under `/api/v1/`.
 
+mod billing;
 mod config;
 pub mod error;
 mod handlers;
 mod logging;
 mod middleware;
+
+pub use billing::{
+    reset_billing_emitter, set_billing_emitter, BillingEventEmitter, NoopBillingEmitter,
+    StripeWebhookEmitter,
+};
 
 // Re-export configuration and logging for main.rs
 pub use config::ApiConfig;
@@ -723,6 +729,8 @@ async fn calculate_handler(
     let duration_ms = duration_secs * 1000.0;
     let user_id_str = user.user_id.clone();
 
+    billing::emit_usage_event(&user_id_str, &engine_id, &user.tier);
+
     match result {
         Ok(output) => {
             state.metrics.record_engine_calculation_with_status(
@@ -986,6 +994,8 @@ async fn workflow_execute_handler(
 
     // Use workflow_id prefixed to distinguish from engine calculations
     let workflow_label = format!("workflow:{}", workflow_id);
+
+    billing::emit_usage_event(&user_id_str, &workflow_label, &user.tier);
 
     match result {
         Ok(workflow_result) => {
