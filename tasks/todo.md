@@ -561,3 +561,41 @@
   - `cargo check -p noesis-core --features openapi` ✅
   - `cargo check -p noesis-api` ✅
   - `cargo check -p noesis-api --tests` ✅
+
+---
+
+# Task Plan — Wave W2 Workflow-Specific OpenAPI Schemas (#448)
+
+## Checklist
+- [x] Add workflow-specific typed synthesis schema models.
+- [x] Add workflow-specific response schemas for all 6 workflows.
+- [x] Add 6 workflow-specific OpenAPI endpoint definitions for execute routes.
+- [x] Reuse shared execution logic to avoid behavioral drift.
+- [x] Add OpenAPI regression tests for path presence and synthesis typing.
+- [x] Run verification compile checks.
+
+## Notes
+- Runtime API surface unchanged (existing dynamic execute route still handles execution).
+- Added static-path OpenAPI definitions for each workflow to satisfy per-workflow endpoint visibility in docs/Swagger.
+
+## Review (fill after execution)
+- Updated `crates/noesis-api/src/lib.rs`:
+  - Added typed synthesis schemas:
+    - `BirthBlueprintSynthesisSchema`, `DailyPracticeSynthesisSchema`, `DecisionSupportSynthesisSchema`, `SelfInquirySynthesisSchema`, `CreativeExpressionSynthesisSchema`, `FullSpectrumSynthesisSchema`
+  - Added typed workflow result schemas (6):
+    - `BirthBlueprintWorkflowResultSchema`, `DailyPracticeWorkflowResultSchema`, `DecisionSupportWorkflowResultSchema`, `SelfInquiryWorkflowResultSchema`, `CreativeExpressionWorkflowResultSchema`, `FullSpectrumWorkflowResultSchema`
+  - Added 6 workflow-specific OpenAPI execute handlers/definitions:
+    - `/api/v1/workflows/birth-blueprint/execute`
+    - `/api/v1/workflows/daily-practice/execute`
+    - `/api/v1/workflows/decision-support/execute`
+    - `/api/v1/workflows/self-inquiry/execute`
+    - `/api/v1/workflows/creative-expression/execute`
+    - `/api/v1/workflows/full-spectrum/execute`
+  - Refactored shared runtime logic into `execute_workflow_by_id(...)` and reused it.
+- Added tests in `crates/noesis-api/tests/workflow_openapi_tests.rs`:
+  - verifies 6 workflow execute paths exist in OpenAPI
+  - verifies workflow result schemas reference typed synthesis schemas
+- Verification:
+  - `cargo fmt --all` ✅
+  - `cargo check -p noesis-api` ✅
+  - `cargo check -p noesis-api --tests` ✅
