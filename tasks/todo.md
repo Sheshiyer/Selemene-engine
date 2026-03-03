@@ -704,3 +704,10 @@
 - `cargo test -p noesis-api --lib` ✅
 - `cargo test -p noesis-api --tests` ⚠️ one pre-existing metrics-registry collision in `billing_hooks_tests` (`AlreadyReg`)
 - `npm --prefix ts-engines test` ✅
+
+### #432
+- Added witness prompt quality audit doc:
+  - `docs/launch/v3.0.0-witness-prompt-audit.md`
+- Added automated contract test in noesis-integration:
+  - `crates/noesis-integration/tests/witness_prompt_quality_tests.rs`
+  - validates all 16 engines against question format + non-prescriptive language constraints
