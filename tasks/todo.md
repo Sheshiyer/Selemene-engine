@@ -909,3 +909,38 @@
 - `deploy.yaml` auto-deploys only on `main` or tags.
 - `test.yml` runs only on `main`, `develop`, and pull requests.
 - Safe path: create a `codex/...` branch, push it, then open/merge through the normal repo flow if deployment to `main` is desired.
+
+## Review (fill after execution)
+- Branch created from detached `HEAD`:
+  - `codex/engine-hygiene-native-runtime-docs`
+- User-facing docs updated:
+  - `README.md`
+  - `docs/ENGINES.md`
+  - `docs/PROJECT_OVERVIEW.md`
+  - `docs/RELEASE_NOTES.md`
+  - `docs/MIGRATION_TO_FREE_ASTROLOGY_API.md`
+  - `docs/planning/selemene-engine-hygiene-2026-03-08.md` (historical-note correction)
+- Commit created:
+  - `c379346d`
+  - `fix(vedic): restore native runtime and validate transits baselines`
+- Branch pushed:
+  - `origin/codex/engine-hygiene-native-runtime-docs`
+- Pull request opened:
+  - `#509`
+  - `https://github.com/Sheshiyer/Selemene-engine/pull/509`
+- Verification run before commit:
+  - `cargo test -p engine-panchanga -- --nocapture`
+  - `cargo test -p engine-vimshottari -- --nocapture`
+  - `cargo test -p engine-transits -- --nocapture`
+  - `cargo test -p noesis-api --test engine_consistency_tests -- --nocapture`
+  - `cargo test -p noesis-api --test vedic_provider_route_tests -- --nocapture`
+  - `cargo test -p noesis-api provider_mode_tests -- --nocapture`
+  - `cargo test -p noesis-bridge -- --nocapture`
+  - `cargo test -p engine-vedic-clock -- --nocapture`
+  - `cargo test -p engine-human-design test_canonical_profile_regression -- --nocapture`
+  - `cargo test -p engine-gene-keys test_gk_birth_mode_derives_from_hd_engine -- --nocapture`
+  - `cargo test -p noesis-vedic-api --test client_tests test_get_panchang_uses_x_api_key_header_and_complete_endpoint -- --nocapture`
+  - `cargo test -p noesis-vedic-api --test panchang_tests -- --nocapture`
+- Workflow status at handoff:
+  - PR exists and is the correct route for `test.yml` to trigger.
+  - At the time of verification, only `Supabase Preview` had appeared and was `skipped`; no GitHub Actions test run had shown up yet.
