@@ -49,8 +49,17 @@ impl TransitsEngine {
             .or_else(|_| NaiveTime::parse_from_str(time_str, "%H:%M:%S"))
             .map_err(|e| EngineError::ValidationError(format!("Invalid time: {}", e)))?;
 
+        let timezone: chrono_tz::Tz = birth_data.timezone.parse().map_err(|e| {
+            EngineError::ValidationError(format!("Invalid timezone '{}': {}", birth_data.timezone, e))
+        })?;
+
         let naive_dt = date.and_time(time);
-        Ok(Utc.from_utc_datetime(&naive_dt))
+        let local_dt = timezone
+            .from_local_datetime(&naive_dt)
+            .single()
+            .ok_or_else(|| EngineError::ValidationError("Ambiguous local birth time".to_string()))?;
+
+        Ok(local_dt.with_timezone(&Utc))
     }
 
     /// Perform transit analysis
@@ -349,7 +358,92 @@ fn assess_period_quality(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::models::{SadeSatiStatus, ZodiacSign};
+    use crate::models::{SadeSatiStatus, TransitPlanet, ZodiacSign};
+    use chrono::TimeZone;
+    use noesis_core::{BirthData, EngineInput, Precision};
+    use std::collections::HashMap;
+
+    fn canonical_birth_data() -> BirthData {
+        BirthData {
+            name: None,
+            date: "1991-08-13".to_string(),
+            time: Some("13:31".to_string()),
+            latitude: 12.9340,
+            longitude: 77.6214,
+            timezone: "Asia/Kolkata".to_string(),
+        }
+    }
+
+    fn position_for(
+        positions: &[crate::models::PlanetaryPosition],
+        planet: TransitPlanet,
+    ) -> &crate::models::PlanetaryPosition {
+        positions
+            .iter()
+            .find(|position| position.planet == planet)
+            .expect("planet should be present")
+    }
+
+    fn natesh_aiyer_birth_data() -> BirthData {
+        BirthData {
+            name: Some("Natesh Aiyer".to_string()),
+            date: "1960-11-20".to_string(),
+            time: Some("17:15".to_string()),
+            latitude: 13.0,
+            longitude: 77.5833,
+            timezone: "Asia/Kolkata".to_string(),
+        }
+    }
+
+    fn anitha_nateshan_birth_data() -> BirthData {
+        BirthData {
+            name: Some("Anitha Nateshan".to_string()),
+            date: "1965-06-01".to_string(),
+            time: Some("00:35".to_string()),
+            latitude: 12.9667,
+            longitude: 77.5833,
+            timezone: "Asia/Kolkata".to_string(),
+        }
+    }
+
+    fn nakshatra_and_pada(longitude: f64) -> (&'static str, u8) {
+        const NAKSHATRA_NAMES: [&str; 27] = [
+            "Ashwini",
+            "Bharani",
+            "Krittika",
+            "Rohini",
+            "Mrigashira",
+            "Ardra",
+            "Punarvasu",
+            "Pushya",
+            "Ashlesha",
+            "Magha",
+            "Purva Phalguni",
+            "Uttara Phalguni",
+            "Hasta",
+            "Chitra",
+            "Swati",
+            "Vishakha",
+            "Anuradha",
+            "Jyeshtha",
+            "Mula",
+            "Purva Ashadha",
+            "Uttara Ashadha",
+            "Shravana",
+            "Dhanishta",
+            "Shatabhisha",
+            "Purva Bhadrapada",
+            "Uttara Bhadrapada",
+            "Revati",
+        ];
+
+        let normalized = longitude.rem_euclid(360.0);
+        let nakshatra_span = 360.0 / 27.0;
+        let pada_span = nakshatra_span / 4.0;
+        let nakshatra_index = (normalized / nakshatra_span).floor() as usize;
+        let pada = ((normalized % nakshatra_span) / pada_span).floor() as u8 + 1;
+        (NAKSHATRA_NAMES[nakshatra_index], pada)
+    }
 
     #[test]
     fn test_engine_creation() {
@@ -394,5 +488,87 @@ mod tests {
             "Sade Sati + retrogrades should be challenging: {:?}",
             quality
         );
+    }
+
+    #[test]
+    fn test_parse_birth_datetime_respects_birth_timezone() {
+        let utc_dt = TransitsEngine::parse_birth_datetime(&canonical_birth_data())
+            .expect("timezone-aware birth parsing should succeed");
+
+        assert_eq!(utc_dt, Utc.with_ymd_and_hms(1991, 8, 13, 8, 1, 0).unwrap());
+    }
+
+    #[test]
+    fn test_birth_and_transit_signs_match_trusted_references() {
+        let engine = TransitsEngine::new();
+        let input = EngineInput {
+            birth_data: Some(canonical_birth_data()),
+            current_time: Utc.with_ymd_and_hms(2026, 3, 10, 1, 0, 0).unwrap(),
+            location: None,
+            precision: Precision::Standard,
+            options: HashMap::new(),
+        };
+
+        let analysis = engine
+            .analyze(&input)
+            .expect("transits analysis should succeed");
+
+        let natal_sun = position_for(&analysis.natal_positions, TransitPlanet::Sun);
+        let natal_moon = position_for(&analysis.natal_positions, TransitPlanet::Moon);
+        let transit_sun = position_for(&analysis.transit_positions, TransitPlanet::Sun);
+        let transit_moon = position_for(&analysis.transit_positions, TransitPlanet::Moon);
+
+        assert_eq!(natal_sun.sign, ZodiacSign::Cancer);
+        assert_eq!(natal_moon.sign, ZodiacSign::Virgo);
+        assert_eq!(transit_sun.sign, ZodiacSign::Aquarius);
+        assert_eq!(transit_moon.sign, ZodiacSign::Scorpio);
+    }
+
+    #[test]
+    fn test_natesh_aiyer_natal_positions_match_pdf_reference() {
+        let engine = TransitsEngine::new();
+        let input = EngineInput {
+            birth_data: Some(natesh_aiyer_birth_data()),
+            current_time: Utc.with_ymd_and_hms(2026, 3, 10, 1, 0, 0).unwrap(),
+            location: None,
+            precision: Precision::Standard,
+            options: HashMap::new(),
+        };
+
+        let analysis = engine
+            .analyze(&input)
+            .expect("transits analysis should succeed");
+
+        let natal_sun = position_for(&analysis.natal_positions, TransitPlanet::Sun);
+        let natal_moon = position_for(&analysis.natal_positions, TransitPlanet::Moon);
+
+        assert_eq!(natal_sun.sign, ZodiacSign::Scorpio);
+        assert_eq!(natal_moon.sign, ZodiacSign::Scorpio);
+        assert_eq!(nakshatra_and_pada(natal_sun.longitude), ("Anuradha", 1));
+        assert_eq!(nakshatra_and_pada(natal_moon.longitude), ("Jyeshtha", 3));
+    }
+
+    #[test]
+    fn test_anitha_nateshan_natal_positions_match_pdf_reference() {
+        let engine = TransitsEngine::new();
+        let input = EngineInput {
+            birth_data: Some(anitha_nateshan_birth_data()),
+            current_time: Utc.with_ymd_and_hms(2026, 3, 10, 1, 0, 0).unwrap(),
+            location: None,
+            precision: Precision::Standard,
+            options: HashMap::new(),
+        };
+
+        let analysis = engine
+            .analyze(&input)
+            .expect("transits analysis should succeed");
+
+        let natal_sun = position_for(&analysis.natal_positions, TransitPlanet::Sun);
+        let natal_moon = position_for(&analysis.natal_positions, TransitPlanet::Moon);
+
+        assert_eq!(natal_sun.sign, ZodiacSign::Taurus);
+        assert_eq!(natal_moon.sign, ZodiacSign::Taurus);
+        assert_eq!(nakshatra_and_pada(natal_sun.longitude), ("Rohini", 3));
+        assert_eq!(nakshatra_and_pada(natal_moon.longitude), ("Mrigashira", 2));
     }
 }

@@ -74,7 +74,7 @@ impl VedicApiClient {
             .request(method, &url)
             .header(header::ACCEPT, "application/json")
             .header(header::CONTENT_TYPE, "application/json")
-            .bearer_auth(&self.config.api_key)
+            .header("x-api-key", &self.config.api_key)
     }
 
     /// Execute a request with automatic 429 retry using exponential backoff.
@@ -234,7 +234,7 @@ impl VedicApiClient {
 
         let response = self
             .execute_with_retry(|| {
-                self.build_request(reqwest::Method::POST, "panchang")
+                self.build_request(reqwest::Method::POST, "complete-panchang")
                     .json(&params)
             })
             .await?;
@@ -448,7 +448,7 @@ impl VedicApiClient {
 
         match self
             .execute_with_retry(|| {
-                self.build_request(reqwest::Method::POST, "panchang")
+                self.build_request(reqwest::Method::POST, "complete-panchang")
                     .json(&health_body)
             })
             .await

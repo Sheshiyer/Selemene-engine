@@ -200,6 +200,16 @@ impl ConsciousnessEngine for BridgeEngine {
     }
 
     async fn calculate(&self, input: EngineInput) -> Result<EngineOutput, EngineError> {
+        if self.engine_id == "sigil-forge" {
+            let has_intention = Self::extract_question(&input.options).is_some();
+            if !has_intention {
+                return Err(EngineError::ValidationError(
+                    "sigil-forge requires options.intention (or question/intent/intent_text)"
+                        .to_string(),
+                ));
+            }
+        }
+
         let url = format!("{}/engines/{}/calculate", self.base_url, self.engine_id);
 
         debug!(
@@ -247,6 +257,14 @@ impl ConsciousnessEngine for BridgeEngine {
                 %body,
                 "bridge calculate returned non-2xx"
             );
+
+            if status.is_client_error() {
+                return Err(EngineError::ValidationError(format!(
+                    "Engine {} rejected input ({}): {}",
+                    self.engine_id, status, body
+                )));
+            }
+
             return Err(EngineError::BridgeError(format!(
                 "Engine {} returned {}: {}",
                 self.engine_id, status, body
@@ -326,6 +344,14 @@ impl ConsciousnessEngine for BridgeEngine {
                 %body,
                 "bridge validate returned non-2xx"
             );
+
+            if status.is_client_error() {
+                return Err(EngineError::ValidationError(format!(
+                    "Engine {} validate rejected input ({}): {}",
+                    self.engine_id, status, body
+                )));
+            }
+
             return Err(EngineError::BridgeError(format!(
                 "Engine {} validate returned {}: {}",
                 self.engine_id, status, body
@@ -619,6 +645,22 @@ mod tests {
                 );
             }
             _ => panic!("Expected BridgeError, got {:?}", err),
+        }
+    }
+
+    #[tokio::test]
+    async fn bridge_engine_sigil_requires_intention() {
+        let engine = BridgeEngine::sigil_forge_with_url("http://localhost:59999");
+        let input = test_input();
+
+        let result = engine.calculate(input).await;
+        assert!(result.is_err());
+
+        match result.unwrap_err() {
+            EngineError::ValidationError(msg) => {
+                assert!(msg.contains("sigil-forge requires options.intention"));
+            }
+            other => panic!("Expected ValidationError, got {:?}", other),
         }
     }
 

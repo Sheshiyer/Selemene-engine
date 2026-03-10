@@ -461,7 +461,6 @@ struct HealthResponse {
 struct ReadinessResponse {
     redis: String,
     orchestrator: String,
-    vedic_api: String,
     overall_status: String,
 }
 
@@ -562,42 +561,12 @@ async fn readiness_handler(State(state): State<AppState>) -> impl IntoResponse {
         _ => "not_ready",
     };
 
-    // Check FreeAstrologyAPI connectivity (lightweight HEAD-like probe, 2s timeout)
-    let vedic_api_status = match std::env::var("FREE_ASTROLOGY_API_KEY") {
-        Ok(key) if !key.is_empty() => {
-            let base_url = std::env::var("FREE_ASTROLOGY_API_BASE_URL")
-                .unwrap_or_else(|_| "https://json.freeastrologyapi.com".to_string());
-            match reqwest::Client::builder()
-                .timeout(Duration::from_secs(2))
-                .build()
-            {
-                Ok(client) => {
-                    // Use a minimal GET to the base URL to verify reachability
-                    // without consuming API quota (no POST to a calculation endpoint)
-                    match client.get(&base_url).send().await {
-                        Ok(resp)
-                            if resp.status().is_success() || resp.status().is_client_error() =>
-                        {
-                            // Any HTTP response (even 4xx) means the service is reachable
-                            "healthy"
-                        }
-                        Ok(_) => "degraded",
-                        Err(_) => "degraded",
-                    }
-                }
-                Err(_) => "degraded",
-            }
-        }
-        _ => "unconfigured",
-    };
-
     let overall_ready = redis_status == "ok" && orchestrator_status == "ready";
     let overall_status = if overall_ready { "ready" } else { "not_ready" };
 
     let response = ReadinessResponse {
         redis: redis_status.to_string(),
         orchestrator: orchestrator_status.to_string(),
-        vedic_api: vedic_api_status.to_string(),
         overall_status: overall_status.to_string(),
     };
 
@@ -699,7 +668,6 @@ async fn calculate_handler(
     // Extract birth_data for profile auto-population (before input is moved)
     let birth_data_for_profile = input.birth_data.clone();
 
-    // Execute engine with user's consciousness level
     let result = state
         .orchestrator
         .execute_engine(&engine_id, input, user.consciousness_level)

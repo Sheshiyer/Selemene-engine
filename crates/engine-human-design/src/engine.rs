@@ -326,6 +326,33 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn test_canonical_profile_regression() {
+        let engine = HumanDesignEngine::new();
+        let input = EngineInput {
+            birth_data: Some(BirthData {
+                name: Some("Canonical".to_string()),
+                date: "1991-08-13".to_string(),
+                time: Some("13:31".to_string()),
+                latitude: 12.9340,
+                longitude: 77.6214,
+                timezone: "Asia/Kolkata".to_string(),
+            }),
+            current_time: Utc::now(),
+            location: None,
+            precision: Precision::Standard,
+            options: HashMap::new(),
+        };
+
+        let output = engine.calculate(input).await.expect("HD calculation should succeed");
+
+        // Incarnation-cross critical gates for canonical profile
+        assert_eq!(output.result["personality_activations"]["sun"]["gate"].as_u64().unwrap(), 4);
+        assert_eq!(output.result["personality_activations"]["earth"]["gate"].as_u64().unwrap(), 49);
+        assert_eq!(output.result["design_activations"]["sun"]["gate"].as_u64().unwrap(), 23);
+        assert_eq!(output.result["design_activations"]["earth"]["gate"].as_u64().unwrap(), 43);
+    }
+
+    #[tokio::test]
     async fn test_validation_checks_witness_prompt() {
         let engine = HumanDesignEngine::new();
         let mut output = EngineOutput {

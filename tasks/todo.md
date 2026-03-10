@@ -1,5 +1,278 @@
 # Task Plan — Admin Dashboard Wave 1 Bootstrap
 
+---
+
+# Task Plan — Astrology Hygiene Verification Audit
+
+## Checklist
+- [x] Review current hygiene-related docs and task/lesson context.
+- [ ] Verify whether FreeAstrologyAPI provider wiring is actually active in runtime code paths.
+- [ ] Verify whether the claimed engine fixes/tests exist in the repo and match the transcript.
+- [ ] Run fresh targeted verification commands for the affected engines/API tests.
+- [ ] Record confirmed findings, contradictions, and remaining gaps in the review section.
+
+## Notes
+- Scope is verification only for the current hygiene changes and provider/runtime behavior.
+- Do not mutate engine logic in this pass unless verification reveals a safe, necessary correction.
+
+## Review (fill after execution)
+- Trusted screenshot reference for `1991-08-13 13:31 Bangalore` shows:
+  - `Tithi = Chaturthi upto 10:04 PM`
+  - `Nakshatra = Uttara Phalguni upto 01:52 PM`
+  - `Nakshatra Pada = 4` at the birth moment (`pada 3` ended at `08:05 AM`)
+  - `Yoga = Siddha upto 07:48 PM`
+  - `Karana = Vishti upto 10:04 PM` (`Vanija` ended at `10:48 AM`)
+  - `Weekday = Mangalavara`
+  - `Paksha = Shukla Paksha`
+  - `Moon sign = Kanya`
+  - `Sun sign = Karka`
+  - `Lahiri Ayanamsha = 23.746632`
+- Native Selemene Panchanga at the same moment returned:
+  - `tithi_name = Chaturthi (Shukla)`
+  - `nakshatra_name = Uttara Phalguni`
+  - `nakshatra_value = 11.987291238292826` -> `pada 4`
+  - `yoga_name = Siddha`
+  - `karana_name = Vishti`
+  - `vara_name = Mangalavara (Tuesday)`
+  - `solar_longitude = 116.37350004069478` -> `Karka`
+  - `lunar_longitude = 159.83054984390435` -> `Kanya`
+  - `julian_day = 2448481.834027778`
+- Comparison verdict:
+  - native Panchanga matches the trusted screenshot on every high-signal birth field we extracted:
+    - `tithi`
+    - `nakshatra`
+    - `nakshatra pada`
+    - `yoga`
+    - `karana`
+    - `vara`
+    - `moon sign`
+    - `sun sign`
+  - we added regression coverage for this exact birth moment in `engine-panchanga`.
+- Verification:
+  - `cargo test -p engine-panchanga test_birth_reference_1991_08_13_bangalore_matches_trusted_screenshot -- --nocapture`
+  - `cargo test -p engine-panchanga -- --nocapture`
+- Residual nuance:
+  - the engine does not currently expose ayanamsha as an output field.
+  - internal sidereal conversion still uses a simplified Lahiri constant (`23.72`) rather than the screenshot's `23.746632`.
+  - despite that, the birth-time Panchanga classifications match the trusted reference for this canonical input.
+
+---
+
+# Task Plan — Panchanga Provider Attribution Check
+
+## Checklist
+- [x] Verify which runtime engines are currently routed through FreeAstrologyAPI.
+- [x] Capture raw FreeAstrologyAPI Panchanga response behavior for the canonical birth input.
+- [x] Capture Selemene `/api/v1/engines/panchanga/calculate` response for the same input.
+- [x] Capture native Panchanga response for the same input.
+- [x] Compare provider behavior vs mapped API response vs native response and isolate the divergence point.
+- [x] Record conclusion and recommended next action in the review section.
+
+## Notes
+- Scope is surgical: provider attribution and correctness for Panchanga first.
+- Do not change engine math or broaden provider wiring in this pass.
+
+## Review (fill after execution)
+- Canonical input used:
+  - `1991-08-13`
+  - `13:31`
+  - `12.9340, 77.6214`
+  - `Asia/Kolkata`
+- Direct live provider probes:
+  - Old configured repo host `https://json.freeastrologyapi.com/panchang` with `x-api-key` returned `403 MissingAuthenticationToken`.
+  - Current public host `https://astro-api-1qnc.onrender.com/api/v1/vedic/panchang` with `Authorization: Bearer ...` returned `401 Missing x-api-key header`.
+  - Current public host with `x-api-key` returned `403 Invalid API Key` for the supplied key.
+- Selemene API route in `VEDIC_ENGINE_PROVIDER=api` mode returned:
+  - `_selemene_execution.route = fallback`
+  - `provider_attempted = true`
+  - `fallback_used = true`
+  - `backend = native-rust`
+  - Panchanga values:
+    - `tithi_name = Tritiya (Shukla)`
+    - `nakshatra_name = Uttara Phalguni`
+    - `yoga_name = Siddha`
+    - `karana_name = Balava`
+    - `vara_name = Mangalavara (Tuesday)`
+    - `solar_longitude = 117.54499786675959`
+    - `lunar_longitude = 153.10711914058018`
+    - `julian_day = 2448481.834027778`
+- Selemene API route in `VEDIC_ENGINE_PROVIDER=native` mode returned the exact same Panchanga values, confirming the `api`-mode result came from native fallback rather than provider mapping.
+- Divergence point isolated:
+  - the failure is upstream of astrology mapping.
+  - initial `noesis-vedic-api` client used Bearer auth and the wrong Panchanga path.
+  - patched client now uses `x-api-key` and `complete-panchang`, with contract coverage:
+    - `cargo test -p noesis-vedic-api --test client_tests test_get_panchang_uses_x_api_key_header_and_complete_endpoint -- --nocapture`
+    - `cargo test -p noesis-api --test vedic_provider_route_tests -- --nocapture`
+  - after the client contract fix, direct raw provider call still returns `403 AccessDenied` on `https://json.freeastrologyapi.com/complete-panchang` for the supplied key.
+  - Selemene `api` mode with fallback disabled now returns `500 BRIDGE_ERROR`, which correctly surfaces the provider failure instead of silently producing astrology output.
+  - Selemene `api` mode with fallback enabled returns the same native Panchanga output as `native` mode, confirming live provider mapping still does not execute because provider authorization blocks first.
+- Recommended next action:
+  - provider contract is now corrected for Panchanga.
+  - next unblocker is provider authorization: verify the active API key/account entitlement for `complete-panchang`, or switch to a provider/endpoint that will return a live Panchanga payload for comparison.
+  - additional entitlement probes against official docs endpoints all failed from this environment with the supplied key:
+    - `POST /complete-panchang` -> `403 AccessDenied`
+    - `POST /tithi-durations` -> `403 Forbidden`
+    - `POST /nakshatra-durations` -> `403 Forbidden`
+    - `POST /yoga-durations` -> `403 Forbidden`
+    - `POST /geo-details` -> `403 Forbidden`
+    - `POST /aayanam` -> `403 Forbidden`
+  - control probes on `geo-details` with no key and with a random key also returned `403 Forbidden`, so the provider is not giving a usable success path or a differentiating auth error from this environment.
+  - viability conclusion: FreeAstrologyAPI is not currently usable as a live Panchanga source in this setup until key/account access is repaired.
+
+---
+
+# Task Plan — Panchanga Native Baseline + Replacement Provider Comparison
+
+## Checklist
+- [ ] Lock the canonical Panchanga fixture for:
+  - `1991-08-13`
+  - `13:31`
+  - `12.9340, 77.6214`
+  - `Asia/Kolkata`
+- [ ] Capture native Selemene Panchanga output for the canonical fixture.
+- [ ] Capture a trusted external reference Panchanga result for the same fixture.
+- [ ] Compare native output vs trusted reference on:
+  - `tithi`
+  - `nakshatra`
+  - `yoga`
+  - `karana`
+  - `vara`
+  - `solar_longitude`
+  - `lunar_longitude`
+  - `julian_day` if available
+- [ ] Decide whether native Panchanga is trustworthy enough to serve as the interim source of truth.
+- [ ] Only after native validation, test replacement provider candidates against the same canonical fixture.
+- [ ] Record the comparison matrix and decision in the review section.
+
+## Notes
+- Freeze FreeAstrologyAPI for Panchanga investigation until provider access is repaired.
+- Native engine validation comes before any replacement provider integration work.
+- Keep this wave evidence-driven and fixture-based.
+
+## Review (fill after execution)
+- External reference used in this pass:
+  - pasted Drik-style Bengaluru day Panchang for `March 10, 2026`
+  - daily context anchored around sunrise `06:30`
+  - updated screenshot clarified that `12:21 PM` refers to the `Anuradha` **pada** transition, while core nakshatra remains `Anuradha` until `07:05 PM`
+- Native Selemene checks run at:
+  - `2026-03-10 06:30 Asia/Kolkata`
+  - `2026-03-10 12:20/12:21 Asia/Kolkata`
+  - Bengaluru center and user coordinates produced effectively the same result for core fields
+- Native engine matches the reference on coarse fields:
+  - `vara = Mangalavara (Tuesday)`
+  - `nakshatra = Anuradha` at day start
+  - `nakshatra = Anuradha` still valid at `12:21 PM`
+  - `lunar_longitude = 220.7894` at sunrise -> moon in `Vrishchika`, `Anuradha`, roughly pada 3
+  - `lunar_longitude = 224.0012` at `12:21 PM` -> moon still in `Anuradha`, now roughly pada 4
+  - `solar_longitude = 324.0117` at sunrise -> sun in `Kumbha`
+  - `tithi = Saptami (Krishna)` matches the screenshot's `Saptami upto 01:54 AM, Mar 11`
+  - `yoga` progression also matches:
+    - sunrise: native `Harshana`
+    - noon: native `Vajra`
+    - screenshot: `Harshana upto 08:21 AM`, then `Vajra`
+- Root cause isolated and fixed in this pass:
+  - `engine-panchanga` used a placeholder modulo-based karana mapping instead of the real 60 half-tithi cycle.
+  - `engine-panchanga` also used rough mean solar/lunar longitudes, which flipped the March 10, 2026 Bengaluru karana transition too early.
+  - surgical fix applied:
+    - replaced karana derivation with the standard 60-slot half-tithi sequence
+    - changed `compute_panchanga()` to prefer local Swiss Ephemeris Sun/Moon positions via `engine-human-design`, with the previous mean-longitude math retained only as fallback
+    - normalized internal karana naming from `Garaja` to `Gara` to match the rest of the system
+- Verification after fix:
+  - `cargo test -p engine-panchanga test_karana_regression_march_10_2026_day_sequence -- --nocapture`
+  - `cargo test -p engine-panchanga -- --nocapture`
+  - `cargo test -p noesis-api --test engine_consistency_tests -- --nocapture`
+- Current confidence decision:
+  - the March 10, 2026 reference now matches on the previously broken karana sequence:
+    - `Vishti` at sunrise
+    - still `Vishti` at `12:21 PM`
+    - `Bava` after the documented `12:40 PM` transition (regression asserted at `12:41 PM`)
+  - native Panchanga is now materially stronger for day-level validation and no longer blocked on the karana mismatch.
+  - canonical birth-fixture validation against a trusted external Panchanga source is still pending before declaring native Panchanga the final baseline for all cases.
+
+---
+
+# Task Plan — Panchanga Birth-Time Validation Against Trusted Screenshot
+
+## Checklist
+- [x] Extract the key Panchanga fields from the trusted birth-day screenshots for:
+  - `1991-08-13`
+  - `13:31`
+  - `Bangalore, India`
+  - `Asia/Kolkata`
+- [x] Run native Selemene Panchanga for the same birth moment.
+- [x] Compare native output vs screenshot on:
+  - `tithi`
+  - `nakshatra`
+  - `nakshatra pada`
+  - `yoga`
+  - `karana`
+  - `vara`
+  - `moon sign`
+  - `sun sign`
+  - `ayanamsha`
+- [x] Record the exact matches/mismatches and confidence decision.
+
+## Notes
+- This pass is validation only.
+- Use the screenshot as the trusted external reference for the exact birth moment.
+- Keep the March 10, 2026 day-Panchang fix separate from the birth-time verdict.
+
+## Review (fill after execution)
+- Trusted screenshot reference for `1991-08-13 13:31 Bangalore` shows:
+  - `Tithi = Chaturthi upto 10:04 PM`
+  - `Nakshatra = Uttara Phalguni upto 01:52 PM`
+  - `Nakshatra Pada = 4`
+  - `Yoga = Siddha upto 07:48 PM`
+  - `Karana = Vishti upto 10:04 PM`
+  - `Weekday = Mangalavara`
+  - `Moon sign = Kanya`
+  - `Sun sign = Karka`
+  - `Lahiri Ayanamsha = 23.746632`
+- Native Selemene Panchanga at the same moment returned:
+  - `tithi_name = Chaturthi (Shukla)`
+  - `nakshatra_name = Uttara Phalguni`
+  - `nakshatra_value = 11.987291238292826` -> `pada 4`
+  - `yoga_name = Siddha`
+  - `karana_name = Vishti`
+  - `vara_name = Mangalavara (Tuesday)`
+  - `solar_longitude = 116.37350004069478` -> `Karka`
+  - `lunar_longitude = 159.83054984390435` -> `Kanya`
+  - `julian_day = 2448481.834027778`
+- Decision:
+  - native Panchanga matches the trusted screenshot on all high-signal birth fields for the canonical input.
+  - regression coverage added in `engine-panchanga` for this exact birth-time fixture.
+
+---
+
+# Task Plan — Panchanga Provider Runtime Decommission
+
+## Checklist
+- [x] Remove FreeAstrologyAPI runtime dispatch from `noesis-api` for Panchanga.
+- [x] Remove provider mapping/runtime dependency hooks that are no longer reachable.
+- [x] Scrub provider reporting fields from active `/api/v1/status` and `/ready` responses.
+- [x] Add route-level tests proving Panchanga remains native even if old provider env vars are still set.
+- [x] Verify no provider trace fields remain in active Panchanga route responses.
+
+## Notes
+- Scope is runtime cleanup only in `noesis-api`.
+- Keep the `noesis-vedic-api` crate in the repo; remove only the active API-path association.
+- Do not touch unrelated engines or legacy docs in this pass.
+
+## Review (fill after execution)
+- Runtime cleanup completed in `noesis-api`:
+  - removed the provider dispatch branch from `calculate_handler`
+  - removed provider-specific Panchanga mapping/helpers from `src/lib.rs`
+  - removed the active `noesis-vedic-api` dependency from `crates/noesis-api/Cargo.toml`
+  - removed provider/status fields from active `/api/v1/status` and `/ready` responses
+- Trace verification after cleanup:
+  - `panchanga` route stays native even when `FREE_ASTROLOGY_API_*` and `VEDIC_ENGINE_PROVIDER=api` are set
+  - response no longer contains `provider` or `_selemene_execution` trace fields
+  - `/api/v1/status` and `/ready` no longer report provider configuration fields
+- Verification:
+  - `cargo test -p engine-panchanga -- --nocapture`
+  - `cargo test -p noesis-api --test vedic_provider_route_tests -- --nocapture`
+  - `cargo test -p noesis-api --test engine_consistency_tests -- --nocapture`
+
 ## Checklist
 - [x] Create `apps/admin-web` Next.js scaffold configured for Vercel deployment.
 - [x] Implement admin route shell and placeholders for documented pages (`/admin/*` via `basePath`).
@@ -258,6 +531,52 @@
   - `apps/admin-web/src/lib/export.ts`
   - `apps/admin-web/src/lib/status.ts`
 - Applied URL-synced state:
+
+---
+
+# Task Plan — Selemene Engine Hygiene Verification (2026-03-09)
+
+## Checklist
+- [x] Review the existing hygiene report, task log, and current worktree changes.
+- [x] Verify whether `noesis-api` currently routes Vedic engines through `noesis-vedic-api` / FreeAstrologyAPI.
+- [x] Run the targeted regression tests cited in the hygiene report.
+- [x] Run at least one broader validation suite to check whether the "fixed" claims hold beyond the canonical fixture.
+- [x] Record the verified state and the main contradictions/gaps.
+
+## Notes
+- Scope is verification only. No engine logic changes in this pass.
+- Focus question: whether current runtime uses FreeAstrologyAPI, and whether the pasted hygiene transcript accurately reflects the repo's present state.
+
+## Review
+- Verified provider wiring in `crates/noesis-api`:
+  - `noesis-api` now depends on `noesis-vedic-api`.
+  - `VEDIC_ENGINE_PROVIDER` defaults to `api`.
+  - `POST /api/v1/engines/:engine_id/calculate` uses provider dispatch for `panchanga` and `vimshottari` only, with fallback controlled by `VEDIC_ENGINE_FALLBACK_ENABLED`.
+  - `human-design`, `gene-keys`, `transits`, and `vedic-clock` remain native in provider mode.
+  - The legacy Panchanga route still bypasses provider routing and uses the native orchestrator path.
+- Verified targeted regression tests pass:
+  - `cargo test -p engine-panchanga`
+  - `cargo test -p engine-vimshottari`
+  - `cargo test -p engine-vedic-clock`
+  - `cargo test -p noesis-bridge`
+  - `cargo test -p engine-human-design test_canonical_profile_regression -- --nocapture`
+  - `cargo test -p engine-gene-keys test_gk_birth_mode_derives_from_hd_engine -- --nocapture`
+  - `cargo test -p engine-gene-keys -- --nocapture`
+  - `cargo test -p noesis-api provider_mode_tests -- --nocapture`
+  - `cargo test -p noesis-api --test engine_consistency_tests -- --nocapture`
+- Verified important gap:
+  - `cargo test -p engine-human-design -- --nocapture` still fails its broader `reference_validation_tests` suite badly:
+    - Sun/Earth validation: 0.0%
+    - Type validation: 0.0%
+    - Authority validation: 25.0%
+    - Profile validation: 75.0%
+    - Centers validation: 0.0%
+    - Channels validation: 0.0%
+- Conclusion:
+  - The pasted transcript is only partially accurate.
+  - It is accurate that targeted canonical fixes/tests were added.
+  - It is no longer accurate to say provider env vars are unused in runtime for all Vedic paths.
+  - It overstates the Human Design fix status; the canonical fixture passes, but the broader reference suite is still failing.
   - `users` (`query`, `tier`, `state`)
   - `api-keys` (`query`, `tier`, `status`)
   - `audit` (`actor`, `action`, `result`, `from`, `to`, `refresh`)
@@ -285,3 +604,308 @@
 - Issue lifecycle updates:
   - Closed as completed: `#482`, `#483`, `#484`, `#485`.
   - Kept umbrella `#486` open pending merge/deploy confirmation.
+
+---
+
+# Task Plan — Engine Hygiene Issue Triage (2026-03-08)
+
+## Checklist
+- [x] Consolidate engine hygiene challenges from latest validation run.
+- [x] Create parent tracking issue for coordinated remediation.
+- [x] Create child issues for each validated challenge domain.
+- [x] Link all child issues back to parent tracker.
+- [x] Create report with challenge matrix + issue links.
+
+## Review
+- Parent tracking issue created: #501
+- Child issues created: #502, #503, #504, #505, #506, #507
+- Report added: `docs/planning/selemene-engine-hygiene-2026-03-08.md`
+- Recommended fix order documented in the report.
+
+## Follow-up Execution — #502 + #503
+- [x] Implemented sidereal conversion in panchanga output path.
+- [x] Fixed vimshottari timezone conversion (local birth time -> UTC).
+- [x] Added canonical regression tests for Uttara Phalguni resolution.
+- [x] Added cross-engine parity test in noesis-api.
+- [x] Verified with:
+  - `cargo test -p engine-panchanga`
+  - `cargo test -p engine-vimshottari`
+  - `cargo test -p noesis-api --test engine_consistency_tests`
+
+## Follow-up Execution — #504 + #505
+- [x] Corrected HD gate-sequence transposition causing design-side canonical drift (23/43 vs 8/14).
+- [x] Added canonical HD regression for incarnation-cross gate anchors.
+- [x] Added GK birth-mode contract test proving HD-derived activation sequence mapping.
+- [x] Added HD↔GK canonical parity test in `noesis-api` consistency suite.
+- [x] Verified with:
+  - `cargo test -p engine-human-design test_canonical_profile_regression`
+  - `cargo test -p engine-gene-keys test_gk_birth_mode_derives_from_hd_engine`
+  - `cargo test -p noesis-api --test engine_consistency_tests`
+
+## Follow-up Execution — #507 + provider wiring discovery
+- [x] Fixed Vedic-clock timezone fallback to `birth_data.timezone` when explicit offset missing.
+- [x] Added/updated tests for timezone fallback behavior.
+- [x] Ran verification: `cargo test -p engine-vedic-clock`.
+- [x] Created provider wiring issue #508 to track `api/native` runtime selection gap for Vedic engines.
+
+## Follow-up Execution — #506 + #508
+- [x] Added sigil-forge pre-validation in bridge adapter to avoid malformed-input bridge 500s.
+- [x] Mapped bridge 4xx responses to validation errors (422 path).
+- [x] Added provider-mode visibility to readiness/status payloads in noesis-api.
+- [x] Added provider-mode mapping tests.
+- [x] Verified with:
+  - `cargo test -p noesis-bridge`
+  - `cargo test -p noesis-api provider_mode_tests`
+
+## Follow-up Execution — #508 true switching pass
+- [x] Added noesis-vedic-api runtime dependency in noesis-api.
+- [x] Implemented provider dispatch for `panchanga` and `vimshottari` in calculate handler.
+- [x] Added fallback-to-native behavior when provider fails and fallback is enabled.
+- [x] Updated status/readiness effective provider mode semantics.
+- [x] Verified with `cargo test -p noesis-api provider_mode_tests -- --nocapture`.
+- [x] Added provider-routing helper tests for supported engine gating.
+- [x] Added fallback-flag env parsing test coverage.
+- [x] Added provider-output mapping contract tests for panchanga and vimshottari.
+- [x] Re-verified with `cargo test -p noesis-api provider_mode_tests -- --nocapture` (7 passing).
+
+---
+
+# Task Plan — Next Wave Synthesis: Astrology API Correctness (2026-03-10)
+
+## Discovery Summary
+- Planning depth: lean
+- Delivery mode: hardening
+- CI/CD expectation: basic + targeted regression gates
+- Release model: phased rollout
+- Quality bar: prove route selection, prove provider-vs-native source, then fix calculation/mapping defects
+- Team topology: solo-owner friendly
+
+## Assumptions
+- The immediate problem is not "add more engines" but "make current panchanga/vimshottari answers attributable and trustworthy."
+- The existing issue set (#501-#508) remains the right container; the next wave should refine/advance those issues rather than open a fresh parallel tracker unless scope expands.
+- Human Design/Gene Keys should not be treated as solved while the broader HD reference suite is still failing.
+
+## Proposed next waves
+
+### Wave 1 — Provider Truth and Attribution
+- [ ] Add end-to-end API tests for `POST /api/v1/engines/panchanga/calculate` and `POST /api/v1/engines/vimshottari/calculate` that assert actual runtime path selection under:
+  - `VEDIC_ENGINE_PROVIDER=api`
+  - `VEDIC_ENGINE_PROVIDER=native`
+  - provider failure + fallback enabled
+  - provider failure + fallback disabled
+- [ ] Add explicit response metadata proving which path served the result:
+  - provider direct
+  - native direct
+  - native fallback after provider failure
+- [ ] Add a reproducible comparison harness/script for canonical birth input:
+  - raw `noesis-vedic-api` payload
+  - mapped `noesis-api` response
+  - native engine response
+- [ ] Decide and document whether the legacy Panchanga route should:
+  - remain native and be clearly documented as such, or
+  - be routed through the same provider-aware dispatcher
+
+### Wave 2 — Provider Contract Hardening (#502, #503, #508)
+- [ ] Add golden fixtures from known-good provider responses for canonical birth data.
+- [ ] Add mapping completeness tests ensuring provider payload fields are preserved or intentionally transformed.
+- [ ] Add negative tests for timezone, ayanamsa, and moon-longitude drift against the canonical birth fixture.
+- [ ] Add a one-command validation script that reports:
+  - configured provider mode
+  - effective route used
+  - backend label
+  - canonical nakshatra / dasha summary
+- [ ] Update stale docs/report language that still says provider routing is unused.
+
+### Wave 3 — Runtime Behavior in Real Environments
+- [ ] Add readiness/status checks that surface whether provider mode is configured but unusable due to missing key/network.
+- [ ] Add production/local smoke steps for:
+  - `FREE_ASTROLOGY_API_KEY` present
+  - provider reachable
+  - fallback triggered/not triggered
+- [ ] Verify Railway/local env parity for:
+  - `FREE_ASTROLOGY_API_KEY`
+  - `VEDIC_ENGINE_PROVIDER`
+  - `VEDIC_ENGINE_FALLBACK_ENABLED`
+- [ ] Add log assertions or structured tracing around provider invocation/fallback transitions.
+
+### Wave 4 — Remaining Native Engine Correctness (#504, #505, #507)
+- [ ] Re-scope #504 around the failing broad reference suite, not the passing canonical fixture.
+- [ ] Build a reduced reference chart pack for HD/GK triage so fixes can land incrementally.
+- [ ] Keep GK aligned to HD outputs, but do not close HD until full reference validation improves materially.
+- [ ] Close #507 only after route-level behavior is verified through API integration, not just unit tests.
+
+## Recommended execution order
+1. #508 first: prove route selection and fallback semantics end-to-end.
+2. #502 + #503 second: use the new harness to determine whether remaining drift is provider payload, mapper logic, or native fallback confusion.
+3. Docs/report cleanup third: remove contradictory statements so future debugging is not polluted by stale assumptions.
+4. #504 + #505 after that: broad HD/GK correctness is still a separate native-engine track.
+
+## Review
+- Current blocker is attribution ambiguity, not lack of more targeted math tests.
+- Once route attribution is explicit, we can answer "FreeAstrologyAPI is wrong" vs "our bridge is wrong" with evidence instead of inference.
+
+## Follow-up Execution — Wave 1 attribution hardening
+- [x] Added explicit execution attribution for `panchanga` and `vimshottari` responses in `crates/noesis-api/src/lib.rs`.
+  - `result._selemene_execution.route` is now one of:
+    - `provider`
+    - `native`
+    - `fallback`
+  - Attribution also records:
+    - `requested_provider`
+    - `provider_attempted`
+    - `fallback_used`
+    - resolved `backend`
+- [x] Added isolated route-level provider tests in `crates/noesis-api/tests/vedic_provider_route_tests.rs` using `wiremock`.
+- [x] Added `wiremock` + `noesis-vedic-api` mocks support to `crates/noesis-api/Cargo.toml` dev-dependencies.
+- [x] Verified route behavior end-to-end:
+  - provider direct success for `panchanga`
+  - provider direct success for `vimshottari`
+  - native direct mode for `panchanga`
+  - provider failure + fallback enabled for `panchanga`
+  - provider failure + fallback disabled for `panchanga`
+- [x] Verification commands:
+  - `cargo test -p noesis-api --test vedic_provider_route_tests -- --nocapture`
+  - `cargo test -p noesis-api provider_mode_tests -- --nocapture`
+
+## Follow-up Execution — Vimshottari provider de-association (surgical)
+- [x] Remove only `vimshottari` from the FreeAstrologyAPI runtime path.
+- [x] Keep `panchanga` provider wiring unchanged.
+- [x] Preserve response schema and native `vimshottari` behavior.
+- [x] Update route/provider tests so `vimshottari` is asserted native even when `VEDIC_ENGINE_PROVIDER=api`.
+- [x] Re-verify targeted `noesis-api` and `engine-vimshottari` tests.
+
+### Constraints
+- Do not remove `noesis-vedic-api` globally.
+- Do not change `panchanga` routing in this pass.
+- Do not touch HD/GK/native engine math in this pass.
+
+### Review
+- `crates/noesis-api/src/lib.rs`
+  - `effective_vedic_engine_modes_for("api")` now reports only `panchanga` as `api`.
+  - `use_api_provider_for_engine(...)` now returns `true` only for `panchanga`.
+  - Removed provider-side `vimshottari` mapping/dispatch from the runtime path.
+- `crates/noesis-api/tests/vedic_provider_route_tests.rs`
+  - Replaced provider-success expectation for `vimshottari` with native-route assertion under `VEDIC_ENGINE_PROVIDER=api`.
+  - Added assertion that no provider request is made for `vimshottari`.
+- `crates/noesis-api/src/lib.rs` provider-mode tests
+  - Updated expected mode map and provider gating assertions.
+  - Removed obsolete provider-vimshottari mapping contract test.
+- Verification:
+  - `cargo test -p engine-vimshottari`
+  - `cargo test -p noesis-api provider_mode_tests -- --nocapture`
+  - `cargo test -p noesis-api --test vedic_provider_route_tests -- --nocapture`
+  - `cargo test -p noesis-api --test engine_consistency_tests -- --nocapture`
+
+---
+
+# Task Plan — Transits Engine Validation
+
+## Checklist
+- [ ] Inspect the native `transits` engine path, inputs, and output contract.
+- [ ] Lock a fixed transit timestamp for comparison so validation is deterministic.
+- [ ] Reproduce the current transits output for the canonical birth data.
+- [ ] Compare high-signal fields against trusted expectations:
+  - natal Moon sign / longitude basis
+  - transit Saturn sign
+  - Sade Sati status
+  - a few major transit-to-natal aspects
+- [ ] Isolate whether the first defect is:
+  - birth timezone handling
+  - tropical vs sidereal basis mismatch
+  - aspect logic
+  - output/schema drift
+- [ ] Add regression coverage and implement the smallest correct fix if a real defect is confirmed.
+
+## Notes
+- Scope is native `engine-transits` only. FreeAstrologyAPI is no longer in the active runtime path here.
+- Use the canonical birth fixture:
+  - `1991-08-13`
+  - `13:31`
+  - `12.9340, 77.6214`
+  - `Asia/Kolkata`
+- Use a fixed transit timestamp for verification, not a moving `now`.
+
+## Review (fill after execution)
+- Early code review findings before patching:
+  - `crates/engine-transits/src/engine.rs` parses birth date/time as UTC and ignores `birth_data.timezone`.
+  - `crates/engine-transits/src/ephemeris.rs` uses raw Swiss Ephemeris tropical longitudes.
+  - `crates/engine-transits/src/sade_sati.rs` computes Sade Sati from those sign values, which is conceptually Vedic and therefore likely requires sidereal Moon/Saturn signs.
+  - Existing tests cover helper logic and output shape, but not canonical birth-time correctness, timezone handling, or sidereal-vs-tropical assumptions.
+- Fixed in this pass:
+  - `crates/engine-transits/src/engine.rs`
+    - `parse_birth_datetime()` now parses `birth_data.timezone` as an IANA timezone and converts local birth time to UTC before natal calculations.
+  - `crates/engine-transits/src/ephemeris.rs`
+    - converted Swiss Ephemeris tropical longitudes to sidereal using the same approximate Lahiri offset (`23.72`) already used by native Panchanga/Vimshottari.
+- Trusted references used:
+  - birth screenshot for `1991-08-13 13:31 Bangalore`
+    - natal Sun sign `Karka` / `Cancer`
+    - natal Moon sign `Kanya` / `Virgo`
+  - Bengaluru day Panchang screenshot for `2026-03-10 06:30 Asia/Kolkata`
+    - transit Sun sign `Kumbha` / `Aquarius`
+    - transit Moon sign `Vrishchika` / `Scorpio`
+- New regression coverage:
+  - `test_parse_birth_datetime_respects_birth_timezone`
+    - proved the old bug first (`1991-08-13 13:31 Asia/Kolkata` was being treated as `1991-08-13T13:31:00Z`)
+    - now asserts the correct UTC conversion: `1991-08-13T08:01:00Z`
+  - `test_birth_and_transit_signs_match_trusted_references`
+    - asserts natal `Sun = Cancer`, `Moon = Virgo`
+    - asserts transit `Sun = Aquarius`, `Moon = Scorpio` for `2026-03-10T01:00:00Z` (`06:30 IST`)
+- Verification:
+  - `cargo test -p engine-transits test_parse_birth_datetime_respects_birth_timezone -- --nocapture`
+  - `cargo test -p engine-transits test_birth_and_transit_signs_match_trusted_references -- --nocapture`
+  - `cargo test -p engine-transits -- --nocapture`
+  - `cargo test -p noesis-api provider_mode_tests -- --nocapture`
+- Current verdict:
+  - native `transits` had a real foundational defect.
+  - the engine now uses timezone-correct natal timestamps and sidereal sign assignment aligned with the rest of the native Vedic stack.
+  - aspect math was left unchanged because applying the same sidereal offset to natal and transit longitudes preserves the inter-planet angular relationships used by the aspect detector.
+- Residual risk:
+  - we have not yet externally validated a full list of transit-to-natal aspects or Sade Sati phase against a second trusted transit source.
+  - docs still describe the engine as `9 Navagraha`, while the runtime output includes outer planets plus Rahu/Ketu.
+- Additional natal reference fixtures queued from user-provided AstroSage PDFs:
+- Additional natal reference fixtures validated from user-provided AstroSage PDFs:
+  - `Natesh Aiyer`
+    - `1960-11-20 17:15 Bangalore`
+    - `Sun = Scorpio`, `Nakshatra = Anuradha pada 1`
+    - `Moon = Scorpio`, `Nakshatra = Jyeshtha pada 3`
+    - `Asc = Aries`
+  - `Anitha Nateshan`
+    - `1965-06-01 00:35 Bangalore`
+    - `Sun = Taurus`, `Nakshatra = Rohini pada 3`
+    - `Moon = Taurus`, `Nakshatra = Mrigashira pada 2`
+    - `Asc = Aquarius`
+- Regression coverage added for both PDF fixtures in `crates/engine-transits/src/engine.rs`:
+  - `test_natesh_aiyer_natal_positions_match_pdf_reference`
+  - `test_anitha_nateshan_natal_positions_match_pdf_reference`
+- One fixture (`Anitha Nateshan`) initially exposed a residual defect:
+  - fixed-offset ayanamsha (`23.72`) was too imprecise across years and placed the natal Sun in `Rohini pada 2` instead of the trusted `Rohini pada 3`.
+- Surgical refinement applied:
+  - `crates/engine-transits/src/ephemeris.rs` now gets the date-correct Lahiri ayanamsha from Swiss Ephemeris via `swe_set_sid_mode(Lahiri)` + `swe_get_ayanamsa_ut(...)` instead of subtracting a fixed constant.
+- Expanded verification:
+  - `cargo test -p engine-transits test_natesh_aiyer_natal_positions_match_pdf_reference -- --nocapture`
+  - `cargo test -p engine-transits test_anitha_nateshan_natal_positions_match_pdf_reference -- --nocapture`
+  - `cargo test -p engine-transits -- --nocapture`
+  - `cargo test -p noesis-api provider_mode_tests -- --nocapture`
+- Updated confidence:
+  - native `transits` now matches three independent natal reference fixtures for Sun/Moon sign and nakshatra/pada-sensitive sidereal placement:
+    - your canonical 1991 birth chart
+    - `Natesh Aiyer` 1960 chart
+    - `Anitha Nateshan` 1965 chart
+  - this materially raises confidence in the natal baseline used for transit analysis.
+
+---
+
+# Task Plan — Docs + Commit + Push
+
+## Checklist
+- [ ] Update user-facing docs to reflect the current native-first Vedic runtime and transits fixes.
+- [ ] Update release-facing notes with the March 2026 engine hygiene corrections.
+- [ ] Add a short correction note to the hygiene planning report so it no longer claims provider routing is active.
+- [ ] Re-run targeted verification before committing.
+- [ ] Commit the validated changes and push to a remote branch so existing workflows can trigger safely.
+
+## Notes
+- Current repo state is detached `HEAD`; do not commit directly without creating a branch first.
+- `deploy.yaml` auto-deploys only on `main` or tags.
+- `test.yml` runs only on `main`, `develop`, and pull requests.
+- Safe path: create a `codex/...` branch, push it, then open/merge through the normal repo flow if deployment to `main` is desired.

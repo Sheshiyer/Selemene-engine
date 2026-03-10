@@ -7,6 +7,8 @@
 **Status**: Production-live on Railway, auth working against Supabase PostgreSQL
 **Overall Maturity**: 78% production-ready
 
+> March 10, 2026 correction: the active Vedic runtime path is native Rust for `panchanga`, `vimshottari`, and `transits`. `noesis-vedic-api` remains in-repo as an optional provider client, but it is not the current production calculation path for those engines.
+
 ---
 
 ## 1. What Is Working
@@ -29,7 +31,7 @@ Sentry error tracking is integrated (`sentry 0.34`, `sentry-tower`), configured 
 
 All 16 engines (11 Rust + 5 TypeScript) produce genuine calculations:
 
-**Panchanga** (697 LOC, 16 tests): Native Rust astronomical calculations using Meeus formulas. Computes Julian Day conversion, solar/lunar longitudes, tithi, nakshatra, yoga, karana, and vara. Uses simplified formulas — good for MVP accuracy, would need Swiss Ephemeris for professional-grade precision. Pure math, no external dependencies.
+**Panchanga** (native Rust): Computes Julian Day conversion, solar/lunar longitudes, tithi, nakshatra, yoga, karana, and vara. The current engine prefers Swiss-Ephemeris-backed solar/lunar positions and falls back to local approximations only when needed. Recent hygiene fixes validated the canonical `1991-08-13 13:31 Asia/Kolkata` birth chart and the `2026-03-10` Bengaluru day Panchang karana sequence against trusted references.
 
 **Numerology** (703 LOC, 18 tests): Implements both Pythagorean and Chaldean systems. Life path, expression, soul urge, personality, birthday number, and Chaldean name number with master number preservation (11, 22, 33). Pure math. Production-ready.
 
@@ -39,15 +41,17 @@ All 16 engines (11 Rust + 5 TypeScript) produce genuine calculations:
 
 **Gene Keys** (2,901 LOC across 9 files, 2 test files): Maps HD gates to the Gene Keys shadow-gift-siddhi framework. Computes 4 activation sequences (Life's Work, Evolution, Radiance, Purpose) from Sun/Earth/Venus personality and design positions. Inherits Swiss Ephemeris from HD engine. Rich wisdom data included.
 
-**Vimshottari** (3,368 LOC across 6 files): Full 120-year Dasha timeline based on Moon's nakshatra at birth. Computes Mahadashas, Antardashas, and Pratyantardashas (729 nested periods). Binary search finds the current moment in the grand cycle. Can use FreeAstrologyAPI or native calculations. Comprehensive planetary wisdom data included.
+**Vimshottari** (native Rust): Full 120-year Dasha timeline based on Moon's nakshatra at birth. Computes Mahadashas, Antardashas, and Pratyantardashas (729 nested periods). Binary search finds the current moment in the grand cycle. The active runtime uses timezone-correct birth parsing plus sidereal Moon longitude derived from Swiss Ephemeris-backed positions.
 
-**Vedic Clock** (3,543 LOC across 15 files): Unique synthesis of TCM organ meridian clock with Vedic panchanga, hora, and choghadiya timing systems. Maps 12-organ TCM clock to 3 Ayurvedic doshas with organ-dosha affinity scoring. Integrates with `noesis-vedic-api` for real-time panchanga data.
+**Vedic Clock** (3,543 LOC across 15 files): Unique synthesis of TCM organ meridian clock with Vedic panchanga, hora, and choghadiya timing systems. Maps 12-organ TCM clock to 3 Ayurvedic doshas with organ-dosha affinity scoring. The current runtime uses the native timing path and now honors birth timezone inputs explicitly.
+
+**Transits** (native Rust): Calculates natal and transit planetary positions, transit-to-natal aspects, retrogrades, and Sade Sati status. Recent hygiene fixes corrected timezone-aware natal parsing and switched sidereal sign assignment from a fixed Lahiri approximation to date-correct Lahiri ayanamsha from Swiss Ephemeris, with validation across three trusted natal charts.
 
 ### Supporting Infrastructure
 
 **Orchestrator** (~3,000 LOC, 20 files): Production-grade parallel engine execution using `futures::join_all`. Registry of 6 workflows (birth-blueprint, daily-practice, decision-support, self-inquiry, creative-expression, full-spectrum). Phase-gated access control (levels 0-5) and workflow caching.
 
-**Vedic API Client** (26,697 LOC — the largest crate): Full FreeAstrologyAPI.com client covering 15+ endpoints (Panchang, Dasha, Birth Chart, Vargas, Transits, Yogas, Shadbala, Ashtakavarga, Muhurta, and more). Production-grade resilience: rate limiting (50 req/day with 5-request safety buffer), exponential backoff with circuit breaker, batch optimization, and caching (birth data: infinite TTL, daily data: 24h TTL, predicted 95%+ hit rate). Falls back to native calculations when API is unavailable.
+**Vedic API Client** (`noesis-vedic-api`): Full FreeAstrologyAPI.com client covering 15+ endpoints (Panchang, Dasha, Birth Chart, Vargas, Transits, Yogas, Shadbala, Ashtakavarga, Muhurta, and more). It remains useful as an integration/client crate, but it is not the active production runtime path for the current Vedic engine calculations after the March 2026 hygiene corrections.
 
 **Bridge** (552 LOC): HTTP adapter connecting to 5 TypeScript engines (Tarot, I-Ching, Enneagram, Sacred Geometry, Sigil Forge) via Bun/Elysia. Health check, configurable timeout, connection retry. Production-ready but depends on external TS server availability.
 
@@ -173,7 +177,7 @@ The Human Design and Gene Keys engines depend on Swiss Ephemeris data files stor
 
 ### FreeAstrologyAPI.com
 
-The `noesis-vedic-api` crate is a full HTTP client for FreeAstrologyAPI.com, providing high-precision Vedic calculations (Panchang, Dasha, Birth Chart, Vargas, Transits, Yogas, Shadbala, Ashtakavarga, Muhurta, and more). The free plan allows 50 requests per day with a 1 request/second rate. The crate implements a 5-request safety buffer (45 usable), aggressive caching (birth data cached infinitely, daily data for 24h), and native calculation fallback when the API is unavailable or rate-limited. This means the system is never fully blocked by the external API — it degrades gracefully to less-precise native calculations.
+The `noesis-vedic-api` crate is a full HTTP client for FreeAstrologyAPI.com, providing access to Panchang, Dasha, Birth Chart, Vargas, Transits, Yogas, Shadbala, Ashtakavarga, Muhurta, and more. As of March 10, 2026, the primary Selemene Vedic runtime no longer depends on this provider for `panchanga`, `vimshottari`, or `transits`; the crate remains in the repo for optional integrations, provider experiments, and future non-runtime use.
 
 ### Wisdom Data Files
 
@@ -251,7 +255,7 @@ The workspace crate structure is well-organized. Each engine is an independent c
 
 The auth system is genuinely well-built. The Postgres-backed validation path, the SHA-256 key hashing, the tiered rate limiting, and the graceful degradation (server runs without DB, just without auth endpoints) reflect production thinking.
 
-The FreeAstrologyAPI integration is the most production-hardened piece — rate limiting, circuit breaker, exponential backoff, caching with appropriate TTLs, and native fallback. At 26,697 LOC it's the largest crate, but it handles a real-world API dependency with the resilience you'd expect.
+The native Vedic engines now carry the primary production responsibility for Panchanga, Vimshottari, and Transits. The provider integration remains available as a supporting client crate, but the runtime path is intentionally simpler and less ambiguous after the March 2026 hygiene pass.
 
 ### What Could Be Better
 

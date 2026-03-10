@@ -3,14 +3,15 @@
 //! Calculates the five limbs of Vedic time: Tithi, Nakshatra, Yoga, Karana, Vara.
 //! Migrated from the original Selemene Engine with ConsciousnessEngine trait implementation.
 
-pub use noesis_core::{ConsciousnessEngine, EngineError, EngineInput, EngineOutput};
-
 use async_trait::async_trait;
-use chrono::Utc;
+use chrono::{NaiveDate, NaiveDateTime, NaiveTime, TimeZone, Utc};
+use engine_human_design::ephemeris::{EphemerisCalculator, HDPlanet};
 use noesis_core::{CalculationMetadata, ValidationResult};
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use std::time::Instant;
+
+pub use noesis_core::{ConsciousnessEngine, EngineError, EngineInput, EngineOutput};
 
 // ---------------------------------------------------------------------------
 // Name lookup tables
@@ -114,7 +115,7 @@ const KARANA_NAMES: [&str; 11] = [
     "Balava",
     "Kaulava",
     "Taitila",
-    "Garaja",
+    "Gara",
     "Vanija",
     "Vishti",
     "Shakuni",
@@ -132,6 +133,39 @@ const VARA_NAMES: [&str; 7] = [
     "Shukravara (Friday)",
     "Shanivara (Saturday)",
 ];
+
+/// Approximate Lahiri ayanamsa used to convert tropical longitudes to sidereal.
+const LAHIRI_AYANAMSA_DEGREES: f64 = 23.72;
+
+/// Convert tropical longitude to sidereal longitude using Lahiri ayanamsa.
+fn to_sidereal_longitude(tropical_longitude: f64) -> f64 {
+    (tropical_longitude - LAHIRI_AYANAMSA_DEGREES).rem_euclid(360.0)
+}
+
+fn parse_local_datetime_to_utc(
+    date: &str,
+    time: &str,
+    tz_offset_hours: f64,
+) -> Option<chrono::DateTime<Utc>> {
+    let local_date = NaiveDate::parse_from_str(date, "%Y-%m-%d").ok()?;
+    let local_time = NaiveTime::parse_from_str(time, "%H:%M")
+        .or_else(|_| NaiveTime::parse_from_str(time, "%H:%M:%S"))
+        .ok()?;
+    let local_dt = NaiveDateTime::new(local_date, local_time);
+    let offset_seconds = (tz_offset_hours * 3600.0).round() as i64;
+    let utc_dt = local_dt - chrono::Duration::seconds(offset_seconds);
+    Some(Utc.from_utc_datetime(&utc_dt))
+}
+
+fn precise_tropical_positions(date: &str, time: &str, tz_offset_hours: f64) -> Option<(f64, f64)> {
+    let utc_dt = parse_local_datetime_to_utc(date, time, tz_offset_hours)?;
+    let ephemeris = EphemerisCalculator::new("");
+    let sun = ephemeris.get_planet_position(HDPlanet::Sun, &utc_dt).ok()?;
+    let moon = ephemeris
+        .get_planet_position(HDPlanet::Moon, &utc_dt)
+        .ok()?;
+    Some((sun.longitude, moon.longitude))
+}
 
 // ---------------------------------------------------------------------------
 // PanchangaResult — local structured output
@@ -265,14 +299,28 @@ pub fn calculate_yoga(solar_longitude: f64, lunar_longitude: f64) -> f64 {
     yoga % 27.0
 }
 
-/// Calculate Karana (half-tithi, 0..11).
-pub fn calculate_karana(tithi: f64) -> f64 {
-    let karana = (tithi as i32) % 11;
-    if karana == 0 {
-        11.0
-    } else {
-        karana as f64
+fn karana_slot_from_tithi(tithi: f64) -> u8 {
+    let slot = (tithi * 2.0).floor() as i32 + 1;
+    slot.clamp(1, 60) as u8
+}
+
+fn karana_identity(slot: u8) -> (u8, &'static str) {
+    match slot {
+        1 => (10, KARANA_NAMES[10]),
+        2..=57 => {
+            let idx = ((slot - 2) % 7) as usize;
+            (idx as u8, KARANA_NAMES[idx])
+        }
+        58 => (7, KARANA_NAMES[7]),
+        59 => (8, KARANA_NAMES[8]),
+        60 => (9, KARANA_NAMES[9]),
+        _ => unreachable!("karana slot must be in 1..=60"),
     }
+}
+
+/// Calculate Karana slot (half-tithi, 1..=60).
+pub fn calculate_karana(tithi: f64) -> f64 {
+    karana_slot_from_tithi(tithi) as f64
 }
 
 /// Calculate Vara (day of the week, 0 = Sunday .. 6 = Saturday).
@@ -288,18 +336,26 @@ pub fn calculate_vara(jd: f64) -> i32 {
 /// Compute a full `PanchangaResult` from date, time, and timezone offset.
 pub fn compute_panchanga(date: &str, time: &str, tz_offset_hours: f64) -> PanchangaResult {
     let jd = calculate_julian_day(date, time, tz_offset_hours);
-    let solar_lng = calculate_solar_position(jd);
-    let lunar_lng = calculate_lunar_position(jd);
+
+    // Prefer local Swiss Ephemeris positions for correct transition timing,
+    // but retain the original mean-longitude fallback if ephemeris access fails.
+    let (solar_lng_tropical, lunar_lng_tropical) =
+        precise_tropical_positions(date, time, tz_offset_hours)
+            .unwrap_or_else(|| (calculate_solar_position(jd), calculate_lunar_position(jd)));
+    let solar_lng = to_sidereal_longitude(solar_lng_tropical);
+    let lunar_lng = to_sidereal_longitude(lunar_lng_tropical);
+
     let tithi_val = calculate_tithi(solar_lng, lunar_lng);
     let nakshatra_val = calculate_nakshatra(lunar_lng);
     let yoga_val = calculate_yoga(solar_lng, lunar_lng);
     let karana_val = calculate_karana(tithi_val);
+    let karana_slot = karana_slot_from_tithi(tithi_val);
+    let (karana_idx, karana_name) = karana_identity(karana_slot);
     let vara_val = calculate_vara(jd);
 
     let tithi_idx = (tithi_val.floor() as usize).min(29);
     let nakshatra_idx = (nakshatra_val.floor() as usize).min(26);
     let yoga_idx = (yoga_val.floor() as usize).min(26);
-    let karana_idx = ((karana_val.floor() as usize).max(1) - 1).min(10);
     let vara_idx = (vara_val as usize).min(6);
 
     PanchangaResult {
@@ -315,8 +371,8 @@ pub fn compute_panchanga(date: &str, time: &str, tz_offset_hours: f64) -> Pancha
         yoga_name: YOGA_NAMES[yoga_idx].to_string(),
         yoga_value: yoga_val,
 
-        karana_index: karana_idx as u8,
-        karana_name: KARANA_NAMES[karana_idx].to_string(),
+        karana_index: karana_idx,
+        karana_name: karana_name.to_string(),
         karana_value: karana_val,
 
         vara_index: vara_idx as u8,
@@ -629,6 +685,45 @@ mod tests {
         assert!(!p.yoga_name.is_empty());
         assert!(!p.karana_name.is_empty());
         assert!(!p.vara_name.is_empty());
+    }
+
+    #[test]
+    fn test_canonical_birth_nakshatra_is_uttara_phalguni() {
+        // Canonical regression case used in engine hygiene triage.
+        let p = compute_panchanga("1991-08-13", "13:31", 5.5);
+        assert_eq!(p.nakshatra_name, "Uttara Phalguni");
+        assert!((146.666667..160.0).contains(&p.lunar_longitude));
+    }
+
+    #[test]
+    fn test_karana_regression_march_10_2026_day_sequence() {
+        // External reference: Bengaluru day Panchang for 2026-03-10
+        // shows Vishti until 12:40 PM, then Bava.
+        let sunrise = compute_panchanga("2026-03-10", "06:30", 5.5);
+        assert_eq!(sunrise.karana_name, "Vishti");
+
+        let midday = compute_panchanga("2026-03-10", "12:21", 5.5);
+        assert_eq!(midday.karana_name, "Vishti");
+
+        let after_transition = compute_panchanga("2026-03-10", "12:41", 5.5);
+        assert_eq!(after_transition.karana_name, "Bava");
+    }
+
+    #[test]
+    fn test_birth_reference_1991_08_13_bangalore_matches_trusted_screenshot() {
+        let p = compute_panchanga("1991-08-13", "13:31", 5.5);
+        let nakshatra_pada = ((p.nakshatra_value.fract() * 4.0).floor() as u8) + 1;
+        let moon_sign_index = (p.lunar_longitude / 30.0).floor() as u8;
+        let sun_sign_index = (p.solar_longitude / 30.0).floor() as u8;
+
+        assert_eq!(p.tithi_name, "Chaturthi (Shukla)");
+        assert_eq!(p.nakshatra_name, "Uttara Phalguni");
+        assert_eq!(nakshatra_pada, 4);
+        assert_eq!(p.yoga_name, "Siddha");
+        assert_eq!(p.karana_name, "Vishti");
+        assert_eq!(p.vara_name, "Mangalavara (Tuesday)");
+        assert_eq!(moon_sign_index, 5, "expected Kanya moon sign");
+        assert_eq!(sun_sign_index, 3, "expected Karka sun sign");
     }
 
     #[test]

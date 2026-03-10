@@ -93,7 +93,7 @@ async fn test_cached_panchang_uses_cache_for_same_date_location() {
     let sample = sample_panchang();
 
     Mock::given(method("POST"))
-        .and(path("/panchang"))
+        .and(path("/complete-panchang"))
         .respond_with(ResponseTemplate::new(200).set_body_json(&sample))
         .mount(&server)
         .await;
@@ -121,7 +121,7 @@ async fn test_cached_panchang_diff_date_triggers_new_request() {
     let sample = sample_panchang();
 
     Mock::given(method("POST"))
-        .and(path("/panchang"))
+        .and(path("/complete-panchang"))
         .respond_with(ResponseTemplate::new(200).set_body_json(&sample))
         .mount(&server)
         .await;

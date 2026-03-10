@@ -34,14 +34,45 @@ impl VedicClockEngine {
         }
     }
 
-    /// Extract timezone offset from input options
-    /// Defaults to 0 (UTC) if not provided
-    fn get_timezone_offset(options: &std::collections::HashMap<String, Value>) -> i32 {
-        options
+    /// Parse timezone string into offset minutes.
+    fn timezone_minutes_from_string(tz: &str) -> Option<i32> {
+        if tz.starts_with('+') || tz.starts_with('-') {
+            let parts: Vec<&str> = tz[1..].split(':').collect();
+            let sign: i32 = if tz.starts_with('-') { -1 } else { 1 };
+            let hours: i32 = parts.first()?.parse().ok()?;
+            let minutes: i32 = parts.get(1).and_then(|m| m.parse().ok()).unwrap_or(0);
+            return Some(sign * (hours * 60 + minutes));
+        }
+
+        match tz {
+            "Asia/Kolkata" | "Asia/Calcutta" => Some(330),
+            "UTC" | "GMT" => Some(0),
+            _ => None,
+        }
+    }
+
+    /// Extract timezone offset in minutes from options or birth_data fallback.
+    /// Priority:
+    /// 1) options.timezone_offset (minutes)
+    /// 2) birth_data.timezone (IANA or +HH:MM)
+    /// 3) UTC (0)
+    fn get_timezone_offset(input: &EngineInput) -> i32 {
+        if let Some(offset) = input
+            .options
             .get("timezone_offset")
             .and_then(|v| v.as_i64())
             .map(|v| v as i32)
-            .unwrap_or(0)
+        {
+            return offset;
+        }
+
+        if let Some(birth) = input.birth_data.as_ref() {
+            if let Some(offset) = Self::timezone_minutes_from_string(&birth.timezone) {
+                return offset;
+            }
+        }
+
+        0
     }
 
     /// Extract optional activity from input options
@@ -198,7 +229,7 @@ impl ConsciousnessEngine for VedicClockEngine {
         let start = Instant::now();
 
         // Get parameters
-        let timezone_offset = Self::get_timezone_offset(&input.options);
+        let timezone_offset = Self::get_timezone_offset(&input);
         let activity = Self::get_activity(&input.options);
         let (tithi, nakshatra) = Self::get_panchanga_indices(&input.options);
 
@@ -311,7 +342,7 @@ impl ConsciousnessEngine for VedicClockEngine {
     }
 
     fn cache_key(&self, input: &EngineInput) -> String {
-        let timezone_offset = Self::get_timezone_offset(&input.options);
+        let timezone_offset = Self::get_timezone_offset(input);
         let activity = Self::get_activity(&input.options);
         let (tithi, nakshatra) = Self::get_panchanga_indices(&input.options);
 
@@ -461,11 +492,29 @@ mod tests {
 
     #[test]
     fn test_get_timezone_offset() {
-        let mut options = HashMap::new();
-        assert_eq!(VedicClockEngine::get_timezone_offset(&options), 0);
+        let mut input = EngineInput {
+            birth_data: None,
+            current_time: Utc::now(),
+            location: None,
+            precision: Precision::Standard,
+            options: HashMap::new(),
+        };
 
-        options.insert("timezone_offset".to_string(), json!(330));
-        assert_eq!(VedicClockEngine::get_timezone_offset(&options), 330);
+        assert_eq!(VedicClockEngine::get_timezone_offset(&input), 0);
+
+        input.options.insert("timezone_offset".to_string(), json!(330));
+        assert_eq!(VedicClockEngine::get_timezone_offset(&input), 330);
+
+        input.options.clear();
+        input.birth_data = Some(noesis_core::BirthData {
+            name: Some("TZ Test".to_string()),
+            date: "1991-08-13".to_string(),
+            time: Some("13:31".to_string()),
+            latitude: 12.9340,
+            longitude: 77.6214,
+            timezone: "Asia/Kolkata".to_string(),
+        });
+        assert_eq!(VedicClockEngine::get_timezone_offset(&input), 330);
     }
 
     #[test]

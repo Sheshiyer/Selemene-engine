@@ -38,7 +38,7 @@ Foundation for all Vedic timing calculations.
 
 **Complete bodygraph** — Type, Strategy, Authority, 9 Centers, 26 Gates, Profile, Definition.
 
-**Input:** `date, time, lat/lng`  
+**Input:** `date, time, lat/lng, timezone`  
 **Endpoint:** `POST /api/v1/engines/human-design/calculate`
 
 Synthesizes I Ching, Kabbalah, Chakras, and Astrology.
@@ -49,7 +49,7 @@ Synthesizes I Ching, Kabbalah, Chakras, and Astrology.
 
 **64 Keys** — Shadow → Gift → Siddhi progression across 4 sequences (Activation, Venus, Pearl, Life's Work).
 
-**Input:** `date, time, lat/lng`  
+**Input:** `date, time, lat/lng, timezone`  
 **Endpoint:** `POST /api/v1/engines/gene-keys/calculate`
 
 Maps consciousness evolution through 64 genetic pathways.
@@ -60,7 +60,7 @@ Maps consciousness evolution through 64 genetic pathways.
 
 **120-year timeline** — Nested planetary periods (Mahadasha → Antardasha → 729 total periods).
 
-**Input:** `date, time, lat/lng`  
+**Input:** `date, time, lat/lng, timezone`  
 **Endpoint:** `POST /api/v1/engines/vimshottari/calculate`
 
 Foundation for Vedic predictive timing.
@@ -155,13 +155,13 @@ Maps voice characteristics to raaga resonance and chakra activations.
 
 ## 11. Transits Engine
 
-**Planetary transits & Sade Sati** — Current planetary positions, natal-to-transit aspects, and Saturn's 7.5-year Sade Sati cycle detection.
+**Planetary transits & Sade Sati** — Current sidereal planetary positions, natal-to-transit aspects, and Saturn's 7.5-year Sade Sati cycle detection.
 
-**Input:** `date, time, lat/lng`
+**Input:** `date, time, lat/lng, timezone`
 **Endpoint:** `POST /api/v1/engines/transits/calculate`
 
 ### Returns
-- Current positions of all 9 Navagraha (Swiss Ephemeris)
+- Current sidereal positions for 12 tracked bodies (Sun, Moon, Mercury, Venus, Mars, Jupiter, Saturn, Uranus, Neptune, Pluto, Rahu, Ketu)
 - Transit-to-natal aspects (conjunction, trine, square, sextile, opposition)
 - Sade Sati phase detection (rising, peak, setting)
 - Retrograde status for all planets
@@ -348,4 +348,3 @@ All engines return this unified structure:
 </p>
 
 <br>
-

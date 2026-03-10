@@ -1,5 +1,9 @@
 # Migration Guide: Native Engines to FreeAstrologyAPI
 
+> Historical note (2026-03-10): this document describes an earlier provider-migration direction. The active Selemene runtime no longer uses FreeAstrologyAPI as the primary path for `panchanga`, `vimshottari`, or `transits`; those engines currently run through the native Rust implementations.
+>
+> Keep this guide only for optional provider integration work against `noesis-vedic-api`, not as the current production runtime architecture.
+
 This guide covers migrating from Selemene Engine's native Vedic calculation engines (`engine-panchanga`, `engine-vimshottari`) to the FreeAstrologyAPI integration provided by the `noesis-vedic-api` crate.
 
 The migration goal is higher astronomical fidelity for reflection workflows, not prescriptive automation.

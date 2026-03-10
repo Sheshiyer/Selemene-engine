@@ -1196,6 +1196,7 @@ version = "0.1.0"
 dependencies = [
  "async-trait",
  "chrono",
+ "engine-human-design",
  "noesis-core",
  "serde",
  "serde_json",
@@ -1209,7 +1210,9 @@ version = "0.1.0"
 dependencies = [
  "async-trait",
  "chrono",
+ "chrono-tz",
  "engine-human-design",
+ "libswisseph-sys",
  "noesis-core",
  "serde",
  "serde_json",
@@ -2462,7 +2465,6 @@ dependencies = [
  "noesis-orchestrator",
  "noesis-witness",
  "opentelemetry 0.22.0",
- "reqwest 0.12.28",
  "sentry",
  "sentry-tower",
  "serde",
@@ -2479,6 +2481,7 @@ dependencies = [
  "utoipa",
  "utoipa-swagger-ui",
  "uuid",
+ "wiremock",
 ]
 
 [[package]]

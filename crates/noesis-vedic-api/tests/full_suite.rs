@@ -378,7 +378,7 @@ mod integration_smoke_tests {
     async fn test_panchang_endpoint_roundtrip() {
         let server = MockServer::start().await;
         Mock::given(method("POST"))
-            .and(path("/panchang"))
+            .and(path("/complete-panchang"))
             .respond_with(ResponseTemplate::new(200).set_body_json(mocks::mock_panchang()))
             .mount(&server)
             .await;

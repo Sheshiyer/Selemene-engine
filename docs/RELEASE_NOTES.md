@@ -13,6 +13,17 @@ This release expands access to reflective computation — mirrors for inquiry, n
 
 It also includes a full philosophy-first documentation realignment: README narrative rewrite, docs-wide messaging normalization, canonical link policy enforcement, vocabulary linting, and final QA sign-off artifacts.
 
+## Post-Release Runtime Corrections (2026-03-10)
+
+The March 2026 engine hygiene pass materially corrected the active Vedic runtime after this release:
+
+- `panchanga` and `vimshottari` are now explicitly native-first in the live `noesis-api` runtime.
+- `transits` now uses timezone-correct natal birth parsing and date-correct Lahiri sidereal conversion.
+- Panchanga karana sequencing and canonical birth-time output were revalidated against trusted chart references.
+- Provider-oriented status/reporting fields were removed from the active API surface to avoid ambiguity about runtime attribution.
+
+These are runtime/documentation corrections after the original v3.0.0 release, not a new tagged release by themselves.
+
 ---
 
 ## What's New
