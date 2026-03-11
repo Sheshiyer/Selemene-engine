@@ -1287,3 +1287,12 @@
     - `rg` confirms no source references remain
   - Keep open after this pass:
     - `#48`, `#51`, `#52`, `#53`, `#54`, `#55`, `#56`, `#57`
+- Closeout record:
+  - commit: `9b049161` `fix(api): add unified error mapper module`
+  - push target: `origin/codex/engine-hygiene-native-runtime-docs`
+  - issue comments:
+    - `#47`: `issuecomment-4038797864`
+    - `#50`: `issuecomment-4038799068`
+  - issue state:
+    - closed: `#47`, `#50`
+    - still open: `#48`, `#51`, `#52`, `#53`, `#54`, `#55`, `#56`, `#57`
