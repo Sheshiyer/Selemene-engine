@@ -1444,7 +1444,7 @@
 - [x] Review open Wave 2 issues and select the smallest live candidate after the baseline tranche.
 - [x] Expand the Redis degradation notes into the incident-style runbook requested by `#323`.
 - [x] Verify the runbook matches the current Redis graceful-degradation behavior and readiness/admin surfaces.
-- [ ] Commit, push, and close `#323` with evidence if the acceptance criteria are satisfied.
+- [x] Commit, push, and close `#323` with evidence if the acceptance criteria are satisfied.
 
 #### `#323` Selection Note
 
@@ -1456,3 +1456,7 @@
   - `crates/noesis-cache/src/l2_cache.rs` Redis graceful-degradation log/fallback behavior
   - `crates/noesis-api/src/lib.rs` readiness fields
   - `crates/noesis-api/src/handlers/admin.rs` admin `redis_available` status
+- Closure record:
+  - committed in `527fc5ad` (`docs(runbooks): add Redis incident procedure for Wave 2`)
+  - pushed to `origin/codex/engine-hygiene-native-runtime-docs`
+  - closed with evidence comment: `#323`
