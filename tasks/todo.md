@@ -1296,3 +1296,32 @@
   - issue state:
     - closed: `#47`, `#50`
     - still open: `#48`, `#51`, `#52`, `#53`, `#54`, `#55`, `#56`, `#57`
+
+### Issue Reduction Sweep — 2026-03-11
+- [x] Inventory the current open issue set and group it into closeable, implement-now, and defer buckets.
+- [x] Review Wave 1 / Wave 2 clusters already touched in this branch and identify issues already satisfied by shipped code.
+- [x] Close the issues that are already proven complete by code, tests, or merged workflow/docs updates.
+- [ ] Record a manageable next-issue set for the remaining open clusters.
+- [x] Add a sweep review summary with counts, closures, and the reduced backlog shape.
+- Review:
+  - Open backlog at sweep start: `416`
+  - Largest remaining milestone buckets:
+    - `P5-Release-Readiness`: `70`
+    - `P4-Performance-Observability`: `70`
+    - `P2-Workflow-Hardening`: `65`
+    - `P1-Stabilization`: `65`
+    - `v2.2.0-Specialized-Engines`: `61`
+    - `P3-Bridge-Reliability`: `52`
+  - Closed in this sweep:
+    - `#47`, `#50` from Wave B error-mapping
+    - `#502`, `#503`, `#507` from engine-hygiene follow-up
+  - Not closeable on evidence yet:
+    - `#48`, `#51`, `#52`, `#53`, `#54`, `#55`, `#56`, `#57`
+    - `#504`, `#505`, `#506`, `#508`
+    - most of `P5`, `P4`, `P2`, and `P3` still require real implementation rather than admin cleanup
+  - Reduced backlog shape after the five sweep closures:
+    - estimated open count: `411`
+  - Next manageable closure candidates should come from:
+    - small documented bridge-reliability items with direct code/test evidence
+    - workflow registry / workflow integration issues already satisfied by current workflow definitions and tests
+    - specialized-engine issues whose acceptance criteria are now covered by engine-local regression tests

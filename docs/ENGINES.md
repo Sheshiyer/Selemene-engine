@@ -104,7 +104,7 @@ Foundation for Vedic predictive timing.
 
 **TCM Organ Clock + Ayurvedic Doshas** — Maps 24-hour cycle to organ energy peaks and dosha dominance.
 
-**Input:** `current_time`  
+**Input:** `current_time` plus either `options.timezone_offset` or `birth_data.timezone`  
 **Endpoint:** `POST /api/v1/engines/vedic-clock/calculate`
 
 ### Returns
@@ -112,6 +112,12 @@ Foundation for Vedic predictive timing.
 - Dominant dosha (Vata/Pitta/Kapha)
 - Optimal activity recommendations
 - Energy quality of current hour
+- Resolved timezone metadata (`offset_minutes`, `source`, `local_hour`)
+
+### Timezone Semantics
+- Priority order: `options.timezone_offset` -> `birth_data.timezone` -> UTC
+- `birth_data.timezone` accepts supported IANA values such as `Asia/Kolkata` and explicit offsets such as `+05:45`
+- The result payload includes the resolved timezone basis so API consumers can verify which local clock the organ-hour calculation used
 
 <br>
 

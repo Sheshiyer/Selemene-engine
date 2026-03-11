@@ -25,6 +25,12 @@ pub struct VedicClockEngine {
     engine_name: String,
 }
 
+#[derive(Clone, Debug, PartialEq, Eq)]
+struct TimezoneResolution {
+    offset_minutes: i32,
+    source: &'static str,
+}
+
 impl VedicClockEngine {
     /// Create a new VedicClock engine instance
     pub fn new() -> Self {
@@ -51,28 +57,37 @@ impl VedicClockEngine {
         }
     }
 
-    /// Extract timezone offset in minutes from options or birth_data fallback.
+    /// Resolve timezone offset in minutes from options or birth_data fallback.
     /// Priority:
     /// 1) options.timezone_offset (minutes)
     /// 2) birth_data.timezone (IANA or +HH:MM)
     /// 3) UTC (0)
-    fn get_timezone_offset(input: &EngineInput) -> i32 {
+    fn resolve_timezone(input: &EngineInput) -> TimezoneResolution {
         if let Some(offset) = input
             .options
             .get("timezone_offset")
             .and_then(|v| v.as_i64())
             .map(|v| v as i32)
         {
-            return offset;
+            return TimezoneResolution {
+                offset_minutes: offset,
+                source: "options.timezone_offset",
+            };
         }
 
         if let Some(birth) = input.birth_data.as_ref() {
             if let Some(offset) = Self::timezone_minutes_from_string(&birth.timezone) {
-                return offset;
+                return TimezoneResolution {
+                    offset_minutes: offset,
+                    source: "birth_data.timezone",
+                };
             }
         }
 
-        0
+        TimezoneResolution {
+            offset_minutes: 0,
+            source: "default_utc",
+        }
     }
 
     /// Extract optional activity from input options
@@ -113,8 +128,9 @@ impl VedicClockEngine {
         result: &VedicClockResult,
         activity: Option<Activity>,
         datetime: chrono::DateTime<Utc>,
-        timezone_offset: i32,
+        timezone: &TimezoneResolution,
     ) -> Value {
+        let local_hour = get_local_hour(datetime, timezone.offset_minutes);
         let mut output = json!({
             "current_organ": {
                 "organ": result.current_organ.organ,
@@ -135,14 +151,20 @@ impl VedicClockEngine {
                 "activities": result.recommendation.activities,
                 "panchanga_quality": result.recommendation.panchanga_quality,
             },
-            "synthesis": synthesize_organ_dosha(datetime, timezone_offset),
+            "synthesis": synthesize_organ_dosha(datetime, timezone.offset_minutes),
             "calculated_for": result.calculated_for,
+            "timezone": {
+                "offset_minutes": timezone.offset_minutes,
+                "source": timezone.source,
+                "local_hour": local_hour,
+            },
         });
 
         // Add activity-specific timing if requested
         if let Some(activity) = activity {
-            let optimal_times = get_optimal_timing(activity, datetime, timezone_offset);
-            let (is_favorable, reason) = is_favorable_now(activity, datetime, timezone_offset);
+            let optimal_times = get_optimal_timing(activity, datetime, timezone.offset_minutes);
+            let (is_favorable, reason) =
+                is_favorable_now(activity, datetime, timezone.offset_minutes);
 
             output["activity_timing"] = json!({
                 "activity": activity.display_name(),
@@ -229,7 +251,7 @@ impl ConsciousnessEngine for VedicClockEngine {
         let start = Instant::now();
 
         // Get parameters
-        let timezone_offset = Self::get_timezone_offset(&input);
+        let timezone = Self::resolve_timezone(&input);
         let activity = Self::get_activity(&input.options);
         let (tithi, nakshatra) = Self::get_panchanga_indices(&input.options);
 
@@ -237,16 +259,16 @@ impl ConsciousnessEngine for VedicClockEngine {
         let datetime = input.current_time;
 
         // Calculate current organ and dosha
-        let current_organ = get_current_organ(datetime, timezone_offset);
-        let local_hour = get_local_hour(datetime, timezone_offset);
+        let current_organ = get_current_organ(datetime, timezone.offset_minutes);
+        let local_hour = get_local_hour(datetime, timezone.offset_minutes);
         let current_dosha = get_dosha_for_hour(local_hour);
 
         // Get temporal recommendation
         let recommendation =
-            get_temporal_recommendation(datetime, timezone_offset, tithi, nakshatra);
+            get_temporal_recommendation(datetime, timezone.offset_minutes, tithi, nakshatra);
 
         // Get upcoming transitions
-        let upcoming = Some(Self::get_upcoming_transitions(datetime, timezone_offset));
+        let upcoming = Some(Self::get_upcoming_transitions(datetime, timezone.offset_minutes));
 
         // Build the result
         let result = VedicClockResult {
@@ -282,7 +304,7 @@ impl ConsciousnessEngine for VedicClockEngine {
 
         Ok(EngineOutput {
             engine_id: self.engine_id.clone(),
-            result: self.build_result(&result, activity, datetime, timezone_offset),
+            result: self.build_result(&result, activity, datetime, &timezone),
             witness_prompt,
             consciousness_level,
             metadata: CalculationMetadata {
@@ -342,17 +364,17 @@ impl ConsciousnessEngine for VedicClockEngine {
     }
 
     fn cache_key(&self, input: &EngineInput) -> String {
-        let timezone_offset = Self::get_timezone_offset(input);
+        let timezone = Self::resolve_timezone(input);
         let activity = Self::get_activity(&input.options);
         let (tithi, nakshatra) = Self::get_panchanga_indices(&input.options);
 
         // Cache key based on hour (organ windows are 2-hour), timezone, and optional parameters
-        let local_hour = get_local_hour(input.current_time, timezone_offset);
+        let local_hour = get_local_hour(input.current_time, timezone.offset_minutes);
         let hour_bucket = local_hour / 2; // Group by 2-hour windows
 
         format!(
             "vedic-clock:h{}:tz{}:a{:?}:t{:?}:n{:?}",
-            hour_bucket, timezone_offset, activity, tithi, nakshatra
+            hour_bucket, timezone.offset_minutes, activity, tithi, nakshatra
         )
     }
 }
@@ -360,6 +382,7 @@ impl ConsciousnessEngine for VedicClockEngine {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use chrono::TimeZone;
     use noesis_core::Precision;
     use std::collections::HashMap;
 
@@ -491,7 +514,7 @@ mod tests {
     }
 
     #[test]
-    fn test_get_timezone_offset() {
+    fn test_resolve_timezone() {
         let mut input = EngineInput {
             birth_data: None,
             current_time: Utc::now(),
@@ -500,10 +523,22 @@ mod tests {
             options: HashMap::new(),
         };
 
-        assert_eq!(VedicClockEngine::get_timezone_offset(&input), 0);
+        assert_eq!(
+            VedicClockEngine::resolve_timezone(&input),
+            TimezoneResolution {
+                offset_minutes: 0,
+                source: "default_utc",
+            }
+        );
 
         input.options.insert("timezone_offset".to_string(), json!(330));
-        assert_eq!(VedicClockEngine::get_timezone_offset(&input), 330);
+        assert_eq!(
+            VedicClockEngine::resolve_timezone(&input),
+            TimezoneResolution {
+                offset_minutes: 330,
+                source: "options.timezone_offset",
+            }
+        );
 
         input.options.clear();
         input.birth_data = Some(noesis_core::BirthData {
@@ -514,7 +549,63 @@ mod tests {
             longitude: 77.6214,
             timezone: "Asia/Kolkata".to_string(),
         });
-        assert_eq!(VedicClockEngine::get_timezone_offset(&input), 330);
+        assert_eq!(
+            VedicClockEngine::resolve_timezone(&input),
+            TimezoneResolution {
+                offset_minutes: 330,
+                source: "birth_data.timezone",
+            }
+        );
+    }
+
+    #[tokio::test]
+    async fn test_fixed_timestamp_uses_birth_timezone_fallback_for_ist() {
+        let engine = VedicClockEngine::new();
+        let input = EngineInput {
+            birth_data: Some(noesis_core::BirthData {
+                name: Some("Canonical".to_string()),
+                date: "1991-08-13".to_string(),
+                time: Some("13:31".to_string()),
+                latitude: 12.9340,
+                longitude: 77.6214,
+                timezone: "Asia/Kolkata".to_string(),
+            }),
+            current_time: Utc.with_ymd_and_hms(2026, 3, 8, 6, 43, 16).unwrap(),
+            location: None,
+            precision: Precision::Standard,
+            options: HashMap::new(),
+        };
+
+        let output = engine.calculate(input).await.expect("vedic-clock should calculate");
+        assert_eq!(output.result["timezone"]["offset_minutes"], 330);
+        assert_eq!(output.result["timezone"]["source"], "birth_data.timezone");
+        assert_eq!(output.result["timezone"]["local_hour"], 12);
+        assert_eq!(output.result["current_organ"]["organ"], "Heart");
+    }
+
+    #[tokio::test]
+    async fn test_fixed_timestamp_supports_explicit_non_utc_offset_strings() {
+        let engine = VedicClockEngine::new();
+        let input = EngineInput {
+            birth_data: Some(noesis_core::BirthData {
+                name: Some("Nepal Offset".to_string()),
+                date: "1991-08-13".to_string(),
+                time: Some("13:31".to_string()),
+                latitude: 27.7172,
+                longitude: 85.3240,
+                timezone: "+05:45".to_string(),
+            }),
+            current_time: Utc.with_ymd_and_hms(2026, 3, 8, 6, 43, 16).unwrap(),
+            location: None,
+            precision: Precision::Standard,
+            options: HashMap::new(),
+        };
+
+        let output = engine.calculate(input).await.expect("vedic-clock should calculate");
+        assert_eq!(output.result["timezone"]["offset_minutes"], 345);
+        assert_eq!(output.result["timezone"]["source"], "birth_data.timezone");
+        assert_eq!(output.result["timezone"]["local_hour"], 12);
+        assert_eq!(output.result["current_organ"]["organ"], "Heart");
     }
 
     #[test]
