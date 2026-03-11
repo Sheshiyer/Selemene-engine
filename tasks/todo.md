@@ -2,6 +2,45 @@
 
 ---
 
+# Task Plan — noesis-api Error Handling Audit for Issue #49
+
+## Checklist
+- [x] Load relevant workflow context and existing task/lesson notes.
+- [x] Inspect `crates/noesis-api/src/lib.rs` for shared API error helpers and response types.
+- [x] Inspect `crates/noesis-api/src/handlers/*.rs` and classify each handler by error-handling pattern.
+- [x] Record which handlers use `engine_error_to_response` / `ApiError` versus ad-hoc `StatusCode + Json(ErrorResponse)`.
+- [x] Conclude whether issue `#49` can close via documentation only or still requires code.
+
+## Notes
+- Scope is audit only for handler error handling patterns in `noesis-api`.
+- Do not modify API behavior in this pass unless the inspection reveals a trivial factual correction is required for the audit itself.
+
+## Review (fill after execution)
+- `crates/noesis-api/src/handlers/auth.rs`, `users.rs`, and `admin.rs` are consistent on the standardized path:
+  - all public handlers return `Result<Response, ApiError>`
+  - `ApiError` delegates to `engine_error_to_response`
+- `crates/noesis-api/src/lib.rs` is mixed:
+  - direct `engine_error_to_response` use in:
+    - `calculate_handler`
+    - `workflow_execute_handler`
+    - `legacy_panchanga_handler`
+    - `legacy_ghati_current_handler`
+  - ad-hoc `(StatusCode, Json(ErrorResponse))` construction in:
+    - `validate_handler`
+    - `engine_info_handler`
+    - `workflow_info_handler`
+    - `list_readings_handler`
+    - `get_reading_handler`
+    - `readings_stats_handler`
+  - special non-`ErrorResponse` outlier:
+    - `metrics_handler` returns plain-text `500`
+- Audit conclusion:
+  - issue `#49` is not documentation-only if the intended outcome is consistent handler error handling across `noesis-api`
+  - the inconsistency is real in current code, concentrated in `lib.rs`
+  - documentation can describe the current split, but closing the issue cleanly still requires code to standardize the remaining ad-hoc handlers
+
+---
+
 # Task Plan — Astrology Hygiene Verification Audit
 
 ## Checklist
@@ -1189,3 +1228,24 @@
     - `#122`: `issuecomment-4038674089`
   - issue state:
     - `#115`, `#116`, `#120`, `#121`, `#122` closed on GitHub
+
+### Wave B — P1 Error Mapping Review
+- [x] Audit issue `#45` against the current `EngineError` taxonomy and HTTP mapping.
+- [x] Audit issue `#46` against current engine crate error patterns and identify real inconsistencies.
+- [x] Audit issues `#47` through `#57` against current `noesis-api` error response behavior and mark closable vs still-open.
+- [x] Record the Wave B audit in a repo artifact that can be linked from GitHub issues.
+- [x] Run fresh verification on the error-handling cluster before closing any issues.
+- [ ] Comment on and close only the Wave B issues that are fully satisfied by current code + audit evidence.
+- Wave B audit artifact:
+  - `docs/planning/wave-b-p1-error-mapping-audit-2026-03-11.md`
+- Fresh verification:
+  - `cargo test -p noesis-api --test error_handling_tests -- --nocapture`
+  - `cargo test -p noesis-bridge bridge_engine -- --nocapture`
+- Closable now:
+  - `#45`
+  - `#46`
+  - `#49`
+- Keep open:
+  - `#47`
+  - `#48`
+  - `#50` through `#57`
