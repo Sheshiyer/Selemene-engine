@@ -1,0 +1,11 @@
+---
+source: crates/noesis-api/tests/error_response_snapshot_tests.rs
+expression: json
+---
+{
+  "error": "Rate limit exceeded",
+  "error_code": "RATE_LIMIT_EXCEEDED",
+  "message": "Rate limit exceeded",
+  "status": 429,
+  "trace_id": "snapshot-trace"
+}

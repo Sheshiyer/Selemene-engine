@@ -1,0 +1,14 @@
+---
+source: crates/noesis-api/tests/error_response_snapshot_tests.rs
+expression: json
+---
+{
+  "details": {
+    "engine_id": "missing"
+  },
+  "error": "Engine not found: missing",
+  "error_code": "ENGINE_NOT_FOUND",
+  "message": "Engine not found: missing",
+  "status": 404,
+  "trace_id": "snapshot-trace"
+}

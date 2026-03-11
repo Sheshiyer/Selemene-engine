@@ -63,6 +63,7 @@ async-trait = "0.1"
 criterion = { version = "0.5", features = ["async_tokio"] }
 serial_test = "3"
 wiremock = "0.6"
+insta = { version = "1.42", features = ["json"] }
 
 [[bench]]
 name = "engine_comparison"

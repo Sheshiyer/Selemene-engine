@@ -1,0 +1,11 @@
+---
+source: crates/noesis-api/tests/error_response_snapshot_tests.rs
+expression: json
+---
+{
+  "error": "An internal configuration error occurred",
+  "error_code": "CONFIG_ERROR",
+  "message": "An internal configuration error occurred",
+  "status": 500,
+  "trace_id": "snapshot-trace"
+}

@@ -1336,3 +1336,34 @@
       - `#502`: `issuecomment-4039333979`
       - `#503`: `issuecomment-4039333989`
       - `#507`: `issuecomment-4039333996`
+
+### Backlog Reduction Tranche — `#52`, `#54`, `#55`, `#56`
+- [x] Add explicit `EngineError` exhaustiveness coverage around `ErrorMapper` for all current variants.
+  - Added a compile-time exhaustive `match` helper and a variant coverage test in `crates/noesis-api/src/error_mapper.rs`.
+- [x] Make request log trace correlation deterministic so error responses reuse the same request trace ID.
+  - `request_logging_middleware()` now generates a request `trace_id`, injects it into the tracing span, and scopes it through `ErrorMapper::with_request_trace_id()` in `crates/noesis-api/src/middleware.rs`.
+  - Added log-correlation proof in `crates/noesis-api/tests/error_trace_correlation_tests.rs`.
+- [x] Add Insta snapshot coverage for all current `EngineError` response shapes with stable scrubbed fields.
+  - Added `crates/noesis-api/tests/error_response_snapshot_tests.rs`.
+  - Generated 12 snapshots in `crates/noesis-api/tests/snapshots/` for the current `EngineError` variant set.
+- [x] Add Prometheus API error counter keyed by `error_code` and verify it increments via `/metrics`.
+  - Added `noesis_api_errors_total{error_code=...}` in `crates/noesis-metrics/src/lib.rs`.
+  - Wired `ErrorMapper` to increment it on every structured error response in `crates/noesis-api/src/error_mapper.rs`.
+  - Added `/metrics` delta verification in `crates/noesis-api/tests/error_metrics_tests.rs`.
+- [x] Run targeted verification for:
+  - `cargo test -p noesis-api error_exhaustiveness -- --nocapture`
+  - `cargo test -p noesis-api --test error_handling_tests -- --nocapture`
+  - `INSTA_UPDATE=always cargo test -p noesis-api --test error_response_snapshot_tests -- --nocapture`
+  - `cargo test -p noesis-api --test error_metrics_tests -- --nocapture`
+  - `cargo test -p noesis-api --test error_trace_correlation_tests -- --nocapture`
+  - `cargo test -p noesis-api --test error_metrics_tests --test error_trace_correlation_tests --test error_response_snapshot_tests -- --nocapture`
+
+### Backlog Reduction Tranche — Review
+- `#52` is now satisfied.
+  - The `ErrorMapper` unit test will stop compiling if a new `EngineError` variant is added without updating the exhaustive `match`.
+- `#54` is now satisfied.
+  - Router-level integration test proves the JSON `trace_id` appears in captured request logs for the same failing request.
+- `#55` is now satisfied.
+  - Snapshot coverage now exists for every current `EngineError` response shape, using a fixed scoped `trace_id`.
+- `#56` is now satisfied.
+  - `/metrics` now exposes `noesis_api_errors_total`, and the integration test verifies per-`error_code` increments.

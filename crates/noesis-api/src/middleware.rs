@@ -31,6 +31,7 @@ pub async fn request_logging_middleware(req: Request, next: Next) -> Response {
     let start = Instant::now();
     let method = req.method().clone();
     let path = req.uri().path().to_string();
+    let trace_id = uuid::Uuid::new_v4().to_string();
 
     // Extract user_id from request extensions if authentication middleware set it
     // For now, we'll check if it's in headers (e.g., X-User-Id set by upstream auth)
@@ -45,13 +46,17 @@ pub async fn request_logging_middleware(req: Request, next: Next) -> Response {
         "http_request",
         method = %method,
         path = %path,
+        trace_id = %trace_id,
         user_id = user_id.as_deref().unwrap_or("anonymous")
     );
 
     // Execute the request within the span
     async move {
-        // Process the request
-        let response = next.run(req).await;
+        let trace_id_for_scope = trace_id.clone();
+        let response = ErrorMapper::with_request_trace_id(trace_id_for_scope, async move {
+            next.run(req).await
+        })
+        .await;
 
         // Calculate duration
         let duration_ms = start.elapsed().as_millis() as u64;
@@ -61,6 +66,7 @@ pub async fn request_logging_middleware(req: Request, next: Next) -> Response {
         info!(
             status = status,
             duration_ms = duration_ms,
+            trace_id = %trace_id,
             "request completed"
         );
 

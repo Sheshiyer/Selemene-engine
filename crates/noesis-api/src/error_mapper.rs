@@ -1,7 +1,13 @@
 use axum::{http::StatusCode, Json};
+use noesis_metrics::record_api_error;
 use noesis_core::EngineError;
 use serde::Serialize;
+use std::future::Future;
 use utoipa::ToSchema;
+
+tokio::task_local! {
+    static REQUEST_TRACE_ID: String;
+}
 
 #[derive(Serialize, ToSchema)]
 pub struct ErrorResponse {
@@ -18,6 +24,13 @@ pub struct ErrorResponse {
 pub struct ErrorMapper;
 
 impl ErrorMapper {
+    pub async fn with_request_trace_id<T>(
+        trace_id: String,
+        future: impl Future<Output = T>,
+    ) -> T {
+        REQUEST_TRACE_ID.scope(trace_id, future).await
+    }
+
     pub fn map(err: EngineError) -> (StatusCode, Json<ErrorResponse>) {
         let err_display = err.to_string();
 
@@ -119,6 +132,7 @@ impl ErrorMapper {
         sentry_message: Option<String>,
     ) -> (StatusCode, Json<ErrorResponse>) {
         let trace_id = Self::current_trace_id();
+        record_api_error(&error_code);
 
         if status.is_server_error() {
             sentry::configure_scope(|scope| {
@@ -145,9 +159,14 @@ impl ErrorMapper {
     }
 
     fn current_trace_id() -> String {
-        tracing::Span::current()
-            .id()
-            .map(|id| format!("{id:?}"))
+        REQUEST_TRACE_ID
+            .try_with(Clone::clone)
+            .ok()
+            .or_else(|| {
+                tracing::Span::current()
+                    .id()
+                    .map(|id| format!("{id:?}"))
+            })
             .unwrap_or_else(|| uuid::Uuid::new_v4().to_string())
     }
 }
@@ -157,6 +176,24 @@ mod tests {
     use super::ErrorMapper;
     use axum::http::StatusCode;
     use noesis_core::EngineError;
+    use serde_json::json;
+
+    fn assert_error_mapper_exhaustive(err: &EngineError) {
+        match err {
+            EngineError::EngineNotFound(_) => {}
+            EngineError::WorkflowNotFound(_) => {}
+            EngineError::PhaseAccessDenied { .. } => {}
+            EngineError::AuthError(_) => {}
+            EngineError::RateLimitExceeded => {}
+            EngineError::ValidationError(_) => {}
+            EngineError::CalculationError(_) => {}
+            EngineError::CacheError(_) => {}
+            EngineError::ConfigError(_) => {}
+            EngineError::BridgeError(_) => {}
+            EngineError::SwissEphemerisError(_) => {}
+            EngineError::InternalError(_) => {}
+        }
+    }
 
     #[test]
     fn map_includes_expanded_schema_fields() {
@@ -176,5 +213,98 @@ mod tests {
         assert_eq!(body.0.status, 400);
         assert_eq!(body.0.message, "bad input");
         assert!(!body.0.trace_id.is_empty());
+    }
+
+    #[test]
+    fn error_exhaustiveness_maps_all_engine_error_variants() {
+        let cases = vec![
+            (
+                EngineError::EngineNotFound("missing".to_string()),
+                StatusCode::NOT_FOUND,
+                "ENGINE_NOT_FOUND",
+            ),
+            (
+                EngineError::WorkflowNotFound("wf".to_string()),
+                StatusCode::NOT_FOUND,
+                "WORKFLOW_NOT_FOUND",
+            ),
+            (
+                EngineError::PhaseAccessDenied {
+                    required: 2,
+                    current: 1,
+                },
+                StatusCode::FORBIDDEN,
+                "PHASE_ACCESS_DENIED",
+            ),
+            (
+                EngineError::AuthError("bad token".to_string()),
+                StatusCode::UNAUTHORIZED,
+                "AUTH_ERROR",
+            ),
+            (
+                EngineError::RateLimitExceeded,
+                StatusCode::TOO_MANY_REQUESTS,
+                "RATE_LIMIT_EXCEEDED",
+            ),
+            (
+                EngineError::ValidationError("invalid".to_string()),
+                StatusCode::UNPROCESSABLE_ENTITY,
+                "VALIDATION_ERROR",
+            ),
+            (
+                EngineError::CalculationError("calc".to_string()),
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "CALCULATION_ERROR",
+            ),
+            (
+                EngineError::CacheError("cache".to_string()),
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "CACHE_ERROR",
+            ),
+            (
+                EngineError::ConfigError("config".to_string()),
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "CONFIG_ERROR",
+            ),
+            (
+                EngineError::BridgeError("bridge".to_string()),
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "BRIDGE_ERROR",
+            ),
+            (
+                EngineError::SwissEphemerisError("swiss".to_string()),
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "SWISS_EPHEMERIS_ERROR",
+            ),
+            (
+                EngineError::InternalError("internal".to_string()),
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "INTERNAL_ERROR",
+            ),
+        ];
+
+        assert_eq!(cases.len(), 12);
+
+        for (err, expected_status, expected_code) in cases {
+            assert_error_mapper_exhaustive(&err);
+            let (status, body) = ErrorMapper::map(err);
+            assert_eq!(status, expected_status);
+            assert_eq!(body.0.error_code, expected_code);
+        }
+    }
+
+    #[tokio::test]
+    async fn request_trace_id_scope_is_reused_in_error_response() {
+        let (_status, body) = ErrorMapper::with_request_trace_id("trace-123".to_string(), async {
+            ErrorMapper::response(
+                StatusCode::BAD_REQUEST,
+                "BAD_INPUT",
+                "bad input",
+                Some(json!({"field": "date"})),
+            )
+        })
+        .await;
+
+        assert_eq!(body.0.trace_id, "trace-123");
     }
 }
