@@ -1426,3 +1426,15 @@
 - `#36` also exposed and fixed a real bug: `engine-face-reading` used timestamp-based cache keys for unseeded inputs, which broke determinism.
 - `#37` is now satisfied by `docs/baseline/dependency-graph.json`, `docs/baseline/dependency-graph.md`, and metadata-backed validation in `baseline_artifact_tests.rs`.
 - `#106` is now satisfied by `docs/runbooks/redis-degradation.md`, grounded in current readiness fields (`redis`, `overall_status`, `redis_available`) and the actual L2 Redis warning messages.
+- Closure record:
+  - committed in `d56ac355` (`docs(baseline): land Wave B baseline audit tranche`)
+  - pushed to `origin/codex/engine-hygiene-native-runtime-docs`
+  - closed with evidence comments:
+    - `#29`
+    - `#30`
+    - `#31`
+    - `#32`
+    - `#35`
+    - `#36`
+    - `#37`
+    - `#106`
