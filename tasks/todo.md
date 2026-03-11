@@ -1313,14 +1313,15 @@
     - `v2.2.0-Specialized-Engines`: `61`
     - `P3-Bridge-Reliability`: `52`
   - Closed in this sweep:
-    - `#47`, `#50` from Wave B error-mapping
     - `#502`, `#503`, `#507` from engine-hygiene follow-up
+  - Closed immediately before the sweep inventory:
+    - `#47`, `#50` from Wave B error-mapping
   - Not closeable on evidence yet:
     - `#48`, `#51`, `#52`, `#53`, `#54`, `#55`, `#56`, `#57`
     - `#504`, `#505`, `#506`, `#508`
     - most of `P5`, `P4`, `P2`, and `P3` still require real implementation rather than admin cleanup
-  - Reduced backlog shape after the five sweep closures:
-    - estimated open count: `411`
+  - Reduced backlog shape after the three sweep closures:
+    - live open count: `413`
   - Next manageable issue set:
     - `#52`, `#54`, `#55`, `#56` as the next small P1 error-mapping tranche
     - `#504`, `#505`, `#506`, `#508` as the remaining engine-hygiene tranche
