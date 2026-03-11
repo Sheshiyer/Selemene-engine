@@ -1,4 +1,4 @@
-use crate::{error::ApiError, AppState};
+use crate::{error::ApiError, AppState, ErrorMapper};
 use axum::{
     extract::{Extension, Json, Path, Query, State},
     http::StatusCode,
@@ -639,15 +639,7 @@ fn json_error_response(
     error_code: &str,
     details: Option<Value>,
 ) -> Response {
-    (
-        status,
-        Json(serde_json::json!({
-            "error": error.into(),
-            "error_code": error_code,
-            "details": details,
-        })),
-    )
-        .into_response()
+    ErrorMapper::response(status, error_code, error.into(), details).into_response()
 }
 
 fn service_unavailable_response() -> Response {

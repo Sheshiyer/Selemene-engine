@@ -80,6 +80,7 @@ fn build_test_app_state() -> (noesis_api::AppState, ApiConfig) {
 
     let state = noesis_api::AppState {
         orchestrator: Arc::new(orchestrator),
+        bridge_manager: Arc::new(noesis_bridge::BridgeManager::from_env()),
         cache: Arc::new(cache),
         auth: Arc::new(auth),
         metrics,
@@ -306,11 +307,18 @@ async fn test_rate_limit_response_format() {
     let json: serde_json::Value = serde_json::from_str(&body_str).unwrap();
 
     // Check error response structure
+    assert_eq!(json["status"], 429);
     assert_eq!(json["error_code"], "RATE_LIMIT_EXCEEDED");
+    assert!(json["message"].is_string());
     assert!(json["error"]
         .as_str()
         .unwrap()
         .contains("Rate limit exceeded"));
+    assert_eq!(json["message"], json["error"]);
+    assert!(
+        json["trace_id"].is_string()
+            && !json["trace_id"].as_str().unwrap_or("").is_empty()
+    );
     assert!(json["details"].is_object());
     assert!(json["details"]["limit"].is_number());
     assert!(json["details"]["window_seconds"].is_number());

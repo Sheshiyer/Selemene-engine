@@ -1,12 +1,13 @@
 use axum::response::{IntoResponse, Response};
 use noesis_core::EngineError;
+use crate::ErrorMapper;
 
 // Wrapper for EngineError to implement IntoResponse
 pub struct ApiError(pub EngineError);
 
 impl IntoResponse for ApiError {
     fn into_response(self) -> Response {
-        let (status, body) = crate::engine_error_to_response(self.0);
+        let (status, body) = ErrorMapper::map(self.0);
         (status, body).into_response()
     }
 }

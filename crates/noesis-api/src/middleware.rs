@@ -11,10 +11,11 @@ use chrono::{DateTime, Duration, Utc};
 use dashmap::DashMap;
 use noesis_auth::{AuthService, AuthUser};
 use noesis_metrics::NoesisMetrics;
-use serde::Serialize;
 use std::sync::Arc;
 use std::time::Instant;
 use tracing::{info, info_span, Instrument};
+
+use crate::{ErrorMapper, ErrorResponse};
 
 /// Request logging middleware that captures timing and structured request metadata.
 ///
@@ -121,15 +122,6 @@ pub async fn metrics_middleware(
     response
 }
 
-/// Error response structure for authentication failures
-#[derive(Serialize)]
-pub struct ErrorResponse {
-    pub error: String,
-    pub error_code: String,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub details: Option<serde_json::Value>,
-}
-
 /// Authentication middleware that validates JWT tokens or API keys.
 ///
 /// Extracts:
@@ -156,13 +148,11 @@ pub async fn auth_middleware(
                         return Ok(next.run(req).await);
                     }
                     Err(_) => {
-                        return Err((
+                        return Err(ErrorMapper::response(
                             StatusCode::UNAUTHORIZED,
-                            Json(ErrorResponse {
-                                error: "Invalid or expired JWT token".to_string(),
-                                error_code: "UNAUTHORIZED".to_string(),
-                                details: Some(serde_json::json!({ "auth_method": "jwt" })),
-                            }),
+                            "UNAUTHORIZED",
+                            "Invalid or expired JWT token",
+                            Some(serde_json::json!({ "auth_method": "jwt" })),
                         ));
                     }
                 }
@@ -181,13 +171,11 @@ pub async fn auth_middleware(
                 }
                 Err(e) => {
                     tracing::warn!(error = %e, "API key validation failed");
-                    return Err((
+                    return Err(ErrorMapper::response(
                         StatusCode::UNAUTHORIZED,
-                        Json(ErrorResponse {
-                            error: "Invalid or expired API key".to_string(),
-                            error_code: "UNAUTHORIZED".to_string(),
-                            details: Some(serde_json::json!({ "auth_method": "api_key" })),
-                        }),
+                        "UNAUTHORIZED",
+                        "Invalid or expired API key",
+                        Some(serde_json::json!({ "auth_method": "api_key" })),
                     ));
                 }
             }
@@ -195,13 +183,11 @@ pub async fn auth_middleware(
     }
 
     // No valid authentication found
-    Err((
+    Err(ErrorMapper::response(
         StatusCode::UNAUTHORIZED,
-        Json(ErrorResponse {
-            error: "Authentication required. Provide JWT token via 'Authorization: Bearer <token>' or API key via 'X-API-Key' header".to_string(),
-            error_code: "UNAUTHORIZED".to_string(),
-            details: None,
-        }),
+        "UNAUTHORIZED",
+        "Authentication required. Provide JWT token via 'Authorization: Bearer <token>' or API key via 'X-API-Key' header",
+        None,
     ))
 }
 
@@ -358,22 +344,20 @@ pub async fn rate_limit_middleware(
 
     if !allowed {
         // Rate limit exceeded - return 429 with headers
-        let mut response = (
+        let mut response = ErrorMapper::response(
             StatusCode::TOO_MANY_REQUESTS,
-            Json(ErrorResponse {
-                error: format!(
-                    "Rate limit exceeded. Maximum {} requests per {} seconds allowed.",
-                    rate_limit, limiter.window_seconds
-                ),
-                error_code: "RATE_LIMIT_EXCEEDED".to_string(),
-                details: Some(serde_json::json!({
-                    "limit": rate_limit,
-                    "window_seconds": limiter.window_seconds,
-                    "reset_at": reset_timestamp,
-                })),
-            }),
+            "RATE_LIMIT_EXCEEDED",
+            format!(
+                "Rate limit exceeded. Maximum {} requests per {} seconds allowed.",
+                rate_limit, limiter.window_seconds
+            ),
+            Some(serde_json::json!({
+                "limit": rate_limit,
+                "window_seconds": limiter.window_seconds,
+                "reset_at": reset_timestamp,
+            })),
         )
-            .into_response();
+        .into_response();
 
         // Add rate limit headers
         let headers = response.headers_mut();

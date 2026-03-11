@@ -494,6 +494,20 @@ async fn test_error_response_structure_401() {
         body["details"].is_null() || body["details"].is_object(),
         "details should be null or object"
     );
+    assert!(body["status"].is_number(), "status field should be numeric");
+    assert!(
+        body["message"].is_string(),
+        "message field should be a string"
+    );
+    assert!(
+        body["trace_id"].is_string()
+            && !body["trace_id"].as_str().unwrap_or("").is_empty(),
+        "trace_id should be a non-empty string"
+    );
+    assert_eq!(
+        body["message"], body["error"],
+        "legacy error field should mirror message"
+    );
 }
 
 #[tokio::test]
@@ -515,6 +529,14 @@ async fn test_error_response_structure_404() {
         body["details"].is_null() || body["details"].is_object(),
         "details should be null or object"
     );
+    assert!(body["status"].is_number(), "status field should be numeric");
+    assert!(body["message"].is_string());
+    assert!(
+        body["trace_id"].is_string()
+            && !body["trace_id"].as_str().unwrap_or("").is_empty(),
+        "trace_id should be a non-empty string"
+    );
+    assert_eq!(body["message"], body["error"]);
 }
 
 #[tokio::test]

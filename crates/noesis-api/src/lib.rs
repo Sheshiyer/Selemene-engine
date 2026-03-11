@@ -6,12 +6,14 @@
 
 mod config;
 pub mod error;
+pub mod error_mapper;
 mod handlers;
 mod logging;
 mod middleware;
 
 // Re-export configuration and logging for main.rs
 pub use config::ApiConfig;
+pub use error_mapper::{ErrorMapper, ErrorResponse};
 pub use logging::{init_tracing, init_tracing_json};
 
 use axum::{
@@ -515,14 +517,6 @@ struct WorkflowInfoResponse {
     engine_ids: Vec<String>,
 }
 
-#[derive(Serialize, ToSchema)]
-pub struct ErrorResponse {
-    pub error: String,
-    pub error_code: String,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub details: Option<serde_json::Value>,
-}
-
 // ---------------------------------------------------------------------------
 // Handlers
 // ---------------------------------------------------------------------------
@@ -831,7 +825,7 @@ async fn calculate_handler(
             state
                 .metrics
                 .record_engine_calculation_error(&engine_id, error_type);
-            Err(engine_error_to_response(e))
+            Err(ErrorMapper::map(e))
         }
     }
 }
@@ -864,13 +858,11 @@ async fn validate_handler(
         .registry()
         .get(&engine_id)
         .ok_or_else(|| {
-            (
+            ErrorMapper::response(
                 StatusCode::NOT_FOUND,
-                Json(ErrorResponse {
-                    error: format!("Engine '{}' not found", engine_id),
-                    error_code: "ENGINE_NOT_FOUND".to_string(),
-                    details: Some(serde_json::json!({ "engine_id": engine_id })),
-                }),
+                "ENGINE_NOT_FOUND",
+                format!("Engine '{}' not found", engine_id),
+                Some(serde_json::json!({ "engine_id": engine_id })),
             )
         })?;
 
@@ -878,7 +870,7 @@ async fn validate_handler(
         .validate(&output)
         .await
         .map(Json)
-        .map_err(engine_error_to_response)
+        .map_err(ErrorMapper::map)
 }
 
 /// GET /api/v1/engines/:engine_id/info -- engine metadata
@@ -907,13 +899,11 @@ async fn engine_info_handler(
         .registry()
         .get(&engine_id)
         .ok_or_else(|| {
-            (
+            ErrorMapper::response(
                 StatusCode::NOT_FOUND,
-                Json(ErrorResponse {
-                    error: format!("Engine '{}' not found", engine_id),
-                    error_code: "ENGINE_NOT_FOUND".to_string(),
-                    details: Some(serde_json::json!({ "engine_id": engine_id })),
-                }),
+                "ENGINE_NOT_FOUND",
+                format!("Engine '{}' not found", engine_id),
+                Some(serde_json::json!({ "engine_id": engine_id })),
             )
         })?;
 
@@ -1095,7 +1085,7 @@ async fn workflow_execute_handler(
             state
                 .metrics
                 .record_engine_calculation_error(&workflow_label, error_type);
-            Err(engine_error_to_response(e))
+            Err(ErrorMapper::map(e))
         }
     }
 }
@@ -1154,13 +1144,11 @@ async fn workflow_info_handler(
         .orchestrator
         .get_workflow(&workflow_id)
         .ok_or_else(|| {
-            (
+            ErrorMapper::response(
                 StatusCode::NOT_FOUND,
-                Json(ErrorResponse {
-                    error: format!("Workflow '{}' not found", workflow_id),
-                    error_code: "WORKFLOW_NOT_FOUND".to_string(),
-                    details: Some(serde_json::json!({ "workflow_id": workflow_id })),
-                }),
+                "WORKFLOW_NOT_FOUND",
+                format!("Workflow '{}' not found", workflow_id),
+                Some(serde_json::json!({ "workflow_id": workflow_id })),
             )
         })?;
 
@@ -1210,25 +1198,16 @@ async fn list_readings_handler(
     axum::extract::Query(params): axum::extract::Query<ReadingsQuery>,
 ) -> Result<Json<ReadingsListResponse>, (StatusCode, Json<ErrorResponse>)> {
     let repo = state.readings_repository.as_ref().ok_or_else(|| {
-        (
+        ErrorMapper::response(
             StatusCode::SERVICE_UNAVAILABLE,
-            Json(ErrorResponse {
-                error: "Database not available".to_string(),
-                error_code: "DB_UNAVAILABLE".to_string(),
-                details: None,
-            }),
+            "DB_UNAVAILABLE",
+            "Database not available",
+            None,
         )
     })?;
 
     let uid = uuid::Uuid::parse_str(&user.user_id).map_err(|_| {
-        (
-            StatusCode::BAD_REQUEST,
-            Json(ErrorResponse {
-                error: "Invalid user ID".to_string(),
-                error_code: "INVALID_USER_ID".to_string(),
-                details: None,
-            }),
-        )
+        ErrorMapper::response(StatusCode::BAD_REQUEST, "INVALID_USER_ID", "Invalid user ID", None)
     })?;
 
     let limit = params.limit.unwrap_or(20).min(100);
@@ -1240,25 +1219,21 @@ async fn list_readings_handler(
         .await
         .map_err(|e| {
             tracing::error!("Failed to fetch readings: {}", e);
-            (
+            ErrorMapper::response(
                 StatusCode::INTERNAL_SERVER_ERROR,
-                Json(ErrorResponse {
-                    error: "Failed to fetch readings".to_string(),
-                    error_code: "DB_ERROR".to_string(),
-                    details: None,
-                }),
+                "DB_ERROR",
+                "Failed to fetch readings",
+                None,
             )
         })?;
 
     let total = repo.count_readings(uid, engine_filter).await.map_err(|e| {
         tracing::error!("Failed to count readings: {}", e);
-        (
+        ErrorMapper::response(
             StatusCode::INTERNAL_SERVER_ERROR,
-            Json(ErrorResponse {
-                error: "Failed to count readings".to_string(),
-                error_code: "DB_ERROR".to_string(),
-                details: None,
-            }),
+            "DB_ERROR",
+            "Failed to count readings",
+            None,
         )
     })?;
 
@@ -1277,48 +1252,35 @@ async fn get_reading_handler(
     Path(reading_id): Path<uuid::Uuid>,
 ) -> Result<Json<noesis_data::models::reading::Reading>, (StatusCode, Json<ErrorResponse>)> {
     let repo = state.readings_repository.as_ref().ok_or_else(|| {
-        (
+        ErrorMapper::response(
             StatusCode::SERVICE_UNAVAILABLE,
-            Json(ErrorResponse {
-                error: "Database not available".to_string(),
-                error_code: "DB_UNAVAILABLE".to_string(),
-                details: None,
-            }),
+            "DB_UNAVAILABLE",
+            "Database not available",
+            None,
         )
     })?;
 
     let uid = uuid::Uuid::parse_str(&user.user_id).map_err(|_| {
-        (
-            StatusCode::BAD_REQUEST,
-            Json(ErrorResponse {
-                error: "Invalid user ID".to_string(),
-                error_code: "INVALID_USER_ID".to_string(),
-                details: None,
-            }),
-        )
+        ErrorMapper::response(StatusCode::BAD_REQUEST, "INVALID_USER_ID", "Invalid user ID", None)
     })?;
 
     let reading = repo.get_reading(reading_id, uid).await.map_err(|e| {
         tracing::error!("Failed to fetch reading: {}", e);
-        (
+        ErrorMapper::response(
             StatusCode::INTERNAL_SERVER_ERROR,
-            Json(ErrorResponse {
-                error: "Failed to fetch reading".to_string(),
-                error_code: "DB_ERROR".to_string(),
-                details: None,
-            }),
+            "DB_ERROR",
+            "Failed to fetch reading",
+            None,
         )
     })?;
 
     reading
         .ok_or_else(|| {
-            (
+            ErrorMapper::response(
                 StatusCode::NOT_FOUND,
-                Json(ErrorResponse {
-                    error: "Reading not found".to_string(),
-                    error_code: "READING_NOT_FOUND".to_string(),
-                    details: Some(serde_json::json!({ "reading_id": reading_id })),
-                }),
+                "READING_NOT_FOUND",
+                "Reading not found",
+                Some(serde_json::json!({ "reading_id": reading_id })),
             )
         })
         .map(Json)
@@ -1330,50 +1292,37 @@ async fn readings_stats_handler(
     Extension(user): Extension<AuthUser>,
 ) -> Result<Json<ReadingsStatsResponse>, (StatusCode, Json<ErrorResponse>)> {
     let repo = state.readings_repository.as_ref().ok_or_else(|| {
-        (
+        ErrorMapper::response(
             StatusCode::SERVICE_UNAVAILABLE,
-            Json(ErrorResponse {
-                error: "Database not available".to_string(),
-                error_code: "DB_UNAVAILABLE".to_string(),
-                details: None,
-            }),
+            "DB_UNAVAILABLE",
+            "Database not available",
+            None,
         )
     })?;
 
     let uid = uuid::Uuid::parse_str(&user.user_id).map_err(|_| {
-        (
-            StatusCode::BAD_REQUEST,
-            Json(ErrorResponse {
-                error: "Invalid user ID".to_string(),
-                error_code: "INVALID_USER_ID".to_string(),
-                details: None,
-            }),
-        )
+        ErrorMapper::response(StatusCode::BAD_REQUEST, "INVALID_USER_ID", "Invalid user ID", None)
     })?;
 
     // Get total count
     let total = repo.count_readings(uid, None).await.map_err(|e| {
         tracing::error!("Failed to count readings: {}", e);
-        (
+        ErrorMapper::response(
             StatusCode::INTERNAL_SERVER_ERROR,
-            Json(ErrorResponse {
-                error: "Failed to count readings".to_string(),
-                error_code: "DB_ERROR".to_string(),
-                details: None,
-            }),
+            "DB_ERROR",
+            "Failed to count readings",
+            None,
         )
     })?;
 
     // Get per-engine stats
     let rows = repo.count_by_engine(uid).await.map_err(|e| {
         tracing::error!("Failed to fetch stats: {}", e);
-        (
+        ErrorMapper::response(
             StatusCode::INTERNAL_SERVER_ERROR,
-            Json(ErrorResponse {
-                error: "Failed to fetch stats".to_string(),
-                error_code: "DB_ERROR".to_string(),
-                details: None,
-            }),
+            "DB_ERROR",
+            "Failed to fetch stats",
+            None,
         )
     })?;
 
@@ -1383,110 +1332,6 @@ async fn readings_stats_handler(
         .collect();
 
     Ok(Json(ReadingsStatsResponse { stats, total }))
-}
-
-// ---------------------------------------------------------------------------
-// Error mapping
-// ---------------------------------------------------------------------------
-
-pub fn engine_error_to_response(err: EngineError) -> (StatusCode, Json<ErrorResponse>) {
-    // Capture server errors (5xx) to Sentry with context
-    let err_display = err.to_string();
-
-    let (status, error_code, message, details) = match &err {
-        EngineError::EngineNotFound(id) => (
-            StatusCode::NOT_FOUND,
-            "ENGINE_NOT_FOUND".to_string(),
-            err.to_string(),
-            Some(serde_json::json!({ "engine_id": id })),
-        ),
-        EngineError::WorkflowNotFound(id) => (
-            StatusCode::NOT_FOUND,
-            "WORKFLOW_NOT_FOUND".to_string(),
-            err.to_string(),
-            Some(serde_json::json!({ "workflow_id": id })),
-        ),
-        EngineError::PhaseAccessDenied { required, current } => (
-            StatusCode::FORBIDDEN,
-            "PHASE_ACCESS_DENIED".to_string(),
-            err.to_string(),
-            Some(serde_json::json!({
-                "required_phase": required,
-                "current_phase": current
-            })),
-        ),
-        EngineError::AuthError(msg) => (
-            StatusCode::UNAUTHORIZED,
-            "AUTH_ERROR".to_string(),
-            err.to_string(),
-            Some(serde_json::json!({ "reason": msg })),
-        ),
-        EngineError::RateLimitExceeded => (
-            StatusCode::TOO_MANY_REQUESTS,
-            "RATE_LIMIT_EXCEEDED".to_string(),
-            err.to_string(),
-            None,
-        ),
-        EngineError::ValidationError(msg) => (
-            StatusCode::UNPROCESSABLE_ENTITY,
-            "VALIDATION_ERROR".to_string(),
-            err.to_string(),
-            Some(serde_json::json!({ "validation_message": msg })),
-        ),
-        EngineError::CalculationError(_) => (
-            StatusCode::INTERNAL_SERVER_ERROR,
-            "CALCULATION_ERROR".to_string(),
-            "An internal calculation error occurred".to_string(),
-            None,
-        ),
-        EngineError::CacheError(_) => (
-            StatusCode::INTERNAL_SERVER_ERROR,
-            "CACHE_ERROR".to_string(),
-            "An internal cache error occurred".to_string(),
-            None,
-        ),
-        EngineError::ConfigError(_) => (
-            StatusCode::INTERNAL_SERVER_ERROR,
-            "CONFIG_ERROR".to_string(),
-            "An internal configuration error occurred".to_string(),
-            None,
-        ),
-        EngineError::BridgeError(_) => (
-            StatusCode::INTERNAL_SERVER_ERROR,
-            "BRIDGE_ERROR".to_string(),
-            "An internal bridge error occurred".to_string(),
-            None,
-        ),
-        EngineError::SwissEphemerisError(_) => (
-            StatusCode::INTERNAL_SERVER_ERROR,
-            "SWISS_EPHEMERIS_ERROR".to_string(),
-            "An internal ephemeris error occurred".to_string(),
-            None,
-        ),
-        EngineError::InternalError(_) => (
-            StatusCode::INTERNAL_SERVER_ERROR,
-            "INTERNAL_ERROR".to_string(),
-            "An internal error occurred".to_string(),
-            None,
-        ),
-    };
-
-    // Report server errors (5xx) to Sentry for visibility
-    if status.is_server_error() {
-        sentry::configure_scope(|scope| {
-            scope.set_tag("error_code", &error_code);
-        });
-        sentry::capture_message(&err_display, sentry::Level::Error);
-    }
-
-    (
-        status,
-        Json(ErrorResponse {
-            error: message,
-            error_code,
-            details,
-        }),
-    )
 }
 
 // ---------------------------------------------------------------------------
@@ -1558,7 +1403,7 @@ async fn legacy_panchanga_handler(
         .orchestrator
         .execute_engine("panchanga", input, 0)
         .await
-        .map_err(engine_error_to_response)?;
+        .map_err(ErrorMapper::map)?;
 
     // Extract PanchangaResult from engine output
     let panchanga_result: serde_json::Value = output.result;
@@ -1655,7 +1500,7 @@ async fn legacy_ghati_current_handler(
         .orchestrator
         .execute_engine("panchanga", input, 0)
         .await
-        .map_err(engine_error_to_response)?;
+        .map_err(ErrorMapper::map)?;
 
     // Extract tithi value to calculate ghati time
     // In Vedic time, 1 day = 60 ghatis, 1 ghati = 24 minutes

@@ -3,6 +3,23 @@
 Date: 2026-03-11  
 Scope: `#45` through `#57` in `P1-Stabilization`
 
+## Implementation Update
+
+Later on `2026-03-11`, the follow-up implementation for `#47` and `#50` landed.
+
+- `#47` is now closeable:
+  - `ErrorResponse` moved into [`crates/noesis-api/src/error_mapper.rs`](../../crates/noesis-api/src/error_mapper.rs)
+  - schema now includes `status`, `error_code`, `message`, legacy `error`, `details`, and `trace_id`
+  - route-level error shape assertions were expanded in:
+    - [`crates/noesis-api/tests/error_handling_tests.rs`](../../crates/noesis-api/tests/error_handling_tests.rs)
+    - [`crates/noesis-api/tests/rate_limit_tests.rs`](../../crates/noesis-api/tests/rate_limit_tests.rs)
+- `#50` is now closeable:
+  - dedicated [`crates/noesis-api/src/error_mapper.rs`](../../crates/noesis-api/src/error_mapper.rs) module exists
+  - `engine_error_to_response()` was removed from [`crates/noesis-api/src/lib.rs`](../../crates/noesis-api/src/lib.rs)
+  - `ApiError`, inline handler call sites, auth middleware, rate-limit middleware, and admin helpers now route through `ErrorMapper`
+- Issues that remain open after this implementation pass:
+  - `#48`, `#51`, `#52`, `#53`, `#54`, `#55`, `#56`, `#57`
+
 ## Summary
 
 This audit reviewed the current `noesis-api` error response path, the engine-level error variants used across native Rust engines and TS bridge engines, and the handler-level response patterns in `noesis-api`.

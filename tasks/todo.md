@@ -1258,3 +1258,32 @@
   - issue state:
     - closed: `#45`, `#46`, `#49`
     - left open by audit: `#47`, `#48`, `#50`, `#51`, `#52`, `#53`, `#54`, `#55`, `#56`, `#57`
+
+### Wave B — `#47` + `#50` Implementation
+- [x] Add failing regression coverage for the expanded `ErrorResponse` contract:
+  - `status`
+  - `message`
+  - `trace_id`
+  - preserve legacy `error`
+- [x] Extract the inline API error mapping into a dedicated `error_mapper` module.
+- [x] Move the shared `ErrorResponse` schema into the new module and update OpenAPI exports.
+- [x] Migrate `ApiError`, inline handler call sites, auth middleware, and rate-limit middleware to the new mapper/schema.
+- [x] Remove `engine_error_to_response()` from `lib.rs` once all call sites are migrated.
+- [x] Run fresh verification for:
+  - `cargo test -p noesis-api --test error_handling_tests -- --nocapture`
+  - `cargo test -p noesis-api --test rate_limit_tests -- --nocapture`
+  - `cargo test -p noesis-api --test workflow_tests -- --nocapture`
+  - `cargo test -p noesis-api error_mapper -- --nocapture`
+  - `cargo build -p noesis-api`
+  - `rg -n "engine_error_to_response" crates/noesis-api/src`
+- Review:
+  - `#47` is now closeable:
+    - `ErrorResponse` lives in `crates/noesis-api/src/error_mapper.rs`
+    - schema now includes `status`, `error_code`, `message`, `error`, `details`, and `trace_id`
+    - response-shape assertions were extended in `crates/noesis-api/tests/error_handling_tests.rs` and `crates/noesis-api/tests/rate_limit_tests.rs`
+  - `#50` is now closeable:
+    - `engine_error_to_response()` was removed from `crates/noesis-api/src/lib.rs`
+    - all migrated call sites now use `ErrorMapper::map()` or `ErrorMapper::response()`
+    - `rg` confirms no source references remain
+  - Keep open after this pass:
+    - `#48`, `#51`, `#52`, `#53`, `#54`, `#55`, `#56`, `#57`
