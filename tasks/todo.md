@@ -1175,7 +1175,17 @@
   - Remaining administrative work is issue updates/closure, not more implementation for this cluster.
 
 ### Wave A — Commit and Closure
-- [ ] Re-run Wave A verification commands before commit/push.
-- [ ] Commit the Wave A readiness + health surface changes on the current branch.
-- [ ] Push `codex/engine-hygiene-native-runtime-docs`.
-- [ ] Comment on and close `#115`, `#116`, `#120`, `#121`, and `#122` with verification evidence.
+- [x] Re-run Wave A verification commands before commit/push.
+- [x] Commit the Wave A readiness + health surface changes on the current branch.
+- [x] Push `codex/engine-hygiene-native-runtime-docs`.
+- [x] Comment on and close `#115`, `#116`, `#120`, `#121`, and `#122` with verification evidence.
+- Closeout record:
+  - commit: `d80eee79` `fix(health): implement Wave A sidecar readiness surface`
+  - issue comments:
+    - `#115`: `issuecomment-4038674085`
+    - `#116`: `issuecomment-4038674114`
+    - `#120`: `issuecomment-4038674087`
+    - `#121`: `issuecomment-4038674205`
+    - `#122`: `issuecomment-4038674089`
+  - issue state:
+    - `#115`, `#116`, `#120`, `#121`, `#122` closed on GitHub
