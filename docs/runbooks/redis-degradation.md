@@ -2,6 +2,8 @@
 
 This runbook covers L2 Redis degradation for the Selemene cache stack (`L1 in-memory -> L2 Redis -> L3 disk`).
 
+For the operator-facing incident procedure requested by the release-readiness backlog, see [incident-redis-failure.md](/Volumes/madara/2026/witnessos/Selemene-engine/docs/runbooks/incident-redis-failure.md).
+
 ## Trigger Threshold
 
 Escalate when either condition is met:

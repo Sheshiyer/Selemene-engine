@@ -1438,3 +1438,21 @@
     - `#36`
     - `#37`
     - `#106`
+
+### Next Wave 2 Candidate — `#323`
+
+- [x] Review open Wave 2 issues and select the smallest live candidate after the baseline tranche.
+- [x] Expand the Redis degradation notes into the incident-style runbook requested by `#323`.
+- [x] Verify the runbook matches the current Redis graceful-degradation behavior and readiness/admin surfaces.
+- [ ] Commit, push, and close `#323` with evidence if the acceptance criteria are satisfied.
+
+#### `#323` Selection Note
+
+- `#323` is the tightest Wave 2 issue because it overlaps the Redis degradation work already landed for `#106` but asks for a more specific incident runbook path and operator procedure.
+- I am intentionally not branching into `#322` or `#324` yet; those require new API-down / TS-bridge incident procedures that are not already mostly captured.
+- Evidence for `#323` now lives in:
+  - `docs/runbooks/incident-redis-failure.md`
+  - `docs/runbooks/redis-degradation.md` cross-link
+  - `crates/noesis-cache/src/l2_cache.rs` Redis graceful-degradation log/fallback behavior
+  - `crates/noesis-api/src/lib.rs` readiness fields
+  - `crates/noesis-api/src/handlers/admin.rs` admin `redis_available` status
