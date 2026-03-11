@@ -1301,7 +1301,7 @@
 - [x] Inventory the current open issue set and group it into closeable, implement-now, and defer buckets.
 - [x] Review Wave 1 / Wave 2 clusters already touched in this branch and identify issues already satisfied by shipped code.
 - [x] Close the issues that are already proven complete by code, tests, or merged workflow/docs updates.
-- [ ] Record a manageable next-issue set for the remaining open clusters.
+- [x] Record a manageable next-issue set for the remaining open clusters.
 - [x] Add a sweep review summary with counts, closures, and the reduced backlog shape.
 - Review:
   - Open backlog at sweep start: `416`
@@ -1321,7 +1321,17 @@
     - most of `P5`, `P4`, `P2`, and `P3` still require real implementation rather than admin cleanup
   - Reduced backlog shape after the five sweep closures:
     - estimated open count: `411`
-  - Next manageable closure candidates should come from:
-    - small documented bridge-reliability items with direct code/test evidence
-    - workflow registry / workflow integration issues already satisfied by current workflow definitions and tests
-    - specialized-engine issues whose acceptance criteria are now covered by engine-local regression tests
+  - Next manageable issue set:
+    - `#52`, `#54`, `#55`, `#56` as the next small P1 error-mapping tranche
+    - `#504`, `#505`, `#506`, `#508` as the remaining engine-hygiene tranche
+    - workflow / registry candidates to audit next:
+      - `#400`, `#401`, `#416`, `#417`, `#419`
+  - Closeout record:
+    - commits:
+      - `9b049161` `fix(api): add unified error mapper module`
+      - `805a4c35` `docs(tasks): record Wave B issue closures`
+      - `79d47d69` `fix(vedic-clock): expose resolved timezone basis`
+    - issue comments:
+      - `#502`: `issuecomment-4039333979`
+      - `#503`: `issuecomment-4039333989`
+      - `#507`: `issuecomment-4039333996`
