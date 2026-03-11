@@ -944,3 +944,238 @@
 - Workflow status at handoff:
   - PR exists and is the correct route for `test.yml` to trigger.
   - At the time of verification, only `Supabase Preview` had appeared and was `skipped`; no GitHub Actions test run had shown up yet.
+
+---
+
+# Task Plan — Wave 1 / Wave 2 Backlog Review
+
+## Checklist
+- [x] Pull all open GitHub issues carrying `wave:W1` or `wave:W2`.
+- [x] Group the open Wave 1 / Wave 2 inventory by milestone.
+- [x] Compare the largest open clusters against current repo state.
+- [x] Identify realistic finish-now clusters versus clusters that should be deferred.
+- [x] Convert the finish-now clusters into an execution order once approved.
+
+## Notes
+- Raw open Wave 1 / Wave 2 backlog size on `2026-03-11`: `267` issues.
+- Counts by milestone:
+  - `P1-Stabilization`: `46` open (`W1=21`, `W2=25`)
+  - `P2-Workflow-Hardening`: `53` open (`W1=24`, `W2=29`)
+  - `P3-Bridge-Reliability`: `31` open (`W1=16`, `W2=15`)
+  - `P4-Performance-Observability`: `49` open (`W1=28`, `W2=21`)
+  - `P5-Release-Readiness`: `46` open (`W1=23`, `W2=23`)
+  - `v2.2.0-Specialized-Engines`: `42` open (`W1=29`, `W2=13`)
+- There are no open `wave:W1` or `wave:W2` issues left in `v3.0.0-Platform-Launch`.
+- These issue sets are not one coherent “current sprint”; many are old taskmaster leaves that were never closed or re-scoped after architecture drift.
+
+## Review (fill after execution)
+- Evidence collected from GitHub:
+  - Open issue inventory pulled with `gh issue list --state open --limit 500 --json ...`
+  - Roadmap reference checked in `.github/projects/CONSCIOUSNESS_ROADMAP.md`
+- Current-code evidence that some old Wave 1 / Wave 2 issues are partially or fully stale:
+  - `crates/noesis-api/src/lib.rs` already exposes `/health/live`, `/health/ready`, and `/ready`
+  - `crates/noesis-api/tests/error_handling_tests.rs` and `crates/noesis-api/src/lib.rs` already implement structured `error_code` responses and broad mapping tests
+  - `crates/noesis-orchestrator/src/lib.rs`, `crates/noesis-orchestrator/src/workflow/registry.rs`, and `crates/noesis-orchestrator/tests/*` already cover workflow registry and phase gating
+  - `scripts/smoke_admin_web.sh` and `.github/workflows/deploy.yaml` already provide part of the release-smoke infrastructure
+- Current-code evidence that other clusters are still materially unfinished:
+  - `crates/noesis-orchestrator/src/workflow/executor.rs` still contains `TODO: Implement other synthesizers`
+  - `docs/PROJECT_OVERVIEW.md` explicitly notes that only `birth-blueprint` and `daily-practice` have fully implemented synthesis, while `decision-support`, `self-inquiry`, `creative-expression`, and `full-spectrum` remain sparse
+  - `crates/engine-biofield/src` does not yet contain `meridian_analysis`, `aura_layers`, or `healing_recommendations` structures implied by the `v2.2.0` Wave 1 / Wave 2 issues
+  - `crates/engine-numerology/src` and `crates/engine-biorhythm/src` do not yet show the planned personal-cycle / secondary-rhythm feature set from `v2.2.0-Specialized-Engines`
+  - `crates/noesis-api/src/lib.rs` still uses `engine_error_to_response` inline and does not contain a dedicated `ErrorMapper` module
+  - repository-wide search shows no `CacheKeyBuilder` implementation; the P1 cache-key migration cluster is still open in substance
+
+### Finish-Now Clusters
+- `P2-W1 health/readiness surface`
+  - Closest to done because the health base already exists.
+  - Candidate issues:
+    - `#115` `Add /health/live liveness endpoint to TS server`
+    - `#116` `Add /health/ready readiness endpoint with engine checks`
+    - `#121` `Add /health/engines endpoint listing per-engine status`
+    - `#122` `Wire sidecar health into Rust /health/ready endpoint`
+    - `#120` `Test sidecar probe responses under partial engine failure`
+  - Practical read: `/health/live` and `/health/ready` exist on the Rust side already, so the remaining work is to make sidecar/engine health explicit and then close the stale split issues.
+
+- `P1 error-mapping cleanup`
+  - Large parts already exist, but the shape is scattered.
+  - Candidate issues:
+    - `#45` through `#49`
+    - `#50` through `#57`
+  - Practical read: this is now mostly consolidation and verification, not greenfield implementation.
+
+- `P5 release smoke consolidation`
+  - Existing smoke/deploy plumbing means this is a realistic short wave.
+  - Candidate issues:
+    - `#291` through `#299`
+    - optionally `#305` for Docker `HEALTHCHECK`
+  - Practical read: extend the existing smoke scripts/workflow rather than invent a new release framework.
+
+- `Issue hygiene / stale closure pass`
+  - Several old audit/doc issues are likely closeable after short evidence notes instead of more code.
+  - Candidate review issues:
+    - `#29` through `#37`
+    - `#45` through `#49`
+    - `#106`
+  - Practical read: these are “prove current state and close or re-scope” issues, not all new engineering work.
+
+### Defer / Re-Scope Clusters
+- `P2-W2 workflow contract suite` (`#123` through `#151`)
+  - Do not treat as a quick finish.
+  - The synthesis layer is still incomplete for four workflows, so schema fixtures and determinism work here will sprawl.
+
+- `v2.2.0-Specialized-Engines` (`#361` through `#402`)
+  - Not “barely finish now”.
+  - These require real feature work across numerology, biorhythm, biofield, and workflow synthesis; current runtime state does not show those features landed.
+
+- `P3 bridge retry/circuit-breaker reliability` (`#185` through `#199`, plus `#107` through `#114`)
+  - Needs re-scoping before execution.
+  - The active runtime path changed materially during the native-first Vedic cleanup, so some of this plan targets architecture that is no longer central.
+
+- `P4 idempotency / auth soak / canary rollout` (`#256` through `#269`, `#314` through `#336`)
+  - Operationally valuable, but not the fastest closure path.
+  - These are infra-heavy and environment-dependent rather than current codebase cleanup.
+
+### Recommended Near-Term Closure Sequence
+- Wave A: `P2-W1` health/readiness cluster
+- Wave B: `P1` error-mapping cleanup cluster
+- Wave C: `P5-W1` smoke-test consolidation cluster
+- After those three: stale-audit closure sweep across the old `P1` documentation/audit issues
+
+### Wave A — Exact Issue Map
+- `#115` `Add /health/live liveness endpoint to TS server`
+  - Current state:
+    - TS sidecar already has a coarse `/health` endpoint in `ts-engines/src/server/app.ts`.
+    - Integration coverage for `/health` already exists in `ts-engines/tests/integration.test.ts`.
+  - Missing:
+    - exact `/health/live` route returning unconditional process liveness
+    - sidecar docs / startup log update if needed
+  - Decision:
+    - implement, not close as-is
+  - Expected touch set:
+    - `ts-engines/src/server/app.ts`
+    - `ts-engines/tests/integration.test.ts`
+
+- `#116` `Add /health/ready readiness endpoint with engine checks`
+  - Current state:
+    - no `/health/ready` exists in the TS sidecar
+    - `ConsciousnessEngine` interface does not expose `selfCheck`
+  - Missing:
+    - readiness route
+    - lightweight per-engine health contract
+    - aggregate status payload
+  - Decision:
+    - implement
+  - Expected touch set:
+    - `ts-engines/src/types/engine.ts`
+    - `ts-engines/src/server/app.ts`
+    - `ts-engines/src/server/registry.ts`
+    - engine implementations only if a default self-check cannot be derived centrally
+    - `ts-engines/tests/integration.test.ts`
+
+- `#121` `Add /health/engines endpoint listing per-engine status`
+  - Current state:
+    - no per-engine health endpoint exists
+  - Missing:
+    - route exposing per-engine health objects with latency
+    - shared health result type reused by `/health/ready`
+  - Decision:
+    - implement in the same batch as `#116`
+  - Expected touch set:
+    - `ts-engines/src/types/engine.ts`
+    - `ts-engines/src/server/app.ts`
+    - `ts-engines/tests/integration.test.ts`
+
+- `#122` `Wire sidecar health into Rust /health/ready endpoint`
+  - Current state:
+    - Rust API already exposes `/health/ready` and `/ready` in `crates/noesis-api/src/lib.rs`
+    - `BridgeManager::health_check()` exists in `crates/noesis-bridge/src/lib.rs`, but it only hits sidecar `/health` and returns coarse success/failure
+    - `ReadinessResponse` currently reports only `redis`, `orchestrator`, and `overall_status`
+  - Missing:
+    - bridge/sidecar readiness field in API response
+    - richer bridge health payload or a new manager method consuming sidecar `/health/ready` or `/health/engines`
+    - readiness tests covering available/degraded bridge states
+  - Decision:
+    - implement after `#116` + `#121`
+  - Expected touch set:
+    - `crates/noesis-bridge/src/lib.rs`
+    - `crates/noesis-api/src/lib.rs`
+    - `crates/noesis-api/tests/...` readiness/route tests
+
+- `#120` `Test sidecar probe responses under partial engine failure`
+  - Current state:
+    - only coarse `/health` tests exist on the TS side
+  - Missing:
+    - healthy / partial failure / all failed / recovery scenarios
+    - either mocking hooks or test doubles for engine self-check state
+  - Decision:
+    - implement last in the Wave A batch, after the routes exist
+  - Expected touch set:
+    - `ts-engines/tests/integration.test.ts`
+    - possibly a small test helper in `ts-engines/tests/`
+
+### Wave A — Recommended Build Order
+- 1. `#115`
+  - cheap route split; gives clean liveness semantics
+- 2. `#116` + `#121`
+  - shared sidecar health model and routes in one TS-side PR slice
+- 3. `#122`
+  - consume sidecar readiness from Rust API and expose `bridge_status`
+- 4. `#120`
+  - lock the new behavior with state-transition tests
+
+### Wave A — Closure Rule
+- Do not close any of `#115`, `#116`, `#120`, `#121`, `#122` from review alone.
+- `#115` is closest to stale, but still misses the exact route shape requested by the issue.
+- The right move is one compact implementation wave that closes all five together with proof.
+
+### Wave A — Execution Review
+- Implemented TS-side health probe surface:
+  - `ts-engines/src/types/engine.ts`
+    - added `EngineHealthStatus`, `LivenessResponse`, `ReadinessResponse`, `EnginesHealthResponse`
+    - added optional `selfCheck()` contract on `ConsciousnessEngine`
+  - `ts-engines/src/server/registry.ts`
+    - exported `EngineRegistry`
+    - added `all()` accessor for per-engine health iteration
+  - `ts-engines/src/server/app.ts`
+    - `createServer()` now accepts an injected registry for isolated tests
+    - added `/health/live`
+    - added `/health/ready`
+    - added `/health/engines`
+    - implemented default self-check behavior for engines that do not yet define a custom health probe
+  - `ts-engines/src/server/index.ts`
+    - exports `EngineRegistry` for isolated test setup
+- Added TS-side regression coverage:
+  - `ts-engines/tests/health.test.ts`
+    - unconditional liveness
+    - healthy readiness
+    - per-engine health payload
+    - degraded readiness
+    - recovery back to healthy
+- Implemented Rust bridge-aware readiness:
+  - `crates/noesis-bridge/src/lib.rs`
+    - added `SidecarEngineHealth` and `SidecarReadinessStatus`
+    - added `BridgeManager::readiness_status()`
+  - `crates/noesis-api/src/lib.rs`
+    - `AppState` now carries `bridge_manager`
+    - `/ready` response now includes:
+      - `bridge_status`
+      - `bridge_engines`
+      - `bridge_failed_engines`
+    - overall readiness now factors bridge availability alongside cache + orchestrator
+- Added Rust-side regression coverage:
+  - `crates/noesis-api/tests/bridge_readiness_tests.rs`
+    - bridge available path
+    - bridge degraded path with failed-engine details
+- Verification:
+  - `bun test ts-engines/tests/health.test.ts ts-engines/tests/integration.test.ts`
+  - `cargo test -p noesis-api --test bridge_readiness_tests --test vedic_provider_route_tests -- --nocapture`
+  - `cargo test -p noesis-bridge -- --nocapture`
+- Wave A status:
+  - `#115`, `#116`, `#120`, `#121`, `#122` are now implemented in code and covered by automated tests.
+  - Remaining administrative work is issue updates/closure, not more implementation for this cluster.
+
+### Wave A — Commit and Closure
+- [ ] Re-run Wave A verification commands before commit/push.
+- [ ] Commit the Wave A readiness + health surface changes on the current branch.
+- [ ] Push `codex/engine-hygiene-native-runtime-docs`.
+- [ ] Comment on and close `#115`, `#116`, `#120`, `#121`, and `#122` with verification evidence.

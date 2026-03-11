@@ -19,6 +19,7 @@ use std::sync::Arc;
 use std::time::Duration;
 
 use async_trait::async_trait;
+use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use sha2::{Digest, Sha256};
 use tracing::{debug, info, warn};
@@ -42,6 +43,21 @@ pub const DEFAULT_TS_SERVER_URL: &str = "http://localhost:3001";
 
 /// Default timeout for HTTP requests in seconds.
 pub const DEFAULT_TIMEOUT_SECS: u64 = 5;
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SidecarEngineHealth {
+    pub engine_id: String,
+    pub healthy: bool,
+    pub detail: String,
+    pub latency_ms: u64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SidecarReadinessStatus {
+    pub status: String,
+    pub engines: Vec<SidecarEngineHealth>,
+    pub failed_engines: Vec<String>,
+}
 
 // ---------------------------------------------------------------------------
 // BridgeEngine
@@ -467,6 +483,47 @@ impl BridgeManager {
                 response.status()
             )))
         }
+    }
+
+    /// Fetch detailed sidecar readiness including per-engine status.
+    pub async fn readiness_status(&self) -> Result<SidecarReadinessStatus, EngineError> {
+        let url = format!("{}/health/ready", self.base_url);
+
+        let client = reqwest::Client::builder()
+            .timeout(Duration::from_secs(2))
+            .build()
+            .map_err(|e| EngineError::BridgeError(format!("Failed to create client: {}", e)))?;
+
+        let response = client.get(&url).send().await.map_err(|e| {
+            if e.is_connect() {
+                EngineError::BridgeError(format!(
+                    "TS server not reachable at {} (connection refused)",
+                    self.base_url
+                ))
+            } else if e.is_timeout() {
+                EngineError::BridgeError(format!(
+                    "TS server readiness check timed out at {}",
+                    self.base_url
+                ))
+            } else {
+                EngineError::BridgeError(format!("Readiness check failed for {}: {}", url, e))
+            }
+        })?;
+
+        let status = response.status();
+        if status.as_u16() != 200 && status.as_u16() != 503 {
+            return Err(EngineError::BridgeError(format!(
+                "Readiness check returned unexpected status {}",
+                status
+            )));
+        }
+
+        response.json::<SidecarReadinessStatus>().await.map_err(|e| {
+            EngineError::BridgeError(format!(
+                "Failed to deserialize readiness response from {}: {}",
+                url, e
+            ))
+        })
     }
 
     /// Check if the TS server is available (non-blocking, returns false on error).

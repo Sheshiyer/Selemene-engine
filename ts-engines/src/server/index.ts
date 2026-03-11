@@ -1,1 +1,1 @@
-export { createServer, registry } from './app'
+export { createServer, registry, EngineRegistry } from './app'

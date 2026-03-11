@@ -214,6 +214,7 @@ impl Modify for SecurityAddon {
 #[derive(Clone)]
 pub struct AppState {
     pub orchestrator: Arc<WorkflowOrchestrator>,
+    pub bridge_manager: Arc<noesis_bridge::BridgeManager>,
     pub cache: Arc<CacheManager>,
     pub auth: Arc<AuthService>,
     pub metrics: Arc<NoesisMetrics>,
@@ -461,7 +462,18 @@ struct HealthResponse {
 struct ReadinessResponse {
     redis: String,
     orchestrator: String,
+    bridge_status: String,
+    bridge_engines: Vec<BridgeEngineStatus>,
+    bridge_failed_engines: Vec<String>,
     overall_status: String,
+}
+
+#[derive(Serialize, ToSchema)]
+struct BridgeEngineStatus {
+    engine_id: String,
+    healthy: bool,
+    detail: String,
+    latency_ms: u64,
 }
 
 #[derive(Serialize, ToSchema)]
@@ -561,12 +573,49 @@ async fn readiness_handler(State(state): State<AppState>) -> impl IntoResponse {
         _ => "not_ready",
     };
 
-    let overall_ready = redis_status == "ok" && orchestrator_status == "ready";
+    let (bridge_status, bridge_engines, bridge_failed_engines) =
+        match state.bridge_manager.readiness_status().await {
+            Ok(status) => (
+                if status.failed_engines.is_empty() {
+                    "available".to_string()
+                } else {
+                    "degraded".to_string()
+                },
+                status
+                    .engines
+                    .into_iter()
+                    .map(|engine| BridgeEngineStatus {
+                        engine_id: engine.engine_id,
+                        healthy: engine.healthy,
+                        detail: engine.detail,
+                        latency_ms: engine.latency_ms,
+                    })
+                    .collect(),
+                status.failed_engines,
+            ),
+            Err(err) => (
+                "unreachable".to_string(),
+                vec![BridgeEngineStatus {
+                    engine_id: "ts-sidecar".to_string(),
+                    healthy: false,
+                    detail: err.to_string(),
+                    latency_ms: 0,
+                }],
+                vec!["ts-sidecar".to_string()],
+            ),
+        };
+
+    let overall_ready = redis_status == "ok"
+        && orchestrator_status == "ready"
+        && bridge_status == "available";
     let overall_status = if overall_ready { "ready" } else { "not_ready" };
 
     let response = ReadinessResponse {
         redis: redis_status.to_string(),
         orchestrator: orchestrator_status.to_string(),
+        bridge_status,
+        bridge_engines,
+        bridge_failed_engines,
         overall_status: overall_status.to_string(),
     };
 
@@ -1679,7 +1728,7 @@ pub async fn build_app_state(config: &ApiConfig) -> AppState {
     orchestrator.register_engine(Arc::new(engine_transits::TransitsEngine::new()));
 
     // -- TypeScript Engines (via HTTP bridge) --
-    let bridge_manager = noesis_bridge::BridgeManager::from_env();
+    let bridge_manager = Arc::new(noesis_bridge::BridgeManager::from_env());
 
     // Always register TS engines so they appear in the API regardless of
     // connectivity during startup. They will return a BridgeError if called
@@ -1795,6 +1844,7 @@ pub async fn build_app_state(config: &ApiConfig) -> AppState {
 
     AppState {
         orchestrator: Arc::new(orchestrator),
+        bridge_manager,
         cache: Arc::new(cache),
         auth: Arc::new(auth),
         metrics: Arc::new(metrics),
@@ -1849,7 +1899,7 @@ pub async fn build_app_state_lazy_db(config: &ApiConfig) -> AppState {
     orchestrator.register_engine(Arc::new(engine_transits::TransitsEngine::new()));
 
     // -- TypeScript Engines (via HTTP bridge) --
-    let bridge_manager = noesis_bridge::BridgeManager::from_env();
+    let bridge_manager = Arc::new(noesis_bridge::BridgeManager::from_env());
 
     // Always register TS engines so they appear in the API regardless of
     // connectivity during startup. They will return a BridgeError if called
@@ -1928,6 +1978,7 @@ pub async fn build_app_state_lazy_db(config: &ApiConfig) -> AppState {
 
     AppState {
         orchestrator: Arc::new(orchestrator),
+        bridge_manager,
         cache: Arc::new(cache),
         auth: Arc::new(auth),
         metrics: Arc::new(metrics),
