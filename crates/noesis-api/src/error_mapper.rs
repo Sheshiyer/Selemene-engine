@@ -133,17 +133,13 @@ impl ErrorMapper {
     ) -> (StatusCode, Json<ErrorResponse>) {
         let trace_id = Self::current_trace_id();
         record_api_error(&error_code);
-
-        if status.is_server_error() {
-            sentry::configure_scope(|scope| {
-                scope.set_tag("error_code", &error_code);
-                scope.set_tag("trace_id", &trace_id);
-            });
-            sentry::capture_message(
-                sentry_message.as_deref().unwrap_or(&message),
-                sentry::Level::Error,
-            );
-        }
+        Self::record_sentry_context(
+            status,
+            &error_code,
+            &message,
+            &trace_id,
+            sentry_message.as_deref().unwrap_or(&message),
+        );
 
         (
             status,
@@ -169,6 +165,42 @@ impl ErrorMapper {
             })
             .unwrap_or_else(|| uuid::Uuid::new_v4().to_string())
     }
+
+    fn record_sentry_context(
+        status: StatusCode,
+        error_code: &str,
+        message: &str,
+        trace_id: &str,
+        sentry_message: &str,
+    ) {
+        use sentry::protocol::{Breadcrumb, Map, Value};
+
+        let mut data = Map::new();
+        data.insert("status".to_string(), Value::from(status.as_u16() as i64));
+        data.insert("error_code".to_string(), Value::from(error_code.to_string()));
+        data.insert("trace_id".to_string(), Value::from(trace_id.to_string()));
+
+        sentry::add_breadcrumb(Breadcrumb {
+            category: Some("api.error".to_string()),
+            ty: "error".to_string(),
+            level: if status.is_server_error() {
+                sentry::Level::Error
+            } else {
+                sentry::Level::Warning
+            },
+            message: Some(format!("{}: {}", error_code, message)),
+            data,
+            ..Default::default()
+        });
+
+        if status.is_server_error() {
+            sentry::configure_scope(|scope| {
+                scope.set_tag("error_code", error_code);
+                scope.set_tag("trace_id", trace_id);
+            });
+            sentry::capture_message(sentry_message, sentry::Level::Error);
+        }
+    }
 }
 
 #[cfg(test)]
@@ -177,6 +209,15 @@ mod tests {
     use axum::http::StatusCode;
     use noesis_core::EngineError;
     use serde_json::json;
+    use sentry::{test::with_captured_events_options, ClientOptions, Level};
+
+    fn run_in_runtime<T>(future: impl std::future::Future<Output = T>) -> T {
+        tokio::runtime::Builder::new_current_thread()
+            .enable_all()
+            .build()
+            .expect("test runtime should build")
+            .block_on(future)
+    }
 
     fn assert_error_mapper_exhaustive(err: &EngineError) {
         match err {
@@ -306,5 +347,81 @@ mod tests {
         .await;
 
         assert_eq!(body.0.trace_id, "trace-123");
+    }
+
+    #[test]
+    fn sentry_captures_event_for_5xx_errors() {
+        let events = with_captured_events_options(
+            || {
+                run_in_runtime(async {
+                    let (_status, body) =
+                        ErrorMapper::with_request_trace_id("trace-500".to_string(), async {
+                            ErrorMapper::map(EngineError::BridgeError(
+                                "sidecar timeout".to_string(),
+                            ))
+                        })
+                        .await;
+                    assert_eq!(body.0.trace_id, "trace-500");
+                });
+            },
+            ClientOptions::default(),
+        );
+
+        assert_eq!(events.len(), 1);
+        let event = &events[0];
+        assert_eq!(event.level, Level::Error);
+        assert_eq!(event.tags.get("error_code").map(String::as_str), Some("BRIDGE_ERROR"));
+        assert_eq!(event.tags.get("trace_id").map(String::as_str), Some("trace-500"));
+        assert!(
+            event.message.as_deref().unwrap_or("").contains("Bridge error"),
+            "expected bridge error message, got {:?}",
+            event.message
+        );
+        assert!(
+            event.breadcrumbs.iter().any(|crumb| {
+                crumb.category.as_deref() == Some("api.error")
+                    && crumb.message.as_deref().unwrap_or("").contains("BRIDGE_ERROR")
+            }),
+            "expected api.error breadcrumb on captured 5xx event"
+        );
+    }
+
+    #[test]
+    fn sentry_records_breadcrumb_only_for_4xx_errors() {
+        let events = with_captured_events_options(
+            || {
+                run_in_runtime(async {
+                    let (_status, body) =
+                        ErrorMapper::with_request_trace_id("trace-404".to_string(), async {
+                            ErrorMapper::map(EngineError::EngineNotFound("missing".to_string()))
+                        })
+                        .await;
+                    assert_eq!(body.0.trace_id, "trace-404");
+                });
+
+                sentry::capture_message("flush breadcrumbs", Level::Info);
+            },
+            ClientOptions::default(),
+        );
+
+        assert_eq!(events.len(), 1);
+        let event = &events[0];
+        assert_eq!(event.message.as_deref(), Some("flush breadcrumbs"));
+        assert!(
+            !event.tags.contains_key("error_code"),
+            "4xx breadcrumb flow should not promote error_code tag into a captured event"
+        );
+        assert!(
+            event.breadcrumbs.iter().any(|crumb| {
+                crumb.category.as_deref() == Some("api.error")
+                    && crumb.message.as_deref().unwrap_or("").contains("ENGINE_NOT_FOUND")
+                    && crumb
+                        .data
+                        .get("trace_id")
+                        .and_then(|value| value.as_str())
+                        == Some("trace-404")
+            }),
+            "expected 4xx breadcrumb with trace_id on the captured event"
+        );
     }
 }

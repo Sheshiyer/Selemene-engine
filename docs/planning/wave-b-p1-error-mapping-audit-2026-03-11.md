@@ -17,8 +17,26 @@ Later on `2026-03-11`, the follow-up implementation for `#47` and `#50` landed.
   - dedicated [`crates/noesis-api/src/error_mapper.rs`](../../crates/noesis-api/src/error_mapper.rs) module exists
   - `engine_error_to_response()` was removed from [`crates/noesis-api/src/lib.rs`](../../crates/noesis-api/src/lib.rs)
   - `ApiError`, inline handler call sites, auth middleware, rate-limit middleware, and admin helpers now route through `ErrorMapper`
-- Issues that remain open after this implementation pass:
+- Issues that remained open immediately after the `#47`/`#50` pass:
   - `#48`, `#51`, `#52`, `#53`, `#54`, `#55`, `#56`, `#57`
+
+## Later Update
+
+Later on `2026-03-11`, the follow-up implementation for `#51`, `#52`, `#53`, `#54`, `#55`, and `#56` landed.
+
+- `#51` is now closeable:
+  - `ErrorMapper` now adds Sentry breadcrumbs for all structured API errors
+  - 5xx responses capture Sentry events with `error_code` and `trace_id`
+  - unit coverage exists in [`crates/noesis-api/src/error_mapper.rs`](../../crates/noesis-api/src/error_mapper.rs)
+- `#52`, `#54`, `#55`, and `#56` are now closeable from the later observability tranche
+- `#53` is now closeable:
+  - the TS bridge path now constructs and translates the structured [`BridgeError`](../../crates/noesis-bridge/src/error.rs) enum instead of formatting ad-hoc error strings in-place
+  - unit coverage exists in [`crates/noesis-bridge/src/error.rs`](../../crates/noesis-bridge/src/error.rs)
+- `#48` is now closeable:
+  - the bridge propagation audit below has been updated to match the current six-variant `BridgeError` enum and the live translation path
+- `#57` remains open:
+  - current `WorkflowResult` still intentionally returns `200` with partial `engine_outputs`
+  - there is still no per-engine error payload or `207 Multi-Status` contract in [`crates/noesis-core/src/types.rs`](../../crates/noesis-core/src/types.rs)
 
 ## Summary
 
@@ -43,12 +61,12 @@ Current non-closeable issues:
 | `#45` | closable | Current taxonomy and HTTP mapping are fully documented below |
 | `#46` | closable | Current engine inconsistency audit is documented below across native and TS engines |
 | `#47` | open | [`ErrorResponse`](../../crates/noesis-api/src/lib.rs) only has `error`, `error_code`, `details`; missing `status` and `trace_id` |
-| `#48` | open / re-scope | Current bridge layer maps directly to `EngineError::{ValidationError,BridgeError}` without a distinct bridge-error enum |
+| `#48` | closable | Dedicated `BridgeError` enum exists and the propagation audit below now documents the live translation path |
 | `#49` | closable | Handler-level audit is documented below, including `ApiError` usage vs ad-hoc responses |
 | `#50` | open | No dedicated `error_mapper.rs`; mapping still lives in `engine_error_to_response()` |
-| `#51` | open | 5xx Sentry capture exists inline, but no breadcrumb split and no request trace correlation |
+| `#51` | closable | `ErrorMapper` now emits breadcrumbs for all errors and event capture for 5xx with tests |
 | `#52` | open | Exhaustive `match` exists implicitly, but there is no dedicated exhaustiveness test or `ErrorMapper` module |
-| `#53` | open | Bridge error translation is still string-based, not structured |
+| `#53` | closable | TS bridge now translates through the structured `BridgeError` enum with unit coverage |
 | `#54` | open | Error JSON does not include `trace_id` |
 | `#55` | open | No snapshot suite for error response shapes |
 | `#56` | open | No per-`error_code` Prometheus counter at the API response layer |
@@ -138,10 +156,22 @@ All TS engines share one HTTP wrapper and one Rust bridge adapter:
 Current path:
 
 - TS sidecar returns `404 ENGINE_NOT_FOUND`, `403 PHASE_ACCESS_DENIED`, or `500 CALCULATION_ERROR` from [`ts-engines/src/server/app.ts:125`](../../ts-engines/src/server/app.ts#L125)
-- Rust bridge adapter maps transport failures to `EngineError::BridgeError` and sidecar 4xx to `EngineError::ValidationError` in [`crates/noesis-bridge/src/lib.rs:247`](../../crates/noesis-bridge/src/lib.rs#L247) and [`crates/noesis-bridge/src/lib.rs:277`](../../crates/noesis-bridge/src/lib.rs#L277)
-- API mapping then converts those `EngineError` values to HTTP responses in [`crates/noesis-api/src/lib.rs:1392`](../../crates/noesis-api/src/lib.rs#L1392)
+- Rust bridge adapter now constructs one of the six [`BridgeError`](../../crates/noesis-bridge/src/error.rs) variants and then translates it into `EngineError::{ValidationError,BridgeError}` in [`crates/noesis-bridge/src/lib.rs`](../../crates/noesis-bridge/src/lib.rs)
+- API mapping then converts those `EngineError` values to HTTP responses in [`crates/noesis-api/src/error_mapper.rs`](../../crates/noesis-api/src/error_mapper.rs)
 
-This is enough to describe the live propagation path, but it does not satisfy the issue body as written because there is no dedicated bridge error enum with six variants in the current codebase.
+### Variant-by-variant propagation
+
+| BridgeError variant | Typical source | EngineError translation | API layer HTTP status | Test / scenario |
+| --- | --- | --- | --- | --- |
+| `HttpError(String)` | outbound request construction or generic reqwest failure | `EngineError::BridgeError` | `500` | [`http_error_preserves_context`](../../crates/noesis-bridge/src/error.rs) |
+| `Timeout { timeout_secs }` | request timeout while calling TS sidecar | `EngineError::BridgeError` | `500` | [`timeout_preserves_timeout_seconds`](../../crates/noesis-bridge/src/error.rs) |
+| `ConnectionRefused { url }` | TS sidecar unavailable / connection refused | `EngineError::BridgeError` | `500` | [`connection_refused_preserves_url`](../../crates/noesis-bridge/src/error.rs) |
+| `EngineResponse { status, body }` with `4xx` | sidecar rejected input | `EngineError::ValidationError` | `422` | [`engine_response_client_errors_become_validation_errors`](../../crates/noesis-bridge/src/error.rs) |
+| `EngineResponse { status, body }` with `5xx` | sidecar internal failure | `EngineError::BridgeError` | `500` | [`engine_response_server_errors_stay_bridge_errors`](../../crates/noesis-bridge/src/error.rs) |
+| `DeserializationError(String)` | malformed JSON from sidecar | `EngineError::BridgeError` | `500` | [`deserialization_error_preserves_payload_context`](../../crates/noesis-bridge/src/error.rs) |
+| `ServerUnavailable(String)` | bridge manager health/readiness failure | `EngineError::BridgeError` | `500` | [`server_unavailable_preserves_reason`](../../crates/noesis-bridge/src/error.rs) |
+
+This now satisfies the audit issue: the live bridge path is documented against the current structured error enum and its API-layer outcome.
 
 ## `#49` noesis-api Handler Error Pattern Audit
 

@@ -1367,3 +1367,31 @@
   - Snapshot coverage now exists for every current `EngineError` response shape, using a fixed scoped `trace_id`.
 - `#56` is now satisfied.
   - `/metrics` now exposes `noesis_api_errors_total`, and the integration test verifies per-`error_code` increments.
+
+### Backlog Reduction Tranche — `#48`, `#51`, `#53`, `#57`
+- [x] Re-audit `#48` against the current `BridgeError` enum and update the propagation document with all six variants plus API-layer outcomes.
+  - Updated `docs/planning/wave-b-p1-error-mapping-audit-2026-03-11.md` with the live six-variant `BridgeError` table and API-layer status outcomes.
+- [x] Normalize TS bridge `BridgeError` -> `EngineError` translation so the live bridge path uses the structured enum instead of ad-hoc strings.
+  - `crates/noesis-bridge/src/lib.rs` now constructs `BridgeError` variants in the TS bridge path before converting them at the trait boundary.
+- [x] Add unit coverage for each `BridgeError` variant preserving the expected context string and `EngineError` category.
+  - Added coverage in `crates/noesis-bridge/src/error.rs`.
+- [x] Add Sentry breadcrumb/event split in `ErrorMapper`: 4xx breadcrumb-only, 5xx breadcrumb + event capture with `error_code` and `trace_id`.
+  - Implemented in `crates/noesis-api/src/error_mapper.rs`.
+- [x] Add Sentry tests with a captured transport proving 5xx event capture and 4xx breadcrumb-only behavior.
+  - Added unit coverage in `crates/noesis-api/src/error_mapper.rs` using Sentry’s captured-event test transport.
+- [x] Decide `#57` from current contract evidence:
+  - if `WorkflowResult` still intentionally returns `200` with partial `engine_outputs`, leave `#57` open and document why
+  - only close it if the HTTP contract actually changes to `207 Multi-Status`
+  - `WorkflowResult` in `crates/noesis-core/src/types.rs` still has only `engine_outputs`, `synthesis`, `total_time_ms`, and `timestamp`.
+  - Current docs and tests still treat partial workflow success as `200 OK` with partial `engine_outputs`.
+- [x] Run targeted verification for:
+  - `cargo test -p noesis-bridge --lib -- --nocapture`
+  - `cargo test -p noesis-api error_mapper -- --nocapture`
+  - `cargo test -p noesis-api --test error_handling_tests -- --nocapture`
+
+### Backlog Reduction Tranche — Review
+- `#48` is now satisfied by the refreshed audit document and the live bridge translation path.
+- `#51` is now satisfied by the breadcrumb/event split plus captured Sentry tests.
+- `#53` is now satisfied by the structured `BridgeError` translation and unit coverage.
+- `#57` remains open.
+  - It still requires a deliberate API contract change from `200` partial workflow responses to `207 Multi-Status` with per-engine error details.
