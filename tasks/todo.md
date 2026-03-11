@@ -1235,7 +1235,7 @@
 - [x] Audit issues `#47` through `#57` against current `noesis-api` error response behavior and mark closable vs still-open.
 - [x] Record the Wave B audit in a repo artifact that can be linked from GitHub issues.
 - [x] Run fresh verification on the error-handling cluster before closing any issues.
-- [ ] Comment on and close only the Wave B issues that are fully satisfied by current code + audit evidence.
+- [x] Comment on and close only the Wave B issues that are fully satisfied by current code + audit evidence.
 - Wave B audit artifact:
   - `docs/planning/wave-b-p1-error-mapping-audit-2026-03-11.md`
 - Fresh verification:
@@ -1249,3 +1249,12 @@
   - `#47`
   - `#48`
   - `#50` through `#57`
+- Closeout record:
+  - audit commit: `0878b1a2` `docs(api): audit Wave B error mapping cluster`
+  - issue comments:
+    - `#45`: `issuecomment-4038733331`
+    - `#46`: `issuecomment-4038733340`
+    - `#49`: `issuecomment-4038733330`
+  - issue state:
+    - closed: `#45`, `#46`, `#49`
+    - left open by audit: `#47`, `#48`, `#50`, `#51`, `#52`, `#53`, `#54`, `#55`, `#56`, `#57`
