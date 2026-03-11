@@ -85,6 +85,13 @@ jobs:
           REDIS_URL: redis://localhost:6379
           DATABASE_URL: postgresql://noesis_test:noesis_test_password@localhost:5432/noesis_test
 
+      - name: Dry-run config audit
+        run: cargo run -p noesis-api --bin validate_config -- --dry-run
+        env:
+          RUST_ENV: development
+          REDIS_URL: redis://localhost:6379
+          DATABASE_URL: postgresql://noesis_test:noesis_test_password@localhost:5432/noesis_test
+
       - name: Run doc tests
         run: cargo test --doc
 

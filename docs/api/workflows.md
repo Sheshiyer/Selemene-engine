@@ -52,12 +52,12 @@ Workflows accept the same `EngineInput` as engines.
 
 | ID | Engines | Purpose |
 | --- | --- | --- |
-| birth-blueprint | numerology, human-design, gene-keys | Core identity mapping |
+| birth-blueprint | numerology, human-design, vimshottari | Core identity mapping |
 | daily-practice | panchanga, vedic-clock, biorhythm | Daily rhythm & timing |
 | decision-support | tarot, i-ching, human-design | Multi-perspective guidance |
 | self-inquiry | gene-keys, enneagram | Shadow work + patterns |
 | creative-expression | sigil-forge, sacred-geometry | Intent visualization |
-| full-spectrum | all 16 engines | Complete consciousness portrait |
+| full-spectrum | 14 workflow engines | Complete consciousness portrait |
 
 ## Example: Execute Workflow
 

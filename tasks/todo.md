@@ -1395,3 +1395,34 @@
 - `#53` is now satisfied by the structured `BridgeError` translation and unit coverage.
 - `#57` remains open.
   - It still requires a deliberate API contract change from `200` partial workflow responses to `207 Multi-Status` with per-engine error details.
+
+### Backlog Reduction Tranche — `#29`, `#30`, `#31`, `#32`, `#35`, `#36`, `#37`, `#106`
+- [x] Create `docs/baseline/engine-matrix.json` covering the Rust engine crates and TypeScript sidecar engines with current versions/phases/source references.
+- [x] Create a workflow parity artifact documenting the 6 canonical workflows, engine membership, required phases, and synthesis path.
+- [x] Create an environment parity checklist documenting all `ApiConfig::from_env()` variables across local, CI, and Railway assumptions.
+- [x] Add/update orchestrator routing invariant doc comments on the key orchestrator types for `#35`.
+- [x] Add trait conformance coverage for the Rust engines that verifies non-empty identity metadata, bounded phase values, and deterministic cache keys.
+- [x] Create a crate dependency graph artifact (Mermaid + JSON summary) from current workspace metadata.
+- [x] Add the Redis degradation/fallback runbook for `#106`.
+- [x] Run targeted verification for:
+  - `cargo test -p noesis-orchestrator --test trait_conformance_tests -- --nocapture`
+  - `cargo test -p noesis-orchestrator --test baseline_artifact_tests -- --nocapture`
+  - `cd ts-engines && bun test tests/health.test.ts tests/baseline_registry.test.ts`
+  - `cargo test -p noesis-api test_from_env_uses_server_host_alias -- --nocapture`
+  - `cargo test -p noesis-api test_from_env_uses_server_port_alias -- --nocapture`
+  - `cargo run -p noesis-api --bin validate_config -- --dry-run`
+  - `cargo test -p engine-face-reading test_cache_key_without_seed -- --nocapture`
+  - `cargo doc -p noesis-orchestrator --no-deps`
+  - `rg -n "Routing invariant" target/doc/noesis_orchestrator -g '*.html'`
+- [x] Leave `#33` and `#34` out of this tranche unless route inventory and orchestrator test-harness evidence fall out naturally from the work.
+
+### Backlog Reduction Tranche — Review
+- `#29` is now satisfied by `docs/baseline/engine-matrix.json` plus `baseline_artifact_tests.rs` version checks against workspace manifests.
+- `#30` is now satisfied by the TS section of `docs/baseline/engine-matrix.json` plus `ts-engines/tests/baseline_registry.test.ts` proving the sidecar registers exactly 5 engines and reports healthy readiness.
+- `#31` is now satisfied by `docs/baseline/workflow-parity.json` and the synchronized correction in `docs/api/workflows.md` from `gene-keys` to `vimshottari` for `birth-blueprint`.
+- `#32` is now satisfied by `docs/baseline/env-parity.md`, `validate_config -- --dry-run`, the CI audit step in `.github/workflows/test.yml`, and `ApiConfig` compatibility aliases for `SERVER_HOST` / `SERVER_PORT`.
+- `#35` is now satisfied by the routing invariant doc comments on `EngineRegistry`, `WorkflowOrchestrator`, and `WorkflowExecutor`, plus `cargo doc` / generated HTML grep evidence.
+- `#36` is now satisfied by 11 engine-specific trait conformance tests in `crates/noesis-orchestrator/tests/trait_conformance_tests.rs`.
+- `#36` also exposed and fixed a real bug: `engine-face-reading` used timestamp-based cache keys for unseeded inputs, which broke determinism.
+- `#37` is now satisfied by `docs/baseline/dependency-graph.json`, `docs/baseline/dependency-graph.md`, and metadata-backed validation in `baseline_artifact_tests.rs`.
+- `#106` is now satisfied by `docs/runbooks/redis-degradation.md`, grounded in current readiness fields (`redis`, `overall_status`, `redis_available`) and the actual L2 Redis warning messages.

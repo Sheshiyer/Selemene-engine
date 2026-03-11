@@ -79,6 +79,11 @@ use tracing::{info, instrument, warn};
 ///
 /// Engines are stored behind `Arc` so they can be shared across
 /// concurrent workflow executions without cloning.
+///
+/// Routing invariant: this type is registration and lookup infrastructure only.
+/// API routes and workflow handlers must dispatch calculations through
+/// `WorkflowOrchestrator` / `WorkflowExecutor` rather than invoking engines
+/// directly from transport-layer code.
 pub struct EngineRegistry {
     engines: HashMap<String, Arc<dyn ConsciousnessEngine>>,
 }
@@ -149,6 +154,10 @@ impl Default for EngineRegistry {
 /// Holds a registry of engines and a map of predefined workflow definitions.
 /// Workflows execute all their constituent engines concurrently using
 /// `futures::future::join_all`.
+///
+/// Routing invariant: all user-facing engine and workflow calculations should
+/// enter the runtime through this orchestrator boundary so phase-gating,
+/// bridge registration, and workflow semantics stay centralized.
 pub struct WorkflowOrchestrator {
     registry: EngineRegistry,
     workflows: HashMap<String, WorkflowDefinition>,

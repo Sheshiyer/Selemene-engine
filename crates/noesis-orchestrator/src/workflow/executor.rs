@@ -16,7 +16,11 @@ use std::sync::Arc;
 use std::time::Instant;
 use tracing::{info, instrument, warn};
 
-/// Executes workflows with parallel engine execution and synthesis
+/// Executes workflows with parallel engine execution and synthesis.
+///
+/// Routing invariant: this executor is the workflow-only calculation path.
+/// Callers should route multi-engine work through `WorkflowOrchestrator` or a
+/// `WorkflowExecutor` created from its registry rather than invoking engines ad hoc.
 pub struct WorkflowExecutor {
     engine_registry: Arc<EngineRegistry>,
     workflow_registry: WorkflowRegistry,
