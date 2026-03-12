@@ -63,6 +63,94 @@ Relevant surfaces:
 - `BridgeManager::readiness_status()` in [crates/noesis-bridge/src/lib.rs](/Volumes/madara/2026/witnessos/Selemene-engine/crates/noesis-bridge/src/lib.rs)
 - `/ready` bridge fields in [crates/noesis-api/src/lib.rs](/Volumes/madara/2026/witnessos/Selemene-engine/crates/noesis-api/src/lib.rs)
 
+## Top 5 Failure Modes
+
+This runbook is intended to cover the most common bridge failure modes for on-call:
+
+1. bridge timeout spike
+2. sidecar crash loop
+3. effective "circuit breaker open" state
+4. TS engine memory leak / resource exhaustion
+5. bridge schema mismatch
+
+### 1. Bridge Timeout Spike
+
+Symptoms:
+
+- bridge requests start timing out
+- `BridgeError::Timeout` / timeout-style failures increase
+- sidecar `/health` may still respond, but engine calculations stall
+
+Actions:
+
+1. confirm `/health` and `/health/ready`
+2. inspect sidecar logs for slow requests
+3. check resource pressure before restarting
+4. restart the sidecar if it is wedged and not recovering
+
+### 2. Sidecar Crash Loop
+
+Symptoms:
+
+- `/health` is unreachable
+- connection refused to `TS_ENGINES_URL`
+- container/process repeatedly exits and restarts
+
+Actions:
+
+1. inspect process/container restart history
+2. inspect boot logs for dependency or runtime failure
+3. correct env/config drift if startup is failing
+4. restart only after the root startup error is identified
+
+### 3. Effective "Circuit Breaker Open" State
+
+Current note:
+
+- no dedicated circuit breaker object is exposed in the bridge today
+- treat repeated timeout/connection-refused states plus bridge unavailability as the operational equivalent
+
+Symptoms:
+
+- all five TS engines are effectively unavailable
+- `/ready` trends from `degraded` to a full sidecar-unavailable state
+
+Actions:
+
+1. treat the sidecar as unavailable
+2. communicate partial platform degradation
+3. rely on the 11 Rust-native engines while sidecar recovery is in progress
+
+### 4. TS Engine Memory Leak / Resource Exhaustion
+
+Symptoms:
+
+- sidecar latency climbs over time
+- intermittent timeouts turn into crash loops
+- memory usage climbs until container restart
+
+Actions:
+
+1. inspect container/process memory usage
+2. identify whether one engine endpoint is responsible
+3. restart the sidecar to restore service
+4. capture logs and repro context for follow-up engineering work
+
+### 5. Bridge Schema Mismatch
+
+Symptoms:
+
+- sidecar responds, but Rust bridge deserialization fails
+- readiness may be healthy while calculations fail with payload/shape errors
+- new sidecar deployment introduced response shape drift
+
+Actions:
+
+1. inspect recent TS sidecar deployment/change history
+2. inspect Rust bridge error logs for deserialization context
+3. compare the failing response shape against the expected bridge contract
+4. roll back the sidecar or align the schema before restoring traffic confidence
+
 ## Diagnosis
 
 1. Check the API readiness surface.
@@ -95,6 +183,9 @@ Relevant surfaces:
 3. If the sidecar is timing out repeatedly:
    - verify the container is healthy and accepting connections
    - check resource pressure before repeatedly restarting it
+4. If failures point to schema mismatch rather than availability:
+   - stop treating the issue as pure infra
+   - compare sidecar response payloads with the Rust bridge contract before rolling forward
 
 ## Partial-Service Communication
 
@@ -126,6 +217,7 @@ After recovery:
    - `bridge_failed_engines: []`
 4. a representative TS engine request succeeds
 5. a representative Rust-native engine request still succeeds
+6. if the incident involved schema mismatch, confirm deserialization errors are gone after the fix or rollback
 
 ## Validation Reference
 

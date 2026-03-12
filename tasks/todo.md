@@ -1488,3 +1488,27 @@
   - committed in `2d5fadd0` (`docs(runbooks): add TS bridge incident procedure`)
   - pushed to `origin/codex/engine-hygiene-native-runtime-docs`
   - closed with evidence comment: `#324`
+
+### Batch Attempt — `#326`, `#327`, `#328`
+
+- [x] Inspect `#326`, `#327`, and `#328` as a shared non-critical docs batch.
+- [x] Determine which issues are actually closeable from the current code surface.
+- [x] Commit, push, and close only the issues honestly satisfied by the shared runbook/docs work.
+
+#### Batch Review Note
+
+- `#326` is **not** closeable yet:
+  - the acceptance criteria ask for per-engine timeout settings and Sentry breadcrumb correlation at the orchestrator incident level
+  - current orchestrator behavior does cover partial engine failures, but the issue asks for a richer timeout/observability runbook than we have today
+- `#327` is **not** closeable yet:
+  - it explicitly depends on the broader runbook set being complete
+- `#328` is closeable if the TS bridge runbook explicitly covers the top five bridge failure modes:
+  - timeout spike
+  - sidecar crash loop
+  - effective open-state bridge outage
+  - TS engine memory leak / resource exhaustion
+  - bridge schema mismatch
+- Closure record:
+  - runbook expanded to cover all five requested bridge failure modes
+  - `#328` closed
+  - `#326` and `#327` intentionally left open
