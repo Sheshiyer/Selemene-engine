@@ -1460,3 +1460,27 @@
   - committed in `527fc5ad` (`docs(runbooks): add Redis incident procedure for Wave 2`)
   - pushed to `origin/codex/engine-hygiene-native-runtime-docs`
   - closed with evidence comment: `#323`
+
+### Next Wave 2 Candidate — `#324`
+
+- [x] Review `#324` requirements against the current bridge health/readiness surface.
+- [x] Write the TS sidecar bridge incident runbook at the requested path.
+- [x] Verify the runbook against `BridgeManager::health_check()`, bridge readiness state, and the 11-Rust-engine fallback boundary.
+- [ ] Commit, push, and close `#324` if the runbook honestly satisfies the issue acceptance criteria.
+
+#### `#324` Selection Note
+
+- `#324` is the next tightest Wave 2 issue because the bridge readiness surface already exists:
+  - `BridgeManager::health_check()`
+  - `BridgeManager::readiness_status()`
+  - `/ready` fields `bridge_status`, `bridge_engines`, and `bridge_failed_engines`
+- Important constraint:
+  - the current bridge does **not** expose a dedicated circuit breaker object or state machine
+  - the runbook must document the operational equivalent using the existing `available` / `degraded` / unavailable bridge states rather than inventing a feature that is not shipped
+- Verification used for `#324`:
+  - `cargo test -p noesis-api --test bridge_readiness_tests -- --nocapture`
+  - locked engine counts from `docs/baseline/engine-matrix.json` (`11` Rust, `5` TS)
+  - source checks for:
+    - `BridgeManager::health_check()`
+    - `BridgeManager::readiness_status()`
+    - `/ready` fields `bridge_status` and `bridge_failed_engines`
