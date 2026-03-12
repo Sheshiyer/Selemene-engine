@@ -1466,7 +1466,7 @@
 - [x] Review `#324` requirements against the current bridge health/readiness surface.
 - [x] Write the TS sidecar bridge incident runbook at the requested path.
 - [x] Verify the runbook against `BridgeManager::health_check()`, bridge readiness state, and the 11-Rust-engine fallback boundary.
-- [ ] Commit, push, and close `#324` if the runbook honestly satisfies the issue acceptance criteria.
+- [x] Commit, push, and close `#324` if the runbook honestly satisfies the issue acceptance criteria.
 
 #### `#324` Selection Note
 
@@ -1484,3 +1484,7 @@
     - `BridgeManager::health_check()`
     - `BridgeManager::readiness_status()`
     - `/ready` fields `bridge_status` and `bridge_failed_engines`
+- Closure record:
+  - committed in `2d5fadd0` (`docs(runbooks): add TS bridge incident procedure`)
+  - pushed to `origin/codex/engine-hygiene-native-runtime-docs`
+  - closed with evidence comment: `#324`
