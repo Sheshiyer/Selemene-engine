@@ -1512,3 +1512,26 @@
   - runbook expanded to cover all five requested bridge failure modes
   - `#328` closed
   - `#326` and `#327` intentionally left open
+
+### Next Non-Critical Closure Wave
+
+- [x] Review open non-critical Wave 2 issues for a docs/runbook/policy batch that the current codebase can support honestly.
+- [ ] Implement the shared runbook batch for:
+  - `#322` API down
+  - `#325` DB pool exhaustion
+  - `#326` workflow timeout / partial engine failure (supporting artifact even if the issue itself may stay open)
+  - `#327` runbook index / quick reference
+- [ ] Evaluate `#314` canary rollout policy as an optional fifth closure in the same wave.
+- [ ] Verify each candidate issue against current code/docs and close only the ones that are fully satisfied.
+
+#### Wave Selection Note
+
+- The next realistic closure wave is smaller than the ideal `10-15` issue target.
+- The best current batch is the remaining non-critical runbook/docs surface because:
+  - it shares the same touch set (`docs/runbooks/`, `docs/troubleshooting.md`, deployment/monitoring references)
+  - it depends on existing readiness, Railway, auth, and DB-degraded-mode behavior that already exists in the repo
+  - it avoids the heavier implementation risk in canary automation, idempotency, or specialized-engine roadmap items
+- Current execution scope for this wave:
+  - target closures: `#322`, `#325`, `#327`
+  - supporting artifact: `#326` runbook document may be created to complete the runbook set, but `#326` itself is not assumed closable
+  - deferred from this wave: `#329`, because current code/docs do not show `JWKS` support
