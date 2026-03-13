@@ -2151,7 +2151,7 @@ Verification:
 - [x] Choose the smallest schema shape that eliminates active-plan ambiguity without rewriting auth or user APIs.
 - [x] Add canonical root and Supabase migrations for plan catalog, billing subscriptions, and an unambiguous active-plan resolution view.
 - [x] Sync the canonical plan/subscription rows from existing user creation and admin tier update paths with rollout-safe fallbacks.
-- [ ] Verify schema-level active-plan resolution and update GitHub status if the acceptance criteria are satisfied.
+- [x] Verify schema-level active-plan resolution and update GitHub status if the acceptance criteria are satisfied.
 
 Plan catalog tranche notes:
 - Current runtime still treats `users.tier` and `api_keys.tier` as the only tier sources. There is no canonical plan table, subscription table, or active-plan join surface yet.
@@ -2165,11 +2165,14 @@ Plan catalog tranche notes:
 - Updated [crates/noesis-data/src/repositories/user_repository.rs](/Volumes/madara/2026/witnessos/Selemene-engine/crates/noesis-data/src/repositories/user_repository.rs) so new users attempt to create canonical active-plan rows and can resolve an active plan via `resolve_active_plan_code(...)`, with legacy fallbacks if the new schema is absent.
 - Updated [crates/noesis-data/src/repositories/admin_repository.rs](/Volumes/madara/2026/witnessos/Selemene-engine/crates/noesis-data/src/repositories/admin_repository.rs) so admin tier updates also resync the canonical active subscription when the new schema exists.
 
-Verification so far:
+Verification:
 - `cargo test -p noesis-data user_repository -- --nocapture`
 - `cargo test -p noesis-data admin_repository -- --nocapture`
 - `cargo build -p noesis-api`
-
-Blocker:
-- The live DB-backed proof for `#19` is currently blocked by environment, not code. Docker is unavailable (`Cannot connect to the Docker daemon`), localhost Postgres is not running, and this machine has `initdb` / `pg_ctl` from `libpq` but not the standalone `postgres` server binary needed to start a temporary local cluster.
-- Because of that, `#19` remains open until the migration is exercised against a real Postgres instance and the active-plan resolution test runs on the migrated schema.
+- Docker Desktop restarted successfully; local Postgres was brought up from [docker-compose.yml](/Volumes/madara/2026/witnessos/Selemene-engine/docker-compose.yml)
+- Canonical root migrations applied against local Postgres through [migrations/014_plan_catalog_billing_subscriptions.sql](/Volumes/madara/2026/witnessos/Selemene-engine/migrations/014_plan_catalog_billing_subscriptions.sql)
+- `DATABASE_URL='postgresql://noesis_user:noesis_password@localhost:5432/noesis' cargo test -p noesis-data active_plan_resolution_stays_unambiguous_after_tier_update -- --nocapture`
+- Commit pushed: `07300914` (`feat(billing): add canonical plan catalog schema`)
+- GitHub outcome:
+  - closed `#19`
+  - backlog now: `361` open / `118` closed
