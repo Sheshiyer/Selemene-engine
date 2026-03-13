@@ -664,6 +664,7 @@ See [`.env.example`](.env.example) for full list.
 | **[API Quickstart](docs/API_QUICKSTART.md)** | Zero to first call |
 | **[Terminal TUI](crates/noesis-tui)** | Interactive terminal interface |
 | **[Rust SDK](crates/noesis-sdk)** | Build your own integrations |
+| **[Engine Onboarding](docs/contributing/engine-onboarding.md)** | Add a native Rust engine |
 | **[Swagger UI](https://selemene.tryambakam.space/api/docs)** | Interactive explorer |
 | **[Terminal Explorer](scripts/explore-api.sh)** | CLI exploration |
 | **[Agent Bridge](bridges/cli/README.md)** | Claude, OpenAI, LangChain tool defs |

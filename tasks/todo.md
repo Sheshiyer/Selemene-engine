@@ -1987,3 +1987,23 @@ Release docs verification notes:
 - Backlog after this tranche:
   - open issues: `367`
   - closed issues: `112`
+
+### v3 Product Docs Batch (`#472`, `#473`)
+
+- [x] Audit `#472` and `#473` against current repo-visible product/docs/runtime surfaces.
+- [x] Record the closure decision: pursue `#473`, keep `#472` open unless the live repo can honestly satisfy its migration acceptance.
+- [x] Create `docs/contributing/engine-onboarding.md` covering trait implementation, crate scaffold, witness prompt guidance, synthesis/registration steps, and CI checklist.
+- [x] Validate the guide by scaffolding a temporary dummy engine crate outside the repo and compiling it against local path dependencies.
+- [x] Cross-link the onboarding guide from existing docs if useful.
+- [ ] Commit, push, and close only the issues truly satisfied by repo-visible artifacts and validation.
+
+Review:
+- `#472` currently appears blocked by repo reality: the issue expects migration steps for both Rust and TypeScript SDKs, but the repo only ships `noesis-sdk` (Rust) and explicitly notes that no TypeScript SDK package exists yet.
+- `#473` is a strong fit for this wave: `ConsciousnessEngine` is stable in `crates/noesis-core`, orchestrator registration is straightforward in `crates/noesis-orchestrator` / `crates/noesis-api`, and trait conformance examples exist in tests.
+
+Verification:
+- Added [docs/contributing/engine-onboarding.md](/Volumes/madara/2026/witnessos/Selemene-engine/docs/contributing/engine-onboarding.md) and linked it from [README.md](/Volumes/madara/2026/witnessos/Selemene-engine/README.md).
+- Validated the guide by scaffolding a temporary crate at `/tmp/selemene-engine-onboarding-VPuoES/engine-test-engine`.
+- `cargo test` in that temporary crate passed with:
+  - `tests::engine_compiles_and_produces_output`
+  - `tests::engine_registers_with_orchestrator`
