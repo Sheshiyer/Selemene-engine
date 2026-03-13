@@ -557,6 +557,14 @@ impl AdminRepository {
                 .bind(tier)
                 .execute(&mut *tx)
                 .await?;
+
+            if let Err(err) =
+                sync_user_active_plan_subscription(&mut tx, user_id, tier, Utc::now()).await
+            {
+                if !missing_plan_billing_schema(&err) {
+                    return Err(err);
+                }
+            }
         }
 
         tx.commit().await?;
@@ -2116,6 +2124,123 @@ fn parse_permissions_value(value: &Value) -> Vec<String> {
         .unwrap_or_default()
 }
 
+async fn sync_user_active_plan_subscription(
+    tx: &mut sqlx::Transaction<'_, Postgres>,
+    user_id: Uuid,
+    tier: &str,
+    effective_start: DateTime<Utc>,
+) -> Result<(), Error> {
+    let plan_code = normalize_plan_code(tier);
+    let display_name = plan_display_name(tier);
+    let provider_subscription_id = format!("internal:{user_id}:{plan_code}");
+
+    let plan_id = sqlx::query_scalar::<_, Uuid>(
+        r#"
+        INSERT INTO plan_catalog (code, display_name, description)
+        VALUES ($1, $2, $3)
+        ON CONFLICT (code)
+        DO UPDATE SET
+            display_name = EXCLUDED.display_name,
+            description = COALESCE(plan_catalog.description, EXCLUDED.description),
+            is_active = true,
+            updated_at = NOW()
+        RETURNING id
+        "#,
+    )
+    .bind(&plan_code)
+    .bind(&display_name)
+    .bind(format!("Canonical plan row for tier '{tier}'"))
+    .fetch_one(&mut **tx)
+    .await?;
+
+    sqlx::query(
+        r#"
+        UPDATE billing_subscriptions
+        SET
+            status = 'canceled',
+            canceled_at = COALESCE(canceled_at, NOW()),
+            cancel_at_period_end = false,
+            updated_at = NOW()
+        WHERE user_id = $1
+          AND status IN ('trialing', 'active', 'past_due')
+          AND canceled_at IS NULL
+        "#,
+    )
+    .bind(user_id)
+    .execute(&mut **tx)
+    .await?;
+
+    sqlx::query(
+        r#"
+        INSERT INTO billing_subscriptions (
+            user_id,
+            plan_id,
+            provider,
+            provider_customer_id,
+            provider_subscription_id,
+            status,
+            cancel_at_period_end,
+            current_period_start,
+            current_period_end
+        )
+        VALUES ($1, $2, 'internal', NULL, $3, 'active', false, $4, NULL)
+        "#,
+    )
+    .bind(user_id)
+    .bind(plan_id)
+    .bind(provider_subscription_id)
+    .bind(effective_start)
+    .execute(&mut **tx)
+    .await?;
+
+    Ok(())
+}
+
+fn normalize_plan_code(tier: &str) -> String {
+    let trimmed = tier.trim();
+    if trimmed.is_empty() {
+        "free".to_string()
+    } else {
+        trimmed.to_ascii_lowercase()
+    }
+}
+
+fn plan_display_name(tier: &str) -> String {
+    let trimmed = tier.trim();
+    if trimmed.is_empty() {
+        "Free".to_string()
+    } else {
+        let lower = trimmed.to_ascii_lowercase();
+        let mut chars = lower.chars();
+        match chars.next() {
+            Some(first) => format!("{}{}", first.to_ascii_uppercase(), chars.as_str()),
+            None => "Free".to_string(),
+        }
+    }
+}
+
+fn missing_plan_billing_schema(err: &Error) -> bool {
+    let Some(db_err) = err.as_database_error() else {
+        return false;
+    };
+
+    match db_err.code().as_deref() {
+        Some("42P01") => {
+            let message = db_err.message().to_ascii_lowercase();
+            message.contains("plan_catalog")
+                || message.contains("billing_subscriptions")
+                || message.contains("user_active_plan_resolutions")
+        }
+        Some("42703") => {
+            let message = db_err.message().to_ascii_lowercase();
+            message.contains("plan_id")
+                || message.contains("provider_subscription_id")
+                || message.contains("plan_code")
+        }
+        _ => false,
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -2177,12 +2302,12 @@ mod tests {
 
     #[test]
     fn migration_012_and_partition_check_script_exist() {
-        let root_sql = fs::read_to_string(
-            repo_root().join("migrations/012_usage_partition_maintenance.sql"),
-        )
-        .expect("root migration 012");
+        let root_sql =
+            fs::read_to_string(repo_root().join("migrations/012_usage_partition_maintenance.sql"))
+                .expect("root migration 012");
         let supabase_sql = fs::read_to_string(
-            repo_root().join("supabase/migrations/20260313000012_012_usage_partition_maintenance.sql"),
+            repo_root()
+                .join("supabase/migrations/20260313000012_012_usage_partition_maintenance.sql"),
         )
         .expect("supabase migration 012");
         let script = fs::read_to_string(repo_root().join("scripts/check_usage_log_partitions.sh"))

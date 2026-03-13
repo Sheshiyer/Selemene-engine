@@ -2144,3 +2144,32 @@ Verification:
 - GitHub outcome:
   - closed `#18`
   - backlog now: `362` open / `117` closed
+
+### Plan Catalog And Billing Schema Tranche (`#19`)
+
+- [x] Audit `#19` against the current `users.tier`, `api_keys.tier`, and repository/runtime tier handling.
+- [x] Choose the smallest schema shape that eliminates active-plan ambiguity without rewriting auth or user APIs.
+- [x] Add canonical root and Supabase migrations for plan catalog, billing subscriptions, and an unambiguous active-plan resolution view.
+- [x] Sync the canonical plan/subscription rows from existing user creation and admin tier update paths with rollout-safe fallbacks.
+- [ ] Verify schema-level active-plan resolution and update GitHub status if the acceptance criteria are satisfied.
+
+Plan catalog tranche notes:
+- Current runtime still treats `users.tier` and `api_keys.tier` as the only tier sources. There is no canonical plan table, subscription table, or active-plan join surface yet.
+- The acceptance on `#19` is stricter than a bare migration: we need a schema-level join path that resolves one active plan per user without duplicated tier ambiguity.
+- Selected implementation shape:
+  - `plan_catalog` table for canonical plans
+  - `billing_subscriptions` table with provider identifiers and status constraints
+  - single active-plan resolution view guarded by a unique active-subscription rule
+  - minimal repository updates so new users and admin tier changes keep the canonical rows in sync while `users.tier` remains a compatibility field
+- Added root migration [migrations/014_plan_catalog_billing_subscriptions.sql](/Volumes/madara/2026/witnessos/Selemene-engine/migrations/014_plan_catalog_billing_subscriptions.sql) and matching Supabase migration [supabase/migrations/20260313000014_014_plan_catalog_billing_subscriptions.sql](/Volumes/madara/2026/witnessos/Selemene-engine/supabase/migrations/20260313000014_014_plan_catalog_billing_subscriptions.sql).
+- Updated [crates/noesis-data/src/repositories/user_repository.rs](/Volumes/madara/2026/witnessos/Selemene-engine/crates/noesis-data/src/repositories/user_repository.rs) so new users attempt to create canonical active-plan rows and can resolve an active plan via `resolve_active_plan_code(...)`, with legacy fallbacks if the new schema is absent.
+- Updated [crates/noesis-data/src/repositories/admin_repository.rs](/Volumes/madara/2026/witnessos/Selemene-engine/crates/noesis-data/src/repositories/admin_repository.rs) so admin tier updates also resync the canonical active subscription when the new schema exists.
+
+Verification so far:
+- `cargo test -p noesis-data user_repository -- --nocapture`
+- `cargo test -p noesis-data admin_repository -- --nocapture`
+- `cargo build -p noesis-api`
+
+Blocker:
+- The live DB-backed proof for `#19` is currently blocked by environment, not code. Docker is unavailable (`Cannot connect to the Docker daemon`), localhost Postgres is not running, and this machine has `initdb` / `pg_ctl` from `libpq` but not the standalone `postgres` server binary needed to start a temporary local cluster.
+- Because of that, `#19` remains open until the migration is exercised against a real Postgres instance and the active-plan resolution test runs on the migrated schema.
