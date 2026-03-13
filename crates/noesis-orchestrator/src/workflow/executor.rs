@@ -7,7 +7,7 @@ use super::registry::WorkflowRegistry;
 use super::synthesis::{BirthBlueprintSynthesizer, DailyPracticeSynthesizer, Synthesizer};
 use super::witness::generate_workflow_witness_prompts;
 use super::{ExtendedWorkflowDefinition, SynthesisType};
-use crate::EngineRegistry;
+use crate::{EngineRegistry, ExecutionRoutingSnapshot};
 use chrono::Utc;
 use futures::future::join_all;
 use noesis_core::{EngineError, EngineInput, EngineOutput};
@@ -126,33 +126,15 @@ impl WorkflowExecutor {
         let futures: Vec<_> = engine_ids
             .iter()
             .map(|engine_id| {
-                let engine_opt = self.engine_registry.get(engine_id);
+                let engine_registry = Arc::clone(&self.engine_registry);
                 let input_clone = input.clone();
                 let engine_id_owned = engine_id.clone();
 
                 async move {
-                    let engine = match engine_opt {
-                        Some(e) => e,
-                        None => {
-                            warn!(engine_id = %engine_id_owned, "Engine not found, skipping");
-                            return (engine_id_owned, None);
-                        }
-                    };
-
-                    // Phase gate
-                    let required = engine.required_phase();
-                    if required > user_phase {
-                        warn!(
-                            engine_id = %engine_id_owned,
-                            required_phase = required,
-                            user_phase,
-                            "Phase access denied, skipping"
-                        );
-                        return (engine_id_owned, None);
-                    }
-
-                    info!(engine_id = %engine_id_owned, "Executing engine");
-                    match engine.calculate(input_clone).await {
+                    match engine_registry
+                        .execute_routed(&engine_id_owned, input_clone, user_phase)
+                        .await
+                    {
                         Ok(output) => (engine_id_owned, Some(output)),
                         Err(e) => {
                             warn!(engine_id = %engine_id_owned, error = %e, "Engine failed");
@@ -212,6 +194,11 @@ impl WorkflowExecutor {
     /// Get mutable workflow registry for registration
     pub fn workflow_registry_mut(&mut self) -> &mut WorkflowRegistry {
         &mut self.workflow_registry
+    }
+
+    /// Snapshot of routed vs bypassed engine execution counts.
+    pub fn execution_routing_snapshot(&self) -> ExecutionRoutingSnapshot {
+        self.engine_registry.execution_routing_snapshot()
     }
 }
 
@@ -351,5 +338,21 @@ mod tests {
                 current: 1
             })
         ));
+    }
+
+    #[tokio::test]
+    async fn execute_workflow_records_routed_engine_executions() {
+        let executor = setup_executor_with_mocks();
+
+        let output = executor
+            .execute("birth-blueprint", test_input(), 5)
+            .await
+            .unwrap();
+        assert_eq!(output.engine_results.len(), 3);
+
+        let snapshot = executor.execution_routing_snapshot();
+        assert_eq!(snapshot.orchestrated_execute_calls, 3);
+        assert_eq!(snapshot.direct_execute_calls, 0);
+        assert_eq!(snapshot.bypass_count, 0);
     }
 }
