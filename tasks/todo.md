@@ -2204,4 +2204,4 @@ Verification:
 GitHub outcome:
 - closed `#43`
 - closed `#44`
-- backlog now: pending refresh after push/close
+- backlog now: `359` open / `120` closed
