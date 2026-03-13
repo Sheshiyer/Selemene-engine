@@ -2014,3 +2014,18 @@ Verification:
 - Backlog after this tranche:
   - open issues: `366`
   - closed issues: `113`
+
+### v3 Launch Runbook Batch (`#477`)
+
+- [x] Audit `#477` against existing release, runbook, rollback, and monitoring docs.
+- [x] Generate an in-repo snapshot of current open GitHub issues for backlog review.
+- [x] Draft a v3.0.0 launch-day operational runbook using repo-visible Railway, monitoring, smoke, and rollback surfaces.
+- [ ] Verify whether the issue can be closed honestly; if staging dry-run proof is missing, leave it open with a blocker note instead of forcing closure.
+
+Review:
+- `#477` is partially supported by existing artifacts: `docs/runbooks/README.md`, `docs/drills/rollback-drill-plan.md`, `docs/release/release-checklist-template.md`, `docs/monitoring/README.md`, and Railway verification scripts already exist.
+- The likely blocker is the issue validation requirement: a rollback dry-run on staging completing in under 5 minutes is not automatically proven by repo contents alone.
+
+Artifacts in progress:
+- `docs/planning/open-issues-snapshot-2026-03-13.md`
+- `docs/runbooks/launch-day-v3.0.0.md`

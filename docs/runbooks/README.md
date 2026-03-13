@@ -57,6 +57,7 @@ curl -sS "$TS_ENGINES_URL/health/ready"
 ## Release Policy
 
 - Canary rollout policy: [canary-rollout-policy.md](/Volumes/madara/2026/witnessos/Selemene-engine/docs/runbooks/canary-rollout-policy.md)
+- Launch-day operations: [launch-day-v3.0.0.md](/Volumes/madara/2026/witnessos/Selemene-engine/docs/runbooks/launch-day-v3.0.0.md)
 
 ## Resilience Drills
 
