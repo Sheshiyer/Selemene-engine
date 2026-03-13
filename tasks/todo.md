@@ -2081,7 +2081,7 @@ Verification:
 - [x] Add canonical lifecycle schema for API key event audit rows and actor-attribution columns.
 - [x] Keep admin create/revoke/rotate handlers API-compatible while writing to the new schema.
 - [x] Preserve rollout safety with repository fallbacks if the new columns/table are not yet migrated.
-- [ ] Commit, push, close `#17`, and refresh backlog counts.
+- [x] Commit, push, close `#17`, and refresh backlog counts.
 
 API key audit implementation notes:
 - Added root migration [migrations/011_api_key_events.sql](/Volumes/madara/2026/witnessos/Selemene-engine/migrations/011_api_key_events.sql) and matching Supabase migration [supabase/migrations/20260313000011_011_api_key_events.sql](/Volumes/madara/2026/witnessos/Selemene-engine/supabase/migrations/20260313000011_011_api_key_events.sql).
@@ -2092,3 +2092,7 @@ Verification:
 - `cargo test -p noesis-data admin_repository -- --nocapture`
 - `cargo build -p noesis-api`
 - `cargo test -p noesis-api derives_platform_admin_role -- --nocapture`
+- Commit pushed: `88a56d46` (`feat(auth): add api key lifecycle audit schema`)
+- GitHub outcome:
+  - closed `#17`
+  - backlog now: `364` open / `115` closed
