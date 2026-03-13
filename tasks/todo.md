@@ -1995,7 +1995,7 @@ Release docs verification notes:
 - [x] Create `docs/contributing/engine-onboarding.md` covering trait implementation, crate scaffold, witness prompt guidance, synthesis/registration steps, and CI checklist.
 - [x] Validate the guide by scaffolding a temporary dummy engine crate outside the repo and compiling it against local path dependencies.
 - [x] Cross-link the onboarding guide from existing docs if useful.
-- [ ] Commit, push, and close only the issues truly satisfied by repo-visible artifacts and validation.
+- [x] Commit, push, and close only the issues truly satisfied by repo-visible artifacts and validation.
 
 Review:
 - `#472` currently appears blocked by repo reality: the issue expects migration steps for both Rust and TypeScript SDKs, but the repo only ships `noesis-sdk` (Rust) and explicitly notes that no TypeScript SDK package exists yet.
@@ -2007,3 +2007,10 @@ Verification:
 - `cargo test` in that temporary crate passed with:
   - `tests::engine_compiles_and_produces_output`
   - `tests::engine_registers_with_orchestrator`
+- Commit pushed: `2100999e` (`docs(contributing): add engine onboarding guide`)
+- GitHub outcome:
+  - closed `#473`
+  - kept `#472` open with blocker comment because the repo still does not ship a TypeScript SDK package or the broader proven migration surface the issue assumes
+- Backlog after this tranche:
+  - open issues: `366`
+  - closed issues: `113`
