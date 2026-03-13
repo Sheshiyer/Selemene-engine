@@ -1593,3 +1593,63 @@
   - `.github/workflows/test.yml`
 - canary policy landed in:
   - `docs/runbooks/canary-rollout-policy.md`
+
+### Next Smoke / Deploy Wave
+
+- [x] Review the `P5-W1` smoke/deploy cluster (`#291`-`#299`) against the current deploy workflow, auth requirements, and live API contract.
+- [x] Implement a generic smoke runner script that emits structured JSON, exits non-zero on failure, and supports protected endpoint auth via `SMOKE_TEST_JWT` or `SMOKE_TEST_API_KEY`.
+- [x] Add smoke checks for:
+  - health live/ready
+  - engines list
+  - panchanga calculation
+  - birth-blueprint workflow execution
+  - metrics endpoint
+  - TS bridge calculation through Rust
+- [x] Add or align the minimal API readiness surface needed for the smoke runner contract (notably `postgres` readiness reporting).
+- [x] Wire the smoke runner into `.github/workflows/deploy.yaml` as the post-deploy smoke gate.
+- [ ] Close only the issues whose acceptance criteria match the shipped contract exactly; keep contract-mismatch issues open.
+
+#### Wave Selection Note
+
+- The best closure yield now is the smoke/deploy batch because one implementation can plausibly satisfy:
+  - `#291`
+  - `#292`
+  - `#293`
+  - `#294`
+  - `#295`
+  - `#296`
+  - `#298`
+  - `#299`
+- `#297` is questionable because its acceptance criteria mention `envelope_version`, which is not part of the current Rust `EngineOutput` contract. I will not close it unless the delivered behavior truly matches that requirement.
+
+#### Smoke / Deploy Batch Review
+
+- The runner now produces a structured JSON report on both the happy path and the failure path.
+- Verified pass path with a mock target returning:
+  - `/health/live`
+  - `/health/ready`
+  - `/api/v1/engines`
+  - `/api/v1/engines/panchanga/calculate`
+  - `/api/v1/workflows/birth-blueprint/execute`
+  - `/metrics`
+  - `/api/v1/engines/tarot/calculate`
+- Verified failure path with `http://127.0.0.1:9`, which now exits `1` and still emits a complete failing JSON report.
+- Honest closure set from this wave:
+  - `#291`
+  - `#292`
+  - `#293`
+  - `#294`
+  - `#296`
+  - `#298`
+  - `#299`
+- Keep open:
+  - `#295` because the public workflow contract is `engine_outputs`, not `engine_results`
+  - `#297` because `EngineOutput` does not include `envelope_version`
+  - `#305` because Docker health status is configured but auto-restart on unhealthy status is not proven by the current runtime/deploy setup
+
+#### Verification
+
+- `cargo test -p noesis-api --test bridge_readiness_tests -- --nocapture`
+- `bash -n scripts/smoke-test-runner.sh`
+- `SMOKE_TEST_JWT=smoke-token bash scripts/smoke-test-runner.sh http://127.0.0.1:8770`
+- `SMOKE_TEST_JWT=smoke-token bash scripts/smoke-test-runner.sh http://127.0.0.1:9`

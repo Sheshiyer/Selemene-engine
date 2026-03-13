@@ -465,6 +465,7 @@ struct HealthResponse {
 #[derive(Serialize, ToSchema)]
 struct ReadinessResponse {
     redis: String,
+    postgres: String,
     orchestrator: String,
     bridge_status: String,
     bridge_engines: Vec<BridgeEngineStatus>,
@@ -563,6 +564,19 @@ async fn readiness_handler(State(state): State<AppState>) -> impl IntoResponse {
         _ => "down",
     };
 
+    let postgres_status = match state.auth.pool() {
+        Some(pool) => match tokio::time::timeout(
+            Duration::from_secs(2),
+            sqlx::query_scalar::<_, i32>("SELECT 1").fetch_one(pool),
+        )
+        .await
+        {
+            Ok(Ok(_)) => "ok",
+            _ => "down",
+        },
+        None => "disabled",
+    };
+
     // Check orchestrator readiness
     let orchestrator_status = match state.orchestrator.is_ready().await {
         Ok(true) => "ready",
@@ -602,12 +616,14 @@ async fn readiness_handler(State(state): State<AppState>) -> impl IntoResponse {
         };
 
     let overall_ready = redis_status == "ok"
+        && postgres_status == "ok"
         && orchestrator_status == "ready"
         && bridge_status == "available";
     let overall_status = if overall_ready { "ready" } else { "not_ready" };
 
     let response = ReadinessResponse {
         redis: redis_status.to_string(),
+        postgres: postgres_status.to_string(),
         orchestrator: orchestrator_status.to_string(),
         bridge_status,
         bridge_engines,

@@ -82,6 +82,7 @@ async fn test_ready_reports_bridge_available_when_sidecar_is_ready() {
     let (status, body) = common::make_unauthenticated_request("GET", "/ready", None).await;
 
     assert_eq!(status, StatusCode::SERVICE_UNAVAILABLE, "body={body:?}");
+    assert!(body["postgres"].is_string(), "body={body:?}");
     assert_eq!(body["bridge_status"], "available");
     assert!(body["bridge_engines"].is_array());
     assert_eq!(body["bridge_engines"].as_array().unwrap().len(), 2);
@@ -107,8 +108,12 @@ async fn test_ready_reports_bridge_degraded_with_failed_engine_details() {
     let (status, body) = common::make_unauthenticated_request("GET", "/ready", None).await;
 
     assert_eq!(status, StatusCode::SERVICE_UNAVAILABLE, "body={body:?}");
+    assert!(body["postgres"].is_string(), "body={body:?}");
     assert_eq!(body["bridge_status"], "degraded");
-    assert_eq!(body["bridge_failed_engines"], serde_json::json!(["sigil-forge"]));
+    assert_eq!(
+        body["bridge_failed_engines"],
+        serde_json::json!(["sigil-forge"])
+    );
     assert_eq!(
         body["bridge_engines"][1]["detail"],
         serde_json::json!("engine unhealthy")
