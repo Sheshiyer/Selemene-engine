@@ -2045,7 +2045,7 @@ Verification / outcome:
 - [x] Choose the smallest honest infra/auth tranche that fits the current runtime without touching unrelated dirty files.
 - [x] Implement `#16` by adding canonical `user_roles` and `user_account_state` tables, backfill migration, and rolling-runtime support.
 - [ ] Re-verify `#17` through `#20` after `#16` lands and decide the next schema batch.
-- [ ] Verify, commit, push, and update backlog counts / issue status.
+- [x] Verify, commit, push, and update backlog counts / issue status.
 
 Infra/auth audit notes:
 - `#16` through `#20` are still genuinely open. The repo has adjacent auth/admin behavior, but no applied root or Supabase migrations for:
@@ -2071,3 +2071,7 @@ Verification:
 - `cargo test -p noesis-data admin_repository -- --nocapture`
 - `cargo build -p noesis-api`
 - `cargo test -p noesis-api derives_platform_admin_role -- --nocapture`
+- Commit pushed: `9e4f8fd8` (`feat(auth): add canonical admin role and state schema`)
+- GitHub outcome:
+  - closed `#16`
+  - backlog now: `365` open / `114` closed
