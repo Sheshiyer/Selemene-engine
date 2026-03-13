@@ -1607,7 +1607,7 @@
   - TS bridge calculation through Rust
 - [x] Add or align the minimal API readiness surface needed for the smoke runner contract (notably `postgres` readiness reporting).
 - [x] Wire the smoke runner into `.github/workflows/deploy.yaml` as the post-deploy smoke gate.
-- [ ] Close only the issues whose acceptance criteria match the shipped contract exactly; keep contract-mismatch issues open.
+- [x] Close only the issues whose acceptance criteria match the shipped contract exactly; keep contract-mismatch issues open.
 
 #### Wave Selection Note
 
@@ -1642,10 +1642,12 @@
   - `#296`
   - `#298`
   - `#299`
+- Closed on GitHub with commit-backed evidence comments after push of `0b68cee5`.
 - Keep open:
   - `#295` because the public workflow contract is `engine_outputs`, not `engine_results`
   - `#297` because `EngineOutput` does not include `envelope_version`
   - `#305` because Docker health status is configured but auto-restart on unhealthy status is not proven by the current runtime/deploy setup
+- Backlog count after this wave: `382` open issues.
 
 #### Verification
 
