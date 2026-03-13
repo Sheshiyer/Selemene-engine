@@ -2020,7 +2020,7 @@ Verification:
 - [x] Audit `#477` against existing release, runbook, rollback, and monitoring docs.
 - [x] Generate an in-repo snapshot of current open GitHub issues for backlog review.
 - [x] Draft a v3.0.0 launch-day operational runbook using repo-visible Railway, monitoring, smoke, and rollback surfaces.
-- [ ] Verify whether the issue can be closed honestly; if staging dry-run proof is missing, leave it open with a blocker note instead of forcing closure.
+- [x] Verify whether the issue can be closed honestly; if staging dry-run proof is missing, leave it open with a blocker note instead of forcing closure.
 
 Review:
 - `#477` is partially supported by existing artifacts: `docs/runbooks/README.md`, `docs/drills/rollback-drill-plan.md`, `docs/release/release-checklist-template.md`, `docs/monitoring/README.md`, and Railway verification scripts already exist.
@@ -2029,3 +2029,11 @@ Review:
 Artifacts in progress:
 - `docs/planning/open-issues-snapshot-2026-03-13.md`
 - `docs/runbooks/launch-day-v3.0.0.md`
+
+Verification / outcome:
+- Added [docs/planning/open-issues-snapshot-2026-03-13.md](/Volumes/madara/2026/witnessos/Selemene-engine/docs/planning/open-issues-snapshot-2026-03-13.md) containing the full live open-issue list at the time of the audit.
+- Added [docs/runbooks/launch-day-v3.0.0.md](/Volumes/madara/2026/witnessos/Selemene-engine/docs/runbooks/launch-day-v3.0.0.md) and linked it from [docs/runbooks/README.md](/Volumes/madara/2026/witnessos/Selemene-engine/docs/runbooks/README.md).
+- Link audit passed for the new launch-day runbook and runbook index.
+- Commit pushed: `36efa1a4` (`docs(runbooks): add launch-day draft and issue snapshot`)
+- GitHub outcome:
+  - kept `#477` open with blocker comment because staging rollback timing and live dashboard URL resolution remain unproven
