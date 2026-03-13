@@ -57,3 +57,7 @@ curl -sS "$TS_ENGINES_URL/health/ready"
 ## Release Policy
 
 - Canary rollout policy: [canary-rollout-policy.md](/Volumes/madara/2026/witnessos/Selemene-engine/docs/runbooks/canary-rollout-policy.md)
+
+## Resilience Drills
+
+- Rollback drill plan: [../drills/rollback-drill-plan.md](/Volumes/madara/2026/witnessos/Selemene-engine/docs/drills/rollback-drill-plan.md)

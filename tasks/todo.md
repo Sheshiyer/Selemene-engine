@@ -1878,3 +1878,53 @@ Verification:
 - `bash scripts/test_canary_automation.sh`
 - `bash scripts/test_canary_alerts.sh`
 - `jq empty monitoring/grafana/dashboards/selemene-engine.json`
+
+### Failure-Mode Docs Batch (`#326`, `#330`)
+
+- [x] Audit `#326`, `#330`, and nearby `#329` acceptance text against the current runtime.
+- [x] Confirm `#326` is now closable because the orchestrator already has per-engine timeout controls and partial-failure handling.
+- [x] Defer `#329` explicitly because its acceptance assumes JWKS rotation and Supabase auth downtime paths that do not exist in the current auth runtime.
+- [x] Update the workflow timeout runbook so it reflects real timeout settings, partial engine failures, trace IDs, and Sentry breadcrumb correlation.
+- [x] Add a rollback drill plan document with the three required scenarios and expected outcomes for `#330`.
+- [x] Cross-link the new drill plan from the runbook index if needed.
+- [x] Run doc/code-alignment verification and close only the issues fully satisfied by repo-visible artifacts.
+
+Review:
+- `#326` is materially closer to done than the current runbook suggests:
+  - `crates/noesis-orchestrator/src/workflow/full_spectrum.rs` already exposes `FullSpectrumConfig.engine_timeout`
+  - individual engines are wrapped in `tokio::time::timeout(...)`
+  - timeout failures are preserved per-engine in `failed_engines`
+  - orchestrator tests already prove:
+    - partial success with one failing engine
+    - success with all engines failing
+    - timeout handling in full-spectrum workflow
+- `#329` is not honest to close in this wave:
+  - `crates/noesis-auth/src/lib.rs` implements JWT secret validation and API-key validation
+  - there is no JWKS fetch/rotation path
+  - there is no Supabase Auth runtime dependency to document as an incident mode
+- This batch should therefore target:
+  - `#326`
+  - `#330`
+  - while explicitly keeping `#329` open with the current blocker rationale
+
+Verification:
+- Updated [docs/runbooks/incident-workflow-timeout.md](/Volumes/madara/2026/witnessos/Selemene-engine/docs/runbooks/incident-workflow-timeout.md) to distinguish:
+  - standard `WorkflowOrchestrator::execute_workflow()` partial-result behavior
+  - `FullSpectrumWorkflow` per-engine timeout handling via `FullSpectrumConfig.engine_timeout`
+  - outer API `REQUEST_TIMEOUT_SECS` request-level `504` behavior
+- Added [docs/drills/rollback-drill-plan.md](/Volumes/madara/2026/witnessos/Selemene-engine/docs/drills/rollback-drill-plan.md) with the three required drill scenarios:
+  - broken environment variable deploy
+  - crashing init code
+  - canary elevated error rate
+- Updated [docs/runbooks/README.md](/Volumes/madara/2026/witnessos/Selemene-engine/docs/runbooks/README.md) with a drill-plan link.
+- `#329` remains intentionally open because the current auth runtime in [crates/noesis-auth/src/lib.rs](/Volumes/madara/2026/witnessos/Selemene-engine/crates/noesis-auth/src/lib.rs) does not implement JWKS rotation or Supabase Auth downtime paths.
+
+Verification:
+- `cargo test -p noesis-orchestrator test_timeout_handling -- --nocapture`
+  - passed
+- `cargo test -p noesis-api --test workflow_execution_tests test_workflow_partial_failure_graceful_degradation -- --nocapture`
+  - passed
+- `cargo test -p noesis-api error_mapper -- --nocapture`
+  - passed
+- `rg -n "FullSpectrumConfig.engine_timeout|REQUEST_TIMEOUT_SECS|trace_id|api.error|NoesisCanaryErrorDivergence" docs/runbooks/incident-workflow-timeout.md docs/drills/rollback-drill-plan.md docs/runbooks/README.md`
+  - passed
