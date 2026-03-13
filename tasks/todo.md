@@ -1516,13 +1516,13 @@
 ### Next Non-Critical Closure Wave
 
 - [x] Review open non-critical Wave 2 issues for a docs/runbook/policy batch that the current codebase can support honestly.
-- [ ] Implement the shared runbook batch for:
+- [x] Implement the shared runbook batch for:
   - `#322` API down
   - `#325` DB pool exhaustion
   - `#326` workflow timeout / partial engine failure (supporting artifact even if the issue itself may stay open)
   - `#327` runbook index / quick reference
 - [ ] Evaluate `#314` canary rollout policy as an optional fifth closure in the same wave.
-- [ ] Verify each candidate issue against current code/docs and close only the ones that are fully satisfied.
+- [x] Verify each candidate issue against current code/docs and close only the ones that are fully satisfied.
 
 #### Wave Selection Note
 
@@ -1535,3 +1535,13 @@
   - target closures: `#322`, `#325`, `#327`
   - supporting artifact: `#326` runbook document may be created to complete the runbook set, but `#326` itself is not assumed closable
   - deferred from this wave: `#329`, because current code/docs do not show `JWKS` support
+- Closure record:
+  - committed in `d6e91eb7` (`docs(runbooks): add API and DB incident wave`)
+  - pushed to `origin/codex/engine-hygiene-native-runtime-docs`
+  - closed:
+    - `#322`
+    - `#325`
+    - `#327`
+  - intentionally left open:
+    - `#326`
+    - `#329`
