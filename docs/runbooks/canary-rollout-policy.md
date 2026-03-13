@@ -10,6 +10,28 @@ It is grounded in the current observability and deploy surfaces:
 - API health/runbook procedures in [incident-api-down.md](/Volumes/madara/2026/witnessos/Selemene-engine/docs/runbooks/incident-api-down.md)
 - TS bridge degradation procedures in [incident-ts-bridge-failure.md](/Volumes/madara/2026/witnessos/Selemene-engine/docs/runbooks/incident-ts-bridge-failure.md)
 
+## Automation Helpers
+
+The policy now has two supporting scripts:
+
+- health scoring: [scripts/canary-health-score.sh](/Volumes/madara/2026/witnessos/Selemene-engine/scripts/canary-health-score.sh)
+- staged promotion: [scripts/canary-promote.sh](/Volumes/madara/2026/witnessos/Selemene-engine/scripts/canary-promote.sh)
+
+Typical usage:
+
+```bash
+bash scripts/canary-health-score.sh | jq
+bash scripts/canary-promote.sh --dry-run | jq
+```
+
+Real promotion/rollback actions are hook-driven:
+
+- `CANARY_PROMOTE_CMD` receives the next stage percentage
+- `CANARY_ROLLBACK_CMD` receives `<last_healthy_stage> <failed_stage>`
+
+This keeps the automation portable until the deploy platform exposes a
+single canonical traffic-shift interface.
+
 ## Traffic Stages
 
 Use this exact progression unless an incident commander freezes the rollout:

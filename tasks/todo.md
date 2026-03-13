@@ -1835,3 +1835,23 @@
 - Backlog after this tranche:
   - open issues: `375`
   - closed issues: `104`
+
+### Canary Automation Batch (`#315`, `#316`)
+
+- [x] Audit current canary policy, deploy workflow, and script/test seams.
+- [x] Implement `scripts/canary-health-score.sh`.
+- [x] Add mocked verification for healthy and unhealthy Prometheus/Sentry responses.
+- [x] Implement `scripts/canary-promote.sh` with dry-run mode and stage-by-stage decisions.
+- [x] Add mocked verification for promotion and rollback decisions.
+- [x] Update canary rollout docs with script usage.
+- [x] Close only if the scripts and mocked verification satisfy the issue acceptance criteria.
+
+Review:
+- Added [scripts/canary-health-score.sh](/Volumes/madara/2026/witnessos/Selemene-engine/scripts/canary-health-score.sh) to score Prometheus error rate, Prometheus p95 latency, and Sentry critical count into a JSON `canary_healthy` decision.
+- Added [scripts/canary-promote.sh](/Volumes/madara/2026/witnessos/Selemene-engine/scripts/canary-promote.sh) to walk canary stages `5 -> 25 -> 50 -> 100`, emit per-stage JSON decisions, and support dry-run promotion and rollback hooks.
+- Added [scripts/test_canary_automation.sh](/Volumes/madara/2026/witnessos/Selemene-engine/scripts/test_canary_automation.sh) to prove healthy/failing health-score cases and dry-run/live promotion behavior with mocked dependencies.
+- Updated [docs/runbooks/canary-rollout-policy.md](/Volumes/madara/2026/witnessos/Selemene-engine/docs/runbooks/canary-rollout-policy.md) with the automation helper usage and hook contract.
+
+Verification:
+- `bash -n scripts/canary-health-score.sh scripts/canary-promote.sh scripts/test_canary_automation.sh`
+- `bash scripts/test_canary_automation.sh`
