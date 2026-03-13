@@ -2126,7 +2126,7 @@ Verification:
 - [x] Add canonical root and Supabase migrations for `user_devices`, `history_sync_state`, and idempotent reading sync columns.
 - [x] Finish minimal runtime wiring so existing reading persistence still compiles against the expanded `NewReading` builder.
 - [x] Verify idempotent same-user `client_event_id` writes and cursor-delta queries via targeted repository tests/builds.
-- [ ] Commit, push, close `#18`, and refresh backlog counts.
+- [x] Commit, push, close `#18`, and refresh backlog counts.
 
 History sync tranche notes:
 - Issue `#18` is not already done. The current admin history-sync endpoints are synthetic over `readings` and `usage_logs`; there was no canonical `user_devices`, `history_sync_state`, `client_event_id`, or `sync_cursor` surface before this tranche.
@@ -2140,3 +2140,7 @@ Verification:
 - `cargo build -p noesis-api`
 - `DATABASE_URL='postgresql://noesis_user:noesis_password@localhost:5432/noesis' cargo test -p noesis-data save_reading_is_idempotent_when_client_event_id_is_present -- --nocapture`
 - Canonical root migrations applied in order against local Postgres via `psql`, including [migrations/013_history_sync_schema.sql](/Volumes/madara/2026/witnessos/Selemene-engine/migrations/013_history_sync_schema.sql)
+- Commit pushed: `ce621cf3` (`feat(sync): add history sync schema and idempotent reading writes`)
+- GitHub outcome:
+  - closed `#18`
+  - backlog now: `362` open / `117` closed
