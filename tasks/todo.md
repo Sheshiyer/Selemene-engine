@@ -1937,3 +1937,46 @@ GitHub closure result:
   - `#329`
 - Backlog after this tranche:
   - open issues: `369`
+
+### Release Docs Batch (`#355`, `#356`)
+
+- [x] Audit the next non-canary, non-auth documentation issues for a coherent batch.
+- [x] Select `#355` and `#356` as the next honest tranche.
+- [x] Defer `#353` because it still needs stronger OpenAPI/runtime proof than this wave provides.
+- [x] Defer `#354` because its acceptance requires a from-scratch Railway deploy walkthrough that is not yet proven in this wave.
+- [ ] Create `docs/monitoring/README.md` that maps monitoring tools to the actual repo config files and explains alert flow from detection to notification.
+- [ ] Create `docs/release/release-checklist-template.md` as a reusable markdown checklist based on the P5 release process.
+- [ ] Add cross-links from existing docs where they improve discoverability.
+- [ ] Run doc/config alignment verification and close only the issues fully satisfied by repo-visible artifacts.
+
+Review:
+- `#355` is a strong fit for this wave:
+  - the monitoring config already exists in `monitoring/`
+  - the alert rules, dashboard files, Alertmanager routing, Jaeger, Loki, and runbooks are all repo-visible
+  - the missing artifact is the consolidated operator-facing README
+- `#356` is also a strong fit:
+  - the P5 process already exists across `docs/RELEASE_NOTES.md`, `docs/planning/p5-release-readiness-plan.json`, and the recent backlog work
+  - the missing artifact is the reusable checklist template
+- `#353` stays open for now:
+  - it asks for updated OpenAPI spec and docs reflecting all P1-P5 endpoint changes
+  - that needs stronger proof against actual generated server spec / merged spec output
+- `#354` stays open for now:
+  - `docs/deployment/RAILWAY.md` and `docs/deployment/VERCEL_ADMIN_WEB.md` exist
+  - but the issue acceptance calls for a new-team-member Railway walkthrough from scratch, which we are not proving in this batch
+
+Verification:
+- pending
+
+## Release Docs Batch (#355, #356)
+- [x] Re-verify monitoring/release doc gaps against current repo state
+- [x] Create docs/monitoring/README.md mapped to actual monitoring surfaces
+- [x] Create docs/release/release-checklist-template.md
+- [x] Cross-link new docs from existing deployment/release docs where appropriate
+- [x] Verify referenced files/configs exist and docs align to repo state
+- [ ] Commit, push, and close #355 and #356 if acceptance criteria are satisfied
+
+Release docs verification notes:
+- `jq empty` passed for all repo-visible Grafana dashboard JSON files.
+- `bash scripts/test_canary_alerts.sh` passed and confirmed the current Prometheus alert rules load and test cleanly.
+- A link audit confirmed all absolute file links introduced in the new monitoring and release docs resolve to existing repo files.
+- The monitoring README intentionally documents the Alertmanager webhook leg as configured-but-unverified because repo-visible webhook handlers were not found for the configured receiver URLs.

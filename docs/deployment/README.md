@@ -122,6 +122,10 @@ cargo audit --deny warnings
 
 ## Monitoring and Observability
 
+Detailed stack reference:
+
+- [docs/monitoring/README.md](/Volumes/madara/2026/witnessos/Selemene-engine/docs/monitoring/README.md)
+
 ### Prometheus Metrics
 
 The engine exposes Prometheus metrics at `/metrics`:
