@@ -1663,7 +1663,7 @@
 - [x] Add a bridge response envelope shim only if it can be done at the API boundary without mutating every native engine output producer.
 - [x] Extend the smoke runner only if needed to satisfy `warn` semantics for the TS bridge check.
 - [x] Re-check whether `#305` can be closed with real Docker proof; otherwise leave it open with no speculative closure.
-- [ ] Close only the issues whose acceptance criteria are actually satisfied after fresh verification.
+- [x] Close only the issues whose acceptance criteria are actually satisfied after fresh verification.
 
 #### Mini-Wave Note
 
@@ -1683,6 +1683,10 @@
   - Docker and Docker Compose are available locally
   - the repo has a `HEALTHCHECK` in `Dockerfile.prod`
   - but the current Compose/restart model still does not prove auto-restart on unhealthy status, so closing it would be speculative
+- Closed on GitHub after push of `d7b99088`:
+  - `#295`
+  - `#297`
+- Backlog count after this mini-wave: `380` open issues.
 
 #### Mini-Wave Verification
 
