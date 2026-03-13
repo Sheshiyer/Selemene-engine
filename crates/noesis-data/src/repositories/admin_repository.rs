@@ -48,11 +48,13 @@ pub struct NewApiKeyRecord {
     pub name: Option<String>,
     pub key_prefix: String,
     pub user_id: Uuid,
+    pub created_by_user_id: Option<Uuid>,
     pub tier: String,
     pub permissions: Value,
     pub consciousness_level: i32,
     pub rate_limit: i32,
     pub expires_at: Option<DateTime<Utc>>,
+    pub rotated_from_key_id: Option<Uuid>,
 }
 
 #[derive(Debug, Clone, sqlx::FromRow)]
@@ -988,16 +990,119 @@ impl AdminRepository {
         &self,
         new_key: NewApiKeyRecord,
     ) -> Result<AdminApiKeyRecord, Error> {
+        match self.create_api_key_with_events(new_key.clone()).await {
+            Ok(record) => Ok(record),
+            Err(err) if missing_api_key_lifecycle_schema_or_events(&err) => {
+                self.create_api_key_legacy(new_key).await
+            }
+            Err(err) => Err(err),
+        }
+    }
+
+    async fn create_api_key_with_events(
+        &self,
+        new_key: NewApiKeyRecord,
+    ) -> Result<AdminApiKeyRecord, Error> {
         let NewApiKeyRecord {
             key_hash,
             name,
             key_prefix,
             user_id,
+            created_by_user_id,
             tier,
             permissions,
             consciousness_level,
             rate_limit,
             expires_at,
+            rotated_from_key_id,
+        } = new_key;
+        let event_name = name.clone();
+        let event_key_prefix = key_prefix.clone();
+        let event_rotated_from_key_id = rotated_from_key_id;
+
+        let mut tx = self.pool.begin().await?;
+
+        let key_id_result = sqlx::query_scalar::<_, Uuid>(
+            r#"
+            INSERT INTO api_keys (
+                key_hash,
+                name,
+                key_prefix,
+                user_id,
+                created_by_user_id,
+                tier,
+                permissions,
+                consciousness_level,
+                rate_limit,
+                expires_at,
+                rotated_from_key_id,
+                is_active
+            )
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, true)
+            RETURNING id
+            "#,
+        )
+        .bind(key_hash.clone())
+        .bind(name)
+        .bind(key_prefix)
+        .bind(user_id)
+        .bind(created_by_user_id)
+        .bind(tier.clone())
+        .bind(permissions.clone())
+        .bind(consciousness_level)
+        .bind(rate_limit)
+        .bind(expires_at)
+        .bind(rotated_from_key_id)
+        .fetch_one(&mut *tx)
+        .await;
+
+        let key_id = match key_id_result {
+            Ok(id) => id,
+            Err(err) => {
+                tx.rollback().await?;
+                return Err(err);
+            }
+        };
+
+        sqlx::query(
+            r#"
+            INSERT INTO api_key_events (key_id, actor_user_id, event_type, metadata, created_at)
+            VALUES ($1, $2, 'created', $3, NOW())
+            "#,
+        )
+        .bind(key_id)
+        .bind(created_by_user_id)
+        .bind(serde_json::json!({
+            "name": event_name,
+            "key_prefix": event_key_prefix,
+            "rotated_from_key_id": event_rotated_from_key_id,
+        }))
+        .execute(&mut *tx)
+        .await?;
+
+        tx.commit().await?;
+
+        self.get_api_key(key_id)
+            .await?
+            .ok_or_else(|| Error::RowNotFound)
+    }
+
+    async fn create_api_key_legacy(
+        &self,
+        new_key: NewApiKeyRecord,
+    ) -> Result<AdminApiKeyRecord, Error> {
+        let NewApiKeyRecord {
+            key_hash,
+            name,
+            key_prefix,
+            user_id,
+            created_by_user_id: _,
+            tier,
+            permissions,
+            consciousness_level,
+            rate_limit,
+            expires_at,
+            rotated_from_key_id: _,
         } = new_key;
 
         let key_id_result = sqlx::query_scalar::<_, Uuid>(
@@ -1067,7 +1172,58 @@ impl AdminRepository {
             .ok_or_else(|| Error::RowNotFound)
     }
 
-    pub async fn revoke_api_key(&self, key_id: Uuid) -> Result<bool, Error> {
+    pub async fn revoke_api_key(
+        &self,
+        key_id: Uuid,
+        actor_user_id: Option<Uuid>,
+    ) -> Result<bool, Error> {
+        match self.revoke_api_key_with_events(key_id, actor_user_id).await {
+            Ok(revoked) => Ok(revoked),
+            Err(err) if missing_api_key_lifecycle_schema_or_events(&err) => {
+                self.revoke_api_key_legacy(key_id).await
+            }
+            Err(err) => Err(err),
+        }
+    }
+
+    async fn revoke_api_key_with_events(
+        &self,
+        key_id: Uuid,
+        actor_user_id: Option<Uuid>,
+    ) -> Result<bool, Error> {
+        let mut tx = self.pool.begin().await?;
+
+        let affected = sqlx::query(
+            "UPDATE api_keys SET is_active = false, revoked_at = NOW(), revoked_by_user_id = $2 WHERE id = $1 AND is_active = true",
+        )
+        .bind(key_id)
+        .bind(actor_user_id)
+        .execute(&mut *tx)
+        .await?
+        .rows_affected();
+
+        if affected == 0 {
+            tx.rollback().await?;
+            return Ok(false);
+        }
+
+        sqlx::query(
+            r#"
+            INSERT INTO api_key_events (key_id, actor_user_id, event_type, metadata, created_at)
+            VALUES ($1, $2, 'revoked', '{}'::jsonb, NOW())
+            "#,
+        )
+        .bind(key_id)
+        .bind(actor_user_id)
+        .execute(&mut *tx)
+        .await?;
+
+        tx.commit().await?;
+
+        Ok(affected > 0)
+    }
+
+    async fn revoke_api_key_legacy(&self, key_id: Uuid) -> Result<bool, Error> {
         let affected = sqlx::query("UPDATE api_keys SET is_active = false WHERE id = $1")
             .bind(key_id)
             .execute(&self.pool)
@@ -1082,6 +1238,26 @@ impl AdminRepository {
         key_id: Uuid,
         new_key_hash: &str,
         new_key_prefix: &str,
+        actor_user_id: Option<Uuid>,
+    ) -> Result<Option<AdminApiKeyRecord>, Error> {
+        match self
+            .rotate_api_key_with_events(key_id, new_key_hash, new_key_prefix, actor_user_id)
+            .await
+        {
+            Ok(record) => Ok(record),
+            Err(err) if missing_api_key_lifecycle_schema_or_events(&err) => {
+                self.rotate_api_key_legacy(key_id, new_key_hash).await
+            }
+            Err(err) => Err(err),
+        }
+    }
+
+    async fn rotate_api_key_with_events(
+        &self,
+        key_id: Uuid,
+        new_key_hash: &str,
+        new_key_prefix: &str,
+        actor_user_id: Option<Uuid>,
     ) -> Result<Option<AdminApiKeyRecord>, Error> {
         let mut tx = self.pool.begin().await?;
 
@@ -1112,9 +1288,13 @@ impl AdminRepository {
             tx.rollback().await?;
             return Ok(None);
         };
+        let replacement_name = existing.name.clone();
 
-        sqlx::query("UPDATE api_keys SET is_active = false WHERE id = $1")
+        sqlx::query(
+            "UPDATE api_keys SET is_active = false, revoked_at = NOW(), revoked_by_user_id = $2 WHERE id = $1",
+        )
             .bind(key_id)
+            .bind(actor_user_id)
             .execute(&mut *tx)
             .await?;
 
@@ -1125,14 +1305,16 @@ impl AdminRepository {
                 name,
                 key_prefix,
                 user_id,
+                created_by_user_id,
                 tier,
                 permissions,
                 consciousness_level,
                 rate_limit,
                 expires_at,
+                rotated_from_key_id,
                 is_active
             )
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, true)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, true)
             RETURNING id
             "#,
         )
@@ -1140,12 +1322,45 @@ impl AdminRepository {
         .bind(existing.name)
         .bind(new_key_prefix)
         .bind(existing.user_id)
+        .bind(actor_user_id)
         .bind(existing.tier)
         .bind(existing.permissions)
         .bind(existing.consciousness_level)
         .bind(existing.rate_limit)
         .bind(existing.expires_at)
+        .bind(key_id)
         .fetch_one(&mut *tx)
+        .await?;
+
+        sqlx::query(
+            r#"
+            INSERT INTO api_key_events (key_id, actor_user_id, event_type, metadata, created_at)
+            VALUES ($1, $2, 'rotated', $3, NOW())
+            "#,
+        )
+        .bind(key_id)
+        .bind(actor_user_id)
+        .bind(serde_json::json!({
+            "replacement_key_id": new_key_id,
+            "replacement_key_prefix": new_key_prefix,
+        }))
+        .execute(&mut *tx)
+        .await?;
+
+        sqlx::query(
+            r#"
+            INSERT INTO api_key_events (key_id, actor_user_id, event_type, metadata, created_at)
+            VALUES ($1, $2, 'created', $3, NOW())
+            "#,
+        )
+        .bind(new_key_id)
+        .bind(actor_user_id)
+        .bind(serde_json::json!({
+            "name": replacement_name,
+            "key_prefix": new_key_prefix,
+            "rotated_from_key_id": key_id,
+        }))
+        .execute(&mut *tx)
         .await?;
 
         tx.commit().await?;
@@ -1822,6 +2037,28 @@ fn missing_admin_schema_tables(err: &Error) -> bool {
     message.contains("user_roles") || message.contains("user_account_state")
 }
 
+fn missing_api_key_lifecycle_schema_or_events(err: &Error) -> bool {
+    let Some(db_err) = err.as_database_error() else {
+        return false;
+    };
+
+    match db_err.code().as_deref() {
+        Some("42P01") => {
+            let message = db_err.message().to_ascii_lowercase();
+            message.contains("api_key_events")
+        }
+        Some("42703") => {
+            let message = db_err.message().to_ascii_lowercase();
+            message.contains("created_by_user_id")
+                || message.contains("revoked_at")
+                || message.contains("revoked_by_user_id")
+                || message.contains("revoked_reason")
+                || message.contains("rotated_from_key_id")
+        }
+        _ => false,
+    }
+}
+
 fn permissions_for_admin_role(role: &str) -> &'static [&'static str] {
     match role {
         "viewer" => &[
@@ -1917,6 +2154,24 @@ mod tests {
             assert!(sql.contains("CREATE TABLE IF NOT EXISTS user_account_state"));
             assert!(sql.contains("INSERT INTO user_roles"));
             assert!(sql.contains("INSERT INTO user_account_state"));
+        }
+    }
+
+    #[test]
+    fn migration_011_exists_in_root_and_supabase() {
+        let root_sql = fs::read_to_string(repo_root().join("migrations/011_api_key_events.sql"))
+            .expect("root migration 011");
+        let supabase_sql = fs::read_to_string(
+            repo_root().join("supabase/migrations/20260313000011_011_api_key_events.sql"),
+        )
+        .expect("supabase migration 011");
+
+        for sql in [&root_sql, &supabase_sql] {
+            assert!(sql.contains("CREATE TABLE IF NOT EXISTS api_key_events"));
+            assert!(sql.contains("ADD COLUMN IF NOT EXISTS created_by_user_id"));
+            assert!(sql.contains("ADD COLUMN IF NOT EXISTS revoked_at"));
+            assert!(sql.contains("ADD COLUMN IF NOT EXISTS rotated_from_key_id"));
+            assert!(sql.contains("INSERT INTO api_key_events"));
         }
     }
 }

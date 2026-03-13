@@ -1411,6 +1411,7 @@ pub async fn create_api_key(
     let secret_key = generate_secret_api_key();
     let key_hash = sha256_hex(&secret_key);
     let key_prefix = secret_key[..12.min(secret_key.len())].to_string();
+    let actor_user_id = Uuid::parse_str(&auth_user.user_id).ok();
 
     let created = repo
         .create_api_key(
@@ -1419,11 +1420,13 @@ pub async fn create_api_key(
                 name: payload.name,
                 key_prefix,
                 user_id: user_uuid,
+                created_by_user_id: actor_user_id,
                 tier: tier.clone(),
                 permissions: serde_json::json!(permissions),
                 consciousness_level,
                 rate_limit,
                 expires_at: payload.expires_at,
+                rotated_from_key_id: None,
             },
         )
         .await
@@ -1488,9 +1491,10 @@ pub async fn revoke_api_key(
         Ok(id) => id,
         Err(resp) => return Ok(resp),
     };
+    let actor_user_id = Uuid::parse_str(&auth_user.user_id).ok();
 
     let revoked = repo
-        .revoke_api_key(key_uuid)
+        .revoke_api_key(key_uuid, actor_user_id)
         .await
         .map_err(|e| EngineError::InternalError(format!("Failed to revoke api key: {e}")))?;
 
@@ -1551,9 +1555,10 @@ pub async fn rotate_api_key(
     let secret_key = generate_secret_api_key();
     let key_hash = sha256_hex(&secret_key);
     let key_prefix = secret_key[..12.min(secret_key.len())].to_string();
+    let actor_user_id = Uuid::parse_str(&auth_user.user_id).ok();
 
     let rotated = repo
-        .rotate_api_key(key_uuid, &key_hash, &key_prefix)
+        .rotate_api_key(key_uuid, &key_hash, &key_prefix, actor_user_id)
         .await
         .map_err(|e| EngineError::InternalError(format!("Failed to rotate api key: {e}")))?;
 

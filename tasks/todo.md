@@ -2075,3 +2075,20 @@ Verification:
 - GitHub outcome:
   - closed `#16`
   - backlog now: `365` open / `114` closed
+
+### API Key Audit Tranche (`#17`)
+
+- [x] Add canonical lifecycle schema for API key event audit rows and actor-attribution columns.
+- [x] Keep admin create/revoke/rotate handlers API-compatible while writing to the new schema.
+- [x] Preserve rollout safety with repository fallbacks if the new columns/table are not yet migrated.
+- [ ] Commit, push, close `#17`, and refresh backlog counts.
+
+API key audit implementation notes:
+- Added root migration [migrations/011_api_key_events.sql](/Volumes/madara/2026/witnessos/Selemene-engine/migrations/011_api_key_events.sql) and matching Supabase migration [supabase/migrations/20260313000011_011_api_key_events.sql](/Volumes/madara/2026/witnessos/Selemene-engine/supabase/migrations/20260313000011_011_api_key_events.sql).
+- Extended [crates/noesis-data/src/repositories/admin_repository.rs](/Volumes/madara/2026/witnessos/Selemene-engine/crates/noesis-data/src/repositories/admin_repository.rs) so `create_api_key`, `revoke_api_key`, and `rotate_api_key` now target immutable `api_key_events` rows plus new metadata columns, with legacy fallbacks if the schema is not present yet.
+- Updated [crates/noesis-api/src/handlers/admin.rs](/Volumes/madara/2026/witnessos/Selemene-engine/crates/noesis-api/src/handlers/admin.rs) to pass actor attribution into key lifecycle mutations without changing the public route contract.
+
+Verification:
+- `cargo test -p noesis-data admin_repository -- --nocapture`
+- `cargo build -p noesis-api`
+- `cargo test -p noesis-api derives_platform_admin_role -- --nocapture`
