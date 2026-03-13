@@ -2174,4 +2174,27 @@ mod tests {
             assert!(sql.contains("INSERT INTO api_key_events"));
         }
     }
+
+    #[test]
+    fn migration_012_and_partition_check_script_exist() {
+        let root_sql = fs::read_to_string(
+            repo_root().join("migrations/012_usage_partition_maintenance.sql"),
+        )
+        .expect("root migration 012");
+        let supabase_sql = fs::read_to_string(
+            repo_root().join("supabase/migrations/20260313000012_012_usage_partition_maintenance.sql"),
+        )
+        .expect("supabase migration 012");
+        let script = fs::read_to_string(repo_root().join("scripts/check_usage_log_partitions.sh"))
+            .expect("partition check script");
+
+        for sql in [&root_sql, &supabase_sql] {
+            assert!(sql.contains("CREATE OR REPLACE FUNCTION ensure_usage_log_partitions"));
+            assert!(sql.contains("to_regclass"));
+            assert!(sql.contains("CREATE TABLE %I PARTITION OF usage_logs"));
+        }
+
+        assert!(script.contains("ensure_usage_log_partitions"));
+        assert!(script.contains("ALERT: usage_logs partition maintenance failed"));
+    }
 }

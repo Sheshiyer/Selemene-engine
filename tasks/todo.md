@@ -2096,3 +2096,22 @@ Verification:
 - GitHub outcome:
   - closed `#17`
   - backlog now: `364` open / `115` closed
+
+### Usage Partition Maintenance Tranche (`#20`)
+
+- [x] Audit the current `usage_logs` partition surface and confirm only static 2026 partitions exist today.
+- [x] Choose a real maintenance shape: DB function plus automated check script, instead of more hard-coded yearly partitions.
+- [x] Add canonical root and Supabase migrations for the maintenance function.
+- [x] Add an operational check script that runs the function and fails loudly on errors.
+- [x] Add lightweight regression coverage for the new migration/script artifacts.
+- [ ] Verify, commit, push, close `#20`, and refresh backlog counts.
+
+Usage partition maintenance notes:
+- Added root migration [migrations/012_usage_partition_maintenance.sql](/Volumes/madara/2026/witnessos/Selemene-engine/migrations/012_usage_partition_maintenance.sql) and matching Supabase migration [supabase/migrations/20260313000012_012_usage_partition_maintenance.sql](/Volumes/madara/2026/witnessos/Selemene-engine/supabase/migrations/20260313000012_012_usage_partition_maintenance.sql).
+- Added [scripts/check_usage_log_partitions.sh](/Volumes/madara/2026/witnessos/Selemene-engine/scripts/check_usage_log_partitions.sh), which calls `ensure_usage_log_partitions(...)` and exits nonzero with an alert message on failure.
+- Extended [crates/noesis-data/src/repositories/admin_repository.rs](/Volumes/madara/2026/witnessos/Selemene-engine/crates/noesis-data/src/repositories/admin_repository.rs) tests so the migration pair and script stay anchored in CI.
+
+Verification:
+- `cargo test -p noesis-data admin_repository -- --nocapture`
+- `bash -n scripts/check_usage_log_partitions.sh`
+- `bash scripts/check_usage_log_partitions.sh` without `DATABASE_URL` exits `1` and emits the alert path
