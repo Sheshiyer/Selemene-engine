@@ -2176,3 +2176,32 @@ Verification:
 - GitHub outcome:
   - closed `#19`
   - backlog now: `361` open / `118` closed
+
+### Orchestrator Routing Guard Tranche (`#43`, `#44`)
+
+- [x] Audit `#43` and `#44` against the current orchestrator/runtime boundary and keep `#38` out of this tranche.
+- [x] Add orchestrator-owned execution routing counters inside `noesis-orchestrator` so direct registry execution is observable.
+- [x] Add debug/test phase-gate assertions so direct registry execution of an inaccessible engine panics in debug builds.
+- [x] Route `WorkflowOrchestrator` and `WorkflowExecutor` engine execution through the guarded registry path.
+- [x] Add targeted tests proving:
+  - direct `EngineRegistry::execute(...)` increments bypass tracking,
+  - routed orchestrator/workflow execution does not,
+  - bypassing phase gating panics in debug tests.
+- [x] Run targeted verification, then commit, push, and close any satisfied issues.
+
+Orchestrator routing guard notes:
+- Added routed-vs-direct execution counters and snapshots in [crates/noesis-orchestrator/src/lib.rs](/Volumes/madara/2026/witnessos/Selemene-engine/crates/noesis-orchestrator/src/lib.rs).
+- `EngineRegistry::execute(...)` is now an explicitly observable bypass path: it increments `direct_execute_calls` and `bypass_count`, and in debug/test builds it panics if phase gating is bypassed for an inaccessible engine.
+- `WorkflowOrchestrator::execute_engine(...)`, `WorkflowOrchestrator::execute_workflow(...)`, and [crates/noesis-orchestrator/src/workflow/executor.rs](/Volumes/madara/2026/witnessos/Selemene-engine/crates/noesis-orchestrator/src/workflow/executor.rs) now route engine execution through the guarded registry path so legitimate execution increments only `orchestrated_execute_calls`.
+
+Verification:
+- `cargo test -p noesis-orchestrator registry_direct_execute_marks_bypass_count -- --nocapture`
+- `cargo test -p noesis-orchestrator execute_workflow_records_routed_engine_executions -- --nocapture`
+- `cargo test -p noesis-orchestrator execute_single_engine_success -- --nocapture`
+- `cargo test -p noesis-orchestrator registry_direct_execute_phase_bypass_panics_in_debug -- --nocapture`
+- `cargo test -p noesis-orchestrator -- --nocapture`
+
+GitHub outcome:
+- closed `#43`
+- closed `#44`
+- backlog now: pending refresh after push/close
