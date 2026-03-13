@@ -80,6 +80,18 @@ EOF
   make_executable "$path"
 }
 
+write_annotation_hook() {
+  local path="$1"
+  local log_file="$2"
+  cat >"$path" <<EOF
+#!/usr/bin/env bash
+set -euo pipefail
+cat >>"$log_file"
+printf '\n--\n' >>"$log_file"
+EOF
+  make_executable "$path"
+}
+
 assert_jq() {
   local file="$1"
   local filter="$2"
@@ -93,14 +105,18 @@ main() {
   local promote_hook="$TMP_DIR/promote-hook.sh"
   local rollback_hook="$TMP_DIR/rollback-hook.sh"
   local hook_log="$TMP_DIR/hook.log"
+  local annotation_hook="$TMP_DIR/annotation-hook.sh"
+  local annotation_log="$TMP_DIR/annotation.log"
   local result_file
 
   write_mock_prometheus "$mock_prom"
   write_mock_sentry "$mock_sentry"
   write_mock_health_script "$mock_health"
   : >"$hook_log"
+  : >"$annotation_log"
   write_recording_hook "$promote_hook" "$hook_log"
   write_recording_hook "$rollback_hook" "$hook_log"
+  write_annotation_hook "$annotation_hook" "$annotation_log"
 
   result_file="$TMP_DIR/health-pass.json"
   PROMETHEUS_QUERY_CMD="$mock_prom" \
@@ -123,20 +139,30 @@ main() {
   CANARY_HEALTH_SCORE_SCRIPT="$mock_health" \
   CANARY_PROMOTE_CMD="$promote_hook" \
   CANARY_ROLLBACK_CMD="$rollback_hook" \
+  GRAFANA_ANNOTATION_CMD="$annotation_hook" \
     bash "$ROOT_DIR/scripts/canary-promote.sh" --dry-run >"$result_file"
   assert_jq "$result_file" '.overall_status == "fail" and .rolled_back == true and .final_stage == 25 and .stages[0].decision == "would_promote" and .stages[1].decision == "would_promote" and .stages[2].decision == "would_rollback"'
   [[ ! -s "$hook_log" ]]
+  [[ ! -s "$annotation_log" ]]
 
   : >"$hook_log"
+  : >"$annotation_log"
   result_file="$TMP_DIR/promote-live.json"
   CANARY_HEALTH_SCORE_SCRIPT="$mock_health" \
   CANARY_PROMOTE_CMD="$promote_hook" \
   CANARY_ROLLBACK_CMD="$rollback_hook" \
+  GRAFANA_ANNOTATION_CMD="$annotation_hook" \
     bash "$ROOT_DIR/scripts/canary-promote.sh" >"$result_file"
   assert_jq "$result_file" '.overall_status == "fail" and .rolled_back == true and .final_stage == 25 and .stages[2].decision == "rolled_back"'
   grep -qx '5' "$hook_log"
   grep -qx '25' "$hook_log"
   grep -qx '25 50' "$hook_log"
+  grep -q '"event_type":"promotion"' "$annotation_log"
+  grep -q '"stage_percent":5' "$annotation_log"
+  grep -q '"stage_percent":25' "$annotation_log"
+  grep -q '"event_type":"rollback"' "$annotation_log"
+  grep -q '"stage_percent":50' "$annotation_log"
+  grep -q '"dashboardUID":"selemene-engine"' "$annotation_log"
 
   echo "canary automation tests passed"
 }

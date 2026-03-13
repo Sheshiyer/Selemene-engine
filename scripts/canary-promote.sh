@@ -9,6 +9,12 @@ STAGE_HOLD_SECONDS="${STAGE_HOLD_SECONDS:-0}"
 CANARY_HEALTH_SCORE_SCRIPT="${CANARY_HEALTH_SCORE_SCRIPT:-scripts/canary-health-score.sh}"
 CANARY_PROMOTE_CMD="${CANARY_PROMOTE_CMD:-}"
 CANARY_ROLLBACK_CMD="${CANARY_ROLLBACK_CMD:-}"
+GRAFANA_URL="${GRAFANA_URL:-}"
+GRAFANA_API_TOKEN="${GRAFANA_API_TOKEN:-}"
+GRAFANA_DASHBOARD_UID="${GRAFANA_DASHBOARD_UID:-selemene-engine}"
+GRAFANA_PANEL_ID="${GRAFANA_PANEL_ID:-}"
+GRAFANA_ANNOTATION_TAGS="${GRAFANA_ANNOTATION_TAGS:-selemene,canary}"
+GRAFANA_ANNOTATION_CMD="${GRAFANA_ANNOTATION_CMD:-}"
 
 usage() {
   cat <<'USAGE'
@@ -22,6 +28,12 @@ Environment:
   CANARY_HEALTH_SCORE_SCRIPT  Health score script path (default: scripts/canary-health-score.sh)
   CANARY_PROMOTE_CMD          Optional executable called as: <cmd> <stage_percent>
   CANARY_ROLLBACK_CMD         Optional executable called as: <cmd> <previous_stage> <failed_stage>
+  GRAFANA_URL                 Optional base URL for Grafana annotation API
+  GRAFANA_API_TOKEN           Optional Grafana API token used with GRAFANA_URL
+  GRAFANA_DASHBOARD_UID       Dashboard UID for canary annotations (default: selemene-engine)
+  GRAFANA_PANEL_ID            Optional panel ID to scope the annotation
+  GRAFANA_ANNOTATION_TAGS     Comma-separated annotation tags (default: selemene,canary)
+  GRAFANA_ANNOTATION_CMD      Optional test hook executable that receives the annotation JSON payload on stdin
 USAGE
 }
 
@@ -42,6 +54,60 @@ append_stage() {
   tmp="$(mktemp)"
   jq --argjson stage "$stage_json" '. + [$stage]' "$STAGES_FILE" >"$tmp"
   mv "$tmp" "$STAGES_FILE"
+}
+
+emit_grafana_annotation() {
+  local event_type="$1"
+  local stage_percent="$2"
+  local decision="$3"
+  local now_ms tags_json payload
+
+  if [[ -z "$GRAFANA_ANNOTATION_CMD" && -z "$GRAFANA_URL" ]]; then
+    return 0
+  fi
+
+  now_ms="$(( $(date +%s) * 1000 ))"
+
+  tags_json="$(jq -nc --arg raw "$GRAFANA_ANNOTATION_TAGS" '$raw | split(",") | map(gsub("^\\s+|\\s+$"; "")) | map(select(length > 0))')"
+
+  payload="$(jq -nc \
+    --arg dashboard_uid "$GRAFANA_DASHBOARD_UID" \
+    --arg panel_id "$GRAFANA_PANEL_ID" \
+    --argjson time_ms "$now_ms" \
+    --arg event_type "$event_type" \
+    --argjson stage_percent "$stage_percent" \
+    --arg decision "$decision" \
+    --arg text "Canary ${event_type}: ${stage_percent}% (${decision})" \
+    --argjson tags "$tags_json" \
+    '{
+      dashboardUID: $dashboard_uid,
+      time: $time_ms,
+      text: $text,
+      tags: $tags
+    }
+    + (if $panel_id == "" then {} else {panelId: ($panel_id | tonumber)} end)
+    + {
+      data: {
+        event_type: $event_type,
+        stage_percent: $stage_percent,
+        decision: $decision
+      }
+    }')"
+
+  if [[ -n "$GRAFANA_ANNOTATION_CMD" ]]; then
+    printf '%s\n' "$payload" | "$GRAFANA_ANNOTATION_CMD"
+    return 0
+  fi
+
+  if [[ -z "$GRAFANA_API_TOKEN" ]]; then
+    echo "GRAFANA_API_TOKEN is required when GRAFANA_URL is set" >&2
+    return 1
+  fi
+
+  curl -sS -X POST "${GRAFANA_URL%/}/api/annotations" \
+    -H "Authorization: Bearer ${GRAFANA_API_TOKEN}" \
+    -H "Content-Type: application/json" \
+    -d "$payload" >/dev/null
 }
 
 main() {
@@ -103,6 +169,7 @@ main() {
       else
         run_hook "$CANARY_PROMOTE_CMD" "$stage"
         decision="promoted"
+        emit_grafana_annotation "promotion" "$stage" "$decision"
       fi
       final_stage="$stage"
 
@@ -126,6 +193,7 @@ main() {
     else
       run_hook "$CANARY_ROLLBACK_CMD" "$previous_stage" "$stage"
       decision="rolled_back"
+      emit_grafana_annotation "rollback" "$stage" "$decision"
     fi
 
     append_stage "$(jq -nc \

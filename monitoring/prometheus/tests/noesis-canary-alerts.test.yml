@@ -1,0 +1,42 @@
+rule_files:
+  - ../alerts/noesis-alerts.yml
+
+evaluation_interval: 1m
+
+tests:
+  - interval: 1m
+    input_series:
+      - series: 'noesis_calculations_total{rollout="stable"}'
+        values: '0 100 200 300 400 500'
+      - series: 'noesis_calculation_errors_total{rollout="stable"}'
+        values: '0 2 4 6 8 10'
+      - series: 'noesis_calculations_total{rollout="canary"}'
+        values: '0 100 200 300 400 500'
+      - series: 'noesis_calculation_errors_total{rollout="canary"}'
+        values: '0 2 4 6 8 10'
+    alert_rule_test:
+      - eval_time: 5m
+        alertname: NoesisCanaryErrorDivergence
+        exp_alerts: []
+
+  - interval: 1m
+    input_series:
+      - series: 'noesis_calculations_total{rollout="stable"}'
+        values: '0 100 200 300 400 500'
+      - series: 'noesis_calculation_errors_total{rollout="stable"}'
+        values: '0 2 4 6 8 10'
+      - series: 'noesis_calculations_total{rollout="canary"}'
+        values: '0 100 200 300 400 500'
+      - series: 'noesis_calculation_errors_total{rollout="canary"}'
+        values: '0 8 16 24 32 40'
+    alert_rule_test:
+      - eval_time: 5m
+        alertname: NoesisCanaryErrorDivergence
+        exp_alerts:
+          - exp_labels:
+              severity: critical
+              service: noesis-api
+              rollout: canary
+            exp_annotations:
+              summary: "Canary error rate is more than double stable"
+              description: "Canary rollout is diverging from stable over the last 2 minutes and should be rolled back"

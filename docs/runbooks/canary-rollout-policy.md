@@ -28,6 +28,8 @@ Real promotion/rollback actions are hook-driven:
 
 - `CANARY_PROMOTE_CMD` receives the next stage percentage
 - `CANARY_ROLLBACK_CMD` receives `<last_healthy_stage> <failed_stage>`
+- `GRAFANA_URL` + `GRAFANA_API_TOKEN` enable direct annotation posts to Grafana
+- `GRAFANA_DASHBOARD_UID` defaults to `selemene-engine`
 
 This keeps the automation portable until the deploy platform exposes a
 single canonical traffic-shift interface.
@@ -126,6 +128,7 @@ Escalate immediately instead of waiting out the observation window when:
 2. Confirm the release is serving traffic and health checks are passing.
 3. At each stage, check:
    - Prometheus/Grafana for error rate and p95
+   - Grafana canary annotations on the `Selemene Engine Dashboard`
    - Sentry for new critical errors
    - `/health/live` and `/ready`
    - smoke or spot-check results for the changed surface
@@ -140,6 +143,27 @@ Escalate immediately instead of waiting out the observation window when:
 rate(noesis_requests_total{status="error"}[5m])
 /
 rate(noesis_requests_total[5m])
+```
+
+### Canary Error Divergence
+
+This alert assumes Prometheus scrape labels distinguish stable and canary
+traffic with `rollout="stable"` and `rollout="canary"`.
+
+```promql
+(
+  sum(rate(noesis_calculation_errors_total{rollout="canary"}[2m]))
+  /
+  clamp_min(sum(rate(noesis_calculations_total{rollout="canary"}[2m])), 0.0001)
+)
+>
+(
+  2 * (
+    sum(rate(noesis_calculation_errors_total{rollout="stable"}[2m]))
+    /
+    clamp_min(sum(rate(noesis_calculations_total{rollout="stable"}[2m])), 0.0001)
+  )
+)
 ```
 
 ### Request p95

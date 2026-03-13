@@ -54,6 +54,8 @@ scrape_configs:
   - job_name: 'noesis-api'
     static_configs:
       - targets: ['noesis-api:8080']
+        labels:
+          rollout: stable
     metrics_path: /metrics
 
   - job_name: 'ts-engines'
@@ -73,6 +75,10 @@ alerting:
     - static_configs:
         - targets: ['alertmanager:9093']
 ```
+
+For canary monitoring, expose the canary slot under a separate target and
+attach `rollout: canary` so divergence alerts can compare stable and canary
+series directly.
 
 ### Alerting Rules
 
@@ -113,6 +119,23 @@ groups:
           severity: critical
         annotations:
           summary: TypeScript engine bridge is down
+
+      - alert: NoesisCanaryErrorDivergence
+        expr: |
+          (
+            sum(rate(noesis_calculation_errors_total{rollout="canary"}[2m]))
+            / clamp_min(sum(rate(noesis_calculations_total{rollout="canary"}[2m])), 0.0001)
+          ) > (
+            2 * (
+              sum(rate(noesis_calculation_errors_total{rollout="stable"}[2m]))
+              / clamp_min(sum(rate(noesis_calculations_total{rollout="stable"}[2m])), 0.0001)
+            )
+          )
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: Canary error rate is diverging from stable
 ```
 
 ---
@@ -125,6 +148,7 @@ groups:
 2. **Engine Performance** - Per-engine calculation times
 3. **Cache Analytics** - Hit rates, memory usage
 4. **Workflow Metrics** - Workflow execution stats
+5. **Selemene Engine Dashboard** - Canary rollout annotations and release markers
 
 ### Dashboard JSON
 

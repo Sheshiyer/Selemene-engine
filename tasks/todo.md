@@ -1855,3 +1855,26 @@ Review:
 Verification:
 - `bash -n scripts/canary-health-score.sh scripts/canary-promote.sh scripts/test_canary_automation.sh`
 - `bash scripts/test_canary_automation.sh`
+
+### Canary Observability Batch (`#318`, `#319`)
+
+- [x] Audit canary alert/dashboard requirements against current Prometheus labels, Grafana dashboards, and promotion script behavior.
+- [x] Add `NoesisCanaryErrorDivergence` alert rule with an explicit canary-vs-stable label contract.
+- [x] Add promtool-compatible rule tests for healthy and divergent canary scenarios.
+- [x] Extend `scripts/canary-promote.sh` to post Grafana annotations for promotion and rollback events.
+- [x] Add mocked verification for Grafana annotation payloads in the canary automation test harness.
+- [x] Update Grafana dashboard/runbook docs so annotations are visible on the Selemene Engine dashboard.
+- [x] Close only the issues whose acceptance criteria are satisfied by repo-visible changes and local verification.
+
+Review:
+- Added rollout-aware canary divergence alerting in [monitoring/prometheus/alerts/noesis-alerts.yml](/Volumes/madara/2026/witnessos/Selemene-engine/monitoring/prometheus/alerts/noesis-alerts.yml) and documented the `rollout=stable|canary` scrape label contract in [monitoring/prometheus.yml](/Volumes/madara/2026/witnessos/Selemene-engine/monitoring/prometheus.yml).
+- Added promtool rule fixtures in [monitoring/prometheus/tests/noesis-canary-alerts.test.yml](/Volumes/madara/2026/witnessos/Selemene-engine/monitoring/prometheus/tests/noesis-canary-alerts.test.yml) with a local runner in [scripts/test_canary_alerts.sh](/Volumes/madara/2026/witnessos/Selemene-engine/scripts/test_canary_alerts.sh).
+- Extended [scripts/canary-promote.sh](/Volumes/madara/2026/witnessos/Selemene-engine/scripts/canary-promote.sh) to post Grafana annotations for live promotion and rollback events, with mocked coverage in [scripts/test_canary_automation.sh](/Volumes/madara/2026/witnessos/Selemene-engine/scripts/test_canary_automation.sh).
+- Updated the Selemene Engine Grafana dashboard and monitoring docs in [monitoring/grafana/dashboards/selemene-engine.json](/Volumes/madara/2026/witnessos/Selemene-engine/monitoring/grafana/dashboards/selemene-engine.json), [docs/runbooks/canary-rollout-policy.md](/Volumes/madara/2026/witnessos/Selemene-engine/docs/runbooks/canary-rollout-policy.md), and [docs/deployment/monitoring.md](/Volumes/madara/2026/witnessos/Selemene-engine/docs/deployment/monitoring.md).
+- Audited `#317` separately and kept it open because the repo still lacks a real canary slot and traffic-splitting infrastructure.
+
+Verification:
+- `bash -n scripts/canary-promote.sh scripts/test_canary_automation.sh scripts/test_canary_alerts.sh`
+- `bash scripts/test_canary_automation.sh`
+- `bash scripts/test_canary_alerts.sh`
+- `jq empty monitoring/grafana/dashboards/selemene-engine.json`
