@@ -1699,3 +1699,127 @@
   degraded bridge mock with `ts_bridge=warn`
 - `docker --version`
 - `docker compose version`
+
+### Next 10-Issue Wave
+
+- Selected batch:
+  - `#33`
+  - `#34`
+  - `#39`
+  - `#40`
+  - `#41`
+  - `#42`
+  - `#43`
+  - `#44`
+  - `#326`
+  - `#329`
+
+#### Wave Rationale
+
+- This is the next best coherent batch because it splits into two low-coupling tracks:
+  - routing baseline / orchestrator-enforcement foundation
+  - remaining failure-mode runbooks
+- The routing issues should start with `#33` and `#34` because:
+  - route inventory is the baseline artifact
+  - the enforcement issues need shared test helpers/harnesses
+- The runbook issues `#326` and `#329` can be handled as a sidecar documentation tranche once the foundation work is underway.
+
+#### Execution Order
+
+- [x] Select the next coherent 10-issue batch.
+- [x] Implement foundation tranche:
+  - `#33` route inventory baseline
+  - `#34` orchestrator-enforcement test harness
+- [x] Use that foundation to decide which of `#39`-`#44` are immediately closable vs need more code.
+- [ ] Execute docs/runbook sidecar tranche:
+  - `#326`
+  - `#329`
+- [ ] Close only the issues proven by fresh verification.
+
+#### Foundation Tranche Review
+
+- `#33` landed as a checked-in baseline artifact plus source-backed drift test:
+  - `docs/baseline/api-route-inventory.json`
+  - `crates/noesis-api/tests/common/route_inventory.rs`
+  - `crates/noesis-api/tests/route_inventory_tests.rs`
+- The route inventory baseline currently documents:
+  - `40` unique `/api/v1` paths
+  - `43` method/path entries
+  - per-route auth requirement (`public` vs `bearer_or_api_key`)
+  - whether the handler touches the orchestrator surface
+- `#34` landed as a reusable route-level probe harness:
+  - `crates/noesis-api/tests/common/test_harness.rs`
+  - `crates/noesis-api/tests/test_harness.rs`
+- The harness builds a custom `AppState` with probe engines, executes real HTTP requests through `create_router`, and asserts orchestrator delegation by checking sentinel outputs plus per-engine execution counters.
+
+#### Foundation Verification
+
+- `cargo test -p noesis-api route_inventory -- --nocapture`
+  - passed
+- `cargo test -p noesis-api test_harness -- --nocapture`
+  - passed
+
+#### Next Routing Mini-Wave
+
+- The new harness makes this next batch practical without touching the dirty middleware file:
+  - `#40` single-engine calculate routing enforcement
+  - `#41` workflow execute routing enforcement
+  - `#42` bridge-engine orchestrator-only enforcement
+- `#39` stays separate for now because it requires `crates/noesis-api/src/middleware.rs`, which already has unrelated local modifications and should be handled deliberately.
+
+#### Routing Enforcement Review
+
+- Landed:
+  - `crates/noesis-api/tests/routing_enforcement_tests.rs`
+- `#40` evidence:
+  - `11` single-engine calculate route tests now verify orchestration for:
+    - `panchanga`
+    - `numerology`
+    - `biorhythm`
+    - `human-design`
+    - `gene-keys`
+    - `vimshottari`
+    - `biofield`
+    - `vedic-clock`
+    - `face-reading`
+    - `nadabrahman`
+    - `transits`
+- `#41` evidence:
+  - `6` workflow execute route tests now verify orchestration for:
+    - `birth-blueprint`
+    - `daily-practice`
+    - `decision-support`
+    - `creative-expression`
+    - `self-inquiry`
+    - `full-spectrum`
+- `#42` evidence:
+  - runtime routing test covers all bridge engine IDs:
+    - `tarot`
+    - `i-ching`
+    - `enneagram`
+    - `sacred-geometry`
+    - `sigil-forge`
+  - source audit verifies `crates/noesis-api/src/handlers/*.rs` do not import or call `BridgeManager` directly
+  - handler-body audit verifies core engine/workflow handlers in `crates/noesis-api/src/lib.rs` do not touch `bridge_manager`
+
+#### Routing Enforcement Verification
+
+- `cargo test -p noesis-api routing_enforcement -- --nocapture`
+  - passed
+- `cargo test -p noesis-api workflow_routing -- --nocapture`
+  - passed
+
+#### Closure Readiness
+
+- Closure-ready:
+  - `#33`
+  - `#34`
+  - `#40`
+  - `#41`
+  - `#42`
+- Intentionally left open:
+  - `#39`
+    - still requires request-tracing middleware changes in `crates/noesis-api/src/middleware.rs`
+  - `#43`
+  - `#44`
+    - both still require new runtime assertion / bypass-count machinery, not just tests

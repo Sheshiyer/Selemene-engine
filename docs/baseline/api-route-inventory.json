@@ -1,0 +1,332 @@
+{
+  "generated_at": "2026-03-13",
+  "inventory_scope": "/api/v1",
+  "source": "crates/noesis-api/src/lib.rs",
+  "path_count": 40,
+  "route_count": 43,
+  "routes": [
+    {
+      "path": "/auth/register",
+      "auth_requirement": "public",
+      "uses_orchestrator": false,
+      "methods": [
+        { "method": "POST", "handler": "handlers::auth::register" }
+      ]
+    },
+    {
+      "path": "/auth/login",
+      "auth_requirement": "public",
+      "uses_orchestrator": false,
+      "methods": [
+        { "method": "POST", "handler": "handlers::auth::login" }
+      ]
+    },
+    {
+      "path": "/auth/forgot-password",
+      "auth_requirement": "public",
+      "uses_orchestrator": false,
+      "methods": [
+        { "method": "POST", "handler": "handlers::auth::forgot_password" }
+      ]
+    },
+    {
+      "path": "/auth/reset-password",
+      "auth_requirement": "public",
+      "uses_orchestrator": false,
+      "methods": [
+        { "method": "POST", "handler": "handlers::auth::reset_password" }
+      ]
+    },
+    {
+      "path": "/auth/change-password",
+      "auth_requirement": "bearer_or_api_key",
+      "uses_orchestrator": false,
+      "methods": [
+        { "method": "POST", "handler": "handlers::auth::change_password" }
+      ]
+    },
+    {
+      "path": "/users/me",
+      "auth_requirement": "bearer_or_api_key",
+      "uses_orchestrator": false,
+      "methods": [
+        { "method": "GET", "handler": "handlers::users::get_me" },
+        { "method": "PATCH", "handler": "handlers::users::update_me" }
+      ]
+    },
+    {
+      "path": "/admin/session",
+      "auth_requirement": "bearer_or_api_key",
+      "uses_orchestrator": false,
+      "methods": [
+        { "method": "GET", "handler": "handlers::admin::get_session" }
+      ]
+    },
+    {
+      "path": "/admin/users",
+      "auth_requirement": "bearer_or_api_key",
+      "uses_orchestrator": false,
+      "methods": [
+        { "method": "GET", "handler": "handlers::admin::list_users" }
+      ]
+    },
+    {
+      "path": "/admin/users/:user_id/state",
+      "auth_requirement": "bearer_or_api_key",
+      "uses_orchestrator": false,
+      "methods": [
+        { "method": "PATCH", "handler": "handlers::admin::update_user_state" }
+      ]
+    },
+    {
+      "path": "/admin/users/:user_id/tier",
+      "auth_requirement": "bearer_or_api_key",
+      "uses_orchestrator": false,
+      "methods": [
+        { "method": "PATCH", "handler": "handlers::admin::update_user_tier" }
+      ]
+    },
+    {
+      "path": "/admin/users/:user_id/roles",
+      "auth_requirement": "bearer_or_api_key",
+      "uses_orchestrator": false,
+      "methods": [
+        { "method": "PUT", "handler": "handlers::admin::update_user_roles" }
+      ]
+    },
+    {
+      "path": "/admin/api-keys",
+      "auth_requirement": "bearer_or_api_key",
+      "uses_orchestrator": false,
+      "methods": [
+        { "method": "GET", "handler": "handlers::admin::list_api_keys" },
+        { "method": "POST", "handler": "handlers::admin::create_api_key" }
+      ]
+    },
+    {
+      "path": "/admin/api-keys/:key_id/revoke",
+      "auth_requirement": "bearer_or_api_key",
+      "uses_orchestrator": false,
+      "methods": [
+        { "method": "POST", "handler": "handlers::admin::revoke_api_key" }
+      ]
+    },
+    {
+      "path": "/admin/api-keys/:key_id/rotate",
+      "auth_requirement": "bearer_or_api_key",
+      "uses_orchestrator": false,
+      "methods": [
+        { "method": "POST", "handler": "handlers::admin::rotate_api_key" }
+      ]
+    },
+    {
+      "path": "/admin/history-sync/users",
+      "auth_requirement": "bearer_or_api_key",
+      "uses_orchestrator": false,
+      "methods": [
+        { "method": "GET", "handler": "handlers::admin::history_sync_users" }
+      ]
+    },
+    {
+      "path": "/admin/history-sync/devices",
+      "auth_requirement": "bearer_or_api_key",
+      "uses_orchestrator": false,
+      "methods": [
+        { "method": "GET", "handler": "handlers::admin::history_sync_devices" }
+      ]
+    },
+    {
+      "path": "/admin/history-sync/events",
+      "auth_requirement": "bearer_or_api_key",
+      "uses_orchestrator": false,
+      "methods": [
+        { "method": "GET", "handler": "handlers::admin::history_sync_events" }
+      ]
+    },
+    {
+      "path": "/admin/analytics/summary",
+      "auth_requirement": "bearer_or_api_key",
+      "uses_orchestrator": false,
+      "methods": [
+        { "method": "GET", "handler": "handlers::admin::analytics_summary" }
+      ]
+    },
+    {
+      "path": "/admin/analytics/usage-timeseries",
+      "auth_requirement": "bearer_or_api_key",
+      "uses_orchestrator": false,
+      "methods": [
+        { "method": "GET", "handler": "handlers::admin::analytics_timeseries" }
+      ]
+    },
+    {
+      "path": "/admin/analytics/usage-breakdown",
+      "auth_requirement": "bearer_or_api_key",
+      "uses_orchestrator": false,
+      "methods": [
+        { "method": "GET", "handler": "handlers::admin::analytics_breakdown" }
+      ]
+    },
+    {
+      "path": "/admin/analytics/top-consumers",
+      "auth_requirement": "bearer_or_api_key",
+      "uses_orchestrator": false,
+      "methods": [
+        { "method": "GET", "handler": "handlers::admin::analytics_top_consumers" }
+      ]
+    },
+    {
+      "path": "/admin/system/health",
+      "auth_requirement": "bearer_or_api_key",
+      "uses_orchestrator": true,
+      "methods": [
+        { "method": "GET", "handler": "handlers::admin::system_health" }
+      ]
+    },
+    {
+      "path": "/admin/system/services",
+      "auth_requirement": "bearer_or_api_key",
+      "uses_orchestrator": false,
+      "methods": [
+        { "method": "GET", "handler": "handlers::admin::system_services" }
+      ]
+    },
+    {
+      "path": "/admin/system/workflows",
+      "auth_requirement": "bearer_or_api_key",
+      "uses_orchestrator": true,
+      "methods": [
+        { "method": "GET", "handler": "handlers::admin::system_workflows" }
+      ]
+    },
+    {
+      "path": "/admin/system/cache",
+      "auth_requirement": "bearer_or_api_key",
+      "uses_orchestrator": false,
+      "methods": [
+        { "method": "GET", "handler": "handlers::admin::system_cache" }
+      ]
+    },
+    {
+      "path": "/admin/audit-events",
+      "auth_requirement": "bearer_or_api_key",
+      "uses_orchestrator": false,
+      "methods": [
+        { "method": "GET", "handler": "handlers::admin::list_audit_events" }
+      ]
+    },
+    {
+      "path": "/admin/audit-events/actions",
+      "auth_requirement": "bearer_or_api_key",
+      "uses_orchestrator": false,
+      "methods": [
+        { "method": "GET", "handler": "handlers::admin::list_audit_actions" }
+      ]
+    },
+    {
+      "path": "/admin/audit-events/:event_id",
+      "auth_requirement": "bearer_or_api_key",
+      "uses_orchestrator": false,
+      "methods": [
+        { "method": "GET", "handler": "handlers::admin::get_audit_event" }
+      ]
+    },
+    {
+      "path": "/status",
+      "auth_requirement": "bearer_or_api_key",
+      "uses_orchestrator": true,
+      "methods": [
+        { "method": "GET", "handler": "status_handler" }
+      ]
+    },
+    {
+      "path": "/engines",
+      "auth_requirement": "bearer_or_api_key",
+      "uses_orchestrator": true,
+      "methods": [
+        { "method": "GET", "handler": "list_engines_handler" }
+      ]
+    },
+    {
+      "path": "/engines/:engine_id/calculate",
+      "auth_requirement": "bearer_or_api_key",
+      "uses_orchestrator": true,
+      "methods": [
+        { "method": "POST", "handler": "calculate_handler" }
+      ]
+    },
+    {
+      "path": "/engines/:engine_id/validate",
+      "auth_requirement": "bearer_or_api_key",
+      "uses_orchestrator": true,
+      "methods": [
+        { "method": "POST", "handler": "validate_handler" }
+      ]
+    },
+    {
+      "path": "/engines/:engine_id/info",
+      "auth_requirement": "bearer_or_api_key",
+      "uses_orchestrator": true,
+      "methods": [
+        { "method": "GET", "handler": "engine_info_handler" }
+      ]
+    },
+    {
+      "path": "/workflows",
+      "auth_requirement": "bearer_or_api_key",
+      "uses_orchestrator": true,
+      "methods": [
+        { "method": "GET", "handler": "list_workflows_handler" }
+      ]
+    },
+    {
+      "path": "/workflows/:workflow_id",
+      "auth_requirement": "bearer_or_api_key",
+      "uses_orchestrator": true,
+      "methods": [
+        { "method": "GET", "handler": "workflow_info_handler" },
+        { "method": "POST", "handler": "workflow_execute_handler" }
+      ]
+    },
+    {
+      "path": "/workflows/:workflow_id/execute",
+      "auth_requirement": "bearer_or_api_key",
+      "uses_orchestrator": true,
+      "methods": [
+        { "method": "POST", "handler": "workflow_execute_handler" }
+      ]
+    },
+    {
+      "path": "/workflows/:workflow_id/info",
+      "auth_requirement": "bearer_or_api_key",
+      "uses_orchestrator": true,
+      "methods": [
+        { "method": "GET", "handler": "workflow_info_handler" }
+      ]
+    },
+    {
+      "path": "/readings",
+      "auth_requirement": "bearer_or_api_key",
+      "uses_orchestrator": false,
+      "methods": [
+        { "method": "GET", "handler": "list_readings_handler" }
+      ]
+    },
+    {
+      "path": "/readings/stats",
+      "auth_requirement": "bearer_or_api_key",
+      "uses_orchestrator": false,
+      "methods": [
+        { "method": "GET", "handler": "readings_stats_handler" }
+      ]
+    },
+    {
+      "path": "/readings/:reading_id",
+      "auth_requirement": "bearer_or_api_key",
+      "uses_orchestrator": false,
+      "methods": [
+        { "method": "GET", "handler": "get_reading_handler" }
+      ]
+    }
+  ]
+}
