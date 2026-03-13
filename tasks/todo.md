@@ -1928,3 +1928,12 @@ Verification:
   - passed
 - `rg -n "FullSpectrumConfig.engine_timeout|REQUEST_TIMEOUT_SECS|trace_id|api.error|NoesisCanaryErrorDivergence" docs/runbooks/incident-workflow-timeout.md docs/drills/rollback-drill-plan.md docs/runbooks/README.md`
   - passed
+
+GitHub closure result:
+- Closed on `codex/engine-hygiene-native-runtime-docs` after push of `089efd55`:
+  - `#326`
+  - `#330`
+- Intentionally left open with blocker comment:
+  - `#329`
+- Backlog after this tranche:
+  - open issues: `369`
