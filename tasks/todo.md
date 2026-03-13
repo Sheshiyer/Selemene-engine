@@ -1973,10 +1973,17 @@ Verification:
 - [x] Create docs/release/release-checklist-template.md
 - [x] Cross-link new docs from existing deployment/release docs where appropriate
 - [x] Verify referenced files/configs exist and docs align to repo state
-- [ ] Commit, push, and close #355 and #356 if acceptance criteria are satisfied
+- [x] Commit, push, and close #355 and #356 if acceptance criteria are satisfied
 
 Release docs verification notes:
 - `jq empty` passed for all repo-visible Grafana dashboard JSON files.
 - `bash scripts/test_canary_alerts.sh` passed and confirmed the current Prometheus alert rules load and test cleanly.
 - A link audit confirmed all absolute file links introduced in the new monitoring and release docs resolve to existing repo files.
 - The monitoring README intentionally documents the Alertmanager webhook leg as configured-but-unverified because repo-visible webhook handlers were not found for the configured receiver URLs.
+- Commit pushed: `659bd10d` (`docs(release): add monitoring and release references`)
+- Closed issues:
+  - `#355`
+  - `#356`
+- Backlog after this tranche:
+  - open issues: `367`
+  - closed issues: `112`
