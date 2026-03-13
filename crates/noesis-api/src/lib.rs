@@ -795,6 +795,10 @@ async fn calculate_handler(
                     witness_prompt: Some(output.witness_prompt.clone()),
                     consciousness_level: output.consciousness_level as i16,
                     calculation_time_ms: Some(duration_ms),
+                    client_event_id: None,
+                    client_device_id: None,
+                    device_platform: None,
+                    device_app_version: None,
                 };
                 let readings_repo = state.readings_repository.clone();
                 let usage_repo = state.usage_repository.clone();
@@ -1055,6 +1059,10 @@ async fn workflow_execute_handler(
                     witness_prompt: None,
                     consciousness_level: user.consciousness_level as i16,
                     calculation_time_ms: Some(duration_ms),
+                    client_event_id: None,
+                    client_device_id: None,
+                    device_platform: None,
+                    device_app_version: None,
                 };
                 let readings_repo = state.readings_repository.clone();
                 let usage_repo = state.usage_repository.clone();
@@ -1261,7 +1269,12 @@ async fn list_readings_handler(
     })?;
 
     let uid = uuid::Uuid::parse_str(&user.user_id).map_err(|_| {
-        ErrorMapper::response(StatusCode::BAD_REQUEST, "INVALID_USER_ID", "Invalid user ID", None)
+        ErrorMapper::response(
+            StatusCode::BAD_REQUEST,
+            "INVALID_USER_ID",
+            "Invalid user ID",
+            None,
+        )
     })?;
 
     let limit = params.limit.unwrap_or(20).min(100);
@@ -1315,7 +1328,12 @@ async fn get_reading_handler(
     })?;
 
     let uid = uuid::Uuid::parse_str(&user.user_id).map_err(|_| {
-        ErrorMapper::response(StatusCode::BAD_REQUEST, "INVALID_USER_ID", "Invalid user ID", None)
+        ErrorMapper::response(
+            StatusCode::BAD_REQUEST,
+            "INVALID_USER_ID",
+            "Invalid user ID",
+            None,
+        )
     })?;
 
     let reading = repo.get_reading(reading_id, uid).await.map_err(|e| {
@@ -1355,7 +1373,12 @@ async fn readings_stats_handler(
     })?;
 
     let uid = uuid::Uuid::parse_str(&user.user_id).map_err(|_| {
-        ErrorMapper::response(StatusCode::BAD_REQUEST, "INVALID_USER_ID", "Invalid user ID", None)
+        ErrorMapper::response(
+            StatusCode::BAD_REQUEST,
+            "INVALID_USER_ID",
+            "Invalid user ID",
+            None,
+        )
     })?;
 
     // Get total count

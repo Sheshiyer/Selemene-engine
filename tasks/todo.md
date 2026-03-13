@@ -2119,3 +2119,24 @@ Verification:
 - GitHub outcome:
   - closed `#20`
   - backlog now: `363` open / `116` closed
+
+### History Sync Schema Tranche (`#18`)
+
+- [x] Audit `#18` against the current `readings` schema, history-sync routes, and repository/runtime code.
+- [x] Add canonical root and Supabase migrations for `user_devices`, `history_sync_state`, and idempotent reading sync columns.
+- [x] Finish minimal runtime wiring so existing reading persistence still compiles against the expanded `NewReading` builder.
+- [x] Verify idempotent same-user `client_event_id` writes and cursor-delta queries via targeted repository tests/builds.
+- [ ] Commit, push, close `#18`, and refresh backlog counts.
+
+History sync tranche notes:
+- Issue `#18` is not already done. The current admin history-sync endpoints are synthetic over `readings` and `usage_logs`; there was no canonical `user_devices`, `history_sync_state`, `client_event_id`, or `sync_cursor` surface before this tranche.
+- Added root migration [migrations/013_history_sync_schema.sql](/Volumes/madara/2026/witnessos/Selemene-engine/migrations/013_history_sync_schema.sql) and matching Supabase migration [supabase/migrations/20260313000013_013_history_sync_schema.sql](/Volumes/madara/2026/witnessos/Selemene-engine/supabase/migrations/20260313000013_013_history_sync_schema.sql).
+- Extended [crates/noesis-data/src/models/reading.rs](/Volumes/madara/2026/witnessos/Selemene-engine/crates/noesis-data/src/models/reading.rs) with `ReadingSyncRecord` and optional client/device sync metadata on `NewReading`.
+- Extended [crates/noesis-data/src/repositories/readings_repository.rs](/Volumes/madara/2026/witnessos/Selemene-engine/crates/noesis-data/src/repositories/readings_repository.rs) with fallback-aware idempotent save logic, cursor-delta listing, and migration-anchored tests.
+- Updated the existing fire-and-forget persistence paths in [crates/noesis-api/src/lib.rs](/Volumes/madara/2026/witnessos/Selemene-engine/crates/noesis-api/src/lib.rs) to pass explicit `None` values for the new sync metadata so the runtime stays source-compatible until mobile/device sync starts sending those fields.
+
+Verification:
+- `cargo test -p noesis-data readings_repository -- --nocapture`
+- `cargo build -p noesis-api`
+- `DATABASE_URL='postgresql://noesis_user:noesis_password@localhost:5432/noesis' cargo test -p noesis-data save_reading_is_idempotent_when_client_event_id_is_present -- --nocapture`
+- Canonical root migrations applied in order against local Postgres via `psql`, including [migrations/013_history_sync_schema.sql](/Volumes/madara/2026/witnessos/Selemene-engine/migrations/013_history_sync_schema.sql)
