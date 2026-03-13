@@ -2205,3 +2205,26 @@ GitHub outcome:
 - closed `#43`
 - closed `#44`
 - backlog now: `359` open / `120` closed
+
+### Native Engine Visibility Guard Tranche (`#38`)
+
+- [x] Audit `#38` against the current `noesis-api` dependency surface and confirm runtime engine crates are still imported directly there.
+- [x] Move native engine registration behind a `noesis-orchestrator` helper so the API runtime no longer constructs engine crates itself.
+- [x] Strip native engine crates from `noesis-api` runtime dependencies while preserving test/bench access through `dev-dependencies`.
+- [x] Add a static regression test proving `noesis-api` runtime code and `[dependencies]` no longer reference native engine crates directly.
+- [x] Run targeted verification, then commit, push, and close `#38`.
+
+Native engine visibility guard notes:
+- Added [WorkflowOrchestrator::register_native_runtime_engines(...)](/Volumes/madara/2026/witnessos/Selemene-engine/crates/noesis-orchestrator/src/lib.rs) so native engine construction now lives in `noesis-orchestrator` instead of `noesis-api`.
+- Updated [crates/noesis-api/src/lib.rs](/Volumes/madara/2026/witnessos/Selemene-engine/crates/noesis-api/src/lib.rs) to build the runtime orchestrator through that helper and keep bridge registration local to the API crate.
+- Removed native engine crates from `noesis-api` runtime `[dependencies]` in [crates/noesis-api/Cargo.toml](/Volumes/madara/2026/witnessos/Selemene-engine/crates/noesis-api/Cargo.toml), leaving only the subset needed for tests/benches under `[dev-dependencies]`.
+- Added a static regression in [crates/noesis-api/tests/routing_enforcement_tests.rs](/Volumes/madara/2026/witnessos/Selemene-engine/crates/noesis-api/tests/routing_enforcement_tests.rs) that fails if native engine crates reappear in `noesis-api` runtime dependencies or source imports.
+
+Verification:
+- `cargo build -p noesis-api`
+- `cargo test -p noesis-orchestrator orchestrator_register_native_runtime_engines -- --nocapture`
+- `cargo test -p noesis-api --test routing_enforcement_tests -- --nocapture`
+
+GitHub outcome:
+- closed `#38`
+- backlog now: pending refresh after push/close
