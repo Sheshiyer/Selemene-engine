@@ -2104,7 +2104,7 @@ Verification:
 - [x] Add canonical root and Supabase migrations for the maintenance function.
 - [x] Add an operational check script that runs the function and fails loudly on errors.
 - [x] Add lightweight regression coverage for the new migration/script artifacts.
-- [ ] Verify, commit, push, close `#20`, and refresh backlog counts.
+- [x] Verify, commit, push, close `#20`, and refresh backlog counts.
 
 Usage partition maintenance notes:
 - Added root migration [migrations/012_usage_partition_maintenance.sql](/Volumes/madara/2026/witnessos/Selemene-engine/migrations/012_usage_partition_maintenance.sql) and matching Supabase migration [supabase/migrations/20260313000012_012_usage_partition_maintenance.sql](/Volumes/madara/2026/witnessos/Selemene-engine/supabase/migrations/20260313000012_012_usage_partition_maintenance.sql).
@@ -2115,3 +2115,7 @@ Verification:
 - `cargo test -p noesis-data admin_repository -- --nocapture`
 - `bash -n scripts/check_usage_log_partitions.sh`
 - `bash scripts/check_usage_log_partitions.sh` without `DATABASE_URL` exits `1` and emits the alert path
+- Commit pushed: `6fc290f8` (`feat(infra): add usage partition maintenance check`)
+- GitHub outcome:
+  - closed `#20`
+  - backlog now: `363` open / `116` closed
