@@ -40,6 +40,7 @@ use sentry_tower::{NewSentryLayer, SentryHttpLayer};
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use sqlx::postgres::{PgConnectOptions, PgPoolOptions};
+use std::collections::HashMap;
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 use tower_http::cors::CorsLayer;
@@ -102,6 +103,8 @@ use workflow_parity::log_workflow_registry_parity;
             EngineOutput,
             ValidationResult,
             WorkflowResult,
+            ApiEngineOutputResponse,
+            ApiWorkflowResultResponse,
             HealthResponse,
             ReadinessResponse,
             StatusResponse,
@@ -520,6 +523,39 @@ struct WorkflowInfoResponse {
     engine_ids: Vec<String>,
 }
 
+#[derive(Serialize, ToSchema)]
+struct ApiEngineOutputResponse {
+    #[serde(flatten)]
+    output: EngineOutput,
+    envelope_version: String,
+}
+
+impl From<EngineOutput> for ApiEngineOutputResponse {
+    fn from(output: EngineOutput) -> Self {
+        Self {
+            output,
+            envelope_version: "1".to_string(),
+        }
+    }
+}
+
+#[derive(Serialize, ToSchema)]
+struct ApiWorkflowResultResponse {
+    #[serde(flatten)]
+    workflow: WorkflowResult,
+    engine_results: HashMap<String, EngineOutput>,
+}
+
+impl From<WorkflowResult> for ApiWorkflowResultResponse {
+    fn from(workflow: WorkflowResult) -> Self {
+        let engine_results = workflow.engine_outputs.clone();
+        Self {
+            workflow,
+            engine_results,
+        }
+    }
+}
+
 // ---------------------------------------------------------------------------
 // Handlers
 // ---------------------------------------------------------------------------
@@ -703,7 +739,7 @@ async fn status_handler(State(state): State<AppState>) -> Json<StatusResponse> {
     ),
     request_body = EngineInput,
     responses(
-        (status = 200, description = "Calculation successful", body = EngineOutput),
+        (status = 200, description = "Calculation successful", body = ApiEngineOutputResponse),
         (status = 401, description = "Unauthorized", body = ErrorResponse),
         (status = 403, description = "Forbidden - Insufficient consciousness phase", body = ErrorResponse),
         (status = 404, description = "Engine not found", body = ErrorResponse),
@@ -720,7 +756,7 @@ async fn calculate_handler(
     Extension(user): Extension<AuthUser>,
     Path(engine_id): Path<String>,
     Json(input): Json<EngineInput>,
-) -> Result<Json<EngineOutput>, (StatusCode, Json<ErrorResponse>)> {
+) -> Result<Json<ApiEngineOutputResponse>, (StatusCode, Json<ErrorResponse>)> {
     let start = Instant::now();
 
     // Capture input for persistence before it's moved into the engine
@@ -809,7 +845,7 @@ async fn calculate_handler(
                 });
             }
 
-            Ok(Json(output))
+            Ok(Json(output.into()))
         }
         Err(e) => {
             state.metrics.record_engine_calculation_with_status(
@@ -961,7 +997,7 @@ async fn list_engines_handler(State(state): State<AppState>) -> Json<EngineListR
     ),
     request_body = EngineInput,
     responses(
-        (status = 200, description = "Workflow execution successful", body = WorkflowResult),
+        (status = 200, description = "Workflow execution successful", body = ApiWorkflowResultResponse),
         (status = 401, description = "Unauthorized", body = ErrorResponse),
         (status = 403, description = "Forbidden - Insufficient consciousness phase", body = ErrorResponse),
         (status = 404, description = "Workflow not found", body = ErrorResponse),
@@ -978,7 +1014,7 @@ async fn workflow_execute_handler(
     Extension(user): Extension<AuthUser>,
     Path(workflow_id): Path<String>,
     Json(input): Json<EngineInput>,
-) -> Result<Json<noesis_core::WorkflowResult>, (StatusCode, Json<ErrorResponse>)> {
+) -> Result<Json<ApiWorkflowResultResponse>, (StatusCode, Json<ErrorResponse>)> {
     let start = Instant::now();
 
     // Capture input for persistence before it's moved into the workflow
@@ -1069,7 +1105,7 @@ async fn workflow_execute_handler(
                 });
             }
 
-            Ok(Json(workflow_result))
+            Ok(Json(workflow_result.into()))
         }
         Err(e) => {
             state.metrics.record_engine_calculation_with_status(

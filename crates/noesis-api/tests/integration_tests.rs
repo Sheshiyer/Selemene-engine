@@ -203,6 +203,7 @@ async fn test_calculate_panchanga_success() {
 
     assert_eq!(status, StatusCode::OK);
     assert_eq!(body["engine_id"], "panchanga");
+    assert_eq!(body["envelope_version"], "1");
     assert!(body["result"].is_object());
     // Timestamp may or may not be present depending on engine implementation
 }
@@ -342,8 +343,10 @@ async fn test_workflow_execute_birth_blueprint_success() {
     // Workflow should succeed even if some engines fail
     assert_eq!(status, StatusCode::OK);
     assert_eq!(body["workflow_id"], "birth-blueprint");
+    assert!(body["engine_results"].is_object());
     assert!(body["engine_outputs"].is_object());
     assert!(body["total_time_ms"].is_number());
+    assert_eq!(body["engine_results"], body["engine_outputs"]);
 }
 
 #[tokio::test]

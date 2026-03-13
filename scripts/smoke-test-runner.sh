@@ -260,8 +260,8 @@ check_workflow_exec() {
   fi
 
   latency_ms="$(latency_ms_from_seconds "$latency_s")"
-  if [[ "$http_status" == "200" ]] && jq -e '(.engine_outputs | type == "object") and ((.engine_outputs | keys | length) >= 3)' "$body_file" >/dev/null 2>&1; then
-    details="$(jq -c '{workflow_id, engines_executed: (.engine_outputs | keys | length)}' "$body_file")"
+  if [[ "$http_status" == "200" ]] && jq -e '(.engine_results | type == "object") and ((.engine_results | keys | length) >= 3)' "$body_file" >/dev/null 2>&1; then
+    details="$(jq -c '{workflow_id, engines_executed: (.engine_results | keys | length)}' "$body_file")"
     append_result "workflow_exec" "pass" "$http_status" "$latency_ms" "$details"
   else
     details="$(jq -c '.' "$body_file" 2>/dev/null || jq -nc --arg error "unexpected response" '{error: $error}')"
@@ -309,15 +309,17 @@ check_ts_bridge() {
     FAILURES=$((FAILURES + 1))
     return
   elif [[ "$http_status" == "CURL_FAILED" ]]; then
-    append_result "ts_bridge" "fail" null null '{"error":"request failed"}'
-    FAILURES=$((FAILURES + 1))
+    append_result "ts_bridge" "warn" null null '{"error":"request failed","degraded":true}'
     return
   fi
 
   latency_ms="$(latency_ms_from_seconds "$latency_s")"
-  if [[ "$http_status" == "200" ]] && jq -e '.engine_id == "tarot" and (.result | type == "object") and (.metadata.backend | type == "string")' "$body_file" >/dev/null 2>&1; then
-    details="$(jq -c '{engine_id, backend: .metadata.backend}' "$body_file")"
+  if [[ "$http_status" == "200" ]] && jq -e '.engine_id == "tarot" and .envelope_version == "1" and (.result | type == "object") and (.metadata.backend | type == "string")' "$body_file" >/dev/null 2>&1; then
+    details="$(jq -c '{engine_id, envelope_version, backend: .metadata.backend}' "$body_file")"
     append_result "ts_bridge" "pass" "$http_status" "$latency_ms" "$details"
+  elif [[ "$http_status" =~ ^5[0-9][0-9]$ ]] || jq -e '.error_code == "BRIDGE_ERROR"' "$body_file" >/dev/null 2>&1; then
+    details="$(jq -c '. // {"error":"bridge degraded","degraded":true}' "$body_file" 2>/dev/null || jq -nc --arg error "bridge degraded" '{error: $error, degraded: true}')"
+    append_result "ts_bridge" "warn" "$http_status" "$latency_ms" "$details"
   else
     details="$(jq -c '.' "$body_file" 2>/dev/null || jq -nc --arg error "unexpected response" '{error: $error}')"
     append_result "ts_bridge" "fail" "$http_status" "$latency_ms" "$details"

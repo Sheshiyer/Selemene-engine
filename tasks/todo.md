@@ -1655,3 +1655,43 @@
 - `bash -n scripts/smoke-test-runner.sh`
 - `SMOKE_TEST_JWT=smoke-token bash scripts/smoke-test-runner.sh http://127.0.0.1:8770`
 - `SMOKE_TEST_JWT=smoke-token bash scripts/smoke-test-runner.sh http://127.0.0.1:9`
+
+### Next Contract / Proof Mini-Wave
+
+- [x] Re-audit `#295`, `#297`, and `#305` against the live workflow, bridge, and Docker contracts.
+- [x] Add a backward-compatible workflow response alias only if it can be done at the API boundary without disturbing the orchestrator/core types.
+- [x] Add a bridge response envelope shim only if it can be done at the API boundary without mutating every native engine output producer.
+- [x] Extend the smoke runner only if needed to satisfy `warn` semantics for the TS bridge check.
+- [x] Re-check whether `#305` can be closed with real Docker proof; otherwise leave it open with no speculative closure.
+- [ ] Close only the issues whose acceptance criteria are actually satisfied after fresh verification.
+
+#### Mini-Wave Note
+
+- `#295` is currently blocked by `engine_results` vs `engine_outputs`.
+- `#297` is currently blocked by missing `envelope_version` and missing `warn` handling in the smoke runner.
+- `#305` remains a proof problem unless the current Docker/Compose behavior can be demonstrated end-to-end.
+
+#### Mini-Wave Review
+
+- `#295` is now satisfied via an API-boundary compatibility alias:
+  - workflow execution responses now include both `engine_outputs` and `engine_results`
+  - core/orchestrator `WorkflowResult` stayed unchanged
+- `#297` is now satisfied via an API-boundary envelope shim plus smoke-runner warn semantics:
+  - engine calculation responses now include `envelope_version: "1"`
+  - the smoke runner now marks TS bridge outages as `warn` when the bridge returns a degraded error
+- `#305` still stays open:
+  - Docker and Docker Compose are available locally
+  - the repo has a `HEALTHCHECK` in `Dockerfile.prod`
+  - but the current Compose/restart model still does not prove auto-restart on unhealthy status, so closing it would be speculative
+
+#### Mini-Wave Verification
+
+- `cargo test -p noesis-api --test integration_tests test_calculate_panchanga_success -- --nocapture`
+- `cargo test -p noesis-api --test integration_tests test_workflow_execute_birth_blueprint_success -- --nocapture`
+- `bash -n scripts/smoke-test-runner.sh`
+- `SMOKE_TEST_JWT=smoke-token bash scripts/smoke-test-runner.sh http://127.0.0.1:8771`
+  healthy mock with `engine_results` and `envelope_version`
+- `SMOKE_TEST_JWT=smoke-token bash scripts/smoke-test-runner.sh http://127.0.0.1:8772`
+  degraded bridge mock with `ts_bridge=warn`
+- `docker --version`
+- `docker compose version`
