@@ -175,6 +175,59 @@ fn routing_enforcement_handlers_do_not_call_bridge_manager_directly() {
     }
 }
 
+#[test]
+fn routing_enforcement_runtime_api_does_not_depend_on_native_engine_crates() {
+    let cargo_toml = fs::read_to_string(workspace_root().join("crates/noesis-api/Cargo.toml"))
+        .expect("noesis-api Cargo.toml should read");
+    let dependencies_section = cargo_toml
+        .split("[dependencies]")
+        .nth(1)
+        .and_then(|tail| tail.split("\n[").next())
+        .expect("dependencies section should exist");
+
+    for dependency in [
+        "engine-panchanga",
+        "engine-numerology",
+        "engine-biorhythm",
+        "engine-human-design",
+        "engine-gene-keys",
+        "engine-vimshottari",
+        "engine-biofield",
+        "engine-vedic-clock",
+        "engine-face-reading",
+        "engine-nadabrahman",
+        "engine-transits",
+    ] {
+        assert!(
+            !dependencies_section.contains(dependency),
+            "runtime dependencies should not contain {}",
+            dependency
+        );
+    }
+
+    let lib_source = fs::read_to_string(workspace_root().join("crates/noesis-api/src/lib.rs"))
+        .expect("api lib source should read");
+    for runtime_import in [
+        "engine_panchanga::",
+        "engine_numerology::",
+        "engine_biorhythm::",
+        "engine_human_design::",
+        "engine_gene_keys::",
+        "engine_vimshottari::",
+        "engine_biofield::",
+        "engine_vedic_clock::",
+        "engine_face_reading::",
+        "engine_nadabrahman::",
+        "engine_transits::",
+    ] {
+        assert!(
+            !lib_source.contains(runtime_import),
+            "noesis-api runtime source should not import {} directly",
+            runtime_import
+        );
+    }
+}
+
 fn canonical_workflow_engine_ids() -> Vec<String> {
     let orchestrator = WorkflowOrchestrator::new();
     let mut ids = BTreeSet::new();

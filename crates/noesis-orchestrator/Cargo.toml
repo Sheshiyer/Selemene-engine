@@ -9,7 +9,17 @@ noesis-core = { path = "../noesis-core" }
 noesis-cache = { path = "../noesis-cache" }
 noesis-witness = { path = "../noesis-witness" }
 noesis-bridge = { path = "../noesis-bridge" }
+engine-biorhythm = { path = "../engine-biorhythm" }
 engine-biofield = { path = "../engine-biofield" }
+engine-face-reading = { path = "../engine-face-reading" }
+engine-gene-keys = { path = "../engine-gene-keys" }
+engine-human-design = { path = "../engine-human-design" }
+engine-nadabrahman = { path = "../engine-nadabrahman" }
+engine-numerology = { path = "../engine-numerology" }
+engine-panchanga = { path = "../engine-panchanga" }
+engine-transits = { path = "../engine-transits" }
+engine-vedic-clock = { path = "../engine-vedic-clock" }
+engine-vimshottari = { path = "../engine-vimshottari" }
 tokio = { version = "1.0", features = ["full"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
@@ -20,16 +30,6 @@ async-trait = "0.1"
 
 [dev-dependencies]
 criterion = { version = "0.5", features = ["async_tokio"] }
-engine-biorhythm = { path = "../engine-biorhythm" }
-engine-face-reading = { path = "../engine-face-reading" }
-engine-gene-keys = { path = "../engine-gene-keys" }
-engine-human-design = { path = "../engine-human-design" }
-engine-nadabrahman = { path = "../engine-nadabrahman" }
-engine-numerology = { path = "../engine-numerology" }
-engine-panchanga = { path = "../engine-panchanga" }
-engine-transits = { path = "../engine-transits" }
-engine-vedic-clock = { path = "../engine-vedic-clock" }
-engine-vimshottari = { path = "../engine-vimshottari" }
 
 [[bench]]
 name = "workflow_bench"

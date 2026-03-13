@@ -1604,52 +1604,11 @@ async fn legacy_ghati_current_handler(
 // Application state builder
 // ---------------------------------------------------------------------------
 
-/// Build the default `AppState` with all engines registered.
-///
-/// # Arguments
-/// * `config` - API configuration with JWT secret, Redis URL, cache settings, etc.
-///
-/// # Returns
-/// Configured `AppState` with orchestrator, cache, auth, and metrics
-pub async fn build_app_state(config: &ApiConfig) -> AppState {
-    // -- Orchestrator with engines --
+async fn build_runtime_orchestrator_and_bridge(
+) -> (WorkflowOrchestrator, Arc<noesis_bridge::BridgeManager>) {
     let mut orchestrator = WorkflowOrchestrator::new();
-    orchestrator.register_engine(Arc::new(engine_panchanga::PanchangaEngine::new()));
-    orchestrator.register_engine(Arc::new(engine_numerology::NumerologyEngine::new()));
-    orchestrator.register_engine(Arc::new(engine_biorhythm::BiorhythmEngine::new()));
+    orchestrator.register_native_runtime_engines();
 
-    // Register HD engine (Phase 1)
-    let hd_engine = Arc::new(engine_human_design::HumanDesignEngine::new());
-    orchestrator.register_engine(hd_engine.clone());
-
-    // Register Gene Keys engine with HD dependency (Phase 2)
-    let gk_engine = Arc::new(engine_gene_keys::GeneKeysEngine::with_hd_engine(
-        hd_engine.clone(),
-    ));
-    orchestrator.register_engine(gk_engine);
-
-    // Register Vimshottari Dasha engine with HD dependency (Phase 2)
-    let vim_engine = Arc::new(engine_vimshottari::VimshottariEngine::with_hd_engine(
-        hd_engine,
-    ));
-    orchestrator.register_engine(vim_engine);
-
-    // Register Biofield engine (Phase 1 - somatic awareness) - returns mock data
-    orchestrator.register_engine(Arc::new(engine_biofield::BiofieldEngine::new()));
-
-    // Register VedicClock-TCM engine (Phase 0 - available to all)
-    orchestrator.register_engine(Arc::new(engine_vedic_clock::VedicClockEngine::new()));
-
-    // Register Face Reading engine (Phase 1 - returns mock data until MediaPipe integration)
-    orchestrator.register_engine(Arc::new(engine_face_reading::FaceReadingEngine::new()));
-
-    // Register NadaBrahman engine (Phase 0 - raga/sound therapy)
-    orchestrator.register_engine(Arc::new(engine_nadabrahman::NadaBrahmanEngine::new()));
-
-    // Register Transits engine (Phase 0 - planetary transit analysis)
-    orchestrator.register_engine(Arc::new(engine_transits::TransitsEngine::new()));
-
-    // -- TypeScript Engines (via HTTP bridge) --
     let bridge_manager = Arc::new(noesis_bridge::BridgeManager::from_env());
 
     // Always register TS engines so they appear in the API regardless of
@@ -1687,6 +1646,20 @@ pub async fn build_app_state(config: &ApiConfig) -> AppState {
     }
 
     log_workflow_registry_parity(&orchestrator);
+
+    (orchestrator, bridge_manager)
+}
+
+/// Build the default `AppState` with all engines registered.
+///
+/// # Arguments
+/// * `config` - API configuration with JWT secret, Redis URL, cache settings, etc.
+///
+/// # Returns
+/// Configured `AppState` with orchestrator, cache, auth, and metrics
+pub async fn build_app_state(config: &ApiConfig) -> AppState {
+    // -- Orchestrator with engines --
+    let (orchestrator, bridge_manager) = build_runtime_orchestrator_and_bridge().await;
 
     // -- Cache --
     let redis_url = config.redis_url.clone().unwrap_or_default();
@@ -1786,80 +1759,7 @@ pub async fn build_app_state(config: &ApiConfig) -> AppState {
 /// endpoints but still need a fully constructed `AppState`.
 pub async fn build_app_state_lazy_db(config: &ApiConfig) -> AppState {
     // -- Orchestrator with engines --
-    let mut orchestrator = WorkflowOrchestrator::new();
-    orchestrator.register_engine(Arc::new(engine_panchanga::PanchangaEngine::new()));
-    orchestrator.register_engine(Arc::new(engine_numerology::NumerologyEngine::new()));
-    orchestrator.register_engine(Arc::new(engine_biorhythm::BiorhythmEngine::new()));
-
-    // Register HD engine (Phase 1)
-    let hd_engine = Arc::new(engine_human_design::HumanDesignEngine::new());
-    orchestrator.register_engine(hd_engine.clone());
-
-    // Register Gene Keys engine with HD dependency (Phase 2)
-    let gk_engine = Arc::new(engine_gene_keys::GeneKeysEngine::with_hd_engine(
-        hd_engine.clone(),
-    ));
-    orchestrator.register_engine(gk_engine);
-
-    // Register Vimshottari Dasha engine with HD dependency (Phase 2)
-    let vim_engine = Arc::new(engine_vimshottari::VimshottariEngine::with_hd_engine(
-        hd_engine,
-    ));
-    orchestrator.register_engine(vim_engine);
-
-    // Register Biofield engine (Phase 1 - somatic awareness) - returns mock data
-    orchestrator.register_engine(Arc::new(engine_biofield::BiofieldEngine::new()));
-
-    // Register VedicClock-TCM engine (Phase 0 - available to all)
-    orchestrator.register_engine(Arc::new(engine_vedic_clock::VedicClockEngine::new()));
-
-    // Register Face Reading engine (Phase 1 - returns mock data until MediaPipe integration)
-    orchestrator.register_engine(Arc::new(engine_face_reading::FaceReadingEngine::new()));
-
-    // Register NadaBrahman engine (Phase 0 - raga/sound therapy)
-    orchestrator.register_engine(Arc::new(engine_nadabrahman::NadaBrahmanEngine::new()));
-
-    // Register Transits engine (Phase 0 - planetary transit analysis)
-    orchestrator.register_engine(Arc::new(engine_transits::TransitsEngine::new()));
-
-    // -- TypeScript Engines (via HTTP bridge) --
-    let bridge_manager = Arc::new(noesis_bridge::BridgeManager::from_env());
-
-    // Always register TS engines so they appear in the API regardless of
-    // connectivity during startup. They will return a BridgeError if called
-    // while the TS server is down.
-    for engine in bridge_manager.engines() {
-        orchestrator.register_engine(engine);
-    }
-
-    let mut ts_connected = false;
-
-    // Optional connectivity check for logging status
-    for attempt in 1..=3 {
-        if bridge_manager.is_available().await {
-            tracing::info!("TS engines verified at {}", bridge_manager.base_url());
-            ts_connected = true;
-            break;
-        }
-
-        if attempt < 3 {
-            tracing::info!(
-                "Checking TS engine connectivity at {} (attempt {}/3)...",
-                bridge_manager.base_url(),
-                attempt
-            );
-            tokio::time::sleep(Duration::from_secs(5)).await;
-        }
-    }
-
-    if !ts_connected {
-        tracing::warn!(
-            "TS engines registered but unreachable at {} - they will appear in API but return errors if used",
-            bridge_manager.base_url()
-        );
-    }
-
-    log_workflow_registry_parity(&orchestrator);
+    let (orchestrator, bridge_manager) = build_runtime_orchestrator_and_bridge().await;
 
     // -- Cache --
     let redis_url = config.redis_url.clone().unwrap_or_default();

@@ -270,6 +270,33 @@ impl WorkflowOrchestrator {
         self.registry.register(engine);
     }
 
+    /// Register the native Rust runtime engine set used by `noesis-api`.
+    ///
+    /// This keeps engine-construction details out of transport crates so API
+    /// handlers only depend on the orchestrator boundary.
+    pub fn register_native_runtime_engines(&mut self) {
+        self.register_engine(Arc::new(engine_panchanga::PanchangaEngine::new()));
+        self.register_engine(Arc::new(engine_numerology::NumerologyEngine::new()));
+        self.register_engine(Arc::new(engine_biorhythm::BiorhythmEngine::new()));
+
+        let hd_engine = Arc::new(engine_human_design::HumanDesignEngine::new());
+        self.register_engine(hd_engine.clone());
+
+        self.register_engine(Arc::new(engine_gene_keys::GeneKeysEngine::with_hd_engine(
+            hd_engine.clone(),
+        )));
+
+        self.register_engine(Arc::new(
+            engine_vimshottari::VimshottariEngine::with_hd_engine(hd_engine),
+        ));
+
+        self.register_engine(Arc::new(engine_biofield::BiofieldEngine::new()));
+        self.register_engine(Arc::new(engine_vedic_clock::VedicClockEngine::new()));
+        self.register_engine(Arc::new(engine_face_reading::FaceReadingEngine::new()));
+        self.register_engine(Arc::new(engine_nadabrahman::NadaBrahmanEngine::new()));
+        self.register_engine(Arc::new(engine_transits::TransitsEngine::new()));
+    }
+
     /// Register a custom workflow definition.
     pub fn register_workflow(&mut self, workflow: WorkflowDefinition) {
         info!(workflow_id = %workflow.id, "Registering workflow");
@@ -755,6 +782,30 @@ mod tests {
         orchestrator.register_engine(Arc::new(MockEngine::new("numerology", 0)));
         let engines = orchestrator.list_engines();
         assert_eq!(engines, vec!["numerology"]);
+    }
+
+    #[test]
+    fn orchestrator_register_native_runtime_engines() {
+        let mut orchestrator = WorkflowOrchestrator::new();
+        orchestrator.register_native_runtime_engines();
+
+        let engines = orchestrator.list_engines();
+        assert_eq!(engines.len(), 11);
+        for engine_id in [
+            "panchanga",
+            "numerology",
+            "biorhythm",
+            "human-design",
+            "gene-keys",
+            "vimshottari",
+            "biofield",
+            "vedic-clock",
+            "face-reading",
+            "nadabrahman",
+            "transits",
+        ] {
+            assert!(engines.contains(&engine_id.to_string()));
+        }
     }
 
     #[tokio::test]

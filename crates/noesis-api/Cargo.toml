@@ -17,17 +17,6 @@ noesis-metrics = { path = "../noesis-metrics" }
 noesis-orchestrator = { path = "../noesis-orchestrator" }
 noesis-bridge = { path = "../noesis-bridge" }
 noesis-witness = { path = "../noesis-witness" }
-engine-panchanga = { path = "../engine-panchanga" }
-engine-numerology = { path = "../engine-numerology" }
-engine-biorhythm = { path = "../engine-biorhythm" }
-engine-human-design = { path = "../engine-human-design" }
-engine-gene-keys = { path = "../engine-gene-keys" }
-engine-vimshottari = { path = "../engine-vimshottari" }
-engine-biofield = { path = "../engine-biofield" }
-engine-vedic-clock = { path = "../engine-vedic-clock" }
-engine-face-reading = { path = "../engine-face-reading" }
-engine-nadabrahman = { path = "../engine-nadabrahman" }
-engine-transits = { path = "../engine-transits" }
 axum = { version = "0.7", features = ["json", "macros"] }
 uuid = { version = "1.7", features = ["serde", "v4"] }
 tokio = { version = "1.0", features = ["full"] }
@@ -65,6 +54,12 @@ serial_test = "3"
 wiremock = "0.6"
 insta = { version = "1.42", features = ["json"] }
 sentry = { version = "0.34", features = ["test"] }
+engine-panchanga = { path = "../engine-panchanga" }
+engine-numerology = { path = "../engine-numerology" }
+engine-biorhythm = { path = "../engine-biorhythm" }
+engine-human-design = { path = "../engine-human-design" }
+engine-gene-keys = { path = "../engine-gene-keys" }
+engine-vimshottari = { path = "../engine-vimshottari" }
 
 [[bench]]
 name = "engine_comparison"
