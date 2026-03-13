@@ -2037,3 +2037,37 @@ Verification / outcome:
 - Commit pushed: `36efa1a4` (`docs(runbooks): add launch-day draft and issue snapshot`)
 - GitHub outcome:
   - kept `#477` open with blocker comment because staging rollback timing and live dashboard URL resolution remain unproven
+
+## Infra/Auth Audit Batch (`#16`-`#20`)
+
+- [x] Audit `#16` through `#20` against the current root migrations, Supabase migrations, and auth/admin runtime.
+- [x] Confirm whether any of the schema issues are already satisfied by repo-visible migrations or runtime code.
+- [x] Choose the smallest honest infra/auth tranche that fits the current runtime without touching unrelated dirty files.
+- [x] Implement `#16` by adding canonical `user_roles` and `user_account_state` tables, backfill migration, and rolling-runtime support.
+- [ ] Re-verify `#17` through `#20` after `#16` lands and decide the next schema batch.
+- [ ] Verify, commit, push, and update backlog counts / issue status.
+
+Infra/auth audit notes:
+- `#16` through `#20` are still genuinely open. The repo has adjacent auth/admin behavior, but no applied root or Supabase migrations for:
+  - `user_roles`
+  - `user_account_state`
+  - `api_key_events`
+  - history sync state / idempotency schema
+  - plan catalog / billing subscriptions
+  - usage partition maintenance function
+- Existing runtime equivalents are partial and legacy-shaped:
+  - role assignment currently persists in `user_profiles.preferences.admin_roles`
+  - account state currently uses `users.locked_until`
+  - API keys already have `name` / `key_prefix`, but no immutable lifecycle event table
+- Selected first tranche: `#16`.
+  This is the cleanest schema/auth step because the admin routes for state and roles already exist; we can add the missing tables, backfill from current data, and keep rollout-safe fallbacks so the live handlers do not break if migrations lag behind deploy.
+
+Infra/auth implementation notes:
+- Added root migration [migrations/010_user_roles_account_state.sql](/Volumes/madara/2026/witnessos/Selemene-engine/migrations/010_user_roles_account_state.sql) and matching Supabase migration [supabase/migrations/20260313000010_010_user_roles_account_state.sql](/Volumes/madara/2026/witnessos/Selemene-engine/supabase/migrations/20260313000010_010_user_roles_account_state.sql).
+- Updated [crates/noesis-data/src/repositories/admin_repository.rs](/Volumes/madara/2026/witnessos/Selemene-engine/crates/noesis-data/src/repositories/admin_repository.rs) so admin role/state reads now prefer the canonical tables while falling back to the legacy `user_profiles.preferences` and `users.locked_until` path when migrations are not yet applied.
+- Kept the runtime blast radius low by continuing to mirror role assignments into `user_profiles.preferences` and account locks into `users.locked_until`, so auth and admin handlers remain compatible during rollout.
+
+Verification:
+- `cargo test -p noesis-data admin_repository -- --nocapture`
+- `cargo build -p noesis-api`
+- `cargo test -p noesis-api derives_platform_admin_role -- --nocapture`

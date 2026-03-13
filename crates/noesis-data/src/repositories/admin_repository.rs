@@ -172,6 +172,105 @@ impl AdminRepository {
         limit: i64,
         offset: i64,
     ) -> Result<Vec<AdminUserRecord>, Error> {
+        match self
+            .list_users_with_account_state(query, tier, state, limit, offset)
+            .await
+        {
+            Ok(records) => Ok(records),
+            Err(err) if missing_admin_schema_tables(&err) => {
+                self.list_users_legacy(query, tier, state, limit, offset)
+                    .await
+            }
+            Err(err) => Err(err),
+        }
+    }
+
+    async fn list_users_with_account_state(
+        &self,
+        query: Option<&str>,
+        tier: Option<&str>,
+        state: Option<&str>,
+        limit: i64,
+        offset: i64,
+    ) -> Result<Vec<AdminUserRecord>, Error> {
+        let mut qb: QueryBuilder<Postgres> = QueryBuilder::new(
+            r#"
+            SELECT
+                u.id,
+                u.email,
+                COALESCE(u.full_name, '') AS full_name,
+                u.tier,
+                u.consciousness_level,
+                u.experience_points,
+                u.last_login_at,
+                u.failed_login_attempts,
+                COALESCE(uas.locked_until, u.locked_until) AS locked_until,
+                u.created_at,
+                u.updated_at,
+                COALESCE((
+                    SELECT COUNT(*)
+                    FROM api_keys k
+                    WHERE k.user_id = u.id AND k.is_active = true
+                ), 0)::BIGINT AS active_key_count,
+                COALESCE((
+                    SELECT jsonb_agg(DISTINCT perms.perm)
+                    FROM (
+                        SELECT jsonb_array_elements_text(k.permissions) AS perm
+                        FROM api_keys k
+                        WHERE k.user_id = u.id AND k.is_active = true
+                    ) perms
+                ), '[]'::jsonb) AS permissions
+            FROM users u
+            LEFT JOIN user_account_state uas ON uas.user_id = u.id
+            WHERE 1=1
+            "#,
+        );
+
+        if let Some(q) = query.map(str::trim).filter(|q| !q.is_empty()) {
+            let pattern = format!("%{}%", q);
+            qb.push(" AND (u.email ILIKE ")
+                .push_bind(pattern.clone())
+                .push(" OR u.full_name ILIKE ")
+                .push_bind(pattern)
+                .push(")");
+        }
+
+        if let Some(t) = tier.map(str::trim).filter(|t| !t.is_empty()) {
+            qb.push(" AND u.tier = ").push_bind(t);
+        }
+
+        match state.map(|s| s.trim().to_ascii_lowercase()) {
+            Some(s) if s == "active" => {
+                qb.push(
+                    " AND (COALESCE(uas.locked_until, u.locked_until) IS NULL OR COALESCE(uas.locked_until, u.locked_until) <= NOW())",
+                );
+            }
+            Some(s) if s == "locked" => {
+                qb.push(
+                    " AND (COALESCE(uas.locked_until, u.locked_until) IS NOT NULL AND COALESCE(uas.locked_until, u.locked_until) > NOW())",
+                );
+            }
+            _ => {}
+        }
+
+        qb.push(" ORDER BY u.created_at DESC LIMIT ")
+            .push_bind(limit)
+            .push(" OFFSET ")
+            .push_bind(offset);
+
+        qb.build_query_as::<AdminUserRecord>()
+            .fetch_all(&self.pool)
+            .await
+    }
+
+    async fn list_users_legacy(
+        &self,
+        query: Option<&str>,
+        tier: Option<&str>,
+        state: Option<&str>,
+        limit: i64,
+        offset: i64,
+    ) -> Result<Vec<AdminUserRecord>, Error> {
         let mut qb: QueryBuilder<Postgres> = QueryBuilder::new(
             r#"
             SELECT
@@ -243,6 +342,63 @@ impl AdminRepository {
         tier: Option<&str>,
         state: Option<&str>,
     ) -> Result<i64, Error> {
+        match self
+            .count_users_with_account_state(query, tier, state)
+            .await
+        {
+            Ok(count) => Ok(count),
+            Err(err) if missing_admin_schema_tables(&err) => {
+                self.count_users_legacy(query, tier, state).await
+            }
+            Err(err) => Err(err),
+        }
+    }
+
+    async fn count_users_with_account_state(
+        &self,
+        query: Option<&str>,
+        tier: Option<&str>,
+        state: Option<&str>,
+    ) -> Result<i64, Error> {
+        let mut qb: QueryBuilder<Postgres> =
+            QueryBuilder::new("SELECT COUNT(*)::BIGINT FROM users u LEFT JOIN user_account_state uas ON uas.user_id = u.id WHERE 1=1");
+
+        if let Some(q) = query.map(str::trim).filter(|q| !q.is_empty()) {
+            let pattern = format!("%{}%", q);
+            qb.push(" AND (u.email ILIKE ")
+                .push_bind(pattern.clone())
+                .push(" OR u.full_name ILIKE ")
+                .push_bind(pattern)
+                .push(")");
+        }
+
+        if let Some(t) = tier.map(str::trim).filter(|t| !t.is_empty()) {
+            qb.push(" AND u.tier = ").push_bind(t);
+        }
+
+        match state.map(|s| s.trim().to_ascii_lowercase()) {
+            Some(s) if s == "active" => {
+                qb.push(
+                    " AND (COALESCE(uas.locked_until, u.locked_until) IS NULL OR COALESCE(uas.locked_until, u.locked_until) <= NOW())",
+                );
+            }
+            Some(s) if s == "locked" => {
+                qb.push(
+                    " AND (COALESCE(uas.locked_until, u.locked_until) IS NOT NULL AND COALESCE(uas.locked_until, u.locked_until) > NOW())",
+                );
+            }
+            _ => {}
+        }
+
+        qb.build_query_scalar::<i64>().fetch_one(&self.pool).await
+    }
+
+    async fn count_users_legacy(
+        &self,
+        query: Option<&str>,
+        tier: Option<&str>,
+        state: Option<&str>,
+    ) -> Result<i64, Error> {
         let mut qb: QueryBuilder<Postgres> =
             QueryBuilder::new("SELECT COUNT(*)::BIGINT FROM users u WHERE 1=1");
 
@@ -273,6 +429,82 @@ impl AdminRepository {
     }
 
     pub async fn set_user_lock_state(
+        &self,
+        user_id: Uuid,
+        locked_until: Option<DateTime<Utc>>,
+    ) -> Result<Option<(Uuid, Option<DateTime<Utc>>)>, Error> {
+        match self
+            .set_user_lock_state_with_account_state(user_id, locked_until)
+            .await
+        {
+            Ok(result) => Ok(result),
+            Err(err) if missing_admin_schema_tables(&err) => {
+                self.set_user_lock_state_legacy(user_id, locked_until).await
+            }
+            Err(err) => Err(err),
+        }
+    }
+
+    async fn set_user_lock_state_with_account_state(
+        &self,
+        user_id: Uuid,
+        locked_until: Option<DateTime<Utc>>,
+    ) -> Result<Option<(Uuid, Option<DateTime<Utc>>)>, Error> {
+        let mut tx = self.pool.begin().await?;
+
+        let updated = sqlx::query_as::<_, (Uuid, Option<DateTime<Utc>>)>(
+            r#"
+            UPDATE users
+            SET
+                locked_until = $2,
+                failed_login_attempts = CASE
+                    WHEN $2 IS NULL THEN 0
+                    ELSE failed_login_attempts
+                END,
+                updated_at = NOW()
+            WHERE id = $1
+            RETURNING id, locked_until
+            "#,
+        )
+        .bind(user_id)
+        .bind(locked_until)
+        .fetch_optional(&mut *tx)
+        .await?;
+
+        let Some((updated_user_id, updated_locked_until)) = updated else {
+            tx.rollback().await?;
+            return Ok(None);
+        };
+
+        let state = if updated_locked_until.is_some() {
+            "locked"
+        } else {
+            "active"
+        };
+
+        sqlx::query(
+            r#"
+            INSERT INTO user_account_state (user_id, state, locked_until, updated_at)
+            VALUES ($1, $2, $3, NOW())
+            ON CONFLICT (user_id)
+            DO UPDATE SET
+                state = EXCLUDED.state,
+                locked_until = EXCLUDED.locked_until,
+                updated_at = NOW()
+            "#,
+        )
+        .bind(updated_user_id)
+        .bind(state)
+        .bind(updated_locked_until)
+        .execute(&mut *tx)
+        .await?;
+
+        tx.commit().await?;
+
+        Ok(Some((updated_user_id, updated_locked_until)))
+    }
+
+    async fn set_user_lock_state_legacy(
         &self,
         user_id: Uuid,
         locked_until: Option<DateTime<Utc>>,
@@ -345,6 +577,109 @@ impl AdminRepository {
         roles: &[String],
         permissions: &[String],
     ) -> Result<Option<i64>, Error> {
+        match self
+            .set_user_roles_and_permissions_with_table(user_id, roles, permissions)
+            .await
+        {
+            Ok(result) => Ok(result),
+            Err(err) if missing_admin_schema_tables(&err) => {
+                self.set_user_roles_and_permissions_legacy(user_id, roles, permissions)
+                    .await
+            }
+            Err(err) => Err(err),
+        }
+    }
+
+    async fn set_user_roles_and_permissions_with_table(
+        &self,
+        user_id: Uuid,
+        roles: &[String],
+        permissions: &[String],
+    ) -> Result<Option<i64>, Error> {
+        let mut tx = self.pool.begin().await?;
+
+        let exists =
+            sqlx::query_scalar::<_, i64>("SELECT COUNT(*)::BIGINT FROM users WHERE id = $1")
+                .bind(user_id)
+                .fetch_one(&mut *tx)
+                .await?;
+
+        if exists == 0 {
+            tx.rollback().await?;
+            return Ok(None);
+        }
+
+        let roles_json = serde_json::json!(roles);
+        let permissions_json = serde_json::json!(permissions);
+
+        sqlx::query("DELETE FROM user_roles WHERE user_id = $1")
+            .bind(user_id)
+            .execute(&mut *tx)
+            .await?;
+
+        if !roles.is_empty() {
+            sqlx::query(
+                r#"
+                INSERT INTO user_roles (user_id, role)
+                SELECT $1, role
+                FROM UNNEST($2::TEXT[]) AS role
+                "#,
+            )
+            .bind(user_id)
+            .bind(roles)
+            .execute(&mut *tx)
+            .await?;
+        }
+
+        sqlx::query(
+            r#"
+            INSERT INTO user_profiles (user_id, preferences, created_at, updated_at)
+            VALUES (
+                $1,
+                jsonb_build_object(
+                    'admin_roles', $2::jsonb,
+                    'admin_permissions', $3::jsonb
+                ),
+                NOW(),
+                NOW()
+            )
+            ON CONFLICT (user_id)
+            DO UPDATE SET
+                preferences = jsonb_set(
+                    jsonb_set(COALESCE(user_profiles.preferences, '{}'::jsonb), '{admin_roles}', $2::jsonb, true),
+                    '{admin_permissions}',
+                    $3::jsonb,
+                    true
+                ),
+                updated_at = NOW()
+            "#,
+        )
+        .bind(user_id)
+        .bind(roles_json)
+        .bind(permissions_json)
+        .execute(&mut *tx)
+        .await?;
+
+        let updated_keys = sqlx::query(
+            "UPDATE api_keys SET permissions = $2 WHERE user_id = $1 AND is_active = true",
+        )
+        .bind(user_id)
+        .bind(serde_json::json!(permissions))
+        .execute(&mut *tx)
+        .await?
+        .rows_affected() as i64;
+
+        tx.commit().await?;
+
+        Ok(Some(updated_keys))
+    }
+
+    async fn set_user_roles_and_permissions_legacy(
+        &self,
+        user_id: Uuid,
+        roles: &[String],
+        permissions: &[String],
+    ) -> Result<Option<i64>, Error> {
         let mut tx = self.pool.begin().await?;
 
         let exists =
@@ -412,6 +747,66 @@ impl AdminRepository {
     }
 
     pub async fn get_effective_permissions(&self, user_id: Uuid) -> Result<Vec<String>, Error> {
+        match self
+            .get_effective_permissions_with_roles_table(user_id)
+            .await
+        {
+            Ok(permissions) => Ok(permissions),
+            Err(err) if missing_admin_schema_tables(&err) => {
+                self.get_effective_permissions_legacy(user_id).await
+            }
+            Err(err) => Err(err),
+        }
+    }
+
+    async fn get_effective_permissions_with_roles_table(
+        &self,
+        user_id: Uuid,
+    ) -> Result<Vec<String>, Error> {
+        let mut permissions: BTreeSet<String> = BTreeSet::new();
+
+        let profile_permissions = sqlx::query_scalar::<_, Option<Value>>(
+            "SELECT preferences -> 'admin_permissions' FROM user_profiles WHERE user_id = $1",
+        )
+        .bind(user_id)
+        .fetch_optional(&self.pool)
+        .await?;
+
+        if let Some(Some(value)) = profile_permissions {
+            for permission in parse_permissions_value(&value) {
+                permissions.insert(permission);
+            }
+        }
+
+        let role_rows =
+            sqlx::query_scalar::<_, String>("SELECT role FROM user_roles WHERE user_id = $1")
+                .bind(user_id)
+                .fetch_all(&self.pool)
+                .await?;
+
+        for role in role_rows {
+            for permission in permissions_for_admin_role(&role) {
+                permissions.insert(permission.to_string());
+            }
+        }
+
+        let key_permissions = sqlx::query_scalar::<_, Value>(
+            "SELECT permissions FROM api_keys WHERE user_id = $1 AND is_active = true",
+        )
+        .bind(user_id)
+        .fetch_all(&self.pool)
+        .await?;
+
+        for value in key_permissions {
+            for permission in parse_permissions_value(&value) {
+                permissions.insert(permission);
+            }
+        }
+
+        Ok(permissions.into_iter().collect())
+    }
+
+    async fn get_effective_permissions_legacy(&self, user_id: Uuid) -> Result<Vec<String>, Error> {
         let mut permissions: BTreeSet<String> = BTreeSet::new();
 
         let profile_permissions = sqlx::query_scalar::<_, Option<Value>>(
@@ -1414,6 +1809,64 @@ fn missing_api_keys_optional_columns(err: &Error) -> bool {
     message.contains("api_keys") && (message.contains("name") || message.contains("key_prefix"))
 }
 
+fn missing_admin_schema_tables(err: &Error) -> bool {
+    let Some(db_err) = err.as_database_error() else {
+        return false;
+    };
+
+    if db_err.code().as_deref() != Some("42P01") {
+        return false;
+    }
+
+    let message = db_err.message().to_ascii_lowercase();
+    message.contains("user_roles") || message.contains("user_account_state")
+}
+
+fn permissions_for_admin_role(role: &str) -> &'static [&'static str] {
+    match role {
+        "viewer" => &[
+            "basic:access",
+            "admin:analytics:read",
+            "admin:system:read",
+            "admin:audit:list",
+        ],
+        "support" => &[
+            "basic:access",
+            "admin:analytics:read",
+            "admin:users:list",
+            "admin:users:read",
+            "admin:history-sync:read",
+        ],
+        "admin" => &[
+            "basic:access",
+            "admin:analytics:read",
+            "admin:users:list",
+            "admin:users:read",
+            "admin:history-sync:read",
+            "admin:keys:list",
+            "admin:keys:create",
+            "admin:keys:revoke",
+            "admin:keys:rotate",
+            "admin:users:tier:update",
+        ],
+        "platform-admin" => &[
+            "basic:access",
+            "admin:*",
+            "admin:analytics:read",
+            "admin:users:list",
+            "admin:users:read",
+            "admin:users:roles:update",
+            "admin:history-sync:read",
+            "admin:keys:list",
+            "admin:keys:create",
+            "admin:keys:revoke",
+            "admin:keys:rotate",
+            "admin:users:tier:update",
+        ],
+        _ => &["basic:access"],
+    }
+}
+
 fn parse_permissions_value(value: &Value) -> Vec<String> {
     value
         .as_array()
@@ -1424,4 +1877,46 @@ fn parse_permissions_value(value: &Value) -> Vec<String> {
                 .collect::<Vec<_>>()
         })
         .unwrap_or_default()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::fs;
+    use std::path::PathBuf;
+
+    fn repo_root() -> PathBuf {
+        PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+            .parent()
+            .expect("workspace crate dir")
+            .parent()
+            .expect("workspace root")
+            .to_path_buf()
+    }
+
+    #[test]
+    fn role_permissions_include_platform_admin_controls() {
+        let perms = permissions_for_admin_role("platform-admin");
+        assert!(perms.contains(&"admin:*"));
+        assert!(perms.contains(&"admin:users:roles:update"));
+        assert!(perms.contains(&"admin:keys:rotate"));
+    }
+
+    #[test]
+    fn migration_010_exists_in_root_and_supabase() {
+        let root_sql =
+            fs::read_to_string(repo_root().join("migrations/010_user_roles_account_state.sql"))
+                .expect("root migration 010");
+        let supabase_sql = fs::read_to_string(
+            repo_root().join("supabase/migrations/20260313000010_010_user_roles_account_state.sql"),
+        )
+        .expect("supabase migration 010");
+
+        for sql in [&root_sql, &supabase_sql] {
+            assert!(sql.contains("CREATE TABLE IF NOT EXISTS user_roles"));
+            assert!(sql.contains("CREATE TABLE IF NOT EXISTS user_account_state"));
+            assert!(sql.contains("INSERT INTO user_roles"));
+            assert!(sql.contains("INSERT INTO user_account_state"));
+        }
+    }
 }
