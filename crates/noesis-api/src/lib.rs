@@ -10,6 +10,7 @@ pub mod error_mapper;
 mod handlers;
 mod logging;
 mod middleware;
+pub mod workflow_parity;
 
 // Re-export configuration and logging for main.rs
 pub use config::ApiConfig;
@@ -45,6 +46,7 @@ use tower_http::cors::CorsLayer;
 use tower_http::trace::TraceLayer;
 use utoipa::{OpenApi, ToSchema};
 use utoipa_swagger_ui::SwaggerUi;
+use workflow_parity::log_workflow_registry_parity;
 
 // ---------------------------------------------------------------------------
 // OpenAPI documentation
@@ -1609,6 +1611,8 @@ pub async fn build_app_state(config: &ApiConfig) -> AppState {
         );
     }
 
+    log_workflow_registry_parity(&orchestrator);
+
     // -- Cache --
     let redis_url = config.redis_url.clone().unwrap_or_default();
     let cache = CacheManager::new(
@@ -1779,6 +1783,8 @@ pub async fn build_app_state_lazy_db(config: &ApiConfig) -> AppState {
             bridge_manager.base_url()
         );
     }
+
+    log_workflow_registry_parity(&orchestrator);
 
     // -- Cache --
     let redis_url = config.redis_url.clone().unwrap_or_default();

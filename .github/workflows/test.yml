@@ -32,11 +32,30 @@ jobs:
       - name: Run Clippy
         run: cargo clippy --all-targets -- -D warnings
 
+  workflow-parity:
+    name: Workflow Registry Parity
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Setup cache
+        uses: Swatinem/rust-cache@v2
+
+      - name: Run workflow parity tests
+        run: cargo test -p noesis-api workflow_parity -- --nocapture
+
+      - name: Validate workflow parity CLI
+        run: cargo run -p noesis-api --bin validate_workflow_parity
+
   # Run unit tests
   test:
     name: Test
     runs-on: ubuntu-latest
-    needs: lint
+    needs: [lint, workflow-parity]
     services:
       redis:
         image: redis:7-alpine

@@ -1545,3 +1545,51 @@
   - intentionally left open:
     - `#326`
     - `#329`
+
+### Next Workflow Parity / Policy Wave
+
+- [x] Confirm `.DS_Store` is already ignored and untrack the root workspace copy from git.
+- [x] Review `#73`, `#74`, and `#314` against the current startup, CI, and monitoring surfaces.
+- [x] Implement startup workflow registry parity check for `#73` using the actual 6 canonical workflow IDs currently shipped by `WorkflowOrchestrator::new()`.
+- [x] Add a CI workflow parity gate for `#74` so drift fails the pipeline explicitly.
+- [x] Add `docs/runbooks/canary-rollout-policy.md` for `#314` with thresholds grounded in the existing monitoring and deploy docs.
+- [x] Verify targeted tests/docs, commit only the relevant files plus the `.DS_Store` untrack, and close only the issues fully satisfied by this wave.
+
+#### Wave Selection Note
+
+- This wave is preferable to broader docs batching because it is tied to code and CI surfaces we can prove:
+  - `build_app_state()` / `build_app_state_lazy_db()`
+  - `WorkflowOrchestrator::default_workflows()`
+  - `.github/workflows/test.yml`
+  - `docs/deployment/monitoring.md`
+- Important constraint:
+  - the canonical workflow set in the code today is:
+    - `birth-blueprint`
+    - `daily-practice`
+    - `decision-support`
+    - `self-inquiry`
+    - `creative-expression`
+    - `full-spectrum`
+  - I will not close anything against older workflow names that are no longer the runtime baseline.
+- Scope control:
+  - `.DS_Store` cleanup is part of this wave because it reduces branch noise and should be committed with the next safe batch
+  - `#314` is closeable as a shipped policy document, but the human review/signoff it mentions remains an operational follow-through item rather than an in-repo test
+
+#### Verification
+
+- `cargo test -p noesis-api workflow_parity -- --nocapture`
+- `cargo run -p noesis-api --bin validate_workflow_parity`
+
+#### Closure Record
+
+- `.DS_Store` is now untracked while remaining ignored via `.gitignore`
+- startup parity is logged from both:
+  - `build_app_state()`
+  - `build_app_state_lazy_db()`
+- dedicated parity module and CLI landed in:
+  - `crates/noesis-api/src/workflow_parity.rs`
+  - `crates/noesis-api/src/bin/validate_workflow_parity.rs`
+- CI parity gate landed in:
+  - `.github/workflows/test.yml`
+- canary policy landed in:
+  - `docs/runbooks/canary-rollout-policy.md`
