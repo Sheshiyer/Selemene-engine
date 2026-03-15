@@ -203,7 +203,12 @@ pub struct AppState {
     pub admin_repository: Option<Arc<AdminRepository>>,
     pub readings_repository: Option<Arc<ReadingsRepository>>,
     pub usage_repository: Option<Arc<UsageRepository>>,
+    pub oauth_repository: Option<Arc<noesis_data::repositories::oauth_repository::OAuthRepository>>,
     pub startup_time: Instant,
+    pub db_available: bool,
+    pub discord_client_id: Option<String>,
+    pub discord_client_secret: Option<String>,
+    pub discord_redirect_uri: Option<String>,
 }
 
 // ---------------------------------------------------------------------------
@@ -277,7 +282,15 @@ pub fn create_router(state: AppState, config: &ApiConfig) -> Router {
             "/auth/forgot-password",
             post(handlers::auth::forgot_password),
         )
-        .route("/auth/reset-password", post(handlers::auth::reset_password));
+        .route("/auth/reset-password", post(handlers::auth::reset_password))
+        .route(
+            "/auth/discord/authorize",
+            get(handlers::oauth::discord_authorize),
+        )
+        .route(
+            "/auth/discord/callback",
+            post(handlers::oauth::discord_callback),
+        );
 
     let api_v1 = Router::new()
         .route(
@@ -1412,6 +1425,12 @@ pub fn engine_error_to_response(err: EngineError) -> (StatusCode, Json<ErrorResp
             "An internal error occurred".to_string(),
             None,
         ),
+        EngineError::ServiceUnavailable(msg) => (
+            StatusCode::SERVICE_UNAVAILABLE,
+            "SERVICE_UNAVAILABLE".to_string(),
+            msg.clone(),
+            None,
+        ),
     };
 
     // Report server errors (5xx) to Sentry for visibility
@@ -1763,6 +1782,7 @@ pub async fn build_app_state(config: &ApiConfig) -> AppState {
     let auth = AuthService::with_pool(config.jwt_secret.clone(), pool.clone());
 
     // -- Persistence repos (only available when DB is connected) --
+    let db_available = pool.is_some();
     let admin_repository = pool
         .as_ref()
         .map(|p| Arc::new(AdminRepository::new(p.clone())));
@@ -1772,6 +1792,9 @@ pub async fn build_app_state(config: &ApiConfig) -> AppState {
     let usage_repository = pool
         .as_ref()
         .map(|p| Arc::new(UsageRepository::new(p.clone())));
+    let oauth_repository = pool
+        .as_ref()
+        .map(|p| Arc::new(noesis_data::repositories::oauth_repository::OAuthRepository::new(p.clone())));
 
     let user_repository = Arc::new(UserRepository::new(pool.unwrap_or_else(|| {
         // Create a lazy pool with a dummy URL — queries will fail at runtime,
@@ -1794,7 +1817,12 @@ pub async fn build_app_state(config: &ApiConfig) -> AppState {
         admin_repository,
         readings_repository,
         usage_repository,
+        oauth_repository,
         startup_time: Instant::now(),
+        db_available,
+        discord_client_id: config.discord_client_id.clone(),
+        discord_client_secret: config.discord_client_secret.clone(),
+        discord_redirect_uri: config.discord_redirect_uri.clone(),
     }
 }
 
@@ -1898,6 +1926,7 @@ pub async fn build_app_state_lazy_db(config: &ApiConfig) -> AppState {
     let auth = AuthService::with_pool(config.jwt_secret.clone(), pool.clone());
 
     // -- Persistence repos (only available when DB is configured) --
+    let db_available = pool.is_some();
     let admin_repository = pool
         .as_ref()
         .map(|p| Arc::new(AdminRepository::new(p.clone())));
@@ -1907,6 +1936,9 @@ pub async fn build_app_state_lazy_db(config: &ApiConfig) -> AppState {
     let usage_repository = pool
         .as_ref()
         .map(|p| Arc::new(UsageRepository::new(p.clone())));
+    let oauth_repository = pool
+        .as_ref()
+        .map(|p| Arc::new(noesis_data::repositories::oauth_repository::OAuthRepository::new(p.clone())));
 
     let user_repository = Arc::new(UserRepository::new(pool.unwrap_or_else(|| {
         PgPoolOptions::new()
@@ -1927,6 +1959,11 @@ pub async fn build_app_state_lazy_db(config: &ApiConfig) -> AppState {
         admin_repository,
         readings_repository,
         usage_repository,
+        oauth_repository,
         startup_time: Instant::now(),
+        db_available,
+        discord_client_id: config.discord_client_id.clone(),
+        discord_client_secret: config.discord_client_secret.clone(),
+        discord_redirect_uri: config.discord_redirect_uri.clone(),
     }
 }

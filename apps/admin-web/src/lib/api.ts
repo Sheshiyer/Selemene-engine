@@ -90,6 +90,17 @@ export async function login(email: string, password: string): Promise<LoginRespo
   });
 }
 
+export async function getDiscordAuthUrl(): Promise<{ url: string }> {
+  return request<{ url: string }>("/api/v1/auth/discord/authorize");
+}
+
+export async function discordCallback(code: string, state?: string): Promise<LoginResponse> {
+  return request<LoginResponse>("/api/v1/auth/discord/callback", {
+    method: "POST",
+    body: { code, state }
+  });
+}
+
 export async function getAdminSession(token: string): Promise<AdminSession> {
   return request<AdminSession>("/api/v1/admin/session", {
     method: "GET",
