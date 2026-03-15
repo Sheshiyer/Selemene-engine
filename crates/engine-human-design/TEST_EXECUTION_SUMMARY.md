@@ -1,6 +1,8 @@
 # Test Execution Summary
 ## W1-S4-02 through W1-S4-07 Validation Tests
 
+> Historical note (2026-03-15): this summary is tied to the January 2026 synthetic reference snapshot. It should not be treated as current external validation of the HD engine.
+
 **Date**: 2026-01-31  
 **Total Charts**: 16  
 **Total Test Categories**: 6

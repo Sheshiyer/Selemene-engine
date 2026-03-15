@@ -21,6 +21,7 @@ The March 2026 engine hygiene pass materially corrected the active Vedic runtime
 - `transits` now uses timezone-correct natal birth parsing and date-correct Lahiri sidereal conversion.
 - Panchanga karana sequencing and canonical birth-time output were revalidated against trusted chart references.
 - Provider-oriented status/reporting fields were removed from the active API surface to avoid ambiguity about runtime attribution.
+- `human-design` now has six locked external site fixtures across `Asia/Kolkata`, `Australia/Sydney`, and `Europe/Moscow`, including corrected gate-sequence, design-time, node, and Generator/Manifesting-Generator type classification behavior.
 
 These are runtime/documentation corrections after the original v3.0.0 release, not a new tagged release by themselves.
 

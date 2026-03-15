@@ -28,8 +28,8 @@ pub enum HDPlanet {
     Uranus = 7,
     Neptune = 8,
     Pluto = 9,
-    NorthNode = 10,  // True Node (better for HD)
-    SouthNode = -10, // Calculated as opposite of North Node
+    NorthNode = 11,  // True Node
+    SouthNode = -11, // Calculated as opposite of North Node
     Earth = 14,      // Geo-centric Earth position
 }
 
@@ -137,7 +137,7 @@ impl EphemerisCalculator {
         }
 
         // Handle South Node as opposite of North Node
-        if planet_id == -10 {
+        if planet_id == -(HDPlanet::NorthNode as i32) {
             let north_node = self.get_planet_position(HDPlanet::NorthNode, datetime)?;
             let south_longitude = (north_node.longitude + 180.0) % 360.0;
             return Ok(PlanetPosition {

@@ -1,6 +1,7 @@
 use chrono::{TimeZone, Utc};
 use engine_human_design::{generate_hd_chart, Planet};
 use serde_json::json;
+use std::collections::BTreeSet;
 
 fn main() {
     // Selected diverse test cases based on search results
@@ -36,6 +37,9 @@ fn main() {
     ];
 
     let mut charts_json = Vec::new();
+    let mut type_coverage = BTreeSet::new();
+    let mut authority_coverage = BTreeSet::new();
+    let mut profile_coverage = BTreeSet::new();
 
     for (name, year, month, day, hour, minute) in test_cases {
         if let Some(birth_time) = Utc
@@ -73,6 +77,9 @@ fn main() {
                         "{}/{}",
                         chart.profile.conscious_line, chart.profile.unconscious_line
                     );
+                    type_coverage.insert(type_str.clone());
+                    authority_coverage.insert(auth_str.clone());
+                    profile_coverage.insert(profile_str.clone());
 
                     // Defined centers
                     let mut defined_centers: Vec<String> = chart
@@ -136,9 +143,9 @@ fn main() {
             "source": "Selemene HD Engine (Synthetic Reference Data)",
             "note": "Reference charts generated from internal engine calculations. Validated for internal consistency. Professional HD software validation pending.",
             "coverage": {
-                "types": ["Generator", "ManifestingGenerator", "Projector"],
-                "authorities": ["Sacral", "GCenter"],
-                "profiles": 12,
+                "types": type_coverage.into_iter().collect::<Vec<_>>(),
+                "authorities": authority_coverage.into_iter().collect::<Vec<_>>(),
+                "profiles": profile_coverage.len(),
                 "total_charts": charts_json.len()
             }
         }

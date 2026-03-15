@@ -329,8 +329,8 @@ fn test_w1_s4_03_type_validation() {
 
     stats.print_summary("W1-S4-03: Type Validation");
 
-    // Type validation expected to be lower due to incomplete wisdom data
-    // Target: 50-70% (depends on channel completeness)
+    // Type validation now uses the canonical 36-channel graph.
+    // Keep a floor here because the fixture set remains synthetic/internal.
     assert!(
         stats.pass_rate() >= 40.0,
         "Type validation pass rate {:.1}% below minimum threshold 40%",
@@ -513,8 +513,7 @@ fn test_w1_s4_07_channels_validation() {
 
     stats.print_summary("W1-S4-07: Channels Validation");
 
-    // Channels depend on incomplete wisdom data (5/36 channels loaded)
-    // Target: 30-50%
+    // Channels now use the canonical 36-channel graph.
     assert!(
         stats.pass_rate() >= 20.0,
         "Channels validation pass rate {:.1}% below minimum threshold 20%",
@@ -590,8 +589,7 @@ fn test_w1_s4_06_centers_validation() {
 
     stats.print_summary("W1-S4-06: Centers Validation");
 
-    // Centers depend on incomplete wisdom data
-    // Target: 30-50%
+    // Centers now use the canonical 36-channel graph.
     assert!(
         stats.pass_rate() >= 20.0,
         "Centers validation pass rate {:.1}% below minimum threshold 20%",
@@ -806,10 +804,10 @@ fn test_comprehensive_validation_report() {
         println!("⚠️  Authority determination NEEDS REVIEW");
     }
 
-    println!("\n🔧 Expected limitations due to incomplete wisdom data:");
-    println!("   - Only 5/36 channels loaded in wisdom database");
-    println!("   - Centers/Channels validation limited by available data");
-    println!("   - Type/Authority may be affected by missing channel definitions\n");
+    println!("\n🔧 Remaining known limitation:");
+    println!("   - The wisdom JSON still only contains descriptive entries for 5 channels");
+    println!("   - Structural analysis now uses an internal canonical 36-channel graph");
+    println!("   - External professional HD parity is still stronger than synthetic-only validation\n");
 }
 
 // Helper function to validate all Sun/Earth activations

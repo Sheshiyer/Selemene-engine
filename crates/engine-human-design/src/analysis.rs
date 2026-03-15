@@ -7,8 +7,53 @@ use crate::models::{
     Activation, Authority, Center, CenterState, Channel, Definition, HDChart, HDType, Planet,
     Profile,
 };
-use crate::wisdom_data::CHANNELS;
 use std::collections::{HashMap, HashSet};
+
+struct ChannelSpec {
+    gate1: u8,
+    gate2: u8,
+    centers: [Center; 2],
+    circuitry: &'static str,
+}
+
+const CANONICAL_CHANNEL_SPECS: &[ChannelSpec] = &[
+    ChannelSpec { gate1: 64, gate2: 47, centers: [Center::Head, Center::Ajna], circuitry: "Collective" },
+    ChannelSpec { gate1: 61, gate2: 24, centers: [Center::Head, Center::Ajna], circuitry: "Individual" },
+    ChannelSpec { gate1: 63, gate2: 4, centers: [Center::Head, Center::Ajna], circuitry: "Collective" },
+    ChannelSpec { gate1: 17, gate2: 62, centers: [Center::Ajna, Center::Throat], circuitry: "Collective" },
+    ChannelSpec { gate1: 43, gate2: 23, centers: [Center::Ajna, Center::Throat], circuitry: "Individual" },
+    ChannelSpec { gate1: 11, gate2: 56, centers: [Center::Ajna, Center::Throat], circuitry: "Collective" },
+    ChannelSpec { gate1: 48, gate2: 16, centers: [Center::Spleen, Center::Throat], circuitry: "Collective" },
+    ChannelSpec { gate1: 57, gate2: 20, centers: [Center::Spleen, Center::Throat], circuitry: "Individual" },
+    ChannelSpec { gate1: 20, gate2: 10, centers: [Center::Throat, Center::G], circuitry: "Individual" },
+    ChannelSpec { gate1: 31, gate2: 7, centers: [Center::Throat, Center::G], circuitry: "Collective" },
+    ChannelSpec { gate1: 8, gate2: 1, centers: [Center::Throat, Center::G], circuitry: "Individual" },
+    ChannelSpec { gate1: 33, gate2: 13, centers: [Center::Throat, Center::G], circuitry: "Collective" },
+    ChannelSpec { gate1: 45, gate2: 21, centers: [Center::Throat, Center::Heart], circuitry: "Tribal" },
+    ChannelSpec { gate1: 12, gate2: 22, centers: [Center::Throat, Center::SolarPlexus], circuitry: "Individual" },
+    ChannelSpec { gate1: 35, gate2: 36, centers: [Center::Throat, Center::SolarPlexus], circuitry: "Collective" },
+    ChannelSpec { gate1: 34, gate2: 20, centers: [Center::Sacral, Center::Throat], circuitry: "Individual" },
+    ChannelSpec { gate1: 2, gate2: 14, centers: [Center::G, Center::Sacral], circuitry: "Individual" },
+    ChannelSpec { gate1: 29, gate2: 46, centers: [Center::Sacral, Center::G], circuitry: "Collective" },
+    ChannelSpec { gate1: 5, gate2: 15, centers: [Center::Sacral, Center::G], circuitry: "Collective" },
+    ChannelSpec { gate1: 10, gate2: 34, centers: [Center::G, Center::Sacral], circuitry: "Individual" },
+    ChannelSpec { gate1: 10, gate2: 57, centers: [Center::G, Center::Spleen], circuitry: "Individual" },
+    ChannelSpec { gate1: 25, gate2: 51, centers: [Center::G, Center::Heart], circuitry: "Individual" },
+    ChannelSpec { gate1: 26, gate2: 44, centers: [Center::Heart, Center::Spleen], circuitry: "Tribal" },
+    ChannelSpec { gate1: 27, gate2: 50, centers: [Center::Sacral, Center::Spleen], circuitry: "Tribal" },
+    ChannelSpec { gate1: 28, gate2: 38, centers: [Center::Spleen, Center::Root], circuitry: "Individual" },
+    ChannelSpec { gate1: 32, gate2: 54, centers: [Center::Spleen, Center::Root], circuitry: "Tribal" },
+    ChannelSpec { gate1: 18, gate2: 58, centers: [Center::Spleen, Center::Root], circuitry: "Collective" },
+    ChannelSpec { gate1: 59, gate2: 6, centers: [Center::Sacral, Center::SolarPlexus], circuitry: "Tribal" },
+    ChannelSpec { gate1: 37, gate2: 40, centers: [Center::SolarPlexus, Center::Heart], circuitry: "Tribal" },
+    ChannelSpec { gate1: 19, gate2: 49, centers: [Center::Root, Center::SolarPlexus], circuitry: "Tribal" },
+    ChannelSpec { gate1: 39, gate2: 55, centers: [Center::Root, Center::SolarPlexus], circuitry: "Individual" },
+    ChannelSpec { gate1: 41, gate2: 30, centers: [Center::Root, Center::SolarPlexus], circuitry: "Collective" },
+    ChannelSpec { gate1: 3, gate2: 60, centers: [Center::Sacral, Center::Root], circuitry: "Individual" },
+    ChannelSpec { gate1: 42, gate2: 53, centers: [Center::Sacral, Center::Root], circuitry: "Collective" },
+    ChannelSpec { gate1: 9, gate2: 52, centers: [Center::Sacral, Center::Root], circuitry: "Collective" },
+    ChannelSpec { gate1: 34, gate2: 57, centers: [Center::Sacral, Center::Spleen], circuitry: "Individual" },
+];
 
 /// Analyze center definitions based on activated channels
 ///
@@ -21,22 +66,17 @@ pub fn analyze_centers(activations: &[Activation]) -> HashMap<Center, CenterStat
     // Track which gates activate each center based on channel connections
     let mut center_gates: HashMap<Center, HashSet<u8>> = HashMap::new();
 
-    // Check all 36 channels
-    for channel in CHANNELS.values() {
-        if channel.gates.len() == 2 {
-            let gate1 = channel.gates[0];
-            let gate2 = channel.gates[1];
-
-            // Channel is active if both gates are activated
-            if activated_gates.contains(&gate1) && activated_gates.contains(&gate2) {
-                // Add these gates to their respective centers
-                for center_name in &channel.centers {
-                    if let Some(center) = center_from_string(center_name) {
-                        center_gates.entry(center).or_default().insert(gate1);
-                        center_gates.entry(center).or_default().insert(gate2);
-                    }
-                }
-            }
+    // Check all 36 canonical channels.
+    for channel in CANONICAL_CHANNEL_SPECS {
+        if activated_gates.contains(&channel.gate1) && activated_gates.contains(&channel.gate2) {
+            center_gates
+                .entry(channel.centers[0])
+                .or_default()
+                .insert(channel.gate1);
+            center_gates
+                .entry(channel.centers[1])
+                .or_default()
+                .insert(channel.gate2);
         }
     }
 
@@ -81,19 +121,14 @@ pub fn analyze_channels(activations: &[Activation]) -> Vec<Channel> {
 
     let mut active_channels = Vec::new();
 
-    for (_key, channel_wisdom) in CHANNELS.iter() {
-        if channel_wisdom.gates.len() == 2 {
-            let gate1 = channel_wisdom.gates[0];
-            let gate2 = channel_wisdom.gates[1];
-
-            if activated_gates.contains(&gate1) && activated_gates.contains(&gate2) {
-                active_channels.push(Channel {
-                    gate1,
-                    gate2,
-                    name: channel_wisdom.name.clone(),
-                    circuitry: channel_wisdom.circuitry.clone(),
-                });
-            }
+    for channel_spec in CANONICAL_CHANNEL_SPECS {
+        if activated_gates.contains(&channel_spec.gate1) && activated_gates.contains(&channel_spec.gate2) {
+            active_channels.push(Channel {
+                gate1: channel_spec.gate1,
+                gate2: channel_spec.gate2,
+                name: format!("Channel {}-{}", channel_spec.gate1, channel_spec.gate2),
+                circuitry: channel_spec.circuitry.to_string(),
+            });
         }
     }
 
@@ -127,14 +162,11 @@ pub fn determine_type(centers: &HashMap<Center, CenterState>, channels: &[Channe
         return HDType::Reflector;
     }
 
-    // Check if Sacral is connected to Throat via a channel
-    let sacral_to_throat = is_sacral_connected_to_throat(channels);
-
     // Check if Throat is connected to a motor center (excluding Sacral)
     let throat_to_motor = is_throat_connected_to_motor(channels);
 
     if sacral_defined {
-        if sacral_to_throat {
+        if throat_to_motor {
             HDType::ManifestingGenerator
         } else {
             HDType::Generator
@@ -284,22 +316,15 @@ pub fn determine_definition(
     let mut adjacency: HashMap<Center, HashSet<Center>> = HashMap::new();
 
     for channel in channels {
-        // Get centers connected by this channel
-        if let Some(channel_wisdom) = CHANNELS.values().find(|c| {
-            c.gates.len() == 2
-                && ((c.gates[0] == channel.gate1 && c.gates[1] == channel.gate2)
-                    || (c.gates[0] == channel.gate2 && c.gates[1] == channel.gate1))
+        if let Some(channel_spec) = CANONICAL_CHANNEL_SPECS.iter().find(|spec| {
+            (spec.gate1 == channel.gate1 && spec.gate2 == channel.gate2)
+                || (spec.gate1 == channel.gate2 && spec.gate2 == channel.gate1)
         }) {
-            if channel_wisdom.centers.len() == 2 {
-                if let (Some(c1), Some(c2)) = (
-                    center_from_string(&channel_wisdom.centers[0]),
-                    center_from_string(&channel_wisdom.centers[1]),
-                ) {
-                    if defined_centers.contains(&c1) && defined_centers.contains(&c2) {
-                        adjacency.entry(c1).or_default().insert(c2);
-                        adjacency.entry(c2).or_default().insert(c1);
-                    }
-                }
+            let c1 = channel_spec.centers[0];
+            let c2 = channel_spec.centers[1];
+            if defined_centers.contains(&c1) && defined_centers.contains(&c2) {
+                adjacency.entry(c1).or_default().insert(c2);
+                adjacency.entry(c2).or_default().insert(c1);
             }
         }
     }
@@ -359,68 +384,27 @@ pub fn analyze_hd_chart(chart: &mut HDChart) -> Result<(), String> {
 
 // Helper functions
 
-fn center_from_string(name: &str) -> Option<Center> {
-    match name {
-        "Head" => Some(Center::Head),
-        "Ajna" => Some(Center::Ajna),
-        "Throat" => Some(Center::Throat),
-        "G" => Some(Center::G),
-        "Heart" | "Ego" => Some(Center::Heart),
-        "Spleen" => Some(Center::Spleen),
-        "SolarPlexus" | "Solar Plexus" | "Emotional" => Some(Center::SolarPlexus),
-        "Sacral" => Some(Center::Sacral),
-        "Root" => Some(Center::Root),
-        _ => None,
-    }
-}
-
-fn is_sacral_connected_to_throat(channels: &[Channel]) -> bool {
-    // Gates connecting Sacral to Throat
-    let sacral_throat_channels = [
-        (5, 15),  // Channel 5-15
-        (14, 2),  // Channel 2-14
-        (29, 46), // Channel 29-46
-        (59, 6),  // Channel 6-59
-        (34, 20), // Channel 20-34 (via Throat)
-        (34, 10), // Channel 10-34 (via G to Throat)
-        (34, 57), // Channel 34-57
-    ];
-
-    for channel in channels {
-        for (g1, g2) in &sacral_throat_channels {
-            if (channel.gate1 == *g1 && channel.gate2 == *g2)
-                || (channel.gate1 == *g2 && channel.gate2 == *g1)
-            {
-                return true;
-            }
-        }
-    }
-
-    false
-}
-
 fn is_throat_connected_to_motor(channels: &[Channel]) -> bool {
-    // Motor centers: Heart (21, 40, 51, 26), Solar Plexus (6, 37, 22, 36, 49, 55), Root (60, 52, 53, 54, 38, 39, 58, 41)
-    let motor_gates = [
-        21, 40, 51, 26, // Heart
-        6, 37, 22, 36, 49, 55, // Solar Plexus
-        60, 52, 53, 54, 38, 39, 58, 41, // Root
+    let motor_centers = [
+        Center::Heart,
+        Center::SolarPlexus,
+        Center::Root,
+        Center::Sacral,
     ];
 
-    let throat_gates = [62, 23, 56, 35, 12, 45, 33, 8, 31, 7, 1, 13, 16, 20];
+    channels.iter().any(|channel| {
+        CANONICAL_CHANNEL_SPECS.iter().any(|spec| {
+            let same_channel = (spec.gate1 == channel.gate1 && spec.gate2 == channel.gate2)
+                || (spec.gate1 == channel.gate2 && spec.gate2 == channel.gate1);
+            if !same_channel {
+                return false;
+            }
 
-    for channel in channels {
-        let has_motor =
-            motor_gates.contains(&channel.gate1) || motor_gates.contains(&channel.gate2);
-        let has_throat =
-            throat_gates.contains(&channel.gate1) || throat_gates.contains(&channel.gate2);
-
-        if has_motor && has_throat {
-            return true;
-        }
-    }
-
-    false
+            let has_throat = spec.centers.contains(&Center::Throat);
+            let has_motor = spec.centers.iter().any(|center| motor_centers.contains(center));
+            has_throat && has_motor
+        })
+    })
 }
 
 fn is_g_connected_to_throat(channels: &[Channel]) -> bool {
@@ -522,6 +506,98 @@ mod tests {
 
         let hd_type = determine_type(&centers, &channels);
         assert_eq!(hd_type, HDType::Reflector);
+    }
+
+    #[test]
+    fn test_determine_type_generator_without_motor_to_throat() {
+        let centers = HashMap::from([
+            (
+                Center::Sacral,
+                CenterState {
+                    defined: true,
+                    gates: vec![34, 42],
+                },
+            ),
+            (
+                Center::G,
+                CenterState {
+                    defined: true,
+                    gates: vec![10],
+                },
+            ),
+            (
+                Center::Spleen,
+                CenterState {
+                    defined: true,
+                    gates: vec![28, 32],
+                },
+            ),
+            (
+                Center::Root,
+                CenterState {
+                    defined: true,
+                    gates: vec![38, 53, 54],
+                },
+            ),
+        ]);
+        let channels = vec![
+            Channel {
+                gate1: 10,
+                gate2: 34,
+                name: "Channel 10-34".to_string(),
+                circuitry: "Individual".to_string(),
+            },
+            Channel {
+                gate1: 28,
+                gate2: 38,
+                name: "Channel 28-38".to_string(),
+                circuitry: "Individual".to_string(),
+            },
+            Channel {
+                gate1: 32,
+                gate2: 54,
+                name: "Channel 32-54".to_string(),
+                circuitry: "Tribal".to_string(),
+            },
+            Channel {
+                gate1: 42,
+                gate2: 53,
+                name: "Channel 42-53".to_string(),
+                circuitry: "Collective".to_string(),
+            },
+        ];
+
+        let hd_type = determine_type(&centers, &channels);
+        assert_eq!(hd_type, HDType::Generator);
+    }
+
+    #[test]
+    fn test_determine_type_manifesting_generator_with_motor_to_throat() {
+        let centers = HashMap::from([
+            (
+                Center::Sacral,
+                CenterState {
+                    defined: true,
+                    gates: vec![34],
+                },
+            ),
+            (
+                Center::Throat,
+                CenterState {
+                    defined: true,
+                    gates: vec![20],
+                },
+            ),
+        ]);
+        let channels = vec![Channel {
+            gate1: 34,
+            gate2: 20,
+            name: "Channel 34-20".to_string(),
+            circuitry: "Individual".to_string(),
+        }];
+
+        let hd_type = determine_type(&centers, &channels);
+        assert_eq!(hd_type, HDType::ManifestingGenerator);
     }
 
     #[test]

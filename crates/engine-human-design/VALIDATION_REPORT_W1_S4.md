@@ -1,6 +1,8 @@
 # Human Design Engine - Accuracy Validation Report
 ## W1-S4-02 through W1-S4-07: Phase 2 Sprint 4 Validation
 
+> Historical note (2026-03-15): this report describes the January 2026 synthetic reference snapshot, not an external source-of-truth validation. The active fixture in `tests/reference_charts.json` is engine-generated and may change when internal HD logic changes.
+
 **Date**: 2026-01-31  
 **Agent**: Agent 23 (HD Accuracy Validation Test Suite)  
 **Test Dataset**: 16 reference charts from Agent 22

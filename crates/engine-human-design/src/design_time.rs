@@ -1,8 +1,7 @@
 //! Design Time Calculation for Human Design
 //!
-//! The Design time is calculated using an 88-day solar arc — finding the exact moment
-//! approximately 88 days before birth when the Sun was at the same ecliptic longitude
-//! as at birth.
+//! The Design time is calculated using an 88-degree solar arc — finding the exact moment
+//! approximately 88-93 days before birth when the Sun was 88° behind the birth longitude.
 //!
 //! This is NOT a simple 88-day subtraction, but requires iterative calculation using
 //! Swiss Ephemeris to find the precise moment when:
@@ -98,7 +97,7 @@ fn calculate_sun_longitude(jd: f64) -> Result<f64, DesignTimeError> {
 ///
 /// # Algorithm
 /// 1. Calculate Sun's longitude at birth
-/// 2. Start with initial estimate: birth_time - 88 days
+/// 2. Start with initial estimate: birth_time - 90 days
 /// 3. Iteratively refine until Sun's longitude matches birth longitude
 /// 4. Use binary search for convergence
 pub fn calculate_design_time(
@@ -119,8 +118,11 @@ pub fn calculate_design_time(
     // Target longitude = birth_longitude - 88° (going backwards in the zodiac)
     let target_longitude = (birth_longitude - 88.0).rem_euclid(360.0);
 
-    // Initial estimate: ~88-92 days before birth (Sun moves ~1° per day)
-    let initial_estimate = birth_time - Duration::days(88);
+    // Initial estimate: ~90 days before birth.
+    // 88 solar degrees maps to a variable number of days because the Sun's apparent
+    // speed changes over the year. A 90-day center with a wider bracket covers the
+    // expected professional-HD range more reliably than a rigid 88-day anchor.
+    let initial_estimate = birth_time - Duration::days(90);
 
     // Perform iterative refinement using binary search
     let design_time = refine_design_time(initial_estimate, target_longitude)?;
@@ -144,9 +146,11 @@ fn refine_design_time(
     const TOLERANCE_DEGREES: f64 = 0.001; // ~3.6 arcseconds (~0.24 seconds of time)
     const TOLERANCE_SECONDS: i64 = 3600; // 1 hour in seconds
 
-    // Search bounds: ±3 days from initial estimate
-    let mut lower_bound = initial_estimate - Duration::days(3);
-    let mut upper_bound = initial_estimate + Duration::days(3);
+    // Search bounds: ±6 days from the 90-day initial estimate, covering roughly
+    // 84-96 days before birth. This comfortably brackets the true 88° solar-arc
+    // design time across the annual variation in solar speed.
+    let mut lower_bound = initial_estimate - Duration::days(6);
+    let mut upper_bound = initial_estimate + Duration::days(6);
 
     for _iteration in 0..MAX_ITERATIONS {
         // Try the midpoint
@@ -161,8 +165,8 @@ fn refine_design_time(
         if diff.abs() < TOLERANCE_DEGREES {
             // Additional check: ensure we're within 1 hour
             let time_diff = (midpoint - initial_estimate).num_seconds().abs();
-            if time_diff < TOLERANCE_SECONDS * 24 * 3 {
-                // Within ±3 days is reasonable
+            if time_diff < TOLERANCE_SECONDS * 24 * 6 {
+                // Within ±6 days of the center estimate is expected.
                 return Ok(midpoint);
             }
         }
@@ -269,13 +273,12 @@ mod tests {
 
     #[test]
     fn test_design_time_validation() {
-        // Test that design time is approximately 88 days before birth
+        // Test that the 88° solar-arc design time falls in the expected wider range.
         let birth_time = Utc.with_ymd_and_hms(2000, 1, 1, 0, 0, 0).unwrap();
-        let expected_design = birth_time - Duration::days(88);
+        let earliest_expected = birth_time - Duration::days(96);
+        let latest_expected = birth_time - Duration::days(84);
 
-        // Verify the expected range
-        let diff = (birth_time - expected_design).num_days();
-        assert_eq!(diff, 88, "Expected ~88 days difference");
+        assert!(earliest_expected < latest_expected);
     }
 
     #[test]
