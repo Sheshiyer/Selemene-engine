@@ -40,12 +40,11 @@ struct DiscordUser {
 }
 
 /// GET /api/v1/auth/discord/authorize — returns the Discord OAuth2 authorize URL
-pub async fn discord_authorize(
-    State(state): State<AppState>,
-) -> Result<Response, ApiError> {
-    let client_id = state.discord_client_id.as_ref().ok_or_else(|| {
-        EngineError::ConfigError("Discord OAuth not configured".to_string())
-    })?;
+pub async fn discord_authorize(State(state): State<AppState>) -> Result<Response, ApiError> {
+    let client_id = state
+        .discord_client_id
+        .as_ref()
+        .ok_or_else(|| EngineError::ConfigError("Discord OAuth not configured".to_string()))?;
     let redirect_uri = state.discord_redirect_uri.as_ref().ok_or_else(|| {
         EngineError::ConfigError("Discord redirect URI not configured".to_string())
     })?;
@@ -63,11 +62,7 @@ pub async fn discord_authorize(
         urlencoding::encode(&state_token),
     );
 
-    Ok((
-        StatusCode::OK,
-        Json(DiscordAuthorizeResponse { url }),
-    )
-        .into_response())
+    Ok((StatusCode::OK, Json(DiscordAuthorizeResponse { url })).into_response())
 }
 
 /// POST /api/v1/auth/discord/callback — exchange Discord auth code for JWT
@@ -76,9 +71,10 @@ pub async fn discord_callback(
     Json(payload): Json<DiscordCallbackRequest>,
 ) -> Result<Response, ApiError> {
     // Verify Discord OAuth is configured
-    let client_id = state.discord_client_id.as_ref().ok_or_else(|| {
-        EngineError::ConfigError("Discord OAuth not configured".to_string())
-    })?;
+    let client_id = state
+        .discord_client_id
+        .as_ref()
+        .ok_or_else(|| EngineError::ConfigError("Discord OAuth not configured".to_string()))?;
     let client_secret = state.discord_client_secret.as_ref().ok_or_else(|| {
         EngineError::ConfigError("Discord client secret not configured".to_string())
     })?;
