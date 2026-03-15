@@ -11,7 +11,10 @@ use tracing_subscriber::fmt::MakeWriter;
 
 mod common;
 
-static TRACE_LOG_SLOT: OnceLock<Mutex<Option<Arc<Mutex<Vec<u8>>>>>> = OnceLock::new();
+type TraceBuffer = Arc<Mutex<Vec<u8>>>;
+type TraceBufferSlot = Mutex<Option<TraceBuffer>>;
+
+static TRACE_LOG_SLOT: OnceLock<TraceBufferSlot> = OnceLock::new();
 static TRACE_SUBSCRIBER_INIT: Once = Once::new();
 
 struct CaptureWriter;
