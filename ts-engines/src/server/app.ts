@@ -9,8 +9,8 @@ import type {
   LivenessResponse,
   ReadinessResponse,
 } from '../types'
-import { EngineRegistry, registry } from './registry'
 import { isEngineValidationError } from '../utils'
+import { EngineRegistry, registry } from './registry'
 
 const startTime = Date.now()
 

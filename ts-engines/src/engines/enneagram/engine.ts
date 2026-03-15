@@ -215,20 +215,28 @@ export class EnneagramEngine implements ConsciousnessEngine {
 
   private validateType(type: number): EnneagramNumber {
     if (type < 1 || type > 9 || !Number.isInteger(type)) {
-      throw new EngineValidationError(`Invalid Enneagram type: ${type}. Must be integer 1-9.`, 'INVALID_ENNEAGRAM_TYPE', {
-        provided: type,
-        min: 1,
-        max: 9,
-      })
+      throw new EngineValidationError(
+        `Invalid Enneagram type: ${type}. Must be integer 1-9.`,
+        'INVALID_ENNEAGRAM_TYPE',
+        {
+          provided: type,
+          min: 1,
+          max: 9,
+        },
+      )
     }
     return type as EnneagramNumber
   }
 
   private validateWing(primaryType: EnneagramNumber, wing: number): EnneagramNumber | undefined {
     if (wing < 1 || wing > 9 || !Number.isInteger(wing)) {
-      throw new EngineValidationError(`Invalid wing value: ${wing}. Wing must be integer 1-9.`, 'INVALID_ENNEAGRAM_WING', {
-        provided: wing,
-      })
+      throw new EngineValidationError(
+        `Invalid wing value: ${wing}. Wing must be integer 1-9.`,
+        'INVALID_ENNEAGRAM_WING',
+        {
+          provided: wing,
+        },
+      )
     }
     // Wing must be adjacent
     const prev = primaryType === 1 ? 9 : primaryType - 1

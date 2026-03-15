@@ -11,5 +11,9 @@ export class EngineValidationError extends Error {
 }
 
 export function isEngineValidationError(err: unknown): err is EngineValidationError {
-  return !!err && typeof err === 'object' && (err as EngineValidationError).name === 'EngineValidationError'
+  return (
+    !!err &&
+    typeof err === 'object' &&
+    (err as EngineValidationError).name === 'EngineValidationError'
+  )
 }
