@@ -268,7 +268,10 @@ impl ConsciousnessEngine for VedicClockEngine {
             get_temporal_recommendation(datetime, timezone.offset_minutes, tithi, nakshatra);
 
         // Get upcoming transitions
-        let upcoming = Some(Self::get_upcoming_transitions(datetime, timezone.offset_minutes));
+        let upcoming = Some(Self::get_upcoming_transitions(
+            datetime,
+            timezone.offset_minutes,
+        ));
 
         // Build the result
         let result = VedicClockResult {
@@ -531,7 +534,9 @@ mod tests {
             }
         );
 
-        input.options.insert("timezone_offset".to_string(), json!(330));
+        input
+            .options
+            .insert("timezone_offset".to_string(), json!(330));
         assert_eq!(
             VedicClockEngine::resolve_timezone(&input),
             TimezoneResolution {
@@ -576,7 +581,10 @@ mod tests {
             options: HashMap::new(),
         };
 
-        let output = engine.calculate(input).await.expect("vedic-clock should calculate");
+        let output = engine
+            .calculate(input)
+            .await
+            .expect("vedic-clock should calculate");
         assert_eq!(output.result["timezone"]["offset_minutes"], 330);
         assert_eq!(output.result["timezone"]["source"], "birth_data.timezone");
         assert_eq!(output.result["timezone"]["local_hour"], 12);
@@ -601,7 +609,10 @@ mod tests {
             options: HashMap::new(),
         };
 
-        let output = engine.calculate(input).await.expect("vedic-clock should calculate");
+        let output = engine
+            .calculate(input)
+            .await
+            .expect("vedic-clock should calculate");
         assert_eq!(output.result["timezone"]["offset_minutes"], 345);
         assert_eq!(output.result["timezone"]["source"], "birth_data.timezone");
         assert_eq!(output.result["timezone"]["local_hour"], 12);

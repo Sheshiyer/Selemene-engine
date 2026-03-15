@@ -56,8 +56,10 @@ async fn metrics_endpoint_tracks_api_errors_by_error_code() {
                 .header(header::AUTHORIZATION, format!("Bearer {}", token))
                 .header(header::CONTENT_TYPE, "application/json")
                 .body(Body::from(
-                    serde_json::to_vec(&serde_json::to_value(common::create_test_birth_input()).unwrap())
-                        .unwrap(),
+                    serde_json::to_vec(
+                        &serde_json::to_value(common::create_test_birth_input()).unwrap(),
+                    )
+                    .unwrap(),
                 ))
                 .unwrap(),
         )

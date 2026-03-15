@@ -500,8 +500,7 @@ async fn test_error_response_structure_401() {
         "message field should be a string"
     );
     assert!(
-        body["trace_id"].is_string()
-            && !body["trace_id"].as_str().unwrap_or("").is_empty(),
+        body["trace_id"].is_string() && !body["trace_id"].as_str().unwrap_or("").is_empty(),
         "trace_id should be a non-empty string"
     );
     assert_eq!(
@@ -532,8 +531,7 @@ async fn test_error_response_structure_404() {
     assert!(body["status"].is_number(), "status field should be numeric");
     assert!(body["message"].is_string());
     assert!(
-        body["trace_id"].is_string()
-            && !body["trace_id"].as_str().unwrap_or("").is_empty(),
+        body["trace_id"].is_string() && !body["trace_id"].as_str().unwrap_or("").is_empty(),
         "trace_id should be a non-empty string"
     );
     assert_eq!(body["message"], body["error"]);

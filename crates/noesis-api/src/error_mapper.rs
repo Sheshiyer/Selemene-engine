@@ -1,6 +1,6 @@
 use axum::{http::StatusCode, Json};
-use noesis_metrics::record_api_error;
 use noesis_core::EngineError;
+use noesis_metrics::record_api_error;
 use serde::Serialize;
 use std::future::Future;
 use utoipa::ToSchema;
@@ -24,10 +24,7 @@ pub struct ErrorResponse {
 pub struct ErrorMapper;
 
 impl ErrorMapper {
-    pub async fn with_request_trace_id<T>(
-        trace_id: String,
-        future: impl Future<Output = T>,
-    ) -> T {
+    pub async fn with_request_trace_id<T>(trace_id: String, future: impl Future<Output = T>) -> T {
         REQUEST_TRACE_ID.scope(trace_id, future).await
     }
 
@@ -158,11 +155,7 @@ impl ErrorMapper {
         REQUEST_TRACE_ID
             .try_with(Clone::clone)
             .ok()
-            .or_else(|| {
-                tracing::Span::current()
-                    .id()
-                    .map(|id| format!("{id:?}"))
-            })
+            .or_else(|| tracing::Span::current().id().map(|id| format!("{id:?}")))
             .unwrap_or_else(|| uuid::Uuid::new_v4().to_string())
     }
 
@@ -177,7 +170,10 @@ impl ErrorMapper {
 
         let mut data = Map::new();
         data.insert("status".to_string(), Value::from(status.as_u16() as i64));
-        data.insert("error_code".to_string(), Value::from(error_code.to_string()));
+        data.insert(
+            "error_code".to_string(),
+            Value::from(error_code.to_string()),
+        );
         data.insert("trace_id".to_string(), Value::from(trace_id.to_string()));
 
         sentry::add_breadcrumb(Breadcrumb {
@@ -208,8 +204,8 @@ mod tests {
     use super::ErrorMapper;
     use axum::http::StatusCode;
     use noesis_core::EngineError;
-    use serde_json::json;
     use sentry::{test::with_captured_events_options, ClientOptions, Level};
+    use serde_json::json;
 
     fn run_in_runtime<T>(future: impl std::future::Future<Output = T>) -> T {
         tokio::runtime::Builder::new_current_thread()
@@ -370,17 +366,31 @@ mod tests {
         assert_eq!(events.len(), 1);
         let event = &events[0];
         assert_eq!(event.level, Level::Error);
-        assert_eq!(event.tags.get("error_code").map(String::as_str), Some("BRIDGE_ERROR"));
-        assert_eq!(event.tags.get("trace_id").map(String::as_str), Some("trace-500"));
+        assert_eq!(
+            event.tags.get("error_code").map(String::as_str),
+            Some("BRIDGE_ERROR")
+        );
+        assert_eq!(
+            event.tags.get("trace_id").map(String::as_str),
+            Some("trace-500")
+        );
         assert!(
-            event.message.as_deref().unwrap_or("").contains("Bridge error"),
+            event
+                .message
+                .as_deref()
+                .unwrap_or("")
+                .contains("Bridge error"),
             "expected bridge error message, got {:?}",
             event.message
         );
         assert!(
             event.breadcrumbs.iter().any(|crumb| {
                 crumb.category.as_deref() == Some("api.error")
-                    && crumb.message.as_deref().unwrap_or("").contains("BRIDGE_ERROR")
+                    && crumb
+                        .message
+                        .as_deref()
+                        .unwrap_or("")
+                        .contains("BRIDGE_ERROR")
             }),
             "expected api.error breadcrumb on captured 5xx event"
         );
@@ -414,11 +424,12 @@ mod tests {
         assert!(
             event.breadcrumbs.iter().any(|crumb| {
                 crumb.category.as_deref() == Some("api.error")
-                    && crumb.message.as_deref().unwrap_or("").contains("ENGINE_NOT_FOUND")
                     && crumb
-                        .data
-                        .get("trace_id")
-                        .and_then(|value| value.as_str())
+                        .message
+                        .as_deref()
+                        .unwrap_or("")
+                        .contains("ENGINE_NOT_FOUND")
+                    && crumb.data.get("trace_id").and_then(|value| value.as_str())
                         == Some("trace-404")
             }),
             "expected 4xx breadcrumb with trace_id on the captured event"

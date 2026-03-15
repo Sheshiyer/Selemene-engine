@@ -315,10 +315,7 @@ async fn test_rate_limit_response_format() {
         .unwrap()
         .contains("Rate limit exceeded"));
     assert_eq!(json["message"], json["error"]);
-    assert!(
-        json["trace_id"].is_string()
-            && !json["trace_id"].as_str().unwrap_or("").is_empty()
-    );
+    assert!(json["trace_id"].is_string() && !json["trace_id"].as_str().unwrap_or("").is_empty());
     assert!(json["details"].is_object());
     assert!(json["details"]["limit"].is_number());
     assert!(json["details"]["window_seconds"].is_number());

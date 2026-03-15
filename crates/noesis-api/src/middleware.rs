@@ -53,10 +53,12 @@ pub async fn request_logging_middleware(req: Request, next: Next) -> Response {
     // Execute the request within the span
     async move {
         let trace_id_for_scope = trace_id.clone();
-        let response = ErrorMapper::with_request_trace_id(trace_id_for_scope, async move {
-            next.run(req).await
-        })
-        .await;
+        let response =
+            ErrorMapper::with_request_trace_id(
+                trace_id_for_scope,
+                async move { next.run(req).await },
+            )
+            .await;
 
         // Calculate duration
         let duration_ms = start.elapsed().as_millis() as u64;

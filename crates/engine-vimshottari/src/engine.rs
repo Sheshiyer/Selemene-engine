@@ -507,7 +507,10 @@ mod tests {
         )
         .expect("timezone conversion should work");
 
-        assert_eq!(utc_dt.format("%Y-%m-%d %H:%M").to_string(), "1991-08-13 08:01");
+        assert_eq!(
+            utc_dt.format("%Y-%m-%d %H:%M").to_string(),
+            "1991-08-13 08:01"
+        );
     }
 
     #[tokio::test]
@@ -528,7 +531,10 @@ mod tests {
             options: HashMap::new(),
         };
 
-        let output = engine.calculate(input).await.expect("calculation should succeed");
+        let output = engine
+            .calculate(input)
+            .await
+            .expect("calculation should succeed");
         let nak_name = output.result["birth_nakshatra"]["name"]
             .as_str()
             .expect("nakshatra name should exist");

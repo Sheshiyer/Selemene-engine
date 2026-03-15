@@ -94,8 +94,10 @@ async fn error_response_trace_id_matches_request_logs() {
                     .header(header::AUTHORIZATION, format!("Bearer {}", token))
                     .header(header::CONTENT_TYPE, "application/json")
                     .body(Body::from(
-                        serde_json::to_vec(&serde_json::to_value(common::create_test_birth_input()).unwrap())
-                            .unwrap(),
+                        serde_json::to_vec(
+                            &serde_json::to_value(common::create_test_birth_input()).unwrap(),
+                        )
+                        .unwrap(),
                     ))
                     .unwrap(),
             )

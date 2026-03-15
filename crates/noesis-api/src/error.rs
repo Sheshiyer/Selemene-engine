@@ -1,6 +1,6 @@
+use crate::ErrorMapper;
 use axum::response::{IntoResponse, Response};
 use noesis_core::EngineError;
-use crate::ErrorMapper;
 
 // Wrapper for EngineError to implement IntoResponse
 pub struct ApiError(pub EngineError);

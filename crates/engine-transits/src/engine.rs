@@ -50,14 +50,19 @@ impl TransitsEngine {
             .map_err(|e| EngineError::ValidationError(format!("Invalid time: {}", e)))?;
 
         let timezone: chrono_tz::Tz = birth_data.timezone.parse().map_err(|e| {
-            EngineError::ValidationError(format!("Invalid timezone '{}': {}", birth_data.timezone, e))
+            EngineError::ValidationError(format!(
+                "Invalid timezone '{}': {}",
+                birth_data.timezone, e
+            ))
         })?;
 
         let naive_dt = date.and_time(time);
         let local_dt = timezone
             .from_local_datetime(&naive_dt)
             .single()
-            .ok_or_else(|| EngineError::ValidationError("Ambiguous local birth time".to_string()))?;
+            .ok_or_else(|| {
+                EngineError::ValidationError("Ambiguous local birth time".to_string())
+            })?;
 
         Ok(local_dt.with_timezone(&Utc))
     }

@@ -343,13 +343,36 @@ mod tests {
             options: HashMap::new(),
         };
 
-        let output = engine.calculate(input).await.expect("HD calculation should succeed");
+        let output = engine
+            .calculate(input)
+            .await
+            .expect("HD calculation should succeed");
 
         // Incarnation-cross critical gates for canonical profile
-        assert_eq!(output.result["personality_activations"]["sun"]["gate"].as_u64().unwrap(), 4);
-        assert_eq!(output.result["personality_activations"]["earth"]["gate"].as_u64().unwrap(), 49);
-        assert_eq!(output.result["design_activations"]["sun"]["gate"].as_u64().unwrap(), 23);
-        assert_eq!(output.result["design_activations"]["earth"]["gate"].as_u64().unwrap(), 43);
+        assert_eq!(
+            output.result["personality_activations"]["sun"]["gate"]
+                .as_u64()
+                .unwrap(),
+            4
+        );
+        assert_eq!(
+            output.result["personality_activations"]["earth"]["gate"]
+                .as_u64()
+                .unwrap(),
+            49
+        );
+        assert_eq!(
+            output.result["design_activations"]["sun"]["gate"]
+                .as_u64()
+                .unwrap(),
+            23
+        );
+        assert_eq!(
+            output.result["design_activations"]["earth"]["gate"]
+                .as_u64()
+                .unwrap(),
+            43
+        );
     }
 
     #[tokio::test]
