@@ -306,11 +306,7 @@ fn sixth_reference() -> ChartRef {
     }
 }
 
-fn extract_activation(
-    chart: &serde_json::Value,
-    bucket: &str,
-    planet: &str,
-) -> Option<(u64, u64)> {
+fn extract_activation(chart: &serde_json::Value, bucket: &str, planet: &str) -> Option<(u64, u64)> {
     let obj = chart.get(bucket)?.get(planet)?;
     Some((obj.get("gate")?.as_u64()?, obj.get("line")?.as_u64()?))
 }
@@ -391,9 +387,8 @@ async fn compare_reference(reference: &ChartRef) -> Result<(), String> {
 
     let personality_sun = extract_activation(&output.result, "personality_activations", "sun")
         .ok_or_else(|| "missing personality sun".to_string())?;
-    let personality_earth =
-        extract_activation(&output.result, "personality_activations", "earth")
-            .ok_or_else(|| "missing personality earth".to_string())?;
+    let personality_earth = extract_activation(&output.result, "personality_activations", "earth")
+        .ok_or_else(|| "missing personality earth".to_string())?;
     let design_sun = extract_activation(&output.result, "design_activations", "sun")
         .ok_or_else(|| "missing design sun".to_string())?;
     let design_earth = extract_activation(&output.result, "design_activations", "earth")

@@ -108,15 +108,27 @@ mod tests {
     #[test]
     fn test_rave_mandala_gate_mapping() {
         // Test that gates follow the Rave Mandala sequence with the Aries offset.
-        assert_eq!(longitude_to_gate(0.0), 25, "0° Aries should still be Gate 25");
+        assert_eq!(
+            longitude_to_gate(0.0),
+            25,
+            "0° Aries should still be Gate 25"
+        );
         assert_eq!(
             longitude_to_gate(3.875),
             17,
             "3°52'30\" Aries should begin Gate 17"
         );
         assert_eq!(longitude_to_gate(9.5), 21, "9°30' Aries should be Gate 21");
-        assert_eq!(longitude_to_gate(15.125), 51, "15°07'30\" Aries should be Gate 51");
-        assert_eq!(longitude_to_gate(20.75), 42, "20°45' Aries should be Gate 42");
+        assert_eq!(
+            longitude_to_gate(15.125),
+            51,
+            "15°07'30\" Aries should be Gate 51"
+        );
+        assert_eq!(
+            longitude_to_gate(20.75),
+            42,
+            "20°45' Aries should be Gate 42"
+        );
         assert_eq!(longitude_to_gate(46.0), 2, "46° should be Gate 2");
         assert_eq!(longitude_to_gate(52.0), 23, "52° should be Gate 23");
 

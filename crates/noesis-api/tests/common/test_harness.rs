@@ -35,12 +35,18 @@ pub struct ProbeExecutionLog {
 
 impl ProbeExecutionLog {
     pub fn record(&self, engine_id: &str) {
-        let mut counts = self.counts.lock().expect("probe counts lock should not poison");
+        let mut counts = self
+            .counts
+            .lock()
+            .expect("probe counts lock should not poison");
         *counts.entry(engine_id.to_string()).or_insert(0) += 1;
     }
 
     pub fn count(&self, engine_id: &str) -> u64 {
-        let counts = self.counts.lock().expect("probe counts lock should not poison");
+        let counts = self
+            .counts
+            .lock()
+            .expect("probe counts lock should not poison");
         counts.get(engine_id).copied().unwrap_or(0)
     }
 }
@@ -183,7 +189,10 @@ impl RoutingHarness {
             .send_authenticated_json(
                 "POST",
                 &format!("/api/v1/engines/{}/calculate", engine_id),
-                Some(serde_json::to_value(create_test_birth_input()).expect("test input should serialize")),
+                Some(
+                    serde_json::to_value(create_test_birth_input())
+                        .expect("test input should serialize"),
+                ),
             )
             .await;
 
@@ -212,7 +221,10 @@ impl RoutingHarness {
             .send_authenticated_json(
                 "POST",
                 &format!("/api/v1/workflows/{}/execute", workflow_id),
-                Some(serde_json::to_value(create_test_birth_input()).expect("test input should serialize")),
+                Some(
+                    serde_json::to_value(create_test_birth_input())
+                        .expect("test input should serialize"),
+                ),
             )
             .await;
 

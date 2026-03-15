@@ -12,11 +12,7 @@ fn find_activation(
         .expect("planet activation should exist")
 }
 
-fn assert_cross(
-    chart: &engine_human_design::HDChart,
-    personality: (u8, u8),
-    design: (u8, u8),
-) {
+fn assert_cross(chart: &engine_human_design::HDChart, personality: (u8, u8), design: (u8, u8)) {
     let p_sun = find_activation(&chart.personality_activations, Planet::Sun);
     let p_earth = find_activation(&chart.personality_activations, Planet::Earth);
     let d_sun = find_activation(&chart.design_activations, Planet::Sun);
@@ -38,7 +34,10 @@ fn external_reference_1991_chart_matches_site() {
 
     assert_eq!((p_sun.gate, p_sun.line), (4, 2));
     assert_eq!((p_earth.gate, p_earth.line), (49, 2));
-    assert_eq!(find_activation(&chart.personality_activations, Planet::Moon).gate, 46);
+    assert_eq!(
+        find_activation(&chart.personality_activations, Planet::Moon).gate,
+        46
+    );
     assert_eq!(
         (
             find_activation(&chart.personality_activations, Planet::NorthNode).gate,
@@ -53,14 +52,38 @@ fn external_reference_1991_chart_matches_site() {
         ),
         (53, 4)
     );
-    assert_eq!(find_activation(&chart.personality_activations, Planet::Mercury).gate, 59);
-    assert_eq!(find_activation(&chart.personality_activations, Planet::Venus).gate, 59);
-    assert_eq!(find_activation(&chart.personality_activations, Planet::Mars).gate, 47);
-    assert_eq!(find_activation(&chart.personality_activations, Planet::Jupiter).gate, 4);
-    assert_eq!(find_activation(&chart.personality_activations, Planet::Saturn).gate, 41);
-    assert_eq!(find_activation(&chart.personality_activations, Planet::Uranus).gate, 38);
-    assert_eq!(find_activation(&chart.personality_activations, Planet::Neptune).gate, 38);
-    assert_eq!(find_activation(&chart.personality_activations, Planet::Pluto).gate, 1);
+    assert_eq!(
+        find_activation(&chart.personality_activations, Planet::Mercury).gate,
+        59
+    );
+    assert_eq!(
+        find_activation(&chart.personality_activations, Planet::Venus).gate,
+        59
+    );
+    assert_eq!(
+        find_activation(&chart.personality_activations, Planet::Mars).gate,
+        47
+    );
+    assert_eq!(
+        find_activation(&chart.personality_activations, Planet::Jupiter).gate,
+        4
+    );
+    assert_eq!(
+        find_activation(&chart.personality_activations, Planet::Saturn).gate,
+        41
+    );
+    assert_eq!(
+        find_activation(&chart.personality_activations, Planet::Uranus).gate,
+        38
+    );
+    assert_eq!(
+        find_activation(&chart.personality_activations, Planet::Neptune).gate,
+        38
+    );
+    assert_eq!(
+        find_activation(&chart.personality_activations, Planet::Pluto).gate,
+        1
+    );
     assert_eq!((d_sun.gate, d_sun.line), (23, 4));
     assert_eq!((d_earth.gate, d_earth.line), (43, 4));
     assert_eq!(

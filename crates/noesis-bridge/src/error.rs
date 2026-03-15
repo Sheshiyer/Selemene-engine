@@ -53,7 +53,10 @@ impl BridgeError {
         match self {
             BridgeError::EngineResponse { status, body } if (400..500).contains(&status) => {
                 let message = if operation == "validate" {
-                    format!("Engine {} validate rejected input ({}): {}", engine_id, status, body)
+                    format!(
+                        "Engine {} validate rejected input ({}): {}",
+                        engine_id, status, body
+                    )
                 } else {
                     format!("Engine {} rejected input ({}): {}", engine_id, status, body)
                 };
@@ -61,7 +64,10 @@ impl BridgeError {
             }
             BridgeError::EngineResponse { status, body } => {
                 let message = if operation == "validate" {
-                    format!("Engine {} validate returned {}: {}", engine_id, status, body)
+                    format!(
+                        "Engine {} validate returned {}: {}",
+                        engine_id, status, body
+                    )
                 } else {
                     format!("Engine {} returned {}: {}", engine_id, status, body)
                 };

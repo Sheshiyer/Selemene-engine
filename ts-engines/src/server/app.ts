@@ -91,7 +91,9 @@ export function createServer(engineRegistry: EngineRegistry = registry) {
     })
     .get('/health/ready', async ({ set }): Promise<ReadinessResponse> => {
       const engines = await runSelfCheck(engineRegistry)
-      const failedEngines = engines.filter((engine) => !engine.healthy).map((engine) => engine.engine_id)
+      const failedEngines = engines
+        .filter((engine) => !engine.healthy)
+        .map((engine) => engine.engine_id)
 
       if (failedEngines.length > 0) {
         set.status = 503

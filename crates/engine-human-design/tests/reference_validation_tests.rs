@@ -807,7 +807,9 @@ fn test_comprehensive_validation_report() {
     println!("\n🔧 Remaining known limitation:");
     println!("   - The wisdom JSON still only contains descriptive entries for 5 channels");
     println!("   - Structural analysis now uses an internal canonical 36-channel graph");
-    println!("   - External professional HD parity is still stronger than synthetic-only validation\n");
+    println!(
+        "   - External professional HD parity is still stronger than synthetic-only validation\n"
+    );
 }
 
 // Helper function to validate all Sun/Earth activations

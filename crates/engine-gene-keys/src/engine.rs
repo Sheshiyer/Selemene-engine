@@ -635,10 +635,30 @@ mod tests {
             .as_u64()
             .unwrap() as u8;
 
-        assert_eq!(gk_output.result["activation_sequence"]["lifes_work"][0].as_u64().unwrap(), ps as u64);
-        assert_eq!(gk_output.result["activation_sequence"]["lifes_work"][1].as_u64().unwrap(), pe as u64);
-        assert_eq!(gk_output.result["activation_sequence"]["evolution"][0].as_u64().unwrap(), ds as u64);
-        assert_eq!(gk_output.result["activation_sequence"]["evolution"][1].as_u64().unwrap(), de as u64);
+        assert_eq!(
+            gk_output.result["activation_sequence"]["lifes_work"][0]
+                .as_u64()
+                .unwrap(),
+            ps as u64
+        );
+        assert_eq!(
+            gk_output.result["activation_sequence"]["lifes_work"][1]
+                .as_u64()
+                .unwrap(),
+            pe as u64
+        );
+        assert_eq!(
+            gk_output.result["activation_sequence"]["evolution"][0]
+                .as_u64()
+                .unwrap(),
+            ds as u64
+        );
+        assert_eq!(
+            gk_output.result["activation_sequence"]["evolution"][1]
+                .as_u64()
+                .unwrap(),
+            de as u64
+        );
 
         // Canonical guard against historical 8/14 drift
         assert_eq!(ds, 23);

@@ -17,42 +17,222 @@ struct ChannelSpec {
 }
 
 const CANONICAL_CHANNEL_SPECS: &[ChannelSpec] = &[
-    ChannelSpec { gate1: 64, gate2: 47, centers: [Center::Head, Center::Ajna], circuitry: "Collective" },
-    ChannelSpec { gate1: 61, gate2: 24, centers: [Center::Head, Center::Ajna], circuitry: "Individual" },
-    ChannelSpec { gate1: 63, gate2: 4, centers: [Center::Head, Center::Ajna], circuitry: "Collective" },
-    ChannelSpec { gate1: 17, gate2: 62, centers: [Center::Ajna, Center::Throat], circuitry: "Collective" },
-    ChannelSpec { gate1: 43, gate2: 23, centers: [Center::Ajna, Center::Throat], circuitry: "Individual" },
-    ChannelSpec { gate1: 11, gate2: 56, centers: [Center::Ajna, Center::Throat], circuitry: "Collective" },
-    ChannelSpec { gate1: 48, gate2: 16, centers: [Center::Spleen, Center::Throat], circuitry: "Collective" },
-    ChannelSpec { gate1: 57, gate2: 20, centers: [Center::Spleen, Center::Throat], circuitry: "Individual" },
-    ChannelSpec { gate1: 20, gate2: 10, centers: [Center::Throat, Center::G], circuitry: "Individual" },
-    ChannelSpec { gate1: 31, gate2: 7, centers: [Center::Throat, Center::G], circuitry: "Collective" },
-    ChannelSpec { gate1: 8, gate2: 1, centers: [Center::Throat, Center::G], circuitry: "Individual" },
-    ChannelSpec { gate1: 33, gate2: 13, centers: [Center::Throat, Center::G], circuitry: "Collective" },
-    ChannelSpec { gate1: 45, gate2: 21, centers: [Center::Throat, Center::Heart], circuitry: "Tribal" },
-    ChannelSpec { gate1: 12, gate2: 22, centers: [Center::Throat, Center::SolarPlexus], circuitry: "Individual" },
-    ChannelSpec { gate1: 35, gate2: 36, centers: [Center::Throat, Center::SolarPlexus], circuitry: "Collective" },
-    ChannelSpec { gate1: 34, gate2: 20, centers: [Center::Sacral, Center::Throat], circuitry: "Individual" },
-    ChannelSpec { gate1: 2, gate2: 14, centers: [Center::G, Center::Sacral], circuitry: "Individual" },
-    ChannelSpec { gate1: 29, gate2: 46, centers: [Center::Sacral, Center::G], circuitry: "Collective" },
-    ChannelSpec { gate1: 5, gate2: 15, centers: [Center::Sacral, Center::G], circuitry: "Collective" },
-    ChannelSpec { gate1: 10, gate2: 34, centers: [Center::G, Center::Sacral], circuitry: "Individual" },
-    ChannelSpec { gate1: 10, gate2: 57, centers: [Center::G, Center::Spleen], circuitry: "Individual" },
-    ChannelSpec { gate1: 25, gate2: 51, centers: [Center::G, Center::Heart], circuitry: "Individual" },
-    ChannelSpec { gate1: 26, gate2: 44, centers: [Center::Heart, Center::Spleen], circuitry: "Tribal" },
-    ChannelSpec { gate1: 27, gate2: 50, centers: [Center::Sacral, Center::Spleen], circuitry: "Tribal" },
-    ChannelSpec { gate1: 28, gate2: 38, centers: [Center::Spleen, Center::Root], circuitry: "Individual" },
-    ChannelSpec { gate1: 32, gate2: 54, centers: [Center::Spleen, Center::Root], circuitry: "Tribal" },
-    ChannelSpec { gate1: 18, gate2: 58, centers: [Center::Spleen, Center::Root], circuitry: "Collective" },
-    ChannelSpec { gate1: 59, gate2: 6, centers: [Center::Sacral, Center::SolarPlexus], circuitry: "Tribal" },
-    ChannelSpec { gate1: 37, gate2: 40, centers: [Center::SolarPlexus, Center::Heart], circuitry: "Tribal" },
-    ChannelSpec { gate1: 19, gate2: 49, centers: [Center::Root, Center::SolarPlexus], circuitry: "Tribal" },
-    ChannelSpec { gate1: 39, gate2: 55, centers: [Center::Root, Center::SolarPlexus], circuitry: "Individual" },
-    ChannelSpec { gate1: 41, gate2: 30, centers: [Center::Root, Center::SolarPlexus], circuitry: "Collective" },
-    ChannelSpec { gate1: 3, gate2: 60, centers: [Center::Sacral, Center::Root], circuitry: "Individual" },
-    ChannelSpec { gate1: 42, gate2: 53, centers: [Center::Sacral, Center::Root], circuitry: "Collective" },
-    ChannelSpec { gate1: 9, gate2: 52, centers: [Center::Sacral, Center::Root], circuitry: "Collective" },
-    ChannelSpec { gate1: 34, gate2: 57, centers: [Center::Sacral, Center::Spleen], circuitry: "Individual" },
+    ChannelSpec {
+        gate1: 64,
+        gate2: 47,
+        centers: [Center::Head, Center::Ajna],
+        circuitry: "Collective",
+    },
+    ChannelSpec {
+        gate1: 61,
+        gate2: 24,
+        centers: [Center::Head, Center::Ajna],
+        circuitry: "Individual",
+    },
+    ChannelSpec {
+        gate1: 63,
+        gate2: 4,
+        centers: [Center::Head, Center::Ajna],
+        circuitry: "Collective",
+    },
+    ChannelSpec {
+        gate1: 17,
+        gate2: 62,
+        centers: [Center::Ajna, Center::Throat],
+        circuitry: "Collective",
+    },
+    ChannelSpec {
+        gate1: 43,
+        gate2: 23,
+        centers: [Center::Ajna, Center::Throat],
+        circuitry: "Individual",
+    },
+    ChannelSpec {
+        gate1: 11,
+        gate2: 56,
+        centers: [Center::Ajna, Center::Throat],
+        circuitry: "Collective",
+    },
+    ChannelSpec {
+        gate1: 48,
+        gate2: 16,
+        centers: [Center::Spleen, Center::Throat],
+        circuitry: "Collective",
+    },
+    ChannelSpec {
+        gate1: 57,
+        gate2: 20,
+        centers: [Center::Spleen, Center::Throat],
+        circuitry: "Individual",
+    },
+    ChannelSpec {
+        gate1: 20,
+        gate2: 10,
+        centers: [Center::Throat, Center::G],
+        circuitry: "Individual",
+    },
+    ChannelSpec {
+        gate1: 31,
+        gate2: 7,
+        centers: [Center::Throat, Center::G],
+        circuitry: "Collective",
+    },
+    ChannelSpec {
+        gate1: 8,
+        gate2: 1,
+        centers: [Center::Throat, Center::G],
+        circuitry: "Individual",
+    },
+    ChannelSpec {
+        gate1: 33,
+        gate2: 13,
+        centers: [Center::Throat, Center::G],
+        circuitry: "Collective",
+    },
+    ChannelSpec {
+        gate1: 45,
+        gate2: 21,
+        centers: [Center::Throat, Center::Heart],
+        circuitry: "Tribal",
+    },
+    ChannelSpec {
+        gate1: 12,
+        gate2: 22,
+        centers: [Center::Throat, Center::SolarPlexus],
+        circuitry: "Individual",
+    },
+    ChannelSpec {
+        gate1: 35,
+        gate2: 36,
+        centers: [Center::Throat, Center::SolarPlexus],
+        circuitry: "Collective",
+    },
+    ChannelSpec {
+        gate1: 34,
+        gate2: 20,
+        centers: [Center::Sacral, Center::Throat],
+        circuitry: "Individual",
+    },
+    ChannelSpec {
+        gate1: 2,
+        gate2: 14,
+        centers: [Center::G, Center::Sacral],
+        circuitry: "Individual",
+    },
+    ChannelSpec {
+        gate1: 29,
+        gate2: 46,
+        centers: [Center::Sacral, Center::G],
+        circuitry: "Collective",
+    },
+    ChannelSpec {
+        gate1: 5,
+        gate2: 15,
+        centers: [Center::Sacral, Center::G],
+        circuitry: "Collective",
+    },
+    ChannelSpec {
+        gate1: 10,
+        gate2: 34,
+        centers: [Center::G, Center::Sacral],
+        circuitry: "Individual",
+    },
+    ChannelSpec {
+        gate1: 10,
+        gate2: 57,
+        centers: [Center::G, Center::Spleen],
+        circuitry: "Individual",
+    },
+    ChannelSpec {
+        gate1: 25,
+        gate2: 51,
+        centers: [Center::G, Center::Heart],
+        circuitry: "Individual",
+    },
+    ChannelSpec {
+        gate1: 26,
+        gate2: 44,
+        centers: [Center::Heart, Center::Spleen],
+        circuitry: "Tribal",
+    },
+    ChannelSpec {
+        gate1: 27,
+        gate2: 50,
+        centers: [Center::Sacral, Center::Spleen],
+        circuitry: "Tribal",
+    },
+    ChannelSpec {
+        gate1: 28,
+        gate2: 38,
+        centers: [Center::Spleen, Center::Root],
+        circuitry: "Individual",
+    },
+    ChannelSpec {
+        gate1: 32,
+        gate2: 54,
+        centers: [Center::Spleen, Center::Root],
+        circuitry: "Tribal",
+    },
+    ChannelSpec {
+        gate1: 18,
+        gate2: 58,
+        centers: [Center::Spleen, Center::Root],
+        circuitry: "Collective",
+    },
+    ChannelSpec {
+        gate1: 59,
+        gate2: 6,
+        centers: [Center::Sacral, Center::SolarPlexus],
+        circuitry: "Tribal",
+    },
+    ChannelSpec {
+        gate1: 37,
+        gate2: 40,
+        centers: [Center::SolarPlexus, Center::Heart],
+        circuitry: "Tribal",
+    },
+    ChannelSpec {
+        gate1: 19,
+        gate2: 49,
+        centers: [Center::Root, Center::SolarPlexus],
+        circuitry: "Tribal",
+    },
+    ChannelSpec {
+        gate1: 39,
+        gate2: 55,
+        centers: [Center::Root, Center::SolarPlexus],
+        circuitry: "Individual",
+    },
+    ChannelSpec {
+        gate1: 41,
+        gate2: 30,
+        centers: [Center::Root, Center::SolarPlexus],
+        circuitry: "Collective",
+    },
+    ChannelSpec {
+        gate1: 3,
+        gate2: 60,
+        centers: [Center::Sacral, Center::Root],
+        circuitry: "Individual",
+    },
+    ChannelSpec {
+        gate1: 42,
+        gate2: 53,
+        centers: [Center::Sacral, Center::Root],
+        circuitry: "Collective",
+    },
+    ChannelSpec {
+        gate1: 9,
+        gate2: 52,
+        centers: [Center::Sacral, Center::Root],
+        circuitry: "Collective",
+    },
+    ChannelSpec {
+        gate1: 34,
+        gate2: 57,
+        centers: [Center::Sacral, Center::Spleen],
+        circuitry: "Individual",
+    },
 ];
 
 /// Analyze center definitions based on activated channels
@@ -122,7 +302,9 @@ pub fn analyze_channels(activations: &[Activation]) -> Vec<Channel> {
     let mut active_channels = Vec::new();
 
     for channel_spec in CANONICAL_CHANNEL_SPECS {
-        if activated_gates.contains(&channel_spec.gate1) && activated_gates.contains(&channel_spec.gate2) {
+        if activated_gates.contains(&channel_spec.gate1)
+            && activated_gates.contains(&channel_spec.gate2)
+        {
             active_channels.push(Channel {
                 gate1: channel_spec.gate1,
                 gate2: channel_spec.gate2,
@@ -401,7 +583,10 @@ fn is_throat_connected_to_motor(channels: &[Channel]) -> bool {
             }
 
             let has_throat = spec.centers.contains(&Center::Throat);
-            let has_motor = spec.centers.iter().any(|center| motor_centers.contains(center));
+            let has_motor = spec
+                .centers
+                .iter()
+                .any(|center| motor_centers.contains(center));
             has_throat && has_motor
         })
     })

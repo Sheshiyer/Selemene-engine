@@ -273,13 +273,11 @@ impl ConsciousnessEngine for BridgeEngine {
                 "bridge calculate returned non-2xx"
             );
 
-            return Err(
-                BridgeError::EngineResponse {
-                    status: status.as_u16(),
-                    body,
-                }
-                .into_calculate_engine_error(&self.engine_id),
-            );
+            return Err(BridgeError::EngineResponse {
+                status: status.as_u16(),
+                body,
+            }
+            .into_calculate_engine_error(&self.engine_id));
         }
 
         let ts_response = response.json::<TsEngineResponse>().await.map_err(|e| {
@@ -352,13 +350,11 @@ impl ConsciousnessEngine for BridgeEngine {
                 "bridge validate returned non-2xx"
             );
 
-            return Err(
-                BridgeError::EngineResponse {
-                    status: status.as_u16(),
-                    body,
-                }
-                .into_validate_engine_error(&self.engine_id),
-            );
+            return Err(BridgeError::EngineResponse {
+                status: status.as_u16(),
+                body,
+            }
+            .into_validate_engine_error(&self.engine_id));
         }
 
         response.json::<ValidationResult>().await.map_err(|e| {
@@ -463,13 +459,11 @@ impl BridgeManager {
             info!(url = %self.base_url, "TS server health check passed");
             Ok(())
         } else {
-            Err(
-                BridgeError::ServerUnavailable(format!(
-                    "Health check returned {}",
-                    response.status()
-                ))
-                .into_manager_engine_error(),
-            )
+            Err(BridgeError::ServerUnavailable(format!(
+                "Health check returned {}",
+                response.status()
+            ))
+            .into_manager_engine_error())
         }
     }
 
@@ -500,22 +494,20 @@ impl BridgeManager {
 
         let status = response.status();
         if status.as_u16() != 200 && status.as_u16() != 503 {
-            return Err(
-                BridgeError::ServerUnavailable(format!(
-                    "Readiness check returned unexpected status {}",
-                    status
-                ))
-                .into_manager_engine_error(),
-            );
+            return Err(BridgeError::ServerUnavailable(format!(
+                "Readiness check returned unexpected status {}",
+                status
+            ))
+            .into_manager_engine_error());
         }
 
-        response.json::<SidecarReadinessStatus>().await.map_err(|e| {
-            BridgeError::DeserializationError(format!(
-                "Readiness response from {}: {}",
-                url, e
-            ))
-            .into_manager_engine_error()
-        })
+        response
+            .json::<SidecarReadinessStatus>()
+            .await
+            .map_err(|e| {
+                BridgeError::DeserializationError(format!("Readiness response from {}: {}", url, e))
+                    .into_manager_engine_error()
+            })
     }
 
     /// Check if the TS server is available (non-blocking, returns false on error).
