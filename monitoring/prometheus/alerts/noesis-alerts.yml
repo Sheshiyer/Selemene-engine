@@ -17,6 +17,29 @@ groups:
           summary: "Noesis API error rate exceeds 5%"
           description: "Error rate is {{ $value | humanizePercentage }} over the last 5 minutes"
 
+      # Canary error rate diverges materially from stable
+      - alert: NoesisCanaryErrorDivergence
+        expr: |
+          (
+            sum(rate(noesis_calculation_errors_total{rollout="canary"}[2m]))
+            / clamp_min(sum(rate(noesis_calculations_total{rollout="canary"}[2m])), 0.0001)
+          ) > (
+            2 * (
+              sum(rate(noesis_calculation_errors_total{rollout="stable"}[2m]))
+              / clamp_min(sum(rate(noesis_calculations_total{rollout="stable"}[2m])), 0.0001)
+            )
+          )
+          and sum(rate(noesis_calculations_total{rollout="canary"}[2m])) > 0
+          and sum(rate(noesis_calculations_total{rollout="stable"}[2m])) > 0
+        for: 2m
+        labels:
+          severity: critical
+          service: noesis-api
+          rollout: canary
+        annotations:
+          summary: "Canary error rate is more than double stable"
+          description: "Canary rollout is diverging from stable over the last 2 minutes and should be rolled back"
+
       # High Latency Alert (P95 > 2s)
       - alert: NoesisHighLatency
         expr: |

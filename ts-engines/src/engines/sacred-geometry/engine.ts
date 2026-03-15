@@ -9,7 +9,10 @@ import { SACRED_FORMS, getFormById, getFormIds } from './wisdom'
 import { generateWitnessPrompts } from './witness'
 
 export class SacredGeometryEngine implements ConsciousnessEngine {
-  private safeSvgPreview(template?: string): { status: 'absent' | 'accepted' | 'rejected'; reason?: string } {
+  private safeSvgPreview(template?: string): {
+    status: 'absent' | 'accepted' | 'rejected'
+    reason?: string
+  } {
     if (!template) {
       return { status: 'absent' }
     }

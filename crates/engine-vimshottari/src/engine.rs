@@ -16,9 +16,9 @@ use std::sync::Arc;
 use std::time::Instant;
 
 use crate::calculator::{
-    calculate_birth_nakshatra, calculate_complete_timeline, calculate_dasha_balance,
-    calculate_mahadashas, calculate_upcoming_transitions, enrich_period_with_qualities,
-    find_current_period, get_nakshatra_from_longitude,
+    calculate_complete_timeline, calculate_dasha_balance, calculate_mahadashas,
+    calculate_upcoming_transitions, enrich_period_with_qualities, find_current_period,
+    get_nakshatra_from_longitude,
 };
 use crate::witness::generate_witness_prompt;
 
@@ -49,10 +49,36 @@ impl VimshottariEngine {
         }
     }
 
-    /// Parse birth_data into a UTC DateTime
+    /// Approximate Lahiri ayanamsa used to convert tropical Moon longitude to sidereal.
+    const LAHIRI_AYANAMSA_DEGREES: f64 = 23.72;
+
+    /// Convert tropical longitude to sidereal (Lahiri).
+    fn to_sidereal_longitude(tropical_longitude: f64) -> f64 {
+        (tropical_longitude - Self::LAHIRI_AYANAMSA_DEGREES).rem_euclid(360.0)
+    }
+
+    /// Parse timezone offsets from either IANA shortcuts or explicit +HH:MM format.
+    fn tz_offset_from_string(tz: &str) -> f64 {
+        if tz.starts_with('+') || tz.starts_with('-') {
+            let parts: Vec<&str> = tz[1..].split(':').collect();
+            let sign: f64 = if tz.starts_with('-') { -1.0 } else { 1.0 };
+            let hours: f64 = parts.first().and_then(|s| s.parse().ok()).unwrap_or(0.0);
+            let minutes: f64 = parts.get(1).and_then(|s| s.parse().ok()).unwrap_or(0.0);
+            return sign * (hours + minutes / 60.0);
+        }
+
+        match tz {
+            "Asia/Kolkata" | "Asia/Calcutta" => 5.5,
+            "UTC" | "GMT" => 0.0,
+            _ => 0.0,
+        }
+    }
+
+    /// Parse birth_data into a UTC DateTime, honoring the local timezone.
     fn parse_birth_datetime(
         date_str: &str,
         time_str: Option<&str>,
+        timezone: Option<&str>,
     ) -> Result<chrono::DateTime<Utc>, EngineError> {
         let date = NaiveDate::parse_from_str(date_str, "%Y-%m-%d").map_err(|e| {
             EngineError::CalculationError(format!("Invalid date format '{}': {}", date_str, e))
@@ -68,8 +94,12 @@ impl VimshottariEngine {
             NaiveTime::from_hms_opt(12, 0, 0).unwrap() // Default to noon
         };
 
-        let naive_dt = NaiveDateTime::new(date, time);
-        Ok(Utc.from_utc_datetime(&naive_dt))
+        let naive_local_dt = NaiveDateTime::new(date, time);
+        let tz_offset_hours = timezone.map(Self::tz_offset_from_string).unwrap_or(0.0);
+        let offset_seconds = (tz_offset_hours * 3600.0) as i64;
+        let naive_utc_dt = naive_local_dt - chrono::Duration::seconds(offset_seconds);
+
+        Ok(Utc.from_utc_datetime(&naive_utc_dt))
     }
 
     /// Extract Moon longitude from options (Mode 2: direct longitude)
@@ -212,19 +242,21 @@ impl ConsciousnessEngine for VimshottariEngine {
 
         // Determine Moon longitude and birth time
         let (moon_longitude, birth_time, backend) = if let Some(ref birth_data) = input.birth_data {
-            // Mode 1: Calculate from birth_data using Swiss Ephemeris
-            let utc_dt = Self::parse_birth_datetime(&birth_data.date, birth_data.time.as_deref())?;
-
-            let _nakshatra = calculate_birth_nakshatra(utc_dt, "").map_err(|e| {
-                EngineError::CalculationError(format!("Failed to calculate birth nakshatra: {}", e))
-            })?;
+            // Mode 1: Calculate from birth_data using Swiss Ephemeris, then convert
+            // tropical Moon longitude to sidereal for Vedic nakshatra/dasha logic.
+            let utc_dt = Self::parse_birth_datetime(
+                &birth_data.date,
+                birth_data.time.as_deref(),
+                Some(&birth_data.timezone),
+            )?;
 
             // Get precise Moon longitude from Swiss Ephemeris
             let ephe = engine_human_design::ephemeris::EphemerisCalculator::new("");
             let moon_pos =
                 ephe.get_planet_position(engine_human_design::ephemeris::HDPlanet::Moon, &utc_dt)?;
+            let sidereal_moon_longitude = Self::to_sidereal_longitude(moon_pos.longitude);
 
-            (moon_pos.longitude, utc_dt, "swiss-ephemeris")
+            (sidereal_moon_longitude, utc_dt, "swiss-ephemeris-sidereal")
         } else if input.options.contains_key("moon_longitude") {
             // Mode 2: Moon longitude provided directly
             let longitude = Self::extract_moon_longitude(&input.options)?;
@@ -236,8 +268,9 @@ impl ConsciousnessEngine for VimshottariEngine {
                 .and_then(|v| v.as_str())
                 .unwrap_or("2000-01-01");
             let time_str = input.options.get("birth_time").and_then(|v| v.as_str());
+            let timezone = input.options.get("timezone").and_then(|v| v.as_str());
 
-            let birth_time = Self::parse_birth_datetime(date_str, time_str)?;
+            let birth_time = Self::parse_birth_datetime(date_str, time_str, timezone)?;
 
             (longitude, birth_time, "moon-longitude")
         } else {
@@ -463,6 +496,50 @@ mod tests {
             precision: Precision::Standard,
             options: HashMap::new(),
         }
+    }
+
+    #[test]
+    fn test_parse_birth_datetime_respects_timezone() {
+        let utc_dt = VimshottariEngine::parse_birth_datetime(
+            "1991-08-13",
+            Some("13:31"),
+            Some("Asia/Kolkata"),
+        )
+        .expect("timezone conversion should work");
+
+        assert_eq!(
+            utc_dt.format("%Y-%m-%d %H:%M").to_string(),
+            "1991-08-13 08:01"
+        );
+    }
+
+    #[tokio::test]
+    async fn test_canonical_birth_data_resolves_uttara_phalguni() {
+        let engine = VimshottariEngine::new();
+        let input = EngineInput {
+            birth_data: Some(BirthData {
+                name: Some("Canonical".to_string()),
+                date: "1991-08-13".to_string(),
+                time: Some("13:31".to_string()),
+                latitude: 12.9340,
+                longitude: 77.6214,
+                timezone: "Asia/Kolkata".to_string(),
+            }),
+            current_time: Utc::now(),
+            location: None,
+            precision: Precision::Standard,
+            options: HashMap::new(),
+        };
+
+        let output = engine
+            .calculate(input)
+            .await
+            .expect("calculation should succeed");
+        let nak_name = output.result["birth_nakshatra"]["name"]
+            .as_str()
+            .expect("nakshatra name should exist");
+
+        assert_eq!(nak_name, "Uttara Phalguni");
     }
 
     #[tokio::test]

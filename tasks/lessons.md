@@ -26,3 +26,13 @@
 - If API endpoint returns 500 and null checks are clean, immediately test for missing columns/indexes expected by latest code.
 - Distinguish **null data shape issues** from **missing schema objects** using `information_schema.columns` before patching query defaults.
 - Add compatibility fallbacks in repository layer for optional, recently introduced columns to reduce incident blast radius during phased migrations.
+
+## 2026-03-10 — Panchanga Table Interpretation Rule
+
+- When comparing external Panchanga tables against engine output, do not assume every `upto` time refers to the core nakshatra or tithi itself.
+- Distinguish clearly between:
+  - nakshatra end time,
+  - nakshatra pada transition time,
+  - karana sequence windows,
+  - yoga transition time.
+- If the source is a screenshot or pasted table, resolve row semantics first before calling a mismatch.

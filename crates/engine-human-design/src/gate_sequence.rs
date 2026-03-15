@@ -3,12 +3,14 @@
 //! CRITICAL: Uses the RAVE MANDALA sequence - the actual Human Design wheel.
 //! This is NOT sequential (1, 2, 3...) around the zodiac!
 //!
-//! The Rave Mandala starts with Gate 17 at 0° Aries and follows a specific
-//! non-sequential order derived from the I-Ching mapped to the zodiac.
+//! The Rave Mandala is offset relative to the tropical zodiac.
+//! 0° Aries falls inside Gate 25, and Gate 17 begins at 3°52'30" Aries.
+//! Gates then follow the standard non-sequential order derived from the
+//! I-Ching mapped to the zodiac.
 //!
 //! Gate calculation:
 //! - 360° / 64 gates = 5.625° per gate
-//! - Gate 17 starts at 0° Aries (spring equinox)
+//! - Gate 17 starts at 3°52'30" Aries
 //! - Gates follow Rave Mandala sequence around the wheel
 //!
 //! Line calculation:
@@ -17,13 +19,14 @@
 
 const DEGREES_PER_GATE: f64 = 360.0 / 64.0; // 5.625°
 const DEGREES_PER_LINE: f64 = DEGREES_PER_GATE / 6.0; // 0.9375°
+const ARIES_OFFSET_DEGREES: f64 = 3.875; // 3°52'30"
 
 /// The Rave Mandala gate sequence starting at 0° Aries.
 /// This is the actual Human Design gate order around the zodiac wheel.
 /// Each entry represents the gate number for that position (0-63 → gates at that position).
 ///
-/// Position 0 = 0°-5.625° Aries = Gate 17
-/// Position 1 = 5.625°-11.25° Aries = Gate 21
+/// Position 0 = 3°52'30"-9°30' Aries = Gate 17
+/// Position 63 wraps across Pisces/Aries and contains Gate 25
 /// etc.
 static RAVE_MANDALA_SEQUENCE: [u8; 64] = [
     17, 21, 51, 42, 3, 27, 24, 2, // 0°-45° (Aries, Taurus partial)
@@ -48,8 +51,8 @@ static RAVE_MANDALA_SEQUENCE: [u8; 64] = [
 /// # Returns
 /// Gate number (1-64)
 pub fn longitude_to_gate(longitude: f64) -> u8 {
-    // Normalize longitude to 0-360
-    let normalized = longitude.rem_euclid(360.0);
+    // Normalize longitude to the true Rave Mandala origin where Gate 17 starts.
+    let normalized = (longitude - ARIES_OFFSET_DEGREES).rem_euclid(360.0);
 
     // Calculate position index: divide by 5.625° to get 0-63
     let position = (normalized / DEGREES_PER_GATE).floor() as usize;
@@ -72,8 +75,8 @@ pub fn longitude_to_gate(longitude: f64) -> u8 {
 /// # Returns
 /// Line number (1-6)
 pub fn longitude_to_line(longitude: f64, _gate: u8) -> u8 {
-    // Normalize longitude to 0-360
-    let normalized = longitude.rem_euclid(360.0);
+    // Normalize longitude to the true Rave Mandala origin where Gate 17 starts.
+    let normalized = (longitude - ARIES_OFFSET_DEGREES).rem_euclid(360.0);
 
     // Find position within the current gate
     let position_in_gate = normalized % DEGREES_PER_GATE;
@@ -104,45 +107,68 @@ mod tests {
 
     #[test]
     fn test_rave_mandala_gate_mapping() {
-        // Test that gates follow Rave Mandala sequence starting at 0° Aries
-        assert_eq!(longitude_to_gate(0.0), 17, "0° Aries should be Gate 17");
-        assert_eq!(longitude_to_gate(5.625), 21, "5.625° should be Gate 21");
-        assert_eq!(longitude_to_gate(11.25), 51, "11.25° should be Gate 51");
-        assert_eq!(longitude_to_gate(16.875), 42, "16.875° should be Gate 42");
+        // Test that gates follow the Rave Mandala sequence with the Aries offset.
+        assert_eq!(
+            longitude_to_gate(0.0),
+            25,
+            "0° Aries should still be Gate 25"
+        );
+        assert_eq!(
+            longitude_to_gate(3.875),
+            17,
+            "3°52'30\" Aries should begin Gate 17"
+        );
+        assert_eq!(longitude_to_gate(9.5), 21, "9°30' Aries should be Gate 21");
+        assert_eq!(
+            longitude_to_gate(15.125),
+            51,
+            "15°07'30\" Aries should be Gate 51"
+        );
+        assert_eq!(
+            longitude_to_gate(20.75),
+            42,
+            "20°45' Aries should be Gate 42"
+        );
+        assert_eq!(longitude_to_gate(46.0), 2, "46° should be Gate 2");
+        assert_eq!(longitude_to_gate(52.0), 23, "52° should be Gate 23");
 
         // Test middle of zodiac (180° = position 32)
-        assert_eq!(longitude_to_gate(180.0), 18, "180° should be Gate 18");
+        assert_eq!(longitude_to_gate(180.0), 46, "180° should be Gate 46");
 
-        // Test near end of zodiac (354.375° = position 63)
-        assert_eq!(longitude_to_gate(354.375), 25, "354.375° should be Gate 25");
+        // Test near end of zodiac (354.375° is in late Pisces, before Gate 25 wraps into Aries)
+        assert_eq!(longitude_to_gate(354.375), 36, "354.375° should be Gate 36");
     }
 
     #[test]
     fn test_line_calculation() {
-        // Test line boundaries within Gate 17 (0° - 5.625°)
+        // Test line boundaries within Gate 17 (3°52'30" - 9°30' Aries)
         assert_eq!(
-            longitude_to_line(0.0, 17),
+            longitude_to_line(3.875, 17),
             1,
             "Start of gate should be line 1"
         );
-        assert_eq!(longitude_to_line(0.9375, 17), 2, "0.9375° should be line 2");
-        assert_eq!(longitude_to_line(1.875, 17), 3, "1.875° should be line 3");
-        assert_eq!(longitude_to_line(2.8125, 17), 4, "2.8125° should be line 4");
-        assert_eq!(longitude_to_line(3.75, 17), 5, "3.75° should be line 5");
-        assert_eq!(longitude_to_line(4.6875, 17), 6, "4.6875° should be line 6");
+        assert_eq!(
+            longitude_to_line(4.8125, 17),
+            2,
+            "0.9375° into the gate should be line 2"
+        );
+        assert_eq!(longitude_to_line(5.75, 17), 3, "1.875° should be line 3");
+        assert_eq!(longitude_to_line(6.6875, 17), 4, "2.8125° should be line 4");
+        assert_eq!(longitude_to_line(7.625, 17), 5, "3.75° should be line 5");
+        assert_eq!(longitude_to_line(8.5625, 17), 6, "4.6875° should be line 6");
     }
 
     #[test]
     fn test_gate_and_line_combined() {
         // Test 0° Aries
         let (gate, line) = longitude_to_gate_and_line(0.0);
-        assert_eq!(gate, 17, "0° Aries should be Gate 17");
-        assert_eq!(line, 1, "0° Aries should be Line 1");
+        assert_eq!(gate, 25, "0° Aries should be Gate 25");
+        assert_eq!(line, 2, "0° Aries should be Line 2");
 
         // Test 180° (Leo/Virgo cusp area)
         let (gate, line) = longitude_to_gate_and_line(180.0);
-        assert_eq!(gate, 18, "180° should be Gate 18");
-        assert_eq!(line, 1, "180° exactly should be Line 1");
+        assert_eq!(gate, 46, "180° should be Gate 46");
+        assert_eq!(line, 2, "180° exactly should be Line 2");
     }
 
     #[test]
@@ -198,20 +224,16 @@ mod tests {
     #[test]
     fn test_known_positions() {
         // Test some known gate positions from reference data
-        // Gate 4 should be around 135°-140° (Cancer/Leo area)
-        // Position 24 = Gate 4 at 135°-140.625°
-        assert_eq!(longitude_to_gate(136.0), 4, "136° should be Gate 4");
+        // Gate 4 should be around 138.875°-144.5° (Leo area)
+        assert_eq!(longitude_to_gate(140.0), 4, "140° should be Gate 4");
 
-        // Gate 23 should be around 45° (Taurus area)
-        // Position 8 = Gate 23 at 45°-50.625°
-        assert_eq!(longitude_to_gate(46.0), 23, "46° should be Gate 23");
+        // Gate 2 should be around 43.25°-48.875° (Taurus area)
+        assert_eq!(longitude_to_gate(46.0), 2, "46° should be Gate 2");
 
-        // Gate 43 should be around 225° (Virgo/Libra area)
-        // Position 40 = Gate 43 at 225°-230.625°
-        assert_eq!(longitude_to_gate(226.0), 43, "226° should be Gate 43");
+        // Gate 1 should be around 223.25°-228.875° (Scorpio area)
+        assert_eq!(longitude_to_gate(226.0), 1, "226° should be Gate 1");
 
-        // Gate 49 should be around 315° (Scorpio/Sagittarius area)
-        // Position 56 = Gate 49 at 315°-320.625°
-        assert_eq!(longitude_to_gate(316.0), 49, "316° should be Gate 49");
+        // Gate 13 should be around 313.25°-318.875° (Aquarius area)
+        assert_eq!(longitude_to_gate(316.0), 13, "316° should be Gate 13");
     }
 }

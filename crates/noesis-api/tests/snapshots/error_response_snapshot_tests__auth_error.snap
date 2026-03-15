@@ -1,0 +1,14 @@
+---
+source: crates/noesis-api/tests/error_response_snapshot_tests.rs
+expression: json
+---
+{
+  "details": {
+    "reason": "bad token"
+  },
+  "error": "Authentication error: bad token",
+  "error_code": "AUTH_ERROR",
+  "message": "Authentication error: bad token",
+  "status": 401,
+  "trace_id": "snapshot-trace"
+}

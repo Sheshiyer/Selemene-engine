@@ -354,10 +354,24 @@ impl ConsciousnessEngine for FaceReadingEngine {
         if let Some(seed) = input.options.get("seed").and_then(|v| v.as_u64()) {
             format!("face-reading:mock:seed:{}", seed)
         } else {
-            // Without seed, each call is unique (timestamp-based)
+            let birth_fragment = input.birth_data.as_ref().map_or_else(
+                || "no-birth-data".to_string(),
+                |birth| {
+                    format!(
+                        "{}:{}:{:.4}:{:.4}:{}",
+                        birth.date,
+                        birth.time.clone().unwrap_or_default(),
+                        birth.latitude,
+                        birth.longitude,
+                        birth.timezone
+                    )
+                },
+            );
+
             format!(
-                "face-reading:mock:{}",
-                Utc::now().timestamp_nanos_opt().unwrap_or(0)
+                "face-reading:mock:{}:{}",
+                birth_fragment,
+                input.current_time.timestamp()
             )
         }
     }
@@ -532,8 +546,10 @@ mod tests {
         let input = create_test_input();
 
         let key = engine.cache_key(&input);
+        let key_repeat = engine.cache_key(&input);
         assert!(key.starts_with("face-reading:mock:"));
         assert!(!key.contains("seed"));
+        assert_eq!(key, key_repeat);
     }
 
     #[tokio::test]

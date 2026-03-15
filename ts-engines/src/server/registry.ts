@@ -4,7 +4,7 @@ import type { ConsciousnessEngine, EngineMetadata } from '../types'
  * Registry of all TypeScript consciousness engines
  * Engines register themselves here on startup
  */
-class EngineRegistry {
+export class EngineRegistry {
   private engines: Map<string, ConsciousnessEngine> = new Map()
 
   /** Register an engine */
@@ -32,6 +32,11 @@ class EngineRegistry {
   /** Get all engine metadata */
   listMetadata(): EngineMetadata[] {
     return Array.from(this.engines.values()).map((e) => e.metadata())
+  }
+
+  /** Get all engine instances */
+  all(): ConsciousnessEngine[] {
+    return Array.from(this.engines.values())
   }
 
   /** Get engine count */

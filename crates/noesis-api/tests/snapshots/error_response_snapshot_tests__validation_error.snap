@@ -1,0 +1,14 @@
+---
+source: crates/noesis-api/tests/error_response_snapshot_tests.rs
+expression: json
+---
+{
+  "details": {
+    "validation_message": "date must be ISO-8601"
+  },
+  "error": "Validation error: date must be ISO-8601",
+  "error_code": "VALIDATION_ERROR",
+  "message": "Validation error: date must be ISO-8601",
+  "status": 422,
+  "trace_id": "snapshot-trace"
+}

@@ -14,6 +14,25 @@ use lazy_static::lazy_static;
 
 lazy_static! {
     pub static ref REGISTRY: Registry = Registry::new();
+    static ref API_ERRORS_TOTAL: IntCounterVec = {
+        let metric = IntCounterVec::new(
+            Opts::new(
+                "noesis_api_errors_total",
+                "Total API error responses by structured error code",
+            ),
+            &["error_code"],
+        )
+        .expect("failed to create noesis_api_errors_total metric");
+        REGISTRY
+            .register(Box::new(metric.clone()))
+            .expect("failed to register noesis_api_errors_total metric");
+        metric
+    };
+}
+
+/// Record a structured API error by `error_code`.
+pub fn record_api_error(error_code: &str) {
+    API_ERRORS_TOTAL.with_label_values(&[error_code]).inc();
 }
 
 // ---------------------------------------------------------------------------

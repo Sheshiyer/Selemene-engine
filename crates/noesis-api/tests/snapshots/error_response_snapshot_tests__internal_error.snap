@@ -1,0 +1,11 @@
+---
+source: crates/noesis-api/tests/error_response_snapshot_tests.rs
+expression: json
+---
+{
+  "error": "An internal error occurred",
+  "error_code": "INTERNAL_ERROR",
+  "message": "An internal error occurred",
+  "status": 500,
+  "trace_id": "snapshot-trace"
+}

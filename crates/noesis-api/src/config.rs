@@ -48,7 +48,9 @@ impl ApiConfig {
     ///
     /// # Environment Variables
     /// - `HOST`: Server host address (default: "0.0.0.0")
+    /// - `SERVER_HOST`: Legacy alias for `HOST`
     /// - `PORT`: Server port (default: 8080)
+    /// - `SERVER_PORT`: Legacy alias for `PORT`
     /// - `JWT_SECRET`: JWT secret (required in production, has dev default)
     /// - `REDIS_URL`: Redis connection URL (optional)
     /// - `ALLOWED_ORIGINS`: Comma-separated CORS origins (default: localhost:3000,5173)
@@ -67,9 +69,12 @@ impl ApiConfig {
             .map(|e| e == "production")
             .unwrap_or(false);
 
-        let host = env::var("HOST").unwrap_or_else(|_| "0.0.0.0".to_string());
+        let host = env::var("HOST")
+            .or_else(|_| env::var("SERVER_HOST"))
+            .unwrap_or_else(|_| "0.0.0.0".to_string());
 
         let port = env::var("PORT")
+            .or_else(|_| env::var("SERVER_PORT"))
             .ok()
             .and_then(|p| p.parse().ok())
             .unwrap_or(8080);
@@ -248,6 +253,39 @@ impl ApiConfig {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::sync::{Mutex, OnceLock};
+
+    fn env_lock() -> &'static Mutex<()> {
+        static LOCK: OnceLock<Mutex<()>> = OnceLock::new();
+        LOCK.get_or_init(|| Mutex::new(()))
+    }
+
+    struct EnvGuard {
+        saved: Vec<(&'static str, Option<String>)>,
+    }
+
+    impl EnvGuard {
+        fn set(vars: &[(&'static str, &str)]) -> Self {
+            let mut saved = Vec::with_capacity(vars.len());
+            for (key, value) in vars {
+                saved.push((*key, std::env::var(key).ok()));
+                std::env::set_var(key, value);
+            }
+            Self { saved }
+        }
+    }
+
+    impl Drop for EnvGuard {
+        fn drop(&mut self) {
+            for (key, prior) in self.saved.drain(..).rev() {
+                if let Some(value) = prior {
+                    std::env::set_var(key, value);
+                } else {
+                    std::env::remove_var(key);
+                }
+            }
+        }
+    }
 
     #[test]
     fn test_bind_address() {
@@ -348,5 +386,37 @@ mod tests {
         };
 
         assert!(config.validate().is_err());
+    }
+
+    #[test]
+    fn test_from_env_uses_server_host_alias() {
+        let _lock = env_lock().lock().unwrap();
+        let _guard = EnvGuard::set(&[
+            ("RUST_ENV", "development"),
+            ("SERVER_HOST", "127.0.0.2"),
+            ("JWT_SECRET", "test-secret-at-least-32-chars-long"),
+        ]);
+        std::env::remove_var("HOST");
+        std::env::remove_var("PORT");
+        std::env::remove_var("SERVER_PORT");
+
+        let config = ApiConfig::from_env().expect("config should load");
+        assert_eq!(config.host, "127.0.0.2");
+    }
+
+    #[test]
+    fn test_from_env_uses_server_port_alias() {
+        let _lock = env_lock().lock().unwrap();
+        let _guard = EnvGuard::set(&[
+            ("RUST_ENV", "development"),
+            ("SERVER_PORT", "9090"),
+            ("JWT_SECRET", "test-secret-at-least-32-chars-long"),
+        ]);
+        std::env::remove_var("HOST");
+        std::env::remove_var("SERVER_HOST");
+        std::env::remove_var("PORT");
+
+        let config = ApiConfig::from_env().expect("config should load");
+        assert_eq!(config.port, 9090);
     }
 }

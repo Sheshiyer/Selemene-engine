@@ -7,9 +7,11 @@
 mod billing;
 mod config;
 pub mod error;
+pub mod error_mapper;
 mod handlers;
 mod logging;
 mod middleware;
+pub mod workflow_parity;
 
 pub use billing::{
     reset_billing_emitter, set_billing_emitter, BillingEventEmitter, NoopBillingEmitter,
@@ -18,6 +20,7 @@ pub use billing::{
 
 // Re-export configuration and logging for main.rs
 pub use config::ApiConfig;
+pub use error_mapper::{ErrorMapper, ErrorResponse};
 pub use logging::{init_tracing, init_tracing_json};
 
 use axum::{
@@ -51,12 +54,14 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use sha2::{Digest, Sha256};
 use sqlx::postgres::{PgConnectOptions, PgPoolOptions};
+use std::collections::HashMap;
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 use tower_http::cors::CorsLayer;
 use tower_http::trace::TraceLayer;
 use utoipa::{OpenApi, ToSchema};
 use utoipa_swagger_ui::SwaggerUi;
+use workflow_parity::log_workflow_registry_parity;
 
 // ---------------------------------------------------------------------------
 // OpenAPI documentation
@@ -138,6 +143,8 @@ use utoipa_swagger_ui::SwaggerUi;
             SigilForgeResultSchema,
             ValidationResult,
             WorkflowResult,
+            ApiEngineOutputResponse,
+            ApiWorkflowResultResponse,
             HealthResponse,
             ReadinessResponse,
             StatusResponse,
@@ -358,6 +365,7 @@ impl Modify for SecurityAddon {
 #[derive(Clone)]
 pub struct AppState {
     pub orchestrator: Arc<WorkflowOrchestrator>,
+    pub bridge_manager: Arc<noesis_bridge::BridgeManager>,
     pub cache: Arc<CacheManager>,
     pub auth: Arc<AuthService>,
     pub metrics: Arc<NoesisMetrics>,
@@ -366,6 +374,14 @@ pub struct AppState {
     pub readings_repository: Option<Arc<ReadingsRepository>>,
     pub usage_repository: Option<Arc<UsageRepository>>,
     pub startup_time: Instant,
+}
+
+pub fn shared_metrics() -> Arc<NoesisMetrics> {
+    static SHARED_METRICS: std::sync::OnceLock<Arc<NoesisMetrics>> = std::sync::OnceLock::new();
+
+    SHARED_METRICS
+        .get_or_init(|| Arc::new(NoesisMetrics::new().expect("Failed to initialise NoesisMetrics")))
+        .clone()
 }
 
 // ---------------------------------------------------------------------------
@@ -611,9 +627,20 @@ struct HealthResponse {
 #[derive(Serialize, ToSchema)]
 struct ReadinessResponse {
     redis: String,
+    postgres: String,
     orchestrator: String,
-    vedic_api: String,
+    bridge_status: String,
+    bridge_engines: Vec<BridgeEngineStatus>,
+    bridge_failed_engines: Vec<String>,
     overall_status: String,
+}
+
+#[derive(Serialize, ToSchema)]
+struct BridgeEngineStatus {
+    engine_id: String,
+    healthy: bool,
+    detail: String,
+    latency_ms: u64,
 }
 
 #[derive(Serialize, ToSchema)]
@@ -653,6 +680,39 @@ struct WorkflowInfoResponse {
     name: String,
     description: String,
     engine_ids: Vec<String>,
+}
+
+#[derive(Serialize, ToSchema)]
+struct ApiEngineOutputResponse {
+    #[serde(flatten)]
+    output: EngineOutput,
+    envelope_version: String,
+}
+
+impl From<EngineOutput> for ApiEngineOutputResponse {
+    fn from(output: EngineOutput) -> Self {
+        Self {
+            output,
+            envelope_version: "1".to_string(),
+        }
+    }
+}
+
+#[derive(Serialize, ToSchema)]
+struct ApiWorkflowResultResponse {
+    #[serde(flatten)]
+    workflow: WorkflowResult,
+    engine_results: HashMap<String, EngineOutput>,
+}
+
+impl From<WorkflowResult> for ApiWorkflowResultResponse {
+    fn from(workflow: WorkflowResult) -> Self {
+        let engine_results = workflow.engine_outputs.clone();
+        Self {
+            workflow,
+            engine_results,
+        }
+    }
 }
 
 #[derive(Serialize, ToSchema)]
@@ -759,14 +819,6 @@ struct FullSpectrumWorkflowResultSchema {
     timestamp: chrono::DateTime<chrono::Utc>,
 }
 
-#[derive(Serialize, ToSchema)]
-pub struct ErrorResponse {
-    pub error: String,
-    pub error_code: String,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub details: Option<serde_json::Value>,
-}
-
 // ---------------------------------------------------------------------------
 // Handlers
 // ---------------------------------------------------------------------------
@@ -811,48 +863,70 @@ async fn readiness_handler(State(state): State<AppState>) -> impl IntoResponse {
         _ => "down",
     };
 
+    let postgres_status = match state.auth.pool() {
+        Some(pool) => match tokio::time::timeout(
+            Duration::from_secs(2),
+            sqlx::query_scalar::<_, i32>("SELECT 1").fetch_one(pool),
+        )
+        .await
+        {
+            Ok(Ok(_)) => "ok",
+            _ => "down",
+        },
+        None => "disabled",
+    };
+
     // Check orchestrator readiness
     let orchestrator_status = match state.orchestrator.is_ready().await {
         Ok(true) => "ready",
         _ => "not_ready",
     };
 
-    // Check FreeAstrologyAPI connectivity (lightweight HEAD-like probe, 2s timeout)
-    let vedic_api_status = match std::env::var("FREE_ASTROLOGY_API_KEY") {
-        Ok(key) if !key.is_empty() => {
-            let base_url = std::env::var("FREE_ASTROLOGY_API_BASE_URL")
-                .unwrap_or_else(|_| "https://json.freeastrologyapi.com".to_string());
-            match reqwest::Client::builder()
-                .timeout(Duration::from_secs(2))
-                .build()
-            {
-                Ok(client) => {
-                    // Use a minimal GET to the base URL to verify reachability
-                    // without consuming API quota (no POST to a calculation endpoint)
-                    match client.get(&base_url).send().await {
-                        Ok(resp)
-                            if resp.status().is_success() || resp.status().is_client_error() =>
-                        {
-                            // Any HTTP response (even 4xx) means the service is reachable
-                            "healthy"
-                        }
-                        Ok(_) => "degraded",
-                        Err(_) => "degraded",
-                    }
-                }
-                Err(_) => "degraded",
-            }
-        }
-        _ => "unconfigured",
-    };
+    let (bridge_status, bridge_engines, bridge_failed_engines) =
+        match state.bridge_manager.readiness_status().await {
+            Ok(status) => (
+                if status.failed_engines.is_empty() {
+                    "available".to_string()
+                } else {
+                    "degraded".to_string()
+                },
+                status
+                    .engines
+                    .into_iter()
+                    .map(|engine| BridgeEngineStatus {
+                        engine_id: engine.engine_id,
+                        healthy: engine.healthy,
+                        detail: engine.detail,
+                        latency_ms: engine.latency_ms,
+                    })
+                    .collect(),
+                status.failed_engines,
+            ),
+            Err(err) => (
+                "unreachable".to_string(),
+                vec![BridgeEngineStatus {
+                    engine_id: "ts-sidecar".to_string(),
+                    healthy: false,
+                    detail: err.to_string(),
+                    latency_ms: 0,
+                }],
+                vec!["ts-sidecar".to_string()],
+            ),
+        };
 
-    let overall_ready = redis_status == "ok" && orchestrator_status == "ready";
+    let overall_ready = redis_status == "ok"
+        && postgres_status == "ok"
+        && orchestrator_status == "ready"
+        && bridge_status == "available";
     let overall_status = if overall_ready { "ready" } else { "not_ready" };
 
     let response = ReadinessResponse {
         redis: redis_status.to_string(),
+        postgres: postgres_status.to_string(),
         orchestrator: orchestrator_status.to_string(),
-        vedic_api: vedic_api_status.to_string(),
+        bridge_status,
+        bridge_engines,
+        bridge_failed_engines,
         overall_status: overall_status.to_string(),
     };
 
@@ -928,7 +1002,7 @@ async fn status_handler(State(state): State<AppState>) -> Json<StatusResponse> {
     ),
     request_body = EngineInput,
     responses(
-        (status = 200, description = "Calculation successful", body = EngineOutput),
+        (status = 200, description = "Calculation successful", body = ApiEngineOutputResponse),
         (status = 401, description = "Unauthorized", body = ErrorResponse),
         (status = 403, description = "Forbidden - Insufficient consciousness phase", body = ErrorResponse),
         (status = 404, description = "Engine not found", body = ErrorResponse),
@@ -945,7 +1019,7 @@ async fn calculate_handler(
     Extension(user): Extension<AuthUser>,
     Path(engine_id): Path<String>,
     Json(input): Json<EngineInput>,
-) -> Result<Json<EngineOutput>, (StatusCode, Json<ErrorResponse>)> {
+) -> Result<Json<ApiEngineOutputResponse>, (StatusCode, Json<ErrorResponse>)> {
     let start = Instant::now();
 
     // Capture input for persistence before it's moved into the engine
@@ -954,7 +1028,6 @@ async fn calculate_handler(
     // Extract birth_data for profile auto-population (before input is moved)
     let birth_data_for_profile = input.birth_data.clone();
 
-    // Execute engine with user's consciousness level
     let result = state
         .orchestrator
         .execute_engine(&engine_id, input, user.consciousness_level)
@@ -987,6 +1060,10 @@ async fn calculate_handler(
                     witness_prompt: Some(output.witness_prompt.clone()),
                     consciousness_level: output.consciousness_level as i16,
                     calculation_time_ms: Some(duration_ms),
+                    client_event_id: None,
+                    client_device_id: None,
+                    device_platform: None,
+                    device_app_version: None,
                 };
                 let readings_repo = state.readings_repository.clone();
                 let usage_repo = state.usage_repository.clone();
@@ -1037,7 +1114,7 @@ async fn calculate_handler(
                 });
             }
 
-            Ok(Json(output))
+            Ok(Json(output.into()))
         }
         Err(e) => {
             state.metrics.record_engine_calculation_with_status(
@@ -1071,7 +1148,7 @@ async fn calculate_handler(
             state
                 .metrics
                 .record_engine_calculation_error(&engine_id, error_type);
-            Err(engine_error_to_response(e))
+            Err(ErrorMapper::map(e))
         }
     }
 }
@@ -1101,25 +1178,21 @@ async fn face_reading_upload_handler(
     let mut image_bytes: Option<Vec<u8>> = None;
 
     while let Some(field) = multipart.next_field().await.map_err(|e| {
-        (
+        ErrorMapper::response(
             StatusCode::BAD_REQUEST,
-            Json(ErrorResponse {
-                error: format!("Invalid multipart payload: {}", e),
-                error_code: "INVALID_MULTIPART".to_string(),
-                details: None,
-            }),
+            "INVALID_MULTIPART",
+            format!("Invalid multipart payload: {}", e),
+            None,
         )
     })? {
         let field_name = field.name().unwrap_or_default().to_string();
         if field_name == "file" || field_name == "image" {
             let bytes = field.bytes().await.map_err(|e| {
-                (
+                ErrorMapper::response(
                     StatusCode::BAD_REQUEST,
-                    Json(ErrorResponse {
-                        error: format!("Failed to read uploaded file: {}", e),
-                        error_code: "INVALID_UPLOAD".to_string(),
-                        details: None,
-                    }),
+                    "INVALID_UPLOAD",
+                    format!("Failed to read uploaded file: {}", e),
+                    None,
                 )
             })?;
             image_bytes = Some(bytes.to_vec());
@@ -1128,14 +1201,11 @@ async fn face_reading_upload_handler(
     }
 
     let image_bytes = image_bytes.ok_or_else(|| {
-        (
+        ErrorMapper::response(
             StatusCode::UNPROCESSABLE_ENTITY,
-            Json(ErrorResponse {
-                error: "No image file found. Provide multipart field named `file` or `image`."
-                    .to_string(),
-                error_code: "MISSING_IMAGE_FILE".to_string(),
-                details: None,
-            }),
+            "MISSING_IMAGE_FILE",
+            "No image file found. Provide multipart field named `file` or `image`.",
+            None,
         )
     })?;
 
@@ -1157,7 +1227,7 @@ async fn face_reading_upload_handler(
         .orchestrator
         .execute_engine("face-reading", input, user.consciousness_level)
         .await
-        .map_err(engine_error_to_response)?;
+        .map_err(ErrorMapper::map)?;
 
     let analysis = output
         .result
@@ -1206,13 +1276,11 @@ async fn validate_handler(
         .registry()
         .get(&engine_id)
         .ok_or_else(|| {
-            (
+            ErrorMapper::response(
                 StatusCode::NOT_FOUND,
-                Json(ErrorResponse {
-                    error: format!("Engine '{}' not found", engine_id),
-                    error_code: "ENGINE_NOT_FOUND".to_string(),
-                    details: Some(serde_json::json!({ "engine_id": engine_id })),
-                }),
+                "ENGINE_NOT_FOUND",
+                format!("Engine '{}' not found", engine_id),
+                Some(serde_json::json!({ "engine_id": engine_id })),
             )
         })?;
 
@@ -1220,7 +1288,7 @@ async fn validate_handler(
         .validate(&output)
         .await
         .map(Json)
-        .map_err(engine_error_to_response)
+        .map_err(ErrorMapper::map)
 }
 
 /// GET /api/v1/engines/:engine_id/info -- engine metadata
@@ -1249,13 +1317,11 @@ async fn engine_info_handler(
         .registry()
         .get(&engine_id)
         .ok_or_else(|| {
-            (
+            ErrorMapper::response(
                 StatusCode::NOT_FOUND,
-                Json(ErrorResponse {
-                    error: format!("Engine '{}' not found", engine_id),
-                    error_code: "ENGINE_NOT_FOUND".to_string(),
-                    details: Some(serde_json::json!({ "engine_id": engine_id })),
-                }),
+                "ENGINE_NOT_FOUND",
+                format!("Engine '{}' not found", engine_id),
+                Some(serde_json::json!({ "engine_id": engine_id })),
             )
         })?;
 
@@ -1295,7 +1361,7 @@ async fn list_engines_handler(State(state): State<AppState>) -> Json<EngineListR
     ),
     request_body = EngineInput,
     responses(
-        (status = 200, description = "Workflow execution successful", body = WorkflowResult),
+        (status = 200, description = "Workflow execution successful", body = ApiWorkflowResultResponse),
         (status = 401, description = "Unauthorized", body = ErrorResponse),
         (status = 403, description = "Forbidden - Insufficient consciousness phase", body = ErrorResponse),
         (status = 404, description = "Workflow not found", body = ErrorResponse),
@@ -1312,7 +1378,7 @@ async fn workflow_execute_handler(
     Extension(user): Extension<AuthUser>,
     Path(workflow_id): Path<String>,
     Json(input): Json<EngineInput>,
-) -> Result<Json<noesis_core::WorkflowResult>, (StatusCode, Json<ErrorResponse>)> {
+) -> Result<Json<ApiWorkflowResultResponse>, (StatusCode, Json<ErrorResponse>)> {
     execute_workflow_by_id(state, user, workflow_id, input).await
 }
 
@@ -1321,7 +1387,7 @@ async fn execute_workflow_by_id(
     user: AuthUser,
     workflow_id: String,
     input: EngineInput,
-) -> Result<Json<noesis_core::WorkflowResult>, (StatusCode, Json<ErrorResponse>)> {
+) -> Result<Json<ApiWorkflowResultResponse>, (StatusCode, Json<ErrorResponse>)> {
     let start = Instant::now();
 
     // Capture input for persistence before it's moved into the workflow
@@ -1364,6 +1430,10 @@ async fn execute_workflow_by_id(
                     witness_prompt: None,
                     consciousness_level: user.consciousness_level as i16,
                     calculation_time_ms: Some(duration_ms),
+                    client_event_id: None,
+                    client_device_id: None,
+                    device_platform: None,
+                    device_app_version: None,
                 };
                 let readings_repo = state.readings_repository.clone();
                 let usage_repo = state.usage_repository.clone();
@@ -1414,7 +1484,7 @@ async fn execute_workflow_by_id(
                 });
             }
 
-            Ok(Json(workflow_result))
+            Ok(Json(workflow_result.into()))
         }
         Err(e) => {
             state.metrics.record_engine_calculation_with_status(
@@ -1448,7 +1518,7 @@ async fn execute_workflow_by_id(
             state
                 .metrics
                 .record_engine_calculation_error(&workflow_label, error_type);
-            Err(engine_error_to_response(e))
+            Err(ErrorMapper::map(e))
         }
     }
 }
@@ -1474,7 +1544,7 @@ async fn birth_blueprint_execute_doc(
     State(state): State<AppState>,
     Extension(user): Extension<AuthUser>,
     Json(input): Json<EngineInput>,
-) -> Result<Json<noesis_core::WorkflowResult>, (StatusCode, Json<ErrorResponse>)> {
+) -> Result<Json<ApiWorkflowResultResponse>, (StatusCode, Json<ErrorResponse>)> {
     execute_workflow_by_id(state, user, "birth-blueprint".to_string(), input).await
 }
 
@@ -1499,7 +1569,7 @@ async fn daily_practice_execute_doc(
     State(state): State<AppState>,
     Extension(user): Extension<AuthUser>,
     Json(input): Json<EngineInput>,
-) -> Result<Json<noesis_core::WorkflowResult>, (StatusCode, Json<ErrorResponse>)> {
+) -> Result<Json<ApiWorkflowResultResponse>, (StatusCode, Json<ErrorResponse>)> {
     execute_workflow_by_id(state, user, "daily-practice".to_string(), input).await
 }
 
@@ -1524,7 +1594,7 @@ async fn decision_support_execute_doc(
     State(state): State<AppState>,
     Extension(user): Extension<AuthUser>,
     Json(input): Json<EngineInput>,
-) -> Result<Json<noesis_core::WorkflowResult>, (StatusCode, Json<ErrorResponse>)> {
+) -> Result<Json<ApiWorkflowResultResponse>, (StatusCode, Json<ErrorResponse>)> {
     execute_workflow_by_id(state, user, "decision-support".to_string(), input).await
 }
 
@@ -1549,7 +1619,7 @@ async fn self_inquiry_execute_doc(
     State(state): State<AppState>,
     Extension(user): Extension<AuthUser>,
     Json(input): Json<EngineInput>,
-) -> Result<Json<noesis_core::WorkflowResult>, (StatusCode, Json<ErrorResponse>)> {
+) -> Result<Json<ApiWorkflowResultResponse>, (StatusCode, Json<ErrorResponse>)> {
     execute_workflow_by_id(state, user, "self-inquiry".to_string(), input).await
 }
 
@@ -1574,7 +1644,7 @@ async fn creative_expression_execute_doc(
     State(state): State<AppState>,
     Extension(user): Extension<AuthUser>,
     Json(input): Json<EngineInput>,
-) -> Result<Json<noesis_core::WorkflowResult>, (StatusCode, Json<ErrorResponse>)> {
+) -> Result<Json<ApiWorkflowResultResponse>, (StatusCode, Json<ErrorResponse>)> {
     execute_workflow_by_id(state, user, "creative-expression".to_string(), input).await
 }
 
@@ -1599,7 +1669,7 @@ async fn full_spectrum_execute_doc(
     State(state): State<AppState>,
     Extension(user): Extension<AuthUser>,
     Json(input): Json<EngineInput>,
-) -> Result<Json<noesis_core::WorkflowResult>, (StatusCode, Json<ErrorResponse>)> {
+) -> Result<Json<ApiWorkflowResultResponse>, (StatusCode, Json<ErrorResponse>)> {
     execute_workflow_by_id(state, user, "full-spectrum".to_string(), input).await
 }
 
@@ -1657,13 +1727,11 @@ async fn workflow_info_handler(
         .orchestrator
         .get_workflow(&workflow_id)
         .ok_or_else(|| {
-            (
+            ErrorMapper::response(
                 StatusCode::NOT_FOUND,
-                Json(ErrorResponse {
-                    error: format!("Workflow '{}' not found", workflow_id),
-                    error_code: "WORKFLOW_NOT_FOUND".to_string(),
-                    details: Some(serde_json::json!({ "workflow_id": workflow_id })),
-                }),
+                "WORKFLOW_NOT_FOUND",
+                format!("Workflow '{}' not found", workflow_id),
+                Some(serde_json::json!({ "workflow_id": workflow_id })),
             )
         })?;
 
@@ -1713,24 +1781,20 @@ async fn list_readings_handler(
     axum::extract::Query(params): axum::extract::Query<ReadingsQuery>,
 ) -> Result<Json<ReadingsListResponse>, (StatusCode, Json<ErrorResponse>)> {
     let repo = state.readings_repository.as_ref().ok_or_else(|| {
-        (
+        ErrorMapper::response(
             StatusCode::SERVICE_UNAVAILABLE,
-            Json(ErrorResponse {
-                error: "Database not available".to_string(),
-                error_code: "DB_UNAVAILABLE".to_string(),
-                details: None,
-            }),
+            "DB_UNAVAILABLE",
+            "Database not available",
+            None,
         )
     })?;
 
     let uid = uuid::Uuid::parse_str(&user.user_id).map_err(|_| {
-        (
+        ErrorMapper::response(
             StatusCode::BAD_REQUEST,
-            Json(ErrorResponse {
-                error: "Invalid user ID".to_string(),
-                error_code: "INVALID_USER_ID".to_string(),
-                details: None,
-            }),
+            "INVALID_USER_ID",
+            "Invalid user ID",
+            None,
         )
     })?;
 
@@ -1743,25 +1807,21 @@ async fn list_readings_handler(
         .await
         .map_err(|e| {
             tracing::error!("Failed to fetch readings: {}", e);
-            (
+            ErrorMapper::response(
                 StatusCode::INTERNAL_SERVER_ERROR,
-                Json(ErrorResponse {
-                    error: "Failed to fetch readings".to_string(),
-                    error_code: "DB_ERROR".to_string(),
-                    details: None,
-                }),
+                "DB_ERROR",
+                "Failed to fetch readings",
+                None,
             )
         })?;
 
     let total = repo.count_readings(uid, engine_filter).await.map_err(|e| {
         tracing::error!("Failed to count readings: {}", e);
-        (
+        ErrorMapper::response(
             StatusCode::INTERNAL_SERVER_ERROR,
-            Json(ErrorResponse {
-                error: "Failed to count readings".to_string(),
-                error_code: "DB_ERROR".to_string(),
-                details: None,
-            }),
+            "DB_ERROR",
+            "Failed to count readings",
+            None,
         )
     })?;
 
@@ -1780,48 +1840,40 @@ async fn get_reading_handler(
     Path(reading_id): Path<uuid::Uuid>,
 ) -> Result<Json<noesis_data::models::reading::Reading>, (StatusCode, Json<ErrorResponse>)> {
     let repo = state.readings_repository.as_ref().ok_or_else(|| {
-        (
+        ErrorMapper::response(
             StatusCode::SERVICE_UNAVAILABLE,
-            Json(ErrorResponse {
-                error: "Database not available".to_string(),
-                error_code: "DB_UNAVAILABLE".to_string(),
-                details: None,
-            }),
+            "DB_UNAVAILABLE",
+            "Database not available",
+            None,
         )
     })?;
 
     let uid = uuid::Uuid::parse_str(&user.user_id).map_err(|_| {
-        (
+        ErrorMapper::response(
             StatusCode::BAD_REQUEST,
-            Json(ErrorResponse {
-                error: "Invalid user ID".to_string(),
-                error_code: "INVALID_USER_ID".to_string(),
-                details: None,
-            }),
+            "INVALID_USER_ID",
+            "Invalid user ID",
+            None,
         )
     })?;
 
     let reading = repo.get_reading(reading_id, uid).await.map_err(|e| {
         tracing::error!("Failed to fetch reading: {}", e);
-        (
+        ErrorMapper::response(
             StatusCode::INTERNAL_SERVER_ERROR,
-            Json(ErrorResponse {
-                error: "Failed to fetch reading".to_string(),
-                error_code: "DB_ERROR".to_string(),
-                details: None,
-            }),
+            "DB_ERROR",
+            "Failed to fetch reading",
+            None,
         )
     })?;
 
     reading
         .ok_or_else(|| {
-            (
+            ErrorMapper::response(
                 StatusCode::NOT_FOUND,
-                Json(ErrorResponse {
-                    error: "Reading not found".to_string(),
-                    error_code: "READING_NOT_FOUND".to_string(),
-                    details: Some(serde_json::json!({ "reading_id": reading_id })),
-                }),
+                "READING_NOT_FOUND",
+                "Reading not found",
+                Some(serde_json::json!({ "reading_id": reading_id })),
             )
         })
         .map(Json)
@@ -1833,50 +1885,42 @@ async fn readings_stats_handler(
     Extension(user): Extension<AuthUser>,
 ) -> Result<Json<ReadingsStatsResponse>, (StatusCode, Json<ErrorResponse>)> {
     let repo = state.readings_repository.as_ref().ok_or_else(|| {
-        (
+        ErrorMapper::response(
             StatusCode::SERVICE_UNAVAILABLE,
-            Json(ErrorResponse {
-                error: "Database not available".to_string(),
-                error_code: "DB_UNAVAILABLE".to_string(),
-                details: None,
-            }),
+            "DB_UNAVAILABLE",
+            "Database not available",
+            None,
         )
     })?;
 
     let uid = uuid::Uuid::parse_str(&user.user_id).map_err(|_| {
-        (
+        ErrorMapper::response(
             StatusCode::BAD_REQUEST,
-            Json(ErrorResponse {
-                error: "Invalid user ID".to_string(),
-                error_code: "INVALID_USER_ID".to_string(),
-                details: None,
-            }),
+            "INVALID_USER_ID",
+            "Invalid user ID",
+            None,
         )
     })?;
 
     // Get total count
     let total = repo.count_readings(uid, None).await.map_err(|e| {
         tracing::error!("Failed to count readings: {}", e);
-        (
+        ErrorMapper::response(
             StatusCode::INTERNAL_SERVER_ERROR,
-            Json(ErrorResponse {
-                error: "Failed to count readings".to_string(),
-                error_code: "DB_ERROR".to_string(),
-                details: None,
-            }),
+            "DB_ERROR",
+            "Failed to count readings",
+            None,
         )
     })?;
 
     // Get per-engine stats
     let rows = repo.count_by_engine(uid).await.map_err(|e| {
         tracing::error!("Failed to fetch stats: {}", e);
-        (
+        ErrorMapper::response(
             StatusCode::INTERNAL_SERVER_ERROR,
-            Json(ErrorResponse {
-                error: "Failed to fetch stats".to_string(),
-                error_code: "DB_ERROR".to_string(),
-                details: None,
-            }),
+            "DB_ERROR",
+            "Failed to fetch stats",
+            None,
         )
     })?;
 
@@ -1886,110 +1930,6 @@ async fn readings_stats_handler(
         .collect();
 
     Ok(Json(ReadingsStatsResponse { stats, total }))
-}
-
-// ---------------------------------------------------------------------------
-// Error mapping
-// ---------------------------------------------------------------------------
-
-pub fn engine_error_to_response(err: EngineError) -> (StatusCode, Json<ErrorResponse>) {
-    // Capture server errors (5xx) to Sentry with context
-    let err_display = err.to_string();
-
-    let (status, error_code, message, details) = match &err {
-        EngineError::EngineNotFound(id) => (
-            StatusCode::NOT_FOUND,
-            "ENGINE_NOT_FOUND".to_string(),
-            err.to_string(),
-            Some(serde_json::json!({ "engine_id": id })),
-        ),
-        EngineError::WorkflowNotFound(id) => (
-            StatusCode::NOT_FOUND,
-            "WORKFLOW_NOT_FOUND".to_string(),
-            err.to_string(),
-            Some(serde_json::json!({ "workflow_id": id })),
-        ),
-        EngineError::PhaseAccessDenied { required, current } => (
-            StatusCode::FORBIDDEN,
-            "PHASE_ACCESS_DENIED".to_string(),
-            err.to_string(),
-            Some(serde_json::json!({
-                "required_phase": required,
-                "current_phase": current
-            })),
-        ),
-        EngineError::AuthError(msg) => (
-            StatusCode::UNAUTHORIZED,
-            "AUTH_ERROR".to_string(),
-            err.to_string(),
-            Some(serde_json::json!({ "reason": msg })),
-        ),
-        EngineError::RateLimitExceeded => (
-            StatusCode::TOO_MANY_REQUESTS,
-            "RATE_LIMIT_EXCEEDED".to_string(),
-            err.to_string(),
-            None,
-        ),
-        EngineError::ValidationError(msg) => (
-            StatusCode::UNPROCESSABLE_ENTITY,
-            "VALIDATION_ERROR".to_string(),
-            err.to_string(),
-            Some(serde_json::json!({ "validation_message": msg })),
-        ),
-        EngineError::CalculationError(_) => (
-            StatusCode::INTERNAL_SERVER_ERROR,
-            "CALCULATION_ERROR".to_string(),
-            "An internal calculation error occurred".to_string(),
-            None,
-        ),
-        EngineError::CacheError(_) => (
-            StatusCode::INTERNAL_SERVER_ERROR,
-            "CACHE_ERROR".to_string(),
-            "An internal cache error occurred".to_string(),
-            None,
-        ),
-        EngineError::ConfigError(_) => (
-            StatusCode::INTERNAL_SERVER_ERROR,
-            "CONFIG_ERROR".to_string(),
-            "An internal configuration error occurred".to_string(),
-            None,
-        ),
-        EngineError::BridgeError(_) => (
-            StatusCode::INTERNAL_SERVER_ERROR,
-            "BRIDGE_ERROR".to_string(),
-            "An internal bridge error occurred".to_string(),
-            None,
-        ),
-        EngineError::SwissEphemerisError(_) => (
-            StatusCode::INTERNAL_SERVER_ERROR,
-            "SWISS_EPHEMERIS_ERROR".to_string(),
-            "An internal ephemeris error occurred".to_string(),
-            None,
-        ),
-        EngineError::InternalError(_) => (
-            StatusCode::INTERNAL_SERVER_ERROR,
-            "INTERNAL_ERROR".to_string(),
-            "An internal error occurred".to_string(),
-            None,
-        ),
-    };
-
-    // Report server errors (5xx) to Sentry for visibility
-    if status.is_server_error() {
-        sentry::configure_scope(|scope| {
-            scope.set_tag("error_code", &error_code);
-        });
-        sentry::capture_message(&err_display, sentry::Level::Error);
-    }
-
-    (
-        status,
-        Json(ErrorResponse {
-            error: message,
-            error_code,
-            details,
-        }),
-    )
 }
 
 // ---------------------------------------------------------------------------
@@ -2061,7 +2001,7 @@ async fn legacy_panchanga_handler(
         .orchestrator
         .execute_engine("panchanga", input, 0)
         .await
-        .map_err(engine_error_to_response)?;
+        .map_err(ErrorMapper::map)?;
 
     // Extract PanchangaResult from engine output
     let panchanga_result: serde_json::Value = output.result;
@@ -2158,7 +2098,7 @@ async fn legacy_ghati_current_handler(
         .orchestrator
         .execute_engine("panchanga", input, 0)
         .await
-        .map_err(engine_error_to_response)?;
+        .map_err(ErrorMapper::map)?;
 
     // Extract tithi value to calculate ghati time
     // In Vedic time, 1 day = 60 ghatis, 1 ghati = 24 minutes
@@ -2185,53 +2125,12 @@ async fn legacy_ghati_current_handler(
 // Application state builder
 // ---------------------------------------------------------------------------
 
-/// Build the default `AppState` with all engines registered.
-///
-/// # Arguments
-/// * `config` - API configuration with JWT secret, Redis URL, cache settings, etc.
-///
-/// # Returns
-/// Configured `AppState` with orchestrator, cache, auth, and metrics
-pub async fn build_app_state(config: &ApiConfig) -> AppState {
-    // -- Orchestrator with engines --
+async fn build_runtime_orchestrator_and_bridge(
+) -> (WorkflowOrchestrator, Arc<noesis_bridge::BridgeManager>) {
     let mut orchestrator = WorkflowOrchestrator::new();
-    orchestrator.register_engine(Arc::new(engine_panchanga::PanchangaEngine::new()));
-    orchestrator.register_engine(Arc::new(engine_numerology::NumerologyEngine::new()));
-    orchestrator.register_engine(Arc::new(engine_biorhythm::BiorhythmEngine::new()));
+    orchestrator.register_native_runtime_engines();
 
-    // Register HD engine (Phase 1)
-    let hd_engine = Arc::new(engine_human_design::HumanDesignEngine::new());
-    orchestrator.register_engine(hd_engine.clone());
-
-    // Register Gene Keys engine with HD dependency (Phase 2)
-    let gk_engine = Arc::new(engine_gene_keys::GeneKeysEngine::with_hd_engine(
-        hd_engine.clone(),
-    ));
-    orchestrator.register_engine(gk_engine);
-
-    // Register Vimshottari Dasha engine with HD dependency (Phase 2)
-    let vim_engine = Arc::new(engine_vimshottari::VimshottariEngine::with_hd_engine(
-        hd_engine,
-    ));
-    orchestrator.register_engine(vim_engine);
-
-    // Register Biofield engine (Phase 1 - somatic awareness) - returns mock data
-    orchestrator.register_engine(Arc::new(engine_biofield::BiofieldEngine::new()));
-
-    // Register VedicClock-TCM engine (Phase 0 - available to all)
-    orchestrator.register_engine(Arc::new(engine_vedic_clock::VedicClockEngine::new()));
-
-    // Register Face Reading engine (Phase 1 - returns mock data until MediaPipe integration)
-    orchestrator.register_engine(Arc::new(engine_face_reading::FaceReadingEngine::new()));
-
-    // Register NadaBrahman engine (Phase 0 - raga/sound therapy)
-    orchestrator.register_engine(Arc::new(engine_nadabrahman::NadaBrahmanEngine::new()));
-
-    // Register Transits engine (Phase 0 - planetary transit analysis)
-    orchestrator.register_engine(Arc::new(engine_transits::TransitsEngine::new()));
-
-    // -- TypeScript Engines (via HTTP bridge) --
-    let bridge_manager = noesis_bridge::BridgeManager::from_env();
+    let bridge_manager = Arc::new(noesis_bridge::BridgeManager::from_env());
 
     // Always register TS engines so they appear in the API regardless of
     // connectivity during startup. They will return a BridgeError if called
@@ -2266,6 +2165,22 @@ pub async fn build_app_state(config: &ApiConfig) -> AppState {
             bridge_manager.base_url()
         );
     }
+
+    log_workflow_registry_parity(&orchestrator);
+
+    (orchestrator, bridge_manager)
+}
+
+/// Build the default `AppState` with all engines registered.
+///
+/// # Arguments
+/// * `config` - API configuration with JWT secret, Redis URL, cache settings, etc.
+///
+/// # Returns
+/// Configured `AppState` with orchestrator, cache, auth, and metrics
+pub async fn build_app_state(config: &ApiConfig) -> AppState {
+    // -- Orchestrator with engines --
+    let (orchestrator, bridge_manager) = build_runtime_orchestrator_and_bridge().await;
 
     // -- Cache --
     let redis_url = config.redis_url.clone().unwrap_or_default();
@@ -2343,13 +2258,14 @@ pub async fn build_app_state(config: &ApiConfig) -> AppState {
     })));
 
     // -- Metrics --
-    let metrics = NoesisMetrics::new().expect("Failed to initialise NoesisMetrics");
+    let metrics = shared_metrics();
 
     AppState {
         orchestrator: Arc::new(orchestrator),
+        bridge_manager,
         cache: Arc::new(cache),
         auth: Arc::new(auth),
-        metrics: Arc::new(metrics),
+        metrics,
         user_repository,
         admin_repository,
         readings_repository,
@@ -2364,78 +2280,7 @@ pub async fn build_app_state(config: &ApiConfig) -> AppState {
 /// endpoints but still need a fully constructed `AppState`.
 pub async fn build_app_state_lazy_db(config: &ApiConfig) -> AppState {
     // -- Orchestrator with engines --
-    let mut orchestrator = WorkflowOrchestrator::new();
-    orchestrator.register_engine(Arc::new(engine_panchanga::PanchangaEngine::new()));
-    orchestrator.register_engine(Arc::new(engine_numerology::NumerologyEngine::new()));
-    orchestrator.register_engine(Arc::new(engine_biorhythm::BiorhythmEngine::new()));
-
-    // Register HD engine (Phase 1)
-    let hd_engine = Arc::new(engine_human_design::HumanDesignEngine::new());
-    orchestrator.register_engine(hd_engine.clone());
-
-    // Register Gene Keys engine with HD dependency (Phase 2)
-    let gk_engine = Arc::new(engine_gene_keys::GeneKeysEngine::with_hd_engine(
-        hd_engine.clone(),
-    ));
-    orchestrator.register_engine(gk_engine);
-
-    // Register Vimshottari Dasha engine with HD dependency (Phase 2)
-    let vim_engine = Arc::new(engine_vimshottari::VimshottariEngine::with_hd_engine(
-        hd_engine,
-    ));
-    orchestrator.register_engine(vim_engine);
-
-    // Register Biofield engine (Phase 1 - somatic awareness) - returns mock data
-    orchestrator.register_engine(Arc::new(engine_biofield::BiofieldEngine::new()));
-
-    // Register VedicClock-TCM engine (Phase 0 - available to all)
-    orchestrator.register_engine(Arc::new(engine_vedic_clock::VedicClockEngine::new()));
-
-    // Register Face Reading engine (Phase 1 - returns mock data until MediaPipe integration)
-    orchestrator.register_engine(Arc::new(engine_face_reading::FaceReadingEngine::new()));
-
-    // Register NadaBrahman engine (Phase 0 - raga/sound therapy)
-    orchestrator.register_engine(Arc::new(engine_nadabrahman::NadaBrahmanEngine::new()));
-
-    // Register Transits engine (Phase 0 - planetary transit analysis)
-    orchestrator.register_engine(Arc::new(engine_transits::TransitsEngine::new()));
-
-    // -- TypeScript Engines (via HTTP bridge) --
-    let bridge_manager = noesis_bridge::BridgeManager::from_env();
-
-    // Always register TS engines so they appear in the API regardless of
-    // connectivity during startup. They will return a BridgeError if called
-    // while the TS server is down.
-    for engine in bridge_manager.engines() {
-        orchestrator.register_engine(engine);
-    }
-
-    let mut ts_connected = false;
-
-    // Optional connectivity check for logging status
-    for attempt in 1..=3 {
-        if bridge_manager.is_available().await {
-            tracing::info!("TS engines verified at {}", bridge_manager.base_url());
-            ts_connected = true;
-            break;
-        }
-
-        if attempt < 3 {
-            tracing::info!(
-                "Checking TS engine connectivity at {} (attempt {}/3)...",
-                bridge_manager.base_url(),
-                attempt
-            );
-            tokio::time::sleep(Duration::from_secs(5)).await;
-        }
-    }
-
-    if !ts_connected {
-        tracing::warn!(
-            "TS engines registered but unreachable at {} - they will appear in API but return errors if used",
-            bridge_manager.base_url()
-        );
-    }
+    let (orchestrator, bridge_manager) = build_runtime_orchestrator_and_bridge().await;
 
     // -- Cache --
     let redis_url = config.redis_url.clone().unwrap_or_default();
@@ -2476,13 +2321,14 @@ pub async fn build_app_state_lazy_db(config: &ApiConfig) -> AppState {
     })));
 
     // -- Metrics --
-    let metrics = NoesisMetrics::new().expect("Failed to initialise NoesisMetrics");
+    let metrics = shared_metrics();
 
     AppState {
         orchestrator: Arc::new(orchestrator),
+        bridge_manager,
         cache: Arc::new(cache),
         auth: Arc::new(auth),
-        metrics: Arc::new(metrics),
+        metrics,
         user_repository,
         admin_repository,
         readings_repository,

@@ -1,0 +1,176 @@
+{
+  "generated_at": "2026-03-11",
+  "counts": {
+    "rust_engines": 11,
+    "ts_engines": 5,
+    "total_engines": 16
+  },
+  "rust_engines": [
+    {
+      "engine_id": "biofield",
+      "engine_name": "Biofield",
+      "crate_name": "engine-biofield",
+      "version": "0.1.0",
+      "required_phase": 1,
+      "runtime": "native-rust",
+      "conformance_status": "verified-by noesis-orchestrator/tests/trait_conformance_tests.rs"
+    },
+    {
+      "engine_id": "biorhythm",
+      "engine_name": "Biorhythm",
+      "crate_name": "engine-biorhythm",
+      "version": "0.1.0",
+      "required_phase": 0,
+      "runtime": "native-rust",
+      "conformance_status": "verified-by noesis-orchestrator/tests/trait_conformance_tests.rs"
+    },
+    {
+      "engine_id": "face-reading",
+      "engine_name": "Face Reading",
+      "crate_name": "engine-face-reading",
+      "version": "0.1.0",
+      "required_phase": 1,
+      "runtime": "native-rust",
+      "conformance_status": "verified-by noesis-orchestrator/tests/trait_conformance_tests.rs"
+    },
+    {
+      "engine_id": "gene-keys",
+      "engine_name": "Gene Keys",
+      "crate_name": "engine-gene-keys",
+      "version": "0.1.0",
+      "required_phase": 2,
+      "runtime": "native-rust",
+      "conformance_status": "verified-by noesis-orchestrator/tests/trait_conformance_tests.rs"
+    },
+    {
+      "engine_id": "human-design",
+      "engine_name": "Human Design",
+      "crate_name": "engine-human-design",
+      "version": "0.1.0",
+      "required_phase": 1,
+      "runtime": "native-rust",
+      "conformance_status": "verified-by noesis-orchestrator/tests/trait_conformance_tests.rs"
+    },
+    {
+      "engine_id": "nadabrahman",
+      "engine_name": "NadaBrahman",
+      "crate_name": "engine-nadabrahman",
+      "version": "0.1.0",
+      "required_phase": 0,
+      "runtime": "native-rust",
+      "conformance_status": "verified-by noesis-orchestrator/tests/trait_conformance_tests.rs"
+    },
+    {
+      "engine_id": "numerology",
+      "engine_name": "Numerology",
+      "crate_name": "engine-numerology",
+      "version": "0.1.0",
+      "required_phase": 0,
+      "runtime": "native-rust",
+      "conformance_status": "verified-by noesis-orchestrator/tests/trait_conformance_tests.rs"
+    },
+    {
+      "engine_id": "panchanga",
+      "engine_name": "Panchanga",
+      "crate_name": "engine-panchanga",
+      "version": "0.1.0",
+      "required_phase": 0,
+      "runtime": "native-rust",
+      "conformance_status": "verified-by noesis-orchestrator/tests/trait_conformance_tests.rs"
+    },
+    {
+      "engine_id": "transits",
+      "engine_name": "Planetary Transits",
+      "crate_name": "engine-transits",
+      "version": "0.1.0",
+      "required_phase": 0,
+      "runtime": "native-rust",
+      "conformance_status": "verified-by noesis-orchestrator/tests/trait_conformance_tests.rs"
+    },
+    {
+      "engine_id": "vedic-clock",
+      "engine_name": "Vedic Clock",
+      "crate_name": "engine-vedic-clock",
+      "version": "0.1.0",
+      "required_phase": 0,
+      "runtime": "native-rust",
+      "conformance_status": "verified-by noesis-orchestrator/tests/trait_conformance_tests.rs"
+    },
+    {
+      "engine_id": "vimshottari",
+      "engine_name": "Vimshottari Dasha",
+      "crate_name": "engine-vimshottari",
+      "version": "0.1.0",
+      "required_phase": 2,
+      "runtime": "native-rust",
+      "conformance_status": "verified-by noesis-orchestrator/tests/trait_conformance_tests.rs"
+    }
+  ],
+  "ts_engines": [
+    {
+      "engine_id": "enneagram",
+      "engine_name": "Enneagram",
+      "package_name": "noesis-ts-engines",
+      "package_version": "1.0.0",
+      "engine_version": "1.0.0",
+      "required_phase": 1,
+      "runtime": "ts-sidecar",
+      "bridge_url_env": "TS_ENGINES_URL",
+      "default_bridge_url": "http://localhost:3001",
+      "health_endpoint": "/health/ready",
+      "health_status": "verified-by ts-engines/tests/baseline_registry.test.ts"
+    },
+    {
+      "engine_id": "i-ching",
+      "engine_name": "I-Ching",
+      "package_name": "noesis-ts-engines",
+      "package_version": "1.0.0",
+      "engine_version": "1.0.0",
+      "required_phase": 0,
+      "runtime": "ts-sidecar",
+      "bridge_url_env": "TS_ENGINES_URL",
+      "default_bridge_url": "http://localhost:3001",
+      "health_endpoint": "/health/ready",
+      "health_status": "verified-by ts-engines/tests/baseline_registry.test.ts"
+    },
+    {
+      "engine_id": "sacred-geometry",
+      "engine_name": "Sacred Geometry",
+      "package_name": "noesis-ts-engines",
+      "package_version": "1.0.0",
+      "engine_version": "1.0.0",
+      "required_phase": 0,
+      "runtime": "ts-sidecar",
+      "bridge_url_env": "TS_ENGINES_URL",
+      "default_bridge_url": "http://localhost:3001",
+      "health_endpoint": "/health/ready",
+      "health_status": "verified-by ts-engines/tests/baseline_registry.test.ts"
+    },
+    {
+      "engine_id": "sigil-forge",
+      "engine_name": "Sigil Forge",
+      "package_name": "noesis-ts-engines",
+      "package_version": "1.0.0",
+      "engine_version": "1.0.0",
+      "required_phase": 1,
+      "runtime": "ts-sidecar",
+      "bridge_url_env": "TS_ENGINES_URL",
+      "default_bridge_url": "http://localhost:3001",
+      "health_endpoint": "/health/ready",
+      "health_status": "verified-by ts-engines/tests/baseline_registry.test.ts"
+    },
+    {
+      "engine_id": "tarot",
+      "engine_name": "Tarot",
+      "package_name": "noesis-ts-engines",
+      "package_version": "1.0.0",
+      "engine_version": "1.0.0",
+      "required_phase": 0,
+      "runtime": "ts-sidecar",
+      "bridge_url_env": "TS_ENGINES_URL",
+      "default_bridge_url": "http://localhost:3001",
+      "health_endpoint": "/health/ready",
+      "health_status": "verified-by ts-engines/tests/baseline_registry.test.ts"
+    }
+  ]
+}

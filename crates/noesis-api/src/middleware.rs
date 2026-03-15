@@ -12,10 +12,11 @@ use chrono::{DateTime, Duration, Utc};
 use dashmap::DashMap;
 use noesis_auth::{AuthService, AuthUser};
 use noesis_metrics::NoesisMetrics;
-use serde::Serialize;
 use std::sync::Arc;
 use std::time::Instant;
 use tracing::{info, info_span, Instrument};
+
+use crate::{ErrorMapper, ErrorResponse};
 
 /// Request logging middleware that captures timing and structured request metadata.
 ///
@@ -31,6 +32,7 @@ pub async fn request_logging_middleware(req: Request, next: Next) -> Response {
     let start = Instant::now();
     let method = req.method().clone();
     let path = req.uri().path().to_string();
+    let trace_id = uuid::Uuid::new_v4().to_string();
 
     // Extract user_id from request extensions if authentication middleware set it
     // For now, we'll check if it's in headers (e.g., X-User-Id set by upstream auth)
@@ -45,13 +47,19 @@ pub async fn request_logging_middleware(req: Request, next: Next) -> Response {
         "http_request",
         method = %method,
         path = %path,
+        trace_id = %trace_id,
         user_id = user_id.as_deref().unwrap_or("anonymous")
     );
 
     // Execute the request within the span
     async move {
-        // Process the request
-        let response = next.run(req).await;
+        let trace_id_for_scope = trace_id.clone();
+        let response =
+            ErrorMapper::with_request_trace_id(
+                trace_id_for_scope,
+                async move { next.run(req).await },
+            )
+            .await;
 
         // Calculate duration
         let duration_ms = start.elapsed().as_millis() as u64;
@@ -61,6 +69,7 @@ pub async fn request_logging_middleware(req: Request, next: Next) -> Response {
         info!(
             status = status,
             duration_ms = duration_ms,
+            trace_id = %trace_id,
             "request completed"
         );
 
@@ -122,15 +131,6 @@ pub async fn metrics_middleware(
     response
 }
 
-/// Error response structure for authentication failures
-#[derive(Serialize)]
-pub struct ErrorResponse {
-    pub error: String,
-    pub error_code: String,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub details: Option<serde_json::Value>,
-}
-
 /// Authentication middleware that validates JWT tokens or API keys.
 ///
 /// Extracts:
@@ -157,13 +157,11 @@ pub async fn auth_middleware(
                         return Ok(next.run(req).await);
                     }
                     Err(_) => {
-                        return Err((
+                        return Err(ErrorMapper::response(
                             StatusCode::UNAUTHORIZED,
-                            Json(ErrorResponse {
-                                error: "Invalid or expired JWT token".to_string(),
-                                error_code: "UNAUTHORIZED".to_string(),
-                                details: Some(serde_json::json!({ "auth_method": "jwt" })),
-                            }),
+                            "UNAUTHORIZED",
+                            "Invalid or expired JWT token",
+                            Some(serde_json::json!({ "auth_method": "jwt" })),
                         ));
                     }
                 }
@@ -182,13 +180,11 @@ pub async fn auth_middleware(
                 }
                 Err(e) => {
                     tracing::warn!(error = %e, "API key validation failed");
-                    return Err((
+                    return Err(ErrorMapper::response(
                         StatusCode::UNAUTHORIZED,
-                        Json(ErrorResponse {
-                            error: "Invalid or expired API key".to_string(),
-                            error_code: "UNAUTHORIZED".to_string(),
-                            details: Some(serde_json::json!({ "auth_method": "api_key" })),
-                        }),
+                        "UNAUTHORIZED",
+                        "Invalid or expired API key",
+                        Some(serde_json::json!({ "auth_method": "api_key" })),
                     ));
                 }
             }
@@ -196,13 +192,11 @@ pub async fn auth_middleware(
     }
 
     // No valid authentication found
-    Err((
+    Err(ErrorMapper::response(
         StatusCode::UNAUTHORIZED,
-        Json(ErrorResponse {
-            error: "Authentication required. Provide JWT token via 'Authorization: Bearer <token>' or API key via 'X-API-Key' header".to_string(),
-            error_code: "UNAUTHORIZED".to_string(),
-            details: None,
-        }),
+        "UNAUTHORIZED",
+        "Authentication required. Provide JWT token via 'Authorization: Bearer <token>' or API key via 'X-API-Key' header",
+        None,
     ))
 }
 
@@ -549,22 +543,20 @@ pub async fn rate_limit_middleware(
     }
 
     if !allowed_minute {
-        let mut response = (
+        let mut response = ErrorMapper::response(
             StatusCode::TOO_MANY_REQUESTS,
-            Json(ErrorResponse {
-                error: format!(
-                    "Rate limit exceeded. Maximum {} requests per {} seconds allowed.",
-                    per_minute_limit, limiter.window_seconds
-                ),
-                error_code: "RATE_LIMIT_EXCEEDED".to_string(),
-                details: Some(serde_json::json!({
-                    "limit": per_minute_limit,
-                    "window_seconds": limiter.window_seconds,
-                    "reset_at": minute_reset_timestamp,
-                })),
-            }),
+            "RATE_LIMIT_EXCEEDED",
+            format!(
+                "Rate limit exceeded. Maximum {} requests per {} seconds allowed.",
+                per_minute_limit, limiter.window_seconds
+            ),
+            Some(serde_json::json!({
+                "limit": per_minute_limit,
+                "window_seconds": limiter.window_seconds,
+                "reset_at": minute_reset_timestamp,
+            })),
         )
-            .into_response();
+        .into_response();
 
         let headers = response.headers_mut();
         headers.insert(
@@ -607,22 +599,20 @@ pub async fn rate_limit_middleware(
         daily_reset_timestamp = Some(reset_daily);
 
         if !allowed_daily {
-            let mut response = (
+            let mut response = ErrorMapper::response(
                 StatusCode::TOO_MANY_REQUESTS,
-                Json(ErrorResponse {
-                    error: format!(
-                        "Daily quota exceeded. Maximum {} requests per day allowed for your tier.",
-                        daily_limit
-                    ),
-                    error_code: "RATE_LIMIT_EXCEEDED".to_string(),
-                    details: Some(serde_json::json!({
-                        "daily_limit": daily_limit,
-                        "daily_reset_at": reset_daily,
-                        "limit_type": "daily",
-                    })),
-                }),
+                "RATE_LIMIT_EXCEEDED",
+                format!(
+                    "Daily quota exceeded. Maximum {} requests per day allowed for your tier.",
+                    daily_limit
+                ),
+                Some(serde_json::json!({
+                    "daily_limit": daily_limit,
+                    "daily_reset_at": reset_daily,
+                    "limit_type": "daily",
+                })),
             )
-                .into_response();
+            .into_response();
 
             let headers = response.headers_mut();
             headers.insert(

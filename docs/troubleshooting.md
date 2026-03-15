@@ -166,6 +166,9 @@ export TS_ENGINE_TIMEOUT_SECONDS=60
 docker-compose logs -f ts-engines
 ```
 
+**Operator runbook:**
+- For incident response and partial-service handling, see [docs/runbooks/incident-ts-bridge-failure.md](/Volumes/madara/2026/witnessos/Selemene-engine/docs/runbooks/incident-ts-bridge-failure.md).
+
 ---
 
 ## 4. Cache Miss Rate High

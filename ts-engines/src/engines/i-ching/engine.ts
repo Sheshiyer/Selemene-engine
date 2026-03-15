@@ -42,9 +42,13 @@ export class IChingEngine implements ConsciousnessEngine {
 
     const question = input.question ?? (input.parameters.question as string | undefined)
     if (question !== undefined && question.trim() === '') {
-      throw new EngineValidationError('Question cannot be empty for I-Ching consultation.', 'INVALID_QUESTION', {
-        field: 'question',
-      })
+      throw new EngineValidationError(
+        'Question cannot be empty for I-Ching consultation.',
+        'INVALID_QUESTION',
+        {
+          field: 'question',
+        },
+      )
     }
 
     // Get or cast primary hexagram
@@ -53,11 +57,15 @@ export class IChingEngine implements ConsciousnessEngine {
 
     if (hexagramParam !== undefined) {
       if (!Number.isInteger(hexagramParam) || hexagramParam < 1 || hexagramParam > 64) {
-        throw new EngineValidationError('Hexagram must be an integer between 1 and 64.', 'INVALID_HEXAGRAM', {
-          provided: hexagramParam,
-          min: 1,
-          max: 64,
-        })
+        throw new EngineValidationError(
+          'Hexagram must be an integer between 1 and 64.',
+          'INVALID_HEXAGRAM',
+          {
+            provided: hexagramParam,
+            min: 1,
+            max: 64,
+          },
+        )
       }
       primaryNumber = hexagramParam
     } else {
@@ -66,9 +74,13 @@ export class IChingEngine implements ConsciousnessEngine {
 
     const primary = getHexagramByNumber(primaryNumber)
     if (!primary) {
-      throw new EngineValidationError(`Invalid hexagram number: ${primaryNumber}`, 'INVALID_HEXAGRAM', {
-        provided: primaryNumber,
-      })
+      throw new EngineValidationError(
+        `Invalid hexagram number: ${primaryNumber}`,
+        'INVALID_HEXAGRAM',
+        {
+          provided: primaryNumber,
+        },
+      )
     }
 
     // Cast changing lines (each line has ~25% chance of being changing in three-coin method)

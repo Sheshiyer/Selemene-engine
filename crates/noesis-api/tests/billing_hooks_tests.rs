@@ -6,7 +6,7 @@ use axum::{
 };
 use chrono::{Duration as ChronoDuration, Utc};
 use noesis_api::{
-    create_router, reset_billing_emitter, set_billing_emitter, ApiConfig, AppState,
+    create_router, reset_billing_emitter, set_billing_emitter, shared_metrics, ApiConfig, AppState,
     BillingEventEmitter, StripeWebhookEmitter,
 };
 use noesis_auth::{ApiKey, AuthService};
@@ -14,7 +14,7 @@ use noesis_cache::CacheManager;
 use noesis_data::repositories::user_repository::UserRepository;
 use noesis_orchestrator::WorkflowOrchestrator;
 use sqlx::postgres::PgPoolOptions;
-use std::sync::{Arc, Mutex, Once};
+use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
 use tower::ServiceExt;
 
@@ -42,8 +42,6 @@ impl BillingEventEmitter for RecordingEmitter {
             .push((user_id.to_string(), tier.to_string()));
     }
 }
-
-static INIT_METRICS: Once = Once::new();
 
 fn build_test_app_state() -> (AppState, ApiConfig) {
     let mut orchestrator = WorkflowOrchestrator::new();
@@ -78,18 +76,11 @@ fn build_test_app_state() -> (AppState, ApiConfig) {
         .expect("Invalid DATABASE_URL");
     let user_repository = Arc::new(UserRepository::new(pool));
 
-    static mut METRICS: Option<Arc<noesis_metrics::NoesisMetrics>> = None;
-    #[allow(static_mut_refs)]
-    let metrics = unsafe {
-        INIT_METRICS.call_once(|| {
-            let m = noesis_metrics::NoesisMetrics::new().expect("Failed to initialize metrics");
-            METRICS = Some(Arc::new(m));
-        });
-        METRICS.as_ref().unwrap().clone()
-    };
+    let metrics = shared_metrics();
 
     let state = AppState {
         orchestrator: Arc::new(orchestrator),
+        bridge_manager: Arc::new(noesis_bridge::BridgeManager::from_env()),
         cache: Arc::new(cache),
         auth: Arc::new(auth),
         metrics,

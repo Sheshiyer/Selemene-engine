@@ -1,5 +1,317 @@
 # Task Plan — Admin Dashboard Wave 1 Bootstrap
 
+---
+
+# Task Plan — noesis-api Error Handling Audit for Issue #49
+
+## Checklist
+- [x] Load relevant workflow context and existing task/lesson notes.
+- [x] Inspect `crates/noesis-api/src/lib.rs` for shared API error helpers and response types.
+- [x] Inspect `crates/noesis-api/src/handlers/*.rs` and classify each handler by error-handling pattern.
+- [x] Record which handlers use `engine_error_to_response` / `ApiError` versus ad-hoc `StatusCode + Json(ErrorResponse)`.
+- [x] Conclude whether issue `#49` can close via documentation only or still requires code.
+
+## Notes
+- Scope is audit only for handler error handling patterns in `noesis-api`.
+- Do not modify API behavior in this pass unless the inspection reveals a trivial factual correction is required for the audit itself.
+
+## Review (fill after execution)
+- `crates/noesis-api/src/handlers/auth.rs`, `users.rs`, and `admin.rs` are consistent on the standardized path:
+  - all public handlers return `Result<Response, ApiError>`
+  - `ApiError` delegates to `engine_error_to_response`
+- `crates/noesis-api/src/lib.rs` is mixed:
+  - direct `engine_error_to_response` use in:
+    - `calculate_handler`
+    - `workflow_execute_handler`
+    - `legacy_panchanga_handler`
+    - `legacy_ghati_current_handler`
+  - ad-hoc `(StatusCode, Json(ErrorResponse))` construction in:
+    - `validate_handler`
+    - `engine_info_handler`
+    - `workflow_info_handler`
+    - `list_readings_handler`
+    - `get_reading_handler`
+    - `readings_stats_handler`
+  - special non-`ErrorResponse` outlier:
+    - `metrics_handler` returns plain-text `500`
+- Audit conclusion:
+  - issue `#49` is not documentation-only if the intended outcome is consistent handler error handling across `noesis-api`
+  - the inconsistency is real in current code, concentrated in `lib.rs`
+  - documentation can describe the current split, but closing the issue cleanly still requires code to standardize the remaining ad-hoc handlers
+
+---
+
+# Task Plan — Astrology Hygiene Verification Audit
+
+## Checklist
+- [x] Review current hygiene-related docs and task/lesson context.
+- [ ] Verify whether FreeAstrologyAPI provider wiring is actually active in runtime code paths.
+- [ ] Verify whether the claimed engine fixes/tests exist in the repo and match the transcript.
+- [ ] Run fresh targeted verification commands for the affected engines/API tests.
+- [ ] Record confirmed findings, contradictions, and remaining gaps in the review section.
+
+## Notes
+- Scope is verification only for the current hygiene changes and provider/runtime behavior.
+- Do not mutate engine logic in this pass unless verification reveals a safe, necessary correction.
+
+## Review (fill after execution)
+- Trusted screenshot reference for `1991-08-13 13:31 Bangalore` shows:
+  - `Tithi = Chaturthi upto 10:04 PM`
+  - `Nakshatra = Uttara Phalguni upto 01:52 PM`
+  - `Nakshatra Pada = 4` at the birth moment (`pada 3` ended at `08:05 AM`)
+  - `Yoga = Siddha upto 07:48 PM`
+  - `Karana = Vishti upto 10:04 PM` (`Vanija` ended at `10:48 AM`)
+  - `Weekday = Mangalavara`
+  - `Paksha = Shukla Paksha`
+  - `Moon sign = Kanya`
+  - `Sun sign = Karka`
+  - `Lahiri Ayanamsha = 23.746632`
+- Native Selemene Panchanga at the same moment returned:
+  - `tithi_name = Chaturthi (Shukla)`
+  - `nakshatra_name = Uttara Phalguni`
+  - `nakshatra_value = 11.987291238292826` -> `pada 4`
+  - `yoga_name = Siddha`
+  - `karana_name = Vishti`
+  - `vara_name = Mangalavara (Tuesday)`
+  - `solar_longitude = 116.37350004069478` -> `Karka`
+  - `lunar_longitude = 159.83054984390435` -> `Kanya`
+  - `julian_day = 2448481.834027778`
+- Comparison verdict:
+  - native Panchanga matches the trusted screenshot on every high-signal birth field we extracted:
+    - `tithi`
+    - `nakshatra`
+    - `nakshatra pada`
+    - `yoga`
+    - `karana`
+    - `vara`
+    - `moon sign`
+    - `sun sign`
+  - we added regression coverage for this exact birth moment in `engine-panchanga`.
+- Verification:
+  - `cargo test -p engine-panchanga test_birth_reference_1991_08_13_bangalore_matches_trusted_screenshot -- --nocapture`
+  - `cargo test -p engine-panchanga -- --nocapture`
+- Residual nuance:
+  - the engine does not currently expose ayanamsha as an output field.
+  - internal sidereal conversion still uses a simplified Lahiri constant (`23.72`) rather than the screenshot's `23.746632`.
+  - despite that, the birth-time Panchanga classifications match the trusted reference for this canonical input.
+
+---
+
+# Task Plan — Panchanga Provider Attribution Check
+
+## Checklist
+- [x] Verify which runtime engines are currently routed through FreeAstrologyAPI.
+- [x] Capture raw FreeAstrologyAPI Panchanga response behavior for the canonical birth input.
+- [x] Capture Selemene `/api/v1/engines/panchanga/calculate` response for the same input.
+- [x] Capture native Panchanga response for the same input.
+- [x] Compare provider behavior vs mapped API response vs native response and isolate the divergence point.
+- [x] Record conclusion and recommended next action in the review section.
+
+## Notes
+- Scope is surgical: provider attribution and correctness for Panchanga first.
+- Do not change engine math or broaden provider wiring in this pass.
+
+## Review (fill after execution)
+- Canonical input used:
+  - `1991-08-13`
+  - `13:31`
+  - `12.9340, 77.6214`
+  - `Asia/Kolkata`
+- Direct live provider probes:
+  - Old configured repo host `https://json.freeastrologyapi.com/panchang` with `x-api-key` returned `403 MissingAuthenticationToken`.
+  - Current public host `https://astro-api-1qnc.onrender.com/api/v1/vedic/panchang` with `Authorization: Bearer ...` returned `401 Missing x-api-key header`.
+  - Current public host with `x-api-key` returned `403 Invalid API Key` for the supplied key.
+- Selemene API route in `VEDIC_ENGINE_PROVIDER=api` mode returned:
+  - `_selemene_execution.route = fallback`
+  - `provider_attempted = true`
+  - `fallback_used = true`
+  - `backend = native-rust`
+  - Panchanga values:
+    - `tithi_name = Tritiya (Shukla)`
+    - `nakshatra_name = Uttara Phalguni`
+    - `yoga_name = Siddha`
+    - `karana_name = Balava`
+    - `vara_name = Mangalavara (Tuesday)`
+    - `solar_longitude = 117.54499786675959`
+    - `lunar_longitude = 153.10711914058018`
+    - `julian_day = 2448481.834027778`
+- Selemene API route in `VEDIC_ENGINE_PROVIDER=native` mode returned the exact same Panchanga values, confirming the `api`-mode result came from native fallback rather than provider mapping.
+- Divergence point isolated:
+  - the failure is upstream of astrology mapping.
+  - initial `noesis-vedic-api` client used Bearer auth and the wrong Panchanga path.
+  - patched client now uses `x-api-key` and `complete-panchang`, with contract coverage:
+    - `cargo test -p noesis-vedic-api --test client_tests test_get_panchang_uses_x_api_key_header_and_complete_endpoint -- --nocapture`
+    - `cargo test -p noesis-api --test vedic_provider_route_tests -- --nocapture`
+  - after the client contract fix, direct raw provider call still returns `403 AccessDenied` on `https://json.freeastrologyapi.com/complete-panchang` for the supplied key.
+  - Selemene `api` mode with fallback disabled now returns `500 BRIDGE_ERROR`, which correctly surfaces the provider failure instead of silently producing astrology output.
+  - Selemene `api` mode with fallback enabled returns the same native Panchanga output as `native` mode, confirming live provider mapping still does not execute because provider authorization blocks first.
+- Recommended next action:
+  - provider contract is now corrected for Panchanga.
+  - next unblocker is provider authorization: verify the active API key/account entitlement for `complete-panchang`, or switch to a provider/endpoint that will return a live Panchanga payload for comparison.
+  - additional entitlement probes against official docs endpoints all failed from this environment with the supplied key:
+    - `POST /complete-panchang` -> `403 AccessDenied`
+    - `POST /tithi-durations` -> `403 Forbidden`
+    - `POST /nakshatra-durations` -> `403 Forbidden`
+    - `POST /yoga-durations` -> `403 Forbidden`
+    - `POST /geo-details` -> `403 Forbidden`
+    - `POST /aayanam` -> `403 Forbidden`
+  - control probes on `geo-details` with no key and with a random key also returned `403 Forbidden`, so the provider is not giving a usable success path or a differentiating auth error from this environment.
+  - viability conclusion: FreeAstrologyAPI is not currently usable as a live Panchanga source in this setup until key/account access is repaired.
+
+---
+
+# Task Plan — Panchanga Native Baseline + Replacement Provider Comparison
+
+## Checklist
+- [ ] Lock the canonical Panchanga fixture for:
+  - `1991-08-13`
+  - `13:31`
+  - `12.9340, 77.6214`
+  - `Asia/Kolkata`
+- [ ] Capture native Selemene Panchanga output for the canonical fixture.
+- [ ] Capture a trusted external reference Panchanga result for the same fixture.
+- [ ] Compare native output vs trusted reference on:
+  - `tithi`
+  - `nakshatra`
+  - `yoga`
+  - `karana`
+  - `vara`
+  - `solar_longitude`
+  - `lunar_longitude`
+  - `julian_day` if available
+- [ ] Decide whether native Panchanga is trustworthy enough to serve as the interim source of truth.
+- [ ] Only after native validation, test replacement provider candidates against the same canonical fixture.
+- [ ] Record the comparison matrix and decision in the review section.
+
+## Notes
+- Freeze FreeAstrologyAPI for Panchanga investigation until provider access is repaired.
+- Native engine validation comes before any replacement provider integration work.
+- Keep this wave evidence-driven and fixture-based.
+
+## Review (fill after execution)
+- External reference used in this pass:
+  - pasted Drik-style Bengaluru day Panchang for `March 10, 2026`
+  - daily context anchored around sunrise `06:30`
+  - updated screenshot clarified that `12:21 PM` refers to the `Anuradha` **pada** transition, while core nakshatra remains `Anuradha` until `07:05 PM`
+- Native Selemene checks run at:
+  - `2026-03-10 06:30 Asia/Kolkata`
+  - `2026-03-10 12:20/12:21 Asia/Kolkata`
+  - Bengaluru center and user coordinates produced effectively the same result for core fields
+- Native engine matches the reference on coarse fields:
+  - `vara = Mangalavara (Tuesday)`
+  - `nakshatra = Anuradha` at day start
+  - `nakshatra = Anuradha` still valid at `12:21 PM`
+  - `lunar_longitude = 220.7894` at sunrise -> moon in `Vrishchika`, `Anuradha`, roughly pada 3
+  - `lunar_longitude = 224.0012` at `12:21 PM` -> moon still in `Anuradha`, now roughly pada 4
+  - `solar_longitude = 324.0117` at sunrise -> sun in `Kumbha`
+  - `tithi = Saptami (Krishna)` matches the screenshot's `Saptami upto 01:54 AM, Mar 11`
+  - `yoga` progression also matches:
+    - sunrise: native `Harshana`
+    - noon: native `Vajra`
+    - screenshot: `Harshana upto 08:21 AM`, then `Vajra`
+- Root cause isolated and fixed in this pass:
+  - `engine-panchanga` used a placeholder modulo-based karana mapping instead of the real 60 half-tithi cycle.
+  - `engine-panchanga` also used rough mean solar/lunar longitudes, which flipped the March 10, 2026 Bengaluru karana transition too early.
+  - surgical fix applied:
+    - replaced karana derivation with the standard 60-slot half-tithi sequence
+    - changed `compute_panchanga()` to prefer local Swiss Ephemeris Sun/Moon positions via `engine-human-design`, with the previous mean-longitude math retained only as fallback
+    - normalized internal karana naming from `Garaja` to `Gara` to match the rest of the system
+- Verification after fix:
+  - `cargo test -p engine-panchanga test_karana_regression_march_10_2026_day_sequence -- --nocapture`
+  - `cargo test -p engine-panchanga -- --nocapture`
+  - `cargo test -p noesis-api --test engine_consistency_tests -- --nocapture`
+- Current confidence decision:
+  - the March 10, 2026 reference now matches on the previously broken karana sequence:
+    - `Vishti` at sunrise
+    - still `Vishti` at `12:21 PM`
+    - `Bava` after the documented `12:40 PM` transition (regression asserted at `12:41 PM`)
+  - native Panchanga is now materially stronger for day-level validation and no longer blocked on the karana mismatch.
+  - canonical birth-fixture validation against a trusted external Panchanga source is still pending before declaring native Panchanga the final baseline for all cases.
+
+---
+
+# Task Plan — Panchanga Birth-Time Validation Against Trusted Screenshot
+
+## Checklist
+- [x] Extract the key Panchanga fields from the trusted birth-day screenshots for:
+  - `1991-08-13`
+  - `13:31`
+  - `Bangalore, India`
+  - `Asia/Kolkata`
+- [x] Run native Selemene Panchanga for the same birth moment.
+- [x] Compare native output vs screenshot on:
+  - `tithi`
+  - `nakshatra`
+  - `nakshatra pada`
+  - `yoga`
+  - `karana`
+  - `vara`
+  - `moon sign`
+  - `sun sign`
+  - `ayanamsha`
+- [x] Record the exact matches/mismatches and confidence decision.
+
+## Notes
+- This pass is validation only.
+- Use the screenshot as the trusted external reference for the exact birth moment.
+- Keep the March 10, 2026 day-Panchang fix separate from the birth-time verdict.
+
+## Review (fill after execution)
+- Trusted screenshot reference for `1991-08-13 13:31 Bangalore` shows:
+  - `Tithi = Chaturthi upto 10:04 PM`
+  - `Nakshatra = Uttara Phalguni upto 01:52 PM`
+  - `Nakshatra Pada = 4`
+  - `Yoga = Siddha upto 07:48 PM`
+  - `Karana = Vishti upto 10:04 PM`
+  - `Weekday = Mangalavara`
+  - `Moon sign = Kanya`
+  - `Sun sign = Karka`
+  - `Lahiri Ayanamsha = 23.746632`
+- Native Selemene Panchanga at the same moment returned:
+  - `tithi_name = Chaturthi (Shukla)`
+  - `nakshatra_name = Uttara Phalguni`
+  - `nakshatra_value = 11.987291238292826` -> `pada 4`
+  - `yoga_name = Siddha`
+  - `karana_name = Vishti`
+  - `vara_name = Mangalavara (Tuesday)`
+  - `solar_longitude = 116.37350004069478` -> `Karka`
+  - `lunar_longitude = 159.83054984390435` -> `Kanya`
+  - `julian_day = 2448481.834027778`
+- Decision:
+  - native Panchanga matches the trusted screenshot on all high-signal birth fields for the canonical input.
+  - regression coverage added in `engine-panchanga` for this exact birth-time fixture.
+
+---
+
+# Task Plan — Panchanga Provider Runtime Decommission
+
+## Checklist
+- [x] Remove FreeAstrologyAPI runtime dispatch from `noesis-api` for Panchanga.
+- [x] Remove provider mapping/runtime dependency hooks that are no longer reachable.
+- [x] Scrub provider reporting fields from active `/api/v1/status` and `/ready` responses.
+- [x] Add route-level tests proving Panchanga remains native even if old provider env vars are still set.
+- [x] Verify no provider trace fields remain in active Panchanga route responses.
+
+## Notes
+- Scope is runtime cleanup only in `noesis-api`.
+- Keep the `noesis-vedic-api` crate in the repo; remove only the active API-path association.
+- Do not touch unrelated engines or legacy docs in this pass.
+
+## Review (fill after execution)
+- Runtime cleanup completed in `noesis-api`:
+  - removed the provider dispatch branch from `calculate_handler`
+  - removed provider-specific Panchanga mapping/helpers from `src/lib.rs`
+  - removed the active `noesis-vedic-api` dependency from `crates/noesis-api/Cargo.toml`
+  - removed provider/status fields from active `/api/v1/status` and `/ready` responses
+- Trace verification after cleanup:
+  - `panchanga` route stays native even when `FREE_ASTROLOGY_API_*` and `VEDIC_ENGINE_PROVIDER=api` are set
+  - response no longer contains `provider` or `_selemene_execution` trace fields
+  - `/api/v1/status` and `/ready` no longer report provider configuration fields
+- Verification:
+  - `cargo test -p engine-panchanga -- --nocapture`
+  - `cargo test -p noesis-api --test vedic_provider_route_tests -- --nocapture`
+  - `cargo test -p noesis-api --test engine_consistency_tests -- --nocapture`
+
 ## Checklist
 - [x] Create `apps/admin-web` Next.js scaffold configured for Vercel deployment.
 - [x] Implement admin route shell and placeholders for documented pages (`/admin/*` via `basePath`).
@@ -258,6 +570,52 @@
   - `apps/admin-web/src/lib/export.ts`
   - `apps/admin-web/src/lib/status.ts`
 - Applied URL-synced state:
+
+---
+
+# Task Plan — Selemene Engine Hygiene Verification (2026-03-09)
+
+## Checklist
+- [x] Review the existing hygiene report, task log, and current worktree changes.
+- [x] Verify whether `noesis-api` currently routes Vedic engines through `noesis-vedic-api` / FreeAstrologyAPI.
+- [x] Run the targeted regression tests cited in the hygiene report.
+- [x] Run at least one broader validation suite to check whether the "fixed" claims hold beyond the canonical fixture.
+- [x] Record the verified state and the main contradictions/gaps.
+
+## Notes
+- Scope is verification only. No engine logic changes in this pass.
+- Focus question: whether current runtime uses FreeAstrologyAPI, and whether the pasted hygiene transcript accurately reflects the repo's present state.
+
+## Review
+- Verified provider wiring in `crates/noesis-api`:
+  - `noesis-api` now depends on `noesis-vedic-api`.
+  - `VEDIC_ENGINE_PROVIDER` defaults to `api`.
+  - `POST /api/v1/engines/:engine_id/calculate` uses provider dispatch for `panchanga` and `vimshottari` only, with fallback controlled by `VEDIC_ENGINE_FALLBACK_ENABLED`.
+  - `human-design`, `gene-keys`, `transits`, and `vedic-clock` remain native in provider mode.
+  - The legacy Panchanga route still bypasses provider routing and uses the native orchestrator path.
+- Verified targeted regression tests pass:
+  - `cargo test -p engine-panchanga`
+  - `cargo test -p engine-vimshottari`
+  - `cargo test -p engine-vedic-clock`
+  - `cargo test -p noesis-bridge`
+  - `cargo test -p engine-human-design test_canonical_profile_regression -- --nocapture`
+  - `cargo test -p engine-gene-keys test_gk_birth_mode_derives_from_hd_engine -- --nocapture`
+  - `cargo test -p engine-gene-keys -- --nocapture`
+  - `cargo test -p noesis-api provider_mode_tests -- --nocapture`
+  - `cargo test -p noesis-api --test engine_consistency_tests -- --nocapture`
+- Verified important gap:
+  - `cargo test -p engine-human-design -- --nocapture` still fails its broader `reference_validation_tests` suite badly:
+    - Sun/Earth validation: 0.0%
+    - Type validation: 0.0%
+    - Authority validation: 25.0%
+    - Profile validation: 75.0%
+    - Centers validation: 0.0%
+    - Channels validation: 0.0%
+- Conclusion:
+  - The pasted transcript is only partially accurate.
+  - It is accurate that targeted canonical fixes/tests were added.
+  - It is no longer accurate to say provider env vars are unused in runtime for all Vedic paths.
+  - It overstates the Human Design fix status; the canonical fixture passes, but the broader reference suite is still failing.
   - `users` (`query`, `tier`, `state`)
   - `api-keys` (`query`, `tier`, `status`)
   - `audit` (`actor`, `action`, `result`, `from`, `to`, `refresh`)
@@ -288,6 +646,1588 @@
 
 ---
 
+# Task Plan — Engine Hygiene Issue Triage (2026-03-08)
+
+## Checklist
+- [x] Consolidate engine hygiene challenges from latest validation run.
+- [x] Create parent tracking issue for coordinated remediation.
+- [x] Create child issues for each validated challenge domain.
+- [x] Link all child issues back to parent tracker.
+- [x] Create report with challenge matrix + issue links.
+
+## Review
+- Parent tracking issue created: #501
+- Child issues created: #502, #503, #504, #505, #506, #507
+- Report added: `docs/planning/selemene-engine-hygiene-2026-03-08.md`
+- Recommended fix order documented in the report.
+
+## Follow-up Execution — #502 + #503
+- [x] Implemented sidereal conversion in panchanga output path.
+- [x] Fixed vimshottari timezone conversion (local birth time -> UTC).
+- [x] Added canonical regression tests for Uttara Phalguni resolution.
+- [x] Added cross-engine parity test in noesis-api.
+- [x] Verified with:
+  - `cargo test -p engine-panchanga`
+  - `cargo test -p engine-vimshottari`
+  - `cargo test -p noesis-api --test engine_consistency_tests`
+
+## Follow-up Execution — #504 + #505
+- [x] Corrected HD gate-sequence transposition causing design-side canonical drift (23/43 vs 8/14).
+- [x] Added canonical HD regression for incarnation-cross gate anchors.
+- [x] Added GK birth-mode contract test proving HD-derived activation sequence mapping.
+- [x] Added HD↔GK canonical parity test in `noesis-api` consistency suite.
+- [x] Verified with:
+  - `cargo test -p engine-human-design test_canonical_profile_regression`
+  - `cargo test -p engine-gene-keys test_gk_birth_mode_derives_from_hd_engine`
+  - `cargo test -p noesis-api --test engine_consistency_tests`
+
+## Follow-up Execution — #507 + provider wiring discovery
+- [x] Fixed Vedic-clock timezone fallback to `birth_data.timezone` when explicit offset missing.
+- [x] Added/updated tests for timezone fallback behavior.
+- [x] Ran verification: `cargo test -p engine-vedic-clock`.
+- [x] Created provider wiring issue #508 to track `api/native` runtime selection gap for Vedic engines.
+
+## Follow-up Execution — #506 + #508
+- [x] Added sigil-forge pre-validation in bridge adapter to avoid malformed-input bridge 500s.
+- [x] Mapped bridge 4xx responses to validation errors (422 path).
+- [x] Added provider-mode visibility to readiness/status payloads in noesis-api.
+- [x] Added provider-mode mapping tests.
+- [x] Verified with:
+  - `cargo test -p noesis-bridge`
+  - `cargo test -p noesis-api provider_mode_tests`
+
+## Follow-up Execution — #508 true switching pass
+- [x] Added noesis-vedic-api runtime dependency in noesis-api.
+- [x] Implemented provider dispatch for `panchanga` and `vimshottari` in calculate handler.
+- [x] Added fallback-to-native behavior when provider fails and fallback is enabled.
+- [x] Updated status/readiness effective provider mode semantics.
+- [x] Verified with `cargo test -p noesis-api provider_mode_tests -- --nocapture`.
+- [x] Added provider-routing helper tests for supported engine gating.
+- [x] Added fallback-flag env parsing test coverage.
+- [x] Added provider-output mapping contract tests for panchanga and vimshottari.
+- [x] Re-verified with `cargo test -p noesis-api provider_mode_tests -- --nocapture` (7 passing).
+
+---
+
+# Task Plan — Next Wave Synthesis: Astrology API Correctness (2026-03-10)
+
+## Discovery Summary
+- Planning depth: lean
+- Delivery mode: hardening
+- CI/CD expectation: basic + targeted regression gates
+- Release model: phased rollout
+- Quality bar: prove route selection, prove provider-vs-native source, then fix calculation/mapping defects
+- Team topology: solo-owner friendly
+
+## Assumptions
+- The immediate problem is not "add more engines" but "make current panchanga/vimshottari answers attributable and trustworthy."
+- The existing issue set (#501-#508) remains the right container; the next wave should refine/advance those issues rather than open a fresh parallel tracker unless scope expands.
+- Human Design/Gene Keys should not be treated as solved while the broader HD reference suite is still failing.
+
+## Proposed next waves
+
+### Wave 1 — Provider Truth and Attribution
+- [ ] Add end-to-end API tests for `POST /api/v1/engines/panchanga/calculate` and `POST /api/v1/engines/vimshottari/calculate` that assert actual runtime path selection under:
+  - `VEDIC_ENGINE_PROVIDER=api`
+  - `VEDIC_ENGINE_PROVIDER=native`
+  - provider failure + fallback enabled
+  - provider failure + fallback disabled
+- [ ] Add explicit response metadata proving which path served the result:
+  - provider direct
+  - native direct
+  - native fallback after provider failure
+- [ ] Add a reproducible comparison harness/script for canonical birth input:
+  - raw `noesis-vedic-api` payload
+  - mapped `noesis-api` response
+  - native engine response
+- [ ] Decide and document whether the legacy Panchanga route should:
+  - remain native and be clearly documented as such, or
+  - be routed through the same provider-aware dispatcher
+
+### Wave 2 — Provider Contract Hardening (#502, #503, #508)
+- [ ] Add golden fixtures from known-good provider responses for canonical birth data.
+- [ ] Add mapping completeness tests ensuring provider payload fields are preserved or intentionally transformed.
+- [ ] Add negative tests for timezone, ayanamsa, and moon-longitude drift against the canonical birth fixture.
+- [ ] Add a one-command validation script that reports:
+  - configured provider mode
+  - effective route used
+  - backend label
+  - canonical nakshatra / dasha summary
+- [ ] Update stale docs/report language that still says provider routing is unused.
+
+### Wave 3 — Runtime Behavior in Real Environments
+- [ ] Add readiness/status checks that surface whether provider mode is configured but unusable due to missing key/network.
+- [ ] Add production/local smoke steps for:
+  - `FREE_ASTROLOGY_API_KEY` present
+  - provider reachable
+  - fallback triggered/not triggered
+- [ ] Verify Railway/local env parity for:
+  - `FREE_ASTROLOGY_API_KEY`
+  - `VEDIC_ENGINE_PROVIDER`
+  - `VEDIC_ENGINE_FALLBACK_ENABLED`
+- [ ] Add log assertions or structured tracing around provider invocation/fallback transitions.
+
+### Wave 4 — Remaining Native Engine Correctness (#504, #505, #507)
+- [ ] Re-scope #504 around the failing broad reference suite, not the passing canonical fixture.
+- [ ] Build a reduced reference chart pack for HD/GK triage so fixes can land incrementally.
+- [ ] Keep GK aligned to HD outputs, but do not close HD until full reference validation improves materially.
+- [ ] Close #507 only after route-level behavior is verified through API integration, not just unit tests.
+
+## Recommended execution order
+1. #508 first: prove route selection and fallback semantics end-to-end.
+2. #502 + #503 second: use the new harness to determine whether remaining drift is provider payload, mapper logic, or native fallback confusion.
+3. Docs/report cleanup third: remove contradictory statements so future debugging is not polluted by stale assumptions.
+4. #504 + #505 after that: broad HD/GK correctness is still a separate native-engine track.
+
+## Review
+- Current blocker is attribution ambiguity, not lack of more targeted math tests.
+- Once route attribution is explicit, we can answer "FreeAstrologyAPI is wrong" vs "our bridge is wrong" with evidence instead of inference.
+
+## Follow-up Execution — Wave 1 attribution hardening
+- [x] Added explicit execution attribution for `panchanga` and `vimshottari` responses in `crates/noesis-api/src/lib.rs`.
+  - `result._selemene_execution.route` is now one of:
+    - `provider`
+    - `native`
+    - `fallback`
+  - Attribution also records:
+    - `requested_provider`
+    - `provider_attempted`
+    - `fallback_used`
+    - resolved `backend`
+- [x] Added isolated route-level provider tests in `crates/noesis-api/tests/vedic_provider_route_tests.rs` using `wiremock`.
+- [x] Added `wiremock` + `noesis-vedic-api` mocks support to `crates/noesis-api/Cargo.toml` dev-dependencies.
+- [x] Verified route behavior end-to-end:
+  - provider direct success for `panchanga`
+  - provider direct success for `vimshottari`
+  - native direct mode for `panchanga`
+  - provider failure + fallback enabled for `panchanga`
+  - provider failure + fallback disabled for `panchanga`
+- [x] Verification commands:
+  - `cargo test -p noesis-api --test vedic_provider_route_tests -- --nocapture`
+  - `cargo test -p noesis-api provider_mode_tests -- --nocapture`
+
+## Follow-up Execution — Vimshottari provider de-association (surgical)
+- [x] Remove only `vimshottari` from the FreeAstrologyAPI runtime path.
+- [x] Keep `panchanga` provider wiring unchanged.
+- [x] Preserve response schema and native `vimshottari` behavior.
+- [x] Update route/provider tests so `vimshottari` is asserted native even when `VEDIC_ENGINE_PROVIDER=api`.
+- [x] Re-verify targeted `noesis-api` and `engine-vimshottari` tests.
+
+### Constraints
+- Do not remove `noesis-vedic-api` globally.
+- Do not change `panchanga` routing in this pass.
+- Do not touch HD/GK/native engine math in this pass.
+
+### Review
+- `crates/noesis-api/src/lib.rs`
+  - `effective_vedic_engine_modes_for("api")` now reports only `panchanga` as `api`.
+  - `use_api_provider_for_engine(...)` now returns `true` only for `panchanga`.
+  - Removed provider-side `vimshottari` mapping/dispatch from the runtime path.
+- `crates/noesis-api/tests/vedic_provider_route_tests.rs`
+  - Replaced provider-success expectation for `vimshottari` with native-route assertion under `VEDIC_ENGINE_PROVIDER=api`.
+  - Added assertion that no provider request is made for `vimshottari`.
+- `crates/noesis-api/src/lib.rs` provider-mode tests
+  - Updated expected mode map and provider gating assertions.
+  - Removed obsolete provider-vimshottari mapping contract test.
+- Verification:
+  - `cargo test -p engine-vimshottari`
+  - `cargo test -p noesis-api provider_mode_tests -- --nocapture`
+  - `cargo test -p noesis-api --test vedic_provider_route_tests -- --nocapture`
+  - `cargo test -p noesis-api --test engine_consistency_tests -- --nocapture`
+
+---
+
+# Task Plan — Transits Engine Validation
+
+## Checklist
+- [ ] Inspect the native `transits` engine path, inputs, and output contract.
+- [ ] Lock a fixed transit timestamp for comparison so validation is deterministic.
+- [ ] Reproduce the current transits output for the canonical birth data.
+- [ ] Compare high-signal fields against trusted expectations:
+  - natal Moon sign / longitude basis
+  - transit Saturn sign
+  - Sade Sati status
+  - a few major transit-to-natal aspects
+- [ ] Isolate whether the first defect is:
+  - birth timezone handling
+  - tropical vs sidereal basis mismatch
+  - aspect logic
+  - output/schema drift
+- [ ] Add regression coverage and implement the smallest correct fix if a real defect is confirmed.
+
+## Notes
+- Scope is native `engine-transits` only. FreeAstrologyAPI is no longer in the active runtime path here.
+- Use the canonical birth fixture:
+  - `1991-08-13`
+  - `13:31`
+  - `12.9340, 77.6214`
+  - `Asia/Kolkata`
+- Use a fixed transit timestamp for verification, not a moving `now`.
+
+## Review (fill after execution)
+- Early code review findings before patching:
+  - `crates/engine-transits/src/engine.rs` parses birth date/time as UTC and ignores `birth_data.timezone`.
+  - `crates/engine-transits/src/ephemeris.rs` uses raw Swiss Ephemeris tropical longitudes.
+  - `crates/engine-transits/src/sade_sati.rs` computes Sade Sati from those sign values, which is conceptually Vedic and therefore likely requires sidereal Moon/Saturn signs.
+  - Existing tests cover helper logic and output shape, but not canonical birth-time correctness, timezone handling, or sidereal-vs-tropical assumptions.
+- Fixed in this pass:
+  - `crates/engine-transits/src/engine.rs`
+    - `parse_birth_datetime()` now parses `birth_data.timezone` as an IANA timezone and converts local birth time to UTC before natal calculations.
+  - `crates/engine-transits/src/ephemeris.rs`
+    - converted Swiss Ephemeris tropical longitudes to sidereal using the same approximate Lahiri offset (`23.72`) already used by native Panchanga/Vimshottari.
+- Trusted references used:
+  - birth screenshot for `1991-08-13 13:31 Bangalore`
+    - natal Sun sign `Karka` / `Cancer`
+    - natal Moon sign `Kanya` / `Virgo`
+  - Bengaluru day Panchang screenshot for `2026-03-10 06:30 Asia/Kolkata`
+    - transit Sun sign `Kumbha` / `Aquarius`
+    - transit Moon sign `Vrishchika` / `Scorpio`
+- New regression coverage:
+  - `test_parse_birth_datetime_respects_birth_timezone`
+    - proved the old bug first (`1991-08-13 13:31 Asia/Kolkata` was being treated as `1991-08-13T13:31:00Z`)
+    - now asserts the correct UTC conversion: `1991-08-13T08:01:00Z`
+  - `test_birth_and_transit_signs_match_trusted_references`
+    - asserts natal `Sun = Cancer`, `Moon = Virgo`
+    - asserts transit `Sun = Aquarius`, `Moon = Scorpio` for `2026-03-10T01:00:00Z` (`06:30 IST`)
+- Verification:
+  - `cargo test -p engine-transits test_parse_birth_datetime_respects_birth_timezone -- --nocapture`
+  - `cargo test -p engine-transits test_birth_and_transit_signs_match_trusted_references -- --nocapture`
+  - `cargo test -p engine-transits -- --nocapture`
+  - `cargo test -p noesis-api provider_mode_tests -- --nocapture`
+- Current verdict:
+  - native `transits` had a real foundational defect.
+  - the engine now uses timezone-correct natal timestamps and sidereal sign assignment aligned with the rest of the native Vedic stack.
+  - aspect math was left unchanged because applying the same sidereal offset to natal and transit longitudes preserves the inter-planet angular relationships used by the aspect detector.
+- Residual risk:
+  - we have not yet externally validated a full list of transit-to-natal aspects or Sade Sati phase against a second trusted transit source.
+  - docs still describe the engine as `9 Navagraha`, while the runtime output includes outer planets plus Rahu/Ketu.
+- Additional natal reference fixtures queued from user-provided AstroSage PDFs:
+- Additional natal reference fixtures validated from user-provided AstroSage PDFs:
+  - `Natesh Aiyer`
+    - `1960-11-20 17:15 Bangalore`
+    - `Sun = Scorpio`, `Nakshatra = Anuradha pada 1`
+    - `Moon = Scorpio`, `Nakshatra = Jyeshtha pada 3`
+    - `Asc = Aries`
+  - `Anitha Nateshan`
+    - `1965-06-01 00:35 Bangalore`
+    - `Sun = Taurus`, `Nakshatra = Rohini pada 3`
+    - `Moon = Taurus`, `Nakshatra = Mrigashira pada 2`
+    - `Asc = Aquarius`
+- Regression coverage added for both PDF fixtures in `crates/engine-transits/src/engine.rs`:
+  - `test_natesh_aiyer_natal_positions_match_pdf_reference`
+  - `test_anitha_nateshan_natal_positions_match_pdf_reference`
+- One fixture (`Anitha Nateshan`) initially exposed a residual defect:
+  - fixed-offset ayanamsha (`23.72`) was too imprecise across years and placed the natal Sun in `Rohini pada 2` instead of the trusted `Rohini pada 3`.
+- Surgical refinement applied:
+  - `crates/engine-transits/src/ephemeris.rs` now gets the date-correct Lahiri ayanamsha from Swiss Ephemeris via `swe_set_sid_mode(Lahiri)` + `swe_get_ayanamsa_ut(...)` instead of subtracting a fixed constant.
+- Expanded verification:
+  - `cargo test -p engine-transits test_natesh_aiyer_natal_positions_match_pdf_reference -- --nocapture`
+  - `cargo test -p engine-transits test_anitha_nateshan_natal_positions_match_pdf_reference -- --nocapture`
+  - `cargo test -p engine-transits -- --nocapture`
+  - `cargo test -p noesis-api provider_mode_tests -- --nocapture`
+- Updated confidence:
+  - native `transits` now matches three independent natal reference fixtures for Sun/Moon sign and nakshatra/pada-sensitive sidereal placement:
+    - your canonical 1991 birth chart
+    - `Natesh Aiyer` 1960 chart
+    - `Anitha Nateshan` 1965 chart
+  - this materially raises confidence in the natal baseline used for transit analysis.
+
+---
+
+# Task Plan — Docs + Commit + Push
+
+## Checklist
+- [ ] Update user-facing docs to reflect the current native-first Vedic runtime and transits fixes.
+- [ ] Update release-facing notes with the March 2026 engine hygiene corrections.
+- [ ] Add a short correction note to the hygiene planning report so it no longer claims provider routing is active.
+- [ ] Re-run targeted verification before committing.
+- [ ] Commit the validated changes and push to a remote branch so existing workflows can trigger safely.
+
+## Notes
+- Current repo state is detached `HEAD`; do not commit directly without creating a branch first.
+- `deploy.yaml` auto-deploys only on `main` or tags.
+- `test.yml` runs only on `main`, `develop`, and pull requests.
+- Safe path: create a `codex/...` branch, push it, then open/merge through the normal repo flow if deployment to `main` is desired.
+
+## Review (fill after execution)
+- Branch created from detached `HEAD`:
+  - `codex/engine-hygiene-native-runtime-docs`
+- User-facing docs updated:
+  - `README.md`
+  - `docs/ENGINES.md`
+  - `docs/PROJECT_OVERVIEW.md`
+  - `docs/RELEASE_NOTES.md`
+  - `docs/MIGRATION_TO_FREE_ASTROLOGY_API.md`
+  - `docs/planning/selemene-engine-hygiene-2026-03-08.md` (historical-note correction)
+- Commit created:
+  - `c379346d`
+  - `fix(vedic): restore native runtime and validate transits baselines`
+- Branch pushed:
+  - `origin/codex/engine-hygiene-native-runtime-docs`
+- Pull request opened:
+  - `#509`
+  - `https://github.com/Sheshiyer/Selemene-engine/pull/509`
+- Verification run before commit:
+  - `cargo test -p engine-panchanga -- --nocapture`
+  - `cargo test -p engine-vimshottari -- --nocapture`
+  - `cargo test -p engine-transits -- --nocapture`
+  - `cargo test -p noesis-api --test engine_consistency_tests -- --nocapture`
+  - `cargo test -p noesis-api --test vedic_provider_route_tests -- --nocapture`
+  - `cargo test -p noesis-api provider_mode_tests -- --nocapture`
+  - `cargo test -p noesis-bridge -- --nocapture`
+  - `cargo test -p engine-vedic-clock -- --nocapture`
+  - `cargo test -p engine-human-design test_canonical_profile_regression -- --nocapture`
+  - `cargo test -p engine-gene-keys test_gk_birth_mode_derives_from_hd_engine -- --nocapture`
+  - `cargo test -p noesis-vedic-api --test client_tests test_get_panchang_uses_x_api_key_header_and_complete_endpoint -- --nocapture`
+  - `cargo test -p noesis-vedic-api --test panchang_tests -- --nocapture`
+- Workflow status at handoff:
+  - PR exists and is the correct route for `test.yml` to trigger.
+  - At the time of verification, only `Supabase Preview` had appeared and was `skipped`; no GitHub Actions test run had shown up yet.
+
+---
+
+# Task Plan — Wave 1 / Wave 2 Backlog Review
+
+## Checklist
+- [x] Pull all open GitHub issues carrying `wave:W1` or `wave:W2`.
+- [x] Group the open Wave 1 / Wave 2 inventory by milestone.
+- [x] Compare the largest open clusters against current repo state.
+- [x] Identify realistic finish-now clusters versus clusters that should be deferred.
+- [x] Convert the finish-now clusters into an execution order once approved.
+
+## Notes
+- Raw open Wave 1 / Wave 2 backlog size on `2026-03-11`: `267` issues.
+- Counts by milestone:
+  - `P1-Stabilization`: `46` open (`W1=21`, `W2=25`)
+  - `P2-Workflow-Hardening`: `53` open (`W1=24`, `W2=29`)
+  - `P3-Bridge-Reliability`: `31` open (`W1=16`, `W2=15`)
+  - `P4-Performance-Observability`: `49` open (`W1=28`, `W2=21`)
+  - `P5-Release-Readiness`: `46` open (`W1=23`, `W2=23`)
+  - `v2.2.0-Specialized-Engines`: `42` open (`W1=29`, `W2=13`)
+- There are no open `wave:W1` or `wave:W2` issues left in `v3.0.0-Platform-Launch`.
+- These issue sets are not one coherent “current sprint”; many are old taskmaster leaves that were never closed or re-scoped after architecture drift.
+
+## Review (fill after execution)
+- Evidence collected from GitHub:
+  - Open issue inventory pulled with `gh issue list --state open --limit 500 --json ...`
+  - Roadmap reference checked in `.github/projects/CONSCIOUSNESS_ROADMAP.md`
+- Current-code evidence that some old Wave 1 / Wave 2 issues are partially or fully stale:
+  - `crates/noesis-api/src/lib.rs` already exposes `/health/live`, `/health/ready`, and `/ready`
+  - `crates/noesis-api/tests/error_handling_tests.rs` and `crates/noesis-api/src/lib.rs` already implement structured `error_code` responses and broad mapping tests
+  - `crates/noesis-orchestrator/src/lib.rs`, `crates/noesis-orchestrator/src/workflow/registry.rs`, and `crates/noesis-orchestrator/tests/*` already cover workflow registry and phase gating
+  - `scripts/smoke_admin_web.sh` and `.github/workflows/deploy.yaml` already provide part of the release-smoke infrastructure
+- Current-code evidence that other clusters are still materially unfinished:
+  - `crates/noesis-orchestrator/src/workflow/executor.rs` still contains `TODO: Implement other synthesizers`
+  - `docs/PROJECT_OVERVIEW.md` explicitly notes that only `birth-blueprint` and `daily-practice` have fully implemented synthesis, while `decision-support`, `self-inquiry`, `creative-expression`, and `full-spectrum` remain sparse
+  - `crates/engine-biofield/src` does not yet contain `meridian_analysis`, `aura_layers`, or `healing_recommendations` structures implied by the `v2.2.0` Wave 1 / Wave 2 issues
+  - `crates/engine-numerology/src` and `crates/engine-biorhythm/src` do not yet show the planned personal-cycle / secondary-rhythm feature set from `v2.2.0-Specialized-Engines`
+  - `crates/noesis-api/src/lib.rs` still uses `engine_error_to_response` inline and does not contain a dedicated `ErrorMapper` module
+  - repository-wide search shows no `CacheKeyBuilder` implementation; the P1 cache-key migration cluster is still open in substance
+
+### Finish-Now Clusters
+- `P2-W1 health/readiness surface`
+  - Closest to done because the health base already exists.
+  - Candidate issues:
+    - `#115` `Add /health/live liveness endpoint to TS server`
+    - `#116` `Add /health/ready readiness endpoint with engine checks`
+    - `#121` `Add /health/engines endpoint listing per-engine status`
+    - `#122` `Wire sidecar health into Rust /health/ready endpoint`
+    - `#120` `Test sidecar probe responses under partial engine failure`
+  - Practical read: `/health/live` and `/health/ready` exist on the Rust side already, so the remaining work is to make sidecar/engine health explicit and then close the stale split issues.
+
+- `P1 error-mapping cleanup`
+  - Large parts already exist, but the shape is scattered.
+  - Candidate issues:
+    - `#45` through `#49`
+    - `#50` through `#57`
+  - Practical read: this is now mostly consolidation and verification, not greenfield implementation.
+
+- `P5 release smoke consolidation`
+  - Existing smoke/deploy plumbing means this is a realistic short wave.
+  - Candidate issues:
+    - `#291` through `#299`
+    - optionally `#305` for Docker `HEALTHCHECK`
+  - Practical read: extend the existing smoke scripts/workflow rather than invent a new release framework.
+
+- `Issue hygiene / stale closure pass`
+  - Several old audit/doc issues are likely closeable after short evidence notes instead of more code.
+  - Candidate review issues:
+    - `#29` through `#37`
+    - `#45` through `#49`
+    - `#106`
+  - Practical read: these are “prove current state and close or re-scope” issues, not all new engineering work.
+
+### Defer / Re-Scope Clusters
+- `P2-W2 workflow contract suite` (`#123` through `#151`)
+  - Do not treat as a quick finish.
+  - The synthesis layer is still incomplete for four workflows, so schema fixtures and determinism work here will sprawl.
+
+- `v2.2.0-Specialized-Engines` (`#361` through `#402`)
+  - Not “barely finish now”.
+  - These require real feature work across numerology, biorhythm, biofield, and workflow synthesis; current runtime state does not show those features landed.
+
+- `P3 bridge retry/circuit-breaker reliability` (`#185` through `#199`, plus `#107` through `#114`)
+  - Needs re-scoping before execution.
+  - The active runtime path changed materially during the native-first Vedic cleanup, so some of this plan targets architecture that is no longer central.
+
+- `P4 idempotency / auth soak / canary rollout` (`#256` through `#269`, `#314` through `#336`)
+  - Operationally valuable, but not the fastest closure path.
+  - These are infra-heavy and environment-dependent rather than current codebase cleanup.
+
+### Recommended Near-Term Closure Sequence
+- Wave A: `P2-W1` health/readiness cluster
+- Wave B: `P1` error-mapping cleanup cluster
+- Wave C: `P5-W1` smoke-test consolidation cluster
+- After those three: stale-audit closure sweep across the old `P1` documentation/audit issues
+
+### Wave A — Exact Issue Map
+- `#115` `Add /health/live liveness endpoint to TS server`
+  - Current state:
+    - TS sidecar already has a coarse `/health` endpoint in `ts-engines/src/server/app.ts`.
+    - Integration coverage for `/health` already exists in `ts-engines/tests/integration.test.ts`.
+  - Missing:
+    - exact `/health/live` route returning unconditional process liveness
+    - sidecar docs / startup log update if needed
+  - Decision:
+    - implement, not close as-is
+  - Expected touch set:
+    - `ts-engines/src/server/app.ts`
+    - `ts-engines/tests/integration.test.ts`
+
+- `#116` `Add /health/ready readiness endpoint with engine checks`
+  - Current state:
+    - no `/health/ready` exists in the TS sidecar
+    - `ConsciousnessEngine` interface does not expose `selfCheck`
+  - Missing:
+    - readiness route
+    - lightweight per-engine health contract
+    - aggregate status payload
+  - Decision:
+    - implement
+  - Expected touch set:
+    - `ts-engines/src/types/engine.ts`
+    - `ts-engines/src/server/app.ts`
+    - `ts-engines/src/server/registry.ts`
+    - engine implementations only if a default self-check cannot be derived centrally
+    - `ts-engines/tests/integration.test.ts`
+
+- `#121` `Add /health/engines endpoint listing per-engine status`
+  - Current state:
+    - no per-engine health endpoint exists
+  - Missing:
+    - route exposing per-engine health objects with latency
+    - shared health result type reused by `/health/ready`
+  - Decision:
+    - implement in the same batch as `#116`
+  - Expected touch set:
+    - `ts-engines/src/types/engine.ts`
+    - `ts-engines/src/server/app.ts`
+    - `ts-engines/tests/integration.test.ts`
+
+- `#122` `Wire sidecar health into Rust /health/ready endpoint`
+  - Current state:
+    - Rust API already exposes `/health/ready` and `/ready` in `crates/noesis-api/src/lib.rs`
+    - `BridgeManager::health_check()` exists in `crates/noesis-bridge/src/lib.rs`, but it only hits sidecar `/health` and returns coarse success/failure
+    - `ReadinessResponse` currently reports only `redis`, `orchestrator`, and `overall_status`
+  - Missing:
+    - bridge/sidecar readiness field in API response
+    - richer bridge health payload or a new manager method consuming sidecar `/health/ready` or `/health/engines`
+    - readiness tests covering available/degraded bridge states
+  - Decision:
+    - implement after `#116` + `#121`
+  - Expected touch set:
+    - `crates/noesis-bridge/src/lib.rs`
+    - `crates/noesis-api/src/lib.rs`
+    - `crates/noesis-api/tests/...` readiness/route tests
+
+- `#120` `Test sidecar probe responses under partial engine failure`
+  - Current state:
+    - only coarse `/health` tests exist on the TS side
+  - Missing:
+    - healthy / partial failure / all failed / recovery scenarios
+    - either mocking hooks or test doubles for engine self-check state
+  - Decision:
+    - implement last in the Wave A batch, after the routes exist
+  - Expected touch set:
+    - `ts-engines/tests/integration.test.ts`
+    - possibly a small test helper in `ts-engines/tests/`
+
+### Wave A — Recommended Build Order
+- 1. `#115`
+  - cheap route split; gives clean liveness semantics
+- 2. `#116` + `#121`
+  - shared sidecar health model and routes in one TS-side PR slice
+- 3. `#122`
+  - consume sidecar readiness from Rust API and expose `bridge_status`
+- 4. `#120`
+  - lock the new behavior with state-transition tests
+
+### Wave A — Closure Rule
+- Do not close any of `#115`, `#116`, `#120`, `#121`, `#122` from review alone.
+- `#115` is closest to stale, but still misses the exact route shape requested by the issue.
+- The right move is one compact implementation wave that closes all five together with proof.
+
+### Wave A — Execution Review
+- Implemented TS-side health probe surface:
+  - `ts-engines/src/types/engine.ts`
+    - added `EngineHealthStatus`, `LivenessResponse`, `ReadinessResponse`, `EnginesHealthResponse`
+    - added optional `selfCheck()` contract on `ConsciousnessEngine`
+  - `ts-engines/src/server/registry.ts`
+    - exported `EngineRegistry`
+    - added `all()` accessor for per-engine health iteration
+  - `ts-engines/src/server/app.ts`
+    - `createServer()` now accepts an injected registry for isolated tests
+    - added `/health/live`
+    - added `/health/ready`
+    - added `/health/engines`
+    - implemented default self-check behavior for engines that do not yet define a custom health probe
+  - `ts-engines/src/server/index.ts`
+    - exports `EngineRegistry` for isolated test setup
+- Added TS-side regression coverage:
+  - `ts-engines/tests/health.test.ts`
+    - unconditional liveness
+    - healthy readiness
+    - per-engine health payload
+    - degraded readiness
+    - recovery back to healthy
+- Implemented Rust bridge-aware readiness:
+  - `crates/noesis-bridge/src/lib.rs`
+    - added `SidecarEngineHealth` and `SidecarReadinessStatus`
+    - added `BridgeManager::readiness_status()`
+  - `crates/noesis-api/src/lib.rs`
+    - `AppState` now carries `bridge_manager`
+    - `/ready` response now includes:
+      - `bridge_status`
+      - `bridge_engines`
+      - `bridge_failed_engines`
+    - overall readiness now factors bridge availability alongside cache + orchestrator
+- Added Rust-side regression coverage:
+  - `crates/noesis-api/tests/bridge_readiness_tests.rs`
+    - bridge available path
+    - bridge degraded path with failed-engine details
+- Verification:
+  - `bun test ts-engines/tests/health.test.ts ts-engines/tests/integration.test.ts`
+  - `cargo test -p noesis-api --test bridge_readiness_tests --test vedic_provider_route_tests -- --nocapture`
+  - `cargo test -p noesis-bridge -- --nocapture`
+- Wave A status:
+  - `#115`, `#116`, `#120`, `#121`, `#122` are now implemented in code and covered by automated tests.
+  - Remaining administrative work is issue updates/closure, not more implementation for this cluster.
+
+### Wave A — Commit and Closure
+- [x] Re-run Wave A verification commands before commit/push.
+- [x] Commit the Wave A readiness + health surface changes on the current branch.
+- [x] Push `codex/engine-hygiene-native-runtime-docs`.
+- [x] Comment on and close `#115`, `#116`, `#120`, `#121`, and `#122` with verification evidence.
+- Closeout record:
+  - commit: `d80eee79` `fix(health): implement Wave A sidecar readiness surface`
+  - issue comments:
+    - `#115`: `issuecomment-4038674085`
+    - `#116`: `issuecomment-4038674114`
+    - `#120`: `issuecomment-4038674087`
+    - `#121`: `issuecomment-4038674205`
+    - `#122`: `issuecomment-4038674089`
+  - issue state:
+    - `#115`, `#116`, `#120`, `#121`, `#122` closed on GitHub
+
+### Wave B — P1 Error Mapping Review
+- [x] Audit issue `#45` against the current `EngineError` taxonomy and HTTP mapping.
+- [x] Audit issue `#46` against current engine crate error patterns and identify real inconsistencies.
+- [x] Audit issues `#47` through `#57` against current `noesis-api` error response behavior and mark closable vs still-open.
+- [x] Record the Wave B audit in a repo artifact that can be linked from GitHub issues.
+- [x] Run fresh verification on the error-handling cluster before closing any issues.
+- [x] Comment on and close only the Wave B issues that are fully satisfied by current code + audit evidence.
+- Wave B audit artifact:
+  - `docs/planning/wave-b-p1-error-mapping-audit-2026-03-11.md`
+- Fresh verification:
+  - `cargo test -p noesis-api --test error_handling_tests -- --nocapture`
+  - `cargo test -p noesis-bridge bridge_engine -- --nocapture`
+- Closable now:
+  - `#45`
+  - `#46`
+  - `#49`
+- Keep open:
+  - `#47`
+  - `#48`
+  - `#50` through `#57`
+- Closeout record:
+  - audit commit: `0878b1a2` `docs(api): audit Wave B error mapping cluster`
+  - issue comments:
+    - `#45`: `issuecomment-4038733331`
+    - `#46`: `issuecomment-4038733340`
+    - `#49`: `issuecomment-4038733330`
+  - issue state:
+    - closed: `#45`, `#46`, `#49`
+    - left open by audit: `#47`, `#48`, `#50`, `#51`, `#52`, `#53`, `#54`, `#55`, `#56`, `#57`
+
+### Wave B — `#47` + `#50` Implementation
+- [x] Add failing regression coverage for the expanded `ErrorResponse` contract:
+  - `status`
+  - `message`
+  - `trace_id`
+  - preserve legacy `error`
+- [x] Extract the inline API error mapping into a dedicated `error_mapper` module.
+- [x] Move the shared `ErrorResponse` schema into the new module and update OpenAPI exports.
+- [x] Migrate `ApiError`, inline handler call sites, auth middleware, and rate-limit middleware to the new mapper/schema.
+- [x] Remove `engine_error_to_response()` from `lib.rs` once all call sites are migrated.
+- [x] Run fresh verification for:
+  - `cargo test -p noesis-api --test error_handling_tests -- --nocapture`
+  - `cargo test -p noesis-api --test rate_limit_tests -- --nocapture`
+  - `cargo test -p noesis-api --test workflow_tests -- --nocapture`
+  - `cargo test -p noesis-api error_mapper -- --nocapture`
+  - `cargo build -p noesis-api`
+  - `rg -n "engine_error_to_response" crates/noesis-api/src`
+- Review:
+  - `#47` is now closeable:
+    - `ErrorResponse` lives in `crates/noesis-api/src/error_mapper.rs`
+    - schema now includes `status`, `error_code`, `message`, `error`, `details`, and `trace_id`
+    - response-shape assertions were extended in `crates/noesis-api/tests/error_handling_tests.rs` and `crates/noesis-api/tests/rate_limit_tests.rs`
+  - `#50` is now closeable:
+    - `engine_error_to_response()` was removed from `crates/noesis-api/src/lib.rs`
+    - all migrated call sites now use `ErrorMapper::map()` or `ErrorMapper::response()`
+    - `rg` confirms no source references remain
+  - Keep open after this pass:
+    - `#48`, `#51`, `#52`, `#53`, `#54`, `#55`, `#56`, `#57`
+- Closeout record:
+  - commit: `9b049161` `fix(api): add unified error mapper module`
+  - push target: `origin/codex/engine-hygiene-native-runtime-docs`
+  - issue comments:
+    - `#47`: `issuecomment-4038797864`
+    - `#50`: `issuecomment-4038799068`
+  - issue state:
+    - closed: `#47`, `#50`
+    - still open: `#48`, `#51`, `#52`, `#53`, `#54`, `#55`, `#56`, `#57`
+
+### Issue Reduction Sweep — 2026-03-11
+- [x] Inventory the current open issue set and group it into closeable, implement-now, and defer buckets.
+- [x] Review Wave 1 / Wave 2 clusters already touched in this branch and identify issues already satisfied by shipped code.
+- [x] Close the issues that are already proven complete by code, tests, or merged workflow/docs updates.
+- [x] Record a manageable next-issue set for the remaining open clusters.
+- [x] Add a sweep review summary with counts, closures, and the reduced backlog shape.
+- Review:
+  - Open backlog at sweep start: `416`
+  - Largest remaining milestone buckets:
+    - `P5-Release-Readiness`: `70`
+    - `P4-Performance-Observability`: `70`
+    - `P2-Workflow-Hardening`: `65`
+    - `P1-Stabilization`: `65`
+    - `v2.2.0-Specialized-Engines`: `61`
+    - `P3-Bridge-Reliability`: `52`
+  - Closed in this sweep:
+    - `#502`, `#503`, `#507` from engine-hygiene follow-up
+  - Closed immediately before the sweep inventory:
+    - `#47`, `#50` from Wave B error-mapping
+  - Not closeable on evidence yet:
+    - `#48`, `#51`, `#52`, `#53`, `#54`, `#55`, `#56`, `#57`
+    - `#504`, `#505`, `#506`, `#508`
+    - most of `P5`, `P4`, `P2`, and `P3` still require real implementation rather than admin cleanup
+  - Reduced backlog shape after the three sweep closures:
+    - live open count: `413`
+  - Next manageable issue set:
+    - `#52`, `#54`, `#55`, `#56` as the next small P1 error-mapping tranche
+    - `#504`, `#505`, `#506`, `#508` as the remaining engine-hygiene tranche
+    - workflow / registry candidates to audit next:
+      - `#400`, `#401`, `#416`, `#417`, `#419`
+  - Closeout record:
+    - commits:
+      - `9b049161` `fix(api): add unified error mapper module`
+      - `805a4c35` `docs(tasks): record Wave B issue closures`
+      - `79d47d69` `fix(vedic-clock): expose resolved timezone basis`
+    - issue comments:
+      - `#502`: `issuecomment-4039333979`
+      - `#503`: `issuecomment-4039333989`
+      - `#507`: `issuecomment-4039333996`
+
+### Backlog Reduction Tranche — `#52`, `#54`, `#55`, `#56`
+- [x] Add explicit `EngineError` exhaustiveness coverage around `ErrorMapper` for all current variants.
+  - Added a compile-time exhaustive `match` helper and a variant coverage test in `crates/noesis-api/src/error_mapper.rs`.
+- [x] Make request log trace correlation deterministic so error responses reuse the same request trace ID.
+  - `request_logging_middleware()` now generates a request `trace_id`, injects it into the tracing span, and scopes it through `ErrorMapper::with_request_trace_id()` in `crates/noesis-api/src/middleware.rs`.
+  - Added log-correlation proof in `crates/noesis-api/tests/error_trace_correlation_tests.rs`.
+- [x] Add Insta snapshot coverage for all current `EngineError` response shapes with stable scrubbed fields.
+  - Added `crates/noesis-api/tests/error_response_snapshot_tests.rs`.
+  - Generated 12 snapshots in `crates/noesis-api/tests/snapshots/` for the current `EngineError` variant set.
+- [x] Add Prometheus API error counter keyed by `error_code` and verify it increments via `/metrics`.
+  - Added `noesis_api_errors_total{error_code=...}` in `crates/noesis-metrics/src/lib.rs`.
+  - Wired `ErrorMapper` to increment it on every structured error response in `crates/noesis-api/src/error_mapper.rs`.
+  - Added `/metrics` delta verification in `crates/noesis-api/tests/error_metrics_tests.rs`.
+- [x] Run targeted verification for:
+  - `cargo test -p noesis-api error_exhaustiveness -- --nocapture`
+  - `cargo test -p noesis-api --test error_handling_tests -- --nocapture`
+  - `INSTA_UPDATE=always cargo test -p noesis-api --test error_response_snapshot_tests -- --nocapture`
+  - `cargo test -p noesis-api --test error_metrics_tests -- --nocapture`
+  - `cargo test -p noesis-api --test error_trace_correlation_tests -- --nocapture`
+  - `cargo test -p noesis-api --test error_metrics_tests --test error_trace_correlation_tests --test error_response_snapshot_tests -- --nocapture`
+
+### Backlog Reduction Tranche — Review
+- `#52` is now satisfied.
+  - The `ErrorMapper` unit test will stop compiling if a new `EngineError` variant is added without updating the exhaustive `match`.
+- `#54` is now satisfied.
+  - Router-level integration test proves the JSON `trace_id` appears in captured request logs for the same failing request.
+- `#55` is now satisfied.
+  - Snapshot coverage now exists for every current `EngineError` response shape, using a fixed scoped `trace_id`.
+- `#56` is now satisfied.
+  - `/metrics` now exposes `noesis_api_errors_total`, and the integration test verifies per-`error_code` increments.
+
+### Backlog Reduction Tranche — `#48`, `#51`, `#53`, `#57`
+- [x] Re-audit `#48` against the current `BridgeError` enum and update the propagation document with all six variants plus API-layer outcomes.
+  - Updated `docs/planning/wave-b-p1-error-mapping-audit-2026-03-11.md` with the live six-variant `BridgeError` table and API-layer status outcomes.
+- [x] Normalize TS bridge `BridgeError` -> `EngineError` translation so the live bridge path uses the structured enum instead of ad-hoc strings.
+  - `crates/noesis-bridge/src/lib.rs` now constructs `BridgeError` variants in the TS bridge path before converting them at the trait boundary.
+- [x] Add unit coverage for each `BridgeError` variant preserving the expected context string and `EngineError` category.
+  - Added coverage in `crates/noesis-bridge/src/error.rs`.
+- [x] Add Sentry breadcrumb/event split in `ErrorMapper`: 4xx breadcrumb-only, 5xx breadcrumb + event capture with `error_code` and `trace_id`.
+  - Implemented in `crates/noesis-api/src/error_mapper.rs`.
+- [x] Add Sentry tests with a captured transport proving 5xx event capture and 4xx breadcrumb-only behavior.
+  - Added unit coverage in `crates/noesis-api/src/error_mapper.rs` using Sentry’s captured-event test transport.
+- [x] Decide `#57` from current contract evidence:
+  - if `WorkflowResult` still intentionally returns `200` with partial `engine_outputs`, leave `#57` open and document why
+  - only close it if the HTTP contract actually changes to `207 Multi-Status`
+  - `WorkflowResult` in `crates/noesis-core/src/types.rs` still has only `engine_outputs`, `synthesis`, `total_time_ms`, and `timestamp`.
+  - Current docs and tests still treat partial workflow success as `200 OK` with partial `engine_outputs`.
+- [x] Run targeted verification for:
+  - `cargo test -p noesis-bridge --lib -- --nocapture`
+  - `cargo test -p noesis-api error_mapper -- --nocapture`
+  - `cargo test -p noesis-api --test error_handling_tests -- --nocapture`
+
+### Backlog Reduction Tranche — Review
+- `#48` is now satisfied by the refreshed audit document and the live bridge translation path.
+- `#51` is now satisfied by the breadcrumb/event split plus captured Sentry tests.
+- `#53` is now satisfied by the structured `BridgeError` translation and unit coverage.
+- `#57` remains open.
+  - It still requires a deliberate API contract change from `200` partial workflow responses to `207 Multi-Status` with per-engine error details.
+
+### Backlog Reduction Tranche — `#29`, `#30`, `#31`, `#32`, `#35`, `#36`, `#37`, `#106`
+- [x] Create `docs/baseline/engine-matrix.json` covering the Rust engine crates and TypeScript sidecar engines with current versions/phases/source references.
+- [x] Create a workflow parity artifact documenting the 6 canonical workflows, engine membership, required phases, and synthesis path.
+- [x] Create an environment parity checklist documenting all `ApiConfig::from_env()` variables across local, CI, and Railway assumptions.
+- [x] Add/update orchestrator routing invariant doc comments on the key orchestrator types for `#35`.
+- [x] Add trait conformance coverage for the Rust engines that verifies non-empty identity metadata, bounded phase values, and deterministic cache keys.
+- [x] Create a crate dependency graph artifact (Mermaid + JSON summary) from current workspace metadata.
+- [x] Add the Redis degradation/fallback runbook for `#106`.
+- [x] Run targeted verification for:
+  - `cargo test -p noesis-orchestrator --test trait_conformance_tests -- --nocapture`
+  - `cargo test -p noesis-orchestrator --test baseline_artifact_tests -- --nocapture`
+  - `cd ts-engines && bun test tests/health.test.ts tests/baseline_registry.test.ts`
+  - `cargo test -p noesis-api test_from_env_uses_server_host_alias -- --nocapture`
+  - `cargo test -p noesis-api test_from_env_uses_server_port_alias -- --nocapture`
+  - `cargo run -p noesis-api --bin validate_config -- --dry-run`
+  - `cargo test -p engine-face-reading test_cache_key_without_seed -- --nocapture`
+  - `cargo doc -p noesis-orchestrator --no-deps`
+  - `rg -n "Routing invariant" target/doc/noesis_orchestrator -g '*.html'`
+- [x] Leave `#33` and `#34` out of this tranche unless route inventory and orchestrator test-harness evidence fall out naturally from the work.
+
+### Backlog Reduction Tranche — Review
+- `#29` is now satisfied by `docs/baseline/engine-matrix.json` plus `baseline_artifact_tests.rs` version checks against workspace manifests.
+- `#30` is now satisfied by the TS section of `docs/baseline/engine-matrix.json` plus `ts-engines/tests/baseline_registry.test.ts` proving the sidecar registers exactly 5 engines and reports healthy readiness.
+- `#31` is now satisfied by `docs/baseline/workflow-parity.json` and the synchronized correction in `docs/api/workflows.md` from `gene-keys` to `vimshottari` for `birth-blueprint`.
+- `#32` is now satisfied by `docs/baseline/env-parity.md`, `validate_config -- --dry-run`, the CI audit step in `.github/workflows/test.yml`, and `ApiConfig` compatibility aliases for `SERVER_HOST` / `SERVER_PORT`.
+- `#35` is now satisfied by the routing invariant doc comments on `EngineRegistry`, `WorkflowOrchestrator`, and `WorkflowExecutor`, plus `cargo doc` / generated HTML grep evidence.
+- `#36` is now satisfied by 11 engine-specific trait conformance tests in `crates/noesis-orchestrator/tests/trait_conformance_tests.rs`.
+- `#36` also exposed and fixed a real bug: `engine-face-reading` used timestamp-based cache keys for unseeded inputs, which broke determinism.
+- `#37` is now satisfied by `docs/baseline/dependency-graph.json`, `docs/baseline/dependency-graph.md`, and metadata-backed validation in `baseline_artifact_tests.rs`.
+- `#106` is now satisfied by `docs/runbooks/redis-degradation.md`, grounded in current readiness fields (`redis`, `overall_status`, `redis_available`) and the actual L2 Redis warning messages.
+- Closure record:
+  - committed in `d56ac355` (`docs(baseline): land Wave B baseline audit tranche`)
+  - pushed to `origin/codex/engine-hygiene-native-runtime-docs`
+  - closed with evidence comments:
+    - `#29`
+    - `#30`
+    - `#31`
+    - `#32`
+    - `#35`
+    - `#36`
+    - `#37`
+    - `#106`
+
+### Next Wave 2 Candidate — `#323`
+
+- [x] Review open Wave 2 issues and select the smallest live candidate after the baseline tranche.
+- [x] Expand the Redis degradation notes into the incident-style runbook requested by `#323`.
+- [x] Verify the runbook matches the current Redis graceful-degradation behavior and readiness/admin surfaces.
+- [x] Commit, push, and close `#323` with evidence if the acceptance criteria are satisfied.
+
+#### `#323` Selection Note
+
+- `#323` is the tightest Wave 2 issue because it overlaps the Redis degradation work already landed for `#106` but asks for a more specific incident runbook path and operator procedure.
+- I am intentionally not branching into `#322` or `#324` yet; those require new API-down / TS-bridge incident procedures that are not already mostly captured.
+- Evidence for `#323` now lives in:
+  - `docs/runbooks/incident-redis-failure.md`
+  - `docs/runbooks/redis-degradation.md` cross-link
+  - `crates/noesis-cache/src/l2_cache.rs` Redis graceful-degradation log/fallback behavior
+  - `crates/noesis-api/src/lib.rs` readiness fields
+  - `crates/noesis-api/src/handlers/admin.rs` admin `redis_available` status
+- Closure record:
+  - committed in `527fc5ad` (`docs(runbooks): add Redis incident procedure for Wave 2`)
+  - pushed to `origin/codex/engine-hygiene-native-runtime-docs`
+  - closed with evidence comment: `#323`
+
+### Next Wave 2 Candidate — `#324`
+
+- [x] Review `#324` requirements against the current bridge health/readiness surface.
+- [x] Write the TS sidecar bridge incident runbook at the requested path.
+- [x] Verify the runbook against `BridgeManager::health_check()`, bridge readiness state, and the 11-Rust-engine fallback boundary.
+- [x] Commit, push, and close `#324` if the runbook honestly satisfies the issue acceptance criteria.
+
+#### `#324` Selection Note
+
+- `#324` is the next tightest Wave 2 issue because the bridge readiness surface already exists:
+  - `BridgeManager::health_check()`
+  - `BridgeManager::readiness_status()`
+  - `/ready` fields `bridge_status`, `bridge_engines`, and `bridge_failed_engines`
+- Important constraint:
+  - the current bridge does **not** expose a dedicated circuit breaker object or state machine
+  - the runbook must document the operational equivalent using the existing `available` / `degraded` / unavailable bridge states rather than inventing a feature that is not shipped
+- Verification used for `#324`:
+  - `cargo test -p noesis-api --test bridge_readiness_tests -- --nocapture`
+  - locked engine counts from `docs/baseline/engine-matrix.json` (`11` Rust, `5` TS)
+  - source checks for:
+    - `BridgeManager::health_check()`
+    - `BridgeManager::readiness_status()`
+    - `/ready` fields `bridge_status` and `bridge_failed_engines`
+- Closure record:
+  - committed in `2d5fadd0` (`docs(runbooks): add TS bridge incident procedure`)
+  - pushed to `origin/codex/engine-hygiene-native-runtime-docs`
+  - closed with evidence comment: `#324`
+
+### Batch Attempt — `#326`, `#327`, `#328`
+
+- [x] Inspect `#326`, `#327`, and `#328` as a shared non-critical docs batch.
+- [x] Determine which issues are actually closeable from the current code surface.
+- [x] Commit, push, and close only the issues honestly satisfied by the shared runbook/docs work.
+
+#### Batch Review Note
+
+- `#326` is **not** closeable yet:
+  - the acceptance criteria ask for per-engine timeout settings and Sentry breadcrumb correlation at the orchestrator incident level
+  - current orchestrator behavior does cover partial engine failures, but the issue asks for a richer timeout/observability runbook than we have today
+- `#327` is **not** closeable yet:
+  - it explicitly depends on the broader runbook set being complete
+- `#328` is closeable if the TS bridge runbook explicitly covers the top five bridge failure modes:
+  - timeout spike
+  - sidecar crash loop
+  - effective open-state bridge outage
+  - TS engine memory leak / resource exhaustion
+  - bridge schema mismatch
+- Closure record:
+  - runbook expanded to cover all five requested bridge failure modes
+  - `#328` closed
+  - `#326` and `#327` intentionally left open
+
+### Next Non-Critical Closure Wave
+
+- [x] Review open non-critical Wave 2 issues for a docs/runbook/policy batch that the current codebase can support honestly.
+- [x] Implement the shared runbook batch for:
+  - `#322` API down
+  - `#325` DB pool exhaustion
+  - `#326` workflow timeout / partial engine failure (supporting artifact even if the issue itself may stay open)
+  - `#327` runbook index / quick reference
+- [ ] Evaluate `#314` canary rollout policy as an optional fifth closure in the same wave.
+- [x] Verify each candidate issue against current code/docs and close only the ones that are fully satisfied.
+
+#### Wave Selection Note
+
+- The next realistic closure wave is smaller than the ideal `10-15` issue target.
+- The best current batch is the remaining non-critical runbook/docs surface because:
+  - it shares the same touch set (`docs/runbooks/`, `docs/troubleshooting.md`, deployment/monitoring references)
+  - it depends on existing readiness, Railway, auth, and DB-degraded-mode behavior that already exists in the repo
+  - it avoids the heavier implementation risk in canary automation, idempotency, or specialized-engine roadmap items
+- Current execution scope for this wave:
+  - target closures: `#322`, `#325`, `#327`
+  - supporting artifact: `#326` runbook document may be created to complete the runbook set, but `#326` itself is not assumed closable
+  - deferred from this wave: `#329`, because current code/docs do not show `JWKS` support
+- Closure record:
+  - committed in `d6e91eb7` (`docs(runbooks): add API and DB incident wave`)
+  - pushed to `origin/codex/engine-hygiene-native-runtime-docs`
+  - closed:
+    - `#322`
+    - `#325`
+    - `#327`
+  - intentionally left open:
+    - `#326`
+    - `#329`
+
+### Next Workflow Parity / Policy Wave
+
+- [x] Confirm `.DS_Store` is already ignored and untrack the root workspace copy from git.
+- [x] Review `#73`, `#74`, and `#314` against the current startup, CI, and monitoring surfaces.
+- [x] Implement startup workflow registry parity check for `#73` using the actual 6 canonical workflow IDs currently shipped by `WorkflowOrchestrator::new()`.
+- [x] Add a CI workflow parity gate for `#74` so drift fails the pipeline explicitly.
+- [x] Add `docs/runbooks/canary-rollout-policy.md` for `#314` with thresholds grounded in the existing monitoring and deploy docs.
+- [x] Verify targeted tests/docs, commit only the relevant files plus the `.DS_Store` untrack, and close only the issues fully satisfied by this wave.
+
+#### Wave Selection Note
+
+- This wave is preferable to broader docs batching because it is tied to code and CI surfaces we can prove:
+  - `build_app_state()` / `build_app_state_lazy_db()`
+  - `WorkflowOrchestrator::default_workflows()`
+  - `.github/workflows/test.yml`
+  - `docs/deployment/monitoring.md`
+- Important constraint:
+  - the canonical workflow set in the code today is:
+    - `birth-blueprint`
+    - `daily-practice`
+    - `decision-support`
+    - `self-inquiry`
+    - `creative-expression`
+    - `full-spectrum`
+  - I will not close anything against older workflow names that are no longer the runtime baseline.
+- Scope control:
+  - `.DS_Store` cleanup is part of this wave because it reduces branch noise and should be committed with the next safe batch
+  - `#314` is closeable as a shipped policy document, but the human review/signoff it mentions remains an operational follow-through item rather than an in-repo test
+
+#### Verification
+
+- `cargo test -p noesis-api workflow_parity -- --nocapture`
+- `cargo run -p noesis-api --bin validate_workflow_parity`
+
+#### Closure Record
+
+- `.DS_Store` is now untracked while remaining ignored via `.gitignore`
+- startup parity is logged from both:
+  - `build_app_state()`
+  - `build_app_state_lazy_db()`
+- dedicated parity module and CLI landed in:
+  - `crates/noesis-api/src/workflow_parity.rs`
+  - `crates/noesis-api/src/bin/validate_workflow_parity.rs`
+- CI parity gate landed in:
+  - `.github/workflows/test.yml`
+- canary policy landed in:
+  - `docs/runbooks/canary-rollout-policy.md`
+
+### Next Smoke / Deploy Wave
+
+- [x] Review the `P5-W1` smoke/deploy cluster (`#291`-`#299`) against the current deploy workflow, auth requirements, and live API contract.
+- [x] Implement a generic smoke runner script that emits structured JSON, exits non-zero on failure, and supports protected endpoint auth via `SMOKE_TEST_JWT` or `SMOKE_TEST_API_KEY`.
+- [x] Add smoke checks for:
+  - health live/ready
+  - engines list
+  - panchanga calculation
+  - birth-blueprint workflow execution
+  - metrics endpoint
+  - TS bridge calculation through Rust
+- [x] Add or align the minimal API readiness surface needed for the smoke runner contract (notably `postgres` readiness reporting).
+- [x] Wire the smoke runner into `.github/workflows/deploy.yaml` as the post-deploy smoke gate.
+- [x] Close only the issues whose acceptance criteria match the shipped contract exactly; keep contract-mismatch issues open.
+
+#### Wave Selection Note
+
+- The best closure yield now is the smoke/deploy batch because one implementation can plausibly satisfy:
+  - `#291`
+  - `#292`
+  - `#293`
+  - `#294`
+  - `#295`
+  - `#296`
+  - `#298`
+  - `#299`
+- `#297` is questionable because its acceptance criteria mention `envelope_version`, which is not part of the current Rust `EngineOutput` contract. I will not close it unless the delivered behavior truly matches that requirement.
+
+#### Smoke / Deploy Batch Review
+
+- The runner now produces a structured JSON report on both the happy path and the failure path.
+- Verified pass path with a mock target returning:
+  - `/health/live`
+  - `/health/ready`
+  - `/api/v1/engines`
+  - `/api/v1/engines/panchanga/calculate`
+  - `/api/v1/workflows/birth-blueprint/execute`
+  - `/metrics`
+  - `/api/v1/engines/tarot/calculate`
+- Verified failure path with `http://127.0.0.1:9`, which now exits `1` and still emits a complete failing JSON report.
+- Honest closure set from this wave:
+  - `#291`
+  - `#292`
+  - `#293`
+  - `#294`
+  - `#296`
+  - `#298`
+  - `#299`
+- Closed on GitHub with commit-backed evidence comments after push of `0b68cee5`.
+- Keep open:
+  - `#295` because the public workflow contract is `engine_outputs`, not `engine_results`
+  - `#297` because `EngineOutput` does not include `envelope_version`
+  - `#305` because Docker health status is configured but auto-restart on unhealthy status is not proven by the current runtime/deploy setup
+- Backlog count after this wave: `382` open issues.
+
+#### Verification
+
+- `cargo test -p noesis-api --test bridge_readiness_tests -- --nocapture`
+- `bash -n scripts/smoke-test-runner.sh`
+- `SMOKE_TEST_JWT=smoke-token bash scripts/smoke-test-runner.sh http://127.0.0.1:8770`
+- `SMOKE_TEST_JWT=smoke-token bash scripts/smoke-test-runner.sh http://127.0.0.1:9`
+
+### Next Contract / Proof Mini-Wave
+
+- [x] Re-audit `#295`, `#297`, and `#305` against the live workflow, bridge, and Docker contracts.
+- [x] Add a backward-compatible workflow response alias only if it can be done at the API boundary without disturbing the orchestrator/core types.
+- [x] Add a bridge response envelope shim only if it can be done at the API boundary without mutating every native engine output producer.
+- [x] Extend the smoke runner only if needed to satisfy `warn` semantics for the TS bridge check.
+- [x] Re-check whether `#305` can be closed with real Docker proof; otherwise leave it open with no speculative closure.
+- [x] Close only the issues whose acceptance criteria are actually satisfied after fresh verification.
+
+#### Mini-Wave Note
+
+- `#295` is currently blocked by `engine_results` vs `engine_outputs`.
+- `#297` is currently blocked by missing `envelope_version` and missing `warn` handling in the smoke runner.
+- `#305` remains a proof problem unless the current Docker/Compose behavior can be demonstrated end-to-end.
+
+#### Mini-Wave Review
+
+- `#295` is now satisfied via an API-boundary compatibility alias:
+  - workflow execution responses now include both `engine_outputs` and `engine_results`
+  - core/orchestrator `WorkflowResult` stayed unchanged
+- `#297` is now satisfied via an API-boundary envelope shim plus smoke-runner warn semantics:
+  - engine calculation responses now include `envelope_version: "1"`
+  - the smoke runner now marks TS bridge outages as `warn` when the bridge returns a degraded error
+- `#305` still stays open:
+  - Docker and Docker Compose are available locally
+  - the repo has a `HEALTHCHECK` in `Dockerfile.prod`
+  - but the current Compose/restart model still does not prove auto-restart on unhealthy status, so closing it would be speculative
+- Closed on GitHub after push of `d7b99088`:
+  - `#295`
+  - `#297`
+- Backlog count after this mini-wave: `380` open issues.
+
+#### Mini-Wave Verification
+
+- `cargo test -p noesis-api --test integration_tests test_calculate_panchanga_success -- --nocapture`
+- `cargo test -p noesis-api --test integration_tests test_workflow_execute_birth_blueprint_success -- --nocapture`
+- `bash -n scripts/smoke-test-runner.sh`
+- `SMOKE_TEST_JWT=smoke-token bash scripts/smoke-test-runner.sh http://127.0.0.1:8771`
+  healthy mock with `engine_results` and `envelope_version`
+- `SMOKE_TEST_JWT=smoke-token bash scripts/smoke-test-runner.sh http://127.0.0.1:8772`
+  degraded bridge mock with `ts_bridge=warn`
+- `docker --version`
+- `docker compose version`
+
+### Next 10-Issue Wave
+
+- Selected batch:
+  - `#33`
+  - `#34`
+  - `#39`
+  - `#40`
+  - `#41`
+  - `#42`
+  - `#43`
+  - `#44`
+  - `#326`
+  - `#329`
+
+#### Wave Rationale
+
+- This is the next best coherent batch because it splits into two low-coupling tracks:
+  - routing baseline / orchestrator-enforcement foundation
+  - remaining failure-mode runbooks
+- The routing issues should start with `#33` and `#34` because:
+  - route inventory is the baseline artifact
+  - the enforcement issues need shared test helpers/harnesses
+- The runbook issues `#326` and `#329` can be handled as a sidecar documentation tranche once the foundation work is underway.
+
+#### Execution Order
+
+- [x] Select the next coherent 10-issue batch.
+- [x] Implement foundation tranche:
+  - `#33` route inventory baseline
+  - `#34` orchestrator-enforcement test harness
+- [x] Use that foundation to decide which of `#39`-`#44` are immediately closable vs need more code.
+- [ ] Execute docs/runbook sidecar tranche:
+  - `#326`
+  - `#329`
+- [ ] Close only the issues proven by fresh verification.
+
+#### Foundation Tranche Review
+
+- `#33` landed as a checked-in baseline artifact plus source-backed drift test:
+  - `docs/baseline/api-route-inventory.json`
+  - `crates/noesis-api/tests/common/route_inventory.rs`
+  - `crates/noesis-api/tests/route_inventory_tests.rs`
+- The route inventory baseline currently documents:
+  - `40` unique `/api/v1` paths
+  - `43` method/path entries
+  - per-route auth requirement (`public` vs `bearer_or_api_key`)
+  - whether the handler touches the orchestrator surface
+- `#34` landed as a reusable route-level probe harness:
+  - `crates/noesis-api/tests/common/test_harness.rs`
+  - `crates/noesis-api/tests/test_harness.rs`
+- The harness builds a custom `AppState` with probe engines, executes real HTTP requests through `create_router`, and asserts orchestrator delegation by checking sentinel outputs plus per-engine execution counters.
+
+#### Foundation Verification
+
+- `cargo test -p noesis-api route_inventory -- --nocapture`
+  - passed
+- `cargo test -p noesis-api test_harness -- --nocapture`
+  - passed
+
+#### Next Routing Mini-Wave
+
+- The new harness makes this next batch practical without touching the dirty middleware file:
+  - `#40` single-engine calculate routing enforcement
+  - `#41` workflow execute routing enforcement
+  - `#42` bridge-engine orchestrator-only enforcement
+- `#39` stays separate for now because it requires `crates/noesis-api/src/middleware.rs`, which already has unrelated local modifications and should be handled deliberately.
+
+#### Routing Enforcement Review
+
+- Landed:
+  - `crates/noesis-api/tests/routing_enforcement_tests.rs`
+- `#40` evidence:
+  - `11` single-engine calculate route tests now verify orchestration for:
+    - `panchanga`
+    - `numerology`
+    - `biorhythm`
+    - `human-design`
+    - `gene-keys`
+    - `vimshottari`
+    - `biofield`
+    - `vedic-clock`
+    - `face-reading`
+    - `nadabrahman`
+    - `transits`
+- `#41` evidence:
+  - `6` workflow execute route tests now verify orchestration for:
+    - `birth-blueprint`
+    - `daily-practice`
+    - `decision-support`
+    - `creative-expression`
+    - `self-inquiry`
+    - `full-spectrum`
+- `#42` evidence:
+  - runtime routing test covers all bridge engine IDs:
+    - `tarot`
+    - `i-ching`
+    - `enneagram`
+    - `sacred-geometry`
+    - `sigil-forge`
+  - source audit verifies `crates/noesis-api/src/handlers/*.rs` do not import or call `BridgeManager` directly
+  - handler-body audit verifies core engine/workflow handlers in `crates/noesis-api/src/lib.rs` do not touch `bridge_manager`
+
+#### Routing Enforcement Verification
+
+- `cargo test -p noesis-api routing_enforcement -- --nocapture`
+  - passed
+- `cargo test -p noesis-api workflow_routing -- --nocapture`
+  - passed
+
+#### Closure Readiness
+
+- Closure-ready:
+  - `#33`
+  - `#34`
+  - `#40`
+  - `#41`
+  - `#42`
+- Intentionally left open:
+  - `#39`
+    - still requires request-tracing middleware changes in `crates/noesis-api/src/middleware.rs`
+  - `#43`
+  - `#44`
+    - both still require new runtime assertion / bypass-count machinery, not just tests
+
+#### GitHub Closure Result
+
+- Closed on branch `codex/engine-hygiene-native-runtime-docs` after push of `b2b788d9`:
+  - `#33`
+  - `#34`
+  - `#40`
+  - `#41`
+  - `#42`
+- Backlog after this tranche:
+  - open issues: `375`
+  - closed issues: `104`
+
+### Canary Automation Batch (`#315`, `#316`)
+
+- [x] Audit current canary policy, deploy workflow, and script/test seams.
+- [x] Implement `scripts/canary-health-score.sh`.
+- [x] Add mocked verification for healthy and unhealthy Prometheus/Sentry responses.
+- [x] Implement `scripts/canary-promote.sh` with dry-run mode and stage-by-stage decisions.
+- [x] Add mocked verification for promotion and rollback decisions.
+- [x] Update canary rollout docs with script usage.
+- [x] Close only if the scripts and mocked verification satisfy the issue acceptance criteria.
+
+Review:
+- Added [scripts/canary-health-score.sh](/Volumes/madara/2026/witnessos/Selemene-engine/scripts/canary-health-score.sh) to score Prometheus error rate, Prometheus p95 latency, and Sentry critical count into a JSON `canary_healthy` decision.
+- Added [scripts/canary-promote.sh](/Volumes/madara/2026/witnessos/Selemene-engine/scripts/canary-promote.sh) to walk canary stages `5 -> 25 -> 50 -> 100`, emit per-stage JSON decisions, and support dry-run promotion and rollback hooks.
+- Added [scripts/test_canary_automation.sh](/Volumes/madara/2026/witnessos/Selemene-engine/scripts/test_canary_automation.sh) to prove healthy/failing health-score cases and dry-run/live promotion behavior with mocked dependencies.
+- Updated [docs/runbooks/canary-rollout-policy.md](/Volumes/madara/2026/witnessos/Selemene-engine/docs/runbooks/canary-rollout-policy.md) with the automation helper usage and hook contract.
+
+Verification:
+- `bash -n scripts/canary-health-score.sh scripts/canary-promote.sh scripts/test_canary_automation.sh`
+- `bash scripts/test_canary_automation.sh`
+
+### Canary Observability Batch (`#318`, `#319`)
+
+- [x] Audit canary alert/dashboard requirements against current Prometheus labels, Grafana dashboards, and promotion script behavior.
+- [x] Add `NoesisCanaryErrorDivergence` alert rule with an explicit canary-vs-stable label contract.
+- [x] Add promtool-compatible rule tests for healthy and divergent canary scenarios.
+- [x] Extend `scripts/canary-promote.sh` to post Grafana annotations for promotion and rollback events.
+- [x] Add mocked verification for Grafana annotation payloads in the canary automation test harness.
+- [x] Update Grafana dashboard/runbook docs so annotations are visible on the Selemene Engine dashboard.
+- [x] Close only the issues whose acceptance criteria are satisfied by repo-visible changes and local verification.
+
+Review:
+- Added rollout-aware canary divergence alerting in [monitoring/prometheus/alerts/noesis-alerts.yml](/Volumes/madara/2026/witnessos/Selemene-engine/monitoring/prometheus/alerts/noesis-alerts.yml) and documented the `rollout=stable|canary` scrape label contract in [monitoring/prometheus.yml](/Volumes/madara/2026/witnessos/Selemene-engine/monitoring/prometheus.yml).
+- Added promtool rule fixtures in [monitoring/prometheus/tests/noesis-canary-alerts.test.yml](/Volumes/madara/2026/witnessos/Selemene-engine/monitoring/prometheus/tests/noesis-canary-alerts.test.yml) with a local runner in [scripts/test_canary_alerts.sh](/Volumes/madara/2026/witnessos/Selemene-engine/scripts/test_canary_alerts.sh).
+- Extended [scripts/canary-promote.sh](/Volumes/madara/2026/witnessos/Selemene-engine/scripts/canary-promote.sh) to post Grafana annotations for live promotion and rollback events, with mocked coverage in [scripts/test_canary_automation.sh](/Volumes/madara/2026/witnessos/Selemene-engine/scripts/test_canary_automation.sh).
+- Updated the Selemene Engine Grafana dashboard and monitoring docs in [monitoring/grafana/dashboards/selemene-engine.json](/Volumes/madara/2026/witnessos/Selemene-engine/monitoring/grafana/dashboards/selemene-engine.json), [docs/runbooks/canary-rollout-policy.md](/Volumes/madara/2026/witnessos/Selemene-engine/docs/runbooks/canary-rollout-policy.md), and [docs/deployment/monitoring.md](/Volumes/madara/2026/witnessos/Selemene-engine/docs/deployment/monitoring.md).
+- Audited `#317` separately and kept it open because the repo still lacks a real canary slot and traffic-splitting infrastructure.
+
+Verification:
+- `bash -n scripts/canary-promote.sh scripts/test_canary_automation.sh scripts/test_canary_alerts.sh`
+- `bash scripts/test_canary_automation.sh`
+- `bash scripts/test_canary_alerts.sh`
+- `jq empty monitoring/grafana/dashboards/selemene-engine.json`
+
+### Failure-Mode Docs Batch (`#326`, `#330`)
+
+- [x] Audit `#326`, `#330`, and nearby `#329` acceptance text against the current runtime.
+- [x] Confirm `#326` is now closable because the orchestrator already has per-engine timeout controls and partial-failure handling.
+- [x] Defer `#329` explicitly because its acceptance assumes JWKS rotation and Supabase auth downtime paths that do not exist in the current auth runtime.
+- [x] Update the workflow timeout runbook so it reflects real timeout settings, partial engine failures, trace IDs, and Sentry breadcrumb correlation.
+- [x] Add a rollback drill plan document with the three required scenarios and expected outcomes for `#330`.
+- [x] Cross-link the new drill plan from the runbook index if needed.
+- [x] Run doc/code-alignment verification and close only the issues fully satisfied by repo-visible artifacts.
+
+Review:
+- `#326` is materially closer to done than the current runbook suggests:
+  - `crates/noesis-orchestrator/src/workflow/full_spectrum.rs` already exposes `FullSpectrumConfig.engine_timeout`
+  - individual engines are wrapped in `tokio::time::timeout(...)`
+  - timeout failures are preserved per-engine in `failed_engines`
+  - orchestrator tests already prove:
+    - partial success with one failing engine
+    - success with all engines failing
+    - timeout handling in full-spectrum workflow
+- `#329` is not honest to close in this wave:
+  - `crates/noesis-auth/src/lib.rs` implements JWT secret validation and API-key validation
+  - there is no JWKS fetch/rotation path
+  - there is no Supabase Auth runtime dependency to document as an incident mode
+- This batch should therefore target:
+  - `#326`
+  - `#330`
+  - while explicitly keeping `#329` open with the current blocker rationale
+
+Verification:
+- Updated [docs/runbooks/incident-workflow-timeout.md](/Volumes/madara/2026/witnessos/Selemene-engine/docs/runbooks/incident-workflow-timeout.md) to distinguish:
+  - standard `WorkflowOrchestrator::execute_workflow()` partial-result behavior
+  - `FullSpectrumWorkflow` per-engine timeout handling via `FullSpectrumConfig.engine_timeout`
+  - outer API `REQUEST_TIMEOUT_SECS` request-level `504` behavior
+- Added [docs/drills/rollback-drill-plan.md](/Volumes/madara/2026/witnessos/Selemene-engine/docs/drills/rollback-drill-plan.md) with the three required drill scenarios:
+  - broken environment variable deploy
+  - crashing init code
+  - canary elevated error rate
+- Updated [docs/runbooks/README.md](/Volumes/madara/2026/witnessos/Selemene-engine/docs/runbooks/README.md) with a drill-plan link.
+- `#329` remains intentionally open because the current auth runtime in [crates/noesis-auth/src/lib.rs](/Volumes/madara/2026/witnessos/Selemene-engine/crates/noesis-auth/src/lib.rs) does not implement JWKS rotation or Supabase Auth downtime paths.
+
+Verification:
+- `cargo test -p noesis-orchestrator test_timeout_handling -- --nocapture`
+  - passed
+- `cargo test -p noesis-api --test workflow_execution_tests test_workflow_partial_failure_graceful_degradation -- --nocapture`
+  - passed
+- `cargo test -p noesis-api error_mapper -- --nocapture`
+  - passed
+- `rg -n "FullSpectrumConfig.engine_timeout|REQUEST_TIMEOUT_SECS|trace_id|api.error|NoesisCanaryErrorDivergence" docs/runbooks/incident-workflow-timeout.md docs/drills/rollback-drill-plan.md docs/runbooks/README.md`
+  - passed
+
+GitHub closure result:
+- Closed on `codex/engine-hygiene-native-runtime-docs` after push of `089efd55`:
+  - `#326`
+  - `#330`
+- Intentionally left open with blocker comment:
+  - `#329`
+- Backlog after this tranche:
+  - open issues: `369`
+
+### Release Docs Batch (`#355`, `#356`)
+
+- [x] Audit the next non-canary, non-auth documentation issues for a coherent batch.
+- [x] Select `#355` and `#356` as the next honest tranche.
+- [x] Defer `#353` because it still needs stronger OpenAPI/runtime proof than this wave provides.
+- [x] Defer `#354` because its acceptance requires a from-scratch Railway deploy walkthrough that is not yet proven in this wave.
+- [ ] Create `docs/monitoring/README.md` that maps monitoring tools to the actual repo config files and explains alert flow from detection to notification.
+- [ ] Create `docs/release/release-checklist-template.md` as a reusable markdown checklist based on the P5 release process.
+- [ ] Add cross-links from existing docs where they improve discoverability.
+- [ ] Run doc/config alignment verification and close only the issues fully satisfied by repo-visible artifacts.
+
+Review:
+- `#355` is a strong fit for this wave:
+  - the monitoring config already exists in `monitoring/`
+  - the alert rules, dashboard files, Alertmanager routing, Jaeger, Loki, and runbooks are all repo-visible
+  - the missing artifact is the consolidated operator-facing README
+- `#356` is also a strong fit:
+  - the P5 process already exists across `docs/RELEASE_NOTES.md`, `docs/planning/p5-release-readiness-plan.json`, and the recent backlog work
+  - the missing artifact is the reusable checklist template
+- `#353` stays open for now:
+  - it asks for updated OpenAPI spec and docs reflecting all P1-P5 endpoint changes
+  - that needs stronger proof against actual generated server spec / merged spec output
+- `#354` stays open for now:
+  - `docs/deployment/RAILWAY.md` and `docs/deployment/VERCEL_ADMIN_WEB.md` exist
+  - but the issue acceptance calls for a new-team-member Railway walkthrough from scratch, which we are not proving in this batch
+
+Verification:
+- pending
+
+## Release Docs Batch (#355, #356)
+- [x] Re-verify monitoring/release doc gaps against current repo state
+- [x] Create docs/monitoring/README.md mapped to actual monitoring surfaces
+- [x] Create docs/release/release-checklist-template.md
+- [x] Cross-link new docs from existing deployment/release docs where appropriate
+- [x] Verify referenced files/configs exist and docs align to repo state
+- [x] Commit, push, and close #355 and #356 if acceptance criteria are satisfied
+
+Release docs verification notes:
+- `jq empty` passed for all repo-visible Grafana dashboard JSON files.
+- `bash scripts/test_canary_alerts.sh` passed and confirmed the current Prometheus alert rules load and test cleanly.
+- A link audit confirmed all absolute file links introduced in the new monitoring and release docs resolve to existing repo files.
+- The monitoring README intentionally documents the Alertmanager webhook leg as configured-but-unverified because repo-visible webhook handlers were not found for the configured receiver URLs.
+- Commit pushed: `659bd10d` (`docs(release): add monitoring and release references`)
+- Closed issues:
+  - `#355`
+  - `#356`
+- Backlog after this tranche:
+  - open issues: `367`
+  - closed issues: `112`
+
+### v3 Product Docs Batch (`#472`, `#473`)
+
+- [x] Audit `#472` and `#473` against current repo-visible product/docs/runtime surfaces.
+- [x] Record the closure decision: pursue `#473`, keep `#472` open unless the live repo can honestly satisfy its migration acceptance.
+- [x] Create `docs/contributing/engine-onboarding.md` covering trait implementation, crate scaffold, witness prompt guidance, synthesis/registration steps, and CI checklist.
+- [x] Validate the guide by scaffolding a temporary dummy engine crate outside the repo and compiling it against local path dependencies.
+- [x] Cross-link the onboarding guide from existing docs if useful.
+- [x] Commit, push, and close only the issues truly satisfied by repo-visible artifacts and validation.
+
+Review:
+- `#472` currently appears blocked by repo reality: the issue expects migration steps for both Rust and TypeScript SDKs, but the repo only ships `noesis-sdk` (Rust) and explicitly notes that no TypeScript SDK package exists yet.
+- `#473` is a strong fit for this wave: `ConsciousnessEngine` is stable in `crates/noesis-core`, orchestrator registration is straightforward in `crates/noesis-orchestrator` / `crates/noesis-api`, and trait conformance examples exist in tests.
+
+Verification:
+- Added [docs/contributing/engine-onboarding.md](/Volumes/madara/2026/witnessos/Selemene-engine/docs/contributing/engine-onboarding.md) and linked it from [README.md](/Volumes/madara/2026/witnessos/Selemene-engine/README.md).
+- Validated the guide by scaffolding a temporary crate at `/tmp/selemene-engine-onboarding-VPuoES/engine-test-engine`.
+- `cargo test` in that temporary crate passed with:
+  - `tests::engine_compiles_and_produces_output`
+  - `tests::engine_registers_with_orchestrator`
+- Commit pushed: `2100999e` (`docs(contributing): add engine onboarding guide`)
+- GitHub outcome:
+  - closed `#473`
+  - kept `#472` open with blocker comment because the repo still does not ship a TypeScript SDK package or the broader proven migration surface the issue assumes
+- Backlog after this tranche:
+  - open issues: `366`
+  - closed issues: `113`
+
+### v3 Launch Runbook Batch (`#477`)
+
+- [x] Audit `#477` against existing release, runbook, rollback, and monitoring docs.
+- [x] Generate an in-repo snapshot of current open GitHub issues for backlog review.
+- [x] Draft a v3.0.0 launch-day operational runbook using repo-visible Railway, monitoring, smoke, and rollback surfaces.
+- [x] Verify whether the issue can be closed honestly; if staging dry-run proof is missing, leave it open with a blocker note instead of forcing closure.
+
+Review:
+- `#477` is partially supported by existing artifacts: `docs/runbooks/README.md`, `docs/drills/rollback-drill-plan.md`, `docs/release/release-checklist-template.md`, `docs/monitoring/README.md`, and Railway verification scripts already exist.
+- The likely blocker is the issue validation requirement: a rollback dry-run on staging completing in under 5 minutes is not automatically proven by repo contents alone.
+
+Artifacts in progress:
+- `docs/planning/open-issues-snapshot-2026-03-13.md`
+- `docs/runbooks/launch-day-v3.0.0.md`
+
+Verification / outcome:
+- Added [docs/planning/open-issues-snapshot-2026-03-13.md](/Volumes/madara/2026/witnessos/Selemene-engine/docs/planning/open-issues-snapshot-2026-03-13.md) containing the full live open-issue list at the time of the audit.
+- Added [docs/runbooks/launch-day-v3.0.0.md](/Volumes/madara/2026/witnessos/Selemene-engine/docs/runbooks/launch-day-v3.0.0.md) and linked it from [docs/runbooks/README.md](/Volumes/madara/2026/witnessos/Selemene-engine/docs/runbooks/README.md).
+- Link audit passed for the new launch-day runbook and runbook index.
+- Commit pushed: `36efa1a4` (`docs(runbooks): add launch-day draft and issue snapshot`)
+- GitHub outcome:
+  - kept `#477` open with blocker comment because staging rollback timing and live dashboard URL resolution remain unproven
+
+## Infra/Auth Audit Batch (`#16`-`#20`)
+
+- [x] Audit `#16` through `#20` against the current root migrations, Supabase migrations, and auth/admin runtime.
+- [x] Confirm whether any of the schema issues are already satisfied by repo-visible migrations or runtime code.
+- [x] Choose the smallest honest infra/auth tranche that fits the current runtime without touching unrelated dirty files.
+- [x] Implement `#16` by adding canonical `user_roles` and `user_account_state` tables, backfill migration, and rolling-runtime support.
+- [ ] Re-verify `#17` through `#20` after `#16` lands and decide the next schema batch.
+- [x] Verify, commit, push, and update backlog counts / issue status.
+
+Infra/auth audit notes:
+- `#16` through `#20` are still genuinely open. The repo has adjacent auth/admin behavior, but no applied root or Supabase migrations for:
+  - `user_roles`
+  - `user_account_state`
+  - `api_key_events`
+  - history sync state / idempotency schema
+  - plan catalog / billing subscriptions
+  - usage partition maintenance function
+- Existing runtime equivalents are partial and legacy-shaped:
+  - role assignment currently persists in `user_profiles.preferences.admin_roles`
+  - account state currently uses `users.locked_until`
+  - API keys already have `name` / `key_prefix`, but no immutable lifecycle event table
+- Selected first tranche: `#16`.
+  This is the cleanest schema/auth step because the admin routes for state and roles already exist; we can add the missing tables, backfill from current data, and keep rollout-safe fallbacks so the live handlers do not break if migrations lag behind deploy.
+
+Infra/auth implementation notes:
+- Added root migration [migrations/010_user_roles_account_state.sql](/Volumes/madara/2026/witnessos/Selemene-engine/migrations/010_user_roles_account_state.sql) and matching Supabase migration [supabase/migrations/20260313000010_010_user_roles_account_state.sql](/Volumes/madara/2026/witnessos/Selemene-engine/supabase/migrations/20260313000010_010_user_roles_account_state.sql).
+- Updated [crates/noesis-data/src/repositories/admin_repository.rs](/Volumes/madara/2026/witnessos/Selemene-engine/crates/noesis-data/src/repositories/admin_repository.rs) so admin role/state reads now prefer the canonical tables while falling back to the legacy `user_profiles.preferences` and `users.locked_until` path when migrations are not yet applied.
+- Kept the runtime blast radius low by continuing to mirror role assignments into `user_profiles.preferences` and account locks into `users.locked_until`, so auth and admin handlers remain compatible during rollout.
+
+Verification:
+- `cargo test -p noesis-data admin_repository -- --nocapture`
+- `cargo build -p noesis-api`
+- `cargo test -p noesis-api derives_platform_admin_role -- --nocapture`
+- Commit pushed: `9e4f8fd8` (`feat(auth): add canonical admin role and state schema`)
+- GitHub outcome:
+  - closed `#16`
+  - backlog now: `365` open / `114` closed
+
+### API Key Audit Tranche (`#17`)
+
+- [x] Add canonical lifecycle schema for API key event audit rows and actor-attribution columns.
+- [x] Keep admin create/revoke/rotate handlers API-compatible while writing to the new schema.
+- [x] Preserve rollout safety with repository fallbacks if the new columns/table are not yet migrated.
+- [x] Commit, push, close `#17`, and refresh backlog counts.
+
+API key audit implementation notes:
+- Added root migration [migrations/011_api_key_events.sql](/Volumes/madara/2026/witnessos/Selemene-engine/migrations/011_api_key_events.sql) and matching Supabase migration [supabase/migrations/20260313000011_011_api_key_events.sql](/Volumes/madara/2026/witnessos/Selemene-engine/supabase/migrations/20260313000011_011_api_key_events.sql).
+- Extended [crates/noesis-data/src/repositories/admin_repository.rs](/Volumes/madara/2026/witnessos/Selemene-engine/crates/noesis-data/src/repositories/admin_repository.rs) so `create_api_key`, `revoke_api_key`, and `rotate_api_key` now target immutable `api_key_events` rows plus new metadata columns, with legacy fallbacks if the schema is not present yet.
+- Updated [crates/noesis-api/src/handlers/admin.rs](/Volumes/madara/2026/witnessos/Selemene-engine/crates/noesis-api/src/handlers/admin.rs) to pass actor attribution into key lifecycle mutations without changing the public route contract.
+
+Verification:
+- `cargo test -p noesis-data admin_repository -- --nocapture`
+- `cargo build -p noesis-api`
+- `cargo test -p noesis-api derives_platform_admin_role -- --nocapture`
+- Commit pushed: `88a56d46` (`feat(auth): add api key lifecycle audit schema`)
+- GitHub outcome:
+  - closed `#17`
+  - backlog now: `364` open / `115` closed
+
+### Usage Partition Maintenance Tranche (`#20`)
+
+- [x] Audit the current `usage_logs` partition surface and confirm only static 2026 partitions exist today.
+- [x] Choose a real maintenance shape: DB function plus automated check script, instead of more hard-coded yearly partitions.
+- [x] Add canonical root and Supabase migrations for the maintenance function.
+- [x] Add an operational check script that runs the function and fails loudly on errors.
+- [x] Add lightweight regression coverage for the new migration/script artifacts.
+- [x] Verify, commit, push, close `#20`, and refresh backlog counts.
+
+Usage partition maintenance notes:
+- Added root migration [migrations/012_usage_partition_maintenance.sql](/Volumes/madara/2026/witnessos/Selemene-engine/migrations/012_usage_partition_maintenance.sql) and matching Supabase migration [supabase/migrations/20260313000012_012_usage_partition_maintenance.sql](/Volumes/madara/2026/witnessos/Selemene-engine/supabase/migrations/20260313000012_012_usage_partition_maintenance.sql).
+- Added [scripts/check_usage_log_partitions.sh](/Volumes/madara/2026/witnessos/Selemene-engine/scripts/check_usage_log_partitions.sh), which calls `ensure_usage_log_partitions(...)` and exits nonzero with an alert message on failure.
+- Extended [crates/noesis-data/src/repositories/admin_repository.rs](/Volumes/madara/2026/witnessos/Selemene-engine/crates/noesis-data/src/repositories/admin_repository.rs) tests so the migration pair and script stay anchored in CI.
+
+Verification:
+- `cargo test -p noesis-data admin_repository -- --nocapture`
+- `bash -n scripts/check_usage_log_partitions.sh`
+- `bash scripts/check_usage_log_partitions.sh` without `DATABASE_URL` exits `1` and emits the alert path
+- Commit pushed: `6fc290f8` (`feat(infra): add usage partition maintenance check`)
+- GitHub outcome:
+  - closed `#20`
+  - backlog now: `363` open / `116` closed
+
+### History Sync Schema Tranche (`#18`)
+
+- [x] Audit `#18` against the current `readings` schema, history-sync routes, and repository/runtime code.
+- [x] Add canonical root and Supabase migrations for `user_devices`, `history_sync_state`, and idempotent reading sync columns.
+- [x] Finish minimal runtime wiring so existing reading persistence still compiles against the expanded `NewReading` builder.
+- [x] Verify idempotent same-user `client_event_id` writes and cursor-delta queries via targeted repository tests/builds.
+- [x] Commit, push, close `#18`, and refresh backlog counts.
+
+History sync tranche notes:
+- Issue `#18` is not already done. The current admin history-sync endpoints are synthetic over `readings` and `usage_logs`; there was no canonical `user_devices`, `history_sync_state`, `client_event_id`, or `sync_cursor` surface before this tranche.
+- Added root migration [migrations/013_history_sync_schema.sql](/Volumes/madara/2026/witnessos/Selemene-engine/migrations/013_history_sync_schema.sql) and matching Supabase migration [supabase/migrations/20260313000013_013_history_sync_schema.sql](/Volumes/madara/2026/witnessos/Selemene-engine/supabase/migrations/20260313000013_013_history_sync_schema.sql).
+- Extended [crates/noesis-data/src/models/reading.rs](/Volumes/madara/2026/witnessos/Selemene-engine/crates/noesis-data/src/models/reading.rs) with `ReadingSyncRecord` and optional client/device sync metadata on `NewReading`.
+- Extended [crates/noesis-data/src/repositories/readings_repository.rs](/Volumes/madara/2026/witnessos/Selemene-engine/crates/noesis-data/src/repositories/readings_repository.rs) with fallback-aware idempotent save logic, cursor-delta listing, and migration-anchored tests.
+- Updated the existing fire-and-forget persistence paths in [crates/noesis-api/src/lib.rs](/Volumes/madara/2026/witnessos/Selemene-engine/crates/noesis-api/src/lib.rs) to pass explicit `None` values for the new sync metadata so the runtime stays source-compatible until mobile/device sync starts sending those fields.
+
+Verification:
+- `cargo test -p noesis-data readings_repository -- --nocapture`
+- `cargo build -p noesis-api`
+- `DATABASE_URL='postgresql://noesis_user:noesis_password@localhost:5432/noesis' cargo test -p noesis-data save_reading_is_idempotent_when_client_event_id_is_present -- --nocapture`
+- Canonical root migrations applied in order against local Postgres via `psql`, including [migrations/013_history_sync_schema.sql](/Volumes/madara/2026/witnessos/Selemene-engine/migrations/013_history_sync_schema.sql)
+- Commit pushed: `ce621cf3` (`feat(sync): add history sync schema and idempotent reading writes`)
+- GitHub outcome:
+  - closed `#18`
+  - backlog now: `362` open / `117` closed
+
+### Plan Catalog And Billing Schema Tranche (`#19`)
+
+- [x] Audit `#19` against the current `users.tier`, `api_keys.tier`, and repository/runtime tier handling.
+- [x] Choose the smallest schema shape that eliminates active-plan ambiguity without rewriting auth or user APIs.
+- [x] Add canonical root and Supabase migrations for plan catalog, billing subscriptions, and an unambiguous active-plan resolution view.
+- [x] Sync the canonical plan/subscription rows from existing user creation and admin tier update paths with rollout-safe fallbacks.
+- [x] Verify schema-level active-plan resolution and update GitHub status if the acceptance criteria are satisfied.
+
+Plan catalog tranche notes:
+- Current runtime still treats `users.tier` and `api_keys.tier` as the only tier sources. There is no canonical plan table, subscription table, or active-plan join surface yet.
+- The acceptance on `#19` is stricter than a bare migration: we need a schema-level join path that resolves one active plan per user without duplicated tier ambiguity.
+- Selected implementation shape:
+  - `plan_catalog` table for canonical plans
+  - `billing_subscriptions` table with provider identifiers and status constraints
+  - single active-plan resolution view guarded by a unique active-subscription rule
+  - minimal repository updates so new users and admin tier changes keep the canonical rows in sync while `users.tier` remains a compatibility field
+- Added root migration [migrations/014_plan_catalog_billing_subscriptions.sql](/Volumes/madara/2026/witnessos/Selemene-engine/migrations/014_plan_catalog_billing_subscriptions.sql) and matching Supabase migration [supabase/migrations/20260313000014_014_plan_catalog_billing_subscriptions.sql](/Volumes/madara/2026/witnessos/Selemene-engine/supabase/migrations/20260313000014_014_plan_catalog_billing_subscriptions.sql).
+- Updated [crates/noesis-data/src/repositories/user_repository.rs](/Volumes/madara/2026/witnessos/Selemene-engine/crates/noesis-data/src/repositories/user_repository.rs) so new users attempt to create canonical active-plan rows and can resolve an active plan via `resolve_active_plan_code(...)`, with legacy fallbacks if the new schema is absent.
+- Updated [crates/noesis-data/src/repositories/admin_repository.rs](/Volumes/madara/2026/witnessos/Selemene-engine/crates/noesis-data/src/repositories/admin_repository.rs) so admin tier updates also resync the canonical active subscription when the new schema exists.
+
+Verification:
+- `cargo test -p noesis-data user_repository -- --nocapture`
+- `cargo test -p noesis-data admin_repository -- --nocapture`
+- `cargo build -p noesis-api`
+- Docker Desktop restarted successfully; local Postgres was brought up from [docker-compose.yml](/Volumes/madara/2026/witnessos/Selemene-engine/docker-compose.yml)
+- Canonical root migrations applied against local Postgres through [migrations/014_plan_catalog_billing_subscriptions.sql](/Volumes/madara/2026/witnessos/Selemene-engine/migrations/014_plan_catalog_billing_subscriptions.sql)
+- `DATABASE_URL='postgresql://noesis_user:noesis_password@localhost:5432/noesis' cargo test -p noesis-data active_plan_resolution_stays_unambiguous_after_tier_update -- --nocapture`
+- Commit pushed: `07300914` (`feat(billing): add canonical plan catalog schema`)
+- GitHub outcome:
+  - closed `#19`
+  - backlog now: `361` open / `118` closed
+
+### Orchestrator Routing Guard Tranche (`#43`, `#44`)
+
+- [x] Audit `#43` and `#44` against the current orchestrator/runtime boundary and keep `#38` out of this tranche.
+- [x] Add orchestrator-owned execution routing counters inside `noesis-orchestrator` so direct registry execution is observable.
+- [x] Add debug/test phase-gate assertions so direct registry execution of an inaccessible engine panics in debug builds.
+- [x] Route `WorkflowOrchestrator` and `WorkflowExecutor` engine execution through the guarded registry path.
+- [x] Add targeted tests proving:
+  - direct `EngineRegistry::execute(...)` increments bypass tracking,
+  - routed orchestrator/workflow execution does not,
+  - bypassing phase gating panics in debug tests.
+- [x] Run targeted verification, then commit, push, and close any satisfied issues.
+
+Orchestrator routing guard notes:
+- Added routed-vs-direct execution counters and snapshots in [crates/noesis-orchestrator/src/lib.rs](/Volumes/madara/2026/witnessos/Selemene-engine/crates/noesis-orchestrator/src/lib.rs).
+- `EngineRegistry::execute(...)` is now an explicitly observable bypass path: it increments `direct_execute_calls` and `bypass_count`, and in debug/test builds it panics if phase gating is bypassed for an inaccessible engine.
+- `WorkflowOrchestrator::execute_engine(...)`, `WorkflowOrchestrator::execute_workflow(...)`, and [crates/noesis-orchestrator/src/workflow/executor.rs](/Volumes/madara/2026/witnessos/Selemene-engine/crates/noesis-orchestrator/src/workflow/executor.rs) now route engine execution through the guarded registry path so legitimate execution increments only `orchestrated_execute_calls`.
+
+Verification:
+- `cargo test -p noesis-orchestrator registry_direct_execute_marks_bypass_count -- --nocapture`
+- `cargo test -p noesis-orchestrator execute_workflow_records_routed_engine_executions -- --nocapture`
+- `cargo test -p noesis-orchestrator execute_single_engine_success -- --nocapture`
+- `cargo test -p noesis-orchestrator registry_direct_execute_phase_bypass_panics_in_debug -- --nocapture`
+- `cargo test -p noesis-orchestrator -- --nocapture`
+
+GitHub outcome:
+- closed `#43`
+- closed `#44`
+- backlog now: `359` open / `120` closed
+
+### Native Engine Visibility Guard Tranche (`#38`)
+
+- [x] Audit `#38` against the current `noesis-api` dependency surface and confirm runtime engine crates are still imported directly there.
+- [x] Move native engine registration behind a `noesis-orchestrator` helper so the API runtime no longer constructs engine crates itself.
+- [x] Strip native engine crates from `noesis-api` runtime dependencies while preserving test/bench access through `dev-dependencies`.
+- [x] Add a static regression test proving `noesis-api` runtime code and `[dependencies]` no longer reference native engine crates directly.
+- [x] Run targeted verification, then commit, push, and close `#38`.
+
+Native engine visibility guard notes:
+- Added [WorkflowOrchestrator::register_native_runtime_engines(...)](/Volumes/madara/2026/witnessos/Selemene-engine/crates/noesis-orchestrator/src/lib.rs) so native engine construction now lives in `noesis-orchestrator` instead of `noesis-api`.
+- Updated [crates/noesis-api/src/lib.rs](/Volumes/madara/2026/witnessos/Selemene-engine/crates/noesis-api/src/lib.rs) to build the runtime orchestrator through that helper and keep bridge registration local to the API crate.
+- Removed native engine crates from `noesis-api` runtime `[dependencies]` in [crates/noesis-api/Cargo.toml](/Volumes/madara/2026/witnessos/Selemene-engine/crates/noesis-api/Cargo.toml), leaving only the subset needed for tests/benches under `[dev-dependencies]`.
+- Added a static regression in [crates/noesis-api/tests/routing_enforcement_tests.rs](/Volumes/madara/2026/witnessos/Selemene-engine/crates/noesis-api/tests/routing_enforcement_tests.rs) that fails if native engine crates reappear in `noesis-api` runtime dependencies or source imports.
+
+Verification:
+- `cargo build -p noesis-api`
+- `cargo test -p noesis-orchestrator orchestrator_register_native_runtime_engines -- --nocapture`
+- `cargo test -p noesis-api --test routing_enforcement_tests -- --nocapture`
+
+GitHub outcome:
+- closed `#38`
+- backlog now: `358` open / `121` closed
 # Task Plan — v3.0.0 Launch Polish + Issue Status Alignment
 
 ## Checklist

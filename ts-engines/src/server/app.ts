@@ -1,15 +1,58 @@
 import { swagger } from '@elysiajs/swagger'
 import { Elysia, t } from 'elysia'
-import type { EngineInput, ErrorResponse, HealthResponse } from '../types'
+import type {
+  EngineHealthStatus,
+  EngineInput,
+  EnginesHealthResponse,
+  ErrorResponse,
+  HealthResponse,
+  LivenessResponse,
+  ReadinessResponse,
+} from '../types'
 import { isEngineValidationError } from '../utils'
-import { registry } from './registry'
+import { EngineRegistry, registry } from './registry'
 
 const startTime = Date.now()
+
+async function runSelfCheck(engineRegistry: EngineRegistry): Promise<EngineHealthStatus[]> {
+  return Promise.all(
+    engineRegistry.all().map(async (engine) => {
+      const startedAt = Date.now()
+      const engineId = engine.metadata().id
+
+      try {
+        if (!engine.selfCheck) {
+          return {
+            engine_id: engineId,
+            healthy: true,
+            detail: 'default health check passed',
+            latency_ms: Date.now() - startedAt,
+          }
+        }
+
+        const result = await engine.selfCheck()
+        return {
+          engine_id: result.engine_id || engineId,
+          healthy: result.healthy,
+          detail: result.detail,
+          latency_ms: result.latency_ms ?? Date.now() - startedAt,
+        }
+      } catch (error) {
+        return {
+          engine_id: engineId,
+          healthy: false,
+          detail: error instanceof Error ? error.message : 'unknown engine health error',
+          latency_ms: Date.now() - startedAt,
+        }
+      }
+    }),
+  )
+}
 
 /**
  * Create the Elysia HTTP server with all routes
  */
-export function createServer() {
+export function createServer(engineRegistry: EngineRegistry = registry) {
   const app = new Elysia()
     .use(
       swagger({
@@ -29,16 +72,45 @@ export function createServer() {
       '/health',
       (): HealthResponse => ({
         status: 'healthy',
-        engines: registry.list(),
+        engines: engineRegistry.list(),
         uptime_ms: Date.now() - startTime,
         version: '1.0.0',
       }),
     )
+    .get(
+      '/health/live',
+      (): LivenessResponse => ({
+        status: 'alive',
+        uptime_ms: Date.now() - startTime,
+        version: '1.0.0',
+      }),
+    )
+    .get('/health/engines', async (): Promise<EnginesHealthResponse> => {
+      const engines = await runSelfCheck(engineRegistry)
+      const status = engines.every((engine) => engine.healthy) ? 'healthy' : 'degraded'
+      return { status, engines }
+    })
+    .get('/health/ready', async ({ set }): Promise<ReadinessResponse> => {
+      const engines = await runSelfCheck(engineRegistry)
+      const failedEngines = engines
+        .filter((engine) => !engine.healthy)
+        .map((engine) => engine.engine_id)
+
+      if (failedEngines.length > 0) {
+        set.status = 503
+      }
+
+      return {
+        status: failedEngines.length === 0 ? 'ready' : 'degraded',
+        engines,
+        failed_engines: failedEngines,
+      }
+    })
 
     // List all engines
     .get('/engines', () => ({
-      engines: registry.listMetadata(),
-      count: registry.count(),
+      engines: engineRegistry.listMetadata(),
+      count: engineRegistry.count(),
     }))
 
     // Get engine info by ID
@@ -52,7 +124,7 @@ export function createServer() {
           ? ErrorResponse
           : ReturnType<NonNullable<T>['metadata']>
         : never => {
-        const engine = registry.get(params.id)
+        const engine = engineRegistry.get(params.id)
         if (!engine) {
           set.status = 404
           return {
@@ -73,7 +145,7 @@ export function createServer() {
     .post(
       '/engines/:id/calculate',
       async ({ params, body, set }) => {
-        const engine = registry.get(params.id)
+        const engine = engineRegistry.get(params.id)
         if (!engine) {
           set.status = 404
           return {
@@ -133,4 +205,4 @@ export function createServer() {
   return app
 }
 
-export { registry }
+export { EngineRegistry, registry }

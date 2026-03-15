@@ -88,13 +88,13 @@ fn sample_panchang() -> Panchang {
 }
 
 #[tokio::test]
-async fn test_get_panchang_adds_auth_header_and_parses() {
+async fn test_get_panchang_uses_x_api_key_header_and_complete_endpoint() {
     let server = MockServer::start().await;
     let sample = sample_panchang();
 
     Mock::given(method("POST"))
-        .and(path("/panchang"))
-        .and(header("authorization", "Bearer test_key"))
+        .and(path("/complete-panchang"))
+        .and(header("x-api-key", "test_key"))
         .respond_with(ResponseTemplate::new(200).set_body_json(&sample))
         .mount(&server)
         .await;
@@ -116,7 +116,7 @@ async fn test_get_panchang_unauthorized_maps_to_configuration_error() {
     let server = MockServer::start().await;
 
     Mock::given(method("POST"))
-        .and(path("/panchang"))
+        .and(path("/complete-panchang"))
         .respond_with(ResponseTemplate::new(401).set_body_string("invalid api key"))
         .mount(&server)
         .await;
@@ -140,7 +140,7 @@ async fn test_get_panchang_rate_limit_maps_to_rate_limit_error() {
     let server = MockServer::start().await;
 
     Mock::given(method("POST"))
-        .and(path("/panchang"))
+        .and(path("/complete-panchang"))
         .respond_with(ResponseTemplate::new(429).set_body_string("rate limit"))
         .mount(&server)
         .await;

@@ -19,6 +19,7 @@ use std::sync::Arc;
 use std::time::Duration;
 
 use async_trait::async_trait;
+use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use sha2::{Digest, Sha256};
 use tracing::{debug, info, warn};
@@ -43,6 +44,21 @@ pub const DEFAULT_TS_SERVER_URL: &str = "http://localhost:3001";
 /// Default timeout for HTTP requests in seconds.
 pub const DEFAULT_TIMEOUT_SECS: u64 = 5;
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SidecarEngineHealth {
+    pub engine_id: String,
+    pub healthy: bool,
+    pub detail: String,
+    pub latency_ms: u64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SidecarReadinessStatus {
+    pub status: String,
+    pub engines: Vec<SidecarEngineHealth>,
+    pub failed_engines: Vec<String>,
+}
+
 // ---------------------------------------------------------------------------
 // BridgeEngine
 // ---------------------------------------------------------------------------
@@ -50,7 +66,8 @@ pub const DEFAULT_TIMEOUT_SECS: u64 = 5;
 /// HTTP adapter that proxies trait calls to a TypeScript engine running on Bun.
 ///
 /// Each instance targets a single engine endpoint on the Bun server.
-/// All HTTP errors are mapped to `EngineError::BridgeError`.
+/// Transport failures are normalized through `BridgeError` before crossing the
+/// trait boundary into `EngineError`.
 pub struct BridgeEngine {
     engine_id: String,
     engine_name: String,
@@ -200,6 +217,16 @@ impl ConsciousnessEngine for BridgeEngine {
     }
 
     async fn calculate(&self, input: EngineInput) -> Result<EngineOutput, EngineError> {
+        if self.engine_id == "sigil-forge" {
+            let has_intention = Self::extract_question(&input.options).is_some();
+            if !has_intention {
+                return Err(EngineError::ValidationError(
+                    "sigil-forge requires options.intention (or question/intent/intent_text)"
+                        .to_string(),
+                ));
+            }
+        }
+
         let url = format!("{}/engines/{}/calculate", self.base_url, self.engine_id);
 
         debug!(
@@ -219,23 +246,21 @@ impl ConsciousnessEngine for BridgeEngine {
             .send()
             .await
             .map_err(|e| {
-                if e.is_timeout() {
+                let bridge_error = if e.is_timeout() {
                     warn!(engine = %self.engine_id, "Bridge request timed out");
-                    EngineError::BridgeError(format!(
-                        "Request to {} timed out after {}s",
-                        self.engine_id,
-                        self.timeout.as_secs()
-                    ))
+                    BridgeError::Timeout {
+                        timeout_secs: self.timeout.as_secs(),
+                    }
                 } else if e.is_connect() {
                     warn!(engine = %self.engine_id, %url, "Bridge connection refused");
-                    EngineError::BridgeError(format!(
-                        "Connection to {} refused (is the TS server running at {}?)",
-                        self.engine_id, self.base_url
-                    ))
+                    BridgeError::ConnectionRefused {
+                        url: self.base_url.clone(),
+                    }
                 } else {
                     warn!(engine = %self.engine_id, error = %e, "Bridge HTTP error");
-                    EngineError::BridgeError(format!("HTTP request to {} failed: {}", url, e))
-                }
+                    BridgeError::HttpError(format!("{} ({})", e, url))
+                };
+                bridge_error.into_calculate_engine_error(&self.engine_id)
             })?;
 
         if !response.status().is_success() {
@@ -247,17 +272,17 @@ impl ConsciousnessEngine for BridgeEngine {
                 %body,
                 "bridge calculate returned non-2xx"
             );
-            return Err(EngineError::BridgeError(format!(
-                "Engine {} returned {}: {}",
-                self.engine_id, status, body
-            )));
+
+            return Err(BridgeError::EngineResponse {
+                status: status.as_u16(),
+                body,
+            }
+            .into_calculate_engine_error(&self.engine_id));
         }
 
         let ts_response = response.json::<TsEngineResponse>().await.map_err(|e| {
-            EngineError::BridgeError(format!(
-                "Failed to deserialize TsEngineResponse from {}: {}",
-                self.engine_id, e
-            ))
+            BridgeError::DeserializationError(format!("TsEngineResponse: {}", e))
+                .into_calculate_engine_error(&self.engine_id)
         })?;
 
         info!(
@@ -301,20 +326,18 @@ impl ConsciousnessEngine for BridgeEngine {
             .send()
             .await
             .map_err(|e| {
-                if e.is_timeout() {
-                    EngineError::BridgeError(format!(
-                        "Validate request to {} timed out after {}s",
-                        self.engine_id,
-                        self.timeout.as_secs()
-                    ))
+                let bridge_error = if e.is_timeout() {
+                    BridgeError::Timeout {
+                        timeout_secs: self.timeout.as_secs(),
+                    }
                 } else if e.is_connect() {
-                    EngineError::BridgeError(format!(
-                        "Connection to {} refused (is the TS server running at {}?)",
-                        self.engine_id, self.base_url
-                    ))
+                    BridgeError::ConnectionRefused {
+                        url: self.base_url.clone(),
+                    }
                 } else {
-                    EngineError::BridgeError(format!("HTTP request to {} failed: {}", url, e))
-                }
+                    BridgeError::HttpError(format!("{} ({})", e, url))
+                };
+                bridge_error.into_validate_engine_error(&self.engine_id)
             })?;
 
         if !response.status().is_success() {
@@ -326,17 +349,17 @@ impl ConsciousnessEngine for BridgeEngine {
                 %body,
                 "bridge validate returned non-2xx"
             );
-            return Err(EngineError::BridgeError(format!(
-                "Engine {} validate returned {}: {}",
-                self.engine_id, status, body
-            )));
+
+            return Err(BridgeError::EngineResponse {
+                status: status.as_u16(),
+                body,
+            }
+            .into_validate_engine_error(&self.engine_id));
         }
 
         response.json::<ValidationResult>().await.map_err(|e| {
-            EngineError::BridgeError(format!(
-                "Failed to deserialize ValidationResult from {}: {}",
-                self.engine_id, e
-            ))
+            BridgeError::DeserializationError(format!("ValidationResult: {}", e))
+                .into_validate_engine_error(&self.engine_id)
         })
     }
 
@@ -414,33 +437,77 @@ impl BridgeManager {
         let client = reqwest::Client::builder()
             .timeout(Duration::from_secs(2))
             .build()
-            .map_err(|e| EngineError::BridgeError(format!("Failed to create client: {}", e)))?;
+            .map_err(|e| {
+                BridgeError::HttpError(format!("Failed to create client: {}", e))
+                    .into_manager_engine_error()
+            })?;
 
         let response = client.get(&url).send().await.map_err(|e| {
-            if e.is_connect() {
-                EngineError::BridgeError(format!(
-                    "TS server not reachable at {} (connection refused)",
-                    self.base_url
-                ))
+            let bridge_error = if e.is_connect() {
+                BridgeError::ConnectionRefused {
+                    url: self.base_url.clone(),
+                }
             } else if e.is_timeout() {
-                EngineError::BridgeError(format!(
-                    "TS server health check timed out at {}",
-                    self.base_url
-                ))
+                BridgeError::Timeout { timeout_secs: 2 }
             } else {
-                EngineError::BridgeError(format!("Health check failed for {}: {}", url, e))
-            }
+                BridgeError::HttpError(format!("Health check failed for {}: {}", url, e))
+            };
+            bridge_error.into_manager_engine_error()
         })?;
 
         if response.status().is_success() {
             info!(url = %self.base_url, "TS server health check passed");
             Ok(())
         } else {
-            Err(EngineError::BridgeError(format!(
+            Err(BridgeError::ServerUnavailable(format!(
                 "Health check returned {}",
                 response.status()
-            )))
+            ))
+            .into_manager_engine_error())
         }
+    }
+
+    /// Fetch detailed sidecar readiness including per-engine status.
+    pub async fn readiness_status(&self) -> Result<SidecarReadinessStatus, EngineError> {
+        let url = format!("{}/health/ready", self.base_url);
+
+        let client = reqwest::Client::builder()
+            .timeout(Duration::from_secs(2))
+            .build()
+            .map_err(|e| {
+                BridgeError::HttpError(format!("Failed to create client: {}", e))
+                    .into_manager_engine_error()
+            })?;
+
+        let response = client.get(&url).send().await.map_err(|e| {
+            let bridge_error = if e.is_connect() {
+                BridgeError::ConnectionRefused {
+                    url: self.base_url.clone(),
+                }
+            } else if e.is_timeout() {
+                BridgeError::Timeout { timeout_secs: 2 }
+            } else {
+                BridgeError::HttpError(format!("Readiness check failed for {}: {}", url, e))
+            };
+            bridge_error.into_manager_engine_error()
+        })?;
+
+        let status = response.status();
+        if status.as_u16() != 200 && status.as_u16() != 503 {
+            return Err(BridgeError::ServerUnavailable(format!(
+                "Readiness check returned unexpected status {}",
+                status
+            ))
+            .into_manager_engine_error());
+        }
+
+        response
+            .json::<SidecarReadinessStatus>()
+            .await
+            .map_err(|e| {
+                BridgeError::DeserializationError(format!("Readiness response from {}: {}", url, e))
+                    .into_manager_engine_error()
+            })
     }
 
     /// Check if the TS server is available (non-blocking, returns false on error).
@@ -619,6 +686,22 @@ mod tests {
                 );
             }
             _ => panic!("Expected BridgeError, got {:?}", err),
+        }
+    }
+
+    #[tokio::test]
+    async fn bridge_engine_sigil_requires_intention() {
+        let engine = BridgeEngine::sigil_forge_with_url("http://localhost:59999");
+        let input = test_input();
+
+        let result = engine.calculate(input).await;
+        assert!(result.is_err());
+
+        match result.unwrap_err() {
+            EngineError::ValidationError(msg) => {
+                assert!(msg.contains("sigil-forge requires options.intention"));
+            }
+            other => panic!("Expected ValidationError, got {:?}", other),
         }
     }
 

@@ -436,6 +436,7 @@ mod tests {
     use super::*;
     use noesis_core::Precision;
     use std::collections::HashMap;
+    use std::sync::Arc;
 
     fn create_test_input_with_gates() -> EngineInput {
         let mut options = HashMap::new();
@@ -590,6 +591,78 @@ mod tests {
             .messages
             .iter()
             .any(|m| m.contains("frequency_assessments")));
+    }
+
+    #[tokio::test]
+    async fn test_gk_birth_mode_derives_from_hd_engine() {
+        let hd_engine = Arc::new(engine_human_design::HumanDesignEngine::new());
+        let gk_engine = GeneKeysEngine::with_hd_engine(hd_engine.clone());
+
+        let input = EngineInput {
+            birth_data: Some(noesis_core::BirthData {
+                name: Some("Canonical".to_string()),
+                date: "1991-08-13".to_string(),
+                time: Some("13:31".to_string()),
+                latitude: 12.9340,
+                longitude: 77.6214,
+                timezone: "Asia/Kolkata".to_string(),
+            }),
+            current_time: Utc::now(),
+            location: None,
+            precision: Precision::Standard,
+            options: HashMap::new(),
+        };
+
+        let hd_output = hd_engine
+            .calculate(input.clone())
+            .await
+            .expect("HD calculation should succeed");
+        let gk_output = gk_engine
+            .calculate(input)
+            .await
+            .expect("GK calculation should succeed");
+
+        let ps = hd_output.result["personality_activations"]["sun"]["gate"]
+            .as_u64()
+            .unwrap() as u8;
+        let pe = hd_output.result["personality_activations"]["earth"]["gate"]
+            .as_u64()
+            .unwrap() as u8;
+        let ds = hd_output.result["design_activations"]["sun"]["gate"]
+            .as_u64()
+            .unwrap() as u8;
+        let de = hd_output.result["design_activations"]["earth"]["gate"]
+            .as_u64()
+            .unwrap() as u8;
+
+        assert_eq!(
+            gk_output.result["activation_sequence"]["lifes_work"][0]
+                .as_u64()
+                .unwrap(),
+            ps as u64
+        );
+        assert_eq!(
+            gk_output.result["activation_sequence"]["lifes_work"][1]
+                .as_u64()
+                .unwrap(),
+            pe as u64
+        );
+        assert_eq!(
+            gk_output.result["activation_sequence"]["evolution"][0]
+                .as_u64()
+                .unwrap(),
+            ds as u64
+        );
+        assert_eq!(
+            gk_output.result["activation_sequence"]["evolution"][1]
+                .as_u64()
+                .unwrap(),
+            de as u64
+        );
+
+        // Canonical guard against historical 8/14 drift
+        assert_eq!(ds, 23);
+        assert_eq!(de, 43);
     }
 
     #[tokio::test]

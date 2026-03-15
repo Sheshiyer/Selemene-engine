@@ -38,7 +38,7 @@ Foundation for all Vedic timing calculations.
 
 **Complete bodygraph** — Type, Strategy, Authority, 9 Centers, 26 Gates, Profile, Definition.
 
-**Input:** `date, time, lat/lng`  
+**Input:** `date, time, lat/lng, timezone`  
 **Endpoint:** `POST /api/v1/engines/human-design/calculate`
 
 Synthesizes I Ching, Kabbalah, Chakras, and Astrology.
@@ -49,7 +49,7 @@ Synthesizes I Ching, Kabbalah, Chakras, and Astrology.
 
 **64 Keys** — Shadow → Gift → Siddhi progression across 4 sequences (Activation, Venus, Pearl, Life's Work).
 
-**Input:** `date, time, lat/lng`  
+**Input:** `date, time, lat/lng, timezone`  
 **Endpoint:** `POST /api/v1/engines/gene-keys/calculate`
 
 Maps consciousness evolution through 64 genetic pathways.
@@ -60,7 +60,7 @@ Maps consciousness evolution through 64 genetic pathways.
 
 **120-year timeline** — Nested planetary periods (Mahadasha → Antardasha → 729 total periods).
 
-**Input:** `date, time, lat/lng`  
+**Input:** `date, time, lat/lng, timezone`  
 **Endpoint:** `POST /api/v1/engines/vimshottari/calculate`
 
 Foundation for Vedic predictive timing.
@@ -104,7 +104,7 @@ Foundation for Vedic predictive timing.
 
 **TCM Organ Clock + Ayurvedic Doshas** — Maps 24-hour cycle to organ energy peaks and dosha dominance.
 
-**Input:** `current_time`  
+**Input:** `current_time` plus either `options.timezone_offset` or `birth_data.timezone`  
 **Endpoint:** `POST /api/v1/engines/vedic-clock/calculate`
 
 ### Returns
@@ -112,6 +112,12 @@ Foundation for Vedic predictive timing.
 - Dominant dosha (Vata/Pitta/Kapha)
 - Optimal activity recommendations
 - Energy quality of current hour
+- Resolved timezone metadata (`offset_minutes`, `source`, `local_hour`)
+
+### Timezone Semantics
+- Priority order: `options.timezone_offset` -> `birth_data.timezone` -> UTC
+- `birth_data.timezone` accepts supported IANA values such as `Asia/Kolkata` and explicit offsets such as `+05:45`
+- The result payload includes the resolved timezone basis so API consumers can verify which local clock the organ-hour calculation used
 
 <br>
 
@@ -155,13 +161,13 @@ Maps voice characteristics to raaga resonance and chakra activations.
 
 ## 11. Transits Engine
 
-**Planetary transits & Sade Sati** — Current planetary positions, natal-to-transit aspects, and Saturn's 7.5-year Sade Sati cycle detection.
+**Planetary transits & Sade Sati** — Current sidereal planetary positions, natal-to-transit aspects, and Saturn's 7.5-year Sade Sati cycle detection.
 
-**Input:** `date, time, lat/lng`
+**Input:** `date, time, lat/lng, timezone`
 **Endpoint:** `POST /api/v1/engines/transits/calculate`
 
 ### Returns
-- Current positions of all 9 Navagraha (Swiss Ephemeris)
+- Current sidereal positions for 12 tracked bodies (Sun, Moon, Mercury, Venus, Mars, Jupiter, Saturn, Uranus, Neptune, Pluto, Rahu, Ketu)
 - Transit-to-natal aspects (conjunction, trine, square, sextile, opposition)
 - Sade Sati phase detection (rising, peak, setting)
 - Retrograde status for all planets
@@ -348,4 +354,3 @@ All engines return this unified structure:
 </p>
 
 <br>
-

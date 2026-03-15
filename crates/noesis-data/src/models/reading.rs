@@ -19,6 +19,17 @@ pub struct Reading {
     pub created_at: DateTime<Utc>,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize, FromRow)]
+pub struct ReadingSyncRecord {
+    pub id: Uuid,
+    pub sync_cursor: i64,
+    pub user_id: Uuid,
+    pub engine_id: String,
+    pub workflow_id: Option<String>,
+    pub client_event_id: Option<String>,
+    pub created_at: DateTime<Utc>,
+}
+
 /// Builder for inserting a new reading.
 pub struct NewReading {
     pub user_id: Uuid,
@@ -30,4 +41,8 @@ pub struct NewReading {
     pub witness_prompt: Option<String>,
     pub consciousness_level: i16,
     pub calculation_time_ms: Option<f64>,
+    pub client_event_id: Option<String>,
+    pub client_device_id: Option<String>,
+    pub device_platform: Option<String>,
+    pub device_app_version: Option<String>,
 }

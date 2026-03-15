@@ -73,6 +73,8 @@ export interface ConsciousnessEngine {
   metadata(): EngineMetadata
   /** Calculate and return results */
   calculate(input: EngineInput): Promise<EngineOutput>
+  /** Lightweight health probe (optional; defaults to healthy when omitted) */
+  selfCheck?(): Promise<EngineHealthStatus>
 }
 
 /** Error response format */
@@ -88,4 +90,32 @@ export interface HealthResponse {
   engines: string[]
   uptime_ms: number
   version: string
+}
+
+/** Per-engine health status */
+export interface EngineHealthStatus {
+  engine_id: string
+  healthy: boolean
+  detail: string
+  latency_ms: number
+}
+
+/** Liveness endpoint response */
+export interface LivenessResponse {
+  status: 'alive'
+  uptime_ms: number
+  version: string
+}
+
+/** Readiness endpoint response */
+export interface ReadinessResponse {
+  status: 'ready' | 'degraded'
+  engines: EngineHealthStatus[]
+  failed_engines: string[]
+}
+
+/** Per-engine health endpoint response */
+export interface EnginesHealthResponse {
+  status: 'healthy' | 'degraded'
+  engines: EngineHealthStatus[]
 }

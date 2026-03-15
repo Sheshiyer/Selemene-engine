@@ -67,6 +67,7 @@ pub use engine_biofield::BiofieldEngine;
 use chrono::Utc;
 use futures::future::join_all;
 use std::collections::HashMap;
+use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::Arc;
 use std::time::Instant;
 use tracing::{info, instrument, warn};
@@ -79,8 +80,23 @@ use tracing::{info, instrument, warn};
 ///
 /// Engines are stored behind `Arc` so they can be shared across
 /// concurrent workflow executions without cloning.
+///
+/// Routing invariant: this type is registration and lookup infrastructure only.
+/// API routes and workflow handlers must dispatch calculations through
+/// `WorkflowOrchestrator` / `WorkflowExecutor` rather than invoking engines
+/// directly from transport-layer code.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct ExecutionRoutingSnapshot {
+    pub orchestrated_execute_calls: u64,
+    pub direct_execute_calls: u64,
+    pub bypass_count: u64,
+}
+
 pub struct EngineRegistry {
     engines: HashMap<String, Arc<dyn ConsciousnessEngine>>,
+    orchestrated_execute_calls: AtomicU64,
+    direct_execute_calls: AtomicU64,
+    bypass_count: AtomicU64,
 }
 
 impl EngineRegistry {
@@ -88,6 +104,9 @@ impl EngineRegistry {
     pub fn new() -> Self {
         Self {
             engines: HashMap::new(),
+            orchestrated_execute_calls: AtomicU64::new(0),
+            direct_execute_calls: AtomicU64::new(0),
+            bypass_count: AtomicU64::new(0),
         }
     }
 
@@ -132,6 +151,84 @@ impl EngineRegistry {
     pub fn is_empty(&self) -> bool {
         self.engines.is_empty()
     }
+
+    /// Snapshot of routed vs bypassed engine execution counts.
+    pub fn execution_routing_snapshot(&self) -> ExecutionRoutingSnapshot {
+        ExecutionRoutingSnapshot {
+            orchestrated_execute_calls: self.orchestrated_execute_calls.load(Ordering::Relaxed),
+            direct_execute_calls: self.direct_execute_calls.load(Ordering::Relaxed),
+            bypass_count: self.bypass_count.load(Ordering::Relaxed),
+        }
+    }
+
+    /// Execute an engine directly from the registry.
+    ///
+    /// This path is intentionally observable so tests can detect direct engine
+    /// execution that bypasses `WorkflowOrchestrator` / `WorkflowExecutor`.
+    pub async fn execute(
+        &self,
+        engine_id: &str,
+        input: EngineInput,
+        user_phase: u8,
+    ) -> Result<EngineOutput, EngineError> {
+        self.execute_internal(engine_id, input, user_phase, false)
+            .await
+    }
+
+    pub(crate) async fn execute_routed(
+        &self,
+        engine_id: &str,
+        input: EngineInput,
+        user_phase: u8,
+    ) -> Result<EngineOutput, EngineError> {
+        self.execute_internal(engine_id, input, user_phase, true)
+            .await
+    }
+
+    async fn execute_internal(
+        &self,
+        engine_id: &str,
+        input: EngineInput,
+        user_phase: u8,
+        routed: bool,
+    ) -> Result<EngineOutput, EngineError> {
+        if routed {
+            self.orchestrated_execute_calls
+                .fetch_add(1, Ordering::Relaxed);
+        } else {
+            self.direct_execute_calls.fetch_add(1, Ordering::Relaxed);
+            self.bypass_count.fetch_add(1, Ordering::Relaxed);
+        }
+
+        let engine = self
+            .get(engine_id)
+            .ok_or_else(|| EngineError::EngineNotFound(engine_id.to_string()))?;
+
+        let required = engine.required_phase();
+        if required > user_phase {
+            if !routed {
+                debug_assert!(
+                    required <= user_phase,
+                    "Phase gate bypassed for engine '{}' (required_phase={}, user_phase={})",
+                    engine_id,
+                    required,
+                    user_phase
+                );
+            }
+
+            return Err(EngineError::PhaseAccessDenied {
+                required,
+                current: user_phase,
+            });
+        }
+
+        if routed {
+            info!(engine_id, "Executing engine");
+        } else {
+            warn!(engine_id, "Executing engine directly via EngineRegistry");
+        }
+        engine.calculate(input).await
+    }
 }
 
 impl Default for EngineRegistry {
@@ -149,6 +246,10 @@ impl Default for EngineRegistry {
 /// Holds a registry of engines and a map of predefined workflow definitions.
 /// Workflows execute all their constituent engines concurrently using
 /// `futures::future::join_all`.
+///
+/// Routing invariant: all user-facing engine and workflow calculations should
+/// enter the runtime through this orchestrator boundary so phase-gating,
+/// bridge registration, and workflow semantics stay centralized.
 pub struct WorkflowOrchestrator {
     registry: EngineRegistry,
     workflows: HashMap<String, WorkflowDefinition>,
@@ -167,6 +268,33 @@ impl WorkflowOrchestrator {
     /// Register a consciousness engine with the internal registry.
     pub fn register_engine(&mut self, engine: Arc<dyn ConsciousnessEngine>) {
         self.registry.register(engine);
+    }
+
+    /// Register the native Rust runtime engine set used by `noesis-api`.
+    ///
+    /// This keeps engine-construction details out of transport crates so API
+    /// handlers only depend on the orchestrator boundary.
+    pub fn register_native_runtime_engines(&mut self) {
+        self.register_engine(Arc::new(engine_panchanga::PanchangaEngine::new()));
+        self.register_engine(Arc::new(engine_numerology::NumerologyEngine::new()));
+        self.register_engine(Arc::new(engine_biorhythm::BiorhythmEngine::new()));
+
+        let hd_engine = Arc::new(engine_human_design::HumanDesignEngine::new());
+        self.register_engine(hd_engine.clone());
+
+        self.register_engine(Arc::new(engine_gene_keys::GeneKeysEngine::with_hd_engine(
+            hd_engine.clone(),
+        )));
+
+        self.register_engine(Arc::new(
+            engine_vimshottari::VimshottariEngine::with_hd_engine(hd_engine),
+        ));
+
+        self.register_engine(Arc::new(engine_biofield::BiofieldEngine::new()));
+        self.register_engine(Arc::new(engine_vedic_clock::VedicClockEngine::new()));
+        self.register_engine(Arc::new(engine_face_reading::FaceReadingEngine::new()));
+        self.register_engine(Arc::new(engine_nadabrahman::NadaBrahmanEngine::new()));
+        self.register_engine(Arc::new(engine_transits::TransitsEngine::new()));
     }
 
     /// Register a custom workflow definition.
@@ -231,28 +359,9 @@ impl WorkflowOrchestrator {
         input: EngineInput,
         user_phase: u8,
     ) -> Result<EngineOutput, EngineError> {
-        let engine = self
-            .registry
-            .get(engine_id)
-            .ok_or_else(|| EngineError::EngineNotFound(engine_id.to_string()))?;
-
-        // Phase gate
-        let required = engine.required_phase();
-        if required > user_phase {
-            warn!(
-                engine_id,
-                required_phase = required,
-                user_phase,
-                "Phase access denied"
-            );
-            return Err(EngineError::PhaseAccessDenied {
-                required,
-                current: user_phase,
-            });
-        }
-
-        info!(engine_id, "Executing engine");
-        engine.calculate(input).await
+        self.registry
+            .execute_routed(engine_id, input, user_phase)
+            .await
     }
 
     // -- Workflow execution ------------------------------------------------
@@ -281,46 +390,20 @@ impl WorkflowOrchestrator {
         );
 
         let start = Instant::now();
+        let registry = &self.registry;
 
         // Build futures for all engines in the workflow.
         let futures: Vec<_> = workflow
             .engine_ids
             .iter()
             .map(|eid| {
-                let engine_opt = self.registry.get(eid);
                 let input_clone = input.clone();
                 let eid_owned = eid.clone();
 
                 async move {
-                    let engine = match engine_opt {
-                        Some(e) => e,
-                        None => {
-                            warn!(engine_id = %eid_owned, "Engine not found in registry, skipping");
-                            let err = EngineError::EngineNotFound(eid_owned.clone());
-                            return (eid_owned, Err(err));
-                        }
-                    };
-
-                    // Phase gate
-                    let required = engine.required_phase();
-                    if required > user_phase {
-                        warn!(
-                            engine_id = %eid_owned,
-                            required_phase = required,
-                            user_phase,
-                            "Phase access denied, skipping engine"
-                        );
-                        return (
-                            eid_owned,
-                            Err(EngineError::PhaseAccessDenied {
-                                required,
-                                current: user_phase,
-                            }),
-                        );
-                    }
-
-                    info!(engine_id = %eid_owned, "Executing engine in workflow");
-                    let result = engine.calculate(input_clone).await;
+                    let result = registry
+                        .execute_routed(&eid_owned, input_clone, user_phase)
+                        .await;
                     (eid_owned, result)
                 }
             })
@@ -638,6 +721,33 @@ mod tests {
         assert_eq!(engine.required_phase(), 2);
     }
 
+    #[tokio::test]
+    async fn registry_direct_execute_marks_bypass_count() {
+        let mut registry = EngineRegistry::new();
+        registry.register(Arc::new(MockEngine::new("numerology", 0)));
+
+        let output = registry
+            .execute("numerology", test_input(), 0)
+            .await
+            .unwrap();
+        assert_eq!(output.engine_id, "numerology");
+
+        let snapshot = registry.execution_routing_snapshot();
+        assert_eq!(snapshot.orchestrated_execute_calls, 0);
+        assert_eq!(snapshot.direct_execute_calls, 1);
+        assert_eq!(snapshot.bypass_count, 1);
+    }
+
+    #[cfg(debug_assertions)]
+    #[tokio::test]
+    #[should_panic(expected = "Phase gate bypassed for engine 'advanced'")]
+    async fn registry_direct_execute_phase_bypass_panics_in_debug() {
+        let mut registry = EngineRegistry::new();
+        registry.register(Arc::new(MockEngine::new("advanced", 3)));
+
+        let _ = registry.execute("advanced", test_input(), 1).await;
+    }
+
     // -- WorkflowOrchestrator tests ----------------------------------------
 
     #[test]
@@ -674,6 +784,30 @@ mod tests {
         assert_eq!(engines, vec!["numerology"]);
     }
 
+    #[test]
+    fn orchestrator_register_native_runtime_engines() {
+        let mut orchestrator = WorkflowOrchestrator::new();
+        orchestrator.register_native_runtime_engines();
+
+        let engines = orchestrator.list_engines();
+        assert_eq!(engines.len(), 11);
+        for engine_id in [
+            "panchanga",
+            "numerology",
+            "biorhythm",
+            "human-design",
+            "gene-keys",
+            "vimshottari",
+            "biofield",
+            "vedic-clock",
+            "face-reading",
+            "nadabrahman",
+            "transits",
+        ] {
+            assert!(engines.contains(&engine_id.to_string()));
+        }
+    }
+
     #[tokio::test]
     async fn execute_single_engine_success() {
         let mut orchestrator = WorkflowOrchestrator::new();
@@ -685,6 +819,11 @@ mod tests {
             .unwrap();
 
         assert_eq!(output.engine_id, "numerology");
+
+        let snapshot = orchestrator.registry().execution_routing_snapshot();
+        assert_eq!(snapshot.orchestrated_execute_calls, 1);
+        assert_eq!(snapshot.direct_execute_calls, 0);
+        assert_eq!(snapshot.bypass_count, 0);
     }
 
     #[tokio::test]
@@ -762,6 +901,11 @@ mod tests {
         assert!(result.engine_outputs.contains_key("numerology"));
         assert!(result.engine_outputs.contains_key("human-design"));
         assert!(!result.engine_outputs.contains_key("gene-keys"));
+
+        let snapshot = orchestrator.registry().execution_routing_snapshot();
+        assert_eq!(snapshot.orchestrated_execute_calls, 3);
+        assert_eq!(snapshot.direct_execute_calls, 0);
+        assert_eq!(snapshot.bypass_count, 0);
     }
 
     #[tokio::test]

@@ -46,17 +46,25 @@ export class TarotEngine implements ConsciousnessEngine {
     // Parse spread type
     const parsedSpread = parseSpreadType(spreadParam)
     if (!parsedSpread) {
-      throw new EngineValidationError('Invalid spread_type. Use one of single_card, three_card, celtic_cross, relationship, career.', 'INVALID_SPREAD_TYPE', {
-        spread_type: spreadParam,
-        supported: Object.values(SpreadType),
-      })
+      throw new EngineValidationError(
+        'Invalid spread_type. Use one of single_card, three_card, celtic_cross, relationship, career.',
+        'INVALID_SPREAD_TYPE',
+        {
+          spread_type: spreadParam,
+          supported: Object.values(SpreadType),
+        },
+      )
     }
     const spreadType = parsedSpread
 
     if (question !== undefined && typeof question === 'string' && question.trim() === '') {
-      throw new EngineValidationError('Question cannot be empty when provided.', 'INVALID_QUESTION', {
-        field: 'question',
-      })
+      throw new EngineValidationError(
+        'Question cannot be empty when provided.',
+        'INVALID_QUESTION',
+        {
+          field: 'question',
+        },
+      )
     }
 
     // Perform the reading

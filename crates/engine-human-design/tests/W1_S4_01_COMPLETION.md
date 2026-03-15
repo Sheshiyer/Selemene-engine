@@ -1,6 +1,8 @@
 # Task W1-S4-01 Completion Summary
 ## Create Reference Chart Test Dataset
 
+> Historical note (2026-03-15): the dataset described here is synthetic and engine-generated. The committed `tests/reference_charts.json` may be regenerated as the internal HD logic evolves.
+
 **Task**: Collect 10+ reference charts from professional HD software with expected values for validation testing.
 
 **Status**: ✅ COMPLETE

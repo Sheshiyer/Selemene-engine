@@ -152,7 +152,7 @@ All engine `/calculate` endpoints accept the same JSON body:
 | **sigil-forge** | `options.intent` | Sigil generation from intent statements |
 | **tarot** | `birth_data.date` | Card spreads, birth card, yearly forecast |
 | **transits** | `birth_data.date`, `time`, lat/lng, tz | Current planetary transits relative to natal chart |
-| **vedic-clock** | (uses `current_time`) | TCM organ clock, Ayurvedic dosha timing |
+| **vedic-clock** | `current_time` + timezone basis (`options.timezone_offset` or `birth_data.timezone`) | TCM organ clock, Ayurvedic dosha timing |
 | **vimshottari** | `birth_data.date`, `time`, lat/lng, tz | Current dasha periods (Maha/Antar/Pratyantar) |
 
 ## Try Each Engine
@@ -172,15 +172,22 @@ curl -s -X POST .../api/v1/engines/human-design/calculate \
   -d '{"birth_data":{"date":"1991-08-13","time":"13:31","latitude":12.9716,"longitude":77.5946,"timezone":"Asia/Kolkata"}}' \
   | python3 -m json.tool
 
-# Vedic Clock — uses current time, no birth data needed
+# Vedic Clock — uses current time plus a timezone basis
 curl -s -X POST .../api/v1/engines/vedic-clock/calculate \
   -H "X-API-Key: $NOESIS_API_KEY" \
   -H "Content-Type: application/json" \
-  -d '{}' \
+  -d '{"current_time":"2026-03-08T06:43:16Z","birth_data":{"date":"1991-08-13","latitude":12.9716,"longitude":77.5946,"timezone":"Asia/Kolkata"}}' \
   | python3 -m json.tool
 ```
 
 Replace `...` with the base URL.
+
+For `vedic-clock`, timezone resolution priority is:
+1. `options.timezone_offset`
+2. `birth_data.timezone`
+3. UTC fallback
+
+The response includes `result.timezone.offset_minutes`, `result.timezone.source`, and `result.timezone.local_hour` so clients can verify the local clock basis used for organ-hour calculations.
 
 ## Workflows (Multi-Engine Synthesis)
 

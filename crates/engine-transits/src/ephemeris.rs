@@ -3,11 +3,45 @@
 //! Reuses `EphemerisCalculator` and `EPHE_MUTEX` from engine-human-design
 //! to avoid duplicate Swiss Ephemeris initialization and ensure thread safety.
 
-use chrono::{DateTime, Utc};
-use engine_human_design::{EphemerisCalculator, HDPlanet};
+use chrono::{DateTime, Datelike, Timelike, Utc};
+use engine_human_design::{ephemeris::EPHE_MUTEX, EphemerisCalculator, HDPlanet};
+use libswisseph_sys::tuple_result::simple::{swe_get_ayanamsa_ut, swe_julday, swe_set_sid_mode};
 use noesis_core::EngineError;
 
 use crate::models::{PlanetaryPosition, TransitPlanet, ZodiacSign};
+
+/// Swiss Ephemeris sidereal mode constant for Lahiri ayanamsha.
+const SIDM_LAHIRI: i32 = 1;
+
+fn datetime_to_jd(datetime: &DateTime<Utc>) -> f64 {
+    unsafe {
+        swe_julday(
+            datetime.year(),
+            datetime.month() as i32,
+            datetime.day() as i32,
+            datetime.hour() as f64
+                + datetime.minute() as f64 / 60.0
+                + datetime.second() as f64 / 3600.0,
+            1,
+        )
+    }
+}
+
+fn lahiri_ayanamsa(datetime: &DateTime<Utc>) -> f64 {
+    let jd_ut = datetime_to_jd(datetime);
+
+    // Swiss Ephemeris sidereal mode is global state; guard it with the shared mutex
+    // used throughout the native ephemeris-backed engines.
+    let _guard = EPHE_MUTEX.lock().unwrap();
+    unsafe {
+        swe_set_sid_mode(SIDM_LAHIRI, 0.0, 0.0);
+        swe_get_ayanamsa_ut(jd_ut)
+    }
+}
+
+fn to_sidereal_longitude(tropical_longitude: f64, datetime: &DateTime<Utc>) -> f64 {
+    (tropical_longitude - lahiri_ayanamsa(datetime)).rem_euclid(360.0)
+}
 
 /// Map TransitPlanet to engine-human-design's HDPlanet
 fn to_hd_planet(planet: TransitPlanet) -> HDPlanet {
@@ -38,14 +72,15 @@ pub fn calculate_position(
 ) -> Result<PlanetaryPosition, EngineError> {
     let hd_planet = to_hd_planet(planet);
     let pos = calculator.get_planet_position(hd_planet, datetime)?;
+    let longitude = to_sidereal_longitude(pos.longitude, datetime);
 
-    let sign = ZodiacSign::from_longitude(pos.longitude);
-    let degree_in_sign = ZodiacSign::degree_in_sign(pos.longitude);
+    let sign = ZodiacSign::from_longitude(longitude);
+    let degree_in_sign = ZodiacSign::degree_in_sign(longitude);
     let is_retrograde = pos.speed < 0.0;
 
     Ok(PlanetaryPosition {
         planet,
-        longitude: pos.longitude,
+        longitude,
         latitude: pos.latitude,
         speed: pos.speed,
         sign,

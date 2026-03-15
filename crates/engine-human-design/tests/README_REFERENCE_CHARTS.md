@@ -1,5 +1,7 @@
 # Human Design Reference Charts Dataset
 
+> Status note (2026-03-15): this dataset is synthetic and intended for internal consistency/regression detection only. It is not a professionally verified Human Design truth set.
+
 ## Overview
 This dataset contains 16 reference charts for validating the Human Design engine accuracy. Charts are generated from the Selemene HD Engine and represent synthetic reference data for internal consistency validation.
 

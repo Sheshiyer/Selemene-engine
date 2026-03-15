@@ -12,6 +12,9 @@
 
 #![allow(dead_code)]
 
+pub mod route_inventory;
+pub mod test_harness;
+
 use axum::{
     body::Body,
     http::{header, Request, StatusCode},

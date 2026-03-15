@@ -614,6 +614,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "console"
+version = "0.15.11"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "054ccb5b10f9f2cbf51eb355ca1d05c2d279ce1804688d0db74b4733a5aeafd8"
+dependencies = [
+ "encode_unicode",
+ "libc",
+ "once_cell",
+ "windows-sys 0.59.0",
+]
+
+[[package]]
 name = "const-oid"
 version = "0.9.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1083,6 +1095,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "encode_unicode"
+version = "1.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "34aa73646ffb006b8f5147f3dc182bd4bcb190227ce861fc4a4844bf8e3cb2c0"
+
+[[package]]
 name = "encoding_rs"
 version = "0.8.35"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1197,6 +1215,7 @@ version = "3.0.0"
 dependencies = [
  "async-trait",
  "chrono",
+ "engine-human-design",
  "noesis-core",
  "serde",
  "serde_json",
@@ -1210,7 +1229,9 @@ version = "3.0.0"
 dependencies = [
  "async-trait",
  "chrono",
+ "chrono-tz",
  "engine-human-design",
+ "libswisseph-sys",
  "noesis-core",
  "serde",
  "serde_json",
@@ -2048,6 +2069,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "insta"
+version = "1.46.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e82db8c87c7f1ccecb34ce0c24399b8a73081427f3c7c50a5d597925356115e4"
+dependencies = [
+ "console",
+ "once_cell",
+ "serde",
+ "similar",
+ "tempfile",
+]
+
+[[package]]
 name = "instability"
 version = "0.3.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2458,19 +2492,15 @@ dependencies = [
  "chrono",
  "criterion",
  "dashmap",
- "engine-biofield",
  "engine-biorhythm",
- "engine-face-reading",
  "engine-gene-keys",
  "engine-human-design",
- "engine-nadabrahman",
  "engine-numerology",
  "engine-panchanga",
- "engine-transits",
- "engine-vedic-clock",
  "engine-vimshottari",
  "futures",
  "http-body-util",
+ "insta",
  "noesis-auth",
  "noesis-bridge",
  "noesis-cache",
@@ -2481,7 +2511,6 @@ dependencies = [
  "noesis-witness",
  "opentelemetry 0.22.0",
  "redis",
- "reqwest 0.12.28",
  "sentry",
  "sentry-tower",
  "serde",
@@ -2498,6 +2527,7 @@ dependencies = [
  "utoipa",
  "utoipa-swagger-ui",
  "uuid",
+ "wiremock",
 ]
 
 [[package]]
@@ -2623,6 +2653,16 @@ dependencies = [
  "chrono",
  "criterion",
  "engine-biofield",
+ "engine-biorhythm",
+ "engine-face-reading",
+ "engine-gene-keys",
+ "engine-human-design",
+ "engine-nadabrahman",
+ "engine-numerology",
+ "engine-panchanga",
+ "engine-transits",
+ "engine-vedic-clock",
+ "engine-vimshottari",
  "futures",
  "noesis-bridge",
  "noesis-cache",
@@ -3617,9 +3657,9 @@ dependencies = [
 
 [[package]]
 name = "quinn-proto"
-version = "0.11.13"
+version = "0.11.14"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f1906b49b0c3bc04b5fe5d86a77925ae6524a19b816ae38ce1e426255f1d8a31"
+checksum = "434b42fec591c96ef50e21e886936e66d3cc3f737104fdb9b737c40ffb94c098"
 dependencies = [
  "bytes",
  "getrandom 0.3.4",
@@ -4550,6 +4590,12 @@ name = "simd-adler32"
 version = "0.3.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e320a6c5ad31d271ad523dcf3ad13e2767ad8b1cb8f047f75a8aeaf8da139da2"
+
+[[package]]
+name = "similar"
+version = "2.7.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bbbb5d9659141646ae647b42fe094daf6c6192d1620870b449d9557f748b2daa"
 
 [[package]]
 name = "simple_asn1"

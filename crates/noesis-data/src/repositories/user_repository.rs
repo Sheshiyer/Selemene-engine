@@ -1,6 +1,6 @@
 use crate::models::user::{User, UserProfile};
 use chrono::{DateTime, NaiveDate, NaiveTime, Utc};
-use sqlx::{Error, PgPool};
+use sqlx::{Error, PgPool, Postgres};
 use uuid::Uuid;
 
 pub struct UserRepository {
@@ -18,6 +18,27 @@ impl UserRepository {
         password_hash: &str,
         full_name: &str,
     ) -> Result<User, Error> {
+        match self
+            .create_user_with_active_plan(email, password_hash, full_name)
+            .await
+        {
+            Ok(user) => Ok(user),
+            Err(err) if missing_plan_billing_schema(&err) => {
+                self.create_user_legacy(email, password_hash, full_name)
+                    .await
+            }
+            Err(err) => Err(err),
+        }
+    }
+
+    async fn create_user_with_active_plan(
+        &self,
+        email: &str,
+        password_hash: &str,
+        full_name: &str,
+    ) -> Result<User, Error> {
+        let mut tx = self.pool.begin().await?;
+        let created_at = Utc::now();
         let user = sqlx::query_as::<_, User>(
             r#"
             INSERT INTO users (id, email, password_hash, full_name, tier, consciousness_level, created_at, updated_at)
@@ -31,6 +52,36 @@ impl UserRepository {
         .bind(full_name)
         .bind("Free") // Default tier
         .bind(0)      // Default consciousness level
+        .bind(created_at)
+        .bind(created_at)
+        .fetch_one(&mut *tx)
+        .await?;
+
+        sync_user_plan_subscription(&mut tx, user.id, &user.tier, created_at, "internal").await?;
+        tx.commit().await?;
+
+        Ok(user)
+    }
+
+    async fn create_user_legacy(
+        &self,
+        email: &str,
+        password_hash: &str,
+        full_name: &str,
+    ) -> Result<User, Error> {
+        let user = sqlx::query_as::<_, User>(
+            r#"
+            INSERT INTO users (id, email, password_hash, full_name, tier, consciousness_level, created_at, updated_at)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+            RETURNING *
+            "#
+        )
+        .bind(Uuid::new_v4())
+        .bind(email)
+        .bind(password_hash)
+        .bind(full_name)
+        .bind("Free")
+        .bind(0)
         .bind(Utc::now())
         .bind(Utc::now())
         .fetch_one(&self.pool)
@@ -210,6 +261,25 @@ impl UserRepository {
             .bind(user_id)
             .fetch_optional(&self.pool)
             .await
+    }
+
+    pub async fn resolve_active_plan_code(&self, user_id: Uuid) -> Result<Option<String>, Error> {
+        match sqlx::query_scalar::<_, String>(
+            "SELECT plan_code FROM user_active_plan_resolutions WHERE user_id = $1",
+        )
+        .bind(user_id)
+        .fetch_optional(&self.pool)
+        .await
+        {
+            Ok(plan) => Ok(plan),
+            Err(err) if missing_plan_billing_schema(&err) => sqlx::query_scalar::<_, String>(
+                "SELECT COALESCE(NULLIF(LOWER(BTRIM(tier)), ''), 'free') FROM users WHERE id = $1",
+            )
+            .bind(user_id)
+            .fetch_optional(&self.pool)
+            .await,
+            Err(err) => Err(err),
+        }
     }
 
     pub async fn update_user(
@@ -571,26 +641,191 @@ impl UserRepository {
     }
 }
 
+async fn sync_user_plan_subscription(
+    tx: &mut sqlx::Transaction<'_, Postgres>,
+    user_id: Uuid,
+    tier: &str,
+    effective_start: DateTime<Utc>,
+    provider: &str,
+) -> Result<(), Error> {
+    let plan_code = normalize_plan_code(tier);
+    let display_name = plan_display_name(tier);
+    let provider_subscription_id = format!("{provider}:{user_id}:{plan_code}");
+
+    let plan_id = sqlx::query_scalar::<_, Uuid>(
+        r#"
+        INSERT INTO plan_catalog (code, display_name, description)
+        VALUES ($1, $2, $3)
+        ON CONFLICT (code)
+        DO UPDATE SET
+            display_name = EXCLUDED.display_name,
+            description = COALESCE(plan_catalog.description, EXCLUDED.description),
+            is_active = true,
+            updated_at = NOW()
+        RETURNING id
+        "#,
+    )
+    .bind(&plan_code)
+    .bind(&display_name)
+    .bind(format!("Canonical plan row for tier '{tier}'"))
+    .fetch_one(&mut **tx)
+    .await?;
+
+    sqlx::query(
+        r#"
+        UPDATE billing_subscriptions
+        SET
+            status = 'canceled',
+            canceled_at = COALESCE(canceled_at, NOW()),
+            cancel_at_period_end = false,
+            updated_at = NOW()
+        WHERE user_id = $1
+          AND status IN ('trialing', 'active', 'past_due')
+          AND canceled_at IS NULL
+        "#,
+    )
+    .bind(user_id)
+    .execute(&mut **tx)
+    .await?;
+
+    sqlx::query(
+        r#"
+        INSERT INTO billing_subscriptions (
+            user_id,
+            plan_id,
+            provider,
+            provider_customer_id,
+            provider_subscription_id,
+            status,
+            cancel_at_period_end,
+            current_period_start,
+            current_period_end
+        )
+        VALUES ($1, $2, $3, NULL, $4, 'active', false, $5, NULL)
+        "#,
+    )
+    .bind(user_id)
+    .bind(plan_id)
+    .bind(provider)
+    .bind(provider_subscription_id)
+    .bind(effective_start)
+    .execute(&mut **tx)
+    .await?;
+
+    Ok(())
+}
+
+fn normalize_plan_code(tier: &str) -> String {
+    let trimmed = tier.trim();
+    if trimmed.is_empty() {
+        "free".to_string()
+    } else {
+        trimmed.to_ascii_lowercase()
+    }
+}
+
+fn plan_display_name(tier: &str) -> String {
+    let trimmed = tier.trim();
+    if trimmed.is_empty() {
+        "Free".to_string()
+    } else {
+        let lower = trimmed.to_ascii_lowercase();
+        let mut chars = lower.chars();
+        match chars.next() {
+            Some(first) => format!("{}{}", first.to_ascii_uppercase(), chars.as_str()),
+            None => "Free".to_string(),
+        }
+    }
+}
+
+fn missing_plan_billing_schema(err: &Error) -> bool {
+    let Some(db_err) = err.as_database_error() else {
+        return false;
+    };
+
+    match db_err.code().as_deref() {
+        Some("42P01") => {
+            let message = db_err.message().to_ascii_lowercase();
+            message.contains("plan_catalog")
+                || message.contains("billing_subscriptions")
+                || message.contains("user_active_plan_resolutions")
+        }
+        Some("42703") => {
+            let message = db_err.message().to_ascii_lowercase();
+            message.contains("plan_id")
+                || message.contains("provider_subscription_id")
+                || message.contains("plan_code")
+        }
+        _ => false,
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::repositories::admin_repository::AdminRepository;
     use sqlx::postgres::PgPoolOptions;
+    use std::fs;
+    use std::path::PathBuf;
 
-    #[tokio::test]
-    async fn add_experience_writes_progression_log_with_generated_id() {
+    fn repo_root() -> PathBuf {
+        PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+            .parent()
+            .expect("workspace crate dir")
+            .parent()
+            .expect("workspace root")
+            .to_path_buf()
+    }
+
+    #[test]
+    fn migration_014_exists_in_root_and_supabase() {
+        let root_sql = fs::read_to_string(
+            repo_root().join("migrations/014_plan_catalog_billing_subscriptions.sql"),
+        )
+        .expect("root migration 014");
+        let supabase_sql =
+            fs::read_to_string(repo_root().join(
+                "supabase/migrations/20260313000014_014_plan_catalog_billing_subscriptions.sql",
+            ))
+            .expect("supabase migration 014");
+
+        for sql in [&root_sql, &supabase_sql] {
+            assert!(sql.contains("CREATE TABLE IF NOT EXISTS plan_catalog"));
+            assert!(sql.contains("CREATE TABLE IF NOT EXISTS billing_subscriptions"));
+            assert!(sql.contains("CREATE OR REPLACE VIEW user_active_plan_resolutions"));
+            assert!(sql.contains("uq_billing_subscriptions_active_user"));
+        }
+    }
+
+    async fn connect_test_pool() -> Option<sqlx::PgPool> {
         let database_url = match std::env::var("DATABASE_URL") {
             Ok(url) => url,
             Err(_) => {
                 eprintln!("Skipping DB integration test: DATABASE_URL not set");
-                return;
+                return None;
             }
         };
 
-        let pool = PgPoolOptions::new()
+        match PgPoolOptions::new()
             .max_connections(2)
             .connect(&database_url)
             .await
-            .expect("Failed to connect to test database");
+        {
+            Ok(pool) => Some(pool),
+            Err(err) => {
+                eprintln!(
+                    "Skipping DB integration test: failed to connect to test database: {err}"
+                );
+                None
+            }
+        }
+    }
+
+    #[tokio::test]
+    async fn add_experience_writes_progression_log_with_generated_id() {
+        let Some(pool) = connect_test_pool().await else {
+            return;
+        };
 
         let repo = UserRepository::new(pool.clone());
         let email = format!("progression-default-{}@example.com", Uuid::new_v4());
@@ -627,6 +862,99 @@ mod tests {
             .execute(&pool)
             .await
             .expect("Failed to cleanup progression_logs");
+
+        sqlx::query("DELETE FROM users WHERE id = $1")
+            .bind(user.id)
+            .execute(&pool)
+            .await
+            .expect("Failed to cleanup users");
+    }
+
+    #[tokio::test]
+    async fn active_plan_resolution_stays_unambiguous_after_tier_update() {
+        let Some(pool) = connect_test_pool().await else {
+            return;
+        };
+
+        let has_schema: bool = sqlx::query_scalar(
+            r#"
+            SELECT EXISTS (
+                SELECT 1 FROM information_schema.tables WHERE table_name = 'plan_catalog'
+            ) AND EXISTS (
+                SELECT 1 FROM information_schema.tables WHERE table_name = 'billing_subscriptions'
+            ) AND EXISTS (
+                SELECT 1 FROM information_schema.views WHERE table_name = 'user_active_plan_resolutions'
+            )
+            "#,
+        )
+        .fetch_one(&pool)
+        .await
+        .expect("schema probe should succeed");
+
+        if !has_schema {
+            eprintln!("Skipping DB integration test: billing plan schema not migrated");
+            return;
+        }
+
+        let repo = UserRepository::new(pool.clone());
+        let admin_repo = AdminRepository::new(pool.clone());
+        let email = format!("plan-resolution-{}@example.com", Uuid::new_v4());
+
+        let user = repo
+            .create_user(&email, "test_password_hash", "Plan Resolution Test User")
+            .await
+            .expect("Failed to create test user");
+
+        let initial_plan = repo
+            .resolve_active_plan_code(user.id)
+            .await
+            .expect("active plan should resolve")
+            .expect("active plan row should exist");
+        assert_eq!(initial_plan, "free");
+
+        let initial_active_count: i64 = sqlx::query_scalar(
+            r#"
+            SELECT COUNT(*)
+            FROM billing_subscriptions
+            WHERE user_id = $1
+              AND status IN ('trialing', 'active', 'past_due')
+              AND canceled_at IS NULL
+            "#,
+        )
+        .bind(user.id)
+        .fetch_one(&pool)
+        .await
+        .expect("active subscription count should succeed");
+        assert_eq!(initial_active_count, 1);
+
+        let updated = admin_repo
+            .set_user_tier(user.id, "premium")
+            .await
+            .expect("tier update should succeed")
+            .expect("user should exist");
+        assert_eq!(updated.1, "premium");
+
+        let resolved_plan = repo
+            .resolve_active_plan_code(user.id)
+            .await
+            .expect("updated active plan should resolve")
+            .expect("updated active plan row should exist");
+        assert_eq!(resolved_plan, "premium");
+
+        let active_count_after: i64 = sqlx::query_scalar(
+            r#"
+            SELECT COUNT(*)
+            FROM billing_subscriptions
+            WHERE user_id = $1
+              AND status IN ('trialing', 'active', 'past_due')
+              AND canceled_at IS NULL
+            "#,
+        )
+        .bind(user.id)
+        .fetch_one(&pool)
+        .await
+        .expect("updated active subscription count should succeed");
+        assert_eq!(active_count_after, 1);
 
         sqlx::query("DELETE FROM users WHERE id = $1")
             .bind(user.id)
