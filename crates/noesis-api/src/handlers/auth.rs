@@ -14,6 +14,17 @@ use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 use uuid::Uuid;
 
+/// Return 503 if the database is not available (auth requires DB).
+fn require_db(state: &AppState) -> Result<(), ApiError> {
+    if !state.db_available {
+        return Err(EngineError::ServiceUnavailable(
+            "Database not available — auth endpoints require a database connection".to_string(),
+        )
+        .into());
+    }
+    Ok(())
+}
+
 #[derive(Deserialize, ToSchema)]
 pub struct RegisterRequest {
     pub email: String,
@@ -121,6 +132,7 @@ pub async fn register(
     State(state): State<AppState>,
     Json(payload): Json<RegisterRequest>,
 ) -> Result<Response, ApiError> {
+    require_db(&state)?;
     // Check if user exists
     let existing_user = state
         .user_repository
@@ -173,6 +185,7 @@ pub async fn login(
     State(state): State<AppState>,
     Json(payload): Json<LoginRequest>,
 ) -> Result<Response, ApiError> {
+    require_db(&state)?;
     // 1. Get user by email
     let user_opt = state
         .user_repository
@@ -276,6 +289,7 @@ pub async fn forgot_password(
     State(state): State<AppState>,
     Json(payload): Json<ForgotPasswordRequest>,
 ) -> Result<Response, ApiError> {
+    require_db(&state)?;
     // Generate token
     let token = Uuid::new_v4().to_string();
     let expires_at = Utc::now() + Duration::hours(1);
@@ -315,6 +329,7 @@ pub async fn reset_password(
     State(state): State<AppState>,
     Json(payload): Json<ResetPasswordRequest>,
 ) -> Result<Response, ApiError> {
+    require_db(&state)?;
     // 1. Verify token
     let user = state
         .user_repository
@@ -366,6 +381,7 @@ pub async fn change_password(
     Extension(auth_user): Extension<AuthUser>,
     Json(payload): Json<ChangePasswordRequest>,
 ) -> Result<Response, ApiError> {
+    require_db(&state)?;
     // 1. Fetch user from DB
     let user_id = auth_user
         .user_id
