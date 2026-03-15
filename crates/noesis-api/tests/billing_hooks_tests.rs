@@ -68,6 +68,9 @@ fn build_test_app_state() -> (AppState, ApiConfig) {
         request_timeout_secs: 30,
         log_level: "info".to_string(),
         log_format: "pretty".to_string(),
+        discord_client_id: None,
+        discord_client_secret: None,
+        discord_redirect_uri: None,
     };
 
     let pool = PgPoolOptions::new()
@@ -88,6 +91,11 @@ fn build_test_app_state() -> (AppState, ApiConfig) {
         admin_repository: None,
         readings_repository: None,
         usage_repository: None,
+        oauth_repository: None,
+        db_available: false,
+        discord_client_id: None,
+        discord_client_secret: None,
+        discord_redirect_uri: None,
         startup_time: Instant::now(),
     };
 
