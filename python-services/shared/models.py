@@ -10,7 +10,7 @@ from pydantic import BaseModel, Field
 class HealthResponse(BaseModel):
     status: str = "healthy"
     service: str
-    version: str = "0.1.0"
+    version: str = "3.0.0"
 
 
 # ---------- MediaPipe service models ----------

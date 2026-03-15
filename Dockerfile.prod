@@ -105,7 +105,7 @@ FROM debian:bookworm-slim AS runtime
 LABEL org.opencontainers.image.title="Selemene Engine" \
       org.opencontainers.image.description="High-performance astronomical calculation engine for Vedic astrology" \
       org.opencontainers.image.vendor="WitnessOS" \
-      org.opencontainers.image.version="0.1.0"
+      org.opencontainers.image.version="3.0.0"
 
 WORKDIR /app
 

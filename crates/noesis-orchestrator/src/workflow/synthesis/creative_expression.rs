@@ -39,14 +39,28 @@ impl Synthesizer for CreativeExpressionSynthesis {
 
         let sigil_data = Self::extract_sigil_data(results.get("sigil-forge"));
         let geo_data = Self::extract_geometry_data(results.get("sacred-geometry"));
+        let nada_data = Self::extract_nada_data(results.get("nadabrahman"));
+        let numerology_data = Self::extract_numerology_data(results.get("numerology"));
 
         themes.extend(Self::extract_sigil_themes(&sigil_data));
         themes.extend(Self::extract_geometry_themes(&geo_data));
+        themes.extend(Self::extract_nada_themes(&nada_data));
+        themes.extend(Self::extract_numerology_themes(&numerology_data));
 
         alignments.extend(Self::find_intention_form_alignment(&sigil_data, &geo_data));
+        alignments.extend(Self::find_sound_number_alignment(
+            &nada_data,
+            &numerology_data,
+        ));
         tensions.extend(Self::find_creative_tensions(&sigil_data, &geo_data));
 
-        let summary = Self::create_summary(&sigil_data, &geo_data, &themes);
+        let summary = Self::create_summary_extended(
+            &sigil_data,
+            &geo_data,
+            &nada_data,
+            &numerology_data,
+            &themes,
+        );
 
         SynthesisResult {
             themes,
@@ -473,6 +487,98 @@ impl CreativeExpressionSynthesis {
             );
         }
         tensions
+    }
+
+    fn extract_nada_data(output: Option<&EngineOutput>) -> Value {
+        let Some(output) = output else {
+            return json!({ "available": false });
+        };
+
+        let result = &output.result;
+        json!({
+            "available": true,
+            "dominant_frequency": result.get("dominant_frequency").cloned().unwrap_or(json!(null)),
+            "tonal_quality": result.get("tonal_quality").cloned().unwrap_or(json!(null)),
+        })
+    }
+
+    fn extract_numerology_data(output: Option<&EngineOutput>) -> Value {
+        let Some(output) = output else {
+            return json!({ "available": false });
+        };
+
+        let result = &output.result;
+        json!({
+            "available": true,
+            "life_path": result.get("life_path").cloned().unwrap_or(json!(null)),
+            "expression_number": result
+                .get("expression_number")
+                .or_else(|| result.get("expression"))
+                .cloned()
+                .unwrap_or(json!(null)),
+        })
+    }
+
+    fn extract_nada_themes(data: &Value) -> Vec<Theme> {
+        if data.get("available").and_then(|v| v.as_bool()) != Some(true) {
+            return vec![];
+        }
+
+        let mut theme = Theme::new(
+            "Sound-guided expression",
+            "Nadabrahman adds frequency/tonal guidance to creative synthesis",
+        );
+        theme.add_source("nadabrahman");
+        vec![theme]
+    }
+
+    fn extract_numerology_themes(data: &Value) -> Vec<Theme> {
+        if data.get("available").and_then(|v| v.as_bool()) != Some(true) {
+            return vec![];
+        }
+
+        let mut theme = Theme::new(
+            "Number-pattern expression",
+            "Numerology contributes symbolic number-pattern framing to creative synthesis",
+        );
+        theme.add_source("numerology");
+        vec![theme]
+    }
+
+    fn find_sound_number_alignment(nada: &Value, numerology: &Value) -> Vec<Alignment> {
+        let nada_available = nada.get("available").and_then(|v| v.as_bool()) == Some(true);
+        let num_available = numerology.get("available").and_then(|v| v.as_bool()) == Some(true);
+
+        if nada_available && num_available {
+            vec![Alignment::new(
+                "Sound-frequency / number-pattern alignment",
+                "Creative parameters align across vibrational (sound) and symbolic (number) systems",
+            )
+            .with_engines(vec!["nadabrahman".into(), "numerology".into()])
+            .with_confidence(0.68)]
+        } else {
+            vec![]
+        }
+    }
+
+    fn create_summary_extended(
+        sigil: &Value,
+        geo: &Value,
+        nada: &Value,
+        numerology: &Value,
+        themes: &[Theme],
+    ) -> String {
+        let mut summary = Self::create_summary(sigil, geo, themes);
+
+        if nada.get("available").and_then(|v| v.as_bool()) == Some(true) {
+            summary.push_str(" Sound-frequency guidance from Nadabrahman was included.");
+        }
+        if numerology.get("available").and_then(|v| v.as_bool()) == Some(true) {
+            summary
+                .push_str(" Numerology pattern cues were included for creative parameter tuning.");
+        }
+
+        summary
     }
 
     fn create_summary(sigil: &Value, geo: &Value, themes: &[Theme]) -> String {

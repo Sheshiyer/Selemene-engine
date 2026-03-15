@@ -36,9 +36,11 @@ members = [
 default-members = ["crates/noesis-api"]
 
 [workspace.package]
-version = "0.1.0"
+version = "3.0.0"
 edition = "2021"
 license = "MIT"
+repository = "https://github.com/Sheshiyer/Selemene-engine"
+homepage = "https://selemene.tryambakam.space"
 
 [workspace.dependencies]
 # Async runtime

@@ -86,6 +86,8 @@ impl DecisionSupportWorkflow {
                 "tarot".to_string(),
                 "i-ching".to_string(),
                 "human-design".to_string(),
+                "enneagram".to_string(),
+                "gene-keys".to_string(),
             ],
             synthesis_type: SynthesisType::DecisionSupport,
             required_phase: Self::REQUIRED_PHASE,
@@ -127,12 +129,23 @@ impl DecisionSupportWorkflow {
         hd_opts.insert("extract_fields".to_string(), json!(["authority", "type"]));
         engine_opts.insert("human-design".to_string(), hd_opts);
 
+        // Enneagram and Gene Keys options add pattern-depth context
+        let mut enneagram_opts = HashMap::new();
+        enneagram_opts.insert("question".to_string(), json!(input.question.clone()));
+        enneagram_opts.insert("includeMovementPrompts".to_string(), json!(true));
+        engine_opts.insert("enneagram".to_string(), enneagram_opts);
+
+        let mut gk_opts = HashMap::new();
+        gk_opts.insert("question".to_string(), json!(input.question.clone()));
+        gk_opts.insert("include_shadow_gift_siddhi".to_string(), json!(true));
+        engine_opts.insert("gene-keys".to_string(), gk_opts);
+
         engine_opts
     }
 
     /// Validate that required engines are present in results
     pub fn validate_results(results: &HashMap<String, EngineOutput>) -> Result<(), Vec<String>> {
-        let required = ["tarot", "i-ching"];
+        let required = ["tarot", "i-ching", "human-design", "enneagram", "gene-keys"];
         let missing: Vec<String> = required
             .iter()
             .filter(|e| !results.contains_key(&e.to_string()))
@@ -155,10 +168,12 @@ mod tests {
     fn test_definition() {
         let def = DecisionSupportWorkflow::definition();
         assert_eq!(def.id, "decision-support");
-        assert_eq!(def.engine_ids.len(), 3);
+        assert_eq!(def.engine_ids.len(), 5);
         assert!(def.engine_ids.contains(&"tarot".to_string()));
         assert!(def.engine_ids.contains(&"i-ching".to_string()));
         assert!(def.engine_ids.contains(&"human-design".to_string()));
+        assert!(def.engine_ids.contains(&"enneagram".to_string()));
+        assert!(def.engine_ids.contains(&"gene-keys".to_string()));
         assert_eq!(def.synthesis_type, SynthesisType::DecisionSupport);
     }
 
@@ -166,7 +181,7 @@ mod tests {
     fn test_base_definition() {
         let base = DecisionSupportWorkflow::base_definition();
         assert_eq!(base.id, "decision-support");
-        assert_eq!(base.engine_ids.len(), 3);
+        assert_eq!(base.engine_ids.len(), 5);
     }
 
     #[test]

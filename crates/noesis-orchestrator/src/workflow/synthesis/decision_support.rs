@@ -55,11 +55,15 @@ impl Synthesizer for DecisionSupportSynthesis {
         let tarot_data = Self::extract_tarot_data(results.get("tarot"));
         let iching_data = Self::extract_iching_data(results.get("i-ching"));
         let hd_data = Self::extract_hd_authority(results.get("human-design"));
+        let enneagram_data = Self::extract_enneagram_data(results.get("enneagram"));
+        let gene_keys_data = Self::extract_gene_keys_data(results.get("gene-keys"));
 
         // Extract themes from each system
         themes.extend(Self::extract_tarot_themes(&tarot_data));
         themes.extend(Self::extract_iching_themes(&iching_data));
         themes.extend(Self::extract_authority_themes(&hd_data));
+        themes.extend(Self::extract_enneagram_themes(&enneagram_data));
+        themes.extend(Self::extract_gene_keys_themes(&gene_keys_data));
 
         // Find alignments
         alignments.extend(Self::find_directional_alignment(&tarot_data, &iching_data));
@@ -68,6 +72,12 @@ impl Synthesizer for DecisionSupportSynthesis {
             &hd_data,
             &tarot_data,
             &iching_data,
+        ));
+        alignments.extend(Self::find_pattern_depth_alignment(
+            &tarot_data,
+            &iching_data,
+            &enneagram_data,
+            &gene_keys_data,
         ));
 
         // Find tensions (framed as multiple perspectives)
@@ -315,6 +325,124 @@ impl DecisionSupportSynthesis {
                 "Allow a full lunar cycle - patterns reveal over time"
             }
             _ => "Notice what arises without forcing a decision",
+        }
+    }
+
+    fn extract_enneagram_data(output: Option<&EngineOutput>) -> Value {
+        let Some(output) = output else {
+            return json!({ "available": false });
+        };
+
+        let result = &output.result;
+        let etype = result
+            .get("type")
+            .or_else(|| result.get("enneagram_type"))
+            .cloned()
+            .unwrap_or(json!(null));
+        let fear = result
+            .get("core_fear")
+            .or_else(|| result.get("fear"))
+            .cloned()
+            .unwrap_or(json!(null));
+
+        json!({
+            "available": true,
+            "type": etype,
+            "core_fear": fear,
+        })
+    }
+
+    fn extract_gene_keys_data(output: Option<&EngineOutput>) -> Value {
+        let Some(output) = output else {
+            return json!({ "available": false });
+        };
+
+        let result = &output.result;
+        let primary_shadow = result
+            .get("life_work")
+            .and_then(|v| v.get("shadow"))
+            .or_else(|| result.get("primary_shadow"))
+            .cloned()
+            .unwrap_or(json!(null));
+        let primary_gift = result
+            .get("life_work")
+            .and_then(|v| v.get("gift"))
+            .or_else(|| result.get("primary_gift"))
+            .cloned()
+            .unwrap_or(json!(null));
+
+        json!({
+            "available": true,
+            "primary_shadow": primary_shadow,
+            "primary_gift": primary_gift,
+        })
+    }
+
+    fn extract_enneagram_themes(data: &Value) -> Vec<Theme> {
+        if data.get("available").and_then(|v| v.as_bool()) != Some(true) {
+            return vec![];
+        }
+
+        let mut themes = Vec::new();
+        if let Some(etype) = data.get("type") {
+            let mut theme = Theme::new(
+                format!("Enneagram Pattern: {}", etype),
+                "Personality strategy adds decision bias context",
+            );
+            theme.add_source("enneagram");
+            themes.push(theme);
+        }
+
+        themes
+    }
+
+    fn extract_gene_keys_themes(data: &Value) -> Vec<Theme> {
+        if data.get("available").and_then(|v| v.as_bool()) != Some(true) {
+            return vec![];
+        }
+
+        let mut themes = Vec::new();
+        if let Some(shadow) = data.get("primary_shadow").and_then(|v| v.as_str()) {
+            let mut theme = Theme::new(
+                format!("Shadow Lens: {}", shadow),
+                "Gene Keys shadow reveals friction pattern in the decision field",
+            );
+            theme.add_source("gene-keys");
+            themes.push(theme);
+        }
+
+        themes
+    }
+
+    fn find_pattern_depth_alignment(
+        tarot: &Value,
+        iching: &Value,
+        enneagram: &Value,
+        gene_keys: &Value,
+    ) -> Vec<Alignment> {
+        let mut engines = Vec::new();
+        if tarot.get("available").and_then(|v| v.as_bool()) == Some(true) {
+            engines.push("tarot".to_string());
+        }
+        if iching.get("available").and_then(|v| v.as_bool()) == Some(true) {
+            engines.push("i-ching".to_string());
+        }
+        if enneagram.get("available").and_then(|v| v.as_bool()) == Some(true) {
+            engines.push("enneagram".to_string());
+        }
+        if gene_keys.get("available").and_then(|v| v.as_bool()) == Some(true) {
+            engines.push("gene-keys".to_string());
+        }
+
+        if engines.len() >= 3 {
+            vec![Alignment::new(
+                "Multi-system depth alignment",
+                "At least three systems provide convergent depth perspectives for this decision",
+            )
+            .with_engines(engines)
+            .with_confidence(0.72)]
+        } else {
+            vec![]
         }
     }
 

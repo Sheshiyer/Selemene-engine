@@ -6,6 +6,7 @@ use axum::{
 };
 use chrono::{Duration as ChronoDuration, Utc};
 use noesis_api::create_router;
+use noesis_api::shared_metrics;
 use noesis_api::ApiConfig;
 use noesis_auth::{ApiKey, AuthService};
 use noesis_cache::CacheManager;
@@ -13,13 +14,10 @@ use noesis_data::repositories::user_repository::UserRepository;
 use noesis_orchestrator::WorkflowOrchestrator;
 use sqlx::postgres::PgPoolOptions;
 use std::sync::Arc;
-use std::sync::Once;
 use std::time::{Duration, Instant};
 use tower::ServiceExt;
 
 mod test_helpers;
-
-static INIT_METRICS: Once = Once::new();
 
 /// Build app state for testing (with proper metrics initialization)
 fn build_test_app_state() -> (noesis_api::AppState, ApiConfig) {
@@ -67,16 +65,8 @@ fn build_test_app_state() -> (noesis_api::AppState, ApiConfig) {
         .expect("Invalid DATABASE_URL");
     let user_repository = Arc::new(UserRepository::new(pool));
 
-    // -- Metrics -- initialize only once globally
-    static mut METRICS: Option<Arc<noesis_metrics::NoesisMetrics>> = None;
-    #[allow(static_mut_refs)]
-    let metrics = unsafe {
-        INIT_METRICS.call_once(|| {
-            let m = noesis_metrics::NoesisMetrics::new().expect("Failed to initialize metrics");
-            METRICS = Some(Arc::new(m));
-        });
-        METRICS.as_ref().unwrap().clone()
-    };
+    // -- Metrics -- shared process-global Prometheus registry
+    let metrics = shared_metrics();
 
     let state = noesis_api::AppState {
         orchestrator: Arc::new(orchestrator),
@@ -94,14 +84,19 @@ fn build_test_app_state() -> (noesis_api::AppState, ApiConfig) {
     (state, config)
 }
 
-/// Test helper to create a test API key with specific rate limit
-async fn create_test_api_key(auth: &Arc<AuthService>, user_id: &str, rate_limit: u32) -> String {
+/// Test helper to create a test API key with specific rate limit and tier
+async fn create_test_api_key(
+    auth: &Arc<AuthService>,
+    user_id: &str,
+    tier: &str,
+    rate_limit: u32,
+) -> String {
     let api_key_value = format!("test-key-{}", user_id);
 
     let api_key = ApiKey {
         key: api_key_value.clone(),
         user_id: user_id.to_string(),
-        tier: "test".to_string(),
+        tier: tier.to_string(),
         permissions: vec!["basic:access".to_string()],
         created_at: Utc::now(),
         expires_at: Some(Utc::now() + ChronoDuration::hours(1)),
@@ -119,7 +114,7 @@ async fn create_test_api_key(auth: &Arc<AuthService>, user_id: &str, rate_limit:
 #[tokio::test]
 async fn test_rate_limit_allows_requests_under_limit() {
     let (state, config) = build_test_app_state();
-    let api_key = create_test_api_key(&state.auth, "user1", 5).await;
+    let api_key = create_test_api_key(&state.auth, "user1", "test", 5).await;
     let app = create_router(state, &config);
 
     // Make 5 requests (all should succeed)
@@ -160,7 +155,7 @@ async fn test_rate_limit_allows_requests_under_limit() {
 #[tokio::test]
 async fn test_rate_limit_blocks_requests_over_limit() {
     let (state, config) = build_test_app_state();
-    let api_key = create_test_api_key(&state.auth, "user2", 3).await;
+    let api_key = create_test_api_key(&state.auth, "user2", "test", 3).await;
     let app = create_router(state, &config);
 
     // Make 3 requests (should all succeed)
@@ -207,8 +202,8 @@ async fn test_rate_limit_blocks_requests_over_limit() {
 #[tokio::test]
 async fn test_rate_limit_per_user_isolation() {
     let (state, config) = build_test_app_state();
-    let api_key1 = create_test_api_key(&state.auth, "user3", 2).await;
-    let api_key2 = create_test_api_key(&state.auth, "user4", 2).await;
+    let api_key1 = create_test_api_key(&state.auth, "user3", "test", 2).await;
+    let api_key2 = create_test_api_key(&state.auth, "user4", "test", 2).await;
     let app = create_router(state, &config);
 
     // User1 makes 2 requests (reaches limit)
@@ -276,7 +271,7 @@ async fn test_rate_limit_skips_public_routes() {
 #[tokio::test]
 async fn test_rate_limit_response_format() {
     let (state, config) = build_test_app_state();
-    let api_key = create_test_api_key(&state.auth, "user5", 1).await;
+    let api_key = create_test_api_key(&state.auth, "user5", "test", 1).await;
     let app = create_router(state, &config);
 
     // First request succeeds
@@ -326,7 +321,7 @@ async fn test_rate_limit_response_format() {
 async fn test_rate_limit_default_100_per_minute() {
     let (state, config) = build_test_app_state();
     // Create API key with rate_limit = 0 (should use default 100)
-    let api_key = create_test_api_key(&state.auth, "user6", 0).await;
+    let api_key = create_test_api_key(&state.auth, "user6", "test", 0).await;
     let app = create_router(state, &config);
 
     let request = Request::builder()
@@ -347,4 +342,24 @@ async fn test_rate_limit_default_100_per_minute() {
         .unwrap();
 
     assert_eq!(limit, "100", "Default rate limit should be 100");
+}
+
+#[tokio::test]
+async fn test_daily_quota_headers_present_for_authenticated_user() {
+    let (state, config) = build_test_app_state();
+    let api_key = create_test_api_key(&state.auth, "daily-user", "free", 0).await;
+    let app = create_router(state, &config);
+
+    let request = Request::builder()
+        .uri("/api/v1/status")
+        .header("X-API-Key", &api_key)
+        .body(Body::empty())
+        .unwrap();
+
+    let response = app.clone().oneshot(request).await.unwrap();
+    assert_eq!(response.status(), StatusCode::OK);
+    assert!(response
+        .headers()
+        .contains_key("X-RateLimit-Daily-Remaining"));
+    assert!(response.headers().contains_key("X-RateLimit-Daily-Reset"));
 }

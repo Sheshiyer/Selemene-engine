@@ -35,6 +35,8 @@ impl Synthesizer for BirthBlueprintSynthesizer {
         let vimshottari = results
             .get("vimshottari")
             .and_then(|o| VimshottariData::from_json(&o.result));
+        let face_reading = results.get("face-reading").map(|o| o.result.clone());
+        let biofield = results.get("biofield").map(|o| o.result.clone());
 
         let mut alignments = Vec::new();
         let mut tensions = Vec::new();
@@ -69,6 +71,50 @@ impl Synthesizer for BirthBlueprintSynthesizer {
             }
         }
 
+        if let Some(ref face) = face_reading {
+            if let Some(primary) = face
+                .get("analysis")
+                .and_then(|a| a.get("constitution"))
+                .and_then(|c| c.get("primary_dosha"))
+                .and_then(|v| v.as_str())
+            {
+                let theme = theme_map
+                    .entry("Constitutional Blueprint".to_string())
+                    .or_insert_with(|| {
+                        Theme::new(
+                            "Constitutional Blueprint",
+                            format!(
+                                "Face-reading constitution highlights {} tendencies",
+                                primary
+                            ),
+                        )
+                    });
+                theme.add_source("face-reading");
+            }
+        }
+
+        if let Some(ref bio) = biofield {
+            if let Some(state) = bio
+                .get("analysis")
+                .and_then(|a| a.get("state"))
+                .and_then(|v| v.as_str())
+                .or_else(|| bio.get("state").and_then(|v| v.as_str()))
+            {
+                let theme = theme_map
+                    .entry("Somatic Field State".to_string())
+                    .or_insert_with(|| {
+                        Theme::new(
+                            "Somatic Field State",
+                            format!(
+                                "Biofield indicates '{}' baseline somatic field state",
+                                state
+                            ),
+                        )
+                    });
+                theme.add_source("biofield");
+            }
+        }
+
         // Identify strong themes (appearing in multiple systems)
         let mut themes: Vec<Theme> = theme_map.into_values().collect();
         themes.sort_by(|a, b| {
@@ -100,6 +146,17 @@ impl Synthesizer for BirthBlueprintSynthesizer {
             if let Some(alignment) = correlate_dasha_and_centers(vim, hd) {
                 alignments.push(alignment);
             }
+        }
+
+        if face_reading.is_some() && biofield.is_some() {
+            alignments.push(
+                Alignment::new(
+                    "Somatic constitution coherence",
+                    "Face-reading constitutional markers align with biofield baseline for profile depth",
+                )
+                .with_engines(vec!["face-reading".to_string(), "biofield".to_string()])
+                .with_confidence(0.68),
+            );
         }
 
         // Generate summary

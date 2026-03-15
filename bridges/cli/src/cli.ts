@@ -12,7 +12,7 @@ program
   .description(
     "CLI tool for setting up Selemene Engine agent bridges — Claude, OpenAI, LangChain"
   )
-  .version("0.1.0");
+  .version("3.0.0");
 
 program
   .command("init")

@@ -443,7 +443,7 @@ mod tests {
                 precision_achieved: "Standard".into(),
                 cached: false,
                 timestamp: Utc::now(),
-                engine_version: "0.1.0".into(),
+                engine_version: "3.0.0".into(),
             },
         }
     }

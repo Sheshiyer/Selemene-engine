@@ -65,52 +65,8 @@ pub enum SynthesisType {
     None,
 }
 
-/// Result of synthesizing multiple engine outputs (legacy format)
-///
-/// Note: New workflows should use `models::SynthesisResult` which has
-/// stronger typed themes, alignments, and tensions.
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct LegacySynthesisResult {
-    /// Type of synthesis performed
-    pub synthesis_type: SynthesisType,
-    /// Key themes identified across engines
-    pub themes: Vec<String>,
-    /// Alignments found between engine outputs
-    pub alignments: Vec<Alignment>,
-    /// Tensions or contrasts between perspectives
-    pub tensions: Vec<Tension>,
-    /// Non-prescriptive witness prompts for self-inquiry
-    pub witness_prompts: Vec<String>,
-    /// Summary narrative (non-interpretive)
-    pub summary: String,
-    /// Engine-specific extracted data
-    pub extracted_data: HashMap<String, Value>,
-}
-
-// Re-export models::SynthesisResult as the primary type
+// Re-export models::SynthesisResult as the primary synthesis type
 pub use models::SynthesisResult;
-
-/// An alignment between two or more engine outputs
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Alignment {
-    /// Engines involved in this alignment
-    pub engines: Vec<String>,
-    /// Description of how they align
-    pub description: String,
-    /// Specific elements that align
-    pub elements: Vec<String>,
-}
-
-/// A tension or contrast between perspectives
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Tension {
-    /// Engines involved in this tension
-    pub engines: Vec<String>,
-    /// Description of the multiple perspectives
-    pub description: String,
-    /// Framing as inquiry rather than contradiction
-    pub inquiry_framing: String,
-}
 
 /// Extended workflow definition with synthesis support
 #[derive(Debug, Clone, Serialize, Deserialize)]

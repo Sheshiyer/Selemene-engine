@@ -44,11 +44,11 @@ pub mod profile;
 pub mod render;
 
 // Re-exports for convenience
-pub use client::{NoesisClient, NoesisClientBuilder, UserProfile};
+pub use client::{NoesisClient, NoesisClientBuilder, UpdateUserRequest, UserProfile};
 pub use config::Config;
 pub use consciousness::ConsciousnessLevel;
 pub use keychain::{CredentialStore, KeychainStore};
-pub use profile::LocalProfile;
+pub use profile::{LocalProfile, SyncResult};
 pub use render::{MarkdownRenderer, ReportFormat};
 
 // Re-export core types

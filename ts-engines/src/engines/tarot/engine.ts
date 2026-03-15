@@ -3,6 +3,7 @@
  */
 
 import type { ConsciousnessEngine, EngineInput, EngineMetadata, EngineOutput } from '../../types'
+import { EngineValidationError } from '../../utils'
 import { performReading } from './reading'
 import { SPREAD_DEFINITIONS, SpreadType, parseSpreadType } from './spreads'
 import { generateQuestionBasedPrompts } from './witness'
@@ -43,7 +44,20 @@ export class TarotEngine implements ConsciousnessEngine {
     const seed = input.seed
 
     // Parse spread type
-    const spreadType = parseSpreadType(spreadParam) ?? SpreadType.THREE_CARD
+    const parsedSpread = parseSpreadType(spreadParam)
+    if (!parsedSpread) {
+      throw new EngineValidationError('Invalid spread_type. Use one of single_card, three_card, celtic_cross, relationship, career.', 'INVALID_SPREAD_TYPE', {
+        spread_type: spreadParam,
+        supported: Object.values(SpreadType),
+      })
+    }
+    const spreadType = parsedSpread
+
+    if (question !== undefined && typeof question === 'string' && question.trim() === '') {
+      throw new EngineValidationError('Question cannot be empty when provided.', 'INVALID_QUESTION', {
+        field: 'question',
+      })
+    }
 
     // Perform the reading
     const reading = performReading(spreadType, seed, question)

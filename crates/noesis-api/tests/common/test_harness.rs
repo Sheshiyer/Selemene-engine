@@ -6,7 +6,7 @@ use axum::{
     Router,
 };
 use chrono::Utc;
-use noesis_api::{create_router, ApiConfig, AppState};
+use noesis_api::{create_router, shared_metrics, ApiConfig, AppState};
 use noesis_auth::AuthService;
 use noesis_cache::CacheManager;
 use noesis_core::{
@@ -14,19 +14,15 @@ use noesis_core::{
     ValidationResult,
 };
 use noesis_data::repositories::user_repository::UserRepository;
-use noesis_metrics::NoesisMetrics;
 use noesis_orchestrator::WorkflowOrchestrator;
 use serde_json::{json, Value};
 use sqlx::postgres::PgPoolOptions;
 use std::{
     collections::HashMap,
-    sync::{Arc, Mutex, Once},
+    sync::{Arc, Mutex},
     time::{Duration, Instant},
 };
 use tower::ServiceExt;
-
-static INIT_METRICS: Once = Once::new();
-static mut SHARED_METRICS: Option<Arc<NoesisMetrics>> = None;
 
 #[derive(Clone, Default)]
 pub struct ProbeExecutionLog {
@@ -278,20 +274,5 @@ impl RoutingHarness {
         };
 
         (status, json)
-    }
-}
-
-fn shared_metrics() -> Arc<NoesisMetrics> {
-    #[allow(static_mut_refs)]
-    unsafe {
-        INIT_METRICS.call_once(|| {
-            let metrics = NoesisMetrics::new().expect("test metrics should initialize");
-            SHARED_METRICS = Some(Arc::new(metrics));
-        });
-
-        SHARED_METRICS
-            .as_ref()
-            .expect("shared metrics should initialize")
-            .clone()
     }
 }

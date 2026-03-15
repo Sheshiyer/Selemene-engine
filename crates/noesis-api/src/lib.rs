@@ -4,6 +4,7 @@
 //! All engine calculations and workflow executions are exposed through versioned
 //! JSON endpoints under `/api/v1/`.
 
+mod billing;
 mod config;
 pub mod error;
 pub mod error_mapper;
@@ -12,13 +13,18 @@ mod logging;
 mod middleware;
 pub mod workflow_parity;
 
+pub use billing::{
+    reset_billing_emitter, set_billing_emitter, BillingEventEmitter, NoopBillingEmitter,
+    StripeWebhookEmitter,
+};
+
 // Re-export configuration and logging for main.rs
 pub use config::ApiConfig;
 pub use error_mapper::{ErrorMapper, ErrorResponse};
 pub use logging::{init_tracing, init_tracing_json};
 
 use axum::{
-    extract::{DefaultBodyLimit, Json, Path, State},
+    extract::{DefaultBodyLimit, Json, Multipart, Path, State},
     http::{HeaderValue, Method, StatusCode},
     middleware as axum_middleware,
     response::IntoResponse,
@@ -28,7 +34,14 @@ use axum::{
 use chrono::Timelike;
 use noesis_auth::{AuthService, AuthUser};
 use noesis_cache::CacheManager;
-use noesis_core::{EngineError, EngineInput, EngineOutput, ValidationResult, WorkflowResult};
+use noesis_core::{
+    BiofieldResultSchema, BiorhythmResultSchema, EngineError, EngineInput, EngineOutput,
+    EngineResultData, EnneagramResultSchema, FaceReadingResultSchema, GeneKeysResultSchema,
+    HumanDesignResultSchema, IChingResultSchema, NadabrahmanResultSchema, NumerologyResultSchema,
+    PanchangaResultSchema, Precision, SacredGeometryResultSchema, SigilForgeResultSchema,
+    TarotResultSchema, TransitsResultSchema, ValidationResult, VedicClockResultSchema,
+    VimshottariResultSchema, WorkflowResult,
+};
 use noesis_data::models::reading::NewReading;
 use noesis_data::repositories::admin_repository::AdminRepository;
 use noesis_data::repositories::readings_repository::ReadingsRepository;
@@ -38,6 +51,7 @@ use noesis_metrics::NoesisMetrics;
 use noesis_orchestrator::WorkflowOrchestrator;
 use sentry_tower::{NewSentryLayer, SentryHttpLayer};
 use serde::{Deserialize, Serialize};
+use serde_json::Value;
 use sha2::{Digest, Sha256};
 use sqlx::postgres::{PgConnectOptions, PgPoolOptions};
 use std::collections::HashMap;
@@ -61,12 +75,20 @@ use workflow_parity::log_workflow_registry_parity;
         status_handler,
         list_engines_handler,
         calculate_handler,
+        face_reading_upload_handler,
         validate_handler,
         engine_info_handler,
         list_workflows_handler,
         workflow_execute_handler,
+        birth_blueprint_execute_doc,
+        daily_practice_execute_doc,
+        decision_support_execute_doc,
+        self_inquiry_execute_doc,
+        creative_expression_execute_doc,
+        full_spectrum_execute_doc,
         workflow_info_handler,
         handlers::users::get_me,
+        handlers::users::get_my_usage,
         handlers::users::update_me,
         handlers::admin::get_session,
         handlers::admin::list_users,
@@ -80,6 +102,7 @@ use workflow_parity::log_workflow_registry_parity;
         handlers::admin::history_sync_users,
         handlers::admin::history_sync_devices,
         handlers::admin::history_sync_events,
+        handlers::admin::usage_summary,
         handlers::admin::analytics_summary,
         handlers::admin::analytics_timeseries,
         handlers::admin::analytics_breakdown,
@@ -101,6 +124,23 @@ use workflow_parity::log_workflow_registry_parity;
         schemas(
             EngineInput,
             EngineOutput,
+            EngineResultData,
+            PanchangaResultSchema,
+            NumerologyResultSchema,
+            BiorhythmResultSchema,
+            HumanDesignResultSchema,
+            GeneKeysResultSchema,
+            VimshottariResultSchema,
+            BiofieldResultSchema,
+            VedicClockResultSchema,
+            FaceReadingResultSchema,
+            NadabrahmanResultSchema,
+            TransitsResultSchema,
+            EnneagramResultSchema,
+            TarotResultSchema,
+            IChingResultSchema,
+            SacredGeometryResultSchema,
+            SigilForgeResultSchema,
             ValidationResult,
             WorkflowResult,
             ApiEngineOutputResponse,
@@ -113,10 +153,26 @@ use workflow_parity::log_workflow_registry_parity;
             EngineListResponse,
             WorkflowListResponse,
             WorkflowInfoResponse,
+            BirthBlueprintSynthesisSchema,
+            DailyPracticeSynthesisSchema,
+            DecisionSupportSynthesisSchema,
+            SelfInquirySynthesisSchema,
+            CreativeExpressionSynthesisSchema,
+            FullSpectrumSynthesisSchema,
+            BirthBlueprintWorkflowResultSchema,
+            DailyPracticeWorkflowResultSchema,
+            DecisionSupportWorkflowResultSchema,
+            SelfInquiryWorkflowResultSchema,
+            CreativeExpressionWorkflowResultSchema,
+            FullSpectrumWorkflowResultSchema,
+            FaceUploadResponse,
             ErrorResponse,
             handlers::users::UserResponse,
             handlers::users::LocationResponse,
             handlers::users::UpdateUserRequest,
+            handlers::users::UserUsageWindowSummary,
+            handlers::users::UserUsageEngineEntry,
+            handlers::users::UserUsageResponse,
             handlers::admin::AdminSessionResponse,
             handlers::admin::AdminUsersResponse,
             handlers::admin::AdminUserItem,
@@ -137,6 +193,12 @@ use workflow_parity::log_workflow_registry_parity;
             handlers::admin::AdminHistorySyncDeviceItem,
             handlers::admin::AdminHistorySyncEventsResponse,
             handlers::admin::AdminHistorySyncEventItem,
+            handlers::admin::AdminUsageWindowSummary,
+            handlers::admin::AdminUsageEngineEntry,
+            handlers::admin::AdminUsageTopUserEntry,
+            handlers::admin::AdminUsageDailyPoint,
+            handlers::admin::AdminUsageTierEntry,
+            handlers::admin::AdminUsageSummaryResponse,
             handlers::admin::AdminAnalyticsSummaryResponse,
             handlers::admin::AdminAnalyticsTimeseriesResponse,
             handlers::admin::AdminAnalyticsTimeseriesPoint,
@@ -178,7 +240,7 @@ use workflow_parity::log_workflow_registry_parity;
     modifiers(&SecurityAddon),
     info(
         title = "Noesis API",
-        version = "0.1.0",
+        version = "3.0.0",
         description = "HTTP API for the Tryambakam Noesis consciousness engine platform. Provides endpoints for astrological calculations (Panchanga), numerology, biorhythms, and multi-engine workflows.",
         contact(
             name = "Tryambakam Team",
@@ -187,7 +249,9 @@ use workflow_parity::log_workflow_registry_parity;
 )]
 struct ApiDoc;
 
+use utoipa::openapi::path::PathItemType;
 use utoipa::openapi::security::{ApiKey, ApiKeyValue, HttpAuthScheme, HttpBuilder, SecurityScheme};
+use utoipa::openapi::{HeaderBuilder, ObjectBuilder, Ref, RefOr, ResponseBuilder, SchemaType};
 use utoipa::Modify;
 
 struct SecurityAddon;
@@ -210,6 +274,86 @@ impl Modify for SecurityAddon {
                 SecurityScheme::ApiKey(ApiKey::Header(ApiKeyValue::new("X-API-Key"))),
             );
         }
+
+        let integer_header_schema = ObjectBuilder::new()
+            .schema_type(SchemaType::Integer)
+            .build();
+
+        let rate_limited_response = ResponseBuilder::new()
+            .description("Rate limit exceeded")
+            .header(
+                "X-RateLimit-Limit",
+                HeaderBuilder::new()
+                    .description(Some("Per-minute quota limit."))
+                    .schema(integer_header_schema.clone())
+                    .build(),
+            )
+            .header(
+                "X-RateLimit-Remaining",
+                HeaderBuilder::new()
+                    .description(Some("Remaining requests in current minute window."))
+                    .schema(integer_header_schema.clone())
+                    .build(),
+            )
+            .header(
+                "X-RateLimit-Reset",
+                HeaderBuilder::new()
+                    .description(Some("UNIX timestamp when minute window resets."))
+                    .schema(integer_header_schema.clone())
+                    .build(),
+            )
+            .header(
+                "X-RateLimit-Daily-Remaining",
+                HeaderBuilder::new()
+                    .description(Some("Remaining requests in current daily window."))
+                    .schema(integer_header_schema.clone())
+                    .build(),
+            )
+            .header(
+                "X-RateLimit-Daily-Reset",
+                HeaderBuilder::new()
+                    .description(Some("UNIX timestamp when daily window resets."))
+                    .schema(integer_header_schema)
+                    .build(),
+            )
+            .content(
+                "application/json",
+                utoipa::openapi::ContentBuilder::new()
+                    .schema(RefOr::Ref(Ref::from_schema_name("ErrorResponse")))
+                    .build(),
+            )
+            .build();
+
+        for path_item in openapi.paths.paths.values_mut() {
+            for method in [
+                PathItemType::Get,
+                PathItemType::Post,
+                PathItemType::Put,
+                PathItemType::Patch,
+                PathItemType::Delete,
+                PathItemType::Head,
+                PathItemType::Options,
+                PathItemType::Trace,
+                PathItemType::Connect,
+            ] {
+                if let Some(operation) = path_item.operations.get_mut(&method) {
+                    let is_secured = operation
+                        .security
+                        .as_ref()
+                        .map(|security| !security.is_empty())
+                        .unwrap_or(false);
+
+                    if !is_secured {
+                        continue;
+                    }
+
+                    operation
+                        .responses
+                        .responses
+                        .insert("429".to_string(), RefOr::T(rate_limited_response.clone()));
+                }
+            }
+        }
     }
 }
 
@@ -230,6 +374,14 @@ pub struct AppState {
     pub readings_repository: Option<Arc<ReadingsRepository>>,
     pub usage_repository: Option<Arc<UsageRepository>>,
     pub startup_time: Instant,
+}
+
+pub fn shared_metrics() -> Arc<NoesisMetrics> {
+    static SHARED_METRICS: std::sync::OnceLock<Arc<NoesisMetrics>> = std::sync::OnceLock::new();
+
+    SHARED_METRICS
+        .get_or_init(|| Arc::new(NoesisMetrics::new().expect("Failed to initialise NoesisMetrics")))
+        .clone()
 }
 
 // ---------------------------------------------------------------------------
@@ -294,6 +446,7 @@ pub fn create_router(state: AppState, config: &ApiConfig) -> Router {
     let rate_limiter = Arc::new(middleware::RateLimiter::new_with_config(
         config.rate_limit_requests,
         config.rate_limit_window_secs,
+        config.redis_url.as_deref(),
     ));
 
     let auth_routes = Router::new()
@@ -314,6 +467,7 @@ pub fn create_router(state: AppState, config: &ApiConfig) -> Router {
             "/users/me",
             get(handlers::users::get_me).patch(handlers::users::update_me),
         )
+        .route("/users/me/usage", get(handlers::users::get_my_usage))
         .route("/admin/session", get(handlers::admin::get_session))
         .route("/admin/users", get(handlers::admin::list_users))
         .route(
@@ -352,6 +506,7 @@ pub fn create_router(state: AppState, config: &ApiConfig) -> Router {
             "/admin/history-sync/events",
             get(handlers::admin::history_sync_events),
         )
+        .route("/admin/usage/summary", get(handlers::admin::usage_summary))
         .route(
             "/admin/analytics/summary",
             get(handlers::admin::analytics_summary),
@@ -393,6 +548,10 @@ pub fn create_router(state: AppState, config: &ApiConfig) -> Router {
         .route("/status", get(status_handler))
         .route("/engines", get(list_engines_handler))
         .route("/engines/:engine_id/calculate", post(calculate_handler))
+        .route(
+            "/engines/face-reading/upload",
+            post(face_reading_upload_handler),
+        )
         .route("/engines/:engine_id/validate", post(validate_handler))
         .route("/engines/:engine_id/info", get(engine_info_handler))
         .route("/workflows", get(list_workflows_handler))
@@ -556,6 +715,110 @@ impl From<WorkflowResult> for ApiWorkflowResultResponse {
     }
 }
 
+#[derive(Serialize, ToSchema)]
+struct FaceUploadResponse {
+    engine_id: String,
+    witness_prompt: String,
+    analysis: serde_json::Value,
+    is_mock_data: bool,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+struct BirthBlueprintSynthesisSchema {
+    themes: Vec<String>,
+    alignments: Vec<String>,
+    tensions: Vec<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+struct DailyPracticeSynthesisSchema {
+    practices: Vec<String>,
+    timing_notes: Vec<String>,
+    cautions: Vec<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+struct DecisionSupportSynthesisSchema {
+    options_summary: Vec<String>,
+    decision_lenses: Vec<String>,
+    risks: Vec<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+struct SelfInquirySynthesisSchema {
+    inquiry_threads: Vec<String>,
+    shadow_themes: Vec<String>,
+    reflection_prompts: Vec<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+struct CreativeExpressionSynthesisSchema {
+    creative_seeds: Vec<String>,
+    modality_alignment: Vec<String>,
+    blockers: Vec<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+struct FullSpectrumSynthesisSchema {
+    integrative_themes: Vec<String>,
+    cross_system_alignments: Vec<String>,
+    developmental_edges: Vec<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+struct BirthBlueprintWorkflowResultSchema {
+    workflow_id: String,
+    engine_outputs: std::collections::HashMap<String, EngineOutput>,
+    synthesis: Option<BirthBlueprintSynthesisSchema>,
+    total_time_ms: f64,
+    timestamp: chrono::DateTime<chrono::Utc>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+struct DailyPracticeWorkflowResultSchema {
+    workflow_id: String,
+    engine_outputs: std::collections::HashMap<String, EngineOutput>,
+    synthesis: Option<DailyPracticeSynthesisSchema>,
+    total_time_ms: f64,
+    timestamp: chrono::DateTime<chrono::Utc>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+struct DecisionSupportWorkflowResultSchema {
+    workflow_id: String,
+    engine_outputs: std::collections::HashMap<String, EngineOutput>,
+    synthesis: Option<DecisionSupportSynthesisSchema>,
+    total_time_ms: f64,
+    timestamp: chrono::DateTime<chrono::Utc>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+struct SelfInquiryWorkflowResultSchema {
+    workflow_id: String,
+    engine_outputs: std::collections::HashMap<String, EngineOutput>,
+    synthesis: Option<SelfInquirySynthesisSchema>,
+    total_time_ms: f64,
+    timestamp: chrono::DateTime<chrono::Utc>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+struct CreativeExpressionWorkflowResultSchema {
+    workflow_id: String,
+    engine_outputs: std::collections::HashMap<String, EngineOutput>,
+    synthesis: Option<CreativeExpressionSynthesisSchema>,
+    total_time_ms: f64,
+    timestamp: chrono::DateTime<chrono::Utc>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+struct FullSpectrumWorkflowResultSchema {
+    workflow_id: String,
+    engine_outputs: std::collections::HashMap<String, EngineOutput>,
+    synthesis: Option<FullSpectrumSynthesisSchema>,
+    total_time_ms: f64,
+    timestamp: chrono::DateTime<chrono::Utc>,
+}
+
 // ---------------------------------------------------------------------------
 // Handlers
 // ---------------------------------------------------------------------------
@@ -576,7 +839,7 @@ async fn health_handler(State(state): State<AppState>) -> Json<HealthResponse> {
 
     Json(HealthResponse {
         status: "ok".to_string(),
-        version: "0.1.0".to_string(),
+        version: "3.0.0".to_string(),
         uptime_seconds: uptime,
         engines_loaded,
         workflows_loaded,
@@ -774,6 +1037,8 @@ async fn calculate_handler(
     let duration_ms = duration_secs * 1000.0;
     let user_id_str = user.user_id.clone();
 
+    billing::emit_usage_event(&user_id_str, &engine_id, &user.tier);
+
     match result {
         Ok(output) => {
             state.metrics.record_engine_calculation_with_status(
@@ -886,6 +1151,101 @@ async fn calculate_handler(
             Err(ErrorMapper::map(e))
         }
     }
+}
+
+/// POST /api/v1/engines/face-reading/upload -- upload image and run face-reading analysis
+#[utoipa::path(
+    post,
+    path = "/api/v1/engines/face-reading/upload",
+    tag = "engines",
+    request_body(content = String, content_type = "multipart/form-data", description = "Multipart form-data with file field named `file` or `image`"),
+    responses(
+        (status = 200, description = "Face analysis successful", body = FaceUploadResponse),
+        (status = 401, description = "Unauthorized", body = ErrorResponse),
+        (status = 403, description = "Forbidden - Insufficient consciousness phase", body = ErrorResponse),
+        (status = 422, description = "Validation error", body = ErrorResponse),
+    ),
+    security(
+        ("bearer_auth" = []),
+        ("api_key" = [])
+    )
+)]
+async fn face_reading_upload_handler(
+    State(state): State<AppState>,
+    Extension(user): Extension<AuthUser>,
+    mut multipart: Multipart,
+) -> Result<Json<FaceUploadResponse>, (StatusCode, Json<ErrorResponse>)> {
+    let mut image_bytes: Option<Vec<u8>> = None;
+
+    while let Some(field) = multipart.next_field().await.map_err(|e| {
+        ErrorMapper::response(
+            StatusCode::BAD_REQUEST,
+            "INVALID_MULTIPART",
+            format!("Invalid multipart payload: {}", e),
+            None,
+        )
+    })? {
+        let field_name = field.name().unwrap_or_default().to_string();
+        if field_name == "file" || field_name == "image" {
+            let bytes = field.bytes().await.map_err(|e| {
+                ErrorMapper::response(
+                    StatusCode::BAD_REQUEST,
+                    "INVALID_UPLOAD",
+                    format!("Failed to read uploaded file: {}", e),
+                    None,
+                )
+            })?;
+            image_bytes = Some(bytes.to_vec());
+            break;
+        }
+    }
+
+    let image_bytes = image_bytes.ok_or_else(|| {
+        ErrorMapper::response(
+            StatusCode::UNPROCESSABLE_ENTITY,
+            "MISSING_IMAGE_FILE",
+            "No image file found. Provide multipart field named `file` or `image`.",
+            None,
+        )
+    })?;
+
+    let mut options = std::collections::HashMap::new();
+    options.insert(
+        "image_data".to_string(),
+        Value::String(String::from_utf8_lossy(&image_bytes).to_string()),
+    );
+
+    let input = EngineInput {
+        birth_data: None,
+        current_time: chrono::Utc::now(),
+        location: None,
+        precision: Precision::Standard,
+        options,
+    };
+
+    let output = state
+        .orchestrator
+        .execute_engine("face-reading", input, user.consciousness_level)
+        .await
+        .map_err(ErrorMapper::map)?;
+
+    let analysis = output
+        .result
+        .get("analysis")
+        .cloned()
+        .unwrap_or_else(|| Value::Object(Default::default()));
+
+    let is_mock_data = analysis
+        .get("is_mock_data")
+        .and_then(|v| v.as_bool())
+        .unwrap_or(true);
+
+    Ok(Json(FaceUploadResponse {
+        engine_id: "face-reading".to_string(),
+        witness_prompt: output.witness_prompt,
+        analysis,
+        is_mock_data,
+    }))
 }
 
 /// POST /api/v1/engines/:engine_id/validate -- validate an engine output
@@ -1019,6 +1379,15 @@ async fn workflow_execute_handler(
     Path(workflow_id): Path<String>,
     Json(input): Json<EngineInput>,
 ) -> Result<Json<ApiWorkflowResultResponse>, (StatusCode, Json<ErrorResponse>)> {
+    execute_workflow_by_id(state, user, workflow_id, input).await
+}
+
+async fn execute_workflow_by_id(
+    state: AppState,
+    user: AuthUser,
+    workflow_id: String,
+    input: EngineInput,
+) -> Result<Json<ApiWorkflowResultResponse>, (StatusCode, Json<ErrorResponse>)> {
     let start = Instant::now();
 
     // Capture input for persistence before it's moved into the workflow
@@ -1037,6 +1406,8 @@ async fn workflow_execute_handler(
 
     // Use workflow_id prefixed to distinguish from engine calculations
     let workflow_label = format!("workflow:{}", workflow_id);
+
+    billing::emit_usage_event(&user_id_str, &workflow_label, &user.tier);
 
     match result {
         Ok(workflow_result) => {
@@ -1150,6 +1521,156 @@ async fn workflow_execute_handler(
             Err(ErrorMapper::map(e))
         }
     }
+}
+
+/// POST /api/v1/workflows/birth-blueprint/execute -- workflow-specific OpenAPI shape
+#[utoipa::path(
+    post,
+    path = "/api/v1/workflows/birth-blueprint/execute",
+    tag = "workflows",
+    request_body = EngineInput,
+    responses(
+        (status = 200, description = "Birth Blueprint workflow result", body = BirthBlueprintWorkflowResultSchema),
+        (status = 401, description = "Unauthorized", body = ErrorResponse),
+        (status = 403, description = "Forbidden", body = ErrorResponse),
+        (status = 404, description = "Workflow not found", body = ErrorResponse),
+        (status = 422, description = "Validation error", body = ErrorResponse),
+        (status = 429, description = "Rate limit exceeded", body = ErrorResponse),
+    ),
+    security(("bearer_auth" = []), ("api_key" = []))
+)]
+#[allow(dead_code)]
+async fn birth_blueprint_execute_doc(
+    State(state): State<AppState>,
+    Extension(user): Extension<AuthUser>,
+    Json(input): Json<EngineInput>,
+) -> Result<Json<ApiWorkflowResultResponse>, (StatusCode, Json<ErrorResponse>)> {
+    execute_workflow_by_id(state, user, "birth-blueprint".to_string(), input).await
+}
+
+/// POST /api/v1/workflows/daily-practice/execute -- workflow-specific OpenAPI shape
+#[utoipa::path(
+    post,
+    path = "/api/v1/workflows/daily-practice/execute",
+    tag = "workflows",
+    request_body = EngineInput,
+    responses(
+        (status = 200, description = "Daily Practice workflow result", body = DailyPracticeWorkflowResultSchema),
+        (status = 401, description = "Unauthorized", body = ErrorResponse),
+        (status = 403, description = "Forbidden", body = ErrorResponse),
+        (status = 404, description = "Workflow not found", body = ErrorResponse),
+        (status = 422, description = "Validation error", body = ErrorResponse),
+        (status = 429, description = "Rate limit exceeded", body = ErrorResponse),
+    ),
+    security(("bearer_auth" = []), ("api_key" = []))
+)]
+#[allow(dead_code)]
+async fn daily_practice_execute_doc(
+    State(state): State<AppState>,
+    Extension(user): Extension<AuthUser>,
+    Json(input): Json<EngineInput>,
+) -> Result<Json<ApiWorkflowResultResponse>, (StatusCode, Json<ErrorResponse>)> {
+    execute_workflow_by_id(state, user, "daily-practice".to_string(), input).await
+}
+
+/// POST /api/v1/workflows/decision-support/execute -- workflow-specific OpenAPI shape
+#[utoipa::path(
+    post,
+    path = "/api/v1/workflows/decision-support/execute",
+    tag = "workflows",
+    request_body = EngineInput,
+    responses(
+        (status = 200, description = "Decision Support workflow result", body = DecisionSupportWorkflowResultSchema),
+        (status = 401, description = "Unauthorized", body = ErrorResponse),
+        (status = 403, description = "Forbidden", body = ErrorResponse),
+        (status = 404, description = "Workflow not found", body = ErrorResponse),
+        (status = 422, description = "Validation error", body = ErrorResponse),
+        (status = 429, description = "Rate limit exceeded", body = ErrorResponse),
+    ),
+    security(("bearer_auth" = []), ("api_key" = []))
+)]
+#[allow(dead_code)]
+async fn decision_support_execute_doc(
+    State(state): State<AppState>,
+    Extension(user): Extension<AuthUser>,
+    Json(input): Json<EngineInput>,
+) -> Result<Json<ApiWorkflowResultResponse>, (StatusCode, Json<ErrorResponse>)> {
+    execute_workflow_by_id(state, user, "decision-support".to_string(), input).await
+}
+
+/// POST /api/v1/workflows/self-inquiry/execute -- workflow-specific OpenAPI shape
+#[utoipa::path(
+    post,
+    path = "/api/v1/workflows/self-inquiry/execute",
+    tag = "workflows",
+    request_body = EngineInput,
+    responses(
+        (status = 200, description = "Self Inquiry workflow result", body = SelfInquiryWorkflowResultSchema),
+        (status = 401, description = "Unauthorized", body = ErrorResponse),
+        (status = 403, description = "Forbidden", body = ErrorResponse),
+        (status = 404, description = "Workflow not found", body = ErrorResponse),
+        (status = 422, description = "Validation error", body = ErrorResponse),
+        (status = 429, description = "Rate limit exceeded", body = ErrorResponse),
+    ),
+    security(("bearer_auth" = []), ("api_key" = []))
+)]
+#[allow(dead_code)]
+async fn self_inquiry_execute_doc(
+    State(state): State<AppState>,
+    Extension(user): Extension<AuthUser>,
+    Json(input): Json<EngineInput>,
+) -> Result<Json<ApiWorkflowResultResponse>, (StatusCode, Json<ErrorResponse>)> {
+    execute_workflow_by_id(state, user, "self-inquiry".to_string(), input).await
+}
+
+/// POST /api/v1/workflows/creative-expression/execute -- workflow-specific OpenAPI shape
+#[utoipa::path(
+    post,
+    path = "/api/v1/workflows/creative-expression/execute",
+    tag = "workflows",
+    request_body = EngineInput,
+    responses(
+        (status = 200, description = "Creative Expression workflow result", body = CreativeExpressionWorkflowResultSchema),
+        (status = 401, description = "Unauthorized", body = ErrorResponse),
+        (status = 403, description = "Forbidden", body = ErrorResponse),
+        (status = 404, description = "Workflow not found", body = ErrorResponse),
+        (status = 422, description = "Validation error", body = ErrorResponse),
+        (status = 429, description = "Rate limit exceeded", body = ErrorResponse),
+    ),
+    security(("bearer_auth" = []), ("api_key" = []))
+)]
+#[allow(dead_code)]
+async fn creative_expression_execute_doc(
+    State(state): State<AppState>,
+    Extension(user): Extension<AuthUser>,
+    Json(input): Json<EngineInput>,
+) -> Result<Json<ApiWorkflowResultResponse>, (StatusCode, Json<ErrorResponse>)> {
+    execute_workflow_by_id(state, user, "creative-expression".to_string(), input).await
+}
+
+/// POST /api/v1/workflows/full-spectrum/execute -- workflow-specific OpenAPI shape
+#[utoipa::path(
+    post,
+    path = "/api/v1/workflows/full-spectrum/execute",
+    tag = "workflows",
+    request_body = EngineInput,
+    responses(
+        (status = 200, description = "Full Spectrum workflow result", body = FullSpectrumWorkflowResultSchema),
+        (status = 401, description = "Unauthorized", body = ErrorResponse),
+        (status = 403, description = "Forbidden", body = ErrorResponse),
+        (status = 404, description = "Workflow not found", body = ErrorResponse),
+        (status = 422, description = "Validation error", body = ErrorResponse),
+        (status = 429, description = "Rate limit exceeded", body = ErrorResponse),
+    ),
+    security(("bearer_auth" = []), ("api_key" = []))
+)]
+#[allow(dead_code)]
+async fn full_spectrum_execute_doc(
+    State(state): State<AppState>,
+    Extension(user): Extension<AuthUser>,
+    Json(input): Json<EngineInput>,
+) -> Result<Json<ApiWorkflowResultResponse>, (StatusCode, Json<ErrorResponse>)> {
+    execute_workflow_by_id(state, user, "full-spectrum".to_string(), input).await
 }
 
 /// GET /api/v1/workflows -- list all workflow IDs
@@ -1737,14 +2258,14 @@ pub async fn build_app_state(config: &ApiConfig) -> AppState {
     })));
 
     // -- Metrics --
-    let metrics = NoesisMetrics::new().expect("Failed to initialise NoesisMetrics");
+    let metrics = shared_metrics();
 
     AppState {
         orchestrator: Arc::new(orchestrator),
         bridge_manager,
         cache: Arc::new(cache),
         auth: Arc::new(auth),
-        metrics: Arc::new(metrics),
+        metrics,
         user_repository,
         admin_repository,
         readings_repository,
@@ -1800,14 +2321,14 @@ pub async fn build_app_state_lazy_db(config: &ApiConfig) -> AppState {
     })));
 
     // -- Metrics --
-    let metrics = NoesisMetrics::new().expect("Failed to initialise NoesisMetrics");
+    let metrics = shared_metrics();
 
     AppState {
         orchestrator: Arc::new(orchestrator),
         bridge_manager,
         cache: Arc::new(cache),
         auth: Arc::new(auth),
-        metrics: Arc::new(metrics),
+        metrics,
         user_repository,
         admin_repository,
         readings_repository,

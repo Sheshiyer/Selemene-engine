@@ -45,17 +45,33 @@ impl Synthesizer for SelfInquirySynthesis {
 
         let gk_data = Self::extract_gene_keys_data(results.get("gene-keys"));
         let enn_data = Self::extract_enneagram_data(results.get("enneagram"));
+        let face_data = Self::extract_face_reading_data(results.get("face-reading"));
+        let biofield_data = Self::extract_biofield_data(results.get("biofield"));
 
         themes.extend(Self::extract_shadow_themes(&gk_data));
         themes.extend(Self::extract_enneagram_themes(&enn_data));
+        themes.extend(Self::extract_face_themes(&face_data));
+        themes.extend(Self::extract_biofield_themes(&biofield_data));
 
         alignments.extend(Self::find_shadow_fear_alignment(&gk_data, &enn_data));
         alignments.extend(Self::find_gift_strength_alignment(&gk_data, &enn_data));
         alignments.extend(Self::find_siddhi_integration_alignment(&gk_data, &enn_data));
+        alignments.extend(Self::find_somatic_pattern_alignment(
+            &gk_data,
+            &enn_data,
+            &face_data,
+            &biofield_data,
+        ));
 
         tensions.extend(Self::find_growth_edge_tensions(&gk_data, &enn_data));
 
-        let summary = Self::create_summary(&gk_data, &enn_data, &alignments);
+        let summary = Self::create_summary_with_somatic(
+            &gk_data,
+            &enn_data,
+            &face_data,
+            &biofield_data,
+            &alignments,
+        );
 
         SynthesisResult {
             themes,
@@ -446,6 +462,112 @@ impl SelfInquirySynthesis {
             );
         }
         tensions
+    }
+
+    fn extract_face_reading_data(output: Option<&EngineOutput>) -> Value {
+        let Some(output) = output else {
+            return json!({ "available": false });
+        };
+
+        let result = &output.result;
+        json!({
+            "available": true,
+            "constitution": result
+                .get("analysis")
+                .and_then(|a| a.get("constitution"))
+                .cloned()
+                .unwrap_or(json!({})),
+        })
+    }
+
+    fn extract_biofield_data(output: Option<&EngineOutput>) -> Value {
+        let Some(output) = output else {
+            return json!({ "available": false });
+        };
+
+        let result = &output.result;
+        json!({
+            "available": true,
+            "state": result.get("state").cloned().unwrap_or(json!(null)),
+            "dominant": result.get("dominant_frequency").cloned().unwrap_or(json!(null)),
+        })
+    }
+
+    fn extract_face_themes(data: &Value) -> Vec<Theme> {
+        if data.get("available").and_then(|v| v.as_bool()) != Some(true) {
+            return vec![];
+        }
+
+        let mut theme = Theme::new(
+            "Constitutional Pattern",
+            "Face-reading adds constitutional and observable pattern context",
+        );
+        theme.add_source("face-reading");
+        vec![theme]
+    }
+
+    fn extract_biofield_themes(data: &Value) -> Vec<Theme> {
+        if data.get("available").and_then(|v| v.as_bool()) != Some(true) {
+            return vec![];
+        }
+
+        let mut theme = Theme::new(
+            "Somatic Energy Pattern",
+            "Biofield adds energetic/somatic pattern context",
+        );
+        theme.add_source("biofield");
+        vec![theme]
+    }
+
+    fn find_somatic_pattern_alignment(
+        gk: &Value,
+        enn: &Value,
+        face: &Value,
+        biofield: &Value,
+    ) -> Vec<Alignment> {
+        let mut engines = Vec::new();
+        if gk.get("available").and_then(|v| v.as_bool()) == Some(true) {
+            engines.push("gene-keys".to_string());
+        }
+        if enn.get("available").and_then(|v| v.as_bool()) == Some(true) {
+            engines.push("enneagram".to_string());
+        }
+        if face.get("available").and_then(|v| v.as_bool()) == Some(true) {
+            engines.push("face-reading".to_string());
+        }
+        if biofield.get("available").and_then(|v| v.as_bool()) == Some(true) {
+            engines.push("biofield".to_string());
+        }
+
+        if engines.len() >= 3 {
+            vec![Alignment::new(
+                "Somatic + shadow coherence",
+                "Shadow-pattern lenses align with observable constitutional/somatic signals",
+            )
+            .with_engines(engines)
+            .with_confidence(0.7)]
+        } else {
+            vec![]
+        }
+    }
+
+    fn create_summary_with_somatic(
+        gk: &Value,
+        enn: &Value,
+        face: &Value,
+        biofield: &Value,
+        alignments: &[Alignment],
+    ) -> String {
+        let mut summary = Self::create_summary(gk, enn, alignments);
+
+        let somatic_available = face.get("available").and_then(|v| v.as_bool()) == Some(true)
+            || biofield.get("available").and_then(|v| v.as_bool()) == Some(true);
+
+        if somatic_available {
+            summary.push_str(" Somatic and constitutional observations were integrated into the shadow-work synthesis.");
+        }
+
+        summary
     }
 
     fn create_summary(gk: &Value, enn: &Value, alignments: &[Alignment]) -> String {

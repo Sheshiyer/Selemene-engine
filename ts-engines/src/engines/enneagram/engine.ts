@@ -10,6 +10,7 @@ import type {
   EngineOutput,
   WitnessPrompt,
 } from '../../types'
+import { EngineValidationError } from '../../utils'
 import {
   type AssessmentResult,
   calculateFromAnswerArray,
@@ -214,20 +215,34 @@ export class EnneagramEngine implements ConsciousnessEngine {
 
   private validateType(type: number): EnneagramNumber {
     if (type < 1 || type > 9 || !Number.isInteger(type)) {
-      throw new Error(`Invalid Enneagram type: ${type}. Must be integer 1-9.`)
+      throw new EngineValidationError(`Invalid Enneagram type: ${type}. Must be integer 1-9.`, 'INVALID_ENNEAGRAM_TYPE', {
+        provided: type,
+        min: 1,
+        max: 9,
+      })
     }
     return type as EnneagramNumber
   }
 
   private validateWing(primaryType: EnneagramNumber, wing: number): EnneagramNumber | undefined {
     if (wing < 1 || wing > 9 || !Number.isInteger(wing)) {
-      return undefined
+      throw new EngineValidationError(`Invalid wing value: ${wing}. Wing must be integer 1-9.`, 'INVALID_ENNEAGRAM_WING', {
+        provided: wing,
+      })
     }
     // Wing must be adjacent
     const prev = primaryType === 1 ? 9 : primaryType - 1
     const next = primaryType === 9 ? 1 : primaryType + 1
     if (wing !== prev && wing !== next) {
-      return undefined
+      throw new EngineValidationError(
+        `Invalid wing ${wing} for type ${primaryType}. Wings must be adjacent (${prev} or ${next}).`,
+        'INVALID_ENNEAGRAM_WING',
+        {
+          type: primaryType,
+          provided: wing,
+          allowed: [prev, next],
+        },
+      )
     }
     return wing as EnneagramNumber
   }

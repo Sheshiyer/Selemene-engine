@@ -1,6 +1,6 @@
 use crate::{error::ApiError, AppState};
 use axum::{
-    extract::{Extension, Json, State},
+    extract::{Extension, Json, Query, State},
     http::StatusCode,
     response::{IntoResponse, Response},
 };
@@ -43,6 +43,32 @@ pub struct UpdateUserRequest {
     pub birth_location_name: Option<String>,
     pub timezone: Option<String>,
     pub preferences: Option<serde_json::Value>,
+}
+
+#[derive(Deserialize, Default)]
+pub struct UserUsageQuery {
+    pub engine_limit: Option<i64>,
+}
+
+#[derive(Serialize, ToSchema)]
+pub struct UserUsageWindowSummary {
+    pub total: i64,
+    pub success: i64,
+    pub failure: i64,
+}
+
+#[derive(Serialize, ToSchema)]
+pub struct UserUsageEngineEntry {
+    pub engine_id: String,
+    pub request_count: i64,
+}
+
+#[derive(Serialize, ToSchema)]
+pub struct UserUsageResponse {
+    pub user_id: String,
+    pub daily: UserUsageWindowSummary,
+    pub monthly: UserUsageWindowSummary,
+    pub engine_breakdown: Vec<UserUsageEngineEntry>,
 }
 
 /// GET /api/v1/users/me -- get the authenticated user's profile
@@ -118,6 +144,78 @@ pub async fn get_me(
     };
 
     Ok((StatusCode::OK, Json(response)).into_response())
+}
+
+/// GET /api/v1/users/me/usage -- usage analytics for the authenticated user
+#[utoipa::path(
+    get,
+    path = "/api/v1/users/me/usage",
+    tag = "users",
+    params(
+        ("engine_limit" = Option<i64>, Query, description = "Max engine rows in breakdown (default 10, max 50)")
+    ),
+    responses(
+        (status = 200, description = "User usage analytics", body = UserUsageResponse),
+        (status = 401, description = "Unauthorized", body = crate::ErrorResponse),
+        (status = 503, description = "Usage repository unavailable", body = crate::ErrorResponse),
+        (status = 500, description = "Internal server error", body = crate::ErrorResponse),
+    ),
+    security(
+        ("bearer_auth" = []),
+        ("api_key" = [])
+    )
+)]
+pub async fn get_my_usage(
+    State(state): State<AppState>,
+    Extension(auth_user): Extension<AuthUser>,
+    Query(query): Query<UserUsageQuery>,
+) -> Result<Response, ApiError> {
+    let usage_repo = state
+        .usage_repository
+        .as_ref()
+        .ok_or_else(|| EngineError::InternalError("Usage repository not configured".to_string()))?;
+
+    let user_uuid = uuid::Uuid::parse_str(&auth_user.user_id)
+        .map_err(|_| EngineError::AuthError("Invalid user ID in token".to_string()))?;
+
+    let engine_limit = query.engine_limit.unwrap_or(10).clamp(1, 50);
+
+    let summary = usage_repo
+        .user_usage_summary(user_uuid)
+        .await
+        .map_err(|e| EngineError::InternalError(format!("Failed to fetch usage summary: {e}")))?;
+
+    let engine_breakdown = usage_repo
+        .user_engine_breakdown(user_uuid, 24 * 30, engine_limit)
+        .await
+        .map_err(|e| {
+            EngineError::InternalError(format!("Failed to fetch user engine breakdown: {e}"))
+        })?
+        .into_iter()
+        .map(|row| UserUsageEngineEntry {
+            engine_id: row.engine_id,
+            request_count: row.request_count,
+        })
+        .collect::<Vec<_>>();
+
+    Ok((
+        StatusCode::OK,
+        Json(UserUsageResponse {
+            user_id: auth_user.user_id,
+            daily: UserUsageWindowSummary {
+                total: summary.daily_total,
+                success: summary.daily_success,
+                failure: summary.daily_failure,
+            },
+            monthly: UserUsageWindowSummary {
+                total: summary.monthly_total,
+                success: summary.monthly_success,
+                failure: summary.monthly_failure,
+            },
+            engine_breakdown,
+        }),
+    )
+        .into_response())
 }
 
 impl UpdateUserRequest {

@@ -10,6 +10,7 @@ import type {
   ReadinessResponse,
 } from '../types'
 import { EngineRegistry, registry } from './registry'
+import { isEngineValidationError } from '../utils'
 
 const startTime = Date.now()
 
@@ -172,6 +173,15 @@ export function createServer(engineRegistry: EngineRegistry = registry) {
           const result = await engine.calculate(body as EngineInput)
           return result
         } catch (err) {
+          if (isEngineValidationError(err)) {
+            set.status = 422
+            return {
+              error: err.message,
+              error_code: err.code,
+              details: err.details,
+            } as ErrorResponse
+          }
+
           set.status = 500
           return {
             error: err instanceof Error ? err.message : 'Unknown error',

@@ -1,6 +1,6 @@
 [package]
 name = "noesis-cache"
-version = "0.1.0"
+version = "3.0.0"
 edition = "2021"
 description = "Multi-layer caching system (L1 in-memory, L2 Redis, L3 disk) for Noesis engines"
 

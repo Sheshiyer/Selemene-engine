@@ -220,6 +220,7 @@ dependencies = [
  "matchit",
  "memchr",
  "mime",
+ "multer",
  "percent-encoding",
  "pin-project-lite",
  "rustversion",
@@ -1110,7 +1111,7 @@ dependencies = [
 
 [[package]]
 name = "engine-biofield"
-version = "0.1.0"
+version = "3.0.0"
 dependencies = [
  "async-trait",
  "chrono",
@@ -1125,7 +1126,7 @@ dependencies = [
 
 [[package]]
 name = "engine-biorhythm"
-version = "0.1.0"
+version = "3.0.0"
 dependencies = [
  "async-trait",
  "chrono",
@@ -1138,7 +1139,7 @@ dependencies = [
 
 [[package]]
 name = "engine-face-reading"
-version = "0.1.0"
+version = "3.0.0"
 dependencies = [
  "async-trait",
  "chrono",
@@ -1153,7 +1154,7 @@ dependencies = [
 
 [[package]]
 name = "engine-gene-keys"
-version = "0.1.0"
+version = "3.0.0"
 dependencies = [
  "async-trait",
  "chrono",
@@ -1167,7 +1168,7 @@ dependencies = [
 
 [[package]]
 name = "engine-human-design"
-version = "0.1.0"
+version = "3.0.0"
 dependencies = [
  "async-trait",
  "chrono",
@@ -1184,7 +1185,7 @@ dependencies = [
 
 [[package]]
 name = "engine-nadabrahman"
-version = "0.1.0"
+version = "3.0.0"
 dependencies = [
  "async-trait",
  "chrono",
@@ -1197,7 +1198,7 @@ dependencies = [
 
 [[package]]
 name = "engine-numerology"
-version = "0.1.0"
+version = "3.0.0"
 dependencies = [
  "async-trait",
  "chrono",
@@ -1210,7 +1211,7 @@ dependencies = [
 
 [[package]]
 name = "engine-panchanga"
-version = "0.1.0"
+version = "3.0.0"
 dependencies = [
  "async-trait",
  "chrono",
@@ -1224,7 +1225,7 @@ dependencies = [
 
 [[package]]
 name = "engine-transits"
-version = "0.1.0"
+version = "3.0.0"
 dependencies = [
  "async-trait",
  "chrono",
@@ -1241,7 +1242,7 @@ dependencies = [
 
 [[package]]
 name = "engine-vedic-clock"
-version = "0.1.0"
+version = "3.0.0"
 dependencies = [
  "async-trait",
  "chrono",
@@ -1255,7 +1256,7 @@ dependencies = [
 
 [[package]]
 name = "engine-vimshottari"
-version = "0.1.0"
+version = "3.0.0"
 dependencies = [
  "async-trait",
  "chrono",
@@ -2437,6 +2438,23 @@ dependencies = [
 ]
 
 [[package]]
+name = "multer"
+version = "3.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "83e87776546dc87511aa5ee218730c92b666d7264ab6ed41f9d215af9cd5224b"
+dependencies = [
+ "bytes",
+ "encoding_rs",
+ "futures-util",
+ "http 1.4.0",
+ "httparse",
+ "memchr",
+ "mime",
+ "spin",
+ "version_check",
+]
+
+[[package]]
 name = "native-tls"
 version = "0.2.14"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2467,7 +2485,7 @@ dependencies = [
 
 [[package]]
 name = "noesis-api"
-version = "0.1.0"
+version = "3.0.0"
 dependencies = [
  "async-trait",
  "axum 0.7.9",
@@ -2492,6 +2510,7 @@ dependencies = [
  "noesis-orchestrator",
  "noesis-witness",
  "opentelemetry 0.22.0",
+ "redis",
  "sentry",
  "sentry-tower",
  "serde",
@@ -2513,7 +2532,7 @@ dependencies = [
 
 [[package]]
 name = "noesis-auth"
-version = "0.1.0"
+version = "3.0.0"
 dependencies = [
  "argon2",
  "chrono",
@@ -2532,7 +2551,7 @@ dependencies = [
 
 [[package]]
 name = "noesis-bridge"
-version = "0.1.0"
+version = "3.0.0"
 dependencies = [
  "async-trait",
  "chrono",
@@ -2548,7 +2567,7 @@ dependencies = [
 
 [[package]]
 name = "noesis-cache"
-version = "0.1.0"
+version = "3.0.0"
 dependencies = [
  "dashmap",
  "lru",
@@ -2564,7 +2583,7 @@ dependencies = [
 
 [[package]]
 name = "noesis-core"
-version = "0.1.0"
+version = "3.0.0"
 dependencies = [
  "async-trait",
  "chrono",
@@ -2577,7 +2596,7 @@ dependencies = [
 
 [[package]]
 name = "noesis-data"
-version = "0.1.0"
+version = "3.0.0"
 dependencies = [
  "chrono",
  "noesis-core",
@@ -2592,7 +2611,7 @@ dependencies = [
 
 [[package]]
 name = "noesis-integration"
-version = "0.1.0"
+version = "3.0.0"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -2613,7 +2632,7 @@ dependencies = [
 
 [[package]]
 name = "noesis-metrics"
-version = "0.1.0"
+version = "3.0.0"
 dependencies = [
  "lazy_static",
  "opentelemetry 0.22.0",
@@ -2628,7 +2647,7 @@ dependencies = [
 
 [[package]]
 name = "noesis-orchestrator"
-version = "0.1.0"
+version = "3.0.0"
 dependencies = [
  "async-trait",
  "chrono",
@@ -2657,7 +2676,7 @@ dependencies = [
 
 [[package]]
 name = "noesis-sdk"
-version = "0.1.0"
+version = "3.0.0"
 dependencies = [
  "chrono",
  "config",
@@ -2680,7 +2699,7 @@ dependencies = [
 
 [[package]]
 name = "noesis-tui"
-version = "0.1.0"
+version = "3.0.0"
 dependencies = [
  "anyhow",
  "chrono",
@@ -2700,7 +2719,7 @@ dependencies = [
 
 [[package]]
 name = "noesis-vedic-api"
-version = "0.1.0"
+version = "3.0.0"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -2723,7 +2742,7 @@ dependencies = [
 
 [[package]]
 name = "noesis-western-api"
-version = "0.1.0"
+version = "3.0.0"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -2742,7 +2761,7 @@ dependencies = [
 
 [[package]]
 name = "noesis-witness"
-version = "0.1.0"
+version = "3.0.0"
 dependencies = [
  "noesis-core",
  "serde",
@@ -3796,6 +3815,7 @@ dependencies = [
  "async-trait",
  "bytes",
  "combine",
+ "futures",
  "futures-util",
  "itoa",
  "num-bigint",
@@ -3805,6 +3825,7 @@ dependencies = [
  "sha1_smol",
  "socket2 0.5.10",
  "tokio",
+ "tokio-retry",
  "tokio-util",
  "url",
 ]

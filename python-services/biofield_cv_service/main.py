@@ -13,7 +13,7 @@ from biofield_cv_service.analyze import router as analyze_router
 
 app = FastAPI(
     title="Selemene Biofield CV Service",
-    version="0.1.0",
+    version="3.0.0",
     description="Python sidecar service for biofield image analysis using OpenCV.",
 )
 

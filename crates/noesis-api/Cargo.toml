@@ -1,6 +1,6 @@
 [package]
 name = "noesis-api"
-version = "0.1.0"
+version = "3.0.0"
 edition = "2021"
 description = "HTTP API server for the Tryambakam Noesis platform"
 
@@ -17,7 +17,7 @@ noesis-metrics = { path = "../noesis-metrics" }
 noesis-orchestrator = { path = "../noesis-orchestrator" }
 noesis-bridge = { path = "../noesis-bridge" }
 noesis-witness = { path = "../noesis-witness" }
-axum = { version = "0.7", features = ["json", "macros"] }
+axum = { version = "0.7", features = ["json", "macros", "multipart"] }
 uuid = { version = "1.7", features = ["serde", "v4"] }
 tokio = { version = "1.0", features = ["full"] }
 sqlx = { version = "0.7", features = ["postgres", "runtime-tokio-rustls", "uuid", "chrono", "json", "macros"] }
@@ -36,6 +36,7 @@ dashmap = "5.5"
 utoipa = { version = "4", features = ["axum_extras", "chrono"] }
 utoipa-swagger-ui = { version = "7", features = ["axum"] }
 sha2 = "0.10"
+redis = { version = "0.26", features = ["tokio-comp", "connection-manager"] }
 
 [features]
 default = []

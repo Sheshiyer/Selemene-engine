@@ -104,7 +104,12 @@ impl SelfInquiryWorkflow {
                          with Enneagram core patterns for shadow work and \
                          pattern recognition"
                 .to_string(),
-            engine_ids: vec!["gene-keys".to_string(), "enneagram".to_string()],
+            engine_ids: vec![
+                "gene-keys".to_string(),
+                "enneagram".to_string(),
+                "face-reading".to_string(),
+                "biofield".to_string(),
+            ],
             synthesis_type: SynthesisType::SelfInquiry,
             required_phase: Self::REQUIRED_PHASE,
             default_options: Self::default_options(),
@@ -168,13 +173,22 @@ impl SelfInquiryWorkflow {
         );
         engine_opts.insert("enneagram".to_string(), enn_opts);
 
+        // Face reading and biofield add somatic/constitutional context.
+        let mut face_opts = HashMap::new();
+        face_opts.insert("use_birth_fallback".to_string(), json!(true));
+        engine_opts.insert("face-reading".to_string(), face_opts);
+
+        let mut biofield_opts = HashMap::new();
+        biofield_opts.insert("include_somatic_markers".to_string(), json!(true));
+        engine_opts.insert("biofield".to_string(), biofield_opts);
+
         engine_opts
     }
 
     /// Validate that required engines are present in results
     pub fn validate_results(results: &HashMap<String, EngineOutput>) -> Result<(), Vec<String>> {
         // At least one engine should succeed
-        let available: Vec<&str> = ["gene-keys", "enneagram"]
+        let available: Vec<&str> = ["gene-keys", "enneagram", "face-reading", "biofield"]
             .iter()
             .filter(|e| results.contains_key(&e.to_string()))
             .copied()
@@ -246,9 +260,11 @@ mod tests {
     fn test_definition() {
         let def = SelfInquiryWorkflow::definition();
         assert_eq!(def.id, "self-inquiry");
-        assert_eq!(def.engine_ids.len(), 2);
+        assert_eq!(def.engine_ids.len(), 4);
         assert!(def.engine_ids.contains(&"gene-keys".to_string()));
         assert!(def.engine_ids.contains(&"enneagram".to_string()));
+        assert!(def.engine_ids.contains(&"face-reading".to_string()));
+        assert!(def.engine_ids.contains(&"biofield".to_string()));
         assert_eq!(def.synthesis_type, SynthesisType::SelfInquiry);
         assert_eq!(def.required_phase, 2);
     }
@@ -257,7 +273,7 @@ mod tests {
     fn test_base_definition() {
         let base = SelfInquiryWorkflow::base_definition();
         assert_eq!(base.id, "self-inquiry");
-        assert_eq!(base.engine_ids.len(), 2);
+        assert_eq!(base.engine_ids.len(), 4);
     }
 
     #[test]
