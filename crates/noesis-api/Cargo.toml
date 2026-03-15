@@ -35,8 +35,10 @@ opentelemetry = { version = "0.22", features = ["trace"], optional = true }
 dashmap = "5.5"
 utoipa = { version = "4", features = ["axum_extras", "chrono"] }
 utoipa-swagger-ui = { version = "7", features = ["axum"] }
+reqwest = { version = "0.12", default-features = false, features = ["rustls-tls", "json"] }
 sha2 = "0.10"
 redis = { version = "0.26", features = ["tokio-comp", "connection-manager"] }
+urlencoding = "2"
 
 [features]
 default = []
