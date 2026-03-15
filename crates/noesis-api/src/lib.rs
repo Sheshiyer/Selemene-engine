@@ -2261,9 +2261,9 @@ pub async fn build_app_state(config: &ApiConfig) -> AppState {
     let usage_repository = pool
         .as_ref()
         .map(|p| Arc::new(UsageRepository::new(p.clone())));
-    let oauth_repository = pool
-        .as_ref()
-        .map(|p| Arc::new(noesis_data::repositories::oauth_repository::OAuthRepository::new(p.clone())));
+    let oauth_repository = pool.as_ref().map(|p| {
+        Arc::new(noesis_data::repositories::oauth_repository::OAuthRepository::new(p.clone()))
+    });
 
     let user_repository = Arc::new(UserRepository::new(pool.unwrap_or_else(|| {
         // Create a lazy pool with a dummy URL — queries will fail at runtime,
@@ -2335,9 +2335,9 @@ pub async fn build_app_state_lazy_db(config: &ApiConfig) -> AppState {
     let usage_repository = pool
         .as_ref()
         .map(|p| Arc::new(UsageRepository::new(p.clone())));
-    let oauth_repository = pool
-        .as_ref()
-        .map(|p| Arc::new(noesis_data::repositories::oauth_repository::OAuthRepository::new(p.clone())));
+    let oauth_repository = pool.as_ref().map(|p| {
+        Arc::new(noesis_data::repositories::oauth_repository::OAuthRepository::new(p.clone()))
+    });
 
     let user_repository = Arc::new(UserRepository::new(pool.unwrap_or_else(|| {
         PgPoolOptions::new()
