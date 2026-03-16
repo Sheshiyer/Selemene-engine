@@ -423,7 +423,7 @@ export default function ApiKeysPage() {
             <thead>
               <tr>
                 <th>Name</th>
-                <th>Prefix</th>
+                <th>API Key</th>
                 <th>User</th>
                 <th>Tier</th>
                 <th>Permissions</th>
@@ -439,18 +439,49 @@ export default function ApiKeysPage() {
                   <td>
                     <div className="table-primary">{k.name || "Unnamed"}</div>
                     <div className="helper">{formatDateTime(k.created_at)}</div>
-                    <button
-                      type="button"
-                      className="link-btn"
-                      onClick={() => void handleCopyValue(k.id, "Key ID")}
-                    >
-                      {k.id}
-                    </button>
+                    <div style={{ display: "inline-flex", alignItems: "center", gap: "0.3rem" }}>
+                      <span className="helper" style={{ fontSize: "0.75rem", fontFamily: "var(--font-mono), monospace" }}>
+                        {k.id.slice(0, 8)}...
+                      </span>
+                      <button
+                        type="button"
+                        className="copy-icon-btn"
+                        title="Copy full key ID"
+                        onClick={() => void handleCopyValue(k.id, "Key ID")}
+                      >
+                        ⧉
+                      </button>
+                    </div>
                   </td>
                   <td>
-                    <span className="key-prefix">
-                      {k.key_prefix || k.id.slice(0, 8) + "..."}
-                    </span>
+                    <div className="key-display">
+                      <code>
+                        {k.key_prefix ? (
+                          <>
+                            {k.key_prefix}
+                            <span className="masked">••••</span>
+                          </>
+                        ) : (
+                          <>
+                            {k.id.slice(0, 8)}...
+                            <span className="legacy-tag">(legacy)</span>
+                          </>
+                        )}
+                      </code>
+                      <button
+                        type="button"
+                        className="copy-icon-btn"
+                        title="Copy key prefix"
+                        onClick={() =>
+                          void handleCopyValue(
+                            k.key_prefix || k.id.slice(0, 8),
+                            "Key prefix"
+                          )
+                        }
+                      >
+                        ⧉
+                      </button>
+                    </div>
                   </td>
                   <td>
                     <div className="table-primary">{k.user_email}</div>

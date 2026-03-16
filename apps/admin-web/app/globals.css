@@ -548,7 +548,62 @@ tbody tr:hover {
   color: #9ff0e5;
 }
 
-/* ---- Key prefix ---- */
+/* ---- Key display ---- */
+.key-display {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: rgba(25, 48, 51, 0.6);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 0.3rem 0.5rem;
+  max-width: 100%;
+}
+
+.key-display code {
+  font-family: var(--font-mono), monospace;
+  font-size: 0.84rem;
+  color: var(--accent);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.key-display .masked {
+  color: var(--text-muted);
+  opacity: 0.5;
+}
+
+.key-display .legacy-tag {
+  font-family: inherit;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  opacity: 0.6;
+  margin-left: 0.2rem;
+}
+
+.copy-icon-btn {
+  border: 0;
+  padding: 0.15rem 0.25rem;
+  margin: 0;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 0.78rem;
+  line-height: 1;
+  border-radius: 4px;
+  transition: color 0.15s, background 0.15s;
+  flex-shrink: 0;
+}
+
+.copy-icon-btn:hover {
+  color: var(--accent);
+  background: rgba(86, 211, 194, 0.12);
+}
+
+.copy-icon-btn.copied {
+  color: #56d3c2;
+}
+
 .key-prefix {
   font-family: var(--font-mono), monospace;
   font-size: 0.82rem;
