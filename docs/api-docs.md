@@ -1,6 +1,7 @@
 # External Vedic API References
 
-Reference links for FreeAstrologyAPI endpoints used by `noesis-vedic-api` integrations.
+Reference links for optional `noesis-vedic-api` integrations.
+They are not part of the active native-first Selemene runtime path.
 
 ## Planetary and Chart Endpoints
 

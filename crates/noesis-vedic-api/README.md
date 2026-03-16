@@ -4,7 +4,7 @@ FreeAstrologyAPI.com integration for accurate Vedic astrology calculations in th
 
 ## Overview
 
-This crate provides a production-grade Rust client for [FreeAstrologyAPI.com](https://freeastrologyapi.com), offering accurate Panchang, Vimshottari Dasha, Birth Charts, and advanced Vedic astrology features. It is the recommended way to perform Vedic calculations in Selemene Engine.
+This crate provides a production-grade Rust client for [FreeAstrologyAPI.com](https://freeastrologyapi.com), offering Panchang, Vimshottari Dasha, Birth Charts, and advanced Vedic astrology features. It remains available for optional provider integrations and experiments, but it is not the active production Vedic runtime path in Selemene Engine.
 
 **Key capabilities:**
 

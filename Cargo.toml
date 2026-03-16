@@ -18,7 +18,7 @@ members = [
     "crates/noesis-sdk",
     # Terminal User Interface
     "crates/noesis-tui",
-    # Vedic astrology API integration (FreeAstrologyAPI.com)
+    # Optional provider integration crates
 
     # Rust consciousness engines
     "crates/engine-panchanga",
@@ -102,4 +102,3 @@ strip = true
 [profile.dev]
 opt-level = 0
 debug = true
-

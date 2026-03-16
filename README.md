@@ -543,6 +543,7 @@ crates/
 ### Runtime Notes
 - `panchanga`, `vimshottari`, and `transits` currently execute through the native Rust engines in the live `noesis-api` runtime.
 - `noesis-vedic-api` remains in the repository for auxiliary/provider integration work, but it is not the active path for the current Vedic runtime.
+- Deploying the main `noesis-api` runtime does not require `FREE_ASTROLOGY_API_*` or `VEDIC_ENGINE_PROVIDER` environment variables.
 - Recent hygiene fixes locked reference regressions for:
   - canonical birth-time Panchanga + Vimshottari output (`1991-08-13 13:31 Asia/Kolkata`)
   - Panchanga karana sequencing for `2026-03-10` Bengaluru

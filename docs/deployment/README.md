@@ -54,7 +54,6 @@ Deployment is infrastructure for a reflection-first system: operational reliabil
 | `REDIS_URL` | Redis connection URL (optional — in-memory fallback) | — |
 | `SENTRY_DSN` | Sentry error tracking DSN (optional) | — |
 | `SWISS_EPHEMERIS_PATH` | Path to Swiss Ephemeris data | `/app/data/ephemeris` |
-| `FREE_ASTROLOGY_API_KEY` | FreeAstrologyAPI.com key (optional) | — |
 
 ## Deployment
 

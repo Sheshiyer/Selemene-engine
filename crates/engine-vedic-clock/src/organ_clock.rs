@@ -1,4 +1,4 @@
-//! Organ clock integration with FreeAstrologyAPI Panchang
+//! Optional provider-backed Panchang overlay for organ clock recommendations.
 
 use chrono::{DateTime, Datelike, Timelike, Utc};
 

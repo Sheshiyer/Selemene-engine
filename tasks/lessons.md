@@ -36,3 +36,23 @@
   - karana sequence windows,
   - yoga transition time.
 - If the source is a screenshot or pasted table, resolve row semantics first before calling a mismatch.
+
+## 2026-03-15 — Runtime Scrub vs Repo Scrub Rule
+
+- Do not equate "removed from the active runtime path" with "fully scrubbed from the repository."
+- After decommissioning a dependency, explicitly audit four residue surfaces before claiming it is scrubbed:
+  - runtime config and env vars,
+  - deployment scripts and compose files,
+  - operator-facing docs,
+  - optional crates or historical records that should be marked retained.
+- Final reports must separate:
+  - fully removed from active runtime,
+  - intentionally retained for history or optional integrations,
+  - stale residue that still needs cleanup.
+
+## 2026-03-15 — API Key Verification Surface Rule
+
+- When a live API key test fails on a branded production domain, distinguish edge/network denial from application auth before concluding the key is bad.
+- If the public domain is fronted by Cloudflare or similar, retry against the direct app origin documented in deployment files when available.
+- If `GET /api/v1/engines/{id}/info` returns `401`, treat it as an auth failure first, not a phase/tier failure, because `info` is authenticated but not phase-gated in this codebase.
+- When the user provides a replacement credential, rerun the same minimal auth probe first (`/api/v1/engines`) before spending time on full engine payload analysis.
