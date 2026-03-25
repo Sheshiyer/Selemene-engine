@@ -7,10 +7,10 @@
 ## Checklist
 - [x] Gather redesign direction from the provided Tryambakam brand board and local HTML variant references.
 - [x] Confirm current admin-web route inventory and shell scope.
-- [ ] Write a redesign plan doc with phases, waves, swarms, and issue mapping.
-- [ ] Generate a 30–40 issue manifest for GitHub synchronization.
-- [ ] Commit and push the planning artifacts.
-- [ ] Create GitHub issues from the manifest and record the results.
+- [x] Write a redesign plan doc with phases, waves, swarms, and issue mapping.
+- [x] Generate a 30–40 issue manifest for GitHub synchronization.
+- [x] Commit and push the planning artifacts.
+- [x] Create GitHub issues from the manifest and record the results.
 
 ## Notes
 - The redesign should shift the admin dashboard from low-taste utilitarian UI to a high-function management system.
@@ -22,7 +22,22 @@
 - The just-shipped API key management work is treated as completed baseline, not future scope.
 
 ## Review (fill after execution)
-- Pending.
+- Planning artifacts:
+  - added `docs/plans/2026-03-25-admin-dashboard-overhaul-plan.md`
+  - added `docs/plans/2026-03-25-admin-dashboard-overhaul-issues.json`
+- Git:
+  - pushed commit `e8622ab7` (`docs(admin): add dashboard overhaul plan`) to `origin/main`
+- GitHub issue sync:
+  - created 34 redesign issues from `ADR-01` through `ADR-34`
+  - issue range: `#515` to `#548`
+  - labels applied per issue:
+    - `enhancement`
+    - `roadmap`
+    - `taskmaster`
+    - phase label
+    - wave label
+    - area label
+  - sync summary written to `/tmp/admin-dashboard-overhaul-issue-sync-summary.json`
 
 ---
 
