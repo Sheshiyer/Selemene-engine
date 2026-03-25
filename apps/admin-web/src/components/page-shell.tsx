@@ -1,3 +1,5 @@
+import { SurfaceCard } from "@/components/admin-primitives";
+
 interface PageShellProps {
   title: string;
   summary: string;
@@ -14,16 +16,14 @@ export function PageShell({
   children
 }: PageShellProps) {
   return (
-    <section className="panel page-shell-panel filigree-frame">
-      <header className="page-shell-header">
-        <div>
-          <div className="eyebrow">{eyebrow}</div>
-          <h2>{title}</h2>
-          <p className="helper">{summary}</p>
-        </div>
-        {actions ? <div className="page-shell-actions">{actions}</div> : null}
-      </header>
+    <SurfaceCard
+      eyebrow={eyebrow}
+      title={title}
+      summary={summary}
+      actions={actions}
+      className="page-shell-panel"
+    >
       <div className="grid page-shell-grid">{children}</div>
-    </section>
+    </SurfaceCard>
   );
 }

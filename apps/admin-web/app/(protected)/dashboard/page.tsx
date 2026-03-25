@@ -11,6 +11,7 @@ import {
   XAxis,
   YAxis
 } from "recharts";
+import { ActionRail, MetricSurface, SurfaceCard } from "@/components/admin-primitives";
 import { PageShell } from "@/components/page-shell";
 import { getAuthToken } from "@/lib/auth";
 import {
@@ -130,51 +131,59 @@ export default function DashboardPage() {
     <PageShell
       title="Dashboard"
       summary="Live platform snapshots for active users, request volume, and error posture over the last 24h."
+      actions={
+        <ActionRail label="Dashboard actions">
+          <label>
+            <span className="sr-only">Auto refresh</span>
+            <select
+              value={autoRefreshSec}
+              onChange={(event) => setAutoRefreshSec(Number.parseInt(event.target.value, 10))}
+            >
+              {REFRESH_OPTIONS.map((value) => (
+                <option key={value} value={value}>
+                  {value === 0 ? "Auto refresh: Off" : `Auto refresh: ${value}s`}
+                </option>
+              ))}
+            </select>
+          </label>
+          <button type="button" onClick={() => void loadDashboard()}>
+            Refresh
+          </button>
+        </ActionRail>
+      }
     >
-      <div className="panel-inline">
-        <label>
-          Auto refresh
-          <select
-            value={autoRefreshSec}
-            onChange={(event) => setAutoRefreshSec(Number.parseInt(event.target.value, 10))}
-          >
-            {REFRESH_OPTIONS.map((value) => (
-              <option key={value} value={value}>
-                {value === 0 ? "Off" : `${value}s`}
-              </option>
-            ))}
-          </select>
-        </label>
-        <button type="button" onClick={() => void loadDashboard()}>
-          Refresh
-        </button>
-      </div>
-
       <p className="helper">Last updated: {formatDateTime(lastUpdatedAt)}</p>
 
       {error ? <div className="error">{error}</div> : null}
 
       <div className="grid metrics">
-        <article className="metric">
-          <div className="label">Active Users (24h)</div>
-          <div className="value">{summary ? formatNumber(summary.active_users) : "--"}</div>
-        </article>
-        <article className="metric">
-          <div className="label">API Requests (24h)</div>
-          <div className="value">{summary ? formatNumber(summary.requests_total) : "--"}</div>
-        </article>
-        <article className="metric">
-          <div className="label">Error Rate</div>
-          <div className="value">{summary ? `${summary.error_rate_pct.toFixed(2)}%` : "--"}</div>
-        </article>
+        <MetricSurface
+          label="Active Users (24h)"
+          value={summary ? formatNumber(summary.active_users) : "--"}
+          detail="Authenticated users with activity in the current 24h window."
+        />
+        <MetricSurface
+          label="API Requests (24h)"
+          value={summary ? formatNumber(summary.requests_total) : "--"}
+          detail="Aggregate request count across admin-visible engine traffic."
+        />
+        <MetricSurface
+          label="Error Rate"
+          value={summary ? `${summary.error_rate_pct.toFixed(2)}%` : "--"}
+          detail="Failure ratio for the same 24h request population."
+        />
       </div>
 
       {loading ? (
         <p className="helper">Loading dashboard metrics...</p>
       ) : (
         <>
-          <article className="panel chart-panel">
-            <h3>24h Request Trend</h3>
+          <SurfaceCard
+            eyebrow="Telemetry"
+            title="24h Request Trend"
+            summary="Hourly request and failure trajectories for the active traffic window."
+            className="chart-panel"
+          >
             <div className="chart-wrap">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={timeseries}>
@@ -209,10 +218,13 @@ export default function DashboardPage() {
                 </LineChart>
               </ResponsiveContainer>
             </div>
-          </article>
+          </SurfaceCard>
 
-          <article className="panel">
-            <h3>Top Consumers (24h)</h3>
+          <SurfaceCard
+            eyebrow="Demand"
+            title="Top Consumers (24h)"
+            summary="Highest-traffic users ranked by volume and failure load."
+          >
             <div className="table-wrap compact">
               <table>
                 <thead>
@@ -245,7 +257,7 @@ export default function DashboardPage() {
                 </tbody>
               </table>
             </div>
-          </article>
+          </SurfaceCard>
         </>
       )}
     </PageShell>

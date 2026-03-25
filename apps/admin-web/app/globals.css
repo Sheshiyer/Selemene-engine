@@ -66,6 +66,10 @@ a {
   min-height: 100vh;
 }
 
+.shell-v2 {
+  grid-template-columns: minmax(260px, 296px) minmax(0, 1fr);
+}
+
 .sidebar {
   border-right: 1px solid var(--line);
   background:
@@ -73,6 +77,17 @@ a {
     radial-gradient(circle at top left, var(--glow-bronze), transparent 38%);
   backdrop-filter: blur(18px);
   padding: 1.25rem 1rem 1.4rem;
+}
+
+.shell-sidebar {
+  display: grid;
+  align-content: start;
+  gap: 1rem;
+}
+
+.brand-lockup {
+  display: grid;
+  gap: 0.35rem;
 }
 
 .brand {
@@ -91,12 +106,29 @@ a {
   gap: 0.4rem;
 }
 
+.nav-section-stack {
+  display: grid;
+  gap: 1rem;
+}
+
+.nav-section {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.nav-section-label {
+  padding-left: 0.12rem;
+}
+
 .nav-item {
   border: 1px solid var(--line);
   border-radius: 14px;
   padding: 0.72rem 0.82rem;
   color: var(--text-muted);
-  display: block;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
   font-size: 0.92rem;
   background: rgba(240, 237, 227, 0.02);
   transition:
@@ -124,6 +156,11 @@ a {
   padding: 1.25rem 1.35rem 1.5rem;
 }
 
+.shell-content {
+  display: grid;
+  gap: 1rem;
+}
+
 .topbar {
   border: 1px solid var(--line);
   background:
@@ -136,6 +173,10 @@ a {
   align-items: center;
   margin-bottom: 1.1rem;
   box-shadow: 0 16px 40px rgba(5, 11, 20, 0.24);
+}
+
+.topbar-v2 {
+  align-items: flex-start;
 }
 
 .topbar h1 {
@@ -171,6 +212,42 @@ a {
   box-shadow: 0 18px 44px rgba(3, 10, 18, 0.28);
 }
 
+.surface-card {
+  position: relative;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background:
+    linear-gradient(180deg, rgba(16, 29, 47, 0.95), rgba(11, 20, 33, 0.94)),
+    radial-gradient(circle at top right, rgba(196, 135, 59, 0.08), transparent 32%);
+  padding: 1.05rem;
+  box-shadow: 0 18px 44px rgba(3, 10, 18, 0.28);
+}
+
+.surface-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 0.95rem;
+}
+
+.surface-card-header h3 {
+  margin: 0.24rem 0 0.28rem;
+  font-family: var(--font-display), sans-serif;
+  font-size: clamp(1.1rem, 1.5vw, 1.35rem);
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.surface-card-actions {
+  flex: 0 0 auto;
+}
+
+.surface-card-body {
+  display: grid;
+  gap: 0.9rem;
+}
+
 .panel h2,
 .panel h3 {
   margin-top: 0;
@@ -196,6 +273,10 @@ a {
     radial-gradient(circle at top left, rgba(196, 135, 59, 0.08), transparent 48%);
 }
 
+.metric-surface {
+  box-shadow: inset 0 0 0 1px rgba(223, 170, 105, 0.04);
+}
+
 .metric .label {
   font-family: var(--font-mono), monospace;
   font-size: 0.74rem;
@@ -209,6 +290,87 @@ a {
   font-family: var(--font-display), sans-serif;
   font-size: clamp(1.45rem, 2vw, 1.9rem);
   letter-spacing: 0.03em;
+}
+
+.metric-detail {
+  margin-top: 0.45rem;
+}
+
+.action-rail {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.55rem;
+}
+
+.action-rail > * {
+  flex: 0 0 auto;
+}
+
+.action-rail button,
+.action-rail select,
+.action-rail a {
+  border: 1px solid var(--line-strong);
+  border-radius: 12px;
+  padding: 0.55rem 0.8rem;
+  background: rgba(240, 237, 227, 0.03);
+  color: var(--text);
+}
+
+.action-rail select {
+  min-height: 42px;
+}
+
+.shell-action-btn {
+  cursor: pointer;
+}
+
+.shell-action-link {
+  display: inline-flex;
+  align-items: center;
+}
+
+.topbar-action-rail {
+  max-width: 420px;
+}
+
+.shell-main-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(240px, 296px);
+  gap: 1rem;
+  align-items: start;
+}
+
+.shell-primary-column,
+.shell-context-column {
+  display: grid;
+  gap: 1rem;
+}
+
+.shell-context-list {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.sidebar-session-card {
+  margin-top: auto;
+}
+
+.sidebar-session-grid {
+  display: grid;
+  gap: 0.85rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.shell-state-wrap {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 1.5rem;
+}
+
+.shell-state-card {
+  width: min(560px, 100%);
 }
 
 .helper {
@@ -549,6 +711,52 @@ tbody tr.clickable-row:focus-visible {
   width: min(920px, 100%);
 }
 
+.overlay-surface {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.overlay-surface-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.overlay-surface-body {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.overlay-surface-footer {
+  margin-top: 0;
+}
+
+.overlay-close {
+  border: 1px solid var(--line-strong);
+  border-radius: 10px;
+  padding: 0.48rem 0.7rem;
+  background: rgba(240, 237, 227, 0.03);
+  color: var(--text);
+  cursor: pointer;
+}
+
+.drawer-overlay {
+  place-items: stretch end;
+}
+
+.drawer-surface {
+  width: min(540px, 100%);
+  height: 100%;
+  border-left: 1px solid var(--line-strong);
+  background:
+    linear-gradient(180deg, rgba(16, 29, 47, 0.98), rgba(10, 19, 31, 0.98)),
+    radial-gradient(circle at top right, var(--glow-bronze), transparent 32%);
+  padding: 1.2rem;
+  overflow-y: auto;
+  box-shadow: -24px 0 48px rgba(3, 10, 18, 0.35);
+}
+
 .modal-card h3 {
   margin-top: 0;
 }
@@ -664,10 +872,18 @@ tbody tr.clickable-row:focus-visible {
   padding-bottom: 0.78rem;
 }
 
+.api-key-metrics {
+  margin-top: 0.15rem;
+}
+
 .modal-two-column {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 0.65rem;
+}
+
+.modal-section {
+  margin-bottom: 0.65rem;
 }
 
 .key-management-modal {
@@ -711,6 +927,7 @@ tbody tr.clickable-row:focus-visible {
   flex-wrap: wrap;
   gap: 0.6rem;
   margin-bottom: 1rem;
+  justify-content: flex-start;
 }
 
 .icon-action {
@@ -859,6 +1076,32 @@ tbody tr.clickable-row:focus-visible {
 
 .link-btn:hover {
   color: #f0c993;
+}
+
+.overlay-detail-grid {
+  gap: 0.55rem;
+}
+
+.overlay-json-block {
+  margin: 0;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--bg-elevated);
+  padding: 0.75rem;
+  overflow: auto;
+  font-size: 0.8rem;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 /* ---- Key prefix ---- */
@@ -1014,9 +1257,21 @@ tbody tr.clickable-row:focus-visible {
     grid-template-columns: 1fr;
   }
 
-  .page-shell-header,
-  .key-modal-header,
-  .detail-card-head {
+.page-shell-header,
+.key-modal-header,
+ .detail-card-head,
+ .surface-card-header,
+ .overlay-surface-header,
+ .topbar-v2 {
     flex-direction: column;
+  }
+
+  .shell-main-grid,
+  .sidebar-session-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .topbar-action-rail {
+    max-width: none;
   }
 }

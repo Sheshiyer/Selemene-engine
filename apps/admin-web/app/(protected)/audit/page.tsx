@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { ActionRail, MetricSurface, SurfaceCard } from "@/components/admin-primitives";
+import { DrawerSurface } from "@/components/overlay-surface";
 import { PageShell } from "@/components/page-shell";
 import { getAuthToken } from "@/lib/auth";
 import {
@@ -212,6 +214,19 @@ export default function AuditPage() {
     <PageShell
       title="Audit Trail"
       summary="Immutable request-level event stream with actor/action filters and structured detail payloads."
+      actions={
+        <ActionRail label="Audit actions">
+          <button type="button" onClick={() => void loadAudit()}>
+            Refresh
+          </button>
+          <button type="button" onClick={handleExportCsv} disabled={events.length === 0}>
+            Export CSV
+          </button>
+          <button type="button" onClick={handleExportJson} disabled={events.length === 0}>
+            Export JSON
+          </button>
+        </ActionRail>
+      }
     >
       <div className="panel-inline">
         <label>
@@ -262,40 +277,37 @@ export default function AuditPage() {
             ))}
           </select>
         </label>
-        <button type="button" onClick={() => void loadAudit()}>
-          Refresh
-        </button>
-        <button type="button" onClick={handleExportCsv} disabled={events.length === 0}>
-          Export CSV
-        </button>
-        <button type="button" onClick={handleExportJson} disabled={events.length === 0}>
-          Export JSON
-        </button>
       </div>
 
       <p className="helper">Last updated: {formatDateTime(lastUpdatedAt)}</p>
 
       <div className="grid metrics">
-        <article className="metric">
-          <div className="label">Matching events</div>
-          <div className="value">{loading ? "--" : total}</div>
-        </article>
-        <article className="metric">
-          <div className="label">Visible rows</div>
-          <div className="value">{events.length}</div>
-        </article>
-        <article className="metric">
-          <div className="label">Failures in result</div>
-          <div className="value">{failureCount}</div>
-        </article>
+        <MetricSurface
+          label="Matching events"
+          value={loading ? "--" : total}
+          detail="Server-side count for the active filter combination."
+        />
+        <MetricSurface
+          label="Visible rows"
+          value={events.length}
+          detail="Rows currently loaded into the table viewport."
+        />
+        <MetricSurface
+          label="Failures in result"
+          value={failureCount}
+          detail="Non-success outcomes within the visible result set."
+        />
       </div>
 
       {error ? <div className="error">{error}</div> : null}
       {success ? <div className="success">{success}</div> : null}
       {loading ? <p className="helper">Loading audit events...</p> : null}
 
-      <article className="panel">
-        <h3>Events</h3>
+      <SurfaceCard
+        eyebrow="Ledger"
+        title="Events"
+        summary="Request-scoped trace records with copyable identifiers and contextual target data."
+      >
         <div className="table-wrap compact">
           <table>
             <thead>
@@ -313,7 +325,7 @@ export default function AuditPage() {
               {events.map((event) => (
                 <tr
                   key={event.event_id}
-                  style={{ cursor: "pointer" }}
+                  className="clickable-row"
                   onClick={() => void openDetail(event.event_id)}
                 >
                   <td>{formatDateTime(event.occurred_at)}</td>
@@ -363,15 +375,35 @@ export default function AuditPage() {
             </tbody>
           </table>
         </div>
-      </article>
+      </SurfaceCard>
 
-      {selected ? (
-        <article className="panel">
-          <h3>Event Detail</h3>
-          <div className="grid" style={{ gap: "0.5rem" }}>
+      {detailLoading ? <p className="helper">Loading selected event detail...</p> : null}
+
+      <DrawerSurface
+        open={Boolean(selected)}
+        onClose={() => setSelected(null)}
+        eyebrow="Event Detail"
+        title={selected?.action ?? "Audit event"}
+        summary={
+          selected
+            ? `${selected.actor_email} · ${selected.target_type} / ${selected.target_id ?? "--"}`
+            : undefined
+        }
+        footer={
+          <button type="button" onClick={() => setSelected(null)}>
+            Close
+          </button>
+        }
+      >
+        {selected ? (
+          <div className="grid overlay-detail-grid">
             <div className="helper">
               Event ID: {selected.event_id}{" "}
-              <button type="button" className="link-btn" onClick={() => void handleCopy(selected.event_id, "Event ID")}>
+              <button
+                type="button"
+                className="link-btn"
+                onClick={() => void handleCopy(selected.event_id, "Event ID")}
+              >
                 copy
               </button>
             </div>
@@ -383,24 +415,10 @@ export default function AuditPage() {
               Action: {selected.action} · Target: {selected.target_type} / {selected.target_id ?? "--"}
             </div>
             <div className="helper">Request ID: {selected.request_id}</div>
-            <pre
-              style={{
-                margin: 0,
-                border: "1px solid var(--line)",
-                borderRadius: "10px",
-                background: "var(--bg-elevated)",
-                padding: "0.75rem",
-                overflow: "auto",
-                fontSize: "0.8rem"
-              }}
-            >
-              {JSON.stringify(selected.metadata, null, 2)}
-            </pre>
+            <pre className="overlay-json-block">{JSON.stringify(selected.metadata, null, 2)}</pre>
           </div>
-        </article>
-      ) : null}
-
-      {detailLoading ? <p className="helper">Loading selected event detail...</p> : null}
+        ) : null}
+      </DrawerSurface>
     </PageShell>
   );
 }

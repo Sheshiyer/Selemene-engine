@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { ActionRail, MetricSurface, SurfaceCard } from "@/components/admin-primitives";
+import { ModalSurface } from "@/components/overlay-surface";
 import { PageShell } from "@/components/page-shell";
 import { getAuthToken } from "@/lib/auth";
 import {
@@ -484,6 +486,22 @@ export default function ApiKeysPage() {
     <PageShell
       title="API Keys"
       summary="Operate API key lifecycle from a single management surface with status, ownership, and destructive controls."
+      actions={
+        <ActionRail label="API key actions">
+          <button type="button" onClick={() => void loadKeys()}>
+            Refresh
+          </button>
+          <button type="button" onClick={handleExportCsv} disabled={filteredKeys.length === 0}>
+            Export CSV
+          </button>
+          <button type="button" onClick={handleExportJson} disabled={filteredKeys.length === 0}>
+            Export JSON
+          </button>
+          <button type="button" onClick={() => setShowCreate(true)}>
+            Create key
+          </button>
+        </ActionRail>
+      }
     >
       <div className="panel-inline">
         <label>
@@ -511,267 +529,256 @@ export default function ApiKeysPage() {
             <option value="revoked">Revoked</option>
           </select>
         </label>
-        <button type="button" onClick={() => void loadKeys()}>
-          Refresh
-        </button>
-        <button type="button" onClick={handleExportCsv} disabled={filteredKeys.length === 0}>
-          Export CSV
-        </button>
-        <button type="button" onClick={handleExportJson} disabled={filteredKeys.length === 0}>
-          Export JSON
-        </button>
-        <button type="button" onClick={() => setShowCreate(true)} style={{ minWidth: 120 }}>
-          + Create key
-        </button>
       </div>
 
-      <div className="grid metrics" style={{ marginTop: "0.8rem" }}>
-        <article className="metric">
-          <div className="label">Total keys</div>
-          <div className="value">{total}</div>
-        </article>
-        <article className="metric">
-          <div className="label">Active</div>
-          <div className="value">{activeCount}</div>
-        </article>
-        <article className="metric">
-          <div className="label">Revoked</div>
-          <div className="value">{revokedCount}</div>
-        </article>
-        <article className="metric">
-          <div className="label">Expiring in 7d</div>
-          <div className="value">{expiringCount}</div>
-        </article>
+      <div className="grid metrics api-key-metrics">
+        <MetricSurface label="Total keys" value={total} detail="All keys matching the current query scope." />
+        <MetricSurface label="Active" value={activeCount} detail="Keys that can still authenticate requests." />
+        <MetricSurface label="Revoked" value={revokedCount} detail="Keys retained for audit but blocked from use." />
+        <MetricSurface
+          label="Expiring in 7d"
+          value={expiringCount}
+          detail="Active keys that need renewal or rotation planning."
+        />
       </div>
 
       {error ? (
-        <div className="error" style={{ marginTop: "0.8rem" }} role="alert">
+        <div className="error" role="alert">
           {error}
         </div>
       ) : null}
 
       {success ? (
-        <div className="success" style={{ marginTop: "0.8rem" }} role="status">
+        <div className="success" role="status">
           {success}
         </div>
       ) : null}
 
       {loading ? (
-        <p className="helper" style={{ marginTop: "1rem" }}>
-          Loading API keys...
-        </p>
+        <p className="helper">Loading API keys...</p>
       ) : (
-        <div className="table-wrap management-table" style={{ marginTop: "0.8rem" }}>
-          <table>
-            <thead>
-              <tr>
-                <th>Key</th>
-                <th>Owner</th>
-                <th>Access</th>
-                <th>Usage</th>
-                <th>Status</th>
-                <th>Manage</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredKeys.map((key) => (
-                <tr
-                  key={key.id}
-                  className="clickable-row"
-                  tabIndex={0}
-                  onClick={() => openKeyModal(key)}
-                  onKeyDown={(event) => {
-                    if (event.key === "Enter" || event.key === " ") {
-                      event.preventDefault();
-                      openKeyModal(key);
-                    }
-                  }}
-                >
-                  <td>
-                    <div className="table-primary">{key.name || "Unnamed key"}</div>
-                    <div className="table-secondary-row">
-                      <span className="key-prefix">{key.key_prefix || `${key.id.slice(0, 8)}...`}</span>
+        <SurfaceCard
+          eyebrow="Registry"
+          title="Key inventory"
+          summary="Ownership, access, lifecycle, and quick-open controls for credential governance."
+        >
+          <div className="table-wrap management-table">
+            <table>
+              <thead>
+                <tr>
+                  <th>Key</th>
+                  <th>Owner</th>
+                  <th>Access</th>
+                  <th>Usage</th>
+                  <th>Status</th>
+                  <th>Manage</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredKeys.map((key) => (
+                  <tr
+                    key={key.id}
+                    className="clickable-row"
+                    tabIndex={0}
+                    onClick={() => openKeyModal(key)}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter" || event.key === " ") {
+                        event.preventDefault();
+                        openKeyModal(key);
+                      }
+                    }}
+                  >
+                    <td>
+                      <div className="table-primary">{key.name || "Unnamed key"}</div>
+                      <div className="table-secondary-row">
+                        <span className="key-prefix">{key.key_prefix || `${key.id.slice(0, 8)}...`}</span>
+                        <button
+                          type="button"
+                          className="link-btn"
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            void handleCopyValue(key.id, "Key ID");
+                          }}
+                        >
+                          {key.id}
+                        </button>
+                      </div>
+                      <div className="helper">Created {formatDateTime(key.created_at)}</div>
+                    </td>
+                    <td>
+                      <div className="table-primary">{key.user_email}</div>
                       <button
                         type="button"
                         className="link-btn"
                         onClick={(event) => {
                           event.stopPropagation();
-                          void handleCopyValue(key.id, "Key ID");
+                          void handleCopyValue(key.user_id, "User ID");
                         }}
                       >
-                        {key.id}
+                        {key.user_id}
                       </button>
-                    </div>
-                    <div className="helper">Created {formatDateTime(key.created_at)}</div>
-                  </td>
-                  <td>
-                    <div className="table-primary">{key.user_email}</div>
-                    <button
-                      type="button"
-                      className="link-btn"
-                      onClick={(event) => {
-                        event.stopPropagation();
-                        void handleCopyValue(key.user_id, "User ID");
-                      }}
-                    >
-                      {key.user_id}
-                    </button>
-                  </td>
-                  <td>
-                    <div className="table-chip-row">
-                      <span className={tierPillClass(key.tier)}>{key.tier}</span>
-                      {permissionsPreview(key.permissions).map((permission) => (
-                        <span className="permission-chip" key={`${key.id}-${permission}`}>
-                          {permission}
-                        </span>
-                      ))}
-                      {key.permissions.length > 2 ? (
-                        <span className="permission-chip muted">+{key.permissions.length - 2}</span>
-                      ) : null}
-                    </div>
-                    <div className="helper">{key.rate_limit}/min rate limit</div>
-                  </td>
-                  <td>
-                    <div className="table-primary">{formatDateTime(key.last_used)}</div>
-                    <div className="helper">
-                      {key.expires_at ? `Expires ${formatDateTime(key.expires_at)}` : "No expiration"}
-                    </div>
-                  </td>
-                  <td>
-                    <span className={statusPillClass(key.is_active ? "active" : "revoked")}>
-                      {key.is_active ? "active" : "revoked"}
-                    </span>
-                  </td>
-                  <td>
-                    <button
-                      type="button"
-                      className="manage-trigger"
-                      onClick={(event) => {
-                        event.stopPropagation();
-                        openKeyModal(key);
-                      }}
-                    >
-                      Open
-                    </button>
-                  </td>
-                </tr>
-              ))}
-              {filteredKeys.length === 0 ? (
-                <tr>
-                  <td colSpan={6}>
-                    <p className="helper">No API keys matched this filter.</p>
-                  </td>
-                </tr>
-              ) : null}
-            </tbody>
-          </table>
-        </div>
+                    </td>
+                    <td>
+                      <div className="table-chip-row">
+                        <span className={tierPillClass(key.tier)}>{key.tier}</span>
+                        {permissionsPreview(key.permissions).map((permission) => (
+                          <span className="permission-chip" key={`${key.id}-${permission}`}>
+                            {permission}
+                          </span>
+                        ))}
+                        {key.permissions.length > 2 ? (
+                          <span className="permission-chip muted">+{key.permissions.length - 2}</span>
+                        ) : null}
+                      </div>
+                      <div className="helper">{key.rate_limit}/min rate limit</div>
+                    </td>
+                    <td>
+                      <div className="table-primary">{formatDateTime(key.last_used)}</div>
+                      <div className="helper">
+                        {key.expires_at ? `Expires ${formatDateTime(key.expires_at)}` : "No expiration"}
+                      </div>
+                    </td>
+                    <td>
+                      <span className={statusPillClass(key.is_active ? "active" : "revoked")}>
+                        {key.is_active ? "active" : "revoked"}
+                      </span>
+                    </td>
+                    <td>
+                      <button
+                        type="button"
+                        className="manage-trigger"
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          openKeyModal(key);
+                        }}
+                      >
+                        Open
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+                {filteredKeys.length === 0 ? (
+                  <tr>
+                    <td colSpan={6}>
+                      <p className="helper">No API keys matched this filter.</p>
+                    </td>
+                  </tr>
+                ) : null}
+              </tbody>
+            </table>
+          </div>
+        </SurfaceCard>
       )}
 
-      {showCreate ? (
-        <div className="modal-overlay" onClick={() => setShowCreate(false)}>
-          <div className="modal-card" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">
-            <h3>Create API Key</h3>
+      <ModalSurface
+        open={showCreate}
+        onClose={() => setShowCreate(false)}
+        eyebrow="Create"
+        title="Create API Key"
+        summary="Generate a new key with explicit tier, permission, and expiration controls."
+        footer={
+          <>
+            <button type="button" onClick={() => setShowCreate(false)}>
+              Cancel
+            </button>
+            <button
+              type="button"
+              className="btn-primary"
+              disabled={creating || !createUserId.trim()}
+              onClick={handleCreate}
+            >
+              {creating ? "Creating..." : "Generate key"}
+            </button>
+          </>
+        }
+      >
+        <div className="form-group">
+          <label>Key name</label>
+          <input
+            value={createName}
+            onChange={(e) => setCreateName(e.target.value)}
+            placeholder="e.g. Production Mobile App"
+          />
+        </div>
 
-            <div className="form-group">
-              <label>Key name</label>
-              <input
-                value={createName}
-                onChange={(e) => setCreateName(e.target.value)}
-                placeholder="e.g. Production Mobile App"
-              />
-            </div>
+        <div className="form-group">
+          <label>User ID</label>
+          <input
+            value={createUserId}
+            onChange={(e) => setCreateUserId(e.target.value)}
+            placeholder="UUID of the target user"
+          />
+        </div>
 
-            <div className="form-group">
-              <label>User ID</label>
-              <input
-                value={createUserId}
-                onChange={(e) => setCreateUserId(e.target.value)}
-                placeholder="UUID of the target user"
-              />
-            </div>
-
-            <div className="modal-two-column">
-              <div className="form-group">
-                <label>Tier</label>
-                <select value={createTier} onChange={(e) => setCreateTier(e.target.value)}>
-                  <option value="free">Free (60/min)</option>
-                  <option value="premium">Premium (1,000/min)</option>
-                  <option value="enterprise">Enterprise (10,000/min)</option>
-                </select>
-              </div>
-              <div className="form-group">
-                <label>Rate limit override</label>
-                <input
-                  value={createRateLimit}
-                  onChange={(e) => setCreateRateLimit(e.target.value)}
-                  placeholder="req/min"
-                />
-              </div>
-            </div>
-
-            <div className="form-group">
-              <label>Expiration (optional)</label>
-              <input
-                type="datetime-local"
-                value={createExpires}
-                onChange={(e) => setCreateExpires(e.target.value)}
-              />
-            </div>
-
-            <div style={{ marginBottom: "0.65rem" }}>
-              <label className="form-section-label">Permissions</label>
-              {PERMISSION_GROUPS.map((group) => (
-                <div className="perm-group" key={group.label}>
-                  <div className="perm-group-label">{group.label}</div>
-                  <div className="perm-list">
-                    {group.permissions.map((permission) => (
-                      <label className="perm-item" key={permission.value}>
-                        <input
-                          type="checkbox"
-                          checked={createPerms.has(permission.value)}
-                          onChange={() => togglePerm(permission.value)}
-                        />
-                        <span>{permission.label}</span>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="modal-actions">
-              <button type="button" onClick={() => setShowCreate(false)}>
-                Cancel
-              </button>
-              <button
-                type="button"
-                className="btn-primary"
-                disabled={creating || !createUserId.trim()}
-                onClick={handleCreate}
-              >
-                {creating ? "Creating..." : "Generate key"}
-              </button>
-            </div>
+        <div className="modal-two-column">
+          <div className="form-group">
+            <label>Tier</label>
+            <select value={createTier} onChange={(e) => setCreateTier(e.target.value)}>
+              <option value="free">Free (60/min)</option>
+              <option value="premium">Premium (1,000/min)</option>
+              <option value="enterprise">Enterprise (10,000/min)</option>
+            </select>
+          </div>
+          <div className="form-group">
+            <label>Rate limit override</label>
+            <input
+              value={createRateLimit}
+              onChange={(e) => setCreateRateLimit(e.target.value)}
+              placeholder="req/min"
+            />
           </div>
         </div>
-      ) : null}
 
-      {selectedKey ? (
-        <div className="modal-overlay" onClick={closeKeyModal}>
-          <div
-            className="modal-card modal-card-wide key-management-modal"
-            onClick={(e) => e.stopPropagation()}
-            role="dialog"
-            aria-modal="true"
-          >
+        <div className="form-group">
+          <label>Expiration (optional)</label>
+          <input
+            type="datetime-local"
+            value={createExpires}
+            onChange={(e) => setCreateExpires(e.target.value)}
+          />
+        </div>
+
+        <div className="modal-section">
+          <label className="form-section-label">Permissions</label>
+          {PERMISSION_GROUPS.map((group) => (
+            <div className="perm-group" key={group.label}>
+              <div className="perm-group-label">{group.label}</div>
+              <div className="perm-list">
+                {group.permissions.map((permission) => (
+                  <label className="perm-item" key={permission.value}>
+                    <input
+                      type="checkbox"
+                      checked={createPerms.has(permission.value)}
+                      onChange={() => togglePerm(permission.value)}
+                    />
+                    <span>{permission.label}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </ModalSurface>
+
+      <ModalSurface
+        open={Boolean(selectedKey)}
+        onClose={closeKeyModal}
+        eyebrow="API key management"
+        title={selectedKey?.name || "Unnamed key"}
+        summary="Full lifecycle controls for a single key, including permanent deletion."
+        className="modal-card-wide key-management-modal"
+        footer={
+          <button type="button" onClick={closeKeyModal}>
+            Close
+          </button>
+        }
+      >
+        {selectedKey ? (
+          <>
             <div className="key-modal-header">
               <div>
-                <div className="eyebrow">API key management</div>
-                <h3>{selectedKey.name || "Unnamed key"}</h3>
-                <p className="helper">
-                  Full lifecycle controls for a single key, including permanent deletion.
-                </p>
+                <div className="eyebrow">Lifecycle</div>
+                <p className="helper">Operate, rotate, revoke, and delete from a single operator surface.</p>
               </div>
               <div className="key-modal-header-meta">
                 <span className={statusPillClass(selectedKey.is_active ? "active" : "revoked")}>
@@ -781,7 +788,7 @@ export default function ApiKeysPage() {
               </div>
             </div>
 
-            <div className="key-modal-toolbar">
+            <ActionRail className="key-modal-toolbar" label="Key management actions">
               <button
                 type="button"
                 className="icon-action"
@@ -809,7 +816,7 @@ export default function ApiKeysPage() {
                 <TrashIcon />
                 <span>Delete</span>
               </button>
-            </div>
+            </ActionRail>
 
             <div className="key-modal-grid">
               <section className="detail-card">
@@ -940,98 +947,102 @@ export default function ApiKeysPage() {
                 </button>
               </section>
             </div>
+          </>
+        ) : null}
+      </ModalSurface>
 
-            <div className="modal-actions">
-              <button type="button" onClick={closeKeyModal}>
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
-      ) : null}
+      <ModalSurface
+        open={Boolean(confirmRevoke)}
+        onClose={() => setConfirmRevoke(null)}
+        eyebrow="Destructive action"
+        title="Revoke API key"
+        summary={
+          confirmRevoke
+            ? `Revoke ${confirmRevoke.name || confirmRevoke.id} and stop all future usage.`
+            : undefined
+        }
+        footer={
+          <>
+            <button type="button" onClick={() => setConfirmRevoke(null)}>
+              Cancel
+            </button>
+            <button
+              type="button"
+              className="btn-danger"
+              disabled={!confirmRevoke || submittingId === confirmRevoke.id}
+              onClick={() => confirmRevoke && void handleRevoke(confirmRevoke)}
+            >
+              {confirmRevoke && submittingId === confirmRevoke.id ? "Revoking..." : "Revoke key"}
+            </button>
+          </>
+        }
+      >
+        {confirmRevoke ? (
+          <p className="helper">User: {confirmRevoke.user_email} | Tier: {confirmRevoke.tier}</p>
+        ) : null}
+      </ModalSurface>
 
-      {confirmRevoke ? (
-        <div className="modal-overlay" onClick={() => setConfirmRevoke(null)}>
-          <div className="modal-card" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">
-            <h3>Revoke API key</h3>
-            <p style={{ margin: "0 0 0.6rem" }}>
-              Revoke <strong>{confirmRevoke.name || confirmRevoke.id}</strong> and stop all future usage.
-            </p>
-            <p className="helper" style={{ margin: "0 0 0.8rem" }}>
-              User: {confirmRevoke.user_email} | Tier: {confirmRevoke.tier}
-            </p>
-            <div className="modal-actions">
-              <button type="button" onClick={() => setConfirmRevoke(null)}>
-                Cancel
-              </button>
-              <button
-                type="button"
-                className="btn-danger"
-                disabled={submittingId === confirmRevoke.id}
-                onClick={() => void handleRevoke(confirmRevoke)}
-              >
-                {submittingId === confirmRevoke.id ? "Revoking..." : "Revoke key"}
-              </button>
-            </div>
-          </div>
-        </div>
-      ) : null}
+      <ModalSurface
+        open={Boolean(confirmRotate)}
+        onClose={() => setConfirmRotate(null)}
+        eyebrow="Credential rotation"
+        title="Rotate API key"
+        summary={
+          confirmRotate
+            ? `Rotate ${confirmRotate.name || confirmRotate.id}. The current secret will be deactivated and replaced.`
+            : undefined
+        }
+        footer={
+          <>
+            <button type="button" onClick={() => setConfirmRotate(null)}>
+              Cancel
+            </button>
+            <button
+              type="button"
+              className="btn-primary"
+              disabled={!confirmRotate || submittingId === confirmRotate.id}
+              onClick={() => confirmRotate && void handleRotate(confirmRotate)}
+            >
+              {confirmRotate && submittingId === confirmRotate.id ? "Rotating..." : "Rotate key"}
+            </button>
+          </>
+        }
+      >
+        {confirmRotate ? (
+          <p className="helper">User: {confirmRotate.user_email} | Tier: {confirmRotate.tier}</p>
+        ) : null}
+      </ModalSurface>
 
-      {confirmRotate ? (
-        <div className="modal-overlay" onClick={() => setConfirmRotate(null)}>
-          <div className="modal-card" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">
-            <h3>Rotate API key</h3>
-            <p style={{ margin: "0 0 0.6rem" }}>
-              Rotating <strong>{confirmRotate.name || confirmRotate.id}</strong> deactivates the current key
-              and issues a new secret.
-            </p>
-            <p className="helper" style={{ margin: "0 0 0.8rem" }}>
-              User: {confirmRotate.user_email} | Tier: {confirmRotate.tier}
-            </p>
-            <div className="modal-actions">
-              <button type="button" onClick={() => setConfirmRotate(null)}>
-                Cancel
-              </button>
-              <button
-                type="button"
-                className="btn-primary"
-                disabled={submittingId === confirmRotate.id}
-                onClick={() => void handleRotate(confirmRotate)}
-              >
-                {submittingId === confirmRotate.id ? "Rotating..." : "Rotate key"}
-              </button>
-            </div>
-          </div>
-        </div>
-      ) : null}
-
-      {confirmDelete ? (
-        <div className="modal-overlay" onClick={() => setConfirmDelete(null)}>
-          <div className="modal-card" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">
-            <h3>Delete API key permanently</h3>
-            <p style={{ margin: "0 0 0.6rem" }}>
-              Permanently delete <strong>{confirmDelete.name || confirmDelete.id}</strong> from the
-              database.
-            </p>
-            <p className="helper" style={{ margin: "0 0 0.8rem" }}>
-              This removes the row itself, not just active access. This action cannot be undone.
-            </p>
-            <div className="modal-actions">
-              <button type="button" onClick={() => setConfirmDelete(null)}>
-                Cancel
-              </button>
-              <button
-                type="button"
-                className="btn-danger"
-                disabled={submittingId === confirmDelete.id}
-                onClick={() => void handleDelete(confirmDelete)}
-              >
-                {submittingId === confirmDelete.id ? "Deleting..." : "Delete permanently"}
-              </button>
-            </div>
-          </div>
-        </div>
-      ) : null}
+      <ModalSurface
+        open={Boolean(confirmDelete)}
+        onClose={() => setConfirmDelete(null)}
+        eyebrow="Permanent removal"
+        title="Delete API key permanently"
+        summary={
+          confirmDelete
+            ? `Delete ${confirmDelete.name || confirmDelete.id} from the database. This cannot be undone.`
+            : undefined
+        }
+        footer={
+          <>
+            <button type="button" onClick={() => setConfirmDelete(null)}>
+              Cancel
+            </button>
+            <button
+              type="button"
+              className="btn-danger"
+              disabled={!confirmDelete || submittingId === confirmDelete.id}
+              onClick={() => confirmDelete && void handleDelete(confirmDelete)}
+            >
+              {confirmDelete && submittingId === confirmDelete.id ? "Deleting..." : "Delete permanently"}
+            </button>
+          </>
+        }
+      >
+        <p className="helper">
+          This removes the stored record itself, not just active access. Prefer revoke if you need audit retention without hard deletion.
+        </p>
+      </ModalSurface>
     </PageShell>
   );
 }

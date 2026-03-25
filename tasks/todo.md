@@ -40,6 +40,52 @@
 
 ---
 
+# Task Plan — Admin Dashboard Redesign Wave 2 (P1 / W2)
+
+## Checklist
+- [x] Confirm the exact Wave 2 deliverables from the dependency graph (`ADR-05`, `ADR-06`, `ADR-07`).
+- [x] Rebuild the protected shell so every authenticated route inherits the new frame automatically.
+- [x] Add shared surface and card primitives for page sections, metrics, and state panels.
+- [x] Add reusable modal, drawer, and action rail primitives.
+- [x] Apply the new primitives to at least the shell and one existing detail flow so they are not dead code.
+- [x] Verify `apps/admin-web` typecheck, lint, and build after the Wave 2 changes.
+- [x] Record results in the review section.
+
+## Notes
+- This pass is `P1 / W2` only.
+- Scope covers shell and primitive infrastructure, not the later page redesign issues.
+- The goal is to make later route-level redesigns compositional instead of one-off.
+
+## Review (fill after execution)
+- Scope:
+  - executed `P1 / W2` only (`ADR-05`, `ADR-06`, `ADR-07`)
+  - did not claim later route-level redesign waves because those depend on this shell/primitives layer
+- Shell:
+  - rebuilt `app/(protected)/layout.tsx` into a two-column shell with grouped navigation, route context, operator context, and shell-level action rail
+  - added route metadata so every protected page inherits consistent eyebrow, title, and summary framing
+  - replaced the old one-off loading / missing-session states with shared shell state cards
+- Shared primitives:
+  - added `apps/admin-web/src/components/admin-primitives.tsx` with:
+    - `SurfaceCard`
+    - `MetricSurface`
+    - `ActionRail`
+  - added `apps/admin-web/src/components/overlay-surface.tsx` with:
+    - `ModalSurface`
+    - `DrawerSurface`
+  - refactored `apps/admin-web/src/components/page-shell.tsx` to use the shared surface primitive instead of a bespoke panel wrapper
+- Primitive adoption:
+  - updated `dashboard/page.tsx` to use shared metric and surface cards
+  - updated `audit/page.tsx` to use shared metric cards, event ledger surface, and a drawer-based event detail view
+  - updated `api-keys/page.tsx` to use shared metric cards, action rail, registry surface, and modal primitives for create/manage/confirm flows
+  - extended `apps/admin-web/app/globals.css` with shell-v2, surface, action-rail, modal, and drawer styling needed for downstream waves
+- Verification:
+  - `npm --prefix apps/admin-web run typecheck`
+  - `npm --prefix apps/admin-web run lint`
+  - `npm --prefix apps/admin-web run build`
+  - all three passed on the final post-fix state
+
+---
+
 # Task Plan — Admin Dashboard Overhaul Plan + GitHub Issue Sync
 
 ## Checklist

@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { AccessDenied } from "@/components/access-denied";
+import { ActionRail, SurfaceCard } from "@/components/admin-primitives";
 import { clearAuthToken, getAuthToken } from "@/lib/auth";
 import { ApiClientError, getAdminSession } from "@/lib/api";
 import { hasPermission, requiredPermissionForPath } from "@/lib/permissions";
@@ -13,17 +14,56 @@ interface NavItem {
   href: string;
   label: string;
   permission: string;
+  section: "Control" | "Observability";
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { href: "/dashboard", label: "Dashboard", permission: "admin:analytics:read" },
-  { href: "/users", label: "Users", permission: "admin:users:list" },
-  { href: "/api-keys", label: "API Keys", permission: "admin:keys:list" },
-  { href: "/history-sync", label: "History Sync", permission: "admin:history-sync:read" },
-  { href: "/analytics", label: "Analytics", permission: "admin:analytics:read" },
-  { href: "/system", label: "System", permission: "admin:system:read" },
-  { href: "/audit", label: "Audit", permission: "admin:audit:list" }
+  { href: "/dashboard", label: "Dashboard", permission: "admin:analytics:read", section: "Control" },
+  { href: "/users", label: "Users", permission: "admin:users:list", section: "Control" },
+  { href: "/api-keys", label: "API Keys", permission: "admin:keys:list", section: "Control" },
+  { href: "/history-sync", label: "History Sync", permission: "admin:history-sync:read", section: "Control" },
+  { href: "/analytics", label: "Analytics", permission: "admin:analytics:read", section: "Observability" },
+  { href: "/system", label: "System", permission: "admin:system:read", section: "Observability" },
+  { href: "/audit", label: "Audit", permission: "admin:audit:list", section: "Observability" }
 ];
+
+const ROUTE_META: Record<string, { eyebrow: string; title: string; summary: string }> = {
+  "/dashboard": {
+    eyebrow: "Overview",
+    title: "Control Room",
+    summary: "Live platform posture across traffic, failure pressure, and operating context."
+  },
+  "/users": {
+    eyebrow: "Identity",
+    title: "User Governance",
+    summary: "Inspect account state, access posture, and operator-level interventions."
+  },
+  "/api-keys": {
+    eyebrow: "Access",
+    title: "Key Governance",
+    summary: "Manage lifecycle, ownership, and destructive controls for machine credentials."
+  },
+  "/history-sync": {
+    eyebrow: "Consistency",
+    title: "History Sync",
+    summary: "Track ingestion drift, repair posture, and device-linked sync health."
+  },
+  "/analytics": {
+    eyebrow: "Usage",
+    title: "Operational Analytics",
+    summary: "Review traffic mix, usage concentration, and time-window demand behavior."
+  },
+  "/system": {
+    eyebrow: "Infrastructure",
+    title: "System Health",
+    summary: "Monitor service health, cache posture, and workflow availability."
+  },
+  "/audit": {
+    eyebrow: "Trace",
+    title: "Audit Ledger",
+    summary: "Inspect actor, action, target, and request lineage with operational context."
+  }
+};
 
 function toRelativeAdminPath(pathname: string): string {
   if (pathname.startsWith("/admin")) {
@@ -47,6 +87,38 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
     () => requiredPermissionForPath(safePathname),
     [safePathname]
   );
+  const routeMeta = ROUTE_META[relativePath] ?? {
+    eyebrow: "Operational Surface",
+    title: "Admin Portal",
+    summary: "Authenticated administrative controls for Selemene."
+  };
+
+  const loadSession = useCallback(
+    async (authToken: string) => {
+      setLoading(true);
+      try {
+        const result = await getAdminSession(authToken);
+        setSession(result);
+        setError(null);
+        setLoading(false);
+      } catch (err) {
+        clearAuthToken();
+        if (err instanceof ApiClientError) {
+          if (err.status === 401) {
+            const returnTo = encodeURIComponent(relativePath);
+            router.replace(`/login?redirect=${returnTo}`);
+            return;
+          }
+          setError(err.payload?.error ?? err.message);
+          setLoading(false);
+          return;
+        }
+        setError("Unable to load admin session.");
+        setLoading(false);
+      }
+    },
+    [relativePath, router]
+  );
 
   useEffect(() => {
     let cancelled = false;
@@ -59,34 +131,36 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
     }
     const authToken = token;
 
-    async function loadSession() {
+    async function hydrateSession() {
       try {
         const result = await getAdminSession(authToken);
-        if (!cancelled) {
-          setSession(result);
-          setError(null);
-          setLoading(false);
+        if (cancelled) {
+          return;
         }
+        setSession(result);
+        setError(null);
+        setLoading(false);
       } catch (err) {
-        if (!cancelled) {
-          clearAuthToken();
-          if (err instanceof ApiClientError) {
-            if (err.status === 401) {
-              const returnTo = encodeURIComponent(relativePath);
-              router.replace(`/login?redirect=${returnTo}`);
-              return;
-            }
-            setError(err.payload?.error ?? err.message);
-            setLoading(false);
+        if (cancelled) {
+          return;
+        }
+        clearAuthToken();
+        if (err instanceof ApiClientError) {
+          if (err.status === 401) {
+            const returnTo = encodeURIComponent(relativePath);
+            router.replace(`/login?redirect=${returnTo}`);
             return;
           }
-          setError("Unable to load admin session.");
+          setError(err.payload?.error ?? err.message);
           setLoading(false);
+          return;
         }
+        setError("Unable to load admin session.");
+        setLoading(false);
       }
     }
 
-    void loadSession();
+    void hydrateSession();
 
     return () => {
       cancelled = true;
@@ -100,84 +174,212 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
     return hasPermission(session.permissions, requiredPermission);
   }, [requiredPermission, session]);
 
+  const navSections = useMemo(
+    () => [
+      {
+        label: "Control",
+        items: NAV_ITEMS.filter((item) => item.section === "Control")
+      },
+      {
+        label: "Observability",
+        items: NAV_ITEMS.filter((item) => item.section === "Observability")
+      }
+    ],
+    []
+  );
+
+  const accessState = canViewRequiredRoute ? "granted" : "limited";
+  const permissionCount = session?.permissions.length ?? 0;
+
   if (loading) {
     return (
-      <main className="content">
-        <section className="panel">
-          <h2>Loading admin session...</h2>
-          <p className="helper">Verifying credentials and permissions.</p>
-        </section>
+      <main className="shell-state-wrap">
+        <SurfaceCard
+          eyebrow="Session"
+          title="Loading admin session"
+          summary="Verifying credentials, scope, and route permissions."
+          className="shell-state-card"
+        >
+          <div className="ornament-rule" />
+        </SurfaceCard>
       </main>
     );
   }
 
   if (error || !session) {
     return (
-      <main className="content">
-        <section className="panel">
-          <h2>Session unavailable</h2>
-          <p className="helper">{error ?? "No session found."}</p>
-          <button
-            type="button"
-            onClick={() => {
-              clearAuthToken();
-              router.replace("/login");
-            }}
-          >
-            Return to login
-          </button>
-        </section>
+      <main className="shell-state-wrap">
+        <SurfaceCard
+          eyebrow="Session"
+          title="Session unavailable"
+          summary={error ?? "No session found."}
+          actions={
+            <ActionRail>
+              <button
+                type="button"
+                className="shell-action-btn"
+                onClick={() => {
+                  clearAuthToken();
+                  router.replace("/login");
+                }}
+              >
+                Return to login
+              </button>
+            </ActionRail>
+          }
+          className="shell-state-card"
+        >
+          <div className="helper">The shell cannot render protected routes until the session resolves.</div>
+        </SurfaceCard>
       </main>
     );
   }
 
   return (
-    <div className="admin-shell">
-      <aside className="sidebar">
-        <div className="brand">Selemene · Admin</div>
-        <nav className="nav-list">
-          {NAV_ITEMS.map((item) => {
-            const allowed = hasPermission(session.permissions, item.permission);
-            const active = relativePath === item.href;
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`nav-item ${active ? "active" : ""}`}
-                title={allowed ? "" : `Requires ${item.permission}`}
-              >
-                {item.label}
-                {!allowed ? " · locked" : ""}
-              </Link>
-            );
-          })}
-        </nav>
+    <div className="admin-shell shell-v2">
+      <aside className="sidebar shell-sidebar">
+        <div className="brand-lockup">
+          <div className="telemetry-caption">Tryambakam Noesis</div>
+          <div className="brand">Selemene Admin</div>
+          <p className="helper">Maps, not prescriptions.</p>
+        </div>
+
+        <div className="ornament-rule" />
+
+        <div className="nav-section-stack">
+          {navSections.map((section) => (
+            <section key={section.label} className="nav-section">
+              <div className="telemetry-caption nav-section-label">{section.label}</div>
+              <nav className="nav-list">
+                {section.items.map((item) => {
+                  const allowed = hasPermission(session.permissions, item.permission);
+                  const active = relativePath === item.href;
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      className={`nav-item ${active ? "active" : ""}`}
+                      title={allowed ? "" : `Requires ${item.permission}`}
+                    >
+                      <span>{item.label}</span>
+                      <span className={`pill ${allowed ? "ok" : "danger"}`}>
+                        {allowed ? "ready" : "locked"}
+                      </span>
+                    </Link>
+                  );
+                })}
+              </nav>
+            </section>
+          ))}
+        </div>
+
+        <SurfaceCard
+          eyebrow="Session"
+          title={session.tier}
+          summary={session.email}
+          className="sidebar-session-card"
+        >
+          <div className="sidebar-session-grid">
+            <div>
+              <div className="telemetry-caption">Permissions</div>
+              <div className="helper">{permissionCount}</div>
+            </div>
+            <div>
+              <div className="telemetry-caption">Route access</div>
+              <div className="helper">{accessState}</div>
+            </div>
+          </div>
+        </SurfaceCard>
       </aside>
 
-      <main className="content">
-        <header className="topbar">
+      <main className="content shell-content">
+        <header className="topbar topbar-v2">
           <div>
-            <h1>Admin Portal</h1>
-            <p>
-              {session.email} · tier: {session.tier}
-            </p>
+            <div className="eyebrow">{routeMeta.eyebrow}</div>
+            <h1>{routeMeta.title}</h1>
+            <p>{routeMeta.summary}</p>
           </div>
-          <button
-            type="button"
-            onClick={() => {
-              clearAuthToken();
-              router.replace("/login");
-            }}
-          >
-            Sign out
-          </button>
+          <ActionRail className="topbar-action-rail" label="Shell actions">
+            <button
+              type="button"
+              className="shell-action-btn"
+              onClick={() => {
+                const token = getAuthToken();
+                if (!token) {
+                  clearAuthToken();
+                  router.replace("/login");
+                  return;
+                }
+                void loadSession(token);
+              }}
+            >
+              Refresh session
+            </button>
+            <Link href="/api-keys" className="shell-action-btn shell-action-link">
+              Open keys
+            </Link>
+            <button
+              type="button"
+              className="shell-action-btn"
+              onClick={() => {
+                clearAuthToken();
+                router.replace("/login");
+              }}
+            >
+              Sign out
+            </button>
+          </ActionRail>
         </header>
 
-        {!canViewRequiredRoute && requiredPermission ? (
-          <AccessDenied permission={requiredPermission} />
-        ) : (
-          children
-        )}
+        <div className="shell-main-grid">
+          <section className="shell-primary-column">
+            {!canViewRequiredRoute && requiredPermission ? (
+              <AccessDenied permission={requiredPermission} />
+            ) : (
+              children
+            )}
+          </section>
+
+          <aside className="shell-context-column">
+            <SurfaceCard
+              eyebrow="Route"
+              title={routeMeta.title}
+              summary="Shared context card for the active administrative surface."
+            >
+              <div className="shell-context-list">
+                <div>
+                  <div className="telemetry-caption">Path</div>
+                  <div className="helper">{relativePath}</div>
+                </div>
+                <div>
+                  <div className="telemetry-caption">Required permission</div>
+                  <div className="helper">{requiredPermission ?? "none"}</div>
+                </div>
+                <div>
+                  <div className="telemetry-caption">Access</div>
+                  <div className="helper">{accessState}</div>
+                </div>
+              </div>
+            </SurfaceCard>
+
+            <SurfaceCard eyebrow="Operator" title="Current account" summary="Session-derived operator posture.">
+              <div className="shell-context-list">
+                <div>
+                  <div className="telemetry-caption">Email</div>
+                  <div className="helper">{session.email}</div>
+                </div>
+                <div>
+                  <div className="telemetry-caption">Tier</div>
+                  <div className="helper">{session.tier}</div>
+                </div>
+                <div>
+                  <div className="telemetry-caption">Permission count</div>
+                  <div className="helper">{permissionCount}</div>
+                </div>
+              </div>
+            </SurfaceCard>
+          </aside>
+        </div>
       </main>
     </div>
   );
