@@ -119,3 +119,58 @@
 - Added `supabase/README.md` documenting canonical mirror policy and drift-check command.
 - Verification:
   - `bash scripts/check_migration_drift.sh` passed.
+
+---
+
+# Task Plan — Admin Dashboard Discord OAuth Thin Slice
+
+## Checklist
+- [x] Keep current email/password admin login working as a fallback path.
+- [x] Add frontend Discord OAuth entry components on `/admin/login` with clear primary/secondary auth hierarchy.
+- [x] Add env/config helpers for Discord OAuth URL construction and callback path handling.
+- [x] Add a public callback route that handles `code` / `error` query states and explains next steps without breaking navigation.
+- [x] Update admin-web docs for the new frontend env contract and current thin-slice limitations.
+- [x] Run verification:
+  - [x] `npm --prefix apps/admin-web run typecheck`
+  - [x] `npm --prefix apps/admin-web run lint`
+  - [x] `npm --prefix apps/admin-web run build`
+
+## Notes
+- Scope is frontend-first only; backend Discord token exchange/session issuance is not implemented in this repo yet.
+- The Discord OAuth CTA should be production-safe when env is absent: disabled or explanatory, not broken.
+- Prefer minimal impact to existing admin session storage and route guards.
+
+## Review (fill after execution)
+- Login surface:
+  - added `DiscordAuthPanel` to make Discord the primary auth CTA while preserving credential login as the fallback path
+  - added Discord-specific styling and callback status card treatment to the existing login shell
+- Shared frontend OAuth helpers:
+  - added `src/lib/admin-routing.ts` for reusable admin redirect normalization
+  - added `src/lib/discord-oauth.ts` for state encoding/decoding, readiness checks, and Discord authorize URL construction
+  - extended `src/lib/config.ts` with optional Discord OAuth env accessors and derived callback URI support
+- Routing:
+  - added public callback route at `/admin/auth/discord/callback`
+  - callback UI now handles success/error/missing-state branches and safely routes operators back to login
+- Docs/tooling:
+  - documented Discord OAuth frontend env vars and current backend limitation in `apps/admin-web/README.md`
+  - made `apps/admin-web` `typecheck` deterministic by switching it to `tsc --noEmit --incremental false` because `next typegen` was producing a stale `.next/types/cache-life.d.ts` reference in this repo state
+- Verification:
+  - `npm --prefix apps/admin-web run typecheck`
+  - `npm --prefix apps/admin-web run lint`
+  - `npm --prefix apps/admin-web run build`
+
+---
+
+# Task Plan — Discord Slice Commit And Mainline Readiness
+
+## Checklist
+- [ ] Re-verify the Discord slice on the current `main` working tree.
+- [ ] Confirm fallback routing behavior for missing/failed Discord auth states.
+- [ ] Commit only the Discord slice and task-tracking artifacts to `main`.
+- [ ] Report any external settings still required for live Discord OAuth.
+
+## Notes
+- Scope here is commit/readiness only; no backend OAuth exchange is being added in this step.
+
+## Review (fill after execution)
+- Pending.

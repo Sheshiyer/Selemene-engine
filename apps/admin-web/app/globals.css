@@ -368,6 +368,12 @@ tbody tr:hover {
   color: var(--text-muted);
 }
 
+.login-stack {
+  display: grid;
+  gap: 0.9rem;
+  margin-bottom: 1rem;
+}
+
 .login-form {
   display: grid;
   gap: 0.75rem;
@@ -403,6 +409,106 @@ tbody tr:hover {
   cursor: wait;
 }
 
+.oauth-card {
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 0.95rem;
+  background:
+    radial-gradient(circle at top right, rgba(88, 101, 242, 0.18), transparent 36%),
+    rgba(13, 21, 25, 0.92);
+}
+
+.oauth-card h2 {
+  margin: 0 0 0.45rem;
+  font-size: 1rem;
+}
+
+.oauth-badge {
+  display: inline-flex;
+  align-items: center;
+  margin-bottom: 0.7rem;
+  border: 1px solid rgba(121, 134, 255, 0.3);
+  border-radius: 999px;
+  background: rgba(88, 101, 242, 0.12);
+  color: #cfd5ff;
+  padding: 0.24rem 0.55rem;
+  font-size: 0.74rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.oauth-button,
+.oauth-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 44px;
+  border: 1px solid rgba(121, 134, 255, 0.35);
+  border-radius: 10px;
+  background: linear-gradient(135deg, #5865f2, #6e7bff);
+  color: #f7f8ff;
+  padding: 0.7rem 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.oauth-button[disabled] {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.oauth-helper {
+  margin: 0.65rem 0 0;
+  color: var(--text-muted);
+  font-size: 0.84rem;
+}
+
+.oauth-divider {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 0.75rem;
+  color: var(--text-muted);
+  font-size: 0.76rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.oauth-divider::before,
+.oauth-divider::after {
+  content: "";
+  height: 1px;
+  background: var(--line);
+}
+
+.oauth-callback-card {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.muted-card {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: rgba(18, 28, 31, 0.88);
+  padding: 0.8rem;
+}
+
+.muted-card p,
+.muted-card strong {
+  margin: 0;
+}
+
+.muted-card p {
+  margin-top: 0.4rem;
+}
+
+.oauth-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
 .error {
   border: 1px solid rgba(239, 107, 115, 0.45);
   background: rgba(120, 35, 42, 0.24);
@@ -432,5 +538,15 @@ tbody tr:hover {
 
   .chart-wrap {
     height: 240px;
+  }
+
+  .oauth-divider {
+    grid-template-columns: 1fr;
+    justify-items: center;
+  }
+
+  .oauth-divider::before,
+  .oauth-divider::after {
+    width: 100%;
   }
 }

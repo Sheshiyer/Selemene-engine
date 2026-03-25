@@ -7,3 +7,11 @@
   - real auth/session handshake,
   - route shell,
   - explicit run/deploy docs.
+
+## 2026-03-25 — Deployment Claim Verification
+
+- Do not imply a change is committed, on `main`, or live until all three checks agree:
+  - `git status` shows no local-only delta for the claimed change,
+  - `git log` shows the relevant commit on the current branch,
+  - the live URL reflects the claimed behavior when inspected directly.
+- If any of those checks disagree, state the exact state plainly: local only, committed but undeployed, or deployed but stale.
