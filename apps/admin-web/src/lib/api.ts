@@ -298,6 +298,13 @@ export async function rotateAdminApiKey(
   });
 }
 
+export async function deleteAdminApiKey(token: string, keyId: string): Promise<void> {
+  await request<Record<string, unknown>>(`/api/v1/admin/api-keys/${keyId}`, {
+    method: "DELETE",
+    token
+  });
+}
+
 export async function getHistorySyncUsers(
   token: string,
   params: { limit?: number; offset?: number } = {}

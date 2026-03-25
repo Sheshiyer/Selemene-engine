@@ -28,7 +28,7 @@ use axum::{
     http::{HeaderValue, Method, StatusCode},
     middleware as axum_middleware,
     response::IntoResponse,
-    routing::{get, patch, post, put},
+    routing::{delete, get, patch, post, put},
     Extension, Router,
 };
 use chrono::Timelike;
@@ -99,6 +99,7 @@ use workflow_parity::log_workflow_registry_parity;
         handlers::admin::create_api_key,
         handlers::admin::revoke_api_key,
         handlers::admin::rotate_api_key,
+        handlers::admin::delete_api_key,
         handlers::admin::history_sync_users,
         handlers::admin::history_sync_devices,
         handlers::admin::history_sync_events,
@@ -498,6 +499,10 @@ pub fn create_router(state: AppState, config: &ApiConfig) -> Router {
         .route(
             "/admin/api-keys",
             get(handlers::admin::list_api_keys).post(handlers::admin::create_api_key),
+        )
+        .route(
+            "/admin/api-keys/:key_id",
+            delete(handlers::admin::delete_api_key),
         )
         .route(
             "/admin/api-keys/:key_id/revoke",

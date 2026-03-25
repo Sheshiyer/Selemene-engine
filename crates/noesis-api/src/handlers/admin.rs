@@ -544,6 +544,7 @@ fn derive_roles(permissions: &[String]) -> Vec<String> {
         "admin:keys:create",
         "admin:keys:revoke",
         "admin:keys:rotate",
+        "admin:keys:delete",
         "admin:users:tier:update",
         "admin:history-sync:retry",
     ];
@@ -588,6 +589,7 @@ fn permissions_for_roles(roles: &[String]) -> Vec<String> {
                 permissions.insert("admin:keys:create".to_string());
                 permissions.insert("admin:keys:revoke".to_string());
                 permissions.insert("admin:keys:rotate".to_string());
+                permissions.insert("admin:keys:delete".to_string());
                 permissions.insert("admin:users:tier:update".to_string());
             }
             "platform-admin" => {
@@ -601,6 +603,7 @@ fn permissions_for_roles(roles: &[String]) -> Vec<String> {
                 permissions.insert("admin:keys:create".to_string());
                 permissions.insert("admin:keys:revoke".to_string());
                 permissions.insert("admin:keys:rotate".to_string());
+                permissions.insert("admin:keys:delete".to_string());
                 permissions.insert("admin:users:tier:update".to_string());
             }
             _ => {}
@@ -626,6 +629,7 @@ fn normalize_effective_permissions(permissions: &[String]) -> Vec<String> {
         "admin:keys:create",
         "admin:keys:revoke",
         "admin:keys:rotate",
+        "admin:keys:delete",
         "admin:history-sync:read",
         "admin:history-sync:retry",
     ];
@@ -1643,6 +1647,65 @@ pub async fn rotate_api_key(
             key: map_api_key_record(rotated),
             secret_key,
         }),
+    )
+        .into_response())
+}
+
+/// DELETE /api/v1/admin/api-keys/{key_id} -- permanently delete an API key
+#[utoipa::path(
+    delete,
+    path = "/api/v1/admin/api-keys/{key_id}",
+    tag = "admin",
+    params(("key_id" = String, Path, description = "API key UUID")),
+    responses(
+        (status = 200, description = "API key deleted"),
+        (status = 403, description = "Forbidden", body = crate::ErrorResponse),
+        (status = 404, description = "Key not found", body = crate::ErrorResponse),
+        (status = 422, description = "Validation error", body = crate::ErrorResponse),
+    ),
+    security(("bearer_auth" = []), ("api_key" = []))
+)]
+pub async fn delete_api_key(
+    State(state): State<AppState>,
+    Extension(auth_user): Extension<AuthUser>,
+    Path(key_id): Path<String>,
+) -> Result<Response, ApiError> {
+    let effective_permissions = effective_permissions(&state, &auth_user).await?;
+    if let Some(resp) = require_permission_or_forbidden(&effective_permissions, "admin:keys:delete")
+    {
+        return Ok(resp);
+    }
+
+    let repo = match admin_repo_or_503(&state) {
+        Ok(repo) => repo,
+        Err(resp) => return Ok(resp),
+    };
+
+    let key_uuid = match parse_uuid_or_422(&key_id, "key_id") {
+        Ok(id) => id,
+        Err(resp) => return Ok(resp),
+    };
+
+    let deleted = repo
+        .delete_api_key(key_uuid)
+        .await
+        .map_err(|e| EngineError::InternalError(format!("Failed to delete api key: {e}")))?;
+
+    if !deleted {
+        return Ok(json_error_response(
+            StatusCode::NOT_FOUND,
+            "API key not found",
+            "NOT_FOUND",
+            Some(serde_json::json!({ "key_id": key_id })),
+        ));
+    }
+
+    Ok((
+        StatusCode::OK,
+        Json(serde_json::json!({
+            "message": "API key deleted",
+            "key_id": key_id,
+        })),
     )
         .into_response())
 }
@@ -2841,5 +2904,21 @@ mod tests {
         assert!(permissions
             .iter()
             .any(|perm| perm == "admin:users:roles:update"));
+    }
+
+    #[test]
+    fn admin_role_includes_api_key_delete_permission() {
+        let roles = vec!["admin".to_string()];
+        let permissions = permissions_for_roles(&roles);
+        assert!(permissions.iter().any(|perm| perm == "admin:keys:delete"));
+    }
+
+    #[test]
+    fn legacy_users_permission_normalizes_api_key_delete() {
+        let permissions = vec!["admin:users".to_string()];
+        let normalized = normalize_effective_permissions(&permissions);
+        assert!(normalized
+            .iter()
+            .any(|perm| perm == "admin:keys:delete"));
     }
 }

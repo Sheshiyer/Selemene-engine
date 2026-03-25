@@ -2,6 +2,63 @@
 
 ---
 
+# Task Plan — API Key Management Modal + Permanent Delete
+
+## Checklist
+- [x] Inspect current API keys UI, client contract, and backend admin API support.
+- [x] Add backend admin API support for permanent API key deletion.
+- [x] Extend frontend API client/types/permissions for delete support.
+- [x] Redesign API key table into a row-clickable management surface with detail modal.
+- [x] Add modal actions for reveal-once secret handling, rotate, revoke, and permanent delete.
+- [x] Verify build/lint/typecheck for `apps/admin-web` and targeted backend tests if available.
+- [x] Record results in the review section.
+
+## Notes
+- User wants the table upgraded into a management-level UI with a detail modal.
+- Permanent delete is explicitly required, not a soft archive.
+- Existing keys should not falsely promise full-secret reveal unless returned by create/rotate flows.
+
+## Review (fill after execution)
+- Backend:
+  - added `DELETE /api/v1/admin/api-keys/:key_id` in `crates/noesis-api`
+  - added repository-level hard delete in `crates/noesis-data`
+  - introduced `admin:keys:delete` into admin role/permission normalization
+- Frontend:
+  - upgraded the API keys page from a passive table into a row-clickable management surface
+  - added a wide detail modal with identity, lifecycle, permissions, secret-access section, and a danger zone
+  - create/rotate now route the one-time secret into the management modal instead of a separate bare reveal modal
+  - permanent delete is available via confirmation modal and requires the new permission
+- Verification:
+  - `npm --prefix apps/admin-web run typecheck`
+  - `npm --prefix apps/admin-web run lint`
+  - `npm --prefix apps/admin-web run build`
+  - `cargo test -p noesis-api admin_role_includes_api_key_delete_permission -- --nocapture`
+- Build/test status:
+  - admin-web typecheck passed
+  - admin-web lint passed
+  - admin-web build passed
+  - targeted noesis-api test passed
+
+---
+
+# Task Plan — Diagnose Vercel 404 After Admin Web Root Fix
+
+## Checklist
+- [x] Re-read deployment lessons and prior Vercel notes before further guidance.
+- [ ] Verify the live responses for the custom domain and Vercel production alias.
+- [ ] Inspect deployment docs and active repo config for any remaining Vercel requirements.
+- [ ] Isolate whether the blocker is unsaved settings, missing redeploy, or wrong domain/project binding.
+- [ ] Give the user the exact next action to clear the 404.
+
+## Notes
+- User changed Vercel settings but still sees Vercel `404: NOT_FOUND`.
+- Prior advice must now be treated as incomplete until live deployment/domain state is proven.
+
+## Review (fill after execution)
+- Pending.
+
+---
+
 # Task Plan — Trigger Fresh Vercel Deploy From `main`
 
 ## Checklist
