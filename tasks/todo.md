@@ -86,6 +86,51 @@
 
 ---
 
+# Task Plan — Admin Dashboard Redesign Wave 3 (P1 / W3)
+
+## Checklist
+- [x] Confirm the exact Wave 3 deliverable from the redesign plan (`ADR-08`).
+- [x] Build shared loading, empty, error, and success state components for the admin app.
+- [x] Add the supporting global CSS so state handling has one visual grammar instead of page-specific helpers.
+- [x] Apply the new state system across protected admin pages so route-level loading and empty cases stop diverging.
+- [x] Verify `apps/admin-web` typecheck, lint, and build after the Wave 3 changes.
+- [x] Record results in the review section.
+
+## Notes
+- This pass is `P1 / W3` only.
+- Scope is global state handling, not the later interaction primitives or page redesign issues.
+- The goal is to eliminate ad-hoc `helper` paragraphs and one-off alert blocks before the page redesign waves begin.
+
+## Review (fill after execution)
+- Scope:
+  - executed `P1 / W3` only (`ADR-08`)
+  - did not claim later interaction, mobile, or page-redesign waves
+- Shared state system:
+  - added `apps/admin-web/src/components/admin-state.tsx`
+  - introduced shared:
+    - `StateBanner` for error/success feedback
+    - `StatePanel` for loading and empty state surfaces
+    - `TableEmptyStateRow` for empty table bodies
+  - extended `apps/admin-web/app/globals.css` with reusable ADR-08 state styling
+- Route adoption:
+  - replaced ad-hoc loading/error/empty patterns across protected routes including:
+    - `dashboard/page.tsx`
+    - `analytics/page.tsx`
+    - `system/page.tsx`
+    - `history-sync/page.tsx`
+    - `users/page.tsx`
+    - `audit/page.tsx`
+    - `api-keys/page.tsx`
+  - standardized table-empty treatment so admin tables now share one empty grammar instead of inline helper paragraphs
+  - standardized top-level success/error messaging so action feedback now uses one shared banner treatment
+- Verification:
+  - `npm --prefix apps/admin-web run typecheck`
+  - `npm --prefix apps/admin-web run lint`
+  - `npm --prefix apps/admin-web run build`
+  - all three passed on the final Wave 3 state
+
+---
+
 # Task Plan — Admin Dashboard Overhaul Plan + GitHub Issue Sync
 
 ## Checklist

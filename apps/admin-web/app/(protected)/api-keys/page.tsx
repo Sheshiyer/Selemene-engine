@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { ActionRail, MetricSurface, SurfaceCard } from "@/components/admin-primitives";
+import { StateBanner, StatePanel, TableEmptyStateRow } from "@/components/admin-state";
 import { ModalSurface } from "@/components/overlay-surface";
 import { PageShell } from "@/components/page-shell";
 import { getAuthToken } from "@/lib/auth";
@@ -542,20 +543,16 @@ export default function ApiKeysPage() {
         />
       </div>
 
-      {error ? (
-        <div className="error" role="alert">
-          {error}
-        </div>
-      ) : null}
+      {error ? <StateBanner variant="error" title={error} /> : null}
 
-      {success ? (
-        <div className="success" role="status">
-          {success}
-        </div>
-      ) : null}
+      {success ? <StateBanner variant="success" title={success} /> : null}
 
       {loading ? (
-        <p className="helper">Loading API keys...</p>
+        <StatePanel
+          variant="loading"
+          title="Loading API keys"
+          description="Resolving key inventory, ownership, permission previews, and lifecycle state."
+        />
       ) : (
         <SurfaceCard
           eyebrow="Registry"
@@ -658,11 +655,11 @@ export default function ApiKeysPage() {
                   </tr>
                 ))}
                 {filteredKeys.length === 0 ? (
-                  <tr>
-                    <td colSpan={6}>
-                      <p className="helper">No API keys matched this filter.</p>
-                    </td>
-                  </tr>
+                  <TableEmptyStateRow
+                    colSpan={6}
+                    title="No API keys matched"
+                    description="Try widening the search, tier, or status filters to restore results."
+                  />
                 ) : null}
               </tbody>
             </table>

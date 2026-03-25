@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { StateBanner, StatePanel, TableEmptyStateRow } from "@/components/admin-state";
 import { PageShell } from "@/components/page-shell";
 import { getAuthToken } from "@/lib/auth";
 import {
@@ -172,7 +173,7 @@ export default function SystemPage() {
 
       <p className="helper">Last updated: {formatDateTime(lastUpdatedAt)}</p>
 
-      {error ? <div className="error">{error}</div> : null}
+      {error ? <StateBanner variant="error" title={error} /> : null}
 
       <div className="grid metrics">
         <article className="metric">
@@ -215,7 +216,13 @@ export default function SystemPage() {
         </article>
       </div>
 
-      {loading ? <p className="helper">Loading system telemetry...</p> : null}
+      {loading ? (
+        <StatePanel
+          variant="loading"
+          title="Loading system telemetry"
+          description="Resolving subsystem health, cache posture, service rows, and workflow runtime signals."
+        />
+      ) : null}
 
       <article className="panel">
         <h3>Subsystem Health</h3>
@@ -245,11 +252,11 @@ export default function SystemPage() {
                 </tr>
               ))}
               {!health || health.subsystems.length === 0 ? (
-                <tr>
-                  <td colSpan={4}>
-                    <p className="helper">No subsystem health data available.</p>
-                  </td>
-                </tr>
+                <TableEmptyStateRow
+                  colSpan={4}
+                  title="No subsystem health data"
+                  description="Subsystem checks have not returned any current health snapshots."
+                />
               ) : null}
             </tbody>
           </table>
@@ -289,11 +296,11 @@ export default function SystemPage() {
                 </tr>
               ))}
               {services.length === 0 ? (
-                <tr>
-                  <td colSpan={6}>
-                    <p className="helper">No service rows available.</p>
-                  </td>
-                </tr>
+                <TableEmptyStateRow
+                  colSpan={6}
+                  title="No service rows"
+                  description="No service-level telemetry is available for the current system view."
+                />
               ) : null}
             </tbody>
           </table>
@@ -331,11 +338,11 @@ export default function SystemPage() {
                 </tr>
               ))}
               {workflows.length === 0 ? (
-                <tr>
-                  <td colSpan={6}>
-                    <p className="helper">No workflow runtime data in this window.</p>
-                  </td>
-                </tr>
+                <TableEmptyStateRow
+                  colSpan={6}
+                  title="No workflow runtime data"
+                  description="No workflow executions were observed in the selected time window."
+                />
               ) : null}
             </tbody>
           </table>

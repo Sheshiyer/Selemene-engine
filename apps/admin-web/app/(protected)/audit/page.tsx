@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { ActionRail, MetricSurface, SurfaceCard } from "@/components/admin-primitives";
+import { StateBanner, StatePanel, TableEmptyStateRow } from "@/components/admin-state";
 import { DrawerSurface } from "@/components/overlay-surface";
 import { PageShell } from "@/components/page-shell";
 import { getAuthToken } from "@/lib/auth";
@@ -299,9 +300,15 @@ export default function AuditPage() {
         />
       </div>
 
-      {error ? <div className="error">{error}</div> : null}
-      {success ? <div className="success">{success}</div> : null}
-      {loading ? <p className="helper">Loading audit events...</p> : null}
+      {error ? <StateBanner variant="error" title={error} /> : null}
+      {success ? <StateBanner variant="success" title={success} /> : null}
+      {loading ? (
+        <StatePanel
+          variant="loading"
+          title="Loading audit events"
+          description="Resolving filtered ledger rows, action metadata, and request context."
+        />
+      ) : null}
 
       <SurfaceCard
         eyebrow="Ledger"
@@ -366,18 +373,25 @@ export default function AuditPage() {
                 </tr>
               ))}
               {events.length === 0 ? (
-                <tr>
-                  <td colSpan={7}>
-                    <p className="helper">No audit events matched these filters.</p>
-                  </td>
-                </tr>
+                <TableEmptyStateRow
+                  colSpan={7}
+                  title="No audit events matched"
+                  description="Adjust the actor, action, result, or time filters to widen the ledger view."
+                />
               ) : null}
             </tbody>
           </table>
         </div>
       </SurfaceCard>
 
-      {detailLoading ? <p className="helper">Loading selected event detail...</p> : null}
+      {detailLoading ? (
+        <StatePanel
+          variant="loading"
+          title="Loading selected event"
+          description="Fetching request metadata and target context for the active ledger row."
+          className="audit-detail-loading"
+        />
+      ) : null}
 
       <DrawerSurface
         open={Boolean(selected)}

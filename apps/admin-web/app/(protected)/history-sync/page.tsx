@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { StateBanner, StatePanel, TableEmptyStateRow } from "@/components/admin-state";
 import { PageShell } from "@/components/page-shell";
 import { getAuthToken } from "@/lib/auth";
 import {
@@ -99,9 +100,15 @@ export default function HistorySyncPage() {
         </button>
       </div>
 
-      {error ? <div className="error">{error}</div> : null}
+      {error ? <StateBanner variant="error" title={error} /> : null}
 
-      {loading ? <p className="helper">Loading history sync data...</p> : null}
+      {loading ? (
+        <StatePanel
+          variant="loading"
+          title="Loading history sync data"
+          description="Resolving user drift, device posture, and recent event ingest status."
+        />
+      ) : null}
 
       <article className="panel">
         <h3>User Drift</h3>
@@ -134,11 +141,11 @@ export default function HistorySyncPage() {
                 </tr>
               ))}
               {users.length === 0 ? (
-                <tr>
-                  <td colSpan={6}>
-                    <p className="helper">No user sync records available.</p>
-                  </td>
-                </tr>
+                <TableEmptyStateRow
+                  colSpan={6}
+                  title="No user sync records"
+                  description="User-level drift rows will appear once sync telemetry is ingested."
+                />
               ) : null}
             </tbody>
           </table>
@@ -179,11 +186,11 @@ export default function HistorySyncPage() {
                 </tr>
               ))}
               {devices.length === 0 ? (
-                <tr>
-                  <td colSpan={6}>
-                    <p className="helper">No device sync records available.</p>
-                  </td>
-                </tr>
+                <TableEmptyStateRow
+                  colSpan={6}
+                  title="No device sync records"
+                  description="No key-backed device sources are currently reporting sync metadata."
+                />
               ) : null}
             </tbody>
           </table>
@@ -221,11 +228,11 @@ export default function HistorySyncPage() {
                 </tr>
               ))}
               {events.length === 0 ? (
-                <tr>
-                  <td colSpan={6}>
-                    <p className="helper">No history sync events available.</p>
-                  </td>
-                </tr>
+                <TableEmptyStateRow
+                  colSpan={6}
+                  title="No history sync events"
+                  description="Recent sync events will appear here after ingestion or repair activity."
+                />
               ) : null}
             </tbody>
           </table>

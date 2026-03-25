@@ -388,6 +388,70 @@ a {
   font-size: 0.87rem;
 }
 
+.state-banner {
+  display: grid;
+  gap: 0.22rem;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 0.78rem 0.86rem;
+  background: rgba(24, 42, 63, 0.5);
+}
+
+.state-banner-title {
+  font-family: var(--font-display), sans-serif;
+  font-size: 1rem;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.state-banner-error {
+  border-color: rgba(239, 107, 115, 0.45);
+  background: linear-gradient(180deg, rgba(95, 23, 31, 0.22), rgba(33, 13, 18, 0.24));
+}
+
+.state-banner-success {
+  border-color: rgba(74, 124, 89, 0.45);
+  background: linear-gradient(180deg, rgba(23, 63, 39, 0.26), rgba(12, 28, 19, 0.26));
+}
+
+.state-panel {
+  min-height: 156px;
+  place-content: center;
+}
+
+.state-panel .surface-card-body {
+  margin-top: 0.2rem;
+}
+
+.state-panel-loading {
+  background:
+    linear-gradient(180deg, rgba(16, 29, 47, 0.95), rgba(11, 20, 33, 0.94)),
+    radial-gradient(circle at top right, rgba(138, 157, 168, 0.12), transparent 32%);
+}
+
+.state-panel-empty {
+  background:
+    linear-gradient(180deg, rgba(16, 29, 47, 0.95), rgba(11, 20, 33, 0.94)),
+    radial-gradient(circle at top right, rgba(196, 135, 59, 0.12), transparent 36%);
+}
+
+.state-table-empty-cell {
+  padding: 1.1rem 0.78rem;
+}
+
+.state-table-empty {
+  display: grid;
+  gap: 0.22rem;
+  justify-items: start;
+}
+
+.state-table-empty-title {
+  font-family: var(--font-display), sans-serif;
+  font-size: 0.98rem;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
 .panel-inline {
   display: grid;
   gap: 0.65rem;

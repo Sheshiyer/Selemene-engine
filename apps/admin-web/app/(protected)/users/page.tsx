@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { StateBanner, StatePanel, TableEmptyStateRow } from "@/components/admin-state";
 import { PageShell } from "@/components/page-shell";
 import { getAuthToken } from "@/lib/auth";
 import {
@@ -306,11 +307,15 @@ export default function UsersPage() {
         </article>
       </div>
 
-      {error ? <div className="error">{error}</div> : null}
-      {success ? <div className="success">{success}</div> : null}
+      {error ? <StateBanner variant="error" title={error} /> : null}
+      {success ? <StateBanner variant="success" title={success} /> : null}
 
       {loading ? (
-        <p className="helper">Loading users...</p>
+        <StatePanel
+          variant="loading"
+          title="Loading users"
+          description="Resolving account inventory, tier drafts, role drafts, and filter-scoped user state."
+        />
       ) : (
         <div className="table-wrap">
           <table>
@@ -397,11 +402,11 @@ export default function UsersPage() {
                 </tr>
               ))}
               {users.length === 0 ? (
-                <tr>
-                  <td colSpan={6}>
-                    <p className="helper">No users matched this filter.</p>
-                  </td>
-                </tr>
+                <TableEmptyStateRow
+                  colSpan={6}
+                  title="No users matched"
+                  description="Try broadening the current search, tier, or state filters."
+                />
               ) : null}
             </tbody>
           </table>

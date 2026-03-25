@@ -12,6 +12,7 @@ import {
   YAxis
 } from "recharts";
 import { ActionRail, MetricSurface, SurfaceCard } from "@/components/admin-primitives";
+import { StateBanner, StatePanel, TableEmptyStateRow } from "@/components/admin-state";
 import { PageShell } from "@/components/page-shell";
 import { getAuthToken } from "@/lib/auth";
 import {
@@ -154,7 +155,7 @@ export default function DashboardPage() {
     >
       <p className="helper">Last updated: {formatDateTime(lastUpdatedAt)}</p>
 
-      {error ? <div className="error">{error}</div> : null}
+      {error ? <StateBanner variant="error" title={error} /> : null}
 
       <div className="grid metrics">
         <MetricSurface
@@ -175,7 +176,11 @@ export default function DashboardPage() {
       </div>
 
       {loading ? (
-        <p className="helper">Loading dashboard metrics...</p>
+        <StatePanel
+          variant="loading"
+          title="Loading dashboard metrics"
+          description="Resolving analytics summary, 24h timeseries, and top-consumer telemetry."
+        />
       ) : (
         <>
           <SurfaceCard
@@ -248,11 +253,11 @@ export default function DashboardPage() {
                     </tr>
                   ))}
                   {topConsumers.length === 0 ? (
-                    <tr>
-                      <td colSpan={4}>
-                        <p className="helper">No traffic data available.</p>
-                      </td>
-                    </tr>
+                    <TableEmptyStateRow
+                      colSpan={4}
+                      title="No traffic data"
+                      description="Top-consumer rankings will appear after request volume is recorded."
+                    />
                   ) : null}
                 </tbody>
               </table>

@@ -15,6 +15,7 @@ import {
   XAxis,
   YAxis
 } from "recharts";
+import { StateBanner, StatePanel, TableEmptyStateRow } from "@/components/admin-state";
 import { PageShell } from "@/components/page-shell";
 import { getAuthToken } from "@/lib/auth";
 import { ApiClientError, getAdminUsageSummary } from "@/lib/api";
@@ -156,7 +157,7 @@ export default function AnalyticsPage() {
 
       <p className="helper">Last updated: {formatDateTime(lastUpdatedAt)}</p>
 
-      {error ? <div className="error">{error}</div> : null}
+      {error ? <StateBanner variant="error" title={error} /> : null}
 
       <div className="grid metrics">
         <article className="metric">
@@ -178,7 +179,11 @@ export default function AnalyticsPage() {
       </div>
 
       {loading ? (
-        <p className="helper">Loading analytics...</p>
+        <StatePanel
+          variant="loading"
+          title="Loading analytics"
+          description="Building usage summary, distribution charts, and top-user rankings for the selected range."
+        />
       ) : (
         <>
           <article className="panel chart-panel">
@@ -266,11 +271,11 @@ export default function AnalyticsPage() {
                     </tr>
                   ))}
                   {(usage?.top_users.length ?? 0) === 0 ? (
-                    <tr>
-                      <td colSpan={2}>
-                        <p className="helper">No usage activity in the selected range.</p>
-                      </td>
-                    </tr>
+                    <TableEmptyStateRow
+                      colSpan={2}
+                      title="No usage activity"
+                      description="No user demand was recorded in the current reporting window."
+                    />
                   ) : null}
                 </tbody>
               </table>
