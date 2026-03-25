@@ -2,6 +2,24 @@
 
 ---
 
+# Task Plan — Trigger Fresh Vercel Deploy From `main`
+
+## Checklist
+- [x] Confirm local branch state is clean and tracking `origin/main`.
+- [x] Update a low-risk file to create a fresh Git commit for Vercel branch deployment.
+- [ ] Commit the deploy-trigger change on `main`.
+- [ ] Push `main` to `origin`.
+- [ ] Verify `origin/main` advanced to the new commit and record the result.
+
+## Notes
+- User requested a README touch specifically to force a new deployment from the connected production branch.
+- Keep the change content-neutral and avoid modifying application behavior.
+
+## Review (fill after execution)
+- Pending.
+
+---
+
 # Task Plan — noesis-api Error Handling Audit for Issue #49
 
 ## Checklist
