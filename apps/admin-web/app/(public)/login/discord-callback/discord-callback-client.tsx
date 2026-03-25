@@ -8,22 +8,21 @@ import { ApiClientError, discordCallback, getAdminSession } from "@/lib/api";
 export function DiscordCallbackClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const code = searchParams.get("code");
+  const state = searchParams.get("state");
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const code = searchParams.get("code");
-    const state = searchParams.get("state");
-
     if (!code) {
-      setError("No authorization code received from Discord.");
       return;
     }
+    const authCode = code;
 
     let cancelled = false;
 
     async function exchangeCode() {
       try {
-        const auth = await discordCallback(code!, state ?? undefined);
+        const auth = await discordCallback(authCode, state ?? undefined);
         if (cancelled) return;
         setAuthToken(auth.token);
         await getAdminSession(auth.token);
@@ -42,7 +41,23 @@ export function DiscordCallbackClient() {
     return () => {
       cancelled = true;
     };
-  }, [searchParams, router]);
+  }, [code, router, state]);
+
+  if (!code) {
+    return (
+      <main className="login-wrap">
+        <section className="login-card">
+          <h1>Selemene Admin</h1>
+          <div className="error">No authorization code received from Discord.</div>
+          <p style={{ marginTop: "1rem" }}>
+            <a href="/admin/login" style={{ color: "var(--accent)" }}>
+              Back to login
+            </a>
+          </p>
+        </section>
+      </main>
+    );
+  }
 
   if (error) {
     return (

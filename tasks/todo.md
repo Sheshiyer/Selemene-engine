@@ -2651,3 +2651,31 @@ GitHub outcome:
 - Added automated contract test in noesis-integration:
   - `crates/noesis-integration/tests/witness_prompt_quality_tests.rs`
   - validates all 16 engines against question format + non-prescriptive language constraints
+
+---
+
+# Task Plan — Admin Web Discord Callback Alias And Mainline Commit
+
+## Checklist
+- [x] Re-verify the Discord auth state on current `main` and confirm remote divergence before shipping.
+- [x] Preserve the backend-driven Discord login flow already present on `origin/main`.
+- [x] Add the admin-safe callback alias route at `/admin/auth/discord/callback`.
+- [x] Document the required Discord OAuth settings for the live admin portal.
+- [x] Commit and push the merged result on top of current `origin/main`.
+
+## Notes
+- Scope is routing/readiness only for admin-web Discord auth.
+- The login page keeps the existing email/password fallback and backend-driven Discord authorize flow.
+
+## Review (fill after execution)
+- Confirmed `origin/main` already contained the active Discord authorize/callback backend flow plus a visible login button, while the live portal was still serving older UI.
+- Added callback alias route so the admin portal can complete Discord auth at either:
+  - `/admin/login/discord-callback`
+  - `/admin/auth/discord/callback`
+- Kept the backend-driven `getDiscordAuthUrl()` login path and existing credential fallback intact.
+- Fixed the existing Discord callback client to satisfy the React lint rule by avoiding synchronous `setState()` inside the effect's missing-code branch.
+- Made `apps/admin-web` `typecheck` deterministic with `tsc --noEmit --incremental false` to avoid the stale Next `.next/types/cache-life.d.ts` failure during verification.
+- Documented the required live settings:
+  - frontend: `NEXT_PUBLIC_API_BASE_URL`
+  - API/backend: `DISCORD_CLIENT_ID`, `DISCORD_CLIENT_SECRET`, `DISCORD_REDIRECT_URI`
+  - Discord developer portal callback URL must exactly match `DISCORD_REDIRECT_URI`
