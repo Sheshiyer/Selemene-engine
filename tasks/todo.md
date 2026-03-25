@@ -2,6 +2,30 @@
 
 ---
 
+# Task Plan — Admin Dashboard Overhaul Plan + GitHub Issue Sync
+
+## Checklist
+- [x] Gather redesign direction from the provided Tryambakam brand board and local HTML variant references.
+- [x] Confirm current admin-web route inventory and shell scope.
+- [ ] Write a redesign plan doc with phases, waves, swarms, and issue mapping.
+- [ ] Generate a 30–40 issue manifest for GitHub synchronization.
+- [ ] Commit and push the planning artifacts.
+- [ ] Create GitHub issues from the manifest and record the results.
+
+## Notes
+- The redesign should shift the admin dashboard from low-taste utilitarian UI to a high-function management system.
+- Visual direction should combine:
+  - the warm Tryambakam brand board,
+  - Exo 2 / Space Grotesk hierarchy,
+  - bronze/teal/cream materials,
+  - and the HUD / split-grid / drill-down energy from the provided HTML variants.
+- The just-shipped API key management work is treated as completed baseline, not future scope.
+
+## Review (fill after execution)
+- Pending.
+
+---
+
 # Task Plan — API Key Management Modal + Permanent Delete
 
 ## Checklist
