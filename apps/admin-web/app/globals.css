@@ -1,14 +1,24 @@
 :root {
-  --bg: #0b1112;
-  --bg-elevated: #111b1d;
-  --bg-soft: #162427;
-  --line: #274449;
-  --line-strong: #36626b;
-  --text: #e6f4f2;
-  --text-muted: #9cb9b6;
-  --accent: #56d3c2;
-  --accent-soft: rgba(86, 211, 194, 0.17);
+  --bg: #0a1628;
+  --bg-elevated: #112035;
+  --bg-soft: #182a3f;
+  --bg-panel: rgba(14, 24, 39, 0.9);
+  --field: rgba(240, 237, 227, 0.06);
+  --field-strong: rgba(240, 237, 227, 0.1);
+  --line: rgba(138, 157, 168, 0.28);
+  --line-strong: rgba(138, 157, 168, 0.52);
+  --text: #f0ede3;
+  --text-muted: #b7c0c6;
+  --accent: #c4873b;
+  --accent-strong: #dfaa69;
+  --accent-soft: rgba(196, 135, 59, 0.17);
+  --support: #4a7c59;
+  --support-soft: rgba(74, 124, 89, 0.2);
+  --signal: #8a9da8;
+  --glow-bronze: rgba(196, 135, 59, 0.18);
+  --glow-verdant: rgba(74, 124, 89, 0.12);
   --danger: #ef6b73;
+  --danger-soft: rgba(239, 107, 115, 0.18);
 }
 
 * {
@@ -26,9 +36,23 @@ body {
   font-family: var(--font-sans), sans-serif;
   color: var(--text);
   background:
-    radial-gradient(circle at 0% 0%, #173a3f 0%, transparent 42%),
-    radial-gradient(circle at 100% 100%, #2a5d55 0%, transparent 38%),
+    radial-gradient(circle at top left, rgba(196, 135, 59, 0.16) 0%, transparent 32%),
+    radial-gradient(circle at bottom right, rgba(74, 124, 89, 0.16) 0%, transparent 28%),
+    linear-gradient(180deg, rgba(240, 237, 227, 0.02), transparent 26%),
     var(--bg);
+  background-attachment: fixed;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent-strong);
+  outline-offset: 2px;
 }
 
 a {
@@ -44,96 +68,119 @@ a {
 
 .sidebar {
   border-right: 1px solid var(--line);
-  background: rgba(11, 17, 18, 0.82);
-  backdrop-filter: blur(10px);
-  padding: 1.25rem 1rem;
+  background:
+    linear-gradient(180deg, rgba(10, 22, 40, 0.96), rgba(12, 21, 34, 0.92)),
+    radial-gradient(circle at top left, var(--glow-bronze), transparent 38%);
+  backdrop-filter: blur(18px);
+  padding: 1.25rem 1rem 1.4rem;
 }
 
 .brand {
-  font-family: var(--font-mono), monospace;
-  font-size: 0.76rem;
-  letter-spacing: 0.12em;
+  font-family: var(--font-display), sans-serif;
+  font-size: 0.95rem;
+  letter-spacing: 0.16em;
+  line-height: 1.2;
   text-transform: uppercase;
-  color: var(--text-muted);
-  margin-bottom: 1.2rem;
+  color: var(--text);
+  margin-bottom: 1.35rem;
+  text-wrap: balance;
 }
 
 .nav-list {
   display: grid;
-  gap: 0.35rem;
+  gap: 0.4rem;
 }
 
 .nav-item {
-  border: 1px solid transparent;
-  border-radius: 10px;
-  padding: 0.58rem 0.7rem;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 0.72rem 0.82rem;
   color: var(--text-muted);
   display: block;
-  font-size: 0.94rem;
+  font-size: 0.92rem;
+  background: rgba(240, 237, 227, 0.02);
+  transition:
+    border-color 180ms ease,
+    background-color 180ms ease,
+    color 180ms ease,
+    transform 180ms ease;
 }
 
 .nav-item:hover {
-  border-color: var(--line);
+  border-color: var(--line-strong);
   color: var(--text);
-  background: rgba(18, 29, 31, 0.65);
+  background: rgba(240, 237, 227, 0.05);
+  transform: translateY(-1px);
 }
 
 .nav-item.active {
-  border-color: var(--line-strong);
+  border-color: rgba(196, 135, 59, 0.46);
   background: var(--accent-soft);
   color: var(--text);
+  box-shadow: inset 0 0 0 1px rgba(223, 170, 105, 0.16);
 }
 
 .content {
-  padding: 1.2rem 1.3rem;
+  padding: 1.25rem 1.35rem 1.5rem;
 }
 
 .topbar {
   border: 1px solid var(--line);
-  background: rgba(12, 18, 20, 0.85);
-  border-radius: 12px;
-  padding: 0.95rem 1rem;
+  background:
+    linear-gradient(180deg, rgba(14, 24, 39, 0.9), rgba(11, 20, 33, 0.9)),
+    radial-gradient(circle at top right, var(--glow-bronze), transparent 40%);
+  border-radius: 18px;
+  padding: 1rem 1.05rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1rem;
+  margin-bottom: 1.1rem;
+  box-shadow: 0 16px 40px rgba(5, 11, 20, 0.24);
 }
 
 .topbar h1 {
   margin: 0;
-  font-size: 1.07rem;
+  font-family: var(--font-display), sans-serif;
+  font-size: 1.18rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
 .topbar p {
-  margin: 0.2rem 0 0;
+  margin: 0.28rem 0 0;
   color: var(--text-muted);
-  font-size: 0.86rem;
+  font-size: 0.84rem;
 }
 
 .topbar button {
   border: 1px solid var(--line-strong);
-  background: transparent;
+  background: rgba(240, 237, 227, 0.03);
   color: var(--text);
-  border-radius: 10px;
-  padding: 0.5rem 0.7rem;
+  border-radius: 12px;
+  padding: 0.55rem 0.8rem;
   cursor: pointer;
 }
 
 .panel {
   border: 1px solid var(--line);
-  border-radius: 12px;
-  background: linear-gradient(180deg, rgba(20, 31, 33, 0.95), rgba(14, 22, 24, 0.95));
-  padding: 1rem;
+  border-radius: 18px;
+  background:
+    linear-gradient(180deg, rgba(16, 29, 47, 0.95), rgba(11, 20, 33, 0.94)),
+    radial-gradient(circle at top right, rgba(196, 135, 59, 0.08), transparent 32%);
+  padding: 1.05rem;
+  box-shadow: 0 18px 44px rgba(3, 10, 18, 0.28);
 }
 
 .panel h2,
 .panel h3 {
   margin-top: 0;
+  font-family: var(--font-display), sans-serif;
+  letter-spacing: 0.02em;
 }
 
 .grid {
   display: grid;
-  gap: 0.8rem;
+  gap: 0.88rem;
 }
 
 .grid.metrics {
@@ -142,31 +189,39 @@ a {
 
 .metric {
   border: 1px solid var(--line);
-  border-radius: 10px;
-  padding: 0.8rem;
-  background: var(--bg-elevated);
+  border-radius: 14px;
+  padding: 0.92rem;
+  background:
+    linear-gradient(180deg, rgba(19, 34, 54, 0.92), rgba(13, 24, 39, 0.92)),
+    radial-gradient(circle at top left, rgba(196, 135, 59, 0.08), transparent 48%);
 }
 
 .metric .label {
-  font-size: 0.8rem;
+  font-family: var(--font-mono), monospace;
+  font-size: 0.74rem;
   color: var(--text-muted);
-  margin-bottom: 0.35rem;
+  margin-bottom: 0.45rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 .metric .value {
-  font-size: 1.24rem;
+  font-family: var(--font-display), sans-serif;
+  font-size: clamp(1.45rem, 2vw, 1.9rem);
+  letter-spacing: 0.03em;
 }
 
 .helper {
   color: var(--text-muted);
   font-size: 0.9rem;
+  line-height: 1.55;
 }
 
 .success {
-  border: 1px solid rgba(86, 211, 194, 0.45);
-  background: rgba(48, 126, 115, 0.2);
-  color: #c4fff8;
-  border-radius: 10px;
+  border: 1px solid rgba(74, 124, 89, 0.5);
+  background: rgba(74, 124, 89, 0.18);
+  color: #d4f0dd;
+  border-radius: 12px;
   padding: 0.6rem 0.7rem;
   font-size: 0.87rem;
 }
@@ -196,17 +251,17 @@ a {
 .cell-input {
   width: 100%;
   border: 1px solid var(--line);
-  border-radius: 10px;
-  padding: 0.52rem 0.62rem;
-  background: var(--bg-soft);
+  border-radius: 12px;
+  padding: 0.56rem 0.68rem;
+  background: var(--field);
   color: var(--text);
 }
 
 .panel-inline button {
   width: auto;
   min-width: 120px;
-  border-color: var(--line-strong);
-  background: rgba(25, 48, 51, 0.8);
+  border-color: rgba(196, 135, 59, 0.34);
+  background: rgba(196, 135, 59, 0.12);
   cursor: pointer;
 }
 
@@ -214,7 +269,8 @@ a {
   width: 100%;
   overflow: auto;
   border: 1px solid var(--line);
-  border-radius: 10px;
+  border-radius: 14px;
+  background: rgba(8, 17, 29, 0.42);
 }
 
 .table-wrap.compact {
@@ -232,19 +288,20 @@ td {
   border-bottom: 1px solid var(--line);
   text-align: left;
   vertical-align: top;
-  padding: 0.62rem 0.7rem;
+  padding: 0.72rem 0.78rem;
   font-size: 0.85rem;
 }
 
 th {
-  font-size: 0.78rem;
-  letter-spacing: 0.02em;
+  font-family: var(--font-mono), monospace;
+  font-size: 0.74rem;
+  letter-spacing: 0.08em;
   color: var(--text-muted);
   text-transform: uppercase;
 }
 
 tbody tr:hover {
-  background: rgba(21, 38, 41, 0.65);
+  background: rgba(240, 237, 227, 0.04);
 }
 
 tbody tr.clickable-row {
@@ -279,18 +336,18 @@ tbody tr.clickable-row:focus-visible {
 .permission-chip {
   display: inline-flex;
   align-items: center;
-  border: 1px solid rgba(86, 211, 194, 0.22);
+  border: 1px solid rgba(196, 135, 59, 0.26);
   border-radius: 999px;
   padding: 0.18rem 0.48rem;
-  background: rgba(86, 211, 194, 0.08);
-  color: #c8f8f1;
+  background: rgba(196, 135, 59, 0.08);
+  color: #f4d6b0;
   font-size: 0.74rem;
   line-height: 1.2;
 }
 
 .permission-chip.muted {
   border-color: var(--line);
-  background: rgba(22, 36, 39, 0.7);
+  background: rgba(24, 42, 63, 0.54);
   color: var(--text-muted);
 }
 
@@ -308,8 +365,8 @@ tbody tr.clickable-row:focus-visible {
 .action-stack button,
 .action-row button {
   border: 1px solid var(--line-strong);
-  border-radius: 8px;
-  background: rgba(18, 37, 39, 0.9);
+  border-radius: 10px;
+  background: rgba(240, 237, 227, 0.03);
   color: var(--text);
   padding: 0.42rem 0.54rem;
   cursor: pointer;
@@ -318,8 +375,8 @@ tbody tr.clickable-row:focus-visible {
 
 .action-row select {
   border: 1px solid var(--line);
-  border-radius: 8px;
-  background: var(--bg-soft);
+  border-radius: 10px;
+  background: var(--field);
   color: var(--text);
 }
 
@@ -332,27 +389,30 @@ tbody tr.clickable-row:focus-visible {
 .pill {
   display: inline-block;
   border-radius: 999px;
-  font-size: 0.75rem;
+  font-family: var(--font-mono), monospace;
+  font-size: 0.7rem;
   line-height: 1;
-  padding: 0.28rem 0.52rem;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  padding: 0.34rem 0.58rem;
   border: 1px solid var(--line);
 }
 
 .pill.ok {
-  border-color: rgba(86, 211, 194, 0.45);
-  background: rgba(86, 211, 194, 0.14);
-  color: #aaf7ed;
+  border-color: rgba(74, 124, 89, 0.42);
+  background: rgba(74, 124, 89, 0.18);
+  color: #d4f0dd;
 }
 
 .pill.warning {
-  border-color: rgba(255, 200, 77, 0.42);
-  background: rgba(163, 111, 34, 0.18);
-  color: #ffe6ba;
+  border-color: rgba(196, 135, 59, 0.42);
+  background: rgba(196, 135, 59, 0.18);
+  color: #ffe3bd;
 }
 
 .pill.danger {
   border-color: rgba(239, 107, 115, 0.45);
-  background: rgba(120, 35, 42, 0.24);
+  background: var(--danger-soft);
   color: #ffc7cb;
 }
 
@@ -362,9 +422,9 @@ tbody tr.clickable-row:focus-visible {
 
 .secret-card {
   margin-top: 0.75rem;
-  border: 1px solid rgba(255, 200, 77, 0.42);
-  background: rgba(163, 111, 34, 0.18);
-  border-radius: 10px;
+  border: 1px solid rgba(196, 135, 59, 0.42);
+  background: rgba(196, 135, 59, 0.16);
+  border-radius: 12px;
   padding: 0.6rem 0.7rem;
 }
 
@@ -390,19 +450,26 @@ tbody tr.clickable-row:focus-visible {
   min-height: 100vh;
   display: grid;
   place-items: center;
-  padding: 1.2rem;
+  padding: 1.4rem;
 }
 
 .login-card {
   width: min(460px, 100%);
   border: 1px solid var(--line);
-  background: rgba(12, 19, 20, 0.93);
-  border-radius: 16px;
-  padding: 1.2rem;
+  background:
+    linear-gradient(180deg, rgba(14, 24, 39, 0.94), rgba(10, 19, 31, 0.96)),
+    radial-gradient(circle at top left, var(--glow-bronze), transparent 44%);
+  border-radius: 22px;
+  padding: 1.35rem;
+  box-shadow: 0 24px 60px rgba(4, 11, 19, 0.32);
 }
 
 .login-card h1 {
   margin: 0 0 0.4rem;
+  font-family: var(--font-display), sans-serif;
+  font-size: clamp(2rem, 4vw, 2.6rem);
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
 }
 
 .login-card p {
@@ -424,17 +491,17 @@ tbody tr.clickable-row:focus-visible {
 .login-form input {
   width: 100%;
   border: 1px solid var(--line);
-  border-radius: 10px;
-  padding: 0.64rem 0.7rem;
-  background: var(--bg-soft);
+  border-radius: 12px;
+  padding: 0.68rem 0.78rem;
+  background: var(--field);
   color: var(--text);
 }
 
 .login-form button {
-  border: 1px solid var(--line-strong);
-  border-radius: 10px;
-  background: linear-gradient(90deg, #49a8a4, #56d3c2);
-  color: #062523;
+  border: 1px solid rgba(196, 135, 59, 0.24);
+  border-radius: 12px;
+  background: linear-gradient(135deg, #c4873b, #dfaa69);
+  color: #0a1628;
   padding: 0.62rem 0.8rem;
   font-weight: 700;
   cursor: pointer;
@@ -447,9 +514,9 @@ tbody tr.clickable-row:focus-visible {
 
 .error {
   border: 1px solid rgba(239, 107, 115, 0.45);
-  background: rgba(120, 35, 42, 0.24);
+  background: var(--danger-soft);
   color: #ffc7cb;
-  border-radius: 10px;
+  border-radius: 12px;
   padding: 0.6rem 0.7rem;
   font-size: 0.87rem;
 }
@@ -471,8 +538,10 @@ tbody tr.clickable-row:focus-visible {
   max-height: 85vh;
   overflow-y: auto;
   border: 1px solid var(--line-strong);
-  background: var(--bg-elevated);
-  border-radius: 16px;
+  background:
+    linear-gradient(180deg, rgba(16, 29, 47, 0.97), rgba(10, 19, 31, 0.97)),
+    radial-gradient(circle at top right, var(--glow-bronze), transparent 36%);
+  border-radius: 20px;
   padding: 1.2rem;
 }
 
@@ -493,16 +562,16 @@ tbody tr.clickable-row:focus-visible {
 
 .modal-actions button {
   border: 1px solid var(--line-strong);
-  border-radius: 10px;
+  border-radius: 12px;
   padding: 0.52rem 0.8rem;
   cursor: pointer;
-  background: rgba(25, 48, 51, 0.8);
+  background: rgba(240, 237, 227, 0.03);
   color: var(--text);
 }
 
 .modal-actions .btn-primary {
-  background: linear-gradient(90deg, #49a8a4, #56d3c2);
-  color: #062523;
+  background: linear-gradient(135deg, #c4873b, #dfaa69);
+  color: #0a1628;
   font-weight: 700;
   border-color: transparent;
 }
@@ -559,17 +628,17 @@ tbody tr.clickable-row:focus-visible {
 .form-group select {
   width: 100%;
   border: 1px solid var(--line);
-  border-radius: 10px;
-  padding: 0.52rem 0.62rem;
-  background: var(--bg-soft);
+  border-radius: 12px;
+  padding: 0.56rem 0.68rem;
+  background: var(--field);
   color: var(--text);
 }
 
 /* ---- Copy button ---- */
 .copy-btn {
   border: 1px solid var(--line-strong);
-  border-radius: 8px;
-  background: rgba(18, 37, 39, 0.9);
+  border-radius: 10px;
+  background: rgba(240, 237, 227, 0.03);
   color: var(--accent);
   padding: 0.3rem 0.6rem;
   cursor: pointer;
@@ -577,15 +646,15 @@ tbody tr.clickable-row:focus-visible {
 }
 
 .copy-btn.copied {
-  color: #aaf7ed;
-  border-color: rgba(86, 211, 194, 0.45);
+  color: #d4f0dd;
+  border-color: rgba(74, 124, 89, 0.45);
 }
 
 .manage-trigger {
   border: 1px solid var(--line-strong);
   border-radius: 999px;
   padding: 0.4rem 0.7rem;
-  background: rgba(25, 48, 51, 0.8);
+  background: rgba(240, 237, 227, 0.04);
   color: var(--text);
   cursor: pointer;
 }
@@ -603,8 +672,8 @@ tbody tr.clickable-row:focus-visible {
 
 .key-management-modal {
   background:
-    radial-gradient(circle at top right, rgba(86, 211, 194, 0.08), transparent 28%),
-    linear-gradient(180deg, rgba(20, 31, 33, 0.98), rgba(14, 22, 24, 0.98));
+    radial-gradient(circle at top right, rgba(196, 135, 59, 0.1), transparent 28%),
+    linear-gradient(180deg, rgba(17, 32, 53, 0.98), rgba(10, 20, 33, 0.98));
 }
 
 .key-modal-header {
@@ -618,6 +687,8 @@ tbody tr.clickable-row:focus-visible {
 .key-modal-header h3 {
   margin: 0.2rem 0 0.3rem;
   font-size: 1.45rem;
+  font-family: var(--font-display), sans-serif;
+  letter-spacing: 0.03em;
 }
 
 .key-modal-header-meta {
@@ -628,6 +699,7 @@ tbody tr.clickable-row:focus-visible {
 }
 
 .eyebrow {
+  font-family: var(--font-mono), monospace;
   font-size: 0.78rem;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -648,7 +720,7 @@ tbody tr.clickable-row:focus-visible {
   border: 1px solid var(--line-strong);
   border-radius: 12px;
   padding: 0.58rem 0.78rem;
-  background: rgba(18, 37, 39, 0.9);
+  background: rgba(240, 237, 227, 0.03);
   color: var(--text);
   cursor: pointer;
 }
@@ -672,8 +744,8 @@ tbody tr.clickable-row:focus-visible {
 }
 
 .icon-action.success {
-  border-color: rgba(86, 211, 194, 0.45);
-  color: #aaf7ed;
+  border-color: rgba(74, 124, 89, 0.45);
+  color: #d4f0dd;
 }
 
 .icon-action:disabled,
@@ -692,7 +764,7 @@ tbody tr.clickable-row:focus-visible {
   border: 1px solid var(--line);
   border-radius: 14px;
   padding: 0.9rem;
-  background: rgba(14, 24, 26, 0.84);
+  background: rgba(24, 42, 63, 0.54);
 }
 
 .detail-card h4 {
@@ -742,8 +814,8 @@ tbody tr.clickable-row:focus-visible {
 }
 
 .secret-display {
-  border: 1px solid rgba(255, 200, 77, 0.28);
-  background: rgba(163, 111, 34, 0.12);
+  border: 1px solid rgba(196, 135, 59, 0.32);
+  background: rgba(196, 135, 59, 0.12);
   border-radius: 12px;
   padding: 0.8rem;
 }
@@ -786,7 +858,7 @@ tbody tr.clickable-row:focus-visible {
 }
 
 .link-btn:hover {
-  color: #9ff0e5;
+  color: #f0c993;
 }
 
 /* ---- Key prefix ---- */
@@ -803,15 +875,15 @@ tbody tr.clickable-row:focus-visible {
 }
 
 .pill.tier-premium {
-  border-color: rgba(86, 211, 194, 0.45);
-  background: rgba(86, 211, 194, 0.14);
-  color: #aaf7ed;
+  border-color: rgba(74, 124, 89, 0.42);
+  background: rgba(74, 124, 89, 0.18);
+  color: #d4f0dd;
 }
 
 .pill.tier-enterprise {
-  border-color: rgba(255, 200, 77, 0.42);
-  background: rgba(163, 111, 34, 0.18);
-  color: #ffe6ba;
+  border-color: rgba(196, 135, 59, 0.42);
+  background: rgba(196, 135, 59, 0.18);
+  color: #ffe3bd;
 }
 
 .login-divider {
@@ -837,24 +909,82 @@ tbody tr.clickable-row:focus-visible {
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  border: 1px solid var(--line-strong);
-  border-radius: 10px;
-  background: #5865f2;
+  border: 1px solid rgba(88, 101, 242, 0.5);
+  border-radius: 12px;
+  background: linear-gradient(135deg, #5865f2, #4752c4);
   color: #fff;
   padding: 0.62rem 0.8rem;
   font-weight: 700;
   font-size: 0.9rem;
   cursor: pointer;
-  transition: background 0.15s;
+  transition:
+    background 180ms ease,
+    transform 180ms ease;
 }
 
 .discord-btn:hover:not([disabled]) {
-  background: #4752c4;
+  background: linear-gradient(135deg, #6572ff, #4f5de0);
+  transform: translateY(-1px);
 }
 
 .discord-btn[disabled] {
   opacity: 0.55;
   cursor: wait;
+}
+
+.page-shell-panel {
+  position: relative;
+}
+
+.page-shell-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.page-shell-header h2 {
+  margin-bottom: 0.42rem;
+  font-size: clamp(1.5rem, 2vw, 1.9rem);
+  text-transform: uppercase;
+}
+
+.page-shell-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.page-shell-grid {
+  gap: 1rem;
+}
+
+.filigree-frame {
+  overflow: hidden;
+}
+
+.filigree-frame::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  box-shadow: inset 0 0 0 1px rgba(223, 170, 105, 0.08);
+}
+
+.telemetry-caption {
+  font-family: var(--font-mono), monospace;
+  font-size: 0.73rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.ornament-rule {
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(196, 135, 59, 0.6), transparent);
 }
 
 @media (max-width: 900px) {
@@ -884,6 +1014,7 @@ tbody tr.clickable-row:focus-visible {
     grid-template-columns: 1fr;
   }
 
+  .page-shell-header,
   .key-modal-header,
   .detail-card-head {
     flex-direction: column;

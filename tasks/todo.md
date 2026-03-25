@@ -2,6 +2,44 @@
 
 ---
 
+# Task Plan — Admin Dashboard Redesign Wave 1 (P1 / W1)
+
+## Checklist
+- [x] Confirm executable Wave 1 scope from the redesign dependency graph.
+- [x] Capture a source-of-truth baseline inventory and before evidence for the current admin surface.
+- [x] Write the Wave 1 design artifact covering tokens, typography, tone, and ornament rules.
+- [x] Land the Wave 1 token and typography system in `apps/admin-web`.
+- [x] Add reusable visual grammar utilities that Wave 2 can build on without reinterpretation.
+- [x] Verify `apps/admin-web` typecheck, lint, and build after the Wave 1 changes.
+- [x] Record results in the review section.
+
+## Notes
+- User asked to "finish admin dashboard redesign issue wave 1".
+- The only dependency-clean interpretation is `P1 / W1` (`ADR-01` through `ADR-04`).
+- Later `W1` items in the master manifest depend on shell and primitive work from later waves and must not be claimed here.
+
+## Review (fill after execution)
+- Scope:
+  - executed `P1 / W1` only (`ADR-01` through `ADR-04`)
+  - did not claim later `W1` tasks because they depend on shell / primitive work from later waves
+- Evidence:
+  - added baseline screenshots:
+    - `docs/assets/admin-dashboard-wave-1-baseline/login-desktop.png`
+    - `docs/assets/admin-dashboard-wave-1-baseline/login-mobile.png`
+  - captured protected-route baseline through source inventory in:
+    - `docs/plans/2026-03-26-admin-dashboard-wave-1-design.md`
+- Design system:
+  - wired `Exo 2` as the display face in `apps/admin-web/app/layout.tsx`
+  - replaced the old teal-led token set with the Tryambakam palette in `apps/admin-web/app/globals.css`
+  - added shared visual grammar utilities and page-shell header treatment for Wave 2 reuse
+- Verification:
+  - `npm --prefix apps/admin-web run typecheck`
+  - `npm --prefix apps/admin-web run lint`
+  - `npm --prefix apps/admin-web run build`
+  - post-change login renders were captured locally with headless Chrome to verify the updated surface loads
+
+---
+
 # Task Plan — Admin Dashboard Overhaul Plan + GitHub Issue Sync
 
 ## Checklist

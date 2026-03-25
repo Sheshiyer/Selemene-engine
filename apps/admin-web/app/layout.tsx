@@ -1,6 +1,13 @@
 import type { Metadata } from "next";
-import { IBM_Plex_Mono, Space_Grotesk } from "next/font/google";
+import { Exo_2, IBM_Plex_Mono, Space_Grotesk } from "next/font/google";
 import "./globals.css";
+
+const exo2 = Exo_2({
+  subsets: ["latin"],
+  variable: "--font-display",
+  weight: ["400", "500", "600", "700"],
+  display: "swap"
+});
 
 const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
@@ -27,7 +34,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${spaceGrotesk.variable} ${ibmPlexMono.variable}`}>{children}</body>
+      <body className={`${exo2.variable} ${spaceGrotesk.variable} ${ibmPlexMono.variable}`}>
+        {children}
+      </body>
     </html>
   );
 }
