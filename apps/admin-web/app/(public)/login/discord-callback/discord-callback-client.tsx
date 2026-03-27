@@ -5,6 +5,14 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { setAuthToken } from "@/lib/auth";
 import { ApiClientError, discordCallback, getAdminSession } from "@/lib/api";
 
+function currentCallbackUri(): string | null {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  return `${window.location.origin}${window.location.pathname}`;
+}
+
 export function DiscordCallbackClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -22,7 +30,11 @@ export function DiscordCallbackClient() {
 
     async function exchangeCode() {
       try {
-        const auth = await discordCallback(authCode, state ?? undefined);
+        const auth = await discordCallback(
+          authCode,
+          state ?? undefined,
+          currentCallbackUri() ?? undefined
+        );
         if (cancelled) return;
         setAuthToken(auth.token);
         await getAdminSession(auth.token);

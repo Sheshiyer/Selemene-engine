@@ -19,6 +19,14 @@ function normalizeRedirect(rawTarget: string | null): string {
   return rawTarget;
 }
 
+function getDiscordCallbackUri(): string | null {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  return `${window.location.origin}/admin/auth/discord/callback`;
+}
+
 export function LoginClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -61,7 +69,7 @@ export function LoginClient() {
     setIsDiscordLoading(true);
 
     try {
-      const { url } = await getDiscordAuthUrl();
+      const { url } = await getDiscordAuthUrl(getDiscordCallbackUri() ?? undefined);
       window.location.href = url;
     } catch (err) {
       setIsDiscordLoading(false);

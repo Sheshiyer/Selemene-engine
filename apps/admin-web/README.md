@@ -42,6 +42,7 @@ Discord OAuth settings:
 - The API deployment must have `DISCORD_CLIENT_ID`, `DISCORD_CLIENT_SECRET`, and `DISCORD_REDIRECT_URI` configured.
 - `DISCORD_REDIRECT_URI` must exactly match the callback URL registered in the Discord developer portal.
 - The admin web supports the callback alias `/admin/auth/discord/callback` in addition to the existing `/admin/login/discord-callback`, so either path can be used as long as the Discord app config and API env use the same exact URI.
+- The login UI now sends its current dashboard callback URI to the API, and the API accepts it only when it stays on the current browser origin and one of the allowed admin callback paths. This keeps Discord login working across the main dashboard origin and compatible preview/local admin origins without opening arbitrary redirect targets.
 
 ## Vercel setup
 

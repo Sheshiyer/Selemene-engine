@@ -2,8 +2,8 @@ use crate::error::ApiError;
 use crate::handlers::auth::LoginResponse;
 use crate::AppState;
 use axum::{
-    extract::{Json, State},
-    http::StatusCode,
+    extract::{Json, Query, State},
+    http::{header, HeaderMap, StatusCode},
     response::{IntoResponse, Response},
 };
 use noesis_core::EngineError;
@@ -12,6 +12,11 @@ use serde::{Deserialize, Serialize};
 const DISCORD_AUTHORIZE_URL: &str = "https://discord.com/api/oauth2/authorize";
 const DISCORD_TOKEN_URL: &str = "https://discord.com/api/oauth2/token";
 const DISCORD_USER_URL: &str = "https://discord.com/api/users/@me";
+const LOCALHOST_HOSTS: &[&str] = &["localhost", "127.0.0.1", "0.0.0.0"];
+const ALLOWED_DISCORD_CALLBACK_PATHS: &[&str] = &[
+    "/admin/login/discord-callback",
+    "/admin/auth/discord/callback",
+];
 
 #[derive(Serialize)]
 pub struct DiscordAuthorizeResponse {
@@ -19,10 +24,16 @@ pub struct DiscordAuthorizeResponse {
 }
 
 #[derive(Deserialize)]
+pub struct DiscordAuthorizeQuery {
+    pub redirect_uri: Option<String>,
+}
+
+#[derive(Deserialize)]
 pub struct DiscordCallbackRequest {
     pub code: String,
     #[allow(dead_code)]
     pub state: Option<String>,
+    pub redirect_uri: Option<String>,
 }
 
 #[derive(Deserialize)]
@@ -39,15 +50,109 @@ struct DiscordUser {
     email: Option<String>,
 }
 
+fn is_localhost_host(host: &str) -> bool {
+    LOCALHOST_HOSTS.contains(&host)
+}
+
+fn validate_requested_discord_redirect_uri(uri: &str) -> Result<reqwest::Url, EngineError> {
+    let parsed = reqwest::Url::parse(uri).map_err(|_| {
+        EngineError::ValidationError(
+            "Discord redirect URI must be an absolute URL.".to_string(),
+        )
+    })?;
+
+    let host = parsed.host_str().ok_or_else(|| {
+        EngineError::ValidationError("Discord redirect URI must include a host.".to_string())
+    })?;
+
+    let scheme = parsed.scheme();
+    let scheme_allowed = scheme == "https" || (scheme == "http" && is_localhost_host(host));
+    if !scheme_allowed {
+        return Err(EngineError::ValidationError(
+            "Discord redirect URI must use https, or http on localhost.".to_string(),
+        ));
+    }
+
+    if parsed.query().is_some() || parsed.fragment().is_some() {
+        return Err(EngineError::ValidationError(
+            "Discord redirect URI cannot include a query string or fragment.".to_string(),
+        ));
+    }
+
+    if !ALLOWED_DISCORD_CALLBACK_PATHS.contains(&parsed.path()) {
+        return Err(EngineError::ValidationError(
+            "Discord redirect URI path is not allowed for the admin dashboard.".to_string(),
+        ));
+    }
+
+    Ok(parsed)
+}
+
+fn origin_from_headers(headers: &HeaderMap) -> Result<Option<reqwest::Url>, EngineError> {
+    let Some(origin) = headers.get(header::ORIGIN) else {
+        return Ok(None);
+    };
+
+    let origin = origin.to_str().map_err(|_| {
+        EngineError::ValidationError("Invalid Origin header for Discord OAuth request.".to_string())
+    })?;
+
+    let parsed = reqwest::Url::parse(origin).map_err(|_| {
+        EngineError::ValidationError("Invalid Origin header for Discord OAuth request.".to_string())
+    })?;
+
+    Ok(Some(parsed))
+}
+
+fn same_origin(left: &reqwest::Url, right: &reqwest::Url) -> bool {
+    left.scheme() == right.scheme()
+        && left.host_str() == right.host_str()
+        && left.port_or_known_default() == right.port_or_known_default()
+}
+
+fn resolve_discord_redirect_uri(
+    configured_redirect_uri: &str,
+    requested_redirect_uri: Option<&str>,
+    headers: &HeaderMap,
+) -> Result<String, EngineError> {
+    if let Some(requested_redirect_uri) = requested_redirect_uri {
+        let requested = validate_requested_discord_redirect_uri(requested_redirect_uri)?;
+        let Some(origin) = origin_from_headers(headers)? else {
+            return Err(EngineError::ValidationError(
+                "Discord redirect URI override requires a browser Origin header.".to_string(),
+            ));
+        };
+
+        if !same_origin(&origin, &requested) {
+            return Err(EngineError::ValidationError(
+                "Discord redirect URI must stay on the current admin origin.".to_string(),
+            ));
+        }
+
+        return Ok(requested.into());
+    }
+
+    Ok(configured_redirect_uri.to_string())
+}
+
 /// GET /api/v1/auth/discord/authorize — returns the Discord OAuth2 authorize URL
-pub async fn discord_authorize(State(state): State<AppState>) -> Result<Response, ApiError> {
+pub async fn discord_authorize(
+    State(state): State<AppState>,
+    headers: HeaderMap,
+    Query(query): Query<DiscordAuthorizeQuery>,
+) -> Result<Response, ApiError> {
     let client_id = state
         .discord_client_id
         .as_ref()
         .ok_or_else(|| EngineError::ConfigError("Discord OAuth not configured".to_string()))?;
-    let redirect_uri = state.discord_redirect_uri.as_ref().ok_or_else(|| {
+    let configured_redirect_uri = state.discord_redirect_uri.as_ref().ok_or_else(|| {
         EngineError::ConfigError("Discord redirect URI not configured".to_string())
     })?;
+    let redirect_uri = resolve_discord_redirect_uri(
+        configured_redirect_uri,
+        query.redirect_uri.as_deref(),
+        &headers,
+    )?;
 
     // Build a simple state token using a HMAC of a timestamp to prevent CSRF.
     // In production you'd want a nonce stored server-side; this is a lightweight approach.
@@ -58,7 +163,7 @@ pub async fn discord_authorize(State(state): State<AppState>) -> Result<Response
         "{}?client_id={}&redirect_uri={}&response_type=code&scope=identify%20email&state={}",
         DISCORD_AUTHORIZE_URL,
         urlencoding::encode(client_id),
-        urlencoding::encode(redirect_uri),
+        urlencoding::encode(&redirect_uri),
         urlencoding::encode(&state_token),
     );
 
@@ -68,6 +173,7 @@ pub async fn discord_authorize(State(state): State<AppState>) -> Result<Response
 /// POST /api/v1/auth/discord/callback — exchange Discord auth code for JWT
 pub async fn discord_callback(
     State(state): State<AppState>,
+    headers: HeaderMap,
     Json(payload): Json<DiscordCallbackRequest>,
 ) -> Result<Response, ApiError> {
     // Verify Discord OAuth is configured
@@ -78,9 +184,14 @@ pub async fn discord_callback(
     let client_secret = state.discord_client_secret.as_ref().ok_or_else(|| {
         EngineError::ConfigError("Discord client secret not configured".to_string())
     })?;
-    let redirect_uri = state.discord_redirect_uri.as_ref().ok_or_else(|| {
+    let configured_redirect_uri = state.discord_redirect_uri.as_ref().ok_or_else(|| {
         EngineError::ConfigError("Discord redirect URI not configured".to_string())
     })?;
+    let redirect_uri = resolve_discord_redirect_uri(
+        configured_redirect_uri,
+        payload.redirect_uri.as_deref(),
+        &headers,
+    )?;
 
     // Verify DB is available (OAuth requires DB to look up users)
     if !state.db_available {
@@ -247,4 +358,53 @@ pub async fn discord_callback(
     };
 
     Ok((StatusCode::OK, Json(response)).into_response())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::resolve_discord_redirect_uri;
+    use axum::http::{HeaderMap, HeaderValue};
+
+    #[test]
+    fn accepts_same_origin_preview_callback_uri() {
+        let mut headers = HeaderMap::new();
+        headers.insert(
+            "origin",
+            HeaderValue::from_static("https://enantiodromia-engine-dashboard.vercel.app"),
+        );
+
+        let resolved = resolve_discord_redirect_uri(
+            "https://144.tryambakam.space/admin/login/discord-callback",
+            Some("https://enantiodromia-engine-dashboard.vercel.app/admin/auth/discord/callback"),
+            &headers,
+        )
+        .expect("preview callback uri should be accepted");
+
+        assert_eq!(
+            resolved,
+            "https://enantiodromia-engine-dashboard.vercel.app/admin/auth/discord/callback"
+        );
+    }
+
+    #[test]
+    fn rejects_cross_origin_callback_uri_override() {
+        let mut headers = HeaderMap::new();
+        headers.insert(
+            "origin",
+            HeaderValue::from_static("https://enantiodromia-engine-dashboard.vercel.app"),
+        );
+
+        let err = resolve_discord_redirect_uri(
+            "https://144.tryambakam.space/admin/login/discord-callback",
+            Some("https://malicious.example.com/admin/auth/discord/callback"),
+            &headers,
+        )
+        .expect_err("cross-origin callback uri should be rejected");
+
+        assert!(
+            err.to_string()
+                .contains("Discord redirect URI must stay on the current admin origin"),
+            "unexpected error: {err}"
+        );
+    }
 }

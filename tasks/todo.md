@@ -2,6 +2,80 @@
 
 ---
 
+# Task Plan — Fix Discord Login Regression After Admin UI Upgrades
+
+## Checklist
+- [x] Reproduce the Discord login regression in the current admin-web flow.
+- [x] Isolate the root cause across the login page, callback handling, and API contract.
+- [x] Add a failing regression test covering the broken Discord auth behavior.
+- [x] Implement the minimal fix for the identified root cause.
+- [x] Verify the fix with targeted tests and relevant app checks.
+
+## Notes
+- User reported that the new UI upgrades broke Discord login.
+- Root-cause-first debugging only; no speculative auth-flow changes.
+
+## Review (fill after execution)
+- Scope:
+  - fixed the admin-web Discord OAuth contract without changing credential login behavior
+  - kept the fix constrained to callback URI selection + validation across frontend and API
+- Reproduction:
+  - verified the live custom domain login button still reached Discord
+  - verified the alternate dashboard origin also sent users to Discord with a hard-coded production callback URI:
+    - current origin: `https://enantiodromia-engine-dashboard.vercel.app/admin/login`
+    - generated redirect URI: `https://144.tryambakam.space/admin/login/discord-callback`
+  - this meant new dashboard origins could not complete OAuth on their own origin
+- Root cause:
+  - frontend always trusted the backend-configured `DISCORD_REDIRECT_URI`
+  - backend always used the single configured redirect URI for both authorize and token exchange
+  - redesign/new-origin surfaces therefore broke Discord login whenever the UI origin differed from the configured callback origin
+- Fix:
+  - backend now accepts an optional caller-provided Discord callback URI for authorize + callback exchange
+  - backend validates that override against:
+    - the current browser `Origin`
+    - allowed admin callback paths only (`/admin/login/discord-callback`, `/admin/auth/discord/callback`)
+    - `https`, or `http` on localhost only
+  - login UI now passes the current origin callback URI
+  - callback page now sends its exact current callback URI back during code exchange
+  - updated admin-web runtime docs to reflect the same-origin callback contract
+- Verification:
+  - live browser reproduction showed the pre-fix hard-coded callback-origin behavior
+  - `cargo test -p noesis-api accepts_same_origin_preview_callback_uri -- --nocapture`
+  - `cargo test -p noesis-api rejects_cross_origin_callback_uri_override -- --nocapture`
+  - `npm --prefix apps/admin-web run typecheck`
+  - `npm --prefix apps/admin-web run lint`
+  - `npm --prefix apps/admin-web run build`
+  - build passed after rerunning with network access for `next/font` Google font fetches
+
+---
+
+# Task Plan — Audit Remaining GitHub Issues For Admin Dashboard
+
+## Checklist
+- [x] Confirm the GitHub repository and issue scope relevant to the admin dashboard.
+- [x] Fetch the current open GitHub issues from the repository.
+- [x] Separate admin-dashboard issues from unrelated repo issues if the repo contains mixed scopes.
+- [x] Summarize the remaining issues clearly for the user.
+
+## Notes
+- User asked for "all the issues that are remaining" for the admin dashboard.
+- Repo remote resolves to `Sheshiyer/Selemene-engine`.
+
+## Review (fill after execution)
+- Scope:
+  - confirmed the relevant admin-dashboard tracker is the `ADR-01` through `ADR-34` issue series in `Sheshiyer/Selemene-engine`
+  - excluded unrelated open roadmap issues from other repo areas
+- Findings:
+  - all 34 admin-dashboard ADR issues are still open on GitHub
+  - the live issue range is `#515` through `#548`
+  - open count by phase: `P1=8`, `P2=8`, `P3=10`, `P4=8`
+  - open count by wave: `W1=14`, `W2=12`, `W3=8`
+- Verification:
+  - `gh issue list --repo Sheshiyer/Selemene-engine --state open --limit 200 --json number,title,url,labels --jq '.[] | select(.title | test("ADR-")) | [.number, .title, .url] | @tsv'`
+  - `gh issue list --repo Sheshiyer/Selemene-engine --state all --limit 200 --json number,title,state --jq '[.[] | select(.title | test("ADR-"))] | {total: length, open: map(select(.state=="OPEN"))|length, closed: map(select(.state=="CLOSED"))|length}'`
+
+---
+
 # Task Plan — Admin Dashboard Redesign Wave 1 (P1 / W1)
 
 ## Checklist
