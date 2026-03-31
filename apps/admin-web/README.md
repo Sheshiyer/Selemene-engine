@@ -11,6 +11,10 @@ This app is the Vercel-hosted admin dashboard for Selemene Engine.
   - Login: `POST /api/v1/auth/login`
   - Session check: `GET /api/v1/admin/session`
   - Token transport: `Authorization: Bearer <token>`
+  - API key is not required for signed-in admin users
+
+For browser/admin sessions (email or Discord auth), use JWT bearer tokens.
+Use API keys only for CLI usage, scripts, or other non-session interfaces.
 
 ## Local development
 

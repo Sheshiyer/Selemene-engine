@@ -30,6 +30,8 @@ import type {
 type HttpMethod = "GET" | "POST" | "PATCH" | "PUT" | "DELETE";
 
 const LOCALHOST_HOSTS = new Set(["localhost", "127.0.0.1", "0.0.0.0"]);
+const API_PREFIX = "/api";
+const API_V1_PREFIX = "/api/v1";
 
 class ApiClientError extends Error {
   status: number;
@@ -87,6 +89,41 @@ function assertApiBaseUrlRuntimeSafety(baseUrl: string): void {
   }
 }
 
+function normalizePathname(pathname: string): string {
+  if (pathname === "/") {
+    return pathname;
+  }
+  return pathname.endsWith("/") ? pathname.slice(0, -1) : pathname;
+}
+
+function hasPrefix(pathname: string, prefix: string): boolean {
+  return pathname === prefix || pathname.startsWith(`${prefix}/`);
+}
+
+function buildApiUrl(baseUrl: string, path: string): string {
+  const base = new URL(baseUrl);
+  const request = new URL(path, "https://placeholder.internal");
+
+  const basePath = normalizePathname(base.pathname);
+  let requestPath = request.pathname;
+
+  // Accept both origin-only and prefixed API base URLs without duplicating path segments.
+  if (basePath.endsWith(API_V1_PREFIX) && hasPrefix(requestPath, API_V1_PREFIX)) {
+    requestPath = requestPath.slice(API_V1_PREFIX.length) || "/";
+  } else if (basePath.endsWith(API_PREFIX) && hasPrefix(requestPath, API_PREFIX)) {
+    requestPath = requestPath.slice(API_PREFIX.length) || "/";
+  }
+
+  const combinedPath = normalizePathname(
+    `${basePath === "/" ? "" : basePath}${requestPath.startsWith("/") ? requestPath : `/${requestPath}`}`
+  );
+
+  base.pathname = combinedPath.startsWith("/") ? combinedPath : `/${combinedPath}`;
+  base.search = request.search;
+
+  return base.toString();
+}
+
 async function request<T>(
   path: string,
   options: {
@@ -98,7 +135,7 @@ async function request<T>(
   const baseUrl = getApiBaseUrl();
   assertApiBaseUrlRuntimeSafety(baseUrl);
 
-  const url = `${baseUrl}${path}`;
+  const url = buildApiUrl(baseUrl, path);
 
   let response: Response;
   try {
