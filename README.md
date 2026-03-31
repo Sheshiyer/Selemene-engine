@@ -19,6 +19,17 @@
   <strong>Rust + Axum + Supabase + Railway</strong>
 </p>
 
+<p align="center">
+  <img src="https://img.shields.io/github/actions/workflow/status/Sheshiyer/Selemene-engine/test.yml?style=flat-square&logo=githubactions&logoColor=white&label=tests" alt="Tests">
+  <img src="https://img.shields.io/github/actions/workflow/status/Sheshiyer/Selemene-engine/deploy.yaml?style=flat-square&logo=railway&logoColor=white&label=deploy" alt="Deploy">
+  <img src="https://img.shields.io/github/v/tag/Sheshiyer/Selemene-engine?style=flat-square&label=version&color=blue" alt="Version">
+  <img src="https://img.shields.io/github/license/Sheshiyer/Selemene-engine?style=flat-square" alt="License">
+</p>
+
+<p align="center">
+  <img src="https://skillicons.dev/icons?i=rust,ts,postgres,redis,docker,kubernetes&theme=dark" alt="Tech Stack" />
+</p>
+
 <br>
 
 <p align="center">
@@ -63,7 +74,10 @@ Selemene offers something different: **16 symbolic mirrors** that reflect patter
 
 <br>
 
-## The Philosophy
+<details>
+<summary><strong>✦ The Philosophy — Kha-Ba-La, Consciousness Levels & Why This Exists</strong></summary>
+
+<br>
 
 ### The Problem
 You've tried the apps. The courses. The retreats.
@@ -100,6 +114,8 @@ The system adapts to your relationship with awareness:
 - **Level 4+ (Embodied):** "What witnesses this pattern arising?"
 
 This isn't gamification. It's meeting you where you are.
+
+</details>
 
 <br>
 
@@ -504,6 +520,20 @@ Creates admin user (`admin@tryambakam.com`) + 5 API keys. Keys print once.
 
 ## ✦ Architecture
 
+```mermaid
+graph LR
+    Client["📱 Client / TUI / Agent"] --> API["🔀 noesis-api<br>(Axum)"]
+    API --> Auth["🔐 noesis-auth<br>(JWT + API Key)"]
+    API --> Orch["⚙️ noesis-orchestrator"]
+    Orch --> RE["🧮 Rust Engines (11)"]
+    Orch --> Bridge["🌉 noesis-bridge"]
+    Bridge --> TSE["📦 TS Engines (5)<br>(Bun)"]
+    API --> Cache["🔴 noesis-cache<br>(L1 LRU · L2 Redis · L3 Disk)"]
+    Auth --> DB[("🗄️ Supabase<br>PostgreSQL")]
+    API --> Metrics["📊 Prometheus<br>/metrics"]
+    API --> Sentry["🔍 Sentry"]
+```
+
 Engine families:
 - Rust native: Panchanga, Human Design, Gene Keys, Vimshottari, Numerology, Biorhythm, Vedic Clock, Biofield, Face Reading, Nadabrahman, Transits
 - TypeScript bridged: Tarot, I-Ching, Enneagram, Sacred Geometry, Sigil Forge
@@ -560,6 +590,20 @@ crates/
 | Panchanga | <1ms | | Human Design | 1.31ms |
 | Numerology | <1ms | | **API p95** | <100ms |
 | Biorhythm | <1ms | | **Workflow** | <200ms |
+
+<br>
+
+---
+
+## ✦ Project Health
+
+| Category | Status | Score |
+|:---------|:------:|------:|
+| Tests | ████████████████████ | 86 files |
+| CI/CD | ████████████████████ | test + deploy + release |
+| Type Safety | ████████████████████ | Rust strict + Biome |
+| Documentation | ████████████████░░░░ | API docs, runbooks, portal |
+| Monitoring | ████████████████████ | Prometheus + Sentry + Grafana |
 
 <br>
 
@@ -670,8 +714,8 @@ See [`.env.example`](.env.example) for full list.
 | **[Swagger UI](https://selemene.tryambakam.space/api/docs)** | Interactive explorer |
 | **[Terminal Explorer](scripts/explore-api.sh)** | CLI exploration |
 | **[Agent Bridge](bridges/cli/README.md)** | Claude, OpenAI, LangChain tool defs |
-| **[Architecture](.context/documentation/architecture/selemene_architecture.md)** | System design |
 | **[Deployment](docs/deployment/README.md)** | Production guide |
+| **[Troubleshooting](docs/troubleshooting.md)** | Common issues & fixes |
 
 <br>
 
@@ -680,6 +724,22 @@ See [`.env.example`](.env.example) for full list.
 ## ✦ Brand Identity
 
 Brand and visual identity assets live under `docs/assets/images/` and campaign-ready compositions are maintained in the design pipeline docs.
+
+<br>
+
+---
+
+## ✦ Contributing
+
+We welcome contributions — especially new engines, witness prompt refinements, and bridge integrations.
+
+1. Fork the repo and create a feature branch
+2. Follow the [Engine Onboarding Guide](docs/contributing/engine-onboarding.md) for new engines
+3. Run tests: `cargo test -- --test-threads=1`
+4. Ensure CI passes: `cargo clippy --workspace` and `cargo fmt --all --check`
+5. Open a PR against `main`
+
+See the [deployment docs](docs/deployment/README.md) for production setup.
 
 <br>
 

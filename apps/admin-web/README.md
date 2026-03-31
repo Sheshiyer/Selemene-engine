@@ -14,6 +14,10 @@ This app is the Vercel-hosted admin dashboard for Selemene Engine.
   - Discord callback exchange: `POST /api/v1/auth/discord/callback`
   - UI callback routes: `/admin/login/discord-callback` and `/admin/auth/discord/callback`
   - Token transport: `Authorization: Bearer <token>`
+  - API key is not required for signed-in admin users
+
+For browser/admin sessions (email or Discord auth), use JWT bearer tokens.
+Use API keys only for CLI usage, scripts, or other non-session interfaces.
 
 ## Local development
 

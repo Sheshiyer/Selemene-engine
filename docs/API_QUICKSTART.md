@@ -10,7 +10,16 @@
 https://selemene.tryambakam.space
 ```
 
-## Step 1: Get an API Key
+## Step 1: Choose an Auth Method
+
+You can call the API with either JWT session auth (email/Discord sign-in) or an API key.
+
+- Use `Authorization: Bearer <token>` for user-facing apps after sign-in.
+- Use `X-API-Key: nk_...` for CLI, scripts, server-to-server, and external interfaces.
+
+Email and Discord sign-in do **not** require an API key.
+
+### Option A: API Key (CLI / integrations)
 
 API keys are prefixed with `nk_` and authenticate via the `X-API-Key` header.
 Each API key is treated as a unique user identity.
@@ -29,6 +38,12 @@ This creates an admin user and 5 API keys across tiers (enterprise, premium, fre
 ```bash
 export NOESIS_API_KEY="nk_your_key_here"
 ```
+
+### Option B: JWT (email or Discord sign-in)
+
+1. Sign in with email/password or Discord OAuth.
+2. Use the returned JWT as `Authorization: Bearer <token>`.
+3. Call the same engine and workflow endpoints with that bearer token.
 
 ## Step 2: Verify Connection
 
@@ -232,8 +247,10 @@ Two methods:
 
 | Method | Header | Use Case |
 |--------|--------|----------|
-| **API Key** | `X-API-Key: nk_...` | Server-to-server, scripts, CLI |
-| **JWT Token** | `Authorization: Bearer <token>` | User sessions (login flow) |
+| **JWT Token** | `Authorization: Bearer <token>` | User sessions (email/Discord sign-in) |
+| **API Key** | `X-API-Key: nk_...` | CLI, server-to-server, and external interfaces |
+
+If a user is authenticated via email or Discord login, a JWT is sufficient. API keys are optional unless you are using non-session clients.
 
 ### API Key Tiers
 

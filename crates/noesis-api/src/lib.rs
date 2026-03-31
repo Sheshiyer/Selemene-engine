@@ -2223,30 +2223,53 @@ pub async fn build_app_state(config: &ApiConfig) -> AppState {
                 PgConnectOptions::new()
             });
 
-        match tokio::time::timeout(
-            Duration::from_secs(5),
-            PgPoolOptions::new()
-                .max_connections(5)
-                .idle_timeout(Duration::from_secs(300)) // drop idle conns after 5min
-                .acquire_timeout(Duration::from_secs(5)) // fail fast on acquire
-                .test_before_acquire(true) // health-check stale conns
-                .connect_with(connect_options),
-        )
-        .await
-        {
-            Ok(Ok(pool)) => {
-                tracing::info!("Database pool connected");
-                Some(pool)
-            }
-            Ok(Err(e)) => {
-                tracing::warn!("Database connection failed (running without DB): {}", e);
-                None
-            }
-            Err(_) => {
-                tracing::warn!("Database connection timed out after 5s (running without DB)");
-                None
+        // Retry startup DB connection to handle transient pooler unavailability.
+        // Uses 3 attempts with exponential back-off (2s -> 4s) before giving up.
+        const MAX_ATTEMPTS: u32 = 3;
+        let mut pool_result: Option<sqlx::PgPool> = None;
+        for attempt in 1..=MAX_ATTEMPTS {
+            let opts = connect_options.clone();
+            match tokio::time::timeout(
+                Duration::from_secs(10),
+                PgPoolOptions::new()
+                    .max_connections(5)
+                    .idle_timeout(Duration::from_secs(300)) // drop idle conns after 5min
+                    .acquire_timeout(Duration::from_secs(5)) // fail fast on acquire
+                    .test_before_acquire(true) // health-check stale conns
+                    .connect_with(opts),
+            )
+            .await
+            {
+                Ok(Ok(p)) => {
+                    tracing::info!("Database pool connected (attempt {}/{})", attempt, MAX_ATTEMPTS);
+                    pool_result = Some(p);
+                    break;
+                }
+                Ok(Err(ref e)) if attempt < MAX_ATTEMPTS => {
+                    let delay = Duration::from_secs(2u64.pow(attempt));
+                    tracing::warn!(
+                        "Database connection attempt {}/{} failed: {} - retrying in {}s",
+                        attempt, MAX_ATTEMPTS, e, delay.as_secs()
+                    );
+                    tokio::time::sleep(delay).await;
+                }
+                Ok(Err(e)) => {
+                    tracing::warn!("Database connection failed (running without DB): {}", e);
+                }
+                Err(_) if attempt < MAX_ATTEMPTS => {
+                    let delay = Duration::from_secs(2u64.pow(attempt));
+                    tracing::warn!(
+                        "Database connection attempt {}/{} timed out - retrying in {}s",
+                        attempt, MAX_ATTEMPTS, delay.as_secs()
+                    );
+                    tokio::time::sleep(delay).await;
+                }
+                Err(_) => {
+                    tracing::warn!("Database connection timed out after 10s (running without DB)");
+                }
             }
         }
+        pool_result
     } else {
         tracing::warn!("No DATABASE_URL configured — auth endpoints unavailable");
         None
