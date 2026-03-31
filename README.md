@@ -31,6 +31,8 @@
   <strong>Not prediction. Reflection. Inquiry. Witness.</strong>
 </p>
 
+<!-- Deployment trigger: 2026-03-25 22:25 IST -->
+
 > **Reflection-first astronomical and consciousness calculation engine.**
 >
 > **Every system you've tried positioned you as user, not author.**

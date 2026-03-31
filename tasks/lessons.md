@@ -36,3 +36,19 @@
   - karana sequence windows,
   - yoga transition time.
 - If the source is a screenshot or pasted table, resolve row semantics first before calling a mismatch.
+
+## 2026-03-25 — Deployment Claim Verification
+
+- Do not imply a change is committed, on `main`, or live until all three checks agree:
+  - `git status` shows no local-only delta for the claimed change,
+  - `git log` shows the relevant commit on the current branch,
+  - the live URL reflects the claimed behavior when inspected directly.
+- If any of those checks disagree, state the exact state plainly: local only, committed but undeployed, or deployed but stale.
+
+## 2026-03-25 — Vercel Settings Change Is Not Deployment Proof
+
+- Treat Vercel settings edits as inert until a fresh production deployment is confirmed and the custom domain resolves to that deployment.
+- If the user reports the same 404 after changing `Root Directory` or framework settings, immediately verify:
+  - whether the project settings were saved,
+  - whether a new production deployment was created after the save,
+  - whether the custom domain is attached to this exact project and environment.

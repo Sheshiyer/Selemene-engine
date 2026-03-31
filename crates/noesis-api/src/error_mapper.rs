@@ -107,6 +107,12 @@ impl ErrorMapper {
                 "An internal error occurred".to_string(),
                 None,
             ),
+            EngineError::ServiceUnavailable(msg) => (
+                StatusCode::SERVICE_UNAVAILABLE,
+                "SERVICE_UNAVAILABLE".to_string(),
+                msg.clone(),
+                None,
+            ),
         };
 
         Self::response_internal(status, error_code, message, details, Some(err_display))
@@ -229,6 +235,7 @@ mod tests {
             EngineError::BridgeError(_) => {}
             EngineError::SwissEphemerisError(_) => {}
             EngineError::InternalError(_) => {}
+            EngineError::ServiceUnavailable(_) => {}
         }
     }
 
@@ -318,9 +325,14 @@ mod tests {
                 StatusCode::INTERNAL_SERVER_ERROR,
                 "INTERNAL_ERROR",
             ),
+            (
+                EngineError::ServiceUnavailable("unavailable".to_string()),
+                StatusCode::SERVICE_UNAVAILABLE,
+                "SERVICE_UNAVAILABLE",
+            ),
         ];
 
-        assert_eq!(cases.len(), 12);
+        assert_eq!(cases.len(), 13);
 
         for (err, expected_status, expected_code) in cases {
             assert_error_mapper_exhaustive(&err);

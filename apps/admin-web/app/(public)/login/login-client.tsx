@@ -3,7 +3,7 @@
 import { FormEvent, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { clearAuthToken, setAuthToken } from "@/lib/auth";
-import { ApiClientError, getAdminSession, login } from "@/lib/api";
+import { ApiClientError, getAdminSession, getDiscordAuthUrl, login } from "@/lib/api";
 
 function normalizeRedirect(rawTarget: string | null): string {
   if (!rawTarget || rawTarget.trim() === "") {
@@ -19,6 +19,14 @@ function normalizeRedirect(rawTarget: string | null): string {
   return rawTarget;
 }
 
+function getDiscordCallbackUri(): string | null {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  return `${window.location.origin}/admin/auth/discord/callback`;
+}
+
 export function LoginClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -31,6 +39,7 @@ export function LoginClient() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isDiscordLoading, setIsDiscordLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
@@ -52,6 +61,23 @@ export function LoginClient() {
       }
     } finally {
       setIsSubmitting(false);
+    }
+  }
+
+  async function onDiscordLogin() {
+    setError(null);
+    setIsDiscordLoading(true);
+
+    try {
+      const { url } = await getDiscordAuthUrl(getDiscordCallbackUri() ?? undefined);
+      window.location.href = url;
+    } catch (err) {
+      setIsDiscordLoading(false);
+      if (err instanceof ApiClientError) {
+        setError(err.payload?.error || err.message);
+      } else {
+        setError("Failed to initiate Discord login.");
+      }
     }
   }
 
@@ -88,6 +114,17 @@ export function LoginClient() {
             {isSubmitting ? "Signing in..." : "Sign in"}
           </button>
         </form>
+        <div className="login-divider">
+          <span>or</span>
+        </div>
+        <button
+          type="button"
+          className="discord-btn"
+          onClick={onDiscordLogin}
+          disabled={isDiscordLoading}
+        >
+          {isDiscordLoading ? "Redirecting..." : "Sign in with Discord"}
+        </button>
       </section>
     </main>
   );

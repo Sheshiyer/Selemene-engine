@@ -1,15 +1,29 @@
+import { SurfaceCard } from "@/components/admin-primitives";
+
 interface PageShellProps {
   title: string;
   summary: string;
+  eyebrow?: string;
+  actions?: React.ReactNode;
   children: React.ReactNode;
 }
 
-export function PageShell({ title, summary, children }: PageShellProps) {
+export function PageShell({
+  title,
+  summary,
+  eyebrow = "Operational Surface",
+  actions,
+  children
+}: PageShellProps) {
   return (
-    <section className="panel">
-      <h2>{title}</h2>
-      <p className="helper">{summary}</p>
-      <div className="grid">{children}</div>
-    </section>
+    <SurfaceCard
+      eyebrow={eyebrow}
+      title={title}
+      summary={summary}
+      actions={actions}
+      className="page-shell-panel"
+    >
+      <div className="grid page-shell-grid">{children}</div>
+    </SurfaceCard>
   );
 }

@@ -38,4 +38,7 @@ pub enum EngineError {
 
     #[error("Internal error: {0}")]
     InternalError(String),
+
+    #[error("Service unavailable: {0}")]
+    ServiceUnavailable(String),
 }

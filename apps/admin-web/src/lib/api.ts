@@ -198,6 +198,25 @@ export async function login(email: string, password: string): Promise<LoginRespo
   });
 }
 
+export async function getDiscordAuthUrl(redirectUri?: string): Promise<{ url: string }> {
+  return request<{ url: string }>(
+    `/api/v1/auth/discord/authorize${buildQuery({
+      redirect_uri: redirectUri
+    })}`
+  );
+}
+
+export async function discordCallback(
+  code: string,
+  state?: string,
+  redirectUri?: string
+): Promise<LoginResponse> {
+  return request<LoginResponse>("/api/v1/auth/discord/callback", {
+    method: "POST",
+    body: { code, state, redirect_uri: redirectUri }
+  });
+}
+
 export async function getAdminSession(token: string): Promise<AdminSession> {
   return request<AdminSession>("/api/v1/admin/session", {
     method: "GET",
@@ -320,6 +339,13 @@ export async function rotateAdminApiKey(
 ): Promise<RotateApiKeyResponse> {
   return request<RotateApiKeyResponse>(`/api/v1/admin/api-keys/${keyId}/rotate`, {
     method: "POST",
+    token
+  });
+}
+
+export async function deleteAdminApiKey(token: string, keyId: string): Promise<void> {
+  await request<Record<string, unknown>>(`/api/v1/admin/api-keys/${keyId}`, {
+    method: "DELETE",
     token
   });
 }

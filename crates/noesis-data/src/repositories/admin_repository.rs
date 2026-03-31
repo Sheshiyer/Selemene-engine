@@ -1241,6 +1241,16 @@ impl AdminRepository {
         Ok(affected > 0)
     }
 
+    pub async fn delete_api_key(&self, key_id: Uuid) -> Result<bool, Error> {
+        let affected = sqlx::query("DELETE FROM api_keys WHERE id = $1")
+            .bind(key_id)
+            .execute(&self.pool)
+            .await?
+            .rows_affected();
+
+        Ok(affected > 0)
+    }
+
     pub async fn rotate_api_key(
         &self,
         key_id: Uuid,

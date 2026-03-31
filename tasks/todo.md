@@ -2,6 +2,330 @@
 
 ---
 
+# Task Plan — Fix Discord Login Regression After Admin UI Upgrades
+
+## Checklist
+- [x] Reproduce the Discord login regression in the current admin-web flow.
+- [x] Isolate the root cause across the login page, callback handling, and API contract.
+- [x] Add a failing regression test covering the broken Discord auth behavior.
+- [x] Implement the minimal fix for the identified root cause.
+- [x] Verify the fix with targeted tests and relevant app checks.
+
+## Notes
+- User reported that the new UI upgrades broke Discord login.
+- Root-cause-first debugging only; no speculative auth-flow changes.
+
+## Review (fill after execution)
+- Scope:
+  - fixed the admin-web Discord OAuth contract without changing credential login behavior
+  - kept the fix constrained to callback URI selection + validation across frontend and API
+- Reproduction:
+  - verified the live custom domain login button still reached Discord
+  - verified the alternate dashboard origin also sent users to Discord with a hard-coded production callback URI:
+    - current origin: `https://enantiodromia-engine-dashboard.vercel.app/admin/login`
+    - generated redirect URI: `https://144.tryambakam.space/admin/login/discord-callback`
+  - this meant new dashboard origins could not complete OAuth on their own origin
+- Root cause:
+  - frontend always trusted the backend-configured `DISCORD_REDIRECT_URI`
+  - backend always used the single configured redirect URI for both authorize and token exchange
+  - redesign/new-origin surfaces therefore broke Discord login whenever the UI origin differed from the configured callback origin
+- Fix:
+  - backend now accepts an optional caller-provided Discord callback URI for authorize + callback exchange
+  - backend validates that override against:
+    - the current browser `Origin`
+    - allowed admin callback paths only (`/admin/login/discord-callback`, `/admin/auth/discord/callback`)
+    - `https`, or `http` on localhost only
+  - login UI now passes the current origin callback URI
+  - callback page now sends its exact current callback URI back during code exchange
+  - updated admin-web runtime docs to reflect the same-origin callback contract
+- Verification:
+  - live browser reproduction showed the pre-fix hard-coded callback-origin behavior
+  - `cargo test -p noesis-api accepts_same_origin_preview_callback_uri -- --nocapture`
+  - `cargo test -p noesis-api rejects_cross_origin_callback_uri_override -- --nocapture`
+  - `npm --prefix apps/admin-web run typecheck`
+  - `npm --prefix apps/admin-web run lint`
+  - `npm --prefix apps/admin-web run build`
+  - build passed after rerunning with network access for `next/font` Google font fetches
+
+---
+
+# Task Plan — Audit Remaining GitHub Issues For Admin Dashboard
+
+## Checklist
+- [x] Confirm the GitHub repository and issue scope relevant to the admin dashboard.
+- [x] Fetch the current open GitHub issues from the repository.
+- [x] Separate admin-dashboard issues from unrelated repo issues if the repo contains mixed scopes.
+- [x] Summarize the remaining issues clearly for the user.
+
+## Notes
+- User asked for "all the issues that are remaining" for the admin dashboard.
+- Repo remote resolves to `Sheshiyer/Selemene-engine`.
+
+## Review (fill after execution)
+- Scope:
+  - confirmed the relevant admin-dashboard tracker is the `ADR-01` through `ADR-34` issue series in `Sheshiyer/Selemene-engine`
+  - excluded unrelated open roadmap issues from other repo areas
+- Findings:
+  - all 34 admin-dashboard ADR issues are still open on GitHub
+  - the live issue range is `#515` through `#548`
+  - open count by phase: `P1=8`, `P2=8`, `P3=10`, `P4=8`
+  - open count by wave: `W1=14`, `W2=12`, `W3=8`
+- Verification:
+  - `gh issue list --repo Sheshiyer/Selemene-engine --state open --limit 200 --json number,title,url,labels --jq '.[] | select(.title | test("ADR-")) | [.number, .title, .url] | @tsv'`
+  - `gh issue list --repo Sheshiyer/Selemene-engine --state all --limit 200 --json number,title,state --jq '[.[] | select(.title | test("ADR-"))] | {total: length, open: map(select(.state=="OPEN"))|length, closed: map(select(.state=="CLOSED"))|length}'`
+
+---
+
+# Task Plan — Admin Dashboard Redesign Wave 1 (P1 / W1)
+
+## Checklist
+- [x] Confirm executable Wave 1 scope from the redesign dependency graph.
+- [x] Capture a source-of-truth baseline inventory and before evidence for the current admin surface.
+- [x] Write the Wave 1 design artifact covering tokens, typography, tone, and ornament rules.
+- [x] Land the Wave 1 token and typography system in `apps/admin-web`.
+- [x] Add reusable visual grammar utilities that Wave 2 can build on without reinterpretation.
+- [x] Verify `apps/admin-web` typecheck, lint, and build after the Wave 1 changes.
+- [x] Record results in the review section.
+
+## Notes
+- User asked to "finish admin dashboard redesign issue wave 1".
+- The only dependency-clean interpretation is `P1 / W1` (`ADR-01` through `ADR-04`).
+- Later `W1` items in the master manifest depend on shell and primitive work from later waves and must not be claimed here.
+
+## Review (fill after execution)
+- Scope:
+  - executed `P1 / W1` only (`ADR-01` through `ADR-04`)
+  - did not claim later `W1` tasks because they depend on shell / primitive work from later waves
+- Evidence:
+  - added baseline screenshots:
+    - `docs/assets/admin-dashboard-wave-1-baseline/login-desktop.png`
+    - `docs/assets/admin-dashboard-wave-1-baseline/login-mobile.png`
+  - captured protected-route baseline through source inventory in:
+    - `docs/plans/2026-03-26-admin-dashboard-wave-1-design.md`
+- Design system:
+  - wired `Exo 2` as the display face in `apps/admin-web/app/layout.tsx`
+  - replaced the old teal-led token set with the Tryambakam palette in `apps/admin-web/app/globals.css`
+  - added shared visual grammar utilities and page-shell header treatment for Wave 2 reuse
+- Verification:
+  - `npm --prefix apps/admin-web run typecheck`
+  - `npm --prefix apps/admin-web run lint`
+  - `npm --prefix apps/admin-web run build`
+  - post-change login renders were captured locally with headless Chrome to verify the updated surface loads
+
+---
+
+# Task Plan — Admin Dashboard Redesign Wave 2 (P1 / W2)
+
+## Checklist
+- [x] Confirm the exact Wave 2 deliverables from the dependency graph (`ADR-05`, `ADR-06`, `ADR-07`).
+- [x] Rebuild the protected shell so every authenticated route inherits the new frame automatically.
+- [x] Add shared surface and card primitives for page sections, metrics, and state panels.
+- [x] Add reusable modal, drawer, and action rail primitives.
+- [x] Apply the new primitives to at least the shell and one existing detail flow so they are not dead code.
+- [x] Verify `apps/admin-web` typecheck, lint, and build after the Wave 2 changes.
+- [x] Record results in the review section.
+
+## Notes
+- This pass is `P1 / W2` only.
+- Scope covers shell and primitive infrastructure, not the later page redesign issues.
+- The goal is to make later route-level redesigns compositional instead of one-off.
+
+## Review (fill after execution)
+- Scope:
+  - executed `P1 / W2` only (`ADR-05`, `ADR-06`, `ADR-07`)
+  - did not claim later route-level redesign waves because those depend on this shell/primitives layer
+- Shell:
+  - rebuilt `app/(protected)/layout.tsx` into a two-column shell with grouped navigation, route context, operator context, and shell-level action rail
+  - added route metadata so every protected page inherits consistent eyebrow, title, and summary framing
+  - replaced the old one-off loading / missing-session states with shared shell state cards
+- Shared primitives:
+  - added `apps/admin-web/src/components/admin-primitives.tsx` with:
+    - `SurfaceCard`
+    - `MetricSurface`
+    - `ActionRail`
+  - added `apps/admin-web/src/components/overlay-surface.tsx` with:
+    - `ModalSurface`
+    - `DrawerSurface`
+  - refactored `apps/admin-web/src/components/page-shell.tsx` to use the shared surface primitive instead of a bespoke panel wrapper
+- Primitive adoption:
+  - updated `dashboard/page.tsx` to use shared metric and surface cards
+  - updated `audit/page.tsx` to use shared metric cards, event ledger surface, and a drawer-based event detail view
+  - updated `api-keys/page.tsx` to use shared metric cards, action rail, registry surface, and modal primitives for create/manage/confirm flows
+  - extended `apps/admin-web/app/globals.css` with shell-v2, surface, action-rail, modal, and drawer styling needed for downstream waves
+- Verification:
+  - `npm --prefix apps/admin-web run typecheck`
+  - `npm --prefix apps/admin-web run lint`
+  - `npm --prefix apps/admin-web run build`
+  - all three passed on the final post-fix state
+
+---
+
+# Task Plan — Admin Dashboard Redesign Wave 3 (P1 / W3)
+
+## Checklist
+- [x] Confirm the exact Wave 3 deliverable from the redesign plan (`ADR-08`).
+- [x] Build shared loading, empty, error, and success state components for the admin app.
+- [x] Add the supporting global CSS so state handling has one visual grammar instead of page-specific helpers.
+- [x] Apply the new state system across protected admin pages so route-level loading and empty cases stop diverging.
+- [x] Verify `apps/admin-web` typecheck, lint, and build after the Wave 3 changes.
+- [x] Record results in the review section.
+
+## Notes
+- This pass is `P1 / W3` only.
+- Scope is global state handling, not the later interaction primitives or page redesign issues.
+- The goal is to eliminate ad-hoc `helper` paragraphs and one-off alert blocks before the page redesign waves begin.
+
+## Review (fill after execution)
+- Scope:
+  - executed `P1 / W3` only (`ADR-08`)
+  - did not claim later interaction, mobile, or page-redesign waves
+- Shared state system:
+  - added `apps/admin-web/src/components/admin-state.tsx`
+  - introduced shared:
+    - `StateBanner` for error/success feedback
+    - `StatePanel` for loading and empty state surfaces
+    - `TableEmptyStateRow` for empty table bodies
+  - extended `apps/admin-web/app/globals.css` with reusable ADR-08 state styling
+- Route adoption:
+  - replaced ad-hoc loading/error/empty patterns across protected routes including:
+    - `dashboard/page.tsx`
+    - `analytics/page.tsx`
+    - `system/page.tsx`
+    - `history-sync/page.tsx`
+    - `users/page.tsx`
+    - `audit/page.tsx`
+    - `api-keys/page.tsx`
+  - standardized table-empty treatment so admin tables now share one empty grammar instead of inline helper paragraphs
+  - standardized top-level success/error messaging so action feedback now uses one shared banner treatment
+- Verification:
+  - `npm --prefix apps/admin-web run typecheck`
+  - `npm --prefix apps/admin-web run lint`
+  - `npm --prefix apps/admin-web run build`
+  - all three passed on the final Wave 3 state
+
+---
+
+# Task Plan — Admin Dashboard Overhaul Plan + GitHub Issue Sync
+
+## Checklist
+- [x] Gather redesign direction from the provided Tryambakam brand board and local HTML variant references.
+- [x] Confirm current admin-web route inventory and shell scope.
+- [x] Write a redesign plan doc with phases, waves, swarms, and issue mapping.
+- [x] Generate a 30–40 issue manifest for GitHub synchronization.
+- [x] Commit and push the planning artifacts.
+- [x] Create GitHub issues from the manifest and record the results.
+
+## Notes
+- The redesign should shift the admin dashboard from low-taste utilitarian UI to a high-function management system.
+- Visual direction should combine:
+  - the warm Tryambakam brand board,
+  - Exo 2 / Space Grotesk hierarchy,
+  - bronze/teal/cream materials,
+  - and the HUD / split-grid / drill-down energy from the provided HTML variants.
+- The just-shipped API key management work is treated as completed baseline, not future scope.
+
+## Review (fill after execution)
+- Planning artifacts:
+  - added `docs/plans/2026-03-25-admin-dashboard-overhaul-plan.md`
+  - added `docs/plans/2026-03-25-admin-dashboard-overhaul-issues.json`
+- Git:
+  - pushed commit `e8622ab7` (`docs(admin): add dashboard overhaul plan`) to `origin/main`
+- GitHub issue sync:
+  - created 34 redesign issues from `ADR-01` through `ADR-34`
+  - issue range: `#515` to `#548`
+  - labels applied per issue:
+    - `enhancement`
+    - `roadmap`
+    - `taskmaster`
+    - phase label
+    - wave label
+    - area label
+  - sync summary written to `/tmp/admin-dashboard-overhaul-issue-sync-summary.json`
+
+---
+
+# Task Plan — API Key Management Modal + Permanent Delete
+
+## Checklist
+- [x] Inspect current API keys UI, client contract, and backend admin API support.
+- [x] Add backend admin API support for permanent API key deletion.
+- [x] Extend frontend API client/types/permissions for delete support.
+- [x] Redesign API key table into a row-clickable management surface with detail modal.
+- [x] Add modal actions for reveal-once secret handling, rotate, revoke, and permanent delete.
+- [x] Verify build/lint/typecheck for `apps/admin-web` and targeted backend tests if available.
+- [x] Record results in the review section.
+
+## Notes
+- User wants the table upgraded into a management-level UI with a detail modal.
+- Permanent delete is explicitly required, not a soft archive.
+- Existing keys should not falsely promise full-secret reveal unless returned by create/rotate flows.
+
+## Review (fill after execution)
+- Backend:
+  - added `DELETE /api/v1/admin/api-keys/:key_id` in `crates/noesis-api`
+  - added repository-level hard delete in `crates/noesis-data`
+  - introduced `admin:keys:delete` into admin role/permission normalization
+- Frontend:
+  - upgraded the API keys page from a passive table into a row-clickable management surface
+  - added a wide detail modal with identity, lifecycle, permissions, secret-access section, and a danger zone
+  - create/rotate now route the one-time secret into the management modal instead of a separate bare reveal modal
+  - permanent delete is available via confirmation modal and requires the new permission
+- Verification:
+  - `npm --prefix apps/admin-web run typecheck`
+  - `npm --prefix apps/admin-web run lint`
+  - `npm --prefix apps/admin-web run build`
+  - `cargo test -p noesis-api admin_role_includes_api_key_delete_permission -- --nocapture`
+- Build/test status:
+  - admin-web typecheck passed
+  - admin-web lint passed
+  - admin-web build passed
+  - targeted noesis-api test passed
+
+---
+
+# Task Plan — Diagnose Vercel 404 After Admin Web Root Fix
+
+## Checklist
+- [x] Re-read deployment lessons and prior Vercel notes before further guidance.
+- [ ] Verify the live responses for the custom domain and Vercel production alias.
+- [ ] Inspect deployment docs and active repo config for any remaining Vercel requirements.
+- [ ] Isolate whether the blocker is unsaved settings, missing redeploy, or wrong domain/project binding.
+- [ ] Give the user the exact next action to clear the 404.
+
+## Notes
+- User changed Vercel settings but still sees Vercel `404: NOT_FOUND`.
+- Prior advice must now be treated as incomplete until live deployment/domain state is proven.
+
+## Review (fill after execution)
+- Pending.
+
+---
+
+# Task Plan — Trigger Fresh Vercel Deploy From `main`
+
+## Checklist
+- [x] Confirm local branch state is clean and tracking `origin/main`.
+- [x] Update a low-risk file to create a fresh Git commit for Vercel branch deployment.
+- [x] Commit the deploy-trigger change on `main`.
+- [x] Push `main` to `origin`.
+- [x] Verify `origin/main` advanced to the new commit and record the result.
+
+## Notes
+- User requested a README touch specifically to force a new deployment from the connected production branch.
+- Keep the change content-neutral and avoid modifying application behavior.
+
+## Review (fill after execution)
+- Commit created on `main`: `31c2d1a5` (`chore: trigger vercel deploy from main`).
+- Root `README.md` received a no-op HTML comment timestamp to force a new Git-based production deployment.
+- Push succeeded:
+  - `d5ac13b4..31c2d1a5  main -> main`
+- Verification:
+  - local `HEAD` = `31c2d1a5`
+  - `origin/main` = `31c2d1a5`
+  - `git status --short --branch` returned `## main...origin/main`, confirming a clean synchronized branch.
+
+---
+
 # Task Plan — noesis-api Error Handling Audit for Issue #49
 
 ## Checklist
@@ -2651,3 +2975,31 @@ GitHub outcome:
 - Added automated contract test in noesis-integration:
   - `crates/noesis-integration/tests/witness_prompt_quality_tests.rs`
   - validates all 16 engines against question format + non-prescriptive language constraints
+
+---
+
+# Task Plan — Admin Web Discord Callback Alias And Mainline Commit
+
+## Checklist
+- [x] Re-verify the Discord auth state on current `main` and confirm remote divergence before shipping.
+- [x] Preserve the backend-driven Discord login flow already present on `origin/main`.
+- [x] Add the admin-safe callback alias route at `/admin/auth/discord/callback`.
+- [x] Document the required Discord OAuth settings for the live admin portal.
+- [x] Commit and push the merged result on top of current `origin/main`.
+
+## Notes
+- Scope is routing/readiness only for admin-web Discord auth.
+- The login page keeps the existing email/password fallback and backend-driven Discord authorize flow.
+
+## Review (fill after execution)
+- Confirmed `origin/main` already contained the active Discord authorize/callback backend flow plus a visible login button, while the live portal was still serving older UI.
+- Added callback alias route so the admin portal can complete Discord auth at either:
+  - `/admin/login/discord-callback`
+  - `/admin/auth/discord/callback`
+- Kept the backend-driven `getDiscordAuthUrl()` login path and existing credential fallback intact.
+- Fixed the existing Discord callback client to satisfy the React lint rule by avoiding synchronous `setState()` inside the effect's missing-code branch.
+- Made `apps/admin-web` `typecheck` deterministic with `tsc --noEmit --incremental false` to avoid the stale Next `.next/types/cache-life.d.ts` failure during verification.
+- Documented the required live settings:
+  - frontend: `NEXT_PUBLIC_API_BASE_URL`
+  - API/backend: `DISCORD_CLIENT_ID`, `DISCORD_CLIENT_SECRET`, `DISCORD_REDIRECT_URI`
+  - Discord developer portal callback URL must exactly match `DISCORD_REDIRECT_URI`
