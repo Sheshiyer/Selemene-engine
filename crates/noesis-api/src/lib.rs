@@ -14,8 +14,8 @@ mod middleware;
 pub mod workflow_parity;
 
 pub use billing::{
-    reset_billing_emitter, set_billing_emitter, BillingEventEmitter, NoopBillingEmitter,
-    StripeWebhookEmitter,
+    reset_billing_emitter, set_billing_emitter, BillingEventEmitter, DodoWebhookEmitter,
+    NoopBillingEmitter, StripeWebhookEmitter,
 };
 
 // Re-export configuration and logging for main.rs
@@ -57,7 +57,7 @@ use sqlx::postgres::{PgConnectOptions, PgPoolOptions};
 use std::collections::HashMap;
 use std::sync::Arc;
 use std::time::{Duration, Instant};
-use tower_http::cors::CorsLayer;
+use tower_http::cors::{AllowOrigin, CorsLayer};
 use tower_http::trace::TraceLayer;
 use utoipa::{OpenApi, ToSchema};
 use utoipa_swagger_ui::SwaggerUi;
@@ -394,6 +394,71 @@ pub fn shared_metrics() -> Arc<NoesisMetrics> {
 // CORS configuration
 // ---------------------------------------------------------------------------
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct WildcardOriginPattern {
+    scheme: String,
+    host_suffix: String,
+}
+
+fn parse_wildcard_origin_pattern(origin: &str) -> Option<WildcardOriginPattern> {
+    let trimmed = origin.trim();
+    let (scheme, host_suffix) = trimmed.split_once("://*.")?;
+
+    if scheme.is_empty() || host_suffix.is_empty() {
+        return None;
+    }
+
+    Some(WildcardOriginPattern {
+        scheme: scheme.to_ascii_lowercase(),
+        host_suffix: format!(".{}", host_suffix.to_ascii_lowercase()),
+    })
+}
+
+fn matches_wildcard_origin(origin: &str, pattern: &WildcardOriginPattern) -> bool {
+    let Some((scheme, authority)) = origin.split_once("://") else {
+        return false;
+    };
+
+    if !scheme.eq_ignore_ascii_case(&pattern.scheme) {
+        return false;
+    }
+
+    let host = authority
+        .split('/')
+        .next()
+        .unwrap_or(authority)
+        .split(':')
+        .next()
+        .unwrap_or(authority)
+        .trim()
+        .to_ascii_lowercase();
+
+    if !host.ends_with(&pattern.host_suffix) {
+        return false;
+    }
+
+    let prefix = &host[..host.len() - pattern.host_suffix.len()];
+    !prefix.is_empty()
+}
+
+fn origin_is_allowed(
+    origin: &HeaderValue,
+    exact_origins: &[HeaderValue],
+    wildcard_patterns: &[WildcardOriginPattern],
+) -> bool {
+    if exact_origins.contains(origin) {
+        return true;
+    }
+
+    let Ok(origin_str) = origin.to_str() else {
+        return false;
+    };
+
+    wildcard_patterns
+        .iter()
+        .any(|pattern| matches_wildcard_origin(origin_str, pattern))
+}
+
 /// Create production-ready CORS layer with environment-based origin allowlist.
 ///
 /// # Arguments
@@ -405,8 +470,14 @@ pub fn shared_metrics() -> Arc<NoesisMetrics> {
 /// - Credentials: true (for cookie/auth workflows)
 /// - Max Age: 3600 seconds (1 hour)
 fn create_cors_layer(allowed_origins: Vec<String>) -> CorsLayer {
-    let origins: Vec<HeaderValue> = allowed_origins
+    let wildcard_patterns: Vec<WildcardOriginPattern> = allowed_origins
         .iter()
+        .filter_map(|origin| parse_wildcard_origin_pattern(origin))
+        .collect();
+
+    let exact_origins: Vec<HeaderValue> = allowed_origins
+        .iter()
+        .filter(|origin| parse_wildcard_origin_pattern(origin).is_none())
         .filter_map(|s| {
             let trimmed = s.trim();
             if trimmed.is_empty() {
@@ -417,8 +488,18 @@ fn create_cors_layer(allowed_origins: Vec<String>) -> CorsLayer {
         })
         .collect();
 
+    let allow_origin = if wildcard_patterns.is_empty() {
+        AllowOrigin::list(exact_origins.clone())
+    } else {
+        let exact_origins = exact_origins.clone();
+        let wildcard_patterns = wildcard_patterns.clone();
+        AllowOrigin::predicate(move |origin, _parts| {
+            origin_is_allowed(origin, &exact_origins, &wildcard_patterns)
+        })
+    };
+
     CorsLayer::new()
-        .allow_origin(origins)
+        .allow_origin(allow_origin)
         .allow_methods([
             Method::GET,
             Method::POST,
@@ -434,6 +515,74 @@ fn create_cors_layer(allowed_origins: Vec<String>) -> CorsLayer {
         ])
         .allow_credentials(true)
         .max_age(Duration::from_secs(3600))
+}
+
+#[cfg(test)]
+mod cors_tests {
+    use super::*;
+
+    #[test]
+    fn parses_wildcard_origin_pattern() {
+        let pattern = parse_wildcard_origin_pattern("https://*.railway.app")
+            .expect("wildcard pattern should parse");
+
+        assert_eq!(
+            pattern,
+            WildcardOriginPattern {
+                scheme: "https".to_string(),
+                host_suffix: ".railway.app".to_string(),
+            }
+        );
+    }
+
+    #[test]
+    fn wildcard_origin_matches_subdomain_only() {
+        let pattern = parse_wildcard_origin_pattern("https://*.railway.app")
+            .expect("wildcard pattern should parse");
+
+        assert!(matches_wildcard_origin(
+            "https://selemene-engine-production.up.railway.app",
+            &pattern
+        ));
+        assert!(!matches_wildcard_origin("https://railway.app", &pattern));
+        assert!(!matches_wildcard_origin("http://selemene-engine-production.up.railway.app", &pattern));
+        assert!(!matches_wildcard_origin("https://railway.app.evil.com", &pattern));
+    }
+
+    #[test]
+    fn origin_allowlist_supports_exact_and_wildcard_matches() {
+        let exact_origins = vec![
+            "http://localhost:5173"
+                .parse::<HeaderValue>()
+                .expect("localhost origin should parse"),
+        ];
+        let wildcard_patterns = vec![
+            parse_wildcard_origin_pattern("https://*.railway.app")
+                .expect("wildcard pattern should parse"),
+        ];
+
+        assert!(origin_is_allowed(
+            &"http://localhost:5173"
+                .parse::<HeaderValue>()
+                .expect("localhost origin should parse"),
+            &exact_origins,
+            &wildcard_patterns,
+        ));
+        assert!(origin_is_allowed(
+            &"https://selemene-engine-production.up.railway.app"
+                .parse::<HeaderValue>()
+                .expect("preview origin should parse"),
+            &exact_origins,
+            &wildcard_patterns,
+        ));
+        assert!(!origin_is_allowed(
+            &"https://evil.com"
+                .parse::<HeaderValue>()
+                .expect("origin should parse"),
+            &exact_origins,
+            &wildcard_patterns,
+        ));
+    }
 }
 
 // ---------------------------------------------------------------------------
@@ -585,6 +734,19 @@ pub fn create_router(state: AppState, config: &ApiConfig) -> Router {
         .route("/readings", get(list_readings_handler))
         .route("/readings/stats", get(readings_stats_handler))
         .route("/readings/:reading_id", get(get_reading_handler))
+        // OpenClaw onboarding routes
+        .route(
+            "/onboarding/invite",
+            post(handlers::onboarding::create_invite),
+        )
+        .route(
+            "/onboarding/invites",
+            get(handlers::onboarding::list_invites),
+        )
+        .route(
+            "/onboarding/:code/openclaw.txt",
+            get(handlers::onboarding::get_onboarding),
+        )
         // Layers are applied bottom-to-top, so rate_limit runs AFTER auth
         .layer(axum_middleware::from_fn_with_state(
             rate_limiter.clone(),
@@ -2241,7 +2403,11 @@ pub async fn build_app_state(config: &ApiConfig) -> AppState {
             .await
             {
                 Ok(Ok(p)) => {
-                    tracing::info!("Database pool connected (attempt {}/{})", attempt, MAX_ATTEMPTS);
+                    tracing::info!(
+                        "Database pool connected (attempt {}/{})",
+                        attempt,
+                        MAX_ATTEMPTS
+                    );
                     pool_result = Some(p);
                     break;
                 }
@@ -2249,7 +2415,10 @@ pub async fn build_app_state(config: &ApiConfig) -> AppState {
                     let delay = Duration::from_secs(2u64.pow(attempt));
                     tracing::warn!(
                         "Database connection attempt {}/{} failed: {} - retrying in {}s",
-                        attempt, MAX_ATTEMPTS, e, delay.as_secs()
+                        attempt,
+                        MAX_ATTEMPTS,
+                        e,
+                        delay.as_secs()
                     );
                     tokio::time::sleep(delay).await;
                 }
@@ -2260,7 +2429,9 @@ pub async fn build_app_state(config: &ApiConfig) -> AppState {
                     let delay = Duration::from_secs(2u64.pow(attempt));
                     tracing::warn!(
                         "Database connection attempt {}/{} timed out - retrying in {}s",
-                        attempt, MAX_ATTEMPTS, delay.as_secs()
+                        attempt,
+                        MAX_ATTEMPTS,
+                        delay.as_secs()
                     );
                     tokio::time::sleep(delay).await;
                 }

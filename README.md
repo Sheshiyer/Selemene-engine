@@ -655,6 +655,7 @@ crates/
 | `/api/v1/admin/users/:user_id/tier` | ✓ | Update user tier |
 | `/api/v1/admin/users/:user_id/roles` | ✓ | Apply role-derived permissions |
 | `/api/v1/admin/api-keys` | ✓ | List/create API keys |
+| `/api/v1/admin/api-keys/:key_id` | ✓ | Permanently delete API key |
 | `/api/v1/admin/api-keys/:key_id/revoke` | ✓ | Revoke API key |
 | `/api/v1/admin/api-keys/:key_id/rotate` | ✓ | Rotate API key |
 | `/api/v1/admin/history-sync/*` | ✓ | Drift/device/event sync views |
@@ -714,8 +715,40 @@ See [`.env.example`](.env.example) for full list.
 | **[Swagger UI](https://selemene.tryambakam.space/api/docs)** | Interactive explorer |
 | **[Terminal Explorer](scripts/explore-api.sh)** | CLI exploration |
 | **[Agent Bridge](bridges/cli/README.md)** | Claude, OpenAI, LangChain tool defs |
+| **[OpenClaw Gateway](docs/api/OPENCLAW_INTEGRATION.md)** | Connect OpenClaw agents |
 | **[Deployment](docs/deployment/README.md)** | Production guide |
 | **[Troubleshooting](docs/troubleshooting.md)** | Common issues & fixes |
+
+<br>
+
+### OpenClaw Gateway Integration
+
+Selemene Engine supports integration with OpenClaw agents via the OpenClaw Gateway protocol. Generate an invite code to get onboarding instructions:
+
+```bash
+# 1. Generate an invite code (requires auth)
+curl -X POST https://selemene.tryambakam.space/api/v1/onboarding/invite \
+  -H "X-API-Key: nk_your_key" \
+  -H "Content-Type: application/json" \
+  -d '{"expires_hours": 24}'
+
+# Response includes:
+# {
+#   "invite_code": "selemene_abc123...",
+#   "onboarding_url": "/api/v1/onboarding/selemene_abc123.../openclaw.txt"
+# }
+
+# 2. Get onboarding instructions
+curl https://selemene.tryambakam.space/api/v1/onboarding/selemene_abc123.../openclaw.txt
+```
+
+The onboarding instructions include:
+- OpenClaw Gateway adapter configuration
+- Gateway URL and authentication tokens
+- Connectivity test commands
+- List of all 16 engines and 6 workflows
+
+See [OpenClaw Integration](docs/api/OPENCLAW_INTEGRATION.md) for detailed setup.
 
 <br>
 
