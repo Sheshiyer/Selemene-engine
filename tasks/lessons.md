@@ -52,3 +52,28 @@
   - whether the project settings were saved,
   - whether a new production deployment was created after the save,
   - whether the custom domain is attached to this exact project and environment.
+
+## 2026-03-27 — Live Callback Verification Before Auth Claims
+
+- For frontend auth fixes, do not stop at local tests plus `git push`.
+- Re-check the live login button’s generated OAuth authorize URL on the exact production/custom domain before claiming the fix is live.
+- If the live callback path or redirect URI still reflects old behavior, treat it as a deployment-state problem first, not a new code regression.
+
+## 2026-03-28 — Custom Domain vs Direct Origin CORS Rule
+
+- When localhost CORS fails against a deployed API, test both:
+  - the custom/public API domain,
+  - the direct platform origin (`*.up.railway.app`, etc.).
+- If the direct origin returns `Access-Control-Allow-Origin` but the custom domain does not, treat it as an edge/domain-layer issue, not an application CORS bug.
+- For local debugging, prefer the direct service URL until the custom-domain edge behavior is fixed.
+
+## 2026-03-28 — Failure Mode Re-Classification Rule
+
+- When one blocking failure is removed, immediately re-classify the next failure from fresh evidence instead of continuing to reason from the old root cause.
+- For auth flows specifically:
+  - CORS failure means the request never reached the application logic.
+  - callback-page `internal error` means the request reached the application and failed deeper in the exchange or persistence path.
+- After a user reports "CORS is gone but still broken", jump straight to:
+  - callback network response body/status,
+  - live application logs,
+  - deploy/runtime config parity.

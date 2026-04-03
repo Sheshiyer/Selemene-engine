@@ -43,6 +43,8 @@ Discord OAuth settings:
 - `DISCORD_REDIRECT_URI` must exactly match the callback URL registered in the Discord developer portal.
 - The admin web supports the callback alias `/admin/auth/discord/callback` in addition to the existing `/admin/login/discord-callback`, so either path can be used as long as the Discord app config and API env use the same exact URI.
 - The login UI now sends its current dashboard callback URI to the API, and the API accepts it only when it stays on the current browser origin and one of the allowed admin callback paths. This keeps Discord login working across the main dashboard origin and compatible preview/local admin origins without opening arbitrary redirect targets.
+- For localhost debugging against the Railway API, the deployed API `ALLOWED_ORIGINS` must include `http://localhost:3001` (and/or `http://localhost:3000` if you run Next there).
+- If the custom API domain does not return localhost CORS headers, prefer the direct Railway public API URL for local testing, for example `NEXT_PUBLIC_API_BASE_URL=https://selemene-engine-production.up.railway.app`.
 
 ## Vercel setup
 

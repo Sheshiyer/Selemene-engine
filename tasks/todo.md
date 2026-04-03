@@ -2,6 +2,92 @@
 
 ---
 
+# Task Plan — Live Discord Callback Internal Error After CORS Unblock
+
+## Checklist
+- [x] Capture the live callback response status/body for the failing Discord flow.
+- [x] Inspect Railway logs for the matching callback request.
+- [x] Identify whether the failure is token exchange, callback URI mismatch, account lookup, or session issuance.
+- [ ] Apply the minimal fix or runtime correction and verify the end-to-end login flow.
+
+## Notes
+- User reports the previous CORS blocker is gone.
+- Current visible failure is on the callback page itself: `An internal error occurred`.
+
+## Review (fill after execution)
+- Findings so far:
+  - reproduced the callback failure in-browser
+  - the callback POST is returning `500` from:
+    - `https://selemene.tryambakam.space/api/v1/auth/discord/callback`
+  - matching Railway app logs show:
+    - startup warning: `Database connection failed (running without DB): password authentication failed for user "postgres"`
+    - callback request: `POST /api/v1/auth/discord/callback` -> `500` after ~30.7s
+  - health/readiness confirms the runtime state:
+    - `https://selemene.tryambakam.space/ready` -> `"postgres":"disabled"`
+    - `https://selemene-engine-production.up.railway.app/ready` -> `"postgres":"disabled"`
+  - conclusion:
+    - the active Railway deployment is running without a working database connection
+    - Discord login cannot succeed until the Railway `DATABASE_URL` / Supabase auth path is corrected and the API comes up with Postgres enabled
+  - additional deployment-state note:
+    - the deployed authorize endpoint still ignores the caller-provided localhost callback override and emits the configured production callback URI
+    - that means the latest callback-origin fix is still not live on the API runtime, but this is secondary to the current DB outage for the production login path
+
+---
+
+# Task Plan — Localhost Admin Dashboard Debug Against Vercel/Railway
+
+## Checklist
+- [x] Run the redesigned admin web locally and confirm the new UI renders.
+- [x] Test whether Discord login can start from localhost against the current remote API.
+- [x] Inspect backend CORS/origin configuration relevant to localhost auth.
+- [x] Determine whether the clean fix is local API bootstrapping or remote CORS changes.
+
+## Notes
+- User wants to use localhost to view the new admin dashboard UI and test Discord auth while Vercel/live deployment is being debugged.
+- Localhost callback URIs are reportedly already registered in the auth provider redirect settings.
+
+## Review (fill after execution)
+- Scope:
+  - ran `apps/admin-web` locally with the current redesign code
+  - tested localhost login initiation against the current remote API origin `https://selemene.tryambakam.space`
+  - inspected API CORS configuration and local API runtime prerequisites
+- Findings:
+  - the redesigned login page renders locally
+  - verified at:
+    - `http://localhost:3001/admin/login`
+    - `http://localhost:3000/admin/login`
+  - Discord login does not reach Discord from either localhost origin
+  - both localhost origins fail earlier on the authorize request with a browser CORS rejection against `https://selemene.tryambakam.space`
+  - API source confirms CORS is strict allowlist-based via `ALLOWED_ORIGINS`
+  - local API dev defaults only mention `http://localhost:3000` and `http://localhost:5173`, but the currently deployed remote API is not allowing the localhost origins tested in practice
+  - a clean local auth loop should use:
+    - admin web on localhost
+    - local `noesis-api` on `http://localhost:8080`
+    - `ALLOWED_ORIGINS` including the chosen localhost admin origin
+  - direct preflight verification against the deployed API showed:
+    - `https://selemene.tryambakam.space` allows `https://144.tryambakam.space`
+    - `https://selemene.tryambakam.space` allows `https://enantiodromia-engine-dashboard.vercel.app`
+    - `https://selemene.tryambakam.space` does not return `Access-Control-Allow-Origin` for `http://localhost:3001`
+  - Railway service config was updated to include localhost origins in `ALLOWED_ORIGINS`
+  - the direct Railway service URL now returns localhost CORS headers:
+    - `https://selemene-engine-production.up.railway.app` allows `http://localhost:3001`
+  - the custom API domain still does not return localhost CORS headers even after the Railway env update, which indicates a custom-domain/edge-layer issue distinct from the API runtime
+- current shell environment does not have the required API runtime env vars loaded (`DISCORD_CLIENT_ID`, `DISCORD_CLIENT_SECRET`, `DISCORD_REDIRECT_URI`, `DATABASE_URL`, `JWT_SECRET`, `ALLOWED_ORIGINS` were all unset), so the local API cannot be started from this shell without sourcing env first
+- Verification:
+  - `NEXT_PUBLIC_API_BASE_URL=https://selemene.tryambakam.space NEXT_PUBLIC_ADMIN_DEV_MODE=false npm run dev` in `apps/admin-web`
+  - `NEXT_PUBLIC_API_BASE_URL=https://selemene.tryambakam.space NEXT_PUBLIC_ADMIN_DEV_MODE=false npx next dev -p 3000`
+  - `NEXT_PUBLIC_API_BASE_URL=https://selemene-engine-production.up.railway.app NEXT_PUBLIC_ADMIN_DEV_MODE=false npm run dev`
+  - browser verification on `http://localhost:3001/admin/login`
+  - browser verification on `http://localhost:3000/admin/login`
+  - `curl -X OPTIONS https://selemene.tryambakam.space/api/v1/auth/discord/authorize -H 'Origin: http://localhost:3001' ...`
+  - `curl -X OPTIONS https://selemene-engine-production.up.railway.app/api/v1/auth/discord/authorize -H 'Origin: http://localhost:3001' ...`
+  - source inspection:
+    - `crates/noesis-api/src/config.rs`
+    - `crates/noesis-api/src/lib.rs`
+    - `apps/admin-web/README.md`
+
+---
+
 # Task Plan — Fix Discord Login Regression After Admin UI Upgrades
 
 ## Checklist

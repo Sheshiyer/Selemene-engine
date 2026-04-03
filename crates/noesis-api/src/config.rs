@@ -62,7 +62,7 @@ impl ApiConfig {
     /// - `SERVER_PORT`: Legacy alias for `PORT`
     /// - `JWT_SECRET`: JWT secret (required in production, has dev default)
     /// - `REDIS_URL`: Redis connection URL (optional)
-    /// - `ALLOWED_ORIGINS`: Comma-separated CORS origins (default: localhost:3000,5173)
+    /// - `ALLOWED_ORIGINS`: Comma-separated CORS origins (default: localhost:3000,3001,5173)
     /// - `RATE_LIMIT_REQUESTS`: Max requests per window (default: 100)
     /// - `RATE_LIMIT_WINDOW_SECS`: Rate limit window in seconds (default: 60)
     /// - `REQUEST_TIMEOUT_SECS`: Request timeout in seconds (default: 30)
@@ -131,7 +131,9 @@ impl ApiConfig {
         let redis_url = env::var("REDIS_URL").ok();
 
         let allowed_origins = env::var("ALLOWED_ORIGINS")
-            .unwrap_or_else(|_| "http://localhost:3000,http://localhost:5173".to_string())
+            .unwrap_or_else(|_| {
+                "http://localhost:3000,http://localhost:3001,http://localhost:5173".to_string()
+            })
             .split(',')
             .map(|s| s.trim().to_string())
             .filter(|s| !s.is_empty())

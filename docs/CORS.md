@@ -14,14 +14,16 @@ This is an access-control boundary for reliable reflection surfaces, not a chang
 
 ```bash
 # Development (default if not set)
-ALLOWED_ORIGINS="http://localhost:3000,http://localhost:5173"
+ALLOWED_ORIGINS="http://localhost:3000,http://localhost:3001,http://localhost:5173"
 
 # Production
 ALLOWED_ORIGINS="https://app.example.com,https://dashboard.example.com"
 
 # Mixed environments
-ALLOWED_ORIGINS="https://app.example.com,http://localhost:3000"
+ALLOWED_ORIGINS="https://app.example.com,http://localhost:3001"
 ```
+
+The admin dashboard in `apps/admin-web` runs on `http://localhost:3001` by default, so local auth debugging should include that origin.
 
 ### CORS Policy Settings
 
@@ -41,7 +43,7 @@ CORS is configured in `crates/noesis-api/src/lib.rs` via the `create_cors_layer(
 ```rust
 fn create_cors_layer() -> CorsLayer {
     let allowed_origins = std::env::var("ALLOWED_ORIGINS")
-        .unwrap_or_else(|_| "http://localhost:3000,http://localhost:5173".to_string());
+        .unwrap_or_else(|_| "http://localhost:3000,http://localhost:3001,http://localhost:5173".to_string());
 
     let origins: Vec<HeaderValue> = allowed_origins
         .split(',')
@@ -130,7 +132,7 @@ If preflight succeeds, the browser sends the actual request.
 3. **Test with curl** (preflight request):
    ```bash
    curl -X OPTIONS http://localhost:8080/api/v1/status \
-     -H "Origin: http://localhost:3000" \
+     -H "Origin: http://localhost:3001" \
      -H "Access-Control-Request-Method: GET" \
      -H "Access-Control-Request-Headers: content-type" \
      -i
@@ -138,7 +140,7 @@ If preflight succeeds, the browser sends the actual request.
 
    Expected response should include:
    ```
-   access-control-allow-origin: http://localhost:3000
+   access-control-allow-origin: http://localhost:3001
    access-control-allow-methods: GET, POST, OPTIONS
    access-control-allow-headers: content-type, authorization, x-api-key
    access-control-allow-credentials: true
@@ -148,7 +150,7 @@ If preflight succeeds, the browser sends the actual request.
 4. **Test actual request:**
    ```bash
    curl http://localhost:8080/api/v1/status \
-     -H "Origin: http://localhost:3000" \
+     -H "Origin: http://localhost:3001" \
      -H "Content-Type: application/json" \
      -i
    ```
@@ -189,7 +191,7 @@ If preflight succeeds, the browser sends the actual request.
    ```
 2. Add your frontend origin to the list:
    ```bash
-   export ALLOWED_ORIGINS="http://localhost:3000,https://your-frontend.com"
+   export ALLOWED_ORIGINS="http://localhost:3001,https://your-frontend.com"
    ```
 3. Restart the API server
 
