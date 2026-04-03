@@ -237,7 +237,10 @@ impl UserRepository {
                 birth_location_name, timezone, preferences, created_at, updated_at
             )
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
-            RETURNING *
+            RETURNING user_id, birth_date, birth_time,
+                      CAST(birth_location_lat AS FLOAT8) AS birth_location_lat,
+                      CAST(birth_location_lng AS FLOAT8) AS birth_location_lng,
+                      birth_location_name, timezone, preferences, created_at, updated_at
             "#,
         )
         .bind(user_id)
@@ -257,10 +260,18 @@ impl UserRepository {
     }
 
     pub async fn get_profile(&self, user_id: Uuid) -> Result<Option<UserProfile>, Error> {
-        sqlx::query_as::<_, UserProfile>("SELECT * FROM user_profiles WHERE user_id = $1")
-            .bind(user_id)
-            .fetch_optional(&self.pool)
-            .await
+        sqlx::query_as::<_, UserProfile>(
+            r#"
+            SELECT user_id, birth_date, birth_time,
+                   CAST(birth_location_lat AS FLOAT8) AS birth_location_lat,
+                   CAST(birth_location_lng AS FLOAT8) AS birth_location_lng,
+                   birth_location_name, timezone, preferences, created_at, updated_at
+            FROM user_profiles WHERE user_id = $1
+            "#,
+        )
+        .bind(user_id)
+        .fetch_optional(&self.pool)
+        .await
     }
 
     pub async fn resolve_active_plan_code(&self, user_id: Uuid) -> Result<Option<String>, Error> {
@@ -345,7 +356,10 @@ impl UserRepository {
                 timezone = COALESCE(EXCLUDED.timezone, user_profiles.timezone),
                 preferences = CASE WHEN $8 IS NOT NULL THEN $8 ELSE user_profiles.preferences END,
                 updated_at = $9
-            RETURNING *
+            RETURNING user_id, birth_date, birth_time,
+                      CAST(birth_location_lat AS FLOAT8) AS birth_location_lat,
+                      CAST(birth_location_lng AS FLOAT8) AS birth_location_lng,
+                      birth_location_name, timezone, preferences, created_at, updated_at
             "#
         )
         .bind(user_id)
@@ -794,6 +808,24 @@ mod tests {
             assert!(sql.contains("CREATE TABLE IF NOT EXISTS billing_subscriptions"));
             assert!(sql.contains("CREATE OR REPLACE VIEW user_active_plan_resolutions"));
             assert!(sql.contains("uq_billing_subscriptions_active_user"));
+        }
+    }
+
+    #[test]
+    fn migration_016_exists_in_root_and_supabase() {
+        let root_sql =
+            fs::read_to_string(repo_root().join("migrations/016_dodo_billing_foundation.sql"))
+                .expect("root migration 016");
+        let supabase_sql = fs::read_to_string(
+            repo_root().join("supabase/migrations/20260331000016_016_dodo_billing_foundation.sql"),
+        )
+        .expect("supabase migration 016");
+
+        for sql in [&root_sql, &supabase_sql] {
+            assert!(sql.contains("CREATE TABLE IF NOT EXISTS billing_customers"));
+            assert!(sql.contains("CREATE TABLE IF NOT EXISTS billing_webhook_events"));
+            assert!(sql.contains("on_hold"));
+            assert!(sql.contains("failed"));
         }
     }
 
