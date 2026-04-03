@@ -1,0 +1,85 @@
+{
+  "setup": [],
+  "run": [],
+  "teardown": [],
+  "scripts": {
+    "smoke-test-all-engines": {
+      "description": "Smoke test all 16 consciousness engines with valid and invalid inputs",
+      "command": "./.superset/scripts/smoke_test_engines.sh",
+      "category": "testing",
+      "env": {
+        "API_BASE": "https://selemene.tryambakam.space/api/v1"
+      }
+    },
+    "smoke-test-all-workflows": {
+      "description": "Smoke test all 6 workflows (birth-blueprint, creative-expression, daily-practice, decision-support, full-spectrum, self-inquiry)",
+      "command": "./.superset/scripts/smoke_test_workflows.sh",
+      "category": "testing",
+      "env": {
+        "API_BASE": "https://selemene.tryambakam.space/api/v1"
+      }
+    },
+    "edge-case-discovery": {
+      "description": "Discover edge cases and boundary conditions across all engines",
+      "command": "./.superset/scripts/edge_case_discovery.sh",
+      "category": "testing",
+      "env": {
+        "API_BASE": "https://selemene.tryambakam.space/api/v1"
+      }
+    },
+    "graceful-fallback-test": {
+      "description": "Test fallback behavior when engines fail or return errors",
+      "command": "./.superset/scripts/fallback_test.sh",
+      "category": "testing",
+      "env": {
+        "API_BASE": "https://selemene.tryambakam.space/api/v1"
+      }
+    },
+    "engine-consistency-check": {
+      "description": "Validate response structure consistency across all 16 engines",
+      "command": "./.superset/scripts/consistency_check.sh",
+      "category": "validation",
+      "env": {
+        "API_BASE": "https://selemene.tryambakam.space/api/v1"
+      }
+    },
+    "performance-benchmark": {
+      "description": "Benchmark all 16 engines for latency and throughput",
+      "command": "./.superset/scripts/performance_benchmark.sh",
+      "category": "performance",
+      "env": {
+        "API_BASE": "https://selemene.tryambakam.space/api/v1"
+      }
+    },
+    "dependency-health": {
+      "description": "Check health of production API and dependencies",
+      "command": "./.superset/scripts/check_dependencies.sh",
+      "category": "health",
+      "env": {
+        "API_BASE": "https://selemene.tryambakam.space/api/v1"
+      }
+    },
+    "sdk-integration-test": {
+      "description": "Test API key authentication and SDK integration",
+      "command": "./.superset/scripts/sdk_integration_test.sh",
+      "category": "integration",
+      "env": {
+        "API_BASE": "https://selemene.tryambakam.space/api/v1"
+      }
+    }
+  },
+  "notes": {
+    "production_url": "https://selemene.tryambakam.space",
+    "architecture": "Railway (backend) + Supabase (auth/DB) + Cloudflare (domain)",
+    "engines": [
+      "vimshottari", "human-design", "gene-keys", "transits", "vedic-clock",
+      "panchanga", "biofield", "biorhythm", "face-reading", "numerology",
+      "nadabrahman", "enneagram", "i-ching", "sacred-geometry", "sigil-forge", "tarot"
+    ],
+    "workflows": [
+      "birth-blueprint", "creative-expression", "daily-practice",
+      "decision-support", "full-spectrum", "self-inquiry"
+    ],
+    "auth": "X-API-Key header for SDK clients"
+  }
+}

@@ -50,6 +50,21 @@ pub struct ApiConfig {
 
     /// Discord OAuth2 redirect URI (optional — Discord login disabled when unset)
     pub discord_redirect_uri: Option<String>,
+
+    /// Dodo Payments API key (optional — billing integration disabled when unset)
+    pub dodo_payments_api_key: Option<String>,
+
+    /// Dodo Payments webhook signing key (optional — webhook verification disabled when unset)
+    pub dodo_payments_webhook_key: Option<String>,
+
+    /// Dodo Payments environment (`test` or `live`)
+    pub dodo_payments_env: Option<String>,
+
+    /// OpenClaw Gateway URL (ws:// or wss://) for OpenClaw integration
+    pub gateway_url: Option<String>,
+
+    /// OpenClaw Gateway token for authentication
+    pub gateway_token: Option<String>,
 }
 
 impl ApiConfig {
@@ -160,6 +175,17 @@ impl ApiConfig {
         let discord_client_id = env::var("DISCORD_CLIENT_ID").ok();
         let discord_client_secret = env::var("DISCORD_CLIENT_SECRET").ok();
         let discord_redirect_uri = env::var("DISCORD_REDIRECT_URI").ok();
+        let dodo_payments_api_key = env::var("DODO_PAYMENTS_API_KEY")
+            .or_else(|_| env::var("DODO_API_KEY"))
+            .ok();
+        let dodo_payments_webhook_key = env::var("DODO_PAYMENTS_WEBHOOK_KEY")
+            .or_else(|_| env::var("DODO_WEBHOOK_KEY"))
+            .ok();
+        let dodo_payments_env = env::var("DODO_PAYMENTS_ENV").ok();
+        
+        // OpenClaw Gateway configuration
+        let gateway_url = env::var("GATEWAY_URL").ok();
+        let gateway_token = env::var("GATEWAY_TOKEN").ok();
 
         Ok(Self {
             host,
@@ -176,6 +202,11 @@ impl ApiConfig {
             discord_client_id,
             discord_client_secret,
             discord_redirect_uri,
+            dodo_payments_api_key,
+            dodo_payments_webhook_key,
+            dodo_payments_env,
+            gateway_url,
+            gateway_token,
         })
     }
 
@@ -257,6 +288,27 @@ impl ApiConfig {
             );
         }
 
+        if let Some(ref dodo_env) = self.dodo_payments_env {
+            if dodo_env != "test" && dodo_env != "live" {
+                return Err(format!(
+                    "DODO_PAYMENTS_ENV must be 'test' or 'live', got '{}'",
+                    dodo_env
+                ));
+            }
+        }
+
+        if self.dodo_payments_api_key.is_some() && self.dodo_payments_env.is_none() {
+            tracing::warn!(
+                "DODO_PAYMENTS_API_KEY is set without DODO_PAYMENTS_ENV; billing should explicitly declare test or live mode"
+            );
+        }
+
+        if self.dodo_payments_api_key.is_some() && self.dodo_payments_webhook_key.is_none() {
+            tracing::warn!(
+                "DODO_PAYMENTS_API_KEY is set without webhook signing key; webhook verification will be unavailable"
+            );
+        }
+
         Ok(())
     }
 
@@ -320,6 +372,11 @@ mod tests {
             discord_client_id: None,
             discord_client_secret: None,
             discord_redirect_uri: None,
+            dodo_payments_api_key: None,
+            dodo_payments_webhook_key: None,
+            dodo_payments_env: None,
+            gateway_url: None,
+            gateway_token: None,
         };
 
         assert_eq!(config.bind_address(), "127.0.0.1:3000");
@@ -342,6 +399,11 @@ mod tests {
             discord_client_id: None,
             discord_client_secret: None,
             discord_redirect_uri: None,
+            dodo_payments_api_key: None,
+            dodo_payments_webhook_key: None,
+            dodo_payments_env: None,
+            gateway_url: None,
+            gateway_token: None,
         };
 
         assert!(config.validate().is_err());
@@ -364,6 +426,9 @@ mod tests {
             discord_client_id: None,
             discord_client_secret: None,
             discord_redirect_uri: None,
+            dodo_payments_api_key: None,
+            dodo_payments_webhook_key: None,
+            dodo_payments_env: None,
         };
 
         assert!(config.validate().is_err());
@@ -387,6 +452,11 @@ mod tests {
                 discord_client_id: None,
                 discord_client_secret: None,
                 discord_redirect_uri: None,
+                dodo_payments_api_key: None,
+                dodo_payments_webhook_key: None,
+                dodo_payments_env: None,
+                gateway_url: None,
+                gateway_token: None,
             };
 
             assert!(
@@ -414,6 +484,11 @@ mod tests {
             discord_client_id: None,
             discord_client_secret: None,
             discord_redirect_uri: None,
+            dodo_payments_api_key: None,
+            dodo_payments_webhook_key: None,
+            dodo_payments_env: None,
+            gateway_url: None,
+            gateway_token: None,
         };
 
         assert!(config.validate().is_err());
@@ -449,5 +524,53 @@ mod tests {
 
         let config = ApiConfig::from_env().expect("config should load");
         assert_eq!(config.port, 9090);
+    }
+
+    #[test]
+    fn test_from_env_reads_dodo_payments_settings() {
+        let _lock = env_lock().lock().unwrap();
+        let _guard = EnvGuard::set(&[
+            ("RUST_ENV", "development"),
+            ("JWT_SECRET", "test-secret-at-least-32-chars-long"),
+            ("DODO_PAYMENTS_API_KEY", "dodo_test_key"),
+            ("DODO_PAYMENTS_WEBHOOK_KEY", "dodo_webhook_secret"),
+            ("DODO_PAYMENTS_ENV", "test"),
+        ]);
+
+        let config = ApiConfig::from_env().expect("config should load");
+        assert_eq!(
+            config.dodo_payments_api_key.as_deref(),
+            Some("dodo_test_key")
+        );
+        assert_eq!(
+            config.dodo_payments_webhook_key.as_deref(),
+            Some("dodo_webhook_secret")
+        );
+        assert_eq!(config.dodo_payments_env.as_deref(), Some("test"));
+    }
+
+    #[test]
+    fn test_validate_rejects_invalid_dodo_payments_env() {
+        let config = ApiConfig {
+            host: "0.0.0.0".to_string(),
+            port: 8080,
+            jwt_secret: "test-secret-at-least-32-chars-long".to_string(),
+            database_url: Some("postgres://localhost/test".to_string()),
+            redis_url: None,
+            allowed_origins: vec![],
+            rate_limit_requests: 100,
+            rate_limit_window_secs: 60,
+            request_timeout_secs: 30,
+            log_level: "info".to_string(),
+            log_format: "pretty".to_string(),
+            discord_client_id: None,
+            discord_client_secret: None,
+            discord_redirect_uri: None,
+            dodo_payments_api_key: Some("dodo_key".to_string()),
+            dodo_payments_webhook_key: Some("dodo_webhook".to_string()),
+            dodo_payments_env: Some("staging".to_string()),
+        };
+
+        assert!(config.validate().is_err());
     }
 }
