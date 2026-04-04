@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { ActionRail, MetricSurface, SurfaceCard } from "@/components/admin-primitives";
 import { StateBanner, StatePanel, TableEmptyStateRow } from "@/components/admin-state";
+import { EventStream, EventStreamItem } from "@/components/event-stream";
 import { DrawerSurface } from "@/components/overlay-surface";
 import { PageShell } from "@/components/page-shell";
 import { getAuthToken } from "@/lib/auth";
@@ -315,73 +316,58 @@ export default function AuditPage() {
         title="Events"
         summary="Request-scoped trace records with copyable identifiers and contextual target data."
       >
-        <div className="table-wrap compact">
-          <table>
-            <thead>
-              <tr>
-                <th>Time</th>
-                <th>Actor</th>
-                <th>Action</th>
-                <th>Target</th>
-                <th>Result</th>
-                <th>Duration (ms)</th>
-                <th>Request ID</th>
-              </tr>
-            </thead>
-            <tbody>
-              {events.map((event) => (
-                <tr
-                  key={event.event_id}
-                  className="clickable-row"
-                  onClick={() => void openDetail(event.event_id)}
-                >
-                  <td>{formatDateTime(event.occurred_at)}</td>
-                  <td>
-                    <div className="table-primary">{event.actor_email}</div>
+        {events.length === 0 ? (
+          <div className="state-table-empty event-stream-empty">
+            <div className="telemetry-caption">Empty</div>
+            <div className="state-table-empty-title">No audit events matched</div>
+            <div className="helper">
+              Adjust the actor, action, result, or time filters to widen the ledger view.
+            </div>
+          </div>
+        ) : (
+          <EventStream label="Audit event stream">
+            {events.map((event) => (
+              <EventStreamItem
+                key={event.event_id}
+                eyebrow="Audit event"
+                title={event.action}
+                subtitle={`${event.actor_email} · ${event.target_type} / ${event.target_id ?? "--"}`}
+                badge={<span className={statusPillClass(event.result)}>{event.result}</span>}
+                metadata={[
+                  { label: "Occurred", value: formatDateTime(event.occurred_at) },
+                  { label: "Duration", value: `${event.duration_ms} ms` },
+                  { label: "Request ID", value: event.request_id }
+                ]}
+                summary={`Actor ${event.actor_user_id} executed ${event.action} against ${event.target_type}.`}
+                action={
+                  <button type="button" onClick={() => void openDetail(event.event_id)}>
+                    Open detail
+                  </button>
+                }
+              >
+                <div className="event-stream-inline-actions">
+                  <div className="helper">Target ID: {event.target_id ?? "--"}</div>
+                  <div className="event-stream-link-row">
                     <button
                       type="button"
                       className="link-btn"
-                      onClick={(rawEvent) => {
-                        rawEvent.stopPropagation();
-                        void handleCopy(event.actor_user_id, "Actor user ID");
-                      }}
+                      onClick={() => void handleCopy(event.actor_user_id, "Actor user ID")}
                     >
-                      {event.actor_user_id}
+                      Copy actor ID
                     </button>
-                  </td>
-                  <td>{event.action}</td>
-                  <td>
-                    <div className="table-primary">{event.target_type}</div>
-                    <div className="helper">{event.target_id ?? "--"}</div>
-                  </td>
-                  <td>
-                    <span className={statusPillClass(event.result)}>{event.result}</span>
-                  </td>
-                  <td>{event.duration_ms}</td>
-                  <td>
                     <button
                       type="button"
                       className="link-btn"
-                      onClick={(rawEvent) => {
-                        rawEvent.stopPropagation();
-                        void handleCopy(event.request_id, "Request ID");
-                      }}
+                      onClick={() => void handleCopy(event.request_id, "Request ID")}
                     >
-                      {event.request_id}
+                      Copy request ID
                     </button>
-                  </td>
-                </tr>
-              ))}
-              {events.length === 0 ? (
-                <TableEmptyStateRow
-                  colSpan={7}
-                  title="No audit events matched"
-                  description="Adjust the actor, action, result, or time filters to widen the ledger view."
-                />
-              ) : null}
-            </tbody>
-          </table>
-        </div>
+                  </div>
+                </div>
+              </EventStreamItem>
+            ))}
+          </EventStream>
+        )}
       </SurfaceCard>
 
       {detailLoading ? (

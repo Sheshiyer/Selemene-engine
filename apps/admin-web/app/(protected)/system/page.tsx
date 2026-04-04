@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { StateBanner, StatePanel, TableEmptyStateRow } from "@/components/admin-state";
+import { EventStream, EventStreamItem } from "@/components/event-stream";
 import { PageShell } from "@/components/page-shell";
 import { getAuthToken } from "@/lib/auth";
 import {
@@ -309,44 +310,34 @@ export default function SystemPage() {
 
       <article className="panel">
         <h3>Workflow Runtime Snapshot</h3>
-        <div className="table-wrap compact">
-          <table>
-            <thead>
-              <tr>
-                <th>Workflow</th>
-                <th>Status</th>
-                <th>Recent Runs</th>
-                <th>Failures</th>
-                <th>Engines</th>
-                <th>Last Seen</th>
-              </tr>
-            </thead>
-            <tbody>
-              {workflows.map((workflow) => (
-                <tr key={workflow.workflow_id}>
-                  <td>
-                    <div className="table-primary">{workflow.name}</div>
-                    <div className="helper">{workflow.workflow_id}</div>
-                  </td>
-                  <td>
-                    <span className={statusPillClass(workflow.status)}>{workflow.status}</span>
-                  </td>
-                  <td>{workflow.recent_runs}</td>
-                  <td>{workflow.failure_runs}</td>
-                  <td>{workflow.engine_count}</td>
-                  <td>{formatDateTime(workflow.last_seen_at)}</td>
-                </tr>
-              ))}
-              {workflows.length === 0 ? (
-                <TableEmptyStateRow
-                  colSpan={6}
-                  title="No workflow runtime data"
-                  description="No workflow executions were observed in the selected time window."
-                />
-              ) : null}
-            </tbody>
-          </table>
-        </div>
+        {workflows.length === 0 ? (
+          <div className="state-table-empty event-stream-empty">
+            <div className="telemetry-caption">Empty</div>
+            <div className="state-table-empty-title">No workflow runtime data</div>
+            <div className="helper">
+              No workflow executions were observed in the selected time window.
+            </div>
+          </div>
+        ) : (
+          <EventStream label="Workflow runtime stream">
+            {workflows.map((workflow) => (
+              <EventStreamItem
+                key={workflow.workflow_id}
+                eyebrow="Workflow"
+                title={workflow.name}
+                subtitle={workflow.workflow_id}
+                badge={<span className={statusPillClass(workflow.status)}>{workflow.status}</span>}
+                metadata={[
+                  { label: "Recent runs", value: workflow.recent_runs },
+                  { label: "Failures", value: workflow.failure_runs },
+                  { label: "Engines", value: workflow.engine_count },
+                  { label: "Last seen", value: formatDateTime(workflow.last_seen_at) }
+                ]}
+                summary="Operational narrative for the selected workflow window, including throughput and failure posture."
+              />
+            ))}
+          </EventStream>
+        )}
       </article>
     </PageShell>
   );
