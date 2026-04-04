@@ -674,7 +674,7 @@ fn user_state(locked_until: Option<DateTime<Utc>>) -> String {
     }
 }
 
-fn default_rate_limit_for_tier(tier: &str) -> i32 {
+pub(crate) fn default_rate_limit_for_tier(tier: &str) -> i32 {
     match tier.to_ascii_lowercase().as_str() {
         "free" => 60,
         "premium" => 1_000,
@@ -683,7 +683,7 @@ fn default_rate_limit_for_tier(tier: &str) -> i32 {
     }
 }
 
-fn generate_secret_api_key() -> String {
+pub(crate) fn generate_secret_api_key() -> String {
     format!("nk_{}{}", Uuid::new_v4().simple(), Uuid::new_v4().simple())
 }
 
@@ -2917,8 +2917,6 @@ mod tests {
     fn legacy_users_permission_normalizes_api_key_delete() {
         let permissions = vec!["admin:users".to_string()];
         let normalized = normalize_effective_permissions(&permissions);
-        assert!(normalized
-            .iter()
-            .any(|perm| perm == "admin:keys:delete"));
+        assert!(normalized.iter().any(|perm| perm == "admin:keys:delete"));
     }
 }
