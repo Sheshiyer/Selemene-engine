@@ -54,6 +54,8 @@ const PERMISSION_GROUPS = [
   },
 ];
 
+const SECRET_REVEAL_WINDOW_SECONDS = 15;
+
 type RecentSecretState = {
   keyId: string;
   secret: string;
@@ -207,6 +209,7 @@ export default function ApiKeysPage() {
   const [selectedKey, setSelectedKey] = useState<AdminApiKeyItem | null>(null);
   const [recentSecret, setRecentSecret] = useState<RecentSecretState | null>(null);
   const [secretVisible, setSecretVisible] = useState(false);
+  const [secretRevealSecondsLeft, setSecretRevealSecondsLeft] = useState(0);
   const [copiedSecret, setCopiedSecret] = useState(false);
   const [session, setSession] = useState<AdminSession | null>(null);
 
@@ -279,6 +282,27 @@ export default function ApiKeysPage() {
     }
   }, [keys, selectedKey]);
 
+  useEffect(() => {
+    if (!secretVisible || !secretForSelectedKey) {
+      return;
+    }
+
+    setSecretRevealSecondsLeft(SECRET_REVEAL_WINDOW_SECONDS);
+
+    const intervalId = window.setInterval(() => {
+      setSecretRevealSecondsLeft((current) => {
+        if (current <= 1) {
+          window.clearInterval(intervalId);
+          setSecretVisible(false);
+          return 0;
+        }
+        return current - 1;
+      });
+    }, 1000);
+
+    return () => window.clearInterval(intervalId);
+  }, [secretForSelectedKey, secretVisible]);
+
   const loadKeys = useCallback(async () => {
     const token = getAuthToken();
     if (!token) {
@@ -324,6 +348,7 @@ export default function ApiKeysPage() {
     if (recentSecret?.keyId !== key.id) {
       setRecentSecret(null);
       setSecretVisible(false);
+      setSecretRevealSecondsLeft(0);
       setCopiedSecret(false);
     }
   }
@@ -332,7 +357,26 @@ export default function ApiKeysPage() {
     setSelectedKey(null);
     setRecentSecret(null);
     setSecretVisible(false);
+    setSecretRevealSecondsLeft(0);
     setCopiedSecret(false);
+  }
+
+  function revealSecretBriefly() {
+    setSecretVisible(true);
+    setSecretRevealSecondsLeft(SECRET_REVEAL_WINDOW_SECONDS);
+  }
+
+  function hideSecret() {
+    setSecretVisible(false);
+    setSecretRevealSecondsLeft(0);
+  }
+
+  function toggleSecretReveal() {
+    if (secretVisible) {
+      hideSecret();
+      return;
+    }
+    revealSecretBriefly();
   }
 
   async function handleCreate() {
@@ -361,7 +405,8 @@ export default function ApiKeysPage() {
       });
 
       setRecentSecret({ keyId: res.key.id, secret: res.secret_key, source: "created" });
-      setSecretVisible(false);
+      setSecretVisible(true);
+      setSecretRevealSecondsLeft(SECRET_REVEAL_WINDOW_SECONDS);
       setCopiedSecret(false);
       setSelectedKey(res.key);
       setSuccess(`Created key "${res.key.name || res.key.id}"`);
@@ -404,7 +449,8 @@ export default function ApiKeysPage() {
     try {
       const res = await rotateAdminApiKey(token, key.id);
       setRecentSecret({ keyId: res.key.id, secret: res.secret_key, source: "rotated" });
-      setSecretVisible(false);
+      setSecretVisible(true);
+      setSecretRevealSecondsLeft(SECRET_REVEAL_WINDOW_SECONDS);
       setCopiedSecret(false);
       setSelectedKey(res.key);
       setSuccess(`Rotated key "${key.name || key.id}"`);
@@ -891,8 +937,8 @@ export default function ApiKeysPage() {
                     <h4>Secret access</h4>
                     <p className="helper">
                       {secretForSelectedKey
-                        ? `The full secret is available because this key was just ${secretForSelectedKey.source} in this session.`
-                        : "Existing keys cannot reveal their full secret after issuance. Only the prefix remains visible."}
+                        ? `The full secret is available because this key was just ${secretForSelectedKey.source} in this browser session. Reveal access auto-hides after ${SECRET_REVEAL_WINDOW_SECONDS} seconds.`
+                        : "Existing keys cannot reveal their full secret after issuance because only the stored hash is retained. Only the prefix remains visible."}
                     </p>
                   </div>
                   {secretForSelectedKey ? (
@@ -900,10 +946,14 @@ export default function ApiKeysPage() {
                       <button
                         type="button"
                         className="icon-action compact"
-                        onClick={() => setSecretVisible((value) => !value)}
+                        onClick={toggleSecretReveal}
                       >
                         <EyeIcon open={secretVisible} />
-                        <span>{secretVisible ? "Hide" : "Show"}</span>
+                        <span>
+                          {secretVisible
+                            ? `Hide (${secretRevealSecondsLeft}s)`
+                            : `Reveal for ${SECRET_REVEAL_WINDOW_SECONDS}s`}
+                        </span>
                       </button>
                       <button
                         type="button"
