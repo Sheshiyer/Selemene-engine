@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { AccessDenied } from "@/components/access-denied";
 import { ActionRail, SurfaceCard } from "@/components/admin-primitives";
+import { CommandPalette, useCommandPaletteToggle } from "@/components/command-palette";
 import { clearAuthToken, getAuthToken } from "@/lib/auth";
 import { ApiClientError, getAdminSession } from "@/lib/api";
 import { hasPermission, requiredPermissionForPath } from "@/lib/permissions";
@@ -81,6 +82,7 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [session, setSession] = useState<AdminSession | null>(null);
+  const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
 
   const relativePath = useMemo(() => toRelativeAdminPath(safePathname), [safePathname]);
   const requiredPermission = useMemo(
@@ -191,6 +193,72 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
   const accessState = canViewRequiredRoute ? "granted" : "limited";
   const permissionCount = session?.permissions.length ?? 0;
 
+  const handleSignOut = useCallback(() => {
+    clearAuthToken();
+    router.replace("/login");
+  }, [router]);
+
+  const handleRefreshSession = useCallback(() => {
+    const token = getAuthToken();
+    if (!token) {
+      handleSignOut();
+      return;
+    }
+    void loadSession(token);
+  }, [handleSignOut, loadSession]);
+
+  const commandPaletteItems = useMemo(() => {
+    if (!session) {
+      return [];
+    }
+
+    const routeItems = NAV_ITEMS.filter((item) =>
+      hasPermission(session.permissions, item.permission)
+    ).map((item) => ({
+      id: `route-${item.href}`,
+      title: `Open ${item.label}`,
+      description: ROUTE_META[item.href]?.summary ?? `Navigate to ${item.label}.`,
+      section: "Navigate",
+      keywords: [item.label, item.href, item.section],
+      onSelect: () => router.push(item.href)
+    }));
+
+    const actionItems = [
+      {
+        id: "action-refresh-session",
+        title: "Refresh session",
+        description: "Reload the current admin session and permission scope.",
+        section: "Actions",
+        keywords: ["session", "permissions", "reload"],
+        shortcutHint: "Shell",
+        onSelect: handleRefreshSession
+      },
+      {
+        id: "action-refresh-page",
+        title: "Refresh current page",
+        description: "Revalidate the current route without leaving the shell.",
+        section: "Actions",
+        keywords: ["route", "reload", "refresh"],
+        shortcutHint: "Route",
+        onSelect: () => router.refresh()
+      },
+      {
+        id: "action-sign-out",
+        title: "Sign out",
+        description: "Clear the admin token and return to the login surface.",
+        section: "Actions",
+        keywords: ["logout", "exit"],
+        shortcutHint: "Auth",
+        danger: true,
+        onSelect: handleSignOut
+      }
+    ];
+
+    return [...routeItems, ...actionItems];
+  }, [handleRefreshSession, handleSignOut, router, session]);
+
+  useCommandPaletteToggle(() => setCommandPaletteOpen(true));
+
   if (loading) {
     return (
       <main className="shell-state-wrap">
@@ -218,10 +286,7 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
               <button
                 type="button"
                 className="shell-action-btn"
-                onClick={() => {
-                  clearAuthToken();
-                  router.replace("/login");
-                }}
+                onClick={handleSignOut}
               >
                 Return to login
               </button>
@@ -303,15 +368,14 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
             <button
               type="button"
               className="shell-action-btn"
-              onClick={() => {
-                const token = getAuthToken();
-                if (!token) {
-                  clearAuthToken();
-                  router.replace("/login");
-                  return;
-                }
-                void loadSession(token);
-              }}
+              onClick={() => setCommandPaletteOpen(true)}
+            >
+              Command palette
+            </button>
+            <button
+              type="button"
+              className="shell-action-btn"
+              onClick={handleRefreshSession}
             >
               Refresh session
             </button>
@@ -321,10 +385,7 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
             <button
               type="button"
               className="shell-action-btn"
-              onClick={() => {
-                clearAuthToken();
-                router.replace("/login");
-              }}
+              onClick={handleSignOut}
             >
               Sign out
             </button>
@@ -381,6 +442,12 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
           </aside>
         </div>
       </main>
+
+      <CommandPalette
+        open={commandPaletteOpen}
+        onClose={() => setCommandPaletteOpen(false)}
+        items={commandPaletteItems}
+      />
     </div>
   );
 }
