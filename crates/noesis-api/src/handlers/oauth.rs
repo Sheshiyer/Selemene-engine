@@ -1,4 +1,5 @@
 use crate::error::ApiError;
+use crate::handlers::admin::{default_rate_limit_for_tier, generate_secret_api_key};
 use crate::handlers::auth::LoginResponse;
 use crate::AppState;
 use axum::{
@@ -6,13 +7,19 @@ use axum::{
     http::{header, HeaderMap, StatusCode},
     response::{IntoResponse, Response},
 };
+use noesis_auth::{sha256_hex, ApiKey};
 use noesis_core::EngineError;
+use noesis_data::models::user::User;
+use noesis_data::repositories::admin_repository::NewApiKeyRecord;
 use serde::{Deserialize, Serialize};
+use std::future::Future;
 
 const DISCORD_AUTHORIZE_URL: &str = "https://discord.com/api/oauth2/authorize";
 const DISCORD_TOKEN_URL: &str = "https://discord.com/api/oauth2/token";
 const DISCORD_USER_URL: &str = "https://discord.com/api/users/@me";
 const LOCALHOST_HOSTS: &[&str] = &["localhost", "127.0.0.1", "0.0.0.0"];
+const OAUTH_DEFAULT_API_KEY_NAME: &str = "Discord OAuth default key";
+const OAUTH_DEFAULT_API_KEY_PERMISSIONS: &[&str] = &["basic:access"];
 const ALLOWED_DISCORD_CALLBACK_PATHS: &[&str] = &[
     "/admin/login/discord-callback",
     "/admin/auth/discord/callback",
@@ -50,15 +57,126 @@ struct DiscordUser {
     email: Option<String>,
 }
 
+#[derive(Debug)]
+struct DefaultOauthApiKeySeed {
+    secret_key: String,
+    key_hash: String,
+    key_prefix: String,
+    tier: String,
+    permissions: Vec<String>,
+    consciousness_level: u8,
+    rate_limit: i32,
+}
+
+fn build_default_oauth_api_key_seed(user: &User) -> DefaultOauthApiKeySeed {
+    let secret_key = generate_secret_api_key();
+    let tier = user.tier.to_ascii_lowercase();
+    let permissions = OAUTH_DEFAULT_API_KEY_PERMISSIONS
+        .iter()
+        .map(|permission| (*permission).to_string())
+        .collect::<Vec<_>>();
+
+    DefaultOauthApiKeySeed {
+        key_hash: sha256_hex(&secret_key),
+        key_prefix: secret_key[..12.min(secret_key.len())].to_string(),
+        secret_key,
+        tier: tier.clone(),
+        permissions,
+        consciousness_level: user.consciousness_level.clamp(0, 5) as u8,
+        rate_limit: default_rate_limit_for_tier(&tier),
+    }
+}
+
+async fn ensure_default_api_key_for_oauth_login<CountFn, CountFut, CreateFn, CreateFut>(
+    count_active_keys: CountFn,
+    create_default_key: CreateFn,
+) -> Result<bool, EngineError>
+where
+    CountFn: FnOnce() -> CountFut,
+    CountFut: Future<Output = Result<i64, EngineError>>,
+    CreateFn: FnOnce() -> CreateFut,
+    CreateFut: Future<Output = Result<(), EngineError>>,
+{
+    let active_key_count = count_active_keys().await?;
+    if active_key_count > 0 {
+        return Ok(false);
+    }
+
+    create_default_key().await?;
+    Ok(true)
+}
+
+async fn provision_default_api_key_for_oauth_login(
+    state: &AppState,
+    user: &User,
+) -> Result<bool, EngineError> {
+    let repo = state.admin_repository.as_ref().ok_or_else(|| {
+        EngineError::ServiceUnavailable(
+            "Admin repository not available for Discord OAuth key provisioning".to_string(),
+        )
+    })?;
+    let seed = build_default_oauth_api_key_seed(user);
+
+    ensure_default_api_key_for_oauth_login(
+        || async {
+            repo.count_api_keys(None, Some(user.id), true)
+                .await
+                .map_err(|e| {
+                    EngineError::InternalError(format!(
+                        "Failed to count active API keys for Discord OAuth login: {e}"
+                    ))
+                })
+        },
+        || async {
+            let created = repo
+                .create_api_key(NewApiKeyRecord {
+                    key_hash: seed.key_hash,
+                    name: Some(OAUTH_DEFAULT_API_KEY_NAME.to_string()),
+                    key_prefix: seed.key_prefix,
+                    user_id: user.id,
+                    created_by_user_id: None,
+                    tier: seed.tier.clone(),
+                    permissions: serde_json::json!(seed.permissions),
+                    consciousness_level: i32::from(seed.consciousness_level),
+                    rate_limit: seed.rate_limit,
+                    expires_at: None,
+                    rotated_from_key_id: None,
+                })
+                .await
+                .map_err(|e| {
+                    EngineError::InternalError(format!(
+                        "Failed to create default API key for Discord OAuth login: {e}"
+                    ))
+                })?;
+
+            let _ = state
+                .auth
+                .add_api_key(ApiKey {
+                    key: seed.secret_key,
+                    user_id: created.user_id.to_string(),
+                    tier: seed.tier,
+                    permissions: seed.permissions,
+                    created_at: created.created_at,
+                    expires_at: created.expires_at,
+                    last_used: created.last_used,
+                    rate_limit: created.rate_limit as u32,
+                    consciousness_level: created.consciousness_level as u8,
+                })
+                .await;
+
+            Ok(())
+        },
+    )
+    .await
+}
+
 fn is_localhost_host(host: &str) -> bool {
     LOCALHOST_HOSTS.contains(&host)
 }
 
 fn validate_requested_discord_redirect_uri(uri: &str) -> Result<reqwest::Url, EngineError> {
     let parsed = reqwest::Url::parse(uri).map_err(|_| {
-        EngineError::ValidationError(
-            "Discord redirect URI must be an absolute URL.".to_string(),
-        )
+        EngineError::ValidationError("Discord redirect URI must be an absolute URL.".to_string())
     })?;
 
     let host = parsed.host_str().ok_or_else(|| {
@@ -331,6 +449,9 @@ pub async fn discord_callback(
     // 4. Update last login
     let _ = state.user_repository.update_last_login(user.id).await;
 
+    let provisioned_default_api_key =
+        provision_default_api_key_for_oauth_login(&state, &user).await?;
+
     // 5. Generate JWT token (same as password login)
     let permissions = vec!["basic:access".to_string()];
     let consciousness_level = user.consciousness_level as u8;
@@ -347,6 +468,7 @@ pub async fn discord_callback(
         user_id = %user.id,
         email = %user.email,
         discord_id = %discord_user.id,
+        provisioned_default_api_key = provisioned_default_api_key,
         "User logged in via Discord"
     );
 
@@ -362,8 +484,19 @@ pub async fn discord_callback(
 
 #[cfg(test)]
 mod tests {
-    use super::resolve_discord_redirect_uri;
+    use super::{
+        build_default_oauth_api_key_seed, ensure_default_api_key_for_oauth_login,
+        resolve_discord_redirect_uri, OAUTH_DEFAULT_API_KEY_PERMISSIONS,
+    };
     use axum::http::{HeaderMap, HeaderValue};
+    use chrono::Utc;
+    use noesis_core::EngineError;
+    use noesis_data::models::user::User;
+    use std::sync::{
+        atomic::{AtomicBool, Ordering},
+        Arc,
+    };
+    use uuid::Uuid;
 
     #[test]
     fn accepts_same_origin_preview_callback_uri() {
@@ -406,5 +539,97 @@ mod tests {
                 .contains("Discord redirect URI must stay on the current admin origin"),
             "unexpected error: {err}"
         );
+    }
+
+    #[test]
+    fn oauth_default_api_key_seed_uses_user_defaults() {
+        let user = User {
+            id: Uuid::new_v4(),
+            email: "discord-seed@example.com".to_string(),
+            password_hash: "unused".to_string(),
+            full_name: "Discord Seed".to_string(),
+            tier: "Premium".to_string(),
+            consciousness_level: 7,
+            experience_points: 0,
+            created_at: Utc::now(),
+            updated_at: Utc::now(),
+            reset_token: None,
+            reset_token_expires_at: None,
+            last_login_at: None,
+            failed_login_attempts: 0,
+            locked_until: None,
+        };
+
+        let seed = build_default_oauth_api_key_seed(&user);
+
+        assert!(seed.secret_key.starts_with("nk_"));
+        assert_eq!(seed.key_prefix.len(), 12);
+        assert_eq!(seed.key_prefix, seed.secret_key[..12]);
+        assert_eq!(seed.tier, "premium");
+        assert_eq!(
+            seed.permissions,
+            OAUTH_DEFAULT_API_KEY_PERMISSIONS
+                .iter()
+                .map(|permission| (*permission).to_string())
+                .collect::<Vec<_>>()
+        );
+        assert_eq!(seed.consciousness_level, 5);
+        assert_eq!(seed.rate_limit, 1_000);
+        assert!(!seed.key_hash.is_empty());
+    }
+
+    #[tokio::test]
+    async fn oauth_default_api_key_is_created_when_user_has_no_active_keys() {
+        let created = Arc::new(AtomicBool::new(false));
+        let created_for_assert = created.clone();
+
+        let result = ensure_default_api_key_for_oauth_login(
+            || async { Ok(0) },
+            move || {
+                let created = created.clone();
+                async move {
+                    created.store(true, Ordering::SeqCst);
+                    Ok(())
+                }
+            },
+        )
+        .await
+        .expect("oauth key creation should succeed");
+
+        assert!(result);
+        assert!(created_for_assert.load(Ordering::SeqCst));
+    }
+
+    #[tokio::test]
+    async fn oauth_default_api_key_is_skipped_when_user_already_has_active_key() {
+        let created = Arc::new(AtomicBool::new(false));
+        let created_for_assert = created.clone();
+
+        let result = ensure_default_api_key_for_oauth_login(
+            || async { Ok(1) },
+            move || {
+                let created = created.clone();
+                async move {
+                    created.store(true, Ordering::SeqCst);
+                    Ok(())
+                }
+            },
+        )
+        .await
+        .expect("oauth key skip should succeed");
+
+        assert!(!result);
+        assert!(!created_for_assert.load(Ordering::SeqCst));
+    }
+
+    #[tokio::test]
+    async fn oauth_default_api_key_propagates_count_failures() {
+        let result = ensure_default_api_key_for_oauth_login(
+            || async { Err(EngineError::InternalError("boom".to_string())) },
+            || async { Ok(()) },
+        )
+        .await;
+
+        assert!(matches!(result, Err(EngineError::InternalError(message)) if message == "boom"));
     }
 }
