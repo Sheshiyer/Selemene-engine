@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { StateBanner, StatePanel, TableEmptyStateRow } from "@/components/admin-state";
+import { EventStream, EventStreamItem } from "@/components/event-stream";
 import { PageShell } from "@/components/page-shell";
 import { getAuthToken } from "@/lib/auth";
 import {
@@ -199,44 +200,33 @@ export default function HistorySyncPage() {
 
       <article className="panel">
         <h3>Recent Events</h3>
-        <div className="table-wrap compact">
-          <table>
-            <thead>
-              <tr>
-                <th>Time</th>
-                <th>User</th>
-                <th>Engine</th>
-                <th>Workflow</th>
-                <th>Status</th>
-                <th>Duration (ms)</th>
-              </tr>
-            </thead>
-            <tbody>
-              {events.map((event) => (
-                <tr key={event.event_id}>
-                  <td>{formatDateTime(event.occurred_at)}</td>
-                  <td>
-                    <div className="table-primary">{event.user_email}</div>
-                    <div className="helper">{event.user_id}</div>
-                  </td>
-                  <td>{event.engine_id ?? "--"}</td>
-                  <td>{event.workflow_id ?? "--"}</td>
-                  <td>
-                    <span className={statusPillClass(event.status)}>{event.status}</span>
-                  </td>
-                  <td>{event.duration_ms}</td>
-                </tr>
-              ))}
-              {events.length === 0 ? (
-                <TableEmptyStateRow
-                  colSpan={6}
-                  title="No history sync events"
-                  description="Recent sync events will appear here after ingestion or repair activity."
-                />
-              ) : null}
-            </tbody>
-          </table>
-        </div>
+        {events.length === 0 ? (
+          <div className="state-table-empty event-stream-empty">
+            <div className="telemetry-caption">Empty</div>
+            <div className="state-table-empty-title">No history sync events</div>
+            <div className="helper">
+              Recent sync events will appear here after ingestion or repair activity.
+            </div>
+          </div>
+        ) : (
+          <EventStream label="History sync event stream">
+            {events.map((event) => (
+              <EventStreamItem
+                key={event.event_id}
+                eyebrow="History sync"
+                title={event.user_email}
+                subtitle={`${event.workflow_id ?? "No workflow"} · ${event.engine_id ?? "No engine"}`}
+                badge={<span className={statusPillClass(event.status)}>{event.status}</span>}
+                metadata={[
+                  { label: "Occurred", value: formatDateTime(event.occurred_at) },
+                  { label: "Duration", value: `${event.duration_ms} ms` },
+                  { label: "User ID", value: event.user_id }
+                ]}
+                summary="Recent synchronization event captured for drift and ingestion review."
+              />
+            ))}
+          </EventStream>
+        )}
       </article>
     </PageShell>
   );
