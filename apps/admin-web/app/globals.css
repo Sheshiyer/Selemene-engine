@@ -1416,6 +1416,45 @@ tbody tr.clickable-row:focus-visible {
   gap: 0.55rem;
 }
 
+.user-drawer-grid {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.user-drawer-metrics {
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+}
+
+.user-drawer-section {
+  background: rgba(8, 17, 29, 0.36);
+}
+
+.user-drawer-action-stack {
+  gap: 0.65rem;
+}
+
+.user-drawer-field {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.user-drawer-field span {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+
+.user-confirm-card {
+  border-color: rgba(196, 135, 59, 0.28);
+}
+
+.user-confirm-actions {
+  justify-content: flex-start;
+}
+
+.user-confirm-hint {
+  margin: 0;
+}
+
 .overlay-json-block {
   margin: 0;
   border: 1px solid var(--line);
