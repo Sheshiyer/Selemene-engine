@@ -853,6 +853,123 @@ tbody tr.clickable-row:focus-visible {
   color: #ffc7cb;
 }
 
+.command-palette-modal {
+  width: min(720px, 100%);
+}
+
+.command-palette-body {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.command-palette-search input {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 0.78rem 0.9rem;
+  background: var(--field);
+  color: var(--text);
+  font-size: 0.96rem;
+}
+
+.command-palette-results {
+  display: grid;
+  gap: 0.9rem;
+  max-height: min(56vh, 520px);
+  overflow-y: auto;
+  padding-right: 0.2rem;
+}
+
+.command-palette-group {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.command-palette-group-label {
+  padding-left: 0.12rem;
+}
+
+.command-palette-group-items {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.command-palette-item {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.8rem;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 0.78rem 0.85rem;
+  background: rgba(240, 237, 227, 0.02);
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+  transition:
+    border-color 180ms ease,
+    background-color 180ms ease,
+    transform 180ms ease;
+}
+
+.command-palette-item:hover,
+.command-palette-item.active {
+  border-color: rgba(196, 135, 59, 0.42);
+  background: rgba(196, 135, 59, 0.09);
+  transform: translateY(-1px);
+}
+
+.command-palette-item.danger {
+  border-color: rgba(239, 107, 115, 0.24);
+}
+
+.command-palette-item.danger.active,
+.command-palette-item.danger:hover {
+  border-color: rgba(239, 107, 115, 0.45);
+  background: rgba(95, 23, 31, 0.26);
+}
+
+.command-palette-copy {
+  display: grid;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.command-palette-title {
+  font-weight: 600;
+}
+
+.command-palette-description {
+  margin: 0;
+}
+
+.command-palette-shortcut {
+  flex-shrink: 0;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 0.2rem 0.48rem;
+  font-family: var(--font-mono), monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.command-palette-footer {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.command-palette-empty {
+  margin: 0;
+}
+
 /* ---- Permission groups ---- */
 .perm-group {
   margin-bottom: 0.8rem;
