@@ -509,6 +509,20 @@ table {
   min-width: 840px;
 }
 
+.table-select-column,
+.table-select-cell {
+  width: 46px;
+  min-width: 46px;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.table-select-column input,
+.table-select-cell input {
+  width: 16px;
+  height: 16px;
+}
+
 th,
 td {
   border-bottom: 1px solid var(--line);
@@ -608,6 +622,50 @@ tbody tr.clickable-row:focus-visible {
 
 .action-stack button:disabled,
 .panel-inline button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.bulk-action-bar {
+  display: grid;
+  gap: 0.85rem;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 0.95rem 1rem;
+  background:
+    linear-gradient(180deg, rgba(16, 29, 47, 0.86), rgba(10, 19, 31, 0.92)),
+    radial-gradient(circle at top left, var(--glow-bronze), transparent 42%);
+}
+
+.bulk-action-bar-embedded {
+  margin-bottom: 0.9rem;
+}
+
+.bulk-action-copy {
+  display: grid;
+  gap: 0.24rem;
+}
+
+.bulk-action-copy h3 {
+  margin: 0;
+}
+
+.bulk-action-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+}
+
+.bulk-action-toolbar button {
+  border: 1px solid var(--line-strong);
+  border-radius: 10px;
+  background: rgba(240, 237, 227, 0.03);
+  color: var(--text);
+  padding: 0.48rem 0.68rem;
+  cursor: pointer;
+}
+
+.bulk-action-toolbar button:disabled {
   opacity: 0.6;
   cursor: not-allowed;
 }
