@@ -3,8 +3,9 @@
 import { useCallback, useEffect, useMemo, useState, type KeyboardEvent as ReactKeyboardEvent } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { MetricSurface, SurfaceCard } from "@/components/admin-primitives";
+import { BulkActionBar, useBulkSelection } from "@/components/bulk-actions";
 import { StateBanner, StatePanel, TableEmptyStateRow } from "@/components/admin-state";
-import { DrawerSurface } from "@/components/overlay-surface";
+import { DrawerSurface, ModalSurface } from "@/components/overlay-surface";
 import { PageShell } from "@/components/page-shell";
 import { getAuthToken } from "@/lib/auth";
 import {
@@ -49,6 +50,11 @@ type PendingUserAction =
       confirmLabel: string;
       nextRole: RoleOption;
     };
+
+type BulkUserAction = {
+  kind: "lock" | "unlock";
+  userIds: string[];
+};
 
 function formatDateTime(value: string | null): string {
   if (!value) {
@@ -119,6 +125,7 @@ export default function UsersPage() {
   const [roleDrafts, setRoleDrafts] = useState<Record<string, RoleOption>>({});
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [pendingAction, setPendingAction] = useState<PendingUserAction | null>(null);
+  const [bulkAction, setBulkAction] = useState<BulkUserAction | null>(null);
 
   useEffect(() => {
     setQuery(getStringParam(searchParams, "query"));
@@ -143,6 +150,19 @@ export default function UsersPage() {
   const selectedUser = useMemo(
     () => users.find((user) => user.id === selectedUserId) ?? null,
     [selectedUserId, users]
+  );
+  const bulkSelection = useBulkSelection(users.map((user) => user.id));
+  const selectedUsers = useMemo(
+    () => users.filter((user) => bulkSelection.selectedSet.has(user.id)),
+    [bulkSelection.selectedSet, users]
+  );
+  const selectedActiveUsers = useMemo(
+    () => selectedUsers.filter((user) => user.state !== "locked"),
+    [selectedUsers]
+  );
+  const selectedLockedUsers = useMemo(
+    () => selectedUsers.filter((user) => user.state === "locked"),
+    [selectedUsers]
   );
 
   useEffect(() => {
@@ -225,6 +245,26 @@ export default function UsersPage() {
   function closeUserDetail() {
     setSelectedUserId(null);
     setPendingAction(null);
+  }
+
+  function queueBulkStateChange(kind: "lock" | "unlock") {
+    const targetIds =
+      kind === "lock"
+        ? selectedActiveUsers.map((user) => user.id)
+        : selectedLockedUsers.map((user) => user.id);
+
+    if (targetIds.length === 0) {
+      setError(
+        kind === "lock"
+          ? "Select at least one active user to lock."
+          : "Select at least one locked user to unlock."
+      );
+      return;
+    }
+
+    setBulkAction({ kind, userIds: targetIds });
+    setError(null);
+    setSuccess(null);
   }
 
   function queueStateChange(user: AdminUserItem) {
@@ -332,6 +372,64 @@ export default function UsersPage() {
     }
   }
 
+  async function confirmBulkAction() {
+    if (!bulkAction) {
+      return;
+    }
+
+    const token = getAuthToken();
+    if (!token) {
+      setError("Missing session token. Please sign in again.");
+      return;
+    }
+
+    const activeBulkAction = bulkAction;
+    setSubmittingId(`bulk-users-${activeBulkAction.kind}`);
+    setError(null);
+    setSuccess(null);
+
+    try {
+      const results = await Promise.allSettled(
+        activeBulkAction.userIds.map((userId) =>
+          updateAdminUserState(token, userId, {
+            state: activeBulkAction.kind === "lock" ? "locked" : "active",
+            lock_minutes: activeBulkAction.kind === "lock" ? 60 : 0
+          })
+        )
+      );
+
+      const failed = results.filter((result) => result.status === "rejected");
+      const succeeded = results.length - failed.length;
+
+      if (succeeded > 0) {
+        setSuccess(
+          activeBulkAction.kind === "lock"
+            ? `Locked ${succeeded} user account${succeeded === 1 ? "" : "s"}.`
+            : `Unlocked ${succeeded} user account${succeeded === 1 ? "" : "s"}.`
+        );
+      }
+
+      if (failed.length > 0) {
+        const firstFailure = failed[0];
+        const baseMessage =
+          firstFailure.reason instanceof ApiClientError
+            ? firstFailure.reason.payload?.error || firstFailure.reason.message
+            : "Some bulk user updates failed";
+        setError(
+          failed.length === results.length
+            ? baseMessage
+            : `${baseMessage} (${failed.length} failed)`
+        );
+      }
+
+      setBulkAction(null);
+      bulkSelection.clear();
+      await loadUsers();
+    } finally {
+      setSubmittingId(null);
+    }
+  }
+
   function handleExportCsv() {
     exportCsv(
       `admin-users-${new Date().toISOString().slice(0, 10)}.csv`,
@@ -418,10 +516,44 @@ export default function UsersPage() {
           description="Resolving account inventory, tier drafts, role drafts, and filter-scoped user state."
         />
       ) : (
-        <div className="table-wrap">
+        <>
+          <BulkActionBar
+            itemLabel="users"
+            selectedCount={bulkSelection.selectedCount}
+            visibleCount={users.length}
+            allVisibleSelected={bulkSelection.allVisibleSelected}
+            onToggleVisible={bulkSelection.toggleVisible}
+            onClear={bulkSelection.clear}
+          >
+            <button
+              type="button"
+              disabled={selectedActiveUsers.length === 0 || submittingId !== null}
+              onClick={() => queueBulkStateChange("lock")}
+            >
+              Lock selected
+            </button>
+            <button
+              type="button"
+              disabled={selectedLockedUsers.length === 0 || submittingId !== null}
+              onClick={() => queueBulkStateChange("unlock")}
+            >
+              Unlock selected
+            </button>
+          </BulkActionBar>
+
+          <div className="table-wrap">
           <table>
             <thead>
               <tr>
+                <th className="table-select-column">
+                  <input
+                    type="checkbox"
+                    aria-label={bulkSelection.allVisibleSelected ? "Clear visible users" : "Select visible users"}
+                    checked={bulkSelection.allVisibleSelected}
+                    onChange={() => bulkSelection.toggleVisible()}
+                    disabled={users.length === 0}
+                  />
+                </th>
                 <th>User</th>
                 <th>Tier</th>
                 <th>Status</th>
@@ -439,6 +571,16 @@ export default function UsersPage() {
                   onClick={() => openUserDetail(user.id)}
                   onKeyDown={(event) => onRowKeyboardOpen(event, () => openUserDetail(user.id))}
                 >
+                  <td className="table-select-cell">
+                    <input
+                      type="checkbox"
+                      aria-label={`Select ${user.email}`}
+                      checked={bulkSelection.selectedSet.has(user.id)}
+                      onChange={() => bulkSelection.toggle(user.id)}
+                      onClick={(event) => event.stopPropagation()}
+                      onKeyDown={(event) => event.stopPropagation()}
+                    />
+                  </td>
                   <td>
                     <div className="table-primary">{user.email}</div>
                     <div className="helper">{user.full_name || "Unnamed"}</div>
@@ -500,15 +642,61 @@ export default function UsersPage() {
               ))}
               {users.length === 0 ? (
                 <TableEmptyStateRow
-                  colSpan={6}
+                  colSpan={7}
                   title="No users matched"
                   description="Try broadening the current search, tier, or state filters."
                 />
               ) : null}
             </tbody>
           </table>
-        </div>
+          </div>
+        </>
       )}
+
+      <ModalSurface
+        open={Boolean(bulkAction)}
+        onClose={() => setBulkAction(null)}
+        eyebrow="Bulk account state"
+        title={
+          bulkAction?.kind === "lock"
+            ? "Lock selected users"
+            : "Unlock selected users"
+        }
+        summary={
+          bulkAction
+            ? `${
+                bulkAction.kind === "lock" ? "Lock" : "Unlock"
+              } ${bulkAction.userIds.length} selected user account${bulkAction.userIds.length === 1 ? "" : "s"} with one confirmation.`
+            : undefined
+        }
+        footer={
+          <>
+            <button type="button" onClick={() => setBulkAction(null)}>
+              Cancel
+            </button>
+            <button
+              type="button"
+              className={bulkAction?.kind === "lock" ? "btn-danger" : "btn-primary"}
+              disabled={!bulkAction || submittingId !== null}
+              onClick={() => void confirmBulkAction()}
+            >
+              {submittingId !== null
+                ? "Applying..."
+                : bulkAction?.kind === "lock"
+                  ? "Confirm lock"
+                  : "Confirm unlock"}
+            </button>
+          </>
+        }
+      >
+        {bulkAction ? (
+          <p className="helper">
+            {bulkAction.kind === "lock"
+              ? "Each selected account will enter a 60 minute lock window."
+              : "Each selected locked account will return to active access immediately."}
+          </p>
+        ) : null}
+      </ModalSurface>
 
       <DrawerSurface
         open={Boolean(selectedUser)}

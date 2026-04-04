@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { ActionRail, MetricSurface, SurfaceCard } from "@/components/admin-primitives";
+import { BulkActionBar, useBulkSelection } from "@/components/bulk-actions";
 import { StateBanner, StatePanel, TableEmptyStateRow } from "@/components/admin-state";
 import { ModalSurface } from "@/components/overlay-surface";
 import { PageShell } from "@/components/page-shell";
@@ -216,6 +217,7 @@ export default function ApiKeysPage() {
   const [confirmRevoke, setConfirmRevoke] = useState<AdminApiKeyItem | null>(null);
   const [confirmRotate, setConfirmRotate] = useState<AdminApiKeyItem | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<AdminApiKeyItem | null>(null);
+  const [confirmBulkRevokeIds, setConfirmBulkRevokeIds] = useState<string[] | null>(null);
   const [submittingId, setSubmittingId] = useState<string | null>(null);
 
   const activeOnly = statusFilter === "active";
@@ -228,6 +230,15 @@ export default function ApiKeysPage() {
     }
     return result;
   }, [keys, statusFilter, tierFilter]);
+  const bulkSelection = useBulkSelection(filteredKeys.map((key) => key.id));
+  const selectedBulkKeys = useMemo(
+    () => filteredKeys.filter((key) => bulkSelection.selectedSet.has(key.id)),
+    [bulkSelection.selectedSet, filteredKeys]
+  );
+  const selectedRevokableKeys = useMemo(
+    () => selectedBulkKeys.filter((key) => key.is_active),
+    [selectedBulkKeys]
+  );
 
   const activeCount = useMemo(() => keys.filter((k) => k.is_active).length, [keys]);
   const revokedCount = useMemo(() => keys.filter((k) => !k.is_active).length, [keys]);
@@ -484,6 +495,65 @@ export default function ApiKeysPage() {
     }
   }
 
+  function queueBulkRevoke() {
+    if (selectedRevokableKeys.length === 0) {
+      setError("Select at least one active key to revoke.");
+      return;
+    }
+
+    setConfirmBulkRevokeIds(selectedRevokableKeys.map((key) => key.id));
+    setError(null);
+    setSuccess(null);
+  }
+
+  async function handleBulkRevoke() {
+    if (!confirmBulkRevokeIds) {
+      return;
+    }
+
+    const token = getAuthToken();
+    if (!token) {
+      setError("Missing session token.");
+      return;
+    }
+
+    const bulkIds = confirmBulkRevokeIds;
+    setSubmittingId("bulk-key-revoke");
+    setError(null);
+    setSuccess(null);
+
+    try {
+      const results = await Promise.allSettled(
+        bulkIds.map((keyId) => revokeAdminApiKey(token, keyId))
+      );
+      const failed = results.filter((result) => result.status === "rejected");
+      const succeeded = results.length - failed.length;
+
+      if (succeeded > 0) {
+        setSuccess(`Revoked ${succeeded} API key${succeeded === 1 ? "" : "s"}.`);
+      }
+
+      if (failed.length > 0) {
+        const firstFailure = failed[0];
+        const baseMessage =
+          firstFailure.reason instanceof ApiClientError
+            ? firstFailure.reason.payload?.error || firstFailure.reason.message
+            : "Some bulk key revocations failed";
+        setError(
+          failed.length === results.length
+            ? baseMessage
+            : `${baseMessage} (${failed.length} failed)`
+        );
+      }
+
+      setConfirmBulkRevokeIds(null);
+      bulkSelection.clear();
+      await loadKeys();
+    } finally {
+      setSubmittingId(null);
+    }
+  }
+
   async function handleCopySecret() {
     if (!secretForSelectedKey) return;
     await copyToClipboard(secretForSelectedKey.secret);
@@ -605,10 +675,37 @@ export default function ApiKeysPage() {
           title="Key inventory"
           summary="Ownership, access, lifecycle, and quick-open controls for credential governance."
         >
+          <BulkActionBar
+            className="bulk-action-bar-embedded"
+            itemLabel="keys"
+            selectedCount={bulkSelection.selectedCount}
+            visibleCount={filteredKeys.length}
+            allVisibleSelected={bulkSelection.allVisibleSelected}
+            onToggleVisible={bulkSelection.toggleVisible}
+            onClear={bulkSelection.clear}
+          >
+            <button
+              type="button"
+              disabled={selectedRevokableKeys.length === 0 || !canRevokeKeys || submittingId !== null}
+              onClick={queueBulkRevoke}
+            >
+              Revoke selected
+            </button>
+          </BulkActionBar>
+
           <div className="table-wrap management-table">
             <table>
               <thead>
                 <tr>
+                  <th className="table-select-column">
+                    <input
+                      type="checkbox"
+                      aria-label={bulkSelection.allVisibleSelected ? "Clear visible keys" : "Select visible keys"}
+                      checked={bulkSelection.allVisibleSelected}
+                      onChange={() => bulkSelection.toggleVisible()}
+                      disabled={filteredKeys.length === 0}
+                    />
+                  </th>
                   <th>Key</th>
                   <th>Owner</th>
                   <th>Access</th>
@@ -631,6 +728,16 @@ export default function ApiKeysPage() {
                       }
                     }}
                   >
+                    <td className="table-select-cell">
+                      <input
+                        type="checkbox"
+                        aria-label={`Select ${key.name || key.id}`}
+                        checked={bulkSelection.selectedSet.has(key.id)}
+                        onChange={() => bulkSelection.toggle(key.id)}
+                        onClick={(event) => event.stopPropagation()}
+                        onKeyDown={(event) => event.stopPropagation()}
+                      />
+                    </td>
                     <td>
                       <div className="table-primary">{key.name || "Unnamed key"}</div>
                       <div className="table-secondary-row">
@@ -702,7 +809,7 @@ export default function ApiKeysPage() {
                 ))}
                 {filteredKeys.length === 0 ? (
                   <TableEmptyStateRow
-                    colSpan={6}
+                    colSpan={7}
                     title="No API keys matched"
                     description="Try widening the search, tier, or status filters to restore results."
                   />
@@ -995,6 +1102,39 @@ export default function ApiKeysPage() {
               </section>
             </div>
           </>
+        ) : null}
+      </ModalSurface>
+
+      <ModalSurface
+        open={Boolean(confirmBulkRevokeIds)}
+        onClose={() => setConfirmBulkRevokeIds(null)}
+        eyebrow="Bulk revoke"
+        title="Revoke selected API keys"
+        summary={
+          confirmBulkRevokeIds
+            ? `Revoke ${confirmBulkRevokeIds.length} selected API key${confirmBulkRevokeIds.length === 1 ? "" : "s"} and retain the records for audit visibility.`
+            : undefined
+        }
+        footer={
+          <>
+            <button type="button" onClick={() => setConfirmBulkRevokeIds(null)}>
+              Cancel
+            </button>
+            <button
+              type="button"
+              className="btn-danger"
+              disabled={!confirmBulkRevokeIds || submittingId !== null}
+              onClick={() => void handleBulkRevoke()}
+            >
+              {submittingId !== null ? "Revoking..." : "Confirm revoke"}
+            </button>
+          </>
+        }
+      >
+        {confirmBulkRevokeIds ? (
+          <p className="helper">
+            Revoke disables future usage while keeping each key row available for audit and operator review.
+          </p>
         ) : null}
       </ModalSurface>
 
