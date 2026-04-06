@@ -166,7 +166,6 @@ impl RoutingHarness {
         let state = AppState {
             orchestrator: Arc::new(orchestrator),
             bridge_manager: Arc::new(noesis_bridge::BridgeManager::from_env()),
-            vedic_service: None,
             cache: Arc::new(cache),
             auth: Arc::new(auth),
             metrics,
