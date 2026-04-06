@@ -17,6 +17,7 @@ noesis-metrics = { path = "../noesis-metrics" }
 noesis-orchestrator = { path = "../noesis-orchestrator" }
 noesis-bridge = { path = "../noesis-bridge" }
 noesis-witness = { path = "../noesis-witness" }
+noesis-vedic-api = { path = "../noesis-vedic-api" }
 axum = { version = "0.7", features = ["json", "macros", "multipart"] }
 uuid = { version = "1.7", features = ["serde", "v4"] }
 tokio = { version = "1.0", features = ["full"] }
@@ -28,6 +29,7 @@ sentry-tower = { version = "0.34", features = ["http"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 chrono = { version = "0.4", features = ["serde"] }
+chrono-tz = "0.10"
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter", "fmt", "json"] }
 tracing-opentelemetry = { version = "0.22", optional = true }
@@ -63,6 +65,7 @@ engine-biorhythm = { path = "../engine-biorhythm" }
 engine-human-design = { path = "../engine-human-design" }
 engine-gene-keys = { path = "../engine-gene-keys" }
 engine-vimshottari = { path = "../engine-vimshottari" }
+noesis-vedic-api = { path = "../noesis-vedic-api", features = ["test-mocks"] }
 
 [[bench]]
 name = "engine_comparison"

@@ -15,9 +15,13 @@ use axum::{
     http::{header, Request, StatusCode},
     Router,
 };
+use chrono::{Duration as ChronoDuration, Utc};
+use noesis_api::{build_app_state_lazy_db, create_router, ApiConfig};
+use noesis_auth::{ApiKey, AuthService};
 use noesis_core::EngineInput;
 use serde_json::{json, Value};
 use serial_test::serial;
+use std::sync::Arc;
 use tower::ServiceExt; // For `oneshot`
 
 mod common;
@@ -95,6 +99,43 @@ async fn make_authenticated_request(
     (status, json)
 }
 
+/// Helper to make API-key authenticated requests
+async fn make_api_key_request(
+    router: &Router,
+    method: &str,
+    uri: &str,
+    api_key: &str,
+    body: Option<Value>,
+) -> (StatusCode, Value) {
+    let request_builder = Request::builder()
+        .method(method)
+        .uri(uri)
+        .header("X-API-Key", api_key)
+        .header(header::CONTENT_TYPE, "application/json");
+
+    let body = if let Some(json_body) = body {
+        Body::from(serde_json::to_vec(&json_body).unwrap())
+    } else {
+        Body::empty()
+    };
+
+    let request = request_builder.body(body).unwrap();
+    let response = router.clone().oneshot(request).await.unwrap();
+
+    let status = response.status();
+    let body_bytes = axum::body::to_bytes(response.into_body(), usize::MAX)
+        .await
+        .unwrap();
+
+    let json: Value = if body_bytes.is_empty() {
+        json!({})
+    } else {
+        serde_json::from_slice(&body_bytes).unwrap_or(json!({}))
+    };
+
+    (status, json)
+}
+
 /// Helper to make unauthenticated requests
 async fn make_unauthenticated_request(
     router: &Router,
@@ -130,6 +171,33 @@ async fn make_unauthenticated_request(
     (status, json)
 }
 
+async fn create_test_api_key(
+    auth: &Arc<AuthService>,
+    user_id: &str,
+    tier: &str,
+    consciousness_level: u8,
+) -> String {
+    let api_key_value = format!("workflow-test-key-{}", user_id);
+
+    let api_key = ApiKey {
+        key: api_key_value.clone(),
+        user_id: user_id.to_string(),
+        tier: tier.to_string(),
+        permissions: vec!["basic:access".to_string()],
+        created_at: Utc::now(),
+        expires_at: Some(Utc::now() + ChronoDuration::hours(1)),
+        last_used: None,
+        rate_limit: 60,
+        consciousness_level,
+    };
+
+    auth.add_api_key(api_key)
+        .await
+        .expect("failed to add workflow test API key");
+
+    api_key_value
+}
+
 // ---------------------------------------------------------------------------
 // Health check tests
 // ---------------------------------------------------------------------------
@@ -143,6 +211,22 @@ async fn test_health_check_no_auth_required() {
     assert_eq!(status, StatusCode::OK);
     assert_eq!(body["status"], "ok");
     assert_eq!(body["version"], "3.0.0");
+}
+
+#[tokio::test]
+async fn test_admin_api_key_delete_route_requires_auth() {
+    let router = get_test_router().await;
+
+    let (status, body) = make_unauthenticated_request(
+        router,
+        "DELETE",
+        "/api/v1/admin/api-keys/00000000-0000-0000-0000-000000000000",
+        None,
+    )
+    .await;
+
+    assert_eq!(status, StatusCode::UNAUTHORIZED, "Body: {:?}", body);
+    assert_eq!(body["error_code"], "UNAUTHORIZED");
 }
 
 // ---------------------------------------------------------------------------
@@ -347,6 +431,31 @@ async fn test_workflow_execute_birth_blueprint_success() {
     assert!(body["engine_outputs"].is_object());
     assert!(body["total_time_ms"].is_number());
     assert_eq!(body["engine_results"], body["engine_outputs"]);
+}
+
+#[tokio::test]
+#[serial]
+async fn test_workflow_execute_birth_blueprint_success_with_api_key() {
+    let mut config = ApiConfig::from_env().expect("failed to load test config");
+    config.database_url = None;
+
+    let state = build_app_state_lazy_db(&config).await;
+    let api_key = create_test_api_key(&state.auth, "workflow-api-key-user", "premium", 5).await;
+    let router = create_router(state, &config);
+
+    let (status, body) = make_api_key_request(
+        &router,
+        "POST",
+        "/api/v1/workflows/birth-blueprint/execute",
+        &api_key,
+        Some(serde_json::to_value(create_test_birth_input()).unwrap()),
+    )
+    .await;
+
+    assert_eq!(status, StatusCode::OK);
+    assert_eq!(body["workflow_id"], "birth-blueprint");
+    assert!(body["engine_results"].is_object());
+    assert!(body["engine_outputs"].is_object());
 }
 
 #[tokio::test]

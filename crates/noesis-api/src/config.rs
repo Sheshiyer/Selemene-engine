@@ -6,6 +6,9 @@
 use noesis_core::EngineError;
 use std::env;
 
+pub const DEFAULT_PYTHON_BIOFIELD_URL: &str = "http://localhost:8002";
+pub const DEFAULT_PYTHON_BIOFIELD_TIMEOUT_MS: u64 = 10_000;
+
 /// API server configuration loaded from environment variables
 #[derive(Debug, Clone)]
 pub struct ApiConfig {
@@ -59,6 +62,12 @@ pub struct ApiConfig {
 
     /// Dodo Payments environment (`test` or `live`)
     pub dodo_payments_env: Option<String>,
+
+    /// Biofield CV Python sidecar URL
+    pub python_biofield_url: String,
+
+    /// Biofield CV Python sidecar request timeout in milliseconds
+    pub python_biofield_timeout_ms: u64,
 
     /// OpenClaw Gateway URL (ws:// or wss://) for OpenClaw integration
     pub gateway_url: Option<String>,
@@ -182,7 +191,20 @@ impl ApiConfig {
             .or_else(|_| env::var("DODO_WEBHOOK_KEY"))
             .ok();
         let dodo_payments_env = env::var("DODO_PAYMENTS_ENV").ok();
-        
+
+        let python_biofield_url = env::var("PYTHON_BIOFIELD_URL")
+            .unwrap_or_else(|_| DEFAULT_PYTHON_BIOFIELD_URL.to_string());
+
+        let python_biofield_timeout_ms = match env::var("PYTHON_BIOFIELD_TIMEOUT_MS") {
+            Ok(value) => value.parse().map_err(|_| {
+                EngineError::ConfigError(format!(
+                    "PYTHON_BIOFIELD_TIMEOUT_MS must be a positive integer, got '{}'",
+                    value
+                ))
+            })?,
+            Err(_) => DEFAULT_PYTHON_BIOFIELD_TIMEOUT_MS,
+        };
+
         // OpenClaw Gateway configuration
         let gateway_url = env::var("GATEWAY_URL").ok();
         let gateway_token = env::var("GATEWAY_TOKEN").ok();
@@ -205,6 +227,8 @@ impl ApiConfig {
             dodo_payments_api_key,
             dodo_payments_webhook_key,
             dodo_payments_env,
+            python_biofield_url,
+            python_biofield_timeout_ms,
             gateway_url,
             gateway_token,
         })
@@ -309,6 +333,19 @@ impl ApiConfig {
             );
         }
 
+        if !self.python_biofield_url.starts_with("http://")
+            && !self.python_biofield_url.starts_with("https://")
+        {
+            return Err(format!(
+                "PYTHON_BIOFIELD_URL must start with 'http://' or 'https://', got: {}",
+                self.python_biofield_url
+            ));
+        }
+
+        if self.python_biofield_timeout_ms == 0 {
+            return Err("PYTHON_BIOFIELD_TIMEOUT_MS must be greater than 0".to_string());
+        }
+
         Ok(())
     }
 
@@ -375,6 +412,8 @@ mod tests {
             dodo_payments_api_key: None,
             dodo_payments_webhook_key: None,
             dodo_payments_env: None,
+            python_biofield_url: DEFAULT_PYTHON_BIOFIELD_URL.to_string(),
+            python_biofield_timeout_ms: DEFAULT_PYTHON_BIOFIELD_TIMEOUT_MS,
             gateway_url: None,
             gateway_token: None,
         };
@@ -402,6 +441,8 @@ mod tests {
             dodo_payments_api_key: None,
             dodo_payments_webhook_key: None,
             dodo_payments_env: None,
+            python_biofield_url: DEFAULT_PYTHON_BIOFIELD_URL.to_string(),
+            python_biofield_timeout_ms: DEFAULT_PYTHON_BIOFIELD_TIMEOUT_MS,
             gateway_url: None,
             gateway_token: None,
         };
@@ -429,6 +470,10 @@ mod tests {
             dodo_payments_api_key: None,
             dodo_payments_webhook_key: None,
             dodo_payments_env: None,
+            python_biofield_url: DEFAULT_PYTHON_BIOFIELD_URL.to_string(),
+            python_biofield_timeout_ms: DEFAULT_PYTHON_BIOFIELD_TIMEOUT_MS,
+            gateway_url: None,
+            gateway_token: None,
         };
 
         assert!(config.validate().is_err());
@@ -455,6 +500,8 @@ mod tests {
                 dodo_payments_api_key: None,
                 dodo_payments_webhook_key: None,
                 dodo_payments_env: None,
+                python_biofield_url: DEFAULT_PYTHON_BIOFIELD_URL.to_string(),
+                python_biofield_timeout_ms: DEFAULT_PYTHON_BIOFIELD_TIMEOUT_MS,
                 gateway_url: None,
                 gateway_token: None,
             };
@@ -487,6 +534,8 @@ mod tests {
             dodo_payments_api_key: None,
             dodo_payments_webhook_key: None,
             dodo_payments_env: None,
+            python_biofield_url: DEFAULT_PYTHON_BIOFIELD_URL.to_string(),
+            python_biofield_timeout_ms: DEFAULT_PYTHON_BIOFIELD_TIMEOUT_MS,
             gateway_url: None,
             gateway_token: None,
         };
@@ -550,6 +599,97 @@ mod tests {
     }
 
     #[test]
+    fn test_from_env_reads_python_biofield_settings() {
+        let _lock = env_lock().lock().unwrap();
+        let _guard = EnvGuard::set(&[
+            ("RUST_ENV", "development"),
+            ("JWT_SECRET", "test-secret-at-least-32-chars-long"),
+            ("PYTHON_BIOFIELD_URL", "http://biofield.internal:8002"),
+            ("PYTHON_BIOFIELD_TIMEOUT_MS", "15000"),
+        ]);
+
+        let config = ApiConfig::from_env().expect("config should load");
+        assert_eq!(config.python_biofield_url, "http://biofield.internal:8002");
+        assert_eq!(config.python_biofield_timeout_ms, 15_000);
+    }
+
+    #[test]
+    fn test_from_env_defaults_python_biofield_settings() {
+        let _lock = env_lock().lock().unwrap();
+        let _guard = EnvGuard::set(&[
+            ("RUST_ENV", "development"),
+            ("JWT_SECRET", "test-secret-at-least-32-chars-long"),
+        ]);
+        std::env::remove_var("PYTHON_BIOFIELD_URL");
+        std::env::remove_var("PYTHON_BIOFIELD_TIMEOUT_MS");
+
+        let config = ApiConfig::from_env().expect("config should load");
+        assert_eq!(config.python_biofield_url, DEFAULT_PYTHON_BIOFIELD_URL);
+        assert_eq!(
+            config.python_biofield_timeout_ms,
+            DEFAULT_PYTHON_BIOFIELD_TIMEOUT_MS
+        );
+    }
+
+    #[test]
+    fn test_validate_rejects_invalid_python_biofield_url() {
+        let config = ApiConfig {
+            host: "0.0.0.0".to_string(),
+            port: 8080,
+            jwt_secret: "test-secret-at-least-32-chars-long".to_string(),
+            database_url: Some("postgres://localhost/test".to_string()),
+            redis_url: None,
+            allowed_origins: vec![],
+            rate_limit_requests: 100,
+            rate_limit_window_secs: 60,
+            request_timeout_secs: 30,
+            log_level: "info".to_string(),
+            log_format: "pretty".to_string(),
+            discord_client_id: None,
+            discord_client_secret: None,
+            discord_redirect_uri: None,
+            dodo_payments_api_key: None,
+            dodo_payments_webhook_key: None,
+            dodo_payments_env: None,
+            python_biofield_url: "biofield.internal:8002".to_string(),
+            python_biofield_timeout_ms: DEFAULT_PYTHON_BIOFIELD_TIMEOUT_MS,
+            gateway_url: None,
+            gateway_token: None,
+        };
+
+        assert!(config.validate().is_err());
+    }
+
+    #[test]
+    fn test_validate_rejects_zero_python_biofield_timeout() {
+        let config = ApiConfig {
+            host: "0.0.0.0".to_string(),
+            port: 8080,
+            jwt_secret: "test-secret-at-least-32-chars-long".to_string(),
+            database_url: Some("postgres://localhost/test".to_string()),
+            redis_url: None,
+            allowed_origins: vec![],
+            rate_limit_requests: 100,
+            rate_limit_window_secs: 60,
+            request_timeout_secs: 30,
+            log_level: "info".to_string(),
+            log_format: "pretty".to_string(),
+            discord_client_id: None,
+            discord_client_secret: None,
+            discord_redirect_uri: None,
+            dodo_payments_api_key: None,
+            dodo_payments_webhook_key: None,
+            dodo_payments_env: None,
+            python_biofield_url: DEFAULT_PYTHON_BIOFIELD_URL.to_string(),
+            python_biofield_timeout_ms: 0,
+            gateway_url: None,
+            gateway_token: None,
+        };
+
+        assert!(config.validate().is_err());
+    }
+
+    #[test]
     fn test_validate_rejects_invalid_dodo_payments_env() {
         let config = ApiConfig {
             host: "0.0.0.0".to_string(),
@@ -569,6 +709,10 @@ mod tests {
             dodo_payments_api_key: Some("dodo_key".to_string()),
             dodo_payments_webhook_key: Some("dodo_webhook".to_string()),
             dodo_payments_env: Some("staging".to_string()),
+            python_biofield_url: DEFAULT_PYTHON_BIOFIELD_URL.to_string(),
+            python_biofield_timeout_ms: DEFAULT_PYTHON_BIOFIELD_TIMEOUT_MS,
+            gateway_url: None,
+            gateway_token: None,
         };
 
         assert!(config.validate().is_err());

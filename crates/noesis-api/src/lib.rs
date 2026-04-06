@@ -4,6 +4,7 @@
 //! All engine calculations and workflow executions are exposed through versioned
 //! JSON endpoints under `/api/v1/`.
 
+mod biofield_client;
 mod billing;
 mod config;
 pub mod error;
@@ -17,6 +18,7 @@ pub use billing::{
     reset_billing_emitter, set_billing_emitter, BillingEventEmitter, DodoWebhookEmitter,
     NoopBillingEmitter, StripeWebhookEmitter,
 };
+pub use biofield_client::{BiofieldAnalyzeRequest, BiofieldClient};
 
 // Re-export configuration and logging for main.rs
 pub use config::ApiConfig;
@@ -31,7 +33,8 @@ use axum::{
     routing::{delete, get, patch, post, put},
     Extension, Router,
 };
-use chrono::Timelike;
+use chrono::{Datelike, LocalResult, NaiveDate, NaiveDateTime, NaiveTime, Offset, TimeZone, Timelike};
+use chrono_tz::Tz;
 use noesis_auth::{AuthService, AuthUser};
 use noesis_cache::CacheManager;
 use noesis_core::{
@@ -44,11 +47,13 @@ use noesis_core::{
 };
 use noesis_data::models::reading::NewReading;
 use noesis_data::repositories::admin_repository::AdminRepository;
+use noesis_data::repositories::biofield_repository::BiofieldRepository;
 use noesis_data::repositories::readings_repository::ReadingsRepository;
 use noesis_data::repositories::usage_repository::UsageRepository;
 use noesis_data::repositories::user_repository::UserRepository;
 use noesis_metrics::NoesisMetrics;
 use noesis_orchestrator::WorkflowOrchestrator;
+use noesis_vedic_api::{VedicApiError, VedicApiService};
 use sentry_tower::{NewSentryLayer, SentryHttpLayer};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -73,6 +78,7 @@ use workflow_parity::log_workflow_registry_parity;
         health_handler,
         readiness_handler,
         status_handler,
+        vedic_chart_handler,
         list_engines_handler,
         calculate_handler,
         face_reading_upload_handler,
@@ -120,6 +126,12 @@ use workflow_parity::log_workflow_registry_parity;
         handlers::auth::forgot_password,
         handlers::auth::reset_password,
         handlers::auth::change_password,
+        handlers::biofield::create_session,
+        handlers::biofield::close_session,
+        handlers::biofield::get_session,
+        handlers::biofield::create_capture,
+        handlers::biofield::list_readings,
+        handlers::biofield::get_reading,
     ),
     components(
         schemas(
@@ -154,6 +166,7 @@ use workflow_parity::log_workflow_registry_parity;
             EngineListResponse,
             WorkflowListResponse,
             WorkflowInfoResponse,
+            VedicChartBundleResponseSchema,
             BirthBlueprintSynthesisSchema,
             DailyPracticeSynthesisSchema,
             DecisionSupportSynthesisSchema,
@@ -228,15 +241,27 @@ use workflow_parity::log_workflow_registry_parity;
             handlers::auth::ResetPasswordResponse,
             handlers::auth::ChangePasswordRequest,
             handlers::auth::ChangePasswordResponse,
+            handlers::biofield::CreateBiofieldSessionRequest,
+            handlers::biofield::CloseBiofieldSessionRequest,
+            handlers::biofield::ListBiofieldReadingsQuery,
+            handlers::biofield::BiofieldSessionResource,
+            handlers::biofield::BiofieldQualitySummary,
+            handlers::biofield::BiofieldArtifactSummary,
+            handlers::biofield::BiofieldReadingSummary,
+            handlers::biofield::ListBiofieldReadingsResponse,
+            handlers::biofield::BiofieldReadingDetail,
+            handlers::biofield::BiofieldPlaceholderResponse,
         )
     ),
     tags(
         (name = "health", description = "Health check and monitoring endpoints"),
+        (name = "charts", description = "Vedic chart geometry endpoints"),
         (name = "engines", description = "Single engine calculation endpoints"),
         (name = "workflows", description = "Multi-engine workflow execution endpoints"),
         (name = "users", description = "User profile management endpoints"),
         (name = "admin", description = "Admin session and management surfaces"),
         (name = "auth", description = "Authentication endpoints (register, login, password reset)"),
+        (name = "biofield", description = "Biofield capture session and reading endpoints"),
     ),
     modifiers(&SecurityAddon),
     info(
@@ -367,11 +392,13 @@ impl Modify for SecurityAddon {
 pub struct AppState {
     pub orchestrator: Arc<WorkflowOrchestrator>,
     pub bridge_manager: Arc<noesis_bridge::BridgeManager>,
+    pub vedic_service: Option<Arc<VedicApiService>>,
     pub cache: Arc<CacheManager>,
     pub auth: Arc<AuthService>,
     pub metrics: Arc<NoesisMetrics>,
     pub user_repository: Arc<UserRepository>,
     pub admin_repository: Option<Arc<AdminRepository>>,
+    pub biofield_repository: Option<Arc<BiofieldRepository>>,
     pub readings_repository: Option<Arc<ReadingsRepository>>,
     pub usage_repository: Option<Arc<UsageRepository>>,
     pub oauth_repository: Option<Arc<noesis_data::repositories::oauth_repository::OAuthRepository>>,
@@ -545,21 +572,23 @@ mod cors_tests {
             &pattern
         ));
         assert!(!matches_wildcard_origin("https://railway.app", &pattern));
-        assert!(!matches_wildcard_origin("http://selemene-engine-production.up.railway.app", &pattern));
-        assert!(!matches_wildcard_origin("https://railway.app.evil.com", &pattern));
+        assert!(!matches_wildcard_origin(
+            "http://selemene-engine-production.up.railway.app",
+            &pattern
+        ));
+        assert!(!matches_wildcard_origin(
+            "https://railway.app.evil.com",
+            &pattern
+        ));
     }
 
     #[test]
     fn origin_allowlist_supports_exact_and_wildcard_matches() {
-        let exact_origins = vec![
-            "http://localhost:5173"
-                .parse::<HeaderValue>()
-                .expect("localhost origin should parse"),
-        ];
-        let wildcard_patterns = vec![
-            parse_wildcard_origin_pattern("https://*.railway.app")
-                .expect("wildcard pattern should parse"),
-        ];
+        let exact_origins = vec!["http://localhost:5173"
+            .parse::<HeaderValue>()
+            .expect("localhost origin should parse")];
+        let wildcard_patterns = vec![parse_wildcard_origin_pattern("https://*.railway.app")
+            .expect("wildcard pattern should parse")];
 
         assert!(origin_is_allowed(
             &"http://localhost:5173"
@@ -631,6 +660,27 @@ pub fn create_router(state: AppState, config: &ApiConfig) -> Router {
             get(handlers::users::get_me).patch(handlers::users::update_me),
         )
         .route("/users/me/usage", get(handlers::users::get_my_usage))
+        .route(
+            "/biofield/sessions",
+            post(handlers::biofield::create_session),
+        )
+        .route(
+            "/biofield/sessions/:session_id/close",
+            post(handlers::biofield::close_session),
+        )
+        .route(
+            "/biofield/sessions/:session_id",
+            get(handlers::biofield::get_session),
+        )
+        .route(
+            "/biofield/sessions/:session_id/captures",
+            post(handlers::biofield::create_capture),
+        )
+        .route("/biofield/readings", get(handlers::biofield::list_readings))
+        .route(
+            "/biofield/readings/:reading_id",
+            get(handlers::biofield::get_reading),
+        )
         .route("/admin/session", get(handlers::admin::get_session))
         .route("/admin/users", get(handlers::admin::list_users))
         .route(
@@ -713,6 +763,7 @@ pub fn create_router(state: AppState, config: &ApiConfig) -> Router {
             get(handlers::admin::get_audit_event),
         )
         .route("/status", get(status_handler))
+        .route("/charts/vedic", post(vedic_chart_handler))
         .route("/engines", get(list_engines_handler))
         .route("/engines/:engine_id/calculate", post(calculate_handler))
         .route(
@@ -862,6 +913,20 @@ struct WorkflowInfoResponse {
     engine_ids: Vec<String>,
 }
 
+#[derive(Serialize)]
+struct VedicChartBundleResponse {
+    d1: serde_json::Value,
+    d9: serde_json::Value,
+}
+
+#[derive(Serialize, ToSchema)]
+struct VedicChartBundleResponseSchema {
+    #[schema(value_type = Object)]
+    d1: serde_json::Value,
+    #[schema(value_type = Object)]
+    d9: serde_json::Value,
+}
+
 #[derive(Serialize, ToSchema)]
 struct ApiEngineOutputResponse {
     #[serde(flatten)]
@@ -997,6 +1062,241 @@ struct FullSpectrumWorkflowResultSchema {
     synthesis: Option<FullSpectrumSynthesisSchema>,
     total_time_ms: f64,
     timestamp: chrono::DateTime<chrono::Utc>,
+}
+
+struct ResolvedBirthDetails {
+    year: i32,
+    month: u32,
+    day: u32,
+    hour: u32,
+    minute: u32,
+    second: u32,
+    latitude: f64,
+    longitude: f64,
+    timezone_offset_hours: f64,
+}
+
+fn chart_validation_error(
+    message: impl Into<String>,
+    details: Option<serde_json::Value>,
+) -> (StatusCode, Json<ErrorResponse>) {
+    ErrorMapper::response(
+        StatusCode::UNPROCESSABLE_ENTITY,
+        "VALIDATION_ERROR",
+        message,
+        details,
+    )
+}
+
+fn parse_explicit_timezone_offset(tz: &str) -> Option<f64> {
+    if !(tz.starts_with('+') || tz.starts_with('-')) {
+        return None;
+    }
+
+    let parts: Vec<&str> = tz[1..].split(':').collect();
+    let sign = if tz.starts_with('-') { -1.0 } else { 1.0 };
+    let hours = parts.first()?.parse::<f64>().ok()?;
+    let minutes = parts
+        .get(1)
+        .and_then(|value| value.parse::<f64>().ok())
+        .unwrap_or(0.0);
+
+    Some(sign * (hours + (minutes / 60.0)))
+}
+
+fn resolve_timezone_offset(
+    timezone: &str,
+    local_datetime: NaiveDateTime,
+) -> Result<f64, (StatusCode, Json<ErrorResponse>)> {
+    let trimmed = timezone.trim();
+    if trimmed.is_empty() {
+        return Err(chart_validation_error(
+            "birth_data.timezone is required for chart calculations.",
+            Some(serde_json::json!({ "field": "birth_data.timezone" })),
+        ));
+    }
+
+    if trimmed.eq_ignore_ascii_case("utc") || trimmed.eq_ignore_ascii_case("gmt") {
+        return Ok(0.0);
+    }
+
+    if let Some(offset) = parse_explicit_timezone_offset(trimmed) {
+        return Ok(offset);
+    }
+
+    let timezone: Tz = trimmed.parse().map_err(|_| {
+        chart_validation_error(
+            format!("Unsupported IANA timezone '{}'.", trimmed),
+            Some(serde_json::json!({ "field": "birth_data.timezone" })),
+        )
+    })?;
+
+    match timezone.from_local_datetime(&local_datetime) {
+        LocalResult::Single(value) | LocalResult::Ambiguous(value, _) => {
+            Ok(value.offset().fix().local_minus_utc() as f64 / 3600.0)
+        }
+        LocalResult::None => Err(chart_validation_error(
+            format!(
+                "Timezone '{}' does not map to a valid local time for the provided birth datetime.",
+                trimmed
+            ),
+            Some(serde_json::json!({ "field": "birth_data.timezone" })),
+        )),
+    }
+}
+
+fn resolve_birth_details(
+    input: &EngineInput,
+) -> Result<ResolvedBirthDetails, (StatusCode, Json<ErrorResponse>)> {
+    let birth_data = input.birth_data.as_ref().ok_or_else(|| {
+        chart_validation_error(
+            "birth_data is required to generate a Vedic chart bundle.",
+            Some(serde_json::json!({ "field": "birth_data" })),
+        )
+    })?;
+
+    let time_string = birth_data.time.as_deref().ok_or_else(|| {
+        chart_validation_error(
+            "birth_data.time is required to generate precise D1 and D9 chart geometry.",
+            Some(serde_json::json!({ "field": "birth_data.time" })),
+        )
+    })?;
+
+    let date = NaiveDate::parse_from_str(&birth_data.date, "%Y-%m-%d").map_err(|error| {
+        chart_validation_error(
+            format!("birth_data.date must use YYYY-MM-DD: {}", error),
+            Some(serde_json::json!({ "field": "birth_data.date" })),
+        )
+    })?;
+
+    let time = NaiveTime::parse_from_str(time_string, "%H:%M")
+        .or_else(|_| NaiveTime::parse_from_str(time_string, "%H:%M:%S"))
+        .map_err(|error| {
+            chart_validation_error(
+                format!("birth_data.time must use HH:MM or HH:MM:SS: {}", error),
+                Some(serde_json::json!({ "field": "birth_data.time" })),
+            )
+        })?;
+
+    let local_datetime = NaiveDateTime::new(date, time);
+    let timezone_offset_hours = resolve_timezone_offset(&birth_data.timezone, local_datetime)?;
+
+    Ok(ResolvedBirthDetails {
+        year: date.year(),
+        month: date.month(),
+        day: date.day(),
+        hour: time.hour(),
+        minute: time.minute(),
+        second: time.second(),
+        latitude: birth_data.latitude,
+        longitude: birth_data.longitude,
+        timezone_offset_hours,
+    })
+}
+
+fn map_vedic_api_error(
+    error: VedicApiError,
+) -> (&'static str, (StatusCode, Json<ErrorResponse>)) {
+    match error {
+        VedicApiError::Configuration { field, message } => (
+            "service_unavailable",
+            ErrorMapper::response(
+                StatusCode::SERVICE_UNAVAILABLE,
+                "VEDIC_SERVICE_UNAVAILABLE",
+                "The Vedic chart service is unavailable or misconfigured.",
+                Some(serde_json::json!({ "field": field, "reason": message })),
+            ),
+        ),
+        VedicApiError::InvalidInput { field, message } => (
+            "validation_error",
+            ErrorMapper::response(
+                StatusCode::UNPROCESSABLE_ENTITY,
+                "VALIDATION_ERROR",
+                message,
+                Some(serde_json::json!({ "field": field })),
+            ),
+        ),
+        VedicApiError::RateLimit { retry_after } => (
+            "rate_limit",
+            ErrorMapper::response(
+                StatusCode::TOO_MANY_REQUESTS,
+                "RATE_LIMIT_EXCEEDED",
+                "The upstream Vedic provider rate limit was exceeded.",
+                retry_after.map(|value| serde_json::json!({ "retry_after_seconds": value })),
+            ),
+        ),
+        VedicApiError::RateLimited {
+            retry_after_seconds,
+        } => (
+            "rate_limit",
+            ErrorMapper::response(
+                StatusCode::TOO_MANY_REQUESTS,
+                "RATE_LIMIT_EXCEEDED",
+                "The upstream Vedic provider rate limit was exceeded.",
+                retry_after_seconds
+                    .map(|value| serde_json::json!({ "retry_after_seconds": value })),
+            ),
+        ),
+        VedicApiError::Network { message }
+        | VedicApiError::NetworkError(message)
+        | VedicApiError::Timeout(message)
+        | VedicApiError::ServiceUnavailable(message) => (
+            "service_unavailable",
+            ErrorMapper::response(
+                StatusCode::SERVICE_UNAVAILABLE,
+                "VEDIC_SERVICE_UNAVAILABLE",
+                message,
+                None,
+            ),
+        ),
+        VedicApiError::Api {
+            status_code,
+            message,
+        } => (
+            "upstream_error",
+            ErrorMapper::response(
+                StatusCode::BAD_GATEWAY,
+                "UPSTREAM_VEDIC_API_ERROR",
+                format!("The upstream Vedic provider returned HTTP {}.", status_code),
+                Some(serde_json::json!({ "upstream_status": status_code, "reason": message })),
+            ),
+        ),
+        VedicApiError::CircuitBreakerOpen => (
+            "service_unavailable",
+            ErrorMapper::response(
+                StatusCode::SERVICE_UNAVAILABLE,
+                "VEDIC_SERVICE_UNAVAILABLE",
+                "The Vedic chart provider is temporarily unavailable.",
+                None,
+            ),
+        ),
+        VedicApiError::Cache { message }
+        | VedicApiError::Parse { message }
+        | VedicApiError::ParseError(message) => (
+            "internal_error",
+            ErrorMapper::response(
+                StatusCode::BAD_GATEWAY,
+                "VEDIC_RESPONSE_INVALID",
+                "The Vedic chart provider returned an invalid response.",
+                Some(serde_json::json!({ "reason": message })),
+            ),
+        ),
+        VedicApiError::FallbackFailed {
+            api_error,
+            native_error,
+        } => (
+            "service_unavailable",
+            ErrorMapper::response(
+                StatusCode::SERVICE_UNAVAILABLE,
+                "VEDIC_SERVICE_UNAVAILABLE",
+                "The Vedic chart provider and native fallback both failed.",
+                Some(serde_json::json!({
+                    "provider_error": api_error.to_string(),
+                    "native_error": native_error,
+                })),
+            ),
+        ),
+    }
 }
 
 // ---------------------------------------------------------------------------
@@ -1170,6 +1470,134 @@ async fn status_handler(State(state): State<AppState>) -> Json<StatusResponse> {
         .collect();
 
     Json(StatusResponse { engines, workflows })
+}
+
+/// POST /api/v1/charts/vedic -- return the D1/D9 chart bundle used by AstroLens
+#[utoipa::path(
+    post,
+    path = "/api/v1/charts/vedic",
+    tag = "charts",
+    request_body = EngineInput,
+    responses(
+        (status = 200, description = "Vedic D1 and D9 chart bundle", body = VedicChartBundleResponseSchema),
+        (status = 401, description = "Unauthorized", body = ErrorResponse),
+        (status = 422, description = "Validation error", body = ErrorResponse),
+        (status = 429, description = "Rate limit exceeded", body = ErrorResponse),
+        (status = 502, description = "Invalid upstream Vedic provider response", body = ErrorResponse),
+        (status = 503, description = "Vedic chart service unavailable", body = ErrorResponse),
+    ),
+    security(
+        ("bearer_auth" = []),
+        ("api_key" = [])
+    )
+)]
+async fn vedic_chart_handler(
+    State(state): State<AppState>,
+    Json(input): Json<EngineInput>,
+) -> Result<Json<VedicChartBundleResponse>, (StatusCode, Json<ErrorResponse>)> {
+    let metric_label = "chart:vedic";
+    let start = Instant::now();
+
+    let birth = match resolve_birth_details(&input) {
+        Ok(value) => value,
+        Err(error_response) => {
+            state.metrics.record_engine_calculation_with_status(
+                metric_label,
+                "failure",
+                start.elapsed().as_secs_f64(),
+            );
+            state
+                .metrics
+                .record_engine_calculation_error(metric_label, "validation_error");
+            return Err(error_response);
+        }
+    };
+
+    let service = match state.vedic_service.clone() {
+        Some(service) => service,
+        None => {
+            state.metrics.record_engine_calculation_with_status(
+                metric_label,
+                "failure",
+                start.elapsed().as_secs_f64(),
+            );
+            state
+                .metrics
+                .record_engine_calculation_error(metric_label, "service_unavailable");
+            return Err(ErrorMapper::response(
+                StatusCode::SERVICE_UNAVAILABLE,
+                "VEDIC_SERVICE_UNAVAILABLE",
+                "The Vedic chart service is unavailable or misconfigured.",
+                None,
+            ));
+        }
+    };
+
+    let d1 = match service
+        .birth_chart_raw(
+            birth.year,
+            birth.month,
+            birth.day,
+            birth.hour,
+            birth.minute,
+            birth.second,
+            birth.latitude,
+            birth.longitude,
+            birth.timezone_offset_hours,
+        )
+        .await
+    {
+        Ok(chart) => chart,
+        Err(error) => {
+            let (error_type, response) = map_vedic_api_error(error);
+            state.metrics.record_engine_calculation_with_status(
+                metric_label,
+                "failure",
+                start.elapsed().as_secs_f64(),
+            );
+            state
+                .metrics
+                .record_engine_calculation_error(metric_label, error_type);
+            return Err(response);
+        }
+    };
+
+    let d9 = match service
+        .navamsa_chart_raw(
+            birth.year,
+            birth.month,
+            birth.day,
+            birth.hour,
+            birth.minute,
+            birth.second,
+            birth.latitude,
+            birth.longitude,
+            birth.timezone_offset_hours,
+        )
+        .await
+    {
+        Ok(chart) => chart,
+        Err(error) => {
+            let (error_type, response) = map_vedic_api_error(error);
+            state.metrics.record_engine_calculation_with_status(
+                metric_label,
+                "failure",
+                start.elapsed().as_secs_f64(),
+            );
+            state
+                .metrics
+                .record_engine_calculation_error(metric_label, error_type);
+            return Err(response);
+        }
+    };
+
+    state.metrics.record_engine_calculation_with_status(
+        metric_label,
+        "success",
+        start.elapsed().as_secs_f64(),
+    );
+
+    Ok(Json(VedicChartBundleResponse { d1, d9 }))
 }
 
 /// POST /api/v1/engines/:engine_id/calculate -- execute a single engine
@@ -2351,6 +2779,19 @@ async fn build_runtime_orchestrator_and_bridge(
     (orchestrator, bridge_manager)
 }
 
+fn build_vedic_service() -> Option<Arc<VedicApiService>> {
+    match VedicApiService::from_env() {
+        Ok(service) => Some(Arc::new(service)),
+        Err(error) => {
+            tracing::warn!(
+                error = %error,
+                "Vedic chart service not configured; /api/v1/charts/vedic will return 503"
+            );
+            None
+        }
+    }
+}
+
 /// Build the default `AppState` with all engines registered.
 ///
 /// # Arguments
@@ -2454,6 +2895,9 @@ pub async fn build_app_state(config: &ApiConfig) -> AppState {
     let admin_repository = pool
         .as_ref()
         .map(|p| Arc::new(AdminRepository::new(p.clone())));
+    let biofield_repository = pool
+        .as_ref()
+        .map(|p| Arc::new(BiofieldRepository::new(p.clone())));
     let readings_repository = pool
         .as_ref()
         .map(|p| Arc::new(ReadingsRepository::new(p.clone())));
@@ -2475,15 +2919,18 @@ pub async fn build_app_state(config: &ApiConfig) -> AppState {
 
     // -- Metrics --
     let metrics = shared_metrics();
+    let vedic_service = build_vedic_service();
 
     AppState {
         orchestrator: Arc::new(orchestrator),
         bridge_manager,
+        vedic_service,
         cache: Arc::new(cache),
         auth: Arc::new(auth),
         metrics,
         user_repository,
         admin_repository,
+        biofield_repository,
         readings_repository,
         usage_repository,
         oauth_repository,
@@ -2528,6 +2975,9 @@ pub async fn build_app_state_lazy_db(config: &ApiConfig) -> AppState {
     let admin_repository = pool
         .as_ref()
         .map(|p| Arc::new(AdminRepository::new(p.clone())));
+    let biofield_repository = pool
+        .as_ref()
+        .map(|p| Arc::new(BiofieldRepository::new(p.clone())));
     let readings_repository = pool
         .as_ref()
         .map(|p| Arc::new(ReadingsRepository::new(p.clone())));
@@ -2547,15 +2997,18 @@ pub async fn build_app_state_lazy_db(config: &ApiConfig) -> AppState {
 
     // -- Metrics --
     let metrics = shared_metrics();
+    let vedic_service = build_vedic_service();
 
     AppState {
         orchestrator: Arc::new(orchestrator),
         bridge_manager,
+        vedic_service,
         cache: Arc::new(cache),
         auth: Arc::new(auth),
         metrics,
         user_repository,
         admin_repository,
+        biofield_repository,
         readings_repository,
         usage_repository,
         oauth_repository,

@@ -253,6 +253,56 @@ impl VedicApiService {
         result
     }
 
+    /// D1 birth chart — raw JSON passthrough from `/planets` upstream endpoint.
+    pub async fn birth_chart_raw(
+        &self,
+        year: i32,
+        month: u32,
+        day: u32,
+        hour: u32,
+        minute: u32,
+        second: u32,
+        lat: f64,
+        lng: f64,
+        tzone: f64,
+    ) -> Result<serde_json::Value> {
+        let start = Instant::now();
+        self.metrics.record_api_call("birth_chart_raw").await;
+
+        let result = self
+            .client
+            .get_birth_chart_raw(year, month, day, hour, minute, second, lat, lng, tzone)
+            .await;
+
+        self.record_result("birth_chart_raw", &result, start).await;
+        result
+    }
+
+    /// D9 Navamsa chart — raw JSON passthrough from `/navamsa-chart-info` upstream endpoint.
+    pub async fn navamsa_chart_raw(
+        &self,
+        year: i32,
+        month: u32,
+        day: u32,
+        hour: u32,
+        minute: u32,
+        second: u32,
+        lat: f64,
+        lng: f64,
+        tzone: f64,
+    ) -> Result<serde_json::Value> {
+        let start = Instant::now();
+        self.metrics.record_api_call("navamsa_chart_raw").await;
+
+        let result = self
+            .client
+            .get_navamsa_chart_raw(year, month, day, hour, minute, second, lat, lng, tzone)
+            .await;
+
+        self.record_result("navamsa_chart_raw", &result, start).await;
+        result
+    }
+
     // ==================== Fallback-Aware Methods (FAPI-098) ====================
 
     /// Get Panchang with automatic fallback to native calculation on API failure.

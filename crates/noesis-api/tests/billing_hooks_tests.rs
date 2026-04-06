@@ -71,6 +71,13 @@ fn build_test_app_state() -> (AppState, ApiConfig) {
         discord_client_id: None,
         discord_client_secret: None,
         discord_redirect_uri: None,
+        dodo_payments_api_key: None,
+        dodo_payments_webhook_key: None,
+        dodo_payments_env: None,
+        python_biofield_url: "http://localhost:8002".to_string(),
+        python_biofield_timeout_ms: 10_000,
+        gateway_url: None,
+        gateway_token: None,
     };
 
     let pool = PgPoolOptions::new()
@@ -84,11 +91,13 @@ fn build_test_app_state() -> (AppState, ApiConfig) {
     let state = AppState {
         orchestrator: Arc::new(orchestrator),
         bridge_manager: Arc::new(noesis_bridge::BridgeManager::from_env()),
+        vedic_service: None,
         cache: Arc::new(cache),
         auth: Arc::new(auth),
         metrics,
         user_repository,
         admin_repository: None,
+        biofield_repository: None,
         readings_repository: None,
         usage_repository: None,
         oauth_repository: None,
