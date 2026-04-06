@@ -53,7 +53,7 @@ use noesis_data::repositories::usage_repository::UsageRepository;
 use noesis_data::repositories::user_repository::UserRepository;
 use noesis_metrics::NoesisMetrics;
 use noesis_orchestrator::WorkflowOrchestrator;
-use noesis_vedic_api::{VedicApiError, VedicApiService};
+use engine_human_design::ephemeris::{EphemerisCalculator, HDPlanet};
 use sentry_tower::{NewSentryLayer, SentryHttpLayer};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -392,7 +392,6 @@ impl Modify for SecurityAddon {
 pub struct AppState {
     pub orchestrator: Arc<WorkflowOrchestrator>,
     pub bridge_manager: Arc<noesis_bridge::BridgeManager>,
-    pub vedic_service: Option<Arc<VedicApiService>>,
     pub cache: Arc<CacheManager>,
     pub auth: Arc<AuthService>,
     pub metrics: Arc<NoesisMetrics>,
@@ -1194,111 +1193,6 @@ fn resolve_birth_details(
     })
 }
 
-fn map_vedic_api_error(
-    error: VedicApiError,
-) -> (&'static str, (StatusCode, Json<ErrorResponse>)) {
-    match error {
-        VedicApiError::Configuration { field, message } => (
-            "service_unavailable",
-            ErrorMapper::response(
-                StatusCode::SERVICE_UNAVAILABLE,
-                "VEDIC_SERVICE_UNAVAILABLE",
-                "The Vedic chart service is unavailable or misconfigured.",
-                Some(serde_json::json!({ "field": field, "reason": message })),
-            ),
-        ),
-        VedicApiError::InvalidInput { field, message } => (
-            "validation_error",
-            ErrorMapper::response(
-                StatusCode::UNPROCESSABLE_ENTITY,
-                "VALIDATION_ERROR",
-                message,
-                Some(serde_json::json!({ "field": field })),
-            ),
-        ),
-        VedicApiError::RateLimit { retry_after } => (
-            "rate_limit",
-            ErrorMapper::response(
-                StatusCode::TOO_MANY_REQUESTS,
-                "RATE_LIMIT_EXCEEDED",
-                "The upstream Vedic provider rate limit was exceeded.",
-                retry_after.map(|value| serde_json::json!({ "retry_after_seconds": value })),
-            ),
-        ),
-        VedicApiError::RateLimited {
-            retry_after_seconds,
-        } => (
-            "rate_limit",
-            ErrorMapper::response(
-                StatusCode::TOO_MANY_REQUESTS,
-                "RATE_LIMIT_EXCEEDED",
-                "The upstream Vedic provider rate limit was exceeded.",
-                retry_after_seconds
-                    .map(|value| serde_json::json!({ "retry_after_seconds": value })),
-            ),
-        ),
-        VedicApiError::Network { message }
-        | VedicApiError::NetworkError(message)
-        | VedicApiError::Timeout(message)
-        | VedicApiError::ServiceUnavailable(message) => (
-            "service_unavailable",
-            ErrorMapper::response(
-                StatusCode::SERVICE_UNAVAILABLE,
-                "VEDIC_SERVICE_UNAVAILABLE",
-                message,
-                None,
-            ),
-        ),
-        VedicApiError::Api {
-            status_code,
-            message,
-        } => (
-            "upstream_error",
-            ErrorMapper::response(
-                StatusCode::BAD_GATEWAY,
-                "UPSTREAM_VEDIC_API_ERROR",
-                format!("The upstream Vedic provider returned HTTP {}.", status_code),
-                Some(serde_json::json!({ "upstream_status": status_code, "reason": message })),
-            ),
-        ),
-        VedicApiError::CircuitBreakerOpen => (
-            "service_unavailable",
-            ErrorMapper::response(
-                StatusCode::SERVICE_UNAVAILABLE,
-                "VEDIC_SERVICE_UNAVAILABLE",
-                "The Vedic chart provider is temporarily unavailable.",
-                None,
-            ),
-        ),
-        VedicApiError::Cache { message }
-        | VedicApiError::Parse { message }
-        | VedicApiError::ParseError(message) => (
-            "internal_error",
-            ErrorMapper::response(
-                StatusCode::BAD_GATEWAY,
-                "VEDIC_RESPONSE_INVALID",
-                "The Vedic chart provider returned an invalid response.",
-                Some(serde_json::json!({ "reason": message })),
-            ),
-        ),
-        VedicApiError::FallbackFailed {
-            api_error,
-            native_error,
-        } => (
-            "service_unavailable",
-            ErrorMapper::response(
-                StatusCode::SERVICE_UNAVAILABLE,
-                "VEDIC_SERVICE_UNAVAILABLE",
-                "The Vedic chart provider and native fallback both failed.",
-                Some(serde_json::json!({
-                    "provider_error": api_error.to_string(),
-                    "native_error": native_error,
-                })),
-            ),
-        ),
-    }
-}
-
 // ---------------------------------------------------------------------------
 // Handlers
 // ---------------------------------------------------------------------------
@@ -1472,6 +1366,220 @@ async fn status_handler(State(state): State<AppState>) -> Json<StatusResponse> {
     Json(StatusResponse { engines, workflows })
 }
 
+// ---------------------------------------------------------------------------
+// Native Vedic chart computation (Swiss Ephemeris, Lahiri ayanamsa, whole-sign)
+// ---------------------------------------------------------------------------
+
+const NAKSHATRA_NAMES: [&str; 27] = [
+    "Ashwini", "Bharani", "Krittika", "Rohini", "Mrigashira", "Ardra", "Punarvasu",
+    "Pushya", "Ashlesha", "Magha", "Purva Phalguni", "Uttara Phalguni", "Hasta",
+    "Chitra", "Swati", "Vishakha", "Anuradha", "Jyeshtha", "Mula", "Purva Ashadha",
+    "Uttara Ashadha", "Shravana", "Dhanishtha", "Shatabhisha", "Purva Bhadrapada",
+    "Uttara Bhadrapada", "Revati",
+];
+
+const VEDIC_SIGN_NAMES: [&str; 12] = [
+    "aries", "taurus", "gemini", "cancer", "leo", "virgo",
+    "libra", "scorpio", "sagittarius", "capricorn", "aquarius", "pisces",
+];
+
+const VEDIC_SIGN_LORDS: [&str; 12] = [
+    "Mars", "Venus", "Mercury", "Moon", "Sun", "Mercury",
+    "Venus", "Mars", "Jupiter", "Saturn", "Saturn", "Jupiter",
+];
+
+/// 9 classical Vedic planets mapped to their familiar names.
+const VEDIC_PLANETS: &[(HDPlanet, &str)] = &[
+    (HDPlanet::Sun,       "Sun"),
+    (HDPlanet::Moon,      "Moon"),
+    (HDPlanet::Mars,      "Mars"),
+    (HDPlanet::Mercury,   "Mercury"),
+    (HDPlanet::Jupiter,   "Jupiter"),
+    (HDPlanet::Venus,     "Venus"),
+    (HDPlanet::Saturn,    "Saturn"),
+    (HDPlanet::NorthNode, "Rahu"),
+    (HDPlanet::SouthNode, "Ketu"),
+];
+
+/// Lahiri (Chitrapaksha) ayanamsa in degrees for a given Julian Day.
+fn lahiri_ayanamsa(jd: f64) -> f64 {
+    let t = (jd - 2451545.0) / 36525.0;
+    23.85 + t * 1.3968 // ~50.3"/year drift
+}
+
+/// Julian Day (UT) from a UTC chrono DateTime.
+fn jd_from_utc(dt: &chrono::DateTime<chrono::Utc>) -> f64 {
+    // J2000.0 = 2000-01-01 12:00:00 UTC = unix timestamp 946728000
+    2451545.0 + (dt.timestamp() - 946728000) as f64 / 86_400.0
+}
+
+/// Tropical ascendant in degrees [0,360) for a given Julian Day and location.
+fn tropical_ascendant(jd: f64, lat: f64, lng: f64) -> f64 {
+    let t = (jd - 2451545.0) / 36525.0;
+    // GMST in degrees
+    let gmst = (280.460_618_37
+        + 360.985_647_366_29 * (jd - 2451545.0)
+        + 0.000_387_933 * t * t
+        - t * t * t / 38_710_000.0)
+        .rem_euclid(360.0);
+    let lst = (gmst + lng).rem_euclid(360.0);
+    let ramc = lst.to_radians();
+    let eps = (23.439_291_111 - 0.013_004_167 * t).to_radians();
+    let lat_r = lat.to_radians();
+    // Standard Ascendant: tan(ASC) = cos(RAMC) / -(sin(RAMC)*cos(ε) + tan(φ)*sin(ε))
+    let num = ramc.cos();
+    let den = -(ramc.sin() * eps.cos() + lat_r.tan() * eps.sin());
+    f64::atan2(num, den).to_degrees().rem_euclid(360.0)
+}
+
+/// (nakshatra name, pada 1-4) from a sidereal longitude [0,360).
+fn nakshatra_and_pada(sidereal: f64) -> (&'static str, u8) {
+    let idx = ((sidereal * 27.0 / 360.0) as usize).min(26);
+    let frac = sidereal * 27.0 / 360.0 - idx as f64;
+    let pada = ((frac * 4.0) as u8 + 1).min(4);
+    (NAKSHATRA_NAMES[idx], pada)
+}
+
+/// Navamsa (D9) sign index [0,11] from D1 sign index and degree within that sign.
+fn navamsa_sign_idx(d1_sign: usize, degree_in_sign: f64) -> usize {
+    let nav_num = (degree_in_sign / (30.0 / 9.0)) as usize; // 0..8
+    let base = match d1_sign % 3 {
+        0 => 0, // movable → starts at Aries
+        1 => 4, // fixed   → starts at Leo
+        _ => 8, // dual    → starts at Sagittarius
+    };
+    (base + nav_num) % 12
+}
+
+/// Build a JSON D1 (Rashi) chart from Swiss Ephemeris tropical planet positions.
+fn build_d1_chart(
+    birth: &ResolvedBirthDetails,
+    jd: f64,
+    ayanamsa: f64,
+    planet_positions: &[(HDPlanet, engine_human_design::ephemeris::PlanetPosition)],
+) -> serde_json::Value {
+    let trop_asc = tropical_ascendant(jd, birth.latitude, birth.longitude);
+    let sid_asc = (trop_asc - ayanamsa).rem_euclid(360.0);
+    let asc_sign_idx = (sid_asc / 30.0) as usize % 12;
+    let asc_degree = sid_asc % 30.0;
+    let (asc_nak, asc_pada) = nakshatra_and_pada(sid_asc);
+
+    let mut planets_json: Vec<serde_json::Value> = Vec::new();
+    let mut moon_json = serde_json::json!({ "sign": "aries", "degree": 0.0, "nakshatra": "Ashwini", "pada": 1, "rashi_lord": "Mars" });
+    let mut sun_sid = 0.0_f64;
+    let mut moon_sid = 0.0_f64;
+
+    for (hd_planet, vedic_name) in VEDIC_PLANETS {
+        let Some((_, pp)) = planet_positions.iter().find(|(p, _)| *p as i32 == *hd_planet as i32) else { continue };
+        let sid_lon = (pp.longitude - ayanamsa).rem_euclid(360.0);
+        let sign_idx = (sid_lon / 30.0) as usize % 12;
+        let degree = sid_lon % 30.0;
+        let (nak, pada) = nakshatra_and_pada(sid_lon);
+        let house = ((sign_idx + 12 - asc_sign_idx) % 12 + 1) as u8;
+
+        planets_json.push(serde_json::json!({
+            "name": vedic_name,
+            "longitude": sid_lon,
+            "sign": VEDIC_SIGN_NAMES[sign_idx],
+            "degree": degree,
+            "minutes": (degree.fract() * 60.0).floor(),
+            "house": house,
+            "is_retrograde": pp.speed < 0.0,
+            "is_combust": false,
+            "nakshatra": nak,
+            "pada": pada,
+            "speed": pp.speed,
+            "latitude": pp.latitude,
+        }));
+
+        if *vedic_name == "Moon" {
+            moon_sid = sid_lon;
+            moon_json = serde_json::json!({
+                "sign": VEDIC_SIGN_NAMES[sign_idx],
+                "degree": degree,
+                "nakshatra": nak,
+                "pada": pada,
+                "rashi_lord": VEDIC_SIGN_LORDS[sign_idx],
+            });
+        }
+        if *vedic_name == "Sun" {
+            sun_sid = sid_lon;
+        }
+    }
+
+    let houses: Vec<serde_json::Value> = (0u8..12).map(|i| {
+        let sign = (asc_sign_idx + i as usize) % 12;
+        let hn = i + 1;
+        serde_json::json!({
+            "number": hn,
+            "sign": VEDIC_SIGN_NAMES[sign],
+            "cusp": sign as f64 * 30.0,
+            "degree": 0.0,
+            "house_type": match hn { 1|5|9 => "dharma", 2|6|10 => "artha", 3|7|11 => "kama", _ => "moksha" },
+            "is_kendra": matches!(hn, 1|4|7|10),
+            "is_panapara": matches!(hn, 2|5|8|11),
+            "is_apoklima": matches!(hn, 3|6|9|12),
+        })
+    }).collect();
+
+    let pof = (sid_asc + moon_sid - sun_sid).rem_euclid(360.0);
+
+    serde_json::json!({
+        "native": {
+            "birth_date": format!("{:04}-{:02}-{:02}", birth.year, birth.month, birth.day),
+            "birth_time": format!("{:02}:{:02}:{:02}", birth.hour, birth.minute, birth.second),
+            "latitude": birth.latitude,
+            "longitude": birth.longitude,
+            "timezone": birth.timezone_offset_hours,
+        },
+        "ayanamsa": ayanamsa,
+        "house_system": "whole_sign",
+        "planets": planets_json,
+        "houses": houses,
+        "ascendant": { "sign": VEDIC_SIGN_NAMES[asc_sign_idx], "degree": asc_degree, "nakshatra": asc_nak, "pada": asc_pada },
+        "moon": moon_json,
+        "special_points": { "lagna": sid_asc, "midheaven": serde_json::Value::Null, "part_of_fortune": pof },
+        "notes": ["Native computation via Swiss Ephemeris (Lahiri ayanamsa, whole-sign houses)"],
+    })
+}
+
+/// Build a JSON D9 (Navamsa) chart from the D1 chart JSON.
+fn build_d9_chart(birth: &ResolvedBirthDetails, d1: &serde_json::Value) -> serde_json::Value {
+    let asc_sign_name = d1["ascendant"]["sign"].as_str().unwrap_or("aries");
+    let asc_sign_idx = VEDIC_SIGN_NAMES.iter().position(|&s| s == asc_sign_name).unwrap_or(0);
+    let asc_degree = d1["ascendant"]["degree"].as_f64().unwrap_or(0.0);
+    let d9_lagna_idx = navamsa_sign_idx(asc_sign_idx, asc_degree);
+
+    let empty = vec![];
+    let planets = d1["planets"].as_array().unwrap_or(&empty);
+
+    let mut vargottama: Vec<&str> = Vec::new();
+    let mut navamsa_positions: Vec<serde_json::Value> = Vec::new();
+
+    for planet in planets {
+        let name = planet["name"].as_str().unwrap_or("");
+        let d1_sign = VEDIC_SIGN_NAMES.iter().position(|&s| s == planet["sign"].as_str().unwrap_or("")).unwrap_or(0);
+        let degree = planet["degree"].as_f64().unwrap_or(0.0);
+        let d9_sign = navamsa_sign_idx(d1_sign, degree);
+        let nav_deg = (degree % (30.0 / 9.0)) * 9.0;
+        let is_varg = d1_sign == d9_sign;
+        if is_varg { vargottama.push(name); }
+        navamsa_positions.push(serde_json::json!({
+            "planet": name,
+            "sign": VEDIC_SIGN_NAMES[d9_sign],
+            "degree": nav_deg,
+            "is_vargottama": is_varg,
+        }));
+    }
+
+    serde_json::json!({
+        "source": d1["native"].clone(),
+        "navamsa_positions": navamsa_positions,
+        "vargottama": vargottama,
+        "d9_lagna": VEDIC_SIGN_NAMES[d9_lagna_idx],
+    })
+}
+
 /// POST /api/v1/charts/vedic -- return the D1/D9 chart bundle used by AstroLens
 #[utoipa::path(
     post,
@@ -1483,8 +1591,7 @@ async fn status_handler(State(state): State<AppState>) -> Json<StatusResponse> {
         (status = 401, description = "Unauthorized", body = ErrorResponse),
         (status = 422, description = "Validation error", body = ErrorResponse),
         (status = 429, description = "Rate limit exceeded", body = ErrorResponse),
-        (status = 502, description = "Invalid upstream Vedic provider response", body = ErrorResponse),
-        (status = 503, description = "Vedic chart service unavailable", body = ErrorResponse),
+        (status = 500, description = "Native ephemeris calculation failed", body = ErrorResponse),
     ),
     security(
         ("bearer_auth" = []),
@@ -1499,105 +1606,63 @@ async fn vedic_chart_handler(
     let start = Instant::now();
 
     let birth = match resolve_birth_details(&input) {
-        Ok(value) => value,
-        Err(error_response) => {
-            state.metrics.record_engine_calculation_with_status(
-                metric_label,
-                "failure",
-                start.elapsed().as_secs_f64(),
-            );
-            state
-                .metrics
-                .record_engine_calculation_error(metric_label, "validation_error");
-            return Err(error_response);
+        Ok(v) => v,
+        Err(e) => {
+            state.metrics.record_engine_calculation_with_status(metric_label, "failure", start.elapsed().as_secs_f64());
+            state.metrics.record_engine_calculation_error(metric_label, "validation_error");
+            return Err(e);
         }
     };
 
-    let service = match state.vedic_service.clone() {
-        Some(service) => service,
-        None => {
-            state.metrics.record_engine_calculation_with_status(
-                metric_label,
-                "failure",
-                start.elapsed().as_secs_f64(),
-            );
-            state
-                .metrics
-                .record_engine_calculation_error(metric_label, "service_unavailable");
-            return Err(ErrorMapper::response(
-                StatusCode::SERVICE_UNAVAILABLE,
-                "VEDIC_SERVICE_UNAVAILABLE",
-                "The Vedic chart service is unavailable or misconfigured.",
-                None,
-            ));
-        }
-    };
-
-    let d1 = match service
-        .birth_chart_raw(
-            birth.year,
-            birth.month,
-            birth.day,
-            birth.hour,
-            birth.minute,
-            birth.second,
-            birth.latitude,
-            birth.longitude,
-            birth.timezone_offset_hours,
-        )
-        .await
-    {
-        Ok(chart) => chart,
-        Err(error) => {
-            let (error_type, response) = map_vedic_api_error(error);
-            state.metrics.record_engine_calculation_with_status(
-                metric_label,
-                "failure",
-                start.elapsed().as_secs_f64(),
-            );
-            state
-                .metrics
-                .record_engine_calculation_error(metric_label, error_type);
-            return Err(response);
-        }
-    };
-
-    let d9 = match service
-        .navamsa_chart_raw(
-            birth.year,
-            birth.month,
-            birth.day,
-            birth.hour,
-            birth.minute,
-            birth.second,
-            birth.latitude,
-            birth.longitude,
-            birth.timezone_offset_hours,
-        )
-        .await
-    {
-        Ok(chart) => chart,
-        Err(error) => {
-            let (error_type, response) = map_vedic_api_error(error);
-            state.metrics.record_engine_calculation_with_status(
-                metric_label,
-                "failure",
-                start.elapsed().as_secs_f64(),
-            );
-            state
-                .metrics
-                .record_engine_calculation_error(metric_label, error_type);
-            return Err(response);
-        }
-    };
-
-    state.metrics.record_engine_calculation_with_status(
-        metric_label,
-        "success",
-        start.elapsed().as_secs_f64(),
+    // Convert local birth time to UTC for Swiss Ephemeris
+    let offset_secs = (birth.timezone_offset_hours * 3600.0) as i64;
+    let naive_dt = chrono::NaiveDateTime::new(
+        chrono::NaiveDate::from_ymd_opt(birth.year, birth.month, birth.day)
+            .expect("validated date"),
+        chrono::NaiveTime::from_hms_opt(birth.hour, birth.minute, birth.second)
+            .expect("validated time"),
     );
+    let utc_dt = (naive_dt - chrono::Duration::seconds(offset_secs)).and_utc();
 
-    Ok(Json(VedicChartBundleResponse { d1, d9 }))
+    // Ephemeris calls are synchronous (C library with global mutex); run off the async thread.
+    let birth_for_task = ResolvedBirthDetails {
+        year: birth.year, month: birth.month, day: birth.day,
+        hour: birth.hour, minute: birth.minute, second: birth.second,
+        latitude: birth.latitude, longitude: birth.longitude,
+        timezone_offset_hours: birth.timezone_offset_hours,
+    };
+
+    let chart_result = tokio::task::spawn_blocking(move || {
+        let ephe = EphemerisCalculator::new("");
+        let jd = jd_from_utc(&utc_dt);
+        let ayanamsa = lahiri_ayanamsa(jd);
+
+        let mut positions: Vec<(HDPlanet, engine_human_design::ephemeris::PlanetPosition)> = Vec::new();
+        for (planet, _) in VEDIC_PLANETS {
+            match ephe.get_planet_position(*planet, &utc_dt) {
+                Ok(pos) => positions.push((*planet, pos)),
+                Err(e) => return Err(format!("Planet {:?}: {}", planet, e)),
+            }
+        }
+
+        let d1 = build_d1_chart(&birth_for_task, jd, ayanamsa, &positions);
+        let d9 = build_d9_chart(&birth_for_task, &d1);
+        Ok((d1, d9))
+    })
+    .await
+    .map_err(|_| {
+        state.metrics.record_engine_calculation_with_status(metric_label, "failure", start.elapsed().as_secs_f64());
+        state.metrics.record_engine_calculation_error(metric_label, "task_panic");
+        ErrorMapper::response(StatusCode::INTERNAL_SERVER_ERROR, "CALCULATION_ERROR", "Vedic chart task panicked", None)
+    })?
+    .map_err(|e| {
+        state.metrics.record_engine_calculation_with_status(metric_label, "failure", start.elapsed().as_secs_f64());
+        state.metrics.record_engine_calculation_error(metric_label, "ephemeris_error");
+        ErrorMapper::response(StatusCode::INTERNAL_SERVER_ERROR, "CALCULATION_ERROR", e, None)
+    })?;
+
+    state.metrics.record_engine_calculation_with_status(metric_label, "success", start.elapsed().as_secs_f64());
+    Ok(Json(VedicChartBundleResponse { d1: chart_result.0, d9: chart_result.1 }))
 }
 
 /// POST /api/v1/engines/:engine_id/calculate -- execute a single engine
@@ -2779,19 +2844,6 @@ async fn build_runtime_orchestrator_and_bridge(
     (orchestrator, bridge_manager)
 }
 
-fn build_vedic_service() -> Option<Arc<VedicApiService>> {
-    match VedicApiService::from_env() {
-        Ok(service) => Some(Arc::new(service)),
-        Err(error) => {
-            tracing::warn!(
-                error = %error,
-                "Vedic chart service not configured; /api/v1/charts/vedic will return 503"
-            );
-            None
-        }
-    }
-}
-
 /// Build the default `AppState` with all engines registered.
 ///
 /// # Arguments
@@ -2919,12 +2971,10 @@ pub async fn build_app_state(config: &ApiConfig) -> AppState {
 
     // -- Metrics --
     let metrics = shared_metrics();
-    let vedic_service = build_vedic_service();
 
     AppState {
         orchestrator: Arc::new(orchestrator),
         bridge_manager,
-        vedic_service,
         cache: Arc::new(cache),
         auth: Arc::new(auth),
         metrics,
@@ -2997,12 +3047,10 @@ pub async fn build_app_state_lazy_db(config: &ApiConfig) -> AppState {
 
     // -- Metrics --
     let metrics = shared_metrics();
-    let vedic_service = build_vedic_service();
 
     AppState {
         orchestrator: Arc::new(orchestrator),
         bridge_manager,
-        vedic_service,
         cache: Arc::new(cache),
         auth: Arc::new(auth),
         metrics,
