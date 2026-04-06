@@ -336,6 +336,27 @@ mod tests {
         }
     }
 
+    #[test]
+    fn migration_017_exists_in_root_and_supabase() {
+        let root_sql =
+            fs::read_to_string(repo_root().join("migrations/017_biofield_sessions.sql"))
+                .expect("root migration 017");
+        let supabase_sql = fs::read_to_string(
+            repo_root().join("supabase/migrations/20260405000017_017_biofield_sessions.sql"),
+        )
+        .expect("supabase migration 017");
+
+        assert_eq!(root_sql, supabase_sql);
+
+        for sql in [&root_sql, &supabase_sql] {
+            assert!(sql.contains("CREATE TABLE IF NOT EXISTS biofield_sessions"));
+            assert!(sql.contains("CREATE TABLE IF NOT EXISTS biofield_capture_artifacts"));
+            assert!(sql.contains("REFERENCES readings(id) ON DELETE SET NULL"));
+            assert!(sql.contains("biofield_sessions_status_check"));
+            assert!(sql.contains("biofield_capture_artifacts_kind_check"));
+        }
+    }
+
     #[tokio::test]
     async fn save_reading_is_idempotent_when_client_event_id_is_present() {
         let database_url = match std::env::var("DATABASE_URL") {

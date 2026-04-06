@@ -428,6 +428,105 @@ impl VedicApiClient {
         Ok(chart)
     }
 
+    /// Get D1 (Rashi) birth chart — raw JSON from the upstream `/planets` endpoint.
+    ///
+    /// Returns the provider's response verbatim as `serde_json::Value` so the caller
+    /// can pass it straight through to API clients without type-mapping.
+    pub async fn get_birth_chart_raw(
+        &self,
+        year: i32,
+        month: u32,
+        day: u32,
+        hour: u32,
+        minute: u32,
+        second: u32,
+        lat: f64,
+        lng: f64,
+        tzone: f64,
+    ) -> Result<serde_json::Value> {
+        info!("Fetching D1 birth chart via /planets");
+
+        let params = serde_json::json!({
+            "year": year,
+            "month": month,
+            "date": day,
+            "hours": hour,
+            "minutes": minute,
+            "seconds": second,
+            "latitude": lat,
+            "longitude": lng,
+            "timezone": tzone,
+            "config": {
+                "observation_point": "topocentric",
+                "ayanamsha": "lahiri"
+            }
+        });
+
+        let response = self
+            .execute_with_retry(|| {
+                self.build_request(reqwest::Method::POST, "planets")
+                    .json(&params)
+            })
+            .await?;
+
+        let raw: serde_json::Value = response.json().await.map_err(|e| {
+            crate::error::VedicApiError::Parse {
+                message: format!("Failed to parse /planets response: {}", e),
+            }
+        })?;
+
+        Ok(raw)
+    }
+
+    /// Get D9 (Navamsa) chart — raw JSON from the upstream `/navamsa-chart-info` endpoint.
+    ///
+    /// Returns the provider's response verbatim as `serde_json::Value`.
+    pub async fn get_navamsa_chart_raw(
+        &self,
+        year: i32,
+        month: u32,
+        day: u32,
+        hour: u32,
+        minute: u32,
+        second: u32,
+        lat: f64,
+        lng: f64,
+        tzone: f64,
+    ) -> Result<serde_json::Value> {
+        info!("Fetching D9 Navamsa chart via /navamsa-chart-info");
+
+        let params = serde_json::json!({
+            "year": year,
+            "month": month,
+            "date": day,
+            "hours": hour,
+            "minutes": minute,
+            "seconds": second,
+            "latitude": lat,
+            "longitude": lng,
+            "timezone": tzone,
+            "config": {
+                "observation_point": "topocentric",
+                "ayanamsha": "lahiri"
+            }
+        });
+
+        let response = self
+            .execute_with_retry(|| {
+                self.build_request(reqwest::Method::POST, "navamsa-chart-info")
+                    .json(&params)
+            })
+            .await?;
+
+        let raw: serde_json::Value = response.json().await.map_err(|e| {
+            crate::error::VedicApiError::Parse {
+                message: format!("Failed to parse /navamsa-chart-info response: {}", e),
+            }
+        })?;
+
+        Ok(raw)
+    }
+
     // ==================== UTILITY METHODS ====================
 
     /// Health check - verify API is accessible

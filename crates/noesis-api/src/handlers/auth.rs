@@ -186,10 +186,12 @@ pub async fn login(
     Json(payload): Json<LoginRequest>,
 ) -> Result<Response, ApiError> {
     require_db(&state)?;
+    let normalized_email = payload.email.trim().to_ascii_lowercase();
+
     // 1. Get user by email
     let user_opt = state
         .user_repository
-        .get_user_by_email(&payload.email)
+        .get_user_by_email(&normalized_email)
         .await
         .map_err(|e| EngineError::InternalError(format!("Database error: {}", e)))?;
 
@@ -202,7 +204,7 @@ pub async fn login(
                     let retry_after = (locked_until - Utc::now()).num_seconds().max(1);
                     tracing::warn!(
                         event = "auth.login_failure",
-                        email = %payload.email,
+                        email = %normalized_email,
                         reason = "account_locked",
                         "Login attempt on locked account"
                     );
@@ -225,7 +227,7 @@ pub async fn login(
 
                 tracing::warn!(
                     event = "auth.login_failure",
-                    email = %payload.email,
+                    email = %normalized_email,
                     reason = "invalid_password",
                     "Failed login attempt"
                 );
@@ -238,7 +240,7 @@ pub async fn login(
             let _ = hash_password("dummy-password-for-timing");
             tracing::warn!(
                 event = "auth.login_failure",
-                email = %payload.email,
+                email = %normalized_email,
                 reason = "user_not_found",
                 "Login attempt for non-existent user"
             );

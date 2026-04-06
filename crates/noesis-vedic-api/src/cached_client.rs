@@ -200,6 +200,54 @@ impl CachedVedicClient {
         Ok(chart)
     }
 
+    /// Get D1 birth chart raw — delegates directly to the inner client (no type cache).
+    pub async fn get_birth_chart_raw(
+        &self,
+        year: i32,
+        month: u32,
+        day: u32,
+        hour: u32,
+        minute: u32,
+        second: u32,
+        lat: f64,
+        lng: f64,
+        tzone: f64,
+    ) -> Result<serde_json::Value> {
+        if !self.rate_limiter.can_request() {
+            return Err(VedicApiError::RateLimit {
+                retry_after: Some(3600),
+            });
+        }
+
+        self.inner
+            .get_birth_chart_raw(year, month, day, hour, minute, second, lat, lng, tzone)
+            .await
+    }
+
+    /// Get D9 Navamsa chart raw — delegates directly to the inner client (no type cache).
+    pub async fn get_navamsa_chart_raw(
+        &self,
+        year: i32,
+        month: u32,
+        day: u32,
+        hour: u32,
+        minute: u32,
+        second: u32,
+        lat: f64,
+        lng: f64,
+        tzone: f64,
+    ) -> Result<serde_json::Value> {
+        if !self.rate_limiter.can_request() {
+            return Err(VedicApiError::RateLimit {
+                retry_after: Some(3600),
+            });
+        }
+
+        self.inner
+            .get_navamsa_chart_raw(year, month, day, hour, minute, second, lat, lng, tzone)
+            .await
+    }
+
     /// Get Navamsa chart
     pub async fn get_navamsa_chart(
         &self,
