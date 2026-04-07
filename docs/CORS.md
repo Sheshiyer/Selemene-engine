@@ -12,6 +12,8 @@ This is an access-control boundary for reliable reflection surfaces, not a chang
 
 **`ALLOWED_ORIGINS`** - Comma-separated list of allowed origin URLs.
 
+Exact origins are supported directly. Wildcard subdomain patterns are also supported in the form `https://*.example.com`.
+
 ```bash
 # Development (default if not set)
 ALLOWED_ORIGINS="http://localhost:3000,http://localhost:5173"
@@ -19,8 +21,14 @@ ALLOWED_ORIGINS="http://localhost:3000,http://localhost:5173"
 # Production
 ALLOWED_ORIGINS="https://app.example.com,https://dashboard.example.com"
 
+# Production with preview subdomains
+ALLOWED_ORIGINS="https://fmrl.tryambakam.space,https://*.railway.app"
+
 # Mixed environments
 ALLOWED_ORIGINS="https://app.example.com,http://localhost:3000"
+
+# Mixed environments with local browser development against live API
+ALLOWED_ORIGINS="https://fmrl.tryambakam.space,https://*.railway.app,http://localhost:5173,http://127.0.0.1:5173"
 ```
 
 ### CORS Policy Settings
@@ -29,7 +37,7 @@ The API applies the following CORS policy:
 
 | Setting | Value | Description |
 |---------|-------|-------------|
-| **Allowed Methods** | `GET`, `POST`, `OPTIONS` | HTTP methods permitted for cross-origin requests |
+| **Allowed Methods** | `GET`, `POST`, `PATCH`, `PUT`, `DELETE`, `OPTIONS` | HTTP methods permitted for cross-origin requests |
 | **Allowed Headers** | `Content-Type`, `Authorization`, `X-API-Key` | Headers that can be sent in cross-origin requests |
 | **Allow Credentials** | `true` | Allows cookies and authentication headers in cross-origin requests |
 | **Max Age** | `3600` seconds (1 hour) | Duration browsers cache preflight response |
@@ -43,21 +51,23 @@ fn create_cors_layer() -> CorsLayer {
     let allowed_origins = std::env::var("ALLOWED_ORIGINS")
         .unwrap_or_else(|_| "http://localhost:3000,http://localhost:5173".to_string());
 
-    let origins: Vec<HeaderValue> = allowed_origins
-        .split(',')
-        .filter_map(|s| {
-            let trimmed = s.trim();
-            if trimmed.is_empty() {
-                None
-            } else {
-                trimmed.parse().ok()
-            }
-        })
-        .collect();
+    // Exact origins are parsed directly. Patterns like `https://*.railway.app`
+    // are matched via a predicate so preview subdomains can be allowed safely.
+    let (exact_origins, wildcard_patterns) = parse_allowed_origins(allowed_origins);
+    let allow_origin = AllowOrigin::predicate(move |origin, _parts| {
+        origin_is_allowed(origin, &exact_origins, &wildcard_patterns)
+    });
 
     CorsLayer::new()
-        .allow_origin(origins)
-        .allow_methods([Method::GET, Method::POST, Method::OPTIONS])
+        .allow_origin(allow_origin)
+        .allow_methods([
+            Method::GET,
+            Method::POST,
+            Method::PATCH,
+            Method::PUT,
+            Method::DELETE,
+            Method::OPTIONS,
+        ])
         .allow_headers([
             axum::http::header::CONTENT_TYPE,
             axum::http::header::AUTHORIZATION,
@@ -99,7 +109,7 @@ Access-Control-Request-Headers: authorization, content-type
 ```http
 HTTP/1.1 200 OK
 Access-Control-Allow-Origin: https://app.example.com
-Access-Control-Allow-Methods: GET, POST, OPTIONS
+Access-Control-Allow-Methods: GET, POST, PATCH, PUT, DELETE, OPTIONS
 Access-Control-Allow-Headers: content-type, authorization, x-api-key
 Access-Control-Allow-Credentials: true
 Access-Control-Max-Age: 3600
@@ -139,7 +149,7 @@ If preflight succeeds, the browser sends the actual request.
    Expected response should include:
    ```
    access-control-allow-origin: http://localhost:3000
-   access-control-allow-methods: GET, POST, OPTIONS
+   access-control-allow-methods: GET, POST, PATCH, PUT, DELETE, OPTIONS
    access-control-allow-headers: content-type, authorization, x-api-key
    access-control-allow-credentials: true
    access-control-max-age: 3600
@@ -192,6 +202,11 @@ If preflight succeeds, the browser sends the actual request.
    export ALLOWED_ORIGINS="http://localhost:3000,https://your-frontend.com"
    ```
 3. Restart the API server
+
+If you need preview subdomains, use a wildcard pattern such as:
+```bash
+export ALLOWED_ORIGINS="https://fmrl.tryambakam.space,https://*.railway.app"
+```
 
 ### "CORS policy: Request header field X is not allowed"
 

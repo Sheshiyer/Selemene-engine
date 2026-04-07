@@ -1,0 +1,27 @@
+{
+  "name": "biofield-web",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev -p 3002",
+    "build": "next build",
+    "start": "next start -p 3002",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit --incremental false"
+  },
+  "dependencies": {
+    "@selemene/biofield-api-client": "file:../../packages/biofield-api-client",
+    "@selemene/biofield-domain": "file:../../packages/biofield-domain",
+    "next": "16.1.6",
+    "react": "18.3.1",
+    "react-dom": "18.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "20.17.57",
+    "@types/react": "18.3.12",
+    "@types/react-dom": "18.3.1",
+    "eslint": "9.39.3",
+    "eslint-config-next": "16.1.6",
+    "typescript": "5.6.3"
+  }
+}

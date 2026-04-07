@@ -109,7 +109,7 @@ impl UserRepository {
                 COALESCE(failed_login_attempts, 0) AS failed_login_attempts,
                 locked_until
             FROM users
-            WHERE lower(btrim(email)) = lower(btrim($1))
+            WHERE email = $1
             "#,
         )
         .bind(email)
@@ -137,7 +137,7 @@ impl UserRepository {
                         0::integer AS failed_login_attempts,
                         NULL::timestamptz AS locked_until
                     FROM users
-                    WHERE lower(btrim(email)) = lower(btrim($1))
+                    WHERE email = $1
                     "#,
                 )
                 .bind(email)
@@ -384,7 +384,7 @@ impl UserRepository {
         expires_at: DateTime<Utc>,
     ) -> Result<bool, Error> {
         let result = sqlx::query(
-            "UPDATE users SET reset_token = $1, reset_token_expires_at = $2 WHERE lower(btrim(email)) = lower(btrim($3))",
+            "UPDATE users SET reset_token = $1, reset_token_expires_at = $2 WHERE email = $3",
         )
         .bind(token)
         .bind(expires_at)

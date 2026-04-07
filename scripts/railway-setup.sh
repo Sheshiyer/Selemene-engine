@@ -70,13 +70,6 @@ if [ -z "$DATABASE_URL" ]; then
     exit 1
 fi
 
-# FreeAstrologyAPI Key
-read -p "FreeAstrologyAPI Key (from https://freeastrologyapi.com/dashboard): " FREE_ASTROLOGY_KEY
-if [ -z "$FREE_ASTROLOGY_KEY" ]; then
-    echo "❌ FREE_ASTROLOGY_API_KEY is required"
-    exit 1
-fi
-
 # Railway URL (optional, can be set later)
 read -p "Production domain (default: tryambakam.space): " PROD_DOMAIN
 PROD_DOMAIN=${PROD_DOMAIN:-tryambakam.space}
@@ -89,6 +82,12 @@ echo ""
 #   openssl rand -base64 48
 # Then set it via Railway dashboard or uncomment and paste below:
 JWT_SECRET="${JWT_SECRET:?ERROR: JWT_SECRET must be set. Generate one with: openssl rand -base64 48}"
+EXTRA_ALLOWED_ORIGINS="${EXTRA_ALLOWED_ORIGINS:-}"
+
+ALLOWED_ORIGINS="https://$PROD_DOMAIN,https://*.railway.app"
+if [ -n "$EXTRA_ALLOWED_ORIGINS" ]; then
+  ALLOWED_ORIGINS="$ALLOWED_ORIGINS,$EXTRA_ALLOWED_ORIGINS"
+fi
 
 # Set all environment variables using Railway CLI
 railway variables \
@@ -100,21 +99,7 @@ railway variables \
   --set "JWT_SECRET=$JWT_SECRET" \
   --set "JWT_EXPIRY=3600" \
   --set "DATABASE_URL=$DATABASE_URL" \
-  --set "ALLOWED_ORIGINS=https://$PROD_DOMAIN,https://*.railway.app" \
-  --set "FREE_ASTROLOGY_API_KEY=$FREE_ASTROLOGY_KEY" \
-  --set "FREE_ASTROLOGY_API_BASE_URL=https://json.freeastrologyapi.com" \
-  --set "FREE_ASTROLOGY_API_TIMEOUT=30" \
-  --set "FREE_ASTROLOGY_API_RETRY_COUNT=3" \
-  --set "FREE_ASTROLOGY_RATE_LIMIT_PER_DAY=50" \
-  --set "FREE_ASTROLOGY_RATE_LIMIT_PER_SECOND=1" \
-  --set "FREE_ASTROLOGY_RATE_LIMIT_BUFFER=5" \
-  --set "FREE_ASTROLOGY_CACHE_BIRTH_TTL=0" \
-  --set "FREE_ASTROLOGY_CACHE_DAILY_TTL=86400" \
-  --set "FREE_ASTROLOGY_CACHE_TRANSIT_TTL=3600" \
-  --set "FREE_ASTROLOGY_PREFETCH_DAYS=7" \
-  --set "VEDIC_ENGINE_PROVIDER=api" \
-  --set "VEDIC_ENGINE_FALLBACK_ENABLED=true" \
-  --set "VEDIC_ENGINE_FALLBACK_ON_RATE_LIMIT=true" \
+  --set "ALLOWED_ORIGINS=$ALLOWED_ORIGINS" \
   --set "SWISS_EPHEMERIS_PATH=/app/data/ephemeris" \
   --set "DATA_PATH=/app/data" \
   --set "WISDOM_DOCS_PATH=/app/data/wisdom-docs" \

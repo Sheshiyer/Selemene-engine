@@ -549,7 +549,6 @@ crates/
   noesis-cache/           3-layer cache (L1 memory, L2 Redis, L3 disk)
   noesis-metrics/         Prometheus instrumentation
   noesis-core/            Shared types (EngineInput, EngineOutput, BirthData)
-  noesis-vedic-api/       Optional FreeAstrologyAPI client (not on the active Vedic runtime path)
   engine-panchanga/       Vedic calendar calculations
   engine-human-design/    HD bodygraph (64 gates, 9 centers, profile)
   engine-gene-keys/       Shadow-Gift-Siddhi activation sequences
@@ -574,7 +573,6 @@ crates/
 
 ### Runtime Notes
 - `panchanga`, `vimshottari`, and `transits` currently execute through the native Rust engines in the live `noesis-api` runtime.
-- `noesis-vedic-api` remains in the repository for auxiliary/provider integration work, but it is not the active path for the current Vedic runtime.
 - Recent hygiene fixes locked reference regressions for:
   - canonical birth-time Panchanga + Vimshottari output (`1991-08-13 13:31 Asia/Kolkata`)
   - Panchanga karana sequencing for `2026-03-10` Bengaluru

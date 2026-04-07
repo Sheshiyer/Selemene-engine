@@ -36,3 +36,5 @@ Thumbs.db
 
 # Local OpenClaw exports
 Openclaw.txt
+.vercel
+.env*.local

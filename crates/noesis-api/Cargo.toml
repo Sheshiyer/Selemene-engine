@@ -65,7 +65,6 @@ engine-biorhythm = { path = "../engine-biorhythm" }
 engine-human-design = { path = "../engine-human-design" }
 engine-gene-keys = { path = "../engine-gene-keys" }
 engine-vimshottari = { path = "../engine-vimshottari" }
-noesis-vedic-api = { path = "../noesis-vedic-api", features = ["test-mocks"] }
 
 [[bench]]
 name = "engine_comparison"

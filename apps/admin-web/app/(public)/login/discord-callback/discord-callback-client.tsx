@@ -4,14 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { setAuthToken } from "@/lib/auth";
 import { ApiClientError, discordCallback, getAdminSession } from "@/lib/api";
-
-function currentCallbackUri(): string | null {
-  if (typeof window === "undefined") {
-    return null;
-  }
-
-  return `${window.location.origin}${window.location.pathname}`;
-}
+import { getDiscordCurrentCallbackOverride } from "@/lib/discord-oauth";
 
 export function DiscordCallbackClient() {
   const router = useRouter();
@@ -33,7 +26,7 @@ export function DiscordCallbackClient() {
         const auth = await discordCallback(
           authCode,
           state ?? undefined,
-          currentCallbackUri() ?? undefined
+          getDiscordCurrentCallbackOverride()
         );
         if (cancelled) return;
         setAuthToken(auth.token);

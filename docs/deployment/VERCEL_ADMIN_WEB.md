@@ -65,6 +65,7 @@ Manual equivalent:
 2. Backend liveness endpoint is reachable: `GET /health/live` -> `200`
 3. `GET /api/v1/admin/session` without token returns `401` (proves route exists + auth gate)
 4. `GET /api/v1/admin/api-keys` without token returns `401` (proves route exists + auth gate)
+5. `DELETE /api/v1/admin/api-keys/{key_id}` without token returns `401` (proves delete route exists + auth gate)
 
 ## Notes
 

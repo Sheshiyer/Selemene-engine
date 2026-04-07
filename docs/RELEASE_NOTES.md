@@ -117,7 +117,7 @@ No response format changes in v3.0.0.
 
 Reusable template for future releases:
 
-- [docs/release/release-checklist-template.md](/Volumes/madara/2026/witnessos/Selemene-engine/docs/release/release-checklist-template.md)
+- [docs/plans/release/release-checklist-template.md](/Volumes/madara/2026/witnessos/Selemene-engine/docs/plans/release/release-checklist-template.md)
 
 - [ ] Confirm `openapi.yaml` matches current routes and schemas
 - [ ] Verify `GET /health/live` and `GET /api/v1/engines`

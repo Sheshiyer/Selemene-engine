@@ -1,10 +1,10 @@
 //! Noesis Integration Layer
 //!
 //! This crate provides a unified interface for combining multiple consciousness
-//! engines and the Vedic API into cohesive, multi-layered analyses.
+//! engines into cohesive, multi-layered analyses.
 //!
 //! # Features
-//! - Vedic API integration (Panchang, Muhurtas, Hora, Choghadiya)
+//! - Native Panchanga integration surfaces (Panchang + Muhurtas)
 //! - Vimshottari Dasha with planetary qualities
 //! - Numerology (Pythagorean & Chaldean)
 //! - TCM (Traditional Chinese Medicine) layering
@@ -33,7 +33,7 @@
 //! }
 //! ```
 
-use chrono::{DateTime, Datelike, Timelike, Utc};
+use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
@@ -49,16 +49,23 @@ pub use synthesis::SynthesisEngine;
 pub use tcm_layer::{TCMAnalysis, TCMElement, TCMOrgan};
 pub use verification::{BirthProfile, DataVerifier, VerificationResult};
 
-/// Re-export key types from Vedic API
-pub use noesis_vedic_api::{
-    chart::{BirthChart, NavamsaChart, ZodiacSign},
-    dasha::{DashaLevel, DashaPeriod, DashaPlanet, VimshottariDasha},
-    panchang::{
-        ChoghadiyaTimings, CompletePanchang, HoraTimings, Karana, MuhurtaCollection, Nakshatra,
-        Paksha, Panchang, PanchangQuery, Tithi, Vara, Yoga,
-    },
-    CachedVedicClient,
-};
+/// Minimal Panchang types retained for integration-layer compatibility.
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct CompletePanchang {
+    pub muhurtas: MuhurtaCollection,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct MuhurtaCollection {
+    pub amrit_kaal: Option<MuhurtaWindow>,
+    pub abhijit: Option<MuhurtaWindow>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MuhurtaWindow {
+    pub start: String,
+    pub end: String,
+}
 
 /// Re-export from Vimshottari engine
 pub use engine_vimshottari::{
@@ -79,7 +86,7 @@ pub type Result<T> = std::result::Result<T, IntegrationError>;
 #[derive(Debug, thiserror::Error)]
 pub enum IntegrationError {
     #[error("Vedic API error: {0}")]
-    VedicApi(#[from] noesis_vedic_api::VedicApiError),
+    VedicApi(String),
 
     #[error("Engine error: {0}")]
     Engine(String),
@@ -100,7 +107,7 @@ pub enum IntegrationError {
 /// Configuration for the integration layer
 #[derive(Debug, Clone)]
 pub struct IntegrationConfig {
-    /// Whether to use the Vedic API or native engines
+    /// Legacy flag for external Vedic API usage (disabled by default).
     pub use_vedic_api: bool,
     /// Whether to include TCM analysis
     pub include_tcm: bool,
@@ -115,7 +122,7 @@ pub struct IntegrationConfig {
 impl Default for IntegrationConfig {
     fn default() -> Self {
         Self {
-            use_vedic_api: true,
+            use_vedic_api: false,
             include_tcm: true,
             include_numerology: true,
             include_biorhythm: true,
@@ -151,25 +158,10 @@ pub async fn verify_birth_data(profile: &BirthProfile) -> Result<VerificationRes
 
 /// Get current Panchang with all Muhurtas for a location
 pub async fn get_current_panchang(lat: f64, lng: f64, tz: f64) -> Result<CompletePanchang> {
-    let client = CachedVedicClient::from_env()
-        .map_err(|e| IntegrationError::Configuration(e.to_string()))?;
-
-    let now = Utc::now();
-    let panchang = client
-        .get_complete_panchang(
-            now.year(),
-            now.month(),
-            now.day(),
-            now.hour(),
-            now.minute(),
-            now.second(),
-            lat,
-            lng,
-            tz,
-        )
-        .await?;
-
-    Ok(panchang)
+    let _ = (lat, lng, tz);
+    Err(IntegrationError::Configuration(
+        "External FreeAstrology API integration has been removed. Use native engine paths instead.".to_string(),
+    ))
 }
 
 /// Calculate auspicious times for an activity

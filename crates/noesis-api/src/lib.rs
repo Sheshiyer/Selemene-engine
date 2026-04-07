@@ -1544,7 +1544,7 @@ fn build_d1_chart(
 }
 
 /// Build a JSON D9 (Navamsa) chart from the D1 chart JSON.
-fn build_d9_chart(birth: &ResolvedBirthDetails, d1: &serde_json::Value) -> serde_json::Value {
+fn build_d9_chart(d1: &serde_json::Value) -> serde_json::Value {
     let asc_sign_name = d1["ascendant"]["sign"].as_str().unwrap_or("aries");
     let asc_sign_idx = VEDIC_SIGN_NAMES.iter().position(|&s| s == asc_sign_name).unwrap_or(0);
     let asc_degree = d1["ascendant"]["degree"].as_f64().unwrap_or(0.0);
@@ -1646,7 +1646,7 @@ async fn vedic_chart_handler(
         }
 
         let d1 = build_d1_chart(&birth_for_task, jd, ayanamsa, &positions);
-        let d9 = build_d9_chart(&birth_for_task, &d1);
+        let d9 = build_d9_chart(&d1);
         Ok((d1, d9))
     })
     .await

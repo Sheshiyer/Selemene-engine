@@ -1,5 +1,5 @@
 const DYNAMIC_DISCORD_CALLBACK_HOSTS = new Set(["localhost", "127.0.0.1", "0.0.0.0"]);
-const DYNAMIC_DISCORD_CALLBACK_SUFFIXES = [".vercel.app", ".railway.app", ".tryambakam.space"];
+const DYNAMIC_DISCORD_CALLBACK_SUFFIXES = [".vercel.app", ".railway.app"];
 
 function normalizeHostname(hostname: string): string {
   return hostname.trim().toLowerCase();

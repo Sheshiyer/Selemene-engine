@@ -61,4 +61,4 @@ curl -sS "$TS_ENGINES_URL/health/ready"
 
 ## Resilience Drills
 
-- Rollback drill plan: [../drills/rollback-drill-plan.md](/Volumes/madara/2026/witnessos/Selemene-engine/docs/drills/rollback-drill-plan.md)
+- Rollback drill plan: [../plans/drills/rollback-drill-plan.md](/Volumes/madara/2026/witnessos/Selemene-engine/docs/plans/drills/rollback-drill-plan.md)

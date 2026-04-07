@@ -4,7 +4,7 @@
 This GitHub Project tracks the development of all consciousness engines and integration features in Selemene Engine.
 
 ## Interactive Timeline
-- HTML roadmap artifact: [selemene-roadmap-timeline.html](../../selemene-roadmap-timeline.html)
+- HTML roadmap artifact: [selemene-roadmap-timeline.html](../../docs/plans/selemene-roadmap-timeline.html)
 - Recommended render in Craft Agent: use an `html-preview` block pointing to the absolute file path.
 
 ## Project Structure
