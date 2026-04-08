@@ -8,8 +8,9 @@ import hashlib
 import json
 import random
 import time
+from typing import Any
 
-from fastapi import APIRouter, File, Form, UploadFile
+from fastapi import APIRouter, File, Form, HTTPException, UploadFile, status
 
 from shared.models import (
     BiofieldCVResponse,
@@ -19,6 +20,9 @@ from shared.models import (
 )
 
 router = APIRouter()
+
+CONTRACT_VERSION = "biofield-cv/v1"
+ANALYSIS_VERSION = "stub-metrics/v1"
 
 ALL_ALGORITHMS = [
     "light_quanta_density",
@@ -90,18 +94,54 @@ def _mock_quality(image_size_bytes: int) -> QualityAssessment:
     )
 
 
+def _unprocessable(detail: str) -> HTTPException:
+    return HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail=detail)
+
+
 def _parse_algorithms(raw: str | None) -> list[str]:
     """Parse and validate the algorithms filter. Returns ALL_ALGORITHMS if None."""
     if raw is None:
         return list(ALL_ALGORITHMS)
+
     try:
         requested = json.loads(raw)
-    except json.JSONDecodeError:
-        return list(ALL_ALGORITHMS)
+    except json.JSONDecodeError as exc:
+        raise _unprocessable(f"algorithms must be valid JSON: {exc.msg}") from exc
+
     if not isinstance(requested, list):
-        return list(ALL_ALGORITHMS)
-    # Keep only recognized names, preserving request order
-    return [a for a in requested if a in ALL_ALGORITHMS]
+        raise _unprocessable("algorithms must be a JSON array of known algorithm names")
+
+    if any(not isinstance(item, str) for item in requested):
+        raise _unprocessable("algorithms must be a JSON array of strings")
+
+    unknown = [item for item in requested if item not in ALL_ALGORITHMS]
+    if unknown:
+        raise _unprocessable(
+            "algorithms contains unsupported values: " + ", ".join(sorted(set(unknown)))
+        )
+
+    deduped: list[str] = []
+    for algorithm in requested:
+        if algorithm not in deduped:
+            deduped.append(algorithm)
+
+    return deduped
+
+
+def _parse_json_object(raw: str | None, field_name: str) -> dict[str, Any] | None:
+    """Parse optional JSON object form fields and reject malformed or non-object values."""
+    if raw is None:
+        return None
+
+    try:
+        parsed = json.loads(raw)
+    except json.JSONDecodeError as exc:
+        raise _unprocessable(f"{field_name} must be valid JSON: {exc.msg}") from exc
+
+    if not isinstance(parsed, dict):
+        raise _unprocessable(f"{field_name} must be a JSON object")
+
+    return parsed
 
 
 @router.post("/analyze", response_model=BiofieldCVResponse)
@@ -109,20 +149,28 @@ async def analyze(
     image: UploadFile = File(..., description="PIP or webcam capture image"),
     algorithms: str | None = Form(None, description="JSON array of algorithm names to run"),
     options: str | None = Form(None, description="JSON string with processing options"),
+    capture_metadata: str | None = Form(
+        None,
+        description="Optional JSON object with capture metadata",
+    ),
 ) -> BiofieldCVResponse:
     start = time.time()
 
     image_bytes = await image.read()
     filename = image.filename or "unknown"
 
+    algorithms_run = _parse_algorithms(algorithms)
+    _parse_json_object(options, "options")
+    _parse_json_object(capture_metadata, "capture_metadata")
+
     seed = _seed_from_filename(filename)
     metrics = _mock_metrics(seed)
     quality = _mock_quality(len(image_bytes))
-    algorithms_run = _parse_algorithms(algorithms)
-
     elapsed_ms = (time.time() - start) * 1000
 
     return BiofieldCVResponse(
+        contract_version=CONTRACT_VERSION,
+        analysis_version=ANALYSIS_VERSION,
         metrics=metrics,
         quality_assessment=quality,
         algorithms_run=algorithms_run,

@@ -1,5 +1,11 @@
 # Lessons Learned
 
+## 2026-04-08 — Fix-It Means Implement Rule
+
+- When the user says **"fix it"** or **"start fixing"**, stop expanding GitHub hygiene/project-management artifacts unless the user explicitly asks for more triage.
+- Move immediately into code implementation mode: isolate the work safely, update the repo task tracker, and start landing the requested tranche.
+- Do not add checklist-style tracking comments to GitHub when the user's intent has shifted to implementation.
+
 ## 2026-02-25 — Bootstrap Rule
 
 - For new surface areas (like `apps/admin-web`), land a thin vertical slice first:
