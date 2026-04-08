@@ -1,6 +1,6 @@
 use crate::models::biofield::{
     BiofieldCaptureArtifact, BiofieldSession, NewBiofieldCaptureArtifact, NewBiofieldSession,
-    BIOFIELD_SESSION_STATUS_ACTIVE,
+    BIOFIELD_SESSION_STATUS_ACTIVE, BIOFIELD_SESSION_STATUS_CLOSED,
 };
 use sqlx::{Error, PgPool};
 use uuid::Uuid;
@@ -46,6 +46,30 @@ impl BiofieldRepository {
         )
         .bind(session_id)
         .bind(user_id)
+        .fetch_optional(&self.pool)
+        .await
+    }
+
+    pub async fn close_session(
+        &self,
+        session_id: Uuid,
+        user_id: Uuid,
+    ) -> Result<Option<BiofieldSession>, Error> {
+        sqlx::query_as::<_, BiofieldSession>(
+            r#"
+            UPDATE biofield_sessions
+            SET status = $3,
+                closed_at = NOW()
+            WHERE id = $1
+              AND user_id = $2
+              AND status = $4
+            RETURNING *
+            "#,
+        )
+        .bind(session_id)
+        .bind(user_id)
+        .bind(BIOFIELD_SESSION_STATUS_CLOSED)
+        .bind(BIOFIELD_SESSION_STATUS_ACTIVE)
         .fetch_optional(&self.pool)
         .await
     }
@@ -271,7 +295,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn biofield_repository_creates_and_gets_user_scoped_session() {
+    async fn biofield_repository_creates_gets_and_closes_user_scoped_session() {
         let Some(pool) = connect_test_db().await else {
             return;
         };
@@ -296,7 +320,10 @@ mod tests {
 
         assert_eq!(session.user_id, user.id);
         assert_eq!(session.status, BIOFIELD_SESSION_STATUS_ACTIVE);
-        assert_eq!(session.client_device_id.as_deref(), Some("desktop-browser-1"));
+        assert_eq!(
+            session.client_device_id.as_deref(),
+            Some("desktop-browser-1")
+        );
         assert_eq!(session.viewer_version.as_deref(), Some("web-0.1.0"));
         assert!(session.closed_at.is_none());
 
@@ -312,6 +339,29 @@ mod tests {
             .await
             .expect("cross-user lookup should not error");
         assert!(missing.is_none());
+
+        let closed = biofield_repo
+            .close_session(session.id, user.id)
+            .await
+            .expect("session close should succeed")
+            .expect("session should still exist for owner");
+        assert_eq!(closed.id, session.id);
+        assert_eq!(closed.status, BIOFIELD_SESSION_STATUS_CLOSED);
+        assert!(closed.closed_at.is_some());
+
+        let refetched = biofield_repo
+            .get_session(session.id, user.id)
+            .await
+            .expect("closed session lookup should succeed")
+            .expect("closed session should exist");
+        assert_eq!(refetched.status, BIOFIELD_SESSION_STATUS_CLOSED);
+        assert!(refetched.closed_at.is_some());
+
+        let second_close = biofield_repo
+            .close_session(session.id, user.id)
+            .await
+            .expect("second close should not error");
+        assert!(second_close.is_none());
 
         sqlx::query("DELETE FROM biofield_sessions WHERE id = $1")
             .bind(session.id)

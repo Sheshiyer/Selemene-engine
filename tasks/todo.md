@@ -1,3 +1,70 @@
+# Task Plan — BF1 Implementation Tranche 1
+
+## Checklist
+- [x] Create a clean BF1 implementation worktree/branch and verify it is isolated from unrelated dirty changes.
+- [x] Record the user-correction lesson and this tranche in the repo trackers before editing code.
+- [x] Implement BF1-02 / BWF-018-019 Python sidecar contract alignment.
+- [x] Implement BF1-03 / BWF-023 authenticated biofield session lifecycle in `noesis-api`.
+- [x] Run targeted Python + Rust verification and `git diff --check`.
+- [x] Summarize exactly what landed and what remains for the next BF1 tranche.
+
+## Notes
+- This tranche intentionally focuses on the two highest-leverage backend blockers still left as stub/scaffold work:
+  - Python sidecar contract parity
+  - Rust biofield session create/get/close handlers
+- Capture upload, reading persistence flow, and frontend bootstrap beyond placeholder state are explicitly deferred to the next tranche.
+
+## Review (fill after execution)
+- Scope:
+  - isolated the BF1 tranche in the dedicated worktree/branch:
+    - `.worktrees/bf1-web-first-tranche-1`
+    - branch: `bf1-web-first-tranche-1`
+  - recorded the user correction in `tasks/lessons.md` before implementation
+- BF1-02 / BWF-018-019 outcome:
+  - added `contract_version` and `analysis_version` to the shared Python biofield response model in:
+    - `python-services/shared/models.py`
+  - upgraded `python-services/biofield_cv_service/analyze.py` to:
+    - emit `contract_version = "biofield-cv/v1"`
+    - emit `analysis_version = "stub-metrics/v1"`
+    - require the `quality_assessment` shape on successful responses
+    - reject malformed `algorithms` JSON
+    - reject non-array `algorithms`
+    - reject unknown algorithm names
+    - reject malformed / non-object `options`
+    - reject malformed / non-object `capture_metadata`
+  - expanded `python-services/tests/test_biofield_analyze.py` to cover:
+    - required top-level contract fields
+    - required quality-assessment fields
+    - malformed/invalid payload behavior
+    - retained deterministic/stub metric behavior
+- BF1-03 / BWF-023 outcome:
+  - added `close_session(...)` to `crates/noesis-data/src/repositories/biofield_repository.rs`
+  - replaced the `501` placeholders in `crates/noesis-api/src/handlers/biofield.rs` for:
+    - `POST /api/v1/biofield/sessions`
+    - `GET /api/v1/biofield/sessions/:session_id`
+    - `POST /api/v1/biofield/sessions/:session_id/close`
+  - new handler behavior now includes:
+    - authenticated user UUID parsing
+    - repository-backed create/get/close flow
+    - user ownership enforcement
+    - `422` invalid UUID handling
+    - `404 BIOFIELD_SESSION_NOT_FOUND`
+    - `409 BIOFIELD_SESSION_NOT_ACTIVE`
+    - `503 BIOFIELD_DB_UNAVAILABLE`
+    - `500 BIOFIELD_DB_ERROR`
+  - added focused router-level integration coverage in:
+    - `crates/noesis-api/tests/biofield_session_lifecycle.rs`
+- Verification:
+  - `python3.11 -m venv <tmp> && pip install -e 'python-services[dev]' && pytest python-services/tests/test_biofield_analyze.py` ✅
+  - `DATABASE_URL=postgresql://noesis_user:noesis_password@localhost:5432/noesis cargo test -p noesis-data biofield_repository -- --nocapture` ✅
+  - `DATABASE_URL=postgresql://noesis_user:noesis_password@localhost:5432/noesis cargo test -p noesis-api --test biofield_session_lifecycle -- --nocapture` ✅
+  - `cargo test -p noesis-api --test biofield_handler_smoke -- --nocapture` ✅
+  - `git diff --check` ✅
+- Remaining next tranche:
+  - BF1-04 frontend auth/session bootstrap in `apps/biofield-web`
+  - BF1-05 capture upload path + sidecar proxy
+  - BF1-06 persistence of reading/artifact rows from successful capture flow
+
 # Task Plan - Biofield Web-First Phase 1 Execution
 
 ## Checklist
