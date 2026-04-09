@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { FormEvent, useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import type { BiofieldCaptureResult, BiofieldSession } from "@selemene/biofield-domain";
 import { BiofieldClientError } from "@selemene/biofield-api-client";
@@ -186,7 +187,7 @@ export default function ViewerPage() {
           <p className="biofield-kicker">Capture path</p>
           <p className="biofield-metric">Browser → Noesis → Python</p>
           <p className="biofield-copy">
-            This tranche proves the private sidecar proxy path without waiting for full history/detail UI.
+            Successful captures now flow into persisted history and reading detail routes in the web surface.
           </p>
         </article>
       </section>
@@ -269,6 +270,14 @@ export default function ViewerPage() {
                 {captureResult.quality_assessment.sufficient_quality ? "Accepted" : "Rejected"}
               </p>
             </div>
+          </div>
+          <div className="biofield-actions" style={{ marginBottom: "1rem" }}>
+            <Link className="biofield-link" href={`/readings/${captureResult.reading_id}`}>
+              Open reading detail
+            </Link>
+            <Link className="biofield-link" href="/history">
+              View history
+            </Link>
           </div>
           <ul className="biofield-list">
             {activeMetricRows.map((metric) => (

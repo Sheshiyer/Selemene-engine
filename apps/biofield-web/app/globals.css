@@ -263,6 +263,61 @@ textarea {
   background: rgba(255, 255, 255, 0.03);
 }
 
+.biofield-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.9rem;
+}
+
+.biofield-meta-grid,
+.biofield-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.8rem;
+}
+
+.biofield-status-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  border: 1px solid var(--line-strong);
+  padding: 0.45rem 0.8rem;
+  font-size: 0.82rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.biofield-status-pill-good {
+  border-color: rgba(78, 192, 184, 0.36);
+  background: rgba(78, 192, 184, 0.12);
+  color: #d8fff8;
+}
+
+.biofield-status-pill-warn {
+  border-color: rgba(244, 187, 104, 0.36);
+  background: rgba(244, 187, 104, 0.12);
+  color: #ffe8c6;
+}
+
+.biofield-json {
+  margin: 0;
+  padding: 1rem;
+  border-radius: 18px;
+  border: 1px solid var(--line);
+  background: rgba(1, 8, 14, 0.46);
+  color: var(--text);
+  overflow: auto;
+  font-family: "SFMono-Regular", "Menlo", monospace;
+  font-size: 0.84rem;
+  line-height: 1.55;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
 .biofield-mono {
   font-family: "SFMono-Regular", "Menlo", monospace;
   word-break: break-word;

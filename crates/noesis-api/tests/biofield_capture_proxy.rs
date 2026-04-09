@@ -342,6 +342,26 @@ impl BiofieldCaptureHarness {
             .body(Body::from(body))
             .expect("request should build");
 
+        self.send_request(request).await
+    }
+
+    async fn send_authenticated_request(
+        &self,
+        method: &str,
+        uri: &str,
+        token: &str,
+    ) -> (StatusCode, Value) {
+        let request = Request::builder()
+            .method(method)
+            .uri(uri)
+            .header(header::AUTHORIZATION, format!("Bearer {token}"))
+            .body(Body::empty())
+            .expect("request should build");
+
+        self.send_request(request).await
+    }
+
+    async fn send_request(&self, request: Request<Body>) -> (StatusCode, Value) {
         let response = self
             .router
             .clone()
@@ -552,6 +572,11 @@ async fn biofield_capture_proxies_to_sidecar_and_persists_reading() {
     assert_eq!(payload["quality_assessment"]["sufficient_quality"], true);
     assert_eq!(payload["artifacts"][0]["kind"], "source-image");
     assert_eq!(payload["artifacts"][0]["mime_type"], "image/jpeg");
+    assert!(payload["artifacts"][0]["id"].as_str().is_some());
+    assert!(payload["artifacts"][0]["storage_path"]
+        .as_str()
+        .expect("storage path should exist")
+        .contains(&session_id.to_string()));
 
     let reading_id = Uuid::parse_str(payload["reading_id"].as_str().expect("reading id string"))
         .expect("valid reading uuid");
@@ -565,6 +590,17 @@ async fn biofield_capture_proxies_to_sidecar_and_persists_reading() {
     assert_eq!(reading.engine_id, "biofield-capture");
     assert_eq!(reading.input_data["session_id"], session_id.to_string());
     assert_eq!(reading.result_data["analysis_version"], "stub-metrics/v1");
+
+    let artifacts = harness
+        .biofield_repository
+        .list_reading_artifacts(reading_id, user_id)
+        .await
+        .expect("reading artifacts should load");
+    assert_eq!(artifacts.len(), 1);
+    assert_eq!(artifacts[0].reading_id, Some(reading_id));
+    assert_eq!(artifacts[0].session_id, session_id);
+    assert_eq!(artifacts[0].artifact_kind, "source-image");
+    assert!(artifacts[0].storage_path.contains(&session_id.to_string()));
 
     harness.delete_user(user_id).await;
 }
@@ -645,5 +681,162 @@ async fn biofield_capture_normalizes_quality_rejection() {
         false
     );
 
+    let artifacts = harness
+        .biofield_repository
+        .list_session_artifacts(session_id, user_id)
+        .await
+        .expect("session artifacts should load");
+    assert_eq!(artifacts.len(), 1);
+    assert_eq!(artifacts[0].reading_id, None);
+    assert_eq!(artifacts[0].artifact_kind, "source-image");
+
+    harness.delete_user(user_id).await;
+}
+
+#[tokio::test]
+#[serial]
+async fn biofield_readings_history_and_detail_are_user_scoped() {
+    let Some(harness) = BiofieldCaptureHarness::new().await else {
+        return;
+    };
+
+    let user_id = harness.create_user_id("history-owner").await;
+    let other_user_id = harness.create_user_id("history-other").await;
+    let session_id = harness.create_session_for_user(user_id).await;
+    let other_session_id = harness.create_session_for_user(other_user_id).await;
+    let token = harness.token_for_user(user_id);
+    let other_token = harness.token_for_user(other_user_id);
+
+    let sidecar = MockServer::start().await;
+    Mock::given(method("POST"))
+        .and(path("/analyze"))
+        .respond_with(ResponseTemplate::new(200).set_body_json(json!({
+            "contract_version": "biofield-cv/v1",
+            "analysis_version": "stub-metrics/v1",
+            "metrics": {
+                "light_quanta_density": 42.5,
+                "normalized_area": 0.67,
+                "average_intensity": 0.51,
+                "inner_noise": 0.11,
+                "energy_analysis": {
+                    "low": 0.2,
+                    "medium": 0.5,
+                    "high": 0.3,
+                    "total": 1.0
+                },
+                "entropy_form_coefficient": 2.7,
+                "fractal_dimension": 1.42,
+                "correlation_dimension": 1.95,
+                "body_symmetry": 0.33,
+                "contour_complexity": 1.8,
+                "pattern_regularity": 0.76
+            },
+            "quality_assessment": {
+                "sharpness": 0.88,
+                "contrast": 0.82,
+                "noise_level": 0.08,
+                "exposure": 0.54,
+                "sufficient_quality": true
+            },
+            "algorithms_run": ["fractal_dimension"],
+            "processing_time_ms": 12.5
+        })))
+        .mount(&sidecar)
+        .await;
+
+    let _env = EnvGuard::set(&[
+        ("PYTHON_BIOFIELD_URL", sidecar.uri()),
+        ("PYTHON_BIOFIELD_TIMEOUT_MS", "1000".to_string()),
+    ]);
+
+    let (body, boundary) = build_multipart_body(vec![MultipartField {
+        name: "image",
+        body: b"\xff\xd8\xff\xe0history-jpeg".to_vec(),
+        file_name: Some("history.jpg"),
+        content_type: Some("image/jpeg"),
+    }]);
+
+    let (owner_status, owner_payload) = harness
+        .send_authenticated_multipart(
+            &format!("/api/v1/biofield/sessions/{session_id}/captures"),
+            &token,
+            body.clone(),
+            &boundary,
+        )
+        .await;
+    assert_eq!(owner_status, StatusCode::CREATED);
+
+    let owner_reading_id = owner_payload["reading_id"]
+        .as_str()
+        .expect("owner reading id")
+        .to_string();
+
+    let (other_status, other_payload) = harness
+        .send_authenticated_multipart(
+            &format!("/api/v1/biofield/sessions/{other_session_id}/captures"),
+            &other_token,
+            body,
+            &boundary,
+        )
+        .await;
+    assert_eq!(other_status, StatusCode::CREATED);
+
+    let other_reading_id = other_payload["reading_id"]
+        .as_str()
+        .expect("other reading id")
+        .to_string();
+
+    let (list_status, list_payload) = harness
+        .send_authenticated_request("GET", "/api/v1/biofield/readings", &token)
+        .await;
+    assert_eq!(list_status, StatusCode::OK);
+    assert_eq!(
+        list_payload["items"].as_array().expect("items array").len(),
+        1
+    );
+    assert_eq!(list_payload["items"][0]["reading_id"], owner_reading_id);
+    assert_eq!(
+        list_payload["items"][0]["session_id"],
+        session_id.to_string()
+    );
+    assert_eq!(list_payload["items"][0]["artifact"]["kind"], "source-image");
+    assert!(list_payload["items"][0]["artifact"]["storage_path"]
+        .as_str()
+        .is_some());
+
+    let (detail_status, detail_payload) = harness
+        .send_authenticated_request(
+            "GET",
+            &format!("/api/v1/biofield/readings/{owner_reading_id}"),
+            &token,
+        )
+        .await;
+    assert_eq!(detail_status, StatusCode::OK);
+    assert_eq!(detail_payload["reading_id"], owner_reading_id);
+    assert_eq!(detail_payload["session_id"], session_id.to_string());
+    assert_eq!(detail_payload["quality"]["sufficient_quality"], true);
+    assert_eq!(
+        detail_payload["result"]["analysis_version"],
+        "stub-metrics/v1"
+    );
+    assert_eq!(
+        detail_payload["result"]["metrics"]["light_quanta_density"],
+        42.5
+    );
+    assert!(detail_payload["artifacts"][0]["storage_path"]
+        .as_str()
+        .is_some());
+
+    let (foreign_status, foreign_payload) = harness
+        .send_authenticated_request(
+            "GET",
+            &format!("/api/v1/biofield/readings/{other_reading_id}"),
+            &token,
+        )
+        .await;
+    assert_eq!(foreign_status, StatusCode::NOT_FOUND);
+    assert_eq!(foreign_payload["error_code"], "BIOFIELD_READING_NOT_FOUND");
+
+    harness.delete_user(other_user_id).await;
     harness.delete_user(user_id).await;
 }

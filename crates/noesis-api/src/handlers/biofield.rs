@@ -10,10 +10,16 @@ use noesis_auth::AuthUser;
 use noesis_bridge::BridgeError;
 use noesis_data::{
     models::{
-        biofield::{BiofieldSession, NewBiofieldSession, BIOFIELD_SESSION_STATUS_ACTIVE},
-        reading::NewReading,
+        biofield::{
+            BiofieldCaptureArtifact, BiofieldSession, NewBiofieldCaptureArtifact,
+            NewBiofieldSession, BIOFIELD_CAPTURE_ARTIFACT_SOURCE_IMAGE,
+            BIOFIELD_SESSION_STATUS_ACTIVE,
+        },
+        reading::{NewReading, Reading},
     },
-    repositories::readings_repository::ReadingsRepository,
+    repositories::{
+        biofield_repository::BiofieldRepository, readings_repository::ReadingsRepository,
+    },
 };
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -23,6 +29,8 @@ use utoipa::ToSchema;
 use uuid::Uuid;
 
 const BIOFIELD_ENGINE_ID: &str = "biofield-capture";
+const DEFAULT_BIOFIELD_READINGS_LIMIT: u32 = 20;
+const MAX_BIOFIELD_READINGS_LIMIT: u32 = 100;
 
 #[derive(Debug, Deserialize, ToSchema)]
 pub struct CreateBiofieldSessionRequest {
@@ -107,12 +115,6 @@ pub struct BiofieldReadingDetail {
     pub artifacts: Vec<BiofieldArtifactSummary>,
 }
 
-#[derive(Debug, Serialize, ToSchema)]
-pub struct BiofieldPlaceholderResponse {
-    pub status: String,
-    pub message: String,
-}
-
 #[derive(Debug, Default)]
 struct ParsedBiofieldCapture {
     image_bytes: Option<Vec<u8>>,
@@ -121,16 +123,6 @@ struct ParsedBiofieldCapture {
     algorithms: Option<Vec<String>>,
     options: Option<Value>,
     capture_metadata: Option<Value>,
-}
-
-fn not_implemented_response(route: &str) -> (StatusCode, Json<BiofieldPlaceholderResponse>) {
-    (
-        StatusCode::NOT_IMPLEMENTED,
-        Json(BiofieldPlaceholderResponse {
-            status: "not_implemented".to_string(),
-            message: format!("{route} is scaffolded but not implemented yet"),
-        }),
-    )
 }
 
 fn json_error_response(
@@ -221,6 +213,24 @@ fn session_not_active_response(session: &BiofieldSession) -> Response {
             "session_id": session.id,
             "status": session.status,
         })),
+    )
+}
+
+fn reading_not_found_response(reading_id: &str) -> Response {
+    json_error_response(
+        StatusCode::NOT_FOUND,
+        "Biofield reading not found",
+        "BIOFIELD_READING_NOT_FOUND",
+        Some(serde_json::json!({ "reading_id": reading_id })),
+    )
+}
+
+fn missing_reading_session_link_response(reading_id: Uuid) -> Response {
+    json_error_response(
+        StatusCode::INTERNAL_SERVER_ERROR,
+        "Biofield reading is missing session linkage",
+        "BIOFIELD_DB_ERROR",
+        Some(serde_json::json!({ "reading_id": reading_id })),
     )
 }
 
@@ -508,14 +518,216 @@ fn create_input_hash(
     format!("{:x}", hasher.finalize())
 }
 
-fn build_capture_artifacts(content_type: &str, byte_size: usize) -> Vec<BiofieldArtifactSummary> {
-    vec![BiofieldArtifactSummary {
+fn artifact_to_summary(artifact: &BiofieldCaptureArtifact) -> BiofieldArtifactSummary {
+    BiofieldArtifactSummary {
+        id: Some(artifact.id.to_string()),
+        kind: artifact.artifact_kind.clone(),
+        mime_type: artifact.mime_type.clone(),
+        storage_path: Some(artifact.storage_path.clone()),
+        byte_size: Some(artifact.byte_size as u64),
+    }
+}
+
+fn fallback_artifact_summary(reading: &Reading) -> BiofieldArtifactSummary {
+    let byte_size = reading
+        .input_data
+        .get("capture_metadata")
+        .and_then(|value| value.get("file_size"))
+        .and_then(Value::as_u64);
+
+    BiofieldArtifactSummary {
         id: None,
-        kind: "source-image".to_string(),
-        mime_type: content_type.to_string(),
+        kind: BIOFIELD_CAPTURE_ARTIFACT_SOURCE_IMAGE.to_string(),
+        mime_type: reading
+            .input_data
+            .get("content_type")
+            .and_then(Value::as_str)
+            .unwrap_or("application/octet-stream")
+            .to_string(),
         storage_path: None,
-        byte_size: Some(byte_size as u64),
-    }]
+        byte_size,
+    }
+}
+
+fn extract_reading_session_id(
+    reading: &Reading,
+    artifacts: &[BiofieldCaptureArtifact],
+) -> Option<String> {
+    artifacts
+        .first()
+        .map(|artifact| artifact.session_id.to_string())
+        .or_else(|| {
+            reading
+                .input_data
+                .get("session_id")
+                .and_then(Value::as_str)
+                .map(str::to_string)
+        })
+}
+
+fn build_reading_summary(
+    reading: &Reading,
+    artifacts: &[BiofieldCaptureArtifact],
+) -> Result<BiofieldReadingSummary, Response> {
+    let session_id = extract_reading_session_id(reading, artifacts)
+        .ok_or_else(|| missing_reading_session_link_response(reading.id))?;
+    let sufficient_quality = reading
+        .result_data
+        .get("quality_assessment")
+        .and_then(|value| value.get("sufficient_quality"))
+        .and_then(Value::as_bool)
+        .unwrap_or(false);
+    let artifact = artifacts
+        .first()
+        .map(artifact_to_summary)
+        .unwrap_or_else(|| fallback_artifact_summary(reading));
+
+    Ok(BiofieldReadingSummary {
+        reading_id: reading.id.to_string(),
+        session_id,
+        engine_id: BIOFIELD_ENGINE_ID.to_string(),
+        created_at: reading.created_at,
+        quality: BiofieldQualitySummary { sufficient_quality },
+        artifact,
+    })
+}
+
+fn build_reading_detail_resource(
+    reading: &Reading,
+    artifacts: &[BiofieldCaptureArtifact],
+) -> Result<BiofieldReadingDetail, Response> {
+    let session_id = extract_reading_session_id(reading, artifacts)
+        .ok_or_else(|| missing_reading_session_link_response(reading.id))?;
+    let artifact_summaries = if artifacts.is_empty() {
+        vec![fallback_artifact_summary(reading)]
+    } else {
+        artifacts.iter().map(artifact_to_summary).collect()
+    };
+
+    Ok(BiofieldReadingDetail {
+        reading_id: reading.id.to_string(),
+        session_id,
+        engine_id: BIOFIELD_ENGINE_ID.to_string(),
+        created_at: reading.created_at,
+        input: reading.input_data.clone(),
+        result: reading.result_data.clone(),
+        quality: reading
+            .result_data
+            .get("quality_assessment")
+            .cloned()
+            .unwrap_or_else(|| serde_json::json!({})),
+        artifacts: artifact_summaries,
+    })
+}
+
+fn normalize_readings_page(query: &ListBiofieldReadingsQuery) -> (u32, u32) {
+    let limit = query
+        .limit
+        .unwrap_or(DEFAULT_BIOFIELD_READINGS_LIMIT)
+        .clamp(1, MAX_BIOFIELD_READINGS_LIMIT);
+    let offset = query.offset.unwrap_or(0);
+    (limit, offset)
+}
+
+fn infer_image_extension(file_name: Option<&str>, content_type: &str) -> String {
+    if let Some(file_name) = file_name {
+        if let Some((_, extension)) = file_name.rsplit_once('.') {
+            if !extension.is_empty()
+                && extension.len() <= 8
+                && extension
+                    .chars()
+                    .all(|character| character.is_ascii_alphanumeric())
+            {
+                return extension.to_ascii_lowercase();
+            }
+        }
+    }
+
+    match content_type {
+        "image/jpeg" => "jpg".to_string(),
+        "image/png" => "png".to_string(),
+        "image/webp" => "webp".to_string(),
+        "image/gif" => "gif".to_string(),
+        "image/bmp" => "bmp".to_string(),
+        _ => "bin".to_string(),
+    }
+}
+
+fn build_source_artifact_storage_path(
+    session_id: Uuid,
+    file_name: Option<&str>,
+    content_type: &str,
+) -> String {
+    let extension = infer_image_extension(file_name, content_type);
+    format!(
+        "biofield/{session_id}/source-{}.{}",
+        Uuid::new_v4(),
+        extension
+    )
+}
+
+fn build_artifact_capture_metadata(
+    parsed_capture: &ParsedBiofieldCapture,
+    content_type: &str,
+) -> Value {
+    serde_json::json!({
+        "file_name": parsed_capture.image_file_name,
+        "content_type": content_type,
+        "algorithms": parsed_capture.algorithms,
+        "options": parsed_capture.options,
+        "capture_metadata": parsed_capture.capture_metadata,
+    })
+}
+
+async fn create_source_artifact(
+    biofield_repository: &BiofieldRepository,
+    session: &BiofieldSession,
+    parsed_capture: &ParsedBiofieldCapture,
+    content_type: &str,
+    image_bytes: &[u8],
+) -> Result<BiofieldCaptureArtifact, sqlx::Error> {
+    biofield_repository
+        .create_artifact(&NewBiofieldCaptureArtifact {
+            session_id: session.id,
+            reading_id: None,
+            artifact_kind: BIOFIELD_CAPTURE_ARTIFACT_SOURCE_IMAGE.to_string(),
+            storage_path: build_source_artifact_storage_path(
+                session.id,
+                parsed_capture.image_file_name.as_deref(),
+                content_type,
+            ),
+            mime_type: content_type.to_string(),
+            byte_size: image_bytes.len() as i64,
+            capture_metadata: build_artifact_capture_metadata(parsed_capture, content_type),
+        })
+        .await
+}
+
+async fn link_source_artifact_to_reading(
+    biofield_repository: &BiofieldRepository,
+    artifact: &BiofieldCaptureArtifact,
+    reading_id: Uuid,
+    user_id: Uuid,
+) -> Result<BiofieldCaptureArtifact, Response> {
+    match biofield_repository
+        .link_artifact_to_reading(artifact.id, reading_id, user_id)
+        .await
+    {
+        Ok(Some(linked_artifact)) => Ok(linked_artifact),
+        Ok(None) => Err(json_error_response(
+            StatusCode::INTERNAL_SERVER_ERROR,
+            "Failed to link biofield artifact to reading",
+            "BIOFIELD_DB_ERROR",
+            Some(serde_json::json!({
+                "artifact_id": artifact.id,
+                "reading_id": reading_id,
+            })),
+        )),
+        Err(error) => Err(biofield_db_error_response(
+            "link biofield capture artifact to reading",
+            &error,
+        )),
+    }
 }
 
 fn build_capture_response(
@@ -828,6 +1040,21 @@ pub async fn create_capture(
         );
     }
 
+    let source_artifact = match create_source_artifact(
+        biofield_repository,
+        &session,
+        &parsed_capture,
+        &content_type,
+        &image_bytes,
+    )
+    .await
+    {
+        Ok(artifact) => artifact,
+        Err(error) => {
+            return biofield_db_error_response("persist biofield capture artifact", &error)
+        }
+    };
+
     let sidecar_client = build_biofield_client_from_env();
     let sidecar_response = match sidecar_client
         .analyze_capture(BiofieldAnalyzeRequest {
@@ -910,14 +1137,25 @@ pub async fn create_capture(
         }
     };
 
-    let artifacts = build_capture_artifacts(&content_type, image_bytes.len());
+    let linked_artifact = match link_source_artifact_to_reading(
+        biofield_repository,
+        &source_artifact,
+        reading_id,
+        user_id,
+    )
+    .await
+    {
+        Ok(artifact) => artifact,
+        Err(response) => return response,
+    };
+
     let response = build_capture_response(
         reading_id,
         session.id,
         analysis_version,
         metrics,
         quality_assessment,
-        artifacts,
+        vec![artifact_to_summary(&linked_artifact)],
     );
 
     (StatusCode::CREATED, Json(response)).into_response()
@@ -935,7 +1173,8 @@ pub async fn create_capture(
     responses(
         (status = 200, description = "Biofield readings listed", body = ListBiofieldReadingsResponse),
         (status = 401, description = "Unauthorized", body = crate::ErrorResponse),
-        (status = 501, description = "Scaffolded route placeholder", body = BiofieldPlaceholderResponse),
+        (status = 503, description = "Biofield DB unavailable", body = crate::ErrorResponse),
+        (status = 500, description = "Internal biofield persistence error", body = crate::ErrorResponse),
     ),
     security(
         ("bearer_auth" = []),
@@ -943,12 +1182,64 @@ pub async fn create_capture(
     )
 )]
 pub async fn list_readings(
-    State(_state): State<AppState>,
-    Extension(_auth_user): Extension<AuthUser>,
+    State(state): State<AppState>,
+    Extension(auth_user): Extension<AuthUser>,
     Query(query): Query<ListBiofieldReadingsQuery>,
-) -> impl IntoResponse {
-    let _ = (query.limit, query.offset);
-    not_implemented_response("GET /api/v1/biofield/readings")
+) -> Response {
+    let Some(readings_repository) = state.readings_repository.as_ref() else {
+        return biofield_db_unavailable_response();
+    };
+    let Some(biofield_repository) = state.biofield_repository.as_ref() else {
+        return biofield_db_unavailable_response();
+    };
+
+    let user_id = match parse_auth_user_uuid(&auth_user) {
+        Ok(user_id) => user_id,
+        Err(response) => return response,
+    };
+
+    let (limit, offset) = normalize_readings_page(&query);
+    let readings = match readings_repository
+        .list_readings(
+            user_id,
+            Some(BIOFIELD_ENGINE_ID),
+            limit as i64,
+            offset as i64,
+        )
+        .await
+    {
+        Ok(readings) => readings,
+        Err(error) => return biofield_db_error_response("list biofield readings", &error),
+    };
+
+    let mut items = Vec::with_capacity(readings.len());
+    for reading in readings {
+        let artifacts = match biofield_repository
+            .list_reading_artifacts(reading.id, user_id)
+            .await
+        {
+            Ok(artifacts) => artifacts,
+            Err(error) => {
+                return biofield_db_error_response("list biofield reading artifacts", &error)
+            }
+        };
+
+        let summary = match build_reading_summary(&reading, &artifacts) {
+            Ok(summary) => summary,
+            Err(response) => return response,
+        };
+        items.push(summary);
+    }
+
+    (
+        StatusCode::OK,
+        Json(ListBiofieldReadingsResponse {
+            items,
+            limit,
+            offset,
+        }),
+    )
+        .into_response()
 }
 
 /// GET /api/v1/biofield/readings/:reading_id
@@ -963,7 +1254,9 @@ pub async fn list_readings(
         (status = 200, description = "Biofield reading detail", body = BiofieldReadingDetail),
         (status = 401, description = "Unauthorized", body = crate::ErrorResponse),
         (status = 404, description = "Reading not found", body = crate::ErrorResponse),
-        (status = 501, description = "Scaffolded route placeholder", body = BiofieldPlaceholderResponse),
+        (status = 422, description = "Invalid reading identifier", body = crate::ErrorResponse),
+        (status = 503, description = "Biofield DB unavailable", body = crate::ErrorResponse),
+        (status = 500, description = "Internal biofield persistence error", body = crate::ErrorResponse),
     ),
     security(
         ("bearer_auth" = []),
@@ -971,9 +1264,47 @@ pub async fn list_readings(
     )
 )]
 pub async fn get_reading(
-    State(_state): State<AppState>,
-    Extension(_auth_user): Extension<AuthUser>,
-    Path(_reading_id): Path<String>,
-) -> impl IntoResponse {
-    not_implemented_response("GET /api/v1/biofield/readings/:reading_id")
+    State(state): State<AppState>,
+    Extension(auth_user): Extension<AuthUser>,
+    Path(reading_id): Path<String>,
+) -> Response {
+    let Some(readings_repository) = state.readings_repository.as_ref() else {
+        return biofield_db_unavailable_response();
+    };
+    let Some(biofield_repository) = state.biofield_repository.as_ref() else {
+        return biofield_db_unavailable_response();
+    };
+
+    let user_id = match parse_auth_user_uuid(&auth_user) {
+        Ok(user_id) => user_id,
+        Err(response) => return response,
+    };
+
+    let reading_uuid = match parse_uuid_or_422(&reading_id, "reading_id") {
+        Ok(reading_uuid) => reading_uuid,
+        Err(response) => return response,
+    };
+
+    let reading = match readings_repository.get_reading(reading_uuid, user_id).await {
+        Ok(Some(reading)) if reading.engine_id == BIOFIELD_ENGINE_ID => reading,
+        Ok(Some(_)) | Ok(None) => return reading_not_found_response(&reading_id),
+        Err(error) => return biofield_db_error_response("fetch biofield reading", &error),
+    };
+
+    let artifacts = match biofield_repository
+        .list_reading_artifacts(reading_uuid, user_id)
+        .await
+    {
+        Ok(artifacts) => artifacts,
+        Err(error) => {
+            return biofield_db_error_response("fetch biofield reading artifacts", &error)
+        }
+    };
+
+    let response = match build_reading_detail_resource(&reading, &artifacts) {
+        Ok(response) => response,
+        Err(response) => return response,
+    };
+
+    (StatusCode::OK, Json(response)).into_response()
 }
