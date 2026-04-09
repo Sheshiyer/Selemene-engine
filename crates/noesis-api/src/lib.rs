@@ -251,7 +251,6 @@ use workflow_parity::log_workflow_registry_parity;
             handlers::biofield::BiofieldReadingSummary,
             handlers::biofield::ListBiofieldReadingsResponse,
             handlers::biofield::BiofieldReadingDetail,
-            handlers::biofield::BiofieldPlaceholderResponse,
         )
     ),
     tags(

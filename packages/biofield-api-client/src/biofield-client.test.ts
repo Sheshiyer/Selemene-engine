@@ -29,7 +29,7 @@ describe("BiofieldClient", () => {
 
   it("lists readings with query params", async () => {
     const fetchMock = vi.fn(async () =>
-      new Response(JSON.stringify([]), { status: 200 }),
+      new Response(JSON.stringify({ items: [], limit: 10, offset: 20 }), { status: 200 }),
     );
 
     const client = new BiofieldClient("https://example.com", { fetchImpl: fetchMock as typeof fetch });

@@ -1,10 +1,10 @@
 import type {
   BiofieldCaptureResult,
   BiofieldReadingDetail,
-  BiofieldReadingSummary,
   BiofieldSession,
   CloseBiofieldSessionRequest,
   CreateBiofieldSessionRequest,
+  ListBiofieldReadingsResponse,
 } from "@selemene/biofield-domain";
 
 export interface BiofieldClientOptions {
@@ -66,7 +66,7 @@ export class BiofieldClient {
 
   async listReadings(
     params: ListBiofieldReadingsParams = {},
-  ): Promise<BiofieldReadingSummary[]> {
+  ): Promise<ListBiofieldReadingsResponse> {
     const search = new URLSearchParams();
 
     if (params.limit !== undefined) {
@@ -79,7 +79,7 @@ export class BiofieldClient {
 
     const suffix = search.size > 0 ? `?${search.toString()}` : "";
 
-    return this.request<BiofieldReadingSummary[]>(`/api/v1/biofield/readings${suffix}`, {
+    return this.request<ListBiofieldReadingsResponse>(`/api/v1/biofield/readings${suffix}`, {
       method: "GET",
     });
   }

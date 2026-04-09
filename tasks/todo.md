@@ -1,3 +1,99 @@
+# Task Plan — BF1 Completion (BF1-06 / BF1-07 / BF1-08)
+
+## Checklist
+- [x] Restore authoritative BF verification footing and record the DB/bootstrap state.
+- [x] Implement BF1-06 reading history/detail APIs plus artifact linkage persistence.
+- [x] Align the shared biofield domain + typed client contract for paginated history responses.
+- [x] Implement BF1-07 real history and reading detail UI in `apps/biofield-web`.
+- [x] Implement BF1-08 smoke/runbook proof for the finished Phase 1 biofield slice.
+- [x] Run backend, frontend, smoke, and `git diff --check` verification.
+- [x] Summarize exactly what landed, what was verified, and any remaining blockers.
+
+## Notes
+- Finish Phase 1 surgically on `bf1-web-first-tranche-1`; no unrelated cleanup.
+- Local Postgres at `localhost:5432` was previously down, so DB-backed verification must be re-established before claiming full BF completion.
+
+## Review (fill after execution)
+- Scope:
+  - completed the remaining BF1 Phase 1 surface on the dedicated BF1 branch/worktree
+  - kept the changes limited to biofield backend/history/detail, shared client/domain seams, and smoke/runbook proof
+- Verification footing / DB state:
+  - confirmed local Docker was initially down, then launched Docker Desktop
+  - confirmed the machine already had a healthy `noesis-postgres` container bound to `localhost:5432`
+  - verified DB reachability with:
+    - `PGPASSWORD=noesis_password psql 'postgresql://noesis_user@localhost:5432/noesis' -c 'select 1 as ok;'`
+- BF1-06 backend outcome:
+  - completed `GET /api/v1/biofield/readings` in:
+    - `crates/noesis-api/src/handlers/biofield.rs`
+    - now returns real user-scoped paginated reading summaries
+  - completed `GET /api/v1/biofield/readings/:reading_id` in:
+    - `crates/noesis-api/src/handlers/biofield.rs`
+    - now returns real user-scoped reading detail payloads
+  - upgraded capture persistence in:
+    - `crates/noesis-api/src/handlers/biofield.rs`
+    - now creates a source artifact row in `biofield_capture_artifacts`
+    - keeps rejected/unlinked captures as artifact metadata rows
+    - links successful captures to the persisted reading row
+    - returns real artifact IDs + storage paths in capture/history/detail responses
+  - removed the last stale placeholder schema usage in:
+    - `crates/noesis-api/src/lib.rs`
+  - extended router-level coverage in:
+    - `crates/noesis-api/tests/biofield_capture_proxy.rs`
+    - added assertions for:
+      - artifact linkage on successful capture
+      - unlinked artifact metadata on rejected quality capture
+      - user-scoped history list
+      - user-scoped reading detail
+- Shared contract / package outcome:
+  - added paginated history response typing in:
+    - `packages/biofield-domain/src/index.ts`
+  - aligned the typed client in:
+    - `packages/biofield-api-client/src/biofield-client.ts`
+    - `packages/biofield-api-client/src/biofield-client.test.ts`
+    - `packages/biofield-api-client/tsconfig.json`
+  - `listReadings(...)` now returns the real paginated BF1 response shape instead of a bare array
+- BF1-07 frontend outcome:
+  - replaced the placeholder history page with a real authenticated data-backed view in:
+    - `apps/biofield-web/app/(protected)/history/page.tsx`
+    - `apps/biofield-web/src/components/biofield-history-page.tsx`
+  - replaced the placeholder reading detail page with a real authenticated detail view in:
+    - `apps/biofield-web/app/(protected)/readings/[readingId]/page.tsx`
+    - `apps/biofield-web/src/components/biofield-reading-detail-page.tsx`
+  - tightened the viewer handoff in:
+    - `apps/biofield-web/app/(protected)/viewer/page.tsx`
+    - latest capture panel now links directly into reading detail and history
+  - extended the web styles for the finished Phase 1 surfaces in:
+    - `apps/biofield-web/app/globals.css`
+- BF1-08 smoke / runbook outcome:
+  - upgraded the smoke script in:
+    - `scripts/smoke_biofield_web.sh`
+    - it now:
+      - self-registers a temporary user
+      - logs in
+      - creates a session
+      - uploads a generated capture
+      - verifies history and detail routes
+      - closes the session
+  - updated the operational proof in:
+    - `docs/runbooks/biofield-capture-analysis.md`
+  - important implementation note:
+    - the sidecar stub quality gate is currently size-based, so the smoke script now generates a >100 KB PNG payload to deterministically pass the current quality threshold
+- Verification:
+  - `npm --prefix packages/biofield-api-client test` ✅
+  - `npm --prefix packages/biofield-api-client run typecheck` ✅
+  - `npm --prefix apps/biofield-web run typecheck` ✅
+  - `npm --prefix apps/biofield-web run lint` ✅
+  - `npm --prefix apps/biofield-web run build` ✅
+  - `cargo test -p noesis-api --test biofield_handler_smoke -- --nocapture` ✅
+  - `cargo test -p noesis-api --test biofield_capture_proxy --no-run` ✅
+  - `DATABASE_URL=postgresql://noesis_user:noesis_password@localhost:5432/noesis cargo test -p noesis-api --test biofield_capture_proxy -- --nocapture` ✅
+  - `DATABASE_URL=postgresql://noesis_user:noesis_password@localhost:5432/noesis cargo test -p noesis-api --test biofield_session_lifecycle -- --nocapture` ✅
+  - `BIOFIELD_WEB_URL=http://127.0.0.1:3002 API_BASE_URL=http://127.0.0.1:8080 PYTHON_BIOFIELD_URL=http://127.0.0.1:8002 bash scripts/smoke_biofield_web.sh` ✅
+  - `git diff --check` ✅
+- Remaining blocker note:
+  - no code blocker remains for BF1 Phase 1 in this worktree
+  - the only operational wrinkle encountered was environment setup (Docker daemon + smoke image size threshold), both of which were resolved during verification
+
 # Task Plan — BF1 Implementation Tranche 2
 
 ## Checklist

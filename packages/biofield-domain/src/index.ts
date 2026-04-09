@@ -91,6 +91,12 @@ export interface BiofieldReadingSummary {
   artifact: BiofieldArtifactSummary;
 }
 
+export interface ListBiofieldReadingsResponse {
+  items: BiofieldReadingSummary[];
+  limit: number;
+  offset: number;
+}
+
 export interface BiofieldReadingDetail {
   reading_id: string;
   session_id: string;
