@@ -247,6 +247,7 @@ use workflow_parity::log_workflow_registry_parity;
             handlers::biofield::BiofieldSessionResource,
             handlers::biofield::BiofieldQualitySummary,
             handlers::biofield::BiofieldArtifactSummary,
+            handlers::biofield::BiofieldCaptureResponse,
             handlers::biofield::BiofieldReadingSummary,
             handlers::biofield::ListBiofieldReadingsResponse,
             handlers::biofield::BiofieldReadingDetail,

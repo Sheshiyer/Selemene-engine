@@ -187,6 +187,87 @@ textarea {
   background: rgba(255, 255, 255, 0.03);
 }
 
+.biofield-shell-copy {
+  margin: 0.35rem 0 0;
+}
+
+.biofield-form-panel {
+  display: grid;
+  gap: 1rem;
+}
+
+.biofield-form {
+  display: grid;
+  gap: 1rem;
+}
+
+.biofield-field {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.biofield-input {
+  width: 100%;
+  border-radius: 18px;
+  border: 1px solid var(--line-strong);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text);
+  padding: 0.9rem 1rem;
+}
+
+.biofield-input::file-selector-button {
+  margin-right: 0.9rem;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text);
+  padding: 0.55rem 0.8rem;
+  cursor: pointer;
+}
+
+.biofield-error,
+.biofield-success {
+  margin: 0;
+  border-radius: 18px;
+  padding: 0.9rem 1rem;
+}
+
+.biofield-error {
+  border: 1px solid rgba(255, 120, 120, 0.28);
+  background: rgba(255, 120, 120, 0.12);
+  color: #ffd5d5;
+}
+
+.biofield-success {
+  border: 1px solid rgba(78, 192, 184, 0.28);
+  background: rgba(78, 192, 184, 0.12);
+  color: #d8fff8;
+}
+
+.biofield-link-active {
+  border-color: var(--accent);
+  background: linear-gradient(135deg, var(--accent-soft), rgba(78, 192, 184, 0.06));
+}
+
+.biofield-list-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 0.8rem;
+  margin-bottom: 1rem;
+}
+
+.biofield-list-card {
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 0.95rem;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.biofield-mono {
+  font-family: "SFMono-Regular", "Menlo", monospace;
+  word-break: break-word;
+}
+
 @media (max-width: 720px) {
   .biofield-shell {
     padding: 1rem;

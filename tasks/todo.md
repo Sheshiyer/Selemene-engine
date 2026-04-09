@@ -1,3 +1,86 @@
+# Task Plan — BF1 Implementation Tranche 2
+
+## Checklist
+- [x] Continue safely on the dedicated BF1 branch/worktree and record tranche 2 in the tracker.
+- [x] Implement BF1-04 / BWF-020 biofield-web auth + session bootstrap.
+- [x] Implement BF1-05 / BWF-024-025 capture upload route and sidecar proxy in `noesis-api`.
+- [x] Wire the viewer UI to create/close sessions and upload a capture through the typed API client.
+- [x] Run frontend, Rust, and relevant Python verification plus `git diff --check`.
+- [x] Summarize exactly what landed and what remains for BF1-06/BF1-07.
+
+## Notes
+- This tranche is intentionally limited to authenticated web shell + upload/proxy success.
+- Persistence of readings/history/detail remains the next tranche unless a minimal capture response requires a tiny seam adjustment.
+
+## Review (fill after execution)
+- Scope:
+  - continued on the dedicated BF1 worktree / branch from tranche 1
+  - kept the tranche focused on BF1-04 frontend shell + BF1-05 capture route/proxy
+- BF1-04 / BWF-020 outcome:
+  - added `apps/biofield-web/src/lib/config.ts` with frontend-safe API base URL normalization
+  - added `apps/biofield-web/src/lib/auth.ts` with localStorage-backed auth session storage + subscription helpers
+  - added `apps/biofield-web/src/lib/api.ts` with:
+    - `login(...)`
+    - typed `BiofieldClient` construction for bearer-auth biofield calls
+  - replaced the placeholder login page in:
+    - `apps/biofield-web/app/(public)/login/page.tsx`
+    - now supports real email/password login against `/api/v1/auth/login`
+  - replaced the protected layout in:
+    - `apps/biofield-web/app/(protected)/layout.tsx`
+    - now acts as a real auth gate with sign-out support
+  - replaced the viewer shell in:
+    - `apps/biofield-web/app/(protected)/viewer/page.tsx`
+    - now supports:
+      - start session
+      - close session
+      - choose image file
+      - upload capture
+      - render returned analysis summary
+  - extended `apps/biofield-web/app/globals.css` with the form, status, and detail styles needed for the new shell
+- BF1-05 / BWF-024-025 outcome:
+  - fixed the workspace source export in:
+    - `packages/biofield-api-client/src/index.ts`
+  - replaced the capture placeholder in:
+    - `crates/noesis-api/src/handlers/biofield.rs`
+    - new route now:
+      - parses multipart form-data
+      - accepts `image` or `file`
+      - validates and parses `algorithms`, `options`, and `capture_metadata`
+      - enforces session ownership and active-session checks
+      - proxies the capture to the Python sidecar through `BiofieldClient`
+      - normalizes quality rejection into `BIOFIELD_CAPTURE_REJECTED_QUALITY`
+      - persists a minimal reading row so the response can return a stable `reading_id`
+      - returns a typed capture response for the frontend viewer
+  - added router-level BF1-05 coverage in:
+    - `crates/noesis-api/tests/biofield_capture_proxy.rs`
+    - covers:
+      - missing image field
+      - missing session
+      - inactive session
+      - successful sidecar proxy + reading persistence
+      - quality rejection normalization
+  - registered the new capture response schema in:
+    - `crates/noesis-api/src/lib.rs`
+- Verification:
+  - `cargo test -p noesis-api --test biofield_handler_smoke -- --nocapture` ✅
+  - `npm --prefix apps/biofield-web install` ✅
+  - `npm --prefix apps/biofield-web run typecheck` ✅
+  - `npm --prefix apps/biofield-web run lint` ✅
+  - `npm --prefix apps/biofield-web run build` ✅
+  - `git diff --check` ✅
+  - attempted DB-backed verification for:
+    - `DATABASE_URL=postgresql://noesis_user:noesis_password@localhost:5432/noesis cargo test -p noesis-api --test biofield_capture_proxy -- --nocapture`
+    - `DATABASE_URL=postgresql://noesis_user:noesis_password@localhost:5432/noesis cargo test -p noesis-api --test biofield_session_lifecycle -- --nocapture`
+  - current blocker:
+    - local Postgres at `localhost:5432` is unavailable in this environment (`psql` returns connection refused), so those integration tests could not execute authoritatively
+- Tranche boundary note:
+  - a minimal reading row is now created during successful capture so the route can return a stable `reading_id`
+  - full history/detail persistence surfaces and artifact linkage are still deferred to the next tranche
+- Remaining next tranche:
+  - BF1-06 persist reading/artifact linkage fully and expose history/detail APIs
+  - BF1-07 render real history and reading detail in `biofield-web`
+  - BF1-08 vertical-slice smoke/runbook proof
+
 # Task Plan — BF1 Implementation Tranche 1
 
 ## Checklist
