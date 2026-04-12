@@ -60,7 +60,7 @@ pub async fn create_invite(
     // Generate unique invite code
     let code = format!(
         "selemene_{}",
-        Uuid::new_v4().to_string().replace("-", "")[..16].to_string()
+        &Uuid::new_v4().to_string().replace("-", "")[..16]
     );
 
     // Calculate expiration (default 24 hours)
@@ -105,7 +105,7 @@ pub async fn get_onboarding(
 
     let invite = codes
         .get(&code)
-        .ok_or_else(|| (axum::http::StatusCode::NOT_FOUND, "Invite code not found"))?;
+        .ok_or((axum::http::StatusCode::NOT_FOUND, "Invite code not found"))?;
 
     // Check expiration
     let now = SystemTime::now()

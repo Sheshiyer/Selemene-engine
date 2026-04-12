@@ -1121,6 +1121,7 @@ fn parse_explicit_timezone_offset(tz: &str) -> Option<f64> {
     Some(sign * (hours + (minutes / 60.0)))
 }
 
+#[allow(clippy::result_large_err)]
 fn resolve_timezone_offset(
     timezone: &str,
     local_datetime: NaiveDateTime,
@@ -1162,6 +1163,7 @@ fn resolve_timezone_offset(
     }
 }
 
+#[allow(clippy::result_large_err)]
 fn resolve_birth_details(
     input: &EngineInput,
 ) -> Result<ResolvedBirthDetails, (StatusCode, Json<ErrorResponse>)> {
@@ -1597,7 +1599,7 @@ fn build_d1_chart(
 }
 
 /// Build a JSON D9 (Navamsa) chart from the D1 chart JSON.
-fn build_d9_chart(birth: &ResolvedBirthDetails, d1: &serde_json::Value) -> serde_json::Value {
+fn build_d9_chart(_birth: &ResolvedBirthDetails, d1: &serde_json::Value) -> serde_json::Value {
     let asc_sign_name = d1["ascendant"]["sign"].as_str().unwrap_or("aries");
     let asc_sign_idx = VEDIC_SIGN_NAMES
         .iter()

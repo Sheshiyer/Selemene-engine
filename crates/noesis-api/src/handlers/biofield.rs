@@ -325,6 +325,7 @@ fn biofield_db_error_response(action: &str, error: &sqlx::Error) -> Response {
     )
 }
 
+#[allow(clippy::result_large_err)]
 fn parse_auth_user_uuid(auth_user: &AuthUser) -> Result<Uuid, Response> {
     Uuid::parse_str(&auth_user.user_id).map_err(|_| {
         json_error_response(
@@ -336,6 +337,7 @@ fn parse_auth_user_uuid(auth_user: &AuthUser) -> Result<Uuid, Response> {
     })
 }
 
+#[allow(clippy::result_large_err)]
 fn parse_uuid_or_422(value: &str, field: &str) -> Result<Uuid, Response> {
     Uuid::parse_str(value).map_err(|_| invalid_uuid_response(field, value))
 }
@@ -362,6 +364,7 @@ fn build_biofield_client_from_env() -> BiofieldClient {
     BiofieldClient::new(base_url, Duration::from_millis(timeout_ms))
 }
 
+#[allow(clippy::result_large_err)]
 fn parse_json_string_array(raw: &str, field_name: &str) -> Result<Vec<String>, Response> {
     let parsed = serde_json::from_str::<Value>(raw).map_err(|error| {
         capture_invalid_response(
@@ -391,6 +394,7 @@ fn parse_json_string_array(raw: &str, field_name: &str) -> Result<Vec<String>, R
     Ok(values)
 }
 
+#[allow(clippy::result_large_err)]
 fn parse_json_object(raw: &str, field_name: &str) -> Result<Value, Response> {
     let parsed = serde_json::from_str::<Value>(raw).map_err(|error| {
         capture_invalid_response(
@@ -646,6 +650,7 @@ fn extract_reading_session_id(
         })
 }
 
+#[allow(clippy::result_large_err)]
 fn build_reading_summary(
     reading: &Reading,
     artifacts: &[BiofieldCaptureArtifact],
@@ -673,6 +678,7 @@ fn build_reading_summary(
     })
 }
 
+#[allow(clippy::result_large_err)]
 fn build_reading_detail_resource(
     reading: &Reading,
     artifacts: &[BiofieldCaptureArtifact],
@@ -891,6 +897,7 @@ fn build_reprocess_response(
     }
 }
 
+#[allow(clippy::result_large_err)]
 fn extract_analysis_payload(sidecar_response: &Value) -> Result<(String, Value, Value), Response> {
     let analysis_version = match sidecar_response
         .get("analysis_version")
@@ -976,9 +983,9 @@ fn reading_options(reading: &Reading) -> Option<Value> {
         .cloned()
 }
 
-fn source_artifact_for_reading<'a>(
-    artifacts: &'a [BiofieldCaptureArtifact],
-) -> Option<&'a BiofieldCaptureArtifact> {
+fn source_artifact_for_reading(
+    artifacts: &[BiofieldCaptureArtifact],
+) -> Option<&BiofieldCaptureArtifact> {
     artifacts
         .iter()
         .find(|artifact| artifact.artifact_kind == BIOFIELD_CAPTURE_ARTIFACT_SOURCE_IMAGE)
@@ -1036,6 +1043,7 @@ fn build_reprocess_input_data(
     })
 }
 
+#[allow(clippy::too_many_arguments)]
 async fn save_reprocessed_reading(
     readings_repository: &ReadingsRepository,
     auth_user: &AuthUser,
@@ -1132,6 +1140,7 @@ fn baseline_summary_from_record(record: &BiofieldBaselineSummaryRecord) -> Biofi
     }
 }
 
+#[allow(clippy::too_many_arguments)]
 async fn save_capture_reading(
     readings_repository: &ReadingsRepository,
     auth_user: &AuthUser,
