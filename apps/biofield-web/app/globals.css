@@ -201,9 +201,20 @@ textarea {
   gap: 1rem;
 }
 
+.biofield-form-inline {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+}
+
 .biofield-field {
   display: grid;
   gap: 0.45rem;
+}
+
+.biofield-field-grow {
+  min-width: 0;
 }
 
 .biofield-input {
@@ -345,5 +356,9 @@ textarea {
 @media (max-width: 720px) {
   .biofield-shell {
     padding: 1rem;
+  }
+
+  .biofield-form-inline {
+    grid-template-columns: 1fr;
   }
 }

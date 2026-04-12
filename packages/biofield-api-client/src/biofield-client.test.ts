@@ -43,29 +43,41 @@ describe("BiofieldClient", () => {
     );
   });
 
-  it("posts reprocess and baseline routes against the frozen namespace", async () => {
+  it("supports comparison-aware detail fetches plus reprocess and baseline routes", async () => {
     const fetchMock = vi.fn(async () =>
       new Response(JSON.stringify({ reading_id: "reading-2" }), { status: 200 }),
     );
 
     const client = new BiofieldClient("https://example.com", { fetchImpl: fetchMock as typeof fetch });
+    await client.getReading("reading-1", { baselineId: "baseline-1" });
     await client.reprocessReading("reading-1");
     await client.listBaselines();
     await client.createBaseline({ name: "Morning", reading_ids: ["reading-1"] });
+    await client.createExport({ reading_id: "reading-1", baseline_id: "baseline-1" });
 
     expect(fetchMock).toHaveBeenNthCalledWith(
       1,
+      "https://example.com/api/v1/biofield/readings/reading-1?baseline_id=baseline-1",
+      expect.objectContaining({ method: "GET" }),
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      2,
       "https://example.com/api/v1/biofield/readings/reading-1/reprocess",
       expect.objectContaining({ method: "POST" }),
     );
     expect(fetchMock).toHaveBeenNthCalledWith(
-      2,
+      3,
       "https://example.com/api/v1/biofield/baselines",
       expect.objectContaining({ method: "GET" }),
     );
     expect(fetchMock).toHaveBeenNthCalledWith(
-      3,
+      4,
       "https://example.com/api/v1/biofield/baselines",
+      expect.objectContaining({ method: "POST" }),
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      5,
+      "https://example.com/api/v1/biofield/exports",
       expect.objectContaining({ method: "POST" }),
     );
   });

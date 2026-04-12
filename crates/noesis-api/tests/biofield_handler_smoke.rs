@@ -38,6 +38,7 @@ async fn biofield_handler_smoke_routes_exist_under_api_v1() {
         ),
         ("GET", "/api/v1/biofield/baselines", None),
         ("POST", "/api/v1/biofield/baselines", Some(json!({}))),
+        ("POST", "/api/v1/biofield/exports", Some(json!({}))),
     ];
 
     for (method, uri, body) in unauthorized_cases {
@@ -82,6 +83,7 @@ async fn biofield_handler_smoke_openapi_contains_biofield_paths() {
         "/api/v1/biofield/readings/{reading_id}",
         "/api/v1/biofield/readings/{reading_id}/reprocess",
         "/api/v1/biofield/baselines",
+        "/api/v1/biofield/exports",
     ];
 
     for path in expected {

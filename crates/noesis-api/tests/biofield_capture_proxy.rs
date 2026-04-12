@@ -9,7 +9,13 @@ use noesis_api::{create_router, shared_metrics, ApiConfig, AppState};
 use noesis_auth::AuthService;
 use noesis_cache::CacheManager;
 use noesis_data::{
-    models::biofield::NewBiofieldSession,
+    models::{
+        biofield::{
+            NewBiofieldBaseline, NewBiofieldCaptureArtifact, NewBiofieldSession,
+            BIOFIELD_CAPTURE_ARTIFACT_SOURCE_IMAGE,
+        },
+        reading::NewReading,
+    },
     repositories::{
         biofield_repository::BiofieldRepository, readings_repository::ReadingsRepository,
         user_repository::UserRepository,
@@ -65,6 +71,10 @@ async fn ensure_biofield_schema(pool: &PgPool) {
             SELECT 1
             FROM information_schema.tables
             WHERE table_name = 'biofield_baseline_readings'
+        ) AND EXISTS (
+            SELECT 1
+            FROM information_schema.tables
+            WHERE table_name = 'biofield_exports'
         )
         "#,
     )
@@ -88,6 +98,8 @@ async fn ensure_biofield_schema(pool: &PgPool) {
     let migration_018 =
         fs::read_to_string(repo_root().join("migrations/018_biofield_baselines.sql"))
             .expect("root migration 018");
+    let migration_019 = fs::read_to_string(repo_root().join("migrations/019_biofield_exports.sql"))
+        .expect("root migration 019");
 
     let apply_result = async {
         let schema_exists_after_lock: bool = sqlx::query_scalar(
@@ -108,6 +120,10 @@ async fn ensure_biofield_schema(pool: &PgPool) {
                 SELECT 1
                 FROM information_schema.tables
                 WHERE table_name = 'biofield_baseline_readings'
+            ) AND EXISTS (
+                SELECT 1
+                FROM information_schema.tables
+                WHERE table_name = 'biofield_exports'
             )
             "#,
         )
@@ -127,6 +143,10 @@ async fn ensure_biofield_schema(pool: &PgPool) {
             .execute(pool)
             .await
             .expect("biofield migration 018 should apply to test database");
+        sqlx::raw_sql(&migration_019)
+            .execute(pool)
+            .await
+            .expect("biofield migration 019 should apply to test database");
     }
     .await;
 
@@ -438,6 +458,72 @@ impl BiofieldCaptureHarness {
             .await
             .expect("test user cleanup should succeed");
     }
+}
+
+async fn create_persisted_biofield_reading(
+    harness: &BiofieldCaptureHarness,
+    user_id: Uuid,
+    session_id: Uuid,
+    label: &str,
+    metrics: Value,
+) -> Uuid {
+    let reading_id = harness
+        .readings_repository
+        .save_reading(&NewReading {
+            user_id,
+            engine_id: "biofield-capture".to_string(),
+            workflow_id: None,
+            input_hash: format!("bf-{:.8}-{}", label, Uuid::new_v4().simple()),
+            input_data: json!({
+                "session_id": session_id,
+                "content_type": "image/jpeg",
+                "file_name": format!("{label}.jpg"),
+                "capture_metadata": {
+                    "platform": "test"
+                }
+            }),
+            result_data: json!({
+                "analysis_version": "stub-metrics/v1",
+                "metrics": metrics,
+                "quality_assessment": {
+                    "sharpness": 0.88,
+                    "contrast": 0.82,
+                    "noise_level": 0.08,
+                    "exposure": 0.54,
+                    "sufficient_quality": true
+                }
+            }),
+            witness_prompt: None,
+            consciousness_level: 0,
+            calculation_time_ms: Some(12.5),
+            client_event_id: None,
+            client_device_id: Some("test-device".to_string()),
+            device_platform: Some("test".to_string()),
+            device_app_version: Some("biofield-web/test".to_string()),
+        })
+        .await
+        .expect("reading should be created");
+
+    harness
+        .biofield_repository
+        .create_artifact(&NewBiofieldCaptureArtifact {
+            session_id,
+            reading_id: Some(reading_id),
+            artifact_kind: BIOFIELD_CAPTURE_ARTIFACT_SOURCE_IMAGE.to_string(),
+            storage_path: format!("biofield/{session_id}/{label}.jpg"),
+            mime_type: "image/jpeg".to_string(),
+            byte_size: 4_096,
+            capture_metadata: json!({
+                "file_name": format!("{label}.jpg"),
+                "capture_metadata": {
+                    "platform": "test"
+                }
+            }),
+        })
+        .await
+        .expect("artifact should be created");
+
+    reading_id
 }
 
 #[tokio::test]
@@ -1187,6 +1273,252 @@ async fn biofield_baselines_create_and_list_are_user_scoped() {
         cross_user_payload["error_code"],
         "BIOFIELD_READING_NOT_FOUND"
     );
+
+    harness.delete_user(other_user_id).await;
+    harness.delete_user(user_id).await;
+    let _ = fs::remove_dir_all(artifacts_dir);
+}
+
+#[tokio::test]
+#[serial]
+async fn biofield_reading_detail_supports_baseline_comparison() {
+    let Some(harness) = BiofieldCaptureHarness::new().await else {
+        return;
+    };
+
+    let user_id = harness.create_user_id("comparison-owner").await;
+    let session_id = harness.create_session_for_user(user_id).await;
+    let token = harness.token_for_user(user_id);
+
+    let primary_reading_id = create_persisted_biofield_reading(
+        &harness,
+        user_id,
+        session_id,
+        "comparison-primary",
+        json!({
+            "light_quanta_density": 50.0,
+            "normalized_area": 0.8,
+            "average_intensity": 0.55,
+            "energy_analysis": {
+                "low": 0.2,
+                "medium": 0.5,
+                "high": 0.3,
+                "total": 1.0
+            }
+        }),
+    )
+    .await;
+    let baseline_reading_id = create_persisted_biofield_reading(
+        &harness,
+        user_id,
+        session_id,
+        "comparison-baseline",
+        json!({
+            "light_quanta_density": 30.0,
+            "normalized_area": 0.5,
+            "average_intensity": 0.4,
+            "energy_analysis": {
+                "low": 0.1,
+                "medium": 0.6,
+                "high": 0.3,
+                "total": 1.0
+            }
+        }),
+    )
+    .await;
+
+    let baseline = harness
+        .biofield_repository
+        .create_baseline(
+            &NewBiofieldBaseline {
+                user_id,
+                name: "Reference baseline".to_string(),
+                notes: Some("Built for BF3 comparison".to_string()),
+            },
+            &[baseline_reading_id],
+        )
+        .await
+        .expect("baseline should be created");
+
+    let (status, payload) = harness
+        .send_authenticated_request(
+            "GET",
+            &format!(
+                "/api/v1/biofield/readings/{}?baseline_id={}",
+                primary_reading_id, baseline.id
+            ),
+            &token,
+        )
+        .await;
+
+    assert_eq!(status, StatusCode::OK);
+    assert_eq!(
+        payload["comparison"]["comparison_version"],
+        "biofield-baseline-delta/v1"
+    );
+    assert_eq!(
+        payload["comparison"]["baseline"]["baseline_id"],
+        baseline.id.to_string()
+    );
+    let delta = payload["comparison"]["deltas"]
+        .as_array()
+        .expect("comparison deltas array")
+        .iter()
+        .find(|item| item["key"] == "light_quanta_density")
+        .expect("light_quanta_density delta should exist");
+    assert_eq!(delta["reading_value"], 50.0);
+    assert_eq!(delta["baseline_value"], 30.0);
+    assert_eq!(delta["absolute_delta"], 20.0);
+
+    harness.delete_user(user_id).await;
+}
+
+#[tokio::test]
+#[serial]
+async fn biofield_exports_persist_bundle_and_enforce_user_scope() {
+    let Some(harness) = BiofieldCaptureHarness::new().await else {
+        return;
+    };
+
+    let user_id = harness.create_user_id("export-owner").await;
+    let other_user_id = harness.create_user_id("export-other").await;
+    let session_id = harness.create_session_for_user(user_id).await;
+    let other_session_id = harness.create_session_for_user(other_user_id).await;
+    let token = harness.token_for_user(user_id);
+    let artifacts_dir = artifact_dir("export");
+    let _env = EnvGuard::set(&[(
+        "BIOFIELD_ARTIFACTS_DIR",
+        artifacts_dir.display().to_string(),
+    )]);
+
+    let reading_id = create_persisted_biofield_reading(
+        &harness,
+        user_id,
+        session_id,
+        "export-reading",
+        json!({
+            "light_quanta_density": 42.5,
+            "normalized_area": 0.67,
+            "average_intensity": 0.51,
+            "energy_analysis": {
+                "low": 0.2,
+                "medium": 0.5,
+                "high": 0.3,
+                "total": 1.0
+            }
+        }),
+    )
+    .await;
+    let baseline_reading_id = create_persisted_biofield_reading(
+        &harness,
+        user_id,
+        session_id,
+        "export-baseline",
+        json!({
+            "light_quanta_density": 40.0,
+            "normalized_area": 0.6,
+            "average_intensity": 0.49,
+            "energy_analysis": {
+                "low": 0.25,
+                "medium": 0.45,
+                "high": 0.3,
+                "total": 1.0
+            }
+        }),
+    )
+    .await;
+    let baseline = harness
+        .biofield_repository
+        .create_baseline(
+            &NewBiofieldBaseline {
+                user_id,
+                name: "Export baseline".to_string(),
+                notes: Some("Used for BF3 export proof".to_string()),
+            },
+            &[baseline_reading_id],
+        )
+        .await
+        .expect("baseline should be created");
+
+    let other_reading_id = create_persisted_biofield_reading(
+        &harness,
+        other_user_id,
+        other_session_id,
+        "export-foreign",
+        json!({
+            "light_quanta_density": 10.0,
+            "normalized_area": 0.2,
+            "average_intensity": 0.1,
+            "energy_analysis": {
+                "low": 0.4,
+                "medium": 0.4,
+                "high": 0.2,
+                "total": 1.0
+            }
+        }),
+    )
+    .await;
+
+    let (status, payload) = harness
+        .send_authenticated_json(
+            "POST",
+            "/api/v1/biofield/exports",
+            &token,
+            json!({
+                "reading_id": reading_id,
+                "baseline_id": baseline.id,
+                "format": "json",
+            }),
+        )
+        .await;
+    assert_eq!(status, StatusCode::CREATED);
+    assert_eq!(payload["reading_id"], reading_id.to_string());
+    assert_eq!(payload["baseline_id"], baseline.id.to_string());
+    assert_eq!(payload["format"], "json");
+    assert_eq!(payload["bundle"]["contract_version"], "biofield-export/v1");
+    assert_eq!(
+        payload["bundle"]["reading"]["comparison"]["baseline"]["baseline_id"],
+        baseline.id.to_string()
+    );
+
+    let export_id = Uuid::parse_str(payload["export_id"].as_str().expect("export id string"))
+        .expect("valid export uuid");
+    let storage_path = payload["storage_path"]
+        .as_str()
+        .expect("storage path should exist")
+        .to_string();
+    assert!(artifacts_dir.join(&storage_path).exists());
+
+    let export_record = harness
+        .biofield_repository
+        .get_export(export_id, user_id)
+        .await
+        .expect("export lookup should succeed")
+        .expect("export should exist for owner");
+    assert_eq!(export_record.reading_id, reading_id);
+    assert_eq!(export_record.baseline_id, Some(baseline.id));
+    assert_eq!(export_record.export_format, "json");
+
+    let foreign_export = harness
+        .biofield_repository
+        .get_export(export_id, other_user_id)
+        .await
+        .expect("foreign export lookup should not error");
+    assert!(foreign_export.is_none());
+
+    let (cross_status, cross_payload) = harness
+        .send_authenticated_json(
+            "POST",
+            "/api/v1/biofield/exports",
+            &token,
+            json!({
+                "reading_id": other_reading_id,
+                "format": "json",
+            }),
+        )
+        .await;
+    assert_eq!(cross_status, StatusCode::NOT_FOUND);
+    assert_eq!(cross_payload["error_code"], "BIOFIELD_READING_NOT_FOUND");
 
     harness.delete_user(other_user_id).await;
     harness.delete_user(user_id).await;
