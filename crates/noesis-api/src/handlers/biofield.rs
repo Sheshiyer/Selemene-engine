@@ -774,6 +774,7 @@ fn build_reading_detail_resource(
     })
 }
 
+#[allow(clippy::result_large_err)]
 fn extract_reading_session_uuid(
     reading: &Reading,
     artifacts: &[BiofieldCaptureArtifact],
@@ -1392,6 +1393,7 @@ fn build_export_bundle(reading: &BiofieldReadingDetail, format: &str) -> Value {
     })
 }
 
+#[allow(clippy::too_many_arguments)]
 async fn save_export_record(
     biofield_repository: &BiofieldRepository,
     user_id: Uuid,
