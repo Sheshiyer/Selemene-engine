@@ -29,6 +29,7 @@ members = [
     "crates/engine-gene-keys",
     "crates/engine-vedic-clock",
     "crates/engine-biofield",
+    "crates/engine-biofield-capture",
     "crates/engine-face-reading",
     "crates/engine-nadabrahman",
     "crates/engine-transits",

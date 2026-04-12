@@ -1125,6 +1125,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "engine-biofield-capture"
+version = "3.0.0"
+dependencies = [
+ "async-trait",
+ "chrono",
+ "noesis-core",
+ "noesis-data",
+ "serde_json",
+ "sha2",
+ "sqlx",
+ "tokio",
+ "uuid",
+]
+
+[[package]]
 name = "engine-biorhythm"
 version = "3.0.0"
 dependencies = [
@@ -2657,6 +2672,7 @@ dependencies = [
  "chrono",
  "criterion",
  "engine-biofield",
+ "engine-biofield-capture",
  "engine-biorhythm",
  "engine-face-reading",
  "engine-gene-keys",
@@ -2674,6 +2690,7 @@ dependencies = [
  "noesis-witness",
  "serde",
  "serde_json",
+ "sqlx",
  "tokio",
  "tracing",
 ]

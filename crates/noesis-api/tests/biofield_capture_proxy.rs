@@ -312,8 +312,13 @@ impl BiofieldCaptureHarness {
         let biofield_repository = Arc::new(BiofieldRepository::new(pool.clone()));
         let readings_repository = Arc::new(ReadingsRepository::new(pool.clone()));
 
+        let mut orchestrator = WorkflowOrchestrator::new();
+        orchestrator.register_engine(Arc::new(noesis_orchestrator::BiofieldCaptureEngine::new(
+            pool.clone(),
+        )));
+
         let state = AppState {
-            orchestrator: Arc::new(WorkflowOrchestrator::new()),
+            orchestrator: Arc::new(orchestrator),
             bridge_manager: Arc::new(noesis_bridge::BridgeManager::from_env()),
             cache: Arc::new(CacheManager::new(
                 String::new(),
@@ -452,6 +457,78 @@ impl BiofieldCaptureHarness {
     }
 
     async fn delete_user(&self, user_id: Uuid) {
+        sqlx::query(
+            "DELETE FROM biofield_exports WHERE user_id = $1",
+        )
+        .bind(user_id)
+        .execute(&self.pool)
+        .await
+        .expect("cleanup biofield_exports should succeed");
+
+        sqlx::query(
+            r#"
+            DELETE FROM biofield_baseline_readings
+            WHERE baseline_id IN (
+                SELECT id FROM biofield_baselines WHERE user_id = $1
+            )
+            "#,
+        )
+        .bind(user_id)
+        .execute(&self.pool)
+        .await
+        .expect("cleanup biofield_baseline_readings should succeed");
+
+        sqlx::query("DELETE FROM biofield_baselines WHERE user_id = $1")
+            .bind(user_id)
+            .execute(&self.pool)
+            .await
+            .expect("cleanup biofield_baselines should succeed");
+
+        sqlx::query(
+            r#"
+            DELETE FROM biofield_capture_artifacts
+            WHERE session_id IN (
+                SELECT id FROM biofield_sessions WHERE user_id = $1
+            ) OR reading_id IN (
+                SELECT id FROM readings WHERE user_id = $1
+            )
+            "#,
+        )
+        .bind(user_id)
+        .execute(&self.pool)
+        .await
+        .expect("cleanup biofield_capture_artifacts should succeed");
+
+        sqlx::query("DELETE FROM biofield_sessions WHERE user_id = $1")
+            .bind(user_id)
+            .execute(&self.pool)
+            .await
+            .expect("cleanup biofield_sessions should succeed");
+
+        sqlx::query("DELETE FROM progression_logs WHERE user_id = $1")
+            .bind(user_id)
+            .execute(&self.pool)
+            .await
+            .expect("cleanup progression_logs should succeed");
+
+        sqlx::query("DELETE FROM history_sync_state WHERE user_id = $1")
+            .bind(user_id)
+            .execute(&self.pool)
+            .await
+            .expect("cleanup history_sync_state should succeed");
+
+        sqlx::query("DELETE FROM readings WHERE user_id = $1")
+            .bind(user_id)
+            .execute(&self.pool)
+            .await
+            .expect("cleanup readings should succeed");
+
+        sqlx::query("DELETE FROM user_devices WHERE user_id = $1")
+            .bind(user_id)
+            .execute(&self.pool)
+            .await
+            .expect("cleanup user_devices should succeed");
+
         sqlx::query("DELETE FROM users WHERE id = $1")
             .bind(user_id)
             .execute(&self.pool)
@@ -1370,6 +1447,91 @@ async fn biofield_reading_detail_supports_baseline_comparison() {
     assert_eq!(delta["baseline_value"], 30.0);
     assert_eq!(delta["absolute_delta"], 20.0);
 
+    harness.delete_user(user_id).await;
+}
+
+#[tokio::test]
+#[serial]
+async fn biofield_capture_engine_route_resolves_owner_reading() {
+    let Some(harness) = BiofieldCaptureHarness::new().await else {
+        return;
+    };
+
+    let user_id = harness.create_user_id("engine-route").await;
+    let session_id = harness.create_session_for_user(user_id).await;
+    let reading_id = create_persisted_biofield_reading(
+        &harness,
+        user_id,
+        session_id,
+        "engine-route",
+        json!({
+            "light_quanta_density": 48.0,
+            "normalized_area": 0.62,
+            "average_intensity": 172.0,
+            "fractal_dimension": 1.41,
+            "body_symmetry": 0.77,
+            "pattern_regularity": 0.58
+        }),
+    )
+    .await;
+    let token = harness.token_for_user(user_id);
+    let reading_count_before = harness
+        .readings_repository
+        .count_readings(user_id, Some("biofield-capture"))
+        .await
+        .expect("reading count before route call should succeed");
+
+    let (status, payload) = harness
+        .send_authenticated_json(
+            "POST",
+            "/api/v1/engines/biofield-capture/calculate",
+            &token,
+            json!({
+                "options": {
+                    "biofield_capture": {
+                        "reading_id": reading_id
+                    }
+                }
+            }),
+        )
+        .await;
+
+    assert_eq!(status, StatusCode::OK);
+    assert_eq!(payload["engine_id"], "biofield-capture");
+    assert_eq!(payload["result"]["reading_id"], reading_id.to_string());
+    assert_eq!(
+        payload["result"]["analysis"]["analysis_version"],
+        "stub-metrics/v1"
+    );
+    assert_eq!(
+        payload["result"]["quality_assessment"]["sufficient_quality"],
+        true
+    );
+    assert!(payload["witness_prompt"].as_str().unwrap_or_default().len() > 8);
+
+    let reading_count_after = harness
+        .readings_repository
+        .count_readings(user_id, Some("biofield-capture"))
+        .await
+        .expect("reading count after route call should succeed");
+    assert_eq!(reading_count_before, 1);
+    assert_eq!(reading_count_after, reading_count_before);
+
+    sqlx::query("DELETE FROM biofield_capture_artifacts WHERE session_id = $1")
+        .bind(session_id)
+        .execute(&harness.pool)
+        .await
+        .expect("cleanup artifacts");
+    sqlx::query("DELETE FROM biofield_sessions WHERE id = $1")
+        .bind(session_id)
+        .execute(&harness.pool)
+        .await
+        .expect("cleanup session");
+    sqlx::query("DELETE FROM readings WHERE id = $1")
+        .bind(reading_id)
+        .execute(&harness.pool)
+        .await
+        .expect("cleanup reading");
     harness.delete_user(user_id).await;
 }
 

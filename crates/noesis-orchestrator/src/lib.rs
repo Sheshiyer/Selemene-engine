@@ -63,6 +63,7 @@ pub use noesis_bridge::{BridgeEngine, BridgeManager, DEFAULT_TS_SERVER_URL};
 
 // Re-export engine types for convenience
 pub use engine_biofield::BiofieldEngine;
+pub use engine_biofield_capture::BiofieldCaptureEngine;
 
 use chrono::Utc;
 use futures::future::join_all;
@@ -274,6 +275,11 @@ impl WorkflowOrchestrator {
     ///
     /// This keeps engine-construction details out of transport crates so API
     /// handlers only depend on the orchestrator boundary.
+    ///
+    /// Note: data-backed engines that need a database connection (for example
+    /// `biofield-capture`) are intentionally not registered here. Transport
+    /// crates may opt into those engines only when a repository-backed runtime
+    /// is actually available.
     pub fn register_native_runtime_engines(&mut self) {
         self.register_engine(Arc::new(engine_panchanga::PanchangaEngine::new()));
         self.register_engine(Arc::new(engine_numerology::NumerologyEngine::new()));
