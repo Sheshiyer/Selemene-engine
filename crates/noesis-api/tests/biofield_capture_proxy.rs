@@ -457,13 +457,11 @@ impl BiofieldCaptureHarness {
     }
 
     async fn delete_user(&self, user_id: Uuid) {
-        sqlx::query(
-            "DELETE FROM biofield_exports WHERE user_id = $1",
-        )
-        .bind(user_id)
-        .execute(&self.pool)
-        .await
-        .expect("cleanup biofield_exports should succeed");
+        sqlx::query("DELETE FROM biofield_exports WHERE user_id = $1")
+            .bind(user_id)
+            .execute(&self.pool)
+            .await
+            .expect("cleanup biofield_exports should succeed");
 
         sqlx::query(
             r#"
