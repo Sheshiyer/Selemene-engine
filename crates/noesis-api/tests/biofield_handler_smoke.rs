@@ -31,11 +31,22 @@ async fn biofield_handler_smoke_routes_exist_under_api_v1() {
             "/api/v1/biofield/readings/00000000-0000-0000-0000-000000000002",
             None,
         ),
+        (
+            "POST",
+            "/api/v1/biofield/readings/00000000-0000-0000-0000-000000000002/reprocess",
+            Some(json!({})),
+        ),
+        ("GET", "/api/v1/biofield/baselines", None),
+        ("POST", "/api/v1/biofield/baselines", Some(json!({}))),
     ];
 
     for (method, uri, body) in unauthorized_cases {
         let (status, _) = common::make_unauthenticated_request(method, uri, body).await;
-        assert_eq!(status, StatusCode::UNAUTHORIZED, "route should exist: {uri}");
+        assert_eq!(
+            status,
+            StatusCode::UNAUTHORIZED,
+            "route should exist: {uri}"
+        );
     }
 }
 
@@ -69,9 +80,14 @@ async fn biofield_handler_smoke_openapi_contains_biofield_paths() {
         "/api/v1/biofield/sessions/{session_id}/captures",
         "/api/v1/biofield/readings",
         "/api/v1/biofield/readings/{reading_id}",
+        "/api/v1/biofield/readings/{reading_id}/reprocess",
+        "/api/v1/biofield/baselines",
     ];
 
     for path in expected {
-        assert!(paths.contains_key(path), "missing biofield path in openapi: {path}");
+        assert!(
+            paths.contains_key(path),
+            "missing biofield path in openapi: {path}"
+        );
     }
 }
