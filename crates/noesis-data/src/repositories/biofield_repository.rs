@@ -1,8 +1,9 @@
 use crate::models::biofield::{
-    BiofieldBaseline, BiofieldBaselineSummaryRecord, BiofieldCaptureArtifact, BiofieldSession,
-    NewBiofieldBaseline, NewBiofieldCaptureArtifact, NewBiofieldSession,
-    BIOFIELD_SESSION_STATUS_ACTIVE, BIOFIELD_SESSION_STATUS_CLOSED,
+    BiofieldBaseline, BiofieldBaselineSummaryRecord, BiofieldCaptureArtifact, BiofieldExport,
+    BiofieldSession, NewBiofieldBaseline, NewBiofieldCaptureArtifact, NewBiofieldExport,
+    NewBiofieldSession, BIOFIELD_SESSION_STATUS_ACTIVE, BIOFIELD_SESSION_STATUS_CLOSED,
 };
+use crate::models::reading::Reading;
 use sqlx::{Error, PgPool};
 use uuid::Uuid;
 
@@ -174,6 +175,60 @@ impl BiofieldRepository {
         .await
     }
 
+    pub async fn get_baseline_summary(
+        &self,
+        baseline_id: Uuid,
+        user_id: Uuid,
+    ) -> Result<Option<BiofieldBaselineSummaryRecord>, Error> {
+        sqlx::query_as::<_, BiofieldBaselineSummaryRecord>(
+            r#"
+            SELECT
+                baseline.id,
+                baseline.user_id,
+                baseline.name,
+                baseline.notes,
+                baseline.created_at,
+                baseline.updated_at,
+                COUNT(link.reading_id)::BIGINT AS reading_count
+            FROM biofield_baselines AS baseline
+            LEFT JOIN biofield_baseline_readings AS link
+                ON link.baseline_id = baseline.id
+            WHERE baseline.id = $1
+              AND baseline.user_id = $2
+            GROUP BY baseline.id
+            "#,
+        )
+        .bind(baseline_id)
+        .bind(user_id)
+        .fetch_optional(&self.pool)
+        .await
+    }
+
+    pub async fn list_baseline_readings(
+        &self,
+        baseline_id: Uuid,
+        user_id: Uuid,
+    ) -> Result<Vec<Reading>, Error> {
+        sqlx::query_as::<_, Reading>(
+            r#"
+            SELECT readings.*
+            FROM biofield_baseline_readings AS link
+            INNER JOIN biofield_baselines AS baseline
+                ON baseline.id = link.baseline_id
+            INNER JOIN readings
+                ON readings.id = link.reading_id
+            WHERE link.baseline_id = $1
+              AND baseline.user_id = $2
+              AND readings.user_id = $2
+            ORDER BY link.sort_order ASC, readings.created_at ASC
+            "#,
+        )
+        .bind(baseline_id)
+        .bind(user_id)
+        .fetch_all(&self.pool)
+        .await
+    }
+
     pub async fn create_baseline(
         &self,
         baseline: &NewBiofieldBaseline,
@@ -239,12 +294,51 @@ impl BiofieldRepository {
         .fetch_all(&self.pool)
         .await
     }
+
+    pub async fn create_export(&self, export: &NewBiofieldExport) -> Result<BiofieldExport, Error> {
+        sqlx::query_as::<_, BiofieldExport>(
+            r#"
+            INSERT INTO biofield_exports (
+                user_id, reading_id, baseline_id, export_format, file_name,
+                storage_path, mime_type, byte_size
+            )
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+            RETURNING *
+            "#,
+        )
+        .bind(export.user_id)
+        .bind(export.reading_id)
+        .bind(export.baseline_id)
+        .bind(&export.export_format)
+        .bind(&export.file_name)
+        .bind(&export.storage_path)
+        .bind(&export.mime_type)
+        .bind(export.byte_size)
+        .fetch_one(&self.pool)
+        .await
+    }
+
+    pub async fn get_export(
+        &self,
+        export_id: Uuid,
+        user_id: Uuid,
+    ) -> Result<Option<BiofieldExport>, Error> {
+        sqlx::query_as::<_, BiofieldExport>(
+            "SELECT * FROM biofield_exports WHERE id = $1 AND user_id = $2",
+        )
+        .bind(export_id)
+        .bind(user_id)
+        .fetch_optional(&self.pool)
+        .await
+    }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::models::biofield::BIOFIELD_CAPTURE_ARTIFACT_SOURCE_IMAGE;
+    use crate::models::biofield::{
+        NewBiofieldBaseline, NewBiofieldExport, BIOFIELD_CAPTURE_ARTIFACT_SOURCE_IMAGE,
+    };
     use crate::models::reading::NewReading;
     use crate::repositories::readings_repository::ReadingsRepository;
     use crate::repositories::user_repository::UserRepository;
@@ -283,6 +377,10 @@ mod tests {
                 SELECT 1
                 FROM information_schema.tables
                 WHERE table_name = 'biofield_baseline_readings'
+            ) AND EXISTS (
+                SELECT 1
+                FROM information_schema.tables
+                WHERE table_name = 'biofield_exports'
             )
             "#,
         )
@@ -306,6 +404,9 @@ mod tests {
         let migration_018 =
             fs::read_to_string(repo_root().join("migrations/018_biofield_baselines.sql"))
                 .expect("root migration 018");
+        let migration_019 =
+            fs::read_to_string(repo_root().join("migrations/019_biofield_exports.sql"))
+                .expect("root migration 019");
 
         let apply_result = async {
             let schema_exists_after_lock: bool = sqlx::query_scalar(
@@ -326,6 +427,10 @@ mod tests {
                     SELECT 1
                     FROM information_schema.tables
                     WHERE table_name = 'biofield_baseline_readings'
+                ) AND EXISTS (
+                    SELECT 1
+                    FROM information_schema.tables
+                    WHERE table_name = 'biofield_exports'
                 )
                 "#,
             )
@@ -345,6 +450,10 @@ mod tests {
                 .execute(pool)
                 .await
                 .expect("biofield migration 018 should apply to test database");
+            sqlx::raw_sql(&migration_019)
+                .execute(pool)
+                .await
+                .expect("biofield migration 019 should apply to test database");
         }
         .await;
 
@@ -564,6 +673,161 @@ mod tests {
             .execute(&pool)
             .await
             .expect("cleanup readings");
+        sqlx::query("DELETE FROM users WHERE id = $1")
+            .bind(user.id)
+            .execute(&pool)
+            .await
+            .expect("cleanup users");
+    }
+
+    #[tokio::test]
+    async fn biofield_repository_lists_baseline_readings_and_gets_exports() {
+        let Some(pool) = connect_test_db().await else {
+            return;
+        };
+
+        let user_repo = UserRepository::new(pool.clone());
+        let readings_repo = ReadingsRepository::new(pool.clone());
+        let biofield_repo = BiofieldRepository::new(pool.clone());
+        let email = format!("biofield-export-{}@example.com", Uuid::new_v4());
+
+        let user = user_repo
+            .create_user(&email, "test_password_hash", "Biofield Export Test User")
+            .await
+            .expect("Failed to create test user");
+
+        let session = biofield_repo
+            .create_session(&NewBiofieldSession::new(user.id))
+            .await
+            .expect("session should be created");
+
+        let first_reading_id = readings_repo
+            .save_reading(&NewReading {
+                user_id: user.id,
+                engine_id: "biofield-capture".to_string(),
+                workflow_id: None,
+                input_hash: format!("biofield-export-input-{}", Uuid::new_v4()),
+                input_data: json!({
+                    "session_id": session.id,
+                    "content_type": "image/jpeg"
+                }),
+                result_data: json!({
+                    "analysis_version": "stub-metrics/v1",
+                    "metrics": { "light_quanta_density": 40.0 },
+                    "quality_assessment": { "sufficient_quality": true }
+                }),
+                witness_prompt: None,
+                consciousness_level: 0,
+                calculation_time_ms: Some(8.0),
+                client_event_id: None,
+                client_device_id: None,
+                device_platform: None,
+                device_app_version: None,
+            })
+            .await
+            .expect("first reading should be created");
+
+        let second_reading_id = readings_repo
+            .save_reading(&NewReading {
+                user_id: user.id,
+                engine_id: "biofield-capture".to_string(),
+                workflow_id: None,
+                input_hash: format!("biofield-export-input-{}", Uuid::new_v4()),
+                input_data: json!({
+                    "session_id": session.id,
+                    "content_type": "image/jpeg"
+                }),
+                result_data: json!({
+                    "analysis_version": "stub-metrics/v1",
+                    "metrics": { "light_quanta_density": 35.0 },
+                    "quality_assessment": { "sufficient_quality": true }
+                }),
+                witness_prompt: None,
+                consciousness_level: 0,
+                calculation_time_ms: Some(8.0),
+                client_event_id: None,
+                client_device_id: None,
+                device_platform: None,
+                device_app_version: None,
+            })
+            .await
+            .expect("second reading should be created");
+
+        let baseline = biofield_repo
+            .create_baseline(
+                &NewBiofieldBaseline {
+                    user_id: user.id,
+                    name: "Reference baseline".to_string(),
+                    notes: Some("Created for repository verification".to_string()),
+                },
+                &[first_reading_id, second_reading_id],
+            )
+            .await
+            .expect("baseline should be created");
+
+        let baseline_readings = biofield_repo
+            .list_baseline_readings(baseline.id, user.id)
+            .await
+            .expect("baseline readings should list");
+        assert_eq!(baseline_readings.len(), 2);
+        assert_eq!(baseline_readings[0].id, first_reading_id);
+        assert_eq!(baseline_readings[1].id, second_reading_id);
+
+        let export = biofield_repo
+            .create_export(&NewBiofieldExport {
+                user_id: user.id,
+                reading_id: first_reading_id,
+                baseline_id: Some(baseline.id),
+                export_format: "json".to_string(),
+                file_name: "biofield-reading.json".to_string(),
+                storage_path: format!("biofield/{}/exports/export.json", session.id),
+                mime_type: "application/json".to_string(),
+                byte_size: 1024,
+            })
+            .await
+            .expect("export should be created");
+
+        let fetched_export = biofield_repo
+            .get_export(export.id, user.id)
+            .await
+            .expect("export fetch should succeed")
+            .expect("export should exist");
+        assert_eq!(fetched_export.reading_id, first_reading_id);
+        assert_eq!(fetched_export.baseline_id, Some(baseline.id));
+        assert_eq!(fetched_export.export_format, "json");
+
+        let missing_export = biofield_repo
+            .get_export(export.id, Uuid::new_v4())
+            .await
+            .expect("cross-user export fetch should not error");
+        assert!(missing_export.is_none());
+
+        sqlx::query("DELETE FROM biofield_exports WHERE id = $1")
+            .bind(export.id)
+            .execute(&pool)
+            .await
+            .expect("cleanup biofield_exports");
+        sqlx::query("DELETE FROM biofield_baseline_readings WHERE baseline_id = $1")
+            .bind(baseline.id)
+            .execute(&pool)
+            .await
+            .expect("cleanup biofield_baseline_readings");
+        sqlx::query("DELETE FROM biofield_baselines WHERE id = $1")
+            .bind(baseline.id)
+            .execute(&pool)
+            .await
+            .expect("cleanup biofield_baselines");
+        sqlx::query("DELETE FROM readings WHERE id = $1 OR id = $2")
+            .bind(first_reading_id)
+            .bind(second_reading_id)
+            .execute(&pool)
+            .await
+            .expect("cleanup readings");
+        sqlx::query("DELETE FROM biofield_sessions WHERE id = $1")
+            .bind(session.id)
+            .execute(&pool)
+            .await
+            .expect("cleanup biofield_sessions");
         sqlx::query("DELETE FROM users WHERE id = $1")
             .bind(user.id)
             .execute(&pool)

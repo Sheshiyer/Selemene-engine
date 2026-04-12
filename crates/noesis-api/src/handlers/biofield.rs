@@ -12,8 +12,9 @@ use noesis_data::{
     models::{
         biofield::{
             BiofieldBaselineSummaryRecord, BiofieldCaptureArtifact, BiofieldSession,
-            NewBiofieldBaseline, NewBiofieldCaptureArtifact, NewBiofieldSession,
-            BIOFIELD_CAPTURE_ARTIFACT_SOURCE_IMAGE, BIOFIELD_SESSION_STATUS_ACTIVE,
+            NewBiofieldBaseline, NewBiofieldCaptureArtifact, NewBiofieldExport, NewBiofieldSession,
+            BIOFIELD_CAPTURE_ARTIFACT_SOURCE_IMAGE, BIOFIELD_EXPORT_FORMAT_JSON,
+            BIOFIELD_SESSION_STATUS_ACTIVE,
         },
         reading::{NewReading, Reading},
     },
@@ -24,12 +25,14 @@ use noesis_data::{
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use sha2::{Digest, Sha256};
-use std::{path::PathBuf, time::Duration};
+use std::{collections::BTreeMap, path::PathBuf, time::Duration};
 use tokio::fs as tokio_fs;
 use utoipa::ToSchema;
 use uuid::Uuid;
 
 const BIOFIELD_ENGINE_ID: &str = "biofield-capture";
+const BIOFIELD_BASELINE_COMPARISON_VERSION: &str = "biofield-baseline-delta/v1";
+const BIOFIELD_EXPORT_CONTRACT_VERSION: &str = "biofield-export/v1";
 const DEFAULT_BIOFIELD_READINGS_LIMIT: u32 = 20;
 const MAX_BIOFIELD_READINGS_LIMIT: u32 = 100;
 
@@ -52,6 +55,11 @@ pub struct ListBiofieldReadingsQuery {
 }
 
 #[derive(Debug, Deserialize, Default, ToSchema)]
+pub struct GetBiofieldReadingQuery {
+    pub baseline_id: Option<String>,
+}
+
+#[derive(Debug, Deserialize, Default, ToSchema)]
 pub struct ReprocessBiofieldReadingRequest {
     pub algorithms: Option<Vec<String>>,
     #[schema(value_type = Object)]
@@ -65,6 +73,13 @@ pub struct CreateBiofieldBaselineRequest {
     pub reading_ids: Vec<String>,
 }
 
+#[derive(Debug, Deserialize, ToSchema)]
+pub struct CreateBiofieldExportRequest {
+    pub reading_id: String,
+    pub baseline_id: Option<String>,
+    pub format: Option<String>,
+}
+
 #[derive(Debug, Serialize, ToSchema)]
 pub struct BiofieldSessionResource {
     pub id: String,
@@ -75,12 +90,12 @@ pub struct BiofieldSessionResource {
     pub viewer_version: Option<String>,
 }
 
-#[derive(Debug, Serialize, ToSchema)]
+#[derive(Debug, Clone, Serialize, ToSchema)]
 pub struct BiofieldQualitySummary {
     pub sufficient_quality: bool,
 }
 
-#[derive(Debug, Serialize, ToSchema)]
+#[derive(Debug, Clone, Serialize, ToSchema)]
 pub struct BiofieldArtifactSummary {
     pub id: Option<String>,
     pub kind: String,
@@ -114,7 +129,7 @@ pub struct BiofieldReprocessResponse {
     pub artifacts: Vec<BiofieldArtifactSummary>,
 }
 
-#[derive(Debug, Serialize, ToSchema)]
+#[derive(Debug, Clone, Serialize, ToSchema)]
 pub struct BiofieldReadingSummary {
     pub reading_id: String,
     pub session_id: String,
@@ -131,7 +146,7 @@ pub struct ListBiofieldReadingsResponse {
     pub offset: u32,
 }
 
-#[derive(Debug, Serialize, ToSchema)]
+#[derive(Debug, Clone, Serialize, ToSchema)]
 pub struct BiofieldBaselineSummary {
     pub baseline_id: String,
     pub name: String,
@@ -146,7 +161,23 @@ pub struct ListBiofieldBaselinesResponse {
     pub items: Vec<BiofieldBaselineSummary>,
 }
 
-#[derive(Debug, Serialize, ToSchema)]
+#[derive(Debug, Clone, Serialize, ToSchema)]
+pub struct BiofieldMetricDelta {
+    pub key: String,
+    pub reading_value: f64,
+    pub baseline_value: f64,
+    pub absolute_delta: f64,
+    pub relative_delta: Option<f64>,
+}
+
+#[derive(Debug, Clone, Serialize, ToSchema)]
+pub struct BiofieldBaselineComparison {
+    pub comparison_version: String,
+    pub baseline: BiofieldBaselineSummary,
+    pub deltas: Vec<BiofieldMetricDelta>,
+}
+
+#[derive(Debug, Clone, Serialize, ToSchema)]
 pub struct BiofieldReadingDetail {
     pub reading_id: String,
     pub session_id: String,
@@ -156,6 +187,22 @@ pub struct BiofieldReadingDetail {
     pub result: serde_json::Value,
     pub quality: serde_json::Value,
     pub artifacts: Vec<BiofieldArtifactSummary>,
+    pub comparison: Option<BiofieldBaselineComparison>,
+}
+
+#[derive(Debug, Serialize, ToSchema)]
+pub struct BiofieldExportResponse {
+    pub export_id: String,
+    pub reading_id: String,
+    pub baseline_id: Option<String>,
+    pub format: String,
+    pub file_name: String,
+    pub mime_type: String,
+    pub byte_size: u64,
+    pub created_at: DateTime<Utc>,
+    pub storage_path: String,
+    #[schema(value_type = Object)]
+    pub bundle: serde_json::Value,
 }
 
 #[derive(Debug, Default)]
@@ -291,6 +338,24 @@ fn baseline_invalid_response(message: impl Into<String>, details: Option<Value>)
         StatusCode::UNPROCESSABLE_ENTITY,
         message,
         "BIOFIELD_BASELINE_INVALID",
+        details,
+    )
+}
+
+fn baseline_not_found_response(baseline_id: &str) -> Response {
+    json_error_response(
+        StatusCode::NOT_FOUND,
+        "Biofield baseline not found",
+        "BIOFIELD_BASELINE_NOT_FOUND",
+        Some(serde_json::json!({ "baseline_id": baseline_id })),
+    )
+}
+
+fn export_invalid_response(message: impl Into<String>, details: Option<Value>) -> Response {
+    json_error_response(
+        StatusCode::UNPROCESSABLE_ENTITY,
+        message,
+        "BIOFIELD_EXPORT_INVALID",
         details,
     )
 }
@@ -682,6 +747,7 @@ fn build_reading_summary(
 fn build_reading_detail_resource(
     reading: &Reading,
     artifacts: &[BiofieldCaptureArtifact],
+    comparison: Option<BiofieldBaselineComparison>,
 ) -> Result<BiofieldReadingDetail, Response> {
     let session_id = extract_reading_session_id(reading, artifacts)
         .ok_or_else(|| missing_reading_session_link_response(reading.id))?;
@@ -704,7 +770,18 @@ fn build_reading_detail_resource(
             .cloned()
             .unwrap_or_else(|| serde_json::json!({})),
         artifacts: artifact_summaries,
+        comparison,
     })
+}
+
+fn extract_reading_session_uuid(
+    reading: &Reading,
+    artifacts: &[BiofieldCaptureArtifact],
+) -> Result<Uuid, Response> {
+    let session_id = extract_reading_session_id(reading, artifacts)
+        .ok_or_else(|| missing_reading_session_link_response(reading.id))?;
+
+    Uuid::parse_str(&session_id).map_err(|_| missing_reading_session_link_response(reading.id))
 }
 
 fn normalize_readings_page(query: &ListBiofieldReadingsQuery) -> (u32, u32) {
@@ -1138,6 +1215,207 @@ fn baseline_summary_from_record(record: &BiofieldBaselineSummaryRecord) -> Biofi
         created_at: record.created_at,
         updated_at: record.updated_at,
     }
+}
+
+fn collect_numeric_metrics(
+    value: &Value,
+    prefix: Option<&str>,
+    metrics: &mut BTreeMap<String, f64>,
+) {
+    match value {
+        Value::Number(number) => {
+            if let (Some(key), Some(metric_value)) = (prefix, number.as_f64()) {
+                metrics.insert(key.to_string(), metric_value);
+            }
+        }
+        Value::Object(object) => {
+            let mut keys = object.keys().cloned().collect::<Vec<_>>();
+            keys.sort();
+            for key in keys {
+                let child_prefix = prefix
+                    .map(|value| format!("{value}.{key}"))
+                    .unwrap_or(key.clone());
+                if let Some(child) = object.get(&key) {
+                    collect_numeric_metrics(child, Some(&child_prefix), metrics);
+                }
+            }
+        }
+        _ => {}
+    }
+}
+
+fn reading_metric_map(reading: &Reading) -> BTreeMap<String, f64> {
+    let mut metrics = BTreeMap::new();
+    if let Some(raw_metrics) = reading.result_data.get("metrics") {
+        collect_numeric_metrics(raw_metrics, None, &mut metrics);
+    }
+    metrics
+}
+
+fn build_baseline_comparison(
+    reading: &Reading,
+    baseline: BiofieldBaselineSummary,
+    baseline_readings: &[Reading],
+) -> BiofieldBaselineComparison {
+    let reading_metrics = reading_metric_map(reading);
+    let mut aggregate: BTreeMap<String, (f64, u32)> = BTreeMap::new();
+
+    for baseline_reading in baseline_readings {
+        for (key, value) in reading_metric_map(baseline_reading) {
+            let entry = aggregate.entry(key).or_insert((0.0, 0));
+            entry.0 += value;
+            entry.1 += 1;
+        }
+    }
+
+    let deltas = reading_metrics
+        .into_iter()
+        .filter_map(|(key, reading_value)| {
+            let (sum, count) = aggregate.get(&key)?;
+            if *count == 0 {
+                return None;
+            }
+
+            let baseline_value = sum / f64::from(*count);
+            let absolute_delta = reading_value - baseline_value;
+            let relative_delta = if baseline_value.abs() < f64::EPSILON {
+                None
+            } else {
+                Some(absolute_delta / baseline_value)
+            };
+
+            Some(BiofieldMetricDelta {
+                key,
+                reading_value,
+                baseline_value,
+                absolute_delta,
+                relative_delta,
+            })
+        })
+        .collect();
+
+    BiofieldBaselineComparison {
+        comparison_version: BIOFIELD_BASELINE_COMPARISON_VERSION.to_string(),
+        baseline,
+        deltas,
+    }
+}
+
+async fn resolve_optional_baseline_comparison(
+    biofield_repository: &BiofieldRepository,
+    reading: &Reading,
+    user_id: Uuid,
+    baseline_id: Option<&str>,
+) -> Result<Option<(Uuid, BiofieldBaselineComparison)>, Response> {
+    let Some(baseline_id) = baseline_id else {
+        return Ok(None);
+    };
+
+    let baseline_uuid = match parse_uuid_or_422(baseline_id, "baseline_id") {
+        Ok(baseline_uuid) => baseline_uuid,
+        Err(response) => return Err(response),
+    };
+
+    let record = match biofield_repository
+        .get_baseline_summary(baseline_uuid, user_id)
+        .await
+    {
+        Ok(Some(record)) => record,
+        Ok(None) => return Err(baseline_not_found_response(baseline_id)),
+        Err(error) => {
+            return Err(biofield_db_error_response(
+                "fetch biofield baseline",
+                &error,
+            ))
+        }
+    };
+
+    let baseline_readings = match biofield_repository
+        .list_baseline_readings(baseline_uuid, user_id)
+        .await
+    {
+        Ok(readings) => readings,
+        Err(error) => {
+            return Err(biofield_db_error_response(
+                "list biofield baseline readings",
+                &error,
+            ))
+        }
+    };
+
+    Ok(Some((
+        baseline_uuid,
+        build_baseline_comparison(
+            reading,
+            baseline_summary_from_record(&record),
+            &baseline_readings,
+        ),
+    )))
+}
+
+fn normalize_export_format(raw: Option<&str>) -> Option<String> {
+    let normalized = raw
+        .map(str::trim)
+        .filter(|value| !value.is_empty())
+        .unwrap_or(BIOFIELD_EXPORT_FORMAT_JSON)
+        .to_ascii_lowercase();
+
+    match normalized.as_str() {
+        BIOFIELD_EXPORT_FORMAT_JSON => Some(normalized),
+        _ => None,
+    }
+}
+
+fn build_export_storage_path(session_id: Uuid, format: &str) -> String {
+    format!(
+        "biofield/{session_id}/exports/export-{}.{}",
+        Uuid::new_v4(),
+        format
+    )
+}
+
+fn build_export_file_name(reading_id: Uuid, baseline_id: Option<Uuid>, format: &str) -> String {
+    match baseline_id {
+        Some(baseline_id) => {
+            format!("biofield-reading-{reading_id}-baseline-{baseline_id}.{format}")
+        }
+        None => format!("biofield-reading-{reading_id}.{format}"),
+    }
+}
+
+fn build_export_bundle(reading: &BiofieldReadingDetail, format: &str) -> Value {
+    serde_json::json!({
+        "contract_version": BIOFIELD_EXPORT_CONTRACT_VERSION,
+        "format": format,
+        "exported_at": Utc::now(),
+        "reading": reading,
+    })
+}
+
+async fn save_export_record(
+    biofield_repository: &BiofieldRepository,
+    user_id: Uuid,
+    reading_id: Uuid,
+    baseline_id: Option<Uuid>,
+    format: &str,
+    file_name: &str,
+    storage_path: &str,
+    mime_type: &str,
+    byte_size: u64,
+) -> Result<noesis_data::models::biofield::BiofieldExport, Response> {
+    biofield_repository
+        .create_export(&NewBiofieldExport {
+            user_id,
+            reading_id,
+            baseline_id,
+            export_format: format.to_string(),
+            file_name: file_name.to_string(),
+            storage_path: storage_path.to_string(),
+            mime_type: mime_type.to_string(),
+            byte_size: byte_size as i64,
+        })
+        .await
+        .map_err(|error| biofield_db_error_response("create biofield export", &error))
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -1595,7 +1873,8 @@ pub async fn list_readings(
     path = "/api/v1/biofield/readings/{reading_id}",
     tag = "biofield",
     params(
-        ("reading_id" = String, Path, description = "Biofield reading identifier")
+        ("reading_id" = String, Path, description = "Biofield reading identifier"),
+        ("baseline_id" = Option<String>, Query, description = "Optional biofield baseline identifier for comparison deltas")
     ),
     responses(
         (status = 200, description = "Biofield reading detail", body = BiofieldReadingDetail),
@@ -1614,6 +1893,7 @@ pub async fn get_reading(
     State(state): State<AppState>,
     Extension(auth_user): Extension<AuthUser>,
     Path(reading_id): Path<String>,
+    Query(query): Query<GetBiofieldReadingQuery>,
 ) -> Response {
     let Some(readings_repository) = state.readings_repository.as_ref() else {
         return biofield_db_unavailable_response();
@@ -1648,7 +1928,19 @@ pub async fn get_reading(
         }
     };
 
-    let response = match build_reading_detail_resource(&reading, &artifacts) {
+    let comparison = match resolve_optional_baseline_comparison(
+        biofield_repository,
+        &reading,
+        user_id,
+        query.baseline_id.as_deref(),
+    )
+    .await
+    {
+        Ok(comparison) => comparison.map(|(_, comparison)| comparison),
+        Err(response) => return response,
+    };
+
+    let response = match build_reading_detail_resource(&reading, &artifacts, comparison) {
         Ok(response) => response,
         Err(response) => return response,
     };
@@ -1964,6 +2256,154 @@ pub async fn create_baseline(
             reading_count: reading_uuids.len() as u32,
             created_at: baseline.created_at,
             updated_at: baseline.updated_at,
+        }),
+    )
+        .into_response()
+}
+
+/// POST /api/v1/biofield/exports
+#[utoipa::path(
+    post,
+    path = "/api/v1/biofield/exports",
+    tag = "biofield",
+    request_body = CreateBiofieldExportRequest,
+    responses(
+        (status = 201, description = "Biofield export created", body = BiofieldExportResponse),
+        (status = 401, description = "Unauthorized", body = crate::ErrorResponse),
+        (status = 404, description = "Reading or baseline not found", body = crate::ErrorResponse),
+        (status = 422, description = "Invalid export request", body = crate::ErrorResponse),
+        (status = 503, description = "Biofield DB unavailable", body = crate::ErrorResponse),
+        (status = 500, description = "Internal biofield persistence or storage error", body = crate::ErrorResponse),
+    ),
+    security(
+        ("bearer_auth" = []),
+        ("api_key" = [])
+    )
+)]
+pub async fn create_export(
+    State(state): State<AppState>,
+    Extension(auth_user): Extension<AuthUser>,
+    Json(request): Json<CreateBiofieldExportRequest>,
+) -> Response {
+    let Some(readings_repository) = state.readings_repository.as_ref() else {
+        return biofield_db_unavailable_response();
+    };
+    let Some(biofield_repository) = state.biofield_repository.as_ref() else {
+        return biofield_db_unavailable_response();
+    };
+
+    let user_id = match parse_auth_user_uuid(&auth_user) {
+        Ok(user_id) => user_id,
+        Err(response) => return response,
+    };
+
+    let reading_uuid = match parse_uuid_or_422(&request.reading_id, "reading_id") {
+        Ok(reading_uuid) => reading_uuid,
+        Err(response) => return response,
+    };
+
+    let Some(export_format) = normalize_export_format(request.format.as_deref()) else {
+        return export_invalid_response(
+            "Unsupported biofield export format",
+            Some(serde_json::json!({ "format": request.format })),
+        );
+    };
+
+    let reading = match readings_repository.get_reading(reading_uuid, user_id).await {
+        Ok(Some(reading)) if reading.engine_id == BIOFIELD_ENGINE_ID => reading,
+        Ok(Some(_)) | Ok(None) => return reading_not_found_response(&request.reading_id),
+        Err(error) => return biofield_db_error_response("fetch biofield reading", &error),
+    };
+
+    let artifacts = match biofield_repository
+        .list_reading_artifacts(reading_uuid, user_id)
+        .await
+    {
+        Ok(artifacts) => artifacts,
+        Err(error) => {
+            return biofield_db_error_response("fetch biofield reading artifacts", &error)
+        }
+    };
+
+    let baseline_context = match resolve_optional_baseline_comparison(
+        biofield_repository,
+        &reading,
+        user_id,
+        request.baseline_id.as_deref(),
+    )
+    .await
+    {
+        Ok(context) => context,
+        Err(response) => return response,
+    };
+    let baseline_id = baseline_context
+        .as_ref()
+        .map(|(baseline_id, _)| *baseline_id);
+    let comparison = baseline_context.map(|(_, comparison)| comparison);
+
+    let detail = match build_reading_detail_resource(&reading, &artifacts, comparison) {
+        Ok(detail) => detail,
+        Err(response) => return response,
+    };
+
+    let session_id = match extract_reading_session_uuid(&reading, &artifacts) {
+        Ok(session_id) => session_id,
+        Err(response) => return response,
+    };
+
+    let bundle = build_export_bundle(&detail, &export_format);
+    let bundle_bytes = match serde_json::to_vec_pretty(&bundle) {
+        Ok(bundle_bytes) => bundle_bytes,
+        Err(error) => {
+            return json_error_response(
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "Failed to serialize biofield export bundle",
+                "BIOFIELD_EXPORT_SERIALIZATION_FAILED",
+                Some(serde_json::json!({ "error": error.to_string() })),
+            )
+        }
+    };
+
+    let storage_path = build_export_storage_path(session_id, &export_format);
+    if let Err(error) = persist_artifact_bytes(&storage_path, &bundle_bytes).await {
+        return biofield_storage_error_response(
+            "persist biofield export bundle",
+            &storage_path,
+            &error,
+        );
+    }
+
+    let file_name = build_export_file_name(reading_uuid, baseline_id, &export_format);
+    let export_record = match save_export_record(
+        biofield_repository,
+        user_id,
+        reading_uuid,
+        baseline_id,
+        &export_format,
+        &file_name,
+        &storage_path,
+        "application/json",
+        bundle_bytes.len() as u64,
+    )
+    .await
+    {
+        Ok(export_record) => export_record,
+        Err(response) => return response,
+    };
+
+    (
+        StatusCode::CREATED,
+        Json(BiofieldExportResponse {
+            export_id: export_record.id.to_string(),
+            reading_id: export_record.reading_id.to_string(),
+            baseline_id: export_record.baseline_id.map(|value| value.to_string()),
+            format: export_record.export_format,
+            file_name: export_record.file_name,
+            mime_type: export_record.mime_type,
+            byte_size: export_record.byte_size as u64,
+            created_at: export_record.created_at,
+            storage_path: export_record.storage_path,
+            bundle,
         }),
     )
         .into_response()

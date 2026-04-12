@@ -21,8 +21,11 @@ REPROCESS_BODY="$TMP_DIR/reprocess.json"
 REPROCESS_DETAIL_BODY="$TMP_DIR/reprocess-detail.json"
 BASELINE_CREATE_BODY="$TMP_DIR/baseline-create.json"
 BASELINE_LIST_BODY="$TMP_DIR/baseline-list.json"
+COMPARISON_BODY="$TMP_DIR/comparison.json"
+EXPORT_BODY="$TMP_DIR/export.json"
 CLOSE_BODY="$TMP_DIR/close.json"
 GENERATED_IMAGE="$TMP_DIR/smoke.png"
+ARTIFACT_ROOT="${BIOFIELD_ARTIFACTS_DIR:-$(pwd)/.runtime/biofield-artifacts}"
 
 cleanup() {
   rm -rf "$TMP_DIR"
@@ -154,7 +157,7 @@ if [[ ! -f "$BIOFIELD_CAPTURE_IMAGE" ]]; then
   fail "BIOFIELD_CAPTURE_IMAGE does not exist: $BIOFIELD_CAPTURE_IMAGE"
 fi
 
-echo "Running biofield-web BF2 smoke checks"
+echo "Running biofield-web BF3 smoke checks"
 echo "BIOFIELD_WEB_URL=$BIOFIELD_WEB_URL"
 echo "API_BASE_URL=$API_BASE_URL"
 echo "PYTHON_BIOFIELD_URL=$PYTHON_BIOFIELD_URL"
@@ -279,6 +282,7 @@ if [[ -z "$BASELINE_ID" || "$BASELINE_COUNT" != "2" ]]; then
   fail "Baseline creation did not return the expected id and reading count"
 fi
 echo "✅ Baseline created with 2 readings"
+export BASELINE_ID
 
 get_json "$API_BASE_URL/api/v1/biofield/baselines" "200" "$BASELINE_LIST_BODY" "$AUTH_HEADER"
 LIST_BASELINE_ID="$(json_field "$BASELINE_LIST_BODY" items.0.baseline_id)"
@@ -287,11 +291,63 @@ if [[ "$LIST_BASELINE_ID" != "$BASELINE_ID" ]]; then
 fi
 echo "✅ Baseline list returns the created baseline"
 
+get_json "$API_BASE_URL/api/v1/biofield/readings/$READING_ID?baseline_id=$BASELINE_ID" "200" "$COMPARISON_BODY" "$AUTH_HEADER"
+COMPARISON_BASELINE_ID="$(json_field "$COMPARISON_BODY" comparison.baseline.baseline_id)"
+COMPARISON_VERSION="$(json_field "$COMPARISON_BODY" comparison.comparison_version)"
+FIRST_COMPARISON_KEY="$(json_field "$COMPARISON_BODY" comparison.deltas.0.key)"
+if [[ "$COMPARISON_BASELINE_ID" != "$BASELINE_ID" || -z "$COMPARISON_VERSION" || -z "$FIRST_COMPARISON_KEY" ]]; then
+  fail "Comparison detail did not return the expected baseline comparison payload"
+fi
+echo "✅ Comparison detail returns baseline deltas ($COMPARISON_VERSION)"
+
+EXPORT_PAYLOAD="$(python3 - <<'PY'
+import json
+import os
+print(json.dumps({
+    'reading_id': os.environ['READING_ID'],
+    'baseline_id': os.environ['BASELINE_ID'],
+    'format': 'json',
+}))
+PY
+)"
+post_json "$API_BASE_URL/api/v1/biofield/exports" "201" "$EXPORT_PAYLOAD" "$EXPORT_BODY" "$AUTH_HEADER"
+EXPORT_ID="$(json_field "$EXPORT_BODY" export_id)"
+EXPORT_FORMAT="$(json_field "$EXPORT_BODY" format)"
+EXPORT_STORAGE_PATH="$(json_field "$EXPORT_BODY" storage_path)"
+EXPORT_CONTRACT_VERSION="$(json_field "$EXPORT_BODY" bundle.contract_version)"
+if [[ -z "$EXPORT_ID" || "$EXPORT_FORMAT" != "json" || "$EXPORT_CONTRACT_VERSION" != "biofield-export/v1" ]]; then
+  fail "Export response did not return the expected persisted bundle metadata"
+fi
+if [[ ! -f "$ARTIFACT_ROOT/$EXPORT_STORAGE_PATH" ]]; then
+  fail "Expected persisted export bundle at $ARTIFACT_ROOT/$EXPORT_STORAGE_PATH"
+fi
+echo "✅ Export bundle persisted at $ARTIFACT_ROOT/$EXPORT_STORAGE_PATH"
+
 close_payload='{"reason":"smoke-complete"}'
-post_json "$API_BASE_URL/api/v1/biofield/sessions/$SESSION_ID/close" "200" "$close_payload" "$CLOSE_BODY" "$AUTH_HEADER"
+CLOSE_STATUS="$(curl -sS -o "$CLOSE_BODY" -w "%{http_code}" -X POST "$API_BASE_URL/api/v1/biofield/sessions/$SESSION_ID/close" -H "Content-Type: application/json" -H "$AUTH_HEADER" --data "$close_payload")"
+if [[ "$CLOSE_STATUS" == "429" ]]; then
+  RESET_AT="$(json_field "$CLOSE_BODY" details.reset_at)"
+  SLEEP_SECONDS="$(RESET_AT="$RESET_AT" python3 - <<'PY'
+import os
+import time
+reset_at = int(os.environ["RESET_AT"])
+print(max(1, reset_at - int(time.time()) + 1))
+PY
+)"
+  echo "⏳ Close request hit rate limit; sleeping ${SLEEP_SECONDS}s for reset"
+  sleep "$SLEEP_SECONDS"
+  post_json "$API_BASE_URL/api/v1/biofield/sessions/$SESSION_ID/close" "200" "$close_payload" "$CLOSE_BODY" "$AUTH_HEADER"
+else
+  if [[ "$CLOSE_STATUS" != "200" ]]; then
+    echo "Response body from $API_BASE_URL/api/v1/biofield/sessions/$SESSION_ID/close:" >&2
+    cat "$CLOSE_BODY" >&2
+    fail "Expected POST $API_BASE_URL/api/v1/biofield/sessions/$SESSION_ID/close to return 200, got $CLOSE_STATUS"
+  fi
+  echo "✅ POST $API_BASE_URL/api/v1/biofield/sessions/$SESSION_ID/close -> $CLOSE_STATUS"
+fi
 CLOSED_STATUS="$(json_field "$CLOSE_BODY" status)"
 if [[ "$CLOSED_STATUS" != "closed" ]]; then
   fail "Session close did not return closed status"
 fi
 
-echo "🎉 Biofield BF2 smoke checks passed"
+echo "🎉 Biofield BF3 smoke checks passed"

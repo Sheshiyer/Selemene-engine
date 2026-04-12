@@ -137,6 +137,7 @@ use workflow_parity::log_workflow_registry_parity;
         handlers::biofield::reprocess_reading,
         handlers::biofield::list_baselines,
         handlers::biofield::create_baseline,
+        handlers::biofield::create_export,
     ),
     components(
         schemas(
@@ -698,6 +699,7 @@ pub fn create_router(state: AppState, config: &ApiConfig) -> Router {
             "/biofield/baselines",
             get(handlers::biofield::list_baselines).post(handlers::biofield::create_baseline),
         )
+        .route("/biofield/exports", post(handlers::biofield::create_export))
         .route("/admin/session", get(handlers::admin::get_session))
         .route("/admin/users", get(handlers::admin::list_users))
         .route(

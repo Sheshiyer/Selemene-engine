@@ -97,6 +97,20 @@ export interface ListBiofieldReadingsResponse {
   offset: number;
 }
 
+export interface BiofieldMetricDelta {
+  key: string;
+  reading_value: number;
+  baseline_value: number;
+  absolute_delta: number;
+  relative_delta?: number | null;
+}
+
+export interface BiofieldBaselineComparison {
+  comparison_version: string;
+  baseline: BiofieldBaselineSummary;
+  deltas: BiofieldMetricDelta[];
+}
+
 export interface BiofieldReadingDetail {
   reading_id: string;
   session_id: string;
@@ -106,6 +120,7 @@ export interface BiofieldReadingDetail {
   result: Record<string, unknown>;
   quality: QualityAssessment;
   artifacts: BiofieldArtifactSummary[];
+  comparison?: BiofieldBaselineComparison | null;
 }
 
 export interface BiofieldCaptureResult {
@@ -144,4 +159,25 @@ export interface BiofieldBaselineSummary {
 
 export interface ListBiofieldBaselinesResponse {
   items: BiofieldBaselineSummary[];
+}
+
+export type BiofieldExportFormat = "json";
+
+export interface CreateBiofieldExportRequest {
+  reading_id: string;
+  baseline_id?: string;
+  format?: BiofieldExportFormat;
+}
+
+export interface BiofieldExportResult {
+  export_id: string;
+  reading_id: string;
+  baseline_id?: string | null;
+  format: BiofieldExportFormat;
+  file_name: string;
+  mime_type: string;
+  byte_size: number;
+  created_at: string;
+  storage_path: string;
+  bundle: Record<string, unknown>;
 }

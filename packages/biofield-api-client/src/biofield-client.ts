@@ -1,10 +1,12 @@
 import type {
   BiofieldCaptureResult,
+  BiofieldExportResult,
   BiofieldReadingDetail,
   BiofieldReprocessResult,
   BiofieldSession,
   CloseBiofieldSessionRequest,
   CreateBiofieldBaselineRequest,
+  CreateBiofieldExportRequest,
   CreateBiofieldSessionRequest,
   ListBiofieldBaselinesResponse,
   ListBiofieldReadingsResponse,
@@ -26,6 +28,10 @@ interface ErrorPayloadShape {
   error_message?: string;
   error?: string;
   detail?: string;
+}
+
+export interface GetBiofieldReadingParams {
+  baselineId?: string;
 }
 
 export class BiofieldClientError extends Error {
@@ -95,8 +101,19 @@ export class BiofieldClient {
     });
   }
 
-  async getReading(readingId: string): Promise<BiofieldReadingDetail> {
-    return this.request<BiofieldReadingDetail>(`/api/v1/biofield/readings/${readingId}`, {
+  async getReading(
+    readingId: string,
+    params: GetBiofieldReadingParams = {},
+  ): Promise<BiofieldReadingDetail> {
+    const search = new URLSearchParams();
+
+    if (params.baselineId) {
+      search.set("baseline_id", params.baselineId);
+    }
+
+    const suffix = search.size > 0 ? `?${search.toString()}` : "";
+
+    return this.request<BiofieldReadingDetail>(`/api/v1/biofield/readings/${readingId}${suffix}`, {
       method: "GET",
     });
   }
@@ -130,6 +147,15 @@ export class BiofieldClient {
         body: JSON.stringify(input),
       },
     );
+  }
+
+  async createExport(
+    input: CreateBiofieldExportRequest,
+  ): Promise<BiofieldExportResult> {
+    return this.request<BiofieldExportResult>("/api/v1/biofield/exports", {
+      method: "POST",
+      body: JSON.stringify(input),
+    });
   }
 
   async uploadCapture(
