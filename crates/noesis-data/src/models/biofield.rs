@@ -11,6 +11,7 @@ pub const BIOFIELD_CAPTURE_ARTIFACT_SOURCE_IMAGE: &str = "source-image";
 pub const BIOFIELD_CAPTURE_ARTIFACT_SEGMENTATION_MASK: &str = "segmentation-mask";
 pub const BIOFIELD_CAPTURE_ARTIFACT_ANALYSIS_OVERLAY: &str = "analysis-overlay";
 pub const BIOFIELD_CAPTURE_ARTIFACT_THUMBNAIL: &str = "thumbnail";
+pub const BIOFIELD_EXPORT_FORMAT_JSON: &str = "json";
 
 pub const BIOFIELD_SESSION_STATUSES: [&str; 3] = [
     BIOFIELD_SESSION_STATUS_ACTIVE,
@@ -25,12 +26,18 @@ pub const BIOFIELD_CAPTURE_ARTIFACT_KINDS: [&str; 4] = [
     BIOFIELD_CAPTURE_ARTIFACT_THUMBNAIL,
 ];
 
+pub const BIOFIELD_EXPORT_FORMATS: [&str; 1] = [BIOFIELD_EXPORT_FORMAT_JSON];
+
 pub fn is_valid_biofield_session_status(status: &str) -> bool {
     BIOFIELD_SESSION_STATUSES.contains(&status)
 }
 
 pub fn is_valid_biofield_capture_artifact_kind(kind: &str) -> bool {
     BIOFIELD_CAPTURE_ARTIFACT_KINDS.contains(&kind)
+}
+
+pub fn is_valid_biofield_export_format(format: &str) -> bool {
+    BIOFIELD_EXPORT_FORMATS.contains(&format)
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, FromRow)]
@@ -118,6 +125,32 @@ pub struct NewBiofieldBaseline {
     pub notes: Option<String>,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize, FromRow)]
+pub struct BiofieldExport {
+    pub id: Uuid,
+    pub user_id: Uuid,
+    pub reading_id: Uuid,
+    pub baseline_id: Option<Uuid>,
+    pub export_format: String,
+    pub file_name: String,
+    pub storage_path: String,
+    pub mime_type: String,
+    pub byte_size: i64,
+    pub created_at: DateTime<Utc>,
+}
+
+#[derive(Debug, Clone)]
+pub struct NewBiofieldExport {
+    pub user_id: Uuid,
+    pub reading_id: Uuid,
+    pub baseline_id: Option<Uuid>,
+    pub export_format: String,
+    pub file_name: String,
+    pub storage_path: String,
+    pub mime_type: String,
+    pub byte_size: i64,
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -157,5 +190,12 @@ mod tests {
         assert!(session.client_device_id.is_none());
         assert!(session.viewer_version.is_none());
         assert!(session.notes.is_none());
+    }
+
+    #[test]
+    fn biofield_models_export_format_values_are_stable() {
+        assert_eq!(BIOFIELD_EXPORT_FORMATS, ["json"]);
+        assert!(is_valid_biofield_export_format("json"));
+        assert!(!is_valid_biofield_export_format("pdf"));
     }
 }

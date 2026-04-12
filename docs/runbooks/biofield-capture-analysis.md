@@ -1,11 +1,11 @@
 # Biofield Capture Analysis Runbook
 
 Date: 2026-04-09
-Status: BF2 local verification path
+Status: BF3 local verification path
 
 ## Purpose
 
-This runbook covers the local verification path for the post-BF1 biofield slice.
+This runbook covers the local verification path for the current biofield vertical slice.
 
 It proves that:
 
@@ -19,6 +19,8 @@ It proves that:
 - the reading detail route returns the persisted analysis payload and artifact metadata
 - a stored source artifact can be reprocessed into a new reading
 - a baseline can be created from selected readings and listed back to the user
+- reading detail can return baseline comparison deltas
+- an export bundle can be created, persisted, and downloaded locally
 
 ## Expected Local Ports
 
@@ -26,6 +28,8 @@ It proves that:
 - `noesis-server`: `8080`
 - `biofield_cv_service`: `8002`
 - `postgres`: `5432`
+
+If local `8080` is occupied, pick another API port and pass it consistently to the API process, web env, and smoke command.
 
 ## Required Environment
 
@@ -133,7 +137,7 @@ bash /Volumes/madara/2026/witnessos/Selemene-engine/scripts/smoke_biofield_web.s
 
 ## Expected Results
 
-The BF2 smoke path should prove all of the following:
+The BF3 smoke path should prove all of the following:
 
 - `/login`, `/viewer`, and `/history` return `200`
 - `/health/live` returns `200`
@@ -147,11 +151,14 @@ The BF2 smoke path should prove all of the following:
 - `GET /api/v1/biofield/readings/:reprocessed_reading_id` resolves
 - `POST /api/v1/biofield/baselines` creates a baseline from the original and reprocessed readings
 - `GET /api/v1/biofield/baselines` returns the created baseline
+- `GET /api/v1/biofield/readings/:reading_id?baseline_id=...` returns comparison deltas
+- `POST /api/v1/biofield/exports` returns persisted export metadata and a bundle payload
+- the returned export `storage_path` exists under the configured biofield artifact root
 - `POST /api/v1/biofield/sessions/:session_id/close` returns `closed`
 
 ## What This Runbook Proves
 
-This BF2 runbook proves the next storage-backed slice beyond BF1:
+This BF3 runbook proves the current storage-backed slice beyond BF2:
 
 - authenticated session lifecycle
 - capture ingestion through Noesis
@@ -161,6 +168,8 @@ This BF2 runbook proves the next storage-backed slice beyond BF1:
 - real source-artifact file persistence
 - reprocess from stored source artifact
 - baseline creation and list
+- reading-vs-baseline comparison deltas
+- synchronous persisted JSON export bundles
 - history list
 - reading detail
 
@@ -168,7 +177,7 @@ This BF2 runbook proves the next storage-backed slice beyond BF1:
 
 This runbook does not yet prove later-phase scope such as:
 
-- baseline comparison deltas/visualization
-- exports
+- richer baseline comparison visualization beyond the thin reading-detail surface
+- alternate export formats
 - downstream synthesis into non-biofield product surfaces
 - real computer-vision upgrade beyond the current Python stub

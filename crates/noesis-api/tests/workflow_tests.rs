@@ -130,6 +130,32 @@ fn create_vimshottari_input_with_moon() -> Value {
 // ---------------------------------------------------------------------------
 
 #[tokio::test]
+async fn test_engine_list_includes_biofield_capture_when_db_is_configured() {
+    if std::env::var("DATABASE_URL")
+        .or_else(|_| std::env::var("TEST_DATABASE_URL"))
+        .is_err()
+    {
+        eprintln!("Skipping engine-list DB bootstrap test: DATABASE_URL not set");
+        return;
+    }
+
+    let router = get_test_router().await;
+    let token = generate_test_token(5);
+
+    let (status, body) = authenticated_get(router, "/api/v1/engines", &token).await;
+
+    assert_eq!(status, StatusCode::OK);
+    let engines = body["engines"].as_array().expect("engines should be array");
+    let engine_ids: Vec<&str> = engines.iter().filter_map(|e| e.as_str()).collect();
+
+    assert!(
+        engine_ids.contains(&"biofield-capture"),
+        "Engine list should include biofield-capture when DB is configured: {:?}",
+        engine_ids
+    );
+}
+
+#[tokio::test]
 async fn test_engine_list_includes_gene_keys_and_vimshottari() {
     let router = get_test_router().await;
     let token = generate_test_token(5);
