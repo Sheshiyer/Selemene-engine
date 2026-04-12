@@ -24,12 +24,15 @@ async fn test_harness_can_assert_workflow_route_delegation() {
 }
 
 #[tokio::test]
-async fn test_harness_builds_lazy_app_state_with_biofield_repository_when_database_url_is_configured() {
+async fn test_harness_builds_lazy_app_state_with_biofield_repository_when_database_url_is_configured(
+) {
     let config = ApiConfig {
         host: "127.0.0.1".to_string(),
         port: 0,
         jwt_secret: common::TEST_JWT_SECRET.to_string(),
-        database_url: Some("postgresql://noesis_user:noesis_password@localhost:5432/noesis".to_string()),
+        database_url: Some(
+            "postgresql://noesis_user:noesis_password@localhost:5432/noesis".to_string(),
+        ),
         redis_url: None,
         allowed_origins: vec![],
         rate_limit_requests: 100,

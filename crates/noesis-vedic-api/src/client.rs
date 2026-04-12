@@ -469,11 +469,13 @@ impl VedicApiClient {
             })
             .await?;
 
-        let raw: serde_json::Value = response.json().await.map_err(|e| {
-            crate::error::VedicApiError::Parse {
-                message: format!("Failed to parse /planets response: {}", e),
-            }
-        })?;
+        let raw: serde_json::Value =
+            response
+                .json()
+                .await
+                .map_err(|e| crate::error::VedicApiError::Parse {
+                    message: format!("Failed to parse /planets response: {}", e),
+                })?;
 
         Ok(raw)
     }
@@ -518,11 +520,13 @@ impl VedicApiClient {
             })
             .await?;
 
-        let raw: serde_json::Value = response.json().await.map_err(|e| {
-            crate::error::VedicApiError::Parse {
-                message: format!("Failed to parse /navamsa-chart-info response: {}", e),
-            }
-        })?;
+        let raw: serde_json::Value =
+            response
+                .json()
+                .await
+                .map_err(|e| crate::error::VedicApiError::Parse {
+                    message: format!("Failed to parse /navamsa-chart-info response: {}", e),
+                })?;
 
         Ok(raw)
     }

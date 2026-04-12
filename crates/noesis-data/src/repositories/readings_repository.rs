@@ -338,9 +338,8 @@ mod tests {
 
     #[test]
     fn migration_017_exists_in_root_and_supabase() {
-        let root_sql =
-            fs::read_to_string(repo_root().join("migrations/017_biofield_sessions.sql"))
-                .expect("root migration 017");
+        let root_sql = fs::read_to_string(repo_root().join("migrations/017_biofield_sessions.sql"))
+            .expect("root migration 017");
         let supabase_sql = fs::read_to_string(
             repo_root().join("supabase/migrations/20260405000017_017_biofield_sessions.sql"),
         )

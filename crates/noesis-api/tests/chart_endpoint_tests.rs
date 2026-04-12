@@ -8,8 +8,8 @@ use noesis_core::{BirthData, Coordinates, EngineInput, Precision};
 use serde_json::Value;
 use serial_test::serial;
 use std::collections::HashMap;
-use tower::ServiceExt;
 use tokio::sync::OnceCell;
+use tower::ServiceExt;
 use wiremock::matchers::{method, path};
 use wiremock::{Mock, MockServer, ResponseTemplate};
 
@@ -154,8 +154,18 @@ async fn make_authenticated_request(
 }
 
 const VALID_SIGNS: [&str; 12] = [
-    "aries", "taurus", "gemini", "cancer", "leo", "virgo",
-    "libra", "scorpio", "sagittarius", "capricorn", "aquarius", "pisces",
+    "aries",
+    "taurus",
+    "gemini",
+    "cancer",
+    "leo",
+    "virgo",
+    "libra",
+    "scorpio",
+    "sagittarius",
+    "capricorn",
+    "aquarius",
+    "pisces",
 ];
 
 #[tokio::test]
@@ -180,34 +190,58 @@ async fn test_vedic_chart_endpoint_returns_d1_and_d9_bundle() {
 
     // D1 structure checks
     let d1_asc_sign = body["d1"]["ascendant"]["sign"].as_str().unwrap_or("");
-    assert!(VALID_SIGNS.contains(&d1_asc_sign), "d1.ascendant.sign '{d1_asc_sign}' not a valid sign");
+    assert!(
+        VALID_SIGNS.contains(&d1_asc_sign),
+        "d1.ascendant.sign '{d1_asc_sign}' not a valid sign"
+    );
 
-    let d1_planets = body["d1"]["planets"].as_array().expect("d1.planets should be array");
+    let d1_planets = body["d1"]["planets"]
+        .as_array()
+        .expect("d1.planets should be array");
     assert!(!d1_planets.is_empty(), "d1.planets should not be empty");
     assert_eq!(d1_planets.len(), 9, "d1 should have 9 vedic planets");
 
-    let planet_names: Vec<&str> = d1_planets.iter()
+    let planet_names: Vec<&str> = d1_planets
+        .iter()
         .filter_map(|p| p["name"].as_str())
         .collect();
-    for expected in ["Sun", "Moon", "Mars", "Mercury", "Jupiter", "Venus", "Saturn", "Rahu", "Ketu"] {
-        assert!(planet_names.contains(&expected), "missing planet {expected}");
+    for expected in [
+        "Sun", "Moon", "Mars", "Mercury", "Jupiter", "Venus", "Saturn", "Rahu", "Ketu",
+    ] {
+        assert!(
+            planet_names.contains(&expected),
+            "missing planet {expected}"
+        );
     }
 
     let d1_moon_nak = body["d1"]["moon"]["nakshatra"].as_str().unwrap_or("");
     assert!(!d1_moon_nak.is_empty(), "d1.moon.nakshatra should be set");
 
-    let d1_houses = body["d1"]["houses"].as_array().expect("d1.houses should be array");
+    let d1_houses = body["d1"]["houses"]
+        .as_array()
+        .expect("d1.houses should be array");
     assert_eq!(d1_houses.len(), 12, "d1 should have 12 houses");
 
-    assert!(body["d1"]["ayanamsa"].as_f64().is_some(), "d1.ayanamsa should be a number");
+    assert!(
+        body["d1"]["ayanamsa"].as_f64().is_some(),
+        "d1.ayanamsa should be a number"
+    );
     assert_eq!(body["d1"]["house_system"], "whole_sign");
 
     // D9 structure checks
-    let d9_positions = body["d9"]["navamsa_positions"].as_array().expect("d9.navamsa_positions should be array");
-    assert!(!d9_positions.is_empty(), "d9.navamsa_positions should not be empty");
+    let d9_positions = body["d9"]["navamsa_positions"]
+        .as_array()
+        .expect("d9.navamsa_positions should be array");
+    assert!(
+        !d9_positions.is_empty(),
+        "d9.navamsa_positions should not be empty"
+    );
 
     let d9_lagna = body["d9"]["d9_lagna"].as_str().unwrap_or("");
-    assert!(VALID_SIGNS.contains(&d9_lagna), "d9.d9_lagna '{d9_lagna}' not a valid sign");
+    assert!(
+        VALID_SIGNS.contains(&d9_lagna),
+        "d9.d9_lagna '{d9_lagna}' not a valid sign"
+    );
 }
 
 #[tokio::test]
@@ -267,7 +301,6 @@ async fn test_openapi_includes_vedic_chart_endpoint() {
         "missing chart path in openapi spec"
     );
 }
-
 
 mod common;
 
@@ -427,7 +460,9 @@ async fn test_vedic_chart_endpoint_returns_d1_and_d9_bundle() {
     let provider_server = MockServer::start().await;
     Mock::given(method("POST"))
         .and(path("/horoscope-chart"))
-        .respond_with(ResponseTemplate::new(200).set_body_json(MockResponses::birth_chart_response()))
+        .respond_with(
+            ResponseTemplate::new(200).set_body_json(MockResponses::birth_chart_response()),
+        )
         .mount(&provider_server)
         .await;
     Mock::given(method("POST"))
@@ -451,7 +486,10 @@ async fn test_vedic_chart_endpoint_returns_d1_and_d9_bundle() {
     assert_eq!(status, StatusCode::OK, "body={body:?}");
     assert_eq!(body["d1"]["ascendant"]["sign"], "scorpio");
     assert_eq!(body["d1"]["moon"]["nakshatra"], "Uttara Phalguni");
-    assert!(body["d1"]["planets"].as_array().map(|v| !v.is_empty()).unwrap_or(false));
+    assert!(body["d1"]["planets"]
+        .as_array()
+        .map(|v| !v.is_empty())
+        .unwrap_or(false));
     assert!(body["d9"]["navamsa_positions"]
         .as_array()
         .map(|v| !v.is_empty())
@@ -461,7 +499,11 @@ async fn test_vedic_chart_endpoint_returns_d1_and_d9_bundle() {
         .received_requests()
         .await
         .expect("provider requests should be available");
-    assert_eq!(requests.len(), 2, "expected one D1 and one D9 provider call");
+    assert_eq!(
+        requests.len(),
+        2,
+        "expected one D1 and one D9 provider call"
+    );
 }
 
 #[tokio::test]
