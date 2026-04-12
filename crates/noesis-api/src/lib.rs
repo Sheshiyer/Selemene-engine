@@ -1164,6 +1164,18 @@ fn resolve_timezone_offset(
     }
 }
 
+fn inject_internal_auth_context(mut input: EngineInput, user: &AuthUser) -> EngineInput {
+    input.options.insert(
+        "_auth".to_string(),
+        serde_json::json!({ "user_id": user.user_id.clone() }),
+    );
+    input
+}
+
+fn should_persist_engine_output(engine_id: &str) -> bool {
+    engine_id != "biofield-capture"
+}
+
 fn resolve_birth_details(
     input: &EngineInput,
 ) -> Result<ResolvedBirthDetails, (StatusCode, Json<ErrorResponse>)> {
@@ -1805,9 +1817,11 @@ async fn calculate_handler(
     // Extract birth_data for profile auto-population (before input is moved)
     let birth_data_for_profile = input.birth_data.clone();
 
+    let runtime_input = inject_internal_auth_context(input, &user);
+
     let result = state
         .orchestrator
-        .execute_engine(&engine_id, input, user.consciousness_level)
+        .execute_engine(&engine_id, runtime_input, user.consciousness_level)
         .await;
 
     let duration_secs = start.elapsed().as_secs_f64();
@@ -1824,8 +1838,9 @@ async fn calculate_handler(
                 duration_secs,
             );
 
-            // Fire-and-forget: persist reading, log usage, award XP
+            // Fire-and-forget: persist reading when appropriate, log usage, award XP
             if let Ok(uid) = uuid::Uuid::parse_str(&user_id_str) {
+                let should_persist = should_persist_engine_output(&engine_id);
                 let input_hash = format!("{:x}", Sha256::digest(input_json.to_string().as_bytes()));
                 let reading = NewReading {
                     user_id: uid,
@@ -1848,9 +1863,11 @@ async fn calculate_handler(
                 let eid = engine_id.clone();
                 let bd = birth_data_for_profile.clone();
                 tokio::spawn(async move {
-                    if let Some(repo) = readings_repo {
-                        if let Err(e) = repo.save_reading(&reading).await {
-                            tracing::warn!("Failed to persist reading: {}", e);
+                    if should_persist {
+                        if let Some(repo) = readings_repo {
+                            if let Err(e) = repo.save_reading(&reading).await {
+                                tracing::warn!("Failed to persist reading: {}", e);
+                            }
                         }
                     }
                     if let Some(repo) = usage_repo {
@@ -2171,10 +2188,12 @@ async fn execute_workflow_by_id(
     let input_json = serde_json::to_value(&input).unwrap_or_default();
     let birth_data_for_profile = input.birth_data.clone();
 
+    let runtime_input = inject_internal_auth_context(input, &user);
+
     // Execute workflow with user's consciousness level
     let result = state
         .orchestrator
-        .execute_workflow(&workflow_id, input, user.consciousness_level)
+        .execute_workflow(&workflow_id, runtime_input, user.consciousness_level)
         .await;
 
     let duration_secs = start.elapsed().as_secs_f64();
@@ -2957,7 +2976,7 @@ async fn build_runtime_orchestrator_and_bridge(
 /// Configured `AppState` with orchestrator, cache, auth, and metrics
 pub async fn build_app_state(config: &ApiConfig) -> AppState {
     // -- Orchestrator with engines --
-    let (orchestrator, bridge_manager) = build_runtime_orchestrator_and_bridge().await;
+    let (mut orchestrator, bridge_manager) = build_runtime_orchestrator_and_bridge().await;
 
     // -- Cache --
     let redis_url = config.redis_url.clone().unwrap_or_default();
@@ -3043,6 +3062,12 @@ pub async fn build_app_state(config: &ApiConfig) -> AppState {
         None
     };
 
+    if let Some(ref db_pool) = pool {
+        orchestrator.register_engine(Arc::new(noesis_orchestrator::BiofieldCaptureEngine::new(
+            db_pool.clone(),
+        )));
+    }
+
     // -- Auth (Postgres-backed API key validation, or degraded without DB) --
     let auth = AuthService::with_pool(config.jwt_secret.clone(), pool.clone());
 
@@ -3102,7 +3127,7 @@ pub async fn build_app_state(config: &ApiConfig) -> AppState {
 /// endpoints but still need a fully constructed `AppState`.
 pub async fn build_app_state_lazy_db(config: &ApiConfig) -> AppState {
     // -- Orchestrator with engines --
-    let (orchestrator, bridge_manager) = build_runtime_orchestrator_and_bridge().await;
+    let (mut orchestrator, bridge_manager) = build_runtime_orchestrator_and_bridge().await;
 
     // -- Cache --
     let redis_url = config.redis_url.clone().unwrap_or_default();
@@ -3120,6 +3145,12 @@ pub async fn build_app_state_lazy_db(config: &ApiConfig) -> AppState {
             .connect_lazy(db_url)
             .expect("Failed to create lazy database pool")
     });
+
+    if let Some(ref db_pool) = pool {
+        orchestrator.register_engine(Arc::new(noesis_orchestrator::BiofieldCaptureEngine::new(
+            db_pool.clone(),
+        )));
+    }
 
     // -- Auth (lazy Postgres-backed API key validation, or degraded without DB) --
     let auth = AuthService::with_pool(config.jwt_secret.clone(), pool.clone());
