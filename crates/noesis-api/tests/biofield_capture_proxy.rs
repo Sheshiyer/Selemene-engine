@@ -57,6 +57,14 @@ async fn ensure_biofield_schema(pool: &PgPool) {
             SELECT 1
             FROM information_schema.tables
             WHERE table_name = 'biofield_capture_artifacts'
+        ) AND EXISTS (
+            SELECT 1
+            FROM information_schema.tables
+            WHERE table_name = 'biofield_baselines'
+        ) AND EXISTS (
+            SELECT 1
+            FROM information_schema.tables
+            WHERE table_name = 'biofield_baseline_readings'
         )
         "#,
     )
@@ -74,9 +82,12 @@ async fn ensure_biofield_schema(pool: &PgPool) {
         .await
         .expect("schema lock should succeed");
 
-    let migration_sql =
+    let migration_017 =
         fs::read_to_string(repo_root().join("migrations/017_biofield_sessions.sql"))
             .expect("root migration 017");
+    let migration_018 =
+        fs::read_to_string(repo_root().join("migrations/018_biofield_baselines.sql"))
+            .expect("root migration 018");
 
     let apply_result = async {
         let schema_exists_after_lock: bool = sqlx::query_scalar(
@@ -89,6 +100,14 @@ async fn ensure_biofield_schema(pool: &PgPool) {
                 SELECT 1
                 FROM information_schema.tables
                 WHERE table_name = 'biofield_capture_artifacts'
+            ) AND EXISTS (
+                SELECT 1
+                FROM information_schema.tables
+                WHERE table_name = 'biofield_baselines'
+            ) AND EXISTS (
+                SELECT 1
+                FROM information_schema.tables
+                WHERE table_name = 'biofield_baseline_readings'
             )
             "#,
         )
@@ -100,10 +119,14 @@ async fn ensure_biofield_schema(pool: &PgPool) {
             return;
         }
 
-        sqlx::raw_sql(&migration_sql)
+        sqlx::raw_sql(&migration_017)
             .execute(pool)
             .await
-            .expect("biofield migration should apply to test database");
+            .expect("biofield migration 017 should apply to test database");
+        sqlx::raw_sql(&migration_018)
+            .execute(pool)
+            .await
+            .expect("biofield migration 018 should apply to test database");
     }
     .await;
 
@@ -211,6 +234,14 @@ fn build_multipart_body(fields: Vec<MultipartField<'_>>) -> (Vec<u8>, String) {
 
     body.extend(format!("--{}--\r\n", boundary).as_bytes());
     (body, boundary)
+}
+
+fn json_body(value: Value) -> Body {
+    Body::from(serde_json::to_vec(&value).expect("json body should serialize"))
+}
+
+fn artifact_dir(label: &str) -> PathBuf {
+    std::env::temp_dir().join(format!("biofield-artifacts-{label}-{}", Uuid::new_v4()))
 }
 
 struct BiofieldCaptureHarness {
@@ -356,6 +387,24 @@ impl BiofieldCaptureHarness {
             .uri(uri)
             .header(header::AUTHORIZATION, format!("Bearer {token}"))
             .body(Body::empty())
+            .expect("request should build");
+
+        self.send_request(request).await
+    }
+
+    async fn send_authenticated_json(
+        &self,
+        method: &str,
+        uri: &str,
+        token: &str,
+        payload: Value,
+    ) -> (StatusCode, Value) {
+        let request = Request::builder()
+            .method(method)
+            .uri(uri)
+            .header(header::AUTHORIZATION, format!("Bearer {token}"))
+            .header(header::CONTENT_TYPE, "application/json")
+            .body(json_body(payload))
             .expect("request should build");
 
         self.send_request(request).await
@@ -525,9 +574,14 @@ async fn biofield_capture_proxies_to_sidecar_and_persists_reading() {
         .mount(&sidecar)
         .await;
 
+    let artifacts_dir = artifact_dir("success");
     let _env = EnvGuard::set(&[
         ("PYTHON_BIOFIELD_URL", sidecar.uri()),
         ("PYTHON_BIOFIELD_TIMEOUT_MS", "1000".to_string()),
+        (
+            "BIOFIELD_ARTIFACTS_DIR",
+            artifacts_dir.display().to_string(),
+        ),
     ]);
 
     let (body, boundary) = build_multipart_body(vec![
@@ -653,9 +707,14 @@ async fn biofield_capture_normalizes_quality_rejection() {
         .mount(&sidecar)
         .await;
 
+    let artifacts_dir = artifact_dir("quality");
     let _env = EnvGuard::set(&[
         ("PYTHON_BIOFIELD_URL", sidecar.uri()),
         ("PYTHON_BIOFIELD_TIMEOUT_MS", "1000".to_string()),
+        (
+            "BIOFIELD_ARTIFACTS_DIR",
+            artifacts_dir.display().to_string(),
+        ),
     ]);
 
     let (body, boundary) = build_multipart_body(vec![MultipartField {
@@ -744,9 +803,14 @@ async fn biofield_readings_history_and_detail_are_user_scoped() {
         .mount(&sidecar)
         .await;
 
+    let artifacts_dir = artifact_dir("history");
     let _env = EnvGuard::set(&[
         ("PYTHON_BIOFIELD_URL", sidecar.uri()),
         ("PYTHON_BIOFIELD_TIMEOUT_MS", "1000".to_string()),
+        (
+            "BIOFIELD_ARTIFACTS_DIR",
+            artifacts_dir.display().to_string(),
+        ),
     ]);
 
     let (body, boundary) = build_multipart_body(vec![MultipartField {
@@ -839,4 +903,292 @@ async fn biofield_readings_history_and_detail_are_user_scoped() {
 
     harness.delete_user(other_user_id).await;
     harness.delete_user(user_id).await;
+}
+
+#[tokio::test]
+#[serial]
+async fn biofield_reprocess_uses_stored_source_artifact_and_creates_new_reading() {
+    let Some(harness) = BiofieldCaptureHarness::new().await else {
+        return;
+    };
+
+    let user_id = harness.create_user_id("reprocess").await;
+    let session_id = harness.create_session_for_user(user_id).await;
+    let token = harness.token_for_user(user_id);
+
+    let sidecar = MockServer::start().await;
+    Mock::given(method("POST"))
+        .and(path("/analyze"))
+        .respond_with(ResponseTemplate::new(200).set_body_json(json!({
+            "contract_version": "biofield-cv/v1",
+            "analysis_version": "stub-metrics/v1",
+            "metrics": {
+                "light_quanta_density": 51.5,
+                "normalized_area": 0.74,
+                "average_intensity": 0.62,
+                "inner_noise": 0.07,
+                "energy_analysis": {
+                    "low": 0.2,
+                    "medium": 0.5,
+                    "high": 0.3,
+                    "total": 1.0
+                },
+                "entropy_form_coefficient": 2.7,
+                "fractal_dimension": 1.42,
+                "correlation_dimension": 1.95,
+                "body_symmetry": 0.33,
+                "contour_complexity": 1.8,
+                "pattern_regularity": 0.76
+            },
+            "quality_assessment": {
+                "sharpness": 0.88,
+                "contrast": 0.82,
+                "noise_level": 0.08,
+                "exposure": 0.54,
+                "sufficient_quality": true
+            },
+            "algorithms_run": ["fractal_dimension"],
+            "processing_time_ms": 12.5
+        })))
+        .mount(&sidecar)
+        .await;
+
+    let artifacts_dir = artifact_dir("reprocess");
+    let _env = EnvGuard::set(&[
+        ("PYTHON_BIOFIELD_URL", sidecar.uri()),
+        ("PYTHON_BIOFIELD_TIMEOUT_MS", "1000".to_string()),
+        (
+            "BIOFIELD_ARTIFACTS_DIR",
+            artifacts_dir.display().to_string(),
+        ),
+    ]);
+
+    let (body, boundary) = build_multipart_body(vec![MultipartField {
+        name: "image",
+        body: b"\xff\xd8\xff\xe0reprocess-jpeg".to_vec(),
+        file_name: Some("reprocess.jpg"),
+        content_type: Some("image/jpeg"),
+    }]);
+
+    let (capture_status, capture_payload) = harness
+        .send_authenticated_multipart(
+            &format!("/api/v1/biofield/sessions/{session_id}/captures"),
+            &token,
+            body,
+            &boundary,
+        )
+        .await;
+    assert_eq!(capture_status, StatusCode::CREATED);
+
+    let original_reading_id = capture_payload["reading_id"]
+        .as_str()
+        .expect("original reading id")
+        .to_string();
+    let original_storage_path = capture_payload["artifacts"][0]["storage_path"]
+        .as_str()
+        .expect("original storage path")
+        .to_string();
+    assert!(artifacts_dir.join(&original_storage_path).exists());
+
+    let (reprocess_status, reprocess_payload) = harness
+        .send_authenticated_json(
+            "POST",
+            &format!("/api/v1/biofield/readings/{original_reading_id}/reprocess"),
+            &token,
+            json!({}),
+        )
+        .await;
+    assert_eq!(reprocess_status, StatusCode::CREATED);
+    assert_eq!(reprocess_payload["source_reading_id"], original_reading_id);
+
+    let reprocessed_reading_id = reprocess_payload["reading_id"]
+        .as_str()
+        .expect("reprocessed reading id")
+        .to_string();
+    assert_ne!(reprocessed_reading_id, original_reading_id);
+    let reprocessed_storage_path = reprocess_payload["artifacts"][0]["storage_path"]
+        .as_str()
+        .expect("reprocessed storage path")
+        .to_string();
+    assert!(artifacts_dir.join(&reprocessed_storage_path).exists());
+
+    let reprocessed_reading_uuid = Uuid::parse_str(&reprocessed_reading_id).expect("uuid");
+    let reprocessed_reading = harness
+        .readings_repository
+        .get_reading(reprocessed_reading_uuid, user_id)
+        .await
+        .expect("reading fetch should succeed")
+        .expect("reprocessed reading should exist");
+    assert_eq!(
+        reprocessed_reading.input_data["reprocessed_from_reading_id"],
+        original_reading_id
+    );
+
+    let artifacts = harness
+        .biofield_repository
+        .list_reading_artifacts(reprocessed_reading_uuid, user_id)
+        .await
+        .expect("reprocessed artifacts should load");
+    assert_eq!(artifacts.len(), 1);
+    assert_eq!(artifacts[0].session_id, session_id);
+    assert_eq!(artifacts[0].reading_id, Some(reprocessed_reading_uuid));
+
+    harness.delete_user(user_id).await;
+    let _ = fs::remove_dir_all(artifacts_dir);
+}
+
+#[tokio::test]
+#[serial]
+async fn biofield_baselines_create_and_list_are_user_scoped() {
+    let Some(harness) = BiofieldCaptureHarness::new().await else {
+        return;
+    };
+
+    let user_id = harness.create_user_id("baseline-owner").await;
+    let other_user_id = harness.create_user_id("baseline-other").await;
+    let session_id = harness.create_session_for_user(user_id).await;
+    let other_session_id = harness.create_session_for_user(other_user_id).await;
+    let token = harness.token_for_user(user_id);
+    let other_token = harness.token_for_user(other_user_id);
+
+    let sidecar = MockServer::start().await;
+    Mock::given(method("POST"))
+        .and(path("/analyze"))
+        .respond_with(ResponseTemplate::new(200).set_body_json(json!({
+            "contract_version": "biofield-cv/v1",
+            "analysis_version": "stub-metrics/v1",
+            "metrics": {
+                "light_quanta_density": 42.5,
+                "normalized_area": 0.67,
+                "average_intensity": 0.51,
+                "inner_noise": 0.11,
+                "energy_analysis": {
+                    "low": 0.2,
+                    "medium": 0.5,
+                    "high": 0.3,
+                    "total": 1.0
+                },
+                "entropy_form_coefficient": 2.7,
+                "fractal_dimension": 1.42,
+                "correlation_dimension": 1.95,
+                "body_symmetry": 0.33,
+                "contour_complexity": 1.8,
+                "pattern_regularity": 0.76
+            },
+            "quality_assessment": {
+                "sharpness": 0.88,
+                "contrast": 0.82,
+                "noise_level": 0.08,
+                "exposure": 0.54,
+                "sufficient_quality": true
+            },
+            "algorithms_run": ["fractal_dimension"],
+            "processing_time_ms": 12.5
+        })))
+        .mount(&sidecar)
+        .await;
+
+    let artifacts_dir = artifact_dir("baseline");
+    let _env = EnvGuard::set(&[
+        ("PYTHON_BIOFIELD_URL", sidecar.uri()),
+        ("PYTHON_BIOFIELD_TIMEOUT_MS", "1000".to_string()),
+        (
+            "BIOFIELD_ARTIFACTS_DIR",
+            artifacts_dir.display().to_string(),
+        ),
+    ]);
+
+    let (body, boundary) = build_multipart_body(vec![MultipartField {
+        name: "image",
+        body: b"\xff\xd8\xff\xe0baseline-jpeg".to_vec(),
+        file_name: Some("baseline.jpg"),
+        content_type: Some("image/jpeg"),
+    }]);
+
+    let mut owner_reading_ids = Vec::new();
+    for _ in 0..2 {
+        let (status, payload) = harness
+            .send_authenticated_multipart(
+                &format!("/api/v1/biofield/sessions/{session_id}/captures"),
+                &token,
+                body.clone(),
+                &boundary,
+            )
+            .await;
+        assert_eq!(status, StatusCode::CREATED);
+        owner_reading_ids.push(
+            payload["reading_id"]
+                .as_str()
+                .expect("owner reading id")
+                .to_string(),
+        );
+    }
+
+    let (other_status, other_payload) = harness
+        .send_authenticated_multipart(
+            &format!("/api/v1/biofield/sessions/{other_session_id}/captures"),
+            &other_token,
+            body,
+            &boundary,
+        )
+        .await;
+    assert_eq!(other_status, StatusCode::CREATED);
+    let other_reading_id = other_payload["reading_id"]
+        .as_str()
+        .expect("other reading id")
+        .to_string();
+
+    let (create_status, create_payload) = harness
+        .send_authenticated_json(
+            "POST",
+            "/api/v1/biofield/baselines",
+            &token,
+            json!({
+                "name": "Morning baseline",
+                "notes": "Two accepted captures",
+                "reading_ids": owner_reading_ids,
+            }),
+        )
+        .await;
+    assert_eq!(create_status, StatusCode::CREATED);
+    assert_eq!(create_payload["name"], "Morning baseline");
+    assert_eq!(create_payload["reading_count"], 2);
+
+    let (list_status, list_payload) = harness
+        .send_authenticated_request("GET", "/api/v1/biofield/baselines", &token)
+        .await;
+    assert_eq!(list_status, StatusCode::OK);
+    assert_eq!(list_payload["items"].as_array().expect("items").len(), 1);
+    assert_eq!(list_payload["items"][0]["name"], "Morning baseline");
+    assert_eq!(list_payload["items"][0]["reading_count"], 2);
+
+    let (other_list_status, other_list_payload) = harness
+        .send_authenticated_request("GET", "/api/v1/biofield/baselines", &other_token)
+        .await;
+    assert_eq!(other_list_status, StatusCode::OK);
+    assert_eq!(
+        other_list_payload["items"].as_array().expect("items").len(),
+        0
+    );
+
+    let (cross_user_status, cross_user_payload) = harness
+        .send_authenticated_json(
+            "POST",
+            "/api/v1/biofield/baselines",
+            &token,
+            json!({
+                "name": "Bad baseline",
+                "reading_ids": [other_reading_id],
+            }),
+        )
+        .await;
+    assert_eq!(cross_user_status, StatusCode::NOT_FOUND);
+    assert_eq!(
+        cross_user_payload["error_code"],
+        "BIOFIELD_READING_NOT_FOUND"
+    );
+
+    harness.delete_user(other_user_id).await;
+    harness.delete_user(user_id).await;
+    let _ = fs::remove_dir_all(artifacts_dir);
 }

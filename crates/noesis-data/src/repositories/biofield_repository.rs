@@ -1,5 +1,6 @@
 use crate::models::biofield::{
-    BiofieldCaptureArtifact, BiofieldSession, NewBiofieldCaptureArtifact, NewBiofieldSession,
+    BiofieldBaseline, BiofieldBaselineSummaryRecord, BiofieldCaptureArtifact, BiofieldSession,
+    NewBiofieldBaseline, NewBiofieldCaptureArtifact, NewBiofieldSession,
     BIOFIELD_SESSION_STATUS_ACTIVE, BIOFIELD_SESSION_STATUS_CLOSED,
 };
 use sqlx::{Error, PgPool};
@@ -172,6 +173,72 @@ impl BiofieldRepository {
         .fetch_all(&self.pool)
         .await
     }
+
+    pub async fn create_baseline(
+        &self,
+        baseline: &NewBiofieldBaseline,
+        reading_ids: &[Uuid],
+    ) -> Result<BiofieldBaseline, Error> {
+        let mut tx = self.pool.begin().await?;
+
+        let baseline_record = sqlx::query_as::<_, BiofieldBaseline>(
+            r#"
+            INSERT INTO biofield_baselines (user_id, name, notes)
+            VALUES ($1, $2, $3)
+            RETURNING *
+            "#,
+        )
+        .bind(baseline.user_id)
+        .bind(&baseline.name)
+        .bind(baseline.notes.as_deref())
+        .fetch_one(&mut *tx)
+        .await?;
+
+        for (index, reading_id) in reading_ids.iter().enumerate() {
+            sqlx::query(
+                r#"
+                INSERT INTO biofield_baseline_readings (baseline_id, reading_id, sort_order)
+                VALUES ($1, $2, $3)
+                "#,
+            )
+            .bind(baseline_record.id)
+            .bind(reading_id)
+            .bind(index as i32)
+            .execute(&mut *tx)
+            .await?;
+        }
+
+        tx.commit().await?;
+
+        Ok(baseline_record)
+    }
+
+    pub async fn list_baselines(
+        &self,
+        user_id: Uuid,
+    ) -> Result<Vec<BiofieldBaselineSummaryRecord>, Error> {
+        sqlx::query_as::<_, BiofieldBaselineSummaryRecord>(
+            r#"
+            SELECT
+                baseline.id,
+                baseline.user_id,
+                baseline.name,
+                baseline.notes,
+                baseline.created_at,
+                baseline.updated_at,
+                COUNT(link.reading_id)::BIGINT AS reading_count
+            FROM biofield_baselines AS baseline
+            LEFT JOIN biofield_baseline_readings AS link
+                ON link.baseline_id = baseline.id
+            WHERE baseline.user_id = $1
+            GROUP BY baseline.id
+            ORDER BY baseline.updated_at DESC, baseline.created_at DESC
+            "#,
+        )
+        .bind(user_id)
+        .fetch_all(&self.pool)
+        .await
+    }
 }
 
 #[cfg(test)]
@@ -208,6 +275,14 @@ mod tests {
                 SELECT 1
                 FROM information_schema.tables
                 WHERE table_name = 'biofield_capture_artifacts'
+            ) AND EXISTS (
+                SELECT 1
+                FROM information_schema.tables
+                WHERE table_name = 'biofield_baselines'
+            ) AND EXISTS (
+                SELECT 1
+                FROM information_schema.tables
+                WHERE table_name = 'biofield_baseline_readings'
             )
             "#,
         )
@@ -225,9 +300,12 @@ mod tests {
             .await
             .expect("schema lock should succeed");
 
-        let migration_sql =
+        let migration_017 =
             fs::read_to_string(repo_root().join("migrations/017_biofield_sessions.sql"))
                 .expect("root migration 017");
+        let migration_018 =
+            fs::read_to_string(repo_root().join("migrations/018_biofield_baselines.sql"))
+                .expect("root migration 018");
 
         let apply_result = async {
             let schema_exists_after_lock: bool = sqlx::query_scalar(
@@ -240,6 +318,14 @@ mod tests {
                     SELECT 1
                     FROM information_schema.tables
                     WHERE table_name = 'biofield_capture_artifacts'
+                ) AND EXISTS (
+                    SELECT 1
+                    FROM information_schema.tables
+                    WHERE table_name = 'biofield_baselines'
+                ) AND EXISTS (
+                    SELECT 1
+                    FROM information_schema.tables
+                    WHERE table_name = 'biofield_baseline_readings'
                 )
                 "#,
             )
@@ -251,10 +337,14 @@ mod tests {
                 return;
             }
 
-            sqlx::raw_sql(&migration_sql)
+            sqlx::raw_sql(&migration_017)
                 .execute(pool)
                 .await
-                .expect("biofield migration should apply to test database");
+                .expect("biofield migration 017 should apply to test database");
+            sqlx::raw_sql(&migration_018)
+                .execute(pool)
+                .await
+                .expect("biofield migration 018 should apply to test database");
         }
         .await;
 

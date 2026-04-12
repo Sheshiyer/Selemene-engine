@@ -4,8 +4,8 @@
 //! All engine calculations and workflow executions are exposed through versioned
 //! JSON endpoints under `/api/v1/`.
 
-mod biofield_client;
 mod billing;
+mod biofield_client;
 mod config;
 pub mod error;
 pub mod error_mapper;
@@ -33,8 +33,11 @@ use axum::{
     routing::{delete, get, patch, post, put},
     Extension, Router,
 };
-use chrono::{Datelike, LocalResult, NaiveDate, NaiveDateTime, NaiveTime, Offset, TimeZone, Timelike};
+use chrono::{
+    Datelike, LocalResult, NaiveDate, NaiveDateTime, NaiveTime, Offset, TimeZone, Timelike,
+};
 use chrono_tz::Tz;
+use engine_human_design::ephemeris::{EphemerisCalculator, HDPlanet};
 use noesis_auth::{AuthService, AuthUser};
 use noesis_cache::CacheManager;
 use noesis_core::{
@@ -53,7 +56,6 @@ use noesis_data::repositories::usage_repository::UsageRepository;
 use noesis_data::repositories::user_repository::UserRepository;
 use noesis_metrics::NoesisMetrics;
 use noesis_orchestrator::WorkflowOrchestrator;
-use engine_human_design::ephemeris::{EphemerisCalculator, HDPlanet};
 use sentry_tower::{NewSentryLayer, SentryHttpLayer};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -132,6 +134,9 @@ use workflow_parity::log_workflow_registry_parity;
         handlers::biofield::create_capture,
         handlers::biofield::list_readings,
         handlers::biofield::get_reading,
+        handlers::biofield::reprocess_reading,
+        handlers::biofield::list_baselines,
+        handlers::biofield::create_baseline,
     ),
     components(
         schemas(
@@ -248,8 +253,13 @@ use workflow_parity::log_workflow_registry_parity;
             handlers::biofield::BiofieldQualitySummary,
             handlers::biofield::BiofieldArtifactSummary,
             handlers::biofield::BiofieldCaptureResponse,
+            handlers::biofield::BiofieldReprocessResponse,
             handlers::biofield::BiofieldReadingSummary,
             handlers::biofield::ListBiofieldReadingsResponse,
+            handlers::biofield::CreateBiofieldBaselineRequest,
+            handlers::biofield::BiofieldBaselineSummary,
+            handlers::biofield::ListBiofieldBaselinesResponse,
+            handlers::biofield::ReprocessBiofieldReadingRequest,
             handlers::biofield::BiofieldReadingDetail,
         )
     ),
@@ -679,6 +689,14 @@ pub fn create_router(state: AppState, config: &ApiConfig) -> Router {
         .route(
             "/biofield/readings/:reading_id",
             get(handlers::biofield::get_reading),
+        )
+        .route(
+            "/biofield/readings/:reading_id/reprocess",
+            post(handlers::biofield::reprocess_reading),
+        )
+        .route(
+            "/biofield/baselines",
+            get(handlers::biofield::list_baselines).post(handlers::biofield::create_baseline),
         )
         .route("/admin/session", get(handlers::admin::get_session))
         .route("/admin/users", get(handlers::admin::list_users))
@@ -1371,32 +1389,64 @@ async fn status_handler(State(state): State<AppState>) -> Json<StatusResponse> {
 // ---------------------------------------------------------------------------
 
 const NAKSHATRA_NAMES: [&str; 27] = [
-    "Ashwini", "Bharani", "Krittika", "Rohini", "Mrigashira", "Ardra", "Punarvasu",
-    "Pushya", "Ashlesha", "Magha", "Purva Phalguni", "Uttara Phalguni", "Hasta",
-    "Chitra", "Swati", "Vishakha", "Anuradha", "Jyeshtha", "Mula", "Purva Ashadha",
-    "Uttara Ashadha", "Shravana", "Dhanishtha", "Shatabhisha", "Purva Bhadrapada",
-    "Uttara Bhadrapada", "Revati",
+    "Ashwini",
+    "Bharani",
+    "Krittika",
+    "Rohini",
+    "Mrigashira",
+    "Ardra",
+    "Punarvasu",
+    "Pushya",
+    "Ashlesha",
+    "Magha",
+    "Purva Phalguni",
+    "Uttara Phalguni",
+    "Hasta",
+    "Chitra",
+    "Swati",
+    "Vishakha",
+    "Anuradha",
+    "Jyeshtha",
+    "Mula",
+    "Purva Ashadha",
+    "Uttara Ashadha",
+    "Shravana",
+    "Dhanishtha",
+    "Shatabhisha",
+    "Purva Bhadrapada",
+    "Uttara Bhadrapada",
+    "Revati",
 ];
 
 const VEDIC_SIGN_NAMES: [&str; 12] = [
-    "aries", "taurus", "gemini", "cancer", "leo", "virgo",
-    "libra", "scorpio", "sagittarius", "capricorn", "aquarius", "pisces",
+    "aries",
+    "taurus",
+    "gemini",
+    "cancer",
+    "leo",
+    "virgo",
+    "libra",
+    "scorpio",
+    "sagittarius",
+    "capricorn",
+    "aquarius",
+    "pisces",
 ];
 
 const VEDIC_SIGN_LORDS: [&str; 12] = [
-    "Mars", "Venus", "Mercury", "Moon", "Sun", "Mercury",
-    "Venus", "Mars", "Jupiter", "Saturn", "Saturn", "Jupiter",
+    "Mars", "Venus", "Mercury", "Moon", "Sun", "Mercury", "Venus", "Mars", "Jupiter", "Saturn",
+    "Saturn", "Jupiter",
 ];
 
 /// 9 classical Vedic planets mapped to their familiar names.
 const VEDIC_PLANETS: &[(HDPlanet, &str)] = &[
-    (HDPlanet::Sun,       "Sun"),
-    (HDPlanet::Moon,      "Moon"),
-    (HDPlanet::Mars,      "Mars"),
-    (HDPlanet::Mercury,   "Mercury"),
-    (HDPlanet::Jupiter,   "Jupiter"),
-    (HDPlanet::Venus,     "Venus"),
-    (HDPlanet::Saturn,    "Saturn"),
+    (HDPlanet::Sun, "Sun"),
+    (HDPlanet::Moon, "Moon"),
+    (HDPlanet::Mars, "Mars"),
+    (HDPlanet::Mercury, "Mercury"),
+    (HDPlanet::Jupiter, "Jupiter"),
+    (HDPlanet::Venus, "Venus"),
+    (HDPlanet::Saturn, "Saturn"),
     (HDPlanet::NorthNode, "Rahu"),
     (HDPlanet::SouthNode, "Ketu"),
 ];
@@ -1417,9 +1467,7 @@ fn jd_from_utc(dt: &chrono::DateTime<chrono::Utc>) -> f64 {
 fn tropical_ascendant(jd: f64, lat: f64, lng: f64) -> f64 {
     let t = (jd - 2451545.0) / 36525.0;
     // GMST in degrees
-    let gmst = (280.460_618_37
-        + 360.985_647_366_29 * (jd - 2451545.0)
-        + 0.000_387_933 * t * t
+    let gmst = (280.460_618_37 + 360.985_647_366_29 * (jd - 2451545.0) + 0.000_387_933 * t * t
         - t * t * t / 38_710_000.0)
         .rem_euclid(360.0);
     let lst = (gmst + lng).rem_euclid(360.0);
@@ -1470,7 +1518,12 @@ fn build_d1_chart(
     let mut moon_sid = 0.0_f64;
 
     for (hd_planet, vedic_name) in VEDIC_PLANETS {
-        let Some((_, pp)) = planet_positions.iter().find(|(p, _)| *p as i32 == *hd_planet as i32) else { continue };
+        let Some((_, pp)) = planet_positions
+            .iter()
+            .find(|(p, _)| *p as i32 == *hd_planet as i32)
+        else {
+            continue;
+        };
         let sid_lon = (pp.longitude - ayanamsa).rem_euclid(360.0);
         let sign_idx = (sid_lon / 30.0) as usize % 12;
         let degree = sid_lon % 30.0;
@@ -1546,7 +1599,10 @@ fn build_d1_chart(
 /// Build a JSON D9 (Navamsa) chart from the D1 chart JSON.
 fn build_d9_chart(birth: &ResolvedBirthDetails, d1: &serde_json::Value) -> serde_json::Value {
     let asc_sign_name = d1["ascendant"]["sign"].as_str().unwrap_or("aries");
-    let asc_sign_idx = VEDIC_SIGN_NAMES.iter().position(|&s| s == asc_sign_name).unwrap_or(0);
+    let asc_sign_idx = VEDIC_SIGN_NAMES
+        .iter()
+        .position(|&s| s == asc_sign_name)
+        .unwrap_or(0);
     let asc_degree = d1["ascendant"]["degree"].as_f64().unwrap_or(0.0);
     let d9_lagna_idx = navamsa_sign_idx(asc_sign_idx, asc_degree);
 
@@ -1558,12 +1614,17 @@ fn build_d9_chart(birth: &ResolvedBirthDetails, d1: &serde_json::Value) -> serde
 
     for planet in planets {
         let name = planet["name"].as_str().unwrap_or("");
-        let d1_sign = VEDIC_SIGN_NAMES.iter().position(|&s| s == planet["sign"].as_str().unwrap_or("")).unwrap_or(0);
+        let d1_sign = VEDIC_SIGN_NAMES
+            .iter()
+            .position(|&s| s == planet["sign"].as_str().unwrap_or(""))
+            .unwrap_or(0);
         let degree = planet["degree"].as_f64().unwrap_or(0.0);
         let d9_sign = navamsa_sign_idx(d1_sign, degree);
         let nav_deg = (degree % (30.0 / 9.0)) * 9.0;
         let is_varg = d1_sign == d9_sign;
-        if is_varg { vargottama.push(name); }
+        if is_varg {
+            vargottama.push(name);
+        }
         navamsa_positions.push(serde_json::json!({
             "planet": name,
             "sign": VEDIC_SIGN_NAMES[d9_sign],
@@ -1608,8 +1669,14 @@ async fn vedic_chart_handler(
     let birth = match resolve_birth_details(&input) {
         Ok(v) => v,
         Err(e) => {
-            state.metrics.record_engine_calculation_with_status(metric_label, "failure", start.elapsed().as_secs_f64());
-            state.metrics.record_engine_calculation_error(metric_label, "validation_error");
+            state.metrics.record_engine_calculation_with_status(
+                metric_label,
+                "failure",
+                start.elapsed().as_secs_f64(),
+            );
+            state
+                .metrics
+                .record_engine_calculation_error(metric_label, "validation_error");
             return Err(e);
         }
     };
@@ -1626,9 +1693,14 @@ async fn vedic_chart_handler(
 
     // Ephemeris calls are synchronous (C library with global mutex); run off the async thread.
     let birth_for_task = ResolvedBirthDetails {
-        year: birth.year, month: birth.month, day: birth.day,
-        hour: birth.hour, minute: birth.minute, second: birth.second,
-        latitude: birth.latitude, longitude: birth.longitude,
+        year: birth.year,
+        month: birth.month,
+        day: birth.day,
+        hour: birth.hour,
+        minute: birth.minute,
+        second: birth.second,
+        latitude: birth.latitude,
+        longitude: birth.longitude,
         timezone_offset_hours: birth.timezone_offset_hours,
     };
 
@@ -1637,7 +1709,8 @@ async fn vedic_chart_handler(
         let jd = jd_from_utc(&utc_dt);
         let ayanamsa = lahiri_ayanamsa(jd);
 
-        let mut positions: Vec<(HDPlanet, engine_human_design::ephemeris::PlanetPosition)> = Vec::new();
+        let mut positions: Vec<(HDPlanet, engine_human_design::ephemeris::PlanetPosition)> =
+            Vec::new();
         for (planet, _) in VEDIC_PLANETS {
             match ephe.get_planet_position(*planet, &utc_dt) {
                 Ok(pos) => positions.push((*planet, pos)),
@@ -1651,18 +1724,47 @@ async fn vedic_chart_handler(
     })
     .await
     .map_err(|_| {
-        state.metrics.record_engine_calculation_with_status(metric_label, "failure", start.elapsed().as_secs_f64());
-        state.metrics.record_engine_calculation_error(metric_label, "task_panic");
-        ErrorMapper::response(StatusCode::INTERNAL_SERVER_ERROR, "CALCULATION_ERROR", "Vedic chart task panicked", None)
+        state.metrics.record_engine_calculation_with_status(
+            metric_label,
+            "failure",
+            start.elapsed().as_secs_f64(),
+        );
+        state
+            .metrics
+            .record_engine_calculation_error(metric_label, "task_panic");
+        ErrorMapper::response(
+            StatusCode::INTERNAL_SERVER_ERROR,
+            "CALCULATION_ERROR",
+            "Vedic chart task panicked",
+            None,
+        )
     })?
     .map_err(|e| {
-        state.metrics.record_engine_calculation_with_status(metric_label, "failure", start.elapsed().as_secs_f64());
-        state.metrics.record_engine_calculation_error(metric_label, "ephemeris_error");
-        ErrorMapper::response(StatusCode::INTERNAL_SERVER_ERROR, "CALCULATION_ERROR", e, None)
+        state.metrics.record_engine_calculation_with_status(
+            metric_label,
+            "failure",
+            start.elapsed().as_secs_f64(),
+        );
+        state
+            .metrics
+            .record_engine_calculation_error(metric_label, "ephemeris_error");
+        ErrorMapper::response(
+            StatusCode::INTERNAL_SERVER_ERROR,
+            "CALCULATION_ERROR",
+            e,
+            None,
+        )
     })?;
 
-    state.metrics.record_engine_calculation_with_status(metric_label, "success", start.elapsed().as_secs_f64());
-    Ok(Json(VedicChartBundleResponse { d1: chart_result.0, d9: chart_result.1 }))
+    state.metrics.record_engine_calculation_with_status(
+        metric_label,
+        "success",
+        start.elapsed().as_secs_f64(),
+    );
+    Ok(Json(VedicChartBundleResponse {
+        d1: chart_result.0,
+        d9: chart_result.1,
+    }))
 }
 
 /// POST /api/v1/engines/:engine_id/calculate -- execute a single engine

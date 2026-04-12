@@ -43,6 +43,33 @@ describe("BiofieldClient", () => {
     );
   });
 
+  it("posts reprocess and baseline routes against the frozen namespace", async () => {
+    const fetchMock = vi.fn(async () =>
+      new Response(JSON.stringify({ reading_id: "reading-2" }), { status: 200 }),
+    );
+
+    const client = new BiofieldClient("https://example.com", { fetchImpl: fetchMock as typeof fetch });
+    await client.reprocessReading("reading-1");
+    await client.listBaselines();
+    await client.createBaseline({ name: "Morning", reading_ids: ["reading-1"] });
+
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      1,
+      "https://example.com/api/v1/biofield/readings/reading-1/reprocess",
+      expect.objectContaining({ method: "POST" }),
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      2,
+      "https://example.com/api/v1/biofield/baselines",
+      expect.objectContaining({ method: "GET" }),
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      3,
+      "https://example.com/api/v1/biofield/baselines",
+      expect.objectContaining({ method: "POST" }),
+    );
+  });
+
   it("raises a typed error on failed requests", async () => {
     const fetchMock = vi.fn(async () =>
       new Response(JSON.stringify({ error: "nope" }), { status: 503 }),

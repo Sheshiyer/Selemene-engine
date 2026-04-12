@@ -318,6 +318,25 @@ textarea {
   word-break: break-word;
 }
 
+.biofield-textarea {
+  min-height: 7rem;
+  resize: vertical;
+}
+
+.biofield-checkbox-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  padding: 0.65rem 0.95rem;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.biofield-checkbox {
+  accent-color: var(--accent);
+}
+
 .biofield-mono {
   font-family: "SFMono-Regular", "Menlo", monospace;
   word-break: break-word;

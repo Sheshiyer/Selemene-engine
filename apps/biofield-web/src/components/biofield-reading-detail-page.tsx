@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from "react";
-import type { BiofieldReadingDetail } from "@selemene/biofield-domain";
+import type { BiofieldReadingDetail, BiofieldReprocessResult } from "@selemene/biofield-domain";
 import { BiofieldClientError } from "@selemene/biofield-api-client";
 import {
   clearStoredAuthSession,
@@ -67,7 +67,10 @@ export function BiofieldReadingDetailPage({ readingId }: { readingId: string }) 
     () => null,
   );
   const [reading, setReading] = useState<BiofieldReadingDetail | null>(null);
+  const [reprocessResult, setReprocessResult] = useState<BiofieldReprocessResult | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isReprocessing, setIsReprocessing] = useState(false);
+  const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
@@ -119,6 +122,30 @@ export function BiofieldReadingDetailPage({ readingId }: { readingId: string }) 
     void loadReading();
   }, [authSession, client, loadReading]);
 
+  async function handleReprocess() {
+    if (!client) {
+      return;
+    }
+
+    setIsReprocessing(true);
+    setErrorMessage(null);
+    setStatusMessage(null);
+
+    try {
+      const response = await client.reprocessReading(readingId);
+      setReprocessResult(response);
+      setStatusMessage(`Reprocessed into reading ${response.reading_id}.`);
+    } catch (error) {
+      if (error instanceof BiofieldClientError && error.status === 401) {
+        handleAuthFailure();
+        return;
+      }
+      setErrorMessage(getErrorMessage(error, "Failed to reprocess biofield reading."));
+    } finally {
+      setIsReprocessing(false);
+    }
+  }
+
   const metrics = useMemo(() => {
     if (!reading || !isRecord(reading.result)) {
       return [] as Array<{ key: string; value: unknown }>;
@@ -158,7 +185,7 @@ export function BiofieldReadingDetailPage({ readingId }: { readingId: string }) 
       <section className="biofield-panel biofield-form-panel">
         <div className="biofield-toolbar">
           <div>
-            <p className="biofield-eyebrow">BF1-07 detail</p>
+            <p className="biofield-eyebrow">BF2 detail and reprocess</p>
             <h2 className="biofield-title" style={{ fontSize: "2rem" }}>
               {analysisVersion ?? "Biofield reading detail"}
             </h2>
@@ -170,6 +197,9 @@ export function BiofieldReadingDetailPage({ readingId }: { readingId: string }) 
             <button className="biofield-link" onClick={() => void loadReading()} type="button">
               Refresh
             </button>
+            <button className="biofield-button" disabled={isReprocessing} onClick={handleReprocess} type="button">
+              {isReprocessing ? "Reprocessing…" : "Reprocess reading"}
+            </button>
             <Link className="biofield-link" href="/history">
               Back to history
             </Link>
@@ -177,7 +207,19 @@ export function BiofieldReadingDetailPage({ readingId }: { readingId: string }) 
         </div>
       </section>
 
+      {statusMessage ? <p className="biofield-success">{statusMessage}</p> : null}
       {errorMessage ? <p className="biofield-error">{errorMessage}</p> : null}
+
+      {reprocessResult ? (
+        <section className="biofield-panel biofield-form-panel">
+          <p className="biofield-eyebrow">Latest reprocess</p>
+          <div className="biofield-actions">
+            <Link className="biofield-link" href={`/readings/${reprocessResult.reading_id}`}>
+              Open reprocessed reading
+            </Link>
+          </div>
+        </section>
+      ) : null}
 
       {isLoading ? (
         <section className="biofield-panel">
