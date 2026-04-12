@@ -52,4 +52,42 @@ describe("BiofieldClient", () => {
 
     await expect(client.getReading("reading-1")).rejects.toBeInstanceOf(BiofieldClientError);
   });
+
+  it("surfaces backend message in typed errors", async () => {
+    const fetchMock = vi.fn(async () =>
+      new Response(
+        JSON.stringify({
+          message: "Biofield analysis service is unavailable",
+          error_code: "BIOFIELD_ANALYSIS_UNAVAILABLE",
+        }),
+        { status: 503 },
+      ),
+    );
+
+    const client = new BiofieldClient("https://example.com", { fetchImpl: fetchMock as typeof fetch });
+
+    await expect(client.getReading("reading-2")).rejects.toMatchObject({
+      name: "BiofieldClientError",
+      message: "Biofield analysis service is unavailable",
+      status: 503,
+    });
+  });
+
+  it("captures raw text payload when response is not json", async () => {
+    const fetchMock = vi.fn(async () =>
+      new Response("upstream unavailable", {
+        status: 502,
+        headers: { "Content-Type": "text/plain" },
+      }),
+    );
+
+    const client = new BiofieldClient("https://example.com", { fetchImpl: fetchMock as typeof fetch });
+
+    await expect(client.getReading("reading-3")).rejects.toMatchObject({
+      name: "BiofieldClientError",
+      message: "Request failed: 502",
+      status: 502,
+      details: { raw: "upstream unavailable" },
+    });
+  });
 });

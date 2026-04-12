@@ -16,6 +16,7 @@ const pageFormatter = new Intl.DateTimeFormat("en-IN", {
   dateStyle: "medium",
   timeStyle: "short",
 });
+const DEFAULT_PAGE_LIMIT = 20;
 
 function formatTimestamp(value: string): string {
   const date = new Date(value);
@@ -50,8 +51,9 @@ export function BiofieldHistoryPage() {
     () => null,
   );
   const [readings, setReadings] = useState<BiofieldReadingSummary[]>([]);
-  const [limit, setLimit] = useState(20);
+  const [limit, setLimit] = useState(DEFAULT_PAGE_LIMIT);
   const [offset, setOffset] = useState(0);
+  const [hasMore, setHasMore] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -74,7 +76,7 @@ export function BiofieldHistoryPage() {
     router.replace("/login");
   }, [router]);
 
-  const loadReadings = useCallback(async () => {
+  const loadReadings = useCallback(async (nextOffset: number, nextLimit: number) => {
     if (!client) {
       return;
     }
@@ -83,10 +85,11 @@ export function BiofieldHistoryPage() {
     setErrorMessage(null);
 
     try {
-      const response = await client.listReadings({ limit: 20, offset: 0 });
+      const response = await client.listReadings({ limit: nextLimit, offset: nextOffset });
       setReadings(response.items);
       setLimit(response.limit);
       setOffset(response.offset);
+      setHasMore(response.items.length === response.limit);
     } catch (error) {
       if (error instanceof BiofieldClientError && error.status === 401) {
         handleAuthFailure();
@@ -103,8 +106,20 @@ export function BiofieldHistoryPage() {
       return;
     }
 
-    void loadReadings();
+    void loadReadings(0, DEFAULT_PAGE_LIMIT);
   }, [authSession, client, loadReadings]);
+
+  function handlePreviousPage() {
+    const nextOffset = Math.max(0, offset - limit);
+    void loadReadings(nextOffset, limit);
+  }
+
+  function handleNextPage() {
+    if (!hasMore) {
+      return;
+    }
+    void loadReadings(offset + limit, limit);
+  }
 
   if (!authSession) {
     return (
@@ -129,7 +144,7 @@ export function BiofieldHistoryPage() {
             </p>
           </div>
           <div className="biofield-actions">
-            <button className="biofield-link" onClick={() => void loadReadings()} type="button">
+            <button className="biofield-link" onClick={() => void loadReadings(offset, limit)} type="button">
               Refresh
             </button>
             <Link className="biofield-link" href="/viewer">
@@ -151,6 +166,28 @@ export function BiofieldHistoryPage() {
             <p className="biofield-kicker">Offset</p>
             <p className="biofield-metric">{offset}</p>
           </div>
+          <div className="biofield-list-card">
+            <p className="biofield-kicker">Page</p>
+            <p className="biofield-metric">{limit > 0 ? Math.floor(offset / limit) + 1 : 1}</p>
+          </div>
+        </div>
+        <div className="biofield-actions">
+          <button
+            className="biofield-link"
+            disabled={isLoading || offset === 0}
+            onClick={handlePreviousPage}
+            type="button"
+          >
+            Previous
+          </button>
+          <button
+            className="biofield-link"
+            disabled={isLoading || !hasMore}
+            onClick={handleNextPage}
+            type="button"
+          >
+            Next
+          </button>
         </div>
       </section>
 

@@ -17,6 +17,13 @@ export interface ListBiofieldReadingsParams {
   offset?: number;
 }
 
+interface ErrorPayloadShape {
+  message?: string;
+  error_message?: string;
+  error?: string;
+  detail?: string;
+}
+
 export class BiofieldClientError extends Error {
   readonly status: number;
   readonly details?: unknown;
@@ -125,11 +132,11 @@ export class BiofieldClient {
     });
 
     const text = await response.text();
-    const payload = text ? JSON.parse(text) : null;
+    const payload = parsePayload(text);
 
     if (!response.ok) {
       throw new BiofieldClientError(
-        `Request failed: ${response.status}`,
+        resolveErrorMessage(payload, response.status),
         response.status,
         payload,
       );
@@ -137,4 +144,36 @@ export class BiofieldClient {
 
     return payload as T;
   }
+}
+
+function parsePayload(text: string): unknown {
+  if (!text) {
+    return null;
+  }
+
+  try {
+    return JSON.parse(text);
+  } catch {
+    return { raw: text };
+  }
+}
+
+function resolveErrorMessage(payload: unknown, status: number): string {
+  if (payload && typeof payload === "object") {
+    const candidate = payload as ErrorPayloadShape;
+    if (typeof candidate.message === "string" && candidate.message.length > 0) {
+      return candidate.message;
+    }
+    if (typeof candidate.error_message === "string" && candidate.error_message.length > 0) {
+      return candidate.error_message;
+    }
+    if (typeof candidate.error === "string" && candidate.error.length > 0) {
+      return candidate.error;
+    }
+    if (typeof candidate.detail === "string" && candidate.detail.length > 0) {
+      return candidate.detail;
+    }
+  }
+
+  return `Request failed: ${status}`;
 }

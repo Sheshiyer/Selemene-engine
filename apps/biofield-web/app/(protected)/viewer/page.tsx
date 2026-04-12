@@ -9,6 +9,12 @@ import {
   getStoredAuthSession,
   subscribeToAuthSession,
 } from "@/lib/auth";
+import {
+  clearStoredActiveSessionId,
+  getStoredActiveSessionId,
+  setStoredActiveSessionId,
+  subscribeToActiveSessionId,
+} from "@/lib/session";
 import { createBiofieldClient } from "@/lib/api";
 import { useRouter } from "next/navigation";
 
@@ -28,11 +34,17 @@ export default function ViewerPage() {
     getStoredAuthSession,
     () => null,
   );
+  const storedSessionId = useSyncExternalStore(
+    subscribeToActiveSessionId,
+    getStoredActiveSessionId,
+    () => null,
+  );
   const [currentSession, setCurrentSession] = useState<BiofieldSession | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [captureResult, setCaptureResult] = useState<BiofieldCaptureResult | null>(null);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isHydratingSession, setIsHydratingSession] = useState(false);
   const [isStartingSession, setIsStartingSession] = useState(false);
   const [isClosingSession, setIsClosingSession] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
@@ -51,10 +63,76 @@ export default function ViewerPage() {
   }, [authSession]);
 
   function handleAuthFailure() {
+    clearStoredActiveSessionId();
     clearStoredAuthSession();
     setCurrentSession(null);
     router.replace("/login");
   }
+
+  useEffect(() => {
+    if (!client) {
+      return;
+    }
+
+    if (!storedSessionId) {
+      return;
+    }
+
+    if (currentSession?.id === storedSessionId) {
+      return;
+    }
+
+    let isCancelled = false;
+
+    async function hydrateSession() {
+      setIsHydratingSession(true);
+      setErrorMessage(null);
+      setStatusMessage(null);
+
+      try {
+        const session = await client.getSession(storedSessionId);
+        if (isCancelled) {
+          return;
+        }
+        setCurrentSession(session);
+        if (session.status === "active") {
+          setStatusMessage(`Restored session ${session.id}.`);
+        } else {
+          clearStoredActiveSessionId();
+          setStatusMessage(
+            `Saved session ${session.id} is ${session.status}; start a new session to continue.`,
+          );
+        }
+      } catch (error) {
+        if (isCancelled) {
+          return;
+        }
+
+        if (error instanceof BiofieldClientError && error.status === 401) {
+          handleAuthFailure();
+          return;
+        }
+
+        clearStoredActiveSessionId();
+        setCurrentSession(null);
+        setErrorMessage(
+          error instanceof Error
+            ? error.message
+            : "Failed to restore your last biofield session.",
+        );
+      } finally {
+        if (!isCancelled) {
+          setIsHydratingSession(false);
+        }
+      }
+    }
+
+    void hydrateSession();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [client, currentSession, storedSessionId]);
 
   async function handleStartSession() {
     if (!client) {
@@ -78,6 +156,8 @@ export default function ViewerPage() {
         },
       });
       setCurrentSession(session);
+      setStoredActiveSessionId(session.id);
+      setCaptureResult(null);
       setStatusMessage(`Session ${session.id} is active.`);
     } catch (error) {
       if (error instanceof BiofieldClientError && error.status === 401) {
@@ -104,6 +184,7 @@ export default function ViewerPage() {
         reason: "viewer-exit",
       });
       setCurrentSession(session);
+      clearStoredActiveSessionId();
       setStatusMessage(`Session ${session.id} closed.`);
     } catch (error) {
       if (error instanceof BiofieldClientError && error.status === 401) {
@@ -161,6 +242,7 @@ export default function ViewerPage() {
   const activeMetricRows = captureResult
     ? METRIC_KEYS.map((key) => ({ key, value: captureResult.metrics[key] }))
     : [];
+  const hasActiveSession = currentSession?.status === "active";
 
   return (
     <section className="biofield-stack">
@@ -180,7 +262,9 @@ export default function ViewerPage() {
           <p className="biofield-copy">
             {currentSession
               ? `Session ${currentSession.id} is managed by Noesis.`
-              : "Start a real biofield session before uploading a capture."}
+              : storedSessionId
+                ? `Restoring session ${storedSessionId} from local state…`
+                : "Start a real biofield session before uploading a capture."}
           </p>
         </article>
         <article className="biofield-panel">
@@ -196,15 +280,21 @@ export default function ViewerPage() {
         <div className="biofield-actions">
           <button
             className="biofield-button"
-            disabled={isStartingSession || !!currentSession}
+            disabled={isStartingSession || isHydratingSession || hasActiveSession}
             onClick={handleStartSession}
             type="button"
           >
-            {isStartingSession ? "Starting session…" : currentSession ? "Session active" : "Start session"}
+            {isHydratingSession
+              ? "Restoring session…"
+              : isStartingSession
+                ? "Starting session…"
+                : hasActiveSession
+                  ? "Session active"
+                  : "Start session"}
           </button>
           <button
             className="biofield-link"
-            disabled={isClosingSession || !currentSession || currentSession.status !== "active"}
+            disabled={isClosingSession || !hasActiveSession}
             onClick={handleCloseSession}
             type="button"
           >
@@ -240,7 +330,7 @@ export default function ViewerPage() {
           <div className="biofield-actions">
             <button
               className="biofield-button"
-              disabled={isUploading || !currentSession || currentSession.status !== "active" || !selectedFile}
+              disabled={isUploading || !hasActiveSession || !selectedFile}
               type="submit"
             >
               {isUploading ? "Uploading…" : "Upload capture"}
