@@ -8,6 +8,7 @@ use std::env;
 
 pub const DEFAULT_PYTHON_BIOFIELD_URL: &str = "http://localhost:8002";
 pub const DEFAULT_PYTHON_BIOFIELD_TIMEOUT_MS: u64 = 10_000;
+pub const DEFAULT_BIOFIELD_ARTIFACTS_DIR: &str = ".runtime/biofield-artifacts";
 
 /// API server configuration loaded from environment variables
 #[derive(Debug, Clone)]

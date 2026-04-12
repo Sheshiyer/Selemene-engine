@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from "react";
-import type { BiofieldReadingSummary } from "@selemene/biofield-domain";
+import { FormEvent, useCallback, useEffect, useMemo, useState, useSyncExternalStore } from "react";
+import type { BiofieldBaselineSummary, BiofieldReadingSummary } from "@selemene/biofield-domain";
 import { BiofieldClientError } from "@selemene/biofield-api-client";
 import {
   clearStoredAuthSession,
@@ -51,10 +51,16 @@ export function BiofieldHistoryPage() {
     () => null,
   );
   const [readings, setReadings] = useState<BiofieldReadingSummary[]>([]);
+  const [baselines, setBaselines] = useState<BiofieldBaselineSummary[]>([]);
+  const [selectedReadingIds, setSelectedReadingIds] = useState<string[]>([]);
+  const [baselineName, setBaselineName] = useState("");
+  const [baselineNotes, setBaselineNotes] = useState("");
   const [limit, setLimit] = useState(DEFAULT_PAGE_LIMIT);
   const [offset, setOffset] = useState(0);
   const [hasMore, setHasMore] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [isCreatingBaseline, setIsCreatingBaseline] = useState(false);
+  const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
@@ -73,6 +79,7 @@ export function BiofieldHistoryPage() {
   const handleAuthFailure = useCallback(() => {
     clearStoredAuthSession();
     setReadings([]);
+    setBaselines([]);
     router.replace("/login");
   }, [router]);
 
@@ -85,17 +92,22 @@ export function BiofieldHistoryPage() {
     setErrorMessage(null);
 
     try {
-      const response = await client.listReadings({ limit: nextLimit, offset: nextOffset });
-      setReadings(response.items);
-      setLimit(response.limit);
-      setOffset(response.offset);
-      setHasMore(response.items.length === response.limit);
+      const [readingsResponse, baselinesResponse] = await Promise.all([
+        client.listReadings({ limit: nextLimit, offset: nextOffset }),
+        client.listBaselines(),
+      ]);
+
+      setReadings(readingsResponse.items);
+      setLimit(readingsResponse.limit);
+      setOffset(readingsResponse.offset);
+      setHasMore(readingsResponse.items.length === readingsResponse.limit);
+      setBaselines(baselinesResponse.items);
     } catch (error) {
       if (error instanceof BiofieldClientError && error.status === 401) {
         handleAuthFailure();
         return;
       }
-      setErrorMessage(getErrorMessage(error, "Failed to load biofield readings."));
+      setErrorMessage(getErrorMessage(error, "Failed to load biofield history."));
     } finally {
       setIsLoading(false);
     }
@@ -108,6 +120,46 @@ export function BiofieldHistoryPage() {
 
     void loadReadings(0, DEFAULT_PAGE_LIMIT);
   }, [authSession, client, loadReadings]);
+
+  function toggleReadingSelection(readingId: string) {
+    setSelectedReadingIds((current) =>
+      current.includes(readingId)
+        ? current.filter((id) => id !== readingId)
+        : [...current, readingId],
+    );
+  }
+
+  async function handleCreateBaseline(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!client || selectedReadingIds.length === 0) {
+      return;
+    }
+
+    setIsCreatingBaseline(true);
+    setErrorMessage(null);
+    setStatusMessage(null);
+
+    try {
+      const baseline = await client.createBaseline({
+        name: baselineName,
+        notes: baselineNotes.trim() || undefined,
+        reading_ids: selectedReadingIds,
+      });
+      setStatusMessage(`Baseline ${baseline.name} created from ${baseline.reading_count} readings.`);
+      setBaselineName("");
+      setBaselineNotes("");
+      setSelectedReadingIds([]);
+      await loadReadings(offset, limit);
+    } catch (error) {
+      if (error instanceof BiofieldClientError && error.status === 401) {
+        handleAuthFailure();
+        return;
+      }
+      setErrorMessage(getErrorMessage(error, "Failed to create biofield baseline."));
+    } finally {
+      setIsCreatingBaseline(false);
+    }
+  }
 
   function handlePreviousPage() {
     const nextOffset = Math.max(0, offset - limit);
@@ -135,12 +187,12 @@ export function BiofieldHistoryPage() {
       <section className="biofield-panel biofield-form-panel">
         <div className="biofield-toolbar">
           <div>
-            <p className="biofield-eyebrow">BF1-07 history</p>
+            <p className="biofield-eyebrow">BF2 history and baselines</p>
             <h2 className="biofield-title" style={{ fontSize: "2rem" }}>
               Persisted readings
             </h2>
             <p className="biofield-copy">
-              Every successful capture now lands as a user-scoped reading with artifact metadata and a stable detail route.
+              Create lightweight baselines from selected readings while keeping the Phase 1 history surface intact.
             </p>
           </div>
           <div className="biofield-actions">
@@ -155,16 +207,20 @@ export function BiofieldHistoryPage() {
 
         <div className="biofield-meta-grid">
           <div className="biofield-list-card">
-            <p className="biofield-kicker">Loaded items</p>
+            <p className="biofield-kicker">Loaded readings</p>
             <p className="biofield-metric">{readings.length}</p>
           </div>
           <div className="biofield-list-card">
-            <p className="biofield-kicker">Page limit</p>
-            <p className="biofield-metric">{limit}</p>
+            <p className="biofield-kicker">Baselines</p>
+            <p className="biofield-metric">{baselines.length}</p>
           </div>
           <div className="biofield-list-card">
-            <p className="biofield-kicker">Offset</p>
-            <p className="biofield-metric">{offset}</p>
+            <p className="biofield-kicker">Selected readings</p>
+            <p className="biofield-metric">{selectedReadingIds.length}</p>
+          </div>
+          <div className="biofield-list-card">
+            <p className="biofield-kicker">Page window</p>
+            <p className="biofield-metric">{offset} -&gt; {offset + readings.length}</p>
           </div>
           <div className="biofield-list-card">
             <p className="biofield-kicker">Page</p>
@@ -191,12 +247,51 @@ export function BiofieldHistoryPage() {
         </div>
       </section>
 
+      {statusMessage ? <p className="biofield-success">{statusMessage}</p> : null}
       {errorMessage ? <p className="biofield-error">{errorMessage}</p> : null}
+
+      {!isLoading && readings.length > 0 ? (
+        <section className="biofield-panel biofield-form-panel">
+          <p className="biofield-eyebrow">Create baseline</p>
+          <form className="biofield-form" onSubmit={handleCreateBaseline}>
+            <label className="biofield-field" htmlFor="biofield-baseline-name">
+              <span className="biofield-kicker">Baseline name</span>
+              <input
+                className="biofield-input"
+                id="biofield-baseline-name"
+                onChange={(event) => setBaselineName(event.target.value)}
+                placeholder="Morning baseline"
+                required
+                value={baselineName}
+              />
+            </label>
+            <label className="biofield-field" htmlFor="biofield-baseline-notes">
+              <span className="biofield-kicker">Notes</span>
+              <textarea
+                className="biofield-input biofield-textarea"
+                id="biofield-baseline-notes"
+                onChange={(event) => setBaselineNotes(event.target.value)}
+                placeholder="Optional reflection about why these readings belong together"
+                value={baselineNotes}
+              />
+            </label>
+            <div className="biofield-actions">
+              <button
+                className="biofield-button"
+                disabled={isCreatingBaseline || selectedReadingIds.length === 0 || baselineName.trim().length === 0}
+                type="submit"
+              >
+                {isCreatingBaseline ? "Creating baseline…" : "Create baseline from selection"}
+              </button>
+            </div>
+          </form>
+        </section>
+      ) : null}
 
       {isLoading ? (
         <section className="biofield-panel">
           <p className="biofield-eyebrow">Loading</p>
-          <p className="biofield-copy">Fetching your persisted biofield readings…</p>
+          <p className="biofield-copy">Fetching your persisted biofield readings and baselines…</p>
         </section>
       ) : null}
 
@@ -217,51 +312,74 @@ export function BiofieldHistoryPage() {
         </section>
       ) : null}
 
+      {!isLoading && baselines.length > 0 ? (
+        <section className="biofield-panel biofield-form-panel">
+          <p className="biofield-eyebrow">Existing baselines</p>
+          <div className="biofield-list-grid">
+            {baselines.map((baseline) => (
+              <div className="biofield-list-card" key={baseline.baseline_id}>
+                <p className="biofield-kicker">{baseline.name}</p>
+                <p className="biofield-copy">{baseline.notes ?? "No notes"}</p>
+                <p className="biofield-copy">{baseline.reading_count} readings</p>
+                <p className="biofield-copy biofield-mono">{baseline.baseline_id}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+      ) : null}
+
       {!isLoading && readings.length > 0 ? (
         <section className="biofield-panel biofield-form-panel">
           <ul className="biofield-list">
-            {readings.map((reading) => (
-              <li key={reading.reading_id}>
-                <div className="biofield-toolbar">
-                  <div>
-                    <p className="biofield-kicker">{formatTimestamp(reading.created_at)}</p>
-                    <p className="biofield-metric">
-                      {reading.quality.sufficient_quality ? "Accepted capture" : "Rejected capture"}
-                    </p>
-                    <p className="biofield-copy">
-                      Reading <span className="biofield-mono">{reading.reading_id}</span>
-                    </p>
+            {readings.map((reading) => {
+              const selected = selectedReadingIds.includes(reading.reading_id);
+              return (
+                <li key={reading.reading_id}>
+                  <div className="biofield-toolbar">
+                    <div>
+                      <p className="biofield-kicker">{formatTimestamp(reading.created_at)}</p>
+                      <p className="biofield-metric">
+                        {reading.quality.sufficient_quality ? "Accepted capture" : "Rejected capture"}
+                      </p>
+                      <p className="biofield-copy">
+                        Reading <span className="biofield-mono">{reading.reading_id}</span>
+                      </p>
+                    </div>
+                    <div className="biofield-actions">
+                      <label className="biofield-checkbox-row">
+                        <input
+                          checked={selected}
+                          className="biofield-checkbox"
+                          onChange={() => toggleReadingSelection(reading.reading_id)}
+                          type="checkbox"
+                        />
+                        <span>{selected ? "Selected" : "Select for baseline"}</span>
+                      </label>
+                      <Link className="biofield-link" href={`/readings/${reading.reading_id}`}>
+                        Open detail
+                      </Link>
+                    </div>
                   </div>
-                  <div className="biofield-actions">
-                    <span
-                      className={`biofield-status-pill${reading.quality.sufficient_quality ? " biofield-status-pill-good" : " biofield-status-pill-warn"}`}
-                    >
-                      {reading.quality.sufficient_quality ? "quality ok" : "quality failed"}
-                    </span>
-                    <Link className="biofield-link" href={`/readings/${reading.reading_id}`}>
-                      Open detail
-                    </Link>
-                  </div>
-                </div>
 
-                <div className="biofield-meta-grid">
-                  <div className="biofield-list-card">
-                    <p className="biofield-kicker">Session</p>
-                    <p className="biofield-copy biofield-mono">{reading.session_id}</p>
+                  <div className="biofield-meta-grid">
+                    <div className="biofield-list-card">
+                      <p className="biofield-kicker">Session</p>
+                      <p className="biofield-copy biofield-mono">{reading.session_id}</p>
+                    </div>
+                    <div className="biofield-list-card">
+                      <p className="biofield-kicker">Artifact</p>
+                      <p className="biofield-copy">{reading.artifact.mime_type}</p>
+                    </div>
+                    <div className="biofield-list-card">
+                      <p className="biofield-kicker">Storage path</p>
+                      <p className="biofield-copy biofield-mono">
+                        {reading.artifact.storage_path ?? "Not yet linked"}
+                      </p>
+                    </div>
                   </div>
-                  <div className="biofield-list-card">
-                    <p className="biofield-kicker">Artifact</p>
-                    <p className="biofield-copy">{reading.artifact.mime_type}</p>
-                  </div>
-                  <div className="biofield-list-card">
-                    <p className="biofield-kicker">Storage path</p>
-                    <p className="biofield-copy biofield-mono">
-                      {reading.artifact.storage_path ?? "Not yet linked"}
-                    </p>
-                  </div>
-                </div>
-              </li>
-            ))}
+                </li>
+              );
+            })}
           </ul>
         </section>
       ) : null}

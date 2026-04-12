@@ -36,3 +36,7 @@ Thumbs.db
 
 # Local OpenClaw exports
 Openclaw.txt
+.vercel
+
+# Local runtime artifact storage
+/.runtime/

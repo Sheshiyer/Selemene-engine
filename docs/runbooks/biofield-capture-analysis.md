@@ -1,11 +1,11 @@
 # Biofield Capture Analysis Runbook
 
 Date: 2026-04-09
-Status: Phase 1 complete local verification path
+Status: BF2 local verification path
 
 ## Purpose
 
-This runbook covers the local verification path for the finished Phase 1 biofield web slice.
+This runbook covers the local verification path for the post-BF1 biofield slice.
 
 It proves that:
 
@@ -17,6 +17,8 @@ It proves that:
 - a capture can be uploaded through Noesis to the Python sidecar
 - a persisted reading appears in history
 - the reading detail route returns the persisted analysis payload and artifact metadata
+- a stored source artifact can be reprocessed into a new reading
+- a baseline can be created from selected readings and listed back to the user
 
 ## Expected Local Ports
 
@@ -53,6 +55,8 @@ PGPASSWORD=noesis_password psql 'postgresql://noesis_user@localhost:5432/noesis'
   - default: `http://localhost:8002`
 - `PYTHON_BIOFIELD_TIMEOUT_MS`
   - default: `10000`
+- optional `BIOFIELD_ARTIFACTS_DIR`
+  - default: `./.runtime/biofield-artifacts`
 
 ### Biofield Web
 
@@ -86,6 +90,8 @@ export JWT_SECRET="dev-secret-at-least-32-characters"
 export DATABASE_URL="postgresql://noesis_user:noesis_password@localhost:5432/noesis"
 export PYTHON_BIOFIELD_URL="http://127.0.0.1:8002"
 export PYTHON_BIOFIELD_TIMEOUT_MS="10000"
+# optional override if you want artifact files elsewhere
+# export BIOFIELD_ARTIFACTS_DIR="/absolute/path/to/biofield-artifacts"
 cargo run --bin noesis-server
 ```
 
@@ -110,7 +116,7 @@ bash /Volumes/madara/2026/witnessos/Selemene-engine/scripts/smoke_biofield_web.s
 
 ### Optional Overrides
 
-The smoke script can self-provision a user and generate a tiny PNG automatically.
+The smoke script can self-provision a user and generate a capture automatically.
 
 Override only if you need fixed values:
 
@@ -127,7 +133,7 @@ bash /Volumes/madara/2026/witnessos/Selemene-engine/scripts/smoke_biofield_web.s
 
 ## Expected Results
 
-The smoke path should prove all of the following:
+The BF2 smoke path should prove all of the following:
 
 - `/login`, `/viewer`, and `/history` return `200`
 - `/health/live` returns `200`
@@ -137,17 +143,24 @@ The smoke path should prove all of the following:
 - `POST /api/v1/biofield/sessions/:session_id/captures` returns `201`
 - `GET /api/v1/biofield/readings` returns the new reading
 - `GET /api/v1/biofield/readings/:reading_id` returns detail for the new reading
+- `POST /api/v1/biofield/readings/:reading_id/reprocess` returns a new reading
+- `GET /api/v1/biofield/readings/:reprocessed_reading_id` resolves
+- `POST /api/v1/biofield/baselines` creates a baseline from the original and reprocessed readings
+- `GET /api/v1/biofield/baselines` returns the created baseline
 - `POST /api/v1/biofield/sessions/:session_id/close` returns `closed`
 
 ## What This Runbook Proves
 
-This Phase 1 runbook proves the end-to-end browser-visible biofield slice:
+This BF2 runbook proves the next storage-backed slice beyond BF1:
 
 - authenticated session lifecycle
 - capture ingestion through Noesis
 - Python-backed analysis response
 - reading persistence
 - artifact metadata linkage
+- real source-artifact file persistence
+- reprocess from stored source artifact
+- baseline creation and list
 - history list
 - reading detail
 
@@ -155,7 +168,7 @@ This Phase 1 runbook proves the end-to-end browser-visible biofield slice:
 
 This runbook does not yet prove later-phase scope such as:
 
-- reading reprocess flow
-- baselines
+- baseline comparison deltas/visualization
 - exports
 - downstream synthesis into non-biofield product surfaces
+- real computer-vision upgrade beyond the current Python stub

@@ -90,16 +90,41 @@ pub struct NewBiofieldCaptureArtifact {
     pub capture_metadata: serde_json::Value,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize, FromRow)]
+pub struct BiofieldBaseline {
+    pub id: Uuid,
+    pub user_id: Uuid,
+    pub name: String,
+    pub notes: Option<String>,
+    pub created_at: DateTime<Utc>,
+    pub updated_at: DateTime<Utc>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, FromRow)]
+pub struct BiofieldBaselineSummaryRecord {
+    pub id: Uuid,
+    pub user_id: Uuid,
+    pub name: String,
+    pub notes: Option<String>,
+    pub created_at: DateTime<Utc>,
+    pub updated_at: DateTime<Utc>,
+    pub reading_count: i64,
+}
+
+#[derive(Debug, Clone)]
+pub struct NewBiofieldBaseline {
+    pub user_id: Uuid,
+    pub name: String,
+    pub notes: Option<String>,
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
 
     #[test]
     fn biofield_models_session_status_values_are_stable() {
-        assert_eq!(
-            BIOFIELD_SESSION_STATUSES,
-            ["active", "closed", "abandoned"]
-        );
+        assert_eq!(BIOFIELD_SESSION_STATUSES, ["active", "closed", "abandoned"]);
         assert!(is_valid_biofield_session_status("active"));
         assert!(is_valid_biofield_session_status("closed"));
         assert!(is_valid_biofield_session_status("abandoned"));

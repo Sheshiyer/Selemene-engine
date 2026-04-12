@@ -1,10 +1,14 @@
 import type {
   BiofieldCaptureResult,
   BiofieldReadingDetail,
+  BiofieldReprocessResult,
   BiofieldSession,
   CloseBiofieldSessionRequest,
+  CreateBiofieldBaselineRequest,
   CreateBiofieldSessionRequest,
+  ListBiofieldBaselinesResponse,
   ListBiofieldReadingsResponse,
+  ReprocessBiofieldReadingRequest,
 } from "@selemene/biofield-domain";
 
 export interface BiofieldClientOptions {
@@ -95,6 +99,37 @@ export class BiofieldClient {
     return this.request<BiofieldReadingDetail>(`/api/v1/biofield/readings/${readingId}`, {
       method: "GET",
     });
+  }
+
+  async reprocessReading(
+    readingId: string,
+    input: ReprocessBiofieldReadingRequest = {},
+  ): Promise<BiofieldReprocessResult> {
+    return this.request<BiofieldReprocessResult>(
+      `/api/v1/biofield/readings/${readingId}/reprocess`,
+      {
+        method: "POST",
+        body: JSON.stringify(input),
+      },
+    );
+  }
+
+  async listBaselines(): Promise<ListBiofieldBaselinesResponse> {
+    return this.request<ListBiofieldBaselinesResponse>("/api/v1/biofield/baselines", {
+      method: "GET",
+    });
+  }
+
+  async createBaseline(
+    input: CreateBiofieldBaselineRequest,
+  ): Promise<ListBiofieldBaselinesResponse["items"][number]> {
+    return this.request<ListBiofieldBaselinesResponse["items"][number]>(
+      "/api/v1/biofield/baselines",
+      {
+        method: "POST",
+        body: JSON.stringify(input),
+      },
+    );
   }
 
   async uploadCapture(

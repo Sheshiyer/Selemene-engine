@@ -17,6 +17,10 @@ SESSION_BODY="$TMP_DIR/session.json"
 CAPTURE_BODY="$TMP_DIR/capture.json"
 HISTORY_BODY="$TMP_DIR/history.json"
 DETAIL_BODY="$TMP_DIR/detail.json"
+REPROCESS_BODY="$TMP_DIR/reprocess.json"
+REPROCESS_DETAIL_BODY="$TMP_DIR/reprocess-detail.json"
+BASELINE_CREATE_BODY="$TMP_DIR/baseline-create.json"
+BASELINE_LIST_BODY="$TMP_DIR/baseline-list.json"
 CLOSE_BODY="$TMP_DIR/close.json"
 GENERATED_IMAGE="$TMP_DIR/smoke.png"
 
@@ -143,13 +147,14 @@ fi
 if [[ -z "$BIOFIELD_CAPTURE_IMAGE" ]]; then
   write_default_capture
   BIOFIELD_CAPTURE_IMAGE="$GENERATED_IMAGE"
+  export BIOFIELD_CAPTURE_IMAGE
 fi
 
 if [[ ! -f "$BIOFIELD_CAPTURE_IMAGE" ]]; then
   fail "BIOFIELD_CAPTURE_IMAGE does not exist: $BIOFIELD_CAPTURE_IMAGE"
 fi
 
-echo "Running biofield-web Phase 1 smoke checks"
+echo "Running biofield-web BF2 smoke checks"
 echo "BIOFIELD_WEB_URL=$BIOFIELD_WEB_URL"
 echo "API_BASE_URL=$API_BASE_URL"
 echo "PYTHON_BIOFIELD_URL=$PYTHON_BIOFIELD_URL"
@@ -230,7 +235,6 @@ FIRST_HISTORY_ID="$(json_field "$HISTORY_BODY" items.0.reading_id)"
 if [[ "$FIRST_HISTORY_ID" != "$READING_ID" ]]; then
   fail "History response top reading_id $FIRST_HISTORY_ID did not match capture reading_id $READING_ID"
 fi
-
 echo "✅ History route returns the new reading"
 
 get_json "$API_BASE_URL/api/v1/biofield/readings/$READING_ID" "200" "$DETAIL_BODY" "$AUTH_HEADER"
@@ -240,15 +244,54 @@ DETAIL_QUALITY_OK="$(json_field "$DETAIL_BODY" quality.sufficient_quality)"
 if [[ "$DETAIL_READING_ID" != "$READING_ID" || "$DETAIL_SESSION_ID" != "$SESSION_ID" || "$DETAIL_QUALITY_OK" != "true" ]]; then
   fail "Reading detail response did not match the created session/reading"
 fi
-
 echo "✅ Reading detail route returns the new reading"
+
+post_json "$API_BASE_URL/api/v1/biofield/readings/$READING_ID/reprocess" "201" '{}' "$REPROCESS_BODY" "$AUTH_HEADER"
+REPROCESSED_READING_ID="$(json_field "$REPROCESS_BODY" reading_id)"
+SOURCE_READING_ID="$(json_field "$REPROCESS_BODY" source_reading_id)"
+if [[ -z "$REPROCESSED_READING_ID" || "$SOURCE_READING_ID" != "$READING_ID" ]]; then
+  fail "Reprocess response did not return a new reading linked to the original reading"
+fi
+echo "✅ Reprocess created reading $REPROCESSED_READING_ID from $READING_ID"
+
+get_json "$API_BASE_URL/api/v1/biofield/readings/$REPROCESSED_READING_ID" "200" "$REPROCESS_DETAIL_BODY" "$AUTH_HEADER"
+REPROCESS_DETAIL_ID="$(json_field "$REPROCESS_DETAIL_BODY" reading_id)"
+if [[ "$REPROCESS_DETAIL_ID" != "$REPROCESSED_READING_ID" ]]; then
+  fail "Reprocessed reading detail did not match the reprocess response"
+fi
+echo "✅ Reprocessed reading detail resolves"
+
+export READING_ID REPROCESSED_READING_ID
+BASELINE_PAYLOAD="$(python3 - <<'PY'
+import json
+import os
+print(json.dumps({
+    'name': 'Smoke baseline',
+    'notes': 'Generated during BF2 smoke verification',
+    'reading_ids': [os.environ['READING_ID'], os.environ['REPROCESSED_READING_ID']],
+}))
+PY
+)"
+post_json "$API_BASE_URL/api/v1/biofield/baselines" "201" "$BASELINE_PAYLOAD" "$BASELINE_CREATE_BODY" "$AUTH_HEADER"
+BASELINE_ID="$(json_field "$BASELINE_CREATE_BODY" baseline_id)"
+BASELINE_COUNT="$(json_field "$BASELINE_CREATE_BODY" reading_count)"
+if [[ -z "$BASELINE_ID" || "$BASELINE_COUNT" != "2" ]]; then
+  fail "Baseline creation did not return the expected id and reading count"
+fi
+echo "✅ Baseline created with 2 readings"
+
+get_json "$API_BASE_URL/api/v1/biofield/baselines" "200" "$BASELINE_LIST_BODY" "$AUTH_HEADER"
+LIST_BASELINE_ID="$(json_field "$BASELINE_LIST_BODY" items.0.baseline_id)"
+if [[ "$LIST_BASELINE_ID" != "$BASELINE_ID" ]]; then
+  fail "Baseline list did not return the created baseline"
+fi
+echo "✅ Baseline list returns the created baseline"
 
 close_payload='{"reason":"smoke-complete"}'
 post_json "$API_BASE_URL/api/v1/biofield/sessions/$SESSION_ID/close" "200" "$close_payload" "$CLOSE_BODY" "$AUTH_HEADER"
-
 CLOSED_STATUS="$(json_field "$CLOSE_BODY" status)"
 if [[ "$CLOSED_STATUS" != "closed" ]]; then
   fail "Session close did not return closed status"
 fi
 
-echo "🎉 Biofield Phase 1 smoke checks passed"
+echo "🎉 Biofield BF2 smoke checks passed"

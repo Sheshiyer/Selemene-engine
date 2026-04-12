@@ -116,3 +116,32 @@ export interface BiofieldCaptureResult {
   quality_assessment: QualityAssessment;
   artifacts: BiofieldArtifactSummary[];
 }
+
+
+export interface ReprocessBiofieldReadingRequest {
+  algorithms?: string[];
+  options?: Record<string, unknown>;
+}
+
+export interface BiofieldReprocessResult extends BiofieldCaptureResult {
+  source_reading_id: string;
+}
+
+export interface CreateBiofieldBaselineRequest {
+  name: string;
+  notes?: string;
+  reading_ids: string[];
+}
+
+export interface BiofieldBaselineSummary {
+  baseline_id: string;
+  name: string;
+  notes?: string | null;
+  reading_count: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ListBiofieldBaselinesResponse {
+  items: BiofieldBaselineSummary[];
+}
