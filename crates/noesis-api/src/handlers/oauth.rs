@@ -25,6 +25,14 @@ const ALLOWED_DISCORD_CALLBACK_PATHS: &[&str] = &[
     "/admin/auth/discord/callback",
 ];
 
+fn normalize_callback_path(path: &str) -> String {
+    if path == "/" {
+        return "/".to_string();
+    }
+
+    path.trim_end_matches('/').to_string()
+}
+
 #[derive(Serialize)]
 pub struct DiscordAuthorizeResponse {
     pub url: String,
@@ -197,7 +205,8 @@ fn validate_requested_discord_redirect_uri(uri: &str) -> Result<reqwest::Url, En
         ));
     }
 
-    if !ALLOWED_DISCORD_CALLBACK_PATHS.contains(&parsed.path()) {
+    let normalized_path = normalize_callback_path(parsed.path());
+    if !ALLOWED_DISCORD_CALLBACK_PATHS.contains(&normalized_path.as_str()) {
         return Err(EngineError::ValidationError(
             "Discord redirect URI path is not allowed for the admin dashboard.".to_string(),
         ));

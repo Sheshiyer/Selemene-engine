@@ -1,5 +1,10 @@
 const DYNAMIC_DISCORD_CALLBACK_HOSTS = new Set(["localhost", "127.0.0.1", "0.0.0.0"]);
 const DYNAMIC_DISCORD_CALLBACK_SUFFIXES = [".vercel.app", ".railway.app", ".tryambakam.space"];
+const STABLE_DISCORD_CALLBACK_HOSTS = new Set([
+  "enantiodromia-engine-dashboard.vercel.app",
+  "144.tryambakam.space",
+  "selemene.tryambakam.space"
+]);
 
 function normalizeHostname(hostname: string): string {
   return hostname.trim().toLowerCase();
@@ -7,6 +12,10 @@ function normalizeHostname(hostname: string): string {
 
 export function shouldUseDynamicDiscordCallbackOverride(hostname: string): boolean {
   const normalized = normalizeHostname(hostname);
+  if (STABLE_DISCORD_CALLBACK_HOSTS.has(normalized)) {
+    return false;
+  }
+
   if (DYNAMIC_DISCORD_CALLBACK_HOSTS.has(normalized)) {
     return true;
   }
@@ -23,7 +32,8 @@ export function buildDiscordCallbackOverride(
     return undefined;
   }
 
-  return `${origin}${callbackPath}`;
+  const normalizedPath = callbackPath !== "/" ? callbackPath.replace(/\/+$/, "") : callbackPath;
+  return `${origin}${normalizedPath}`;
 }
 
 export function getDiscordLoginCallbackOverride(): string | undefined {
