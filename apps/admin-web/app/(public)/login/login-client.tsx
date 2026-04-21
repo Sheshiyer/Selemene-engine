@@ -4,6 +4,7 @@ import { FormEvent, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { clearAuthToken, setAuthToken } from "@/lib/auth";
 import { ApiClientError, getAdminSession, getDiscordAuthUrl, login } from "@/lib/api";
+import { getDiscordLoginCallbackOverride } from "@/lib/discord-oauth";
 
 function normalizeRedirect(rawTarget: string | null): string {
   if (!rawTarget || rawTarget.trim() === "") {
@@ -17,14 +18,6 @@ function normalizeRedirect(rawTarget: string | null): string {
     return stripped === "" ? "/dashboard" : stripped;
   }
   return rawTarget;
-}
-
-function getDiscordCallbackUri(): string | null {
-  if (typeof window === "undefined") {
-    return null;
-  }
-
-  return `${window.location.origin}/admin/auth/discord/callback`;
 }
 
 export function LoginClient() {
@@ -69,7 +62,7 @@ export function LoginClient() {
     setIsDiscordLoading(true);
 
     try {
-      const { url } = await getDiscordAuthUrl(getDiscordCallbackUri() ?? undefined);
+      const { url } = await getDiscordAuthUrl(getDiscordLoginCallbackOverride());
       window.location.href = url;
     } catch (err) {
       setIsDiscordLoading(false);
