@@ -1,5 +1,4 @@
 const DYNAMIC_DISCORD_CALLBACK_HOSTS = new Set(["localhost", "127.0.0.1", "0.0.0.0"]);
-const DYNAMIC_DISCORD_CALLBACK_SUFFIXES = [".vercel.app", ".railway.app", ".tryambakam.space"];
 const STABLE_DISCORD_CALLBACK_HOSTS = new Set([
   "enantiodromia-engine-dashboard.vercel.app",
   "144.tryambakam.space",
@@ -16,11 +15,8 @@ export function shouldUseDynamicDiscordCallbackOverride(hostname: string): boole
     return false;
   }
 
-  if (DYNAMIC_DISCORD_CALLBACK_HOSTS.has(normalized)) {
-    return true;
-  }
-
-  return DYNAMIC_DISCORD_CALLBACK_SUFFIXES.some((suffix) => normalized.endsWith(suffix));
+  // Discord app redirect URIs are static; preview domains should fall back to canonical backend redirect URI.
+  return DYNAMIC_DISCORD_CALLBACK_HOSTS.has(normalized);
 }
 
 export function buildDiscordCallbackOverride(
