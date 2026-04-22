@@ -1715,6 +1715,69 @@
 - Pull request opened:
   - `#509`
   - `https://github.com/Sheshiyer/Selemene-engine/pull/509`
+
+# Task Plan — GitHub Next Wave Orchestration (Biofield / FMRL / BV-PIP)
+
+## Checklist
+- [x] Load orchestration context from `github-next-wave-orchestrator/SKILL.md`.
+- [x] Re-read `tasks/lessons.md` and `tasks/todo.md` before proposing next execution wave.
+- [x] Capture current git branch/worktree topology and open PR health.
+- [x] Capture live GitHub issue and PR inventory for readiness scoring.
+- [x] Map BV-PIP reference frontend capability surface against current `apps/biofield-web` and Rust biofield API seams.
+- [x] Produce status report with explicit risks and confidence.
+- [x] Verify the proposed next wave with user before implementation starts.
+- [x] Execute Batch A: reduce merge risk by isolating BF1 scope from non-biofield commits.
+- [x] Execute Batch B: finish BF1 API behavior (`501` placeholders -> working routes) with tests.
+- [x] Execute Batch C: finish BF1 frontend capture/history/detail parity against stable API contract.
+- [x] Execute Batch D: queue BF2/BF3/BF4 stacked PR flow with strict dependency order and verification gates.
+
+### Batch C Execution Plan (2026-04-12)
+- [x] Re-read BF1 frontend issues and align acceptance criteria (`#553`, `#554`, `#555`).
+- [x] Diff `apps/biofield-web` against BV-PIP reference UX and enumerate missing parity items.
+- [x] Implement missing viewer/history/detail/frontend API-contract behaviors on `bf1-web-first-clean`.
+- [x] Run focused verification for touched surface (Rust biofield tests + any available TS/static checks).
+- [x] Push branch updates and sync PR `#560` with explicit Batch C review notes.
+
+### Batch D Execution Plan (2026-04-12)
+- [x] Map BF2/BF3/BF4 issue scope and acceptance criteria (`#556`, `#557`, `#558` + dependencies).
+- [x] Audit current stacked branches (`bf2-storage-reprocess-baselines`, `bf3-comparison-exports`, `bf4-capture-engine-seam`) for ancestry and delta contamination.
+- [x] Create clean stacked branches from `bf1-web-first-clean` with strict order and minimal tranche diffs.
+- [x] Open or update PR stack in dependency order (BF2 -> BF3 -> BF4) with explicit base branches.
+- [x] Run tranche-focused verification gates for each branch before/after PR creation.
+- [x] Update tracker and post orchestration notes on relevant PRs/issues.
+
+## Notes
+- User asked for orchestration using:
+  - skill file at `/Users/sheshnarayaniyer/.craft-agent/workspaces/my-workspace/skills/github-next-wave-orchestrator/SKILL.md`
+  - `tasks/lessons.md` and `tasks/todo.md`
+  - repo worktree and GitHub issue/PR context
+  - reference BV-PIP project: `/Volumes/madara/2026/twc-vault/01-Projects/BV-PIP/bv-pip-analysis`
+- Observed stacked biofield branches:
+  - `bf1-web-first-tranche-1`
+  - `bf2-storage-reprocess-baselines`
+  - `bf3-comparison-exports`
+  - `bf4-capture-engine-seam`
+- Open biofield umbrella/issues:
+  - `#550` plus `#551` through `#558`
+- Open PRs:
+  - `#559` (biofield tranche 1), `#514` (admin stale), `#1` (legacy draft)
+- Orchestration risk:
+  - PR `#559` currently carries a very large mixed scope (`2031` files, ~`1.56M` additions) and is marked `DIRTY` despite successful checks.
+
+## Review (fill after execution)
+- Status scan outcome:
+  - Open issues: `340`
+  - Open PRs: `3`
+  - Recent issue activity is highly concentrated in biofield (`#550-#558` updated on `2026-04-08`), while the majority of backlog is older roadmap/taskmaster inventory.
+  - Biofield-specific open issues currently detected: `11` (`#226`, `#235`, `#550-#558`).
+  - PR `#559` check rollup is green, but merge state is `DIRTY`; this indicates integration scope/conflict risk rather than red CI.
+- Parity scan outcome (BV-PIP -> Selemene):
+  - BV-PIP frontend includes full capture/render/metrics workflow (`camera`, `PIP shader`, `segmentation`, `realtime metrics`, `analysis/detail`, `PDF export`).
+  - `apps/biofield-web` in current branch is still scaffold-level route shells.
+  - Rust `biofield` handler routes are scaffolded but still return `501 not_implemented`.
+  - Repository layer exists (`biofield_repository`) and can support session/artifact flows once handlers are implemented.
+- Proposed readiness:
+  - Overall readiness score: **Yellow** (active biofield momentum, but merge scope and stale PR/backlog debt create immediate delivery risk).
 - Verification run before commit:
   - `cargo test -p engine-panchanga -- --nocapture`
   - `cargo test -p engine-vimshottari -- --nocapture`
@@ -1731,6 +1794,75 @@
 - Workflow status at handoff:
   - PR exists and is the correct route for `test.yml` to trigger.
   - At the time of verification, only `Supabase Preview` had appeared and was `skipped`; no GitHub Actions test run had shown up yet.
+- Batch A execution review (`2026-04-12`):
+  - User approved execution (`"ye"`), then Batch A started immediately.
+  - New clean extraction worktree/branch created from `origin/main`:
+    - `.worktrees/bf1-web-first-clean`
+    - `bf1-web-first-clean`
+  - Cherry-picked BF1 tranche commits onto clean base:
+    - `e51bb0e6`
+    - `319fed86`
+    - `553ed67b`
+  - Follow-up cleanup commit to complete missing module carryover and drop task-log noise:
+    - `a026a2e9`
+    - `fix(biofield): complete clean bf1 extraction and drop task-log noise`
+  - Resulting branch status:
+    - `bf1-web-first-clean...origin/main [ahead 4]`
+    - Diff scope reduced from mixed mega-PR (`2031` files in `#559`) to `28` files.
+    - No `tasks/todo.md` or `tasks/lessons.md` left in branch diff.
+  - Publication status:
+    - Pushed: `origin/bf1-web-first-clean`
+    - PR opened: `#560` `https://github.com/Sheshiyer/Selemene-engine/pull/560`
+    - Initial GitHub scope stats: `changedFiles=28`, `additions=5814`, `deletions=43`, `mergeStateStatus=UNSTABLE` (checks not fully settled yet).
+    - After first CI completion, workflow `CI - Test & Lint` failed on `Lint` (`cargo fmt --check`) and `Security Audit` (`cargo audit` advisory hit). This appears to be a baseline repo condition: recent `main` runs of the same workflow are also failing.
+  - Verification evidence in clean worktree:
+    - `rg -n "not_implemented|501|TODO" crates/noesis-api/src/handlers/biofield.rs` -> no matches
+    - `cargo test -p noesis-api --test biofield_session_lifecycle -- --nocapture` -> pass (`4` tests)
+    - `cargo test -p noesis-api --test biofield_capture_proxy -- --nocapture` -> pass (`5` tests)
+    - `pytest python-services/tests/test_biofield_analyze.py` -> blocked locally (`ModuleNotFoundError: No module named 'fastapi'`)
+  - Batch D execution review (`2026-04-12`):
+    - Clean stacked branches created from `bf1-web-first-clean`:
+      - `bf2-storage-reprocess-baselines-clean` (`510e7fc1`)
+      - `bf3-comparison-exports-clean` (`d453d84a`)
+      - `bf4-capture-engine-seam-clean` (`921b80eb`)
+    - Old-stack contamination removed during cherry-pick conflict resolution:
+      - dropped stale `tasks/todo.md` payload in BF2/BF3/BF4
+      - dropped deleted-doc reintroductions from BF3/BF4 conflict payloads
+    - Verification evidence:
+      - BF2:
+        - `cargo test -p noesis-api --test biofield_capture_proxy` -> pass (`7` tests)
+        - `cargo test -p noesis-api --test biofield_handler_smoke` -> pass (`2` tests)
+        - `cargo test -p noesis-data biofield` -> pass (`5` tests)
+      - BF3:
+        - `cargo test -p noesis-api --test biofield_capture_proxy` -> pass (`9` tests)
+        - `cargo test -p noesis-api --test biofield_handler_smoke` -> pass (`2` tests)
+        - `cargo test -p noesis-data biofield` -> pass (`7` tests)
+      - BF4:
+        - `cargo test -p noesis-api --test biofield_capture_proxy` -> pass (`10` tests)
+        - `cargo test -p noesis-api --test workflow_tests` -> pass (`13` tests)
+        - `cargo test -p noesis-orchestrator --test trait_conformance_tests` -> pass (`12` tests)
+        - `cargo test -p engine-biofield-capture` -> pass (`6` tests)
+      - all three branches: `git diff --cached --check` -> pass
+    - PR chain opened with explicit dependency bases:
+      - `#561` `bf2-storage-reprocess-baselines-clean` -> base `bf1-web-first-clean`
+      - `#562` `bf3-comparison-exports-clean` -> base `bf2-storage-reprocess-baselines-clean`
+      - `#563` `bf4-capture-engine-seam-clean` -> base `bf3-comparison-exports-clean`
+  - Batch C execution review (`2026-04-12`):
+    - Commit pushed to clean branch:
+      - `8ff78777`
+      - `feat(biofield-web): persist viewer session and paginate readings`
+    - Frontend parity deltas:
+      - added persistent active-session bootstrap (`apps/biofield-web/src/lib/session.ts`)
+      - viewer now restores active session across refresh, and lifecycle controls are status-driven
+      - history route now uses `limit`/`offset` pagination contract with previous/next navigation
+      - `biofield-api-client` now handles non-JSON failures and surfaces backend error messages consistently
+    - Batch C verification evidence:
+      - `cargo test -p noesis-api --test biofield_session_lifecycle -- --nocapture` -> pass (`4` tests)
+      - `cargo test -p noesis-api --test biofield_capture_proxy -- --nocapture` -> pass (`5` tests)
+      - `npx vitest run packages/biofield-api-client/src/biofield-client.test.ts` -> pass (`5` tests)
+    - PR sync:
+      - branch pushed: `bf1-web-first-clean`
+      - PR note posted: `https://github.com/Sheshiyer/Selemene-engine/pull/560#issuecomment-4231453196`
 
 ---
 

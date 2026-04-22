@@ -7,6 +7,7 @@ This is the quick-reference index for the current incident runbooks.
 | Alert / Incident | Runbook | Severity | Expected Resolution |
 |---|---|---:|---:|
 | `NoesisAPIDown` / public `502` or `503` | [incident-api-down.md](/Volumes/madara/2026/witnessos/Selemene-engine/docs/runbooks/incident-api-down.md) | High | 15-30 min |
+| Discord admin login redirect drift | [discord-oauth-callback-policy.md](/Volumes/madara/2026/witnessos/Selemene-engine/docs/runbooks/discord-oauth-callback-policy.md) | Medium | 10-15 min |
 | `NoesisRedisConnectionFailure` / cache degradation | [incident-redis-failure.md](/Volumes/madara/2026/witnessos/Selemene-engine/docs/runbooks/incident-redis-failure.md) | Medium | 15-30 min |
 | TS bridge timeout / sidecar degradation | [incident-ts-bridge-failure.md](/Volumes/madara/2026/witnessos/Selemene-engine/docs/runbooks/incident-ts-bridge-failure.md) | High | 15-30 min |
 | `NoesisPostgresConnectionsHigh` / DB pool exhaustion | [incident-db-pool-exhaustion.md](/Volumes/madara/2026/witnessos/Selemene-engine/docs/runbooks/incident-db-pool-exhaustion.md) | High | 15-30 min |
@@ -58,6 +59,7 @@ curl -sS "$TS_ENGINES_URL/health/ready"
 
 - Canary rollout policy: [canary-rollout-policy.md](/Volumes/madara/2026/witnessos/Selemene-engine/docs/runbooks/canary-rollout-policy.md)
 - Launch-day operations: [launch-day-v3.0.0.md](/Volumes/madara/2026/witnessos/Selemene-engine/docs/runbooks/launch-day-v3.0.0.md)
+- Discord OAuth callback policy: [discord-oauth-callback-policy.md](/Volumes/madara/2026/witnessos/Selemene-engine/docs/runbooks/discord-oauth-callback-policy.md)
 
 ## Resilience Drills
 

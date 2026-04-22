@@ -81,6 +81,8 @@ class QualityAssessment(BaseModel):
 
 
 class BiofieldCVResponse(BaseModel):
+    contract_version: str = Field(default="biofield-cv/v1")
+    analysis_version: str = Field(description="Algorithm/version identifier for reproducibility")
     metrics: SpatialMetrics
     quality_assessment: QualityAssessment | None = None
     algorithms_run: list[str]

@@ -20,6 +20,9 @@ from shared.models import (
 
 router = APIRouter()
 
+CONTRACT_VERSION = "biofield-cv/v1"
+ANALYSIS_VERSION = "mock-seeded-v1"
+
 ALL_ALGORITHMS = [
     "light_quanta_density",
     "normalized_area",
@@ -123,6 +126,8 @@ async def analyze(
     elapsed_ms = (time.time() - start) * 1000
 
     return BiofieldCVResponse(
+        contract_version=CONTRACT_VERSION,
+        analysis_version=ANALYSIS_VERSION,
         metrics=metrics,
         quality_assessment=quality,
         algorithms_run=algorithms_run,

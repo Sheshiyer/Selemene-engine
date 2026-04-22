@@ -38,3 +38,11 @@ Thumbs.db
 Openclaw.txt
 .vercel
 .env*.local
+.worktrees/
+
+# madara sync housekeeping 2026-04-22
+**/__pycache__/
+**/*.pyc
+**/*.pyo
+.context/worktrees/
+scripts/worktrees/

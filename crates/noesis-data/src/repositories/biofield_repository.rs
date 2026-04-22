@@ -1,6 +1,6 @@
 use crate::models::biofield::{
     BiofieldCaptureArtifact, BiofieldSession, NewBiofieldCaptureArtifact, NewBiofieldSession,
-    BIOFIELD_SESSION_STATUS_ACTIVE,
+    BIOFIELD_SESSION_STATUS_ACTIVE, is_valid_biofield_session_status,
 };
 use sqlx::{Error, PgPool};
 use uuid::Uuid;
@@ -46,6 +46,37 @@ impl BiofieldRepository {
         )
         .bind(session_id)
         .bind(user_id)
+        .fetch_optional(&self.pool)
+        .await
+    }
+
+    pub async fn update_session_status(
+        &self,
+        session_id: Uuid,
+        user_id: Uuid,
+        status: &str,
+        notes: Option<&str>,
+    ) -> Result<Option<BiofieldSession>, Error> {
+        if !is_valid_biofield_session_status(status) {
+            return Ok(None);
+        }
+
+        sqlx::query_as::<_, BiofieldSession>(
+            r#"
+            UPDATE biofield_sessions
+            SET
+                status = $3,
+                notes = COALESCE($4, notes),
+                closed_at = CASE WHEN $3 = 'active' THEN NULL ELSE NOW() END,
+                updated_at = NOW()
+            WHERE id = $1 AND user_id = $2
+            RETURNING *
+            "#,
+        )
+        .bind(session_id)
+        .bind(user_id)
+        .bind(status)
+        .bind(notes)
         .fetch_optional(&self.pool)
         .await
     }

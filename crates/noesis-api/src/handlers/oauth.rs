@@ -25,6 +25,14 @@ const ALLOWED_DISCORD_CALLBACK_PATHS: &[&str] = &[
     "/admin/auth/discord/callback",
 ];
 
+fn normalize_callback_path(path: &str) -> String {
+    if path == "/" {
+        return "/".to_string();
+    }
+
+    path.trim_end_matches('/').to_string()
+}
+
 #[derive(Serialize)]
 pub struct DiscordAuthorizeResponse {
     pub url: String,
@@ -197,7 +205,8 @@ fn validate_requested_discord_redirect_uri(uri: &str) -> Result<reqwest::Url, En
         ));
     }
 
-    if !ALLOWED_DISCORD_CALLBACK_PATHS.contains(&parsed.path()) {
+    let normalized_path = normalize_callback_path(parsed.path());
+    if !ALLOWED_DISCORD_CALLBACK_PATHS.contains(&normalized_path.as_str()) {
         return Err(EngineError::ValidationError(
             "Discord redirect URI path is not allowed for the admin dashboard.".to_string(),
         ));
@@ -486,7 +495,8 @@ pub async fn discord_callback(
 mod tests {
     use super::{
         build_default_oauth_api_key_seed, ensure_default_api_key_for_oauth_login,
-        resolve_discord_redirect_uri, OAUTH_DEFAULT_API_KEY_PERMISSIONS,
+        resolve_discord_redirect_uri, validate_requested_discord_redirect_uri,
+        OAUTH_DEFAULT_API_KEY_PERMISSIONS,
     };
     use axum::http::{HeaderMap, HeaderValue};
     use chrono::Utc;
@@ -516,6 +526,54 @@ mod tests {
         assert_eq!(
             resolved,
             "https://enantiodromia-engine-dashboard.vercel.app/admin/auth/discord/callback"
+        );
+    }
+
+    #[test]
+    fn accepts_allowed_callback_paths_with_trailing_slashes() {
+        for uri in [
+            "https://preview.example.vercel.app/admin/login/discord-callback/",
+            "https://preview.example.vercel.app/admin/auth/discord/callback/",
+        ] {
+            let parsed = validate_requested_discord_redirect_uri(uri)
+                .expect("allowed callback uri with trailing slash should be accepted");
+
+            assert_eq!(parsed.as_str(), uri);
+        }
+    }
+
+    #[test]
+    fn rejects_disallowed_callback_paths() {
+        let err = validate_requested_discord_redirect_uri(
+            "https://preview.example.vercel.app/admin/login/discord-callback/nope",
+        )
+        .expect_err("disallowed callback path should be rejected");
+
+        assert!(
+            err.to_string()
+                .contains("Discord redirect URI path is not allowed for the admin dashboard"),
+            "unexpected error: {err}"
+        );
+    }
+
+    #[test]
+    fn accepts_same_origin_preview_callback_uri_with_trailing_slash() {
+        let mut headers = HeaderMap::new();
+        headers.insert(
+            "origin",
+            HeaderValue::from_static("https://enantiodromia-engine-dashboard.vercel.app"),
+        );
+
+        let resolved = resolve_discord_redirect_uri(
+            "https://144.tryambakam.space/admin/login/discord-callback",
+            Some("https://enantiodromia-engine-dashboard.vercel.app/admin/login/discord-callback/"),
+            &headers,
+        )
+        .expect("preview callback uri with trailing slash should be accepted");
+
+        assert_eq!(
+            resolved,
+            "https://enantiodromia-engine-dashboard.vercel.app/admin/login/discord-callback/"
         );
     }
 

@@ -104,3 +104,23 @@ def test_analyze_processing_time_positive(biofield_client, fake_jpeg):
         "/analyze", files={"image": (name, buf, "image/jpeg")}
     ).json()
     assert data["processing_time_ms"] >= 0
+
+
+def test_analyze_includes_contract_and_analysis_versions(biofield_client, fake_jpeg):
+    buf, name = fake_jpeg
+    data = biofield_client.post(
+        "/analyze", files={"image": (name, buf, "image/jpeg")}
+    ).json()
+    assert data["contract_version"] == "biofield-cv/v1"
+    assert isinstance(data["analysis_version"], str)
+    assert len(data["analysis_version"]) > 0
+
+
+def test_analyze_invalid_algorithms_payload_falls_back_to_default(biofield_client, fake_jpeg):
+    buf, name = fake_jpeg
+    data = biofield_client.post(
+        "/analyze",
+        files={"image": (name, buf, "image/jpeg")},
+        data={"algorithms": "{not-json"},
+    ).json()
+    assert len(data["algorithms_run"]) == 11

@@ -12,6 +12,7 @@ pub mod error_mapper;
 mod handlers;
 mod logging;
 mod middleware;
+mod vedic_api_service;
 pub mod workflow_parity;
 
 pub use billing::{
@@ -53,7 +54,6 @@ use noesis_data::repositories::usage_repository::UsageRepository;
 use noesis_data::repositories::user_repository::UserRepository;
 use noesis_metrics::NoesisMetrics;
 use noesis_orchestrator::WorkflowOrchestrator;
-use engine_human_design::ephemeris::{EphemerisCalculator, HDPlanet};
 use sentry_tower::{NewSentryLayer, SentryHttpLayer};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -279,6 +279,7 @@ use utoipa::openapi::path::PathItemType;
 use utoipa::openapi::security::{ApiKey, ApiKeyValue, HttpAuthScheme, HttpBuilder, SecurityScheme};
 use utoipa::openapi::{HeaderBuilder, ObjectBuilder, Ref, RefOr, ResponseBuilder, SchemaType};
 use utoipa::Modify;
+use vedic_api_service::VedicApiService;
 
 struct SecurityAddon;
 
@@ -1366,218 +1367,266 @@ async fn status_handler(State(state): State<AppState>) -> Json<StatusResponse> {
     Json(StatusResponse { engines, workflows })
 }
 
-// ---------------------------------------------------------------------------
-// Native Vedic chart computation (Swiss Ephemeris, Lahiri ayanamsa, whole-sign)
-// ---------------------------------------------------------------------------
+fn normalize_chart_bundle(
+    mut d1: serde_json::Value,
+    mut d9: serde_json::Value,
+) -> Result<VedicChartBundleResponse, (StatusCode, Json<ErrorResponse>)> {
+    const SIGN_NAMES: [&str; 12] = [
+        "aries",
+        "taurus",
+        "gemini",
+        "cancer",
+        "leo",
+        "virgo",
+        "libra",
+        "scorpio",
+        "sagittarius",
+        "capricorn",
+        "aquarius",
+        "pisces",
+    ];
+    const PLANET_NAMES: [&str; 9] = [
+        "Sun", "Moon", "Mars", "Mercury", "Jupiter", "Venus", "Saturn", "Rahu", "Ketu",
+    ];
 
-const NAKSHATRA_NAMES: [&str; 27] = [
-    "Ashwini", "Bharani", "Krittika", "Rohini", "Mrigashira", "Ardra", "Punarvasu",
-    "Pushya", "Ashlesha", "Magha", "Purva Phalguni", "Uttara Phalguni", "Hasta",
-    "Chitra", "Swati", "Vishakha", "Anuradha", "Jyeshtha", "Mula", "Purva Ashadha",
-    "Uttara Ashadha", "Shravana", "Dhanishtha", "Shatabhisha", "Purva Bhadrapada",
-    "Uttara Bhadrapada", "Revati",
-];
+    let sign_name = |value: &serde_json::Value| -> Option<String> {
+        if let Some(sign) = value.as_str() {
+            return Some(sign.to_ascii_lowercase());
+        }
 
-const VEDIC_SIGN_NAMES: [&str; 12] = [
-    "aries", "taurus", "gemini", "cancer", "leo", "virgo",
-    "libra", "scorpio", "sagittarius", "capricorn", "aquarius", "pisces",
-];
-
-const VEDIC_SIGN_LORDS: [&str; 12] = [
-    "Mars", "Venus", "Mercury", "Moon", "Sun", "Mercury",
-    "Venus", "Mars", "Jupiter", "Saturn", "Saturn", "Jupiter",
-];
-
-/// 9 classical Vedic planets mapped to their familiar names.
-const VEDIC_PLANETS: &[(HDPlanet, &str)] = &[
-    (HDPlanet::Sun,       "Sun"),
-    (HDPlanet::Moon,      "Moon"),
-    (HDPlanet::Mars,      "Mars"),
-    (HDPlanet::Mercury,   "Mercury"),
-    (HDPlanet::Jupiter,   "Jupiter"),
-    (HDPlanet::Venus,     "Venus"),
-    (HDPlanet::Saturn,    "Saturn"),
-    (HDPlanet::NorthNode, "Rahu"),
-    (HDPlanet::SouthNode, "Ketu"),
-];
-
-/// Lahiri (Chitrapaksha) ayanamsa in degrees for a given Julian Day.
-fn lahiri_ayanamsa(jd: f64) -> f64 {
-    let t = (jd - 2451545.0) / 36525.0;
-    23.85 + t * 1.3968 // ~50.3"/year drift
-}
-
-/// Julian Day (UT) from a UTC chrono DateTime.
-fn jd_from_utc(dt: &chrono::DateTime<chrono::Utc>) -> f64 {
-    // J2000.0 = 2000-01-01 12:00:00 UTC = unix timestamp 946728000
-    2451545.0 + (dt.timestamp() - 946728000) as f64 / 86_400.0
-}
-
-/// Tropical ascendant in degrees [0,360) for a given Julian Day and location.
-fn tropical_ascendant(jd: f64, lat: f64, lng: f64) -> f64 {
-    let t = (jd - 2451545.0) / 36525.0;
-    // GMST in degrees
-    let gmst = (280.460_618_37
-        + 360.985_647_366_29 * (jd - 2451545.0)
-        + 0.000_387_933 * t * t
-        - t * t * t / 38_710_000.0)
-        .rem_euclid(360.0);
-    let lst = (gmst + lng).rem_euclid(360.0);
-    let ramc = lst.to_radians();
-    let eps = (23.439_291_111 - 0.013_004_167 * t).to_radians();
-    let lat_r = lat.to_radians();
-    // Standard Ascendant: tan(ASC) = cos(RAMC) / -(sin(RAMC)*cos(ε) + tan(φ)*sin(ε))
-    let num = ramc.cos();
-    let den = -(ramc.sin() * eps.cos() + lat_r.tan() * eps.sin());
-    f64::atan2(num, den).to_degrees().rem_euclid(360.0)
-}
-
-/// (nakshatra name, pada 1-4) from a sidereal longitude [0,360).
-fn nakshatra_and_pada(sidereal: f64) -> (&'static str, u8) {
-    let idx = ((sidereal * 27.0 / 360.0) as usize).min(26);
-    let frac = sidereal * 27.0 / 360.0 - idx as f64;
-    let pada = ((frac * 4.0) as u8 + 1).min(4);
-    (NAKSHATRA_NAMES[idx], pada)
-}
-
-/// Navamsa (D9) sign index [0,11] from D1 sign index and degree within that sign.
-fn navamsa_sign_idx(d1_sign: usize, degree_in_sign: f64) -> usize {
-    let nav_num = (degree_in_sign / (30.0 / 9.0)) as usize; // 0..8
-    let base = match d1_sign % 3 {
-        0 => 0, // movable → starts at Aries
-        1 => 4, // fixed   → starts at Leo
-        _ => 8, // dual    → starts at Sagittarius
+        let idx = value.as_i64()?;
+        if !(1..=12).contains(&idx) {
+            return None;
+        }
+        Some(SIGN_NAMES[(idx - 1) as usize].to_string())
     };
-    (base + nav_num) % 12
-}
 
-/// Build a JSON D1 (Rashi) chart from Swiss Ephemeris tropical planet positions.
-fn build_d1_chart(
-    birth: &ResolvedBirthDetails,
-    jd: f64,
-    ayanamsa: f64,
-    planet_positions: &[(HDPlanet, engine_human_design::ephemeris::PlanetPosition)],
-) -> serde_json::Value {
-    let trop_asc = tropical_ascendant(jd, birth.latitude, birth.longitude);
-    let sid_asc = (trop_asc - ayanamsa).rem_euclid(360.0);
-    let asc_sign_idx = (sid_asc / 30.0) as usize % 12;
-    let asc_degree = sid_asc % 30.0;
-    let (asc_nak, asc_pada) = nakshatra_and_pada(sid_asc);
+    let build_houses = |asc_sign: &str| -> Vec<serde_json::Value> {
+        let start_idx = SIGN_NAMES.iter().position(|sign| *sign == asc_sign).unwrap_or(0);
+        (0..12)
+            .map(|offset| {
+                let sign = SIGN_NAMES[(start_idx + offset) % 12];
+                serde_json::json!({
+                    "number": offset + 1,
+                    "sign": sign,
+                })
+            })
+            .collect()
+    };
 
-    let mut planets_json: Vec<serde_json::Value> = Vec::new();
-    let mut moon_json = serde_json::json!({ "sign": "aries", "degree": 0.0, "nakshatra": "Ashwini", "pada": 1, "rashi_lord": "Mars" });
-    let mut sun_sid = 0.0_f64;
-    let mut moon_sid = 0.0_f64;
+    if d1
+        .get("planets")
+        .and_then(serde_json::Value::as_array)
+        .is_none()
+    {
+        let parsed = d1.get("output").map(|output| {
+            let mut asc_sign = String::from("aries");
 
-    for (hd_planet, vedic_name) in VEDIC_PLANETS {
-        let Some((_, pp)) = planet_positions.iter().find(|(p, _)| *p as i32 == *hd_planet as i32) else { continue };
-        let sid_lon = (pp.longitude - ayanamsa).rem_euclid(360.0);
-        let sign_idx = (sid_lon / 30.0) as usize % 12;
-        let degree = sid_lon % 30.0;
-        let (nak, pada) = nakshatra_and_pada(sid_lon);
-        let house = ((sign_idx + 12 - asc_sign_idx) % 12 + 1) as u8;
+            let entries: Vec<&serde_json::Value> = match output {
+                serde_json::Value::Object(map) => map.values().collect(),
+                serde_json::Value::Array(items) => items
+                    .iter()
+                    .flat_map(|item| match item {
+                        serde_json::Value::Object(map) => {
+                            map.values().collect::<Vec<&serde_json::Value>>()
+                        }
+                        _ => Vec::new(),
+                    })
+                    .collect(),
+                _ => Vec::new(),
+            };
 
-        planets_json.push(serde_json::json!({
-            "name": vedic_name,
-            "longitude": sid_lon,
-            "sign": VEDIC_SIGN_NAMES[sign_idx],
-            "degree": degree,
-            "minutes": (degree.fract() * 60.0).floor(),
-            "house": house,
-            "is_retrograde": pp.speed < 0.0,
-            "is_combust": false,
-            "nakshatra": nak,
-            "pada": pada,
-            "speed": pp.speed,
-            "latitude": pp.latitude,
-        }));
+            let planets = entries
+                .iter()
+                .filter_map(|entry| {
+                    let name = entry.get("name")?.as_str()?;
+                    if name == "Ascendant" || !PLANET_NAMES.contains(&name) {
+                        return None;
+                    }
 
-        if *vedic_name == "Moon" {
-            moon_sid = sid_lon;
-            moon_json = serde_json::json!({
-                "sign": VEDIC_SIGN_NAMES[sign_idx],
-                "degree": degree,
-                "nakshatra": nak,
-                "pada": pada,
-                "rashi_lord": VEDIC_SIGN_LORDS[sign_idx],
-            });
-        }
-        if *vedic_name == "Sun" {
-            sun_sid = sid_lon;
+                    let sign = sign_name(entry.get("current_sign")?)?;
+                    let degree = entry
+                        .get("normDegree")
+                        .or_else(|| entry.get("degree"))
+                        .cloned()
+                        .unwrap_or(serde_json::Value::Null);
+
+                    Some(serde_json::json!({
+                        "name": name,
+                        "sign": sign,
+                        "degree": degree,
+                        "house": entry
+                            .get("house_number")
+                            .cloned()
+                            .unwrap_or(serde_json::Value::Null),
+                        "is_retrograde": entry
+                            .get("isRetro")
+                            .and_then(serde_json::Value::as_str)
+                            .map(|v| v.eq_ignore_ascii_case("true"))
+                            .unwrap_or(false),
+                    }))
+                })
+                .collect::<Vec<_>>();
+
+            if let Some(asc_entry) = entries.iter().find(|entry| {
+                entry.get("name").and_then(serde_json::Value::as_str) == Some("Ascendant")
+            }) {
+                if let Some(sign) = asc_entry.get("current_sign").and_then(&sign_name) {
+                    asc_sign = sign;
+                }
+            }
+
+            let houses = build_houses(&asc_sign);
+
+            serde_json::json!({
+                "planets": planets,
+                "houses": houses,
+                "house_system": "whole_sign",
+                "ascendant": { "sign": asc_sign },
+            })
+        });
+
+        if let Some(mapped) = parsed {
+            d1 = mapped;
         }
     }
 
-    let houses: Vec<serde_json::Value> = (0u8..12).map(|i| {
-        let sign = (asc_sign_idx + i as usize) % 12;
-        let hn = i + 1;
-        serde_json::json!({
-            "number": hn,
-            "sign": VEDIC_SIGN_NAMES[sign],
-            "cusp": sign as f64 * 30.0,
-            "degree": 0.0,
-            "house_type": match hn { 1|5|9 => "dharma", 2|6|10 => "artha", 3|7|11 => "kama", _ => "moksha" },
-            "is_kendra": matches!(hn, 1|4|7|10),
-            "is_panapara": matches!(hn, 2|5|8|11),
-            "is_apoklima": matches!(hn, 3|6|9|12),
-        })
-    }).collect();
+    let d1_has_planets = d1
+        .get("planets")
+        .and_then(serde_json::Value::as_array)
+        .is_some();
+    let d1_has_houses = d1
+        .get("houses")
+        .and_then(serde_json::Value::as_array)
+        .is_some();
 
-    let pof = (sid_asc + moon_sid - sun_sid).rem_euclid(360.0);
-
-    serde_json::json!({
-        "native": {
-            "birth_date": format!("{:04}-{:02}-{:02}", birth.year, birth.month, birth.day),
-            "birth_time": format!("{:02}:{:02}:{:02}", birth.hour, birth.minute, birth.second),
-            "latitude": birth.latitude,
-            "longitude": birth.longitude,
-            "timezone": birth.timezone_offset_hours,
-        },
-        "ayanamsa": ayanamsa,
-        "house_system": "whole_sign",
-        "planets": planets_json,
-        "houses": houses,
-        "ascendant": { "sign": VEDIC_SIGN_NAMES[asc_sign_idx], "degree": asc_degree, "nakshatra": asc_nak, "pada": asc_pada },
-        "moon": moon_json,
-        "special_points": { "lagna": sid_asc, "midheaven": serde_json::Value::Null, "part_of_fortune": pof },
-        "notes": ["Native computation via Swiss Ephemeris (Lahiri ayanamsa, whole-sign houses)"],
-    })
-}
-
-/// Build a JSON D9 (Navamsa) chart from the D1 chart JSON.
-fn build_d9_chart(d1: &serde_json::Value) -> serde_json::Value {
-    let asc_sign_name = d1["ascendant"]["sign"].as_str().unwrap_or("aries");
-    let asc_sign_idx = VEDIC_SIGN_NAMES.iter().position(|&s| s == asc_sign_name).unwrap_or(0);
-    let asc_degree = d1["ascendant"]["degree"].as_f64().unwrap_or(0.0);
-    let d9_lagna_idx = navamsa_sign_idx(asc_sign_idx, asc_degree);
-
-    let empty = vec![];
-    let planets = d1["planets"].as_array().unwrap_or(&empty);
-
-    let mut vargottama: Vec<&str> = Vec::new();
-    let mut navamsa_positions: Vec<serde_json::Value> = Vec::new();
-
-    for planet in planets {
-        let name = planet["name"].as_str().unwrap_or("");
-        let d1_sign = VEDIC_SIGN_NAMES.iter().position(|&s| s == planet["sign"].as_str().unwrap_or("")).unwrap_or(0);
-        let degree = planet["degree"].as_f64().unwrap_or(0.0);
-        let d9_sign = navamsa_sign_idx(d1_sign, degree);
-        let nav_deg = (degree % (30.0 / 9.0)) * 9.0;
-        let is_varg = d1_sign == d9_sign;
-        if is_varg { vargottama.push(name); }
-        navamsa_positions.push(serde_json::json!({
-            "planet": name,
-            "sign": VEDIC_SIGN_NAMES[d9_sign],
-            "degree": nav_deg,
-            "is_vargottama": is_varg,
-        }));
+    if !(d1_has_planets && d1_has_houses) {
+        return Err(ErrorMapper::response(
+            StatusCode::INTERNAL_SERVER_ERROR,
+            "CALCULATION_ERROR",
+            "Birth chart payload missing required AstroLens fields: planets/houses.",
+            None,
+        ));
     }
 
-    serde_json::json!({
-        "source": d1["native"].clone(),
-        "navamsa_positions": navamsa_positions,
-        "vargottama": vargottama,
-        "d9_lagna": VEDIC_SIGN_NAMES[d9_lagna_idx],
-    })
+    if d9.get("navamsa_positions").is_none() {
+        let parsed = d9.get("output").map(|output| {
+            let mut d9_lagna = String::from("aries");
+            let entries: Vec<&serde_json::Value> = match output {
+                serde_json::Value::Object(map) => map.values().collect(),
+                serde_json::Value::Array(items) => items
+                    .iter()
+                    .flat_map(|item| match item {
+                        serde_json::Value::Object(map) => {
+                            map.values().collect::<Vec<&serde_json::Value>>()
+                        }
+                        _ => Vec::new(),
+                    })
+                    .collect(),
+                _ => Vec::new(),
+            };
+
+            let navamsa_positions = entries
+                .iter()
+                .filter_map(|entry| {
+                    let name = entry.get("name")?.as_str()?;
+                    if name == "Ascendant" || !PLANET_NAMES.contains(&name) {
+                        return None;
+                    }
+
+                    let sign = sign_name(entry.get("current_sign")?)?;
+                    Some(serde_json::json!({
+                        "planet": name,
+                        "sign": sign,
+                        "degree": entry
+                            .get("normDegree")
+                            .or_else(|| entry.get("degree"))
+                            .cloned()
+                            .unwrap_or(serde_json::Value::Null),
+                        "is_vargottama": false,
+                    }))
+                })
+                .collect::<Vec<_>>();
+
+            if let Some(asc_entry) = entries.iter().find(|entry| {
+                entry.get("name").and_then(serde_json::Value::as_str) == Some("Ascendant")
+            }) {
+                if let Some(sign) = asc_entry.get("current_sign").and_then(&sign_name) {
+                    d9_lagna = sign;
+                }
+            }
+
+            serde_json::json!({
+                "navamsa_positions": navamsa_positions,
+                "d9_lagna": d9_lagna,
+            })
+        });
+
+        if let Some(mapped) = parsed {
+            d9 = mapped;
+        }
+    }
+
+    if d9.get("navamsa_positions").is_none() {
+        if let Some(planets) = d9.get("planets").and_then(serde_json::Value::as_array) {
+            let navamsa_positions: Vec<serde_json::Value> = planets
+                .iter()
+                .map(|planet| {
+                    let planet_name = planet
+                        .get("planet")
+                        .and_then(serde_json::Value::as_str)
+                        .or_else(|| planet.get("name").and_then(serde_json::Value::as_str))
+                        .unwrap_or("Unknown");
+                    serde_json::json!({
+                        "planet": planet_name,
+                        "sign": planet.get("sign").cloned().unwrap_or(serde_json::Value::Null),
+                        "degree": planet.get("degree").cloned().unwrap_or(serde_json::Value::Null),
+                        "is_vargottama": planet
+                            .get("is_vargottama")
+                            .cloned()
+                            .unwrap_or(serde_json::Value::Bool(false)),
+                    })
+                })
+                .collect();
+
+            if let Some(obj) = d9.as_object_mut() {
+                obj.insert(
+                    "navamsa_positions".to_string(),
+                    serde_json::Value::Array(navamsa_positions),
+                );
+            }
+        }
+    }
+
+    if d9.get("d9_lagna").is_none() {
+        let lagna = d9
+            .get("lagna")
+            .and_then(serde_json::Value::as_str)
+            .or_else(|| {
+                d9.get("ascendant")
+                    .and_then(|asc| asc.get("sign"))
+                    .and_then(serde_json::Value::as_str)
+            })
+            .map(ToString::to_string);
+        if let (Some(obj), Some(value)) = (d9.as_object_mut(), lagna) {
+            obj.insert("d9_lagna".to_string(), serde_json::Value::String(value));
+        }
+    }
+
+    let has_navamsa_positions = d9
+        .get("navamsa_positions")
+        .and_then(serde_json::Value::as_array)
+        .is_some();
+    if !has_navamsa_positions {
+        return Err(ErrorMapper::response(
+            StatusCode::INTERNAL_SERVER_ERROR,
+            "CALCULATION_ERROR",
+            "Navamsa chart payload missing required AstroLens field: navamsa_positions.",
+            None,
+        ));
+    }
+
+    Ok(VedicChartBundleResponse { d1, d9 })
 }
 
 /// POST /api/v1/charts/vedic -- return the D1/D9 chart bundle used by AstroLens
@@ -1591,7 +1640,7 @@ fn build_d9_chart(d1: &serde_json::Value) -> serde_json::Value {
         (status = 401, description = "Unauthorized", body = ErrorResponse),
         (status = 422, description = "Validation error", body = ErrorResponse),
         (status = 429, description = "Rate limit exceeded", body = ErrorResponse),
-        (status = 500, description = "Native ephemeris calculation failed", body = ErrorResponse),
+        (status = 500, description = "Vedic API chart calculation failed", body = ErrorResponse),
     ),
     security(
         ("bearer_auth" = []),
@@ -1614,55 +1663,76 @@ async fn vedic_chart_handler(
         }
     };
 
-    // Convert local birth time to UTC for Swiss Ephemeris
-    let offset_secs = (birth.timezone_offset_hours * 3600.0) as i64;
-    let naive_dt = chrono::NaiveDateTime::new(
-        chrono::NaiveDate::from_ymd_opt(birth.year, birth.month, birth.day)
-            .expect("validated date"),
-        chrono::NaiveTime::from_hms_opt(birth.hour, birth.minute, birth.second)
-            .expect("validated time"),
-    );
-    let utc_dt = (naive_dt - chrono::Duration::seconds(offset_secs)).and_utc();
-
-    // Ephemeris calls are synchronous (C library with global mutex); run off the async thread.
-    let birth_for_task = ResolvedBirthDetails {
-        year: birth.year, month: birth.month, day: birth.day,
-        hour: birth.hour, minute: birth.minute, second: birth.second,
-        latitude: birth.latitude, longitude: birth.longitude,
-        timezone_offset_hours: birth.timezone_offset_hours,
-    };
-
-    let chart_result = tokio::task::spawn_blocking(move || {
-        let ephe = EphemerisCalculator::new("");
-        let jd = jd_from_utc(&utc_dt);
-        let ayanamsa = lahiri_ayanamsa(jd);
-
-        let mut positions: Vec<(HDPlanet, engine_human_design::ephemeris::PlanetPosition)> = Vec::new();
-        for (planet, _) in VEDIC_PLANETS {
-            match ephe.get_planet_position(*planet, &utc_dt) {
-                Ok(pos) => positions.push((*planet, pos)),
-                Err(e) => return Err(format!("Planet {:?}: {}", planet, e)),
-            }
-        }
-
-        let d1 = build_d1_chart(&birth_for_task, jd, ayanamsa, &positions);
-        let d9 = build_d9_chart(&d1);
-        Ok((d1, d9))
-    })
-    .await
-    .map_err(|_| {
-        state.metrics.record_engine_calculation_with_status(metric_label, "failure", start.elapsed().as_secs_f64());
-        state.metrics.record_engine_calculation_error(metric_label, "task_panic");
-        ErrorMapper::response(StatusCode::INTERNAL_SERVER_ERROR, "CALCULATION_ERROR", "Vedic chart task panicked", None)
-    })?
-    .map_err(|e| {
-        state.metrics.record_engine_calculation_with_status(metric_label, "failure", start.elapsed().as_secs_f64());
-        state.metrics.record_engine_calculation_error(metric_label, "ephemeris_error");
+    let vedic_service = VedicApiService::from_env().map_err(|e| {
+        state.metrics.record_engine_calculation_with_status(
+            metric_label,
+            "failure",
+            start.elapsed().as_secs_f64(),
+        );
+        state
+            .metrics
+            .record_engine_calculation_error(metric_label, "service_config_error");
         ErrorMapper::response(StatusCode::INTERNAL_SERVER_ERROR, "CALCULATION_ERROR", e, None)
     })?;
 
-    state.metrics.record_engine_calculation_with_status(metric_label, "success", start.elapsed().as_secs_f64());
-    Ok(Json(VedicChartBundleResponse { d1: chart_result.0, d9: chart_result.1 }))
+    let d1 = vedic_service
+        .birth_chart(
+            birth.year,
+            birth.month,
+            birth.day,
+            birth.hour,
+            birth.minute,
+            birth.second,
+            birth.latitude,
+            birth.longitude,
+            birth.timezone_offset_hours,
+        )
+        .await
+        .map_err(|e| {
+            state.metrics.record_engine_calculation_with_status(
+                metric_label,
+                "failure",
+                start.elapsed().as_secs_f64(),
+            );
+            state
+                .metrics
+                .record_engine_calculation_error(metric_label, "birth_chart_error");
+            ErrorMapper::response(StatusCode::INTERNAL_SERVER_ERROR, "CALCULATION_ERROR", e, None)
+        })?;
+
+    let d9 = vedic_service
+        .navamsa_chart(
+            birth.year,
+            birth.month,
+            birth.day,
+            birth.hour,
+            birth.minute,
+            birth.second,
+            birth.latitude,
+            birth.longitude,
+            birth.timezone_offset_hours,
+        )
+        .await
+        .map_err(|e| {
+            state.metrics.record_engine_calculation_with_status(
+                metric_label,
+                "failure",
+                start.elapsed().as_secs_f64(),
+            );
+            state
+                .metrics
+                .record_engine_calculation_error(metric_label, "navamsa_chart_error");
+            ErrorMapper::response(StatusCode::INTERNAL_SERVER_ERROR, "CALCULATION_ERROR", e, None)
+        })?;
+
+    let chart_result = normalize_chart_bundle(d1, d9)?;
+
+    state.metrics.record_engine_calculation_with_status(
+        metric_label,
+        "success",
+        start.elapsed().as_secs_f64(),
+    );
+    Ok(Json(chart_result))
 }
 
 /// POST /api/v1/engines/:engine_id/calculate -- execute a single engine

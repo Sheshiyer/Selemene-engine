@@ -79,9 +79,17 @@ export class BiofieldClient {
 
     const suffix = search.size > 0 ? `?${search.toString()}` : "";
 
-    return this.request<BiofieldReadingSummary[]>(`/api/v1/biofield/readings${suffix}`, {
+    const payload = await this.request<
+      BiofieldReadingSummary[] | { items: BiofieldReadingSummary[] }
+    >(`/api/v1/biofield/readings${suffix}`, {
       method: "GET",
     });
+
+    if (Array.isArray(payload)) {
+      return payload;
+    }
+
+    return payload.items ?? [];
   }
 
   async getReading(readingId: string): Promise<BiofieldReadingDetail> {
