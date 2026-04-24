@@ -2,14 +2,14 @@
 //!
 //! P4-W1-S1-03: Criterion benchmark suite for the biorhythm engine.
 //! Three groups:
-//!   biorhythm_single_day   — single-day cycle calculation
-//!   biorhythm_30_day_range — 30-day forecast window
+//!   biorhythm_single_day     — single-day cycle calculation
+//!   biorhythm_30_day_range   — 30-day forecast window
 //!   biorhythm_cycle_analysis — cycle-analysis across diverse birth dates
 
+use chrono::{TimeZone, Utc};
 use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion};
 use engine_biorhythm::BiorhythmEngine;
 use noesis_core::{BirthData, ConsciousnessEngine, EngineInput, Precision};
-use chrono::{TimeZone, Utc};
 use serde_json::json;
 
 // ---------------------------------------------------------------------------
@@ -37,22 +37,25 @@ fn make_input(birth_date: &str, forecast_days: i64) -> EngineInput {
     }
 }
 
+// Shared runtime used by all benchmark functions to avoid per-function setup overhead.
+fn shared_runtime() -> tokio::runtime::Runtime {
+    tokio::runtime::Builder::new_current_thread()
+        .enable_all()
+        .build()
+        .unwrap()
+}
+
 // ---------------------------------------------------------------------------
 // Benchmark: single-day calculation (no forecast)
 // ---------------------------------------------------------------------------
 
 fn benchmark_single_day(c: &mut Criterion) {
     let engine = BiorhythmEngine::new();
-    let rt = tokio::runtime::Runtime::new().unwrap();
+    let rt = shared_runtime();
 
     let mut group = c.benchmark_group("biorhythm_single_day");
 
-    let birth_dates = [
-        "1985-06-15",
-        "1990-01-15",
-        "1978-11-03",
-        "2000-05-20",
-    ];
+    let birth_dates = ["1985-06-15", "1990-01-15", "1978-11-03", "2000-05-20"];
 
     for date in &birth_dates {
         let input = make_input(date, 0);
@@ -61,9 +64,8 @@ fn benchmark_single_day(c: &mut Criterion) {
             &input,
             |b, input| {
                 b.iter(|| {
-                    rt.block_on(async {
-                        engine.calculate(black_box(input.clone())).await.unwrap()
-                    })
+                    rt.block_on(engine.calculate(black_box(input.clone())))
+                        .unwrap()
                 })
             },
         );
@@ -78,15 +80,11 @@ fn benchmark_single_day(c: &mut Criterion) {
 
 fn benchmark_30_day_range(c: &mut Criterion) {
     let engine = BiorhythmEngine::new();
-    let rt = tokio::runtime::Runtime::new().unwrap();
+    let rt = shared_runtime();
 
     let mut group = c.benchmark_group("biorhythm_30_day_range");
 
-    let birth_dates = [
-        "1985-06-15",
-        "1990-01-15",
-        "1978-11-03",
-    ];
+    let birth_dates = ["1985-06-15", "1990-01-15", "1978-11-03"];
 
     for date in &birth_dates {
         let input = make_input(date, 30);
@@ -95,9 +93,8 @@ fn benchmark_30_day_range(c: &mut Criterion) {
             &input,
             |b, input| {
                 b.iter(|| {
-                    rt.block_on(async {
-                        engine.calculate(black_box(input.clone())).await.unwrap()
-                    })
+                    rt.block_on(engine.calculate(black_box(input.clone())))
+                        .unwrap()
                 })
             },
         );
@@ -112,7 +109,7 @@ fn benchmark_30_day_range(c: &mut Criterion) {
 
 fn benchmark_cycle_analysis(c: &mut Criterion) {
     let engine = BiorhythmEngine::new();
-    let rt = tokio::runtime::Runtime::new().unwrap();
+    let rt = shared_runtime();
 
     // 10 diverse birth dates to exercise all cycle phases
     let birth_dates: Vec<String> = (0..10)
@@ -124,18 +121,9 @@ fn benchmark_cycle_analysis(c: &mut Criterion) {
     c.bench_function("biorhythm_cycle_analysis_10_births", |b| {
         b.iter(|| {
             rt.block_on(async {
-                let results: Vec<_> = inputs
-                    .iter()
-                    .map(|input| {
-                        let eng = &engine;
-                        let inp = input.clone();
-                        async move { eng.calculate(black_box(inp)).await.unwrap() }
-                    })
-                    .collect();
-                // drive futures sequentially (no rayon needed — pure math)
-                let mut out = Vec::with_capacity(results.len());
-                for fut in results {
-                    out.push(fut.await);
+                let mut out = Vec::with_capacity(inputs.len());
+                for input in &inputs {
+                    out.push(engine.calculate(black_box(input.clone())).await.unwrap());
                 }
                 black_box(out)
             })
