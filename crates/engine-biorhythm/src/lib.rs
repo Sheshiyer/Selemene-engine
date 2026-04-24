@@ -23,6 +23,7 @@ const PHYSICAL_PERIOD: f64 = 23.0;
 const EMOTIONAL_PERIOD: f64 = 28.0;
 const INTELLECTUAL_PERIOD: f64 = 33.0;
 const INTUITIVE_PERIOD: f64 = 38.0;
+const SPIRITUAL_PERIOD: f64 = 53.0;
 
 /// Threshold in days for declaring a zero-crossing "critical".
 const CRITICAL_THRESHOLD: f64 = 1.0;
@@ -40,6 +41,7 @@ pub struct BiorhythmResult {
     pub emotional: CycleResult,
     pub intellectual: CycleResult,
     pub intuitive: CycleResult,
+    pub spiritual: CycleResult,
     pub mastery: f64,
     pub passion: f64,
     pub wisdom: f64,
@@ -356,6 +358,7 @@ impl ConsciousnessEngine for BiorhythmEngine {
         let emotional = compute_cycle(days_alive, EMOTIONAL_PERIOD);
         let intellectual = compute_cycle(days_alive, INTELLECTUAL_PERIOD);
         let intuitive = compute_cycle(days_alive, INTUITIVE_PERIOD);
+        let spiritual = compute_cycle(days_alive, SPIRITUAL_PERIOD);
 
         // --- Composite cycles (percentages) ---
         let mastery = (physical.percentage + intellectual.percentage) / 2.0;
@@ -391,6 +394,7 @@ impl ConsciousnessEngine for BiorhythmEngine {
             emotional,
             intellectual,
             intuitive,
+            spiritual,
             mastery,
             passion,
             wisdom,
@@ -448,6 +452,7 @@ impl ConsciousnessEngine for BiorhythmEngine {
             ("emotional", &bio_result.emotional),
             ("intellectual", &bio_result.intellectual),
             ("intuitive", &bio_result.intuitive),
+            ("spiritual", &bio_result.spiritual),
         ] {
             if cycle.value < -1.0 || cycle.value > 1.0 {
                 valid = false;
@@ -661,6 +666,7 @@ mod tests {
             emotional: compute_cycle(10000, EMOTIONAL_PERIOD),
             intellectual: compute_cycle(10000, INTELLECTUAL_PERIOD),
             intuitive: compute_cycle(10000, INTUITIVE_PERIOD),
+            spiritual: compute_cycle(10000, SPIRITUAL_PERIOD),
             mastery: 50.0,
             passion: 50.0,
             wisdom: 50.0,
@@ -671,5 +677,38 @@ mod tests {
         let prompt = generate_witness_prompt(&result);
         assert!(!prompt.is_empty());
         assert!(prompt.contains('%'));
+    }
+
+    #[test]
+    fn test_spiritual_cycle_period_and_invariants() {
+        // At day 0, spiritual sine value should be 0 (sin(0) = 0).
+        let val_at_birth = cycle_value(0, SPIRITUAL_PERIOD);
+        assert!(val_at_birth.abs() < 1e-10, "Expected 0 at birth, got {}", val_at_birth);
+
+        // One full period should return very close to 0 again.
+        let val_at_period = cycle_value(SPIRITUAL_PERIOD as i64, SPIRITUAL_PERIOD);
+        assert!(val_at_period.abs() < 1e-10, "Expected 0 at full period, got {}", val_at_period);
+
+        // compute_cycle yields value in [-1, 1] and percentage in [0, 100].
+        let result = compute_cycle(100, SPIRITUAL_PERIOD);
+        assert!(result.value >= -1.0 && result.value <= 1.0);
+        assert!(result.percentage >= 0.0 && result.percentage <= 100.0);
+        assert!(result.days_until_peak > 0);
+        assert!(result.days_until_critical > 0);
+
+        // cycle_day must be in [0, 52] inclusive (period 53 ⇒ modulo 53).
+        assert!(result.cycle_day >= 0 && result.cycle_day < SPIRITUAL_PERIOD as i64);
+    }
+
+    #[tokio::test]
+    async fn test_spiritual_field_in_output() {
+        let engine = BiorhythmEngine::new();
+        let target = Utc.with_ymd_and_hms(2025, 6, 15, 12, 0, 0).unwrap();
+        let input = make_input("1990-01-01", target);
+        let output = engine.calculate(input).await.unwrap();
+
+        let bio: BiorhythmResult = serde_json::from_value(output.result).unwrap();
+        assert!(bio.spiritual.value >= -1.0 && bio.spiritual.value <= 1.0);
+        assert!(bio.spiritual.percentage >= 0.0 && bio.spiritual.percentage <= 100.0);
     }
 }
