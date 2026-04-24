@@ -1,0 +1,209 @@
+{
+  "engine_id": "gene-keys",
+  "result": {
+    "activation_sequence": {
+      "evolution": [
+        64,
+        63
+      ],
+      "lifes_work": [
+        9,
+        16
+      ],
+      "purpose": [
+        16,
+        63
+      ],
+      "radiance": [
+        9,
+        64
+      ]
+    },
+    "active_keys": [
+      {
+        "gift": "Determination",
+        "key_number": 9,
+        "line": 3,
+        "name": "Gene Key 9",
+        "shadow": "Inertia",
+        "siddhi": "Invincibility",
+        "source": "PersonalitySun"
+      },
+      {
+        "gift": "Versatility",
+        "key_number": 16,
+        "line": 3,
+        "name": "Gene Key 16",
+        "shadow": "Indifference",
+        "siddhi": "Versatility",
+        "source": "PersonalityEarth"
+      },
+      {
+        "gift": "Synthesis",
+        "key_number": 64,
+        "line": 3,
+        "name": "Gene Key 64",
+        "shadow": "Ignorance",
+        "siddhi": "Synthesis",
+        "source": "DesignSun"
+      },
+      {
+        "gift": "Bliss",
+        "key_number": 63,
+        "line": 3,
+        "name": "Gene Key 63",
+        "shadow": "Pressure",
+        "siddhi": "Bliss",
+        "source": "DesignEarth"
+      }
+    ],
+    "frequency_assessments": [
+      {
+        "gene_key": 9,
+        "gift": "Determination",
+        "gift_description": "The gift frequency expresses the balanced state of consciousness that serves the collective good.",
+        "name": "Gene Key 9",
+        "recognition_prompts": {
+          "gift": [
+            "When do you experience Determination arising naturally, without effort?",
+            "Can you notice the space between the Inertia pattern and the emergence of Determination?",
+            "What happens when Determination flows through you? How does it feel different from the shadow?",
+            "When this gift is active, who are you serving? What opens?",
+            "Does this quality arise more often now than in the past?"
+          ],
+          "shadow": [
+            "Do you notice yourself reacting unconsciously through the pattern of Inertia?",
+            "When Inertia arises, can you feel the contraction or resistance in your body?",
+            "Do you find yourself caught in Inertia without realizing it until later?",
+            "What triggers this pattern? When does it feel most intense?",
+            "Can you witness the pattern without trying to change or fix it?"
+          ],
+          "siddhi": [
+            "Have you had moments where Determination dissolved into Invincibility?",
+            "When Invincibility is present, is there still a 'you' experiencing it?",
+            "What remains when the personal expression of Determination falls away?",
+            "Have you touched a state beyond your individual consciousness?",
+            "Can you rest in the paradox of this frequency without needing to understand it?"
+          ]
+        },
+        "shadow": "Inertia",
+        "shadow_description": "The shadow frequency represents the unconscious pattern that creates limitation and suffering in this area of life.",
+        "siddhi": "Invincibility",
+        "siddhi_description": "The siddhi frequency embodies the highest potential of human consciousness in this archetypal pattern.",
+        "suggested_frequency": null
+      },
+      {
+        "gene_key": 16,
+        "gift": "Versatility",
+        "gift_description": "The gift frequency expresses the balanced state of consciousness that serves the collective good.",
+        "name": "Gene Key 16",
+        "recognition_prompts": {
+          "gift": [
+            "When do you experience Versatility arising naturally, without effort?",
+            "Can you notice the space between the Indifference pattern and the emergence of Versatility?",
+            "What happens when Versatility flows through you? How does it feel different from the shadow?",
+            "When this gift is active, who are you serving? What opens?",
+            "Does this quality arise more often now than in the past?"
+          ],
+          "shadow": [
+            "Do you notice yourself reacting unconsciously through the pattern of Indifference?",
+            "When Indifference arises, can you feel the contraction or resistance in your body?",
+            "Do you find yourself caught in Indifference without realizing it until later?",
+            "What triggers this pattern? When does it feel most intense?",
+            "Can you witness the pattern without trying to change or fix it?"
+          ],
+          "siddhi": [
+            "Have you had moments where Versatility dissolved into Versatility?",
+            "When Versatility is present, is there still a 'you' experiencing it?",
+            "What remains when the personal expression of Versatility falls away?",
+            "Have you touched a state beyond your individual consciousness?",
+            "Can you rest in the paradox of this frequency without needing to understand it?"
+          ]
+        },
+        "shadow": "Indifference",
+        "shadow_description": "The shadow frequency represents the unconscious pattern that creates limitation and suffering in this area of life.",
+        "siddhi": "Versatility",
+        "siddhi_description": "The siddhi frequency embodies the highest potential of human consciousness in this archetypal pattern.",
+        "suggested_frequency": null
+      },
+      {
+        "gene_key": 64,
+        "gift": "Synthesis",
+        "gift_description": "The gift frequency expresses the balanced state of consciousness that serves the collective good.",
+        "name": "Gene Key 64",
+        "recognition_prompts": {
+          "gift": [
+            "When do you experience Synthesis arising naturally, without effort?",
+            "Can you notice the space between the Ignorance pattern and the emergence of Synthesis?",
+            "What happens when Synthesis flows through you? How does it feel different from the shadow?",
+            "When this gift is active, who are you serving? What opens?",
+            "Does this quality arise more often now than in the past?"
+          ],
+          "shadow": [
+            "Do you notice yourself reacting unconsciously through the pattern of Ignorance?",
+            "When Ignorance arises, can you feel the contraction or resistance in your body?",
+            "Do you find yourself caught in Ignorance without realizing it until later?",
+            "What triggers this pattern? When does it feel most intense?",
+            "Can you witness the pattern without trying to change or fix it?"
+          ],
+          "siddhi": [
+            "Have you had moments where Synthesis dissolved into Synthesis?",
+            "When Synthesis is present, is there still a 'you' experiencing it?",
+            "What remains when the personal expression of Synthesis falls away?",
+            "Have you touched a state beyond your individual consciousness?",
+            "Can you rest in the paradox of this frequency without needing to understand it?"
+          ]
+        },
+        "shadow": "Ignorance",
+        "shadow_description": "The shadow frequency represents the unconscious pattern that creates limitation and suffering in this area of life.",
+        "siddhi": "Synthesis",
+        "siddhi_description": "The siddhi frequency embodies the highest potential of human consciousness in this archetypal pattern.",
+        "suggested_frequency": null
+      },
+      {
+        "gene_key": 63,
+        "gift": "Bliss",
+        "gift_description": "The gift frequency expresses the balanced state of consciousness that serves the collective good.",
+        "name": "Gene Key 63",
+        "recognition_prompts": {
+          "gift": [
+            "When do you experience Bliss arising naturally, without effort?",
+            "Can you notice the space between the Pressure pattern and the emergence of Bliss?",
+            "What happens when Bliss flows through you? How does it feel different from the shadow?",
+            "When this gift is active, who are you serving? What opens?",
+            "Does this quality arise more often now than in the past?"
+          ],
+          "shadow": [
+            "Do you notice yourself reacting unconsciously through the pattern of Pressure?",
+            "When Pressure arises, can you feel the contraction or resistance in your body?",
+            "Do you find yourself caught in Pressure without realizing it until later?",
+            "What triggers this pattern? When does it feel most intense?",
+            "Can you witness the pattern without trying to change or fix it?"
+          ],
+          "siddhi": [
+            "Have you had moments where Bliss dissolved into Bliss?",
+            "When Bliss is present, is there still a 'you' experiencing it?",
+            "What remains when the personal expression of Bliss falls away?",
+            "Have you touched a state beyond your individual consciousness?",
+            "Can you rest in the paradox of this frequency without needing to understand it?"
+          ]
+        },
+        "shadow": "Pressure",
+        "shadow_description": "The shadow frequency represents the unconscious pattern that creates limitation and suffering in this area of life.",
+        "siddhi": "Bliss",
+        "siddhi_description": "The siddhi frequency embodies the highest potential of human consciousness in this archetypal pattern.",
+        "suggested_frequency": null
+      }
+    ]
+  },
+  "witness_prompt": "How do your conscious gifts Determination (9) and Synthesis (64) create your core magnetism? When you're most authentic, what happens in the interplay between Versatility (16) and Bliss (63) as your higher calling reveals itself? What invitation lives in the space between Inertia becoming Determination and Indifference becoming Versatility?",
+  "consciousness_level": 3,
+  "metadata": {
+    "calculation_time_ms": 0.0,
+    "backend": "hd-derived",
+    "precision_achieved": "Standard",
+    "cached": false,
+    "timestamp": "2025-01-01T00:00:00Z",
+    "engine_version": "3.0.0"
+  }
+}
