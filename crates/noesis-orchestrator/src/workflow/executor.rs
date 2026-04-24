@@ -14,7 +14,7 @@ use noesis_core::{EngineError, EngineInput, EngineOutput};
 use std::collections::HashMap;
 use std::sync::Arc;
 use std::time::Instant;
-use tracing::{info, instrument, warn};
+use tracing::{info, info_span, instrument, warn, Instrument};
 
 /// Executes workflows with parallel engine execution and synthesis.
 ///
@@ -71,7 +71,11 @@ impl WorkflowExecutor {
     }
 
     /// Execute a workflow definition
-    #[instrument(skip(self, workflow, input), fields(workflow_id = %workflow.id))]
+    ///
+    /// Emits a parent tracing span carrying `workflow_id` and `engine_count`
+    /// plus a child span per engine carrying `engine_id`, `duration_ms`, and
+    /// `status` (success | failure).
+    #[instrument(skip(self, workflow, input), fields(workflow_id = %workflow.id, engine_count = tracing::field::Empty))]
     pub async fn execute_workflow(
         &self,
         workflow: &ExtendedWorkflowDefinition,
@@ -79,10 +83,12 @@ impl WorkflowExecutor {
         user_phase: u8,
     ) -> Result<WorkflowOutput, EngineError> {
         let start = Instant::now();
+        let engine_count = workflow.engine_ids.len();
+        tracing::Span::current().record("engine_count", engine_count);
 
         info!(
             workflow_id = %workflow.id,
-            engine_count = workflow.engine_ids.len(),
+            engine_count,
             "Starting parallel workflow execution"
         );
 
@@ -116,7 +122,10 @@ impl WorkflowExecutor {
         })
     }
 
-    /// Execute multiple engines in parallel
+    /// Execute multiple engines in parallel, each within its own child span.
+    ///
+    /// Each span carries `engine_id`, `duration_ms`, and `status`
+    /// (success | failure) so Jaeger can render a per-engine timing breakdown.
     async fn execute_engines_parallel(
         &self,
         engine_ids: &[String],
@@ -130,11 +139,23 @@ impl WorkflowExecutor {
                 let input_clone = input.clone();
                 let engine_id_owned = engine_id.clone();
 
+                let engine_span = info_span!(
+                    "engine.execute",
+                    engine_id = %engine_id_owned,
+                    duration_ms = tracing::field::Empty,
+                    status = tracing::field::Empty,
+                );
+
                 async move {
-                    match engine_registry
+                    let engine_start = Instant::now();
+                    let result = engine_registry
                         .execute_routed(&engine_id_owned, input_clone, user_phase)
-                        .await
-                    {
+                        .await;
+                    let elapsed_ms = engine_start.elapsed().as_millis() as u64;
+                    let status = if result.is_ok() { "success" } else { "failure" };
+                    tracing::Span::current().record("duration_ms", elapsed_ms);
+                    tracing::Span::current().record("status", status);
+                    match result {
                         Ok(output) => (engine_id_owned, Some(output)),
                         Err(e) => {
                             warn!(engine_id = %engine_id_owned, error = %e, "Engine failed");
@@ -142,6 +163,7 @@ impl WorkflowExecutor {
                         }
                     }
                 }
+                .instrument(engine_span)
             })
             .collect();
 
