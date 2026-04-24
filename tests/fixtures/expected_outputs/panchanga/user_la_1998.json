@@ -1,0 +1,32 @@
+{
+  "engine_id": "panchanga",
+  "result": {
+    "julian_day": 2450934.677083333,
+    "karana_index": 2,
+    "karana_name": "Kaulava",
+    "karana_value": 11.0,
+    "lunar_longitude": 80.11223434118703,
+    "nakshatra_index": 6,
+    "nakshatra_name": "Punarvasu",
+    "nakshatra_value": 6.008417575589027,
+    "solar_longitude": 16.88358616370091,
+    "tithi_index": 5,
+    "tithi_name": "Shashthi (Shukla)",
+    "tithi_value": 5.26905401479051,
+    "vara_index": 5,
+    "vara_name": "Shukravara (Friday)",
+    "yoga_index": 7,
+    "yoga_name": "Dhriti",
+    "yoga_value": 7.274686537866596
+  },
+  "witness_prompt": "You were born under Tithi Shashthi (Shukla) and Nakshatra Punarvasu. The Tithi reflects the angle between Sun and Moon at your birth — a mirror of the dance between your conscious will and emotional nature. What pattern do you notice when your intentions and feelings are misaligned?",
+  "consciousness_level": 0,
+  "metadata": {
+    "calculation_time_ms": 0.0,
+    "backend": "native-rust",
+    "precision_achieved": "Standard",
+    "cached": false,
+    "timestamp": "2026-01-01T00:00:00Z",
+    "engine_version": "3.0.0"
+  }
+}
