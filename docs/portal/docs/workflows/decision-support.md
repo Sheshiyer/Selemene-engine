@@ -14,6 +14,8 @@ sidebar_position: 4
 - `tarot`
 - `i-ching`
 - `human-design`
+- `enneagram`
+- `gene-keys`
 
 ## Endpoint
 
@@ -34,7 +36,8 @@ sidebar_position: 4
   "current_time": "2026-03-03T12:00:00Z",
   "precision": "standard",
   "options": {
-    "question": "What should I prioritize this week?"
+    "question": "What should I prioritize this week?",
+    "spread": "yes_no"
   }
 }
 ```
@@ -45,9 +48,25 @@ sidebar_position: 4
 {
   "workflow_id": "decision-support",
   "engine_outputs": {
-    "example-engine": {
-      "engine_id": "example-engine",
-      "result": {},
+    "tarot": {
+      "engine_id": "tarot",
+      "result": {
+        "spread": {
+          "type": "yes_no",
+          "name": "Yes or No",
+          "card_count": 1
+        },
+        "cards": [
+          {
+            "position": 0,
+            "cardName": "The Fool"
+          }
+        ],
+        "decision": {
+          "answer": "yes",
+          "confidence": 0.74
+        }
+      },
       "witness_prompt": "...",
       "metadata": {"processing_time_ms": 12.3}
     }
@@ -65,3 +84,13 @@ sidebar_position: 4
 ## Consciousness phase gating
 
 This workflow requires **phase 1** or higher. If user phase is lower, API returns a phase access error.
+
+## Tarot spread options
+
+- `single_card`
+- `three_card`
+- `celtic_cross`
+- `horseshoe`
+- `relationship`
+- `career`
+- `yes_no`

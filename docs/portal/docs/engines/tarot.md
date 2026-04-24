@@ -38,15 +38,48 @@ Uses shared `EngineInput`:
 ```json
 {
   "engine_id": "tarot",
-  "timestamp": "2026-03-03T12:00:00Z",
-  "result": {"example": "typed-result-fields-see-openapi"},
-  "witness_prompt": "A reflective prompt tuned to your current phase.",
-  "metadata": {
-    "consciousness_level": 0,
-    "processing_time_ms": 23.4,
-    "version": "3.0.0",
-    "cache_hit": false
-  }
+  "result": {
+    "spread": {
+      "type": "horseshoe",
+      "name": "Horseshoe Spread",
+      "description": "A 7-card spread for situational clarity from past influences to likely outcome",
+      "card_count": 7,
+      "available_types": ["single_card", "three_card", "celtic_cross", "horseshoe", "relationship", "career", "yes_no"]
+    },
+    "question": "What should I focus on now?",
+    "positions": [
+      {
+        "position": 0,
+        "name": "Past Influence",
+        "meaning": "What from the past still shapes this situation",
+        "card": {
+          "id": "m09",
+          "name": "The Hermit",
+          "arcana": "major",
+          "number": 9,
+          "isReversed": false,
+          "interpretation": {
+            "meaning": "A period of inner guidance and reflection",
+            "keywords": ["solitude", "wisdom", "reflection"]
+          }
+        }
+      }
+    ],
+    "cards": [
+      {
+        "position": 0,
+        "name": "Past Influence",
+        "cardName": "The Hermit"
+      }
+    ]
+  },
+  "witness_prompts": [
+    {
+      "prompt": "What does this spread ask you to notice?"
+    }
+  ],
+  "calculated_at": "2026-03-03T12:00:00Z",
+  "processing_time_ms": 23
 }
 ```
 
@@ -63,9 +96,19 @@ Uses shared `EngineInput`:
 ```json
 {
   "options": {
+    "spread": "three_card",
     "question": "What should I focus on now?",
-    "intent": "clarity",
-    "intent_text": "Create aligned momentum"
+    "spread_type": "three_card"
   }
 }
 ```
+
+## Supported spreads
+
+- `single_card`
+- `three_card`
+- `celtic_cross`
+- `horseshoe`
+- `relationship`
+- `career`
+- `yes_no`

@@ -135,11 +135,80 @@ curl -X POST http://localhost:8080/api/v1/engines/tarot/calculate \
   -H "Content-Type: application/json" \
   -d '{
     "options": {
-      "spread_type": "three_card",
+      "spread": "horseshoe",
       "question": "What should I focus on this month?",
       "reversed_enabled": true
     }
   }'
+```
+
+Supported tarot spread values:
+- `single_card`
+- `three_card`
+- `celtic_cross`
+- `horseshoe`
+- `relationship`
+- `career`
+- `yes_no`
+
+Compatibility aliases accepted by the engine:
+- `options.spread` (preferred)
+- `options.spread_type` (legacy)
+- `options.spreadType` (legacy)
+
+Example tarot response payload:
+
+```json
+{
+  "engine_id": "tarot",
+  "result": {
+    "spread": {
+      "type": "yes_no",
+      "name": "Yes or No",
+      "description": "A focused one-card spread for binary clarity in the present moment",
+      "card_count": 1,
+      "available_types": ["single_card", "three_card", "celtic_cross", "horseshoe", "relationship", "career", "yes_no"]
+    },
+    "question": "Should I proceed with this partnership?",
+    "positions": [
+      {
+        "position": 0,
+        "name": "Answer Card",
+        "meaning": "The card polarity and orientation indicate a yes/no tendency",
+        "card": {
+          "id": "m00",
+          "name": "The Fool",
+          "arcana": "major",
+          "number": 0,
+          "isReversed": false,
+          "interpretation": {
+            "meaning": "Beginnings and unguarded trust",
+            "keywords": ["beginnings", "trust"]
+          }
+        }
+      }
+    ],
+    "cards": [
+      {
+        "position": 0,
+        "name": "Answer Card",
+        "cardName": "The Fool"
+      }
+    ],
+    "decision": {
+      "answer": "yes",
+      "confidence": 0.74,
+      "rationale": "The Fool appeared upright, suggesting a supportive current for this direction."
+    }
+  },
+  "witness_prompts": [
+    {
+      "prompt": "What makes this yes feel alive in your body?"
+    }
+  ],
+  "calculated_at": "2026-04-24T12:00:00Z",
+  "processing_time_ms": 14
+}
 ```
 
 ## Errors

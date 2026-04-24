@@ -14,7 +14,7 @@
 //! # Quick Start
 //!
 //! ```rust,ignore
-//! use noesis_sdk::{NoesisClient, LocalProfile, Config};
+//! use noesis_sdk::{Config, LocalProfile, NoesisClient, TarotSpread};
 //!
 //! #[tokio::main]
 //! async fn main() -> Result<(), noesis_sdk::Error> {
@@ -28,9 +28,17 @@
 //!     // Run a calculation
 //!     let input = profile.to_engine_input();
 //!     let output = client.calculate("numerology", input).await?;
+//!     let tarot = client
+//!         .calculate_tarot(
+//!             profile.to_engine_input(),
+//!             "What should I hold with care right now?",
+//!             TarotSpread::ThreeCard,
+//!         )
+//!         .await?;
 //!
 //!     println!("Life Path: {}", output.result["life_path"]["value"]);
 //!     println!("Witness: {}", output.witness_prompt);
+//!     println!("Tarot Witness: {}", tarot.witness_prompt);
 //!
 //!     Ok(())
 //! }
@@ -44,7 +52,9 @@ pub mod profile;
 pub mod render;
 
 // Re-exports for convenience
-pub use client::{NoesisClient, NoesisClientBuilder, UpdateUserRequest, UserProfile};
+pub use client::{
+    NoesisClient, NoesisClientBuilder, TarotSpread, UpdateUserRequest, UserProfile,
+};
 pub use config::Config;
 pub use consciousness::ConsciousnessLevel;
 pub use keychain::{CredentialStore, KeychainStore};

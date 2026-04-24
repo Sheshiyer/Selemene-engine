@@ -194,13 +194,22 @@ curl -s -X POST https://selemene.tryambakam.space/api/v1/engines/numerology/calc
 First-party Rust SDK for interacting with the Selemene API. Use it to build your own tools, integrations, or TUI extensions.
 
 ```rust
-use noesis_sdk::{Config, NoesisClient, LocalProfile};
+use noesis_sdk::{Config, LocalProfile, NoesisClient, TarotSpread};
 
 let config = Config::load().unwrap_or_default();
 let client = NoesisClient::new(&config)?;
 let profile = LocalProfile::load_or_default()?.unwrap();
 let output = client.calculate("numerology", profile.to_engine_input()).await?;
 println!("{}", MarkdownRenderer::new().render_engine_output(&output));
+
+let tarot = client
+  .calculate_tarot(
+    profile.to_engine_input(),
+    "What am I not seeing yet?",
+    TarotSpread::Horseshoe,
+  )
+  .await?;
+println!("{}", tarot.witness_prompt);
 ```
 
 **Features:** HTTP client for all 16 engines & 6 workflows, local profile management (`~/.noesis/profile.json`), macOS Keychain API key storage, Markdown/JSON report rendering, TOML + env config.

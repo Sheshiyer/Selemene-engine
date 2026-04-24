@@ -479,4 +479,132 @@ mod tests {
             .await
             .expect("cleanup users");
     }
+
+    #[tokio::test]
+    async fn save_reading_preserves_nested_tarot_result_payloads() {
+        let database_url = match std::env::var("DATABASE_URL") {
+            Ok(url) => url,
+            Err(_) => {
+                eprintln!("Skipping DB integration test: DATABASE_URL not set");
+                return;
+            }
+        };
+
+        let pool = PgPoolOptions::new()
+            .max_connections(2)
+            .connect(&database_url)
+            .await
+            .expect("Failed to connect to test database");
+
+        let user_repo = UserRepository::new(pool.clone());
+        let readings_repo = ReadingsRepository::new(pool.clone());
+        let email = format!("tarot-payload-{}@example.com", Uuid::new_v4());
+
+        let user = user_repo
+            .create_user(&email, "test_password_hash", "Tarot Payload Test User")
+            .await
+            .expect("Failed to create test user");
+
+        let reading = NewReading {
+            user_id: user.id,
+            engine_id: "tarot".to_string(),
+            workflow_id: Some("decision-support".to_string()),
+            input_hash: "tarot-input".to_string(),
+            input_data: json!({
+                "options": {
+                    "spread": "yes_no",
+                    "question": "Should I proceed?"
+                }
+            }),
+            result_data: json!({
+                "engine_id": "tarot",
+                "result": {
+                    "spread": {
+                        "type": "yes_no",
+                        "name": "Yes or No",
+                        "description": "A focused one-card spread for binary clarity in the present moment",
+                        "card_count": 1,
+                        "available_types": ["single_card", "three_card", "celtic_cross", "horseshoe", "relationship", "career", "yes_no"]
+                    },
+                    "question": "Should I proceed?",
+                    "positions": [
+                        {
+                            "position": 0,
+                            "name": "Answer Card",
+                            "meaning": "The card polarity and orientation indicate a yes/no tendency",
+                            "card": {
+                                "id": "m00",
+                                "name": "The Fool",
+                                "arcana": "major",
+                                "number": 0,
+                                "element": "air",
+                                "isReversed": false,
+                                "interpretation": {
+                                    "meaning": "Beginnings and unguarded trust",
+                                    "keywords": ["beginnings", "trust"]
+                                }
+                            }
+                        }
+                    ],
+                    "cards": [
+                        {
+                            "position": 0,
+                            "name": "Answer Card",
+                            "meaning": "The card polarity and orientation indicate a yes/no tendency",
+                            "id": "m00",
+                            "cardName": "The Fool",
+                            "arcana": "major",
+                            "number": 0,
+                            "element": "air",
+                            "isReversed": false,
+                            "interpretation": {
+                                "meaning": "Beginnings and unguarded trust",
+                                "keywords": ["beginnings", "trust"]
+                            }
+                        }
+                    ],
+                    "decision": {
+                        "answer": "yes",
+                        "confidence": 0.74,
+                        "rationale": "The Fool appeared upright, suggesting a supportive current for this direction."
+                    }
+                }
+            }),
+            witness_prompt: Some("What makes this yes feel alive in your body?".to_string()),
+            consciousness_level: 1,
+            calculation_time_ms: Some(18.0),
+            client_event_id: None,
+            client_device_id: None,
+            device_platform: None,
+            device_app_version: None,
+        };
+
+        let reading_id = readings_repo
+            .save_reading(&reading)
+            .await
+            .expect("save_reading should succeed");
+
+        let stored = readings_repo
+            .get_reading(reading_id, user.id)
+            .await
+            .expect("get_reading should succeed")
+            .expect("saved reading should exist");
+
+        assert_eq!(stored.engine_id, "tarot");
+        assert_eq!(stored.workflow_id.as_deref(), Some("decision-support"));
+        assert_eq!(stored.result_data["result"]["spread"]["type"], json!("yes_no"));
+        assert_eq!(stored.result_data["result"]["cards"][0]["cardName"], json!("The Fool"));
+        assert_eq!(stored.result_data["result"]["decision"]["answer"], json!("yes"));
+
+        sqlx::query("DELETE FROM readings WHERE id = $1")
+            .bind(reading_id)
+            .execute(&pool)
+            .await
+            .expect("cleanup readings");
+        sqlx::query("DELETE FROM users WHERE id = $1")
+            .bind(user.id)
+            .execute(&pool)
+            .await
+            .expect("cleanup users");
+    }
 }

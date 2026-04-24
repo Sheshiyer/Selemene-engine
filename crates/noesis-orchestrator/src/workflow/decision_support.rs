@@ -35,14 +35,20 @@ fn default_spread() -> TarotSpread {
 /// Available Tarot spread types
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
 pub enum TarotSpread {
-    #[serde(rename = "SINGLE")]
+    #[serde(rename = "SINGLE", alias = "single", alias = "single_card")]
     Single,
-    #[serde(rename = "THREE_CARD")]
+    #[serde(rename = "THREE_CARD", alias = "three_card", alias = "three")]
     ThreeCard,
-    #[serde(rename = "CELTIC_CROSS")]
+    #[serde(rename = "CELTIC_CROSS", alias = "celtic_cross", alias = "celtic")]
     CelticCross,
-    #[serde(rename = "HORSESHOE")]
+    #[serde(rename = "HORSESHOE", alias = "horseshoe")]
     Horseshoe,
+    #[serde(rename = "RELATIONSHIP", alias = "relationship")]
+    Relationship,
+    #[serde(rename = "CAREER", alias = "career")]
+    Career,
+    #[serde(rename = "YES_NO", alias = "yes_no", alias = "yes_or_no", alias = "yesno")]
+    YesNo,
 }
 
 #[allow(clippy::derivable_impls)]
@@ -59,6 +65,21 @@ impl TarotSpread {
             TarotSpread::ThreeCard => "THREE_CARD",
             TarotSpread::CelticCross => "CELTIC_CROSS",
             TarotSpread::Horseshoe => "HORSESHOE",
+            TarotSpread::Relationship => "RELATIONSHIP",
+            TarotSpread::Career => "CAREER",
+            TarotSpread::YesNo => "YES_NO",
+        }
+    }
+
+    pub fn as_engine_param(&self) -> &'static str {
+        match self {
+            TarotSpread::Single => "single_card",
+            TarotSpread::ThreeCard => "three_card",
+            TarotSpread::CelticCross => "celtic_cross",
+            TarotSpread::Horseshoe => "horseshoe",
+            TarotSpread::Relationship => "relationship",
+            TarotSpread::Career => "career",
+            TarotSpread::YesNo => "yes_no",
         }
     }
 }
@@ -103,7 +124,10 @@ impl DecisionSupportWorkflow {
     /// Default options for the workflow
     pub fn default_options() -> HashMap<String, Value> {
         let mut opts = HashMap::new();
-        opts.insert("spread".to_string(), json!(TarotSpread::ThreeCard.as_str()));
+        opts.insert(
+            "spread".to_string(),
+            json!(TarotSpread::ThreeCard.as_engine_param()),
+        );
         opts
     }
 
@@ -115,7 +139,7 @@ impl DecisionSupportWorkflow {
 
         // Tarot options
         let mut tarot_opts = HashMap::new();
-        tarot_opts.insert("spread".to_string(), json!(input.spread.as_str()));
+        tarot_opts.insert("spread".to_string(), json!(input.spread.as_engine_param()));
         tarot_opts.insert("question".to_string(), json!(input.question.clone()));
         engine_opts.insert("tarot".to_string(), tarot_opts);
 
@@ -194,7 +218,7 @@ mod tests {
         let opts = DecisionSupportWorkflow::prepare_engine_options(&input);
 
         assert!(opts.contains_key("tarot"));
-        assert_eq!(opts["tarot"]["spread"], json!("CELTIC_CROSS"));
+        assert_eq!(opts["tarot"]["spread"], json!("celtic_cross"));
         assert_eq!(opts["tarot"]["question"], json!("Should I change careers?"));
 
         assert!(opts.contains_key("i-ching"));
@@ -210,5 +234,34 @@ mod tests {
         assert_eq!(TarotSpread::ThreeCard.as_str(), "THREE_CARD");
         assert_eq!(TarotSpread::CelticCross.as_str(), "CELTIC_CROSS");
         assert_eq!(TarotSpread::Horseshoe.as_str(), "HORSESHOE");
+        assert_eq!(TarotSpread::Relationship.as_str(), "RELATIONSHIP");
+        assert_eq!(TarotSpread::Career.as_str(), "CAREER");
+        assert_eq!(TarotSpread::YesNo.as_str(), "YES_NO");
+        assert_eq!(TarotSpread::YesNo.as_engine_param(), "yes_no");
+    }
+
+    #[test]
+    fn test_spread_deserialization_aliases() {
+        #[derive(Deserialize)]
+        struct Wrapper {
+            spread: TarotSpread,
+        }
+
+        let upper: Wrapper = serde_json::from_value(json!({ "spread": "YES_NO" }))
+            .expect("uppercase enum variant should deserialize");
+        assert_eq!(upper.spread, TarotSpread::YesNo);
+
+        let canonical: Wrapper = serde_json::from_value(json!({ "spread": "CAREER" }))
+            .expect("career enum variant should deserialize");
+        assert_eq!(canonical.spread, TarotSpread::Career);
+
+        let lower_yes_no: Wrapper = serde_json::from_value(json!({ "spread": "yes_no" }))
+            .expect("lowercase yes_no alias should deserialize");
+        assert_eq!(lower_yes_no.spread, TarotSpread::YesNo);
+
+        let lower_relationship: Wrapper =
+            serde_json::from_value(json!({ "spread": "relationship" }))
+                .expect("lowercase relationship alias should deserialize");
+        assert_eq!(lower_relationship.spread, TarotSpread::Relationship);
     }
 }

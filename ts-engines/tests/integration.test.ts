@@ -128,6 +128,49 @@ describe('Tarot Engine', () => {
     expect((data as any).result.positions.length).toBe(10)
   })
 
+  it('supports all spread variants with scaffolded payloads', async () => {
+    const cases = [
+      { spread: 'single_card', expectedCount: 1 },
+      { spread: 'three_card', expectedCount: 3 },
+      { spread: 'celtic_cross', expectedCount: 10 },
+      { spread: 'horseshoe', expectedCount: 7 },
+      { spread: 'relationship', expectedCount: 7 },
+      { spread: 'career', expectedCount: 5 },
+      { spread: 'yes_no', expectedCount: 1 },
+    ]
+
+    for (const testCase of cases) {
+      const { status, data } = await apiCall('POST', '/engines/tarot/calculate', {
+        consciousness_level: 0,
+        parameters: { spread: testCase.spread },
+        seed: 99,
+      })
+
+      expect(status).toBe(200)
+      expect((data as any).result.spread.type).toBe(testCase.spread)
+      expect((data as any).result.spread.card_count).toBe(testCase.expectedCount)
+      expect((data as any).result.positions.length).toBe(testCase.expectedCount)
+      expect((data as any).result.cards.length).toBe(testCase.expectedCount)
+      expect((data as any).result.spread.available_types).toContain('yes_no')
+
+      if (testCase.spread === 'yes_no') {
+        expect((data as any).result.decision).toBeDefined()
+      }
+    }
+  })
+
+  it('accepts legacy spread_type alias over HTTP', async () => {
+    const { status, data } = await apiCall('POST', '/engines/tarot/calculate', {
+      consciousness_level: 0,
+      parameters: { spread_type: 'career' },
+      seed: 77,
+    })
+
+    expect(status).toBe(200)
+    expect((data as any).result.spread.type).toBe('career')
+    expect((data as any).result.positions.length).toBe(5)
+  })
+
   it('rejects invalid spread_type with structured 422', async () => {
     const { status, data } = await apiCall('POST', '/engines/tarot/calculate', {
       consciousness_level: 0,

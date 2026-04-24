@@ -6,7 +6,7 @@ sidebar_position: 4
 ## Rust SDK
 
 ```rust
-use noesis_sdk::{Config, LocalProfile, NoesisClient};
+use noesis_sdk::{Config, LocalProfile, NoesisClient, TarotSpread};
 
 # async fn run() -> Result<(), noesis_sdk::Error> {
 let config = Config::load()?;
@@ -15,6 +15,15 @@ let profile = LocalProfile::load()?.unwrap_or_default();
 let input = profile.to_engine_input();
 let output = client.calculate("numerology", input).await?;
 println!("{}", output.witness_prompt);
+
+let tarot = client
+  .calculate_tarot(
+    profile.to_engine_input(),
+    "What does this decision ask of me?",
+    TarotSpread::YesNo,
+  )
+  .await?;
+println!("{}", tarot.witness_prompt);
 # Ok(())
 # }
 ```

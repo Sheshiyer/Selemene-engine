@@ -6,8 +6,10 @@ export enum SpreadType {
   SINGLE_CARD = 'single_card',
   THREE_CARD = 'three_card',
   CELTIC_CROSS = 'celtic_cross',
+  HORSESHOE = 'horseshoe',
   RELATIONSHIP = 'relationship',
   CAREER = 'career',
+  YES_NO = 'yes_no',
 }
 
 export interface SpreadPosition {
@@ -117,6 +119,49 @@ const CELTIC_CROSS_SPREAD: SpreadDefinition = {
   ],
 }
 
+const HORSESHOE_SPREAD: SpreadDefinition = {
+  type: SpreadType.HORSESHOE,
+  name: 'Horseshoe Spread',
+  description: 'A 7-card spread for situational clarity from past influences to likely outcome',
+  positions: [
+    {
+      position: 0,
+      name: 'Past Influence',
+      meaning: 'What from the past still shapes this situation',
+    },
+    {
+      position: 1,
+      name: 'Present Influence',
+      meaning: 'The immediate energy and pressures around you now',
+    },
+    {
+      position: 2,
+      name: 'Hidden Influence',
+      meaning: 'What is operating beneath the surface',
+    },
+    {
+      position: 3,
+      name: 'Advice',
+      meaning: 'How to engage this situation with awareness',
+    },
+    {
+      position: 4,
+      name: 'External Influence',
+      meaning: 'People or circumstances affecting the path',
+    },
+    {
+      position: 5,
+      name: 'Obstacles',
+      meaning: 'Challenges to navigate or integrate',
+    },
+    {
+      position: 6,
+      name: 'Likely Outcome',
+      meaning: 'Where this arc is currently headed',
+    },
+  ],
+}
+
 const RELATIONSHIP_SPREAD: SpreadDefinition = {
   type: SpreadType.RELATIONSHIP,
   name: 'Relationship Spread',
@@ -193,12 +238,27 @@ const CAREER_SPREAD: SpreadDefinition = {
   ],
 }
 
+const YES_NO_SPREAD: SpreadDefinition = {
+  type: SpreadType.YES_NO,
+  name: 'Yes or No',
+  description: 'A focused one-card spread for binary clarity in the present moment',
+  positions: [
+    {
+      position: 0,
+      name: 'Answer Card',
+      meaning: 'The card polarity and orientation indicate a yes/no tendency',
+    },
+  ],
+}
+
 export const SPREAD_DEFINITIONS: Record<SpreadType, SpreadDefinition> = {
   [SpreadType.SINGLE_CARD]: SINGLE_CARD_SPREAD,
   [SpreadType.THREE_CARD]: THREE_CARD_SPREAD,
   [SpreadType.CELTIC_CROSS]: CELTIC_CROSS_SPREAD,
+  [SpreadType.HORSESHOE]: HORSESHOE_SPREAD,
   [SpreadType.RELATIONSHIP]: RELATIONSHIP_SPREAD,
   [SpreadType.CAREER]: CAREER_SPREAD,
+  [SpreadType.YES_NO]: YES_NO_SPREAD,
 }
 
 export function getSpreadDefinition(type: SpreadType): SpreadDefinition {
@@ -210,7 +270,32 @@ export function getSpreadPositionCount(type: SpreadType): number {
 }
 
 export function parseSpreadType(value: string): SpreadType | null {
-  const normalized = value.toLowerCase().replace(/[-\s]/g, '_')
-  const types = Object.values(SpreadType)
-  return types.find((t) => t === normalized) ?? null
+  if (!value || typeof value !== 'string') {
+    return null
+  }
+
+  const normalized = value
+    .trim()
+    .toLowerCase()
+    .replace(/[-\s]/g, '_')
+
+  const direct = Object.values(SpreadType).find((t) => t === normalized)
+  if (direct) {
+    return direct
+  }
+
+  const aliases: Record<string, SpreadType> = {
+    single: SpreadType.SINGLE_CARD,
+    one_card: SpreadType.SINGLE_CARD,
+    three: SpreadType.THREE_CARD,
+    celtic: SpreadType.CELTIC_CROSS,
+    relationship_reading: SpreadType.RELATIONSHIP,
+    love: SpreadType.RELATIONSHIP,
+    work: SpreadType.CAREER,
+    career_reading: SpreadType.CAREER,
+    yesno: SpreadType.YES_NO,
+    yes_or_no: SpreadType.YES_NO,
+  }
+
+  return aliases[normalized] ?? null
 }

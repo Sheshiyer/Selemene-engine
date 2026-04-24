@@ -41,6 +41,33 @@ pub const WORKFLOWS: &[&str] = &[
     "full-spectrum",
 ];
 
+/// Canonical tarot spread identifiers accepted by the engine.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum TarotSpread {
+    SingleCard,
+    ThreeCard,
+    CelticCross,
+    Horseshoe,
+    Relationship,
+    Career,
+    YesNo,
+}
+
+impl TarotSpread {
+    pub fn as_str(self) -> &'static str {
+        match self {
+            Self::SingleCard => "single_card",
+            Self::ThreeCard => "three_card",
+            Self::CelticCross => "celtic_cross",
+            Self::Horseshoe => "horseshoe",
+            Self::Relationship => "relationship",
+            Self::Career => "career",
+            Self::YesNo => "yes_no",
+        }
+    }
+}
+
 /// High-level client for the Selemene Engine API.
 ///
 /// Handles authentication, request formatting, and response parsing.
@@ -90,6 +117,27 @@ impl NoesisClient {
 
         self.send_with_retry(|| self.authenticated(self.http.post(&url).json(&input)))
             .await
+    }
+
+    /// Calculate a tarot reading with typed spread options.
+    #[instrument(skip(self, input, question), fields(spread = %spread.as_str()))]
+    pub async fn calculate_tarot(
+        &self,
+        input: EngineInput,
+        question: impl Into<String>,
+        spread: TarotSpread,
+    ) -> Result<EngineOutput> {
+        let mut tarot_input = input;
+        let mut options = tarot_input.options;
+
+        options.insert("question".to_string(), serde_json::Value::String(question.into()));
+        options.insert(
+            "spread".to_string(),
+            serde_json::Value::String(spread.as_str().to_string()),
+        );
+
+        tarot_input.options = options;
+        self.calculate("tarot", tarot_input).await
     }
 
     /// Execute a multi-engine workflow.
@@ -452,6 +500,17 @@ mod tests {
     fn test_workflows_list() {
         assert_eq!(WORKFLOWS.len(), 6);
         assert!(WORKFLOWS.contains(&"daily-practice"));
+    }
+
+    #[test]
+    fn test_tarot_spread_strings() {
+        assert_eq!(TarotSpread::SingleCard.as_str(), "single_card");
+        assert_eq!(TarotSpread::ThreeCard.as_str(), "three_card");
+        assert_eq!(TarotSpread::CelticCross.as_str(), "celtic_cross");
+        assert_eq!(TarotSpread::Horseshoe.as_str(), "horseshoe");
+        assert_eq!(TarotSpread::Relationship.as_str(), "relationship");
+        assert_eq!(TarotSpread::Career.as_str(), "career");
+        assert_eq!(TarotSpread::YesNo.as_str(), "yes_no");
     }
 
     #[test]

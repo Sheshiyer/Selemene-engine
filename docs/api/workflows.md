@@ -54,7 +54,7 @@ Workflows accept the same `EngineInput` as engines.
 | --- | --- | --- |
 | birth-blueprint | numerology, human-design, vimshottari | Core identity mapping |
 | daily-practice | panchanga, vedic-clock, biorhythm | Daily rhythm & timing |
-| decision-support | tarot, i-ching, human-design | Multi-perspective guidance |
+| decision-support | tarot, i-ching, human-design, enneagram, gene-keys | Multi-perspective guidance |
 | self-inquiry | gene-keys, enneagram | Shadow work + patterns |
 | creative-expression | sigil-forge, sacred-geometry | Intent visualization |
 | full-spectrum | 14 workflow engines | Complete consciousness portrait |
@@ -137,3 +137,25 @@ If a downstream flow requires Gene Keys but it is absent in a workflow output:
 
 - `GET /api/v1/workflows` (list workflows)
 - `GET /api/v1/workflows/{workflow_id}/info` (workflow metadata)
+
+## Decision Support Notes
+
+`decision-support` forwards `options.spread` to the tarot engine. Accepted values:
+
+- `single_card`
+- `three_card`
+- `celtic_cross`
+- `horseshoe`
+- `relationship`
+- `career`
+- `yes_no`
+
+Compatibility aliases are also accepted on the workflow input for the spread value:
+
+- `SINGLE`
+- `THREE_CARD`
+- `CELTIC_CROSS`
+- `HORSESHOE`
+- `RELATIONSHIP`
+- `CAREER`
+- `YES_NO`

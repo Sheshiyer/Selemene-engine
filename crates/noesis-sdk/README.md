@@ -18,7 +18,7 @@ cargo add noesis-sdk
 ## Usage
 
 ```rust
-use noesis_sdk::{Config, LocalProfile, NoesisClient};
+use noesis_sdk::{Config, LocalProfile, NoesisClient, TarotSpread};
 
 # async fn example() -> Result<(), noesis_sdk::Error> {
 let config = Config::load()?;
@@ -27,6 +27,15 @@ let mut profile = LocalProfile::load()?.unwrap_or_default();
 let _ = profile.sync(&client).await?;
 let output = client.calculate("numerology", profile.to_engine_input()).await?;
 println!("{}", output.witness_prompt);
+
+let tarot = client
+	.calculate_tarot(
+		profile.to_engine_input(),
+		"What should I focus on right now?",
+		TarotSpread::ThreeCard,
+	)
+	.await?;
+println!("{}", tarot.witness_prompt);
 # Ok(())
 # }
 ```

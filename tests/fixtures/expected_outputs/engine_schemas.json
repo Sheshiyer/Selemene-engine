@@ -76,10 +76,10 @@
       }
     },
     "tarot": {
-      "required_phase": 1,
+      "required_phase": 0,
       "is_typescript": true,
       "result_schema": {
-        "required": ["cards", "spread_type", "interpretation"]
+        "required": ["spread", "positions", "cards"]
       }
     },
     "i-ching": {
@@ -121,7 +121,7 @@
       "description": "Daily practice recommendations"
     },
     "decision-support": {
-      "engines": ["tarot", "i-ching", "numerology"],
+      "engines": ["tarot", "i-ching", "human-design", "enneagram", "gene-keys"],
       "description": "Decision support through divination"
     },
     "self-inquiry": {

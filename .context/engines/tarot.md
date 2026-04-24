@@ -21,7 +21,7 @@ Generate divinatory readings using tarot card draws, offering symbolic mirrors f
 ```json
 {
   "options": {
-    "spread_type": "celtic_cross",
+    "spread": "celtic_cross",
     "question": "What do I need to know about my career path?",
     "reversed_enabled": true,
     "deck": "rider_waite"
@@ -31,7 +31,8 @@ Generate divinatory readings using tarot card draws, offering symbolic mirrors f
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| options.spread_type | string | No | Spread layout (default: three_card) |
+| options.spread | string | No | Spread layout (default: three_card) |
+| options.spread_type | string | No | Legacy alias for spread |
 | options.question | string | No | Question for the reading |
 | options.reversed_enabled | boolean | No | Allow reversed cards (default: true) |
 | options.deck | string | No | Deck variant (default: rider_waite) |
@@ -40,66 +41,72 @@ Generate divinatory readings using tarot card draws, offering symbolic mirrors f
 
 | Spread | Cards | Positions | Use Case |
 |--------|-------|-----------|----------|
-| single | 1 | Card | Quick insight |
+| single_card | 1 | Card | Quick insight |
 | three_card | 3 | Past, Present, Future | General reading |
 | celtic_cross | 10 | Full spread | Comprehensive analysis |
 | horseshoe | 7 | Past to outcome | Situation overview |
-| relationship | 6 | Two perspectives | Partnership questions |
+| relationship | 7 | Two perspectives | Partnership questions |
+| career | 5 | Career path | Professional questions |
+| yes_no | 1 | Binary answer | Quick directional check |
 
 ## Output Structure
 
 ```json
 {
   "engine_id": "tarot",
-  "success": true,
   "result": {
-    "spread_type": "three_card",
+    "spread": {
+      "type": "three_card",
+      "name": "Three Card Spread",
+      "description": "Past, Present, and Future - a classic spread for understanding the flow of time",
+      "card_count": 3,
+      "available_types": ["single_card", "three_card", "celtic_cross", "horseshoe", "relationship", "career", "yes_no"]
+    },
     "question": "What do I need to know about my career path?",
-    "cards": [
+    "positions": [
       {
-        "position": "Past",
+        "position": 0,
+        "name": "Past",
+        "meaning": "What has led to this moment; influences from the past",
         "card": {
+          "id": "m09",
           "name": "The Hermit",
           "arcana": "Major",
           "number": 9,
           "suit": null,
-          "reversed": false,
-          "keywords": ["Introspection", "Solitude", "Inner guidance"],
-          "meaning_upright": "A period of withdrawal and inner reflection...",
-          "meaning_reversed": "Isolation, loneliness, withdrawal..."
-        },
-        "interpretation": "Your past career path involved significant introspection..."
-      },
-      {
-        "position": "Present",
-        "card": {
-          "name": "The Wheel of Fortune",
-          "arcana": "Major",
-          "number": 10,
-          "suit": null,
-          "reversed": false,
-          "keywords": ["Cycles", "Fate", "Turning point"]
-        },
-        "interpretation": "You are currently at a turning point..."
-      },
-      {
-        "position": "Future",
-        "card": {
-          "name": "Three of Wands",
-          "arcana": "Minor",
-          "number": 3,
-          "suit": "Wands",
-          "reversed": false,
-          "keywords": ["Expansion", "Foresight", "Opportunity"]
-        },
-        "interpretation": "Expansion and new opportunities await..."
+          "isReversed": false,
+          "interpretation": {
+            "meaning": "A period of withdrawal and inner reflection...",
+            "keywords": ["Introspection", "Solitude", "Inner guidance"]
+          }
+        }
       }
     ],
-    "synthesis": "The reading suggests a journey from introspection through change toward expansion...",
-    "advice": "Trust the turning point you're experiencing as preparation for growth."
+    "cards": [
+      {
+        "position": 0,
+        "name": "Past",
+        "meaning": "What has led to this moment; influences from the past",
+        "id": "m09",
+        "cardName": "The Hermit",
+        "arcana": "Major",
+        "number": 9,
+        "isReversed": false,
+        "interpretation": {
+          "meaning": "A period of withdrawal and inner reflection...",
+          "keywords": ["Introspection", "Solitude", "Inner guidance"]
+        }
+      }
+    ],
+    "seed": 42
   },
-  "witness_prompt": "The Hermit's past solitude meets the Wheel's present change—what wisdom from your inner journey prepares you for this turning point?",
-  "consciousness_level": 1
+  "witness_prompts": [
+    {
+      "prompt": "The Hermit's past solitude meets present change—what wisdom from your inner journey is ready to re-enter action?"
+    }
+  ],
+  "calculated_at": "2026-03-03T12:00:00Z",
+  "processing_time_ms": 12
 }
 ```
 
@@ -160,9 +167,11 @@ Four suits of 14 cards each (Ace through 10 + Page, Knight, Queen, King).
 | Three card spread | ✅ Full | Past/Present/Future |
 | Celtic Cross | ✅ Full | 10 positions |
 | Horseshoe | ✅ Full | 7 positions |
-| Relationship | ✅ Full | 6 positions |
+| Relationship | ✅ Full | 7 positions |
+| Career | ✅ Full | 5 positions |
+| Yes/No | ✅ Full | 1 position + decision payload |
 | Card wisdom | ✅ Full | Upright/reversed meanings |
-| Synthesis | ✅ Full | Cross-card theme detection |
+| Payload scaffolding | ✅ Full | Spread metadata + positions + cards + decision |
 | Witness prompts | ✅ Full | Spread-appropriate |
 
 ## API Endpoint
@@ -179,7 +188,7 @@ curl -X POST http://localhost:8080/api/v1/engines/tarot/calculate \
   -H "Content-Type: application/json" \
   -d '{
     "options": {
-      "spread_type": "three_card",
+      "spread": "three_card",
       "question": "What should I focus on this month?",
       "reversed_enabled": true
     }
