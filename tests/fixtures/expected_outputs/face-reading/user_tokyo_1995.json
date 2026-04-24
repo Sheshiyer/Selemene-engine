@@ -1,0 +1,71 @@
+{
+  "engine_id": "face-reading",
+  "result": {
+    "analysis": {
+      "constitution": {
+        "primary_dosha": "kapha",
+        "secondary_dosha": "vata",
+        "tcm_element": "earth",
+        "body_type": "endomorph",
+        "descriptions": {
+          "dosha": "Earth and water: stable, nurturing, enduring",
+          "element": "Stability, nurturing, grounding, balance",
+          "body_type": "Soft, rounded features, solid build"
+        }
+      },
+      "personality_indicators": [
+        {
+          "trait_name": "Deep Patience",
+          "facial_indicator": "rounded facial contours with wide-set features",
+          "description": "Reflects a steady, grounded approach to life's challenges."
+        },
+        {
+          "trait_name": "Nurturing Presence",
+          "facial_indicator": "full lips and soft periorbital region",
+          "description": "Signals natural capacity for care, support, and compassion."
+        }
+      ],
+      "elemental_balance": {
+        "wood": 0.14,
+        "fire": 0.16,
+        "earth": 0.34,
+        "metal": 0.19,
+        "water": 0.17,
+        "dominant": "earth"
+      },
+      "health_indicators": [
+        {
+          "zone": "mouth",
+          "associated_organ": "Spleen/Stomach",
+          "observation": "Well-defined vermilion border suggests strong digestive energy"
+        },
+        {
+          "zone": "chin",
+          "associated_organ": "Kidneys/Bladder",
+          "observation": "Broad chin indicates robust kidney jing (essence)"
+        }
+      ],
+      "is_mock_data": false
+    },
+    "notice": "Heuristic analysis generated from provided image_data or birth_data fallback.",
+    "traditions": ["Chinese Mian Xiang", "Ayurvedic Face Analysis", "Western Physiognomy"],
+    "future_capabilities": [
+      "Real-time facial landmark detection",
+      "Photo-based analysis",
+      "Video stream processing",
+      "Expression tracking over time",
+      "Comparative analysis (before/after)"
+    ],
+    "disclaimer": "This information is for self-reflection purposes only and should not be used for medical diagnosis or treatment decisions."
+  },
+  "witness_prompt": "In what ways does your Earth constitution's gift for nurturing others reflect your own need for groundedness, and how might you receive the same nourishment you so generously offer?",
+  "consciousness_level": 2,
+  "metadata": {
+    "calculation_time_ms": 1.3,
+    "backend": "birth-physiognomy-fallback",
+    "precision_achieved": "birth-derived",
+    "cached": false,
+    "timestamp": "2026-01-15T14:30:00Z",
+    "engine_version": "3.0.0"
+  }
+}

@@ -1,0 +1,49 @@
+{
+  "engine_id": "nadabrahman",
+  "result": {
+    "time_recommendation": {
+      "prahar_name": "Aparahna (Afternoon)",
+      "prahar_number": 4,
+      "time_range": "15:00-18:00",
+      "primary_raga": {
+        "raga_number": 28,
+        "raga_name": "Harikambhoji",
+        "reason": "Afternoon raga for sustained energy and clarity"
+      },
+      "dosha_dominance": "pitta",
+      "energy_quality": "sustaining"
+    },
+    "recommendations": [
+      {
+        "raga_number": 28,
+        "raga_name": "Harikambhoji",
+        "reason": "Afternoon raga for sustained energy and clarity",
+        "score": 0.88,
+        "arohanam": ["S", "R2", "G3", "M1", "P", "D2", "N2", "S"],
+        "avarohanam": ["S", "N2", "D2", "P", "M1", "G3", "R2", "S"],
+        "mood": "bhakti",
+        "therapeutic_qualities": ["calming", "devotional", "centering"]
+      },
+      {
+        "raga_number": 22,
+        "raga_name": "Kharaharapriya",
+        "reason": "Balances pitta energy in afternoon hours",
+        "score": 0.76,
+        "arohanam": ["S", "R2", "G2", "M1", "P", "D2", "N2", "S"],
+        "avarohanam": ["S", "N2", "D2", "P", "M1", "G2", "R2", "S"],
+        "mood": "karuna",
+        "therapeutic_qualities": ["cooling", "compassionate", "introspective"]
+      }
+    ]
+  },
+  "witness_prompt": "As you listen to the Afternoon ragas, what inner quality is being sustained or nourished within you right now?",
+  "consciousness_level": 0,
+  "metadata": {
+    "calculation_time_ms": 0.8,
+    "backend": "native",
+    "precision_achieved": "standard",
+    "cached": false,
+    "timestamp": "2026-01-15T14:30:00Z",
+    "engine_version": "3.0.0"
+  }
+}

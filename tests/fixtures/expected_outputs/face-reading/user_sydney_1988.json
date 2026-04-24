@@ -1,0 +1,71 @@
+{
+  "engine_id": "face-reading",
+  "result": {
+    "analysis": {
+      "constitution": {
+        "primary_dosha": "pitta",
+        "secondary_dosha": "vata",
+        "tcm_element": "wood",
+        "body_type": "mesomorph",
+        "descriptions": {
+          "dosha": "Fire and water: driven, focused, transformative",
+          "element": "Growth, creativity, vision, flexibility",
+          "body_type": "Athletic, medium build, defined features"
+        }
+      },
+      "personality_indicators": [
+        {
+          "trait_name": "Creative Vision",
+          "facial_indicator": "high forehead with prominent supraorbital ridge",
+          "description": "Indicates expansive thinking and innovative problem-solving capacity."
+        },
+        {
+          "trait_name": "Strategic Intelligence",
+          "facial_indicator": "well-defined philtrum and direct gaze pattern",
+          "description": "Suggests analytical precision combined with intuitive foresight."
+        }
+      ],
+      "elemental_balance": {
+        "wood": 0.29,
+        "fire": 0.25,
+        "earth": 0.16,
+        "metal": 0.17,
+        "water": 0.13,
+        "dominant": "wood"
+      },
+      "health_indicators": [
+        {
+          "zone": "eyebrows",
+          "associated_organ": "Liver/Gallbladder",
+          "observation": "Full, well-arched brows indicate strong liver energy and creativity"
+        },
+        {
+          "zone": "temples",
+          "associated_organ": "Liver/Gallbladder",
+          "observation": "Subtle temple tension may reflect Wood element stress"
+        }
+      ],
+      "is_mock_data": false
+    },
+    "notice": "Heuristic analysis generated from provided image_data or birth_data fallback.",
+    "traditions": ["Chinese Mian Xiang", "Ayurvedic Face Analysis", "Western Physiognomy"],
+    "future_capabilities": [
+      "Real-time facial landmark detection",
+      "Photo-based analysis",
+      "Video stream processing",
+      "Expression tracking over time",
+      "Comparative analysis (before/after)"
+    ],
+    "disclaimer": "This information is for self-reflection purposes only and should not be used for medical diagnosis or treatment decisions."
+  },
+  "witness_prompt": "Where in your life is your Wood element's drive for growth and expansion most alive, and what happens when that creative force meets resistance?",
+  "consciousness_level": 2,
+  "metadata": {
+    "calculation_time_ms": 1.0,
+    "backend": "birth-physiognomy-fallback",
+    "precision_achieved": "birth-derived",
+    "cached": false,
+    "timestamp": "2026-01-15T14:30:00Z",
+    "engine_version": "3.0.0"
+  }
+}

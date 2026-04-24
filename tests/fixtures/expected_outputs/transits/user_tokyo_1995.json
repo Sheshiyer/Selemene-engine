@@ -1,0 +1,77 @@
+{
+  "engine_id": "transits",
+  "result": {
+    "natal_positions": [
+      {"planet": "Sun", "longitude": 250.876, "sign": "Sagittarius", "degree_in_sign": 10.88, "is_retrograde": false},
+      {"planet": "Moon", "longitude": 136.432, "sign": "Leo", "degree_in_sign": 16.43, "is_retrograde": false},
+      {"planet": "Mercury", "longitude": 238.123, "sign": "Scorpio", "degree_in_sign": 28.12, "is_retrograde": false},
+      {"planet": "Venus", "longitude": 262.789, "sign": "Sagittarius", "degree_in_sign": 22.79, "is_retrograde": false},
+      {"planet": "Mars", "longitude": 188.234, "sign": "Libra", "degree_in_sign": 8.23, "is_retrograde": false},
+      {"planet": "Jupiter", "longitude": 257.543, "sign": "Sagittarius", "degree_in_sign": 17.54, "is_retrograde": false},
+      {"planet": "Saturn", "longitude": 357.876, "sign": "Pisces", "degree_in_sign": 27.88, "is_retrograde": false},
+      {"planet": "Uranus", "longitude": 303.321, "sign": "Aquarius", "degree_in_sign": 3.32, "is_retrograde": false},
+      {"planet": "Neptune", "longitude": 293.012, "sign": "Capricorn", "degree_in_sign": 23.01, "is_retrograde": false},
+      {"planet": "Pluto", "longitude": 240.543, "sign": "Scorpio", "degree_in_sign": 10.54, "is_retrograde": false},
+      {"planet": "Rahu", "longitude": 177.654, "sign": "Virgo", "degree_in_sign": 27.65, "is_retrograde": true},
+      {"planet": "Ketu", "longitude": 357.654, "sign": "Pisces", "degree_in_sign": 27.65, "is_retrograde": true}
+    ],
+    "transit_positions": [
+      {"planet": "Sun", "longitude": 295.234, "sign": "Capricorn", "degree_in_sign": 25.23, "speed": 1.019, "is_retrograde": false},
+      {"planet": "Moon", "longitude": 142.876, "sign": "Leo", "degree_in_sign": 22.88, "speed": 13.176, "is_retrograde": false},
+      {"planet": "Mercury", "longitude": 288.432, "sign": "Capricorn", "degree_in_sign": 18.43, "speed": 1.423, "is_retrograde": false},
+      {"planet": "Venus", "longitude": 315.789, "sign": "Aquarius", "degree_in_sign": 15.79, "speed": 1.234, "is_retrograde": false},
+      {"planet": "Mars", "longitude": 18.543, "sign": "Aries", "degree_in_sign": 18.54, "speed": 0.521, "is_retrograde": false},
+      {"planet": "Jupiter", "longitude": 29.876, "sign": "Aries", "degree_in_sign": 29.88, "speed": 0.098, "is_retrograde": false},
+      {"planet": "Saturn", "longitude": 350.123, "sign": "Pisces", "degree_in_sign": 20.12, "speed": 0.034, "is_retrograde": false},
+      {"planet": "Uranus", "longitude": 56.789, "sign": "Taurus", "degree_in_sign": 26.79, "speed": 0.023, "is_retrograde": false},
+      {"planet": "Neptune", "longitude": 8.234, "sign": "Aries", "degree_in_sign": 8.23, "speed": 0.011, "is_retrograde": false},
+      {"planet": "Pluto", "longitude": 301.654, "sign": "Aquarius", "degree_in_sign": 11.65, "speed": 0.013, "is_retrograde": false},
+      {"planet": "Rahu", "longitude": 11.234, "sign": "Aries", "degree_in_sign": 11.23, "speed": -0.053, "is_retrograde": true},
+      {"planet": "Ketu", "longitude": 191.234, "sign": "Libra", "degree_in_sign": 11.23, "speed": -0.053, "is_retrograde": true}
+    ],
+    "aspects": [
+      {
+        "transiting_planet": "Saturn",
+        "natal_planet": "Sun",
+        "aspect_type": "Trine",
+        "orb": 4.25,
+        "is_applying": false,
+        "nature": "Harmonious"
+      },
+      {
+        "transiting_planet": "Uranus",
+        "natal_planet": "Moon",
+        "aspect_type": "Trine",
+        "orb": 3.64,
+        "is_applying": true,
+        "nature": "Harmonious"
+      },
+      {
+        "transiting_planet": "Jupiter",
+        "natal_planet": "Mars",
+        "aspect_type": "Sextile",
+        "orb": 1.64,
+        "is_applying": false,
+        "nature": "Harmonious"
+      }
+    ],
+    "sade_sati": {
+      "is_active": false,
+      "phase": null,
+      "saturn_sign": "Pisces",
+      "moon_sign": "Leo"
+    },
+    "period_quality": "Highly Favorable",
+    "retrograde_planets": ["Rahu", "Ketu"]
+  },
+  "witness_prompt": "With multiple harmonious transits activating your natal planets, what authentic expression of yourself is wanting to emerge into greater visibility?",
+  "consciousness_level": 0,
+  "metadata": {
+    "calculation_time_ms": 4.1,
+    "backend": "native",
+    "precision_achieved": "standard",
+    "cached": false,
+    "timestamp": "2026-01-15T18:45:00Z",
+    "engine_version": "3.0.0"
+  }
+}

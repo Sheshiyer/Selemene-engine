@@ -1,0 +1,71 @@
+{
+  "engine_id": "face-reading",
+  "result": {
+    "analysis": {
+      "constitution": {
+        "primary_dosha": "vata",
+        "secondary_dosha": "pitta",
+        "tcm_element": "metal",
+        "body_type": "ectomorph",
+        "descriptions": {
+          "dosha": "Air and space: creative, quick-thinking, adaptable",
+          "element": "Precision, boundaries, refinement, letting go",
+          "body_type": "Lean, long-limbed, fine-featured"
+        }
+      },
+      "personality_indicators": [
+        {
+          "trait_name": "Adaptive Insight",
+          "facial_indicator": "dynamic feature symmetry profile",
+          "description": "Demonstrates pattern-adaptive self-observation tendencies."
+        },
+        {
+          "trait_name": "Somatic Attunement",
+          "facial_indicator": "micro-expression contrast map",
+          "description": "Shows nuanced emotional regulation and embodied awareness signals."
+        }
+      ],
+      "elemental_balance": {
+        "wood": 0.18,
+        "fire": 0.22,
+        "earth": 0.15,
+        "metal": 0.28,
+        "water": 0.17,
+        "dominant": "metal"
+      },
+      "health_indicators": [
+        {
+          "zone": "forehead",
+          "associated_organ": "Liver/Gallbladder",
+          "observation": "Clear zone indicates balanced digestive energy"
+        },
+        {
+          "zone": "nose",
+          "associated_organ": "Spleen/Stomach",
+          "observation": "Balanced structure suggests stable earth element"
+        }
+      ],
+      "is_mock_data": false
+    },
+    "notice": "Heuristic analysis generated from provided image_data or birth_data fallback.",
+    "traditions": ["Chinese Mian Xiang", "Ayurvedic Face Analysis", "Western Physiognomy"],
+    "future_capabilities": [
+      "Real-time facial landmark detection",
+      "Photo-based analysis",
+      "Video stream processing",
+      "Expression tracking over time",
+      "Comparative analysis (before/after)"
+    ],
+    "disclaimer": "This information is for self-reflection purposes only and should not be used for medical diagnosis or treatment decisions."
+  },
+  "witness_prompt": "What does the quality of precision and discernment in your Metal constitution reveal about how you create healthy boundaries in your relationships?",
+  "consciousness_level": 2,
+  "metadata": {
+    "calculation_time_ms": 1.2,
+    "backend": "birth-physiognomy-fallback",
+    "precision_achieved": "birth-derived",
+    "cached": false,
+    "timestamp": "2026-01-15T14:30:00Z",
+    "engine_version": "3.0.0"
+  }
+}

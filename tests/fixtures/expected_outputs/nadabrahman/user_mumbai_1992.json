@@ -1,0 +1,49 @@
+{
+  "engine_id": "nadabrahman",
+  "result": {
+    "time_recommendation": {
+      "prahar_name": "Brahma Muhurta (Pre-dawn)",
+      "prahar_number": 8,
+      "time_range": "03:00-06:00",
+      "primary_raga": {
+        "raga_number": 65,
+        "raga_name": "Mechakalyani",
+        "reason": "Pre-dawn raga for deep spiritual practice and meditation"
+      },
+      "dosha_dominance": "vata",
+      "energy_quality": "awakening"
+    },
+    "recommendations": [
+      {
+        "raga_number": 65,
+        "raga_name": "Mechakalyani",
+        "reason": "Pre-dawn raga for deep spiritual practice and meditation",
+        "score": 0.93,
+        "arohanam": ["S", "R2", "G3", "M2", "P", "D2", "N3", "S"],
+        "avarohanam": ["S", "N3", "D2", "P", "M2", "G3", "R2", "S"],
+        "mood": "shanta",
+        "therapeutic_qualities": ["meditative", "expansive", "spiritually-elevating"]
+      },
+      {
+        "raga_number": 72,
+        "raga_name": "Rasikapriya",
+        "reason": "Supports deep contemplative states in Brahma Muhurta",
+        "score": 0.81,
+        "arohanam": ["S", "R3", "G3", "M2", "P", "D3", "N3", "S"],
+        "avarohanam": ["S", "N3", "D3", "P", "M2", "G3", "R3", "S"],
+        "mood": "adbhuta",
+        "therapeutic_qualities": ["transcendent", "wonder-inducing", "consciousness-expanding"]
+      }
+    ]
+  },
+  "witness_prompt": "In this sacred Brahma Muhurta hour, before the world stirs, what silent knowing arises when you simply listen to the sound within?",
+  "consciousness_level": 0,
+  "metadata": {
+    "calculation_time_ms": 0.7,
+    "backend": "native",
+    "precision_achieved": "standard",
+    "cached": false,
+    "timestamp": "2026-01-15T22:30:00Z",
+    "engine_version": "3.0.0"
+  }
+}

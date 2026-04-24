@@ -1,0 +1,71 @@
+{
+  "engine_id": "face-reading",
+  "result": {
+    "analysis": {
+      "constitution": {
+        "primary_dosha": "pitta",
+        "secondary_dosha": "kapha",
+        "tcm_element": "fire",
+        "body_type": "mesomorph",
+        "descriptions": {
+          "dosha": "Fire and water: driven, focused, transformative",
+          "element": "Joy, communication, passion, warmth",
+          "body_type": "Athletic, medium build, defined features"
+        }
+      },
+      "personality_indicators": [
+        {
+          "trait_name": "Focused Determination",
+          "facial_indicator": "strong brow ridge and defined jaw",
+          "description": "Indicates goal-oriented thinking and decisive action patterns."
+        },
+        {
+          "trait_name": "Emotional Intelligence",
+          "facial_indicator": "expressive eye region with balanced spacing",
+          "description": "Reveals capacity for deep empathy and interpersonal connection."
+        }
+      ],
+      "elemental_balance": {
+        "wood": 0.21,
+        "fire": 0.31,
+        "earth": 0.18,
+        "metal": 0.14,
+        "water": 0.16,
+        "dominant": "fire"
+      },
+      "health_indicators": [
+        {
+          "zone": "eyes",
+          "associated_organ": "Heart/Small Intestine",
+          "observation": "Bright eyes indicate strong fire element and cardiac vitality"
+        },
+        {
+          "zone": "cheeks",
+          "associated_organ": "Lungs/Large Intestine",
+          "observation": "Even coloration suggests balanced respiratory energy"
+        }
+      ],
+      "is_mock_data": false
+    },
+    "notice": "Heuristic analysis generated from provided image_data or birth_data fallback.",
+    "traditions": ["Chinese Mian Xiang", "Ayurvedic Face Analysis", "Western Physiognomy"],
+    "future_capabilities": [
+      "Real-time facial landmark detection",
+      "Photo-based analysis",
+      "Video stream processing",
+      "Expression tracking over time",
+      "Comparative analysis (before/after)"
+    ],
+    "disclaimer": "This information is for self-reflection purposes only and should not be used for medical diagnosis or treatment decisions."
+  },
+  "witness_prompt": "How does your Fire constitution's drive for transformation serve your deepest purpose, and where might it benefit from the cooling wisdom of your Kapha secondary nature?",
+  "consciousness_level": 2,
+  "metadata": {
+    "calculation_time_ms": 1.1,
+    "backend": "birth-physiognomy-fallback",
+    "precision_achieved": "birth-derived",
+    "cached": false,
+    "timestamp": "2026-01-15T14:30:00Z",
+    "engine_version": "3.0.0"
+  }
+}

@@ -1,0 +1,49 @@
+{
+  "engine_id": "nadabrahman",
+  "result": {
+    "time_recommendation": {
+      "prahar_name": "Pratah (Morning)",
+      "prahar_number": 1,
+      "time_range": "06:00-09:00",
+      "primary_raga": {
+        "raga_number": 16,
+        "raga_name": "Chakravakam",
+        "reason": "Dawn raga invoking clarity and new beginnings"
+      },
+      "dosha_dominance": "kapha",
+      "energy_quality": "ascending"
+    },
+    "recommendations": [
+      {
+        "raga_number": 16,
+        "raga_name": "Chakravakam",
+        "reason": "Dawn raga invoking clarity and new beginnings",
+        "score": 0.87,
+        "arohanam": ["S", "R1", "G3", "M1", "P", "D2", "N2", "S"],
+        "avarohanam": ["S", "N2", "D2", "P", "M1", "G3", "R1", "S"],
+        "mood": "shringara",
+        "therapeutic_qualities": ["uplifting", "inspiring", "heart-opening"]
+      },
+      {
+        "raga_number": 1,
+        "raga_name": "Kanakangi",
+        "reason": "Foundation raga for grounded morning practice",
+        "score": 0.68,
+        "arohanam": ["S", "R1", "G1", "M1", "P", "D1", "N1", "S"],
+        "avarohanam": ["S", "N1", "D1", "P", "M1", "G1", "R1", "S"],
+        "mood": "shanta",
+        "therapeutic_qualities": ["grounding", "stabilizing", "foundational"]
+      }
+    ]
+  },
+  "witness_prompt": "As the morning raga rises with the sun, what intention or quality of awareness do you wish to cultivate throughout this new day?",
+  "consciousness_level": 0,
+  "metadata": {
+    "calculation_time_ms": 0.6,
+    "backend": "native",
+    "precision_achieved": "standard",
+    "cached": false,
+    "timestamp": "2026-01-15T06:00:00Z",
+    "engine_version": "3.0.0"
+  }
+}

@@ -1,0 +1,77 @@
+{
+  "engine_id": "transits",
+  "result": {
+    "natal_positions": [
+      {"planet": "Sun", "longitude": 107.876, "sign": "Cancer", "degree_in_sign": 17.88, "is_retrograde": false},
+      {"planet": "Moon", "longitude": 195.432, "sign": "Libra", "degree_in_sign": 15.43, "is_retrograde": false},
+      {"planet": "Mercury", "longitude": 118.123, "sign": "Cancer", "degree_in_sign": 28.12, "is_retrograde": true},
+      {"planet": "Venus", "longitude": 94.789, "sign": "Cancer", "degree_in_sign": 4.79, "is_retrograde": false},
+      {"planet": "Mars", "longitude": 71.234, "sign": "Gemini", "degree_in_sign": 11.23, "is_retrograde": false},
+      {"planet": "Jupiter", "longitude": 163.543, "sign": "Virgo", "degree_in_sign": 13.54, "is_retrograde": false},
+      {"planet": "Saturn", "longitude": 296.876, "sign": "Capricorn", "degree_in_sign": 26.88, "is_retrograde": false},
+      {"planet": "Uranus", "longitude": 284.321, "sign": "Capricorn", "degree_in_sign": 14.32, "is_retrograde": false},
+      {"planet": "Neptune", "longitude": 288.012, "sign": "Capricorn", "degree_in_sign": 18.01, "is_retrograde": false},
+      {"planet": "Pluto", "longitude": 233.543, "sign": "Scorpio", "degree_in_sign": 23.54, "is_retrograde": false},
+      {"planet": "Rahu", "longitude": 67.654, "sign": "Gemini", "degree_in_sign": 7.65, "is_retrograde": true},
+      {"planet": "Ketu", "longitude": 247.654, "sign": "Sagittarius", "degree_in_sign": 7.65, "is_retrograde": true}
+    ],
+    "transit_positions": [
+      {"planet": "Sun", "longitude": 295.234, "sign": "Capricorn", "degree_in_sign": 25.23, "speed": 1.019, "is_retrograde": false},
+      {"planet": "Moon", "longitude": 142.876, "sign": "Leo", "degree_in_sign": 22.88, "speed": 13.176, "is_retrograde": false},
+      {"planet": "Mercury", "longitude": 288.432, "sign": "Capricorn", "degree_in_sign": 18.43, "speed": 1.423, "is_retrograde": false},
+      {"planet": "Venus", "longitude": 315.789, "sign": "Aquarius", "degree_in_sign": 15.79, "speed": 1.234, "is_retrograde": false},
+      {"planet": "Mars", "longitude": 18.543, "sign": "Aries", "degree_in_sign": 18.54, "speed": 0.521, "is_retrograde": false},
+      {"planet": "Jupiter", "longitude": 29.876, "sign": "Aries", "degree_in_sign": 29.88, "speed": 0.098, "is_retrograde": false},
+      {"planet": "Saturn", "longitude": 350.123, "sign": "Pisces", "degree_in_sign": 20.12, "speed": 0.034, "is_retrograde": false},
+      {"planet": "Uranus", "longitude": 56.789, "sign": "Taurus", "degree_in_sign": 26.79, "speed": 0.023, "is_retrograde": false},
+      {"planet": "Neptune", "longitude": 8.234, "sign": "Aries", "degree_in_sign": 8.23, "speed": 0.011, "is_retrograde": false},
+      {"planet": "Pluto", "longitude": 301.654, "sign": "Aquarius", "degree_in_sign": 11.65, "speed": 0.013, "is_retrograde": false},
+      {"planet": "Rahu", "longitude": 11.234, "sign": "Aries", "degree_in_sign": 11.23, "speed": -0.053, "is_retrograde": true},
+      {"planet": "Ketu", "longitude": 191.234, "sign": "Libra", "degree_in_sign": 11.23, "speed": -0.053, "is_retrograde": true}
+    ],
+    "aspects": [
+      {
+        "transiting_planet": "Pluto",
+        "natal_planet": "Saturn",
+        "aspect_type": "Conjunction",
+        "orb": 4.78,
+        "is_applying": true,
+        "nature": "Neutral"
+      },
+      {
+        "transiting_planet": "Saturn",
+        "natal_planet": "Jupiter",
+        "aspect_type": "Trine",
+        "orb": 6.58,
+        "is_applying": false,
+        "nature": "Harmonious"
+      },
+      {
+        "transiting_planet": "Uranus",
+        "natal_planet": "Mars",
+        "aspect_type": "Sextile",
+        "orb": 4.44,
+        "is_applying": false,
+        "nature": "Harmonious"
+      }
+    ],
+    "sade_sati": {
+      "is_active": false,
+      "phase": null,
+      "saturn_sign": "Pisces",
+      "moon_sign": "Libra"
+    },
+    "period_quality": "Favorable",
+    "retrograde_planets": ["Rahu", "Ketu"]
+  },
+  "witness_prompt": "As Pluto deeply transforms the structures of Saturn in your chart, what old ways of achieving security are being dismantled so a more authentic foundation can be built?",
+  "consciousness_level": 0,
+  "metadata": {
+    "calculation_time_ms": 4.2,
+    "backend": "native",
+    "precision_achieved": "standard",
+    "cached": false,
+    "timestamp": "2026-01-15T22:30:00Z",
+    "engine_version": "3.0.0"
+  }
+}

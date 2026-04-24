@@ -1,0 +1,49 @@
+{
+  "engine_id": "nadabrahman",
+  "result": {
+    "time_recommendation": {
+      "prahar_name": "Sangava (Forenoon)",
+      "prahar_number": 2,
+      "time_range": "09:00-12:00",
+      "primary_raga": {
+        "raga_number": 15,
+        "raga_name": "Mayamalavagowla",
+        "reason": "Morning raga for awakening and mental clarity"
+      },
+      "dosha_dominance": "kapha",
+      "energy_quality": "expansive"
+    },
+    "recommendations": [
+      {
+        "raga_number": 15,
+        "raga_name": "Mayamalavagowla",
+        "reason": "Morning raga for awakening and mental clarity",
+        "score": 0.91,
+        "arohanam": ["S", "R1", "G3", "M1", "P", "D1", "N3", "S"],
+        "avarohanam": ["S", "N3", "D1", "P", "M1", "G3", "R1", "S"],
+        "mood": "veera",
+        "therapeutic_qualities": ["energizing", "clarifying", "awakening"]
+      },
+      {
+        "raga_number": 8,
+        "raga_name": "Hanumattodi",
+        "reason": "Dispels morning lethargy and activates vital energy",
+        "score": 0.79,
+        "arohanam": ["S", "R1", "G1", "M1", "P", "D1", "N1", "S"],
+        "avarohanam": ["S", "N1", "D1", "P", "M1", "G1", "R1", "S"],
+        "mood": "karuna",
+        "therapeutic_qualities": ["grounding", "focusing", "steady"]
+      }
+    ]
+  },
+  "witness_prompt": "What is the quality of your awareness as the morning unfolds — is there expansion or contraction, and what does the raga reveal about your current inner atmosphere?",
+  "consciousness_level": 0,
+  "metadata": {
+    "calculation_time_ms": 0.7,
+    "backend": "native",
+    "precision_achieved": "standard",
+    "cached": false,
+    "timestamp": "2026-01-15T09:15:00Z",
+    "engine_version": "3.0.0"
+  }
+}

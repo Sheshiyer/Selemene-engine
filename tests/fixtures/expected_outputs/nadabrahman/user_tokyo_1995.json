@@ -1,0 +1,49 @@
+{
+  "engine_id": "nadabrahman",
+  "result": {
+    "time_recommendation": {
+      "prahar_name": "Sayahna (Evening)",
+      "prahar_number": 5,
+      "time_range": "18:00-21:00",
+      "primary_raga": {
+        "raga_number": 29,
+        "raga_name": "Dheerasankarabharanam",
+        "reason": "Evening raga for reflective transition from day to night"
+      },
+      "dosha_dominance": "vata",
+      "energy_quality": "transitional"
+    },
+    "recommendations": [
+      {
+        "raga_number": 29,
+        "raga_name": "Dheerasankarabharanam",
+        "reason": "Evening raga for reflective transition from day to night",
+        "score": 0.85,
+        "arohanam": ["S", "R2", "G3", "M1", "P", "D2", "N3", "S"],
+        "avarohanam": ["S", "N3", "D2", "P", "M1", "G3", "R2", "S"],
+        "mood": "shanta",
+        "therapeutic_qualities": ["balancing", "reflective", "peaceful"]
+      },
+      {
+        "raga_number": 20,
+        "raga_name": "Natabhairavi",
+        "reason": "Soothes vata imbalances in transition times",
+        "score": 0.73,
+        "arohanam": ["S", "R2", "G2", "M1", "P", "D1", "N2", "S"],
+        "avarohanam": ["S", "N2", "D1", "P", "M1", "G2", "R2", "S"],
+        "mood": "karuna",
+        "therapeutic_qualities": ["grounding", "soothing", "vata-pacifying"]
+      }
+    ]
+  },
+  "witness_prompt": "As the evening raga invites you to transition from outer activity to inner stillness, what are you ready to release from the day?",
+  "consciousness_level": 0,
+  "metadata": {
+    "calculation_time_ms": 0.9,
+    "backend": "native",
+    "precision_achieved": "standard",
+    "cached": false,
+    "timestamp": "2026-01-15T18:45:00Z",
+    "engine_version": "3.0.0"
+  }
+}

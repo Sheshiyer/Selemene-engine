@@ -1,0 +1,77 @@
+{
+  "engine_id": "transits",
+  "result": {
+    "natal_positions": [
+      {"planet": "Sun", "longitude": 294.876, "sign": "Capricorn", "degree_in_sign": 24.88, "is_retrograde": false},
+      {"planet": "Moon", "longitude": 52.341, "sign": "Taurus", "degree_in_sign": 22.34, "is_retrograde": false},
+      {"planet": "Mercury", "longitude": 285.123, "sign": "Capricorn", "degree_in_sign": 15.12, "is_retrograde": false},
+      {"planet": "Venus", "longitude": 312.456, "sign": "Aquarius", "degree_in_sign": 12.46, "is_retrograde": false},
+      {"planet": "Mars", "longitude": 229.789, "sign": "Scorpio", "degree_in_sign": 19.79, "is_retrograde": false},
+      {"planet": "Jupiter", "longitude": 72.654, "sign": "Gemini", "degree_in_sign": 12.65, "is_retrograde": false},
+      {"planet": "Saturn", "longitude": 277.321, "sign": "Capricorn", "degree_in_sign": 7.32, "is_retrograde": false},
+      {"planet": "Uranus", "longitude": 278.012, "sign": "Capricorn", "degree_in_sign": 8.01, "is_retrograde": false},
+      {"planet": "Neptune", "longitude": 280.543, "sign": "Capricorn", "degree_in_sign": 10.54, "is_retrograde": false},
+      {"planet": "Pluto", "longitude": 244.876, "sign": "Scorpio", "degree_in_sign": 14.88, "is_retrograde": false},
+      {"planet": "Rahu", "longitude": 337.654, "sign": "Pisces", "degree_in_sign": 7.65, "is_retrograde": true},
+      {"planet": "Ketu", "longitude": 157.654, "sign": "Virgo", "degree_in_sign": 7.65, "is_retrograde": true}
+    ],
+    "transit_positions": [
+      {"planet": "Sun", "longitude": 295.234, "sign": "Capricorn", "degree_in_sign": 25.23, "speed": 1.019, "is_retrograde": false},
+      {"planet": "Moon", "longitude": 142.876, "sign": "Leo", "degree_in_sign": 22.88, "speed": 13.176, "is_retrograde": false},
+      {"planet": "Mercury", "longitude": 288.432, "sign": "Capricorn", "degree_in_sign": 18.43, "speed": 1.423, "is_retrograde": false},
+      {"planet": "Venus", "longitude": 315.789, "sign": "Aquarius", "degree_in_sign": 15.79, "speed": 1.234, "is_retrograde": false},
+      {"planet": "Mars", "longitude": 18.543, "sign": "Aries", "degree_in_sign": 18.54, "speed": 0.521, "is_retrograde": false},
+      {"planet": "Jupiter", "longitude": 29.876, "sign": "Aries", "degree_in_sign": 29.88, "speed": 0.098, "is_retrograde": false},
+      {"planet": "Saturn", "longitude": 350.123, "sign": "Pisces", "degree_in_sign": 20.12, "speed": 0.034, "is_retrograde": false},
+      {"planet": "Uranus", "longitude": 56.789, "sign": "Taurus", "degree_in_sign": 26.79, "speed": 0.023, "is_retrograde": false},
+      {"planet": "Neptune", "longitude": 8.234, "sign": "Aries", "degree_in_sign": 8.23, "speed": 0.011, "is_retrograde": false},
+      {"planet": "Pluto", "longitude": 301.654, "sign": "Aquarius", "degree_in_sign": 11.65, "speed": 0.013, "is_retrograde": false},
+      {"planet": "Rahu", "longitude": 11.234, "sign": "Aries", "degree_in_sign": 11.23, "speed": -0.053, "is_retrograde": true},
+      {"planet": "Ketu", "longitude": 191.234, "sign": "Libra", "degree_in_sign": 11.23, "speed": -0.053, "is_retrograde": true}
+    ],
+    "aspects": [
+      {
+        "transiting_planet": "Saturn",
+        "natal_planet": "Moon",
+        "aspect_type": "Trine",
+        "orb": 2.22,
+        "is_applying": false,
+        "nature": "Harmonious"
+      },
+      {
+        "transiting_planet": "Jupiter",
+        "natal_planet": "Sun",
+        "aspect_type": "Trine",
+        "orb": 4.58,
+        "is_applying": false,
+        "nature": "Harmonious"
+      },
+      {
+        "transiting_planet": "Pluto",
+        "natal_planet": "Sun",
+        "aspect_type": "Conjunction",
+        "orb": 6.77,
+        "is_applying": true,
+        "nature": "Neutral"
+      }
+    ],
+    "sade_sati": {
+      "is_active": false,
+      "phase": null,
+      "saturn_sign": "Pisces",
+      "moon_sign": "Taurus"
+    },
+    "period_quality": "Favorable",
+    "retrograde_planets": ["Rahu", "Ketu"]
+  },
+  "witness_prompt": "With Jupiter trining your natal Sun, what vision of expanded possibility is knocking on your door — and are you ready to open it?",
+  "consciousness_level": 0,
+  "metadata": {
+    "calculation_time_ms": 4.3,
+    "backend": "native",
+    "precision_achieved": "standard",
+    "cached": false,
+    "timestamp": "2026-01-15T14:30:00Z",
+    "engine_version": "3.0.0"
+  }
+}
