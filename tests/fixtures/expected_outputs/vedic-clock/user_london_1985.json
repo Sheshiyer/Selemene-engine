@@ -1,0 +1,79 @@
+{
+  "engine_id": "vedic-clock",
+  "result": {
+    "current_organ": {
+      "organ": "SmallIntestine",
+      "element": "Fire",
+      "time_window": "1 PM - 3 PM",
+      "peak_energy": "Sorting, assimilating, and discernment",
+      "associated_emotion": "Discernment (balanced) / Confusion (imbalanced)",
+      "recommended_activities": [
+        "Organizing tasks",
+        "Email and correspondence",
+        "Sorting through information",
+        "Decision-making",
+        "Assimilating morning's learning"
+      ]
+    },
+    "current_dosha": {
+      "dosha": "Vata",
+      "qualities": [
+        "Movement",
+        "Communication",
+        "Flexibility",
+        "Completion energy"
+      ]
+    },
+    "recommendation": {
+      "time_window": "1 PM - 3 PM",
+      "organ": "SmallIntestine",
+      "dosha": "Vata",
+      "activities": [
+        {
+          "activity": "Organizing tasks",
+          "quality": "optimal",
+          "reason": "Aligned with SmallIntestine active window and Vata dosha"
+        },
+        {
+          "activity": "Email and correspondence",
+          "quality": "optimal",
+          "reason": "Aligned with SmallIntestine active window and Vata dosha"
+        },
+        {
+          "activity": "Sorting through information",
+          "quality": "optimal",
+          "reason": "Aligned with SmallIntestine active window and Vata dosha"
+        }
+      ],
+      "panchanga_quality": null
+    },
+    "synthesis": "During the Vata period, with Small Intestine active, focus on organizing tasks.",
+    "calculated_for": "2026-01-01T14:00:00Z",
+    "timezone": {
+      "offset_minutes": 0,
+      "source": "default_utc",
+      "local_hour": 14
+    }
+  },
+  "witness_prompt": "The Small Intestine organ is active now, governed by the Fire element. Notice: discernment (balanced). What is present in this moment that you have not yet fully seen?",
+  "consciousness_level": 0,
+  "metadata": {
+    "calculation_time_ms": 0.0,
+    "backend": "native-rust",
+    "precision_achieved": "Standard",
+    "cached": false,
+    "timestamp": "2026-01-01T14:00:00Z",
+    "engine_version": "3.0.0"
+  },
+  "_fixture_meta": {
+    "input": {
+      "current_time": "2026-01-01T14:00:00Z",
+      "timezone_offset": 0,
+      "timezone_name": "Europe/London"
+    },
+    "description": "Vedic Clock golden fixture for user_london_1985",
+    "local_hour": 14,
+    "active_organ": "SmallIntestine",
+    "active_dosha": "Vata"
+  }
+}

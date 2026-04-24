@@ -1,0 +1,121 @@
+{
+  "engine_id": "vimshottari",
+  "result": {
+    "birth_nakshatra": {
+      "name": "Pushya",
+      "number": 8,
+      "moon_longitude": 100.0
+    },
+    "timeline": {
+      "birth_date": "1995-12-03T00:00:00+00:00",
+      "total_years": 120,
+      "mahadashas": [
+        {
+          "planet": "Saturn",
+          "start_date": "1995-12-03T00:00:00+00:00",
+          "end_date": "2005-06-02T21:00:00Z",
+          "duration_years": 19,
+          "antardasha_count": 9
+        },
+        {
+          "planet": "Mercury",
+          "start_date": "2005-06-02T21:00:00Z",
+          "end_date": "2022-06-03T03:00:00Z",
+          "duration_years": 17,
+          "antardasha_count": 9
+        },
+        {
+          "planet": "Ketu",
+          "start_date": "2022-06-03T03:00:00Z",
+          "end_date": "2029-06-02T21:00:00Z",
+          "duration_years": 7,
+          "antardasha_count": 9
+        },
+        {
+          "planet": "Venus",
+          "start_date": "2029-06-02T21:00:00Z",
+          "end_date": "2049-06-02T21:00:00Z",
+          "duration_years": 20,
+          "antardasha_count": 9
+        },
+        {
+          "planet": "Sun",
+          "start_date": "2049-06-02T21:00:00Z",
+          "end_date": "2055-06-03T09:00:00Z",
+          "duration_years": 6,
+          "antardasha_count": 9
+        },
+        {
+          "planet": "Moon",
+          "start_date": "2055-06-03T09:00:00Z",
+          "end_date": "2065-06-02T21:00:00Z",
+          "duration_years": 10,
+          "antardasha_count": 9
+        },
+        {
+          "planet": "Mars",
+          "start_date": "2065-06-02T21:00:00Z",
+          "end_date": "2072-06-02T15:00:00Z",
+          "duration_years": 7,
+          "antardasha_count": 9
+        },
+        {
+          "planet": "Rahu",
+          "start_date": "2072-06-02T15:00:00Z",
+          "end_date": "2090-06-03T03:00:00Z",
+          "duration_years": 18,
+          "antardasha_count": 9
+        },
+        {
+          "planet": "Jupiter",
+          "start_date": "2090-06-03T03:00:00Z",
+          "end_date": "2106-06-04T03:00:00Z",
+          "duration_years": 16,
+          "antardasha_count": 9
+        }
+      ]
+    },
+    "current_period": {
+      "mahadasha": {
+        "planet": "Ketu",
+        "start": "2022-06-03T03:00:00Z",
+        "end": "2029-06-02T21:00:00Z",
+        "years": 7
+      },
+      "antardasha": {
+        "planet": "Ketu",
+        "start": "2022-06-03T03:00:00Z",
+        "end": "2029-06-02T21:00:00Z",
+        "years": 0.4083333333333333
+      },
+      "pratyantardasha": {
+        "planet": "Ketu",
+        "start": "2022-06-03T03:00:00Z",
+        "end": "2029-06-02T21:00:00Z",
+        "days": 149.14375
+      }
+    },
+    "upcoming_transitions": [],
+    "period_enrichment": null
+  },
+  "witness_prompt": "During the Ketu Mahadasha, you are invited to explore the themes of planetary influence on your consciousness. What patterns of time are unfolding?",
+  "consciousness_level": 3,
+  "metadata": {
+    "calculation_time_ms": 0.0,
+    "backend": "moon-longitude",
+    "precision_achieved": "Standard",
+    "cached": false,
+    "timestamp": "2026-01-01T00:00:00Z",
+    "engine_version": "3.0.0"
+  },
+  "_fixture_meta": {
+    "input": {
+      "birth_date": "1995-12-03",
+      "moon_longitude": 100.0,
+      "current_time": "2026-01-01T00:00:00Z"
+    },
+    "description": "Vimshottari golden fixture for user_tokyo_1995",
+    "nakshatra": "Pushya",
+    "ruling_planet": "Saturn"
+  }
+}

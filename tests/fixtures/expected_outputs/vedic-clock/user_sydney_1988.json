@@ -1,0 +1,78 @@
+{
+  "engine_id": "vedic-clock",
+  "result": {
+    "current_organ": {
+      "organ": "Liver",
+      "element": "Wood",
+      "time_window": "1 AM - 3 AM",
+      "peak_energy": "Blood cleansing and planning in dreams",
+      "associated_emotion": "Vision (balanced) / Anger (imbalanced)",
+      "recommended_activities": [
+        "Deep restorative sleep",
+        "Dreaming",
+        "Body detoxification",
+        "Subconscious planning"
+      ]
+    },
+    "current_dosha": {
+      "dosha": "Pitta",
+      "qualities": [
+        "Internal cleansing",
+        "Metabolic processing",
+        "Dream activity",
+        "Cellular repair"
+      ]
+    },
+    "recommendation": {
+      "time_window": "1 AM - 3 AM",
+      "organ": "Liver",
+      "dosha": "Pitta",
+      "activities": [
+        {
+          "activity": "Deep restorative sleep",
+          "quality": "optimal",
+          "reason": "Aligned with Liver active window and Pitta dosha"
+        },
+        {
+          "activity": "Dreaming",
+          "quality": "optimal",
+          "reason": "Aligned with Liver active window and Pitta dosha"
+        },
+        {
+          "activity": "Body detoxification",
+          "quality": "optimal",
+          "reason": "Aligned with Liver active window and Pitta dosha"
+        }
+      ],
+      "panchanga_quality": null
+    },
+    "synthesis": "During the Pitta period, with Liver active, focus on deep restorative sleep.",
+    "calculated_for": "2026-01-01T14:00:00Z",
+    "timezone": {
+      "offset_minutes": 660,
+      "source": "options.timezone_offset",
+      "local_hour": 1
+    }
+  },
+  "witness_prompt": "The Liver organ is active now, governed by the Wood element. Notice: vision (balanced). What is present in this moment that you have not yet fully seen?",
+  "consciousness_level": 0,
+  "metadata": {
+    "calculation_time_ms": 0.0,
+    "backend": "native-rust",
+    "precision_achieved": "Standard",
+    "cached": false,
+    "timestamp": "2026-01-01T14:00:00Z",
+    "engine_version": "3.0.0"
+  },
+  "_fixture_meta": {
+    "input": {
+      "current_time": "2026-01-01T14:00:00Z",
+      "timezone_offset": 660,
+      "timezone_name": "Australia/Sydney"
+    },
+    "description": "Vedic Clock golden fixture for user_sydney_1988",
+    "local_hour": 1,
+    "active_organ": "Liver",
+    "active_dosha": "Pitta"
+  }
+}
