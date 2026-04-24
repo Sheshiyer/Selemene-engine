@@ -2687,6 +2687,7 @@ dependencies = [
  "noesis-bridge",
  "noesis-cache",
  "noesis-core",
+ "noesis-metrics",
  "noesis-witness",
  "serde",
  "serde_json",

@@ -11,6 +11,7 @@ use crate::{EngineRegistry, ExecutionRoutingSnapshot};
 use chrono::Utc;
 use futures::future::join_all;
 use noesis_core::{EngineError, EngineInput, EngineOutput};
+use noesis_metrics::NoesisMetrics;
 use std::collections::HashMap;
 use std::sync::Arc;
 use std::time::Instant;
@@ -24,6 +25,7 @@ use tracing::{info, instrument, warn};
 pub struct WorkflowExecutor {
     engine_registry: Arc<EngineRegistry>,
     workflow_registry: WorkflowRegistry,
+    metrics: Option<Arc<NoesisMetrics>>,
 }
 
 impl WorkflowExecutor {
@@ -32,6 +34,7 @@ impl WorkflowExecutor {
         Self {
             engine_registry,
             workflow_registry: WorkflowRegistry::new(),
+            metrics: None,
         }
     }
 
@@ -43,7 +46,14 @@ impl WorkflowExecutor {
         Self {
             engine_registry,
             workflow_registry,
+            metrics: None,
         }
+    }
+
+    /// Attach a metrics instance so workflow-level metrics are recorded.
+    pub fn with_metrics(mut self, metrics: Arc<NoesisMetrics>) -> Self {
+        self.metrics = Some(metrics);
+        self
     }
 
     /// Execute a workflow by ID
@@ -105,6 +115,15 @@ impl WorkflowExecutor {
 
         // Generate witness prompts from synthesis
         let witness_prompts = generate_workflow_witness_prompts(&synthesis, user_phase);
+
+        // Record workflow-level metrics after full synthesis so duration covers the complete execution.
+        if let Some(metrics) = &self.metrics {
+            metrics.record_workflow_execution(
+                &workflow.id,
+                start.elapsed().as_secs_f64(),
+                engine_results.len(),
+            );
+        }
 
         Ok(WorkflowOutput {
             workflow_id: workflow.id.clone(),
@@ -358,5 +377,37 @@ mod tests {
         assert_eq!(snapshot.orchestrated_execute_calls, 5);
         assert_eq!(snapshot.direct_execute_calls, 0);
         assert_eq!(snapshot.bypass_count, 0);
+    }
+
+    fn build_registry() -> Arc<EngineRegistry> {
+        let mut registry = EngineRegistry::new();
+        registry.register(Arc::new(MockEngine::new("numerology", 0)));
+        registry.register(Arc::new(MockEngine::new("human-design", 0)));
+        registry.register(Arc::new(MockEngine::new("vimshottari", 0)));
+        registry.register(Arc::new(MockEngine::new("panchanga", 0)));
+        registry.register(Arc::new(MockEngine::new("vedic-clock", 0)));
+        registry.register(Arc::new(MockEngine::new("biorhythm", 0)));
+        Arc::new(registry)
+    }
+
+    #[tokio::test]
+    async fn execute_workflow_records_duration_and_engine_count_metrics() {
+        let metrics = Arc::new(noesis_metrics::NoesisMetrics::new().unwrap());
+        let executor = WorkflowExecutor::new(build_registry()).with_metrics(Arc::clone(&metrics));
+
+        executor
+            .execute("birth-blueprint", test_input(), 5)
+            .await
+            .unwrap();
+
+        let text = metrics.get_metrics_text().unwrap();
+        assert!(
+            text.contains(r#"noesis_workflow_execution_duration_seconds"#),
+            "duration histogram missing from /metrics"
+        );
+        assert!(
+            text.contains(r#"noesis_workflow_engines_succeeded{workflow_id="birth-blueprint"}"#),
+            "engines_succeeded gauge missing from /metrics"
+        );
     }
 }
