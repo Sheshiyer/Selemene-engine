@@ -1,0 +1,69 @@
+{
+  "_meta": {
+    "case_id": "leap_year_feb_29",
+    "engine_id": "human-design",
+    "description": "Leap day February 29 human design - tests date parsing and Pisces gate region",
+    "boundary_condition": "leap_day_date",
+    "notes": "February 29, 2000 (leap day). Engine must parse Feb 29 without error. NaiveDate and timezone conversion must handle leap year correctly. Solar longitude ~340\u00b0 maps to Gate 37 in Rave Mandala."
+  },
+  "input": {
+    "name": "Leap Day User",
+    "date": "2000-02-29",
+    "time": "12:30",
+    "latitude": 40.7128,
+    "longitude": -74.006,
+    "timezone": "America/New_York"
+  },
+  "expected_output": {
+    "engine_id": "human-design",
+    "result": {
+      "personality_sun_gate": 37,
+      "personality_sun_line": 6,
+      "personality_earth_gate": 40,
+      "design_sun_gate": 9
+    }
+  },
+  "validation_rules": {
+    "no_nan_values": true,
+    "no_engine_panic": true,
+    "personality_activations_count": 13,
+    "design_activations_count": 13,
+    "gate_range": [
+      1,
+      64
+    ],
+    "line_range": [
+      1,
+      6
+    ],
+    "longitude_range": [
+      0.0,
+      360.0
+    ],
+    "hd_type_valid": [
+      "Generator",
+      "ManifestingGenerator",
+      "Projector",
+      "Manifestor",
+      "Reflector"
+    ],
+    "authority_valid": [
+      "Sacral",
+      "Emotional",
+      "Splenic",
+      "Heart",
+      "GCenter",
+      "Mental",
+      "Lunar"
+    ],
+    "profile_lines_range": [
+      1,
+      6
+    ],
+    "defined_centers_range": [
+      0,
+      9
+    ],
+    "earth_opposite_sun": true
+  }
+}

@@ -1,0 +1,85 @@
+{
+  "_meta": {
+    "case_id": "noon_birth",
+    "engine_id": "numerology",
+    "description": "Summer solstice noon numerology - tests master number 11 in life path",
+    "boundary_condition": "master_number_life_path",
+    "notes": "Year 2000\u21922; month 6\u21926; day 21\u21923; sum 11 (master). Both life_path and soul_urge produce master number 11 \u2014 is_master must be True and chain must NOT reduce further."
+  },
+  "input": {
+    "name": "High Noon User",
+    "date": "2000-06-21",
+    "time": "12:00",
+    "latitude": 23.4393,
+    "longitude": 0.0,
+    "timezone": "UTC"
+  },
+  "expected_output": {
+    "engine_id": "numerology",
+    "result": {
+      "life_path": {
+        "value": 11,
+        "is_master": true,
+        "reduction_chain": [
+          11
+        ],
+        "meaning": "Intuition, spiritual insight, illumination (master)"
+      },
+      "expression": {
+        "value": 9,
+        "is_master": false,
+        "reduction_chain": [
+          72,
+          9
+        ],
+        "meaning": "Compassion, completion, universal love"
+      },
+      "soul_urge": {
+        "value": 11,
+        "is_master": true,
+        "reduction_chain": [
+          29,
+          11
+        ],
+        "meaning": "Intuition, spiritual insight, illumination (master)"
+      },
+      "personality": {
+        "value": 7,
+        "is_master": false,
+        "reduction_chain": [
+          43,
+          7
+        ],
+        "meaning": "Analysis, wisdom, introspection"
+      },
+      "birthday": {
+        "value": 3,
+        "is_master": false,
+        "reduction_chain": [
+          21,
+          3
+        ],
+        "meaning": "Creativity, expression, joy"
+      },
+      "chaldean_name": {
+        "value": 9,
+        "is_master": false,
+        "reduction_chain": [
+          54,
+          9
+        ],
+        "meaning": "Compassion, completion, universal love"
+      }
+    }
+  },
+  "validation_rules": {
+    "no_nan_values": true,
+    "no_engine_panic": true,
+    "all_numbers_in_range": [
+      1,
+      33
+    ],
+    "master_numbers_not_reduced": true,
+    "witness_prompt_non_empty": true
+  }
+}

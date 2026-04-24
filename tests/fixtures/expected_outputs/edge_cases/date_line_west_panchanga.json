@@ -1,0 +1,60 @@
+{
+  "_meta": {
+    "case_id": "date_line_west",
+    "engine_id": "panchanga",
+    "description": "Near international date line (west) - Samoa, tests timezone -11 and year-end boundary",
+    "boundary_condition": "date_line_west_boundary",
+    "notes": "Pacific/Samoa (UTC-11) is NOT in the panchanga engine timezone map; tz_offset_from_string defaults to 0.0 (UTC). Engine calculates for local time treated as UTC. Julian Day and Vara reflect UTC interpretation of 1985-12-31 23:59."
+  },
+  "input": {
+    "name": "Samoa User",
+    "date": "1985-12-31",
+    "time": "23:59",
+    "latitude": -13.8506,
+    "longitude": -171.7513,
+    "timezone": "Pacific/Samoa"
+  },
+  "expected_output": {
+    "engine_id": "panchanga",
+    "result": {
+      "tithi_index": 19,
+      "tithi_name": "Panchami (Krishna)",
+      "nakshatra_index": 9,
+      "nakshatra_name": "Magha",
+      "yoga_index": 2,
+      "yoga_name": "Ayushman",
+      "karana_index": 3,
+      "karana_name": "Taitila",
+      "vara_index": 2,
+      "vara_name": "Mangalavara (Tuesday)"
+    }
+  },
+  "validation_rules": {
+    "no_nan_values": true,
+    "no_engine_panic": true,
+    "julian_day_range": [
+      2400000.0,
+      2500000.0
+    ],
+    "solar_longitude_range": [
+      0.0,
+      360.0
+    ],
+    "lunar_longitude_range": [
+      0.0,
+      360.0
+    ],
+    "tithi_value_range": [
+      0.0,
+      30.0
+    ],
+    "nakshatra_value_range": [
+      0.0,
+      27.0
+    ],
+    "yoga_value_range": [
+      0.0,
+      27.0
+    ]
+  }
+}

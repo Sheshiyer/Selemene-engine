@@ -1,0 +1,60 @@
+{
+  "_meta": {
+    "case_id": "century_boundary",
+    "engine_id": "panchanga",
+    "description": "Born at millennium/century boundary - January 1, 2000 00:01 UTC",
+    "boundary_condition": "millennium_boundary",
+    "notes": "Y2K boundary: Julian Day calculation must correctly handle the year 2000 epoch. Europe/London treated as UTC+0."
+  },
+  "input": {
+    "name": "Millennium User",
+    "date": "2000-01-01",
+    "time": "00:01",
+    "latitude": 51.5074,
+    "longitude": -0.1278,
+    "timezone": "Europe/London"
+  },
+  "expected_output": {
+    "engine_id": "panchanga",
+    "result": {
+      "tithi_index": 24,
+      "tithi_name": "Dashami (Krishna)",
+      "nakshatra_index": 14,
+      "nakshatra_name": "Swati",
+      "yoga_index": 6,
+      "yoga_name": "Sukarma",
+      "karana_index": 6,
+      "karana_name": "Vishti",
+      "vara_index": 6,
+      "vara_name": "Shanivara (Saturday)"
+    }
+  },
+  "validation_rules": {
+    "no_nan_values": true,
+    "no_engine_panic": true,
+    "julian_day_range": [
+      2400000.0,
+      2500000.0
+    ],
+    "solar_longitude_range": [
+      0.0,
+      360.0
+    ],
+    "lunar_longitude_range": [
+      0.0,
+      360.0
+    ],
+    "tithi_value_range": [
+      0.0,
+      30.0
+    ],
+    "nakshatra_value_range": [
+      0.0,
+      27.0
+    ],
+    "yoga_value_range": [
+      0.0,
+      27.0
+    ]
+  }
+}
