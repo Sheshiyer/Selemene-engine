@@ -304,6 +304,97 @@ fn generate_witness_prompt(result: &BiorhythmResult) -> String {
 }
 
 // ---------------------------------------------------------------------------
+// Compatibility types and calculation
+// ---------------------------------------------------------------------------
+
+/// Compatibility score for a single biorhythm cycle.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CycleCompatibility {
+    /// Score in the range [0, 100].
+    /// 100 = perfect alignment, 0 = maximum opposition (half-period apart).
+    pub score: f64,
+    /// Cycle period in days.
+    pub period: f64,
+    /// Absolute day difference between the two birth dates.
+    pub days_diff: i64,
+}
+
+/// Result of a two-person biorhythm compatibility calculation.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CompatibilityResult {
+    pub birth_date_a: String,
+    pub birth_date_b: String,
+    /// Reference date supplied by the caller; stored for context (e.g. serialised API
+    /// responses).  Compatibility scores depend only on the two birth dates, not on
+    /// this date.
+    pub target_date: String,
+    pub physical: CycleCompatibility,
+    pub emotional: CycleCompatibility,
+    pub intellectual: CycleCompatibility,
+    pub intuitive: CycleCompatibility,
+    /// Equal-weighted average of the three *primary* cycles (physical, emotional,
+    /// intellectual).  The intuitive cycle is excluded to match the convention used by
+    /// `BiorhythmResult::overall_energy`.
+    pub overall: f64,
+}
+
+/// Calculate the compatibility score for a single cycle.
+///
+/// Formula: `50 × (1 + cos(2π × (|days_diff| mod period) / period))`
+///
+/// This maps to:
+/// - 100 when `days_diff ≡ 0 (mod period)` (identical phases)
+/// - 0   when `days_diff ≡ period/2 (mod period)` (opposite phases)
+fn cycle_compatibility(days_diff: i64, period: f64) -> CycleCompatibility {
+    let diff_mod = (days_diff.abs() as f64) % period;
+    let score = 50.0 * (1.0 + (2.0 * PI * diff_mod / period).cos());
+    CycleCompatibility {
+        score,
+        period,
+        days_diff: days_diff.abs(),
+    }
+}
+
+/// Calculate biorhythm compatibility between two people.
+///
+/// # Arguments
+/// * `birth_date_a` – birth date of person A
+/// * `birth_date_b` – birth date of person B
+/// * `target_date`  – reference date stored in the result for caller context;
+///                    the per-cycle scores depend only on the two birth dates
+///
+/// # Returns
+/// `CompatibilityResult` with per-cycle scores and an equal-weighted overall score
+/// across the three primary cycles.
+pub fn calculate_compatibility(
+    birth_date_a: NaiveDate,
+    birth_date_b: NaiveDate,
+    target_date: NaiveDate,
+) -> CompatibilityResult {
+    let days_diff = (birth_date_a - birth_date_b).num_days();
+
+    let physical = cycle_compatibility(days_diff, PHYSICAL_PERIOD);
+    let emotional = cycle_compatibility(days_diff, EMOTIONAL_PERIOD);
+    let intellectual = cycle_compatibility(days_diff, INTELLECTUAL_PERIOD);
+    let intuitive = cycle_compatibility(days_diff, INTUITIVE_PERIOD);
+
+    // Overall = equal-weighted average of the three primary cycles (physical,
+    // emotional, intellectual), matching the convention of BiorhythmResult::overall_energy.
+    let overall = (physical.score + emotional.score + intellectual.score) / 3.0;
+
+    CompatibilityResult {
+        birth_date_a: birth_date_a.format("%Y-%m-%d").to_string(),
+        birth_date_b: birth_date_b.format("%Y-%m-%d").to_string(),
+        target_date: target_date.format("%Y-%m-%d").to_string(),
+        physical,
+        emotional,
+        intellectual,
+        intuitive,
+        overall,
+    }
+}
+
+// ---------------------------------------------------------------------------
 // Parse helpers
 // ---------------------------------------------------------------------------
 
@@ -671,5 +762,114 @@ mod tests {
         let prompt = generate_witness_prompt(&result);
         assert!(!prompt.is_empty());
         assert!(prompt.contains('%'));
+    }
+
+    // ------------------------------------------------------------------
+    // Compatibility tests (Acceptance Criteria for issue #374)
+    // ------------------------------------------------------------------
+
+    #[test]
+    fn test_compatibility_identical_birth_dates_is_100() {
+        let date_a = NaiveDate::from_ymd_opt(1990, 6, 15).unwrap();
+        let target = NaiveDate::from_ymd_opt(2025, 1, 1).unwrap();
+
+        let result = calculate_compatibility(date_a, date_a, target);
+
+        assert!(
+            (result.physical.score - 100.0).abs() < 1e-9,
+            "physical score should be 100 for identical dates, got {}",
+            result.physical.score
+        );
+        assert!(
+            (result.emotional.score - 100.0).abs() < 1e-9,
+            "emotional score should be 100 for identical dates, got {}",
+            result.emotional.score
+        );
+        assert!(
+            (result.intellectual.score - 100.0).abs() < 1e-9,
+            "intellectual score should be 100 for identical dates, got {}",
+            result.intellectual.score
+        );
+        assert!(
+            (result.intuitive.score - 100.0).abs() < 1e-9,
+            "intuitive score should be 100 for identical dates, got {}",
+            result.intuitive.score
+        );
+        assert!(
+            (result.overall - 100.0).abs() < 1e-9,
+            "overall should be 100 for identical dates, got {}",
+            result.overall
+        );
+    }
+
+    /// EMOTIONAL_PERIOD = 28 days (even), so half = 14 days — exact integer test.
+    #[test]
+    fn test_compatibility_half_period_emotional_is_zero() {
+        let date_a = NaiveDate::from_ymd_opt(1990, 1, 1).unwrap();
+        let date_b = date_a + chrono::Duration::days(14); // exactly half of 28
+        let target = NaiveDate::from_ymd_opt(2025, 1, 1).unwrap();
+
+        let result = calculate_compatibility(date_a, date_b, target);
+
+        assert!(
+            result.emotional.score.abs() < 1e-9,
+            "emotional score should be 0 when exactly half-period apart, got {}",
+            result.emotional.score
+        );
+    }
+
+    /// INTUITIVE_PERIOD = 38 days (even), so half = 19 days — exact integer test.
+    #[test]
+    fn test_compatibility_half_period_intuitive_is_zero() {
+        let date_a = NaiveDate::from_ymd_opt(1985, 3, 1).unwrap();
+        let date_b = date_a + chrono::Duration::days(19); // exactly half of 38
+        let target = NaiveDate::from_ymd_opt(2025, 1, 1).unwrap();
+
+        let result = calculate_compatibility(date_a, date_b, target);
+
+        assert!(
+            result.intuitive.score.abs() < 1e-9,
+            "intuitive score should be 0 when exactly half INTUITIVE_PERIOD apart, got {}",
+            result.intuitive.score
+        );
+    }
+
+    #[test]
+    fn test_compatibility_score_bounds() {
+        let date_a = NaiveDate::from_ymd_opt(1990, 1, 1).unwrap();
+        let date_b = NaiveDate::from_ymd_opt(1995, 7, 4).unwrap();
+        let target = NaiveDate::from_ymd_opt(2025, 6, 15).unwrap();
+
+        let result = calculate_compatibility(date_a, date_b, target);
+
+        for score in [
+            result.physical.score,
+            result.emotional.score,
+            result.intellectual.score,
+            result.intuitive.score,
+            result.overall,
+        ] {
+            assert!(
+                (-1e-9..=100.0 + 1e-9).contains(&score),
+                "score {} is out of [0, 100]",
+                score
+            );
+        }
+    }
+
+    #[test]
+    fn test_compatibility_symmetry() {
+        // calculate_compatibility(a, b) == calculate_compatibility(b, a)
+        let date_a = NaiveDate::from_ymd_opt(1990, 1, 1).unwrap();
+        let date_b = NaiveDate::from_ymd_opt(1992, 6, 20).unwrap();
+        let target = NaiveDate::from_ymd_opt(2025, 1, 1).unwrap();
+
+        let ab = calculate_compatibility(date_a, date_b, target);
+        let ba = calculate_compatibility(date_b, date_a, target);
+
+        assert!((ab.physical.score - ba.physical.score).abs() < 1e-9);
+        assert!((ab.emotional.score - ba.emotional.score).abs() < 1e-9);
+        assert!((ab.intellectual.score - ba.intellectual.score).abs() < 1e-9);
+        assert!((ab.overall - ba.overall).abs() < 1e-9);
     }
 }
