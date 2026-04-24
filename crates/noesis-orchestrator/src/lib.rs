@@ -65,6 +65,9 @@ pub use noesis_bridge::{BridgeEngine, BridgeManager, DEFAULT_TS_SERVER_URL};
 pub use engine_biofield::BiofieldEngine;
 pub use engine_biofield_capture::BiofieldCaptureEngine;
 
+// Re-export ephemeris types so noesis-api does not need a direct engine-human-design dependency
+pub use engine_human_design::ephemeris::{EphemerisCalculator, HDPlanet, PlanetPosition};
+
 use chrono::Utc;
 use futures::future::join_all;
 use std::collections::HashMap;

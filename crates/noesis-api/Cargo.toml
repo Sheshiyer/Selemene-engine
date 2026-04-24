@@ -17,7 +17,6 @@ noesis-metrics = { path = "../noesis-metrics" }
 noesis-orchestrator = { path = "../noesis-orchestrator" }
 noesis-bridge = { path = "../noesis-bridge" }
 noesis-witness = { path = "../noesis-witness" }
-engine-human-design = { path = "../engine-human-design" }
 axum = { version = "0.7", features = ["json", "macros", "multipart"] }
 uuid = { version = "1.7", features = ["serde", "v4"] }
 tokio = { version = "1.0", features = ["full"] }
