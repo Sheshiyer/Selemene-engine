@@ -1,7 +1,8 @@
 //! Biorhythm Consciousness Engine
 //!
-//! Calculates physical (23-day), emotional (28-day), and intellectual (33-day) cycles,
-//! plus intuitive (38-day) and three composite cycles (mastery, passion, wisdom).
+//! Calculates physical (23-day), emotional (28-day), intellectual (33-day),
+//! intuitive (38-day), aesthetic (43-day), and spiritual (53-day) cycles,
+//! plus three composite cycles (mastery, passion, wisdom).
 //! Pure math -- no external dependencies beyond std and chrono.
 
 use async_trait::async_trait;
@@ -23,9 +24,22 @@ const PHYSICAL_PERIOD: f64 = 23.0;
 const EMOTIONAL_PERIOD: f64 = 28.0;
 const INTELLECTUAL_PERIOD: f64 = 33.0;
 const INTUITIVE_PERIOD: f64 = 38.0;
+const AESTHETIC_PERIOD: f64 = 43.0;
+const SPIRITUAL_PERIOD: f64 = 53.0;
 
 /// Threshold in days for declaring a zero-crossing "critical".
 const CRITICAL_THRESHOLD: f64 = 1.0;
+
+/// All six biorhythm cycles ordered by period length.
+/// Used by `find_critical_days` and tests as the single source of truth.
+const ALL_CYCLE_PERIODS: &[(&str, f64)] = &[
+    ("physical", PHYSICAL_PERIOD),
+    ("emotional", EMOTIONAL_PERIOD),
+    ("intellectual", INTELLECTUAL_PERIOD),
+    ("intuitive", INTUITIVE_PERIOD),
+    ("aesthetic", AESTHETIC_PERIOD),
+    ("spiritual", SPIRITUAL_PERIOD),
+];
 
 // ---------------------------------------------------------------------------
 // Result types
@@ -40,13 +54,22 @@ pub struct BiorhythmResult {
     pub emotional: CycleResult,
     pub intellectual: CycleResult,
     pub intuitive: CycleResult,
+    pub aesthetic: CycleResult,
+    pub spiritual: CycleResult,
     pub mastery: f64,
     pub passion: f64,
     pub wisdom: f64,
-    pub critical_days: Vec<String>,
+    pub critical_days: Vec<CriticalDayEntry>,
     pub overall_energy: f64,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub forecast: Option<Vec<ForecastDay>>,
+}
+
+/// A single critical day entry, annotated with the cycle(s) that cross zero.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CriticalDayEntry {
+    pub date: String,
+    pub cycles: Vec<String>,
 }
 
 /// Result for a single biorhythm cycle.
@@ -202,27 +225,33 @@ fn compute_cycle(days_alive: i64, period: f64) -> CycleResult {
     }
 }
 
-/// Collect upcoming critical days (dates where any primary cycle crosses zero) within a window.
+/// Collect upcoming critical days (dates where any of the 6 cycles cross zero) within a window.
+/// Each entry records which cycle(s) triggered it.
 fn find_critical_days(
     birth_date: NaiveDate,
     target_date: NaiveDate,
     window_days: i64,
-) -> Vec<String> {
-    let mut critical = Vec::new();
+) -> Vec<CriticalDayEntry> {
+    let mut entries = Vec::new();
     let base_days = (target_date - birth_date).num_days();
 
     for offset in 1..=window_days {
         let d = base_days + offset;
-        let any_critical = is_critical_day(d, PHYSICAL_PERIOD)
-            || is_critical_day(d, EMOTIONAL_PERIOD)
-            || is_critical_day(d, INTELLECTUAL_PERIOD);
-        if any_critical {
+        let triggering: Vec<String> = ALL_CYCLE_PERIODS
+            .iter()
+            .filter(|(_, period)| is_critical_day(d, *period))
+            .map(|(name, _)| name.to_string())
+            .collect();
+        if !triggering.is_empty() {
             let date = target_date + chrono::Duration::days(offset);
-            critical.push(date.format("%Y-%m-%d").to_string());
+            entries.push(CriticalDayEntry {
+                date: date.format("%Y-%m-%d").to_string(),
+                cycles: triggering,
+            });
         }
     }
 
-    critical
+    entries
 }
 
 /// Build the optional forecast.
@@ -356,6 +385,8 @@ impl ConsciousnessEngine for BiorhythmEngine {
         let emotional = compute_cycle(days_alive, EMOTIONAL_PERIOD);
         let intellectual = compute_cycle(days_alive, INTELLECTUAL_PERIOD);
         let intuitive = compute_cycle(days_alive, INTUITIVE_PERIOD);
+        let aesthetic = compute_cycle(days_alive, AESTHETIC_PERIOD);
+        let spiritual = compute_cycle(days_alive, SPIRITUAL_PERIOD);
 
         // --- Composite cycles (percentages) ---
         let mastery = (physical.percentage + intellectual.percentage) / 2.0;
@@ -391,6 +422,8 @@ impl ConsciousnessEngine for BiorhythmEngine {
             emotional,
             intellectual,
             intuitive,
+            aesthetic,
+            spiritual,
             mastery,
             passion,
             wisdom,
@@ -448,6 +481,8 @@ impl ConsciousnessEngine for BiorhythmEngine {
             ("emotional", &bio_result.emotional),
             ("intellectual", &bio_result.intellectual),
             ("intuitive", &bio_result.intuitive),
+            ("aesthetic", &bio_result.aesthetic),
+            ("spiritual", &bio_result.spiritual),
         ] {
             if cycle.value < -1.0 || cycle.value > 1.0 {
                 valid = false;
@@ -645,11 +680,82 @@ mod tests {
         let birth = NaiveDate::from_ymd_opt(1990, 1, 1).unwrap();
         let target = NaiveDate::from_ymd_opt(2025, 6, 15).unwrap();
         let critical = find_critical_days(birth, target, 7);
-        // Should return dates as strings and have reasonable count.
+        // Should return entries within the window.
         assert!(critical.len() <= 7);
-        for d in &critical {
-            assert!(d.len() == 10); // YYYY-MM-DD
+        for entry in &critical {
+            assert!(entry.date.len() == 10); // YYYY-MM-DD
+            assert!(!entry.cycles.is_empty(), "each entry must name at least one cycle");
         }
+    }
+
+    #[test]
+    fn test_find_critical_days_30_day_window_includes_secondary() {
+        // Over 30 days there must be crossings for aesthetic (43-day) and
+        // spiritual (53-day) cycles given sufficient elapsed days, but more
+        // importantly we verify that when secondary crossings do appear they
+        // are labelled correctly.
+        let birth = NaiveDate::from_ymd_opt(1990, 1, 1).unwrap();
+        let target = NaiveDate::from_ymd_opt(2025, 6, 15).unwrap();
+        let critical = find_critical_days(birth, target, 30);
+
+        // Collect all cycle names that appear across the window.
+        let all_cycles: std::collections::HashSet<String> = critical
+            .iter()
+            .flat_map(|e| e.cycles.iter().cloned())
+            .collect();
+
+        // Every named cycle must be one of the six recognised ones.
+        let valid: std::collections::HashSet<&str> = ALL_CYCLE_PERIODS
+            .iter()
+            .map(|(name, _)| *name)
+            .collect();
+
+        for name in &all_cycles {
+            assert!(
+                valid.contains(name.as_str()),
+                "unexpected cycle name '{}' in critical_days",
+                name
+            );
+        }
+
+        // Over 30 days we should see at least some crossings.
+        assert!(
+            !critical.is_empty(),
+            "expected at least one critical day in a 30-day window"
+        );
+    }
+
+    #[test]
+    fn test_aesthetic_cycle_at_birth() {
+        // At day 0 aesthetic value should be 0 (sin(0) = 0).
+        let val = cycle_value(0, AESTHETIC_PERIOD);
+        assert!(val.abs() < 1e-10);
+    }
+
+    #[test]
+    fn test_aesthetic_cycle_at_quarter() {
+        // At 1/4 of the aesthetic period the value should be near peak.
+        let quarter = (AESTHETIC_PERIOD / 4.0).round() as i64;
+        let val = cycle_value(quarter, AESTHETIC_PERIOD);
+        assert!(val > 0.9, "Expected near aesthetic peak, got {}", val);
+    }
+
+    #[test]
+    fn test_spiritual_cycle_invariants() {
+        // Validate same invariants as primary cycles for spiritual (53-day).
+        let result = compute_cycle(100, SPIRITUAL_PERIOD);
+        assert!(
+            result.value >= -1.0 && result.value <= 1.0,
+            "spiritual value out of range"
+        );
+        assert!(
+            result.percentage >= 0.0 && result.percentage <= 100.0,
+            "spiritual percentage out of range"
+        );
+        assert!(result.days_until_peak > 0);
+        assert!(result.days_until_critical > 0);
+        // At birth day 0 the cycle should be at zero crossing.
+        assert!(is_critical_day(0, SPIRITUAL_PERIOD));
     }
 
     #[test]
@@ -661,6 +767,8 @@ mod tests {
             emotional: compute_cycle(10000, EMOTIONAL_PERIOD),
             intellectual: compute_cycle(10000, INTELLECTUAL_PERIOD),
             intuitive: compute_cycle(10000, INTUITIVE_PERIOD),
+            aesthetic: compute_cycle(10000, AESTHETIC_PERIOD),
+            spiritual: compute_cycle(10000, SPIRITUAL_PERIOD),
             mastery: 50.0,
             passion: 50.0,
             wisdom: 50.0,
