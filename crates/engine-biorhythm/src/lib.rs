@@ -1,7 +1,7 @@
 //! Biorhythm Consciousness Engine
 //!
 //! Calculates physical (23-day), emotional (28-day), and intellectual (33-day) cycles,
-//! plus intuitive (38-day) and three composite cycles (mastery, passion, wisdom).
+//! plus intuitive (38-day), aesthetic (43-day), and three composite cycles (mastery, passion, wisdom).
 //! Pure math -- no external dependencies beyond std and chrono.
 
 use async_trait::async_trait;
@@ -23,6 +23,7 @@ const PHYSICAL_PERIOD: f64 = 23.0;
 const EMOTIONAL_PERIOD: f64 = 28.0;
 const INTELLECTUAL_PERIOD: f64 = 33.0;
 const INTUITIVE_PERIOD: f64 = 38.0;
+const AESTHETIC_PERIOD: f64 = 43.0;
 
 /// Threshold in days for declaring a zero-crossing "critical".
 const CRITICAL_THRESHOLD: f64 = 1.0;
@@ -40,6 +41,7 @@ pub struct BiorhythmResult {
     pub emotional: CycleResult,
     pub intellectual: CycleResult,
     pub intuitive: CycleResult,
+    pub aesthetic: CycleResult,
     pub mastery: f64,
     pub passion: f64,
     pub wisdom: f64,
@@ -70,6 +72,7 @@ pub struct ForecastDay {
     pub emotional: f64,
     pub intellectual: f64,
     pub intuitive: f64,
+    pub aesthetic: f64,
     pub overall_energy: f64,
 }
 
@@ -215,7 +218,9 @@ fn find_critical_days(
         let d = base_days + offset;
         let any_critical = is_critical_day(d, PHYSICAL_PERIOD)
             || is_critical_day(d, EMOTIONAL_PERIOD)
-            || is_critical_day(d, INTELLECTUAL_PERIOD);
+            || is_critical_day(d, INTELLECTUAL_PERIOD)
+            || is_critical_day(d, INTUITIVE_PERIOD)
+            || is_critical_day(d, AESTHETIC_PERIOD);
         if any_critical {
             let date = target_date + chrono::Duration::days(offset);
             critical.push(date.format("%Y-%m-%d").to_string());
@@ -239,6 +244,7 @@ fn build_forecast(
             let emot = to_percentage(cycle_value(d, EMOTIONAL_PERIOD));
             let inte = to_percentage(cycle_value(d, INTELLECTUAL_PERIOD));
             let intu = to_percentage(cycle_value(d, INTUITIVE_PERIOD));
+            let aest = to_percentage(cycle_value(d, AESTHETIC_PERIOD));
             let date = target_date + chrono::Duration::days(offset);
             ForecastDay {
                 date: date.format("%Y-%m-%d").to_string(),
@@ -247,6 +253,7 @@ fn build_forecast(
                 emotional: emot,
                 intellectual: inte,
                 intuitive: intu,
+                aesthetic: aest,
                 overall_energy: (phys + emot + inte) / 3.0,
             }
         })
@@ -356,6 +363,7 @@ impl ConsciousnessEngine for BiorhythmEngine {
         let emotional = compute_cycle(days_alive, EMOTIONAL_PERIOD);
         let intellectual = compute_cycle(days_alive, INTELLECTUAL_PERIOD);
         let intuitive = compute_cycle(days_alive, INTUITIVE_PERIOD);
+        let aesthetic = compute_cycle(days_alive, AESTHETIC_PERIOD);
 
         // --- Composite cycles (percentages) ---
         let mastery = (physical.percentage + intellectual.percentage) / 2.0;
@@ -391,6 +399,7 @@ impl ConsciousnessEngine for BiorhythmEngine {
             emotional,
             intellectual,
             intuitive,
+            aesthetic,
             mastery,
             passion,
             wisdom,
@@ -448,6 +457,7 @@ impl ConsciousnessEngine for BiorhythmEngine {
             ("emotional", &bio_result.emotional),
             ("intellectual", &bio_result.intellectual),
             ("intuitive", &bio_result.intuitive),
+            ("aesthetic", &bio_result.aesthetic),
         ] {
             if cycle.value < -1.0 || cycle.value > 1.0 {
                 valid = false;
@@ -661,6 +671,7 @@ mod tests {
             emotional: compute_cycle(10000, EMOTIONAL_PERIOD),
             intellectual: compute_cycle(10000, INTELLECTUAL_PERIOD),
             intuitive: compute_cycle(10000, INTUITIVE_PERIOD),
+            aesthetic: compute_cycle(10000, AESTHETIC_PERIOD),
             mastery: 50.0,
             passion: 50.0,
             wisdom: 50.0,
@@ -671,5 +682,67 @@ mod tests {
         let prompt = generate_witness_prompt(&result);
         assert!(!prompt.is_empty());
         assert!(prompt.contains('%'));
+    }
+
+    // --- Aesthetic cycle tests ---
+
+    #[test]
+    fn test_aesthetic_at_day_zero_is_zero() {
+        // sin(0) = 0
+        let val = cycle_value(0, AESTHETIC_PERIOD);
+        assert!(val.abs() < 1e-10, "aesthetic value at day 0 should be 0, got {}", val);
+    }
+
+    #[test]
+    fn test_aesthetic_at_quarter_period_near_peak() {
+        // Peak is at AESTHETIC_PERIOD / 4 ≈ 10.75 → day 11.
+        let quarter = (AESTHETIC_PERIOD / 4.0).round() as i64; // 11
+        let val = cycle_value(quarter, AESTHETIC_PERIOD);
+        assert!(val > 0.9, "aesthetic value at day ~11 should be near peak, got {}", val);
+    }
+
+    #[test]
+    fn test_aesthetic_percentage_in_range() {
+        for day in 0..=43_i64 {
+            let pct = to_percentage(cycle_value(day, AESTHETIC_PERIOD));
+            assert!(
+                (0.0..=100.0).contains(&pct),
+                "aesthetic percentage {} at day {} out of [0, 100]",
+                pct,
+                day
+            );
+        }
+    }
+
+    #[test]
+    fn test_aesthetic_compute_cycle_valid() {
+        let result = compute_cycle(100, AESTHETIC_PERIOD);
+        assert!(result.value >= -1.0 && result.value <= 1.0);
+        assert!(result.percentage >= 0.0 && result.percentage <= 100.0);
+        assert!(result.days_until_peak > 0);
+        assert!(result.days_until_critical > 0);
+    }
+
+    #[tokio::test]
+    async fn test_calculate_includes_aesthetic() {
+        let engine = BiorhythmEngine::new();
+        let target = Utc.with_ymd_and_hms(2025, 6, 15, 12, 0, 0).unwrap();
+        let input = make_input("1990-01-01", target);
+        let output = engine.calculate(input).await.unwrap();
+
+        let bio: BiorhythmResult = serde_json::from_value(output.result).unwrap();
+        assert!(bio.aesthetic.value >= -1.0 && bio.aesthetic.value <= 1.0);
+        assert!(bio.aesthetic.percentage >= 0.0 && bio.aesthetic.percentage <= 100.0);
+        assert_eq!(bio.aesthetic.cycle_day, bio.days_alive.rem_euclid(AESTHETIC_PERIOD as i64));
+    }
+
+    #[tokio::test]
+    async fn test_validate_accepts_aesthetic() {
+        let engine = BiorhythmEngine::new();
+        let target = Utc.with_ymd_and_hms(2025, 6, 15, 12, 0, 0).unwrap();
+        let input = make_input("1990-01-01", target);
+        let output = engine.calculate(input).await.unwrap();
+        let validation = engine.validate(&output).await.unwrap();
+        assert!(validation.valid);
     }
 }
