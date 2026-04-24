@@ -299,7 +299,8 @@ impl VedicApiService {
             .get_navamsa_chart_raw(year, month, day, hour, minute, second, lat, lng, tzone)
             .await;
 
-        self.record_result("navamsa_chart_raw", &result, start).await;
+        self.record_result("navamsa_chart_raw", &result, start)
+            .await;
         result
     }
 

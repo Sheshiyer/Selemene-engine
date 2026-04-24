@@ -1,1 +1,1 @@
-export * from "./biofield-client.js";
+export * from "./biofield-client";

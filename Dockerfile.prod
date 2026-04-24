@@ -34,6 +34,7 @@ COPY crates/noesis-witness/Cargo.toml ./crates/noesis-witness/Cargo.toml
 COPY crates/noesis-orchestrator/Cargo.toml ./crates/noesis-orchestrator/Cargo.toml
 COPY crates/noesis-bridge/Cargo.toml ./crates/noesis-bridge/Cargo.toml
 COPY crates/noesis-api/Cargo.toml ./crates/noesis-api/Cargo.toml
+COPY crates/noesis-vedic-api/Cargo.toml ./crates/noesis-vedic-api/Cargo.toml
 COPY crates/noesis-western-api/Cargo.toml ./crates/noesis-western-api/Cargo.toml
 COPY crates/noesis-integration/Cargo.toml ./crates/noesis-integration/Cargo.toml
 COPY crates/engine-panchanga/Cargo.toml ./crates/engine-panchanga/Cargo.toml
@@ -52,7 +53,7 @@ COPY crates/engine-transits/Cargo.toml ./crates/engine-transits/Cargo.toml
 # Library crates get a stub lib.rs
 RUN for crate in \
       noesis-core noesis-data noesis-cache noesis-auth noesis-metrics \
-    noesis-witness noesis-orchestrator noesis-bridge \
+      noesis-witness noesis-orchestrator noesis-bridge noesis-vedic-api \
       noesis-western-api noesis-integration \
       engine-panchanga engine-numerology engine-biorhythm engine-human-design \
       engine-vimshottari engine-gene-keys engine-vedic-clock engine-biofield \

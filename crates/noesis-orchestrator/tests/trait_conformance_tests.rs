@@ -1,5 +1,6 @@
 use chrono::{TimeZone, Utc};
 use engine_biofield::BiofieldEngine;
+use engine_biofield_capture::BiofieldCaptureEngine;
 use engine_biorhythm::BiorhythmEngine;
 use engine_face_reading::FaceReadingEngine;
 use engine_gene_keys::GeneKeysEngine;
@@ -12,6 +13,7 @@ use engine_vedic_clock::VedicClockEngine;
 use engine_vimshottari::VimshottariEngine;
 use noesis_core::{BirthData, ConsciousnessEngine, EngineInput, Precision};
 use serde_json::json;
+use sqlx::postgres::PgPoolOptions;
 use std::collections::HashMap;
 use std::sync::Arc;
 
@@ -57,6 +59,16 @@ fn assert_engine_conformance(
 fn trait_conformance_biofield() {
     let engine = BiofieldEngine::new();
     assert_engine_conformance(&engine, "biofield", 1);
+}
+
+#[tokio::test]
+async fn trait_conformance_biofield_capture() {
+    let pool = PgPoolOptions::new()
+        .max_connections(1)
+        .connect_lazy("postgres://localhost/noesis_test")
+        .expect("lazy pool should build");
+    let engine = BiofieldCaptureEngine::new(pool);
+    assert_engine_conformance(&engine, "biofield-capture", 1);
 }
 
 #[test]

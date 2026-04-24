@@ -17,10 +17,10 @@ Use this runbook when coordinating a release that touches:
 
 Supporting references:
 
-- [docs/plans/release/release-checklist-template.md](/Volumes/madara/2026/witnessos/Selemene-engine/docs/plans/release/release-checklist-template.md)
+- [docs/release/release-checklist-template.md](/Volumes/madara/2026/witnessos/Selemene-engine/docs/release/release-checklist-template.md)
 - [docs/monitoring/README.md](/Volumes/madara/2026/witnessos/Selemene-engine/docs/monitoring/README.md)
 - [docs/runbooks/README.md](/Volumes/madara/2026/witnessos/Selemene-engine/docs/runbooks/README.md)
-- [docs/plans/drills/rollback-drill-plan.md](/Volumes/madara/2026/witnessos/Selemene-engine/docs/plans/drills/rollback-drill-plan.md)
+- [docs/drills/rollback-drill-plan.md](/Volumes/madara/2026/witnessos/Selemene-engine/docs/drills/rollback-drill-plan.md)
 
 ## Operator Inputs
 

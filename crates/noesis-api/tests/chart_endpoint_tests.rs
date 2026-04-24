@@ -16,7 +16,21 @@ use wiremock::{Mock, MockServer, ResponseTemplate};
 mod common;
 
 static TS_HEALTH_SERVER: OnceCell<MockServer> = OnceCell::const_new();
-static VEDIC_API_SERVER: OnceCell<MockServer> = OnceCell::const_new();
+
+async fn ts_health_server_uri() -> String {
+    let server = TS_HEALTH_SERVER
+        .get_or_init(|| async {
+            let server = MockServer::start().await;
+            Mock::given(method("GET"))
+                .and(path("/health"))
+                .respond_with(ResponseTemplate::new(200))
+                .mount(&server)
+                .await;
+            server
+        })
+        .await;
+    server.uri()
+}
 
 struct EnvGuard {
     saved: Vec<(&'static str, Option<String>)>,
@@ -43,93 +57,6 @@ impl Drop for EnvGuard {
             }
         }
     }
-}
-
-async fn ts_health_server_uri() -> String {
-    let server = TS_HEALTH_SERVER
-        .get_or_init(|| async {
-            let server = MockServer::start().await;
-            Mock::given(method("GET"))
-                .and(path("/health"))
-                .respond_with(ResponseTemplate::new(200))
-                .mount(&server)
-                .await;
-            server
-        })
-        .await;
-
-    server.uri()
-}
-
-async fn vedic_api_server_uri() -> String {
-    let server = VEDIC_API_SERVER
-        .get_or_init(|| async {
-            let server = MockServer::start().await;
-
-            Mock::given(method("POST"))
-                .and(path("/planets"))
-                .respond_with(ResponseTemplate::new(200).set_body_json(serde_json::json!({
-                    "ayanamsa": 24.1,
-                    "house_system": "whole_sign",
-                    "ascendant": {
-                        "sign": "virgo",
-                        "degree": 12.4,
-                        "nakshatra": "Hasta",
-                        "pada": 2
-                    },
-                    "moon": {
-                        "sign": "taurus",
-                        "degree": 8.2,
-                        "nakshatra": "Rohini",
-                        "pada": 3,
-                        "rashi_lord": "Venus"
-                    },
-                    "planets": [
-                        {"name": "Sun", "sign": "leo", "degree": 18.1},
-                        {"name": "Moon", "sign": "taurus", "degree": 8.2},
-                        {"name": "Mars", "sign": "gemini", "degree": 2.1},
-                        {"name": "Mercury", "sign": "virgo", "degree": 15.3},
-                        {"name": "Jupiter", "sign": "cancer", "degree": 28.7},
-                        {"name": "Venus", "sign": "libra", "degree": 4.5},
-                        {"name": "Saturn", "sign": "capricorn", "degree": 20.0},
-                        {"name": "Rahu", "sign": "aries", "degree": 11.0},
-                        {"name": "Ketu", "sign": "libra", "degree": 11.0}
-                    ],
-                    "houses": [
-                        {"number": 1, "sign": "virgo"},
-                        {"number": 2, "sign": "libra"},
-                        {"number": 3, "sign": "scorpio"},
-                        {"number": 4, "sign": "sagittarius"},
-                        {"number": 5, "sign": "capricorn"},
-                        {"number": 6, "sign": "aquarius"},
-                        {"number": 7, "sign": "pisces"},
-                        {"number": 8, "sign": "aries"},
-                        {"number": 9, "sign": "taurus"},
-                        {"number": 10, "sign": "gemini"},
-                        {"number": 11, "sign": "cancer"},
-                        {"number": 12, "sign": "leo"}
-                    ]
-                })))
-                .mount(&server)
-                .await;
-
-            Mock::given(method("POST"))
-                .and(path("/navamsa-chart-info"))
-                .respond_with(ResponseTemplate::new(200).set_body_json(serde_json::json!({
-                    "d9_lagna": "capricorn",
-                    "navamsa_positions": [
-                        {"planet": "Sun", "sign": "leo", "degree": 12.2, "is_vargottama": false},
-                        {"planet": "Moon", "sign": "taurus", "degree": 2.2, "is_vargottama": true}
-                    ]
-                })))
-                .mount(&server)
-                .await;
-
-            server
-        })
-        .await;
-
-    server.uri()
 }
 
 fn canonical_birth_input() -> EngineInput {
@@ -245,12 +172,9 @@ const VALID_SIGNS: [&str; 12] = [
 #[serial]
 async fn test_vedic_chart_endpoint_returns_d1_and_d9_bundle() {
     let ts_base_url = ts_health_server_uri().await;
-    let vedic_base_url = vedic_api_server_uri().await;
     let _env = EnvGuard::set(&[
         ("TS_ENGINES_URL", ts_base_url),
         ("JWT_SECRET", common::TEST_JWT_SECRET.to_string()),
-        ("VEDIC_API_BASE_URL", vedic_base_url),
-        ("FREE_ASTROLOGY_API_KEY", "test_key".to_string()),
     ]);
     let router = build_router().await;
 
@@ -264,6 +188,7 @@ async fn test_vedic_chart_endpoint_returns_d1_and_d9_bundle() {
 
     assert_eq!(status, StatusCode::OK, "body={body:?}");
 
+    // D1 structure checks
     let d1_asc_sign = body["d1"]["ascendant"]["sign"].as_str().unwrap_or("");
     assert!(
         VALID_SIGNS.contains(&d1_asc_sign),
@@ -283,7 +208,10 @@ async fn test_vedic_chart_endpoint_returns_d1_and_d9_bundle() {
     for expected in [
         "Sun", "Moon", "Mars", "Mercury", "Jupiter", "Venus", "Saturn", "Rahu", "Ketu",
     ] {
-        assert!(planet_names.contains(&expected), "missing planet {expected}");
+        assert!(
+            planet_names.contains(&expected),
+            "missing planet {expected}"
+        );
     }
 
     let d1_moon_nak = body["d1"]["moon"]["nakshatra"].as_str().unwrap_or("");
@@ -300,10 +228,14 @@ async fn test_vedic_chart_endpoint_returns_d1_and_d9_bundle() {
     );
     assert_eq!(body["d1"]["house_system"], "whole_sign");
 
+    // D9 structure checks
     let d9_positions = body["d9"]["navamsa_positions"]
         .as_array()
         .expect("d9.navamsa_positions should be array");
-    assert!(!d9_positions.is_empty(), "d9.navamsa_positions should not be empty");
+    assert!(
+        !d9_positions.is_empty(),
+        "d9.navamsa_positions should not be empty"
+    );
 
     let d9_lagna = body["d9"]["d9_lagna"].as_str().unwrap_or("");
     assert!(
@@ -315,14 +247,6 @@ async fn test_vedic_chart_endpoint_returns_d1_and_d9_bundle() {
 #[tokio::test]
 #[serial]
 async fn test_vedic_chart_endpoint_rejects_missing_birth_data() {
-    let ts_base_url = ts_health_server_uri().await;
-    let vedic_base_url = vedic_api_server_uri().await;
-    let _env = EnvGuard::set(&[
-        ("TS_ENGINES_URL", ts_base_url),
-        ("JWT_SECRET", common::TEST_JWT_SECRET.to_string()),
-        ("VEDIC_API_BASE_URL", vedic_base_url),
-        ("FREE_ASTROLOGY_API_KEY", "test_key".to_string()),
-    ]);
     let router = build_router().await;
     let input = EngineInput {
         birth_data: None,

@@ -108,7 +108,6 @@ Workflow output contract:
 - `PUT /api/v1/admin/users/{user_id}/roles`
 - `GET /api/v1/admin/api-keys`
 - `POST /api/v1/admin/api-keys`
-- `DELETE /api/v1/admin/api-keys/{key_id}`
 - `POST /api/v1/admin/api-keys/{key_id}/revoke`
 - `POST /api/v1/admin/api-keys/{key_id}/rotate`
 

@@ -26,6 +26,7 @@ graph TD
   noesis_orchestrator["noesis-orchestrator"]
   noesis_sdk["noesis-sdk"]
   noesis_tui["noesis-tui"]
+  noesis_vedic_api["noesis-vedic-api"]
   noesis_western_api["noesis-western-api"]
   noesis_witness["noesis-witness"]
 
@@ -43,6 +44,7 @@ graph TD
   engine_transits --> engine_human_design
   engine_transits --> noesis_core
   engine_vedic_clock --> noesis_core
+  engine_vedic_clock --> noesis_vedic_api
   engine_vimshottari --> engine_human_design
   engine_vimshottari --> noesis_core
   noesis_api --> engine_biofield
@@ -73,6 +75,7 @@ graph TD
   noesis_integration --> engine_panchanga
   noesis_integration --> engine_vimshottari
   noesis_integration --> noesis_core
+  noesis_integration --> noesis_vedic_api
   noesis_orchestrator --> engine_biofield
   noesis_orchestrator --> noesis_bridge
   noesis_orchestrator --> noesis_cache

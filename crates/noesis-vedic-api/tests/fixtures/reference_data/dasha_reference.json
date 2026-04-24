@@ -1,0 +1,241 @@
+{
+  "_meta": {
+    "description": "Reference Vimshottari Dasha data for validation tests",
+    "ayanamsa": "lahiri",
+    "source": "JHora 8.0 cross-referenced with astrosage.com",
+    "last_verified": "2026-02-03",
+    "notes": [
+      "Dasha periods calculated using Vimshottari system (120-year cycle)",
+      "Dates may differ by a few days across software due to ayanamsa precision",
+      "Moon longitude determines the starting dasha and balance"
+    ]
+  },
+  "reference_charts": [
+    {
+      "id": "chart_1_swami_vivekananda",
+      "description": "Swami Vivekananda - well-documented birth chart",
+      "birth_data": {
+        "date": "1863-01-12",
+        "time": "06:33:00",
+        "location": {
+          "name": "Kolkata",
+          "latitude": 22.5726,
+          "longitude": 88.3639,
+          "timezone": 5.5
+        }
+      },
+      "moon_data": {
+        "nakshatra": "UttaraAshadha",
+        "nakshatra_number": 21,
+        "pada": 1,
+        "moon_longitude": 270.5,
+        "ruler": "Sun"
+      },
+      "expected_mahadashas": [
+        {
+          "planet": "Sun",
+          "start_date": "1863-01-12",
+          "end_date": "1866-06-29",
+          "duration_years": 3.46,
+          "is_birth_dasha": true,
+          "notes": "Balance of Sun dasha at birth ~3.5 years"
+        },
+        {
+          "planet": "Moon",
+          "start_date": "1866-06-29",
+          "end_date": "1876-06-29",
+          "duration_years": 10.0,
+          "is_birth_dasha": false,
+          "notes": "Full Moon Mahadasha"
+        },
+        {
+          "planet": "Mars",
+          "start_date": "1876-06-29",
+          "end_date": "1883-06-29",
+          "duration_years": 7.0,
+          "is_birth_dasha": false,
+          "notes": "Full Mars Mahadasha"
+        },
+        {
+          "planet": "Rahu",
+          "start_date": "1883-06-29",
+          "end_date": "1901-06-29",
+          "duration_years": 18.0,
+          "is_birth_dasha": false,
+          "notes": "Full Rahu Mahadasha - period of major spiritual awakening"
+        },
+        {
+          "planet": "Jupiter",
+          "start_date": "1901-06-29",
+          "end_date": "1917-06-29",
+          "duration_years": 16.0,
+          "is_birth_dasha": false,
+          "notes": "Full Jupiter Mahadasha - passed away 1902 in this dasha"
+        }
+      ],
+      "tolerance": {
+        "date_days": 30,
+        "duration_months": 2,
+        "notes": "Historical charts may have birth time uncertainty of +/- 15 min"
+      }
+    },
+    {
+      "id": "chart_2_modern_reference",
+      "description": "Modern reference chart with precisely known birth time",
+      "birth_data": {
+        "date": "1985-03-15",
+        "time": "10:30:00",
+        "location": {
+          "name": "Chennai",
+          "latitude": 13.0827,
+          "longitude": 80.2707,
+          "timezone": 5.5
+        }
+      },
+      "moon_data": {
+        "nakshatra": "Pushya",
+        "nakshatra_number": 8,
+        "pada": 2,
+        "moon_longitude": 100.5,
+        "ruler": "Saturn"
+      },
+      "expected_mahadashas": [
+        {
+          "planet": "Saturn",
+          "start_date": "1985-03-15",
+          "end_date": "1999-07-15",
+          "duration_years": 14.33,
+          "is_birth_dasha": true,
+          "notes": "Balance of Saturn dasha at birth ~14.3 years"
+        },
+        {
+          "planet": "Mercury",
+          "start_date": "1999-07-15",
+          "end_date": "2016-07-15",
+          "duration_years": 17.0,
+          "is_birth_dasha": false,
+          "notes": "Full Mercury Mahadasha"
+        },
+        {
+          "planet": "Ketu",
+          "start_date": "2016-07-15",
+          "end_date": "2023-07-15",
+          "duration_years": 7.0,
+          "is_birth_dasha": false,
+          "notes": "Full Ketu Mahadasha"
+        },
+        {
+          "planet": "Venus",
+          "start_date": "2023-07-15",
+          "end_date": "2043-07-15",
+          "duration_years": 20.0,
+          "is_birth_dasha": false,
+          "notes": "Full Venus Mahadasha - current period"
+        }
+      ],
+      "expected_antardashas_in_venus_md": [
+        {
+          "planet": "Venus",
+          "start_date": "2023-07-15",
+          "end_date": "2026-11-15",
+          "duration_years": 3.33,
+          "notes": "Venus-Venus antardasha"
+        },
+        {
+          "planet": "Sun",
+          "start_date": "2026-11-15",
+          "end_date": "2027-11-15",
+          "duration_years": 1.0,
+          "notes": "Venus-Sun antardasha"
+        },
+        {
+          "planet": "Moon",
+          "start_date": "2027-11-15",
+          "end_date": "2029-07-15",
+          "duration_years": 1.67,
+          "notes": "Venus-Moon antardasha"
+        }
+      ],
+      "tolerance": {
+        "date_days": 15,
+        "duration_months": 1,
+        "notes": "Modern chart with precise birth time, tighter tolerance"
+      }
+    },
+    {
+      "id": "chart_3_ketu_birth_dasha",
+      "description": "Chart starting with Ketu Mahadasha for sequence validation",
+      "birth_data": {
+        "date": "2000-09-01",
+        "time": "05:15:00",
+        "location": {
+          "name": "Pune",
+          "latitude": 18.5204,
+          "longitude": 73.8567,
+          "timezone": 5.5
+        }
+      },
+      "moon_data": {
+        "nakshatra": "Ashwini",
+        "nakshatra_number": 1,
+        "pada": 3,
+        "moon_longitude": 8.5,
+        "ruler": "Ketu"
+      },
+      "expected_mahadashas": [
+        {
+          "planet": "Ketu",
+          "start_date": "2000-09-01",
+          "end_date": "2004-03-01",
+          "duration_years": 3.5,
+          "is_birth_dasha": true,
+          "notes": "Balance of Ketu dasha - born in pada 3 so ~half remaining"
+        },
+        {
+          "planet": "Venus",
+          "start_date": "2004-03-01",
+          "end_date": "2024-03-01",
+          "duration_years": 20.0,
+          "is_birth_dasha": false,
+          "notes": "Full Venus Mahadasha"
+        },
+        {
+          "planet": "Sun",
+          "start_date": "2024-03-01",
+          "end_date": "2030-03-01",
+          "duration_years": 6.0,
+          "is_birth_dasha": false,
+          "notes": "Full Sun Mahadasha - current period"
+        },
+        {
+          "planet": "Moon",
+          "start_date": "2030-03-01",
+          "end_date": "2040-03-01",
+          "duration_years": 10.0,
+          "is_birth_dasha": false,
+          "notes": "Full Moon Mahadasha"
+        }
+      ],
+      "tolerance": {
+        "date_days": 15,
+        "duration_months": 1,
+        "notes": "Chart with Ketu birth dasha to test sequence from beginning"
+      }
+    }
+  ],
+  "dasha_sequence_validation": {
+    "correct_order": ["Ketu", "Venus", "Sun", "Moon", "Mars", "Rahu", "Jupiter", "Saturn", "Mercury"],
+    "total_cycle_years": 120,
+    "period_years": {
+      "Ketu": 7,
+      "Venus": 20,
+      "Sun": 6,
+      "Moon": 10,
+      "Mars": 7,
+      "Rahu": 18,
+      "Jupiter": 16,
+      "Saturn": 19,
+      "Mercury": 17
+    }
+  }
+}

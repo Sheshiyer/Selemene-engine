@@ -1,10 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from "react";
-import { PIPViewerPanel } from "@/components/pip/PIPViewerPanel";
-import { BIOFIELD_ENGINE_ID } from "@selemene/biofield-domain";
-import type { CompositeScores, FrameMetrics } from "@/components/pip/MetricsCalculator";
+import { FormEvent, useEffect, useMemo, useState, useSyncExternalStore } from "react";
+import type { BiofieldCaptureResult, BiofieldSession } from "@selemene/biofield-domain";
 import { BiofieldClientError } from "@selemene/biofield-api-client";
 import {
   clearStoredAuthSession,
@@ -20,14 +18,15 @@ import {
 import { createBiofieldClient } from "@/lib/api";
 import { useRouter } from "next/navigation";
 
-/**
- * ViewerPage — live PIP biofield viewer.
- *
- * Phase: BF1-05 (capture upload path + sidecar proxy)
- * Current wave: camera + WebGL2 shader only (no ML segmentation yet).
- * Next wave: wire capturedDataUrl → POST /api/v1/biofield/sessions/:id/captures
- *            → Python sidecar → Noesis engine seam.
- */
+const METRIC_KEYS = [
+  "light_quanta_density",
+  "normalized_area",
+  "average_intensity",
+  "fractal_dimension",
+  "body_symmetry",
+  "pattern_regularity",
+] as const;
+
 export default function ViewerPage() {
   const router = useRouter();
   const authSession = useSyncExternalStore(
@@ -40,6 +39,21 @@ export default function ViewerPage() {
     getStoredActiveSessionId,
     () => null,
   );
+  const [currentSession, setCurrentSession] = useState<BiofieldSession | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [captureResult, setCaptureResult] = useState<BiofieldCaptureResult | null>(null);
+  const [statusMessage, setStatusMessage] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isHydratingSession, setIsHydratingSession] = useState(false);
+  const [isStartingSession, setIsStartingSession] = useState(false);
+  const [isClosingSession, setIsClosingSession] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+
+  useEffect(() => {
+    if (!authSession) {
+      router.replace("/login");
+    }
+  }, [authSession, router]);
 
   const client = useMemo(() => {
     if (!authSession) {
@@ -48,247 +62,323 @@ export default function ViewerPage() {
     return createBiofieldClient(authSession.token);
   }, [authSession]);
 
-  const [sessionId, setSessionId] = useState<string | null>(null);
-  const [sessionStatus, setSessionStatus] = useState<string>("idle");
-  const [isSessionActionLoading, setIsSessionActionLoading] = useState(false);
-  const [uploadState, setUploadState] = useState<"idle" | "uploading" | "done" | "error">("idle");
-  const [uploadError, setUploadError] = useState<string | null>(null);
-  const [lastCapture, setLastCapture] = useState<{
-    dataUrl: string;
-    maskDataUrl: string | null;
-    timestamp: number;
-    frameMetrics: FrameMetrics | null;
-    compositeScores: CompositeScores | null;
-    readingId?: string;
-  } | null>(null);
-
-  useEffect(() => {
-    if (!authSession) {
-      router.replace("/login");
-    }
-  }, [authSession, router]);
-
-  useEffect(() => {
-    if (storedSessionId) {
-      setSessionId(storedSessionId);
-    }
-  }, [storedSessionId]);
-
-  const handleAuthFailure = useCallback(() => {
+  function handleAuthFailure() {
     clearStoredActiveSessionId();
     clearStoredAuthSession();
-    setSessionId(null);
-    setSessionStatus("idle");
+    setCurrentSession(null);
     router.replace("/login");
-  }, [router]);
+  }
 
-  const dataUrlToBlob = async (dataUrl: string): Promise<Blob> => {
-    const resp = await fetch(dataUrl);
-    return resp.blob();
-  };
-
-  const ensureSession = useCallback(async (): Promise<string> => {
+  useEffect(() => {
     if (!client) {
-      throw new Error("Please sign in before creating a session");
+      return;
     }
-    if (sessionId) return sessionId;
 
-    const session = await client.createSession({
-      client_device_id: typeof navigator !== "undefined" ? navigator.userAgent : "web",
-      viewer_version: "biofield-web/pip-v1",
-      context: {
+    if (!storedSessionId) {
+      return;
+    }
+
+    if (currentSession?.id === storedSessionId) {
+      return;
+    }
+
+    let isCancelled = false;
+
+    async function hydrateSession() {
+      setIsHydratingSession(true);
+      setErrorMessage(null);
+      setStatusMessage(null);
+
+      try {
+        const session = await client.getSession(storedSessionId);
+        if (isCancelled) {
+          return;
+        }
+        setCurrentSession(session);
+        if (session.status === "active") {
+          setStatusMessage(`Restored session ${session.id}.`);
+        } else {
+          clearStoredActiveSessionId();
+          setStatusMessage(
+            `Saved session ${session.id} is ${session.status}; start a new session to continue.`,
+          );
+        }
+      } catch (error) {
+        if (isCancelled) {
+          return;
+        }
+
+        if (error instanceof BiofieldClientError && error.status === 401) {
+          handleAuthFailure();
+          return;
+        }
+
+        clearStoredActiveSessionId();
+        setCurrentSession(null);
+        setErrorMessage(
+          error instanceof Error
+            ? error.message
+            : "Failed to restore your last biofield session.",
+        );
+      } finally {
+        if (!isCancelled) {
+          setIsHydratingSession(false);
+        }
+      }
+    }
+
+    void hydrateSession();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [client, currentSession, storedSessionId]);
+
+  async function handleStartSession() {
+    if (!client) {
+      return;
+    }
+
+    setIsStartingSession(true);
+    setErrorMessage(null);
+    setStatusMessage(null);
+
+    try {
+      const session = await client.createSession({
+        client_device_id: "browser",
+        viewer_version: "biofield-web/0.1.0",
+        context: {
+          platform: typeof navigator !== "undefined" ? navigator.userAgent : "unknown",
+          viewport:
+            typeof window !== "undefined"
+              ? { width: window.innerWidth, height: window.innerHeight }
+              : undefined,
+        },
+      });
+      setCurrentSession(session);
+      setStoredActiveSessionId(session.id);
+      setCaptureResult(null);
+      setStatusMessage(`Session ${session.id} is active.`);
+    } catch (error) {
+      if (error instanceof BiofieldClientError && error.status === 401) {
+        handleAuthFailure();
+        return;
+      }
+      setErrorMessage(error instanceof Error ? error.message : "Failed to start biofield session.");
+    } finally {
+      setIsStartingSession(false);
+    }
+  }
+
+  async function handleCloseSession() {
+    if (!client || !currentSession) {
+      return;
+    }
+
+    setIsClosingSession(true);
+    setErrorMessage(null);
+    setStatusMessage(null);
+
+    try {
+      const session = await client.closeSession(currentSession.id, {
+        reason: "viewer-exit",
+      });
+      setCurrentSession(session);
+      clearStoredActiveSessionId();
+      setStatusMessage(`Session ${session.id} closed.`);
+    } catch (error) {
+      if (error instanceof BiofieldClientError && error.status === 401) {
+        handleAuthFailure();
+        return;
+      }
+      setErrorMessage(error instanceof Error ? error.message : "Failed to close biofield session.");
+    } finally {
+      setIsClosingSession(false);
+    }
+  }
+
+  async function handleUpload(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!client || !currentSession || !selectedFile) {
+      return;
+    }
+
+    setIsUploading(true);
+    setErrorMessage(null);
+    setStatusMessage(null);
+
+    const formData = new FormData();
+    formData.append("image", selectedFile);
+    formData.append("options", JSON.stringify({ mode: "capture" }));
+    formData.append(
+      "capture_metadata",
+      JSON.stringify({
         platform: "web",
+        file_name: selectedFile.name,
+        file_size: selectedFile.size,
+        file_type: selectedFile.type,
         viewport:
           typeof window !== "undefined"
             ? { width: window.innerWidth, height: window.innerHeight }
             : undefined,
-      },
-    });
-
-    setSessionId(session.id);
-    setStoredActiveSessionId(session.id);
-    setSessionStatus(session.status);
-    return session.id;
-  }, [client, sessionId]);
-
-  const handleStartSession = useCallback(async () => {
-    if (!client) {
-      return;
-    }
-
-    setIsSessionActionLoading(true);
-    setUploadError(null);
-
-    try {
-      await ensureSession();
-    } catch (err) {
-      if (err instanceof BiofieldClientError && err.status === 401) {
-        handleAuthFailure();
-        return;
-      }
-      setUploadError(err instanceof Error ? err.message : "Failed to start session");
-    } finally {
-      setIsSessionActionLoading(false);
-    }
-  }, [client, ensureSession, handleAuthFailure]);
-
-  const handleCloseSession = useCallback(async () => {
-    if (!client || !sessionId) {
-      return;
-    }
-
-    setIsSessionActionLoading(true);
-    setUploadError(null);
-
-    try {
-      const closed = await client.closeSession(sessionId, { reason: "viewer-close" });
-      setSessionStatus(closed.status);
-      setSessionId(null);
-      clearStoredActiveSessionId();
-    } catch (err) {
-      if (err instanceof BiofieldClientError && err.status === 401) {
-        handleAuthFailure();
-        return;
-      }
-      setUploadError(err instanceof Error ? err.message : "Failed to close session");
-    } finally {
-      setIsSessionActionLoading(false);
-    }
-  }, [client, handleAuthFailure, sessionId]);
-
-  const handleCapture = useCallback(
-    async (payload: {
-      dataUrl: string;
-      maskDataUrl: string | null;
-      timestamp: number;
-      frameMetrics: FrameMetrics | null;
-      compositeScores: CompositeScores | null;
-    }) => {
-      setLastCapture(payload);
-      setUploadState("uploading");
-      setUploadError(null);
-
-      try {
-        const sid = await ensureSession();
-        if (!client) {
-          throw new Error("Please sign in before uploading captures");
-        }
-
-        const form = new FormData();
-        form.append("image", await dataUrlToBlob(payload.dataUrl), `capture-${payload.timestamp}.png`);
-
-        if (payload.maskDataUrl) {
-          form.append(
-            "segmentation_mask",
-            await dataUrlToBlob(payload.maskDataUrl),
-            `mask-${payload.timestamp}.png`
-          );
-        }
-
-        form.append(
-          "capture_metadata",
-          JSON.stringify({
-            engine_id: BIOFIELD_ENGINE_ID,
-            capture_timestamp: payload.timestamp,
-            realtime_metrics: payload.frameMetrics,
-            realtime_scores: payload.compositeScores,
-          })
-        );
-        form.append("options", JSON.stringify({ mode: "capture", source: "biofield-web-viewer" }));
-
-        const result = await client.uploadCapture(sid, form);
-
-        setLastCapture((prev) =>
-          prev
-            ? {
-                ...prev,
-                readingId: result.reading_id,
-              }
-            : prev
-        );
-        setSessionStatus("active");
-        setUploadState("done");
-      } catch (err) {
-        if (err instanceof BiofieldClientError && err.status === 401) {
-          handleAuthFailure();
-          return;
-        }
-        setUploadState("error");
-        setUploadError(err instanceof Error ? err.message : "Capture upload failed");
-      }
-    },
-    [client, ensureSession, handleAuthFailure]
-  );
-
-  if (!authSession) {
-    return (
-      <section className="biofield-panel">
-        <p className="biofield-eyebrow">Auth gate</p>
-        <p className="biofield-copy">Checking your biofield access…</p>
-      </section>
+      }),
     );
+
+    try {
+      const result = await client.uploadCapture(currentSession.id, formData);
+      setCaptureResult(result);
+      setStatusMessage(`Capture analyzed with ${result.analysis_version}.`);
+    } catch (error) {
+      if (error instanceof BiofieldClientError && error.status === 401) {
+        handleAuthFailure();
+        return;
+      }
+      setErrorMessage(error instanceof Error ? error.message : "Failed to upload capture.");
+    } finally {
+      setIsUploading(false);
+    }
   }
 
+  const activeMetricRows = captureResult
+    ? METRIC_KEYS.map((key) => ({ key, value: captureResult.metrics[key] }))
+    : [];
+  const hasActiveSession = currentSession?.status === "active";
+
   return (
-    <section className="biofield-viewer-layout">
+    <section className="biofield-stack">
+      <section className="biofield-grid">
+        <article className="biofield-panel">
+          <p className="biofield-kicker">Auth state</p>
+          <p className="biofield-metric">{authSession ? authSession.email : "Loading…"}</p>
+          <p className="biofield-copy">
+            Viewer requests use the stored bearer token from the BF1-04 login flow.
+          </p>
+        </article>
+        <article className="biofield-panel">
+          <p className="biofield-kicker">Server session</p>
+          <p className="biofield-metric">
+            {currentSession ? currentSession.status : "No active session"}
+          </p>
+          <p className="biofield-copy">
+            {currentSession
+              ? `Session ${currentSession.id} is managed by Noesis.`
+              : storedSessionId
+                ? `Restoring session ${storedSessionId} from local state…`
+                : "Start a real biofield session before uploading a capture."}
+          </p>
+        </article>
+        <article className="biofield-panel">
+          <p className="biofield-kicker">Capture path</p>
+          <p className="biofield-metric">Browser → Noesis → Python</p>
+          <p className="biofield-copy">
+            Successful captures now flow into persisted history and reading detail routes in the web surface.
+          </p>
+        </article>
+      </section>
+
       <section className="biofield-panel biofield-form-panel">
-        <p className="biofield-eyebrow">Session lifecycle</p>
         <div className="biofield-actions">
           <button
             className="biofield-button"
-            disabled={isSessionActionLoading || !!sessionId}
-            onClick={() => void handleStartSession()}
+            disabled={isStartingSession || isHydratingSession || hasActiveSession}
+            onClick={handleStartSession}
             type="button"
           >
-            {isSessionActionLoading ? "Starting…" : "Start session"}
+            {isHydratingSession
+              ? "Restoring session…"
+              : isStartingSession
+                ? "Starting session…"
+                : hasActiveSession
+                  ? "Session active"
+                  : "Start session"}
           </button>
           <button
             className="biofield-link"
-            disabled={isSessionActionLoading || !sessionId}
-            onClick={() => void handleCloseSession()}
+            disabled={isClosingSession || !hasActiveSession}
+            onClick={handleCloseSession}
             type="button"
           >
-            {isSessionActionLoading ? "Closing…" : "Close session"}
+            {isClosingSession ? "Closing session…" : "Close session"}
           </button>
         </div>
-        <p className="biofield-copy" style={{ marginTop: 8 }}>
-          Session: {sessionId ?? "none"} · status {sessionStatus}
-        </p>
+
+        {statusMessage ? <p className="biofield-success">{statusMessage}</p> : null}
+        {errorMessage ? <p className="biofield-error">{errorMessage}</p> : null}
       </section>
 
-      <PIPViewerPanel onCapture={handleCapture} />
+      <section className="biofield-panel biofield-form-panel">
+        <p className="biofield-eyebrow">Capture upload</p>
+        <h2 className="biofield-title" style={{ fontSize: "2rem" }}>
+          Upload a capture
+        </h2>
+        <p className="biofield-copy">
+          Use any local image to exercise the BF1-05 multipart upload and sidecar proxy path.
+        </p>
 
-      {lastCapture && (
-        <aside className="biofield-capture-preview">
-          <p className="biofield-kicker">
-            Last capture — {new Date(lastCapture.timestamp).toLocaleTimeString()}
-          </p>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={lastCapture.dataUrl}
-            alt="PIP capture"
-            className="biofield-capture-thumb"
-          />
-          <p className="biofield-copy" style={{ marginTop: 8 }}>
-            Ready to upload · engine <code>{BIOFIELD_ENGINE_ID}</code>
-          </p>
-          <p className="biofield-copy" style={{ marginTop: 8 }}>
-            Session: {sessionId ?? "pending"}
-          </p>
-          <p className="biofield-copy" style={{ marginTop: 8 }}>
-            Upload: {uploadState}
-            {lastCapture.readingId ? ` · reading ${lastCapture.readingId}` : ""}
-          </p>
-          {lastCapture.readingId ? (
-            <p className="biofield-copy" style={{ marginTop: 8 }}>
-              <Link className="biofield-link" href={`/readings/${lastCapture.readingId}`}>
-                Open reading detail
-              </Link>
-            </p>
-          ) : null}
-          {uploadError && <p className="biofield-error-inline">{uploadError}</p>}
-        </aside>
-      )}
+        <form className="biofield-form" onSubmit={handleUpload}>
+          <label className="biofield-field" htmlFor="biofield-capture-file">
+            <span className="biofield-kicker">Image file</span>
+            <input
+              accept="image/*"
+              className="biofield-input"
+              id="biofield-capture-file"
+              onChange={(event) => setSelectedFile(event.target.files?.[0] ?? null)}
+              type="file"
+            />
+          </label>
+
+          <div className="biofield-actions">
+            <button
+              className="biofield-button"
+              disabled={isUploading || !hasActiveSession || !selectedFile}
+              type="submit"
+            >
+              {isUploading ? "Uploading…" : "Upload capture"}
+            </button>
+          </div>
+        </form>
+      </section>
+
+      {captureResult ? (
+        <section className="biofield-panel">
+          <p className="biofield-eyebrow">Latest analysis</p>
+          <h2 className="biofield-title" style={{ fontSize: "2rem" }}>
+            {captureResult.analysis_version}
+          </h2>
+          <div className="biofield-list-grid">
+            <div className="biofield-list-card">
+              <p className="biofield-kicker">Reading ID</p>
+              <p className="biofield-copy biofield-mono">{captureResult.reading_id}</p>
+            </div>
+            <div className="biofield-list-card">
+              <p className="biofield-kicker">Session ID</p>
+              <p className="biofield-copy biofield-mono">{captureResult.session_id}</p>
+            </div>
+            <div className="biofield-list-card">
+              <p className="biofield-kicker">Quality</p>
+              <p className="biofield-copy">
+                {captureResult.quality_assessment.sufficient_quality ? "Accepted" : "Rejected"}
+              </p>
+            </div>
+          </div>
+          <div className="biofield-actions" style={{ marginBottom: "1rem" }}>
+            <Link className="biofield-link" href={`/readings/${captureResult.reading_id}`}>
+              Open reading detail
+            </Link>
+            <Link className="biofield-link" href="/history">
+              View history
+            </Link>
+          </div>
+          <ul className="biofield-list">
+            {activeMetricRows.map((metric) => (
+              <li key={metric.key}>
+                <p className="biofield-kicker">{metric.key}</p>
+                <p className="biofield-metric">{String(metric.value)}</p>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
     </section>
   );
 }

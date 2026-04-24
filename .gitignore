@@ -37,15 +37,6 @@ Thumbs.db
 # Local OpenClaw exports
 Openclaw.txt
 .vercel
-.env*.local
-.worktrees/
 
-# madara sync housekeeping 2026-04-22
-**/__pycache__/
-**/*.pyc
-**/*.pyo
-.context/worktrees/
-scripts/worktrees/
-
-# Agent task scaffolding (auto-generated, deleted before merge)
-.agent-tasks/
+# Local runtime artifact storage
+/.runtime/

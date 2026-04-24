@@ -7,7 +7,7 @@
 **Status**: Production-live on Railway, auth working against Supabase PostgreSQL
 **Overall Maturity**: 78% production-ready
 
-> March 10, 2026 correction: the active Vedic runtime path is native Rust for `panchanga`, `vimshottari`, and `transits`.
+> March 10, 2026 correction: the active Vedic runtime path is native Rust for `panchanga`, `vimshottari`, and `transits`. `noesis-vedic-api` remains in-repo as an optional provider client, but it is not the current production calculation path for those engines.
 
 ---
 
@@ -51,6 +51,8 @@ All 16 engines (11 Rust + 5 TypeScript) produce genuine calculations:
 
 **Orchestrator** (~3,000 LOC, 20 files): Production-grade parallel engine execution using `futures::join_all`. Registry of 6 workflows (birth-blueprint, daily-practice, decision-support, self-inquiry, creative-expression, full-spectrum). Phase-gated access control (levels 0-5) and workflow caching.
 
+**Vedic API Client** (`noesis-vedic-api`): Full FreeAstrologyAPI.com client covering 15+ endpoints (Panchang, Dasha, Birth Chart, Vargas, Transits, Yogas, Shadbala, Ashtakavarga, Muhurta, and more). It remains useful as an integration/client crate, but it is not the active production runtime path for the current Vedic engine calculations after the March 2026 hygiene corrections.
+
 **Bridge** (552 LOC): HTTP adapter connecting to 5 TypeScript engines (Tarot, I-Ching, Enneagram, Sacred Geometry, Sigil Forge) via Bun/Elysia. Health check, configurable timeout, connection retry. Production-ready but depends on external TS server availability.
 
 **Auth** (~400 LOC + password module): JWT + API key authentication. Argon2id password hashing. Postgres-backed key validation with SHA-256 hashing. Tiered rate limiting (60/1,000/10,000 req/min). Dual-write for API key persistence.
@@ -93,7 +95,7 @@ The workflow execution framework works, but synthesis logic (the part that combi
 
 ### Compilation Warnings
 
-`engine-vedic-clock` produces 12 warnings and `engine-vimshottari` produces 4. These are non-blocking but noisy. A `cargo fix` pass would clean most of them.
+`noesis-vedic-api` produces 67 warnings (mostly unused imports/variables), `engine-vedic-clock` produces 12, and `engine-vimshottari` produces 4. These are non-blocking but noisy. A `cargo fix` pass would clean most of them.
 
 ### CI Pipeline Gaps
 
@@ -122,11 +124,11 @@ The test workflow uses `continue-on-error: true` for integration tests due to a 
 
 ### Medium Priority (Next Month)
 
-8. **Clean up compilation warnings** — Run `cargo fix` on `engine-vedic-clock` and `engine-vimshottari`
+8. **Clean up 83 compilation warnings** — Run `cargo fix` on `noesis-vedic-api`, `engine-vedic-clock`, `engine-vimshottari`
 9. **Fix integration test SIGTRAP** — Investigate and fix cleanup crash, remove `continue-on-error` from CI
 10. **Database partition maintenance** — Create `usage_logs_2027_*` partitions and document the maintenance procedure
 11. **Docker alignment** — Update `docker-compose.yml` to use `Dockerfile.prod` or document the dev vs. prod distinction clearly
-12. **Vedic parsing hardening** — Ensure native Panchanga pathways gracefully handle all incoming date/time edge cases.
+12. **Vedic API parsing** — Complete the 2 `todo!()` calls in `noesis-vedic-api/src/panchang/mod.rs` (lines 308, 313) for Tithi/Nakshatra parsing from certain API response formats
 13. **Admin API endpoints** — Build the `/api/v1/admin/*` endpoints for user management and API key creation (the `add_api_key()` dual-write was done specifically to enable this)
 
 ### Future (Backlog)
@@ -173,9 +175,9 @@ The test workflow uses `continue-on-error: true` for integration tests due to a 
 
 The Human Design and Gene Keys engines depend on Swiss Ephemeris data files stored in `data/ephemeris/`. Three files are present and required: `sepl_18.se1` (473KB, planetary data), `semo_18.se1` (1.2MB, Moon data), and `seas_18.se1` (218KB, asteroid data). These are compiled astronomical tables, not something you can regenerate — they come from the Swiss Ephemeris distribution and cover the period relevant to modern birth chart calculations. If these files are missing, Human Design and Gene Keys calculations will fail. The Dockerfile copies them explicitly into the container.
 
-### Vedic Runtime Note
+### FreeAstrologyAPI.com
 
-The primary Selemene Vedic runtime uses native Rust engines with Swiss Ephemeris-backed computation for active chart/timing paths.
+The `noesis-vedic-api` crate is a full HTTP client for FreeAstrologyAPI.com, providing access to Panchang, Dasha, Birth Chart, Vargas, Transits, Yogas, Shadbala, Ashtakavarga, Muhurta, and more. As of March 10, 2026, the primary Selemene Vedic runtime no longer depends on this provider for `panchanga`, `vimshottari`, or `transits`; the crate remains in the repo for optional integrations, provider experiments, and future non-runtime use.
 
 ### Wisdom Data Files
 

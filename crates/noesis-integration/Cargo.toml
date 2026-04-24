@@ -3,12 +3,13 @@ name = "noesis-integration"
 version = "3.0.0"
 edition = "2021"
 authors = ["Tryambakam Noesis Team"]
-description = "Integration layer for Vimshottari, Numerology, Panchanga, and TCM systems"
+description = "Integration layer for Vedic API, Vimshottari, Numerology, and TCM systems"
 license = "MIT"
 
 [dependencies]
 # Core dependencies
 noesis-core = { path = "../noesis-core" }
+noesis-vedic-api = { path = "../noesis-vedic-api" }
 
 # Engines
 engine-vimshottari = { path = "../engine-vimshottari" }

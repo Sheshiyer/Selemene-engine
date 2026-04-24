@@ -2,8 +2,8 @@
   "generated_at": "2026-03-13",
   "inventory_scope": "/api/v1",
   "source": "crates/noesis-api/src/lib.rs",
-  "path_count": 41,
-  "route_count": 44,
+  "path_count": 40,
+  "route_count": 43,
   "routes": [
     {
       "path": "/auth/register",
@@ -237,14 +237,6 @@
       "uses_orchestrator": true,
       "methods": [
         { "method": "GET", "handler": "status_handler" }
-      ]
-    },
-    {
-      "path": "/charts/vedic",
-      "auth_requirement": "bearer_or_api_key",
-      "uses_orchestrator": false,
-      "methods": [
-        { "method": "POST", "handler": "vedic_chart_handler" }
       ]
     },
     {

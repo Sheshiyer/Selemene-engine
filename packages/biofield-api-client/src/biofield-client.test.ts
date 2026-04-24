@@ -29,7 +29,7 @@ describe("BiofieldClient", () => {
 
   it("lists readings with query params", async () => {
     const fetchMock = vi.fn(async () =>
-      new Response(JSON.stringify([]), { status: 200 }),
+      new Response(JSON.stringify({ items: [], limit: 10, offset: 20 }), { status: 200 }),
     );
 
     const client = new BiofieldClient("https://example.com", { fetchImpl: fetchMock as typeof fetch });
@@ -43,6 +43,45 @@ describe("BiofieldClient", () => {
     );
   });
 
+  it("supports comparison-aware detail fetches plus reprocess and baseline routes", async () => {
+    const fetchMock = vi.fn(async () =>
+      new Response(JSON.stringify({ reading_id: "reading-2" }), { status: 200 }),
+    );
+
+    const client = new BiofieldClient("https://example.com", { fetchImpl: fetchMock as typeof fetch });
+    await client.getReading("reading-1", { baselineId: "baseline-1" });
+    await client.reprocessReading("reading-1");
+    await client.listBaselines();
+    await client.createBaseline({ name: "Morning", reading_ids: ["reading-1"] });
+    await client.createExport({ reading_id: "reading-1", baseline_id: "baseline-1" });
+
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      1,
+      "https://example.com/api/v1/biofield/readings/reading-1?baseline_id=baseline-1",
+      expect.objectContaining({ method: "GET" }),
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      2,
+      "https://example.com/api/v1/biofield/readings/reading-1/reprocess",
+      expect.objectContaining({ method: "POST" }),
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      3,
+      "https://example.com/api/v1/biofield/baselines",
+      expect.objectContaining({ method: "GET" }),
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      4,
+      "https://example.com/api/v1/biofield/baselines",
+      expect.objectContaining({ method: "POST" }),
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      5,
+      "https://example.com/api/v1/biofield/exports",
+      expect.objectContaining({ method: "POST" }),
+    );
+  });
+
   it("raises a typed error on failed requests", async () => {
     const fetchMock = vi.fn(async () =>
       new Response(JSON.stringify({ error: "nope" }), { status: 503 }),
@@ -51,5 +90,43 @@ describe("BiofieldClient", () => {
     const client = new BiofieldClient("https://example.com", { fetchImpl: fetchMock as typeof fetch });
 
     await expect(client.getReading("reading-1")).rejects.toBeInstanceOf(BiofieldClientError);
+  });
+
+  it("surfaces backend message in typed errors", async () => {
+    const fetchMock = vi.fn(async () =>
+      new Response(
+        JSON.stringify({
+          message: "Biofield analysis service is unavailable",
+          error_code: "BIOFIELD_ANALYSIS_UNAVAILABLE",
+        }),
+        { status: 503 },
+      ),
+    );
+
+    const client = new BiofieldClient("https://example.com", { fetchImpl: fetchMock as typeof fetch });
+
+    await expect(client.getReading("reading-2")).rejects.toMatchObject({
+      name: "BiofieldClientError",
+      message: "Biofield analysis service is unavailable",
+      status: 503,
+    });
+  });
+
+  it("captures raw text payload when response is not json", async () => {
+    const fetchMock = vi.fn(async () =>
+      new Response("upstream unavailable", {
+        status: 502,
+        headers: { "Content-Type": "text/plain" },
+      }),
+    );
+
+    const client = new BiofieldClient("https://example.com", { fetchImpl: fetchMock as typeof fetch });
+
+    await expect(client.getReading("reading-3")).rejects.toMatchObject({
+      name: "BiofieldClientError",
+      message: "Request failed: 502",
+      status: 502,
+      details: { raw: "upstream unavailable" },
+    });
   });
 });

@@ -11,11 +11,14 @@ members = [
     "crates/noesis-orchestrator",
     "crates/noesis-bridge",
     "crates/noesis-api",
+    "crates/noesis-vedic-api",
+    "crates/noesis-western-api",
     "crates/noesis-integration",
     # SDK for TUI/Desktop/Agent clients
     "crates/noesis-sdk",
     # Terminal User Interface
     "crates/noesis-tui",
+    # Vedic astrology API integration (FreeAstrologyAPI.com)
 
     # Rust consciousness engines
     "crates/engine-panchanga",
@@ -26,6 +29,7 @@ members = [
     "crates/engine-gene-keys",
     "crates/engine-vedic-clock",
     "crates/engine-biofield",
+    "crates/engine-biofield-capture",
     "crates/engine-face-reading",
     "crates/engine-nadabrahman",
     "crates/engine-transits",

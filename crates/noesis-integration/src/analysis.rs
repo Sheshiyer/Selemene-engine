@@ -1,11 +1,11 @@
-//! Unified Analysis combining Vimshottari, Numerology, Panchanga, and TCM
+//! Unified Analysis combining Vedic API, Vimshottari, Numerology, and TCM
 
-use chrono::{DateTime, Datelike, Utc};
+use chrono::{DateTime, Datelike, Timelike, Utc};
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    ActivityType, AuspiciousQuality, AuspiciousWindow, BirthProfile, CompletePanchang,
-    IntegrationConfig, IntegrationError, Result, TCMAnalysis, TCMElement,
+    ActivityType, AuspiciousQuality, AuspiciousWindow, BirthProfile, CachedVedicClient,
+    CompletePanchang, IntegrationConfig, IntegrationError, Result, TCMAnalysis, TCMElement,
 };
 
 /// Complete unified analysis from all systems
@@ -13,7 +13,7 @@ use crate::{
 pub struct UnifiedAnalysis {
     /// Birth profile used
     pub profile: BirthProfile,
-    /// Panchang data
+    /// Vedic API Panchang data
     pub panchang: Option<CompletePanchang>,
     /// Vimshottari Dasha analysis
     pub vimshottari: VimshottariAnalysis,
@@ -174,7 +174,7 @@ impl UnifiedAnalysis {
     ) -> Result<Self> {
         let generated_at = Utc::now();
 
-        // Get Panchang data if enabled
+        // Get Vedic API data if enabled
         let panchang = if config.use_vedic_api {
             Some(Self::fetch_panchang(profile).await?)
         } else {
@@ -224,12 +224,35 @@ impl UnifiedAnalysis {
         })
     }
 
-    /// Fetch Panchang data
+    /// Fetch Panchang from Vedic API
     async fn fetch_panchang(profile: &BirthProfile) -> Result<CompletePanchang> {
-        let _ = profile;
-        Err(IntegrationError::Configuration(
-            "External FreeAstrology API integration has been removed. Use native engine paths instead.".to_string(),
-        ))
+        let client = CachedVedicClient::from_env()
+            .map_err(|e| IntegrationError::Configuration(e.to_string()))?;
+
+        // Parse birth date
+        let date = profile.parse_date()?;
+        let time = profile
+            .parse_time()
+            .ok_or_else(|| IntegrationError::DateParse("Invalid time".to_string()))?;
+
+        // For now, use UTC offset from timezone (simplified)
+        let tz_offset = 5.5; // IST
+
+        let panchang = client
+            .get_complete_panchang(
+                date.year(),
+                date.month(),
+                date.day(),
+                time.hour(),
+                time.minute(),
+                0,
+                profile.latitude,
+                profile.longitude,
+                tz_offset,
+            )
+            .await?;
+
+        Ok(panchang)
     }
 
     /// Analyze Vimshottari Dasha

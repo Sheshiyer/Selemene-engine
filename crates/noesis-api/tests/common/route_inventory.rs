@@ -5,7 +5,7 @@ const API_LIB_PATH: &str = "crates/noesis-api/src/lib.rs";
 const AUTH_HANDLER_PATH: &str = "crates/noesis-api/src/handlers/auth.rs";
 const USER_HANDLER_PATH: &str = "crates/noesis-api/src/handlers/users.rs";
 const ADMIN_HANDLER_PATH: &str = "crates/noesis-api/src/handlers/admin.rs";
-const INVENTORY_PATH: &str = ".context/baseline/api-route-inventory.json";
+const INVENTORY_PATH: &str = "docs/baseline/api-route-inventory.json";
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct ApiRouteInventory {

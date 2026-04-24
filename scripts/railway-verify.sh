@@ -54,6 +54,8 @@ required_vars=(
     "DATABASE_URL"
     "REDIS_URL"
     "ALLOWED_ORIGINS"
+    "FREE_ASTROLOGY_API_KEY"
+    "VEDIC_ENGINE_PROVIDER"
 )
 
 missing_vars=()

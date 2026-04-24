@@ -351,7 +351,11 @@ mod tests {
         assert_eq!(output.engine_results.len(), 3);
 
         let snapshot = executor.execution_routing_snapshot();
-        assert_eq!(snapshot.orchestrated_execute_calls, 3);
+        // WorkflowExecutor uses the richer workflow registry, where birth-blueprint
+        // attempts numerology, human-design, vimshottari, biofield, and face-reading.
+        // The mock setup only registers the first three, so output count is 3 while
+        // routed execution count is still 5.
+        assert_eq!(snapshot.orchestrated_execute_calls, 5);
         assert_eq!(snapshot.direct_execute_calls, 0);
         assert_eq!(snapshot.bypass_count, 0);
     }

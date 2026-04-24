@@ -1,10 +1,16 @@
 import type {
   BiofieldCaptureResult,
+  BiofieldExportResult,
   BiofieldReadingDetail,
-  BiofieldReadingSummary,
+  BiofieldReprocessResult,
   BiofieldSession,
   CloseBiofieldSessionRequest,
+  CreateBiofieldBaselineRequest,
+  CreateBiofieldExportRequest,
   CreateBiofieldSessionRequest,
+  ListBiofieldBaselinesResponse,
+  ListBiofieldReadingsResponse,
+  ReprocessBiofieldReadingRequest,
 } from "@selemene/biofield-domain";
 
 export interface BiofieldClientOptions {
@@ -15,6 +21,17 @@ export interface BiofieldClientOptions {
 export interface ListBiofieldReadingsParams {
   limit?: number;
   offset?: number;
+}
+
+interface ErrorPayloadShape {
+  message?: string;
+  error_message?: string;
+  error?: string;
+  detail?: string;
+}
+
+export interface GetBiofieldReadingParams {
+  baselineId?: string;
 }
 
 export class BiofieldClientError extends Error {
@@ -66,7 +83,7 @@ export class BiofieldClient {
 
   async listReadings(
     params: ListBiofieldReadingsParams = {},
-  ): Promise<BiofieldReadingSummary[]> {
+  ): Promise<ListBiofieldReadingsResponse> {
     const search = new URLSearchParams();
 
     if (params.limit !== undefined) {
@@ -79,22 +96,65 @@ export class BiofieldClient {
 
     const suffix = search.size > 0 ? `?${search.toString()}` : "";
 
-    const payload = await this.request<
-      BiofieldReadingSummary[] | { items: BiofieldReadingSummary[] }
-    >(`/api/v1/biofield/readings${suffix}`, {
+    return this.request<ListBiofieldReadingsResponse>(`/api/v1/biofield/readings${suffix}`, {
       method: "GET",
     });
-
-    if (Array.isArray(payload)) {
-      return payload;
-    }
-
-    return payload.items ?? [];
   }
 
-  async getReading(readingId: string): Promise<BiofieldReadingDetail> {
-    return this.request<BiofieldReadingDetail>(`/api/v1/biofield/readings/${readingId}`, {
+  async getReading(
+    readingId: string,
+    params: GetBiofieldReadingParams = {},
+  ): Promise<BiofieldReadingDetail> {
+    const search = new URLSearchParams();
+
+    if (params.baselineId) {
+      search.set("baseline_id", params.baselineId);
+    }
+
+    const suffix = search.size > 0 ? `?${search.toString()}` : "";
+
+    return this.request<BiofieldReadingDetail>(`/api/v1/biofield/readings/${readingId}${suffix}`, {
       method: "GET",
+    });
+  }
+
+  async reprocessReading(
+    readingId: string,
+    input: ReprocessBiofieldReadingRequest = {},
+  ): Promise<BiofieldReprocessResult> {
+    return this.request<BiofieldReprocessResult>(
+      `/api/v1/biofield/readings/${readingId}/reprocess`,
+      {
+        method: "POST",
+        body: JSON.stringify(input),
+      },
+    );
+  }
+
+  async listBaselines(): Promise<ListBiofieldBaselinesResponse> {
+    return this.request<ListBiofieldBaselinesResponse>("/api/v1/biofield/baselines", {
+      method: "GET",
+    });
+  }
+
+  async createBaseline(
+    input: CreateBiofieldBaselineRequest,
+  ): Promise<ListBiofieldBaselinesResponse["items"][number]> {
+    return this.request<ListBiofieldBaselinesResponse["items"][number]>(
+      "/api/v1/biofield/baselines",
+      {
+        method: "POST",
+        body: JSON.stringify(input),
+      },
+    );
+  }
+
+  async createExport(
+    input: CreateBiofieldExportRequest,
+  ): Promise<BiofieldExportResult> {
+    return this.request<BiofieldExportResult>("/api/v1/biofield/exports", {
+      method: "POST",
+      body: JSON.stringify(input),
     });
   }
 
@@ -133,11 +193,11 @@ export class BiofieldClient {
     });
 
     const text = await response.text();
-    const payload = text ? JSON.parse(text) : null;
+    const payload = parsePayload(text);
 
     if (!response.ok) {
       throw new BiofieldClientError(
-        `Request failed: ${response.status}`,
+        resolveErrorMessage(payload, response.status),
         response.status,
         payload,
       );
@@ -145,4 +205,36 @@ export class BiofieldClient {
 
     return payload as T;
   }
+}
+
+function parsePayload(text: string): unknown {
+  if (!text) {
+    return null;
+  }
+
+  try {
+    return JSON.parse(text);
+  } catch {
+    return { raw: text };
+  }
+}
+
+function resolveErrorMessage(payload: unknown, status: number): string {
+  if (payload && typeof payload === "object") {
+    const candidate = payload as ErrorPayloadShape;
+    if (typeof candidate.message === "string" && candidate.message.length > 0) {
+      return candidate.message;
+    }
+    if (typeof candidate.error_message === "string" && candidate.error_message.length > 0) {
+      return candidate.error_message;
+    }
+    if (typeof candidate.error === "string" && candidate.error.length > 0) {
+      return candidate.error;
+    }
+    if (typeof candidate.detail === "string" && candidate.detail.length > 0) {
+      return candidate.detail;
+    }
+  }
+
+  return `Request failed: ${status}`;
 }
