@@ -202,7 +202,10 @@ fn bench_all_hours_sweep(c: &mut Criterion) {
 /// Benchmark: batch temporal recommendations across multiple timezones
 fn bench_batch_timezone_recommendations(c: &mut Criterion) {
     let dt = Utc.with_ymd_and_hms(2024, 6, 15, 12, 0, 0).unwrap();
-    // Major timezone offsets in minutes
+    // Major timezone offsets in minutes:
+    // -720 = UTC-12 (Baker Island), -480 = PST (UTC-8), -300 = EST (UTC-5),
+    //    0 = UTC,  +60 = CET (UTC+1),  +330 = IST (UTC+5:30),
+    // +540 = JST (UTC+9),  +600 = AEST (UTC+10)
     let offsets: Vec<i32> = vec![-720, -480, -300, 0, 60, 330, 540, 600];
 
     let mut group = c.benchmark_group("vedic_clock_batch");

@@ -79,6 +79,7 @@ fn bench_chakra_wisdom_lookup(c: &mut Criterion) {
 fn bench_metric_interpretation(c: &mut Criterion) {
     let mut group = c.benchmark_group("biofield_core");
 
+    // The four core BiofieldMetrics fields (see engine_biofield::models::BiofieldMetrics)
     let metrics = ["coherence", "entropy", "fractal_dimension", "symmetry"];
     group.bench_function("metric_interpretation_all", |b| {
         b.iter(|| {
