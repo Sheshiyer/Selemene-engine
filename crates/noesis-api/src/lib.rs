@@ -37,7 +37,7 @@ use chrono::{
     Datelike, LocalResult, NaiveDate, NaiveDateTime, NaiveTime, Offset, TimeZone, Timelike,
 };
 use chrono_tz::Tz;
-use engine_human_design::ephemeris::{EphemerisCalculator, HDPlanet};
+use noesis_orchestrator::{EphemerisCalculator, HDPlanet};
 use noesis_auth::{AuthService, AuthUser};
 use noesis_cache::CacheManager;
 use noesis_core::{
@@ -1520,7 +1520,7 @@ fn build_d1_chart(
     birth: &ResolvedBirthDetails,
     jd: f64,
     ayanamsa: f64,
-    planet_positions: &[(HDPlanet, engine_human_design::ephemeris::PlanetPosition)],
+    planet_positions: &[(HDPlanet, noesis_orchestrator::PlanetPosition)],
 ) -> serde_json::Value {
     let trop_asc = tropical_ascendant(jd, birth.latitude, birth.longitude);
     let sid_asc = (trop_asc - ayanamsa).rem_euclid(360.0);
@@ -1725,7 +1725,7 @@ async fn vedic_chart_handler(
         let jd = jd_from_utc(&utc_dt);
         let ayanamsa = lahiri_ayanamsa(jd);
 
-        let mut positions: Vec<(HDPlanet, engine_human_design::ephemeris::PlanetPosition)> =
+        let mut positions: Vec<(HDPlanet, noesis_orchestrator::PlanetPosition)> =
             Vec::new();
         for (planet, _) in VEDIC_PLANETS {
             match ephe.get_planet_position(*planet, &utc_dt) {

@@ -2525,7 +2525,6 @@ dependencies = [
  "noesis-metrics",
  "noesis-orchestrator",
  "noesis-vedic-api",
- "noesis-witness",
  "opentelemetry 0.22.0",
  "redis",
  "reqwest 0.12.28",
