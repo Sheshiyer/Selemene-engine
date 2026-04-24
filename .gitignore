@@ -46,3 +46,6 @@ Openclaw.txt
 **/*.pyo
 .context/worktrees/
 scripts/worktrees/
+
+# Agent task scaffolding (auto-generated, deleted before merge)
+.agent-tasks/
