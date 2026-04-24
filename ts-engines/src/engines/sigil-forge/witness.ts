@@ -19,7 +19,7 @@ const INTENTION_TEMPLATES = [
 ]
 
 const PROCESS_TEMPLATES = [
-  'As you engage with the {method_name} method, what emerges?',
+  'As you engage with {method_name}, what emerges?',
   'What intuitions arise as you work through these steps?',
   'Where do you feel called to deviate from the process? Follow that.',
   'What wants to be expressed that the steps cannot capture?',

@@ -1,0 +1,81 @@
+{
+  "engine_id": "sigil-forge",
+  "result": {
+    "intention": "I am aligned with my highest purpose",
+    "method": {
+      "id": "word-elimination",
+      "name": "Word Elimination Method",
+      "description": "The classic chaos magick technique. Write your intention as a statement, remove all vowels and duplicate consonants, then arrange the remaining letters into a symbol.",
+      "steps": [
+        "Write your intention as a present-tense statement of desire (e.g., \"I am confident and calm\")",
+        "Remove all vowels from the statement",
+        "Remove all duplicate consonants, keeping only the first occurrence of each",
+        "Take the remaining consonants and begin sketching them together",
+        "Let the letters flow, overlap, rotate, and merge into a single unified symbol",
+        "Refine until the original letters are no longer recognizable as letters",
+        "The resulting abstract symbol is your sigil"
+      ]
+    },
+    "processing": {
+      "type": "word_elimination",
+      "original": "I am aligned with my highest purpose",
+      "remaining_letters": "MLGNDWTHYSPR",
+      "letter_count": 12
+    },
+    "charging_suggestions": [
+      {
+        "name": "Physical Gnosis",
+        "description": "Use physical exertion (dancing, exercise, breath work) to reach a peak state. At the moment of exhaustion or release, focus briefly on the sigil then let go."
+      },
+      {
+        "name": "Destruction Charging",
+        "description": "After creating the sigil, destroy it with intention \u2014 burn it, tear it up, bury it, or dissolve it in water. The act of destruction releases the energy."
+      }
+    ],
+    "guidance": {
+      "note": "This engine provides the process for sigil creation. The actual visual sigil must be created by you \u2014 this personal investment is essential to the magic.",
+      "next_steps": [
+        "Gather your materials (paper, pen, or digital canvas)",
+        "Follow the Word Elimination Method steps above",
+        "Allow intuition to guide the final form",
+        "Choose a charging method that resonates",
+        "Release attachment to outcome"
+      ]
+    },
+    "svg_preview": {
+      "status": "absent"
+    },
+    "seed": 42
+  },
+  "witness_prompts": [
+    {
+      "prompt": "What do you notice as you condense your intention into MLGNDWTHYSPR?",
+      "context": "Intention exploration",
+      "themes": [
+        "intention",
+        "desire",
+        "transformation"
+      ]
+    },
+    {
+      "prompt": "As you engage with Word Elimination Method, what emerges?",
+      "context": "Working with Word Elimination Method",
+      "themes": [
+        "process",
+        "creation",
+        "intuition"
+      ]
+    },
+    {
+      "prompt": "When you release this sigil, what are you truly letting go of?",
+      "context": "Charging and release",
+      "themes": [
+        "release",
+        "trust",
+        "completion"
+      ]
+    }
+  ],
+  "calculated_at": "2024-01-15T14:30:00.000Z",
+  "processing_time_ms": 0
+}

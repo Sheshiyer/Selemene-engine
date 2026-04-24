@@ -1,0 +1,70 @@
+{
+  "engine_id": "i-ching",
+  "result": {
+    "primary_hexagram": {
+      "number": 1,
+      "name": "The Creative",
+      "chinese_name": "\u4e7e (Qi\u00e1n)",
+      "meaning": "Pure yang energy, heaven, creative power, strong action",
+      "judgment": "The Creative works sublime success, furthering through perseverance.",
+      "image": "The movement of heaven is full of power. Thus the superior person makes themselves strong and untiring."
+    },
+    "changing_lines": [
+      1,
+      2,
+      3,
+      4
+    ],
+    "relating_hexagram": {
+      "number": 52,
+      "name": "Hexagram 52",
+      "chinese_name": "\u536652",
+      "meaning": "Meaning for hexagram 52 (stub data)",
+      "judgment": "The judgment for hexagram 52.",
+      "image": "The image for hexagram 52."
+    },
+    "casting": {
+      "method": "three_coins",
+      "line_values": [
+        6,
+        6,
+        6,
+        6,
+        8,
+        8
+      ]
+    },
+    "seed": 9999
+  },
+  "witness_prompts": [
+    {
+      "prompt": "What does The Creative illuminate about your current situation?",
+      "context": "Primary hexagram: 1. The Creative",
+      "themes": [
+        "change",
+        "wisdom",
+        "situation"
+      ]
+    },
+    {
+      "prompt": "As the situation transforms from The Creative to Hexagram 52, what transition do you sense in your own life?",
+      "context": "Transformation: The Creative \u2192 Hexagram 52",
+      "themes": [
+        "transformation",
+        "change",
+        "movement"
+      ]
+    },
+    {
+      "prompt": "What question does this oracle seem to be asking you in return?",
+      "context": "Reflection",
+      "themes": [
+        "inquiry",
+        "self-reflection",
+        "wisdom"
+      ]
+    }
+  ],
+  "calculated_at": "2024-01-15T14:30:00.000Z",
+  "processing_time_ms": 0
+}
