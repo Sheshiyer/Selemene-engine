@@ -1,0 +1,1202 @@
+openapi: 3.0.3
+info:
+  title: Noesis API
+  version: 3.0.0
+  description: |
+    High-performance consciousness calculation platform with 16 engines and multi-engine workflows.
+
+servers:
+  - url: http://localhost:8080
+    description: Local development (Rust API)
+  - url: https://selemene.tryambakam.space
+    description: Production
+
+tags:
+  - name: health
+    description: Health checks and readiness
+  - name: engines
+    description: Single engine calculations
+  - name: workflows
+    description: Multi-engine workflow execution
+  - name: users
+    description: User profile endpoints
+  - name: auth
+    description: Registration and login
+  - name: readings
+    description: Calculation history
+  - name: legacy
+    description: Backward-compatible legacy endpoints
+
+paths:
+  /health:
+    get:
+      tags: [health]
+      summary: Health check
+      responses:
+        "200":
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthResponse"
+
+  /health/live:
+    get:
+      tags: [health]
+      summary: Liveness probe
+      responses:
+        "200":
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthResponse"
+
+  /health/ready:
+    get:
+      tags: [health]
+      summary: Readiness probe
+      responses:
+        "200":
+          description: Service is ready
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReadinessResponse"
+        "503":
+          description: Service is not ready
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReadinessResponse"
+
+  /ready:
+    get:
+      tags: [health]
+      summary: Readiness probe (alias)
+      responses:
+        "200":
+          description: Service is ready
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReadinessResponse"
+        "503":
+          description: Service is not ready
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReadinessResponse"
+
+  /metrics:
+    get:
+      tags: [health]
+      summary: Prometheus metrics
+      responses:
+        "200":
+          description: Prometheus metrics text
+          content:
+            text/plain:
+              schema:
+                type: string
+
+  /api/v1/status:
+    get:
+      tags: [health]
+      summary: List engines and workflows
+      security:
+        - bearer_auth: []
+        - api_key: []
+      responses:
+        "200":
+          description: List of engines and workflows
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StatusResponse"
+
+  /api/v1/engines:
+    get:
+      tags: [engines]
+      summary: List available engines
+      security:
+        - bearer_auth: []
+        - api_key: []
+      responses:
+        "200":
+          description: List of engine IDs
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EngineListResponse"
+
+  /api/v1/engines/{engine_id}/calculate:
+    post:
+      tags: [engines]
+      summary: Execute a single engine
+      security:
+        - bearer_auth: []
+        - api_key: []
+      parameters:
+        - name: engine_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EngineInput"
+      responses:
+        "200":
+          description: Calculation successful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EngineOutput"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        "429":
+          $ref: "#/components/responses/RateLimit"
+
+  /api/v1/engines/{engine_id}/validate:
+    post:
+      tags: [engines]
+      summary: Validate an engine output
+      security:
+        - bearer_auth: []
+        - api_key: []
+      parameters:
+        - name: engine_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EngineOutput"
+      responses:
+        "200":
+          description: Validation result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationResult"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /api/v1/engines/{engine_id}/info:
+    get:
+      tags: [engines]
+      summary: Engine metadata
+      security:
+        - bearer_auth: []
+        - api_key: []
+      parameters:
+        - name: engine_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Engine information
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EngineInfoResponse"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /api/v1/workflows:
+    get:
+      tags: [workflows]
+      summary: List available workflows
+      security:
+        - bearer_auth: []
+        - api_key: []
+      responses:
+        "200":
+          description: List of workflows
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WorkflowListResponse"
+
+  /api/v1/workflows/{workflow_id}:
+    get:
+      tags: [workflows]
+      summary: Workflow metadata (compatibility alias)
+      description: Alias of GET /api/v1/workflows/{workflow_id}/info.
+      security:
+        - bearer_auth: []
+        - api_key: []
+      parameters:
+        - name: workflow_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Workflow information
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WorkflowInfoResponse"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    post:
+      tags: [workflows]
+      summary: Execute workflow (compatibility alias)
+      description: Alias of POST /api/v1/workflows/{workflow_id}/execute.
+      security:
+        - bearer_auth: []
+        - api_key: []
+      parameters:
+        - name: workflow_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EngineInput"
+      responses:
+        "200":
+          description: Workflow execution successful (engine_outputs may be partial)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WorkflowResult"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        "429":
+          $ref: "#/components/responses/RateLimit"
+
+  /api/v1/workflows/{workflow_id}/execute:
+    post:
+      tags: [workflows]
+      summary: Execute a workflow
+      security:
+        - bearer_auth: []
+        - api_key: []
+      parameters:
+        - name: workflow_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EngineInput"
+      responses:
+        "200":
+          description: Workflow execution successful (engine_outputs may be partial)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WorkflowResult"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        "429":
+          $ref: "#/components/responses/RateLimit"
+
+  /api/v1/workflows/{workflow_id}/info:
+    get:
+      tags: [workflows]
+      summary: Workflow metadata
+      security:
+        - bearer_auth: []
+        - api_key: []
+      parameters:
+        - name: workflow_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Workflow information
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WorkflowInfoResponse"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /api/v1/users/me:
+    get:
+      tags: [users]
+      summary: Get current user profile
+      security:
+        - bearer_auth: []
+        - api_key: []
+      responses:
+        "200":
+          description: User profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+    patch:
+      tags: [users]
+      summary: Update current user profile
+      security:
+        - bearer_auth: []
+        - api_key: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateUserRequest"
+      responses:
+        "200":
+          description: Profile updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UpdateUserResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+
+  /api/v1/auth/register:
+    post:
+      tags: [auth]
+      summary: Register a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterRequest"
+      responses:
+        "201":
+          description: User created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RegisterResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+
+  /api/v1/auth/login:
+    post:
+      tags: [auth]
+      summary: Login and receive a JWT token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+      responses:
+        "200":
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoginResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+
+  /api/v1/auth/forgot-password:
+    post:
+      tags: [auth]
+      summary: Request a password reset
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ForgotPasswordRequest"
+      responses:
+        "200":
+          description: Reset request accepted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ForgotPasswordResponse"
+
+  /api/v1/auth/reset-password:
+    post:
+      tags: [auth]
+      summary: Reset password with token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ResetPasswordRequest"
+      responses:
+        "200":
+          description: Password reset
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResetPasswordResponse"
+
+  /api/v1/auth/change-password:
+    post:
+      tags: [auth]
+      summary: Change password for authenticated user
+      security:
+        - bearer_auth: []
+        - api_key: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChangePasswordRequest"
+      responses:
+        "200":
+          description: Password changed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChangePasswordResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+
+  /api/v1/readings:
+    get:
+      tags: [readings]
+      summary: List user readings
+      security:
+        - bearer_auth: []
+        - api_key: []
+      parameters:
+        - name: engine_id
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+        - name: offset
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+      responses:
+        "200":
+          description: Paginated list of readings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReadingsListResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /api/v1/readings/stats:
+    get:
+      tags: [readings]
+      summary: Count readings per engine
+      security:
+        - bearer_auth: []
+        - api_key: []
+      responses:
+        "200":
+          description: Reading stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReadingsStatsResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /api/v1/readings/{reading_id}:
+    get:
+      tags: [readings]
+      summary: Get a single reading
+      security:
+        - bearer_auth: []
+        - api_key: []
+      parameters:
+        - name: reading_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Reading details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Reading"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /api/legacy/panchanga/calculate:
+    post:
+      tags: [legacy]
+      summary: Legacy Panchanga calculation
+      description: Deprecated. Use /api/v1/engines/panchanga/calculate instead.
+      deprecated: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LegacyPanchangaRequest"
+      responses:
+        "200":
+          description: Legacy Panchanga response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LegacyPanchangaResponse"
+
+  /api/legacy/ghati/current:
+    get:
+      tags: [legacy]
+      summary: Legacy Ghati time
+      description: Deprecated. Returns current ghati time using Panchanga.
+      deprecated: true
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LegacyGhatiRequest"
+      responses:
+        "200":
+          description: Ghati time response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LegacyGhatiResponse"
+
+components:
+  securitySchemes:
+    bearer_auth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    api_key:
+      type: apiKey
+      in: header
+      name: X-API-Key
+
+  responses:
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    Forbidden:
+      description: Forbidden
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    NotFound:
+      description: Not found
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    ValidationError:
+      description: Validation error
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    RateLimit:
+      description: Rate limit exceeded
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+
+  schemas:
+    EngineInput:
+      type: object
+      properties:
+        birth_data:
+          $ref: "#/components/schemas/BirthData"
+        current_time:
+          type: string
+          format: date-time
+        location:
+          $ref: "#/components/schemas/Coordinates"
+        precision:
+          $ref: "#/components/schemas/Precision"
+        options:
+          type: object
+          additionalProperties: true
+
+    BirthData:
+      type: object
+      properties:
+        name:
+          type: string
+          nullable: true
+        date:
+          type: string
+          example: "1990-01-01"
+        time:
+          type: string
+          nullable: true
+          example: "14:30"
+        latitude:
+          type: number
+          example: 12.9716
+        longitude:
+          type: number
+          example: 77.5946
+        timezone:
+          type: string
+          example: "Asia/Kolkata"
+      required: [date, latitude, longitude, timezone]
+
+    Coordinates:
+      type: object
+      properties:
+        latitude:
+          type: number
+        longitude:
+          type: number
+        altitude:
+          type: number
+          nullable: true
+      required: [latitude, longitude]
+
+    Precision:
+      type: string
+      enum: [Standard, High, Extreme]
+
+    CalculationMetadata:
+      type: object
+      properties:
+        calculation_time_ms:
+          type: number
+        backend:
+          type: string
+        precision_achieved:
+          type: string
+        cached:
+          type: boolean
+        timestamp:
+          type: string
+          format: date-time
+        engine_version:
+          type: string
+
+    EngineOutput:
+      type: object
+      properties:
+        engine_id:
+          type: string
+        result:
+          type: object
+          additionalProperties: true
+        witness_prompt:
+          type: string
+        consciousness_level:
+          type: integer
+          format: int32
+        metadata:
+          $ref: "#/components/schemas/CalculationMetadata"
+      required: [engine_id, result, witness_prompt, consciousness_level, metadata]
+
+    ValidationResult:
+      type: object
+      properties:
+        valid:
+          type: boolean
+        confidence:
+          type: number
+        messages:
+          type: array
+          items:
+            type: string
+      required: [valid, confidence, messages]
+
+    WorkflowResult:
+      type: object
+      properties:
+        workflow_id:
+          type: string
+        engine_outputs:
+          type: object
+          description: Map of successful engine results. Engines that fail or are phase-gated may be omitted.
+          additionalProperties:
+            $ref: "#/components/schemas/EngineOutput"
+        synthesis:
+          type: object
+          nullable: true
+        total_time_ms:
+          type: number
+        timestamp:
+          type: string
+          format: date-time
+      required: [workflow_id, engine_outputs, total_time_ms, timestamp]
+
+    HealthResponse:
+      type: object
+      properties:
+        status:
+          type: string
+        version:
+          type: string
+        uptime_seconds:
+          type: integer
+        engines_loaded:
+          type: integer
+        workflows_loaded:
+          type: integer
+
+    ReadinessResponse:
+      type: object
+      properties:
+        redis:
+          type: string
+        orchestrator:
+          type: string
+        vedic_api:
+          type: string
+        overall_status:
+          type: string
+
+    StatusResponse:
+      type: object
+      properties:
+        engines:
+          type: array
+          items:
+            type: string
+        workflows:
+          type: array
+          items:
+            $ref: "#/components/schemas/WorkflowSummary"
+
+    WorkflowSummary:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        engine_count:
+          type: integer
+
+    EngineInfoResponse:
+      type: object
+      properties:
+        engine_id:
+          type: string
+        engine_name:
+          type: string
+        required_phase:
+          type: integer
+
+    EngineListResponse:
+      type: object
+      properties:
+        engines:
+          type: array
+          items:
+            type: string
+
+    WorkflowListResponse:
+      type: object
+      properties:
+        workflows:
+          type: array
+          items:
+            $ref: "#/components/schemas/WorkflowSummary"
+
+    WorkflowInfoResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        engine_ids:
+          type: array
+          items:
+            type: string
+
+    UserResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+        full_name:
+          type: string
+        tier:
+          type: string
+        consciousness_level:
+          type: integer
+        experience_points:
+          type: integer
+        birth_date:
+          type: string
+          format: date
+          nullable: true
+        birth_time:
+          type: string
+          format: time
+          nullable: true
+        birth_location:
+          $ref: "#/components/schemas/LocationResponse"
+        timezone:
+          type: string
+          nullable: true
+        preferences:
+          type: object
+          additionalProperties: true
+
+    LocationResponse:
+      type: object
+      properties:
+        lat:
+          type: number
+        lng:
+          type: number
+        name:
+          type: string
+          nullable: true
+
+    UpdateUserRequest:
+      type: object
+      properties:
+        full_name:
+          type: string
+          nullable: true
+        email:
+          type: string
+          nullable: true
+        birth_date:
+          type: string
+          format: date
+          nullable: true
+        birth_time:
+          type: string
+          format: time
+          nullable: true
+        birth_location_lat:
+          type: number
+          nullable: true
+        birth_location_lng:
+          type: number
+          nullable: true
+        birth_location_name:
+          type: string
+          nullable: true
+        timezone:
+          type: string
+          nullable: true
+        preferences:
+          type: object
+          additionalProperties: true
+
+    UpdateUserResponse:
+      type: object
+      properties:
+        message:
+          type: string
+
+    RegisterRequest:
+      type: object
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+        full_name:
+          type: string
+      required: [email, password, full_name]
+
+    RegisterResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        message:
+          type: string
+
+    LoginRequest:
+      type: object
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+      required: [email, password]
+
+    LoginResponse:
+      type: object
+      properties:
+        token:
+          type: string
+        user_id:
+          type: string
+        email:
+          type: string
+        tier:
+          type: string
+
+    ForgotPasswordRequest:
+      type: object
+      properties:
+        email:
+          type: string
+      required: [email]
+
+    ForgotPasswordResponse:
+      type: object
+      properties:
+        message:
+          type: string
+
+    ResetPasswordRequest:
+      type: object
+      properties:
+        token:
+          type: string
+        new_password:
+          type: string
+      required: [token, new_password]
+
+    ResetPasswordResponse:
+      type: object
+      properties:
+        message:
+          type: string
+
+    ChangePasswordRequest:
+      type: object
+      properties:
+        current_password:
+          type: string
+        new_password:
+          type: string
+      required: [current_password, new_password]
+
+    ChangePasswordResponse:
+      type: object
+      properties:
+        message:
+          type: string
+
+    Reading:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        user_id:
+          type: string
+          format: uuid
+        engine_id:
+          type: string
+        workflow_id:
+          type: string
+          nullable: true
+        input_hash:
+          type: string
+        input_data:
+          type: object
+          additionalProperties: true
+        result_data:
+          type: object
+          additionalProperties: true
+        witness_prompt:
+          type: string
+          nullable: true
+        consciousness_level:
+          type: integer
+        calculation_time_ms:
+          type: number
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+
+    ReadingsListResponse:
+      type: object
+      properties:
+        readings:
+          type: array
+          items:
+            $ref: "#/components/schemas/Reading"
+        total:
+          type: integer
+        limit:
+          type: integer
+        offset:
+          type: integer
+
+    ReadingsStatsEntry:
+      type: object
+      properties:
+        engine_id:
+          type: string
+        count:
+          type: integer
+
+    ReadingsStatsResponse:
+      type: object
+      properties:
+        stats:
+          type: array
+          items:
+            $ref: "#/components/schemas/ReadingsStatsEntry"
+        total:
+          type: integer
+
+    LegacyPanchangaRequest:
+      type: object
+      properties:
+        date:
+          type: string
+        time:
+          type: string
+          nullable: true
+        latitude:
+          type: number
+        longitude:
+          type: number
+        timezone:
+          type: string
+        name:
+          type: string
+          nullable: true
+      required: [date, latitude, longitude, timezone]
+
+    LegacyPanchangaResponse:
+      type: object
+      properties:
+        tithi_index:
+          type: integer
+        tithi_name:
+          type: string
+        tithi_value:
+          type: number
+        nakshatra_index:
+          type: integer
+        nakshatra_name:
+          type: string
+        nakshatra_value:
+          type: number
+        yoga_index:
+          type: integer
+        yoga_name:
+          type: string
+        yoga_value:
+          type: number
+        karana_index:
+          type: integer
+        karana_name:
+          type: string
+        karana_value:
+          type: number
+        vara_index:
+          type: integer
+        vara_name:
+          type: string
+        solar_longitude:
+          type: number
+        lunar_longitude:
+          type: number
+        julian_day:
+          type: number
+
+    LegacyGhatiRequest:
+      type: object
+      properties:
+        latitude:
+          type: number
+          nullable: true
+        longitude:
+          type: number
+          nullable: true
+
+    LegacyGhatiResponse:
+      type: object
+      properties:
+        ghati:
+          type: integer
+        pala:
+          type: integer
+        vipala:
+          type: integer
+        utc_timestamp:
+          type: string
+          format: date-time
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+        error_code:
+          type: string
+        details:
+          type: object
+          nullable: true

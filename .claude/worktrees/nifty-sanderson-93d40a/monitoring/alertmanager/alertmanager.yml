@@ -1,0 +1,115 @@
+# Alertmanager configuration for Noesis
+# Handles routing and notification of alerts from Prometheus
+
+global:
+  resolve_timeout: 5m
+  # SMTP configuration (uncomment and configure for email alerts)
+  # smtp_smarthost: 'smtp.example.com:587'
+  # smtp_from: 'alertmanager@example.com'
+  # smtp_auth_username: 'alertmanager'
+  # smtp_auth_password: 'password'
+  
+  # Slack configuration (uncomment and configure for Slack alerts)
+  # slack_api_url: 'https://hooks.slack.com/services/xxx/yyy/zzz'
+
+# Route tree
+route:
+  group_by: ['alertname', 'severity', 'service']
+  group_wait: 30s
+  group_interval: 5m
+  repeat_interval: 4h
+  receiver: 'default-receiver'
+  
+  routes:
+    # Critical alerts - immediate notification
+    - match:
+        severity: critical
+      receiver: 'critical-receiver'
+      group_wait: 10s
+      repeat_interval: 1h
+      continue: true
+    
+    # Warning alerts
+    - match:
+        severity: warning
+      receiver: 'warning-receiver'
+      group_wait: 1m
+      repeat_interval: 4h
+    
+    # Infrastructure alerts
+    - match:
+        service: infrastructure
+      receiver: 'infrastructure-receiver'
+      group_by: ['alertname', 'instance']
+    
+    # Database alerts
+    - match_re:
+        service: ^(postgres|redis)$
+      receiver: 'database-receiver'
+      group_by: ['alertname', 'service']
+
+# Inhibition rules
+inhibit_rules:
+  # If a critical alert fires, suppress warnings for the same alertname
+  - source_match:
+      severity: 'critical'
+    target_match:
+      severity: 'warning'
+    equal: ['alertname', 'service']
+  
+  # If API is down, suppress other API alerts
+  - source_match:
+      alertname: 'NoesisAPIDown'
+    target_match_re:
+      alertname: '^Noesis.*'
+    equal: ['service']
+
+# Receivers
+receivers:
+  - name: 'default-receiver'
+    # Webhook receiver for generic alerts
+    webhook_configs:
+      - url: 'http://noesis-api:8080/webhooks/alerts'
+        send_resolved: true
+        max_alerts: 10
+
+  - name: 'critical-receiver'
+    # Critical alerts go to multiple channels
+    webhook_configs:
+      - url: 'http://noesis-api:8080/webhooks/alerts/critical'
+        send_resolved: true
+    # Uncomment for Slack
+    # slack_configs:
+    #   - channel: '#noesis-critical'
+    #     title: '{{ .GroupLabels.alertname }}'
+    #     text: '{{ range .Alerts }}{{ .Annotations.summary }}{{ end }}'
+    #     send_resolved: true
+    # Uncomment for PagerDuty
+    # pagerduty_configs:
+    #   - service_key: '<your-pagerduty-key>'
+    #     severity: critical
+
+  - name: 'warning-receiver'
+    webhook_configs:
+      - url: 'http://noesis-api:8080/webhooks/alerts/warning'
+        send_resolved: true
+    # Uncomment for Slack
+    # slack_configs:
+    #   - channel: '#noesis-alerts'
+    #     title: '{{ .GroupLabels.alertname }}'
+    #     text: '{{ range .Alerts }}{{ .Annotations.summary }}{{ end }}'
+    #     send_resolved: true
+
+  - name: 'infrastructure-receiver'
+    webhook_configs:
+      - url: 'http://noesis-api:8080/webhooks/alerts/infrastructure'
+        send_resolved: true
+
+  - name: 'database-receiver'
+    webhook_configs:
+      - url: 'http://noesis-api:8080/webhooks/alerts/database'
+        send_resolved: true
+
+# Templates for notification formatting
+templates:
+  - '/etc/alertmanager/templates/*.tmpl'

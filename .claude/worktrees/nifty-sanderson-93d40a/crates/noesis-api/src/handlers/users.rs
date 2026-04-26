@@ -1,0 +1,386 @@
+use crate::{error::ApiError, AppState};
+use axum::{
+    extract::{Extension, Json, Query, State},
+    http::StatusCode,
+    response::{IntoResponse, Response},
+};
+use chrono::{Datelike, NaiveDate, NaiveTime};
+use noesis_auth::AuthUser;
+use noesis_core::EngineError;
+use serde::{Deserialize, Serialize};
+use utoipa::ToSchema;
+
+#[derive(Serialize, ToSchema)]
+pub struct UserResponse {
+    pub id: String,
+    pub email: String,
+    pub full_name: String,
+    pub tier: String,
+    pub consciousness_level: i32,
+    pub experience_points: i32,
+    pub birth_date: Option<NaiveDate>,
+    pub birth_time: Option<NaiveTime>,
+    pub birth_location: Option<LocationResponse>,
+    pub timezone: Option<String>,
+    pub preferences: serde_json::Value,
+}
+
+#[derive(Serialize, ToSchema)]
+pub struct LocationResponse {
+    pub lat: f64,
+    pub lng: f64,
+    pub name: Option<String>,
+}
+
+#[derive(Deserialize, ToSchema)]
+pub struct UpdateUserRequest {
+    pub full_name: Option<String>,
+    pub email: Option<String>,
+    pub birth_date: Option<NaiveDate>,
+    pub birth_time: Option<NaiveTime>,
+    pub birth_location_lat: Option<f64>,
+    pub birth_location_lng: Option<f64>,
+    pub birth_location_name: Option<String>,
+    pub timezone: Option<String>,
+    pub preferences: Option<serde_json::Value>,
+}
+
+#[derive(Deserialize, Default)]
+pub struct UserUsageQuery {
+    pub engine_limit: Option<i64>,
+}
+
+#[derive(Serialize, ToSchema)]
+pub struct UserUsageWindowSummary {
+    pub total: i64,
+    pub success: i64,
+    pub failure: i64,
+}
+
+#[derive(Serialize, ToSchema)]
+pub struct UserUsageEngineEntry {
+    pub engine_id: String,
+    pub request_count: i64,
+}
+
+#[derive(Serialize, ToSchema)]
+pub struct UserUsageResponse {
+    pub user_id: String,
+    pub daily: UserUsageWindowSummary,
+    pub monthly: UserUsageWindowSummary,
+    pub engine_breakdown: Vec<UserUsageEngineEntry>,
+}
+
+/// GET /api/v1/users/me -- get the authenticated user's profile
+#[utoipa::path(
+    get,
+    path = "/api/v1/users/me",
+    tag = "users",
+    responses(
+        (status = 200, description = "User profile retrieved", body = UserResponse),
+        (status = 401, description = "Unauthorized", body = crate::ErrorResponse),
+        (status = 500, description = "Internal server error", body = crate::ErrorResponse),
+    ),
+    security(
+        ("bearer_auth" = []),
+        ("api_key" = [])
+    )
+)]
+pub async fn get_me(
+    State(state): State<AppState>,
+    Extension(auth_user): Extension<AuthUser>,
+) -> Result<Response, ApiError> {
+    // Fetch user
+    let user_uuid = uuid::Uuid::parse_str(&auth_user.user_id)
+        .map_err(|_| EngineError::AuthError("Invalid user ID in token".to_string()))?;
+
+    let user = state
+        .user_repository
+        .get_user_by_id(user_uuid)
+        .await
+        .map_err(|e| EngineError::InternalError(format!("Database error: {}", e)))?
+        .ok_or_else(|| EngineError::AuthError("User not found".to_string()))?;
+
+    // Fetch profile
+    let profile = state
+        .user_repository
+        .get_profile(user_uuid)
+        .await
+        .map_err(|e| EngineError::InternalError(format!("Database error: {}", e)))?;
+
+    // Construct response
+    let (birth_date, birth_time, birth_location, timezone, preferences) = if let Some(p) = profile {
+        (
+            p.birth_date,
+            p.birth_time,
+            if let (Some(lat), Some(lng)) = (p.birth_location_lat, p.birth_location_lng) {
+                Some(LocationResponse {
+                    lat,
+                    lng,
+                    name: p.birth_location_name,
+                })
+            } else {
+                None
+            },
+            p.timezone,
+            p.preferences,
+        )
+    } else {
+        (None, None, None, None, serde_json::json!({}))
+    };
+
+    let response = UserResponse {
+        id: user.id.to_string(),
+        email: user.email,
+        full_name: user.full_name,
+        tier: user.tier,
+        consciousness_level: user.consciousness_level,
+        experience_points: user.experience_points,
+        birth_date,
+        birth_time,
+        birth_location,
+        timezone,
+        preferences,
+    };
+
+    Ok((StatusCode::OK, Json(response)).into_response())
+}
+
+/// GET /api/v1/users/me/usage -- usage analytics for the authenticated user
+#[utoipa::path(
+    get,
+    path = "/api/v1/users/me/usage",
+    tag = "users",
+    params(
+        ("engine_limit" = Option<i64>, Query, description = "Max engine rows in breakdown (default 10, max 50)")
+    ),
+    responses(
+        (status = 200, description = "User usage analytics", body = UserUsageResponse),
+        (status = 401, description = "Unauthorized", body = crate::ErrorResponse),
+        (status = 503, description = "Usage repository unavailable", body = crate::ErrorResponse),
+        (status = 500, description = "Internal server error", body = crate::ErrorResponse),
+    ),
+    security(
+        ("bearer_auth" = []),
+        ("api_key" = [])
+    )
+)]
+pub async fn get_my_usage(
+    State(state): State<AppState>,
+    Extension(auth_user): Extension<AuthUser>,
+    Query(query): Query<UserUsageQuery>,
+) -> Result<Response, ApiError> {
+    let usage_repo = state
+        .usage_repository
+        .as_ref()
+        .ok_or_else(|| EngineError::InternalError("Usage repository not configured".to_string()))?;
+
+    let user_uuid = uuid::Uuid::parse_str(&auth_user.user_id)
+        .map_err(|_| EngineError::AuthError("Invalid user ID in token".to_string()))?;
+
+    let engine_limit = query.engine_limit.unwrap_or(10).clamp(1, 50);
+
+    let summary = usage_repo
+        .user_usage_summary(user_uuid)
+        .await
+        .map_err(|e| EngineError::InternalError(format!("Failed to fetch usage summary: {e}")))?;
+
+    let engine_breakdown = usage_repo
+        .user_engine_breakdown(user_uuid, 24 * 30, engine_limit)
+        .await
+        .map_err(|e| {
+            EngineError::InternalError(format!("Failed to fetch user engine breakdown: {e}"))
+        })?
+        .into_iter()
+        .map(|row| UserUsageEngineEntry {
+            engine_id: row.engine_id,
+            request_count: row.request_count,
+        })
+        .collect::<Vec<_>>();
+
+    Ok((
+        StatusCode::OK,
+        Json(UserUsageResponse {
+            user_id: auth_user.user_id,
+            daily: UserUsageWindowSummary {
+                total: summary.daily_total,
+                success: summary.daily_success,
+                failure: summary.daily_failure,
+            },
+            monthly: UserUsageWindowSummary {
+                total: summary.monthly_total,
+                success: summary.monthly_success,
+                failure: summary.monthly_failure,
+            },
+            engine_breakdown,
+        }),
+    )
+        .into_response())
+}
+
+impl UpdateUserRequest {
+    fn validate(&self) -> Result<(), EngineError> {
+        if let Some(email) = &self.email {
+            if !email.contains('@') || !email.contains('.') {
+                return Err(EngineError::ValidationError("Invalid email format".into()));
+            }
+        }
+        if let Some(date) = self.birth_date {
+            if date.year() < 1000 || date.year() > 3000 {
+                return Err(EngineError::ValidationError(format!(
+                    "Birth year {} out of supported range (1000-3000)",
+                    date.year()
+                )));
+            }
+        }
+        if let Some(lat) = self.birth_location_lat {
+            if !(-90.0..=90.0).contains(&lat) {
+                return Err(EngineError::ValidationError(
+                    "Latitude must be between -90 and 90".into(),
+                ));
+            }
+        }
+        if let Some(lng) = self.birth_location_lng {
+            if !(-180.0..=180.0).contains(&lng) {
+                return Err(EngineError::ValidationError(
+                    "Longitude must be between -180 and 180".into(),
+                ));
+            }
+        }
+        if let Some(tz) = &self.timezone {
+            if tz.trim().is_empty() {
+                return Err(EngineError::ValidationError(
+                    "Timezone cannot be empty".into(),
+                ));
+            }
+        }
+        Ok(())
+    }
+}
+
+/// PATCH /api/v1/users/me -- update the authenticated user's profile
+#[utoipa::path(
+    patch,
+    path = "/api/v1/users/me",
+    tag = "users",
+    request_body = UpdateUserRequest,
+    responses(
+        (status = 200, description = "Profile updated successfully"),
+        (status = 401, description = "Unauthorized", body = crate::ErrorResponse),
+        (status = 422, description = "Validation error", body = crate::ErrorResponse),
+        (status = 500, description = "Internal server error", body = crate::ErrorResponse),
+    ),
+    security(
+        ("bearer_auth" = []),
+        ("api_key" = [])
+    )
+)]
+pub async fn update_me(
+    State(state): State<AppState>,
+    Extension(auth_user): Extension<AuthUser>,
+    Json(payload): Json<UpdateUserRequest>,
+) -> Result<Response, ApiError> {
+    payload.validate()?;
+
+    let user_uuid = uuid::Uuid::parse_str(&auth_user.user_id)
+        .map_err(|_| EngineError::AuthError("Invalid user ID in token".to_string()))?;
+
+    // Update User table fields
+    if payload.full_name.is_some() || payload.email.is_some() {
+        state
+            .user_repository
+            .update_user(user_uuid, payload.full_name, payload.email)
+            .await
+            .map_err(|e| EngineError::InternalError(format!("Database error: {}", e)))?;
+    }
+
+    // Update Profile table fields
+    if payload.birth_date.is_some()
+        || payload.birth_time.is_some()
+        || payload.birth_location_lat.is_some()
+        || payload.birth_location_lng.is_some()
+        || payload.birth_location_name.is_some()
+        || payload.timezone.is_some()
+        || payload.preferences.is_some()
+    {
+        state
+            .user_repository
+            .update_profile(
+                user_uuid,
+                payload.birth_date,
+                payload.birth_time,
+                payload.birth_location_lat,
+                payload.birth_location_lng,
+                payload.birth_location_name,
+                payload.timezone,
+                payload.preferences,
+            )
+            .await
+            .map_err(|e| EngineError::InternalError(format!("Database error: {}", e)))?;
+    }
+
+    Ok((
+        StatusCode::OK,
+        Json(serde_json::json!({"message": "Profile updated successfully"})),
+    )
+        .into_response())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_update_profile_validation() {
+        let req = UpdateUserRequest {
+            full_name: None,
+            email: Some("valid@example.com".to_string()),
+            birth_date: None,
+            birth_time: None,
+            birth_location_lat: Some(45.0),
+            birth_location_lng: Some(90.0),
+            birth_location_name: None,
+            timezone: Some("UTC".to_string()),
+            preferences: None,
+        };
+        assert!(req.validate().is_ok());
+
+        let bad_email = UpdateUserRequest {
+            email: Some("invalid-email".to_string()),
+            ..req_base()
+        };
+        assert!(bad_email.validate().is_err());
+
+        let bad_lat = UpdateUserRequest {
+            birth_location_lat: Some(91.0),
+            ..req_base()
+        };
+        assert!(bad_lat.validate().is_err());
+
+        let bad_lng = UpdateUserRequest {
+            birth_location_lng: Some(-181.0),
+            ..req_base()
+        };
+        assert!(bad_lng.validate().is_err());
+
+        let empty_tz = UpdateUserRequest {
+            timezone: Some("   ".to_string()),
+            ..req_base()
+        };
+        assert!(empty_tz.validate().is_err());
+    }
+
+    fn req_base() -> UpdateUserRequest {
+        UpdateUserRequest {
+            full_name: None,
+            email: None,
+            birth_date: None,
+            birth_time: None,
+            birth_location_lat: None,
+            birth_location_lng: None,
+            birth_location_name: None,
+            timezone: None,
+            preferences: None,
+        }
+    }
+}

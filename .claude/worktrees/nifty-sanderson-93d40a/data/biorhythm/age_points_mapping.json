@@ -1,0 +1,193 @@
+{
+  "age_points_system": {
+    "description": "Traditional Chinese face reading maps 100 age points across the face, providing temporal insights for life planning and optimization.",
+    "total_points": 100,
+    "mapping_principle": "Each age point corresponds to a specific facial location and life period, allowing for precise timing analysis."
+  },
+  "age_regions": {
+    "early_childhood": {
+      "ages": "1-14",
+      "location": "upper_forehead",
+      "significance": "Foundation years and family influence",
+      "key_points": {
+        "1": {"location": "hairline_center", "meaning": "Birth and early infancy"},
+        "2": {"location": "hairline_left", "meaning": "Family support"},
+        "3": {"location": "hairline_right", "meaning": "Early health"},
+        "7": {"location": "upper_forehead_left", "meaning": "Childhood development"},
+        "8": {"location": "upper_forehead_center", "meaning": "Early education"},
+        "9": {"location": "upper_forehead_right", "meaning": "Family harmony"},
+        "14": {"location": "mid_forehead_transition", "meaning": "Adolescent transition"}
+      }
+    },
+    "youth_development": {
+      "ages": "15-28",
+      "location": "mid_forehead",
+      "significance": "Education, early career, and relationship formation",
+      "key_points": {
+        "15": {"location": "mid_forehead_left", "meaning": "Educational opportunities"},
+        "16": {"location": "mid_forehead_center", "meaning": "Academic achievement"},
+        "17": {"location": "mid_forehead_right", "meaning": "Early career direction"},
+        "19": {"location": "forehead_temple_left", "meaning": "Travel and exploration"},
+        "20": {"location": "forehead_temple_right", "meaning": "Independence"},
+        "22": {"location": "eyebrow_head_left", "meaning": "Friendship development"},
+        "23": {"location": "eyebrow_head_right", "meaning": "Social connections"},
+        "25": {"location": "eyebrow_middle_left", "meaning": "Career establishment"},
+        "26": {"location": "eyebrow_middle_right", "meaning": "Relationship formation"},
+        "28": {"location": "eyebrow_tail", "meaning": "Early marriage potential"}
+      }
+    },
+    "prime_years": {
+      "ages": "29-42",
+      "location": "eye_area",
+      "significance": "Career peak, marriage, and family building",
+      "key_points": {
+        "29": {"location": "upper_eyelid_left", "meaning": "Property acquisition"},
+        "30": {"location": "upper_eyelid_right", "meaning": "Wealth accumulation"},
+        "31": {"location": "eye_corner_left", "meaning": "Marriage harmony"},
+        "32": {"location": "eye_corner_right", "meaning": "Spouse relationship"},
+        "34": {"location": "lower_eyelid_left", "meaning": "Children fortune"},
+        "35": {"location": "lower_eyelid_right", "meaning": "Family expansion"},
+        "36": {"location": "eye_center_left", "meaning": "Career advancement"},
+        "37": {"location": "eye_center_right", "meaning": "Professional recognition"},
+        "39": {"location": "temple_left", "meaning": "Travel and expansion"},
+        "40": {"location": "temple_right", "meaning": "Environmental changes"},
+        "41": {"location": "cheek_upper_left", "meaning": "Social status"},
+        "42": {"location": "cheek_upper_right", "meaning": "Leadership position"}
+      }
+    },
+    "maturity_phase": {
+      "ages": "43-56",
+      "location": "nose_area",
+      "significance": "Peak achievement, wealth accumulation, and wisdom development",
+      "key_points": {
+        "43": {"location": "nose_bridge_upper", "meaning": "Health and vitality"},
+        "44": {"location": "nose_bridge_middle", "meaning": "Constitutional strength"},
+        "45": {"location": "nose_bridge_lower", "meaning": "Mid-life transition"},
+        "46": {"location": "nose_wing_left", "meaning": "Financial stability"},
+        "47": {"location": "nose_wing_right", "meaning": "Wealth management"},
+        "48": {"location": "nose_tip", "meaning": "Peak earning period"},
+        "49": {"location": "philtrum_upper", "meaning": "Legacy building"},
+        "50": {"location": "philtrum_middle", "meaning": "Wisdom accumulation"},
+        "51": {"location": "philtrum_lower", "meaning": "Mentorship role"},
+        "52": {"location": "upper_lip_left", "meaning": "Communication mastery"},
+        "53": {"location": "upper_lip_center", "meaning": "Teaching ability"},
+        "54": {"location": "upper_lip_right", "meaning": "Influence expansion"},
+        "55": {"location": "mouth_corner_left", "meaning": "Relationship depth"},
+        "56": {"location": "mouth_corner_right", "meaning": "Partnership maturity"}
+      }
+    },
+    "wisdom_years": {
+      "ages": "57-70",
+      "location": "mouth_chin_area",
+      "significance": "Wisdom sharing, mentorship, and spiritual development",
+      "key_points": {
+        "57": {"location": "lower_lip_left", "meaning": "Wisdom expression"},
+        "58": {"location": "lower_lip_center", "meaning": "Teaching and guidance"},
+        "59": {"location": "lower_lip_right", "meaning": "Legacy transmission"},
+        "60": {"location": "chin_upper_left", "meaning": "Grandparent role"},
+        "61": {"location": "chin_upper_center", "meaning": "Family elder status"},
+        "62": {"location": "chin_upper_right", "meaning": "Community respect"},
+        "63": {"location": "chin_middle_left", "meaning": "Spiritual awakening"},
+        "64": {"location": "chin_middle_center", "meaning": "Inner peace"},
+        "65": {"location": "chin_middle_right", "meaning": "Contentment"},
+        "66": {"location": "chin_lower_left", "meaning": "Health maintenance"},
+        "67": {"location": "chin_lower_center", "meaning": "Longevity"},
+        "68": {"location": "chin_lower_right", "meaning": "Vitality preservation"},
+        "69": {"location": "jaw_left", "meaning": "Stability and security"},
+        "70": {"location": "jaw_right", "meaning": "Peaceful transition"}
+      }
+    },
+    "elder_phase": {
+      "ages": "71-100",
+      "location": "jaw_neck_area",
+      "significance": "Spiritual cultivation, legacy completion, and transcendence",
+      "key_points": {
+        "75": {"location": "jaw_angle_left", "meaning": "Spiritual mastery"},
+        "80": {"location": "jaw_angle_right", "meaning": "Transcendent wisdom"},
+        "85": {"location": "neck_upper", "meaning": "Universal connection"},
+        "90": {"location": "neck_middle", "meaning": "Cosmic consciousness"},
+        "95": {"location": "neck_lower", "meaning": "Preparation for transition"},
+        "100": {"location": "throat_center", "meaning": "Complete fulfillment"}
+      }
+    }
+  },
+  "favorable_periods": {
+    "universal_favorable": [19, 23, 28, 35, 42, 49, 56, 63, 70, 77, 84],
+    "career_favorable": [25, 32, 39, 46, 53, 60],
+    "relationship_favorable": [22, 29, 36, 43, 50, 57],
+    "health_favorable": [21, 28, 35, 42, 49, 56, 63, 70],
+    "wealth_favorable": [26, 33, 40, 47, 54, 61, 68]
+  },
+  "challenging_periods": {
+    "universal_challenging": [24, 31, 38, 45, 52, 59, 66, 73, 80],
+    "career_challenging": [27, 34, 41, 48, 55, 62],
+    "relationship_challenging": [30, 37, 44, 51, 58, 65],
+    "health_challenging": [33, 40, 47, 54, 61, 68, 75],
+    "financial_challenging": [29, 36, 43, 50, 57, 64, 71]
+  },
+  "life_phase_analysis": {
+    "foundation_phase": {
+      "ages": "1-28",
+      "focus": "Learning, development, and foundation building",
+      "key_themes": ["Education", "Family influence", "Character formation", "Early relationships"],
+      "optimal_activities": ["Learning", "Skill development", "Relationship building", "Health establishment"]
+    },
+    "building_phase": {
+      "ages": "29-42",
+      "focus": "Career establishment, family building, and wealth accumulation",
+      "key_themes": ["Career advancement", "Marriage", "Children", "Property acquisition"],
+      "optimal_activities": ["Career focus", "Family building", "Investment", "Network expansion"]
+    },
+    "peak_phase": {
+      "ages": "43-56",
+      "focus": "Achievement, leadership, and wealth maximization",
+      "key_themes": ["Peak performance", "Leadership roles", "Wealth accumulation", "Influence"],
+      "optimal_activities": ["Leadership", "Mentorship", "Investment", "Legacy building"]
+    },
+    "wisdom_phase": {
+      "ages": "57-70",
+      "focus": "Wisdom sharing, mentorship, and spiritual development",
+      "key_themes": ["Teaching", "Mentorship", "Spiritual growth", "Family elder role"],
+      "optimal_activities": ["Teaching", "Mentoring", "Spiritual practice", "Family guidance"]
+    },
+    "transcendence_phase": {
+      "ages": "71-100",
+      "focus": "Spiritual cultivation, legacy completion, and preparation for transition",
+      "key_themes": ["Spiritual mastery", "Legacy completion", "Transcendence", "Peace"],
+      "optimal_activities": ["Spiritual practice", "Wisdom sharing", "Peace cultivation", "Preparation"]
+    }
+  },
+  "timing_principles": {
+    "early_timing": "Ages 1-35 focus on foundation and development",
+    "middle_timing": "Ages 36-65 focus on achievement and accumulation",
+    "late_timing": "Ages 66-100 focus on wisdom and transcendence",
+    "cyclical_nature": "Life patterns repeat in 7-year and 12-year cycles",
+    "personal_variation": "Individual timing may vary based on constitutional type"
+  },
+  "application_guidelines": {
+    "favorable_period_actions": [
+      "Initiate new projects during favorable ages",
+      "Make important decisions during peak periods",
+      "Focus on corresponding life areas during optimal timing",
+      "Maximize opportunities during favorable cycles"
+    ],
+    "challenging_period_strategies": [
+      "Exercise extra caution during challenging ages",
+      "Focus on maintenance rather than expansion",
+      "Seek support and guidance during difficult periods",
+      "Use challenges as opportunities for growth"
+    ],
+    "general_principles": [
+      "Align major life decisions with favorable timing",
+      "Prepare for challenging periods in advance",
+      "Use age point analysis for strategic planning",
+      "Combine with other face reading insights for complete picture"
+    ]
+  },
+  "cultural_context": {
+    "historical_origin": "Age point mapping has been used in Chinese face reading for over 1000 years",
+    "philosophical_basis": "Based on the principle that facial features reflect life timing and destiny",
+    "practical_application": "Used for life planning, decision timing, and personal optimization",
+    "modern_relevance": "Provides framework for understanding life phases and optimal timing"
+  }
+}

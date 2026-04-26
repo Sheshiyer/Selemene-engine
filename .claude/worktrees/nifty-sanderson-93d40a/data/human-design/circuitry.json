@@ -1,0 +1,276 @@
+{
+  "circuitry_info": {
+    "name": "Human Design Circuitry",
+    "description": "The 3 main circuits that organize the 36 channels and their themes",
+    "total_circuits": 3,
+    "purpose": "Circuits describe the fundamental ways energy flows and operates in Human Design",
+    "organization": "Each circuit has specific themes, motivations, and ways of operating",
+    "source": "Human Design System by Ra Uru Hu"
+  },
+  "circuit_overview": {
+    "Individual": {
+      "percentage": "~33%",
+      "theme": "Mutation and Empowerment",
+      "purpose": "Individual expression and unique mutation",
+      "energy": "Pulse energy - on/off, creative bursts"
+    },
+    "Tribal": {
+      "percentage": "~33%", 
+      "theme": "Support and Resources",
+      "purpose": "Caring for the tribe and material security",
+      "energy": "Cyclical energy - rhythmic, sustainable"
+    },
+    "Collective": {
+      "percentage": "~33%",
+      "theme": "Sharing and Understanding", 
+      "purpose": "Collective evolution and sharing knowledge",
+      "energy": "Wave energy - building and releasing"
+    }
+  },
+  "circuits": {
+    "Individual": {
+      "name": "Individual Circuit",
+      "theme": "Mutation and Empowerment",
+      "description": "The circuit of individual expression, creativity, and unique mutation. Focused on empowering the individual to express their uniqueness.",
+      "energy_type": "Pulse Energy",
+      "energy_characteristics": [
+        "On/off pulse rhythm",
+        "Creative bursts followed by rest",
+        "Not sustainable 24/7",
+        "Needs downtime between pulses",
+        "Irregular but powerful"
+      ],
+      "sub_circuits": {
+        "Knowing": {
+          "name": "Knowing Circuit",
+          "channels": ["1-8", "7-31", "13-33"],
+          "theme": "Individual knowing and leadership",
+          "description": "About individual knowing, leadership, and sharing unique insights",
+          "characteristics": [
+            "Individual leadership",
+            "Unique insights",
+            "Personal knowing",
+            "Inspiring others through example"
+          ]
+        },
+        "Centering": {
+          "name": "Centering Circuit", 
+          "channels": ["10-20", "25-51", "28-38"],
+          "theme": "Individual centering and love",
+          "description": "About individual centering, self-love, and authentic expression",
+          "characteristics": [
+            "Self-love and acceptance",
+            "Authentic expression",
+            "Individual centering",
+            "Personal authenticity"
+          ]
+        },
+        "Integration": {
+          "name": "Integration Circuit",
+          "channels": ["2-14", "3-60", "9-52", "12-22", "15-5", "26-44", "34-57"],
+          "theme": "Individual integration and mutation",
+          "description": "About integrating individual energy and creating mutation",
+          "characteristics": [
+            "Energy integration",
+            "Creative mutation",
+            "Individual power",
+            "Unique expression"
+          ]
+        }
+      },
+      "keynotes": [
+        "Individual empowerment",
+        "Unique expression",
+        "Creative mutation",
+        "Personal authenticity",
+        "Inspiring others through uniqueness"
+      ],
+      "challenges": [
+        "Pressure to be constantly creative",
+        "Others expecting constant inspiration",
+        "Burnout from not honoring pulse rhythm",
+        "Feeling responsible for others' empowerment"
+      ],
+      "gifts": [
+        "Unique creative expression",
+        "Inspiring individual example",
+        "Mutative influence",
+        "Authentic leadership"
+      ],
+      "relationships": {
+        "with_tribal": "Can inspire tribal support systems",
+        "with_collective": "Can mutate collective understanding",
+        "within_individual": "Mutual inspiration and creative collaboration"
+      }
+    },
+    "Tribal": {
+      "name": "Tribal Circuit",
+      "theme": "Support and Resources",
+      "description": "The circuit of tribal support, material security, and caring for the community. Focused on ensuring the tribe's survival and well-being.",
+      "energy_type": "Cyclical Energy",
+      "energy_characteristics": [
+        "Rhythmic, cyclical patterns",
+        "Sustainable over time",
+        "Connected to natural rhythms",
+        "Consistent and reliable",
+        "Seasonal variations"
+      ],
+      "sub_circuits": {
+        "Ego": {
+          "name": "Ego Circuit",
+          "channels": ["21-45", "40-37"],
+          "theme": "Tribal leadership and control",
+          "description": "About tribal leadership, control of resources, and material security",
+          "characteristics": [
+            "Material leadership",
+            "Resource management",
+            "Tribal authority",
+            "Practical control"
+          ]
+        },
+        "Defense": {
+          "name": "Defense Circuit",
+          "channels": ["17-62", "18-58", "39-55", "54-32"],
+          "theme": "Tribal defense and survival",
+          "description": "About defending the tribe and ensuring survival",
+          "characteristics": [
+            "Tribal protection",
+            "Survival instincts",
+            "Community defense",
+            "Safety and security"
+          ]
+        }
+      },
+      "keynotes": [
+        "Tribal support and care",
+        "Material security",
+        "Resource sharing",
+        "Community survival",
+        "Practical assistance"
+      ],
+      "challenges": [
+        "Over-caring and burnout",
+        "Difficulty saying no to tribal needs",
+        "Sacrificing individual needs for tribe",
+        "Becoming overly controlling"
+      ],
+      "gifts": [
+        "Natural caring and support",
+        "Resource management abilities",
+        "Community building skills",
+        "Practical assistance"
+      ],
+      "relationships": {
+        "with_individual": "Provides support for individual expression",
+        "with_collective": "Supports collective endeavors practically",
+        "within_tribal": "Mutual support and resource sharing"
+      }
+    },
+    "Collective": {
+      "name": "Collective Circuit",
+      "theme": "Sharing and Understanding",
+      "description": "The circuit of collective evolution, sharing knowledge, and understanding. Focused on the evolution and advancement of humanity as a whole.",
+      "energy_type": "Wave Energy",
+      "energy_characteristics": [
+        "Building wave patterns",
+        "Accumulation and release",
+        "Emotional and mental waves",
+        "Cyclical building to peak",
+        "Natural rhythm of gathering and sharing"
+      ],
+      "sub_circuits": {
+        "Logic": {
+          "name": "Logic Circuit",
+          "channels": ["11-56", "16-48", "35-36", "47-64", "63-4"],
+          "theme": "Collective logic and patterns",
+          "description": "About understanding patterns, logic, and collective mental processes",
+          "characteristics": [
+            "Pattern recognition",
+            "Logical understanding",
+            "Mental processing",
+            "Systematic thinking"
+          ]
+        },
+        "Abstract": {
+          "name": "Abstract Circuit", 
+          "channels": ["13-33", "19-49", "29-46", "30-41", "36-35", "41-30"],
+          "theme": "Collective experience and wisdom",
+          "description": "About sharing experiences, stories, and collective wisdom",
+          "characteristics": [
+            "Experience sharing",
+            "Storytelling",
+            "Collective memory",
+            "Wisdom transmission"
+          ]
+        },
+        "Sensing": {
+          "name": "Sensing Circuit",
+          "channels": ["20-10", "23-43", "24-61"],
+          "theme": "Collective sensing and awareness",
+          "description": "About collective sensing, awareness, and understanding",
+          "characteristics": [
+            "Collective awareness",
+            "Sensing patterns",
+            "Group consciousness",
+            "Shared understanding"
+          ]
+        }
+      },
+      "keynotes": [
+        "Collective evolution",
+        "Knowledge sharing",
+        "Understanding patterns",
+        "Group consciousness",
+        "Humanity's advancement"
+      ],
+      "challenges": [
+        "Information overload",
+        "Difficulty processing collective input",
+        "Overwhelm from group consciousness",
+        "Pressure to understand everything"
+      ],
+      "gifts": [
+        "Pattern recognition abilities",
+        "Collective wisdom",
+        "Knowledge synthesis",
+        "Understanding human nature"
+      ],
+      "relationships": {
+        "with_individual": "Benefits from individual mutations",
+        "with_tribal": "Shares knowledge with tribal communities",
+        "within_collective": "Collaborative understanding and evolution"
+      }
+    }
+  },
+  "circuit_interactions": {
+    "individual_tribal": {
+      "description": "Individual creativity inspiring tribal support",
+      "dynamics": "Individual expression can inspire tribal communities to provide support",
+      "examples": "Artist (Individual) supported by community (Tribal)"
+    },
+    "individual_collective": {
+      "description": "Individual mutation advancing collective understanding",
+      "dynamics": "Individual innovations contribute to collective evolution",
+      "examples": "Inventor (Individual) advancing human knowledge (Collective)"
+    },
+    "tribal_collective": {
+      "description": "Tribal support enabling collective sharing",
+      "dynamics": "Tribal resources support collective knowledge sharing",
+      "examples": "Community (Tribal) funding education (Collective)"
+    }
+  },
+  "practical_applications": {
+    "understanding_energy": "Recognize which circuit energy you're operating from",
+    "relationship_dynamics": "Understand how different circuits interact",
+    "career_alignment": "Choose work that aligns with your circuit themes",
+    "energy_management": "Honor the energy patterns of your circuits",
+    "team_building": "Create balanced teams with all three circuits"
+  },
+  "circuit_balance": {
+    "importance": "All three circuits are necessary for healthy human society",
+    "individual_role": "Provides mutation, creativity, and unique expression",
+    "tribal_role": "Provides support, resources, and community care",
+    "collective_role": "Provides understanding, knowledge, and evolution",
+    "integration": "Healthy individuals and societies need all three circuits functioning"
+  }
+}

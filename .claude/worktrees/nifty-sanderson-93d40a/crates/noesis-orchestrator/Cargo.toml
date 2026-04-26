@@ -1,0 +1,38 @@
+[package]
+name = "noesis-orchestrator"
+version = "3.0.0"
+edition = "2021"
+description = "Workflow orchestrator for parallel multi-engine execution"
+
+[dependencies]
+noesis-core = { path = "../noesis-core" }
+noesis-cache = { path = "../noesis-cache" }
+noesis-witness = { path = "../noesis-witness" }
+noesis-bridge = { path = "../noesis-bridge" }
+engine-biorhythm = { path = "../engine-biorhythm" }
+engine-biofield = { path = "../engine-biofield" }
+engine-biofield-capture = { path = "../engine-biofield-capture" }
+engine-face-reading = { path = "../engine-face-reading" }
+engine-gene-keys = { path = "../engine-gene-keys" }
+engine-human-design = { path = "../engine-human-design" }
+engine-nadabrahman = { path = "../engine-nadabrahman" }
+engine-numerology = { path = "../engine-numerology" }
+engine-panchanga = { path = "../engine-panchanga" }
+engine-transits = { path = "../engine-transits" }
+engine-vedic-clock = { path = "../engine-vedic-clock" }
+engine-vimshottari = { path = "../engine-vimshottari" }
+tokio = { version = "1.0", features = ["full"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+tracing = "0.1"
+futures = "0.3"
+chrono = { version = "0.4", features = ["serde"] }
+async-trait = "0.1"
+
+[dev-dependencies]
+criterion = { version = "0.5", features = ["async_tokio"] }
+sqlx = { version = "0.7", features = ["postgres", "runtime-tokio-rustls"] }
+
+[[bench]]
+name = "workflow_bench"
+harness = false

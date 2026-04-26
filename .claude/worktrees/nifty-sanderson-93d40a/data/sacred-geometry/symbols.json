@@ -1,0 +1,52 @@
+{
+  "symbols_info": {
+    "name": "Sacred Symbols",
+    "description": "Traditional sacred symbols and their meanings",
+    "source": "Various spiritual traditions"
+  },
+  "symbols": {
+    "ankh": {
+      "name": "Ankh",
+      "origin": "Egyptian",
+      "meaning": "Life, immortality, divine protection",
+      "elements": [
+        "loop",
+        "cross"
+      ],
+      "usage": "Symbol of eternal life"
+    },
+    "om": {
+      "name": "Om/Aum",
+      "origin": "Hindu/Buddhist",
+      "meaning": "Universal sound, cosmic consciousness",
+      "elements": [
+        "curve",
+        "dot",
+        "crescent"
+      ],
+      "usage": "Sacred sound and meditation symbol"
+    },
+    "yin_yang": {
+      "name": "Yin Yang",
+      "origin": "Taoist",
+      "meaning": "Balance, duality, harmony",
+      "elements": [
+        "circle",
+        "curves",
+        "dots"
+      ],
+      "usage": "Symbol of complementary opposites"
+    },
+    "tree_of_life": {
+      "name": "Tree of Life",
+      "origin": "Kabbalistic",
+      "meaning": "Divine emanation, spiritual path",
+      "elements": [
+        "spheres",
+        "paths",
+        "pillars"
+      ],
+      "usage": "Map of consciousness and creation"
+    }
+  }
+}

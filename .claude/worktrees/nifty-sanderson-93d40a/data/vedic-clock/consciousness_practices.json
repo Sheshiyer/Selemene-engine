@@ -1,0 +1,261 @@
+{
+  "elemental_practices": {
+    "Fire": {
+      "vedic_practices": [
+        "Agni Hotra (fire ceremony)",
+        "Surya Namaskara (sun salutations)",
+        "Trataka (candle gazing)",
+        "Bhastrika pranayama (bellows breath)"
+      ],
+      "tcm_practices": [
+        "Heart coherence breathing",
+        "Joy cultivation exercises",
+        "Circulation-enhancing movements",
+        "Fire element qigong"
+      ],
+      "integrated_practices": [
+        "Fire meditation with heart focus",
+        "Solar plexus activation with joy",
+        "Transformational breathing with circulation",
+        "Illumination practices with heart opening"
+      ]
+    },
+    "Water": {
+      "vedic_practices": [
+        "Jal Neti (nasal cleansing)",
+        "Chandra Namaskara (moon salutations)",
+        "Sheetali pranayama (cooling breath)",
+        "Water element meditation"
+      ],
+      "tcm_practices": [
+        "Kidney strengthening exercises",
+        "Willpower cultivation practices",
+        "Fluid balance techniques",
+        "Water element qigong"
+      ],
+      "integrated_practices": [
+        "Lunar kidney meditation",
+        "Willpower with cooling breath",
+        "Emotional flow with kidney support",
+        "Wisdom cultivation through water practices"
+      ]
+    },
+    "Earth": {
+      "vedic_practices": [
+        "Prithvi mudra (earth gesture)",
+        "Grounding meditation",
+        "Earth element pranayama",
+        "Stability-building asanas"
+      ],
+      "tcm_practices": [
+        "Spleen strengthening exercises",
+        "Digestive fire cultivation",
+        "Grounding qigong",
+        "Earth element practices"
+      ],
+      "integrated_practices": [
+        "Grounded digestive meditation",
+        "Stability with spleen support",
+        "Nourishment practices with earth connection",
+        "Foundation building through earth harmony"
+      ]
+    },
+    "Air": {
+      "vedic_practices": [
+        "Vayu mudra (air gesture)",
+        "Pranayama (breath control)",
+        "Movement-based practices",
+        "Mental clarity meditation"
+      ],
+      "tcm_practices": [
+        "Lung strengthening exercises",
+        "Breathing refinement techniques",
+        "Metal element qigong",
+        "Inspiration cultivation"
+      ],
+      "integrated_practices": [
+        "Refined breathing with lung support",
+        "Mental clarity through breath control",
+        "Inspiration practices with air element",
+        "Communication enhancement through breath"
+      ]
+    },
+    "Ether": {
+      "vedic_practices": [
+        "Akasha meditation",
+        "Sound healing (mantras)",
+        "Space awareness practices",
+        "Transcendental meditation"
+      ],
+      "tcm_practices": [
+        "System harmonization",
+        "Energy distribution practices",
+        "Holistic balance techniques",
+        "Integration exercises"
+      ],
+      "integrated_practices": [
+        "Transcendent system harmony",
+        "Sound healing with energy distribution",
+        "Space awareness with holistic balance",
+        "Divine integration practices"
+      ]
+    }
+  },
+  "dasha_specific_practices": {
+    "Jupiter": {
+      "consciousness_focus": "Expansion through wisdom",
+      "daily_practices": [
+        "Morning wisdom meditation",
+        "Teaching or sharing knowledge",
+        "Philosophical study",
+        "Guru-disciple practices"
+      ],
+      "tcm_integration": [
+        "Liver support for growth planning",
+        "Spleen strengthening for wisdom absorption",
+        "Wood element cultivation",
+        "Earth element nourishment"
+      ],
+      "timing_optimization": [
+        "Best during Liver time (1-3 AM) for visioning",
+        "Spleen time (9-11 AM) for learning",
+        "Jupiter hours for expansion practices",
+        "Thursday for Jupiter energy"
+      ]
+    },
+    "Saturn": {
+      "consciousness_focus": "Discipline through structure",
+      "daily_practices": [
+        "Structured meditation routine",
+        "Discipline-building exercises",
+        "Service to others",
+        "Patience cultivation"
+      ],
+      "tcm_integration": [
+        "Kidney strengthening for willpower",
+        "Large intestine support for elimination",
+        "Water element cultivation",
+        "Metal element refinement"
+      ],
+      "timing_optimization": [
+        "Best during Kidney time (5-7 PM) for willpower",
+        "Large intestine time (5-7 AM) for elimination",
+        "Saturn hours for discipline",
+        "Saturday for Saturn energy"
+      ]
+    },
+    "Mercury": {
+      "consciousness_focus": "Communication through clarity",
+      "daily_practices": [
+        "Writing and journaling",
+        "Communication exercises",
+        "Learning new skills",
+        "Mental agility training"
+      ],
+      "tcm_integration": [
+        "Lung support for clear expression",
+        "Small intestine for discernment",
+        "Metal element refinement",
+        "Fire element for clarity"
+      ],
+      "timing_optimization": [
+        "Best during Lung time (3-5 AM) for inspiration",
+        "Small intestine time (1-3 PM) for discernment",
+        "Mercury hours for communication",
+        "Wednesday for Mercury energy"
+      ]
+    }
+  },
+  "time_specific_practices": {
+    "01:00-03:00": {
+      "organ": "Liver",
+      "element": "Wood",
+      "consciousness_practices": [
+        "Vision meditation for future growth",
+        "Emotional detox visualization",
+        "Planning and goal-setting meditation",
+        "Liver qi circulation"
+      ],
+      "integration_methods": [
+        "Combine with current dasha energy",
+        "Align with personal growth goals",
+        "Use for releasing old patterns",
+        "Support with appropriate elements"
+      ]
+    },
+    "03:00-05:00": {
+      "organ": "Lung",
+      "element": "Metal",
+      "consciousness_practices": [
+        "Deep breathing meditation",
+        "Letting go visualization",
+        "Inspiration cultivation",
+        "Lung qi strengthening"
+      ],
+      "integration_methods": [
+        "Connect with spiritual inspiration",
+        "Release what no longer serves",
+        "Refine consciousness quality",
+        "Prepare for new day energy"
+      ]
+    },
+    "11:00-13:00": {
+      "organ": "Heart",
+      "element": "Fire",
+      "consciousness_practices": [
+        "Heart coherence meditation",
+        "Joy cultivation practices",
+        "Social connection activities",
+        "Heart fire circulation"
+      ],
+      "integration_methods": [
+        "Express authentic self",
+        "Connect with others meaningfully",
+        "Cultivate genuine joy",
+        "Circulate love energy"
+      ]
+    },
+    "17:00-19:00": {
+      "organ": "Kidney",
+      "element": "Water",
+      "consciousness_practices": [
+        "Willpower strengthening meditation",
+        "Essence cultivation practices",
+        "Water element meditation",
+        "Kidney qi building"
+      ],
+      "integration_methods": [
+        "Build inner strength",
+        "Cultivate life essence",
+        "Develop spiritual willpower",
+        "Store energy for evening"
+      ]
+    }
+  },
+  "synthesis_practices": {
+    "daily_integration": [
+      "Morning energy assessment (5 minutes)",
+      "Hourly consciousness check-ins (1 minute each)",
+      "Midday synthesis practice (10 minutes)",
+      "Evening integration reflection (10 minutes)"
+    ],
+    "weekly_integration": [
+      "Weekly energy pattern review",
+      "Dasha-organ correspondence analysis",
+      "Elemental balance assessment",
+      "Practice adjustment planning"
+    ],
+    "monthly_integration": [
+      "Monthly consciousness curriculum review",
+      "Dasha progression analysis",
+      "Seasonal TCM adjustments",
+      "Long-term optimization planning"
+    ],
+    "advanced_practices": [
+      "Multi-dimensional energy mapping",
+      "Consciousness state prediction",
+      "Personalized practice creation",
+      "Integration mastery development"
+    ]
+  }
+}

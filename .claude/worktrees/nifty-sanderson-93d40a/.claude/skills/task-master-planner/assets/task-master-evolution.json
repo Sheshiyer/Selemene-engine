@@ -1,0 +1,276 @@
+{
+  "schema_version": "1.0",
+  "assumptions": [
+    "Initial production release is complete and stable",
+    "Monitoring and analytics are available for feedback loops",
+    "Product roadmap inputs are captured from ops stakeholders"
+  ],
+  "risks": [
+    "Unprioritized backlog can dilute focus",
+    "Schema changes may require careful migration sequencing",
+    "Performance regressions may occur with expanded usage"
+  ],
+  "phases": [
+    {
+      "phase_id": "P5",
+      "name": "Evolution & Optimization",
+      "objective": "Iterate based on real usage, improve reliability, and expand capabilities.",
+      "sprints": [
+        {
+          "sprint_id": "S7",
+          "duration_weeks": 2,
+          "focus": "Feedback loops, reliability, and operational hardening",
+          "tasks": [
+            {
+              "id": "P5-S7-01",
+              "title": "Set up post-launch metrics dashboard",
+              "area": "infra",
+              "owner_role": "DevOps",
+              "est_hours": 8,
+              "dependencies": [],
+              "deliverable": "Operational metrics dashboard",
+              "acceptance": "Key KPIs visible for reservations, cleaning, tasks"
+            },
+            {
+              "id": "P5-S7-02",
+              "title": "Implement user feedback intake and triage workflow",
+              "area": "product",
+              "owner_role": "Tech Lead",
+              "est_hours": 6,
+              "dependencies": [],
+              "deliverable": "Feedback intake process and backlog labels",
+              "acceptance": "New issues are categorized and routed"
+            },
+            {
+              "id": "P5-S7-03",
+              "title": "Triage and fix top 10 production bugs",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 14,
+              "dependencies": ["P5-S7-02"],
+              "deliverable": "Bugfix batch release",
+              "acceptance": "Top 10 issues closed with regression tests"
+            },
+            {
+              "id": "P5-S7-04",
+              "title": "Audit RLS policies against real usage",
+              "area": "data",
+              "owner_role": "Backend Eng",
+              "est_hours": 8,
+              "dependencies": [],
+              "deliverable": "RLS audit report and policy adjustments",
+              "acceptance": "No denied-access incidents in audit logs"
+            },
+            {
+              "id": "P5-S7-05",
+              "title": "Optimize most expensive queries from logs",
+              "area": "data",
+              "owner_role": "Backend Eng",
+              "est_hours": 10,
+              "dependencies": ["P5-S7-01"],
+              "deliverable": "Query tuning changes",
+              "acceptance": "Top 5 slow queries improved"
+            },
+            {
+              "id": "P5-S7-06",
+              "title": "Stabilize realtime update race conditions",
+              "area": "frontend",
+              "owner_role": "Frontend Eng",
+              "est_hours": 10,
+              "dependencies": [],
+              "deliverable": "Realtime client fixes",
+              "acceptance": "No duplicate or stale states in QA scenarios"
+            },
+            {
+              "id": "P5-S7-07",
+              "title": "Enhance offline queue and retry behavior",
+              "area": "frontend",
+              "owner_role": "Frontend Eng",
+              "est_hours": 8,
+              "dependencies": [],
+              "deliverable": "Offline queue refinements",
+              "acceptance": "Failed ops retry and reconcile cleanly"
+            },
+            {
+              "id": "P5-S7-08",
+              "title": "Add operational SLA alerts for sync failures",
+              "area": "infra",
+              "owner_role": "DevOps",
+              "est_hours": 6,
+              "dependencies": ["P5-S7-01"],
+              "deliverable": "Sync failure alerts",
+              "acceptance": "Alerts trigger within 15 minutes of failure"
+            },
+            {
+              "id": "P5-S7-09",
+              "title": "Improve audit log query performance",
+              "area": "data",
+              "owner_role": "Backend Eng",
+              "est_hours": 6,
+              "dependencies": ["P5-S7-05"],
+              "deliverable": "Audit log indexing refinements",
+              "acceptance": "Audit log page loads under target latency"
+            },
+            {
+              "id": "P5-S7-10",
+              "title": "Add rate-limit backoff for Hospitable API",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 6,
+              "dependencies": [],
+              "deliverable": "Backoff and jitter in API client",
+              "acceptance": "No burst failures at rate limit thresholds"
+            },
+            {
+              "id": "P5-S7-11",
+              "title": "Refine cleaning board UX based on staff feedback",
+              "area": "frontend",
+              "owner_role": "Frontend Eng",
+              "est_hours": 8,
+              "dependencies": ["P5-S7-02"],
+              "deliverable": "Cleaning board UX updates",
+              "acceptance": "Staff confirms improved flow"
+            },
+            {
+              "id": "P5-S7-12",
+              "title": "Refine tasks filters and bulk actions",
+              "area": "frontend",
+              "owner_role": "Frontend Eng",
+              "est_hours": 8,
+              "dependencies": ["P5-S7-02"],
+              "deliverable": "Enhanced task list controls",
+              "acceptance": "Bulk actions cover common workflows"
+            }
+          ]
+        },
+        {
+          "sprint_id": "S8",
+          "duration_weeks": 2,
+          "focus": "Feature expansion and platform resilience",
+          "tasks": [
+            {
+              "id": "P5-S8-01",
+              "title": "Add inventory reorder recommendations",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 10,
+              "dependencies": [],
+              "deliverable": "Reorder recommendation logic",
+              "acceptance": "Recommendations appear for low-stock items"
+            },
+            {
+              "id": "P5-S8-02",
+              "title": "Add inventory reorder UI and actions",
+              "area": "frontend",
+              "owner_role": "Frontend Eng",
+              "est_hours": 10,
+              "dependencies": ["P5-S8-01"],
+              "deliverable": "Inventory reorder UI",
+              "acceptance": "Users can acknowledge or mark ordered"
+            },
+            {
+              "id": "P5-S8-03",
+              "title": "Add advanced reservation filters",
+              "area": "frontend",
+              "owner_role": "Frontend Eng",
+              "est_hours": 8,
+              "dependencies": [],
+              "deliverable": "Expanded reservation filters",
+              "acceptance": "Filters include platform, guest count, revenue"
+            },
+            {
+              "id": "P5-S8-04",
+              "title": "Implement reservation revenue breakdown",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 8,
+              "dependencies": [],
+              "deliverable": "Revenue calculation endpoint",
+              "acceptance": "Breakdown matches financial fields"
+            },
+            {
+              "id": "P5-S8-05",
+              "title": "Add reservation revenue UI widget",
+              "area": "frontend",
+              "owner_role": "Frontend Eng",
+              "est_hours": 8,
+              "dependencies": ["P5-S8-04"],
+              "deliverable": "Revenue breakdown UI",
+              "acceptance": "Widget displays per-reservation revenue"
+            },
+            {
+              "id": "P5-S8-06",
+              "title": "Add bulk task assignment",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 8,
+              "dependencies": [],
+              "deliverable": "Bulk assign endpoint",
+              "acceptance": "Multiple tasks can be assigned in one request"
+            },
+            {
+              "id": "P5-S8-07",
+              "title": "Add bulk task assignment UI",
+              "area": "frontend",
+              "owner_role": "Frontend Eng",
+              "est_hours": 8,
+              "dependencies": ["P5-S8-06"],
+              "deliverable": "Bulk assignment UI",
+              "acceptance": "Users can assign tasks to a staff member"
+            },
+            {
+              "id": "P5-S8-08",
+              "title": "Add owner portal read-only views",
+              "area": "frontend",
+              "owner_role": "Frontend Eng",
+              "est_hours": 12,
+              "dependencies": ["P5-S7-04"],
+              "deliverable": "Owner-specific views",
+              "acceptance": "Owners see only owned properties and reports"
+            },
+            {
+              "id": "P5-S8-09",
+              "title": "Enhance notifications routing (LINE/email)",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 10,
+              "dependencies": [],
+              "deliverable": "Notification routing enhancements",
+              "acceptance": "Notifications respect user preferences"
+            },
+            {
+              "id": "P5-S8-10",
+              "title": "Add notifications preferences UI",
+              "area": "frontend",
+              "owner_role": "Frontend Eng",
+              "est_hours": 8,
+              "dependencies": ["P5-S8-09"],
+              "deliverable": "Notification preferences UI",
+              "acceptance": "Users can configure channels"
+            },
+            {
+              "id": "P5-S8-11",
+              "title": "Harden backup/restore procedures",
+              "area": "infra",
+              "owner_role": "DevOps",
+              "est_hours": 8,
+              "dependencies": [],
+              "deliverable": "Backup/restore runbook and tests",
+              "acceptance": "Restore drills succeed in staging"
+            },
+            {
+              "id": "P5-S8-12",
+              "title": "Run post-launch regression suite",
+              "area": "qa",
+              "owner_role": "QA",
+              "est_hours": 8,
+              "dependencies": ["P5-S7-03"],
+              "deliverable": "Regression test report",
+              "acceptance": "No high severity regressions remain"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

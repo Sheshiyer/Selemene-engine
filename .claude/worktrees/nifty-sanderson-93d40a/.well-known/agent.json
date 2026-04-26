@@ -1,0 +1,136 @@
+{
+  "name": "Selemene Engine",
+  "description": "Computational mirror for self-inquiry. 8 Vedic and consciousness calculation engines returning witness prompts calibrated to awareness level. Sub-millisecond calculations.",
+  "url": "https://selemene.tryambakam.space",
+  "provider": {
+    "name": "Tryambakam Noesis",
+    "url": "https://github.com/Sheshiyer/Selemene-engine"
+  },
+  "version": "2.3.0",
+  "documentationUrl": "https://selemene.tryambakam.space/api/docs",
+  "capabilities": {
+    "streaming": false,
+    "pushNotifications": false
+  },
+  "defaultInputModes": ["application/json"],
+  "defaultOutputModes": ["application/json"],
+  "skills": [
+    {
+      "id": "panchanga",
+      "name": "Panchanga (Vedic Calendar)",
+      "description": "Calculate tithi, nakshatra, yoga, karana, and vara for any date and location",
+      "tags": ["vedic", "astrology", "calendar", "timing"],
+      "examples": [
+        "What is the panchanga for today in Mumbai?",
+        "Calculate the Vedic calendar for 1991-08-13 in Bangalore"
+      ]
+    },
+    {
+      "id": "numerology",
+      "name": "Numerology",
+      "description": "Calculate life path, expression, soul urge, and personality numbers using Pythagorean and Chaldean systems",
+      "tags": ["numerology", "name-analysis", "life-path"],
+      "examples": [
+        "What is the numerology for the name Shesh born on 1991-08-13?",
+        "Calculate my life path number"
+      ]
+    },
+    {
+      "id": "human-design",
+      "name": "Human Design",
+      "description": "Generate bodygraph with type, strategy, authority, profile, 9 centers, and 26 gate activations",
+      "tags": ["human-design", "bodygraph", "type", "authority"],
+      "examples": [
+        "What is the Human Design chart for someone born 1991-08-13 at 13:31 in Bangalore?",
+        "Show my bodygraph type and authority"
+      ]
+    },
+    {
+      "id": "gene-keys",
+      "name": "Gene Keys",
+      "description": "Calculate Shadow-Gift-Siddhi frequencies across 4 activation sequences",
+      "tags": ["gene-keys", "shadow", "gift", "siddhi", "contemplation"],
+      "examples": [
+        "What are the Gene Keys activations for someone born 1991-08-13 at 13:31?",
+        "Show my activation sequence with shadow and gift frequencies"
+      ]
+    },
+    {
+      "id": "vimshottari",
+      "name": "Vimshottari Dasha",
+      "description": "Calculate the 120-year Vedic planetary timeline with nested dasha periods (Maha, Antar, Pratyantar, Sookshma)",
+      "tags": ["vedic", "dasha", "planetary-periods", "timeline"],
+      "examples": [
+        "What dasha period am I in right now?",
+        "Calculate the Vimshottari timeline from birth"
+      ]
+    },
+    {
+      "id": "biorhythm",
+      "name": "Biorhythm",
+      "description": "Calculate physical (23-day), emotional (28-day), and intellectual (33-day) sine wave cycles",
+      "tags": ["biorhythm", "cycles", "energy"],
+      "examples": [
+        "What is my biorhythm for today?",
+        "Show my physical, emotional, and intellectual cycles"
+      ]
+    },
+    {
+      "id": "vedic-clock",
+      "name": "Vedic Clock",
+      "description": "TCM organ meridian clock and Ayurvedic dosha timing for optimal daily scheduling",
+      "tags": ["vedic", "ayurveda", "timing", "dosha", "muhurta"],
+      "examples": [
+        "What is the current Vedic time?",
+        "What muhurta is active right now?"
+      ]
+    },
+    {
+      "id": "biofield",
+      "name": "Biofield",
+      "description": "Chakra energy readings based on birth data",
+      "tags": ["chakra", "energy", "biofield"],
+      "examples": [
+        "Show my chakra energy readings",
+        "What does the biofield look like for my birth profile?"
+      ]
+    },
+    {
+      "id": "workflow-birth-blueprint",
+      "name": "Birth Blueprint Workflow",
+      "description": "Comprehensive natal analysis combining Numerology + Human Design + Vimshottari into a unified life portrait",
+      "tags": ["workflow", "natal", "comprehensive"],
+      "examples": [
+        "Generate my complete birth blueprint",
+        "Run the birth-blueprint workflow for 1991-08-13 at 13:31 in Bangalore"
+      ]
+    },
+    {
+      "id": "workflow-daily-practice",
+      "name": "Daily Practice Workflow",
+      "description": "Daily timing optimization combining Panchanga + Vedic Clock + Biorhythm for optimal scheduling",
+      "tags": ["workflow", "daily", "timing", "optimization"],
+      "examples": [
+        "What should I focus on today?",
+        "Run daily practice for my location"
+      ]
+    }
+  ],
+  "securitySchemes": {
+    "apiKey": {
+      "type": "apiKey",
+      "in": "header",
+      "name": "X-API-Key",
+      "description": "Noesis API key (prefix: nk_). Get one via the seed script."
+    },
+    "bearerAuth": {
+      "type": "http",
+      "scheme": "bearer",
+      "description": "JWT token obtained from /api/v1/auth/login"
+    }
+  },
+  "security": [
+    { "apiKey": [] },
+    { "bearerAuth": [] }
+  ]
+}

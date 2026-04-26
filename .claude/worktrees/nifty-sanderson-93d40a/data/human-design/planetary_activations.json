@@ -1,0 +1,279 @@
+{
+  "planetary_activations_info": {
+    "name": "Human Design Planetary Activations",
+    "description": "The 13 planetary bodies and their influence on Human Design charts",
+    "total_planets": 13,
+    "calculation_time": "Birth time and location determine planetary positions",
+    "purpose": "Planets activate gates and create the unique Human Design chart",
+    "source": "Human Design System by Ra Uru Hu"
+  },
+  "personality_vs_design": {
+    "personality": {
+      "description": "Conscious aspect - what you think you are",
+      "color": "Black in traditional charts",
+      "timing": "Birth moment",
+      "awareness": "Conscious and accessible",
+      "planets": "All 13 planets at birth moment"
+    },
+    "design": {
+      "description": "Unconscious aspect - your genetic imprint",
+      "color": "Red in traditional charts", 
+      "timing": "88 degrees of sun movement before birth (~88 days)",
+      "awareness": "Unconscious and automatic",
+      "planets": "All 13 planets 88 days before birth"
+    }
+  },
+  "planets": {
+    "Sun": {
+      "name": "Sun",
+      "symbol": "☉",
+      "importance": "Most important - 70% of your energy",
+      "personality_meaning": "Conscious identity and life purpose",
+      "design_meaning": "Unconscious life force and vitality",
+      "keynotes": [
+        "Identity and self-expression",
+        "Life force and vitality", 
+        "Core purpose and direction",
+        "Leadership and authority"
+      ],
+      "in_incarnation_cross": "Primary gate in cross calculation",
+      "cycle": "1 year around zodiac",
+      "influence": "Strongest planetary influence in chart"
+    },
+    "Earth": {
+      "name": "Earth",
+      "symbol": "⊕",
+      "importance": "Second most important - grounding force",
+      "personality_meaning": "Conscious grounding and material focus",
+      "design_meaning": "Unconscious grounding and stability",
+      "keynotes": [
+        "Grounding and stability",
+        "Material world connection",
+        "Practical manifestation",
+        "Foundation and support"
+      ],
+      "relationship_to_sun": "Always opposite the Sun (180 degrees)",
+      "in_incarnation_cross": "Secondary gate in cross calculation",
+      "influence": "Grounding force for Sun's expression"
+    },
+    "North_Node": {
+      "name": "North Node",
+      "symbol": "☊",
+      "importance": "Future direction and growth",
+      "personality_meaning": "Conscious direction of growth",
+      "design_meaning": "Unconscious evolutionary direction",
+      "keynotes": [
+        "Future direction and purpose",
+        "Evolutionary growth",
+        "Life lessons to learn",
+        "Karmic direction forward"
+      ],
+      "in_incarnation_cross": "Third gate in cross calculation",
+      "cycle": "18.6 years to complete zodiac",
+      "relationship_to_south": "Always opposite South Node"
+    },
+    "South_Node": {
+      "name": "South Node", 
+      "symbol": "☋",
+      "importance": "Past patterns and karma",
+      "personality_meaning": "Conscious past patterns",
+      "design_meaning": "Unconscious karmic patterns",
+      "keynotes": [
+        "Past life patterns",
+        "Karmic inheritance",
+        "What to release",
+        "Automatic behaviors"
+      ],
+      "in_incarnation_cross": "Fourth gate in cross calculation",
+      "relationship_to_north": "Always opposite North Node",
+      "influence": "Patterns to transcend or integrate"
+    },
+    "Moon": {
+      "name": "Moon",
+      "symbol": "☽",
+      "importance": "Emotional and instinctual patterns",
+      "personality_meaning": "Conscious emotional patterns",
+      "design_meaning": "Unconscious instinctual responses",
+      "keynotes": [
+        "Emotional patterns and needs",
+        "Instinctual responses",
+        "Nurturing and care",
+        "Cyclical patterns"
+      ],
+      "cycle": "28 days around zodiac",
+      "influence": "Emotional and instinctual conditioning",
+      "special_note": "Especially important for Reflectors"
+    },
+    "Mercury": {
+      "name": "Mercury",
+      "symbol": "☿",
+      "importance": "Communication and mental processing",
+      "personality_meaning": "Conscious communication style",
+      "design_meaning": "Unconscious mental patterns",
+      "keynotes": [
+        "Communication and expression",
+        "Mental processing",
+        "Learning and teaching",
+        "Information exchange"
+      ],
+      "cycle": "88 days around zodiac",
+      "influence": "How you think and communicate"
+    },
+    "Venus": {
+      "name": "Venus",
+      "symbol": "♀",
+      "importance": "Values and relationships",
+      "personality_meaning": "Conscious values and attractions",
+      "design_meaning": "Unconscious relationship patterns",
+      "keynotes": [
+        "Values and what you love",
+        "Relationship patterns",
+        "Aesthetic sense",
+        "Attraction and magnetism"
+      ],
+      "cycle": "225 days around zodiac",
+      "influence": "What you value and how you relate"
+    },
+    "Mars": {
+      "name": "Mars",
+      "symbol": "♂",
+      "importance": "Action and drive",
+      "personality_meaning": "Conscious action and assertion",
+      "design_meaning": "Unconscious drive and aggression",
+      "keynotes": [
+        "Action and initiative",
+        "Drive and motivation",
+        "Assertion and aggression",
+        "Physical energy"
+      ],
+      "cycle": "687 days around zodiac",
+      "influence": "How you take action and assert yourself"
+    },
+    "Jupiter": {
+      "name": "Jupiter",
+      "symbol": "♃",
+      "importance": "Expansion and wisdom",
+      "personality_meaning": "Conscious expansion and growth",
+      "design_meaning": "Unconscious wisdom and philosophy",
+      "keynotes": [
+        "Expansion and growth",
+        "Wisdom and philosophy",
+        "Teaching and learning",
+        "Optimism and faith"
+      ],
+      "cycle": "12 years around zodiac",
+      "influence": "How you expand and grow"
+    },
+    "Saturn": {
+      "name": "Saturn",
+      "symbol": "♄",
+      "importance": "Structure and discipline",
+      "personality_meaning": "Conscious discipline and responsibility",
+      "design_meaning": "Unconscious limitations and structure",
+      "keynotes": [
+        "Discipline and structure",
+        "Responsibility and duty",
+        "Limitations and boundaries",
+        "Mastery through time"
+      ],
+      "cycle": "29.5 years around zodiac",
+      "influence": "How you structure and discipline yourself",
+      "saturn_return": "Major life transition around age 29-30"
+    },
+    "Uranus": {
+      "name": "Uranus",
+      "symbol": "♅",
+      "importance": "Innovation and rebellion",
+      "personality_meaning": "Conscious innovation and uniqueness",
+      "design_meaning": "Unconscious revolutionary patterns",
+      "keynotes": [
+        "Innovation and invention",
+        "Rebellion and revolution",
+        "Uniqueness and individuality",
+        "Sudden changes"
+      ],
+      "cycle": "84 years around zodiac",
+      "influence": "How you innovate and rebel"
+    },
+    "Neptune": {
+      "name": "Neptune",
+      "symbol": "♆",
+      "importance": "Spirituality and illusion",
+      "personality_meaning": "Conscious spiritual ideals",
+      "design_meaning": "Unconscious spiritual patterns",
+      "keynotes": [
+        "Spirituality and mysticism",
+        "Illusion and confusion",
+        "Compassion and sacrifice",
+        "Transcendence"
+      ],
+      "cycle": "165 years around zodiac",
+      "influence": "How you connect to the spiritual"
+    },
+    "Pluto": {
+      "name": "Pluto",
+      "symbol": "♇",
+      "importance": "Transformation and power",
+      "personality_meaning": "Conscious transformation themes",
+      "design_meaning": "Unconscious power patterns",
+      "keynotes": [
+        "Transformation and rebirth",
+        "Power and control",
+        "Death and regeneration",
+        "Deep psychological patterns"
+      ],
+      "cycle": "248 years around zodiac",
+      "influence": "How you transform and use power"
+    }
+  },
+  "incarnation_cross_planets": {
+    "primary_four": {
+      "conscious_sun": "Most important - conscious life purpose",
+      "conscious_earth": "Grounding for conscious purpose", 
+      "unconscious_sun": "Unconscious life force direction",
+      "unconscious_earth": "Unconscious grounding"
+    },
+    "calculation": "These four gates create the Incarnation Cross theme",
+    "importance": "Determines life purpose and destiny theme"
+  },
+  "planetary_influences": {
+    "personal_planets": {
+      "planets": ["Sun", "Moon", "Mercury", "Venus", "Mars"],
+      "influence": "Personal characteristics and daily life patterns",
+      "change_frequency": "Relatively quick cycles"
+    },
+    "social_planets": {
+      "planets": ["Jupiter", "Saturn"],
+      "influence": "Social roles and life structure",
+      "change_frequency": "Medium cycles (12-30 years)"
+    },
+    "transpersonal_planets": {
+      "planets": ["Uranus", "Neptune", "Pluto"],
+      "influence": "Generational themes and collective evolution",
+      "change_frequency": "Very slow cycles (84-248 years)"
+    },
+    "lunar_nodes": {
+      "planets": ["North Node", "South Node"],
+      "influence": "Karmic direction and evolutionary purpose",
+      "change_frequency": "18.6 year cycle"
+    }
+  },
+  "chart_calculation": {
+    "birth_data_required": [
+      "Date of birth",
+      "Exact time of birth",
+      "Location of birth (city/coordinates)"
+    ],
+    "personality_calculation": "Planetary positions at exact birth moment",
+    "design_calculation": "Planetary positions 88 degrees of sun movement before birth",
+    "gate_activation": "Each planet activates specific gate based on zodiac position",
+    "line_activation": "Specific line within gate based on precise planetary position"
+  },
+  "practical_applications": {
+    "chart_reading": "Planets show which gates are activated and how",
+    "timing": "Planetary transits activate gates temporarily",
+    "compatibility": "Compare planetary activations between people",
+    "life_cycles": "Planetary returns mark important life transitions",
+    "evolution": "Track how planetary influences change over time"
+  }
+}

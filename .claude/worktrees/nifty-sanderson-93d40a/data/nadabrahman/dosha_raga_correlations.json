@@ -1,0 +1,389 @@
+{
+  "metadata": {
+    "version": "1.0.0",
+    "description": "Ayurvedic dosha-raga correlations for NadaBrahman engine. Maps Vata, Pitta, and Kapha constitutions to recommended ragas for balancing and therapeutic use.",
+    "tradition": "Carnatic (Melakarta) + Ayurveda",
+    "references": "melakarta_ragas.json raga numbers"
+  },
+  "doshas": {
+    "vata": {
+      "name": "Vata",
+      "elements": ["air", "ether"],
+      "qualities": ["light", "dry", "cold", "mobile", "subtle", "clear"],
+      "description": "Vata governs movement, creativity, and nervous system. When balanced: creative, enthusiastic, flexible. When imbalanced: anxiety, insomnia, restlessness.",
+      "balancing_musical_qualities": {
+        "tempo": "slow_to_moderate",
+        "rhythm": "steady_grounding",
+        "melody": "warm_rich_tones",
+        "dynamics": "gentle_consistent",
+        "preferred_swaras": ["sa", "ma1", "pa", "dha2"],
+        "description": "Vata is calmed by warm, grounding, steady music. Lower registers and slower tempos anchor the restless vata energy."
+      },
+      "pacifying_ragas": {
+        "primary": [
+          { "raga_number": 15, "name": "Mayamalavagowla", "reason": "Grounding and devotional, anchors scattered energy" },
+          { "raga_number": 22, "name": "Kharaharapriya", "reason": "Warm, emotionally rich tones that soothe anxiety" },
+          { "raga_number": 29, "name": "Dheerasankarabharanam", "reason": "Majestic and stable, creates sense of security" },
+          { "raga_number": 20, "name": "Natabhairavi", "reason": "Deep meditative quality calms nervous system" },
+          { "raga_number": 28, "name": "Harikambhoji", "reason": "Sweet and nurturing, reduces restlessness" }
+        ],
+        "secondary": [
+          { "raga_number": 1, "name": "Kanakangi", "reason": "Contemplative and grounding" },
+          { "raga_number": 8, "name": "Hanumatodi", "reason": "Deep emotional resonance, calming" },
+          { "raga_number": 16, "name": "Chakravakam", "reason": "Steady, centering quality" },
+          { "raga_number": 4, "name": "Vanaspati", "reason": "Pastoral, nurturing energy" },
+          { "raga_number": 34, "name": "Vagadheeswari", "reason": "Contemplative depth" },
+          { "raga_number": 5, "name": "Manavati", "reason": "Gentle, soothing quality" }
+        ]
+      },
+      "aggravating_ragas": [
+        { "raga_number": 53, "name": "Gamanasrama", "reason": "Too stimulating and restless for vata" },
+        { "raga_number": 41, "name": "Pavani", "reason": "Erratic quality increases vata instability" },
+        { "raga_number": 64, "name": "Vachaspati", "reason": "Intense energy can overstimulate" }
+      ],
+      "imbalance_patterns": {
+        "anxiety": {
+          "recommended_ragas": [22, 29, 20],
+          "practice_duration_minutes": 20,
+          "time_of_day": "evening",
+          "description": "Slow, warm ragas with steady rhythm for grounding"
+        },
+        "insomnia": {
+          "recommended_ragas": [1, 2, 8],
+          "practice_duration_minutes": 30,
+          "time_of_day": "late_night",
+          "description": "Deep, contemplative ragas that quiet the mind"
+        },
+        "scattered_mind": {
+          "recommended_ragas": [15, 29, 28],
+          "practice_duration_minutes": 15,
+          "time_of_day": "morning",
+          "description": "Structured, majestic ragas that focus attention"
+        },
+        "joint_pain": {
+          "recommended_ragas": [22, 4, 5],
+          "practice_duration_minutes": 20,
+          "time_of_day": "afternoon",
+          "description": "Warm, nurturing ragas for physical relaxation"
+        }
+      },
+      "seasonal_recommendations": {
+        "autumn": {
+          "season_name": "Sharad",
+          "vata_state": "aggravated",
+          "priority_ragas": [22, 29, 15],
+          "description": "Autumn is vata season — prioritize warming, grounding ragas"
+        },
+        "winter_early": {
+          "season_name": "Hemanta",
+          "vata_state": "moderate",
+          "priority_ragas": [20, 28, 8],
+          "description": "Early winter continues vata patterns, use nurturing ragas"
+        },
+        "spring": {
+          "season_name": "Vasanta",
+          "vata_state": "balanced",
+          "priority_ragas": [15, 29, 22],
+          "description": "Spring brings natural balance, maintain with steady ragas"
+        }
+      },
+      "time_of_day_preferences": {
+        "early_morning": { "ragas": [15, 1], "reason": "Grounding start to the day" },
+        "morning": { "ragas": [29, 22], "reason": "Structured warmth for vata morning" },
+        "afternoon": { "ragas": [28, 4], "reason": "Nurturing energy during vata peak" },
+        "evening": { "ragas": [20, 5], "reason": "Calming transition for restless evenings" },
+        "night": { "ragas": [8, 2], "reason": "Deep tones for vata sleep preparation" }
+      }
+    },
+    "pitta": {
+      "name": "Pitta",
+      "elements": ["fire", "water"],
+      "qualities": ["hot", "sharp", "light", "oily", "liquid", "spreading"],
+      "description": "Pitta governs metabolism, intellect, and transformation. When balanced: intelligent, focused, courageous. When imbalanced: anger, inflammation, criticism.",
+      "balancing_musical_qualities": {
+        "tempo": "moderate",
+        "rhythm": "flowing_graceful",
+        "melody": "cool_sweet_tones",
+        "dynamics": "moderate_not_intense",
+        "preferred_swaras": ["sa", "ri2", "ga3", "pa", "ni3"],
+        "description": "Pitta is cooled by sweet, melodious music. Mid-range tones with flowing rhythms reduce heat and intensity."
+      },
+      "pacifying_ragas": {
+        "primary": [
+          { "raga_number": 28, "name": "Harikambhoji", "reason": "Sweet and cooling, reduces pitta heat" },
+          { "raga_number": 22, "name": "Kharaharapriya", "reason": "Emotionally balancing, cools anger" },
+          { "raga_number": 29, "name": "Dheerasankarabharanam", "reason": "Balanced and majestic without aggravation" },
+          { "raga_number": 15, "name": "Mayamalavagowla", "reason": "Devotional quality redirects pitta intensity" },
+          { "raga_number": 5, "name": "Manavati", "reason": "Gentle and soothing, cools emotional fire" }
+        ],
+        "secondary": [
+          { "raga_number": 20, "name": "Natabhairavi", "reason": "Meditative cooling" },
+          { "raga_number": 26, "name": "Charukesi", "reason": "Pleasant and flowing" },
+          { "raga_number": 34, "name": "Vagadheeswari", "reason": "Contemplative, reduces intensity" },
+          { "raga_number": 36, "name": "Chalanata", "reason": "Expansive yet calm" },
+          { "raga_number": 16, "name": "Chakravakam", "reason": "Centering quality" },
+          { "raga_number": 9, "name": "Dhenuka", "reason": "Gentle pastoral quality" }
+        ]
+      },
+      "aggravating_ragas": [
+        { "raga_number": 51, "name": "Kamavardhini", "reason": "Intense and fiery, increases pitta" },
+        { "raga_number": 53, "name": "Gamanasrama", "reason": "Sharp and stimulating" },
+        { "raga_number": 57, "name": "Simhendramadhyamam", "reason": "Dramatic intensity aggravates pitta" }
+      ],
+      "imbalance_patterns": {
+        "anger": {
+          "recommended_ragas": [28, 5, 22],
+          "practice_duration_minutes": 15,
+          "time_of_day": "midday",
+          "description": "Sweet, cooling ragas to diffuse heated emotions"
+        },
+        "inflammation": {
+          "recommended_ragas": [20, 26, 9],
+          "practice_duration_minutes": 25,
+          "time_of_day": "evening",
+          "description": "Cool, meditative ragas for physical cooling"
+        },
+        "criticism": {
+          "recommended_ragas": [15, 29, 34],
+          "practice_duration_minutes": 20,
+          "time_of_day": "morning",
+          "description": "Devotional ragas that cultivate compassion"
+        },
+        "acid_reflux": {
+          "recommended_ragas": [28, 22, 5],
+          "practice_duration_minutes": 15,
+          "time_of_day": "after_meals",
+          "description": "Gentle, sweet ragas for digestive cooling"
+        }
+      },
+      "seasonal_recommendations": {
+        "summer": {
+          "season_name": "Grishma",
+          "pitta_state": "aggravated",
+          "priority_ragas": [28, 5, 20],
+          "description": "Summer heat aggravates pitta — use cooling, sweet ragas"
+        },
+        "late_summer": {
+          "season_name": "Varsha",
+          "pitta_state": "high",
+          "priority_ragas": [22, 26, 9],
+          "description": "Monsoon period still carries pitta, maintain cooling practice"
+        },
+        "autumn": {
+          "season_name": "Sharad",
+          "pitta_state": "releasing",
+          "priority_ragas": [29, 15, 34],
+          "description": "Pitta begins to release in autumn, support with balanced ragas"
+        }
+      },
+      "time_of_day_preferences": {
+        "early_morning": { "ragas": [15, 29], "reason": "Balanced start before pitta rises" },
+        "morning": { "ragas": [28, 22], "reason": "Sweet tones as pitta activates" },
+        "midday": { "ragas": [5, 26], "reason": "Cooling during pitta peak hours" },
+        "afternoon": { "ragas": [20, 9], "reason": "Gentle cooldown from midday intensity" },
+        "evening": { "ragas": [34, 22], "reason": "Contemplative transition as pitta settles" }
+      }
+    },
+    "kapha": {
+      "name": "Kapha",
+      "elements": ["earth", "water"],
+      "qualities": ["heavy", "slow", "cool", "oily", "smooth", "dense", "stable"],
+      "description": "Kapha governs structure, lubrication, and immunity. When balanced: loving, calm, steady. When imbalanced: lethargy, attachment, congestion.",
+      "balancing_musical_qualities": {
+        "tempo": "moderate_to_fast",
+        "rhythm": "stimulating_varied",
+        "melody": "bright_uplifting",
+        "dynamics": "dynamic_energetic",
+        "preferred_swaras": ["ri2", "ga3", "ma2", "dha3", "ni3"],
+        "description": "Kapha is stimulated by bright, uplifting music. Higher registers and varied rhythms counteract heaviness and inertia."
+      },
+      "pacifying_ragas": {
+        "primary": [
+          { "raga_number": 65, "name": "Mechakalyani", "reason": "Brilliant and uplifting, counteracts kapha lethargy" },
+          { "raga_number": 51, "name": "Kamavardhini", "reason": "Intensely stimulating, breaks through stagnation" },
+          { "raga_number": 53, "name": "Gamanasrama", "reason": "Dynamic energy awakens kapha" },
+          { "raga_number": 3, "name": "Ganamurti", "reason": "Uplifting devotional energy, counters heaviness" },
+          { "raga_number": 57, "name": "Simhendramadhyamam", "reason": "Dramatic and energizing" }
+        ],
+        "secondary": [
+          { "raga_number": 64, "name": "Vachaspati", "reason": "Stimulating intellectual energy" },
+          { "raga_number": 59, "name": "Dharmavati", "reason": "Bright and purposeful" },
+          { "raga_number": 55, "name": "Syamalangi", "reason": "Activating quality" },
+          { "raga_number": 45, "name": "Subhapantuvarali", "reason": "Intense devotional energy" },
+          { "raga_number": 63, "name": "Latangi", "reason": "Lively and stimulating" },
+          { "raga_number": 39, "name": "Jhalavarali", "reason": "Powerful awakening energy" }
+        ]
+      },
+      "aggravating_ragas": [
+        { "raga_number": 1, "name": "Kanakangi", "reason": "Too slow and heavy for kapha" },
+        { "raga_number": 2, "name": "Ratnangi", "reason": "Dreamy quality increases kapha inertia" },
+        { "raga_number": 4, "name": "Vanaspati", "reason": "Pastoral heaviness aggravates kapha" }
+      ],
+      "imbalance_patterns": {
+        "lethargy": {
+          "recommended_ragas": [65, 51, 53],
+          "practice_duration_minutes": 15,
+          "time_of_day": "early_morning",
+          "description": "Bright, stimulating ragas to break through morning heaviness"
+        },
+        "congestion": {
+          "recommended_ragas": [57, 39, 45],
+          "practice_duration_minutes": 20,
+          "time_of_day": "morning",
+          "description": "Intense ragas that clear stagnant energy"
+        },
+        "attachment": {
+          "recommended_ragas": [64, 59, 63],
+          "practice_duration_minutes": 20,
+          "time_of_day": "afternoon",
+          "description": "Intellectually stimulating ragas that encourage detachment"
+        },
+        "weight_gain": {
+          "recommended_ragas": [65, 53, 55],
+          "practice_duration_minutes": 25,
+          "time_of_day": "morning",
+          "description": "Dynamic ragas that stimulate metabolism"
+        }
+      },
+      "seasonal_recommendations": {
+        "winter_late": {
+          "season_name": "Shishira",
+          "kapha_state": "accumulating",
+          "priority_ragas": [65, 51, 57],
+          "description": "Late winter starts kapha accumulation — use stimulating ragas"
+        },
+        "spring": {
+          "season_name": "Vasanta",
+          "kapha_state": "aggravated",
+          "priority_ragas": [53, 39, 45],
+          "description": "Spring is kapha season — strongest stimulating ragas needed"
+        },
+        "summer": {
+          "season_name": "Grishma",
+          "kapha_state": "releasing",
+          "priority_ragas": [64, 59, 63],
+          "description": "Summer heat naturally reduces kapha, moderate stimulation"
+        }
+      },
+      "time_of_day_preferences": {
+        "early_morning": { "ragas": [65, 3], "reason": "Bright energy to counter kapha morning" },
+        "morning": { "ragas": [51, 53], "reason": "Stimulating during kapha peak hours (6-10am)" },
+        "midday": { "ragas": [64, 59], "reason": "Maintain energy through midday" },
+        "afternoon": { "ragas": [57, 63], "reason": "Prevent afternoon kapha slump" },
+        "evening": { "ragas": [55, 45], "reason": "Moderate stimulation for kapha evenings" }
+      }
+    }
+  },
+  "dual_dosha_recommendations": {
+    "vata_pitta": {
+      "name": "Vata-Pitta",
+      "description": "Combination of air/ether with fire/water. Needs grounding without overheating.",
+      "recommended_ragas": [
+        { "raga_number": 22, "name": "Kharaharapriya", "reason": "Warm yet cooling — balances both doshas" },
+        { "raga_number": 29, "name": "Dheerasankarabharanam", "reason": "Stable and balanced without extremes" },
+        { "raga_number": 28, "name": "Harikambhoji", "reason": "Sweet and grounding" }
+      ]
+    },
+    "pitta_kapha": {
+      "name": "Pitta-Kapha",
+      "description": "Combination of fire/water with earth/water. Needs activation without overheating.",
+      "recommended_ragas": [
+        { "raga_number": 15, "name": "Mayamalavagowla", "reason": "Devotional energy — stimulating but centered" },
+        { "raga_number": 59, "name": "Dharmavati", "reason": "Bright yet purposeful, not aggressive" },
+        { "raga_number": 26, "name": "Charukesi", "reason": "Pleasant stimulation" }
+      ]
+    },
+    "vata_kapha": {
+      "name": "Vata-Kapha",
+      "description": "Combination of air/ether with earth/water. Needs warmth and gentle stimulation.",
+      "recommended_ragas": [
+        { "raga_number": 65, "name": "Mechakalyani", "reason": "Bright and warm — activates without scattering" },
+        { "raga_number": 3, "name": "Ganamurti", "reason": "Uplifting devotional energy" },
+        { "raga_number": 64, "name": "Vachaspati", "reason": "Intellectually stimulating and warming" }
+      ]
+    },
+    "tridosha": {
+      "name": "Tridosha (Balanced)",
+      "description": "All three doshas in balance. Maintain equilibrium with sattvic ragas.",
+      "recommended_ragas": [
+        { "raga_number": 29, "name": "Dheerasankarabharanam", "reason": "Most balanced raga in the Melakarta system" },
+        { "raga_number": 15, "name": "Mayamalavagowla", "reason": "Universally harmonizing" },
+        { "raga_number": 22, "name": "Kharaharapriya", "reason": "Emotionally centering" }
+      ]
+    }
+  },
+  "cross_system_correlations": {
+    "dosha_chakra_raga": {
+      "description": "Maps dosha imbalances to affected chakras and recommended ragas",
+      "mappings": [
+        {
+          "dosha": "vata",
+          "primary_chakras": ["root", "sacral"],
+          "chakra_frequencies_hz": [396, 417],
+          "recommended_ragas": [1, 22, 29],
+          "practice": "Ground vata by focusing on lower chakras with steady, warm ragas"
+        },
+        {
+          "dosha": "pitta",
+          "primary_chakras": ["solar_plexus", "heart"],
+          "chakra_frequencies_hz": [528, 639],
+          "recommended_ragas": [28, 5, 20],
+          "practice": "Cool pitta through heart-centered ragas at Solfeggio frequencies"
+        },
+        {
+          "dosha": "kapha",
+          "primary_chakras": ["throat", "third_eye"],
+          "chakra_frequencies_hz": [741, 852],
+          "recommended_ragas": [65, 51, 57],
+          "practice": "Stimulate kapha through higher chakras with bright, dynamic ragas"
+        }
+      ]
+    },
+    "dosha_biorhythm": {
+      "description": "Modulation of raga recommendation based on biorhythm cycle phase",
+      "physical_high": {
+        "vata": "reduce_grounding_intensity",
+        "pitta": "maintain_cooling",
+        "kapha": "reduce_stimulation_slightly"
+      },
+      "physical_low": {
+        "vata": "increase_grounding_intensity",
+        "pitta": "add_nurturing_ragas",
+        "kapha": "increase_stimulation"
+      },
+      "emotional_high": {
+        "vata": "maintain_calming",
+        "pitta": "increase_cooling",
+        "kapha": "standard_stimulation"
+      },
+      "emotional_low": {
+        "vata": "strong_grounding_needed",
+        "pitta": "gentle_cooling",
+        "kapha": "gentle_stimulation"
+      }
+    }
+  },
+  "practice_guidelines": {
+    "listening_duration": {
+      "minimum_minutes": 10,
+      "optimal_minutes": 20,
+      "maximum_minutes": 45,
+      "description": "Therapeutic effect requires minimum 10 minutes. Optimal at 20 minutes. Diminishing returns beyond 45 minutes."
+    },
+    "frequency": {
+      "daily_recommended": true,
+      "times_per_day": 1,
+      "best_consistency": "same_time_daily",
+      "description": "Daily practice at a consistent time builds cumulative therapeutic benefit"
+    },
+    "posture": {
+      "seated": "Most effective for deep listening and meditation",
+      "walking": "Suitable for energizing ragas (kapha-pacifying)",
+      "lying_down": "Suitable for calming ragas (vata-pacifying) before sleep"
+    },
+    "contraindications": {
+      "description": "Musical therapy is complementary. Not a replacement for medical treatment.",
+      "note": "Strong emotional reactions to certain ragas should be noted and discussed with a practitioner"
+    }
+  }
+}

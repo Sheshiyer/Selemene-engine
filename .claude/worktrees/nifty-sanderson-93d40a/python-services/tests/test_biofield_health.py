@@ -1,0 +1,44 @@
+"""Tests for Biofield CV service health endpoint."""
+
+from fastapi.testclient import TestClient
+
+from biofield_cv_service.main import app
+
+client = TestClient(app)
+
+
+def test_health_returns_200() -> None:
+    response = client.get("/health")
+    assert response.status_code == 200
+
+
+def test_health_returns_correct_service_name() -> None:
+    response = client.get("/health")
+    data = response.json()
+    assert data["service"] == "biofield-cv"
+
+
+def test_health_returns_version() -> None:
+    response = client.get("/health")
+    data = response.json()
+    assert data["version"] == "3.0.0"
+
+
+def test_health_includes_opencv_availability() -> None:
+    response = client.get("/health")
+    data = response.json()
+    assert "opencv_available" in data
+    assert isinstance(data["opencv_available"], bool)
+
+
+def test_health_includes_numpy_availability() -> None:
+    response = client.get("/health")
+    data = response.json()
+    assert "numpy_available" in data
+    assert isinstance(data["numpy_available"], bool)
+
+
+def test_health_status_is_healthy() -> None:
+    response = client.get("/health")
+    data = response.json()
+    assert data["status"] == "healthy"

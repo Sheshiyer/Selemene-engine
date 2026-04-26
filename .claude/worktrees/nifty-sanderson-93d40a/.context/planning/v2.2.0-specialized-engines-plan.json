@@ -1,0 +1,932 @@
+{
+  "phase_id": "V2.2.0",
+  "name": "Specialized Engines",
+  "milestone": "v2.2.0",
+  "target": "Q2 2026",
+  "delivery_mode": "Prototype",
+  "objective": "Complete 3 specialized calculation engines (Numerology, Biorhythm, Biofield) by filling feature gaps, adding missing calculation systems, refactoring to canonical file structure, hardening with comprehensive tests and benchmarks, and updating workflow integrations.",
+  "context": "All three engine crates exist with substantial implementations. Numerology has Pythagorean/Chaldean core numbers. Biorhythm has primary + intuitive cycles with forecast. Biofield has Vedic chakra analysis with mock fallback. This plan closes the remaining feature gaps, normalizes structure, and brings all three to production quality.",
+  "gate": "Gate V2.2.0: All 3 engines pass ConsciousnessEngine contract tests, reference validation suites, and p95 benchmarks under 5ms. Workflows updated. API docs complete.",
+  "waves": [
+    {
+      "wave_id": "W1",
+      "name": "Engine Feature Completion & Core Logic",
+      "description": "Close all calculation feature gaps. Add missing algorithms and systems to each engine.",
+      "swarms": [
+        {
+          "swarm_id": "S1",
+          "name": "Numerology \u2014 Feature Gaps & Refactor",
+          "tasks": [
+            {
+              "id": "V22-W1-S1-01",
+              "title": "Extract types into dedicated types.rs module",
+              "area": "backend",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 4,
+              "dependencies": [],
+              "deliverable": "NumerologyNumber, NumerologyResult, and all input/output structs moved to crates/engine-numerology/src/types.rs with pub re-exports from lib.rs",
+              "acceptance": "cargo build succeeds with types in separate module; all existing tests pass unchanged",
+              "validation": "types.rs exists with all Serialize/Deserialize structs; lib.rs uses `pub mod types; pub use types::*;`"
+            },
+            {
+              "id": "V22-W1-S1-02",
+              "title": "Extract calculation functions into calculator.rs module",
+              "area": "backend",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 4,
+              "dependencies": [
+                "V22-W1-S1-01"
+              ],
+              "deliverable": "All pure calculation functions (calculate_life_path, calculate_expression, etc.) moved to crates/engine-numerology/src/calculator.rs",
+              "acceptance": "lib.rs contains only NumerologyEngine struct and ConsciousnessEngine impl; calculator.rs contains all computation logic; tests pass",
+              "validation": "calculator.rs exports all 6 calculation functions; lib.rs compute() delegates to calculator module"
+            },
+            {
+              "id": "V22-W1-S1-03",
+              "title": "Implement personal year cycle calculation",
+              "area": "backend",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 6,
+              "dependencies": [
+                "V22-W1-S1-02"
+              ],
+              "deliverable": "PersonalCycle struct and calculate_personal_year(birth_date, target_year) function in calculator.rs",
+              "acceptance": "Personal year = reduce(birth_month + birth_day + target_year); 5 reference test cases pass",
+              "validation": "Unit test with known birth dates produces correct personal year numbers matching numerology references"
+            },
+            {
+              "id": "V22-W1-S1-04",
+              "title": "Implement personal month and personal day cycles",
+              "area": "backend",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 6,
+              "dependencies": [
+                "V22-W1-S1-03"
+              ],
+              "deliverable": "calculate_personal_month(personal_year, calendar_month) and calculate_personal_day(personal_month, calendar_day) functions",
+              "acceptance": "Personal month = reduce(personal_year + calendar_month); personal day = reduce(personal_month + calendar_day); 3 reference tests each",
+              "validation": "Unit tests verify cascading reduction: year -> month -> day for at least 3 different dates"
+            },
+            {
+              "id": "V22-W1-S1-05",
+              "title": "Add personal cycles to NumerologyResult and engine output",
+              "area": "backend",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 6,
+              "dependencies": [
+                "V22-W1-S1-04"
+              ],
+              "deliverable": "NumerologyResult gains optional personal_cycles field with year/month/day; ConsciousnessEngine::calculate() populates it using input.current_time",
+              "acceptance": "Engine output JSON includes personal_cycles object with year, month, day numbers and meanings when current_time is provided",
+              "validation": "Async engine test verifies personal_cycles present in output; validate() checks values are in range 1-9 or master"
+            },
+            {
+              "id": "V22-W1-S1-06",
+              "title": "Enhance witness prompt with personal cycle awareness",
+              "area": "backend",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 4,
+              "dependencies": [
+                "V22-W1-S1-05"
+              ],
+              "deliverable": "generate_witness_prompt() incorporates personal year/month energy into the reflective prompt text",
+              "acceptance": "Witness prompt mentions the personal year theme when personal_cycles are present; prompt remains valid when absent",
+              "validation": "Test with and without current_time; prompt strings are non-empty and contextually relevant in both cases"
+            },
+            {
+              "id": "V22-W1-S1-07",
+              "title": "Update cache_key to include personal cycle inputs",
+              "area": "backend",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 4,
+              "dependencies": [
+                "V22-W1-S1-05"
+              ],
+              "deliverable": "cache_key() hashes current_time date component so personal cycle results are date-specific",
+              "acceptance": "Same birth data on different dates produces different cache keys; same date produces same key",
+              "validation": "Unit test: cache_key(input_today) != cache_key(input_tomorrow) for identical birth data"
+            }
+          ]
+        },
+        {
+          "swarm_id": "S2",
+          "name": "Biorhythm \u2014 Feature Gaps & Refactor",
+          "tasks": [
+            {
+              "id": "V22-W1-S2-01",
+              "title": "Extract types into dedicated types.rs module",
+              "area": "backend",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 4,
+              "dependencies": [],
+              "deliverable": "BiorhythmResult, CycleResult, ForecastDay, and CompatibilityResult moved to crates/engine-biorhythm/src/types.rs",
+              "acceptance": "cargo build succeeds; all existing tests pass with types imported from types module",
+              "validation": "types.rs exists with all public structs; lib.rs delegates via pub use"
+            },
+            {
+              "id": "V22-W1-S2-02",
+              "title": "Extract calculation functions into calculator.rs module",
+              "area": "backend",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 4,
+              "dependencies": [
+                "V22-W1-S2-01"
+              ],
+              "deliverable": "All pure functions (cycle_value, compute_cycle, find_critical_days, build_forecast, etc.) moved to calculator.rs",
+              "acceptance": "lib.rs contains only BiorhythmEngine + ConsciousnessEngine impl; calculator.rs has all math",
+              "validation": "calculator.rs is self-contained with cycle constants and all trigonometric helpers"
+            },
+            {
+              "id": "V22-W1-S2-03",
+              "title": "Add Aesthetic (43-day) secondary rhythm cycle",
+              "area": "backend",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 6,
+              "dependencies": [
+                "V22-W1-S2-02"
+              ],
+              "deliverable": "AESTHETIC_PERIOD constant and aesthetic CycleResult computed in calculate(); included in BiorhythmResult",
+              "acceptance": "BiorhythmResult.aesthetic field contains valid CycleResult with 43-day period sine curve values",
+              "validation": "Unit test: aesthetic cycle at day 0 is 0; at ~day 11 is near peak; percentage always in [0, 100]"
+            },
+            {
+              "id": "V22-W1-S2-04",
+              "title": "Add Spiritual (53-day) secondary rhythm cycle",
+              "area": "backend",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 6,
+              "dependencies": [
+                "V22-W1-S2-02"
+              ],
+              "deliverable": "SPIRITUAL_PERIOD constant and spiritual CycleResult computed in calculate(); included in BiorhythmResult",
+              "acceptance": "BiorhythmResult.spiritual field contains valid CycleResult with 53-day period sine curve values",
+              "validation": "Unit test: spiritual cycle validates same invariants as primary cycles; period is 53 days"
+            },
+            {
+              "id": "V22-W1-S2-05",
+              "title": "Include secondary rhythms in critical day detection",
+              "area": "backend",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 4,
+              "dependencies": [
+                "V22-W1-S2-03",
+                "V22-W1-S2-04"
+              ],
+              "deliverable": "find_critical_days() checks aesthetic and spiritual cycles; critical_days output annotates which cycle(s) are crossing zero",
+              "acceptance": "Critical days list includes zero-crossings for all 6 cycles; each entry identifies the triggering cycle(s)",
+              "validation": "Test with a long window (30 days) verifies that aesthetic and spiritual crossings appear alongside primary ones"
+            },
+            {
+              "id": "V22-W1-S2-06",
+              "title": "Include secondary rhythms in forecast output",
+              "area": "backend",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 4,
+              "dependencies": [
+                "V22-W1-S2-03",
+                "V22-W1-S2-04"
+              ],
+              "deliverable": "ForecastDay struct gains aesthetic and spiritual percentage fields; build_forecast() populates them",
+              "acceptance": "Each ForecastDay has 6 cycle values (physical, emotional, intellectual, intuitive, aesthetic, spiritual) plus overall_energy",
+              "validation": "Deserialize forecast output; verify all 6 cycle fields present and in [0, 100] range for every forecast day"
+            },
+            {
+              "id": "V22-W1-S2-07",
+              "title": "Implement compatibility biorhythm calculation for two people",
+              "area": "backend",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 8,
+              "dependencies": [
+                "V22-W1-S2-02"
+              ],
+              "deliverable": "calculate_compatibility(birth_date_a, birth_date_b, target_date) function returning CompatibilityResult with per-cycle correlation scores",
+              "acceptance": "Compatibility score per cycle = 100 * cos(2*PI*(days_diff % period)/period); overall compatibility is weighted average",
+              "validation": "Test: identical birth dates produce 100% compatibility; birth dates exactly half-period apart produce 0% for that cycle"
+            },
+            {
+              "id": "V22-W1-S2-08",
+              "title": "Add compatibility mode to engine via options parameter",
+              "area": "backend",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 6,
+              "dependencies": [
+                "V22-W1-S2-07"
+              ],
+              "deliverable": "When input.options contains 'partner_birth_date', engine output includes compatibility section alongside primary biorhythm",
+              "acceptance": "Engine calculate() returns both personal biorhythm and compatibility data when partner date is provided; personal-only when absent",
+              "validation": "Async test: with partner_birth_date option returns compatibility; without it returns standard output"
+            },
+            {
+              "id": "V22-W1-S2-09",
+              "title": "Update validate() for secondary cycles and compatibility fields",
+              "area": "backend",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 4,
+              "dependencies": [
+                "V22-W1-S2-06",
+                "V22-W1-S2-08"
+              ],
+              "deliverable": "validate() checks aesthetic/spiritual cycle ranges and compatibility score ranges when present",
+              "acceptance": "Validation catches out-of-range secondary cycle values and invalid compatibility scores",
+              "validation": "Test with crafted invalid output (aesthetic > 100, compatibility < 0) is caught by validate()"
+            },
+            {
+              "id": "V22-W1-S2-10",
+              "title": "Enhance witness prompt with secondary rhythms and compatibility insight",
+              "area": "backend",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 4,
+              "dependencies": [
+                "V22-W1-S2-06",
+                "V22-W1-S2-08"
+              ],
+              "deliverable": "generate_witness_prompt() references aesthetic/spiritual cycles and compatibility context when available",
+              "acceptance": "Prompt mentions aesthetic/spiritual phases; compatibility mode adds relational awareness text",
+              "validation": "Test: prompt with all cycles present contains references to 6 cycles; compatibility prompt contains relational language"
+            }
+          ]
+        },
+        {
+          "swarm_id": "S3",
+          "name": "Biofield \u2014 Feature Gaps & New Subsystems",
+          "tasks": [
+            {
+              "id": "V22-W1-S3-01",
+              "title": "Define meridian analysis data models",
+              "area": "backend",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 6,
+              "dependencies": [],
+              "deliverable": "MeridianReading, MeridianSystem, and MeridianAnalysis structs in models.rs covering 12 primary meridians with their element/organ associations",
+              "acceptance": "Models cover all 12 TCM meridians (Lung, Large Intestine, Stomach, Spleen, Heart, Small Intestine, Bladder, Kidney, Pericardium, Triple Warmer, Gallbladder, Liver)",
+              "validation": "MeridianSystem::all() returns exactly 12 entries; each has name, element, organ, and time_window fields"
+            },
+            {
+              "id": "V22-W1-S3-02",
+              "title": "Implement meridian energy calculator using Chinese medicine clock",
+              "area": "backend",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 8,
+              "dependencies": [
+                "V22-W1-S3-01"
+              ],
+              "deliverable": "meridian.rs module with calculate_meridian_energies(current_time, birth_data) using TCM organ clock (2-hour windows) correlated with birth chart",
+              "acceptance": "Each meridian gets an energy_level (0.0-1.0) based on time-of-day alignment and birth-data planetary correlations",
+              "validation": "Test: 3am-5am produces highest Lung meridian energy; noon-1pm produces highest Heart energy"
+            },
+            {
+              "id": "V22-W1-S3-03",
+              "title": "Integrate meridian analysis into BiofieldEngine calculate()",
+              "area": "backend",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 6,
+              "dependencies": [
+                "V22-W1-S3-02"
+              ],
+              "deliverable": "BiofieldEngine::analyze() includes meridian_analysis in the Vedic analysis path; mock path returns simulated meridian data",
+              "acceptance": "Engine output JSON contains meridian_analysis array with 12 meridian readings alongside existing chakra_readings",
+              "validation": "Async test: output has both chakra_readings (7) and meridian_analysis (12); all energy_levels in [0, 1]"
+            },
+            {
+              "id": "V22-W1-S3-04",
+              "title": "Define aura layer data models",
+              "area": "backend",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 4,
+              "dependencies": [],
+              "deliverable": "AuraLayer enum (Physical, Etheric, Emotional, Mental, Astral, Celestial, Ketheric) and AuraReading struct in models.rs",
+              "acceptance": "7 aura layers defined with intensity, dominant_color, and expansion_level fields",
+              "validation": "AuraLayer::all() returns 7 entries; serde roundtrip passes"
+            },
+            {
+              "id": "V22-W1-S3-05",
+              "title": "Implement aura layer assessment based on chakra and planetary data",
+              "area": "backend",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 8,
+              "dependencies": [
+                "V22-W1-S3-04"
+              ],
+              "deliverable": "aura.rs module with calculate_aura_layers(chakra_readings, planetary_context) mapping chakra energies to their corresponding aura layers",
+              "acceptance": "Each aura layer intensity derived from corresponding chakra(s); Physical aura from Root, Etheric from Sacral, etc.",
+              "validation": "Test: high Root chakra activity produces high Physical aura intensity; all values in valid ranges"
+            },
+            {
+              "id": "V22-W1-S3-06",
+              "title": "Integrate aura layer assessment into BiofieldEngine output",
+              "area": "backend",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 4,
+              "dependencies": [
+                "V22-W1-S3-05"
+              ],
+              "deliverable": "Engine output includes aura_layers array with 7 layer readings; mock path returns simulated aura data",
+              "acceptance": "aura_layers field appears in output JSON with 7 entries, each having layer, intensity, dominant_color",
+              "validation": "validate() checks aura_layers count is 7 and all intensities in [0, 1]"
+            },
+            {
+              "id": "V22-W1-S3-07",
+              "title": "Define healing modality recommendation data model",
+              "area": "backend",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 4,
+              "dependencies": [],
+              "deliverable": "HealingRecommendation struct with modality, target_area, priority, and rationale fields; HealingModality enum covering yoga, pranayama, meditation, sound therapy, etc.",
+              "acceptance": "At least 8 healing modalities defined; each HealingRecommendation links a modality to a specific biofield finding",
+              "validation": "HealingModality::all() returns >= 8 variants; serde roundtrip passes"
+            },
+            {
+              "id": "V22-W1-S3-08",
+              "title": "Implement healing recommendation engine based on biofield state",
+              "area": "backend",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 8,
+              "dependencies": [
+                "V22-W1-S3-07",
+                "V22-W1-S3-03",
+                "V22-W1-S3-06"
+              ],
+              "deliverable": "healing.rs module with generate_recommendations(chakra_readings, meridian_analysis, aura_layers) producing prioritized list of healing modalities",
+              "acceptance": "Low chakra activity triggers relevant modality (e.g., Root chakra low -> grounding yoga); blocked meridian -> acupressure recommendation",
+              "validation": "Test: low Root chakra + blocked Kidney meridian produces at least 2 recommendations targeting those areas"
+            },
+            {
+              "id": "V22-W1-S3-09",
+              "title": "Integrate healing recommendations into BiofieldEngine output",
+              "area": "backend",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 4,
+              "dependencies": [
+                "V22-W1-S3-08"
+              ],
+              "deliverable": "Engine output includes healing_recommendations array; replaces the existing areas_of_attention with richer recommendation objects",
+              "acceptance": "Output JSON has healing_recommendations array with modality, target_area, priority, and rationale for each entry",
+              "validation": "Async test: output contains >= 1 recommendation; each has all required fields; validate() checks structure"
+            },
+            {
+              "id": "V22-W1-S3-10",
+              "title": "Update validate() for meridian, aura, and healing fields",
+              "area": "backend",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 6,
+              "dependencies": [
+                "V22-W1-S3-03",
+                "V22-W1-S3-06",
+                "V22-W1-S3-09"
+              ],
+              "deliverable": "validate() checks meridian_analysis (12 entries, valid ranges), aura_layers (7 entries, valid ranges), and healing_recommendations (non-empty, valid structure)",
+              "acceptance": "Crafted invalid outputs (wrong meridian count, aura intensity > 1, empty recommendations) are rejected by validate()",
+              "validation": "Test with 4 invalid output variants; each fails validation with specific error message"
+            },
+            {
+              "id": "V22-W1-S3-11",
+              "title": "Enhance witness prompt with meridian, aura, and healing awareness",
+              "area": "backend",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 6,
+              "dependencies": [
+                "V22-W1-S3-09"
+              ],
+              "deliverable": "generate_vedic_witness_prompt() incorporates meridian peak, aura expansion, and top healing suggestion into reflective text",
+              "acceptance": "Witness prompt references the most active meridian, dominant aura layer, and primary recommendation",
+              "validation": "Test: prompt with full biofield data mentions all three subsystems; prompt length > 100 chars"
+            },
+            {
+              "id": "V22-W1-S3-12",
+              "title": "Update cache_key for expanded biofield output determinism",
+              "area": "backend",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 4,
+              "dependencies": [
+                "V22-W1-S3-09"
+              ],
+              "deliverable": "cache_key() includes hash of meridian-relevant time window (2-hour granularity) to match TCM clock precision",
+              "acceptance": "Cache key changes when crossing a 2-hour TCM window boundary; stable within same window",
+              "validation": "Test: times within same 2-hour window produce same key; times crossing boundary produce different keys"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "wave_id": "W2",
+      "name": "Integration, Workflows & API",
+      "description": "Wire expanded engines into orchestrator workflows, update API documentation, and verify cross-engine integration.",
+      "swarms": [
+        {
+          "swarm_id": "S4",
+          "name": "Numerology \u2014 Integration & Workflow Updates",
+          "tasks": [
+            {
+              "id": "V22-W2-S4-01",
+              "title": "Add numerology personal cycles to birth-blueprint workflow synthesis",
+              "area": "backend",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 6,
+              "dependencies": [
+                "V22-W1-S1-05"
+              ],
+              "deliverable": "BirthBlueprintSynthesizer references personal cycle data when synthesizing the birth blueprint narrative",
+              "acceptance": "birth-blueprint workflow output includes personal cycle context alongside life path and expression data",
+              "validation": "Integration test: birth-blueprint workflow with current_time set returns synthesis mentioning personal year"
+            },
+            {
+              "id": "V22-W2-S4-02",
+              "title": "Add personal day to daily-practice workflow synthesis",
+              "area": "backend",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 6,
+              "dependencies": [
+                "V22-W1-S1-05"
+              ],
+              "deliverable": "DailyPracticeSynthesizer incorporates numerology personal day alongside biorhythm and panchanga data",
+              "acceptance": "daily-practice workflow can optionally include numerology personal day when name is provided in birth_data",
+              "validation": "Integration test: daily-practice with name+birth_date includes personal day in synthesis"
+            },
+            {
+              "id": "V22-W2-S4-03",
+              "title": "Update numerology API endpoint documentation with personal cycles",
+              "area": "product",
+              "owner_role": "Tech Lead",
+              "est_hours": 4,
+              "dependencies": [
+                "V22-W1-S1-05"
+              ],
+              "deliverable": "OpenAPI/doc comments updated to document personal_cycles field in numerology engine output",
+              "acceptance": "API docs show personal_cycles as optional object with year, month, day sub-objects",
+              "validation": "utoipa schema generation includes personal_cycles in the output type"
+            }
+          ]
+        },
+        {
+          "swarm_id": "S5",
+          "name": "Biorhythm \u2014 Integration & Workflow Updates",
+          "tasks": [
+            {
+              "id": "V22-W2-S5-01",
+              "title": "Update daily-practice workflow to include secondary rhythms in synthesis",
+              "area": "backend",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 6,
+              "dependencies": [
+                "V22-W1-S2-06"
+              ],
+              "deliverable": "DailyPracticeSynthesizer references aesthetic and spiritual cycles in the daily energy narrative",
+              "acceptance": "daily-practice synthesis text mentions aesthetic/spiritual energy when those cycles are at notable levels (> 80% or < 20%)",
+              "validation": "Integration test with crafted date showing high aesthetic cycle includes aesthetic reference in synthesis"
+            },
+            {
+              "id": "V22-W2-S5-02",
+              "title": "Register compatibility mode in full-spectrum workflow",
+              "area": "backend",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 4,
+              "dependencies": [
+                "V22-W1-S2-08"
+              ],
+              "deliverable": "full-spectrum workflow passes through partner_birth_date option to biorhythm engine when present",
+              "acceptance": "full-spectrum with partner_birth_date includes compatibility data in biorhythm engine output",
+              "validation": "Integration test: full-spectrum workflow with partner option produces compatibility section in biorhythm output"
+            },
+            {
+              "id": "V22-W2-S5-03",
+              "title": "Update biorhythm API documentation for secondary cycles and compatibility",
+              "area": "product",
+              "owner_role": "Tech Lead",
+              "est_hours": 4,
+              "dependencies": [
+                "V22-W1-S2-09"
+              ],
+              "deliverable": "API docs updated with aesthetic, spiritual cycle fields and compatibility mode documentation",
+              "acceptance": "Docs cover new output fields, partner_birth_date option, and compatibility score interpretation",
+              "validation": "Doc review confirms all new fields and options are documented with examples"
+            }
+          ]
+        },
+        {
+          "swarm_id": "S6",
+          "name": "Biofield \u2014 Integration & Workflow Updates",
+          "tasks": [
+            {
+              "id": "V22-W2-S6-01",
+              "title": "Add biofield meridian data to daily-practice workflow synthesis",
+              "area": "backend",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 6,
+              "dependencies": [
+                "V22-W1-S3-03"
+              ],
+              "deliverable": "DailyPracticeSynthesizer incorporates current peak meridian into daily practice recommendations",
+              "acceptance": "daily-practice workflow references the currently active TCM meridian when biofield data is available",
+              "validation": "Integration test: daily-practice at specific time includes meridian-appropriate practice suggestion"
+            },
+            {
+              "id": "V22-W2-S6-02",
+              "title": "Add biofield healing recommendations to self-inquiry workflow",
+              "area": "backend",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 6,
+              "dependencies": [
+                "V22-W1-S3-09"
+              ],
+              "deliverable": "SelfInquirySynthesizer can optionally include healing modality recommendations from biofield engine",
+              "acceptance": "self-inquiry workflow includes somatic awareness healing suggestions when biofield engine is included",
+              "validation": "Integration test: self-inquiry with biofield engine produces healing recommendations in synthesis"
+            },
+            {
+              "id": "V22-W2-S6-03",
+              "title": "Update full-spectrum workflow to leverage expanded biofield subsystems",
+              "area": "backend",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 6,
+              "dependencies": [
+                "V22-W1-S3-10"
+              ],
+              "deliverable": "FullSpectrumSynthesizer references meridian, aura, and healing data from biofield engine in holistic narrative",
+              "acceptance": "full-spectrum synthesis incorporates biofield meridian, aura, and healing insights alongside other engine outputs",
+              "validation": "Integration test: full-spectrum with birth_data includes meridian, aura, and healing in final synthesis"
+            },
+            {
+              "id": "V22-W2-S6-04",
+              "title": "Update biofield API documentation for meridian, aura, and healing fields",
+              "area": "product",
+              "owner_role": "Tech Lead",
+              "est_hours": 6,
+              "dependencies": [
+                "V22-W1-S3-10"
+              ],
+              "deliverable": "API docs document all new output sections: meridian_analysis, aura_layers, healing_recommendations",
+              "acceptance": "Each new section has field descriptions, value ranges, and interpretation guidance",
+              "validation": "Doc review confirms all new fields documented; OpenAPI schema matches actual output structure"
+            }
+          ]
+        },
+        {
+          "swarm_id": "S7",
+          "name": "Cross-Cutting Integration",
+          "tasks": [
+            {
+              "id": "V22-W2-S7-01",
+              "title": "Add numerology to daily-practice workflow engine_ids in registry",
+              "area": "backend",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 4,
+              "dependencies": [
+                "V22-W2-S4-02"
+              ],
+              "deliverable": "WorkflowRegistry daily-practice engine_ids gains 'numerology' entry; existing panchanga, vedic-clock, biorhythm unchanged",
+              "acceptance": "daily-practice workflow definition lists 4 engines: panchanga, vedic-clock, biorhythm, numerology",
+              "validation": "Registry unit test asserts daily-practice has 4 engine_ids including numerology"
+            },
+            {
+              "id": "V22-W2-S7-02",
+              "title": "Add biofield to self-inquiry workflow engine_ids in registry",
+              "area": "backend",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 4,
+              "dependencies": [
+                "V22-W2-S6-02"
+              ],
+              "deliverable": "WorkflowRegistry self-inquiry engine_ids gains 'biofield' entry; existing gene-keys, enneagram unchanged",
+              "acceptance": "self-inquiry workflow definition lists 3 engines: gene-keys, enneagram, biofield",
+              "validation": "Registry unit test asserts self-inquiry has 3 engine_ids including biofield"
+            },
+            {
+              "id": "V22-W2-S7-03",
+              "title": "Update full-spectrum engine list to reflect all secondary rhythms",
+              "area": "backend",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 4,
+              "dependencies": [
+                "V22-W2-S6-03"
+              ],
+              "deliverable": "full-spectrum workflow comments and docs acknowledge the expanded capabilities of numerology, biorhythm, and biofield engines",
+              "acceptance": "Full-spectrum workflow documentation references personal cycles, secondary rhythms, and meridian/aura/healing subsystems",
+              "validation": "Doc review confirms full-spectrum documentation covers all v2.2.0 engine capabilities"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "wave_id": "W3",
+      "name": "Testing, Benchmarks & Documentation",
+      "description": "Comprehensive test suites, performance benchmarks, contract tests, and final documentation for all three engines.",
+      "swarms": [
+        {
+          "swarm_id": "S8",
+          "name": "Numerology \u2014 Testing & Benchmarks",
+          "tasks": [
+            {
+              "id": "V22-W3-S8-01",
+              "title": "Add personal cycle reference validation tests",
+              "area": "qa",
+              "owner_role": "QA Eng",
+              "est_hours": 6,
+              "dependencies": [
+                "V22-W1-S1-05"
+              ],
+              "deliverable": "Reference validation test cases for personal year/month/day in tests/reference_validation_tests.rs covering at least 5 known birth dates",
+              "acceptance": "All 5 personal year calculations match hand-computed reference values; month and day cascade correctly",
+              "validation": "cargo test --package engine-numerology passes with >= 25 total test cases"
+            },
+            {
+              "id": "V22-W3-S8-02",
+              "title": "Add edge case tests for numerology (empty name, unicode, special chars)",
+              "area": "qa",
+              "owner_role": "QA Eng",
+              "est_hours": 6,
+              "dependencies": [
+                "V22-W1-S1-02"
+              ],
+              "deliverable": "Test cases for: empty string name, unicode names, hyphenated names, names with numbers, single-char names",
+              "acceptance": "Engine returns appropriate errors for invalid inputs and handles edge cases gracefully",
+              "validation": "Test suite includes >= 8 edge case tests; all pass or return expected errors"
+            },
+            {
+              "id": "V22-W3-S8-03",
+              "title": "Create numerology benchmark suite",
+              "area": "qa",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 6,
+              "dependencies": [
+                "V22-W1-S1-05"
+              ],
+              "deliverable": "benches/numerology_bench.rs using criterion with benchmarks for life_path, full_calculate, and personal_cycles",
+              "acceptance": "Benchmark results show p50 and p95 latencies; full calculate < 1ms on standard hardware",
+              "validation": "cargo bench --package engine-numerology runs successfully; results captured in CI artifacts"
+            },
+            {
+              "id": "V22-W3-S8-04",
+              "title": "ConsciousnessEngine contract test for numerology",
+              "area": "qa",
+              "owner_role": "QA Eng",
+              "est_hours": 6,
+              "dependencies": [
+                "V22-W1-S1-07"
+              ],
+              "deliverable": "Contract test verifying: engine_id() returns 'numerology', required_phase() returns 0, cache_key() is deterministic, validate() accepts calculate() output",
+              "acceptance": "Contract test covers all 6 trait methods with assertion on return types and values",
+              "validation": "Test runs as part of CI; failure blocks merge"
+            }
+          ]
+        },
+        {
+          "swarm_id": "S9",
+          "name": "Biorhythm \u2014 Testing & Benchmarks",
+          "tasks": [
+            {
+              "id": "V22-W3-S9-01",
+              "title": "Add secondary rhythm cycle validation tests",
+              "area": "qa",
+              "owner_role": "QA Eng",
+              "est_hours": 6,
+              "dependencies": [
+                "V22-W1-S2-06"
+              ],
+              "deliverable": "Tests validating aesthetic (43-day) and spiritual (53-day) cycle math: zero-crossings, peaks, percentage ranges",
+              "acceptance": "Aesthetic and spiritual cycles produce mathematically correct sine values at known cycle positions",
+              "validation": "At least 6 test cases per secondary cycle; all pass"
+            },
+            {
+              "id": "V22-W3-S9-02",
+              "title": "Add compatibility biorhythm validation tests",
+              "area": "qa",
+              "owner_role": "QA Eng",
+              "est_hours": 6,
+              "dependencies": [
+                "V22-W1-S2-08"
+              ],
+              "deliverable": "Tests for: identical dates (100% match), half-period offset (0% for that cycle), random dates (valid ranges), missing partner (graceful fallback)",
+              "acceptance": "Compatibility calculations produce mathematically correct cosine-based correlation scores",
+              "validation": "At least 8 compatibility test cases covering edge cases and normal scenarios"
+            },
+            {
+              "id": "V22-W3-S9-03",
+              "title": "Create biorhythm benchmark suite",
+              "area": "qa",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 6,
+              "dependencies": [
+                "V22-W1-S2-09"
+              ],
+              "deliverable": "benches/biorhythm_bench.rs with criterion benchmarks for primary_cycles, full_calculate, compatibility, and 30-day forecast",
+              "acceptance": "Full calculate with 7-day forecast < 1ms; compatibility calculation < 500us",
+              "validation": "cargo bench --package engine-biorhythm runs successfully; CI captures results"
+            },
+            {
+              "id": "V22-W3-S9-04",
+              "title": "ConsciousnessEngine contract test for biorhythm",
+              "area": "qa",
+              "owner_role": "QA Eng",
+              "est_hours": 6,
+              "dependencies": [
+                "V22-W1-S2-09"
+              ],
+              "deliverable": "Contract test verifying all trait methods: engine_id(), engine_name(), required_phase(), calculate(), validate(), cache_key()",
+              "acceptance": "Contract test asserts engine_id='biorhythm', required_phase=0, validate accepts own output",
+              "validation": "Test runs in CI; exercises full calculate->validate roundtrip"
+            }
+          ]
+        },
+        {
+          "swarm_id": "S10",
+          "name": "Biofield \u2014 Testing & Benchmarks",
+          "tasks": [
+            {
+              "id": "V22-W3-S10-01",
+              "title": "Add meridian analysis validation tests",
+              "area": "qa",
+              "owner_role": "QA Eng",
+              "est_hours": 6,
+              "dependencies": [
+                "V22-W1-S3-03"
+              ],
+              "deliverable": "Tests validating: correct meridian count (12), TCM clock alignment, energy level ranges, mock vs vedic path consistency",
+              "acceptance": "Meridian tests verify time-of-day correlation with correct organ and all values in [0, 1]",
+              "validation": "At least 6 meridian test cases including boundary times (e.g., exactly at window transitions)"
+            },
+            {
+              "id": "V22-W3-S10-02",
+              "title": "Add aura layer assessment validation tests",
+              "area": "qa",
+              "owner_role": "QA Eng",
+              "est_hours": 6,
+              "dependencies": [
+                "V22-W1-S3-06"
+              ],
+              "deliverable": "Tests validating: 7 layers present, chakra-to-aura mapping correctness, intensity ranges, color assignment logic",
+              "acceptance": "Aura tests verify Physical aura correlates with Root chakra; all intensities in [0, 1]",
+              "validation": "At least 6 aura test cases including all-high chakras and all-low chakras scenarios"
+            },
+            {
+              "id": "V22-W3-S10-03",
+              "title": "Add healing recommendation validation tests",
+              "area": "qa",
+              "owner_role": "QA Eng",
+              "est_hours": 6,
+              "dependencies": [
+                "V22-W1-S3-09"
+              ],
+              "deliverable": "Tests validating: recommendations generated for low-energy scenarios, modality appropriateness, priority ordering, empty state handling",
+              "acceptance": "Healing tests verify low Root -> grounding recommendation, low Heart -> heart-opening recommendation, balanced state -> maintenance suggestions",
+              "validation": "At least 6 healing test cases with various biofield states"
+            },
+            {
+              "id": "V22-W3-S10-04",
+              "title": "Create biofield benchmark suite",
+              "area": "qa",
+              "owner_role": "Backend Eng (Rust)",
+              "est_hours": 6,
+              "dependencies": [
+                "V22-W1-S3-10"
+              ],
+              "deliverable": "benches/biofield_bench.rs with criterion benchmarks for vedic_path, mock_path, and full_analysis with all subsystems",
+              "acceptance": "Full vedic analysis < 5ms; mock path < 1ms; benchmarks capture meridian + aura + healing overhead",
+              "validation": "cargo bench --package engine-biofield runs successfully; CI captures results"
+            },
+            {
+              "id": "V22-W3-S10-05",
+              "title": "ConsciousnessEngine contract test for biofield",
+              "area": "qa",
+              "owner_role": "QA Eng",
+              "est_hours": 6,
+              "dependencies": [
+                "V22-W1-S3-10"
+              ],
+              "deliverable": "Contract test verifying all trait methods including both vedic and mock paths",
+              "acceptance": "Contract test asserts engine_id='biofield', required_phase=1, validate accepts vedic and mock outputs",
+              "validation": "Test exercises both vedic (with birth_data) and mock (without) paths"
+            }
+          ]
+        },
+        {
+          "swarm_id": "S11",
+          "name": "Cross-Cutting QA & Documentation",
+          "tasks": [
+            {
+              "id": "V22-W3-S11-01",
+              "title": "End-to-end workflow integration test for daily-practice with all 4 engines",
+              "area": "qa",
+              "owner_role": "QA Eng",
+              "est_hours": 8,
+              "dependencies": [
+                "V22-W2-S7-01",
+                "V22-W2-S5-01"
+              ],
+              "deliverable": "Integration test exercising full daily-practice workflow with panchanga, vedic-clock, biorhythm (including secondary), and numerology (personal day)",
+              "acceptance": "Workflow executes all 4 engines, synthesis includes data from all engines, no engine errors",
+              "validation": "Test spawns orchestrator with real engines; workflow returns success with synthesis containing all engine references"
+            },
+            {
+              "id": "V22-W3-S11-02",
+              "title": "End-to-end workflow integration test for full-spectrum with expanded engines",
+              "area": "qa",
+              "owner_role": "QA Eng",
+              "est_hours": 8,
+              "dependencies": [
+                "V22-W2-S6-03",
+                "V22-W2-S7-03"
+              ],
+              "deliverable": "Integration test exercising full-spectrum workflow verifying all engine outputs include v2.2.0 features",
+              "acceptance": "full-spectrum workflow produces outputs with personal cycles, secondary rhythms, meridian analysis, aura layers, and healing recommendations",
+              "validation": "Test validates output structure of each engine matches v2.2.0 schema"
+            },
+            {
+              "id": "V22-W3-S11-03",
+              "title": "Cross-engine cache key collision test",
+              "area": "qa",
+              "owner_role": "QA Eng",
+              "est_hours": 4,
+              "dependencies": [
+                "V22-W1-S1-07",
+                "V22-W1-S2-09",
+                "V22-W1-S3-12"
+              ],
+              "deliverable": "Test verifying no cache key collisions between the 3 engines for identical inputs",
+              "acceptance": "Same EngineInput produces 3 different cache keys from numerology, biorhythm, and biofield engines",
+              "validation": "Test with 5 different inputs; all cache keys are unique across engines"
+            },
+            {
+              "id": "V22-W3-S11-04",
+              "title": "Engine registration parity test for v2.2.0",
+              "area": "qa",
+              "owner_role": "QA Eng",
+              "est_hours": 4,
+              "dependencies": [
+                "V22-W2-S7-01",
+                "V22-W2-S7-02"
+              ],
+              "deliverable": "Test asserting build_app_state() registers all 3 specialized engines and updated workflow definitions match v2.2.0 spec",
+              "acceptance": "Registration test verifies numerology, biorhythm, and biofield are in registry; workflow engine lists are correct",
+              "validation": "Test fails if any v2.2.0 engine missing from registry or workflow definitions don't match spec"
+            },
+            {
+              "id": "V22-W3-S11-05",
+              "title": "Write v2.2.0 engine specification document",
+              "area": "product",
+              "owner_role": "Tech Lead",
+              "est_hours": 8,
+              "dependencies": [
+                "V22-W1-S1-05",
+                "V22-W1-S2-09",
+                "V22-W1-S3-10"
+              ],
+              "deliverable": "docs/engines/v2.2.0-specialized-engines.md documenting all calculation methods, input/output schemas, and integration points for numerology, biorhythm, and biofield",
+              "acceptance": "Document covers all algorithms, data models, API schemas, and workflow integration for each engine",
+              "validation": "Peer review by tech lead; document matches actual implementation"
+            },
+            {
+              "id": "V22-W3-S11-06",
+              "title": "Update CHANGELOG and version bump for v2.2.0",
+              "area": "product",
+              "owner_role": "Tech Lead",
+              "est_hours": 4,
+              "dependencies": [
+                "V22-W3-S11-02"
+              ],
+              "deliverable": "CHANGELOG.md entry for v2.2.0 listing all new features; Cargo.toml version bumped to 2.2.0 for all 3 engine crates",
+              "acceptance": "CHANGELOG lists: personal cycles, secondary rhythms, compatibility, meridian analysis, aura layers, healing recommendations",
+              "validation": "Version strings in Cargo.toml match 2.2.0; CHANGELOG entry exists and is complete"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "total_tasks": 70,
+    "by_wave": {
+      "W1_feature_completion": 29,
+      "W2_integration_api": 18,
+      "W3_testing_docs": 23
+    },
+    "by_area": {
+      "backend": 42,
+      "qa": 19,
+      "product": 7,
+      "infra": 0,
+      "frontend": 0,
+      "data": 0
+    },
+    "by_engine": {
+      "numerology": 14,
+      "biorhythm": 17,
+      "biofield": 23,
+      "cross_cutting": 16
+    },
+    "total_estimated_hours": 366,
+    "critical_path": [
+      "V22-W1-S1-01 -> V22-W1-S1-02 -> V22-W1-S1-03 -> V22-W1-S1-04 -> V22-W1-S1-05 (Numerology personal cycles)",
+      "V22-W1-S2-02 -> V22-W1-S2-07 -> V22-W1-S2-08 -> V22-W1-S2-09 (Biorhythm compatibility)",
+      "V22-W1-S3-01 -> V22-W1-S3-02 -> V22-W1-S3-03 -> V22-W1-S3-08 -> V22-W1-S3-09 -> V22-W1-S3-10 (Biofield meridian+healing)"
+    ],
+    "parallelization_opportunities": [
+      "W1-S1, W1-S2, W1-S3 are fully independent (3 engines in parallel)",
+      "W1-S3-01 and W1-S3-04 and W1-S3-07 are independent (meridian, aura, healing models in parallel)",
+      "W2-S4, W2-S5, W2-S6 are mostly independent (per-engine integration)",
+      "W3-S8, W3-S9, W3-S10 are fully independent (per-engine test suites)",
+      "All benchmark tasks (W3-S8-03, W3-S9-03, W3-S10-04) can run in parallel"
+    ]
+  }
+}

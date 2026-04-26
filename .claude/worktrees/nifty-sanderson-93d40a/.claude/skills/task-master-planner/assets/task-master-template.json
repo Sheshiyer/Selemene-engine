@@ -1,0 +1,37 @@
+{
+  "schema_version": "1.0",
+  "project": {
+    "name": "",
+    "repo_root": "",
+    "generated_on": "YYYY-MM-DD",
+    "generated_by": "task-master-planner",
+    "assumptions": [],
+    "risks": []
+  },
+  "phases": [
+    {
+      "phase_id": "P0",
+      "name": "",
+      "objective": "",
+      "sprints": [
+        {
+          "sprint_id": "S1",
+          "duration_weeks": 2,
+          "focus": "",
+          "tasks": [
+            {
+              "id": "P0-S1-01",
+              "title": "",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 8,
+              "dependencies": [],
+              "deliverable": "",
+              "acceptance": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

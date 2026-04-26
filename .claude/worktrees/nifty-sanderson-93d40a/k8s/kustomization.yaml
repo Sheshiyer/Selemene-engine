@@ -1,0 +1,55 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+metadata:
+  name: selemene-engine
+
+namespace: selemene
+
+labels:
+  - includeSelectors: true
+    pairs:
+      app.kubernetes.io/name: selemene
+      app.kubernetes.io/managed-by: kustomize
+
+resources:
+  # Base API resources
+  - base/deployment.yaml
+  - base/service.yaml
+  - base/configmap.yaml
+  - base/secrets.yaml
+  - base/ingress.yaml
+  - base/hpa.yaml
+  
+  # TS Engines resources
+  - ts-engines/deployment.yaml
+  - ts-engines/service.yaml
+  
+  # Cert-manager resources
+  - cert-manager/cluster-issuer.yaml
+  - cert-manager/certificate.yaml
+  
+  # Infrastructure (optional - uncomment if needed)
+  # - redis/redis-sentinel.yml
+  # - postgres/postgres-replication.yml
+
+# Common image configuration
+images:
+  - name: ghcr.io/witnessos/selemene-engine
+    newTag: latest
+  - name: ghcr.io/witnessos/selemene-ts-engines
+    newTag: latest
+
+# Config map generator for environment-specific configs
+configMapGenerator:
+  - name: selemene-env
+    behavior: create
+    literals:
+      - ENVIRONMENT=production
+
+# Replicas can be overridden per environment
+replicas:
+  - name: selemene-api
+    count: 2
+  - name: selemene-ts-engines
+    count: 1

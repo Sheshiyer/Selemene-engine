@@ -1,0 +1,302 @@
+{
+  "definitions_info": {
+    "name": "Human Design Definition Types",
+    "description": "The 5 types of definition describing how energy flows through the bodygraph",
+    "total_types": 5,
+    "purpose": "Definition determines how energy flows and how you interact with others",
+    "source": "Human Design System by Ra Uru Hu"
+  },
+  "definition_types": {
+    "Single_Definition": {
+      "name": "Single Definition",
+      "percentage": "~41%",
+      "description": "All defined centers are connected in one continuous flow of energy",
+      "characteristics": [
+        "Self-contained energy flow",
+        "Independent and self-reliant",
+        "Consistent energy patterns",
+        "Don't need others to complete them",
+        "Natural wholeness"
+      ],
+      "energy_flow": {
+        "pattern": "Continuous flow between all defined centers",
+        "consistency": "Very consistent and reliable",
+        "independence": "Highly independent energetically",
+        "completion": "Complete within themselves"
+      },
+      "relationships": {
+        "with_others": "Don't need others for energetic completion",
+        "attraction": "Often attract those with splits to bridge",
+        "dynamics": "Can be self-sufficient, may need to learn interdependence",
+        "compatibility": "Compatible with all definition types"
+      },
+      "advantages": [
+        "Energetic self-sufficiency",
+        "Consistent energy flow",
+        "Natural independence",
+        "Reliable energy patterns"
+      ],
+      "challenges": [
+        "May be too self-contained",
+        "Can miss need for others",
+        "Potential for isolation",
+        "May not understand others' need for completion"
+      ],
+      "examples": [
+        "All motor centers connected to throat",
+        "G-center connected to all other defined centers",
+        "Continuous chain of defined centers and channels"
+      ]
+    },
+    "Split_Definition": {
+      "name": "Split Definition", 
+      "percentage": "~46%",
+      "description": "Two separate areas of definition with a gap between them",
+      "characteristics": [
+        "Two distinct energy areas",
+        "Need bridge between splits",
+        "Seek completion through others",
+        "More complex energy dynamics",
+        "Natural collaborators"
+      ],
+      "energy_flow": {
+        "pattern": "Two separate energy flows with gap",
+        "consistency": "Less consistent, depends on bridging",
+        "independence": "Need others to bridge the split",
+        "completion": "Seek completion through relationships"
+      },
+      "bridging": {
+        "mechanism": "Undefined centers/gates between splits",
+        "through_others": "Others can bridge the split temporarily",
+        "through_transits": "Planetary transits can bridge splits",
+        "importance": "Bridging creates temporary wholeness"
+      },
+      "relationships": {
+        "with_others": "Naturally seek others who can bridge their split",
+        "attraction": "Attracted to those who complete their energy",
+        "dynamics": "Natural collaborators and team players",
+        "compatibility": "Especially compatible with complementary definitions"
+      },
+      "advantages": [
+        "Natural collaboration skills",
+        "Flexibility in energy expression",
+        "Openness to others",
+        "Adaptability"
+      ],
+      "challenges": [
+        "Inconsistent energy when unbridged",
+        "Dependency on others for completion",
+        "Potential for codependency",
+        "Energy fluctuations"
+      ],
+      "types_of_splits": {
+        "simple_split": "Two areas with one bridging gate needed",
+        "wide_split": "Two areas with multiple bridging possibilities",
+        "emotional_split": "Split involving emotional center",
+        "mental_split": "Split involving mental centers"
+      }
+    },
+    "Triple_Split_Definition": {
+      "name": "Triple Split Definition",
+      "percentage": "~11%", 
+      "description": "Three separate areas of definition with gaps between them",
+      "characteristics": [
+        "Three distinct energy areas",
+        "Complex energy dynamics",
+        "Need multiple bridges",
+        "Highly collaborative nature",
+        "Flexible and adaptable"
+      ],
+      "energy_flow": {
+        "pattern": "Three separate energy flows with gaps",
+        "consistency": "Variable, depends on multiple bridging",
+        "independence": "Highly dependent on others for completion",
+        "completion": "Need community/group for full expression"
+      },
+      "bridging": {
+        "complexity": "Need multiple bridges simultaneously",
+        "through_groups": "Best completed through groups/community",
+        "timing": "Rare for all splits to be bridged at once",
+        "patience": "Must be patient for right bridging"
+      },
+      "relationships": {
+        "with_others": "Thrive in group settings and communities",
+        "attraction": "Attracted to diverse groups of people",
+        "dynamics": "Natural community builders",
+        "compatibility": "Need variety of people for completion"
+      },
+      "advantages": [
+        "Exceptional collaboration skills",
+        "Community building abilities",
+        "Flexibility and adaptability",
+        "Appreciation for diversity"
+      ],
+      "challenges": [
+        "Rarely feel complete alone",
+        "Complex energy management",
+        "Potential overwhelm in wrong groups",
+        "Difficulty with isolation"
+      ],
+      "lifestyle": {
+        "community_focus": "Thrive in community settings",
+        "group_work": "Excel in team environments",
+        "social_needs": "High social interaction needs",
+        "alone_time": "Limited tolerance for extended isolation"
+      }
+    },
+    "Quadruple_Split_Definition": {
+      "name": "Quadruple Split Definition",
+      "percentage": "~1%",
+      "description": "Four separate areas of definition - very rare and complex",
+      "characteristics": [
+        "Four distinct energy areas",
+        "Extremely complex energy dynamics",
+        "Highly dependent on others",
+        "Natural community organizers",
+        "Exceptional flexibility"
+      ],
+      "energy_flow": {
+        "pattern": "Four separate energy flows with multiple gaps",
+        "consistency": "Highly variable and complex",
+        "independence": "Cannot function independently",
+        "completion": "Requires large community for completion"
+      },
+      "bridging": {
+        "complexity": "Requires multiple simultaneous bridges",
+        "community_need": "Need large, diverse community",
+        "timing": "Very rare for all splits to be bridged",
+        "patience": "Must be extremely patient for completion"
+      },
+      "relationships": {
+        "with_others": "Absolutely require community and groups",
+        "attraction": "Attracted to large, diverse communities",
+        "dynamics": "Natural organizers of large groups",
+        "compatibility": "Need many different people for completion"
+      },
+      "advantages": [
+        "Exceptional community organizing skills",
+        "Ability to work with diverse groups",
+        "Extreme flexibility and adaptability",
+        "Natural understanding of complexity"
+      ],
+      "challenges": [
+        "Cannot function well in isolation",
+        "Extremely complex energy management",
+        "Overwhelming without right community",
+        "Rare to feel truly complete"
+      ],
+      "lifestyle": {
+        "community_essential": "Community is absolutely essential",
+        "large_groups": "Thrive in large, diverse groups",
+        "organizing": "Natural organizers and facilitators",
+        "isolation_difficulty": "Cannot handle isolation well"
+      },
+      "rarity": {
+        "percentage": "Less than 1% of population",
+        "uniqueness": "Extremely rare and unique energy",
+        "misunderstanding": "Often misunderstood by others",
+        "special_needs": "Require special understanding and support"
+      }
+    },
+    "No_Definition": {
+      "name": "No Definition",
+      "percentage": "~1%",
+      "description": "All centers undefined - only found in Reflectors",
+      "characteristics": [
+        "Complete openness",
+        "Total flexibility",
+        "Mirror for others",
+        "Sampling energy",
+        "Wisdom through reflection"
+      ],
+      "energy_flow": {
+        "pattern": "No fixed energy flow",
+        "consistency": "Completely inconsistent and variable",
+        "independence": "Completely dependent on environment",
+        "completion": "Complete through reflecting others"
+      },
+      "reflector_nature": {
+        "sampling": "Sample and reflect all energies",
+        "mirroring": "Mirror the health of community",
+        "wisdom": "Gain wisdom through reflection",
+        "environment": "Completely dependent on environment"
+      },
+      "relationships": {
+        "with_others": "Reflect back others' energy and health",
+        "attraction": "Attracted to healthy, positive environments",
+        "dynamics": "Serve as mirrors and wisdom keepers",
+        "compatibility": "Compatible with all types when healthy"
+      },
+      "advantages": [
+        "Complete flexibility and adaptability",
+        "Wisdom about human nature",
+        "Ability to see others clearly",
+        "Natural evaluation abilities"
+      ],
+      "challenges": [
+        "No consistent energy of their own",
+        "Completely dependent on environment",
+        "Can take on others' problems",
+        "Difficulty with unhealthy environments"
+      ],
+      "lifestyle": {
+        "environment_crucial": "Environment is absolutely crucial",
+        "people_selection": "Must carefully choose people",
+        "lunar_timing": "Follow lunar cycles for decisions",
+        "wisdom_role": "Serve as wisdom keepers for community"
+      }
+    }
+  },
+  "bridging_mechanics": {
+    "what_bridges": [
+      "Undefined centers between splits",
+      "Hanging gates that connect to others",
+      "Planetary transits",
+      "Other people's definition",
+      "Environmental energies"
+    ],
+    "temporary_vs_permanent": {
+      "temporary": "Through others, transits, environment",
+      "permanent": "Only through your own definition",
+      "importance": "Temporary bridging creates wholeness experiences"
+    },
+    "relationship_dynamics": {
+      "electromagnetic": "Splits create electromagnetic attraction",
+      "completion": "Seek others who complete energy flow",
+      "codependency_risk": "Can become dependent on bridging",
+      "healthy_bridging": "Temporary completion, not permanent dependency"
+    }
+  },
+  "practical_implications": {
+    "single_definition": {
+      "work": "Can work independently effectively",
+      "relationships": "Don't need others for completion but benefit from connection",
+      "decision_making": "Can make decisions independently",
+      "energy_management": "Consistent energy patterns"
+    },
+    "split_definition": {
+      "work": "Excel in collaborative environments",
+      "relationships": "Naturally seek complementary partners",
+      "decision_making": "Benefit from discussing with others",
+      "energy_management": "Variable energy depending on bridging"
+    },
+    "triple_split": {
+      "work": "Thrive in team and community settings",
+      "relationships": "Need diverse group of connections",
+      "decision_making": "Best decisions made with group input",
+      "energy_management": "Complex, requires community support"
+    },
+    "quadruple_split": {
+      "work": "Excel as community organizers and facilitators",
+      "relationships": "Require large, diverse community",
+      "decision_making": "Need extensive community input",
+      "energy_management": "Extremely complex, community dependent"
+    },
+    "no_definition": {
+      "work": "Thrive in healthy, supportive environments",
+      "relationships": "Reflect back others' energy and health",
+      "decision_making": "Use lunar cycle timing",
+      "energy_management": "Completely environmental dependent"
+    }
+  }
+}

@@ -1,0 +1,145 @@
+name: Agent Merge Lane
+
+on:
+  workflow_dispatch:
+    inputs:
+      lane:
+        description: "Lane to merge (qa-docs|backend|all)"
+        required: false
+        default: "qa-docs"
+        type: choice
+        options:
+          - qa-docs
+          - backend
+          - all
+      limit:
+        description: "Max PRs to merge in this batch"
+        required: false
+        default: "5"
+        type: string
+      dry_run:
+        description: "If true, report candidates without merging"
+        required: false
+        default: false
+        type: boolean
+
+jobs:
+  merge_lane:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+
+    steps:
+      - name: Merge eligible agent PRs in lane
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const lane = core.getInput('lane') || 'qa-docs';
+            const limit = parseInt(core.getInput('limit') || '5', 10);
+            const dryRun = String(core.getInput('dry_run')) === 'true';
+            const { owner, repo } = context.repo;
+
+            function issueNumFromHead(headRef) {
+              const m = /^agent\/issue-(\d+)-/.exec(headRef || '');
+              return m ? parseInt(m[1], 10) : null;
+            }
+
+            function laneForArea(area) {
+              if (area === 'area:qa' || area === 'area:docs') return 'qa-docs';
+              if (area === 'area:backend' || area === 'area:data') return 'backend';
+              return 'all';
+            }
+
+            const { data: pulls } = await github.rest.pulls.list({
+              owner,
+              repo,
+              state: 'open',
+              per_page: 100,
+            });
+
+            const agentPulls = pulls.filter(p => p.head.ref.startsWith('agent/issue-'));
+            const candidates = [];
+
+            for (const pr of agentPulls) {
+              if (pr.draft) continue;
+              const issueNum = issueNumFromHead(pr.head.ref);
+              if (!issueNum) continue;
+
+              let area = '';
+              try {
+                const { data: issue } = await github.rest.issues.get({ owner, repo, issue_number: issueNum });
+                const labels = (issue.labels || []).map(l => typeof l === 'string' ? l : l.name);
+                area = labels.find(l => l.startsWith('area:')) || '';
+              } catch (e) {
+                core.warning(`Could not load issue #${issueNum} for PR #${pr.number}: ${e.message}`);
+                continue;
+              }
+
+              const prLane = laneForArea(area);
+              if (lane !== 'all' && prLane !== lane) continue;
+
+              candidates.push({
+                number: pr.number,
+                title: pr.title,
+                headSha: pr.head.sha,
+                issueNum,
+                area,
+                lane: prLane,
+              });
+            }
+
+            candidates.sort((a, b) => a.number - b.number);
+            const batch = candidates.slice(0, limit);
+
+            core.notice(`Lane=${lane} dry_run=${dryRun} eligible=${candidates.length} merging=${batch.length}`);
+            if (!batch.length) {
+              core.summary.addHeading('Agent Merge Lane').addRaw('No eligible non-draft PRs for this lane.', true).write();
+              return;
+            }
+
+            const merged = [];
+            const failed = [];
+
+            for (const item of batch) {
+              if (dryRun) {
+                merged.push({ ...item, dryRun: true });
+                continue;
+              }
+
+              try {
+                await github.rest.pulls.merge({
+                  owner,
+                  repo,
+                  pull_number: item.number,
+                  merge_method: 'squash',
+                  sha: item.headSha,
+                  commit_title: `[agent][${item.lane}] ${item.title}`,
+                });
+                merged.push(item);
+              } catch (e) {
+                failed.push({ ...item, error: e.message });
+              }
+            }
+
+            const summary = core.summary.addHeading('Agent Merge Lane Batch');
+            summary.addRaw(`- Lane: ${lane}\n`, true);
+            summary.addRaw(`- Dry run: ${dryRun}\n`, true);
+            summary.addRaw(`- Eligible: ${candidates.length}\n`, true);
+            summary.addRaw(`- Attempted: ${batch.length}\n`, true);
+            summary.addRaw(`- Merged: ${merged.length}\n`, true);
+            summary.addRaw(`- Failed: ${failed.length}\n`, true);
+
+            if (merged.length) {
+              summary.addHeading('Merged').addCodeBlock(
+                merged.map(m => `#${m.number} issue=#${m.issueNum} area=${m.area} lane=${m.lane}${m.dryRun ? ' (dry-run)' : ''}`).join('\n')
+              );
+            }
+            if (failed.length) {
+              summary.addHeading('Failed').addCodeBlock(
+                failed.map(f => `#${f.number} issue=#${f.issueNum} area=${f.area} error=${f.error}`).join('\n')
+              );
+            }
+
+            await summary.write();

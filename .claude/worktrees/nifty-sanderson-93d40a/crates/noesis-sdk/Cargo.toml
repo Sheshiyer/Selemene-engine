@@ -1,0 +1,57 @@
+[package]
+name = "noesis-sdk"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+description = "Rust SDK for Selemene Engine — typed API client, profile management, credential storage, and report rendering"
+readme = "README.md"
+keywords = ["selemene", "sdk", "astrology", "api-client", "consciousness"]
+categories = ["api-bindings", "asynchronous"]
+
+[features]
+default = ["keychain"]
+keychain = ["keyring"]
+
+[dependencies]
+# Core types from noesis-core
+noesis-core = { version = "3.0.0", path = "../noesis-core" }
+
+# Async runtime
+tokio = { workspace = true }
+
+# HTTP client
+reqwest = { workspace = true }
+
+# Serialization
+serde = { workspace = true }
+serde_json = { workspace = true }
+
+# Date/Time
+chrono = { workspace = true }
+
+# Error handling
+thiserror = { workspace = true }
+
+# Configuration
+config = { workspace = true }
+dotenvy = { workspace = true }
+toml = { workspace = true }
+
+# UUID for request IDs
+uuid = { workspace = true }
+
+# Logging
+tracing = { workspace = true }
+
+# Directories for profile/config storage
+dirs = "5.0"
+
+# Keychain integration (optional, macOS/Windows/Linux)
+keyring = { version = "3.6", optional = true }
+
+[dev-dependencies]
+tokio-test = "0.4"
+wiremock = "0.6"
+tempfile = "3.14"

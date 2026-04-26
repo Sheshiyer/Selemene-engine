@@ -1,0 +1,31 @@
+# Dependencies
+node_modules
+bun.lock
+
+# Build artifacts
+dist/
+build/
+*.log
+*.lock
+
+# Development
+.git
+.env
+.env.*
+*.swp
+*.swo
+*~
+
+# Tests
+tests/
+*.test.ts
+*.spec.ts
+
+# Documentation
+*.md
+docs/
+
+# IDE
+.vscode/
+.idea/
+*.iml

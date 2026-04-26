@@ -1,0 +1,108 @@
+[workspace]
+resolver = "2"
+members = [
+    # Shared services
+    "crates/noesis-core",
+    "crates/noesis-data",
+    "crates/noesis-cache",
+    "crates/noesis-auth",
+    "crates/noesis-metrics",
+    "crates/noesis-witness",
+    "crates/noesis-orchestrator",
+    "crates/noesis-bridge",
+    "crates/noesis-api",
+    "crates/noesis-vedic-api",
+    "crates/noesis-western-api",
+    "crates/noesis-integration",
+    # SDK for TUI/Desktop/Agent clients
+    "crates/noesis-sdk",
+    # Terminal User Interface
+    "crates/noesis-tui",
+    # Vedic astrology API integration (FreeAstrologyAPI.com)
+
+    # Rust consciousness engines
+    "crates/engine-panchanga",
+    "crates/engine-numerology",
+    "crates/engine-biorhythm",
+    "crates/engine-human-design",
+    "crates/engine-vimshottari",
+    "crates/engine-gene-keys",
+    "crates/engine-vedic-clock",
+    "crates/engine-biofield",
+    "crates/engine-biofield-capture",
+    "crates/engine-face-reading",
+    "crates/engine-nadabrahman",
+    "crates/engine-transits",
+]
+default-members = ["crates/noesis-api"]
+
+[workspace.package]
+version = "3.0.0"
+edition = "2021"
+license = "MIT"
+repository = "https://github.com/Sheshiyer/Selemene-engine"
+homepage = "https://selemene.tryambakam.space"
+
+[workspace.dependencies]
+# Async runtime
+tokio = { version = "1.40", features = ["full"] }
+
+# Web framework
+axum = { version = "0.7", features = ["macros"] }
+tower = { version = "0.4", features = ["util", "timeout"] }
+tower-http = { version = "0.5", features = ["trace", "cors"] }
+
+# Serialization
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+# Date/Time
+chrono = { version = "0.4", features = ["serde"] }
+
+# Error handling
+anyhow = "1.0"
+thiserror = "1.0"
+
+# Logging
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+# Configuration
+config = "0.14"
+dotenvy = "0.15"
+toml = "0.8"
+
+# Database
+sqlx = { version = "0.7", features = ["runtime-tokio-native-tls", "postgres", "chrono", "uuid"] }
+
+# Authentication
+jsonwebtoken = "9.3"
+bcrypt = "0.15"
+
+# Caching
+redis = { version = "0.26", features = ["tokio-comp", "connection-manager"] }
+dashmap = "6.0"
+
+# HTTP client
+reqwest = { version = "0.12", features = ["json"] }
+
+# UUID
+uuid = { version = "1.10", features = ["v4", "serde"] }
+
+# Parallel processing
+rayon = "1.10"
+
+# Swiss Ephemeris wrapper
+swisseph = "0.1"
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = true
+
+[profile.dev]
+opt-level = 0
+debug = true
+

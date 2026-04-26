@@ -1,0 +1,70 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: selemene-api-cert
+  namespace: selemene
+spec:
+  # Secret name to store the certificate
+  secretName: selemene-api-tls
+  
+  # Duration and renewal
+  duration: 2160h    # 90 days
+  renewBefore: 360h  # 15 days before expiry
+  
+  # Subject
+  subject:
+    organizations:
+      - WitnessOS
+  
+  # Common name and DNS names
+  commonName: api.selemene.witnessos.io
+  dnsNames:
+    - api.selemene.witnessos.io
+    - ts.selemene.witnessos.io
+  
+  # Issuer reference
+  issuerRef:
+    name: letsencrypt-prod
+    kind: ClusterIssuer
+    group: cert-manager.io
+  
+  # Private key settings
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+    rotationPolicy: Always
+  
+  # Usage
+  usages:
+    - server auth
+    - client auth
+---
+# Wildcard certificate for all subdomains (optional)
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: selemene-wildcard-cert
+  namespace: selemene
+spec:
+  secretName: selemene-wildcard-tls
+  
+  duration: 2160h
+  renewBefore: 360h
+  
+  subject:
+    organizations:
+      - WitnessOS
+  
+  commonName: "*.selemene.witnessos.io"
+  dnsNames:
+    - "*.selemene.witnessos.io"
+    - "selemene.witnessos.io"
+  
+  issuerRef:
+    name: letsencrypt-prod
+    kind: ClusterIssuer
+    group: cert-manager.io
+  
+  privateKey:
+    algorithm: ECDSA
+    size: 256

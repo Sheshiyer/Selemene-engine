@@ -1,0 +1,381 @@
+//! Integration tests for rate limiting middleware
+
+use axum::{
+    body::Body,
+    http::{Request, StatusCode},
+};
+use chrono::{Duration as ChronoDuration, Utc};
+use noesis_api::create_router;
+use noesis_api::shared_metrics;
+use noesis_api::ApiConfig;
+use noesis_auth::{ApiKey, AuthService};
+use noesis_cache::CacheManager;
+use noesis_data::repositories::user_repository::UserRepository;
+use noesis_orchestrator::WorkflowOrchestrator;
+use sqlx::postgres::PgPoolOptions;
+use std::sync::Arc;
+use std::time::{Duration, Instant};
+use tower::ServiceExt;
+
+mod test_helpers;
+
+/// Build app state for testing (with proper metrics initialization)
+fn build_test_app_state() -> (noesis_api::AppState, ApiConfig) {
+    // -- Orchestrator with engines --
+    let mut orchestrator = WorkflowOrchestrator::new();
+    orchestrator.register_engine(Arc::new(engine_panchanga::PanchangaEngine::new()));
+    orchestrator.register_engine(Arc::new(engine_numerology::NumerologyEngine::new()));
+    orchestrator.register_engine(Arc::new(engine_biorhythm::BiorhythmEngine::new()));
+
+    // -- Cache --
+    let cache = CacheManager::new(
+        String::new(),             // no Redis URL in tests
+        100,                       // L1: 100 MB
+        Duration::from_secs(3600), // L2 TTL: 1 hour
+        false,                     // L3 disabled
+    );
+
+    // -- Auth --
+    let jwt_secret = test_helpers::TEST_JWT_SECRET.to_string();
+    let auth = AuthService::new(jwt_secret);
+
+    // -- Config --
+    // Use DATABASE_URL if present; otherwise use a dummy URL for connect_lazy.
+    let database_url = std::env::var("DATABASE_URL")
+        .unwrap_or_else(|_| "postgres://localhost/noesis_test".to_string());
+    let config = ApiConfig {
+        host: "127.0.0.1".to_string(),
+        port: 0,
+        jwt_secret: test_helpers::TEST_JWT_SECRET.to_string(),
+        database_url: Some(database_url.clone()),
+        redis_url: None,
+        allowed_origins: vec![],
+        rate_limit_requests: 100,
+        rate_limit_window_secs: 60,
+        request_timeout_secs: 30,
+        log_level: "info".to_string(),
+        log_format: "pretty".to_string(),
+        discord_client_id: None,
+        discord_client_secret: None,
+        discord_redirect_uri: None,
+        dodo_payments_api_key: None,
+        dodo_payments_webhook_key: None,
+        dodo_payments_env: None,
+        python_biofield_url: "http://localhost:8002".to_string(),
+        python_biofield_timeout_ms: 10_000,
+        gateway_url: None,
+        gateway_token: None,
+    };
+
+    // -- User repository --
+    // Rate-limit tests don't hit DB-backed endpoints; use a lazy pool.
+    let pool = PgPoolOptions::new()
+        .max_connections(1)
+        .connect_lazy(&database_url)
+        .expect("Invalid DATABASE_URL");
+    let user_repository = Arc::new(UserRepository::new(pool));
+
+    // -- Metrics -- shared process-global Prometheus registry
+    let metrics = shared_metrics();
+
+    let state = noesis_api::AppState {
+        orchestrator: Arc::new(orchestrator),
+        bridge_manager: Arc::new(noesis_bridge::BridgeManager::from_env()),
+        cache: Arc::new(cache),
+        auth: Arc::new(auth),
+        metrics,
+        user_repository,
+        admin_repository: None,
+        biofield_repository: None,
+        readings_repository: None,
+        usage_repository: None,
+        oauth_repository: None,
+        startup_time: Instant::now(),
+        db_available: false,
+        discord_client_id: None,
+        discord_client_secret: None,
+        discord_redirect_uri: None,
+    };
+
+    (state, config)
+}
+
+/// Test helper to create a test API key with specific rate limit and tier
+async fn create_test_api_key(
+    auth: &Arc<AuthService>,
+    user_id: &str,
+    tier: &str,
+    rate_limit: u32,
+) -> String {
+    let api_key_value = format!("test-key-{}", user_id);
+
+    let api_key = ApiKey {
+        key: api_key_value.clone(),
+        user_id: user_id.to_string(),
+        tier: tier.to_string(),
+        permissions: vec!["basic:access".to_string()],
+        created_at: Utc::now(),
+        expires_at: Some(Utc::now() + ChronoDuration::hours(1)),
+        last_used: None,
+        rate_limit,
+        consciousness_level: 0,
+    };
+
+    auth.add_api_key(api_key)
+        .await
+        .expect("Failed to add API key");
+    api_key_value
+}
+
+#[tokio::test]
+async fn test_rate_limit_allows_requests_under_limit() {
+    let (state, config) = build_test_app_state();
+    let api_key = create_test_api_key(&state.auth, "user1", "test", 5).await;
+    let app = create_router(state, &config);
+
+    // Make 5 requests (all should succeed)
+    for i in 0..5 {
+        let request = Request::builder()
+            .uri("/api/v1/status")
+            .header("X-API-Key", &api_key)
+            .body(Body::empty())
+            .unwrap();
+
+        let response = app.clone().oneshot(request).await.unwrap();
+
+        assert_eq!(
+            response.status(),
+            StatusCode::OK,
+            "Request {} should succeed",
+            i + 1
+        );
+
+        // Check rate limit headers are present
+        assert!(response.headers().contains_key("X-RateLimit-Limit"));
+        assert!(response.headers().contains_key("X-RateLimit-Remaining"));
+        assert!(response.headers().contains_key("X-RateLimit-Reset"));
+
+        let remaining = response
+            .headers()
+            .get("X-RateLimit-Remaining")
+            .unwrap()
+            .to_str()
+            .unwrap()
+            .parse::<u32>()
+            .unwrap();
+
+        assert_eq!(remaining, 5 - (i + 1), "Remaining count should decrease");
+    }
+}
+
+#[tokio::test]
+async fn test_rate_limit_blocks_requests_over_limit() {
+    let (state, config) = build_test_app_state();
+    let api_key = create_test_api_key(&state.auth, "user2", "test", 3).await;
+    let app = create_router(state, &config);
+
+    // Make 3 requests (should all succeed)
+    for _ in 0..3 {
+        let request = Request::builder()
+            .uri("/api/v1/status")
+            .header("X-API-Key", &api_key)
+            .body(Body::empty())
+            .unwrap();
+
+        let response = app.clone().oneshot(request).await.unwrap();
+        assert_eq!(response.status(), StatusCode::OK);
+    }
+
+    // 4th request should be rate limited
+    let request = Request::builder()
+        .uri("/api/v1/status")
+        .header("X-API-Key", &api_key)
+        .body(Body::empty())
+        .unwrap();
+
+    let response = app.clone().oneshot(request).await.unwrap();
+
+    assert_eq!(
+        response.status(),
+        StatusCode::TOO_MANY_REQUESTS,
+        "Request over limit should return 429"
+    );
+
+    // Check rate limit headers are still present
+    let headers = response.headers();
+    assert!(headers.contains_key("X-RateLimit-Limit"));
+    assert!(headers.contains_key("X-RateLimit-Remaining"));
+    assert!(headers.contains_key("X-RateLimit-Reset"));
+
+    let remaining = headers
+        .get("X-RateLimit-Remaining")
+        .unwrap()
+        .to_str()
+        .unwrap();
+    assert_eq!(remaining, "0", "Remaining should be 0 when rate limited");
+}
+
+#[tokio::test]
+async fn test_rate_limit_per_user_isolation() {
+    let (state, config) = build_test_app_state();
+    let api_key1 = create_test_api_key(&state.auth, "user3", "test", 2).await;
+    let api_key2 = create_test_api_key(&state.auth, "user4", "test", 2).await;
+    let app = create_router(state, &config);
+
+    // User1 makes 2 requests (reaches limit)
+    for _ in 0..2 {
+        let request = Request::builder()
+            .uri("/api/v1/status")
+            .header("X-API-Key", &api_key1)
+            .body(Body::empty())
+            .unwrap();
+
+        let response = app.clone().oneshot(request).await.unwrap();
+        assert_eq!(response.status(), StatusCode::OK);
+    }
+
+    // User1's 3rd request should fail
+    let request = Request::builder()
+        .uri("/api/v1/status")
+        .header("X-API-Key", &api_key1)
+        .body(Body::empty())
+        .unwrap();
+
+    let response = app.clone().oneshot(request).await.unwrap();
+    assert_eq!(response.status(), StatusCode::TOO_MANY_REQUESTS);
+
+    // User2 should still be able to make requests (independent rate limit)
+    let request = Request::builder()
+        .uri("/api/v1/status")
+        .header("X-API-Key", &api_key2)
+        .body(Body::empty())
+        .unwrap();
+
+    let response = app.clone().oneshot(request).await.unwrap();
+    assert_eq!(
+        response.status(),
+        StatusCode::OK,
+        "User2 should have independent rate limit"
+    );
+}
+
+#[tokio::test]
+async fn test_rate_limit_skips_public_routes() {
+    let (state, config) = build_test_app_state();
+    let app = create_router(state, &config);
+
+    // Make multiple requests to /health without authentication
+    for _ in 0..10 {
+        let request = Request::builder()
+            .uri("/health")
+            .body(Body::empty())
+            .unwrap();
+
+        let response = app.clone().oneshot(request).await.unwrap();
+
+        assert_eq!(
+            response.status(),
+            StatusCode::OK,
+            "Public route should not be rate limited"
+        );
+
+        // Public routes should not have rate limit headers
+        assert!(!response.headers().contains_key("X-RateLimit-Limit"));
+    }
+}
+
+#[tokio::test]
+async fn test_rate_limit_response_format() {
+    let (state, config) = build_test_app_state();
+    let api_key = create_test_api_key(&state.auth, "user5", "test", 1).await;
+    let app = create_router(state, &config);
+
+    // First request succeeds
+    let request = Request::builder()
+        .uri("/api/v1/status")
+        .header("X-API-Key", &api_key)
+        .body(Body::empty())
+        .unwrap();
+
+    let response = app.clone().oneshot(request).await.unwrap();
+    assert_eq!(response.status(), StatusCode::OK);
+
+    // Second request should be rate limited
+    let request = Request::builder()
+        .uri("/api/v1/status")
+        .header("X-API-Key", &api_key)
+        .body(Body::empty())
+        .unwrap();
+
+    let response = app.clone().oneshot(request).await.unwrap();
+    assert_eq!(response.status(), StatusCode::TOO_MANY_REQUESTS);
+
+    // Parse response body to check error format
+    let body_bytes = axum::body::to_bytes(response.into_body(), usize::MAX)
+        .await
+        .unwrap();
+    let body_str = String::from_utf8(body_bytes.to_vec()).unwrap();
+    let json: serde_json::Value = serde_json::from_str(&body_str).unwrap();
+
+    // Check error response structure
+    assert_eq!(json["status"], 429);
+    assert_eq!(json["error_code"], "RATE_LIMIT_EXCEEDED");
+    assert!(json["message"].is_string());
+    assert!(json["error"]
+        .as_str()
+        .unwrap()
+        .contains("Rate limit exceeded"));
+    assert_eq!(json["message"], json["error"]);
+    assert!(json["trace_id"].is_string() && !json["trace_id"].as_str().unwrap_or("").is_empty());
+    assert!(json["details"].is_object());
+    assert!(json["details"]["limit"].is_number());
+    assert!(json["details"]["window_seconds"].is_number());
+    assert!(json["details"]["reset_at"].is_number());
+}
+
+#[tokio::test]
+async fn test_rate_limit_default_100_per_minute() {
+    let (state, config) = build_test_app_state();
+    // Create API key with rate_limit = 0 (should use default 100)
+    let api_key = create_test_api_key(&state.auth, "user6", "test", 0).await;
+    let app = create_router(state, &config);
+
+    let request = Request::builder()
+        .uri("/api/v1/status")
+        .header("X-API-Key", &api_key)
+        .body(Body::empty())
+        .unwrap();
+
+    let response = app.clone().oneshot(request).await.unwrap();
+    assert_eq!(response.status(), StatusCode::OK);
+
+    // Check that the rate limit header shows 100
+    let limit = response
+        .headers()
+        .get("X-RateLimit-Limit")
+        .unwrap()
+        .to_str()
+        .unwrap();
+
+    assert_eq!(limit, "100", "Default rate limit should be 100");
+}
+
+#[tokio::test]
+async fn test_daily_quota_headers_present_for_authenticated_user() {
+    let (state, config) = build_test_app_state();
+    let api_key = create_test_api_key(&state.auth, "daily-user", "free", 0).await;
+    let app = create_router(state, &config);
+
+    let request = Request::builder()
+        .uri("/api/v1/status")
+        .header("X-API-Key", &api_key)
+        .body(Body::empty())
+        .unwrap();
+
+    let response = app.clone().oneshot(request).await.unwrap();
+    assert_eq!(response.status(), StatusCode::OK);
+    assert!(response
+        .headers()
+        .contains_key("X-RateLimit-Daily-Remaining"));
+    assert!(response.headers().contains_key("X-RateLimit-Daily-Reset"));
+}

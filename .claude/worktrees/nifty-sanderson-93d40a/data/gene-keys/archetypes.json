@@ -1,0 +1,1476 @@
+{
+  "gene_keys_info": {
+    "name": "Gene Keys Archetypal System",
+    "description": "The 64 Gene Keys with Shadow, Gift, and Siddhi frequencies",
+    "total_keys": 64,
+    "source": "Gene Keys synthesis by Richard Rudd",
+    "sequences": [
+      "Activation",
+      "Venus",
+      "Pearl"
+    ]
+  },
+  "gene_keys": {
+    "1": {
+      "number": 1,
+      "name": "The Creative",
+      "shadow": "Entropy",
+      "gift": "Freshness",
+      "siddhi": "Beauty",
+      "codon": "CCG",
+      "amino_acid": "Proline",
+      "programming_partner": 33,
+      "physiology": "Physiology 1",
+      "shadow_description": "The shadow of Entropy manifests as creative stagnation, where life force becomes trapped in repetitive patterns and loses its natural flow.",
+      "gift_description": "The gift of Freshness brings spontaneous creativity and the ability to see life with new eyes, breaking free from stale patterns.",
+      "siddhi_description": "Beauty is the highest frequency - the recognition that all existence is an expression of divine aesthetic perfection.",
+      "keywords": [
+        "transformation",
+        "consciousness",
+        "evolution",
+        "awakening"
+      ],
+      "life_theme": "Breaking free from entropy through creative spontaneity"
+    },
+    "2": {
+      "number": 2,
+      "name": "The Orientation",
+      "shadow": "Dislocation",
+      "gift": "Orientation",
+      "siddhi": "Unity",
+      "codon": "GGC",
+      "amino_acid": "Glycine",
+      "programming_partner": 34,
+      "physiology": "Physiology 2",
+      "shadow_description": "Dislocation creates a sense of not belonging, feeling lost or disconnected from one's true direction in life.",
+      "gift_description": "Orientation provides natural guidance and the ability to help others find their direction through patient, grounded wisdom.",
+      "siddhi_description": "Unity transcends all sense of separation, revealing the interconnectedness of all existence.",
+      "keywords": [
+        "transformation",
+        "consciousness",
+        "evolution",
+        "awakening"
+      ],
+      "life_theme": "Finding and providing direction through inner compass"
+    },
+    "3": {
+      "number": 3,
+      "name": "The Innovation",
+      "shadow": "Chaos",
+      "gift": "Innovation",
+      "siddhi": "Innocence",
+      "codon": "AAG",
+      "amino_acid": "Lysine",
+      "programming_partner": 35,
+      "physiology": "Physiology 3",
+      "shadow_description": "Chaos manifests as overwhelming confusion and the inability to bring order to new beginnings.",
+      "gift_description": "Innovation transforms chaos into breakthrough solutions, bringing order through creative problem-solving.",
+      "siddhi_description": "Innocence sees all challenges as opportunities for growth, maintaining childlike wonder in the face of complexity.",
+      "keywords": [
+        "transformation",
+        "consciousness",
+        "evolution",
+        "awakening"
+      ],
+      "life_theme": "Transforming chaos into innovative solutions"
+    },
+    "4": {
+      "number": 4,
+      "name": "The Understanding",
+      "shadow": "Intolerance",
+      "gift": "Understanding",
+      "siddhi": "Forgiveness",
+      "codon": "TGC",
+      "amino_acid": "Cysteine",
+      "programming_partner": 36,
+      "physiology": "Physiology 4",
+      "shadow_description": "Intolerance creates rigid thinking patterns and the inability to accept different perspectives or approaches.",
+      "gift_description": "Understanding brings mental clarity and the ability to see multiple perspectives, fostering tolerance and wisdom.",
+      "siddhi_description": "Forgiveness transcends all judgment, seeing the perfection in every experience and being.",
+      "keywords": [
+        "transformation",
+        "consciousness",
+        "evolution",
+        "awakening"
+      ],
+      "life_theme": "Developing tolerance through deeper understanding"
+    },
+    "5": {
+      "number": 5,
+      "name": "The Rhythm",
+      "shadow": "Impatience",
+      "gift": "Patience",
+      "siddhi": "Timelessness",
+      "codon": "TTG",
+      "amino_acid": "Leucine",
+      "programming_partner": 37,
+      "physiology": "Physiology 5",
+      "shadow_description": "Impatience disrupts natural timing and creates anxiety about outcomes, forcing premature action.",
+      "gift_description": "Patience aligns with natural rhythms and timing, knowing when to act and when to wait.",
+      "siddhi_description": "Timelessness transcends linear time, experiencing the eternal present moment.",
+      "keywords": [
+        "transformation",
+        "consciousness",
+        "evolution",
+        "awakening"
+      ],
+      "life_theme": "Learning to flow with natural timing and rhythms"
+    },
+    "6": {
+      "number": 6,
+      "name": "The Peacemaker",
+      "shadow": "Conflict",
+      "gift": "Diplomacy",
+      "siddhi": "Peace",
+      "codon": "TCG",
+      "amino_acid": "Serine",
+      "programming_partner": 38,
+      "physiology": "Physiology 6",
+      "shadow_description": "Conflict arises from emotional reactivity and the inability to find common ground with others.",
+      "gift_description": "Diplomacy brings natural peacemaking abilities and emotional intelligence in relationships.",
+      "siddhi_description": "Peace radiates unconditional love and harmony, dissolving all conflict through presence.",
+      "keywords": [
+        "transformation",
+        "consciousness",
+        "evolution",
+        "awakening"
+      ],
+      "life_theme": "Transforming conflict into harmony through emotional wisdom"
+    },
+    "7": {
+      "number": 7,
+      "name": "Gene Key 7",
+      "shadow": "Division",
+      "gift": "Virtue",
+      "siddhi": "Virtue",
+      "codon": "CCG",
+      "amino_acid": "Proline",
+      "programming_partner": 39,
+      "physiology": "Physiology 7",
+      "shadow_description": "The shadow frequency represents the unconscious pattern that creates limitation and suffering in this area of life.",
+      "gift_description": "The gift frequency expresses the balanced state of consciousness that serves the collective good.",
+      "siddhi_description": "The siddhi frequency embodies the highest potential of human consciousness in this archetypal pattern.",
+      "keywords": [
+        "transformation",
+        "consciousness",
+        "evolution",
+        "awakening"
+      ],
+      "life_theme": "Transforming unconscious patterns into conscious service"
+    },
+    "8": {
+      "number": 8,
+      "name": "Gene Key 8",
+      "shadow": "Mediocrity",
+      "gift": "Style",
+      "siddhi": "Exquisiteness",
+      "codon": "GGC",
+      "amino_acid": "Glycine",
+      "programming_partner": 40,
+      "physiology": "Physiology 8",
+      "shadow_description": "The shadow frequency represents the unconscious pattern that creates limitation and suffering in this area of life.",
+      "gift_description": "The gift frequency expresses the balanced state of consciousness that serves the collective good.",
+      "siddhi_description": "The siddhi frequency embodies the highest potential of human consciousness in this archetypal pattern.",
+      "keywords": [
+        "transformation",
+        "consciousness",
+        "evolution",
+        "awakening"
+      ],
+      "life_theme": "Transforming unconscious patterns into conscious service"
+    },
+    "9": {
+      "number": 9,
+      "name": "Gene Key 9",
+      "shadow": "Inertia",
+      "gift": "Determination",
+      "siddhi": "Invincibility",
+      "codon": "AAG",
+      "amino_acid": "Lysine",
+      "programming_partner": 41,
+      "physiology": "Physiology 9",
+      "shadow_description": "The shadow frequency represents the unconscious pattern that creates limitation and suffering in this area of life.",
+      "gift_description": "The gift frequency expresses the balanced state of consciousness that serves the collective good.",
+      "siddhi_description": "The siddhi frequency embodies the highest potential of human consciousness in this archetypal pattern.",
+      "keywords": [
+        "transformation",
+        "consciousness",
+        "evolution",
+        "awakening"
+      ],
+      "life_theme": "Transforming unconscious patterns into conscious service"
+    },
+    "10": {
+      "number": 10,
+      "name": "Gene Key 10",
+      "shadow": "Self-Obsession",
+      "gift": "Naturalness",
+      "siddhi": "Being",
+      "codon": "TGC",
+      "amino_acid": "Cysteine",
+      "programming_partner": 42,
+      "physiology": "Physiology 10",
+      "shadow_description": "The shadow frequency represents the unconscious pattern that creates limitation and suffering in this area of life.",
+      "gift_description": "The gift frequency expresses the balanced state of consciousness that serves the collective good.",
+      "siddhi_description": "The siddhi frequency embodies the highest potential of human consciousness in this archetypal pattern.",
+      "keywords": [
+        "transformation",
+        "consciousness",
+        "evolution",
+        "awakening"
+      ],
+      "life_theme": "Transforming unconscious patterns into conscious service"
+    },
+    "11": {
+      "number": 11,
+      "name": "Gene Key 11",
+      "shadow": "Obscurity",
+      "gift": "Idealism",
+      "siddhi": "Light",
+      "codon": "TTG",
+      "amino_acid": "Leucine",
+      "programming_partner": 43,
+      "physiology": "Physiology 11",
+      "shadow_description": "The shadow frequency represents the unconscious pattern that creates limitation and suffering in this area of life.",
+      "gift_description": "The gift frequency expresses the balanced state of consciousness that serves the collective good.",
+      "siddhi_description": "The siddhi frequency embodies the highest potential of human consciousness in this archetypal pattern.",
+      "keywords": [
+        "transformation",
+        "consciousness",
+        "evolution",
+        "awakening"
+      ],
+      "life_theme": "Transforming unconscious patterns into conscious service"
+    },
+    "12": {
+      "number": 12,
+      "name": "Gene Key 12",
+      "shadow": "Vanity",
+      "gift": "Discrimination",
+      "siddhi": "Purity",
+      "codon": "TCG",
+      "amino_acid": "Serine",
+      "programming_partner": 44,
+      "physiology": "Physiology 12",
+      "shadow_description": "The shadow frequency represents the unconscious pattern that creates limitation and suffering in this area of life.",
+      "gift_description": "The gift frequency expresses the balanced state of consciousness that serves the collective good.",
+      "siddhi_description": "The siddhi frequency embodies the highest potential of human consciousness in this archetypal pattern.",
+      "keywords": [
+        "transformation",
+        "consciousness",
+        "evolution",
+        "awakening"
+      ],
+      "life_theme": "Transforming unconscious patterns into conscious service"
+    },
+    "13": {
+      "number": 13,
+      "name": "Gene Key 13",
+      "shadow": "Discord",
+      "gift": "Concord",
+      "siddhi": "Compassion",
+      "codon": "CCG",
+      "amino_acid": "Proline",
+      "programming_partner": 45,
+      "physiology": "Physiology 13",
+      "shadow_description": "The shadow frequency represents the unconscious pattern that creates limitation and suffering in this area of life.",
+      "gift_description": "The gift frequency expresses the balanced state of consciousness that serves the collective good.",
+      "siddhi_description": "The siddhi frequency embodies the highest potential of human consciousness in this archetypal pattern.",
+      "keywords": [
+        "transformation",
+        "consciousness",
+        "evolution",
+        "awakening"
+      ],
+      "life_theme": "Transforming unconscious patterns into conscious service"
+    },
+    "14": {
+      "number": 14,
+      "name": "Gene Key 14",
+      "shadow": "Compromise",
+      "gift": "Competence",
+      "siddhi": "Bodhicitta",
+      "codon": "GGC",
+      "amino_acid": "Glycine",
+      "programming_partner": 46,
+      "physiology": "Physiology 14",
+      "shadow_description": "The shadow frequency represents the unconscious pattern that creates limitation and suffering in this area of life.",
+      "gift_description": "The gift frequency expresses the balanced state of consciousness that serves the collective good.",
+      "siddhi_description": "The siddhi frequency embodies the highest potential of human consciousness in this archetypal pattern.",
+      "keywords": [
+        "transformation",
+        "consciousness",
+        "evolution",
+        "awakening"
+      ],
+      "life_theme": "Transforming unconscious patterns into conscious service"
+    },
+    "15": {
+      "number": 15,
+      "name": "Gene Key 15",
+      "shadow": "Dullness",
+      "gift": "Magnetism",
+      "siddhi": "Magnetism",
+      "codon": "AAG",
+      "amino_acid": "Lysine",
+      "programming_partner": 47,
+      "physiology": "Physiology 15",
+      "shadow_description": "The shadow frequency represents the unconscious pattern that creates limitation and suffering in this area of life.",
+      "gift_description": "The gift frequency expresses the balanced state of consciousness that serves the collective good.",
+      "siddhi_description": "The siddhi frequency embodies the highest potential of human consciousness in this archetypal pattern.",
+      "keywords": [
+        "transformation",
+        "consciousness",
+        "evolution",
+        "awakening"
+      ],
+      "life_theme": "Transforming unconscious patterns into conscious service"
+    },
+    "16": {
+      "number": 16,
+      "name": "Gene Key 16",
+      "shadow": "Indifference",
+      "gift": "Versatility",
+      "siddhi": "Versatility",
+      "codon": "TGC",
+      "amino_acid": "Cysteine",
+      "programming_partner": 48,
+      "physiology": "Physiology 16",
+      "shadow_description": "The shadow frequency represents the unconscious pattern that creates limitation and suffering in this area of life.",
+      "gift_description": "The gift frequency expresses the balanced state of consciousness that serves the collective good.",
+      "siddhi_description": "The siddhi frequency embodies the highest potential of human consciousness in this archetypal pattern.",
+      "keywords": [
+        "transformation",
+        "consciousness",
+        "evolution",
+        "awakening"
+      ],
+      "life_theme": "Transforming unconscious patterns into conscious service"
+    },
+    "17": {
+      "number": 17,
+      "name": "Gene Key 17",
+      "shadow": "Opinion",
+      "gift": "Far-Sightedness",
+      "siddhi": "Omniscience",
+      "codon": "TTG",
+      "amino_acid": "Leucine",
+      "programming_partner": 49,
+      "physiology": "Physiology 17",
+      "shadow_description": "The shadow frequency represents the unconscious pattern that creates limitation and suffering in this area of life.",
+      "gift_description": "The gift frequency expresses the balanced state of consciousness that serves the collective good.",
+      "siddhi_description": "The siddhi frequency embodies the highest potential of human consciousness in this archetypal pattern.",
+      "keywords": [
+        "transformation",
+        "consciousness",
+        "evolution",
+        "awakening"
+      ],
+      "life_theme": "Transforming unconscious patterns into conscious service"
+    },
+    "18": {
+      "number": 18,
+      "name": "Gene Key 18",
+      "shadow": "Correction",
+      "gift": "Integrity",
+      "siddhi": "Perfection",
+      "codon": "TCG",
+      "amino_acid": "Serine",
+      "programming_partner": 50,
+      "physiology": "Physiology 18",
+      "shadow_description": "The shadow frequency represents the unconscious pattern that creates limitation and suffering in this area of life.",
+      "gift_description": "The gift frequency expresses the balanced state of consciousness that serves the collective good.",
+      "siddhi_description": "The siddhi frequency embodies the highest potential of human consciousness in this archetypal pattern.",
+      "keywords": [
+        "transformation",
+        "consciousness",
+        "evolution",
+        "awakening"
+      ],
+      "life_theme": "Transforming unconscious patterns into conscious service"
+    },
+    "19": {
+      "number": 19,
+      "name": "Gene Key 19",
+      "shadow": "Need",
+      "gift": "Sensitivity",
+      "siddhi": "Sacrifice",
+      "codon": "CCG",
+      "amino_acid": "Proline",
+      "programming_partner": 51,
+      "physiology": "Physiology 19",
+      "shadow_description": "The shadow frequency represents the unconscious pattern that creates limitation and suffering in this area of life.",
+      "gift_description": "The gift frequency expresses the balanced state of consciousness that serves the collective good.",
+      "siddhi_description": "The siddhi frequency embodies the highest potential of human consciousness in this archetypal pattern.",
+      "keywords": [
+        "transformation",
+        "consciousness",
+        "evolution",
+        "awakening"
+      ],
+      "life_theme": "Transforming unconscious patterns into conscious service"
+    },
+    "20": {
+      "number": 20,
+      "name": "Gene Key 20",
+      "shadow": "Superficiality",
+      "gift": "Self-Assurance",
+      "siddhi": "Presence",
+      "codon": "GGC",
+      "amino_acid": "Glycine",
+      "programming_partner": 52,
+      "physiology": "Physiology 20",
+      "shadow_description": "The shadow frequency represents the unconscious pattern that creates limitation and suffering in this area of life.",
+      "gift_description": "The gift frequency expresses the balanced state of consciousness that serves the collective good.",
+      "siddhi_description": "The siddhi frequency embodies the highest potential of human consciousness in this archetypal pattern.",
+      "keywords": [
+        "transformation",
+        "consciousness",
+        "evolution",
+        "awakening"
+      ],
+      "life_theme": "Transforming unconscious patterns into conscious service"
+    },
+    "21": {
+      "number": 21,
+      "name": "Gene Key 21",
+      "shadow": "Control",
+      "gift": "Authority",
+      "siddhi": "Valor",
+      "codon": "AAG",
+      "amino_acid": "Lysine",
+      "programming_partner": 53,
+      "physiology": "Physiology 21",
+      "shadow_description": "The shadow frequency represents the unconscious pattern that creates limitation and suffering in this area of life.",
+      "gift_description": "The gift frequency expresses the balanced state of consciousness that serves the collective good.",
+      "siddhi_description": "The siddhi frequency embodies the highest potential of human consciousness in this archetypal pattern.",
+      "keywords": [
+        "transformation",
+        "consciousness",
+        "evolution",
+        "awakening"
+      ],
+      "life_theme": "Transforming unconscious patterns into conscious service"
+    },
+    "22": {
+      "number": 22,
+      "name": "Gene Key 22",
+      "shadow": "Dishonor",
+      "gift": "Grace",
+      "siddhi": "Grace",
+      "codon": "TGC",
+      "amino_acid": "Cysteine",
+      "programming_partner": 54,
+      "physiology": "Physiology 22",
+      "shadow_description": "The shadow frequency represents the unconscious pattern that creates limitation and suffering in this area of life.",
+      "gift_description": "The gift frequency expresses the balanced state of consciousness that serves the collective good.",
+      "siddhi_description": "The siddhi frequency embodies the highest potential of human consciousness in this archetypal pattern.",
+      "keywords": [
+        "transformation",
+        "consciousness",
+        "evolution",
+        "awakening"
+      ],
+      "life_theme": "Transforming unconscious patterns into conscious service"
+    },
+    "23": {
+      "number": 23,
+      "name": "Gene Key 23",
+      "shadow": "Complexity",
+      "gift": "Simplicity",
+      "siddhi": "Simplicity",
+      "codon": "TTG",
+      "amino_acid": "Leucine",
+      "programming_partner": 55,
+      "physiology": "Physiology 23",
+      "shadow_description": "The shadow frequency represents the unconscious pattern that creates limitation and suffering in this area of life.",
+      "gift_description": "The gift frequency expresses the balanced state of consciousness that serves the collective good.",
+      "siddhi_description": "The siddhi frequency embodies the highest potential of human consciousness in this archetypal pattern.",
+      "keywords": [
+        "transformation",
+        "consciousness",
+        "evolution",
+        "awakening"
+      ],
+      "life_theme": "Transforming unconscious patterns into conscious service"
+    },
+    "24": {
+      "number": 24,
+      "name": "Gene Key 24",
+      "shadow": "Addiction",
+      "gift": "Returning",
+      "siddhi": "Return",
+      "codon": "TCG",
+      "amino_acid": "Serine",
+      "programming_partner": 56,
+      "physiology": "Physiology 24",
+      "shadow_description": "The shadow frequency represents the unconscious pattern that creates limitation and suffering in this area of life.",
+      "gift_description": "The gift frequency expresses the balanced state of consciousness that serves the collective good.",
+      "siddhi_description": "The siddhi frequency embodies the highest potential of human consciousness in this archetypal pattern.",
+      "keywords": [
+        "transformation",
+        "consciousness",
+        "evolution",
+        "awakening"
+      ],
+      "life_theme": "Transforming unconscious patterns into conscious service"
+    },
+    "25": {
+      "number": 25,
+      "name": "Gene Key 25",
+      "shadow": "Constriction",
+      "gift": "Acceptance",
+      "siddhi": "Acceptance",
+      "codon": "CCG",
+      "amino_acid": "Proline",
+      "programming_partner": 57,
+      "physiology": "Physiology 25",
+      "shadow_description": "The shadow frequency represents the unconscious pattern that creates limitation and suffering in this area of life.",
+      "gift_description": "The gift frequency expresses the balanced state of consciousness that serves the collective good.",
+      "siddhi_description": "The siddhi frequency embodies the highest potential of human consciousness in this archetypal pattern.",
+      "keywords": [
+        "transformation",
+        "consciousness",
+        "evolution",
+        "awakening"
+      ],
+      "life_theme": "Transforming unconscious patterns into conscious service"
+    },
+    "26": {
+      "number": 26,
+      "name": "Gene Key 26",
+      "shadow": "Exhaustion",
+      "gift": "Artlessness",
+      "siddhi": "Invisibility",
+      "codon": "GGC",
+      "amino_acid": "Glycine",
+      "programming_partner": 58,
+      "physiology": "Physiology 26",
+      "shadow_description": "The shadow frequency represents the unconscious pattern that creates limitation and suffering in this area of life.",
+      "gift_description": "The gift frequency expresses the balanced state of consciousness that serves the collective good.",
+      "siddhi_description": "The siddhi frequency embodies the highest potential of human consciousness in this archetypal pattern.",
+      "keywords": [
+        "transformation",
+        "consciousness",
+        "evolution",
+        "awakening"
+      ],
+      "life_theme": "Transforming unconscious patterns into conscious service"
+    },
+    "27": {
+      "number": 27,
+      "name": "Gene Key 27",
+      "shadow": "Selfishness",
+      "gift": "Selflessness",
+      "siddhi": "Selflessness",
+      "codon": "AAG",
+      "amino_acid": "Lysine",
+      "programming_partner": 59,
+      "physiology": "Physiology 27",
+      "shadow_description": "The shadow frequency represents the unconscious pattern that creates limitation and suffering in this area of life.",
+      "gift_description": "The gift frequency expresses the balanced state of consciousness that serves the collective good.",
+      "siddhi_description": "The siddhi frequency embodies the highest potential of human consciousness in this archetypal pattern.",
+      "keywords": [
+        "transformation",
+        "consciousness",
+        "evolution",
+        "awakening"
+      ],
+      "life_theme": "Transforming unconscious patterns into conscious service"
+    },
+    "28": {
+      "number": 28,
+      "name": "Gene Key 28",
+      "shadow": "Purposelessness",
+      "gift": "Totality",
+      "siddhi": "Totality",
+      "codon": "TGC",
+      "amino_acid": "Cysteine",
+      "programming_partner": 60,
+      "physiology": "Physiology 28",
+      "shadow_description": "The shadow frequency represents the unconscious pattern that creates limitation and suffering in this area of life.",
+      "gift_description": "The gift frequency expresses the balanced state of consciousness that serves the collective good.",
+      "siddhi_description": "The siddhi frequency embodies the highest potential of human consciousness in this archetypal pattern.",
+      "keywords": [
+        "transformation",
+        "consciousness",
+        "evolution",
+        "awakening"
+      ],
+      "life_theme": "Transforming unconscious patterns into conscious service"
+    },
+    "29": {
+      "number": 29,
+      "name": "Gene Key 29",
+      "shadow": "Half-Heartedness",
+      "gift": "Perseverance",
+      "siddhi": "Perseverance",
+      "codon": "TTG",
+      "amino_acid": "Leucine",
+      "programming_partner": 61,
+      "physiology": "Physiology 29",
+      "shadow_description": "The shadow frequency represents the unconscious pattern that creates limitation and suffering in this area of life.",
+      "gift_description": "The gift frequency expresses the balanced state of consciousness that serves the collective good.",
+      "siddhi_description": "The siddhi frequency embodies the highest potential of human consciousness in this archetypal pattern.",
+      "keywords": [
+        "transformation",
+        "consciousness",
+        "evolution",
+        "awakening"
+      ],
+      "life_theme": "Transforming unconscious patterns into conscious service"
+    },
+    "30": {
+      "number": 30,
+      "name": "Gene Key 30",
+      "shadow": "Desire",
+      "gift": "Lightness",
+      "siddhi": "Rapture",
+      "codon": "TCG",
+      "amino_acid": "Serine",
+      "programming_partner": 62,
+      "physiology": "Physiology 30",
+      "shadow_description": "The shadow frequency represents the unconscious pattern that creates limitation and suffering in this area of life.",
+      "gift_description": "The gift frequency expresses the balanced state of consciousness that serves the collective good.",
+      "siddhi_description": "The siddhi frequency embodies the highest potential of human consciousness in this archetypal pattern.",
+      "keywords": [
+        "transformation",
+        "consciousness",
+        "evolution",
+        "awakening"
+      ],
+      "life_theme": "Transforming unconscious patterns into conscious service"
+    },
+    "31": {
+      "number": 31,
+      "name": "Gene Key 31",
+      "shadow": "Arrogance",
+      "gift": "Leadership",
+      "siddhi": "Majesty",
+      "codon": "CCG",
+      "amino_acid": "Proline",
+      "programming_partner": 63,
+      "physiology": "Physiology 31",
+      "shadow_description": "The shadow frequency represents the unconscious pattern that creates limitation and suffering in this area of life.",
+      "gift_description": "The gift frequency expresses the balanced state of consciousness that serves the collective good.",
+      "siddhi_description": "The siddhi frequency embodies the highest potential of human consciousness in this archetypal pattern.",
+      "keywords": [
+        "transformation",
+        "consciousness",
+        "evolution",
+        "awakening"
+      ],
+      "life_theme": "Transforming unconscious patterns into conscious service"
+    },
+    "32": {
+      "number": 32,
+      "name": "Gene Key 32",
+      "shadow": "Failure",
+      "gift": "Preservation",
+      "siddhi": "Preservation",
+      "codon": "GGC",
+      "amino_acid": "Glycine",
+      "programming_partner": 64,
+      "physiology": "Physiology 32",
+      "shadow_description": "The shadow frequency represents the unconscious pattern that creates limitation and suffering in this area of life.",
+      "gift_description": "The gift frequency expresses the balanced state of consciousness that serves the collective good.",
+      "siddhi_description": "The siddhi frequency embodies the highest potential of human consciousness in this archetypal pattern.",
+      "keywords": [
+        "transformation",
+        "consciousness",
+        "evolution",
+        "awakening"
+      ],
+      "life_theme": "Transforming unconscious patterns into conscious service"
+    },
+    "33": {
+      "number": 33,
+      "name": "Gene Key 33",
+      "shadow": "Forgetting",
+      "gift": "Mindfulness",
+      "siddhi": "Mindfulness",
+      "codon": "AAG",
+      "amino_acid": "Lysine",
+      "programming_partner": 1,
+      "physiology": "Physiology 33",
+      "shadow_description": "The shadow frequency represents the unconscious pattern that creates limitation and suffering in this area of life.",
+      "gift_description": "The gift frequency expresses the balanced state of consciousness that serves the collective good.",
+      "siddhi_description": "The siddhi frequency embodies the highest potential of human consciousness in this archetypal pattern.",
+      "keywords": [
+        "transformation",
+        "consciousness",
+        "evolution",
+        "awakening"
+      ],
+      "life_theme": "Transforming unconscious patterns into conscious service"
+    },
+    "34": {
+      "number": 34,
+      "name": "Gene Key 34",
+      "shadow": "Rage",
+      "gift": "Power",
+      "siddhi": "Power",
+      "codon": "TGC",
+      "amino_acid": "Cysteine",
+      "programming_partner": 2,
+      "physiology": "Physiology 34",
+      "shadow_description": "The shadow frequency represents the unconscious pattern that creates limitation and suffering in this area of life.",
+      "gift_description": "The gift frequency expresses the balanced state of consciousness that serves the collective good.",
+      "siddhi_description": "The siddhi frequency embodies the highest potential of human consciousness in this archetypal pattern.",
+      "keywords": [
+        "transformation",
+        "consciousness",
+        "evolution",
+        "awakening"
+      ],
+      "life_theme": "Transforming unconscious patterns into conscious service"
+    },
+    "35": {
+      "number": 35,
+      "name": "Gene Key 35",
+      "shadow": "Cynicism",
+      "gift": "Adventure",
+      "siddhi": "Adventure",
+      "codon": "TTG",
+      "amino_acid": "Leucine",
+      "programming_partner": 3,
+      "physiology": "Physiology 35",
+      "shadow_description": "The shadow frequency represents the unconscious pattern that creates limitation and suffering in this area of life.",
+      "gift_description": "The gift frequency expresses the balanced state of consciousness that serves the collective good.",
+      "siddhi_description": "The siddhi frequency embodies the highest potential of human consciousness in this archetypal pattern.",
+      "keywords": [
+        "transformation",
+        "consciousness",
+        "evolution",
+        "awakening"
+      ],
+      "life_theme": "Transforming unconscious patterns into conscious service"
+    },
+    "36": {
+      "number": 36,
+      "name": "Gene Key 36",
+      "shadow": "Turbulence",
+      "gift": "Humanity",
+      "siddhi": "Compassion",
+      "codon": "TCG",
+      "amino_acid": "Serine",
+      "programming_partner": 4,
+      "physiology": "Physiology 36",
+      "shadow_description": "The shadow frequency represents the unconscious pattern that creates limitation and suffering in this area of life.",
+      "gift_description": "The gift frequency expresses the balanced state of consciousness that serves the collective good.",
+      "siddhi_description": "The siddhi frequency embodies the highest potential of human consciousness in this archetypal pattern.",
+      "keywords": [
+        "transformation",
+        "consciousness",
+        "evolution",
+        "awakening"
+      ],
+      "life_theme": "Transforming unconscious patterns into conscious service"
+    },
+    "37": {
+      "number": 37,
+      "name": "Gene Key 37",
+      "shadow": "Weakness",
+      "gift": "Tenderness",
+      "siddhi": "Tenderness",
+      "codon": "CCG",
+      "amino_acid": "Proline",
+      "programming_partner": 5,
+      "physiology": "Physiology 37",
+      "shadow_description": "The shadow frequency represents the unconscious pattern that creates limitation and suffering in this area of life.",
+      "gift_description": "The gift frequency expresses the balanced state of consciousness that serves the collective good.",
+      "siddhi_description": "The siddhi frequency embodies the highest potential of human consciousness in this archetypal pattern.",
+      "keywords": [
+        "transformation",
+        "consciousness",
+        "evolution",
+        "awakening"
+      ],
+      "life_theme": "Transforming unconscious patterns into conscious service"
+    },
+    "38": {
+      "number": 38,
+      "name": "Gene Key 38",
+      "shadow": "Tension",
+      "gift": "Perseverance",
+      "siddhi": "Perseverance",
+      "codon": "GGC",
+      "amino_acid": "Glycine",
+      "programming_partner": 6,
+      "physiology": "Physiology 38",
+      "shadow_description": "The shadow frequency represents the unconscious pattern that creates limitation and suffering in this area of life.",
+      "gift_description": "The gift frequency expresses the balanced state of consciousness that serves the collective good.",
+      "siddhi_description": "The siddhi frequency embodies the highest potential of human consciousness in this archetypal pattern.",
+      "keywords": [
+        "transformation",
+        "consciousness",
+        "evolution",
+        "awakening"
+      ],
+      "life_theme": "Transforming unconscious patterns into conscious service"
+    },
+    "39": {
+      "number": 39,
+      "name": "Gene Key 39",
+      "shadow": "Provocation",
+      "gift": "Provocation",
+      "siddhi": "Provocation",
+      "codon": "AAG",
+      "amino_acid": "Lysine",
+      "programming_partner": 7,
+      "physiology": "Physiology 39",
+      "shadow_description": "The shadow frequency represents the unconscious pattern that creates limitation and suffering in this area of life.",
+      "gift_description": "The gift frequency expresses the balanced state of consciousness that serves the collective good.",
+      "siddhi_description": "The siddhi frequency embodies the highest potential of human consciousness in this archetypal pattern.",
+      "keywords": [
+        "transformation",
+        "consciousness",
+        "evolution",
+        "awakening"
+      ],
+      "life_theme": "Transforming unconscious patterns into conscious service"
+    },
+    "40": {
+      "number": 40,
+      "name": "Gene Key 40",
+      "shadow": "Exhaustion",
+      "gift": "Resolve",
+      "siddhi": "Resolve",
+      "codon": "TGC",
+      "amino_acid": "Cysteine",
+      "programming_partner": 8,
+      "physiology": "Physiology 40",
+      "shadow_description": "The shadow frequency represents the unconscious pattern that creates limitation and suffering in this area of life.",
+      "gift_description": "The gift frequency expresses the balanced state of consciousness that serves the collective good.",
+      "siddhi_description": "The siddhi frequency embodies the highest potential of human consciousness in this archetypal pattern.",
+      "keywords": [
+        "transformation",
+        "consciousness",
+        "evolution",
+        "awakening"
+      ],
+      "life_theme": "Transforming unconscious patterns into conscious service"
+    },
+    "41": {
+      "number": 41,
+      "name": "Gene Key 41",
+      "shadow": "Fantasy",
+      "gift": "Imagination",
+      "siddhi": "Imagination",
+      "codon": "TTG",
+      "amino_acid": "Leucine",
+      "programming_partner": 9,
+      "physiology": "Physiology 41",
+      "shadow_description": "The shadow frequency represents the unconscious pattern that creates limitation and suffering in this area of life.",
+      "gift_description": "The gift frequency expresses the balanced state of consciousness that serves the collective good.",
+      "siddhi_description": "The siddhi frequency embodies the highest potential of human consciousness in this archetypal pattern.",
+      "keywords": [
+        "transformation",
+        "consciousness",
+        "evolution",
+        "awakening"
+      ],
+      "life_theme": "Transforming unconscious patterns into conscious service"
+    },
+    "42": {
+      "number": 42,
+      "name": "Gene Key 42",
+      "shadow": "Expectation",
+      "gift": "Expectancy",
+      "siddhi": "Expectancy",
+      "codon": "TCG",
+      "amino_acid": "Serine",
+      "programming_partner": 10,
+      "physiology": "Physiology 42",
+      "shadow_description": "The shadow frequency represents the unconscious pattern that creates limitation and suffering in this area of life.",
+      "gift_description": "The gift frequency expresses the balanced state of consciousness that serves the collective good.",
+      "siddhi_description": "The siddhi frequency embodies the highest potential of human consciousness in this archetypal pattern.",
+      "keywords": [
+        "transformation",
+        "consciousness",
+        "evolution",
+        "awakening"
+      ],
+      "life_theme": "Transforming unconscious patterns into conscious service"
+    },
+    "43": {
+      "number": 43,
+      "name": "Gene Key 43",
+      "shadow": "Interference",
+      "gift": "Insight",
+      "siddhi": "Insight",
+      "codon": "CCG",
+      "amino_acid": "Proline",
+      "programming_partner": 11,
+      "physiology": "Physiology 43",
+      "shadow_description": "The shadow frequency represents the unconscious pattern that creates limitation and suffering in this area of life.",
+      "gift_description": "The gift frequency expresses the balanced state of consciousness that serves the collective good.",
+      "siddhi_description": "The siddhi frequency embodies the highest potential of human consciousness in this archetypal pattern.",
+      "keywords": [
+        "transformation",
+        "consciousness",
+        "evolution",
+        "awakening"
+      ],
+      "life_theme": "Transforming unconscious patterns into conscious service"
+    },
+    "44": {
+      "number": 44,
+      "name": "Gene Key 44",
+      "shadow": "Distraction",
+      "gift": "Synergy",
+      "siddhi": "Synergy",
+      "codon": "GGC",
+      "amino_acid": "Glycine",
+      "programming_partner": 12,
+      "physiology": "Physiology 44",
+      "shadow_description": "The shadow frequency represents the unconscious pattern that creates limitation and suffering in this area of life.",
+      "gift_description": "The gift frequency expresses the balanced state of consciousness that serves the collective good.",
+      "siddhi_description": "The siddhi frequency embodies the highest potential of human consciousness in this archetypal pattern.",
+      "keywords": [
+        "transformation",
+        "consciousness",
+        "evolution",
+        "awakening"
+      ],
+      "life_theme": "Transforming unconscious patterns into conscious service"
+    },
+    "45": {
+      "number": 45,
+      "name": "Gene Key 45",
+      "shadow": "Coercion",
+      "gift": "Intervention",
+      "siddhi": "Intervention",
+      "codon": "AAG",
+      "amino_acid": "Lysine",
+      "programming_partner": 13,
+      "physiology": "Physiology 45",
+      "shadow_description": "The shadow frequency represents the unconscious pattern that creates limitation and suffering in this area of life.",
+      "gift_description": "The gift frequency expresses the balanced state of consciousness that serves the collective good.",
+      "siddhi_description": "The siddhi frequency embodies the highest potential of human consciousness in this archetypal pattern.",
+      "keywords": [
+        "transformation",
+        "consciousness",
+        "evolution",
+        "awakening"
+      ],
+      "life_theme": "Transforming unconscious patterns into conscious service"
+    },
+    "46": {
+      "number": 46,
+      "name": "Gene Key 46",
+      "shadow": "Inadequacy",
+      "gift": "Resourcefulness",
+      "siddhi": "Resourcefulness",
+      "codon": "TGC",
+      "amino_acid": "Cysteine",
+      "programming_partner": 14,
+      "physiology": "Physiology 46",
+      "shadow_description": "The shadow frequency represents the unconscious pattern that creates limitation and suffering in this area of life.",
+      "gift_description": "The gift frequency expresses the balanced state of consciousness that serves the collective good.",
+      "siddhi_description": "The siddhi frequency embodies the highest potential of human consciousness in this archetypal pattern.",
+      "keywords": [
+        "transformation",
+        "consciousness",
+        "evolution",
+        "awakening"
+      ],
+      "life_theme": "Transforming unconscious patterns into conscious service"
+    },
+    "47": {
+      "number": 47,
+      "name": "Gene Key 47",
+      "shadow": "Oppression",
+      "gift": "Transmutation",
+      "siddhi": "Transmutation",
+      "codon": "TTG",
+      "amino_acid": "Leucine",
+      "programming_partner": 15,
+      "physiology": "Physiology 47",
+      "shadow_description": "The shadow frequency represents the unconscious pattern that creates limitation and suffering in this area of life.",
+      "gift_description": "The gift frequency expresses the balanced state of consciousness that serves the collective good.",
+      "siddhi_description": "The siddhi frequency embodies the highest potential of human consciousness in this archetypal pattern.",
+      "keywords": [
+        "transformation",
+        "consciousness",
+        "evolution",
+        "awakening"
+      ],
+      "life_theme": "Transforming unconscious patterns into conscious service"
+    },
+    "48": {
+      "number": 48,
+      "name": "Gene Key 48",
+      "shadow": "Insignificance",
+      "gift": "Wisdom",
+      "siddhi": "Wisdom",
+      "codon": "TCG",
+      "amino_acid": "Serine",
+      "programming_partner": 16,
+      "physiology": "Physiology 48",
+      "shadow_description": "The shadow frequency represents the unconscious pattern that creates limitation and suffering in this area of life.",
+      "gift_description": "The gift frequency expresses the balanced state of consciousness that serves the collective good.",
+      "siddhi_description": "The siddhi frequency embodies the highest potential of human consciousness in this archetypal pattern.",
+      "keywords": [
+        "transformation",
+        "consciousness",
+        "evolution",
+        "awakening"
+      ],
+      "life_theme": "Transforming unconscious patterns into conscious service"
+    },
+    "49": {
+      "number": 49,
+      "name": "Gene Key 49",
+      "shadow": "Reaction",
+      "gift": "Restraint",
+      "siddhi": "Restraint",
+      "codon": "CCG",
+      "amino_acid": "Proline",
+      "programming_partner": 17,
+      "physiology": "Physiology 49",
+      "shadow_description": "The shadow frequency represents the unconscious pattern that creates limitation and suffering in this area of life.",
+      "gift_description": "The gift frequency expresses the balanced state of consciousness that serves the collective good.",
+      "siddhi_description": "The siddhi frequency embodies the highest potential of human consciousness in this archetypal pattern.",
+      "keywords": [
+        "transformation",
+        "consciousness",
+        "evolution",
+        "awakening"
+      ],
+      "life_theme": "Transforming unconscious patterns into conscious service"
+    },
+    "50": {
+      "number": 50,
+      "name": "Gene Key 50",
+      "shadow": "Corruption",
+      "gift": "Harmony",
+      "siddhi": "Harmony",
+      "codon": "GGC",
+      "amino_acid": "Glycine",
+      "programming_partner": 18,
+      "physiology": "Physiology 50",
+      "shadow_description": "The shadow frequency represents the unconscious pattern that creates limitation and suffering in this area of life.",
+      "gift_description": "The gift frequency expresses the balanced state of consciousness that serves the collective good.",
+      "siddhi_description": "The siddhi frequency embodies the highest potential of human consciousness in this archetypal pattern.",
+      "keywords": [
+        "transformation",
+        "consciousness",
+        "evolution",
+        "awakening"
+      ],
+      "life_theme": "Transforming unconscious patterns into conscious service"
+    },
+    "51": {
+      "number": 51,
+      "name": "Gene Key 51",
+      "shadow": "Hysteria",
+      "gift": "Shock",
+      "siddhi": "Shock",
+      "codon": "AAG",
+      "amino_acid": "Lysine",
+      "programming_partner": 19,
+      "physiology": "Physiology 51",
+      "shadow_description": "The shadow frequency represents the unconscious pattern that creates limitation and suffering in this area of life.",
+      "gift_description": "The gift frequency expresses the balanced state of consciousness that serves the collective good.",
+      "siddhi_description": "The siddhi frequency embodies the highest potential of human consciousness in this archetypal pattern.",
+      "keywords": [
+        "transformation",
+        "consciousness",
+        "evolution",
+        "awakening"
+      ],
+      "life_theme": "Transforming unconscious patterns into conscious service"
+    },
+    "52": {
+      "number": 52,
+      "name": "Gene Key 52",
+      "shadow": "Stress",
+      "gift": "Stillness",
+      "siddhi": "Stillness",
+      "codon": "TGC",
+      "amino_acid": "Cysteine",
+      "programming_partner": 20,
+      "physiology": "Physiology 52",
+      "shadow_description": "The shadow frequency represents the unconscious pattern that creates limitation and suffering in this area of life.",
+      "gift_description": "The gift frequency expresses the balanced state of consciousness that serves the collective good.",
+      "siddhi_description": "The siddhi frequency embodies the highest potential of human consciousness in this archetypal pattern.",
+      "keywords": [
+        "transformation",
+        "consciousness",
+        "evolution",
+        "awakening"
+      ],
+      "life_theme": "Transforming unconscious patterns into conscious service"
+    },
+    "53": {
+      "number": 53,
+      "name": "Gene Key 53",
+      "shadow": "Inertia",
+      "gift": "Endurance",
+      "siddhi": "Endurance",
+      "codon": "TTG",
+      "amino_acid": "Leucine",
+      "programming_partner": 21,
+      "physiology": "Physiology 53",
+      "shadow_description": "The shadow frequency represents the unconscious pattern that creates limitation and suffering in this area of life.",
+      "gift_description": "The gift frequency expresses the balanced state of consciousness that serves the collective good.",
+      "siddhi_description": "The siddhi frequency embodies the highest potential of human consciousness in this archetypal pattern.",
+      "keywords": [
+        "transformation",
+        "consciousness",
+        "evolution",
+        "awakening"
+      ],
+      "life_theme": "Transforming unconscious patterns into conscious service"
+    },
+    "54": {
+      "number": 54,
+      "name": "Gene Key 54",
+      "shadow": "Bitterness",
+      "gift": "Intuition",
+      "siddhi": "Transparency",
+      "codon": "TCG",
+      "amino_acid": "Serine",
+      "programming_partner": 22,
+      "physiology": "Physiology 54",
+      "shadow_description": "The shadow frequency represents the unconscious pattern that creates limitation and suffering in this area of life.",
+      "gift_description": "The gift frequency expresses the balanced state of consciousness that serves the collective good.",
+      "siddhi_description": "The siddhi frequency embodies the highest potential of human consciousness in this archetypal pattern.",
+      "keywords": [
+        "transformation",
+        "consciousness",
+        "evolution",
+        "awakening"
+      ],
+      "life_theme": "Transforming unconscious patterns into conscious service"
+    },
+    "55": {
+      "number": 55,
+      "name": "Gene Key 55",
+      "shadow": "Victimization",
+      "gift": "Penetration",
+      "siddhi": "Penetration",
+      "codon": "CCG",
+      "amino_acid": "Proline",
+      "programming_partner": 23,
+      "physiology": "Physiology 55",
+      "shadow_description": "The shadow frequency represents the unconscious pattern that creates limitation and suffering in this area of life.",
+      "gift_description": "The gift frequency expresses the balanced state of consciousness that serves the collective good.",
+      "siddhi_description": "The siddhi frequency embodies the highest potential of human consciousness in this archetypal pattern.",
+      "keywords": [
+        "transformation",
+        "consciousness",
+        "evolution",
+        "awakening"
+      ],
+      "life_theme": "Transforming unconscious patterns into conscious service"
+    },
+    "56": {
+      "number": 56,
+      "name": "Gene Key 56",
+      "shadow": "Impatience",
+      "gift": "Gentleness",
+      "siddhi": "Gentleness",
+      "codon": "GGC",
+      "amino_acid": "Glycine",
+      "programming_partner": 24,
+      "physiology": "Physiology 56",
+      "shadow_description": "The shadow frequency represents the unconscious pattern that creates limitation and suffering in this area of life.",
+      "gift_description": "The gift frequency expresses the balanced state of consciousness that serves the collective good.",
+      "siddhi_description": "The siddhi frequency embodies the highest potential of human consciousness in this archetypal pattern.",
+      "keywords": [
+        "transformation",
+        "consciousness",
+        "evolution",
+        "awakening"
+      ],
+      "life_theme": "Transforming unconscious patterns into conscious service"
+    },
+    "57": {
+      "number": 57,
+      "name": "Gene Key 57",
+      "shadow": "Confusion",
+      "gift": "Clarity",
+      "siddhi": "Clarity",
+      "codon": "AAG",
+      "amino_acid": "Lysine",
+      "programming_partner": 25,
+      "physiology": "Physiology 57",
+      "shadow_description": "The shadow frequency represents the unconscious pattern that creates limitation and suffering in this area of life.",
+      "gift_description": "The gift frequency expresses the balanced state of consciousness that serves the collective good.",
+      "siddhi_description": "The siddhi frequency embodies the highest potential of human consciousness in this archetypal pattern.",
+      "keywords": [
+        "transformation",
+        "consciousness",
+        "evolution",
+        "awakening"
+      ],
+      "life_theme": "Transforming unconscious patterns into conscious service"
+    },
+    "58": {
+      "number": 58,
+      "name": "Gene Key 58",
+      "shadow": "Limitation",
+      "gift": "Practicality",
+      "siddhi": "Practicality",
+      "codon": "TGC",
+      "amino_acid": "Cysteine",
+      "programming_partner": 26,
+      "physiology": "Physiology 58",
+      "shadow_description": "The shadow frequency represents the unconscious pattern that creates limitation and suffering in this area of life.",
+      "gift_description": "The gift frequency expresses the balanced state of consciousness that serves the collective good.",
+      "siddhi_description": "The siddhi frequency embodies the highest potential of human consciousness in this archetypal pattern.",
+      "keywords": [
+        "transformation",
+        "consciousness",
+        "evolution",
+        "awakening"
+      ],
+      "life_theme": "Transforming unconscious patterns into conscious service"
+    },
+    "59": {
+      "number": 59,
+      "name": "Gene Key 59",
+      "shadow": "Doubt",
+      "gift": "Breakthrough",
+      "siddhi": "Breakthrough",
+      "codon": "TTG",
+      "amino_acid": "Leucine",
+      "programming_partner": 27,
+      "physiology": "Physiology 59",
+      "shadow_description": "The shadow frequency represents the unconscious pattern that creates limitation and suffering in this area of life.",
+      "gift_description": "The gift frequency expresses the balanced state of consciousness that serves the collective good.",
+      "siddhi_description": "The siddhi frequency embodies the highest potential of human consciousness in this archetypal pattern.",
+      "keywords": [
+        "transformation",
+        "consciousness",
+        "evolution",
+        "awakening"
+      ],
+      "life_theme": "Transforming unconscious patterns into conscious service"
+    },
+    "60": {
+      "number": 60,
+      "name": "Gene Key 60",
+      "shadow": "Suspicion",
+      "gift": "Service",
+      "siddhi": "Service",
+      "codon": "TCG",
+      "amino_acid": "Serine",
+      "programming_partner": 28,
+      "physiology": "Physiology 60",
+      "shadow_description": "The shadow frequency represents the unconscious pattern that creates limitation and suffering in this area of life.",
+      "gift_description": "The gift frequency expresses the balanced state of consciousness that serves the collective good.",
+      "siddhi_description": "The siddhi frequency embodies the highest potential of human consciousness in this archetypal pattern.",
+      "keywords": [
+        "transformation",
+        "consciousness",
+        "evolution",
+        "awakening"
+      ],
+      "life_theme": "Transforming unconscious patterns into conscious service"
+    },
+    "61": {
+      "number": 61,
+      "name": "Gene Key 61",
+      "shadow": "Incompetence",
+      "gift": "Enthusiasm",
+      "siddhi": "Enthusiasm",
+      "codon": "CCG",
+      "amino_acid": "Proline",
+      "programming_partner": 29,
+      "physiology": "Physiology 61",
+      "shadow_description": "The shadow frequency represents the unconscious pattern that creates limitation and suffering in this area of life.",
+      "gift_description": "The gift frequency expresses the balanced state of consciousness that serves the collective good.",
+      "siddhi_description": "The siddhi frequency embodies the highest potential of human consciousness in this archetypal pattern.",
+      "keywords": [
+        "transformation",
+        "consciousness",
+        "evolution",
+        "awakening"
+      ],
+      "life_theme": "Transforming unconscious patterns into conscious service"
+    },
+    "62": {
+      "number": 62,
+      "name": "Gene Key 62",
+      "shadow": "Stagnation",
+      "gift": "Inspiration",
+      "siddhi": "Inspiration",
+      "codon": "GGC",
+      "amino_acid": "Glycine",
+      "programming_partner": 30,
+      "physiology": "Physiology 62",
+      "shadow_description": "The shadow frequency represents the unconscious pattern that creates limitation and suffering in this area of life.",
+      "gift_description": "The gift frequency expresses the balanced state of consciousness that serves the collective good.",
+      "siddhi_description": "The siddhi frequency embodies the highest potential of human consciousness in this archetypal pattern.",
+      "keywords": [
+        "transformation",
+        "consciousness",
+        "evolution",
+        "awakening"
+      ],
+      "life_theme": "Transforming unconscious patterns into conscious service"
+    },
+    "63": {
+      "number": 63,
+      "name": "Gene Key 63",
+      "shadow": "Pressure",
+      "gift": "Bliss",
+      "siddhi": "Bliss",
+      "codon": "AAG",
+      "amino_acid": "Lysine",
+      "programming_partner": 31,
+      "physiology": "Physiology 63",
+      "shadow_description": "The shadow frequency represents the unconscious pattern that creates limitation and suffering in this area of life.",
+      "gift_description": "The gift frequency expresses the balanced state of consciousness that serves the collective good.",
+      "siddhi_description": "The siddhi frequency embodies the highest potential of human consciousness in this archetypal pattern.",
+      "keywords": [
+        "transformation",
+        "consciousness",
+        "evolution",
+        "awakening"
+      ],
+      "life_theme": "Transforming unconscious patterns into conscious service"
+    },
+    "64": {
+      "number": 64,
+      "name": "Gene Key 64",
+      "shadow": "Ignorance",
+      "gift": "Synthesis",
+      "siddhi": "Synthesis",
+      "codon": "TGC",
+      "amino_acid": "Cysteine",
+      "programming_partner": 32,
+      "physiology": "Physiology 64",
+      "shadow_description": "The shadow frequency represents the unconscious pattern that creates limitation and suffering in this area of life.",
+      "gift_description": "The gift frequency expresses the balanced state of consciousness that serves the collective good.",
+      "siddhi_description": "The siddhi frequency embodies the highest potential of human consciousness in this archetypal pattern.",
+      "keywords": [
+        "transformation",
+        "consciousness",
+        "evolution",
+        "awakening"
+      ],
+      "life_theme": "Transforming unconscious patterns into conscious service"
+    }
+  },
+  "sequences": {
+    "activation": {
+      "name": "Activation Sequence",
+      "description": "The four primary gates that form your core genetic blueprint",
+      "gates": [
+        {
+          "name": "Life's Work",
+          "description": "Your core life purpose and creative expression",
+          "calculation": "Sun position at birth"
+        },
+        {
+          "name": "Evolution",
+          "description": "Your path of personal development and growth",
+          "calculation": "Earth position at birth"
+        },
+        {
+          "name": "Radiance",
+          "description": "Your gift to humanity and how you shine",
+          "calculation": "Sun position 88 days before birth"
+        },
+        {
+          "name": "Purpose",
+          "description": "Your deepest calling and spiritual mission",
+          "calculation": "Earth position 88 days before birth"
+        }
+      ]
+    },
+    "venus": {
+      "name": "Venus Sequence",
+      "description": "The pathway of love and relationships",
+      "gates": [
+        {
+          "name": "Attraction",
+          "description": "What draws you to others and others to you",
+          "calculation": "Venus position at birth"
+        },
+        {
+          "name": "Magnetism",
+          "description": "Your natural charisma and appeal",
+          "calculation": "Venus position 88 days before birth"
+        }
+      ]
+    },
+    "pearl": {
+      "name": "Pearl Sequence",
+      "description": "The pathway of prosperity and material manifestation",
+      "gates": [
+        {
+          "name": "Vocation",
+          "description": "Your natural career path and work style",
+          "calculation": "Jupiter position at birth"
+        },
+        {
+          "name": "Culture",
+          "description": "Your contribution to collective evolution",
+          "calculation": "Saturn position at birth"
+        },
+        {
+          "name": "Brand",
+          "description": "Your unique signature in the world",
+          "calculation": "Uranus position at birth"
+        }
+      ]
+    }
+  },
+  "frequencies": {
+    "shadow": {
+      "name": "Shadow Frequency",
+      "description": "The victim consciousness that creates suffering",
+      "characteristics": [
+        "fear",
+        "reactivity",
+        "unconsciousness",
+        "separation"
+      ],
+      "purpose": "To provide the pressure needed for transformation"
+    },
+    "gift": {
+      "name": "Gift Frequency",
+      "description": "The genius consciousness that serves others",
+      "characteristics": [
+        "love",
+        "creativity",
+        "consciousness",
+        "service"
+      ],
+      "purpose": "To express our unique gifts in service to life"
+    },
+    "siddhi": {
+      "name": "Siddhi Frequency",
+      "description": "The divine consciousness that transcends duality",
+      "characteristics": [
+        "unity",
+        "transcendence",
+        "pure being",
+        "divine love"
+      ],
+      "purpose": "To embody the highest potential of human consciousness"
+    }
+  },
+  "pathworking": {
+    "contemplation": {
+      "name": "Contemplation",
+      "description": "The practice of deep reflection on the Gene Keys",
+      "method": "Daily contemplation of your Gene Key themes and patterns"
+    },
+    "programming_partners": {
+      "name": "Programming Partners",
+      "description": "Gene Keys that work together to create balance",
+      "method": "Study both keys in your programming partnership for deeper insight"
+    },
+    "frequency_shifting": {
+      "name": "Frequency Shifting",
+      "description": "The process of moving from Shadow to Gift to Siddhi",
+      "method": "Awareness, acceptance, and integration of all three frequencies"
+    }
+  }
+}

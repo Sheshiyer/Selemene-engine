@@ -1,0 +1,207 @@
+{
+  "tithi": {
+    "Pratipada": {
+      "element": "Fire",
+      "energy": "New beginnings",
+      "quality": "Initiative",
+      "optimal_for": ["Starting projects", "Setting intentions", "Planning"],
+      "avoid": ["Completing tasks", "Major decisions"]
+    },
+    "Dwitiya": {
+      "element": "Earth",
+      "energy": "Building foundation",
+      "quality": "Stability",
+      "optimal_for": ["Foundation work", "Relationship building", "Practical tasks"],
+      "avoid": ["Rushing", "Impulsive actions"]
+    },
+    "Tritiya": {
+      "element": "Fire",
+      "energy": "Action and courage",
+      "quality": "Dynamic",
+      "optimal_for": ["Taking action", "Courage-requiring tasks", "Competition"],
+      "avoid": ["Passive activities", "Procrastination"]
+    },
+    "Chaturthi": {
+      "element": "Earth",
+      "energy": "Obstacles and challenges",
+      "quality": "Testing",
+      "optimal_for": ["Problem-solving", "Overcoming obstacles", "Patience practice"],
+      "avoid": ["Easy tasks", "Avoiding challenges"]
+    },
+    "Panchami": {
+      "element": "Ether",
+      "energy": "Knowledge and learning",
+      "quality": "Educational",
+      "optimal_for": ["Learning", "Teaching", "Spiritual practices", "Research"],
+      "avoid": ["Ignorance", "Superficial activities"]
+    },
+    "Shashthi": {
+      "element": "Air",
+      "energy": "Conflict and competition",
+      "quality": "Challenging",
+      "optimal_for": ["Competitive activities", "Debates", "Overcoming enemies"],
+      "avoid": ["Peaceful activities", "Harmony-seeking"]
+    },
+    "Saptami": {
+      "element": "Fire",
+      "energy": "Friendship and alliances",
+      "quality": "Social",
+      "optimal_for": ["Making friends", "Partnerships", "Social activities"],
+      "avoid": ["Isolation", "Antisocial behavior"]
+    },
+    "Ashtami": {
+      "element": "Earth",
+      "energy": "Destruction and transformation",
+      "quality": "Transformative",
+      "optimal_for": ["Letting go", "Transformation", "Ending cycles"],
+      "avoid": ["Starting new things", "Building"]
+    },
+    "Navami": {
+      "element": "Fire",
+      "energy": "Completion and fulfillment",
+      "quality": "Fulfilling",
+      "optimal_for": ["Completing projects", "Achieving goals", "Celebration"],
+      "avoid": ["Starting new ventures", "Procrastination"]
+    },
+    "Dashami": {
+      "element": "Water",
+      "energy": "Purification and cleansing",
+      "quality": "Purifying",
+      "optimal_for": ["Cleansing", "Purification", "Healing", "Detox"],
+      "avoid": ["Accumulation", "Indulgence"]
+    },
+    "Ekadashi": {
+      "element": "Ether",
+      "energy": "Spiritual elevation",
+      "quality": "Spiritual",
+      "optimal_for": ["Fasting", "Meditation", "Spiritual practices", "Prayer"],
+      "avoid": ["Material pursuits", "Heavy meals"]
+    },
+    "Dwadashi": {
+      "element": "Air",
+      "energy": "Victory and success",
+      "quality": "Victorious",
+      "optimal_for": ["Achieving victory", "Success activities", "Leadership"],
+      "avoid": ["Giving up", "Defeatist attitude"]
+    },
+    "Trayodashi": {
+      "element": "Water",
+      "energy": "Emotional intensity",
+      "quality": "Intense",
+      "optimal_for": ["Emotional work", "Deep healing", "Intensity practices"],
+      "avoid": ["Superficial activities", "Emotional suppression"]
+    },
+    "Chaturdashi": {
+      "element": "Earth",
+      "energy": "Preparation and anticipation",
+      "quality": "Preparatory",
+      "optimal_for": ["Preparation", "Planning", "Anticipation", "Readiness"],
+      "avoid": ["Impulsive actions", "Unpreparedness"]
+    },
+    "Purnima": {
+      "element": "Water",
+      "energy": "Fullness and completion",
+      "quality": "Complete",
+      "optimal_for": ["Completion", "Fulfillment", "Celebration", "Gratitude"],
+      "avoid": ["Starting new cycles", "Incompleteness"]
+    }
+  },
+  "nakshatra": {
+    "Ashwini": {
+      "element": "Fire",
+      "deity": "Ashwini Kumaras",
+      "quality": "Swift action",
+      "optimal_for": ["Quick decisions", "Healing", "New beginnings", "Speed"],
+      "consciousness_theme": "Divine healing and swift transformation"
+    },
+    "Bharani": {
+      "element": "Earth",
+      "deity": "Yama",
+      "quality": "Transformation",
+      "optimal_for": ["Letting go", "Death/rebirth cycles", "Transformation"],
+      "consciousness_theme": "Sacred transformation and life cycles"
+    },
+    "Krittika": {
+      "element": "Fire",
+      "deity": "Agni",
+      "quality": "Purification",
+      "optimal_for": ["Purification", "Cutting through illusion", "Clarity"],
+      "consciousness_theme": "Divine fire of purification and truth"
+    },
+    "Rohini": {
+      "element": "Earth",
+      "deity": "Brahma",
+      "quality": "Growth",
+      "optimal_for": ["Growth", "Creativity", "Fertility", "Beauty"],
+      "consciousness_theme": "Creative manifestation and growth"
+    },
+    "Mrigashira": {
+      "element": "Earth",
+      "deity": "Soma",
+      "quality": "Seeking",
+      "optimal_for": ["Searching", "Exploration", "Quest", "Investigation"],
+      "consciousness_theme": "Divine quest for truth and meaning"
+    },
+    "Ardra": {
+      "element": "Water",
+      "deity": "Rudra",
+      "quality": "Destruction/Renewal",
+      "optimal_for": ["Emotional release", "Storms", "Renewal", "Cleansing"],
+      "consciousness_theme": "Divine destruction for renewal"
+    },
+    "Punarvasu": {
+      "element": "Water",
+      "deity": "Aditi",
+      "quality": "Return/Renewal",
+      "optimal_for": ["Returning home", "Renewal", "Restoration", "Nurturing"],
+      "consciousness_theme": "Divine mother's protective renewal"
+    },
+    "Pushya": {
+      "element": "Water",
+      "deity": "Brihaspati",
+      "quality": "Nourishment",
+      "optimal_for": ["Nourishing", "Teaching", "Spiritual growth", "Wisdom"],
+      "consciousness_theme": "Divine nourishment and spiritual teaching"
+    },
+    "Ashlesha": {
+      "element": "Water",
+      "deity": "Nagas",
+      "quality": "Coiling/Embracing",
+      "optimal_for": ["Deep psychology", "Hidden knowledge", "Kundalini work"],
+      "consciousness_theme": "Serpent wisdom and hidden knowledge"
+    },
+    "Magha": {
+      "element": "Fire",
+      "deity": "Pitrs",
+      "quality": "Ancestral power",
+      "optimal_for": ["Honoring ancestors", "Authority", "Tradition", "Legacy"],
+      "consciousness_theme": "Ancestral wisdom and royal authority"
+    }
+  },
+  "yoga": {
+    "Vishkumbha": {
+      "quality": "Obstructive",
+      "energy": "Blocking",
+      "optimal_for": ["Patience practice", "Overcoming obstacles", "Inner work"],
+      "consciousness_theme": "Learning through obstacles"
+    },
+    "Priti": {
+      "quality": "Loving",
+      "energy": "Affectionate",
+      "optimal_for": ["Love", "Relationships", "Harmony", "Beauty"],
+      "consciousness_theme": "Divine love and harmony"
+    },
+    "Ayushman": {
+      "quality": "Life-giving",
+      "energy": "Vitality",
+      "optimal_for": ["Health", "Longevity", "Vitality", "Life force"],
+      "consciousness_theme": "Divine life force and vitality"
+    },
+    "Saubhagya": {
+      "quality": "Fortunate",
+      "energy": "Auspicious",
+      "optimal_for": ["Good fortune", "Success", "Prosperity", "Blessings"],
+      "consciousness_theme": "Divine grace and fortune"
+    }
+  }
+}

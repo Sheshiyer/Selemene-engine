@@ -1,0 +1,1033 @@
+{
+  "schema_version": "1.0",
+  "project": {
+    "name": "Selemene TUI / RHDUI — Platform Integration Build",
+    "repo_root": "/Volumes/madara/2026/witnessos/Selemene-engine",
+    "generated_on": "2026-02-16",
+    "generated_by": "task-master-planner + dispatching-parallel-agents",
+    "assumptions": [
+      "Selemene API (v3.0.0) is stable and deployed on Railway — no API changes needed",
+      "All 16 engines and 6 workflows are live and responding",
+      "bridges/cli exists as scaffold; TUI will extend or replace it",
+      "Tauri, Raycast, and Apple ecosystem work are greenfield",
+      "Ratatui (Rust) is the TUI framework; Ink (React) considered but passed over for consistency",
+      "Raycast extension uses TypeScript (Raycast SDK)",
+      "macOS menu bar applet uses SwiftUI + MenuBarExtra",
+      "Apple Watch uses WatchKit / SwiftUI complications",
+      "Tauri wrapper uses Tauri v2 + React/Svelte frontend",
+      "Apple Shortcuts use HTTP actions calling the live API",
+      "birth_data profile is stored locally as JSON (TUI) and in Keychain (macOS/watchOS)"
+    ],
+    "risks": [
+      "Apple Watch payload size limits may restrict multi-engine workflows",
+      "Raycast extension review process adds unknown delay",
+      "Tauri v2 is relatively new; may hit edge cases on macOS Sequoia",
+      "Keychain access from Shortcuts requires entitlements",
+      "Menu bar + Raycast must respond in <2s; slow engines need prefetch/cache",
+      "WatchOS connectivity constraints require robust offline caching"
+    ],
+    "parallel_execution_strategy": {
+      "description": "Tasks marked with parallel_group can be dispatched to independent Claude agents simultaneously using dispatching-parallel-agents. Each agent gets a focused scope, clear deliverable, and constraint to not modify code outside its domain.",
+      "dispatch_pattern": "One agent per task within a parallel_group. Agent prompt includes: task title, acceptance criteria, files to touch, and constraint boundaries.",
+      "integration_step": "After parallel agents return, a single integration pass reviews all changes, runs tests, and resolves any conflicts."
+    }
+  },
+  "phases": [
+    {
+      "phase_id": "P0",
+      "name": "Foundation & Shared Infrastructure",
+      "objective": "Build the shared SDK client, config, profile, and output layers that all surfaces consume. Nothing user-facing yet — just plumbing.",
+      "sprints": [
+        {
+          "sprint_id": "S1",
+          "duration_weeks": 1,
+          "focus": "Rust SDK client + local profile",
+          "tasks": [
+            {
+              "id": "P0-S1-01",
+              "title": "Create noesis-sdk crate with typed API client",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 12,
+              "dependencies": [],
+              "parallel_group": "P0-infra",
+              "deliverable": "crates/noesis-sdk with reqwest-based client calling all 16 engine endpoints and 6 workflow endpoints, returning typed EngineOutput/WorkflowResult",
+              "acceptance": "cargo test --lib in noesis-sdk passes; client successfully calls /api/v1/engines/numerology/calculate against live API"
+            },
+            {
+              "id": "P0-S1-02",
+              "title": "Define LocalProfile struct and JSON persistence",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 6,
+              "dependencies": [],
+              "parallel_group": "P0-infra",
+              "deliverable": "noesis-sdk/src/profile.rs — LocalProfile struct with birth_data, api_key, preferences; save/load from ~/.noesis/profile.json",
+              "acceptance": "Profile round-trips through JSON serialization; missing fields produce clear errors"
+            },
+            {
+              "id": "P0-S1-03",
+              "title": "Implement secure credential storage (Keychain bridge)",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 8,
+              "dependencies": [],
+              "parallel_group": "P0-infra",
+              "deliverable": "noesis-sdk/src/keychain.rs — trait-based credential store with macOS Keychain backend and plaintext fallback for Linux",
+              "acceptance": "API key stored in Keychain is retrievable; fallback works on Linux CI"
+            },
+            {
+              "id": "P0-S1-04",
+              "title": "Build Markdown report renderer",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 8,
+              "dependencies": [],
+              "parallel_group": "P0-infra",
+              "deliverable": "noesis-sdk/src/render.rs — takes EngineOutput and produces styled Markdown with witness prompt, metadata, and consciousness_level",
+              "acceptance": "Rendered Markdown for numerology output matches expected snapshot"
+            },
+            {
+              "id": "P0-S1-05",
+              "title": "Create shared config module (endpoints, timeouts, cache TTL)",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 4,
+              "dependencies": [],
+              "parallel_group": "P0-infra",
+              "deliverable": "noesis-sdk/src/config.rs — runtime config from env vars or ~/.noesis/config.toml with defaults",
+              "acceptance": "Config loads from file, falls back to env, falls back to defaults; all three paths tested"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "phase_id": "P1",
+      "name": "TUI — Terminal User Interface",
+      "objective": "Ship a polished Ratatui-based terminal app for onboarding, running engines, and exporting reports. First user-facing surface.",
+      "sprints": [
+        {
+          "sprint_id": "S2",
+          "duration_weeks": 2,
+          "focus": "TUI core shell + onboarding flow",
+          "tasks": [
+            {
+              "id": "P1-S2-01",
+              "title": "Scaffold noesis-tui crate with Ratatui",
+              "area": "frontend",
+              "owner_role": "Frontend Eng",
+              "est_hours": 6,
+              "dependencies": ["P0-S1-01"],
+              "parallel_group": null,
+              "deliverable": "crates/noesis-tui with Ratatui app shell, event loop, and placeholder screens",
+              "acceptance": "cargo run --bin noesis-tui launches a terminal app with a welcome screen"
+            },
+            {
+              "id": "P1-S2-02",
+              "title": "Build onboarding wizard (profile + API key capture)",
+              "area": "frontend",
+              "owner_role": "Frontend Eng",
+              "est_hours": 10,
+              "dependencies": ["P1-S2-01", "P0-S1-02", "P0-S1-03"],
+              "parallel_group": null,
+              "deliverable": "Step-by-step TUI wizard: name → date → time → lat/lng → API key → save profile",
+              "acceptance": "Completing wizard creates ~/.noesis/profile.json and stores API key in Keychain"
+            },
+            {
+              "id": "P1-S2-03",
+              "title": "Implement engine picker screen",
+              "area": "frontend",
+              "owner_role": "Frontend Eng",
+              "est_hours": 8,
+              "dependencies": ["P1-S2-01"],
+              "parallel_group": "P1-screens",
+              "deliverable": "Scrollable list of 16 engines with descriptions; arrow-key selection; Enter fires calculation",
+              "acceptance": "Selecting numerology engine and pressing Enter triggers API call and shows spinner"
+            },
+            {
+              "id": "P1-S2-04",
+              "title": "Implement workflow picker screen",
+              "area": "frontend",
+              "owner_role": "Frontend Eng",
+              "est_hours": 6,
+              "dependencies": ["P1-S2-01"],
+              "parallel_group": "P1-screens",
+              "deliverable": "Workflow list with 6 workflows; selection triggers workflow execution",
+              "acceptance": "Selecting daily-practice workflow fires /api/v1/workflows/daily-practice/execute"
+            },
+            {
+              "id": "P1-S2-05",
+              "title": "Build result display panel (styled engine output)",
+              "area": "frontend",
+              "owner_role": "Frontend Eng",
+              "est_hours": 10,
+              "dependencies": ["P1-S2-03"],
+              "parallel_group": null,
+              "deliverable": "Panel rendering EngineOutput with colored sections: result, witness_prompt, metadata, consciousness_level",
+              "acceptance": "Numerology result displays life_path, expression, soul_urge with colors and witness prompt"
+            }
+          ]
+        },
+        {
+          "sprint_id": "S3",
+          "duration_weeks": 2,
+          "focus": "TUI polish + export + history",
+          "tasks": [
+            {
+              "id": "P1-S3-01",
+              "title": "Add Markdown export from result screen",
+              "area": "frontend",
+              "owner_role": "Frontend Eng",
+              "est_hours": 6,
+              "dependencies": ["P1-S2-05", "P0-S1-04"],
+              "parallel_group": "P1-export",
+              "deliverable": "Pressing 'e' on result screen saves Markdown report to ~/noesis-reports/{engine}_{date}.md",
+              "acceptance": "Exported Markdown file contains full engine output and witness prompt"
+            },
+            {
+              "id": "P1-S3-02",
+              "title": "Add JSON export from result screen",
+              "area": "frontend",
+              "owner_role": "Frontend Eng",
+              "est_hours": 4,
+              "dependencies": ["P1-S2-05"],
+              "parallel_group": "P1-export",
+              "deliverable": "Pressing 'j' exports raw JSON response to ~/noesis-reports/{engine}_{date}.json",
+              "acceptance": "Exported JSON is valid and matches API response"
+            },
+            {
+              "id": "P1-S3-03",
+              "title": "Build history browser (past readings from API)",
+              "area": "frontend",
+              "owner_role": "Frontend Eng",
+              "est_hours": 10,
+              "dependencies": ["P1-S2-01", "P0-S1-01"],
+              "parallel_group": null,
+              "deliverable": "Screen listing past readings from GET /api/v1/readings; selectable to view detail",
+              "acceptance": "History screen loads readings; selecting one shows full result in the result panel"
+            },
+            {
+              "id": "P1-S3-04",
+              "title": "Add keyboard shortcuts help overlay",
+              "area": "frontend",
+              "owner_role": "Frontend Eng",
+              "est_hours": 4,
+              "dependencies": ["P1-S2-01"],
+              "parallel_group": "P1-polish",
+              "deliverable": "Pressing '?' shows keybinding overlay with all available shortcuts",
+              "acceptance": "Help overlay displays and dismisses with Esc; lists all active shortcuts"
+            },
+            {
+              "id": "P1-S3-05",
+              "title": "Add error handling and retry UX",
+              "area": "frontend",
+              "owner_role": "Frontend Eng",
+              "est_hours": 6,
+              "dependencies": ["P1-S2-05"],
+              "parallel_group": "P1-polish",
+              "deliverable": "API errors show inline error panel with message + 'r' to retry; network timeouts handled gracefully",
+              "acceptance": "Simulated 500 error displays error panel; pressing 'r' retries the call"
+            },
+            {
+              "id": "P1-S3-06",
+              "title": "Add profile editor screen",
+              "area": "frontend",
+              "owner_role": "Frontend Eng",
+              "est_hours": 6,
+              "dependencies": ["P1-S2-02"],
+              "parallel_group": "P1-polish",
+              "deliverable": "Screen to view and edit saved profile (name, birth_data, preferences) without re-running full wizard",
+              "acceptance": "Editing date in profile editor updates ~/.noesis/profile.json"
+            },
+            {
+              "id": "P1-S3-07",
+              "title": "TUI integration tests",
+              "area": "qa",
+              "owner_role": "QA Eng",
+              "est_hours": 8,
+              "dependencies": ["P1-S3-01", "P1-S3-03", "P1-S3-05"],
+              "parallel_group": null,
+              "deliverable": "Integration tests using ratatui test harness; onboarding, engine run, export, and error flows",
+              "acceptance": "cargo test --test tui_integration passes all scenarios"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "phase_id": "P2",
+      "name": "Desktop Surfaces — Raycast, Menu Bar, Tauri",
+      "objective": "Expose Selemene through three macOS-native surfaces: Raycast for quick lookups, menu bar for ambient timing, Tauri for a full GUI wrapper.",
+      "sprints": [
+        {
+          "sprint_id": "S4",
+          "duration_weeks": 2,
+          "focus": "Raycast extension",
+          "tasks": [
+            {
+              "id": "P2-S4-01",
+              "title": "Scaffold Raycast extension project",
+              "area": "frontend",
+              "owner_role": "Frontend Eng",
+              "est_hours": 4,
+              "dependencies": ["P0-S1-01"],
+              "parallel_group": "P2-raycast",
+              "deliverable": "raycast-extension/ with package.json, tsconfig, and Raycast SDK boilerplate",
+              "acceptance": "Extension loads in Raycast dev mode without errors"
+            },
+            {
+              "id": "P2-S4-02",
+              "title": "Implement API key preferences + secure storage",
+              "area": "frontend",
+              "owner_role": "Frontend Eng",
+              "est_hours": 4,
+              "dependencies": ["P2-S4-01"],
+              "parallel_group": "P2-raycast",
+              "deliverable": "Raycast preferences panel for API key and server URL; stored via Raycast secure preferences",
+              "acceptance": "API key saved in preferences is used for all subsequent API calls"
+            },
+            {
+              "id": "P2-S4-03",
+              "title": "Build 'Quick Numerology' command",
+              "area": "frontend",
+              "owner_role": "Frontend Eng",
+              "est_hours": 6,
+              "dependencies": ["P2-S4-02"],
+              "parallel_group": "P2-raycast-cmds",
+              "deliverable": "Raycast command that takes name + date, calls numerology engine, shows life_path/expression/soul_urge in Raycast Detail view",
+              "acceptance": "Running command with valid input displays numerology result within 2 seconds"
+            },
+            {
+              "id": "P2-S4-04",
+              "title": "Build 'Today's Panchanga' command",
+              "area": "frontend",
+              "owner_role": "Frontend Eng",
+              "est_hours": 6,
+              "dependencies": ["P2-S4-02"],
+              "parallel_group": "P2-raycast-cmds",
+              "deliverable": "Raycast command showing today's tithi, nakshatra, yoga, karana from panchanga engine",
+              "acceptance": "Command displays current panchanga data with formatted output"
+            },
+            {
+              "id": "P2-S4-05",
+              "title": "Build 'Daily Practice' workflow command",
+              "area": "frontend",
+              "owner_role": "Frontend Eng",
+              "est_hours": 8,
+              "dependencies": ["P2-S4-02"],
+              "parallel_group": "P2-raycast-cmds",
+              "deliverable": "Raycast command running daily-practice workflow; shows combined result with witness prompt",
+              "acceptance": "Workflow result renders in Raycast Detail with all engine outputs and witness prompt"
+            },
+            {
+              "id": "P2-S4-06",
+              "title": "Add Raycast menu bar item (ambient panchanga)",
+              "area": "frontend",
+              "owner_role": "Frontend Eng",
+              "est_hours": 6,
+              "dependencies": ["P2-S4-04"],
+              "parallel_group": null,
+              "deliverable": "Raycast menu bar command showing current tithi in menu bar; dropdown shows full panchanga",
+              "acceptance": "Menu bar shows tithi name; clicking expands to full panchanga detail"
+            },
+            {
+              "id": "P2-S4-07",
+              "title": "Raycast extension tests + submission prep",
+              "area": "qa",
+              "owner_role": "QA Eng",
+              "est_hours": 6,
+              "dependencies": ["P2-S4-03", "P2-S4-04", "P2-S4-05", "P2-S4-06"],
+              "parallel_group": null,
+              "deliverable": "Tests for all commands; README, screenshots, and metadata for Raycast Store submission",
+              "acceptance": "All commands tested; extension passes raycast lint"
+            }
+          ]
+        },
+        {
+          "sprint_id": "S5",
+          "duration_weeks": 2,
+          "focus": "macOS menu bar applet",
+          "tasks": [
+            {
+              "id": "P2-S5-01",
+              "title": "Scaffold SwiftUI menu bar app (MenuBarExtra)",
+              "area": "frontend",
+              "owner_role": "macOS Eng",
+              "est_hours": 6,
+              "dependencies": ["P0-S1-01"],
+              "parallel_group": "P2-menubar",
+              "deliverable": "Xcode project: NoesisMenuBar with MenuBarExtra, SwiftUI views, and API client stub",
+              "acceptance": "App appears in menu bar with placeholder icon; clicking opens popover"
+            },
+            {
+              "id": "P2-S5-02",
+              "title": "Implement Swift API client for Selemene",
+              "area": "backend",
+              "owner_role": "macOS Eng",
+              "est_hours": 8,
+              "dependencies": ["P2-S5-01"],
+              "parallel_group": "P2-menubar",
+              "deliverable": "NoesisClient.swift — async/await HTTP client calling engine and workflow endpoints; Codable response models",
+              "acceptance": "Client successfully calls numerology and panchanga engines; responses decode correctly"
+            },
+            {
+              "id": "P2-S5-03",
+              "title": "Build daily timing view (panchanga + vedic clock)",
+              "area": "frontend",
+              "owner_role": "macOS Eng",
+              "est_hours": 8,
+              "dependencies": ["P2-S5-02"],
+              "parallel_group": "P2-menubar-views",
+              "deliverable": "Popover view showing current tithi, nakshatra, muhurta, and TCM meridian from vedic-clock engine",
+              "acceptance": "View updates on open; shows live panchanga and vedic clock data"
+            },
+            {
+              "id": "P2-S5-04",
+              "title": "Build quick witness prompt view",
+              "area": "frontend",
+              "owner_role": "macOS Eng",
+              "est_hours": 6,
+              "dependencies": ["P2-S5-02"],
+              "parallel_group": "P2-menubar-views",
+              "deliverable": "Section in popover showing today's witness prompt from daily-practice workflow",
+              "acceptance": "Witness prompt refreshes daily; cached between opens"
+            },
+            {
+              "id": "P2-S5-05",
+              "title": "Add Keychain storage for API key",
+              "area": "backend",
+              "owner_role": "macOS Eng",
+              "est_hours": 4,
+              "dependencies": ["P2-S5-01"],
+              "parallel_group": "P2-menubar",
+              "deliverable": "Settings sheet with API key input; stored in macOS Keychain via Security framework",
+              "acceptance": "API key persists across app restarts; Keychain item visible in Keychain Access"
+            },
+            {
+              "id": "P2-S5-06",
+              "title": "Add background refresh + notifications",
+              "area": "frontend",
+              "owner_role": "macOS Eng",
+              "est_hours": 8,
+              "dependencies": ["P2-S5-03"],
+              "parallel_group": null,
+              "deliverable": "Timer-based background refresh every 30 min; optional notification on tithi change",
+              "acceptance": "Panchanga data refreshes silently; notification fires on tithi transition"
+            },
+            {
+              "id": "P2-S5-07",
+              "title": "Menu bar applet polish + DMG packaging",
+              "area": "infra",
+              "owner_role": "macOS Eng",
+              "est_hours": 6,
+              "dependencies": ["P2-S5-03", "P2-S5-04", "P2-S5-05", "P2-S5-06"],
+              "parallel_group": null,
+              "deliverable": "App icon, launch-at-login toggle, DMG build script, README",
+              "acceptance": "DMG installs cleanly; app launches at login; icon matches Noesis branding"
+            }
+          ]
+        },
+        {
+          "sprint_id": "S6",
+          "duration_weeks": 2,
+          "focus": "Tauri wrapper app",
+          "tasks": [
+            {
+              "id": "P2-S6-01",
+              "title": "Scaffold Tauri v2 project with React frontend",
+              "area": "frontend",
+              "owner_role": "Frontend Eng",
+              "est_hours": 6,
+              "dependencies": ["P0-S1-01"],
+              "parallel_group": "P2-tauri",
+              "deliverable": "tauri-app/ with Tauri v2 + Vite + React + Tailwind; window opens with placeholder",
+              "acceptance": "cargo tauri dev launches a window with React app rendering"
+            },
+            {
+              "id": "P2-S6-02",
+              "title": "Build onboarding flow (API key + profile setup)",
+              "area": "frontend",
+              "owner_role": "Frontend Eng",
+              "est_hours": 8,
+              "dependencies": ["P2-S6-01"],
+              "parallel_group": null,
+              "deliverable": "Multi-step onboarding form: API key → birth data → preferences; stored via Tauri secure store plugin",
+              "acceptance": "Completing onboarding persists profile; subsequent launches skip onboarding"
+            },
+            {
+              "id": "P2-S6-03",
+              "title": "Build engine dashboard with card grid",
+              "area": "frontend",
+              "owner_role": "Frontend Eng",
+              "est_hours": 10,
+              "dependencies": ["P2-S6-02"],
+              "parallel_group": "P2-tauri-pages",
+              "deliverable": "Dashboard showing 16 engine cards; clicking a card opens calculation view",
+              "acceptance": "All 16 engines displayed with icons; clicking numerology opens its calculation form"
+            },
+            {
+              "id": "P2-S6-04",
+              "title": "Build calculation form + result view",
+              "area": "frontend",
+              "owner_role": "Frontend Eng",
+              "est_hours": 10,
+              "dependencies": ["P2-S6-03"],
+              "parallel_group": "P2-tauri-pages",
+              "deliverable": "Dynamic form based on engine input requirements; result view with styled output and witness prompt",
+              "acceptance": "Numerology form pre-fills from profile; submitting shows styled result"
+            },
+            {
+              "id": "P2-S6-05",
+              "title": "Build workflow runner page",
+              "area": "frontend",
+              "owner_role": "Frontend Eng",
+              "est_hours": 8,
+              "dependencies": ["P2-S6-02"],
+              "parallel_group": "P2-tauri-pages",
+              "deliverable": "Page listing 6 workflows; running one shows combined result with all engine outputs",
+              "acceptance": "Daily-practice workflow runs and displays multi-engine results"
+            },
+            {
+              "id": "P2-S6-06",
+              "title": "Build history + readings page",
+              "area": "frontend",
+              "owner_role": "Frontend Eng",
+              "est_hours": 8,
+              "dependencies": ["P2-S6-02"],
+              "parallel_group": "P2-tauri-pages",
+              "deliverable": "Page fetching GET /api/v1/readings; list + detail views with filtering by engine",
+              "acceptance": "Past readings load; clicking one shows full result; filter by engine works"
+            },
+            {
+              "id": "P2-S6-07",
+              "title": "Add Markdown/PDF export from Tauri",
+              "area": "frontend",
+              "owner_role": "Frontend Eng",
+              "est_hours": 6,
+              "dependencies": ["P2-S6-04"],
+              "parallel_group": null,
+              "deliverable": "Export button on result view saves Markdown or PDF to disk via Tauri file dialog",
+              "acceptance": "Exported Markdown matches expected format; PDF renders cleanly"
+            },
+            {
+              "id": "P2-S6-08",
+              "title": "Tauri app theming + branding",
+              "area": "frontend",
+              "owner_role": "Frontend Eng",
+              "est_hours": 6,
+              "dependencies": ["P2-S6-03"],
+              "parallel_group": null,
+              "deliverable": "Dark/light mode with Noesis brand colors; app icon; splash screen",
+              "acceptance": "App uses Noesis color palette; icon renders in dock and title bar"
+            },
+            {
+              "id": "P2-S6-09",
+              "title": "Tauri build + distribution (DMG, auto-update)",
+              "area": "infra",
+              "owner_role": "DevOps",
+              "est_hours": 8,
+              "dependencies": ["P2-S6-07", "P2-S6-08"],
+              "parallel_group": null,
+              "deliverable": "CI/CD pipeline producing signed DMG; Tauri updater configured for future releases",
+              "acceptance": "cargo tauri build produces signed DMG; updater endpoint responds"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "phase_id": "P3",
+      "name": "Apple Ecosystem — Shortcuts, Watch, Caching",
+      "objective": "Extend Selemene into the Apple ecosystem: Shortcuts actions for automation, Watch faces for ambient awareness, and on-device caching for reliability.",
+      "sprints": [
+        {
+          "sprint_id": "S7",
+          "duration_weeks": 2,
+          "focus": "Apple Shortcuts integration",
+          "tasks": [
+            {
+              "id": "P3-S7-01",
+              "title": "Design Shortcuts action schema (inputs/outputs)",
+              "area": "product",
+              "owner_role": "Product Eng",
+              "est_hours": 4,
+              "dependencies": [],
+              "parallel_group": "P3-shortcuts-design",
+              "deliverable": "Spec doc defining Shortcut actions: Run Engine, Run Workflow, Get Today's Panchanga, Get Witness Prompt",
+              "acceptance": "Spec reviewed and approved; covers input parameters, output types, and error handling"
+            },
+            {
+              "id": "P3-S7-02",
+              "title": "Create 'Run Engine' Shortcut action (HTTP-based)",
+              "area": "frontend",
+              "owner_role": "macOS Eng",
+              "est_hours": 8,
+              "dependencies": ["P3-S7-01"],
+              "parallel_group": "P3-shortcuts-impl",
+              "deliverable": "Shortcuts .shortcut file: prompts for engine name → calls API → returns formatted result text",
+              "acceptance": "Shortcut runs numerology engine with saved profile data and displays result"
+            },
+            {
+              "id": "P3-S7-03",
+              "title": "Create 'Run Workflow' Shortcut action",
+              "area": "frontend",
+              "owner_role": "macOS Eng",
+              "est_hours": 6,
+              "dependencies": ["P3-S7-01"],
+              "parallel_group": "P3-shortcuts-impl",
+              "deliverable": "Shortcut calling workflow endpoint; parses multi-engine response into readable text",
+              "acceptance": "Daily-practice workflow runs via Shortcut; output includes all engine results"
+            },
+            {
+              "id": "P3-S7-04",
+              "title": "Create 'Morning Witness' automation Shortcut",
+              "area": "frontend",
+              "owner_role": "macOS Eng",
+              "est_hours": 6,
+              "dependencies": ["P3-S7-02", "P3-S7-03"],
+              "parallel_group": null,
+              "deliverable": "Automation shortcut triggered at user-defined time; runs daily-practice and shows notification with witness prompt",
+              "acceptance": "Automation triggers at scheduled time; notification displays witness prompt"
+            },
+            {
+              "id": "P3-S7-05",
+              "title": "Build Shortcuts gallery landing page",
+              "area": "product",
+              "owner_role": "Product Eng",
+              "est_hours": 4,
+              "dependencies": ["P3-S7-02", "P3-S7-03", "P3-S7-04"],
+              "parallel_group": null,
+              "deliverable": "docs/shortcuts/ with install instructions, iCloud share links, and screenshots",
+              "acceptance": "Gallery page lists all shortcuts with descriptions and install links"
+            }
+          ]
+        },
+        {
+          "sprint_id": "S8",
+          "duration_weeks": 2,
+          "focus": "Apple Watch app + complications",
+          "tasks": [
+            {
+              "id": "P3-S8-01",
+              "title": "Scaffold watchOS app target in Xcode project",
+              "area": "frontend",
+              "owner_role": "macOS Eng",
+              "est_hours": 6,
+              "dependencies": ["P2-S5-01", "P2-S5-02"],
+              "parallel_group": "P3-watch",
+              "deliverable": "WatchKit app target added to NoesisMenuBar project; shared API client and models",
+              "acceptance": "Watch app builds and deploys to simulator; shows placeholder view"
+            },
+            {
+              "id": "P3-S8-02",
+              "title": "Build daily practice Watch face",
+              "area": "frontend",
+              "owner_role": "macOS Eng",
+              "est_hours": 10,
+              "dependencies": ["P3-S8-01"],
+              "parallel_group": "P3-watch-faces",
+              "deliverable": "Watch view showing today's witness prompt, current tithi, and biorhythm phases (P/E/I percentages)",
+              "acceptance": "Watch displays cached daily data; tapping sections shows detail"
+            },
+            {
+              "id": "P3-S8-03",
+              "title": "Build biorhythm complication",
+              "area": "frontend",
+              "owner_role": "macOS Eng",
+              "est_hours": 8,
+              "dependencies": ["P3-S8-01"],
+              "parallel_group": "P3-watch-faces",
+              "deliverable": "WidgetKit complication showing P/E/I cycle percentages; updates every 4 hours",
+              "acceptance": "Complication displays on watch face; values match API biorhythm output"
+            },
+            {
+              "id": "P3-S8-04",
+              "title": "Build panchanga complication",
+              "area": "frontend",
+              "owner_role": "macOS Eng",
+              "est_hours": 8,
+              "dependencies": ["P3-S8-01"],
+              "parallel_group": "P3-watch-faces",
+              "deliverable": "WidgetKit complication showing current tithi and nakshatra; updates on tithi change",
+              "acceptance": "Complication renders tithi name; tapping opens panchanga detail view"
+            },
+            {
+              "id": "P3-S8-05",
+              "title": "Implement WatchConnectivity for phone↔watch sync",
+              "area": "backend",
+              "owner_role": "macOS Eng",
+              "est_hours": 8,
+              "dependencies": ["P3-S8-01"],
+              "parallel_group": "P3-watch",
+              "deliverable": "WatchConnectivity session syncing profile and cached engine data from iPhone companion",
+              "acceptance": "Profile and daily cache sync from phone to watch; watch works independently after sync"
+            },
+            {
+              "id": "P3-S8-06",
+              "title": "Watch app offline caching layer",
+              "area": "backend",
+              "owner_role": "macOS Eng",
+              "est_hours": 8,
+              "dependencies": ["P3-S8-02", "P3-S8-05"],
+              "parallel_group": null,
+              "deliverable": "Core Data or UserDefaults cache storing last-fetched engine results; TTL-based refresh",
+              "acceptance": "Watch app shows cached data when offline; refreshes when connectivity returns"
+            }
+          ]
+        },
+        {
+          "sprint_id": "S9",
+          "duration_weeks": 1,
+          "focus": "On-device caching + offline resilience",
+          "tasks": [
+            {
+              "id": "P3-S9-01",
+              "title": "Build SDK-level response cache (Rust)",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 8,
+              "dependencies": ["P0-S1-01", "P0-S1-05"],
+              "parallel_group": "P3-cache",
+              "deliverable": "noesis-sdk cache layer: SQLite-backed response cache with configurable TTL per engine",
+              "acceptance": "Cached response returned when within TTL; expired entries trigger fresh API call"
+            },
+            {
+              "id": "P3-S9-02",
+              "title": "Add prefetch strategy for time-sensitive engines",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 6,
+              "dependencies": ["P3-S9-01"],
+              "parallel_group": "P3-cache",
+              "deliverable": "Prefetch scheduler that refreshes panchanga/vedic-clock/biorhythm results at configurable intervals",
+              "acceptance": "Prefetch runs on schedule; cached results available instantly for TUI/Raycast/menu bar"
+            },
+            {
+              "id": "P3-S9-03",
+              "title": "Integrate cache into TUI and Raycast",
+              "area": "frontend",
+              "owner_role": "Frontend Eng",
+              "est_hours": 6,
+              "dependencies": ["P3-S9-01", "P1-S2-05", "P2-S4-03"],
+              "parallel_group": null,
+              "deliverable": "TUI and Raycast use SDK cache layer; show cached indicator when serving stale data",
+              "acceptance": "TUI shows '(cached)' label on stale results; Raycast serves instant results from cache"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "phase_id": "P4",
+      "name": "Integration, QA & Release",
+      "objective": "Cross-surface testing, performance validation, documentation, and release packaging.",
+      "sprints": [
+        {
+          "sprint_id": "S10",
+          "duration_weeks": 2,
+          "focus": "Cross-surface integration + final QA",
+          "tasks": [
+            {
+              "id": "P4-S10-01",
+              "title": "End-to-end test: TUI onboarding → engine run → export",
+              "area": "qa",
+              "owner_role": "QA Eng",
+              "est_hours": 6,
+              "dependencies": ["P1-S3-07"],
+              "parallel_group": "P4-e2e",
+              "deliverable": "E2E test script simulating full TUI flow against live API",
+              "acceptance": "Test passes: profile created, engine called, Markdown exported, result matches"
+            },
+            {
+              "id": "P4-S10-02",
+              "title": "End-to-end test: Raycast commands against live API",
+              "area": "qa",
+              "owner_role": "QA Eng",
+              "est_hours": 6,
+              "dependencies": ["P2-S4-07"],
+              "parallel_group": "P4-e2e",
+              "deliverable": "Manual test checklist + automated smoke tests for all Raycast commands",
+              "acceptance": "All 4 Raycast commands return valid results; menu bar item updates"
+            },
+            {
+              "id": "P4-S10-03",
+              "title": "End-to-end test: Tauri app full flow",
+              "area": "qa",
+              "owner_role": "QA Eng",
+              "est_hours": 8,
+              "dependencies": ["P2-S6-09"],
+              "parallel_group": "P4-e2e",
+              "deliverable": "Playwright or Tauri test runner exercising onboarding, dashboard, calculation, history, and export",
+              "acceptance": "All core flows pass; no console errors; export files verify"
+            },
+            {
+              "id": "P4-S10-04",
+              "title": "End-to-end test: Shortcuts automation flow",
+              "area": "qa",
+              "owner_role": "QA Eng",
+              "est_hours": 4,
+              "dependencies": ["P3-S7-04"],
+              "parallel_group": "P4-e2e",
+              "deliverable": "Manual test: run each Shortcut; verify output format and notification",
+              "acceptance": "All 3 shortcuts produce expected output; morning automation fires notification"
+            },
+            {
+              "id": "P4-S10-05",
+              "title": "End-to-end test: Watch app + complications",
+              "area": "qa",
+              "owner_role": "QA Eng",
+              "est_hours": 6,
+              "dependencies": ["P3-S8-06"],
+              "parallel_group": "P4-e2e",
+              "deliverable": "Simulator test: watch app loads, complications render, offline mode works",
+              "acceptance": "Watch shows cached data; complications update; offline mode graceful"
+            },
+            {
+              "id": "P4-S10-06",
+              "title": "Performance audit: all surfaces under 2s response",
+              "area": "qa",
+              "owner_role": "QA Eng",
+              "est_hours": 6,
+              "dependencies": ["P4-S10-01", "P4-S10-02", "P4-S10-03"],
+              "parallel_group": null,
+              "deliverable": "Benchmark report: P50/P95/P99 latencies for each surface calling each engine",
+              "acceptance": "All primary flows complete in <2s P95; any violations documented with mitigation"
+            },
+            {
+              "id": "P4-S10-07",
+              "title": "Security review: credential storage across all surfaces",
+              "area": "qa",
+              "owner_role": "Backend Eng",
+              "est_hours": 6,
+              "dependencies": ["P0-S1-03", "P2-S4-02", "P2-S5-05"],
+              "parallel_group": null,
+              "deliverable": "Audit report confirming API keys never stored in plaintext on macOS; Keychain usage verified",
+              "acceptance": "No plaintext API keys found in config files, logs, or app state"
+            },
+            {
+              "id": "P4-S10-08",
+              "title": "Update README roadmap to reflect delivered status",
+              "area": "product",
+              "owner_role": "Product Eng",
+              "est_hours": 2,
+              "dependencies": ["P4-S10-06"],
+              "parallel_group": "P4-docs",
+              "deliverable": "README.md and RELEASE_NOTES.md roadmap sections updated with actual delivery status",
+              "acceptance": "Roadmap shows accurate delivered/in-progress/planned status for each phase"
+            },
+            {
+              "id": "P4-S10-09",
+              "title": "Write user guide for each surface",
+              "area": "product",
+              "owner_role": "Product Eng",
+              "est_hours": 8,
+              "dependencies": ["P4-S10-01", "P4-S10-02", "P4-S10-03", "P4-S10-04", "P4-S10-05"],
+              "parallel_group": "P4-docs",
+              "deliverable": "docs/guides/ with TUI, Raycast, Menu Bar, Tauri, Shortcuts, and Watch user guides",
+              "acceptance": "Each guide has install instructions, screenshots/GIFs, and common workflows"
+            },
+            {
+              "id": "P4-S10-10",
+              "title": "Tag v4.0.0 release + CHANGELOG update",
+              "area": "infra",
+              "owner_role": "DevOps",
+              "est_hours": 4,
+              "dependencies": ["P4-S10-08", "P4-S10-09"],
+              "parallel_group": null,
+              "deliverable": "Git tag v4.0.0; CHANGELOG.md updated; release notes published",
+              "acceptance": "Tag exists on main; CHANGELOG covers all Phase P1-P3 deliverables"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "parallel_dispatch_manifest": {
+    "description": "Groups of tasks that can be dispatched to independent Claude agents simultaneously. Use dispatching-parallel-agents pattern: one agent per task, focused prompt, no shared state.",
+    "groups": [
+      {
+        "group_id": "P0-infra",
+        "phase": "P0",
+        "tasks": ["P0-S1-01", "P0-S1-02", "P0-S1-03", "P0-S1-04", "P0-S1-05"],
+        "agent_count": 5,
+        "shared_state": false,
+        "constraint": "Each agent works in its own module within noesis-sdk; no cross-module imports until integration",
+        "estimated_parallel_hours": 12
+      },
+      {
+        "group_id": "P1-screens",
+        "phase": "P1",
+        "tasks": ["P1-S2-03", "P1-S2-04"],
+        "agent_count": 2,
+        "shared_state": false,
+        "constraint": "Each agent implements one screen in noesis-tui; both depend on shared app shell but don't touch it",
+        "estimated_parallel_hours": 8
+      },
+      {
+        "group_id": "P1-export",
+        "phase": "P1",
+        "tasks": ["P1-S3-01", "P1-S3-02"],
+        "agent_count": 2,
+        "shared_state": false,
+        "constraint": "Each agent adds one export format; output to separate files",
+        "estimated_parallel_hours": 6
+      },
+      {
+        "group_id": "P1-polish",
+        "phase": "P1",
+        "tasks": ["P1-S3-04", "P1-S3-05", "P1-S3-06"],
+        "agent_count": 3,
+        "shared_state": false,
+        "constraint": "Each agent works on independent UI concerns (help, errors, profile edit)",
+        "estimated_parallel_hours": 6
+      },
+      {
+        "group_id": "P2-raycast",
+        "phase": "P2",
+        "tasks": ["P2-S4-01", "P2-S4-02"],
+        "agent_count": 2,
+        "shared_state": false,
+        "constraint": "Scaffold and preferences are independent setup tasks",
+        "estimated_parallel_hours": 4
+      },
+      {
+        "group_id": "P2-raycast-cmds",
+        "phase": "P2",
+        "tasks": ["P2-S4-03", "P2-S4-04", "P2-S4-05"],
+        "agent_count": 3,
+        "shared_state": false,
+        "constraint": "Each agent implements one Raycast command; all share the API client but don't modify it",
+        "estimated_parallel_hours": 8
+      },
+      {
+        "group_id": "P2-menubar",
+        "phase": "P2",
+        "tasks": ["P2-S5-01", "P2-S5-02", "P2-S5-05"],
+        "agent_count": 3,
+        "shared_state": false,
+        "constraint": "Scaffold, API client, and Keychain are independent modules",
+        "estimated_parallel_hours": 8
+      },
+      {
+        "group_id": "P2-menubar-views",
+        "phase": "P2",
+        "tasks": ["P2-S5-03", "P2-S5-04"],
+        "agent_count": 2,
+        "shared_state": false,
+        "constraint": "Each agent builds one popover section; no shared UI state",
+        "estimated_parallel_hours": 8
+      },
+      {
+        "group_id": "P2-tauri",
+        "phase": "P2",
+        "tasks": ["P2-S6-01"],
+        "agent_count": 1,
+        "shared_state": false,
+        "constraint": "Scaffold is single-agent",
+        "estimated_parallel_hours": 6
+      },
+      {
+        "group_id": "P2-tauri-pages",
+        "phase": "P2",
+        "tasks": ["P2-S6-03", "P2-S6-04", "P2-S6-05", "P2-S6-06"],
+        "agent_count": 4,
+        "shared_state": false,
+        "constraint": "Each agent builds one page/route in the Tauri React app; shared components read-only",
+        "estimated_parallel_hours": 10
+      },
+      {
+        "group_id": "P3-shortcuts-design",
+        "phase": "P3",
+        "tasks": ["P3-S7-01"],
+        "agent_count": 1,
+        "shared_state": false,
+        "constraint": "Design task; no code",
+        "estimated_parallel_hours": 4
+      },
+      {
+        "group_id": "P3-shortcuts-impl",
+        "phase": "P3",
+        "tasks": ["P3-S7-02", "P3-S7-03"],
+        "agent_count": 2,
+        "shared_state": false,
+        "constraint": "Each agent builds one Shortcut file; no shared code",
+        "estimated_parallel_hours": 8
+      },
+      {
+        "group_id": "P3-watch",
+        "phase": "P3",
+        "tasks": ["P3-S8-01", "P3-S8-05"],
+        "agent_count": 2,
+        "shared_state": false,
+        "constraint": "Scaffold and WatchConnectivity are independent modules",
+        "estimated_parallel_hours": 8
+      },
+      {
+        "group_id": "P3-watch-faces",
+        "phase": "P3",
+        "tasks": ["P3-S8-02", "P3-S8-03", "P3-S8-04"],
+        "agent_count": 3,
+        "shared_state": false,
+        "constraint": "Each agent builds one watch view or complication; shared models read-only",
+        "estimated_parallel_hours": 10
+      },
+      {
+        "group_id": "P3-cache",
+        "phase": "P3",
+        "tasks": ["P3-S9-01", "P3-S9-02"],
+        "agent_count": 2,
+        "shared_state": false,
+        "constraint": "Cache layer and prefetch scheduler are independent modules within noesis-sdk",
+        "estimated_parallel_hours": 8
+      },
+      {
+        "group_id": "P4-e2e",
+        "phase": "P4",
+        "tasks": ["P4-S10-01", "P4-S10-02", "P4-S10-03", "P4-S10-04", "P4-S10-05"],
+        "agent_count": 5,
+        "shared_state": false,
+        "constraint": "Each agent tests one surface; no shared test state",
+        "estimated_parallel_hours": 8
+      },
+      {
+        "group_id": "P4-docs",
+        "phase": "P4",
+        "tasks": ["P4-S10-08", "P4-S10-09"],
+        "agent_count": 2,
+        "shared_state": false,
+        "constraint": "Each agent writes different docs; no file overlap",
+        "estimated_parallel_hours": 8
+      }
+    ],
+    "total_parallel_groups": 17,
+    "max_concurrent_agents": 5,
+    "estimated_wall_clock_savings": "~60% reduction vs sequential execution"
+  },
+  "summary": {
+    "total_tasks": 67,
+    "phases": 5,
+    "sprints": 10,
+    "parallelizable_tasks": 48,
+    "sequential_tasks": 19,
+    "total_estimated_hours": 438,
+    "estimated_parallel_hours": 270,
+    "areas": {
+      "frontend": 36,
+      "backend": 12,
+      "qa": 9,
+      "infra": 4,
+      "product": 4,
+      "data": 2
+    },
+    "tech_stack": {
+      "tui": "Rust + Ratatui",
+      "raycast": "TypeScript + Raycast SDK",
+      "menu_bar": "Swift + SwiftUI + MenuBarExtra",
+      "tauri": "Rust + Tauri v2 + React + Tailwind",
+      "shortcuts": "Apple Shortcuts (HTTP actions)",
+      "watch": "Swift + WatchKit + WidgetKit",
+      "sdk": "Rust + reqwest + serde + keyring"
+    }
+  }
+}

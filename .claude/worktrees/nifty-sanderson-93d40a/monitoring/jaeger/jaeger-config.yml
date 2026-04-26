@@ -1,0 +1,55 @@
+# Jaeger All-in-One configuration for Noesis distributed tracing
+# Production deployments should use separate collector/query/agent
+
+# Collector configuration
+collector:
+  # HTTP port for spans
+  http-server:
+    host-port: ":14268"
+  # gRPC port for OTLP spans
+  otlp:
+    grpc:
+      host-port: ":4317"
+    http:
+      host-port: ":4318"
+  # Zipkin compatible endpoint
+  zipkin:
+    host-port: ":9411"
+
+# Query service configuration
+query:
+  # UI port
+  http-server:
+    host-port: ":16686"
+  # gRPC port for query
+  grpc-server:
+    host-port: ":16685"
+  # Base path for UI
+  base-path: "/"
+
+# Storage configuration (in-memory for dev, use Elasticsearch/Cassandra for prod)
+memory:
+  max-traces: 100000
+
+# Sampling configuration
+sampling:
+  strategies-file: ""
+  
+# Processor configuration  
+processor:
+  jaeger-compact:
+    server-host-port: ":6831"
+  jaeger-binary:
+    server-host-port: ":6832"
+
+# Logging
+log-level: info
+
+# Metrics
+metrics-backend: prometheus
+metrics-http-route: "/metrics"
+
+# Admin
+admin:
+  http:
+    host-port: ":14269"

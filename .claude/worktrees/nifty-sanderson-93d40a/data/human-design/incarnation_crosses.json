@@ -1,0 +1,264 @@
+{
+  "incarnation_crosses_info": {
+    "name": "Human Design Incarnation Crosses",
+    "description": "The 192 Incarnation Crosses representing life purpose and destiny themes",
+    "total_crosses": 192,
+    "types": {
+      "Right_Angle": {
+        "count": 69,
+        "description": "Personal destiny - focused on individual development and self-actualization"
+      },
+      "Left_Angle": {
+        "count": 69,
+        "description": "Transpersonal destiny - focused on others and collective themes"
+      },
+      "Juxtaposition": {
+        "count": 54,
+        "description": "Fixed fate - specific karmic themes with less flexibility"
+      }
+    },
+    "source": "Human Design System by Ra Uru Hu"
+  },
+  "crosses": {
+    "Right_Angle_Cross_of_the_Four_Ways": {
+      "name": "Right Angle Cross of the Four Ways",
+      "type": "Right_Angle",
+      "gates": {
+        "conscious_sun": 1,
+        "conscious_earth": 2,
+        "unconscious_sun": 7,
+        "unconscious_earth": 13
+      },
+      "theme": "Creative Self-Expression and Direction",
+      "purpose": "To express individual creativity while finding proper direction in life",
+      "description": "This cross carries the energy of creative self-expression combined with the need to find one's true direction. The individual is here to express their unique creative force while learning to be receptive to higher guidance about their life path.",
+      "keynotes": [
+        "Creative expression",
+        "Individual purpose", 
+        "Finding direction",
+        "Leadership through example"
+      ],
+      "challenges": [
+        "Balancing self-expression with receptivity",
+        "Finding the right direction",
+        "Not forcing creative expression"
+      ],
+      "gifts": [
+        "Natural creativity",
+        "Ability to inspire others",
+        "Strong sense of individual purpose"
+      ]
+    },
+    "Right_Angle_Cross_of_Consciousness": {
+      "name": "Right Angle Cross of Consciousness",
+      "type": "Right_Angle", 
+      "gates": {
+        "conscious_sun": 63,
+        "conscious_earth": 64,
+        "unconscious_sun": 4,
+        "unconscious_earth": 49
+      },
+      "theme": "Mental Clarity and Revolutionary Change",
+      "purpose": "To bring mental clarity and revolutionary thinking to transform outdated patterns",
+      "description": "This cross combines the completion energy of 63/64 with the mental clarity of gate 4 and revolutionary change of gate 49. These individuals are here to think clearly about what needs to change and help transform old patterns.",
+      "keynotes": [
+        "Mental clarity",
+        "Revolutionary thinking",
+        "Pattern recognition",
+        "Transformation catalyst"
+      ],
+      "challenges": [
+        "Mental pressure and doubt",
+        "Timing of revolutionary changes",
+        "Balancing logic with intuition"
+      ],
+      "gifts": [
+        "Clear thinking",
+        "Ability to see what needs changing",
+        "Revolutionary insights"
+      ]
+    },
+    "Right_Angle_Cross_of_the_Sphinx": {
+      "name": "Right Angle Cross of the Sphinx",
+      "type": "Right_Angle",
+      "gates": {
+        "conscious_sun": 13,
+        "conscious_earth": 7,
+        "unconscious_sun": 1,
+        "unconscious_earth": 2
+      },
+      "theme": "Fellowship and Individual Expression",
+      "purpose": "To create fellowship while maintaining individual creative expression",
+      "description": "This cross carries the energy of bringing people together in fellowship while maintaining strong individual creative expression. The challenge is balancing community needs with personal creative impulses.",
+      "keynotes": [
+        "Fellowship creation",
+        "Community building",
+        "Individual creativity",
+        "Leadership in groups"
+      ],
+      "challenges": [
+        "Balancing individual needs with group needs",
+        "Creating authentic fellowship",
+        "Not compromising creativity for acceptance"
+      ],
+      "gifts": [
+        "Natural community builders",
+        "Ability to unite diverse people",
+        "Creative leadership"
+      ]
+    },
+    "Left_Angle_Cross_of_Wishes": {
+      "name": "Left Angle Cross of Wishes",
+      "type": "Left_Angle",
+      "gates": {
+        "conscious_sun": 46,
+        "conscious_earth": 25,
+        "unconscious_sun": 22,
+        "unconscious_earth": 47
+      },
+      "theme": "Serendipity and Love of the Body",
+      "purpose": "To experience and share the love of being in a body through serendipitous encounters",
+      "description": "This cross is about the love of being in a physical body and experiencing life through serendipitous encounters. These individuals attract what they need through their natural magnetism and love of embodied experience.",
+      "keynotes": [
+        "Serendipity",
+        "Love of embodiment",
+        "Natural magnetism",
+        "Attracting opportunities"
+      ],
+      "challenges": [
+        "Trusting in serendipity",
+        "Not forcing outcomes",
+        "Accepting the body's wisdom"
+      ],
+      "gifts": [
+        "Natural luck and timing",
+        "Embodied wisdom",
+        "Magnetic presence"
+      ]
+    },
+    "Left_Angle_Cross_of_Healing": {
+      "name": "Left Angle Cross of Healing",
+      "type": "Left_Angle",
+      "gates": {
+        "conscious_sun": 27,
+        "conscious_earth": 28,
+        "unconscious_sun": 50,
+        "unconscious_earth": 3
+      },
+      "theme": "Nourishment and Healing",
+      "purpose": "To provide nourishment and healing through caring and responsibility",
+      "description": "This cross carries the energy of caring, nourishment, and healing. These individuals are here to take responsibility for the wellbeing of others and provide the nourishment needed for growth and healing.",
+      "keynotes": [
+        "Caring and nourishment",
+        "Healing abilities",
+        "Responsibility for others",
+        "Protective instincts"
+      ],
+      "challenges": [
+        "Not over-caring",
+        "Setting healthy boundaries",
+        "Avoiding martyrdom"
+      ],
+      "gifts": [
+        "Natural healing abilities",
+        "Deep caring nature",
+        "Protective instincts"
+      ]
+    },
+    "Juxtaposition_Cross_of_Now": {
+      "name": "Juxtaposition Cross of Now",
+      "type": "Juxtaposition",
+      "gates": {
+        "conscious_sun": 52,
+        "conscious_earth": 58,
+        "unconscious_sun": 52,
+        "unconscious_earth": 58
+      },
+      "theme": "Stillness and Present Moment Awareness",
+      "purpose": "To embody stillness and bring others into present moment awareness",
+      "description": "This cross is about the power of stillness and being fully present in the now moment. These individuals have a fixed fate to embody stillness and help others find peace in the present moment.",
+      "keynotes": [
+        "Present moment awareness",
+        "Stillness and meditation",
+        "Inner peace",
+        "Grounding others"
+      ],
+      "challenges": [
+        "Accepting the fixed nature of their path",
+        "Not being restless",
+        "Trusting in stillness"
+      ],
+      "gifts": [
+        "Natural meditation ability",
+        "Calming presence",
+        "Present moment awareness"
+      ]
+    },
+    "Right_Angle_Cross_of_Explanation": {
+      "name": "Right Angle Cross of Explanation",
+      "type": "Right_Angle",
+      "gates": {
+        "conscious_sun": 4,
+        "conscious_earth": 49,
+        "unconscious_sun": 23,
+        "unconscious_earth": 43
+      },
+      "theme": "Mental Clarity and Revolutionary Understanding",
+      "purpose": "To bring mental clarity and explanation to complex concepts, helping others understand revolutionary changes",
+      "description": "This cross combines the mental clarity and logical thinking of Gate 4 with the revolutionary change energy of Gate 49, supported by the simplification power of Gate 23 and the individual insights of Gate 43. These individuals are here to explain complex concepts and help others understand necessary changes.",
+      "keynotes": [
+        "Mental clarity and logic",
+        "Revolutionary thinking",
+        "Simplifying complexity",
+        "Individual insights",
+        "Teaching and explanation"
+      ],
+      "challenges": [
+        "Pressure to have all the answers",
+        "Impatience with others' understanding",
+        "Mental overwhelm from complexity",
+        "Forcing insights before they're ready"
+      ],
+      "gifts": [
+        "Natural teaching ability",
+        "Clear logical thinking",
+        "Revolutionary insights",
+        "Ability to simplify complex ideas",
+        "Individual breakthrough moments"
+      ]
+    },
+    "Right_Angle_Cross_of_Healing": {
+      "name": "Right Angle Cross of Healing",
+      "type": "Right_Angle",
+      "gates": {
+        "conscious_sun": 25,
+        "conscious_earth": 57,
+        "unconscious_sun": 10,
+        "unconscious_earth": 42
+      },
+      "theme": "Universal Love and Behavioral Healing",
+      "purpose": "To heal through universal love and help others understand proper behavior and self-love",
+      "description": "This cross combines the universal love of Gate 25 with the intuitive clarity of Gate 57, supported by the self-love and behavior of Gate 10 and the growth through experience of Gate 42. These individuals are natural healers who help others through love and proper behavior.",
+      "keynotes": [
+        "Universal love and compassion",
+        "Intuitive clarity and insight",
+        "Self-love and proper behavior",
+        "Growth through experience",
+        "Natural healing abilities"
+      ],
+      "challenges": [
+        "Taking on others' pain",
+        "Overwhelming sensitivity",
+        "Difficulty maintaining boundaries",
+        "Pressure to fix everyone"
+      ],
+      "gifts": [
+        "Deep compassion and empathy",
+        "Intuitive healing abilities",
+        "Understanding of human behavior",
+        "Ability to love unconditionally",
+        "Wisdom through experience"
+      ]
+    }
+  }
+}

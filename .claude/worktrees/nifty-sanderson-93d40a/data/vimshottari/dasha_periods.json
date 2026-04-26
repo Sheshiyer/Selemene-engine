@@ -1,0 +1,95 @@
+{
+  "dasha_info": {
+    "name": "Vimshottari Dasha System",
+    "description": "The 120-year planetary period system",
+    "total_years": 120,
+    "source": "Traditional Vedic astrology"
+  },
+  "mahadasha_periods": {
+    "Sun": {
+      "years": 6,
+      "months": 0,
+      "days": 0
+    },
+    "Moon": {
+      "years": 10,
+      "months": 0,
+      "days": 0
+    },
+    "Mars": {
+      "years": 7,
+      "months": 0,
+      "days": 0
+    },
+    "Rahu": {
+      "years": 18,
+      "months": 0,
+      "days": 0
+    },
+    "Jupiter": {
+      "years": 16,
+      "months": 0,
+      "days": 0
+    },
+    "Saturn": {
+      "years": 19,
+      "months": 0,
+      "days": 0
+    },
+    "Mercury": {
+      "years": 17,
+      "months": 0,
+      "days": 0
+    },
+    "Ketu": {
+      "years": 7,
+      "months": 0,
+      "days": 0
+    },
+    "Venus": {
+      "years": 20,
+      "months": 0,
+      "days": 0
+    }
+  },
+  "planetary_order": [
+    "Sun",
+    "Moon",
+    "Mars",
+    "Rahu",
+    "Jupiter",
+    "Saturn",
+    "Mercury",
+    "Ketu",
+    "Venus"
+  ],
+  "nakshatra_rulers": {
+    "1": "Ketu",
+    "2": "Venus",
+    "3": "Sun",
+    "4": "Moon",
+    "5": "Mars",
+    "6": "Rahu",
+    "7": "Jupiter",
+    "8": "Saturn",
+    "9": "Mercury",
+    "10": "Ketu",
+    "11": "Venus",
+    "12": "Sun",
+    "13": "Moon",
+    "14": "Mars",
+    "15": "Rahu",
+    "16": "Jupiter",
+    "17": "Saturn",
+    "18": "Mercury",
+    "19": "Ketu",
+    "20": "Venus",
+    "21": "Sun",
+    "22": "Moon",
+    "23": "Mars",
+    "24": "Rahu",
+    "25": "Jupiter",
+    "26": "Saturn",
+    "27": "Mercury"
+  }
+}

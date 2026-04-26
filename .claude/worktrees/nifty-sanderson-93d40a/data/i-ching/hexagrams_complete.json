@@ -1,0 +1,214 @@
+{
+  "hexagram_info": {
+    "name": "I-Ching Hexagrams",
+    "description": "The 64 hexagrams of the I-Ching with meanings and interpretations",
+    "total_hexagrams": 64,
+    "source": "Traditional I-Ching wisdom"
+  },
+  "hexagrams": {
+    "1": {
+      "number": 1,
+      "name": "The Creative",
+      "chinese": "乾 (Qián)",
+      "trigrams": ["Heaven", "Heaven"],
+      "binary": "111111",
+      "keywords": ["creativity", "strength", "leadership", "initiative"],
+      "judgment": "The Creative works sublime success, furthering through perseverance.",
+      "image": "The movement of heaven is full of power. Thus the superior man makes himself strong and untiring.",
+      "meaning": "Pure creative energy, the power of the heavens, leadership and initiative. This hexagram represents the masculine principle, strength, and the ability to create and lead.",
+      "divination": "Great success is possible through persistent effort. Take the lead and act with confidence.",
+      "changing_lines": {
+        "1": "Hidden dragon. Do not act.",
+        "2": "Dragon appearing in the field. It furthers one to see the great man.",
+        "3": "All day long the superior man is creatively active. At nightfall his mind is still beset with cares. Danger. No blame.",
+        "4": "Wavering flight over the depths. No blame.",
+        "5": "Flying dragon in the heavens. It furthers one to see the great man.",
+        "6": "Arrogant dragon will have cause to repent."
+      }
+    },
+    "2": {
+      "number": 2,
+      "name": "The Receptive",
+      "chinese": "坤 (Kūn)",
+      "trigrams": ["Earth", "Earth"],
+      "binary": "000000",
+      "keywords": ["receptivity", "yielding", "nurturing", "devotion"],
+      "judgment": "The Receptive brings about sublime success, furthering through the perseverance of a mare.",
+      "image": "The earth's condition is receptive devotion. Thus the superior man who has breadth of character carries the outer world.",
+      "meaning": "Pure receptive energy, the power of the earth, yielding and nurturing. This hexagram represents the feminine principle, devotion, and the ability to support and nurture.",
+      "divination": "Success comes through receptivity and cooperation. Support others and allow things to unfold naturally.",
+      "changing_lines": {
+        "1": "When there is hoarfrost underfoot, solid ice is not far off.",
+        "2": "Straight, square, great. Without purpose, yet nothing remains unfurthered.",
+        "3": "Hidden lines. One is able to remain persevering. If by chance you are in the service of a king, seek not works but bring to completion.",
+        "4": "A tied-up sack. No blame, no praise.",
+        "5": "A yellow lower garment brings supreme good fortune.",
+        "6": "Dragons fight in the meadow. Their blood is black and yellow."
+      }
+    },
+    "3": {
+      "number": 3,
+      "name": "Difficulty at the Beginning",
+      "chinese": "屯 (Zhūn)",
+      "trigrams": ["Water", "Thunder"],
+      "binary": "010001",
+      "keywords": ["difficulty", "birth", "struggle", "perseverance"],
+      "judgment": "Difficulty at the Beginning works sublime success, furthering through perseverance.",
+      "image": "Clouds and thunder: the image of Difficulty at the Beginning. Thus the superior man brings order out of confusion.",
+      "meaning": "Initial difficulties that must be overcome. Like birth pangs, these struggles are necessary for new growth and development.",
+      "divination": "Persist through initial difficulties. What seems chaotic now will lead to order and success.",
+      "changing_lines": {
+        "1": "Hesitation and hindrance. It furthers one to remain persevering. It furthers one to appoint helpers.",
+        "2": "Difficulties pile up. Horse and wagon part. He is not a robber; he wants to woo when the time comes.",
+        "3": "Whoever hunts deer without the forester only loses his way in the forest.",
+        "4": "Horse and wagon part. Strive for union. To go brings good fortune. Everything acts to further.",
+        "5": "Difficulties in blessing. A little perseverance brings good fortune. Great perseverance brings misfortune.",
+        "6": "Horse and wagon part. Bloody tears flow."
+      }
+    },
+    "4": {
+      "number": 4,
+      "name": "Youthful Folly",
+      "chinese": "蒙 (Méng)",
+      "trigrams": ["Mountain", "Water"],
+      "binary": "100010",
+      "keywords": ["inexperience", "learning", "teaching", "guidance"],
+      "judgment": "Youthful Folly has success. It is not I who seek the young fool; the young fool seeks me.",
+      "image": "A spring wells up at the foot of the mountain: the image of Youth. Thus the superior man fosters his character by thoroughness in all that he does.",
+      "meaning": "The need for learning and guidance. Inexperience that can be transformed through proper teaching and sincere seeking.",
+      "divination": "Seek guidance from those wiser than yourself. Be humble and willing to learn.",
+      "changing_lines": {
+        "1": "To make a fool develop it furthers one to apply discipline.",
+        "2": "To bear with fools in kindliness brings good fortune.",
+        "3": "Take not a maiden who, when she sees a man of bronze, loses possession of herself.",
+        "4": "Entangled folly brings humiliation.",
+        "5": "Childlike folly brings good fortune.",
+        "6": "In punishing folly it does not further one to commit transgressions."
+      }
+    },
+    "5": {
+      "number": 5,
+      "name": "Waiting",
+      "chinese": "需 (Xū)",
+      "trigrams": ["Water", "Heaven"],
+      "binary": "010111",
+      "keywords": ["patience", "nourishment", "confidence", "timing"],
+      "judgment": "Waiting. If you are sincere, you have light and success. Perseverance brings good fortune.",
+      "image": "Clouds rise up to heaven: the image of Waiting. Thus the superior man eats and drinks, is joyous and of good cheer.",
+      "meaning": "The wisdom of waiting for the right moment. Patience and confidence in the natural timing of events.",
+      "divination": "Wait patiently for the right moment. Maintain your strength and confidence while you wait.",
+      "changing_lines": {
+        "1": "Waiting in the meadow. It furthers one to abide in what endures. No blame.",
+        "2": "Waiting on the sand. There is some gossip. The end brings good fortune.",
+        "3": "Waiting in the mud brings about the arrival of the enemy.",
+        "4": "Waiting in blood. Get out of the pit.",
+        "5": "Waiting at meat and drink. Perseverance brings good fortune.",
+        "6": "One falls into the pit. Three uninvited guests arrive. Honor them, and in the end there will be good fortune."
+      }
+    }
+  },
+  "trigrams": {
+    "Heaven": {
+      "chinese": "乾 (Qián)",
+      "binary": "111",
+      "element": "Metal",
+      "attribute": "Strong",
+      "family": "Father",
+      "direction": "Northwest",
+      "season": "Late Autumn",
+      "meaning": "Creative force, strength, leadership"
+    },
+    "Earth": {
+      "chinese": "坤 (Kūn)",
+      "binary": "000",
+      "element": "Earth",
+      "attribute": "Yielding",
+      "family": "Mother",
+      "direction": "Southwest",
+      "season": "Late Summer",
+      "meaning": "Receptive force, nurturing, devotion"
+    },
+    "Thunder": {
+      "chinese": "震 (Zhèn)",
+      "binary": "001",
+      "element": "Wood",
+      "attribute": "Arousing",
+      "family": "Eldest Son",
+      "direction": "East",
+      "season": "Spring",
+      "meaning": "Movement, shock, awakening"
+    },
+    "Water": {
+      "chinese": "坎 (Kǎn)",
+      "binary": "010",
+      "element": "Water",
+      "attribute": "Dangerous",
+      "family": "Middle Son",
+      "direction": "North",
+      "season": "Winter",
+      "meaning": "Depth, danger, flowing"
+    },
+    "Mountain": {
+      "chinese": "艮 (Gèn)",
+      "binary": "100",
+      "element": "Earth",
+      "attribute": "Keeping Still",
+      "family": "Youngest Son",
+      "direction": "Northeast",
+      "season": "Late Winter",
+      "meaning": "Stillness, meditation, boundaries"
+    },
+    "Wind": {
+      "chinese": "巽 (Xùn)",
+      "binary": "011",
+      "element": "Wood",
+      "attribute": "Gentle",
+      "family": "Eldest Daughter",
+      "direction": "Southeast",
+      "season": "Early Summer",
+      "meaning": "Penetration, gentleness, gradual progress"
+    },
+    "Fire": {
+      "chinese": "離 (Lí)",
+      "binary": "101",
+      "element": "Fire",
+      "attribute": "Clinging",
+      "family": "Middle Daughter",
+      "direction": "South",
+      "season": "Summer",
+      "meaning": "Light, clarity, beauty"
+    },
+    "Lake": {
+      "chinese": "兌 (Duì)",
+      "binary": "110",
+      "element": "Metal",
+      "attribute": "Joyous",
+      "family": "Youngest Daughter",
+      "direction": "West",
+      "season": "Autumn",
+      "meaning": "Joy, pleasure, communication"
+    }
+  },
+  "methods": {
+    "coins": {
+      "name": "Three Coins Method",
+      "description": "Traditional method using three coins, tossed six times",
+      "probabilities": {
+        "6": 0.125,
+        "7": 0.375,
+        "8": 0.375,
+        "9": 0.125
+      }
+    },
+    "yarrow": {
+      "name": "Yarrow Stalks Method",
+      "description": "Traditional method using 50 yarrow stalks",
+      "probabilities": {
+        "6": 0.0625,
+        "7": 0.4375,
+        "8": 0.4375,
+        "9": 0.0625
+      }
+    }
+  }
+}

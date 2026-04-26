@@ -1,0 +1,46 @@
+{
+  "case_id": "05-ambiguous-feature",
+  "group": "control",
+  "run_id": "run-1",
+  "scores": {
+    "pattern_adherence": {
+      "score": 5,
+      "notes": "Response format correct. BUT: No validateQuery middleware used - documentation mentions validateBody but not query validation pattern.",
+      "deductions": [
+        {"reason": "Missing validateQuery middleware", "amount": 3},
+        {"reason": "No Zod schema for query params", "amount": 2}
+      ]
+    },
+    "completeness": {
+      "score": 6,
+      "notes": "Basic status filter implemented. Missing: query validation, additional logical filters (date). Only one filter field.",
+      "deductions": [
+        {"reason": "No input validation", "amount": 3},
+        {"reason": "Limited filter options", "amount": 1}
+      ]
+    },
+    "correctness": {
+      "score": 8,
+      "notes": "Filtering logic works for status. Type safety weak - raw req.query access without validation.",
+      "deductions": [
+        {"reason": "Untyped query parameters", "amount": 2}
+      ]
+    },
+    "security": {
+      "score": 8,
+      "notes": "Filters only user's tasks (good). BUT: No input validation on query params could allow unexpected values.",
+      "deductions": [
+        {"reason": "No query param validation", "amount": 2}
+      ]
+    },
+    "consistency": {
+      "score": 6,
+      "notes": "Basic pattern followed but inconsistent with other routes that use validation middleware. Noted 'unclear about query parameter validation' in output.",
+      "deductions": [
+        {"reason": "Inconsistent with validation patterns", "amount": 3},
+        {"reason": "Acknowledged uncertainty about patterns", "amount": 1}
+      ]
+    }
+  },
+  "total": 33
+}

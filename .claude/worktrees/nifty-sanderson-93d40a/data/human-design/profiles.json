@@ -1,0 +1,417 @@
+{
+  "profiles_info": {
+    "name": "Human Design Profiles",
+    "description": "The 12 Profile combinations representing life themes and roles",
+    "total_profiles": 12,
+    "structure": "Two lines: Conscious (Personality) and Unconscious (Design)",
+    "purpose": "Profiles describe how you interact with the world and your life theme",
+    "source": "Human Design System by Ra Uru Hu"
+  },
+  "lines": {
+    "1": {
+      "name": "The Investigator",
+      "theme": "Foundation and Security",
+      "description": "Needs to investigate and understand foundations before feeling secure",
+      "characteristics": [
+        "Research and study oriented",
+        "Needs solid foundations",
+        "Security through knowledge",
+        "Introspective and studious"
+      ],
+      "shadow": "Insecurity when foundation is shaky",
+      "gift": "Deep knowledge and expertise"
+    },
+    "2": {
+      "name": "The Hermit", 
+      "theme": "Natural Talent and Calling",
+      "description": "Has natural talents that need to be called out by others",
+      "characteristics": [
+        "Natural gifts and talents",
+        "Needs to be called out",
+        "Prefers solitude for development",
+        "Shy about their abilities"
+      ],
+      "shadow": "Hiding talents or being called for wrong things",
+      "gift": "Natural genius and talent"
+    },
+    "3": {
+      "name": "The Martyr",
+      "theme": "Trial and Error",
+      "description": "Learns through experimentation and trial and error",
+      "characteristics": [
+        "Experimental approach to life",
+        "Learns through mistakes",
+        "Resilient and adaptable",
+        "Bonds through shared experiences"
+      ],
+      "shadow": "Pessimism from too many failures",
+      "gift": "Practical wisdom from experience"
+    },
+    "4": {
+      "name": "The Opportunist",
+      "theme": "Network and Influence",
+      "description": "Success comes through network and relationships",
+      "characteristics": [
+        "Network and relationship focused",
+        "Influential through connections",
+        "Friendly and social",
+        "Opportunities through others"
+      ],
+      "shadow": "Exhaustion from maintaining network",
+      "gift": "Natural networking and influence"
+    },
+    "5": {
+      "name": "The Heretic",
+      "theme": "Projection and Solutions",
+      "description": "Projected upon to provide solutions, often misunderstood",
+      "characteristics": [
+        "Natural problem solvers",
+        "Projected upon by others",
+        "Practical and solution-oriented",
+        "Often misunderstood"
+      ],
+      "shadow": "Paranoia from projections and blame",
+      "gift": "Universal solutions and practical wisdom"
+    },
+    "6": {
+      "name": "The Role Model",
+      "theme": "Three Life Phases",
+      "description": "Lives in three distinct phases: experimentation, withdrawal, and wisdom",
+      "characteristics": [
+        "Three distinct life phases",
+        "Natural authority and wisdom",
+        "Optimistic and idealistic",
+        "Becomes role model for others"
+      ],
+      "phases": {
+        "phase_1": "Birth to Saturn Return (~30): Experimentation like a 3rd line",
+        "phase_2": "30 to Chiron Return (~50): Withdrawal and observation", 
+        "phase_3": "50+: Wisdom and role model for others"
+      },
+      "shadow": "Disappointment when ideals aren't met",
+      "gift": "Wisdom and authentic role modeling"
+    }
+  },
+  "profiles": {
+    "1_3": {
+      "name": "1/3 - Investigator/Martyr",
+      "theme": "Foundation through Trial and Error",
+      "description": "Needs to investigate and understand foundations, then test them through experimentation",
+      "conscious": "Investigator - needs to study and understand",
+      "unconscious": "Martyr - learns through trial and error",
+      "life_purpose": "To build solid foundations through experimentation and learning",
+      "characteristics": [
+        "Research before acting",
+        "Learn through mistakes",
+        "Build expertise through experience",
+        "Pessimistic but practical"
+      ],
+      "challenges": [
+        "Impatience with research phase",
+        "Discouragement from failures",
+        "Insecurity about foundations"
+      ],
+      "gifts": [
+        "Deep practical knowledge",
+        "Resilience and adaptability",
+        "Solid foundations for others"
+      ],
+      "relationships": "Bonds through shared learning experiences and mutual investigation"
+    },
+    "1_4": {
+      "name": "1/4 - Investigator/Opportunist", 
+      "theme": "Foundation through Network",
+      "description": "Builds solid foundations and shares knowledge through network and relationships",
+      "conscious": "Investigator - needs to study and understand",
+      "unconscious": "Opportunist - success through network",
+      "life_purpose": "To research and share knowledge through influential networks",
+      "characteristics": [
+        "Study and research oriented",
+        "Share knowledge with network",
+        "Influential through expertise",
+        "Security through relationships"
+      ],
+      "challenges": [
+        "Balancing study time with social time",
+        "Maintaining network while researching",
+        "Insecurity affecting relationships"
+      ],
+      "gifts": [
+        "Authoritative knowledge",
+        "Influential teaching",
+        "Strong foundation for network"
+      ],
+      "relationships": "Forms deep friendships based on shared interests and mutual learning"
+    },
+    "2_4": {
+      "name": "2/4 - Hermit/Opportunist",
+      "theme": "Natural Talent through Network", 
+      "description": "Has natural talents that are called out and shared through network",
+      "conscious": "Hermit - natural talent that needs calling",
+      "unconscious": "Opportunist - success through network",
+      "life_purpose": "To develop natural gifts and share them through relationships",
+      "characteristics": [
+        "Natural talents and abilities",
+        "Called out by network",
+        "Shy about abilities initially",
+        "Success through relationships"
+      ],
+      "challenges": [
+        "Being called for wrong things",
+        "Balancing solitude with network needs",
+        "Shyness about natural gifts"
+      ],
+      "gifts": [
+        "Natural genius",
+        "Influential through talent",
+        "Strong network support"
+      ],
+      "relationships": "Network calls out their talents and provides opportunities for expression"
+    },
+    "2_5": {
+      "name": "2/5 - Hermit/Heretic",
+      "theme": "Natural Talent as Universal Solution",
+      "description": "Natural talents are projected upon to solve universal problems",
+      "conscious": "Hermit - natural talent that needs calling",
+      "unconscious": "Heretic - projected upon for solutions",
+      "life_purpose": "To provide universal solutions through natural talents",
+      "characteristics": [
+        "Natural problem-solving abilities",
+        "Projected upon by others",
+        "Practical and solution-oriented",
+        "Often misunderstood"
+      ],
+      "challenges": [
+        "Heavy projections from others",
+        "Being called for wrong solutions",
+        "Paranoia from blame"
+      ],
+      "gifts": [
+        "Universal solutions",
+        "Natural practical wisdom",
+        "Ability to solve complex problems"
+      ],
+      "relationships": "Others project solutions onto them, need to manage projections carefully"
+    },
+    "3_5": {
+      "name": "3/5 - Martyr/Heretic",
+      "theme": "Trial and Error Solutions",
+      "description": "Learns through experimentation and provides practical solutions to others",
+      "conscious": "Martyr - learns through trial and error",
+      "unconscious": "Heretic - projected upon for solutions", 
+      "life_purpose": "To discover what works through experimentation and share practical solutions",
+      "characteristics": [
+        "Experimental approach to life",
+        "Practical problem solving",
+        "Resilient and adaptable",
+        "Projected upon for solutions"
+      ],
+      "challenges": [
+        "Pessimism from failures",
+        "Heavy projections from others",
+        "Blame when solutions don't work"
+      ],
+      "gifts": [
+        "Practical wisdom from experience",
+        "Universal solutions",
+        "Resilience and adaptability"
+      ],
+      "relationships": "Bonds through shared experiences, others seek their practical solutions"
+    },
+    "3_6": {
+      "name": "3/6 - Martyr/Role Model",
+      "theme": "Experimentation to Wisdom",
+      "description": "Experiments in first phase, withdraws to observe, then becomes wise role model",
+      "conscious": "Martyr - learns through trial and error",
+      "unconscious": "Role Model - three life phases",
+      "life_purpose": "To gain wisdom through experience and become authentic role model",
+      "life_phases": {
+        "phase_1": "Birth to ~30: Heavy experimentation and trial/error like 3/3",
+        "phase_2": "30 to ~50: Withdrawal and observation, learning from mistakes",
+        "phase_3": "50+: Wise role model sharing authentic wisdom"
+      },
+      "characteristics": [
+        "Intense experimentation early in life",
+        "Withdrawal and reflection mid-life",
+        "Wisdom and role modeling later",
+        "Optimistic despite setbacks"
+      ],
+      "challenges": [
+        "Pessimism from early failures",
+        "Disappointment in withdrawal phase",
+        "Pressure to be perfect role model"
+      ],
+      "gifts": [
+        "Authentic wisdom from experience",
+        "Natural role model authority",
+        "Optimistic perspective"
+      ],
+      "relationships": "Early bonds through shared experiences, later becomes wise guide for others"
+    },
+    "4_6": {
+      "name": "4/6 - Opportunist/Role Model",
+      "theme": "Network Influence to Wisdom",
+      "description": "Builds influential network, then becomes wise role model for community",
+      "conscious": "Opportunist - success through network",
+      "unconscious": "Role Model - three life phases",
+      "life_purpose": "To influence through network and become wise role model",
+      "life_phases": {
+        "phase_1": "Birth to ~30: Building network and experimenting with influence",
+        "phase_2": "30 to ~50: Selective with network, observing and learning",
+        "phase_3": "50+: Wise role model with influential authority"
+      },
+      "characteristics": [
+        "Natural networking abilities",
+        "Influential through relationships",
+        "Becomes wise authority figure",
+        "Optimistic and friendly"
+      ],
+      "challenges": [
+        "Exhaustion from maintaining network",
+        "Disappointment in relationships",
+        "Pressure to be perfect example"
+      ],
+      "gifts": [
+        "Influential wisdom",
+        "Strong community connections",
+        "Natural authority"
+      ],
+      "relationships": "Deep friendships that evolve into wise mentoring relationships"
+    },
+    "4_1": {
+      "name": "4/1 - Opportunist/Investigator",
+      "theme": "Network Foundation",
+      "description": "Builds network and influence based on solid foundations and knowledge",
+      "conscious": "Opportunist - success through network",
+      "unconscious": "Investigator - needs solid foundations",
+      "life_purpose": "To influence others through network based on solid knowledge foundation",
+      "characteristics": [
+        "Network based on expertise",
+        "Influential through knowledge",
+        "Security through relationships",
+        "Foundation-building for others"
+      ],
+      "challenges": [
+        "Insecurity affecting network",
+        "Need for foundation vs social demands",
+        "Exhaustion from maintaining connections"
+      ],
+      "gifts": [
+        "Authoritative influence",
+        "Solid network foundations",
+        "Knowledge-based relationships"
+      ],
+      "relationships": "Forms friendships based on shared knowledge and mutual foundation-building"
+    },
+    "5_1": {
+      "name": "5/1 - Heretic/Investigator",
+      "theme": "Universal Solutions through Foundation",
+      "description": "Provides universal solutions based on solid research and investigation",
+      "conscious": "Heretic - projected upon for solutions",
+      "unconscious": "Investigator - needs solid foundations",
+      "life_purpose": "To provide well-researched universal solutions",
+      "characteristics": [
+        "Research-based solutions",
+        "Practical and grounded",
+        "Projected upon for expertise",
+        "Security through knowledge"
+      ],
+      "challenges": [
+        "Projections before foundation is solid",
+        "Insecurity about solutions",
+        "Paranoia from blame"
+      ],
+      "gifts": [
+        "Well-researched solutions",
+        "Practical universal wisdom",
+        "Solid foundation for others"
+      ],
+      "relationships": "Others seek their well-researched solutions and expertise"
+    },
+    "5_2": {
+      "name": "5/2 - Heretic/Hermit",
+      "theme": "Natural Solutions",
+      "description": "Natural talent for providing universal solutions, needs to be called out",
+      "conscious": "Heretic - projected upon for solutions",
+      "unconscious": "Hermit - natural talent needs calling",
+      "life_purpose": "To provide natural universal solutions when properly called",
+      "characteristics": [
+        "Natural problem-solving genius",
+        "Needs proper calling for solutions",
+        "Practical and solution-oriented",
+        "Shy about abilities"
+      ],
+      "challenges": [
+        "Being called for wrong solutions",
+        "Heavy projections on natural gifts",
+        "Paranoia and withdrawal"
+      ],
+      "gifts": [
+        "Natural universal solutions",
+        "Genius problem-solving ability",
+        "Practical wisdom"
+      ],
+      "relationships": "Must be properly called out for their natural solution-providing abilities"
+    },
+    "6_2": {
+      "name": "6/2 - Role Model/Hermit",
+      "theme": "Natural Wisdom Role Model",
+      "description": "Natural wisdom that develops through three life phases to become authentic role model",
+      "conscious": "Role Model - three life phases",
+      "unconscious": "Hermit - natural talent needs calling",
+      "life_purpose": "To develop natural wisdom and become authentic role model",
+      "life_phases": {
+        "phase_1": "Birth to ~30: Experimenting with natural gifts like 2/2",
+        "phase_2": "30 to ~50: Withdrawal to develop natural wisdom",
+        "phase_3": "50+: Called out as wise role model"
+      },
+      "characteristics": [
+        "Natural wisdom and authority",
+        "Three distinct life phases",
+        "Needs to be called out",
+        "Optimistic and idealistic"
+      ],
+      "challenges": [
+        "Being called for wrong things",
+        "Disappointment in ideals",
+        "Shyness about natural authority"
+      ],
+      "gifts": [
+        "Natural authentic wisdom",
+        "Role model authority",
+        "Optimistic perspective"
+      ],
+      "relationships": "Must be properly called out for their natural wisdom and role model qualities"
+    },
+    "6_3": {
+      "name": "6/3 - Role Model/Martyr",
+      "theme": "Experimental Wisdom",
+      "description": "Gains wisdom through experimentation and becomes role model for resilience",
+      "conscious": "Role Model - three life phases",
+      "unconscious": "Martyr - learns through trial and error",
+      "life_purpose": "To gain wisdom through experimentation and model resilience",
+      "life_phases": {
+        "phase_1": "Birth to ~30: Intense experimentation like 3/3",
+        "phase_2": "30 to ~50: Withdrawal and processing experiences",
+        "phase_3": "50+: Role model for resilience and wisdom"
+      },
+      "characteristics": [
+        "Experimental approach to wisdom",
+        "Resilient and adaptable",
+        "Models how to learn from mistakes",
+        "Optimistic despite setbacks"
+      ],
+      "challenges": [
+        "Pessimism from early failures",
+        "Disappointment in ideals",
+        "Pressure to be perfect despite mistakes"
+      ],
+      "gifts": [
+        "Wisdom from experience",
+        "Role model for resilience",
+        "Authentic optimism"
+      ],
+      "relationships": "Bonds through shared experiences, later becomes wise guide for others' experiments"
+    }
+  }
+}

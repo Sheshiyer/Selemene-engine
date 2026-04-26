@@ -1,0 +1,1490 @@
+{
+  "schema_version": "1.0",
+  "integration_plan": {
+    "name": "FreeAstrologyAPI.com Integration - Vedic Engine Migration",
+    "description": "Comprehensive plan to migrate native Vedic astrology calculations to FreeAstrologyAPI.com endpoints for Panchanga, Vimshottari, Navamsa, and related features",
+    "api_provider": {
+      "name": "FreeAstrologyAPI.com",
+      "base_url": "https://json.freeastrologyapi.com",
+      "documentation": "https://freeastrologyapi.com/api-docs",
+      "auth_type": "API Key",
+      "rate_limits": {
+        "free_tier": "1000 requests/day",
+        "paid_tier": "Higher limits available"
+      }
+    },
+    "current_native_engines": [
+      "engine-panchanga",
+      "engine-vimshottari",
+      "engine-human-design",
+      "engine-gene-keys"
+    ],
+    "engines_to_migrate": [
+      "engine-panchanga",
+      "engine-vimshottari"
+    ],
+    "engines_to_enhance": [
+      "engine-vedic-clock"
+    ],
+    "new_features_to_add": [
+      "Navamsa Chart (D9)",
+      "Divisional Charts (D1-D60)",
+      "Muhurta/Electional timings",
+      "Yoga detection",
+      "Shadbala calculations",
+      "Ashtakavarga",
+      "Planet strengths and dignities",
+      "Transit calculations",
+      "KP Astrology support"
+    ],
+    "total_tasks": 120,
+    "phases": [
+      {
+        "phase_id": "FAPI-P1",
+        "name": "Phase 1: API Client Foundation",
+        "description": "Build the HTTP client, authentication, and error handling for FreeAstrologyAPI",
+        "tasks": [
+          {
+            "id": "FAPI-001",
+            "title": "Create FreeAstrologyAPI client module",
+            "description": "Create new crate/module for FreeAstrologyAPI integration",
+            "engine": "infrastructure",
+            "action": "create",
+            "file_path": "crates/noesis-vedic-api/src/lib.rs",
+            "acceptance": "Module compiles, exports client struct",
+            "est_hours": 3,
+            "priority": "critical"
+          },
+          {
+            "id": "FAPI-002",
+            "title": "Define API configuration struct",
+            "description": "Create config for API key, base URL, timeout, retry settings",
+            "engine": "infrastructure",
+            "action": "code",
+            "file_path": "crates/noesis-vedic-api/src/config.rs",
+            "acceptance": "Config loads from env vars, validates API key",
+            "est_hours": 2,
+            "priority": "critical"
+          },
+          {
+            "id": "FAPI-003",
+            "title": "Implement HTTP client with reqwest",
+            "description": "Create async HTTP client with proper headers and timeout",
+            "engine": "infrastructure",
+            "action": "code",
+            "file_path": "crates/noesis-vedic-api/src/client.rs",
+            "acceptance": "Client makes successful HTTP requests, handles timeouts",
+            "est_hours": 4,
+            "priority": "critical"
+          },
+          {
+            "id": "FAPI-004",
+            "title": "Implement API key authentication",
+            "description": "Add API key header to all requests",
+            "engine": "infrastructure",
+            "action": "code",
+            "file_path": "crates/noesis-vedic-api/src/client.rs",
+            "acceptance": "API key included in Authorization header",
+            "est_hours": 2,
+            "priority": "critical"
+          },
+          {
+            "id": "FAPI-005",
+            "title": "Create error handling types",
+            "description": "Define ApiError enum for various failure modes",
+            "engine": "infrastructure",
+            "action": "code",
+            "file_path": "crates/noesis-vedic-api/src/error.rs",
+            "acceptance": "Errors properly categorized: Network, RateLimit, InvalidInput, ApiError",
+            "est_hours": 3,
+            "priority": "high"
+          },
+          {
+            "id": "FAPI-006",
+            "title": "Implement retry logic with exponential backoff",
+            "description": "Retry failed requests with exponential backoff for 5xx errors",
+            "engine": "infrastructure",
+            "action": "code",
+            "file_path": "crates/noesis-vedic-api/src/retry.rs",
+            "acceptance": "Retries 3 times, respects 429 rate limit headers",
+            "est_hours": 4,
+            "priority": "high"
+          },
+          {
+            "id": "FAPI-007",
+            "title": "Add request/response logging",
+            "description": "Log API calls for debugging with sensitive data redaction",
+            "engine": "infrastructure",
+            "action": "code",
+            "file_path": "crates/noesis-vedic-api/src/logging.rs",
+            "acceptance": "Logs show request URL, response time, status, API key masked",
+            "est_hours": 3,
+            "priority": "medium"
+          },
+          {
+            "id": "FAPI-008",
+            "title": "Implement circuit breaker pattern",
+            "description": "Circuit breaker for when API is down or rate limited",
+            "engine": "infrastructure",
+            "action": "code",
+            "file_path": "crates/noesis-vedic-api/src/circuit_breaker.rs",
+            "acceptance": "Opens after 5 failures, closes after recovery period",
+            "est_hours": 4,
+            "priority": "medium"
+          },
+          {
+            "id": "FAPI-009",
+            "title": "Create response cache layer",
+            "description": "Cache API responses to reduce calls and improve speed",
+            "engine": "infrastructure",
+            "action": "code",
+            "file_path": "crates/noesis-vedic-api/src/cache.rs",
+            "acceptance": "TTL-based caching, cache key from request params",
+            "est_hours": 4,
+            "priority": "high"
+          },
+          {
+            "id": "FAPI-010",
+            "title": "Write client unit tests",
+            "description": "Test client with mock server",
+            "engine": "infrastructure",
+            "action": "test",
+            "file_path": "crates/noesis-vedic-api/tests/client_tests.rs",
+            "acceptance": "90%+ coverage, mock server tests pass",
+            "est_hours": 4,
+            "priority": "high"
+          }
+        ]
+      },
+      {
+        "phase_id": "FAPI-P2",
+        "name": "Phase 2: Panchang API Integration",
+        "description": "Integrate Panchang endpoints for Tithi, Nakshatra, Yoga, Karana, and Muhurtas",
+        "tasks": [
+          {
+            "id": "FAPI-011",
+            "title": "Define Panchang request/response types",
+            "description": "Create structs for Panchang API request and response",
+            "engine": "panchanga",
+            "action": "code",
+            "file_path": "crates/noesis-vedic-api/src/panchang/types.rs",
+            "acceptance": "Types match API response schema exactly",
+            "est_hours": 3,
+            "priority": "critical"
+          },
+          {
+            "id": "FAPI-012",
+            "title": "Implement GET /panchang endpoint call",
+            "description": "Call Panchang API with date, time, lat, lng, timezone",
+            "engine": "panchanga",
+            "action": "code",
+            "file_path": "crates/noesis-vedic-api/src/panchang/api.rs",
+            "acceptance": "Returns Tithi, Nakshatra, Yoga, Karana, Vara",
+            "est_hours": 3,
+            "priority": "critical"
+          },
+          {
+            "id": "FAPI-013",
+            "title": "Map API Tithi response to internal model",
+            "description": "Convert API tithi data to engine-panchanga Tithi struct",
+            "engine": "panchanga",
+            "action": "code",
+            "file_path": "crates/noesis-vedic-api/src/panchang/mappers.rs",
+            "acceptance": "All 30 tithis mapped correctly with paksha",
+            "est_hours": 2,
+            "priority": "critical"
+          },
+          {
+            "id": "FAPI-014",
+            "title": "Map API Nakshatra response to internal model",
+            "description": "Convert API nakshatra data with pada information",
+            "engine": "panchanga",
+            "action": "code",
+            "file_path": "crates/noesis-vedic-api/src/panchang/mappers.rs",
+            "acceptance": "All 27 nakshatras mapped with lords and padas",
+            "est_hours": 2,
+            "priority": "critical"
+          },
+          {
+            "id": "FAPI-015",
+            "title": "Map API Yoga response to internal model",
+            "description": "Convert API yoga data",
+            "engine": "panchanga",
+            "action": "code",
+            "file_path": "crates/noesis-vedic-api/src/panchang/mappers.rs",
+            "acceptance": "All 27 yogas mapped",
+            "est_hours": 2,
+            "priority": "high"
+          },
+          {
+            "id": "FAPI-016",
+            "title": "Map API Karana response to internal model",
+            "description": "Convert API karana data",
+            "engine": "panchanga",
+            "action": "code",
+            "file_path": "crates/noesis-vedic-api/src/panchang/mappers.rs",
+            "acceptance": "All 11 karanas mapped correctly",
+            "est_hours": 2,
+            "priority": "high"
+          },
+          {
+            "id": "FAPI-017",
+            "title": "Implement GET /sunrise-sunset endpoint",
+            "description": "Get sunrise and sunset times for location",
+            "engine": "panchanga",
+            "action": "code",
+            "file_path": "crates/noesis-vedic-api/src/panchang/api.rs",
+            "acceptance": "Returns accurate sunrise/sunset for Bengaluru test date",
+            "est_hours": 2,
+            "priority": "medium"
+          },
+          {
+            "id": "FAPI-018",
+            "title": "Implement GET /abhijit-muhurta endpoint",
+            "description": "Get Abhijit Muhurta (victorious midday) timing",
+            "engine": "panchanga",
+            "action": "code",
+            "file_path": "crates/noesis-vedic-api/src/panchang/muhurta.rs",
+            "acceptance": "Returns start/end times for Abhijit Muhurta",
+            "est_hours": 2,
+            "priority": "medium"
+          },
+          {
+            "id": "FAPI-019",
+            "title": "Implement GET /amrit-kaal endpoint",
+            "description": "Get Amrit Kaal (nectar time) for auspicious beginnings",
+            "engine": "panchanga",
+            "action": "code",
+            "file_path": "crates/noesis-vedic-api/src/panchang/muhurta.rs",
+            "acceptance": "Returns Amrit Kaal timings",
+            "est_hours": 2,
+            "priority": "medium"
+          },
+          {
+            "id": "FAPI-020",
+            "title": "Implement GET /rahu-kalam endpoint",
+            "description": "Get Rahu Kalam (inauspicious period) timing",
+            "engine": "panchanga",
+            "action": "code",
+            "file_path": "crates/noesis-vedic-api/src/panchang/muhurta.rs",
+            "acceptance": "Returns Rahu Kalam for day of week",
+            "est_hours": 2,
+            "priority": "medium"
+          },
+          {
+            "id": "FAPI-021",
+            "title": "Implement GET /yama-gandam endpoint",
+            "description": "Get Yama Gandam (death time) to avoid",
+            "engine": "panchanga",
+            "action": "code",
+            "file_path": "crates/noesis-vedic-api/src/panchang/muhurta.rs",
+            "acceptance": "Returns Yama Gandam timings",
+            "est_hours": 2,
+            "priority": "medium"
+          },
+          {
+            "id": "FAPI-022",
+            "title": "Implement GET /gulika-kaal endpoint",
+            "description": "Get Gulika Kaal (son of Saturn) timing",
+            "engine": "panchanga",
+            "action": "code",
+            "file_path": "crates/noesis-vedic-api/src/panchang/muhurta.rs",
+            "acceptance": "Returns Gulika rising time",
+            "est_hours": 2,
+            "priority": "medium"
+          },
+          {
+            "id": "FAPI-023",
+            "title": "Implement GET /hora-timings endpoint",
+            "description": "Get planetary hour (Hora) timings for the day",
+            "engine": "panchanga",
+            "action": "code",
+            "file_path": "crates/noesis-vedic-api/src/panchang/hora.rs",
+            "acceptance": "Returns all 24 horas with planetary lords",
+            "est_hours": 3,
+            "priority": "high"
+          },
+          {
+            "id": "FAPI-024",
+            "title": "Implement GET /choghadiya endpoint",
+            "description": "Get Choghadiya Muhurtas (auspicious/inauspicious periods)",
+            "engine": "panchanga",
+            "action": "code",
+            "file_path": "crates/noesis-vedic-api/src/panchang/choghadiya.rs",
+            "acceptance": "Returns day and night choghadiya with nature",
+            "est_hours": 3,
+            "priority": "medium"
+          },
+          {
+            "id": "FAPI-025",
+            "title": "Implement GET /varjyam endpoint",
+            "description": "Get Varjyam (avoidable period) timings",
+            "engine": "panchanga",
+            "action": "code",
+            "file_path": "crates/noesis-vedic-api/src/panchang/muhurta.rs",
+            "acceptance": "Returns Varjyam start/end times",
+            "est_hours": 2,
+            "priority": "low"
+          },
+          {
+            "id": "FAPI-026",
+            "title": "Implement GET /dur-muhurta endpoint",
+            "description": "Get Dur Muhurta (bad times) to avoid",
+            "engine": "panchanga",
+            "action": "code",
+            "file_path": "crates/noesis-vedic-api/src/panchang/muhurta.rs",
+            "acceptance": "Returns Dur Muhurta timings",
+            "est_hours": 2,
+            "priority": "low"
+          },
+          {
+            "id": "FAPI-027",
+            "title": "Implement GET /brahma-muhurta endpoint",
+            "description": "Get Brahma Muhurta (creator's time) for meditation",
+            "engine": "panchanga",
+            "action": "code",
+            "file_path": "crates/noesis-vedic-api/src/panchang/muhurta.rs",
+            "acceptance": "Returns Brahma Muhurta time window",
+            "est_hours": 2,
+            "priority": "medium"
+          },
+          {
+            "id": "FAPI-028",
+            "title": "Create comprehensive Panchang DTO",
+            "description": "Single DTO combining all Panchang elements",
+            "engine": "panchanga",
+            "action": "code",
+            "file_path": "crates/noesis-vedic-api/src/panchang/dto.rs",
+            "acceptance": "Complete Panchang data structure with all fields",
+            "est_hours": 3,
+            "priority": "high"
+          },
+          {
+            "id": "FAPI-029",
+            "title": "Write Panchang API integration tests",
+            "description": "Test all Panchang endpoints with real API",
+            "engine": "panchanga",
+            "action": "test",
+            "file_path": "crates/noesis-vedic-api/tests/panchang_tests.rs",
+            "acceptance": "Tests pass with real API, validate against known data",
+            "est_hours": 5,
+            "priority": "critical"
+          },
+          {
+            "id": "FAPI-030",
+            "title": "Update engine-panchanga to use API",
+            "description": "Refactor engine-panchanga to call FreeAstrologyAPI",
+            "engine": "panchanga",
+            "action": "refactor",
+            "file_path": "crates/engine-panchanga/src/lib.rs",
+            "acceptance": "All existing tests pass, uses API for calculations",
+            "est_hours": 5,
+            "priority": "critical"
+          }
+        ]
+      },
+      {
+        "phase_id": "FAPI-P3",
+        "name": "Phase 3: Vimshottari Dasha API Integration",
+        "description": "Integrate Vimshottari Dasha endpoints for all levels of planetary periods",
+        "tasks": [
+          {
+            "id": "FAPI-031",
+            "title": "Define Vimshottari request/response types",
+            "description": "Create structs for Dasha API request and response",
+            "engine": "vimshottari",
+            "action": "code",
+            "file_path": "crates/noesis-vedic-api/src/vimshottari/types.rs",
+            "acceptance": "Types match API response for all Dasha levels",
+            "est_hours": 3,
+            "priority": "critical"
+          },
+          {
+            "id": "FAPI-032",
+            "title": "Implement POST /vimshottari-dasha endpoint",
+            "description": "Call Vimshottari Dasha API with birth details",
+            "engine": "vimshottari",
+            "action": "code",
+            "file_path": "crates/noesis-vedic-api/src/vimshottari/api.rs",
+            "acceptance": "Returns complete 120-year Dasha sequence",
+            "est_hours": 3,
+            "priority": "critical"
+          },
+          {
+            "id": "FAPI-033",
+            "title": "Support Maha Dasha only level",
+            "description": "Fetch only Maha Dasha (main periods)",
+            "engine": "vimshottari",
+            "action": "code",
+            "file_path": "crates/noesis-vedic-api/src/vimshottari/api.rs",
+            "acceptance": "dasha_type=maha-dasha returns 9 periods",
+            "est_hours": 2,
+            "priority": "high"
+          },
+          {
+            "id": "FAPI-034",
+            "title": "Support Antar Dasha level",
+            "description": "Fetch Antar Dasha (sub-periods) within each Maha Dasha",
+            "engine": "vimshottari",
+            "action": "code",
+            "file_path": "crates/noesis-vedic-api/src/vimshottari/api.rs",
+            "acceptance": "dasha_type=antar-dasha returns 9x9=81 periods",
+            "est_hours": 2,
+            "priority": "high"
+          },
+          {
+            "id": "FAPI-035",
+            "title": "Support Pratyantar Dasha level",
+            "description": "Fetch Pratyantar Dasha (sub-sub-periods)",
+            "engine": "vimshottari",
+            "action": "code",
+            "file_path": "crates/noesis-vedic-api/src/vimshottari/api.rs",
+            "acceptance": "dasha_type=pratyantar-dasha returns nested structure",
+            "est_hours": 2,
+            "priority": "high"
+          },
+          {
+            "id": "FAPI-036",
+            "title": "Support Sookshma Dasha level",
+            "description": "Fetch Sookshma Dasha (finest level periods)",
+            "engine": "vimshottari",
+            "action": "code",
+            "file_path": "crates/noesis-vedic-api/src/vimshottari/api.rs",
+            "acceptance": "dasha_type=sookshma-dasha returns 4-level nested structure",
+            "est_hours": 3,
+            "priority": "medium"
+          },
+          {
+            "id": "FAPI-037",
+            "title": "Map API Mahadasha to internal model",
+            "description": "Convert API Maha Dasha data to internal struct",
+            "engine": "vimshottari",
+            "action": "code",
+            "file_path": "crates/noesis-vedic-api/src/vimshottari/mappers.rs",
+            "acceptance": "All 9 planets mapped with correct dates",
+            "est_hours": 3,
+            "priority": "critical"
+          },
+          {
+            "id": "FAPI-038",
+            "title": "Map API Antar Dasha to internal model",
+            "description": "Convert API Antar Dasha nested structure",
+            "engine": "vimshottari",
+            "action": "code",
+            "file_path": "crates/noesis-vedic-api/src/vimshottari/mappers.rs",
+            "acceptance": "Nested structure flattened and accessible",
+            "est_hours": 3,
+            "priority": "high"
+          },
+          {
+            "id": "FAPI-039",
+            "title": "Implement current Dasha calculation",
+            "description": "Find current Maha, Antar, Pratyantar Dasha for given date",
+            "engine": "vimshottari",
+            "action": "code",
+            "file_path": "crates/noesis-vedic-api/src/vimshottari/current.rs",
+            "acceptance": "Returns correct current Dasha for test date 2026-02-03",
+            "est_hours": 4,
+            "priority": "critical"
+          },
+          {
+            "id": "FAPI-040",
+            "title": "Implement upcoming transitions",
+            "description": "Find next N Dasha transitions",
+            "engine": "vimshottari",
+            "action": "code",
+            "file_path": "crates/noesis-vedic-api/src/vimshottari/transitions.rs",
+            "acceptance": "Returns upcoming transitions with dates",
+            "est_hours": 3,
+            "priority": "medium"
+          },
+          {
+            "id": "FAPI-041",
+            "title": "Get Dasha lord by date",
+            "description": "Find which planet rules a specific date",
+            "engine": "vimshottari",
+            "action": "code",
+            "file_path": "crates/noesis-vedic-api/src/vimshottari/query.rs",
+            "acceptance": "Returns correct Dasha lord for any input date",
+            "est_hours": 2,
+            "priority": "medium"
+          },
+          {
+            "id": "FAPI-042",
+            "title": "Validate against birth data test",
+            "description": "Test with Shesh's birth data: Nakshatra Uttara Phalguni, should start with Sun Maha Dasha",
+            "engine": "vimshottari",
+            "action": "test",
+            "file_path": "crates/noesis-vedic-api/tests/vimshottari_validation.rs",
+            "acceptance": "Sun Dasha starts 1991-09-14, Mars Dasha 2008-09-13",
+            "est_hours": 3,
+            "priority": "critical"
+          },
+          {
+            "id": "FAPI-043",
+            "title": "Add Dasha quality/themes from wisdom",
+            "description": "Enrich Dasha with planet qualities from wisdom docs",
+            "engine": "vimshottari",
+            "action": "code",
+            "file_path": "crates/noesis-vedic-api/src/vimshottari/enrichment.rs",
+            "acceptance": "Each Dasha period includes planet themes and keywords",
+            "est_hours": 3,
+            "priority": "medium"
+          },
+          {
+            "id": "FAPI-044",
+            "title": "Update engine-vimshottari to use API",
+            "description": "Refactor engine-vimshottari to call FreeAstrologyAPI",
+            "engine": "vimshottari",
+            "action": "refactor",
+            "file_path": "crates/engine-vimshottari/src/lib.rs",
+            "acceptance": "All existing tests pass, uses API for Dasha calculations",
+            "est_hours": 5,
+            "priority": "critical"
+          }
+        ]
+      },
+      {
+        "phase_id": "FAPI-P4",
+        "name": "Phase 4: Birth Chart (Kundli) API Integration",
+        "description": "Integrate birth chart endpoints for planet positions, houses, and dignities",
+        "tasks": [
+          {
+            "id": "FAPI-045",
+            "title": "Define Birth Chart request/response types",
+            "description": "Create structs for Horoscope Chart API",
+            "engine": "birth-chart",
+            "action": "code",
+            "file_path": "crates/noesis-vedic-api/src/birth_chart/types.rs",
+            "acceptance": "Types include planets, houses, aspects, dignities",
+            "est_hours": 4,
+            "priority": "critical"
+          },
+          {
+            "id": "FAPI-046",
+            "title": "Implement GET /horoscope-chart endpoint",
+            "description": "Call Horoscope Chart API for Rashi chart (D1)",
+            "engine": "birth-chart",
+            "action": "code",
+            "file_path": "crates/noesis-vedic-api/src/birth_chart/api.rs",
+            "acceptance": "Returns complete birth chart with all planets and houses",
+            "est_hours": 3,
+            "priority": "critical"
+          },
+          {
+            "id": "FAPI-047",
+            "title": "Map planet positions to internal model",
+            "description": "Convert API planet data: sign, degree, nakshatra, pada",
+            "engine": "birth-chart",
+            "action": "code",
+            "file_path": "crates/noesis-vedic-api/src/birth_chart/mappers.rs",
+            "acceptance": "All 9 planets mapped with accurate positions",
+            "est_hours": 3,
+            "priority": "critical"
+          },
+          {
+            "id": "FAPI-048",
+            "title": "Map house cusps to internal model",
+            "description": "Convert API house data with sign and degree",
+            "engine": "birth-chart",
+            "action": "code",
+            "file_path": "crates/noesis-vedic-api/src/birth_chart/mappers.rs",
+            "acceptance": "All 12 houses mapped with Ascendant",
+            "est_hours": 3,
+            "priority": "high"
+          },
+          {
+            "id": "FAPI-049",
+            "title": "Extract dignity information",
+            "description": "Map exalted, debilitated, moolatrikona, own sign status",
+            "engine": "birth-chart",
+            "action": "code",
+            "file_path": "crates/noesis-vedic-api/src/birth_chart/dignities.rs",
+            "acceptance": "Each planet has dignity enum value",
+            "est_hours": 3,
+            "priority": "high"
+          },
+          {
+            "id": "FAPI-050",
+            "title": "Extract retrograde and combustion info",
+            "description": "Map retrograde, combust status for each planet",
+            "engine": "birth-chart",
+            "action": "code",
+            "file_path": "crates/noesis-vedic-api/src/birth_chart/status.rs",
+            "acceptance": "Correctly identifies retrograde and combust planets",
+            "est_hours": 2,
+            "priority": "medium"
+          },
+          {
+            "id": "FAPI-051",
+            "title": "Calculate aspects between planets",
+            "description": "Derive aspect relationships from positions",
+            "engine": "birth-chart",
+            "action": "code",
+            "file_path": "crates/noesis-vedic-api/src/birth_chart/aspects.rs",
+            "acceptance": "Returns all planetary aspects with nature",
+            "est_hours": 4,
+            "priority": "medium"
+          },
+          {
+            "id": "FAPI-052",
+            "title": "Validate against test birth data",
+            "description": "Test with Shesh's birth data: Ascendant Scorpio, Moon Virgo",
+            "engine": "birth-chart",
+            "action": "test",
+            "file_path": "crates/noesis-vedic-api/tests/birth_chart_validation.rs",
+            "acceptance": "Ascendant matches Scorpio, Moon in Virgo/Uttara Phalguni",
+            "est_hours": 4,
+            "priority": "critical"
+          }
+        ]
+      },
+      {
+        "phase_id": "FAPI-P5",
+        "name": "Phase 5: Navamsa and Divisional Charts (Vargas)",
+        "description": "Integrate Navamsa (D9) and other divisional chart endpoints",
+        "tasks": [
+          {
+            "id": "FAPI-053",
+            "title": "Define Navamsa chart types",
+            "description": "Create types for Navamsa (D9) chart data",
+            "engine": "navamsa",
+            "action": "code",
+            "file_path": "crates/noesis-vedic-api/src/vargas/navamsa_types.rs",
+            "acceptance": "Types for D9 chart with planetary positions",
+            "est_hours": 3,
+            "priority": "critical"
+          },
+          {
+            "id": "FAPI-054",
+            "title": "Implement GET /navamsa-chart endpoint",
+            "description": "Call Navamsa Chart API",
+            "engine": "navamsa",
+            "action": "code",
+            "file_path": "crates/noesis-vedic-api/src/vargas/navamsa.rs",
+            "acceptance": "Returns D9 chart with all planets",
+            "est_hours": 3,
+            "priority": "critical"
+          },
+          {
+            "id": "FAPI-055",
+            "title": "Map Navamsa positions to internal model",
+            "description": "Convert D9 positions for marriage/spirituality analysis",
+            "engine": "navamsa",
+            "action": "code",
+            "file_path": "crates/noesis-vedic-api/src/vargas/navamsa_mappers.rs",
+            "acceptance": "All planets mapped to their Navamsa positions",
+            "est_hours": 3,
+            "priority": "high"
+          },
+          {
+            "id": "FAPI-056",
+            "title": "Define general Varga (divisional chart) types",
+            "description": "Create types for D1-D60 charts",
+            "engine": "vargas",
+            "action": "code",
+            "file_path": "crates/noesis-vedic-api/src/vargas/types.rs",
+            "acceptance": "Types support D1, D2, D3, D7, D9, D10, D12, D16, D20, D24, D27, D30, D40, D45, D60",
+            "est_hours": 4,
+            "priority": "medium"
+          },
+          {
+            "id": "FAPI-057",
+            "title": "Implement GET /horoscope-chart with vargas parameter",
+            "description": "Fetch specific divisional charts via parameter",
+            "engine": "vargas",
+            "action": "code",
+            "file_path": "crates/noesis-vedic-api/src/vargas/api.rs",
+            "acceptance": "Can request D1, D9, D10, etc. individually",
+            "est_hours": 3,
+            "priority": "medium"
+          },
+          {
+            "id": "FAPI-058",
+            "title": "Implement D10 (Dasamsa) for career analysis",
+            "description": "Get Dasamsa chart for profession analysis",
+            "engine": "vargas",
+            "action": "code",
+            "file_path": "crates/noesis-vedic-api/src/vargas/dasamsa.rs",
+            "acceptance": "Returns D10 chart with career indicators",
+            "est_hours": 3,
+            "priority": "medium"
+          },
+          {
+            "id": "FAPI-059",
+            "title": "Implement D12 (Dwadasamsa) for parents",
+            "description": "Get Dwadasamsa chart for parent lineage analysis",
+            "engine": "vargas",
+            "action": "code",
+            "file_path": "crates/noesis-vedic-api/src/vargas/dwadasamsa.rs",
+            "acceptance": "Returns D12 chart",
+            "est_hours": 2,
+            "priority": "low"
+          },
+          {
+            "id": "FAPI-060",
+            "title": "Implement D7 (Saptamsa) for children",
+            "description": "Get Saptamsa chart for progeny analysis",
+            "engine": "vargas",
+            "action": "code",
+            "file_path": "crates/noesis-vedic-api/src/vargas/saptamsa.rs",
+            "acceptance": "Returns D7 chart",
+            "est_hours": 2,
+            "priority": "low"
+          },
+          {
+            "id": "FAPI-061",
+            "title": "Create Varga strength calculator",
+            "description": "Calculate Varga Vimshopaka Bala (divisional chart strength)",
+            "engine": "vargas",
+            "action": "code",
+            "file_path": "crates/noesis-vedic-api/src/vargas/strength.rs",
+            "acceptance": "Returns strength score for each planet across vargas",
+            "est_hours": 4,
+            "priority": "medium"
+          },
+          {
+            "id": "FAPI-062",
+            "title": "Write Navamsa validation tests",
+            "description": "Test Navamsa calculations against known data",
+            "engine": "navamsa",
+            "action": "test",
+            "file_path": "crates/noesis-vedic-api/tests/navamsa_tests.rs",
+            "acceptance": "Navamsa positions accurate within tolerance",
+            "est_hours": 3,
+            "priority": "high"
+          }
+        ]
+      },
+      {
+        "phase_id": "FAPI-P6",
+        "name": "Phase 6: Advanced Features - Yogas, Shadbala, Ashtakavarga",
+        "description": "Integrate advanced Vedic astrology features for deeper analysis",
+        "tasks": [
+          {
+            "id": "FAPI-063",
+            "title": "Define Yoga detection types",
+            "description": "Create types for planetary yoga combinations",
+            "engine": "yogas",
+            "action": "code",
+            "file_path": "crates/noesis-vedic-api/src/yogas/types.rs",
+            "acceptance": "Types for Raj Yogas, Dhana Yogas, etc.",
+            "est_hours": 3,
+            "priority": "medium"
+          },
+          {
+            "id": "FAPI-064",
+            "title": "Implement GET /yogas endpoint",
+            "description": "Fetch planetary yoga combinations present in chart",
+            "engine": "yogas",
+            "action": "code",
+            "file_path": "crates/noesis-vedic-api/src/yogas/api.rs",
+            "acceptance": "Returns list of yogas with strength",
+            "est_hours": 4,
+            "priority": "medium"
+          },
+          {
+            "id": "FAPI-065",
+            "title": "Map common Raj Yogas",
+            "description": "Identify and map auspicious combinations",
+            "engine": "yogas",
+            "action": "code",
+            "file_path": "crates/noesis-vedic-api/src/yogas/raj_yogas.rs",
+            "acceptance": "Detects Gajakesari, Budha-Aditya, etc.",
+            "est_hours": 4,
+            "priority": "medium"
+          },
+          {
+            "id": "FAPI-066",
+            "title": "Map wealth-related Dhana Yogas",
+            "description": "Identify wealth yoga combinations",
+            "engine": "yogas",
+            "action": "code",
+            "file_path": "crates/noesis-vedic-api/src/yogas/dhana_yogas.rs",
+            "acceptance": "Detects wealth indicators from 2nd, 11th houses",
+            "est_hours": 3,
+            "priority": "low"
+          },
+          {
+            "id": "FAPI-067",
+            "title": "Define Shadbala types",
+            "description": "Create types for 6-fold planetary strength",
+            "engine": "shadbala",
+            "action": "code",
+            "file_path": "crates/noesis-vedic-api/src/shadbala/types.rs",
+            "acceptance": "Types for Sthana Bala, Dig Bala, Kala Bala, etc.",
+            "est_hours": 3,
+            "priority": "medium"
+          },
+          {
+            "id": "FAPI-068",
+            "title": "Implement GET /shadbala endpoint",
+            "description": "Fetch Shadbala calculations for all planets",
+            "engine": "shadbala",
+            "action": "code",
+            "file_path": "crates/noesis-vedic-api/src/shadbala/api.rs",
+            "acceptance": "Returns 6-fold strength for each planet",
+            "est_hours": 4,
+            "priority": "medium"
+          },
+          {
+            "id": "FAPI-069",
+            "title": "Calculate total Shadbala and Rupas",
+            "description": "Sum up all 6 balas for each planet",
+            "engine": "shadbala",
+            "action": "code",
+            "file_path": "crates/noesis-vedic-api/src/shadbala/calculator.rs",
+            "acceptance": "Planet with highest Shadbala identified as strongest",
+            "est_hours": 3,
+            "priority": "medium"
+          },
+          {
+            "id": "FAPI-070",
+            "title": "Define Ashtakavarga types",
+            "description": "Create types for Ashtakavarga (8-fold bindu) system",
+            "engine": "ashtakavarga",
+            "action": "code",
+            "file_path": "crates/noesis-vedic-api/src/ashtakavarga/types.rs",
+            "acceptance": "Types for Sarva Ashtakavarga and planet-specific",
+            "est_hours": 3,
+            "priority": "low"
+          },
+          {
+            "id": "FAPI-071",
+            "title": "Implement GET /ashtakavarga endpoint",
+            "description": "Fetch Ashtakavarga bindu points",
+            "engine": "ashtakavarga",
+            "action": "code",
+            "file_path": "crates/noesis-vedic-api/src/ashtakavarga/api.rs",
+            "acceptance": "Returns bindus for each planet in each house",
+            "est_hours": 4,
+            "priority": "low"
+          },
+          {
+            "id": "FAPI-072",
+            "title": "Calculate Sarva Ashtakavarga totals",
+            "description": "Sum bindus for total house strength",
+            "engine": "ashtakavarga",
+            "action": "code",
+            "file_path": "crates/noesis-vedic-api/src/ashtakavarga/totals.rs",
+            "acceptance": "House with 30+ bindus identified as strong",
+            "est_hours": 3,
+            "priority": "low"
+          }
+        ]
+      },
+      {
+        "phase_id": "FAPI-P7",
+        "name": "Phase 7: Transit and Predictive Features",
+        "description": "Add transit calculations and predictive astrology features",
+        "tasks": [
+          {
+            "id": "FAPI-073",
+            "title": "Define transit calculation types",
+            "description": "Create types for planetary transits",
+            "engine": "transits",
+            "action": "code",
+            "file_path": "crates/noesis-vedic-api/src/transits/types.rs",
+            "acceptance": "Types for transit positions and aspects to natal",
+            "est_hours": 3,
+            "priority": "medium"
+          },
+          {
+            "id": "FAPI-074",
+            "title": "Implement GET /transits endpoint",
+            "description": "Fetch current or specific date transit positions",
+            "engine": "transits",
+            "action": "code",
+            "file_path": "crates/noesis-vedic-api/src/transits/api.rs",
+            "acceptance": "Returns all planet positions for transit date",
+            "est_hours": 3,
+            "priority": "medium"
+          },
+          {
+            "id": "FAPI-075",
+            "title": "Calculate transit aspects to natal chart",
+            "description": "Find transiting planets aspecting natal positions",
+            "engine": "transits",
+            "action": "code",
+            "file_path": "crates/noesis-vedic-api/src/transits/aspects.rs",
+            "acceptance": "Returns active transits with aspect nature",
+            "est_hours": 4,
+            "priority": "medium"
+          },
+          {
+            "id": "FAPI-076",
+            "title": "Identify Saturn transit (Sade Sati)",
+            "description": "Detect if Saturn is in Sade Sati period",
+            "engine": "transits",
+            "action": "code",
+            "file_path": "crates/noesis-vedic-api/src/transits/sade_sati.rs",
+            "acceptance": "Returns Sade Sati status: Rising/Peak/Setting/None",
+            "est_hours": 3,
+            "priority": "medium"
+          },
+          {
+            "id": "FAPI-077",
+            "title": "Identify Jupiter transit blessings",
+            "description": "Find when Jupiter transits over natal planets",
+            "engine": "transits",
+            "action": "code",
+            "file_path": "crates/noesis-vedic-api/src/transits/jupiter.rs",
+            "acceptance": "Returns Guru Peyarchi (Jupiter transit) effects",
+            "est_hours": 3,
+            "priority": "medium"
+          },
+          {
+            "id": "FAPI-078",
+            "title": "Calculate upcoming transit dates",
+            "description": "Find when planets will change signs or aspect",
+            "engine": "transits",
+            "action": "code",
+            "file_path": "crates/noesis-vedic-api/src/transits/predictions.rs",
+            "acceptance": "Returns upcoming significant transit dates",
+            "est_hours": 4,
+            "priority": "medium"
+          },
+          {
+            "id": "FAPI-079",
+            "title": "Define progression types",
+            "description": "Create types for secondary progressions",
+            "engine": "progressions",
+            "action": "code",
+            "file_path": "crates/noesis-vedic-api/src/progressions/types.rs",
+            "acceptance": "Types for progressed chart",
+            "est_hours": 2,
+            "priority": "low"
+          },
+          {
+            "id": "FAPI-080",
+            "title": "Implement progressed chart calculation",
+            "description": "Calculate secondary progressions (day for a year)",
+            "engine": "progressions",
+            "action": "code",
+            "file_path": "crates/noesis-vedic-api/src/progressions/api.rs",
+            "acceptance": "Returns progressed positions for age",
+            "est_hours": 3,
+            "priority": "low"
+          }
+        ]
+      },
+      {
+        "phase_id": "FAPI-P8",
+        "name": "Phase 8: Muhurta (Electional Astrology)",
+        "description": "Integrate Muhurta endpoints for finding auspicious timings",
+        "tasks": [
+          {
+            "id": "FAPI-081",
+            "title": "Define Muhurta calculation types",
+            "description": "Create types for electional astrology",
+            "engine": "muhurta",
+            "action": "code",
+            "file_path": "crates/noesis-vedic-api/src/muhurta/types.rs",
+            "acceptance": "Types for auspicious/inauspicious time windows",
+            "est_hours": 3,
+            "priority": "medium"
+          },
+          {
+            "id": "FAPI-082",
+            "title": "Implement GET /muhurta endpoint",
+            "description": "Find Muhurta for specific activity on given date",
+            "engine": "muhurta",
+            "action": "code",
+            "file_path": "crates/noesis-vedic-api/src/muhurta/api.rs",
+            "acceptance": "Returns optimal time windows for activity",
+            "est_hours": 4,
+            "priority": "medium"
+          },
+          {
+            "id": "FAPI-083",
+            "title": "Calculate marriage Muhurta",
+            "description": "Find auspicious times for wedding",
+            "engine": "muhurta",
+            "action": "code",
+            "file_path": "crates/noesis-vedic-api/src/muhurta/marriage.rs",
+            "acceptance": "Considers Nakshatra, Tithi, avoid Mars hora",
+            "est_hours": 4,
+            "priority": "medium"
+          },
+          {
+            "id": "FAPI-084",
+            "title": "Calculate business Muhurta",
+            "description": "Find auspicious times for starting business",
+            "engine": "muhurta",
+            "action": "code",
+            "file_path": "crates/noesis-vedic-api/src/muhurta/business.rs",
+            "acceptance": "Considers 3rd, 10th house, strong Mercury/Jupiter",
+            "est_hours": 3,
+            "priority": "low"
+          },
+          {
+            "id": "FAPI-085",
+            "title": "Calculate travel Muhurta",
+            "description": "Find auspicious times for journey",
+            "engine": "muhurta",
+            "action": "code",
+            "file_path": "crates/noesis-vedic-api/src/muhurta/travel.rs",
+            "acceptance": "Avoids inauspicious yogas for travel",
+            "est_hours": 3,
+            "priority": "low"
+          },
+          {
+            "id": "FAPI-086",
+            "title": "Calculate general activity Muhurta",
+            "description": "Find good times for general activities",
+            "engine": "muhurta",
+            "action": "code",
+            "file_path": "crates/noesis-vedic-api/src/muhurta/general.rs",
+            "acceptance": "Considers Abhijit Muhurta, avoids Rahu Kalam",
+            "est_hours": 3,
+            "priority": "medium"
+          }
+        ]
+      },
+      {
+        "phase_id": "FAPI-P9",
+        "name": "Phase 9: Vedic Clock Enhancement",
+        "description": "Enhance Vedic Clock with API-derived data for better accuracy",
+        "tasks": [
+          {
+            "id": "FAPI-087",
+            "title": "Enhance TCM organ clock with API data",
+            "description": "Use API sunrise/sunset for accurate organ transitions",
+            "engine": "vedic-clock",
+            "action": "enhance",
+            "file_path": "crates/engine-vedic-clock/src/organ_clock.rs",
+            "acceptance": "Organ times based on actual sunrise not just 6AM",
+            "est_hours": 4,
+            "priority": "high"
+          },
+          {
+            "id": "FAPI-088",
+            "title": "Add Hora-based recommendations to Vedic Clock",
+            "description": "Use planetary hour for activity suggestions",
+            "engine": "vedic-clock",
+            "action": "enhance",
+            "file_path": "crates/engine-vedic-clock/src/hora_integration.rs",
+            "acceptance": "Current Hora lord influences recommendations",
+            "est_hours": 4,
+            "priority": "medium"
+          },
+          {
+            "id": "FAPI-089",
+            "title": "Integrate Choghadiya into Vedic Clock",
+            "description": "Add Choghadiya Muhurta quality to time recommendations",
+            "engine": "vedic-clock",
+            "action": "enhance",
+            "file_path": "crates/engine-vedic-clock/src/choghadiya_integration.rs",
+            "acceptance": "Time recommendations consider Choghadiya nature",
+            "est_hours": 3,
+            "priority": "medium"
+          },
+          {
+            "id": "FAPI-090",
+            "title": "Add Panchang quality to Vedic Clock",
+            "description": "Integrate Tithi, Nakshatra quality into daily rhythm",
+            "engine": "vedic-clock",
+            "action": "enhance",
+            "file_path": "crates/engine-vedic-clock/src/panchang_integration.rs",
+            "acceptance": "Daily overview includes Tithi and Nakshatra",
+            "est_hours": 3,
+            "priority": "medium"
+          },
+          {
+            "id": "FAPI-091",
+            "title": "Update engine-vedic-clock API integration",
+            "description": "Refactor to use noesis-vedic-api crate",
+            "engine": "vedic-clock",
+            "action": "refactor",
+            "file_path": "crates/engine-vedic-clock/src/lib.rs",
+            "acceptance": "All tests pass, uses API for astronomical data",
+            "est_hours": 4,
+            "priority": "high"
+          }
+        ]
+      },
+      {
+        "phase_id": "FAPI-P10",
+        "name": "Phase 10: Integration and Testing",
+        "description": "Complete integration, testing, and validation against reference data",
+        "tasks": [
+          {
+            "id": "FAPI-092",
+            "title": "Create unified Vedic API service",
+            "description": "Combine all API modules into unified service",
+            "engine": "infrastructure",
+            "action": "code",
+            "file_path": "crates/noesis-vedic-api/src/service.rs",
+            "acceptance": "Single service provides all Vedic astrology features",
+            "est_hours": 4,
+            "priority": "critical"
+          },
+          {
+            "id": "FAPI-093",
+            "title": "Add API response mocking for tests",
+            "description": "Create mock responses for unit testing without API calls",
+            "engine": "infrastructure",
+            "action": "code",
+            "file_path": "crates/noesis-vedic-api/src/test_mocks.rs",
+            "acceptance": "Tests can run without internet/API key",
+            "est_hours": 4,
+            "priority": "high"
+          },
+          {
+            "id": "FAPI-094",
+            "title": "Write comprehensive integration tests",
+            "description": "Test all endpoints with real API",
+            "engine": "infrastructure",
+            "action": "test",
+            "file_path": "crates/noesis-vedic-api/tests/integration_tests.rs",
+            "acceptance": "All major endpoints tested, >80% coverage",
+            "est_hours": 6,
+            "priority": "critical"
+          },
+          {
+            "id": "FAPI-095",
+            "title": "Validate Panchang against JHora",
+            "description": "Compare API results with JHora software for accuracy",
+            "engine": "validation",
+            "action": "test",
+            "file_path": "tests/validation/panchang_jhora_comparison.rs",
+            "acceptance": "Tithi/Nakshatra within 1 degree of JHora",
+            "est_hours": 4,
+            "priority": "critical"
+          },
+          {
+            "id": "FAPI-096",
+            "title": "Validate Vimshottari against reference",
+            "description": "Test Dasha dates against known ephemeris",
+            "engine": "validation",
+            "action": "test",
+            "file_path": "tests/validation/vimshottari_reference.rs",
+            "acceptance": "Dasha dates accurate within 1 day",
+            "est_hours": 4,
+            "priority": "critical"
+          },
+          {
+            "id": "FAPI-097",
+            "title": "Test with Shesh's birth data",
+            "description": "Complete validation using profile.json data",
+            "engine": "validation",
+            "action": "test",
+            "file_path": "tests/validation/shesh_profile_validation.rs",
+            "acceptance": "All values match expected from profile.json",
+            "est_hours": 4,
+            "priority": "critical"
+          },
+          {
+            "id": "FAPI-098",
+            "title": "Add API fallback to native calculation",
+            "description": "If API fails, fall back to native engine",
+            "engine": "infrastructure",
+            "action": "code",
+            "file_path": "crates/noesis-vedic-api/src/fallback.rs",
+            "acceptance": "Graceful degradation when API unavailable",
+            "est_hours": 4,
+            "priority": "high"
+          },
+          {
+            "id": "FAPI-099",
+            "title": "Add metrics and monitoring",
+            "description": "Track API usage, latency, error rates",
+            "engine": "infrastructure",
+            "action": "code",
+            "file_path": "crates/noesis-vedic-api/src/metrics.rs",
+            "acceptance": "Prometheus metrics for API calls and cache hits",
+            "est_hours": 3,
+            "priority": "medium"
+          },
+          {
+            "id": "FAPI-100",
+            "title": "Update Cargo.toml dependencies",
+            "description": "Add reqwest, serde, and other dependencies",
+            "engine": "infrastructure",
+            "action": "config",
+            "file_path": "crates/noesis-vedic-api/Cargo.toml",
+            "acceptance": "All dependencies resolve, builds successfully",
+            "est_hours": 2,
+            "priority": "high"
+          },
+          {
+            "id": "FAPI-101",
+            "title": "Add workspace configuration",
+            "description": "Add new crate to workspace Cargo.toml",
+            "engine": "infrastructure",
+            "action": "config",
+            "file_path": "Cargo.toml",
+            "acceptance": "noesis-vedic-api included in workspace",
+            "est_hours": 1,
+            "priority": "high"
+          },
+          {
+            "id": "FAPI-102",
+            "title": "Write API integration documentation",
+            "description": "Document how to use the Vedic API crate",
+            "engine": "documentation",
+            "action": "docs",
+            "file_path": "crates/noesis-vedic-api/README.md",
+            "acceptance": "Complete usage examples, configuration guide",
+            "est_hours": 3,
+            "priority": "medium"
+          },
+          {
+            "id": "FAPI-103",
+            "title": "Create environment configuration template",
+            "description": "Add API key and settings to .env.example",
+            "engine": "documentation",
+            "action": "config",
+            "file_path": ".env.example",
+            "acceptance": "FREE_ASTROLOGY_API_KEY documented",
+            "est_hours": 1,
+            "priority": "high"
+          },
+          {
+            "id": "FAPI-104",
+            "title": "Update Docker configuration for API key",
+            "description": "Pass API key through Docker environment",
+            "engine": "infrastructure",
+            "action": "config",
+            "file_path": "docker-compose.yml",
+            "acceptance": "API key configurable via environment variable",
+            "est_hours": 2,
+            "priority": "medium"
+          },
+          {
+            "id": "FAPI-105",
+            "title": "Create API rate limit handling",
+            "description": "Handle 429 responses gracefully",
+            "engine": "infrastructure",
+            "action": "code",
+            "file_path": "crates/noesis-vedic-api/src/rate_limit.rs",
+            "acceptance": "Respects Retry-After header, queues requests",
+            "est_hours": 3,
+            "priority": "medium"
+          },
+          {
+            "id": "FAPI-106",
+            "title": "Implement batch request optimization",
+            "description": "Combine multiple calculations in single request where possible",
+            "engine": "infrastructure",
+            "action": "code",
+            "file_path": "crates/noesis-vedic-api/src/batch.rs",
+            "acceptance": "Reduces API calls through intelligent batching",
+            "est_hours": 4,
+            "priority": "low"
+          },
+          {
+            "id": "FAPI-107",
+            "title": "Add API versioning support",
+            "description": "Handle API version in URLs",
+            "engine": "infrastructure",
+            "action": "code",
+            "file_path": "crates/noesis-vedic-api/src/versioning.rs",
+            "acceptance": "API version configurable, defaults to v1",
+            "est_hours": 2,
+            "priority": "low"
+          },
+          {
+            "id": "FAPI-108",
+            "title": "Write migration guide from native engines",
+            "description": "Document how to migrate existing code",
+            "engine": "documentation",
+            "action": "docs",
+            "file_path": "docs/MIGRATION_TO_FREE_ASTROLOGY_API.md",
+            "acceptance": "Step-by-step migration instructions",
+            "est_hours": 3,
+            "priority": "medium"
+          },
+          {
+            "id": "FAPI-109",
+            "title": "Update CHANGELOG",
+            "description": "Document API integration in changelog",
+            "engine": "documentation",
+            "action": "docs",
+            "file_path": "CHANGELOG.md",
+            "acceptance": "New features and breaking changes documented",
+            "est_hours": 1,
+            "priority": "low"
+          },
+          {
+            "id": "FAPI-110",
+            "title": "Run full test suite",
+            "description": "Execute all tests including integration tests",
+            "engine": "testing",
+            "action": "test",
+            "file_path": "tests/full_suite.rs",
+            "acceptance": "All tests pass with real API",
+            "est_hours": 4,
+            "priority": "critical"
+          }
+        ]
+      },
+      {
+        "phase_id": "FAPI-P11",
+        "name": "Phase 11: New Features and Future Extensions",
+        "description": "Additional features that leverage the API for enhanced functionality",
+        "tasks": [
+          {
+            "id": "FAPI-111",
+            "title": "Create unified Vedic report generator",
+            "description": "Generate comprehensive PDF report combining all Vedic features",
+            "engine": "new-feature",
+            "action": "code",
+            "file_path": "crates/noesis-vedic-api/src/report_generator.rs",
+            "acceptance": "Single call generates complete Vedic analysis",
+            "est_hours": 6,
+            "priority": "low"
+          },
+          {
+            "id": "FAPI-112",
+            "title": "Implement daily Panchang notification",
+            "description": "Daily Panchang data for notifications/reminders",
+            "engine": "new-feature",
+            "action": "code",
+            "file_path": "crates/noesis-vedic-api/src/daily_panchang.rs",
+            "acceptance": "Returns today's complete Panchang with recommendations",
+            "est_hours": 3,
+            "priority": "medium"
+          },
+          {
+            "id": "FAPI-113",
+            "title": "Create planetary hour alarm system",
+            "description": "Find optimal times based on Hora throughout day",
+            "engine": "new-feature",
+            "action": "code",
+            "file_path": "crates/noesis-vedic-api/src/hora_alarms.rs",
+            "acceptance": "Returns next favorable Hora for each planet",
+            "est_hours": 3,
+            "priority": "low"
+          },
+          {
+            "id": "FAPI-114",
+            "title": "Implement Dasha change notifications",
+            "description": "Alert when Dasha periods change",
+            "engine": "new-feature",
+            "action": "code",
+            "file_path": "crates/noesis-vedic-api/src/dasha_alerts.rs",
+            "acceptance": "Returns upcoming Dasha changes with dates",
+            "est_hours": 4,
+            "priority": "medium"
+          },
+          {
+            "id": "FAPI-115",
+            "title": "Create festival calendar integration",
+            "description": "Indian festival dates based on Panchang",
+            "engine": "new-feature",
+            "action": "code",
+            "file_path": "crates/noesis-vedic-api/src/festivals.rs",
+            "acceptance": "Returns major festivals for year with dates",
+            "est_hours": 4,
+            "priority": "low"
+          },
+          {
+            "id": "FAPI-116",
+            "title": "Implement eclipse prediction",
+            "description": "Find upcoming solar and lunar eclipses",
+            "engine": "new-feature",
+            "action": "code",
+            "file_path": "crates/noesis-vedic-api/src/eclipses.rs",
+            "acceptance": "Returns eclipse dates with visibility location",
+            "est_hours": 3,
+            "priority": "low"
+          },
+          {
+            "id": "FAPI-117",
+            "title": "Add Tithi-based fasting recommendations",
+            "description": "Ekadashi and other fasting days",
+            "engine": "new-feature",
+            "action": "code",
+            "file_path": "crates/noesis-vedic-api/src/fasting.rs",
+            "acceptance": "Returns upcoming fasting days with Tithi",
+            "est_hours": 3,
+            "priority": "low"
+          },
+          {
+            "id": "FAPI-118",
+            "title": "Create Nakshatra-based name suggestion",
+            "description": "Suggest syllables for naming based on birth Nakshatra",
+            "engine": "new-feature",
+            "action": "code",
+            "file_path": "crates/noesis-vedic-api/src/naming.rs",
+            "acceptance": "Returns appropriate starting syllables",
+            "est_hours": 2,
+            "priority": "low"
+          },
+          {
+            "id": "FAPI-119",
+            "title": "Implement planetary remedy suggestions",
+            "description": "Suggest remedies for afflicted planets",
+            "engine": "new-feature",
+            "action": "code",
+            "file_path": "crates/noesis-vedic-api/src/remedies.rs",
+            "acceptance": "Returns gemstones, mantras, donations for planets",
+            "est_hours": 4,
+            "priority": "low"
+          },
+          {
+            "id": "FAPI-120",
+            "title": "Final integration validation",
+            "description": "Complete end-to-end testing of all features",
+            "engine": "testing",
+            "action": "test",
+            "file_path": "tests/final_validation.rs",
+            "acceptance": "All 120 tasks complete, system production-ready",
+            "est_hours": 6,
+            "priority": "critical"
+          }
+        ]
+      }
+    ],
+    "api_endpoints_summary": {
+      "panchang": [
+        "GET /panchang - Complete Panchang for date",
+        "GET /sunrise-sunset - Sunrise and sunset times",
+        "GET /abhijit-muhurta - Victorious midday period",
+        "GET /amrit-kaal - Nectar time for auspicious work",
+        "GET /rahu-kalam - Rahu period to avoid",
+        "GET /yama-gandam - Yama period to avoid",
+        "GET /gulika-kaal - Gulika rising time",
+        "GET /hora-timings - Planetary hours (24 horas)",
+        "GET /choghadiya - Choghadiya Muhurtas",
+        "GET /varjyam - Varjyam periods to avoid",
+        "GET /dur-muhurta - Bad Muhurtas",
+        "GET /brahma-muhurta - Creator's time for meditation"
+      ],
+      "vimshottari": [
+        "POST /vimshottari-dasha - Complete Dasha with levels: maha, antar, pratyantar, sookshma"
+      ],
+      "birth_chart": [
+        "GET /horoscope-chart - Rashi chart (D1) with planets and houses",
+        "GET /navamsa-chart - Navamsa chart (D9)",
+        "GET /horoscope-chart-svg - SVG visualization of chart"
+      ],
+      "vargas": [
+        "GET /horoscope-chart with varga param - Divisional charts D1-D60"
+      ],
+      "advanced": [
+        "GET /yogas - Planetary yoga combinations",
+        "GET /shadbala - Six-fold planetary strength",
+        "GET /ashtakavarga - Ashtakavarga bindu points",
+        "GET /transits - Planetary transit positions"
+      ]
+    },
+    "key_benefits": [
+      "Accurate calculations validated against standard ephemeris",
+      "No maintenance of complex astronomical calculations",
+      "Access to advanced features like Shadbala, Ashtakavarga",
+      "Divisional charts (Vargas) D1-D60",
+      "Comprehensive Muhurta timings",
+      "Festival and eclipse data",
+      "Reduced code complexity in our engines"
+    ],
+    "migration_strategy": {
+      "approach": "Adapter pattern - keep existing interfaces",
+      "backward_compatibility": "Existing API endpoints unchanged",
+      "fallback": "Native calculations as backup if API unavailable",
+      "cache_strategy": "Aggressive caching to minimize API calls",
+      "testing": "Validate API results against known good data before migration"
+    }
+  }
+}

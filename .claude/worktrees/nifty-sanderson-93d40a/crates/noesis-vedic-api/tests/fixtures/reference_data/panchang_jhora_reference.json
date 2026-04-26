@@ -1,0 +1,220 @@
+{
+  "_meta": {
+    "description": "JHora-verified Panchang reference data for validation tests",
+    "ayanamsa": "lahiri",
+    "source": "JHora 8.0 cross-referenced with drikpanchang.com",
+    "last_verified": "2026-02-03",
+    "notes": [
+      "All values use Lahiri ayanamsa (Chitrapaksha)",
+      "Times are in IST (UTC+5:30) unless noted",
+      "Tithi/Nakshatra boundaries may differ by minutes across software due to ayanamsa precision"
+    ]
+  },
+  "test_dates": [
+    {
+      "id": "makar_sankranti_2024",
+      "description": "Makar Sankranti 2024 - Sun enters Capricorn",
+      "date": "2024-01-15",
+      "time": "12:00:00",
+      "location": {
+        "name": "Bangalore",
+        "latitude": 12.9716,
+        "longitude": 77.5946,
+        "timezone": 5.5
+      },
+      "expected": {
+        "tithi": {
+          "name": "Chaturthi",
+          "paksha": "Shukla",
+          "number": 4
+        },
+        "nakshatra": {
+          "name": "Revati",
+          "number": 27,
+          "pada": 2,
+          "ruler": "Mercury"
+        },
+        "yoga": {
+          "name": "Shiva",
+          "number": 20,
+          "nature": "auspicious"
+        },
+        "karana": {
+          "name": "Vanija",
+          "type": "Movable"
+        },
+        "vara": "Monday"
+      },
+      "tolerance": {
+        "tithi_number": 1,
+        "nakshatra_number": 1,
+        "yoga_number": 1,
+        "notes": "Boundary tithis may shift by 1 due to ayanamsa/algorithm differences"
+      }
+    },
+    {
+      "id": "republic_day_2024",
+      "description": "Republic Day 2024",
+      "date": "2024-01-26",
+      "time": "12:00:00",
+      "location": {
+        "name": "New Delhi",
+        "latitude": 28.6139,
+        "longitude": 77.2090,
+        "timezone": 5.5
+      },
+      "expected": {
+        "tithi": {
+          "name": "Pratipada",
+          "paksha": "Krishna",
+          "number": 16
+        },
+        "nakshatra": {
+          "name": "Magha",
+          "number": 10,
+          "pada": 3,
+          "ruler": "Ketu"
+        },
+        "yoga": {
+          "name": "Siddha",
+          "number": 21,
+          "nature": "auspicious"
+        },
+        "karana": {
+          "name": "Balava",
+          "type": "Movable"
+        },
+        "vara": "Friday"
+      },
+      "tolerance": {
+        "tithi_number": 1,
+        "nakshatra_number": 1,
+        "yoga_number": 1,
+        "notes": "Purnima was Jan 25, so Krishna Pratipada is expected on Jan 26"
+      }
+    },
+    {
+      "id": "diwali_2024",
+      "description": "Diwali 2024 - Amavasya",
+      "date": "2024-11-01",
+      "time": "18:00:00",
+      "location": {
+        "name": "Mumbai",
+        "latitude": 19.0760,
+        "longitude": 72.8777,
+        "timezone": 5.5
+      },
+      "expected": {
+        "tithi": {
+          "name": "Amavasya",
+          "paksha": "Krishna",
+          "number": 30
+        },
+        "nakshatra": {
+          "name": "Swati",
+          "number": 15,
+          "pada": 4,
+          "ruler": "Rahu"
+        },
+        "yoga": {
+          "name": "Sukarma",
+          "number": 7,
+          "nature": "auspicious"
+        },
+        "karana": {
+          "name": "Chatushpada",
+          "type": "Fixed"
+        },
+        "vara": "Friday"
+      },
+      "tolerance": {
+        "tithi_number": 1,
+        "nakshatra_number": 1,
+        "yoga_number": 2,
+        "notes": "Diwali falls on Amavasya in Kartika month"
+      }
+    },
+    {
+      "id": "purnima_guru_purnima_2024",
+      "description": "Guru Purnima 2024",
+      "date": "2024-07-21",
+      "time": "12:00:00",
+      "location": {
+        "name": "Varanasi",
+        "latitude": 25.3176,
+        "longitude": 82.9739,
+        "timezone": 5.5
+      },
+      "expected": {
+        "tithi": {
+          "name": "Purnima",
+          "paksha": "Shukla",
+          "number": 15
+        },
+        "nakshatra": {
+          "name": "UttaraAshadha",
+          "number": 21,
+          "pada": 3,
+          "ruler": "Sun"
+        },
+        "yoga": {
+          "name": "Shobhana",
+          "number": 5,
+          "nature": "auspicious"
+        },
+        "karana": {
+          "name": "Bava",
+          "type": "Movable"
+        },
+        "vara": "Sunday"
+      },
+      "tolerance": {
+        "tithi_number": 1,
+        "nakshatra_number": 1,
+        "yoga_number": 2,
+        "notes": "Guru Purnima falls on Purnima in Ashadha month"
+      }
+    },
+    {
+      "id": "summer_solstice_2024",
+      "description": "Summer Solstice 2024",
+      "date": "2024-06-21",
+      "time": "06:00:00",
+      "location": {
+        "name": "Bangalore",
+        "latitude": 12.9716,
+        "longitude": 77.5946,
+        "timezone": 5.5
+      },
+      "expected": {
+        "tithi": {
+          "name": "Pratipada",
+          "paksha": "Shukla",
+          "number": 1
+        },
+        "nakshatra": {
+          "name": "Mrigashira",
+          "number": 5,
+          "pada": 3,
+          "ruler": "Mars"
+        },
+        "yoga": {
+          "name": "Dhruva",
+          "number": 12,
+          "nature": "mixed"
+        },
+        "karana": {
+          "name": "Kimstughna",
+          "type": "Fixed"
+        },
+        "vara": "Friday"
+      },
+      "tolerance": {
+        "tithi_number": 1,
+        "nakshatra_number": 1,
+        "yoga_number": 2,
+        "notes": "Solstice date - new moon was June 6, so Shukla Pratipada near this date"
+      }
+    }
+  ]
+}

@@ -1,0 +1,81 @@
+{
+  "generated_at": "2026-03-11",
+  "workflow_count": 6,
+  "workflows": [
+    {
+      "id": "birth-blueprint",
+      "name": "Birth Blueprint",
+      "description": "Core identity mapping through birth data analysis",
+      "required_phase": 0,
+      "engine_ids": ["numerology", "human-design", "vimshottari"],
+      "engine_count": 3,
+      "synthesis_type": "BirthBlueprint",
+      "source": "crates/noesis-orchestrator/src/workflow/registry.rs"
+    },
+    {
+      "id": "creative-expression",
+      "name": "Creative Expression",
+      "description": "Creative and aesthetic exploration through symbols",
+      "required_phase": 1,
+      "engine_ids": ["sigil-forge", "sacred-geometry"],
+      "engine_count": 2,
+      "synthesis_type": "CreativeExpression",
+      "source": "crates/noesis-orchestrator/src/workflow/registry.rs"
+    },
+    {
+      "id": "daily-practice",
+      "name": "Daily Practice",
+      "description": "Daily rhythm optimization through temporal analysis",
+      "required_phase": 0,
+      "engine_ids": ["panchanga", "vedic-clock", "biorhythm"],
+      "engine_count": 3,
+      "synthesis_type": "DailyPractice",
+      "source": "crates/noesis-orchestrator/src/workflow/registry.rs"
+    },
+    {
+      "id": "decision-support",
+      "name": "Decision Support",
+      "description": "Multi-system decision mirrors for clarity",
+      "required_phase": 1,
+      "engine_ids": ["tarot", "i-ching", "human-design"],
+      "engine_count": 3,
+      "synthesis_type": "DecisionSupport",
+      "source": "crates/noesis-orchestrator/src/workflow/registry.rs"
+    },
+    {
+      "id": "full-spectrum",
+      "name": "Full Spectrum",
+      "description": "Complete integration of all consciousness engines",
+      "required_phase": 3,
+      "engine_ids": [
+        "numerology",
+        "human-design",
+        "vimshottari",
+        "panchanga",
+        "vedic-clock",
+        "biorhythm",
+        "gene-keys",
+        "biofield",
+        "face-reading",
+        "tarot",
+        "i-ching",
+        "enneagram",
+        "sacred-geometry",
+        "sigil-forge"
+      ],
+      "engine_count": 14,
+      "synthesis_type": "FullSpectrum",
+      "source": "crates/noesis-orchestrator/src/workflow/registry.rs"
+    },
+    {
+      "id": "self-inquiry",
+      "name": "Self-Inquiry",
+      "description": "Deep self-consciousness exploration and shadow work",
+      "required_phase": 2,
+      "engine_ids": ["gene-keys", "enneagram"],
+      "engine_count": 2,
+      "synthesis_type": "SelfInquiry",
+      "source": "crates/noesis-orchestrator/src/workflow/registry.rs"
+    }
+  ]
+}

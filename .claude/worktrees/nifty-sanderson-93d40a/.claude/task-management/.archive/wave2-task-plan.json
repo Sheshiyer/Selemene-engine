@@ -1,0 +1,1079 @@
+{
+  "schema_version": "1.0",
+  "project": {
+    "name": "Tryambakam Noesis - Wave 2: TypeScript Engines + Workflows + Polish",
+    "repo_root": "/Volumes/madara/2026/witnessos/Selemene-engine",
+    "generated_on": "2026-01-30",
+    "generated_by": "task-master-planner + ultrathink synthesis",
+    "wave": 2,
+    "depends_on_wave": 1,
+    "prerequisites": [
+      "noesis-api fully operational with all routes",
+      "Human Design engine with 100% accuracy",
+      "Gene Keys engine operational",
+      "Vimshottari engine operational",
+      "noesis-bridge working (TypeScript adapter)",
+      "All Wave 1 integration tests passing"
+    ],
+    "assumptions": [
+      "Bun runtime installed and operational",
+      "TypeScript engines can run on separate port (3001)",
+      "HTTP bridge latency acceptable for archetypal engines (<50ms overhead)",
+      "VedicClock-TCM integration data available from wisdom-docs",
+      "Biofield PIP device not required for initial implementation (mock data OK)",
+      "Face Reading MediaPipe models available"
+    ],
+    "risks": [
+      "TypeScript engine performance may require optimization",
+      "Workflow synthesis logic requires deep understanding of cross-engine patterns",
+      "Biofield/Face Reading may need specialized hardware integration",
+      "Production deployment config highly environment-specific"
+    ]
+  },
+  "phases": [
+    {
+      "phase_id": "W2-P1",
+      "name": "Wave 2 Phase 1: TypeScript Engines Foundation",
+      "objective": "Implement Bun HTTP server and first 2 TypeScript engines (Tarot, I-Ching)",
+      "sprints": [
+        {
+          "sprint_id": "W2-S1",
+          "duration_weeks": 2,
+          "focus": "TypeScript server + Tarot engine",
+          "tasks": [
+            {
+              "id": "W2-S1-01",
+              "title": "Create ts-engines project structure",
+              "area": "frontend",
+              "owner_role": "Frontend Eng",
+              "est_hours": 4,
+              "dependencies": [],
+              "deliverable": "ts-engines/ directory with package.json, tsconfig.json, Bun setup",
+              "acceptance": "bun install && bun run dev starts server"
+            },
+            {
+              "id": "W2-S1-02",
+              "title": "Define TypeScript EngineInput/EngineOutput types",
+              "area": "frontend",
+              "owner_role": "Frontend Eng",
+              "est_hours": 4,
+              "dependencies": ["W2-S1-01"],
+              "deliverable": "TypeScript interfaces matching Rust ConsciousnessEngine trait",
+              "acceptance": "Type-safe request/response handling"
+            },
+            {
+              "id": "W2-S1-03",
+              "title": "Implement Bun HTTP server with routing",
+              "area": "frontend",
+              "owner_role": "Frontend Eng",
+              "est_hours": 6,
+              "dependencies": ["W2-S1-02"],
+              "deliverable": "Hono/Express server on port 3001 with /engines/:id/calculate routes",
+              "acceptance": "Server responds to POST requests with JSON"
+            },
+            {
+              "id": "W2-S1-04",
+              "title": "Implement health check endpoint for TS server",
+              "area": "frontend",
+              "owner_role": "Frontend Eng",
+              "est_hours": 3,
+              "dependencies": ["W2-S1-03"],
+              "deliverable": "GET /health returns server status",
+              "acceptance": "Returns {status: healthy, engines: [...]}"
+            },
+            {
+              "id": "W2-S1-05",
+              "title": "Load Tarot wisdom data (rider-waite.json)",
+              "area": "frontend",
+              "owner_role": "Frontend Eng",
+              "est_hours": 4,
+              "dependencies": ["W2-S1-01"],
+              "deliverable": "Load 78 cards from wisdom-docs/tarot/rider_waite.json",
+              "acceptance": "All cards accessible with upright/reversed meanings"
+            },
+            {
+              "id": "W2-S1-06",
+              "title": "Implement Tarot card shuffling algorithm",
+              "area": "frontend",
+              "owner_role": "Frontend Eng",
+              "est_hours": 5,
+              "dependencies": ["W2-S1-05"],
+              "deliverable": "Fisher-Yates shuffle with seeded randomness",
+              "acceptance": "Reproducible spreads given same seed (for caching)"
+            },
+            {
+              "id": "W2-S1-07",
+              "title": "Implement Tarot spread layouts",
+              "area": "frontend",
+              "owner_role": "Frontend Eng",
+              "est_hours": 7,
+              "dependencies": ["W2-S1-06"],
+              "deliverable": "Support 5 spreads: Single Card, 3-Card (past/present/future), Celtic Cross, Relationship, Career",
+              "acceptance": "Each spread returns positioned cards with meanings"
+            },
+            {
+              "id": "W2-S1-08",
+              "title": "Implement Tarot upright/reversed logic",
+              "area": "frontend",
+              "owner_role": "Frontend Eng",
+              "est_hours": 4,
+              "dependencies": ["W2-S1-07"],
+              "deliverable": "Randomly determine card orientation (50% upright, 50% reversed)",
+              "acceptance": "Reversed cards return reversed_meaning from wisdom data"
+            },
+            {
+              "id": "W2-S1-09",
+              "title": "Implement Tarot witness prompt generation",
+              "area": "frontend",
+              "owner_role": "Frontend Eng",
+              "est_hours": 6,
+              "dependencies": ["W2-S1-08"],
+              "deliverable": "Generate inquiry prompts based on drawn cards",
+              "acceptance": "Prompts ask user to witness card's archetypal energy in their life"
+            },
+            {
+              "id": "W2-S1-10",
+              "title": "Implement Tarot engine class",
+              "area": "frontend",
+              "owner_role": "Frontend Eng",
+              "est_hours": 5,
+              "dependencies": ["W2-S1-09"],
+              "deliverable": "TarotEngine class with calculate() method matching interface",
+              "acceptance": "Returns EngineOutput with spread result + witness prompt"
+            },
+            {
+              "id": "W2-S1-11",
+              "title": "Register Tarot engine with TS server router",
+              "area": "frontend",
+              "owner_role": "Frontend Eng",
+              "est_hours": 3,
+              "dependencies": ["W2-S1-10"],
+              "deliverable": "POST /engines/tarot/calculate routes to TarotEngine",
+              "acceptance": "Can call Tarot engine via HTTP"
+            },
+            {
+              "id": "W2-S1-12",
+              "title": "Test Tarot engine via Rust bridge",
+              "area": "qa",
+              "owner_role": "QA Eng",
+              "est_hours": 6,
+              "dependencies": ["W2-S1-11"],
+              "deliverable": "Integration test calling Tarot through noesis-bridge",
+              "acceptance": "Rust API can proxy Tarot requests to TS server"
+            },
+            {
+              "id": "W2-S1-13",
+              "title": "Register Tarot bridge engine with orchestrator",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 4,
+              "dependencies": ["W2-S1-12"],
+              "deliverable": "BridgeEngine for Tarot added to orchestrator",
+              "acceptance": "POST /api/v1/engines/tarot/calculate works end-to-end"
+            }
+          ]
+        },
+        {
+          "sprint_id": "W2-S2",
+          "duration_weeks": 2,
+          "focus": "I-Ching engine + remaining TS engines",
+          "tasks": [
+            {
+              "id": "W2-S2-01",
+              "title": "Load I-Ching wisdom data (hexagrams_complete.json)",
+              "area": "frontend",
+              "owner_role": "Frontend Eng",
+              "est_hours": 4,
+              "dependencies": [],
+              "deliverable": "Load 64 hexagrams with judgment, image, line meanings",
+              "acceptance": "All hexagrams accessible with full text"
+            },
+            {
+              "id": "W2-S2-02",
+              "title": "Implement three-coin method for I-Ching",
+              "area": "frontend",
+              "owner_role": "Frontend Eng",
+              "est_hours": 6,
+              "dependencies": ["W2-S2-01"],
+              "deliverable": "Traditional coin toss method generates 6 lines (yin/yang, stable/changing)",
+              "acceptance": "Produces valid hexagram with changing lines"
+            },
+            {
+              "id": "W2-S2-03",
+              "title": "Implement hexagram transformation logic",
+              "area": "frontend",
+              "owner_role": "Frontend Eng",
+              "est_hours": 5,
+              "dependencies": ["W2-S2-02"],
+              "deliverable": "Generate relating hexagram from changing lines",
+              "acceptance": "Returns primary + relating hexagram pair"
+            },
+            {
+              "id": "W2-S2-04",
+              "title": "Implement I-Ching witness prompt generation",
+              "area": "frontend",
+              "owner_role": "Frontend Eng",
+              "est_hours": 6,
+              "dependencies": ["W2-S2-03"],
+              "deliverable": "Generate prompts based on hexagram wisdom",
+              "acceptance": "Prompts invite reflection on situation without prescription"
+            },
+            {
+              "id": "W2-S2-05",
+              "title": "Implement I-Ching engine class",
+              "area": "frontend",
+              "owner_role": "Frontend Eng",
+              "est_hours": 5,
+              "dependencies": ["W2-S2-04"],
+              "deliverable": "IChingEngine with calculate() method",
+              "acceptance": "Returns hexagram reading with witness prompt"
+            },
+            {
+              "id": "W2-S2-06",
+              "title": "Register I-Ching with TS server and orchestrator",
+              "area": "frontend",
+              "owner_role": "Frontend Eng",
+              "est_hours": 4,
+              "dependencies": ["W2-S2-05"],
+              "deliverable": "I-Ching engine operational via bridge",
+              "acceptance": "POST /api/v1/engines/i-ching/calculate works"
+            },
+            {
+              "id": "W2-S2-07",
+              "title": "Load Enneagram wisdom data (types.json)",
+              "area": "frontend",
+              "owner_role": "Frontend Eng",
+              "est_hours": 4,
+              "dependencies": [],
+              "deliverable": "Load 9 types with wings, integration, disintegration paths",
+              "acceptance": "All type data accessible"
+            },
+            {
+              "id": "W2-S2-08",
+              "title": "Implement Enneagram assessment questionnaire",
+              "area": "frontend",
+              "owner_role": "Frontend Eng",
+              "est_hours": 8,
+              "dependencies": ["W2-S2-07"],
+              "deliverable": "Multi-question assessment scoring algorithm",
+              "acceptance": "Returns likely type + wing based on responses"
+            },
+            {
+              "id": "W2-S2-09",
+              "title": "Implement Enneagram witness prompt generation",
+              "area": "frontend",
+              "owner_role": "Frontend Eng",
+              "est_hours": 6,
+              "dependencies": ["W2-S2-08"],
+              "deliverable": "Prompts based on type's core fear/desire",
+              "acceptance": "Invites witnessing patterns without identifying as type"
+            },
+            {
+              "id": "W2-S2-10",
+              "title": "Implement Enneagram engine class",
+              "area": "frontend",
+              "owner_role": "Frontend Eng",
+              "est_hours": 5,
+              "dependencies": ["W2-S2-09"],
+              "deliverable": "EnneagramEngine with assessment + type description",
+              "acceptance": "Returns type analysis with witness prompt"
+            },
+            {
+              "id": "W2-S2-11",
+              "title": "Register Enneagram engine",
+              "area": "frontend",
+              "owner_role": "Frontend Eng",
+              "est_hours": 4,
+              "dependencies": ["W2-S2-10"],
+              "deliverable": "Enneagram operational via bridge",
+              "acceptance": "POST /api/v1/engines/enneagram/calculate works"
+            },
+            {
+              "id": "W2-S2-12",
+              "title": "Implement Sacred Geometry engine stub",
+              "area": "frontend",
+              "owner_role": "Frontend Eng",
+              "est_hours": 6,
+              "dependencies": [],
+              "deliverable": "Basic Sacred Geometry engine (visual generation deferred to future)",
+              "acceptance": "Returns sacred geometry metadata + witness prompt"
+            },
+            {
+              "id": "W2-S2-13",
+              "title": "Implement Sigil Forge engine stub",
+              "area": "frontend",
+              "owner_role": "Frontend Eng",
+              "est_hours": 6,
+              "dependencies": [],
+              "deliverable": "Basic Sigil Forge engine (visual generation deferred)",
+              "acceptance": "Returns sigil metadata + witness prompt"
+            },
+            {
+              "id": "W2-S2-14",
+              "title": "Write integration tests for all TS engines",
+              "area": "qa",
+              "owner_role": "QA Eng",
+              "est_hours": 8,
+              "dependencies": ["W2-S2-11", "W2-S2-13"],
+              "deliverable": "Test suite for Tarot, I-Ching, Enneagram, SacredGeo, Sigil via API",
+              "acceptance": "All 5 TS engines return valid responses"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "phase_id": "W2-P2",
+      "name": "Wave 2 Phase 2: Specialized Rust Engines",
+      "objective": "Implement VedicClock-TCM, Biofield (stub), Face Reading (stub)",
+      "sprints": [
+        {
+          "sprint_id": "W2-S3",
+          "duration_weeks": 2,
+          "focus": "VedicClock-TCM integration engine",
+          "tasks": [
+            {
+              "id": "W2-S3-01",
+              "title": "Define VedicClock-TCM data structures",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 6,
+              "dependencies": [],
+              "deliverable": "Rust structs for OrganClock, Dosha, TimeWindow",
+              "acceptance": "Serde structs for TCM 24-hour cycle + Vedic time"
+            },
+            {
+              "id": "W2-S3-02",
+              "title": "Load TCM organ clock wisdom data",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 4,
+              "dependencies": ["W2-S3-01"],
+              "deliverable": "Load tcm_organ_clock.json with 12 2-hour windows",
+              "acceptance": "Organ clock data accessible"
+            },
+            {
+              "id": "W2-S3-03",
+              "title": "Load Panchanga qualities wisdom data",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 4,
+              "dependencies": ["W2-S3-01"],
+              "deliverable": "Load panchanga_qualities.json with Tithi/Nakshatra/Yoga/Karana meanings",
+              "acceptance": "Panchanga quality data accessible"
+            },
+            {
+              "id": "W2-S3-04",
+              "title": "Implement current organ clock calculation",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 6,
+              "dependencies": ["W2-S3-02"],
+              "deliverable": "Given current time, return active organ + peak energy + practices",
+              "acceptance": "Correctly maps 24-hour clock to organ windows"
+            },
+            {
+              "id": "W2-S3-05",
+              "title": "Integrate Panchanga temporal data",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 7,
+              "dependencies": ["W2-S3-03"],
+              "deliverable": "Combine current Panchanga (from engine-panchanga) with TCM organ clock",
+              "acceptance": "Returns unified temporal recommendations"
+            },
+            {
+              "id": "W2-S3-06",
+              "title": "Implement dosha-organ correspondence",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 7,
+              "dependencies": ["W2-S3-04"],
+              "deliverable": "Map Vata/Pitta/Kapha to TCM organs and elements",
+              "acceptance": "Cross-system correlation table operational"
+            },
+            {
+              "id": "W2-S3-07",
+              "title": "Implement optimal timing recommendations",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 8,
+              "dependencies": ["W2-S3-05", "W2-S3-06"],
+              "deliverable": "Synthesize Vedic + TCM for activity timing (meditation, work, rest, etc)",
+              "acceptance": "Returns hour-by-hour recommendations with rationale"
+            },
+            {
+              "id": "W2-S3-08",
+              "title": "Implement VedicClock witness prompt generation",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 6,
+              "dependencies": ["W2-S3-07"],
+              "deliverable": "Prompts invite witnessing body's natural rhythms",
+              "acceptance": "Asks user to observe energy levels at different times"
+            },
+            {
+              "id": "W2-S3-09",
+              "title": "Implement ConsciousnessEngine trait for VedicClock",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 5,
+              "dependencies": ["W2-S3-08"],
+              "deliverable": "VedicClockEngine implements trait",
+              "acceptance": "Returns temporal optimization + witness prompt"
+            },
+            {
+              "id": "W2-S3-10",
+              "title": "Register VedicClock engine with orchestrator",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 4,
+              "dependencies": ["W2-S3-09"],
+              "deliverable": "VedicClockEngine added to registry",
+              "acceptance": "POST /api/v1/engines/vedic-clock/calculate works"
+            },
+            {
+              "id": "W2-S3-11",
+              "title": "Write integration tests for VedicClock engine",
+              "area": "qa",
+              "owner_role": "QA Eng",
+              "est_hours": 6,
+              "dependencies": ["W2-S3-10"],
+              "deliverable": "Test VedicClock temporal recommendations",
+              "acceptance": "Validates Vedic + TCM synthesis logic"
+            }
+          ]
+        },
+        {
+          "sprint_id": "W2-S4",
+          "duration_weeks": 1,
+          "focus": "Biofield + Face Reading stub implementations",
+          "tasks": [
+            {
+              "id": "W2-S4-01",
+              "title": "Create Biofield engine stub structure",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 4,
+              "dependencies": [],
+              "deliverable": "engine-biofield crate with ConsciousnessEngine impl",
+              "acceptance": "Returns placeholder biofield data + witness prompt"
+            },
+            {
+              "id": "W2-S4-02",
+              "title": "Load biofield algorithm wisdom data",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 4,
+              "dependencies": ["W2-S4-01"],
+              "deliverable": "Load biofield_spatial_algorithms.json and temporal",
+              "acceptance": "Algorithm metadata accessible"
+            },
+            {
+              "id": "W2-S4-03",
+              "title": "Implement mock biofield metrics calculation",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 6,
+              "dependencies": ["W2-S4-02"],
+              "deliverable": "Generate mock fractal dimension, entropy, coherence scores",
+              "acceptance": "Returns plausible biofield metrics structure"
+            },
+            {
+              "id": "W2-S4-04",
+              "title": "Implement biofield witness prompt generation",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 5,
+              "dependencies": ["W2-S4-03"],
+              "deliverable": "Prompts invite witnessing breath/energy field states",
+              "acceptance": "Asks user to observe somatic sensations"
+            },
+            {
+              "id": "W2-S4-05",
+              "title": "Register Biofield engine (stub mode)",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 3,
+              "dependencies": ["W2-S4-04"],
+              "deliverable": "BiofieldEngine added to orchestrator",
+              "acceptance": "POST /api/v1/engines/biofield/calculate returns mock data"
+            },
+            {
+              "id": "W2-S4-06",
+              "title": "Create Face Reading engine stub structure",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 4,
+              "dependencies": [],
+              "deliverable": "engine-face-reading crate with ConsciousnessEngine impl",
+              "acceptance": "Returns placeholder face reading data + witness prompt"
+            },
+            {
+              "id": "W2-S4-07",
+              "title": "Load face reading wisdom data",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 4,
+              "dependencies": ["W2-S4-06"],
+              "deliverable": "Load facial_landmark_mappings, tcm_face_correlations, vedic_face_correlations",
+              "acceptance": "Face zone data accessible"
+            },
+            {
+              "id": "W2-S4-08",
+              "title": "Implement mock face analysis",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 6,
+              "dependencies": ["W2-S4-07"],
+              "deliverable": "Generate mock constitution/personality analysis",
+              "acceptance": "Returns plausible face reading structure"
+            },
+            {
+              "id": "W2-S4-09",
+              "title": "Implement face reading witness prompt generation",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 5,
+              "dependencies": ["W2-S4-08"],
+              "deliverable": "Prompts invite observing facial features as mirrors",
+              "acceptance": "Asks user to witness constitution patterns"
+            },
+            {
+              "id": "W2-S4-10",
+              "title": "Register Face Reading engine (stub mode)",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 3,
+              "dependencies": ["W2-S4-09"],
+              "deliverable": "FaceReadingEngine added to orchestrator",
+              "acceptance": "POST /api/v1/engines/face-reading/calculate returns mock data"
+            },
+            {
+              "id": "W2-S4-11",
+              "title": "Document stub engine future implementation plans",
+              "area": "product",
+              "owner_role": "Tech Writer",
+              "est_hours": 5,
+              "dependencies": ["W2-S4-05", "W2-S4-10"],
+              "deliverable": "Document hardware requirements and future roadmap for Biofield/Face Reading",
+              "acceptance": "Clear documentation on what's stub vs. full implementation"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "phase_id": "W2-P3",
+      "name": "Wave 2 Phase 3: Multi-Engine Workflows",
+      "objective": "Implement 6 pre-defined workflows with synthesis logic",
+      "sprints": [
+        {
+          "sprint_id": "W2-S5",
+          "duration_weeks": 2,
+          "focus": "Workflow synthesis patterns + first 3 workflows",
+          "tasks": [
+            {
+              "id": "W2-S5-01",
+              "title": "Define Workflow data structures",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 6,
+              "dependencies": [],
+              "deliverable": "WorkflowDefinition, WorkflowOutput, SynthesisResult structs",
+              "acceptance": "Type-safe workflow representation"
+            },
+            {
+              "id": "W2-S5-02",
+              "title": "Implement workflow registry",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 5,
+              "dependencies": ["W2-S5-01"],
+              "deliverable": "HashMap of 6 predefined workflows with metadata",
+              "acceptance": "Workflows discoverable via /api/v1/workflows"
+            },
+            {
+              "id": "W2-S5-03",
+              "title": "Implement birth-blueprint workflow",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 8,
+              "dependencies": ["W2-S5-02"],
+              "deliverable": "Numerology + HD + Vimshottari in parallel, synthesize results",
+              "acceptance": "Returns unified birth blueprint with cross-engine insights"
+            },
+            {
+              "id": "W2-S5-04",
+              "title": "Implement synthesis logic for birth-blueprint",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 8,
+              "dependencies": ["W2-S5-03"],
+              "deliverable": "Find patterns across Life Path (numerology), Type (HD), Current Dasha (Vimshottari)",
+              "acceptance": "Synthesis highlights aligned vs. conflicting themes"
+            },
+            {
+              "id": "W2-S5-05",
+              "title": "Implement daily-practice workflow",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 8,
+              "dependencies": ["W2-S5-02"],
+              "deliverable": "Panchanga + VedicClock-TCM + Biorhythm in parallel",
+              "acceptance": "Returns optimal timing for today's activities"
+            },
+            {
+              "id": "W2-S5-06",
+              "title": "Implement synthesis logic for daily-practice",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 7,
+              "dependencies": ["W2-S5-05"],
+              "deliverable": "Combine temporal recommendations from 3 systems",
+              "acceptance": "Synthesis finds optimal windows across all three engines"
+            },
+            {
+              "id": "W2-S5-07",
+              "title": "Implement decision-support workflow",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 8,
+              "dependencies": ["W2-S5-02"],
+              "deliverable": "Tarot + I-Ching + HD Authority in parallel",
+              "acceptance": "Returns multi-perspective guidance on decision"
+            },
+            {
+              "id": "W2-S5-08",
+              "title": "Implement synthesis logic for decision-support",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 8,
+              "dependencies": ["W2-S5-07"],
+              "deliverable": "Synthesize archetypal (Tarot/I-Ching) with bodily authority (HD)",
+              "acceptance": "Synthesis highlights aligned guidance vs. tensions"
+            },
+            {
+              "id": "W2-S5-09",
+              "title": "Write witness prompts for workflows",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 6,
+              "dependencies": ["W2-S5-04", "W2-S5-06", "W2-S5-08"],
+              "deliverable": "Workflow-level witness prompts based on synthesis",
+              "acceptance": "Prompts invite witnessing cross-engine patterns"
+            },
+            {
+              "id": "W2-S5-10",
+              "title": "Test parallel execution performance",
+              "area": "qa",
+              "owner_role": "QA Eng",
+              "est_hours": 6,
+              "dependencies": ["W2-S5-03", "W2-S5-05", "W2-S5-07"],
+              "deliverable": "Verify workflows complete in ~max(engine_time), not sum",
+              "acceptance": "3-engine workflow takes ~200ms, not 600ms"
+            }
+          ]
+        },
+        {
+          "sprint_id": "W2-S6",
+          "duration_weeks": 2,
+          "focus": "Remaining workflows + full-spectrum",
+          "tasks": [
+            {
+              "id": "W2-S6-01",
+              "title": "Implement self-inquiry workflow",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 8,
+              "dependencies": [],
+              "deliverable": "Gene Keys + Enneagram + enhanced witness prompts",
+              "acceptance": "Returns shadow-work focused synthesis"
+            },
+            {
+              "id": "W2-S6-02",
+              "title": "Implement synthesis logic for self-inquiry",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 8,
+              "dependencies": ["W2-S6-01"],
+              "deliverable": "Map Gene Keys shadows to Enneagram core fears",
+              "acceptance": "Synthesis reveals unconscious pattern correlations"
+            },
+            {
+              "id": "W2-S6-03",
+              "title": "Implement creative-expression workflow",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 7,
+              "dependencies": [],
+              "deliverable": "Sigil Forge + Sacred Geometry + (future Raaga stub)",
+              "acceptance": "Returns generative guidance"
+            },
+            {
+              "id": "W2-S6-04",
+              "title": "Implement synthesis logic for creative-expression",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 6,
+              "dependencies": ["W2-S6-03"],
+              "deliverable": "Combine symbolic/geometric outputs for creative prompts",
+              "acceptance": "Synthesis suggests creative directions"
+            },
+            {
+              "id": "W2-S6-05",
+              "title": "Implement full-spectrum workflow",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 10,
+              "dependencies": [],
+              "deliverable": "All 13 engines in parallel (8 Rust + 5 TS)",
+              "acceptance": "Returns complete self-portrait across all systems"
+            },
+            {
+              "id": "W2-S6-06",
+              "title": "Implement synthesis logic for full-spectrum",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 10,
+              "dependencies": ["W2-S6-05"],
+              "deliverable": "Cross-engine pattern detection across all 13 outputs",
+              "acceptance": "Identifies themes appearing in 3+ engines"
+            },
+            {
+              "id": "W2-S6-07",
+              "title": "Implement workflow caching strategy",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 7,
+              "dependencies": ["W2-S6-06"],
+              "deliverable": "Cache workflow results separately from individual engines",
+              "acceptance": "Workflow cache keys based on input + engine versions"
+            },
+            {
+              "id": "W2-S6-08",
+              "title": "Write integration tests for all workflows",
+              "area": "qa",
+              "owner_role": "QA Eng",
+              "est_hours": 10,
+              "dependencies": ["W2-S6-07"],
+              "deliverable": "E2E tests for all 6 workflows via API",
+              "acceptance": "All workflows return valid synthesized results"
+            },
+            {
+              "id": "W2-S6-09",
+              "title": "Benchmark full-spectrum workflow performance",
+              "area": "qa",
+              "owner_role": "QA Eng",
+              "est_hours": 6,
+              "dependencies": ["W2-S6-05"],
+              "deliverable": "Measure parallel execution of 13 engines",
+              "acceptance": "Full-spectrum completes in <2 seconds (not 13x individual time)"
+            },
+            {
+              "id": "W2-S6-10",
+              "title": "Document workflow synthesis patterns",
+              "area": "product",
+              "owner_role": "Tech Writer",
+              "est_hours": 8,
+              "dependencies": ["W2-S6-08"],
+              "deliverable": ".context/workflows.md with synthesis logic explained",
+              "acceptance": "Documents how cross-engine validation works"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "phase_id": "W2-P4",
+      "name": "Wave 2 Phase 4: Production Readiness + Polish",
+      "objective": "Deployment config, monitoring, observability, comprehensive E2E tests, documentation",
+      "sprints": [
+        {
+          "sprint_id": "W2-S7",
+          "duration_weeks": 2,
+          "focus": "Deployment + infrastructure",
+          "tasks": [
+            {
+              "id": "W2-S7-01",
+              "title": "Create production Dockerfile multi-stage build",
+              "area": "infra",
+              "owner_role": "DevOps",
+              "est_hours": 6,
+              "dependencies": [],
+              "deliverable": "Optimized Docker image <500MB with noesis-api binary",
+              "acceptance": "Production image builds and runs successfully"
+            },
+            {
+              "id": "W2-S7-02",
+              "title": "Create Kubernetes deployment manifests",
+              "area": "infra",
+              "owner_role": "DevOps",
+              "est_hours": 8,
+              "dependencies": ["W2-S7-01"],
+              "deliverable": "K8s Deployment, Service, Ingress, ConfigMap, Secrets for noesis-api + TS server",
+              "acceptance": "kubectl apply deploys full stack"
+            },
+            {
+              "id": "W2-S7-03",
+              "title": "Configure horizontal pod autoscaling",
+              "area": "infra",
+              "owner_role": "DevOps",
+              "est_hours": 5,
+              "dependencies": ["W2-S7-02"],
+              "deliverable": "HPA based on CPU/memory metrics",
+              "acceptance": "Pods scale 1-10 based on load"
+            },
+            {
+              "id": "W2-S7-04",
+              "title": "Configure Redis cluster for production",
+              "area": "infra",
+              "owner_role": "DevOps",
+              "est_hours": 6,
+              "dependencies": [],
+              "deliverable": "Redis Sentinel or Redis Cluster for L2 cache HA",
+              "acceptance": "Redis failover works without data loss"
+            },
+            {
+              "id": "W2-S7-05",
+              "title": "Configure Postgres replication",
+              "area": "infra",
+              "owner_role": "DevOps",
+              "est_hours": 7,
+              "dependencies": [],
+              "deliverable": "Primary-replica Postgres setup for read scaling",
+              "acceptance": "Read queries use replica, writes use primary"
+            },
+            {
+              "id": "W2-S7-06",
+              "title": "Set up Prometheus monitoring",
+              "area": "infra",
+              "owner_role": "DevOps",
+              "est_hours": 6,
+              "dependencies": [],
+              "deliverable": "Prometheus scraping /metrics endpoint, storing time-series",
+              "acceptance": "Metrics visible in Prometheus UI"
+            },
+            {
+              "id": "W2-S7-07",
+              "title": "Set up Grafana dashboards",
+              "area": "infra",
+              "owner_role": "DevOps",
+              "est_hours": 8,
+              "dependencies": ["W2-S7-06"],
+              "deliverable": "Dashboards for: API latency, engine performance, cache hit rates, error rates",
+              "acceptance": "Real-time visualization of key metrics"
+            },
+            {
+              "id": "W2-S7-08",
+              "title": "Configure structured logging with ELK/Loki",
+              "area": "infra",
+              "owner_role": "DevOps",
+              "est_hours": 8,
+              "dependencies": [],
+              "deliverable": "Centralized log aggregation with searchable JSON logs",
+              "acceptance": "Can query logs by user_id, engine_id, trace_id"
+            },
+            {
+              "id": "W2-S7-09",
+              "title": "Set up distributed tracing with Jaeger",
+              "area": "infra",
+              "owner_role": "DevOps",
+              "est_hours": 7,
+              "dependencies": [],
+              "deliverable": "Trace requests through orchestrator → engines → cache",
+              "acceptance": "Can visualize full request path in Jaeger UI"
+            },
+            {
+              "id": "W2-S7-10",
+              "title": "Configure alerting rules",
+              "area": "infra",
+              "owner_role": "DevOps",
+              "est_hours": 6,
+              "dependencies": ["W2-S7-06"],
+              "deliverable": "Alerts for: High error rate, latency > SLA, cache hit < 70%, pod crashes",
+              "acceptance": "Test alerts fire and route to Slack/PagerDuty"
+            },
+            {
+              "id": "W2-S7-11",
+              "title": "Implement health check probes for K8s",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 5,
+              "dependencies": [],
+              "deliverable": "Liveness probe checks app alive, readiness checks dependencies",
+              "acceptance": "K8s restarts unhealthy pods, routes traffic only to ready pods"
+            },
+            {
+              "id": "W2-S7-12",
+              "title": "Configure TLS/SSL certificates",
+              "area": "infra",
+              "owner_role": "DevOps",
+              "est_hours": 5,
+              "dependencies": ["W2-S7-02"],
+              "deliverable": "Cert-manager auto-provisioning Let's Encrypt certs",
+              "acceptance": "API accessible via HTTPS"
+            },
+            {
+              "id": "W2-S7-13",
+              "title": "Set up CI/CD pipeline",
+              "area": "infra",
+              "owner_role": "DevOps",
+              "est_hours": 8,
+              "dependencies": [],
+              "deliverable": "GitHub Actions: test → build → push image → deploy to staging/prod",
+              "acceptance": "Push to main triggers automated deployment"
+            }
+          ]
+        },
+        {
+          "sprint_id": "W2-S8",
+          "duration_weeks": 2,
+          "focus": "Comprehensive testing + documentation",
+          "tasks": [
+            {
+              "id": "W2-S8-01",
+              "title": "Write E2E test suite for all 13 engines",
+              "area": "qa",
+              "owner_role": "QA Eng",
+              "est_hours": 12,
+              "dependencies": [],
+              "deliverable": "Comprehensive E2E tests covering happy path + error cases",
+              "acceptance": "All 13 engines tested via API with various inputs"
+            },
+            {
+              "id": "W2-S8-02",
+              "title": "Write E2E test suite for all 6 workflows",
+              "area": "qa",
+              "owner_role": "QA Eng",
+              "est_hours": 10,
+              "dependencies": [],
+              "deliverable": "E2E tests for all workflows with synthesis validation",
+              "acceptance": "All workflows tested with assertion on synthesis output"
+            },
+            {
+              "id": "W2-S8-03",
+              "title": "Write load tests for production readiness",
+              "area": "qa",
+              "owner_role": "QA Eng",
+              "est_hours": 8,
+              "dependencies": [],
+              "deliverable": "k6/Locust tests simulating 1000 concurrent users",
+              "acceptance": "System maintains <1s p95 latency under load"
+            },
+            {
+              "id": "W2-S8-04",
+              "title": "Write chaos engineering tests",
+              "area": "qa",
+              "owner_role": "QA Eng",
+              "est_hours": 8,
+              "dependencies": [],
+              "deliverable": "Tests for: Redis down, Postgres down, TS server down, pod crashes",
+              "acceptance": "System degrades gracefully, no cascading failures"
+            },
+            {
+              "id": "W2-S8-05",
+              "title": "Write security penetration tests",
+              "area": "qa",
+              "owner_role": "Security Eng",
+              "est_hours": 10,
+              "dependencies": [],
+              "deliverable": "Test auth bypass, SQL injection, XSS, CSRF, rate limit bypass",
+              "acceptance": "No critical vulnerabilities found"
+            },
+            {
+              "id": "W2-S8-06",
+              "title": "Perform accuracy validation sweep",
+              "area": "qa",
+              "owner_role": "QA Eng",
+              "est_hours": 12,
+              "dependencies": [],
+              "deliverable": "Re-validate HD, Gene Keys, Vimshottari against reference data",
+              "acceptance": "100% accuracy maintained for astronomical engines"
+            },
+            {
+              "id": "W2-S8-07",
+              "title": "Update .context/architecture with final patterns",
+              "area": "product",
+              "owner_role": "Tech Writer",
+              "est_hours": 8,
+              "dependencies": [],
+              "deliverable": "Document as-built architecture with all engines + workflows",
+              "acceptance": ".context reflects final implementation"
+            },
+            {
+              "id": "W2-S8-08",
+              "title": "Write .context/engines docs for all engines",
+              "area": "product",
+              "owner_role": "Tech Writer",
+              "est_hours": 16,
+              "dependencies": [],
+              "deliverable": "Individual engine docs in .context/engines/ for all 13",
+              "acceptance": "Each engine has calculation details, wisdom data sources, witness prompt patterns"
+            },
+            {
+              "id": "W2-S8-09",
+              "title": "Write .context/workflows synthesis documentation",
+              "area": "product",
+              "owner_role": "Tech Writer",
+              "est_hours": 10,
+              "dependencies": [],
+              "deliverable": "Document synthesis patterns for all 6 workflows",
+              "acceptance": "Explains cross-engine validation logic"
+            },
+            {
+              "id": "W2-S8-10",
+              "title": "Write API documentation with examples",
+              "area": "product",
+              "owner_role": "Tech Writer",
+              "est_hours": 12,
+              "dependencies": [],
+              "deliverable": "Complete API docs with curl examples for all endpoints",
+              "acceptance": "Developers can integrate without asking questions"
+            },
+            {
+              "id": "W2-S8-11",
+              "title": "Write deployment guide",
+              "area": "product",
+              "owner_role": "Tech Writer",
+              "est_hours": 8,
+              "dependencies": ["W2-S7-13"],
+              "deliverable": "Step-by-step guide for deploying to production",
+              "acceptance": "DevOps can deploy following guide"
+            },
+            {
+              "id": "W2-S8-12",
+              "title": "Write troubleshooting guide",
+              "area": "product",
+              "owner_role": "Tech Writer",
+              "est_hours": 8,
+              "dependencies": [],
+              "deliverable": "Common issues + solutions (cache misses, Swiss Eph errors, TS bridge failures)",
+              "acceptance": "Covers top 10 common issues"
+            },
+            {
+              "id": "W2-S8-13",
+              "title": "Perform final code review and cleanup",
+              "area": "backend",
+              "owner_role": "Backend Eng",
+              "est_hours": 12,
+              "dependencies": [],
+              "deliverable": "Remove TODO comments, dead code, improve inline docs",
+              "acceptance": "Codebase ready for external contributions"
+            },
+            {
+              "id": "W2-S8-14",
+              "title": "Create release notes and migration guide",
+              "area": "product",
+              "owner_role": "Tech Writer",
+              "est_hours": 6,
+              "dependencies": [],
+              "deliverable": "Release notes for Selemene → Tryambakam migration",
+              "acceptance": "Existing users know how to upgrade"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

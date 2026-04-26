@@ -1,0 +1,264 @@
+{
+  "channels_info": {
+    "name": "Human Design Channels",
+    "description": "The 36 channels connecting gates and centers in Human Design",
+    "total_channels": 36,
+    "purpose": "Channels create defined energy flows between centers",
+    "activation": "Both gates must be activated to create a defined channel",
+    "source": "Human Design System by Ra Uru Hu"
+  },
+  "circuitry": {
+    "Individual": {
+      "description": "Mutation and empowerment - unique individual expression",
+      "theme": "Empowerment through uniqueness",
+      "channels": [
+        "1-8",
+        "2-14",
+        "3-60",
+        "7-31",
+        "9-52",
+        "10-20",
+        "12-22",
+        "15-5",
+        "25-51",
+        "26-44",
+        "28-38",
+        "34-57"
+      ]
+    },
+    "Tribal": {
+      "description": "Support and resources - caring for the tribe",
+      "theme": "Support and material security",
+      "channels": [
+        "17-62",
+        "18-58",
+        "19-49",
+        "21-45",
+        "27-50",
+        "32-54",
+        "37-40",
+        "39-55",
+        "40-37",
+        "59-6"
+      ]
+    },
+    "Collective": {
+      "description": "Sharing and understanding - collective evolution",
+      "theme": "Sharing knowledge and experience",
+      "channels": [
+        "11-56",
+        "13-33",
+        "16-48",
+        "20-10",
+        "23-43",
+        "24-61",
+        "29-46",
+        "30-41",
+        "35-36",
+        "47-64",
+        "63-4"
+      ]
+    }
+  },
+  "channels": {
+    "1-8": {
+      "name": "Channel of Inspiration",
+      "gates": [
+        1,
+        8
+      ],
+      "centers": [
+        "G",
+        "Throat"
+      ],
+      "type": "Manifesting",
+      "circuitry": "Individual",
+      "theme": "Creative Role Model",
+      "description": "The channel of creative inspiration and individual expression. Brings unique creative energy to inspire others.",
+      "keynotes": [
+        "Creative inspiration",
+        "Individual expression",
+        "Role modeling creativity",
+        "Inspiring others through uniqueness"
+      ],
+      "gate_1": "The Creative - Self-expression and individual purpose",
+      "gate_8": "Contribution - Unique contribution and style",
+      "energy_flow": "Creative self-expression (1) flows to unique contribution (8)",
+      "when_defined": "Natural creative inspiration and ability to inspire others",
+      "challenges": [
+        "Pressure to be constantly creative",
+        "Others expecting inspiration on demand",
+        "Feeling responsible for others' creativity"
+      ],
+      "gifts": [
+        "Natural creative inspiration",
+        "Ability to inspire others",
+        "Unique individual expression"
+      ]
+    },
+    "2-14": {
+      "name": "Channel of the Beat",
+      "gates": [
+        2,
+        14
+      ],
+      "centers": [
+        "G",
+        "Sacral"
+      ],
+      "type": "Generating",
+      "circuitry": "Individual",
+      "theme": "Keeper of Keys",
+      "description": "The channel of direction and life force energy. Knows the direction and has the energy to pursue it.",
+      "keynotes": [
+        "Direction and purpose",
+        "Life force energy",
+        "Keeper of resources",
+        "Material success"
+      ],
+      "gate_2": "The Receptive - Direction of the self",
+      "gate_14": "Power Skills - Possession in great measure",
+      "energy_flow": "Direction (2) is powered by life force energy (14)",
+      "when_defined": "Natural sense of direction with energy to pursue it",
+      "challenges": [
+        "Pressure to always know the direction",
+        "Others expecting material success",
+        "Burnout from overusing energy"
+      ],
+      "gifts": [
+        "Clear sense of direction",
+        "Sustainable energy for goals",
+        "Natural material success"
+      ]
+    },
+    "3-60": {
+      "name": "Channel of Mutation",
+      "gates": [
+        3,
+        60
+      ],
+      "centers": [
+        "Sacral",
+        "Root"
+      ],
+      "type": "Generating",
+      "circuitry": "Individual",
+      "theme": "Energy for Change",
+      "description": "The channel of mutation and innovation. Brings energy for change and new beginnings.",
+      "keynotes": [
+        "Mutation and change",
+        "Innovation energy",
+        "New beginnings",
+        "Breaking old patterns"
+      ],
+      "gate_3": "Ordering - Innovation through ordering",
+      "gate_60": "Limitation - Acceptance of limitations",
+      "energy_flow": "Innovation (3) is grounded by acceptance of limitations (60)",
+      "when_defined": "Natural ability to innovate and create change",
+      "challenges": [
+        "Constant pressure to innovate",
+        "Difficulty with limitations",
+        "Others expecting constant change"
+      ],
+      "gifts": [
+        "Natural innovation abilities",
+        "Energy for positive change",
+        "Breaking through limitations"
+      ]
+    },
+    "7-31": {
+      "name": "Channel of the Alpha",
+      "gates": [
+        7,
+        31
+      ],
+      "centers": [
+        "G",
+        "Throat"
+      ],
+      "type": "Manifesting",
+      "circuitry": "Collective",
+      "theme": "Leadership",
+      "description": "The channel of leadership and democratic guidance. Natural leaders who guide through influence.",
+      "keynotes": [
+        "Democratic leadership",
+        "Influential guidance",
+        "Leading by example",
+        "Collective direction"
+      ],
+      "gate_7": "The Army - The role of the self in interaction",
+      "gate_31": "Influence - Leading through influence",
+      "energy_flow": "Leadership role (7) expressed through influence (31)",
+      "when_defined": "Natural leadership abilities and influential presence",
+      "challenges": [
+        "Pressure to always lead",
+        "Others expecting constant guidance",
+        "Responsibility for group direction"
+      ],
+      "gifts": [
+        "Natural leadership abilities",
+        "Influential communication",
+        "Democratic guidance style"
+      ]
+    },
+    "9-52": {
+      "name": "Channel of Concentration",
+      "gates": [
+        9,
+        52
+      ],
+      "centers": [
+        "Sacral",
+        "Root"
+      ],
+      "type": "Generating",
+      "circuitry": "Individual",
+      "theme": "Determination",
+      "description": "The channel of focus and determination. Ability to concentrate energy on what matters.",
+      "keynotes": [
+        "Focus and concentration",
+        "Determination",
+        "Sustained effort",
+        "Completing projects"
+      ],
+      "gate_9": "Focus - The power of the small",
+      "gate_52": "Stillness - Keeping still",
+      "energy_flow": "Focused energy (9) grounded by stillness (52)",
+      "when_defined": "Natural ability to focus and complete projects",
+      "challenges": [
+        "Difficulty stopping once focused",
+        "Others expecting constant productivity",
+        "Burnout from over-focusing"
+      ],
+      "gifts": [
+        "Exceptional focus abilities",
+        "Determination to complete",
+        "Sustained concentrated effort"
+      ]
+    }
+  },
+  "channel_types": {
+    "Manifesting": {
+      "description": "Channels connecting motor centers to throat",
+      "function": "Manifestation and expression",
+      "energy": "Outward expression of energy"
+    },
+    "Generating": {
+      "description": "Channels connecting sacral to other centers",
+      "function": "Life force and building energy",
+      "energy": "Sustainable work energy"
+    },
+    "Projected": {
+      "description": "Channels not involving motor centers",
+      "function": "Guidance and wisdom",
+      "energy": "Focused and penetrating"
+    }
+  },
+  "practical_applications": {
+    "chart_reading": "Defined channels show consistent energy themes",
+    "relationships": "Channel compatibility creates electromagnetic attraction",
+    "life_purpose": "Channels indicate natural talents and abilities",
+    "career": "Channels suggest optimal work environments and roles",
+    "personal_development": "Understanding channels helps optimize energy use"
+  }
+}

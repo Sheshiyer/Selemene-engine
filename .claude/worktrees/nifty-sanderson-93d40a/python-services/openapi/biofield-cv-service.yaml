@@ -1,0 +1,116 @@
+openapi: "3.0.3"
+info:
+  title: "Selemene Biofield CV Service"
+  version: "3.0.0"
+  description: "Python sidecar service for biofield image analysis using OpenCV. Implements spatial algorithms from biofield_spatial_algorithms.json."
+
+servers:
+  - url: http://localhost:8002
+    description: Local development
+
+paths:
+  /health:
+    get:
+      summary: Health check
+      operationId: healthCheck
+      responses:
+        "200":
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthResponse"
+
+  /analyze:
+    post:
+      summary: Analyze biofield image using spatial algorithms
+      operationId: analyzeBiofield
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [image]
+              properties:
+                image:
+                  type: string
+                  format: binary
+                  description: "PIP or webcam capture image"
+                algorithms:
+                  type: string
+                  description: "JSON array of algorithm names to run. Default: all."
+                options:
+                  type: string
+                  description: "JSON string with processing options"
+      responses:
+        "200":
+          description: Biofield analysis complete
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BiofieldCVResponse"
+        "400":
+          description: Invalid image
+        "422":
+          description: Processing failed
+        "503":
+          description: OpenCV not available
+
+components:
+  schemas:
+    HealthResponse:
+      type: object
+      required: [status, service, version]
+      properties:
+        status: { type: string, enum: [healthy, degraded] }
+        service: { type: string, example: "biofield-cv" }
+        version: { type: string, example: "3.0.0" }
+        opencv_available: { type: boolean }
+        numpy_available: { type: boolean }
+
+    BiofieldCVResponse:
+      type: object
+      required: [metrics, processing_time_ms, algorithms_run]
+      properties:
+        metrics:
+          $ref: "#/components/schemas/SpatialMetrics"
+        quality_assessment:
+          $ref: "#/components/schemas/QualityAssessment"
+        algorithms_run:
+          type: array
+          items: { type: string }
+        processing_time_ms: { type: number, format: float }
+
+    SpatialMetrics:
+      type: object
+      properties:
+        light_quanta_density: { type: number, format: float, description: "Quanta per unit area" }
+        normalized_area: { type: number, format: float, minimum: 0, maximum: 1 }
+        average_intensity: { type: number, format: float, minimum: 0, maximum: 1 }
+        inner_noise: { type: number, format: float, description: "Variance coefficient" }
+        energy_analysis:
+          $ref: "#/components/schemas/EnergyBands"
+        entropy_form_coefficient: { type: number, format: float, description: "Shannon entropy in bits" }
+        fractal_dimension: { type: number, format: float, minimum: 1, maximum: 2 }
+        correlation_dimension: { type: number, format: float }
+        body_symmetry: { type: number, format: float, minimum: -1, maximum: 1 }
+        contour_complexity: { type: number, format: float }
+        pattern_regularity: { type: number, format: float, minimum: 0, maximum: 1 }
+
+    EnergyBands:
+      type: object
+      properties:
+        low: { type: number, format: float }
+        medium: { type: number, format: float }
+        high: { type: number, format: float }
+        total: { type: number, format: float }
+
+    QualityAssessment:
+      type: object
+      properties:
+        sharpness: { type: number, format: float }
+        contrast: { type: number, format: float }
+        noise_level: { type: number, format: float }
+        exposure: { type: number, format: float }
+        sufficient_quality: { type: boolean }

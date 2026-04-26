@@ -1,0 +1,102 @@
+name: New Engine Proposal
+description: Propose a new consciousness engine for Selemene
+title: "[ENGINE] "
+labels: ["new-engine", "needs-review", "architecture"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Proposing a new consciousness engine? Great! Please provide detailed information.
+
+  - type: input
+    id: engine-name
+    attributes:
+      label: Engine Name
+      description: What is the name of the proposed engine?
+      placeholder: "Example: Tropical Astrology Engine"
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Engine Description
+      description: What does this engine calculate?
+      placeholder: "Calculates tropical zodiac positions, aspects, house systems, and generates natal chart interpretations"
+    validations:
+      required: true
+
+  - type: textarea
+    id: inputs
+    attributes:
+      label: Required Inputs
+      description: What data does this engine need?
+      placeholder: |
+        - Birth date/time
+        - Birth location (lat/long)
+        - House system preference
+        - Aspect orbs
+    validations:
+      required: true
+
+  - type: textarea
+    id: outputs
+    attributes:
+      label: Expected Outputs
+      description: What will this engine return?
+      placeholder: |
+        - Planet positions in tropical zodiac
+        - House cusps
+        - Planetary aspects with orbs
+        - Chart interpretation text
+    validations:
+      required: true
+
+  - type: dropdown
+    id: complexity
+    attributes:
+      label: Implementation Complexity
+      description: Your assessment of complexity
+      options:
+        - Low - Mostly data lookups
+        - Medium - Some calculations required
+        - High - Complex astronomical calculations
+        - Very High - Novel algorithms/research needed
+    validations:
+      required: true
+
+  - type: textarea
+    id: references
+    attributes:
+      label: References & Resources
+      description: Links to algorithms, papers, existing implementations
+      placeholder: |
+        - Algorithm: https://...
+        - Reference data: https://...
+        - Existing library: https://...
+
+  - type: textarea
+    id: use-cases
+    attributes:
+      label: Use Cases
+      description: Who will use this and why?
+      placeholder: "Western astrologers need tropical positions for natal chart analysis"
+
+  - type: dropdown
+    id: language
+    attributes:
+      label: Preferred Implementation Language
+      options:
+        - Rust (native)
+        - TypeScript (ts-engines)
+        - Either
+        - Not sure
+    validations:
+      required: true
+
+  - type: textarea
+    id: integration
+    attributes:
+      label: Integration Considerations
+      description: How does this fit with existing engines?
+      placeholder: "Could share ephemeris data with Human Design engine, needs new API endpoint group"

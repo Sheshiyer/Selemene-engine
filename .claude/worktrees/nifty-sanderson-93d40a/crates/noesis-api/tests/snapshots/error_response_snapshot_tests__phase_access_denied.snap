@@ -1,0 +1,15 @@
+---
+source: crates/noesis-api/tests/error_response_snapshot_tests.rs
+expression: json
+---
+{
+  "details": {
+    "current_phase": 1,
+    "required_phase": 3
+  },
+  "error": "Phase access denied: engine requires phase 3, user is at phase 1",
+  "error_code": "PHASE_ACCESS_DENIED",
+  "message": "Phase access denied: engine requires phase 3, user is at phase 1",
+  "status": 403,
+  "trace_id": "snapshot-trace"
+}

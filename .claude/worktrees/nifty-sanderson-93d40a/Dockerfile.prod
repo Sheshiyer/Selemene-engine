@@ -1,0 +1,159 @@
+# =============================================================================
+# Production Multi-Stage Dockerfile for Selemene Engine (noesis-api)
+# Optimized for Docker layer caching: dependency builds are cached separately
+# from source builds, reducing incremental deploy time from ~15min to ~2-3min.
+# Target size: <500MB
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Stage 1: Builder — build the workspace
+# -----------------------------------------------------------------------------
+FROM rust:1.89-slim-bookworm AS builder
+
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    pkg-config \
+    libssl-dev \
+    clang \
+    libclang-dev \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /build
+
+# --- Layer 1: Copy workspace manifests only (changes when dependencies change) ---
+COPY Cargo.toml Cargo.lock ./
+
+# Copy only Cargo.toml files from each crate (not source code)
+COPY crates/noesis-core/Cargo.toml ./crates/noesis-core/Cargo.toml
+COPY crates/noesis-data/Cargo.toml ./crates/noesis-data/Cargo.toml
+COPY crates/noesis-cache/Cargo.toml ./crates/noesis-cache/Cargo.toml
+COPY crates/noesis-auth/Cargo.toml ./crates/noesis-auth/Cargo.toml
+COPY crates/noesis-metrics/Cargo.toml ./crates/noesis-metrics/Cargo.toml
+COPY crates/noesis-witness/Cargo.toml ./crates/noesis-witness/Cargo.toml
+COPY crates/noesis-orchestrator/Cargo.toml ./crates/noesis-orchestrator/Cargo.toml
+COPY crates/noesis-bridge/Cargo.toml ./crates/noesis-bridge/Cargo.toml
+COPY crates/noesis-api/Cargo.toml ./crates/noesis-api/Cargo.toml
+COPY crates/noesis-vedic-api/Cargo.toml ./crates/noesis-vedic-api/Cargo.toml
+COPY crates/noesis-western-api/Cargo.toml ./crates/noesis-western-api/Cargo.toml
+COPY crates/noesis-integration/Cargo.toml ./crates/noesis-integration/Cargo.toml
+COPY crates/engine-panchanga/Cargo.toml ./crates/engine-panchanga/Cargo.toml
+COPY crates/engine-numerology/Cargo.toml ./crates/engine-numerology/Cargo.toml
+COPY crates/engine-biorhythm/Cargo.toml ./crates/engine-biorhythm/Cargo.toml
+COPY crates/engine-human-design/Cargo.toml ./crates/engine-human-design/Cargo.toml
+COPY crates/engine-vimshottari/Cargo.toml ./crates/engine-vimshottari/Cargo.toml
+COPY crates/engine-gene-keys/Cargo.toml ./crates/engine-gene-keys/Cargo.toml
+COPY crates/engine-vedic-clock/Cargo.toml ./crates/engine-vedic-clock/Cargo.toml
+COPY crates/engine-biofield/Cargo.toml ./crates/engine-biofield/Cargo.toml
+COPY crates/engine-face-reading/Cargo.toml ./crates/engine-face-reading/Cargo.toml
+COPY crates/engine-nadabrahman/Cargo.toml ./crates/engine-nadabrahman/Cargo.toml
+COPY crates/engine-transits/Cargo.toml ./crates/engine-transits/Cargo.toml
+
+# --- Layer 2: Create dummy source stubs so cargo can resolve the workspace ---
+# Library crates get a stub lib.rs
+RUN for crate in \
+      noesis-core noesis-data noesis-cache noesis-auth noesis-metrics \
+      noesis-witness noesis-orchestrator noesis-bridge noesis-vedic-api \
+      noesis-western-api noesis-integration \
+      engine-panchanga engine-numerology engine-biorhythm engine-human-design \
+      engine-vimshottari engine-gene-keys engine-vedic-clock engine-biofield \
+      engine-face-reading engine-nadabrahman engine-transits; do \
+        mkdir -p "crates/$crate/src" && \
+        echo "" > "crates/$crate/src/lib.rs"; \
+    done && \
+    # noesis-api has both lib.rs and a [[bin]] target (main.rs), plus src/bin/ extras
+    mkdir -p crates/noesis-api/src/bin && \
+    echo "" > crates/noesis-api/src/lib.rs && \
+    echo "fn main() {}" > crates/noesis-api/src/main.rs && \
+    echo "fn main() {}" > crates/noesis-api/src/bin/generate_load_test_tokens.rs && \
+    echo "fn main() {}" > crates/noesis-api/src/bin/generate_test_credentials.rs && \
+    # Create dummy benches and examples to satisfy Cargo.toml manifests during pre-build
+    mkdir -p crates/noesis-orchestrator/benches && echo "fn main() {}" > crates/noesis-orchestrator/benches/workflow_bench.rs && \
+    mkdir -p crates/noesis-api/benches && echo "fn main() {}" > crates/noesis-api/benches/engine_comparison.rs && \
+    mkdir -p crates/engine-vimshottari/benches && echo "fn main() {}" > crates/engine-vimshottari/benches/vim_performance.rs && \
+    mkdir -p crates/noesis-auth/examples && \
+    echo "fn main() {}" > crates/noesis-auth/examples/seed_api_keys.rs && \
+    echo "fn main() {}" > crates/noesis-auth/examples/rotate_api_key.rs && \
+    echo "fn main() {}" > crates/noesis-auth/examples/issue_api_key_from_existing.rs && \
+    mkdir -p crates/engine-gene-keys/benches && echo "fn main() {}" > crates/engine-gene-keys/benches/gk_performance.rs && \
+    mkdir -p crates/engine-human-design/benches && echo "fn main() {}" > crates/engine-human-design/benches/hd_performance.rs
+
+# --- Layer 3: Build dependencies only (THIS LAYER IS CACHED on source-only changes) ---
+RUN cargo build --release --bin noesis-server 2>&1 || true
+# The above may partially fail due to missing data files for include_str!, but it
+# will still download and compile all third-party dependencies, which is the goal.
+
+# --- Layer 4: Copy data files (changes infrequently) ---
+COPY data/ ./data/
+
+# --- Layer 5: Copy real source code (changes on every deploy) ---
+COPY crates/ ./crates/
+
+# Invalidate cargo's fingerprint cache so it recompiles our crates (not deps)
+RUN find crates -name "*.rs" -exec touch {} +
+
+# --- Layer 6: Build the real application (only recompiles project crates) ---
+RUN cargo build --release --bin noesis-server && \
+    strip /build/target/release/noesis-server
+
+# -----------------------------------------------------------------------------
+# Stage 2: Runtime — minimal production image
+# -----------------------------------------------------------------------------
+FROM debian:bookworm-slim AS runtime
+
+# Labels for container metadata
+LABEL org.opencontainers.image.title="Selemene Engine" \
+      org.opencontainers.image.description="High-performance astronomical calculation engine for Vedic astrology" \
+      org.opencontainers.image.vendor="WitnessOS" \
+      org.opencontainers.image.version="3.0.0"
+
+WORKDIR /app
+
+# Install minimal runtime dependencies
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    ca-certificates \
+    libssl3 \
+    curl \
+    && rm -rf /var/lib/apt/lists/* \
+    && rm -rf /var/cache/apt/*
+
+# Create non-root user for security
+RUN useradd -r -s /bin/false -u 1000 appuser && \
+    mkdir -p /app/data && \
+    chown -R appuser:appuser /app
+
+# Copy binary from builder
+COPY --from=builder /build/target/release/noesis-server /app/noesis-server
+
+# Copy Swiss Ephemeris data files
+COPY --chown=appuser:appuser data/ephemeris/ /app/data/ephemeris/
+
+# Copy wisdom-docs JSON files
+COPY --chown=appuser:appuser data/wisdom-docs/ /app/data/wisdom-docs/
+
+# Copy additional data directories (all exist in the repo)
+COPY --chown=appuser:appuser data/constants/ /app/data/constants/
+COPY --chown=appuser:appuser data/validation/ /app/data/validation/
+COPY --chown=appuser:appuser data/gene-keys/ /app/data/gene-keys/
+COPY --chown=appuser:appuser data/human-design/ /app/data/human-design/
+
+# Set environment variables
+ENV RUST_LOG=info \
+    DATA_PATH=/app/data \
+    SWISS_EPHEMERIS_PATH=/app/data/ephemeris \
+    HOST=0.0.0.0 \
+    PORT=8080
+
+# Expose API port
+EXPOSE 8080
+
+# Switch to non-root user
+USER appuser
+
+# Health check using the new endpoints
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+    CMD curl -sf http://localhost:8080/health/live || exit 1
+
+# Run the server
+ENTRYPOINT ["/app/noesis-server"]

@@ -1,0 +1,276 @@
+{
+  "metadata": {
+    "system": "Prahar-Raga",
+    "tradition": "Hindustani-Carnatic",
+    "version": "1.0.0",
+    "description": "Maps 8 prahar (3-hour time blocks) to recommended ragas based on traditional Indian musicology. Each prahar has primary and secondary raga recommendations with rationale."
+  },
+  "prahar_system": {
+    "description": "The day is divided into 8 prahar (watches) of approximately 3 hours each. Each prahar has specific ragas traditionally associated with it based on the emotional and energetic quality of that time.",
+    "note": "Exact times vary by season and tradition. These represent the standard division."
+  },
+  "prahars": [
+    {
+      "prahar": 1,
+      "name": "Pratah Kala (Early Morning)",
+      "time_range": "06:00-09:00",
+      "start_hour": 6,
+      "end_hour": 9,
+      "quality": "awakening",
+      "dosha_dominant": "kapha",
+      "element": "water",
+      "energy": "ascending",
+      "primary_ragas": [
+        {
+          "melakarta_number": 15,
+          "name": "Mayamalavagowla",
+          "rationale": "Traditional beginner raga, auspicious morning scale with powerful awakening quality"
+        },
+        {
+          "melakarta_number": 29,
+          "name": "Dheerasankarabharanam",
+          "rationale": "Major scale equivalent, bright and uplifting for morning energy"
+        },
+        {
+          "melakarta_number": 22,
+          "name": "Kharaharapriya",
+          "rationale": "Versatile raga with natural minor feel, supports morning contemplation"
+        }
+      ],
+      "secondary_ragas": [8, 28, 65],
+      "consciousness_practice": "Pranayama and sun salutation",
+      "witness_prompt": "As morning light fills the space, notice what awakens within you as these notes rise."
+    },
+    {
+      "prahar": 2,
+      "name": "Purvahna (Late Morning)",
+      "time_range": "09:00-12:00",
+      "start_hour": 9,
+      "end_hour": 12,
+      "quality": "activating",
+      "dosha_dominant": "pitta",
+      "element": "fire",
+      "energy": "peak_ascending",
+      "primary_ragas": [
+        {
+          "melakarta_number": 28,
+          "name": "Harikambhoji",
+          "rationale": "Mixolydian equivalent, active and joyful energy for productive morning"
+        },
+        {
+          "melakarta_number": 65,
+          "name": "Mechakalyani",
+          "rationale": "Lydian equivalent with prati madhyama, expansive and luminous"
+        },
+        {
+          "melakarta_number": 17,
+          "name": "Suryakantam",
+          "rationale": "Sun-related raga, intensely bright for peak morning energy"
+        }
+      ],
+      "secondary_ragas": [29, 59, 64],
+      "consciousness_practice": "Focused meditation and creative work",
+      "witness_prompt": "At the height of morning energy, observe where your attention naturally flows."
+    },
+    {
+      "prahar": 3,
+      "name": "Madhyahna (Afternoon)",
+      "time_range": "12:00-15:00",
+      "start_hour": 12,
+      "end_hour": 15,
+      "quality": "sustaining",
+      "dosha_dominant": "pitta",
+      "element": "fire",
+      "energy": "plateau",
+      "primary_ragas": [
+        {
+          "melakarta_number": 16,
+          "name": "Chakravakam",
+          "rationale": "Balanced raga that sustains energy without overstimulation"
+        },
+        {
+          "melakarta_number": 27,
+          "name": "Sarasangi",
+          "rationale": "Melodious and sustaining, supports afternoon equilibrium"
+        },
+        {
+          "melakarta_number": 51,
+          "name": "Kamavardhini",
+          "rationale": "Desire-fulfilling raga with prati madhyama, maintains afternoon drive"
+        }
+      ],
+      "secondary_ragas": [26, 33, 58],
+      "consciousness_practice": "Walking meditation and mindful eating",
+      "witness_prompt": "In the fullness of day, notice the balance between doing and being."
+    },
+    {
+      "prahar": 4,
+      "name": "Aparahna (Late Afternoon)",
+      "time_range": "15:00-18:00",
+      "start_hour": 15,
+      "end_hour": 18,
+      "quality": "transitioning",
+      "dosha_dominant": "vata",
+      "element": "air",
+      "energy": "descending",
+      "primary_ragas": [
+        {
+          "melakarta_number": 14,
+          "name": "Vakulabharanam",
+          "rationale": "Sweet and fragrant quality matching late afternoon's softening light"
+        },
+        {
+          "melakarta_number": 56,
+          "name": "Shanmukhapriya",
+          "rationale": "Six-faced beauty raga, complex emotions of day's transition"
+        },
+        {
+          "melakarta_number": 23,
+          "name": "Gaurimanohari",
+          "rationale": "Beautiful and gentle, supports the transition from activity to reflection"
+        }
+      ],
+      "secondary_ragas": [21, 34, 52],
+      "consciousness_practice": "Journaling and gentle yoga",
+      "witness_prompt": "As the day turns, witness the natural letting go that arises."
+    },
+    {
+      "prahar": 5,
+      "name": "Sayam Kala (Early Evening)",
+      "time_range": "18:00-21:00",
+      "start_hour": 18,
+      "end_hour": 21,
+      "quality": "deepening",
+      "dosha_dominant": "kapha",
+      "element": "earth",
+      "energy": "settling",
+      "primary_ragas": [
+        {
+          "melakarta_number": 20,
+          "name": "Natabhairavi",
+          "rationale": "Natural minor, evokes depth and introspection of twilight"
+        },
+        {
+          "melakarta_number": 57,
+          "name": "Simhendramadhyamam",
+          "rationale": "Lion-like raga with Hungarian minor feel, powerful evening meditation"
+        },
+        {
+          "melakarta_number": 21,
+          "name": "Keeravani",
+          "rationale": "Harmonic minor equivalent, deep emotional resonance for evening"
+        }
+      ],
+      "secondary_ragas": [44, 53, 59],
+      "consciousness_practice": "Sandhya Vandana (twilight meditation)",
+      "witness_prompt": "In the liminal space between day and night, notice what wants to be seen."
+    },
+    {
+      "prahar": 6,
+      "name": "Pradosha (Night)",
+      "time_range": "21:00-00:00",
+      "start_hour": 21,
+      "end_hour": 0,
+      "quality": "contemplative",
+      "dosha_dominant": "vata",
+      "element": "ether",
+      "energy": "deep_inward",
+      "primary_ragas": [
+        {
+          "melakarta_number": 45,
+          "name": "Shubhapantuvarali",
+          "rationale": "Deeply contemplative raga with intense inward-turning quality"
+        },
+        {
+          "melakarta_number": 39,
+          "name": "Jhalavarali",
+          "rationale": "Rare and mysterious, suitable for deep night meditation"
+        },
+        {
+          "melakarta_number": 8,
+          "name": "Hanumatodi",
+          "rationale": "Phrygian equivalent, devotional depth for night contemplation"
+        }
+      ],
+      "secondary_ragas": [37, 43, 63],
+      "consciousness_practice": "Deep dhyana (meditation) and mantra",
+      "witness_prompt": "In night's stillness, witness the space between thoughts."
+    },
+    {
+      "prahar": 7,
+      "name": "Nisha (Late Night)",
+      "time_range": "00:00-03:00",
+      "start_hour": 0,
+      "end_hour": 3,
+      "quality": "transcendent",
+      "dosha_dominant": "vata",
+      "element": "ether",
+      "energy": "transcendent",
+      "primary_ragas": [
+        {
+          "melakarta_number": 1,
+          "name": "Kanakangi",
+          "rationale": "First raga of the system, represents primordial sound in deepest night"
+        },
+        {
+          "melakarta_number": 36,
+          "name": "Chalanata",
+          "rationale": "Moving dance raga, the finale of the shuddha madhyama set"
+        },
+        {
+          "melakarta_number": 72,
+          "name": "Rasikapriya",
+          "rationale": "Last raga of the system, connoisseur's delight, completes the cycle"
+        }
+      ],
+      "secondary_ragas": [6, 42, 48],
+      "consciousness_practice": "Yoga Nidra and lucid awareness",
+      "witness_prompt": "In the deepest night, rest in the awareness that witnesses even sleep."
+    },
+    {
+      "prahar": 8,
+      "name": "Brahma Muhurta (Pre-Dawn)",
+      "time_range": "03:00-06:00",
+      "start_hour": 3,
+      "end_hour": 6,
+      "quality": "sacred",
+      "dosha_dominant": "vata_to_kapha",
+      "element": "ether_to_water",
+      "energy": "pre_dawn_awakening",
+      "primary_ragas": [
+        {
+          "melakarta_number": 68,
+          "name": "Jyotiswarupini",
+          "rationale": "Light-formed raga, embodies the first stirring of dawn light"
+        },
+        {
+          "melakarta_number": 59,
+          "name": "Dharmavati",
+          "rationale": "Righteous raga, aligns with the sacred pre-dawn hour of dharma"
+        },
+        {
+          "melakarta_number": 15,
+          "name": "Mayamalavagowla",
+          "rationale": "Traditional first raga learned, creates bridge from night to morning"
+        }
+      ],
+      "secondary_ragas": [3, 9, 67],
+      "consciousness_practice": "Brahma Muhurta sadhana (spiritual practice)",
+      "witness_prompt": "In the sacred hour before dawn, witness the birth of a new cycle of awareness."
+    }
+  ],
+  "nakshatra_modulation": {
+    "description": "Nakshatras (lunar mansions) modulate raga selection within each prahar. The ruling planet of the current nakshatra shifts emphasis toward certain swara groups.",
+    "planetary_swara_mapping": {
+      "sun": { "primary_swara": "ma1", "emphasis": "brightness" },
+      "moon": { "primary_swara": "sa", "emphasis": "nurturing" },
+      "mars": { "primary_swara": "ri", "emphasis": "intensity" },
+      "mercury": { "primary_swara": "ga", "emphasis": "intellect" },
+      "jupiter": { "primary_swara": "pa", "emphasis": "expansion" },
+      "venus": { "primary_swara": "dha", "emphasis": "beauty" },
+      "saturn": { "primary_swara": "ni", "emphasis": "depth" },
+      "rahu": { "primary_swara": "ma2", "emphasis": "transformation" },
+      "ketu": { "primary_swara": "sa", "emphasis": "liberation" }
+    }
+  }
+}

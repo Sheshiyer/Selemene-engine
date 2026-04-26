@@ -1,0 +1,33 @@
+{
+  "case_id": "05-ambiguous-feature",
+  "group": "treatment",
+  "run_id": "run-1",
+  "scores": {
+    "pattern_adherence": {
+      "score": 10,
+      "notes": "Uses validateQuery middleware exactly as shown in validation.md. Zod schema with enum validation pattern. Response format correct.",
+      "deductions": []
+    },
+    "completeness": {
+      "score": 10,
+      "notes": "Status filter with enum validation. Date range filters (dueBefore, dueAfter). Type inference. All optional. Handles empty results.",
+      "deductions": []
+    },
+    "correctness": {
+      "score": 10,
+      "notes": "Filtering logic correct. Type-safe with Zod inference. Date parsing correct.",
+      "deductions": []
+    },
+    "security": {
+      "score": 10,
+      "notes": "Input validated with Zod enum. Only filters user's own tasks. Explicit reference to auth/security.md ownership pattern.",
+      "deductions": []
+    },
+    "consistency": {
+      "score": 10,
+      "notes": "Follows validation.md patterns exactly. Uses existing middleware. Comments reference specific documentation files showing clear pattern discovery.",
+      "deductions": []
+    }
+  },
+  "total": 50
+}

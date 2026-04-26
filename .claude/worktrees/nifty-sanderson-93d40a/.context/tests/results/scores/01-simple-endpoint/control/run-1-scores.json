@@ -1,0 +1,33 @@
+{
+  "case_id": "01-simple-endpoint",
+  "group": "control",
+  "run_id": "run-1",
+  "scores": {
+    "pattern_adherence": {
+      "score": 9,
+      "notes": "Correct response format, uses authenticate middleware, follows Router pattern. Minor: no explicit import shown for AppError.",
+      "deductions": []
+    },
+    "completeness": {
+      "score": 10,
+      "notes": "All requirements met: endpoint created, authentication enforced, correct HTTP method and path, returns user profile.",
+      "deductions": []
+    },
+    "correctness": {
+      "score": 10,
+      "notes": "Logic is correct, proper async/await, TypeScript types used correctly.",
+      "deductions": []
+    },
+    "security": {
+      "score": 10,
+      "notes": "Uses authenticate middleware, does not expose passwordHash, accesses req.user safely with non-null assertion.",
+      "deductions": []
+    },
+    "consistency": {
+      "score": 9,
+      "notes": "Matches existing route style, correct naming. Minor: didn't reference existing routes for exact import style.",
+      "deductions": []
+    }
+  },
+  "total": 48
+}

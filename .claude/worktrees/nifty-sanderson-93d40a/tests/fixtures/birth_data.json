@@ -1,0 +1,211 @@
+{
+  "reference_users": [
+    {
+      "id": "user_nyc_1990",
+      "name": "Reference NYC User",
+      "date": "1990-01-15",
+      "time": "14:30",
+      "latitude": 40.7128,
+      "longitude": -74.006,
+      "timezone": "America/New_York",
+      "description": "Standard reference user for deterministic testing"
+    },
+    {
+      "id": "user_london_1985",
+      "name": "London User",
+      "date": "1985-06-20",
+      "time": "09:15",
+      "latitude": 51.5074,
+      "longitude": -0.1278,
+      "timezone": "Europe/London",
+      "description": "European timezone user"
+    },
+    {
+      "id": "user_tokyo_1995",
+      "name": "Tokyo User",
+      "date": "1995-12-03",
+      "time": "18:45",
+      "latitude": 35.6762,
+      "longitude": 139.6503,
+      "timezone": "Asia/Tokyo",
+      "description": "East Asian timezone user"
+    },
+    {
+      "id": "user_sydney_1988",
+      "name": "Sydney User",
+      "date": "1988-03-21",
+      "time": "06:00",
+      "latitude": -33.8688,
+      "longitude": 151.2093,
+      "timezone": "Australia/Sydney",
+      "description": "Southern hemisphere user with equinox birth"
+    },
+    {
+      "id": "user_mumbai_1992",
+      "name": "Mumbai User",
+      "date": "1992-07-10",
+      "time": "22:30",
+      "latitude": 19.076,
+      "longitude": 72.8777,
+      "timezone": "Asia/Kolkata",
+      "description": "India Standard Time user"
+    },
+    {
+      "id": "user_berlin_1979",
+      "name": "Berlin User",
+      "date": "1979-11-25",
+      "time": "11:45",
+      "latitude": 52.52,
+      "longitude": 13.405,
+      "timezone": "Europe/Berlin",
+      "description": "CET timezone user"
+    },
+    {
+      "id": "user_saopaulo_2000",
+      "name": "Sao Paulo User",
+      "date": "2000-02-14",
+      "time": "03:15",
+      "latitude": -23.5505,
+      "longitude": -46.6333,
+      "timezone": "America/Sao_Paulo",
+      "description": "Brazilian user with late night birth"
+    },
+    {
+      "id": "user_cairo_1975",
+      "name": "Cairo User",
+      "date": "1975-09-08",
+      "time": "16:00",
+      "latitude": 30.0444,
+      "longitude": 31.2357,
+      "timezone": "Africa/Cairo",
+      "description": "Middle Eastern user"
+    },
+    {
+      "id": "user_la_1998",
+      "name": "Los Angeles User",
+      "date": "1998-04-30",
+      "time": "20:15",
+      "latitude": 34.0522,
+      "longitude": -118.2437,
+      "timezone": "America/Los_Angeles",
+      "description": "Pacific timezone user"
+    },
+    {
+      "id": "user_delhi_1983",
+      "name": "Delhi User",
+      "date": "1983-08-17",
+      "time": "07:45",
+      "latitude": 28.6139,
+      "longitude": 77.209,
+      "timezone": "Asia/Kolkata",
+      "description": "North India user with morning birth"
+    }
+  ],
+  "edge_cases": {
+    "midnight_birth": {
+      "name": "Midnight User",
+      "date": "1990-01-01",
+      "time": "00:00",
+      "latitude": 0.0,
+      "longitude": 0.0,
+      "timezone": "UTC",
+      "description": "Midnight birth at equator for edge case testing"
+    },
+    "noon_birth": {
+      "name": "High Noon User",
+      "date": "2000-06-21",
+      "time": "12:00",
+      "latitude": 23.4393,
+      "longitude": 0.0,
+      "timezone": "UTC",
+      "description": "Summer solstice at noon on Tropic of Cancer"
+    },
+    "polar_location": {
+      "name": "Arctic User",
+      "date": "1990-06-15",
+      "time": "14:00",
+      "latitude": 78.2232,
+      "longitude": 15.6267,
+      "timezone": "Arctic/Longyearbyen",
+      "description": "Arctic location for polar edge cases"
+    },
+    "date_line_west": {
+      "name": "Samoa User",
+      "date": "1985-12-31",
+      "time": "23:59",
+      "latitude": -13.8506,
+      "longitude": -171.7513,
+      "timezone": "Pacific/Samoa",
+      "description": "Near international date line (west)"
+    },
+    "date_line_east": {
+      "name": "Fiji User",
+      "date": "1985-12-31",
+      "time": "23:59",
+      "latitude": -17.7134,
+      "longitude": 178.065,
+      "timezone": "Pacific/Fiji",
+      "description": "Near international date line (east)"
+    },
+    "leap_year_feb_29": {
+      "name": "Leap Day User",
+      "date": "2000-02-29",
+      "time": "12:30",
+      "latitude": 40.7128,
+      "longitude": -74.006,
+      "timezone": "America/New_York",
+      "description": "Born on leap day"
+    },
+    "century_boundary": {
+      "name": "Millennium User",
+      "date": "2000-01-01",
+      "time": "00:01",
+      "latitude": 51.5074,
+      "longitude": -0.1278,
+      "timezone": "Europe/London",
+      "description": "Born at century/millennium boundary"
+    }
+  },
+  "invalid_inputs": {
+    "invalid_date": {
+      "name": "Invalid Date",
+      "date": "1990-13-45",
+      "time": "14:30",
+      "latitude": 40.7128,
+      "longitude": -74.006,
+      "timezone": "America/New_York"
+    },
+    "invalid_time": {
+      "name": "Invalid Time",
+      "date": "1990-01-15",
+      "time": "25:99",
+      "latitude": 40.7128,
+      "longitude": -74.006,
+      "timezone": "America/New_York"
+    },
+    "out_of_range_latitude": {
+      "name": "Bad Latitude",
+      "date": "1990-01-15",
+      "time": "14:30",
+      "latitude": 95.0,
+      "longitude": -74.006,
+      "timezone": "America/New_York"
+    },
+    "out_of_range_longitude": {
+      "name": "Bad Longitude",
+      "date": "1990-01-15",
+      "time": "14:30",
+      "latitude": 40.7128,
+      "longitude": 200.0,
+      "timezone": "America/New_York"
+    },
+    "invalid_timezone": {
+      "name": "Bad Timezone",
+      "date": "1990-01-15",
+      "time": "14:30",
+      "latitude": 40.7128,
+      "longitude": -74.006,
+      "timezone": "Mars/Olympus"
+    }
+  }
+}

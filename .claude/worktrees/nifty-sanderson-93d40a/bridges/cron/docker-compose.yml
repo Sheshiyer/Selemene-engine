@@ -1,0 +1,42 @@
+# Selemene Cron Scheduler
+# Uses ofelia for Docker-native cron scheduling
+version: "3.8"
+
+services:
+  scheduler:
+    image: mcuadros/ofelia:latest
+    depends_on:
+      - bridge
+    command: daemon --docker
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    labels:
+      ofelia.job-exec.daily-witness.schedule: "0 4 * * *"
+      ofelia.job-exec.daily-witness.command: "/scripts/daily_witness.sh"
+      ofelia.job-exec.daily-witness.container: "selemene-cron"
+      ofelia.job-exec.hourly-panchanga.schedule: "0 * * * *"
+      ofelia.job-exec.hourly-panchanga.command: "/scripts/hourly_panchanga.sh"
+      ofelia.job-exec.hourly-panchanga.container: "selemene-cron"
+
+  cron-runner:
+    image: curlimages/curl:latest
+    container_name: selemene-cron
+    volumes:
+      - ./daily_witness.sh:/scripts/daily_witness.sh:ro
+      - ./hourly_panchanga.sh:/scripts/hourly_panchanga.sh:ro
+      - cron-logs:/var/log/selemene
+    environment:
+      - BRIDGE_URL=http://bridge:8000
+    entrypoint: ["sh", "-c", "while true; do sleep 3600; done"]
+
+  bridge:
+    build: ../universal-tool-server
+    ports:
+      - "8000:8000"
+    environment:
+      - SELEMENE_RUST_URL=http://host.docker.internal:8080
+      - SELEMENE_TS_URL=http://host.docker.internal:3001
+      - SELEMENE_API_KEY=${SELEMENE_API_KEY:-}
+
+volumes:
+  cron-logs:

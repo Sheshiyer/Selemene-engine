@@ -1,0 +1,561 @@
+{
+  "meta": {
+    "name": "Selemene Engine — Aleph Launch Tasks",
+    "description": "Post-MVP improvement plan: bug fixes, cleanup, refactoring, docs, and deploy verification. Filtered from Grok's 55-task plan against actual codebase state.",
+    "created": "2026-02-10",
+    "source": "plan-aleph-launch.md (Grok), filtered by noesisX",
+    "total_tasks": 50,
+    "total_estimate_hours": 148,
+    "sprints": 5,
+    "filtered_out": [
+      "Grok Task 33 (cargo-audit in CI) — already done in MVP-04",
+      "Redis L2 cache tasks — already done in MVP-05/MVP-08",
+      "Test stability (SIGTRAP cleanup) — already done in MVP-07",
+      "OpenAPI updates — already done in MVP-18",
+      "Load test baseline — already done in MVP-21",
+      "Secret scanning — already done in MVP-04",
+      "Grok Task 14 (merge biofield to experimental) — biofield is 1.7K+ LOC, NOT a stub",
+      "Grok Task 26 (merge face-reading to experimental) — face-reading is 1.7K+ LOC, NOT a stub",
+      "Grok Task 30 (accuracy tests for experimental crate) — no experimental crate needed",
+      "Grok Task 32 (merge similar handlers in vedic-api) — too vague, needs separate assessment",
+      "vitest benchmark references — ts-engines uses Bun, not vitest"
+    ]
+  },
+  "sprints": [
+    {
+      "id": "sprint-1",
+      "name": "P0 Bug Fixes + Assessment",
+      "estimate_hours": 32,
+      "tasks": [
+        {
+          "id": "ALEPH-01",
+          "title": "Fix vimshottari 120-year cycle total (117.375 vs 120)",
+          "source": "Grok P1-Phase3-28",
+          "estimate_hours": 4,
+          "status": "done",
+          "priority": "P0",
+          "description": "Vimshottari dasha period durations sum to 117.375 years instead of the canonical 120. Investigate rounding/truncation in period calculations and fix to match traditional values.",
+          "dependencies": []
+        },
+        {
+          "id": "ALEPH-02",
+          "title": "Fix vimshottari antardasha date continuity (4-day gap)",
+          "source": "Grok P1-Phase3-28",
+          "estimate_hours": 3,
+          "status": "done",
+          "priority": "P0",
+          "description": "Antardasha sub-periods have a 4-day gap between consecutive periods. End date of one period should equal start date of the next. Fix date boundary calculations.",
+          "dependencies": ["ALEPH-01"]
+        },
+        {
+          "id": "ALEPH-03",
+          "title": "Fix TCM element relationships mapping (Metal vs Water)",
+          "source": "Grok P1-Phase3-29",
+          "estimate_hours": 3,
+          "status": "done",
+          "priority": "P0",
+          "description": "TCM element relationship mapping returns incorrect controlling/generating cycle elements. Verify against Wu Xing (Five Elements) canonical relationships.",
+          "dependencies": []
+        },
+        {
+          "id": "ALEPH-04",
+          "title": "Fix TCM analysis from birth profile (Earth vs Fire)",
+          "source": "Grok P1-Phase3-29",
+          "estimate_hours": 3,
+          "status": "done",
+          "priority": "P0",
+          "description": "TCM analysis derived from birth profile assigns incorrect primary element (Earth instead of Fire for certain birth data). Trace element derivation logic and fix mapping.",
+          "dependencies": ["ALEPH-03"]
+        },
+        {
+          "id": "ALEPH-05",
+          "title": "Fix engine-human-design SIGSEGV on multi-threaded test cleanup",
+          "source": "Grok P1-Phase1-7",
+          "estimate_hours": 6,
+          "status": "done",
+          "priority": "P0",
+          "description": "Human Design engine tests SIGSEGV during cleanup in multi-threaded test execution. Likely related to shared static data or unsafe FFI teardown. Investigate with RUST_BACKTRACE=full and thread sanitizer.",
+          "dependencies": []
+        },
+        {
+          "id": "ALEPH-06",
+          "title": "Cargo workspace audit — list all crates, tag stubs vs active",
+          "source": "Grok P1-Phase1-1/2",
+          "estimate_hours": 2,
+          "status": "done",
+          "priority": "P1",
+          "description": "Audit all workspace members. Tag each as: active (>500 LOC, tests), stub (<300 LOC, minimal), or support (shared types/utils). Map dependency graph from Cargo.lock. Actual stubs: noesis-witness (34 LOC), noesis-western-api (270 LOC), noesis-core (269 LOC). NOT stubs: biofield, face-reading (1.7K+ LOC each).",
+          "dependencies": []
+        },
+        {
+          "id": "ALEPH-07",
+          "title": "Run cargo-udeps for dead code scan",
+          "source": "Grok P1-Phase1-5",
+          "estimate_hours": 2,
+          "status": "done",
+          "priority": "P1",
+          "description": "Install and run cargo-udeps --workspace to identify unused dependencies across all crates. Document findings for Phase 2 cleanup.",
+          "dependencies": ["ALEPH-06"]
+        },
+        {
+          "id": "ALEPH-08",
+          "title": "Run benchmark baselines for all engines",
+          "source": "Grok P1-Phase1-6",
+          "estimate_hours": 2,
+          "status": "done",
+          "priority": "P1",
+          "description": "Execute all benchmarks in benches/ directory (hd_performance.rs, vim_performance.rs, etc.). Record baseline numbers for comparison in Phase 5.",
+          "dependencies": []
+        },
+        {
+          "id": "ALEPH-09",
+          "title": "Test coverage gap analysis across all crates",
+          "source": "Grok P1-Phase1-7",
+          "estimate_hours": 3,
+          "status": "done",
+          "priority": "P1",
+          "description": "Run cargo-tarpaulin or llvm-cov to measure test coverage per crate. Identify crates below 60% coverage. Prioritize gaps for Phase 3 testing work.",
+          "dependencies": []
+        },
+        {
+          "id": "ALEPH-10",
+          "title": "Identify prune candidates (legacy/, archive/, deprecated scripts)",
+          "source": "Grok P1-Phase1-3",
+          "estimate_hours": 2,
+          "status": "done",
+          "priority": "P1",
+          "description": "Audit legacy/, archive/root-binary-prototype/, and scripts/ for deletion candidates. List each file with rationale (superseded, unused, deprecated). Output: prune-candidates.md.",
+          "dependencies": []
+        },
+        {
+          "id": "ALEPH-11",
+          "title": "Doc gap analysis — .context/ vs actual codebase",
+          "source": "Grok P1-Phase1-8/9",
+          "estimate_hours": 2,
+          "status": "done",
+          "priority": "P1",
+          "description": "Compare .context/ documentation against actual codebase structure. Identify stale docs, missing coverage for new engines/workflows, and outdated architecture descriptions.",
+          "dependencies": []
+        }
+      ]
+    },
+    {
+      "id": "sprint-2",
+      "name": "Cleanup & Pruning",
+      "estimate_hours": 28,
+      "tasks": [
+        {
+          "id": "ALEPH-12",
+          "title": "Archive legacy/ directory",
+          "source": "Grok P2-Phase2-13",
+          "estimate_hours": 2,
+          "status": "pending",
+          "priority": "P1",
+          "description": "Move legacy/ contents to a git tag or archive branch. Remove from main working tree. Verify no active code references legacy/ paths.",
+          "dependencies": ["ALEPH-10"]
+        },
+        {
+          "id": "ALEPH-13",
+          "title": "Archive root-binary-prototype directory",
+          "source": "Grok P2-Phase2-13",
+          "estimate_hours": 1,
+          "status": "pending",
+          "priority": "P1",
+          "description": "Move archive/root-binary-prototype/ out of main tree. This is a historical prototype that's been superseded by the workspace binary setup.",
+          "dependencies": ["ALEPH-10"]
+        },
+        {
+          "id": "ALEPH-14",
+          "title": "Clean .gitkeep files in data/",
+          "source": "Grok P2-Phase2-11",
+          "estimate_hours": 1,
+          "status": "pending",
+          "priority": "P1",
+          "description": "Remove .gitkeep placeholder files from data/ subdirectories that now contain actual data files. Verify git still tracks the directories.",
+          "dependencies": []
+        },
+        {
+          "id": "ALEPH-15",
+          "title": "Evaluate noesis-witness stub (34 LOC) for absorption into noesis-core",
+          "source": "Grok P2-Phase2-14 (corrected)",
+          "estimate_hours": 3,
+          "status": "pending",
+          "priority": "P1",
+          "description": "noesis-witness is 34 LOC — a true stub. Evaluate if its types/traits should merge into noesis-core or remain as a future expansion point. If merging: update all Cargo.toml references, move types, remove crate.",
+          "dependencies": ["ALEPH-06"]
+        },
+        {
+          "id": "ALEPH-16",
+          "title": "Evaluate noesis-western-api stub (270 LOC) for consolidation",
+          "source": "Grok P2-Phase2-14 (corrected)",
+          "estimate_hours": 3,
+          "status": "pending",
+          "priority": "P1",
+          "description": "noesis-western-api is 270 LOC — minimal stub for Western astrology API. Evaluate: keep as placeholder for future Western astrology support, or absorb into noesis-vedic-api as a submodule. Decision depends on roadmap intent.",
+          "dependencies": ["ALEPH-06"]
+        },
+        {
+          "id": "ALEPH-17",
+          "title": "Prune deprecated scripts",
+          "source": "Grok P2-Phase2-24",
+          "estimate_hours": 2,
+          "status": "pending",
+          "priority": "P1",
+          "description": "Remove or archive deprecated scripts: test_gene_keys_frequency.sh, verify_phase3.sh, and any others identified in ALEPH-10 that are superseded by CI workflows or newer scripts.",
+          "dependencies": ["ALEPH-10"]
+        },
+        {
+          "id": "ALEPH-18",
+          "title": "Run cargo fmt --all for consistency",
+          "source": "Grok P2-Phase2-15",
+          "estimate_hours": 1,
+          "status": "pending",
+          "priority": "P1",
+          "description": "Run cargo fmt --all across the entire workspace. Commit formatting changes as a standalone commit for clean git blame.",
+          "dependencies": []
+        },
+        {
+          "id": "ALEPH-19",
+          "title": "Lint TS engines (bun run lint in ts-engines/)",
+          "source": "Grok P2-Phase2-20",
+          "estimate_hours": 2,
+          "status": "pending",
+          "priority": "P1",
+          "description": "Run bun run lint in ts-engines/ directory. Fix lint errors and warnings. Note: ts-engines uses Bun, not vitest.",
+          "dependencies": []
+        },
+        {
+          "id": "ALEPH-20",
+          "title": "Prune old .claude/ agent artifacts",
+          "source": "Grok P2-Phase2-17",
+          "estimate_hours": 2,
+          "status": "pending",
+          "priority": "P1",
+          "description": "Clean up outdated agent summary files (AGENT_XX_COMPLETION_SUMMARY.md) and old task management artifacts in .claude/ that are no longer relevant post-MVP.",
+          "dependencies": []
+        },
+        {
+          "id": "ALEPH-21",
+          "title": "Remove unused symlinks in legacy/",
+          "source": "Grok P2-Phase2-13",
+          "estimate_hours": 1,
+          "status": "pending",
+          "priority": "P1",
+          "description": "Identify and remove broken or unused symlinks in legacy/ directory before archiving.",
+          "dependencies": ["ALEPH-10"]
+        },
+        {
+          "id": "ALEPH-22",
+          "title": "Clean duplicate/unused data files",
+          "source": "Grok P2-Phase2-19",
+          "estimate_hours": 2,
+          "status": "pending",
+          "priority": "P1",
+          "description": "Audit data/ directory for duplicate JSON files or unused data files that are not referenced by any engine. Remove after confirming no imports/references.",
+          "dependencies": ["ALEPH-10"]
+        },
+        {
+          "id": "ALEPH-23",
+          "title": "Audit k8s/ for redundant YAML manifests",
+          "source": "Grok P2-Phase2-22",
+          "estimate_hours": 2,
+          "status": "pending",
+          "priority": "P1",
+          "description": "Review k8s/ directory for redundant or unused Kubernetes manifests (e.g., postgres-replication.yml if not needed, unused service definitions). Remove or consolidate.",
+          "dependencies": []
+        },
+        {
+          "id": "ALEPH-24",
+          "title": "Phase 2 summary — cargo check + file count before/after",
+          "source": "Grok P2-Phase2-25",
+          "estimate_hours": 2,
+          "status": "pending",
+          "priority": "P1",
+          "description": "After all Phase 2 tasks complete: run cargo check --workspace, document file count reduction (before vs after), verify no compilation errors introduced. Create phase-2-summary.md.",
+          "dependencies": ["ALEPH-12", "ALEPH-13", "ALEPH-14", "ALEPH-15", "ALEPH-16", "ALEPH-17", "ALEPH-18", "ALEPH-19", "ALEPH-20", "ALEPH-21", "ALEPH-22", "ALEPH-23"]
+        }
+      ]
+    },
+    {
+      "id": "sprint-3",
+      "name": "Refactoring & Upgrades",
+      "estimate_hours": 42,
+      "tasks": [
+        {
+          "id": "ALEPH-25",
+          "title": "Add fuzz tests for ephemeris.rs (cargo-fuzz)",
+          "source": "Grok P3-Phase3-27",
+          "estimate_hours": 4,
+          "status": "pending",
+          "priority": "P2",
+          "description": "Add cargo-fuzz targets for ephemeris calculation functions. Focus on edge cases: extreme dates, boundary julian day numbers, leap second transitions.",
+          "dependencies": ["ALEPH-24"]
+        },
+        {
+          "id": "ALEPH-26",
+          "title": "Optimize vimshottari dasha profiling",
+          "source": "Grok P3-Phase3-28",
+          "estimate_hours": 4,
+          "status": "pending",
+          "priority": "P2",
+          "description": "Profile vim_performance.rs benchmarks. Identify hot paths in dasha period calculations. Apply naive_then_optimize: ensure correctness first (ALEPH-01/02 fixes), then optimize critical paths.",
+          "dependencies": ["ALEPH-01", "ALEPH-02", "ALEPH-08"]
+        },
+        {
+          "id": "ALEPH-27",
+          "title": "Integrate TCM consistency in vedic-clock engine",
+          "source": "Grok P3-Phase3-29",
+          "estimate_hours": 4,
+          "status": "pending",
+          "priority": "P2",
+          "description": "After TCM fixes (ALEPH-03/04), ensure vedic-clock engine consistently uses corrected TCM element mappings. Update models.rs and any TCM-related calculations in the vedic-clock engine.",
+          "dependencies": ["ALEPH-03", "ALEPH-04"]
+        },
+        {
+          "id": "ALEPH-28",
+          "title": "Add L3 disk cache metrics to noesis-cache tests",
+          "source": "Grok P3-Phase3-31",
+          "estimate_hours": 3,
+          "status": "pending",
+          "priority": "P2",
+          "description": "Extend noesis-cache test suite with L3 disk cache metric collection. Verify cache hit/miss ratios, eviction behavior, and disk I/O overhead under test load.",
+          "dependencies": ["ALEPH-24"]
+        },
+        {
+          "id": "ALEPH-29",
+          "title": "Optimize workflow synthesis parallelism (tokio tasks)",
+          "source": "Grok P3-Phase3-34",
+          "estimate_hours": 6,
+          "status": "pending",
+          "priority": "P2",
+          "description": "Refactor birth_blueprint.rs and workflow synthesizers to use tokio::spawn for parallel engine execution where engines are independent. Measure latency improvement vs sequential execution.",
+          "dependencies": ["ALEPH-24"]
+        },
+        {
+          "id": "ALEPH-30",
+          "title": "Add performance benchmarks for TS engines (Bun-native)",
+          "source": "Grok P3-Phase3 (corrected from vitest)",
+          "estimate_hours": 4,
+          "status": "pending",
+          "priority": "P2",
+          "description": "Create Bun-native performance benchmarks for TS engines (numerology, biorhythm). Use Bun's built-in bench capabilities, NOT vitest. Establish baseline p95 latencies.",
+          "dependencies": ["ALEPH-19"]
+        },
+        {
+          "id": "ALEPH-31",
+          "title": "Extend chaos testing to cover Redis failures",
+          "source": "Grok P3-Phase3-38",
+          "estimate_hours": 3,
+          "status": "pending",
+          "priority": "P2",
+          "description": "Extend run-chaos-tests.sh to simulate Redis connection failures, timeouts, and OOM conditions. Verify graceful degradation to L1 in-memory cache.",
+          "dependencies": ["ALEPH-24"]
+        },
+        {
+          "id": "ALEPH-32",
+          "title": "Add security test variants (auth_bypass expansion)",
+          "source": "Grok P3-Phase3-39",
+          "estimate_hours": 3,
+          "status": "pending",
+          "priority": "P2",
+          "description": "Expand auth_bypass test suite with additional attack vectors: expired tokens, malformed JWTs, role escalation attempts, missing auth headers on protected endpoints.",
+          "dependencies": ["ALEPH-24"]
+        },
+        {
+          "id": "ALEPH-33",
+          "title": "Add dotenv-linter for env validation in CI",
+          "source": "Grok P3-Phase3-43",
+          "estimate_hours": 2,
+          "status": "pending",
+          "priority": "P2",
+          "description": "Add dotenv-linter to CI workflow to validate .env.example and catch env var issues (missing quotes, duplicate keys, invalid syntax) before deploy.",
+          "dependencies": []
+        },
+        {
+          "id": "ALEPH-34",
+          "title": "Create unified test runner script (cargo test + bun test)",
+          "source": "Grok P3-Phase3-36",
+          "estimate_hours": 2,
+          "status": "pending",
+          "priority": "P2",
+          "description": "Create a root-level test.sh that runs both cargo test --workspace and bun test in ts-engines/. Standardize exit codes and output formatting. Use in CI.",
+          "dependencies": ["ALEPH-24"]
+        },
+        {
+          "id": "ALEPH-35",
+          "title": "Extend k6 load tests to cover TS engines",
+          "source": "Grok P3-Phase3-37",
+          "estimate_hours": 3,
+          "status": "pending",
+          "priority": "P2",
+          "description": "Add k6 load test scenarios for TS engine endpoints (numerology, biorhythm). Verify p95 latency under concurrent load. Compare against Rust engine baselines.",
+          "dependencies": ["ALEPH-30"]
+        },
+        {
+          "id": "ALEPH-36",
+          "title": "Phase 3 summary — full test suite + coverage delta",
+          "source": "Grok P3-Phase3-40",
+          "estimate_hours": 2,
+          "status": "pending",
+          "priority": "P2",
+          "description": "After all Phase 3 tasks complete: run full test suite, measure coverage delta vs ALEPH-09 baseline, document performance improvements and new test counts. Create phase-3-summary.md.",
+          "dependencies": ["ALEPH-25", "ALEPH-26", "ALEPH-27", "ALEPH-28", "ALEPH-29", "ALEPH-30", "ALEPH-31", "ALEPH-32", "ALEPH-33", "ALEPH-34", "ALEPH-35"]
+        }
+      ]
+    },
+    {
+      "id": "sprint-4",
+      "name": "Documentation & Hygiene",
+      "estimate_hours": 24,
+      "tasks": [
+        {
+          "id": "ALEPH-37",
+          "title": "Update CODEBASE_INDEX.md with post-cleanup structure",
+          "source": "Grok P4-Phase4-41",
+          "estimate_hours": 3,
+          "status": "pending",
+          "priority": "P2",
+          "description": "Rewrite CODEBASE_INDEX.md to reflect post-Phase-2 codebase structure. Remove references to archived/deleted directories. Add new crates or restructured paths.",
+          "dependencies": ["ALEPH-24"]
+        },
+        {
+          "id": "ALEPH-38",
+          "title": "Integrate cargo-udeps as dead code hygiene in CI",
+          "source": "Grok P4-Phase4-42",
+          "estimate_hours": 3,
+          "status": "pending",
+          "priority": "P2",
+          "description": "Add cargo-udeps to CI workflow as a non-blocking check. Report unused dependencies in CI output. Use findings from ALEPH-07 as baseline.",
+          "dependencies": ["ALEPH-07"]
+        },
+        {
+          "id": "ALEPH-39",
+          "title": "TODO resolution sweep (grep TODOs, resolve or track)",
+          "source": "Grok P4-Phase4-44",
+          "estimate_hours": 4,
+          "status": "pending",
+          "priority": "P2",
+          "description": "Grep all TODO/FIXME/HACK comments across workspace. For each: resolve if trivial, create a tracked issue if non-trivial, or document as intentional with explanation.",
+          "dependencies": ["ALEPH-24"]
+        },
+        {
+          "id": "ALEPH-40",
+          "title": "Run cargo clippy --fix pass",
+          "source": "Grok P4-Phase4-45",
+          "estimate_hours": 3,
+          "status": "pending",
+          "priority": "P2",
+          "description": "Run cargo clippy --fix --workspace to auto-fix lint warnings. Review changes before committing. Address the 67 pre-existing warnings in noesis-vedic-api.",
+          "dependencies": ["ALEPH-18"]
+        },
+        {
+          "id": "ALEPH-41",
+          "title": "Enhance API_QUICKSTART.md with TS engine examples",
+          "source": "Grok P4-Phase4-46",
+          "estimate_hours": 2,
+          "status": "pending",
+          "priority": "P2",
+          "description": "Add TS engine endpoint examples (numerology, biorhythm) to API_QUICKSTART.md. Include curl examples, expected responses, and error cases.",
+          "dependencies": ["ALEPH-30"]
+        },
+        {
+          "id": "ALEPH-42",
+          "title": "Update RELEASE_NOTES.md with Aleph upgrade summaries",
+          "source": "Grok P4-Phase4-47",
+          "estimate_hours": 2,
+          "status": "pending",
+          "priority": "P2",
+          "description": "Add Aleph Launch release notes covering: P0 bug fixes, cleanup metrics, refactoring improvements, and new test coverage. Include before/after metrics.",
+          "dependencies": ["ALEPH-36"]
+        },
+        {
+          "id": "ALEPH-43",
+          "title": "Create Binary Guide section in README.md",
+          "source": "Grok P4-Phase4-48",
+          "estimate_hours": 2,
+          "status": "pending",
+          "priority": "P2",
+          "description": "Add a Binary Guide section to README.md explaining: noesis-server binary, build instructions, runtime configuration, Docker usage, and development vs production modes.",
+          "dependencies": []
+        },
+        {
+          "id": "ALEPH-44",
+          "title": "Generate mdBook from .context/ documentation",
+          "source": "Grok P4-Phase4-35",
+          "estimate_hours": 5,
+          "status": "pending",
+          "priority": "P3",
+          "description": "Set up mdBook to compile .context/ markdown files into a navigable documentation site. Configure SUMMARY.md, book.toml, and add CI step to build docs on push.",
+          "dependencies": ["ALEPH-11", "ALEPH-37"]
+        }
+      ]
+    },
+    {
+      "id": "sprint-5",
+      "name": "Verification & Deploy",
+      "estimate_hours": 22,
+      "tasks": [
+        {
+          "id": "ALEPH-45",
+          "title": "Docker-compose full stack verification",
+          "source": "Grok P5-Phase5-51",
+          "estimate_hours": 4,
+          "status": "pending",
+          "priority": "P2",
+          "description": "Run docker-compose up with all services (noesis-server, PostgreSQL, Redis). Test all endpoint categories: health, auth, engine, workflow. Verify inter-service connectivity.",
+          "dependencies": ["ALEPH-36"]
+        },
+        {
+          "id": "ALEPH-46",
+          "title": "CI workflow trigger + artifact verification",
+          "source": "Grok P5-Phase5-52",
+          "estimate_hours": 3,
+          "status": "pending",
+          "priority": "P2",
+          "description": "Trigger full CI workflow on final Aleph branch. Verify: all tests pass, Docker image builds, artifacts are published, no warnings in security scans.",
+          "dependencies": ["ALEPH-45"]
+        },
+        {
+          "id": "ALEPH-47",
+          "title": "Performance re-baseline vs Phase 1 benchmarks",
+          "source": "Grok P5-Phase5-53",
+          "estimate_hours": 3,
+          "status": "pending",
+          "priority": "P2",
+          "description": "Re-run all benchmarks from ALEPH-08. Compare against Phase 1 baselines. Document improvements/regressions. Target: no regression >5%, improvements in vimshottari and synthesis paths.",
+          "dependencies": ["ALEPH-08", "ALEPH-26", "ALEPH-29"]
+        },
+        {
+          "id": "ALEPH-48",
+          "title": "Staging deploy to Railway + 24h monitoring",
+          "source": "Grok P5-Phase5-54",
+          "estimate_hours": 6,
+          "status": "pending",
+          "priority": "P2",
+          "description": "Deploy Aleph release to Railway staging. Monitor for 24 hours: health endpoint uptime, error rates in Sentry, response latencies, memory/CPU usage. Document findings.",
+          "dependencies": ["ALEPH-46"]
+        },
+        {
+          "id": "ALEPH-49",
+          "title": "Final retrospective with metrics",
+          "source": "Grok P5-Phase5-55",
+          "estimate_hours": 3,
+          "status": "pending",
+          "priority": "P3",
+          "description": "Write aleph-retrospective.md with metrics: crate count delta, file count delta, test coverage delta, benchmark performance delta, lines of dead code removed, TODO count resolved. Include lessons learned.",
+          "dependencies": ["ALEPH-47", "ALEPH-48"]
+        },
+        {
+          "id": "ALEPH-50",
+          "title": "Phase 5 signoff — final cargo check + test suite green",
+          "source": "Derived",
+          "estimate_hours": 3,
+          "status": "pending",
+          "priority": "P2",
+          "description": "Final verification gate: cargo check --workspace clean, cargo test --workspace all pass, bun test in ts-engines/ all pass, cargo clippy --workspace no errors. Signoff for production deploy.",
+          "dependencies": ["ALEPH-49"]
+        }
+      ]
+    }
+  ]
+}

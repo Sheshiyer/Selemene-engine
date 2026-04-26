@@ -1,0 +1,244 @@
+{
+  "types_info": {
+    "name": "Human Design Types",
+    "description": "The 5 Human Design Types with their strategies and characteristics",
+    "total_types": 5,
+    "population_distribution": {
+      "Generator": "37%",
+      "Manifesting_Generator": "33%", 
+      "Projector": "21%",
+      "Manifestor": "8%",
+      "Reflector": "1%"
+    },
+    "source": "Human Design System by Ra Uru Hu"
+  },
+  "types": {
+    "Generator": {
+      "name": "Generator",
+      "percentage": 37,
+      "aura": "Open and Enveloping",
+      "strategy": "To Respond",
+      "authority_types": [
+        "Sacral Authority",
+        "Emotional Authority"
+      ],
+      "signature": "Satisfaction",
+      "not_self_theme": "Frustration",
+      "definition_requirement": "Sacral Center defined, Throat not connected to motor",
+      "description": "Generators are the life force of the planet. They have sustainable energy when engaged in work they love and are designed to respond to life rather than initiate.",
+      "characteristics": [
+        "Sustainable life force energy",
+        "Designed to work and be productive",
+        "Natural builders and creators",
+        "Need to respond rather than initiate",
+        "Satisfaction comes from right work"
+      ],
+      "strategy_details": {
+        "how_to_respond": "Wait for something external to respond to - sounds, requests, opportunities",
+        "sacral_sounds": "Uh-huh (yes), Unh-uh (no), Hmm (maybe/unclear)",
+        "decision_making": "Trust gut response, not mental reasoning",
+        "energy_management": "Use energy fully each day, go to bed tired"
+      },
+      "common_challenges": [
+        "Initiating instead of responding",
+        "Saying yes when sacral says no",
+        "Working in wrong jobs",
+        "Not trusting gut responses"
+      ],
+      "gifts": [
+        "Sustainable energy for right work",
+        "Natural building and creating abilities",
+        "Magnetic aura that attracts opportunities",
+        "Mastery through repetition"
+      ],
+      "relationships": {
+        "with_manifestors": "Can provide energy for manifestor visions",
+        "with_projectors": "Can be guided by projector insights",
+        "with_reflectors": "Can be mirrored by reflector wisdom",
+        "with_generators": "Natural collaboration and energy exchange"
+      }
+    },
+    "Manifesting_Generator": {
+      "name": "Manifesting Generator",
+      "percentage": 33,
+      "aura": "Open and Enveloping",
+      "strategy": "To Respond and Inform",
+      "authority_types": [
+        "Sacral Authority",
+        "Emotional Authority"
+      ],
+      "signature": "Satisfaction and Peace",
+      "not_self_theme": "Frustration and Anger",
+      "definition_requirement": "Sacral Center defined, Throat connected to motor",
+      "description": "Manifesting Generators are a hybrid type with Generator energy and Manifestor manifestation abilities. They can skip steps and move quickly when responding correctly.",
+      "characteristics": [
+        "Multi-passionate and multi-talented",
+        "Can skip steps in processes",
+        "Fast-moving when aligned",
+        "Need to respond AND inform",
+        "Natural efficiency and shortcuts"
+      ],
+      "strategy_details": {
+        "respond_first": "Always respond to something external first",
+        "then_inform": "Inform others of your actions to avoid resistance",
+        "skip_steps": "Trust your ability to find shortcuts",
+        "multiple_interests": "Honor your multi-passionate nature"
+      },
+      "common_challenges": [
+        "Not informing others of their actions",
+        "Trying to focus on one thing only",
+        "Impatience with slower processes",
+        "Initiating without responding first"
+      ],
+      "gifts": [
+        "Incredible efficiency when aligned",
+        "Multi-talented abilities",
+        "Natural shortcuts and innovation",
+        "High energy and productivity"
+      ],
+      "relationships": {
+        "with_manifestors": "Share manifestation abilities",
+        "with_projectors": "Need guidance for direction",
+        "with_reflectors": "Benefit from reflector mirroring",
+        "with_generators": "Share sacral energy and building abilities"
+      }
+    },
+    "Projector": {
+      "name": "Projector",
+      "percentage": 21,
+      "aura": "Focused and Absorbing",
+      "strategy": "Wait for Invitation",
+      "authority_types": [
+        "Splenic Authority",
+        "Emotional Authority",
+        "Heart Authority",
+        "G-Center Authority",
+        "Mental Authority"
+      ],
+      "signature": "Success",
+      "not_self_theme": "Bitterness",
+      "definition_requirement": "Sacral Center undefined",
+      "description": "Projectors are natural guides and managers of energy. They see systems and people clearly and are designed to guide others when invited.",
+      "characteristics": [
+        "Natural guides and advisors",
+        "See others clearly",
+        "Designed to manage and direct energy",
+        "Need recognition and invitation",
+        "Wisdom through studying others"
+      ],
+      "strategy_details": {
+        "wait_for_invitation": "Wait for formal invitations for major life decisions",
+        "recognition_first": "Ensure you're recognized before offering guidance",
+        "study_others": "Develop expertise in understanding people and systems",
+        "energy_management": "Rest and recharge regularly, not designed for 8-hour workdays"
+      },
+      "common_challenges": [
+        "Giving advice without invitation",
+        "Working like a Generator",
+        "Not waiting for recognition",
+        "Burnout from overworking"
+      ],
+      "gifts": [
+        "Natural wisdom and guidance abilities",
+        "Clear seeing of others and systems",
+        "Efficient use of energy",
+        "Leadership through invitation"
+      ],
+      "relationships": {
+        "with_generators": "Guide generator energy effectively",
+        "with_manifestors": "Can advise on manifestation strategies",
+        "with_reflectors": "Share wisdom about others",
+        "with_projectors": "Mutual recognition and guidance"
+      }
+    },
+    "Manifestor": {
+      "name": "Manifestor",
+      "percentage": 8,
+      "aura": "Closed and Repelling",
+      "strategy": "To Inform",
+      "authority_types": [
+        "Emotional Authority",
+        "Splenic Authority",
+        "Heart Authority"
+      ],
+      "signature": "Peace",
+      "not_self_theme": "Anger",
+      "definition_requirement": "Throat connected to motor center (not Sacral)",
+      "description": "Manifestors are the initiators and catalysts. They have the power to start things and create impact, but must inform others to avoid resistance.",
+      "characteristics": [
+        "Natural initiators and catalysts",
+        "Independent and self-reliant",
+        "Create impact and change",
+        "Need freedom to act",
+        "Powerful aura that can intimidate"
+      ],
+      "strategy_details": {
+        "inform_before_acting": "Tell people what you're going to do before you do it",
+        "who_to_inform": "Anyone who will be impacted by your actions",
+        "timing": "Inform just before taking action, not asking permission",
+        "independence": "Maintain your independence while keeping others informed"
+      },
+      "common_challenges": [
+        "Not informing others",
+        "Trying to control outcomes",
+        "Impatience with others' pace",
+        "Anger when met with resistance"
+      ],
+      "gifts": [
+        "Natural leadership and initiation",
+        "Ability to start new things",
+        "Independence and self-reliance",
+        "Catalyzing change and movement"
+      ],
+      "relationships": {
+        "with_generators": "Can initiate projects for generators to build",
+        "with_projectors": "Can benefit from projector guidance",
+        "with_reflectors": "Can learn from reflector wisdom",
+        "with_manifestors": "Mutual respect for independence"
+      }
+    },
+    "Reflector": {
+      "name": "Reflector",
+      "percentage": 1,
+      "aura": "Resistant and Sampling",
+      "strategy": "Wait a Lunar Cycle",
+      "authority_types": [
+        "Lunar Authority"
+      ],
+      "signature": "Surprise",
+      "not_self_theme": "Disappointment",
+      "definition_requirement": "All centers undefined",
+      "description": "Reflectors are the mirrors of humanity. They reflect the health of their community and are designed to make major decisions over a full lunar cycle.",
+      "characteristics": [
+        "Mirror the health of community",
+        "Highly sensitive to environment",
+        "Wisdom keepers",
+        "Need right environment and people",
+        "Natural evaluators of others"
+      ],
+      "strategy_details": {
+        "lunar_cycle": "Wait 28+ days for major decisions",
+        "environment_crucial": "Choose environment and people carefully",
+        "sampling_aura": "Sample different energies without taking them on",
+        "community_health": "Reflect back the health of your community"
+      },
+      "common_challenges": [
+        "Making quick decisions",
+        "Taking on others' energy",
+        "Wrong environment or people",
+        "Not honoring their sensitivity"
+      ],
+      "gifts": [
+        "Wisdom about human nature",
+        "Ability to see others clearly",
+        "Natural evaluation abilities",
+        "Reflecting community health"
+      ],
+      "relationships": {
+        "with_all_types": "Reflect back the energy and health of others",
+        "environment": "Need supportive, healthy environments",
+        "community": "Serve as barometer for community wellbeing"
+      }
+    }
+  }
+}

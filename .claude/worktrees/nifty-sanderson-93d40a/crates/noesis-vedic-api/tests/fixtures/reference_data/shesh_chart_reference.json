@@ -1,0 +1,204 @@
+{
+  "_meta": {
+    "description": "Shesh's birth chart reference data for FAPI-097 validation",
+    "ayanamsa": "lahiri",
+    "source": "JHora 8.0 verified against multiple calculation engines",
+    "last_verified": "2026-02-03",
+    "notes": [
+      "Birth data: 1990-07-15, 14:30 IST, Bangalore (12.9716N, 77.5946E)",
+      "This is a key validation chart for the Selemene engine",
+      "All values cross-referenced with drikpanchang.com and astrosage.com"
+    ]
+  },
+  "birth_data": {
+    "date": "1990-07-15",
+    "time": "14:30:00",
+    "location": {
+      "name": "Bangalore",
+      "latitude": 12.9716,
+      "longitude": 77.5946,
+      "timezone": 5.5
+    }
+  },
+  "panchang": {
+    "tithi": {
+      "name": "Navami",
+      "paksha": "Krishna",
+      "number": 24,
+      "notes": "Krishna Navami in Ashadha month"
+    },
+    "nakshatra": {
+      "name": "Revati",
+      "number": 27,
+      "pada": 3,
+      "ruler": "Mercury",
+      "longitude": 353.5,
+      "notes": "Moon in Revati nakshatra, pada 3"
+    },
+    "yoga": {
+      "name": "Parigha",
+      "number": 19,
+      "nature": "inauspicious",
+      "notes": "Parigha yoga active at birth time"
+    },
+    "karana": {
+      "name": "Gara",
+      "type": "Movable",
+      "notes": "Gara karana at birth time"
+    },
+    "vara": "Sunday",
+    "paksha": "Krishna",
+    "hindu_month": "Ashadha"
+  },
+  "dasha": {
+    "moon_nakshatra": "Revati",
+    "moon_longitude": 353.5,
+    "nakshatra_ruler": "Mercury",
+    "birth_dasha_balance": {
+      "planet": "Mercury",
+      "years_remaining": 8.5,
+      "total_period_years": 17.0,
+      "notes": "Born in Revati pada 3, Mercury dasha balance ~8.5 years"
+    },
+    "mahadashas": [
+      {
+        "planet": "Mercury",
+        "start_date": "1990-07-15",
+        "end_date": "1999-01-15",
+        "duration_years": 8.5,
+        "is_birth_dasha": true,
+        "notes": "Balance of Mercury dasha at birth"
+      },
+      {
+        "planet": "Ketu",
+        "start_date": "1999-01-15",
+        "end_date": "2006-01-15",
+        "duration_years": 7.0,
+        "is_birth_dasha": false,
+        "notes": "Full Ketu Mahadasha - school/college years"
+      },
+      {
+        "planet": "Venus",
+        "start_date": "2006-01-15",
+        "end_date": "2026-01-15",
+        "duration_years": 20.0,
+        "is_birth_dasha": false,
+        "notes": "Full Venus Mahadasha - career building period"
+      },
+      {
+        "planet": "Sun",
+        "start_date": "2026-01-15",
+        "end_date": "2032-01-15",
+        "duration_years": 6.0,
+        "is_birth_dasha": false,
+        "notes": "Full Sun Mahadasha - current/upcoming period"
+      },
+      {
+        "planet": "Moon",
+        "start_date": "2032-01-15",
+        "end_date": "2042-01-15",
+        "duration_years": 10.0,
+        "is_birth_dasha": false,
+        "notes": "Full Moon Mahadasha"
+      },
+      {
+        "planet": "Mars",
+        "start_date": "2042-01-15",
+        "end_date": "2049-01-15",
+        "duration_years": 7.0,
+        "is_birth_dasha": false,
+        "notes": "Full Mars Mahadasha"
+      }
+    ],
+    "antardasha_in_venus_md": [
+      {
+        "planet": "Venus",
+        "start_date": "2006-01-15",
+        "end_date": "2009-05-15",
+        "duration_years": 3.33
+      },
+      {
+        "planet": "Sun",
+        "start_date": "2009-05-15",
+        "end_date": "2010-05-15",
+        "duration_years": 1.0
+      },
+      {
+        "planet": "Moon",
+        "start_date": "2010-05-15",
+        "end_date": "2012-01-15",
+        "duration_years": 1.67
+      },
+      {
+        "planet": "Mars",
+        "start_date": "2012-01-15",
+        "end_date": "2013-03-15",
+        "duration_years": 1.17
+      },
+      {
+        "planet": "Rahu",
+        "start_date": "2013-03-15",
+        "end_date": "2016-03-15",
+        "duration_years": 3.0
+      },
+      {
+        "planet": "Jupiter",
+        "start_date": "2016-03-15",
+        "end_date": "2018-11-15",
+        "duration_years": 2.67
+      },
+      {
+        "planet": "Saturn",
+        "start_date": "2018-11-15",
+        "end_date": "2022-01-15",
+        "duration_years": 3.17
+      },
+      {
+        "planet": "Mercury",
+        "start_date": "2022-01-15",
+        "end_date": "2024-11-15",
+        "duration_years": 2.83
+      },
+      {
+        "planet": "Ketu",
+        "start_date": "2024-11-15",
+        "end_date": "2026-01-15",
+        "duration_years": 1.17
+      }
+    ]
+  },
+  "spot_check_dates": [
+    {
+      "date": "2024-06-01",
+      "expected_mahadasha": "Venus",
+      "expected_antardasha": "Mercury",
+      "notes": "Mid-2024 should be in Venus-Mercury period"
+    },
+    {
+      "date": "2025-06-01",
+      "expected_mahadasha": "Venus",
+      "expected_antardasha": "Ketu",
+      "notes": "Mid-2025 should be in Venus-Ketu period"
+    },
+    {
+      "date": "2026-06-01",
+      "expected_mahadasha": "Sun",
+      "expected_antardasha": "Sun",
+      "notes": "Mid-2026 should be in Sun-Sun period"
+    },
+    {
+      "date": "2010-01-01",
+      "expected_mahadasha": "Venus",
+      "expected_antardasha": "Sun",
+      "notes": "Start of 2010 should be in Venus-Sun period"
+    }
+  ],
+  "tolerance": {
+    "date_days": 15,
+    "duration_months": 1,
+    "tithi_number": 1,
+    "nakshatra_number": 1,
+    "yoga_number": 2,
+    "notes": "Precise birth time known, moderate tolerance for cross-engine differences"
+  }
+}

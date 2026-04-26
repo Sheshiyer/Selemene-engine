@@ -1,0 +1,320 @@
+{
+  "authorities_info": {
+    "name": "Human Design Authorities",
+    "description": "The 7 types of inner authority for decision-making in Human Design",
+    "total_authorities": 7,
+    "purpose": "Inner authority determines how each person is designed to make correct decisions",
+    "source": "Human Design System by Ra Uru Hu"
+  },
+  "authorities": {
+    "Sacral_Authority": {
+      "name": "Sacral Authority",
+      "types": ["Generator", "Manifesting_Generator"],
+      "percentage": "~70%",
+      "center": "Sacral",
+      "requirement": "Sacral Center defined, Solar Plexus undefined",
+      "description": "The most common authority, based on gut responses and life force energy. Decisions are made through immediate sacral sounds and gut feelings.",
+      "how_it_works": {
+        "mechanism": "Gut response to yes/no questions",
+        "sounds": {
+          "yes": "Uh-huh, mmm-hmm (rising tone)",
+          "no": "Unh-uh, nuh-uh (flat/declining tone)", 
+          "maybe": "Hmm, uh... (uncertain tone)"
+        },
+        "timing": "Immediate response, don't think about it",
+        "body_signals": "Energy rising (yes) or dropping (no)"
+      },
+      "decision_process": [
+        "Ask yes/no questions",
+        "Listen for immediate gut response",
+        "Trust the sound/feeling, not the mind",
+        "Don't overthink or rationalize"
+      ],
+      "common_mistakes": [
+        "Thinking instead of feeling",
+        "Overriding gut response with logic",
+        "Not asking yes/no questions",
+        "Waiting too long to respond"
+      ],
+      "tips": [
+        "Practice with small decisions first",
+        "Have others ask you yes/no questions",
+        "Notice your energy levels after decisions",
+        "Trust your first response"
+      ],
+      "examples": [
+        "Should I take this job? (Uh-huh = yes)",
+        "Do I want to go to this event? (Unh-uh = no)",
+        "Is this the right relationship? (Hmm = unclear, ask differently)"
+      ]
+    },
+    "Emotional_Authority": {
+      "name": "Emotional Authority",
+      "types": ["Generator", "Manifesting_Generator", "Projector", "Manifestor"],
+      "percentage": "~50%",
+      "center": "Solar Plexus",
+      "requirement": "Solar Plexus Center defined",
+      "description": "Decision-making through emotional clarity over time. No truth in the now - must wait for emotional wave to complete before deciding.",
+      "how_it_works": {
+        "mechanism": "Emotional wave from high to low",
+        "timing": "Wait for clarity, no rush decisions",
+        "wave_pattern": "Hope → Disappointment → Clarity",
+        "clarity_point": "When emotion is neutral/calm"
+      },
+      "decision_process": [
+        "Feel the initial emotional response",
+        "Wait for the wave to move through",
+        "Check decision at different emotional points",
+        "Decide when feeling neutral/clear"
+      ],
+      "wave_stages": {
+        "high": "Optimistic, excited, hopeful",
+        "middle": "Realistic assessment",
+        "low": "Pessimistic, disappointed",
+        "clarity": "Neutral, calm, clear"
+      },
+      "common_mistakes": [
+        "Deciding when emotional (high or low)",
+        "Rushing important decisions",
+        "Believing there's truth in the now",
+        "Not honoring the wave process"
+      ],
+      "tips": [
+        "Sleep on important decisions",
+        "Talk through decisions with others",
+        "Journal through the emotional wave",
+        "Wait until you feel neutral"
+      ],
+      "time_frames": {
+        "small_decisions": "Hours to a day",
+        "medium_decisions": "Days to a week", 
+        "major_decisions": "Weeks to months"
+      }
+    },
+    "Splenic_Authority": {
+      "name": "Splenic Authority",
+      "types": ["Projector", "Manifestor"],
+      "percentage": "~11%",
+      "center": "Spleen",
+      "requirement": "Spleen defined, Solar Plexus and Sacral undefined",
+      "description": "Intuitive authority based on survival instincts and in-the-moment awareness. Decisions come as quiet inner knowing.",
+      "how_it_works": {
+        "mechanism": "Subtle intuitive knowing",
+        "timing": "In the moment, spontaneous",
+        "quality": "Quiet, gentle, often whispered",
+        "nature": "Survival-based wisdom"
+      },
+      "decision_process": [
+        "Tune into subtle body awareness",
+        "Listen for quiet inner voice",
+        "Trust first instinct",
+        "Act on intuitive knowing immediately"
+      ],
+      "characteristics": [
+        "Very subtle and quiet",
+        "Speaks only once",
+        "Survival and health focused",
+        "Present moment awareness",
+        "Often felt as 'knowing'"
+      ],
+      "common_mistakes": [
+        "Ignoring subtle signals",
+        "Waiting for louder confirmation",
+        "Overthinking intuitive hits",
+        "Not trusting survival instincts"
+      ],
+      "tips": [
+        "Practice meditation and stillness",
+        "Pay attention to body sensations",
+        "Trust your first instinct",
+        "Act quickly on intuitive hits"
+      ],
+      "examples": [
+        "Sudden knowing to leave a situation",
+        "Intuitive sense about someone's health",
+        "Gut feeling about safety/danger",
+        "Spontaneous knowing about timing"
+      ]
+    },
+    "Heart_Authority": {
+      "name": "Heart Authority (Ego Authority)",
+      "types": ["Projector", "Manifestor"],
+      "percentage": "~1%",
+      "center": "Heart/Ego",
+      "requirement": "Heart Center defined, Solar Plexus, Sacral, and Spleen undefined",
+      "description": "Willpower-based authority focused on what the heart truly wants and values. Decisions based on personal desires and self-worth.",
+      "how_it_works": {
+        "mechanism": "What the heart truly wants",
+        "focus": "Personal desires and values",
+        "question": "What do I want? What's in it for me?",
+        "energy": "Willpower and determination"
+      },
+      "decision_process": [
+        "Ask 'What do I want?'",
+        "Consider what's truly important to you",
+        "Check if it aligns with your values",
+        "Decide based on heart's desire"
+      ],
+      "characteristics": [
+        "Self-focused (not selfish)",
+        "Values-based decisions",
+        "Strong willpower",
+        "Clear about wants and needs",
+        "Material world focused"
+      ],
+      "common_mistakes": [
+        "Feeling guilty about self-focus",
+        "Ignoring personal desires",
+        "Making decisions for others",
+        "Not valuing self-worth"
+      ],
+      "tips": [
+        "Honor your personal desires",
+        "Ask 'What's in it for me?'",
+        "Value your self-worth",
+        "Make decisions that serve you"
+      ],
+      "examples": [
+        "Choosing career based on personal values",
+        "Deciding relationships based on what you want",
+        "Making choices that honor self-worth",
+        "Following heart's true desires"
+      ]
+    },
+    "G_Center_Authority": {
+      "name": "G-Center Authority (Self-Projected Authority)",
+      "types": ["Projector"],
+      "percentage": "~3%",
+      "center": "G-Center",
+      "requirement": "G-Center connected to Throat, other motor centers undefined",
+      "description": "Identity and direction-based authority. Decisions come through speaking and hearing your own voice about identity and direction.",
+      "how_it_works": {
+        "mechanism": "Speaking your truth out loud",
+        "process": "Hear yourself talk about the decision",
+        "focus": "Identity, direction, love",
+        "clarity": "Through verbal expression"
+      },
+      "decision_process": [
+        "Talk about the decision with others",
+        "Listen to what you hear yourself saying",
+        "Notice what feels true when spoken",
+        "Decide based on what sounds right"
+      ],
+      "characteristics": [
+        "Need to talk things through",
+        "Clarity comes through speaking",
+        "Identity and direction focused",
+        "Love and relationship oriented",
+        "Truth emerges through voice"
+      ],
+      "common_mistakes": [
+        "Making decisions in silence",
+        "Not talking through options",
+        "Ignoring what you hear yourself say",
+        "Rushing without verbal processing"
+      ],
+      "tips": [
+        "Find trusted people to talk with",
+        "Record yourself talking about decisions",
+        "Pay attention to your own words",
+        "Notice what feels true when spoken"
+      ],
+      "examples": [
+        "Talking through career direction",
+        "Speaking about relationship choices",
+        "Discussing life path options",
+        "Verbalizing identity questions"
+      ]
+    },
+    "Mental_Authority": {
+      "name": "Mental Authority (Environmental Authority)",
+      "types": ["Projector"],
+      "percentage": "~2%",
+      "center": "Ajna",
+      "requirement": "Ajna connected to Throat, no motor centers defined",
+      "description": "Mental processing authority that requires talking through decisions with others. Clarity comes through mental exchange and discussion.",
+      "how_it_works": {
+        "mechanism": "Mental processing with others",
+        "process": "Discuss and think through options",
+        "requirement": "Trusted sounding boards",
+        "clarity": "Through mental exchange"
+      },
+      "decision_process": [
+        "Find trusted advisors to discuss with",
+        "Talk through all aspects of decision",
+        "Process mentally with different people",
+        "Decide after thorough mental exploration"
+      ],
+      "characteristics": [
+        "Need mental processing",
+        "Require trusted advisors",
+        "Clarity through discussion",
+        "Mental exchange essential",
+        "Conceptual understanding important"
+      ],
+      "common_mistakes": [
+        "Making decisions alone",
+        "Not seeking input from others",
+        "Rushing mental processing",
+        "Not finding trusted advisors"
+      ],
+      "tips": [
+        "Cultivate trusted advisors",
+        "Take time for mental processing",
+        "Discuss from multiple angles",
+        "Don't decide in isolation"
+      ],
+      "examples": [
+        "Discussing career options with mentors",
+        "Processing relationship decisions with friends",
+        "Exploring life choices with advisors",
+        "Mental exchange about important decisions"
+      ]
+    },
+    "Lunar_Authority": {
+      "name": "Lunar Authority",
+      "types": ["Reflector"],
+      "percentage": "~1%",
+      "center": "None (all undefined)",
+      "requirement": "All centers undefined",
+      "description": "Decision-making over a full lunar cycle (28+ days). Reflectors sample different energies and perspectives before making major decisions.",
+      "how_it_works": {
+        "mechanism": "28+ day lunar cycle",
+        "process": "Sample different perspectives",
+        "timing": "Full moon to full moon",
+        "wisdom": "Collective and environmental"
+      },
+      "decision_process": [
+        "Begin considering decision at new moon",
+        "Sample different environments and people",
+        "Notice how decision feels in different contexts",
+        "Decide after full lunar cycle completion"
+      ],
+      "lunar_phases": {
+        "new_moon": "Plant the seed of the decision",
+        "waxing": "Gather information and perspectives",
+        "full_moon": "Peak clarity and illumination",
+        "waning": "Release what doesn't serve",
+        "next_new_moon": "Make the decision"
+      },
+      "common_mistakes": [
+        "Making quick decisions",
+        "Not honoring the lunar cycle",
+        "Deciding in wrong environment",
+        "Not sampling different perspectives"
+      ],
+      "tips": [
+        "Track lunar cycles",
+        "Change environments during cycle",
+        "Talk with different people",
+        "Trust the timing process"
+      ],
+      "examples": [
+        "Major life moves over lunar cycle",
+        "Career changes through moon phases",
+        "Relationship decisions over 28 days",
+        "Important choices with lunar timing"
+      ]
+    }
+  }
+}

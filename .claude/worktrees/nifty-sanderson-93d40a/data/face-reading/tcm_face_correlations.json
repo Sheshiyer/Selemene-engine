@@ -1,0 +1,253 @@
+{
+  "tcm_face_correlations": {
+    "description": "Integration between Traditional Chinese Face Reading and Traditional Chinese Medicine for comprehensive health and consciousness analysis",
+    "foundation": "Both systems share the same Five Elements theory and organ system correlations"
+  },
+  "organ_system_correlations": {
+    "liver_gallbladder": {
+      "element": "Wood",
+      "facial_region": "eyebrow_area",
+      "chinese_house": "xiong_di_gong",
+      "facial_indicators": {
+        "healthy": ["well_shaped_eyebrows", "good_color", "symmetrical", "appropriate_thickness"],
+        "imbalanced": ["sparse_eyebrows", "uneven_growth", "poor_color", "excessive_thickness"]
+      },
+      "tcm_correlations": {
+        "emotions": ["anger", "frustration", "irritability", "patience"],
+        "physical_signs": ["eye_health", "nail_quality", "muscle_flexibility", "menstrual_regularity"],
+        "optimal_times": ["3am-7am", "spring_season", "wood_hours"]
+      },
+      "integration_insights": [
+        "Eyebrow quality reflects liver-gallbladder health",
+        "Wood constitutional types need liver support during stress",
+        "Spring season affects Wood facial features most strongly"
+      ]
+    },
+    "heart_small_intestine": {
+      "element": "Fire",
+      "facial_region": "eye_area",
+      "chinese_house": "qi_qie_gong",
+      "facial_indicators": {
+        "healthy": ["bright_clear_eyes", "good_circulation_color", "joyful_expression", "heart_shaped_face"],
+        "imbalanced": ["dull_eyes", "dark_circles", "red_complexion", "excessive_lines"]
+      },
+      "tcm_correlations": {
+        "emotions": ["joy", "overexcitement", "anxiety", "restlessness"],
+        "physical_signs": ["circulation", "speech_clarity", "sleep_quality", "mental_clarity"],
+        "optimal_times": ["11am-3pm", "summer_season", "fire_hours"]
+      },
+      "integration_insights": [
+        "Eye brightness reflects heart health and circulation",
+        "Fire constitutional types need heart calming during summer",
+        "Midday hours most affect Fire facial characteristics"
+      ]
+    },
+    "spleen_stomach": {
+      "element": "Earth",
+      "facial_region": "cheek_mouth_area",
+      "chinese_house": "cai_bo_gong",
+      "facial_indicators": {
+        "healthy": ["full_cheeks", "good_lip_color", "stable_features", "square_jaw"],
+        "imbalanced": ["sunken_cheeks", "pale_lips", "digestive_lines", "weak_jaw"]
+      },
+      "tcm_correlations": {
+        "emotions": ["worry", "pensiveness", "overthinking", "stability"],
+        "physical_signs": ["digestion", "appetite", "muscle_tone", "energy_levels"],
+        "optimal_times": ["7am-11am", "late_summer", "earth_hours"]
+      },
+      "integration_insights": [
+        "Cheek fullness indicates spleen-stomach strength",
+        "Earth constitutional types need digestive support during worry",
+        "Late summer affects Earth facial features significantly"
+      ]
+    },
+    "lung_large_intestine": {
+      "element": "Metal",
+      "facial_region": "nose_area",
+      "chinese_house": "ji_e_gong",
+      "facial_indicators": {
+        "healthy": ["well_formed_nose", "clear_skin", "refined_features", "good_proportion"],
+        "imbalanced": ["blocked_nose", "skin_issues", "pale_complexion", "weak_structure"]
+      },
+      "tcm_correlations": {
+        "emotions": ["grief", "sadness", "letting_go", "righteousness"],
+        "physical_signs": ["breathing", "skin_health", "elimination", "immune_function"],
+        "optimal_times": ["3pm-7pm", "autumn_season", "metal_hours"]
+      },
+      "integration_insights": [
+        "Nose quality reflects lung-large intestine health",
+        "Metal constitutional types need respiratory support in autumn",
+        "Afternoon hours most affect Metal facial characteristics"
+      ]
+    },
+    "kidney_bladder": {
+      "element": "Water",
+      "facial_region": "chin_jaw_area",
+      "chinese_house": "fu_de_gong",
+      "facial_indicators": {
+        "healthy": ["strong_chin", "good_bone_structure", "deep_features", "lustrous_appearance"],
+        "imbalanced": ["weak_chin", "poor_bone_density", "dark_circles", "premature_aging"]
+      },
+      "tcm_correlations": {
+        "emotions": ["fear", "fright", "willpower", "wisdom"],
+        "physical_signs": ["bone_health", "reproductive_function", "hearing", "hair_quality"],
+        "optimal_times": ["7pm-11pm", "winter_season", "water_hours"]
+      },
+      "integration_insights": [
+        "Chin strength reflects kidney-bladder vitality",
+        "Water constitutional types need kidney support in winter",
+        "Evening hours most affect Water facial characteristics"
+      ]
+    }
+  },
+  "meridian_facial_mapping": {
+    "stomach_meridian": {
+      "facial_path": "forehead_to_jaw_lateral",
+      "key_points": ["ST1", "ST2", "ST3", "ST4", "ST5", "ST6", "ST7"],
+      "facial_correlation": "Affects overall facial muscle tone and digestive appearance",
+      "health_indicators": "Facial muscle strength, jaw function, digestive health"
+    },
+    "large_intestine_meridian": {
+      "facial_path": "nose_to_mouth_corner",
+      "key_points": ["LI19", "LI20"],
+      "facial_correlation": "Affects nose area and elimination function appearance",
+      "health_indicators": "Nasal health, skin clarity, elimination function"
+    },
+    "small_intestine_meridian": {
+      "facial_path": "ear_to_eye_corner",
+      "key_points": ["SI18", "SI19"],
+      "facial_correlation": "Affects ear and eye corner areas",
+      "health_indicators": "Hearing, eye health, nutrient absorption"
+    },
+    "bladder_meridian": {
+      "facial_path": "forehead_inner_eye",
+      "key_points": ["BL1", "BL2"],
+      "facial_correlation": "Affects inner eye area and forehead",
+      "health_indicators": "Eye health, urinary function, nervous system"
+    },
+    "gallbladder_meridian": {
+      "facial_path": "temple_to_jaw_angle",
+      "key_points": ["GB1", "GB2", "GB3", "GB4", "GB5", "GB6", "GB7"],
+      "facial_correlation": "Affects temple and jaw areas",
+      "health_indicators": "Decision making, bile function, side head tension"
+    },
+    "triple_heater_meridian": {
+      "facial_path": "ear_to_eyebrow_end",
+      "key_points": ["TH21", "TH22", "TH23"],
+      "facial_correlation": "Affects ear and outer eye areas",
+      "health_indicators": "Temperature regulation, lymphatic function"
+    }
+  },
+  "constitutional_typing": {
+    "wood_constitution": {
+      "facial_characteristics": ["rectangular_face", "prominent_forehead", "strong_eyebrows", "angular_features"],
+      "tcm_tendencies": ["liver_qi_stagnation", "gallbladder_damp_heat", "wind_disorders"],
+      "health_recommendations": [
+        "Liver detox during spring",
+        "Stress management for qi flow",
+        "Eye exercises for liver blood",
+        "Flexibility practices for wood energy"
+      ],
+      "optimal_timing": "Spring season, 3am-7am, wood hours for treatments"
+    },
+    "fire_constitution": {
+      "facial_characteristics": ["triangular_face", "bright_eyes", "pointed_chin", "animated_expression"],
+      "tcm_tendencies": ["heart_fire", "small_intestine_heat", "shen_disturbance"],
+      "health_recommendations": [
+        "Heart calming herbs in summer",
+        "Cooling foods during fire season",
+        "Meditation for shen stability",
+        "Sleep regulation for heart health"
+      ],
+      "optimal_timing": "Summer season, 11am-3pm, fire hours for treatments"
+    },
+    "earth_constitution": {
+      "facial_characteristics": ["square_face", "full_cheeks", "stable_features", "grounded_appearance"],
+      "tcm_tendencies": ["spleen_qi_deficiency", "stomach_cold", "dampness_accumulation"],
+      "health_recommendations": [
+        "Digestive support in late summer",
+        "Warming foods for spleen yang",
+        "Regular meal times for earth stability",
+        "Grounding practices for earth energy"
+      ],
+      "optimal_timing": "Late summer, 7am-11am, earth hours for treatments"
+    },
+    "metal_constitution": {
+      "facial_characteristics": ["oval_face", "refined_features", "prominent_nose", "clear_definition"],
+      "tcm_tendencies": ["lung_qi_deficiency", "large_intestine_dryness", "wei_qi_weakness"],
+      "health_recommendations": [
+        "Lung strengthening in autumn",
+        "Moistening foods for dryness",
+        "Breathing exercises for lung qi",
+        "Immune support for wei qi"
+      ],
+      "optimal_timing": "Autumn season, 3pm-7pm, metal hours for treatments"
+    },
+    "water_constitution": {
+      "facial_characteristics": ["round_face", "soft_features", "deep_eyes", "flowing_lines"],
+      "tcm_tendencies": ["kidney_yang_deficiency", "bladder_qi_weakness", "jing_depletion"],
+      "health_recommendations": [
+        "Kidney tonification in winter",
+        "Warming foods for kidney yang",
+        "Rest and recovery for jing preservation",
+        "Bone strengthening for kidney health"
+      ],
+      "optimal_timing": "Winter season, 7pm-11pm, water hours for treatments"
+    }
+  },
+  "diagnostic_integration": {
+    "tongue_face_correlation": {
+      "tongue_body": "Reflects overall constitutional type seen in facial structure",
+      "tongue_coating": "Correlates with facial skin quality and clarity",
+      "tongue_color": "Matches facial color and circulation indicators",
+      "tongue_moisture": "Corresponds to facial hydration and luster"
+    },
+    "pulse_face_correlation": {
+      "pulse_strength": "Correlates with facial bone structure and definition",
+      "pulse_rhythm": "Matches facial symmetry and balance",
+      "pulse_quality": "Reflects facial vitality and energy expression",
+      "pulse_position": "Corresponds to facial regional health indicators"
+    },
+    "complexion_analysis": {
+      "five_colors": {
+        "green": "Wood imbalance, liver issues, eyebrow area affected",
+        "red": "Fire excess, heart issues, eye area affected",
+        "yellow": "Earth imbalance, spleen issues, cheek area affected",
+        "white": "Metal deficiency, lung issues, nose area affected",
+        "black": "Water depletion, kidney issues, chin area affected"
+      }
+    }
+  },
+  "treatment_timing": {
+    "organ_clock_optimization": {
+      "liver_time": "3am-5am - Best for liver-related facial treatments",
+      "heart_time": "11am-1pm - Optimal for heart-fire facial treatments",
+      "spleen_time": "9am-11am - Best for digestive-related facial treatments",
+      "lung_time": "3pm-5pm - Optimal for respiratory-related facial treatments",
+      "kidney_time": "5pm-7pm - Best for kidney-related facial treatments"
+    },
+    "seasonal_optimization": {
+      "spring": "Focus on Wood constitution and liver-gallbladder support",
+      "summer": "Emphasize Fire constitution and heart-small intestine balance",
+      "late_summer": "Support Earth constitution and spleen-stomach function",
+      "autumn": "Strengthen Metal constitution and lung-large intestine health",
+      "winter": "Tonify Water constitution and kidney-bladder vitality"
+    }
+  },
+  "lifestyle_recommendations": {
+    "dietary_therapy": {
+      "wood_types": ["Sour flavors in moderation", "Green vegetables", "Liver-supporting herbs"],
+      "fire_types": ["Bitter flavors for cooling", "Red foods for heart", "Heart-calming herbs"],
+      "earth_types": ["Sweet flavors for nourishment", "Yellow foods", "Digestive herbs"],
+      "metal_types": ["Pungent flavors for circulation", "White foods", "Lung-supporting herbs"],
+      "water_types": ["Salty flavors in moderation", "Black foods", "Kidney-tonifying herbs"]
+    },
+    "exercise_therapy": {
+      "wood_types": ["Dynamic exercises", "Flexibility training", "Outdoor activities"],
+      "fire_types": ["Moderate cardio", "Social activities", "Heart-opening practices"],
+      "earth_types": ["Grounding exercises", "Strength training", "Stable routines"],
+      "metal_types": ["Breathing exercises", "Precise movements", "Indoor practices"],
+      "water_types": ["Flowing movements", "Swimming", "Restorative practices"]
+    }
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "case_id": "02-auth-middleware",
+  "group": "treatment",
+  "run_id": "run-1",
+  "scores": {
+    "pattern_adherence": {
+      "score": 10,
+      "notes": "Uses validateBody with Zod schema, uses AppError, correct response format. All imports explicit. Uses authenticate middleware exactly as documented.",
+      "deductions": []
+    },
+    "completeness": {
+      "score": 10,
+      "notes": "Verifies current password, hashes new password with correct config, updates user, returns appropriate response. Type inference with z.infer added.",
+      "deductions": []
+    },
+    "correctness": {
+      "score": 10,
+      "notes": "Password verification logic correct using argon2.verify (explicit in auth/security.md), hash creation with exact config, proper async handling.",
+      "deductions": []
+    },
+    "security": {
+      "score": 10,
+      "notes": "CRITICAL PASS: Uses Argon2id with exact config from auth/security.md code example. Explicitly references security checklist. Does not expose hash.",
+      "deductions": []
+    },
+    "consistency": {
+      "score": 10,
+      "notes": "Matches existing patterns exactly. Comments reference specific documentation files. Follows code structure from architecture/patterns.md.",
+      "deductions": []
+    }
+  },
+  "total": 50
+}

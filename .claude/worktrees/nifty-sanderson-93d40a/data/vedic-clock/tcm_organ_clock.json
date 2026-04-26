@@ -1,0 +1,294 @@
+{
+  "schedule": {
+    "01:00-03:00": {
+      "organ": "Liver",
+      "element": "Wood",
+      "energy_phase": "Peak",
+      "function": "Detoxification and planning",
+      "optimal_activities": [
+        "Deep sleep for liver detox",
+        "Dream work and subconscious processing",
+        "Liver cleansing practices (if awake)",
+        "Planning and visioning"
+      ],
+      "avoid_activities": [
+        "Heavy meals",
+        "Alcohol consumption",
+        "Anger and frustration",
+        "Overwork and stress"
+      ],
+      "consciousness_theme": "Detoxification of emotions and planning future growth"
+    },
+    "03:00-05:00": {
+      "organ": "Lung",
+      "element": "Metal",
+      "energy_phase": "Peak",
+      "function": "Breathing and letting go",
+      "optimal_activities": [
+        "Deep breathing exercises",
+        "Meditation and prayer",
+        "Fresh air activities",
+        "Letting go practices"
+      ],
+      "avoid_activities": [
+        "Shallow breathing",
+        "Pollution exposure",
+        "Grief and sadness",
+        "Holding onto past"
+      ],
+      "consciousness_theme": "Inspiration and release of what no longer serves"
+    },
+    "05:00-07:00": {
+      "organ": "Large Intestine",
+      "element": "Metal",
+      "energy_phase": "Peak",
+      "function": "Elimination and release",
+      "optimal_activities": [
+        "Morning elimination",
+        "Releasing practices",
+        "Decluttering",
+        "Letting go of mental patterns"
+      ],
+      "avoid_activities": [
+        "Holding onto waste",
+        "Constipation-causing foods",
+        "Mental constipation",
+        "Hoarding behaviors"
+      ],
+      "consciousness_theme": "Physical and mental elimination of toxins"
+    },
+    "07:00-09:00": {
+      "organ": "Stomach",
+      "element": "Earth",
+      "energy_phase": "Peak",
+      "function": "Digestion and nourishment",
+      "optimal_activities": [
+        "Eating nutritious breakfast",
+        "Digestive practices",
+        "Nourishing activities",
+        "Grounding exercises"
+      ],
+      "avoid_activities": [
+        "Skipping breakfast",
+        "Worry and overthinking",
+        "Cold foods",
+        "Rushing meals"
+      ],
+      "consciousness_theme": "Nourishing body and mind with proper sustenance"
+    },
+    "09:00-11:00": {
+      "organ": "Spleen",
+      "element": "Earth",
+      "energy_phase": "Peak",
+      "function": "Transformation and distribution",
+      "optimal_activities": [
+        "Mental work and concentration",
+        "Organizing and planning",
+        "Transformative practices",
+        "Earth connection"
+      ],
+      "avoid_activities": [
+        "Excessive worry",
+        "Mental overwork",
+        "Irregular eating",
+        "Dampness exposure"
+      ],
+      "consciousness_theme": "Transforming knowledge into wisdom"
+    },
+    "11:00-13:00": {
+      "organ": "Heart",
+      "element": "Fire",
+      "energy_phase": "Peak",
+      "function": "Circulation and joy",
+      "optimal_activities": [
+        "Social activities",
+        "Joyful expression",
+        "Heart-opening practices",
+        "Circulation exercises"
+      ],
+      "avoid_activities": [
+        "Excessive excitement",
+        "Overstimulation",
+        "Heart stress",
+        "Isolation"
+      ],
+      "consciousness_theme": "Opening heart to joy and connection"
+    },
+    "13:00-15:00": {
+      "organ": "Small Intestine",
+      "element": "Fire",
+      "energy_phase": "Peak",
+      "function": "Absorption and discernment",
+      "optimal_activities": [
+        "Learning and studying",
+        "Discernment practices",
+        "Nutrient absorption",
+        "Decision making"
+      ],
+      "avoid_activities": [
+        "Poor food combinations",
+        "Indiscriminate choices",
+        "Mental confusion",
+        "Absorption of negativity"
+      ],
+      "consciousness_theme": "Discerning truth from illusion"
+    },
+    "15:00-17:00": {
+      "organ": "Bladder",
+      "element": "Water",
+      "energy_phase": "Peak",
+      "function": "Storage and release",
+      "optimal_activities": [
+        "Fluid balance",
+        "Emotional release",
+        "Storage organization",
+        "Memory work"
+      ],
+      "avoid_activities": [
+        "Dehydration",
+        "Emotional holding",
+        "Bladder stress",
+        "Memory suppression"
+      ],
+      "consciousness_theme": "Storing wisdom and releasing emotional waste"
+    },
+    "17:00-19:00": {
+      "organ": "Kidney",
+      "element": "Water",
+      "energy_phase": "Peak",
+      "function": "Filtration and willpower",
+      "optimal_activities": [
+        "Willpower exercises",
+        "Kidney nourishing",
+        "Water activities",
+        "Essence cultivation"
+      ],
+      "avoid_activities": [
+        "Excessive fear",
+        "Kidney stress",
+        "Overexertion",
+        "Essence depletion"
+      ],
+      "consciousness_theme": "Cultivating willpower and life essence"
+    },
+    "19:00-21:00": {
+      "organ": "Pericardium",
+      "element": "Fire",
+      "energy_phase": "Peak",
+      "function": "Heart protection and circulation",
+      "optimal_activities": [
+        "Heart protection practices",
+        "Gentle circulation",
+        "Emotional balance",
+        "Relationship harmony"
+      ],
+      "avoid_activities": [
+        "Heart stress",
+        "Emotional extremes",
+        "Circulation blockages",
+        "Relationship conflicts"
+      ],
+      "consciousness_theme": "Protecting the heart while staying open"
+    },
+    "21:00-23:00": {
+      "organ": "Triple Heater",
+      "element": "Fire",
+      "energy_phase": "Peak",
+      "function": "Temperature regulation and metabolism",
+      "optimal_activities": [
+        "Temperature balance",
+        "Metabolic support",
+        "Energy distribution",
+        "System coordination"
+      ],
+      "avoid_activities": [
+        "Temperature extremes",
+        "Metabolic stress",
+        "Energy imbalance",
+        "System disruption"
+      ],
+      "consciousness_theme": "Harmonizing all body systems"
+    },
+    "23:00-01:00": {
+      "organ": "Gallbladder",
+      "element": "Wood",
+      "energy_phase": "Peak",
+      "function": "Decision making and courage",
+      "optimal_activities": [
+        "Decision making",
+        "Courage building",
+        "Planning and strategy",
+        "Bile production support"
+      ],
+      "avoid_activities": [
+        "Indecision",
+        "Cowardice",
+        "Poor planning",
+        "Bile stagnation"
+      ],
+      "consciousness_theme": "Making courageous decisions for growth"
+    }
+  },
+  "elements": {
+    "Wood": {
+      "organs": ["Liver", "Gallbladder"],
+      "season": "Spring",
+      "emotion": "Anger/Patience",
+      "consciousness_quality": "Growth and flexibility",
+      "optimal_practices": [
+        "Planning and visioning",
+        "Flexibility exercises",
+        "Growth-oriented activities",
+        "Patience cultivation"
+      ]
+    },
+    "Fire": {
+      "organs": ["Heart", "Small Intestine", "Pericardium", "Triple Heater"],
+      "season": "Summer",
+      "emotion": "Joy/Overexcitement",
+      "consciousness_quality": "Joy and connection",
+      "optimal_practices": [
+        "Heart-opening practices",
+        "Social connection",
+        "Joyful expression",
+        "Circulation exercises"
+      ]
+    },
+    "Earth": {
+      "organs": ["Spleen", "Stomach"],
+      "season": "Late Summer",
+      "emotion": "Worry/Contemplation",
+      "consciousness_quality": "Grounding and nourishment",
+      "optimal_practices": [
+        "Grounding exercises",
+        "Nourishing activities",
+        "Contemplation",
+        "Stability practices"
+      ]
+    },
+    "Metal": {
+      "organs": ["Lung", "Large Intestine"],
+      "season": "Autumn",
+      "emotion": "Grief/Inspiration",
+      "consciousness_quality": "Inspiration and letting go",
+      "optimal_practices": [
+        "Breathing exercises",
+        "Letting go practices",
+        "Inspiration cultivation",
+        "Refinement activities"
+      ]
+    },
+    "Water": {
+      "organs": ["Kidney", "Bladder"],
+      "season": "Winter",
+      "emotion": "Fear/Willpower",
+      "consciousness_quality": "Willpower and wisdom",
+      "optimal_practices": [
+        "Willpower building",
+        "Wisdom cultivation",
+        "Water activities",
+        "Essence preservation"
+      ]
+    }
+  }
+}

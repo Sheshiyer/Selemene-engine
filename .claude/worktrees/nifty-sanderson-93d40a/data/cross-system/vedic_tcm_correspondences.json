@@ -1,0 +1,259 @@
+{
+  "elemental_correspondences": {
+    "Fire-Fire": {
+      "harmony_level": 1.0,
+      "quality": "Perfect Resonance",
+      "description": "Vedic Fire and TCM Fire create perfect harmony",
+      "practices": [
+        "Fire meditation with candle gazing",
+        "Heart coherence breathing",
+        "Sun salutation practices",
+        "Joyful expression and laughter"
+      ],
+      "optimal_times": ["11:00-15:00", "19:00-23:00"],
+      "consciousness_theme": "Pure fire consciousness - joy, transformation, and illumination"
+    },
+    "Fire-Wood": {
+      "harmony_level": 0.8,
+      "quality": "Nourishing Synergy",
+      "description": "Vedic Fire feeds TCM Wood for growth",
+      "practices": [
+        "Creative fire practices",
+        "Growth visualization with inner fire",
+        "Dynamic planning sessions",
+        "Courage-building exercises"
+      ],
+      "optimal_times": ["01:00-03:00", "23:00-01:00"],
+      "consciousness_theme": "Fire-fueled growth and creative expansion"
+    },
+    "Earth-Earth": {
+      "harmony_level": 1.0,
+      "quality": "Perfect Grounding",
+      "description": "Vedic Earth and TCM Earth create ultimate stability",
+      "practices": [
+        "Grounding meditation",
+        "Earth connection rituals",
+        "Nourishing meal practices",
+        "Stability and structure building"
+      ],
+      "optimal_times": ["07:00-11:00"],
+      "consciousness_theme": "Deep earth consciousness - stability, nourishment, and grounding"
+    },
+    "Earth-Metal": {
+      "harmony_level": 0.7,
+      "quality": "Supportive Foundation",
+      "description": "Vedic Earth provides foundation for TCM Metal refinement",
+      "practices": [
+        "Grounded breathing exercises",
+        "Structured letting-go practices",
+        "Organized decluttering",
+        "Stable inspiration cultivation"
+      ],
+      "optimal_times": ["03:00-07:00"],
+      "consciousness_theme": "Grounded refinement and structured release"
+    },
+    "Air-Metal": {
+      "harmony_level": 0.9,
+      "quality": "Excellent Refinement",
+      "description": "Vedic Air and TCM Metal create refined consciousness",
+      "practices": [
+        "Pranayama breathing techniques",
+        "Mental clarity meditation",
+        "Refined communication practices",
+        "Inspiration and letting-go balance"
+      ],
+      "optimal_times": ["03:00-07:00"],
+      "consciousness_theme": "Refined air consciousness - clarity, inspiration, and release"
+    },
+    "Air-Wood": {
+      "harmony_level": 0.6,
+      "quality": "Dynamic Movement",
+      "description": "Vedic Air creates movement in TCM Wood growth",
+      "practices": [
+        "Dynamic movement practices",
+        "Flexible planning sessions",
+        "Adaptable growth strategies",
+        "Wind-like flexibility cultivation"
+      ],
+      "optimal_times": ["01:00-03:00", "23:00-01:00"],
+      "consciousness_theme": "Dynamic growth with flexible adaptation"
+    },
+    "Water-Water": {
+      "harmony_level": 1.0,
+      "quality": "Perfect Flow",
+      "description": "Vedic Water and TCM Water create ultimate flow",
+      "practices": [
+        "Flow meditation",
+        "Water ceremony rituals",
+        "Emotional flow practices",
+        "Willpower and wisdom cultivation"
+      ],
+      "optimal_times": ["15:00-19:00"],
+      "consciousness_theme": "Pure water consciousness - flow, wisdom, and emotional mastery"
+    },
+    "Water-Wood": {
+      "harmony_level": 0.8,
+      "quality": "Nourishing Growth",
+      "description": "Vedic Water nourishes TCM Wood for healthy growth",
+      "practices": [
+        "Fluid growth practices",
+        "Emotional nourishment of plans",
+        "Wisdom-guided planning",
+        "Flexible decision-making"
+      ],
+      "optimal_times": ["01:00-03:00", "23:00-01:00"],
+      "consciousness_theme": "Wisdom-nourished growth and emotional planning"
+    },
+    "Ether-Fire": {
+      "harmony_level": 0.9,
+      "quality": "Transcendent Joy",
+      "description": "Vedic Ether elevates TCM Fire to spiritual joy",
+      "practices": [
+        "Transcendent heart practices",
+        "Spiritual joy cultivation",
+        "Ethereal fire meditation",
+        "Divine connection through joy"
+      ],
+      "optimal_times": ["11:00-15:00", "19:00-23:00"],
+      "consciousness_theme": "Transcendent fire consciousness - spiritual joy and divine connection"
+    },
+    "Ether-Earth": {
+      "harmony_level": 0.7,
+      "quality": "Grounded Transcendence",
+      "description": "Vedic Ether brings transcendence to TCM Earth stability",
+      "practices": [
+        "Grounded spiritual practices",
+        "Transcendent nourishment",
+        "Ethereal grounding meditation",
+        "Divine stability cultivation"
+      ],
+      "optimal_times": ["07:00-11:00"],
+      "consciousness_theme": "Transcendent earth consciousness - grounded spirituality"
+    }
+  },
+  "planetary_organ_correspondences": {
+    "Jupiter": {
+      "tcm_organs": ["Liver", "Spleen"],
+      "elements": ["Wood", "Earth"],
+      "consciousness_connection": "Expansion through growth and nourishment",
+      "optimal_practices": [
+        "Liver detox during Jupiter periods",
+        "Spleen strengthening for wisdom absorption",
+        "Growth-oriented planning",
+        "Nourishing spiritual practices"
+      ]
+    },
+    "Saturn": {
+      "tcm_organs": ["Kidney", "Large Intestine"],
+      "elements": ["Water", "Metal"],
+      "consciousness_connection": "Discipline through willpower and release",
+      "optimal_practices": [
+        "Kidney strengthening for willpower",
+        "Elimination practices for discipline",
+        "Structured letting-go",
+        "Patient endurance building"
+      ]
+    },
+    "Mercury": {
+      "tcm_organs": ["Lung", "Small Intestine"],
+      "elements": ["Metal", "Fire"],
+      "consciousness_connection": "Communication through inspiration and discernment",
+      "optimal_practices": [
+        "Breathing for clear communication",
+        "Discernment practices",
+        "Mental clarity cultivation",
+        "Refined expression"
+      ]
+    },
+    "Venus": {
+      "tcm_organs": ["Heart", "Kidney"],
+      "elements": ["Fire", "Water"],
+      "consciousness_connection": "Love through joy and essence",
+      "optimal_practices": [
+        "Heart-opening for love",
+        "Essence cultivation for beauty",
+        "Emotional harmony",
+        "Creative expression"
+      ]
+    },
+    "Mars": {
+      "tcm_organs": ["Liver", "Heart"],
+      "elements": ["Wood", "Fire"],
+      "consciousness_connection": "Action through growth and circulation",
+      "optimal_practices": [
+        "Liver qi for action",
+        "Heart fire for courage",
+        "Dynamic movement",
+        "Assertive expression"
+      ]
+    }
+  },
+  "time_correspondences": {
+    "dawn": {
+      "vedic_quality": "Brahma Muhurta - Divine awakening",
+      "tcm_organs": ["Lung", "Large Intestine"],
+      "synthesis": "Divine inspiration meets physical elimination",
+      "optimal_practices": [
+        "Spiritual breathing practices",
+        "Divine connection meditation",
+        "Elimination of mental toxins",
+        "Fresh start rituals"
+      ]
+    },
+    "morning": {
+      "vedic_quality": "Surya energy - Solar activation",
+      "tcm_organs": ["Stomach", "Spleen"],
+      "synthesis": "Solar energy meets digestive transformation",
+      "optimal_practices": [
+        "Sun salutations",
+        "Nourishing breakfast rituals",
+        "Solar meditation",
+        "Digestive fire activation"
+      ]
+    },
+    "midday": {
+      "vedic_quality": "Agni peak - Maximum fire",
+      "tcm_organs": ["Heart", "Small Intestine"],
+      "synthesis": "Peak fire meets heart joy and discernment",
+      "optimal_practices": [
+        "Fire meditation",
+        "Heart-opening practices",
+        "Discernment exercises",
+        "Peak energy utilization"
+      ]
+    },
+    "afternoon": {
+      "vedic_quality": "Vayu increase - Air element rise",
+      "tcm_organs": ["Bladder", "Kidney"],
+      "synthesis": "Air movement meets water storage and willpower",
+      "optimal_practices": [
+        "Movement practices",
+        "Willpower building",
+        "Fluid balance",
+        "Air-water harmony"
+      ]
+    },
+    "evening": {
+      "vedic_quality": "Soma time - Lunar nectar",
+      "tcm_organs": ["Pericardium", "Triple Heater"],
+      "synthesis": "Lunar nectar meets heart protection and system harmony",
+      "optimal_practices": [
+        "Heart protection rituals",
+        "System harmonization",
+        "Lunar meditation",
+        "Gentle circulation"
+      ]
+    },
+    "night": {
+      "vedic_quality": "Tamas increase - Rest and restoration",
+      "tcm_organs": ["Gallbladder", "Liver"],
+      "synthesis": "Restorative rest meets decision-making and detox",
+      "optimal_practices": [
+        "Decision-making meditation",
+        "Liver detox support",
+        "Restorative practices",
+        "Deep rest preparation"
+      ]
+    }
+  }
+}

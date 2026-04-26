@@ -1,0 +1,170 @@
+{
+  "periods": {
+    "Ketu": {
+      "years": 7,
+      "element": "Fire",
+      "qualities": ["Spiritual detachment", "Inner wisdom", "Past-life karma"],
+      "themes": ["Letting go", "Spiritual awakening", "Karmic completion"]
+    },
+    "Venus": {
+      "years": 20,
+      "element": "Water",
+      "qualities": ["Love", "Beauty", "Creativity", "Material comfort"],
+      "themes": ["Relationships", "Artistic expression", "Luxury and comfort"]
+    },
+    "Sun": {
+      "years": 6,
+      "element": "Fire",
+      "qualities": ["Leadership", "Authority", "Self-expression", "Vitality"],
+      "themes": ["Personal power", "Recognition", "Soul purpose"]
+    },
+    "Moon": {
+      "years": 10,
+      "element": "Water",
+      "qualities": ["Emotions", "Intuition", "Nurturing", "Fluctuation"],
+      "themes": ["Emotional development", "Family", "Public recognition"]
+    },
+    "Mars": {
+      "years": 7,
+      "element": "Fire",
+      "qualities": ["Energy", "Courage", "Action", "Competition"],
+      "themes": ["Physical strength", "Conflict resolution", "Property matters"]
+    },
+    "Rahu": {
+      "years": 18,
+      "element": "Air",
+      "qualities": ["Innovation", "Materialism", "Foreign influence", "Illusion"],
+      "themes": ["Breaking patterns", "Material success", "Technology"]
+    },
+    "Jupiter": {
+      "years": 16,
+      "element": "Ether",
+      "qualities": ["Wisdom", "Teaching", "Expansion", "Spirituality"],
+      "themes": ["Higher learning", "Spiritual growth", "Mentorship"]
+    },
+    "Saturn": {
+      "years": 19,
+      "element": "Earth",
+      "qualities": ["Discipline", "Responsibility", "Limitation", "Patience"],
+      "themes": ["Hard work", "Structure building", "Karmic lessons"]
+    },
+    "Mercury": {
+      "years": 17,
+      "element": "Earth",
+      "qualities": ["Communication", "Intelligence", "Adaptability", "Commerce"],
+      "themes": ["Learning", "Business", "Writing", "Travel"]
+    }
+  },
+  "planetary_qualities": {
+    "Jupiter": {
+      "consciousness_lessons": [
+        "Expansion through wisdom",
+        "Teaching and mentoring others",
+        "Spiritual development",
+        "Higher learning and philosophy",
+        "Ethical leadership"
+      ],
+      "optimal_practices": [
+        "Meditation and contemplation",
+        "Study of sacred texts",
+        "Teaching and sharing knowledge",
+        "Charitable activities",
+        "Guru-disciple relationships"
+      ],
+      "challenges": [
+        "Over-expansion",
+        "Dogmatism",
+        "Excessive optimism",
+        "Neglecting practical matters"
+      ]
+    },
+    "Saturn": {
+      "consciousness_lessons": [
+        "Discipline and structure",
+        "Accepting responsibility",
+        "Learning through limitations",
+        "Building lasting foundations",
+        "Karmic debt resolution"
+      ],
+      "optimal_practices": [
+        "Consistent daily routines",
+        "Physical discipline",
+        "Service to others",
+        "Patience cultivation",
+        "Structural organization"
+      ],
+      "challenges": [
+        "Depression and pessimism",
+        "Excessive restriction",
+        "Fear of change",
+        "Isolation tendencies"
+      ]
+    },
+    "Mercury": {
+      "consciousness_lessons": [
+        "Clear communication",
+        "Intellectual development",
+        "Adaptability and flexibility",
+        "Practical intelligence",
+        "Information synthesis"
+      ],
+      "optimal_practices": [
+        "Writing and journaling",
+        "Learning new skills",
+        "Communication exercises",
+        "Mental agility training",
+        "Information organization"
+      ],
+      "challenges": [
+        "Mental restlessness",
+        "Superficial learning",
+        "Communication confusion",
+        "Nervous system stress"
+      ]
+    },
+    "Venus": {
+      "consciousness_lessons": [
+        "Love and relationships",
+        "Creative expression",
+        "Beauty appreciation",
+        "Harmony creation",
+        "Material balance"
+      ],
+      "optimal_practices": [
+        "Artistic creation",
+        "Relationship cultivation",
+        "Beauty meditation",
+        "Sensory refinement",
+        "Harmony practices"
+      ],
+      "challenges": [
+        "Excessive materialism",
+        "Relationship dependency",
+        "Vanity and superficiality",
+        "Overindulgence"
+      ]
+    },
+    "Mars": {
+      "consciousness_lessons": [
+        "Courage and action",
+        "Energy management",
+        "Conflict resolution",
+        "Physical mastery",
+        "Righteous anger"
+      ],
+      "optimal_practices": [
+        "Physical exercise",
+        "Martial arts",
+        "Energy cultivation",
+        "Assertiveness training",
+        "Goal achievement"
+      ],
+      "challenges": [
+        "Excessive aggression",
+        "Impatience",
+        "Conflict creation",
+        "Energy depletion"
+      ]
+    }
+  }
+}
