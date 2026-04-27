@@ -492,24 +492,23 @@ async fn parse_capture_multipart(
         let field_name = field.name().unwrap_or_default().to_string();
 
         match field_name.as_str() {
-            "image" | "file" => {
-                if parsed.image_bytes.is_none() {
-                    let content_type = field
-                        .content_type()
-                        .map(str::to_string)
-                        .unwrap_or_else(|| "application/octet-stream".to_string());
-                    let file_name = field.file_name().map(str::to_string);
-                    let bytes = field.bytes().await.map_err(|error| {
-                        capture_invalid_response(
-                            format!("Failed to read uploaded file: {error}"),
-                            Some(serde_json::json!({ "field": field_name })),
-                        )
-                    })?;
-                    parsed.image_bytes = Some(bytes.to_vec());
-                    parsed.image_content_type = Some(content_type);
-                    parsed.image_file_name = file_name;
-                }
+            "image" | "file" if parsed.image_bytes.is_none() => {
+                let content_type = field
+                    .content_type()
+                    .map(str::to_string)
+                    .unwrap_or_else(|| "application/octet-stream".to_string());
+                let file_name = field.file_name().map(str::to_string);
+                let bytes = field.bytes().await.map_err(|error| {
+                    capture_invalid_response(
+                        format!("Failed to read uploaded file: {error}"),
+                        Some(serde_json::json!({ "field": field_name })),
+                    )
+                })?;
+                parsed.image_bytes = Some(bytes.to_vec());
+                parsed.image_content_type = Some(content_type);
+                parsed.image_file_name = file_name;
             }
+            "image" | "file" => {}
             "algorithms" => {
                 let text = field.text().await.map_err(|error| {
                     capture_invalid_response(
