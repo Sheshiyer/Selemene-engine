@@ -1,0 +1,113 @@
+name: Agent Auto-Ready
+
+# Flips an agent/issue-<N>-* draft PR to ready-for-review as soon as the
+# Copilot coding agent (or any agent) finishes its work. The signal we use is
+# deletion of `.agent-tasks/issue-<N>.md` from the PR head — the contract in
+# .github/copilot-instructions.md tells the agent to delete that file in its
+# final commit. No file == agent considers itself done.
+#
+# Triggers:
+#   - pull_request (synchronize/opened/reopened): real-time, primary path
+#   - workflow_dispatch: manual sweep mode for backfill or after edge cases
+#
+# Safety gates (per PR):
+#   - Must be a draft agent/issue-* PR
+#   - Must have > 1 commit (scaffold + at least one real commit)
+#   - Task file must be gone from PR head
+#
+# No-op if any gate fails. Idempotent — re-running has no effect on already-ready PRs.
+
+on:
+  pull_request:
+    types: [synchronize, opened, reopened]
+  workflow_dispatch: {}
+
+jobs:
+  auto_ready:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      - name: Flip eligible draft PRs to ready-for-review
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+
+            async function processOne(pr) {
+              const headRef = pr.head.ref;
+              if (!pr.draft || !headRef.startsWith('agent/issue-')) {
+                return { pr: pr.number, status: 'skipped (not draft agent/issue-*)' };
+              }
+
+              const m = /^agent\/issue-(\d+)-/.exec(headRef);
+              if (!m) return { pr: pr.number, status: 'skipped (no issue num in head ref)' };
+              const num = parseInt(m[1], 10);
+              const taskPath = `.agent-tasks/issue-${num}.md`;
+
+              // Gate 1: at least 2 commits (scaffold + work).
+              const { data: commits } = await github.rest.pulls.listCommits({
+                owner, repo, pull_number: pr.number, per_page: 100,
+              });
+              if (commits.length < 2) {
+                return { pr: pr.number, status: `waiting (only ${commits.length} commit)` };
+              }
+
+              // Gate 2: task file must be gone from PR head.
+              try {
+                await github.rest.repos.getContent({
+                  owner, repo, path: taskPath, ref: pr.head.sha,
+                });
+                return { pr: pr.number, status: `waiting (${taskPath} still present)` };
+              } catch (e) {
+                if (e.status !== 404) throw e;
+              }
+
+              // Flip draft -> ready.
+              await github.graphql(`
+                mutation($id:ID!) {
+                  markPullRequestReadyForReview(input:{pullRequestId:$id}) {
+                    pullRequest { number isDraft }
+                  }
+                }
+              `, { id: pr.node_id });
+
+              return { pr: pr.number, status: `flipped ready (issue #${num}, ${commits.length} commits)` };
+            }
+
+            // Route by trigger.
+            const results = [];
+            if (context.eventName === 'pull_request') {
+              results.push(await processOne(context.payload.pull_request));
+            } else {
+              // workflow_dispatch: sweep all open draft agent/issue-* PRs.
+              const { data: prs } = await github.rest.pulls.list({
+                owner, repo, state: 'open', per_page: 100,
+              });
+              const candidates = prs.filter(p => p.draft && p.head.ref.startsWith('agent/issue-'));
+              core.notice(`Sweep: ${candidates.length} candidate draft agent PRs`);
+              for (const p of candidates) {
+                results.push(await processOne(p));
+                await new Promise(r => setTimeout(r, 500));
+              }
+            }
+
+            // Report
+            const flipped = results.filter(r => r.status.startsWith('flipped'));
+            const waiting = results.filter(r => r.status.startsWith('waiting'));
+            const skipped = results.filter(r => r.status.startsWith('skipped'));
+            const summary = core.summary
+              .addHeading('Agent Auto-Ready')
+              .addRaw(`- Trigger: \`${context.eventName}\`\n`, true)
+              .addRaw(`- Processed: ${results.length}\n`, true)
+              .addRaw(`- Flipped ready: ${flipped.length}\n`, true)
+              .addRaw(`- Waiting (gates not met): ${waiting.length}\n`, true)
+              .addRaw(`- Skipped (not eligible): ${skipped.length}\n`, true);
+            if (results.length) {
+              summary.addCodeBlock(results.map(r => `#${r.pr}: ${r.status}`).join('\n'));
+            }
+            await summary.write();
+
+            for (const r of results) console.log(`#${r.pr}: ${r.status}`);

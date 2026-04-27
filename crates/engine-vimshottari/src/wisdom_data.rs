@@ -341,8 +341,8 @@ fn load_nakshatras() -> Vec<Nakshatra> {
 
     let mut nakshatras: Vec<_> = data
         .nakshatras
-        .into_iter()
-        .filter_map(|(_, entry)| {
+        .into_values()
+        .filter_map(|entry| {
             VedicPlanet::from_str(&entry.ruling_planet).map(|planet| Nakshatra {
                 number: entry.number,
                 name: entry.name,
