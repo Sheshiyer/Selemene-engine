@@ -52,6 +52,9 @@ jobs:
       - name: Validate workflow parity CLI
         run: cargo run -p noesis-api --bin validate_workflow_parity
 
+      - name: Witness prompt contract
+        run: cargo test -p noesis-integration --test witness_prompt_quality_tests -- --nocapture
+
   # Run unit tests
   test:
     name: Test
