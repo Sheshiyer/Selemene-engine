@@ -23,6 +23,8 @@ const PHYSICAL_PERIOD: f64 = 23.0;
 const EMOTIONAL_PERIOD: f64 = 28.0;
 const INTELLECTUAL_PERIOD: f64 = 33.0;
 const INTUITIVE_PERIOD: f64 = 38.0;
+const AESTHETIC_PERIOD: f64 = 43.0;
+const SPIRITUAL_PERIOD: f64 = 53.0;
 
 /// Threshold in days for declaring a zero-crossing "critical".
 const CRITICAL_THRESHOLD: f64 = 1.0;
@@ -70,6 +72,8 @@ pub struct ForecastDay {
     pub emotional: f64,
     pub intellectual: f64,
     pub intuitive: f64,
+    pub aesthetic: f64,
+    pub spiritual: f64,
     pub overall_energy: f64,
 }
 
@@ -239,6 +243,8 @@ fn build_forecast(
             let emot = to_percentage(cycle_value(d, EMOTIONAL_PERIOD));
             let inte = to_percentage(cycle_value(d, INTELLECTUAL_PERIOD));
             let intu = to_percentage(cycle_value(d, INTUITIVE_PERIOD));
+            let aest = to_percentage(cycle_value(d, AESTHETIC_PERIOD));
+            let spir = to_percentage(cycle_value(d, SPIRITUAL_PERIOD));
             let date = target_date + chrono::Duration::days(offset);
             ForecastDay {
                 date: date.format("%Y-%m-%d").to_string(),
@@ -247,7 +253,9 @@ fn build_forecast(
                 emotional: emot,
                 intellectual: inte,
                 intuitive: intu,
-                overall_energy: (phys + emot + inte) / 3.0,
+                aesthetic: aest,
+                spiritual: spir,
+                overall_energy: (phys + emot + inte + intu + aest + spir) / 6.0,
             }
         })
         .collect()
@@ -740,6 +748,33 @@ mod tests {
         assert!(critical.len() <= 7);
         for d in &critical {
             assert!(d.len() == 10); // YYYY-MM-DD
+        }
+    }
+
+    #[test]
+    fn test_forecast_has_six_cycle_fields_in_range() {
+        let birth = NaiveDate::from_ymd_opt(1990, 1, 1).unwrap();
+        let target = NaiveDate::from_ymd_opt(2025, 6, 15).unwrap();
+        let forecast = build_forecast(birth, target, 7);
+        assert_eq!(forecast.len(), 7);
+        for day in &forecast {
+            for (name, val) in [
+                ("physical", day.physical),
+                ("emotional", day.emotional),
+                ("intellectual", day.intellectual),
+                ("intuitive", day.intuitive),
+                ("aesthetic", day.aesthetic),
+                ("spiritual", day.spiritual),
+                ("overall_energy", day.overall_energy),
+            ] {
+                assert!(
+                    (0.0..=100.0).contains(&val),
+                    "{} value {} out of [0, 100] on {}",
+                    name,
+                    val,
+                    day.date
+                );
+            }
         }
     }
 
