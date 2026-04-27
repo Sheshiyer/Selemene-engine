@@ -25,6 +25,8 @@ jobs:
     steps:
       - name: Dispatch issues to agent PRs
         uses: actions/github-script@v7
+        env:
+          COPILOT_AUTOKICK: ${{ vars.COPILOT_AUTOKICK || 'true' }}
         with:
           script: |
             const { owner, repo } = context.repo;
@@ -167,6 +169,29 @@ jobs:
                 body: prBody,
                 draft: true,
               });
+
+              // Kick GitHub Copilot coding agent on the new draft PR (toggle via repo var COPILOT_AUTOKICK)
+              const autoKick = (process.env.COPILOT_AUTOKICK || 'true').toLowerCase() === 'true';
+              if (autoKick) {
+                const kickBody = [
+                  `@copilot Implement everything in \`.agent-tasks/issue-${num}.md\`.`,
+                  ``,
+                  `Acceptance:`,
+                  `- All items in the issue's Acceptance Criteria pass`,
+                  `- \`cargo build && cargo test\` is green`,
+                  `- Delete \`.agent-tasks/issue-${num}.md\` in your final commit`,
+                  `- Convert this PR from draft to ready-for-review`,
+                  `- Post \`agent: done -- tests passing, ready for review\``,
+                ].join('\n');
+                await github.rest.issues.createComment({
+                  owner, repo,
+                  issue_number: pr.number,
+                  body: kickBody,
+                });
+                console.log(`#${num}: posted @copilot kickoff on PR #${pr.number}`);
+              } else {
+                console.log(`#${num}: COPILOT_AUTOKICK disabled, skipping @copilot kickoff`);
+              }
 
               // Comment on the source issue
               await github.rest.issues.createComment({
