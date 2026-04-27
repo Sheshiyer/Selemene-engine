@@ -9,10 +9,10 @@ ignore = [
     # Fix requires upgrading sqlx 0.7->0.8 (tracked via RUSTSEC-2024-0363) and
     # reqwest 0.11->0.12. The name-constraint bugs (0098/0099) only affect clients
     # that validate certificates with constrained URI/wildcard names from untrusted
-    # CAs; we connect only to Supabase and known vendor APIs.  The CRL-panic
-    # (0104) requires an attacker to supply a malformed CRL, which is not reachable
-    # in our server-to-server TLS usage.  Review date: 2026-04-24.
+    # CAs; we connect only to Supabase and known vendor APIs. The CRL-panic
+    # (0104) requires a malformed CRL input, which is not reachable in our
+    # server-to-server TLS usage. Review date: 2026-04-24.
     "RUSTSEC-2026-0098",  # rustls-webpki — URI name constraint validation; blocked on sqlx/reqwest major upgrade
     "RUSTSEC-2026-0099",  # rustls-webpki — wildcard name constraint; blocked on sqlx/reqwest major upgrade
-    "RUSTSEC-2026-0104",  # rustls-webpki — CRL parse panic; not reachable without CRL revocation; blocked on sqlx/reqwest major upgrade
+    "RUSTSEC-2026-0104",  # rustls-webpki — CRL parse panic; blocked on sqlx/reqwest major upgrade
 ]

@@ -778,6 +778,34 @@ See the [deployment docs](docs/deployment/README.md) for production setup.
 
 ---
 
+## ✦ Agent dispatch
+
+Selemene ships an automated contributor pipeline: any open issue with the `agent-ready` label is auto-converted into a draft PR implemented by the GitHub Copilot coding agent. Useful for well-scoped tasks where the issue body fully specifies the deliverable.
+
+**Trigger:** apply the `agent-ready` label to an open issue.
+
+**What happens (in order):**
+
+1. [`agent-dispatch.yml`](.github/workflows/agent-dispatch.yml) creates branch `agent/issue-{N}-{slug}` off main, opens a draft PR with the issue spec + checklist, and commits a task file at `.agent-tasks/issue-{N}.md`.
+2. The dispatch workflow posts an `@copilot Implement everything in .agent-tasks/issue-{N}.md.` comment on the PR (controlled by repo var `COPILOT_AUTOKICK`, default `true`).
+3. The Copilot coding agent picks up the kickoff, implements per the spec, and **deletes** `.agent-tasks/issue-{N}.md` in its final commit to signal done.
+4. [`agent-auto-ready.yml`](.github/workflows/agent-auto-ready.yml) detects the deleted task file (gated on >1 commit + draft + `agent/issue-*` head) and flips the PR from draft → ready-for-review.
+5. On merge, [`agent-post-merge.yml`](.github/workflows/agent-post-merge.yml) closes the linked issue and applies the `agent-merged` label.
+
+**Backfill mode** — for issues already labeled before the dispatch workflow was added, run **Actions → Agent Issue Dispatch → Run workflow** (leave input empty for all open `agent-ready` issues, or pass a comma-separated issue list).
+
+**Batch merge** — [`agent-merge-lane.yml`](.github/workflows/agent-merge-lane.yml) supports manual dispatch to merge eligible agent PRs by lane (`qa-docs`, `backend`, `all`) with an optional `dry_run`.
+
+**Gotchas:**
+
+- Issue body must fully specify the deliverable + acceptance criteria — the bot reads only `.agent-tasks/issue-{N}.md`, not the surrounding repo context.
+- Idempotent: if the dispatch fires twice on the same issue, the second run skips because an `agent/issue-{N}-*` PR already exists.
+- The auto-ready gate requires >1 commit (scaffold + at least one bot commit) — empty draft PRs stay draft.
+
+<br>
+
+---
+
 ## ✦ Acknowledgments
 
 <sub>This work stands on the shoulders of **Maharishi Parashara** (Vimshottari Dasha), **Ra Uru Hu** (Human Design), **Richard Rudd** (Gene Keys), **B.V. Raman** (Vedic astrology), and the **Swiss Ephemeris Team**.</sub>
