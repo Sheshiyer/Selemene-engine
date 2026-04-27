@@ -361,7 +361,7 @@ fn cycle_compatibility(days_diff: i64, period: f64) -> CycleCompatibility {
 /// * `birth_date_a` – birth date of person A
 /// * `birth_date_b` – birth date of person B
 /// * `target_date`  – reference date stored in the result for caller context;
-///                    the per-cycle scores depend only on the two birth dates
+///   the per-cycle scores depend only on the two birth dates
 ///
 /// # Returns
 /// `CompatibilityResult` with per-cycle scores and an equal-weighted overall score
