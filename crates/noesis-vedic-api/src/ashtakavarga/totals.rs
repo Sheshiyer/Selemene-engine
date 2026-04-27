@@ -35,7 +35,7 @@ pub fn calculate_analysis(sarva: &SarvaAshtakavarga) -> AshtakavargaAnalysis {
         .collect();
 
     // Sort by points descending
-    sign_strengths.sort_by(|a, b| b.points.cmp(&a.points));
+    sign_strengths.sort_by_key(|s| std::cmp::Reverse(s.points));
 
     let strongest_signs: Vec<SignStrength> = sign_strengths.iter().take(3).cloned().collect();
 

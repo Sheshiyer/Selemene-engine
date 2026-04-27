@@ -80,7 +80,7 @@ impl HoraAlarmScheduler {
 
         // Sort by notification time
         self.pending_notifications
-            .sort_by(|a, b| a.notification_time.cmp(&b.notification_time));
+            .sort_by_key(|n| n.notification_time);
     }
 
     /// Get pending notifications
