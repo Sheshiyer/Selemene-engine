@@ -1,0 +1,60 @@
+{
+  "engine_id": "sacred-geometry",
+  "result": {
+    "form": {
+      "id": "flower-of-life",
+      "name": "Flower of Life",
+      "description": "An ancient symbol composed of multiple evenly-spaced, overlapping circles arranged in a flower-like pattern with six-fold symmetry. It is considered to contain the patterns of creation.",
+      "symbolism": "Unity, creation, and the interconnectedness of all life. Contains the blueprint for all existence - from the structure of atoms to galaxies.",
+      "elements": [
+        "circle",
+        "hexagon",
+        "vesica piscis"
+      ],
+      "numerology": 6
+    },
+    "meditation": {
+      "prompt": "Allow your awareness to rest on the center of the Flower of Life. Notice how each circle supports and is supported by others. Let the pattern breathe.",
+      "duration_suggestion": "5-15 minutes"
+    },
+    "intention": null,
+    "svg_preview": {
+      "status": "absent"
+    },
+    "seed": 9999
+  },
+  "witness_prompts": [
+    {
+      "prompt": "As you visualize Flower of Life, what patterns do you notice in your own life?",
+      "context": "Contemplating Flower of Life",
+      "themes": [
+        "geometry",
+        "pattern",
+        "awareness",
+        "circle",
+        "hexagon",
+        "vesica piscis"
+      ]
+    },
+    {
+      "prompt": "Allow your awareness to rest on the center of the Flower of Life. Notice how each circle supports and is supported by others. Let the pattern breathe. Take three breaths and notice what arises.",
+      "context": "Meditation guidance",
+      "themes": [
+        "meditation",
+        "presence",
+        "visualization"
+      ]
+    },
+    {
+      "prompt": "The number 6 resonates through Flower of Life. Where does this number appear in your life?",
+      "context": "Numerological resonance",
+      "themes": [
+        "numerology",
+        "symbolism",
+        "synchronicity"
+      ]
+    }
+  ],
+  "calculated_at": "2024-01-15T14:30:00.000Z",
+  "processing_time_ms": 0
+}

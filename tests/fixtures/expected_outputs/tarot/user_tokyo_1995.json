@@ -1,0 +1,120 @@
+{
+  "engine_id": "tarot",
+  "result": {
+    "spread": {
+      "type": "three_card",
+      "name": "Three Card Spread",
+      "description": "Past, Present, and Future - a classic spread for understanding the flow of time"
+    },
+    "positions": [
+      {
+        "position": 0,
+        "name": "Past",
+        "meaning": "What has led to this moment; influences from the past",
+        "card": {
+          "id": "major-4",
+          "name": "The Emperor",
+          "arcana": "major",
+          "number": 4,
+          "element": "fire",
+          "isReversed": true,
+          "interpretation": {
+            "meaning": "Domination, excessive control, rigidity, lack of discipline",
+            "keywords": [
+              "authority",
+              "structure",
+              "leadership",
+              "stability"
+            ]
+          }
+        }
+      },
+      {
+        "position": 1,
+        "name": "Present",
+        "meaning": "The current situation; where you stand now",
+        "card": {
+          "id": "major-20",
+          "name": "Judgement",
+          "arcana": "major",
+          "number": 20,
+          "element": "fire",
+          "isReversed": false,
+          "interpretation": {
+            "meaning": "Reflection, reckoning, awakening, renewal, purpose",
+            "keywords": [
+              "rebirth",
+              "calling",
+              "absolution",
+              "reflection"
+            ]
+          }
+        }
+      },
+      {
+        "position": 2,
+        "name": "Future",
+        "meaning": "What may unfold; potential outcomes and energies ahead",
+        "card": {
+          "id": "cups-10",
+          "name": "Ten of Cups",
+          "arcana": "minor",
+          "suit": "cups",
+          "number": 10,
+          "element": "water",
+          "isReversed": false,
+          "interpretation": {
+            "meaning": "Divine love, blissful relationships, harmony, alignment",
+            "keywords": [
+              "happiness",
+              "fulfillment",
+              "family",
+              "harmony"
+            ]
+          }
+        }
+      }
+    ],
+    "seed": 9999
+  },
+  "witness_prompts": [
+    {
+      "prompt": "With The Emperor appearing reversed, what inner landscape might it be reflecting?",
+      "context": "The Emperor in Past position (reversed)",
+      "themes": [
+        "shadow",
+        "inversion",
+        "inner work",
+        "authority",
+        "structure",
+        "leadership",
+        "stability"
+      ]
+    },
+    {
+      "prompt": "How do Judgement and Ten of Cups seem to speak to each other in this reading?",
+      "context": "Connection between Present and Future",
+      "themes": [
+        "rebirth",
+        "calling",
+        "absolution",
+        "reflection",
+        "happiness",
+        "fulfillment",
+        "family",
+        "harmony"
+      ]
+    },
+    {
+      "prompt": "As you take in the full spread, what truth wants to be acknowledged?",
+      "context": "Overall reading reflection",
+      "themes": [
+        "wholeness",
+        "integration",
+        "meaning"
+      ]
+    }
+  ],
+  "calculated_at": "2024-01-15T14:30:00.000Z",
+  "processing_time_ms": 0
+}
