@@ -426,7 +426,7 @@ pub fn get_recommendations(
     }
 
     // Sort by score descending
-    recommendations.sort_by(|a, b| b.score.cmp(&a.score));
+    recommendations.sort_by_key(|r| std::cmp::Reverse(r.score));
 
     recommendations
 }
