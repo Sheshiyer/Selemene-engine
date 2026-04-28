@@ -1,0 +1,86 @@
+{
+  "_meta": {
+    "case_id": "date_line_east",
+    "engine_id": "numerology",
+    "description": "Fiji date line east numerology - same date as west case, different name",
+    "boundary_condition": "year_end_date_east",
+    "notes": "Same date as date_line_west (1985-12-31) \u2192 same life_path (3) and birthday (4). Different name 'Fiji User' produces different expression/soul_urge/personality values."
+  },
+  "input": {
+    "name": "Fiji User",
+    "date": "1985-12-31",
+    "time": "23:59",
+    "latitude": -17.7134,
+    "longitude": 178.065,
+    "timezone": "Pacific/Fiji"
+  },
+  "expected_output": {
+    "engine_id": "numerology",
+    "result": {
+      "life_path": {
+        "value": 3,
+        "is_master": false,
+        "reduction_chain": [
+          12,
+          3
+        ],
+        "meaning": "Creativity, expression, joy"
+      },
+      "expression": {
+        "value": 7,
+        "is_master": false,
+        "reduction_chain": [
+          43,
+          7
+        ],
+        "meaning": "Analysis, wisdom, introspection"
+      },
+      "soul_urge": {
+        "value": 8,
+        "is_master": false,
+        "reduction_chain": [
+          26,
+          8
+        ],
+        "meaning": "Power, abundance, achievement"
+      },
+      "personality": {
+        "value": 8,
+        "is_master": false,
+        "reduction_chain": [
+          17,
+          8
+        ],
+        "meaning": "Power, abundance, achievement"
+      },
+      "birthday": {
+        "value": 4,
+        "is_master": false,
+        "reduction_chain": [
+          31,
+          4
+        ],
+        "meaning": "Structure, discipline, foundation"
+      },
+      "chaldean_name": {
+        "value": 9,
+        "is_master": false,
+        "reduction_chain": [
+          27,
+          9
+        ],
+        "meaning": "Compassion, completion, universal love"
+      }
+    }
+  },
+  "validation_rules": {
+    "no_nan_values": true,
+    "no_engine_panic": true,
+    "all_numbers_in_range": [
+      1,
+      33
+    ],
+    "master_numbers_not_reduced": true,
+    "witness_prompt_non_empty": true
+  }
+}

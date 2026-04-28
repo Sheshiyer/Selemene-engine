@@ -1,0 +1,69 @@
+{
+  "_meta": {
+    "case_id": "century_boundary",
+    "engine_id": "human-design",
+    "description": "Millennium boundary human design - January 1, 2000 00:01 UTC, near same position as midnight_birth",
+    "boundary_condition": "millennium_boundary",
+    "notes": "Y2K boundary: Jan 1, 2000 00:01 UTC+0. Engine must handle year 2000 epoch transition. Solar position near winter solstice \u2192 Gate 38. Design time 88 days earlier (early October 1999) \u2192 Gate 48."
+  },
+  "input": {
+    "name": "Millennium User",
+    "date": "2000-01-01",
+    "time": "00:01",
+    "latitude": 51.5074,
+    "longitude": -0.1278,
+    "timezone": "Europe/London"
+  },
+  "expected_output": {
+    "engine_id": "human-design",
+    "result": {
+      "personality_sun_gate": 38,
+      "personality_sun_line": 1,
+      "personality_earth_gate": 39,
+      "design_sun_gate": 48
+    }
+  },
+  "validation_rules": {
+    "no_nan_values": true,
+    "no_engine_panic": true,
+    "personality_activations_count": 13,
+    "design_activations_count": 13,
+    "gate_range": [
+      1,
+      64
+    ],
+    "line_range": [
+      1,
+      6
+    ],
+    "longitude_range": [
+      0.0,
+      360.0
+    ],
+    "hd_type_valid": [
+      "Generator",
+      "ManifestingGenerator",
+      "Projector",
+      "Manifestor",
+      "Reflector"
+    ],
+    "authority_valid": [
+      "Sacral",
+      "Emotional",
+      "Splenic",
+      "Heart",
+      "GCenter",
+      "Mental",
+      "Lunar"
+    ],
+    "profile_lines_range": [
+      1,
+      6
+    ],
+    "defined_centers_range": [
+      0,
+      9
+    ],
+    "earth_opposite_sun": true
+  }
+}

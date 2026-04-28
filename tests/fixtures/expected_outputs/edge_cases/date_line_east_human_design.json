@@ -1,0 +1,69 @@
+{
+  "_meta": {
+    "case_id": "date_line_east",
+    "engine_id": "human-design",
+    "description": "Fiji date-line east human design - UTC+12 same local date as Samoa, 23 UTC hours earlier",
+    "boundary_condition": "date_line_east_boundary",
+    "notes": "Pacific/Fiji is UTC+12. Local 23:59 Dec 31 \u2192 UTC 11:59 Dec 31 (23 hours before the Samoa case). Both share the same local date but different UTC times, yielding different gate lines."
+  },
+  "input": {
+    "name": "Fiji User",
+    "date": "1985-12-31",
+    "time": "23:59",
+    "latitude": -17.7134,
+    "longitude": 178.065,
+    "timezone": "Pacific/Fiji"
+  },
+  "expected_output": {
+    "engine_id": "human-design",
+    "result": {
+      "personality_sun_gate": 38,
+      "personality_sun_line": 1,
+      "personality_earth_gate": 39,
+      "design_sun_gate": 48
+    }
+  },
+  "validation_rules": {
+    "no_nan_values": true,
+    "no_engine_panic": true,
+    "personality_activations_count": 13,
+    "design_activations_count": 13,
+    "gate_range": [
+      1,
+      64
+    ],
+    "line_range": [
+      1,
+      6
+    ],
+    "longitude_range": [
+      0.0,
+      360.0
+    ],
+    "hd_type_valid": [
+      "Generator",
+      "ManifestingGenerator",
+      "Projector",
+      "Manifestor",
+      "Reflector"
+    ],
+    "authority_valid": [
+      "Sacral",
+      "Emotional",
+      "Splenic",
+      "Heart",
+      "GCenter",
+      "Mental",
+      "Lunar"
+    ],
+    "profile_lines_range": [
+      1,
+      6
+    ],
+    "defined_centers_range": [
+      0,
+      9
+    ],
+    "earth_opposite_sun": true
+  }
+}
