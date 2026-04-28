@@ -1115,6 +1115,7 @@ version = "3.0.0"
 dependencies = [
  "async-trait",
  "chrono",
+ "criterion",
  "engine-human-design",
  "noesis-core",
  "rand 0.8.6",
@@ -1262,6 +1263,7 @@ version = "3.0.0"
 dependencies = [
  "async-trait",
  "chrono",
+ "criterion",
  "noesis-core",
  "noesis-vedic-api",
  "rand 0.9.4",
