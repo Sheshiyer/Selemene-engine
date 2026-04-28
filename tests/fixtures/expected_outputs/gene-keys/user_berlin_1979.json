@@ -1,0 +1,209 @@
+{
+  "engine_id": "gene-keys",
+  "result": {
+    "activation_sequence": {
+      "evolution": [
+        59,
+        55
+      ],
+      "lifes_work": [
+        34,
+        20
+      ],
+      "purpose": [
+        20,
+        55
+      ],
+      "radiance": [
+        34,
+        59
+      ]
+    },
+    "active_keys": [
+      {
+        "gift": "Power",
+        "key_number": 34,
+        "line": 3,
+        "name": "Gene Key 34",
+        "shadow": "Rage",
+        "siddhi": "Power",
+        "source": "PersonalitySun"
+      },
+      {
+        "gift": "Self-Assurance",
+        "key_number": 20,
+        "line": 3,
+        "name": "Gene Key 20",
+        "shadow": "Superficiality",
+        "siddhi": "Presence",
+        "source": "PersonalityEarth"
+      },
+      {
+        "gift": "Breakthrough",
+        "key_number": 59,
+        "line": 3,
+        "name": "Gene Key 59",
+        "shadow": "Doubt",
+        "siddhi": "Breakthrough",
+        "source": "DesignSun"
+      },
+      {
+        "gift": "Penetration",
+        "key_number": 55,
+        "line": 3,
+        "name": "Gene Key 55",
+        "shadow": "Victimization",
+        "siddhi": "Penetration",
+        "source": "DesignEarth"
+      }
+    ],
+    "frequency_assessments": [
+      {
+        "gene_key": 34,
+        "gift": "Power",
+        "gift_description": "The gift frequency expresses the balanced state of consciousness that serves the collective good.",
+        "name": "Gene Key 34",
+        "recognition_prompts": {
+          "gift": [
+            "When do you experience Power arising naturally, without effort?",
+            "Can you notice the space between the Rage pattern and the emergence of Power?",
+            "What happens when Power flows through you? How does it feel different from the shadow?",
+            "When this gift is active, who are you serving? What opens?",
+            "Does this quality arise more often now than in the past?"
+          ],
+          "shadow": [
+            "Do you notice yourself reacting unconsciously through the pattern of Rage?",
+            "When Rage arises, can you feel the contraction or resistance in your body?",
+            "Do you find yourself caught in Rage without realizing it until later?",
+            "What triggers this pattern? When does it feel most intense?",
+            "Can you witness the pattern without trying to change or fix it?"
+          ],
+          "siddhi": [
+            "Have you had moments where Power dissolved into Power?",
+            "When Power is present, is there still a 'you' experiencing it?",
+            "What remains when the personal expression of Power falls away?",
+            "Have you touched a state beyond your individual consciousness?",
+            "Can you rest in the paradox of this frequency without needing to understand it?"
+          ]
+        },
+        "shadow": "Rage",
+        "shadow_description": "The shadow frequency represents the unconscious pattern that creates limitation and suffering in this area of life.",
+        "siddhi": "Power",
+        "siddhi_description": "The siddhi frequency embodies the highest potential of human consciousness in this archetypal pattern.",
+        "suggested_frequency": null
+      },
+      {
+        "gene_key": 20,
+        "gift": "Self-Assurance",
+        "gift_description": "The gift frequency expresses the balanced state of consciousness that serves the collective good.",
+        "name": "Gene Key 20",
+        "recognition_prompts": {
+          "gift": [
+            "When do you experience Self-Assurance arising naturally, without effort?",
+            "Can you notice the space between the Superficiality pattern and the emergence of Self-Assurance?",
+            "What happens when Self-Assurance flows through you? How does it feel different from the shadow?",
+            "When this gift is active, who are you serving? What opens?",
+            "Does this quality arise more often now than in the past?"
+          ],
+          "shadow": [
+            "Do you notice yourself reacting unconsciously through the pattern of Superficiality?",
+            "When Superficiality arises, can you feel the contraction or resistance in your body?",
+            "Do you find yourself caught in Superficiality without realizing it until later?",
+            "What triggers this pattern? When does it feel most intense?",
+            "Can you witness the pattern without trying to change or fix it?"
+          ],
+          "siddhi": [
+            "Have you had moments where Self-Assurance dissolved into Presence?",
+            "When Presence is present, is there still a 'you' experiencing it?",
+            "What remains when the personal expression of Self-Assurance falls away?",
+            "Have you touched a state beyond your individual consciousness?",
+            "Can you rest in the paradox of this frequency without needing to understand it?"
+          ]
+        },
+        "shadow": "Superficiality",
+        "shadow_description": "The shadow frequency represents the unconscious pattern that creates limitation and suffering in this area of life.",
+        "siddhi": "Presence",
+        "siddhi_description": "The siddhi frequency embodies the highest potential of human consciousness in this archetypal pattern.",
+        "suggested_frequency": null
+      },
+      {
+        "gene_key": 59,
+        "gift": "Breakthrough",
+        "gift_description": "The gift frequency expresses the balanced state of consciousness that serves the collective good.",
+        "name": "Gene Key 59",
+        "recognition_prompts": {
+          "gift": [
+            "When do you experience Breakthrough arising naturally, without effort?",
+            "Can you notice the space between the Doubt pattern and the emergence of Breakthrough?",
+            "What happens when Breakthrough flows through you? How does it feel different from the shadow?",
+            "When this gift is active, who are you serving? What opens?",
+            "Does this quality arise more often now than in the past?"
+          ],
+          "shadow": [
+            "Do you notice yourself reacting unconsciously through the pattern of Doubt?",
+            "When Doubt arises, can you feel the contraction or resistance in your body?",
+            "Do you find yourself caught in Doubt without realizing it until later?",
+            "What triggers this pattern? When does it feel most intense?",
+            "Can you witness the pattern without trying to change or fix it?"
+          ],
+          "siddhi": [
+            "Have you had moments where Breakthrough dissolved into Breakthrough?",
+            "When Breakthrough is present, is there still a 'you' experiencing it?",
+            "What remains when the personal expression of Breakthrough falls away?",
+            "Have you touched a state beyond your individual consciousness?",
+            "Can you rest in the paradox of this frequency without needing to understand it?"
+          ]
+        },
+        "shadow": "Doubt",
+        "shadow_description": "The shadow frequency represents the unconscious pattern that creates limitation and suffering in this area of life.",
+        "siddhi": "Breakthrough",
+        "siddhi_description": "The siddhi frequency embodies the highest potential of human consciousness in this archetypal pattern.",
+        "suggested_frequency": null
+      },
+      {
+        "gene_key": 55,
+        "gift": "Penetration",
+        "gift_description": "The gift frequency expresses the balanced state of consciousness that serves the collective good.",
+        "name": "Gene Key 55",
+        "recognition_prompts": {
+          "gift": [
+            "When do you experience Penetration arising naturally, without effort?",
+            "Can you notice the space between the Victimization pattern and the emergence of Penetration?",
+            "What happens when Penetration flows through you? How does it feel different from the shadow?",
+            "When this gift is active, who are you serving? What opens?",
+            "Does this quality arise more often now than in the past?"
+          ],
+          "shadow": [
+            "Do you notice yourself reacting unconsciously through the pattern of Victimization?",
+            "When Victimization arises, can you feel the contraction or resistance in your body?",
+            "Do you find yourself caught in Victimization without realizing it until later?",
+            "What triggers this pattern? When does it feel most intense?",
+            "Can you witness the pattern without trying to change or fix it?"
+          ],
+          "siddhi": [
+            "Have you had moments where Penetration dissolved into Penetration?",
+            "When Penetration is present, is there still a 'you' experiencing it?",
+            "What remains when the personal expression of Penetration falls away?",
+            "Have you touched a state beyond your individual consciousness?",
+            "Can you rest in the paradox of this frequency without needing to understand it?"
+          ]
+        },
+        "shadow": "Victimization",
+        "shadow_description": "The shadow frequency represents the unconscious pattern that creates limitation and suffering in this area of life.",
+        "siddhi": "Penetration",
+        "siddhi_description": "The siddhi frequency embodies the highest potential of human consciousness in this archetypal pattern.",
+        "suggested_frequency": null
+      }
+    ]
+  },
+  "witness_prompt": "How do your conscious gifts Power (34) and Breakthrough (59) create your core magnetism? When you're most authentic, what happens in the interplay between Self-Assurance (20) and Penetration (55) as your higher calling reveals itself? What invitation lives in the space between Rage becoming Power and Superficiality becoming Self-Assurance?",
+  "consciousness_level": 3,
+  "metadata": {
+    "calculation_time_ms": 0.0,
+    "backend": "hd-derived",
+    "precision_achieved": "Standard",
+    "cached": false,
+    "timestamp": "2025-01-01T00:00:00Z",
+    "engine_version": "3.0.0"
+  }
+}

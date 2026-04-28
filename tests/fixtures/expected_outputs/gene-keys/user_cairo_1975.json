@@ -1,0 +1,209 @@
+{
+  "engine_id": "gene-keys",
+  "result": {
+    "activation_sequence": {
+      "evolution": [
+        45,
+        26
+      ],
+      "lifes_work": [
+        64,
+        63
+      ],
+      "purpose": [
+        63,
+        26
+      ],
+      "radiance": [
+        64,
+        45
+      ]
+    },
+    "active_keys": [
+      {
+        "gift": "Synthesis",
+        "key_number": 64,
+        "line": 3,
+        "name": "Gene Key 64",
+        "shadow": "Ignorance",
+        "siddhi": "Synthesis",
+        "source": "PersonalitySun"
+      },
+      {
+        "gift": "Bliss",
+        "key_number": 63,
+        "line": 3,
+        "name": "Gene Key 63",
+        "shadow": "Pressure",
+        "siddhi": "Bliss",
+        "source": "PersonalityEarth"
+      },
+      {
+        "gift": "Intervention",
+        "key_number": 45,
+        "line": 3,
+        "name": "Gene Key 45",
+        "shadow": "Coercion",
+        "siddhi": "Intervention",
+        "source": "DesignSun"
+      },
+      {
+        "gift": "Artlessness",
+        "key_number": 26,
+        "line": 3,
+        "name": "Gene Key 26",
+        "shadow": "Exhaustion",
+        "siddhi": "Invisibility",
+        "source": "DesignEarth"
+      }
+    ],
+    "frequency_assessments": [
+      {
+        "gene_key": 64,
+        "gift": "Synthesis",
+        "gift_description": "The gift frequency expresses the balanced state of consciousness that serves the collective good.",
+        "name": "Gene Key 64",
+        "recognition_prompts": {
+          "gift": [
+            "When do you experience Synthesis arising naturally, without effort?",
+            "Can you notice the space between the Ignorance pattern and the emergence of Synthesis?",
+            "What happens when Synthesis flows through you? How does it feel different from the shadow?",
+            "When this gift is active, who are you serving? What opens?",
+            "Does this quality arise more often now than in the past?"
+          ],
+          "shadow": [
+            "Do you notice yourself reacting unconsciously through the pattern of Ignorance?",
+            "When Ignorance arises, can you feel the contraction or resistance in your body?",
+            "Do you find yourself caught in Ignorance without realizing it until later?",
+            "What triggers this pattern? When does it feel most intense?",
+            "Can you witness the pattern without trying to change or fix it?"
+          ],
+          "siddhi": [
+            "Have you had moments where Synthesis dissolved into Synthesis?",
+            "When Synthesis is present, is there still a 'you' experiencing it?",
+            "What remains when the personal expression of Synthesis falls away?",
+            "Have you touched a state beyond your individual consciousness?",
+            "Can you rest in the paradox of this frequency without needing to understand it?"
+          ]
+        },
+        "shadow": "Ignorance",
+        "shadow_description": "The shadow frequency represents the unconscious pattern that creates limitation and suffering in this area of life.",
+        "siddhi": "Synthesis",
+        "siddhi_description": "The siddhi frequency embodies the highest potential of human consciousness in this archetypal pattern.",
+        "suggested_frequency": null
+      },
+      {
+        "gene_key": 63,
+        "gift": "Bliss",
+        "gift_description": "The gift frequency expresses the balanced state of consciousness that serves the collective good.",
+        "name": "Gene Key 63",
+        "recognition_prompts": {
+          "gift": [
+            "When do you experience Bliss arising naturally, without effort?",
+            "Can you notice the space between the Pressure pattern and the emergence of Bliss?",
+            "What happens when Bliss flows through you? How does it feel different from the shadow?",
+            "When this gift is active, who are you serving? What opens?",
+            "Does this quality arise more often now than in the past?"
+          ],
+          "shadow": [
+            "Do you notice yourself reacting unconsciously through the pattern of Pressure?",
+            "When Pressure arises, can you feel the contraction or resistance in your body?",
+            "Do you find yourself caught in Pressure without realizing it until later?",
+            "What triggers this pattern? When does it feel most intense?",
+            "Can you witness the pattern without trying to change or fix it?"
+          ],
+          "siddhi": [
+            "Have you had moments where Bliss dissolved into Bliss?",
+            "When Bliss is present, is there still a 'you' experiencing it?",
+            "What remains when the personal expression of Bliss falls away?",
+            "Have you touched a state beyond your individual consciousness?",
+            "Can you rest in the paradox of this frequency without needing to understand it?"
+          ]
+        },
+        "shadow": "Pressure",
+        "shadow_description": "The shadow frequency represents the unconscious pattern that creates limitation and suffering in this area of life.",
+        "siddhi": "Bliss",
+        "siddhi_description": "The siddhi frequency embodies the highest potential of human consciousness in this archetypal pattern.",
+        "suggested_frequency": null
+      },
+      {
+        "gene_key": 45,
+        "gift": "Intervention",
+        "gift_description": "The gift frequency expresses the balanced state of consciousness that serves the collective good.",
+        "name": "Gene Key 45",
+        "recognition_prompts": {
+          "gift": [
+            "When do you experience Intervention arising naturally, without effort?",
+            "Can you notice the space between the Coercion pattern and the emergence of Intervention?",
+            "What happens when Intervention flows through you? How does it feel different from the shadow?",
+            "When this gift is active, who are you serving? What opens?",
+            "Does this quality arise more often now than in the past?"
+          ],
+          "shadow": [
+            "Do you notice yourself reacting unconsciously through the pattern of Coercion?",
+            "When Coercion arises, can you feel the contraction or resistance in your body?",
+            "Do you find yourself caught in Coercion without realizing it until later?",
+            "What triggers this pattern? When does it feel most intense?",
+            "Can you witness the pattern without trying to change or fix it?"
+          ],
+          "siddhi": [
+            "Have you had moments where Intervention dissolved into Intervention?",
+            "When Intervention is present, is there still a 'you' experiencing it?",
+            "What remains when the personal expression of Intervention falls away?",
+            "Have you touched a state beyond your individual consciousness?",
+            "Can you rest in the paradox of this frequency without needing to understand it?"
+          ]
+        },
+        "shadow": "Coercion",
+        "shadow_description": "The shadow frequency represents the unconscious pattern that creates limitation and suffering in this area of life.",
+        "siddhi": "Intervention",
+        "siddhi_description": "The siddhi frequency embodies the highest potential of human consciousness in this archetypal pattern.",
+        "suggested_frequency": null
+      },
+      {
+        "gene_key": 26,
+        "gift": "Artlessness",
+        "gift_description": "The gift frequency expresses the balanced state of consciousness that serves the collective good.",
+        "name": "Gene Key 26",
+        "recognition_prompts": {
+          "gift": [
+            "When do you experience Artlessness arising naturally, without effort?",
+            "Can you notice the space between the Exhaustion pattern and the emergence of Artlessness?",
+            "What happens when Artlessness flows through you? How does it feel different from the shadow?",
+            "When this gift is active, who are you serving? What opens?",
+            "Does this quality arise more often now than in the past?"
+          ],
+          "shadow": [
+            "Do you notice yourself reacting unconsciously through the pattern of Exhaustion?",
+            "When Exhaustion arises, can you feel the contraction or resistance in your body?",
+            "Do you find yourself caught in Exhaustion without realizing it until later?",
+            "What triggers this pattern? When does it feel most intense?",
+            "Can you witness the pattern without trying to change or fix it?"
+          ],
+          "siddhi": [
+            "Have you had moments where Artlessness dissolved into Invisibility?",
+            "When Invisibility is present, is there still a 'you' experiencing it?",
+            "What remains when the personal expression of Artlessness falls away?",
+            "Have you touched a state beyond your individual consciousness?",
+            "Can you rest in the paradox of this frequency without needing to understand it?"
+          ]
+        },
+        "shadow": "Exhaustion",
+        "shadow_description": "The shadow frequency represents the unconscious pattern that creates limitation and suffering in this area of life.",
+        "siddhi": "Invisibility",
+        "siddhi_description": "The siddhi frequency embodies the highest potential of human consciousness in this archetypal pattern.",
+        "suggested_frequency": null
+      }
+    ]
+  },
+  "witness_prompt": "How do your conscious gifts Synthesis (64) and Intervention (45) create your core magnetism? When you're most authentic, what happens in the interplay between Bliss (63) and Artlessness (26) as your higher calling reveals itself? What invitation lives in the space between Ignorance becoming Synthesis and Pressure becoming Bliss?",
+  "consciousness_level": 3,
+  "metadata": {
+    "calculation_time_ms": 0.0,
+    "backend": "hd-derived",
+    "precision_achieved": "Standard",
+    "cached": false,
+    "timestamp": "2025-01-01T00:00:00Z",
+    "engine_version": "3.0.0"
+  }
+}
