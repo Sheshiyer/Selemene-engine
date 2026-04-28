@@ -1,0 +1,71 @@
+{
+  "engine_id": "face-reading",
+  "result": {
+    "analysis": {
+      "constitution": {
+        "primary_dosha": "kapha",
+        "secondary_dosha": "pitta",
+        "tcm_element": "water",
+        "body_type": "endomorph",
+        "descriptions": {
+          "dosha": "Earth and water: stable, nurturing, enduring",
+          "element": "Wisdom, adaptability, depth, flow",
+          "body_type": "Soft, rounded features, solid build"
+        }
+      },
+      "personality_indicators": [
+        {
+          "trait_name": "Intuitive Depth",
+          "facial_indicator": "deep-set eyes with pronounced epicanthal curvature",
+          "description": "Reveals access to deep intuitive knowing and unconscious wisdom streams."
+        },
+        {
+          "trait_name": "Resilient Adaptability",
+          "facial_indicator": "soft jawline with fluid facial transitions",
+          "description": "Indicates capacity to flow around obstacles and adapt to changing conditions."
+        }
+      ],
+      "elemental_balance": {
+        "wood": 0.15,
+        "fire": 0.18,
+        "earth": 0.22,
+        "metal": 0.13,
+        "water": 0.32,
+        "dominant": "water"
+      },
+      "health_indicators": [
+        {
+          "zone": "ears",
+          "associated_organ": "Kidneys/Bladder",
+          "observation": "Well-formed ear helix suggests strong kidney constitution"
+        },
+        {
+          "zone": "forehead",
+          "associated_organ": "Liver/Gallbladder",
+          "observation": "Smooth upper forehead indicates calm nervous system regulation"
+        }
+      ],
+      "is_mock_data": false
+    },
+    "notice": "Heuristic analysis generated from provided image_data or birth_data fallback.",
+    "traditions": ["Chinese Mian Xiang", "Ayurvedic Face Analysis", "Western Physiognomy"],
+    "future_capabilities": [
+      "Real-time facial landmark detection",
+      "Photo-based analysis",
+      "Video stream processing",
+      "Expression tracking over time",
+      "Comparative analysis (before/after)"
+    ],
+    "disclaimer": "This information is for self-reflection purposes only and should not be used for medical diagnosis or treatment decisions."
+  },
+  "witness_prompt": "How does your Water element's deep intuitive nature guide you when the mind's clarity is clouded, and what do you access when you trust that inner knowing?",
+  "consciousness_level": 2,
+  "metadata": {
+    "calculation_time_ms": 1.4,
+    "backend": "birth-physiognomy-fallback",
+    "precision_achieved": "birth-derived",
+    "cached": false,
+    "timestamp": "2026-01-15T14:30:00Z",
+    "engine_version": "3.0.0"
+  }
+}
