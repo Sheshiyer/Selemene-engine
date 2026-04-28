@@ -1,0 +1,121 @@
+{
+  "engine_id": "vimshottari",
+  "result": {
+    "birth_nakshatra": {
+      "name": "Purva Phalguni",
+      "number": 11,
+      "moon_longitude": 140.0
+    },
+    "timeline": {
+      "birth_date": "1992-07-10T00:00:00+00:00",
+      "total_years": 120,
+      "mahadashas": [
+        {
+          "planet": "Venus",
+          "start_date": "1992-07-10T00:00:00+00:00",
+          "end_date": "2002-07-10T12:00:00Z",
+          "duration_years": 20,
+          "antardasha_count": 9
+        },
+        {
+          "planet": "Sun",
+          "start_date": "2002-07-10T12:00:00Z",
+          "end_date": "2008-07-10T00:00:00+00:00",
+          "duration_years": 6,
+          "antardasha_count": 9
+        },
+        {
+          "planet": "Moon",
+          "start_date": "2008-07-10T00:00:00+00:00",
+          "end_date": "2018-07-10T12:00:00Z",
+          "duration_years": 10,
+          "antardasha_count": 9
+        },
+        {
+          "planet": "Mars",
+          "start_date": "2018-07-10T12:00:00Z",
+          "end_date": "2025-07-10T06:00:00Z",
+          "duration_years": 7,
+          "antardasha_count": 9
+        },
+        {
+          "planet": "Rahu",
+          "start_date": "2025-07-10T06:00:00Z",
+          "end_date": "2043-07-10T18:00:00Z",
+          "duration_years": 18,
+          "antardasha_count": 9
+        },
+        {
+          "planet": "Jupiter",
+          "start_date": "2043-07-10T18:00:00Z",
+          "end_date": "2059-07-10T18:00:00Z",
+          "duration_years": 16,
+          "antardasha_count": 9
+        },
+        {
+          "planet": "Saturn",
+          "start_date": "2059-07-10T18:00:00Z",
+          "end_date": "2078-07-10T12:00:00Z",
+          "duration_years": 19,
+          "antardasha_count": 9
+        },
+        {
+          "planet": "Mercury",
+          "start_date": "2078-07-10T12:00:00Z",
+          "end_date": "2095-07-10T18:00:00Z",
+          "duration_years": 17,
+          "antardasha_count": 9
+        },
+        {
+          "planet": "Ketu",
+          "start_date": "2095-07-10T18:00:00Z",
+          "end_date": "2102-07-11T12:00:00Z",
+          "duration_years": 7,
+          "antardasha_count": 9
+        }
+      ]
+    },
+    "current_period": {
+      "mahadasha": {
+        "planet": "Rahu",
+        "start": "2025-07-10T06:00:00Z",
+        "end": "2043-07-10T18:00:00Z",
+        "years": 18
+      },
+      "antardasha": {
+        "planet": "Rahu",
+        "start": "2025-07-10T06:00:00Z",
+        "end": "2043-07-10T18:00:00Z",
+        "years": 2.7
+      },
+      "pratyantardasha": {
+        "planet": "Rahu",
+        "start": "2025-07-10T06:00:00Z",
+        "end": "2043-07-10T18:00:00Z",
+        "days": 986.175
+      }
+    },
+    "upcoming_transitions": [],
+    "period_enrichment": null
+  },
+  "witness_prompt": "During the Rahu Mahadasha, you are invited to explore the themes of planetary influence on your consciousness. What patterns of time are unfolding?",
+  "consciousness_level": 3,
+  "metadata": {
+    "calculation_time_ms": 0.0,
+    "backend": "moon-longitude",
+    "precision_achieved": "Standard",
+    "cached": false,
+    "timestamp": "2026-01-01T00:00:00Z",
+    "engine_version": "3.0.0"
+  },
+  "_fixture_meta": {
+    "input": {
+      "birth_date": "1992-07-10",
+      "moon_longitude": 140.0,
+      "current_time": "2026-01-01T00:00:00Z"
+    },
+    "description": "Vimshottari golden fixture for user_mumbai_1992",
+    "nakshatra": "Purva Phalguni",
+    "ruling_planet": "Venus"
+  }
+}

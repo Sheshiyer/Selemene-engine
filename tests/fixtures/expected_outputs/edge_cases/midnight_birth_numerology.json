@@ -1,0 +1,85 @@
+{
+  "_meta": {
+    "case_id": "midnight_birth",
+    "engine_id": "numerology",
+    "description": "Midnight birth numerology - tests year 1990, day 01, month 01",
+    "boundary_condition": "midnight_year_start",
+    "notes": "Life path year 1990 \u2192 1+9+9+0=19\u219210\u21921; month 01\u21921; day 01\u21921; sum 3. Name 'Midnight User' exercises full Pythagorean and Chaldean mappings."
+  },
+  "input": {
+    "name": "Midnight User",
+    "date": "1990-01-01",
+    "time": "00:00",
+    "latitude": 0.0,
+    "longitude": 0.0,
+    "timezone": "UTC"
+  },
+  "expected_output": {
+    "engine_id": "numerology",
+    "result": {
+      "life_path": {
+        "value": 3,
+        "is_master": false,
+        "reduction_chain": [
+          3
+        ],
+        "meaning": "Creativity, expression, joy"
+      },
+      "expression": {
+        "value": 3,
+        "is_master": false,
+        "reduction_chain": [
+          66,
+          12,
+          3
+        ],
+        "meaning": "Creativity, expression, joy"
+      },
+      "soul_urge": {
+        "value": 8,
+        "is_master": false,
+        "reduction_chain": [
+          26,
+          8
+        ],
+        "meaning": "Power, abundance, achievement"
+      },
+      "personality": {
+        "value": 4,
+        "is_master": false,
+        "reduction_chain": [
+          40,
+          4
+        ],
+        "meaning": "Structure, discipline, foundation"
+      },
+      "birthday": {
+        "value": 1,
+        "is_master": false,
+        "reduction_chain": [
+          1
+        ],
+        "meaning": "Leadership, independence, pioneering"
+      },
+      "chaldean_name": {
+        "value": 7,
+        "is_master": false,
+        "reduction_chain": [
+          43,
+          7
+        ],
+        "meaning": "Analysis, wisdom, introspection"
+      }
+    }
+  },
+  "validation_rules": {
+    "no_nan_values": true,
+    "no_engine_panic": true,
+    "all_numbers_in_range": [
+      1,
+      33
+    ],
+    "master_numbers_not_reduced": true,
+    "witness_prompt_non_empty": true
+  }
+}

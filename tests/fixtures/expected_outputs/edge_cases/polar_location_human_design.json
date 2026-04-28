@@ -1,0 +1,69 @@
+{
+  "_meta": {
+    "case_id": "polar_location",
+    "engine_id": "human-design",
+    "description": "Arctic location human design - unsupported timezone defaults to UTC, tests polar lat/lon handling",
+    "boundary_condition": "polar_arctic_location",
+    "notes": "Arctic/Longyearbyen timezone is not recognized; engine defaults to UTC offset. HD calculations use UTC datetime only \u2014 lat/lon not used for gate calculations. Engine must not panic on extreme latitude."
+  },
+  "input": {
+    "name": "Arctic User",
+    "date": "1990-06-15",
+    "time": "14:00",
+    "latitude": 78.2232,
+    "longitude": 15.6267,
+    "timezone": "Arctic/Longyearbyen"
+  },
+  "expected_output": {
+    "engine_id": "human-design",
+    "result": {
+      "personality_sun_gate": 12,
+      "personality_sun_line": 2,
+      "personality_earth_gate": 11,
+      "design_sun_gate": 25
+    }
+  },
+  "validation_rules": {
+    "no_nan_values": true,
+    "no_engine_panic": true,
+    "personality_activations_count": 13,
+    "design_activations_count": 13,
+    "gate_range": [
+      1,
+      64
+    ],
+    "line_range": [
+      1,
+      6
+    ],
+    "longitude_range": [
+      0.0,
+      360.0
+    ],
+    "hd_type_valid": [
+      "Generator",
+      "ManifestingGenerator",
+      "Projector",
+      "Manifestor",
+      "Reflector"
+    ],
+    "authority_valid": [
+      "Sacral",
+      "Emotional",
+      "Splenic",
+      "Heart",
+      "GCenter",
+      "Mental",
+      "Lunar"
+    ],
+    "profile_lines_range": [
+      1,
+      6
+    ],
+    "defined_centers_range": [
+      0,
+      9
+    ],
+    "earth_opposite_sun": true
+  }
+}

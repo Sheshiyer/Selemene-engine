@@ -1,0 +1,60 @@
+{
+  "_meta": {
+    "case_id": "noon_birth",
+    "engine_id": "panchanga",
+    "description": "Summer solstice at noon on Tropic of Cancer - tests solar maximum and equatorial belt",
+    "boundary_condition": "summer_solstice_noon",
+    "notes": "Summer solstice noon: Sun at maximum northward declination. Yoga value near 0 tests wrap-around boundary. Y2K date exercises millennium handling."
+  },
+  "input": {
+    "name": "High Noon User",
+    "date": "2000-06-21",
+    "time": "12:00",
+    "latitude": 23.4393,
+    "longitude": 0.0,
+    "timezone": "UTC"
+  },
+  "expected_output": {
+    "engine_id": "panchanga",
+    "result": {
+      "tithi_index": 19,
+      "tithi_name": "Panchami (Krishna)",
+      "nakshatra_index": 22,
+      "nakshatra_name": "Dhanishta",
+      "yoga_index": 0,
+      "yoga_name": "Vishkambha",
+      "karana_index": 2,
+      "karana_name": "Kaulava",
+      "vara_index": 3,
+      "vara_name": "Budhavara (Wednesday)"
+    }
+  },
+  "validation_rules": {
+    "no_nan_values": true,
+    "no_engine_panic": true,
+    "julian_day_range": [
+      2400000.0,
+      2500000.0
+    ],
+    "solar_longitude_range": [
+      0.0,
+      360.0
+    ],
+    "lunar_longitude_range": [
+      0.0,
+      360.0
+    ],
+    "tithi_value_range": [
+      0.0,
+      30.0
+    ],
+    "nakshatra_value_range": [
+      0.0,
+      27.0
+    ],
+    "yoga_value_range": [
+      0.0,
+      27.0
+    ]
+  }
+}

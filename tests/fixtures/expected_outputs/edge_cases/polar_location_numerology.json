@@ -1,0 +1,86 @@
+{
+  "_meta": {
+    "case_id": "polar_location",
+    "engine_id": "numerology",
+    "description": "Arctic location numerology - tests normal life path calculation for Arctic user",
+    "boundary_condition": "polar_arctic_name",
+    "notes": "Numerology is pure math; lat/lon/timezone have no effect. Year 1990\u21921; month 6\u21926; day 15\u21926; sum 13\u21924. Expression, soul_urge, and personality all equal 9 (three nines)."
+  },
+  "input": {
+    "name": "Arctic User",
+    "date": "1990-06-15",
+    "time": "14:00",
+    "latitude": 78.2232,
+    "longitude": 15.6267,
+    "timezone": "Arctic/Longyearbyen"
+  },
+  "expected_output": {
+    "engine_id": "numerology",
+    "result": {
+      "life_path": {
+        "value": 4,
+        "is_master": false,
+        "reduction_chain": [
+          13,
+          4
+        ],
+        "meaning": "Structure, discipline, foundation"
+      },
+      "expression": {
+        "value": 9,
+        "is_master": false,
+        "reduction_chain": [
+          45,
+          9
+        ],
+        "meaning": "Compassion, completion, universal love"
+      },
+      "soul_urge": {
+        "value": 9,
+        "is_master": false,
+        "reduction_chain": [
+          18,
+          9
+        ],
+        "meaning": "Compassion, completion, universal love"
+      },
+      "personality": {
+        "value": 9,
+        "is_master": false,
+        "reduction_chain": [
+          27,
+          9
+        ],
+        "meaning": "Compassion, completion, universal love"
+      },
+      "birthday": {
+        "value": 6,
+        "is_master": false,
+        "reduction_chain": [
+          15,
+          6
+        ],
+        "meaning": "Responsibility, nurturing, harmony"
+      },
+      "chaldean_name": {
+        "value": 3,
+        "is_master": false,
+        "reduction_chain": [
+          30,
+          3
+        ],
+        "meaning": "Creativity, expression, joy"
+      }
+    }
+  },
+  "validation_rules": {
+    "no_nan_values": true,
+    "no_engine_panic": true,
+    "all_numbers_in_range": [
+      1,
+      33
+    ],
+    "master_numbers_not_reduced": true,
+    "witness_prompt_non_empty": true
+  }
+}
