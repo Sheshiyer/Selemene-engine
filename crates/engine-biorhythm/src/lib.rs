@@ -1,8 +1,7 @@
 //! Biorhythm Consciousness Engine
 //!
-//! Calculates physical (23-day), emotional (28-day), intellectual (33-day),
-//! intuitive (38-day), aesthetic (43-day), and spiritual (53-day) cycles,
-//! plus three composite cycles (mastery, passion, wisdom).
+//! Calculates physical (23-day), emotional (28-day), and intellectual (33-day) cycles,
+//! plus intuitive (38-day), aesthetic (43-day), and three composite cycles (mastery, passion, wisdom).
 //! Pure math -- no external dependencies beyond std and chrono.
 
 pub mod calculator;
@@ -30,22 +29,11 @@ const PHYSICAL_PERIOD: f64 = 23.0;
 const EMOTIONAL_PERIOD: f64 = 28.0;
 const INTELLECTUAL_PERIOD: f64 = 33.0;
 const INTUITIVE_PERIOD: f64 = 38.0;
-const AESTHETIC_PERIOD: f64 = 43.0;
+const SPIRITUAL_PERIOD: f64 = 53.0;
 
 /// Threshold in days for declaring a zero-crossing "critical".
 const CRITICAL_THRESHOLD: f64 = 1.0;
 
-/// All six biorhythm cycles ordered by period length.
-/// Used by `find_critical_days` and tests as the single source of truth.
-const ALL_CYCLE_PERIODS: &[(&str, f64)] = &[
-    ("physical", PHYSICAL_PERIOD),
-    ("emotional", EMOTIONAL_PERIOD),
-    ("intellectual", INTELLECTUAL_PERIOD),
-    ("intuitive", INTUITIVE_PERIOD),
-    ("aesthetic", AESTHETIC_PERIOD),
-    ("spiritual", SPIRITUAL_PERIOD),
-];
-
 // ---------------------------------------------------------------------------
 // Result types
 // ---------------------------------------------------------------------------
@@ -59,62 +47,7 @@ pub struct BiorhythmResult {
     pub emotional: CycleResult,
     pub intellectual: CycleResult,
     pub intuitive: CycleResult,
-    pub aesthetic: CycleResult,
     pub spiritual: CycleResult,
-    pub mastery: f64,
-    pub passion: f64,
-    pub wisdom: f64,
-    pub critical_days: Vec<CriticalDayEntry>,
-    pub overall_energy: f64,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub forecast: Option<Vec<ForecastDay>>,
-}
-
-/// A single critical day entry, annotated with the cycle(s) that cross zero.
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct CriticalDayEntry {
-    pub date: String,
-    pub cycles: Vec<String>,
-}
-
-/// Result for a single biorhythm cycle.
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct CycleResult {
-    pub value: f64,
-    pub percentage: f64,
-    pub phase: String,
-    pub days_until_peak: i64,
-    pub days_until_critical: i64,
-    pub is_critical: bool,
-    pub cycle_day: i64,
-}
-
-/// One day in the optional forecast window.
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ForecastDay {
-    pub date: String,
-    pub days_alive: i64,
-    pub physical: f64,
-    pub emotional: f64,
-    pub intellectual: f64,
-    pub intuitive: f64,
-    pub overall_energy: f64,
-}
-
-// ---------------------------------------------------------------------------
-// Result types
-// ---------------------------------------------------------------------------
-
-/// Full biorhythm calculation result.
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct BiorhythmResult {
-    pub days_alive: i64,
-    pub target_date: String,
-    pub physical: CycleResult,
-    pub emotional: CycleResult,
-    pub intellectual: CycleResult,
-    pub intuitive: CycleResult,
-    pub aesthetic: CycleResult,
     pub mastery: f64,
     pub passion: f64,
     pub wisdom: f64,
@@ -145,7 +78,6 @@ pub struct ForecastDay {
     pub emotional: f64,
     pub intellectual: f64,
     pub intuitive: f64,
-    pub aesthetic: f64,
     pub overall_energy: f64,
 }
 
@@ -278,33 +210,29 @@ fn compute_cycle(days_alive: i64, period: f64) -> CycleResult {
     }
 }
 
-/// Collect upcoming critical days (dates where any of the 6 cycles cross zero) within a window.
-/// Each entry records which cycle(s) triggered it.
+/// Collect upcoming critical days (dates where any primary cycle crosses zero) within a window.
 fn find_critical_days(
     birth_date: NaiveDate,
     target_date: NaiveDate,
     window_days: i64,
-) -> Vec<CriticalDayEntry> {
-    let mut entries = Vec::new();
+) -> Vec<String> {
+    let mut critical = Vec::new();
     let base_days = (target_date - birth_date).num_days();
 
     for offset in 1..=window_days {
         let d = base_days + offset;
-        let triggering: Vec<String> = ALL_CYCLE_PERIODS
-            .iter()
-            .filter(|(_, period)| is_critical_day(d, *period))
-            .map(|(name, _)| name.to_string())
-            .collect();
-        if !triggering.is_empty() {
+        let any_critical = is_critical_day(d, PHYSICAL_PERIOD)
+            || is_critical_day(d, EMOTIONAL_PERIOD)
+            || is_critical_day(d, INTELLECTUAL_PERIOD)
+            || is_critical_day(d, INTUITIVE_PERIOD)
+            || is_critical_day(d, AESTHETIC_PERIOD);
+        if any_critical {
             let date = target_date + chrono::Duration::days(offset);
-            entries.push(CriticalDayEntry {
-                date: date.format("%Y-%m-%d").to_string(),
-                cycles: triggering,
-            });
+            critical.push(date.format("%Y-%m-%d").to_string());
         }
     }
 
-    entries
+    critical
 }
 
 /// Build the optional forecast.
@@ -531,7 +459,6 @@ impl ConsciousnessEngine for BiorhythmEngine {
         let emotional = compute_cycle(days_alive, EMOTIONAL_PERIOD);
         let intellectual = compute_cycle(days_alive, INTELLECTUAL_PERIOD);
         let intuitive = compute_cycle(days_alive, INTUITIVE_PERIOD);
-        let aesthetic = compute_cycle(days_alive, AESTHETIC_PERIOD);
         let spiritual = compute_cycle(days_alive, SPIRITUAL_PERIOD);
 
         // --- Composite cycles (percentages) ---
@@ -568,7 +495,6 @@ impl ConsciousnessEngine for BiorhythmEngine {
             emotional,
             intellectual,
             intuitive,
-            aesthetic,
             spiritual,
             mastery,
             passion,
@@ -627,7 +553,6 @@ impl ConsciousnessEngine for BiorhythmEngine {
             ("emotional", &bio_result.emotional),
             ("intellectual", &bio_result.intellectual),
             ("intuitive", &bio_result.intuitive),
-            ("aesthetic", &bio_result.aesthetic),
             ("spiritual", &bio_result.spiritual),
         ] {
             if cycle.value < -1.0 || cycle.value > 1.0 {
@@ -827,82 +752,38 @@ mod tests {
         let birth = NaiveDate::from_ymd_opt(1990, 1, 1).unwrap();
         let target = NaiveDate::from_ymd_opt(2025, 6, 15).unwrap();
         let critical = find_critical_days(birth, target, 7);
-        // Should return entries within the window.
+        // Should return dates as strings and have reasonable count.
         assert!(critical.len() <= 7);
-        for entry in &critical {
-            assert!(entry.date.len() == 10); // YYYY-MM-DD
-            assert!(!entry.cycles.is_empty(), "each entry must name at least one cycle");
+        for d in &critical {
+            assert!(d.len() == 10); // YYYY-MM-DD
         }
     }
 
     #[test]
-    fn test_find_critical_days_30_day_window_includes_secondary() {
-        // Over 30 days there must be crossings for aesthetic (43-day) and
-        // spiritual (53-day) cycles given sufficient elapsed days, but more
-        // importantly we verify that when secondary crossings do appear they
-        // are labelled correctly.
+    fn test_forecast_has_six_cycle_fields_in_range() {
         let birth = NaiveDate::from_ymd_opt(1990, 1, 1).unwrap();
         let target = NaiveDate::from_ymd_opt(2025, 6, 15).unwrap();
-        let critical = find_critical_days(birth, target, 30);
-
-        // Collect all cycle names that appear across the window.
-        let all_cycles: std::collections::HashSet<String> = critical
-            .iter()
-            .flat_map(|e| e.cycles.iter().cloned())
-            .collect();
-
-        // Every named cycle must be one of the six recognised ones.
-        let valid: std::collections::HashSet<&str> = ALL_CYCLE_PERIODS
-            .iter()
-            .map(|(name, _)| *name)
-            .collect();
-
-        for name in &all_cycles {
-            assert!(
-                valid.contains(name.as_str()),
-                "unexpected cycle name '{}' in critical_days",
-                name
-            );
+        let forecast = build_forecast(birth, target, 7);
+        assert_eq!(forecast.len(), 7);
+        for day in &forecast {
+            for (name, val) in [
+                ("physical", day.physical),
+                ("emotional", day.emotional),
+                ("intellectual", day.intellectual),
+                ("intuitive", day.intuitive),
+                ("aesthetic", day.aesthetic),
+                ("spiritual", day.spiritual),
+                ("overall_energy", day.overall_energy),
+            ] {
+                assert!(
+                    (0.0..=100.0).contains(&val),
+                    "{} value {} out of [0, 100] on {}",
+                    name,
+                    val,
+                    day.date
+                );
+            }
         }
-
-        // Over 30 days we should see at least some crossings.
-        assert!(
-            !critical.is_empty(),
-            "expected at least one critical day in a 30-day window"
-        );
-    }
-
-    #[test]
-    fn test_aesthetic_cycle_at_birth() {
-        // At day 0 aesthetic value should be 0 (sin(0) = 0).
-        let val = cycle_value(0, AESTHETIC_PERIOD);
-        assert!(val.abs() < 1e-10);
-    }
-
-    #[test]
-    fn test_aesthetic_cycle_at_quarter() {
-        // At 1/4 of the aesthetic period the value should be near peak.
-        let quarter = (AESTHETIC_PERIOD / 4.0).round() as i64;
-        let val = cycle_value(quarter, AESTHETIC_PERIOD);
-        assert!(val > 0.9, "Expected near aesthetic peak, got {}", val);
-    }
-
-    #[test]
-    fn test_spiritual_cycle_invariants() {
-        // Validate same invariants as primary cycles for spiritual (53-day).
-        let result = compute_cycle(100, SPIRITUAL_PERIOD);
-        assert!(
-            result.value >= -1.0 && result.value <= 1.0,
-            "spiritual value out of range"
-        );
-        assert!(
-            result.percentage >= 0.0 && result.percentage <= 100.0,
-            "spiritual percentage out of range"
-        );
-        assert!(result.days_until_peak > 0);
-        assert!(result.days_until_critical > 0);
-        // At birth day 0 the cycle should be at zero crossing.
-        assert!(is_critical_day(0, SPIRITUAL_PERIOD));
     }
 
     #[test]
@@ -914,7 +795,6 @@ mod tests {
             emotional: compute_cycle(10000, EMOTIONAL_PERIOD),
             intellectual: compute_cycle(10000, INTELLECTUAL_PERIOD),
             intuitive: compute_cycle(10000, INTUITIVE_PERIOD),
-            aesthetic: compute_cycle(10000, AESTHETIC_PERIOD),
             spiritual: compute_cycle(10000, SPIRITUAL_PERIOD),
             mastery: 50.0,
             passion: 50.0,
@@ -928,65 +808,36 @@ mod tests {
         assert!(prompt.contains('%'));
     }
 
-    // --- Aesthetic cycle tests ---
-
     #[test]
-    fn test_aesthetic_at_day_zero_is_zero() {
-        // sin(0) = 0
-        let val = cycle_value(0, AESTHETIC_PERIOD);
-        assert!(val.abs() < 1e-10, "aesthetic value at day 0 should be 0, got {}", val);
-    }
+    fn test_spiritual_cycle_period_and_invariants() {
+        // At day 0, spiritual sine value should be 0 (sin(0) = 0).
+        let val_at_birth = cycle_value(0, SPIRITUAL_PERIOD);
+        assert!(val_at_birth.abs() < 1e-10, "Expected 0 at birth, got {}", val_at_birth);
 
-    #[test]
-    fn test_aesthetic_at_quarter_period_near_peak() {
-        // Peak is at AESTHETIC_PERIOD / 4 ≈ 10.75 → day 11.
-        let quarter = (AESTHETIC_PERIOD / 4.0).round() as i64; // 11
-        let val = cycle_value(quarter, AESTHETIC_PERIOD);
-        assert!(val > 0.9, "aesthetic value at day ~11 should be near peak, got {}", val);
-    }
+        // One full period should return very close to 0 again.
+        let val_at_period = cycle_value(SPIRITUAL_PERIOD as i64, SPIRITUAL_PERIOD);
+        assert!(val_at_period.abs() < 1e-10, "Expected 0 at full period, got {}", val_at_period);
 
-    #[test]
-    fn test_aesthetic_percentage_in_range() {
-        for day in 0..=43_i64 {
-            let pct = to_percentage(cycle_value(day, AESTHETIC_PERIOD));
-            assert!(
-                (0.0..=100.0).contains(&pct),
-                "aesthetic percentage {} at day {} out of [0, 100]",
-                pct,
-                day
-            );
-        }
-    }
-
-    #[test]
-    fn test_aesthetic_compute_cycle_valid() {
-        let result = compute_cycle(100, AESTHETIC_PERIOD);
+        // compute_cycle yields value in [-1, 1] and percentage in [0, 100].
+        let result = compute_cycle(100, SPIRITUAL_PERIOD);
         assert!(result.value >= -1.0 && result.value <= 1.0);
         assert!(result.percentage >= 0.0 && result.percentage <= 100.0);
         assert!(result.days_until_peak > 0);
         assert!(result.days_until_critical > 0);
+
+        // cycle_day must be in [0, 52] inclusive (period 53 ⇒ modulo 53).
+        assert!(result.cycle_day >= 0 && result.cycle_day < SPIRITUAL_PERIOD as i64);
     }
 
     #[tokio::test]
-    async fn test_calculate_includes_aesthetic() {
+    async fn test_spiritual_field_in_output() {
         let engine = BiorhythmEngine::new();
         let target = Utc.with_ymd_and_hms(2025, 6, 15, 12, 0, 0).unwrap();
         let input = make_input("1990-01-01", target);
         let output = engine.calculate(input).await.unwrap();
 
         let bio: BiorhythmResult = serde_json::from_value(output.result).unwrap();
-        assert!(bio.aesthetic.value >= -1.0 && bio.aesthetic.value <= 1.0);
-        assert!(bio.aesthetic.percentage >= 0.0 && bio.aesthetic.percentage <= 100.0);
-        assert_eq!(bio.aesthetic.cycle_day, bio.days_alive.rem_euclid(AESTHETIC_PERIOD as i64));
-    }
-
-    #[tokio::test]
-    async fn test_validate_accepts_aesthetic() {
-        let engine = BiorhythmEngine::new();
-        let target = Utc.with_ymd_and_hms(2025, 6, 15, 12, 0, 0).unwrap();
-        let input = make_input("1990-01-01", target);
-        let output = engine.calculate(input).await.unwrap();
-        let validation = engine.validate(&output).await.unwrap();
-        assert!(validation.valid);
+        assert!(bio.spiritual.value >= -1.0 && bio.spiritual.value <= 1.0);
+        assert!(bio.spiritual.percentage >= 0.0 && bio.spiritual.percentage <= 100.0);
     }
 }
