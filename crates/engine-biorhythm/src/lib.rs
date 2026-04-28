@@ -4,17 +4,21 @@
 //! plus intuitive (38-day), aesthetic (43-day), and three composite cycles (mastery, passion, wisdom).
 //! Pure math -- no external dependencies beyond std and chrono.
 
-pub mod types;
-pub use types::*;
+pub mod calculator;
+
+pub use calculator::{
+    build_forecast, compute_cycle, find_critical_days, generate_witness_prompt, BiorhythmResult,
+    CycleResult, ForecastDay, EMOTIONAL_PERIOD, INTELLECTUAL_PERIOD, INTUITIVE_PERIOD,
+    PHYSICAL_PERIOD,
+};
 
 use async_trait::async_trait;
-use chrono::{NaiveDate, Utc};
+use chrono::Utc;
 use noesis_core::{
     CalculationMetadata, ConsciousnessEngine, EngineError, EngineInput, EngineOutput,
     ValidationResult,
 };
 use sha2::{Digest, Sha256};
-use std::f64::consts::PI;
 use std::time::Instant;
 
 // ---------------------------------------------------------------------------
@@ -408,8 +412,8 @@ pub fn calculate_compatibility(
 // ---------------------------------------------------------------------------
 
 /// Parse a YYYY-MM-DD date string into NaiveDate.
-fn parse_date(date_str: &str) -> Result<NaiveDate, EngineError> {
-    NaiveDate::parse_from_str(date_str, "%Y-%m-%d")
+fn parse_date(date_str: &str) -> Result<chrono::NaiveDate, EngineError> {
+    chrono::NaiveDate::parse_from_str(date_str, "%Y-%m-%d")
         .map_err(|e| EngineError::CalculationError(format!("Invalid date '{}': {}", date_str, e)))
 }
 
@@ -624,7 +628,8 @@ impl ConsciousnessEngine for BiorhythmEngine {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use chrono::{DateTime, TimeZone, Utc};
+    use super::calculator::{cycle_value, is_critical_day, to_percentage, PHYSICAL_PERIOD};
+    use chrono::{DateTime, NaiveDate, TimeZone, Utc};
     use noesis_core::{BirthData, Precision};
     use std::collections::HashMap;
 

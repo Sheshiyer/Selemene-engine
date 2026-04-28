@@ -1,0 +1,70 @@
+{
+  "engine_id": "biorhythm",
+  "result": {
+    "days_alive": 13800,
+    "target_date": "2026-01-01",
+    "physical": {
+      "value": -2.038010347584904e-13,
+      "percentage": 49.99999999998981,
+      "phase": "Critical",
+      "days_until_peak": 6,
+      "days_until_critical": 12,
+      "is_critical": true,
+      "cycle_day": 0
+    },
+    "emotional": {
+      "value": -0.7818314824682557,
+      "percentage": 10.908425876587213,
+      "phase": "Rising",
+      "days_until_peak": 12,
+      "days_until_critical": 5,
+      "is_critical": false,
+      "cycle_day": 24
+    },
+    "intellectual": {
+      "value": 0.9096319953544135,
+      "percentage": 95.48159976772068,
+      "phase": "Rising",
+      "days_until_peak": 3,
+      "days_until_critical": 11,
+      "is_critical": false,
+      "cycle_day": 6
+    },
+    "intuitive": {
+      "value": 0.8371664782624872,
+      "percentage": 91.85832391312437,
+      "phase": "Rising",
+      "days_until_peak": 4,
+      "days_until_critical": 13,
+      "is_critical": false,
+      "cycle_day": 6
+    },
+    "mastery": 72.74079988385525,
+    "passion": 30.454212938288514,
+    "wisdom": 53.19501282215395,
+    "critical_days": [
+      "2026-01-02",
+      "2026-01-05",
+      "2026-01-06"
+    ],
+    "overall_energy": 52.130008548099234
+  },
+  "witness_prompt": "Your intellectual cycle is at 95% while emotional is at 11%. Today holds a critical crossing — a threshold moment. What old pattern is completing, and what new rhythm wants to begin?",
+  "consciousness_level": 0,
+  "metadata": {
+    "calculation_time_ms": 0.0,
+    "backend": "native-rust",
+    "precision_achieved": "Standard",
+    "cached": false,
+    "timestamp": "2026-01-01T00:00:00Z",
+    "engine_version": "3.0.0"
+  },
+  "_fixture_meta": {
+    "input": {
+      "birth_date": "1988-03-21",
+      "timezone": "Australia/Sydney",
+      "current_time": "2026-01-01T00:00:00Z"
+    },
+    "description": "Biorhythm golden fixture for user_sydney_1988"
+  }
+}

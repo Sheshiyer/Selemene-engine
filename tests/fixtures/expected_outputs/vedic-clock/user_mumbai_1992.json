@@ -1,0 +1,79 @@
+{
+  "engine_id": "vedic-clock",
+  "result": {
+    "current_organ": {
+      "organ": "Pericardium",
+      "element": "Fire",
+      "time_window": "7 PM - 9 PM",
+      "peak_energy": "Protection and emotional intimacy",
+      "associated_emotion": "Openness (balanced) / Guardedness (imbalanced)",
+      "recommended_activities": [
+        "Quality time with loved ones",
+        "Intimacy",
+        "Self-care rituals",
+        "Relaxation",
+        "Emotional connection"
+      ]
+    },
+    "current_dosha": {
+      "dosha": "Kapha",
+      "qualities": [
+        "Winding down",
+        "Heaviness",
+        "Relaxation",
+        "Connection"
+      ]
+    },
+    "recommendation": {
+      "time_window": "7 PM - 9 PM",
+      "organ": "Pericardium",
+      "dosha": "Kapha",
+      "activities": [
+        {
+          "activity": "Quality time with loved ones",
+          "quality": "optimal",
+          "reason": "Aligned with Pericardium active window and Kapha dosha"
+        },
+        {
+          "activity": "Intimacy",
+          "quality": "optimal",
+          "reason": "Aligned with Pericardium active window and Kapha dosha"
+        },
+        {
+          "activity": "Self-care rituals",
+          "quality": "optimal",
+          "reason": "Aligned with Pericardium active window and Kapha dosha"
+        }
+      ],
+      "panchanga_quality": null
+    },
+    "synthesis": "During the Kapha period, with Pericardium active, focus on quality time with loved ones.",
+    "calculated_for": "2026-01-01T14:00:00Z",
+    "timezone": {
+      "offset_minutes": 330,
+      "source": "birth_data.timezone",
+      "local_hour": 19
+    }
+  },
+  "witness_prompt": "The Pericardium organ is active now, governed by the Fire element. Notice: openness (balanced). What is present in this moment that you have not yet fully seen?",
+  "consciousness_level": 0,
+  "metadata": {
+    "calculation_time_ms": 0.0,
+    "backend": "native-rust",
+    "precision_achieved": "Standard",
+    "cached": false,
+    "timestamp": "2026-01-01T14:00:00Z",
+    "engine_version": "3.0.0"
+  },
+  "_fixture_meta": {
+    "input": {
+      "current_time": "2026-01-01T14:00:00Z",
+      "timezone_offset": 330,
+      "timezone_name": "Asia/Kolkata"
+    },
+    "description": "Vedic Clock golden fixture for user_mumbai_1992",
+    "local_hour": 19,
+    "active_organ": "Pericardium",
+    "active_dosha": "Kapha"
+  }
+}

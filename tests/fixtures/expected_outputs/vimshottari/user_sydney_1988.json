@@ -1,0 +1,121 @@
+{
+  "engine_id": "vimshottari",
+  "result": {
+    "birth_nakshatra": {
+      "name": "Shravana",
+      "number": 22,
+      "moon_longitude": 280.0
+    },
+    "timeline": {
+      "birth_date": "1988-03-21T00:00:00+00:00",
+      "total_years": 120,
+      "mahadashas": [
+        {
+          "planet": "Moon",
+          "start_date": "1988-03-21T00:00:00+00:00",
+          "end_date": "1998-03-21T12:00:00Z",
+          "duration_years": 10,
+          "antardasha_count": 9
+        },
+        {
+          "planet": "Mars",
+          "start_date": "1998-03-21T12:00:00Z",
+          "end_date": "2005-03-21T06:00:00Z",
+          "duration_years": 7,
+          "antardasha_count": 9
+        },
+        {
+          "planet": "Rahu",
+          "start_date": "2005-03-21T06:00:00Z",
+          "end_date": "2023-03-21T18:00:00Z",
+          "duration_years": 18,
+          "antardasha_count": 9
+        },
+        {
+          "planet": "Jupiter",
+          "start_date": "2023-03-21T18:00:00Z",
+          "end_date": "2039-03-21T18:00:00Z",
+          "duration_years": 16,
+          "antardasha_count": 9
+        },
+        {
+          "planet": "Saturn",
+          "start_date": "2039-03-21T18:00:00Z",
+          "end_date": "2058-03-21T12:00:00Z",
+          "duration_years": 19,
+          "antardasha_count": 9
+        },
+        {
+          "planet": "Mercury",
+          "start_date": "2058-03-21T12:00:00Z",
+          "end_date": "2075-03-21T18:00:00Z",
+          "duration_years": 17,
+          "antardasha_count": 9
+        },
+        {
+          "planet": "Ketu",
+          "start_date": "2075-03-21T18:00:00Z",
+          "end_date": "2082-03-21T12:00:00Z",
+          "duration_years": 7,
+          "antardasha_count": 9
+        },
+        {
+          "planet": "Venus",
+          "start_date": "2082-03-21T12:00:00Z",
+          "end_date": "2102-03-22T12:00:00Z",
+          "duration_years": 20,
+          "antardasha_count": 9
+        },
+        {
+          "planet": "Sun",
+          "start_date": "2102-03-22T12:00:00Z",
+          "end_date": "2108-03-22T00:00:00+00:00",
+          "duration_years": 6,
+          "antardasha_count": 9
+        }
+      ]
+    },
+    "current_period": {
+      "mahadasha": {
+        "planet": "Jupiter",
+        "start": "2023-03-21T18:00:00Z",
+        "end": "2039-03-21T18:00:00Z",
+        "years": 16
+      },
+      "antardasha": {
+        "planet": "Jupiter",
+        "start": "2023-03-21T18:00:00Z",
+        "end": "2039-03-21T18:00:00Z",
+        "years": 2.1333333333333333
+      },
+      "pratyantardasha": {
+        "planet": "Jupiter",
+        "start": "2023-03-21T18:00:00Z",
+        "end": "2039-03-21T18:00:00Z",
+        "days": 779.2
+      }
+    },
+    "upcoming_transitions": [],
+    "period_enrichment": null
+  },
+  "witness_prompt": "During the Jupiter Mahadasha, you are invited to explore the themes of planetary influence on your consciousness. What patterns of time are unfolding?",
+  "consciousness_level": 3,
+  "metadata": {
+    "calculation_time_ms": 0.0,
+    "backend": "moon-longitude",
+    "precision_achieved": "Standard",
+    "cached": false,
+    "timestamp": "2026-01-01T00:00:00Z",
+    "engine_version": "3.0.0"
+  },
+  "_fixture_meta": {
+    "input": {
+      "birth_date": "1988-03-21",
+      "moon_longitude": 280.0,
+      "current_time": "2026-01-01T00:00:00Z"
+    },
+    "description": "Vimshottari golden fixture for user_sydney_1988",
+    "nakshatra": "Shravana",
+    "ruling_planet": "Moon"
+  }
+}

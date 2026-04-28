@@ -1,0 +1,60 @@
+{
+  "_meta": {
+    "case_id": "polar_location",
+    "engine_id": "panchanga",
+    "description": "Arctic location (78\u00b0N Svalbard) - tests polar coordinate edge case with unsupported timezone",
+    "boundary_condition": "polar_arctic_location",
+    "notes": "Arctic/Longyearbyen is NOT in the panchanga engine timezone map; tz_offset_from_string defaults to 0.0 (UTC). Extreme northern latitude (78\u00b0N) has no effect on the Vedic calculation since panchanga uses only UTC datetime for planetary positions. Karana index 0 (Bava) is the first of the 7 repeating karanas."
+  },
+  "input": {
+    "name": "Arctic User",
+    "date": "1990-06-15",
+    "time": "14:00",
+    "latitude": 78.2232,
+    "longitude": 15.6267,
+    "timezone": "Arctic/Longyearbyen"
+  },
+  "expected_output": {
+    "engine_id": "panchanga",
+    "result": {
+      "tithi_index": 21,
+      "tithi_name": "Saptami (Krishna)",
+      "nakshatra_index": 24,
+      "nakshatra_name": "Purva Bhadrapada",
+      "yoga_index": 1,
+      "yoga_name": "Priti",
+      "karana_index": 0,
+      "karana_name": "Bava",
+      "vara_index": 5,
+      "vara_name": "Shukravara (Friday)"
+    }
+  },
+  "validation_rules": {
+    "no_nan_values": true,
+    "no_engine_panic": true,
+    "julian_day_range": [
+      2400000.0,
+      2500000.0
+    ],
+    "solar_longitude_range": [
+      0.0,
+      360.0
+    ],
+    "lunar_longitude_range": [
+      0.0,
+      360.0
+    ],
+    "tithi_value_range": [
+      0.0,
+      30.0
+    ],
+    "nakshatra_value_range": [
+      0.0,
+      27.0
+    ],
+    "yoga_value_range": [
+      0.0,
+      27.0
+    ]
+  }
+}
