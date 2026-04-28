@@ -1,0 +1,32 @@
+{
+  "engine_id": "panchanga",
+  "result": {
+    "julian_day": 2447907.3125,
+    "karana_index": 3,
+    "karana_name": "Taitila",
+    "karana_value": 40.0,
+    "lunar_longitude": 147.6698773819993,
+    "nakshatra_index": 11,
+    "nakshatra_name": "Uttara Phalguni",
+    "nakshatra_value": 11.075240803649947,
+    "solar_longitude": 271.6764526627845,
+    "tithi_index": 19,
+    "tithi_name": "Panchami (Krishna)",
+    "tithi_value": 19.666118726601233,
+    "vara_index": 1,
+    "vara_name": "Somavara (Monday)",
+    "yoga_index": 4,
+    "yoga_name": "Shobhana",
+    "yoga_value": 4.450974753358786
+  },
+  "witness_prompt": "You were born under Tithi Panchami (Krishna) and Nakshatra Uttara Phalguni. The Tithi reflects the angle between Sun and Moon at your birth — a mirror of the dance between your conscious will and emotional nature. What pattern do you notice when your intentions and feelings are misaligned?",
+  "consciousness_level": 0,
+  "metadata": {
+    "calculation_time_ms": 0.0,
+    "backend": "native-rust",
+    "precision_achieved": "Standard",
+    "cached": false,
+    "timestamp": "2026-01-01T00:00:00Z",
+    "engine_version": "3.0.0"
+  }
+}
