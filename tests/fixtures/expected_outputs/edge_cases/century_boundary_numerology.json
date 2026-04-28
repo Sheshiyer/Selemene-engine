@@ -1,0 +1,85 @@
+{
+  "_meta": {
+    "case_id": "century_boundary",
+    "engine_id": "numerology",
+    "description": "Millennium boundary January 1, 2000 - tests Y2K date and low-digit life path",
+    "boundary_condition": "millennium_y2k",
+    "notes": "Year 2000\u21922; month 01\u21921; day 01\u21921; sum 4. The Y2K date parses without error. Soul_urge and personality both equal 7. Birthday=1 (single-digit, no reduction)."
+  },
+  "input": {
+    "name": "Millennium User",
+    "date": "2000-01-01",
+    "time": "00:01",
+    "latitude": 51.5074,
+    "longitude": -0.1278,
+    "timezone": "Europe/London"
+  },
+  "expected_output": {
+    "engine_id": "numerology",
+    "result": {
+      "life_path": {
+        "value": 4,
+        "is_master": false,
+        "reduction_chain": [
+          4
+        ],
+        "meaning": "Structure, discipline, foundation"
+      },
+      "expression": {
+        "value": 5,
+        "is_master": false,
+        "reduction_chain": [
+          68,
+          14,
+          5
+        ],
+        "meaning": "Freedom, change, adventure"
+      },
+      "soul_urge": {
+        "value": 7,
+        "is_master": false,
+        "reduction_chain": [
+          34,
+          7
+        ],
+        "meaning": "Analysis, wisdom, introspection"
+      },
+      "personality": {
+        "value": 7,
+        "is_master": false,
+        "reduction_chain": [
+          34,
+          7
+        ],
+        "meaning": "Analysis, wisdom, introspection"
+      },
+      "birthday": {
+        "value": 1,
+        "is_master": false,
+        "reduction_chain": [
+          1
+        ],
+        "meaning": "Leadership, independence, pioneering"
+      },
+      "chaldean_name": {
+        "value": 8,
+        "is_master": false,
+        "reduction_chain": [
+          53,
+          8
+        ],
+        "meaning": "Power, abundance, achievement"
+      }
+    }
+  },
+  "validation_rules": {
+    "no_nan_values": true,
+    "no_engine_panic": true,
+    "all_numbers_in_range": [
+      1,
+      33
+    ],
+    "master_numbers_not_reduced": true,
+    "witness_prompt_non_empty": true
+  }
+}

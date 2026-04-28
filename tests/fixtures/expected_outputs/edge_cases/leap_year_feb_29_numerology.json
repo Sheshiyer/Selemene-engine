@@ -1,0 +1,88 @@
+{
+  "_meta": {
+    "case_id": "leap_year_feb_29",
+    "engine_id": "numerology",
+    "description": "Leap day February 29, 2000 - tests master number birthday (29\u219211)",
+    "boundary_condition": "leap_day_master_birthday",
+    "notes": "Day=29\u219229\u219211 (master). Birthday number stops at 11 without further reduction. Year 2000\u21922; month 2\u21922; day 29\u219211 (via reduce_to_core); life_path sum 2+2+11=15\u21926."
+  },
+  "input": {
+    "name": "Leap Day User",
+    "date": "2000-02-29",
+    "time": "12:30",
+    "latitude": 40.7128,
+    "longitude": -74.006,
+    "timezone": "America/New_York"
+  },
+  "expected_output": {
+    "engine_id": "numerology",
+    "result": {
+      "life_path": {
+        "value": 6,
+        "is_master": false,
+        "reduction_chain": [
+          15,
+          6
+        ],
+        "meaning": "Responsibility, nurturing, harmony"
+      },
+      "expression": {
+        "value": 1,
+        "is_master": false,
+        "reduction_chain": [
+          46,
+          10,
+          1
+        ],
+        "meaning": "Leadership, independence, pioneering"
+      },
+      "soul_urge": {
+        "value": 6,
+        "is_master": false,
+        "reduction_chain": [
+          15,
+          6
+        ],
+        "meaning": "Responsibility, nurturing, harmony"
+      },
+      "personality": {
+        "value": 4,
+        "is_master": false,
+        "reduction_chain": [
+          31,
+          4
+        ],
+        "meaning": "Structure, discipline, foundation"
+      },
+      "birthday": {
+        "value": 11,
+        "is_master": true,
+        "reduction_chain": [
+          29,
+          11
+        ],
+        "meaning": "Intuition, spiritual insight, illumination (master)"
+      },
+      "chaldean_name": {
+        "value": 3,
+        "is_master": false,
+        "reduction_chain": [
+          39,
+          12,
+          3
+        ],
+        "meaning": "Creativity, expression, joy"
+      }
+    }
+  },
+  "validation_rules": {
+    "no_nan_values": true,
+    "no_engine_panic": true,
+    "all_numbers_in_range": [
+      1,
+      33
+    ],
+    "master_numbers_not_reduced": true,
+    "witness_prompt_non_empty": true
+  }
+}

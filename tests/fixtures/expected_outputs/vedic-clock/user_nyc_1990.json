@@ -1,0 +1,80 @@
+{
+  "engine_id": "vedic-clock",
+  "result": {
+    "current_organ": {
+      "organ": "Spleen",
+      "element": "Earth",
+      "time_window": "9 AM - 11 AM",
+      "peak_energy": "Mental clarity and concentration peak",
+      "associated_emotion": "Thoughtfulness (balanced) / Overthinking (imbalanced)",
+      "recommended_activities": [
+        "Intellectual work",
+        "Studying",
+        "Problem-solving",
+        "Important meetings",
+        "Strategic planning"
+      ]
+    },
+    "current_dosha": {
+      "dosha": "Kapha",
+      "qualities": [
+        "Stability",
+        "Groundedness",
+        "Calmness",
+        "Heaviness",
+        "Nurturing"
+      ]
+    },
+    "recommendation": {
+      "time_window": "9 AM - 11 AM",
+      "organ": "Spleen",
+      "dosha": "Kapha",
+      "activities": [
+        {
+          "activity": "Intellectual work",
+          "quality": "optimal",
+          "reason": "Aligned with Spleen active window and Kapha dosha"
+        },
+        {
+          "activity": "Studying",
+          "quality": "optimal",
+          "reason": "Aligned with Spleen active window and Kapha dosha"
+        },
+        {
+          "activity": "Problem-solving",
+          "quality": "optimal",
+          "reason": "Aligned with Spleen active window and Kapha dosha"
+        }
+      ],
+      "panchanga_quality": null
+    },
+    "synthesis": "During the Kapha period, with Spleen active, focus on intellectual work.",
+    "calculated_for": "2026-01-01T14:00:00Z",
+    "timezone": {
+      "offset_minutes": -300,
+      "source": "options.timezone_offset",
+      "local_hour": 9
+    }
+  },
+  "witness_prompt": "The Spleen organ is active now, governed by the Earth element. Notice: thoughtfulness (balanced). What is present in this moment that you have not yet fully seen?",
+  "consciousness_level": 0,
+  "metadata": {
+    "calculation_time_ms": 0.0,
+    "backend": "native-rust",
+    "precision_achieved": "Standard",
+    "cached": false,
+    "timestamp": "2026-01-01T14:00:00Z",
+    "engine_version": "3.0.0"
+  },
+  "_fixture_meta": {
+    "input": {
+      "current_time": "2026-01-01T14:00:00Z",
+      "timezone_offset": -300,
+      "timezone_name": "America/New_York"
+    },
+    "description": "Vedic Clock golden fixture for user_nyc_1990",
+    "local_hour": 9,
+    "active_organ": "Spleen",
+    "active_dosha": "Kapha"
+  }
+}

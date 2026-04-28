@@ -1,0 +1,60 @@
+{
+  "_meta": {
+    "case_id": "midnight_birth",
+    "engine_id": "panchanga",
+    "description": "Midnight birth at UTC equator - tests day boundary crossing and zero-coordinate handling",
+    "boundary_condition": "midnight_utc_equator",
+    "notes": "Midnight boundary: UTC 00:00 tests Julian Day calculation at day transition. Solar position near winter solstice (Capricorn). Engine must not return NaN for zero-coordinate inputs."
+  },
+  "input": {
+    "name": "Midnight User",
+    "date": "1990-01-01",
+    "time": "00:00",
+    "latitude": 0.0,
+    "longitude": 0.0,
+    "timezone": "UTC"
+  },
+  "expected_output": {
+    "engine_id": "panchanga",
+    "result": {
+      "tithi_index": 3,
+      "tithi_name": "Chaturthi (Shukla)",
+      "nakshatra_index": 22,
+      "nakshatra_name": "Dhanishta",
+      "yoga_index": 14,
+      "yoga_name": "Vajra",
+      "karana_index": 6,
+      "karana_name": "Vishti",
+      "vara_index": 1,
+      "vara_name": "Somavara (Monday)"
+    }
+  },
+  "validation_rules": {
+    "no_nan_values": true,
+    "no_engine_panic": true,
+    "julian_day_range": [
+      2400000.0,
+      2500000.0
+    ],
+    "solar_longitude_range": [
+      0.0,
+      360.0
+    ],
+    "lunar_longitude_range": [
+      0.0,
+      360.0
+    ],
+    "tithi_value_range": [
+      0.0,
+      30.0
+    ],
+    "nakshatra_value_range": [
+      0.0,
+      27.0
+    ],
+    "yoga_value_range": [
+      0.0,
+      27.0
+    ]
+  }
+}

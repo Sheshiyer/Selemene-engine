@@ -1,0 +1,72 @@
+{
+  "engine_id": "biorhythm",
+  "result": {
+    "days_alive": 10987,
+    "target_date": "2026-01-01",
+    "physical": {
+      "value": -0.9422609221187117,
+      "percentage": 2.8869538940644146,
+      "phase": "Falling",
+      "days_until_peak": 13,
+      "days_until_critical": 7,
+      "is_critical": false,
+      "cycle_day": 16
+    },
+    "emotional": {
+      "value": 0.6234898018588406,
+      "percentage": 81.17449009294204,
+      "phase": "Falling",
+      "days_until_peak": 24,
+      "days_until_critical": 3,
+      "is_critical": false,
+      "cycle_day": 11
+    },
+    "intellectual": {
+      "value": -0.37166245566034584,
+      "percentage": 31.41687721698271,
+      "phase": "Rising",
+      "days_until_peak": 11,
+      "days_until_critical": 2,
+      "is_critical": false,
+      "cycle_day": 31
+    },
+    "intuitive": {
+      "value": 0.7357239106730552,
+      "percentage": 86.78619553365277,
+      "phase": "Rising",
+      "days_until_peak": 5,
+      "days_until_critical": 15,
+      "is_critical": false,
+      "cycle_day": 5
+    },
+    "mastery": 17.151915555523562,
+    "passion": 42.03072199350323,
+    "wisdom": 56.295683654962374,
+    "critical_days": [
+      "2026-01-03",
+      "2026-01-04",
+      "2026-01-05",
+      "2026-01-07",
+      "2026-01-08"
+    ],
+    "overall_energy": 38.492773734663054
+  },
+  "witness_prompt": "Your emotional cycle is at 81% while physical is at 3%. Notice: how does this contrast show up in your day? Are you the energy, or the one who observes it?",
+  "consciousness_level": 0,
+  "metadata": {
+    "calculation_time_ms": 0.0,
+    "backend": "native-rust",
+    "precision_achieved": "Standard",
+    "cached": false,
+    "timestamp": "2026-01-01T00:00:00Z",
+    "engine_version": "3.0.0"
+  },
+  "_fixture_meta": {
+    "input": {
+      "birth_date": "1995-12-03",
+      "timezone": "Asia/Tokyo",
+      "current_time": "2026-01-01T00:00:00Z"
+    },
+    "description": "Biorhythm golden fixture for user_tokyo_1995"
+  }
+}
