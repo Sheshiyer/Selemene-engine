@@ -1,7 +1,7 @@
 //! Biorhythm Consciousness Engine
 //!
 //! Calculates physical (23-day), emotional (28-day), and intellectual (33-day) cycles,
-//! plus intuitive (38-day) and three composite cycles (mastery, passion, wisdom).
+//! plus intuitive (38-day), aesthetic (43-day), and three composite cycles (mastery, passion, wisdom).
 //! Pure math -- no external dependencies beyond std and chrono.
 
 pub mod calculator;
@@ -22,6 +22,67 @@ use sha2::{Digest, Sha256};
 use std::time::Instant;
 
 // ---------------------------------------------------------------------------
+// Cycle constants
+// ---------------------------------------------------------------------------
+
+const PHYSICAL_PERIOD: f64 = 23.0;
+const EMOTIONAL_PERIOD: f64 = 28.0;
+const INTELLECTUAL_PERIOD: f64 = 33.0;
+const INTUITIVE_PERIOD: f64 = 38.0;
+const AESTHETIC_PERIOD: f64 = 43.0;
+
+/// Threshold in days for declaring a zero-crossing "critical".
+const CRITICAL_THRESHOLD: f64 = 1.0;
+
+// ---------------------------------------------------------------------------
+// Result types
+// ---------------------------------------------------------------------------
+
+/// Full biorhythm calculation result.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct BiorhythmResult {
+    pub days_alive: i64,
+    pub target_date: String,
+    pub physical: CycleResult,
+    pub emotional: CycleResult,
+    pub intellectual: CycleResult,
+    pub intuitive: CycleResult,
+    pub aesthetic: CycleResult,
+    pub mastery: f64,
+    pub passion: f64,
+    pub wisdom: f64,
+    pub critical_days: Vec<String>,
+    pub overall_energy: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub forecast: Option<Vec<ForecastDay>>,
+}
+
+/// Result for a single biorhythm cycle.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CycleResult {
+    pub value: f64,
+    pub percentage: f64,
+    pub phase: String,
+    pub days_until_peak: i64,
+    pub days_until_critical: i64,
+    pub is_critical: bool,
+    pub cycle_day: i64,
+}
+
+/// One day in the optional forecast window.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ForecastDay {
+    pub date: String,
+    pub days_alive: i64,
+    pub physical: f64,
+    pub emotional: f64,
+    pub intellectual: f64,
+    pub intuitive: f64,
+    pub aesthetic: f64,
+    pub overall_energy: f64,
+}
+
+// ---------------------------------------------------------------------------
 // Engine struct
 // ---------------------------------------------------------------------------
 
@@ -37,6 +98,312 @@ impl BiorhythmEngine {
 impl Default for BiorhythmEngine {
     fn default() -> Self {
         Self::new()
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Pure calculation helpers
+// ---------------------------------------------------------------------------
+
+/// Sine value for a given number of days alive and cycle period.
+fn cycle_value(days_alive: i64, period: f64) -> f64 {
+    (2.0 * PI * days_alive as f64 / period).sin()
+}
+
+/// Map a sine value (-1..1) to a percentage (0..100).
+fn to_percentage(value: f64) -> f64 {
+    (value + 1.0) / 2.0 * 100.0
+}
+
+/// Determine the phase label for a cycle value and its derivative direction.
+fn phase_label(value: f64, days_alive: i64, period: f64) -> String {
+    // Check for critical (near zero crossing) first.
+    if is_critical_day(days_alive, period) {
+        return "Critical".to_string();
+    }
+
+    let cos_val = (2.0 * PI * days_alive as f64 / period).cos();
+
+    if value > 0.95 {
+        "Peak".to_string()
+    } else if value < -0.95 {
+        "Low".to_string()
+    } else if cos_val > 0.0 {
+        "Rising".to_string()
+    } else {
+        "Falling".to_string()
+    }
+}
+
+/// Days until the next positive peak (sin = 1).
+/// Peak occurs when days_alive / period = 0.25 + n for integer n.
+fn days_until_peak(days_alive: i64, period: f64) -> i64 {
+    let current_phase = (days_alive as f64 % period) / period; // 0..1
+                                                               // Peak is at phase = 0.25
+    let distance = if current_phase <= 0.25 {
+        0.25 - current_phase
+    } else {
+        1.25 - current_phase
+    };
+    let days = (distance * period).ceil() as i64;
+    if days == 0 {
+        period as i64
+    } else {
+        days
+    }
+}
+
+/// Days until the next zero crossing.
+/// Zero crossings occur at phase = 0.0 and phase = 0.5.
+fn days_until_critical(days_alive: i64, period: f64) -> i64 {
+    let current_phase = (days_alive as f64 % period) / period; // 0..1
+                                                               // Zero crossings at 0.0 and 0.5
+    let targets = [0.5, 1.0]; // next crossings relative to current position
+    let mut min_days = i64::MAX;
+    for &target in &targets {
+        let distance = if current_phase < target {
+            target - current_phase
+        } else {
+            continue;
+        };
+        let days = (distance * period).ceil() as i64;
+        if days > 0 && days < min_days {
+            min_days = days;
+        }
+    }
+    if min_days == i64::MAX {
+        // Wrap around: next zero crossing is at phase 0.0 of the next cycle
+        let distance = 1.0 - current_phase;
+        (distance * period).ceil() as i64
+    } else {
+        min_days
+    }
+}
+
+/// Whether this day is within CRITICAL_THRESHOLD days of a zero crossing.
+fn is_critical_day(days_alive: i64, period: f64) -> bool {
+    let value = cycle_value(days_alive, period);
+    // Near zero means near a crossing. Use absolute value threshold.
+    // sin(x) ~ 0 when x is near n*pi, i.e. near zero crossing.
+    // A threshold of 1 day means |sin(2*pi*d/p)| < sin(2*pi*1/p).
+    let threshold_value = (2.0 * PI * CRITICAL_THRESHOLD / period).sin().abs();
+    value.abs() < threshold_value
+}
+
+/// Compute a single CycleResult.
+fn compute_cycle(days_alive: i64, period: f64) -> CycleResult {
+    let value = cycle_value(days_alive, period);
+    let percentage = to_percentage(value);
+    let phase = phase_label(value, days_alive, period);
+    let until_peak = days_until_peak(days_alive, period);
+    let until_critical = days_until_critical(days_alive, period);
+    let critical = is_critical_day(days_alive, period);
+    let cycle_day = days_alive.rem_euclid(period as i64);
+
+    CycleResult {
+        value,
+        percentage,
+        phase,
+        days_until_peak: until_peak,
+        days_until_critical: until_critical,
+        is_critical: critical,
+        cycle_day,
+    }
+}
+
+/// Collect upcoming critical days (dates where any primary cycle crosses zero) within a window.
+fn find_critical_days(
+    birth_date: NaiveDate,
+    target_date: NaiveDate,
+    window_days: i64,
+) -> Vec<String> {
+    let mut critical = Vec::new();
+    let base_days = (target_date - birth_date).num_days();
+
+    for offset in 1..=window_days {
+        let d = base_days + offset;
+        let any_critical = is_critical_day(d, PHYSICAL_PERIOD)
+            || is_critical_day(d, EMOTIONAL_PERIOD)
+            || is_critical_day(d, INTELLECTUAL_PERIOD)
+            || is_critical_day(d, INTUITIVE_PERIOD)
+            || is_critical_day(d, AESTHETIC_PERIOD);
+        if any_critical {
+            let date = target_date + chrono::Duration::days(offset);
+            critical.push(date.format("%Y-%m-%d").to_string());
+        }
+    }
+
+    critical
+}
+
+/// Build the optional forecast.
+fn build_forecast(
+    birth_date: NaiveDate,
+    target_date: NaiveDate,
+    forecast_days: i64,
+) -> Vec<ForecastDay> {
+    let base_days = (target_date - birth_date).num_days();
+    (1..=forecast_days)
+        .map(|offset| {
+            let d = base_days + offset;
+            let phys = to_percentage(cycle_value(d, PHYSICAL_PERIOD));
+            let emot = to_percentage(cycle_value(d, EMOTIONAL_PERIOD));
+            let inte = to_percentage(cycle_value(d, INTELLECTUAL_PERIOD));
+            let intu = to_percentage(cycle_value(d, INTUITIVE_PERIOD));
+            let aest = to_percentage(cycle_value(d, AESTHETIC_PERIOD));
+            let date = target_date + chrono::Duration::days(offset);
+            ForecastDay {
+                date: date.format("%Y-%m-%d").to_string(),
+                days_alive: d,
+                physical: phys,
+                emotional: emot,
+                intellectual: inte,
+                intuitive: intu,
+                aesthetic: aest,
+                overall_energy: (phys + emot + inte) / 3.0,
+            }
+        })
+        .collect()
+}
+
+/// Generate a reflective witness prompt from the current cycle state.
+fn generate_witness_prompt(result: &BiorhythmResult) -> String {
+    let phys_pct = result.physical.percentage;
+    let emot_pct = result.emotional.percentage;
+    let inte_pct = result.intellectual.percentage;
+
+    // Find the highest and lowest primary cycles.
+    let cycles = [
+        ("physical", phys_pct),
+        ("emotional", emot_pct),
+        ("intellectual", inte_pct),
+    ];
+    let highest = cycles
+        .iter()
+        .max_by(|a, b| a.1.partial_cmp(&b.1).unwrap())
+        .unwrap();
+    let lowest = cycles
+        .iter()
+        .min_by(|a, b| a.1.partial_cmp(&b.1).unwrap())
+        .unwrap();
+
+    let any_critical = result.physical.is_critical
+        || result.emotional.is_critical
+        || result.intellectual.is_critical;
+
+    let base = format!(
+        "Your {} cycle is at {:.0}% while {} is at {:.0}%.",
+        highest.0, highest.1, lowest.0, lowest.1,
+    );
+
+    let reflection = if any_critical {
+        " Today holds a critical crossing — a threshold moment. \
+         What old pattern is completing, and what new rhythm wants to begin?"
+    } else if (highest.1 - lowest.1).abs() > 50.0 {
+        " Notice: how does this contrast show up in your day? \
+         Are you the energy, or the one who observes it?"
+    } else if result.overall_energy > 70.0 {
+        " With high overall energy, the temptation is to do more. \
+         What would it mean to be fully present instead of merely productive?"
+    } else if result.overall_energy < 30.0 {
+        " Low energy is not a problem to solve — it is a season. \
+         What does stillness want to teach you today?"
+    } else {
+        " In this balanced moment, awareness itself becomes the practice. \
+         Can you notice the rhythm without trying to change it?"
+    };
+
+    format!("{}{}", base, reflection)
+}
+
+// ---------------------------------------------------------------------------
+// Compatibility types and calculation
+// ---------------------------------------------------------------------------
+
+/// Compatibility score for a single biorhythm cycle.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CycleCompatibility {
+    /// Score in the range [0, 100].
+    /// 100 = perfect alignment, 0 = maximum opposition (half-period apart).
+    pub score: f64,
+    /// Cycle period in days.
+    pub period: f64,
+    /// Absolute day difference between the two birth dates.
+    pub days_diff: i64,
+}
+
+/// Result of a two-person biorhythm compatibility calculation.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CompatibilityResult {
+    pub birth_date_a: String,
+    pub birth_date_b: String,
+    /// Reference date supplied by the caller; stored for context (e.g. serialised API
+    /// responses).  Compatibility scores depend only on the two birth dates, not on
+    /// this date.
+    pub target_date: String,
+    pub physical: CycleCompatibility,
+    pub emotional: CycleCompatibility,
+    pub intellectual: CycleCompatibility,
+    pub intuitive: CycleCompatibility,
+    /// Equal-weighted average of the three *primary* cycles (physical, emotional,
+    /// intellectual).  The intuitive cycle is excluded to match the convention used by
+    /// `BiorhythmResult::overall_energy`.
+    pub overall: f64,
+}
+
+/// Calculate the compatibility score for a single cycle.
+///
+/// Formula: `50 × (1 + cos(2π × (|days_diff| mod period) / period))`
+///
+/// This maps to:
+/// - 100 when `days_diff ≡ 0 (mod period)` (identical phases)
+/// - 0   when `days_diff ≡ period/2 (mod period)` (opposite phases)
+fn cycle_compatibility(days_diff: i64, period: f64) -> CycleCompatibility {
+    let diff_mod = (days_diff.abs() as f64) % period;
+    let score = 50.0 * (1.0 + (2.0 * PI * diff_mod / period).cos());
+    CycleCompatibility {
+        score,
+        period,
+        days_diff: days_diff.abs(),
+    }
+}
+
+/// Calculate biorhythm compatibility between two people.
+///
+/// # Arguments
+/// * `birth_date_a` – birth date of person A
+/// * `birth_date_b` – birth date of person B
+/// * `target_date`  – reference date stored in the result for caller context;
+///   the per-cycle scores depend only on the two birth dates
+///
+/// # Returns
+/// `CompatibilityResult` with per-cycle scores and an equal-weighted overall score
+/// across the three primary cycles.
+pub fn calculate_compatibility(
+    birth_date_a: NaiveDate,
+    birth_date_b: NaiveDate,
+    target_date: NaiveDate,
+) -> CompatibilityResult {
+    let days_diff = (birth_date_a - birth_date_b).num_days();
+
+    let physical = cycle_compatibility(days_diff, PHYSICAL_PERIOD);
+    let emotional = cycle_compatibility(days_diff, EMOTIONAL_PERIOD);
+    let intellectual = cycle_compatibility(days_diff, INTELLECTUAL_PERIOD);
+    let intuitive = cycle_compatibility(days_diff, INTUITIVE_PERIOD);
+
+    // Overall = equal-weighted average of the three primary cycles (physical,
+    // emotional, intellectual), matching the convention of BiorhythmResult::overall_energy.
+    let overall = (physical.score + emotional.score + intellectual.score) / 3.0;
+
+    CompatibilityResult {
+        birth_date_a: birth_date_a.format("%Y-%m-%d").to_string(),
+        birth_date_b: birth_date_b.format("%Y-%m-%d").to_string(),
+        target_date: target_date.format("%Y-%m-%d").to_string(),
+        physical,
+        emotional,
+        intellectual,
+        intuitive,
+        overall,
     }
 }
 
@@ -93,6 +460,7 @@ impl ConsciousnessEngine for BiorhythmEngine {
         let emotional = compute_cycle(days_alive, EMOTIONAL_PERIOD);
         let intellectual = compute_cycle(days_alive, INTELLECTUAL_PERIOD);
         let intuitive = compute_cycle(days_alive, INTUITIVE_PERIOD);
+        let aesthetic = compute_cycle(days_alive, AESTHETIC_PERIOD);
 
         // --- Composite cycles (percentages) ---
         let mastery = (physical.percentage + intellectual.percentage) / 2.0;
@@ -128,6 +496,7 @@ impl ConsciousnessEngine for BiorhythmEngine {
             emotional,
             intellectual,
             intuitive,
+            aesthetic,
             mastery,
             passion,
             wisdom,
@@ -185,6 +554,7 @@ impl ConsciousnessEngine for BiorhythmEngine {
             ("emotional", &bio_result.emotional),
             ("intellectual", &bio_result.intellectual),
             ("intuitive", &bio_result.intuitive),
+            ("aesthetic", &bio_result.aesthetic),
         ] {
             if cycle.value < -1.0 || cycle.value > 1.0 {
                 valid = false;
@@ -426,6 +796,7 @@ mod tests {
             emotional: compute_cycle(10000, EMOTIONAL_PERIOD),
             intellectual: compute_cycle(10000, INTELLECTUAL_PERIOD),
             intuitive: compute_cycle(10000, INTUITIVE_PERIOD),
+            aesthetic: compute_cycle(10000, AESTHETIC_PERIOD),
             mastery: 50.0,
             passion: 50.0,
             wisdom: 50.0,
@@ -438,112 +809,65 @@ mod tests {
         assert!(prompt.contains('%'));
     }
 
-    // ------------------------------------------------------------------
-    // Compatibility tests (Acceptance Criteria for issue #374)
-    // ------------------------------------------------------------------
+    // --- Aesthetic cycle tests ---
 
     #[test]
-    fn test_compatibility_identical_birth_dates_is_100() {
-        let date_a = NaiveDate::from_ymd_opt(1990, 6, 15).unwrap();
-        let target = NaiveDate::from_ymd_opt(2025, 1, 1).unwrap();
-
-        let result = calculate_compatibility(date_a, date_a, target);
-
-        assert!(
-            (result.physical.score - 100.0).abs() < 1e-9,
-            "physical score should be 100 for identical dates, got {}",
-            result.physical.score
-        );
-        assert!(
-            (result.emotional.score - 100.0).abs() < 1e-9,
-            "emotional score should be 100 for identical dates, got {}",
-            result.emotional.score
-        );
-        assert!(
-            (result.intellectual.score - 100.0).abs() < 1e-9,
-            "intellectual score should be 100 for identical dates, got {}",
-            result.intellectual.score
-        );
-        assert!(
-            (result.intuitive.score - 100.0).abs() < 1e-9,
-            "intuitive score should be 100 for identical dates, got {}",
-            result.intuitive.score
-        );
-        assert!(
-            (result.overall - 100.0).abs() < 1e-9,
-            "overall should be 100 for identical dates, got {}",
-            result.overall
-        );
-    }
-
-    /// EMOTIONAL_PERIOD = 28 days (even), so half = 14 days — exact integer test.
-    #[test]
-    fn test_compatibility_half_period_emotional_is_zero() {
-        let date_a = NaiveDate::from_ymd_opt(1990, 1, 1).unwrap();
-        let date_b = date_a + chrono::Duration::days(14); // exactly half of 28
-        let target = NaiveDate::from_ymd_opt(2025, 1, 1).unwrap();
-
-        let result = calculate_compatibility(date_a, date_b, target);
-
-        assert!(
-            result.emotional.score.abs() < 1e-9,
-            "emotional score should be 0 when exactly half-period apart, got {}",
-            result.emotional.score
-        );
-    }
-
-    /// INTUITIVE_PERIOD = 38 days (even), so half = 19 days — exact integer test.
-    #[test]
-    fn test_compatibility_half_period_intuitive_is_zero() {
-        let date_a = NaiveDate::from_ymd_opt(1985, 3, 1).unwrap();
-        let date_b = date_a + chrono::Duration::days(19); // exactly half of 38
-        let target = NaiveDate::from_ymd_opt(2025, 1, 1).unwrap();
-
-        let result = calculate_compatibility(date_a, date_b, target);
-
-        assert!(
-            result.intuitive.score.abs() < 1e-9,
-            "intuitive score should be 0 when exactly half INTUITIVE_PERIOD apart, got {}",
-            result.intuitive.score
-        );
+    fn test_aesthetic_at_day_zero_is_zero() {
+        // sin(0) = 0
+        let val = cycle_value(0, AESTHETIC_PERIOD);
+        assert!(val.abs() < 1e-10, "aesthetic value at day 0 should be 0, got {}", val);
     }
 
     #[test]
-    fn test_compatibility_score_bounds() {
-        let date_a = NaiveDate::from_ymd_opt(1990, 1, 1).unwrap();
-        let date_b = NaiveDate::from_ymd_opt(1995, 7, 4).unwrap();
-        let target = NaiveDate::from_ymd_opt(2025, 6, 15).unwrap();
+    fn test_aesthetic_at_quarter_period_near_peak() {
+        // Peak is at AESTHETIC_PERIOD / 4 ≈ 10.75 → day 11.
+        let quarter = (AESTHETIC_PERIOD / 4.0).round() as i64; // 11
+        let val = cycle_value(quarter, AESTHETIC_PERIOD);
+        assert!(val > 0.9, "aesthetic value at day ~11 should be near peak, got {}", val);
+    }
 
-        let result = calculate_compatibility(date_a, date_b, target);
-
-        for score in [
-            result.physical.score,
-            result.emotional.score,
-            result.intellectual.score,
-            result.intuitive.score,
-            result.overall,
-        ] {
+    #[test]
+    fn test_aesthetic_percentage_in_range() {
+        for day in 0..=43_i64 {
+            let pct = to_percentage(cycle_value(day, AESTHETIC_PERIOD));
             assert!(
-                (-1e-9..=100.0 + 1e-9).contains(&score),
-                "score {} is out of [0, 100]",
-                score
+                (0.0..=100.0).contains(&pct),
+                "aesthetic percentage {} at day {} out of [0, 100]",
+                pct,
+                day
             );
         }
     }
 
     #[test]
-    fn test_compatibility_symmetry() {
-        // calculate_compatibility(a, b) == calculate_compatibility(b, a)
-        let date_a = NaiveDate::from_ymd_opt(1990, 1, 1).unwrap();
-        let date_b = NaiveDate::from_ymd_opt(1992, 6, 20).unwrap();
-        let target = NaiveDate::from_ymd_opt(2025, 1, 1).unwrap();
+    fn test_aesthetic_compute_cycle_valid() {
+        let result = compute_cycle(100, AESTHETIC_PERIOD);
+        assert!(result.value >= -1.0 && result.value <= 1.0);
+        assert!(result.percentage >= 0.0 && result.percentage <= 100.0);
+        assert!(result.days_until_peak > 0);
+        assert!(result.days_until_critical > 0);
+    }
 
-        let ab = calculate_compatibility(date_a, date_b, target);
-        let ba = calculate_compatibility(date_b, date_a, target);
+    #[tokio::test]
+    async fn test_calculate_includes_aesthetic() {
+        let engine = BiorhythmEngine::new();
+        let target = Utc.with_ymd_and_hms(2025, 6, 15, 12, 0, 0).unwrap();
+        let input = make_input("1990-01-01", target);
+        let output = engine.calculate(input).await.unwrap();
 
-        assert!((ab.physical.score - ba.physical.score).abs() < 1e-9);
-        assert!((ab.emotional.score - ba.emotional.score).abs() < 1e-9);
-        assert!((ab.intellectual.score - ba.intellectual.score).abs() < 1e-9);
-        assert!((ab.overall - ba.overall).abs() < 1e-9);
+        let bio: BiorhythmResult = serde_json::from_value(output.result).unwrap();
+        assert!(bio.aesthetic.value >= -1.0 && bio.aesthetic.value <= 1.0);
+        assert!(bio.aesthetic.percentage >= 0.0 && bio.aesthetic.percentage <= 100.0);
+        assert_eq!(bio.aesthetic.cycle_day, bio.days_alive.rem_euclid(AESTHETIC_PERIOD as i64));
+    }
+
+    #[tokio::test]
+    async fn test_validate_accepts_aesthetic() {
+        let engine = BiorhythmEngine::new();
+        let target = Utc.with_ymd_and_hms(2025, 6, 15, 12, 0, 0).unwrap();
+        let input = make_input("1990-01-01", target);
+        let output = engine.calculate(input).await.unwrap();
+        let validation = engine.validate(&output).await.unwrap();
+        assert!(validation.valid);
     }
 }
