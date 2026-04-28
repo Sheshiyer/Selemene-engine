@@ -37,7 +37,7 @@ use chrono::{
     Datelike, LocalResult, NaiveDate, NaiveDateTime, NaiveTime, Offset, TimeZone, Timelike,
 };
 use chrono_tz::Tz;
-use noesis_orchestrator::{EphemerisCalculator, HDPlanet, WorkflowOrchestrator};
+use noesis_orchestrator::{EphemerisCalculator, HDPlanet};
 use noesis_auth::{AuthService, AuthUser};
 use noesis_cache::CacheManager;
 use noesis_core::{
