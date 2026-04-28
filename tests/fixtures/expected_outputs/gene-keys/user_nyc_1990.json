@@ -1,0 +1,209 @@
+{
+  "engine_id": "gene-keys",
+  "result": {
+    "activation_sequence": {
+      "evolution": [
+        50,
+        3
+      ],
+      "lifes_work": [
+        61,
+        62
+      ],
+      "purpose": [
+        62,
+        3
+      ],
+      "radiance": [
+        61,
+        50
+      ]
+    },
+    "active_keys": [
+      {
+        "gift": "Enthusiasm",
+        "key_number": 61,
+        "line": 3,
+        "name": "Gene Key 61",
+        "shadow": "Incompetence",
+        "siddhi": "Enthusiasm",
+        "source": "PersonalitySun"
+      },
+      {
+        "gift": "Inspiration",
+        "key_number": 62,
+        "line": 3,
+        "name": "Gene Key 62",
+        "shadow": "Stagnation",
+        "siddhi": "Inspiration",
+        "source": "PersonalityEarth"
+      },
+      {
+        "gift": "Harmony",
+        "key_number": 50,
+        "line": 3,
+        "name": "Gene Key 50",
+        "shadow": "Corruption",
+        "siddhi": "Harmony",
+        "source": "DesignSun"
+      },
+      {
+        "gift": "Innovation",
+        "key_number": 3,
+        "line": 3,
+        "name": "The Innovation",
+        "shadow": "Chaos",
+        "siddhi": "Innocence",
+        "source": "DesignEarth"
+      }
+    ],
+    "frequency_assessments": [
+      {
+        "gene_key": 61,
+        "gift": "Enthusiasm",
+        "gift_description": "The gift frequency expresses the balanced state of consciousness that serves the collective good.",
+        "name": "Gene Key 61",
+        "recognition_prompts": {
+          "gift": [
+            "When do you experience Enthusiasm arising naturally, without effort?",
+            "Can you notice the space between the Incompetence pattern and the emergence of Enthusiasm?",
+            "What happens when Enthusiasm flows through you? How does it feel different from the shadow?",
+            "When this gift is active, who are you serving? What opens?",
+            "Does this quality arise more often now than in the past?"
+          ],
+          "shadow": [
+            "Do you notice yourself reacting unconsciously through the pattern of Incompetence?",
+            "When Incompetence arises, can you feel the contraction or resistance in your body?",
+            "Do you find yourself caught in Incompetence without realizing it until later?",
+            "What triggers this pattern? When does it feel most intense?",
+            "Can you witness the pattern without trying to change or fix it?"
+          ],
+          "siddhi": [
+            "Have you had moments where Enthusiasm dissolved into Enthusiasm?",
+            "When Enthusiasm is present, is there still a 'you' experiencing it?",
+            "What remains when the personal expression of Enthusiasm falls away?",
+            "Have you touched a state beyond your individual consciousness?",
+            "Can you rest in the paradox of this frequency without needing to understand it?"
+          ]
+        },
+        "shadow": "Incompetence",
+        "shadow_description": "The shadow frequency represents the unconscious pattern that creates limitation and suffering in this area of life.",
+        "siddhi": "Enthusiasm",
+        "siddhi_description": "The siddhi frequency embodies the highest potential of human consciousness in this archetypal pattern.",
+        "suggested_frequency": null
+      },
+      {
+        "gene_key": 62,
+        "gift": "Inspiration",
+        "gift_description": "The gift frequency expresses the balanced state of consciousness that serves the collective good.",
+        "name": "Gene Key 62",
+        "recognition_prompts": {
+          "gift": [
+            "When do you experience Inspiration arising naturally, without effort?",
+            "Can you notice the space between the Stagnation pattern and the emergence of Inspiration?",
+            "What happens when Inspiration flows through you? How does it feel different from the shadow?",
+            "When this gift is active, who are you serving? What opens?",
+            "Does this quality arise more often now than in the past?"
+          ],
+          "shadow": [
+            "Do you notice yourself reacting unconsciously through the pattern of Stagnation?",
+            "When Stagnation arises, can you feel the contraction or resistance in your body?",
+            "Do you find yourself caught in Stagnation without realizing it until later?",
+            "What triggers this pattern? When does it feel most intense?",
+            "Can you witness the pattern without trying to change or fix it?"
+          ],
+          "siddhi": [
+            "Have you had moments where Inspiration dissolved into Inspiration?",
+            "When Inspiration is present, is there still a 'you' experiencing it?",
+            "What remains when the personal expression of Inspiration falls away?",
+            "Have you touched a state beyond your individual consciousness?",
+            "Can you rest in the paradox of this frequency without needing to understand it?"
+          ]
+        },
+        "shadow": "Stagnation",
+        "shadow_description": "The shadow frequency represents the unconscious pattern that creates limitation and suffering in this area of life.",
+        "siddhi": "Inspiration",
+        "siddhi_description": "The siddhi frequency embodies the highest potential of human consciousness in this archetypal pattern.",
+        "suggested_frequency": null
+      },
+      {
+        "gene_key": 50,
+        "gift": "Harmony",
+        "gift_description": "The gift frequency expresses the balanced state of consciousness that serves the collective good.",
+        "name": "Gene Key 50",
+        "recognition_prompts": {
+          "gift": [
+            "When do you experience Harmony arising naturally, without effort?",
+            "Can you notice the space between the Corruption pattern and the emergence of Harmony?",
+            "What happens when Harmony flows through you? How does it feel different from the shadow?",
+            "When this gift is active, who are you serving? What opens?",
+            "Does this quality arise more often now than in the past?"
+          ],
+          "shadow": [
+            "Do you notice yourself reacting unconsciously through the pattern of Corruption?",
+            "When Corruption arises, can you feel the contraction or resistance in your body?",
+            "Do you find yourself caught in Corruption without realizing it until later?",
+            "What triggers this pattern? When does it feel most intense?",
+            "Can you witness the pattern without trying to change or fix it?"
+          ],
+          "siddhi": [
+            "Have you had moments where Harmony dissolved into Harmony?",
+            "When Harmony is present, is there still a 'you' experiencing it?",
+            "What remains when the personal expression of Harmony falls away?",
+            "Have you touched a state beyond your individual consciousness?",
+            "Can you rest in the paradox of this frequency without needing to understand it?"
+          ]
+        },
+        "shadow": "Corruption",
+        "shadow_description": "The shadow frequency represents the unconscious pattern that creates limitation and suffering in this area of life.",
+        "siddhi": "Harmony",
+        "siddhi_description": "The siddhi frequency embodies the highest potential of human consciousness in this archetypal pattern.",
+        "suggested_frequency": null
+      },
+      {
+        "gene_key": 3,
+        "gift": "Innovation",
+        "gift_description": "Innovation transforms chaos into breakthrough solutions, bringing order through creative problem-solving.",
+        "name": "The Innovation",
+        "recognition_prompts": {
+          "gift": [
+            "When do you experience Innovation arising naturally, without effort?",
+            "Can you notice the space between the Chaos pattern and the emergence of Innovation?",
+            "What happens when Innovation flows through you? How does it feel different from the shadow?",
+            "When this gift is active, who are you serving? What opens?",
+            "Does this quality arise more often now than in the past?"
+          ],
+          "shadow": [
+            "Do you notice yourself reacting unconsciously through the pattern of Chaos?",
+            "When Chaos arises, can you feel the contraction or resistance in your body?",
+            "Do you find yourself caught in Chaos without realizing it until later?",
+            "What triggers this pattern? When does it feel most intense?",
+            "Can you witness the pattern without trying to change or fix it?"
+          ],
+          "siddhi": [
+            "Have you had moments where Innovation dissolved into Innocence?",
+            "When Innocence is present, is there still a 'you' experiencing it?",
+            "What remains when the personal expression of Innovation falls away?",
+            "Have you touched a state beyond your individual consciousness?",
+            "Can you rest in the paradox of this frequency without needing to understand it?"
+          ]
+        },
+        "shadow": "Chaos",
+        "shadow_description": "Chaos manifests as overwhelming confusion and the inability to bring order to new beginnings.",
+        "siddhi": "Innocence",
+        "siddhi_description": "Innocence sees all challenges as opportunities for growth, maintaining childlike wonder in the face of complexity.",
+        "suggested_frequency": null
+      }
+    ]
+  },
+  "witness_prompt": "How do your conscious gifts Enthusiasm (61) and Harmony (50) create your core magnetism? When you're most authentic, what happens in the interplay between Inspiration (62) and Innovation (3) as your higher calling reveals itself? What invitation lives in the space between Incompetence becoming Enthusiasm and Stagnation becoming Inspiration?",
+  "consciousness_level": 3,
+  "metadata": {
+    "calculation_time_ms": 0.0,
+    "backend": "hd-derived",
+    "precision_achieved": "Standard",
+    "cached": false,
+    "timestamp": "2025-01-01T00:00:00Z",
+    "engine_version": "3.0.0"
+  }
+}

@@ -391,6 +391,33 @@ mod tests {
     }
 
     #[test]
+    fn test_forecast_has_six_cycle_fields_in_range() {
+        let birth = NaiveDate::from_ymd_opt(1990, 1, 1).unwrap();
+        let target = NaiveDate::from_ymd_opt(2025, 6, 15).unwrap();
+        let forecast = build_forecast(birth, target, 7);
+        assert_eq!(forecast.len(), 7);
+        for day in &forecast {
+            for (name, val) in [
+                ("physical", day.physical),
+                ("emotional", day.emotional),
+                ("intellectual", day.intellectual),
+                ("intuitive", day.intuitive),
+                ("aesthetic", day.aesthetic),
+                ("spiritual", day.spiritual),
+                ("overall_energy", day.overall_energy),
+            ] {
+                assert!(
+                    (0.0..=100.0).contains(&val),
+                    "{} value {} out of [0, 100] on {}",
+                    name,
+                    val,
+                    day.date
+                );
+            }
+        }
+    }
+
+    #[test]
     fn test_witness_prompt_not_empty() {
         let result = BiorhythmResult {
             days_alive: 10000,
@@ -409,5 +436,114 @@ mod tests {
         let prompt = generate_witness_prompt(&result);
         assert!(!prompt.is_empty());
         assert!(prompt.contains('%'));
+    }
+
+    // ------------------------------------------------------------------
+    // Compatibility tests (Acceptance Criteria for issue #374)
+    // ------------------------------------------------------------------
+
+    #[test]
+    fn test_compatibility_identical_birth_dates_is_100() {
+        let date_a = NaiveDate::from_ymd_opt(1990, 6, 15).unwrap();
+        let target = NaiveDate::from_ymd_opt(2025, 1, 1).unwrap();
+
+        let result = calculate_compatibility(date_a, date_a, target);
+
+        assert!(
+            (result.physical.score - 100.0).abs() < 1e-9,
+            "physical score should be 100 for identical dates, got {}",
+            result.physical.score
+        );
+        assert!(
+            (result.emotional.score - 100.0).abs() < 1e-9,
+            "emotional score should be 100 for identical dates, got {}",
+            result.emotional.score
+        );
+        assert!(
+            (result.intellectual.score - 100.0).abs() < 1e-9,
+            "intellectual score should be 100 for identical dates, got {}",
+            result.intellectual.score
+        );
+        assert!(
+            (result.intuitive.score - 100.0).abs() < 1e-9,
+            "intuitive score should be 100 for identical dates, got {}",
+            result.intuitive.score
+        );
+        assert!(
+            (result.overall - 100.0).abs() < 1e-9,
+            "overall should be 100 for identical dates, got {}",
+            result.overall
+        );
+    }
+
+    /// EMOTIONAL_PERIOD = 28 days (even), so half = 14 days — exact integer test.
+    #[test]
+    fn test_compatibility_half_period_emotional_is_zero() {
+        let date_a = NaiveDate::from_ymd_opt(1990, 1, 1).unwrap();
+        let date_b = date_a + chrono::Duration::days(14); // exactly half of 28
+        let target = NaiveDate::from_ymd_opt(2025, 1, 1).unwrap();
+
+        let result = calculate_compatibility(date_a, date_b, target);
+
+        assert!(
+            result.emotional.score.abs() < 1e-9,
+            "emotional score should be 0 when exactly half-period apart, got {}",
+            result.emotional.score
+        );
+    }
+
+    /// INTUITIVE_PERIOD = 38 days (even), so half = 19 days — exact integer test.
+    #[test]
+    fn test_compatibility_half_period_intuitive_is_zero() {
+        let date_a = NaiveDate::from_ymd_opt(1985, 3, 1).unwrap();
+        let date_b = date_a + chrono::Duration::days(19); // exactly half of 38
+        let target = NaiveDate::from_ymd_opt(2025, 1, 1).unwrap();
+
+        let result = calculate_compatibility(date_a, date_b, target);
+
+        assert!(
+            result.intuitive.score.abs() < 1e-9,
+            "intuitive score should be 0 when exactly half INTUITIVE_PERIOD apart, got {}",
+            result.intuitive.score
+        );
+    }
+
+    #[test]
+    fn test_compatibility_score_bounds() {
+        let date_a = NaiveDate::from_ymd_opt(1990, 1, 1).unwrap();
+        let date_b = NaiveDate::from_ymd_opt(1995, 7, 4).unwrap();
+        let target = NaiveDate::from_ymd_opt(2025, 6, 15).unwrap();
+
+        let result = calculate_compatibility(date_a, date_b, target);
+
+        for score in [
+            result.physical.score,
+            result.emotional.score,
+            result.intellectual.score,
+            result.intuitive.score,
+            result.overall,
+        ] {
+            assert!(
+                (-1e-9..=100.0 + 1e-9).contains(&score),
+                "score {} is out of [0, 100]",
+                score
+            );
+        }
+    }
+
+    #[test]
+    fn test_compatibility_symmetry() {
+        // calculate_compatibility(a, b) == calculate_compatibility(b, a)
+        let date_a = NaiveDate::from_ymd_opt(1990, 1, 1).unwrap();
+        let date_b = NaiveDate::from_ymd_opt(1992, 6, 20).unwrap();
+        let target = NaiveDate::from_ymd_opt(2025, 1, 1).unwrap();
+
+        let ab = calculate_compatibility(date_a, date_b, target);
+        let ba = calculate_compatibility(date_b, date_a, target);
+
+        assert!((ab.physical.score - ba.physical.score).abs() < 1e-9);
+        assert!((ab.emotional.score - ba.emotional.score).abs() < 1e-9);
+        assert!((ab.intellectual.score - ba.intellectual.score).abs() < 1e-9);
+        assert!((ab.overall - ba.overall).abs() < 1e-9);
     }
 }

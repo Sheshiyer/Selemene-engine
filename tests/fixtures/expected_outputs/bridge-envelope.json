@@ -1,0 +1,53 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Bridge Envelope",
+  "description": "JSON schema for TypeScript engine responses as they cross the noesis-bridge into Rust. Matches TsEngineResponse in crates/noesis-bridge/src/ts_client.rs.",
+  "type": "object",
+  "required": ["engine_id", "result", "witness_prompts", "calculated_at", "processing_time_ms"],
+  "additionalProperties": false,
+  "properties": {
+    "engine_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Unique identifier of the TypeScript engine that produced this result"
+    },
+    "result": {
+      "type": "object",
+      "description": "Engine-specific calculation result. Structure varies per engine."
+    },
+    "witness_prompts": {
+      "type": "array",
+      "description": "Non-prescriptive inquiry prompts for self-reflection",
+      "items": {
+        "type": "object",
+        "required": ["prompt"],
+        "additionalProperties": false,
+        "properties": {
+          "prompt": {
+            "type": "string",
+            "minLength": 1,
+            "description": "The inquiry question"
+          },
+          "context": {
+            "type": "string",
+            "description": "Context for the prompt"
+          },
+          "themes": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Related themes to explore"
+          }
+        }
+      }
+    },
+    "calculated_at": {
+      "type": "string",
+      "description": "ISO 8601 timestamp when the calculation completed"
+    },
+    "processing_time_ms": {
+      "type": "number",
+      "minimum": 0,
+      "description": "Processing time in milliseconds"
+    }
+  }
+}

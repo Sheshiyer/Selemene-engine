@@ -1,0 +1,97 @@
+{
+  "engine_id": "enneagram",
+  "result": {
+    "mode": "lookup",
+    "typeAnalysis": {
+      "type": {
+        "number": 6,
+        "name": "The Loyalist",
+        "coreFear": "Being without support or guidance",
+        "coreDesire": "To have security and support",
+        "coreWeakness": "Anxiety\u2014scanning for threats and dangers",
+        "description": "Engaging, responsible, anxious, and suspicious. Sixes are reliable and hardworking, yet can be defensive. They fear being without support and seek security in systems and relationships.",
+        "keyMotivations": [
+          "Having security and feeling supported",
+          "Testing attitudes of others toward them",
+          "Fighting against anxiety and insecurity",
+          "Finding trusted authority or belief system"
+        ],
+        "healthyTraits": [
+          "Courageous and leadership-capable",
+          "Self-affirming and trusting",
+          "Committed and reliable",
+          "Cooperative and community-building",
+          "Engaging and responsible"
+        ],
+        "averageTraits": [
+          "Anxious and vigilant",
+          "Ambivalent and evasive",
+          "Suspicious and reactive",
+          "Defensive and blaming",
+          "Seeking reassurance and security"
+        ],
+        "unhealthyTraits": [
+          "Paranoid and fearful",
+          "Self-defeating and masochistic",
+          "Panicky and volatile",
+          "Hysterical and irrational",
+          "Striking out at perceived enemies"
+        ]
+      },
+      "wings": [
+        {
+          "number": 5,
+          "name": "The Investigator"
+        },
+        {
+          "number": 7,
+          "name": "The Enthusiast"
+        }
+      ],
+      "integration": {
+        "type": 9,
+        "name": "The Peacemaker",
+        "description": "Sixes access peace and acceptance of healthy Nines"
+      },
+      "disintegration": {
+        "type": 3,
+        "name": "The Achiever",
+        "description": "Sixes become competitive and image-conscious like unhealthy Threes"
+      },
+      "center": "head",
+      "hornevianGroup": "compliant",
+      "harmonicGroup": "reactive"
+    }
+  },
+  "witness_prompts": [
+    {
+      "prompt": "How might calm presence already be available to you?",
+      "context": "Integration to Type 9",
+      "themes": [
+        "growth",
+        "integration",
+        "potential"
+      ]
+    },
+    {
+      "prompt": "Where do you notice the pattern of being without support or guidance arising in your life?",
+      "context": "Type 6 - The Loyalist core fear",
+      "themes": [
+        "fear",
+        "pattern recognition",
+        "the loyalist"
+      ]
+    },
+    {
+      "prompt": "How might this pattern be an attempt to get something you need?",
+      "context": "Open inquiry",
+      "themes": [
+        "self-inquiry",
+        "curiosity",
+        "compassion"
+      ]
+    }
+  ],
+  "calculated_at": "2024-01-15T14:30:00.000Z",
+  "processing_time_ms": 0
+}

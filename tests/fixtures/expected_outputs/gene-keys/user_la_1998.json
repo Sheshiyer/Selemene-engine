@@ -1,0 +1,209 @@
+{
+  "engine_id": "gene-keys",
+  "result": {
+    "activation_sequence": {
+      "evolution": [
+        19,
+        33
+      ],
+      "lifes_work": [
+        24,
+        44
+      ],
+      "purpose": [
+        44,
+        33
+      ],
+      "radiance": [
+        24,
+        19
+      ]
+    },
+    "active_keys": [
+      {
+        "gift": "Returning",
+        "key_number": 24,
+        "line": 3,
+        "name": "Gene Key 24",
+        "shadow": "Addiction",
+        "siddhi": "Return",
+        "source": "PersonalitySun"
+      },
+      {
+        "gift": "Synergy",
+        "key_number": 44,
+        "line": 3,
+        "name": "Gene Key 44",
+        "shadow": "Distraction",
+        "siddhi": "Synergy",
+        "source": "PersonalityEarth"
+      },
+      {
+        "gift": "Sensitivity",
+        "key_number": 19,
+        "line": 3,
+        "name": "Gene Key 19",
+        "shadow": "Need",
+        "siddhi": "Sacrifice",
+        "source": "DesignSun"
+      },
+      {
+        "gift": "Mindfulness",
+        "key_number": 33,
+        "line": 3,
+        "name": "Gene Key 33",
+        "shadow": "Forgetting",
+        "siddhi": "Mindfulness",
+        "source": "DesignEarth"
+      }
+    ],
+    "frequency_assessments": [
+      {
+        "gene_key": 24,
+        "gift": "Returning",
+        "gift_description": "The gift frequency expresses the balanced state of consciousness that serves the collective good.",
+        "name": "Gene Key 24",
+        "recognition_prompts": {
+          "gift": [
+            "When do you experience Returning arising naturally, without effort?",
+            "Can you notice the space between the Addiction pattern and the emergence of Returning?",
+            "What happens when Returning flows through you? How does it feel different from the shadow?",
+            "When this gift is active, who are you serving? What opens?",
+            "Does this quality arise more often now than in the past?"
+          ],
+          "shadow": [
+            "Do you notice yourself reacting unconsciously through the pattern of Addiction?",
+            "When Addiction arises, can you feel the contraction or resistance in your body?",
+            "Do you find yourself caught in Addiction without realizing it until later?",
+            "What triggers this pattern? When does it feel most intense?",
+            "Can you witness the pattern without trying to change or fix it?"
+          ],
+          "siddhi": [
+            "Have you had moments where Returning dissolved into Return?",
+            "When Return is present, is there still a 'you' experiencing it?",
+            "What remains when the personal expression of Returning falls away?",
+            "Have you touched a state beyond your individual consciousness?",
+            "Can you rest in the paradox of this frequency without needing to understand it?"
+          ]
+        },
+        "shadow": "Addiction",
+        "shadow_description": "The shadow frequency represents the unconscious pattern that creates limitation and suffering in this area of life.",
+        "siddhi": "Return",
+        "siddhi_description": "The siddhi frequency embodies the highest potential of human consciousness in this archetypal pattern.",
+        "suggested_frequency": null
+      },
+      {
+        "gene_key": 44,
+        "gift": "Synergy",
+        "gift_description": "The gift frequency expresses the balanced state of consciousness that serves the collective good.",
+        "name": "Gene Key 44",
+        "recognition_prompts": {
+          "gift": [
+            "When do you experience Synergy arising naturally, without effort?",
+            "Can you notice the space between the Distraction pattern and the emergence of Synergy?",
+            "What happens when Synergy flows through you? How does it feel different from the shadow?",
+            "When this gift is active, who are you serving? What opens?",
+            "Does this quality arise more often now than in the past?"
+          ],
+          "shadow": [
+            "Do you notice yourself reacting unconsciously through the pattern of Distraction?",
+            "When Distraction arises, can you feel the contraction or resistance in your body?",
+            "Do you find yourself caught in Distraction without realizing it until later?",
+            "What triggers this pattern? When does it feel most intense?",
+            "Can you witness the pattern without trying to change or fix it?"
+          ],
+          "siddhi": [
+            "Have you had moments where Synergy dissolved into Synergy?",
+            "When Synergy is present, is there still a 'you' experiencing it?",
+            "What remains when the personal expression of Synergy falls away?",
+            "Have you touched a state beyond your individual consciousness?",
+            "Can you rest in the paradox of this frequency without needing to understand it?"
+          ]
+        },
+        "shadow": "Distraction",
+        "shadow_description": "The shadow frequency represents the unconscious pattern that creates limitation and suffering in this area of life.",
+        "siddhi": "Synergy",
+        "siddhi_description": "The siddhi frequency embodies the highest potential of human consciousness in this archetypal pattern.",
+        "suggested_frequency": null
+      },
+      {
+        "gene_key": 19,
+        "gift": "Sensitivity",
+        "gift_description": "The gift frequency expresses the balanced state of consciousness that serves the collective good.",
+        "name": "Gene Key 19",
+        "recognition_prompts": {
+          "gift": [
+            "When do you experience Sensitivity arising naturally, without effort?",
+            "Can you notice the space between the Need pattern and the emergence of Sensitivity?",
+            "What happens when Sensitivity flows through you? How does it feel different from the shadow?",
+            "When this gift is active, who are you serving? What opens?",
+            "Does this quality arise more often now than in the past?"
+          ],
+          "shadow": [
+            "Do you notice yourself reacting unconsciously through the pattern of Need?",
+            "When Need arises, can you feel the contraction or resistance in your body?",
+            "Do you find yourself caught in Need without realizing it until later?",
+            "What triggers this pattern? When does it feel most intense?",
+            "Can you witness the pattern without trying to change or fix it?"
+          ],
+          "siddhi": [
+            "Have you had moments where Sensitivity dissolved into Sacrifice?",
+            "When Sacrifice is present, is there still a 'you' experiencing it?",
+            "What remains when the personal expression of Sensitivity falls away?",
+            "Have you touched a state beyond your individual consciousness?",
+            "Can you rest in the paradox of this frequency without needing to understand it?"
+          ]
+        },
+        "shadow": "Need",
+        "shadow_description": "The shadow frequency represents the unconscious pattern that creates limitation and suffering in this area of life.",
+        "siddhi": "Sacrifice",
+        "siddhi_description": "The siddhi frequency embodies the highest potential of human consciousness in this archetypal pattern.",
+        "suggested_frequency": null
+      },
+      {
+        "gene_key": 33,
+        "gift": "Mindfulness",
+        "gift_description": "The gift frequency expresses the balanced state of consciousness that serves the collective good.",
+        "name": "Gene Key 33",
+        "recognition_prompts": {
+          "gift": [
+            "When do you experience Mindfulness arising naturally, without effort?",
+            "Can you notice the space between the Forgetting pattern and the emergence of Mindfulness?",
+            "What happens when Mindfulness flows through you? How does it feel different from the shadow?",
+            "When this gift is active, who are you serving? What opens?",
+            "Does this quality arise more often now than in the past?"
+          ],
+          "shadow": [
+            "Do you notice yourself reacting unconsciously through the pattern of Forgetting?",
+            "When Forgetting arises, can you feel the contraction or resistance in your body?",
+            "Do you find yourself caught in Forgetting without realizing it until later?",
+            "What triggers this pattern? When does it feel most intense?",
+            "Can you witness the pattern without trying to change or fix it?"
+          ],
+          "siddhi": [
+            "Have you had moments where Mindfulness dissolved into Mindfulness?",
+            "When Mindfulness is present, is there still a 'you' experiencing it?",
+            "What remains when the personal expression of Mindfulness falls away?",
+            "Have you touched a state beyond your individual consciousness?",
+            "Can you rest in the paradox of this frequency without needing to understand it?"
+          ]
+        },
+        "shadow": "Forgetting",
+        "shadow_description": "The shadow frequency represents the unconscious pattern that creates limitation and suffering in this area of life.",
+        "siddhi": "Mindfulness",
+        "siddhi_description": "The siddhi frequency embodies the highest potential of human consciousness in this archetypal pattern.",
+        "suggested_frequency": null
+      }
+    ]
+  },
+  "witness_prompt": "How do your conscious gifts Returning (24) and Sensitivity (19) create your core magnetism? When you're most authentic, what happens in the interplay between Synergy (44) and Mindfulness (33) as your higher calling reveals itself? What invitation lives in the space between Addiction becoming Returning and Distraction becoming Synergy?",
+  "consciousness_level": 3,
+  "metadata": {
+    "calculation_time_ms": 0.0,
+    "backend": "hd-derived",
+    "precision_achieved": "Standard",
+    "cached": false,
+    "timestamp": "2025-01-01T00:00:00Z",
+    "engine_version": "3.0.0"
+  }
+}
