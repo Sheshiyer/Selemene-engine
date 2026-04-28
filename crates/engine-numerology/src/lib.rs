@@ -3,12 +3,14 @@
 //! Implements Pythagorean and Chaldean numerology systems.
 //! Pure math -- no external dependencies beyond noesis-core.
 
+pub mod types;
+pub use types::*;
+
 pub use noesis_core::{ConsciousnessEngine, EngineError, EngineInput, EngineOutput};
 
 use async_trait::async_trait;
 use chrono::Utc;
 use noesis_core::{CalculationMetadata, ValidationResult};
-use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use std::time::Instant;
 
@@ -120,16 +122,8 @@ fn is_vowel(ch: char) -> bool {
 }
 
 // ---------------------------------------------------------------------------
-// NumerologyNumber & NumerologyResult
+// NumerologyNumber constructor (uses private helpers defined below)
 // ---------------------------------------------------------------------------
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct NumerologyNumber {
-    pub value: u32,
-    pub is_master: bool,
-    pub reduction_chain: Vec<u32>,
-    pub meaning: String,
-}
 
 impl NumerologyNumber {
     fn from_raw(raw_sum: u32) -> Self {
@@ -141,16 +135,6 @@ impl NumerologyNumber {
             meaning: meaning_for(value),
         }
     }
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct NumerologyResult {
-    pub life_path: NumerologyNumber,
-    pub expression: NumerologyNumber,
-    pub soul_urge: NumerologyNumber,
-    pub personality: NumerologyNumber,
-    pub birthday: NumerologyNumber,
-    pub chaldean_name: NumerologyNumber,
 }
 
 // ---------------------------------------------------------------------------

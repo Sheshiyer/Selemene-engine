@@ -123,6 +123,7 @@ use workflow_parity::log_workflow_registry_parity;
         handlers::admin::list_audit_events,
         handlers::admin::get_audit_event,
         handlers::admin::list_audit_actions,
+        handlers::admin::ephemeris_checksums,
         handlers::auth::register,
         handlers::auth::login,
         handlers::auth::forgot_password,
@@ -237,6 +238,7 @@ use workflow_parity::log_workflow_registry_parity;
             handlers::admin::AdminAuditEventItem,
             handlers::admin::AdminAuditEventDetailResponse,
             handlers::admin::AdminAuditActionsResponse,
+            handlers::admin::EphemerisChecksumsResponse,
             handlers::auth::RegisterRequest,
             handlers::auth::RegisterResponse,
             handlers::auth::LoginRequest,
@@ -417,6 +419,51 @@ pub struct AppState {
     pub discord_client_id: Option<String>,
     pub discord_client_secret: Option<String>,
     pub discord_redirect_uri: Option<String>,
+    /// SHA256 checksums of ephemeris `.se1` files, keyed by filename.
+    /// Computed once at startup from the `data/ephemeris/` directory.
+    pub ephemeris_checksums: Arc<HashMap<String, String>>,
+}
+
+/// Compute SHA256 checksums for all `.se1` files in `dir`.
+///
+/// Returns a map of `filename → hex-encoded SHA256`.  Missing or
+/// unreadable files are silently skipped; errors are logged at `warn`
+/// level so that a missing ephemeris directory does not prevent startup.
+fn compute_ephemeris_checksums(dir: &str) -> HashMap<String, String> {
+    let mut map = HashMap::new();
+
+    let read_dir = match std::fs::read_dir(dir) {
+        Ok(rd) => rd,
+        Err(e) => {
+            tracing::warn!("Cannot open ephemeris directory '{}': {}", dir, e);
+            return map;
+        }
+    };
+
+    for entry in read_dir.flatten() {
+        let path = entry.path();
+        if path.extension().and_then(|s| s.to_str()) != Some("se1") {
+            continue;
+        }
+
+        let bytes = match std::fs::read(&path) {
+            Ok(b) => b,
+            Err(e) => {
+                tracing::warn!("Failed to read ephemeris file {:?}: {}", path, e);
+                continue;
+            }
+        };
+
+        let mut hasher = Sha256::new();
+        hasher.update(&bytes);
+        let digest = format!("{:x}", hasher.finalize());
+
+        if let Some(name) = path.file_name().and_then(|n| n.to_str()) {
+            map.insert(name.to_string(), digest);
+        }
+    }
+
+    map
 }
 
 pub fn shared_metrics() -> Arc<NoesisMetrics> {
@@ -769,6 +816,10 @@ pub fn create_router(state: AppState, config: &ApiConfig) -> Router {
             get(handlers::admin::system_workflows),
         )
         .route("/admin/system/cache", get(handlers::admin::system_cache))
+        .route(
+            "/admin/ephemeris/checksums",
+            get(handlers::admin::ephemeris_checksums),
+        )
         .route(
             "/admin/audit-events",
             get(handlers::admin::list_audit_events),
@@ -3103,6 +3154,15 @@ pub async fn build_app_state(config: &ApiConfig) -> AppState {
     // -- Metrics --
     let metrics = shared_metrics();
 
+    // -- Ephemeris checksums --
+    let ephemeris_dir = std::env::var("EPHEMERIS_DIR")
+        .unwrap_or_else(|_| "data/ephemeris".to_string());
+    let ephemeris_checksums = Arc::new(compute_ephemeris_checksums(&ephemeris_dir));
+    tracing::info!(
+        "Computed SHA256 checksums for {} ephemeris file(s)",
+        ephemeris_checksums.len()
+    );
+
     AppState {
         orchestrator: Arc::new(orchestrator),
         bridge_manager,
@@ -3120,6 +3180,7 @@ pub async fn build_app_state(config: &ApiConfig) -> AppState {
         discord_client_id: config.discord_client_id.clone(),
         discord_client_secret: config.discord_client_secret.clone(),
         discord_redirect_uri: config.discord_redirect_uri.clone(),
+        ephemeris_checksums,
     }
 }
 
@@ -3185,6 +3246,11 @@ pub async fn build_app_state_lazy_db(config: &ApiConfig) -> AppState {
     // -- Metrics --
     let metrics = shared_metrics();
 
+    // -- Ephemeris checksums --
+    let ephemeris_dir = std::env::var("EPHEMERIS_DIR")
+        .unwrap_or_else(|_| "data/ephemeris".to_string());
+    let ephemeris_checksums = Arc::new(compute_ephemeris_checksums(&ephemeris_dir));
+
     AppState {
         orchestrator: Arc::new(orchestrator),
         bridge_manager,
@@ -3202,5 +3268,54 @@ pub async fn build_app_state_lazy_db(config: &ApiConfig) -> AppState {
         discord_client_id: config.discord_client_id.clone(),
         discord_client_secret: config.discord_client_secret.clone(),
         discord_redirect_uri: config.discord_redirect_uri.clone(),
+        ephemeris_checksums,
+    }
+}
+
+#[cfg(test)]
+mod checksum_tests {
+    use super::*;
+
+    #[test]
+    fn nonexistent_dir_returns_empty_map() {
+        let map = compute_ephemeris_checksums("/tmp/no_such_dir_xyzabc");
+        assert!(map.is_empty());
+    }
+
+    #[test]
+    fn non_se1_files_are_ignored() {
+        let dir = tempfile::tempdir().expect("tempdir");
+        std::fs::write(dir.path().join("readme.txt"), b"ignored").unwrap();
+        let map = compute_ephemeris_checksums(dir.path().to_str().unwrap());
+        assert!(map.is_empty());
+    }
+
+    #[test]
+    fn se1_file_produces_correct_sha256() {
+        let dir = tempfile::tempdir().expect("tempdir");
+        let content = b"test ephemeris data";
+        std::fs::write(dir.path().join("test.se1"), content).unwrap();
+
+        let map = compute_ephemeris_checksums(dir.path().to_str().unwrap());
+        assert_eq!(map.len(), 1);
+
+        let mut hasher = Sha256::new();
+        hasher.update(content);
+        let expected = format!("{:x}", hasher.finalize());
+        assert_eq!(map["test.se1"], expected);
+    }
+
+    #[test]
+    fn only_se1_files_are_included() {
+        let dir = tempfile::tempdir().expect("tempdir");
+        std::fs::write(dir.path().join("a.se1"), b"data").unwrap();
+        std::fs::write(dir.path().join("b.se1"), b"data2").unwrap();
+        std::fs::write(dir.path().join("c.txt"), b"ignored").unwrap();
+
+        let map = compute_ephemeris_checksums(dir.path().to_str().unwrap());
+        assert_eq!(map.len(), 2);
+        assert!(map.contains_key("a.se1"));
+        assert!(map.contains_key("b.se1"));
+        assert!(!map.contains_key("c.txt"));
     }
 }

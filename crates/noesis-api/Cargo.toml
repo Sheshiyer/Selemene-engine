@@ -64,6 +64,7 @@ engine-human-design = { path = "../engine-human-design" }
 engine-gene-keys = { path = "../engine-gene-keys" }
 engine-vimshottari = { path = "../engine-vimshottari" }
 noesis-vedic-api = { path = "../noesis-vedic-api", features = ["test-mocks"] }
+tempfile = "3"
 
 [[bench]]
 name = "engine_comparison"

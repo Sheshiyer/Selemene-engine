@@ -11,10 +11,11 @@ use crate::{EngineRegistry, ExecutionRoutingSnapshot};
 use chrono::Utc;
 use futures::future::join_all;
 use noesis_core::{EngineError, EngineInput, EngineOutput};
+use noesis_metrics::NoesisMetrics;
 use std::collections::HashMap;
 use std::sync::Arc;
 use std::time::Instant;
-use tracing::{info, instrument, warn};
+use tracing::{info, info_span, instrument, warn, Instrument};
 
 /// Executes workflows with parallel engine execution and synthesis.
 ///
@@ -24,6 +25,7 @@ use tracing::{info, instrument, warn};
 pub struct WorkflowExecutor {
     engine_registry: Arc<EngineRegistry>,
     workflow_registry: WorkflowRegistry,
+    metrics: Option<Arc<NoesisMetrics>>,
 }
 
 impl WorkflowExecutor {
@@ -32,6 +34,7 @@ impl WorkflowExecutor {
         Self {
             engine_registry,
             workflow_registry: WorkflowRegistry::new(),
+            metrics: None,
         }
     }
 
@@ -43,7 +46,14 @@ impl WorkflowExecutor {
         Self {
             engine_registry,
             workflow_registry,
+            metrics: None,
         }
+    }
+
+    /// Attach a metrics instance so workflow-level metrics are recorded.
+    pub fn with_metrics(mut self, metrics: Arc<NoesisMetrics>) -> Self {
+        self.metrics = Some(metrics);
+        self
     }
 
     /// Execute a workflow by ID
@@ -71,7 +81,11 @@ impl WorkflowExecutor {
     }
 
     /// Execute a workflow definition
-    #[instrument(skip(self, workflow, input), fields(workflow_id = %workflow.id))]
+    ///
+    /// Emits a parent tracing span carrying `workflow_id` and `engine_count`
+    /// plus a child span per engine carrying `engine_id`, `duration_ms`, and
+    /// `status` (success | failure).
+    #[instrument(skip(self, workflow, input), fields(workflow_id = %workflow.id, engine_count = tracing::field::Empty))]
     pub async fn execute_workflow(
         &self,
         workflow: &ExtendedWorkflowDefinition,
@@ -79,10 +93,12 @@ impl WorkflowExecutor {
         user_phase: u8,
     ) -> Result<WorkflowOutput, EngineError> {
         let start = Instant::now();
+        let engine_count = workflow.engine_ids.len();
+        tracing::Span::current().record("engine_count", engine_count);
 
         info!(
             workflow_id = %workflow.id,
-            engine_count = workflow.engine_ids.len(),
+            engine_count,
             "Starting parallel workflow execution"
         );
 
@@ -106,6 +122,15 @@ impl WorkflowExecutor {
         // Generate witness prompts from synthesis
         let witness_prompts = generate_workflow_witness_prompts(&synthesis, user_phase);
 
+        // Record workflow-level metrics after full synthesis so duration covers the complete execution.
+        if let Some(metrics) = &self.metrics {
+            metrics.record_workflow_execution(
+                &workflow.id,
+                start.elapsed().as_secs_f64(),
+                engine_results.len(),
+            );
+        }
+
         Ok(WorkflowOutput {
             workflow_id: workflow.id.clone(),
             engine_results,
@@ -116,7 +141,10 @@ impl WorkflowExecutor {
         })
     }
 
-    /// Execute multiple engines in parallel
+    /// Execute multiple engines in parallel, each within its own child span.
+    ///
+    /// Each span carries `engine_id`, `duration_ms`, and `status`
+    /// (success | failure) so Jaeger can render a per-engine timing breakdown.
     async fn execute_engines_parallel(
         &self,
         engine_ids: &[String],
@@ -130,11 +158,23 @@ impl WorkflowExecutor {
                 let input_clone = input.clone();
                 let engine_id_owned = engine_id.clone();
 
+                let engine_span = info_span!(
+                    "engine.execute",
+                    engine_id = %engine_id_owned,
+                    duration_ms = tracing::field::Empty,
+                    status = tracing::field::Empty,
+                );
+
                 async move {
-                    match engine_registry
+                    let engine_start = Instant::now();
+                    let result = engine_registry
                         .execute_routed(&engine_id_owned, input_clone, user_phase)
-                        .await
-                    {
+                        .await;
+                    let elapsed_ms = engine_start.elapsed().as_millis() as u64;
+                    let status = if result.is_ok() { "success" } else { "failure" };
+                    tracing::Span::current().record("duration_ms", elapsed_ms);
+                    tracing::Span::current().record("status", status);
+                    match result {
                         Ok(output) => (engine_id_owned, Some(output)),
                         Err(e) => {
                             warn!(engine_id = %engine_id_owned, error = %e, "Engine failed");
@@ -142,6 +182,7 @@ impl WorkflowExecutor {
                         }
                     }
                 }
+                .instrument(engine_span)
             })
             .collect();
 
@@ -358,5 +399,37 @@ mod tests {
         assert_eq!(snapshot.orchestrated_execute_calls, 5);
         assert_eq!(snapshot.direct_execute_calls, 0);
         assert_eq!(snapshot.bypass_count, 0);
+    }
+
+    fn build_registry() -> Arc<EngineRegistry> {
+        let mut registry = EngineRegistry::new();
+        registry.register(Arc::new(MockEngine::new("numerology", 0)));
+        registry.register(Arc::new(MockEngine::new("human-design", 0)));
+        registry.register(Arc::new(MockEngine::new("vimshottari", 0)));
+        registry.register(Arc::new(MockEngine::new("panchanga", 0)));
+        registry.register(Arc::new(MockEngine::new("vedic-clock", 0)));
+        registry.register(Arc::new(MockEngine::new("biorhythm", 0)));
+        Arc::new(registry)
+    }
+
+    #[tokio::test]
+    async fn execute_workflow_records_duration_and_engine_count_metrics() {
+        let metrics = Arc::new(noesis_metrics::NoesisMetrics::new().unwrap());
+        let executor = WorkflowExecutor::new(build_registry()).with_metrics(Arc::clone(&metrics));
+
+        executor
+            .execute("birth-blueprint", test_input(), 5)
+            .await
+            .unwrap();
+
+        let text = metrics.get_metrics_text().unwrap();
+        assert!(
+            text.contains(r#"noesis_workflow_execution_duration_seconds"#),
+            "duration histogram missing from /metrics"
+        );
+        assert!(
+            text.contains(r#"noesis_workflow_engines_succeeded{workflow_id="birth-blueprint"}"#),
+            "engines_succeeded gauge missing from /metrics"
+        );
     }
 }

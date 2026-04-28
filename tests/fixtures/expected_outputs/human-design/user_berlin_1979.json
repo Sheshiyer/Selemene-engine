@@ -1,0 +1,170 @@
+{
+  "engine_id": "human-design",
+  "result": {
+    "active_channels": [
+      "57-20",
+      "34-20",
+      "26-44",
+      "59-6",
+      "37-40",
+      "39-55",
+      "34-57"
+    ],
+    "authority": "Emotional",
+    "defined_centers": [
+      "Throat",
+      "SolarPlexus",
+      "Heart",
+      "Spleen",
+      "Sacral",
+      "Root"
+    ],
+    "definition": "Single",
+    "design_activations": {
+      "earth": {
+        "gate": 55,
+        "line": 5,
+        "longitude": 334.56454399226743
+      },
+      "jupiter": {
+        "gate": 4,
+        "line": 5,
+        "longitude": 143.33242072931145
+      },
+      "mars": {
+        "gate": 39,
+        "line": 4,
+        "longitude": 102.99762819550888
+      },
+      "mercury": {
+        "gate": 4,
+        "line": 2,
+        "longitude": 139.95858776372495
+      },
+      "moon": {
+        "gate": 44,
+        "line": 1,
+        "longitude": 217.7208679472568
+      },
+      "neptune": {
+        "gate": 26,
+        "line": 1,
+        "longitude": 257.7240010111643
+      },
+      "northnode": {
+        "gate": 40,
+        "line": 3,
+        "longitude": 158.46785512710852
+      },
+      "pluto": {
+        "gate": 57,
+        "line": 3,
+        "longitude": 197.45868050023643
+      },
+      "saturn": {
+        "gate": 64,
+        "line": 5,
+        "longitude": 165.6153820892952
+      },
+      "southnode": {
+        "gate": 37,
+        "line": 3,
+        "longitude": 338.4678551271085
+      },
+      "sun": {
+        "gate": 59,
+        "line": 5,
+        "longitude": 154.56454399226746
+      },
+      "uranus": {
+        "gate": 1,
+        "line": 5,
+        "longitude": 227.38826127546844
+      },
+      "venus": {
+        "gate": 59,
+        "line": 6,
+        "longitude": 155.37077247859537
+      }
+    },
+    "hd_type": "ManifestingGenerator",
+    "personality_activations": {
+      "earth": {
+        "gate": 20,
+        "line": 3,
+        "longitude": 62.563722790727525
+      },
+      "jupiter": {
+        "gate": 40,
+        "line": 4,
+        "longitude": 158.72799909965514
+      },
+      "mars": {
+        "gate": 59,
+        "line": 3,
+        "longitude": 152.43427877581146
+      },
+      "mercury": {
+        "gate": 43,
+        "line": 3,
+        "longitude": 231.22977959070278
+      },
+      "moon": {
+        "gate": 13,
+        "line": 1,
+        "longitude": 313.9601434851613
+      },
+      "neptune": {
+        "gate": 26,
+        "line": 3,
+        "longitude": 259.56000569790245
+      },
+      "northnode": {
+        "gate": 59,
+        "line": 4,
+        "longitude": 153.85662697562887
+      },
+      "pluto": {
+        "gate": 57,
+        "line": 6,
+        "longitude": 200.74562626582153
+      },
+      "saturn": {
+        "gate": 6,
+        "line": 3,
+        "longitude": 175.42830311272633
+      },
+      "southnode": {
+        "gate": 55,
+        "line": 4,
+        "longitude": 333.85662697562884
+      },
+      "sun": {
+        "gate": 34,
+        "line": 3,
+        "longitude": 242.56372279072755
+      },
+      "uranus": {
+        "gate": 43,
+        "line": 4,
+        "longitude": 231.99558660776063
+      },
+      "venus": {
+        "gate": 11,
+        "line": 4,
+        "longitude": 266.0836201423524
+      }
+    },
+    "profile": "3/5"
+  },
+  "witness_prompt": "How do you experience the pull to respond quickly and then skip steps once momentum builds?",
+  "consciousness_level": 1,
+  "metadata": {
+    "calculation_time_ms": 0.0,
+    "backend": "swiss-ephemeris",
+    "precision_achieved": "Standard",
+    "cached": false,
+    "timestamp": "2025-01-01T00:00:00Z",
+    "engine_version": "3.0.0"
+  }
+}
