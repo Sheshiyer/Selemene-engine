@@ -225,7 +225,8 @@ fn find_critical_days(
             || is_critical_day(d, EMOTIONAL_PERIOD)
             || is_critical_day(d, INTELLECTUAL_PERIOD)
             || is_critical_day(d, INTUITIVE_PERIOD)
-            || is_critical_day(d, AESTHETIC_PERIOD);
+            || is_critical_day(d, AESTHETIC_PERIOD)
+            || is_critical_day(d, SPIRITUAL_PERIOD);
         if any_critical {
             let date = target_date + chrono::Duration::days(offset);
             critical.push(date.format("%Y-%m-%d").to_string());
