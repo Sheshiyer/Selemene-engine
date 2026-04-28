@@ -1,0 +1,121 @@
+{
+  "engine_id": "tarot",
+  "result": {
+    "spread": {
+      "type": "three_card",
+      "name": "Three Card Spread",
+      "description": "Past, Present, and Future - a classic spread for understanding the flow of time"
+    },
+    "positions": [
+      {
+        "position": 0,
+        "name": "Past",
+        "meaning": "What has led to this moment; influences from the past",
+        "card": {
+          "id": "cups-13",
+          "name": "Queen of Cups",
+          "arcana": "minor",
+          "suit": "cups",
+          "number": 13,
+          "element": "water",
+          "isReversed": true,
+          "interpretation": {
+            "meaning": "Inner feelings, self-care, self-love, co-dependency",
+            "keywords": [
+              "compassion",
+              "nurturing",
+              "intuition",
+              "emotional security"
+            ]
+          }
+        }
+      },
+      {
+        "position": 1,
+        "name": "Present",
+        "meaning": "The current situation; where you stand now",
+        "card": {
+          "id": "major-9",
+          "name": "The Hermit",
+          "arcana": "major",
+          "number": 9,
+          "element": "earth",
+          "isReversed": true,
+          "interpretation": {
+            "meaning": "Isolation, loneliness, withdrawal, lost your way",
+            "keywords": [
+              "introspection",
+              "solitude",
+              "guidance",
+              "wisdom"
+            ]
+          }
+        }
+      },
+      {
+        "position": 2,
+        "name": "Future",
+        "meaning": "What may unfold; potential outcomes and energies ahead",
+        "card": {
+          "id": "cups-6",
+          "name": "Six of Cups",
+          "arcana": "minor",
+          "suit": "cups",
+          "number": 6,
+          "element": "water",
+          "isReversed": true,
+          "interpretation": {
+            "meaning": "Living in the past, forgiveness, lacking playfulness",
+            "keywords": [
+              "nostalgia",
+              "memories",
+              "innocence",
+              "reunion"
+            ]
+          }
+        }
+      }
+    ],
+    "seed": 1337
+  },
+  "witness_prompts": [
+    {
+      "prompt": "With The Hermit appearing reversed, what inner landscape might it be reflecting?",
+      "context": "The Hermit in Present position (reversed)",
+      "themes": [
+        "shadow",
+        "inversion",
+        "inner work",
+        "introspection",
+        "solitude",
+        "guidance",
+        "wisdom"
+      ]
+    },
+    {
+      "prompt": "How do The Hermit and Six of Cups seem to speak to each other in this reading?",
+      "context": "Connection between Present and Future",
+      "themes": [
+        "introspection",
+        "solitude",
+        "guidance",
+        "wisdom",
+        "nostalgia",
+        "memories",
+        "innocence",
+        "reunion"
+      ]
+    },
+    {
+      "prompt": "What does this reading illuminate that you may not have seen before?",
+      "context": "Overall reading reflection",
+      "themes": [
+        "wholeness",
+        "integration",
+        "meaning"
+      ]
+    }
+  ],
+  "calculated_at": "2024-01-15T14:30:00.000Z",
+  "processing_time_ms": 0
+}

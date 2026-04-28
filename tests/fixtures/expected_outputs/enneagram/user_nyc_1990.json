@@ -1,0 +1,97 @@
+{
+  "engine_id": "enneagram",
+  "result": {
+    "mode": "lookup",
+    "typeAnalysis": {
+      "type": {
+        "number": 7,
+        "name": "The Enthusiast",
+        "coreFear": "Being deprived, in pain, or trapped",
+        "coreDesire": "To be satisfied and content",
+        "coreWeakness": "Gluttony\u2014wanting more and more experiences",
+        "description": "Spontaneous, versatile, acquisitive, and scattered. Sevens are enthusiastic, optimistic, and adventurous. They fear being trapped in pain and pursue endless positive experiences.",
+        "keyMotivations": [
+          "Maintaining freedom and happiness",
+          "Avoiding missing out on worthwhile experiences",
+          "Keeping self excited and occupied",
+          "Avoiding and discharging pain"
+        ],
+        "healthyTraits": [
+          "Joyful and grateful",
+          "Accomplished and focused",
+          "Assimilating experiences deeply",
+          "Present and awed by life",
+          "Versatile and productive"
+        ],
+        "averageTraits": [
+          "Hyperactive and scattered",
+          "Uninhibited and excessive",
+          "Materialistic and acquisitive",
+          "Self-centered and impatient",
+          "Avoiding commitment and depth"
+        ],
+        "unhealthyTraits": [
+          "Impulsive and infantile",
+          "Addictive and debauched",
+          "Manic and out of control",
+          "Panic-stricken and paralyzed",
+          "Claustrophobic and erratic"
+        ]
+      },
+      "wings": [
+        {
+          "number": 6,
+          "name": "The Loyalist"
+        },
+        {
+          "number": 8,
+          "name": "The Challenger"
+        }
+      ],
+      "integration": {
+        "type": 5,
+        "name": "The Investigator",
+        "description": "Sevens access depth and focus of healthy Fives"
+      },
+      "disintegration": {
+        "type": 1,
+        "name": "The Reformer",
+        "description": "Sevens become critical and perfectionistic like unhealthy Ones"
+      },
+      "center": "head",
+      "hornevianGroup": "assertive",
+      "harmonicGroup": "positive"
+    }
+  },
+  "witness_prompts": [
+    {
+      "prompt": "What happens in your body when you feel trapped?",
+      "context": "Type 7 - Somatic awareness",
+      "themes": [
+        "body",
+        "sensation",
+        "embodiment"
+      ]
+    },
+    {
+      "prompt": "How might this pattern be an attempt to get something you need?",
+      "context": "Open inquiry",
+      "themes": [
+        "self-inquiry",
+        "curiosity",
+        "compassion"
+      ]
+    },
+    {
+      "prompt": "Can you observe the reframing pattern without trying to change it?",
+      "context": "Type 7 - Behavioral pattern",
+      "themes": [
+        "observation",
+        "non-judgment",
+        "awareness"
+      ]
+    }
+  ],
+  "calculated_at": "2024-01-15T14:30:00.000Z",
+  "processing_time_ms": 1
+}

@@ -15,4 +15,9 @@ rand = "0.8"
 sha2 = "0.10"
 
 [dev-dependencies]
+criterion = { version = "0.5", features = ["async_tokio"] }
 tokio = { version = "1.43", features = ["full", "test-util"] }
+
+[[bench]]
+name = "biofield_bench"
+harness = false

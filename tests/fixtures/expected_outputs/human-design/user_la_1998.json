@@ -1,0 +1,163 @@
+{
+  "engine_id": "human-design",
+  "result": {
+    "active_channels": [
+      "37-40",
+      "39-55",
+      "41-30"
+    ],
+    "authority": "Emotional",
+    "defined_centers": [
+      "Heart",
+      "SolarPlexus",
+      "Root"
+    ],
+    "definition": "Single",
+    "design_activations": {
+      "earth": {
+        "gate": 33,
+        "line": 6,
+        "longitude": 132.5636369914116
+      },
+      "jupiter": {
+        "gate": 30,
+        "line": 6,
+        "longitude": 329.33476867520324
+      },
+      "mars": {
+        "gate": 55,
+        "line": 6,
+        "longitude": 335.71215694090745
+      },
+      "mercury": {
+        "gate": 60,
+        "line": 3,
+        "longitude": 298.4418335386885
+      },
+      "moon": {
+        "gate": 21,
+        "line": 3,
+        "longitude": 12.066217939148693
+      },
+      "neptune": {
+        "gate": 60,
+        "line": 5,
+        "longitude": 300.13181344355326
+      },
+      "northnode": {
+        "gate": 40,
+        "line": 6,
+        "longitude": 160.77371562606766
+      },
+      "pluto": {
+        "gate": 9,
+        "line": 3,
+        "longitude": 247.65776638783763
+      },
+      "saturn": {
+        "gate": 51,
+        "line": 1,
+        "longitude": 15.490557154192699
+      },
+      "southnode": {
+        "gate": 37,
+        "line": 6,
+        "longitude": 340.77371562606766
+      },
+      "sun": {
+        "gate": 19,
+        "line": 6,
+        "longitude": 312.5636369914116
+      },
+      "uranus": {
+        "gate": 19,
+        "line": 2,
+        "longitude": 308.92648814311747
+      },
+      "venus": {
+        "gate": 54,
+        "line": 4,
+        "longitude": 288.83713878252786
+      }
+    },
+    "hd_type": "Projector",
+    "personality_activations": {
+      "earth": {
+        "gate": 44,
+        "line": 4,
+        "longitude": 220.5631246427802
+      },
+      "jupiter": {
+        "gate": 22,
+        "line": 3,
+        "longitude": 349.5624921723716
+      },
+      "mars": {
+        "gate": 2,
+        "line": 1,
+        "longitude": 43.38128918946132
+      },
+      "mercury": {
+        "gate": 21,
+        "line": 6,
+        "longitude": 14.307815282878897
+      },
+      "moon": {
+        "gate": 39,
+        "line": 5,
+        "longitude": 103.2730998589048
+      },
+      "neptune": {
+        "gate": 41,
+        "line": 1,
+        "longitude": 302.16002421128786
+      },
+      "northnode": {
+        "gate": 40,
+        "line": 3,
+        "longitude": 158.37677184198023
+      },
+      "pluto": {
+        "gate": 9,
+        "line": 2,
+        "longitude": 247.40019960000475
+      },
+      "saturn": {
+        "gate": 42,
+        "line": 6,
+        "longitude": 25.56631831949055
+      },
+      "southnode": {
+        "gate": 37,
+        "line": 3,
+        "longitude": 338.37677184198026
+      },
+      "sun": {
+        "gate": 24,
+        "line": 4,
+        "longitude": 40.563124642780195
+      },
+      "uranus": {
+        "gate": 19,
+        "line": 6,
+        "longitude": 312.6315486905911
+      },
+      "venus": {
+        "gate": 36,
+        "line": 5,
+        "longitude": 357.00687816472634
+      }
+    },
+    "profile": "4/6"
+  },
+  "witness_prompt": "How do you experience recognition when it arrives naturally, without effort or seeking?",
+  "consciousness_level": 1,
+  "metadata": {
+    "calculation_time_ms": 0.0,
+    "backend": "swiss-ephemeris",
+    "precision_achieved": "Standard",
+    "cached": false,
+    "timestamp": "2025-01-01T00:00:00Z",
+    "engine_version": "3.0.0"
+  }
+}

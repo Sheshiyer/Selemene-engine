@@ -1,0 +1,69 @@
+{
+  "engine_id": "numerology",
+  "result": {
+    "birthday": {
+      "is_master": false,
+      "meaning": "Freedom, change, adventure",
+      "reduction_chain": [
+        14,
+        5
+      ],
+      "value": 5
+    },
+    "chaldean_name": {
+      "is_master": false,
+      "meaning": "Analysis, wisdom, introspection",
+      "reduction_chain": [
+        52,
+        7
+      ],
+      "value": 7
+    },
+    "expression": {
+      "is_master": false,
+      "meaning": "Leadership, independence, pioneering",
+      "reduction_chain": [
+        46,
+        10,
+        1
+      ],
+      "value": 1
+    },
+    "life_path": {
+      "is_master": false,
+      "meaning": "Compassion, completion, universal love",
+      "reduction_chain": [
+        9
+      ],
+      "value": 9
+    },
+    "personality": {
+      "is_master": false,
+      "meaning": "Creativity, expression, joy",
+      "reduction_chain": [
+        21,
+        3
+      ],
+      "value": 3
+    },
+    "soul_urge": {
+      "is_master": false,
+      "meaning": "Analysis, wisdom, introspection",
+      "reduction_chain": [
+        25,
+        7
+      ],
+      "value": 7
+    }
+  },
+  "witness_prompt": "Your Life Path 9 speaks of universal compassion. Notice: in your giving, have you also allowed yourself to receive?",
+  "consciousness_level": 0,
+  "metadata": {
+    "calculation_time_ms": 0.0,
+    "backend": "native-rust",
+    "precision_achieved": "exact",
+    "cached": false,
+    "timestamp": "2025-01-01T00:00:00Z",
+    "engine_version": "3.0.0"
+  }
+}

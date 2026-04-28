@@ -1,0 +1,209 @@
+{
+  "engine_id": "gene-keys",
+  "result": {
+    "activation_sequence": {
+      "evolution": [
+        25,
+        46
+      ],
+      "lifes_work": [
+        15,
+        10
+      ],
+      "purpose": [
+        10,
+        46
+      ],
+      "radiance": [
+        15,
+        25
+      ]
+    },
+    "active_keys": [
+      {
+        "gift": "Magnetism",
+        "key_number": 15,
+        "line": 3,
+        "name": "Gene Key 15",
+        "shadow": "Dullness",
+        "siddhi": "Magnetism",
+        "source": "PersonalitySun"
+      },
+      {
+        "gift": "Naturalness",
+        "key_number": 10,
+        "line": 3,
+        "name": "Gene Key 10",
+        "shadow": "Self-Obsession",
+        "siddhi": "Being",
+        "source": "PersonalityEarth"
+      },
+      {
+        "gift": "Acceptance",
+        "key_number": 25,
+        "line": 3,
+        "name": "Gene Key 25",
+        "shadow": "Constriction",
+        "siddhi": "Acceptance",
+        "source": "DesignSun"
+      },
+      {
+        "gift": "Resourcefulness",
+        "key_number": 46,
+        "line": 3,
+        "name": "Gene Key 46",
+        "shadow": "Inadequacy",
+        "siddhi": "Resourcefulness",
+        "source": "DesignEarth"
+      }
+    ],
+    "frequency_assessments": [
+      {
+        "gene_key": 15,
+        "gift": "Magnetism",
+        "gift_description": "The gift frequency expresses the balanced state of consciousness that serves the collective good.",
+        "name": "Gene Key 15",
+        "recognition_prompts": {
+          "gift": [
+            "When do you experience Magnetism arising naturally, without effort?",
+            "Can you notice the space between the Dullness pattern and the emergence of Magnetism?",
+            "What happens when Magnetism flows through you? How does it feel different from the shadow?",
+            "When this gift is active, who are you serving? What opens?",
+            "Does this quality arise more often now than in the past?"
+          ],
+          "shadow": [
+            "Do you notice yourself reacting unconsciously through the pattern of Dullness?",
+            "When Dullness arises, can you feel the contraction or resistance in your body?",
+            "Do you find yourself caught in Dullness without realizing it until later?",
+            "What triggers this pattern? When does it feel most intense?",
+            "Can you witness the pattern without trying to change or fix it?"
+          ],
+          "siddhi": [
+            "Have you had moments where Magnetism dissolved into Magnetism?",
+            "When Magnetism is present, is there still a 'you' experiencing it?",
+            "What remains when the personal expression of Magnetism falls away?",
+            "Have you touched a state beyond your individual consciousness?",
+            "Can you rest in the paradox of this frequency without needing to understand it?"
+          ]
+        },
+        "shadow": "Dullness",
+        "shadow_description": "The shadow frequency represents the unconscious pattern that creates limitation and suffering in this area of life.",
+        "siddhi": "Magnetism",
+        "siddhi_description": "The siddhi frequency embodies the highest potential of human consciousness in this archetypal pattern.",
+        "suggested_frequency": null
+      },
+      {
+        "gene_key": 10,
+        "gift": "Naturalness",
+        "gift_description": "The gift frequency expresses the balanced state of consciousness that serves the collective good.",
+        "name": "Gene Key 10",
+        "recognition_prompts": {
+          "gift": [
+            "When do you experience Naturalness arising naturally, without effort?",
+            "Can you notice the space between the Self-Obsession pattern and the emergence of Naturalness?",
+            "What happens when Naturalness flows through you? How does it feel different from the shadow?",
+            "When this gift is active, who are you serving? What opens?",
+            "Does this quality arise more often now than in the past?"
+          ],
+          "shadow": [
+            "Do you notice yourself reacting unconsciously through the pattern of Self-Obsession?",
+            "When Self-Obsession arises, can you feel the contraction or resistance in your body?",
+            "Do you find yourself caught in Self-Obsession without realizing it until later?",
+            "What triggers this pattern? When does it feel most intense?",
+            "Can you witness the pattern without trying to change or fix it?"
+          ],
+          "siddhi": [
+            "Have you had moments where Naturalness dissolved into Being?",
+            "When Being is present, is there still a 'you' experiencing it?",
+            "What remains when the personal expression of Naturalness falls away?",
+            "Have you touched a state beyond your individual consciousness?",
+            "Can you rest in the paradox of this frequency without needing to understand it?"
+          ]
+        },
+        "shadow": "Self-Obsession",
+        "shadow_description": "The shadow frequency represents the unconscious pattern that creates limitation and suffering in this area of life.",
+        "siddhi": "Being",
+        "siddhi_description": "The siddhi frequency embodies the highest potential of human consciousness in this archetypal pattern.",
+        "suggested_frequency": null
+      },
+      {
+        "gene_key": 25,
+        "gift": "Acceptance",
+        "gift_description": "The gift frequency expresses the balanced state of consciousness that serves the collective good.",
+        "name": "Gene Key 25",
+        "recognition_prompts": {
+          "gift": [
+            "When do you experience Acceptance arising naturally, without effort?",
+            "Can you notice the space between the Constriction pattern and the emergence of Acceptance?",
+            "What happens when Acceptance flows through you? How does it feel different from the shadow?",
+            "When this gift is active, who are you serving? What opens?",
+            "Does this quality arise more often now than in the past?"
+          ],
+          "shadow": [
+            "Do you notice yourself reacting unconsciously through the pattern of Constriction?",
+            "When Constriction arises, can you feel the contraction or resistance in your body?",
+            "Do you find yourself caught in Constriction without realizing it until later?",
+            "What triggers this pattern? When does it feel most intense?",
+            "Can you witness the pattern without trying to change or fix it?"
+          ],
+          "siddhi": [
+            "Have you had moments where Acceptance dissolved into Acceptance?",
+            "When Acceptance is present, is there still a 'you' experiencing it?",
+            "What remains when the personal expression of Acceptance falls away?",
+            "Have you touched a state beyond your individual consciousness?",
+            "Can you rest in the paradox of this frequency without needing to understand it?"
+          ]
+        },
+        "shadow": "Constriction",
+        "shadow_description": "The shadow frequency represents the unconscious pattern that creates limitation and suffering in this area of life.",
+        "siddhi": "Acceptance",
+        "siddhi_description": "The siddhi frequency embodies the highest potential of human consciousness in this archetypal pattern.",
+        "suggested_frequency": null
+      },
+      {
+        "gene_key": 46,
+        "gift": "Resourcefulness",
+        "gift_description": "The gift frequency expresses the balanced state of consciousness that serves the collective good.",
+        "name": "Gene Key 46",
+        "recognition_prompts": {
+          "gift": [
+            "When do you experience Resourcefulness arising naturally, without effort?",
+            "Can you notice the space between the Inadequacy pattern and the emergence of Resourcefulness?",
+            "What happens when Resourcefulness flows through you? How does it feel different from the shadow?",
+            "When this gift is active, who are you serving? What opens?",
+            "Does this quality arise more often now than in the past?"
+          ],
+          "shadow": [
+            "Do you notice yourself reacting unconsciously through the pattern of Inadequacy?",
+            "When Inadequacy arises, can you feel the contraction or resistance in your body?",
+            "Do you find yourself caught in Inadequacy without realizing it until later?",
+            "What triggers this pattern? When does it feel most intense?",
+            "Can you witness the pattern without trying to change or fix it?"
+          ],
+          "siddhi": [
+            "Have you had moments where Resourcefulness dissolved into Resourcefulness?",
+            "When Resourcefulness is present, is there still a 'you' experiencing it?",
+            "What remains when the personal expression of Resourcefulness falls away?",
+            "Have you touched a state beyond your individual consciousness?",
+            "Can you rest in the paradox of this frequency without needing to understand it?"
+          ]
+        },
+        "shadow": "Inadequacy",
+        "shadow_description": "The shadow frequency represents the unconscious pattern that creates limitation and suffering in this area of life.",
+        "siddhi": "Resourcefulness",
+        "siddhi_description": "The siddhi frequency embodies the highest potential of human consciousness in this archetypal pattern.",
+        "suggested_frequency": null
+      }
+    ]
+  },
+  "witness_prompt": "How do your conscious gifts Magnetism (15) and Acceptance (25) create your core magnetism? When you're most authentic, what happens in the interplay between Naturalness (10) and Resourcefulness (46) as your higher calling reveals itself? What invitation lives in the space between Dullness becoming Magnetism and Self-Obsession becoming Naturalness?",
+  "consciousness_level": 3,
+  "metadata": {
+    "calculation_time_ms": 0.0,
+    "backend": "hd-derived",
+    "precision_achieved": "Standard",
+    "cached": false,
+    "timestamp": "2025-01-01T00:00:00Z",
+    "engine_version": "3.0.0"
+  }
+}
