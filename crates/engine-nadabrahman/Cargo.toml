@@ -14,3 +14,9 @@ sha2 = "0.10"
 
 [dev-dependencies]
 tokio = { version = "1.43", features = ["full", "test-util"] }
+criterion = { version = "0.5", features = ["async_tokio"] }
+serde_json = "1.0"
+
+[[bench]]
+name = "nadabrahman_bench"
+harness = false
