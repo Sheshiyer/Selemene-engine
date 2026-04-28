@@ -105,6 +105,7 @@ fn build_test_app_state() -> (AppState, ApiConfig) {
         discord_client_secret: None,
         discord_redirect_uri: None,
         startup_time: Instant::now(),
+        ephemeris_checksums: Arc::new(std::collections::HashMap::new()),
     };
 
     (state, config)
