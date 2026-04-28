@@ -17,4 +17,9 @@ rand = "0.9"
 noesis-vedic-api = { path = "../noesis-vedic-api" }
 
 [dev-dependencies]
+criterion = { version = "0.5", features = ["async_tokio"] }
 tokio = { version = "1.43", features = ["full", "test-util"] }
+
+[[bench]]
+name = "vedic_clock_bench"
+harness = false

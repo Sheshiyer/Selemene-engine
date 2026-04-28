@@ -1,0 +1,209 @@
+{
+  "engine_id": "gene-keys",
+  "result": {
+    "activation_sequence": {
+      "evolution": [
+        14,
+        8
+      ],
+      "lifes_work": [
+        30,
+        29
+      ],
+      "purpose": [
+        29,
+        8
+      ],
+      "radiance": [
+        30,
+        14
+      ]
+    },
+    "active_keys": [
+      {
+        "gift": "Lightness",
+        "key_number": 30,
+        "line": 3,
+        "name": "Gene Key 30",
+        "shadow": "Desire",
+        "siddhi": "Rapture",
+        "source": "PersonalitySun"
+      },
+      {
+        "gift": "Perseverance",
+        "key_number": 29,
+        "line": 3,
+        "name": "Gene Key 29",
+        "shadow": "Half-Heartedness",
+        "siddhi": "Perseverance",
+        "source": "PersonalityEarth"
+      },
+      {
+        "gift": "Competence",
+        "key_number": 14,
+        "line": 3,
+        "name": "Gene Key 14",
+        "shadow": "Compromise",
+        "siddhi": "Bodhicitta",
+        "source": "DesignSun"
+      },
+      {
+        "gift": "Style",
+        "key_number": 8,
+        "line": 3,
+        "name": "Gene Key 8",
+        "shadow": "Mediocrity",
+        "siddhi": "Exquisiteness",
+        "source": "DesignEarth"
+      }
+    ],
+    "frequency_assessments": [
+      {
+        "gene_key": 30,
+        "gift": "Lightness",
+        "gift_description": "The gift frequency expresses the balanced state of consciousness that serves the collective good.",
+        "name": "Gene Key 30",
+        "recognition_prompts": {
+          "gift": [
+            "When do you experience Lightness arising naturally, without effort?",
+            "Can you notice the space between the Desire pattern and the emergence of Lightness?",
+            "What happens when Lightness flows through you? How does it feel different from the shadow?",
+            "When this gift is active, who are you serving? What opens?",
+            "Does this quality arise more often now than in the past?"
+          ],
+          "shadow": [
+            "Do you notice yourself reacting unconsciously through the pattern of Desire?",
+            "When Desire arises, can you feel the contraction or resistance in your body?",
+            "Do you find yourself caught in Desire without realizing it until later?",
+            "What triggers this pattern? When does it feel most intense?",
+            "Can you witness the pattern without trying to change or fix it?"
+          ],
+          "siddhi": [
+            "Have you had moments where Lightness dissolved into Rapture?",
+            "When Rapture is present, is there still a 'you' experiencing it?",
+            "What remains when the personal expression of Lightness falls away?",
+            "Have you touched a state beyond your individual consciousness?",
+            "Can you rest in the paradox of this frequency without needing to understand it?"
+          ]
+        },
+        "shadow": "Desire",
+        "shadow_description": "The shadow frequency represents the unconscious pattern that creates limitation and suffering in this area of life.",
+        "siddhi": "Rapture",
+        "siddhi_description": "The siddhi frequency embodies the highest potential of human consciousness in this archetypal pattern.",
+        "suggested_frequency": null
+      },
+      {
+        "gene_key": 29,
+        "gift": "Perseverance",
+        "gift_description": "The gift frequency expresses the balanced state of consciousness that serves the collective good.",
+        "name": "Gene Key 29",
+        "recognition_prompts": {
+          "gift": [
+            "When do you experience Perseverance arising naturally, without effort?",
+            "Can you notice the space between the Half-Heartedness pattern and the emergence of Perseverance?",
+            "What happens when Perseverance flows through you? How does it feel different from the shadow?",
+            "When this gift is active, who are you serving? What opens?",
+            "Does this quality arise more often now than in the past?"
+          ],
+          "shadow": [
+            "Do you notice yourself reacting unconsciously through the pattern of Half-Heartedness?",
+            "When Half-Heartedness arises, can you feel the contraction or resistance in your body?",
+            "Do you find yourself caught in Half-Heartedness without realizing it until later?",
+            "What triggers this pattern? When does it feel most intense?",
+            "Can you witness the pattern without trying to change or fix it?"
+          ],
+          "siddhi": [
+            "Have you had moments where Perseverance dissolved into Perseverance?",
+            "When Perseverance is present, is there still a 'you' experiencing it?",
+            "What remains when the personal expression of Perseverance falls away?",
+            "Have you touched a state beyond your individual consciousness?",
+            "Can you rest in the paradox of this frequency without needing to understand it?"
+          ]
+        },
+        "shadow": "Half-Heartedness",
+        "shadow_description": "The shadow frequency represents the unconscious pattern that creates limitation and suffering in this area of life.",
+        "siddhi": "Perseverance",
+        "siddhi_description": "The siddhi frequency embodies the highest potential of human consciousness in this archetypal pattern.",
+        "suggested_frequency": null
+      },
+      {
+        "gene_key": 14,
+        "gift": "Competence",
+        "gift_description": "The gift frequency expresses the balanced state of consciousness that serves the collective good.",
+        "name": "Gene Key 14",
+        "recognition_prompts": {
+          "gift": [
+            "When do you experience Competence arising naturally, without effort?",
+            "Can you notice the space between the Compromise pattern and the emergence of Competence?",
+            "What happens when Competence flows through you? How does it feel different from the shadow?",
+            "When this gift is active, who are you serving? What opens?",
+            "Does this quality arise more often now than in the past?"
+          ],
+          "shadow": [
+            "Do you notice yourself reacting unconsciously through the pattern of Compromise?",
+            "When Compromise arises, can you feel the contraction or resistance in your body?",
+            "Do you find yourself caught in Compromise without realizing it until later?",
+            "What triggers this pattern? When does it feel most intense?",
+            "Can you witness the pattern without trying to change or fix it?"
+          ],
+          "siddhi": [
+            "Have you had moments where Competence dissolved into Bodhicitta?",
+            "When Bodhicitta is present, is there still a 'you' experiencing it?",
+            "What remains when the personal expression of Competence falls away?",
+            "Have you touched a state beyond your individual consciousness?",
+            "Can you rest in the paradox of this frequency without needing to understand it?"
+          ]
+        },
+        "shadow": "Compromise",
+        "shadow_description": "The shadow frequency represents the unconscious pattern that creates limitation and suffering in this area of life.",
+        "siddhi": "Bodhicitta",
+        "siddhi_description": "The siddhi frequency embodies the highest potential of human consciousness in this archetypal pattern.",
+        "suggested_frequency": null
+      },
+      {
+        "gene_key": 8,
+        "gift": "Style",
+        "gift_description": "The gift frequency expresses the balanced state of consciousness that serves the collective good.",
+        "name": "Gene Key 8",
+        "recognition_prompts": {
+          "gift": [
+            "When do you experience Style arising naturally, without effort?",
+            "Can you notice the space between the Mediocrity pattern and the emergence of Style?",
+            "What happens when Style flows through you? How does it feel different from the shadow?",
+            "When this gift is active, who are you serving? What opens?",
+            "Does this quality arise more often now than in the past?"
+          ],
+          "shadow": [
+            "Do you notice yourself reacting unconsciously through the pattern of Mediocrity?",
+            "When Mediocrity arises, can you feel the contraction or resistance in your body?",
+            "Do you find yourself caught in Mediocrity without realizing it until later?",
+            "What triggers this pattern? When does it feel most intense?",
+            "Can you witness the pattern without trying to change or fix it?"
+          ],
+          "siddhi": [
+            "Have you had moments where Style dissolved into Exquisiteness?",
+            "When Exquisiteness is present, is there still a 'you' experiencing it?",
+            "What remains when the personal expression of Style falls away?",
+            "Have you touched a state beyond your individual consciousness?",
+            "Can you rest in the paradox of this frequency without needing to understand it?"
+          ]
+        },
+        "shadow": "Mediocrity",
+        "shadow_description": "The shadow frequency represents the unconscious pattern that creates limitation and suffering in this area of life.",
+        "siddhi": "Exquisiteness",
+        "siddhi_description": "The siddhi frequency embodies the highest potential of human consciousness in this archetypal pattern.",
+        "suggested_frequency": null
+      }
+    ]
+  },
+  "witness_prompt": "How do your conscious gifts Lightness (30) and Competence (14) create your core magnetism? When you're most authentic, what happens in the interplay between Perseverance (29) and Style (8) as your higher calling reveals itself? What invitation lives in the space between Desire becoming Lightness and Half-Heartedness becoming Perseverance?",
+  "consciousness_level": 3,
+  "metadata": {
+    "calculation_time_ms": 0.0,
+    "backend": "hd-derived",
+    "precision_achieved": "Standard",
+    "cached": false,
+    "timestamp": "2025-01-01T00:00:00Z",
+    "engine_version": "3.0.0"
+  }
+}

@@ -7,6 +7,7 @@ description = "Workflow orchestrator for parallel multi-engine execution"
 [dependencies]
 noesis-core = { path = "../noesis-core" }
 noesis-cache = { path = "../noesis-cache" }
+noesis-metrics = { path = "../noesis-metrics" }
 noesis-witness = { path = "../noesis-witness" }
 noesis-bridge = { path = "../noesis-bridge" }
 engine-biorhythm = { path = "../engine-biorhythm" }
