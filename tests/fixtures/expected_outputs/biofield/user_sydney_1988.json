@@ -1,0 +1,103 @@
+{
+  "engine_id": "biofield",
+  "result": {
+    "metrics": {
+      "fractal_dimension": 1.44,
+      "entropy": 0.53,
+      "coherence": 0.66,
+      "symmetry": 0.71,
+      "vitality_index": 0.610569,
+      "timestamp": "2026-01-01T00:00:00Z"
+    },
+    "chakra_readings": [
+      {
+        "chakra": "Root",
+        "chakra_name": "Root",
+        "activity_level": 0.79,
+        "balance": -0.16,
+        "color_intensity": "bright red",
+        "location": "Base of spine",
+        "element": "Earth"
+      },
+      {
+        "chakra": "Sacral",
+        "chakra_name": "Sacral",
+        "activity_level": 0.45,
+        "balance": 0.29,
+        "color_intensity": "dim orange",
+        "location": "Lower abdomen",
+        "element": "Water"
+      },
+      {
+        "chakra": "SolarPlexus",
+        "chakra_name": "Solar Plexus",
+        "activity_level": 0.61,
+        "balance": -0.07,
+        "color_intensity": "moderate yellow",
+        "location": "Upper abdomen",
+        "element": "Fire"
+      },
+      {
+        "chakra": "Heart",
+        "chakra_name": "Heart",
+        "activity_level": 0.55,
+        "balance": 0.42,
+        "color_intensity": "moderate green",
+        "location": "Center of chest",
+        "element": "Air"
+      },
+      {
+        "chakra": "Throat",
+        "chakra_name": "Throat",
+        "activity_level": 0.67,
+        "balance": -0.25,
+        "color_intensity": "moderate blue",
+        "location": "Throat center",
+        "element": "Ether"
+      },
+      {
+        "chakra": "ThirdEye",
+        "chakra_name": "Third Eye",
+        "activity_level": 0.74,
+        "balance": 0.13,
+        "color_intensity": "bright indigo",
+        "location": "Between eyebrows",
+        "element": "Light"
+      },
+      {
+        "chakra": "Crown",
+        "chakra_name": "Crown",
+        "activity_level": 0.52,
+        "balance": -0.34,
+        "color_intensity": "moderate violet",
+        "location": "Top of head",
+        "element": "Consciousness"
+      }
+    ],
+    "interpretation": "Vitality is in a moderate range. Note: This interpretation is based on simulated data.",
+    "areas_of_attention": [
+      "Heart chakra shows right-dominant pattern"
+    ],
+    "is_mock_data": true,
+    "notice": "This is simulated data. Full biofield analysis requires PIP hardware integration."
+  },
+  "witness_prompt": "Your Root center shows the highest activity at 79%. With an overall vitality of 0.61, notice where energy flows freely and where it seeks your attention. What does your body know that your mind has not yet acknowledged?",
+  "consciousness_level": 1,
+  "metadata": {
+    "calculation_time_ms": 0.0,
+    "backend": "mock",
+    "precision_achieved": "simulated",
+    "cached": false,
+    "timestamp": "2026-01-01T00:00:00Z",
+    "engine_version": "3.0.0"
+  },
+  "_fixture_meta": {
+    "input": {
+      "birth_date": "1988-03-21",
+      "user_id": "user_sydney_1988",
+      "current_time": "2026-01-01T00:00:00Z"
+    },
+    "description": "Biofield golden fixture for user_sydney_1988",
+    "seed": 17926223574940645871
+  }
+}

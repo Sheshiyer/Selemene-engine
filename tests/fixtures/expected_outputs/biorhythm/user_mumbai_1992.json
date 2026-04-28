@@ -1,0 +1,68 @@
+{
+  "engine_id": "biorhythm",
+  "result": {
+    "days_alive": 12228,
+    "target_date": "2026-01-01",
+    "physical": {
+      "value": -0.8169698930105929,
+      "percentage": 9.151505349470357,
+      "phase": "Falling",
+      "days_until_peak": 14,
+      "days_until_critical": 8,
+      "is_critical": false,
+      "cycle_day": 15
+    },
+    "emotional": {
+      "value": -0.9749279121818172,
+      "percentage": 1.253604390909141,
+      "phase": "Low",
+      "days_until_peak": 15,
+      "days_until_critical": 8,
+      "is_critical": false,
+      "cycle_day": 20
+    },
+    "intellectual": {
+      "value": -0.2817325568415385,
+      "percentage": 35.91337215792307,
+      "phase": "Falling",
+      "days_until_peak": 24,
+      "days_until_critical": 16,
+      "is_critical": false,
+      "cycle_day": 18
+    },
+    "intuitive": {
+      "value": -0.9694002659393297,
+      "percentage": 1.5299867030335146,
+      "phase": "Low",
+      "days_until_peak": 18,
+      "days_until_critical": 8,
+      "is_critical": false,
+      "cycle_day": 30
+    },
+    "mastery": 22.532438753696713,
+    "passion": 5.202554870189749,
+    "wisdom": 18.583488274416105,
+    "critical_days": [
+      "2026-01-08"
+    ],
+    "overall_energy": 15.439493966100855
+  },
+  "witness_prompt": "Your intellectual cycle is at 36% while emotional is at 1%. Low energy is not a problem to solve — it is a season. What does stillness want to teach you today?",
+  "consciousness_level": 0,
+  "metadata": {
+    "calculation_time_ms": 0.0,
+    "backend": "native-rust",
+    "precision_achieved": "Standard",
+    "cached": false,
+    "timestamp": "2026-01-01T00:00:00Z",
+    "engine_version": "3.0.0"
+  },
+  "_fixture_meta": {
+    "input": {
+      "birth_date": "1992-07-10",
+      "timezone": "Asia/Kolkata",
+      "current_time": "2026-01-01T00:00:00Z"
+    },
+    "description": "Biorhythm golden fixture for user_mumbai_1992"
+  }
+}

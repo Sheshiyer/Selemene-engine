@@ -16,3 +16,8 @@ once_cell = "1.19"
 
 [dev-dependencies]
 tokio = { version = "1.43", features = ["full", "test-util"] }
+criterion = { version = "0.5", features = ["async_tokio"] }
+
+[[bench]]
+name = "face_reading_bench"
+harness = false

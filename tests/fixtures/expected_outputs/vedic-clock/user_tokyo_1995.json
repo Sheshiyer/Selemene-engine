@@ -1,0 +1,78 @@
+{
+  "engine_id": "vedic-clock",
+  "result": {
+    "current_organ": {
+      "organ": "Gallbladder",
+      "element": "Wood",
+      "time_window": "11 PM - 1 AM",
+      "peak_energy": "Decision and courage crystallize in sleep",
+      "associated_emotion": "Decisiveness (balanced) / Indecision (imbalanced)",
+      "recommended_activities": [
+        "Deep sleep",
+        "Processing decisions",
+        "Dream incubation",
+        "Being asleep ideally"
+      ]
+    },
+    "current_dosha": {
+      "dosha": "Pitta",
+      "qualities": [
+        "Internal cleansing",
+        "Metabolic processing",
+        "Dream activity",
+        "Cellular repair"
+      ]
+    },
+    "recommendation": {
+      "time_window": "11 PM - 1 AM",
+      "organ": "Gallbladder",
+      "dosha": "Pitta",
+      "activities": [
+        {
+          "activity": "Deep sleep",
+          "quality": "optimal",
+          "reason": "Aligned with Gallbladder active window and Pitta dosha"
+        },
+        {
+          "activity": "Processing decisions",
+          "quality": "optimal",
+          "reason": "Aligned with Gallbladder active window and Pitta dosha"
+        },
+        {
+          "activity": "Dream incubation",
+          "quality": "optimal",
+          "reason": "Aligned with Gallbladder active window and Pitta dosha"
+        }
+      ],
+      "panchanga_quality": null
+    },
+    "synthesis": "During the Pitta period, with Gallbladder active, focus on deep sleep.",
+    "calculated_for": "2026-01-01T14:00:00Z",
+    "timezone": {
+      "offset_minutes": 540,
+      "source": "options.timezone_offset",
+      "local_hour": 23
+    }
+  },
+  "witness_prompt": "The Gallbladder organ is active now, governed by the Wood element. Notice: decisiveness (balanced). What is present in this moment that you have not yet fully seen?",
+  "consciousness_level": 0,
+  "metadata": {
+    "calculation_time_ms": 0.0,
+    "backend": "native-rust",
+    "precision_achieved": "Standard",
+    "cached": false,
+    "timestamp": "2026-01-01T14:00:00Z",
+    "engine_version": "3.0.0"
+  },
+  "_fixture_meta": {
+    "input": {
+      "current_time": "2026-01-01T14:00:00Z",
+      "timezone_offset": 540,
+      "timezone_name": "Asia/Tokyo"
+    },
+    "description": "Vedic Clock golden fixture for user_tokyo_1995",
+    "local_hour": 23,
+    "active_organ": "Gallbladder",
+    "active_dosha": "Pitta"
+  }
+}

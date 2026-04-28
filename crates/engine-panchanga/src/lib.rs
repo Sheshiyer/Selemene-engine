@@ -783,3 +783,4 @@ mod tests {
         assert_eq!(vr.confidence, 1.0);
     }
 }
+

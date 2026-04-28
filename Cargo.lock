@@ -1160,6 +1160,7 @@ version = "3.0.0"
 dependencies = [
  "async-trait",
  "chrono",
+ "criterion",
  "noesis-core",
  "once_cell",
  "rand 0.8.6",
@@ -1206,6 +1207,7 @@ version = "3.0.0"
 dependencies = [
  "async-trait",
  "chrono",
+ "criterion",
  "noesis-core",
  "serde",
  "serde_json",
@@ -1247,6 +1249,7 @@ dependencies = [
  "async-trait",
  "chrono",
  "chrono-tz",
+ "criterion",
  "engine-human-design",
  "libswisseph-sys",
  "noesis-core",

@@ -1,0 +1,60 @@
+{
+  "_meta": {
+    "case_id": "leap_year_feb_29",
+    "engine_id": "panchanga",
+    "description": "Born on February 29 (leap year 2000) - tests leap day date parsing",
+    "boundary_condition": "leap_day_date",
+    "notes": "Year 2000 is a leap year (divisible by 400). Feb 29 must parse correctly. Timezone America/New_York treated as UTC-5 offset."
+  },
+  "input": {
+    "name": "Leap Day User",
+    "date": "2000-02-29",
+    "time": "12:30",
+    "latitude": 40.7128,
+    "longitude": -74.006,
+    "timezone": "America/New_York"
+  },
+  "expected_output": {
+    "engine_id": "panchanga",
+    "result": {
+      "tithi_index": 24,
+      "tithi_name": "Dashami (Krishna)",
+      "nakshatra_index": 19,
+      "nakshatra_name": "Purva Ashadha",
+      "yoga_index": 15,
+      "yoga_name": "Siddhi",
+      "karana_index": 6,
+      "karana_name": "Vishti",
+      "vara_index": 2,
+      "vara_name": "Mangalavara (Tuesday)"
+    }
+  },
+  "validation_rules": {
+    "no_nan_values": true,
+    "no_engine_panic": true,
+    "julian_day_range": [
+      2400000.0,
+      2500000.0
+    ],
+    "solar_longitude_range": [
+      0.0,
+      360.0
+    ],
+    "lunar_longitude_range": [
+      0.0,
+      360.0
+    ],
+    "tithi_value_range": [
+      0.0,
+      30.0
+    ],
+    "nakshatra_value_range": [
+      0.0,
+      27.0
+    ],
+    "yoga_value_range": [
+      0.0,
+      27.0
+    ]
+  }
+}

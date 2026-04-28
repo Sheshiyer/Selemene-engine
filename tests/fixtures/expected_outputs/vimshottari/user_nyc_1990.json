@@ -1,0 +1,121 @@
+{
+  "engine_id": "vimshottari",
+  "result": {
+    "birth_nakshatra": {
+      "name": "Rohini",
+      "number": 4,
+      "moon_longitude": 45.0
+    },
+    "timeline": {
+      "birth_date": "1990-01-15T00:00:00+00:00",
+      "total_years": 120,
+      "mahadashas": [
+        {
+          "planet": "Moon",
+          "start_date": "1990-01-15T00:00:00+00:00",
+          "end_date": "1996-04-15T19:29:57Z",
+          "duration_years": 10,
+          "antardasha_count": 9
+        },
+        {
+          "planet": "Mars",
+          "start_date": "1996-04-15T19:29:57Z",
+          "end_date": "2003-04-16T13:29:57Z",
+          "duration_years": 7,
+          "antardasha_count": 9
+        },
+        {
+          "planet": "Rahu",
+          "start_date": "2003-04-16T13:29:57Z",
+          "end_date": "2021-04-16T01:29:57Z",
+          "duration_years": 18,
+          "antardasha_count": 9
+        },
+        {
+          "planet": "Jupiter",
+          "start_date": "2021-04-16T01:29:57Z",
+          "end_date": "2037-04-16T01:29:57Z",
+          "duration_years": 16,
+          "antardasha_count": 9
+        },
+        {
+          "planet": "Saturn",
+          "start_date": "2037-04-16T01:29:57Z",
+          "end_date": "2056-04-15T19:29:57Z",
+          "duration_years": 19,
+          "antardasha_count": 9
+        },
+        {
+          "planet": "Mercury",
+          "start_date": "2056-04-15T19:29:57Z",
+          "end_date": "2073-04-16T01:29:57Z",
+          "duration_years": 17,
+          "antardasha_count": 9
+        },
+        {
+          "planet": "Ketu",
+          "start_date": "2073-04-16T01:29:57Z",
+          "end_date": "2080-04-15T19:29:57Z",
+          "duration_years": 7,
+          "antardasha_count": 9
+        },
+        {
+          "planet": "Venus",
+          "start_date": "2080-04-15T19:29:57Z",
+          "end_date": "2100-04-16T19:29:57Z",
+          "duration_years": 20,
+          "antardasha_count": 9
+        },
+        {
+          "planet": "Sun",
+          "start_date": "2100-04-16T19:29:57Z",
+          "end_date": "2106-04-17T07:29:57Z",
+          "duration_years": 6,
+          "antardasha_count": 9
+        }
+      ]
+    },
+    "current_period": {
+      "mahadasha": {
+        "planet": "Jupiter",
+        "start": "2021-04-16T01:29:57Z",
+        "end": "2037-04-16T01:29:57Z",
+        "years": 16
+      },
+      "antardasha": {
+        "planet": "Jupiter",
+        "start": "2021-04-16T01:29:57Z",
+        "end": "2037-04-16T01:29:57Z",
+        "years": 2.1333333333333333
+      },
+      "pratyantardasha": {
+        "planet": "Jupiter",
+        "start": "2021-04-16T01:29:57Z",
+        "end": "2037-04-16T01:29:57Z",
+        "days": 779.2
+      }
+    },
+    "upcoming_transitions": [],
+    "period_enrichment": null
+  },
+  "witness_prompt": "During the Jupiter Mahadasha, you are invited to explore the themes of planetary influence on your consciousness. What patterns of time are unfolding?",
+  "consciousness_level": 3,
+  "metadata": {
+    "calculation_time_ms": 0.0,
+    "backend": "moon-longitude",
+    "precision_achieved": "Standard",
+    "cached": false,
+    "timestamp": "2026-01-01T00:00:00Z",
+    "engine_version": "3.0.0"
+  },
+  "_fixture_meta": {
+    "input": {
+      "birth_date": "1990-01-15",
+      "moon_longitude": 45.0,
+      "current_time": "2026-01-01T00:00:00Z"
+    },
+    "description": "Vimshottari golden fixture for user_nyc_1990",
+    "nakshatra": "Rohini",
+    "ruling_planet": "Moon"
+  }
+}

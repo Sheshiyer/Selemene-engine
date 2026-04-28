@@ -55,7 +55,6 @@ use noesis_data::repositories::readings_repository::ReadingsRepository;
 use noesis_data::repositories::usage_repository::UsageRepository;
 use noesis_data::repositories::user_repository::UserRepository;
 use noesis_metrics::NoesisMetrics;
-use noesis_orchestrator::WorkflowOrchestrator;
 use sentry_tower::{NewSentryLayer, SentryHttpLayer};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;

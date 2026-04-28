@@ -1,0 +1,66 @@
+{
+  "engine_id": "biorhythm",
+  "result": {
+    "days_alive": 13135,
+    "target_date": "2026-01-01",
+    "physical": {
+      "value": 0.5195839500353275,
+      "percentage": 75.97919750176638,
+      "phase": "Rising",
+      "days_until_peak": 4,
+      "days_until_critical": 10,
+      "is_critical": false,
+      "cycle_day": 2
+    },
+    "emotional": {
+      "value": 0.6234898018586285,
+      "percentage": 81.17449009293142,
+      "phase": "Rising",
+      "days_until_peak": 4,
+      "days_until_critical": 11,
+      "is_critical": false,
+      "cycle_day": 3
+    },
+    "intellectual": {
+      "value": 0.18925124436018995,
+      "percentage": 59.462562218009495,
+      "phase": "Critical",
+      "days_until_peak": 8,
+      "days_until_critical": 16,
+      "is_critical": true,
+      "cycle_day": 1
+    },
+    "intuitive": {
+      "value": -0.8371664782626315,
+      "percentage": 8.141676086868427,
+      "phase": "Falling",
+      "days_until_peak": 23,
+      "days_until_critical": 13,
+      "is_critical": false,
+      "cycle_day": 25
+    },
+    "mastery": 67.72087985988793,
+    "passion": 78.5768437973489,
+    "wisdom": 70.31852615547047,
+    "critical_days": [],
+    "overall_energy": 72.20541660423577
+  },
+  "witness_prompt": "Your emotional cycle is at 81% while intellectual is at 59%. Today holds a critical crossing — a threshold moment. What old pattern is completing, and what new rhythm wants to begin?",
+  "consciousness_level": 0,
+  "metadata": {
+    "calculation_time_ms": 0.0,
+    "backend": "native-rust",
+    "precision_achieved": "Standard",
+    "cached": false,
+    "timestamp": "2026-01-01T00:00:00Z",
+    "engine_version": "3.0.0"
+  },
+  "_fixture_meta": {
+    "input": {
+      "birth_date": "1990-01-15",
+      "timezone": "America/New_York",
+      "current_time": "2026-01-01T00:00:00Z"
+    },
+    "description": "Biorhythm golden fixture for user_nyc_1990"
+  }
+}

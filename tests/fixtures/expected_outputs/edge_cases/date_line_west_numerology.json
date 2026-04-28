@@ -1,0 +1,86 @@
+{
+  "_meta": {
+    "case_id": "date_line_west",
+    "engine_id": "numerology",
+    "description": "Samoa date line west numerology - tests year-end date 1985-12-31",
+    "boundary_condition": "year_end_date",
+    "notes": "Date 1985-12-31: year 1985\u21925; month 12\u21923; day 31\u21924; sum 12\u21923. Birthday day=31\u21924 (compound number reduces). Same date as date_line_east fixture but different name yields different expression/soul_urge."
+  },
+  "input": {
+    "name": "Samoa User",
+    "date": "1985-12-31",
+    "time": "23:59",
+    "latitude": -13.8506,
+    "longitude": -171.7513,
+    "timezone": "Pacific/Samoa"
+  },
+  "expected_output": {
+    "engine_id": "numerology",
+    "result": {
+      "life_path": {
+        "value": 3,
+        "is_master": false,
+        "reduction_chain": [
+          12,
+          3
+        ],
+        "meaning": "Creativity, expression, joy"
+      },
+      "expression": {
+        "value": 4,
+        "is_master": false,
+        "reduction_chain": [
+          31,
+          4
+        ],
+        "meaning": "Structure, discipline, foundation"
+      },
+      "soul_urge": {
+        "value": 7,
+        "is_master": false,
+        "reduction_chain": [
+          16,
+          7
+        ],
+        "meaning": "Analysis, wisdom, introspection"
+      },
+      "personality": {
+        "value": 6,
+        "is_master": false,
+        "reduction_chain": [
+          15,
+          6
+        ],
+        "meaning": "Responsibility, nurturing, harmony"
+      },
+      "birthday": {
+        "value": 4,
+        "is_master": false,
+        "reduction_chain": [
+          31,
+          4
+        ],
+        "meaning": "Structure, discipline, foundation"
+      },
+      "chaldean_name": {
+        "value": 5,
+        "is_master": false,
+        "reduction_chain": [
+          32,
+          5
+        ],
+        "meaning": "Freedom, change, adventure"
+      }
+    }
+  },
+  "validation_rules": {
+    "no_nan_values": true,
+    "no_engine_panic": true,
+    "all_numbers_in_range": [
+      1,
+      33
+    ],
+    "master_numbers_not_reduced": true,
+    "witness_prompt_non_empty": true
+  }
+}

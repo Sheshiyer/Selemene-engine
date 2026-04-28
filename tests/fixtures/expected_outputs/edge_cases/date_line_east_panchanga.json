@@ -1,0 +1,60 @@
+{
+  "_meta": {
+    "case_id": "date_line_east",
+    "engine_id": "panchanga",
+    "description": "Near international date line (east) - Fiji, tests timezone +12 and year-end boundary",
+    "boundary_condition": "date_line_east_boundary",
+    "notes": "Pacific/Fiji (UTC+12) is NOT in the panchanga engine timezone map; tz_offset_from_string defaults to 0.0 (UTC). Both date_line_west and date_line_east produce identical panchanga results because the engine treats both unrecognized Pacific timezones as UTC+0. This documents the expected fallback behavior."
+  },
+  "input": {
+    "name": "Fiji User",
+    "date": "1985-12-31",
+    "time": "23:59",
+    "latitude": -17.7134,
+    "longitude": 178.065,
+    "timezone": "Pacific/Fiji"
+  },
+  "expected_output": {
+    "engine_id": "panchanga",
+    "result": {
+      "tithi_index": 19,
+      "tithi_name": "Panchami (Krishna)",
+      "nakshatra_index": 9,
+      "nakshatra_name": "Magha",
+      "yoga_index": 2,
+      "yoga_name": "Ayushman",
+      "karana_index": 3,
+      "karana_name": "Taitila",
+      "vara_index": 2,
+      "vara_name": "Mangalavara (Tuesday)"
+    }
+  },
+  "validation_rules": {
+    "no_nan_values": true,
+    "no_engine_panic": true,
+    "julian_day_range": [
+      2400000.0,
+      2500000.0
+    ],
+    "solar_longitude_range": [
+      0.0,
+      360.0
+    ],
+    "lunar_longitude_range": [
+      0.0,
+      360.0
+    ],
+    "tithi_value_range": [
+      0.0,
+      30.0
+    ],
+    "nakshatra_value_range": [
+      0.0,
+      27.0
+    ],
+    "yoga_value_range": [
+      0.0,
+      27.0
+    ]
+  }
+}
