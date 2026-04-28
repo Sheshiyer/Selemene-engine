@@ -2846,6 +2846,40 @@ pub async fn list_audit_actions(
     Ok((StatusCode::OK, Json(AdminAuditActionsResponse { actions })).into_response())
 }
 
+/// Response body for the ephemeris checksums endpoint.
+#[derive(Serialize, ToSchema)]
+pub struct EphemerisChecksumsResponse {
+    /// Map of `.se1` filename to its hex-encoded SHA256 digest.
+    pub checksums: HashMap<String, String>,
+}
+
+/// GET /api/v1/admin/ephemeris/checksums — SHA256 checksums of ephemeris files
+#[utoipa::path(
+    get,
+    path = "/api/v1/admin/ephemeris/checksums",
+    tag = "admin",
+    responses(
+        (status = 200, description = "Ephemeris file checksums", body = EphemerisChecksumsResponse),
+        (status = 403, description = "Forbidden", body = crate::ErrorResponse),
+    ),
+    security(("bearer_auth" = []), ("api_key" = []))
+)]
+pub async fn ephemeris_checksums(
+    State(state): State<AppState>,
+    Extension(auth_user): Extension<AuthUser>,
+) -> Result<Response, ApiError> {
+    let effective_permissions = effective_permissions(&state, &auth_user).await?;
+    if let Some(resp) =
+        require_permission_or_forbidden(&effective_permissions, "admin:system:read")
+    {
+        return Ok(resp);
+    }
+
+    // Serialize directly from the Arc to avoid cloning the underlying HashMap.
+    let checksums = &*state.ephemeris_checksums;
+    Ok((StatusCode::OK, Json(EphemerisChecksumsResponse { checksums: checksums.clone() })).into_response())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

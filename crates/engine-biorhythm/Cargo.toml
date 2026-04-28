@@ -14,3 +14,8 @@ sha2 = "0.10"
 
 [dev-dependencies]
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
+criterion = { version = "0.5", features = ["async_tokio"] }
+
+[[bench]]
+name = "biorhythm_bench"
+harness = false

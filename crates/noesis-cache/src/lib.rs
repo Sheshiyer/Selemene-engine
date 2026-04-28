@@ -4,6 +4,7 @@
 //! Engines provide their own cache keys via the `ConsciousnessEngine::cache_key` trait method;
 //! this crate hashes those keys and manages L1/L2/L3 storage transparently.
 
+pub mod ephemeris;
 pub mod l1_cache;
 pub mod l2_cache;
 pub mod l3_cache;

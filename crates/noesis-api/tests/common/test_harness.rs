@@ -180,6 +180,7 @@ impl RoutingHarness {
             discord_client_secret: None,
             discord_redirect_uri: None,
             startup_time: Instant::now(),
+            ephemeris_checksums: Arc::new(std::collections::HashMap::new()),
         };
 
         let router = create_router(state, &config);

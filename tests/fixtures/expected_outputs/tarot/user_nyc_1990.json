@@ -1,0 +1,118 @@
+{
+  "engine_id": "tarot",
+  "result": {
+    "spread": {
+      "type": "three_card",
+      "name": "Three Card Spread",
+      "description": "Past, Present, and Future - a classic spread for understanding the flow of time"
+    },
+    "positions": [
+      {
+        "position": 0,
+        "name": "Past",
+        "meaning": "What has led to this moment; influences from the past",
+        "card": {
+          "id": "major-2",
+          "name": "The High Priestess",
+          "arcana": "major",
+          "number": 2,
+          "element": "water",
+          "isReversed": false,
+          "interpretation": {
+            "meaning": "Intuition, sacred knowledge, divine feminine, the subconscious mind",
+            "keywords": [
+              "intuition",
+              "mystery",
+              "inner voice",
+              "wisdom"
+            ]
+          }
+        }
+      },
+      {
+        "position": 1,
+        "name": "Present",
+        "meaning": "The current situation; where you stand now",
+        "card": {
+          "id": "swords-5",
+          "name": "Five of Swords",
+          "arcana": "minor",
+          "suit": "swords",
+          "number": 5,
+          "element": "air",
+          "isReversed": true,
+          "interpretation": {
+            "meaning": "Reconciliation, making amends, past resentment",
+            "keywords": [
+              "conflict",
+              "defeat",
+              "tension",
+              "hostility"
+            ]
+          }
+        }
+      },
+      {
+        "position": 2,
+        "name": "Future",
+        "meaning": "What may unfold; potential outcomes and energies ahead",
+        "card": {
+          "id": "swords-14",
+          "name": "King of Swords",
+          "arcana": "minor",
+          "suit": "swords",
+          "number": 14,
+          "element": "air",
+          "isReversed": true,
+          "interpretation": {
+            "meaning": "Quiet power, inner truth, misuse of power, manipulation",
+            "keywords": [
+              "authority",
+              "truth",
+              "intellect",
+              "ethical"
+            ]
+          }
+        }
+      }
+    ],
+    "seed": 42
+  },
+  "witness_prompts": [
+    {
+      "prompt": "As you consider The High Priestess in the position of Past, what stands out?",
+      "context": "The High Priestess in Past position",
+      "themes": [
+        "intuition",
+        "mystery",
+        "inner voice",
+        "wisdom"
+      ]
+    },
+    {
+      "prompt": "Notice the interplay between Five of Swords and King of Swords\u2014what patterns arise?",
+      "context": "Connection between Present and Future",
+      "themes": [
+        "conflict",
+        "defeat",
+        "tension",
+        "hostility",
+        "authority",
+        "truth",
+        "intellect",
+        "ethical"
+      ]
+    },
+    {
+      "prompt": "What does this reading illuminate that you may not have seen before?",
+      "context": "Overall reading reflection",
+      "themes": [
+        "wholeness",
+        "integration",
+        "meaning"
+      ]
+    }
+  ],
+  "calculated_at": "2024-01-15T14:30:00.000Z",
+  "processing_time_ms": 3
+}
