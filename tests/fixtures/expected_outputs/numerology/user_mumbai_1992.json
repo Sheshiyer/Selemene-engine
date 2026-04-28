@@ -1,0 +1,68 @@
+{
+  "engine_id": "numerology",
+  "result": {
+    "birthday": {
+      "is_master": false,
+      "meaning": "Leadership, independence, pioneering",
+      "reduction_chain": [
+        10,
+        1
+      ],
+      "value": 1
+    },
+    "chaldean_name": {
+      "is_master": false,
+      "meaning": "Analysis, wisdom, introspection",
+      "reduction_chain": [
+        34,
+        7
+      ],
+      "value": 7
+    },
+    "expression": {
+      "is_master": false,
+      "meaning": "Freedom, change, adventure",
+      "reduction_chain": [
+        41,
+        5
+      ],
+      "value": 5
+    },
+    "life_path": {
+      "is_master": true,
+      "meaning": "Intuition, spiritual insight, illumination (master)",
+      "reduction_chain": [
+        11
+      ],
+      "value": 11
+    },
+    "personality": {
+      "is_master": false,
+      "meaning": "Partnership, diplomacy, sensitivity",
+      "reduction_chain": [
+        20,
+        2
+      ],
+      "value": 2
+    },
+    "soul_urge": {
+      "is_master": false,
+      "meaning": "Creativity, expression, joy",
+      "reduction_chain": [
+        21,
+        3
+      ],
+      "value": 3
+    }
+  },
+  "witness_prompt": "Your Life Path 11 carries the master vibration of intuition. Notice: the light you channel -- is it yours to hold, or to pass through?",
+  "consciousness_level": 0,
+  "metadata": {
+    "calculation_time_ms": 0.0,
+    "backend": "native-rust",
+    "precision_achieved": "exact",
+    "cached": false,
+    "timestamp": "2025-01-01T00:00:00Z",
+    "engine_version": "3.0.0"
+  }
+}

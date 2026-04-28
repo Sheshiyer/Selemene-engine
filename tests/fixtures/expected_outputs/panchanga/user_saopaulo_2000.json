@@ -1,0 +1,32 @@
+{
+  "engine_id": "panchanga",
+  "result": {
+    "julian_day": 2451588.6354166665,
+    "karana_index": 2,
+    "karana_name": "Kaulava",
+    "karana_value": 18.0,
+    "lunar_longitude": 46.23441300005477,
+    "nakshatra_index": 3,
+    "nakshatra_name": "Rohini",
+    "nakshatra_value": 3.4675809750041076,
+    "solar_longitude": 301.0096938222197,
+    "tithi_index": 8,
+    "tithi_name": "Navami (Shukla)",
+    "tithi_value": 8.768726598152924,
+    "vara_index": 1,
+    "vara_name": "Somavara (Monday)",
+    "yoga_index": 26,
+    "yoga_name": "Vaidhriti",
+    "yoga_value": 26.043308011670582
+  },
+  "witness_prompt": "You were born under Tithi Navami (Shukla) and Nakshatra Rohini. The Tithi reflects the angle between Sun and Moon at your birth — a mirror of the dance between your conscious will and emotional nature. What pattern do you notice when your intentions and feelings are misaligned?",
+  "consciousness_level": 0,
+  "metadata": {
+    "calculation_time_ms": 0.0,
+    "backend": "native-rust",
+    "precision_achieved": "Standard",
+    "cached": false,
+    "timestamp": "2026-01-01T00:00:00Z",
+    "engine_version": "3.0.0"
+  }
+}

@@ -1,0 +1,67 @@
+name: Agent Post-Merge Cleanup
+
+on:
+  pull_request_target:
+    types: [closed]
+
+jobs:
+  cleanup:
+    if: github.event.pull_request.merged == true && startsWith(github.event.pull_request.head.ref, 'agent/issue-')
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: read
+      issues: write
+
+    steps:
+      - name: Auto-close/auto-label linked issue
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const pr = context.payload.pull_request;
+            const headRef = pr.head.ref || '';
+            const m = /^agent\/issue-(\d+)-/.exec(headRef);
+            if (!m) {
+              core.notice(`Head ref ${headRef} does not match agent issue pattern.`);
+              return;
+            }
+
+            const issueNum = parseInt(m[1], 10);
+
+            const ensureLabel = async (name, color, description) => {
+              try {
+                await github.rest.issues.getLabel({ owner, repo, name });
+              } catch (e) {
+                if (e.status === 404) {
+                  await github.rest.issues.createLabel({ owner, repo, name, color, description });
+                } else {
+                  throw e;
+                }
+              }
+            };
+
+            await ensureLabel('agent-merged', '0E8A16', 'Issue merged via agent lane workflow');
+            await ensureLabel('agent-batch-merged', '1D76DB', 'Issue merged in an automated merge batch');
+
+            try {
+              await github.rest.issues.removeLabel({ owner, repo, issue_number: issueNum, name: 'agent-ready' });
+            } catch (_) {}
+
+            await github.rest.issues.addLabels({
+              owner,
+              repo,
+              issue_number: issueNum,
+              labels: ['agent-merged', 'agent-batch-merged'],
+            });
+
+            const { data: issue } = await github.rest.issues.get({ owner, repo, issue_number: issueNum });
+            if (issue.state !== 'closed') {
+              await github.rest.issues.update({ owner, repo, issue_number: issueNum, state: 'closed' });
+            }
+
+            await github.rest.issues.createComment({
+              owner,
+              repo,
+              issue_number: issueNum,
+              body: `Auto-cleanup after merge of PR #${pr.number}: issue closed and labeled for agent batch tracking.`,
+            });

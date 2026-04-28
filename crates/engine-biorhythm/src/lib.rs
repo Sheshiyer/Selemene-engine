@@ -4,13 +4,15 @@
 //! plus intuitive (38-day) and three composite cycles (mastery, passion, wisdom).
 //! Pure math -- no external dependencies beyond std and chrono.
 
+pub mod types;
+pub use types::*;
+
 use async_trait::async_trait;
 use chrono::{NaiveDate, Utc};
 use noesis_core::{
     CalculationMetadata, ConsciousnessEngine, EngineError, EngineInput, EngineOutput,
     ValidationResult,
 };
-use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use std::f64::consts::PI;
 use std::time::Instant;
@@ -23,55 +25,11 @@ const PHYSICAL_PERIOD: f64 = 23.0;
 const EMOTIONAL_PERIOD: f64 = 28.0;
 const INTELLECTUAL_PERIOD: f64 = 33.0;
 const INTUITIVE_PERIOD: f64 = 38.0;
+const AESTHETIC_PERIOD: f64 = 43.0;
+const SPIRITUAL_PERIOD: f64 = 53.0;
 
 /// Threshold in days for declaring a zero-crossing "critical".
 const CRITICAL_THRESHOLD: f64 = 1.0;
-
-// ---------------------------------------------------------------------------
-// Result types
-// ---------------------------------------------------------------------------
-
-/// Full biorhythm calculation result.
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct BiorhythmResult {
-    pub days_alive: i64,
-    pub target_date: String,
-    pub physical: CycleResult,
-    pub emotional: CycleResult,
-    pub intellectual: CycleResult,
-    pub intuitive: CycleResult,
-    pub mastery: f64,
-    pub passion: f64,
-    pub wisdom: f64,
-    pub critical_days: Vec<String>,
-    pub overall_energy: f64,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub forecast: Option<Vec<ForecastDay>>,
-}
-
-/// Result for a single biorhythm cycle.
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct CycleResult {
-    pub value: f64,
-    pub percentage: f64,
-    pub phase: String,
-    pub days_until_peak: i64,
-    pub days_until_critical: i64,
-    pub is_critical: bool,
-    pub cycle_day: i64,
-}
-
-/// One day in the optional forecast window.
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ForecastDay {
-    pub date: String,
-    pub days_alive: i64,
-    pub physical: f64,
-    pub emotional: f64,
-    pub intellectual: f64,
-    pub intuitive: f64,
-    pub overall_energy: f64,
-}
 
 // ---------------------------------------------------------------------------
 // Engine struct
@@ -239,6 +197,8 @@ fn build_forecast(
             let emot = to_percentage(cycle_value(d, EMOTIONAL_PERIOD));
             let inte = to_percentage(cycle_value(d, INTELLECTUAL_PERIOD));
             let intu = to_percentage(cycle_value(d, INTUITIVE_PERIOD));
+            let aest = to_percentage(cycle_value(d, AESTHETIC_PERIOD));
+            let spir = to_percentage(cycle_value(d, SPIRITUAL_PERIOD));
             let date = target_date + chrono::Duration::days(offset);
             ForecastDay {
                 date: date.format("%Y-%m-%d").to_string(),
@@ -247,7 +207,9 @@ fn build_forecast(
                 emotional: emot,
                 intellectual: inte,
                 intuitive: intu,
-                overall_energy: (phys + emot + inte) / 3.0,
+                aesthetic: aest,
+                spiritual: spir,
+                overall_energy: (phys + emot + inte + intu + aest + spir) / 6.0,
             }
         })
         .collect()
@@ -301,6 +263,97 @@ fn generate_witness_prompt(result: &BiorhythmResult) -> String {
     };
 
     format!("{}{}", base, reflection)
+}
+
+// ---------------------------------------------------------------------------
+// Compatibility types and calculation
+// ---------------------------------------------------------------------------
+
+/// Compatibility score for a single biorhythm cycle.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CycleCompatibility {
+    /// Score in the range [0, 100].
+    /// 100 = perfect alignment, 0 = maximum opposition (half-period apart).
+    pub score: f64,
+    /// Cycle period in days.
+    pub period: f64,
+    /// Absolute day difference between the two birth dates.
+    pub days_diff: i64,
+}
+
+/// Result of a two-person biorhythm compatibility calculation.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CompatibilityResult {
+    pub birth_date_a: String,
+    pub birth_date_b: String,
+    /// Reference date supplied by the caller; stored for context (e.g. serialised API
+    /// responses).  Compatibility scores depend only on the two birth dates, not on
+    /// this date.
+    pub target_date: String,
+    pub physical: CycleCompatibility,
+    pub emotional: CycleCompatibility,
+    pub intellectual: CycleCompatibility,
+    pub intuitive: CycleCompatibility,
+    /// Equal-weighted average of the three *primary* cycles (physical, emotional,
+    /// intellectual).  The intuitive cycle is excluded to match the convention used by
+    /// `BiorhythmResult::overall_energy`.
+    pub overall: f64,
+}
+
+/// Calculate the compatibility score for a single cycle.
+///
+/// Formula: `50 × (1 + cos(2π × (|days_diff| mod period) / period))`
+///
+/// This maps to:
+/// - 100 when `days_diff ≡ 0 (mod period)` (identical phases)
+/// - 0   when `days_diff ≡ period/2 (mod period)` (opposite phases)
+fn cycle_compatibility(days_diff: i64, period: f64) -> CycleCompatibility {
+    let diff_mod = (days_diff.abs() as f64) % period;
+    let score = 50.0 * (1.0 + (2.0 * PI * diff_mod / period).cos());
+    CycleCompatibility {
+        score,
+        period,
+        days_diff: days_diff.abs(),
+    }
+}
+
+/// Calculate biorhythm compatibility between two people.
+///
+/// # Arguments
+/// * `birth_date_a` – birth date of person A
+/// * `birth_date_b` – birth date of person B
+/// * `target_date`  – reference date stored in the result for caller context;
+///   the per-cycle scores depend only on the two birth dates
+///
+/// # Returns
+/// `CompatibilityResult` with per-cycle scores and an equal-weighted overall score
+/// across the three primary cycles.
+pub fn calculate_compatibility(
+    birth_date_a: NaiveDate,
+    birth_date_b: NaiveDate,
+    target_date: NaiveDate,
+) -> CompatibilityResult {
+    let days_diff = (birth_date_a - birth_date_b).num_days();
+
+    let physical = cycle_compatibility(days_diff, PHYSICAL_PERIOD);
+    let emotional = cycle_compatibility(days_diff, EMOTIONAL_PERIOD);
+    let intellectual = cycle_compatibility(days_diff, INTELLECTUAL_PERIOD);
+    let intuitive = cycle_compatibility(days_diff, INTUITIVE_PERIOD);
+
+    // Overall = equal-weighted average of the three primary cycles (physical,
+    // emotional, intellectual), matching the convention of BiorhythmResult::overall_energy.
+    let overall = (physical.score + emotional.score + intellectual.score) / 3.0;
+
+    CompatibilityResult {
+        birth_date_a: birth_date_a.format("%Y-%m-%d").to_string(),
+        birth_date_b: birth_date_b.format("%Y-%m-%d").to_string(),
+        target_date: target_date.format("%Y-%m-%d").to_string(),
+        physical,
+        emotional,
+        intellectual,
+        intuitive,
+        overall,
+    }
 }
 
 // ---------------------------------------------------------------------------
@@ -653,6 +706,33 @@ mod tests {
     }
 
     #[test]
+    fn test_forecast_has_six_cycle_fields_in_range() {
+        let birth = NaiveDate::from_ymd_opt(1990, 1, 1).unwrap();
+        let target = NaiveDate::from_ymd_opt(2025, 6, 15).unwrap();
+        let forecast = build_forecast(birth, target, 7);
+        assert_eq!(forecast.len(), 7);
+        for day in &forecast {
+            for (name, val) in [
+                ("physical", day.physical),
+                ("emotional", day.emotional),
+                ("intellectual", day.intellectual),
+                ("intuitive", day.intuitive),
+                ("aesthetic", day.aesthetic),
+                ("spiritual", day.spiritual),
+                ("overall_energy", day.overall_energy),
+            ] {
+                assert!(
+                    (0.0..=100.0).contains(&val),
+                    "{} value {} out of [0, 100] on {}",
+                    name,
+                    val,
+                    day.date
+                );
+            }
+        }
+    }
+
+    #[test]
     fn test_witness_prompt_not_empty() {
         let result = BiorhythmResult {
             days_alive: 10000,
@@ -671,5 +751,114 @@ mod tests {
         let prompt = generate_witness_prompt(&result);
         assert!(!prompt.is_empty());
         assert!(prompt.contains('%'));
+    }
+
+    // ------------------------------------------------------------------
+    // Compatibility tests (Acceptance Criteria for issue #374)
+    // ------------------------------------------------------------------
+
+    #[test]
+    fn test_compatibility_identical_birth_dates_is_100() {
+        let date_a = NaiveDate::from_ymd_opt(1990, 6, 15).unwrap();
+        let target = NaiveDate::from_ymd_opt(2025, 1, 1).unwrap();
+
+        let result = calculate_compatibility(date_a, date_a, target);
+
+        assert!(
+            (result.physical.score - 100.0).abs() < 1e-9,
+            "physical score should be 100 for identical dates, got {}",
+            result.physical.score
+        );
+        assert!(
+            (result.emotional.score - 100.0).abs() < 1e-9,
+            "emotional score should be 100 for identical dates, got {}",
+            result.emotional.score
+        );
+        assert!(
+            (result.intellectual.score - 100.0).abs() < 1e-9,
+            "intellectual score should be 100 for identical dates, got {}",
+            result.intellectual.score
+        );
+        assert!(
+            (result.intuitive.score - 100.0).abs() < 1e-9,
+            "intuitive score should be 100 for identical dates, got {}",
+            result.intuitive.score
+        );
+        assert!(
+            (result.overall - 100.0).abs() < 1e-9,
+            "overall should be 100 for identical dates, got {}",
+            result.overall
+        );
+    }
+
+    /// EMOTIONAL_PERIOD = 28 days (even), so half = 14 days — exact integer test.
+    #[test]
+    fn test_compatibility_half_period_emotional_is_zero() {
+        let date_a = NaiveDate::from_ymd_opt(1990, 1, 1).unwrap();
+        let date_b = date_a + chrono::Duration::days(14); // exactly half of 28
+        let target = NaiveDate::from_ymd_opt(2025, 1, 1).unwrap();
+
+        let result = calculate_compatibility(date_a, date_b, target);
+
+        assert!(
+            result.emotional.score.abs() < 1e-9,
+            "emotional score should be 0 when exactly half-period apart, got {}",
+            result.emotional.score
+        );
+    }
+
+    /// INTUITIVE_PERIOD = 38 days (even), so half = 19 days — exact integer test.
+    #[test]
+    fn test_compatibility_half_period_intuitive_is_zero() {
+        let date_a = NaiveDate::from_ymd_opt(1985, 3, 1).unwrap();
+        let date_b = date_a + chrono::Duration::days(19); // exactly half of 38
+        let target = NaiveDate::from_ymd_opt(2025, 1, 1).unwrap();
+
+        let result = calculate_compatibility(date_a, date_b, target);
+
+        assert!(
+            result.intuitive.score.abs() < 1e-9,
+            "intuitive score should be 0 when exactly half INTUITIVE_PERIOD apart, got {}",
+            result.intuitive.score
+        );
+    }
+
+    #[test]
+    fn test_compatibility_score_bounds() {
+        let date_a = NaiveDate::from_ymd_opt(1990, 1, 1).unwrap();
+        let date_b = NaiveDate::from_ymd_opt(1995, 7, 4).unwrap();
+        let target = NaiveDate::from_ymd_opt(2025, 6, 15).unwrap();
+
+        let result = calculate_compatibility(date_a, date_b, target);
+
+        for score in [
+            result.physical.score,
+            result.emotional.score,
+            result.intellectual.score,
+            result.intuitive.score,
+            result.overall,
+        ] {
+            assert!(
+                (-1e-9..=100.0 + 1e-9).contains(&score),
+                "score {} is out of [0, 100]",
+                score
+            );
+        }
+    }
+
+    #[test]
+    fn test_compatibility_symmetry() {
+        // calculate_compatibility(a, b) == calculate_compatibility(b, a)
+        let date_a = NaiveDate::from_ymd_opt(1990, 1, 1).unwrap();
+        let date_b = NaiveDate::from_ymd_opt(1992, 6, 20).unwrap();
+        let target = NaiveDate::from_ymd_opt(2025, 1, 1).unwrap();
+
+        let ab = calculate_compatibility(date_a, date_b, target);
+        let ba = calculate_compatibility(date_b, date_a, target);
+
+        assert!((ab.physical.score - ba.physical.score).abs() < 1e-9);
+        assert!((ab.emotional.score - ba.emotional.score).abs() < 1e-9);
+        assert!((ab.intellectual.score - ba.intellectual.score).abs() < 1e-9);
+        assert!((ab.overall - ba.overall).abs() < 1e-9);
     }
 }

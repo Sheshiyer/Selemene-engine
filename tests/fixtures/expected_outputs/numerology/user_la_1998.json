@@ -1,0 +1,70 @@
+{
+  "engine_id": "numerology",
+  "result": {
+    "birthday": {
+      "is_master": false,
+      "meaning": "Creativity, expression, joy",
+      "reduction_chain": [
+        30,
+        3
+      ],
+      "value": 3
+    },
+    "chaldean_name": {
+      "is_master": false,
+      "meaning": "Compassion, completion, universal love",
+      "reduction_chain": [
+        54,
+        9
+      ],
+      "value": 9
+    },
+    "expression": {
+      "is_master": false,
+      "meaning": "Leadership, independence, pioneering",
+      "reduction_chain": [
+        55,
+        10,
+        1
+      ],
+      "value": 1
+    },
+    "life_path": {
+      "is_master": false,
+      "meaning": "Analysis, wisdom, introspection",
+      "reduction_chain": [
+        16,
+        7
+      ],
+      "value": 7
+    },
+    "personality": {
+      "is_master": false,
+      "meaning": "Creativity, expression, joy",
+      "reduction_chain": [
+        30,
+        3
+      ],
+      "value": 3
+    },
+    "soul_urge": {
+      "is_master": false,
+      "meaning": "Analysis, wisdom, introspection",
+      "reduction_chain": [
+        25,
+        7
+      ],
+      "value": 7
+    }
+  },
+  "witness_prompt": "Your Life Path 7 suggests a path of inner wisdom. Notice: are you the seeker, or that which is found?",
+  "consciousness_level": 0,
+  "metadata": {
+    "calculation_time_ms": 0.0,
+    "backend": "native-rust",
+    "precision_achieved": "exact",
+    "cached": false,
+    "timestamp": "2025-01-01T00:00:00Z",
+    "engine_version": "3.0.0"
+  }
+}

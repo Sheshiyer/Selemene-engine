@@ -146,6 +146,12 @@ pub struct NoesisMetrics {
     pub cache_layer_requests: IntGauge,
     /// Computed cache hit rate (0.0–1.0).
     pub cache_hit_rate: Gauge,
+
+    // -- Workflow-level metrics -----------------------------------------------
+    /// Workflow execution duration broken down by `workflow_id` label.
+    pub workflow_execution_duration: HistogramVec,
+    /// Number of engines that succeeded in a workflow, broken down by `workflow_id` label.
+    pub workflow_engines_succeeded: IntGaugeVec,
 }
 
 impl NoesisMetrics {
@@ -262,6 +268,23 @@ impl NoesisMetrics {
 
         let cache_hit_rate = Gauge::new("noesis_cache_hit_rate", "Cache hit rate (0.0-1.0)")?;
 
+        // -- Workflow-level metrics ------------------------------------------
+        let workflow_execution_duration = HistogramVec::new(
+            HistogramOpts::new(
+                "noesis_workflow_execution_duration_seconds",
+                "Workflow execution duration per workflow in seconds",
+            ),
+            &["workflow_id"],
+        )?;
+
+        let workflow_engines_succeeded = IntGaugeVec::new(
+            Opts::new(
+                "noesis_workflow_engines_succeeded",
+                "Number of engines that succeeded in a workflow execution",
+            ),
+            &["workflow_id"],
+        )?;
+
         // -- Register everything with the Prometheus registry ----------------
         REGISTRY.register(Box::new(requests_total.clone()))?;
         REGISTRY.register(Box::new(request_duration.clone()))?;
@@ -286,6 +309,8 @@ impl NoesisMetrics {
         REGISTRY.register(Box::new(cache_layer_misses.clone()))?;
         REGISTRY.register(Box::new(cache_layer_requests.clone()))?;
         REGISTRY.register(Box::new(cache_hit_rate.clone()))?;
+        REGISTRY.register(Box::new(workflow_execution_duration.clone()))?;
+        REGISTRY.register(Box::new(workflow_engines_succeeded.clone()))?;
 
         Ok(Self {
             requests_total,
@@ -311,6 +336,8 @@ impl NoesisMetrics {
             cache_layer_misses,
             cache_layer_requests,
             cache_hit_rate,
+            workflow_execution_duration,
+            workflow_engines_succeeded,
         })
     }
 
@@ -431,6 +458,21 @@ impl NoesisMetrics {
         }
     }
 
+    /// Record a workflow execution: duration histogram and engine-success gauge.
+    pub fn record_workflow_execution(
+        &self,
+        workflow_id: &str,
+        duration_secs: f64,
+        engines_succeeded: usize,
+    ) {
+        self.workflow_execution_duration
+            .with_label_values(&[workflow_id])
+            .observe(duration_secs);
+        self.workflow_engines_succeeded
+            .with_label_values(&[workflow_id])
+            .set(engines_succeeded as i64);
+    }
+
     /// Encode all registered metrics in Prometheus text exposition format.
     pub fn get_metrics_text(&self) -> Result<String, Box<dyn std::error::Error>> {
         use prometheus::Encoder;
@@ -539,11 +581,14 @@ mod tests {
         metrics.record_validation_difference(0.5);
         metrics.update_system_metrics(1024.0, 12.5, 3600.0);
         metrics.update_active_connections(5.0);
+        metrics.record_workflow_execution("birth-blueprint", 1.23, 5);
 
         let text = metrics
             .get_metrics_text()
             .expect("should encode metrics text");
         assert!(text.contains("noesis_requests_total"));
         assert!(text.contains("noesis_engine_calculations_total"));
+        assert!(text.contains("noesis_workflow_execution_duration_seconds"));
+        assert!(text.contains("noesis_workflow_engines_succeeded"));
     }
 }
