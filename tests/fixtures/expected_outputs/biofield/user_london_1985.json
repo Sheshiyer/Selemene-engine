@@ -1,0 +1,103 @@
+{
+  "engine_id": "biofield",
+  "result": {
+    "metrics": {
+      "fractal_dimension": 1.32,
+      "entropy": 0.48,
+      "coherence": 0.55,
+      "symmetry": 0.63,
+      "vitality_index": 0.51946,
+      "timestamp": "2026-01-01T00:00:00Z"
+    },
+    "chakra_readings": [
+      {
+        "chakra": "Root",
+        "chakra_name": "Root",
+        "activity_level": 0.51,
+        "balance": 0.18,
+        "color_intensity": "moderate red",
+        "location": "Base of spine",
+        "element": "Earth"
+      },
+      {
+        "chakra": "Sacral",
+        "chakra_name": "Sacral",
+        "activity_level": 0.38,
+        "balance": -0.22,
+        "color_intensity": "dim orange",
+        "location": "Lower abdomen",
+        "element": "Water"
+      },
+      {
+        "chakra": "SolarPlexus",
+        "chakra_name": "Solar Plexus",
+        "activity_level": 0.44,
+        "balance": 0.31,
+        "color_intensity": "dim yellow",
+        "location": "Upper abdomen",
+        "element": "Fire"
+      },
+      {
+        "chakra": "Heart",
+        "chakra_name": "Heart",
+        "activity_level": 0.6,
+        "balance": -0.14,
+        "color_intensity": "moderate green",
+        "location": "Center of chest",
+        "element": "Air"
+      },
+      {
+        "chakra": "Throat",
+        "chakra_name": "Throat",
+        "activity_level": 0.72,
+        "balance": 0.08,
+        "color_intensity": "bright blue",
+        "location": "Throat center",
+        "element": "Ether"
+      },
+      {
+        "chakra": "ThirdEye",
+        "chakra_name": "Third Eye",
+        "activity_level": 0.49,
+        "balance": -0.19,
+        "color_intensity": "dim indigo",
+        "location": "Between eyebrows",
+        "element": "Light"
+      },
+      {
+        "chakra": "Crown",
+        "chakra_name": "Crown",
+        "activity_level": 0.55,
+        "balance": 0.25,
+        "color_intensity": "moderate violet",
+        "location": "Top of head",
+        "element": "Consciousness"
+      }
+    ],
+    "interpretation": "Vitality is in a moderate range. Note: This interpretation is based on simulated data.",
+    "areas_of_attention": [
+      "Sacral (Lower abdomen) - lower activity observed"
+    ],
+    "is_mock_data": true,
+    "notice": "This is simulated data. Full biofield analysis requires PIP hardware integration."
+  },
+  "witness_prompt": "Your Throat center shows the highest activity at 72%. With an overall vitality of 0.52, notice where energy flows freely and where it seeks your attention. What does your body know that your mind has not yet acknowledged?",
+  "consciousness_level": 1,
+  "metadata": {
+    "calculation_time_ms": 0.0,
+    "backend": "mock",
+    "precision_achieved": "simulated",
+    "cached": false,
+    "timestamp": "2026-01-01T00:00:00Z",
+    "engine_version": "3.0.0"
+  },
+  "_fixture_meta": {
+    "input": {
+      "birth_date": "1985-06-20",
+      "user_id": "user_london_1985",
+      "current_time": "2026-01-01T00:00:00Z"
+    },
+    "description": "Biofield golden fixture for user_london_1985",
+    "seed": 17920230043054523000
+  }
+}
