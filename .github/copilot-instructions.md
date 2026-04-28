@@ -127,3 +127,16 @@ GET  /health/ready                          — Readiness probe
 4. **Performance optimization**: Benchmark with `cargo bench`, validate accuracy with `tests/validation/`
 
 Always preserve the orchestrator pattern — calculations flow through `CalculationOrchestrator`, not directly from handlers to engines.
+
+## Agent Dispatch Contract
+
+When you are invoked on a PR whose head ref matches `agent/issue-<N>-*`:
+
+1. Your full task contract is in `.agent-tasks/issue-<N>.md`. Read it before writing any code.
+2. Implement against the Deliverable + Acceptance Criteria in that file.
+3. Run `cargo build && cargo test` and confirm green before pushing the final commit.
+4. Delete `.agent-tasks/issue-<N>.md` in your final commit.
+5. Convert the PR from draft to ready-for-review.
+6. Post a PR comment: `agent: done -- tests passing, ready for review`.
+
+Branch naming and the task-file marker are load-bearing — `agent-merge-lane.yml` and `agent-post-merge.yml` both depend on them. Do not rename the branch or the task file.

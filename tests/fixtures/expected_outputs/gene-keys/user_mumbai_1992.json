@@ -1,0 +1,209 @@
+{
+  "engine_id": "gene-keys",
+  "result": {
+    "activation_sequence": {
+      "evolution": [
+        51,
+        57
+      ],
+      "lifes_work": [
+        53,
+        54
+      ],
+      "purpose": [
+        54,
+        57
+      ],
+      "radiance": [
+        53,
+        51
+      ]
+    },
+    "active_keys": [
+      {
+        "gift": "Endurance",
+        "key_number": 53,
+        "line": 3,
+        "name": "Gene Key 53",
+        "shadow": "Inertia",
+        "siddhi": "Endurance",
+        "source": "PersonalitySun"
+      },
+      {
+        "gift": "Intuition",
+        "key_number": 54,
+        "line": 3,
+        "name": "Gene Key 54",
+        "shadow": "Bitterness",
+        "siddhi": "Transparency",
+        "source": "PersonalityEarth"
+      },
+      {
+        "gift": "Shock",
+        "key_number": 51,
+        "line": 3,
+        "name": "Gene Key 51",
+        "shadow": "Hysteria",
+        "siddhi": "Shock",
+        "source": "DesignSun"
+      },
+      {
+        "gift": "Clarity",
+        "key_number": 57,
+        "line": 3,
+        "name": "Gene Key 57",
+        "shadow": "Confusion",
+        "siddhi": "Clarity",
+        "source": "DesignEarth"
+      }
+    ],
+    "frequency_assessments": [
+      {
+        "gene_key": 53,
+        "gift": "Endurance",
+        "gift_description": "The gift frequency expresses the balanced state of consciousness that serves the collective good.",
+        "name": "Gene Key 53",
+        "recognition_prompts": {
+          "gift": [
+            "When do you experience Endurance arising naturally, without effort?",
+            "Can you notice the space between the Inertia pattern and the emergence of Endurance?",
+            "What happens when Endurance flows through you? How does it feel different from the shadow?",
+            "When this gift is active, who are you serving? What opens?",
+            "Does this quality arise more often now than in the past?"
+          ],
+          "shadow": [
+            "Do you notice yourself reacting unconsciously through the pattern of Inertia?",
+            "When Inertia arises, can you feel the contraction or resistance in your body?",
+            "Do you find yourself caught in Inertia without realizing it until later?",
+            "What triggers this pattern? When does it feel most intense?",
+            "Can you witness the pattern without trying to change or fix it?"
+          ],
+          "siddhi": [
+            "Have you had moments where Endurance dissolved into Endurance?",
+            "When Endurance is present, is there still a 'you' experiencing it?",
+            "What remains when the personal expression of Endurance falls away?",
+            "Have you touched a state beyond your individual consciousness?",
+            "Can you rest in the paradox of this frequency without needing to understand it?"
+          ]
+        },
+        "shadow": "Inertia",
+        "shadow_description": "The shadow frequency represents the unconscious pattern that creates limitation and suffering in this area of life.",
+        "siddhi": "Endurance",
+        "siddhi_description": "The siddhi frequency embodies the highest potential of human consciousness in this archetypal pattern.",
+        "suggested_frequency": null
+      },
+      {
+        "gene_key": 54,
+        "gift": "Intuition",
+        "gift_description": "The gift frequency expresses the balanced state of consciousness that serves the collective good.",
+        "name": "Gene Key 54",
+        "recognition_prompts": {
+          "gift": [
+            "When do you experience Intuition arising naturally, without effort?",
+            "Can you notice the space between the Bitterness pattern and the emergence of Intuition?",
+            "What happens when Intuition flows through you? How does it feel different from the shadow?",
+            "When this gift is active, who are you serving? What opens?",
+            "Does this quality arise more often now than in the past?"
+          ],
+          "shadow": [
+            "Do you notice yourself reacting unconsciously through the pattern of Bitterness?",
+            "When Bitterness arises, can you feel the contraction or resistance in your body?",
+            "Do you find yourself caught in Bitterness without realizing it until later?",
+            "What triggers this pattern? When does it feel most intense?",
+            "Can you witness the pattern without trying to change or fix it?"
+          ],
+          "siddhi": [
+            "Have you had moments where Intuition dissolved into Transparency?",
+            "When Transparency is present, is there still a 'you' experiencing it?",
+            "What remains when the personal expression of Intuition falls away?",
+            "Have you touched a state beyond your individual consciousness?",
+            "Can you rest in the paradox of this frequency without needing to understand it?"
+          ]
+        },
+        "shadow": "Bitterness",
+        "shadow_description": "The shadow frequency represents the unconscious pattern that creates limitation and suffering in this area of life.",
+        "siddhi": "Transparency",
+        "siddhi_description": "The siddhi frequency embodies the highest potential of human consciousness in this archetypal pattern.",
+        "suggested_frequency": null
+      },
+      {
+        "gene_key": 51,
+        "gift": "Shock",
+        "gift_description": "The gift frequency expresses the balanced state of consciousness that serves the collective good.",
+        "name": "Gene Key 51",
+        "recognition_prompts": {
+          "gift": [
+            "When do you experience Shock arising naturally, without effort?",
+            "Can you notice the space between the Hysteria pattern and the emergence of Shock?",
+            "What happens when Shock flows through you? How does it feel different from the shadow?",
+            "When this gift is active, who are you serving? What opens?",
+            "Does this quality arise more often now than in the past?"
+          ],
+          "shadow": [
+            "Do you notice yourself reacting unconsciously through the pattern of Hysteria?",
+            "When Hysteria arises, can you feel the contraction or resistance in your body?",
+            "Do you find yourself caught in Hysteria without realizing it until later?",
+            "What triggers this pattern? When does it feel most intense?",
+            "Can you witness the pattern without trying to change or fix it?"
+          ],
+          "siddhi": [
+            "Have you had moments where Shock dissolved into Shock?",
+            "When Shock is present, is there still a 'you' experiencing it?",
+            "What remains when the personal expression of Shock falls away?",
+            "Have you touched a state beyond your individual consciousness?",
+            "Can you rest in the paradox of this frequency without needing to understand it?"
+          ]
+        },
+        "shadow": "Hysteria",
+        "shadow_description": "The shadow frequency represents the unconscious pattern that creates limitation and suffering in this area of life.",
+        "siddhi": "Shock",
+        "siddhi_description": "The siddhi frequency embodies the highest potential of human consciousness in this archetypal pattern.",
+        "suggested_frequency": null
+      },
+      {
+        "gene_key": 57,
+        "gift": "Clarity",
+        "gift_description": "The gift frequency expresses the balanced state of consciousness that serves the collective good.",
+        "name": "Gene Key 57",
+        "recognition_prompts": {
+          "gift": [
+            "When do you experience Clarity arising naturally, without effort?",
+            "Can you notice the space between the Confusion pattern and the emergence of Clarity?",
+            "What happens when Clarity flows through you? How does it feel different from the shadow?",
+            "When this gift is active, who are you serving? What opens?",
+            "Does this quality arise more often now than in the past?"
+          ],
+          "shadow": [
+            "Do you notice yourself reacting unconsciously through the pattern of Confusion?",
+            "When Confusion arises, can you feel the contraction or resistance in your body?",
+            "Do you find yourself caught in Confusion without realizing it until later?",
+            "What triggers this pattern? When does it feel most intense?",
+            "Can you witness the pattern without trying to change or fix it?"
+          ],
+          "siddhi": [
+            "Have you had moments where Clarity dissolved into Clarity?",
+            "When Clarity is present, is there still a 'you' experiencing it?",
+            "What remains when the personal expression of Clarity falls away?",
+            "Have you touched a state beyond your individual consciousness?",
+            "Can you rest in the paradox of this frequency without needing to understand it?"
+          ]
+        },
+        "shadow": "Confusion",
+        "shadow_description": "The shadow frequency represents the unconscious pattern that creates limitation and suffering in this area of life.",
+        "siddhi": "Clarity",
+        "siddhi_description": "The siddhi frequency embodies the highest potential of human consciousness in this archetypal pattern.",
+        "suggested_frequency": null
+      }
+    ]
+  },
+  "witness_prompt": "How do your conscious gifts Endurance (53) and Shock (51) create your core magnetism? When you're most authentic, what happens in the interplay between Intuition (54) and Clarity (57) as your higher calling reveals itself? What invitation lives in the space between Inertia becoming Endurance and Bitterness becoming Intuition?",
+  "consciousness_level": 3,
+  "metadata": {
+    "calculation_time_ms": 0.0,
+    "backend": "hd-derived",
+    "precision_achieved": "Standard",
+    "cached": false,
+    "timestamp": "2025-01-01T00:00:00Z",
+    "engine_version": "3.0.0"
+  }
+}

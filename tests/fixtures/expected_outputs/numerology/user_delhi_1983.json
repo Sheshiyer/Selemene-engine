@@ -1,0 +1,69 @@
+{
+  "engine_id": "numerology",
+  "result": {
+    "birthday": {
+      "is_master": false,
+      "meaning": "Power, abundance, achievement",
+      "reduction_chain": [
+        17,
+        8
+      ],
+      "value": 8
+    },
+    "chaldean_name": {
+      "is_master": false,
+      "meaning": "Analysis, wisdom, introspection",
+      "reduction_chain": [
+        34,
+        7
+      ],
+      "value": 7
+    },
+    "expression": {
+      "is_master": true,
+      "meaning": "Intuition, spiritual insight, illumination (master)",
+      "reduction_chain": [
+        47,
+        11
+      ],
+      "value": 11
+    },
+    "life_path": {
+      "is_master": false,
+      "meaning": "Leadership, independence, pioneering",
+      "reduction_chain": [
+        19,
+        10,
+        1
+      ],
+      "value": 1
+    },
+    "personality": {
+      "is_master": false,
+      "meaning": "Analysis, wisdom, introspection",
+      "reduction_chain": [
+        25,
+        7
+      ],
+      "value": 7
+    },
+    "soul_urge": {
+      "is_master": true,
+      "meaning": "Master builder, practical visionary (master)",
+      "reduction_chain": [
+        22
+      ],
+      "value": 22
+    }
+  },
+  "witness_prompt": "Your Life Path 1 speaks of the pioneer within. Notice: are you leading from authentic will, or from the need to be first?",
+  "consciousness_level": 0,
+  "metadata": {
+    "calculation_time_ms": 0.0,
+    "backend": "native-rust",
+    "precision_achieved": "exact",
+    "cached": false,
+    "timestamp": "2025-01-01T00:00:00Z",
+    "engine_version": "3.0.0"
+  }
+}

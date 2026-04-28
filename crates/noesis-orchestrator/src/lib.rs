@@ -74,7 +74,7 @@ use std::collections::HashMap;
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::Arc;
 use std::time::Instant;
-use tracing::{info, instrument, warn};
+use tracing::{info, info_span, instrument, warn, Instrument};
 
 // ---------------------------------------------------------------------------
 // EngineRegistry
@@ -380,7 +380,11 @@ impl WorkflowOrchestrator {
     /// Each engine in the workflow runs concurrently. If an individual engine
     /// fails or is phase-gated, its error is logged but the overall workflow
     /// still succeeds -- the failed engine is simply omitted from the results.
-    #[instrument(skip(self, input), fields(workflow_id = %workflow_id, user_phase))]
+    ///
+    /// Emits a parent tracing span carrying `workflow_id` and `engine_count`
+    /// plus a child span per engine carrying `engine_id`, `duration_ms`, and
+    /// `status` (success | failure).
+    #[instrument(skip(self, input), fields(workflow_id = %workflow_id, user_phase, engine_count = tracing::field::Empty))]
     pub async fn execute_workflow(
         &self,
         workflow_id: &str,
@@ -392,16 +396,20 @@ impl WorkflowOrchestrator {
             .get(workflow_id)
             .ok_or_else(|| EngineError::WorkflowNotFound(workflow_id.to_string()))?;
 
+        let engine_count = workflow.engine_ids.len();
+        tracing::Span::current().record("engine_count", engine_count);
+
         info!(
             workflow_id,
-            engine_count = workflow.engine_ids.len(),
+            engine_count,
             "Starting workflow execution"
         );
 
         let start = Instant::now();
         let registry = &self.registry;
 
-        // Build futures for all engines in the workflow.
+        // Build futures for all engines in the workflow, each wrapped in its
+        // own child span so Jaeger shows a per-engine timing breakdown.
         let futures: Vec<_> = workflow
             .engine_ids
             .iter()
@@ -409,12 +417,25 @@ impl WorkflowOrchestrator {
                 let input_clone = input.clone();
                 let eid_owned = eid.clone();
 
+                let engine_span = info_span!(
+                    "engine.execute",
+                    engine_id = %eid_owned,
+                    duration_ms = tracing::field::Empty,
+                    status = tracing::field::Empty,
+                );
+
                 async move {
+                    let engine_start = Instant::now();
                     let result = registry
                         .execute_routed(&eid_owned, input_clone, user_phase)
                         .await;
+                    let elapsed_ms = engine_start.elapsed().as_millis() as u64;
+                    let status = if result.is_ok() { "success" } else { "failure" };
+                    tracing::Span::current().record("duration_ms", elapsed_ms);
+                    tracing::Span::current().record("status", status);
                     (eid_owned, result)
                 }
+                .instrument(engine_span)
             })
             .collect();
 

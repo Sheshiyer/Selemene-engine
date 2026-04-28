@@ -1,0 +1,71 @@
+{
+  "engine_id": "numerology",
+  "result": {
+    "birthday": {
+      "is_master": false,
+      "meaning": "Responsibility, nurturing, harmony",
+      "reduction_chain": [
+        15,
+        6
+      ],
+      "value": 6
+    },
+    "chaldean_name": {
+      "is_master": true,
+      "meaning": "Intuition, spiritual insight, illumination (master)",
+      "reduction_chain": [
+        65,
+        11
+      ],
+      "value": 11
+    },
+    "expression": {
+      "is_master": false,
+      "meaning": "Structure, discipline, foundation",
+      "reduction_chain": [
+        85,
+        13,
+        4
+      ],
+      "value": 4
+    },
+    "life_path": {
+      "is_master": false,
+      "meaning": "Power, abundance, achievement",
+      "reduction_chain": [
+        8
+      ],
+      "value": 8
+    },
+    "personality": {
+      "is_master": false,
+      "meaning": "Creativity, expression, joy",
+      "reduction_chain": [
+        57,
+        12,
+        3
+      ],
+      "value": 3
+    },
+    "soul_urge": {
+      "is_master": false,
+      "meaning": "Leadership, independence, pioneering",
+      "reduction_chain": [
+        28,
+        10,
+        1
+      ],
+      "value": 1
+    }
+  },
+  "witness_prompt": "Your Life Path 8 speaks of mastery over the material. Notice: does your power serve the whole, or only the self?",
+  "consciousness_level": 0,
+  "metadata": {
+    "calculation_time_ms": 0.0,
+    "backend": "native-rust",
+    "precision_achieved": "exact",
+    "cached": false,
+    "timestamp": "2025-01-01T00:00:00Z",
+    "engine_version": "3.0.0"
+  }
+}

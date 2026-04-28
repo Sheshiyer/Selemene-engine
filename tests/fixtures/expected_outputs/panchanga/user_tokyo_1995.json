@@ -1,0 +1,32 @@
+{
+  "engine_id": "panchanga",
+  "result": {
+    "julian_day": 2450054.90625,
+    "karana_index": 1,
+    "karana_name": "Balava",
+    "karana_value": 24.0,
+    "lunar_longitude": 6.324324155278116,
+    "nakshatra_index": 0,
+    "nakshatra_name": "Ashwini",
+    "nakshatra_value": 0.4743243116458587,
+    "solar_longitude": 227.0264791369631,
+    "tithi_index": 11,
+    "tithi_name": "Dwadashi (Shukla)",
+    "tithi_value": 11.608153751526249,
+    "vara_index": 0,
+    "vara_name": "Ravivara (Sunday)",
+    "yoga_index": 17,
+    "yoga_name": "Variyan",
+    "yoga_value": 17.50131024691809
+  },
+  "witness_prompt": "You were born under Tithi Dwadashi (Shukla) and Nakshatra Ashwini. The Tithi reflects the angle between Sun and Moon at your birth — a mirror of the dance between your conscious will and emotional nature. What pattern do you notice when your intentions and feelings are misaligned?",
+  "consciousness_level": 0,
+  "metadata": {
+    "calculation_time_ms": 0.0,
+    "backend": "native-rust",
+    "precision_achieved": "Standard",
+    "cached": false,
+    "timestamp": "2026-01-01T00:00:00Z",
+    "engine_version": "3.0.0"
+  }
+}

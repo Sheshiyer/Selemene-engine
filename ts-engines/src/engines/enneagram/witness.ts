@@ -44,7 +44,7 @@ const PATTERN_TEMPLATES = [
  * Body-centered inquiry templates
  */
 const BODY_TEMPLATES = [
-  'What happens in your body when {trigger} occurs?',
+  'What happens in your body when {trigger}?',
   'Where do you feel {emotion} most strongly in your body?',
   'What physical sensations accompany the {pattern} pattern?',
   'How does your breath change when {trigger} happens?',
