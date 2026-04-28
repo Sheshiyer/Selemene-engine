@@ -1,0 +1,32 @@
+{
+  "engine_id": "panchanga",
+  "result": {
+    "julian_day": 2447241.3333333335,
+    "karana_index": 5,
+    "karana_name": "Vanija",
+    "karana_value": 7.0,
+    "lunar_longitude": 13.885524054172883,
+    "nakshatra_index": 1,
+    "nakshatra_name": "Bharani",
+    "nakshatra_value": 1.0414143040629662,
+    "solar_longitude": 336.70876487113816,
+    "tithi_index": 3,
+    "tithi_name": "Chaturthi (Shukla)",
+    "tithi_value": 3.098063265252893,
+    "vara_index": 0,
+    "vara_name": "Ravivara (Sunday)",
+    "yoga_index": 26,
+    "yoga_name": "Vaidhriti",
+    "yoga_value": 26.294571669398326
+  },
+  "witness_prompt": "You were born under Tithi Chaturthi (Shukla) and Nakshatra Bharani. The Tithi reflects the angle between Sun and Moon at your birth — a mirror of the dance between your conscious will and emotional nature. What pattern do you notice when your intentions and feelings are misaligned?",
+  "consciousness_level": 0,
+  "metadata": {
+    "calculation_time_ms": 0.0,
+    "backend": "native-rust",
+    "precision_achieved": "Standard",
+    "cached": false,
+    "timestamp": "2026-01-01T00:00:00Z",
+    "engine_version": "3.0.0"
+  }
+}

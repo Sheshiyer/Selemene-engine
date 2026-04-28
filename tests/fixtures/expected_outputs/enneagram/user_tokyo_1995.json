@@ -1,0 +1,97 @@
+{
+  "engine_id": "enneagram",
+  "result": {
+    "mode": "lookup",
+    "typeAnalysis": {
+      "type": {
+        "number": 1,
+        "name": "The Reformer",
+        "coreFear": "Being corrupt, evil, or defective",
+        "coreDesire": "To be good, virtuous, and have integrity",
+        "coreWeakness": "Resentment\u2014repressed anger from feeling that things are never good enough",
+        "description": "Principled, purposeful, self-controlled, and perfectionistic. Ones have a strong sense of right and wrong and advocate for change. They fear being morally flawed and strive for integrity in all they do.",
+        "keyMotivations": [
+          "Striving to be right and to improve everything",
+          "Being consistent and self-disciplined",
+          "Justifying position and maintaining high standards",
+          "Avoiding criticism and blame"
+        ],
+        "healthyTraits": [
+          "Wise and discerning",
+          "Realistic and accepting",
+          "Noble and ethically heroic",
+          "Inspiring others to improve",
+          "Orderly without being rigid"
+        ],
+        "averageTraits": [
+          "Highly critical of self and others",
+          "Perfectionistic and detail-oriented",
+          "Time-conscious and organized",
+          "Suppressing emotions, especially anger",
+          "Moralizing and teaching others"
+        ],
+        "unhealthyTraits": [
+          "Rigid and inflexible",
+          "Self-righteous and punishing",
+          "Obsessive about imperfection",
+          "Severely depressed when ideals unmet",
+          "Condemning and intolerant"
+        ]
+      },
+      "wings": [
+        {
+          "number": 9,
+          "name": "The Peacemaker"
+        },
+        {
+          "number": 2,
+          "name": "The Helper"
+        }
+      ],
+      "integration": {
+        "type": 7,
+        "name": "The Enthusiast",
+        "description": "Ones access joy and spontaneity of healthy Sevens"
+      },
+      "disintegration": {
+        "type": 4,
+        "name": "The Individualist",
+        "description": "Ones become moody and irrational like unhealthy Fours"
+      },
+      "center": "gut",
+      "hornevianGroup": "compliant",
+      "harmonicGroup": "competency"
+    }
+  },
+  "witness_prompts": [
+    {
+      "prompt": "Where do you notice the pattern of being corrupt, evil, or defective arising in your life?",
+      "context": "Type 1 - The Reformer core fear",
+      "themes": [
+        "fear",
+        "pattern recognition",
+        "the reformer"
+      ]
+    },
+    {
+      "prompt": "Can you observe the improving pattern without trying to change it?",
+      "context": "Type 1 - Behavioral pattern",
+      "themes": [
+        "observation",
+        "non-judgment",
+        "awareness"
+      ]
+    },
+    {
+      "prompt": "What does this pattern protect you from?",
+      "context": "Open inquiry",
+      "themes": [
+        "self-inquiry",
+        "curiosity",
+        "compassion"
+      ]
+    }
+  ],
+  "calculated_at": "2024-01-15T14:30:00.000Z",
+  "processing_time_ms": 0
+}

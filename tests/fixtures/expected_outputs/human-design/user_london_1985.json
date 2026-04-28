@@ -1,0 +1,168 @@
+{
+  "engine_id": "human-design",
+  "result": {
+    "active_channels": [
+      "43-23",
+      "2-14",
+      "5-15",
+      "25-51",
+      "42-53"
+    ],
+    "authority": "Sacral",
+    "defined_centers": [
+      "Throat",
+      "Ajna",
+      "Root",
+      "Sacral",
+      "G",
+      "Heart"
+    ],
+    "definition": "Split",
+    "design_activations": {
+      "earth": {
+        "gate": 46,
+        "line": 3,
+        "longitude": 180.9463551287072
+      },
+      "jupiter": {
+        "gate": 19,
+        "line": 2,
+        "longitude": 309.09436119222966
+      },
+      "mars": {
+        "gate": 27,
+        "line": 3,
+        "longitude": 34.65017401269508
+      },
+      "mercury": {
+        "gate": 51,
+        "line": 4,
+        "longitude": 18.00118929769002
+      },
+      "moon": {
+        "gate": 25,
+        "line": 5,
+        "longitude": 2.366769109585375
+      },
+      "neptune": {
+        "gate": 10,
+        "line": 6,
+        "longitude": 273.55863704450013
+      },
+      "northnode": {
+        "gate": 23,
+        "line": 1,
+        "longitude": 49.09731877316313
+      },
+      "pluto": {
+        "gate": 28,
+        "line": 3,
+        "longitude": 214.22473964262733
+      },
+      "saturn": {
+        "gate": 14,
+        "line": 4,
+        "longitude": 237.95923499120448
+      },
+      "southnode": {
+        "gate": 43,
+        "line": 1,
+        "longitude": 229.09731877316312
+      },
+      "sun": {
+        "gate": 25,
+        "line": 3,
+        "longitude": 0.9463551287072124
+      },
+      "uranus": {
+        "gate": 26,
+        "line": 2,
+        "longitude": 257.9852229132509
+      },
+      "venus": {
+        "gate": 42,
+        "line": 1,
+        "longitude": 21.02661853208034
+      }
+    },
+    "hd_type": "Generator",
+    "personality_activations": {
+      "earth": {
+        "gate": 10,
+        "line": 1,
+        "longitude": 268.946567775829
+      },
+      "jupiter": {
+        "gate": 13,
+        "line": 4,
+        "longitude": 316.5864702074107
+      },
+      "mars": {
+        "gate": 52,
+        "line": 4,
+        "longitude": 97.2410320113591
+      },
+      "mercury": {
+        "gate": 39,
+        "line": 5,
+        "longitude": 103.51792654210321
+      },
+      "moon": {
+        "gate": 53,
+        "line": 6,
+        "longitude": 110.63497336038377
+      },
+      "neptune": {
+        "gate": 10,
+        "line": 5,
+        "longitude": 272.3334136751939
+      },
+      "northnode": {
+        "gate": 2,
+        "line": 5,
+        "longitude": 47.526482967156966
+      },
+      "pluto": {
+        "gate": 28,
+        "line": 1,
+        "longitude": 212.05773149109535
+      },
+      "saturn": {
+        "gate": 43,
+        "line": 4,
+        "longitude": 232.4411659599607
+      },
+      "southnode": {
+        "gate": 1,
+        "line": 5,
+        "longitude": 227.52648296715697
+      },
+      "sun": {
+        "gate": 15,
+        "line": 1,
+        "longitude": 88.94656777582901
+      },
+      "uranus": {
+        "gate": 5,
+        "line": 5,
+        "longitude": 255.43883841357507
+      },
+      "venus": {
+        "gate": 2,
+        "line": 1,
+        "longitude": 43.38916848817849
+      }
+    },
+    "profile": "1/3"
+  },
+  "witness_prompt": "What does it feel like in your body when you wait to respond to life's invitations rather than initiating?",
+  "consciousness_level": 1,
+  "metadata": {
+    "calculation_time_ms": 0.0,
+    "backend": "swiss-ephemeris",
+    "precision_achieved": "Standard",
+    "cached": false,
+    "timestamp": "2025-01-01T00:00:00Z",
+    "engine_version": "3.0.0"
+  }
+}
