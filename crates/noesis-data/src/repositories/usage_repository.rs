@@ -1,3 +1,4 @@
+use chrono::{Datelike, NaiveDate, TimeZone, Utc};
 use sqlx::{Error, PgPool};
 use uuid::Uuid;
 
@@ -40,6 +41,17 @@ pub struct AdminUsageDailyPoint {
 pub struct AdminUsageTierDistribution {
     pub tier: String,
     pub request_count: i64,
+}
+
+pub struct UsageWindowSummary {
+    pub total: i64,
+    pub success: i64,
+    pub failure: i64,
+}
+
+pub struct UsageDateRange {
+    pub start: chrono::DateTime<Utc>,
+    pub end: chrono::DateTime<Utc>,
 }
 
 impl UsageRepository {
@@ -99,6 +111,147 @@ impl UsageRepository {
             monthly_total: row.3,
             monthly_success: row.4,
             monthly_failure: row.5,
+        })
+    }
+
+    /// Get usage totals for one UTC day.
+    pub async fn get_daily_usage(
+        &self,
+        user_id: Uuid,
+        date: NaiveDate,
+    ) -> Result<UsageWindowSummary, Error> {
+        let start = Utc
+            .with_ymd_and_hms(date.year(), date.month(), date.day(), 0, 0, 0)
+            .single()
+            .expect("valid day start");
+        let end = start + chrono::Duration::days(1);
+
+        self.get_window_usage(user_id, UsageDateRange { start, end }).await
+    }
+
+    /// Get usage totals for one UTC month (based on the provided date's year/month).
+    pub async fn get_monthly_summary(
+        &self,
+        user_id: Uuid,
+        month: NaiveDate,
+    ) -> Result<UsageWindowSummary, Error> {
+        let start = Utc
+            .with_ymd_and_hms(month.year(), month.month(), 1, 0, 0, 0)
+            .single()
+            .expect("valid month start");
+
+        let (end_year, end_month) = if month.month() == 12 {
+            (month.year() + 1, 1)
+        } else {
+            (month.year(), month.month() + 1)
+        };
+
+        let end = Utc
+            .with_ymd_and_hms(end_year, end_month, 1, 0, 0, 0)
+            .single()
+            .expect("valid month end");
+
+        self.get_window_usage(user_id, UsageDateRange { start, end }).await
+    }
+
+    /// Get per-engine usage breakdown for a user in a fixed date range.
+    pub async fn get_engine_breakdown(
+        &self,
+        user_id: Uuid,
+        date_range: UsageDateRange,
+    ) -> Result<Vec<UsageEngineBreakdown>, Error> {
+        let rows = sqlx::query_as::<_, (String, i64)>(
+            r#"
+            SELECT
+                COALESCE(NULLIF(engine_id, ''), 'unknown') AS engine_id,
+                COUNT(*)::BIGINT AS request_count
+            FROM usage_logs
+            WHERE user_id = $1
+              AND created_at >= $2
+              AND created_at < $3
+            GROUP BY COALESCE(NULLIF(engine_id, ''), 'unknown')
+            ORDER BY request_count DESC, engine_id ASC
+            "#,
+        )
+        .bind(user_id)
+        .bind(date_range.start)
+        .bind(date_range.end)
+        .fetch_all(&self.pool)
+        .await?;
+
+        Ok(rows
+            .into_iter()
+            .map(|(engine_id, request_count)| UsageEngineBreakdown {
+                engine_id,
+                request_count,
+            })
+            .collect())
+    }
+
+    /// Get top users by request count in a fixed date range.
+    pub async fn get_top_users(
+        &self,
+        limit: i64,
+        date_range: UsageDateRange,
+    ) -> Result<Vec<AdminUsageTopUser>, Error> {
+        let rows = sqlx::query_as::<_, (Uuid, String, i64)>(
+            r#"
+            SELECT
+                l.user_id,
+                u.email,
+                COUNT(*)::BIGINT AS request_count
+            FROM usage_logs l
+            INNER JOIN users u ON u.id = l.user_id
+            WHERE l.created_at >= $1
+              AND l.created_at < $2
+            GROUP BY l.user_id, u.email
+            ORDER BY request_count DESC, u.email ASC
+            LIMIT $3
+            "#,
+        )
+        .bind(date_range.start)
+        .bind(date_range.end)
+        .bind(limit.max(1))
+        .fetch_all(&self.pool)
+        .await?;
+
+        Ok(rows
+            .into_iter()
+            .map(|(user_id, user_email, request_count)| AdminUsageTopUser {
+                user_id,
+                user_email,
+                request_count,
+            })
+            .collect())
+    }
+
+    async fn get_window_usage(
+        &self,
+        user_id: Uuid,
+        date_range: UsageDateRange,
+    ) -> Result<UsageWindowSummary, Error> {
+        let row = sqlx::query_as::<_, (i64, i64, i64)>(
+            r#"
+            SELECT
+                COUNT(*)::BIGINT AS total,
+                COUNT(*) FILTER (WHERE status = 'success')::BIGINT AS success,
+                COUNT(*) FILTER (WHERE status = 'failure')::BIGINT AS failure
+            FROM usage_logs
+            WHERE user_id = $1
+              AND created_at >= $2
+              AND created_at < $3
+            "#,
+        )
+        .bind(user_id)
+        .bind(date_range.start)
+        .bind(date_range.end)
+        .fetch_one(&self.pool)
+        .await?;
+
+        Ok(UsageWindowSummary {
+            total: row.0,
+            success: row.1,
+            failure: row.2,
         })
     }
 
@@ -283,5 +436,371 @@ impl UsageRepository {
                 request_count,
             })
             .collect())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use sqlx::PgPool;
+
+    async fn seed_user(pool: &PgPool, id: Uuid, email: &str, tier: &str) -> Result<(), Error> {
+        sqlx::query(
+            r#"
+            INSERT INTO users (id, email, password_hash, full_name, tier, consciousness_level)
+            VALUES ($1, $2, $3, $4, $5, $6)
+            "#,
+        )
+        .bind(id)
+        .bind(email)
+        .bind("test_hash")
+        .bind("Test User")
+        .bind(tier)
+        .bind(1_i32)
+        .execute(pool)
+        .await?;
+
+        Ok(())
+    }
+
+    async fn seed_usage(
+        pool: &PgPool,
+        user_id: Uuid,
+        engine_id: Option<&str>,
+        status: &str,
+        created_at: chrono::DateTime<Utc>,
+    ) -> Result<(), Error> {
+        sqlx::query(
+            r#"
+            INSERT INTO usage_logs (user_id, engine_id, workflow_id, status, duration_ms, created_at)
+            VALUES ($1, $2, NULL, $3, 120, $4)
+            "#,
+        )
+        .bind(user_id)
+        .bind(engine_id)
+        .bind(status)
+        .bind(created_at)
+        .execute(pool)
+        .await?;
+
+        Ok(())
+    }
+
+    #[sqlx::test(migrations = "../../migrations")]
+    #[ignore = "requires SQLx test database"]
+    async fn get_daily_usage_returns_expected_counts(pool: PgPool) -> Result<(), Error> {
+        let repo = UsageRepository::new(pool.clone());
+        let user_id = Uuid::new_v4();
+        let other_user_id = Uuid::new_v4();
+
+        seed_user(&pool, user_id, "daily@example.com", "free").await?;
+        seed_user(&pool, other_user_id, "other-daily@example.com", "free").await?;
+
+        seed_usage(
+            &pool,
+            user_id,
+            Some("panchanga"),
+            "success",
+            Utc.with_ymd_and_hms(2026, 4, 15, 1, 0, 0)
+                .single()
+                .expect("valid ts"),
+        )
+        .await?;
+        seed_usage(
+            &pool,
+            user_id,
+            Some("panchanga"),
+            "failure",
+            Utc.with_ymd_and_hms(2026, 4, 15, 2, 0, 0)
+                .single()
+                .expect("valid ts"),
+        )
+        .await?;
+        seed_usage(
+            &pool,
+            user_id,
+            Some("biorhythm"),
+            "success",
+            Utc.with_ymd_and_hms(2026, 4, 15, 3, 0, 0)
+                .single()
+                .expect("valid ts"),
+        )
+        .await?;
+
+        // Outside requested day
+        seed_usage(
+            &pool,
+            user_id,
+            Some("biorhythm"),
+            "success",
+            Utc.with_ymd_and_hms(2026, 4, 16, 3, 0, 0)
+                .single()
+                .expect("valid ts"),
+        )
+        .await?;
+
+        // Different user on same day
+        seed_usage(
+            &pool,
+            other_user_id,
+            Some("panchanga"),
+            "success",
+            Utc.with_ymd_and_hms(2026, 4, 15, 4, 0, 0)
+                .single()
+                .expect("valid ts"),
+        )
+        .await?;
+
+        let summary = repo
+            .get_daily_usage(
+                user_id,
+                NaiveDate::from_ymd_opt(2026, 4, 15).expect("valid date"),
+            )
+            .await?;
+
+        assert_eq!(summary.total, 3);
+        assert_eq!(summary.success, 2);
+        assert_eq!(summary.failure, 1);
+
+        Ok(())
+    }
+
+    #[sqlx::test(migrations = "../../migrations")]
+    #[ignore = "requires SQLx test database"]
+    async fn get_monthly_summary_returns_expected_counts(pool: PgPool) -> Result<(), Error> {
+        let repo = UsageRepository::new(pool.clone());
+        let user_id = Uuid::new_v4();
+
+        seed_user(&pool, user_id, "monthly@example.com", "pro").await?;
+
+        seed_usage(
+            &pool,
+            user_id,
+            Some("panchanga"),
+            "success",
+            Utc.with_ymd_and_hms(2026, 4, 1, 0, 10, 0)
+                .single()
+                .expect("valid ts"),
+        )
+        .await?;
+        seed_usage(
+            &pool,
+            user_id,
+            Some("biorhythm"),
+            "failure",
+            Utc.with_ymd_and_hms(2026, 4, 30, 23, 59, 0)
+                .single()
+                .expect("valid ts"),
+        )
+        .await?;
+
+        // Outside April
+        seed_usage(
+            &pool,
+            user_id,
+            Some("panchanga"),
+            "success",
+            Utc.with_ymd_and_hms(2026, 3, 31, 23, 59, 0)
+                .single()
+                .expect("valid ts"),
+        )
+        .await?;
+
+        let summary = repo
+            .get_monthly_summary(
+                user_id,
+                NaiveDate::from_ymd_opt(2026, 4, 1).expect("valid date"),
+            )
+            .await?;
+
+        assert_eq!(summary.total, 2);
+        assert_eq!(summary.success, 1);
+        assert_eq!(summary.failure, 1);
+
+        Ok(())
+    }
+
+    #[sqlx::test(migrations = "../../migrations")]
+    #[ignore = "requires SQLx test database"]
+    async fn get_engine_breakdown_returns_expected_rows(pool: PgPool) -> Result<(), Error> {
+        let repo = UsageRepository::new(pool.clone());
+        let user_id = Uuid::new_v4();
+        let other_user_id = Uuid::new_v4();
+
+        seed_user(&pool, user_id, "breakdown@example.com", "free").await?;
+        seed_user(&pool, other_user_id, "breakdown-other@example.com", "free").await?;
+
+        seed_usage(
+            &pool,
+            user_id,
+            Some("panchanga"),
+            "success",
+            Utc.with_ymd_and_hms(2026, 4, 10, 9, 0, 0)
+                .single()
+                .expect("valid ts"),
+        )
+        .await?;
+        seed_usage(
+            &pool,
+            user_id,
+            Some("panchanga"),
+            "success",
+            Utc.with_ymd_and_hms(2026, 4, 11, 9, 0, 0)
+                .single()
+                .expect("valid ts"),
+        )
+        .await?;
+        seed_usage(
+            &pool,
+            user_id,
+            Some("biorhythm"),
+            "success",
+            Utc.with_ymd_and_hms(2026, 4, 12, 9, 0, 0)
+                .single()
+                .expect("valid ts"),
+        )
+        .await?;
+        seed_usage(
+            &pool,
+            user_id,
+            None,
+            "success",
+            Utc.with_ymd_and_hms(2026, 4, 13, 9, 0, 0)
+                .single()
+                .expect("valid ts"),
+        )
+        .await?;
+
+        // Different user and out-of-range rows must not be included
+        seed_usage(
+            &pool,
+            other_user_id,
+            Some("panchanga"),
+            "success",
+            Utc.with_ymd_and_hms(2026, 4, 14, 9, 0, 0)
+                .single()
+                .expect("valid ts"),
+        )
+        .await?;
+        seed_usage(
+            &pool,
+            user_id,
+            Some("panchanga"),
+            "success",
+            Utc.with_ymd_and_hms(2026, 5, 1, 0, 0, 0)
+                .single()
+                .expect("valid ts"),
+        )
+        .await?;
+
+        let rows = repo
+            .get_engine_breakdown(
+                user_id,
+                UsageDateRange {
+                    start: Utc
+                        .with_ymd_and_hms(2026, 4, 1, 0, 0, 0)
+                        .single()
+                        .expect("valid start"),
+                    end: Utc
+                        .with_ymd_and_hms(2026, 5, 1, 0, 0, 0)
+                        .single()
+                        .expect("valid end"),
+                },
+            )
+            .await?;
+
+        assert_eq!(rows.len(), 3);
+        assert_eq!(rows[0].engine_id, "panchanga");
+        assert_eq!(rows[0].request_count, 2);
+        assert_eq!(rows[1].engine_id, "biorhythm");
+        assert_eq!(rows[1].request_count, 1);
+        assert_eq!(rows[2].engine_id, "unknown");
+        assert_eq!(rows[2].request_count, 1);
+
+        Ok(())
+    }
+
+    #[sqlx::test(migrations = "../../migrations")]
+    #[ignore = "requires SQLx test database"]
+    async fn get_top_users_returns_ranked_rows(pool: PgPool) -> Result<(), Error> {
+        let repo = UsageRepository::new(pool.clone());
+        let user_a = Uuid::new_v4();
+        let user_b = Uuid::new_v4();
+        let user_c = Uuid::new_v4();
+
+        seed_user(&pool, user_a, "a-top@example.com", "pro").await?;
+        seed_user(&pool, user_b, "b-top@example.com", "free").await?;
+        seed_user(&pool, user_c, "c-top@example.com", "free").await?;
+
+        for _ in 0..5 {
+            seed_usage(
+                &pool,
+                user_a,
+                Some("panchanga"),
+                "success",
+                Utc.with_ymd_and_hms(2026, 4, 20, 8, 0, 0)
+                    .single()
+                    .expect("valid ts"),
+            )
+            .await?;
+        }
+        for _ in 0..3 {
+            seed_usage(
+                &pool,
+                user_b,
+                Some("biorhythm"),
+                "success",
+                Utc.with_ymd_and_hms(2026, 4, 20, 8, 0, 0)
+                    .single()
+                    .expect("valid ts"),
+            )
+            .await?;
+        }
+        seed_usage(
+            &pool,
+            user_c,
+            Some("human-design"),
+            "success",
+            Utc.with_ymd_and_hms(2026, 4, 20, 8, 0, 0)
+                .single()
+                .expect("valid ts"),
+        )
+        .await?;
+
+        // Out-of-range usage should not affect results.
+        seed_usage(
+            &pool,
+            user_c,
+            Some("human-design"),
+            "success",
+            Utc.with_ymd_and_hms(2026, 5, 2, 8, 0, 0)
+                .single()
+                .expect("valid ts"),
+        )
+        .await?;
+
+        let top = repo
+            .get_top_users(
+                2,
+                UsageDateRange {
+                    start: Utc
+                        .with_ymd_and_hms(2026, 4, 1, 0, 0, 0)
+                        .single()
+                        .expect("valid start"),
+                    end: Utc
+                        .with_ymd_and_hms(2026, 5, 1, 0, 0, 0)
+                        .single()
+                        .expect("valid end"),
+                },
+            )
+            .await?;
+
+        assert_eq!(top.len(), 2);
+        assert_eq!(top[0].user_id, user_a);
+        assert_eq!(top[0].request_count, 5);
+        assert_eq!(top[1].user_id, user_b);
+        assert_eq!(top[1].request_count, 3);
+
+        Ok(())
     }
 }
