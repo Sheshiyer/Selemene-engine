@@ -66,9 +66,6 @@ pub use engine_biofield::BiofieldEngine;
 pub use engine_biofield_capture::BiofieldCaptureEngine;
 pub use engine_human_design::ephemeris::{EphemerisCalculator, HDPlanet, PlanetPosition};
 
-// Re-export ephemeris types so noesis-api does not need a direct engine-human-design dependency
-pub use engine_human_design::ephemeris::{EphemerisCalculator, HDPlanet, PlanetPosition};
-
 use chrono::Utc;
 use futures::future::join_all;
 use std::collections::HashMap;
@@ -400,11 +397,7 @@ impl WorkflowOrchestrator {
         let engine_count = workflow.engine_ids.len();
         tracing::Span::current().record("engine_count", engine_count);
 
-        info!(
-            workflow_id,
-            engine_count,
-            "Starting workflow execution"
-        );
+        info!(workflow_id, engine_count, "Starting workflow execution");
 
         let start = Instant::now();
         let registry = &self.registry;
@@ -517,7 +510,12 @@ impl WorkflowOrchestrator {
                 id: "daily-practice".into(),
                 name: "Daily Practice".into(),
                 description: "Daily rhythm and awareness tools".into(),
-                engine_ids: vec!["panchanga".into(), "vedic-clock".into(), "biorhythm".into()],
+                engine_ids: vec![
+                    "panchanga".into(),
+                    "vedic-clock".into(),
+                    "biorhythm".into(),
+                    "transits".into(),
+                ],
             },
             WorkflowDefinition {
                 id: "decision-support".into(),

@@ -2,7 +2,71 @@
 
 All notable changes to the Tryambakam Noesis Engine project.
 
-## [3.0.1] - 2026-02-24
+## [3.1.0] - 2026-04-30
+
+### Added
+
+**API Input Validation Hardening (#462)**
+- `validate_engine_input()` helper called at the API boundary in both `calculate_handler` and `execute_workflow_by_id` before any engine compute
+- Validates `birth_data` coordinate bounds (latitude ∈ [-90, 90], longitude ∈ [-180, 180]) → 422 on violation
+- Caps `options` map at 64 keys to prevent unbounded memory usage → 422 on violation
+- Uses the standard `ErrorMapper::response` path so errors carry `trace_id`
+
+**Security Audits (#459, #460)**
+- `cargo audit` clean: 0 vulnerabilities; 6 unmaintained-crate warnings are pre-existing and noted
+- JWT implementation confirmed OWASP-compliant: HS256 enforced, required claims `exp`/`iat`/`sub` validated, 24-hour expiry, no algorithm=none path
+
+**API Migration Guide (#472)**
+- New doc: `docs/api/migration-v2-to-v3.md` — covers base URL, auth changes, `EngineInput` schema, engine/workflow renames, response envelope changes, error format, and new endpoints
+
+### Changed
+- All crate versions bumped from `3.0.0` → `3.1.0` (#474)
+- `health` endpoint now reports `version: "3.1.0"`
+
+---
+
+## [2.2.0] - 2026-04-30
+
+### Added
+
+**Biorhythm — Secondary Cycles & Compatibility**
+- `spiritual` (53-day) and `aesthetic` (43-day) cycles now fully integrated as `CycleResult` fields in all engine outputs (#371, #372)
+- `spiritual` cycle included in critical-day detection across 6 cycles (#372)
+- 7-day `forecast` array includes `aesthetic` and `spiritual` percentage values for every day
+- `partner_birth_date` option: pass a partner's birth date in `EngineInput.options` to receive a `compatibility` block with per-cycle scores (physical, emotional, intellectual, intuitive) and an equal-weighted `overall` score (#394)
+
+**Daily Practice Workflow**
+- `transits` engine added as the 4th participant in the `daily-practice` workflow (#416)
+- `DailyPracticeSynthesizer` now references aesthetic and spiritual cycle levels in the synthesis summary when they are at notable values (> 80% or < 20%) (#393)
+- Secondary rhythm signal included in synthesis summary text
+
+**Full Spectrum Workflow**
+- `partner_birth_date` option forwarded transparently through full-spectrum execution to the biorhythm engine (#394)
+
+### Tests
+- 14 new biorhythm validation tests covering:
+  - Aesthetic cycle (43-day) at birth, quarter-period, half-period, and full-period (#407)
+  - Spiritual cycle (53-day) at birth and quarter-period (#407)
+  - Percentage mapping at known sine values (#407)
+  - Compatibility cosine formula, same-birthday, full-period, overall mean, and range (#408)
+  - `ConsciousnessEngine` contract: `engine_id`, `required_phase=0`, `validate` accepts own output (#410)
+- 6 new E2E integration tests in `noesis-integration`:
+  - `daily-practice` biorhythm output with all 4 engines (#416)
+  - `full-spectrum` biorhythm output fields and compatibility block (#417)
+
+### Benchmarks
+- New criterion benchmark groups added to `engine-biorhythm`:
+  - `biorhythm_7day_forecast` — full calculate with 7-day forecast (target: < 1 ms) (#409)
+  - `biorhythm_compatibility` — two-person compatibility calculation (target: < 500 µs) (#409)
+
+### Documentation
+- `docs/portal/docs/engines/biorhythm.md` updated with:
+  - `options` table covering `forecast_days` and `partner_birth_date` (#395)
+  - Full response example with secondary cycles and compatibility block (#395)
+  - Per-field descriptions for primary cycles, secondary cycles, composite scores, and compatibility (#395)
+  - Compatibility score formula and interpretation guide (#395)
+
+
 
 ### Added
 - Consciousness level auto-promotion docs with reading-count thresholds and XP accrual notes in [authentication.md](docs/api/authentication.md).

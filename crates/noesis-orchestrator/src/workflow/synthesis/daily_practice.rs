@@ -462,6 +462,14 @@ fn generate_daily_summary(
             "Your biorhythm composite is {} ({:.1})",
             state, bio.composite
         ));
+
+        let notable_secondary = bio.notable_secondary_cycles();
+        if !notable_secondary.is_empty() {
+            parts.push(format!(
+                "Secondary rhythm signal: {}",
+                notable_secondary.join(", ")
+            ));
+        }
     }
 
     // Supported activities
@@ -580,7 +588,9 @@ mod tests {
                 json!({
                     "physical": 0.7,
                     "emotional": 0.5,
-                    "intellectual": 0.3
+                    "intellectual": 0.3,
+                    "aesthetic": { "percentage": 85.0 },
+                    "spiritual": { "percentage": 15.0 }
                 }),
             ),
         );
@@ -600,6 +610,10 @@ mod tests {
 
         // Summary should not be empty
         assert!(!synthesis.summary.is_empty());
+        assert!(
+            synthesis.summary.contains("Secondary rhythm signal"),
+            "summary should mention notable secondary rhythm cycles"
+        );
     }
 
     #[test]
@@ -634,6 +648,8 @@ mod tests {
                 phase: "High".to_string(),
                 description: String::new(),
             },
+            aesthetic_percentage: None,
+            spiritual_percentage: None,
             composite: 0.17,
         });
 

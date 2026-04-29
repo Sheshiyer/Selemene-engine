@@ -203,7 +203,9 @@ macro_rules! panchanga_snapshot_test {
             );
 
             // Value ranges
-            let tithi_val = got["tithi_value"].as_f64().expect("tithi_value must be f64");
+            let tithi_val = got["tithi_value"]
+                .as_f64()
+                .expect("tithi_value must be f64");
             assert!(
                 (0.0..30.0).contains(&tithi_val),
                 "[{}] tithi_value {} out of range 0..30",
@@ -403,9 +405,9 @@ macro_rules! hd_snapshot_test {
 
             // All gates must be 1..=64, all lines 1..=6, all longitudes 0..360
             for (planet, act) in pers.iter().chain(des.iter()) {
-                let gate = act["gate"].as_u64().unwrap_or_else(|| {
-                    panic!("[{}] activation {} missing gate", $case_id, planet)
-                });
+                let gate = act["gate"]
+                    .as_u64()
+                    .unwrap_or_else(|| panic!("[{}] activation {} missing gate", $case_id, planet));
                 assert!(
                     gate >= 1 && gate <= 64,
                     "[{}] {} gate {} out of range 1..=64",
@@ -414,9 +416,9 @@ macro_rules! hd_snapshot_test {
                     gate
                 );
 
-                let line = act["line"].as_u64().unwrap_or_else(|| {
-                    panic!("[{}] activation {} missing line", $case_id, planet)
-                });
+                let line = act["line"]
+                    .as_u64()
+                    .unwrap_or_else(|| panic!("[{}] activation {} missing line", $case_id, planet));
                 assert!(
                     line >= 1 && line <= 6,
                     "[{}] {} line {} out of range 1..=6",
@@ -439,10 +441,9 @@ macro_rules! hd_snapshot_test {
 
             // Earth must be ~180° opposite Sun in both personality and design activations
             for (activation_set, label) in [(&pers, "personality"), (&des, "design")] {
-                if let (Some(sun), Some(earth)) = (
-                    activation_set.get("sun"),
-                    activation_set.get("earth"),
-                ) {
+                if let (Some(sun), Some(earth)) =
+                    (activation_set.get("sun"), activation_set.get("earth"))
+                {
                     let sun_lon = sun["longitude"]
                         .as_f64()
                         .expect("sun longitude must be f64");
@@ -467,11 +468,7 @@ macro_rules! hd_snapshot_test {
             assert!(
                 matches!(
                     hd_type,
-                    "Generator"
-                        | "ManifestingGenerator"
-                        | "Projector"
-                        | "Manifestor"
-                        | "Reflector"
+                    "Generator" | "ManifestingGenerator" | "Projector" | "Manifestor" | "Reflector"
                 ),
                 "[{}] invalid hd_type: {}",
                 $case_id,
@@ -500,7 +497,14 @@ macro_rules! hd_snapshot_test {
 
             // Defined centers must be a subset of the 9 valid center names
             let valid_centers = [
-                "Head", "Ajna", "Throat", "G", "Heart", "Spleen", "SolarPlexus", "Sacral",
+                "Head",
+                "Ajna",
+                "Throat",
+                "G",
+                "Heart",
+                "Spleen",
+                "SolarPlexus",
+                "Sacral",
                 "Root",
             ];
             if let Some(centers) = got["defined_centers"].as_array() {

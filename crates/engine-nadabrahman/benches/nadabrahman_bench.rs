@@ -8,8 +8,10 @@
 use chrono::Utc;
 use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion};
 use engine_nadabrahman::{
-    data::{get_chakra_frequency, get_prahar_ragas, get_raga, get_ragas_for_dosha,
-           get_ragas_for_rasa, raga_db},
+    data::{
+        get_chakra_frequency, get_prahar_ragas, get_raga, get_ragas_for_dosha, get_ragas_for_rasa,
+        raga_db,
+    },
     ConsciousnessEngine, EngineInput, NadaBrahmanEngine,
 };
 use noesis_core::Precision;
@@ -93,11 +95,9 @@ fn bench_data_lookups(c: &mut Criterion) {
 
     // Single raga lookup by number
     for number in [1u32, 29, 36, 64, 72] {
-        group.bench_with_input(
-            BenchmarkId::new("get_raga", number),
-            &number,
-            |b, &n| b.iter(|| black_box(get_raga(black_box(n)))),
-        );
+        group.bench_with_input(BenchmarkId::new("get_raga", number), &number, |b, &n| {
+            b.iter(|| black_box(get_raga(black_box(n))))
+        });
     }
 
     // Prahar (time-of-day) raga recommendations for all 8 prahars
@@ -120,15 +120,21 @@ fn bench_data_lookups(c: &mut Criterion) {
 
     // Rasa-based recommendations for common rasas
     for rasa in ["shanta", "shringara", "karuna", "vira"] {
-        group.bench_with_input(
-            BenchmarkId::new("ragas_for_rasa", rasa),
-            rasa,
-            |b, rasa| b.iter(|| black_box(get_ragas_for_rasa(rasa))),
-        );
+        group.bench_with_input(BenchmarkId::new("ragas_for_rasa", rasa), rasa, |b, rasa| {
+            b.iter(|| black_box(get_ragas_for_rasa(rasa)))
+        });
     }
 
     // Chakra frequency lookup for all 7 chakras
-    for chakra in ["root", "sacral", "solar_plexus", "heart", "throat", "third_eye", "crown"] {
+    for chakra in [
+        "root",
+        "sacral",
+        "solar_plexus",
+        "heart",
+        "throat",
+        "third_eye",
+        "crown",
+    ] {
         group.bench_with_input(
             BenchmarkId::new("chakra_frequency", chakra),
             chakra,

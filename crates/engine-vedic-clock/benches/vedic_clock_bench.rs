@@ -7,10 +7,9 @@
 use chrono::{Duration, TimeZone, Utc};
 use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion};
 use engine_vedic_clock::{
-    dosha_times, get_current_organ, get_dosha_for_hour, get_local_hour,
-    get_temporal_recommendation, generate_witness_prompt, minutes_until_next_transition,
-    organ_clock, synthesize_organ_dosha,
-    ConsciousnessEngine, EngineInput, VedicClockEngine,
+    dosha_times, generate_witness_prompt, get_current_organ, get_dosha_for_hour, get_local_hour,
+    get_temporal_recommendation, minutes_until_next_transition, organ_clock,
+    synthesize_organ_dosha, ConsciousnessEngine, EngineInput, VedicClockEngine,
 };
 use noesis_core::Precision;
 use std::collections::HashMap;
@@ -57,9 +56,7 @@ fn bench_get_current_organ(c: &mut Criterion) {
 fn bench_dosha_calculations(c: &mut Criterion) {
     let mut group = c.benchmark_group("vedic_clock_core");
 
-    group.bench_function("dosha_times_all", |b| {
-        b.iter(|| black_box(dosha_times()))
-    });
+    group.bench_function("dosha_times_all", |b| b.iter(|| black_box(dosha_times())));
 
     group.bench_function("get_dosha_for_hour_noon", |b| {
         b.iter(|| black_box(get_dosha_for_hour(black_box(12))))
@@ -222,7 +219,9 @@ fn bench_batch_timezone_recommendations(c: &mut Criterion) {
 
     // Parameterised by number of timezones
     for n in [4usize, 8, 16] {
-        let offsets_n: Vec<i32> = (0..n as i32).map(|i| i * 60 - (n as i32 / 2) * 60).collect();
+        let offsets_n: Vec<i32> = (0..n as i32)
+            .map(|i| i * 60 - (n as i32 / 2) * 60)
+            .collect();
         group.bench_with_input(
             BenchmarkId::new("timezone_recommendations", n),
             &offsets_n,
@@ -231,12 +230,7 @@ fn bench_batch_timezone_recommendations(c: &mut Criterion) {
                     let results: Vec<_> = offsets
                         .iter()
                         .map(|&tz| {
-                            get_temporal_recommendation(
-                                black_box(dt),
-                                black_box(tz),
-                                None,
-                                None,
-                            )
+                            get_temporal_recommendation(black_box(dt), black_box(tz), None, None)
                         })
                         .collect();
                     black_box(results)
