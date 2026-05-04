@@ -1,4 +1,5 @@
 import type { PIPSettings } from "./types";
+import type { MediaPipeMask } from "./useMediaPipe";
 
 // ─── Vertex shader ────────────────────────────────────────────────────────────
 const VERT_SRC = `#version 300 es
@@ -14,6 +15,8 @@ const FRAG_SRC = `#version 300 es
 precision highp float;
 
 uniform sampler2D u_video;
+uniform sampler2D u_mask;      // MediaPipe selfie segmentation confidence mask
+uniform float u_maskStrength;  // 0 = mask off, 1 = full mask gating
 uniform float u_time;
 uniform float u_noiseScale;
 uniform float u_noiseSpeed;
@@ -85,11 +88,16 @@ void main() {
   float gate = smoothstep(u_threshold - 0.1, u_threshold + 0.1, n);
   vec3  pip  = biofieldPalette(n);
 
-  fragColor = vec4(mix(video.rgb, pip, u_intensity * gate), 1.0);
+  // Segmentation mask: confidence value is in the red channel.
+  // u_maskStrength = 0 → ignore mask, 1 → only show biofield on person pixels.
+  float personConf = texture(u_mask, v_texCoord).r;
+  float maskGate   = mix(1.0, personConf, u_maskStrength);
+
+  fragColor = vec4(mix(video.rgb, pip, u_intensity * gate * maskGate), 1.0);
 }`;
 
 const UNIFORM_NAMES = [
-  "u_video", "u_time", "u_noiseScale", "u_noiseSpeed",
+  "u_video", "u_mask", "u_maskStrength", "u_time", "u_noiseScale", "u_noiseSpeed",
   "u_layerCount", "u_intensity", "u_colorShift", "u_threshold",
 ] as const;
 
@@ -99,6 +107,7 @@ export class PIPRenderer {
   private gl: WebGL2RenderingContext | null = null;
   private program: WebGLProgram | null = null;
   private videoTexture: WebGLTexture | null = null;
+  private maskTexture: WebGLTexture | null = null;
   private vao: WebGLVertexArrayObject | null = null;
   private uniforms: Partial<Record<UniformName, WebGLUniformLocation | null>> = {};
 
@@ -146,6 +155,18 @@ export class PIPRenderer {
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
     this.videoTexture = tex;
 
+    // Mask texture — updated each frame from MediaPipe confidence mask.
+    const maskTex = gl.createTexture();
+    if (!maskTex) return false;
+    gl.bindTexture(gl.TEXTURE_2D, maskTex);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    // Seed a 1×1 white pixel so the shader has a valid sampler before any mask arrives.
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.R32F, 1, 1, 0, gl.RED, gl.FLOAT, new Float32Array([1]));
+    this.maskTexture = maskTex;
+
     for (const name of UNIFORM_NAMES) {
       this.uniforms[name] = gl.getUniformLocation(prog, name);
     }
@@ -153,7 +174,7 @@ export class PIPRenderer {
     return true;
   }
 
-  render(video: HTMLVideoElement, timeMs: number, s: PIPSettings): void {
+  render(video: HTMLVideoElement, timeMs: number, s: PIPSettings, mask?: MediaPipeMask | null): void {
     const gl = this.gl;
     if (!gl || !this.program || !this.vao) return;
 
@@ -172,12 +193,29 @@ export class PIPRenderer {
       gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, video);
     }
 
+    // Upload segmentation mask when available (single-channel float R32F).
+    const maskStrength = mask ? 1.0 : 0.0;
+    if (mask) {
+      gl.bindTexture(gl.TEXTURE_2D, this.maskTexture);
+      gl.texImage2D(
+        gl.TEXTURE_2D, 0, gl.R32F,
+        mask.width, mask.height, 0,
+        gl.RED, gl.FLOAT, mask.data,
+      );
+    }
+
     gl.useProgram(this.program);
     gl.bindVertexArray(this.vao);
+
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, this.videoTexture);
 
+    gl.activeTexture(gl.TEXTURE1);
+    gl.bindTexture(gl.TEXTURE_2D, this.maskTexture);
+
     gl.uniform1i(this.uniforms.u_video ?? null, 0);
+    gl.uniform1i(this.uniforms.u_mask ?? null, 1);
+    gl.uniform1f(this.uniforms.u_maskStrength ?? null, maskStrength);
     gl.uniform1f(this.uniforms.u_time ?? null, timeMs / 1000);
     gl.uniform1f(this.uniforms.u_noiseScale ?? null, s.noiseScale);
     gl.uniform1f(this.uniforms.u_noiseSpeed ?? null, s.noiseSpeed);
@@ -194,6 +232,7 @@ export class PIPRenderer {
     const gl = this.gl;
     if (!gl) return;
     if (this.videoTexture) gl.deleteTexture(this.videoTexture);
+    if (this.maskTexture)  gl.deleteTexture(this.maskTexture);
     if (this.program)      gl.deleteProgram(this.program);
     if (this.vao)          gl.deleteVertexArray(this.vao);
     this.gl = null;
