@@ -353,8 +353,8 @@ impl ConsciousnessEngine for BiorhythmEngine {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use super::calculator::{cycle_value, is_critical_day, to_percentage, PHYSICAL_PERIOD};
+    use super::*;
     use chrono::{DateTime, NaiveDate, TimeZone, Utc};
     use noesis_core::{BirthData, Precision};
     use std::collections::HashMap;
@@ -539,11 +539,19 @@ mod tests {
     fn test_spiritual_cycle_period_and_invariants() {
         // At day 0, spiritual sine value should be 0 (sin(0) = 0).
         let val_at_birth = cycle_value(0, SPIRITUAL_PERIOD);
-        assert!(val_at_birth.abs() < 1e-10, "Expected 0 at birth, got {}", val_at_birth);
+        assert!(
+            val_at_birth.abs() < 1e-10,
+            "Expected 0 at birth, got {}",
+            val_at_birth
+        );
 
         // One full period should return very close to 0 again.
         let val_at_period = cycle_value(SPIRITUAL_PERIOD as i64, SPIRITUAL_PERIOD);
-        assert!(val_at_period.abs() < 1e-10, "Expected 0 at full period, got {}", val_at_period);
+        assert!(
+            val_at_period.abs() < 1e-10,
+            "Expected 0 at full period, got {}",
+            val_at_period
+        );
 
         // compute_cycle yields value in [-1, 1] and percentage in [0, 100].
         let result = compute_cycle(100, SPIRITUAL_PERIOD);

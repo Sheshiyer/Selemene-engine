@@ -16,8 +16,6 @@ use engine_vimshottari::{
 // representative fixed input when varying the starting planet.
 const BENCH_BALANCE_YEARS: f64 = 4.375;
 
-
-
 /// Returns the birth time used across all benchmark groups.
 fn birth_time() -> chrono::DateTime<Utc> {
     Utc.with_ymd_and_hms(1985, 6, 15, 14, 30, 0).unwrap()
@@ -174,9 +172,7 @@ fn bench_full_120year_timeline(c: &mut Criterion) {
         (VedicPlanet::Mars, 5.0),
     ]
     .iter()
-    .map(|&(planet, balance)| {
-        calculate_mahadashas(birth_time(), planet, balance)
-    })
+    .map(|&(planet, balance)| calculate_mahadashas(birth_time(), planet, balance))
     .collect();
 
     group.bench_function("batch_5_full_timelines", |b| {
@@ -196,20 +192,11 @@ fn bench_full_120year_timeline(c: &mut Criterion) {
 // Criterion entry-points
 // ---------------------------------------------------------------------------
 
-criterion_group!(
-    mahadasha_calculation,
-    bench_nakshatra_lookup,
-);
+criterion_group!(mahadasha_calculation, bench_nakshatra_lookup,);
 
-criterion_group!(
-    antardasha_subdivision,
-    bench_antardasha_subdivision,
-);
+criterion_group!(antardasha_subdivision, bench_antardasha_subdivision,);
 
-criterion_group!(
-    full_120year_timeline,
-    bench_full_120year_timeline,
-);
+criterion_group!(full_120year_timeline, bench_full_120year_timeline,);
 
 criterion_main!(
     mahadasha_calculation,

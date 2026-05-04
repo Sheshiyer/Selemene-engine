@@ -33,7 +33,9 @@ fn load_fixture(engine: &str, user: &str) -> Value {
 /// Assert that a fixture contains all required top-level EngineOutput fields.
 fn assert_engine_output_structure(fixture: &Value, expected_engine_id: &str) {
     assert_eq!(
-        fixture["engine_id"].as_str().expect("engine_id must be a string"),
+        fixture["engine_id"]
+            .as_str()
+            .expect("engine_id must be a string"),
         expected_engine_id,
         "engine_id mismatch"
     );
@@ -92,7 +94,9 @@ fn assert_biorhythm_fixture(fixture: &Value) {
 
     let result = &fixture["result"];
 
-    let days_alive = result["days_alive"].as_i64().expect("days_alive must be an integer");
+    let days_alive = result["days_alive"]
+        .as_i64()
+        .expect("days_alive must be an integer");
     assert!(days_alive > 0, "days_alive must be positive");
 
     assert!(
@@ -104,7 +108,9 @@ fn assert_biorhythm_fixture(fixture: &Value) {
         let c = &result[cycle];
         assert!(c.is_object(), "{} must be an object", cycle);
 
-        let value = c["value"].as_f64().expect(&format!("{}.value must be f64", cycle));
+        let value = c["value"]
+            .as_f64()
+            .expect(&format!("{}.value must be f64", cycle));
         assert!(
             (-1.0..=1.0).contains(&value),
             "{}.value {} out of [-1, 1]",
@@ -112,7 +118,9 @@ fn assert_biorhythm_fixture(fixture: &Value) {
             value
         );
 
-        let pct = c["percentage"].as_f64().expect(&format!("{}.percentage must be f64", cycle));
+        let pct = c["percentage"]
+            .as_f64()
+            .expect(&format!("{}.percentage must be f64", cycle));
         assert!(
             (0.0..=100.0).contains(&pct),
             "{}.percentage {} out of [0, 100]",
@@ -120,7 +128,9 @@ fn assert_biorhythm_fixture(fixture: &Value) {
             pct
         );
 
-        let phase = c["phase"].as_str().expect(&format!("{}.phase must be string", cycle));
+        let phase = c["phase"]
+            .as_str()
+            .expect(&format!("{}.phase must be string", cycle));
         assert!(
             ["Rising", "Falling", "Peak", "Low", "Critical"].contains(&phase),
             "{}.phase '{}' is not a valid phase",
@@ -179,7 +189,10 @@ fn test_biorhythm_fixture_user_nyc_1990() {
         (result["physical"]["value"].as_f64().unwrap() - 0.5195839500353275).abs() < 1e-9,
         "physical value mismatch"
     );
-    assert_eq!(result["intellectual"]["phase"].as_str().unwrap(), "Critical");
+    assert_eq!(
+        result["intellectual"]["phase"].as_str().unwrap(),
+        "Critical"
+    );
 }
 
 #[test]
@@ -273,13 +286,17 @@ fn assert_vimshottari_fixture(fixture: &Value) {
     // birth_nakshatra
     let nak = &result["birth_nakshatra"];
     assert!(nak.is_object(), "birth_nakshatra must be an object");
-    let nak_name = nak["name"].as_str().expect("birth_nakshatra.name must be string");
+    let nak_name = nak["name"]
+        .as_str()
+        .expect("birth_nakshatra.name must be string");
     assert!(
         VALID_NAKSHATRAS.contains(&nak_name),
         "birth_nakshatra.name '{}' is not a valid nakshatra",
         nak_name
     );
-    let nak_num = nak["number"].as_u64().expect("birth_nakshatra.number must be u64");
+    let nak_num = nak["number"]
+        .as_u64()
+        .expect("birth_nakshatra.number must be u64");
     assert!(
         (1..=27).contains(&nak_num),
         "birth_nakshatra.number {} out of range [1, 27]",
@@ -308,14 +325,22 @@ fn assert_vimshottari_fixture(fixture: &Value) {
     assert_eq!(mahadashas.len(), 9, "must have exactly 9 mahadashas");
 
     for maha in mahadashas {
-        let planet = maha["planet"].as_str().expect("mahadasha.planet must be string");
+        let planet = maha["planet"]
+            .as_str()
+            .expect("mahadasha.planet must be string");
         assert!(
             VALID_PLANETS.contains(&planet),
             "mahadasha.planet '{}' is not valid",
             planet
         );
-        assert!(maha["start_date"].is_string(), "mahadasha.start_date must be string");
-        assert!(maha["end_date"].is_string(), "mahadasha.end_date must be string");
+        assert!(
+            maha["start_date"].is_string(),
+            "mahadasha.start_date must be string"
+        );
+        assert!(
+            maha["end_date"].is_string(),
+            "mahadasha.end_date must be string"
+        );
         let dur = maha["duration_years"]
             .as_f64()
             .expect("mahadasha.duration_years must be number");
@@ -340,8 +365,13 @@ fn test_vimshottari_fixture_user_nyc_1990() {
     let f = load_fixture("vimshottari", "user_nyc_1990");
     assert_vimshottari_fixture(&f);
     let nak_name = f["result"]["birth_nakshatra"]["name"].as_str().unwrap();
-    let moon_lon = f["result"]["birth_nakshatra"]["moon_longitude"].as_f64().unwrap();
-    assert!((moon_lon - 45.0).abs() < 1e-9, "moon_longitude should be 45.0");
+    let moon_lon = f["result"]["birth_nakshatra"]["moon_longitude"]
+        .as_f64()
+        .unwrap();
+    assert!(
+        (moon_lon - 45.0).abs() < 1e-9,
+        "moon_longitude should be 45.0"
+    );
     assert_eq!(nak_name, "Rohini");
 }
 
@@ -425,13 +455,17 @@ fn assert_vedic_clock_fixture(fixture: &Value) {
     // current_organ
     let organ = &result["current_organ"];
     assert!(organ.is_object(), "current_organ must be an object");
-    let organ_name = organ["organ"].as_str().expect("current_organ.organ must be string");
+    let organ_name = organ["organ"]
+        .as_str()
+        .expect("current_organ.organ must be string");
     assert!(
         VALID_ORGANS.contains(&organ_name),
         "current_organ.organ '{}' is not valid",
         organ_name
     );
-    let element = organ["element"].as_str().expect("current_organ.element must be string");
+    let element = organ["element"]
+        .as_str()
+        .expect("current_organ.element must be string");
     assert!(
         VALID_ELEMENTS.contains(&element),
         "current_organ.element '{}' is not valid",
@@ -453,7 +487,9 @@ fn assert_vedic_clock_fixture(fixture: &Value) {
     // current_dosha
     let dosha = &result["current_dosha"];
     assert!(dosha.is_object(), "current_dosha must be an object");
-    let dosha_name = dosha["dosha"].as_str().expect("current_dosha.dosha must be string");
+    let dosha_name = dosha["dosha"]
+        .as_str()
+        .expect("current_dosha.dosha must be string");
     assert!(
         VALID_DOSHAS.contains(&dosha_name),
         "current_dosha.dosha '{}' is not valid",
@@ -475,16 +511,28 @@ fn assert_vedic_clock_fixture(fixture: &Value) {
         tz["offset_minutes"].is_number(),
         "timezone.offset_minutes must be a number"
     );
-    let local_hour = tz["local_hour"].as_u64().expect("timezone.local_hour must be u64");
-    assert!(local_hour < 24, "timezone.local_hour must be 0-23, got {}", local_hour);
+    let local_hour = tz["local_hour"]
+        .as_u64()
+        .expect("timezone.local_hour must be u64");
+    assert!(
+        local_hour < 24,
+        "timezone.local_hour must be 0-23, got {}",
+        local_hour
+    );
 }
 
 #[test]
 fn test_vedic_clock_fixture_user_nyc_1990() {
     let f = load_fixture("vedic-clock", "user_nyc_1990");
     assert_vedic_clock_fixture(&f);
-    assert_eq!(f["result"]["current_organ"]["organ"].as_str().unwrap(), "Spleen");
-    assert_eq!(f["result"]["current_dosha"]["dosha"].as_str().unwrap(), "Kapha");
+    assert_eq!(
+        f["result"]["current_organ"]["organ"].as_str().unwrap(),
+        "Spleen"
+    );
+    assert_eq!(
+        f["result"]["current_dosha"]["dosha"].as_str().unwrap(),
+        "Kapha"
+    );
     assert_eq!(f["result"]["timezone"]["local_hour"].as_u64().unwrap(), 9);
 }
 
@@ -492,8 +540,14 @@ fn test_vedic_clock_fixture_user_nyc_1990() {
 fn test_vedic_clock_fixture_user_london_1985() {
     let f = load_fixture("vedic-clock", "user_london_1985");
     assert_vedic_clock_fixture(&f);
-    assert_eq!(f["result"]["current_organ"]["organ"].as_str().unwrap(), "SmallIntestine");
-    assert_eq!(f["result"]["current_dosha"]["dosha"].as_str().unwrap(), "Vata");
+    assert_eq!(
+        f["result"]["current_organ"]["organ"].as_str().unwrap(),
+        "SmallIntestine"
+    );
+    assert_eq!(
+        f["result"]["current_dosha"]["dosha"].as_str().unwrap(),
+        "Vata"
+    );
     assert_eq!(f["result"]["timezone"]["local_hour"].as_u64().unwrap(), 14);
 }
 
@@ -501,8 +555,14 @@ fn test_vedic_clock_fixture_user_london_1985() {
 fn test_vedic_clock_fixture_user_tokyo_1995() {
     let f = load_fixture("vedic-clock", "user_tokyo_1995");
     assert_vedic_clock_fixture(&f);
-    assert_eq!(f["result"]["current_organ"]["organ"].as_str().unwrap(), "Gallbladder");
-    assert_eq!(f["result"]["current_dosha"]["dosha"].as_str().unwrap(), "Pitta");
+    assert_eq!(
+        f["result"]["current_organ"]["organ"].as_str().unwrap(),
+        "Gallbladder"
+    );
+    assert_eq!(
+        f["result"]["current_dosha"]["dosha"].as_str().unwrap(),
+        "Pitta"
+    );
     assert_eq!(f["result"]["timezone"]["local_hour"].as_u64().unwrap(), 23);
 }
 
@@ -510,8 +570,14 @@ fn test_vedic_clock_fixture_user_tokyo_1995() {
 fn test_vedic_clock_fixture_user_sydney_1988() {
     let f = load_fixture("vedic-clock", "user_sydney_1988");
     assert_vedic_clock_fixture(&f);
-    assert_eq!(f["result"]["current_organ"]["organ"].as_str().unwrap(), "Liver");
-    assert_eq!(f["result"]["current_dosha"]["dosha"].as_str().unwrap(), "Pitta");
+    assert_eq!(
+        f["result"]["current_organ"]["organ"].as_str().unwrap(),
+        "Liver"
+    );
+    assert_eq!(
+        f["result"]["current_dosha"]["dosha"].as_str().unwrap(),
+        "Pitta"
+    );
     assert_eq!(f["result"]["timezone"]["local_hour"].as_u64().unwrap(), 1);
 }
 
@@ -519,8 +585,14 @@ fn test_vedic_clock_fixture_user_sydney_1988() {
 fn test_vedic_clock_fixture_user_mumbai_1992() {
     let f = load_fixture("vedic-clock", "user_mumbai_1992");
     assert_vedic_clock_fixture(&f);
-    assert_eq!(f["result"]["current_organ"]["organ"].as_str().unwrap(), "Pericardium");
-    assert_eq!(f["result"]["current_dosha"]["dosha"].as_str().unwrap(), "Kapha");
+    assert_eq!(
+        f["result"]["current_organ"]["organ"].as_str().unwrap(),
+        "Pericardium"
+    );
+    assert_eq!(
+        f["result"]["current_dosha"]["dosha"].as_str().unwrap(),
+        "Kapha"
+    );
     assert_eq!(f["result"]["timezone"]["local_hour"].as_u64().unwrap(), 19);
 }
 
@@ -566,7 +638,9 @@ fn assert_biofield_fixture(fixture: &Value) {
     );
 
     for field in &["entropy", "coherence", "symmetry", "vitality_index"] {
-        let v = metrics[field].as_f64().expect(&format!("metrics.{} must be f64", field));
+        let v = metrics[field]
+            .as_f64()
+            .expect(&format!("metrics.{} must be f64", field));
         assert!(
             (0.0..=1.0).contains(&v),
             "metrics.{} = {} out of [0.0, 1.0]",
@@ -626,7 +700,9 @@ fn assert_biofield_fixture(fixture: &Value) {
         "areas_of_attention must be an array"
     );
     assert_eq!(
-        result["is_mock_data"].as_bool().expect("is_mock_data must be boolean"),
+        result["is_mock_data"]
+            .as_bool()
+            .expect("is_mock_data must be boolean"),
         true,
         "is_mock_data must be true for these fixtures"
     );

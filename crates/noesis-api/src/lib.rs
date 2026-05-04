@@ -37,7 +37,6 @@ use chrono::{
     Datelike, LocalResult, NaiveDate, NaiveDateTime, NaiveTime, Offset, TimeZone, Timelike,
 };
 use chrono_tz::Tz;
-use noesis_orchestrator::{EphemerisCalculator, HDPlanet};
 use noesis_auth::{AuthService, AuthUser};
 use noesis_cache::CacheManager;
 use noesis_core::{
@@ -55,6 +54,7 @@ use noesis_data::repositories::readings_repository::ReadingsRepository;
 use noesis_data::repositories::usage_repository::UsageRepository;
 use noesis_data::repositories::user_repository::UserRepository;
 use noesis_metrics::NoesisMetrics;
+use noesis_orchestrator::{EphemerisCalculator, HDPlanet};
 use sentry_tower::{NewSentryLayer, SentryHttpLayer};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -1775,8 +1775,7 @@ async fn vedic_chart_handler(
         let jd = jd_from_utc(&utc_dt);
         let ayanamsa = lahiri_ayanamsa(jd);
 
-        let mut positions: Vec<(HDPlanet, noesis_orchestrator::PlanetPosition)> =
-            Vec::new();
+        let mut positions: Vec<(HDPlanet, noesis_orchestrator::PlanetPosition)> = Vec::new();
         for (planet, _) in VEDIC_PLANETS {
             match ephe.get_planet_position(*planet, &utc_dt) {
                 Ok(pos) => positions.push((*planet, pos)),
@@ -3154,8 +3153,8 @@ pub async fn build_app_state(config: &ApiConfig) -> AppState {
     let metrics = shared_metrics();
 
     // -- Ephemeris checksums --
-    let ephemeris_dir = std::env::var("EPHEMERIS_DIR")
-        .unwrap_or_else(|_| "data/ephemeris".to_string());
+    let ephemeris_dir =
+        std::env::var("EPHEMERIS_DIR").unwrap_or_else(|_| "data/ephemeris".to_string());
     let ephemeris_checksums = Arc::new(compute_ephemeris_checksums(&ephemeris_dir));
     tracing::info!(
         "Computed SHA256 checksums for {} ephemeris file(s)",
@@ -3246,8 +3245,8 @@ pub async fn build_app_state_lazy_db(config: &ApiConfig) -> AppState {
     let metrics = shared_metrics();
 
     // -- Ephemeris checksums --
-    let ephemeris_dir = std::env::var("EPHEMERIS_DIR")
-        .unwrap_or_else(|_| "data/ephemeris".to_string());
+    let ephemeris_dir =
+        std::env::var("EPHEMERIS_DIR").unwrap_or_else(|_| "data/ephemeris".to_string());
     let ephemeris_checksums = Arc::new(compute_ephemeris_checksums(&ephemeris_dir));
 
     AppState {

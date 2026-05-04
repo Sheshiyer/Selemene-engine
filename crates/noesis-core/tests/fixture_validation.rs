@@ -147,7 +147,12 @@ fn assert_nadabrahman_schema(result: &Value, user: &str) {
     let recommendations = result
         .get("recommendations")
         .and_then(|v| v.as_array())
-        .unwrap_or_else(|| panic!("Missing or invalid 'recommendations' in nadabrahman/{}", user));
+        .unwrap_or_else(|| {
+            panic!(
+                "Missing or invalid 'recommendations' in nadabrahman/{}",
+                user
+            )
+        });
 
     assert!(
         !recommendations.is_empty(),
@@ -202,7 +207,13 @@ fn assert_transits_schema(result: &Value, user: &str) {
         user
     );
     for pos in natal {
-        for field in &["planet", "longitude", "sign", "degree_in_sign", "is_retrograde"] {
+        for field in &[
+            "planet",
+            "longitude",
+            "sign",
+            "degree_in_sign",
+            "is_retrograde",
+        ] {
             assert!(
                 pos.get(field).is_some(),
                 "Missing {field} in natal_positions entry in transits/{user}"

@@ -59,16 +59,12 @@ fn benchmark_single_day(c: &mut Criterion) {
 
     for date in &birth_dates {
         let input = make_input(date, 0);
-        group.bench_with_input(
-            BenchmarkId::from_parameter(date),
-            &input,
-            |b, input| {
-                b.iter(|| {
-                    rt.block_on(engine.calculate(black_box(input.clone())))
-                        .unwrap()
-                })
-            },
-        );
+        group.bench_with_input(BenchmarkId::from_parameter(date), &input, |b, input| {
+            b.iter(|| {
+                rt.block_on(engine.calculate(black_box(input.clone())))
+                    .unwrap()
+            })
+        });
     }
 
     group.finish();
@@ -88,16 +84,12 @@ fn benchmark_30_day_range(c: &mut Criterion) {
 
     for date in &birth_dates {
         let input = make_input(date, 30);
-        group.bench_with_input(
-            BenchmarkId::from_parameter(date),
-            &input,
-            |b, input| {
-                b.iter(|| {
-                    rt.block_on(engine.calculate(black_box(input.clone())))
-                        .unwrap()
-                })
-            },
-        );
+        group.bench_with_input(BenchmarkId::from_parameter(date), &input, |b, input| {
+            b.iter(|| {
+                rt.block_on(engine.calculate(black_box(input.clone())))
+                    .unwrap()
+            })
+        });
     }
 
     group.finish();

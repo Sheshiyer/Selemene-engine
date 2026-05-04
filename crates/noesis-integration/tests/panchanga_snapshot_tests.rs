@@ -294,10 +294,7 @@ fn test_fixtures_are_well_formed() {
             path.display()
         );
         assert!(
-            !v["witness_prompt"]
-                .as_str()
-                .unwrap_or("")
-                .is_empty(),
+            !v["witness_prompt"].as_str().unwrap_or("").is_empty(),
             "witness_prompt must not be empty in {}",
             path.display()
         );

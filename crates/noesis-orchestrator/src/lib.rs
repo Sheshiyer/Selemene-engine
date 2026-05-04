@@ -400,11 +400,7 @@ impl WorkflowOrchestrator {
         let engine_count = workflow.engine_ids.len();
         tracing::Span::current().record("engine_count", engine_count);
 
-        info!(
-            workflow_id,
-            engine_count,
-            "Starting workflow execution"
-        );
+        info!(workflow_id, engine_count, "Starting workflow execution");
 
         let start = Instant::now();
         let registry = &self.registry;

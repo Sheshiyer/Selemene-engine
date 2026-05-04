@@ -7,9 +7,8 @@
 
 use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion};
 use engine_gene_keys::{
-    assess_frequencies, generate_complete_pathways, generate_transformation_pathways,
-    get_gene_key, gene_keys, ActivationSequence, ActivationSource, GeneKeyActivation,
-    GeneKeysChart,
+    assess_frequencies, gene_keys, generate_complete_pathways, generate_transformation_pathways,
+    get_gene_key, ActivationSequence, ActivationSource, GeneKeyActivation, GeneKeysChart,
 };
 
 // ---------------------------------------------------------------------------
@@ -88,11 +87,9 @@ fn bench_single_key_lookup(c: &mut Criterion) {
     let mut group = c.benchmark_group("single_key_lookup");
 
     for &key in &[1u8, 16, 32, 48, 64] {
-        group.bench_with_input(
-            BenchmarkId::from_parameter(key),
-            &key,
-            |b, &k| b.iter(|| black_box(get_gene_key(black_box(k)))),
-        );
+        group.bench_with_input(BenchmarkId::from_parameter(key), &key, |b, &k| {
+            b.iter(|| black_box(get_gene_key(black_box(k))))
+        });
     }
 
     group.finish();
@@ -108,9 +105,7 @@ fn bench_full_profile_build(c: &mut Criterion) {
 
     let mut group = c.benchmark_group("full_profile_64_keys");
 
-    group.bench_function("build_chart", |b| {
-        b.iter(|| black_box(make_full_chart()))
-    });
+    group.bench_function("build_chart", |b| b.iter(|| black_box(make_full_chart())));
 
     group.bench_function("iterate_all_keys", |b| {
         b.iter(|| {
@@ -160,18 +155,14 @@ fn bench_shadow_gift_siddhi(c: &mut Criterion) {
     group.bench_function("transformation_pathways", |b| {
         let chart = make_chart(36, 6, 55, 49);
         let assessments = assess_frequencies(&chart, Some(2));
-        b.iter(|| {
-            black_box(generate_transformation_pathways(black_box(&assessments)))
-        })
+        b.iter(|| black_box(generate_transformation_pathways(black_box(&assessments))))
     });
 
     // Complete pathways (both arcs)
     group.bench_function("complete_pathways", |b| {
         let chart = make_chart(1, 2, 13, 7);
         let assessments = assess_frequencies(&chart, Some(3));
-        b.iter(|| {
-            black_box(generate_complete_pathways(black_box(&assessments)))
-        })
+        b.iter(|| black_box(generate_complete_pathways(black_box(&assessments))))
     });
 
     group.finish();
