@@ -307,30 +307,30 @@ export default function ViewerPage() {
 
       <section className="biofield-grid">
         <article className="biofield-panel">
-          <p className="biofield-kicker">Auth state</p>
+          <p className="biofield-kicker">Identity</p>
           <p className="biofield-metric">{authSession ? authSession.email : "Loading…"}</p>
           <p className="biofield-copy">
-            Viewer requests use the stored bearer token from the BF1-04 login flow.
+            Session bound to {authSession ? authSession.tier : "—"} tier. All requests carry your active bearer token.
           </p>
         </article>
         <article className="biofield-panel">
-          <p className="biofield-kicker">Server session</p>
+          <p className="biofield-kicker">Field session</p>
           <p className="biofield-metric">
             {currentSession ? currentSession.status : "No active session"}
           </p>
           <p className="biofield-copy">
             {currentSession
-              ? `Session ${currentSession.id} is managed by Noesis.`
+              ? `Session ${currentSession.id} is open and recording.`
               : storedSessionId
-                ? `Restoring session ${storedSessionId} from local state…`
-                : "Start a real biofield session before uploading a capture."}
+                ? `Restoring session ${storedSessionId}…`
+                : "Open a session to begin recording field data and accepting captures."}
           </p>
         </article>
         <article className="biofield-panel">
-          <p className="biofield-kicker">Capture path</p>
-          <p className="biofield-metric">Browser → Noesis → Python</p>
+          <p className="biofield-kicker">Analysis path</p>
+          <p className="biofield-metric">Camera → Noesis → Python</p>
           <p className="biofield-copy">
-            Successful captures now flow into persisted history and reading detail routes in the web surface.
+            Every capture moves through Noesis into the private analysis layer, returning as a persisted reading.
           </p>
         </article>
       </section>
@@ -386,12 +386,12 @@ export default function ViewerPage() {
       </section>
 
       <section className="biofield-panel biofield-form-panel">
-        <p className="biofield-eyebrow">Capture upload</p>
+        <p className="biofield-eyebrow">Manual capture</p>
         <h2 className="biofield-title" style={{ fontSize: "2rem" }}>
           Upload a capture
         </h2>
         <p className="biofield-copy">
-          Use any local image to exercise the BF1-05 multipart upload and sidecar proxy path.
+          Send a still image through the Noesis analysis path — identical to the PIP auto-capture pipeline.
         </p>
 
         <form className="biofield-form" onSubmit={handleUpload}>

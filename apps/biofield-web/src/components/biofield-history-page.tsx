@@ -176,8 +176,8 @@ export function BiofieldHistoryPage() {
   if (!authSession) {
     return (
       <section className="biofield-panel">
-        <p className="biofield-eyebrow">History</p>
-        <p className="biofield-copy">Checking your biofield access…</p>
+        <p className="biofield-eyebrow">Coherence archive</p>
+        <p className="biofield-copy">Verifying your session…</p>
       </section>
     );
   }
@@ -187,12 +187,12 @@ export function BiofieldHistoryPage() {
       <section className="biofield-panel biofield-form-panel">
         <div className="biofield-toolbar">
           <div>
-            <p className="biofield-eyebrow">BF2 history and baselines</p>
+            <p className="biofield-eyebrow">Coherence archive</p>
             <h2 className="biofield-title" style={{ fontSize: "2rem" }}>
-              Persisted readings
+              Your readings
             </h2>
             <p className="biofield-copy">
-              Create lightweight baselines from selected readings while keeping the Phase 1 history surface intact.
+              Select readings to build coherence baselines. Compare any future reading against an established baseline to surface pattern deltas.
             </p>
           </div>
           <div className="biofield-actions">
@@ -291,7 +291,7 @@ export function BiofieldHistoryPage() {
       {isLoading ? (
         <section className="biofield-panel">
           <p className="biofield-eyebrow">Loading</p>
-          <p className="biofield-copy">Fetching your persisted biofield readings and baselines…</p>
+          <p className="biofield-copy">Loading your field history…</p>
         </section>
       ) : null}
 
@@ -302,7 +302,7 @@ export function BiofieldHistoryPage() {
             Your history is empty
           </h3>
           <p className="biofield-copy">
-            Start a session in the viewer and upload a capture to create the first persisted biofield reading.
+            Open a session in the viewer and send a capture through the analysis path. Your first reading will appear here.
           </p>
           <div className="biofield-actions">
             <Link className="biofield-button" href="/viewer">

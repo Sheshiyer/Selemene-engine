@@ -42,10 +42,10 @@ export default function LoginPage() {
     <main className="biofield-shell">
       <div className="biofield-stack">
         <section className="biofield-hero">
-          <p className="biofield-eyebrow">BF1-04 authenticated shell</p>
-          <h1 className="biofield-title">Biofield Web</h1>
+          <p className="biofield-eyebrow">Noesis · Biofield</p>
+          <h1 className="biofield-title">Biofield</h1>
           <p className="biofield-copy">
-            Sign in with your Selemene account to start a real biofield session and send a capture through Noesis to the private Python analysis service.
+            Sign in to open a coherence session. Your camera becomes a field instrument — live pattern data moves through Noesis into the private analysis layer and returns as structured readings you can compare, baseline, and track over time.
           </p>
         </section>
 

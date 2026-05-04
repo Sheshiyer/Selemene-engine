@@ -287,7 +287,7 @@ export function BiofieldReadingDetailPage({ readingId }: { readingId: string }) 
     return (
       <section className="biofield-panel">
         <p className="biofield-eyebrow">Reading detail</p>
-        <p className="biofield-copy">Checking your biofield access…</p>
+        <p className="biofield-copy">Verifying your session…</p>
       </section>
     );
   }
@@ -297,7 +297,7 @@ export function BiofieldReadingDetailPage({ readingId }: { readingId: string }) 
       <section className="biofield-panel biofield-form-panel">
         <div className="biofield-toolbar">
           <div>
-            <p className="biofield-eyebrow">BF3 detail, comparison, and exports</p>
+            <p className="biofield-eyebrow">Reading detail</p>
             <h2 className="biofield-title" style={{ fontSize: "2rem" }}>
               {analysisVersion ?? "Biofield reading detail"}
             </h2>
@@ -360,7 +360,7 @@ export function BiofieldReadingDetailPage({ readingId }: { readingId: string }) 
           </p>
         ) : (
           <p className="biofield-copy">
-            Choose one of your persisted baselines to compute deterministic deltas against this reading.
+            Select a baseline to surface deterministic deltas — coherence shifts measured against an established reference point.
           </p>
         )}
       </section>
@@ -404,7 +404,7 @@ export function BiofieldReadingDetailPage({ readingId }: { readingId: string }) 
       {isLoading ? (
         <section className="biofield-panel">
           <p className="biofield-eyebrow">Loading</p>
-          <p className="biofield-copy">Fetching persisted reading detail, baselines, and optional comparison…</p>
+          <p className="biofield-copy">Loading reading detail and baselines…</p>
         </section>
       ) : null}
 

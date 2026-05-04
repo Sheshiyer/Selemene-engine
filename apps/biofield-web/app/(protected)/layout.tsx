@@ -43,8 +43,8 @@ export default function ProtectedLayout({
       <main className="biofield-shell">
         <div className="biofield-stack">
           <section className="biofield-panel">
-            <p className="biofield-eyebrow">Auth gate</p>
-            <p className="biofield-copy">Checking your biofield session access…</p>
+            <p className="biofield-eyebrow">Noesis · Biofield</p>
+            <p className="biofield-copy">Verifying your session…</p>
           </section>
         </div>
       </main>
