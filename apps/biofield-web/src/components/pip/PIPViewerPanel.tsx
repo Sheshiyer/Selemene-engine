@@ -2,42 +2,69 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { DEFAULT_PIP_SETTINGS } from "./types";
+import type { CompositeScores } from "./types";
 import { useCamera } from "./useCamera";
 import { useMediaPipe } from "./useMediaPipe";
 import { usePIPRenderer } from "./usePIPRenderer";
+import { useLiveMetrics } from "./useLiveMetrics";
 
 export interface PIPViewerPanelProps {
   onCapture?: (blob: Blob, dataUrl: string) => void;
+  /** Called each time live metrics are refreshed (~10 fps). */
+  onMetrics?: (scores: CompositeScores) => void;
 }
 
 type PanelState = "idle" | "streaming" | "paused";
 
-export function PIPViewerPanel({ onCapture }: PIPViewerPanelProps) {
+export function PIPViewerPanel({ onCapture, onMetrics }: PIPViewerPanelProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const settingsRef = useRef(DEFAULT_PIP_SETTINGS);
+  const onMetricsRef = useRef(onMetrics);
+  onMetricsRef.current = onMetrics;
 
   const { videoRef, isStreaming, devices, error: cameraError, startCamera, stopCamera } = useCamera();
   const { status: glStatus, startRenderLoop, stopRenderLoop } = usePIPRenderer(canvasRef);
-  const { ready: mpReady, error: mpError, segmentFrame } = useMediaPipe();
+  const { ready: mpReady, error: mpError, segmentFrame, detectFace } = useMediaPipe();
+  const { metrics, updateMetrics } = useLiveMetrics(canvasRef);
 
   const [panelState, setPanelState] = useState<PanelState>("idle");
   const [captureCount, setCaptureCount] = useState(0);
   const [captureError, setCaptureError] = useState<string | null>(null);
 
-  // getMask runs each RAF frame: returns the latest segmentation mask or null.
   const getMask = useCallback(() => {
     const video = videoRef.current;
     if (!mpReady || !video) return null;
     return segmentFrame(video);
   }, [mpReady, segmentFrame, videoRef]);
 
+  const getFace = useCallback(() => {
+    const video = videoRef.current;
+    if (!mpReady || !video) return null;
+    return detectFace(video);
+  }, [mpReady, detectFace, videoRef]);
+
+  // onFrame: called each RAF iteration; feeds MetricsCalculator and fires onMetrics callback.
+  const onFrame = useCallback(
+    (canvas: HTMLCanvasElement, mask: ReturnType<typeof getMask>, face: ReturnType<typeof getFace>) => {
+      updateMetrics(canvas, mask, face);
+    },
+    [updateMetrics],
+  );
+
+  // Forward composite scores to parent whenever they update.
+  useEffect(() => {
+    if (metrics && onMetricsRef.current) {
+      onMetricsRef.current(metrics.composite);
+    }
+  }, [metrics]);
+
   // Start render loop when both camera and renderer are ready.
   useEffect(() => {
     const video = videoRef.current;
     if (isStreaming && glStatus === "ready" && video && panelState === "streaming") {
-      startRenderLoop(video, settingsRef, getMask);
+      startRenderLoop(video, settingsRef, getMask, getFace, onFrame);
     }
-  }, [isStreaming, glStatus, panelState, startRenderLoop, getMask, videoRef]);
+  }, [isStreaming, glStatus, panelState, startRenderLoop, getMask, getFace, onFrame, videoRef]);
 
   const handleStart = useCallback(async () => {
     setCaptureError(null);
@@ -53,10 +80,10 @@ export function PIPViewerPanel({ onCapture }: PIPViewerPanelProps) {
   const handleResume = useCallback(() => {
     const video = videoRef.current;
     if (video && glStatus === "ready") {
-      startRenderLoop(video, settingsRef, getMask);
+      startRenderLoop(video, settingsRef, getMask, getFace, onFrame);
     }
     setPanelState("streaming");
-  }, [glStatus, getMask, startRenderLoop, videoRef]);
+  }, [glStatus, getMask, getFace, onFrame, startRenderLoop, videoRef]);
 
   const handleStop = useCallback(() => {
     stopRenderLoop();
@@ -88,27 +115,17 @@ export function PIPViewerPanel({ onCapture }: PIPViewerPanelProps) {
   }, [onCapture]);
 
   const glLabel =
-    glStatus === "ready"
-      ? "WebGL2 ✓"
-      : glStatus === "error"
-        ? "WebGL2 ✗"
-        : "WebGL2 …";
+    glStatus === "ready" ? "WebGL2 ✓" : glStatus === "error" ? "WebGL2 ✗" : "WebGL2 …";
 
-  const mpLabel = mpError
-    ? "MP ✗"
-    : mpReady
-      ? "MP ✓"
-      : "MP …";
+  const mpLabel = mpError ? "MP ✗" : mpReady ? "MP ✓" : "MP …";
 
   const cameraLabel =
-    panelState === "streaming"
-      ? "streaming"
-      : panelState === "paused"
-        ? "paused"
-        : "off";
+    panelState === "streaming" ? "streaming" : panelState === "paused" ? "paused" : "off";
 
   const deviceLabel =
     devices.length > 0 ? `${devices.length} camera${devices.length !== 1 ? "s" : ""}` : "no cameras";
+
+  const c = metrics?.composite;
 
   return (
     <section className="biofield-panel biofield-form-panel">
@@ -143,7 +160,7 @@ export function PIPViewerPanel({ onCapture }: PIPViewerPanelProps) {
         )}
       </div>
 
-      {/* WebGL2 canvas — hidden video element feeds it each frame */}
+      {/* WebGL2 canvas */}
       <div
         style={{
           position: "relative",
@@ -155,7 +172,6 @@ export function PIPViewerPanel({ onCapture }: PIPViewerPanelProps) {
           marginBottom: "0.75rem",
         }}
       >
-        {/* Hidden video element — camera source for WebGL2 texture */}
         <video
           ref={videoRef}
           autoPlay
@@ -180,6 +196,30 @@ export function PIPViewerPanel({ onCapture }: PIPViewerPanelProps) {
             }}
           >
             Start camera to begin PIP visualisation
+          </div>
+        )}
+
+        {/* Live metrics overlay */}
+        {c && panelState !== "idle" && (
+          <div
+            style={{
+              position: "absolute",
+              bottom: 8,
+              left: 8,
+              right: 8,
+              display: "grid",
+              gridTemplateColumns: "1fr 1fr",
+              gap: "4px 12px",
+              fontSize: "0.7rem",
+              color: "rgba(255,255,255,0.85)",
+              textShadow: "0 1px 3px rgba(0,0,0,0.8)",
+              pointerEvents: "none",
+            }}
+          >
+            <MetricRow label="Coherence"  value={c.overallCoherence} />
+            <MetricRow label="Symmetry"   value={c.bodySymmetry} />
+            <MetricRow label="Luminance"  value={c.lightQuantaDensity} />
+            <MetricRow label="Regularity" value={c.patternRegularity} />
           </div>
         )}
       </div>
@@ -238,3 +278,33 @@ export function PIPViewerPanel({ onCapture }: PIPViewerPanelProps) {
     </section>
   );
 }
+
+// ─── Inline metric row ────────────────────────────────────────────────────────
+function MetricRow({ label, value }: { label: string; value: number }) {
+  const pct = Math.round(value * 100);
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+      <span style={{ opacity: 0.7, minWidth: 70 }}>{label}</span>
+      <div
+        style={{
+          flex: 1,
+          height: 3,
+          background: "rgba(255,255,255,0.15)",
+          borderRadius: 2,
+          overflow: "hidden",
+        }}
+      >
+        <div
+          style={{
+            width: `${pct}%`,
+            height: "100%",
+            background: "rgba(120,220,180,0.9)",
+            borderRadius: 2,
+          }}
+        />
+      </div>
+      <span style={{ minWidth: 30, textAlign: "right" }}>{pct}%</span>
+    </div>
+  );
+}
+
