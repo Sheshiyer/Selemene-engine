@@ -879,7 +879,7 @@ async fn test_vimshottari_full_timeline_e2e() {
     // 9 or 10 mahadashas (10 when first period is partial, requiring an extra to reach 120 years)
     let mahadashas = timeline["mahadashas"].as_array().unwrap();
     assert!(
-        mahadashas.len() >= 9 && mahadashas.len() <= 10,
+        (9..=10).contains(&mahadashas.len()),
         "Expected 9-10 mahadashas, got {}",
         mahadashas.len()
     );
@@ -984,7 +984,7 @@ async fn test_vimshottari_moon_longitude_mode() {
     // Timeline should have 9-10 mahadashas
     let mahadashas = body["result"]["timeline"]["mahadashas"].as_array().unwrap();
     assert!(
-        mahadashas.len() >= 9 && mahadashas.len() <= 10,
+        (9..=10).contains(&mahadashas.len()),
         "Expected 9-10 mahadashas, got {}",
         mahadashas.len()
     );
@@ -1117,7 +1117,7 @@ async fn test_vimshottari_date_continuity() {
 
     let mahadashas = body["result"]["timeline"]["mahadashas"].as_array().unwrap();
     assert!(
-        mahadashas.len() >= 9 && mahadashas.len() <= 10,
+        (9..=10).contains(&mahadashas.len()),
         "Expected 9-10 mahadashas, got {}",
         mahadashas.len()
     );
