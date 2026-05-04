@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useCallback, useEffect, useMemo, useState, useSyncExternalStore } from "react";
+import { FormEvent, useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import type { BiofieldCaptureResult, BiofieldSession } from "@selemene/biofield-domain";
 import { BiofieldClientError } from "@selemene/biofield-api-client";
+import type { EngineOutput } from "@selemene/noesis-sdk-ts";
 import {
   clearStoredAuthSession,
   getStoredAuthSession,
@@ -15,9 +16,13 @@ import {
   setStoredActiveSessionId,
   subscribeToActiveSessionId,
 } from "@/lib/session";
-import { createBiofieldClient } from "@/lib/api";
+import { createBiofieldClient, createNoesisClient } from "@/lib/api";
 import { useRouter } from "next/navigation";
 import { PIPViewerPanel } from "@/components/pip/PIPViewerPanel";
+import type { CompositeScores } from "@/components/pip/types";
+
+// Interval at which live metrics are posted to the Noesis biofield engine.
+const METRICS_SUBMIT_INTERVAL_MS = 30_000;
 
 const METRIC_KEYS = [
   "light_quanta_density",
@@ -49,6 +54,10 @@ export default function ViewerPage() {
   const [isStartingSession, setIsStartingSession] = useState(false);
   const [isClosingSession, setIsClosingSession] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [witnessInsight, setWitnessInsight] = useState<EngineOutput | null>(null);
+
+  // Track last metrics submission timestamp to rate-limit engine calls.
+  const lastMetricsSubmitRef = useRef<number>(0);
 
   useEffect(() => {
     if (!authSession) {
@@ -57,10 +66,13 @@ export default function ViewerPage() {
   }, [authSession, router]);
 
   const client = useMemo(() => {
-    if (!authSession) {
-      return null;
-    }
+    if (!authSession) return null;
     return createBiofieldClient(authSession.token);
+  }, [authSession]);
+
+  const noesisClient = useMemo(() => {
+    if (!authSession) return null;
+    return createNoesisClient(authSession.token);
   }, [authSession]);
 
   function handleAuthFailure() {
@@ -71,17 +83,9 @@ export default function ViewerPage() {
   }
 
   useEffect(() => {
-    if (!client) {
-      return;
-    }
-
-    if (!storedSessionId) {
-      return;
-    }
-
-    if (currentSession?.id === storedSessionId) {
-      return;
-    }
+    if (!client) return;
+    if (!storedSessionId) return;
+    if (currentSession?.id === storedSessionId) return;
 
     let isCancelled = false;
 
@@ -92,9 +96,7 @@ export default function ViewerPage() {
 
       try {
         const session = await client.getSession(storedSessionId);
-        if (isCancelled) {
-          return;
-        }
+        if (isCancelled) return;
         setCurrentSession(session);
         if (session.status === "active") {
           setStatusMessage(`Restored session ${session.id}.`);
@@ -105,40 +107,27 @@ export default function ViewerPage() {
           );
         }
       } catch (error) {
-        if (isCancelled) {
-          return;
-        }
-
+        if (isCancelled) return;
         if (error instanceof BiofieldClientError && error.status === 401) {
           handleAuthFailure();
           return;
         }
-
         clearStoredActiveSessionId();
         setCurrentSession(null);
         setErrorMessage(
-          error instanceof Error
-            ? error.message
-            : "Failed to restore your last biofield session.",
+          error instanceof Error ? error.message : "Failed to restore your last biofield session.",
         );
       } finally {
-        if (!isCancelled) {
-          setIsHydratingSession(false);
-        }
+        if (!isCancelled) setIsHydratingSession(false);
       }
     }
 
     void hydrateSession();
-
-    return () => {
-      isCancelled = true;
-    };
+    return () => { isCancelled = true; };
   }, [client, currentSession, storedSessionId]);
 
   async function handleStartSession() {
-    if (!client) {
-      return;
-    }
+    if (!client) return;
 
     setIsStartingSession(true);
     setErrorMessage(null);
@@ -159,6 +148,7 @@ export default function ViewerPage() {
       setCurrentSession(session);
       setStoredActiveSessionId(session.id);
       setCaptureResult(null);
+      setWitnessInsight(null);
       setStatusMessage(`Session ${session.id} is active.`);
     } catch (error) {
       if (error instanceof BiofieldClientError && error.status === 401) {
@@ -172,18 +162,14 @@ export default function ViewerPage() {
   }
 
   async function handleCloseSession() {
-    if (!client || !currentSession) {
-      return;
-    }
+    if (!client || !currentSession) return;
 
     setIsClosingSession(true);
     setErrorMessage(null);
     setStatusMessage(null);
 
     try {
-      const session = await client.closeSession(currentSession.id, {
-        reason: "viewer-exit",
-      });
+      const session = await client.closeSession(currentSession.id, { reason: "viewer-exit" });
       setCurrentSession(session);
       clearStoredActiveSessionId();
       setStatusMessage(`Session ${session.id} closed.`);
@@ -200,9 +186,7 @@ export default function ViewerPage() {
 
   async function handleUpload(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!client || !currentSession || !selectedFile) {
-      return;
-    }
+    if (!client || !currentSession || !selectedFile) return;
 
     setIsUploading(true);
     setErrorMessage(null);
@@ -285,6 +269,32 @@ export default function ViewerPage() {
     }
   }, [client, currentSession]);
 
+  // BF1-05.6: Submit live composite scores to Noesis biofield engine.
+  // Throttled to METRICS_SUBMIT_INTERVAL_MS (30s) to avoid hammering the API.
+  const handleMetrics = useCallback((scores: CompositeScores) => {
+    if (!noesisClient) return;
+
+    const now = performance.now();
+    if (now - lastMetricsSubmitRef.current < METRICS_SUBMIT_INTERVAL_MS) return;
+    lastMetricsSubmitRef.current = now;
+
+    void noesisClient.calculate("biofield", {
+      options: {
+        source: "pip-live-metrics",
+        light_quanta_density: scores.lightQuantaDensity,
+        normalized_area: scores.normalizedArea,
+        body_symmetry: scores.bodySymmetry,
+        pattern_regularity: scores.patternRegularity,
+        overall_coherence: scores.overallCoherence,
+      },
+    }).then((output) => {
+      setWitnessInsight(output);
+    }).catch((err) => {
+      // Non-blocking: engine errors don't interrupt the live viewer.
+      console.warn("[BF1-05.6] biofield engine error:", err instanceof Error ? err.message : err);
+    });
+  }, [noesisClient]);
+
   const activeMetricRows = captureResult
     ? METRIC_KEYS.map((key) => ({ key, value: captureResult.metrics[key] }))
     : [];
@@ -292,8 +302,8 @@ export default function ViewerPage() {
 
   return (
     <section className="biofield-stack">
-      {/* PIP live camera + WebGL2 shader viewer (BF1-05.1) */}
-      <PIPViewerPanel onCapture={handlePIPCapture} />
+      {/* PIP live camera + WebGL2 shader viewer */}
+      <PIPViewerPanel onCapture={handlePIPCapture} onMetrics={handleMetrics} />
 
       <section className="biofield-grid">
         <article className="biofield-panel">
@@ -324,6 +334,26 @@ export default function ViewerPage() {
           </p>
         </article>
       </section>
+
+      {/* Witness insight from live metrics → biofield engine */}
+      {witnessInsight && (
+        <section className="biofield-panel">
+          <p className="biofield-eyebrow">Witness insight</p>
+          <h2 className="biofield-title" style={{ fontSize: "1.5rem" }}>
+            Live field reading
+          </h2>
+          {witnessInsight.witness_prompt && (
+            <p className="biofield-copy" style={{ fontStyle: "italic", opacity: 0.9 }}>
+              &ldquo;{witnessInsight.witness_prompt}&rdquo;
+            </p>
+          )}
+          {witnessInsight.consciousness_level !== undefined && (
+            <p className="biofield-kicker" style={{ marginTop: "0.5rem" }}>
+              Consciousness level: {witnessInsight.consciousness_level}
+            </p>
+          )}
+        </section>
+      )}
 
       <section className="biofield-panel biofield-form-panel">
         <div className="biofield-actions">
@@ -431,3 +461,14 @@ export default function ViewerPage() {
     </section>
   );
 }
+
+
+const METRIC_KEYS = [
+  "light_quanta_density",
+  "normalized_area",
+  "average_intensity",
+  "fractal_dimension",
+  "body_symmetry",
+  "pattern_regularity",
+] as const;
+
