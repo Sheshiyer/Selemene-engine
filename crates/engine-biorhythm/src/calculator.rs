@@ -34,6 +34,7 @@ pub struct BiorhythmResult {
     pub emotional: CycleResult,
     pub intellectual: CycleResult,
     pub intuitive: CycleResult,
+    pub aesthetic: CycleResult,
     pub spiritual: CycleResult,
     pub mastery: f64,
     pub passion: f64,
@@ -240,12 +241,18 @@ pub fn generate_witness_prompt(result: &BiorhythmResult) -> String {
     let phys_pct = result.physical.percentage;
     let emot_pct = result.emotional.percentage;
     let inte_pct = result.intellectual.percentage;
+    let intu_pct = result.intuitive.percentage;
+    let aest_pct = result.aesthetic.percentage;
+    let spir_pct = result.spiritual.percentage;
 
-    // Find the highest and lowest primary cycles.
+    // Find the highest and lowest across all six cycles.
     let cycles = [
         ("physical", phys_pct),
         ("emotional", emot_pct),
         ("intellectual", inte_pct),
+        ("intuitive", intu_pct),
+        ("aesthetic", aest_pct),
+        ("spiritual", spir_pct),
     ];
     let highest = cycles
         .iter()
@@ -258,7 +265,10 @@ pub fn generate_witness_prompt(result: &BiorhythmResult) -> String {
 
     let any_critical = result.physical.is_critical
         || result.emotional.is_critical
-        || result.intellectual.is_critical;
+        || result.intellectual.is_critical
+        || result.intuitive.is_critical
+        || result.aesthetic.is_critical
+        || result.spiritual.is_critical;
 
     let base = format!(
         "Your {} cycle is at {:.0}% while {} is at {:.0}%.",
