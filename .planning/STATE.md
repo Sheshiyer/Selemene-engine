@@ -2,42 +2,49 @@
 
 ## Current
 
-- **Active milestone**: m1 (P4 Gate D → P5 pending)
-- **Main branch**: at PR #651 (V22-W1 biorhythm/numerology complete)
-- **Open feature PRs**:
-  - **PR #652** (`feat/v3.1.0-security-validation-usage` → main): v3.1.0 security audits, input validation, UsageRepository, migration guide
-  - **PR #653** (`feat/biorhythm-forecast-secondary-cycles` → main): ForecastDay aesthetic/spiritual cycles + lib.rs/calculator.rs split fix
-- **Remote branches**: 2 feature branches (`feat/v3.1.0-*`, `feat/biorhythm-*`), no `agent/issue-*` branches remaining
+- **Active milestone**: v3.1.0 — **all Gates A–E verified, release signoff complete**
+- **Codebase version**: 3.1.0 (HEAD: ad810647)
+- **Open feature PRs**: none — 0 open PRs
+- **Remote branches**: `gate-e-report` and `fix/clippy-suppressions` (both merged, blocked from deletion by branch-protection rules — harmless)
 
 ## Recent Activity
 
-- **2026-05-04**:
-  - Opened PR #652 — v3.1.0 security hardening, input validation, UsageRepository date-range queries, API migration guide (v2→v3)
-  - Opened PR #653 — biorhythm `ForecastDay` secondary cycles (aesthetic 43-day, spiritual 53-day) + fixed pre-existing `E0255` compile bug in `lib.rs` (duplicate definitions vs `calculator.rs`)
-  - **Branch cleanup complete**: deleted all 74 `agent/issue-*` remote branches — all work confirmed in main or covered by new PRs
-    - Updated `noesis-admin` ruleset to exclude `refs/heads/agent/**` from branch deletion protection
-  - V22-W1 (numerology personal cycles + biorhythm secondary cycles + compatibility) fully merged via PR #651
+- **2026-05-04** (session 2):
+  - **PR #658** merged — Gate E verification report (`docs/release/gate-e-verification.md`)
+    - Drill 1: healthy canary baseline → `canary_healthy: true` ✅
+    - Drill 2: 5% error rate → `canary-promote.sh` rolls back at stage 25, hook called ✅
+    - Drill 3: live smoke runner → `/health/live`, `/health/ready`, `/metrics` all pass ✅
+  - **PR #659** merged — removed obsolete clippy suppressions from CI
+    - CI now runs `cargo clippy --all-targets -- -D warnings` with zero `-A` overrides
+    - All checks green at the stricter lint level
+
+- **2026-05-04** (session 1):
+  - **PR #652** merged — v3.1.0 security audits, input validation hardening, UsageRepository, API migration guide
+  - **PR #654** merged — biorhythm `ForecastDay` aesthetic/spiritual cycles + `lib.rs`/`calculator.rs` split fix (rebased from closed #653)
+  - **PR #656** merged — added `aesthetic: CycleResult` to `BiorhythmResult`; `overall_energy` now 6-cycle mean (was 3)
+  - **PR #657** merged — bumped `test_health_check_no_auth_required` version assertion `"3.0.0"` → `"3.1.0"`
+  - Gate D re-verified: 52/52 tests pass against v3.1.0 main
 
 - **2026-04-28**: PR #651 merged — V22-W1-S2-09 (full V22 Week 1 sprint complete)
 
-- **2026-04-26**:
-  - Closed PR #567 (redundant); shipped #568, #596, #597, #598, #600, #601
-  - Agent-dispatch + auto-ready + merge-lane pipeline shipped
-
 ## Open Blockers
 
-None. CI should be green on main (PR #651 clean merge).
+None.
 
 ## Next
 
-1. **Merge PR #652** once CI passes — v3.1.0 security + usage analytics
-2. **Merge PR #653** once CI passes — biorhythm ForecastDay fix
-3. **Reconcile `overall_energy` formula**: `ForecastDay.overall_energy` uses 6-cycle mean (PR #653), but `BiorhythmResult.overall_energy` in `calculate()` in `lib.rs` still uses 3-cycle mean — decide if they should match
-4. **Gate D** (P4): p95 SLO validation under mixed workflow traffic
-5. **Gate E** (P5): Canary + rollback drill, release checklist signoff
+Lower-priority follow-on items (no blocker on v3.1.0):
+
+1. **Smoke test credentials** — provision `SMOKE_TEST_API_KEY` in Railway env to cover auth-gated checks in Drill 3 (engines list, panchanga calc, workflow exec, TS bridge)
+2. **Version assertion fragility** — `test_health_check_no_auth_required` line 213 hardcodes `"3.1.0"`; will break on next version bump — consider making it semver-agnostic
+3. **Rollback drill Scenarios 1 & 2** — broken env var + crashing init require a staging deploy; no staging environment currently exists on Railway
+4. **Grafana annotation wiring** — `GRAFANA_ANNOTATION_CMD` hook exists but `GRAFANA_URL`/`GRAFANA_API_TOKEN` not configured; blocked on observability infrastructure
 
 ## Notes
 
-- **engine-biorhythm compile bug (fixed in PR #653)**: When `calculator.rs` was extracted, `lib.rs` was updated to `pub mod calculator` + `pub use` but the old monolithic code was NOT removed, causing ~52 `E0255` duplicate-name errors silently lurking on main. PR #653 removes the ~280 duplicate lines.
-- **V22 milestone**: V22-W1-S1 (numerology) + V22-W1-S2 (biorhythm) fully merged. PR #652 brings v3.1.0 security layer. PR #653 adds the last missing secondary rhythm fields.
-- `.context/planning/` archived to `.context/planning/_archive-2026-03/` (25 files, untouched, frozen 2026-03-02).
+- **Gate verification reports**: `docs/release/gate-verification.md` (Gates A–D, generated 2026-04-24) and `docs/release/gate-e-verification.md` (Gate E, generated 2026-05-04)
+- **CI lint**: now strictest-ever — no `-A` suppressions; `cargo clippy --all-targets -- -D warnings` passes clean
+- **Branch protection quirk**: `noesis-admin` ruleset blocks force-push on `feat/*`/`fix/*` and blocks branch deletion. Merged branches persist as orphans. Workaround for force-push: push to new branch name, close old PR, open new PR. `refs/heads/agent/**` is exempt from deletion protection.
+- **Squash-merge divergence**: squash commits don't match individual commit SHAs. Never cut a fix branch from a feature branch post-merge; always cherry-pick onto `origin/main`.
+- **types.rs dead file**: `crates/engine-biorhythm/src/types.rs` exists but is not referenced — leftover artifact, low priority.
+- `.context/planning/` archived to `.context/planning/_archive-2026-03/` (25 files, frozen 2026-03-02).
