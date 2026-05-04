@@ -23,7 +23,7 @@ const OAUTH_DEFAULT_API_KEY_PERMISSIONS: &[&str] = &["basic:access"];
 const ALLOWED_DISCORD_CALLBACK_PATHS: &[&str] = &[
     "/admin/login/discord-callback",
     "/admin/auth/discord/callback",
-    "/login/discord-callback", // biofield-web
+    "/login/discord-callback",
 ];
 
 fn normalize_callback_path(path: &str) -> String {

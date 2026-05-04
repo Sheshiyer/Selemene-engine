@@ -181,7 +181,16 @@ export function PIPViewerPanel({ onCapture, onMetrics }: PIPViewerPanelProps) {
         />
         <canvas
           ref={canvasRef}
-          style={{ display: "block", width: "100%", height: "100%" }}
+          style={{
+            display: "block",
+            width: "100%",
+            height: "100%",
+            transition: "box-shadow 0.5s ease",
+            boxShadow: isStreaming && !mpReady
+              ? "inset 0 0 0 2px rgba(124,124,255,0.45)"
+              : "none",
+            animation: isStreaming && !mpReady ? "pulse-canvas-border 1.8s ease-in-out infinite" : "none",
+          }}
         />
         {panelState === "idle" && (
           <div

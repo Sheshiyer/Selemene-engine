@@ -8,26 +8,35 @@ export interface BiofieldAuthSession {
 const STORAGE_KEY = "selemene_biofield_auth";
 const listeners = new Set<() => void>();
 
-function emitChange(): void {
-  listeners.forEach((listener) => listener());
-}
+// Cached snapshot — same reference returned until storage actually changes.
+// Required by useSyncExternalStore: getSnapshot must be referentially stable
+// between renders when data has not changed.
+let cachedSession: BiofieldAuthSession | null | undefined = undefined;
 
-export function getStoredAuthSession(): BiofieldAuthSession | null {
-  if (typeof window === "undefined") {
-    return null;
-  }
-
+function readFromStorage(): BiofieldAuthSession | null {
+  if (typeof window === "undefined") return null;
   const raw = window.localStorage.getItem(STORAGE_KEY);
-  if (!raw) {
-    return null;
-  }
-
+  if (!raw) return null;
   try {
     return JSON.parse(raw) as BiofieldAuthSession;
   } catch {
     window.localStorage.removeItem(STORAGE_KEY);
     return null;
   }
+}
+
+function emitChange(): void {
+  cachedSession = readFromStorage(); // refresh cache on every write/clear
+  listeners.forEach((listener) => listener());
+}
+
+export function getStoredAuthSession(): BiofieldAuthSession | null {
+  if (typeof window === "undefined") return null;
+  // Populate cache on first call (hydration)
+  if (cachedSession === undefined) {
+    cachedSession = readFromStorage();
+  }
+  return cachedSession;
 }
 
 export function subscribeToAuthSession(listener: () => void): () => void {

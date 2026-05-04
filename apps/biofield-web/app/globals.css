@@ -1,364 +1,875 @@
+/* ─────────────────────────────────────────────────────────
+   Selemene Biofield — Design System
+   DESIGN_VARIANCE=8  MOTION_INTENSITY=6  VISUAL_DENSITY=4
+   Geist · liquid glass · asymmetric · no neon
+   ───────────────────────────────────────────────────────── */
+
+/* ── Fonts injected by layout.tsx via next/font/google ── */
+
+/* ══════════════════════════════════════════════
+   1 · TOKENS
+   ══════════════════════════════════════════════ */
 :root {
-  --bg: #08131f;
-  --panel: rgba(10, 26, 40, 0.86);
-  --panel-strong: rgba(12, 32, 48, 0.95);
-  --line: rgba(125, 180, 196, 0.18);
-  --line-strong: rgba(125, 180, 196, 0.36);
-  --text: #edf7fb;
-  --muted: #9eb7c4;
-  --accent: #4ec0b8;
-  --accent-soft: rgba(78, 192, 184, 0.18);
-  --signal: #f4bb68;
-  --signal-soft: rgba(244, 187, 104, 0.16);
+  /* Type */
+  --font-sans: var(--font-geist, "Geist", "Inter", system-ui, sans-serif);
+  --font-mono: var(--font-geist-mono, "Geist Mono", "Fira Code", monospace);
+
+  /* Palette — dark base */
+  --bg:            #09090b;
+  --surface:       #101014;
+  --surface-2:     #15151a;
+  --panel:         rgba(255,255,255,0.03);
+  --panel-strong:  rgba(255,255,255,0.055);
+  --panel-hover:   rgba(255,255,255,0.075);
+
+  /* Lines */
+  --line-faint:    rgba(255,255,255,0.05);
+  --line-mid:      rgba(255,255,255,0.10);
+  --line-strong:   rgba(255,255,255,0.18);
+
+  /* Text */
+  --text:          #f0f0f3;
+  --text-2:        rgba(240,240,243,0.72);
+  --muted:         rgba(240,240,243,0.44);
+
+  /* Accent — cold indigo */
+  --accent:        #7c7cff;
+  --accent-rgb:    124, 124, 255;
+  --accent-dim:    rgba(124,124,255,0.15);
+  --accent-border: rgba(124,124,255,0.32);
+
+  /* Signal — warm amber used for live / active state */
+  --signal:        #ffb347;
+  --signal-rgb:    255,179,71;
+
+  /* Radius */
+  --r-xs:  4px;
+  --r-sm:  6px;
+  --r-md:  10px;
+  --r-lg:  14px;
+  --r-xl:  20px;
+  --r-2xl: 28px;
+  --r-pill: 9999px;
+
+  /* Elevation */
+  --shadow-sm:  0 1px  4px rgba(0,0,0,0.35);
+  --shadow-md:  0 4px 16px rgba(0,0,0,0.40);
+  --shadow-lg:  0 12px 40px rgba(0,0,0,0.50);
+  --shadow-xl:  0 24px 72px rgba(0,0,0,0.55);
+
+  /* Inner refraction (liquid glass top edge) */
+  --inset-glow:  inset 0 1px 0 rgba(255,255,255,0.07);
+
+  /* Easing */
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-spring:   cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-* {
-  box-sizing: border-box;
+/* ══════════════════════════════════════════════
+   2 · RESET & BASE
+   ══════════════════════════════════════════════ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  scroll-behavior: smooth;
 }
 
-html,
 body {
-  min-height: 100%;
-  margin: 0;
-  padding: 0;
-}
-
-body {
-  font-family: "Space Grotesk", "Avenir Next", sans-serif;
+  font-family: var(--font-sans);
+  font-size: 0.93rem;
+  line-height: 1.6;
   color: var(--text);
+  background: var(--bg);
+  min-height: 100dvh;
+  overflow-x: hidden;
+}
+
+/* Subtle radial bg gradient */
+body::before {
+  content: "";
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
   background:
-    radial-gradient(circle at top left, rgba(78, 192, 184, 0.16) 0%, transparent 30%),
-    radial-gradient(circle at bottom right, rgba(244, 187, 104, 0.14) 0%, transparent 26%),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.02), transparent 22%),
-    var(--bg);
-  background-attachment: fixed;
+    radial-gradient(ellipse 80% 60% at 15% 8%,  rgba(124,124,255,0.06) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 50% at 90% 85%, rgba(255,179,71,0.04)  0%, transparent 55%);
+  z-index: 0;
 }
 
-a {
-  color: inherit;
-  text-decoration: none;
-}
-
-button,
-input,
-select,
-textarea {
-  font: inherit;
-}
-
-:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
-}
-
-.biofield-shell {
-  min-height: 100vh;
-  padding: 1.5rem;
-}
-
-.biofield-stack {
-  max-width: 1160px;
-  margin: 0 auto;
-  display: grid;
-  gap: 1rem;
-}
-
-.biofield-hero,
-.biofield-panel {
-  border: 1px solid var(--line);
-  border-radius: 24px;
-  background:
-    linear-gradient(180deg, rgba(10, 26, 40, 0.92), rgba(6, 18, 30, 0.95)),
-    radial-gradient(circle at top right, var(--accent-soft), transparent 36%);
-  box-shadow: 0 18px 42px rgba(1, 8, 14, 0.28);
-}
-
-.biofield-hero {
-  padding: 1.4rem;
-}
-
-.biofield-panel {
-  padding: 1.1rem;
-}
-
+/* ══════════════════════════════════════════════
+   3 · TYPOGRAPHY
+   ══════════════════════════════════════════════ */
 .biofield-eyebrow {
-  margin: 0 0 0.5rem;
-  color: var(--signal);
-  font-size: 0.8rem;
+  font-size: 0.7rem;
+  font-weight: 600;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-}
-
-.biofield-title {
-  margin: 0;
-  font-size: clamp(2rem, 4vw, 3.4rem);
-  line-height: 0.95;
-  letter-spacing: -0.05em;
-}
-
-.biofield-copy {
   color: var(--muted);
-  line-height: 1.6;
-  max-width: 68ch;
-}
-
-.biofield-actions,
-.biofield-nav {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-}
-
-.biofield-button,
-.biofield-link {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 999px;
-  padding: 0.78rem 1.1rem;
-  border: 1px solid var(--line-strong);
-  transition:
-    transform 160ms ease,
-    border-color 160ms ease,
-    background-color 160ms ease;
-}
-
-.biofield-button {
-  background: linear-gradient(135deg, var(--accent-soft), rgba(78, 192, 184, 0.06));
-}
-
-.biofield-link {
-  background: rgba(255, 255, 255, 0.02);
-}
-
-.biofield-button:hover,
-.biofield-link:hover {
-  transform: translateY(-1px);
-  border-color: var(--accent);
-}
-
-.biofield-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 1rem;
 }
 
 .biofield-kicker {
-  margin: 0 0 0.35rem;
-  font-size: 0.78rem;
-  letter-spacing: 0.16em;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
+  color: var(--muted);
+}
+
+.biofield-title {
+  font-size: clamp(1.9rem, 4vw, 3rem);
+  font-weight: 760;
+  letter-spacing: -0.045em;
+  line-height: 1.1;
+  color: var(--text);
+}
+
+.biofield-title-sm {
+  font-size: clamp(1.2rem, 2.5vw, 1.6rem);
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  line-height: 1.2;
+  color: var(--text);
+}
+
+.biofield-copy {
+  font-size: 0.92rem;
+  color: var(--text-2);
+  line-height: 1.7;
+}
+
+.biofield-mono {
+  font-family: var(--font-mono);
+  font-size: 0.88em;
+  color: var(--text-2);
+}
+
+/* ══════════════════════════════════════════════
+   4 · SHELL & LAYOUT
+   ══════════════════════════════════════════════ */
+.biofield-shell {
+  position: relative;
+  z-index: 1;
+  min-height: 100dvh;
+  padding: clamp(1rem, 3vw, 2.4rem);
+}
+
+.biofield-stack {
+  display: grid;
+  gap: 1.1rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* ── Asymmetric login split ── */
+.biofield-login-shell {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  min-height: 100dvh;
+}
+
+@media (max-width: 768px) {
+  .biofield-login-shell {
+    grid-template-columns: 1fr;
+  }
+  .biofield-login-left {
+    display: none;
+  }
+}
+
+.biofield-login-left {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2.4rem;
+  padding: clamp(2.4rem, 6vw, 5rem) clamp(2rem, 5vw, 4.5rem);
+  border-right: 1px solid var(--line-faint);
+  position: relative;
+  overflow: hidden;
+}
+
+.biofield-login-left::before {
+  content: "";
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 90% 60% at -10% 30%, rgba(124,124,255,0.1) 0%, transparent 60%);
+}
+
+/* Orbiting glow orb */
+.biofield-login-left::after {
+  content: "";
+  pointer-events: none;
+  position: absolute;
+  top: 25%;
+  left: -8%;
+  width: 340px;
+  height: 340px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(124,124,255,0.12) 0%, transparent 70%);
+  animation: orbit-glow 8s ease-in-out infinite alternate;
+  filter: blur(24px);
+}
+
+@keyframes orbit-glow {
+  from { transform: translate(-5%, -8%) scale(0.95); opacity: 0.55; }
+  to   { transform: translate( 8%, 12%) scale(1.05); opacity: 1; }
+}
+
+.biofield-login-right {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(2rem, 5vw, 4rem);
+  background: rgba(255,255,255,0.016);
+}
+
+.biofield-login-form-card {
+  width: 100%;
+  max-width: 400px;
+  display: grid;
+  gap: 1.1rem;
+}
+
+.biofield-login-wordmark {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.2rem;
+}
+
+.biofield-login-wordmark-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 10px rgba(var(--accent-rgb), 0.6);
+  flex-shrink: 0;
+  animation: pulse-dot 2.8s ease-in-out infinite;
+}
+
+.biofield-login-wordmark-text {
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* ══════════════════════════════════════════════
+   5 · PANEL (liquid glass)
+   ══════════════════════════════════════════════ */
+.biofield-panel {
+  position: relative;
+  border-radius: var(--r-xl);
+  border: 1px solid var(--line-mid);
+  background: var(--panel);
+  backdrop-filter: blur(20px) saturate(1.4);
+  -webkit-backdrop-filter: blur(20px) saturate(1.4);
+  box-shadow: var(--inset-glow), var(--shadow-md);
+  padding: 1.6rem 1.8rem;
+  overflow: hidden;
+  transition: border-color 0.2s var(--ease-out-expo),
+              box-shadow   0.2s var(--ease-out-expo);
+}
+
+.biofield-panel:hover {
+  border-color: var(--line-strong);
+  box-shadow: var(--inset-glow), var(--shadow-lg);
+}
+
+/* Spotlight hover — shimmer moves with mouse via JS-free CSS */
+.biofield-panel::before {
+  content: "";
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(ellipse 60% 40% at 30% -10%, rgba(124,124,255,0.06) 0%, transparent 60%);
+  opacity: 0;
+  transition: opacity 0.4s var(--ease-out-expo);
+}
+.biofield-panel:hover::before { opacity: 1; }
+
+/* ── Nav pill ── */
+.biofield-shell-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.65rem 0.9rem 0.65rem 1.1rem;
+  border-radius: var(--r-pill) !important;
+  background: var(--panel-strong) !important;
+  box-shadow: var(--inset-glow), 0 2px 16px rgba(0,0,0,0.4) !important;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+/* ── Section variant (no hover effect) ── */
+.biofield-section {
+  border-radius: var(--r-xl);
+  border: 1px solid var(--line-mid);
+  background: var(--panel);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: var(--inset-glow), var(--shadow-sm);
+  padding: 1.6rem 1.8rem;
+  overflow: hidden;
+}
+
+/* ══════════════════════════════════════════════
+   6 · NAVIGATION
+   ══════════════════════════════════════════════ */
+.biofield-nav {
+  display: flex;
+  align-items: center;
+  gap: 0.15rem;
+  flex-wrap: wrap;
+}
+
+.biofield-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.45rem 0.9rem;
+  border-radius: var(--r-pill);
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--muted);
+  text-decoration: none;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: color 0.15s, background 0.15s;
+  font-family: var(--font-sans);
+}
+
+.biofield-link:hover {
+  color: var(--text);
+  background: rgba(255,255,255,0.07);
+}
+
+.biofield-link-active {
+  color: var(--text) !important;
+  background: rgba(255,255,255,0.09) !important;
+  font-weight: 600;
+}
+
+/* ══════════════════════════════════════════════
+   7 · BUTTONS
+   ══════════════════════════════════════════════ */
+.biofield-button {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+  padding: 0.7rem 1.4rem;
+  border-radius: var(--r-md);
+  font-family: var(--font-sans);
+  font-size: 0.88rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  transition: opacity 0.15s, transform 0.15s var(--ease-spring), box-shadow 0.15s;
+  overflow: hidden;
+
+  /* Default: ghost */
+  color: var(--text);
+  background: rgba(255,255,255,0.06);
+  border: 1px solid var(--line-mid);
+  box-shadow: var(--inset-glow);
+  text-decoration: none;
+}
+
+.biofield-button::after {
+  content: "";
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(135deg, rgba(255,255,255,0.12) 0%, transparent 60%);
+  opacity: 0;
+  transition: opacity 0.25s var(--ease-out-expo);
+}
+
+.biofield-button:hover:not(:disabled) {
+  background: rgba(255,255,255,0.1);
+  border-color: var(--line-strong);
+  transform: translateY(-1px);
+  box-shadow: var(--inset-glow), var(--shadow-md);
+}
+
+.biofield-button:hover:not(:disabled)::after { opacity: 1; }
+
+.biofield-button:active:not(:disabled) {
+  transform: translateY(0) scale(0.98);
+  transition-duration: 0.08s;
+}
+
+.biofield-button:disabled {
+  opacity: 0.42;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* ── Primary (Discord / CTA) ── */
+.biofield-button-primary {
+  background: var(--accent-dim);
+  border-color: var(--accent-border);
+  color: #d4d4ff;
+  box-shadow: var(--inset-glow), 0 0 0 0 rgba(var(--accent-rgb), 0);
+}
+
+.biofield-button-primary:hover:not(:disabled) {
+  background: rgba(var(--accent-rgb), 0.22);
+  border-color: rgba(var(--accent-rgb), 0.5);
+  box-shadow: var(--inset-glow), 0 0 20px rgba(var(--accent-rgb), 0.18), var(--shadow-md);
+  color: #e8e8ff;
+}
+
+/* ── Danger / destructive ── */
+.biofield-button-danger {
+  background: rgba(255, 80, 80, 0.1);
+  border-color: rgba(255, 80, 80, 0.25);
+  color: #ffaaaa;
+}
+
+.biofield-button-danger:hover:not(:disabled) {
+  background: rgba(255, 80, 80, 0.18);
+  border-color: rgba(255, 80, 80, 0.42);
+}
+
+/* ── Icon-only button ── */
+.biofield-button-icon {
+  padding: 0.6rem;
+  border-radius: var(--r-md);
+  aspect-ratio: 1;
+}
+
+/* ── Signal / live indicator button ── */
+.biofield-button-live {
+  background: rgba(var(--signal-rgb), 0.1);
+  border-color: rgba(var(--signal-rgb), 0.28);
   color: var(--signal);
 }
 
-.biofield-metric {
-  margin: 0;
-  font-size: 1.6rem;
-  letter-spacing: -0.04em;
+.biofield-button-live:hover:not(:disabled) {
+  background: rgba(var(--signal-rgb), 0.18);
+  border-color: rgba(var(--signal-rgb), 0.5);
 }
 
-.biofield-shell-nav {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  gap: 0.8rem;
-  align-items: center;
-}
-
-.biofield-shell-nav h1 {
-  margin: 0;
-  font-size: 1rem;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-}
-
-.biofield-list {
-  display: grid;
-  gap: 0.8rem;
-  padding: 0;
-  margin: 0;
-  list-style: none;
-}
-
-.biofield-list li {
-  border: 1px solid var(--line);
-  border-radius: 18px;
-  padding: 0.95rem;
-  background: rgba(255, 255, 255, 0.03);
-}
-
-.biofield-shell-copy {
-  margin: 0.35rem 0 0;
-}
-
-.biofield-form-panel {
-  display: grid;
-  gap: 1rem;
-}
-
+/* ══════════════════════════════════════════════
+   8 · FORMS
+   ══════════════════════════════════════════════ */
 .biofield-form {
   display: grid;
-  gap: 1rem;
-}
-
-.biofield-form-inline {
-  display: grid;
-  gap: 1rem;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: end;
+  gap: 0.9rem;
 }
 
 .biofield-field {
   display: grid;
   gap: 0.45rem;
-}
-
-.biofield-field-grow {
-  min-width: 0;
+  cursor: default;
 }
 
 .biofield-input {
   width: 100%;
-  border-radius: 18px;
-  border: 1px solid var(--line-strong);
-  background: rgba(255, 255, 255, 0.04);
+  padding: 0.72rem 0.9rem;
+  border-radius: var(--r-md);
+  border: 1px solid var(--line-mid);
+  background: rgba(255,255,255,0.04);
   color: var(--text);
-  padding: 0.9rem 1rem;
+  font-family: var(--font-sans);
+  font-size: 0.88rem;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+  box-shadow: var(--inset-glow);
 }
 
-.biofield-input::file-selector-button {
-  margin-right: 0.9rem;
-  border: 1px solid var(--line-strong);
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.06);
-  color: var(--text);
-  padding: 0.55rem 0.8rem;
-  cursor: pointer;
-}
+.biofield-input::placeholder { color: var(--muted); }
 
-.biofield-error,
-.biofield-success {
-  margin: 0;
-  border-radius: 18px;
-  padding: 0.9rem 1rem;
+.biofield-input:focus {
+  border-color: var(--accent-border);
+  background: rgba(255,255,255,0.06);
+  box-shadow: var(--inset-glow), 0 0 0 3px rgba(var(--accent-rgb), 0.15);
 }
 
 .biofield-error {
-  border: 1px solid rgba(255, 120, 120, 0.28);
-  background: rgba(255, 120, 120, 0.12);
-  color: #ffd5d5;
+  font-size: 0.82rem;
+  color: #ff8585;
+  padding: 0.6rem 0.8rem;
+  border-radius: var(--r-sm);
+  border: 1px solid rgba(255,80,80,0.2);
+  background: rgba(255,80,80,0.07);
+  line-height: 1.5;
 }
 
-.biofield-success {
-  border: 1px solid rgba(78, 192, 184, 0.28);
-  background: rgba(78, 192, 184, 0.12);
-  color: #d8fff8;
-}
-
-.biofield-link-active {
-  border-color: var(--accent);
-  background: linear-gradient(135deg, var(--accent-soft), rgba(78, 192, 184, 0.06));
-}
-
-.biofield-list-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 0.8rem;
-  margin-bottom: 1rem;
-}
-
-.biofield-list-card {
-  border: 1px solid var(--line);
-  border-radius: 18px;
-  padding: 0.95rem;
-  background: rgba(255, 255, 255, 0.03);
-}
-
-.biofield-toolbar {
+/* ══════════════════════════════════════════════
+   9 · DIVIDER
+   ══════════════════════════════════════════════ */
+.biofield-divider {
   display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  align-items: flex-start;
+  align-items: center;
+  gap: 0.8rem;
+  color: var(--muted);
+  font-size: 0.76rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin: 0.2rem 0;
+}
+
+.biofield-divider::before,
+.biofield-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--line-mid);
+}
+
+/* ══════════════════════════════════════════════
+   10 · METRIC & DATA DISPLAY
+   ══════════════════════════════════════════════ */
+/* Bento grid — asymmetric */
+.biofield-bento {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 0.9rem;
 }
 
-.biofield-meta-grid,
-.biofield-detail-grid {
+.biofield-metric-card {
+  padding: 1.2rem 1.4rem;
+  border-radius: var(--r-lg);
+  border: 1px solid var(--line-mid);
+  background: var(--panel);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: var(--inset-glow);
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 0.8rem;
+  gap: 0.35rem;
+  transition: border-color 0.2s var(--ease-out-expo), transform 0.2s var(--ease-out-expo), box-shadow 0.2s;
 }
 
-.biofield-status-pill {
+.biofield-metric-card:hover {
+  border-color: var(--line-strong);
+  transform: translateY(-2px);
+  box-shadow: var(--inset-glow), var(--shadow-md);
+}
+
+.biofield-metric-label {
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.biofield-metric-value {
+  font-family: var(--font-mono);
+  font-size: 1.4rem;
+  font-weight: 600;
+  letter-spacing: -0.04em;
+  color: var(--text);
+  line-height: 1.2;
+}
+
+.biofield-metric-unit {
+  font-size: 0.75rem;
+  color: var(--muted);
+  font-family: var(--font-mono);
+}
+
+/* Live pulse on metric values when session active */
+.biofield-metric-live .biofield-metric-value {
+  animation: metric-flash 2.4s ease-in-out infinite;
+}
+
+@keyframes metric-flash {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.75; }
+}
+
+/* Progress bar */
+.biofield-bar-track {
+  height: 3px;
+  width: 100%;
+  border-radius: var(--r-pill);
+  background: var(--line-faint);
+  overflow: hidden;
+}
+
+.biofield-bar-fill {
+  height: 100%;
+  border-radius: var(--r-pill);
+  background: var(--accent);
+  transition: width 0.4s var(--ease-out-expo);
+}
+
+/* ══════════════════════════════════════════════
+   11 · STATUS BADGES
+   ══════════════════════════════════════════════ */
+.biofield-badge {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  border-radius: 999px;
-  border: 1px solid var(--line-strong);
-  padding: 0.45rem 0.8rem;
-  font-size: 0.82rem;
+  gap: 0.3rem;
+  padding: 0.22rem 0.6rem;
+  border-radius: var(--r-pill);
+  font-size: 0.7rem;
+  font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  background: rgba(255, 255, 255, 0.04);
 }
 
-.biofield-status-pill-good {
-  border-color: rgba(78, 192, 184, 0.36);
-  background: rgba(78, 192, 184, 0.12);
-  color: #d8fff8;
+.biofield-badge-live {
+  color: var(--signal);
+  background: rgba(var(--signal-rgb), 0.12);
+  border: 1px solid rgba(var(--signal-rgb), 0.25);
 }
 
-.biofield-status-pill-warn {
-  border-color: rgba(244, 187, 104, 0.36);
-  background: rgba(244, 187, 104, 0.12);
-  color: #ffe8c6;
+.biofield-badge-live::before {
+  content: "";
+  display: inline-block;
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: currentColor;
+  animation: pulse-dot 1.6s ease-in-out infinite;
 }
 
-.biofield-json {
-  margin: 0;
-  padding: 1rem;
-  border-radius: 18px;
-  border: 1px solid var(--line);
-  background: rgba(1, 8, 14, 0.46);
+.biofield-badge-idle {
+  color: var(--muted);
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--line-mid);
+}
+
+.biofield-badge-ready {
+  color: #60dda6;
+  background: rgba(96,221,166,0.1);
+  border: 1px solid rgba(96,221,166,0.22);
+}
+
+.biofield-badge-error {
+  color: #ff8585;
+  background: rgba(255,80,80,0.08);
+  border: 1px solid rgba(255,80,80,0.22);
+}
+
+/* ══════════════════════════════════════════════
+   12 · CAMERA / VIDEO
+   ══════════════════════════════════════════════ */
+.biofield-camera-shell {
+  border-radius: var(--r-xl);
+  overflow: hidden;
+  border: 1px solid var(--line-mid);
+  background: var(--surface);
+  box-shadow: var(--inset-glow), var(--shadow-lg);
+  aspect-ratio: 16 / 9;
+  position: relative;
+}
+
+.biofield-camera-shell video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.biofield-camera-overlay {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(
+    to bottom,
+    transparent 60%,
+    rgba(9,9,11,0.55) 100%
+  );
+}
+
+/* ── PIP (picture-in-picture) ── */
+.biofield-pip {
+  position: absolute;
+  bottom: 1.1rem;
+  right: 1.1rem;
+  width: clamp(100px, 18%, 160px);
+  aspect-ratio: 16 / 9;
+  border-radius: var(--r-lg);
+  overflow: hidden;
+  border: 1px solid var(--line-strong);
+  box-shadow: var(--inset-glow), var(--shadow-lg);
+  background: var(--surface);
+  cursor: move;
+  transition: box-shadow 0.2s;
+}
+
+.biofield-pip:hover {
+  box-shadow: var(--inset-glow), var(--shadow-xl);
+}
+
+.biofield-pip video {
+  width: 100%; height: 100%;
+  object-fit: cover; display: block;
+}
+
+/* ══════════════════════════════════════════════
+   13 · WITNESS INSIGHT CARD
+   ══════════════════════════════════════════════ */
+.biofield-insight-card {
+  padding: 1.6rem 1.8rem;
+  border-radius: var(--r-xl);
+  border: 1px solid var(--accent-border);
+  background: var(--accent-dim);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: var(--inset-glow), 0 0 40px rgba(var(--accent-rgb), 0.08), var(--shadow-md);
+  display: grid;
+  gap: 0.9rem;
+}
+
+.biofield-insight-card blockquote {
+  font-size: 1.02rem;
+  line-height: 1.72;
   color: var(--text);
-  overflow: auto;
-  font-family: "SFMono-Regular", "Menlo", monospace;
-  font-size: 0.84rem;
-  line-height: 1.55;
-  white-space: pre-wrap;
-  word-break: break-word;
+  font-style: normal;
+  font-weight: 400;
+  letter-spacing: -0.01em;
 }
 
-.biofield-textarea {
-  min-height: 7rem;
-  resize: vertical;
+/* ══════════════════════════════════════════════
+   14 · TABLE
+   ══════════════════════════════════════════════ */
+.biofield-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.86rem;
 }
 
-.biofield-checkbox-row {
+.biofield-table thead tr {
+  border-bottom: 1px solid var(--line-mid);
+}
+
+.biofield-table th {
+  padding: 0.6rem 0.9rem;
+  text-align: left;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.biofield-table td {
+  padding: 0.72rem 0.9rem;
+  color: var(--text-2);
+  vertical-align: top;
+  border-bottom: 1px solid var(--line-faint);
+}
+
+.biofield-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.biofield-table tbody tr:hover td {
+  background: rgba(255,255,255,0.022);
+}
+
+/* ══════════════════════════════════════════════
+   15 · ANIMATIONS
+   ══════════════════════════════════════════════ */
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1;    transform: scale(1); }
+  50%      { opacity: 0.45; transform: scale(0.85); }
+}
+
+@keyframes shimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position: 200%  center; }
+}
+
+/* Stagger cascade on any .biofield-stack children */
+.biofield-stack > * {
+  animation: fade-up 0.5s var(--ease-out-expo) both;
+}
+.biofield-stack > *:nth-child(1)  { animation-delay:   0ms; }
+.biofield-stack > *:nth-child(2)  { animation-delay:  55ms; }
+.biofield-stack > *:nth-child(3)  { animation-delay: 110ms; }
+.biofield-stack > *:nth-child(4)  { animation-delay: 165ms; }
+.biofield-stack > *:nth-child(5)  { animation-delay: 220ms; }
+.biofield-stack > *:nth-child(6)  { animation-delay: 275ms; }
+.biofield-stack > *:nth-child(7)  { animation-delay: 330ms; }
+.biofield-stack > *:nth-child(8)  { animation-delay: 385ms; }
+
+/* Stagger bento cards */
+.biofield-bento > * {
+  animation: fade-up 0.45s var(--ease-out-expo) both;
+}
+.biofield-bento > *:nth-child(1)  { animation-delay:  40ms; }
+.biofield-bento > *:nth-child(2)  { animation-delay:  80ms; }
+.biofield-bento > *:nth-child(3)  { animation-delay: 120ms; }
+.biofield-bento > *:nth-child(4)  { animation-delay: 160ms; }
+.biofield-bento > *:nth-child(5)  { animation-delay: 200ms; }
+.biofield-bento > *:nth-child(6)  { animation-delay: 240ms; }
+.biofield-bento > *:nth-child(7)  { animation-delay: 280ms; }
+.biofield-bento > *:nth-child(8)  { animation-delay: 320ms; }
+.biofield-bento > *:nth-child(9)  { animation-delay: 360ms; }
+.biofield-bento > *:nth-child(10) { animation-delay: 400ms; }
+.biofield-bento > *:nth-child(11) { animation-delay: 440ms; }
+.biofield-bento > *:nth-child(12) { animation-delay: 480ms; }
+
+/* Shimmer skeleton */
+.biofield-skeleton {
+  border-radius: var(--r-md);
+  background: linear-gradient(90deg, var(--surface-2) 25%, var(--surface) 50%, var(--surface-2) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.8s ease-in-out infinite;
+}
+
+@keyframes pulse-canvas-border {
+  0%, 100% { box-shadow: inset 0 0 0 2px rgba(124,124,255,0.35); }
+  50%       { box-shadow: inset 0 0 0 2px rgba(124,124,255,0.7); }
+}
+
+/* ══════════════════════════════════════════════
+   16 · UTILITIES
+   ══════════════════════════════════════════════ */
+.sr-only {
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden;
+  clip: rect(0,0,0,0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+.biofield-flex-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.biofield-chip {
   display: inline-flex;
   align-items: center;
-  gap: 0.55rem;
-  border: 1px solid var(--line-strong);
-  border-radius: 999px;
-  padding: 0.65rem 0.95rem;
-  background: rgba(255, 255, 255, 0.03);
-}
-
-.biofield-checkbox {
-  accent-color: var(--accent);
-}
-
-.biofield-mono {
-  font-family: "SFMono-Regular", "Menlo", monospace;
-  word-break: break-word;
-}
-
-@media (max-width: 720px) {
-  .biofield-shell {
-    padding: 1rem;
-  }
-
-  .biofield-form-inline {
-    grid-template-columns: 1fr;
-  }
+  padding: 0.18rem 0.55rem;
+  border-radius: var(--r-pill);
+  font-size: 0.72rem;
+  font-weight: 500;
+  border: 1px solid var(--line-mid);
+  color: var(--muted);
+  background: rgba(255,255,255,0.03);
 }

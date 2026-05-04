@@ -22,40 +22,52 @@ interface LoginResponse {
   tier: string;
 }
 
-export async function login(email: string, password: string): Promise<BiofieldAuthSession> {
-  const response = await fetch(buildApiUrl("/api/v1/auth/login"), {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ email, password }),
+async function apiRequest<T>(path: string, init?: RequestInit): Promise<T> {
+  const response = await fetch(buildApiUrl(path), {
     cache: "no-store",
+    ...init,
   });
-
   const text = await response.text();
   const payload = text ? JSON.parse(text) : null;
-
   if (!response.ok) {
     throw new BiofieldApiError(
-      typeof payload?.message === "string" ? payload.message : `Login failed: ${response.status}`,
+      typeof payload?.message === "string" ? payload.message : `Request failed: ${response.status}`,
       response.status,
       payload,
     );
   }
+  return payload as T;
+}
 
-  const loginResponse = payload as LoginResponse;
-  return {
-    token: loginResponse.token,
-    userId: loginResponse.user_id,
-    email: loginResponse.email,
-    tier: loginResponse.tier,
-  };
+export async function login(email: string, password: string): Promise<BiofieldAuthSession> {
+  const data = await apiRequest<LoginResponse>("/api/v1/auth/login", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, password }),
+  });
+  return { token: data.token, userId: data.user_id, email: data.email, tier: data.tier };
+}
+
+export async function getDiscordAuthUrl(redirectUri?: string): Promise<{ url: string }> {
+  const qs = redirectUri ? `?redirect_uri=${encodeURIComponent(redirectUri)}` : "";
+  return apiRequest<{ url: string }>(`/api/v1/auth/discord/authorize${qs}`);
+}
+
+export async function discordCallback(
+  code: string,
+  state?: string,
+  redirectUri?: string,
+): Promise<BiofieldAuthSession> {
+  const data = await apiRequest<LoginResponse>("/api/v1/auth/discord/callback", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ code, state, redirect_uri: redirectUri }),
+  });
+  return { token: data.token, userId: data.user_id, email: data.email, tier: data.tier };
 }
 
 export function createBiofieldClient(token: string): BiofieldClient {
-  return new BiofieldClient(getApiBaseUrl(), {
-    authToken: token,
-  });
+  return new BiofieldClient(getApiBaseUrl(), { authToken: token });
 }
 
 export function createNoesisClient(token: string): NoesisClient {

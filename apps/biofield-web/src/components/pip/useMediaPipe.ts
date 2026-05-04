@@ -61,7 +61,7 @@ interface NormalizedLandmark {
 
 interface FaceLandmarkerResult {
   faceLandmarks: NormalizedLandmark[][];
-  close(): void;
+  // Note: FaceLandmarkerResult does NOT have close() — only segmentation results do.
 }
 
 interface FaceLandmarkerStatic {
@@ -213,7 +213,7 @@ export function useMediaPipe(): UseMediaPipeResult {
 
     const result = face.detectForVideo(video, performance.now());
     const out: MediaPipeFaceResult = { landmarks: result.faceLandmarks };
-    result.close();
+    // FaceLandmarkerResult has no close() — only ImageSegmenterResult does.
     return out;
   }, []);
 
