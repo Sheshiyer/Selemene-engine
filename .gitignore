@@ -44,3 +44,9 @@ Openclaw.txt
 
 # Local runtime artifact storage
 /.runtime/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
