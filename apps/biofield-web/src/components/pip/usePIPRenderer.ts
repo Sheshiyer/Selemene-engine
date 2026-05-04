@@ -2,7 +2,7 @@
 
 import { RefObject, useCallback, useEffect, useRef, useState } from "react";
 import { PIPRenderer } from "./PIPRenderer";
-import type { MediaPipeMask } from "./useMediaPipe";
+import type { MediaPipeMask, MediaPipeFaceResult } from "./useMediaPipe";
 import type { PIPSettings } from "./types";
 
 export type RendererStatus = "idle" | "ready" | "error";
@@ -13,6 +13,8 @@ export interface UsePIPRendererResult {
     video: HTMLVideoElement,
     settingsRef: RefObject<PIPSettings>,
     getMask: () => MediaPipeMask | null,
+    getFace: () => MediaPipeFaceResult | null,
+    onFrame: (canvas: HTMLCanvasElement, mask: MediaPipeMask | null, face: MediaPipeFaceResult | null) => void,
   ) => void;
   stopRenderLoop: () => void;
 }
@@ -49,6 +51,8 @@ export function usePIPRenderer(
       video: HTMLVideoElement,
       settingsRef: RefObject<PIPSettings>,
       getMask: () => MediaPipeMask | null,
+      getFace: () => MediaPipeFaceResult | null,
+      onFrame: (canvas: HTMLCanvasElement, mask: MediaPipeMask | null, face: MediaPipeFaceResult | null) => void,
     ) => {
       if (rafRef.current !== null) return;
 
@@ -56,18 +60,27 @@ export function usePIPRenderer(
 
       function loop() {
         const renderer = rendererRef.current;
+        const canvas = canvasRef.current;
         if (!renderer) return;
 
         const settings = settingsRef.current;
+        const mask = getMask();
+        const face = getFace();
+
         if (settings) {
-          renderer.render(video, performance.now() - startTime, settings, getMask());
+          renderer.render(video, performance.now() - startTime, settings, mask);
         }
+
+        if (canvas) {
+          onFrame(canvas, mask, face);
+        }
+
         rafRef.current = requestAnimationFrame(loop);
       }
 
       rafRef.current = requestAnimationFrame(loop);
     },
-    [],
+    [canvasRef],
   );
 
   const stopRenderLoop = useCallback(() => {
