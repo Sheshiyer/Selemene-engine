@@ -13,12 +13,14 @@ dependencies = [
     "python-multipart>=0.0.6",
     "numpy>=1.26",
     "pydantic>=2.5",
+    "opencv-python-headless>=4.8",
+    "scipy>=1.11",
+    "scikit-image>=0.22",
 ]
 
 [project.optional-dependencies]
 mediapipe = [
     "mediapipe>=0.10",
-    "opencv-python-headless>=4.8",
 ]
 dev = [
     "pytest>=7.4",
