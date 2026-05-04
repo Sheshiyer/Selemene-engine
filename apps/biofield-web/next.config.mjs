@@ -7,6 +7,15 @@ const nextConfig = {
     "@selemene/biofield-domain",
     "@selemene/biofield-api-client",
   ],
+  async redirects() {
+    return [
+      {
+        source: "/",
+        destination: "/login",
+        permanent: false,
+      },
+    ];
+  },
 };
 
 export default nextConfig;
