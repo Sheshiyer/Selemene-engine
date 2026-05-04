@@ -510,7 +510,7 @@ mod tests {
         for chakra in Chakra::all() {
             let cw = wisdom
                 .get(&chakra)
-                .expect(&format!("{:?} wisdom missing", chakra));
+                .unwrap_or_else(|| panic!("{:?} wisdom missing", chakra));
             assert!(!cw.name.is_empty());
             assert!(!cw.location.is_empty());
             assert!(!cw.qualities.is_empty());
@@ -534,7 +534,7 @@ mod tests {
         for metric in expected_metrics {
             let interp = interps
                 .get(metric)
-                .expect(&format!("{} interpretation missing", metric));
+                .unwrap_or_else(|| panic!("{} interpretation missing", metric));
             assert!(!interp.description.is_empty());
             assert!(interp.optimal_range.0 < interp.optimal_range.1);
         }

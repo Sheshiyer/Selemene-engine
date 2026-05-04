@@ -108,7 +108,8 @@ mod tests {
         let test_keys = [1, 17, 33, 47, 64];
 
         for &key_num in &test_keys {
-            let key = get_gene_key(key_num).expect(&format!("Gene Key {} missing", key_num));
+            let key = get_gene_key(key_num)
+                .unwrap_or_else(|| panic!("Gene Key {} missing", key_num));
 
             // Descriptions should be substantial (typical: 100-500 words)
             assert!(

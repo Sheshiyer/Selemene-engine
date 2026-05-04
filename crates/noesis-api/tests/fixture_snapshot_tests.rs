@@ -110,7 +110,7 @@ fn assert_biorhythm_fixture(fixture: &Value) {
 
         let value = c["value"]
             .as_f64()
-            .expect(&format!("{}.value must be f64", cycle));
+            .unwrap_or_else(|| panic!("{}.value must be f64", cycle));
         assert!(
             (-1.0..=1.0).contains(&value),
             "{}.value {} out of [-1, 1]",
@@ -120,7 +120,7 @@ fn assert_biorhythm_fixture(fixture: &Value) {
 
         let pct = c["percentage"]
             .as_f64()
-            .expect(&format!("{}.percentage must be f64", cycle));
+            .unwrap_or_else(|| panic!("{}.percentage must be f64", cycle));
         assert!(
             (0.0..=100.0).contains(&pct),
             "{}.percentage {} out of [0, 100]",
@@ -130,7 +130,7 @@ fn assert_biorhythm_fixture(fixture: &Value) {
 
         let phase = c["phase"]
             .as_str()
-            .expect(&format!("{}.phase must be string", cycle));
+            .unwrap_or_else(|| panic!("{}.phase must be string", cycle));
         assert!(
             ["Rising", "Falling", "Peak", "Low", "Critical"].contains(&phase),
             "{}.phase '{}' is not a valid phase",
@@ -163,7 +163,7 @@ fn assert_biorhythm_fixture(fixture: &Value) {
     for composite in &["mastery", "passion", "wisdom", "overall_energy"] {
         let v = result[composite]
             .as_f64()
-            .expect(&format!("{} must be f64", composite));
+            .unwrap_or_else(|| panic!("{} must be f64", composite));
         assert!(
             (0.0..=100.0).contains(&v),
             "{} = {} out of [0, 100]",
@@ -640,7 +640,7 @@ fn assert_biofield_fixture(fixture: &Value) {
     for field in &["entropy", "coherence", "symmetry", "vitality_index"] {
         let v = metrics[field]
             .as_f64()
-            .expect(&format!("metrics.{} must be f64", field));
+            .unwrap_or_else(|| panic!("metrics.{} must be f64", field));
         assert!(
             (0.0..=1.0).contains(&v),
             "metrics.{} = {} out of [0.0, 1.0]",
@@ -699,11 +699,10 @@ fn assert_biofield_fixture(fixture: &Value) {
         result["areas_of_attention"].is_array(),
         "areas_of_attention must be an array"
     );
-    assert_eq!(
+    assert!(
         result["is_mock_data"]
             .as_bool()
             .expect("is_mock_data must be boolean"),
-        true,
         "is_mock_data must be true for these fixtures"
     );
 }
