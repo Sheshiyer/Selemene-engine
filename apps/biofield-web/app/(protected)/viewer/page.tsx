@@ -462,13 +462,3 @@ export default function ViewerPage() {
   );
 }
 
-
-const METRIC_KEYS = [
-  "light_quanta_density",
-  "normalized_area",
-  "average_intensity",
-  "fractal_dimension",
-  "body_symmetry",
-  "pattern_regularity",
-] as const;
-
