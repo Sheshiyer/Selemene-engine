@@ -1,4 +1,5 @@
 import { BiofieldClient } from "@selemene/biofield-api-client";
+import { NoesisClient } from "@selemene/noesis-sdk-ts";
 import { buildApiUrl, getApiBaseUrl } from "@/lib/config";
 import type { BiofieldAuthSession } from "@/lib/auth";
 
@@ -55,4 +56,8 @@ export function createBiofieldClient(token: string): BiofieldClient {
   return new BiofieldClient(getApiBaseUrl(), {
     authToken: token,
   });
+}
+
+export function createNoesisClient(token: string): NoesisClient {
+  return new NoesisClient(getApiBaseUrl(), { authToken: token });
 }
