@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { DEFAULT_PIP_SETTINGS } from "./types";
 import { useCamera } from "./useCamera";
+import { useMediaPipe } from "./useMediaPipe";
 import { usePIPRenderer } from "./usePIPRenderer";
 
 export interface PIPViewerPanelProps {
@@ -17,18 +18,26 @@ export function PIPViewerPanel({ onCapture }: PIPViewerPanelProps) {
 
   const { videoRef, isStreaming, devices, error: cameraError, startCamera, stopCamera } = useCamera();
   const { status: glStatus, startRenderLoop, stopRenderLoop } = usePIPRenderer(canvasRef);
+  const { ready: mpReady, error: mpError, segmentFrame } = useMediaPipe();
 
   const [panelState, setPanelState] = useState<PanelState>("idle");
   const [captureCount, setCaptureCount] = useState(0);
   const [captureError, setCaptureError] = useState<string | null>(null);
 
+  // getMask runs each RAF frame: returns the latest segmentation mask or null.
+  const getMask = useCallback(() => {
+    const video = videoRef.current;
+    if (!mpReady || !video) return null;
+    return segmentFrame(video);
+  }, [mpReady, segmentFrame, videoRef]);
+
   // Start render loop when both camera and renderer are ready.
   useEffect(() => {
     const video = videoRef.current;
     if (isStreaming && glStatus === "ready" && video && panelState === "streaming") {
-      startRenderLoop(video, settingsRef);
+      startRenderLoop(video, settingsRef, getMask);
     }
-  }, [isStreaming, glStatus, panelState, startRenderLoop, videoRef]);
+  }, [isStreaming, glStatus, panelState, startRenderLoop, getMask, videoRef]);
 
   const handleStart = useCallback(async () => {
     setCaptureError(null);
@@ -44,10 +53,10 @@ export function PIPViewerPanel({ onCapture }: PIPViewerPanelProps) {
   const handleResume = useCallback(() => {
     const video = videoRef.current;
     if (video && glStatus === "ready") {
-      startRenderLoop(video, settingsRef);
+      startRenderLoop(video, settingsRef, getMask);
     }
     setPanelState("streaming");
-  }, [glStatus, startRenderLoop, videoRef]);
+  }, [glStatus, getMask, startRenderLoop, videoRef]);
 
   const handleStop = useCallback(() => {
     stopRenderLoop();
@@ -69,13 +78,6 @@ export function PIPViewerPanel({ onCapture }: PIPViewerPanelProps) {
         const reader = new FileReader();
         reader.onloadend = () => {
           const dataUrl = reader.result as string;
-          // BF1-05.2 will wire this to POST /api/v1/biofield/sessions/:id/captures
-          console.info("[PIPViewer] capture", {
-            engineId: "biofield-pip",
-            size: blob.size,
-            width: canvas.width,
-            height: canvas.height,
-          });
           onCapture?.(blob, dataUrl);
           setCaptureCount((n) => n + 1);
         };
@@ -91,6 +93,12 @@ export function PIPViewerPanel({ onCapture }: PIPViewerPanelProps) {
       : glStatus === "error"
         ? "WebGL2 ✗"
         : "WebGL2 …";
+
+  const mpLabel = mpError
+    ? "MP ✗"
+    : mpReady
+      ? "MP ✓"
+      : "MP …";
 
   const cameraLabel =
     panelState === "streaming"
@@ -115,6 +123,12 @@ export function PIPViewerPanel({ onCapture }: PIPViewerPanelProps) {
           className={`biofield-status-pill ${glStatus === "ready" ? "biofield-status-pill-good" : glStatus === "error" ? "" : "biofield-status-pill-warn"}`}
         >
           {glLabel}
+        </span>
+        <span
+          className={`biofield-status-pill ${mpReady ? "biofield-status-pill-good" : mpError ? "" : "biofield-status-pill-warn"}`}
+          title={mpError ?? undefined}
+        >
+          {mpLabel}
         </span>
         <span
           className={`biofield-status-pill ${panelState === "streaming" ? "biofield-status-pill-good" : panelState === "paused" ? "biofield-status-pill-warn" : ""}`}
@@ -219,10 +233,7 @@ export function PIPViewerPanel({ onCapture }: PIPViewerPanelProps) {
       )}
 
       <p className="biofield-copy" style={{ marginTop: "0.75rem" }}>
-        Captures save locally as PNG.{" "}
-        <span className="biofield-mono" style={{ fontSize: "0.75em", opacity: 0.7 }}>
-          API upload wired in BF1-05.2
-        </span>
+        Segmentation mask{mpReady ? " active" : " loading"} — biofield overlay is person-gated.
       </p>
     </section>
   );
