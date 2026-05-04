@@ -69,36 +69,45 @@ float fbm(vec2 p, int octaves) {
   return v;
 }
 
-// ── Biofield colour palette ───────────────────────────────────────────────────
-// Maps [0,1] to teal/blue/purple/gold interference fringe colours.
+// ── Full-spectrum rainbow palette ─────────────────────────────────────────────
+// Uses equal RGB weights with 120° phase shifts for a vivid full-hue wheel.
+// dark pixels → blue/violet, mid → cyan/green, bright → yellow/red.
 vec3 biofieldPalette(float t) {
   t = fract(t + u_colorShift);
   return vec3(0.5) + vec3(0.5) *
-    cos(6.28318 * (vec3(1.0, 0.7, 0.4) * t + vec3(0.0, 0.15, 0.20)));
+    cos(6.28318 * (t + vec3(0.0, 0.33, 0.67)));
 }
 
 void main() {
   // Video texture is flipped vertically from WebGL's coordinate system.
   vec4 video = texture(u_video, vec2(v_texCoord.x, 1.0 - v_texCoord.y));
 
+  // Luminance of the video frame drives the primary colour mapping.
+  // This maps real video structure (face, hair, background) to distinct hues.
+  float luma = dot(video.rgb, vec3(0.299, 0.587, 0.114));
+
+  // Animated fBm noise adds the energy-field shimmer on top of luma.
   vec2 p = v_texCoord * u_noiseScale;
-  float n = fbm(p + u_time * u_noiseSpeed, u_layerCount) * 0.5 + 0.5;
+  float noise = fbm(p + u_time * u_noiseSpeed, u_layerCount) * 0.5 + 0.5;
 
-  // Gate: only paint biofield overlay where noise exceeds threshold.
-  float gate = smoothstep(u_threshold - 0.1, u_threshold + 0.1, n);
-  vec3  pip  = biofieldPalette(n);
+  // Combine: luma spread × 2.5 so the palette wraps twice across the
+  // brightness range, noise adds animated shimmer, time adds slow drift.
+  float colorT = fract(luma * 2.5 + noise * 0.35 + u_time * 0.015);
+  vec3 pip = biofieldPalette(colorT);
 
-  // Segmentation mask: confidence value is in the red channel.
-  // u_maskStrength = 0 → ignore mask, 1 → only show biofield on person pixels.
-  float personConf = texture(u_mask, v_texCoord).r;
-  float maskGate   = mix(1.0, personConf, u_maskStrength);
+  // Segmentation blending:
+  //   No mask (maskStrength=0): 80 % effect everywhere (clear before MP loads)
+  //   With mask (maskStrength=1): person=100 %, background=50 %
+  float personConf  = texture(u_mask, v_texCoord).r;
+  float bgStrength  = mix(0.8, 0.5, u_maskStrength);
+  float pixelStrength = mix(bgStrength, 1.0, personConf * u_maskStrength);
 
-  fragColor = vec4(mix(video.rgb, pip, u_intensity * gate * maskGate), 1.0);
+  fragColor = vec4(mix(video.rgb, pip, u_intensity * pixelStrength), 1.0);
 }`;
 
 const UNIFORM_NAMES = [
   "u_video", "u_mask", "u_maskStrength", "u_time", "u_noiseScale", "u_noiseSpeed",
-  "u_layerCount", "u_intensity", "u_colorShift", "u_threshold",
+  "u_layerCount", "u_intensity", "u_colorShift",
 ] as const;
 
 type UniformName = (typeof UNIFORM_NAMES)[number];
@@ -222,7 +231,6 @@ export class PIPRenderer {
     gl.uniform1i(this.uniforms.u_layerCount ?? null, s.layerCount);
     gl.uniform1f(this.uniforms.u_intensity ?? null, s.intensity);
     gl.uniform1f(this.uniforms.u_colorShift ?? null, s.colorShift);
-    gl.uniform1f(this.uniforms.u_threshold ?? null, s.threshold);
 
     gl.drawArrays(gl.TRIANGLES, 0, 6);
     gl.bindVertexArray(null);

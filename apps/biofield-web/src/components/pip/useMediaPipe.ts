@@ -122,16 +122,22 @@ export function useMediaPipe(): UseMediaPipeResult {
   useEffect(() => {
     let cancelled = false;
 
-    async function init() {
-      // MediaPipe WASM emits TFLite/XNNPACK init messages through console.error.
-      // Suppress them during init so they don't appear in the Next.js issues overlay.
-      const origError = console.error;
-      console.error = (...args: unknown[]) => {
-        const msg = String(args[0] ?? "");
-        if (msg.startsWith("INFO:") || msg.includes("XNNPACK") || msg.includes("gl_context") || msg.includes("face_landmarker")) return;
-        origError.apply(console, args);
-      };
+    // MediaPipe routes TFLite/XNNPACK init + per-frame inference messages through
+    // console.error. Suppress them for the entire lifetime of this hook so they
+    // don't appear in the Next.js issues overlay (not just during init).
+    const origError = console.error;
+    console.error = (...args: unknown[]) => {
+      const msg = String(args[0] ?? "");
+      if (
+        msg.startsWith("INFO:") ||
+        msg.includes("XNNPACK") ||
+        msg.includes("gl_context") ||
+        msg.includes("face_landmarker")
+      ) return;
+      origError.apply(console, args);
+    };
 
+    async function init() {
       try {
         // Indirect dynamic import bypasses TypeScript's URL import check while
         // preserving full type safety via the inline interface above.
@@ -180,8 +186,6 @@ export function useMediaPipe(): UseMediaPipeResult {
           console.warn("[useMediaPipe]", message);
           setError(message);
         }
-      } finally {
-        console.error = origError;
       }
     }
 
@@ -189,6 +193,7 @@ export function useMediaPipe(): UseMediaPipeResult {
 
     return () => {
       cancelled = true;
+      console.error = origError; // restore on unmount
       segmenterRef.current?.close();
       faceRef.current?.close();
       segmenterRef.current = null;

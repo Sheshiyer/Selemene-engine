@@ -8,12 +8,12 @@ export interface PIPSettings {
 }
 
 export const DEFAULT_PIP_SETTINGS: PIPSettings = {
-  noiseScale: 3.0,
-  noiseSpeed: 0.12,
-  layerCount: 4,
-  intensity: 0.55,
+  noiseScale: 3.5,
+  noiseSpeed: 0.18,
+  layerCount: 5,
+  intensity: 0.92,
   colorShift: 0.0,
-  threshold: 0.35,
+  threshold: 0.0,   // kept for API compat; not used in shader
 };
 
 export interface FrameMetrics {
