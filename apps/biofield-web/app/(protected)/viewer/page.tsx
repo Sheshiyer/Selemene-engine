@@ -19,6 +19,7 @@ import {
 import { createBiofieldClient, createNoesisClient } from "@/lib/api";
 import { useRouter } from "next/navigation";
 import { PIPViewerPanel } from "@/components/pip/PIPViewerPanel";
+import { BiofieldLiveMetrics } from "@/components/BiofieldLiveMetrics";
 import type { CompositeScores } from "@/components/pip/types";
 
 // Interval at which live metrics are posted to the Noesis biofield engine.
@@ -48,6 +49,7 @@ export default function ViewerPage() {
   const [currentSession, setCurrentSession] = useState<BiofieldSession | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [captureResult, setCaptureResult] = useState<BiofieldCaptureResult | null>(null);
+  const [liveScores, setLiveScores] = useState<CompositeScores | null>(null);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isHydratingSession, setIsHydratingSession] = useState(false);
@@ -272,6 +274,9 @@ export default function ViewerPage() {
   // BF1-05.6: Submit live composite scores to Noesis biofield engine.
   // Throttled to METRICS_SUBMIT_INTERVAL_MS (30s) to avoid hammering the API.
   const handleMetrics = useCallback((scores: CompositeScores) => {
+    // Always update the live display (no throttle).
+    setLiveScores(scores);
+
     if (!noesisClient) return;
 
     const now = performance.now();
@@ -295,9 +300,6 @@ export default function ViewerPage() {
     });
   }, [noesisClient]);
 
-  const activeMetricRows = captureResult
-    ? METRIC_KEYS.map((key) => ({ key, value: captureResult.metrics[key] }))
-    : [];
   const hasActiveSession = currentSession?.status === "active";
 
   return (
@@ -305,71 +307,103 @@ export default function ViewerPage() {
       {/* PIP live camera + WebGL2 shader viewer */}
       <PIPViewerPanel onCapture={handlePIPCapture} onMetrics={handleMetrics} />
 
-      <section className="biofield-grid">
-        <article className="biofield-panel">
-          <p className="biofield-kicker">Identity</p>
-          <p className="biofield-metric">{authSession ? authSession.email : "Loading…"}</p>
-          <p className="biofield-copy">
-            Session bound to {authSession ? authSession.tier : "—"} tier. All requests carry your active bearer token.
-          </p>
-        </article>
-        <article className="biofield-panel">
-          <p className="biofield-kicker">Field session</p>
-          <p className="biofield-metric">
-            {currentSession ? currentSession.status : "No active session"}
-          </p>
-          <p className="biofield-copy">
-            {currentSession
-              ? `Session ${currentSession.id} is open and recording.`
-              : storedSessionId
-                ? `Restoring session ${storedSessionId}…`
-                : "Open a session to begin recording field data and accepting captures."}
-          </p>
-        </article>
-        <article className="biofield-panel">
-          <p className="biofield-kicker">Analysis path</p>
-          <p className="biofield-metric">Camera → Noesis → Python</p>
-          <p className="biofield-copy">
-            Every capture moves through Noesis into the private analysis layer, returning as a persisted reading.
-          </p>
-        </article>
-      </section>
+      {/* Live metrics — shown once MediaPipe starts flowing data */}
+      {liveScores && <BiofieldLiveMetrics scores={liveScores} />}
 
-      {/* Witness insight from live metrics → biofield engine */}
+      {/* Witness insight from Noesis biofield engine */}
       {witnessInsight && (
-        <section className="biofield-panel">
-          <p className="biofield-eyebrow">Witness insight</p>
-          <h2 className="biofield-title" style={{ fontSize: "1.5rem" }}>
-            Live field reading
-          </h2>
+        <section style={{
+          padding: "1.6rem 1.8rem",
+          borderRadius: "var(--r-xl)",
+          background: "var(--panel)",
+          border: "1px solid var(--line-faint)",
+          boxShadow: "inset 0 1px 0 rgba(255,255,255,0.04)",
+          display: "flex",
+          flexDirection: "column",
+          gap: "1rem",
+        }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>
+            <span style={{
+              width: 6, height: 6, borderRadius: "50%",
+              background: "var(--signal)",
+              boxShadow: "0 0 8px rgba(255,179,71,0.5)",
+            }} />
+            <p style={{ margin: 0, fontSize: "0.7rem", fontWeight: 600, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--muted)" }}>
+              Witness insight
+            </p>
+          </div>
+
           {witnessInsight.witness_prompt && (
-            <p className="biofield-copy" style={{ fontStyle: "italic", opacity: 0.9 }}>
+            <p style={{
+              margin: 0,
+              fontSize: "1.1rem",
+              lineHeight: 1.65,
+              fontStyle: "italic",
+              color: "var(--text-2)",
+              borderLeft: "2px solid var(--accent-border)",
+              paddingLeft: "1rem",
+            }}>
               &ldquo;{witnessInsight.witness_prompt}&rdquo;
             </p>
           )}
+
           {witnessInsight.consciousness_level !== undefined && (
-            <p className="biofield-kicker" style={{ marginTop: "0.5rem" }}>
-              Consciousness level: {witnessInsight.consciousness_level}
-            </p>
+            <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+              <span style={{ fontSize: "0.7rem", fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--muted)" }}>
+                Consciousness level
+              </span>
+              <span style={{
+                fontSize: "1.4rem", fontWeight: 700, letterSpacing: "-0.04em",
+                color: "var(--accent)",
+              }}>
+                {witnessInsight.consciousness_level}
+              </span>
+            </div>
           )}
         </section>
       )}
 
-      <section className="biofield-panel biofield-form-panel">
-        <div className="biofield-actions">
+      {/* Session row — compact single strip */}
+      <section style={{
+        padding: "1rem 1.4rem",
+        borderRadius: "var(--r-xl)",
+        background: "var(--panel)",
+        border: "1px solid var(--line-faint)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        flexWrap: "wrap",
+        gap: "0.75rem",
+      }}>
+        {/* Status */}
+        <div style={{ display: "flex", alignItems: "center", gap: "1.2rem" }}>
+          <div>
+            <p style={{ margin: 0, fontSize: "0.68rem", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--muted)" }}>Account</p>
+            <p style={{ margin: 0, fontSize: "0.82rem", color: "var(--text)" }}>{authSession?.email ?? "—"}</p>
+          </div>
+          <div style={{ width: 1, height: 28, background: "var(--line-faint)" }} />
+          <div>
+            <p style={{ margin: 0, fontSize: "0.68rem", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--muted)" }}>Session</p>
+            <p style={{ margin: 0, fontSize: "0.82rem", color: hasActiveSession ? "var(--accent)" : "var(--muted)" }}>
+              {isHydratingSession ? "Restoring…" : currentSession ? currentSession.status : storedSessionId ? `Restoring ${storedSessionId}…` : "No session"}
+            </p>
+          </div>
+          <div style={{ width: 1, height: 28, background: "var(--line-faint)" }} />
+          <div>
+            <p style={{ margin: 0, fontSize: "0.68rem", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--muted)" }}>Tier</p>
+            <p style={{ margin: 0, fontSize: "0.82rem", color: "var(--signal)" }}>{authSession?.tier ?? "—"}</p>
+          </div>
+        </div>
+
+        {/* Actions */}
+        <div className="biofield-actions" style={{ margin: 0 }}>
           <button
             className="biofield-button"
             disabled={isStartingSession || isHydratingSession || hasActiveSession}
             onClick={handleStartSession}
             type="button"
           >
-            {isHydratingSession
-              ? "Restoring session…"
-              : isStartingSession
-                ? "Starting session…"
-                : hasActiveSession
-                  ? "Session active"
-                  : "Start session"}
+            {isStartingSession ? "Starting…" : hasActiveSession ? "Active" : "Start session"}
           </button>
           <button
             className="biofield-link"
@@ -377,23 +411,17 @@ export default function ViewerPage() {
             onClick={handleCloseSession}
             type="button"
           >
-            {isClosingSession ? "Closing session…" : "Close session"}
+            {isClosingSession ? "Closing…" : "End session"}
           </button>
         </div>
 
-        {statusMessage ? <p className="biofield-success">{statusMessage}</p> : null}
-        {errorMessage ? <p className="biofield-error">{errorMessage}</p> : null}
+        {statusMessage && <p className="biofield-success" style={{ width: "100%", margin: 0 }}>{statusMessage}</p>}
+        {errorMessage  && <p className="biofield-error"  style={{ width: "100%", margin: 0 }}>{errorMessage}</p>}
       </section>
 
+      {/* Manual capture — collapsible-style minimal form */}
       <section className="biofield-panel biofield-form-panel">
         <p className="biofield-eyebrow">Manual capture</p>
-        <h2 className="biofield-title" style={{ fontSize: "2rem" }}>
-          Upload a capture
-        </h2>
-        <p className="biofield-copy">
-          Send a still image through the Noesis analysis path — identical to the PIP auto-capture pipeline.
-        </p>
-
         <form className="biofield-form" onSubmit={handleUpload}>
           <label className="biofield-field" htmlFor="biofield-capture-file">
             <span className="biofield-kicker">Image file</span>
@@ -405,7 +433,6 @@ export default function ViewerPage() {
               type="file"
             />
           </label>
-
           <div className="biofield-actions">
             <button
               className="biofield-button"
@@ -418,46 +445,78 @@ export default function ViewerPage() {
         </form>
       </section>
 
-      {captureResult ? (
+      {/* Capture result */}
+      {captureResult && (
         <section className="biofield-panel">
-          <p className="biofield-eyebrow">Latest analysis</p>
-          <h2 className="biofield-title" style={{ fontSize: "2rem" }}>
-            {captureResult.analysis_version}
-          </h2>
-          <div className="biofield-list-grid">
-            <div className="biofield-list-card">
-              <p className="biofield-kicker">Reading ID</p>
-              <p className="biofield-copy biofield-mono">{captureResult.reading_id}</p>
+          <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: "1rem" }}>
+            <div>
+              <p className="biofield-eyebrow">Analysis complete</p>
+              <h2 className="biofield-title" style={{ fontSize: "1.6rem", margin: 0 }}>
+                {captureResult.analysis_version}
+              </h2>
             </div>
-            <div className="biofield-list-card">
-              <p className="biofield-kicker">Session ID</p>
-              <p className="biofield-copy biofield-mono">{captureResult.session_id}</p>
-            </div>
-            <div className="biofield-list-card">
-              <p className="biofield-kicker">Quality</p>
-              <p className="biofield-copy">
-                {captureResult.quality_assessment.sufficient_quality ? "Accepted" : "Rejected"}
-              </p>
-            </div>
+            <span style={{
+              fontSize: "0.7rem", fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase",
+              padding: "0.22rem 0.6rem", borderRadius: "var(--r-pill)",
+              background: captureResult.quality_assessment.sufficient_quality ? "rgba(124,124,255,0.12)" : "rgba(255,100,100,0.1)",
+              border: `1px solid ${captureResult.quality_assessment.sufficient_quality ? "rgba(124,124,255,0.3)" : "rgba(255,100,100,0.25)"}`,
+              color: captureResult.quality_assessment.sufficient_quality ? "var(--accent)" : "#ff6464",
+            }}>
+              {captureResult.quality_assessment.sufficient_quality ? "Accepted" : "Rejected"}
+            </span>
           </div>
-          <div className="biofield-actions" style={{ marginBottom: "1rem" }}>
+
+          <div style={{
+            display: "grid", gridTemplateColumns: "1fr 1fr",
+            gap: "0.5rem", marginBottom: "1rem",
+          }}>
+            {METRIC_KEYS.map((key) => {
+              const raw = captureResult.metrics[key];
+              const num = typeof raw === "number" ? raw : parseFloat(String(raw));
+              const isValid = !isNaN(num);
+              const pct = isValid ? Math.round(num * 100) : null;
+              return (
+                <div key={key} style={{
+                  padding: "0.65rem 0.8rem",
+                  borderRadius: "var(--r-md)",
+                  background: "rgba(255,255,255,0.025)",
+                  border: "1px solid var(--line-faint)",
+                  display: "flex", flexDirection: "column", gap: "0.35rem",
+                }}>
+                  <span style={{ fontSize: "0.62rem", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--muted)" }}>
+                    {key.replaceAll("_", " ")}
+                  </span>
+                  {pct !== null ? (
+                    <>
+                      <span style={{ fontSize: "1.1rem", fontWeight: 700, letterSpacing: "-0.04em", color: "var(--text)" }}>
+                        {pct}<span style={{ fontSize: "0.6rem", opacity: 0.45 }}>%</span>
+                      </span>
+                      <div style={{ height: 2, borderRadius: 9999, background: "rgba(255,255,255,0.06)" }}>
+                        <div style={{
+                          width: `${pct}%`, height: "100%", borderRadius: 9999,
+                          background: "var(--accent)",
+                          transition: "width 0.5s ease",
+                        }} />
+                      </div>
+                    </>
+                  ) : (
+                    <span style={{ fontSize: "0.82rem", color: "var(--text-2)" }}>{String(raw)}</span>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+
+          <div className="biofield-actions">
             <Link className="biofield-link" href={`/readings/${captureResult.reading_id}`}>
-              Open reading detail
+              Open reading
             </Link>
             <Link className="biofield-link" href="/history">
-              View history
+              History
             </Link>
           </div>
-          <ul className="biofield-list">
-            {activeMetricRows.map((metric) => (
-              <li key={metric.key}>
-                <p className="biofield-kicker">{metric.key}</p>
-                <p className="biofield-metric">{String(metric.value)}</p>
-              </li>
-            ))}
-          </ul>
         </section>
-      ) : null}
+      )}
     </section>
   );
 }
