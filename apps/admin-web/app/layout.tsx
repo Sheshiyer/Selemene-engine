@@ -22,6 +22,8 @@ const ibmPlexMono = IBM_Plex_Mono({
   display: "swap"
 });
 
+export { reportWebVitals } from "@/lib/telemetry-vitals";
+
 export const metadata: Metadata = {
   title: "Selemene Admin",
   description: "Admin portal for key management, users, and platform operations"

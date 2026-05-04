@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from "react";
 import { ModalSurface } from "@/components/overlay-surface";
+import { trackEvent } from "@/lib/telemetry";
 
 function joinClasses(...values: Array<string | false | null | undefined>) {
   return values.filter(Boolean).join(" ");
@@ -120,6 +121,11 @@ export function CommandPalette({
       return;
     }
 
+    trackEvent("command_palette_select", {
+      id: selected.id,
+      section: selected.section,
+      title: selected.title
+    });
     handleClose();
     selected.onSelect();
   }
@@ -179,6 +185,13 @@ export function CommandPalette({
             onChange={(event) => setQuery(event.target.value)}
             onKeyDown={onListKeyDown}
             placeholder="Search routes and actions"
+            role="combobox"
+            aria-autocomplete="list"
+            aria-expanded={filteredItems.length > 0}
+            aria-controls="command-palette-listbox"
+            aria-activedescendant={
+              filteredItems[activeIndex] ? `cp-item-${filteredItems[activeIndex].id}` : undefined
+            }
           />
         </label>
 
@@ -189,7 +202,7 @@ export function CommandPalette({
             <div className="helper">Try a route name, action, or keyword like audit, refresh, or sign out.</div>
           </div>
         ) : (
-          <div className="command-palette-results" role="listbox" aria-label="Available commands">
+          <div className="command-palette-results" id="command-palette-listbox" role="listbox" aria-label="Available commands">
             {groupedItems.map((group) => (
               <section key={group.section} className="command-palette-group">
                 <div className="telemetry-caption command-palette-group-label">{group.section}</div>
@@ -199,6 +212,7 @@ export function CommandPalette({
                     return (
                       <button
                         key={item.id}
+                        id={`cp-item-${item.id}`}
                         type="button"
                         role="option"
                         aria-selected={active}

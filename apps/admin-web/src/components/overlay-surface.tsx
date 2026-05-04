@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useId, type ReactNode } from "react";
 
 function joinClasses(...values: Array<string | false | null | undefined>) {
   return values.filter(Boolean).join(" ");
@@ -45,6 +45,7 @@ export function ModalSurface({
   children
 }: OverlayBaseProps) {
   useEscapeToClose(open, onClose);
+  const titleId = useId();
 
   if (!open) {
     return null;
@@ -57,12 +58,13 @@ export function ModalSurface({
         onClick={(event) => event.stopPropagation()}
         role="dialog"
         aria-modal="true"
+        aria-labelledby={title ? titleId : undefined}
       >
         {eyebrow || title || summary ? (
           <header className="overlay-surface-header">
             <div>
               {eyebrow ? <div className="eyebrow">{eyebrow}</div> : null}
-              {title ? <h3>{title}</h3> : null}
+              {title ? <h3 id={titleId}>{title}</h3> : null}
               {summary ? <p className="helper">{summary}</p> : null}
             </div>
             <button type="button" className="overlay-close" onClick={onClose} aria-label="Close dialog">
@@ -88,6 +90,7 @@ export function DrawerSurface({
   children
 }: OverlayBaseProps) {
   useEscapeToClose(open, onClose);
+  const titleId = useId();
 
   if (!open) {
     return null;
@@ -100,11 +103,12 @@ export function DrawerSurface({
         onClick={(event) => event.stopPropagation()}
         role="dialog"
         aria-modal="true"
+        aria-labelledby={title ? titleId : undefined}
       >
         <header className="overlay-surface-header">
           <div>
             {eyebrow ? <div className="eyebrow">{eyebrow}</div> : null}
-            {title ? <h3>{title}</h3> : null}
+            {title ? <h3 id={titleId}>{title}</h3> : null}
             {summary ? <p className="helper">{summary}</p> : null}
           </div>
           <button type="button" className="overlay-close" onClick={onClose} aria-label="Close drawer">
