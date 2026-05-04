@@ -15,6 +15,8 @@ pub const PHYSICAL_PERIOD: f64 = 23.0;
 pub const EMOTIONAL_PERIOD: f64 = 28.0;
 pub const INTELLECTUAL_PERIOD: f64 = 33.0;
 pub const INTUITIVE_PERIOD: f64 = 38.0;
+pub const AESTHETIC_PERIOD: f64 = 43.0;
+pub const SPIRITUAL_PERIOD: f64 = 53.0;
 
 /// Threshold in days for declaring a zero-crossing "critical".
 pub const CRITICAL_THRESHOLD: f64 = 1.0;
@@ -32,6 +34,7 @@ pub struct BiorhythmResult {
     pub emotional: CycleResult,
     pub intellectual: CycleResult,
     pub intuitive: CycleResult,
+    pub spiritual: CycleResult,
     pub mastery: f64,
     pub passion: f64,
     pub wisdom: f64,
@@ -62,6 +65,8 @@ pub struct ForecastDay {
     pub emotional: f64,
     pub intellectual: f64,
     pub intuitive: f64,
+    pub aesthetic: f64,
+    pub spiritual: f64,
     pub overall_energy: f64,
 }
 
@@ -212,6 +217,8 @@ pub fn build_forecast(
             let emot = to_percentage(cycle_value(d, EMOTIONAL_PERIOD));
             let inte = to_percentage(cycle_value(d, INTELLECTUAL_PERIOD));
             let intu = to_percentage(cycle_value(d, INTUITIVE_PERIOD));
+            let aest = to_percentage(cycle_value(d, AESTHETIC_PERIOD));
+            let spir = to_percentage(cycle_value(d, SPIRITUAL_PERIOD));
             let date = target_date + chrono::Duration::days(offset);
             ForecastDay {
                 date: date.format("%Y-%m-%d").to_string(),
@@ -220,7 +227,9 @@ pub fn build_forecast(
                 emotional: emot,
                 intellectual: inte,
                 intuitive: intu,
-                overall_energy: (phys + emot + inte) / 3.0,
+                aesthetic: aest,
+                spiritual: spir,
+                overall_energy: (phys + emot + inte + intu + aest + spir) / 6.0,
             }
         })
         .collect()
