@@ -54,8 +54,17 @@ export function useCamera(): UseCameraResult {
       streamRef.current = stream;
 
       if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        await videoRef.current.play();
+        const video = videoRef.current;
+        video.srcObject = stream;
+        // Wait for the browser to finish loading the new stream before playing.
+        // Calling play() immediately after srcObject= can race with the internal
+        // load and trigger "play() interrupted by a new load request".
+        await new Promise<void>((resolve) => {
+          const handler = () => { video.removeEventListener("loadedmetadata", handler); resolve(); };
+          if (video.readyState >= video.HAVE_METADATA) { resolve(); }
+          else { video.addEventListener("loadedmetadata", handler); }
+        });
+        await video.play();
       }
 
       setIsStreaming(true);
