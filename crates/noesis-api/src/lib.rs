@@ -1232,9 +1232,7 @@ fn inject_internal_auth_context(mut input: EngineInput, user: &AuthUser) -> Engi
 ///
 /// Returns an HTTP 422 error response on validation failure.
 #[allow(clippy::result_large_err)]
-fn validate_engine_input(
-    input: &EngineInput,
-) -> Result<(), (StatusCode, Json<ErrorResponse>)> {
+fn validate_engine_input(input: &EngineInput) -> Result<(), (StatusCode, Json<ErrorResponse>)> {
     if let Some(ref bd) = input.birth_data {
         if let Err(msg) = bd.validate() {
             return Err(ErrorMapper::response(

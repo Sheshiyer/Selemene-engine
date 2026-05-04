@@ -609,10 +609,7 @@ mod tests {
         use noesis_core::{BirthData, Precision};
 
         let mut engines: HashMap<String, Arc<dyn ConsciousnessEngine>> = HashMap::new();
-        engines.insert(
-            "biorhythm".into(),
-            Arc::new(BiorhythmEngine::new()),
-        );
+        engines.insert("biorhythm".into(), Arc::new(BiorhythmEngine::new()));
 
         let workflow = FullSpectrumWorkflow::new(engines);
 

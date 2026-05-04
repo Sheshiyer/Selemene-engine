@@ -496,7 +496,9 @@ impl ConsciousnessEngine for BiorhythmEngine {
             .and_then(|v| v.as_str())
             .map(parse_date)
             .transpose()?
-            .map(|partner_birth_date| calculate_compatibility(birth_date, partner_birth_date, target_date));
+            .map(|partner_birth_date| {
+                calculate_compatibility(birth_date, partner_birth_date, target_date)
+            });
 
         // --- Assemble result ---
         let bio_result = BiorhythmResult {
@@ -907,7 +909,10 @@ mod tests {
     #[test]
     fn test_aesthetic_cycle_at_birth_zero() {
         let val = cycle_value(0, AESTHETIC_PERIOD);
-        assert!(val.abs() < 1e-10, "aesthetic at day 0 should be 0, got {val}");
+        assert!(
+            val.abs() < 1e-10,
+            "aesthetic at day 0 should be 0, got {val}"
+        );
     }
 
     /// Aesthetic cycle at one quarter-period must be near the peak (sin ≈ 1.0).
@@ -915,7 +920,10 @@ mod tests {
     fn test_aesthetic_cycle_at_quarter_period_is_peak() {
         let quarter = (AESTHETIC_PERIOD / 4.0).round() as i64; // 11
         let val = cycle_value(quarter, AESTHETIC_PERIOD);
-        assert!(val > 0.9, "aesthetic at quarter-period should be near 1.0, got {val}");
+        assert!(
+            val > 0.9,
+            "aesthetic at quarter-period should be near 1.0, got {val}"
+        );
     }
 
     /// Aesthetic cycle at one half-period must be near zero (sin(π) ≈ 0).
@@ -944,7 +952,10 @@ mod tests {
     #[test]
     fn test_spiritual_cycle_at_birth_zero() {
         let val = cycle_value(0, SPIRITUAL_PERIOD);
-        assert!(val.abs() < 1e-10, "spiritual at day 0 should be 0, got {val}");
+        assert!(
+            val.abs() < 1e-10,
+            "spiritual at day 0 should be 0, got {val}"
+        );
     }
 
     /// Spiritual cycle at one quarter-period must be near peak.
@@ -952,7 +963,10 @@ mod tests {
     fn test_spiritual_cycle_at_quarter_period_is_peak() {
         let quarter = (SPIRITUAL_PERIOD / 4.0).round() as i64; // 13
         let val = cycle_value(quarter, SPIRITUAL_PERIOD);
-        assert!(val > 0.9, "spiritual at quarter-period should be near 1.0, got {val}");
+        assert!(
+            val > 0.9,
+            "spiritual at quarter-period should be near 1.0, got {val}"
+        );
     }
 
     /// Verify the percentage mapping at known sine values.
@@ -1030,21 +1044,27 @@ mod tests {
         let result = calculate_compatibility(date_a, date_b, target);
 
         let days_diff = (date_a - date_b).num_days().abs() as f64;
-        let expected_physical = 50.0 * (1.0 + (2.0 * PI * (days_diff % PHYSICAL_PERIOD) / PHYSICAL_PERIOD).cos());
-        let expected_emotional = 50.0 * (1.0 + (2.0 * PI * (days_diff % EMOTIONAL_PERIOD) / EMOTIONAL_PERIOD).cos());
-        let expected_intellectual = 50.0 * (1.0 + (2.0 * PI * (days_diff % INTELLECTUAL_PERIOD) / INTELLECTUAL_PERIOD).cos());
+        let expected_physical =
+            50.0 * (1.0 + (2.0 * PI * (days_diff % PHYSICAL_PERIOD) / PHYSICAL_PERIOD).cos());
+        let expected_emotional =
+            50.0 * (1.0 + (2.0 * PI * (days_diff % EMOTIONAL_PERIOD) / EMOTIONAL_PERIOD).cos());
+        let expected_intellectual = 50.0
+            * (1.0 + (2.0 * PI * (days_diff % INTELLECTUAL_PERIOD) / INTELLECTUAL_PERIOD).cos());
 
         assert!(
             (result.physical.score - expected_physical).abs() < 1e-8,
-            "physical: expected {expected_physical}, got {}", result.physical.score
+            "physical: expected {expected_physical}, got {}",
+            result.physical.score
         );
         assert!(
             (result.emotional.score - expected_emotional).abs() < 1e-8,
-            "emotional: expected {expected_emotional}, got {}", result.emotional.score
+            "emotional: expected {expected_emotional}, got {}",
+            result.emotional.score
         );
         assert!(
             (result.intellectual.score - expected_intellectual).abs() < 1e-8,
-            "intellectual: expected {expected_intellectual}, got {}", result.intellectual.score
+            "intellectual: expected {expected_intellectual}, got {}",
+            result.intellectual.score
         );
     }
 
@@ -1114,7 +1134,10 @@ mod tests {
         // Contract: calculate() returns Ok
         let target = Utc.with_ymd_and_hms(2025, 6, 15, 12, 0, 0).unwrap();
         let input = make_input("1990-01-01", target);
-        let output = engine.calculate(input).await.expect("calculate must succeed");
+        let output = engine
+            .calculate(input)
+            .await
+            .expect("calculate must succeed");
 
         // Contract: validate() accepts its own output and returns valid=true
         let validation = engine

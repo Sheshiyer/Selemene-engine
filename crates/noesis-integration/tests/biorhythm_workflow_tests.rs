@@ -53,7 +53,10 @@ fn standard_input() -> EngineInput {
 async fn test_daily_practice_biorhythm_engine_output() {
     let engine = BiorhythmEngine::new();
     let input = standard_input();
-    let output = engine.calculate(input).await.expect("biorhythm should succeed");
+    let output = engine
+        .calculate(input)
+        .await
+        .expect("biorhythm should succeed");
 
     assert_eq!(output.engine_id, "biorhythm");
 
@@ -62,7 +65,10 @@ async fn test_daily_practice_biorhythm_engine_output() {
     // Primary cycles must be present
     assert!(result.get("physical").is_some(), "physical cycle missing");
     assert!(result.get("emotional").is_some(), "emotional cycle missing");
-    assert!(result.get("intellectual").is_some(), "intellectual cycle missing");
+    assert!(
+        result.get("intellectual").is_some(),
+        "intellectual cycle missing"
+    );
 
     // Secondary cycles must be present (#416 — secondary rhythms requirement)
     assert!(result.get("spiritual").is_some(), "spiritual cycle missing");
@@ -71,12 +77,22 @@ async fn test_daily_practice_biorhythm_engine_output() {
     // Forecast must be present (default 7-day)
     let forecast = result.get("forecast").expect("forecast should be present");
     let forecast_arr = forecast.as_array().expect("forecast should be array");
-    assert_eq!(forecast_arr.len(), 7, "7-day forecast should have 7 entries");
+    assert_eq!(
+        forecast_arr.len(),
+        7,
+        "7-day forecast should have 7 entries"
+    );
 
     // Each forecast day must have both secondary cycles
     for day in forecast_arr {
-        assert!(day.get("aesthetic").is_some(), "forecast day missing aesthetic");
-        assert!(day.get("spiritual").is_some(), "forecast day missing spiritual");
+        assert!(
+            day.get("aesthetic").is_some(),
+            "forecast day missing aesthetic"
+        );
+        assert!(
+            day.get("spiritual").is_some(),
+            "forecast day missing spiritual"
+        );
     }
 
     // Witness prompt must be non-empty
@@ -182,7 +198,10 @@ async fn test_daily_practice_synthesis_receives_secondary_rhythm_data() {
         options: HashMap::new(),
     };
 
-    let output = engine.calculate(input).await.expect("calculate must succeed");
+    let output = engine
+        .calculate(input)
+        .await
+        .expect("calculate must succeed");
 
     let result = &output.result;
 
@@ -224,7 +243,10 @@ async fn test_daily_practice_synthesis_receives_secondary_rhythm_data() {
 async fn test_full_spectrum_biorhythm_output_has_all_required_fields() {
     let engine = BiorhythmEngine::new();
     let input = standard_input();
-    let output = engine.calculate(input).await.expect("biorhythm should succeed");
+    let output = engine
+        .calculate(input)
+        .await
+        .expect("biorhythm should succeed");
 
     let result = &output.result;
 
@@ -261,7 +283,9 @@ async fn test_full_spectrum_biorhythm_output_has_all_required_fields() {
     );
 
     // 7-day forecast (required for full-spectrum temporal analysis)
-    let forecast = result.get("forecast").expect("forecast required in full-spectrum");
+    let forecast = result
+        .get("forecast")
+        .expect("forecast required in full-spectrum");
     let forecast_arr = forecast.as_array().expect("forecast must be array");
     assert!(!forecast_arr.is_empty(), "forecast must not be empty");
 
@@ -290,7 +314,10 @@ async fn test_full_spectrum_biorhythm_compatibility_output() {
         serde_json::Value::String("1993-03-20".to_string()),
     );
 
-    let output = engine.calculate(input).await.expect("biorhythm should succeed");
+    let output = engine
+        .calculate(input)
+        .await
+        .expect("biorhythm should succeed");
 
     let compatibility = output
         .result
@@ -298,7 +325,13 @@ async fn test_full_spectrum_biorhythm_compatibility_output() {
         .expect("compatibility block required when partner_birth_date is set");
 
     // Required fields in compatibility block
-    for field in &["overall", "physical", "emotional", "intellectual", "intuitive"] {
+    for field in &[
+        "overall",
+        "physical",
+        "emotional",
+        "intellectual",
+        "intuitive",
+    ] {
         assert!(
             compatibility.get(field).is_some(),
             "compatibility block missing field: {field}"

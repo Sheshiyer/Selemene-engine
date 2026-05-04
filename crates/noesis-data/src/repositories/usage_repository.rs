@@ -126,7 +126,8 @@ impl UsageRepository {
             .expect("valid day start");
         let end = start + chrono::Duration::days(1);
 
-        self.get_window_usage(user_id, UsageDateRange { start, end }).await
+        self.get_window_usage(user_id, UsageDateRange { start, end })
+            .await
     }
 
     /// Get usage totals for one UTC month (based on the provided date's year/month).
@@ -151,7 +152,8 @@ impl UsageRepository {
             .single()
             .expect("valid month end");
 
-        self.get_window_usage(user_id, UsageDateRange { start, end }).await
+        self.get_window_usage(user_id, UsageDateRange { start, end })
+            .await
     }
 
     /// Get per-engine usage breakdown for a user in a fixed date range.
