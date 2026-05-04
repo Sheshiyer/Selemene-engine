@@ -3,6 +3,12 @@
     "apps/*",
     "packages/*"
   ],
+  "overrides": {
+    "postcss": "^8.5.10",
+    "next": {
+      "postcss": "^8.5.10"
+    }
+  },
   "devDependencies": {
     "shadcn": "^3.8.5"
   }
