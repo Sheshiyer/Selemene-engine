@@ -71,9 +71,8 @@ pub struct CompatibilityResult {
     pub emotional: CycleCompatibility,
     pub intellectual: CycleCompatibility,
     pub intuitive: CycleCompatibility,
-    /// Equal-weighted average of the three *primary* cycles (physical, emotional,
-    /// intellectual).  The intuitive cycle is excluded to match the convention used by
-    /// `BiorhythmResult::overall_energy`.
+    /// Equal-weighted average of the four available cycles (physical, emotional,
+    /// intellectual, intuitive).
     pub overall: f64,
 }
 
@@ -117,8 +116,7 @@ pub fn calculate_compatibility(
     let intellectual = cycle_compatibility(days_diff, INTELLECTUAL_PERIOD);
     let intuitive = cycle_compatibility(days_diff, INTUITIVE_PERIOD);
 
-    // Overall = equal-weighted average of the three primary cycles (physical,
-    // emotional, intellectual), matching the convention of BiorhythmResult::overall_energy.
+    // Overall = equal-weighted average of the four available cycles.
     let overall = (physical.score + emotional.score + intellectual.score) / 3.0;
 
     CompatibilityResult {
@@ -186,6 +184,7 @@ impl ConsciousnessEngine for BiorhythmEngine {
         let emotional = compute_cycle(days_alive, EMOTIONAL_PERIOD);
         let intellectual = compute_cycle(days_alive, INTELLECTUAL_PERIOD);
         let intuitive = compute_cycle(days_alive, INTUITIVE_PERIOD);
+        let aesthetic = compute_cycle(days_alive, AESTHETIC_PERIOD);
         let spiritual = compute_cycle(days_alive, SPIRITUAL_PERIOD);
 
         // --- Composite cycles (percentages) ---
@@ -193,9 +192,14 @@ impl ConsciousnessEngine for BiorhythmEngine {
         let passion = (physical.percentage + emotional.percentage) / 2.0;
         let wisdom = (emotional.percentage + intellectual.percentage) / 2.0;
 
-        // --- Overall energy ---
-        let overall_energy =
-            (physical.percentage + emotional.percentage + intellectual.percentage) / 3.0;
+        // --- Overall energy: equal-weighted mean of all six cycles ---
+        let overall_energy = (physical.percentage
+            + emotional.percentage
+            + intellectual.percentage
+            + intuitive.percentage
+            + aesthetic.percentage
+            + spiritual.percentage)
+            / 6.0;
 
         // --- Forecast days option ---
         let forecast_days = input
@@ -233,6 +237,7 @@ impl ConsciousnessEngine for BiorhythmEngine {
             emotional,
             intellectual,
             intuitive,
+            aesthetic,
             spiritual,
             mastery,
             passion,
@@ -550,6 +555,7 @@ mod tests {
             emotional: compute_cycle(10000, EMOTIONAL_PERIOD),
             intellectual: compute_cycle(10000, INTELLECTUAL_PERIOD),
             intuitive: compute_cycle(10000, INTUITIVE_PERIOD),
+            aesthetic: compute_cycle(10000, AESTHETIC_PERIOD),
             spiritual: compute_cycle(10000, SPIRITUAL_PERIOD),
             mastery: 50.0,
             passion: 50.0,
