@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useEffect, useMemo, useState, useSyncExternalStore } from "react";
+import { FormEvent, useCallback, useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import type { BiofieldCaptureResult, BiofieldSession } from "@selemene/biofield-domain";
 import { BiofieldClientError } from "@selemene/biofield-api-client";
 import {
@@ -17,6 +17,7 @@ import {
 } from "@/lib/session";
 import { createBiofieldClient } from "@/lib/api";
 import { useRouter } from "next/navigation";
+import { PIPViewerPanel } from "@/components/pip/PIPViewerPanel";
 
 const METRIC_KEYS = [
   "light_quanta_density",
@@ -239,6 +240,16 @@ export default function ViewerPage() {
     }
   }
 
+  // BF1-05.1: PIP capture callback — logs locally for now.
+  // BF1-05.2 will wire blob → POST /api/v1/biofield/sessions/:id/captures.
+  const handlePIPCapture = useCallback((blob: Blob, _dataUrl: string) => {
+    console.info("[PIPViewer] capture queued for upload", {
+      engineId: "biofield-pip",
+      size: blob.size,
+      sessionId: currentSession?.id ?? null,
+    });
+  }, [currentSession]);
+
   const activeMetricRows = captureResult
     ? METRIC_KEYS.map((key) => ({ key, value: captureResult.metrics[key] }))
     : [];
@@ -246,6 +257,9 @@ export default function ViewerPage() {
 
   return (
     <section className="biofield-stack">
+      {/* PIP live camera + WebGL2 shader viewer (BF1-05.1) */}
+      <PIPViewerPanel onCapture={handlePIPCapture} />
+
       <section className="biofield-grid">
         <article className="biofield-panel">
           <p className="biofield-kicker">Auth state</p>
