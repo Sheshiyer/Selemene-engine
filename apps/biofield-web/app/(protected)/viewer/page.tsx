@@ -240,15 +240,50 @@ export default function ViewerPage() {
     }
   }
 
-  // BF1-05.1: PIP capture callback — logs locally for now.
-  // BF1-05.2 will wire blob → POST /api/v1/biofield/sessions/:id/captures.
-  const handlePIPCapture = useCallback((blob: Blob, _dataUrl: string) => {
-    console.info("[PIPViewer] capture queued for upload", {
-      engineId: "biofield-pip",
-      size: blob.size,
-      sessionId: currentSession?.id ?? null,
-    });
-  }, [currentSession]);
+  // BF1-05.2: Wire PIP blob → POST /api/v1/biofield/sessions/:id/captures.
+  const handlePIPCapture = useCallback(async (blob: Blob, _dataUrl: string) => {
+    if (!client || !currentSession) {
+      console.warn("[PIPViewer] no active session — capture not uploaded");
+      return;
+    }
+
+    setIsUploading(true);
+    setErrorMessage(null);
+    setStatusMessage(null);
+
+    const file = new File([blob], "pip-capture.png", { type: blob.type || "image/png" });
+    const formData = new FormData();
+    formData.append("image", file);
+    formData.append("options", JSON.stringify({ mode: "capture", source: "pip-camera" }));
+    formData.append(
+      "capture_metadata",
+      JSON.stringify({
+        platform: "web",
+        source: "pip-camera",
+        file_name: "pip-capture.png",
+        file_size: blob.size,
+        file_type: file.type,
+        viewport:
+          typeof window !== "undefined"
+            ? { width: window.innerWidth, height: window.innerHeight }
+            : undefined,
+      }),
+    );
+
+    try {
+      const result = await client.uploadCapture(currentSession.id, formData);
+      setCaptureResult(result);
+      setStatusMessage(`PIP capture analyzed with ${result.analysis_version}.`);
+    } catch (error) {
+      if (error instanceof BiofieldClientError && error.status === 401) {
+        handleAuthFailure();
+        return;
+      }
+      setErrorMessage(error instanceof Error ? error.message : "Failed to upload PIP capture.");
+    } finally {
+      setIsUploading(false);
+    }
+  }, [client, currentSession]);
 
   const activeMetricRows = captureResult
     ? METRIC_KEYS.map((key) => ({ key, value: captureResult.metrics[key] }))
