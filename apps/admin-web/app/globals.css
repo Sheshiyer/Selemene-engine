@@ -19,6 +19,11 @@
   --glow-verdant: rgba(74, 124, 89, 0.12);
   --danger: #ef6b73;
   --danger-soft: rgba(239, 107, 115, 0.18);
+  /* Layout tokens */
+  --sidebar-w: minmax(260px, 296px);
+  --gap-shell: 1rem;
+  --gap-card: 0.9rem;
+  --gap-section: 0.55rem;
 }
 
 * {
@@ -62,12 +67,14 @@ a {
 
 .admin-shell {
   display: grid;
-  grid-template-columns: 252px 1fr;
+  grid-template-columns: var(--sidebar-w) minmax(0, 1fr);
   min-height: 100vh;
 }
 
+/* shell-v2 retained for backward compatibility; effectively a no-op since
+   .admin-shell already uses --sidebar-w. */
 .shell-v2 {
-  grid-template-columns: minmax(260px, 296px) minmax(0, 1fr);
+  grid-template-columns: var(--sidebar-w) minmax(0, 1fr);
 }
 
 .sidebar {
@@ -549,7 +556,7 @@ tbody tr.clickable-row {
 }
 
 tbody tr.clickable-row:focus-visible {
-  outline: 2px solid var(--accent);
+  outline: 2px solid var(--accent-strong);
   outline-offset: -2px;
 }
 

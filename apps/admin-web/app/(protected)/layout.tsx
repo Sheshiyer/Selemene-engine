@@ -9,6 +9,7 @@ import { CommandPalette, useCommandPaletteToggle } from "@/components/command-pa
 import { clearAuthToken, getAuthToken } from "@/lib/auth";
 import { ApiClientError, getAdminSession } from "@/lib/api";
 import { hasPermission, requiredPermissionForPath } from "@/lib/permissions";
+import { trackEvent } from "@/lib/telemetry";
 import type { AdminSession } from "@/types/admin";
 
 interface NavItem {
@@ -194,6 +195,7 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
   const permissionCount = session?.permissions.length ?? 0;
 
   const handleSignOut = useCallback(() => {
+    trackEvent("admin_sign_out");
     clearAuthToken();
     router.replace("/login");
   }, [router]);
@@ -314,8 +316,8 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
         <div className="nav-section-stack">
           {navSections.map((section) => (
             <section key={section.label} className="nav-section">
-              <div className="telemetry-caption nav-section-label">{section.label}</div>
-              <nav className="nav-list">
+              <div className="telemetry-caption nav-section-label" aria-hidden="true">{section.label}</div>
+              <nav className="nav-list" aria-label={section.label}>
                 {section.items.map((item) => {
                   const allowed = hasPermission(session.permissions, item.permission);
                   const active = relativePath === item.href;
@@ -325,9 +327,11 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
                       href={item.href}
                       className={`nav-item ${active ? "active" : ""}`}
                       title={allowed ? "" : `Requires ${item.permission}`}
+                      aria-current={active ? "page" : undefined}
+                      aria-disabled={!allowed || undefined}
                     >
                       <span>{item.label}</span>
-                      <span className={`pill ${allowed ? "ok" : "danger"}`}>
+                      <span className={`pill ${allowed ? "ok" : "danger"}`} aria-hidden="true">
                         {allowed ? "ready" : "locked"}
                       </span>
                     </Link>
