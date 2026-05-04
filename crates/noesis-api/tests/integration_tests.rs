@@ -210,7 +210,7 @@ async fn test_health_check_no_auth_required() {
 
     assert_eq!(status, StatusCode::OK);
     assert_eq!(body["status"], "ok");
-    assert_eq!(body["version"], "3.0.0");
+    assert_eq!(body["version"], "3.1.0");
 }
 
 #[tokio::test]
