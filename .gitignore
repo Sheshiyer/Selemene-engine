@@ -2,6 +2,10 @@
 /target/
 /ts-engines/node_modules/
 /node_modules/
+/apps/*/node_modules/
+/apps/*/.next/
+/packages/*/node_modules/
+next-env.d.ts
 
 # IDE
 .idea/
