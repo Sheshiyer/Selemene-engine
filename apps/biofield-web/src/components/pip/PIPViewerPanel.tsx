@@ -58,13 +58,17 @@ export function PIPViewerPanel({ onCapture, onMetrics }: PIPViewerPanelProps) {
     }
   }, [metrics]);
 
-  // Start render loop when both camera and renderer are ready.
+  // Start render loop when camera, renderer, and MediaPipe are all ready.
+  // stopRenderLoop before each start so the loop always uses the latest getMask/getFace
+  // closures (getMask changes when mpReady transitions, and the RAF guard would otherwise
+  // prevent the loop from picking up the new closure).
   useEffect(() => {
     const video = videoRef.current;
-    if (isStreaming && glStatus === "ready" && video && panelState === "streaming") {
+    if (isStreaming && glStatus === "ready" && mpReady && video && panelState === "streaming") {
+      stopRenderLoop();
       startRenderLoop(video, settingsRef, getMask, getFace, onFrame);
     }
-  }, [isStreaming, glStatus, panelState, startRenderLoop, getMask, getFace, onFrame, videoRef]);
+  }, [isStreaming, glStatus, mpReady, panelState, startRenderLoop, stopRenderLoop, getMask, getFace, onFrame, videoRef]);
 
   const handleStart = useCallback(async () => {
     setCaptureError(null);
@@ -79,11 +83,12 @@ export function PIPViewerPanel({ onCapture, onMetrics }: PIPViewerPanelProps) {
 
   const handleResume = useCallback(() => {
     const video = videoRef.current;
-    if (video && glStatus === "ready") {
+    if (video && glStatus === "ready" && mpReady) {
+      stopRenderLoop();
       startRenderLoop(video, settingsRef, getMask, getFace, onFrame);
     }
     setPanelState("streaming");
-  }, [glStatus, getMask, getFace, onFrame, startRenderLoop, videoRef]);
+  }, [glStatus, mpReady, getMask, getFace, onFrame, startRenderLoop, stopRenderLoop, videoRef]);
 
   const handleStop = useCallback(() => {
     stopRenderLoop();
@@ -205,6 +210,32 @@ export function PIPViewerPanel({ onCapture, onMetrics }: PIPViewerPanelProps) {
             }}
           >
             Start camera to begin PIP visualisation
+          </div>
+        )}
+
+        {/* Loading overlay while MediaPipe model is initialising (#676) */}
+        {isStreaming && !mpReady && (
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "0.5rem",
+              background: "rgba(0,0,0,0.55)",
+              color: "rgba(180,180,255,0.9)",
+              fontSize: "0.8rem",
+              pointerEvents: "none",
+            }}
+          >
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+              <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83">
+                <animateTransform attributeName="transform" type="rotate" from="0 12 12" to="360 12 12" dur="1.2s" repeatCount="indefinite" />
+              </path>
+            </svg>
+            Calibrating biofield…
           </div>
         )}
 
