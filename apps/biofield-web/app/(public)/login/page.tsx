@@ -3,13 +3,15 @@
 import { FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getStoredAuthSession, setStoredAuthSession } from "@/lib/auth";
-import { BiofieldApiError, login } from "@/lib/api";
+import { BiofieldApiError, getDiscordAuthUrl, login } from "@/lib/api";
+import { getBiofieldDiscordCallbackOverride } from "@/lib/discord-oauth";
 
 export default function LoginPage() {
   const router = useRouter();
-  const [email, setEmail] = useState("demo@example.com");
-  const [password, setPassword] = useState("DemoPass123");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isDiscordLoading, setIsDiscordLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
@@ -17,6 +19,22 @@ export default function LoginPage() {
       router.replace("/viewer");
     }
   }, [router]);
+
+  async function handleDiscordLogin() {
+    setErrorMessage(null);
+    setIsDiscordLoading(true);
+    try {
+      const { url } = await getDiscordAuthUrl(getBiofieldDiscordCallbackOverride());
+      window.location.href = url;
+    } catch (error) {
+      setIsDiscordLoading(false);
+      if (error instanceof BiofieldApiError) {
+        setErrorMessage(error.message);
+      } else {
+        setErrorMessage("Could not initiate Discord sign-in.");
+      }
+    }
+  }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -50,6 +68,21 @@ export default function LoginPage() {
         </section>
 
         <section className="biofield-panel biofield-form-panel">
+          <div className="biofield-actions">
+            <button
+              className="biofield-button"
+              disabled={isDiscordLoading || isSubmitting}
+              onClick={handleDiscordLogin}
+              type="button"
+            >
+              {isDiscordLoading ? "Redirecting…" : "Sign in with Discord"}
+            </button>
+          </div>
+
+          <div className="biofield-divider">
+            <span>or sign in with email</span>
+          </div>
+
           <form className="biofield-form" onSubmit={handleSubmit}>
             <label className="biofield-field" htmlFor="biofield-email">
               <span className="biofield-kicker">Email</span>
@@ -80,7 +113,7 @@ export default function LoginPage() {
             {errorMessage ? <p className="biofield-error">{errorMessage}</p> : null}
 
             <div className="biofield-actions">
-              <button className="biofield-button" disabled={isSubmitting} type="submit">
+              <button className="biofield-button" disabled={isSubmitting || isDiscordLoading} type="submit">
                 {isSubmitting ? "Signing in…" : "Sign in"}
               </button>
             </div>

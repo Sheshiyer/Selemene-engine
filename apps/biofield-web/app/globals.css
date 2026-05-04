@@ -348,6 +348,25 @@ textarea {
   accent-color: var(--accent);
 }
 
+.biofield-divider {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 1.25rem 0;
+  color: var(--muted);
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.biofield-divider::before,
+.biofield-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
 .biofield-mono {
   font-family: "SFMono-Regular", "Menlo", monospace;
   word-break: break-word;
