@@ -2869,15 +2869,20 @@ pub async fn ephemeris_checksums(
     Extension(auth_user): Extension<AuthUser>,
 ) -> Result<Response, ApiError> {
     let effective_permissions = effective_permissions(&state, &auth_user).await?;
-    if let Some(resp) =
-        require_permission_or_forbidden(&effective_permissions, "admin:system:read")
+    if let Some(resp) = require_permission_or_forbidden(&effective_permissions, "admin:system:read")
     {
         return Ok(resp);
     }
 
     // Serialize directly from the Arc to avoid cloning the underlying HashMap.
     let checksums = &*state.ephemeris_checksums;
-    Ok((StatusCode::OK, Json(EphemerisChecksumsResponse { checksums: checksums.clone() })).into_response())
+    Ok((
+        StatusCode::OK,
+        Json(EphemerisChecksumsResponse {
+            checksums: checksums.clone(),
+        }),
+    )
+        .into_response())
 }
 
 #[cfg(test)]

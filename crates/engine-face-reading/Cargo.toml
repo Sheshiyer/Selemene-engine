@@ -1,6 +1,6 @@
 [package]
 name = "engine-face-reading"
-version = "3.0.0"
+version = "3.1.0"
 edition = "2021"
 description = "Face Reading consciousness engine — Five Elements constitution analysis"
 

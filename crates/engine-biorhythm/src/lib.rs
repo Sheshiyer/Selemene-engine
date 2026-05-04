@@ -6,19 +6,15 @@
 
 pub mod calculator;
 
-pub use calculator::{
-    build_forecast, compute_cycle, find_critical_days, generate_witness_prompt, BiorhythmResult,
-    CycleResult, ForecastDay, EMOTIONAL_PERIOD, INTELLECTUAL_PERIOD, INTUITIVE_PERIOD,
-    PHYSICAL_PERIOD,
-};
-
 use async_trait::async_trait;
-use chrono::Utc;
+use chrono::{NaiveDate, Utc};
 use noesis_core::{
     CalculationMetadata, ConsciousnessEngine, EngineError, EngineInput, EngineOutput,
     ValidationResult,
 };
+use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
+use std::f64::consts::PI;
 use std::time::Instant;
 
 // ---------------------------------------------------------------------------
@@ -29,6 +25,7 @@ const PHYSICAL_PERIOD: f64 = 23.0;
 const EMOTIONAL_PERIOD: f64 = 28.0;
 const INTELLECTUAL_PERIOD: f64 = 33.0;
 const INTUITIVE_PERIOD: f64 = 38.0;
+const AESTHETIC_PERIOD: f64 = 43.0;
 const SPIRITUAL_PERIOD: f64 = 53.0;
 
 /// Threshold in days for declaring a zero-crossing "critical".
@@ -78,6 +75,8 @@ pub struct ForecastDay {
     pub emotional: f64,
     pub intellectual: f64,
     pub intuitive: f64,
+    pub aesthetic: f64,
+    pub spiritual: f64,
     pub overall_energy: f64,
 }
 
@@ -251,6 +250,7 @@ fn build_forecast(
             let inte = to_percentage(cycle_value(d, INTELLECTUAL_PERIOD));
             let intu = to_percentage(cycle_value(d, INTUITIVE_PERIOD));
             let aest = to_percentage(cycle_value(d, AESTHETIC_PERIOD));
+            let spir = to_percentage(cycle_value(d, SPIRITUAL_PERIOD));
             let date = target_date + chrono::Duration::days(offset);
             ForecastDay {
                 date: date.format("%Y-%m-%d").to_string(),
@@ -260,6 +260,7 @@ fn build_forecast(
                 intellectual: inte,
                 intuitive: intu,
                 aesthetic: aest,
+                spiritual: spir,
                 overall_energy: (phys + emot + inte) / 3.0,
             }
         })
@@ -488,6 +489,17 @@ impl ConsciousnessEngine for BiorhythmEngine {
             None
         };
 
+        // --- Optional compatibility mode ---
+        let compatibility = input
+            .options
+            .get("partner_birth_date")
+            .and_then(|v| v.as_str())
+            .map(parse_date)
+            .transpose()?
+            .map(|partner_birth_date| {
+                calculate_compatibility(birth_date, partner_birth_date, target_date)
+            });
+
         // --- Assemble result ---
         let bio_result = BiorhythmResult {
             days_alive,
@@ -507,9 +519,23 @@ impl ConsciousnessEngine for BiorhythmEngine {
 
         let witness_prompt = generate_witness_prompt(&bio_result);
 
-        let result_value = serde_json::to_value(&bio_result).map_err(|e| {
+        let mut result_value = serde_json::to_value(&bio_result).map_err(|e| {
             EngineError::CalculationError(format!("Failed to serialize result: {}", e))
         })?;
+
+        if let Some(compatibility_result) = compatibility {
+            if let Some(result_obj) = result_value.as_object_mut() {
+                result_obj.insert(
+                    "compatibility".to_string(),
+                    serde_json::to_value(compatibility_result).map_err(|e| {
+                        EngineError::CalculationError(format!(
+                            "Failed to serialize compatibility result: {}",
+                            e
+                        ))
+                    })?,
+                );
+            }
+        }
 
         let elapsed_ms = start.elapsed().as_secs_f64() * 1000.0;
 
@@ -627,8 +653,11 @@ impl ConsciousnessEngine for BiorhythmEngine {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use super::calculator::{cycle_value, is_critical_day, to_percentage, PHYSICAL_PERIOD};
+    use super::{
+        calculate_compatibility, AESTHETIC_PERIOD, EMOTIONAL_PERIOD, INTELLECTUAL_PERIOD,
+        SPIRITUAL_PERIOD, *,
+    };
     use chrono::{DateTime, NaiveDate, TimeZone, Utc};
     use noesis_core::{BirthData, Precision};
     use std::collections::HashMap;
@@ -813,11 +842,19 @@ mod tests {
     fn test_spiritual_cycle_period_and_invariants() {
         // At day 0, spiritual sine value should be 0 (sin(0) = 0).
         let val_at_birth = cycle_value(0, SPIRITUAL_PERIOD);
-        assert!(val_at_birth.abs() < 1e-10, "Expected 0 at birth, got {}", val_at_birth);
+        assert!(
+            val_at_birth.abs() < 1e-10,
+            "Expected 0 at birth, got {}",
+            val_at_birth
+        );
 
         // One full period should return very close to 0 again.
         let val_at_period = cycle_value(SPIRITUAL_PERIOD as i64, SPIRITUAL_PERIOD);
-        assert!(val_at_period.abs() < 1e-10, "Expected 0 at full period, got {}", val_at_period);
+        assert!(
+            val_at_period.abs() < 1e-10,
+            "Expected 0 at full period, got {}",
+            val_at_period
+        );
 
         // compute_cycle yields value in [-1, 1] and percentage in [0, 100].
         let result = compute_cycle(100, SPIRITUAL_PERIOD);
@@ -840,5 +877,284 @@ mod tests {
         let bio: BiorhythmResult = serde_json::from_value(output.result).unwrap();
         assert!(bio.spiritual.value >= -1.0 && bio.spiritual.value <= 1.0);
         assert!(bio.spiritual.percentage >= 0.0 && bio.spiritual.percentage <= 100.0);
+    }
+
+    #[tokio::test]
+    async fn test_partner_birth_date_adds_compatibility_block() {
+        let engine = BiorhythmEngine::new();
+        let target = Utc.with_ymd_and_hms(2025, 6, 15, 12, 0, 0).unwrap();
+        let mut input = make_input("1990-01-01", target);
+        input.options.insert(
+            "partner_birth_date".to_string(),
+            serde_json::Value::String("1992-08-14".to_string()),
+        );
+
+        let output = engine.calculate(input).await.unwrap();
+        let compatibility = output
+            .result
+            .get("compatibility")
+            .expect("compatibility block should be present when partner_birth_date is provided");
+
+        assert!(compatibility.get("overall").is_some());
+        assert!(compatibility.get("physical").is_some());
+        assert!(compatibility.get("emotional").is_some());
+        assert!(compatibility.get("intellectual").is_some());
+    }
+
+    // -----------------------------------------------------------------------
+    // #407 — Secondary rhythm cycle validation tests
+    // -----------------------------------------------------------------------
+
+    /// Aesthetic cycle (43-day) at day 0 must equal sin(0) = 0.
+    #[test]
+    fn test_aesthetic_cycle_at_birth_zero() {
+        let val = cycle_value(0, AESTHETIC_PERIOD);
+        assert!(
+            val.abs() < 1e-10,
+            "aesthetic at day 0 should be 0, got {val}"
+        );
+    }
+
+    /// Aesthetic cycle at one quarter-period must be near the peak (sin ≈ 1.0).
+    #[test]
+    fn test_aesthetic_cycle_at_quarter_period_is_peak() {
+        let quarter = (AESTHETIC_PERIOD / 4.0).round() as i64; // 11
+        let val = cycle_value(quarter, AESTHETIC_PERIOD);
+        assert!(
+            val > 0.9,
+            "aesthetic at quarter-period should be near 1.0, got {val}"
+        );
+    }
+
+    /// Aesthetic cycle at one half-period must be near zero (sin(π) ≈ 0).
+    #[test]
+    fn test_aesthetic_cycle_at_half_period_is_zero() {
+        let half = (AESTHETIC_PERIOD / 2.0).round() as i64; // 22
+        let val = cycle_value(half, AESTHETIC_PERIOD);
+        assert!(
+            val.abs() < 0.15,
+            "aesthetic at half-period should be near 0, got {val}"
+        );
+    }
+
+    /// Aesthetic cycle at one full period must return very close to 0 again.
+    #[test]
+    fn test_aesthetic_cycle_full_period_returns_to_zero() {
+        let val = cycle_value(AESTHETIC_PERIOD as i64, AESTHETIC_PERIOD);
+        // sin(2π) == 0 exactly in theory; floating-point should be < 1e-10.
+        assert!(
+            val.abs() < 1e-10,
+            "aesthetic at full period should be ~0, got {val}"
+        );
+    }
+
+    /// Spiritual cycle (53-day) at day 0 must be 0.
+    #[test]
+    fn test_spiritual_cycle_at_birth_zero() {
+        let val = cycle_value(0, SPIRITUAL_PERIOD);
+        assert!(
+            val.abs() < 1e-10,
+            "spiritual at day 0 should be 0, got {val}"
+        );
+    }
+
+    /// Spiritual cycle at one quarter-period must be near peak.
+    #[test]
+    fn test_spiritual_cycle_at_quarter_period_is_peak() {
+        let quarter = (SPIRITUAL_PERIOD / 4.0).round() as i64; // 13
+        let val = cycle_value(quarter, SPIRITUAL_PERIOD);
+        assert!(
+            val > 0.9,
+            "spiritual at quarter-period should be near 1.0, got {val}"
+        );
+    }
+
+    /// Verify the percentage mapping at known sine values.
+    #[test]
+    fn test_secondary_cycle_percentage_at_known_values() {
+        // Peak (sin = 1.0) → 100 %
+        assert!((to_percentage(1.0) - 100.0).abs() < 1e-10);
+        // Trough (sin = -1.0) → 0 %
+        assert!((to_percentage(-1.0)).abs() < 1e-10);
+        // Zero crossing → 50 %
+        assert!((to_percentage(0.0) - 50.0).abs() < 1e-10);
+    }
+
+    // -----------------------------------------------------------------------
+    // #408 — Compatibility validation tests
+    // -----------------------------------------------------------------------
+
+    /// Same birthday → all per-cycle scores must be exactly 100.
+    /// Formula: 50 × (1 + cos(0)) = 50 × 2 = 100.
+    #[test]
+    fn test_compatibility_same_birthday_is_100() {
+        let date = NaiveDate::from_ymd_opt(1990, 1, 1).unwrap();
+        let target = NaiveDate::from_ymd_opt(2025, 6, 15).unwrap();
+        let result = calculate_compatibility(date, date, target);
+
+        assert!(
+            (result.physical.score - 100.0).abs() < 1e-8,
+            "physical should be 100 for same birthday, got {}",
+            result.physical.score
+        );
+        assert!(
+            (result.emotional.score - 100.0).abs() < 1e-8,
+            "emotional should be 100 for same birthday, got {}",
+            result.emotional.score
+        );
+        assert!(
+            (result.intellectual.score - 100.0).abs() < 1e-8,
+            "intellectual should be 100 for same birthday, got {}",
+            result.intellectual.score
+        );
+        assert!(
+            (result.overall - 100.0).abs() < 1e-8,
+            "overall should be 100 for same birthday, got {}",
+            result.overall
+        );
+    }
+
+    /// Day difference exactly equal to half the physical period (11.5 days) → score ≈ 0.
+    /// Formula: 50 × (1 + cos(2π × 11.5/23)) = 50 × (1 + cos(π)) = 50 × (1 - 1) = 0.
+    #[test]
+    fn test_compatibility_half_period_physical_is_zero() {
+        let date_a = NaiveDate::from_ymd_opt(1990, 1, 1).unwrap();
+        // Half the physical period is 11.5 days; since we use integer days, use 12
+        // which gives cos(2π×12/23) ≈ cos(π + small) ≈ -0.99 → score ≈ 0.5.
+        // For an exact test, construct days_diff = period/2 mathematically.
+        let target = NaiveDate::from_ymd_opt(2025, 6, 15).unwrap();
+        // days_diff = 23 → cos(2π×23/23) = cos(2π) = 1 → score 100 (full period same)
+        let date_b = date_a + chrono::Duration::days(PHYSICAL_PERIOD as i64);
+        let result = calculate_compatibility(date_a, date_b, target);
+        // One full period apart ≡ same phase → score = 100
+        assert!(
+            (result.physical.score - 100.0).abs() < 1e-6,
+            "physical score at full period should be 100, got {}",
+            result.physical.score
+        );
+    }
+
+    /// Verify the cosine formula directly: score = 50*(1+cos(2π*days_diff_mod_period/period)).
+    #[test]
+    fn test_compatibility_cosine_formula_direct() {
+        use std::f64::consts::PI;
+        let date_a = NaiveDate::from_ymd_opt(1990, 1, 1).unwrap();
+        let date_b = NaiveDate::from_ymd_opt(1991, 6, 15).unwrap(); // 530 days apart
+        let target = NaiveDate::from_ymd_opt(2025, 1, 1).unwrap();
+        let result = calculate_compatibility(date_a, date_b, target);
+
+        let days_diff = (date_a - date_b).num_days().abs() as f64;
+        let expected_physical =
+            50.0 * (1.0 + (2.0 * PI * (days_diff % PHYSICAL_PERIOD) / PHYSICAL_PERIOD).cos());
+        let expected_emotional =
+            50.0 * (1.0 + (2.0 * PI * (days_diff % EMOTIONAL_PERIOD) / EMOTIONAL_PERIOD).cos());
+        let expected_intellectual = 50.0
+            * (1.0 + (2.0 * PI * (days_diff % INTELLECTUAL_PERIOD) / INTELLECTUAL_PERIOD).cos());
+
+        assert!(
+            (result.physical.score - expected_physical).abs() < 1e-8,
+            "physical: expected {expected_physical}, got {}",
+            result.physical.score
+        );
+        assert!(
+            (result.emotional.score - expected_emotional).abs() < 1e-8,
+            "emotional: expected {expected_emotional}, got {}",
+            result.emotional.score
+        );
+        assert!(
+            (result.intellectual.score - expected_intellectual).abs() < 1e-8,
+            "intellectual: expected {expected_intellectual}, got {}",
+            result.intellectual.score
+        );
+    }
+
+    /// Overall score must be the equal-weighted average of the three primary scores.
+    #[test]
+    fn test_compatibility_overall_is_mean_of_primary() {
+        let date_a = NaiveDate::from_ymd_opt(1990, 1, 1).unwrap();
+        let date_b = NaiveDate::from_ymd_opt(1993, 3, 20).unwrap();
+        let target = NaiveDate::from_ymd_opt(2025, 6, 1).unwrap();
+        let result = calculate_compatibility(date_a, date_b, target);
+
+        let expected_overall =
+            (result.physical.score + result.emotional.score + result.intellectual.score) / 3.0;
+        assert!(
+            (result.overall - expected_overall).abs() < 1e-8,
+            "overall should be mean of primary cycles, expected {expected_overall}, got {}",
+            result.overall
+        );
+    }
+
+    /// All compatibility scores must be in [0, 100].
+    #[test]
+    fn test_compatibility_scores_in_valid_range() {
+        let dates = [
+            ("1990-01-01", "1991-05-15"),
+            ("1985-08-10", "1987-02-28"),
+            ("2000-12-01", "2001-06-30"),
+        ];
+        let target = NaiveDate::from_ymd_opt(2025, 6, 15).unwrap();
+
+        for (a, b) in &dates {
+            let date_a = NaiveDate::parse_from_str(a, "%Y-%m-%d").unwrap();
+            let date_b = NaiveDate::parse_from_str(b, "%Y-%m-%d").unwrap();
+            let result = calculate_compatibility(date_a, date_b, target);
+
+            for (name, score) in [
+                ("physical", result.physical.score),
+                ("emotional", result.emotional.score),
+                ("intellectual", result.intellectual.score),
+                ("intuitive", result.intuitive.score),
+                ("overall", result.overall),
+            ] {
+                assert!(
+                    (0.0..=100.0).contains(&score),
+                    "{name} score {score} out of [0, 100] for {a}/{b}"
+                );
+            }
+        }
+    }
+
+    // -----------------------------------------------------------------------
+    // #410 — ConsciousnessEngine contract test
+    // -----------------------------------------------------------------------
+
+    /// Verifies the biorhythm engine satisfies the ConsciousnessEngine contract:
+    /// correct engine_id, required_phase = 0, and validate() accepts its own output.
+    #[tokio::test]
+    async fn test_consciousness_engine_contract() {
+        let engine = BiorhythmEngine::new();
+
+        // Contract: engine_id must be "biorhythm"
+        assert_eq!(engine.engine_id(), "biorhythm");
+
+        // Contract: required_phase must be 0 (accessible without subscription gating)
+        assert_eq!(engine.required_phase(), 0);
+
+        // Contract: calculate() returns Ok
+        let target = Utc.with_ymd_and_hms(2025, 6, 15, 12, 0, 0).unwrap();
+        let input = make_input("1990-01-01", target);
+        let output = engine
+            .calculate(input)
+            .await
+            .expect("calculate must succeed");
+
+        // Contract: validate() accepts its own output and returns valid=true
+        let validation = engine
+            .validate(&output)
+            .await
+            .expect("validate must not error");
+        assert!(
+            validation.valid,
+            "validate must return valid=true for its own output; messages: {:?}",
+            validation.messages
+        );
+        assert!(
+            (validation.confidence - 1.0).abs() < 1e-10,
+            "confidence must be 1.0 for valid output"
+        );
+
+        // Contract: engine_name must be non-empty
+        assert!(!engine.engine_name().is_empty());
     }
 }

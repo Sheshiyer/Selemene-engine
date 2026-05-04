@@ -1,0 +1,267 @@
+diff --git a/.env.example b/.env.example
+index 3b679b75..44414d6f 100644
+--- a/.env.example
++++ b/.env.example
+@@ -44,6 +44,7 @@ CACHE_L2_TTL=86400       # 24 hours
+ # === Authentication ===
+ JWT_SECRET=CHANGE_ME_generate_with_openssl_rand_base64_48
+ JWT_EXPIRY=3600  # 1 hour
++ALLOWED_ORIGINS=http://localhost:3000,http://localhost:3001,http://localhost:5173
+ 
+ # === Swiss Ephemeris ===
+ SWISS_EPHEMERIS_PATH=/app/data/ephemeris
+@@ -101,4 +102,4 @@ SUPABASE_DB_PASSWORD=your_supabase_password_here
+ # Created by: cargo run --package noesis-auth --features postgres --example seed_api_keys
+ # ADMIN_EMAIL=admin@tryambakam.com
+ # ADMIN_PASSWORD=<generated-by-seed-script>
+-# Admin API Keys: see seed script output (5 keys across enterprise/premium/free tiers)
+\ No newline at end of file
++# Admin API Keys: see seed script output (5 keys across enterprise/premium/free tiers)
+diff --git a/apps/admin-web/README.md b/apps/admin-web/README.md
+index db65d6dc..04757e9e 100644
+--- a/apps/admin-web/README.md
++++ b/apps/admin-web/README.md
+@@ -43,6 +43,8 @@ Discord OAuth settings:
+ - `DISCORD_REDIRECT_URI` must exactly match the callback URL registered in the Discord developer portal.
+ - The admin web supports the callback alias `/admin/auth/discord/callback` in addition to the existing `/admin/login/discord-callback`, so either path can be used as long as the Discord app config and API env use the same exact URI.
+ - The login UI now sends its current dashboard callback URI to the API, and the API accepts it only when it stays on the current browser origin and one of the allowed admin callback paths. This keeps Discord login working across the main dashboard origin and compatible preview/local admin origins without opening arbitrary redirect targets.
++- For localhost debugging against the Railway API, the deployed API `ALLOWED_ORIGINS` must include `http://localhost:3001` (and/or `http://localhost:3000` if you run Next there).
++- If the custom API domain does not return localhost CORS headers, prefer the direct Railway public API URL for local testing, for example `NEXT_PUBLIC_API_BASE_URL=https://selemene-engine-production.up.railway.app`.
+ 
+ ## Vercel setup
+ 
+diff --git a/apps/admin-web/next-env.d.ts b/apps/admin-web/next-env.d.ts
+index 9edff1c7..c4b7818f 100644
+--- a/apps/admin-web/next-env.d.ts
++++ b/apps/admin-web/next-env.d.ts
+@@ -1,6 +1,6 @@
+ /// <reference types="next" />
+ /// <reference types="next/image-types/global" />
+-import "./.next/types/routes.d.ts";
++import "./.next/dev/types/routes.d.ts";
+ 
+ // NOTE: This file should not be edited
+ // see https://nextjs.org/docs/app/api-reference/config/typescript for more information.
+diff --git a/crates/noesis-api/src/config.rs b/crates/noesis-api/src/config.rs
+index 16e05f13..85b4ea4d 100644
+--- a/crates/noesis-api/src/config.rs
++++ b/crates/noesis-api/src/config.rs
+@@ -62,7 +62,7 @@ impl ApiConfig {
+     /// - `SERVER_PORT`: Legacy alias for `PORT`
+     /// - `JWT_SECRET`: JWT secret (required in production, has dev default)
+     /// - `REDIS_URL`: Redis connection URL (optional)
+-    /// - `ALLOWED_ORIGINS`: Comma-separated CORS origins (default: localhost:3000,5173)
++    /// - `ALLOWED_ORIGINS`: Comma-separated CORS origins (default: localhost:3000,3001,5173)
+     /// - `RATE_LIMIT_REQUESTS`: Max requests per window (default: 100)
+     /// - `RATE_LIMIT_WINDOW_SECS`: Rate limit window in seconds (default: 60)
+     /// - `REQUEST_TIMEOUT_SECS`: Request timeout in seconds (default: 30)
+@@ -131,7 +131,9 @@ impl ApiConfig {
+         let redis_url = env::var("REDIS_URL").ok();
+ 
+         let allowed_origins = env::var("ALLOWED_ORIGINS")
+-            .unwrap_or_else(|_| "http://localhost:3000,http://localhost:5173".to_string())
++            .unwrap_or_else(|_| {
++                "http://localhost:3000,http://localhost:3001,http://localhost:5173".to_string()
++            })
+             .split(',')
+             .map(|s| s.trim().to_string())
+             .filter(|s| !s.is_empty())
+diff --git a/docs/CORS.md b/docs/CORS.md
+index c9890e44..2e9396f1 100644
+--- a/docs/CORS.md
++++ b/docs/CORS.md
+@@ -14,15 +14,17 @@ This is an access-control boundary for reliable reflection surfaces, not a chang
+ 
+ ```bash
+ # Development (default if not set)
+-ALLOWED_ORIGINS="http://localhost:3000,http://localhost:5173"
++ALLOWED_ORIGINS="http://localhost:3000,http://localhost:3001,http://localhost:5173"
+ 
+ # Production
+ ALLOWED_ORIGINS="https://app.example.com,https://dashboard.example.com"
+ 
+ # Mixed environments
+-ALLOWED_ORIGINS="https://app.example.com,http://localhost:3000"
++ALLOWED_ORIGINS="https://app.example.com,http://localhost:3001"
+ ```
+ 
++The admin dashboard in `apps/admin-web` runs on `http://localhost:3001` by default, so local auth debugging should include that origin.
++
+ ### CORS Policy Settings
+ 
+ The API applies the following CORS policy:
+@@ -41,7 +43,7 @@ CORS is configured in `crates/noesis-api/src/lib.rs` via the `create_cors_layer(
+ ```rust
+ fn create_cors_layer() -> CorsLayer {
+     let allowed_origins = std::env::var("ALLOWED_ORIGINS")
+-        .unwrap_or_else(|_| "http://localhost:3000,http://localhost:5173".to_string());
++        .unwrap_or_else(|_| "http://localhost:3000,http://localhost:3001,http://localhost:5173".to_string());
+ 
+     let origins: Vec<HeaderValue> = allowed_origins
+         .split(',')
+@@ -130,7 +132,7 @@ If preflight succeeds, the browser sends the actual request.
+ 3. **Test with curl** (preflight request):
+    ```bash
+    curl -X OPTIONS http://localhost:8080/api/v1/status \
+-     -H "Origin: http://localhost:3000" \
++     -H "Origin: http://localhost:3001" \
+      -H "Access-Control-Request-Method: GET" \
+      -H "Access-Control-Request-Headers: content-type" \
+      -i
+@@ -138,7 +140,7 @@ If preflight succeeds, the browser sends the actual request.
+ 
+    Expected response should include:
+    ```
+-   access-control-allow-origin: http://localhost:3000
++   access-control-allow-origin: http://localhost:3001
+    access-control-allow-methods: GET, POST, OPTIONS
+    access-control-allow-headers: content-type, authorization, x-api-key
+    access-control-allow-credentials: true
+@@ -148,7 +150,7 @@ If preflight succeeds, the browser sends the actual request.
+ 4. **Test actual request:**
+    ```bash
+    curl http://localhost:8080/api/v1/status \
+-     -H "Origin: http://localhost:3000" \
++     -H "Origin: http://localhost:3001" \
+      -H "Content-Type: application/json" \
+      -i
+    ```
+@@ -189,7 +191,7 @@ If preflight succeeds, the browser sends the actual request.
+    ```
+ 2. Add your frontend origin to the list:
+    ```bash
+-   export ALLOWED_ORIGINS="http://localhost:3000,https://your-frontend.com"
++   export ALLOWED_ORIGINS="http://localhost:3001,https://your-frontend.com"
+    ```
+ 3. Restart the API server
+ 
+diff --git a/tasks/lessons.md b/tasks/lessons.md
+index b07732bd..bb3eab44 100644
+--- a/tasks/lessons.md
++++ b/tasks/lessons.md
+@@ -52,3 +52,28 @@
+   - whether the project settings were saved,
+   - whether a new production deployment was created after the save,
+   - whether the custom domain is attached to this exact project and environment.
++
++## 2026-03-27 — Live Callback Verification Before Auth Claims
++
++- For frontend auth fixes, do not stop at local tests plus `git push`.
++- Re-check the live login button’s generated OAuth authorize URL on the exact production/custom domain before claiming the fix is live.
++- If the live callback path or redirect URI still reflects old behavior, treat it as a deployment-state problem first, not a new code regression.
++
++## 2026-03-28 — Custom Domain vs Direct Origin CORS Rule
++
++- When localhost CORS fails against a deployed API, test both:
++  - the custom/public API domain,
++  - the direct platform origin (`*.up.railway.app`, etc.).
++- If the direct origin returns `Access-Control-Allow-Origin` but the custom domain does not, treat it as an edge/domain-layer issue, not an application CORS bug.
++- For local debugging, prefer the direct service URL until the custom-domain edge behavior is fixed.
++
++## 2026-03-28 — Failure Mode Re-Classification Rule
++
++- When one blocking failure is removed, immediately re-classify the next failure from fresh evidence instead of continuing to reason from the old root cause.
++- For auth flows specifically:
++  - CORS failure means the request never reached the application logic.
++  - callback-page `internal error` means the request reached the application and failed deeper in the exchange or persistence path.
++- After a user reports "CORS is gone but still broken", jump straight to:
++  - callback network response body/status,
++  - live application logs,
++  - deploy/runtime config parity.
+diff --git a/tasks/todo.md b/tasks/todo.md
+index f992f5d3..565f3297 100644
+--- a/tasks/todo.md
++++ b/tasks/todo.md
+@@ -2,6 +2,92 @@
+ 
+ ---
+ 
++# Task Plan — Live Discord Callback Internal Error After CORS Unblock
++
++## Checklist
++- [x] Capture the live callback response status/body for the failing Discord flow.
++- [x] Inspect Railway logs for the matching callback request.
++- [x] Identify whether the failure is token exchange, callback URI mismatch, account lookup, or session issuance.
++- [ ] Apply the minimal fix or runtime correction and verify the end-to-end login flow.
++
++## Notes
++- User reports the previous CORS blocker is gone.
++- Current visible failure is on the callback page itself: `An internal error occurred`.
++
++## Review (fill after execution)
++- Findings so far:
++  - reproduced the callback failure in-browser
++  - the callback POST is returning `500` from:
++    - `https://selemene.tryambakam.space/api/v1/auth/discord/callback`
++  - matching Railway app logs show:
++    - startup warning: `Database connection failed (running without DB): password authentication failed for user "postgres"`
++    - callback request: `POST /api/v1/auth/discord/callback` -> `500` after ~30.7s
++  - health/readiness confirms the runtime state:
++    - `https://selemene.tryambakam.space/ready` -> `"postgres":"disabled"`
++    - `https://selemene-engine-production.up.railway.app/ready` -> `"postgres":"disabled"`
++  - conclusion:
++    - the active Railway deployment is running without a working database connection
++    - Discord login cannot succeed until the Railway `DATABASE_URL` / Supabase auth path is corrected and the API comes up with Postgres enabled
++  - additional deployment-state note:
++    - the deployed authorize endpoint still ignores the caller-provided localhost callback override and emits the configured production callback URI
++    - that means the latest callback-origin fix is still not live on the API runtime, but this is secondary to the current DB outage for the production login path
++
++---
++
++# Task Plan — Localhost Admin Dashboard Debug Against Vercel/Railway
++
++## Checklist
++- [x] Run the redesigned admin web locally and confirm the new UI renders.
++- [x] Test whether Discord login can start from localhost against the current remote API.
++- [x] Inspect backend CORS/origin configuration relevant to localhost auth.
++- [x] Determine whether the clean fix is local API bootstrapping or remote CORS changes.
++
++## Notes
++- User wants to use localhost to view the new admin dashboard UI and test Discord auth while Vercel/live deployment is being debugged.
++- Localhost callback URIs are reportedly already registered in the auth provider redirect settings.
++
++## Review (fill after execution)
++- Scope:
++  - ran `apps/admin-web` locally with the current redesign code
++  - tested localhost login initiation against the current remote API origin `https://selemene.tryambakam.space`
++  - inspected API CORS configuration and local API runtime prerequisites
++- Findings:
++  - the redesigned login page renders locally
++  - verified at:
++    - `http://localhost:3001/admin/login`
++    - `http://localhost:3000/admin/login`
++  - Discord login does not reach Discord from either localhost origin
++  - both localhost origins fail earlier on the authorize request with a browser CORS rejection against `https://selemene.tryambakam.space`
++  - API source confirms CORS is strict allowlist-based via `ALLOWED_ORIGINS`
++  - local API dev defaults only mention `http://localhost:3000` and `http://localhost:5173`, but the currently deployed remote API is not allowing the localhost origins tested in practice
++  - a clean local auth loop should use:
++    - admin web on localhost
++    - local `noesis-api` on `http://localhost:8080`
++    - `ALLOWED_ORIGINS` including the chosen localhost admin origin
++  - direct preflight verification against the deployed API showed:
++    - `https://selemene.tryambakam.space` allows `https://144.tryambakam.space`
++    - `https://selemene.tryambakam.space` allows `https://enantiodromia-engine-dashboard.vercel.app`
++    - `https://selemene.tryambakam.space` does not return `Access-Control-Allow-Origin` for `http://localhost:3001`
++  - Railway service config was updated to include localhost origins in `ALLOWED_ORIGINS`
++  - the direct Railway service URL now returns localhost CORS headers:
++    - `https://selemene-engine-production.up.railway.app` allows `http://localhost:3001`
++  - the custom API domain still does not return localhost CORS headers even after the Railway env update, which indicates a custom-domain/edge-layer issue distinct from the API runtime
++- current shell environment does not have the required API runtime env vars loaded (`DISCORD_CLIENT_ID`, `DISCORD_CLIENT_SECRET`, `DISCORD_REDIRECT_URI`, `DATABASE_URL`, `JWT_SECRET`, `ALLOWED_ORIGINS` were all unset), so the local API cannot be started from this shell without sourcing env first
++- Verification:
++  - `NEXT_PUBLIC_API_BASE_URL=https://selemene.tryambakam.space NEXT_PUBLIC_ADMIN_DEV_MODE=false npm run dev` in `apps/admin-web`
++  - `NEXT_PUBLIC_API_BASE_URL=https://selemene.tryambakam.space NEXT_PUBLIC_ADMIN_DEV_MODE=false npx next dev -p 3000`
++  - `NEXT_PUBLIC_API_BASE_URL=https://selemene-engine-production.up.railway.app NEXT_PUBLIC_ADMIN_DEV_MODE=false npm run dev`
++  - browser verification on `http://localhost:3001/admin/login`
++  - browser verification on `http://localhost:3000/admin/login`
++  - `curl -X OPTIONS https://selemene.tryambakam.space/api/v1/auth/discord/authorize -H 'Origin: http://localhost:3001' ...`
++  - `curl -X OPTIONS https://selemene-engine-production.up.railway.app/api/v1/auth/discord/authorize -H 'Origin: http://localhost:3001' ...`
++  - source inspection:
++    - `crates/noesis-api/src/config.rs`
++    - `crates/noesis-api/src/lib.rs`
++    - `apps/admin-web/README.md`
++
++---
++
+ # Task Plan — Fix Discord Login Regression After Admin UI Upgrades
+ 
+ ## Checklist

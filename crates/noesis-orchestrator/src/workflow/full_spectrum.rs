@@ -597,4 +597,55 @@ mod tests {
         assert!(elapsed.as_millis() < 150, "Execution should be parallel");
         assert_eq!(result.engines_succeeded, 3);
     }
+
+    /// #394 — full-spectrum passes partner_birth_date option to biorhythm engine.
+    ///
+    /// When a caller includes `partner_birth_date` in `EngineInput.options`, the
+    /// full-spectrum workflow must forward those options unchanged to the biorhythm
+    /// engine so that the compatibility block appears in its output.
+    #[tokio::test]
+    async fn test_partner_birth_date_flows_through_to_biorhythm() {
+        use engine_biorhythm::BiorhythmEngine;
+        use noesis_core::{BirthData, Precision};
+
+        let mut engines: HashMap<String, Arc<dyn ConsciousnessEngine>> = HashMap::new();
+        engines.insert("biorhythm".into(), Arc::new(BiorhythmEngine::new()));
+
+        let workflow = FullSpectrumWorkflow::new(engines);
+
+        let mut options = HashMap::new();
+        options.insert(
+            "partner_birth_date".to_string(),
+            serde_json::Value::String("1992-08-14".to_string()),
+        );
+
+        let input = EngineInput {
+            birth_data: Some(BirthData {
+                name: Some("Test".to_string()),
+                date: "1990-01-01".to_string(),
+                time: None,
+                latitude: 0.0,
+                longitude: 0.0,
+                timezone: "UTC".to_string(),
+            }),
+            current_time: Utc::now(),
+            location: None,
+            precision: Precision::Standard,
+            options,
+        };
+
+        let result = workflow.execute(input).await.unwrap();
+
+        assert_eq!(result.engines_succeeded, 1, "biorhythm should succeed");
+
+        let bio_output = result
+            .successful_outputs
+            .get("biorhythm")
+            .expect("biorhythm output must be present");
+
+        assert!(
+            bio_output.result.get("compatibility").is_some(),
+            "biorhythm output must contain a compatibility block when partner_birth_date is provided"
+        );
+    }
 }

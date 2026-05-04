@@ -4,15 +4,12 @@
 //!   Group 1 – core calculation path (mock metrics generation, vitality index, chakra readings)
 //!   Group 2 – batch operations (multiple users, seeded reproducible runs)
 
+use chrono::Utc;
 use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion};
 use engine_biofield::{
-    generate_metrics_for_user, generate_mock_metrics,
-    get_chakra_wisdom, get_metric_interpretation,
-    generate_witness_prompts,
-    models::Chakra,
-    ConsciousnessEngine, EngineInput, BiofieldEngine,
+    generate_metrics_for_user, generate_mock_metrics, generate_witness_prompts, get_chakra_wisdom,
+    get_metric_interpretation, models::Chakra, BiofieldEngine, ConsciousnessEngine, EngineInput,
 };
-use chrono::Utc;
 use noesis_core::Precision;
 use std::collections::HashMap;
 
@@ -134,19 +131,15 @@ fn bench_batch_user_metrics(c: &mut Criterion) {
     // Parameterised batch sizes
     for size in [1usize, 5, 20, 50] {
         let ids: Vec<String> = (0..size).map(|i| format!("bench_user_{}", i)).collect();
-        group.bench_with_input(
-            BenchmarkId::new("batch_users", size),
-            &ids,
-            |b, ids| {
-                b.iter(|| {
-                    let results: Vec<_> = ids
-                        .iter()
-                        .map(|id| generate_metrics_for_user(black_box(id.as_str())))
-                        .collect();
-                    black_box(results)
-                })
-            },
-        );
+        group.bench_with_input(BenchmarkId::new("batch_users", size), &ids, |b, ids| {
+            b.iter(|| {
+                let results: Vec<_> = ids
+                    .iter()
+                    .map(|id| generate_metrics_for_user(black_box(id.as_str())))
+                    .collect();
+                black_box(results)
+            })
+        });
     }
 
     group.finish();

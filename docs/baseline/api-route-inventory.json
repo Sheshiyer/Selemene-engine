@@ -2,8 +2,8 @@
   "generated_at": "2026-03-13",
   "inventory_scope": "/api/v1",
   "source": "crates/noesis-api/src/lib.rs",
-  "path_count": 59,
-  "route_count": 63,
+  "path_count": 60,
+  "route_count": 64,
   "routes": [
     {
       "path": "/auth/register",
@@ -443,6 +443,17 @@
         {
           "method": "GET",
           "handler": "handlers::admin::system_cache"
+        }
+      ]
+    },
+    {
+      "path": "/admin/ephemeris/checksums",
+      "auth_requirement": "bearer_or_api_key",
+      "uses_orchestrator": false,
+      "methods": [
+        {
+          "method": "GET",
+          "handler": "handlers::admin::ephemeris_checksums"
         }
       ]
     },

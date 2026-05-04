@@ -7,13 +7,13 @@
 
 use chrono::{TimeZone, Utc};
 use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion};
+use engine_human_design::EphemerisCalculator;
 use engine_transits::{
     aspects::{calculate_aspects, calculate_aspects_with_orbs, significant_aspects},
     ephemeris::calculate_all_positions,
     sade_sati::detect_sade_sati,
     TransitsEngine,
 };
-use engine_human_design::EphemerisCalculator;
 use noesis_core::{BirthData, ConsciousnessEngine, EngineInput, Precision};
 use std::collections::HashMap;
 
@@ -99,10 +99,8 @@ fn bench_analysis(c: &mut Criterion) {
     // Aspect calculation (default orbs)
     group.bench_function("calculate_aspects_default_orbs", |b| {
         b.iter(|| {
-            let aspects = calculate_aspects(
-                black_box(&transit_positions),
-                black_box(&natal_positions),
-            );
+            let aspects =
+                calculate_aspects(black_box(&transit_positions), black_box(&natal_positions));
             black_box(aspects)
         })
     });
@@ -131,10 +129,8 @@ fn bench_analysis(c: &mut Criterion) {
     // Sade Sati detection
     group.bench_function("detect_sade_sati", |b| {
         b.iter(|| {
-            let status = detect_sade_sati(
-                black_box(&transit_positions),
-                black_box(&natal_positions),
-            );
+            let status =
+                detect_sade_sati(black_box(&transit_positions), black_box(&natal_positions));
             black_box(status)
         })
     });
@@ -152,8 +148,8 @@ fn bench_analysis(c: &mut Criterion) {
             &tdt,
             |b, &tdt| {
                 b.iter(|| {
-                    let tpos = calculate_all_positions(&calc, black_box(&tdt))
-                        .expect("transit positions");
+                    let tpos =
+                        calculate_all_positions(&calc, black_box(&tdt)).expect("transit positions");
                     let aspects = calculate_aspects(&tpos, &natal_positions);
                     let sade_sati = detect_sade_sati(&tpos, &natal_positions);
                     black_box((aspects, sade_sati))

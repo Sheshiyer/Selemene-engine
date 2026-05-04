@@ -247,6 +247,8 @@ pub struct BiorhythmData {
     pub physical: CycleData,
     pub emotional: CycleData,
     pub intellectual: CycleData,
+    pub aesthetic_percentage: Option<f64>,
+    pub spiritual_percentage: Option<f64>,
     pub composite: f64,
 }
 
@@ -260,18 +262,11 @@ pub struct CycleData {
 impl BiorhythmData {
     /// Extract from engine output JSON
     pub fn from_json(value: &Value) -> Option<Self> {
-        let physical_val = value
-            .get("physical")
-            .and_then(|v| v.as_f64())
-            .unwrap_or(0.0);
-        let emotional_val = value
-            .get("emotional")
-            .and_then(|v| v.as_f64())
-            .unwrap_or(0.0);
-        let intellectual_val = value
-            .get("intellectual")
-            .and_then(|v| v.as_f64())
-            .unwrap_or(0.0);
+        let physical_val = extract_cycle_value(value.get("physical"));
+        let emotional_val = extract_cycle_value(value.get("emotional"));
+        let intellectual_val = extract_cycle_value(value.get("intellectual"));
+        let aesthetic_percentage = extract_cycle_percentage(value.get("aesthetic"));
+        let spiritual_percentage = extract_cycle_percentage(value.get("spiritual"));
 
         Some(Self {
             physical: CycleData {
@@ -289,15 +284,39 @@ impl BiorhythmData {
                 phase: cycle_phase(intellectual_val),
                 description: intellectual_description(intellectual_val),
             },
+            aesthetic_percentage,
+            spiritual_percentage,
             composite: (physical_val + emotional_val + intellectual_val) / 3.0,
         })
     }
 
+    pub fn notable_secondary_cycles(&self) -> Vec<String> {
+        let mut notes = Vec::new();
+
+        if let Some(aesthetic) = self.aesthetic_percentage {
+            if aesthetic >= 80.0 {
+                notes.push(format!("aesthetic energy is very high ({aesthetic:.0}%)"));
+            } else if aesthetic <= 20.0 {
+                notes.push(format!("aesthetic energy is very low ({aesthetic:.0}%)"));
+            }
+        }
+
+        if let Some(spiritual) = self.spiritual_percentage {
+            if spiritual >= 80.0 {
+                notes.push(format!("spiritual energy is very high ({spiritual:.0}%)"));
+            } else if spiritual <= 20.0 {
+                notes.push(format!("spiritual energy is very low ({spiritual:.0}%)"));
+            }
+        }
+
+        notes
+    }
+
     /// Get activity recommendations based on cycles
     pub fn activity_fit(&self) -> Vec<(String, f64)> {
+        // Physical activities
         let mut activities = vec![];
 
-        // Physical activities
         if self.physical.value > 0.3 {
             activities.push(("Physical exercise".to_string(), self.physical.value));
         }
@@ -330,6 +349,28 @@ impl BiorhythmData {
         self.physical.value.abs() < 0.1
             || self.emotional.value.abs() < 0.1
             || self.intellectual.value.abs() < 0.1
+    }
+}
+
+fn extract_cycle_value(value: Option<&Value>) -> f64 {
+    match value {
+        Some(v) if v.is_object() => v.get("value").and_then(|n| n.as_f64()).unwrap_or(0.0),
+        Some(v) => v.as_f64().unwrap_or(0.0),
+        None => 0.0,
+    }
+}
+
+fn extract_cycle_percentage(value: Option<&Value>) -> Option<f64> {
+    match value {
+        Some(v) if v.is_object() => v.get("percentage").and_then(|n| n.as_f64()),
+        Some(v) => v.as_f64().map(|n| {
+            if n.abs() <= 1.0 {
+                ((n + 1.0) / 2.0) * 100.0
+            } else {
+                n
+            }
+        }),
+        None => None,
     }
 }
 
@@ -514,6 +555,8 @@ mod tests {
                 phase: "High".to_string(),
                 description: String::new(),
             },
+            aesthetic_percentage: None,
+            spiritual_percentage: None,
             composite: 0.35,
         };
 

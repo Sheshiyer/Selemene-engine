@@ -165,10 +165,7 @@ mod tests {
     fn test_prefix_uniqueness() {
         let mut seen = std::collections::HashSet::new();
         for prefix in EPHEMERIS_DEPENDENT_PREFIXES {
-            assert!(
-                seen.insert(*prefix),
-                "Duplicate prefix found: {prefix}"
-            );
+            assert!(seen.insert(*prefix), "Duplicate prefix found: {prefix}");
         }
     }
 
@@ -185,7 +182,10 @@ mod tests {
     fn test_panchanga_prefix_matches_engine_key_format() {
         // Mirrors the exact format from engine-panchanga/src/lib.rs:
         //   format!("panchanga:{:x}", md5_hash)
-        let key = format!("panchanga:{:x}", md5::compute("2024-01-15:12:00:12.972442:77.594562"));
+        let key = format!(
+            "panchanga:{:x}",
+            md5::compute("2024-01-15:12:00:12.972442:77.594562")
+        );
         assert!(is_ephemeris_dependent(&key));
     }
 

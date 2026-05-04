@@ -5,10 +5,12 @@
 //!   biorhythm_single_day     — single-day cycle calculation
 //!   biorhythm_30_day_range   — 30-day forecast window
 //!   biorhythm_cycle_analysis — cycle-analysis across diverse birth dates
+//!   biorhythm_7day_forecast  — full calculate with 7-day forecast (AC: < 1ms)
+//!   biorhythm_compatibility  — two-person compatibility (AC: < 500µs)
 
 use chrono::{TimeZone, Utc};
 use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion};
-use engine_biorhythm::BiorhythmEngine;
+use engine_biorhythm::{calculate_compatibility, BiorhythmEngine};
 use noesis_core::{BirthData, ConsciousnessEngine, EngineInput, Precision};
 use serde_json::json;
 
@@ -59,16 +61,12 @@ fn benchmark_single_day(c: &mut Criterion) {
 
     for date in &birth_dates {
         let input = make_input(date, 0);
-        group.bench_with_input(
-            BenchmarkId::from_parameter(date),
-            &input,
-            |b, input| {
-                b.iter(|| {
-                    rt.block_on(engine.calculate(black_box(input.clone())))
-                        .unwrap()
-                })
-            },
-        );
+        group.bench_with_input(BenchmarkId::from_parameter(date), &input, |b, input| {
+            b.iter(|| {
+                rt.block_on(engine.calculate(black_box(input.clone())))
+                    .unwrap()
+            })
+        });
     }
 
     group.finish();
@@ -88,16 +86,12 @@ fn benchmark_30_day_range(c: &mut Criterion) {
 
     for date in &birth_dates {
         let input = make_input(date, 30);
-        group.bench_with_input(
-            BenchmarkId::from_parameter(date),
-            &input,
-            |b, input| {
-                b.iter(|| {
-                    rt.block_on(engine.calculate(black_box(input.clone())))
-                        .unwrap()
-                })
-            },
-        );
+        group.bench_with_input(BenchmarkId::from_parameter(date), &input, |b, input| {
+            b.iter(|| {
+                rt.block_on(engine.calculate(black_box(input.clone())))
+                    .unwrap()
+            })
+        });
     }
 
     group.finish();
@@ -132,6 +126,53 @@ fn benchmark_cycle_analysis(c: &mut Criterion) {
 }
 
 // ---------------------------------------------------------------------------
+// Benchmark: full calculate with 7-day forecast (AC #409: < 1 ms)
+// ---------------------------------------------------------------------------
+
+fn benchmark_7day_forecast(c: &mut Criterion) {
+    let engine = BiorhythmEngine::new();
+    let rt = shared_runtime();
+
+    let mut group = c.benchmark_group("biorhythm_7day_forecast");
+
+    let birth_dates = ["1985-06-15", "1990-01-15", "1978-11-03"];
+
+    for date in &birth_dates {
+        let input = make_input(date, 7);
+        group.bench_with_input(BenchmarkId::from_parameter(date), &input, |b, input| {
+            b.iter(|| {
+                rt.block_on(engine.calculate(black_box(input.clone())))
+                    .unwrap()
+            })
+        });
+    }
+
+    group.finish();
+}
+
+// ---------------------------------------------------------------------------
+// Benchmark: two-person compatibility (AC #409: < 500 µs)
+// ---------------------------------------------------------------------------
+
+fn benchmark_compatibility(c: &mut Criterion) {
+    use chrono::NaiveDate;
+
+    let birth_a = NaiveDate::from_ymd_opt(1990, 1, 1).unwrap();
+    let birth_b = NaiveDate::from_ymd_opt(1992, 8, 14).unwrap();
+    let target = NaiveDate::from_ymd_opt(2025, 6, 15).unwrap();
+
+    c.bench_function("biorhythm_compatibility_calculation", |b| {
+        b.iter(|| {
+            black_box(calculate_compatibility(
+                black_box(birth_a),
+                black_box(birth_b),
+                black_box(target),
+            ))
+        })
+    });
+}
+
+// ---------------------------------------------------------------------------
 // criterion wiring
 // ---------------------------------------------------------------------------
 
@@ -140,5 +181,7 @@ criterion_group!(
     benchmark_single_day,
     benchmark_30_day_range,
     benchmark_cycle_analysis,
+    benchmark_7day_forecast,
+    benchmark_compatibility,
 );
 criterion_main!(benches);

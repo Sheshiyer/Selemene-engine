@@ -37,7 +37,6 @@ use chrono::{
     Datelike, LocalResult, NaiveDate, NaiveDateTime, NaiveTime, Offset, TimeZone, Timelike,
 };
 use chrono_tz::Tz;
-use noesis_orchestrator::{EphemerisCalculator, HDPlanet};
 use noesis_auth::{AuthService, AuthUser};
 use noesis_cache::CacheManager;
 use noesis_core::{
@@ -55,6 +54,7 @@ use noesis_data::repositories::readings_repository::ReadingsRepository;
 use noesis_data::repositories::usage_repository::UsageRepository;
 use noesis_data::repositories::user_repository::UserRepository;
 use noesis_metrics::NoesisMetrics;
+use noesis_orchestrator::{EphemerisCalculator, HDPlanet, WorkflowOrchestrator};
 use sentry_tower::{NewSentryLayer, SentryHttpLayer};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -278,7 +278,7 @@ use workflow_parity::log_workflow_registry_parity;
     modifiers(&SecurityAddon),
     info(
         title = "Noesis API",
-        version = "3.0.0",
+        version = "3.1.0",
         description = "HTTP API for the Tryambakam Noesis consciousness engine platform. Provides endpoints for astrological calculations (Panchanga), numerology, biorhythms, and multi-engine workflows.",
         contact(
             name = "Tryambakam Team",
@@ -1223,6 +1223,43 @@ fn inject_internal_auth_context(mut input: EngineInput, user: &AuthUser) -> Engi
     input
 }
 
+/// Validate common `EngineInput` fields at the API boundary.
+///
+/// Checks:
+/// - `birth_data` coordinate bounds when present (lat [-90,90], lon [-180,180])
+/// - `birth_data.date` format (YYYY-MM-DD)
+/// - `options` map does not exceed a safe size cap (prevents memory exhaustion)
+///
+/// Returns an HTTP 422 error response on validation failure.
+#[allow(clippy::result_large_err)]
+fn validate_engine_input(input: &EngineInput) -> Result<(), (StatusCode, Json<ErrorResponse>)> {
+    if let Some(ref bd) = input.birth_data {
+        if let Err(msg) = bd.validate() {
+            return Err(ErrorMapper::response(
+                StatusCode::UNPROCESSABLE_ENTITY,
+                "VALIDATION_ERROR",
+                msg,
+                None,
+            ));
+        }
+    }
+
+    // Cap the options map to 64 entries to prevent unbounded memory usage.
+    if input.options.len() > 64 {
+        return Err(ErrorMapper::response(
+            StatusCode::UNPROCESSABLE_ENTITY,
+            "VALIDATION_ERROR",
+            format!(
+                "options map exceeds the maximum allowed size of 64 entries (got {})",
+                input.options.len()
+            ),
+            None,
+        ));
+    }
+
+    Ok(())
+}
+
 fn should_persist_engine_output(engine_id: &str) -> bool {
     engine_id != "biofield-capture"
 }
@@ -1297,7 +1334,7 @@ async fn health_handler(State(state): State<AppState>) -> Json<HealthResponse> {
 
     Json(HealthResponse {
         status: "ok".to_string(),
-        version: "3.0.0".to_string(),
+        version: "3.1.0".to_string(),
         uptime_seconds: uptime,
         engines_loaded,
         workflows_loaded,
@@ -1775,8 +1812,7 @@ async fn vedic_chart_handler(
         let jd = jd_from_utc(&utc_dt);
         let ayanamsa = lahiri_ayanamsa(jd);
 
-        let mut positions: Vec<(HDPlanet, noesis_orchestrator::PlanetPosition)> =
-            Vec::new();
+        let mut positions: Vec<(HDPlanet, noesis_orchestrator::PlanetPosition)> = Vec::new();
         for (planet, _) in VEDIC_PLANETS {
             match ephe.get_planet_position(*planet, &utc_dt) {
                 Ok(pos) => positions.push((*planet, pos)),
@@ -1862,6 +1898,9 @@ async fn calculate_handler(
     Json(input): Json<EngineInput>,
 ) -> Result<Json<ApiEngineOutputResponse>, (StatusCode, Json<ErrorResponse>)> {
     let start = Instant::now();
+
+    // Validate input at the API boundary (lat/lon bounds, options size cap).
+    validate_engine_input(&input)?;
 
     // Capture input for persistence before it's moved into the engine
     let input_json = serde_json::to_value(&input).unwrap_or_default();
@@ -2235,6 +2274,9 @@ async fn execute_workflow_by_id(
     input: EngineInput,
 ) -> Result<Json<ApiWorkflowResultResponse>, (StatusCode, Json<ErrorResponse>)> {
     let start = Instant::now();
+
+    // Validate input at the API boundary (lat/lon bounds, options size cap).
+    validate_engine_input(&input)?;
 
     // Capture input for persistence before it's moved into the workflow
     let input_json = serde_json::to_value(&input).unwrap_or_default();
@@ -3154,8 +3196,8 @@ pub async fn build_app_state(config: &ApiConfig) -> AppState {
     let metrics = shared_metrics();
 
     // -- Ephemeris checksums --
-    let ephemeris_dir = std::env::var("EPHEMERIS_DIR")
-        .unwrap_or_else(|_| "data/ephemeris".to_string());
+    let ephemeris_dir =
+        std::env::var("EPHEMERIS_DIR").unwrap_or_else(|_| "data/ephemeris".to_string());
     let ephemeris_checksums = Arc::new(compute_ephemeris_checksums(&ephemeris_dir));
     tracing::info!(
         "Computed SHA256 checksums for {} ephemeris file(s)",
@@ -3246,8 +3288,8 @@ pub async fn build_app_state_lazy_db(config: &ApiConfig) -> AppState {
     let metrics = shared_metrics();
 
     // -- Ephemeris checksums --
-    let ephemeris_dir = std::env::var("EPHEMERIS_DIR")
-        .unwrap_or_else(|_| "data/ephemeris".to_string());
+    let ephemeris_dir =
+        std::env::var("EPHEMERIS_DIR").unwrap_or_else(|_| "data/ephemeris".to_string());
     let ephemeris_checksums = Arc::new(compute_ephemeris_checksums(&ephemeris_dir));
 
     AppState {

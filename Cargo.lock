@@ -1111,7 +1111,7 @@ dependencies = [
 
 [[package]]
 name = "engine-biofield"
-version = "3.0.0"
+version = "3.1.0"
 dependencies = [
  "async-trait",
  "chrono",
@@ -1127,7 +1127,7 @@ dependencies = [
 
 [[package]]
 name = "engine-biofield-capture"
-version = "3.0.0"
+version = "3.1.0"
 dependencies = [
  "async-trait",
  "chrono",
@@ -1142,7 +1142,7 @@ dependencies = [
 
 [[package]]
 name = "engine-biorhythm"
-version = "3.0.0"
+version = "3.1.0"
 dependencies = [
  "async-trait",
  "chrono",
@@ -1156,7 +1156,7 @@ dependencies = [
 
 [[package]]
 name = "engine-face-reading"
-version = "3.0.0"
+version = "3.1.0"
 dependencies = [
  "async-trait",
  "chrono",
@@ -1172,7 +1172,7 @@ dependencies = [
 
 [[package]]
 name = "engine-gene-keys"
-version = "3.0.0"
+version = "3.1.0"
 dependencies = [
  "async-trait",
  "chrono",
@@ -1186,7 +1186,7 @@ dependencies = [
 
 [[package]]
 name = "engine-human-design"
-version = "3.0.0"
+version = "3.1.0"
 dependencies = [
  "async-trait",
  "chrono",
@@ -1203,7 +1203,7 @@ dependencies = [
 
 [[package]]
 name = "engine-nadabrahman"
-version = "3.0.0"
+version = "3.1.0"
 dependencies = [
  "async-trait",
  "chrono",
@@ -1217,7 +1217,7 @@ dependencies = [
 
 [[package]]
 name = "engine-numerology"
-version = "3.0.0"
+version = "3.1.0"
 dependencies = [
  "async-trait",
  "chrono",
@@ -1230,7 +1230,7 @@ dependencies = [
 
 [[package]]
 name = "engine-panchanga"
-version = "3.0.0"
+version = "3.1.0"
 dependencies = [
  "async-trait",
  "chrono",
@@ -1244,7 +1244,7 @@ dependencies = [
 
 [[package]]
 name = "engine-transits"
-version = "3.0.0"
+version = "3.1.0"
 dependencies = [
  "async-trait",
  "chrono",
@@ -1262,7 +1262,7 @@ dependencies = [
 
 [[package]]
 name = "engine-vedic-clock"
-version = "3.0.0"
+version = "3.1.0"
 dependencies = [
  "async-trait",
  "chrono",
@@ -1277,7 +1277,7 @@ dependencies = [
 
 [[package]]
 name = "engine-vimshottari"
-version = "3.0.0"
+version = "3.1.0"
 dependencies = [
  "async-trait",
  "chrono",
@@ -2506,7 +2506,7 @@ dependencies = [
 
 [[package]]
 name = "noesis-api"
-version = "3.0.0"
+version = "3.1.0"
 dependencies = [
  "async-trait",
  "axum 0.7.9",
@@ -2557,7 +2557,7 @@ dependencies = [
 
 [[package]]
 name = "noesis-auth"
-version = "3.0.0"
+version = "3.1.0"
 dependencies = [
  "argon2",
  "chrono",
@@ -2576,7 +2576,7 @@ dependencies = [
 
 [[package]]
 name = "noesis-bridge"
-version = "3.0.0"
+version = "3.1.0"
 dependencies = [
  "async-trait",
  "chrono",
@@ -2592,7 +2592,7 @@ dependencies = [
 
 [[package]]
 name = "noesis-cache"
-version = "3.0.0"
+version = "3.1.0"
 dependencies = [
  "dashmap",
  "lru",
@@ -2608,7 +2608,7 @@ dependencies = [
 
 [[package]]
 name = "noesis-core"
-version = "3.0.0"
+version = "3.1.0"
 dependencies = [
  "async-trait",
  "chrono",
@@ -2621,7 +2621,7 @@ dependencies = [
 
 [[package]]
 name = "noesis-data"
-version = "3.0.0"
+version = "3.1.0"
 dependencies = [
  "chrono",
  "noesis-core",
@@ -2636,7 +2636,7 @@ dependencies = [
 
 [[package]]
 name = "noesis-integration"
-version = "3.0.0"
+version = "3.1.0"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -2657,7 +2657,7 @@ dependencies = [
 
 [[package]]
 name = "noesis-metrics"
-version = "3.0.0"
+version = "3.1.0"
 dependencies = [
  "lazy_static",
  "opentelemetry 0.22.0",
@@ -2672,7 +2672,7 @@ dependencies = [
 
 [[package]]
 name = "noesis-orchestrator"
-version = "3.0.0"
+version = "3.1.0"
 dependencies = [
  "async-trait",
  "chrono",
@@ -2704,7 +2704,7 @@ dependencies = [
 
 [[package]]
 name = "noesis-sdk"
-version = "3.0.0"
+version = "3.1.0"
 dependencies = [
  "chrono",
  "config",
@@ -2727,7 +2727,7 @@ dependencies = [
 
 [[package]]
 name = "noesis-tui"
-version = "3.0.0"
+version = "3.1.0"
 dependencies = [
  "anyhow",
  "chrono",
@@ -2747,7 +2747,7 @@ dependencies = [
 
 [[package]]
 name = "noesis-vedic-api"
-version = "3.0.0"
+version = "3.1.0"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -2770,7 +2770,7 @@ dependencies = [
 
 [[package]]
 name = "noesis-western-api"
-version = "3.0.0"
+version = "3.1.0"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -2789,7 +2789,7 @@ dependencies = [
 
 [[package]]
 name = "noesis-witness"
-version = "3.0.0"
+version = "3.1.0"
 dependencies = [
  "noesis-core",
  "serde",
