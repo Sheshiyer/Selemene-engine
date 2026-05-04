@@ -336,8 +336,8 @@ impl DataVerifier {
 
     /// Verify coordinates are in valid range
     fn verify_coordinates(&self, profile: &BirthProfile) -> VerificationCheck {
-        let valid_lat = profile.latitude >= -90.0 && profile.latitude <= 90.0;
-        let valid_lng = profile.longitude >= -180.0 && profile.longitude <= 180.0;
+        let valid_lat = (-90.0..=90.0).contains(&profile.latitude);
+        let valid_lng = (-180.0..=180.0).contains(&profile.longitude);
 
         VerificationCheck {
             name: "Coordinates range".to_string(),

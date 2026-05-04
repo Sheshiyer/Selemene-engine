@@ -316,7 +316,7 @@ async fn test_vimshottari_calculate_with_moon_longitude() {
         .as_array()
         .expect("mahadashas should be array");
     assert!(
-        mahadashas.len() >= 9 && mahadashas.len() <= 10,
+        (9..=10).contains(&mahadashas.len()),
         "Should have 9-10 mahadashas, got {}",
         mahadashas.len()
     );

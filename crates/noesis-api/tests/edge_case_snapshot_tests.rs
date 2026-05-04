@@ -308,7 +308,7 @@ macro_rules! numerology_snapshot_test {
 
                 // All core numbers must be in range 1..=33
                 assert!(
-                    got_val >= 1 && got_val <= 33,
+                    (1..=33).contains(&got_val),
                     "[{}] {}.value={} out of range 1..=33",
                     $case_id,
                     key,
@@ -409,7 +409,7 @@ macro_rules! hd_snapshot_test {
                     .as_u64()
                     .unwrap_or_else(|| panic!("[{}] activation {} missing gate", $case_id, planet));
                 assert!(
-                    gate >= 1 && gate <= 64,
+                    (1..=64).contains(&gate),
                     "[{}] {} gate {} out of range 1..=64",
                     $case_id,
                     planet,
@@ -420,7 +420,7 @@ macro_rules! hd_snapshot_test {
                     .as_u64()
                     .unwrap_or_else(|| panic!("[{}] activation {} missing line", $case_id, planet));
                 assert!(
-                    line >= 1 && line <= 6,
+                    (1..=6).contains(&line),
                     "[{}] {} line {} out of range 1..=6",
                     $case_id,
                     planet,
@@ -431,7 +431,7 @@ macro_rules! hd_snapshot_test {
                     panic!("[{}] activation {} missing longitude", $case_id, planet)
                 });
                 assert!(
-                    lon.is_finite() && lon >= 0.0 && lon < 360.0,
+                    lon.is_finite() && (0.0..360.0).contains(&lon),
                     "[{}] {} longitude {} out of range [0, 360)",
                     $case_id,
                     planet,
@@ -488,7 +488,7 @@ macro_rules! hd_snapshot_test {
             for p in &parts {
                 let n: u8 = p.parse().unwrap_or(0);
                 assert!(
-                    n >= 1 && n <= 6,
+                    (1..=6).contains(&n),
                     "[{}] profile line {} out of range 1..=6",
                     $case_id,
                     n
