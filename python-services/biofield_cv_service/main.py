@@ -1,9 +1,9 @@
 """Biofield CV sidecar service.
 
-FastAPI application on port 8002. Implements spatial algorithms from
-biofield_spatial_algorithms.json.
+FastAPI application. Listens on $PORT (default 8002) so Railway can route correctly.
 """
 
+import os
 import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -31,11 +31,12 @@ app.include_router(analyze_router)
 
 def start() -> None:
     """Entry point for the `biofield-cv-service` console script."""
+    port = int(os.environ.get("PORT", 8002))
     uvicorn.run(
         "biofield_cv_service.main:app",
         host="0.0.0.0",
-        port=8002,
-        reload=True,
+        port=port,
+        reload=False,
     )
 
 
