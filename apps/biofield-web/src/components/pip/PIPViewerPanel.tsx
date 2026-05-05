@@ -134,85 +134,89 @@ export function PIPViewerPanel({ onCapture, onMetrics, fillHeight }: PIPViewerPa
 
   const c = metrics?.composite;
 
-  // Unified void-field container — same dark field as the right panel
+  // Unified void-field container — centered circle portal
   const containerStyle: React.CSSProperties = fillHeight
-    ? { position: "relative", display: "flex", flexDirection: "column", height: "100%", width: "100%", background: "#070B1D", overflow: "hidden" }
-    : { position: "relative", display: "flex", flexDirection: "column", background: "#070B1D", borderRadius: 12, overflow: "hidden" };
+    ? { position: "relative", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100%", width: "100%", background: "#070B1D", overflow: "hidden" }
+    : { position: "relative", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", background: "#070B1D", borderRadius: 12, overflow: "hidden" };
 
   return (
     <section style={containerStyle}>
-      {/* ── Canvas — fills the void field ── */}
+      {/* ── Circular portal — canvas clipped to circle ── */}
+      {/* Outer wrapper: sizes the portal, provides anchor for ring overlay */}
       <div style={{
         position: "relative",
-        width: "100%",
-        ...(fillHeight ? { flex: 1, minHeight: 0 } : { aspectRatio: "4/3" }),
-        overflow: "hidden",
+        // circle size: largest square that fits, leaving room for controls + ring halo
+        width: "min(80%, calc(100dvh - 80px))",
+        aspectRatio: "1 / 1",
+        flexShrink: 0,
       }}>
-        <video
-          ref={videoRef}
-          autoPlay playsInline muted
-          style={{ position: "absolute", opacity: 0, pointerEvents: "none", width: 1, height: 1 }}
-        />
-        <canvas
-          ref={canvasRef}
-          style={{ display: "block", width: "100%", height: "100%" }}
+        {/* Concentric ring halo — drawn OUTSIDE the clipped circle */}
+        <PortalRings
+          streaming={panelState === "streaming"}
+          metrics={c ? { coherence: c.overallCoherence, symmetry: c.bodySymmetry, luminance: c.lightQuantaDensity, regularity: c.patternRegularity } : null}
         />
 
-        {/* ── Idle state: sacred geometry placeholder ── */}
-        {panelState === "idle" && <IdleGeometry />}
-
-        {/* ── Calibrating overlay: spinning geometry ring ── */}
-        {isStreaming && !mpReady && <CalibrationOverlay />}
-
-        {/* ── System status — 3 floating geometry dots, top-right ── */}
+        {/* Clipped circular canvas */}
         <div style={{
-          position: "absolute", top: 14, right: 14,
-          display: "flex", alignItems: "center", gap: 5,
+          position: "absolute",
+          inset: "10%", // ring halo lives in the 10% margin around the circle
+          borderRadius: "50%",
+          overflow: "hidden",
+          background: "#070B1D",
+        }}>
+          <video
+            ref={videoRef}
+            autoPlay playsInline muted
+            style={{ position: "absolute", opacity: 0, pointerEvents: "none", width: 1, height: 1 }}
+          />
+          <canvas
+            ref={canvasRef}
+            style={{ display: "block", width: "100%", height: "100%", objectFit: "cover" }}
+          />
+
+          {/* Idle state: sacred geometry placeholder */}
+          {panelState === "idle" && <IdleGeometry />}
+
+          {/* Calibrating overlay */}
+          {isStreaming && !mpReady && <CalibrationOverlay />}
+
+          {/* Subtle vignette to blend circle edges into void */}
+          <div style={{
+            position: "absolute", inset: 0,
+            borderRadius: "50%",
+            background: "radial-gradient(circle, transparent 55%, rgba(7,11,29,0.55) 80%, rgba(7,11,29,0.9) 100%)",
+            pointerEvents: "none",
+          }} />
+        </div>
+
+        {/* Status dots — float at top of the outer ring, centered */}
+        <div style={{
+          position: "absolute", top: "5%", left: "50%",
+          transform: "translateX(-50%)",
+          display: "flex", alignItems: "center", gap: 6,
           pointerEvents: "none",
         }}>
-          {/* WebGL dot */}
           <StatusDot active={glStatus === "ready"} warn={glStatus === "idle"} title={glLabel} />
-          {/* MediaPipe dot */}
           <StatusDot active={mpReady} warn={!mpReady && !mpError} title={mpLabel} />
-          {/* Camera dot */}
           <StatusDot active={panelState === "streaming"} warn={panelState === "paused"} title={`Camera: ${cameraLabel}`} />
           {captureCount > 0 && (
             <span style={{
-              fontFamily: "var(--font-mono)", fontSize: "0.48rem", letterSpacing: "0.1em",
-              color: "rgba(16,181,167,0.55)", marginLeft: 2,
+              fontFamily: "var(--font-mono)", fontSize: "0.44rem", letterSpacing: "0.12em",
+              color: "rgba(16,181,167,0.5)",
             }}>
               {captureCount}×
             </span>
           )}
         </div>
-
-        {/* ── Live metric arcs — bottom overlay ── */}
-        {c && panelState !== "idle" && (
-          <LiveMetricArcs
-            coherence={c.overallCoherence}
-            symmetry={c.bodySymmetry}
-            luminance={c.lightQuantaDensity}
-            regularity={c.patternRegularity}
-          />
-        )}
       </div>
 
-      {/* ── Controls — floating geometry nodes, no action bar ── */}
+      {/* ── Controls — float below the circle, centered ── */}
       <div style={{
         flexShrink: 0,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        gap: "1.5rem",
-        padding: "0.65rem 1rem",
-        position: "relative",
+        display: "flex", alignItems: "center", justifyContent: "center",
+        gap: "2rem",
+        padding: "0.7rem 1rem 0.5rem",
       }}>
-        {/* Thin gold geometry line above controls */}
-        <div style={{
-          position: "absolute", top: 0, left: "10%", right: "10%", height: 1,
-          background: "linear-gradient(90deg, transparent 0%, rgba(197,160,23,0.15) 30%, rgba(197,160,23,0.15) 70%, transparent 100%)",
-        }} />
-
         {panelState === "idle" ? (
           <GeometryButton onClick={() => { void handleStart(); }} label="OPEN FIELD" accent="gold" />
         ) : panelState === "paused" ? (
@@ -220,11 +224,7 @@ export function PIPViewerPanel({ onCapture, onMetrics, fillHeight }: PIPViewerPa
         ) : null}
 
         {(panelState === "streaming" || panelState === "paused") && (
-          <GeometryButton
-            onClick={handleCapture}
-            label="CAPTURE"
-            accent="emerald"
-          />
+          <GeometryButton onClick={handleCapture} label="CAPTURE" accent="emerald" />
         )}
 
         {panelState === "streaming" && (
@@ -236,12 +236,13 @@ export function PIPViewerPanel({ onCapture, onMetrics, fillHeight }: PIPViewerPa
         )}
       </div>
 
-      {/* Error — minimal inline, no card */}
+      {/* Error */}
       {(cameraError ?? captureError) && (
         <p style={{
-          margin: "0 1rem 0.6rem",
-          fontFamily: "var(--font-mono)", fontSize: "0.6rem",
+          margin: "0 1rem 0.5rem",
+          fontFamily: "var(--font-mono)", fontSize: "0.58rem",
           color: "rgba(198,93,59,0.75)", letterSpacing: "0.04em",
+          textAlign: "center",
         }}>
           {cameraError ?? captureError}
         </p>
@@ -262,11 +263,143 @@ function StatusDot({ active, warn, title }: { active: boolean; warn: boolean; ti
       style={{
         display: "inline-block",
         width: 4, height: 4, borderRadius: "50%",
-        background: color,
-        boxShadow: glow,
+        background: color, boxShadow: glow,
         transition: "all 0.4s ease",
       }}
     />
+  );
+}
+
+/**
+ * Portal ring system — SVG overlay that fills 100% of the outer wrapper.
+ * The circle canvas lives in the inner 80% (inset 10%); the ring lives in
+ * the 10% halo on each side + extends 5% beyond for the outermost arc.
+ * Metric arcs are drawn in the ring band between r=42% and r=48% of total size.
+ */
+function PortalRings({
+  streaming,
+  metrics,
+}: {
+  streaming: boolean;
+  metrics: { coherence: number; symmetry: number; luminance: number; regularity: number } | null;
+}) {
+  // SVG coordinate system: 200×200, circle lives at r=72 (inset 10% of 100% → circle r=80 in SVG units of 200/2)
+  const C = 100; // center
+  const innerR = 72; // edge of the clipped circle portal
+  const ringR1 = 78; // inner edge of ring band
+  const ringR2 = 90; // outer edge of ring band
+  const dotRings = [82, 86, 92]; // concentric dot ring radii
+
+  // Metric arcs — drawn in the ring band, each occupying 90° sectors
+  const metricDefs = metrics ? [
+    { v: metrics.coherence,  color: "rgba(16,181,167,0.7)",  startDeg: -135, spanDeg: 90 },
+    { v: metrics.symmetry,   color: "rgba(197,160,23,0.7)",  startDeg: -45,  spanDeg: 90 },
+    { v: metrics.luminance,  color: "rgba(11,80,251,0.7)",   startDeg: 45,   spanDeg: 90 },
+    { v: metrics.regularity, color: "rgba(240,237,227,0.4)", startDeg: 135,  spanDeg: 90 },
+  ] : [];
+
+  function arcPath(cx: number, cy: number, r: number, startDeg: number, endDeg: number): string {
+    const toRad = (d: number) => (d * Math.PI) / 180;
+    const x1 = cx + r * Math.cos(toRad(startDeg));
+    const y1 = cy + r * Math.sin(toRad(startDeg));
+    const x2 = cx + r * Math.cos(toRad(endDeg));
+    const y2 = cy + r * Math.sin(toRad(endDeg));
+    const large = Math.abs(endDeg - startDeg) > 180 ? 1 : 0;
+    return `M ${x1} ${y1} A ${r} ${r} 0 ${large} 1 ${x2} ${y2}`;
+  }
+
+  return (
+    <svg
+      viewBox="0 0 200 200"
+      style={{
+        position: "absolute", inset: 0, width: "100%", height: "100%",
+        pointerEvents: "none", overflow: "visible",
+      }}
+    >
+      {/* Thin circle that frames the portal edge */}
+      <circle cx={C} cy={C} r={innerR}
+        fill="none"
+        stroke={streaming ? "rgba(197,160,23,0.35)" : "rgba(197,160,23,0.12)"}
+        strokeWidth="0.5"
+      />
+
+      {/* Track ring (full circle outlines in the halo band) */}
+      {dotRings.map((r) => (
+        <circle key={r} cx={C} cy={C} r={r}
+          fill="none"
+          stroke="rgba(197,160,23,0.07)"
+          strokeWidth="0.4"
+        />
+      ))}
+
+      {/* Concentric dot pattern on the ring band */}
+      {dotRings.map((r) =>
+        Array.from({ length: Math.round(r * 0.9) }).map((_, i, arr) => {
+          const a = (i / arr.length) * Math.PI * 2;
+          return (
+            <circle
+              key={`${r}-${i}`}
+              cx={C + r * Math.cos(a)}
+              cy={C + r * Math.sin(a)}
+              r={0.5}
+              fill="rgba(197,160,23,0.25)"
+            />
+          );
+        })
+      )}
+
+      {/* Radial spokes — 12 thin lines from circle edge outward */}
+      {Array.from({ length: 12 }).map((_, i) => {
+        const a = (i / 12) * Math.PI * 2;
+        return (
+          <line
+            key={i}
+            x1={C + (innerR + 1) * Math.cos(a)} y1={C + (innerR + 1) * Math.sin(a)}
+            x2={C + (ringR2 + 2) * Math.cos(a)} y2={C + (ringR2 + 2) * Math.sin(a)}
+            stroke="rgba(197,160,23,0.12)" strokeWidth="0.4"
+          />
+        );
+      })}
+
+      {/* Metric arc fills — occupy ring band between ringR1 and ringR2 */}
+      {metricDefs.map(({ v, color, startDeg, spanDeg }, i) => {
+        const sweepDeg = spanDeg * Math.min(1, Math.max(0, v));
+        const endDeg = startDeg + sweepDeg;
+        const trackEnd = startDeg + spanDeg - 1;
+        const arcR = ringR1 + (ringR2 - ringR1) / 2; // midline
+        return (
+          <g key={i}>
+            {/* Track */}
+            <path d={arcPath(C, C, arcR, startDeg, trackEnd)} fill="none" stroke="rgba(240,237,227,0.05)" strokeWidth="3.5" />
+            {/* Value fill */}
+            {sweepDeg > 0.5 && (
+              <path d={arcPath(C, C, arcR, startDeg, endDeg - 0.5)} fill="none" stroke={color} strokeWidth="3.5" strokeLinecap="round" />
+            )}
+          </g>
+        );
+      })}
+
+      {/* Metric labels at 45° sector midpoints */}
+      {metrics && [
+        { label: "COH", deg: -90, color: "rgba(16,181,167,0.5)"  },
+        { label: "SYM", deg:   0, color: "rgba(197,160,23,0.5)"  },
+        { label: "LUM", deg:  90, color: "rgba(11,80,251,0.6)"   },
+        { label: "REG", deg: 180, color: "rgba(240,237,227,0.3)" },
+      ].map(({ label, deg, color }) => {
+        const a = (deg * Math.PI) / 180;
+        const lr = ringR2 + 6;
+        return (
+          <text
+            key={label}
+            x={C + lr * Math.cos(a)} y={C + lr * Math.sin(a)}
+            textAnchor="middle" dominantBaseline="middle"
+            style={{ fontFamily: "var(--font-mono)", fontSize: "3.5px", fill: color, letterSpacing: "0.5px" }}
+          >
+            {label}
+          </text>
+        );
+      })}
+    </svg>
   );
 }
 
