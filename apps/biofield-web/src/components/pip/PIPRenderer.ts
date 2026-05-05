@@ -33,7 +33,7 @@ const float ROUGHNESS = 0.33;
 const float EXPONENT  = 1.04;
 const float AMPLITUDE = 0.96;
 const float OFFSET    = 0.47;
-const float VIDEO_INF = 0.3;    // how much video RGB bends the noise coord
+const float VIDEO_INF = 0.45;   // how much video RGB bends the noise coord — raised for tighter body wrapping
 const float HUE_SHIFT = 0.82;
 const float COLOR_SAT = 0.83;
 const float BLUR_AMT  = 5.9;    // match TD reference: 59% blurred video blend
@@ -174,10 +174,15 @@ void main() {
   // Z-depth per pixel, causing noise rings to wrap around body contours.
   // The spiral appearance is intrinsic to fBm at scale 16.7 — no explicit
   // spiral formula needed (and adding one breaks the interaction).
-  float scale       = 1.0 / max(PERIOD, 0.0001);
   vec3 spatialCoord = vec3(uv * scale, u_time * 0.1);
   vec3 videoCoord   = videoCol * scale * 2.0;
   vec3 noiseCoord   = mix(spatialCoord, videoCoord, VIDEO_INF) + vec3(0.0, 0.0, u_time * 0.1);
+
+  // Centered vortex: spiral that radiates outward from screen center.
+  // This creates the organically-spiraling effect without breaking video interaction.
+  vec2 centered = uv - vec2(0.5);
+  float vAngle  = atan(centered.y, centered.x) + length(centered) * 3.5 - u_time * 0.18;
+  noiseCoord.xy += vec2(sin(vAngle), cos(vAngle)) * 0.20;
 
   float n = fbm(noiseCoord);
   n = sign(n) * pow(abs(n), EXPONENT);
@@ -188,9 +193,9 @@ void main() {
   vec3 composite = tdColorComposite(videoCol, noiseCol);
   composite = mix(videoCol, composite, u_intensity);
 
-  // Soft blur blend — mixes in 59 % blurred video for energy-field softness.
-  vec3 blurred = gaussianBlur(u_video, uv, BLUR_AMT * 0.01);
-  composite = mix(composite, blurred, clamp(BLUR_AMT * 0.1, 0.0, 0.8));
+  // Soft blur blend — 15% blurred video adds gentle energy-field glow without washing out noise interaction.
+  vec3 blurred = gaussianBlur(u_video, uv, BLUR_AMT);
+  composite = mix(composite, blurred, 0.15);
 
   // Segmentation mask: person pixels = full composite, background = 80%.
   // Before mask loads (maskStrength=0) the full composite shows everywhere.
