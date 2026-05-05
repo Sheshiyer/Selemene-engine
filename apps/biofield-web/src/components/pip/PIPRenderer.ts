@@ -168,13 +168,16 @@ void main() {
   vec2 uv = vec2(v_texCoord.x, 1.0 - v_texCoord.y);
   vec3 videoCol = texture(u_video, uv).rgb;
 
-  // Noise coordinate: spatial XY + video RGB bends it (30%) + time animates Z.
-  // Use uv (top-down, matches reference vUV) so noise space aligns with video space.
-  float scale     = 1.0 / max(PERIOD, 0.0001);
-  vec3 spatialCoord = vec3(uv * scale, u_time * 0.1);
-  vec3 videoCoord   = videoCol * scale * 2.0;
-  vec3 noiseCoord   = mix(spatialCoord, videoCoord, VIDEO_INF)
-                    + vec3(0.0, 0.0, u_time * 0.1);
+  // ── Spiral coordinate: radial bands + angular phase = concentric spiral ──
+  // Radial distance from centre gives concentric rings; subtracting the angle
+  // twists them into a right-hand spiral.  Time rotates the whole field.
+  vec2 center = uv - vec2(0.5);
+  float r      = length(center) * 5.5;
+  float theta  = atan(center.y, center.x);
+  float spiral = r - theta * 0.45;
+  // Video RGB bends the spiral locally (VIDEO_INF = 30%) — person's body warps the field
+  vec3 noiseCoord = vec3(uv / max(PERIOD, 0.0001), spiral + u_time * 0.12)
+                  + vec3(videoCol * 2.0 * VIDEO_INF, 0.0);
 
   float n = fbm(noiseCoord);
   n = sign(n) * pow(abs(n), EXPONENT);

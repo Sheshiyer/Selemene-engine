@@ -42,6 +42,13 @@
   --signal:        #ffb347;
   --signal-rgb:    255,179,71;
 
+  /* ── Consciousness Color Spectrum (brand-docs) ── */
+  --c-violet:      #8B5CF6;   /* Witness Violet    — patternRegularity */
+  --c-indigo:      #6366F1;   /* Flow Indigo        — overallCoherence  */
+  --c-gold:        #F59E0B;   /* Sacred Gold        — lightQuantaDensity */
+  --c-emerald:     #10B981;   /* Coherence Emerald  — bodySymmetry      */
+  --c-void:        #09090b;   /* Void Black         — bg                */
+
   /* Radius */
   --r-xs:  4px;
   --r-sm:  6px;

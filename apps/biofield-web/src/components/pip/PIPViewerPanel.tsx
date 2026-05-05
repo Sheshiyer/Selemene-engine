@@ -12,11 +12,13 @@ export interface PIPViewerPanelProps {
   onCapture?: (blob: Blob, dataUrl: string) => void;
   /** Called each time live metrics are refreshed (~10 fps). */
   onMetrics?: (scores: CompositeScores) => void;
+  /** When true the canvas fills the parent container height instead of using 4:3 aspect ratio. */
+  fillHeight?: boolean;
 }
 
 type PanelState = "idle" | "streaming" | "paused";
 
-export function PIPViewerPanel({ onCapture, onMetrics }: PIPViewerPanelProps) {
+export function PIPViewerPanel({ onCapture, onMetrics, fillHeight }: PIPViewerPanelProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const settingsRef = useRef(DEFAULT_PIP_SETTINGS);
   const onMetricsRef = useRef(onMetrics);
@@ -133,11 +135,16 @@ export function PIPViewerPanel({ onCapture, onMetrics }: PIPViewerPanelProps) {
   const c = metrics?.composite;
 
   return (
-    <section className="biofield-panel biofield-form-panel">
-      <p className="biofield-eyebrow">PIP Viewer</p>
-      <h2 className="biofield-title" style={{ fontSize: "2rem" }}>
-        Live biofield capture
-      </h2>
+    <section
+      className="biofield-panel biofield-form-panel"
+      style={fillHeight ? { display: "flex", flexDirection: "column", height: "100%", padding: 0, gap: 0, borderRadius: 0, border: "none", background: "transparent" } : undefined}
+    >
+      {!fillHeight && <p className="biofield-eyebrow">PIP Viewer</p>}
+      {!fillHeight && (
+        <h2 className="biofield-title" style={{ fontSize: "2rem" }}>
+          Live biofield capture
+        </h2>
+      )}
 
       {/* Status strip */}
       <div className="biofield-toolbar" style={{ marginBottom: "0.75rem" }}>
@@ -170,11 +177,11 @@ export function PIPViewerPanel({ onCapture, onMetrics }: PIPViewerPanelProps) {
         style={{
           position: "relative",
           width: "100%",
-          aspectRatio: "4/3",
+          ...(fillHeight ? { flex: 1, minHeight: 0 } : { aspectRatio: "4/3" }),
           background: "rgba(0,0,0,0.4)",
-          borderRadius: 12,
+          borderRadius: fillHeight ? 0 : 12,
           overflow: "hidden",
-          marginBottom: "0.75rem",
+          marginBottom: fillHeight ? 0 : "0.75rem",
         }}
       >
         <video
@@ -265,7 +272,10 @@ export function PIPViewerPanel({ onCapture, onMetrics }: PIPViewerPanelProps) {
       </div>
 
       {/* Controls */}
-      <div className="biofield-actions">
+      <div
+        className="biofield-actions"
+        style={fillHeight ? { padding: "8px 12px", gap: 8, flexShrink: 0, borderTop: "1px solid rgba(255,255,255,0.06)" } : undefined}
+      >
         <button
           className="biofield-button"
           disabled={panelState !== "idle"}
@@ -307,14 +317,16 @@ export function PIPViewerPanel({ onCapture, onMetrics }: PIPViewerPanelProps) {
       </div>
 
       {(cameraError ?? captureError) && (
-        <p className="biofield-error" style={{ marginTop: "0.5rem" }}>
+        <p className="biofield-error" style={{ marginTop: "0.5rem", padding: fillHeight ? "0 12px" : undefined }}>
           {cameraError ?? captureError}
         </p>
       )}
 
-      <p className="biofield-copy" style={{ marginTop: "0.75rem" }}>
-        Segmentation mask{mpReady ? " active" : " loading"} — biofield overlay is person-gated.
-      </p>
+      {!fillHeight && (
+        <p className="biofield-copy" style={{ marginTop: "0.75rem" }}>
+          Segmentation mask{mpReady ? " active" : " loading"} — biofield overlay is person-gated.
+        </p>
+      )}
     </section>
   );
 }
