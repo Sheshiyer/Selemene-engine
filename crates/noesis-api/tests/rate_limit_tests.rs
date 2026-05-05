@@ -86,6 +86,7 @@ fn build_test_app_state() -> (noesis_api::AppState, ApiConfig) {
         metrics,
         user_repository,
         admin_repository: None,
+            billing_repository: None,
         biofield_repository: None,
         readings_repository: None,
         usage_repository: None,

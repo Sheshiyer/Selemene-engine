@@ -73,3 +73,23 @@ export function createBiofieldClient(token: string): BiofieldClient {
 export function createNoesisClient(token: string): NoesisClient {
   return new NoesisClient(getApiBaseUrl(), { authToken: token });
 }
+
+import type { PlanCode, CheckoutCreateResponse } from "@selemene/noesis-sdk-ts";
+
+/**
+ * Creates a Dodo Payments checkout session via the Rust API.
+ * Returns the hosted checkout URL the client should redirect to.
+ */
+export async function createCheckoutSession(
+  token: string,
+  planCode: PlanCode,
+): Promise<CheckoutCreateResponse> {
+  return apiRequest<CheckoutCreateResponse>("/api/v1/billing/checkout", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ plan_code: planCode }),
+  });
+}

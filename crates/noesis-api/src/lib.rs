@@ -49,6 +49,7 @@ use noesis_core::{
 };
 use noesis_data::models::reading::NewReading;
 use noesis_data::repositories::admin_repository::AdminRepository;
+use noesis_data::repositories::billing_repository::BillingRepository;
 use noesis_data::repositories::biofield_repository::BiofieldRepository;
 use noesis_data::repositories::readings_repository::ReadingsRepository;
 use noesis_data::repositories::usage_repository::UsageRepository;
@@ -409,6 +410,7 @@ pub struct AppState {
     pub metrics: Arc<NoesisMetrics>,
     pub user_repository: Arc<UserRepository>,
     pub admin_repository: Option<Arc<AdminRepository>>,
+    pub billing_repository: Option<Arc<BillingRepository>>,
     pub biofield_repository: Option<Arc<BiofieldRepository>>,
     pub readings_repository: Option<Arc<ReadingsRepository>>,
     pub usage_repository: Option<Arc<UsageRepository>>,
@@ -717,6 +719,11 @@ pub fn create_router(state: AppState, config: &ApiConfig) -> Router {
         )
         .route("/users/me/usage", get(handlers::users::get_my_usage))
         .route(
+            "/billing/checkout",
+            post(handlers::billing::create_checkout_session),
+        )
+        .route("/billing/balance", get(handlers::billing::get_balance))
+        .route(
             "/biofield/sessions",
             post(handlers::biofield::create_session),
         )
@@ -884,6 +891,19 @@ pub fn create_router(state: AppState, config: &ApiConfig) -> Router {
         .route("/panchanga/calculate", post(legacy_panchanga_handler))
         .route("/ghati/current", get(legacy_ghati_current_handler))
         .layer(axum_middleware::from_fn_with_state(
+            rate_limiter.clone(),
+            middleware::rate_limit_middleware,
+        ));
+
+    // Internal endpoints. Auth is by shared secret in X-Forward-Secret, NOT
+    // JWT. Today this is just the Dodo billing webhook ingest from the
+    // biofield-web Next.js adaptor. No JWT middleware applied.
+    let internal_routes = Router::new()
+        .route(
+            "/billing/events",
+            post(handlers::billing::events_forward),
+        )
+        .layer(axum_middleware::from_fn_with_state(
             rate_limiter,
             middleware::rate_limit_middleware,
         ));
@@ -900,6 +920,7 @@ pub fn create_router(state: AppState, config: &ApiConfig) -> Router {
         .route("/metrics", get(metrics_handler))
         .nest("/api/v1", api_v1)
         .nest("/api/legacy", legacy)
+        .nest("/internal", internal_routes)
         .layer(axum_middleware::from_fn(
             middleware::request_logging_middleware,
         ))
@@ -1869,6 +1890,73 @@ async fn vedic_chart_handler(
     }))
 }
 
+/// Free-tier monthly engine-call cap. Paid tiers are gated server-side by
+/// Dodo's credit balance via the meter; this only applies to users without
+/// an active Dodo customer.
+const FREE_TIER_MONTHLY_LIMIT: i64 = 50;
+
+/// Returns Err(402) when the user has consumed their free-tier quota for the
+/// current calendar month. Fails OPEN on db errors / missing repo to avoid
+/// blocking paying flows on infrastructure hiccups.
+async fn enforce_free_tier_quota(
+    state: &AppState,
+    user: &AuthUser,
+) -> Result<(), (StatusCode, Json<ErrorResponse>)> {
+    if user.tier != "free" {
+        return Ok(());
+    }
+    let Some(repo) = state.billing_repository.as_ref() else {
+        return Ok(());
+    };
+    let user_uuid = match uuid::Uuid::parse_str(&user.user_id) {
+        Ok(u) => u,
+        Err(_) => return Ok(()),
+    };
+    match repo.get_monthly_engine_count(user_uuid).await {
+        Ok(count) if count >= FREE_TIER_MONTHLY_LIMIT => {
+            billing::emit_quota_exceeded(&user.user_id, &user.tier);
+            Err(ErrorMapper::response(
+                StatusCode::PAYMENT_REQUIRED,
+                "QUOTA_EXCEEDED",
+                format!(
+                    "Free tier limit reached ({} of {} engine calls used this month). Upgrade at /pricing for more credits.",
+                    count, FREE_TIER_MONTHLY_LIMIT
+                ),
+                Some(serde_json::json!({
+                    "tier": "free",
+                    "monthly_limit": FREE_TIER_MONTHLY_LIMIT,
+                    "monthly_used": count,
+                    "upgrade_url": "/pricing",
+                })),
+            ))
+        }
+        Ok(_) => Ok(()),
+        Err(e) => {
+            tracing::warn!(error = %e, "monthly quota lookup failed; failing open");
+            Ok(())
+        }
+    }
+}
+
+/// Fire-and-forget increment of the free-tier monthly counter. Called from
+/// the success branch of engine + workflow handlers.
+fn increment_free_tier_counter(state: &AppState, user: &AuthUser) {
+    if user.tier != "free" {
+        return;
+    }
+    let Some(repo) = state.billing_repository.clone() else {
+        return;
+    };
+    let Ok(user_uuid) = uuid::Uuid::parse_str(&user.user_id) else {
+        return;
+    };
+    tokio::spawn(async move {
+        if let Err(e) = repo.increment_monthly_engine_count(user_uuid).await {
+            tracing::warn!(error = %e, "monthly counter increment failed");
+        }
+    });
+}
+
 /// POST /api/v1/engines/:engine_id/calculate -- execute a single engine
 #[utoipa::path(
     post,
@@ -1902,6 +1990,9 @@ async fn calculate_handler(
     // Validate input at the API boundary (lat/lon bounds, options size cap).
     validate_engine_input(&input)?;
 
+    // Free-tier monthly cap. 402 with upgrade hint when exceeded.
+    enforce_free_tier_quota(&state, &user).await?;
+
     // Capture input for persistence before it's moved into the engine
     let input_json = serde_json::to_value(&input).unwrap_or_default();
 
@@ -1928,6 +2019,8 @@ async fn calculate_handler(
                 "success",
                 duration_secs,
             );
+
+            increment_free_tier_counter(&state, &user);
 
             // Fire-and-forget: persist reading when appropriate, log usage, award XP
             if let Ok(uid) = uuid::Uuid::parse_str(&user_id_str) {
@@ -2278,6 +2371,9 @@ async fn execute_workflow_by_id(
     // Validate input at the API boundary (lat/lon bounds, options size cap).
     validate_engine_input(&input)?;
 
+    // Free-tier monthly cap.
+    enforce_free_tier_quota(&state, &user).await?;
+
     // Capture input for persistence before it's moved into the workflow
     let input_json = serde_json::to_value(&input).unwrap_or_default();
     let birth_data_for_profile = input.birth_data.clone();
@@ -2306,6 +2402,8 @@ async fn execute_workflow_by_id(
                 "success",
                 duration_secs,
             );
+
+            increment_free_tier_counter(&state, &user);
 
             // Fire-and-forget: persist reading, log usage, award XP (25 for workflow)
             if let Ok(uid) = uuid::Uuid::parse_str(&user_id_str) {
@@ -3170,6 +3268,31 @@ pub async fn build_app_state(config: &ApiConfig) -> AppState {
     let admin_repository = pool
         .as_ref()
         .map(|p| Arc::new(AdminRepository::new(p.clone())));
+    let billing_repository = pool
+        .as_ref()
+        .map(|p| Arc::new(BillingRepository::new(p.clone())));
+
+    // Install the Dodo Payments outbound emitter when credentials + DB are
+    // both available. Without this the global BILLING_EMITTER stays as the
+    // no-op default and every engine call's emit is a black hole.
+    if let (Some(api_key), Some(env_mode), Some(repo)) = (
+        config.dodo_payments_api_key.as_ref(),
+        config.dodo_payments_env.as_ref(),
+        billing_repository.as_ref(),
+    ) {
+        let api_base = if env_mode == "live" {
+            "https://live.dodopayments.com"
+        } else {
+            "https://test.dodopayments.com"
+        };
+        let emitter = DodoWebhookEmitter::new(api_key, api_base).with_repository(repo.clone());
+        billing::set_billing_emitter(Arc::new(emitter));
+        tracing::info!(env_mode = %env_mode, "Dodo billing emitter installed");
+    } else {
+        tracing::info!(
+            "Dodo billing emitter not installed — DODO_PAYMENTS_API_KEY/_ENV/db missing; usage events will be no-op"
+        );
+    }
     let biofield_repository = pool
         .as_ref()
         .map(|p| Arc::new(BiofieldRepository::new(p.clone())));
@@ -3212,6 +3335,7 @@ pub async fn build_app_state(config: &ApiConfig) -> AppState {
         metrics,
         user_repository,
         admin_repository,
+        billing_repository,
         biofield_repository,
         readings_repository,
         usage_repository,
@@ -3264,6 +3388,31 @@ pub async fn build_app_state_lazy_db(config: &ApiConfig) -> AppState {
     let admin_repository = pool
         .as_ref()
         .map(|p| Arc::new(AdminRepository::new(p.clone())));
+    let billing_repository = pool
+        .as_ref()
+        .map(|p| Arc::new(BillingRepository::new(p.clone())));
+
+    // Install the Dodo Payments outbound emitter when credentials + DB are
+    // both available. Without this the global BILLING_EMITTER stays as the
+    // no-op default and every engine call's emit is a black hole.
+    if let (Some(api_key), Some(env_mode), Some(repo)) = (
+        config.dodo_payments_api_key.as_ref(),
+        config.dodo_payments_env.as_ref(),
+        billing_repository.as_ref(),
+    ) {
+        let api_base = if env_mode == "live" {
+            "https://live.dodopayments.com"
+        } else {
+            "https://test.dodopayments.com"
+        };
+        let emitter = DodoWebhookEmitter::new(api_key, api_base).with_repository(repo.clone());
+        billing::set_billing_emitter(Arc::new(emitter));
+        tracing::info!(env_mode = %env_mode, "Dodo billing emitter installed");
+    } else {
+        tracing::info!(
+            "Dodo billing emitter not installed — DODO_PAYMENTS_API_KEY/_ENV/db missing; usage events will be no-op"
+        );
+    }
     let biofield_repository = pool
         .as_ref()
         .map(|p| Arc::new(BiofieldRepository::new(p.clone())));
@@ -3300,6 +3449,7 @@ pub async fn build_app_state_lazy_db(config: &ApiConfig) -> AppState {
         metrics,
         user_repository,
         admin_repository,
+        billing_repository,
         biofield_repository,
         readings_repository,
         usage_repository,

@@ -191,6 +191,7 @@ impl BiofieldSessionHarness {
             metrics: shared_metrics(),
             user_repository: user_repository.clone(),
             admin_repository: None,
+            billing_repository: None,
             biofield_repository: Some(biofield_repository.clone()),
             readings_repository: None,
             usage_repository: None,
