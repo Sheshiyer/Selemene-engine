@@ -11,7 +11,7 @@ export const DEFAULT_PIP_SETTINGS: PIPSettings = {
   noiseScale: 3.5,
   noiseSpeed: 0.18,
   layerCount: 5,
-  intensity: 0.92,
+  intensity: 1.0,   // full composite — shader's BLUR_AMT controls the final blend
   colorShift: 0.0,
   threshold: 0.0,   // kept for API compat; not used in shader
 };

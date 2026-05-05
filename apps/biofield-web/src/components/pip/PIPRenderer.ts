@@ -36,7 +36,7 @@ const float OFFSET    = 0.47;
 const float VIDEO_INF = 0.3;    // how much video RGB bends the noise coord
 const float HUE_SHIFT = 0.82;
 const float COLOR_SAT = 0.83;
-const float BLUR_AMT  = 5.9;    // soft blur blend amount
+const float BLUR_AMT  = 2.0;    // soft blur blend — keep low to preserve vivid false-color
 
 // ── 3D Simplex noise (Ashima Arts) ───────────────────────────────────────────
 vec3 mod289(vec3 x) { return x - floor(x*(1.0/289.0))*289.0; }
@@ -158,8 +158,8 @@ vec3 gaussianBlur(sampler2D tex, vec2 uv, float amount) {
 vec3 enhancedNoiseColor(float n, vec3 videoCol) {
   vec3 vHSL = rgb2hsl(videoCol);
   float hue = n * HUE_SHIFT + vHSL.x * (1.0 - HUE_SHIFT);
-  float sat = clamp(mix(0.7, 1.0, fract(n + 0.33)) * COLOR_SAT, 0.0, 1.0);
-  float lit = mix(0.3, 0.9, fract(n + 0.66));
+  float sat = clamp(mix(0.85, 1.0, fract(n + 0.33)) * 0.97, 0.0, 1.0);
+  float lit = mix(0.35, 0.95, fract(n + 0.66));
   return hsl2rgb(vec3(hue, sat, lit));
 }
 
@@ -189,11 +189,11 @@ void main() {
   vec3 blurred = gaussianBlur(u_video, uv, BLUR_AMT * 0.01);
   composite = mix(composite, blurred, clamp(BLUR_AMT * 0.1, 0.0, 0.8));
 
-  // Segmentation mask: person pixels = full composite, background = 50%.
+  // Segmentation mask: person pixels = full composite, background = 80%.
   // Before mask loads (maskStrength=0) the full composite shows everywhere.
   // Use uv to match video orientation (top-down).
   float personConf   = texture(u_mask, uv).r;
-  float bgAlpha      = mix(1.0, 0.5, u_maskStrength);
+  float bgAlpha      = mix(1.0, 0.8, u_maskStrength);   // background keeps 80% composite
   float pixelAlpha   = mix(bgAlpha, 1.0, personConf * u_maskStrength);
   vec3 outCol = mix(videoCol, composite, pixelAlpha);
 
