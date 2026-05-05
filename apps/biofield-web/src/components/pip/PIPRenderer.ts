@@ -37,6 +37,7 @@ const float VIDEO_INF = 0.45;   // how much video RGB bends the noise coord — 
 const float HUE_SHIFT = 0.82;
 const float COLOR_SAT = 0.83;
 const float BLUR_AMT  = 5.9;    // match TD reference: 59% blurred video blend
+const float scale     = 1.0 / PERIOD;  // spatial frequency ≈ 16.7
 
 // ── 3D Simplex noise (Ashima Arts) ───────────────────────────────────────────
 vec3 mod289(vec3 x) { return x - floor(x*(1.0/289.0))*289.0; }
