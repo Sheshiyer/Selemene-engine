@@ -177,7 +177,7 @@ void main() {
   float spiral = r - theta * 0.45;
   // Video RGB bends the spiral locally (VIDEO_INF = 30%) — person's body warps the field
   vec3 noiseCoord = vec3(uv / max(PERIOD, 0.0001), spiral + u_time * 0.12)
-                  + vec3(videoCol * 2.0 * VIDEO_INF, 0.0);
+                  + videoCol * 2.0 * VIDEO_INF;  // videoCol is already vec3
 
   float n = fbm(noiseCoord);
   n = sign(n) * pow(abs(n), EXPONENT);
