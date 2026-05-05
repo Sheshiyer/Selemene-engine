@@ -397,37 +397,46 @@ export default function ViewerPage() {
   const hasDyad = aletheios || pichet || synthesis;
 
   return (
-    /* Single non-scrollable viewport — 100dvh × 100vw grid */
+    /* ══════════════════════════════════════════════════════════════
+       WitnessOS Viewer — void-field, geometry-first layout
+       No borders, no cards. Geometry defines space.
+       ══════════════════════════════════════════════════════════════ */
     <div style={{
       position: "fixed", inset: 0,
       width: "100vw", height: "100dvh",
       overflow: "hidden",
       display: "grid",
       gridTemplateColumns: "58fr 42fr",
-      background: "var(--bg)",
+      background: "#070B1D",
     }}>
 
-      {/* ───── Left: full-height camera / shader panel ───── */}
+      {/* ───── Left: full-height camera / biofield portal ───── */}
       <div style={{ height: "100dvh", overflow: "hidden", position: "relative" }}>
         <PIPViewerPanel onCapture={handlePIPCapture} onMetrics={handleMetrics} fillHeight />
       </div>
 
-      {/* ───── Right: consciousness data panel — Kha Arc background ───── */}
+      {/* ───── Right: consciousness data column — pure void field ───── */}
+      {/* Thin geometry rule replaces border-left */}
       <div style={{
         height: "100dvh",
         display: "flex",
         flexDirection: "column",
-        borderLeft: "1px solid rgba(11,80,251,0.12)",
-        background: "linear-gradient(180deg, #070B1D 0%, #0a0e20 60%, #0E1428 100%)",
+        position: "relative",
+        background: "#070B1D",
         overflow: "hidden",
       }}>
+        {/* Vertical divider — thin gold geometry line, not a CSS border */}
+        <div style={{
+          position: "absolute", left: 0, top: "8%", bottom: "8%", width: 1,
+          background: "linear-gradient(180deg, transparent 0%, rgba(197,160,23,0.22) 20%, rgba(197,160,23,0.22) 80%, transparent 100%)",
+          pointerEvents: "none",
+        }} />
 
         {/* ── COSMOGRAM — sacred geometry biofield display ── */}
         <div style={{
           flex: "1 1 0",
           minHeight: "42dvh",
           maxHeight: "72dvh",
-          padding: "0.5rem 0.5rem 0.3rem",
           overflow: "hidden",
           display: "flex",
           alignItems: "center",
@@ -445,64 +454,61 @@ export default function ViewerPage() {
           />
         </div>
 
-        {/* ── WITNESS DYAD — ritual portal section ── */}
+        {/* ── Thin geometry separator between cosmogram and dyad ── */}
+        <div style={{
+          flexShrink: 0,
+          margin: "0 1.4rem",
+          height: 1,
+          background: "linear-gradient(90deg, transparent 0%, rgba(197,160,23,0.18) 25%, rgba(16,181,167,0.12) 75%, transparent 100%)",
+        }} />
+
+        {/* ── WITNESS DYAD — floating text, no cards ── */}
         <div style={{
           flex: 1,
           minHeight: 0,
-          padding: "0.85rem 1rem",
+          padding: "0.75rem 1.4rem 0.5rem",
           overflowY: "auto",
           display: "flex",
           flexDirection: "column",
-          gap: "0.85rem",
+          gap: "0.6rem",
         }}>
-          {/* Section header */}
+          {/* Dyad header — label + status badges */}
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexShrink: 0 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              {/* Pulsing presence dot */}
               <span style={{
-                width: 5, height: 5, borderRadius: "50%",
-                background: hasDyad ? "var(--c-gold)" : "rgba(240,237,227,0.15)",
-                boxShadow: hasDyad ? "0 0 8px rgba(197,160,23,0.6)" : "none",
-                animation: hasDyad ? "pulse-dot 1.8s ease-in-out infinite" : "none",
-                transition: "all 0.5s ease",
+                width: 4, height: 4, borderRadius: "50%",
+                background: hasDyad ? "rgba(197,160,23,0.9)" : "rgba(240,237,227,0.12)",
+                boxShadow: hasDyad ? "0 0 6px rgba(197,160,23,0.5)" : "none",
+                animation: hasDyad ? "pulse-dot 2s ease-in-out infinite" : "none",
+                transition: "all 0.5s ease", flexShrink: 0,
               }} />
-              <p style={{
-                margin: 0,
-                fontFamily: "var(--font-display)",
-                fontSize: "0.62rem", fontWeight: 700,
-                letterSpacing: "0.18em", textTransform: "uppercase",
-                color: "var(--muted)",
+              <span style={{
+                fontFamily: "var(--font-display)", fontSize: "0.52rem", fontWeight: 700,
+                letterSpacing: "0.22em", textTransform: "uppercase",
+                color: "rgba(240,237,227,0.3)",
               }}>
                 Witness Dyad
-              </p>
+              </span>
             </div>
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
               {isLlmPowered && enginesUsed.length > 0 && (
                 <span style={{
-                  fontFamily: "var(--font-mono)", fontSize: "0.5rem",
-                  color: "var(--c-emerald)", letterSpacing: "0.12em",
-                  border: "1px solid rgba(16,181,167,0.3)",
-                  borderRadius: 3, padding: "1px 5px",
+                  fontFamily: "var(--font-mono)", fontSize: "0.46rem",
+                  color: "rgba(16,181,167,0.6)", letterSpacing: "0.14em",
                   textTransform: "uppercase",
                 }}>
-                  {enginesUsed.length} engines · AI
+                  {enginesUsed.length} engines
                 </span>
               )}
               {witnessInsight?.consciousness_level !== undefined && (
-                <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
-                  <span style={{
-                    fontFamily: "var(--font-display)", fontSize: "0.55rem", fontWeight: 600,
-                    letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--muted)",
-                  }}>
-                    Level
-                  </span>
-                  <span style={{
-                    fontFamily: "var(--font-mono)", fontSize: "1.05rem", fontWeight: 700,
-                    letterSpacing: "-0.04em", color: "var(--c-indigo)",
-                    textShadow: "0 0 14px rgba(11,80,251,0.6)",
-                  }}>
-                    {witnessInsight.consciousness_level}
-                  </span>
-                </div>
+                <span style={{
+                  fontFamily: "var(--font-mono)", fontSize: "0.76rem", fontWeight: 700,
+                  letterSpacing: "-0.04em", color: "rgba(11,80,251,0.75)",
+                  textShadow: "0 0 12px rgba(11,80,251,0.4)",
+                }}>
+                  {witnessInsight.consciousness_level}
+                </span>
               )}
             </div>
           </div>
@@ -511,186 +517,150 @@ export default function ViewerPage() {
             hasDyad ? (
               <>
                 {aletheios && (
-                  <div style={{
-                    display: "flex", flexDirection: "column", gap: "0.35rem",
-                    padding: "0.65rem 0.85rem",
-                    borderRadius: "var(--r-md)",
-                    background: "linear-gradient(135deg, rgba(11,80,251,0.06) 0%, rgba(7,11,29,0) 100%)",
-                    border: "1px solid rgba(11,80,251,0.18)",
-                  }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                      <span style={{ width: 3, height: 12, borderRadius: 2, background: "var(--c-indigo)", boxShadow: "0 0 6px rgba(11,80,251,0.6)", flexShrink: 0 }} />
-                      <p style={{
-                        margin: 0,
-                        fontFamily: "var(--font-display)",
-                        fontSize: "0.54rem", fontWeight: 700,
-                        letterSpacing: "0.2em", textTransform: "uppercase",
-                        color: "var(--c-indigo)",
-                        textShadow: "0 0 10px rgba(11,80,251,0.5)",
+                  <div style={{ display: "flex", flexDirection: "column", gap: "0.28rem" }}>
+                    {/* Agent label — spaced caps, no box */}
+                    <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
+                      {/* Diamond glyph */}
+                      <svg width="6" height="6" viewBox="0 0 6 6" style={{ flexShrink: 0, opacity: 0.7 }}>
+                        <polygon points="3,0 6,3 3,6 0,3" fill="none" stroke="rgba(11,80,251,0.7)" strokeWidth="0.8" />
+                      </svg>
+                      <span style={{
+                        fontFamily: "var(--font-display)", fontSize: "0.5rem", fontWeight: 700,
+                        letterSpacing: "0.22em", textTransform: "uppercase",
+                        color: "rgba(11,80,251,0.65)",
                       }}>
                         Aletheios · Left Pillar
-                      </p>
+                      </span>
                     </div>
                     <p style={{
-                      margin: 0,
-                      fontFamily: "var(--font-body)",
-                      fontSize: "0.82rem", lineHeight: 1.72,
-                      color: "var(--text-2)",
+                      margin: 0, fontFamily: "var(--font-body)",
+                      fontSize: "0.8rem", lineHeight: 1.72,
+                      color: "rgba(240,237,227,0.68)",
+                      paddingLeft: "0.85rem",
                     }}>
                       {aletheios}
                     </p>
                   </div>
                 )}
                 {pichet && (
-                  <div style={{
-                    display: "flex", flexDirection: "column", gap: "0.35rem",
-                    padding: "0.65rem 0.85rem",
-                    borderRadius: "var(--r-md)",
-                    background: "linear-gradient(135deg, rgba(197,160,23,0.05) 0%, rgba(7,11,29,0) 100%)",
-                    border: "1px solid rgba(197,160,23,0.18)",
-                  }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                      <span style={{ width: 3, height: 12, borderRadius: 2, background: "var(--c-gold)", boxShadow: "0 0 6px rgba(197,160,23,0.6)", flexShrink: 0 }} />
-                      <p style={{
-                        margin: 0,
-                        fontFamily: "var(--font-display)",
-                        fontSize: "0.54rem", fontWeight: 700,
-                        letterSpacing: "0.2em", textTransform: "uppercase",
-                        color: "var(--c-gold)",
-                        textShadow: "0 0 10px rgba(197,160,23,0.5)",
+                  <div style={{ display: "flex", flexDirection: "column", gap: "0.28rem", marginTop: "0.3rem" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
+                      <svg width="6" height="6" viewBox="0 0 6 6" style={{ flexShrink: 0, opacity: 0.7 }}>
+                        <polygon points="3,0 6,3 3,6 0,3" fill="none" stroke="rgba(197,160,23,0.7)" strokeWidth="0.8" />
+                      </svg>
+                      <span style={{
+                        fontFamily: "var(--font-display)", fontSize: "0.5rem", fontWeight: 700,
+                        letterSpacing: "0.22em", textTransform: "uppercase",
+                        color: "rgba(197,160,23,0.65)",
                       }}>
                         Pichet · Right Pillar
-                      </p>
+                      </span>
                     </div>
                     <p style={{
-                      margin: 0,
-                      fontFamily: "var(--font-body)",
-                      fontSize: "0.82rem", lineHeight: 1.72,
-                      color: "var(--text-2)",
+                      margin: 0, fontFamily: "var(--font-body)",
+                      fontSize: "0.8rem", lineHeight: 1.72,
+                      color: "rgba(240,237,227,0.68)",
+                      paddingLeft: "0.85rem",
                     }}>
                       {pichet}
                     </p>
                   </div>
                 )}
                 {synthesis && (
-                  <div style={{
-                    padding: "0.65rem 0.85rem",
-                    borderTop: "1px solid rgba(16,181,167,0.15)",
-                  }}>
+                  <>
+                    {/* Thin emerald geometry line before synthesis */}
+                    <div style={{
+                      margin: "0.15rem 0",
+                      height: 1,
+                      background: "linear-gradient(90deg, rgba(16,181,167,0.12) 0%, rgba(16,181,167,0.06) 100%)",
+                    }} />
                     <p style={{
-                      margin: 0,
-                      fontFamily: "var(--font-body)",
-                      fontSize: "0.82rem", lineHeight: 1.65,
+                      margin: 0, fontFamily: "var(--font-body)",
+                      fontSize: "0.78rem", lineHeight: 1.65,
                       fontStyle: "italic",
-                      color: "var(--text-2)", opacity: 0.75,
+                      color: "rgba(240,237,227,0.44)",
                     }}>
                       {synthesis}
                     </p>
-                  </div>
+                  </>
                 )}
                 {witnessQuestion && (
-                  <div style={{
-                    padding: "0.6rem 0.85rem",
-                    borderRadius: "var(--r-md)",
-                    background: "rgba(16,181,167,0.05)",
-                    border: "1px solid rgba(16,181,167,0.18)",
-                    marginTop: "0.25rem",
+                  <p style={{
+                    margin: "0.1rem 0 0",
+                    fontFamily: "var(--font-body)",
+                    fontSize: "0.76rem", lineHeight: 1.7,
+                    color: "rgba(16,181,167,0.72)",
+                    fontStyle: "italic",
                   }}>
-                    <p style={{
-                      margin: 0,
-                      fontFamily: "var(--font-body)",
-                      fontSize: "0.78rem", lineHeight: 1.7,
-                      color: "rgba(16,181,167,0.9)",
-                    }}>
-                      {witnessQuestion}
-                    </p>
-                  </div>
+                    {witnessQuestion}
+                  </p>
                 )}
               </>
             ) : (
-              <div style={{
-                padding: "0.9rem 1rem",
-                borderRadius: "var(--r-md)",
-                background: "rgba(45,0,80,0.12)",
-                border: "1px solid rgba(45,0,80,0.3)",
+              <p style={{
+                margin: 0, fontFamily: "var(--font-body)",
+                fontSize: "0.88rem", lineHeight: 1.75,
+                fontStyle: "italic",
+                color: "rgba(240,237,227,0.5)",
               }}>
-                <p style={{
-                  margin: 0,
-                  fontFamily: "var(--font-body)",
-                  fontSize: "0.9rem", lineHeight: 1.75,
-                  fontStyle: "italic",
-                  color: "var(--text-2)",
-                }}>
-                  &ldquo;{dyadFallback}&rdquo;
-                </p>
-              </div>
+                &ldquo;{dyadFallback}&rdquo;
+              </p>
             )
           ) : (
-            <div style={{
-              flex: 1, display: "flex", alignItems: "center", justifyContent: "center", minHeight: 90,
-            }}>
+            <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", minHeight: 80 }}>
               <p style={{
-                margin: 0,
-                fontFamily: "var(--font-body)",
-                fontSize: "0.78rem", color: "var(--muted)",
-                textAlign: "center", lineHeight: 1.65, maxWidth: 200,
+                margin: 0, fontFamily: "var(--font-body)",
+                fontSize: "0.72rem", color: "rgba(240,237,227,0.22)",
+                textAlign: "center", lineHeight: 1.7, maxWidth: 180,
+                letterSpacing: "0.02em",
               }}>
-                Witness perspectives appear here after the first biofield reading
+                Witness perspectives emerge after the first biofield reading
               </p>
             </div>
           )}
 
-          {/* Capture result — compact */}
+          {/* Capture result — minimal, no card */}
           {captureResult && (
-            <div style={{
-              marginTop: "auto",
-              padding: "0.75rem 0.85rem",
-              borderRadius: "var(--r-md)",
-              background: "rgba(11,80,251,0.05)",
-              border: "1px solid rgba(11,80,251,0.12)",
-              display: "flex", flexDirection: "column", gap: "0.5rem",
-            }}>
+            <div style={{ marginTop: "auto", paddingTop: "0.5rem", display: "flex", flexDirection: "column", gap: "0.35rem" }}>
+              {/* Thin separator */}
+              <div style={{ height: 1, background: "linear-gradient(90deg, rgba(11,80,251,0.1) 0%, transparent 100%)" }} />
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <p style={{
-                  margin: 0, fontFamily: "var(--font-display)", fontSize: "0.58rem", fontWeight: 700,
-                  letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--muted)",
+                <span style={{
+                  fontFamily: "var(--font-display)", fontSize: "0.48rem", fontWeight: 700,
+                  letterSpacing: "0.18em", textTransform: "uppercase", color: "rgba(240,237,227,0.25)",
                 }}>
                   Last capture
-                </p>
+                </span>
                 <span style={{
-                  fontFamily: "var(--font-display)", fontSize: "0.54rem", fontWeight: 700, letterSpacing: "0.1em",
-                  padding: "0.14rem 0.45rem", borderRadius: "var(--r-pill)",
-                  background: captureResult.quality_assessment.sufficient_quality ? "rgba(16,181,167,0.1)" : "rgba(198,93,59,0.1)",
-                  border: `1px solid ${captureResult.quality_assessment.sufficient_quality ? "rgba(16,181,167,0.25)" : "rgba(198,93,59,0.25)"}`,
-                  color: captureResult.quality_assessment.sufficient_quality ? "var(--c-emerald)" : "var(--error)",
-                  textShadow: captureResult.quality_assessment.sufficient_quality ? "0 0 8px rgba(16,181,167,0.4)" : "none",
+                  fontFamily: "var(--font-mono)", fontSize: "0.52rem", letterSpacing: "0.1em",
                   textTransform: "uppercase",
+                  color: captureResult.quality_assessment.sufficient_quality ? "rgba(16,181,167,0.7)" : "rgba(198,93,59,0.7)",
                 }}>
-                  {captureResult.quality_assessment.sufficient_quality ? "Accepted" : "Rejected"}
+                  {captureResult.quality_assessment.sufficient_quality ? "✓ Accepted" : "✗ Rejected"}
                 </span>
               </div>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.3rem" }}>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.2rem 0.8rem" }}>
                 {METRIC_KEYS.map((key) => {
                   const raw = captureResult.metrics[key];
                   const num = typeof raw === "number" ? raw : parseFloat(String(raw));
                   const pct = !isNaN(num) ? Math.round(num * 100) : null;
                   return (
-                    <div key={key} style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                      <span style={{ fontFamily: "var(--font-mono)", fontSize: "0.55rem", color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.08em" }}>
+                    <div key={key} style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+                      <span style={{ fontFamily: "var(--font-mono)", fontSize: "0.5rem", color: "rgba(240,237,227,0.28)", textTransform: "uppercase", letterSpacing: "0.07em" }}>
                         {key.replace(/_/g, " ").replace(/^(light quanta|normalized|average|fractal|body|pattern)/, m => m.slice(0, 3))}
                       </span>
-                      <span style={{ fontFamily: "var(--font-mono)", fontSize: "0.7rem", fontWeight: 700, color: "var(--text-2)" }}>
+                      <span style={{ fontFamily: "var(--font-mono)", fontSize: "0.68rem", fontWeight: 700, color: "rgba(240,237,227,0.6)" }}>
                         {pct !== null ? `${pct}%` : String(raw)}
                       </span>
                     </div>
                   );
                 })}
               </div>
-              <div style={{ display: "flex", gap: "0.5rem" }}>
-                <Link className="biofield-link" href={`/readings/${captureResult.reading_id}`} style={{ fontSize: "0.7rem" }}>
+              <div style={{ display: "flex", gap: "1rem" }}>
+                <Link className="biofield-link" href={`/readings/${captureResult.reading_id}`} style={{ fontSize: "0.66rem" }}>
                   Open reading
                 </Link>
-                <Link className="biofield-link" href="/history" style={{ fontSize: "0.7rem" }}>
+                <Link className="biofield-link" href="/history" style={{ fontSize: "0.66rem" }}>
                   History
                 </Link>
               </div>
@@ -698,49 +668,55 @@ export default function ViewerPage() {
           )}
         </div>
 
-        {/* ── SESSION STRIP — La Arc — bottom anchor ── */}
+        {/* ── SESSION STRIP — minimal anchor, geometry line above ── */}
         <div style={{
           flex: "0 0 auto",
-          padding: "0.7rem 1rem",
-          borderTop: "1px solid rgba(11,80,251,0.1)",
-          background: "linear-gradient(90deg, rgba(197,160,23,0.04) 0%, rgba(45,0,80,0.08) 50%, #070B1D 100%)",
-          display: "flex", flexDirection: "column", gap: "0.5rem",
+          padding: "0.6rem 1.4rem 0.7rem",
+          display: "flex", flexDirection: "column", gap: "0.4rem",
+          position: "relative",
         }}>
+          {/* Thin gold geometry line — replaces solid border-top */}
+          <div style={{
+            position: "absolute", top: 0, left: "1.4rem", right: "1.4rem", height: 1,
+            background: "linear-gradient(90deg, transparent 0%, rgba(197,160,23,0.18) 30%, rgba(197,160,23,0.18) 70%, transparent 100%)",
+          }} />
+
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "0.75rem", flexWrap: "wrap" }}>
-            {/* Account meta */}
-            <div style={{ display: "flex", alignItems: "center", gap: "0.85rem" }}>
-              <div>
-                <p style={{ margin: 0, fontFamily: "var(--font-display)", fontSize: "0.5rem", fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--muted)" }}>Account</p>
-                <p style={{ margin: 0, fontFamily: "var(--font-body)", fontSize: "0.73rem", color: "var(--text)", maxWidth: 130, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                  {authSession?.email ?? "—"}
-                </p>
-              </div>
-              <div style={{ width: 1, height: 22, background: "rgba(11,80,251,0.15)" }} />
-              <div>
-                <p style={{ margin: 0, fontFamily: "var(--font-display)", fontSize: "0.5rem", fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--muted)" }}>Session</p>
-                <p style={{ margin: 0, fontFamily: "var(--font-mono)", fontSize: "0.73rem", color: hasActiveSession ? "var(--c-emerald)" : "var(--muted)", textShadow: hasActiveSession ? "0 0 8px rgba(16,181,167,0.4)" : "none" }}>
-                  {isHydratingSession ? "Restoring…" : currentSession ? currentSession.status : "—"}
-                </p>
-              </div>
-              <div style={{ width: 1, height: 22, background: "rgba(11,80,251,0.15)" }} />
-              <div>
-                <p style={{ margin: 0, fontFamily: "var(--font-display)", fontSize: "0.5rem", fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--muted)" }}>Tier</p>
-                <p style={{ margin: 0, fontFamily: "var(--font-mono)", fontSize: "0.73rem", color: "var(--c-gold)", textShadow: "0 0 8px rgba(197,160,23,0.35)" }}>
-                  {authSession?.tier ?? "—"}
-                </p>
-              </div>
+            {/* Account meta — spaced, no divider bars */}
+            <div style={{ display: "flex", alignItems: "baseline", gap: "1.2rem" }}>
+              <span style={{
+                fontFamily: "var(--font-body)", fontSize: "0.7rem",
+                color: "rgba(240,237,227,0.55)",
+                maxWidth: 140, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+              }}>
+                {authSession?.email ?? "—"}
+              </span>
+              <span style={{
+                fontFamily: "var(--font-mono)", fontSize: "0.68rem",
+                color: hasActiveSession ? "rgba(16,181,167,0.7)" : "rgba(240,237,227,0.28)",
+                textShadow: hasActiveSession ? "0 0 8px rgba(16,181,167,0.3)" : "none",
+              }}>
+                {isHydratingSession ? "restoring…" : currentSession ? currentSession.status : "—"}
+              </span>
+              <span style={{
+                fontFamily: "var(--font-mono)", fontSize: "0.68rem",
+                color: "rgba(197,160,23,0.65)",
+                letterSpacing: "0.04em",
+              }}>
+                {authSession?.tier ?? "—"}
+              </span>
             </div>
             {/* Session actions */}
             <div className="biofield-actions" style={{ margin: 0 }}>
               <button
-                className="biofield-button" style={{ fontSize: "0.7rem", padding: "0.28rem 0.75rem" }}
+                className="biofield-button" style={{ fontSize: "0.66rem", padding: "0.24rem 0.7rem" }}
                 disabled={isStartingSession || isHydratingSession || hasActiveSession}
                 onClick={handleStartSession} type="button"
               >
                 {isStartingSession ? "Starting…" : hasActiveSession ? "Active" : "Start session"}
               </button>
               <button
-                className="biofield-link" style={{ fontSize: "0.7rem" }}
+                className="biofield-link" style={{ fontSize: "0.66rem" }}
                 disabled={isClosingSession || !hasActiveSession}
                 onClick={handleCloseSession} type="button"
               >
@@ -750,10 +726,10 @@ export default function ViewerPage() {
           </div>
 
           {statusMessage && (
-            <p style={{ margin: 0, fontFamily: "var(--font-mono)", fontSize: "0.65rem", color: "var(--c-emerald)", textShadow: "0 0 8px rgba(16,181,167,0.35)" }}>{statusMessage}</p>
+            <p style={{ margin: 0, fontFamily: "var(--font-mono)", fontSize: "0.6rem", color: "rgba(16,181,167,0.6)" }}>{statusMessage}</p>
           )}
           {errorMessage && (
-            <p style={{ margin: 0, fontFamily: "var(--font-mono)", fontSize: "0.65rem", color: "var(--error)" }}>{errorMessage}</p>
+            <p style={{ margin: 0, fontFamily: "var(--font-mono)", fontSize: "0.6rem", color: "rgba(198,93,59,0.8)" }}>{errorMessage}</p>
           )}
         </div>
       </div>
