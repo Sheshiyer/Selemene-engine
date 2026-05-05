@@ -175,9 +175,10 @@ void main() {
   float r      = length(center) * 5.5;
   float theta  = atan(center.y, center.x);
   float spiral = r - theta * 0.45;
-  // Video RGB bends the spiral locally (VIDEO_INF = 30%) — person's body warps the field
-  vec3 noiseCoord = vec3(uv / max(PERIOD, 0.0001), spiral + u_time * 0.12)
-                  + videoCol * 2.0 * VIDEO_INF;  // videoCol is already vec3
+  // Video RGB warps the XY sampling position only — person's body bends the field
+  // spatially without corrupting the Z spiral phase (which drives the rings).
+  vec2 warpedUV   = uv / max(PERIOD, 0.0001) + videoCol.rg * 2.0 * VIDEO_INF;
+  vec3 noiseCoord = vec3(warpedUV, spiral + u_time * 0.12);
 
   float n = fbm(noiseCoord);
   n = sign(n) * pow(abs(n), EXPONENT);
