@@ -31,11 +31,29 @@ impl BillingRepository {
         Self { pool }
     }
 
-    /// Atomically record a webhook delivery. Returns `Ok(true)` on first
-    /// delivery (mutate freely), `Ok(false)` on duplicate (caller should
-    /// short-circuit with `dedup=true`). Uses ON CONFLICT DO NOTHING so the
-    /// PK constraint is the synchronisation primitive — no race window.
-    pub async fn try_record_webhook_event(
+    /// Cheap pre-flight check: has this webhook_id already been fully
+    /// processed? Used as the FIRST gate before dispatch so duplicate
+    /// deliveries from Dodo's retry chain short-circuit cleanly.
+    pub async fn webhook_event_already_processed(&self, webhook_id: &str) -> Result<bool, Error> {
+        let row: Option<(i64,)> = sqlx::query_as(
+            r#"SELECT 1::bigint FROM processed_webhook_events WHERE webhook_id = $1 LIMIT 1"#,
+        )
+        .bind(webhook_id)
+        .fetch_optional(&self.pool)
+        .await?;
+        Ok(row.is_some())
+    }
+
+    /// Record a webhook delivery as processed. Called only AFTER dispatch
+    /// succeeds, so transient dispatch failures (DB blip, etc.) don't
+    /// poison-pill future retries — Dodo retries the event, the row isn't
+    /// there yet, dispatch runs again, and only the successful run records
+    /// idempotency.
+    ///
+    /// Returns `Ok(true)` if this call inserted the row, `Ok(false)` if a
+    /// concurrent delivery beat us (still safe — both ran an idempotent
+    /// dispatch and only one INSERT lands due to PK).
+    pub async fn record_webhook_event_processed(
         &self,
         webhook_id: &str,
         provider: &str,
@@ -53,7 +71,6 @@ impl BillingRepository {
         .bind(event_type)
         .execute(&self.pool)
         .await?;
-
         Ok(result.rows_affected() == 1)
     }
 
@@ -80,10 +97,7 @@ impl BillingRepository {
     /// Look up a plan catalog entry by canonical plan code (`free`, `basic`,
     /// `premium`, `enterprise`). Used by the checkout route to translate a
     /// user's selected tier into a Dodo product ID.
-    pub async fn find_plan_by_code(
-        &self,
-        code: &str,
-    ) -> Result<Option<PlanCatalogEntry>, Error> {
+    pub async fn find_plan_by_code(&self, code: &str) -> Result<Option<PlanCatalogEntry>, Error> {
         sqlx::query_as::<_, PlanCatalogEntry>(
             r#"
             SELECT id, code, display_name, description, is_active, metadata,
@@ -104,12 +118,11 @@ impl BillingRepository {
         &self,
         user_id: Uuid,
     ) -> Result<Option<(String, Option<String>)>, Error> {
-        let row: Option<(String, Option<String>)> = sqlx::query_as(
-            r#"SELECT email, dodo_customer_id FROM users WHERE id = $1 LIMIT 1"#,
-        )
-        .bind(user_id)
-        .fetch_optional(&self.pool)
-        .await?;
+        let row: Option<(String, Option<String>)> =
+            sqlx::query_as(r#"SELECT email, dodo_customer_id FROM users WHERE id = $1 LIMIT 1"#)
+                .bind(user_id)
+                .fetch_optional(&self.pool)
+                .await?;
         Ok(row)
     }
 
@@ -152,22 +165,23 @@ impl BillingRepository {
 
     /// Hot-path lookup for the usage emitter. Returns `Ok(None)` for users
     /// who have never checked out (free tier — no Dodo customer to bill).
-    pub async fn find_user_dodo_customer_id(
-        &self,
-        user_id: Uuid,
-    ) -> Result<Option<String>, Error> {
-        let row: Option<(Option<String>,)> = sqlx::query_as(
-            r#"SELECT dodo_customer_id FROM users WHERE id = $1 LIMIT 1"#,
-        )
-        .bind(user_id)
-        .fetch_optional(&self.pool)
-        .await?;
+    pub async fn find_user_dodo_customer_id(&self, user_id: Uuid) -> Result<Option<String>, Error> {
+        let row: Option<(Option<String>,)> =
+            sqlx::query_as(r#"SELECT dodo_customer_id FROM users WHERE id = $1 LIMIT 1"#)
+                .bind(user_id)
+                .fetch_optional(&self.pool)
+                .await?;
         Ok(row.and_then(|(maybe,)| maybe))
     }
 
     /// Tier + period_end + dodo_customer_id from the `user_active_plan_resolutions`
     /// view (defined in migration 014). Used by the balance proxy to combine
     /// local subscription state with Dodo's credit balance.
+    ///
+    /// Accepts both `dodo_payments` and `legacy` provider rows — legacy rows
+    /// are the seed data from migration 014's backfill (one per existing
+    /// user, mirroring `users.tier`). Dodo-issued rows take priority when
+    /// both exist for the same user.
     pub async fn find_active_plan_resolution(
         &self,
         user_id: Uuid,
@@ -182,12 +196,15 @@ impl BillingRepository {
                 cancel_at_period_end
             FROM user_active_plan_resolutions
             WHERE user_id = $1
-              AND provider = $2
+              AND provider IN ('dodo_payments', 'legacy')
+            ORDER BY CASE provider
+                       WHEN 'dodo_payments' THEN 0
+                       ELSE 1
+                     END
             LIMIT 1
             "#,
         )
         .bind(user_id)
-        .bind(PROVIDER_DODO)
         .fetch_optional(&self.pool)
         .await
     }
@@ -198,12 +215,11 @@ impl BillingRepository {
         &self,
         customer_id: &str,
     ) -> Result<Option<Uuid>, Error> {
-        let row: Option<(Uuid,)> = sqlx::query_as(
-            r#"SELECT id FROM users WHERE dodo_customer_id = $1 LIMIT 1"#,
-        )
-        .bind(customer_id)
-        .fetch_optional(&self.pool)
-        .await?;
+        let row: Option<(Uuid,)> =
+            sqlx::query_as(r#"SELECT id FROM users WHERE dodo_customer_id = $1 LIMIT 1"#)
+                .bind(customer_id)
+                .fetch_optional(&self.pool)
+                .await?;
         Ok(row.map(|(id,)| id))
     }
 
@@ -214,13 +230,11 @@ impl BillingRepository {
         user_id: Uuid,
         customer_id: &str,
     ) -> Result<(), Error> {
-        sqlx::query(
-            r#"UPDATE users SET dodo_customer_id = $2, updated_at = NOW() WHERE id = $1"#,
-        )
-        .bind(user_id)
-        .bind(customer_id)
-        .execute(&self.pool)
-        .await?;
+        sqlx::query(r#"UPDATE users SET dodo_customer_id = $2, updated_at = NOW() WHERE id = $1"#)
+            .bind(user_id)
+            .bind(customer_id)
+            .execute(&self.pool)
+            .await?;
         Ok(())
     }
 
@@ -228,13 +242,11 @@ impl BillingRepository {
     /// `billing_subscriptions`; this column is a denormalised fast-path for
     /// hot middleware.
     pub async fn set_user_tier(&self, user_id: Uuid, tier: &str) -> Result<(), Error> {
-        sqlx::query(
-            r#"UPDATE users SET tier = $2, updated_at = NOW() WHERE id = $1"#,
-        )
-        .bind(user_id)
-        .bind(tier)
-        .execute(&self.pool)
-        .await?;
+        sqlx::query(r#"UPDATE users SET tier = $2, updated_at = NOW() WHERE id = $1"#)
+            .bind(user_id)
+            .bind(tier)
+            .execute(&self.pool)
+            .await?;
         Ok(())
     }
 

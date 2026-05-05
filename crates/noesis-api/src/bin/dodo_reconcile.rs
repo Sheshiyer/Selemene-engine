@@ -73,7 +73,10 @@ async fn main() -> ExitCode {
     };
     let repo = BillingRepository::new(pool);
 
-    let local_ids = match repo.list_active_provider_subscription_ids(PROVIDER_DODO).await {
+    let local_ids = match repo
+        .list_active_provider_subscription_ids(PROVIDER_DODO)
+        .await
+    {
         Ok(v) => v,
         Err(e) => {
             eprintln!("error: list local active subs: {}", e);
@@ -185,8 +188,8 @@ async fn fetch_active_dodo_subscription_ids(
         if !status.is_success() {
             return Err(format!("Dodo {} on page {}: {}", status, page, text));
         }
-        let parsed: Value = serde_json::from_str(&text)
-            .map_err(|e| format!("parse page {}: {}", page, e))?;
+        let parsed: Value =
+            serde_json::from_str(&text).map_err(|e| format!("parse page {}: {}", page, e))?;
         let items = parsed
             .get("items")
             .and_then(|v| v.as_array())

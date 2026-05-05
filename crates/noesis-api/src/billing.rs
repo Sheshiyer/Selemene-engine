@@ -400,8 +400,7 @@ mod tests {
     #[test]
     fn dodo_usage_payload_shape() {
         let emitter = DodoWebhookEmitter::new("sk_test_key", "https://test.dodopayments.com");
-        let payload =
-            emitter.format_usage_payload("cus_abc", "user-1", "panchanga", "premium");
+        let payload = emitter.format_usage_payload("cus_abc", "user-1", "panchanga", "premium");
 
         let events = payload["events"].as_array().expect("events array");
         assert_eq!(events.len(), 1);
@@ -435,23 +434,45 @@ mod tests {
     #[test]
     fn inbound_event_type_serde_roundtrip() {
         let cases = [
-            ("subscription.active", DodoInboundEventType::SubscriptionActive),
-            ("subscription.updated", DodoInboundEventType::SubscriptionUpdated),
-            ("subscription.on_hold", DodoInboundEventType::SubscriptionOnHold),
-            ("subscription.cancelled", DodoInboundEventType::SubscriptionCancelled),
-            ("subscription.failed", DodoInboundEventType::SubscriptionFailed),
+            (
+                "subscription.active",
+                DodoInboundEventType::SubscriptionActive,
+            ),
+            (
+                "subscription.updated",
+                DodoInboundEventType::SubscriptionUpdated,
+            ),
+            (
+                "subscription.on_hold",
+                DodoInboundEventType::SubscriptionOnHold,
+            ),
+            (
+                "subscription.cancelled",
+                DodoInboundEventType::SubscriptionCancelled,
+            ),
+            (
+                "subscription.failed",
+                DodoInboundEventType::SubscriptionFailed,
+            ),
             ("payment.succeeded", DodoInboundEventType::PaymentSucceeded),
             ("payment.failed", DodoInboundEventType::PaymentFailed),
             ("credit.added", DodoInboundEventType::CreditAdded),
             ("credit.deducted", DodoInboundEventType::CreditDeducted),
             ("credit.balance_low", DodoInboundEventType::CreditBalanceLow),
-            ("credit.overage_charged", DodoInboundEventType::CreditOverageCharged),
+            (
+                "credit.overage_charged",
+                DodoInboundEventType::CreditOverageCharged,
+            ),
         ];
         for (wire, variant) in cases {
             let json = serde_json::to_string(&variant).unwrap();
-            assert_eq!(json, format!("\"{}\"", wire), "encode mismatch for {}", wire);
-            let decoded: DodoInboundEventType =
-                serde_json::from_str(&json).unwrap();
+            assert_eq!(
+                json,
+                format!("\"{}\"", wire),
+                "encode mismatch for {}",
+                wire
+            );
+            let decoded: DodoInboundEventType = serde_json::from_str(&json).unwrap();
             assert_eq!(decoded, variant, "decode mismatch for {}", wire);
         }
     }

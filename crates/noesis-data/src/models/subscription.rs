@@ -52,7 +52,8 @@ impl BillingSubscription {
     /// True iff this row participates in the partial unique index that defines
     /// "the user's currently active subscription".
     pub fn is_active_slot(&self) -> bool {
-        matches!(self.status.as_str(), "trialing" | "active" | "past_due") && self.canceled_at.is_none()
+        matches!(self.status.as_str(), "trialing" | "active" | "past_due")
+            && self.canceled_at.is_none()
     }
 }
 

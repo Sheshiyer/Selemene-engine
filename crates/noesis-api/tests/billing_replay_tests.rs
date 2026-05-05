@@ -204,15 +204,22 @@ fn build_active_envelope(
 
 // ---------------------------------------------------------------------------
 
-/// 25× concurrent deliveries of the same webhook_id should result in:
-///   • exactly 1 row in processed_webhook_events
-///   • exactly 1 active billing_subscriptions row
-///   • exactly 1 OK response, 24 dedup responses
+/// 25× concurrent deliveries of the same webhook_id must converge to:
+///   • exactly 1 row in `processed_webhook_events`
+///   • exactly 1 row in `billing_subscriptions` (no double-billing)
 ///
-/// 25 deliberately sits under the IP-based rate-limiter default (30/min) so
-/// the test exercises only the idempotency primitive, not the orthogonal
-/// rate-limit middleware. Dodo's retry cadence in production is well below
-/// 25/min for a single subscription's webhook chain, so this matches reality.
+/// Note: with idempotency recording moved to AFTER dispatch (so transient
+/// dispatch failures don't poison-pill retries), concurrent deliveries that
+/// arrive in the race window between the pre-flight SELECT and the post-
+/// dispatch INSERT will all dispatch. State mutations are upserts and
+/// therefore idempotent, so the DB still ends in the single canonical
+/// state. **Sequential** retries (the common Dodo retry case) still
+/// short-circuit at the SELECT — covered by the
+/// `webhook_replay_with_same_id_returns_dedup` test in billing_e2e_tests.
+///
+/// 25 deliberately sits under the IP-based rate-limiter default (30/min)
+/// so the test exercises only the idempotency primitive, not the
+/// orthogonal rate-limit middleware.
 #[tokio::test]
 #[serial_test::serial]
 async fn webhook_replay_concurrent_yields_exactly_one_mutation() {
@@ -243,30 +250,39 @@ async fn webhook_replay_concurrent_yields_exactly_one_mutation() {
             post_envelope(&r, env, FORWARD_SECRET).await
         }));
     }
-    let mut ok_count = 0;
-    let mut dedup_count = 0;
-    let mut other_count = 0;
+    // Every delivery should respond 200 — either dispatched cleanly or
+    // dedup'd at the pre-flight check. Distribution between ok/dedup
+    // depends on race timing and is not asserted here; the invariant we
+    // care about is the resulting DB state below.
     for fut in futures {
         let (status, body) = fut.await.expect("task");
-        assert_eq!(status, StatusCode::OK, "every delivery should 200; got {} {}", status, body);
-        match body.get("status").and_then(|v| v.as_str()) {
-            Some("ok") => ok_count += 1,
-            Some("dedup") => dedup_count += 1,
-            _ => other_count += 1,
-        }
+        assert_eq!(
+            status,
+            StatusCode::OK,
+            "every delivery should 200; got {} {}",
+            status,
+            body
+        );
+        let s = body.get("status").and_then(|v| v.as_str()).unwrap_or("?");
+        assert!(
+            s == "ok" || s == "dedup",
+            "unexpected status '{}': {}",
+            s,
+            body
+        );
     }
-    assert_eq!(ok_count, 1, "exactly one 'ok' (got {})", ok_count);
-    assert_eq!(dedup_count, CONCURRENCY - 1, "exactly {} 'dedup' (got {})", CONCURRENCY - 1, dedup_count);
-    assert_eq!(other_count, 0, "no other statuses (got {})", other_count);
 
-    // DB invariants
+    // DB invariants — the safety properties.
     let processed: (i64,) =
         sqlx::query_as("SELECT COUNT(*) FROM processed_webhook_events WHERE webhook_id = $1")
             .bind(&webhook_id)
             .fetch_one(&pool)
             .await
             .expect("count processed");
-    assert_eq!(processed.0, 1, "exactly one processed_webhook_events row");
+    assert_eq!(
+        processed.0, 1,
+        "exactly one processed_webhook_events row (PK guarantees this)"
+    );
 
     let subs: (i64,) = sqlx::query_as(
         "SELECT COUNT(*) FROM billing_subscriptions WHERE provider_subscription_id = $1",
@@ -359,5 +375,8 @@ async fn stale_envelope_writes_nothing_to_processed_events() {
             .fetch_one(&pool)
             .await
             .expect("count processed");
-    assert_eq!(count.0, 0, "stale rejection should not record idempotency entry");
+    assert_eq!(
+        count.0, 0,
+        "stale rejection should not record idempotency entry"
+    );
 }

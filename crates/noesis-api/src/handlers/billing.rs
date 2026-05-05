@@ -55,12 +55,17 @@ pub async fn events_forward(
             .and_then(|v| v.as_str().map(String::from))
             .unwrap_or_else(|| "unknown".to_string());
         noesis_metrics::record_dodo_webhook(&event_type_label, "stale");
-        return (StatusCode::BAD_REQUEST, format!("stale timestamp: {}", err_msg))
+        return (
+            StatusCode::BAD_REQUEST,
+            format!("stale timestamp: {}", err_msg),
+        )
             .into_response();
     }
 
     let Some(repo) = state.billing_repository.clone() else {
-        tracing::error!("billing webhook received but billing_repository unavailable (db not configured)");
+        tracing::error!(
+            "billing webhook received but billing_repository unavailable (db not configured)"
+        );
         return (StatusCode::SERVICE_UNAVAILABLE, "billing not configured").into_response();
     };
 
@@ -69,12 +74,17 @@ pub async fn events_forward(
         .and_then(|v| v.as_str().map(String::from))
         .unwrap_or_else(|| format!("{:?}", envelope.event_type));
 
-    // -- 2. Idempotency --
+    // -- 3. Idempotency PRE-flight check --
+    //
+    // Cheap SELECT — short-circuits Dodo's retry chain when a previous
+    // delivery already completed. The matching INSERT happens AFTER
+    // dispatch succeeds (see step 5) so transient dispatch failures don't
+    // poison-pill future retries.
     match repo
-        .try_record_webhook_event(&envelope.webhook_id, PROVIDER_DODO, &event_type_str)
+        .webhook_event_already_processed(&envelope.webhook_id)
         .await
     {
-        Ok(false) => {
+        Ok(true) => {
             tracing::info!(
                 webhook_id = %envelope.webhook_id,
                 event_type = %event_type_str,
@@ -83,7 +93,7 @@ pub async fn events_forward(
             noesis_metrics::record_dodo_webhook(&event_type_str, "dedup");
             return (StatusCode::OK, Json(BillingForwardResponse::Dedup)).into_response();
         }
-        Ok(true) => {
+        Ok(false) => {
             tracing::info!(
                 webhook_id = %envelope.webhook_id,
                 event_type = %event_type_str,
@@ -91,8 +101,11 @@ pub async fn events_forward(
             );
         }
         Err(e) => {
-            tracing::error!(error = %e, "failed to record webhook event for idempotency");
-            return (StatusCode::INTERNAL_SERVER_ERROR, "idempotency check failed")
+            tracing::error!(error = %e, "failed to check webhook idempotency");
+            return (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "idempotency check failed",
+            )
                 .into_response();
         }
     }
@@ -130,13 +143,36 @@ pub async fn events_forward(
 
     match result {
         Ok(()) => {
+            // Record idempotency only after successful dispatch. A concurrent
+            // duplicate that beat us to the INSERT just gets rows_affected=0
+            // (still an idempotent outcome — both runs ran the same upserts).
+            if let Err(e) = repo
+                .record_webhook_event_processed(
+                    &envelope.webhook_id,
+                    PROVIDER_DODO,
+                    &event_type_str,
+                )
+                .await
+            {
+                tracing::error!(
+                    error = %e,
+                    webhook_id = %envelope.webhook_id,
+                    "dispatch succeeded but idempotency record failed; future retries will reprocess (state mutations are idempotent)"
+                );
+                // Don't 5xx — dispatch already mutated state successfully.
+                // A future retry will run the same upserts and converge.
+            }
             noesis_metrics::record_dodo_webhook(&event_type_str, "ok");
             (StatusCode::OK, Json(BillingForwardResponse::Ok)).into_response()
         }
         Err(HandlerError::MissingField(path)) => {
             noesis_metrics::record_dodo_webhook(&event_type_str, "bad_request");
             tracing::warn!(path = path, "missing field in webhook payload");
-            (StatusCode::UNPROCESSABLE_ENTITY, format!("missing field: {}", path)).into_response()
+            (
+                StatusCode::UNPROCESSABLE_ENTITY,
+                format!("missing field: {}", path),
+            )
+                .into_response()
         }
         Err(HandlerError::UnknownProduct(product_id)) => {
             tracing::error!(
@@ -151,7 +187,10 @@ pub async fn events_forward(
         }
         Err(HandlerError::UnknownUser(detail)) => {
             tracing::error!(detail = %detail, "could not resolve subscription to a user");
-            (StatusCode::UNPROCESSABLE_ENTITY, format!("unknown user: {}", detail))
+            (
+                StatusCode::UNPROCESSABLE_ENTITY,
+                format!("unknown user: {}", detail),
+            )
                 .into_response()
         }
         Err(HandlerError::Db(e)) => {
@@ -243,7 +282,9 @@ fn extract_bool(payload: &Value, path: &[&str]) -> Option<bool> {
 
 fn extract_datetime(payload: &Value, path: &[&str]) -> Option<DateTime<Utc>> {
     let s = extract_str(payload, path)?;
-    DateTime::parse_from_rfc3339(s).ok().map(|dt| dt.with_timezone(&Utc))
+    DateTime::parse_from_rfc3339(s)
+        .ok()
+        .map(|dt| dt.with_timezone(&Utc))
 }
 
 /// Customer ID comes either as `data.customer.customer_id` (rich object) or
@@ -279,8 +320,8 @@ async fn handle_subscription_active(
         .ok_or(HandlerError::MissingField("data.subscription_id"))?;
     let customer_id = extract_customer_id(payload)
         .ok_or(HandlerError::MissingField("data.customer.customer_id"))?;
-    let product_id = extract_product_id(payload)
-        .ok_or(HandlerError::MissingField("data.product_id"))?;
+    let product_id =
+        extract_product_id(payload).ok_or(HandlerError::MissingField("data.product_id"))?;
 
     let plan = repo
         .find_plan_by_dodo_product_id(product_id)
@@ -348,8 +389,8 @@ async fn handle_subscription_updated(
         .ok_or(HandlerError::MissingField("data.subscription_id"))?;
     let customer_id = extract_customer_id(payload)
         .ok_or(HandlerError::MissingField("data.customer.customer_id"))?;
-    let product_id = extract_product_id(payload)
-        .ok_or(HandlerError::MissingField("data.product_id"))?;
+    let product_id =
+        extract_product_id(payload).ok_or(HandlerError::MissingField("data.product_id"))?;
     let status = extract_str(payload, &["data", "status"])
         .ok_or(HandlerError::MissingField("data.status"))?;
 
@@ -589,7 +630,10 @@ pub async fn create_checkout_session(
             body = %body_text,
             "Dodo checkout returned non-success"
         );
-        return (StatusCode::BAD_GATEWAY, format!("dodo {}: {}", status, body_text))
+        return (
+            StatusCode::BAD_GATEWAY,
+            format!("dodo {}: {}", status, body_text),
+        )
             .into_response();
     }
 
@@ -611,7 +655,11 @@ pub async fn create_checkout_session(
         return (StatusCode::BAD_GATEWAY, "no checkout_url").into_response();
     };
 
-    (StatusCode::OK, Json(CreateCheckoutResponse { checkout_url })).into_response()
+    (
+        StatusCode::OK,
+        Json(CreateCheckoutResponse { checkout_url }),
+    )
+        .into_response()
 }
 
 // ---------------------------------------------------------------------------
@@ -701,7 +749,10 @@ pub async fn create_portal_session(
     let body_text = resp.text().await.unwrap_or_default();
     if !status.is_success() {
         tracing::error!(status = %status, body = %body_text, "Dodo portal non-success");
-        return (StatusCode::BAD_GATEWAY, format!("dodo {}: {}", status, body_text))
+        return (
+            StatusCode::BAD_GATEWAY,
+            format!("dodo {}: {}", status, body_text),
+        )
             .into_response();
     }
 
@@ -729,7 +780,19 @@ pub async fn create_portal_session(
 // credit balance. Free-tier users (no dodo_customer_id) get a tier-default
 // response without touching Dodo.
 
-const FREE_TIER_DEFAULT_CREDITS: u64 = 50;
+/// Per-tier default credits used in fallback paths (legacy backfill rows
+/// without a Dodo customer; Dodo 404s before first credit grant). Mirrors
+/// the per-product credit settings configured in the Dodo dashboard
+/// (runbooks/dodo-dashboard-setup.md §4). Keep these in sync.
+fn tier_default_credits(plan_code: &str) -> u64 {
+    match plan_code.to_lowercase().as_str() {
+        "free" => 50,
+        "basic" => 500,
+        "premium" => 2_500,
+        "enterprise" => 10_000,
+        _ => 50,
+    }
+}
 
 #[derive(Debug, Serialize)]
 pub struct BalanceResponse {
@@ -779,7 +842,7 @@ pub async fn get_balance(
         return (
             StatusCode::OK,
             Json(BalanceResponse {
-                credits_remaining: FREE_TIER_DEFAULT_CREDITS,
+                credits_remaining: tier_default_credits("free"),
                 overage_charged: "0".to_string(),
                 period_end: None,
                 tier: "free".to_string(),
@@ -792,11 +855,12 @@ pub async fn get_balance(
 
     let Some(customer_id) = active.provider_customer_id.as_deref() else {
         // Active row exists but no customer_id (legacy backfill row from
-        // migration 014). Treat as tier_default for this tier.
+        // migration 014). Show the tier's default monthly grant — paid
+        // legacy users see their real allowance, not the free-tier 50.
         return (
             StatusCode::OK,
             Json(BalanceResponse {
-                credits_remaining: FREE_TIER_DEFAULT_CREDITS,
+                credits_remaining: tier_default_credits(&active.plan_code),
                 overage_charged: "0".to_string(),
                 period_end: active.current_period_end,
                 tier: active.plan_code,
@@ -848,11 +912,13 @@ pub async fn get_balance(
 
     let status = resp.status();
     if status == reqwest::StatusCode::NOT_FOUND {
-        // Customer never had this entitlement — return tier_default.
+        // Customer never had this entitlement (e.g. just-created customer
+        // before the first credit grant lands). Return the tier's default
+        // monthly grant — a paid user shouldn't see "50 credits".
         return (
             StatusCode::OK,
             Json(BalanceResponse {
-                credits_remaining: FREE_TIER_DEFAULT_CREDITS,
+                credits_remaining: tier_default_credits(&active.plan_code),
                 overage_charged: "0".to_string(),
                 period_end: active.current_period_end,
                 tier: active.plan_code,
@@ -865,7 +931,10 @@ pub async fn get_balance(
     let body_text = resp.text().await.unwrap_or_default();
     if !status.is_success() {
         tracing::error!(status = %status, body = %body_text, "Dodo balance non-success");
-        return (StatusCode::BAD_GATEWAY, format!("dodo {}: {}", status, body_text))
+        return (
+            StatusCode::BAD_GATEWAY,
+            format!("dodo {}: {}", status, body_text),
+        )
             .into_response();
     }
 
@@ -998,7 +1067,11 @@ mod tests {
     fn timestamp_freshness_rejects_far_future() {
         let future = (chrono::Utc::now().timestamp() + 3600).to_string();
         let err = validate_timestamp_freshness(&future).unwrap_err();
-        assert!(err.contains("future"), "expected 'future' in error: {}", err);
+        assert!(
+            err.contains("future"),
+            "expected 'future' in error: {}",
+            err
+        );
     }
 
     #[test]

@@ -903,10 +903,7 @@ pub fn create_router(state: AppState, config: &ApiConfig) -> Router {
     // JWT. Today this is just the Dodo billing webhook ingest from the
     // biofield-web Next.js adaptor. No JWT middleware applied.
     let internal_routes = Router::new()
-        .route(
-            "/billing/events",
-            post(handlers::billing::events_forward),
-        )
+        .route("/billing/events", post(handlers::billing::events_forward))
         .layer(axum_middleware::from_fn_with_state(
             rate_limiter,
             middleware::rate_limit_middleware,
