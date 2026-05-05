@@ -168,17 +168,20 @@ void main() {
   vec2 uv = vec2(v_texCoord.x, 1.0 - v_texCoord.y);
   vec3 videoCol = texture(u_video, uv).rgb;
 
-  // ── Spiral coordinate: radial bands + angular phase = concentric spiral ──
-  // Radial distance from centre gives concentric rings; subtracting the angle
-  // twists them into a right-hand spiral.  Time rotates the whole field.
+  // ── Spiral + video-interaction noise coordinate ──────────────────────────
+  // Exact TD reference formula: mix(spatialCoord, videoCoord, VIDEO_INF)
+  // This blends video RGB into ALL 3 axes — the blue channel shifts the
+  // noise depth, producing the body-contour topographic color interaction.
+  // Z = spiral (not just time) so concentric rings radiate from canvas centre.
   vec2 center = uv - vec2(0.5);
   float r      = length(center) * 5.5;
   float theta  = atan(center.y, center.x);
   float spiral = r - theta * 0.45;
-  // Video RGB warps the XY sampling position only — person's body bends the field
-  // spatially without corrupting the Z spiral phase (which drives the rings).
-  vec2 warpedUV   = uv / max(PERIOD, 0.0001) + videoCol.rg * 2.0 * VIDEO_INF;
-  vec3 noiseCoord = vec3(warpedUV, spiral + u_time * 0.12);
+
+  float scale       = 1.0 / max(PERIOD, 0.0001);
+  vec3 spatialCoord = vec3(uv * scale, spiral + u_time * 0.12);  // spiral in Z
+  vec3 videoCoord   = videoCol * scale * 2.0;                     // video drives all 3 axes
+  vec3 noiseCoord   = mix(spatialCoord, videoCoord, VIDEO_INF);  // exact TD mix
 
   float n = fbm(noiseCoord);
   n = sign(n) * pow(abs(n), EXPONENT);
