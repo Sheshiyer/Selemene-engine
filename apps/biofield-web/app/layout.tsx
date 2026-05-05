@@ -2,6 +2,10 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
+// FontShare CDN — Panchang (display) + Satoshi (body) — brand typography system
+const FONTSHARE_HREF =
+  "https://api.fontshare.com/v2/css?f[]=panchang@400,500,600,700,800&f[]=satoshi@300,400,500,700&display=swap";
+
 const geist = Geist({
   subsets: ["latin"],
   variable: "--font-geist",
@@ -26,6 +30,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${geist.variable} ${geistMono.variable}`}>
+      <head>
+        <link rel="preconnect" href="https://api.fontshare.com" />
+        <link rel="stylesheet" href={FONTSHARE_HREF} />
+      </head>
       <body>{children}</body>
     </html>
   );

@@ -1,55 +1,81 @@
 /* ─────────────────────────────────────────────────────────
-   Selemene Biofield — Design System
-   DESIGN_VARIANCE=8  MOTION_INTENSITY=6  VISUAL_DENSITY=4
-   Geist · liquid glass · asymmetric · no neon
+   Tryambakam Noesis — Bioluminescent Consciousness Design System
+   Brand palette: Goethe's Zur Farbenlehre · Kha-Ba-La framework
+   Typography: Panchang (display) · Satoshi (body) · SF Mono (data)
    ───────────────────────────────────────────────────────── */
 
-/* ── Fonts injected by layout.tsx via next/font/google ── */
+/* ── Fonts injected by layout.tsx via next/font/google + FontShare CDN ── */
 
 /* ══════════════════════════════════════════════
    1 · TOKENS
    ══════════════════════════════════════════════ */
 :root {
-  /* Type */
-  --font-sans: var(--font-geist, "Geist", "Inter", system-ui, sans-serif);
-  --font-mono: var(--font-geist-mono, "Geist Mono", "Fira Code", monospace);
+  /* ── Brand Typography ─────────────────────────────────────────────────── */
+  --font-display: "Panchang", var(--font-geist, "Geist"), system-ui, sans-serif;
+  --font-body:    "Satoshi", var(--font-geist, "Geist"), system-ui, sans-serif;
+  --font-sans:    "Satoshi", var(--font-geist, "Geist"), system-ui, sans-serif;
+  --font-mono:    "SF Mono", var(--font-geist-mono, "Geist Mono"), monospace;
 
-  /* Palette — dark base */
-  --bg:            #09090b;
-  --surface:       #101014;
-  --surface-2:     #15151a;
-  --panel:         rgba(255,255,255,0.03);
-  --panel-strong:  rgba(255,255,255,0.055);
-  --panel-hover:   rgba(255,255,255,0.075);
+  /* ── Consciousness Color Spectrum (Goethe's Zur Farbenlehre) ─────────── */
+  /* La  — Inertia/Source — Pre-chromatic Ur-ground */
+  --c-void:        #070B1D;
+  /* Kha — Spirit/Observer — Steigerung culmination */
+  --c-violet:      #2D0050;
+  /* Kha→Ba — Flow state — Deep minus */
+  --c-indigo:      #0B50FB;
+  /* Ba  — Body/Activation — Plus apex */
+  --c-gold:        #C5A017;
+  /* Ba↔La — Coherence — Resolution */
+  --c-emerald:     #10B5A7;
 
-  /* Lines */
-  --line-faint:    rgba(255,255,255,0.05);
-  --line-mid:      rgba(255,255,255,0.10);
-  --line-strong:   rgba(255,255,255,0.18);
+  /* ── Functional Colors ───────────────────────────────────────────────── */
+  --bg:            #070B1D;   /* Void Black — primary canvas */
+  --surface:       #0E1428;   /* Deep Surface — card backgrounds */
+  --surface-2:     #121932;   /* Slightly elevated surfaces */
+  --panel:         rgba(11, 80, 251, 0.04);   /* Flow Indigo tint */
+  --panel-strong:  rgba(11, 80, 251, 0.08);
+  --panel-hover:   rgba(11, 80, 251, 0.12);
 
-  /* Text */
-  --text:          #f0f0f3;
-  --text-2:        rgba(240,240,243,0.72);
-  --muted:         rgba(240,240,243,0.44);
+  /* ── Text ────────────────────────────────────────────────────────────── */
+  --text:          #F0EDE3;   /* Parchment — primary text */
+  --text-2:        rgba(240,237,227,0.72);
+  --muted:         rgba(240,237,227,0.44);
 
-  /* Accent — cold indigo */
-  --accent:        #7c7cff;
-  --accent-rgb:    124, 124, 255;
-  --accent-dim:    rgba(124,124,255,0.15);
-  --accent-border: rgba(124,124,255,0.32);
+  /* ── Lines ───────────────────────────────────────────────────────────── */
+  --line-faint:    rgba(11, 80, 251, 0.08);
+  --line-mid:      rgba(11, 80, 251, 0.18);
+  --line-strong:   rgba(11, 80, 251, 0.35);
 
-  /* Signal — warm amber used for live / active state */
-  --signal:        #ffb347;
-  --signal-rgb:    255,179,71;
+  /* ── Accent aliases (backwards compat) ───────────────────────────────── */
+  --accent:        #0B50FB;
+  --accent-rgb:    11, 80, 251;
+  --accent-dim:    rgba(11, 80, 251, 0.15);
+  --accent-border: rgba(11, 80, 251, 0.32);
 
-  /* ── Consciousness Color Spectrum (brand-docs) ── */
-  --c-violet:      #8B5CF6;   /* Witness Violet    — patternRegularity */
-  --c-indigo:      #6366F1;   /* Flow Indigo        — overallCoherence  */
-  --c-gold:        #F59E0B;   /* Sacred Gold        — lightQuantaDensity */
-  --c-emerald:     #10B981;   /* Coherence Emerald  — bodySymmetry      */
-  --c-void:        #09090b;   /* Void Black         — bg                */
+  /* ── Signal ──────────────────────────────────────────────────────────── */
+  --signal:        #C5A017;   /* Sacred Gold — live / active state */
+  --signal-rgb:    197, 160, 23;
 
-  /* Radius */
+  /* ── Error/Warning/Success ───────────────────────────────────────────── */
+  --error:         #C65D3B;   /* Terracotta — warm, not clinical red */
+  --success:       #10B5A7;   /* Coherence Emerald */
+  --warning:       #C5A017;   /* Sacred Gold */
+
+  /* ── Kha-Ba-La Gradients ─────────────────────────────────────────────── */
+  /* Kha Arc — Observer: void → violet → indigo (seeing before acting) */
+  --grad-kha:   linear-gradient(135deg, #070B1D 0%, #2D0050 50%, #0B50FB 100%);
+  /* Ba Arc  — Embodiment: emerald → gold (body awakening into purpose) */
+  --grad-ba:    linear-gradient(90deg,  #10B5A7 0%, #C5A017 100%);
+  /* La Arc  — Return: gold → violet → void (activation back to source) */
+  --grad-la:    linear-gradient(135deg, #C5A017 0%, #2D0050 50%, #070B1D 100%);
+
+  /* ── Glow tokens ─────────────────────────────────────────────────────── */
+  --glow-indigo:   0 0 16px rgba(11, 80, 251, 0.5);
+  --glow-gold:     0 0 16px rgba(197, 160, 23, 0.5);
+  --glow-emerald:  0 0 16px rgba(16, 181, 167, 0.5);
+  --glow-violet:   0 0 16px rgba(45, 0, 80, 0.7);
+
+  /* ── Radius ──────────────────────────────────────────────────────────── */
   --r-xs:  4px;
   --r-sm:  6px;
   --r-md:  10px;
