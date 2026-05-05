@@ -202,3 +202,67 @@ mismatched rows.
 | Logs (Rust) | tag `events_forward` or `subscription activated` / `subscription cancelled` |
 | Logs (Next.js) | tag `[dodo-webhook]` |
 | Sentry | category `dodo.usage_emit` for outbound failures |
+
+---
+
+## Setup notes (one-time)
+
+### Import the Grafana dashboard
+
+```bash
+# From repo root, with $GRAFANA_URL and $GRAFANA_API_TOKEN set:
+curl -X POST "$GRAFANA_URL/api/dashboards/db" \
+  -H "Authorization: Bearer $GRAFANA_API_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d @monitoring/grafana/dashboards/dodo-billing.json
+```
+
+Or via the UI: Grafana → Dashboards → New → Import → upload
+`monitoring/grafana/dashboards/dodo-billing.json`. Pick the Prometheus
+datasource that scrapes the `noesis-api` `/metrics` endpoint.
+
+### Schedule the reconcile cron
+
+**k8s** — apply the manifest:
+```bash
+kubectl apply -f k8s/base/dodo-reconcile-cronjob.yaml
+kubectl get cronjob dodo-reconcile      # verify
+kubectl get jobs --selector=job=dodo-reconcile   # see runs
+```
+
+**Railway** — add to your project settings → Cron Jobs:
+- **Schedule**: `13 * * * *`  (offset from the top-of-hour stampede)
+- **Command**: `/app/dodo_reconcile`
+- **Environment**: same secrets as the main service (`DODO_PAYMENTS_API_KEY`,
+  `DATABASE_URL`, `DODO_PAYMENTS_ENV`)
+- **Override**: `DODO_RECONCILE_FORCE_CANCEL=false` for the first week.
+
+**Bare host / systemd timer**:
+```ini
+# /etc/systemd/system/dodo-reconcile.timer
+[Unit]
+Description=Dodo reconcile hourly
+[Timer]
+OnCalendar=hourly
+Persistent=true
+[Install]
+WantedBy=timers.target
+
+# /etc/systemd/system/dodo-reconcile.service
+[Unit]
+Description=Dodo subscription reconciliation
+After=network-online.target
+[Service]
+Type=oneshot
+EnvironmentFile=/etc/selemene/dodo.env
+ExecStart=/usr/local/bin/dodo_reconcile
+User=selemene
+```
+
+Check the first few runs with `journalctl -u dodo-reconcile.service`.
+
+### Promote reconcile to auto-correct mode
+
+After **7 days** of clean drift reports, flip the env var so
+`local_only_active` rows are auto-cancelled instead of just reported.
+See `runbooks/dodo-live-flip.md` step 6 for the full procedure.
