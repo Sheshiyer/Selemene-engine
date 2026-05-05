@@ -310,58 +310,120 @@ export default function ViewerPage() {
       {/* Live metrics — shown once MediaPipe starts flowing data */}
       {liveScores && <BiofieldLiveMetrics scores={liveScores} />}
 
-      {/* Witness insight from Noesis biofield engine */}
-      {witnessInsight && (
-        <section style={{
-          padding: "1.6rem 1.8rem",
-          borderRadius: "var(--r-xl)",
-          background: "var(--panel)",
-          border: "1px solid var(--line-faint)",
-          boxShadow: "inset 0 1px 0 rgba(255,255,255,0.04)",
-          display: "flex",
-          flexDirection: "column",
-          gap: "1rem",
-        }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>
-            <span style={{
-              width: 6, height: 6, borderRadius: "50%",
-              background: "var(--signal)",
-              boxShadow: "0 0 8px rgba(255,179,71,0.5)",
-            }} />
-            <p style={{ margin: 0, fontSize: "0.7rem", fontWeight: 600, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--muted)" }}>
-              Witness insight
-            </p>
-          </div>
-
-          {witnessInsight.witness_prompt && (
-            <p style={{
-              margin: 0,
-              fontSize: "1.1rem",
-              lineHeight: 1.65,
-              fontStyle: "italic",
-              color: "var(--text-2)",
-              borderLeft: "2px solid var(--accent-border)",
-              paddingLeft: "1rem",
-            }}>
-              &ldquo;{witnessInsight.witness_prompt}&rdquo;
-            </p>
-          )}
-
-          {witnessInsight.consciousness_level !== undefined && (
-            <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
-              <span style={{ fontSize: "0.7rem", fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--muted)" }}>
-                Consciousness level
-              </span>
-              <span style={{
-                fontSize: "1.4rem", fontWeight: 700, letterSpacing: "-0.04em",
-                color: "var(--accent)",
-              }}>
-                {witnessInsight.consciousness_level}
-              </span>
+      {/* Witness insight — Dyad perspectives (Aletheios + Pichet) */}
+      {witnessInsight && (() => {
+        // The Dyad witness agents return their voices inside result.witness_layer.
+        const wl = witnessInsight.result?.witness_layer as {
+          aletheios?: { perspective?: string };
+          pichet?: { perspective?: string };
+          synthesis?: string;
+          witness_question?: string;
+        } | undefined;
+        const aletheios = wl?.aletheios?.perspective;
+        const pichet = wl?.pichet?.perspective;
+        const synthesis = wl?.synthesis;
+        // Fallback to legacy witness_prompt if Dyad layer isn't populated yet.
+        const fallback = witnessInsight.witness_prompt;
+        const hasDyad = aletheios || pichet || synthesis;
+        if (!hasDyad && !fallback) return null;
+        return (
+          <section style={{
+            padding: "1.6rem 1.8rem",
+            borderRadius: "var(--r-xl)",
+            background: "var(--panel)",
+            border: "1px solid var(--line-faint)",
+            boxShadow: "inset 0 1px 0 rgba(255,255,255,0.04)",
+            display: "flex",
+            flexDirection: "column",
+            gap: "1.2rem",
+          }}>
+            {/* Header */}
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>
+                <span style={{
+                  width: 6, height: 6, borderRadius: "50%",
+                  background: "var(--signal)",
+                  boxShadow: "0 0 8px rgba(255,179,71,0.5)",
+                }} />
+                <p style={{ margin: 0, fontSize: "0.7rem", fontWeight: 600, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--muted)" }}>
+                  Witness Dyad
+                </p>
+              </div>
+              {witnessInsight.consciousness_level !== undefined && (
+                <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                  <span style={{ fontSize: "0.65rem", fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--muted)" }}>
+                    Level
+                  </span>
+                  <span style={{ fontSize: "1.1rem", fontWeight: 700, letterSpacing: "-0.04em", color: "var(--accent)" }}>
+                    {witnessInsight.consciousness_level}
+                  </span>
+                </div>
+              )}
             </div>
-          )}
-        </section>
-      )}
+
+            {hasDyad ? (
+              <>
+                {/* Aletheios voice */}
+                {aletheios && (
+                  <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
+                    <p style={{ margin: 0, fontSize: "0.62rem", fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--muted)", opacity: 0.7 }}>
+                      Aletheios
+                    </p>
+                    <p style={{
+                      margin: 0, fontSize: "0.97rem", lineHeight: 1.6,
+                      color: "var(--text-2)",
+                      borderLeft: "2px solid var(--accent-border)",
+                      paddingLeft: "0.9rem",
+                    }}>
+                      {aletheios}
+                    </p>
+                  </div>
+                )}
+
+                {/* Pichet voice */}
+                {pichet && (
+                  <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
+                    <p style={{ margin: 0, fontSize: "0.62rem", fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--muted)", opacity: 0.7 }}>
+                      Pichet
+                    </p>
+                    <p style={{
+                      margin: 0, fontSize: "0.97rem", lineHeight: 1.6,
+                      color: "var(--text-2)",
+                      borderLeft: "2px solid rgba(180,120,255,0.5)",
+                      paddingLeft: "0.9rem",
+                    }}>
+                      {pichet}
+                    </p>
+                  </div>
+                )}
+
+                {/* Synthesis */}
+                {synthesis && (
+                  <p style={{
+                    margin: 0, fontSize: "0.9rem", lineHeight: 1.6,
+                    fontStyle: "italic", color: "var(--text-2)",
+                    opacity: 0.8,
+                    paddingTop: "0.4rem",
+                    borderTop: "1px solid var(--line-faint)",
+                  }}>
+                    {synthesis}
+                  </p>
+                )}
+              </>
+            ) : (
+              /* Legacy fallback — template prompt while Dyad warms up */
+              <p style={{
+                margin: 0, fontSize: "1.05rem", lineHeight: 1.65,
+                fontStyle: "italic", color: "var(--text-2)",
+                borderLeft: "2px solid var(--accent-border)",
+                paddingLeft: "1rem",
+              }}>
+                &ldquo;{fallback}&rdquo;
+              </p>
+            )}
+          </section>
+        );
+      })()}
 
       {/* Session row — compact single strip */}
       <section style={{

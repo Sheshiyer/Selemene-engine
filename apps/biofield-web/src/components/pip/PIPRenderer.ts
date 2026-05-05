@@ -169,8 +169,9 @@ void main() {
   vec3 videoCol = texture(u_video, uv).rgb;
 
   // Noise coordinate: spatial XY + video RGB bends it (30%) + time animates Z.
+  // Use uv (top-down, matches reference vUV) so noise space aligns with video space.
   float scale     = 1.0 / max(PERIOD, 0.0001);
-  vec3 spatialCoord = vec3(v_texCoord * scale, u_time * 0.1);
+  vec3 spatialCoord = vec3(uv * scale, u_time * 0.1);
   vec3 videoCoord   = videoCol * scale * 2.0;
   vec3 noiseCoord   = mix(spatialCoord, videoCoord, VIDEO_INF)
                     + vec3(0.0, 0.0, u_time * 0.1);
@@ -190,7 +191,8 @@ void main() {
 
   // Segmentation mask: person pixels = full composite, background = 50%.
   // Before mask loads (maskStrength=0) the full composite shows everywhere.
-  float personConf   = texture(u_mask, v_texCoord).r;
+  // Use uv to match video orientation (top-down).
+  float personConf   = texture(u_mask, uv).r;
   float bgAlpha      = mix(1.0, 0.5, u_maskStrength);
   float pixelAlpha   = mix(bgAlpha, 1.0, personConf * u_maskStrength);
   vec3 outCol = mix(videoCol, composite, pixelAlpha);
