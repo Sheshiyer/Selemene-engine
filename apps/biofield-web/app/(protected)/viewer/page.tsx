@@ -424,12 +424,14 @@ export default function ViewerPage() {
 
         {/* ── COSMOGRAM — sacred geometry biofield display ── */}
         <div style={{
-          flex: "0 0 56dvh",
-          padding: "0.6rem 0.85rem 0.4rem",
-          borderBottom: "1px solid rgba(11,80,251,0.1)",
+          flex: "1 1 0",
+          minHeight: "42dvh",
+          maxHeight: "72dvh",
+          padding: "0.5rem 0.5rem 0.3rem",
           overflow: "hidden",
           display: "flex",
-          alignItems: "stretch",
+          alignItems: "center",
+          justifyContent: "center",
         }}>
           <BiofieldCosmogram
             scores={liveScores ?? {
