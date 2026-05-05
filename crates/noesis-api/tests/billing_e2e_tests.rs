@@ -199,6 +199,10 @@ async fn post_envelope(
     (status, parsed)
 }
 
+fn fresh_timestamp() -> String {
+    chrono::Utc::now().timestamp().to_string()
+}
+
 fn build_subscription_active_envelope(
     webhook_id: &str,
     user_id: Uuid,
@@ -208,7 +212,7 @@ fn build_subscription_active_envelope(
 ) -> Value {
     json!({
         "webhook_id": webhook_id,
-        "webhook_timestamp": "1714867200",
+        "webhook_timestamp": fresh_timestamp(),
         "event_type": "subscription.active",
         "payload": {
             "type": "subscription.active",
@@ -331,7 +335,7 @@ async fn webhook_subscription_cancelled_immediate_downgrades_tier() {
     let cancel_webhook_id = format!("msg_cancel_{}", Uuid::new_v4());
     let cancel_envelope = json!({
         "webhook_id": cancel_webhook_id,
-        "webhook_timestamp": "1714867300",
+        "webhook_timestamp": fresh_timestamp(),
         "event_type": "subscription.cancelled",
         "payload": {
             "type": "subscription.cancelled",

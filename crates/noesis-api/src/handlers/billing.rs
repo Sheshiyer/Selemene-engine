@@ -25,6 +25,12 @@ use crate::AppState;
 
 const SHARED_SECRET_HEADER: &str = "x-forward-secret";
 
+/// Maximum age (seconds) accepted for webhook_timestamp before we reject as
+/// stale. Mirrors the Standard Webhooks library default. Defense-in-depth on
+/// top of Next.js's signature verification — anyone replaying old payloads
+/// to /internal/billing/events with a leaked forward secret hits this gate.
+const WEBHOOK_MAX_AGE_SECS: i64 = 300;
+
 pub async fn events_forward(
     State(state): State<AppState>,
     headers: HeaderMap,
@@ -32,7 +38,25 @@ pub async fn events_forward(
 ) -> impl IntoResponse {
     // -- 1. Auth (shared secret) --
     if !shared_secret_ok(&headers) {
+        noesis_metrics::record_dodo_webhook("unknown", "unauthorized");
         return (StatusCode::UNAUTHORIZED, "forbidden").into_response();
+    }
+
+    // -- 2. Freshness — reject replayed/old envelopes --
+    if let Err(err_msg) = validate_timestamp_freshness(&envelope.webhook_timestamp) {
+        tracing::warn!(
+            webhook_id = %envelope.webhook_id,
+            timestamp = %envelope.webhook_timestamp,
+            error = %err_msg,
+            "rejecting stale or unparseable webhook timestamp"
+        );
+        let event_type_label = serde_json::to_value(envelope.event_type)
+            .ok()
+            .and_then(|v| v.as_str().map(String::from))
+            .unwrap_or_else(|| "unknown".to_string());
+        noesis_metrics::record_dodo_webhook(&event_type_label, "stale");
+        return (StatusCode::BAD_REQUEST, format!("stale timestamp: {}", err_msg))
+            .into_response();
     }
 
     let Some(repo) = state.billing_repository.clone() else {
@@ -56,6 +80,7 @@ pub async fn events_forward(
                 event_type = %event_type_str,
                 "duplicate webhook delivery — already processed"
             );
+            noesis_metrics::record_dodo_webhook(&event_type_str, "dedup");
             return (StatusCode::OK, Json(BillingForwardResponse::Dedup)).into_response();
         }
         Ok(true) => {
@@ -104,8 +129,12 @@ pub async fn events_forward(
     };
 
     match result {
-        Ok(()) => (StatusCode::OK, Json(BillingForwardResponse::Ok)).into_response(),
+        Ok(()) => {
+            noesis_metrics::record_dodo_webhook(&event_type_str, "ok");
+            (StatusCode::OK, Json(BillingForwardResponse::Ok)).into_response()
+        }
         Err(HandlerError::MissingField(path)) => {
+            noesis_metrics::record_dodo_webhook(&event_type_str, "bad_request");
             tracing::warn!(path = path, "missing field in webhook payload");
             (StatusCode::UNPROCESSABLE_ENTITY, format!("missing field: {}", path)).into_response()
         }
@@ -135,6 +164,25 @@ pub async fn events_forward(
 // ---------------------------------------------------------------------------
 // Auth
 // ---------------------------------------------------------------------------
+
+/// Validates that `webhook_timestamp` (Standard Webhooks unix-seconds string)
+/// is within `WEBHOOK_MAX_AGE_SECS` of now. Accepts mild future skew (+30s)
+/// to tolerate clock drift between Dodo and our servers. Returns Err with
+/// a short human reason on failure.
+fn validate_timestamp_freshness(ts: &str) -> Result<(), String> {
+    let parsed: i64 = ts
+        .parse()
+        .map_err(|_| format!("not a unix-seconds integer ('{}')", ts))?;
+    let now = chrono::Utc::now().timestamp();
+    let age = now - parsed;
+    if age > WEBHOOK_MAX_AGE_SECS {
+        return Err(format!("{}s old (max {}s)", age, WEBHOOK_MAX_AGE_SECS));
+    }
+    if age < -30 {
+        return Err(format!("{}s in future — clock skew suspected", -age));
+    }
+    Ok(())
+}
 
 fn shared_secret_ok(headers: &HeaderMap) -> bool {
     let provided = headers
@@ -931,6 +979,39 @@ mod tests {
     fn extract_selemene_user_id_rejects_non_uuid() {
         let p = json!({"data": {"metadata": {"selemene_user_id": "not-a-uuid"}}});
         assert_eq!(extract_selemene_user_id(&p), None);
+    }
+
+    #[test]
+    fn timestamp_freshness_accepts_now() {
+        let now = chrono::Utc::now().timestamp().to_string();
+        assert!(validate_timestamp_freshness(&now).is_ok());
+    }
+
+    #[test]
+    fn timestamp_freshness_rejects_old() {
+        let old = (chrono::Utc::now().timestamp() - WEBHOOK_MAX_AGE_SECS - 60).to_string();
+        let err = validate_timestamp_freshness(&old).unwrap_err();
+        assert!(err.contains("old"), "expected 'old' in error: {}", err);
+    }
+
+    #[test]
+    fn timestamp_freshness_rejects_far_future() {
+        let future = (chrono::Utc::now().timestamp() + 3600).to_string();
+        let err = validate_timestamp_freshness(&future).unwrap_err();
+        assert!(err.contains("future"), "expected 'future' in error: {}", err);
+    }
+
+    #[test]
+    fn timestamp_freshness_tolerates_small_skew() {
+        // +20s in future — within ±30s tolerance band
+        let near_future = (chrono::Utc::now().timestamp() + 20).to_string();
+        assert!(validate_timestamp_freshness(&near_future).is_ok());
+    }
+
+    #[test]
+    fn timestamp_freshness_rejects_garbage() {
+        assert!(validate_timestamp_freshness("not-a-number").is_err());
+        assert!(validate_timestamp_freshness("").is_err());
     }
 
     #[test]

@@ -1919,6 +1919,7 @@ async fn enforce_free_tier_quota(
     match repo.get_monthly_engine_count(user_uuid).await {
         Ok(count) if count >= FREE_TIER_MONTHLY_LIMIT => {
             billing::emit_quota_exceeded(&user.user_id, &user.tier);
+            noesis_metrics::record_dodo_quota_exceeded(&user.tier);
             Err(ErrorMapper::response(
                 StatusCode::PAYMENT_REQUIRED,
                 "QUOTA_EXCEEDED",

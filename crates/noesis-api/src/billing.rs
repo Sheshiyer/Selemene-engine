@@ -291,25 +291,46 @@ impl BillingEventEmitter for DodoWebhookEmitter {
                     // Free tier — no customer ID yet. Quota gate handles
                     // billing-side enforcement; usage just isn't metered.
                     tracing::trace!(user_id = %user_id, "usage emit skipped: no dodo_customer_id");
+                    noesis_metrics::record_dodo_usage_emit("skipped");
                     return;
                 }
                 Err(e) => {
                     tracing::error!(error = %e, "usage emit: dodo_customer_id lookup failed");
+                    noesis_metrics::record_dodo_usage_emit("failed");
                     return;
                 }
             };
 
-            if let Err(detail) = emitter
+            match emitter
                 .ingest_usage_event(&dodo_customer_id, &user_id, &engine_id, &tier)
                 .await
             {
-                tracing::error!(
-                    user_id = %user_id,
-                    engine_id = %engine_id,
-                    error = %detail,
-                    "dodo usage ingest failed after retries"
-                );
-                // T25 wires Sentry + metrics counter here.
+                Ok(()) => {
+                    noesis_metrics::record_dodo_usage_emit("success");
+                }
+                Err(detail) => {
+                    tracing::error!(
+                        user_id = %user_id,
+                        engine_id = %engine_id,
+                        error = %detail,
+                        "dodo usage ingest failed after retries"
+                    );
+                    noesis_metrics::record_dodo_usage_emit("failed");
+                    // Sentry breadcrumb so this surfaces in error tracking.
+                    sentry::add_breadcrumb(sentry::Breadcrumb {
+                        category: Some("dodo.usage_emit".into()),
+                        level: sentry::Level::Error,
+                        message: Some(format!("dodo usage ingest failed: {}", detail)),
+                        data: {
+                            let mut m = std::collections::BTreeMap::new();
+                            m.insert("user_id".into(), user_id.clone().into());
+                            m.insert("engine_id".into(), engine_id.clone().into());
+                            m.insert("tier".into(), tier.clone().into());
+                            m
+                        },
+                        ..Default::default()
+                    });
+                }
             }
         });
     }

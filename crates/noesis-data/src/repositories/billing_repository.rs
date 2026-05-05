@@ -328,6 +328,56 @@ impl BillingRepository {
         .await
     }
 
+    /// List provider_subscription_ids for all currently-active rows owned by
+    /// `provider`. Used by the reconciliation cron to diff against the
+    /// authoritative side (Dodo) and detect drift.
+    pub async fn list_active_provider_subscription_ids(
+        &self,
+        provider: &str,
+    ) -> Result<Vec<String>, Error> {
+        let rows: Vec<(String,)> = sqlx::query_as(
+            r#"
+            SELECT provider_subscription_id
+            FROM billing_subscriptions
+            WHERE provider = $1
+              AND status IN ('trialing', 'active', 'past_due')
+              AND canceled_at IS NULL
+              AND provider_subscription_id IS NOT NULL
+            "#,
+        )
+        .bind(provider)
+        .fetch_all(&self.pool)
+        .await?;
+        Ok(rows.into_iter().map(|(s,)| s).collect())
+    }
+
+    /// Force a subscription identified by provider_subscription_id into the
+    /// canceled state. Used by reconciliation when Dodo reports the row as
+    /// canceled but our local state still says active.
+    pub async fn force_cancel_subscription(
+        &self,
+        provider_subscription_id: &str,
+    ) -> Result<Option<BillingSubscription>, Error> {
+        sqlx::query_as::<_, BillingSubscription>(
+            r#"
+            UPDATE billing_subscriptions
+            SET status = 'canceled',
+                canceled_at = COALESCE(canceled_at, NOW()),
+                cancel_at_period_end = false,
+                updated_at = NOW()
+            WHERE provider = $2 AND provider_subscription_id = $1
+            RETURNING id, user_id, plan_id, provider, provider_customer_id,
+                      provider_subscription_id, status, cancel_at_period_end,
+                      current_period_start, current_period_end, canceled_at,
+                      created_at, updated_at, metadata
+            "#,
+        )
+        .bind(provider_subscription_id)
+        .bind(PROVIDER_DODO)
+        .fetch_optional(&self.pool)
+        .await
+    }
+
     /// Push a subscription into past_due (renewal failed, in dunning window).
     pub async fn set_subscription_past_due(
         &self,
