@@ -191,17 +191,17 @@ fn engines_present(ctx: &WitnessContext) -> Vec<String> {
     out
 }
 
-/// Primary entry point — calls enterprise LLM to produce a full Witness Dyad.
-/// Falls back to `None` if `OPENAI_API_KEY` is unset (caller should use rule-based fallback).
-pub async fn interpret_with_llm(ctx: &WitnessContext) -> Option<WitnessDyadLlm> {
-    let client = LlmClient::from_env()?;
+/// Primary entry point — calls tier-appropriate LLM (NVIDIA NIM or OpenRouter) to produce a full Witness Dyad.
+/// Falls back to `None` if no API key is configured (caller should use rule-based fallback).
+pub async fn interpret_with_llm(ctx: &WitnessContext, tier: &str) -> Option<WitnessDyadLlm> {
+    let client = LlmClient::for_tier(tier)?;
     let user_msg = build_context_message(ctx);
     let engines_used = engines_present(ctx);
 
-    // Fire Aletheios + Pichet in parallel
+    // Fire Aletheios + Pichet in parallel, each using their tier-mapped model
     let (aletheios_res, pichet_res) = tokio::join!(
-        client.complete(ALETHEIOS_SYSTEM, &user_msg, 320),
-        client.complete(PICHET_SYSTEM, &user_msg, 320),
+        client.complete_for_role("aletheios", ALETHEIOS_SYSTEM, &user_msg),
+        client.complete_for_role("pichet", PICHET_SYSTEM, &user_msg),
     );
 
     let aletheios = match aletheios_res {
@@ -224,11 +224,10 @@ pub async fn interpret_with_llm(ctx: &WitnessContext) -> Option<WitnessDyadLlm> 
         "{}\n\n## Aletheios perspective\n{}\n\n## Pichet perspective\n{}",
         user_msg, aletheios, pichet
     );
-    let synthesis_raw = match client.complete(SYNTHESIS_SYSTEM, &synthesis_user, 200).await {
+    let synthesis_raw = match client.complete_for_role("synthesis", SYNTHESIS_SYSTEM, &synthesis_user).await {
         Ok(t) => t,
         Err(e) => {
             tracing::warn!("[witness-llm] synthesis failed: {e}");
-            // Still return partial result with empty synthesis
             return Some(WitnessDyadLlm {
                 aletheios,
                 pichet,
@@ -239,7 +238,6 @@ pub async fn interpret_with_llm(ctx: &WitnessContext) -> Option<WitnessDyadLlm> 
         }
     };
 
-    // Parse synthesis JSON
     let (synthesis, witness_question) = parse_synthesis_json(&synthesis_raw);
 
     Some(WitnessDyadLlm {

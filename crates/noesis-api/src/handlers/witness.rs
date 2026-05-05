@@ -117,7 +117,7 @@ pub async fn interpret(
     };
 
     // ── LLM interpretation (with rule-based fallback) ─────────────────────────
-    if let Some(llm_result) = interpret_with_llm(&ctx).await {
+    if let Some(llm_result) = interpret_with_llm(&ctx, &user.tier).await {
         return Ok(Json(WitnessInterpretResponse {
             aletheios: llm_result.aletheios,
             pichet: llm_result.pichet,
