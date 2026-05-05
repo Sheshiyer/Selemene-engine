@@ -19,7 +19,7 @@ import {
 import { createBiofieldClient, createNoesisClient } from "@/lib/api";
 import { useRouter } from "next/navigation";
 import { PIPViewerPanel } from "@/components/pip/PIPViewerPanel";
-import { BiofieldLiveMetrics } from "@/components/BiofieldLiveMetrics";
+import { BiofieldCosmogram } from "@/components/BiofieldCosmogram";
 import type { CompositeScores } from "@/components/pip/types";
 
 // Interval at which live metrics are posted to the Noesis biofield engine.
@@ -341,48 +341,24 @@ export default function ViewerPage() {
         overflow: "hidden",
       }}>
 
-        {/* ── METRICS — bioluminescent field panel ── */}
+        {/* ── COSMOGRAM — geometric biofield display ── */}
         <div style={{
           flex: "0 0 auto",
-          padding: "1rem 1rem 0.75rem",
+          padding: "0.85rem 1rem 0.7rem",
           borderBottom: "1px solid rgba(11,80,251,0.1)",
+          maxHeight: "54dvh",
+          overflowY: "hidden",
         }}>
-          {liveScores ? (
-            <BiofieldLiveMetrics scores={liveScores} />
-          ) : (
-            /* Idle placeholder — calibrating state */
-            <div style={{
-              padding: "1.2rem 1.1rem",
-              borderRadius: "var(--r-lg)",
-              background: "linear-gradient(160deg, rgba(45,0,80,0.15) 0%, rgba(11,80,251,0.04) 100%)",
-              border: "1px solid rgba(11,80,251,0.12)",
-              display: "flex",
-              flexDirection: "column",
-              gap: "0.8rem",
-            }}>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
-                  <span style={{ width: 5, height: 5, borderRadius: "50%", background: "rgba(240,237,227,0.2)", animation: "pulse-dot 2s ease-in-out infinite" }} />
-                  <p style={{ margin: 0, fontFamily: "var(--font-display)", fontSize: "0.62rem", fontWeight: 700, letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--muted)" }}>
-                    Live field metrics
-                  </p>
-                </div>
-                <span style={{ fontFamily: "var(--font-display)", fontSize: "0.55rem", fontWeight: 600, letterSpacing: "0.1em", color: "var(--muted)", opacity: 0.5, textTransform: "uppercase" }}>Awaiting</span>
-              </div>
-              {[...Array(5)].map((_, i) => (
-                <div key={i} style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-                  <div style={{ display: "flex", justifyContent: "space-between" }}>
-                    <div style={{ width: `${45 + i * 12}px`, height: 7, borderRadius: 4, background: "rgba(11,80,251,0.08)", animation: "pulse-dot 1.8s ease-in-out infinite", animationDelay: `${i * 0.15}s` }} />
-                    <div style={{ width: 28, height: 7, borderRadius: 4, background: "rgba(11,80,251,0.06)" }} />
-                  </div>
-                  <div style={{ height: 2, borderRadius: 9999, background: "rgba(11,80,251,0.06)" }} />
-                </div>
-              ))}
-              <p style={{ margin: 0, fontFamily: "var(--font-body)", fontSize: "0.7rem", color: "var(--muted)", textAlign: "center", letterSpacing: "0.02em" }}>
-                Start camera to stream biofield data
-              </p>
-            </div>
-          )}
+          <BiofieldCosmogram
+            scores={liveScores ?? {
+              lightQuantaDensity: 0,
+              normalizedArea: 0,
+              bodySymmetry: 0.5,
+              patternRegularity: 0.5,
+              overallCoherence: 0,
+            }}
+            engineResult={witnessInsight?.result as Record<string, unknown> | null}
+          />
         </div>
 
         {/* ── WITNESS DYAD — ritual portal section ── */}
@@ -440,25 +416,28 @@ export default function ViewerPage() {
                 {aletheios && (
                   <div style={{
                     display: "flex", flexDirection: "column", gap: "0.35rem",
-                    padding: "0.75rem 0.85rem",
+                    padding: "0.65rem 0.85rem",
                     borderRadius: "var(--r-md)",
-                    background: "rgba(11,80,251,0.05)",
-                    border: "1px solid rgba(11,80,251,0.14)",
+                    background: "linear-gradient(135deg, rgba(11,80,251,0.06) 0%, rgba(7,11,29,0) 100%)",
+                    border: "1px solid rgba(11,80,251,0.18)",
                   }}>
-                    <p style={{
-                      margin: 0,
-                      fontFamily: "var(--font-display)",
-                      fontSize: "0.56rem", fontWeight: 700,
-                      letterSpacing: "0.18em", textTransform: "uppercase",
-                      color: "var(--c-indigo)",
-                      textShadow: "0 0 10px rgba(11,80,251,0.5)",
-                    }}>
-                      Aletheios · Flow
-                    </p>
+                    <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                      <span style={{ width: 3, height: 12, borderRadius: 2, background: "var(--c-indigo)", boxShadow: "0 0 6px rgba(11,80,251,0.6)", flexShrink: 0 }} />
+                      <p style={{
+                        margin: 0,
+                        fontFamily: "var(--font-display)",
+                        fontSize: "0.54rem", fontWeight: 700,
+                        letterSpacing: "0.2em", textTransform: "uppercase",
+                        color: "var(--c-indigo)",
+                        textShadow: "0 0 10px rgba(11,80,251,0.5)",
+                      }}>
+                        Aletheios · Left Pillar
+                      </p>
+                    </div>
                     <p style={{
                       margin: 0,
                       fontFamily: "var(--font-body)",
-                      fontSize: "0.86rem", lineHeight: 1.7,
+                      fontSize: "0.82rem", lineHeight: 1.72,
                       color: "var(--text-2)",
                     }}>
                       {aletheios}
@@ -468,25 +447,28 @@ export default function ViewerPage() {
                 {pichet && (
                   <div style={{
                     display: "flex", flexDirection: "column", gap: "0.35rem",
-                    padding: "0.75rem 0.85rem",
+                    padding: "0.65rem 0.85rem",
                     borderRadius: "var(--r-md)",
-                    background: "rgba(45,0,80,0.15)",
-                    border: "1px solid rgba(45,0,80,0.35)",
+                    background: "linear-gradient(135deg, rgba(197,160,23,0.05) 0%, rgba(7,11,29,0) 100%)",
+                    border: "1px solid rgba(197,160,23,0.18)",
                   }}>
-                    <p style={{
-                      margin: 0,
-                      fontFamily: "var(--font-display)",
-                      fontSize: "0.56rem", fontWeight: 700,
-                      letterSpacing: "0.18em", textTransform: "uppercase",
-                      color: "rgba(180,120,255,0.9)",
-                      textShadow: "0 0 10px rgba(45,0,80,0.8)",
-                    }}>
-                      Pichet · Witness
-                    </p>
+                    <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                      <span style={{ width: 3, height: 12, borderRadius: 2, background: "var(--c-gold)", boxShadow: "0 0 6px rgba(197,160,23,0.6)", flexShrink: 0 }} />
+                      <p style={{
+                        margin: 0,
+                        fontFamily: "var(--font-display)",
+                        fontSize: "0.54rem", fontWeight: 700,
+                        letterSpacing: "0.2em", textTransform: "uppercase",
+                        color: "var(--c-gold)",
+                        textShadow: "0 0 10px rgba(197,160,23,0.5)",
+                      }}>
+                        Pichet · Right Pillar
+                      </p>
+                    </div>
                     <p style={{
                       margin: 0,
                       fontFamily: "var(--font-body)",
-                      fontSize: "0.86rem", lineHeight: 1.7,
+                      fontSize: "0.82rem", lineHeight: 1.72,
                       color: "var(--text-2)",
                     }}>
                       {pichet}

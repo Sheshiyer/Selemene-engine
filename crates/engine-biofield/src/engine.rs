@@ -17,7 +17,7 @@ use crate::mock::{generate_metrics_for_user, generate_mock_metrics};
 use crate::models::{BiofieldAnalysis, BiofieldMetrics};
 use crate::vedic::{generate_vedic_witness_prompt, VedicAnalysisResult, VedicBiofieldAnalyzer};
 use crate::wisdom::{get_chakra_wisdom, get_metric_interpretation};
-use crate::witness::generate_witness_prompt;
+use crate::witness::{generate_witness_dyad, generate_witness_prompt};
 
 /// Biofield consciousness engine
 ///
@@ -260,6 +260,16 @@ impl ConsciousnessEngine for BiofieldEngine {
         } else {
             result["computation_mode"] = json!("vedic");
         }
+
+        // ── Witness Dyad injection ───────────────────────────────────────────────
+        // Inject Aletheios / Pichet perspectives directly into result JSON so the
+        // frontend can read result.witness_layer without needing a new EngineOutput field.
+        let dyad = generate_witness_dyad(analysis);
+        result["witness_layer"] = json!({
+            "aletheios": { "perspective": dyad.aletheios },
+            "pichet":    { "perspective": dyad.pichet },
+            "synthesis": dyad.synthesis,
+        });
 
         Ok(EngineOutput {
             engine_id: self.engine_id.clone(),
