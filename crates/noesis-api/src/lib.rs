@@ -724,6 +724,10 @@ pub fn create_router(state: AppState, config: &ApiConfig) -> Router {
         )
         .route("/billing/balance", get(handlers::billing::get_balance))
         .route(
+            "/billing/portal",
+            post(handlers::billing::create_portal_session),
+        )
+        .route(
             "/biofield/sessions",
             post(handlers::biofield::create_session),
         )

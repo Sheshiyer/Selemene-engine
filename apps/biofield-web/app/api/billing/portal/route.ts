@@ -1,9 +1,14 @@
-// Wave 1.3 stub. T19 calls Rust → client.customers.createCustomerPortalSession()
-// and returns the portal URL. Contract: .context/billing/contracts.md § API.
+// Note: portal session creation lives on the Rust API at
+// `POST /api/v1/billing/portal`. The biofield-web client calls it directly
+// via `createPortalSession(token)` from src/lib/api.ts.
 
 export async function POST(): Promise<Response> {
   return Response.json(
-    { status: "stub", note: "portal lands in T19" },
-    { status: 200 },
+    {
+      error: "use Rust API",
+      detail:
+        "portal session creation is at POST /api/v1/billing/portal on noesis-api",
+    },
+    { status: 410 },
   );
 }

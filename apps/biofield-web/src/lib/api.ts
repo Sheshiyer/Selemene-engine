@@ -2,6 +2,8 @@ import { BiofieldClient } from "@selemene/biofield-api-client";
 import { NoesisClient } from "@selemene/noesis-sdk-ts";
 import { buildApiUrl, getApiBaseUrl } from "@/lib/config";
 import type { BiofieldAuthSession } from "@/lib/auth";
+import { emitQuotaExceeded } from "@/lib/quota";
+import type { QuotaExceededDetail } from "@/components/QuotaExceededModal";
 
 export class BiofieldApiError extends Error {
   readonly status: number;
@@ -30,6 +32,14 @@ async function apiRequest<T>(path: string, init?: RequestInit): Promise<T> {
   const text = await response.text();
   const payload = text ? JSON.parse(text) : null;
   if (!response.ok) {
+    // Surface QUOTA_EXCEEDED to the global modal before throwing. The error
+    // still propagates so callers can decide whether to fall through.
+    if (
+      response.status === 402 &&
+      payload?.error_code === "QUOTA_EXCEEDED"
+    ) {
+      emitQuotaExceeded(payload?.details as QuotaExceededDetail | undefined);
+    }
     throw new BiofieldApiError(
       typeof payload?.message === "string" ? payload.message : `Request failed: ${response.status}`,
       response.status,
@@ -74,7 +84,12 @@ export function createNoesisClient(token: string): NoesisClient {
   return new NoesisClient(getApiBaseUrl(), { authToken: token });
 }
 
-import type { PlanCode, CheckoutCreateResponse } from "@selemene/noesis-sdk-ts";
+import type {
+  PlanCode,
+  CheckoutCreateResponse,
+  PortalCreateResponse,
+  BalanceResponse,
+} from "@selemene/noesis-sdk-ts";
 
 /**
  * Creates a Dodo Payments checkout session via the Rust API.
@@ -91,5 +106,34 @@ export async function createCheckoutSession(
       Authorization: `Bearer ${token}`,
     },
     body: JSON.stringify({ plan_code: planCode }),
+  });
+}
+
+/**
+ * Creates a Dodo Payments customer-portal session for the authenticated
+ * user. Returns the hosted portal URL where they manage their subscription,
+ * update payment method, and download invoices.
+ *
+ * Returns 404 if the user has never checked out (no Dodo customer yet).
+ */
+export async function createPortalSession(
+  token: string,
+): Promise<PortalCreateResponse> {
+  return apiRequest<PortalCreateResponse>("/api/v1/billing/portal", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+}
+
+/**
+ * Reads the authenticated user's billing balance: tier, period_end,
+ * Witness Credits remaining. Returns tier_default for free users.
+ */
+export async function getBillingBalance(
+  token: string,
+): Promise<BalanceResponse> {
+  return apiRequest<BalanceResponse>("/api/v1/billing/balance", {
+    method: "GET",
+    headers: { Authorization: `Bearer ${token}` },
   });
 }

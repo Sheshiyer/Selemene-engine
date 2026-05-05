@@ -2,8 +2,8 @@
   "generated_at": "2026-03-13",
   "inventory_scope": "/api/v1",
   "source": "crates/noesis-api/src/lib.rs",
-  "path_count": 62,
-  "route_count": 66,
+  "path_count": 63,
+  "route_count": 67,
   "routes": [
     {
       "path": "/auth/register",
@@ -127,6 +127,17 @@
         {
           "method": "GET",
           "handler": "handlers::billing::get_balance"
+        }
+      ]
+    },
+    {
+      "path": "/billing/portal",
+      "auth_requirement": "bearer_or_api_key",
+      "uses_orchestrator": false,
+      "methods": [
+        {
+          "method": "POST",
+          "handler": "handlers::billing::create_portal_session"
         }
       ]
     },

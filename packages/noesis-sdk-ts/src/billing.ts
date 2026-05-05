@@ -65,12 +65,15 @@ export interface UsageIngestRequest {
 }
 
 // Customer balance proxy — biofield-web → noesis-api → Dodo
+// Mirrors the Rust BalanceResponse exactly (handlers/billing.rs::get_balance)
 export interface BalanceResponse {
   credits_remaining: number;
-  credits_total: number;
-  period_end: string | null; // ISO-8601 or null for free tier
-  overage_enabled: boolean;
+  /** String to preserve Dodo's decimal precision (e.g. "0", "1.50"). */
+  overage_charged: string;
+  /** ISO-8601 from billing_subscriptions.current_period_end, or null. */
+  period_end: string | null;
   tier: PlanCode;
+  cancel_at_period_end: boolean;
   source: "dodo" | "tier_default";
 }
 

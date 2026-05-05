@@ -567,6 +567,113 @@ pub async fn create_checkout_session(
 }
 
 // ---------------------------------------------------------------------------
+// Customer portal — POST /api/v1/billing/portal (JWT-authenticated)
+// ---------------------------------------------------------------------------
+//
+// Returns a Dodo-hosted customer-portal URL where the user can manage
+// their subscription, payment method, and download invoices. Requires
+// the user to have an existing dodo_customer_id (404 otherwise — they
+// have never checked out).
+
+#[derive(Debug, Serialize)]
+pub struct CreatePortalResponse {
+    pub portal_url: String,
+}
+
+pub async fn create_portal_session(
+    State(state): State<AppState>,
+    Extension(auth_user): Extension<AuthUser>,
+) -> impl IntoResponse {
+    let Some(repo) = state.billing_repository.clone() else {
+        return (StatusCode::SERVICE_UNAVAILABLE, "billing not configured").into_response();
+    };
+
+    let api_key = match std::env::var("DODO_PAYMENTS_API_KEY") {
+        Ok(k) if !k.is_empty() => k,
+        _ => {
+            return (
+                StatusCode::SERVICE_UNAVAILABLE,
+                "DODO_PAYMENTS_API_KEY not set",
+            )
+                .into_response();
+        }
+    };
+
+    let user_id = match Uuid::parse_str(&auth_user.user_id) {
+        Ok(u) => u,
+        Err(_) => return (StatusCode::UNAUTHORIZED, "invalid user_id").into_response(),
+    };
+
+    let customer_id = match repo.find_user_dodo_customer_id(user_id).await {
+        Ok(Some(c)) => c,
+        Ok(None) => {
+            return (
+                StatusCode::NOT_FOUND,
+                "no Dodo customer for this user — complete a checkout first",
+            )
+                .into_response();
+        }
+        Err(e) => {
+            tracing::error!(error = %e, "find_user_dodo_customer_id failed");
+            return (StatusCode::INTERNAL_SERVER_ERROR, "db error").into_response();
+        }
+    };
+
+    let dodo_env = std::env::var("DODO_PAYMENTS_ENV").unwrap_or_else(|_| "test".to_string());
+    let api_base = if dodo_env == "live" {
+        "https://live.dodopayments.com"
+    } else {
+        "https://test.dodopayments.com"
+    };
+    let url = format!(
+        "{}/customers/{}/customer-portal/session",
+        api_base, customer_id
+    );
+
+    let client = match reqwest::Client::builder()
+        .timeout(std::time::Duration::from_secs(10))
+        .build()
+    {
+        Ok(c) => c,
+        Err(e) => {
+            tracing::error!(error = %e, "reqwest build failed");
+            return (StatusCode::INTERNAL_SERVER_ERROR, "http client error").into_response();
+        }
+    };
+
+    let resp = match client.post(&url).bearer_auth(&api_key).send().await {
+        Ok(r) => r,
+        Err(e) => {
+            tracing::error!(error = %e, "Dodo portal POST failed");
+            return (StatusCode::BAD_GATEWAY, "upstream unreachable").into_response();
+        }
+    };
+
+    let status = resp.status();
+    let body_text = resp.text().await.unwrap_or_default();
+    if !status.is_success() {
+        tracing::error!(status = %status, body = %body_text, "Dodo portal non-success");
+        return (StatusCode::BAD_GATEWAY, format!("dodo {}: {}", status, body_text))
+            .into_response();
+    }
+
+    let parsed: Value = match serde_json::from_str(&body_text) {
+        Ok(v) => v,
+        Err(_) => return (StatusCode::BAD_GATEWAY, "malformed dodo response").into_response(),
+    };
+    let portal_url = parsed
+        .get("link")
+        .and_then(|v| v.as_str())
+        .map(String::from);
+    let Some(portal_url) = portal_url else {
+        tracing::error!(body = %body_text, "link missing in Dodo portal response");
+        return (StatusCode::BAD_GATEWAY, "no portal link").into_response();
+    };
+
+    (StatusCode::OK, Json(CreatePortalResponse { portal_url })).into_response()
+}
+
+// ---------------------------------------------------------------------------
 // Balance proxy — GET /api/v1/billing/balance (JWT-authenticated)
 // ---------------------------------------------------------------------------
 //
