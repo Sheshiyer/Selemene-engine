@@ -154,6 +154,17 @@ async fn main() -> ExitCode {
     });
     println!("{}", report);
 
+    // Persist the run for the admin dashboard. Failures here are logged
+    // but do not affect exit status — Sentry/Grafana already carry
+    // alerting; this is for the human-readable inspection view only.
+    match repo
+        .record_reconcile_run(force_cancel, report.clone(), None)
+        .await
+    {
+        Ok(id) => tracing::info!(reconcile_run_id = id, "reconcile run recorded"),
+        Err(e) => tracing::warn!(error = %e, "failed to record reconcile run"),
+    }
+
     // Non-zero drift but no operational failure → exit 0 (cron should not
     // fail-loud on every drift; alerting handles that). Reserve non-zero
     // exits for actual operational errors (DB/Dodo unreachable, etc).

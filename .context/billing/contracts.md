@@ -217,3 +217,69 @@ The `metadata.selemene_user_id` is what closes the loop on the inbound
 
 Any deviation from this document during Phase 2 is a contract drift and must
 trigger a re-planning loop, not a silent edit.
+
+---
+
+## §Admin (added 2026-05-06)
+
+Operator-facing dashboard endpoints for the Dodo Payments integration. All
+routes are mounted under `/api/v1/admin/billing/*` and require the standard
+`auth_middleware`. Permission gating is per-endpoint (not group-wide).
+
+### Permission matrix
+
+| Permission | Granted to role | Use |
+|---|---|---|
+| `admin:billing:read` | `billing-admin`, implied by any other `admin:billing:*` perm, or by `admin:*` | All read-only endpoints below |
+| `admin:billing:subscriptions:cancel` | `billing-admin`, `admin:*` | `POST /admin/billing/subscriptions/:id/cancel` |
+| `admin:billing:reconcile:trigger` | `billing-admin`, `admin:*` | `POST /admin/billing/reconcile/run` |
+
+The existing `admin` and `platform-admin` roles do NOT receive billing
+permissions by default; grant the new `billing-admin` role explicitly.
+`platform-admin` retains everything via the `admin:*` wildcard.
+
+### Endpoints
+
+| Method | Path | Permission | Returns |
+|---|---|---|---|
+| GET | `/api/v1/admin/billing/overview` | `admin:billing:read` | `{ status_counts[], free_users, mrr_usd_estimate }` |
+| GET | `/api/v1/admin/billing/subscriptions?status=…&limit=…&offset=…` | `admin:billing:read` | `{ items[], total, limit, offset }` |
+| GET | `/api/v1/admin/billing/subscriptions/:id` | `admin:billing:read` | `{ subscription }` |
+| POST | `/api/v1/admin/billing/subscriptions/:id/cancel` | `admin:billing:subscriptions:cancel` | `{ ok, subscription_id }` |
+| GET | `/api/v1/admin/billing/webhook-events?provider=…&limit=…` | `admin:billing:read` | `{ items[], limit }` |
+| GET | `/api/v1/admin/billing/reconcile/drift` | `admin:billing:read` | `{ latest? }` |
+| POST | `/api/v1/admin/billing/reconcile/run` | `admin:billing:reconcile:trigger` | `{ command, note }` (returns shell one-liner; no in-process spawn) |
+| GET | `/api/v1/admin/billing/plans` | `admin:billing:read` | `{ items[] }` |
+
+### Storage additions
+
+Migration `023_reconcile_runs.sql` adds:
+
+```sql
+CREATE TABLE reconcile_runs (
+  id              BIGSERIAL PRIMARY KEY,
+  started_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  finished_at     TIMESTAMPTZ,
+  force_cancel    BOOLEAN     NOT NULL DEFAULT FALSE,
+  drift_json      JSONB       NOT NULL DEFAULT '{}'::jsonb,
+  error           TEXT
+);
+```
+
+`bin/dodo_reconcile` now writes one row per execution; the admin
+`/reconcile/drift` endpoint reads `ORDER BY started_at DESC LIMIT 1`.
+
+### Out of scope (v1)
+
+- No write surface for `plan_catalog` (change via migration only)
+- No refund triggering (refund via Dodo dashboard)
+- Reconcile trigger is informational only (returns the kubectl/cli command;
+  the bin runs out-of-process under cron infrastructure)
+
+### Frontend surface
+
+Route group: `apps/biofield-web/app/(admin)/billing/*`. Direct client-side
+fetch via `src/lib/admin-api.ts`. The `(admin)/layout.tsx` lazy-fetches
+`/api/v1/admin/session` on first mount and stores the resulting permissions
+on the existing `BiofieldAuthSession`. Pages without billing permissions
+render a Forbidden state.

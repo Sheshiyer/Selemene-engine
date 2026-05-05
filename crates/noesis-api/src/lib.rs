@@ -842,6 +842,39 @@ pub fn create_router(state: AppState, config: &ApiConfig) -> Router {
             "/admin/audit-events/:event_id",
             get(handlers::admin::get_audit_event),
         )
+        // Admin billing dashboard endpoints (read-only except cancel/trigger).
+        .route(
+            "/admin/billing/overview",
+            get(handlers::admin_billing::overview),
+        )
+        .route(
+            "/admin/billing/subscriptions",
+            get(handlers::admin_billing::list_subscriptions),
+        )
+        .route(
+            "/admin/billing/subscriptions/:id",
+            get(handlers::admin_billing::get_subscription),
+        )
+        .route(
+            "/admin/billing/subscriptions/:id/cancel",
+            post(handlers::admin_billing::cancel_subscription),
+        )
+        .route(
+            "/admin/billing/webhook-events",
+            get(handlers::admin_billing::list_webhook_events),
+        )
+        .route(
+            "/admin/billing/reconcile/drift",
+            get(handlers::admin_billing::reconcile_drift),
+        )
+        .route(
+            "/admin/billing/reconcile/run",
+            post(handlers::admin_billing::reconcile_trigger),
+        )
+        .route(
+            "/admin/billing/plans",
+            get(handlers::admin_billing::list_plans),
+        )
         .route("/status", get(status_handler))
         .route("/charts/vedic", post(vedic_chart_handler))
         .route("/engines", get(list_engines_handler))

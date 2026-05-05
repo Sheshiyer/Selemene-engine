@@ -22,6 +22,33 @@ pub struct ActivePlanResolution {
     pub cancel_at_period_end: bool,
 }
 
+/// Aggregate counts surfaced by the admin overview endpoint.
+#[derive(Debug, Clone, Serialize, Deserialize, FromRow)]
+pub struct SubscriptionStatusCount {
+    pub status: String,
+    pub count: i64,
+}
+
+/// One row in the admin webhook-events list.
+#[derive(Debug, Clone, Serialize, Deserialize, FromRow)]
+pub struct ProcessedWebhookEventRow {
+    pub webhook_id: String,
+    pub provider: String,
+    pub event_type: String,
+    pub processed_at: DateTime<Utc>,
+}
+
+/// One row in the admin reconcile-runs list.
+#[derive(Debug, Clone, Serialize, Deserialize, FromRow)]
+pub struct ReconcileRunRow {
+    pub id: i64,
+    pub started_at: DateTime<Utc>,
+    pub finished_at: Option<DateTime<Utc>>,
+    pub force_cancel: bool,
+    pub drift_json: serde_json::Value,
+    pub error: Option<String>,
+}
+
 pub struct BillingRepository {
     pool: PgPool,
 }
@@ -388,6 +415,209 @@ impl BillingRepository {
         .bind(PROVIDER_DODO)
         .fetch_optional(&self.pool)
         .await
+    }
+
+    // -----------------------------------------------------------------------
+    // Admin read-only methods (admin_billing handler)
+    // -----------------------------------------------------------------------
+
+    /// Count subscriptions grouped by status. Powers the admin overview cards.
+    pub async fn count_subscriptions_by_status(
+        &self,
+    ) -> Result<Vec<SubscriptionStatusCount>, Error> {
+        sqlx::query_as::<_, SubscriptionStatusCount>(
+            r#"
+            SELECT status, COUNT(*)::bigint AS count
+            FROM billing_subscriptions
+            WHERE provider = $1
+            GROUP BY status
+            ORDER BY status
+            "#,
+        )
+        .bind(PROVIDER_DODO)
+        .fetch_all(&self.pool)
+        .await
+    }
+
+    /// Count free-tier users (rough denominator for conversion).
+    pub async fn count_free_users(&self) -> Result<i64, Error> {
+        let row: (i64,) =
+            sqlx::query_as(r#"SELECT COUNT(*)::bigint FROM users WHERE tier = 'free'"#)
+                .fetch_one(&self.pool)
+                .await?;
+        Ok(row.0)
+    }
+
+    /// Paginated subscription list with optional status filter.
+    /// Returns (rows, total_matching).
+    pub async fn list_subscriptions_paginated(
+        &self,
+        status_filter: Option<&str>,
+        limit: i64,
+        offset: i64,
+    ) -> Result<(Vec<BillingSubscription>, i64), Error> {
+        let total: (i64,) = match status_filter {
+            Some(s) => sqlx::query_as(
+                r#"SELECT COUNT(*)::bigint FROM billing_subscriptions WHERE provider = $1 AND status = $2"#,
+            )
+            .bind(PROVIDER_DODO)
+            .bind(s)
+            .fetch_one(&self.pool)
+            .await?,
+            None => sqlx::query_as(
+                r#"SELECT COUNT(*)::bigint FROM billing_subscriptions WHERE provider = $1"#,
+            )
+            .bind(PROVIDER_DODO)
+            .fetch_one(&self.pool)
+            .await?,
+        };
+
+        let rows = match status_filter {
+            Some(s) => sqlx::query_as::<_, BillingSubscription>(
+                r#"
+                SELECT id, user_id, plan_id, provider, provider_customer_id,
+                       provider_subscription_id, status, cancel_at_period_end,
+                       current_period_start, current_period_end, canceled_at,
+                       created_at, updated_at, metadata
+                FROM billing_subscriptions
+                WHERE provider = $1 AND status = $2
+                ORDER BY updated_at DESC
+                LIMIT $3 OFFSET $4
+                "#,
+            )
+            .bind(PROVIDER_DODO)
+            .bind(s)
+            .bind(limit)
+            .bind(offset)
+            .fetch_all(&self.pool)
+            .await?,
+            None => sqlx::query_as::<_, BillingSubscription>(
+                r#"
+                SELECT id, user_id, plan_id, provider, provider_customer_id,
+                       provider_subscription_id, status, cancel_at_period_end,
+                       current_period_start, current_period_end, canceled_at,
+                       created_at, updated_at, metadata
+                FROM billing_subscriptions
+                WHERE provider = $1
+                ORDER BY updated_at DESC
+                LIMIT $2 OFFSET $3
+                "#,
+            )
+            .bind(PROVIDER_DODO)
+            .bind(limit)
+            .bind(offset)
+            .fetch_all(&self.pool)
+            .await?,
+        };
+
+        Ok((rows, total.0))
+    }
+
+    /// Single subscription by internal UUID. Returns None if not found.
+    pub async fn find_subscription_by_id(
+        &self,
+        id: Uuid,
+    ) -> Result<Option<BillingSubscription>, Error> {
+        sqlx::query_as::<_, BillingSubscription>(
+            r#"
+            SELECT id, user_id, plan_id, provider, provider_customer_id,
+                   provider_subscription_id, status, cancel_at_period_end,
+                   current_period_start, current_period_end, canceled_at,
+                   created_at, updated_at, metadata
+            FROM billing_subscriptions
+            WHERE id = $1
+            "#,
+        )
+        .bind(id)
+        .fetch_optional(&self.pool)
+        .await
+    }
+
+    /// Most recent processed webhook events (capped). Used by the admin
+    /// webhook-events list view.
+    pub async fn list_processed_webhook_events(
+        &self,
+        provider_filter: Option<&str>,
+        limit: i64,
+    ) -> Result<Vec<ProcessedWebhookEventRow>, Error> {
+        match provider_filter {
+            Some(p) => sqlx::query_as::<_, ProcessedWebhookEventRow>(
+                r#"
+                SELECT webhook_id, provider, event_type, processed_at
+                FROM processed_webhook_events
+                WHERE provider = $1
+                ORDER BY processed_at DESC
+                LIMIT $2
+                "#,
+            )
+            .bind(p)
+            .bind(limit)
+            .fetch_all(&self.pool)
+            .await,
+            None => sqlx::query_as::<_, ProcessedWebhookEventRow>(
+                r#"
+                SELECT webhook_id, provider, event_type, processed_at
+                FROM processed_webhook_events
+                ORDER BY processed_at DESC
+                LIMIT $1
+                "#,
+            )
+            .bind(limit)
+            .fetch_all(&self.pool)
+            .await,
+        }
+    }
+
+    /// All plan_catalog rows for the admin plans view (no filter — there are
+    /// only a handful).
+    pub async fn list_plan_catalog(&self) -> Result<Vec<PlanCatalogEntry>, Error> {
+        sqlx::query_as::<_, PlanCatalogEntry>(
+            r#"
+            SELECT id, code, display_name, description, is_active, metadata,
+                   dodo_product_id, created_at, updated_at
+            FROM plan_catalog
+            ORDER BY display_name
+            "#,
+        )
+        .fetch_all(&self.pool)
+        .await
+    }
+
+    /// Most recent reconcile run (for admin "show drift" view). Returns None
+    /// if the table is empty (cron hasn't run yet on this env).
+    pub async fn latest_reconcile_run(&self) -> Result<Option<ReconcileRunRow>, Error> {
+        sqlx::query_as::<_, ReconcileRunRow>(
+            r#"
+            SELECT id, started_at, finished_at, force_cancel, drift_json, error
+            FROM reconcile_runs
+            ORDER BY started_at DESC
+            LIMIT 1
+            "#,
+        )
+        .fetch_optional(&self.pool)
+        .await
+    }
+
+    /// Insert a new reconcile run (called by the bin's main()).
+    pub async fn record_reconcile_run(
+        &self,
+        force_cancel: bool,
+        drift_json: serde_json::Value,
+        error: Option<&str>,
+    ) -> Result<i64, Error> {
+        let row: (i64,) = sqlx::query_as(
+            r#"
+            INSERT INTO reconcile_runs (started_at, finished_at, force_cancel, drift_json, error)
+            VALUES (NOW(), NOW(), $1, $2, $3)
+            RETURNING id
+            "#,
+        )
+        .bind(force_cancel)
+        .bind(drift_json)
+        .bind(error)
+        .fetch_one(&self.pool)
+        .await?;
+        Ok(row.0)
     }
 
     /// Push a subscription into past_due (renewal failed, in dunning window).
