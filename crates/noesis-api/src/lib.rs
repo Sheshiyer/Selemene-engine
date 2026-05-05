@@ -851,6 +851,7 @@ pub fn create_router(state: AppState, config: &ApiConfig) -> Router {
             post(workflow_execute_handler),
         )
         .route("/workflows/:workflow_id/info", get(workflow_info_handler))
+        .route("/witness/interpret", post(handlers::witness::interpret))
         .route("/readings", get(list_readings_handler))
         .route("/readings/stats", get(readings_stats_handler))
         .route("/readings/:reading_id", get(get_reading_handler))

@@ -17,6 +17,7 @@ import {
   subscribeToActiveSessionId,
 } from "@/lib/session";
 import { createBiofieldClient, createNoesisClient } from "@/lib/api";
+import { buildApiUrl } from "@/lib/config";
 import { useRouter } from "next/navigation";
 import { PIPViewerPanel } from "@/components/pip/PIPViewerPanel";
 import { BiofieldCosmogram } from "@/components/BiofieldCosmogram";
@@ -58,6 +59,25 @@ export default function ViewerPage() {
   const [isUploading, setIsUploading] = useState(false);
   const [witnessInsight, setWitnessInsight] = useState<EngineOutput | null>(null);
 
+  // Structured Witness Dyad from the multi-engine LLM interpretation endpoint.
+  const [witnessDyad, setWitnessDyad] = useState<{
+    aletheios: string;
+    pichet: string;
+    synthesis: string;
+    witness_question: string;
+    engines_used: string[];
+    llm_powered: boolean;
+  } | null>(null);
+
+  // User profile (birth data for engine calculations)
+  const [userBirthData, setUserBirthData] = useState<{
+    birth_date: string | null;
+    birth_time: string | null;
+    birth_location_lat: number | null;
+    birth_location_lng: number | null;
+    timezone: string | null;
+  } | null>(null);
+
   // Track last metrics submission timestamp to rate-limit engine calls.
   const lastMetricsSubmitRef = useRef<number>(0);
 
@@ -66,6 +86,27 @@ export default function ViewerPage() {
       router.replace("/login");
     }
   }, [authSession, router]);
+
+  // Load user profile once to get birth data for multi-engine witness interpretation.
+  useEffect(() => {
+    if (!authSession?.token) return;
+    fetch(buildApiUrl("/api/v1/users/me"), {
+      headers: { Authorization: `Bearer ${authSession.token}` },
+    })
+      .then((r) => r.ok ? r.json() : null)
+      .then((data) => {
+        if (data) {
+          setUserBirthData({
+            birth_date: data.birth_date ?? null,
+            birth_time: data.birth_time ?? null,
+            birth_location_lat: data.birth_location?.lat ?? null,
+            birth_location_lng: data.birth_location?.lng ?? null,
+            timezone: data.timezone ?? null,
+          });
+        }
+      })
+      .catch(() => { /* profile unavailable — witness still works without birth data */ });
+  }, [authSession?.token]);
 
   const client = useMemo(() => {
     if (!authSession) return null;
@@ -277,12 +318,13 @@ export default function ViewerPage() {
     // Always update the live display (no throttle).
     setLiveScores(scores);
 
-    if (!noesisClient) return;
+    if (!noesisClient || !authSession?.token) return;
 
     const now = performance.now();
     if (now - lastMetricsSubmitRef.current < METRICS_SUBMIT_INTERVAL_MS) return;
     lastMetricsSubmitRef.current = now;
 
+    // 1. Biofield engine call (keeps cosmogram data fresh)
     void noesisClient.calculate("biofield", {
       options: {
         source: "pip-live-metrics",
@@ -295,23 +337,62 @@ export default function ViewerPage() {
     }).then((output) => {
       setWitnessInsight(output);
     }).catch((err) => {
-      // Non-blocking: engine errors don't interrupt the live viewer.
       console.warn("[BF1-05.6] biofield engine error:", err instanceof Error ? err.message : err);
     });
-  }, [noesisClient]);
+
+    // 2. Multi-engine LLM witness interpret — uses birth data + all engines
+    const birthData = userBirthData?.birth_date ? {
+      date: userBirthData.birth_date,
+      latitude: userBirthData.birth_location_lat ?? 0,
+      longitude: userBirthData.birth_location_lng ?? 0,
+      timezone: userBirthData.timezone ?? "UTC",
+      ...(userBirthData.birth_time ? { time: userBirthData.birth_time } : {}),
+    } : undefined;
+
+    void fetch(buildApiUrl("/api/v1/witness/interpret"), {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${authSession.token}`,
+      },
+      body: JSON.stringify({
+        birth_data: birthData,
+        live_scores: {
+          energy: scores.lightQuantaDensity,
+          coherence: scores.overallCoherence,
+          symmetry: scores.bodySymmetry,
+          complexity: scores.patternRegularity,
+          regulation: scores.normalizedArea,
+          color_balance: (scores.overallCoherence + scores.bodySymmetry) / 2,
+        },
+        consciousness_level: 0,
+      }),
+    })
+      .then((r) => r.ok ? r.json() : null)
+      .then((dyad) => { if (dyad) setWitnessDyad(dyad); })
+      .catch((err) => {
+        console.warn("[witness-interpret] error:", err instanceof Error ? err.message : err);
+      });
+  }, [noesisClient, authSession?.token, userBirthData]);
 
   const hasActiveSession = currentSession?.status === "active";
 
-  // ── Witness Dyad data ──────────────────────────────────────────────────────
+  // ── Witness Dyad data — prefer LLM result, fall back to rule-based ──────────
+  // witnessDyad = rich multi-engine LLM interpretation (when OPENAI_API_KEY set)
+  // witnessInsight = biofield engine result (always available, rule-based fallback)
   const wl = witnessInsight?.result?.witness_layer as {
     aletheios?: { perspective?: string };
     pichet?: { perspective?: string };
     synthesis?: string;
     witness_question?: string;
   } | undefined;
-  const aletheios = wl?.aletheios?.perspective;
-  const pichet = wl?.pichet?.perspective;
-  const synthesis = wl?.synthesis;
+
+  const aletheios = witnessDyad?.aletheios ?? wl?.aletheios?.perspective;
+  const pichet = witnessDyad?.pichet ?? wl?.pichet?.perspective;
+  const synthesis = witnessDyad?.synthesis ?? wl?.synthesis;
+  const witnessQuestion = witnessDyad?.witness_question ?? wl?.witness_question;
+  const enginesUsed = witnessDyad?.engines_used ?? [];
+  const isLlmPowered = witnessDyad?.llm_powered ?? false;
   const dyadFallback = witnessInsight?.witness_prompt;
   const hasDyad = aletheios || pichet || synthesis;
 
@@ -377,9 +458,9 @@ export default function ViewerPage() {
             <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
               <span style={{
                 width: 5, height: 5, borderRadius: "50%",
-                background: witnessInsight ? "var(--c-gold)" : "rgba(240,237,227,0.15)",
-                boxShadow: witnessInsight ? "0 0 8px rgba(197,160,23,0.6)" : "none",
-                animation: witnessInsight ? "pulse-dot 1.8s ease-in-out infinite" : "none",
+                background: hasDyad ? "var(--c-gold)" : "rgba(240,237,227,0.15)",
+                boxShadow: hasDyad ? "0 0 8px rgba(197,160,23,0.6)" : "none",
+                animation: hasDyad ? "pulse-dot 1.8s ease-in-out infinite" : "none",
                 transition: "all 0.5s ease",
               }} />
               <p style={{
@@ -392,23 +473,36 @@ export default function ViewerPage() {
                 Witness Dyad
               </p>
             </div>
-            {witnessInsight?.consciousness_level !== undefined && (
-              <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              {isLlmPowered && enginesUsed.length > 0 && (
                 <span style={{
-                  fontFamily: "var(--font-display)", fontSize: "0.55rem", fontWeight: 600,
-                  letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--muted)",
+                  fontFamily: "var(--font-mono)", fontSize: "0.5rem",
+                  color: "var(--c-emerald)", letterSpacing: "0.12em",
+                  border: "1px solid rgba(16,181,167,0.3)",
+                  borderRadius: 3, padding: "1px 5px",
+                  textTransform: "uppercase",
                 }}>
-                  Level
+                  {enginesUsed.length} engines · AI
                 </span>
-                <span style={{
-                  fontFamily: "var(--font-mono)", fontSize: "1.05rem", fontWeight: 700,
-                  letterSpacing: "-0.04em", color: "var(--c-indigo)",
-                  textShadow: "0 0 14px rgba(11,80,251,0.6)",
-                }}>
-                  {witnessInsight.consciousness_level}
-                </span>
-              </div>
-            )}
+              )}
+              {witnessInsight?.consciousness_level !== undefined && (
+                <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+                  <span style={{
+                    fontFamily: "var(--font-display)", fontSize: "0.55rem", fontWeight: 600,
+                    letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--muted)",
+                  }}>
+                    Level
+                  </span>
+                  <span style={{
+                    fontFamily: "var(--font-mono)", fontSize: "1.05rem", fontWeight: 700,
+                    letterSpacing: "-0.04em", color: "var(--c-indigo)",
+                    textShadow: "0 0 14px rgba(11,80,251,0.6)",
+                  }}>
+                    {witnessInsight.consciousness_level}
+                  </span>
+                </div>
+              )}
+            </div>
           </div>
 
           {witnessInsight && (hasDyad || dyadFallback) ? (
@@ -489,6 +583,24 @@ export default function ViewerPage() {
                       color: "var(--text-2)", opacity: 0.75,
                     }}>
                       {synthesis}
+                    </p>
+                  </div>
+                )}
+                {witnessQuestion && (
+                  <div style={{
+                    padding: "0.6rem 0.85rem",
+                    borderRadius: "var(--r-md)",
+                    background: "rgba(16,181,167,0.05)",
+                    border: "1px solid rgba(16,181,167,0.18)",
+                    marginTop: "0.25rem",
+                  }}>
+                    <p style={{
+                      margin: 0,
+                      fontFamily: "var(--font-body)",
+                      fontSize: "0.78rem", lineHeight: 1.7,
+                      color: "rgba(16,181,167,0.9)",
+                    }}>
+                      {witnessQuestion}
                     </p>
                   </div>
                 )}

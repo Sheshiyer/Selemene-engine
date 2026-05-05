@@ -8,3 +8,6 @@ description = "Witness Agent prompt injection for self-consciousness development
 noesis-core = { path = "../noesis-core" }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
+reqwest = { version = "0.12", features = ["json"] }
+tokio = { version = "1.40", features = ["full"] }
+tracing = "0.1"
