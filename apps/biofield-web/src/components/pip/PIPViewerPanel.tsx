@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { DEFAULT_PIP_SETTINGS } from "./types";
 import type { CompositeScores } from "./types";
 import { useCamera } from "./useCamera";
@@ -134,229 +134,345 @@ export function PIPViewerPanel({ onCapture, onMetrics, fillHeight }: PIPViewerPa
 
   const c = metrics?.composite;
 
+  // Unified void-field container — same dark field as the right panel
+  const containerStyle: React.CSSProperties = fillHeight
+    ? { position: "relative", display: "flex", flexDirection: "column", height: "100%", width: "100%", background: "#070B1D", overflow: "hidden" }
+    : { position: "relative", display: "flex", flexDirection: "column", background: "#070B1D", borderRadius: 12, overflow: "hidden" };
+
   return (
-    <section
-      className="biofield-panel biofield-form-panel"
-      style={fillHeight ? { display: "flex", flexDirection: "column", height: "100%", padding: 0, gap: 0, borderRadius: 0, border: "none", background: "transparent" } : undefined}
-    >
-      {!fillHeight && <p className="biofield-eyebrow">PIP Viewer</p>}
-      {!fillHeight && (
-        <h2 className="biofield-title" style={{ fontSize: "2rem" }}>
-          Live biofield capture
-        </h2>
-      )}
-
-      {/* Status strip */}
-      <div className="biofield-toolbar" style={{ marginBottom: "0.75rem" }}>
-        <span
-          className={`biofield-status-pill ${glStatus === "ready" ? "biofield-status-pill-good" : glStatus === "error" ? "" : "biofield-status-pill-warn"}`}
-        >
-          {glLabel}
-        </span>
-        <span
-          className={`biofield-status-pill ${mpReady ? "biofield-status-pill-good" : mpError ? "" : "biofield-status-pill-warn"}`}
-          title={mpError ?? undefined}
-        >
-          {mpLabel}
-        </span>
-        <span
-          className={`biofield-status-pill ${panelState === "streaming" ? "biofield-status-pill-good" : panelState === "paused" ? "biofield-status-pill-warn" : ""}`}
-        >
-          Camera: {cameraLabel}
-        </span>
-        <span className="biofield-status-pill">{deviceLabel}</span>
-        {captureCount > 0 && (
-          <span className="biofield-status-pill biofield-status-pill-good">
-            {captureCount} capture{captureCount !== 1 ? "s" : ""}
-          </span>
-        )}
-      </div>
-
-      {/* WebGL2 canvas */}
-      <div
-        style={{
-          position: "relative",
-          width: "100%",
-          ...(fillHeight ? { flex: 1, minHeight: 0 } : { aspectRatio: "4/3" }),
-          background: "rgba(0,0,0,0.4)",
-          borderRadius: fillHeight ? 0 : 12,
-          overflow: "hidden",
-          marginBottom: fillHeight ? 0 : "0.75rem",
-        }}
-      >
+    <section style={containerStyle}>
+      {/* ── Canvas — fills the void field ── */}
+      <div style={{
+        position: "relative",
+        width: "100%",
+        ...(fillHeight ? { flex: 1, minHeight: 0 } : { aspectRatio: "4/3" }),
+        overflow: "hidden",
+      }}>
         <video
           ref={videoRef}
-          autoPlay
-          playsInline
-          muted
+          autoPlay playsInline muted
           style={{ position: "absolute", opacity: 0, pointerEvents: "none", width: 1, height: 1 }}
         />
         <canvas
           ref={canvasRef}
-          style={{
-            display: "block",
-            width: "100%",
-            height: "100%",
-            transition: "box-shadow 0.5s ease",
-            boxShadow: isStreaming && !mpReady
-              ? "inset 0 0 0 2px rgba(124,124,255,0.45)"
-              : "none",
-            animation: isStreaming && !mpReady ? "pulse-canvas-border 1.8s ease-in-out infinite" : "none",
-          }}
+          style={{ display: "block", width: "100%", height: "100%" }}
         />
-        {panelState === "idle" && (
-          <div
-            style={{
-              position: "absolute",
-              inset: 0,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              color: "var(--muted)",
-              fontSize: "0.875rem",
-            }}
-          >
-            Start camera to begin PIP visualisation
-          </div>
-        )}
 
-        {/* Loading overlay while MediaPipe model is initialising (#676) */}
-        {isStreaming && !mpReady && (
-          <div
-            style={{
-              position: "absolute",
-              inset: 0,
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: "0.5rem",
-              background: "rgba(0,0,0,0.55)",
-              color: "rgba(180,180,255,0.9)",
-              fontSize: "0.8rem",
-              pointerEvents: "none",
-            }}
-          >
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-              <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83">
-                <animateTransform attributeName="transform" type="rotate" from="0 12 12" to="360 12 12" dur="1.2s" repeatCount="indefinite" />
-              </path>
-            </svg>
-            Calibrating biofield…
-          </div>
-        )}
+        {/* ── Idle state: sacred geometry placeholder ── */}
+        {panelState === "idle" && <IdleGeometry />}
 
-        {/* Live metrics overlay */}
+        {/* ── Calibrating overlay: spinning geometry ring ── */}
+        {isStreaming && !mpReady && <CalibrationOverlay />}
+
+        {/* ── System status — 3 floating geometry dots, top-right ── */}
+        <div style={{
+          position: "absolute", top: 14, right: 14,
+          display: "flex", alignItems: "center", gap: 5,
+          pointerEvents: "none",
+        }}>
+          {/* WebGL dot */}
+          <StatusDot active={glStatus === "ready"} warn={glStatus === "idle"} title={glLabel} />
+          {/* MediaPipe dot */}
+          <StatusDot active={mpReady} warn={!mpReady && !mpError} title={mpLabel} />
+          {/* Camera dot */}
+          <StatusDot active={panelState === "streaming"} warn={panelState === "paused"} title={`Camera: ${cameraLabel}`} />
+          {captureCount > 0 && (
+            <span style={{
+              fontFamily: "var(--font-mono)", fontSize: "0.48rem", letterSpacing: "0.1em",
+              color: "rgba(16,181,167,0.55)", marginLeft: 2,
+            }}>
+              {captureCount}×
+            </span>
+          )}
+        </div>
+
+        {/* ── Live metric arcs — bottom overlay ── */}
         {c && panelState !== "idle" && (
-          <div
-            style={{
-              position: "absolute",
-              bottom: 8,
-              left: 8,
-              right: 8,
-              display: "grid",
-              gridTemplateColumns: "1fr 1fr",
-              gap: "4px 12px",
-              fontSize: "0.7rem",
-              color: "rgba(255,255,255,0.85)",
-              textShadow: "0 1px 3px rgba(0,0,0,0.8)",
-              pointerEvents: "none",
-            }}
-          >
-            <MetricRow label="Coherence"  value={c.overallCoherence} />
-            <MetricRow label="Symmetry"   value={c.bodySymmetry} />
-            <MetricRow label="Luminance"  value={c.lightQuantaDensity} />
-            <MetricRow label="Regularity" value={c.patternRegularity} />
-          </div>
+          <LiveMetricArcs
+            coherence={c.overallCoherence}
+            symmetry={c.bodySymmetry}
+            luminance={c.lightQuantaDensity}
+            regularity={c.patternRegularity}
+          />
         )}
       </div>
 
-      {/* Controls */}
-      <div
-        className="biofield-actions"
-        style={fillHeight ? { padding: "8px 12px", gap: 8, flexShrink: 0, borderTop: "1px solid rgba(255,255,255,0.06)" } : undefined}
-      >
-        <button
-          className="biofield-button"
-          disabled={panelState !== "idle"}
-          onClick={() => { void handleStart(); }}
-          type="button"
-        >
-          Start camera
-        </button>
+      {/* ── Controls — floating geometry nodes, no action bar ── */}
+      <div style={{
+        flexShrink: 0,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: "1.5rem",
+        padding: "0.65rem 1rem",
+        position: "relative",
+      }}>
+        {/* Thin gold geometry line above controls */}
+        <div style={{
+          position: "absolute", top: 0, left: "10%", right: "10%", height: 1,
+          background: "linear-gradient(90deg, transparent 0%, rgba(197,160,23,0.15) 30%, rgba(197,160,23,0.15) 70%, transparent 100%)",
+        }} />
+
+        {panelState === "idle" ? (
+          <GeometryButton onClick={() => { void handleStart(); }} label="OPEN FIELD" accent="gold" />
+        ) : panelState === "paused" ? (
+          <GeometryButton onClick={handleResume} label="RESUME" accent="indigo" />
+        ) : null}
+
+        {(panelState === "streaming" || panelState === "paused") && (
+          <GeometryButton
+            onClick={handleCapture}
+            label="CAPTURE"
+            accent="emerald"
+          />
+        )}
 
         {panelState === "streaming" && (
-          <button className="biofield-link" onClick={handlePause} type="button">
-            Pause
-          </button>
+          <GeometryButton onClick={handlePause} label="PAUSE" accent="muted" />
         )}
 
-        {panelState === "paused" && (
-          <button className="biofield-link" onClick={handleResume} type="button">
-            Resume
-          </button>
+        {panelState !== "idle" && (
+          <GeometryButton onClick={handleStop} label="CLOSE" accent="muted" />
         )}
-
-        <button
-          className="biofield-button"
-          disabled={panelState !== "streaming" && panelState !== "paused"}
-          onClick={handleCapture}
-          type="button"
-        >
-          Capture
-        </button>
-
-        <button
-          className="biofield-link"
-          disabled={panelState === "idle"}
-          onClick={handleStop}
-          type="button"
-        >
-          Stop
-        </button>
       </div>
 
+      {/* Error — minimal inline, no card */}
       {(cameraError ?? captureError) && (
-        <p className="biofield-error" style={{ marginTop: "0.5rem", padding: fillHeight ? "0 12px" : undefined }}>
+        <p style={{
+          margin: "0 1rem 0.6rem",
+          fontFamily: "var(--font-mono)", fontSize: "0.6rem",
+          color: "rgba(198,93,59,0.75)", letterSpacing: "0.04em",
+        }}>
           {cameraError ?? captureError}
-        </p>
-      )}
-
-      {!fillHeight && (
-        <p className="biofield-copy" style={{ marginTop: "0.75rem" }}>
-          Segmentation mask{mpReady ? " active" : " loading"} — biofield overlay is person-gated.
         </p>
       )}
     </section>
   );
 }
 
-// ─── Inline metric row ────────────────────────────────────────────────────────
-function MetricRow({ label, value }: { label: string; value: number }) {
-  const pct = Math.round(value * 100);
+// ─── Geometry sub-components ─────────────────────────────────────────────────
+
+/** Three-dot system status indicator */
+function StatusDot({ active, warn, title }: { active: boolean; warn: boolean; title: string }) {
+  const color = active ? "rgba(16,181,167,0.75)" : warn ? "rgba(197,160,23,0.55)" : "rgba(240,237,227,0.15)";
+  const glow = active ? "0 0 5px rgba(16,181,167,0.4)" : warn ? "0 0 5px rgba(197,160,23,0.3)" : "none";
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-      <span style={{ opacity: 0.7, minWidth: 70 }}>{label}</span>
-      <div
-        style={{
-          flex: 1,
-          height: 3,
-          background: "rgba(255,255,255,0.15)",
-          borderRadius: 2,
-          overflow: "hidden",
-        }}
+    <span
+      title={title}
+      style={{
+        display: "inline-block",
+        width: 4, height: 4, borderRadius: "50%",
+        background: color,
+        boxShadow: glow,
+        transition: "all 0.4s ease",
+      }}
+    />
+  );
+}
+
+/** Sacred geometry idle placeholder — animated concentric rings + lotus */
+function IdleGeometry() {
+  return (
+    <div style={{
+      position: "absolute", inset: 0,
+      display: "flex", alignItems: "center", justifyContent: "center",
+      pointerEvents: "none",
+    }}>
+      <svg
+        viewBox="0 0 400 400"
+        style={{ width: "min(55%, 220px)", height: "auto", opacity: 0.28 }}
       >
-        <div
-          style={{
-            width: `${pct}%`,
-            height: "100%",
-            background: "rgba(120,220,180,0.9)",
-            borderRadius: 2,
-          }}
-        />
-      </div>
-      <span style={{ minWidth: 30, textAlign: "right" }}>{pct}%</span>
+        {/* Concentric dot rings */}
+        {[60, 100, 140, 180].map((r, ri) =>
+          Array.from({ length: ri * 8 + 8 }).map((_, i, arr) => {
+            const a = (i / arr.length) * Math.PI * 2;
+            return (
+              <circle
+                key={`${r}-${i}`}
+                cx={200 + r * Math.cos(a)}
+                cy={200 + r * Math.sin(a)}
+                r={1.2}
+                fill="rgba(197,160,23,0.5)"
+              />
+            );
+          })
+        )}
+        {/* Radial spokes */}
+        {Array.from({ length: 12 }).map((_, i) => {
+          const a = (i / 12) * Math.PI * 2;
+          return (
+            <line
+              key={i}
+              x1={200 + 50 * Math.cos(a)} y1={200 + 50 * Math.sin(a)}
+              x2={200 + 185 * Math.cos(a)} y2={200 + 185 * Math.sin(a)}
+              stroke="rgba(197,160,23,0.18)" strokeWidth="0.6"
+            />
+          );
+        })}
+        {/* Flower of life — 6 circles */}
+        {Array.from({ length: 6 }).map((_, i) => {
+          const a = (i / 6) * Math.PI * 2;
+          return (
+            <circle
+              key={i}
+              cx={200 + 30 * Math.cos(a)}
+              cy={200 + 30 * Math.sin(a)}
+              r={30}
+              fill="none"
+              stroke="rgba(197,160,23,0.35)"
+              strokeWidth="0.7"
+            />
+          );
+        })}
+        <circle cx="200" cy="200" r="30" fill="none" stroke="rgba(197,160,23,0.35)" strokeWidth="0.7" />
+        {/* Outer ring */}
+        <circle cx="200" cy="200" r="185" fill="none" stroke="rgba(197,160,23,0.12)" strokeWidth="0.6" />
+      </svg>
+      {/* Label */}
+      <p style={{
+        position: "absolute", bottom: "18%",
+        margin: 0,
+        fontFamily: "var(--font-display)",
+        fontSize: "0.52rem", fontWeight: 700,
+        letterSpacing: "0.26em", textTransform: "uppercase",
+        color: "rgba(240,237,227,0.2)",
+      }}>
+        Open Field to Begin
+      </p>
     </div>
+  );
+}
+
+/** Spinning geometry ring while MediaPipe calibrates */
+function CalibrationOverlay() {
+  return (
+    <div style={{
+      position: "absolute", inset: 0,
+      display: "flex", flexDirection: "column",
+      alignItems: "center", justifyContent: "center",
+      gap: "0.85rem",
+      background: "rgba(7,11,29,0.65)",
+      pointerEvents: "none",
+    }}>
+      <svg width="48" height="48" viewBox="0 0 48 48" style={{ opacity: 0.7 }}>
+        {/* Outer rotating arc */}
+        <circle cx="24" cy="24" r="20" fill="none" stroke="rgba(197,160,23,0.15)" strokeWidth="1" />
+        <path
+          d="M 24 4 A 20 20 0 0 1 44 24"
+          fill="none" stroke="rgba(197,160,23,0.6)" strokeWidth="1.2" strokeLinecap="round"
+        >
+          <animateTransform attributeName="transform" type="rotate" from="0 24 24" to="360 24 24" dur="1.6s" repeatCount="indefinite" />
+        </path>
+        {/* Inner dot */}
+        <circle cx="24" cy="24" r="2.5" fill="rgba(16,181,167,0.6)">
+          <animate attributeName="opacity" values="0.4;1;0.4" dur="1.6s" repeatCount="indefinite" />
+        </circle>
+      </svg>
+      <span style={{
+        fontFamily: "var(--font-display)",
+        fontSize: "0.5rem", fontWeight: 700,
+        letterSpacing: "0.26em", textTransform: "uppercase",
+        color: "rgba(240,237,227,0.3)",
+      }}>
+        Calibrating
+      </span>
+    </div>
+  );
+}
+
+/** 4 thin arc indicators in bottom-left of canvas — geometry encoding of live metrics */
+function LiveMetricArcs({ coherence, symmetry, luminance, regularity }: {
+  coherence: number; symmetry: number; luminance: number; regularity: number;
+}) {
+  const metrics = [
+    { v: coherence,  color: "rgba(16,181,167,0.65)",  label: "COH" },
+    { v: symmetry,   color: "rgba(197,160,23,0.65)",   label: "SYM" },
+    { v: luminance,  color: "rgba(11,80,251,0.65)",    label: "LUM" },
+    { v: regularity, color: "rgba(240,237,227,0.4)",   label: "REG" },
+  ];
+  const R = 14;
+  const gap = 38;
+  return (
+    <svg
+      style={{ position: "absolute", bottom: 14, left: 14, pointerEvents: "none", overflow: "visible" }}
+      width={gap * 4}
+      height={36}
+    >
+      {metrics.map(({ v, color, label }, i) => {
+        const cx = i * gap + R + 2;
+        const cy = R + 2;
+        const pct = Math.min(1, Math.max(0, v));
+        const arc = pct * Math.PI * 1.8; // 0 → 1.8π sweep
+        const startA = -Math.PI * 0.9 + Math.PI / 2;
+        const endA = startA + arc;
+        const x1 = cx + R * Math.cos(startA - Math.PI / 2);
+        const y1 = cy + R * Math.sin(startA - Math.PI / 2);
+        const x2 = cx + R * Math.cos(endA - Math.PI / 2);
+        const y2 = cy + R * Math.sin(endA - Math.PI / 2);
+        const large = arc > Math.PI ? 1 : 0;
+        return (
+          <g key={label}>
+            {/* Track ring */}
+            <circle cx={cx} cy={cy} r={R} fill="none" stroke="rgba(240,237,227,0.06)" strokeWidth="1.2" />
+            {/* Value arc */}
+            {pct > 0.01 && (
+              <path
+                d={`M ${x1} ${y1} A ${R} ${R} 0 ${large} 1 ${x2} ${y2}`}
+                fill="none" stroke={color} strokeWidth="1.5" strokeLinecap="round"
+              />
+            )}
+            {/* Label */}
+            <text
+              x={cx} y={cy + R + 10}
+              textAnchor="middle"
+              style={{ fontFamily: "var(--font-mono)", fontSize: "0.38rem", fill: "rgba(240,237,227,0.3)", letterSpacing: "0.1em" }}
+            >
+              {label}
+            </text>
+          </g>
+        );
+      })}
+    </svg>
+  );
+}
+
+/** Minimal geometry node button */
+function GeometryButton({ onClick, label, accent }: {
+  onClick: () => void;
+  label: string;
+  accent: "gold" | "indigo" | "emerald" | "muted";
+}) {
+  const colors = {
+    gold:    { text: "rgba(197,160,23,0.75)",   line: "rgba(197,160,23,0.3)"   },
+    indigo:  { text: "rgba(11,80,251,0.85)",     line: "rgba(11,80,251,0.35)"   },
+    emerald: { text: "rgba(16,181,167,0.75)",    line: "rgba(16,181,167,0.3)"   },
+    muted:   { text: "rgba(240,237,227,0.28)",   line: "rgba(240,237,227,0.1)"  },
+  };
+  const { text, line } = colors[accent];
+  return (
+    <button
+      onClick={onClick}
+      type="button"
+      style={{
+        background: "none", border: "none", cursor: "pointer",
+        display: "flex", flexDirection: "column", alignItems: "center", gap: 4,
+        padding: "4px 8px",
+      }}
+    >
+      {/* Diamond glyph */}
+      <svg width="10" height="10" viewBox="0 0 10 10">
+        <polygon points="5,0 10,5 5,10 0,5" fill="none" stroke={line} strokeWidth="0.8" />
+        <circle cx="5" cy="5" r="1.5" fill={text} />
+      </svg>
+      <span style={{
+        fontFamily: "var(--font-display)",
+        fontSize: "0.46rem", fontWeight: 700,
+        letterSpacing: "0.22em", textTransform: "uppercase",
+        color: text,
+      }}>
+        {label}
+      </span>
+    </button>
   );
 }
 
