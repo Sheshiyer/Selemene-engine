@@ -36,7 +36,7 @@ const float OFFSET    = 0.47;
 const float VIDEO_INF = 0.3;    // how much video RGB bends the noise coord
 const float HUE_SHIFT = 0.82;
 const float COLOR_SAT = 0.83;
-const float BLUR_AMT  = 2.0;    // soft blur blend — keep low to preserve vivid false-color
+const float BLUR_AMT  = 5.9;    // match TD reference: 59% blurred video blend
 
 // ── 3D Simplex noise (Ashima Arts) ───────────────────────────────────────────
 vec3 mod289(vec3 x) { return x - floor(x*(1.0/289.0))*289.0; }
@@ -154,34 +154,30 @@ vec3 gaussianBlur(sampler2D tex, vec2 uv, float amount) {
   return r;
 }
 
-// Noise → HSL colour (video hue influences output when noise is low)
+// Noise → HSL colour — exact TD enhancedNoiseColor formula
 vec3 enhancedNoiseColor(float n, vec3 videoCol) {
   vec3 vHSL = rgb2hsl(videoCol);
   float hue = n * HUE_SHIFT + vHSL.x * (1.0 - HUE_SHIFT);
-  float sat = clamp(mix(0.85, 1.0, fract(n + 0.33)) * 0.97, 0.0, 1.0);
-  float lit = mix(0.35, 0.95, fract(n + 0.66));
+  float sat = clamp(mix(0.7, 1.0, fract(n + 0.33)) * COLOR_SAT, 0.0, 1.0);
+  float lit = mix(0.3, 0.9, fract(n + 0.66));
   return hsl2rgb(vec3(hue, sat, lit));
 }
 
 void main() {
-  // WebGL UV origin is bottom-left; video texture expects top-left origin.
+  // WebGL UV origin is bottom-left; match TD vertex shader vUV.y = 1-y flip.
   vec2 uv = vec2(v_texCoord.x, 1.0 - v_texCoord.y);
   vec3 videoCol = texture(u_video, uv).rgb;
 
-  // ── Spiral + video-interaction noise coordinate ──────────────────────────
-  // Exact TD reference formula: mix(spatialCoord, videoCoord, VIDEO_INF)
-  // This blends video RGB into ALL 3 axes — the blue channel shifts the
-  // noise depth, producing the body-contour topographic color interaction.
-  // Z = spiral (not just time) so concentric rings radiate from canvas centre.
-  vec2 center = uv - vec2(0.5);
-  float r      = length(center) * 5.5;
-  float theta  = atan(center.y, center.x);
-  float spiral = r - theta * 0.45;
-
+  // ── Exact TD noise coordinate formula (touchdesigner-embed.html lines 391-393)
+  // XY = UV * scale (spatial frequency), Z = time (drives animation).
+  // Video RGB is blended into ALL 3 axes via mix(). The blue channel shifts
+  // Z-depth per pixel, causing noise rings to wrap around body contours.
+  // The spiral appearance is intrinsic to fBm at scale 16.7 — no explicit
+  // spiral formula needed (and adding one breaks the interaction).
   float scale       = 1.0 / max(PERIOD, 0.0001);
-  vec3 spatialCoord = vec3(uv * scale, spiral + u_time * 0.12);  // spiral in Z
-  vec3 videoCoord   = videoCol * scale * 2.0;                     // video drives all 3 axes
-  vec3 noiseCoord   = mix(spatialCoord, videoCoord, VIDEO_INF);  // exact TD mix
+  vec3 spatialCoord = vec3(uv * scale, u_time * 0.1);
+  vec3 videoCoord   = videoCol * scale * 2.0;
+  vec3 noiseCoord   = mix(spatialCoord, videoCoord, VIDEO_INF) + vec3(0.0, 0.0, u_time * 0.1);
 
   float n = fbm(noiseCoord);
   n = sign(n) * pow(abs(n), EXPONENT);
