@@ -473,8 +473,9 @@ impl BillingRepository {
         };
 
         let rows = match status_filter {
-            Some(s) => sqlx::query_as::<_, BillingSubscription>(
-                r#"
+            Some(s) => {
+                sqlx::query_as::<_, BillingSubscription>(
+                    r#"
                 SELECT id, user_id, plan_id, provider, provider_customer_id,
                        provider_subscription_id, status, cancel_at_period_end,
                        current_period_start, current_period_end, canceled_at,
@@ -484,15 +485,17 @@ impl BillingRepository {
                 ORDER BY updated_at DESC
                 LIMIT $3 OFFSET $4
                 "#,
-            )
-            .bind(PROVIDER_DODO)
-            .bind(s)
-            .bind(limit)
-            .bind(offset)
-            .fetch_all(&self.pool)
-            .await?,
-            None => sqlx::query_as::<_, BillingSubscription>(
-                r#"
+                )
+                .bind(PROVIDER_DODO)
+                .bind(s)
+                .bind(limit)
+                .bind(offset)
+                .fetch_all(&self.pool)
+                .await?
+            }
+            None => {
+                sqlx::query_as::<_, BillingSubscription>(
+                    r#"
                 SELECT id, user_id, plan_id, provider, provider_customer_id,
                        provider_subscription_id, status, cancel_at_period_end,
                        current_period_start, current_period_end, canceled_at,
@@ -502,12 +505,13 @@ impl BillingRepository {
                 ORDER BY updated_at DESC
                 LIMIT $2 OFFSET $3
                 "#,
-            )
-            .bind(PROVIDER_DODO)
-            .bind(limit)
-            .bind(offset)
-            .fetch_all(&self.pool)
-            .await?,
+                )
+                .bind(PROVIDER_DODO)
+                .bind(limit)
+                .bind(offset)
+                .fetch_all(&self.pool)
+                .await?
+            }
         };
 
         Ok((rows, total.0))
@@ -541,30 +545,34 @@ impl BillingRepository {
         limit: i64,
     ) -> Result<Vec<ProcessedWebhookEventRow>, Error> {
         match provider_filter {
-            Some(p) => sqlx::query_as::<_, ProcessedWebhookEventRow>(
-                r#"
+            Some(p) => {
+                sqlx::query_as::<_, ProcessedWebhookEventRow>(
+                    r#"
                 SELECT webhook_id, provider, event_type, processed_at
                 FROM processed_webhook_events
                 WHERE provider = $1
                 ORDER BY processed_at DESC
                 LIMIT $2
                 "#,
-            )
-            .bind(p)
-            .bind(limit)
-            .fetch_all(&self.pool)
-            .await,
-            None => sqlx::query_as::<_, ProcessedWebhookEventRow>(
-                r#"
+                )
+                .bind(p)
+                .bind(limit)
+                .fetch_all(&self.pool)
+                .await
+            }
+            None => {
+                sqlx::query_as::<_, ProcessedWebhookEventRow>(
+                    r#"
                 SELECT webhook_id, provider, event_type, processed_at
                 FROM processed_webhook_events
                 ORDER BY processed_at DESC
                 LIMIT $1
                 "#,
-            )
-            .bind(limit)
-            .fetch_all(&self.pool)
-            .await,
+                )
+                .bind(limit)
+                .fetch_all(&self.pool)
+                .await
+            }
         }
     }
 
