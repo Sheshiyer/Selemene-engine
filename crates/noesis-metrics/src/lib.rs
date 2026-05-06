@@ -36,6 +36,98 @@ pub fn record_api_error(error_code: &str) {
 }
 
 // ---------------------------------------------------------------------------
+// Dodo Payments billing metrics (T25)
+// ---------------------------------------------------------------------------
+
+lazy_static! {
+    /// Inbound webhook deliveries received at /internal/billing/events.
+    /// Outcome: ok | dedup | stale | unauthorized | bad_request | error
+    static ref DODO_WEBHOOK_RECEIVED_TOTAL: IntCounterVec = {
+        let metric = IntCounterVec::new(
+            Opts::new(
+                "noesis_dodo_webhook_received_total",
+                "Inbound Dodo webhook deliveries grouped by event type and outcome",
+            ),
+            &["event_type", "outcome"],
+        )
+        .expect("create noesis_dodo_webhook_received_total");
+        REGISTRY
+            .register(Box::new(metric.clone()))
+            .expect("register noesis_dodo_webhook_received_total");
+        metric
+    };
+
+    /// Outbound usage event ingestion attempts (POST /usage-events/ingest).
+    /// Outcome: success | failed | skipped (free tier; no customer)
+    static ref DODO_USAGE_EMIT_TOTAL: IntCounterVec = {
+        let metric = IntCounterVec::new(
+            Opts::new(
+                "noesis_dodo_usage_emit_total",
+                "Outbound Dodo usage-event ingest attempts by outcome",
+            ),
+            &["outcome"],
+        )
+        .expect("create noesis_dodo_usage_emit_total");
+        REGISTRY
+            .register(Box::new(metric.clone()))
+            .expect("register noesis_dodo_usage_emit_total");
+        metric
+    };
+
+    /// Free-tier monthly quota exceeded events.
+    static ref DODO_QUOTA_EXCEEDED_TOTAL: IntCounterVec = {
+        let metric = IntCounterVec::new(
+            Opts::new(
+                "noesis_dodo_quota_exceeded_total",
+                "Engine call rejections due to free-tier monthly quota exhaustion",
+            ),
+            &["tier"],
+        )
+        .expect("create noesis_dodo_quota_exceeded_total");
+        REGISTRY
+            .register(Box::new(metric.clone()))
+            .expect("register noesis_dodo_quota_exceeded_total");
+        metric
+    };
+
+    /// Reconciliation cron drift counts. Class: local_only | dodo_only.
+    static ref DODO_RECONCILE_DRIFT_TOTAL: IntCounterVec = {
+        let metric = IntCounterVec::new(
+            Opts::new(
+                "noesis_dodo_reconcile_drift_total",
+                "Subscription state drift detected by the reconcile cron",
+            ),
+            &["class"],
+        )
+        .expect("create noesis_dodo_reconcile_drift_total");
+        REGISTRY
+            .register(Box::new(metric.clone()))
+            .expect("register noesis_dodo_reconcile_drift_total");
+        metric
+    };
+}
+
+pub fn record_dodo_webhook(event_type: &str, outcome: &str) {
+    DODO_WEBHOOK_RECEIVED_TOTAL
+        .with_label_values(&[event_type, outcome])
+        .inc();
+}
+
+pub fn record_dodo_usage_emit(outcome: &str) {
+    DODO_USAGE_EMIT_TOTAL.with_label_values(&[outcome]).inc();
+}
+
+pub fn record_dodo_quota_exceeded(tier: &str) {
+    DODO_QUOTA_EXCEEDED_TOTAL.with_label_values(&[tier]).inc();
+}
+
+pub fn record_dodo_reconcile_drift(class: &str, count: u64) {
+    DODO_RECONCILE_DRIFT_TOTAL
+        .with_label_values(&[class])
+        .inc_by(count);
+}
+
+// ---------------------------------------------------------------------------
 // OpenTelemetry Tracing Configuration
 // ---------------------------------------------------------------------------
 

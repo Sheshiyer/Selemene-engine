@@ -1,0 +1,128 @@
+{
+  "dashboard": {
+    "id": null,
+    "uid": "dodo-billing",
+    "title": "Dodo Payments Billing",
+    "tags": ["billing", "dodo", "selemene"],
+    "style": "dark",
+    "timezone": "browser",
+    "schemaVersion": 38,
+    "version": 1,
+    "refresh": "30s",
+    "time": { "from": "now-6h", "to": "now" },
+    "panels": [
+      {
+        "id": 1,
+        "title": "Webhook ingest rate (by outcome)",
+        "type": "timeseries",
+        "datasource": { "type": "prometheus", "uid": "prometheus" },
+        "targets": [
+          {
+            "expr": "sum by (outcome) (rate(noesis_dodo_webhook_received_total[5m]))",
+            "legendFormat": "{{outcome}}"
+          }
+        ],
+        "fieldConfig": { "defaults": { "unit": "ops" } },
+        "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 }
+      },
+      {
+        "id": 2,
+        "title": "Webhook event types (last 1h)",
+        "type": "piechart",
+        "datasource": { "type": "prometheus", "uid": "prometheus" },
+        "targets": [
+          {
+            "expr": "sum by (event_type) (increase(noesis_dodo_webhook_received_total{outcome=\"ok\"}[1h]))",
+            "legendFormat": "{{event_type}}"
+          }
+        ],
+        "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 }
+      },
+      {
+        "id": 3,
+        "title": "Outbound usage emit success rate",
+        "type": "stat",
+        "datasource": { "type": "prometheus", "uid": "prometheus" },
+        "targets": [
+          {
+            "expr": "sum(rate(noesis_dodo_usage_emit_total{outcome=\"success\"}[5m])) / sum(rate(noesis_dodo_usage_emit_total{outcome!=\"skipped\"}[5m]))",
+            "legendFormat": "success rate"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percentunit",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                { "color": "red", "value": null },
+                { "color": "yellow", "value": 0.95 },
+                { "color": "green", "value": 0.99 }
+              ]
+            }
+          }
+        },
+        "gridPos": { "h": 6, "w": 6, "x": 0, "y": 8 }
+      },
+      {
+        "id": 4,
+        "title": "Outbound usage emit by outcome",
+        "type": "timeseries",
+        "datasource": { "type": "prometheus", "uid": "prometheus" },
+        "targets": [
+          {
+            "expr": "sum by (outcome) (rate(noesis_dodo_usage_emit_total[5m]))",
+            "legendFormat": "{{outcome}}"
+          }
+        ],
+        "fieldConfig": { "defaults": { "unit": "ops" } },
+        "gridPos": { "h": 6, "w": 18, "x": 6, "y": 8 }
+      },
+      {
+        "id": 5,
+        "title": "Free-tier quota exceeded",
+        "type": "timeseries",
+        "datasource": { "type": "prometheus", "uid": "prometheus" },
+        "targets": [
+          {
+            "expr": "sum by (tier) (rate(noesis_dodo_quota_exceeded_total[5m]))",
+            "legendFormat": "{{tier}}"
+          }
+        ],
+        "description": "402 responses returned to free-tier users who hit the 50/month cap. A spike here is an upgrade-funnel signal.",
+        "fieldConfig": { "defaults": { "unit": "ops" } },
+        "gridPos": { "h": 8, "w": 12, "x": 0, "y": 14 }
+      },
+      {
+        "id": 6,
+        "title": "Reconciliation drift (rolling 24h)",
+        "type": "timeseries",
+        "datasource": { "type": "prometheus", "uid": "prometheus" },
+        "targets": [
+          {
+            "expr": "sum by (class) (increase(noesis_dodo_reconcile_drift_total[24h]))",
+            "legendFormat": "{{class}}"
+          }
+        ],
+        "description": "Subscription state mismatches detected by the dodo_reconcile cron. Non-zero local_only after auto-cancel is enabled means cancellations Dodo reports that we missed by webhook.",
+        "fieldConfig": { "defaults": { "unit": "short" } },
+        "gridPos": { "h": 8, "w": 12, "x": 12, "y": 14 }
+      },
+      {
+        "id": 7,
+        "title": "Webhook 401 / 400 (auth + freshness rejections)",
+        "type": "timeseries",
+        "datasource": { "type": "prometheus", "uid": "prometheus" },
+        "targets": [
+          {
+            "expr": "sum(rate(noesis_dodo_webhook_received_total{outcome=~\"unauthorized|stale|bad_request\"}[5m]))",
+            "legendFormat": "rejected/sec"
+          }
+        ],
+        "description": "Sustained nonzero indicates either misconfigured webhook signing key (Dodo rotated and we didn't update DODO_PAYMENTS_WEBHOOK_KEY) or a replay attempt.",
+        "fieldConfig": { "defaults": { "unit": "ops" } },
+        "gridPos": { "h": 8, "w": 24, "x": 0, "y": 22 }
+      }
+    ]
+  }
+}

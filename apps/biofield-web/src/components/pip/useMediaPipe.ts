@@ -144,6 +144,15 @@ export function useMediaPipe(): UseMediaPipeResult {
     };
 
     async function init() {
+      // MediaPipe WASM emits TFLite/XNNPACK init messages through console.error.
+      // Suppress them during init so they don't appear in the Next.js issues overlay.
+      const origError = console.error;
+      console.error = (...args: unknown[]) => {
+        const msg = String(args[0] ?? "");
+        if (msg.startsWith("INFO:") || msg.includes("XNNPACK") || msg.includes("gl_context") || msg.includes("face_landmarker")) return;
+        origError.apply(console, args);
+      };
+
       try {
         // Indirect dynamic import bypasses TypeScript's URL import check while
         // preserving full type safety via the inline interface above.
@@ -192,6 +201,8 @@ export function useMediaPipe(): UseMediaPipeResult {
           console.warn("[useMediaPipe]", message);
           setError(message);
         }
+      } finally {
+        console.error = origError;
       }
     }
 

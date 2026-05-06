@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { QuotaExceededHost } from "@/components/QuotaExceededHost";
 
 // FontShare CDN — Panchang (display) + Satoshi (body) — brand typography system
 const FONTSHARE_HREF =
@@ -30,11 +31,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${geist.variable} ${geistMono.variable}`}>
-      <head>
-        <link rel="preconnect" href="https://api.fontshare.com" />
-        <link rel="stylesheet" href={FONTSHARE_HREF} />
-      </head>
-      <body>{children}</body>
+      <body>
+        {children}
+        <QuotaExceededHost />
+      </body>
     </html>
   );
 }

@@ -91,34 +91,12 @@ supabase db show --project-ref [PROJECT_REF]
 ALLOWED_ORIGINS=https://tryambakam.space,https://*.railway.app
 ```
 
-### FreeAstrologyAPI Integration
+### Vedic Runtime
 
-```bash
-# Your FreeAstrologyAPI.com API key
-# Get from: https://freeastrologyapi.com/dashboard
-FREE_ASTROLOGY_API_KEY=[YOUR_API_KEY_HERE]
-
-# API configuration
-FREE_ASTROLOGY_API_BASE_URL=https://json.freeastrologyapi.com
-FREE_ASTROLOGY_API_TIMEOUT=30
-FREE_ASTROLOGY_API_RETRY_COUNT=3
-
-# Rate limiting (free tier: 50/day, 1/sec)
-FREE_ASTROLOGY_RATE_LIMIT_PER_DAY=50
-FREE_ASTROLOGY_RATE_LIMIT_PER_SECOND=1
-FREE_ASTROLOGY_RATE_LIMIT_BUFFER=5
-
-# Caching strategy
-FREE_ASTROLOGY_CACHE_BIRTH_TTL=0
-FREE_ASTROLOGY_CACHE_DAILY_TTL=86400
-FREE_ASTROLOGY_CACHE_TRANSIT_TTL=3600
-FREE_ASTROLOGY_PREFETCH_DAYS=7
-
-# Engine provider
-VEDIC_ENGINE_PROVIDER=api
-VEDIC_ENGINE_FALLBACK_ENABLED=true
-VEDIC_ENGINE_FALLBACK_ON_RATE_LIMIT=true
-```
+Vedic engines (panchanga, vimshottari, transits, charts) run as native Rust
+against bundled Swiss Ephemeris data. No Vedic provider key is required on
+Railway — historical `FREE_ASTROLOGY_API_*` and `VEDIC_ENGINE_PROVIDER`
+variables can be removed from the service.
 
 ### Data Paths (Railway auto-mounts these from Docker)
 
@@ -383,11 +361,7 @@ Please provide these values so I can help you configure:
    - Format: `postgresql://postgres.PROJECT_REF:[PASSWORD]@aws-0-[REGION].pooler.supabase.com:6543/postgres?sslmode=require`
    - Get from: Supabase Dashboard → Settings → Database → "Connection Pooling"
 
-2. **FreeAstrologyAPI Key:**
-   - Get from: https://freeastrologyapi.com/dashboard
-   - Free tier is fine (50 requests/day)
-
-3. **Railway URL (after first deploy):**
+2. **Railway URL (after first deploy):**
    - Format: `[PROJECT-NAME]-production.up.railway.app`
    - Needed for Cloudflare CNAME target
 

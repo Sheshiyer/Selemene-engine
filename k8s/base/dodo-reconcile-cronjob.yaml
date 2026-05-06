@@ -1,0 +1,70 @@
+# Dodo Payments ↔ Postgres reconciliation cron (T24).
+#
+# Runs `cargo run --bin dodo_reconcile` once per hour, comparing the live
+# Dodo subscriptions list against `billing_subscriptions` and reporting drift
+# as a structured JSON line on stdout (ingested by the cluster log scraper).
+#
+# READ-ONLY by default. Drift is reported to Prometheus
+# (`noesis_dodo_reconcile_drift_total{class}`) but no DB mutations happen.
+#
+# After ~1 week of clean drift reports, set DODO_RECONCILE_FORCE_CANCEL=true
+# in the env block to enable auto-correction of `local_only_active` drift.
+# See runbooks/dodo-incident.md Scenario 2 for the rationale.
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: dodo-reconcile
+  labels:
+    app: selemene
+    component: billing
+spec:
+  schedule: "13 * * * *"          # :13 every hour (offset to avoid the top-of-hour stampede)
+  timeZone: "Etc/UTC"
+  concurrencyPolicy: Forbid       # never overlap two reconciles
+  startingDeadlineSeconds: 300    # if a run is more than 5 min late, skip it
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 5
+  jobTemplate:
+    spec:
+      backoffLimit: 1             # one retry; rely on the next hour otherwise
+      activeDeadlineSeconds: 600  # hard timeout per run
+      ttlSecondsAfterFinished: 86400  # keep finished pods 24h for log inspection
+      template:
+        metadata:
+          labels:
+            app: selemene
+            component: billing
+            job: dodo-reconcile
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: dodo-reconcile
+              # Reuse the noesis-api image — `dodo_reconcile` is shipped as a
+              # bin within the same crate.
+              image: ghcr.io/sheshiyer/selemene-engine:latest
+              command: ["/app/dodo_reconcile"]
+              env:
+                # Read-only mode for the first week post-deploy. After clean
+                # drift reports, switch to "true" to enable auto-correction.
+                - name: DODO_RECONCILE_FORCE_CANCEL
+                  value: "false"
+                - name: RUST_LOG
+                  value: "info,noesis_data=warn"
+              envFrom:
+                - secretRef:
+                    name: selemene-secrets   # provides DODO_PAYMENTS_API_KEY,
+                                             #          DODO_PAYMENTS_ENV,
+                                             #          DATABASE_URL
+              resources:
+                requests:
+                  cpu: "50m"
+                  memory: "64Mi"
+                limits:
+                  cpu: "500m"
+                  memory: "256Mi"
+              securityContext:
+                runAsNonRoot: true
+                allowPrivilegeEscalation: false
+                readOnlyRootFilesystem: true
+                capabilities:
+                  drop: ["ALL"]

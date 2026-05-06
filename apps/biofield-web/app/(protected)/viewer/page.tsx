@@ -20,7 +20,7 @@ import { createBiofieldClient, createNoesisClient } from "@/lib/api";
 import { buildApiUrl } from "@/lib/config";
 import { useRouter } from "next/navigation";
 import { PIPViewerPanel } from "@/components/pip/PIPViewerPanel";
-import { BiofieldCosmogram } from "@/components/BiofieldCosmogram";
+import { BiofieldLiveMetrics } from "@/components/BiofieldLiveMetrics";
 import type { CompositeScores } from "@/components/pip/types";
 
 // Interval at which live metrics are posted to the Noesis biofield engine.
@@ -318,7 +318,7 @@ export default function ViewerPage() {
     // Always update the live display (no throttle).
     setLiveScores(scores);
 
-    if (!noesisClient || !authSession?.token) return;
+    if (!noesisClient) return;
 
     const now = performance.now();
     if (now - lastMetricsSubmitRef.current < METRICS_SUBMIT_INTERVAL_MS) return;
@@ -339,41 +339,6 @@ export default function ViewerPage() {
     }).catch((err) => {
       console.warn("[BF1-05.6] biofield engine error:", err instanceof Error ? err.message : err);
     });
-
-    // 2. Multi-engine LLM witness interpret — uses birth data + all engines
-    const birthData = userBirthData?.birth_date ? {
-      date: userBirthData.birth_date,
-      latitude: userBirthData.birth_location_lat ?? 0,
-      longitude: userBirthData.birth_location_lng ?? 0,
-      timezone: userBirthData.timezone ?? "UTC",
-      ...(userBirthData.birth_time ? { time: userBirthData.birth_time } : {}),
-    } : undefined;
-
-    void fetch(buildApiUrl("/api/v1/witness/interpret"), {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${authSession.token}`,
-      },
-      body: JSON.stringify({
-        birth_data: birthData,
-        live_scores: {
-          energy: scores.lightQuantaDensity,
-          coherence: scores.overallCoherence,
-          symmetry: scores.bodySymmetry,
-          complexity: scores.patternRegularity,
-          regulation: scores.normalizedArea,
-          color_balance: (scores.overallCoherence + scores.bodySymmetry) / 2,
-        },
-        consciousness_level: 0,
-      }),
-    })
-      .then((r) => r.ok ? r.json() : null)
-      .then((dyad) => { if (dyad) setWitnessDyad(dyad); })
-      .catch((err) => {
-        console.warn("[witness-interpret] error:", err instanceof Error ? err.message : err);
-      });
-  }, [noesisClient, authSession?.token, userBirthData]);
 
   const hasActiveSession = currentSession?.status === "active";
 
@@ -410,329 +375,214 @@ export default function ViewerPage() {
       background: "#070B1D",
     }}>
 
-      {/* ───── Left: full-height camera / biofield portal ───── */}
-      <div style={{ height: "100dvh", overflow: "hidden", position: "relative" }}>
-        <PIPViewerPanel onCapture={handlePIPCapture} onMetrics={handleMetrics} fillHeight />
-      </div>
+      {/* Live metrics — shown once MediaPipe starts flowing data */}
+      {liveScores && <BiofieldLiveMetrics scores={liveScores} />}
 
-      {/* ───── Right: consciousness data column — pure void field ───── */}
-      {/* Thin geometry rule replaces border-left */}
-      <div style={{
-        height: "100dvh",
-        display: "flex",
-        flexDirection: "column",
-        position: "relative",
-        background: "#070B1D",
-        overflow: "hidden",
-      }}>
-        {/* Vertical divider — thin gold geometry line, not a CSS border */}
-        <div style={{
-          position: "absolute", left: 0, top: "8%", bottom: "8%", width: 1,
-          background: "linear-gradient(180deg, transparent 0%, rgba(197,160,23,0.22) 20%, rgba(197,160,23,0.22) 80%, transparent 100%)",
-          pointerEvents: "none",
-        }} />
-
-        {/* ── COSMOGRAM — sacred geometry biofield display ── */}
-        <div style={{
-          flex: "1 1 0",
-          minHeight: "42dvh",
-          maxHeight: "72dvh",
-          overflow: "hidden",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-        }}>
-          <BiofieldCosmogram
-            scores={liveScores ?? {
-              lightQuantaDensity: 0,
-              normalizedArea: 0,
-              bodySymmetry: 0.5,
-              patternRegularity: 0.5,
-              overallCoherence: 0,
-            }}
-            engineResult={witnessInsight?.result as Record<string, unknown> | null}
-          />
-        </div>
-
-        {/* ── Thin geometry separator between cosmogram and dyad ── */}
-        <div style={{
-          flexShrink: 0,
-          margin: "0 1.4rem",
-          height: 1,
-          background: "linear-gradient(90deg, transparent 0%, rgba(197,160,23,0.18) 25%, rgba(16,181,167,0.12) 75%, transparent 100%)",
-        }} />
-
-        {/* ── WITNESS DYAD — floating text, no cards ── */}
-        <div style={{
-          flex: 1,
-          minHeight: 0,
-          padding: "0.75rem 1.4rem 0.5rem",
-          overflowY: "auto",
+      {/* Witness insight from Noesis biofield engine */}
+      {witnessInsight && (
+        <section style={{
+          padding: "1.6rem 1.8rem",
+          borderRadius: "var(--r-xl)",
+          background: "var(--panel)",
+          border: "1px solid var(--line-faint)",
+          boxShadow: "inset 0 1px 0 rgba(255,255,255,0.04)",
           display: "flex",
           flexDirection: "column",
-          gap: "0.6rem",
+          gap: "1rem",
         }}>
-          {/* Dyad header — label + status badges */}
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexShrink: 0 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              {/* Pulsing presence dot */}
-              <span style={{
-                width: 4, height: 4, borderRadius: "50%",
-                background: hasDyad ? "rgba(197,160,23,0.9)" : "rgba(240,237,227,0.12)",
-                boxShadow: hasDyad ? "0 0 6px rgba(197,160,23,0.5)" : "none",
-                animation: hasDyad ? "pulse-dot 2s ease-in-out infinite" : "none",
-                transition: "all 0.5s ease", flexShrink: 0,
-              }} />
-              <span style={{
-                fontFamily: "var(--font-display)", fontSize: "0.52rem", fontWeight: 700,
-                letterSpacing: "0.22em", textTransform: "uppercase",
-                color: "rgba(240,237,227,0.3)",
-              }}>
-                Witness Dyad
-              </span>
-            </div>
-            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              {isLlmPowered && enginesUsed.length > 0 && (
-                <span style={{
-                  fontFamily: "var(--font-mono)", fontSize: "0.46rem",
-                  color: "rgba(16,181,167,0.6)", letterSpacing: "0.14em",
-                  textTransform: "uppercase",
-                }}>
-                  {enginesUsed.length} engines
-                </span>
-              )}
-              {witnessInsight?.consciousness_level !== undefined && (
-                <span style={{
-                  fontFamily: "var(--font-mono)", fontSize: "0.76rem", fontWeight: 700,
-                  letterSpacing: "-0.04em", color: "rgba(11,80,251,0.75)",
-                  textShadow: "0 0 12px rgba(11,80,251,0.4)",
-                }}>
-                  {witnessInsight.consciousness_level}
-                </span>
-              )}
-            </div>
+          <div style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>
+            <span style={{
+              width: 6, height: 6, borderRadius: "50%",
+              background: "var(--signal)",
+              boxShadow: "0 0 8px rgba(255,179,71,0.5)",
+            }} />
+            <p style={{ margin: 0, fontSize: "0.7rem", fontWeight: 600, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--muted)" }}>
+              Witness insight
+            </p>
           </div>
 
-          {witnessInsight && (hasDyad || dyadFallback) ? (
-            hasDyad ? (
-              <>
-                {aletheios && (
-                  <div style={{ display: "flex", flexDirection: "column", gap: "0.28rem" }}>
-                    {/* Agent label — spaced caps, no box */}
-                    <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
-                      {/* Diamond glyph */}
-                      <svg width="6" height="6" viewBox="0 0 6 6" style={{ flexShrink: 0, opacity: 0.7 }}>
-                        <polygon points="3,0 6,3 3,6 0,3" fill="none" stroke="rgba(11,80,251,0.7)" strokeWidth="0.8" />
-                      </svg>
-                      <span style={{
-                        fontFamily: "var(--font-display)", fontSize: "0.5rem", fontWeight: 700,
-                        letterSpacing: "0.22em", textTransform: "uppercase",
-                        color: "rgba(11,80,251,0.65)",
-                      }}>
-                        Aletheios · Left Pillar
-                      </span>
-                    </div>
-                    <p style={{
-                      margin: 0, fontFamily: "var(--font-body)",
-                      fontSize: "0.8rem", lineHeight: 1.72,
-                      color: "rgba(240,237,227,0.68)",
-                      paddingLeft: "0.85rem",
-                    }}>
-                      {aletheios}
-                    </p>
-                  </div>
-                )}
-                {pichet && (
-                  <div style={{ display: "flex", flexDirection: "column", gap: "0.28rem", marginTop: "0.3rem" }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
-                      <svg width="6" height="6" viewBox="0 0 6 6" style={{ flexShrink: 0, opacity: 0.7 }}>
-                        <polygon points="3,0 6,3 3,6 0,3" fill="none" stroke="rgba(197,160,23,0.7)" strokeWidth="0.8" />
-                      </svg>
-                      <span style={{
-                        fontFamily: "var(--font-display)", fontSize: "0.5rem", fontWeight: 700,
-                        letterSpacing: "0.22em", textTransform: "uppercase",
-                        color: "rgba(197,160,23,0.65)",
-                      }}>
-                        Pichet · Right Pillar
-                      </span>
-                    </div>
-                    <p style={{
-                      margin: 0, fontFamily: "var(--font-body)",
-                      fontSize: "0.8rem", lineHeight: 1.72,
-                      color: "rgba(240,237,227,0.68)",
-                      paddingLeft: "0.85rem",
-                    }}>
-                      {pichet}
-                    </p>
-                  </div>
-                )}
-                {synthesis && (
-                  <>
-                    {/* Thin emerald geometry line before synthesis */}
-                    <div style={{
-                      margin: "0.15rem 0",
-                      height: 1,
-                      background: "linear-gradient(90deg, rgba(16,181,167,0.12) 0%, rgba(16,181,167,0.06) 100%)",
-                    }} />
-                    <p style={{
-                      margin: 0, fontFamily: "var(--font-body)",
-                      fontSize: "0.78rem", lineHeight: 1.65,
-                      fontStyle: "italic",
-                      color: "rgba(240,237,227,0.44)",
-                    }}>
-                      {synthesis}
-                    </p>
-                  </>
-                )}
-                {witnessQuestion && (
-                  <p style={{
-                    margin: "0.1rem 0 0",
-                    fontFamily: "var(--font-body)",
-                    fontSize: "0.76rem", lineHeight: 1.7,
-                    color: "rgba(16,181,167,0.72)",
-                    fontStyle: "italic",
-                  }}>
-                    {witnessQuestion}
-                  </p>
-                )}
-              </>
-            ) : (
-              <p style={{
-                margin: 0, fontFamily: "var(--font-body)",
-                fontSize: "0.88rem", lineHeight: 1.75,
-                fontStyle: "italic",
-                color: "rgba(240,237,227,0.5)",
-              }}>
-                &ldquo;{dyadFallback}&rdquo;
-              </p>
-            )
-          ) : (
-            <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", minHeight: 80 }}>
-              <p style={{
-                margin: 0, fontFamily: "var(--font-body)",
-                fontSize: "0.72rem", color: "rgba(240,237,227,0.22)",
-                textAlign: "center", lineHeight: 1.7, maxWidth: 180,
-                letterSpacing: "0.02em",
-              }}>
-                Witness perspectives emerge after the first biofield reading
-              </p>
-            </div>
+          {witnessInsight.witness_prompt && (
+            <p style={{
+              margin: 0,
+              fontSize: "1.1rem",
+              lineHeight: 1.65,
+              fontStyle: "italic",
+              color: "var(--text-2)",
+              borderLeft: "2px solid var(--accent-border)",
+              paddingLeft: "1rem",
+            }}>
+              &ldquo;{witnessInsight.witness_prompt}&rdquo;
+            </p>
           )}
 
-          {/* Capture result — minimal, no card */}
-          {captureResult && (
-            <div style={{ marginTop: "auto", paddingTop: "0.5rem", display: "flex", flexDirection: "column", gap: "0.35rem" }}>
-              {/* Thin separator */}
-              <div style={{ height: 1, background: "linear-gradient(90deg, rgba(11,80,251,0.1) 0%, transparent 100%)" }} />
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <span style={{
-                  fontFamily: "var(--font-display)", fontSize: "0.48rem", fontWeight: 700,
-                  letterSpacing: "0.18em", textTransform: "uppercase", color: "rgba(240,237,227,0.25)",
-                }}>
-                  Last capture
-                </span>
-                <span style={{
-                  fontFamily: "var(--font-mono)", fontSize: "0.52rem", letterSpacing: "0.1em",
-                  textTransform: "uppercase",
-                  color: captureResult.quality_assessment.sufficient_quality ? "rgba(16,181,167,0.7)" : "rgba(198,93,59,0.7)",
-                }}>
-                  {captureResult.quality_assessment.sufficient_quality ? "✓ Accepted" : "✗ Rejected"}
-                </span>
-              </div>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.2rem 0.8rem" }}>
-                {METRIC_KEYS.map((key) => {
-                  const raw = captureResult.metrics[key];
-                  const num = typeof raw === "number" ? raw : parseFloat(String(raw));
-                  const pct = !isNaN(num) ? Math.round(num * 100) : null;
-                  return (
-                    <div key={key} style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
-                      <span style={{ fontFamily: "var(--font-mono)", fontSize: "0.5rem", color: "rgba(240,237,227,0.28)", textTransform: "uppercase", letterSpacing: "0.07em" }}>
-                        {key.replace(/_/g, " ").replace(/^(light quanta|normalized|average|fractal|body|pattern)/, m => m.slice(0, 3))}
-                      </span>
-                      <span style={{ fontFamily: "var(--font-mono)", fontSize: "0.68rem", fontWeight: 700, color: "rgba(240,237,227,0.6)" }}>
-                        {pct !== null ? `${pct}%` : String(raw)}
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
-              <div style={{ display: "flex", gap: "1rem" }}>
-                <Link className="biofield-link" href={`/readings/${captureResult.reading_id}`} style={{ fontSize: "0.66rem" }}>
-                  Open reading
-                </Link>
-                <Link className="biofield-link" href="/history" style={{ fontSize: "0.66rem" }}>
-                  History
-                </Link>
-              </div>
+          {witnessInsight.consciousness_level !== undefined && (
+            <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+              <span style={{ fontSize: "0.7rem", fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--muted)" }}>
+                Consciousness level
+              </span>
+              <span style={{
+                fontSize: "1.4rem", fontWeight: 700, letterSpacing: "-0.04em",
+                color: "var(--accent)",
+              }}>
+                {witnessInsight.consciousness_level}
+              </span>
             </div>
           )}
+        </section>
+      )}
+
+      {/* Session row — compact single strip */}
+      <section style={{
+        padding: "1rem 1.4rem",
+        borderRadius: "var(--r-xl)",
+        background: "var(--panel)",
+        border: "1px solid var(--line-faint)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        flexWrap: "wrap",
+        gap: "0.75rem",
+      }}>
+        {/* Status */}
+        <div style={{ display: "flex", alignItems: "center", gap: "1.2rem" }}>
+          <div>
+            <p style={{ margin: 0, fontSize: "0.68rem", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--muted)" }}>Account</p>
+            <p style={{ margin: 0, fontSize: "0.82rem", color: "var(--text)" }}>{authSession?.email ?? "—"}</p>
+          </div>
+          <div style={{ width: 1, height: 28, background: "var(--line-faint)" }} />
+          <div>
+            <p style={{ margin: 0, fontSize: "0.68rem", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--muted)" }}>Session</p>
+            <p style={{ margin: 0, fontSize: "0.82rem", color: hasActiveSession ? "var(--accent)" : "var(--muted)" }}>
+              {isHydratingSession ? "Restoring…" : currentSession ? currentSession.status : storedSessionId ? `Restoring ${storedSessionId}…` : "No session"}
+            </p>
+          </div>
+          <div style={{ width: 1, height: 28, background: "var(--line-faint)" }} />
+          <div>
+            <p style={{ margin: 0, fontSize: "0.68rem", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--muted)" }}>Tier</p>
+            <p style={{ margin: 0, fontSize: "0.82rem", color: "var(--signal)" }}>{authSession?.tier ?? "—"}</p>
+          </div>
         </div>
 
-        {/* ── SESSION STRIP — minimal anchor, geometry line above ── */}
-        <div style={{
-          flex: "0 0 auto",
-          padding: "0.6rem 1.4rem 0.7rem",
-          display: "flex", flexDirection: "column", gap: "0.4rem",
-          position: "relative",
-        }}>
-          {/* Thin gold geometry line — replaces solid border-top */}
+        {/* Actions */}
+        <div className="biofield-actions" style={{ margin: 0 }}>
+          <button
+            className="biofield-button"
+            disabled={isStartingSession || isHydratingSession || hasActiveSession}
+            onClick={handleStartSession}
+            type="button"
+          >
+            {isStartingSession ? "Starting…" : hasActiveSession ? "Active" : "Start session"}
+          </button>
+          <button
+            className="biofield-link"
+            disabled={isClosingSession || !hasActiveSession}
+            onClick={handleCloseSession}
+            type="button"
+          >
+            {isClosingSession ? "Closing…" : "End session"}
+          </button>
+        </div>
+
+        {statusMessage && <p className="biofield-success" style={{ width: "100%", margin: 0 }}>{statusMessage}</p>}
+        {errorMessage  && <p className="biofield-error"  style={{ width: "100%", margin: 0 }}>{errorMessage}</p>}
+      </section>
+
+      {/* Manual capture — collapsible-style minimal form */}
+      <section className="biofield-panel biofield-form-panel">
+        <p className="biofield-eyebrow">Manual capture</p>
+        <form className="biofield-form" onSubmit={handleUpload}>
+          <label className="biofield-field" htmlFor="biofield-capture-file">
+            <span className="biofield-kicker">Image file</span>
+            <input
+              accept="image/*"
+              className="biofield-input"
+              id="biofield-capture-file"
+              onChange={(event) => setSelectedFile(event.target.files?.[0] ?? null)}
+              type="file"
+            />
+          </label>
+          <div className="biofield-actions">
+            <button
+              className="biofield-button"
+              disabled={isUploading || !hasActiveSession || !selectedFile}
+              type="submit"
+            >
+              {isUploading ? "Uploading…" : "Upload capture"}
+            </button>
+          </div>
+
+      {/* Capture result */}
+      {captureResult && (
+        <section className="biofield-panel">
+          <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: "1rem" }}>
+            <div>
+              <p className="biofield-eyebrow">Analysis complete</p>
+              <h2 className="biofield-title" style={{ fontSize: "1.6rem", margin: 0 }}>
+                {captureResult.analysis_version}
+              </h2>
+            </div>
+            <span style={{
+              fontSize: "0.7rem", fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase",
+              padding: "0.22rem 0.6rem", borderRadius: "var(--r-pill)",
+              background: captureResult.quality_assessment.sufficient_quality ? "rgba(124,124,255,0.12)" : "rgba(255,100,100,0.1)",
+              border: `1px solid ${captureResult.quality_assessment.sufficient_quality ? "rgba(124,124,255,0.3)" : "rgba(255,100,100,0.25)"}`,
+              color: captureResult.quality_assessment.sufficient_quality ? "var(--accent)" : "#ff6464",
+            }}>
+              {captureResult.quality_assessment.sufficient_quality ? "Accepted" : "Rejected"}
+            </span>
+          </div>
+
           <div style={{
-            position: "absolute", top: 0, left: "1.4rem", right: "1.4rem", height: 1,
-            background: "linear-gradient(90deg, transparent 0%, rgba(197,160,23,0.18) 30%, rgba(197,160,23,0.18) 70%, transparent 100%)",
-          }} />
-
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "0.75rem", flexWrap: "wrap" }}>
-            {/* Account meta — spaced, no divider bars */}
-            <div style={{ display: "flex", alignItems: "baseline", gap: "1.2rem" }}>
-              <span style={{
-                fontFamily: "var(--font-body)", fontSize: "0.7rem",
-                color: "rgba(240,237,227,0.55)",
-                maxWidth: 140, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
-              }}>
-                {authSession?.email ?? "—"}
-              </span>
-              <span style={{
-                fontFamily: "var(--font-mono)", fontSize: "0.68rem",
-                color: hasActiveSession ? "rgba(16,181,167,0.7)" : "rgba(240,237,227,0.28)",
-                textShadow: hasActiveSession ? "0 0 8px rgba(16,181,167,0.3)" : "none",
-              }}>
-                {isHydratingSession ? "restoring…" : currentSession ? currentSession.status : "—"}
-              </span>
-              <span style={{
-                fontFamily: "var(--font-mono)", fontSize: "0.68rem",
-                color: "rgba(197,160,23,0.65)",
-                letterSpacing: "0.04em",
-              }}>
-                {authSession?.tier ?? "—"}
-              </span>
-            </div>
-            {/* Session actions */}
-            <div className="biofield-actions" style={{ margin: 0 }}>
-              <button
-                className="biofield-button" style={{ fontSize: "0.66rem", padding: "0.24rem 0.7rem" }}
-                disabled={isStartingSession || isHydratingSession || hasActiveSession}
-                onClick={handleStartSession} type="button"
-              >
-                {isStartingSession ? "Starting…" : hasActiveSession ? "Active" : "Start session"}
-              </button>
-              <button
-                className="biofield-link" style={{ fontSize: "0.66rem" }}
-                disabled={isClosingSession || !hasActiveSession}
-                onClick={handleCloseSession} type="button"
-              >
-                {isClosingSession ? "Closing…" : "End session"}
-              </button>
-            </div>
+            display: "grid", gridTemplateColumns: "1fr 1fr",
+            gap: "0.5rem", marginBottom: "1rem",
+          }}>
+            {METRIC_KEYS.map((key) => {
+              const raw = captureResult.metrics[key];
+              const num = typeof raw === "number" ? raw : parseFloat(String(raw));
+              const isValid = !isNaN(num);
+              const pct = isValid ? Math.round(num * 100) : null;
+              return (
+                <div key={key} style={{
+                  padding: "0.65rem 0.8rem",
+                  borderRadius: "var(--r-md)",
+                  background: "rgba(255,255,255,0.025)",
+                  border: "1px solid var(--line-faint)",
+                  display: "flex", flexDirection: "column", gap: "0.35rem",
+                }}>
+                  <span style={{ fontSize: "0.62rem", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--muted)" }}>
+                    {key.replaceAll("_", " ")}
+                  </span>
+                  {pct !== null ? (
+                    <>
+                      <span style={{ fontSize: "1.1rem", fontWeight: 700, letterSpacing: "-0.04em", color: "var(--text)" }}>
+                        {pct}<span style={{ fontSize: "0.6rem", opacity: 0.45 }}>%</span>
+                      </span>
+                      <div style={{ height: 2, borderRadius: 9999, background: "rgba(255,255,255,0.06)" }}>
+                        <div style={{
+                          width: `${pct}%`, height: "100%", borderRadius: 9999,
+                          background: "var(--accent)",
+                          transition: "width 0.5s ease",
+                        }} />
+                      </div>
+                    </>
+                  ) : (
+                    <span style={{ fontSize: "0.82rem", color: "var(--text-2)" }}>{String(raw)}</span>
+                  )}
+                </div>
+              );
+            })}
           </div>
 
-          {statusMessage && (
-            <p style={{ margin: 0, fontFamily: "var(--font-mono)", fontSize: "0.6rem", color: "rgba(16,181,167,0.6)" }}>{statusMessage}</p>
-          )}
-          {errorMessage && (
-            <p style={{ margin: 0, fontFamily: "var(--font-mono)", fontSize: "0.6rem", color: "rgba(198,93,59,0.8)" }}>{errorMessage}</p>
-          )}
-        </div>
-      </div>
-    </div>
+          <div className="biofield-actions">
+            <Link className="biofield-link" href={`/readings/${captureResult.reading_id}`}>
+              Open reading
+            </Link>
+            <Link className="biofield-link" href="/history">
+              History
+            </Link>
+          </div>
+        </section>
+      )}
+    </section>
   );
 }
