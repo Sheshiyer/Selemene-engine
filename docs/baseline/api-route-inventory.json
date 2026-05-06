@@ -2,8 +2,8 @@
   "generated_at": "2026-03-13",
   "inventory_scope": "/api/v1",
   "source": "crates/noesis-api/src/lib.rs",
-  "path_count": 60,
-  "route_count": 64,
+  "path_count": 63,
+  "route_count": 67,
   "routes": [
     {
       "path": "/auth/register",
@@ -105,6 +105,39 @@
         {
           "method": "GET",
           "handler": "handlers::users::get_my_usage"
+        }
+      ]
+    },
+    {
+      "path": "/billing/checkout",
+      "auth_requirement": "bearer_or_api_key",
+      "uses_orchestrator": false,
+      "methods": [
+        {
+          "method": "POST",
+          "handler": "handlers::billing::create_checkout_session"
+        }
+      ]
+    },
+    {
+      "path": "/billing/balance",
+      "auth_requirement": "bearer_or_api_key",
+      "uses_orchestrator": false,
+      "methods": [
+        {
+          "method": "GET",
+          "handler": "handlers::billing::get_balance"
+        }
+      ]
+    },
+    {
+      "path": "/billing/portal",
+      "auth_requirement": "bearer_or_api_key",
+      "uses_orchestrator": false,
+      "methods": [
+        {
+          "method": "POST",
+          "handler": "handlers::billing::create_portal_session"
         }
       ]
     },

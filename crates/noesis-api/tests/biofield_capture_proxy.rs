@@ -330,6 +330,7 @@ impl BiofieldCaptureHarness {
             metrics: shared_metrics(),
             user_repository: user_repository.clone(),
             admin_repository: None,
+            billing_repository: None,
             biofield_repository: Some(biofield_repository.clone()),
             readings_repository: Some(readings_repository.clone()),
             usage_repository: None,

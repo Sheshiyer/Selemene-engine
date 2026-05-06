@@ -476,7 +476,7 @@ pub struct AuditEventsQuery {
     pub offset: Option<i64>,
 }
 
-fn has_permission(permissions: &[String], required: &str) -> bool {
+pub(crate) fn has_permission(permissions: &[String], required: &str) -> bool {
     if permissions
         .iter()
         .any(|perm| perm == required || perm == "admin:*")
@@ -499,6 +499,17 @@ fn has_permission(permissions: &[String], required: &str) -> bool {
 
     if (required.starts_with("admin:keys:") || required.starts_with("admin:history-sync:"))
         && permissions.iter().any(|perm| perm == "admin:users")
+    {
+        return true;
+    }
+
+    // Parent grant: holding `admin:billing:read` does NOT grant cancel/trigger
+    // (those are explicit destructive perms). But holding the explicit perm
+    // for any billing sub-resource grants read.
+    if required == "admin:billing:read"
+        && permissions
+            .iter()
+            .any(|perm| perm.starts_with("admin:billing:"))
     {
         return true;
     }
@@ -556,6 +567,15 @@ fn derive_roles(permissions: &[String]) -> Vec<String> {
         roles.insert("platform-admin".to_string());
     }
 
+    let billing_signals = [
+        "admin:billing:read",
+        "admin:billing:subscriptions:cancel",
+        "admin:billing:reconcile:trigger",
+    ];
+    if billing_signals.iter().any(|perm| has(perm)) {
+        roles.insert("billing-admin".to_string());
+    }
+
     if roles.is_empty() && has_admin_access(permissions) {
         roles.insert("viewer".to_string());
     }
@@ -606,6 +626,15 @@ fn permissions_for_roles(roles: &[String]) -> Vec<String> {
                 permissions.insert("admin:keys:delete".to_string());
                 permissions.insert("admin:users:tier:update".to_string());
             }
+            // Billing admin: payment-system surface only. Deliberately disjoint
+            // from `admin` so granting billing access doesn't grant user admin
+            // (and vice versa). `platform-admin` retains everything via
+            // `admin:*` wildcard.
+            "billing-admin" => {
+                permissions.insert("admin:billing:read".to_string());
+                permissions.insert("admin:billing:subscriptions:cancel".to_string());
+                permissions.insert("admin:billing:reconcile:trigger".to_string());
+            }
             _ => {}
         }
     }
@@ -632,6 +661,9 @@ fn normalize_effective_permissions(permissions: &[String]) -> Vec<String> {
         "admin:keys:delete",
         "admin:history-sync:read",
         "admin:history-sync:retry",
+        "admin:billing:read",
+        "admin:billing:subscriptions:cancel",
+        "admin:billing:reconcile:trigger",
     ];
 
     for required in canonical_permissions {
@@ -655,7 +687,7 @@ fn parse_permissions(value: &Value) -> Vec<String> {
         .unwrap_or_default()
 }
 
-fn normalize_limit_offset(
+pub(crate) fn normalize_limit_offset(
     limit: Option<i64>,
     offset: Option<i64>,
     default_limit: i64,
@@ -687,7 +719,7 @@ pub(crate) fn generate_secret_api_key() -> String {
     format!("nk_{}{}", Uuid::new_v4().simple(), Uuid::new_v4().simple())
 }
 
-fn json_error_response(
+pub(crate) fn json_error_response(
     status: StatusCode,
     error: impl Into<String>,
     error_code: &str,
@@ -696,7 +728,7 @@ fn json_error_response(
     ErrorMapper::response(status, error_code, error.into(), details).into_response()
 }
 
-fn service_unavailable_response() -> Response {
+pub(crate) fn service_unavailable_response() -> Response {
     json_error_response(
         StatusCode::SERVICE_UNAVAILABLE,
         "Admin APIs require a configured database connection",
@@ -705,7 +737,7 @@ fn service_unavailable_response() -> Response {
     )
 }
 
-fn forbidden_response(required_permission: &str) -> Response {
+pub(crate) fn forbidden_response(required_permission: &str) -> Response {
     json_error_response(
         StatusCode::FORBIDDEN,
         format!("Missing required permission: {required_permission}"),
@@ -728,7 +760,7 @@ fn parse_uuid_or_422(id: &str, field: &str) -> Result<Uuid, Response> {
     })
 }
 
-async fn effective_permissions(
+pub(crate) async fn effective_permissions(
     state: &AppState,
     auth_user: &AuthUser,
 ) -> Result<Vec<String>, ApiError> {
