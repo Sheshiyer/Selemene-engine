@@ -36,14 +36,12 @@ export default function AdminBillingReconcilePage() {
     if (!token) return;
     let cancelled = false;
     setLoading(true);
-    Promise.all([
-      getAdminBillingReconcileDrift(token),
-      getAdminSession(token)
-    ])
-      .then(([drift, sess]) => {
+
+    // Core read-only data — page MUST render this even if session lookup fails.
+    getAdminBillingReconcileDrift(token)
+      .then((drift) => {
         if (!cancelled) {
           setData(drift);
-          setSession(sess);
           setError(null);
         }
       })
@@ -60,6 +58,18 @@ export default function AdminBillingReconcilePage() {
       .finally(() => {
         if (!cancelled) setLoading(false);
       });
+
+    // Best-effort: only gates the "Trigger reconcile" action button.
+    // Failure here leaves session=null which simply hides the button —
+    // it does NOT block read-only observability.
+    getAdminSession(token)
+      .then((sess) => {
+        if (!cancelled) setSession(sess);
+      })
+      .catch(() => {
+        // Swallow — read-only view continues to work without action gating.
+      });
+
     return () => {
       cancelled = true;
     };

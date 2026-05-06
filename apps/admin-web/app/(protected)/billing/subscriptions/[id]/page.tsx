@@ -46,14 +46,12 @@ export default function AdminBillingSubscriptionDetailPage({
     if (!token) return;
     let cancelled = false;
     setLoading(true);
-    Promise.all([
-      getAdminBillingSubscription(token, id),
-      getAdminSession(token)
-    ])
-      .then(([detail, sess]) => {
+
+    // Core read data — page MUST render this even if session lookup fails.
+    getAdminBillingSubscription(token, id)
+      .then((detail) => {
         if (!cancelled) {
           setSub(detail.subscription);
-          setSession(sess);
           setError(null);
         }
       })
@@ -70,6 +68,18 @@ export default function AdminBillingSubscriptionDetailPage({
       .finally(() => {
         if (!cancelled) setLoading(false);
       });
+
+    // Best-effort: only gates the "Force-cancel" destructive action.
+    // Failure here leaves session=null which hides the cancel button —
+    // it does NOT block subscription detail visibility.
+    getAdminSession(token)
+      .then((sess) => {
+        if (!cancelled) setSession(sess);
+      })
+      .catch(() => {
+        // Swallow — read-only view continues to work without action gating.
+      });
+
     return () => {
       cancelled = true;
     };
