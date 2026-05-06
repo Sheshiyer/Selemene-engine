@@ -1,9 +1,194 @@
 //! Witness prompt generation for biofield awareness
 //!
 //! Generates non-prescriptive somatic awareness prompts based on biofield analysis.
-//! Prompts invite self-inquiry without diagnosing or prescribing.
+//! Includes the Witness Dyad: Aletheios (left pillar — truth/integration) and
+//! Pichet (right pillar — vitality/action). Prompts invite self-inquiry without
+//! diagnosing or prescribing.
 
 use crate::models::{BiofieldAnalysis, BiofieldMetrics, Chakra, ChakraReading};
+
+/// Structured Witness Dyad output — Aletheios and Pichet perspectives
+pub struct WitnessDyad {
+    pub aletheios: String,
+    pub pichet: String,
+    pub synthesis: String,
+}
+
+/// Generate the Witness Dyad from biofield analysis.
+///
+/// - Aletheios (left pillar): truth-revealing, contemplative, integrative.
+///   Simplifies when overwhelmed; invites rest and unconcealment.
+/// - Pichet (right pillar): vitalizing, action-oriented.
+///   Energizes when stagnant; invites embodiment and forward movement.
+/// - Synthesis: a unifying question that holds both pillars.
+pub fn generate_witness_dyad(analysis: &BiofieldAnalysis) -> WitnessDyad {
+    let m = &analysis.metrics;
+
+    let aletheios = generate_aletheios(m);
+    let pichet = generate_pichet(m);
+    let synthesis = generate_synthesis(m);
+
+    WitnessDyad {
+        aletheios,
+        pichet,
+        synthesis,
+    }
+}
+
+/// Aletheios — the Left Pillar. Truth-revealing, contemplative, integrative.
+/// Speaks from stillness. Simplifies when overwhelmed.
+fn generate_aletheios(m: &BiofieldMetrics) -> String {
+    // High coherence → naming the quality of alignment
+    if m.coherence > 0.72 {
+        return format!(
+            "Something has settled in your field — coherence at {:.0}%. \
+             What is the name of this quality? Not what caused it, not what to do with it — \
+             simply: what is it? Let that answer be simple.",
+            m.coherence * 100.0
+        );
+    }
+
+    // Low vitality → rest and witness (not fix)
+    if m.vitality_index < 0.38 {
+        return format!(
+            "Vitality is quiet right now — {:.0}% of its peak. \
+             Aletheios does not ask you to restore it. \
+             What does this quietness actually feel like, beneath the story of what it means?",
+            m.vitality_index * 100.0
+        );
+    }
+
+    // Low entropy → stillness / stagnation
+    if m.entropy < 0.35 {
+        return "The field is still. Stillness is not the same as absence. \
+                What is present in this stillness that you have not yet named?"
+            .to_string();
+    }
+
+    // Asymmetry → truth on the neglected side
+    if m.symmetry < 0.48 {
+        return "One side of your field is quieter than the other. \
+                That quieter side is not broken — it is waiting. \
+                What has it been waiting to say?"
+            .to_string();
+    }
+
+    // Low coherence → fragmentation without judgment
+    if m.coherence < 0.42 {
+        return "The field is distributed — scattered across many frequencies. \
+                Aletheios asks: what is the one true thing underneath all of this fragmentation? \
+                Not a solution. A fact."
+            .to_string();
+    }
+
+    // Default — generic contemplative truth inquiry
+    "What does your body already know that your mind has not yet accepted? \
+     Sit with that. No interpretation needed."
+        .to_string()
+}
+
+/// Pichet — the Right Pillar. Vitalizing, action-oriented, forward-moving.
+/// Speaks from aliveness. Energizes when stagnant.
+fn generate_pichet(m: &BiofieldMetrics) -> String {
+    // High vitality → channel the aliveness
+    if m.vitality_index > 0.72 {
+        let highest_chakra = highest_active_chakra_name(m);
+        return format!(
+            "Your vitality is at {:.0}% — the field is active. \
+             The {} center is leading. What wants to move through you right now? \
+             Do not think about it. Let it move.",
+            m.vitality_index * 100.0,
+            highest_chakra
+        );
+    }
+
+    // High entropy → dynamic pattern, ride it
+    if m.entropy > 0.65 {
+        return format!(
+            "The field is dynamic — entropy at {:.0}%. Pichet sees this as aliveness, not chaos. \
+             What one action, even tiny, would honor the energy that is moving right now?",
+            m.entropy * 100.0
+        );
+    }
+
+    // Low vitality → Pichet vitalizes — introduces movement
+    if m.vitality_index < 0.42 {
+        return "Pichet does not ask you to force energy that isn't there. \
+                But: what small, physical act — a breath, a sound, a shift in posture — \
+                would be the most honest response to this moment?"
+            .to_string();
+    }
+
+    // Low coherence → one point of action
+    if m.coherence < 0.45 {
+        return "When the field is scattered, Pichet simplifies the question: \
+                of everything you are holding right now, what is the one thing \
+                that — if you let it go — would allow everything else to settle?"
+            .to_string();
+    }
+
+    // High symmetry + coherence → integration in motion
+    if m.symmetry > 0.7 && m.coherence > 0.6 {
+        return format!(
+            "Symmetry at {:.0}%, coherence at {:.0}%. \
+             The field is balanced and awake. Pichet asks: what are you building with this? \
+             Aliveness wants direction.",
+            m.symmetry * 100.0,
+            m.coherence * 100.0
+        );
+    }
+
+    // Default — vitalizing action prompt
+    "Pichet asks one question: what is your body asking to do right now, \
+     not what it 'should' do? Follow that impulse for ten seconds. \
+     Notice what shifts."
+        .to_string()
+}
+
+/// Synthesis — the unifying question that holds both Aletheios and Pichet.
+fn generate_synthesis(m: &BiofieldMetrics) -> String {
+    // High coherence + high vitality → full integration moment
+    if m.coherence > 0.65 && m.vitality_index > 0.65 {
+        return "Both pillars are lit. The field is coherent and alive. \
+                What is ready to be born from this convergence?"
+            .to_string();
+    }
+
+    // Low coherence + low vitality → gentle holding
+    if m.coherence < 0.4 && m.vitality_index < 0.4 {
+        return "The field is asking for rest and truth at once. \
+                The synthesis question: what would full permission feel like, right now?"
+            .to_string();
+    }
+
+    // High coherence, low vitality → integration without forcing
+    if m.coherence > 0.6 && m.vitality_index < 0.45 {
+        return "Something is integrated but not yet animated. \
+                The synthesis: what does this knowing want to become in the world?"
+            .to_string();
+    }
+
+    // Low coherence, high vitality → grounding the energy
+    if m.coherence < 0.45 && m.vitality_index > 0.6 {
+        return "Energy is present but the field is scattered. \
+                The synthesis: what container would let this aliveness go deeper, rather than wider?"
+            .to_string();
+    }
+
+    // Default synthesis
+    "Between unconcealment and aliveness — what is the quality of this moment, \
+     exactly as it is?"
+        .to_string()
+}
+
+/// Returns the name of the most active chakra center from biofield metrics.
+fn highest_active_chakra_name(m: &BiofieldMetrics) -> &'static str {
+    m.chakra_readings
+        .iter()
+        .max_by(|a, b| a.activity_level.partial_cmp(&b.activity_level).unwrap())
+        .map(|r| r.chakra.name())
+        .unwrap_or("heart")
+}
 
 /// Generate witness prompts based on biofield analysis
 ///

@@ -2,6 +2,54 @@
 
 All notable changes to the Tryambakam Noesis Engine project.
 
+## [3.2.0] - 2026-05-05
+
+### Added
+
+**WitnessOS Biofield Viewer — Geometry-First UI (`feat/viewer-metrics-ui`)**
+
+*Biofield cosmogram v4*
+- Borderless floating geometry panels — 6 metrics (ENERGY / SYMMETRY / COHERENCE / COMPLEXITY / REGULATION / COLOR FIELD) with correct PIP spec names (Light Quanta, Bilateral, Hurst·Pattern, Fractal Dim, OFA·Lyapunov, GLCM·Spectral)
+- SVG 800×800 viewBox, arc progress rings + geometric icons per metric, click-to-collapse panels
+- Responsive layout: `flex: 1 1 0` container (min 42dvh, max 72dvh)
+
+*Viewer page — WitnessOS void-field redesign*
+- Full `#070B1D` void canvas — no gradients, no card backgrounds, no borders
+- Right panel divider replaced with thin gold gradient geometry rule (absolute positioned SVG-style div)
+- Witness Dyad: all card borders/backgrounds removed → floating text with diamond SVG glyphs as agent markers
+- Agent text floats with left-padding indent; synthesis separated by thin emerald geometry line
+- Capture result: no card — inline separator + mono metric baseline rows
+- Session strip: thin gold geometry gradient line replaces solid border-top; account/session/tier as single baseline row
+
+*PIP viewer panel — circular portal*
+- Camera feed clipped to circle via `borderRadius: 50%` + `overflow: hidden`
+- Radial vignette blends circle edges into void field
+- `PortalRings` SVG overlay: concentric dot rings, 12 radial spokes, 4 metric arc sectors in ring halo band
+  - COH / SYM / LUM / REG arcs sweep proportional to live metric values, colored per consciousness spectrum
+- Status pills replaced with 3 floating geometry dots (top-center of portal ring)
+- Action bar replaced with geometry node buttons: diamond glyph + spaced-caps labels (OPEN FIELD / CAPTURE / PAUSE / CLOSE)
+- Idle state: animated flower-of-life + concentric dot rings geometry placeholder
+- Calibrating state: spinning gold arc ring + pulsing emerald dot overlay
+- MetricRow progress bars replaced with `LiveMetricArcs` SVG arcs embedded in portal ring
+
+*NVIDIA NIM tier-aware LLM witness*
+- `crates/noesis-witness/src/llm.rs` — tier-aware client using NVIDIA NIM / OpenRouter
+- Model mapping: free → kimi-k2/minimax, standard → gpt-oss-120b, enterprise → nemotron-49b
+- Fallback chain: NVIDIA NIM → OpenRouter → rule-based witness
+- `POST /api/v1/witness/interpret` multi-engine LLM endpoint: takes birth data + live biofield scores, invokes all available engines, synthesizes Aletheios/Pichet dyad via LLM
+
+### Fixed
+
+- GLSL shader `scale` constant undeclared — was referenced as `scale` in fragment shader but only documented in a comment; added `const float scale = 1.0 / PERIOD;` (≈ 16.7) to constants block, fixing `ERROR: 0:163: 'scale' : undeclared identifier` that prevented WebGL render loop from starting
+
+### Changed
+
+- `PIPViewerPanel` no longer uses `biofield-panel` / `biofield-form-panel` CSS classes — pure void-field container
+- Viewer page right panel background: pure `#070B1D` (was blue gradient `#070B1D → #0a0e20 → #0E1428`)
+- All inline `border` properties in viewer removed — geometry SVG lines define visual separation
+
+---
+
 ## [3.1.0] - 2026-04-30
 
 ### Added

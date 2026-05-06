@@ -3,6 +3,10 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { QuotaExceededHost } from "@/components/QuotaExceededHost";
 
+// FontShare CDN — Panchang (display) + Satoshi (body) — brand typography system
+const FONTSHARE_HREF =
+  "https://api.fontshare.com/v2/css?f[]=panchang@400,500,600,700,800&f[]=satoshi@300,400,500,700&display=swap";
+
 const geist = Geist({
   subsets: ["latin"],
   variable: "--font-geist",

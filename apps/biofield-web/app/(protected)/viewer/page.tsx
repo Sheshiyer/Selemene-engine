@@ -17,6 +17,7 @@ import {
   subscribeToActiveSessionId,
 } from "@/lib/session";
 import { createBiofieldClient, createNoesisClient } from "@/lib/api";
+import { buildApiUrl } from "@/lib/config";
 import { useRouter } from "next/navigation";
 import { PIPViewerPanel } from "@/components/pip/PIPViewerPanel";
 import { BiofieldLiveMetrics } from "@/components/BiofieldLiveMetrics";
@@ -58,6 +59,25 @@ export default function ViewerPage() {
   const [isUploading, setIsUploading] = useState(false);
   const [witnessInsight, setWitnessInsight] = useState<EngineOutput | null>(null);
 
+  // Structured Witness Dyad from the multi-engine LLM interpretation endpoint.
+  const [witnessDyad, setWitnessDyad] = useState<{
+    aletheios: string;
+    pichet: string;
+    synthesis: string;
+    witness_question: string;
+    engines_used: string[];
+    llm_powered: boolean;
+  } | null>(null);
+
+  // User profile (birth data for engine calculations)
+  const [userBirthData, setUserBirthData] = useState<{
+    birth_date: string | null;
+    birth_time: string | null;
+    birth_location_lat: number | null;
+    birth_location_lng: number | null;
+    timezone: string | null;
+  } | null>(null);
+
   // Track last metrics submission timestamp to rate-limit engine calls.
   const lastMetricsSubmitRef = useRef<number>(0);
 
@@ -66,6 +86,27 @@ export default function ViewerPage() {
       router.replace("/login");
     }
   }, [authSession, router]);
+
+  // Load user profile once to get birth data for multi-engine witness interpretation.
+  useEffect(() => {
+    if (!authSession?.token) return;
+    fetch(buildApiUrl("/api/v1/users/me"), {
+      headers: { Authorization: `Bearer ${authSession.token}` },
+    })
+      .then((r) => r.ok ? r.json() : null)
+      .then((data) => {
+        if (data) {
+          setUserBirthData({
+            birth_date: data.birth_date ?? null,
+            birth_time: data.birth_time ?? null,
+            birth_location_lat: data.birth_location?.lat ?? null,
+            birth_location_lng: data.birth_location?.lng ?? null,
+            timezone: data.timezone ?? null,
+          });
+        }
+      })
+      .catch(() => { /* profile unavailable — witness still works without birth data */ });
+  }, [authSession?.token]);
 
   const client = useMemo(() => {
     if (!authSession) return null;
@@ -283,6 +324,7 @@ export default function ViewerPage() {
     if (now - lastMetricsSubmitRef.current < METRICS_SUBMIT_INTERVAL_MS) return;
     lastMetricsSubmitRef.current = now;
 
+    // 1. Biofield engine call (keeps cosmogram data fresh)
     void noesisClient.calculate("biofield", {
       options: {
         source: "pip-live-metrics",
@@ -295,17 +337,43 @@ export default function ViewerPage() {
     }).then((output) => {
       setWitnessInsight(output);
     }).catch((err) => {
-      // Non-blocking: engine errors don't interrupt the live viewer.
       console.warn("[BF1-05.6] biofield engine error:", err instanceof Error ? err.message : err);
     });
-  }, [noesisClient]);
 
   const hasActiveSession = currentSession?.status === "active";
 
+  // ── Witness Dyad data — prefer LLM result, fall back to rule-based ──────────
+  // witnessDyad = rich multi-engine LLM interpretation (when OPENAI_API_KEY set)
+  // witnessInsight = biofield engine result (always available, rule-based fallback)
+  const wl = witnessInsight?.result?.witness_layer as {
+    aletheios?: { perspective?: string };
+    pichet?: { perspective?: string };
+    synthesis?: string;
+    witness_question?: string;
+  } | undefined;
+
+  const aletheios = witnessDyad?.aletheios ?? wl?.aletheios?.perspective;
+  const pichet = witnessDyad?.pichet ?? wl?.pichet?.perspective;
+  const synthesis = witnessDyad?.synthesis ?? wl?.synthesis;
+  const witnessQuestion = witnessDyad?.witness_question ?? wl?.witness_question;
+  const enginesUsed = witnessDyad?.engines_used ?? [];
+  const isLlmPowered = witnessDyad?.llm_powered ?? false;
+  const dyadFallback = witnessInsight?.witness_prompt;
+  const hasDyad = aletheios || pichet || synthesis;
+
   return (
-    <section className="biofield-stack">
-      {/* PIP live camera + WebGL2 shader viewer */}
-      <PIPViewerPanel onCapture={handlePIPCapture} onMetrics={handleMetrics} />
+    /* ══════════════════════════════════════════════════════════════
+       WitnessOS Viewer — void-field, geometry-first layout
+       No borders, no cards. Geometry defines space.
+       ══════════════════════════════════════════════════════════════ */
+    <div style={{
+      position: "fixed", inset: 0,
+      width: "100vw", height: "100dvh",
+      overflow: "hidden",
+      display: "grid",
+      gridTemplateColumns: "58fr 42fr",
+      background: "#070B1D",
+    }}>
 
       {/* Live metrics — shown once MediaPipe starts flowing data */}
       {liveScores && <BiofieldLiveMetrics scores={liveScores} />}
@@ -442,8 +510,6 @@ export default function ViewerPage() {
               {isUploading ? "Uploading…" : "Upload capture"}
             </button>
           </div>
-        </form>
-      </section>
 
       {/* Capture result */}
       {captureResult && (
@@ -520,4 +586,3 @@ export default function ViewerPage() {
     </section>
   );
 }
-

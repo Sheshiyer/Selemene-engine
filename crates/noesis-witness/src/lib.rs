@@ -1,16 +1,15 @@
-//! Noesis Witness — Self-inquiry prompt generation for consciousness development
+//! Noesis Witness — Self-inquiry prompt generation and LLM-powered Dyad interpretation.
 //!
-//! Every engine output includes a witness_prompt. This crate provides
-//! consciousness-level-appropriate prompt templates.
+//! Every engine output includes a witness_prompt (rule-based, always available).
+//! For enterprise users, `interpret_with_llm()` calls an OpenAI-compatible model
+//! with full multi-engine context to produce rich Aletheios/Pichet perspectives.
 
-/// Generate a witness prompt appropriate to the user's consciousness level.
-///
-/// Levels:
-/// - 0 (Dormant): Observational prompts
-/// - 1 (Glimpsing): Reflective prompts
-/// - 2 (Practicing): Inquiry prompts
-/// - 3 (Integrated): Authorship prompts
-/// - 4-5 (Embodied): Open prompts
+pub mod interpret;
+pub mod llm;
+
+pub use interpret::{interpret_with_llm, LiveBiofieldScores, WitnessContext, WitnessDyadLlm};
+
+/// Generate a witness prompt appropriate to the user's consciousness level (rule-based fallback).
 pub fn generate_witness_prompt(engine_id: &str, level: u8, _context: &serde_json::Value) -> String {
     match level {
         0 => format!(

@@ -122,6 +122,27 @@ export function useMediaPipe(): UseMediaPipeResult {
   useEffect(() => {
     let cancelled = false;
 
+    // MediaPipe routes TFLite/XNNPACK init + per-frame inference messages through
+    // console.error. Suppress them until init() fully settles (including the
+    // cancelled-cleanup path) so Turbopack's dev overlay never sees them.
+    // IMPORTANT: do NOT restore origError in the cleanup return — the async init
+    // may still be running after unmount and will call face.close() / segmenter.close()
+    // which re-emit WASM INFO messages. We restore only in init()'s finally block.
+    let suppress = true;
+    const origError = console.error;
+    console.error = (...args: unknown[]) => {
+      if (suppress) {
+        const msg = String(args[0] ?? "");
+        if (
+          msg.startsWith("INFO:") ||
+          msg.includes("XNNPACK") ||
+          msg.includes("gl_context") ||
+          msg.includes("face_landmarker")
+        ) return;
+      }
+      origError.apply(console, args);
+    };
+
     async function init() {
       // MediaPipe WASM emits TFLite/XNNPACK init messages through console.error.
       // Suppress them during init so they don't appear in the Next.js issues overlay.
@@ -185,10 +206,16 @@ export function useMediaPipe(): UseMediaPipeResult {
       }
     }
 
-    void init();
+    void init().finally(() => {
+      suppress = false;
+      console.error = origError;
+    });
 
     return () => {
       cancelled = true;
+      // NOTE: console.error restore is handled in init()'s finally block above.
+      // Restoring here would race with the async cancelled-cleanup path in init()
+      // which calls face.close() / segmenter.close() — those emit WASM INFO messages.
       segmenterRef.current?.close();
       faceRef.current?.close();
       segmenterRef.current = null;
