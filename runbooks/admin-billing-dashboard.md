@@ -22,9 +22,11 @@ below.
 
 ## Routes
 
-Frontend (Next.js):
+Frontend lives in **`apps/admin-web`** (the dedicated operator app on port
+3001), under the `(protected)` route group. The end-user `apps/biofield-web`
+on port 3000 has no admin surface — it is the engine output area only.
 
-| Path | Purpose |
+| Path (admin-web) | Purpose |
 |---|---|
 | `/billing` | Status counts, free user count, MRR estimate |
 | `/billing/subscriptions` | Paginated table of every Dodo subscription, status filter |
@@ -32,6 +34,8 @@ Frontend (Next.js):
 | `/billing/webhook-events` | Last 100 processed webhook events |
 | `/billing/reconcile` | Latest drift report + trigger command |
 | `/billing/plans` | Plan catalog (read-only) |
+
+Local dev: `cd apps/admin-web && bun run dev` → `http://localhost:3001/billing`
 
 Backend (Rust):
 

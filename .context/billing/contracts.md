@@ -278,8 +278,21 @@ CREATE TABLE reconcile_runs (
 
 ### Frontend surface
 
-Route group: `apps/biofield-web/app/(admin)/billing/*`. Direct client-side
-fetch via `src/lib/admin-api.ts`. The `(admin)/layout.tsx` lazy-fetches
-`/api/v1/admin/session` on first mount and stores the resulting permissions
-on the existing `BiofieldAuthSession`. Pages without billing permissions
-render a Forbidden state.
+Route group: `apps/admin-web/app/(protected)/billing/*` (port 3001 in dev).
+Admin-web is the dedicated operator app — `apps/biofield-web` (port 3000)
+remains the end-user engine output area only.
+
+The existing `(protected)/layout.tsx` already gates routes via
+`requiredPermissionForPath()` + `hasPermission()`. The billing routes are
+wired into:
+
+- `NAV_ITEMS` — adds `{ href: "/billing", permission: "admin:billing:read" }`
+- `ROUTE_META["/billing"]` — header eyebrow/title/summary
+- `requiredPermissionForPath()` in `src/lib/permissions.ts` — maps
+  `/billing/*` → `admin:billing:read`
+- `hasPermission()` parent-grant — holding any explicit `admin:billing:*`
+  perm grants the broader read permission
+
+Direct client-side fetch via the existing `src/lib/api.ts` (8 new
+`*AdminBilling*` exports). Types live in `src/types/admin.ts`. No BFF
+proxy needed.

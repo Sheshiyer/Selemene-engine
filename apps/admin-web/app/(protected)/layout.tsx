@@ -23,6 +23,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: "/dashboard", label: "Dashboard", permission: "admin:analytics:read", section: "Control" },
   { href: "/users", label: "Users", permission: "admin:users:list", section: "Control" },
   { href: "/api-keys", label: "API Keys", permission: "admin:keys:list", section: "Control" },
+  { href: "/billing", label: "Billing", permission: "admin:billing:read", section: "Control" },
   { href: "/history-sync", label: "History Sync", permission: "admin:history-sync:read", section: "Control" },
   { href: "/analytics", label: "Analytics", permission: "admin:analytics:read", section: "Observability" },
   { href: "/system", label: "System", permission: "admin:system:read", section: "Observability" },
@@ -64,6 +65,11 @@ const ROUTE_META: Record<string, { eyebrow: string; title: string; summary: stri
     eyebrow: "Trace",
     title: "Audit Ledger",
     summary: "Inspect actor, action, target, and request lineage with operational context."
+  },
+  "/billing": {
+    eyebrow: "Revenue",
+    title: "Billing & Subscriptions",
+    summary: "Subscription state, webhook ingest, plan catalog, and reconcile drift across the Dodo Payments integration."
   }
 };
 
