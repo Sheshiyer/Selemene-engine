@@ -1,0 +1,185 @@
+diff --git a/crates/noesis-data/src/repositories/admin_repository.rs b/crates/noesis-data/src/repositories/admin_repository.rs
+index 1a3e31d2..9398ce09 100644
+--- a/crates/noesis-data/src/repositories/admin_repository.rs
++++ b/crates/noesis-data/src/repositories/admin_repository.rs
+@@ -454,15 +454,15 @@ impl AdminRepository {
+                 k.name,
+                 k.key_prefix,
+                 k.user_id,
+-                u.email AS user_email,
+-                k.tier,
+-                k.permissions,
+-                k.consciousness_level,
+-                k.rate_limit,
+-                k.created_at,
++                COALESCE(u.email, '') AS user_email,
++                COALESCE(k.tier, 'free') AS tier,
++                COALESCE(k.permissions, '[]'::jsonb) AS permissions,
++                COALESCE(k.consciousness_level, 0)::INTEGER AS consciousness_level,
++                COALESCE(k.rate_limit, 60)::INTEGER AS rate_limit,
++                COALESCE(k.created_at, NOW()) AS created_at,
+                 k.expires_at,
+                 k.last_used,
+-                k.is_active
++                COALESCE(k.is_active, true) AS is_active
+             FROM api_keys k
+             INNER JOIN users u ON u.id = k.user_id
+             WHERE 1=1
+@@ -495,7 +495,10 @@ impl AdminRepository {
+             .push(" OFFSET ")
+             .push_bind(offset);
+ 
+-        let query_result = qb.build_query_as::<AdminApiKeyRecord>().fetch_all(&self.pool).await;
++        let query_result = qb
++            .build_query_as::<AdminApiKeyRecord>()
++            .fetch_all(&self.pool)
++            .await;
+         match query_result {
+             Ok(rows) => Ok(rows),
+             Err(err) if missing_api_keys_optional_columns(&err) => {
+@@ -540,7 +543,8 @@ impl AdminRepository {
+         match count_result {
+             Ok(total) => Ok(total),
+             Err(err) if missing_api_keys_optional_columns(&err) => {
+-                self.count_api_keys_legacy(query, user_id, active_only).await
++                self.count_api_keys_legacy(query, user_id, active_only)
++                    .await
+             }
+             Err(err) => Err(err),
+         }
+@@ -554,15 +558,15 @@ impl AdminRepository {
+                 k.name,
+                 k.key_prefix,
+                 k.user_id,
+-                u.email AS user_email,
+-                k.tier,
+-                k.permissions,
+-                k.consciousness_level,
+-                k.rate_limit,
+-                k.created_at,
++                COALESCE(u.email, '') AS user_email,
++                COALESCE(k.tier, 'free') AS tier,
++                COALESCE(k.permissions, '[]'::jsonb) AS permissions,
++                COALESCE(k.consciousness_level, 0)::INTEGER AS consciousness_level,
++                COALESCE(k.rate_limit, 60)::INTEGER AS rate_limit,
++                COALESCE(k.created_at, NOW()) AS created_at,
+                 k.expires_at,
+                 k.last_used,
+-                k.is_active
++                COALESCE(k.is_active, true) AS is_active
+             FROM api_keys k
+             INNER JOIN users u ON u.id = k.user_id
+             WHERE k.id = $1
+@@ -765,15 +769,15 @@ impl AdminRepository {
+                 NULL::TEXT AS name,
+                 NULL::TEXT AS key_prefix,
+                 k.user_id,
+-                u.email AS user_email,
+-                k.tier,
+-                k.permissions,
+-                k.consciousness_level,
+-                k.rate_limit,
+-                k.created_at,
++                COALESCE(u.email, '') AS user_email,
++                COALESCE(k.tier, 'free') AS tier,
++                COALESCE(k.permissions, '[]'::jsonb) AS permissions,
++                COALESCE(k.consciousness_level, 0)::INTEGER AS consciousness_level,
++                COALESCE(k.rate_limit, 60)::INTEGER AS rate_limit,
++                COALESCE(k.created_at, NOW()) AS created_at,
+                 k.expires_at,
+                 k.last_used,
+-                k.is_active
++                COALESCE(k.is_active, true) AS is_active
+             FROM api_keys k
+             INNER JOIN users u ON u.id = k.user_id
+             WHERE 1=1
+@@ -849,15 +853,15 @@ impl AdminRepository {
+                 NULL::TEXT AS name,
+                 NULL::TEXT AS key_prefix,
+                 k.user_id,
+-                u.email AS user_email,
+-                k.tier,
+-                k.permissions,
+-                k.consciousness_level,
+-                k.rate_limit,
+-                k.created_at,
++                COALESCE(u.email, '') AS user_email,
++                COALESCE(k.tier, 'free') AS tier,
++                COALESCE(k.permissions, '[]'::jsonb) AS permissions,
++                COALESCE(k.consciousness_level, 0)::INTEGER AS consciousness_level,
++                COALESCE(k.rate_limit, 60)::INTEGER AS rate_limit,
++                COALESCE(k.created_at, NOW()) AS created_at,
+                 k.expires_at,
+                 k.last_used,
+-                k.is_active
++                COALESCE(k.is_active, true) AS is_active
+             FROM api_keys k
+             INNER JOIN users u ON u.id = k.user_id
+             WHERE k.id = $1
+@@ -886,7 +890,9 @@ impl AdminRepository {
+         .fetch_optional(&mut *tx)
+         .await?;
+ 
+-        let Some((user_id, tier, permissions, consciousness_level, rate_limit, expires_at)) = existing else {
++        let Some((user_id, tier, permissions, consciousness_level, rate_limit, expires_at)) =
++            existing
++        else {
+             tx.rollback().await?;
+             return Ok(None);
+         };
+@@ -1203,8 +1209,7 @@ fn missing_api_keys_optional_columns(err: &Error) -> bool {
+     }
+ 
+     let message = db_err.message().to_ascii_lowercase();
+-    message.contains("api_keys")
+-        && (message.contains("name") || message.contains("key_prefix"))
++    message.contains("api_keys") && (message.contains("name") || message.contains("key_prefix"))
+ }
+ 
+ fn parse_permissions_value(value: &Value) -> Vec<String> {
+diff --git a/tasks/lessons.md b/tasks/lessons.md
+index 89d0348a..630b7b4e 100644
+--- a/tasks/lessons.md
++++ b/tasks/lessons.md
+@@ -20,3 +20,9 @@
+ - Before advising `Root Directory`, verify the Vercel project is connected to the intended GitHub repository and branch.
+ - If build logs show very low file counts and "Root Directory does not exist", suspect repo/link mismatch first.
+ - Preserve env values before destructive resets, then re-import with explicit monorepo root selection.
++
++## 2026-03-01 — Console Triage Signal Rule
++
++- In browser console incidents, separate extension/background-frame errors from first-party app/API errors immediately.
++- Prioritize network failures from product domains (e.g., `/api/v1/admin/*` 500s) as root-cause candidates.
++- Treat extension `FrameDoesNotExistError` and `runtime.lastError` lines as likely noise unless reproducible without extensions.
+diff --git a/tasks/todo.md b/tasks/todo.md
+index 0fff1524..6ec5cb44 100644
+--- a/tasks/todo.md
++++ b/tasks/todo.md
+@@ -149,3 +149,27 @@
+   - `npm --prefix apps/admin-web run lint`
+   - `npm --prefix apps/admin-web run build`
+   - all passed.
++
++---
++
++# Task Plan — Admin API Keys 500 Hotfix
++
++## Checklist
++- [x] Triage console output and isolate actionable failure from browser-extension noise.
++- [x] Identify failing backend endpoint (`GET /api/v1/admin/api-keys`).
++- [x] Harden admin API key list/get queries against legacy nullable data with SQL `COALESCE` defaults.
++- [x] Preserve legacy-column fallback behavior for `name` / `key_prefix` compatibility.
++- [x] Run verification gates (`cargo check -p noesis-data`, `cargo check -p noesis-api`).
++
++## Notes
++- Extension `FrameDoesNotExistError`/`runtime.lastError` messages are non-app noise and not root cause.
++- Primary failure is server-side 500 on API keys query path.
++
++## Review (fill after execution)
++- Updated `crates/noesis-data/src/repositories/admin_repository.rs` API key selects (primary + legacy paths):
++  - `user_email`, `tier`, `permissions`, `consciousness_level`, `rate_limit`, `created_at`, and `is_active` now use defensive `COALESCE` projections.
++  - This prevents decode/runtime query failures when legacy rows contain nullable values in fields now assumed non-null by API models.
++- Verification:
++  - `cargo check -p noesis-data` ✅
++  - `cargo check -p noesis-api` ✅
++  - `cargo test -p noesis-data --lib -- --nocapture` ❌ (fails locally due missing test DB/DATABASE_URL, unrelated compile/runtime regression).
