@@ -104,10 +104,10 @@ impl LlmClient {
             LlmProvider::OpenRouter
         } else if nvidia_key.is_some() && openrouter_key.is_none() {
             LlmProvider::Nvidia
-        } else if openrouter_key.is_some() && nvidia_key.is_none() {
-            LlmProvider::OpenRouter
         } else if openrouter_key.is_some() {
-            LlmProvider::OpenRouter // both set: OpenRouter default (compat with witness-agents)
+            // Covers both "OpenRouter only" and "both keys set" — OpenRouter
+            // is the default for the latter (compat with witness-agents).
+            LlmProvider::OpenRouter
         } else {
             return None; // no key → silent fallback
         };
