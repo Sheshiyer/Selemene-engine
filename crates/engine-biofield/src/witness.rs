@@ -28,7 +28,11 @@ pub fn generate_witness_dyad(analysis: &BiofieldAnalysis) -> WitnessDyad {
     let pichet = generate_pichet(m);
     let synthesis = generate_synthesis(m);
 
-    WitnessDyad { aletheios, pichet, synthesis }
+    WitnessDyad {
+        aletheios,
+        pichet,
+        synthesis,
+    }
 }
 
 /// Aletheios — the Left Pillar. Truth-revealing, contemplative, integrative.

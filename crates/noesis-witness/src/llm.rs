@@ -25,20 +25,20 @@ fn model_for_tier(tier: &str, role: &str) -> (&'static str, u32) {
     match (tier, role) {
         // enterprise: deep reasoning models
         ("enterprise", "aletheios") => ("nvidia/llama-3.3-nemotron-super-49b-v1.5", 2048),
-        ("enterprise", "pichet")    => ("minimaxai/minimax-m2.7",                   2048),
-        ("enterprise", "synthesis") => ("openai/gpt-oss-120b",                      2048),
+        ("enterprise", "pichet") => ("minimaxai/minimax-m2.7", 2048),
+        ("enterprise", "synthesis") => ("openai/gpt-oss-120b", 2048),
         // standard/subscriber: autoresearch winners (gpt-oss-120b both roles)
-        ("standard", "aletheios") => ("openai/gpt-oss-120b",  1536),
-        ("standard", "pichet")    => ("openai/gpt-oss-120b",  1536),
-        ("standard", "synthesis") => ("z-ai/glm4.7",          1536),
+        ("standard", "aletheios") => ("openai/gpt-oss-120b", 1536),
+        ("standard", "pichet") => ("openai/gpt-oss-120b", 1536),
+        ("standard", "synthesis") => ("z-ai/glm4.7", 1536),
         // free: fast, lightweight
-        ("free", "aletheios") => ("moonshotai/kimi-k2-instruct",      512),
-        ("free", "pichet")    => ("minimaxai/minimax-m2.7",           1024),
-        ("free", "synthesis") => ("moonshotai/kimi-k2-instruct",      512),
+        ("free", "aletheios") => ("moonshotai/kimi-k2-instruct", 512),
+        ("free", "pichet") => ("minimaxai/minimax-m2.7", 1024),
+        ("free", "synthesis") => ("moonshotai/kimi-k2-instruct", 512),
         // default (unknown tier → standard)
-        (_, "pichet")    => ("openai/gpt-oss-120b", 1536),
+        (_, "pichet") => ("openai/gpt-oss-120b", 1536),
         (_, "synthesis") => ("openai/gpt-oss-120b", 1024),
-        _                => ("openai/gpt-oss-120b", 1536),
+        _ => ("openai/gpt-oss-120b", 1536),
     }
 }
 
@@ -107,9 +107,9 @@ impl LlmClient {
         } else if openrouter_key.is_some() && nvidia_key.is_none() {
             LlmProvider::OpenRouter
         } else if openrouter_key.is_some() {
-            LlmProvider::OpenRouter   // both set: OpenRouter default (compat with witness-agents)
+            LlmProvider::OpenRouter // both set: OpenRouter default (compat with witness-agents)
         } else {
-            return None;              // no key → silent fallback
+            return None; // no key → silent fallback
         };
 
         Some(Self {
@@ -131,11 +131,21 @@ impl LlmClient {
     ) -> Result<String, String> {
         let (model, max_tokens) = model_for_tier(&self.tier, role);
 
-        match self.complete_with_provider(&self.provider, model, system, user, max_tokens).await {
+        match self
+            .complete_with_provider(&self.provider, model, system, user, max_tokens)
+            .await
+        {
             Ok(t) => Ok(t),
             Err(e) if self.provider == LlmProvider::Nvidia && self.openrouter_api_key.is_some() => {
                 warn!("[witness-llm] NVIDIA failed ({e}), retrying via OpenRouter");
-                self.complete_with_provider(&LlmProvider::OpenRouter, model, system, user, max_tokens).await
+                self.complete_with_provider(
+                    &LlmProvider::OpenRouter,
+                    model,
+                    system,
+                    user,
+                    max_tokens,
+                )
+                .await
             }
             Err(e) => Err(e),
         }
@@ -165,8 +175,14 @@ impl LlmClient {
         let body = ChatRequest {
             model: model.to_string(),
             messages: vec![
-                ChatMessage { role: "system".into(), content: system.into() },
-                ChatMessage { role: "user".into(), content: user.into() },
+                ChatMessage {
+                    role: "system".into(),
+                    content: system.into(),
+                },
+                ChatMessage {
+                    role: "user".into(),
+                    content: user.into(),
+                },
             ],
             max_tokens,
             temperature: 0.82,
@@ -201,7 +217,8 @@ impl LlmClient {
             .next()
             .and_then(|c| {
                 // Reasoning models may put content in reasoning_content when budget is tight
-                c.message.content
+                c.message
+                    .content
                     .filter(|s| !s.is_empty())
                     .or(c.message.reasoning_content)
             })

@@ -4,7 +4,7 @@
 //! then calls the enterprise LLM (OpenAI-compatible, incl. NVIDIA NIM) to produce
 //! Aletheios + Pichet perspectives. Falls back to rule-based dyad if no API key.
 
-use crate::{AppState};
+use crate::AppState;
 use axum::{
     extract::{Extension, Json, State},
     http::StatusCode,
@@ -12,9 +12,7 @@ use axum::{
 use chrono::Utc;
 use noesis_auth::AuthUser;
 use noesis_core::{BirthData, EngineInput};
-use noesis_witness::{
-    interpret::{interpret_with_llm, LiveBiofieldScores, WitnessContext},
-};
+use noesis_witness::interpret::{interpret_with_llm, LiveBiofieldScores, WitnessContext};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use utoipa::ToSchema;
@@ -58,7 +56,8 @@ pub async fn interpret(
     State(state): State<AppState>,
     Extension(user): Extension<AuthUser>,
     Json(req): Json<WitnessInterpretRequest>,
-) -> Result<Json<WitnessInterpretResponse>, (StatusCode, Json<crate::error_mapper::ErrorResponse>)> {
+) -> Result<Json<WitnessInterpretResponse>, (StatusCode, Json<crate::error_mapper::ErrorResponse>)>
+{
     let now = Utc::now();
     let consciousness_level = req.consciousness_level.max(user.consciousness_level);
     let user_name = req.user_name;

@@ -31,4 +31,3 @@ pub fn generate_witness_prompt(engine_id: &str, level: u8, _context: &serde_json
         _ => "What wants to emerge through you right now?".to_string(),
     }
 }
-

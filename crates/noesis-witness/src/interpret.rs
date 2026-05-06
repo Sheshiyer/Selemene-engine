@@ -129,25 +129,43 @@ fn build_context_message(ctx: &WitnessContext) -> String {
     ));
 
     if let Some(p) = &ctx.panchanga {
-        lines.push(format!("\n## Vedic Panchanga (Today's Cosmic Moment)\n{}", format_engine_data(p)));
+        lines.push(format!(
+            "\n## Vedic Panchanga (Today's Cosmic Moment)\n{}",
+            format_engine_data(p)
+        ));
     }
     if let Some(hd) = &ctx.human_design {
-        lines.push(format!("\n## Human Design Bodygraph\n{}", format_engine_data(hd)));
+        lines.push(format!(
+            "\n## Human Design Bodygraph\n{}",
+            format_engine_data(hd)
+        ));
     }
     if let Some(gk) = &ctx.gene_keys {
-        lines.push(format!("\n## Gene Keys Activations\n{}", format_engine_data(gk)));
+        lines.push(format!(
+            "\n## Gene Keys Activations\n{}",
+            format_engine_data(gk)
+        ));
     }
     if let Some(n) = &ctx.numerology {
-        lines.push(format!("\n## Numerological Currents\n{}", format_engine_data(n)));
+        lines.push(format!(
+            "\n## Numerological Currents\n{}",
+            format_engine_data(n)
+        ));
     }
     if let Some(b) = &ctx.biorhythm {
         lines.push(format!("\n## Biorhythm Cycles\n{}", format_engine_data(b)));
     }
     if let Some(t) = &ctx.transits {
-        lines.push(format!("\n## Planetary Transits\n{}", format_engine_data(t)));
+        lines.push(format!(
+            "\n## Planetary Transits\n{}",
+            format_engine_data(t)
+        ));
     }
     if let Some(v) = &ctx.vimshottari {
-        lines.push(format!("\n## Vimshottari Dasha Period\n{}", format_engine_data(v)));
+        lines.push(format!(
+            "\n## Vimshottari Dasha Period\n{}",
+            format_engine_data(v)
+        ));
     }
 
     lines.join("\n")
@@ -159,16 +177,21 @@ fn format_engine_data(v: &Value) -> String {
         Value::Object(map) => {
             let mut out = vec![];
             for (k, val) in map.iter().take(12) {
-                if matches!(k.as_str(), "metadata" | "calculation_time_ms" | "cached" | "engine_version" | "backend") {
+                if matches!(
+                    k.as_str(),
+                    "metadata" | "calculation_time_ms" | "cached" | "engine_version" | "backend"
+                ) {
                     continue;
                 }
                 let val_str = match val {
                     Value::String(s) => s.clone(),
                     Value::Number(n) => n.to_string(),
                     Value::Bool(b) => b.to_string(),
-                    Value::Array(a) if a.len() <= 4 => {
-                        a.iter().map(|x| x.to_string()).collect::<Vec<_>>().join(", ")
-                    }
+                    Value::Array(a) if a.len() <= 4 => a
+                        .iter()
+                        .map(|x| x.to_string())
+                        .collect::<Vec<_>>()
+                        .join(", "),
                     _ => serde_json::to_string(val).unwrap_or_default(),
                 };
                 out.push(format!("- {k}: {val_str}"));
@@ -181,13 +204,27 @@ fn format_engine_data(v: &Value) -> String {
 
 fn engines_present(ctx: &WitnessContext) -> Vec<String> {
     let mut out = vec!["biofield".to_string()];
-    if ctx.panchanga.is_some() { out.push("panchanga".into()); }
-    if ctx.human_design.is_some() { out.push("human-design".into()); }
-    if ctx.gene_keys.is_some() { out.push("gene-keys".into()); }
-    if ctx.numerology.is_some() { out.push("numerology".into()); }
-    if ctx.biorhythm.is_some() { out.push("biorhythm".into()); }
-    if ctx.transits.is_some() { out.push("transits".into()); }
-    if ctx.vimshottari.is_some() { out.push("vimshottari".into()); }
+    if ctx.panchanga.is_some() {
+        out.push("panchanga".into());
+    }
+    if ctx.human_design.is_some() {
+        out.push("human-design".into());
+    }
+    if ctx.gene_keys.is_some() {
+        out.push("gene-keys".into());
+    }
+    if ctx.numerology.is_some() {
+        out.push("numerology".into());
+    }
+    if ctx.biorhythm.is_some() {
+        out.push("biorhythm".into());
+    }
+    if ctx.transits.is_some() {
+        out.push("transits".into());
+    }
+    if ctx.vimshottari.is_some() {
+        out.push("vimshottari".into());
+    }
     out
 }
 
@@ -224,7 +261,10 @@ pub async fn interpret_with_llm(ctx: &WitnessContext, tier: &str) -> Option<Witn
         "{}\n\n## Aletheios perspective\n{}\n\n## Pichet perspective\n{}",
         user_msg, aletheios, pichet
     );
-    let synthesis_raw = match client.complete_for_role("synthesis", SYNTHESIS_SYSTEM, &synthesis_user).await {
+    let synthesis_raw = match client
+        .complete_for_role("synthesis", SYNTHESIS_SYSTEM, &synthesis_user)
+        .await
+    {
         Ok(t) => t,
         Err(e) => {
             tracing::warn!("[witness-llm] synthesis failed: {e}");
