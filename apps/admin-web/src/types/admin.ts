@@ -330,3 +330,93 @@ export interface ApiErrorPayload {
   error_code: string;
   details?: Record<string, unknown> | null;
 }
+
+// ─── Billing (Dodo Payments) ─────────────────────────────────────────────────
+
+export interface AdminBillingStatusCount {
+  status: string;
+  count: number;
+}
+
+export interface AdminBillingOverviewResponse {
+  status_counts: AdminBillingStatusCount[];
+  free_users: number;
+  mrr_usd_estimate: number;
+}
+
+export interface AdminBillingSubscriptionItem {
+  id: string;
+  user_id: string;
+  plan_id: string;
+  provider: string;
+  provider_customer_id: string | null;
+  provider_subscription_id: string | null;
+  status: string;
+  cancel_at_period_end: boolean;
+  current_period_start: string | null;
+  current_period_end: string | null;
+  canceled_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface AdminBillingSubscriptionsResponse {
+  items: AdminBillingSubscriptionItem[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+export interface AdminBillingSubscriptionDetailResponse {
+  subscription: AdminBillingSubscriptionItem;
+}
+
+export interface AdminBillingWebhookEventItem {
+  webhook_id: string;
+  provider: string;
+  event_type: string;
+  processed_at: string;
+}
+
+export interface AdminBillingWebhookEventsResponse {
+  items: AdminBillingWebhookEventItem[];
+  limit: number;
+}
+
+export interface AdminBillingReconcileRun {
+  id: number;
+  started_at: string;
+  finished_at: string | null;
+  force_cancel: boolean;
+  drift_json: Record<string, unknown>;
+  error: string | null;
+}
+
+export interface AdminBillingReconcileDriftResponse {
+  latest: AdminBillingReconcileRun | null;
+}
+
+export interface AdminBillingReconcileTriggerResponse {
+  command: string;
+  note: string;
+}
+
+export interface AdminBillingPlanItem {
+  id: string;
+  code: string;
+  display_name: string;
+  description: string | null;
+  is_active: boolean;
+  dodo_product_id: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface AdminBillingPlansResponse {
+  items: AdminBillingPlanItem[];
+}
+
+export interface AdminBillingCancelSubscriptionResponse {
+  ok: boolean;
+  subscription_id: string;
+}

@@ -25,6 +25,15 @@ function hasLegacyAlias(permissions: string[], required: string): boolean {
     return true;
   }
 
+  // Holding any explicit admin:billing:* perm grants the broader
+  // admin:billing:read read-only check. Cancel/trigger remain explicit.
+  if (
+    required === "admin:billing:read" &&
+    permissions.some((p) => p.startsWith("admin:billing:"))
+  ) {
+    return true;
+  }
+
   return false;
 }
 
@@ -65,6 +74,9 @@ export function requiredPermissionForPath(pathname: string): string | null {
   }
   if (normalized.startsWith("/audit")) {
     return "admin:audit:list";
+  }
+  if (normalized.startsWith("/billing")) {
+    return "admin:billing:read";
   }
   return null;
 }

@@ -3,14 +3,6 @@ export interface BiofieldAuthSession {
   userId: string;
   email: string;
   tier: string;
-  /**
-   * Effective admin permissions, populated post-login by GET /api/v1/admin/session.
-   * Undefined until that fetch resolves; absent or empty for non-admin users.
-   * Consumers MUST treat undefined and [] differently:
-   *   undefined → still resolving (render skeleton)
-   *   []        → resolved, no admin access (hide admin UI)
-   */
-  permissions?: string[];
 }
 
 const STORAGE_KEY = "selemene_biofield_auth";
@@ -76,30 +68,4 @@ export function clearStoredAuthSession(): void {
   }
   window.localStorage.removeItem(STORAGE_KEY);
   emitChange();
-}
-
-/**
- * Update the stored session's permissions in place (or set to []) without
- * touching token/userId/email/tier. No-op if no session is stored.
- */
-export function setStoredAuthPermissions(permissions: string[]): void {
-  if (typeof window === "undefined") return;
-  const current = readFromStorage();
-  if (!current) return;
-  const next: BiofieldAuthSession = { ...current, permissions };
-  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-  emitChange();
-}
-
-/**
- * Returns true iff the session has any of the listed permissions, or the
- * `admin:*` wildcard. Returns false if permissions is undefined or empty.
- */
-export function sessionHasAnyPermission(
-  session: BiofieldAuthSession | null,
-  required: string[],
-): boolean {
-  if (!session?.permissions || session.permissions.length === 0) return false;
-  if (session.permissions.includes("admin:*")) return true;
-  return required.some((perm) => session.permissions!.includes(perm));
 }

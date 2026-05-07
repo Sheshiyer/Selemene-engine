@@ -8,6 +8,14 @@ import type {
   AdminAuditActionsResponse,
   AdminAuditEventDetailResponse,
   AdminAuditEventsResponse,
+  AdminBillingCancelSubscriptionResponse,
+  AdminBillingOverviewResponse,
+  AdminBillingPlansResponse,
+  AdminBillingReconcileDriftResponse,
+  AdminBillingReconcileTriggerResponse,
+  AdminBillingSubscriptionDetailResponse,
+  AdminBillingSubscriptionsResponse,
+  AdminBillingWebhookEventsResponse,
   AdminHistorySyncDevicesResponse,
   AdminHistorySyncEventsResponse,
   AdminHistorySyncUsersResponse,
@@ -525,6 +533,87 @@ export async function getAuditEvent(
 
 export async function getAuditActions(token: string): Promise<AdminAuditActionsResponse> {
   return request<AdminAuditActionsResponse>("/api/v1/admin/audit-events/actions", { token });
+}
+
+// ─── Billing (Dodo Payments) ─────────────────────────────────────────────────
+
+export async function getAdminBillingOverview(
+  token: string
+): Promise<AdminBillingOverviewResponse> {
+  return request<AdminBillingOverviewResponse>("/api/v1/admin/billing/overview", { token });
+}
+
+export async function getAdminBillingSubscriptions(
+  token: string,
+  params: { status?: string; limit?: number; offset?: number } = {}
+): Promise<AdminBillingSubscriptionsResponse> {
+  const qs = new URLSearchParams();
+  if (params.status) qs.set("status", params.status);
+  if (params.limit !== undefined) qs.set("limit", String(params.limit));
+  if (params.offset !== undefined) qs.set("offset", String(params.offset));
+  const suffix = qs.toString() ? `?${qs.toString()}` : "";
+  return request<AdminBillingSubscriptionsResponse>(
+    `/api/v1/admin/billing/subscriptions${suffix}`,
+    { token }
+  );
+}
+
+export async function getAdminBillingSubscription(
+  token: string,
+  id: string
+): Promise<AdminBillingSubscriptionDetailResponse> {
+  return request<AdminBillingSubscriptionDetailResponse>(
+    `/api/v1/admin/billing/subscriptions/${encodeURIComponent(id)}`,
+    { token }
+  );
+}
+
+export async function cancelAdminBillingSubscription(
+  token: string,
+  id: string
+): Promise<AdminBillingCancelSubscriptionResponse> {
+  return request<AdminBillingCancelSubscriptionResponse>(
+    `/api/v1/admin/billing/subscriptions/${encodeURIComponent(id)}/cancel`,
+    { token, method: "POST" }
+  );
+}
+
+export async function getAdminBillingWebhookEvents(
+  token: string,
+  params: { provider?: string; limit?: number } = {}
+): Promise<AdminBillingWebhookEventsResponse> {
+  const qs = new URLSearchParams();
+  if (params.provider) qs.set("provider", params.provider);
+  if (params.limit !== undefined) qs.set("limit", String(params.limit));
+  const suffix = qs.toString() ? `?${qs.toString()}` : "";
+  return request<AdminBillingWebhookEventsResponse>(
+    `/api/v1/admin/billing/webhook-events${suffix}`,
+    { token }
+  );
+}
+
+export async function getAdminBillingReconcileDrift(
+  token: string
+): Promise<AdminBillingReconcileDriftResponse> {
+  return request<AdminBillingReconcileDriftResponse>(
+    "/api/v1/admin/billing/reconcile/drift",
+    { token }
+  );
+}
+
+export async function triggerAdminBillingReconcile(
+  token: string
+): Promise<AdminBillingReconcileTriggerResponse> {
+  return request<AdminBillingReconcileTriggerResponse>(
+    "/api/v1/admin/billing/reconcile/run",
+    { token, method: "POST" }
+  );
+}
+
+export async function getAdminBillingPlans(
+  token: string
+): Promise<AdminBillingPlansResponse> {
+  return request<AdminBillingPlansResponse>("/api/v1/admin/billing/plans", { token });
 }
 
 export { ApiClientError };
