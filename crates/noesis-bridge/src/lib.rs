@@ -72,6 +72,92 @@ pub struct SidecarReadinessStatus {
 }
 
 // ---------------------------------------------------------------------------
+// Circuit breaker
+// ---------------------------------------------------------------------------
+
+/// Failure threshold before the circuit opens (trips).
+const CB_FAILURE_THRESHOLD: u32 = 5;
+/// Seconds the circuit stays open before allowing a half-open probe.
+const CB_RESET_SECS: u64 = 30;
+/// Env var to override the failure threshold.
+const CB_THRESHOLD_ENV: &str = "TS_BRIDGE_CB_THRESHOLD";
+/// Env var to override the reset window in seconds.
+const CB_RESET_ENV: &str = "TS_BRIDGE_CB_RESET_SECS";
+
+/// Simple three-state circuit breaker: Closed → Open → Half-Open → Closed.
+///
+/// All state is stored in atomics so the breaker is cheaply shared via `Arc`.
+struct BridgeCircuitBreaker {
+    /// Consecutive failure count.
+    failure_count: std::sync::atomic::AtomicU32,
+    /// Unix timestamp (seconds) of the last failure.
+    last_failure_ts: std::sync::atomic::AtomicU64,
+    /// Trip threshold: failures before opening.
+    open_threshold: u32,
+    /// Seconds the open circuit waits before entering half-open.
+    reset_secs: u64,
+}
+
+impl BridgeCircuitBreaker {
+    fn new() -> Self {
+        let open_threshold = std::env::var(CB_THRESHOLD_ENV)
+            .ok()
+            .and_then(|v| v.trim().parse().ok())
+            .unwrap_or(CB_FAILURE_THRESHOLD);
+        let reset_secs = std::env::var(CB_RESET_ENV)
+            .ok()
+            .and_then(|v| v.trim().parse().ok())
+            .unwrap_or(CB_RESET_SECS);
+        Self {
+            failure_count: std::sync::atomic::AtomicU32::new(0),
+            last_failure_ts: std::sync::atomic::AtomicU64::new(0),
+            open_threshold,
+            reset_secs,
+        }
+    }
+
+    fn now_secs() -> u64 {
+        std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap_or_default()
+            .as_secs()
+    }
+
+    /// Returns `true` if a request should be allowed through.
+    fn allow(&self) -> bool {
+        use std::sync::atomic::Ordering::Relaxed;
+        let failures = self.failure_count.load(Relaxed);
+        if failures < self.open_threshold {
+            return true; // Closed
+        }
+        // Open: check if reset window has elapsed (half-open probe)
+        let last = self.last_failure_ts.load(Relaxed);
+        Self::now_secs().saturating_sub(last) >= self.reset_secs
+    }
+
+    fn record_success(&self) {
+        use std::sync::atomic::Ordering::Relaxed;
+        self.failure_count.store(0, Relaxed);
+    }
+
+    fn record_failure(&self) {
+        use std::sync::atomic::Ordering::Relaxed;
+        self.failure_count.fetch_add(1, Relaxed);
+        self.last_failure_ts.store(Self::now_secs(), Relaxed);
+    }
+
+    fn is_open(&self) -> bool {
+        use std::sync::atomic::Ordering::Relaxed;
+        let failures = self.failure_count.load(Relaxed);
+        if failures < self.open_threshold {
+            return false;
+        }
+        let last = self.last_failure_ts.load(Relaxed);
+        Self::now_secs().saturating_sub(last) < self.reset_secs
+    }
+}
+
+// ---------------------------------------------------------------------------
 // BridgeEngine
 // ---------------------------------------------------------------------------
 
@@ -87,6 +173,7 @@ pub struct BridgeEngine {
     base_url: String,
     client: reqwest::Client,
     timeout: Duration,
+    circuit: BridgeCircuitBreaker,
 }
 
 impl BridgeEngine {
@@ -141,6 +228,7 @@ impl BridgeEngine {
             base_url: base_url.into().trim_end_matches('/').to_owned(),
             client,
             timeout,
+            circuit: BridgeCircuitBreaker::new(),
         })
     }
 
@@ -238,6 +326,18 @@ impl ConsciousnessEngine for BridgeEngine {
     }
 
     async fn calculate(&self, input: EngineInput) -> Result<EngineOutput, EngineError> {
+        // Circuit-breaker fast-fail: prevents cascading 503s when the TS sidecar is down.
+        if !self.circuit.allow() {
+            warn!(
+                engine = %self.engine_id,
+                "Circuit open — failing fast (TS sidecar unreachable)"
+            );
+            return Err(EngineError::BridgeError(format!(
+                "{}: circuit open — too many consecutive failures, retry in {}s",
+                self.engine_id, self.circuit.reset_secs
+            )));
+        }
+
         if self.engine_id == "sigil-forge" {
             let has_intention = Self::extract_question(&input.options).is_some();
             if !has_intention {
@@ -281,6 +381,7 @@ impl ConsciousnessEngine for BridgeEngine {
                     warn!(engine = %self.engine_id, error = %e, "Bridge HTTP error");
                     BridgeError::HttpError(format!("{} ({})", e, url))
                 };
+                self.circuit.record_failure();
                 bridge_error.into_calculate_engine_error(&self.engine_id)
             })?;
 
@@ -293,7 +394,7 @@ impl ConsciousnessEngine for BridgeEngine {
                 %body,
                 "bridge calculate returned non-2xx"
             );
-
+            self.circuit.record_failure();
             return Err(BridgeError::EngineResponse {
                 status: status.as_u16(),
                 body,
@@ -305,6 +406,9 @@ impl ConsciousnessEngine for BridgeEngine {
             BridgeError::DeserializationError(format!("TsEngineResponse: {}", e))
                 .into_calculate_engine_error(&self.engine_id)
         })?;
+
+        // Request succeeded — reset the circuit.
+        self.circuit.record_success();
 
         info!(
             engine = %self.engine_id,
@@ -689,6 +793,37 @@ mod tests {
     fn bridge_manager_base_url() {
         let manager = BridgeManager::new("http://custom:4000");
         assert_eq!(manager.base_url(), "http://custom:4000");
+    }
+
+    #[tokio::test]
+    async fn circuit_breaker_trips_after_threshold() {
+        use std::time::Duration;
+        let cb = BridgeCircuitBreaker {
+            failure_count: std::sync::atomic::AtomicU32::new(0),
+            last_failure_ts: std::sync::atomic::AtomicU64::new(0),
+            open_threshold: 3,
+            reset_secs: 60,
+        };
+        assert!(cb.allow()); // Closed
+        cb.record_failure();
+        cb.record_failure();
+        cb.record_failure();
+        assert!(!cb.allow()); // Open after 3 failures
+        // Success resets it
+        cb.record_success();
+        assert!(cb.allow()); // Closed again
+    }
+
+    #[tokio::test]
+    async fn circuit_breaker_half_open_after_reset_window() {
+        let cb = BridgeCircuitBreaker {
+            failure_count: std::sync::atomic::AtomicU32::new(3),
+            last_failure_ts: std::sync::atomic::AtomicU64::new(0), // very old
+            open_threshold: 3,
+            reset_secs: 1,
+        };
+        // last_failure was at epoch 0, reset_secs=1 → window elapsed → half-open probe allowed
+        assert!(cb.allow());
     }
 
     #[tokio::test]
