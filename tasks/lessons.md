@@ -98,10 +98,41 @@
   - the live URL reflects the claimed behavior when inspected directly.
 - If any of those checks disagree, state the exact state plainly: local only, committed but undeployed, or deployed but stale.
 
-## 2026-03-25 — Vercel Settings Change Is Not Deployment Proof
+## 2026-05-08 — v3.3.0 Release Session Lessons
 
-- Treat Vercel settings edits as inert until a fresh production deployment is confirmed and the custom domain resolves to that deployment.
-- If the user reports the same 404 after changing `Root Directory` or framework settings, immediately verify:
-  - whether the project settings were saved,
-  - whether a new production deployment was created after the save,
-  - whether the custom domain is attached to this exact project and environment.
+### range_days SQL Type Gotcha
+- In `admin/usage/summary`, the `range_days` parameter must cast to `::integer` in PostgreSQL.
+- If passed as a Rust `i64` without explicit cast, Postgres infers `bigint` which fails the `INTERVAL` arithmetic.
+- Document this in `docs/api/admin-analytics.md` — done.
+
+### OpenAPI Annotation Gap
+- 59 paths in live OpenAPI spec vs 84 registered routes. Missing paths: all `/billing/*`, `/readings/*`, `/witness/interpret`, `/auth/discord/*`, partial `/biofield/*`.
+- Root cause: handlers lack `#[utoipa::path]` annotations. P3 Rust work required.
+- Do not claim "OpenAPI covers all endpoints" without verifying count vs route registration count.
+
+### Vercel Domain Ownership vs DNS
+- `vercel domains add subdomain.tryambakam.space` returns 403 until the apex domain is registered in Vercel.
+- Once apex is registered (in another Vercel project), use Vercel API directly: `POST /v9/projects/{id}/domains`.
+- Domains show `verified: true` only after DNS records exist in Cloudflare (CNAME to `cname.vercel-dns.com`).
+
+### Wrangler v4 Token Storage
+- Wrangler v4 OAuth tokens are NOT in `~/.wrangler/` or `~/.config/wrangler/`.
+- The `cloudflare-api|*` macOS Keychain entry is the MCP integration token (read-only), NOT wrangler.
+- DNS write access requires Cloudflare dashboard or a separate API token with `dns_records:edit` scope.
+
+### Next.js `output: "standalone"` and Vercel
+- Vercel ignores `output: "standalone"` and uses its own optimization. No need to remove it.
+- For Railway deployment, standalone mode is required (`node .next/standalone/server.js`).
+
+### SDK Rename Strategy
+- Renaming `@selemene/sdk` → `@noesis/sdk` requires a new npm package name (old package stays on npm unless deprecated).
+- Update: `package.json` name, README, all import examples in docs. Tests still pass since name only matters for external consumers.
+
+### Noesis Web Deployment Pattern
+- noesis-web: Vercel (natural for Next.js, consistent with admin-web pattern)
+- biofield-cv-service: Railway
+- witness-agents: Railway
+- ts-engines: Railway
+- Selemene-engine (Rust API): Railway
+- admin-web (enantiodromia-engine-dashboard): Vercel
+
