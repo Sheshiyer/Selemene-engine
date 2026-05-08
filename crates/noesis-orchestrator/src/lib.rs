@@ -67,7 +67,7 @@ pub use engine_biofield_capture::BiofieldCaptureEngine;
 pub use engine_human_design::ephemeris::{EphemerisCalculator, HDPlanet, PlanetPosition};
 
 use chrono::Utc;
-use futures::future::join_all;
+use futures::stream::{self, StreamExt};
 use std::collections::HashMap;
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::Arc;
@@ -433,8 +433,16 @@ impl WorkflowOrchestrator {
             })
             .collect();
 
-        // Run all engines concurrently.
-        let results = join_all(futures).await;
+        // Run engines concurrently, bounded to prevent DB connection pool exhaustion.
+        // MAX_WORKFLOW_CONCURRENCY defaults to 8; tune via env var.
+        let concurrency = std::env::var("MAX_WORKFLOW_CONCURRENCY")
+            .ok()
+            .and_then(|s| s.parse::<usize>().ok())
+            .unwrap_or(8);
+        let results = stream::iter(futures)
+            .buffer_unordered(concurrency)
+            .collect::<Vec<_>>()
+            .await;
 
         // Collect successful outputs; log failures.
         let mut engine_outputs = HashMap::new();

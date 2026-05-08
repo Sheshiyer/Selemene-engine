@@ -229,10 +229,13 @@ impl AuthService {
         let pool_clone = pool.clone();
         let key_hash_clone = key_hash.clone();
         tokio::spawn(async move {
-            let _ = sqlx::query("UPDATE api_keys SET last_used = NOW() WHERE key_hash = $1")
+            if let Err(e) = sqlx::query("UPDATE api_keys SET last_used = NOW() WHERE key_hash = $1")
                 .bind(&key_hash_clone)
                 .execute(&pool_clone)
-                .await;
+                .await
+            {
+                tracing::warn!(error = %e, "Failed to update api_key last_used — timestamp may be stale");
+            }
         });
 
         // Parse permissions from JSONB

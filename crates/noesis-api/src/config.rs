@@ -156,7 +156,18 @@ impl ApiConfig {
         let redis_url = env::var("REDIS_URL").ok();
 
         let allowed_origins = env::var("ALLOWED_ORIGINS")
-            .unwrap_or_else(|_| "http://localhost:3000,http://localhost:5173".to_string())
+            .unwrap_or_else(|_| {
+                let is_production = env::var("RUST_ENV").as_deref() == Ok("production");
+                if is_production {
+                    tracing::warn!(
+                        "ALLOWED_ORIGINS not set in production — defaulting to empty list. \
+                         Set ALLOWED_ORIGINS to your frontend domain(s) to allow cross-origin requests."
+                    );
+                    String::new()
+                } else {
+                    "http://localhost:3000,http://localhost:5173".to_string()
+                }
+            })
             .split(',')
             .map(|s| s.trim().to_string())
             .filter(|s| !s.is_empty())

@@ -10,7 +10,25 @@ permissions:
   packages: write
 
 jobs:
+  # Gate: unit + doc tests must pass before release artifacts are built.
+  pre-release-tests:
+    name: Pre-release test gate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache cargo
+        uses: Swatinem/rust-cache@v2
+
+      - name: Run unit tests
+        run: cargo test --lib --bins -- --test-threads=4
+
   create-release:
+    needs: pre-release-tests
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code

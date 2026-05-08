@@ -163,7 +163,6 @@ jobs:
         env:
           REDIS_URL: redis://localhost:6379
           DATABASE_URL: postgresql://noesis_test:noesis_test_password@localhost:5432/noesis_test
-        continue-on-error: true
 
   # Security audit
   security:

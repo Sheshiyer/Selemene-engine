@@ -966,6 +966,7 @@ fn require_permission_or_forbidden(permissions: &[String], required: &str) -> Op
     if has_permission(permissions, required) {
         None
     } else {
+        tracing::warn!(required_permission = %required, "Authorization denied — insufficient permissions");
         Some(forbidden_response(required))
     }
 }
@@ -1217,6 +1218,15 @@ pub async fn update_user_tier(
         return Ok(json_error_response(
             StatusCode::UNPROCESSABLE_ENTITY,
             "Tier cannot be empty",
+            "VALIDATION_ERROR",
+            None,
+        ));
+    }
+    const VALID_TIERS: &[&str] = &["free", "basic", "premium", "enterprise"];
+    if !VALID_TIERS.contains(&tier.as_str()) {
+        return Ok(json_error_response(
+            StatusCode::UNPROCESSABLE_ENTITY,
+            format!("Invalid tier '{}'. Must be one of: {}", tier, VALID_TIERS.join(", ")),
             "VALIDATION_ERROR",
             None,
         ));
@@ -1473,6 +1483,15 @@ pub async fn create_api_key(
         .map(|t| t.trim().to_ascii_lowercase())
         .filter(|t| !t.is_empty())
     {
+        const VALID_TIERS: &[&str] = &["free", "basic", "premium", "enterprise"];
+        if !VALID_TIERS.contains(&tier.as_str()) {
+            return Ok(json_error_response(
+                StatusCode::UNPROCESSABLE_ENTITY,
+                format!("Invalid tier '{}'. Must be one of: {}", tier, VALID_TIERS.join(", ")),
+                "VALIDATION_ERROR",
+                None,
+            ));
+        }
         tier
     } else if let Some(existing_tier) = repo
         .get_user_tier(user_uuid)

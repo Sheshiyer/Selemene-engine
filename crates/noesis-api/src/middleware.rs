@@ -34,13 +34,13 @@ pub async fn request_logging_middleware(req: Request, next: Next) -> Response {
     let path = req.uri().path().to_string();
     let trace_id = uuid::Uuid::new_v4().to_string();
 
-    // Extract user_id from request extensions if authentication middleware set it
-    // For now, we'll check if it's in headers (e.g., X-User-Id set by upstream auth)
+    // Extract user_id from AuthUser extension (injected by auth middleware after auth check).
+    // Reading from the X-User-Id header would always be "anonymous" since auth middleware
+    // uses request extensions, not response headers.
     let user_id = req
-        .headers()
-        .get("x-user-id")
-        .and_then(|v| v.to_str().ok())
-        .map(|s| s.to_string());
+        .extensions()
+        .get::<AuthUser>()
+        .map(|u| u.user_id.clone());
 
     // Create a span for this request - this automatically generates trace_id and span_id
     let span = info_span!(

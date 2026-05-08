@@ -943,9 +943,12 @@ pub fn create_router(state: AppState, config: &ApiConfig) -> Router {
             middleware::rate_limit_middleware,
         ));
 
-    // Start with a base router and merge docs first (both have () state)
-    let base = Router::new()
-        .merge(SwaggerUi::new("/api/docs").url("/api/openapi.json", ApiDoc::openapi()));
+    // Start with a base router. Swagger UI is gated behind ENABLE_SWAGGER_UI=true
+    // to avoid exposing all admin endpoint schemas to anonymous clients in production.
+    let mut base = Router::new();
+    if std::env::var("ENABLE_SWAGGER_UI").as_deref() == Ok("true") {
+        base = base.merge(SwaggerUi::new("/api/docs").url("/api/openapi.json", ApiDoc::openapi()));
+    }
 
     // Now add stateful routes
     base.route("/health", get(health_handler))
@@ -3338,6 +3341,19 @@ pub async fn build_app_state(config: &ApiConfig) -> AppState {
     let usage_repository = pool
         .as_ref()
         .map(|p| Arc::new(UsageRepository::new(p.clone())));
+
+    // Ensure usage_log partitions exist for the next 3 months.
+    // Idempotent — safe on every startup; prevents the 2027 partition cliff.
+    if let Some(ref db_pool) = pool {
+        match sqlx::query("SELECT ensure_usage_log_partitions(3)")
+            .execute(db_pool)
+            .await
+        {
+            Ok(_) => tracing::info!("usage_log partitions ensured for next 3 months"),
+            Err(e) => tracing::warn!(error = %e, "Failed to ensure usage_log partitions — continuing startup"),
+        }
+    }
+
     let oauth_repository = pool.as_ref().map(|p| {
         Arc::new(noesis_data::repositories::oauth_repository::OAuthRepository::new(p.clone()))
     });

@@ -20,6 +20,7 @@ uuid = { version = "1.7", features = ["serde", "v4"] }
 sha2 = "0.10"
 hex = "0.4"
 rand = "0.8"
+tracing = "0.1"
 
 # Optional: Postgres-backed auth (enable with `features = ["postgres"]`)
 sqlx = { version = "0.7", features = ["postgres", "runtime-tokio-rustls", "uuid", "chrono", "json", "macros"], optional = true }
