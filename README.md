@@ -618,7 +618,8 @@ crates/
 | Component | Technology |
 |-----------|------------|
 | **Compute** | [Railway](https://railway.app) |
-| **Admin Frontend** | [Vercel](https://vercel.com) (`apps/admin-web`) |
+| **Admin Frontend** | [Vercel](https://vercel.com) (`apps/admin-web`) · billing at `/billing` |
+| **Payments** | [Dodo Payments](https://dodopayments.com) — plan catalog, subscriptions, webhooks |
 | **Database** | [Supabase](https://supabase.com) PostgreSQL |
 | **Cache** | Redis (L2) + LRU (L1) |
 
@@ -660,6 +661,14 @@ crates/
 | `/api/v1/admin/api-keys/:key_id/rotate` | ✓ | Rotate API key |
 | `/api/v1/admin/history-sync/*` | ✓ | Drift/device/event sync views |
 | `/api/v1/admin/analytics/*` | ✓ | Summary/timeseries/breakdown/top consumers |
+| `/api/v1/admin/billing/overview` | ✓ | Subscription counts, MRR estimate, free user count |
+| `/api/v1/admin/billing/subscriptions` | ✓ | Paginated subscription list with status filter |
+| `/api/v1/admin/billing/subscriptions/:id` | ✓ | Subscription detail + force-cancel |
+| `/api/v1/admin/billing/webhook-events` | ✓ | Last 100 processed Dodo webhook events |
+| `/api/v1/admin/billing/reconcile/drift` | ✓ | Current subscription drift report |
+| `/api/v1/admin/billing/reconcile/run` | ✓ | Trigger reconcile job |
+| `/api/v1/admin/billing/plans` | ✓ | Plan catalog (read-only) |
+| `/api/v1/admin/usage/summary` | ✓ | Engine usage summary + top consumers |
 
 </details>
 

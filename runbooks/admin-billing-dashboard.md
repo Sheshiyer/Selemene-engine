@@ -52,24 +52,50 @@ Backend (Rust):
 
 ## Granting access
 
-The auth system stores roles per user. To grant a user the billing-admin
-role on production:
+The auth system stores roles in two paths depending on schema state:
+
+**Path A — `user_profiles.preferences` (current production)**
+
+This is the active path while the `user_roles` table's CHECK constraint is pending update to include `billing-admin`.
 
 ```sql
 -- Replace with the target user_id
-UPDATE users
-SET roles = COALESCE(roles, '{}'::text[]) || ARRAY['billing-admin']
+UPDATE user_profiles
+SET preferences = jsonb_set(
+  jsonb_set(
+    COALESCE(preferences, '{}'),
+    '{admin_roles}',
+    COALESCE(preferences->'admin_roles', '[]'::jsonb) || '["billing-admin"]'::jsonb
+  ),
+  '{admin_permissions}',
+  '["admin:billing:read","admin:billing:subscriptions:cancel","admin:billing:reconcile:trigger"]'::jsonb
+)
 WHERE id = '00000000-0000-0000-0000-000000000000';
 ```
+
+**Path B — `user_roles` table (future, after migration adding billing-admin to CHECK)**
+
+```sql
+-- After a migration adds 'billing-admin' to the user_roles CHECK constraint:
+INSERT INTO user_roles (user_id, role)
+VALUES ('00000000-0000-0000-0000-000000000000', 'billing-admin')
+ON CONFLICT DO NOTHING;
+```
+
+> ⚠️ **Note**: `UPDATE users SET roles = ...` will fail — the `users` table has no `roles` column. Use Path A above.
 
 Then have the user sign out + back in. The `/api/v1/admin/session` endpoint
 will resolve their permissions on the next admin layout load.
 
-To revoke:
+To revoke (Path A):
 
 ```sql
-UPDATE users
-SET roles = array_remove(roles, 'billing-admin')
+UPDATE user_profiles
+SET preferences = jsonb_set(
+  COALESCE(preferences, '{}'),
+  '{admin_roles}',
+  (COALESCE(preferences->'admin_roles', '[]'::jsonb) - 'billing-admin')
+)
 WHERE id = '00000000-0000-0000-0000-000000000000';
 ```
 

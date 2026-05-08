@@ -2,6 +2,24 @@
 
 All notable changes to the Tryambakam Noesis Engine project.
 
+## [3.3.0] - 2026-05-08
+
+### Added
+- Admin billing dashboard at `/billing` in `apps/admin-web` — overview, subscriptions, webhook events, reconcile, plans
+- New `billing-admin` role scoped to billing surface only (`admin:billing:read`, `:subscriptions:cancel`, `:reconcile:trigger`)
+- Backend Rust admin billing endpoints: `/api/v1/admin/billing/*` (overview, subscriptions CRUD, webhook events, reconcile drift/run, plans)
+- Schema migrations 010–023 applied to production: `user_roles`, `billing_subscriptions`, `plan_catalog`, `processed_webhook_events`, `engine_usage_monthly`, `reconcile_runs`
+- `supabase/migrations/20260508000023_023_reconcile_runs.sql` — reconcile cron run tracking
+- Operator runbook: `runbooks/admin-billing-dashboard.md` with grant SQL, common tasks, failure modes
+
+### Changed
+- Admin billing surface moved from `biofield-web` (user app) to `admin-web` (operator app) — no user-facing routes changed
+- `apps/admin-web` now points to `https://selemene.tryambakam.space` for API calls
+
+### Fixed
+- `/api/v1/admin/billing/overview` was returning 500 due to missing `billing_subscriptions` schema — resolved by applying migrations
+- `/api/v1/admin/usage/summary` was returning 500 due to missing `engine_usage_monthly` table — resolved
+
 ## [3.2.0] - 2026-05-05
 
 ### Added
