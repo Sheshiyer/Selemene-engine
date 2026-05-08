@@ -9,10 +9,15 @@ Not prediction. Reflection. Inquiry. Witness.
 
 ## Quick Links
 
-- **OpenAPI Spec**: [openapi.yaml](./openapi.yaml)
+- **Live OpenAPI Spec** (v3.3.0): [https://selemene.tryambakam.space/api/openapi.json](https://selemene.tryambakam.space/api/openapi.json)
+- **Swagger UI**: [https://selemene.tryambakam.space/api/docs](https://selemene.tryambakam.space/api/docs)
+- **OpenAPI YAML** (local ref): [openapi.yaml](./openapi.yaml)
 - **Engines**: [engines.md](./engines.md)
 - **Workflows**: [workflows.md](./workflows.md)
 - **Authentication**: [authentication.md](./authentication.md)
+- **Billing (User)**: [billing.md](./billing.md)
+- **Admin Analytics**: [admin-analytics.md](./admin-analytics.md)
+- **Admin Reconciliation**: [admin-reconcile.md](./admin-reconcile.md)
 - **LLM and Agent Guide**: [LLM_AGENT_GUIDE.md](./LLM_AGENT_GUIDE.md)
 - **OpenClaw Integration**: [OPENCLAW_INTEGRATION.md](./OPENCLAW_INTEGRATION.md)
 - **MCP Integration**: [MCP_INTEGRATION.md](./MCP_INTEGRATION.md)
@@ -94,35 +99,74 @@ Notes:
 - `POST /api/v1/workflows/{workflow_id}/execute`
 - `GET /api/v1/workflows/{workflow_id}/info`
 
-Workflow output contract:
+Workflow output contract (v3.3.0):
 - `workflow_id` and `total_time_ms` are always present on success.
 - `engine_outputs` contains successful engine results only.
+- `reading_id`, `reading_url`, `created_at`, `subject`, `evidence` are top-level reading-object fields.
+- `witness_layer` contains: `title`, `summary`, `convergences`, `frictions`, `practice`, `question`.
 - For strict completeness checks, compare `engine_outputs` keys to `GET /api/v1/workflows/{workflow_id}/info.engine_ids`.
 
-### Admin
+### Admin (Users & Keys)
 
-- `GET /api/v1/admin/session`
-- `GET /api/v1/admin/users`
-- `PATCH /api/v1/admin/users/{user_id}/state`
-- `PATCH /api/v1/admin/users/{user_id}/tier`
-- `PUT /api/v1/admin/users/{user_id}/roles`
-- `GET /api/v1/admin/api-keys`
-- `POST /api/v1/admin/api-keys`
-- `POST /api/v1/admin/api-keys/{key_id}/revoke`
-- `POST /api/v1/admin/api-keys/{key_id}/rotate`
+Requires `admin` or `platform-admin` role. See [admin-analytics.md](./admin-analytics.md) for analytics endpoints.
 
-Admin routes are permission-gated. Typical requirements include:
-- `admin:users:list` for user listing
-- `admin:keys:list` for key listing
-- `admin:system:read` for system views
-- `admin:audit:list` for audit views
+- `GET /api/v1/admin/session` — effective permissions for current token
+- `GET /api/v1/admin/users` — list all users (`admin:users:list`)
+- `PATCH /api/v1/admin/users/{user_id}/state` — activate/deactivate user
+- `PATCH /api/v1/admin/users/{user_id}/tier` — change user tier
+- `PUT /api/v1/admin/users/{user_id}/roles` — assign roles
+- `GET /api/v1/admin/api-keys` — list all API keys (`admin:keys:list`)
+- `POST /api/v1/admin/api-keys/{key_id}/revoke` — revoke key
+- `POST /api/v1/admin/api-keys/{key_id}/rotate` — rotate key
+- `GET /api/v1/admin/audit-events` — audit log (`admin:audit:list`)
+- `GET /api/v1/admin/system/health` — system health (`admin:system:read`)
+- `GET /api/v1/admin/system/cache` — cache stats
+- `GET /api/v1/admin/system/services` — service statuses
 
-Use `GET /api/v1/admin/session` to verify the effective permission set for the authenticated user.
+### Admin Billing
+
+Requires `billing-admin` role. Full reference: [admin-analytics.md](./admin-analytics.md).
+
+- `GET /api/v1/admin/billing/overview` — MRR estimate, subscription counts
+- `GET /api/v1/admin/billing/subscriptions` — paginated subscription list
+- `POST /api/v1/admin/billing/subscriptions/{id}/cancel` — force-cancel
+- `GET /api/v1/admin/billing/webhook-events` — processed webhook log
+- `GET /api/v1/admin/billing/reconcile/drift` — billing drift report
+- `POST /api/v1/admin/billing/reconcile/run` — trigger reconciliation
+- `GET /api/v1/admin/billing/plans` — plan catalog
+- `GET /api/v1/admin/usage/summary` — usage across all users
+- `GET /api/v1/admin/analytics/summary` — aggregated analytics
+
+### Billing (User-facing)
+
+Full reference: [billing.md](./billing.md).
+
+- `GET /api/v1/billing/balance` — credit balance and tier
+- `GET /api/v1/billing/subscription` — subscription status
+- `POST /api/v1/billing/checkout` — initiate plan upgrade (Dodo Payments)
+- `GET /api/v1/billing/portal` — Dodo customer portal redirect
+
+### Biofield
+
+- `GET /api/v1/biofield/readings` — list biofield readings
+- `GET /api/v1/biofield/readings/{reading_id}` — single reading
+- `POST /api/v1/biofield/readings/{reading_id}/reprocess` — reprocess
+- `GET /api/v1/biofield/baselines` — user baselines
+- `POST /api/v1/biofield/exports` — create export
+- `GET /api/v1/biofield/sessions` — PIP camera sessions
+- `POST /api/v1/biofield/sessions/{session_id}/captures` — capture frame
+- `POST /api/v1/biofield/sessions/{session_id}/close` — close session
+
+### Witness
+
+- `POST /api/v1/witness/interpret` — generate witness interpretation from engine outputs
+  - Input: `{ engine_outputs: [...], context?: {...} }`
+  - Output: reading-object with `witness_layer` fields
 
 ### User Profile
 
-- `GET /api/v1/users/me`
-- `PATCH /api/v1/users/me`
+- `GET /api/v1/users/me` — current user profile
+- `GET /api/v1/users/me/usage` — personal usage stats
 
 ### Auth
 
@@ -131,12 +175,14 @@ Use `GET /api/v1/admin/session` to verify the effective permission set for the a
 - `POST /api/v1/auth/forgot-password`
 - `POST /api/v1/auth/reset-password`
 - `POST /api/v1/auth/change-password`
+- `GET /api/v1/auth/discord/authorize` — Discord OAuth initiation
+- `GET /api/v1/auth/discord/callback` — Discord OAuth callback
 
 ### Readings History
 
-- `GET /api/v1/readings`
-- `GET /api/v1/readings/{reading_id}`
-- `GET /api/v1/readings/stats`
+- `GET /api/v1/readings` — list saved readings for authenticated user
+- `GET /api/v1/readings/{reading_id}` — single reading (full reading-object)
+- `GET /api/v1/readings/stats` — reading statistics
 
 ### Legacy (Deprecated)
 

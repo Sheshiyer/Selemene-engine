@@ -55,7 +55,7 @@ curl -s https://selemene.tryambakam.space/health/live | python3 -m json.tool
 ```json
 {
     "status": "ok",
-    "version": "3.0.0",
+    "version": "3.3.0",
     "engines_loaded": 16,
     "workflows_loaded": 6
 }
@@ -305,6 +305,50 @@ For a richer terminal experience, use the included explorer:
 
 This gives you a menu-driven interface to explore engines, run calculations, and see formatted responses — all from the terminal.
 
+## Reading-Object Contract (v3.3.0)
+
+Workflow execution responses now include a reading-object at the top level alongside `engine_outputs`.
+
+```bash
+curl -s -X POST $NOESIS_URL/api/v1/workflows/daily-practice/execute \
+  -H "X-API-Key: $NOESIS_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "birth_data": {
+      "date": "1991-08-13",
+      "time": "13:19",
+      "timezone": "Asia/Kolkata",
+      "latitude": 12.9716,
+      "longitude": 77.5946
+    }
+  }'
+```
+
+The response now includes:
+
+```json
+{
+  "workflow_id": "daily-practice",
+  "reading_id": "uuid",
+  "reading_url": "https://noesis.tryambakam.space/readings/uuid",
+  "created_at": "2026-05-08T05:00:00Z",
+  "subject": "1991-08-13 / Asia/Kolkata",
+  "evidence": ["panchanga", "vedic-clock", "biorhythm"],
+  "witness_layer": {
+    "title": "...",
+    "summary": "...",
+    "convergences": ["..."],
+    "frictions": ["..."],
+    "practice": "...",
+    "question": "..."
+  },
+  "engine_outputs": {...},
+  "total_time_ms": 44
+}
+```
+
+`reading_url` is non-null only when `WITNESS_READING_BASE_URL` is set in the deployment environment.
+
 ## Quick Reference
 
 ```bash
@@ -335,6 +379,12 @@ curl -s -X POST $NOESIS_URL/api/v1/workflows/{workflow_id}/execute \
   -H "X-API-Key: $NOESIS_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{"birth_data":{...}}'
+
+# My readings history
+curl -s $NOESIS_URL/api/v1/readings -H "X-API-Key: $NOESIS_API_KEY"
+
+# Credit balance
+curl -s $NOESIS_URL/api/v1/billing/balance -H "X-API-Key: $NOESIS_API_KEY"
 
 # Swagger UI
 open $NOESIS_URL/api/docs

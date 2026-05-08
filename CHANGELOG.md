@@ -118,6 +118,16 @@ All notable changes to the Tryambakam Noesis Engine project.
 ### Fixed
 - `/api/v1/admin/billing/overview` was returning 500 due to missing `billing_subscriptions` schema — resolved by applying migrations
 - `/api/v1/admin/usage/summary` was returning 500 due to missing `engine_usage_monthly` table — resolved
+- `/api/openapi.json` was returning 404 in production — fixed by enabling `ENABLE_SWAGGER_UI=true` in Railway environment
+
+### Docs (P1-W1/W2)
+- `docs/DRIFT_REPORT_v3.3.md` — master audit: 84 routes, 52% doc coverage gap, SDK status, llms.txt gaps
+- `llms.txt` updated: product name "Selemene Engine" → "Noesis", added version 3.3.0, billing/admin/readings/witness sections, reading-object contract, consumer URLs
+- `docs/api/README.md` updated: admin billing, admin analytics, user billing, biofield, witness, auth OAuth sections added
+- `docs/api/billing.md` created: full user-facing billing endpoint reference (balance, subscription, checkout, portal, credit model)
+- `docs/api/admin-analytics.md` created: operator analytics (billing overview, subscriptions, usage summary, analytics, top consumers, plans) with type-gotcha doc for `range_days`
+- `docs/api/admin-reconcile.md` created: drift detection, reconcile run, reconcile history, migration 023 how-to
+- `docs/API_QUICKSTART.md`: version string fixed (3.0.0 → 3.3.0), reading-object contract section added, billing/readings curl examples added
 
 ## [3.2.0] - 2026-05-05
 

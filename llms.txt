@@ -1,8 +1,8 @@
-# Selemene Engine
+# Noesis
 
-> Computational mirror for self-inquiry. 16 live consciousness engines with sub-ms calculations. REST API with witness prompts calibrated to consciousness level.
+> version: 3.3.0 · Computational mirror for self-inquiry. 16 live consciousness engines with sub-ms calculations. REST API with witness prompts calibrated to consciousness level.
 
-Selemene Engine is a high-performance Rust + TypeScript API serving 16 calculation engines (11 Rust + 5 TypeScript) rooted in Vedic, numerological, and consciousness traditions. Each response includes a witness prompt — a question calibrated to your awareness level.
+Noesis is a high-performance Rust + TypeScript API (repository: Selemene-engine) serving 16 calculation engines (11 Rust + 5 TypeScript) rooted in Vedic, numerological, and consciousness traditions. Each response includes a witness prompt — a question calibrated to your awareness level. Deployed at `selemene.tryambakam.space`.
 
 ## API Documentation
 
@@ -42,8 +42,59 @@ Selemene Engine is a high-performance Rust + TypeScript API serving 16 calculati
 - [Self Inquiry](https://selemene.tryambakam.space/api/v1/workflows/self-inquiry/info): Reflective prompts across consciousness systems
 - [Creative Expression](https://selemene.tryambakam.space/api/v1/workflows/creative-expression/info): Archetypal and symbolic creative guidance
 
+## Billing (User)
+
+- `GET /api/v1/billing/balance`: Credit balance and tier
+- `GET /api/v1/billing/subscription`: Current subscription status
+- `POST /api/v1/billing/checkout`: Initiate plan upgrade (Dodo Payments)
+- `GET /api/v1/billing/portal`: Dodo customer portal redirect
+
+## Admin (Billing Operators — requires `billing-admin` role)
+
+- `GET /api/v1/admin/billing/overview`: MRR estimate, subscription counts by status, free user count
+- `GET /api/v1/admin/billing/subscriptions`: Paginated active subscriptions
+- `POST /api/v1/admin/billing/subscriptions/{id}/cancel`: Force-cancel subscription
+- `GET /api/v1/admin/billing/webhook-events`: Last processed Dodo webhook events
+- `GET /api/v1/admin/billing/reconcile/drift`: Billing drift report
+- `POST /api/v1/admin/billing/reconcile/run`: Trigger reconciliation run
+- `GET /api/v1/admin/billing/plans`: Plan catalog
+- `GET /api/v1/admin/usage/summary`: Usage summary across all users (range_days param is int, not bigint)
+- `GET /api/v1/admin/analytics/summary`: Aggregated analytics
+- `GET /api/v1/admin/analytics/top-consumers`: Top API consumers
+
+## Readings & Witness
+
+- `GET /api/v1/readings`: List saved readings for authenticated user
+- `GET /api/v1/readings/{reading_id}`: Get a specific reading (includes reading-object contract fields)
+- `GET /api/v1/readings/stats`: Reading statistics for user
+- `POST /api/v1/witness/interpret`: Generate witness interpretation from engine outputs
+
+### Reading-Object Contract (v3.3.0)
+Workflow responses now include these top-level fields:
+```json
+{
+  "reading_id": "uuid",
+  "reading_url": "https://...",
+  "created_at": "ISO-8601",
+  "subject": "birth-data-summary",
+  "evidence": [...],
+  "witness_layer": {
+    "title": "...",
+    "summary": "...",
+    "convergences": [...],
+    "frictions": [...],
+    "practice": "...",
+    "question": "..."
+  }
+}
+```
+
 ## Optional
 
 - [Bridge CLI](https://github.com/Sheshiyer/Selemene-engine/blob/main/bridges/cli/README.md): Generate tool definitions for Claude, OpenAI, LangChain
+- [MCP Integration](https://github.com/Sheshiyer/Selemene-engine/blob/main/docs/api/MCP_INTEGRATION.md): Model Context Protocol tools
+- [OpenClaw Integration](https://github.com/Sheshiyer/Selemene-engine/blob/main/docs/api/OPENCLAW_INTEGRATION.md): OpenClaw agent tools
+- [Noesis Web](https://noesis.tryambakam.space): Full 16-engine viewer (also at 3437.tryambakam.space)
+- [Admin Surface](https://144.tryambakam.space): Operator billing dashboard
 - [Deployment Guide](https://github.com/Sheshiyer/Selemene-engine/blob/main/docs/deployment/README.md): Self-hosting instructions
 - [Changelog](https://github.com/Sheshiyer/Selemene-engine/blob/main/CHANGELOG.md): Version history
