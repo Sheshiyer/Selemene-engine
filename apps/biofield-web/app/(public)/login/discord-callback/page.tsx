@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { setStoredAuthSession } from "@/lib/auth";
 import { BiofieldApiError, discordCallback } from "@/lib/api";
@@ -37,7 +37,7 @@ function Shell({ children }: { children: React.ReactNode }) {
   );
 }
 
-export default function DiscordCallbackPage() {
+function DiscordCallbackInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const code = searchParams.get("code");
@@ -101,5 +101,17 @@ export default function DiscordCallbackPage() {
         ))}
       </div>
     </Shell>
+  );
+}
+
+export default function DiscordCallbackPage() {
+  return (
+    <Suspense fallback={
+      <Shell>
+        <h1 style={{ margin: 0, fontSize: "1.4rem", fontWeight: 700, letterSpacing: "-0.04em" }}>Loading…</h1>
+      </Shell>
+    }>
+      <DiscordCallbackInner />
+    </Suspense>
   );
 }

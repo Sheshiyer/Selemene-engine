@@ -8,7 +8,7 @@ export interface CameraDevice {
 }
 
 export interface UseCameraResult {
-  videoRef: React.RefObject<HTMLVideoElement | null>;
+  videoRef: React.RefObject<HTMLVideoElement>;
   isStreaming: boolean;
   devices: CameraDevice[];
   error: string | null;
@@ -17,7 +17,7 @@ export interface UseCameraResult {
 }
 
 export function useCamera(): UseCameraResult {
-  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const [isStreaming, setIsStreaming] = useState(false);
   const [devices, setDevices] = useState<CameraDevice[]>([]);

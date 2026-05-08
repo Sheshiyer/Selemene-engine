@@ -138,7 +138,7 @@ export default function ViewerPage() {
       setStatusMessage(null);
 
       try {
-        const session = await client.getSession(storedSessionId);
+        const session = await client!.getSession(storedSessionId!);
         if (isCancelled) return;
         setCurrentSession(session);
         if (session.status === "active") {
@@ -339,6 +339,7 @@ export default function ViewerPage() {
     }).catch((err) => {
       console.warn("[BF1-05.6] biofield engine error:", err instanceof Error ? err.message : err);
     });
+  }, [noesisClient, lastMetricsSubmitRef]);
 
   const hasActiveSession = currentSession?.status === "active";
 
@@ -510,6 +511,7 @@ export default function ViewerPage() {
               {isUploading ? "Uploading…" : "Upload capture"}
             </button>
           </div>
+        </form>
 
       {/* Capture result */}
       {captureResult && (
@@ -583,6 +585,7 @@ export default function ViewerPage() {
           </div>
         </section>
       )}
-    </section>
+      </section>
+    </div>
   );
 }
