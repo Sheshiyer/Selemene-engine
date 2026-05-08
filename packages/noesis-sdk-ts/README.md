@@ -1,34 +1,36 @@
-# @selemene/sdk
+# @noesis/sdk
 
-TypeScript SDK for Selemene Engine.
+TypeScript SDK for the Noesis Consciousness Engine — 16 engines covering Vedic astrology, Human Design, Gene Keys, numerology, biorhythm, Tarot, I-Ching, and more.
+
+**API**: `https://selemene.tryambakam.space` | **Web viewer**: `https://noesis.tryambakam.space`
 
 ## Installation
 
 ```bash
-npm i @selemene/sdk
+npm i @noesis/sdk
 ```
 
 ## Quickstart (Node.js)
 
 ```ts
-import { NoesisClient } from "@selemene/sdk";
+import { NoesisClient } from "@noesis/sdk";
 
-const client = new NoesisClient("https://selemene-engine-production.up.railway.app", {
+const client = new NoesisClient("https://selemene.tryambakam.space", {
   authToken: process.env.NOESIS_API_KEY,
   maxRetries: 2,
   backoffMs: 200,
 });
 
 const health = await client.health();
-console.log(health.version);
+console.log(health.version); // "3.3.0"
 ```
 
 ## Quickstart (Browser)
 
 ```ts
-import { NoesisClient } from "@selemene/sdk";
+import { NoesisClient } from "@noesis/sdk";
 
-const client = new NoesisClient("https://selemene-engine-production.up.railway.app", {
+const client = new NoesisClient("https://selemene.tryambakam.space", {
   authToken: "nk_...",
 });
 
@@ -57,7 +59,7 @@ console.log(result.engine_id);
 ## Error handling
 
 ```ts
-import { NoesisClient, SelemeneError } from "@selemene/sdk";
+import { NoesisClient, SelemeneError } from "@noesis/sdk";
 
 try {
   await client.workflow("daily-practice", { birth_data: { date: "1991-08-13" } });
@@ -76,11 +78,36 @@ setTimeout(() => controller.abort(), 1000);
 await client.health({ signal: controller.signal });
 ```
 
+## v3.3.0 reading-object contract
+
+Workflow responses now include reading persistence fields:
+
+```ts
+const result = await client.workflow("full-spectrum", { birth_data: { date: "1991-08-13" } });
+console.log(result.reading_id);         // "r_abc123"
+console.log(result.reading_url);        // "https://noesis.tryambakam.space/readings/r_abc123"
+console.log(result.witness_layer?.question); // "What are you not saying?"
+```
+
 ## API Reference
 
 | Method | Description |
 |---|---|
-| `health(options?)` | Fetches `/health/live` |
-| `calculate(engineId, input, options?)` | Runs `/api/v1/engines/{engineId}/calculate` |
-| `workflow(workflowId, input, options?)` | Runs `/api/v1/workflows/{workflowId}/execute` |
-| `rateLimitInfo` | Last parsed `X-RateLimit-*` and daily quota headers |
+| `health(options?)` | `/health/live` — server health + version |
+| `calculate(engineId, input, options?)` | `/api/v1/engines/{id}/calculate` |
+| `workflow(workflowId, input, options?)` | `/api/v1/workflows/{id}/execute` |
+| `listEngines(options?)` | `/api/v1/engines` — engine catalogue |
+| `listWorkflows(options?)` | `/api/v1/workflows` — workflow catalogue |
+| `getEngineInfo(engineId, options?)` | `/api/v1/engines/{id}` |
+| `getWorkflowInfo(workflowId, options?)` | `/api/v1/workflows/{id}` |
+| `getMe(options?)` | `/api/v1/auth/me` — user profile |
+| `getMyUsage(options?)` | `/api/v1/usage/me` — credit usage |
+| `getBillingBalance(options?)` | `/api/v1/billing/balance` |
+| `getBillingSubscription(options?)` | `/api/v1/billing/subscription` |
+| `createCheckout(request, options?)` | `/api/v1/billing/checkout` — Dodo checkout URL |
+| `getBillingPortal(options?)` | `/api/v1/billing/portal` — Dodo portal URL |
+| `listReadings(opts?, options?)` | `/api/v1/readings` — reading history |
+| `getReading(readingId, options?)` | `/api/v1/readings/{id}` |
+| `interpretWitness(input, options?)` | `/api/v1/witness/interpret` |
+| `validateEngine(engineId, options?)` | Returns `{ valid: boolean }` |
+| `rateLimitInfo` | Last parsed `X-RateLimit-*` headers |

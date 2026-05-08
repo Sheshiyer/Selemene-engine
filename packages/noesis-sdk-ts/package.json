@@ -1,7 +1,7 @@
 {
-  "name": "@selemene/sdk",
-  "version": "3.0.0",
-  "description": "TypeScript SDK for Selemene Engine",
+  "name": "@noesis/sdk",
+  "version": "3.3.0",
+  "description": "TypeScript SDK for Noesis Consciousness Engine",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -22,9 +22,11 @@
     "clean": "rm -rf dist"
   },
   "keywords": [
+    "noesis",
     "selemene",
     "sdk",
     "typescript",
+    "consciousness",
     "astrology",
     "api"
   ],
@@ -33,7 +35,7 @@
     "type": "git",
     "url": "https://github.com/Sheshiyer/Selemene-engine.git"
   },
-  "homepage": "https://selemene.tryambakam.space",
+  "homepage": "https://noesis.tryambakam.space",
   "engines": {
     "node": ">=18"
   },
