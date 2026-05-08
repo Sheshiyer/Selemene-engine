@@ -194,9 +194,9 @@ export default function EnginesPage() {
   }, [router]);
 
   const engineMap = new Map<string, EngineOutput>();
-  const outputs = response?.engine_outputs ?? response?.engine_results ?? [];
-  for (const o of outputs) {
-    engineMap.set(o.engine_id, o);
+  const outputsMap = response?.engine_outputs ?? response?.engine_results ?? {};
+  for (const [id, o] of Object.entries(outputsMap)) {
+    engineMap.set(id, o);
   }
 
   const handleSubmit = useCallback(async (birthData: BirthData) => {
@@ -246,7 +246,7 @@ export default function EnginesPage() {
                   <span>Reading: {response.reading_id}</span>
                 )}
                 <span>{response.total_time_ms}ms</span>
-                <span>{outputs.length} engines</span>
+                <span>{Object.keys(outputsMap).length} engines</span>
               </div>
             )}
 

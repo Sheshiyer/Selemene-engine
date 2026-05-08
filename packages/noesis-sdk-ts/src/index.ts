@@ -69,12 +69,17 @@ export interface WitnessLayer {
 
 export interface WorkflowResult {
   workflow_id: string;
-  engine_outputs?: EngineOutput[];
-  engine_results?: EngineOutput[];
+  /**
+   * Engine results keyed by engine_id.
+   * Both `engine_outputs` and `engine_results` carry the same data;
+   * prefer `engine_outputs` but fall back to `engine_results` for compatibility.
+   */
+  engine_outputs?: Record<string, EngineOutput>;
+  engine_results?: Record<string, EngineOutput>;
   synthesis?: string;
   timestamp?: string;
   total_time_ms?: number;
-  /** v3.3.0: Reading persistence fields */
+  /** v3.3.0: Reading persistence fields (requires witness-agents deploy — issue #711) */
   reading_id?: string;
   reading_url?: string | null;
   created_at?: string;

@@ -34,13 +34,17 @@ export interface WitnessLayer {
 
 export interface WorkflowResponse {
   workflow_id: string;
-  reading_id?: string;
-  engine_outputs?: EngineOutput[];
-  engine_results?: EngineOutput[];
+  /**
+   * Engine results keyed by engine_id (both fields carry same data).
+   * Use `engine_outputs ?? engine_results` for compatibility.
+   */
+  engine_outputs?: Record<string, EngineOutput>;
+  engine_results?: Record<string, EngineOutput>;
   witness_layer?: WitnessLayer;
   synthesis?: string;
   timestamp?: string;
   total_time_ms?: number;
+  reading_id?: string;
 }
 
 export interface ReadingSummary {
