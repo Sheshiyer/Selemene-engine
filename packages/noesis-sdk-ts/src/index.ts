@@ -105,11 +105,92 @@ export interface WorkflowInfo {
   description?: string;
 }
 
+// ── Auth request/response types ──────────────────────────────────────────────
+
+export interface RegisterRequest {
+  email: string;
+  password: string;
+  full_name: string;
+}
+
+export interface RegisterResponse {
+  id: string;
+  message: string;
+}
+
+export interface LoginRequest {
+  email: string;
+  password: string;
+}
+
+export interface LoginResponse {
+  token: string;
+  user_id: string;
+  email: string;
+  tier: string;
+}
+
+export interface ForgotPasswordRequest {
+  email: string;
+}
+
+export interface ForgotPasswordResponse {
+  message: string;
+}
+
+export interface ResetPasswordRequest {
+  token: string;
+  new_password: string;
+}
+
+export interface ResetPasswordResponse {
+  message: string;
+}
+
+export interface ChangePasswordRequest {
+  current_password: string;
+  new_password: string;
+}
+
+export interface ChangePasswordResponse {
+  message: string;
+}
+
+// ── User profile types ────────────────────────────────────────────────────────
+
+/** Slim profile used internally. For the full profile, use UserProfile. */
 export interface UserProfile {
   id: string;
   email?: string;
   role?: string;
   created_at?: string;
+}
+
+/** Full user profile returned by GET /api/v1/users/me */
+export interface UserProfileFull {
+  id: string;
+  email: string;
+  full_name: string;
+  tier: string;
+  consciousness_level: number;
+  experience_points: number;
+  birth_date?: string | null;
+  birth_time?: string | null;
+  birth_location?: { lat: number; lng: number; name?: string | null } | null;
+  timezone?: string | null;
+  preferences: Record<string, unknown>;
+}
+
+export interface UpdateUserRequest {
+  full_name?: string;
+  email?: string;
+  birth_date?: string;
+  birth_time?: string;
+  birth_location_lat?: number;
+  birth_location_lng?: number;
+  birth_location_name?: string;
+  timezone?: string;
+  preferences?: Record<string, unknown>;
 }
 
 export interface UsageSummary {
@@ -118,6 +199,38 @@ export interface UsageSummary {
   credits_used?: number;
   period_start?: string;
   period_end?: string;
+}
+
+// ── Usage analytics types ─────────────────────────────────────────────────────
+
+export interface UserUsageWindowSummary {
+  total: number;
+  success: number;
+  failure: number;
+}
+
+export interface UserUsageEngineEntry {
+  engine_id: string;
+  request_count: number;
+}
+
+export interface UserUsageResponse {
+  user_id: string;
+  daily: UserUsageWindowSummary;
+  monthly: UserUsageWindowSummary;
+  engine_breakdown: UserUsageEngineEntry[];
+}
+
+// ── Readings stats types ──────────────────────────────────────────────────────
+
+export interface ReadingsStatsEntry {
+  engine_id: string;
+  count: number;
+}
+
+export interface ReadingsStatsResponse {
+  stats: ReadingsStatsEntry[];
+  total: number;
 }
 
 export interface Reading {
@@ -156,7 +269,10 @@ export interface RateLimitInfo {
 }
 
 export interface NoesisClientOptions {
+  /** JWT bearer token (Authorization: Bearer <token>) */
   authToken?: string;
+  /** API key (X-API-Key: nk_...). Takes precedence over authToken when both are set. */
+  apiKey?: string;
   maxRetries?: number;
   backoffMs?: number;
 }
@@ -179,6 +295,7 @@ export class SelemeneError extends Error {
 
 export class NoesisClient {
   private readonly authToken?: string;
+  private readonly apiKey?: string;
   private readonly maxRetries: number;
   private readonly backoffMs: number;
   public rateLimitInfo: RateLimitInfo = {};
@@ -193,6 +310,7 @@ export class NoesisClient {
       this.backoffMs = 150;
     } else {
       this.authToken = options.authToken;
+      this.apiKey = options.apiKey;
       this.maxRetries = options.maxRetries ?? 0;
       this.backoffMs = options.backoffMs ?? 150;
     }
@@ -244,7 +362,7 @@ export class NoesisClient {
 
   /** Get engine metadata by ID. */
   async getEngineInfo(engineId: EngineId | string, options?: RequestOptions): Promise<EngineInfo> {
-    return this.request<EngineInfo>(`/api/v1/engines/${engineId}`, { method: "GET" }, options);
+    return this.request<EngineInfo>(`/api/v1/engines/${engineId}/info`, { method: "GET" }, options);
   }
 
   /** Get workflow metadata by ID. */
@@ -252,16 +370,72 @@ export class NoesisClient {
     return this.request<WorkflowInfo>(`/api/v1/workflows/${workflowId}`, { method: "GET" }, options);
   }
 
-  // ── Auth & user ─────────────────────────────────────────────────────────
+  // ── Auth ─────────────────────────────────────────────────────────────────────
 
-  /** Get the authenticated user's profile. */
-  async getMe(options?: RequestOptions): Promise<UserProfile> {
-    return this.request<UserProfile>("/api/v1/auth/me", { method: "GET" }, options);
+  /** Register a new user account. Returns the new user ID. */
+  async register(request: RegisterRequest, options?: RequestOptions): Promise<RegisterResponse> {
+    return this.request<RegisterResponse>(
+      "/api/v1/auth/register",
+      { method: "POST", body: JSON.stringify(request) },
+      options,
+    );
   }
 
-  /** Get the authenticated user's usage summary. */
-  async getMyUsage(options?: RequestOptions): Promise<UsageSummary> {
-    return this.request<UsageSummary>("/api/v1/usage/me", { method: "GET" }, options);
+  /** Log in with email + password. Returns a JWT token. */
+  async login(request: LoginRequest, options?: RequestOptions): Promise<LoginResponse> {
+    return this.request<LoginResponse>(
+      "/api/v1/auth/login",
+      { method: "POST", body: JSON.stringify(request) },
+      options,
+    );
+  }
+
+  /** Initiate a password reset flow. */
+  async forgotPassword(request: ForgotPasswordRequest, options?: RequestOptions): Promise<ForgotPasswordResponse> {
+    return this.request<ForgotPasswordResponse>(
+      "/api/v1/auth/forgot-password",
+      { method: "POST", body: JSON.stringify(request) },
+      options,
+    );
+  }
+
+  /** Complete a password reset with the token received by email. */
+  async resetPassword(request: ResetPasswordRequest, options?: RequestOptions): Promise<ResetPasswordResponse> {
+    return this.request<ResetPasswordResponse>(
+      "/api/v1/auth/reset-password",
+      { method: "POST", body: JSON.stringify(request) },
+      options,
+    );
+  }
+
+  /** Change password for an already-authenticated user. */
+  async changePassword(request: ChangePasswordRequest, options?: RequestOptions): Promise<ChangePasswordResponse> {
+    return this.request<ChangePasswordResponse>(
+      "/api/v1/auth/change-password",
+      { method: "POST", body: JSON.stringify(request) },
+      options,
+    );
+  }
+
+  // ── Auth & user ─────────────────────────────────────────────────────────
+
+  /** Get the authenticated user's full profile. */
+  async getMe(options?: RequestOptions): Promise<UserProfileFull> {
+    return this.request<UserProfileFull>("/api/v1/users/me", { method: "GET" }, options);
+  }
+
+  /** Update the authenticated user's profile. */
+  async updateMe(request: UpdateUserRequest, options?: RequestOptions): Promise<UserProfileFull> {
+    return this.request<UserProfileFull>(
+      "/api/v1/users/me",
+      { method: "PUT", body: JSON.stringify(request) },
+      options,
+    );
+  }
+
+  /** Get the authenticated user's usage analytics. */
+  async getMyUsage(options?: RequestOptions): Promise<UserUsageResponse> {
+    return this.request<UserUsageResponse>("/api/v1/users/me/usage", { method: "GET" }, options);
   }
 
   // ── Billing ──────────────────────────────────────────────────────────────
@@ -272,8 +446,9 @@ export class NoesisClient {
   }
 
   /** Get the user's active subscription details. */
-  async getBillingSubscription(options?: RequestOptions): Promise<Record<string, unknown>> {
-    return this.request<Record<string, unknown>>("/api/v1/billing/subscription", { method: "GET" }, options);
+  async getBillingSubscription(options?: RequestOptions): Promise<import("./billing.js").BalanceResponse> {
+    // Alias to getBillingBalance — /billing/subscription does not exist as a separate endpoint.
+    return this.getBillingBalance(options);
   }
 
   /** Create a Dodo checkout session for plan upgrade. */
@@ -314,6 +489,11 @@ export class NoesisClient {
     return this.request<ReadingDetail>(`/api/v1/readings/${readingId}`, { method: "GET" }, options);
   }
 
+  /** Get readings count per engine for the authenticated user. */
+  async getReadingsStats(options?: RequestOptions): Promise<ReadingsStatsResponse> {
+    return this.request<ReadingsStatsResponse>("/api/v1/readings/stats", { method: "GET" }, options);
+  }
+
   // ── Witness ───────────────────────────────────────────────────────────────
 
   /** Get a witness interpretation for arbitrary text or a reading. */
@@ -348,7 +528,9 @@ export class NoesisClient {
     const headers = new Headers(init.headers ?? {});
     headers.set("Content-Type", "application/json");
 
-    if (this.authToken) {
+    if (this.apiKey) {
+      headers.set("X-API-Key", this.apiKey);
+    } else if (this.authToken) {
       headers.set("Authorization", `Bearer ${this.authToken}`);
     }
 
