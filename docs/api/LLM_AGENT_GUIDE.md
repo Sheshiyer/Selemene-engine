@@ -126,3 +126,33 @@ curl -s -X POST https://selemene.tryambakam.space/api/v1/workflows/birth-bluepri
 - Gene Keys fallback:
   1. First try `POST /api/v1/engines/gene-keys/calculate` with `birth_data`.
   2. On `500 CALCULATION_ERROR`, call Human Design, extract Sun/Earth gates, retry Gene Keys with `options.hd_gates`.
+
+# Reading-Object Contract (v3.3.0)
+
+Workflow responses now include a reading-object at the top level. Agents should surface `witness_layer.question` to the user as the primary reflection prompt.
+
+```json
+{
+  "workflow_id": "daily-practice",
+  "reading_id": "uuid",
+  "reading_url": "https://noesis.tryambakam.space/readings/uuid",
+  "created_at": "ISO-8601",
+  "subject": "birth-data-summary",
+  "evidence": ["panchanga", "vedic-clock", "biorhythm"],
+  "witness_layer": {
+    "title": "...",
+    "summary": "...",
+    "convergences": ["..."],
+    "frictions": ["..."],
+    "practice": "...",
+    "question": "..."
+  },
+  "engine_outputs": {...}
+}
+```
+
+Always present `witness_layer.question` as the closing reflection. Do not interpret it — only witness it.
+
+# Hermes Integration (Planned)
+
+Hermes agent integration is in progress. Tool definitions will be available at `bridges/hermes/` once finalized. Use the Bridge CLI for now: `bridges/cli/`.

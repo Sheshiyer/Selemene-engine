@@ -1,12 +1,12 @@
-# Selemene Agent Bridges
+# Noesis Agent Bridges
 
-Expose Selemene Engine as reflection-first, self-authorship tools for AI agents. One OpenAPI spec in, framework-native tool definitions out.
+Expose Noesis as reflection-first, self-authorship tools for AI agents. One OpenAPI spec in, framework-native tool definitions out.
 
 ## How It Works
 
 ```
-Selemene Engine (Rust/TS)
-    ↓ OpenAPI spec
+Noesis (Rust/TS API)
+    ↓ OpenAPI spec (https://selemene.tryambakam.space/api/openapi.json)
 Bridge Generators (Python / TypeScript CLI)
     ↓
 ├── Claude tool definitions (tools.json)
@@ -51,7 +51,7 @@ Plus 6 orchestrated workflows.
 
 - Node.js 18+ (for CLI)
 - Python 3.10+ (for LangChain bridge, optional)
-- A running Selemene Engine instance
+- A running Noesis instance (or use `https://selemene.tryambakam.space`)
 
 ## License
 
