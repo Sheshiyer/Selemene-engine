@@ -1,0 +1,96 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Exo+2:wght@600;700;800&display=swap');
+
+:root {
+  --bg: #070B1D;
+  --bg-elevated: #0d1428;
+  --bg-panel: rgba(13, 20, 40, 0.92);
+  --bg-soft: #131d35;
+  --field: rgba(240, 237, 227, 0.06);
+  --field-hover: rgba(240, 237, 227, 0.1);
+  --line: rgba(138, 157, 168, 0.2);
+  --line-gold: rgba(196, 135, 59, 0.4);
+  --text: #f0ede3;
+  --text-muted: #8a9da8;
+  --text-dim: rgba(240, 237, 227, 0.4);
+  --gold: #c4873b;
+  --gold-soft: rgba(196, 135, 59, 0.15);
+  --gold-glow: rgba(196, 135, 59, 0.25);
+  --emerald: #4a7c59;
+  --emerald-soft: rgba(74, 124, 89, 0.2);
+  --danger: #ef6b73;
+  --info: #5a8fbb;
+  --radius: 8px;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+  background: none;
+  color: inherit;
+}
+
+input, select {
+  font-family: 'IBM Plex Mono', monospace;
+  background: var(--field);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  color: var(--text);
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+input:focus, select:focus {
+  border-color: var(--gold);
+}
+
+input::placeholder {
+  color: var(--text-dim);
+}
+
+h1, h2, h3 {
+  font-family: 'Exo 2', sans-serif;
+  font-weight: 700;
+}
+
+code, .mono {
+  font-family: 'IBM Plex Mono', monospace;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--line);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
