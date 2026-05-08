@@ -17,12 +17,16 @@ use chrono::{DateTime, Duration, Utc};
 use std::collections::HashMap;
 use std::sync::Arc;
 use tokio::sync::RwLock;
+use uuid::Uuid;
 
 #[cfg(feature = "postgres")]
 use sha2::{Digest, Sha256};
 
 #[cfg(feature = "postgres")]
 use sqlx::PgPool;
+
+/// JWT lifetime — 1 hour for security (#697).
+const JWT_LIFETIME_HOURS: i64 = 1;
 
 /// JWT claims structure
 #[derive(Debug, Serialize, Deserialize)]
@@ -33,6 +37,10 @@ pub struct Claims {
     pub tier: String,             // User tier (free, premium, enterprise)
     pub permissions: Vec<String>, // User permissions
     pub consciousness_level: u8,  // User consciousness level (0-5)
+    /// JWT ID — unique per token; used for revocation (#697).
+    /// Optional to remain backward-compatible with tokens issued before this change.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub jti: Option<String>,
 }
 
 /// API key structure
@@ -57,6 +65,10 @@ pub struct AuthUser {
     pub permissions: Vec<String>,
     pub rate_limit: u32,
     pub consciousness_level: u8,
+    /// JWT ID — present for JWT-authenticated users, None for API-key-authenticated users.
+    pub jti: Option<String>,
+    /// JWT expiry (Unix seconds) — used by the logout handler to set revocation TTL.
+    pub token_exp: Option<u64>,
 }
 
 /// Row returned by the api_keys Postgres query
@@ -77,11 +89,18 @@ struct ApiKeyRecord {
     pub is_active: bool,
 }
 
+/// Revocation store: maps jti → expiry (Unix seconds).
+/// Shared across all clones of AuthService via Arc.
+type RevocationStore = Arc<std::sync::RwLock<HashMap<String, u64>>>;
+
 /// Authentication service
 pub struct AuthService {
     jwt_secret: String,
     api_keys: Arc<RwLock<HashMap<String, ApiKey>>>,
     jwt_validation: Validation,
+    /// In-memory JWT revocation set. Single-instance only — replace with
+    /// Redis-backed store for multi-replica deployments (#697 follow-up).
+    revoked_tokens: RevocationStore,
     #[cfg(feature = "postgres")]
     pool: Option<PgPool>,
 }
@@ -99,6 +118,7 @@ impl AuthService {
             jwt_secret,
             api_keys: Arc::new(RwLock::new(HashMap::new())),
             jwt_validation: validation,
+            revoked_tokens: Arc::new(std::sync::RwLock::new(HashMap::new())),
             #[cfg(feature = "postgres")]
             pool: None,
         }
@@ -117,8 +137,27 @@ impl AuthService {
             jwt_secret,
             api_keys: Arc::new(RwLock::new(HashMap::new())),
             jwt_validation: validation,
+            revoked_tokens: Arc::new(std::sync::RwLock::new(HashMap::new())),
             pool,
         }
+    }
+
+    /// Revoke a JWT by its `jti`. The token will be rejected until `exp_secs` passes.
+    ///
+    /// Also prunes expired entries from the revocation store on each call.
+    pub fn revoke_token(&self, jti: &str, exp_secs: u64) {
+        let now = Utc::now().timestamp() as u64;
+        let mut store = self.revoked_tokens.write().expect("revocation store lock");
+        // Prune expired entries so the map doesn't grow unbounded.
+        store.retain(|_, &mut exp| exp > now);
+        store.insert(jti.to_string(), exp_secs);
+    }
+
+    /// Returns `true` if the given jti has been revoked and hasn't expired yet.
+    pub fn is_token_revoked(&self, jti: &str) -> bool {
+        let now = Utc::now().timestamp() as u64;
+        let store = self.revoked_tokens.read().expect("revocation store lock");
+        store.get(jti).map(|&exp| exp > now).unwrap_or(false)
     }
 
     /// Validate JWT token
@@ -136,6 +175,13 @@ impl AuthService {
             return Err(EngineError::AuthError("Token expired".to_string()));
         }
 
+        // Check revocation list (only for tokens that carry a jti)
+        if let Some(ref jti) = claims.jti {
+            if self.is_token_revoked(jti) {
+                return Err(EngineError::AuthError("Token has been revoked".to_string()));
+            }
+        }
+
         // Get rate limit based on tier
         let rate_limit = self.get_rate_limit_for_tier(&claims.tier);
 
@@ -145,6 +191,8 @@ impl AuthService {
             permissions: claims.permissions,
             rate_limit,
             consciousness_level: claims.consciousness_level,
+            jti: claims.jti,
+            token_exp: Some(claims.exp as u64),
         })
     }
 
@@ -190,6 +238,8 @@ impl AuthService {
                 permissions,
                 rate_limit,
                 consciousness_level,
+                jti: None,
+                token_exp: None,
             })
         } else {
             Err(EngineError::AuthError("Invalid API key".to_string()))
@@ -248,10 +298,12 @@ impl AuthService {
             permissions,
             rate_limit: record.rate_limit as u32,
             consciousness_level: record.consciousness_level as u8,
+            jti: None,
+            token_exp: None,
         })
     }
 
-    /// Generate JWT token
+    /// Generate JWT token with a unique jti for revocation support.
     pub fn generate_jwt_token(
         &self,
         user_id: &str,
@@ -260,7 +312,7 @@ impl AuthService {
         consciousness_level: u8,
     ) -> Result<String, EngineError> {
         let now = Utc::now();
-        let exp = (now + Duration::hours(24)).timestamp() as usize; // 24 hour expiration
+        let exp = (now + Duration::hours(JWT_LIFETIME_HOURS)).timestamp() as usize;
 
         let claims = Claims {
             sub: user_id.to_string(),
@@ -269,6 +321,7 @@ impl AuthService {
             tier: tier.to_string(),
             permissions: permissions.to_vec(),
             consciousness_level,
+            jti: Some(Uuid::new_v4().to_string()),
         };
 
         let encoding_key = EncodingKey::from_secret(self.jwt_secret.as_ref());

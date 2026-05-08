@@ -713,6 +713,7 @@ pub fn create_router(state: AppState, config: &ApiConfig) -> Router {
             "/auth/change-password",
             post(handlers::auth::change_password),
         )
+        .route("/auth/logout", post(handlers::auth::logout))
         .route(
             "/users/me",
             get(handlers::users::get_me).patch(handlers::users::update_me),

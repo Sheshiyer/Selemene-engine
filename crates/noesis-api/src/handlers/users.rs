@@ -32,10 +32,14 @@ pub struct LocationResponse {
     pub name: Option<String>,
 }
 
+/// PATCH /api/v1/users/me request body.
+///
+/// Note: email changes are intentionally excluded. Email is a security-sensitive
+/// field (auth bypass risk) and requires out-of-band verification. Use
+/// POST /api/v1/users/me/change-email (future endpoint) for email changes.
 #[derive(Deserialize, ToSchema)]
 pub struct UpdateUserRequest {
     pub full_name: Option<String>,
-    pub email: Option<String>,
     pub birth_date: Option<NaiveDate>,
     pub birth_time: Option<NaiveTime>,
     pub birth_location_lat: Option<f64>,
@@ -220,11 +224,6 @@ pub async fn get_my_usage(
 
 impl UpdateUserRequest {
     fn validate(&self) -> Result<(), EngineError> {
-        if let Some(email) = &self.email {
-            if !email.contains('@') || !email.contains('.') {
-                return Err(EngineError::ValidationError("Invalid email format".into()));
-            }
-        }
         if let Some(date) = self.birth_date {
             if date.year() < 1000 || date.year() > 3000 {
                 return Err(EngineError::ValidationError(format!(
@@ -285,11 +284,11 @@ pub async fn update_me(
     let user_uuid = uuid::Uuid::parse_str(&auth_user.user_id)
         .map_err(|_| EngineError::AuthError("Invalid user ID in token".to_string()))?;
 
-    // Update User table fields
-    if payload.full_name.is_some() || payload.email.is_some() {
+    // Update User table fields (full_name only; email changes require dedicated flow)
+    if payload.full_name.is_some() {
         state
             .user_repository
-            .update_user(user_uuid, payload.full_name, payload.email)
+            .update_user(user_uuid, payload.full_name, None)
             .await
             .map_err(|e| EngineError::InternalError(format!("Database error: {}", e)))?;
     }
@@ -334,7 +333,6 @@ mod tests {
     fn test_update_profile_validation() {
         let req = UpdateUserRequest {
             full_name: None,
-            email: Some("valid@example.com".to_string()),
             birth_date: None,
             birth_time: None,
             birth_location_lat: Some(45.0),
@@ -344,12 +342,6 @@ mod tests {
             preferences: None,
         };
         assert!(req.validate().is_ok());
-
-        let bad_email = UpdateUserRequest {
-            email: Some("invalid-email".to_string()),
-            ..req_base()
-        };
-        assert!(bad_email.validate().is_err());
 
         let bad_lat = UpdateUserRequest {
             birth_location_lat: Some(91.0),
@@ -373,7 +365,6 @@ mod tests {
     fn req_base() -> UpdateUserRequest {
         UpdateUserRequest {
             full_name: None,
-            email: None,
             birth_date: None,
             birth_time: None,
             birth_location_lat: None,

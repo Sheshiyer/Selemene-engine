@@ -422,3 +422,45 @@ pub async fn change_password(
 
     Ok((StatusCode::OK, Json(response)).into_response())
 }
+
+// ---------------------------------------------------------------------------
+// Logout — revoke the current JWT (#697)
+// ---------------------------------------------------------------------------
+
+#[derive(Serialize, ToSchema)]
+pub struct LogoutResponse {
+    pub message: String,
+}
+
+/// POST /api/v1/auth/logout — invalidate the caller's JWT immediately.
+///
+/// The JWT is added to the in-memory revocation list for the remainder of its
+/// natural lifetime. API-key-authenticated requests are accepted but are a no-op
+/// (API keys are invalidated via DELETE /api/v1/admin/api-keys/:id instead).
+pub async fn logout(
+    State(state): State<AppState>,
+    Extension(auth_user): Extension<AuthUser>,
+) -> impl IntoResponse {
+    if let (Some(jti), Some(exp)) = (auth_user.jti, auth_user.token_exp) {
+        state.auth.revoke_token(&jti, exp);
+        tracing::info!(
+            event = "auth.logout",
+            user_id = %auth_user.user_id,
+            jti = %jti,
+            "JWT revoked on logout"
+        );
+    } else {
+        tracing::debug!(
+            user_id = %auth_user.user_id,
+            "Logout called without jti (API key auth or legacy token) — no-op"
+        );
+    }
+
+    (
+        StatusCode::OK,
+        Json(LogoutResponse {
+            message: "Logged out successfully".to_string(),
+        }),
+    )
+        .into_response()
+}
