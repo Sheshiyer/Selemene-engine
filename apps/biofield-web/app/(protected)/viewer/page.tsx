@@ -363,7 +363,7 @@ export default function ViewerPage() {
 
   return (
     /* ══════════════════════════════════════════════════════════════
-       WitnessOS Viewer — void-field, geometry-first layout
+       Noesis Biofield Viewer — void-field, geometry-first layout
        No borders, no cards. Geometry defines space.
        ══════════════════════════════════════════════════════════════ */
     <div style={{
@@ -378,7 +378,7 @@ export default function ViewerPage() {
       {/* Live metrics — shown once MediaPipe starts flowing data */}
       {liveScores && <BiofieldLiveMetrics scores={liveScores} />}
 
-      {/* Witness insight from Noesis biofield engine */}
+      {/* Noesis synthesis from biofield engine */}
       {witnessInsight && (
         <section style={{
           padding: "1.6rem 1.8rem",
@@ -397,7 +397,7 @@ export default function ViewerPage() {
               boxShadow: "0 0 8px rgba(255,179,71,0.5)",
             }} />
             <p style={{ margin: 0, fontSize: "0.7rem", fontWeight: 600, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--muted)" }}>
-              Witness insight
+              Noesis synthesis
             </p>
           </div>
 

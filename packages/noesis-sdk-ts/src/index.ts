@@ -11,6 +11,7 @@ export const ENGINE_IDS = [
   "nadabrahman",
   "numerology",
   "panchanga",
+  "raaga",
   "sacred-geometry",
   "sigil-forge",
   "tarot",

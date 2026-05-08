@@ -30,6 +30,7 @@ import SigilForge from "@/components/engines/SigilForge";
 import Enneagram from "@/components/engines/Enneagram";
 import Nadabrahman from "@/components/engines/Nadabrahman";
 import FaceReading from "@/components/engines/FaceReading";
+import RaagaView from "@/components/engines/Raaga";
 import GenericEngineView from "@/components/engines/GenericEngineView";
 
 /* ── Engine registry ─────────────────────────────────── */
@@ -51,6 +52,7 @@ const ENGINE_IDS = [
   "enneagram",
   "nadabrahman",
   "face-reading",
+  "raaga",
 ] as const;
 
 type EngineId = (typeof ENGINE_IDS)[number];
@@ -96,6 +98,8 @@ function renderEngine(id: EngineId, result: Record<string, unknown>) {
       return <Nadabrahman result={result} />;
     case "face-reading":
       return <FaceReading result={result} />;
+    case "raaga":
+      return <RaagaView result={result} />;
     default:
       return <GenericEngineView result={result} />;
   }
@@ -259,7 +263,7 @@ export default function EnginesPage() {
                 }}
                 onClick={() => setActiveTab("witness")}
               >
-                ◈ Witness Layer
+                ◈ Synthesis
               </button>
               {ENGINE_IDS.map((id) => {
                 const has = engineMap.has(id);

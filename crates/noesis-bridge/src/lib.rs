@@ -286,6 +286,16 @@ impl BridgeEngine {
         Self::new("sigil-forge", "Sigil Forge", 1, base_url)
     }
 
+    /// Create a Raaga (Carnatic melakarta) engine bridge with default URL.
+    pub fn raaga() -> Self {
+        Self::raaga_with_url(DEFAULT_TS_SERVER_URL)
+    }
+
+    /// Create a Raaga engine bridge with custom URL.
+    pub fn raaga_with_url(base_url: impl Into<String>) -> Self {
+        Self::new("raaga", "Raaga", 0, base_url)
+    }
+
     fn extract_question(options: &std::collections::HashMap<String, Value>) -> Option<String> {
         const QUESTION_ALIASES: [&str; 4] = ["question", "intention", "intent", "intent_text"];
 
@@ -502,7 +512,7 @@ impl ConsciousnessEngine for BridgeEngine {
 
 /// Manages the set of TypeScript engines accessible through the HTTP bridge.
 ///
-/// Provides factory construction of `BridgeEngine` instances for the five
+/// Provides factory construction of `BridgeEngine` instances for the six
 /// TypeScript-based consciousness engines and a health-check endpoint.
 pub struct BridgeManager {
     base_url: String,
@@ -512,7 +522,7 @@ pub struct BridgeManager {
 impl BridgeManager {
     /// Create a new manager pointing at the given Bun server root URL.
     ///
-    /// Instantiates `BridgeEngine` wrappers for all five TypeScript engines.
+    /// Instantiates `BridgeEngine` wrappers for all six TypeScript engines.
     pub fn new(base_url: impl Into<String>) -> Self {
         let base_url: String = base_url.into();
 
@@ -522,6 +532,7 @@ impl BridgeManager {
             Arc::new(BridgeEngine::enneagram_with_url(&base_url)),
             Arc::new(BridgeEngine::sacred_geometry_with_url(&base_url)),
             Arc::new(BridgeEngine::sigil_forge_with_url(&base_url)),
+            Arc::new(BridgeEngine::raaga_with_url(&base_url)),
         ];
 
         info!(
@@ -703,6 +714,14 @@ mod tests {
     }
 
     #[test]
+    fn bridge_engine_factory_raaga() {
+        let engine = BridgeEngine::raaga();
+        assert_eq!(engine.engine_id(), "raaga");
+        assert_eq!(engine.engine_name(), "Raaga");
+        assert_eq!(engine.required_phase(), 0);
+    }
+
+    #[test]
     fn bridge_engine_with_custom_url() {
         let engine = BridgeEngine::tarot_with_url("http://custom:4000");
         assert_eq!(engine.engine_id(), "tarot");
@@ -779,7 +798,7 @@ mod tests {
     fn bridge_manager_creates_all_engines() {
         let manager = BridgeManager::new("http://localhost:3001");
         let engines = manager.engines();
-        assert_eq!(engines.len(), 5);
+        assert_eq!(engines.len(), 6);
 
         let ids: Vec<&str> = engines.iter().map(|e| e.engine_id()).collect();
         assert!(ids.contains(&"tarot"));
@@ -787,6 +806,7 @@ mod tests {
         assert!(ids.contains(&"enneagram"));
         assert!(ids.contains(&"sacred-geometry"));
         assert!(ids.contains(&"sigil-forge"));
+        assert!(ids.contains(&"raaga"));
     }
 
     #[test]

@@ -6,12 +6,14 @@
  * - Enneagram
  * - Sacred Geometry (stub)
  * - Sigil Forge (stub)
+ * - Raaga (Carnatic melakarta sound therapy)
  */
 
 import { createServer, registry } from './server'
 
 import { EnneagramEngine } from './engines/enneagram'
 import { IChingEngine } from './engines/i-ching'
+import { RaagaEngine } from './engines/raaga'
 import { SacredGeometryEngine } from './engines/sacred-geometry'
 import { SigilForgeEngine } from './engines/sigil-forge'
 // Import and register engines
@@ -23,6 +25,7 @@ registry.register(new IChingEngine())
 registry.register(new EnneagramEngine())
 registry.register(new SacredGeometryEngine())
 registry.register(new SigilForgeEngine())
+registry.register(new RaagaEngine())
 
 const PORT = process.env.PORT ? Number.parseInt(process.env.PORT) : 3001
 

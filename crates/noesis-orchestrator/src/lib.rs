@@ -547,7 +547,7 @@ impl WorkflowOrchestrator {
                 id: "creative-expression".into(),
                 name: "Creative Expression".into(),
                 description: "Creative and aesthetic exploration".into(),
-                engine_ids: vec!["sigil-forge".into(), "sacred-geometry".into()],
+                engine_ids: vec!["sigil-forge".into(), "sacred-geometry".into(), "raaga".into()],
             },
             WorkflowDefinition {
                 id: "full-spectrum".into(),
@@ -564,6 +564,7 @@ impl WorkflowOrchestrator {
                     "biofield".into(),
                     "face-reading".into(),
                     "nadabrahman".into(),
+                    "raaga".into(),
                     "transits".into(),
                     "tarot".into(),
                     "i-ching".into(),
@@ -989,7 +990,7 @@ mod tests {
     fn full_spectrum_has_all_engines() {
         let orchestrator = WorkflowOrchestrator::new();
         let wf = orchestrator.get_workflow("full-spectrum").unwrap();
-        assert_eq!(wf.engine_ids.len(), 16);
+        assert_eq!(wf.engine_ids.len(), 17);
     }
 
     #[test]
