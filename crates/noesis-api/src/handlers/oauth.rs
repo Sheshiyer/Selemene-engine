@@ -225,6 +225,12 @@ fn origin_from_headers(headers: &HeaderMap) -> Result<Option<reqwest::Url>, Engi
         EngineError::ValidationError("Invalid Origin header for Discord OAuth request.".to_string())
     })?;
 
+    // Browsers send `Origin: null` for some local redirect flows (e.g., localhost
+    // pages that navigate to an OAuth endpoint). Treat this as "no origin".
+    if origin == "null" {
+        return Ok(None);
+    }
+
     let parsed = reqwest::Url::parse(origin).map_err(|_| {
         EngineError::ValidationError("Invalid Origin header for Discord OAuth request.".to_string())
     })?;
@@ -245,16 +251,30 @@ fn resolve_discord_redirect_uri(
 ) -> Result<String, EngineError> {
     if let Some(requested_redirect_uri) = requested_redirect_uri {
         let requested = validate_requested_discord_redirect_uri(requested_redirect_uri)?;
-        let Some(origin) = origin_from_headers(headers)? else {
-            return Err(EngineError::ValidationError(
-                "Discord redirect URI override requires a browser Origin header.".to_string(),
-            ));
-        };
 
-        if !same_origin(&origin, &requested) {
-            return Err(EngineError::ValidationError(
-                "Discord redirect URI must stay on the current admin origin.".to_string(),
-            ));
+        match origin_from_headers(headers)? {
+            Some(origin) => {
+                // Origin present — enforce same-origin rule.
+                if !same_origin(&origin, &requested) {
+                    return Err(EngineError::ValidationError(
+                        "Discord redirect URI must stay on the current admin origin.".to_string(),
+                    ));
+                }
+            }
+            None => {
+                // No Origin header (or `Origin: null`). Allow only localhost redirect URIs —
+                // these cannot be forged from the public internet.
+                let host = requested.host_str().unwrap_or("");
+                if !is_localhost_host(host) {
+                    return Err(EngineError::ValidationError(
+                        "Discord redirect URI override requires a browser Origin header for non-localhost URIs.".to_string(),
+                    ));
+                }
+                tracing::debug!(
+                    redirect_uri = %requested,
+                    "Allowing localhost Discord redirect without Origin header"
+                );
+            }
         }
 
         return Ok(requested.into());
@@ -547,6 +567,51 @@ mod tests {
         assert!(
             err.to_string()
                 .contains("Discord redirect URI must stay on the current admin origin"),
+            "unexpected error: {err}"
+        );
+    }
+
+    #[test]
+    fn accepts_localhost_redirect_without_origin_header() {
+        // Simulates local dev: no Origin header at all (or Origin: null stripped by browser)
+        let headers = HeaderMap::new();
+        let resolved = resolve_discord_redirect_uri(
+            "https://144.tryambakam.space/admin/login/discord-callback",
+            Some("http://localhost:3001/admin/login/discord-callback"),
+            &headers,
+        )
+        .expect("localhost redirect without Origin should be accepted");
+
+        assert_eq!(resolved, "http://localhost:3001/admin/login/discord-callback");
+    }
+
+    #[test]
+    fn accepts_localhost_redirect_with_null_origin() {
+        let mut headers = HeaderMap::new();
+        headers.insert("origin", HeaderValue::from_static("null"));
+
+        let resolved = resolve_discord_redirect_uri(
+            "https://144.tryambakam.space/admin/login/discord-callback",
+            Some("http://localhost:3001/admin/login/discord-callback"),
+            &headers,
+        )
+        .expect("localhost redirect with Origin: null should be accepted");
+
+        assert_eq!(resolved, "http://localhost:3001/admin/login/discord-callback");
+    }
+
+    #[test]
+    fn rejects_non_localhost_redirect_without_origin() {
+        let headers = HeaderMap::new();
+        let err = resolve_discord_redirect_uri(
+            "https://144.tryambakam.space/admin/login/discord-callback",
+            Some("https://malicious.example.com/admin/login/discord-callback"),
+            &headers,
+        )
+        .expect_err("non-localhost without Origin should be rejected");
+
+        assert!(
+            err.to_string().contains("Origin header"),
             "unexpected error: {err}"
         );
     }
