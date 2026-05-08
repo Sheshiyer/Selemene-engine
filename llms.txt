@@ -94,6 +94,7 @@ Workflow responses now include these top-level fields:
 - [Bridge CLI](https://github.com/Sheshiyer/Selemene-engine/blob/main/bridges/cli/README.md): Generate tool definitions for Claude, OpenAI, LangChain
 - [MCP Integration](https://github.com/Sheshiyer/Selemene-engine/blob/main/docs/api/MCP_INTEGRATION.md): Model Context Protocol tools
 - [OpenClaw Integration](https://github.com/Sheshiyer/Selemene-engine/blob/main/docs/api/OPENCLAW_INTEGRATION.md): OpenClaw agent tools
+- [Hermes Integration](https://github.com/Sheshiyer/Selemene-engine/blob/main/docs/api/HERMES_INTEGRATION.md): NousResearch Hermes function-calling bridge
 - [Noesis Web](https://noesis.tryambakam.space): Full 16-engine viewer (also at 3437.tryambakam.space)
 - [Admin Surface](https://144.tryambakam.space): Operator billing dashboard
 - [Deployment Guide](https://github.com/Sheshiyer/Selemene-engine/blob/main/docs/deployment/README.md): Self-hosting instructions

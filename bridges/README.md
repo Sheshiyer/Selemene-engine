@@ -25,6 +25,7 @@ The generators read the live OpenAPI specs from a running Selemene instance and 
 | `claude/` | Generated Claude tool definitions output | Output dir |
 | `openai/` | Generated OpenAI function definitions output | Output dir |
 | [`universal-tool-server/`](universal-tool-server/) | MCP-compatible FastAPI server | Scaffold |
+| [`hermes/`](hermes/) | NousResearch Hermes function-calling bridge | Active |
 | [`cron/`](cron/) | Scheduled jobs (daily witness, hourly panchanga) | Scaffold |
 | [`tests/`](tests/) | Bridge integration tests | Active |
 
