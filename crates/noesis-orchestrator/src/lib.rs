@@ -349,7 +349,7 @@ impl WorkflowOrchestrator {
         required_phase: u8,
         base_url: &str,
     ) {
-        let engine = BridgeEngine::new(engine_id, engine_name, required_phase, base_url);
+        let engine = BridgeEngine::with_env_timeout(engine_id, engine_name, required_phase, base_url);
         self.register_engine(Arc::new(engine));
     }
 

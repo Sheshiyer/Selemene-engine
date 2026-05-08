@@ -1507,9 +1507,22 @@ pub async fn create_api_key(
         .permissions
         .unwrap_or_else(|| vec!["basic:access".to_string()]);
 
-    let rate_limit = payload
-        .rate_limit
-        .unwrap_or_else(|| default_rate_limit_for_tier(&tier));
+    let rate_limit = {
+        let rl = payload
+            .rate_limit
+            .unwrap_or_else(|| default_rate_limit_for_tier(&tier));
+        // Enforce sane bounds: 0 disables rate limiting (allowed for enterprise),
+        // 100_000 is a hard ceiling to prevent runaway values.
+        if rl < 0 || rl > 100_000 {
+            return Ok(json_error_response(
+                StatusCode::UNPROCESSABLE_ENTITY,
+                format!("rate_limit must be between 0 and 100000, got {rl}"),
+                "VALIDATION_ERROR",
+                None,
+            ));
+        }
+        rl
+    };
 
     let consciousness_level = payload.consciousness_level.unwrap_or(0).clamp(0, 5);
 

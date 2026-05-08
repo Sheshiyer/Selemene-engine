@@ -1,0 +1,128 @@
+name: Doc Currency Check
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      update_baseline:
+        description: "Update OpenAPI baseline after check"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  doc-currency:
+    name: Check API doc currency
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Wait for deployment (release only)
+        if: github.event_name == 'release'
+        run: |
+          echo "Waiting 3 minutes for Railway deployment to complete…"
+          sleep 180
+
+      - name: Health check
+        run: |
+          STATUS=$(curl -sS -o /dev/null -w "%{http_code}" \
+            --retry 5 --retry-delay 15 --retry-connrefused \
+            https://selemene.tryambakam.space/health/live)
+          if [ "$STATUS" != "200" ]; then
+            echo "❌ Health check failed: HTTP $STATUS"
+            exit 1
+          fi
+          echo "✅ API healthy"
+
+      - name: OpenAPI diff check
+        id: diff
+        run: |
+          python scripts/check_openapi_diff.py \
+            --baseline .planning/openapi-baseline.json \
+            --url https://selemene.tryambakam.space/api/openapi.json \
+            2>&1 | tee /tmp/diff_output.txt
+          echo "exit_code=${PIPESTATUS[0]}" >> $GITHUB_OUTPUT
+
+      - name: Doc coverage check
+        id: coverage
+        run: |
+          python scripts/check_doc_coverage.py \
+            --url https://selemene.tryambakam.space/api/openapi.json \
+            --docs-dir docs/api \
+            2>&1 | tee /tmp/coverage_output.txt
+          echo "exit_code=${PIPESTATUS[0]}" >> $GITHUB_OUTPUT
+
+      - name: Update baseline (workflow_dispatch only)
+        if: github.event_name == 'workflow_dispatch' && inputs.update_baseline == true
+        run: |
+          python scripts/check_openapi_diff.py \
+            --baseline .planning/openapi-baseline.json \
+            --url https://selemene.tryambakam.space/api/openapi.json \
+            --update
+
+      - name: Commit updated baseline
+        if: github.event_name == 'workflow_dispatch' && inputs.update_baseline == true
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore(docs): update OpenAPI baseline after release [skip ci]"
+          file_pattern: ".planning/openapi-baseline.json"
+
+      - name: Post PR comment on failure
+        if: >
+          failure() &&
+          (steps.diff.outputs.exit_code != '0' || steps.coverage.outputs.exit_code != '0')
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const diff = fs.existsSync('/tmp/diff_output.txt')
+              ? fs.readFileSync('/tmp/diff_output.txt', 'utf8') : '';
+            const coverage = fs.existsSync('/tmp/coverage_output.txt')
+              ? fs.readFileSync('/tmp/coverage_output.txt', 'utf8') : '';
+
+            const body = [
+              '## ⚠️ Doc Currency Check Failed',
+              '',
+              '### OpenAPI Diff',
+              '```',
+              diff.slice(0, 2000),
+              '```',
+              '',
+              '### Doc Coverage',
+              '```',
+              coverage.slice(0, 2000),
+              '```',
+              '',
+              '**Fix:** Update `docs/api/` files for any new/changed endpoints, then run:',
+              '```bash',
+              'python scripts/check_openapi_diff.py --update',
+              '```',
+            ].join('\n');
+
+            // Post as release comment or commit comment
+            await github.rest.repos.createCommitComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              commit_sha: context.sha,
+              body,
+            });
+
+      - name: Fail if gaps found
+        if: steps.diff.outputs.exit_code != '0' || steps.coverage.outputs.exit_code != '0'
+        run: |
+          echo "❌ Doc currency checks failed. See output above."
+          exit 1

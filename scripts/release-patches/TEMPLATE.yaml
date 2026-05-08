@@ -1,0 +1,36 @@
+# Release Patch Template for Noesis
+# Copy to scripts/release-patches/vX.Y.Z.yaml and fill in for each release.
+
+version: "3.4.0"  # Update to the actual release version
+
+# Each patch is applied sequentially to the target file.
+# Operations:
+#   after + insert  → Insert text immediately after the anchor line
+#   replace_section + new_content  → Replace a section heading (count update, etc.)
+patches:
+  # Example: Add a new engine to the engines doc
+  - file: docs/api/engines.md
+    after: "## Engine List"
+    insert: |
+      ### `new-engine` — Description Here
+      `POST /api/v1/engines/new-engine/calculate`
+
+      Input fields, output fields, notes.
+
+  # Example: Update engine count in workflows doc
+  - file: docs/api/workflows.md
+    replace_section: "## Workflows (6)"
+    new_content: "## Workflows (7)"
+
+  # Example: Add to llms.txt for discoverability
+  - file: llms.txt
+    after: "# Bridges"
+    insert: "- [New Integration](https://selemene.tryambakam.space/api/v1/engines/new-engine/info): One-line description."
+
+  # Example: Update changelog section heading
+  - file: CHANGELOG.md
+    after: "## Unreleased"
+    insert: |
+      ## [3.4.0] - YYYY-MM-DD
+      ### Added
+      - New engine: `new-engine`

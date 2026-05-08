@@ -16,6 +16,11 @@ healthcheckTimeout = 300  # 5 minutes for initial startup (Rust app takes time)
 restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 3
 
+# Resource limits — prevents OOM kills from being silent/ungraceful (#706)
+[deploy.resources]
+memory = 1024  # MB
+cpu = 1.0      # vCPU
+
 [deploy.watch]
 # Watch paths - trigger deployment only when these files change
 # This prevents unnecessary rebuilds when docs/tests change
