@@ -41,8 +41,20 @@ pub use noesis_core::{
 /// Default URL for the TypeScript engines server.
 pub const DEFAULT_TS_SERVER_URL: &str = "http://localhost:3001";
 
-/// Default timeout for HTTP requests in seconds.
-pub const DEFAULT_TIMEOUT_SECS: u64 = 5;
+/// Default timeout for HTTP requests in seconds (overridable via `TS_BRIDGE_TIMEOUT` env var).
+pub const DEFAULT_TIMEOUT_SECS: u64 = 30;
+
+/// Read the configured bridge timeout from the environment.
+///
+/// Reads `TS_BRIDGE_TIMEOUT` (seconds, integer). Falls back to [`DEFAULT_TIMEOUT_SECS`] if
+/// the variable is unset or unparseable.
+pub fn configured_timeout() -> Duration {
+    std::env::var("TS_BRIDGE_TIMEOUT")
+        .ok()
+        .and_then(|v| v.trim().parse::<u64>().ok())
+        .map(Duration::from_secs)
+        .unwrap_or_else(|| Duration::from_secs(DEFAULT_TIMEOUT_SECS))
+}
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SidecarEngineHealth {
@@ -97,30 +109,39 @@ impl BridgeEngine {
             base_url,
             Duration::from_secs(DEFAULT_TIMEOUT_SECS),
         )
+        .expect("Failed to build BridgeEngine HTTP client — TLS initialization failed")
     }
 
-    /// Create a new bridge with a custom timeout.
+    /// Create a new bridge using the runtime-configured timeout (reads `TS_BRIDGE_TIMEOUT` env).
+    pub fn with_env_timeout(
+        engine_id: impl Into<String>,
+        engine_name: impl Into<String>,
+        required_phase: u8,
+        base_url: impl Into<String>,
+    ) -> Result<Self, EngineError> {
+        Self::with_timeout(engine_id, engine_name, required_phase, base_url, configured_timeout())
+    }
     pub fn with_timeout(
         engine_id: impl Into<String>,
         engine_name: impl Into<String>,
         required_phase: u8,
         base_url: impl Into<String>,
         timeout: Duration,
-    ) -> Self {
+    ) -> Result<Self, EngineError> {
         let client = reqwest::Client::builder()
             .timeout(timeout)
             .connect_timeout(Duration::from_secs(2))
             .build()
-            .expect("Failed to build HTTP client");
+            .map_err(|e| EngineError::BridgeError(format!("Failed to build HTTP client: {e}")))?;
 
-        Self {
+        Ok(Self {
             engine_id: engine_id.into(),
             engine_name: engine_name.into(),
             required_phase,
             base_url: base_url.into().trim_end_matches('/').to_owned(),
             client,
             timeout,
-        }
+        })
     }
 
     // -------------------------------------------------------------------------
@@ -614,7 +635,8 @@ mod tests {
             0,
             "http://localhost:3001",
             Duration::from_secs(10),
-        );
+        )
+        .expect("test: failed to build engine");
         assert_eq!(engine.timeout, Duration::from_secs(10));
     }
 

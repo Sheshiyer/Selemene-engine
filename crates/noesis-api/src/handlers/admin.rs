@@ -385,7 +385,10 @@ pub struct AdminAuditEventsResponse {
 #[derive(Serialize, ToSchema)]
 pub struct AdminAuditEventItem {
     pub event_id: String,
-    pub request_id: String,
+    // Note: request_id is not stored separately in the DB — reserved for future
+    // HTTP request correlation. Consumers should use event_id as the stable identifier.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub request_id: Option<String>,
     pub occurred_at: DateTime<Utc>,
     pub actor_user_id: String,
     pub actor_email: String,
@@ -738,6 +741,10 @@ pub(crate) fn service_unavailable_response() -> Response {
 }
 
 pub(crate) fn forbidden_response(required_permission: &str) -> Response {
+    tracing::warn!(
+        required_permission = %required_permission,
+        "Authorization denied — insufficient permissions"
+    );
     json_error_response(
         StatusCode::FORBIDDEN,
         format!("Missing required permission: {required_permission}"),
@@ -819,7 +826,7 @@ fn map_api_key_record(record: AdminApiKeyRecord) -> AdminApiKeyItem {
 fn map_audit_event_record(record: AuditEventRecord) -> AdminAuditEventItem {
     AdminAuditEventItem {
         event_id: record.event_id.to_string(),
-        request_id: record.event_id.to_string(),
+        request_id: None, // not stored in DB; event_id is the stable trace identifier
         occurred_at: record.occurred_at,
         actor_user_id: record.actor_user_id.to_string(),
         actor_email: record.actor_email,

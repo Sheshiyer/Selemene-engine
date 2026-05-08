@@ -349,7 +349,13 @@ impl WorkflowOrchestrator {
         required_phase: u8,
         base_url: &str,
     ) {
-        let engine = BridgeEngine::with_env_timeout(engine_id, engine_name, required_phase, base_url);
+        let engine = match BridgeEngine::with_env_timeout(engine_id, engine_name, required_phase, base_url) {
+            Ok(e) => e,
+            Err(err) => {
+                tracing::error!(error = %err, engine_id = %engine_id, "Failed to build BridgeEngine — skipping registration");
+                return;
+            }
+        };
         self.register_engine(Arc::new(engine));
     }
 

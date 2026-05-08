@@ -11,7 +11,6 @@ use axum::{
 use chrono::{DateTime, Duration, Utc};
 use dashmap::DashMap;
 use noesis_auth::{AuthService, AuthUser};
-use noesis_metrics::NoesisMetrics;
 use std::sync::Arc;
 use std::time::Instant;
 use tracing::{info, info_span, Instrument};
@@ -79,58 +78,6 @@ pub async fn request_logging_middleware(req: Request, next: Next) -> Response {
     .await
 }
 
-/// Metrics middleware for recording engine calculation metrics.
-///
-/// Records:
-/// - `engine_calculation_duration_seconds` histogram (labeled by engine_id)
-/// - `engine_calculation_status_total` counter (labeled by engine_id, status)
-/// - `engine_calculation_errors_total` counter (labeled by engine_id, error_type)
-///
-/// This middleware should wrap handlers that extract engine_id from path or state.
-#[allow(dead_code)]
-pub async fn metrics_middleware(
-    metrics: Arc<NoesisMetrics>,
-    engine_id: String,
-    req: Request,
-    next: Next,
-) -> Response {
-    let start = Instant::now();
-
-    // Process the request
-    let response = next.run(req).await;
-
-    // Calculate duration
-    let duration_secs = start.elapsed().as_secs_f64();
-    let status = response.status();
-
-    // Determine status label (success/failure)
-    let status_label = if status.is_success() {
-        "success"
-    } else {
-        "failure"
-    };
-
-    // Record metrics
-    metrics.record_engine_calculation_with_status(&engine_id, status_label, duration_secs);
-
-    // If it's an error, record error type
-    if !status.is_success() {
-        let error_type = match status {
-            StatusCode::BAD_REQUEST => "bad_request",
-            StatusCode::UNAUTHORIZED => "unauthorized",
-            StatusCode::FORBIDDEN => "forbidden",
-            StatusCode::NOT_FOUND => "not_found",
-            StatusCode::UNPROCESSABLE_ENTITY => "validation_error",
-            StatusCode::TOO_MANY_REQUESTS => "rate_limit",
-            _ => "internal_error",
-        };
-
-        metrics.record_engine_calculation_error(&engine_id, error_type);
-    }
-
-    response
-}
-
 /// Authentication middleware that validates JWT tokens or API keys.
 ///
 /// Extracts:
@@ -156,7 +103,12 @@ pub async fn auth_middleware(
                         req.extensions_mut().insert(user);
                         return Ok(next.run(req).await);
                     }
-                    Err(_) => {
+                    Err(e) => {
+                        tracing::warn!(
+                            error = %e,
+                            path = %req.uri().path(),
+                            "JWT validation failed — returning 401"
+                        );
                         return Err(ErrorMapper::response(
                             StatusCode::UNAUTHORIZED,
                             "UNAUTHORIZED",
