@@ -4,5 +4,11 @@
   "outputDirectory": ".next",
   "env": {
     "NEXT_PUBLIC_API_BASE_URL": "https://selemene.tryambakam.space"
+  },
+  "experimentalServices": {
+    "web": {
+      "routePrefix": "/",
+      "framework": "nextjs"
+    }
   }
 }
