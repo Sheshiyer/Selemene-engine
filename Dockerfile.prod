@@ -79,9 +79,11 @@ RUN for crate in \
     mkdir -p crates/engine-human-design/benches && echo "fn main() {}" > crates/engine-human-design/benches/hd_performance.rs
 
 # --- Layer 3: Build dependencies only (THIS LAYER IS CACHED on source-only changes) ---
+# The build may produce warnings or partial errors for missing data files (include_str!
+# paths that don't exist yet) — that is expected and intentional. The goal of this
+# layer is only to pre-compile third-party dependencies. Any real build failure (linker
+# errors, Rust errors) will surface in Layer 6 where all sources are present.
 RUN cargo build --release --bin noesis-server 2>&1 || true
-# The above may partially fail due to missing data files for include_str!, but it
-# will still download and compile all third-party dependencies, which is the goal.
 
 # --- Layer 4: Copy data files (changes infrequently) ---
 COPY data/ ./data/
@@ -109,12 +111,11 @@ LABEL org.opencontainers.image.title="Selemene Engine" \
 
 WORKDIR /app
 
-# Install minimal runtime dependencies
+# Install minimal runtime dependencies (no curl — reduces attack surface)
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     ca-certificates \
     libssl3 \
-    curl \
     && rm -rf /var/lib/apt/lists/* \
     && rm -rf /var/cache/apt/*
 
@@ -151,9 +152,9 @@ EXPOSE 8080
 # Switch to non-root user
 USER appuser
 
-# Health check using the new endpoints
+# Health check via TCP socket (no curl dependency needed)
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-    CMD curl -sf http://localhost:8080/health/live || exit 1
+    CMD bash -c 'echo > /dev/tcp/localhost/8080' || exit 1
 
 # Run the server
 ENTRYPOINT ["/app/noesis-server"]
