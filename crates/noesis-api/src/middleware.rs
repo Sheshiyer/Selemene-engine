@@ -447,14 +447,31 @@ impl Default for RateLimiter {
 
 /// Extract client IP address from proxy headers or fall back to "unknown".
 ///
-/// Checks (in order): X-Forwarded-For, X-Real-IP.
-/// Railway and most reverse proxies set X-Forwarded-For.
+/// On Railway (and most CDN/proxy setups), the platform appends the real client IP
+/// as the LAST entry in X-Forwarded-For. Trusting the FIRST entry is unsafe — an
+/// attacker can spoof it by sending `X-Forwarded-For: 1.2.3.4` before the proxy chain.
+///
+/// Priority order:
+/// 1. CF-Connecting-IP (Cloudflare — single hop, can't be spoofed at the edge)
+/// 2. Last entry in X-Forwarded-For (added by Railway's own reverse proxy)
+/// 3. X-Real-IP (nginx upstream)
 fn extract_client_ip(req: &Request) -> String {
-    // X-Forwarded-For: first IP is the original client
+    // Cloudflare sets this to the real client IP — single value, not a list.
+    if let Some(cf_ip) = req.headers().get("cf-connecting-ip") {
+        if let Ok(val) = cf_ip.to_str() {
+            let ip = val.trim();
+            if !ip.is_empty() {
+                return ip.to_string();
+            }
+        }
+    }
+
+    // X-Forwarded-For: use the LAST (rightmost) IP — it's the one added by Railway's
+    // trusted proxy and cannot be forged by the client.
     if let Some(forwarded) = req.headers().get("x-forwarded-for") {
         if let Ok(val) = forwarded.to_str() {
-            if let Some(first_ip) = val.split(",").next() {
-                let ip = first_ip.trim();
+            if let Some(last_ip) = val.split(',').next_back() {
+                let ip = last_ip.trim();
                 if !ip.is_empty() {
                     return ip.to_string();
                 }
@@ -462,7 +479,7 @@ fn extract_client_ip(req: &Request) -> String {
         }
     }
 
-    // X-Real-IP (nginx)
+    // X-Real-IP (nginx upstream)
     if let Some(real_ip) = req.headers().get("x-real-ip") {
         if let Ok(val) = real_ip.to_str() {
             let ip = val.trim();

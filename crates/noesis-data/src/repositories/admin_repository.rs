@@ -2118,6 +2118,15 @@ fn permissions_for_admin_role(role: &str) -> &'static [&'static str] {
             "admin:keys:rotate",
             "admin:users:tier:update",
         ],
+        "billing-admin" => &[
+            "basic:access",
+            "admin:billing:read",
+            "admin:billing:subscriptions:cancel",
+            "admin:billing:reconcile:trigger",
+            "admin:analytics:read",
+            "admin:users:list",
+            "admin:users:read",
+        ],
         _ => &["basic:access"],
     }
 }
