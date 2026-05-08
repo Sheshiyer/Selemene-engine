@@ -271,7 +271,7 @@ impl UsageRepository {
                 COUNT(*)::BIGINT AS request_count
             FROM usage_logs
             WHERE user_id = $1
-              AND created_at >= NOW() - make_interval(hours => $2)
+              AND created_at >= NOW() - make_interval(hours => $2::integer)
             GROUP BY COALESCE(NULLIF(engine_id, ''), 'unknown')
             ORDER BY request_count DESC, engine_id ASC
             LIMIT $3
@@ -302,7 +302,7 @@ impl UsageRepository {
                 COUNT(*) FILTER (WHERE status = 'failure')::BIGINT AS failure,
                 COUNT(DISTINCT user_id)::BIGINT AS active_users
             FROM usage_logs
-            WHERE created_at >= NOW() - make_interval(hours => $1)
+            WHERE created_at >= NOW() - make_interval(hours => $1::integer)
             "#,
         )
         .bind(window_hours)
@@ -329,7 +329,7 @@ impl UsageRepository {
                 COALESCE(NULLIF(engine_id, ''), 'unknown') AS engine_id,
                 COUNT(*)::BIGINT AS request_count
             FROM usage_logs
-            WHERE created_at >= NOW() - make_interval(hours => $1)
+            WHERE created_at >= NOW() - make_interval(hours => $1::integer)
             GROUP BY COALESCE(NULLIF(engine_id, ''), 'unknown')
             ORDER BY request_count DESC, engine_id ASC
             LIMIT $2
@@ -360,7 +360,7 @@ impl UsageRepository {
                 to_char(date_trunc('day', created_at), 'YYYY-MM-DD') AS day,
                 COUNT(*)::BIGINT AS request_count
             FROM usage_logs
-            WHERE created_at >= NOW() - make_interval(days => $1)
+            WHERE created_at >= NOW() - make_interval(days => $1::integer)
             GROUP BY date_trunc('day', created_at)
             ORDER BY date_trunc('day', created_at) ASC
             "#,
@@ -387,7 +387,7 @@ impl UsageRepository {
                 COUNT(*)::BIGINT AS request_count
             FROM usage_logs l
             INNER JOIN users u ON u.id = l.user_id
-            WHERE l.created_at >= NOW() - make_interval(hours => $1)
+            WHERE l.created_at >= NOW() - make_interval(hours => $1::integer)
             GROUP BY COALESCE(NULLIF(lower(u.tier), ''), 'unknown')
             ORDER BY request_count DESC, tier ASC
             "#,
@@ -419,7 +419,7 @@ impl UsageRepository {
                 COUNT(*)::BIGINT AS request_count
             FROM usage_logs l
             INNER JOIN users u ON u.id = l.user_id
-            WHERE l.created_at >= NOW() - make_interval(hours => $1)
+            WHERE l.created_at >= NOW() - make_interval(hours => $1::integer)
             GROUP BY l.user_id, u.email
             ORDER BY request_count DESC, u.email ASC
             LIMIT $2
