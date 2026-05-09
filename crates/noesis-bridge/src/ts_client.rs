@@ -34,8 +34,8 @@ pub struct TsEngineResponse {
     pub witness_prompts: Vec<WitnessPrompt>,
     /// ISO timestamp when calculation completed
     pub calculated_at: String,
-    /// Processing time in milliseconds
-    pub processing_time_ms: u64,
+    /// Processing time in milliseconds (float-safe: TS engines may return fractional ms)
+    pub processing_time_ms: f64,
 }
 
 /// A prompt for self-reflection/witnessing

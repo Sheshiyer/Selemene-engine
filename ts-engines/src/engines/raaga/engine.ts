@@ -189,7 +189,7 @@ export class RaagaEngine implements ConsciousnessEngine {
       result,
       witness_prompts: generateWitnessPrompts(m, dosha),
       calculated_at: new Date().toISOString(),
-      processing_time_ms: performance.now() - startTime,
+      processing_time_ms: Math.round(performance.now() - startTime),
     }
   }
 }
