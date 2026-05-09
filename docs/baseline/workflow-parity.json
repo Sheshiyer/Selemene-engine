@@ -1,0 +1,44 @@
+{
+  "workflows": [
+    {
+      "id": "birth-blueprint",
+      "required_phase": 0,
+      "engine_ids": ["numerology", "human-design", "vimshottari", "biofield", "face-reading"],
+      "synthesis_type": "BirthBlueprint"
+    },
+    {
+      "id": "creative-expression",
+      "required_phase": 1,
+      "engine_ids": ["sigil-forge", "sacred-geometry", "nadabrahman", "numerology", "raaga"],
+      "synthesis_type": "CreativeExpression"
+    },
+    {
+      "id": "daily-practice",
+      "required_phase": 0,
+      "engine_ids": ["panchanga", "vedic-clock", "biorhythm", "transits", "nadabrahman"],
+      "synthesis_type": "DailyPractice"
+    },
+    {
+      "id": "decision-support",
+      "required_phase": 1,
+      "engine_ids": ["tarot", "i-ching", "human-design", "enneagram", "gene-keys"],
+      "synthesis_type": "DecisionSupport"
+    },
+    {
+      "id": "full-spectrum",
+      "required_phase": 3,
+      "engine_ids": [
+        "numerology", "human-design", "vimshottari", "panchanga", "vedic-clock",
+        "biorhythm", "gene-keys", "biofield", "face-reading", "transits", "nadabrahman",
+        "tarot", "i-ching", "enneagram", "sacred-geometry", "sigil-forge", "raaga"
+      ],
+      "synthesis_type": "FullSpectrum"
+    },
+    {
+      "id": "self-inquiry",
+      "required_phase": 2,
+      "engine_ids": ["gene-keys", "enneagram", "face-reading", "biofield"],
+      "synthesis_type": "SelfInquiry"
+    }
+  ]
+}

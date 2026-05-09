@@ -185,10 +185,10 @@ fn engine_matrix_matches_workspace_versions() {
     let matrix: EngineMatrix = parse_json_file(&path);
 
     assert_eq!(matrix.rust_engines.len(), 11);
-    assert_eq!(matrix.ts_engines.len(), 5);
+    assert_eq!(matrix.ts_engines.len(), 6);
     assert_eq!(matrix.counts.rust_engines, 11);
-    assert_eq!(matrix.counts.ts_engines, 5);
-    assert_eq!(matrix.counts.total_engines, 16);
+    assert_eq!(matrix.counts.ts_engines, 6);
+    assert_eq!(matrix.counts.total_engines, 17);
 
     for entry in &matrix.rust_engines {
         assert_eq!(entry.version, cargo_version_for(&entry.crate_name));
@@ -232,7 +232,7 @@ fn dependency_graph_matches_cargo_metadata() {
     let graph: DependencyGraph = parse_json_file(&path);
     let metadata_map = cargo_internal_dependency_map();
 
-    assert_eq!(graph.workspace_crate_count, 25);
+    assert_eq!(graph.workspace_crate_count, 26);
     assert_eq!(graph.packages.len(), metadata_map.len());
 
     let documented: BTreeMap<String, Vec<String>> = graph

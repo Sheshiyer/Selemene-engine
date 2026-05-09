@@ -100,6 +100,7 @@ impl WorkflowRegistry {
                 "sacred-geometry".into(),
                 "nadabrahman".into(),
                 "numerology".into(),
+                "raaga".into(),
             ],
             synthesis_type: SynthesisType::CreativeExpression,
             default_options: HashMap::new(),
@@ -130,6 +131,7 @@ impl WorkflowRegistry {
                 "enneagram".into(),
                 "sacred-geometry".into(),
                 "sigil-forge".into(),
+                "raaga".into(),
             ],
             synthesis_type: SynthesisType::FullSpectrum,
             default_options: HashMap::new(),
@@ -251,7 +253,7 @@ mod tests {
         let registry = WorkflowRegistry::new();
         let wf = registry.get("full-spectrum").unwrap();
 
-        assert_eq!(wf.engine_ids.len(), 16);
+        assert_eq!(wf.engine_ids.len(), 17);
         assert!(wf.engine_ids.contains(&"numerology".to_string()));
         assert!(wf.engine_ids.contains(&"tarot".to_string()));
         assert!(wf.engine_ids.contains(&"transits".to_string()));

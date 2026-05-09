@@ -1,0 +1,28 @@
+{
+  "rust_engines": [
+    { "engine_id": "biofield",      "crate_name": "engine-biofield",      "version": "3.1.0", "required_phase": 1 },
+    { "engine_id": "biorhythm",     "crate_name": "engine-biorhythm",     "version": "3.1.0", "required_phase": 0 },
+    { "engine_id": "face-reading",  "crate_name": "engine-face-reading",  "version": "3.1.0", "required_phase": 1 },
+    { "engine_id": "gene-keys",     "crate_name": "engine-gene-keys",     "version": "3.1.0", "required_phase": 2 },
+    { "engine_id": "human-design",  "crate_name": "engine-human-design",  "version": "3.1.0", "required_phase": 1 },
+    { "engine_id": "nadabrahman",   "crate_name": "engine-nadabrahman",   "version": "3.1.0", "required_phase": 0 },
+    { "engine_id": "numerology",    "crate_name": "engine-numerology",    "version": "3.1.0", "required_phase": 0 },
+    { "engine_id": "panchanga",     "crate_name": "engine-panchanga",     "version": "3.1.0", "required_phase": 0 },
+    { "engine_id": "transits",      "crate_name": "engine-transits",      "version": "3.1.0", "required_phase": 0 },
+    { "engine_id": "vedic-clock",   "crate_name": "engine-vedic-clock",   "version": "3.1.0", "required_phase": 0 },
+    { "engine_id": "vimshottari",   "crate_name": "engine-vimshottari",   "version": "3.1.0", "required_phase": 2 }
+  ],
+  "ts_engines": [
+    { "engine_id": "enneagram",       "engine_version": "1.0.0" },
+    { "engine_id": "i-ching",         "engine_version": "1.0.0" },
+    { "engine_id": "raaga",           "engine_version": "1.0.0" },
+    { "engine_id": "sacred-geometry", "engine_version": "1.0.0" },
+    { "engine_id": "sigil-forge",     "engine_version": "1.0.0" },
+    { "engine_id": "tarot",           "engine_version": "1.0.0" }
+  ],
+  "counts": {
+    "rust_engines": 11,
+    "ts_engines": 6,
+    "total_engines": 17
+  }
+}
