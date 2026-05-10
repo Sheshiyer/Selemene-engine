@@ -83,8 +83,20 @@
 - [ ] **HYG-02**: Backfill `phases/P{1,2,3}/VERIFICATION.md` from completion summaries in `.context/planning/_archive-2026-03/`
 - [ ] **HYG-03**: Branch cleanup — 35 no-PR remote branches (wave*, bf*-clean, release/v3.0.0-*, fix/*, claude/musing-*)
 
+## Forward-Looking (post-m1)
+
+### Nādashakti V2 — Audio Richness (consumer-side, noesis-web)
+
+**Status:** plan ready, awaiting milestone slot. Owner: `claude` orchestrator + 4 sub-agent swarms.
+**Plan:** [`raagaegnin/V2_AUDIO_RICHNESS_PLAN.md`](../../raagaegnin/V2_AUDIO_RICHNESS_PLAN.md)
+**Scope:** gamakas (5 ornaments) · sample-pack timbres (sitar/tanpura/mridangam/bansuri/sarangi) · 6 talas + breath-paced cps · server-side WAV render · tanpura drone bed.
+**Foundation shipped:** v1 just-intonation 22-shruti playback verified end-to-end (Strudel `freq()` + `evaluate()` path). Engine output (raga#) → audio synthesis pipeline live in `apps/noesis-web/src/lib/raaga/`.
+**Effort:** 78 tasks · 3 phases · 9 waves · 22 swarms · ~108 hrs.
+**Acceptance:** all 72 melakartas play within ±5¢ of just-intonation Hz under 5 ornament types; offline-rendered WAV matches live audio (RMSE < 0.01); v1 callsites unaffected.
+
 ## References
 
 - Source: `.context/planning/_archive-2026-03/noesis-roadmap-timeline-2026-02-24.md`
 - Per-phase JSON plans: `.context/planning/_archive-2026-03/p{1..5}-*.json`
 - Recent execution plans: `docs/plans/`
+- Consumer-app v2 plan: `raagaegnin/V2_AUDIO_RICHNESS_PLAN.md`

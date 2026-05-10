@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nādashakti — Audible Body-Map (Strudel + Just-Intonation Shrutis)</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #0a0a0f 0%, #1a1a2e 50%, #0f0f1a 100%);
+            color: #e0e0e0; min-height: 100vh; overflow-x: hidden;
+        }
+        .container { max-width: 1400px; margin: 0 auto; padding: 2rem; }
+        header {
+            text-align: center; margin-bottom: 1.5rem; padding: 1rem;
+            background: rgba(255, 255, 255, 0.03); border-radius: 20px;
+            border: 1px solid rgba(255, 215, 0, 0.2);
+        }
+        h1 {
+            font-size: 2.2rem;
+            background: linear-gradient(45deg, #ffd700, #ff6b35, #ffd700);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+        .sanskrit { font-size: 1.2rem; color: #ffd700; margin: 0.5rem 0; }
+        .subtitle { color: #888; }
+        .audio-status {
+            margin-top: 0.75rem; padding: 0.5rem 1rem; border-radius: 25px;
+            background: rgba(100, 181, 246, 0.1); border: 1px solid rgba(100, 181, 246, 0.3);
+            display: inline-block; color: #64b5f6; font-size: 0.9rem;
+        }
+        .audio-status.ready { color: #81c784; border-color: rgba(129, 199, 132, 0.4); background: rgba(129, 199, 132, 0.1); }
+        .audio-status.playing { color: #ffd700; border-color: #ffd700; }
+
+        .main-content { display: grid; grid-template-columns: 280px 1fr 360px; gap: 1.5rem; align-items: start; }
+        @media (max-width: 1100px) { .main-content { grid-template-columns: 1fr; } }
+
+        .panel {
+            background: rgba(255, 255, 255, 0.03); border-radius: 15px;
+            padding: 1.25rem; border: 1px solid rgba(255, 215, 0, 0.1);
+        }
+        .panel h3 { color: #ffd700; margin-bottom: 0.75rem; text-align: center; }
+
+        .ma-toggle { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
+        .ma-btn {
+            flex: 1; padding: 0.6rem; border: 1px solid rgba(255, 215, 0, 0.3);
+            background: transparent; color: #aaa; border-radius: 20px;
+            cursor: pointer; transition: all 0.3s ease; font-size: 0.85rem;
+        }
+        .ma-btn.active { background: rgba(255, 215, 0, 0.2); color: #ffd700; border-color: #ffd700; }
+
+        .chakra-list { display: flex; flex-direction: column; gap: 0.4rem; }
+        .chakra-item {
+            padding: 0.6rem; background: rgba(255, 255, 255, 0.02);
+            border-radius: 6px; cursor: pointer; transition: all 0.3s ease;
+            border: 1px solid transparent;
+        }
+        .chakra-item:hover { background: rgba(255, 215, 0, 0.1); border-color: rgba(255, 215, 0, 0.3); }
+        .chakra-item.active { background: rgba(255, 215, 0, 0.15); border-color: #ffd700; }
+        .chakra-item .number { font-weight: bold; color: #ffd700; }
+        .chakra-item .zone { font-size: 0.7rem; color: #888; }
+
+        .body-container { display: flex; justify-content: center; align-items: center; min-height: 600px; }
+        .body-svg { width: 100%; max-width: 360px; }
+        .body-zone { cursor: pointer; transition: all 0.3s ease; }
+        .body-zone:hover { filter: brightness(1.5); }
+        .body-zone.active { filter: brightness(2) drop-shadow(0 0 10px currentColor); }
+
+        .raga-grid { display: grid; gap: 0.6rem; }
+        .raga-card {
+            padding: 0.75rem; background: rgba(255, 255, 255, 0.02);
+            border-radius: 6px; border-left: 3px solid #ffd700;
+            cursor: pointer; transition: all 0.3s ease;
+            display: flex; align-items: center; justify-content: space-between; gap: 0.5rem;
+        }
+        .raga-card:hover { background: rgba(255, 255, 255, 0.05); }
+        .raga-card.playing { background: rgba(255, 215, 0, 0.1); border-left-color: #ff6b35; }
+        .raga-card-text { flex: 1; min-width: 0; }
+        .raga-card .raga-name { font-weight: bold; color: #fff; font-size: 0.95rem; }
+        .raga-card .raga-meta { font-size: 0.75rem; color: #aaa; margin-top: 0.2rem; font-family: ui-monospace, monospace; }
+        .play-btn {
+            background: rgba(255, 215, 0, 0.15); border: 1px solid rgba(255, 215, 0, 0.4);
+            color: #ffd700; border-radius: 50%; width: 36px; height: 36px;
+            cursor: pointer; font-size: 0.9rem; flex-shrink: 0;
+            transition: all 0.2s; display: flex; align-items: center; justify-content: center;
+        }
+        .play-btn:hover { background: rgba(255, 215, 0, 0.3); transform: scale(1.1); }
+        .play-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+        .play-btn.playing { background: #ff6b35; color: #fff; border-color: #ff6b35; }
+
+        .controls {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;
+            margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(255, 215, 0, 0.1);
+        }
+        .controls label { font-size: 0.75rem; color: #888; }
+        .controls input { width: 100%; }
+        .stop-btn {
+            grid-column: span 2; padding: 0.6rem; margin-top: 0.5rem;
+            background: rgba(229, 115, 115, 0.15); border: 1px solid rgba(229, 115, 115, 0.4);
+            color: #e57373; border-radius: 20px; cursor: pointer;
+        }
+
+        .footer-quote {
+            text-align: center; padding: 1.5rem; margin-top: 2rem; font-style: italic;
+            color: #888; border-top: 1px solid rgba(255, 215, 0, 0.1);
+        }
+        .footer-quote .sanskrit-quote { font-size: 1.2rem; color: #ffd700; margin-bottom: 0.5rem; }
+        .footer-quote .small { font-size: 0.8rem; color: #666; margin-top: 0.5rem; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎵 Nādashakti — Audible Body</h1>
+            <div class="sanskrit">नादशक्ति</div>
+            <div class="subtitle">72 Melakartas · Just-Intonation Shrutis · Strudel WebAudio</div>
+            <div class="audio-status" id="audioStatus">Click any raga to initialize audio</div>
+        </header>
+
+        <div class="main-content">
+            <!-- Left: chakras -->
+            <div class="panel">
+                <h3>12 Chakras</h3>
+                <div class="ma-toggle">
+                    <button class="ma-btn active" data-ma="shuddha">Shuddha (1–36)</button>
+                    <button class="ma-btn" data-ma="prati">Prati (37–72)</button>
+                </div>
+                <div class="chakra-list" id="chakraList"></div>
+            </div>
+
+            <!-- Center: body -->
+            <div class="body-container">
+                <svg class="body-svg" viewBox="0 0 200 500" id="bodySvg">
+                    <ellipse class="body-zone" cx="100" cy="35" rx="30" ry="35" fill="#1a1a2e" stroke="#ffd700" stroke-width="1" data-chakra="12"/>
+                    <rect class="body-zone" x="85" y="70" width="30" height="25" rx="5" fill="#1a1a2e" stroke="#ba68c8" stroke-width="1" data-chakra="11"/>
+                    <ellipse class="body-zone" cx="55" cy="105" rx="25" ry="15" fill="#1a1a2e" stroke="#64b5f6" stroke-width="1" data-chakra="10"/>
+                    <ellipse class="body-zone" cx="145" cy="105" rx="25" ry="15" fill="#1a1a2e" stroke="#64b5f6" stroke-width="1" data-chakra="10"/>
+                    <ellipse class="body-zone" cx="100" cy="140" rx="45" ry="35" fill="#1a1a2e" stroke="#81c784" stroke-width="1" data-chakra="9"/>
+                    <ellipse class="body-zone" cx="100" cy="160" rx="20" ry="18" fill="#1a1a2e" stroke="#f48fb1" stroke-width="1.5" data-chakra="8"/>
+                    <ellipse class="body-zone" cx="100" cy="200" rx="35" ry="20" fill="#1a1a2e" stroke="#ffb74d" stroke-width="1" data-chakra="7"/>
+                    <ellipse class="body-zone" cx="100" cy="235" rx="30" ry="18" fill="#1a1a2e" stroke="#fff176" stroke-width="1" data-chakra="6"/>
+                    <ellipse class="body-zone" cx="100" cy="270" rx="35" ry="22" fill="#1a1a2e" stroke="#e57373" stroke-width="1" data-chakra="5"/>
+                    <ellipse class="body-zone" cx="100" cy="310" rx="45" ry="25" fill="#1a1a2e" stroke="#ce93d8" stroke-width="1" data-chakra="4"/>
+                    <ellipse class="body-zone" cx="75" cy="365" rx="20" ry="45" fill="#1a1a2e" stroke="#ff8a65" stroke-width="1" data-chakra="3"/>
+                    <ellipse class="body-zone" cx="125" cy="365" rx="20" ry="45" fill="#1a1a2e" stroke="#ff8a65" stroke-width="1" data-chakra="3"/>
+                    <ellipse class="body-zone" cx="70" cy="430" rx="12" ry="30" fill="#1a1a2e" stroke="#4fc3f7" stroke-width="1" data-chakra="2"/>
+                    <ellipse class="body-zone" cx="130" cy="430" rx="12" ry="30" fill="#1a1a2e" stroke="#4fc3f7" stroke-width="1" data-chakra="2"/>
+                    <ellipse class="body-zone" cx="65" cy="475" rx="18" ry="10" fill="#1a1a2e" stroke="#a5d6a7" stroke-width="1" data-chakra="1"/>
+                    <ellipse class="body-zone" cx="135" cy="475" rx="18" ry="10" fill="#1a1a2e" stroke="#a5d6a7" stroke-width="1" data-chakra="1"/>
+                </svg>
+            </div>
+
+            <!-- Right: ragas + controls -->
+            <div class="panel">
+                <h3 id="chakraTitle">Select a Chakra</h3>
+                <div class="raga-grid" id="ragaGrid"></div>
+                <div class="controls" id="controls" style="display:none;">
+                    <label>Sa (Hz)<input type="range" id="rootHz" min="110" max="440" value="220" step="10"></label>
+                    <label>Tempo (cps)<input type="range" id="cps" min="0.2" max="1.5" value="0.5" step="0.05"></label>
+                    <button class="stop-btn" id="stopBtn">■ Stop</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer-quote">
+            <div class="sanskrit-quote">नाद ब्रह्म — Nāda Brahma</div>
+            <div>"Sound is the Absolute. Tune the strings in shrutis, never in semitones."</div>
+            <div class="small">See <a href="SHRUTI_THEORY.md" style="color:#ffd700">SHRUTI_THEORY.md</a> for the science</div>
+        </div>
+    </div>
+
+    <script type="module">
+        // ───────────────────────────────────────────────────────────────────
+        // 22 SHRUTIS (Sa..Sa') — just-intonation ratios
+        // ───────────────────────────────────────────────────────────────────
+        const SHRUTIS = [
+            [1,1],[256,243],[16,15],[10,9],[9,8],
+            [32,27],[6,5],[5,4],[81,64],
+            [4,3],[27,20],[45,32],[729,512],
+            [3,2],
+            [128,81],[8,5],[5,3],[27,16],
+            [16,9],[9,5],[15,8],[243,128],
+            [2,1],
+        ];
+        const ratioOf = (i) => SHRUTIS[i][0] / SHRUTIS[i][1];
+
+        const SW = { Sa:0, R1:1,R2:4,R3:5, G1:5,G2:6,G3:7, M1:9,M2:12, Pa:13,
+                     D1:14,D2:16,D3:18, N1:18,N2:19,N3:20, Sa_:22 };
+        const RG = [[SW.R1,SW.G1],[SW.R1,SW.G2],[SW.R1,SW.G3],[SW.R2,SW.G2],[SW.R2,SW.G3],[SW.R3,SW.G3]];
+        const DN = [[SW.D1,SW.N1],[SW.D1,SW.N2],[SW.D1,SW.N3],[SW.D2,SW.N2],[SW.D2,SW.N3],[SW.D3,SW.N3]];
+
+        const NAMES = [
+            "Kanakangi","Ratnangi","Ganamurti","Vanaspati","Manavati","Tanarupi",
+            "Senapati","Hanumatodi","Dhenuka","Natakapriya","Kokilapriya","Rupavati",
+            "Gayakapriya","Vakulabharanam","Mayamalavagaula","Chakravakam","Suryakantam","Hatakambari",
+            "Jhankaradhvani","Natabhairavi","Keeravani","Kharaharapriya","Gourimanohari","Varunapriya",
+            "Mararanjani","Charukesi","Sarasangi","Harikambhoji","Dheerasankarabharanam","Naganandini",
+            "Yagapriya","Ragavardhini","Gangeyabhushani","Vagadhishvari","Shulini","Chalanata",
+            "Salagam","Jalarnavam","Jhalavarali","Navaneetam","Pavani","Raghupriya",
+            "Gavambodhi","Bhavapriya","Subhapantuvarali","Shadvidhamargini","Suvarnangi","Divyamani",
+            "Dhavalambari","Namanarayani","Kamavardhini","Ramapriya","Gamanasrama","Vishvambhari",
+            "Shyamalangi","Shanmukhapriya","Simhendramadhyamam","Hemavati","Dharmavati","Neetimati",
+            "Kantamani","Rishabhapriya","Latangi","Vachaspati","Mechakalyani","Chitrambari",
+            "Sucharitra","Jyotisvarupini","Dhatuvardhini","Nasikabhushani","Kosalam","Rasikapriya",
+        ];
+
+        function genMelakarta(num) {
+            const isPrati = num > 36;
+            const localN = isPrati ? num - 36 : num;
+            const cInSet = Math.floor((localN - 1) / 6);
+            const pInChk = (localN - 1) % 6;
+            const [r,g] = RG[cInSet];
+            const [d,n] = DN[pInChk];
+            const ma = isPrati ? SW.M2 : SW.M1;
+            const arohana = [SW.Sa, r, g, ma, SW.Pa, d, n, SW.Sa_];
+            return {
+                num, name: NAMES[num-1], arohana,
+                avarohana: [...arohana].reverse(),
+                chakra: Math.floor((num-1)/6) + 1,
+            };
+        }
+        const MELAKARTAS = Array.from({length:72}, (_,i) => genMelakarta(i+1));
+
+        const CHAKRAS = [
+            { num:1,  name:"Indu",   zone:"Feet" },
+            { num:2,  name:"Netra",  zone:"Calves" },
+            { num:3,  name:"Agni",   zone:"Thighs" },
+            { num:4,  name:"Veda",   zone:"Hips" },
+            { num:5,  name:"Bāṇa",   zone:"Lower Abdomen" },
+            { num:6,  name:"Rutu",   zone:"Navel" },
+            { num:7,  name:"Ṛṣi",    zone:"Solar Plexus" },
+            { num:8,  name:"Vasu",   zone:"Heart" },
+            { num:9,  name:"Brahma", zone:"Chest" },
+            { num:10, name:"Diśi",   zone:"Shoulders" },
+            { num:11, name:"Rudra",  zone:"Throat" },
+            { num:12, name:"Āditya", zone:"Head" },
+        ];
+
+        // ───────────────────────────────────────────────────────────────────
+        // Strudel — UMD script tag, functions exposed as globals on window
+        // ───────────────────────────────────────────────────────────────────
+        let strudelReady = null;
+        function loadStrudel() {
+            if (strudelReady) return strudelReady;
+            setStatus('⏳ Loading Strudel WebAudio engine…');
+            strudelReady = new Promise((resolve, reject) => {
+                const s = document.createElement('script');
+                s.src = 'https://unpkg.com/@strudel/web@1.3.0';
+                s.onload = async () => {
+                    try {
+                        // initStrudel() must run inside a user gesture for AudioContext to unlock
+                        await window.initStrudel();
+                        setStatus('🎵 Audio ready · click any ▶ button', 'ready');
+                        resolve();
+                    } catch (e) { reject(e); }
+                };
+                s.onerror = () => reject(new Error('Failed to load @strudel/web from unpkg'));
+                document.head.appendChild(s);
+            });
+            return strudelReady;
+        }
+
+        async function playRaaga(num) {
+            await loadStrudel();
+            const m = MELAKARTAS[num-1];
+            const ratios = [...m.arohana, ...m.avarohana.slice(1)].map(ratioOf);
+            const root = parseInt(document.getElementById('rootHz').value, 10);
+            const cps = parseFloat(document.getElementById('cps').value);
+
+            // @strudel/web ships freq() but not xen() at the global level. We
+            // bake the just-intonation ratios into Hz values directly — the
+            // result is identical (no 12-TET quantization happens).
+            const hzs = ratios.map(r => +(r * root).toFixed(4));
+            const N = hzs.length;
+            // setcps must live inside the evaluate string (transpiler-resolved)
+            const code = `setcps(${cps}); freq("${hzs.join(' ')}").s("sine").slow(${N / 2})`;
+            window.evaluate(code);
+
+            setStatus(`▶ Playing #${num} ${m.name} · root ${root}Hz · ${cps} cps`, 'playing');
+        }
+
+        async function stopAll() {
+            if (!strudelReady) return;
+            try { window.hush(); } catch { /* not loaded yet */ }
+            setStatus('Stopped', 'ready');
+            document.querySelectorAll('.play-btn.playing, .raga-card.playing')
+                .forEach(el => el.classList.remove('playing'));
+        }
+
+        // ───────────────────────────────────────────────────────────────────
+        // UI
+        // ───────────────────────────────────────────────────────────────────
+        let currentMa = 'shuddha';
+        let selectedChakra = null;
+
+        const setStatus = (msg, cls = '') => {
+            const el = document.getElementById('audioStatus');
+            el.textContent = msg;
+            el.className = 'audio-status ' + cls;
+        };
+
+        function renderChakraList() {
+            const list = document.getElementById('chakraList');
+            const filtered = currentMa === 'shuddha' ? CHAKRAS.slice(0,6) : CHAKRAS.slice(6,12);
+            list.innerHTML = filtered.map(c => `
+                <div class="chakra-item ${selectedChakra === c.num ? 'active' : ''}" data-chakra="${c.num}">
+                    <span class="number">${c.num}.</span> <span>${c.name}</span>
+                    <div class="zone">${c.zone}</div>
+                </div>
+            `).join('');
+        }
+
+        function renderRagas(chakraNum) {
+            const c = CHAKRAS.find(x => x.num === chakraNum);
+            if (!c) return;
+            document.getElementById('chakraTitle').textContent = `${c.name} — ${c.zone}`;
+            const start = (chakraNum-1)*6 + 1;
+            const ragas = Array.from({length:6}, (_,i) => MELAKARTAS[start-1+i]);
+            const grid = document.getElementById('ragaGrid');
+            grid.innerHTML = ragas.map(r => `
+                <div class="raga-card" data-num="${r.num}">
+                    <div class="raga-card-text">
+                        <div class="raga-name">#${r.num} ${r.name}</div>
+                        <div class="raga-meta">${r.arohana.map(i => SHRUTIS[i][0]+'/'+SHRUTIS[i][1]).join(' · ')}</div>
+                    </div>
+                    <button class="play-btn" data-num="${r.num}">▶</button>
+                </div>
+            `).join('');
+            document.getElementById('controls').style.display = 'grid';
+        }
+
+        function highlightZone(chakraNum) {
+            document.querySelectorAll('.body-zone').forEach(z => {
+                z.classList.toggle('active', parseInt(z.dataset.chakra,10) === chakraNum);
+            });
+        }
+
+        // Events
+        document.querySelectorAll('.ma-btn').forEach(b => {
+            b.addEventListener('click', () => {
+                document.querySelectorAll('.ma-btn').forEach(x => x.classList.remove('active'));
+                b.classList.add('active');
+                currentMa = b.dataset.ma;
+                selectedChakra = null;
+                renderChakraList();
+            });
+        });
+
+        document.getElementById('chakraList').addEventListener('click', e => {
+            const item = e.target.closest('.chakra-item');
+            if (!item) return;
+            selectedChakra = parseInt(item.dataset.chakra, 10);
+            renderChakraList();
+            renderRagas(selectedChakra);
+            highlightZone(selectedChakra);
+        });
+
+        document.querySelectorAll('.body-zone').forEach(z => {
+            z.addEventListener('click', () => {
+                const num = parseInt(z.dataset.chakra, 10);
+                if (num <= 6) currentMa = 'shuddha';
+                else currentMa = 'prati';
+                document.querySelectorAll('.ma-btn').forEach(x => {
+                    x.classList.toggle('active', x.dataset.ma === currentMa);
+                });
+                selectedChakra = num;
+                renderChakraList();
+                renderRagas(num);
+                highlightZone(num);
+            });
+        });
+
+        document.getElementById('ragaGrid').addEventListener('click', async e => {
+            const btn = e.target.closest('.play-btn') || e.target.closest('.raga-card');
+            if (!btn) return;
+            const num = parseInt(btn.dataset.num, 10);
+            if (!num) return;
+            document.querySelectorAll('.play-btn.playing, .raga-card.playing')
+                .forEach(el => el.classList.remove('playing'));
+            const card = document.querySelector(`.raga-card[data-num="${num}"]`);
+            const pbtn = document.querySelector(`.play-btn[data-num="${num}"]`);
+            card?.classList.add('playing');
+            pbtn?.classList.add('playing');
+            try { await playRaaga(num); }
+            catch (err) { setStatus('Audio error: ' + err.message); console.error(err); }
+        });
+
+        document.getElementById('stopBtn').addEventListener('click', stopAll);
+
+        // Init
+        renderChakraList();
+    </script>
+</body>
+</html>

@@ -1,0 +1,1012 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Melakarta-Mahapurusha Body Map | WitnessOS</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #0a0a0f 0%, #1a1a2e 50%, #0f0f1a 100%);
+            color: #e0e0e0;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 215, 0, 0.2);
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(45deg, #ffd700, #ff6b35, #ffd700);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        .subtitle {
+            color: #888;
+            font-size: 1.1rem;
+        }
+
+        .sanskrit {
+            font-size: 1.3rem;
+            color: #ffd700;
+            margin: 0.5rem 0;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 300px 1fr 350px;
+            gap: 2rem;
+            align-items: start;
+        }
+
+        @media (max-width: 1200px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Left Panel - Chakra List */
+        .chakra-panel {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 15px;
+            padding: 1.5rem;
+            border: 1px solid rgba(255, 215, 0, 0.1);
+        }
+
+        .chakra-panel h3 {
+            color: #ffd700;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .chakra-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .chakra-item {
+            padding: 0.8rem;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid transparent;
+        }
+
+        .chakra-item:hover {
+            background: rgba(255, 215, 0, 0.1);
+            border-color: rgba(255, 215, 0, 0.3);
+        }
+
+        .chakra-item.active {
+            background: rgba(255, 215, 0, 0.15);
+            border-color: #ffd700;
+        }
+
+        .chakra-item .number {
+            font-weight: bold;
+            color: #ffd700;
+        }
+
+        .chakra-item .name {
+            font-size: 0.9rem;
+        }
+
+        .chakra-item .zone {
+            font-size: 0.75rem;
+            color: #888;
+        }
+
+        /* Center - Body Visualization */
+        .body-container {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 700px;
+        }
+
+        .body-svg {
+            width: 100%;
+            max-width: 400px;
+            height: auto;
+        }
+
+        .body-zone {
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .body-zone:hover {
+            filter: brightness(1.5);
+        }
+
+        .body-zone.active {
+            filter: brightness(2) drop-shadow(0 0 10px currentColor);
+        }
+
+        /* Right Panel - Raga Details */
+        .detail-panel {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 15px;
+            padding: 1.5rem;
+            border: 1px solid rgba(255, 215, 0, 0.1);
+        }
+
+        .detail-panel h3 {
+            color: #ffd700;
+            margin-bottom: 1rem;
+            text-align: center;
+            font-size: 1.3rem;
+        }
+
+        .chakra-info {
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            background: rgba(255, 215, 0, 0.05);
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .chakra-info .name {
+            font-size: 1.5rem;
+            color: #ffd700;
+        }
+
+        .chakra-info .translation {
+            color: #aaa;
+            font-style: italic;
+        }
+
+        .chakra-info .body-zone-name {
+            color: #ff6b35;
+            font-weight: bold;
+            margin-top: 0.5rem;
+        }
+
+        .raga-grid {
+            display: grid;
+            gap: 0.8rem;
+        }
+
+        .raga-card {
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 8px;
+            border-left: 3px solid var(--rasa-color, #ffd700);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .raga-card:hover {
+            background: rgba(255, 255, 255, 0.05);
+            transform: translateX(5px);
+        }
+
+        .raga-card.active {
+            background: rgba(255, 215, 0, 0.1);
+        }
+
+        .raga-card .raga-number {
+            font-size: 0.8rem;
+            color: #888;
+        }
+
+        .raga-card .raga-name {
+            font-weight: bold;
+            color: #fff;
+            font-size: 1rem;
+        }
+
+        .raga-card .raga-rasa {
+            font-size: 0.85rem;
+            color: var(--rasa-color, #ffd700);
+        }
+
+        .raga-card .raga-body {
+            font-size: 0.8rem;
+            color: #aaa;
+        }
+
+        .raga-card .raga-therapy {
+            font-size: 0.75rem;
+            color: #888;
+            margin-top: 0.5rem;
+            font-style: italic;
+        }
+
+        .raga-card-row {
+            display: flex; align-items: center; justify-content: space-between; gap: 0.5rem;
+        }
+        .raga-card-text { flex: 1; min-width: 0; }
+        .play-btn {
+            background: rgba(255, 215, 0, 0.15); border: 1px solid rgba(255, 215, 0, 0.4);
+            color: #ffd700; border-radius: 50%; width: 34px; height: 34px;
+            cursor: pointer; font-size: 0.85rem; flex-shrink: 0;
+            transition: all 0.2s; display: flex; align-items: center; justify-content: center;
+        }
+        .play-btn:hover { background: rgba(255, 215, 0, 0.3); transform: scale(1.1); }
+        .play-btn.playing { background: #ff6b35; color: #fff; border-color: #ff6b35; }
+        .audio-status {
+            display: inline-block; margin-top: 0.5rem; padding: 0.4rem 0.9rem;
+            border-radius: 20px; background: rgba(100, 181, 246, 0.1);
+            border: 1px solid rgba(100, 181, 246, 0.3); color: #64b5f6; font-size: 0.85rem;
+        }
+        .audio-status.ready { color: #81c784; border-color: rgba(129, 199, 132, 0.4); background: rgba(129, 199, 132, 0.1); }
+        .audio-status.playing { color: #ffd700; border-color: #ffd700; }
+        .audio-stop {
+            margin-top: 1rem; width: 100%; padding: 0.5rem;
+            background: rgba(229, 115, 115, 0.15); border: 1px solid rgba(229, 115, 115, 0.4);
+            color: #e57373; border-radius: 20px; cursor: pointer;
+        }
+
+        /* Rasa Colors */
+        .rasa-santa { --rasa-color: #64b5f6; }
+        .rasa-sringara { --rasa-color: #f48fb1; }
+        .rasa-karuna { --rasa-color: #81c784; }
+        .rasa-vira { --rasa-color: #ffb74d; }
+        .rasa-raudra { --rasa-color: #e57373; }
+        .rasa-adbhuta { --rasa-color: #ba68c8; }
+        .rasa-hasya { --rasa-color: #fff176; }
+        .rasa-bhakti { --rasa-color: #ff80ab; }
+
+        /* Breath Info */
+        .breath-panel {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            background: rgba(100, 181, 246, 0.1);
+            border-radius: 10px;
+            border: 1px solid rgba(100, 181, 246, 0.3);
+        }
+
+        .breath-panel h4 {
+            color: #64b5f6;
+            margin-bottom: 0.5rem;
+        }
+
+        .breath-pattern {
+            font-size: 1.2rem;
+            color: #fff;
+            text-align: center;
+            padding: 0.5rem;
+        }
+
+        .time-window {
+            text-align: center;
+            color: #aaa;
+            font-size: 0.9rem;
+        }
+
+        /* Legend */
+        .legend {
+            margin-top: 2rem;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 10px;
+        }
+
+        .legend h4 {
+            color: #ffd700;
+            margin-bottom: 0.8rem;
+            text-align: center;
+        }
+
+        .legend-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 0.5rem;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.8rem;
+        }
+
+        .legend-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        /* Ma Type Toggle */
+        .ma-toggle {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .ma-btn {
+            padding: 0.8rem 1.5rem;
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            background: transparent;
+            color: #aaa;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .ma-btn.active {
+            background: rgba(255, 215, 0, 0.2);
+            color: #ffd700;
+            border-color: #ffd700;
+        }
+
+        .ma-btn:hover {
+            border-color: #ffd700;
+        }
+
+        /* Footer Quote */
+        .footer-quote {
+            text-align: center;
+            padding: 2rem;
+            margin-top: 2rem;
+            font-style: italic;
+            color: #888;
+            border-top: 1px solid rgba(255, 215, 0, 0.1);
+        }
+
+        .footer-quote .sanskrit-quote {
+            font-size: 1.3rem;
+            color: #ffd700;
+            margin-bottom: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎵 Nādashakti — Sound-Spirit Body</h1>
+            <div class="sanskrit">नादशक्ति • 音霊の体</div>
+            <div class="subtitle">72 Melakarta Ragas Mapped to the Mahapurusha · Just-Intonation Audio</div>
+            <div class="audio-status" id="audioStatus">Click any raga ▶ to initialize audio</div>
+            <div class="v2-bar" id="v2Bar" style="display:none; margin-top:0.75rem; padding:0.6rem; background:rgba(255,215,0,0.06); border:1px solid rgba(255,215,0,0.25); border-radius:10px; flex-wrap:wrap; gap:0.6rem; justify-content:center;">
+                <label style="display:flex; flex-direction:column; gap:0.2rem; font-size:0.7rem; color:#aaa;">Timbre
+                    <select id="v2Timbre" style="background:rgba(0,0,0,0.3); color:#e0e0e0; border:1px solid rgba(255,215,0,0.3); border-radius:4px; padding:0.25rem;">
+                        <option value="sine">Sine (V1)</option>
+                        <option value="sitar" selected>Sitar</option>
+                        <option value="bansuri">Bansuri</option>
+                        <option value="sarangi">Sarangi</option>
+                    </select>
+                </label>
+                <label style="display:flex; flex-direction:column; gap:0.2rem; font-size:0.7rem; color:#aaa;">Gamaka
+                    <select id="v2Gamaka" style="background:rgba(0,0,0,0.3); color:#e0e0e0; border:1px solid rgba(255,215,0,0.3); border-radius:4px; padding:0.25rem;">
+                        <option value="none">None</option>
+                        <option value="kampita" selected>Kampita</option>
+                        <option value="andolana">Andolana</option>
+                        <option value="kurula">Kurula</option>
+                        <option value="nokku">Nokku</option>
+                        <option value="sphurita">Sphurita</option>
+                    </select>
+                </label>
+                <label style="display:flex; flex-direction:column; gap:0.2rem; font-size:0.7rem; color:#aaa;">Tala
+                    <select id="v2Tala" style="background:rgba(0,0,0,0.3); color:#e0e0e0; border:1px solid rgba(255,215,0,0.3); border-radius:4px; padding:0.25rem;">
+                        <option value="">Free</option>
+                        <option value="adi" selected>Ādi (8)</option>
+                        <option value="rupakam">Rūpakam (6)</option>
+                        <option value="misra-chapu">Miśra Chāpu (7)</option>
+                        <option value="khanda-chapu">Khaṇḍa Chāpu (5)</option>
+                        <option value="tisra-eka">Tisra Ēkam (3)</option>
+                        <option value="jhampa">Miśra Jhampa (10)</option>
+                    </select>
+                </label>
+                <label style="display:flex; flex-direction:column; gap:0.2rem; font-size:0.7rem; color:#aaa;">Breath
+                    <select id="v2Breath" style="background:rgba(0,0,0,0.3); color:#e0e0e0; border:1px solid rgba(255,215,0,0.3); border-radius:4px; padding:0.25rem;">
+                        <option value="">Default cps</option>
+                        <option value="bhastrika">Bhastrika</option>
+                        <option value="ujjayi">Ujjāyī</option>
+                        <option value="brahmari">Bhrāmarī</option>
+                        <option value="shitali">Śītalī</option>
+                    </select>
+                </label>
+            </div>
+            <label style="display:inline-flex; align-items:center; gap:0.4rem; margin-top:0.6rem; cursor:pointer; font-size:0.85rem; color:#aaa;">
+                <input type="checkbox" id="v2Toggle" style="accent-color:#ffd700;">
+                <span>V2 audio (gamakas · timbres · tala · breath)</span>
+            </label>
+        </header>
+
+        <div class="ma-toggle">
+            <button class="ma-btn active" data-ma="shuddha">Shuddha Ma (1-36)</button>
+            <button class="ma-btn" data-ma="prati">Prati Ma (37-72)</button>
+        </div>
+
+        <div class="main-content">
+            <!-- Left Panel -->
+            <div class="chakra-panel">
+                <h3>12 Melakarta Chakras</h3>
+                <div class="chakra-list" id="chakraList">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+
+            <!-- Center - Body -->
+            <div class="body-container">
+                <svg class="body-svg" viewBox="0 0 200 500" id="bodySvg">
+                    <!-- Head/Crown -->
+                    <ellipse class="body-zone" id="zone-head" cx="100" cy="35" rx="30" ry="35" 
+                             fill="#1a1a2e" stroke="#ffd700" stroke-width="1" data-chakra="12"/>
+                    
+                    <!-- Throat -->
+                    <rect class="body-zone" id="zone-throat" x="85" y="70" width="30" height="25" rx="5"
+                          fill="#1a1a2e" stroke="#ba68c8" stroke-width="1" data-chakra="11"/>
+                    
+                    <!-- Shoulders -->
+                    <ellipse class="body-zone" id="zone-shoulders-r" cx="55" cy="105" rx="25" ry="15"
+                             fill="#1a1a2e" stroke="#64b5f6" stroke-width="1" data-chakra="10"/>
+                    <ellipse class="body-zone" id="zone-shoulders-l" cx="145" cy="105" rx="25" ry="15"
+                             fill="#1a1a2e" stroke="#64b5f6" stroke-width="1" data-chakra="10"/>
+                    
+                    <!-- Chest -->
+                    <ellipse class="body-zone" id="zone-chest" cx="100" cy="140" rx="45" ry="35"
+                             fill="#1a1a2e" stroke="#81c784" stroke-width="1" data-chakra="9"/>
+                    
+                    <!-- Heart -->
+                    <ellipse class="body-zone" id="zone-heart" cx="100" cy="160" rx="20" ry="18"
+                             fill="#1a1a2e" stroke="#f48fb1" stroke-width="1.5" data-chakra="8"/>
+                    
+                    <!-- Solar Plexus -->
+                    <ellipse class="body-zone" id="zone-solar" cx="100" cy="200" rx="35" ry="20"
+                             fill="#1a1a2e" stroke="#ffb74d" stroke-width="1" data-chakra="7"/>
+                    
+                    <!-- Navel -->
+                    <ellipse class="body-zone" id="zone-navel" cx="100" cy="235" rx="30" ry="18"
+                             fill="#1a1a2e" stroke="#fff176" stroke-width="1" data-chakra="6"/>
+                    
+                    <!-- Lower Abdomen -->
+                    <ellipse class="body-zone" id="zone-lower-abd" cx="100" cy="270" rx="35" ry="22"
+                             fill="#1a1a2e" stroke="#e57373" stroke-width="1" data-chakra="5"/>
+                    
+                    <!-- Hips -->
+                    <ellipse class="body-zone" id="zone-hips" cx="100" cy="310" rx="45" ry="25"
+                             fill="#1a1a2e" stroke="#ce93d8" stroke-width="1" data-chakra="4"/>
+                    
+                    <!-- Thighs -->
+                    <ellipse class="body-zone" id="zone-thigh-r" cx="75" cy="365" rx="20" ry="45"
+                             fill="#1a1a2e" stroke="#ff8a65" stroke-width="1" data-chakra="3"/>
+                    <ellipse class="body-zone" id="zone-thigh-l" cx="125" cy="365" rx="20" ry="45"
+                             fill="#1a1a2e" stroke="#ff8a65" stroke-width="1" data-chakra="3"/>
+                    
+                    <!-- Calves -->
+                    <ellipse class="body-zone" id="zone-calf-r" cx="70" cy="430" rx="12" ry="30"
+                             fill="#1a1a2e" stroke="#4fc3f7" stroke-width="1" data-chakra="2"/>
+                    <ellipse class="body-zone" id="zone-calf-l" cx="130" cy="430" rx="12" ry="30"
+                             fill="#1a1a2e" stroke="#4fc3f7" stroke-width="1" data-chakra="2"/>
+                    
+                    <!-- Feet -->
+                    <ellipse class="body-zone" id="zone-foot-r" cx="65" cy="475" rx="18" ry="10"
+                             fill="#1a1a2e" stroke="#a5d6a7" stroke-width="1" data-chakra="1"/>
+                    <ellipse class="body-zone" id="zone-foot-l" cx="135" cy="475" rx="18" ry="10"
+                             fill="#1a1a2e" stroke="#a5d6a7" stroke-width="1" data-chakra="1"/>
+                    
+                    <!-- Arms (simplified) -->
+                    <line x1="30" y1="105" x2="15" y2="200" stroke="#444" stroke-width="8" stroke-linecap="round"/>
+                    <line x1="170" y1="105" x2="185" y2="200" stroke="#444" stroke-width="8" stroke-linecap="round"/>
+                </svg>
+            </div>
+
+            <!-- Right Panel -->
+            <div class="detail-panel">
+                <h3>Raga Details</h3>
+                <div class="chakra-info" id="chakraInfo">
+                    <div class="name">Select a Chakra</div>
+                    <div class="translation">Click on body zone or chakra list</div>
+                </div>
+                <div class="raga-grid" id="ragaGrid">
+                    <!-- Populated by JS -->
+                </div>
+                <div class="breath-panel" id="breathPanel" style="display: none;">
+                    <h4>🌬️ Breath Pattern</h4>
+                    <div class="breath-pattern" id="breathPattern"></div>
+                    <div class="time-window" id="timeWindow"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="legend">
+            <h4>Nine Rasas (Emotional Essences)</h4>
+            <div class="legend-grid">
+                <div class="legend-item"><span class="legend-color" style="background: #64b5f6;"></span> Śānta (Peace)</div>
+                <div class="legend-item"><span class="legend-color" style="background: #f48fb1;"></span> Śṛṅgāra (Love)</div>
+                <div class="legend-item"><span class="legend-color" style="background: #81c784;"></span> Karuṇa (Compassion)</div>
+                <div class="legend-item"><span class="legend-color" style="background: #ffb74d;"></span> Vīra (Heroism)</div>
+                <div class="legend-item"><span class="legend-color" style="background: #e57373;"></span> Raudra (Fury)</div>
+                <div class="legend-item"><span class="legend-color" style="background: #ba68c8;"></span> Adbhuta (Wonder)</div>
+                <div class="legend-item"><span class="legend-color" style="background: #fff176;"></span> Hāsya (Joy)</div>
+                <div class="legend-item"><span class="legend-color" style="background: #ff80ab;"></span> Bhakti (Devotion)</div>
+            </div>
+        </div>
+
+        <div class="footer-quote">
+            <div class="sanskrit-quote">नाद ब्रह्म — Nāda Brahma</div>
+            <div>"Sound is the Absolute. The body is a veena, consciousness the musician, breath the plectrum."</div>
+        </div>
+    </div>
+
+    <script>
+        // Complete Melakarta Data
+        const melakartas = {
+            1: { name: "Kanakaṅgi", rasa: "santa", body: "Right heel", therapy: "Grounding anxiety" },
+            2: { name: "Ratnaṅgi", rasa: "karuna", body: "Left heel", therapy: "Emotional stability" },
+            3: { name: "Gānamūrti", rasa: "sringara", body: "Right arch", therapy: "Relational harmony" },
+            4: { name: "Vanaspati", rasa: "vira", body: "Left arch", therapy: "Overcoming fear" },
+            5: { name: "Mānavati", rasa: "adbhuta", body: "Right toes", therapy: "Opening perception" },
+            6: { name: "Tānarūpi", rasa: "hasya", body: "Left toes", therapy: "Releasing tension" },
+            7: { name: "Senāpati", rasa: "vira", body: "Right calf outer", therapy: "Assertive action" },
+            8: { name: "Hanumatodi", rasa: "karuna", body: "Right calf inner", therapy: "Devotional flow" },
+            9: { name: "Dhenukā", rasa: "santa", body: "Left calf outer", therapy: "Nurturing calm" },
+            10: { name: "Nāṭakapriyā", rasa: "sringara", body: "Left calf inner", therapy: "Creative expression" },
+            11: { name: "Kokilapriyā", rasa: "adbhuta", body: "Right ankle", therapy: "Melodic awakening" },
+            12: { name: "Rūpavati", rasa: "hasya", body: "Left ankle", therapy: "Form appreciation" },
+            13: { name: "Gāyakapriyā", rasa: "sringara", body: "Right thigh front", therapy: "Passion activation" },
+            14: { name: "Vakulābharaṇam", rasa: "santa", body: "Right thigh back", therapy: "Peaceful strength" },
+            15: { name: "Māyāmāḷavagauḷa", rasa: "adbhuta", body: "Left thigh front", therapy: "Wonder & devotion" },
+            16: { name: "Chakravākam", rasa: "karuna", body: "Left thigh back", therapy: "Longing transformed" },
+            17: { name: "Sūryakāntam", rasa: "vira", body: "Right thigh outer", therapy: "Solar courage" },
+            18: { name: "Hāṭakāmbari", rasa: "raudra", body: "Left thigh outer", therapy: "Fierce protection" },
+            19: { name: "Jhāṅkāradhvani", rasa: "adbhuta", body: "Right hip joint", therapy: "Sound awakening" },
+            20: { name: "Naṭabhairavī", rasa: "raudra", body: "Left hip joint", therapy: "Dance of destruction" },
+            21: { name: "Kīravāṇi", rasa: "karuna", body: "Right sacroiliac", therapy: "Melancholic healing" },
+            22: { name: "Kharaharapriyā", rasa: "sringara", body: "Left sacroiliac", therapy: "Beloved devotion" },
+            23: { name: "Gaurimanohari", rasa: "santa", body: "Right buttock", therapy: "Divine feminine peace" },
+            24: { name: "Varuṇapriyā", rasa: "santa", body: "Left buttock", therapy: "Water element flow" },
+            25: { name: "Mārarañjani", rasa: "sringara", body: "Right lower belly", therapy: "Sensual awakening" },
+            26: { name: "Chārukesi", rasa: "santa", body: "Left lower belly", therapy: "Gentle radiance" },
+            27: { name: "Sarasāṅgī", rasa: "hasya", body: "Right inguinal", therapy: "Flowing joy" },
+            28: { name: "Harikāmbhoji", rasa: "vira", body: "Left inguinal", therapy: "Courageous action" },
+            29: { name: "Dhīrasaṅkarābharaṇam", rasa: "vira", body: "Pubic center", therapy: "Heroic stability" },
+            30: { name: "Nāgānandinī", rasa: "adbhuta", body: "Perineum", therapy: "Serpent awakening" },
+            31: { name: "Yāgapriyā", rasa: "santa", body: "Navel center", therapy: "Sacrificial peace" },
+            32: { name: "Rāgavardhini", rasa: "sringara", body: "Right of navel", therapy: "Passion cultivation" },
+            33: { name: "Gāṅgeyabhūṣaṇī", rasa: "santa", body: "Left of navel", therapy: "Sacred river flow" },
+            34: { name: "Vāgadhīśvarī", rasa: "adbhuta", body: "Above navel", therapy: "Speech mastery" },
+            35: { name: "Śūlini", rasa: "raudra", body: "Below navel", therapy: "Trident power" },
+            36: { name: "Chalanāṭa", rasa: "hasya", body: "Navel periphery", therapy: "Playful movement" },
+            37: { name: "Sālagam", rasa: "santa", body: "Center solar plexus", therapy: "Pure discrimination" },
+            38: { name: "Jalārṇavam", rasa: "karuna", body: "Right of plexus", therapy: "Ocean of compassion" },
+            39: { name: "Jhālavarāḷi", rasa: "raudra", body: "Left of plexus", therapy: "Fierce clarity" },
+            40: { name: "Navanītam", rasa: "sringara", body: "Upper plexus", therapy: "Butter-soft love" },
+            41: { name: "Pāvani", rasa: "santa", body: "Lower plexus", therapy: "Purifying wind" },
+            42: { name: "Raghupriyā", rasa: "vira", body: "Plexus periphery", therapy: "Royal courage" },
+            43: { name: "Gavāmbodhi", rasa: "santa", body: "Heart center", therapy: "Ocean of light" },
+            44: { name: "Bhavapriyā", rasa: "bhakti", body: "Right atrium", therapy: "Devotional love" },
+            45: { name: "Śubhapantuvarāḷi", rasa: "karuna", body: "Left atrium", therapy: "Auspicious compassion" },
+            46: { name: "Ṣadvidhamārgiṇī", rasa: "adbhuta", body: "Right ventricle", therapy: "Six-path wonder" },
+            47: { name: "Suvarnāṅgī", rasa: "sringara", body: "Left ventricle", therapy: "Golden body beauty" },
+            48: { name: "Divyamaṇi", rasa: "hasya", body: "Pericardium", therapy: "Divine jewel joy" },
+            49: { name: "Dhavalāmbari", rasa: "santa", body: "Sternum center", therapy: "White light peace" },
+            50: { name: "Nāmanārāyaṇī", rasa: "bhakti", body: "Right chest", therapy: "Divine name devotion" },
+            51: { name: "Kāmavardhini", rasa: "sringara", body: "Left chest", therapy: "Desire refinement" },
+            52: { name: "Rāmapriyā", rasa: "vira", body: "Right ribs", therapy: "Righteous action" },
+            53: { name: "Gamanasrama", rasa: "karuna", body: "Left ribs", therapy: "Effortful compassion" },
+            54: { name: "Viśvambharī", rasa: "adbhuta", body: "Full chest", therapy: "Universe-bearing" },
+            55: { name: "Śyāmalāṅgī", rasa: "karuna", body: "Right shoulder", therapy: "Dark goddess grace" },
+            56: { name: "Ṣaṇmukhapriyā", rasa: "vira", body: "Left shoulder", therapy: "Six-faced courage" },
+            57: { name: "Siṃhendramadhyamam", rasa: "raudra", body: "Right deltoid", therapy: "Lion king power" },
+            58: { name: "Hemavatī", rasa: "santa", body: "Left deltoid", therapy: "Snow mountain peace" },
+            59: { name: "Dharmāvatī", rasa: "santa", body: "Right trapezius", therapy: "Dharmic stability" },
+            60: { name: "Nītimatī", rasa: "adbhuta", body: "Left trapezius", therapy: "Ethical wonder" },
+            61: { name: "Kāntāmaṇi", rasa: "sringara", body: "Throat center", therapy: "Beloved jewel" },
+            62: { name: "Ṛṣabhapriyā", rasa: "vira", body: "Right throat", therapy: "Bull strength voice" },
+            63: { name: "Latāṅgī", rasa: "sringara", body: "Left throat", therapy: "Creeping vine grace" },
+            64: { name: "Vāchaspati", rasa: "adbhuta", body: "Larynx", therapy: "Lord of speech" },
+            65: { name: "Mechakalyāṇī", rasa: "santa", body: "Thyroid right", therapy: "Auspicious blue" },
+            66: { name: "Chitrāmbarī", rasa: "hasya", body: "Thyroid left", therapy: "Wondrous garment" },
+            67: { name: "Sucharitra", rasa: "santa", body: "Third eye", therapy: "Pure character" },
+            68: { name: "Jyotisvarūpiṇī", rasa: "adbhuta", body: "Crown center", therapy: "Light embodiment" },
+            69: { name: "Dhātuvardhini", rasa: "vira", body: "Right temple", therapy: "Element strength" },
+            70: { name: "Nāsikabhūṣaṇī", rasa: "sringara", body: "Left temple", therapy: "Nose-adorned beauty" },
+            71: { name: "Kosalam", rasa: "santa", body: "Forehead center", therapy: "Sheathed peace" },
+            72: { name: "Rasikapriyā", rasa: "bhakti", body: "Full crown", therapy: "Connoisseur devotion" }
+        };
+
+        const chakras = [
+            { num: 1, name: "Indu", translation: "Moon", zone: "Feet", ragas: [1,2,3,4,5,6], breath: "4-4-4-4", time: "3:00-5:00 AM" },
+            { num: 2, name: "Netra", translation: "Eyes", zone: "Calves", ragas: [7,8,9,10,11,12], breath: "4-7-8", time: "5:00-7:00 AM" },
+            { num: 3, name: "Agni", translation: "Fire", zone: "Thighs", ragas: [13,14,15,16,17,18], breath: "Bhastrika", time: "7:00-9:00 AM" },
+            { num: 4, name: "Veda", translation: "Knowledge", zone: "Hips", ragas: [19,20,21,22,23,24], breath: "6-0-6-0", time: "9:00-11:00 AM" },
+            { num: 5, name: "Bāṇa", translation: "Arrow", zone: "Lower Abdomen", ragas: [25,26,27,28,29,30], breath: "Kapalabhati", time: "11:00 AM-1:00 PM" },
+            { num: 6, name: "Rutu", translation: "Season", zone: "Navel", ragas: [31,32,33,34,35,36], breath: "Nadi Shodhana", time: "1:00-3:00 PM" },
+            { num: 7, name: "Ṛṣi", translation: "Sage", zone: "Solar Plexus", ragas: [37,38,39,40,41,42], breath: "Ujjayi", time: "3:00-5:00 PM" },
+            { num: 8, name: "Vasu", translation: "Divine Dweller", zone: "Heart", ragas: [43,44,45,46,47,48], breath: "5-5 Coherence", time: "5:00-7:00 PM" },
+            { num: 9, name: "Brahma", translation: "Creator", zone: "Chest", ragas: [49,50,51,52,53,54], breath: "Dirgha", time: "7:00-9:00 PM" },
+            { num: 10, name: "Diśi", translation: "Direction", zone: "Shoulders", ragas: [55,56,57,58,59,60], breath: "Shoulder-roll", time: "9:00-11:00 PM" },
+            { num: 11, name: "Rudra", translation: "Fierce One", zone: "Throat", ragas: [61,62,63,64,65,66], breath: "Brahmari", time: "11:00 PM-1:00 AM" },
+            { num: 12, name: "Āditya", translation: "Sun", zone: "Head", ragas: [67,68,69,70,71,72], breath: "Śītalī", time: "1:00-3:00 AM" }
+        ];
+
+        const rasaColors = {
+            santa: "#64b5f6",
+            sringara: "#f48fb1",
+            karuna: "#81c784",
+            vira: "#ffb74d",
+            raudra: "#e57373",
+            adbhuta: "#ba68c8",
+            hasya: "#fff176",
+            bhakti: "#ff80ab"
+        };
+
+        let currentMaType = 'shuddha';
+        let selectedChakra = null;
+
+        // Initialize
+        function init() {
+            renderChakraList();
+            setupEventListeners();
+        }
+
+        function renderChakraList() {
+            const list = document.getElementById('chakraList');
+            const filteredChakras = currentMaType === 'shuddha' 
+                ? chakras.slice(0, 6) 
+                : chakras.slice(6, 12);
+            
+            list.innerHTML = filteredChakras.map(c => `
+                <div class="chakra-item ${selectedChakra === c.num ? 'active' : ''}" 
+                     data-chakra="${c.num}">
+                    <span class="number">${c.num}.</span>
+                    <span class="name">${c.name}</span>
+                    <div class="zone">${c.zone}</div>
+                </div>
+            `).join('');
+        }
+
+        function renderRagaDetails(chakraNum) {
+            const chakra = chakras.find(c => c.num === chakraNum);
+            if (!chakra) return;
+
+            document.getElementById('chakraInfo').innerHTML = `
+                <div class="name">${chakra.name}</div>
+                <div class="translation">${chakra.translation}</div>
+                <div class="body-zone-name">${chakra.zone}</div>
+            `;
+
+            const ragaGrid = document.getElementById('ragaGrid');
+            ragaGrid.innerHTML = chakra.ragas.map(num => {
+                const raga = melakartas[num];
+                return `
+                    <div class="raga-card rasa-${raga.rasa}" data-num="${num}">
+                        <div class="raga-card-row">
+                            <div class="raga-card-text">
+                                <div class="raga-number">#${num}</div>
+                                <div class="raga-name">${raga.name}</div>
+                                <div class="raga-rasa">${raga.rasa.charAt(0).toUpperCase() + raga.rasa.slice(1)}</div>
+                                <div class="raga-body">${raga.body}</div>
+                                <div class="raga-therapy">${raga.therapy}</div>
+                            </div>
+                            <button class="play-btn" data-num="${num}" title="Play in just-intonation shrutis">▶</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            document.getElementById('breathPanel').style.display = 'block';
+            document.getElementById('breathPattern').textContent = chakra.breath;
+            document.getElementById('timeWindow').textContent = `Optimal Time: ${chakra.time}`;
+        }
+
+        function setupEventListeners() {
+            // Ma type toggle
+            document.querySelectorAll('.ma-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.ma-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    currentMaType = btn.dataset.ma;
+                    selectedChakra = null;
+                    renderChakraList();
+                });
+            });
+
+            // Chakra list clicks
+            document.getElementById('chakraList').addEventListener('click', (e) => {
+                const item = e.target.closest('.chakra-item');
+                if (item) {
+                    selectedChakra = parseInt(item.dataset.chakra);
+                    renderChakraList();
+                    renderRagaDetails(selectedChakra);
+                    highlightBodyZone(selectedChakra);
+                }
+            });
+
+            // Body zone clicks
+            document.querySelectorAll('.body-zone').forEach(zone => {
+                zone.addEventListener('click', () => {
+                    const chakraNum = parseInt(zone.dataset.chakra);
+                    selectedChakra = chakraNum;
+                    
+                    // Switch ma type if needed
+                    if (chakraNum <= 6 && currentMaType !== 'shuddha') {
+                        currentMaType = 'shuddha';
+                        document.querySelectorAll('.ma-btn').forEach(b => b.classList.remove('active'));
+                        document.querySelector('[data-ma="shuddha"]').classList.add('active');
+                    } else if (chakraNum > 6 && currentMaType !== 'prati') {
+                        currentMaType = 'prati';
+                        document.querySelectorAll('.ma-btn').forEach(b => b.classList.remove('active'));
+                        document.querySelector('[data-ma="prati"]').classList.add('active');
+                    }
+                    
+                    renderChakraList();
+                    renderRagaDetails(chakraNum);
+                    highlightBodyZone(chakraNum);
+                });
+            });
+        }
+
+        function highlightBodyZone(chakraNum) {
+            document.querySelectorAll('.body-zone').forEach(zone => {
+                zone.classList.remove('active');
+                if (parseInt(zone.dataset.chakra) === chakraNum) {
+                    zone.classList.add('active');
+                }
+            });
+        }
+
+        init();
+        // Hoist the per-raga metadata so the v2 audio module (loaded in a
+        // separate <script type="module">) can resolve names. Both data
+        // structures live in this script's closure; expose them on window.
+        window.melakartas = melakartas;
+        window.chakras = chakras;
+    </script>
+
+    <!-- ────────────────────────────────────────────────────────────────────
+         Audio synthesis layer — Strudel + 22-shruti just-intonation
+         See SHRUTI_THEORY.md for why this is not 12-TET.
+    ──────────────────────────────────────────────────────────────────── -->
+    <script type="module">
+        const SHRUTI_RATIOS = [
+            [1,1],[256,243],[16,15],[10,9],[9,8],
+            [32,27],[6,5],[5,4],[81,64],
+            [4,3],[27,20],[45,32],[729,512],
+            [3,2],
+            [128,81],[8,5],[5,3],[27,16],
+            [16,9],[9,5],[15,8],[243,128],
+            [2,1],
+        ];
+        const ratioOf = (i) => SHRUTI_RATIOS[i][0] / SHRUTI_RATIOS[i][1];
+        const SW = { Sa:0, R1:1,R2:4,R3:5, G1:5,G2:6,G3:7, M1:9,M2:12, Pa:13,
+                     D1:14,D2:16,D3:18, N1:18,N2:19,N3:20, Sa_:22 };
+        const RG = [[SW.R1,SW.G1],[SW.R1,SW.G2],[SW.R1,SW.G3],[SW.R2,SW.G2],[SW.R2,SW.G3],[SW.R3,SW.G3]];
+        const DN = [[SW.D1,SW.N1],[SW.D1,SW.N2],[SW.D1,SW.N3],[SW.D2,SW.N2],[SW.D2,SW.N3],[SW.D3,SW.N3]];
+
+        function arohanaIndices(num) {
+            const isPrati = num > 36;
+            const localN = isPrati ? num - 36 : num;
+            const cInSet = Math.floor((localN - 1) / 6);
+            const pInChk = (localN - 1) % 6;
+            const [r,g] = RG[cInSet];
+            const [d,n] = DN[pInChk];
+            const ma = isPrati ? SW.M2 : SW.M1;
+            return [SW.Sa, r, g, ma, SW.Pa, d, n, SW.Sa_];
+        }
+
+        const setStatus = (msg, cls = '') => {
+            const el = document.getElementById('audioStatus');
+            if (!el) return;
+            el.textContent = msg;
+            el.className = 'audio-status ' + cls;
+        };
+
+        let strudelReady = null;
+        function loadStrudel() {
+            if (strudelReady) return strudelReady;
+            setStatus('⏳ Loading Strudel WebAudio engine…');
+            strudelReady = new Promise((resolve, reject) => {
+                const s = document.createElement('script');
+                s.src = 'https://unpkg.com/@strudel/web@1.3.0';
+                s.onload = async () => {
+                    try {
+                        // initStrudel() must run inside a user gesture so AudioContext unlocks
+                        await window.initStrudel();
+                        setStatus('🎵 Audio ready — click any ▶ button', 'ready');
+                        resolve();
+                    } catch (e) { reject(e); }
+                };
+                s.onerror = () => reject(new Error('Failed to load @strudel/web from unpkg'));
+                document.head.appendChild(s);
+            });
+            return strudelReady;
+        }
+
+        // ── V2 helpers (inline mirror of v2/gamakas/render.ts + samples/timbres.ts) ──
+        const _v2cents = (hz, c) => hz * Math.pow(2, c / 1200);
+        const _v2fmt = (hz) => hz.toFixed(3);
+        const _v2ease = (x) => x*x*(3 - 2*x);
+        const V2_GAMAKA_DEFAULTS = {
+            none: {},
+            kampita: { cents: 20, rateHz: 6 },
+            andolana: { cents: 50, rateHz: 1.5 },
+            kurula: { cents: 100, glideFraction: 0.4 },
+            nokku: { graceCents: 100, graceFraction: 0.08 },
+            sphurita: { startCents: -60, attackFraction: 0.1 },
+        };
+        function v2RenderGamaka(hz, kind) {
+            const g = V2_GAMAKA_DEFAULTS[kind];
+            if (kind === 'none' || !g) return _v2fmt(hz);
+            if (kind === 'kampita' || kind === 'andolana') {
+                const samples = kind === 'kampita' ? 8 : 4;
+                const pts = [];
+                for (let i = 0; i < samples; i++) {
+                    const phase = (i / samples) * Math.PI * 2;
+                    pts.push(_v2fmt(_v2cents(hz, g.cents * Math.sin(phase))));
+                }
+                return `[${pts.join(' ')}]`;
+            }
+            if (kind === 'kurula') {
+                const steps = 5; const pts = [];
+                for (let i = 0; i < steps; i++) pts.push(_v2fmt(_v2cents(hz, -g.cents * (1 - _v2ease(i/(steps-1))))));
+                return `[[${pts.join(' ')}]@${g.glideFraction} ${_v2fmt(hz)}@${1-g.glideFraction}]`;
+            }
+            if (kind === 'nokku') {
+                const graceHz = _v2cents(hz, g.graceCents);
+                return `[${_v2fmt(graceHz)}@${g.graceFraction} ${_v2fmt(hz)}@${1-g.graceFraction}]`;
+            }
+            if (kind === 'sphurita') {
+                const steps = 4; const pts = [];
+                for (let i = 0; i < steps; i++) {
+                    const t = i/(steps-1); const eased = 1 - Math.pow(1-t, 2);
+                    pts.push(_v2fmt(_v2cents(hz, g.startCents * (1 - eased))));
+                }
+                return `[[${pts.join(' ')}]@${g.attackFraction} ${_v2fmt(hz)}@${1-g.attackFraction}]`;
+            }
+            return _v2fmt(hz);
+        }
+        const V2_TIMBRES = {
+            sine: { sound:'sine', attack:0.01, decay:0.05, sustain:0.85, release:0.15, gain:0.8 },
+            sitar: { sound:'sitar', attack:0.005, decay:0.3, sustain:0.4, release:0.8, gain:1.0, lpf:4500, lpq:2 },
+            bansuri: { sound:'bansuri', attack:0.08, decay:0.1, sustain:0.85, release:0.4, gain:0.9, lpf:5000, lpq:1 },
+            sarangi: { sound:'sarangi', attack:0.15, decay:0.2, sustain:0.9, release:0.5, gain:0.95, lpf:3500, lpq:1.5 },
+        };
+        const V2_TALAS = {
+            'adi':{beats:8, accents:[0,4,6]}, 'rupakam':{beats:6, accents:[0,2]},
+            'misra-chapu':{beats:7, accents:[0,3]}, 'khanda-chapu':{beats:5, accents:[0,2]},
+            'tisra-eka':{beats:3, accents:[0]}, 'jhampa':{beats:10, accents:[0,7,8]},
+        };
+        function v2TalaGain(t) {
+            const out = [];
+            for (let i = 0; i < t.beats; i++) {
+                if (i === t.accents[0]) out.push('1.5');
+                else if (t.accents.includes(i)) out.push('1.2');
+                else out.push('1');
+            }
+            return out.join(' ');
+        }
+        const V2_BREATHS = {
+            'bhastrika': { cps:1.0, attack:0.005, decay:0.02, sustain:0.3, release:0.05 },
+            'ujjayi':    { cps:0.1, attack:0.2,   decay:0.1,  sustain:0.7, release:0.5 },
+            'brahmari':  { cps:0.0313, attack:0.2, decay:0.1, sustain:0.95, release:1.0 },
+            'shitali':   { cps:0.05,  attack:0.2, decay:0.1,  sustain:0.95, release:1.0 },
+        };
+
+        async function playRaga(num) {
+            await loadStrudel();
+            const aroha = arohanaIndices(num);
+            const avaro = [...aroha].reverse();
+            const seq = [...aroha, ...avaro.slice(1)];
+            const ratios = seq.map(ratioOf);
+            const root = 220;     // Sa = A3
+
+            const v2on = document.getElementById('v2Toggle')?.checked;
+            let code;
+            if (v2on) {
+                const timbre = document.getElementById('v2Timbre').value;
+                const gamaka = document.getElementById('v2Gamaka').value;
+                const talaName = document.getElementById('v2Tala').value;
+                const breathName = document.getElementById('v2Breath').value;
+                const t = V2_TIMBRES[timbre];
+                const breath = V2_BREATHS[breathName];
+                const cps = breath ? breath.cps : 0.5;
+                const hzs = ratios.map(r => +(r * root).toFixed(4));
+                const fragments = hzs.map(hz => v2RenderGamaka(hz, gamaka));
+                let chain = `freq("${fragments.join(' ')}").s("${t.sound}")`;
+                if (breath) {
+                    chain += `.attack(${breath.attack}).decay(${breath.decay}).sustain(${breath.sustain}).release(${breath.release})`;
+                } else {
+                    chain += `.attack(${t.attack}).decay(${t.decay}).sustain(${t.sustain}).release(${t.release})`;
+                }
+                chain += `.gain(${t.gain})`;
+                if (t.lpf) chain += `.lpf(${t.lpf}).lpq(${t.lpq||1})`;
+                if (talaName && V2_TALAS[talaName]) chain += `.gain("${v2TalaGain(V2_TALAS[talaName])}")`;
+                chain += `.slow(${hzs.length / 2})`;
+                code = `setcps(${cps}); ${chain}`;
+            } else {
+                const hzs = ratios.map(r => +(r * root).toFixed(4));
+                code = `setcps(0.5); freq("${hzs.join(' ')}").s("sine").slow(${hzs.length / 2})`;
+            }
+            window.evaluate(code);
+
+            // Name lookup — `melakartas` is hoisted to window at the end of the
+            // first <script> block; this <script type="module"> reads it here.
+            const name = (window.melakartas && window.melakartas[num] && window.melakartas[num].name) || `Raga #${num}`;
+            const tag = v2on ? `v2 · ${document.getElementById('v2Timbre').value} · ${document.getElementById('v2Gamaka').value}` : 'v1 sine';
+            setStatus(`▶ #${num} ${name} · ${tag}`, 'playing');
+        }
+
+        async function stopAudio() {
+            if (!strudelReady) return;
+            try { window.hush(); } catch { /* not loaded */ }
+            setStatus('Stopped', 'ready');
+            document.querySelectorAll('.play-btn.playing').forEach(b => b.classList.remove('playing'));
+            document.querySelectorAll('.raga-card.playing').forEach(c => c.classList.remove('playing'));
+        }
+
+        // Delegate clicks on play buttons (cards rerender on chakra change)
+        document.body.addEventListener('click', async (e) => {
+            const btn = e.target.closest('.play-btn');
+            if (!btn) return;
+            e.stopPropagation();    // don't trigger the raga-card click below
+            const num = parseInt(btn.dataset.num, 10);
+            if (!num) return;
+
+            document.querySelectorAll('.play-btn.playing').forEach(b => b.classList.remove('playing'));
+            document.querySelectorAll('.raga-card.playing').forEach(c => c.classList.remove('playing'));
+            btn.classList.add('playing');
+            btn.closest('.raga-card')?.classList.add('playing');
+
+            try { await playRaga(num); }
+            catch (err) {
+                setStatus('Audio error: ' + err.message);
+                console.error('[Nadashakti audio]', err);
+            }
+        });
+
+        // Add a stop button to the breath panel area
+        document.addEventListener('DOMContentLoaded', () => {
+            const breathPanel = document.getElementById('breathPanel');
+            if (breathPanel && !document.getElementById('audioStopBtn')) {
+                const btn = document.createElement('button');
+                btn.id = 'audioStopBtn';
+                btn.className = 'audio-stop';
+                btn.textContent = '■ Stop audio';
+                btn.addEventListener('click', stopAudio);
+                breathPanel.appendChild(btn);
+            }
+        });
+
+        // V2 toggle visibility wiring
+        const _v2tog = document.getElementById('v2Toggle');
+        const _v2bar = document.getElementById('v2Bar');
+        if (_v2tog && _v2bar) {
+            _v2tog.addEventListener('change', () => {
+                _v2bar.style.display = _v2tog.checked ? 'flex' : 'none';
+            });
+        }
+
+        // T-074: Auto-resume AudioContext if browser suspended it on tab blur
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden && typeof window.getAudioContext === 'function') {
+                try {
+                    const ac = window.getAudioContext();
+                    if (ac.state === 'suspended') ac.resume();
+                } catch {}
+            }
+        });
+
+        window.NadashaktiAudio = { playRaga, stopAudio, arohanaIndices, ratioOf };
+    </script>
+</body>
+</html>

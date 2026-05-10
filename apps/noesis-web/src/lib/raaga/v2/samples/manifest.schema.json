@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://noesis-web/raaga/samples-manifest.schema.json",
+  "title": "Nādashakti Sample Manifest",
+  "description": "Sample-pack manifest for Strudel `samples()`. Each entry maps a Strudel sound name to one or more sample URLs (per pitch / velocity layer).",
+  "type": "object",
+  "required": ["version", "baseUrl", "packs"],
+  "additionalProperties": false,
+  "properties": {
+    "version": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$" },
+    "baseUrl": {
+      "type": "string",
+      "format": "uri",
+      "description": "CDN root URL — entries are joined onto this base."
+    },
+    "packs": {
+      "type": "object",
+      "patternProperties": {
+        "^[a-z][a-z0-9-]*$": { "$ref": "#/$defs/Pack" }
+      },
+      "additionalProperties": false
+    }
+  },
+  "$defs": {
+    "Pack": {
+      "type": "object",
+      "required": ["instrument", "license", "samples"],
+      "additionalProperties": false,
+      "properties": {
+        "instrument": {
+          "type": "string",
+          "enum": ["sitar", "tanpura", "mridangam", "bansuri", "sarangi", "tabla", "veena", "shehnai", "drone", "other"]
+        },
+        "license": {
+          "type": "string",
+          "enum": ["CC0-1.0", "CC-BY-4.0", "CC-BY-SA-4.0", "AGPL-3.0-or-later", "MIT"],
+          "description": "Only redistribution-safe licenses are accepted."
+        },
+        "attribution": { "type": "string" },
+        "source": { "type": "string", "format": "uri" },
+        "rootNote": {
+          "type": "string",
+          "description": "Sa pitch the sample was recorded at, e.g. 'C4'. Used for repitching."
+        },
+        "samples": {
+          "oneOf": [
+            { "$ref": "#/$defs/SimpleSamples" },
+            { "$ref": "#/$defs/MultiPitchSamples" }
+          ]
+        }
+      }
+    },
+    "SimpleSamples": {
+      "type": "array",
+      "items": { "type": "string" },
+      "minItems": 1,
+      "description": "Array of relative URLs (joined onto baseUrl)."
+    },
+    "MultiPitchSamples": {
+      "type": "object",
+      "patternProperties": {
+        "^[A-G][#b]?[0-9]$": {
+          "type": "array",
+          "items": { "type": "string" },
+          "minItems": 1
+        }
+      },
+      "additionalProperties": false,
+      "description": "Map of note name → velocity-layer URL list."
+    }
+  }
+}

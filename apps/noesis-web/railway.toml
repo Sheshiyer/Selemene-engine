@@ -14,3 +14,4 @@ restartPolicyMaxRetries = 3
 
 [variables]
 PORT = "3002"
+NEXT_PUBLIC_RAAGA_V2_ENABLED = "true"
