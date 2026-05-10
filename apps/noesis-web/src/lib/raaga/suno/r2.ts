@@ -43,10 +43,12 @@ export const r2KeyFor = (melakartaNum: number, style: SunoStyle, sunoSongId: str
   return `clips/${style}/${String(melakartaNum).padStart(2, '0')}-${sunoSongId}.mp3`;
 };
 
-/** Build the public CDN URL for a given key. */
+/** Build the public CDN URL for a given key. Doesn't require R2 secrets —
+ *  only the public-base URL (which has a sensible default). Safe to call from
+ *  the wrangler-based upload path that has no R2 API token. */
 export const cdnUrlFor = (key: string): string => {
-  const cfg = getConfig();
-  return `${cfg.publicBaseUrl.replace(/\/$/, '')}/${key}`;
+  const base = process.env.R2_PUBLIC_BASE_URL ?? 'https://pub-1f3a1b9dd04b4178b521c06332f81a37.r2.dev';
+  return `${base.replace(/\/$/, '')}/${key}`;
 };
 
 /**

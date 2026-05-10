@@ -23,9 +23,10 @@
 
 import {
   buildSunoPrompt, getQuota, submitGeneration, pollUntilReady,
-  downloadAudio, uploadMp3ToR2, r2KeyFor, type SunoStyle,
+  downloadAudio, r2KeyFor, type SunoStyle,
   type BulkGenCheckpoint,
 } from '../src/lib/raaga/suno/index.js';
+import { uploadMp3ToR2ViaWrangler } from '../src/lib/raaga/suno/r2-wrangler.js';
 import fs from 'node:fs';
 import path from 'node:path';
 
@@ -67,7 +68,7 @@ async function generateOne(num: number, style: SunoStyle): Promise<{
   });
   const mp3 = await downloadAudio(ready.audio_url);
   const key = r2KeyFor(num, style, song.id);
-  const { cdnUrl } = await uploadMp3ToR2(key, mp3);
+  const { cdnUrl } = uploadMp3ToR2ViaWrangler(key, mp3);
   log(`  #${num} ${style} ✓ ${(mp3.length / 1024).toFixed(0)} KiB → ${cdnUrl}`);
   return { songId: song.id, key, cdnUrl, durationSec: ready.duration, prompt: req.prompt };
 }

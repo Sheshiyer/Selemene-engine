@@ -14,25 +14,13 @@ This is the "your turn" checklist after the code-side Phase 1 lands. The TypeScr
 | **Cloudflare account ID** | `9d9d23b27f32e70ae3afb6a1aa2c0f10` |
 | **R2 bucket** | `selemene-raga-clips` (created, public access enabled) |
 | **R2 public CDN URL** | `https://pub-1f3a1b9dd04b4178b521c06332f81a37.r2.dev` |
+| **End-to-end upload tested** | wrangler put → CDN HTTP 200 ✓ |
 
-You can paste these straight into env files. The bucket is empty — Phase 2's bulk gen fills it.
+**No R2 API token needed for dev.** The smoke + bulk-gen scripts use `wrangler r2 object put` directly via your existing `wrangler` OAuth (they shell out via `r2-wrangler.ts`). When you eventually deploy serverless code that uploads (Phase 3), you'll mint S3-compatible keys then. For now: skip the dashboard step.
 
-## 🔑 Steps that need your hands
+## 🔑 The ONE step that still needs your hands
 
-### Step 1 — Generate an R2 API token (Cloudflare dashboard)
-
-`wrangler` can list and create buckets but **cannot** mint API tokens — that has to happen in the dashboard.
-
-1. Go to https://dash.cloudflare.com/9d9d23b27f32e70ae3afb6a1aa2c0f10/r2/api-tokens
-2. Click **Create API token**
-3. **Token name:** `selemene-suno-bridge`
-4. **Permissions:** *Object Read & Write*
-5. **Specify bucket:** `selemene-raga-clips`
-6. **TTL:** Forever (or set as you prefer)
-7. Click **Create API token**
-8. Copy the **Access Key ID** and **Secret Access Key** (shown only once — save them somewhere safe)
-
-### Step 2 — Capture your Suno cookie
+### Step 1 — Capture your Suno cookie
 
 This is the screenshot you sent. Re-do it now:
 1. Open https://suno.com/create in a browser **logged in to your Pro account**
@@ -69,14 +57,9 @@ Append to `apps/noesis-web/.env.local`:
 # Suno bridge (from step 3 — replace with your actual URL)
 SUNO_BRIDGE_URL=https://selemene-suno-bridge.vercel.app
 
-# R2 storage (account ID + bucket are already known)
-R2_ACCOUNT_ID=9d9d23b27f32e70ae3afb6a1aa2c0f10
-R2_BUCKET=selemene-raga-clips
-R2_PUBLIC_BASE_URL=https://pub-1f3a1b9dd04b4178b521c06332f81a37.r2.dev
-
-# R2 token (from step 1)
-R2_ACCESS_KEY_ID=<paste your R2 access key>
-R2_SECRET_ACCESS_KEY=<paste your R2 secret>
+# That's all the env you need for dev — R2 uploads happen via wrangler OAuth.
+# (Defaults for R2_ACCOUNT_ID, R2_BUCKET, R2_PUBLIC_BASE_URL are already
+#  hardcoded in apps/noesis-web/src/lib/raaga/suno/r2.ts — override only if needed.)
 ```
 
 ### Step 5 — Apply the DB migration
@@ -95,7 +78,7 @@ sqlx migrate run --source ./migrations --database-url "$DATABASE_URL"
 
 ```bash
 cd Selemene-engine/apps/noesis-web
-pnpm install -D tsx @aws-sdk/client-s3        # one-time deps
+pnpm install -D tsx                # only tsx needed; wrangler is global
 pnpm tsx scripts/suno-smoke.ts 15
 ```
 

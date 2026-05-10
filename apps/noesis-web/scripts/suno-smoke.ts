@@ -30,10 +30,10 @@ import {
   submitGeneration,
   pollUntilReady,
   downloadAudio,
-  uploadMp3ToR2,
   r2KeyFor,
   type SunoStyle,
 } from '../src/lib/raaga/suno/index.js';
+import { uploadMp3ToR2ViaWrangler } from '../src/lib/raaga/suno/r2-wrangler.js';
 
 const args = process.argv.slice(2);
 const melakartaNum = parseInt(args[0] ?? '15', 10);
@@ -74,9 +74,9 @@ async function main() {
   const mp3Buffer = await downloadAudio(ready.audio_url);
   log(`Downloaded ${(mp3Buffer.length / 1024).toFixed(1)} KiB`);
 
-  log('Uploading to R2…');
+  log('Uploading to R2 via wrangler…');
   const key = r2KeyFor(melakartaNum, style, song.id);
-  const { cdnUrl } = await uploadMp3ToR2(key, mp3Buffer);
+  const { cdnUrl } = uploadMp3ToR2ViaWrangler(key, mp3Buffer);
   log(`Uploaded → ${cdnUrl}`);
 
   const quotaAfter = await getQuota();
