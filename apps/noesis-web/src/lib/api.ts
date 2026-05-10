@@ -160,6 +160,27 @@ export async function executeWorkflow(
   );
 }
 
+export interface MeResponse {
+  id: string;
+  email: string;
+  full_name: string;
+  tier: string;
+}
+
+export async function getMe(apiKey: string): Promise<MeResponse> {
+  return request<MeResponse>("/api/v1/users/me", { method: "GET" }, apiKey);
+}
+
+/** Returns true if the current token has admin permissions. */
+export async function checkAdminAccess(apiKey: string): Promise<boolean> {
+  try {
+    await request<unknown>("/api/v1/admin/system/health", { method: "GET" }, apiKey);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export async function getReadings(
   apiKey: string,
 ): Promise<ReadingsResponse> {

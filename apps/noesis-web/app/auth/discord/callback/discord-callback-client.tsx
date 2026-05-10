@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { setApiKey } from "@/lib/auth";
-import { discordCallback } from "@/lib/api";
+import { setApiKey, setUserProfile } from "@/lib/auth";
+import { discordCallback, getMe, checkAdminAccess } from "@/lib/api";
 
 const s = {
   page: {
@@ -72,6 +72,14 @@ export function DiscordCallbackClient() {
         if (cancelled) return;
         // Store JWT as the session token; authHeaders() sends it as Bearer
         setApiKey(res.token);
+        // Fetch user profile and admin status in parallel, then redirect
+        const [me, isAdmin] = await Promise.all([
+          getMe(res.token).catch(() => null),
+          checkAdminAccess(res.token).catch(() => false),
+        ]);
+        if (!cancelled && me) {
+          setUserProfile({ id: me.id, email: me.email, full_name: me.full_name, tier: me.tier, is_admin: isAdmin });
+        }
         router.replace("/engines");
       } catch (err: unknown) {
         if (cancelled) return;

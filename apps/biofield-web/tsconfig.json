@@ -16,9 +16,9 @@
     "plugins": [{ "name": "next" }],
     "paths": {
       "@/*": ["./src/*"],
-      "@selemene/biofield-domain": ["../../packages/biofield-domain/src/index.ts"],
-      "@selemene/biofield-api-client": ["../../packages/biofield-api-client/src/index.ts"],
-      "@selemene/noesis-sdk-ts": ["../../packages/noesis-sdk-ts/dist/index"]
+      "@selemene/biofield-domain": ["./src/lib/selemene/biofield-domain"],
+      "@selemene/biofield-api-client": ["./src/lib/selemene/biofield-api-client"],
+      "@selemene/noesis-sdk-ts": ["./src/lib/selemene/noesis-sdk"]
     }
   },
   "include": [

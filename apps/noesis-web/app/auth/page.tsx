@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { setApiKey } from "@/lib/auth";
-import { getHealth, getDiscordAuthUrl } from "@/lib/api";
+import { setApiKey, setUserProfile } from "@/lib/auth";
+import { getHealth, getDiscordAuthUrl, getMe, checkAdminAccess } from "@/lib/api";
 import { getDiscordCallbackUri } from "@/lib/discord-oauth";
 
 const s = {
@@ -141,6 +141,10 @@ export default function AuthPage() {
     try {
       await getHealth();
       setApiKey(trimmed);
+      // Background profile fetch — don't block redirect on this
+      Promise.all([getMe(trimmed).catch(() => null), checkAdminAccess(trimmed).catch(() => false)])
+        .then(([me, isAdmin]) => { if (me) setUserProfile({ id: me.id, email: me.email, full_name: me.full_name, tier: me.tier, is_admin: isAdmin as boolean }); })
+        .catch(() => {});
       setSuccess(true);
       setTimeout(() => router.replace("/engines"), 800);
     } catch {
