@@ -108,9 +108,9 @@ const styles = {
 };
 
 const TABS = [
-  { href: "/engines", label: "Engines" },
-  { href: "/readings", label: "Readings" },
-  { href: "/biofield", label: "Biofield" },
+  { href: "/engines", label: "Engines", external: false },
+  { href: "/readings", label: "Readings", external: false },
+  { href: "https://biofield-web.vercel.app", label: "Biofield", external: true },
 ];
 
 export default function NavBar() {
@@ -135,18 +135,30 @@ export default function NavBar() {
           NOESIS
         </Link>
         <div style={styles.tabs}>
-          {TABS.map((t) => (
-            <Link
-              key={t.href}
-              href={t.href}
-              style={{
-                ...styles.tab,
-                ...(pathname.startsWith(t.href) ? styles.tabActive : {}),
-              }}
-            >
-              {t.label}
-            </Link>
-          ))}
+          {TABS.map((t) =>
+            t.external ? (
+              <a
+                key={t.href}
+                href={t.href}
+                target="_blank"
+                rel="noreferrer"
+                style={styles.tab}
+              >
+                {t.label} ↗
+              </a>
+            ) : (
+              <Link
+                key={t.href}
+                href={t.href}
+                style={{
+                  ...styles.tab,
+                  ...(pathname.startsWith(t.href) ? styles.tabActive : {}),
+                }}
+              >
+                {t.label}
+              </Link>
+            )
+          )}
         </div>
       </div>
       <div style={styles.right}>
