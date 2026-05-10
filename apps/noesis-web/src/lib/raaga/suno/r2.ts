@@ -18,16 +18,21 @@ interface R2Config {
 }
 
 const getConfig = (): R2Config => {
+  // Defaults reflect the already-provisioned Selemene infra:
+  //   - bucket: selemene-raga-clips (created via wrangler)
+  //   - public URL: pub-1f3a1b9dd04b4178b521c06332f81a37.r2.dev (auto-assigned)
+  //   - account: Sheshiyer's Cloudflare account
+  // Override any of these via env. accessKeyId+secret MUST come from env.
   const cfg: R2Config = {
-    accountId: process.env.R2_ACCOUNT_ID ?? '',
+    accountId: process.env.R2_ACCOUNT_ID ?? '9d9d23b27f32e70ae3afb6a1aa2c0f10',
     accessKeyId: process.env.R2_ACCESS_KEY_ID ?? '',
     secretAccessKey: process.env.R2_SECRET_ACCESS_KEY ?? '',
     bucket: process.env.R2_BUCKET ?? 'selemene-raga-clips',
-    publicBaseUrl: process.env.R2_PUBLIC_BASE_URL ?? '',
+    publicBaseUrl: process.env.R2_PUBLIC_BASE_URL ?? 'https://pub-1f3a1b9dd04b4178b521c06332f81a37.r2.dev',
   };
-  for (const [k, v] of Object.entries(cfg)) {
-    if (!v) throw new Error(`R2 config missing: ${k} (set env var)`);
-  }
+  // Only the SECRETS are required. Everything else has a sensible default.
+  if (!cfg.accessKeyId) throw new Error('R2_ACCESS_KEY_ID env var required (mint via Cloudflare dashboard)');
+  if (!cfg.secretAccessKey) throw new Error('R2_SECRET_ACCESS_KEY env var required (mint via Cloudflare dashboard)');
   return cfg;
 };
 

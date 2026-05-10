@@ -1,90 +1,147 @@
 # Suno Integration — Setup Guide
 
-This is the "your turn" checklist after the code-side Phase 1 lands. The TypeScript modules, scripts, SQL migration, and runbooks are all committed. To run the smoke test (S-015) you need to provision the credentials below.
+This is the "your turn" checklist after the code-side Phase 1 lands. The TypeScript modules, scripts, SQL migration, and runbooks are all committed. Below: what's already provisioned for you (R2 bucket + CDN URL) vs what still needs your hands.
 
-> **Plan reference:** [`SUNO_INTEGRATION_PLAN.md`](./SUNO_INTEGRATION_PLAN.md) — the full 52-task swarm-architect plan.
-> **Verifier:** `node apps/noesis-web/src/lib/raaga/suno/verify-suno.mjs` — confirms all 288 prompts (72 ragas × 4 styles) generate cleanly and ≤ 300 chars.
+> **Plan reference:** [`SUNO_INTEGRATION_PLAN.md`](./SUNO_INTEGRATION_PLAN.md) — full 52-task swarm plan.
+> **Verifier:** `node apps/noesis-web/src/lib/raaga/suno/verify-suno.mjs` → must show "✅ 14/14 VERIFIED"
 
 ---
 
-## Phase 1 status: **code-complete · awaiting credentials**
+## ✅ Already provisioned (Claude did via wrangler)
 
-| Task | What's done (this branch) | What you need to do |
-|---|---|---|
-| **S-001** Pin gcui-art/suno-api version | Deploy template documented | Fork the repo + pin a tag |
-| **S-002** Deploy bridge to Vercel | Deploy commands in `infra/suno-bridge/README.md` | Run `vercel --prod` |
-| **S-003** Custom domain | Instructions documented | Add CNAME + run `vercel domains add` |
-| **S-004** Capture Suno cookie | Extraction steps in runbook | Open suno.com → DevTools → Network → copy `Cookie:` header → paste into Vercel env as `SUNO_COOKIE` |
-| **S-005** Cookie-refresh runbook | `infra/suno-bridge/SUNO_AUTH_RUNBOOK.md` | Read, schedule rotation reminder |
-| **S-006** Sentry alarm on 401 | — | Wire to your existing Sentry/log infra |
-| **S-007** Provision R2 bucket | — | Cloudflare dashboard → R2 → create `selemene-raga-clips` bucket |
-| **S-008** R2 lifecycle policy | — | No expiry, public-via-CDN |
-| **S-009** R2 credentials env | — | Add to Vercel/Railway: `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET`, `R2_PUBLIC_BASE_URL` |
-| **S-010** Migration `028_raga_clips.sql` | ✓ committed | Run `sqlx migrate run` (or your migration tool) |
-| **S-011** Indices + trigger for `approved_at` | ✓ included in migration | (above) |
-| **S-012** Rust `RagaClip` model in `noesis-core` | — *deferred to Phase 3 API task* | (Phase 3 task S-035) |
-| **S-013** Prompt template `buildSunoPrompt` | ✓ `apps/noesis-web/src/lib/raaga/suno/prompt.ts` | — |
-| **S-014** Hand-review canonical prompts | ✓ verifier prints 5 canonical samples | Run verifier; review console output |
-| **S-015** Smoke gen script | ✓ `apps/noesis-web/scripts/suno-smoke.ts` | After steps S-002, S-004, S-007, S-009: `pnpm tsx apps/noesis-web/scripts/suno-smoke.ts 15` |
-| **S-016** Verify CDN URL plays | — | Open the CDN URL printed by smoke script in a browser |
-| **S-017** This README | ✓ you are here | — |
-| **S-018** Phase-1 sign-off | — | After S-015 + S-016 succeed |
+| Resource | Value |
+|---|---|
+| **Cloudflare account ID** | `9d9d23b27f32e70ae3afb6a1aa2c0f10` |
+| **R2 bucket** | `selemene-raga-clips` (created, public access enabled) |
+| **R2 public CDN URL** | `https://pub-1f3a1b9dd04b4178b521c06332f81a37.r2.dev` |
 
-## Quickstart (after creds are set up)
+You can paste these straight into env files. The bucket is empty — Phase 2's bulk gen fills it.
+
+## 🔑 Steps that need your hands
+
+### Step 1 — Generate an R2 API token (Cloudflare dashboard)
+
+`wrangler` can list and create buckets but **cannot** mint API tokens — that has to happen in the dashboard.
+
+1. Go to https://dash.cloudflare.com/9d9d23b27f32e70ae3afb6a1aa2c0f10/r2/api-tokens
+2. Click **Create API token**
+3. **Token name:** `selemene-suno-bridge`
+4. **Permissions:** *Object Read & Write*
+5. **Specify bucket:** `selemene-raga-clips`
+6. **TTL:** Forever (or set as you prefer)
+7. Click **Create API token**
+8. Copy the **Access Key ID** and **Secret Access Key** (shown only once — save them somewhere safe)
+
+### Step 2 — Capture your Suno cookie
+
+This is the screenshot you sent. Re-do it now:
+1. Open https://suno.com/create in a browser **logged in to your Pro account**
+2. DevTools (⌘⌥I) → **Network** tab
+3. Click any button or trigger any request
+4. Click the request → **Headers** → **Request Headers**
+5. Find `cookie:` and **copy the full value** (long string starting with `__client=...`)
+
+**DO NOT paste the cookie into chat.** Keep it in your clipboard or a password manager.
+
+### Step 3 — Deploy the Suno bridge to Vercel
 
 ```bash
-# 1. Verify the prompt template + migration are ready
-cd apps/noesis-web
-node src/lib/raaga/suno/verify-suno.mjs
-# → expect "✅ Suno P1 contracts VERIFIED"
-
-# 2. Apply the DB migration to Selemene's Postgres
-cd ../..
-sqlx migrate run --source ./migrations
-# → migration 028_raga_clips applied
-
-# 3. Set up the bridge + R2 envs (see infra/suno-bridge/README.md)
-# Once ready, copy the env keys into apps/noesis-web/.env.local
-
-# 4. Smoke test ONE raga
-cd apps/noesis-web
-pnpm install -D tsx @aws-sdk/client-s3   # one-time
-pnpm tsx scripts/suno-smoke.ts 15
-# → ~60 seconds, prints CDN URL on success
-
-# 5. If smoke succeeds, kick off bulk gen for ambient style on all 72 ragas
-pnpm tsx scripts/suno-bulk-gen.ts ambient
-# → ~5-10 minutes per batch of 5; resumable via .suno-checkpoint.json
-# → uses ~144 credits (≈6% of monthly Pro budget)
+cd Selemene-engine/infra/suno-bridge
+cp .env.template .env
+# Open .env in your editor; paste your cookie value into SUNO_COOKIE=
+# Save. Then:
+bash deploy.sh
 ```
 
-## Cost reminder
+The script:
+1. Clones `gcui-art/suno-api` at pinned tag `v1.0.0` (audit it first if you want — `cat suno-api-build/pages/api/custom_generate.ts`)
+2. Deploys to Vercel as `selemene-suno-bridge`
+3. Sets `SUNO_COOKIE` env var (read from your local `.env`, never echoed)
+4. Redeploys + curls `/api/get_limit` to verify
 
-- Suno Pro: $10/mo · 2,500 credits · ~250 generations/month
-- Each generation = 10 credits, returns 2 song variants
-- 72 ragas × 1 take = **144 credits = 6% of monthly quota** (well within budget)
-- Phase 4 (3 more styles) = 216 more = spread over months
-- R2: ~$5/mo for ~250 MB storage + free egress under 10TB
-- **Steady state: ~$15/mo total**
+When done, the script prints the bridge URL. Save it as `SUNO_BRIDGE_URL`.
 
-## What this gets you
+### Step 4 — Wire env into noesis-web
 
-After the smoke test succeeds and bulk gen completes:
-- All 72 melakartas have one approved Suno-rendered ambient clip in R2
-- Each clip is 30-60s of just-instrumental Indian classical raga audio
-- Served via Cloudflare CDN with 1y immutable cache
-- Available at `https://clips.tryambakam.space/clips/ambient/15-{songId}.mp3` (etc.)
-- Phase 3 wires this into the Nadabrahman UI as the primary playback path, with V2.5 Strudel as fallback
+Append to `apps/noesis-web/.env.local`:
+
+```bash
+# Suno bridge (from step 3 — replace with your actual URL)
+SUNO_BRIDGE_URL=https://selemene-suno-bridge.vercel.app
+
+# R2 storage (account ID + bucket are already known)
+R2_ACCOUNT_ID=9d9d23b27f32e70ae3afb6a1aa2c0f10
+R2_BUCKET=selemene-raga-clips
+R2_PUBLIC_BASE_URL=https://pub-1f3a1b9dd04b4178b521c06332f81a37.r2.dev
+
+# R2 token (from step 1)
+R2_ACCESS_KEY_ID=<paste your R2 access key>
+R2_SECRET_ACCESS_KEY=<paste your R2 secret>
+```
+
+### Step 5 — Apply the DB migration
+
+Pick the right command for your migration tool:
+
+```bash
+# If you use sqlx (most likely — Selemene's pattern):
+sqlx migrate run --source ./migrations --database-url "$DATABASE_URL"
+
+# If you use a different runner, the file is at:
+# migrations/028_raga_clips.sql
+```
+
+### Step 6 — Smoke test (uses ~10 of your 2,500 monthly Suno credits)
+
+```bash
+cd Selemene-engine/apps/noesis-web
+pnpm install -D tsx @aws-sdk/client-s3        # one-time deps
+pnpm tsx scripts/suno-smoke.ts 15
+```
+
+Expected output (~60-90 seconds):
+```
+[smoke] Smoke test: melakarta=15 style=ambient duration=45s
+[smoke] Quota before: 2500 credits remaining
+[smoke] Submitting generation…
+[smoke] Submitted: 2 variants returned. IDs: abc..., def...
+[smoke] Polling song abc... for completion…
+[smoke] Song ready: status=streaming, duration=45s, audio_url=...
+[smoke] Downloading MP3…
+[smoke] Downloaded 720.3 KiB
+[smoke] Uploading to R2…
+[smoke] Uploaded → https://pub-1f3a1b9dd04b4178b521c06332f81a37.r2.dev/clips/ambient/15-abc...mp3
+[smoke] Quota after: 2490 credits remaining (used 10)
+[smoke] ✅ Smoke test complete. Open the CDN URL above in a browser to listen.
+```
+
+Open the CDN URL → hear Mayamalavagaula. If audible, sign off Phase 1 and proceed to **Phase 2 bulk gen**:
+
+```bash
+pnpm tsx scripts/suno-bulk-gen.ts ambient
+# 5-min batches; resumable; ~144 credits total for all 72 ragas
+```
+
+---
 
 ## When something breaks
 
 | Problem | Where to look |
 |---|---|
 | Cookie expired (401 from bridge) | [`infra/suno-bridge/SUNO_AUTH_RUNBOOK.md`](../infra/suno-bridge/SUNO_AUTH_RUNBOOK.md) |
-| R2 upload fails | Check `R2_ACCOUNT_ID` matches your Cloudflare account; test with `aws s3 cp` |
-| Bulk gen stops mid-run | Just re-run — `.suno-checkpoint.json` resumes |
+| R2 upload fails | Verify `R2_ACCOUNT_ID` matches Cloudflare account; test with `aws s3 cp test.mp3 s3://selemene-raga-clips/test/test.mp3 --endpoint-url=https://9d9d23b27f32e70ae3afb6a1aa2c0f10.r2.cloudflarestorage.com` |
+| Bulk gen stops mid-run | Re-run — `.suno-checkpoint.json` resumes |
 | Generation quality poor | Edit prompt template in `apps/noesis-web/src/lib/raaga/suno/prompt.ts`; re-run for affected ragas only via `pnpm tsx scripts/suno-bulk-gen.ts ambient 15 15` |
-| Rolling back the whole feature | Set `NEXT_PUBLIC_SUNO_DISABLED=true` in Vercel/Railway env; Nadabrahman falls back to V2.5 Strudel |
+| Roll back the whole feature | Set `NEXT_PUBLIC_SUNO_DISABLED=true` in Vercel/Railway env; Nadabrahman falls back to V2.5 Strudel |
+
+---
+
+## Cost reminder
+
+- Suno Pro: $10/mo · 2,500 credits/mo · ~250 generations/mo
+- Phase 2 first run: 144 credits = **6%** of monthly quota
+- R2: ~$0/mo until you exceed 10GB egress (highly unlikely)
+- **Steady state: Suno Pro $10/mo + R2 ~$0/mo = $10/mo total**
 
 ---
 
