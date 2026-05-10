@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { BirthData } from "@/lib/api";
 
 const styles = {
@@ -45,17 +45,29 @@ const styles = {
 interface BirthDataFormProps {
   onSubmit: (data: BirthData) => void;
   loading: boolean;
+  initialData?: Partial<BirthData>;
 }
 
-export default function BirthDataForm({ onSubmit, loading }: BirthDataFormProps) {
-  const [date, setDate] = useState("");
-  const [time, setTime] = useState("");
+export default function BirthDataForm({ onSubmit, loading, initialData }: BirthDataFormProps) {
+  const [date, setDate] = useState(initialData?.date ?? "");
+  const [time, setTime] = useState(initialData?.time ?? "");
   const [timezone, setTimezone] = useState(
-    Intl.DateTimeFormat().resolvedOptions().timeZone,
+    initialData?.timezone ?? Intl.DateTimeFormat().resolvedOptions().timeZone,
   );
-  const [lat, setLat] = useState("");
-  const [lng, setLng] = useState("");
-  const [name, setName] = useState("");
+  const [lat, setLat] = useState(initialData?.latitude != null ? String(initialData.latitude) : "");
+  const [lng, setLng] = useState(initialData?.longitude != null ? String(initialData.longitude) : "");
+  const [name, setName] = useState(initialData?.name ?? "");
+
+  // Sync if initialData arrives after mount (async fetch)
+  useEffect(() => {
+    if (!initialData) return;
+    if (initialData.date) setDate(initialData.date);
+    if (initialData.time) setTime(initialData.time);
+    if (initialData.timezone) setTimezone(initialData.timezone);
+    if (initialData.latitude != null) setLat(String(initialData.latitude));
+    if (initialData.longitude != null) setLng(String(initialData.longitude));
+    if (initialData.name) setName(initialData.name);
+  }, [initialData]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

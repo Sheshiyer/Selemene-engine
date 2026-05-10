@@ -9,6 +9,7 @@ import EngineCard from "@/components/EngineCard";
 import { getApiKey, isAuthenticated } from "@/lib/auth";
 import {
   executeWorkflow,
+  getReadings,
   type BirthData,
   type WorkflowResponse,
   type EngineOutput,
@@ -190,11 +191,22 @@ export default function EnginesPage() {
   const [error, setError] = useState<string | null>(null);
   const [response, setResponse] = useState<WorkflowResponse | null>(null);
   const [activeTab, setActiveTab] = useState<string>("witness");
+  const [lastBirthData, setLastBirthData] = useState<Partial<BirthData> | undefined>(undefined);
 
   useEffect(() => {
     if (!isAuthenticated()) {
       router.replace("/auth");
+      return;
     }
+    // Auto-fill birth data from the most recent reading
+    const key = getApiKey();
+    if (!key) return;
+    getReadings(key)
+      .then((res) => {
+        const latest = res.readings?.[0];
+        if (latest?.birth_data) setLastBirthData(latest.birth_data);
+      })
+      .catch(() => { /* silently ignore — empty form is fine */ });
   }, [router]);
 
   const engineMap = new Map<string, EngineOutput>();
@@ -232,7 +244,7 @@ export default function EnginesPage() {
       <NavBar />
       <main style={s.content}>
         <h1 style={s.heading}>Full-Spectrum Analysis</h1>
-        <BirthDataForm onSubmit={handleSubmit} loading={loading} />
+        <BirthDataForm onSubmit={handleSubmit} loading={loading} initialData={lastBirthData} />
 
         {error && <div style={s.errorBox}>{error}</div>}
 

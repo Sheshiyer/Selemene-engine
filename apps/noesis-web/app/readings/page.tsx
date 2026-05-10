@@ -29,7 +29,7 @@ const s = {
     fontWeight: 800,
     color: "var(--text)",
   },
-  card: {
+  cardClickable: {
     background: "var(--bg-panel)",
     border: "1px solid var(--line)",
     borderRadius: "var(--radius)",
@@ -38,6 +38,8 @@ const s = {
     justifyContent: "space-between",
     alignItems: "center",
     gap: "1rem",
+    cursor: "pointer",
+    transition: "border-color 0.15s, background 0.15s",
   },
   left: {
     display: "flex",
@@ -135,17 +137,35 @@ export default function ReadingsPage() {
         )}
 
         {readings.map((r) => (
-          <div key={r.reading_id} style={s.card}>
+          <div
+            key={r.reading_id}
+            style={s.cardClickable}
+            onClick={() => router.push(`/readings/${r.reading_id}`)}
+            onMouseEnter={(e) => {
+              (e.currentTarget as HTMLDivElement).style.borderColor = "var(--gold)";
+              (e.currentTarget as HTMLDivElement).style.background = "var(--bg-hover, var(--bg-panel))";
+            }}
+            onMouseLeave={(e) => {
+              (e.currentTarget as HTMLDivElement).style.borderColor = "var(--line)";
+              (e.currentTarget as HTMLDivElement).style.background = "var(--bg-panel)";
+            }}
+          >
             <div style={s.left}>
-              <span style={s.readingId}>{r.reading_id}</span>
-              <span style={s.workflow}>{r.workflow_id}</span>
+              <span style={s.workflow}>{r.workflow_id || "full-spectrum"}</span>
               <span style={s.date}>
-                {r.created_at
-                  ? new Date(r.created_at).toLocaleString()
-                  : "—"}
+                {r.created_at ? new Date(r.created_at).toLocaleString() : "—"}
               </span>
+              {r.birth_data?.name && (
+                <span style={{ fontSize: "0.8rem", color: "var(--gold)" }}>{r.birth_data.name}</span>
+              )}
+              {r.birth_data?.date && (
+                <span style={s.readingId}>{r.birth_data.date}</span>
+              )}
             </div>
-            <span style={s.badge}>{r.engine_count} engines</span>
+            <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+              <span style={s.badge}>{r.engine_count} engines</span>
+              <span style={{ color: "var(--text-muted)", fontSize: "1rem" }}>→</span>
+            </div>
           </div>
         ))}
       </main>
