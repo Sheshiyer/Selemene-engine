@@ -170,6 +170,17 @@ export async function getReadings(
   );
 }
 
+export async function getReading(
+  readingId: string,
+  apiKey: string,
+): Promise<WorkflowResponse> {
+  return request<WorkflowResponse>(
+    `/api/v1/readings/${readingId}`,
+    { method: "GET" },
+    apiKey,
+  );
+}
+
 export async function getHealth(): Promise<HealthResponse> {
   return request<HealthResponse>("/health/live", { method: "GET" });
 }
