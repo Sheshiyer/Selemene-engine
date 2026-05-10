@@ -24,6 +24,7 @@ const ALLOWED_DISCORD_CALLBACK_PATHS: &[&str] = &[
     "/admin/login/discord-callback",
     "/admin/auth/discord/callback",
     "/login/discord-callback",
+    "/auth/discord/callback",
 ];
 
 fn normalize_callback_path(path: &str) -> String {

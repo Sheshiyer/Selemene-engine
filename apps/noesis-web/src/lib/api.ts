@@ -118,6 +118,33 @@ async function request<T>(
 
 /* ── Public API ────────────────────────────────────────── */
 
+export interface LoginResponse {
+  token: string;
+  user_id: string;
+  email: string;
+  tier: string;
+}
+
+export async function getDiscordAuthUrl(
+  redirectUri?: string,
+): Promise<{ url: string }> {
+  const qs = redirectUri ? `?redirect_uri=${encodeURIComponent(redirectUri)}` : "";
+  return request<{ url: string }>(`/api/v1/auth/discord/authorize${qs}`, {
+    method: "GET",
+  });
+}
+
+export async function discordCallback(
+  code: string,
+  state?: string,
+  redirectUri?: string,
+): Promise<LoginResponse> {
+  return request<LoginResponse>("/api/v1/auth/discord/callback", {
+    method: "POST",
+    body: JSON.stringify({ code, state, redirect_uri: redirectUri }),
+  });
+}
+
 export async function executeWorkflow(
   workflowId: string,
   birthData: BirthData,
