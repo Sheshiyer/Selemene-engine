@@ -1,25 +1,16 @@
 import type { Metadata } from "next";
-import { Exo_2, IBM_Plex_Mono, Space_Grotesk } from "next/font/google";
+import { Geist_Mono } from "next/font/google";
 import "./globals.css";
 
-const exo2 = Exo_2({
-  subsets: ["latin"],
-  variable: "--font-display",
-  weight: ["400", "500", "600", "700"],
-  display: "swap"
-});
+// Brand fonts: Panchang (display) + Satoshi (body) via FontShare CDN
+// SF Mono / Geist Mono (monospace) — Geist_Mono loaded as CSS var fallback
+const FONTSHARE_HREF =
+  "https://api.fontshare.com/v2/css?f[]=panchang@400,500,600,700,800&f[]=satoshi@300,400,500,700&display=swap";
 
-const spaceGrotesk = Space_Grotesk({
+const geistMono = Geist_Mono({
   subsets: ["latin"],
-  variable: "--font-sans",
-  display: "swap"
-});
-
-const ibmPlexMono = IBM_Plex_Mono({
-  subsets: ["latin"],
-  weight: ["400", "600"],
-  variable: "--font-mono",
-  display: "swap"
+  variable: "--font-geist-mono",
+  display: "swap",
 });
 
 export { reportWebVitals } from "@/lib/telemetry-vitals";
@@ -35,8 +26,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className={`${exo2.variable} ${spaceGrotesk.variable} ${ibmPlexMono.variable}`}>
+    <html lang="en" className={geistMono.variable}>
+      <head>
+        <link rel="preconnect" href="https://api.fontshare.com" />
+        <link rel="stylesheet" href={FONTSHARE_HREF} />
+      </head>
+      <body>
         {children}
       </body>
     </html>

@@ -1,4 +1,10 @@
 :root {
+  /* ── Brand Typography — matches noesis-web + biofield-web ─────────────── */
+  --font-display: "Panchang", system-ui, sans-serif;
+  --font-sans:    "Satoshi", system-ui, sans-serif;
+  --font-body:    "Satoshi", system-ui, sans-serif;
+  --font-mono:    "SF Mono", var(--font-geist-mono, "Geist Mono"), monospace;
+
   --bg: #0a1628;
   --bg-elevated: #112035;
   --bg-soft: #182a3f;
