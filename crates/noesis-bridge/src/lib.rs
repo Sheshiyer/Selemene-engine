@@ -146,6 +146,7 @@ impl BridgeCircuitBreaker {
         self.last_failure_ts.store(Self::now_secs(), Relaxed);
     }
 
+    #[allow(dead_code)]
     fn is_open(&self) -> bool {
         use std::sync::atomic::Ordering::Relaxed;
         let failures = self.failure_count.load(Relaxed);
