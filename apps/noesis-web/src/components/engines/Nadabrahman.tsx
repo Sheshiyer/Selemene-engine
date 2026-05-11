@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo, useRef } from "react";
 import GenericEngineView from "./GenericEngineView";
 import { MELAKARTAS, getRaagaPlayer, type PlayOptions } from "@/lib/raaga";
+import type { SunoStyle } from "@/lib/raaga/suno/types";
 
 interface NadabrahmanProps {
   result: Record<string, unknown>;
@@ -91,6 +92,15 @@ export default function Nadabrahman({ result }: NadabrahmanProps) {
   const [tala, setTala] = useState<V2Tala>('adi');
   const [breath, setBreath] = useState<V2Breath>('');
 
+  // Source preference: 'auto' = try Suno clip first, fall back to Strudel.
+  //                    'live' = force V2.5 Strudel synthesis (skip Suno lookup).
+  const [audioSource, setAudioSource] = useState<'auto' | 'live'>('auto');
+  // <audio> element used for Suno clip playback (separate from Strudel)
+  const clipAudioRef = useRef<HTMLAudioElement | null>(null);
+
+  // Style for Suno lookup. Currently always 'ambient' — Phase 4 will expose UI.
+  const sunoStyle: SunoStyle = useMemo<SunoStyle>(() => 'ambient', []);
+
   const buildPlayOptions = useCallback((): PlayOptions => {
     const opts: PlayOptions = {
       rootHz: typeof hz === "number" ? hz : 220,
@@ -108,21 +118,62 @@ export default function Nadabrahman({ result }: NadabrahmanProps) {
     return opts;
   }, [hz, v2On, timbre, gamaka, tala, breath]);
 
+  /**
+   * Three-tier fallback playback:
+   *   1. audioSource='auto' + Suno clip exists → stream from R2 CDN
+   *   2. fall through (audioSource='live' OR Suno 404 OR Suno error) → V2.5 Strudel
+   *   3. Strudel failure → V1 sine via Strudel's own fallback path inside play()
+   */
   const handlePlay = useCallback(async (num: number, name: string) => {
+    setPlayingNum(num);
+
+    // Stop any prior Strudel + audio element playback
+    try { await getRaagaPlayer().stop(); } catch { /* ignore */ }
+    if (clipAudioRef.current) {
+      clipAudioRef.current.pause();
+      clipAudioRef.current.currentTime = 0;
+    }
+
+    // ── Tier 1: Suno clip (if 'auto' + clip pre-fetched) ──────────────
+    if (audioSource === 'auto') {
+      setAudioStatus(`Looking up Suno clip…`);
+      try {
+        const r = await fetch(`/api/v1/raga/${num}/clip?style=${sunoStyle}`);
+        if (r.ok) {
+          const meta = await r.json() as { cdn_url: string; duration_sec: number };
+          if (!clipAudioRef.current) clipAudioRef.current = new Audio();
+          clipAudioRef.current.src = meta.cdn_url;
+          clipAudioRef.current.play().catch(() => { /* user-gesture issues handled below */ });
+          setAudioStatus(`▶ ${name} (#${num}) · Suno clip · ${meta.duration_sec}s · ${sunoStyle}`);
+          return;
+        }
+        // 404 (no clip yet) or 503 (db down) → fall through to Strudel
+      } catch {
+        // Network error → fall through to Strudel
+      }
+    }
+
+    // ── Tier 2: V2.5 Strudel synthesis (always available, no network) ──
     try {
       setAudioStatus(`Loading audio…`);
-      setPlayingNum(num);
       await getRaagaPlayer().play(num, buildPlayOptions());
       const v2Tag = v2On ? `v2 · ${timbre} · ${gamaka}${tala ? ` · ${tala}` : ''}${breath ? ` · ${breath}` : ''}` : 'v1 sine';
-      setAudioStatus(`▶ ${name} (#${num}) · ${v2Tag}`);
+      const sourceTag = audioSource === 'auto' ? 'Strudel fallback' : 'Strudel live';
+      setAudioStatus(`▶ ${name} (#${num}) · ${sourceTag} · ${v2Tag}`);
     } catch (err) {
+      // Tier 3 (V1 sine) is internal to RaagaPlayer; if Strudel itself fails,
+      // surface the error.
       setAudioStatus(`Audio error: ${(err as Error).message}`);
       setPlayingNum(null);
     }
-  }, [buildPlayOptions, v2On, timbre, gamaka, tala, breath]);
+  }, [audioSource, sunoStyle, buildPlayOptions, v2On, timbre, gamaka, tala, breath]);
 
   const handleStop = useCallback(async () => {
     try { await getRaagaPlayer().stop(); } catch { /* ignore */ }
+    if (clipAudioRef.current) {
+      clipAudioRef.current.pause();
+      clipAudioRef.current.currentTime = 0;
+    }
     setPlayingNum(null);
     setAudioStatus("Stopped");
   }, []);
@@ -220,11 +271,37 @@ export default function Nadabrahman({ result }: NadabrahmanProps) {
         </div>
       )}
 
+      {/* Audio source — Suno recording (default) vs forced V2.5 Strudel live */}
+      <div style={{ ...s.v2Toggle, gap: '1rem' }}>
+        <label style={s.v2Toggle}>
+          <input
+            type="radio"
+            name="audioSource"
+            checked={audioSource === 'auto'}
+            onChange={() => setAudioSource('auto')}
+          />
+          <span style={{ color: audioSource === 'auto' ? 'var(--gold)' : 'var(--text-muted)' }}>
+            🎙 Recording (Suno) — fallback to live synth
+          </span>
+        </label>
+        <label style={s.v2Toggle}>
+          <input
+            type="radio"
+            name="audioSource"
+            checked={audioSource === 'live'}
+            onChange={() => setAudioSource('live')}
+          />
+          <span style={{ color: audioSource === 'live' ? 'var(--gold)' : 'var(--text-muted)' }}>
+            🎹 Live synthesis only (V2.5 Strudel)
+          </span>
+        </label>
+      </div>
+
       {/* V2 controls — collapsed when v2 off */}
       <label style={s.v2Toggle}>
         <input type="checkbox" checked={v2On} onChange={(e) => setV2On(e.target.checked)} />
         <span style={{ color: v2On ? 'var(--gold)' : 'var(--text-muted)' }}>
-          V2 audio: gamakas · timbres · tala · breath
+          V2 audio: gamakas · timbres · tala · breath (used when Strudel plays)
         </span>
       </label>
 
