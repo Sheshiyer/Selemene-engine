@@ -17,29 +17,29 @@
 type Ratio = readonly [number, number]
 
 const SHRUTIS: readonly Ratio[] = [
-  [1, 1],       // 0  Sa
-  [256, 243],   // 1  R1
-  [16, 15],     // 2  R2
-  [10, 9],      // 3  R3
-  [9, 8],       // 4  R4 / G1 (vivadi alias)
-  [32, 27],     // 5  G1 / R3-alt
-  [6, 5],       // 6  G2
-  [5, 4],       // 7  G3
-  [81, 64],     // 8  G4
-  [4, 3],       // 9  M1
-  [27, 20],     // 10 M2-alt
-  [45, 32],     // 11 M2-alt2
-  [729, 512],   // 12 M2 (tivra Ma)
-  [3, 2],       // 13 Pa
-  [128, 81],    // 14 D1
-  [8, 5],       // 15 D2
-  [5, 3],       // 16 D3 / N1-alt
-  [27, 16],     // 17 D4
-  [16, 9],      // 18 N1 / D3 (vivadi alias)
-  [9, 5],       // 19 N2
-  [15, 8],      // 20 N3
-  [243, 128],   // 21 N4
-  [2, 1],       // 22 Sa' (octave)
+  [1, 1], // 0  Sa
+  [256, 243], // 1  R1
+  [16, 15], // 2  R2
+  [10, 9], // 3  R3
+  [9, 8], // 4  R4 / G1 (vivadi alias)
+  [32, 27], // 5  G1 / R3-alt
+  [6, 5], // 6  G2
+  [5, 4], // 7  G3
+  [81, 64], // 8  G4
+  [4, 3], // 9  M1
+  [27, 20], // 10 M2-alt
+  [45, 32], // 11 M2-alt2
+  [729, 512], // 12 M2 (tivra Ma)
+  [3, 2], // 13 Pa
+  [128, 81], // 14 D1
+  [8, 5], // 15 D2
+  [5, 3], // 16 D3 / N1-alt
+  [27, 16], // 17 D4
+  [16, 9], // 18 N1 / D3 (vivadi alias)
+  [9, 5], // 19 N2
+  [15, 8], // 20 N3
+  [243, 128], // 21 N4
+  [2, 1], // 22 Sa' (octave)
 ]
 
 export function ratioOf(idx: number): number {
@@ -51,12 +51,21 @@ export function ratioOf(idx: number): number {
 // Carnatic swara → shruti index mapping
 const SW = {
   Sa: 0,
-  R1: 1,  R2: 4,  R3: 5,
-  G1: 5,  G2: 6,  G3: 7,
-  M1: 9,  M2: 12,
+  R1: 1,
+  R2: 4,
+  R3: 5,
+  G1: 5,
+  G2: 6,
+  G3: 7,
+  M1: 9,
+  M2: 12,
   Pa: 13,
-  D1: 14, D2: 16, D3: 18,
-  N1: 18, N2: 19, N3: 20,
+  D1: 14,
+  D2: 16,
+  D3: 18,
+  N1: 18,
+  N2: 19,
+  N3: 20,
   Sa_: 22,
 } as const
 
@@ -84,27 +93,87 @@ const DN_PAIRS: readonly [number, number][] = [
 
 /** Canonical names from Venkatamakhin's Chaturdandi Prakashika ordering. */
 const NAMES: readonly string[] = [
-  'Kanakangi', 'Ratnangi', 'Ganamurthi', 'Vanaspathi', 'Manavathi', 'Tanarupi',
-  'Senavathi', 'Hanumatodi', 'Dhenuka', 'Natakapriya', 'Kokilapriya', 'Rupavathi',
-  'Gayakapriya', 'Vakulabharanam', 'Mayamalavagaula', 'Chakravakam', 'Suryakantam', 'Hatakambari',
-  'Jhankaradhwani', 'Natabhairavi', 'Keeravani', 'Kharaharapriya', 'Gourimanohari', 'Varunapriya',
-  'Mararanjani', 'Charukesi', 'Sarasangi', 'Harikambhoji', 'Dheerasankarabharanam', 'Naganandini',
-  'Yagapriya', 'Ragavardhini', 'Gangeyabhushani', 'Vagadheeswari', 'Shulini', 'Chalanata',
-  'Salagam', 'Jalarnavam', 'Jhalavarali', 'Navaneetam', 'Pavani', 'Raghupriya',
-  'Gavambodhi', 'Bhavapriya', 'Shubhapantuvarali', 'Shadvidamargini', 'Suvarnangi', 'Divyamani',
-  'Dhavalambari', 'Namanarayani', 'Kamavardhini', 'Ramapriya', 'Gamanashrama', 'Viswambhari',
-  'Shyamalangi', 'Shanmukhapriya', 'Simhendramadhyamam', 'Hemavathi', 'Dharmavathi', 'Neetimathi',
-  'Kantamani', 'Rishabhapriya', 'Latangi', 'Vachaspathi', 'Mechakalyani', 'Chitrambari',
-  'Sucharitra', 'Jyotiswarupini', 'Dhatuvardhini', 'Nasikabhushani', 'Kosalam', 'Rasikapriya',
+  'Kanakangi',
+  'Ratnangi',
+  'Ganamurthi',
+  'Vanaspathi',
+  'Manavathi',
+  'Tanarupi',
+  'Senavathi',
+  'Hanumatodi',
+  'Dhenuka',
+  'Natakapriya',
+  'Kokilapriya',
+  'Rupavathi',
+  'Gayakapriya',
+  'Vakulabharanam',
+  'Mayamalavagaula',
+  'Chakravakam',
+  'Suryakantam',
+  'Hatakambari',
+  'Jhankaradhwani',
+  'Natabhairavi',
+  'Keeravani',
+  'Kharaharapriya',
+  'Gourimanohari',
+  'Varunapriya',
+  'Mararanjani',
+  'Charukesi',
+  'Sarasangi',
+  'Harikambhoji',
+  'Dheerasankarabharanam',
+  'Naganandini',
+  'Yagapriya',
+  'Ragavardhini',
+  'Gangeyabhushani',
+  'Vagadheeswari',
+  'Shulini',
+  'Chalanata',
+  'Salagam',
+  'Jalarnavam',
+  'Jhalavarali',
+  'Navaneetam',
+  'Pavani',
+  'Raghupriya',
+  'Gavambodhi',
+  'Bhavapriya',
+  'Shubhapantuvarali',
+  'Shadvidamargini',
+  'Suvarnangi',
+  'Divyamani',
+  'Dhavalambari',
+  'Namanarayani',
+  'Kamavardhini',
+  'Ramapriya',
+  'Gamanashrama',
+  'Viswambhari',
+  'Shyamalangi',
+  'Shanmukhapriya',
+  'Simhendramadhyamam',
+  'Hemavathi',
+  'Dharmavathi',
+  'Neetimathi',
+  'Kantamani',
+  'Rishabhapriya',
+  'Latangi',
+  'Vachaspathi',
+  'Mechakalyani',
+  'Chitrambari',
+  'Sucharitra',
+  'Jyotiswarupini',
+  'Dhatuvardhini',
+  'Nasikabhushani',
+  'Kosalam',
+  'Rasikapriya',
 ]
 
 export interface Melakarta {
-  num: number            // 1..72
+  num: number // 1..72
   name: string
-  chakra: number         // 1..12 (indu=1..aditya=12)
-  arohana: readonly number[]   // shruti indices: Sa R G M Pa D N Sa'
+  chakra: number // 1..12 (indu=1..aditya=12)
+  arohana: readonly number[] // shruti indices: Sa R G M Pa D N Sa'
   avarohana: readonly number[] // descending (same set, reversed Sa' N D Pa M G R Sa)
-  ratios: readonly number[]    // just-intonation ratios for arohana
+  ratios: readonly number[] // just-intonation ratios for arohana
   ma_type: 'shuddha' | 'prati' // Ma1 vs Ma2
 }
 
@@ -145,7 +214,12 @@ export function getMelakarta(num: number): Melakarta | undefined {
 export function findMelakartaByName(query: string): Melakarta | undefined {
   const norm = query.toLowerCase().replace(/[^a-z]/g, '')
   if (!norm) return undefined
-  return MELAKARTAS.find((m) => m.name.toLowerCase().replace(/[^a-z]/g, '').includes(norm))
+  return MELAKARTAS.find((m) =>
+    m.name
+      .toLowerCase()
+      .replace(/[^a-z]/g, '')
+      .includes(norm),
+  )
 }
 
 // ---------------------------------------------------------------------------
@@ -172,21 +246,21 @@ export function getRaagasForDosha(dosha: Dosha): readonly Melakarta[] {
 // ---------------------------------------------------------------------------
 
 export interface PraharInfo {
-  prahar: number   // 1..8
+  prahar: number // 1..8
   label: string
   start_hour: number
   recommended: readonly number[] // melakarta nums
 }
 
 export const PRAHARS: readonly PraharInfo[] = [
-  { prahar: 1, label: 'Sunrise',    start_hour: 6,  recommended: [15, 29, 8]  },
-  { prahar: 2, label: 'Morning',    start_hour: 9,  recommended: [28, 29, 22] },
-  { prahar: 3, label: 'Midday',     start_hour: 12, recommended: [65, 64, 36] },
-  { prahar: 4, label: 'Afternoon',  start_hour: 15, recommended: [63, 28, 22] },
-  { prahar: 5, label: 'Evening',    start_hour: 18, recommended: [20, 22, 8]  },
-  { prahar: 6, label: 'Dusk',       start_hour: 21, recommended: [22, 20, 48] },
-  { prahar: 7, label: 'Night',      start_hour: 0,  recommended: [8, 20, 14]  },
-  { prahar: 8, label: 'Pre-dawn',   start_hour: 3,  recommended: [15, 8, 14]  },
+  { prahar: 1, label: 'Sunrise', start_hour: 6, recommended: [15, 29, 8] },
+  { prahar: 2, label: 'Morning', start_hour: 9, recommended: [28, 29, 22] },
+  { prahar: 3, label: 'Midday', start_hour: 12, recommended: [65, 64, 36] },
+  { prahar: 4, label: 'Afternoon', start_hour: 15, recommended: [63, 28, 22] },
+  { prahar: 5, label: 'Evening', start_hour: 18, recommended: [20, 22, 8] },
+  { prahar: 6, label: 'Dusk', start_hour: 21, recommended: [22, 20, 48] },
+  { prahar: 7, label: 'Night', start_hour: 0, recommended: [8, 20, 14] },
+  { prahar: 8, label: 'Pre-dawn', start_hour: 3, recommended: [15, 8, 14] },
 ]
 
 export function getPraharForHour(hour: number): PraharInfo {

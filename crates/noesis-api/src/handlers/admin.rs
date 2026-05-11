@@ -1233,7 +1233,11 @@ pub async fn update_user_tier(
     if !VALID_TIERS.contains(&tier.as_str()) {
         return Ok(json_error_response(
             StatusCode::UNPROCESSABLE_ENTITY,
-            format!("Invalid tier '{}'. Must be one of: {}", tier, VALID_TIERS.join(", ")),
+            format!(
+                "Invalid tier '{}'. Must be one of: {}",
+                tier,
+                VALID_TIERS.join(", ")
+            ),
             "VALIDATION_ERROR",
             None,
         ));
@@ -1494,7 +1498,11 @@ pub async fn create_api_key(
         if !VALID_TIERS.contains(&tier.as_str()) {
             return Ok(json_error_response(
                 StatusCode::UNPROCESSABLE_ENTITY,
-                format!("Invalid tier '{}'. Must be one of: {}", tier, VALID_TIERS.join(", ")),
+                format!(
+                    "Invalid tier '{}'. Must be one of: {}",
+                    tier,
+                    VALID_TIERS.join(", ")
+                ),
                 "VALIDATION_ERROR",
                 None,
             ));

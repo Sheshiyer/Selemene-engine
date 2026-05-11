@@ -146,6 +146,7 @@ impl BridgeCircuitBreaker {
         self.last_failure_ts.store(Self::now_secs(), Relaxed);
     }
 
+    #[allow(dead_code)]
     fn is_open(&self) -> bool {
         use std::sync::atomic::Ordering::Relaxed;
         let failures = self.failure_count.load(Relaxed);
@@ -206,7 +207,13 @@ impl BridgeEngine {
         required_phase: u8,
         base_url: impl Into<String>,
     ) -> Result<Self, EngineError> {
-        Self::with_timeout(engine_id, engine_name, required_phase, base_url, configured_timeout())
+        Self::with_timeout(
+            engine_id,
+            engine_name,
+            required_phase,
+            base_url,
+            configured_timeout(),
+        )
     }
     pub fn with_timeout(
         engine_id: impl Into<String>,
@@ -829,7 +836,7 @@ mod tests {
         cb.record_failure();
         cb.record_failure();
         assert!(!cb.allow()); // Open after 3 failures
-        // Success resets it
+                              // Success resets it
         cb.record_success();
         assert!(cb.allow()); // Closed again
     }

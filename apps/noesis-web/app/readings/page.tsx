@@ -24,7 +24,7 @@ const s = {
     gap: "1rem",
   },
   heading: {
-    fontFamily: "'Exo 2', sans-serif",
+    fontFamily: "var(--font-display)",
     fontSize: "1.5rem",
     fontWeight: 800,
     color: "var(--text)",
@@ -49,7 +49,7 @@ const s = {
   readingId: {
     fontSize: "0.8rem",
     color: "var(--gold)",
-    fontFamily: "'IBM Plex Mono', monospace",
+    fontFamily: "var(--font-mono)",
   },
   workflow: {
     fontSize: "0.9rem",

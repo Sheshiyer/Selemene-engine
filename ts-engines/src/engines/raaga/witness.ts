@@ -9,15 +9,18 @@ export function generateWitnessPrompts(melakarta: Melakarta, dosha?: string): Wi
       themes: ['listening', 'somatic awareness', 'resonance'],
     },
     {
-      prompt: `The ascending and descending forms of this raga differ slightly in character. What quality do you notice in the ascent versus the descent?`,
-      context: `The arohana–avarohana arc creates a journey: moving upward carries one quality; returning carries another.`,
+      prompt:
+        'The ascending and descending forms of this raga differ slightly in character. What quality do you notice in the ascent versus the descent?',
+      context:
+        'The arohana–avarohana arc creates a journey: moving upward carries one quality; returning carries another.',
       themes: ['duality', 'direction', 'musical intelligence'],
     },
     ...(dosha
       ? [
           {
             prompt: `This raga is recommended for your ${dosha} constitution. How does it address an imbalance you currently feel?`,
-            context: `Ayurvedic sound therapy suggests that specific interval relationships within a raga can modulate vata, pitta, or kapha energies.`,
+            context:
+              'Ayurvedic sound therapy suggests that specific interval relationships within a raga can modulate vata, pitta, or kapha energies.',
             themes: ['Ayurveda', 'balance', 'self-inquiry'],
           },
         ]

@@ -583,7 +583,10 @@ mod tests {
         )
         .expect("localhost redirect without Origin should be accepted");
 
-        assert_eq!(resolved, "http://localhost:3001/admin/login/discord-callback");
+        assert_eq!(
+            resolved,
+            "http://localhost:3001/admin/login/discord-callback"
+        );
     }
 
     #[test]
@@ -598,7 +601,10 @@ mod tests {
         )
         .expect("localhost redirect with Origin: null should be accepted");
 
-        assert_eq!(resolved, "http://localhost:3001/admin/login/discord-callback");
+        assert_eq!(
+            resolved,
+            "http://localhost:3001/admin/login/discord-callback"
+        );
     }
 
     #[test]

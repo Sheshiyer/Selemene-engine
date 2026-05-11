@@ -28,7 +28,7 @@ const styles = {
   sub: {
     fontSize: "0.8rem",
     color: "var(--text-muted)",
-    fontFamily: "'IBM Plex Mono', monospace",
+    fontFamily: "var(--font-mono)",
   },
   sectionTitle: {
     fontSize: "0.75rem",

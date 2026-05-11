@@ -140,10 +140,89 @@ check('exists: migrations/028_raga_clips.sql', () => {
     `migration file must exist at ${target}`);
 });
 
+// ─── PHASE 3 ASSERTIONS — API route + Nadabrahman fallback chain ──────
+console.log('\n▸ Phase-3 file inventory');
+// db.ts + pg.d.ts live alongside the verifier in suno/;
+// useRagaClip.ts lives one level up in lib/raaga/.
+const phase3Files = [
+  { rel: 'db.ts',          label: 'src/lib/raaga/suno/db.ts' },
+  { rel: 'pg.d.ts',        label: 'src/lib/raaga/suno/pg.d.ts' },
+  { rel: '../useRagaClip.ts', label: 'src/lib/raaga/useRagaClip.ts' },
+];
+phase3Files.forEach(({ rel, label }) => {
+  check(`exists: ${label}`, () => {
+    assert.ok(exists(rel), `${rel} missing`);
+  });
+});
+// API route lives outside the suno/ dir
+check('exists: app/api/v1/raga/[num]/clip/route.ts', () => {
+  const repoRoot = path.resolve(__dirname, '../../../../../..');
+  const target = path.join(repoRoot, 'apps/noesis-web/app/api/v1/raga/[num]/clip/route.ts');
+  assert.ok(fs.existsSync(target), `route file must exist at ${target}`);
+});
+
+console.log('\n▸ API route contract');
+check('route exports GET handler', () => {
+  const repoRoot = path.resolve(__dirname, '../../../../../..');
+  const src = fs.readFileSync(path.join(repoRoot, 'apps/noesis-web/app/api/v1/raga/[num]/clip/route.ts'), 'utf8');
+  assert.ok(src.includes('export async function GET'), 'must export GET');
+  assert.ok(src.includes('findApprovedClip'), 'must call findApprovedClip');
+  assert.ok(src.includes('Cache-Control'), 'must set Cache-Control header');
+});
+check('route validates melakarta_num 1..72 + style enum', () => {
+  const repoRoot = path.resolve(__dirname, '../../../../../..');
+  const src = fs.readFileSync(path.join(repoRoot, 'apps/noesis-web/app/api/v1/raga/[num]/clip/route.ts'), 'utf8');
+  assert.ok(/num\s*<\s*1\s*\|\|\s*num\s*>\s*72/.test(src), 'must guard num range');
+  assert.ok(src.includes("'ambient'") && src.includes("'meditative'"), 'must enumerate styles');
+});
+check('route returns 404 with fallback hint on missing clip', () => {
+  const repoRoot = path.resolve(__dirname, '../../../../../..');
+  const src = fs.readFileSync(path.join(repoRoot, 'apps/noesis-web/app/api/v1/raga/[num]/clip/route.ts'), 'utf8');
+  assert.ok(src.includes('status: 404'), 'must return 404 when no clip');
+  assert.ok(src.includes('fallback'), 'must hint at fallback path');
+});
+check('route returns 503 on DB error so client falls back', () => {
+  const repoRoot = path.resolve(__dirname, '../../../../../..');
+  const src = fs.readFileSync(path.join(repoRoot, 'apps/noesis-web/app/api/v1/raga/[num]/clip/route.ts'), 'utf8');
+  assert.ok(src.includes('status: 503'), 'must return 503 on DB exception');
+});
+
+console.log('\n▸ Nadabrahman fallback chain wired');
+check('Nadabrahman.tsx imports SunoStyle + has audioSource state', () => {
+  const repoRoot = path.resolve(__dirname, '../../../../../..');
+  const src = fs.readFileSync(path.join(repoRoot, 'apps/noesis-web/src/components/engines/Nadabrahman.tsx'), 'utf8');
+  assert.ok(src.includes('SunoStyle'), 'must import SunoStyle type');
+  assert.ok(src.includes("audioSource"), 'must have audioSource state');
+  assert.ok(src.includes("'auto'") && src.includes("'live'"), 'must offer auto/live modes');
+});
+check('Nadabrahman.tsx calls Suno API endpoint', () => {
+  const repoRoot = path.resolve(__dirname, '../../../../../..');
+  const src = fs.readFileSync(path.join(repoRoot, 'apps/noesis-web/src/components/engines/Nadabrahman.tsx'), 'utf8');
+  assert.ok(src.includes('/api/v1/raga/'), 'must fetch the clip API');
+  assert.ok(src.includes('clipAudioRef'), 'must hold an <audio> element ref');
+});
+check('Nadabrahman.tsx falls back to getRaagaPlayer().play() on Suno miss', () => {
+  const repoRoot = path.resolve(__dirname, '../../../../../..');
+  const src = fs.readFileSync(path.join(repoRoot, 'apps/noesis-web/src/components/engines/Nadabrahman.tsx'), 'utf8');
+  // Verify the fall-through path: try Suno → if not ok → Strudel
+  assert.ok(src.includes('getRaagaPlayer().play'), 'must still play via Strudel');
+  // Status should reflect when Strudel is used as a fallback vs. live
+  assert.ok(/Strudel fallback|Strudel live/.test(src), 'must label playback source');
+});
+
+console.log('\n▸ DB helper contract');
+check('db.ts is server-only + queries by (num, style, status=approved)', () => {
+  const src = read('db.ts');
+  assert.ok(src.includes("'server-only'"), 'must import server-only');
+  assert.ok(src.includes("status = 'approved'"), 'must filter status');
+  assert.ok(src.includes('melakarta_num = $1'), 'must parameterize melakarta');
+  assert.ok(src.includes('style = $2'), 'must parameterize style');
+});
+
 console.log('\n────────────────────────────────────────');
 console.log(`  ${pass} passed, ${fail} failed`);
 if (fail > 0) {
-  console.log('  ❌ Suno P1 contracts INCOMPLETE');
+  console.log('  ❌ Suno contracts INCOMPLETE');
   process.exit(1);
 }
-console.log('  ✅ Suno P1 contracts VERIFIED — ready for cookie + R2 + smoke run');
+console.log('  ✅ Suno P1 + P3 contracts VERIFIED — ready for cookie + R2 + smoke run');
