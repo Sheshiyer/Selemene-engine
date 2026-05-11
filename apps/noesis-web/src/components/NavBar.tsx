@@ -107,7 +107,7 @@ const styles = {
   },
 };
 
-const BIOFIELD_BASE_URL = "https://biofield-web.vercel.app";
+const BIOFIELD_BASE_URL = "https://biofield.tryambakam.space";
 
 function getBiofieldHref(): string {
   if (typeof window === "undefined") return BIOFIELD_BASE_URL;
