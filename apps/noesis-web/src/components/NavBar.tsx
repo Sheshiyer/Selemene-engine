@@ -3,7 +3,36 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { isAuthenticated, clearApiKey, getUserProfile, type UserProfile } from "@/lib/auth";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type CSSProperties } from "react";
+
+/* ── Tier Badge Styling ───────────────────────────────────── */
+
+type Tier = "free" | "pro" | "architect";
+
+const TIER_COLORS: Record<Tier, { bg: string; color: string }> = {
+  free:      { bg: "rgba(255,255,255,0.1)",   color: "rgba(255,255,255,0.4)" },
+  pro:       { bg: "rgba(16,181,167,0.15)",    color: "var(--c-emerald)" },
+  architect: { bg: "rgba(197,160,23,0.15)",    color: "var(--c-gold)" },
+};
+
+function tierBadgeStyle(tier: string): CSSProperties {
+  const t = TIER_COLORS[tier as Tier] ?? TIER_COLORS.free;
+  return {
+    fontSize: "0.55rem",
+    fontWeight: 600,
+    fontFamily: "var(--font-mono)",
+    textTransform: "lowercase",
+    letterSpacing: "0.04em",
+    padding: "1px 6px",
+    borderRadius: 10,
+    background: t.bg,
+    color: t.color,
+    lineHeight: 1.5,
+    whiteSpace: "nowrap",
+  };
+}
+
+/* ── Styles ───────────────────────────────────────────────── */
 
 const styles = {
   nav: {
@@ -12,7 +41,6 @@ const styles = {
     justifyContent: "space-between",
     padding: "0 1.5rem",
     height: 56,
-    // Kha Arc atmosphere: void → subtle violet tint
     background: "linear-gradient(90deg, #070B1D 0%, rgba(45,0,80,0.4) 50%, #070B1D 100%)",
     borderBottom: "1px solid var(--line-mid)",
     boxShadow: "0 1px 0 var(--line-faint), inset 0 -1px 0 rgba(11,80,251,0.06)",
@@ -48,21 +76,15 @@ const styles = {
     letterSpacing: "0.02em",
   },
   tabActive: {
-    // Ba Arc gradient pill for active tab
     background: "linear-gradient(90deg, rgba(16,181,167,0.15) 0%, rgba(197,160,23,0.15) 100%)",
     color: "var(--signal)",
     border: "1px solid rgba(197,160,23,0.25)",
-  },
-  tabHover: {
-    color: "var(--text)",
-    background: "var(--panel-hover)",
   },
   right: {
     display: "flex",
     alignItems: "center",
     gap: "0.75rem",
   },
-  // Avatar circle
   avatar: {
     width: 30,
     height: 30,
@@ -80,6 +102,24 @@ const styles = {
   },
   avatarAdmin: {
     border: "1.5px solid var(--c-violet)",
+  },
+  avatarGroup: {
+    display: "flex",
+    flexDirection: "column" as const,
+    alignItems: "center",
+    gap: "3px",
+    position: "relative" as const,
+  },
+  adminTag: {
+    fontSize: "0.6rem",
+    padding: "1px 5px",
+    borderRadius: 10,
+    background: "rgba(197,160,23,0.2)",
+    color: "var(--c-gold)",
+    fontWeight: 600,
+    fontFamily: "var(--font-mono)",
+    lineHeight: 1.4,
+    whiteSpace: "nowrap" as const,
   },
   userInfo: {
     display: "flex",
@@ -148,6 +188,25 @@ const styles = {
     fontFamily: "var(--font-body)",
     transition: "border-color 0.15s, color 0.15s",
   },
+  tooltip: {
+    position: "absolute" as const,
+    top: "calc(100% + 6px)",
+    right: 0,
+    background: "var(--surface-2)",
+    border: "1px solid var(--line-mid)",
+    borderRadius: 6,
+    padding: "6px 10px",
+    fontSize: "0.68rem",
+    color: "var(--text)",
+    fontFamily: "var(--font-mono)",
+    whiteSpace: "nowrap" as const,
+    zIndex: 200,
+    boxShadow: "0 4px 12px rgba(0,0,0,0.4)",
+    display: "flex",
+    flexDirection: "column" as const,
+    gap: "2px",
+    pointerEvents: "none" as const,
+  },
 };
 
 const BIOFIELD_BASE_URL = "https://biofield.tryambakam.space";
@@ -155,7 +214,6 @@ const BIOFIELD_BASE_URL = "https://biofield.tryambakam.space";
 function getBiofieldHref(): string {
   if (typeof window === "undefined") return BIOFIELD_BASE_URL;
   const key = localStorage.getItem("noesis_api_key");
-  // Only forward JWTs (eyJ prefix). API keys (nk_ prefix) are not valid for biofield-web.
   if (key && key.startsWith("eyJ")) {
     return `${BIOFIELD_BASE_URL}/login#token=${key}`;
   }
@@ -167,6 +225,82 @@ const TABS = [
   { href: "/readings", label: "Readings", external: false },
   { href: BIOFIELD_BASE_URL, label: "Biofield", external: true },
 ];
+
+/* ── Profile Section ──────────────────────────────────────── */
+
+function ProfileArea({ profile }: { profile: UserProfile | null }) {
+  const [hovering, setHovering] = useState(false);
+
+  if (!profile) {
+    return (
+      <span style={styles.badge}>
+        <span style={styles.dot} />
+        API Key Active
+      </span>
+    );
+  }
+
+  const initials = (profile.full_name || profile.email || "?").charAt(0).toUpperCase();
+
+  return (
+    <div
+      style={{ display: "flex", alignItems: "center", gap: "0.6rem", position: "relative" }}
+      onMouseEnter={() => setHovering(true)}
+      onMouseLeave={() => setHovering(false)}
+    >
+      {/* Admin link badge */}
+      {profile.is_admin && (
+        <a
+          href="https://144.tryambakam.space/admin"
+          target="_blank"
+          rel="noreferrer"
+          style={styles.adminBadge}
+        >
+          ADM
+        </a>
+      )}
+
+      {/* Avatar column: initials circle + tier badge + admin tag */}
+      <div style={styles.avatarGroup}>
+        {/* Admin indicator above avatar */}
+        {profile.is_admin && (
+          <span style={styles.adminTag}>✦ admin</span>
+        )}
+
+        {/* Avatar circle */}
+        <div
+          style={{
+            ...styles.avatar,
+            ...(profile.is_admin ? styles.avatarAdmin : {}),
+          }}
+        >
+          {initials}
+        </div>
+
+        {/* Tier badge below avatar */}
+        <span style={tierBadgeStyle(profile.tier)}>{profile.tier}</span>
+      </div>
+
+      {/* Name + tier text */}
+      <div style={styles.userInfo}>
+        <span style={styles.userName}>
+          {profile.full_name || profile.email.split("@")[0]}
+        </span>
+        <span style={styles.userTier}>{profile.tier}</span>
+      </div>
+
+      {/* Hover tooltip */}
+      {hovering && (
+        <div style={styles.tooltip}>
+          <span style={{ color: "var(--muted)" }}>{profile.email}</span>
+          <span>tier: <strong style={{ color: "var(--signal)" }}>{profile.tier}</strong></span>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ── NavBar ───────────────────────────────────────────────── */
 
 export default function NavBar() {
   const pathname = usePathname();
@@ -200,7 +334,6 @@ export default function NavBar() {
                 style={styles.tab}
               >
                 {t.label}
-                {/* Emerald bioluminescent dot when session exists */}
                 {authed && <span style={styles.biofieldDot} aria-hidden />}
                 {!authed && " ↗"}
               </a>
@@ -222,41 +355,7 @@ export default function NavBar() {
       <div style={styles.right}>
         {authed ? (
           <>
-            {profile?.is_admin && (
-              <a
-                href="https://144.tryambakam.space/admin"
-                target="_blank"
-                rel="noreferrer"
-                style={styles.adminBadge}
-              >
-                ADM
-              </a>
-            )}
-            {/* Avatar initial circle */}
-            <div
-              style={{
-                ...styles.avatar,
-                ...(profile?.is_admin ? styles.avatarAdmin : {}),
-              }}
-              title={profile?.email}
-            >
-              {(profile?.full_name || profile?.email || "?")
-                .charAt(0)
-                .toUpperCase()}
-            </div>
-            {profile ? (
-              <div style={styles.userInfo}>
-                <span style={styles.userName}>
-                  {profile.full_name || profile.email.split("@")[0]}
-                </span>
-                <span style={styles.userTier}>{profile.tier}</span>
-              </div>
-            ) : (
-              <span style={styles.badge}>
-                <span style={styles.dot} />
-                API Key Active
-              </span>
-            )}
+            <ProfileArea profile={profile} />
             <button style={styles.logoutBtn} onClick={handleLogout}>
               Sign out
             </button>

@@ -179,13 +179,14 @@ export default function CompassSelector({
 }: CompassSelectorProps) {
   return (
     <section style={styles.shell} aria-label="Compass workflow selector">
-      <div style={styles.grid}>
+      <div style={styles.grid} className="compass-grid">
         {COMPASS_OPTIONS.map((option) => {
           const active = selected === option.id;
           return (
             <button
               key={option.id}
               type="button"
+              className="compass-card"
               onClick={() => onSelect(option.id)}
               style={{
                 ...styles.card,
@@ -201,7 +202,7 @@ export default function CompassSelector({
                   <span style={styles.direction}>{option.direction}</span>
                   <span style={styles.label}>{option.label}</span>
                   <span style={styles.sanskrit}>{option.sanskrit}</span>
-                  <span style={styles.intention}>{option.intention}</span>
+                  <span className="compass-card-desc" style={styles.intention}>{option.intention}</span>
                 </span>
               </div>
             </button>
@@ -210,6 +211,7 @@ export default function CompassSelector({
       </div>
       <button
         type="button"
+        className="compass-full-bar"
         onClick={() => onSelect("full-spectrum")}
         style={{
           ...styles.fullButton,

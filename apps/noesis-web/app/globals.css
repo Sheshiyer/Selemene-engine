@@ -338,3 +338,39 @@ code, .mono, pre {
   opacity: 0.4;
   cursor: not-allowed;
 }
+
+/* ══════════════════════════════════════════════
+   5 · RESPONSIVE + MOBILE
+   ══════════════════════════════════════════════ */
+
+/* Compass cards: collapse to compact pill row on narrow screens */
+@media (max-width: 640px) {
+  .compass-grid {
+    display: flex !important;
+    flex-wrap: wrap;
+    gap: 0.375rem;
+  }
+  .compass-card {
+    flex: 1 1 calc(50% - 0.375rem);
+    min-width: 120px;
+    padding: 0.6rem 0.75rem !important;
+  }
+  .compass-card-desc {
+    display: none;
+  }
+  .compass-full-bar {
+    order: -1;
+    width: 100%;
+  }
+}
+
+/* Result reveal animation */
+.result-reveal {
+  animation: growIn 0.45s var(--ease-out-expo) both;
+}
+
+/* Page content must stack above constellation bg */
+.page-content {
+  position: relative;
+  z-index: 1;
+}

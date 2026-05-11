@@ -8,6 +8,7 @@ import WitnessLayer from "@/components/WitnessLayer";
 import EngineCard from "@/components/EngineCard";
 import CalculationLoader from "@/components/CalculationLoader";
 import CompassSelector, {
+  COMPASS_OPTIONS,
   type CompassMode,
 } from "@/components/CompassSelector";
 import EngineGrid, { type EngineGridItem } from "@/components/EngineGrid";
@@ -247,6 +248,126 @@ function renderEngine(id: EngineId, result: Record<string, unknown>) {
   }
 }
 
+/* ── DX-03 — Constellation background ───────────────── */
+
+// Deterministic star field (no JS randomness — seeded via golden-angle hash)
+const STARS = Array.from({ length: 72 }, (_, i) => ({
+  cx: ((i * 137.508 + 17.3) % 100).toFixed(2),
+  cy: ((i * 89.217 + 43.1) % 100).toFixed(2),
+  r:  i % 7 === 0 ? "0.22" : i % 3 === 0 ? "0.15" : "0.09",
+  op: (0.10 + (i % 8) * 0.04).toFixed(2),
+}));
+
+const LINES = Array.from({ length: 22 }, (_, i) => {
+  const a = STARS[i * 3 % 72];
+  const b = STARS[(i * 3 + 9) % 72];
+  return { x1: a.cx, y1: a.cy, x2: b.cx, y2: b.cy };
+});
+
+function ConstellationBg() {
+  return (
+    <svg
+      aria-hidden="true"
+      className="constellation-bg"
+      viewBox="0 0 100 100"
+      preserveAspectRatio="xMidYMid slice"
+    >
+      {LINES.map((l, i) => (
+        <line
+          key={i}
+          x1={l.x1} y1={l.y1} x2={l.x2} y2={l.y2}
+          stroke="rgba(197,160,23,0.05)"
+          strokeWidth="0.06"
+        />
+      ))}
+      {STARS.map((star, i) => (
+        <circle
+          key={i}
+          cx={star.cx} cy={star.cy}
+          r={star.r}
+          fill={i % 5 === 0 ? "rgba(16,181,167,0.7)" : "rgba(197,160,23,0.8)"}
+          opacity={star.op}
+        />
+      ))}
+    </svg>
+  );
+}
+
+/* ── DX-26 — Constellation empty state ──────────────── */
+
+const EMPTY_RING_STARS = [
+  [60, 10], [85, 28], [95, 52], [78, 72], [55, 82],
+  [35, 72], [18, 52], [22, 28], [48, 18], [60, 44],
+] as const;
+const EMPTY_RING_LINES = [
+  [0,9],[0,1],[1,2],[2,3],[3,4],[4,5],[5,6],[6,7],[7,8],[8,0],[0,3],[0,5],[9,2],[9,7],
+] as const;
+
+function EmptyState({ label, glyph }: { label: string; glyph: string }) {
+  return (
+    <div style={{
+      padding: "2.5rem 2rem",
+      border: "1px solid var(--line-mid)",
+      borderRadius: "var(--r-md)",
+      background: "radial-gradient(circle at 50% 10%, rgba(197,160,23,0.07), transparent 55%), var(--panel)",
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      gap: "1.25rem",
+      textAlign: "center",
+    }}>
+      <svg
+        width="110" height="90" viewBox="0 0 110 90"
+        aria-hidden="true"
+        style={{ opacity: 0.45, animation: "constellationDrift 8s ease-in-out infinite" }}
+      >
+        {EMPTY_RING_LINES.map(([a, b], i) => (
+          <line
+            key={i}
+            x1={EMPTY_RING_STARS[a][0]} y1={EMPTY_RING_STARS[a][1]}
+            x2={EMPTY_RING_STARS[b][0]} y2={EMPTY_RING_STARS[b][1]}
+            stroke="rgba(197,160,23,0.35)" strokeWidth="0.6"
+          />
+        ))}
+        {EMPTY_RING_STARS.map(([cx, cy], i) => (
+          <circle
+            key={i} cx={cx} cy={cy}
+            r={i === 9 ? 5 : 2.5}
+            fill={i === 9 ? "rgba(16,181,167,0.7)" : "rgba(197,160,23,0.75)"}
+          />
+        ))}
+        <text
+          x="60" y="47" textAnchor="middle" dominantBaseline="middle"
+          fontSize="10" fill="rgba(197,160,23,0.6)"
+          fontFamily="sans-serif"
+        >{glyph}</text>
+      </svg>
+
+      <span style={{
+        fontFamily: "var(--font-display)",
+        fontSize: "0.68rem",
+        textTransform: "uppercase",
+        letterSpacing: "0.14em",
+        color: "var(--signal)",
+      }}>
+        Awaiting Calculation
+      </span>
+
+      <p style={{
+        color: "var(--text-dim)",
+        fontSize: "0.875rem",
+        lineHeight: 1.65,
+        maxWidth: 360,
+        margin: 0,
+      }}>
+        Enter your birth data above and begin the{" "}
+        <span style={{ color: "var(--text-2)" }}>{label}</span>{" "}
+        ritual to reveal your cosmic blueprint.
+      </p>
+    </div>
+  );
+}
+
 /* ── Styles ──────────────────────────────────────────── */
 
 const s = {
@@ -318,17 +439,6 @@ const s = {
     borderColor: "rgba(197,160,23,0.45)",
     color: "var(--signal)",
     boxShadow: "var(--glow-gold)",
-  },
-  emptyState: {
-    padding: "2rem",
-    border: "1px solid var(--line-mid)",
-    borderRadius: "var(--r-md)",
-    background:
-      "radial-gradient(circle at 50% 0%, rgba(197,160,23,0.08), transparent 40%), var(--panel)",
-    color: "var(--text-dim)",
-    textAlign: "center" as const,
-    fontSize: "0.9rem",
-    lineHeight: 1.6,
   },
 };
 
@@ -405,9 +515,10 @@ export default function EnginesPage() {
 
   return (
     <div style={s.page}>
+      <ConstellationBg />
       <NavBar />
-      <main style={s.content}>
-        <h1 style={s.heading}>Full-Spectrum Analysis</h1>
+      <main className="page-content" style={s.content}>
+        <h1 style={s.heading}>{selectedWorkflow.label}</h1>
         <p style={s.intro}>
           Choose a compass direction before calculation. Full Spectrum keeps the
           complete 17-engine mandala; directional modes focus the workflow into
@@ -429,9 +540,9 @@ export default function EnginesPage() {
         )}
 
         {response && (
-          <>
+          <div className="result-reveal">
             {response.total_time_ms != null && (
-              <div style={s.meta}>
+              <div style={{ ...s.meta, marginBottom: "0.5rem" }}>
                 {response.reading_id && (
                   <span>Reading: {response.reading_id}</span>
                 )}
@@ -491,14 +602,14 @@ export default function EnginesPage() {
                 </EngineCard>
               );
             })()}
-          </>
+          </div>
         )}
 
         {!response && !loading && !error && (
-          <p style={s.emptyState}>
-            ◈ Enter your birth data above and run the{" "}
-            {selectedWorkflow.label.toLowerCase()} calculation.
-          </p>
+          <EmptyState
+            label={selectedWorkflow.label.toLowerCase()}
+            glyph={COMPASS_OPTIONS.find(o => o.id === selectedCompass)?.glyph ?? "◈"}
+          />
         )}
       </main>
     </div>
