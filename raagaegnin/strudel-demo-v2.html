@@ -1,0 +1,1200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nādashakti V2 — Gamakas · Timbres · Tala · Breath · Render</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #0a0a0f 0%, #1a1a2e 50%, #0f0f1a 100%);
+            color: #e0e0e0; min-height: 100vh; overflow-x: hidden;
+        }
+        .container { max-width: 1500px; margin: 0 auto; padding: 1.5rem; }
+        header {
+            text-align: center; margin-bottom: 1rem; padding: 1rem;
+            background: rgba(255, 255, 255, 0.03); border-radius: 20px;
+            border: 1px solid rgba(255, 215, 0, 0.2);
+        }
+        h1 {
+            font-size: 1.8rem;
+            background: linear-gradient(45deg, #ffd700, #ff6b35, #ffd700);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            margin-bottom: 0.3rem;
+        }
+        .subtitle { color: #888; font-size: 0.85rem; }
+        .audio-status {
+            margin-top: 0.5rem; padding: 0.4rem 0.9rem; border-radius: 20px;
+            background: rgba(100, 181, 246, 0.1); border: 1px solid rgba(100, 181, 246, 0.3);
+            display: inline-block; color: #64b5f6; font-size: 0.85rem;
+        }
+        .audio-status.ready { color: #81c784; border-color: rgba(129, 199, 132, 0.4); background: rgba(129, 199, 132, 0.1); }
+        .audio-status.playing { color: #ffd700; border-color: #ffd700; }
+
+        .controls-bar {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 0.75rem; padding: 1rem;
+            background: rgba(255, 215, 0, 0.05); border: 1px solid rgba(255, 215, 0, 0.2);
+            border-radius: 12px; margin-bottom: 1rem;
+        }
+        .ctrl { display: flex; flex-direction: column; gap: 0.3rem; }
+        .ctrl label { font-size: 0.7rem; color: #aaa; text-transform: uppercase; letter-spacing: 0.05em; }
+        .ctrl select, .ctrl input[type="range"] {
+            background: rgba(0,0,0,0.3); color: #e0e0e0; border: 1px solid rgba(255,215,0,0.3);
+            border-radius: 6px; padding: 0.4rem; font-size: 0.9rem;
+        }
+        .ctrl-toggle { display: flex; align-items: center; gap: 0.4rem; cursor: pointer; }
+        .ctrl-toggle input { accent-color: #ffd700; }
+
+        .raga-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 0.6rem;
+        }
+        .raga-card {
+            padding: 0.75rem; background: rgba(255, 255, 255, 0.02);
+            border-radius: 6px; border-left: 3px solid #ffd700;
+            display: flex; flex-direction: column; gap: 0.4rem;
+        }
+        .raga-card .row { display: flex; justify-content: space-between; align-items: center; gap: 0.3rem; }
+        .raga-card .name { font-weight: bold; color: #fff; font-size: 0.95rem; }
+        .raga-card .meta { font-size: 0.7rem; color: #888; }
+        .play-btn, .dl-btn {
+            border-radius: 50%; width: 32px; height: 32px;
+            cursor: pointer; font-size: 0.8rem; flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center;
+            transition: all 0.2s;
+        }
+        .play-btn {
+            background: rgba(255, 215, 0, 0.15); border: 1px solid rgba(255, 215, 0, 0.4);
+            color: #ffd700;
+        }
+        .play-btn:hover { background: rgba(255, 215, 0, 0.3); transform: scale(1.1); }
+        .play-btn.playing { background: #ff6b35; color: #fff; border-color: #ff6b35; }
+        .dl-btn {
+            background: rgba(100, 181, 246, 0.15); border: 1px solid rgba(100, 181, 246, 0.4);
+            color: #64b5f6;
+        }
+        .dl-btn:hover { background: rgba(100, 181, 246, 0.3); }
+
+        .stop-btn {
+            margin: 1rem auto 0; display: block; padding: 0.5rem 2rem;
+            background: rgba(229, 115, 115, 0.15); border: 1px solid rgba(229, 115, 115, 0.4);
+            color: #e57373; border-radius: 20px; cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎵 Nādashakti V2</h1>
+            <div class="subtitle">Gamakas · Sample timbres · Tala · Breath-paced cps · Tanpura · WAV download</div>
+            <div class="audio-status" id="audioStatus">Click any raga ▶ to load Strudel</div>
+            <div style="margin-top:0.6rem; display:flex; gap:0.5rem; justify-content:center; align-items:center; font-size:0.8rem;">
+                <button id="audioTestBtn" style="background:rgba(129,199,132,0.2); border:1px solid rgba(129,199,132,0.4); color:#81c784; padding:0.4rem 1rem; border-radius:20px; cursor:pointer; font-size:0.85rem;">🔊 Test audio (2s sine)</button>
+                <span id="audioDiag" style="color:#888; font-family:ui-monospace,monospace;">audio: not initialized</span>
+            </div>
+        </header>
+
+        <div class="controls-bar">
+            <div class="ctrl" style="grid-column: span 2;">
+                <label>Ritual Preset</label>
+                <select id="presetSel" style="font-weight:bold; color:#ff6b35;">
+                    <option value="">— Custom (use controls below) —</option>
+                    <option value="morning-maya">Morning Surrender (Mayamalavagaula · sitar · kampita · adi)</option>
+                    <option value="evening-bhairavi">Evening Compassion (Bhairavi · sarangi · andolana · misra-chapu · brahmari)</option>
+                    <option value="sankarabharanam-bright">Bright Major (Sankarabharanam · bansuri · nokku · adi · ujjayi)</option>
+                    <option value="kalyani-devotional">Devotional Lift (Kalyani · sitar · sphurita · rupakam · ujjayi)</option>
+                    <option value="kharaharapriya-flow">Dorian Flow (Kharaharapriya · sarangi · kurula · adi)</option>
+                    <option value="bhastrika-fire">Fire Activation (Mayamalavagaula · sitar · kampita · adi · bhastrika)</option>
+                    <option value="alaap-maya">★ ALAAP — Mayamalavagaula meditation (60s, all phases, sitar, tanpura)</option>
+                    <option value="alaap-kalyani-pad">★ ALAAP — Kalyani ambient (supersaw pad, slow breath)</option>
+                    <option value="palta-sarali-saw">PALTA — Sarali Varisai on Sankarabharanam (saw lead)</option>
+                    <option value="palta-jantai-pluck">PALTA — Jantai paired (square pluck, fast)</option>
+                    <option value="acid-yaman">⚡ ACID — Raga Yaman (Kalyani · 132 BPM · 4-on-the-floor)</option>
+                    <option value="acid-bhairavi">⚡ ACID — Raga Bhairavi (Hanumatodi · 124 BPM · brooding)</option>
+                    <option value="acid-megh">⚡ ACID — Raga Megh (Kharaharapriya · 128 BPM · monsoon)</option>
+                    <option value="acid-kalavati">⚡ ACID — Raga Kalavati (Harikambhoji · 130 BPM · pentatonic)</option>
+                    <option value="acid-lalit">⚡ ACID — Raga Lalit (Mayamalavagaula · 120 BPM · morning)</option>
+                    <option value="acid-charukeshi">⚡ ACID — Raga Charukeshi (#26 · 134 BPM · hypnotic)</option>
+                    <option value="ritual-feet">✦ RITUAL — Earth-foundation (Kanakangi · feet chakra · 88 BPM)</option>
+                    <option value="ritual-heart">✦ RITUAL — Heart-opening (Bhavapriya · heart chakra · 96 BPM)</option>
+                    <option value="ritual-throat">✦ RITUAL — Throat-clarity (Kantamani · throat chakra · 100 BPM)</option>
+                    <option value="ritual-crown">✦ RITUAL — Crown-light (Jyotisvarupini · head chakra · 92 BPM)</option>
+                    <option value="ritual-fire">✦ RITUAL — Fire-activation (Mayamalavagaula · solar · 108 BPM, high)</option>
+                </select>
+            </div>
+            <div class="ctrl">
+                <label>Mode</label>
+                <select id="modeSel">
+                    <option value="standard" selected>Standard (arohana ↑ + avarohana ↓)</option>
+                    <option value="palta">Palta (Carnatic permutation)</option>
+                    <option value="alaap">Alaap (rhythm-free meditation)</option>
+                    <option value="acid">★ Acid Classical (Charanjit Singh 1982)</option>
+                    <option value="ritual">✦ Ritual (sectional, evolving, ~80s)</option>
+                </select>
+            </div>
+            <div class="ctrl">
+                <label>Timbre (classical-feel synth)</label>
+                <select id="timbreSel">
+                    <optgroup label="Voice & wind">
+                        <option value="bansuri" selected>Bansuri (flute, sine, breathy)</option>
+                        <option value="voice">Voice (triangle, vocal-range)</option>
+                        <option value="shehnai">Shehnai (reedy, slightly nasal)</option>
+                    </optgroup>
+                    <optgroup label="Bowed & plucked">
+                        <option value="sarangi">Sarangi (bowed, dark)</option>
+                        <option value="veena">Veena (slow pluck + ring)</option>
+                        <option value="sitar">Sitar (triangle pluck)</option>
+                        <option value="pluck">Pluck (sharp, fast)</option>
+                    </optgroup>
+                    <optgroup label="Drone & test">
+                        <option value="tanpurasynth">Tanpura Synth (drone)</option>
+                        <option value="sine">Sine (V1 / shruti test)</option>
+                    </optgroup>
+                </select>
+            </div>
+            <div class="ctrl">
+                <label>Default Gamaka</label>
+                <select id="gamakaSel">
+                    <option value="none">None (plain)</option>
+                    <option value="kampita" selected>Kampita (light vibrato)</option>
+                    <option value="andolana">Andolana (slow oscillation)</option>
+                    <option value="kurula">Kurula (curved slide)</option>
+                    <option value="nokku">Nokku (grace above)</option>
+                    <option value="sphurita">Sphurita (bent attack)</option>
+                </select>
+            </div>
+            <div class="ctrl">
+                <label>Tala</label>
+                <select id="talaSel">
+                    <option value="">— None —</option>
+                    <option value="adi" selected>Ādi (8)</option>
+                    <option value="rupakam">Rūpakam (6)</option>
+                    <option value="misra-chapu">Miśra Chāpu (7)</option>
+                    <option value="khanda-chapu">Khaṇḍa Chāpu (5)</option>
+                    <option value="tisra-eka">Tisra Ēkam (3)</option>
+                    <option value="jhampa">Miśra Jhampa (10)</option>
+                </select>
+            </div>
+            <div class="ctrl">
+                <label>Breath</label>
+                <select id="breathSel">
+                    <option value="">— Default cps —</option>
+                    <option value="box-4">Box 4-4-4-4</option>
+                    <option value="calming-4-7-8">Calm 4-7-8</option>
+                    <option value="bhastrika">Bhastrika</option>
+                    <option value="ujjayi">Ujjāyī</option>
+                    <option value="brahmari">Bhrāmarī</option>
+                    <option value="shitali">Śītalī</option>
+                </select>
+            </div>
+            <div class="ctrl">
+                <label>Palta (when mode=Palta)</label>
+                <select id="paltaSel">
+                    <option value="sarali">Sarali Varisai (4-note ↑ paired)</option>
+                    <option value="jantai">Jantai (paired-repeat)</option>
+                    <option value="dattu">Dattu (skip-pairs)</option>
+                    <option value="tara">Tara Sthayi (reach Sa')</option>
+                    <option value="mel-sthayi">Mel-Sthayi (3-note climb)</option>
+                    <option value="alankara">Alankāra (overlap triples)</option>
+                </select>
+            </div>
+            <div class="ctrl">
+                <label>Alaap phases (when mode=Alaap)</label>
+                <select id="alaapPhasesSel">
+                    <option value="all">All 3 (Vilambit→Madhya→Drut, ~60s)</option>
+                    <option value="vilambit">Vilambit only (slow, ~25s)</option>
+                    <option value="madhya">Madhya only (~15s)</option>
+                    <option value="drut">Drut only (fast tans, ~10s)</option>
+                    <option value="vilambit-madhya">Vilambit + Madhya</option>
+                </select>
+            </div>
+            <div class="ctrl">
+                <label>Sa Hz</label>
+                <input type="range" id="rootHz" min="110" max="440" value="220" step="10">
+            </div>
+            <div class="ctrl">
+                <label>BPM (acid mode)</label>
+                <input type="range" id="bpmSlider" min="90" max="140" value="132" step="2">
+                <span id="bpmDisplay" style="font-size:0.7rem; color:#aaa;">132 BPM</span>
+            </div>
+            <div class="ctrl">
+                <label>Drum intensity (acid/ritual)</label>
+                <select id="intensitySel">
+                    <option value="low">Low (kick only)</option>
+                    <option value="med" selected>Med (kick + hh + clap)</option>
+                    <option value="high">High (full kit)</option>
+                </select>
+            </div>
+            <div class="ctrl">
+                <label>Section length (ritual mode)</label>
+                <select id="sectionCyclesSel">
+                    <option value="4">Short (~40s total)</option>
+                    <option value="8" selected>Medium (~80s total)</option>
+                    <option value="12">Long (~120s total)</option>
+                    <option value="16">Extended (~160s total)</option>
+                </select>
+            </div>
+            <div class="ctrl">
+                <label class="ctrl-toggle"><input type="checkbox" id="useMaya"> Mayamalavagaula preset</label>
+                <label class="ctrl-toggle"><input type="checkbox" id="tanpuraTog"> Tanpura drone</label>
+            </div>
+        </div>
+
+        <div class="raga-grid" id="ragaGrid"></div>
+
+        <button class="stop-btn" id="stopBtn">■ Stop</button>
+    </div>
+
+    <script type="module">
+        // ───────────────────────────────────────────────────────────────────
+        // Inline JS port of v2 modules (subset). Source of truth lives in
+        // apps/noesis-web/src/lib/raaga/v2/. Kept in sync via verify-v2.mjs.
+        // ───────────────────────────────────────────────────────────────────
+
+        // 22 shrutis + Sa'
+        const SHRUTIS = [
+            [1,1],[256,243],[16,15],[10,9],[9,8],[32,27],[6,5],[5,4],[81,64],
+            [4,3],[27,20],[45,32],[729,512],[3,2],
+            [128,81],[8,5],[5,3],[27,16],[16,9],[9,5],[15,8],[243,128],[2,1],
+        ];
+        const ratioOf = (i) => SHRUTIS[i][0] / SHRUTIS[i][1];
+        const SW = { Sa:0, R1:1,R2:4,R3:5, G1:5,G2:6,G3:7, M1:9,M2:12, Pa:13,
+                     D1:14,D2:16,D3:18, N1:18,N2:19,N3:20, Sa_:22 };
+        const RG = [[SW.R1,SW.G1],[SW.R1,SW.G2],[SW.R1,SW.G3],[SW.R2,SW.G2],[SW.R2,SW.G3],[SW.R3,SW.G3]];
+        const DN = [[SW.D1,SW.N1],[SW.D1,SW.N2],[SW.D1,SW.N3],[SW.D2,SW.N2],[SW.D2,SW.N3],[SW.D3,SW.N3]];
+
+        function genMelakarta(num) {
+            const isPrati = num > 36;
+            const localN = isPrati ? num - 36 : num;
+            const cInSet = Math.floor((localN - 1) / 6);
+            const pInChk = (localN - 1) % 6;
+            const [r,g] = RG[cInSet];
+            const [d,n] = DN[pInChk];
+            const ma = isPrati ? SW.M2 : SW.M1;
+            const arohana = [SW.Sa, r, g, ma, SW.Pa, d, n, SW.Sa_];
+            return { num, arohana, avarohana: [...arohana].reverse() };
+        }
+        const NAMES = ["Kanakangi","Ratnangi","Ganamurti","Vanaspati","Manavati","Tanarupi",
+            "Senapati","Hanumatodi","Dhenuka","Natakapriya","Kokilapriya","Rupavati",
+            "Gayakapriya","Vakulabharanam","Mayamalavagaula","Chakravakam","Suryakantam","Hatakambari",
+            "Jhankaradhvani","Natabhairavi","Keeravani","Kharaharapriya","Gourimanohari","Varunapriya",
+            "Mararanjani","Charukesi","Sarasangi","Harikambhoji","Dheerasankarabharanam","Naganandini",
+            "Yagapriya","Ragavardhini","Gangeyabhushani","Vagadhishvari","Shulini","Chalanata",
+            "Salagam","Jalarnavam","Jhalavarali","Navaneetam","Pavani","Raghupriya",
+            "Gavambodhi","Bhavapriya","Subhapantuvarali","Shadvidhamargini","Suvarnangi","Divyamani",
+            "Dhavalambari","Namanarayani","Kamavardhini","Ramapriya","Gamanasrama","Vishvambhari",
+            "Shyamalangi","Shanmukhapriya","Simhendramadhyamam","Hemavati","Dharmavati","Neetimati",
+            "Kantamani","Rishabhapriya","Latangi","Vachaspati","Mechakalyani","Chitrambari",
+            "Sucharitra","Jyotisvarupini","Dhatuvardhini","Nasikabhushani","Kosalam","Rasikapriya"];
+        const MELAKARTAS = Array.from({length:72}, (_,i) => ({...genMelakarta(i+1), name: NAMES[i]}));
+
+        // ── Gamaka renderers (mini-notation expansion) ─────────────────────
+        const cents = (hz, c) => hz * Math.pow(2, c / 1200);
+        const fmt = (hz) => hz.toFixed(3);
+        const ease = (x) => x*x*(3 - 2*x);
+
+        const GAMAKAS = {
+            none:     {},
+            kampita:  { cents: 20, rateHz: 6 },
+            andolana: { cents: 50, rateHz: 1.5 },
+            kurula:   { cents: 100, glideFraction: 0.4 },
+            nokku:    { graceCents: 100, graceFraction: 0.08 },
+            sphurita: { startCents: -60, attackFraction: 0.1 },
+        };
+
+        function renderGamaka(hz, kind) {
+            const g = GAMAKAS[kind];
+            if (kind === 'none') return fmt(hz);
+            if (kind === 'kampita' || kind === 'andolana') {
+                const samples = kind === 'kampita' ? 8 : 4;
+                const pts = [];
+                for (let i = 0; i < samples; i++) {
+                    const phase = (i / samples) * Math.PI * 2;
+                    pts.push(fmt(cents(hz, g.cents * Math.sin(phase))));
+                }
+                return `[${pts.join(' ')}]`;
+            }
+            if (kind === 'kurula') {
+                const steps = 5;
+                const pts = [];
+                for (let i = 0; i < steps; i++) {
+                    const t = ease(i / (steps - 1));
+                    pts.push(fmt(cents(hz, -g.cents * (1 - t))));
+                }
+                const gw = g.glideFraction;
+                return `[[${pts.join(' ')}]@${gw} ${fmt(hz)}@${1 - gw}]`;
+            }
+            if (kind === 'nokku') {
+                const graceHz = cents(hz, g.graceCents);
+                const gw = g.graceFraction;
+                return `[${fmt(graceHz)}@${gw} ${fmt(hz)}@${1 - gw}]`;
+            }
+            if (kind === 'sphurita') {
+                const steps = 4;
+                const pts = [];
+                for (let i = 0; i < steps; i++) {
+                    const t = i / (steps - 1);
+                    const eased = 1 - Math.pow(1 - t, 2);
+                    pts.push(fmt(cents(hz, g.startCents * (1 - eased))));
+                }
+                const aw = g.attackFraction;
+                return `[[${pts.join(' ')}]@${aw} ${fmt(hz)}@${1 - aw}]`;
+            }
+            return fmt(hz);
+        }
+
+        // ── Timbre profiles — classical-feel synthesis ─────────────────────
+        // Design rules for "not-techno" sound:
+        //   - Triangle/sine over sawtooth (gentle harmonics, voice-like)
+        //   - LPF Q ≤ 1 (no resonant peaks; Q≥2 is the synthy sound)
+        //   - Slow attacks (40-180ms) for blown/bowed; sharp only for plucked
+        //   - Tiny detune for body, not chorus
+        //   - All gain values ≤ 0.7 to leave headroom for tala/gamaka peaks
+        const TIMBRES = {
+            // V1 baseline
+            sine:         { sound: 'sine',     attack: 0.01,  decay: 0.05, sustain: 0.85, release: 0.15, gain: 0.7 },
+
+            // Classical-feel synth voices (the recommended set)
+            veena:        { sound: 'triangle', attack: 0.04,  decay: 0.4,  sustain: 0.5,  release: 1.0,  gain: 0.7,  lpf: 2200, lpq: 0.6, detune: 3 },
+            bansuri:      { sound: 'sine',     attack: 0.12,  decay: 0.15, sustain: 0.85, release: 0.7,  gain: 0.65 },
+            sarangi:      { sound: 'triangle', attack: 0.18,  decay: 0.25, sustain: 0.9,  release: 0.9,  gain: 0.7,  lpf: 1800, lpq: 0.8, detune: 4 },
+            voice:        { sound: 'triangle', attack: 0.08,  decay: 0.2,  sustain: 0.85, release: 0.6,  gain: 0.7,  lpf: 2500, lpq: 0.5 },
+            shehnai:      { sound: 'triangle', attack: 0.06,  decay: 0.2,  sustain: 0.8,  release: 0.5,  gain: 0.7,  lpf: 2800, lpq: 0.7 },
+            tanpurasynth: { sound: 'triangle', attack: 1.2,   decay: 1.0,  sustain: 1.0,  release: 3.5,  gain: 0.4,  lpf: 1100, lpq: 0.5, detune: 4 },
+
+            // Brighter / pluckier voices (use sparingly — most "techno" risk lives here)
+            sitar:        { sound: 'triangle', attack: 0.005, decay: 0.4,  sustain: 0.35, release: 1.2,  gain: 0.65, lpf: 3000, lpq: 0.9, detune: 2 },
+            pluck:        { sound: 'triangle', attack: 0.002, decay: 0.18, sustain: 0.05, release: 0.3,  gain: 0.55, lpf: 3500, lpq: 0.8 },
+        };
+
+        // ── Paltas (Carnatic permutation patterns) ──────────────────────────
+        // Each generator takes the 8 swara indices [0..7] (Sa..Sa') and returns
+        // an expanded sequence indexing into the same swara array.
+        const PALTAS = {
+            sarali: (s) => {
+                const out = [];
+                for (let st = 0; st <= 4; st++) out.push(s[st], s[st+1], s[st+2], s[st+3]);
+                for (let st = 7; st >= 3; st--) out.push(s[st], s[st-1], s[st-2], s[st-3]);
+                return out;
+            },
+            jantai: (s) => {
+                const out = [];
+                for (let st = 0; st <= 4; st++) for (let i = 0; i < 4; i++) { out.push(s[st+i], s[st+i]); }
+                return out;
+            },
+            dattu: (s) => {
+                const out = [];
+                for (let st = 0; st <= 5; st++) out.push(s[st], s[st+2]);
+                for (let st = 7; st >= 2; st--) out.push(s[st], s[st-2]);
+                return out;
+            },
+            tara: (s) => {
+                const out = [];
+                for (let i = 0; i < 7; i++) out.push(s[i], s[7]);
+                out.push(s[7], s[6], s[5], s[4], s[3], s[2], s[1], s[0]);
+                return out;
+            },
+            'mel-sthayi': (s) => {
+                const out = [];
+                for (let st = 0; st <= 4; st++) out.push(s[st], s[st+2], s[st+4]);
+                out.push(s[7], s[6], s[5], s[4], s[3], s[2], s[1], s[0]);
+                return out;
+            },
+            alankara: (s) => {
+                const out = [];
+                for (let st = 0; st <= 5; st++) out.push(s[st], s[st+1], s[st+2]);
+                for (let st = 7; st >= 2; st--) out.push(s[st], s[st-1], s[st-2]);
+                return out;
+            },
+        };
+
+        // ── Alaap phase configs ─────────────────────────────────────────────
+        const ALAAP_PHASES = {
+            vilambit: { cps: 0.05, swaraSec: 6.0, defaultGamaka: 'andolana', pauseSec: 4.0 },
+            madhya:   { cps: 0.1,  swaraSec: 2.0, defaultGamaka: 'kampita',  pauseSec: 1.5 },
+            drut:     { cps: 0.3,  swaraSec: 0.4, defaultGamaka: 'sphurita', pauseSec: 0.5 },
+        };
+        const ALAAP_PHRASES = {
+            vilambit: [[0],[0,1],[0,1,2,1,0],[0,1,2,1]],
+            madhya:   [[0,1,2,3,2,1,0],[2,3,4,3,2],[0,2,4,5,4,2,0],[3,4,5,6,5,4,3],[0,4,5,6,7]],
+            drut:     [[0,1,2,3,4,5,6,7],[7,6,5,4,3,2,1,0],[0,2,1,3,2,4,3,5,4,6,5,7],[7,5,6,4,5,3,4,2,3,1,2,0]],
+        };
+
+        function renderAlaap(hzs, phaseList) {
+            const globalCps = Math.min(...phaseList.map(p => ALAAP_PHASES[p].cps));
+            const fragments = [];
+            let totalSec = 0;
+            for (const phase of phaseList) {
+                const cfg = ALAAP_PHASES[phase];
+                const phrases = ALAAP_PHRASES[phase];
+                const swaraWeight = (cfg.swaraSec * globalCps).toFixed(4);
+                const pauseWeight = (cfg.pauseSec * globalCps).toFixed(4);
+                for (const phrase of phrases) {
+                    for (const swaraIdx of phrase) {
+                        const hz = hzs[swaraIdx];
+                        const ornamented = v2RenderGamaka(hz, cfg.defaultGamaka);
+                        fragments.push(`${ornamented}@${swaraWeight}`);
+                        totalSec += cfg.swaraSec;
+                    }
+                    fragments.push(`~@${pauseWeight}`);
+                    totalSec += cfg.pauseSec;
+                }
+            }
+            return { miniNotation: fragments.join(' '), cps: globalCps, durationSec: totalSec };
+        }
+
+        // ── v2 render gamaka mirror (used by alaap) ─────────────────────────
+        function v2RenderGamaka(hz, kind) {
+            const g = GAMAKAS[kind] || {};
+            if (kind === 'none' || !GAMAKAS[kind]) return hz.toFixed(3);
+            return renderGamaka(hz, kind);  // reuse the function defined above
+        }
+
+        // ── Tala data ──────────────────────────────────────────────────────
+        const TALAS = {
+            'adi':          { beats: 8,  accentBeats: [0, 4, 6] },
+            'rupakam':      { beats: 6,  accentBeats: [0, 2] },
+            'misra-chapu':  { beats: 7,  accentBeats: [0, 3] },
+            'khanda-chapu': { beats: 5,  accentBeats: [0, 2] },
+            'tisra-eka':    { beats: 3,  accentBeats: [0] },
+            'jhampa':       { beats: 10, accentBeats: [0, 7, 8] },
+        };
+
+        function talaGain(tala, baseGain = 1.0, samam = 1.4, edam = 1.15) {
+            // Pre-multiply tala accent into the base gain so we emit ONE
+            // .gain("...") chain — Strudel's second .gain() would override
+            // the first, so chaining them silences notes in some versions.
+            const out = [];
+            for (let i = 0; i < tala.beats; i++) {
+                let mul;
+                if (i === tala.accentBeats[0]) mul = samam;
+                else if (tala.accentBeats.includes(i)) mul = edam;
+                else mul = 1.0;
+                out.push((baseGain * mul).toFixed(3));
+            }
+            return out.join(' ');
+        }
+
+        // ── Breath data ────────────────────────────────────────────────────
+        const BREATHS = {
+            'box-4':         { pattern: [4,4,4,4],   isStaccato: false, isSustain: false },
+            'calming-4-7-8': { pattern: [4,7,8,0],   isStaccato: false, isSustain: false },
+            'bhastrika':     { pattern: [0.5,0,0.5,0], isStaccato: true,  isSustain: false },
+            'ujjayi':        { pattern: [4,0,6,0],   isStaccato: false, isSustain: false },
+            'brahmari':      { pattern: [4,0,12,0],  isStaccato: false, isSustain: true },
+            'shitali':       { pattern: [4,2,6,0],   isStaccato: false, isSustain: true },
+        };
+
+        function breathArt(name) {
+            const b = BREATHS[name];
+            if (!b) return null;
+            const cycleS = b.pattern.reduce((a,b) => a+b, 0);
+            const cps = +(1 / (Math.max(0.5, cycleS) * 2)).toFixed(4);
+            const inhale = b.pattern[0], exhale = b.pattern[2];
+            const attack = +Math.min(1.5, Math.max(0.01, inhale * 0.05)).toFixed(3);
+            const release = +Math.min(2.5, Math.max(0.05, exhale * 0.08)).toFixed(3);
+            return {
+                cps: b.isStaccato ? Math.max(cps * 4, 1.0) : cps,
+                attack: b.isStaccato ? 0.005 : attack,
+                decay: b.isStaccato ? 0.02 : 0.1,
+                sustain: b.isStaccato ? 0.3 : b.isSustain ? 0.95 : 0.7,
+                release: b.isStaccato ? 0.05 : b.isSustain ? Math.max(release, 1.0) : release,
+            };
+        }
+
+        // ── Mayamalavagaula preset ─────────────────────────────────────────
+        const MAYA_GAMAKAS = {
+            1: 'kampita',     // Re1
+            2: 'sphurita',    // Ga3 (ascending)
+            3: 'andolana',    // Ma1
+            5: 'kampita',     // Dha1
+            6: 'nokku',       // Ni3 (descending grace)
+        };
+
+        // ── Composer (compose.ts inline port — supports standard/palta/alaap modes) ──
+        function composeRaaga({ num, rootHz, timbre, defaultGamaka, useMaya, tala, breath, mode, palta, alaapPhases }) {
+            const m = MELAKARTAS[num - 1];
+            const aroha = m.arohana.map(ratioOf);
+            const avaro = m.avarohana.map(ratioOf);
+            const fullHzs = aroha.map(r => +(r * rootHz).toFixed(4));  // 8 swaras Sa..Sa'
+
+            const t = TIMBRES[timbre];
+
+            // ── ALAAP MODE — overrides everything ─────────────────────────
+            if (mode === 'alaap') {
+                const phaseList = alaapPhases || ['vilambit', 'madhya', 'drut'];
+                const out = renderAlaap(fullHzs, phaseList);
+                let chain = `freq("${out.miniNotation}").s("${t.sound}")`;
+                // Override ADSR for contemplative attack
+                chain += `.attack(${Math.max(t.attack, 0.2).toFixed(3)})`;
+                chain += `.decay(${Math.max(t.decay, 0.3).toFixed(3)})`;
+                chain += `.sustain(${Math.max(t.sustain, 0.85).toFixed(3)})`;
+                chain += `.release(${Math.max(t.release, 1.5).toFixed(3)})`;
+                chain += `.gain(${(t.gain * 0.85).toFixed(3)})`;
+                if (t.lpf) chain += `.lpf(${t.lpf})`;
+                if (t.lpq) chain += `.lpq(${t.lpq})`;
+                if (t.detune) chain += `.detune(${t.detune})`;
+                return {
+                    code: `setcps(${out.cps}); ${chain}`,
+                    hzs: fullHzs,
+                    durationSec: out.durationSec,
+                    mode: 'alaap',
+                };
+            }
+
+            // ── PALTA / STANDARD MODE ─────────────────────────────────────
+            let hzs;
+            if (mode === 'palta' && palta && PALTAS[palta]) {
+                const swaraIndices = [0, 1, 2, 3, 4, 5, 6, 7];
+                const expanded = PALTAS[palta](swaraIndices);
+                hzs = expanded.map(i => fullHzs[Math.min(i, 7)]);
+            } else {
+                // Standard arohana + avarohana
+                const ratios = [...aroha, ...avaro.slice(1)];
+                hzs = ratios.map(r => +(r * rootHz).toFixed(4));
+            }
+
+            // Per-swara gamaka
+            const fragments = hzs.map((hz, i) => {
+                const presetForIndex = useMaya && num === 15 && mode === 'standard' ? MAYA_GAMAKAS[i] : null;
+                const kind = presetForIndex || defaultGamaka;
+                return renderGamaka(hz, kind);
+            });
+            const miniNotation = fragments.join(' ');
+
+            // CPS: breath > default. Palta uses faster default (0.7) for energy.
+            const art = breathArt(breath);
+            const cps = art ? art.cps : (mode === 'palta' ? 0.7 : 0.5);
+
+            // Build chain — IMPORTANT: only ONE .gain() in the entire chain.
+            // Strudel's second .gain() OVERRIDES the first, so we pre-multiply
+            // the tala accent INTO the base gain when applicable.
+            let chain = `freq("${miniNotation}").s("${t.sound}")`;
+            if (art) {
+                chain += `.attack(${art.attack}).decay(${art.decay}).sustain(${art.sustain}).release(${art.release})`;
+            } else {
+                chain += `.attack(${t.attack}).decay(${t.decay}).sustain(${t.sustain}).release(${t.release})`;
+            }
+
+            // Single .gain() — folded with tala accent if standard+tala
+            const useTala = mode !== 'palta' && tala && TALAS[tala];
+            if (useTala) {
+                chain += `.gain("${talaGain(TALAS[tala], t.gain)}")`;
+            } else {
+                chain += `.gain(${t.gain})`;
+            }
+
+            if (t.lpf) chain += `.lpf(${t.lpf})`;
+            if (t.lpq) chain += `.lpq(${t.lpq})`;
+            if (t.detune) chain += `.detune(${t.detune})`;
+
+            chain += `.slow(${hzs.length / 2})`;
+            return { code: `setcps(${cps}); ${chain}`, hzs, mode };
+        }
+
+        // ── Tanpura code builder ──────────────────────────────────────────
+        // Use the actual oscillator name `sawtooth` — `dronesynth` is a TIMBRE
+        // KEY in our profile map, not a Strudel sound name.
+        function buildTanpuraCode(rootHz, gain = 0.35) {
+            const pa = +(rootHz * (3/2) / 2).toFixed(3);
+            const sa = +rootHz.toFixed(3);
+            const saLow = +(rootHz / 2).toFixed(3);
+            return `setcps(0.08); freq("${pa} ${sa} ${sa} ${saLow}").s("sawtooth").attack(1.5).decay(1.0).sustain(1.0).release(4.0).gain(${gain}).lpf(1200).detune(5)`;
+        }
+
+        // ── ACID-CLASSICAL composer (Charanjit Singh 1982 palette) ────────
+        // Builds a 4-layer stack:
+        //   1. TR-808 drums (bd*4 + offbeat hh + clap on 2 & 4)
+        //   2. TB-303 bassline — sawtooth + envelope-modulated LPF (squelch)
+        //   3. Jupiter-8 lead — detuned saw + vibrato + reverb playing the raga
+        //   4. Pa+Sa drone (sustained sub-octave)
+        //
+        // Tempo: 120-135 BPM = cps 0.5-0.56 (one cycle = 4 beats = one bar).
+        let _dirtSamplesLoading = null;
+        async function ensureDirtSamples() {
+            if (_dirtSamplesLoading) return _dirtSamplesLoading;
+            _dirtSamplesLoading = (async () => {
+                await window.evaluate(`samples('github:tidalcycles/dirt-samples')`);
+                // Give the lazy-loader a moment to resolve at least the kit we use.
+                await new Promise(r => setTimeout(r, 1500));
+            })();
+            return _dirtSamplesLoading;
+        }
+
+        function buildAcidDrumPattern(intensity = 'med') {
+            // Returns the drums portion of the stack.
+            // Intensity controls density: low=just kick, med=kick+hh, high=add cp+oh
+            const kick = `s("bd*4").gain(0.75)`;
+            const hh   = `s("[~ hh]*4").gain(0.32)`;
+            const oh   = `s("~ ~ oh ~").gain(0.25)`;
+            const cp   = `s("~ cp").gain(0.4)`;  // backbeat (2 & 4)
+            if (intensity === 'low') return kick;
+            if (intensity === 'high') return `stack(${kick}, ${hh}, ${oh}, ${cp})`;
+            return `stack(${kick}, ${hh}, ${cp})`;  // med
+        }
+
+        function buildAcidBassline(arohanaHzs, opts = {}) {
+            // TB-303 bassline. We map the raga's 8 swaras (Sa..Sa') down an octave
+            // and walk through them as a 16-step bass pattern (one cycle = 16 16ths).
+            // Sa lands on every downbeat (steps 0, 4, 8, 12) for tonal anchor.
+            // Pattern: Sa [r] [r] [r] | Sa [r] [r] [r] | Sa [r] [r] [r] | Sa [r] [r] [r]
+            // Where [r] picks from arohana[1..7] in walking order.
+            const lowOct = arohanaHzs.map(hz => +(hz / 2).toFixed(3));  // sub-octave for bass
+            const sa = lowOct[0];
+            const walk = [lowOct[1], lowOct[2], lowOct[3], lowOct[2], lowOct[4], lowOct[5], lowOct[6], lowOct[1], lowOct[3]];
+            // 16 steps: Sa downbeat + 3 walking notes per beat × 4 beats
+            const steps = [];
+            for (let beat = 0; beat < 4; beat++) {
+                steps.push(sa);
+                for (let i = 0; i < 3; i++) steps.push(walk[(beat * 3 + i) % walk.length]);
+            }
+            const lpfBase = opts.lpfBase ?? 350;
+            const lpenv = opts.lpenv ?? 9;     // squelch amount (semitones-ish)
+            const lpd = opts.lpd ?? 0.18;
+            const accent = opts.accent ?? 'high';
+            // Accent every Sa (step 0,4,8,12) with extra envelope amount
+            // For now: single .gain() pattern with louder Sa
+            const gainPattern = steps.map((_, i) => (i % 4 === 0 ? '0.55' : '0.4')).join(' ');
+            return `freq("${steps.join(' ')}").s("sawtooth").lpf(${lpfBase}).lpenv(${lpenv}).lpa(0.005).lpd(${lpd}).lps(0).lpr(0.08).attack(0.001).decay(0.05).sustain(0.4).release(0.06).gain("${gainPattern}").detune(0)`;
+        }
+
+        function buildJupiterLead(arohanaHzs, opts = {}) {
+            // Detuned-saw lead playing one full ascent + descent per cycle.
+            // 8 ascending + 7 descending = 15 notes spread across one cycle.
+            const lead = [...arohanaHzs, ...arohanaHzs.slice(0, 7).reverse()];
+            const lpfSweep = opts.lpfSweep || '1200 1800 2400 1800';
+            const gain = opts.leadGain ?? 0.32;
+            // Note: octaved up one for "lead" register
+            const leadHz = lead.map(hz => +(hz * 2).toFixed(3));
+            return `freq("${leadHz.join(' ')}").s("sawtooth").detune(8).attack(0.05).decay(0.2).sustain(0.55).release(0.35).lpf("${lpfSweep}").lpq(1.2).vib(4.5).vibmod(15).room(0.55).gain(${gain})`;
+        }
+
+        function buildAcidDrone(rootHz, gain = 0.22) {
+            // Sustained Pa + Sa in the low register. Two notes stacked.
+            const pa = +(rootHz * (3/2) / 2).toFixed(3);
+            const sa = +(rootHz / 2).toFixed(3);
+            return `stack(freq("${sa}").s("sawtooth").attack(2).decay(1).sustain(1).release(4).lpf(700).lpq(0.5).detune(5).gain(${gain}), freq("${pa}").s("sawtooth").attack(2).decay(1).sustain(1).release(4).lpf(700).lpq(0.5).detune(7).gain(${gain * 0.85}))`;
+        }
+
+        // ── RITUAL composer (Charanjit-inspired, body-purpose-driven) ─────
+        // 4 sections played sequentially via cat() with each section
+        // lasting `sectionCycles` cycles. Total = 4 × sectionCycles cycles.
+        // At cps=0.4 and sectionCycles=8 → 32 cycles = 80 seconds.
+        //
+        // Layers fade in / out across sections:
+        //   intro:   drone + sparse lead with delay tail
+        //   swell:   + pad with LFO filter sweep + sliding bass + lead
+        //   peak:    + drums (evolving) + denser lead with probabilistic flourishes
+        //   release: drone + fading pad + occasional lead echoes
+        //
+        // Probabilistic transformations (.sometimesBy, .degradeBy) make every
+        // play slightly different — this is the difference between a recording
+        // and a ritual.
+
+        function _rrDrone(rootHz, gain = 0.18) {
+            const sa = +(rootHz / 2).toFixed(3);
+            const pa = +(rootHz * (3/2) / 2).toFixed(3);
+            return `stack(freq("${sa}").s("triangle").attack(4).decay(2).sustain(1).release(8).lpf(700).lpq(0.4).detune(5).gain(${gain}), freq("${pa}").s("triangle").attack(4).decay(2).sustain(1).release(8).lpf(700).lpq(0.4).detune(7).gain(${(gain*0.85).toFixed(3)}))`;
+        }
+
+        function _rrPad(arohanaHzs, opts = {}) {
+            // Sustained Sa+Ga+Pa middle-octave pad with breathing LPF sweep.
+            // arohanaHzs[0]=Sa, [2]=Ga, [4]=Pa — three "chord-like" tones (raga has no chords, but these imply harmony)
+            const sa = arohanaHzs[0];
+            const ga = arohanaHzs[2];
+            const pa = arohanaHzs[4];
+            const gain = opts.gain ?? 0.18;
+            const sweepLow  = opts.sweepLow  ?? 600;
+            const sweepHigh = opts.sweepHigh ?? 2200;
+            const sweepSlow = opts.sweepSlow ?? 16;
+            return `freq("${sa} ${ga} ${pa}").s("triangle").attack(3).decay(1).sustain(0.95).release(5).lpf(tri.range(${sweepLow},${sweepHigh}).slow(${sweepSlow})).lpq(0.5).room(0.7).detune(4).gain(${gain})`;
+        }
+
+        function _rrSlidingBass(arohanaHzs, opts = {}) {
+            // Bass that SLIDES between key swaras (Sa-Pa-Ga-Sa cycle), low octave.
+            // .slide chains pitch-glide between adjacent notes.
+            const sa = +(arohanaHzs[0] / 2).toFixed(3);
+            const pa = +(arohanaHzs[4] / 2).toFixed(3);
+            const ga = +(arohanaHzs[2] / 2).toFixed(3);
+            const ma = +(arohanaHzs[3] / 2).toFixed(3);
+            // 8-step pattern with rests for sparseness; slide fills the gaps
+            const seq = `${sa} ~ ${pa} ${ga} ~ ${ma} ${pa} ~`;
+            const gain = opts.gain ?? 0.32;
+            return `freq("${seq}").s("triangle").slide(0.6).lpf(700).lpq(0.7).attack(0.05).decay(0.2).sustain(0.6).release(0.4).room(0.4).gain(${gain})`;
+        }
+
+        function _rrLead(arohanaHzs, opts = {}) {
+            // Sparse melody — picks 4-5 swaras per cycle from the arohana,
+            // plays them with delay tail + room reverb + probabilistic flourishes.
+            // Lead is octaved up.
+            const lead = [arohanaHzs[0], arohanaHzs[2], arohanaHzs[4], arohanaHzs[6], arohanaHzs[7]];
+            const leadHz = lead.map(hz => +(hz * 2).toFixed(3));
+            const seq = leadHz.join(' ~ ');  // notes separated by rests
+            const gain = opts.gain ?? 0.28;
+            const degrade = opts.degrade ?? 0.3;
+            const flourishProb = opts.flourishProb ?? 0.18;
+            return `freq("${seq}").s("triangle").attack(0.04).decay(0.2).sustain(0.6).release(0.6).lpf(2200).lpq(0.6).delay(0.55).delaytime(0.375).delayfb(0.5).room(0.6).vib(3).vibmod(10).gain(${gain}).degradeBy(${degrade}).sometimesBy(${flourishProb}, x=>x.fast(2))`;
+        }
+
+        function _rrDrums(intensity = 'med', section = 'peak') {
+            // Drums only enter at swell+peak. Density scales by section.
+            if (section === 'intro' || section === 'release') {
+                return `s("bd ~ ~ ~").gain(0.4).degradeBy(0.5)`;  // sparse heartbeat
+            }
+            if (section === 'swell') {
+                return `stack(s("bd ~ bd ~").gain(0.55), s("[~ hh]*2").gain(0.2).degradeBy(0.3))`;
+            }
+            // peak
+            if (intensity === 'low')  return `s("bd*2").gain(0.55)`;
+            if (intensity === 'high') return `stack(s("bd*4").gain(0.7), s("[~ hh]*4").gain(0.32), s("~ cp").gain(0.4), s("~ ~ oh ~").gain(0.22))`;
+            return `stack(s("bd*4").gain(0.65), s("[~ hh]*4").gain(0.28), s("~ cp").gain(0.35))`;  // med
+        }
+
+        function composeRitual(opts) {
+            const { num, rootHz, cps = 0.4, sectionCycles = 8, intensity = 'med' } = opts;
+            const m = MELAKARTAS[num - 1];
+            const arohanaHzs = m.arohana.map(i => +(ratioOf(i) * rootHz).toFixed(4));
+
+            const drone = _rrDrone(rootHz);
+            const padFull   = _rrPad(arohanaHzs);
+            const padFaded  = _rrPad(arohanaHzs, { gain: 0.1, sweepHigh: 1400 });
+            const bass      = _rrSlidingBass(arohanaHzs);
+            const bassSparse = _rrSlidingBass(arohanaHzs, { gain: 0.18 });
+            const leadIntro   = _rrLead(arohanaHzs, { gain: 0.22, degrade: 0.55, flourishProb: 0.05 });
+            const leadSwell   = _rrLead(arohanaHzs, { gain: 0.28, degrade: 0.35, flourishProb: 0.15 });
+            const leadPeak    = _rrLead(arohanaHzs, { gain: 0.34, degrade: 0.18, flourishProb: 0.30 });
+            const leadRelease = _rrLead(arohanaHzs, { gain: 0.20, degrade: 0.65, flourishProb: 0.10 });
+            const drumsIntro   = _rrDrums(intensity, 'intro');
+            const drumsSwell   = _rrDrums(intensity, 'swell');
+            const drumsPeak    = _rrDrums(intensity, 'peak');
+            const drumsRelease = _rrDrums(intensity, 'release');
+
+            const sIntro   = `stack(${drone}, ${leadIntro}, ${drumsIntro})`;
+            const sSwell   = `stack(${drone}, ${padFull}, ${bassSparse}, ${leadSwell}, ${drumsSwell})`;
+            const sPeak    = `stack(${drone}, ${padFull}, ${bass}, ${leadPeak}, ${drumsPeak})`;
+            const sRelease = `stack(${drone}, ${padFaded}, ${leadRelease}, ${drumsRelease})`;
+
+            // cat(...) plays each pattern for ONE cycle. .slow(N) makes each
+            // last N cycles. So 4 sections × 8 cycles each = 32 cycles total.
+            const totalCycles = sectionCycles * 4;
+            const totalSec = +(totalCycles / cps).toFixed(0);
+            const code = `setcps(${cps}); cat(${sIntro}, ${sSwell}, ${sPeak}, ${sRelease}).slow(${sectionCycles})`;
+            return { code, mode: 'ritual', durationSec: totalSec, sections: ['intro','swell','peak','release'] };
+        }
+
+        function composeAcidClassical(opts) {
+            const { num, rootHz, cps = 0.55, intensity = 'med', leadGain = 0.32 } = opts;
+            const m = MELAKARTAS[num - 1];
+            const arohanaHzs = m.arohana.map(i => +(ratioOf(i) * rootHz).toFixed(4));
+            const drums = buildAcidDrumPattern(intensity);
+            const bass = buildAcidBassline(arohanaHzs);
+            const lead = buildJupiterLead(arohanaHzs, { leadGain });
+            const drone = buildAcidDrone(rootHz);
+            const code = `setcps(${cps}); stack(${drums}, ${drone}, ${bass}, ${lead})`;
+            return { code, mode: 'acid', durationSec: 0 };  // loops indefinitely
+        }
+
+        // ── Strudel loader ─────────────────────────────────────────────────
+        const setStatus = (msg, cls = '') => {
+            const el = document.getElementById('audioStatus');
+            el.textContent = msg;
+            el.className = 'audio-status ' + cls;
+        };
+        let strudelReady = null;
+        function loadStrudel() {
+            if (strudelReady) return strudelReady;
+            setStatus('⏳ Loading Strudel…');
+            strudelReady = new Promise((res, rej) => {
+                const s = document.createElement('script');
+                s.src = 'https://unpkg.com/@strudel/web@1.3.0';
+                s.onload = async () => {
+                    try { await window.initStrudel(); setStatus('🎵 Audio ready', 'ready'); res(); }
+                    catch (e) { rej(e); }
+                };
+                s.onerror = () => rej(new Error('CDN load failed'));
+                document.head.appendChild(s);
+            });
+            return strudelReady;
+        }
+
+        // ── Play handler ───────────────────────────────────────────────────
+        async function playRaga(num) {
+            await loadStrudel();
+            const opts = readControls();
+
+            // ── RITUAL MODE — sectional, probabilistic, body-purpose ────
+            if (opts.mode === 'ritual') {
+                setStatus('⏳ Loading drum samples (first time only)…');
+                try {
+                    await ensureDirtSamples();
+                } catch (e) {
+                    setStatus('Drum CDN failed: ' + e.message);
+                    return;
+                }
+                const cps = (opts.bpm ?? 96) / 60 / 4;  // 96 BPM default — slower than acid
+                const ritual = composeRitual({
+                    num,
+                    rootHz: opts.rootHz,
+                    cps,
+                    sectionCycles: opts.sectionCycles ?? 8,
+                    intensity: opts.intensity ?? 'med',
+                });
+                window.evaluate(ritual.code);
+                const m = MELAKARTAS[num - 1];
+                setStatus(`▶ #${num} ${m.name} · RITUAL · ~${ritual.durationSec}s · intro→swell→peak→release · ${opts.bpm ?? 96} BPM`, 'playing');
+                console.log('[RITUAL] code:', ritual.code);
+                return;
+            }
+
+            // ── ACID CLASSICAL MODE — Charanjit Singh 1982 stack ─────────
+            if (opts.mode === 'acid') {
+                setStatus('⏳ Loading drum samples (first time only)…');
+                try {
+                    await ensureDirtSamples();
+                } catch (e) {
+                    setStatus('Drum-sample CDN failed: ' + e.message);
+                    return;
+                }
+                const cps = (opts.bpm ?? 132) / 60 / 4;
+                const acid = composeAcidClassical({
+                    num,
+                    rootHz: opts.rootHz,
+                    cps,
+                    intensity: opts.intensity ?? 'med',
+                });
+                window.evaluate(acid.code);
+                const m = MELAKARTAS[num - 1];
+                setStatus(`▶ #${num} ${m.name} · ACID CLASSICAL · ${opts.bpm ?? 132} BPM · ${opts.intensity ?? 'med'} drums`, 'playing');
+                console.log('[ACID] code:', acid.code);
+                return;
+            }
+
+            const { code, hzs, durationSec, mode } = composeRaaga({ num, ...opts });
+            const wantsTanpura = opts.tanpura || mode === 'alaap';
+            let finalCode = code;
+            if (wantsTanpura) {
+                const ragaPattern = code.replace(/^setcps\([\d.]+\);\s*/, '');
+                const tanpuraPattern = buildTanpuraCode(opts.rootHz)
+                    .replace(/^setcps\([\d.]+\);\s*/, '');
+                const cpsMatch = code.match(/setcps\(([\d.]+)\)/);
+                const cps = cpsMatch ? cpsMatch[1] : '0.5';
+                finalCode = `setcps(${cps}); stack(${ragaPattern}, ${tanpuraPattern})`;
+            }
+
+            window.evaluate(finalCode);
+
+            const m = MELAKARTAS[num - 1];
+            let tag;
+            if (mode === 'alaap') {
+                tag = `ALAAP · ${opts.alaapPhases.join('→')} · ${opts.timbre} · tanpura · ~${Math.round(durationSec)}s`;
+            } else if (mode === 'palta') {
+                tag = `PALTA · ${opts.palta} · ${opts.timbre} · ${opts.defaultGamaka}${opts.tanpura ? ' · tanpura' : ''}`;
+            } else {
+                tag = `${opts.timbre} · ${opts.defaultGamaka} · ${opts.tala || 'free'} · ${opts.breath || 'default cps'}${opts.tanpura ? ' · tanpura' : ''}`;
+            }
+            setStatus(`▶ #${num} ${m.name} · ${tag}`, 'playing');
+            console.log('[V2.5] code:', finalCode);
+        }
+
+        // ── Download handler ───────────────────────────────────────────────
+        async function downloadRaga(num) {
+            const opts = readControls();
+            const m = MELAKARTAS[num - 1];
+            const aroha = m.arohana.map(ratioOf);
+            const avaro = m.avarohana.map(ratioOf);
+            const ratios = [...aroha, ...avaro.slice(1)];
+            const hzs = ratios.map(r => +(r * opts.rootHz).toFixed(4));
+            const sampleRate = 48000;
+            const slotSec = 1.0;
+            const totalSec = hzs.length * slotSec;
+            const t = TIMBRES[opts.timbre];
+            const ctx = new OfflineAudioContext({ numberOfChannels: 2, length: Math.ceil(totalSec * sampleRate), sampleRate });
+            for (let i = 0; i < hzs.length; i++) {
+                const osc = ctx.createOscillator();
+                // Render whatever waveform the chosen timbre uses (sine/triangle).
+                osc.type = ['sine','triangle','sawtooth','square'].includes(t.sound) ? t.sound : 'sine';
+                osc.frequency.setValueAtTime(hzs[i], i * slotSec);
+                const gain = ctx.createGain();
+                const t0 = i * slotSec;
+                // Clamp envelope timings so attack+decay+release ≤ slotSec.
+                // Otherwise we get negative time → setValueAtTime crash.
+                const att = Math.min(t.attack, slotSec * 0.2);
+                const dec = Math.min(t.decay,  slotSec * 0.2);
+                const rel = Math.min(t.release, slotSec * 0.4);
+                const sustainEnd = Math.max(t0 + att + dec, t0 + slotSec - rel);
+                gain.gain.setValueAtTime(0, t0);
+                gain.gain.linearRampToValueAtTime(t.gain, t0 + att);
+                gain.gain.linearRampToValueAtTime(t.gain * t.sustain, t0 + att + dec);
+                gain.gain.setValueAtTime(t.gain * t.sustain, sustainEnd);
+                gain.gain.linearRampToValueAtTime(0, t0 + slotSec);
+                // Optional LPF for the offline render too
+                let lastNode = gain;
+                if (t.lpf) {
+                    const filter = ctx.createBiquadFilter();
+                    filter.type = 'lowpass';
+                    filter.frequency.value = t.lpf;
+                    filter.Q.value = t.lpq ?? 0.7;
+                    gain.connect(filter);
+                    lastNode = filter;
+                }
+                lastNode.connect(ctx.destination);
+                osc.connect(gain);
+                osc.start(t0);
+                osc.stop(t0 + slotSec);
+            }
+            const buf = await ctx.startRendering();
+            const wav = encodeWav(buf, sampleRate);
+            const blob = new Blob([wav], { type: 'audio/wav' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `${m.name}-${opts.timbre}.wav`;
+            a.click();
+            URL.revokeObjectURL(a.href);
+            setStatus(`⬇ Downloaded ${m.name}.wav`, 'ready');
+        }
+
+        // ── WAV encoder ────────────────────────────────────────────────────
+        function encodeWav(buffer, sampleRate) {
+            const ch0 = buffer.getChannelData(0);
+            const ch1 = buffer.numberOfChannels > 1 ? buffer.getChannelData(1) : ch0;
+            const N = ch0.length;
+            const bytesPerSample = 2;
+            const dataSize = N * 2 * bytesPerSample;
+            const ab = new ArrayBuffer(44 + dataSize);
+            const v = new DataView(ab);
+            const ws = (off, s) => { for (let i = 0; i < s.length; i++) v.setUint8(off + i, s.charCodeAt(i)); };
+            ws(0, 'RIFF'); v.setUint32(4, 36 + dataSize, true); ws(8, 'WAVE');
+            ws(12, 'fmt '); v.setUint32(16, 16, true); v.setUint16(20, 1, true);
+            v.setUint16(22, 2, true); v.setUint32(24, sampleRate, true);
+            v.setUint32(28, sampleRate * 4, true); v.setUint16(32, 4, true); v.setUint16(34, 16, true);
+            ws(36, 'data'); v.setUint32(40, dataSize, true);
+            let off = 44;
+            for (let i = 0; i < N; i++) {
+                for (const ch of [ch0, ch1]) {
+                    const s = Math.max(-1, Math.min(1, ch[i]));
+                    v.setInt16(off, s < 0 ? s * 0x8000 : s * 0x7fff, true);
+                    off += 2;
+                }
+            }
+            return ab;
+        }
+
+        function readControls() {
+            const phaseSelVal = document.getElementById('alaapPhasesSel')?.value || 'all';
+            const phaseMap = {
+                'all': ['vilambit', 'madhya', 'drut'],
+                'vilambit': ['vilambit'],
+                'madhya': ['madhya'],
+                'drut': ['drut'],
+                'vilambit-madhya': ['vilambit', 'madhya'],
+            };
+            return {
+                rootHz: parseInt(document.getElementById('rootHz').value, 10),
+                timbre: document.getElementById('timbreSel').value,
+                defaultGamaka: document.getElementById('gamakaSel').value,
+                tala: document.getElementById('talaSel').value || null,
+                breath: document.getElementById('breathSel').value || null,
+                useMaya: document.getElementById('useMaya').checked,
+                tanpura: document.getElementById('tanpuraTog').checked,
+                mode: document.getElementById('modeSel')?.value || 'standard',
+                palta: document.getElementById('paltaSel')?.value || 'sarali',
+                alaapPhases: phaseMap[phaseSelVal] || phaseMap['all'],
+                bpm: parseInt(document.getElementById('bpmSlider')?.value || '132', 10),
+                intensity: document.getElementById('intensitySel')?.value || 'med',
+                sectionCycles: parseInt(document.getElementById('sectionCyclesSel')?.value || '8', 10),
+            };
+        }
+
+        async function stopAll() {
+            if (!strudelReady) return;
+            try { window.hush(); } catch {}
+            setStatus('Stopped', 'ready');
+            document.querySelectorAll('.play-btn.playing').forEach(b => b.classList.remove('playing'));
+        }
+
+        // ── Render raga grid ───────────────────────────────────────────────
+        function renderGrid() {
+            const grid = document.getElementById('ragaGrid');
+            // Show 12 representative ragas (one per chakra, the first of each)
+            const featured = [1, 7, 13, 19, 25, 31, 37, 43, 49, 55, 61, 67];
+            // Plus 5 canonical + 4 ritual/acid preset targets (#26 Charukeshi, #28 Harikambhoji,
+            // #44 Bhavapriya, #68 Jyotisvarupini)
+            const canonical = [15, 8, 22, 29, 65];
+            const presetExtras = [26, 28, 44, 68];
+            const nums = [...new Set([...canonical, ...featured, ...presetExtras])].sort((a,b)=>a-b);
+            grid.innerHTML = nums.map(num => {
+                const m = MELAKARTAS[num-1];
+                const isCanon = canonical.includes(num);
+                return `
+                    <div class="raga-card" style="${isCanon ? 'border-left-color: #ff6b35;' : ''}">
+                        <div class="row">
+                            <div>
+                                <div class="name">#${num} ${m.name}</div>
+                                <div class="meta">${isCanon ? '★ canonical · ' : ''}chakra ${Math.floor((num-1)/6)+1}</div>
+                            </div>
+                            <div style="display: flex; gap: 0.3rem;">
+                                <button class="play-btn" data-action="play" data-num="${num}" title="Play">▶</button>
+                                <button class="dl-btn" data-action="dl" data-num="${num}" title="Download WAV">⬇</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        document.body.addEventListener('click', async (e) => {
+            const btn = e.target.closest('button[data-action]');
+            if (!btn) return;
+            const num = parseInt(btn.dataset.num, 10);
+            const action = btn.dataset.action;
+            document.querySelectorAll('.play-btn.playing').forEach(b => b.classList.remove('playing'));
+            try {
+                if (action === 'play') {
+                    btn.classList.add('playing');
+                    await playRaga(num);
+                } else if (action === 'dl') {
+                    setStatus(`⏳ Rendering ${MELAKARTAS[num-1].name}…`);
+                    await downloadRaga(num);
+                }
+            } catch (err) {
+                setStatus(`Audio error: ${err.message}`);
+                console.error(err);
+            }
+        });
+        document.getElementById('stopBtn').addEventListener('click', stopAll);
+
+        // Ritual presets (T-054 + v2.5 alaap/palta entries)
+        // All presets use synth voices so they sound immediately without
+        // requiring sample-pack download.
+        // All presets use classical-feel synth voices (triangle/sine).
+        const PRESETS = {
+            'morning-maya':         { num: 15, mode:'standard', timbre:'bansuri', gamaka:'kampita',  tala:'adi',          breath:'',          useMaya:true,  desc:'Mayamalavagaula at brahma muhurta · bansuri flute' },
+            'evening-bhairavi':     { num: 8,  mode:'standard', timbre:'sarangi', gamaka:'andolana', tala:'misra-chapu',  breath:'brahmari',  useMaya:false, desc:'Hanumatodi (Bhairavi) · bowed sarangi' },
+            'sankarabharanam-bright':{num: 29, mode:'standard', timbre:'shehnai', gamaka:'nokku',    tala:'adi',          breath:'ujjayi',    useMaya:false, desc:'Major-scale equivalent · reedy shehnai' },
+            'kalyani-devotional':   { num: 65, mode:'standard', timbre:'voice',   gamaka:'sphurita', tala:'rupakam',      breath:'ujjayi',    useMaya:false, desc:'Lydian with tivra Ma · vocal' },
+            'kharaharapriya-flow':  { num: 22, mode:'standard', timbre:'sarangi', gamaka:'kurula',   tala:'adi',          breath:'',          useMaya:false, desc:'Dorian-equivalent flow · sarangi' },
+            'bhastrika-fire':       { num: 15, mode:'standard', timbre:'pluck',   gamaka:'kampita',  tala:'adi',          breath:'bhastrika', useMaya:true,  desc:'Fire activation · sharp pluck' },
+            'alaap-maya':           { num: 15, mode:'alaap',    timbre:'bansuri', gamaka:'andolana', tala:'',             breath:'',          useMaya:false, alaapPhases:'all',             desc:'Mayamalavagaula meditation · bansuri (all 3 phases)' },
+            'alaap-kalyani-pad':    { num: 65, mode:'alaap',    timbre:'voice',   gamaka:'andolana', tala:'',             breath:'',          useMaya:false, alaapPhases:'vilambit-madhya', desc:'Kalyani ambient · vocal pad' },
+            'palta-sarali-saw':     { num: 29, mode:'palta',    timbre:'veena',   gamaka:'kampita',  tala:'',             breath:'',          useMaya:false, palta:'sarali',                desc:'Sarali Varisai on Sankarabharanam · veena' },
+            'palta-jantai-pluck':   { num: 65, mode:'palta',    timbre:'pluck',   gamaka:'sphurita', tala:'',             breath:'',          useMaya:false, palta:'jantai',                desc:'Jantai paired · pluck' },
+
+            // ⚡ Acid Classical (Charanjit Singh, 1982 — TR-808 + TB-303 + Jupiter-8)
+            'acid-yaman':       { num: 65, mode:'acid', bpm: 132, intensity: 'med',  desc:'Raga Yaman (Kalyani) — Lydian acid' },
+            'acid-bhairavi':    { num: 8,  mode:'acid', bpm: 124, intensity: 'med',  desc:'Raga Bhairavi (Hanumatodi) — brooding minor acid' },
+            'acid-megh':        { num: 22, mode:'acid', bpm: 128, intensity: 'high', desc:'Raga Megh (Kharaharapriya) — monsoon Dorian' },
+            'acid-kalavati':    { num: 28, mode:'acid', bpm: 130, intensity: 'med',  desc:'Raga Kalavati (Harikambhoji) — bright pentatonic' },
+            'acid-lalit':       { num: 15, mode:'acid', bpm: 120, intensity: 'low',  desc:'Raga Lalit (Mayamalavagaula) — devotional, sparse drums' },
+            'acid-charukeshi':  { num: 26, mode:'acid', bpm: 134, intensity: 'high', desc:'Raga Charukeshi — hypnotic acid lifter' },
+
+            // ✦ Ritual (sectional, evolving — body-purpose-driven)
+            'ritual-feet':   { num: 1,  mode:'ritual', bpm: 88,  intensity: 'low',  sectionCycles: 8,  desc:'Earth-foundation · Kanakangi · feet/Indu chakra · slow grounding' },
+            'ritual-heart':  { num: 44, mode:'ritual', bpm: 96,  intensity: 'med',  sectionCycles: 8,  desc:'Heart-opening · Bhavapriya · Vasu chakra · evening warmth' },
+            'ritual-throat': { num: 61, mode:'ritual', bpm: 100, intensity: 'med',  sectionCycles: 8,  desc:'Throat-clarity · Kantamani · Rudra chakra · expression unlock' },
+            'ritual-crown':  { num: 68, mode:'ritual', bpm: 92,  intensity: 'low',  sectionCycles: 10, desc:'Crown-light · Jyotisvarupini · Aditya chakra · luminous, sparse' },
+            'ritual-fire':   { num: 15, mode:'ritual', bpm: 108, intensity: 'high', sectionCycles: 6,  desc:'Fire-activation · Mayamalavagaula · solar plexus · denser drums, faster build' },
+        };
+        const presetSel = document.getElementById('presetSel');
+        if (presetSel) {
+            presetSel.addEventListener('change', async () => {
+                const k = presetSel.value;
+                if (!k || !PRESETS[k]) return;
+                const p = PRESETS[k];
+                document.getElementById('modeSel').value = p.mode;
+                if (p.timbre) document.getElementById('timbreSel').value = p.timbre;
+                if (p.gamaka) document.getElementById('gamakaSel').value = p.gamaka;
+                document.getElementById('talaSel').value = p.tala || '';
+                document.getElementById('breathSel').value = p.breath || '';
+                if (p.useMaya != null) document.getElementById('useMaya').checked = p.useMaya;
+                if (p.palta) document.getElementById('paltaSel').value = p.palta;
+                if (p.alaapPhases) document.getElementById('alaapPhasesSel').value = p.alaapPhases;
+                if (p.bpm) {
+                    document.getElementById('bpmSlider').value = p.bpm;
+                    document.getElementById('bpmDisplay').textContent = p.bpm + ' BPM';
+                }
+                if (p.intensity) document.getElementById('intensitySel').value = p.intensity;
+                if (p.sectionCycles) document.getElementById('sectionCyclesSel').value = String(p.sectionCycles);
+                setStatus(`Preset → ${p.desc} · click ▶ on the highlighted raga`, 'ready');
+                document.querySelectorAll('.raga-card').forEach(c => c.style.outline = '');
+                const card = document.querySelector(`.raga-card button[data-num="${p.num}"]`)?.closest('.raga-card');
+                if (card) card.style.outline = '2px solid #ff6b35';
+            });
+        }
+
+        renderGrid();
+
+        // BPM slider live display
+        const bpmSlider = document.getElementById('bpmSlider');
+        const bpmDisplay = document.getElementById('bpmDisplay');
+        if (bpmSlider && bpmDisplay) {
+            bpmSlider.addEventListener('input', () => {
+                bpmDisplay.textContent = bpmSlider.value + ' BPM';
+            });
+        }
+
+        // ── Audio diagnostic — bypasses Strudel entirely so we can prove
+        //     the user's browser/output device works regardless of Strudel state. ──
+        function updateAudioDiag() {
+            const el = document.getElementById('audioDiag');
+            if (!el) return;
+            try {
+                const ac = window.getAudioContext?.();
+                if (!ac) {
+                    el.textContent = 'audio: Strudel not loaded yet';
+                    return;
+                }
+                el.textContent = `audio: ctx=${ac.state} · sr=${ac.sampleRate}Hz · t=${ac.currentTime.toFixed(1)}s`;
+                el.style.color = ac.state === 'running' ? '#81c784' : '#e57373';
+            } catch (e) { el.textContent = 'audio: ' + e.message; }
+        }
+        setInterval(updateAudioDiag, 500);
+
+        document.getElementById('audioTestBtn')?.addEventListener('click', async () => {
+            // Use raw WebAudio — guaranteed to make a sound if user's output works.
+            try {
+                const AC = window.AudioContext || window.webkitAudioContext;
+                const ctx = new AC();
+                if (ctx.state === 'suspended') await ctx.resume();
+                const osc = ctx.createOscillator();
+                osc.type = 'sine';
+                osc.frequency.value = 440;
+                const g = ctx.createGain();
+                g.gain.setValueAtTime(0, ctx.currentTime);
+                g.gain.linearRampToValueAtTime(0.3, ctx.currentTime + 0.05);
+                g.gain.setValueAtTime(0.3, ctx.currentTime + 1.95);
+                g.gain.linearRampToValueAtTime(0, ctx.currentTime + 2.0);
+                osc.connect(g).connect(ctx.destination);
+                osc.start();
+                osc.stop(ctx.currentTime + 2.05);
+                setStatus(`🔊 Playing 440Hz test tone (2s) · ctx=${ctx.state} · sr=${ctx.sampleRate}Hz`, 'playing');
+                setTimeout(() => setStatus('Test complete — if you heard nothing, check OS volume / output device / tab mute', 'ready'), 2200);
+            } catch (e) {
+                setStatus(`Audio test FAILED: ${e.message}`, '');
+            }
+        });
+
+        // T-074: AudioContext auto-resume when tab regains focus
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden && typeof window.getAudioContext === 'function') {
+                try {
+                    const ac = window.getAudioContext();
+                    if (ac.state === 'suspended') ac.resume();
+                } catch {}
+            }
+        });
+
+        window.NadashaktiV2 = {
+            composeRaaga, playRaga, buildTanpuraCode,
+            MELAKARTAS, GAMAKAS, TIMBRES, TALAS, BREATHS,
+            PALTAS, ALAAP_PHASES, ALAAP_PHRASES, renderAlaap,
+            // Acid Classical (Charanjit Singh palette)
+            composeAcidClassical, ensureDirtSamples,
+            buildAcidDrumPattern, buildAcidBassline, buildJupiterLead, buildAcidDrone,
+            // Ritual mode (sectional, evolving)
+            composeRitual,
+        };
+    </script>
+</body>
+</html>
