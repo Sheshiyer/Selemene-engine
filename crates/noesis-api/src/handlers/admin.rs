@@ -1528,7 +1528,7 @@ pub async fn create_api_key(
             .unwrap_or_else(|| default_rate_limit_for_tier(&tier));
         // Enforce sane bounds: 0 disables rate limiting (allowed for enterprise),
         // 100_000 is a hard ceiling to prevent runaway values.
-        if rl < 0 || rl > 100_000 {
+        if !(0..=100_000).contains(&rl) {
             return Ok(json_error_response(
                 StatusCode::UNPROCESSABLE_ENTITY,
                 format!("rate_limit must be between 0 and 100000, got {rl}"),

@@ -225,7 +225,7 @@ pub async fn get_my_usage(
 impl UpdateUserRequest {
     fn validate(&self) -> Result<(), EngineError> {
         if let Some(date) = self.birth_date {
-            if date.year() < 1000 || date.year() > 3000 {
+            if !(1000..=3000).contains(&date.year()) {
                 return Err(EngineError::ValidationError(format!(
                     "Birth year {} out of supported range (1000-3000)",
                     date.year()
