@@ -6,6 +6,11 @@ import NavBar from "@/components/NavBar";
 import BirthDataForm from "@/components/BirthDataForm";
 import WitnessLayer from "@/components/WitnessLayer";
 import EngineCard from "@/components/EngineCard";
+import CalculationLoader from "@/components/CalculationLoader";
+import CompassSelector, {
+  type CompassMode,
+} from "@/components/CompassSelector";
+import EngineGrid, { type EngineGridItem } from "@/components/EngineGrid";
 import { getApiKey, isAuthenticated } from "@/lib/auth";
 import {
   executeWorkflow,
@@ -58,8 +63,144 @@ const ENGINE_IDS = [
 
 type EngineId = (typeof ENGINE_IDS)[number];
 
+const ENGINE_META: Record<EngineId, EngineGridItem> = {
+  panchanga: {
+    id: "panchanga",
+    label: "Panchanga",
+    sigil: "☽",
+    direction: "stabilize",
+  },
+  "human-design": {
+    id: "human-design",
+    label: "Human Design",
+    sigil: "⬡",
+    direction: "mutate",
+  },
+  "gene-keys": {
+    id: "gene-keys",
+    label: "Gene Keys",
+    sigil: "✦",
+    direction: "mutate",
+  },
+  vimshottari: {
+    id: "vimshottari",
+    label: "Vimshottari",
+    sigil: "◌",
+    direction: "stabilize",
+  },
+  numerology: {
+    id: "numerology",
+    label: "Numerology",
+    sigil: "9",
+    direction: "mutate",
+  },
+  biorhythm: {
+    id: "biorhythm",
+    label: "Biorhythm",
+    sigil: "∞",
+    direction: "heal",
+  },
+  "vedic-clock": {
+    id: "vedic-clock",
+    label: "Vedic Clock",
+    sigil: "◷",
+    direction: "heal",
+  },
+  transits: {
+    id: "transits",
+    label: "Transits",
+    sigil: "☍",
+    direction: "stabilize",
+  },
+  biofield: {
+    id: "biofield",
+    label: "Biofield",
+    sigil: "◎",
+    direction: "heal",
+  },
+  tarot: {
+    id: "tarot",
+    label: "Tarot",
+    sigil: "▯",
+    direction: "mutate",
+  },
+  "i-ching": {
+    id: "i-ching",
+    label: "I-Ching",
+    sigil: "☷",
+    direction: "mutate",
+  },
+  "sacred-geometry": {
+    id: "sacred-geometry",
+    label: "Sacred Geometry",
+    sigil: "✺",
+    direction: "create",
+  },
+  "sigil-forge": {
+    id: "sigil-forge",
+    label: "Sigil Forge",
+    sigil: "⌁",
+    direction: "create",
+  },
+  enneagram: {
+    id: "enneagram",
+    label: "Enneagram",
+    sigil: "✶",
+    direction: "mutate",
+  },
+  nadabrahman: {
+    id: "nadabrahman",
+    label: "Nadabrahman",
+    sigil: "ॐ",
+    direction: "create",
+  },
+  "face-reading": {
+    id: "face-reading",
+    label: "Face Reading",
+    sigil: "◉",
+    direction: "mutate",
+  },
+  raaga: {
+    id: "raaga",
+    label: "Raaga",
+    sigil: "♪",
+    direction: "create",
+  },
+};
+
+const COMPASS_WORKFLOWS: Record<
+  CompassMode,
+  { label: string; workflowId: string; engineIds: EngineId[] }
+> = {
+  "full-spectrum": {
+    label: "Full Spectrum",
+    workflowId: "full-spectrum",
+    engineIds: [...ENGINE_IDS],
+  },
+  stabilize: {
+    label: "Stabilize",
+    workflowId: "daily-practice",
+    engineIds: ["panchanga", "vedic-clock", "biorhythm", "transits", "nadabrahman"],
+  },
+  heal: {
+    label: "Heal",
+    workflowId: "self-inquiry",
+    engineIds: ["gene-keys", "enneagram", "face-reading", "biofield"],
+  },
+  create: {
+    label: "Create",
+    workflowId: "creative-expression",
+    engineIds: ["sigil-forge", "sacred-geometry", "nadabrahman", "numerology", "raaga"],
+  },
+  mutate: {
+    label: "Mutate",
+    workflowId: "decision-support",
+    engineIds: ["tarot", "i-ching", "human-design", "enneagram", "gene-keys"],
+  },
+};
+
 function engineLabel(id: string): string {
-  return id
+  return ENGINE_META[id as EngineId]?.label ?? id
     .split("-")
     .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
     .join(" ");
@@ -127,37 +268,17 @@ const s = {
   },
   heading: {
     fontFamily: "var(--font-display)",
-    fontSize: "1.5rem",
+    fontSize: "1.75rem",
     fontWeight: 800,
-    color: "var(--text)",
+    color: "var(--signal)",
+    letterSpacing: "0.06em",
   },
-  tabBar: {
-    display: "flex",
-    gap: "0.25rem",
-    overflowX: "auto" as const,
-    padding: "0.25rem 0",
-    borderBottom: "1px solid var(--line)",
-  },
-  tab: {
-    padding: "0.5rem 0.75rem",
-    fontSize: "0.8rem",
-    fontWeight: 500,
-    color: "var(--text-muted)",
-    borderRadius: "var(--radius) var(--radius) 0 0",
-    whiteSpace: "nowrap" as const,
-    cursor: "pointer",
-    border: "none",
-    background: "transparent",
-    transition: "all 0.15s",
-    fontFamily: "var(--font-body)",
-  },
-  tabActive: {
-    background: "var(--gold-soft)",
-    color: "var(--gold)",
-    borderBottom: "2px solid var(--gold)",
-  },
-  tabHasData: {
-    color: "var(--text)",
+  intro: {
+    maxWidth: 680,
+    color: "var(--text-2)",
+    fontSize: "0.95rem",
+    lineHeight: 1.7,
+    marginTop: "-0.75rem",
   },
   errorBox: {
     padding: "1rem",
@@ -167,19 +288,47 @@ const s = {
     color: "var(--danger)",
     fontSize: "0.9rem",
   },
-  loadingPulse: {
-    color: "var(--text-muted)",
-    fontSize: "0.9rem",
-    fontStyle: "italic",
-    textAlign: "center" as const,
-    padding: "2rem 0",
-  },
   meta: {
     display: "flex",
+    flexWrap: "wrap" as const,
     gap: "1rem",
     fontSize: "0.8rem",
     color: "var(--text-muted)",
     fontFamily: "var(--font-mono)",
+  },
+  resultShell: {
+    display: "flex",
+    flexDirection: "column" as const,
+    gap: "1rem",
+  },
+  synthesisButton: {
+    width: "fit-content",
+    padding: "0.625rem 0.875rem",
+    borderRadius: "var(--r-sm)",
+    border: "1px solid var(--line-mid)",
+    background: "rgba(11,80,251,0.05)",
+    color: "var(--text-2)",
+    fontFamily: "var(--font-mono)",
+    fontSize: "0.72rem",
+    letterSpacing: "0.08em",
+    textTransform: "uppercase" as const,
+    transition: "border-color 0.18s, color 0.18s, box-shadow 0.18s",
+  },
+  synthesisButtonActive: {
+    borderColor: "rgba(197,160,23,0.45)",
+    color: "var(--signal)",
+    boxShadow: "var(--glow-gold)",
+  },
+  emptyState: {
+    padding: "2rem",
+    border: "1px solid var(--line-mid)",
+    borderRadius: "var(--r-md)",
+    background:
+      "radial-gradient(circle at 50% 0%, rgba(197,160,23,0.08), transparent 40%), var(--panel)",
+    color: "var(--text-dim)",
+    textAlign: "center" as const,
+    fontSize: "0.9rem",
+    lineHeight: 1.6,
   },
 };
 
@@ -191,6 +340,8 @@ export default function EnginesPage() {
   const [error, setError] = useState<string | null>(null);
   const [response, setResponse] = useState<WorkflowResponse | null>(null);
   const [activeTab, setActiveTab] = useState<string>("witness");
+  const [selectedCompass, setSelectedCompass] =
+    useState<CompassMode>("full-spectrum");
   const [lastBirthData, setLastBirthData] = useState<Partial<BirthData> | undefined>(undefined);
 
   useEffect(() => {
@@ -214,6 +365,19 @@ export default function EnginesPage() {
   for (const [id, o] of Object.entries(outputsMap)) {
     engineMap.set(id, o);
   }
+  const selectedWorkflow = COMPASS_WORKFLOWS[selectedCompass];
+  const selectedGridEngines = selectedWorkflow.engineIds.map((id) => ENGINE_META[id]);
+  const selectedEngineLabels = selectedWorkflow.engineIds.map((id) =>
+    ENGINE_META[id].label.toLowerCase(),
+  );
+  const availableEngineIds = new Set(engineMap.keys());
+
+  const handleCompassSelect = (mode: CompassMode) => {
+    setSelectedCompass(mode);
+    setActiveTab("witness");
+    setResponse(null);
+    setError(null);
+  };
 
   const handleSubmit = useCallback(async (birthData: BirthData) => {
     const key = getApiKey();
@@ -226,7 +390,7 @@ export default function EnginesPage() {
     setResponse(null);
     setActiveTab("witness");
     try {
-      const res = await executeWorkflow("full-spectrum", birthData, key);
+      const res = await executeWorkflow(selectedWorkflow.workflowId, birthData, key);
       setResponse(res);
     } catch (err: unknown) {
       if (err instanceof Error) {
@@ -237,21 +401,31 @@ export default function EnginesPage() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [selectedWorkflow.workflowId]);
 
   return (
     <div style={s.page}>
       <NavBar />
       <main style={s.content}>
         <h1 style={s.heading}>Full-Spectrum Analysis</h1>
+        <p style={s.intro}>
+          Choose a compass direction before calculation. Full Spectrum keeps the
+          complete 17-engine mandala; directional modes focus the workflow into
+          a ritual arc.
+        </p>
+        <CompassSelector
+          selected={selectedCompass}
+          onSelect={handleCompassSelect}
+        />
         <BirthDataForm onSubmit={handleSubmit} loading={loading} initialData={lastBirthData} />
 
         {error && <div style={s.errorBox}>{error}</div>}
 
         {loading && (
-          <p style={s.loadingPulse}>
-            Running all 16 engines… this may take a moment.
-          </p>
+          <CalculationLoader
+            engineLabels={selectedEngineLabels}
+            modeLabel={selectedWorkflow.label}
+          />
         )}
 
         {response && (
@@ -266,33 +440,22 @@ export default function EnginesPage() {
               </div>
             )}
 
-            {/* Tab bar */}
-            <div style={s.tabBar}>
+            <div style={s.resultShell}>
               <button
                 style={{
-                  ...s.tab,
-                  ...(activeTab === "witness" ? s.tabActive : {}),
+                  ...s.synthesisButton,
+                  ...(activeTab === "witness" ? s.synthesisButtonActive : {}),
                 }}
                 onClick={() => setActiveTab("witness")}
               >
                 ◈ Synthesis
               </button>
-              {ENGINE_IDS.map((id) => {
-                const has = engineMap.has(id);
-                return (
-                  <button
-                    key={id}
-                    style={{
-                      ...s.tab,
-                      ...(activeTab === id ? s.tabActive : {}),
-                      ...(has && activeTab !== id ? s.tabHasData : {}),
-                    }}
-                    onClick={() => setActiveTab(id)}
-                  >
-                    {engineLabel(id)}
-                  </button>
-                );
-              })}
+              <EngineGrid
+                engines={selectedGridEngines}
+                activeEngineId={activeTab}
+                availableEngineIds={availableEngineIds}
+                onSelect={setActiveTab}
+              />
             </div>
 
             {/* Active content */}
@@ -313,7 +476,7 @@ export default function EnginesPage() {
                     name={engineLabel(activeTab)}
                     status="idle"
                   >
-                    <p style={{ color: "var(--text-dim)", fontSize: "0.9rem" }}>
+                    <p style={{ color: "var(--text-dim)", fontSize: "0.9rem", lineHeight: 1.6 }}>
                       No data returned for this engine.
                     </p>
                   </EngineCard>
@@ -332,15 +495,9 @@ export default function EnginesPage() {
         )}
 
         {!response && !loading && !error && (
-          <p
-            style={{
-              color: "var(--text-dim)",
-              textAlign: "center",
-              padding: "3rem 0",
-              fontSize: "0.95rem",
-            }}
-          >
-            Enter your birth data above and run the full-spectrum analysis.
+          <p style={s.emptyState}>
+            ◈ Enter your birth data above and run the{" "}
+            {selectedWorkflow.label.toLowerCase()} calculation.
           </p>
         )}
       </main>

@@ -244,6 +244,16 @@ code, .mono, pre {
   100% { transform: translate(0, 0); }
 }
 
+@keyframes sigilDraw {
+  from { stroke-dashoffset: 480; opacity: 0.2; }
+  to   { stroke-dashoffset: 0;   opacity: 1; }
+}
+
+@keyframes loaderCorePulse {
+  0%, 100% { opacity: 0.45; filter: drop-shadow(0 0 4px rgba(16,181,167,0.3)); }
+  50%      { opacity: 1;    filter: drop-shadow(0 0 14px rgba(16,181,167,0.75)); }
+}
+
 /* Respect reduced motion */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
@@ -276,6 +286,32 @@ code, .mono, pre {
 
 .animate-grow-in  { animation: growIn 0.4s var(--ease-out-expo) both; }
 .animate-slide-up { animation: slideUp 0.4s var(--ease-out-expo) both; }
+
+.engine-icon-grid {
+  grid-template-columns: repeat(5, 80px);
+  justify-content: start;
+}
+
+@media (max-width: 540px) {
+  .engine-icon-grid {
+    grid-template-columns: repeat(3, 80px);
+    justify-content: center;
+  }
+}
+
+.sigil-path {
+  stroke-dasharray: 480;
+  stroke-dashoffset: 480;
+  animation: sigilDraw 3s var(--ease-out-expo) infinite;
+}
+
+.sigil-path-delay-1 { animation-delay: 160ms; }
+.sigil-path-delay-2 { animation-delay: 320ms; }
+.sigil-path-delay-3 { animation-delay: 480ms; }
+
+.loader-core {
+  animation: loaderCorePulse 1.8s ease-in-out infinite;
+}
 
 /* Ba Arc CTA button — the primary action element */
 .btn-ba {
