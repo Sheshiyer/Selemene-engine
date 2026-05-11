@@ -27,7 +27,7 @@ const s = {
     textAlign: "center" as const,
   },
   logo: {
-    fontFamily: "'Exo 2', sans-serif",
+    fontFamily: "var(--font-display)",
     fontSize: "2rem",
     fontWeight: 800,
     color: "var(--gold)",
