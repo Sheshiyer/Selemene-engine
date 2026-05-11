@@ -11,8 +11,9 @@
     "format": "biome format --write src/"
   },
   "dependencies": {
-    "elysia": "^1.0.0",
-    "@elysiajs/swagger": "^1.0.0"
+    "@elysiajs/swagger": "^1.0.0",
+    "@supabase/supabase-js": "^2.49.4",
+    "elysia": "^1.0.0"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.5.0",

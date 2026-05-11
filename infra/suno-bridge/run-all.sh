@@ -176,25 +176,11 @@ check_cmd() {
 
 check_cmd git     "git"     "brew install git"
 check_cmd gh      "gh"      "brew install gh"
-check_cmd vercel  "vercel"  "npm i -g vercel"
-check_cmd wrangler "wrangler" "npm i -g wrangler"
-check_cmd pnpm    "pnpm"    "npm i -g pnpm"
-check_cmd node    "node"    "see https://nodejs.org"
+check_cmd bun     "bun"    "see https://bun.sh"
 check_cmd curl    "curl"    "(should be built-in)"
 
 # Auth checks
 if has_cmd gh && gh auth status >/dev/null 2>&1; then ok "gh authenticated"; else warn "gh not authenticated — run: gh auth login"; fi
-if has_cmd vercel && with_timeout 30 vercel whoami >/dev/null 2>&1; then ok "vercel authenticated"; else warn "vercel not authenticated (or slow auth check) — run: vercel login"; fi
-# Wrangler quirk: `wrangler whoami` returns exit 0 even when not authed, just
-# prints "Not logged in." to stderr. Inspect output text instead of exit code.
-if has_cmd wrangler; then
-  wrangler_out=$(with_timeout 30 wrangler whoami 2>&1)
-  if echo "$wrangler_out" | grep -qE 'Account ID|You are logged in'; then
-    ok "wrangler authenticated"
-  else
-    warn "wrangler not authenticated — run: wrangler login"
-  fi
-fi
 
 # Cookie check
 if [[ -f "$SCRIPT_DIR/.env" ]] && grep -qE '^SUNO_COOKIE=.+' "$SCRIPT_DIR/.env"; then
@@ -215,29 +201,33 @@ if (( ! PREFLIGHT_OK && ! DRY_RUN )); then
   err "Pre-flight failed. Resolve the warnings above and re-run."
   echo "  - Cookie capture: open suno.com → DevTools → Network → copy cookie:"
   echo "  - Paste into:    $SCRIPT_DIR/.env"
-  echo "  - Auth fixes:    gh auth login · vercel login · wrangler login"
+  echo "  - Auth fixes:    gh auth login"
   exit 1
 fi
 
 # ──────────────────────────────────────────────────────────────────────────
-# Step 1 — Deploy Suno bridge (clones gcui-art/suno-api + vercel deploy)
+# Step 1 — Health-check SUNO_BRIDGE_URL (bridge runs in ts-engines Railway sidecar)
 # ──────────────────────────────────────────────────────────────────────────
 step_deploy_bridge() {
-  if [[ ! -x "$SCRIPT_DIR/deploy.sh" ]]; then
-    err "deploy.sh missing or not executable"
+  local url="${SUNO_BRIDGE_URL:-}"
+  if [[ -z "$url" ]] && [[ -f "$SCRIPT_DIR/.env" ]]; then
+    url=$(grep -E '^SUNO_BRIDGE_URL=' "$SCRIPT_DIR/.env" | cut -d= -f2- | tr -d '"')
+  fi
+  if [[ -z "$url" ]]; then
+    err "SUNO_BRIDGE_URL not set — set it in $SCRIPT_DIR/.env or as env var"
+    echo "    The Suno bridge now runs as part of ts-engines Railway sidecar."
+    echo "    Set SUNO_BRIDGE_URL=https://selemene.tryambakam.space (or the ts-engines URL)."
     return 1
   fi
-  log "Running deploy.sh with ${TIMEOUT_VERCEL_DEPLOY}s timeout…"
-  if with_timeout "$TIMEOUT_VERCEL_DEPLOY" bash "$SCRIPT_DIR/deploy.sh" 2>&1 | tee -a "$LOG_FILE"; then
-    # Extract deployed URL — deploy.sh prints `Bridge URL: https://...`
-    local url; url=$(grep -oE 'https://[a-zA-Z0-9.-]+\.vercel\.app' "$LOG_FILE" | tail -1)
-    if [[ -n "$url" ]]; then
-      state_set "bridge_url" "$url"
-      ok "bridge_url: $url"
-    fi
+  log "Health-checking Suno bridge at $url/api/get_limit…"
+  if with_timeout "$TIMEOUT_QUOTA_CHECK" curl -sf "${url}/api/get_limit" >/dev/null 2>&1; then
+    state_set "bridge_url" "$url"
+    ok "bridge responds: $url"
     return 0
+  else
+    err "bridge unreachable or cookie invalid. Check SUNO_COOKIE in $SCRIPT_DIR/.env"
+    return 1
   fi
-  return $?
 }
 
 # ──────────────────────────────────────────────────────────────────────────
@@ -246,16 +236,11 @@ step_deploy_bridge() {
 step_wire_env() {
   local url; url=$(state_get "bridge_url")
   if [[ -z "$url" ]]; then
-    warn "no bridge_url in state — did step 1 succeed? Trying to read from vercel directly…"
-    url=$(with_timeout 10 vercel ls 2>/dev/null | grep -oE 'https://[a-zA-Z0-9.-]+selemene-suno[a-zA-Z0-9.-]*\.vercel\.app' | head -1)
-  fi
-  if [[ -z "$url" ]]; then
-    err "could not determine SUNO_BRIDGE_URL — set it manually in apps/noesis-web/.env.local"
+    warn "no bridge_url in state — did step 1 succeed?"
     return 1
   fi
   local env_local="$REPO_ROOT/apps/noesis-web/.env.local"
   if [[ -f "$env_local" ]] && grep -q "^SUNO_BRIDGE_URL=" "$env_local"; then
-    # Replace existing
     local tmp; tmp=$(mktemp)
     sed -E "s|^SUNO_BRIDGE_URL=.*|SUNO_BRIDGE_URL=$url|" "$env_local" > "$tmp"
     mv "$tmp" "$env_local"
@@ -263,16 +248,6 @@ step_wire_env() {
   else
     echo "SUNO_BRIDGE_URL=$url" >> "$env_local"
     ok "appended SUNO_BRIDGE_URL to $env_local"
-  fi
-
-  # Quick health-check that the bridge actually responds
-  log "Health-checking bridge: GET /api/get_limit (${TIMEOUT_QUOTA_CHECK}s timeout)…"
-  if with_timeout "$TIMEOUT_QUOTA_CHECK" curl -sf "${url}/api/get_limit" >/dev/null; then
-    ok "bridge /api/get_limit responds 200"
-    return 0
-  else
-    err "bridge unreachable or returned non-2xx. Cookie may be invalid — see SUNO_AUTH_RUNBOOK.md"
-    return 1
   fi
 }
 
@@ -286,7 +261,7 @@ step_migrate() {
     return 0  # not a hard failure
   fi
   if ! has_cmd sqlx; then
-    warn "sqlx CLI not installed (cargo install sqlx-cli) — skipping. Migration SQL at migrations/028_raga_clips.sql"
+    warn "sqlx CLI not installed (cargo install sqlx-cli) — skipping. Migration SQL at migrations/028_raga_clips.sql and 029_readings_consciousness_check.sql"
     return 0
   fi
   log "Applying migrations (${TIMEOUT_MIGRATION}s timeout)…"
@@ -303,20 +278,15 @@ step_migrate() {
 # Step 4 — Smoke test (single raga, uses ~10 credits)
 # ──────────────────────────────────────────────────────────────────────────
 step_smoke() {
-  local web_dir="$REPO_ROOT/apps/noesis-web"
-  if [[ ! -f "$web_dir/scripts/suno-smoke.ts" ]]; then
-    err "suno-smoke.ts not found at $web_dir/scripts/"
+  local ts_dir="$REPO_ROOT/ts-engines"
+  if [[ ! -f "$ts_dir/scripts/suno-smoke.ts" ]]; then
+    err "suno-smoke.ts not found at $ts_dir/scripts/ — run bun install in ts-engines first"
     return 1
-  fi
-  # Install tsx if needed
-  if [[ ! -f "$web_dir/node_modules/.bin/tsx" ]]; then
-    info "installing tsx (one-time)…"
-    quiet_run bash -c "cd '$web_dir' && pnpm install -D tsx" || { err "tsx install failed"; return 1; }
   fi
   log "Running smoke test for melakarta #15 (Mayamalavagaula)…"
   if with_timeout "$TIMEOUT_SMOKE_TEST" \
-      bash -c "cd '$web_dir' && pnpm tsx scripts/suno-smoke.ts 15" 2>&1 | tee -a "$LOG_FILE"; then
-    local cdn; cdn=$(grep -oE 'https://[a-zA-Z0-9.-]+r2\.dev/clips/[^ ]+\.mp3' "$LOG_FILE" | tail -1)
+      bash -c "cd '$ts_dir' && bun run scripts/suno-smoke.ts 15" 2>&1 | tee -a "$LOG_FILE"; then
+    local cdn; cdn=$(grep -oE 'https://[^ ]+\.mp3' "$LOG_FILE" | tail -1)
     if [[ -n "$cdn" ]]; then
       state_set "smoke_cdn_url" "$cdn"
       ok "smoke clip uploaded: $cdn"
@@ -324,9 +294,9 @@ step_smoke() {
     return 0
   else
     err "smoke test failed (timeout or error). Common causes:"
-    echo "    - SUNO_BRIDGE_URL invalid → check ${web_dir}/.env.local"
-    echo "    - Suno cookie expired → see SUNO_AUTH_RUNBOOK.md"
-    echo "    - Wrangler not authed → run: wrangler login"
+    echo "    - SUNO_BRIDGE_URL invalid → check $SCRIPT_DIR/.env"
+    echo "    - Suno cookie expired → refresh SUNO_COOKIE in $SCRIPT_DIR/.env"
+    echo "    - Supabase Storage bucket 'raga-clips' not created"
     return 1
   fi
 }
@@ -335,10 +305,10 @@ step_smoke() {
 # Step 5 — Bulk gen (all 72 ragas, ~30 min, ~144 credits)
 # ──────────────────────────────────────────────────────────────────────────
 step_bulk() {
-  local web_dir="$REPO_ROOT/apps/noesis-web"
+  local ts_dir="$REPO_ROOT/ts-engines"
   log "Starting bulk gen for ambient style (${TIMEOUT_BULK_GEN}s timeout)…"
   if with_timeout "$TIMEOUT_BULK_GEN" \
-      bash -c "cd '$web_dir' && pnpm tsx scripts/suno-bulk-gen.ts ambient" 2>&1 | tee -a "$LOG_FILE"; then
+      bash -c "cd '$ts_dir' && bun run scripts/suno-bulk-gen.ts ambient" 2>&1 | tee -a "$LOG_FILE"; then
     local done_count; done_count=$(grep -cE '✓.*ambient' "$LOG_FILE" 2>/dev/null || echo 0)
     state_set "bulk_done_count" "$done_count"
     ok "bulk gen complete (~$done_count successful uploads)"

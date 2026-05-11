@@ -5,5 +5,6 @@ pub mod billing;
 pub mod biofield;
 pub mod oauth;
 pub mod onboarding;
+pub mod raga;
 pub mod users;
 pub mod witness;

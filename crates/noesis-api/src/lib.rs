@@ -900,6 +900,11 @@ pub fn create_router(state: AppState, config: &ApiConfig) -> Router {
         .route("/readings", get(list_readings_handler))
         .route("/readings/stats", get(readings_stats_handler))
         .route("/readings/:reading_id", get(get_reading_handler))
+        // Raga clip lookup (SUNO-03)
+        .route(
+            "/raga/:num/clip",
+            get(handlers::raga::get_raga_clip),
+        )
         // OpenClaw onboarding routes
         .route(
             "/onboarding/invite",
@@ -943,6 +948,8 @@ pub fn create_router(state: AppState, config: &ApiConfig) -> Router {
     // biofield-web Next.js adaptor. No JWT middleware applied.
     let internal_routes = Router::new()
         .route("/billing/events", post(handlers::billing::events_forward))
+        // Raga clip upsert — called by ts-engines bulk-gen (SUNO-05)
+        .route("/raga/clip", post(handlers::raga::upsert_raga_clip))
         .layer(axum_middleware::from_fn_with_state(
             rate_limiter,
             middleware::rate_limit_middleware,

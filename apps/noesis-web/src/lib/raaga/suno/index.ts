@@ -3,8 +3,8 @@ export type { SunoStyle, ClipStatus, RagaClipRow, SunoCustomGenerateRequest, Sun
 export { buildSunoPrompt, buildAllPrompts } from './prompt';
 export { getQuota, submitGeneration, getSongs, pollUntilReady, downloadAudio } from './client';
 export type { QuotaInfo } from './client';
-export { r2KeyFor, cdnUrlFor, uploadMp3ToR2 } from './r2';
-export { uploadMp3ToR2ViaWrangler } from './r2-wrangler';
+// Storage — re-exports the Supabase Storage implementation; r2KeyFor alias kept for backward compat.
+export { storageKeyFor, r2KeyFor, cdnUrlFor, publicUrlFor, uploadMp3ToStorage, uploadMp3ToR2 } from './r2';
 
 // Phase 3: server-side DB helper. Don't re-export from client code —
 // callers in API routes/server components should `import { findApprovedClip }

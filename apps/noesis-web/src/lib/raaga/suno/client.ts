@@ -1,12 +1,11 @@
-// Suno wrapper client — wraps the gcui-art/suno-api endpoints.
+// Suno bridge client — proxied through the ts-engines Railway sidecar.
 //
-// Endpoints used:
-//   POST /api/custom_generate   — submit job, returns 2 song objects with status='submitted'
-//   GET  /api/get?ids=a,b       — poll status; returns array of song objects
-//   GET  /api/get_limit         — quota check
+// Endpoints used (sidecar at SUNO_BRIDGE_URL):
+//   GET  /suno/get_limit          — quota check
+//   POST /suno/custom_generate    — submit job, returns 2 song objects with status='submitted'
+//   GET  /suno/get?ids=a,b        — poll status; returns array of song objects
 //
-// We use the wrapper deployed at SUNO_BRIDGE_URL (env). Cookie auth lives
-// inside the wrapper; we just hit its HTTP API.
+// Cookie auth (SUNO_COOKIE) lives in ts-engines env — never exposed to browser.
 
 import type { SunoCustomGenerateRequest, SunoSongResponse } from './types';
 
@@ -25,7 +24,7 @@ const headers = (): HeadersInit => ({
 });
 
 export const getQuota = async (): Promise<QuotaInfo> => {
-  const r = await fetch(`${SUNO_BRIDGE_URL}/api/get_limit`, { headers: headers() });
+  const r = await fetch(`${SUNO_BRIDGE_URL}/suno/get_limit`, { headers: headers() });
   if (!r.ok) throw new Error(`get_limit failed: ${r.status} ${await r.text()}`);
   return r.json();
 };
@@ -33,20 +32,20 @@ export const getQuota = async (): Promise<QuotaInfo> => {
 export const submitGeneration = async (
   body: SunoCustomGenerateRequest,
 ): Promise<SunoSongResponse[]> => {
-  const r = await fetch(`${SUNO_BRIDGE_URL}/api/custom_generate`, {
+  const r = await fetch(`${SUNO_BRIDGE_URL}/suno/custom_generate`, {
     method: 'POST',
     headers: headers(),
     body: JSON.stringify(body),
   });
   if (!r.ok) throw new Error(`custom_generate failed: ${r.status} ${await r.text()}`);
-  // Wrapper returns an array of 2 song variants
+  // Sidecar returns an array of 2 song variants
   const data = await r.json();
   if (!Array.isArray(data)) throw new Error(`expected array, got ${typeof data}`);
   return data as SunoSongResponse[];
 };
 
 export const getSongs = async (ids: string[]): Promise<SunoSongResponse[]> => {
-  const r = await fetch(`${SUNO_BRIDGE_URL}/api/get?ids=${ids.join(',')}`, { headers: headers() });
+  const r = await fetch(`${SUNO_BRIDGE_URL}/suno/get?ids=${ids.join(',')}`, { headers: headers() });
   if (!r.ok) throw new Error(`get failed: ${r.status} ${await r.text()}`);
   return r.json();
 };
