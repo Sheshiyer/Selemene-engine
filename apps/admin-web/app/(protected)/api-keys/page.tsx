@@ -56,6 +56,7 @@ const PERMISSION_GROUPS = [
 ];
 
 const SECRET_REVEAL_WINDOW_SECONDS = 15;
+const SECRET_INITIAL_REVEAL_SECONDS = 60;
 
 type RecentSecretState = {
   keyId: string;
@@ -298,8 +299,8 @@ export default function ApiKeysPage() {
       return;
     }
 
-    setSecretRevealSecondsLeft(SECRET_REVEAL_WINDOW_SECONDS);
-
+    // Don't reset the countdown here — handlers set the initial window
+    // (SECRET_INITIAL_REVEAL_SECONDS for create/rotate, SECRET_REVEAL_WINDOW_SECONDS for manual re-reveal)
     const intervalId = window.setInterval(() => {
       setSecretRevealSecondsLeft((current) => {
         if (current <= 1) {
@@ -417,7 +418,7 @@ export default function ApiKeysPage() {
 
       setRecentSecret({ keyId: res.key.id, secret: res.secret_key, source: "created" });
       setSecretVisible(true);
-      setSecretRevealSecondsLeft(SECRET_REVEAL_WINDOW_SECONDS);
+      setSecretRevealSecondsLeft(SECRET_INITIAL_REVEAL_SECONDS);
       setCopiedSecret(false);
       setSelectedKey(res.key);
       setSuccess(`Created key "${res.key.name || res.key.id}"`);
@@ -461,7 +462,7 @@ export default function ApiKeysPage() {
       const res = await rotateAdminApiKey(token, key.id);
       setRecentSecret({ keyId: res.key.id, secret: res.secret_key, source: "rotated" });
       setSecretVisible(true);
-      setSecretRevealSecondsLeft(SECRET_REVEAL_WINDOW_SECONDS);
+      setSecretRevealSecondsLeft(SECRET_INITIAL_REVEAL_SECONDS);
       setCopiedSecret(false);
       setSelectedKey(res.key);
       setSuccess(`Rotated key "${key.name || key.id}"`);
@@ -967,6 +968,40 @@ export default function ApiKeysPage() {
                 <span>Delete</span>
               </button>
             </ActionRail>
+
+            {secretForSelectedKey && secretVisible ? (
+              <div className="secret-reveal-alert" role="alert" aria-live="assertive">
+                <div className="secret-reveal-alert-header">
+                  <div className="secret-reveal-alert-copy">
+                    <div className="secret-reveal-alert-eyebrow">
+                      {secretForSelectedKey.source === "created" ? "KEY CREATED" : "KEY ROTATED"}
+                    </div>
+                    <p className="secret-reveal-alert-message">
+                      Copy your secret now — this is the only time it will be visible.
+                    </p>
+                  </div>
+                  <div className="secret-reveal-alert-timer" aria-label={`${secretRevealSecondsLeft} seconds remaining`}>
+                    {secretRevealSecondsLeft}s
+                  </div>
+                </div>
+                <div className="secret-reveal-alert-code">
+                  <code>{secretForSelectedKey.secret}</code>
+                </div>
+                <div className="secret-reveal-alert-actions">
+                  <button
+                    type="button"
+                    className={`secret-reveal-copy-btn ${copiedSecret ? "copied" : ""}`}
+                    onClick={() => void handleCopySecret()}
+                  >
+                    <CopyIcon />
+                    <span>{copiedSecret ? "Copied!" : "Copy secret"}</span>
+                  </button>
+                  <button type="button" className="secret-reveal-dismiss-btn" onClick={hideSecret}>
+                    Dismiss
+                  </button>
+                </div>
+              </div>
+            ) : null}
 
             <div className="key-modal-grid">
               <section className="detail-card">
