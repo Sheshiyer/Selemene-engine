@@ -12,8 +12,10 @@ const styles = {
     justifyContent: "space-between",
     padding: "0 1.5rem",
     height: 56,
-    background: "var(--bg-elevated)",
-    borderBottom: "1px solid var(--line)",
+    // Kha Arc atmosphere: void → subtle violet tint
+    background: "linear-gradient(90deg, #070B1D 0%, rgba(45,0,80,0.4) 50%, #070B1D 100%)",
+    borderBottom: "1px solid var(--line-mid)",
+    boxShadow: "0 1px 0 var(--line-faint), inset 0 -1px 0 rgba(11,80,251,0.06)",
     position: "sticky" as const,
     top: 0,
     zIndex: 100,
@@ -26,30 +28,58 @@ const styles = {
   logo: {
     fontFamily: "var(--font-display)",
     fontWeight: 800,
-    fontSize: "1.25rem",
-    color: "var(--gold)",
-    letterSpacing: "0.05em",
+    fontSize: "1.1rem",
+    color: "var(--signal)",
+    letterSpacing: "0.12em",
+    textTransform: "uppercase" as const,
   },
   tabs: {
     display: "flex",
-    gap: "0.25rem",
+    gap: "0.125rem",
   },
   tab: {
-    padding: "0.375rem 0.75rem",
-    borderRadius: "var(--radius)",
-    fontSize: "0.875rem",
+    padding: "0.3rem 0.75rem",
+    borderRadius: "var(--r-pill)",
+    fontSize: "0.82rem",
     fontWeight: 500,
-    color: "var(--text-muted)",
+    color: "var(--muted)",
     transition: "all 0.15s",
+    fontFamily: "var(--font-body)",
+    letterSpacing: "0.02em",
   },
   tabActive: {
-    background: "var(--gold-soft)",
-    color: "var(--gold)",
+    // Ba Arc gradient pill for active tab
+    background: "linear-gradient(90deg, rgba(16,181,167,0.15) 0%, rgba(197,160,23,0.15) 100%)",
+    color: "var(--signal)",
+    border: "1px solid rgba(197,160,23,0.25)",
+  },
+  tabHover: {
+    color: "var(--text)",
+    background: "var(--panel-hover)",
   },
   right: {
     display: "flex",
     alignItems: "center",
     gap: "0.75rem",
+  },
+  // Avatar circle
+  avatar: {
+    width: 30,
+    height: 30,
+    borderRadius: "50%",
+    background: "var(--surface-2)",
+    border: "1.5px solid var(--signal)",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontSize: "0.7rem",
+    fontWeight: 700,
+    fontFamily: "var(--font-display)",
+    color: "var(--signal)",
+    flexShrink: 0,
+  },
+  avatarAdmin: {
+    border: "1.5px solid var(--c-violet)",
   },
   userInfo: {
     display: "flex",
@@ -58,52 +88,65 @@ const styles = {
     gap: "0.1rem",
   },
   userName: {
-    fontSize: "0.75rem",
+    fontSize: "0.72rem",
     color: "var(--text)",
     fontWeight: 600,
     fontFamily: "var(--font-body)",
   },
   userTier: {
-    fontSize: "0.65rem",
-    color: "var(--text-muted)",
+    fontSize: "0.62rem",
+    color: "var(--muted)",
     fontFamily: "var(--font-mono)",
     textTransform: "uppercase" as const,
-    letterSpacing: "0.05em",
+    letterSpacing: "0.06em",
   },
   badge: {
     display: "flex",
     alignItems: "center",
     gap: "0.375rem",
-    fontSize: "0.75rem",
-    color: "var(--emerald)",
+    fontSize: "0.72rem",
+    color: "var(--c-emerald)",
     fontFamily: "var(--font-mono)",
   },
   dot: {
     width: 6,
     height: 6,
     borderRadius: "50%",
-    background: "var(--emerald)",
+    background: "var(--c-emerald)",
+    flexShrink: 0,
+  },
+  biofieldDot: {
+    width: 5,
+    height: 5,
+    borderRadius: "50%",
+    background: "var(--c-emerald)",
+    display: "inline-block",
+    marginLeft: 4,
+    boxShadow: "0 0 4px var(--c-emerald)",
+    flexShrink: 0,
   },
   adminBadge: {
-    fontSize: "0.65rem",
-    padding: "0.15rem 0.5rem",
-    borderRadius: 4,
-    background: "rgba(99,102,241,0.15)",
-    color: "#818cf8",
+    fontSize: "0.6rem",
+    padding: "0.12rem 0.45rem",
+    borderRadius: "var(--r-xs)",
+    background: "rgba(45,0,80,0.35)",
+    color: "var(--c-emerald)",
     fontWeight: 700,
-    border: "1px solid rgba(99,102,241,0.3)",
+    border: "1px solid rgba(45,0,80,0.6)",
     textDecoration: "none",
-    letterSpacing: "0.04em",
+    letterSpacing: "0.06em",
+    fontFamily: "var(--font-mono)",
   },
   logoutBtn: {
-    fontSize: "0.75rem",
-    color: "var(--text-dim)",
-    padding: "0.25rem 0.5rem",
-    borderRadius: "var(--radius)",
-    border: "1px solid var(--line)",
+    fontSize: "0.72rem",
+    color: "var(--muted)",
+    padding: "0.2rem 0.5rem",
+    borderRadius: "var(--r-xs)",
+    border: "1px solid var(--line-faint)",
     cursor: "pointer",
     background: "transparent",
     fontFamily: "var(--font-body)",
+    transition: "border-color 0.15s, color 0.15s",
   },
 };
 
@@ -156,7 +199,10 @@ export default function NavBar() {
                 rel="noreferrer"
                 style={styles.tab}
               >
-                {t.label} ↗
+                {t.label}
+                {/* Emerald bioluminescent dot when session exists */}
+                {authed && <span style={styles.biofieldDot} aria-hidden />}
+                {!authed && " ↗"}
               </a>
             ) : (
               <Link
@@ -183,9 +229,21 @@ export default function NavBar() {
                 rel="noreferrer"
                 style={styles.adminBadge}
               >
-                ⚡ ADMIN
+                ADM
               </a>
             )}
+            {/* Avatar initial circle */}
+            <div
+              style={{
+                ...styles.avatar,
+                ...(profile?.is_admin ? styles.avatarAdmin : {}),
+              }}
+              title={profile?.email}
+            >
+              {(profile?.full_name || profile?.email || "?")
+                .charAt(0)
+                .toUpperCase()}
+            </div>
             {profile ? (
               <div style={styles.userInfo}>
                 <span style={styles.userName}>
@@ -208,8 +266,9 @@ export default function NavBar() {
             href="/auth"
             style={{
               ...styles.tab,
-              border: "1px solid var(--gold)",
-              color: "var(--gold)",
+              border: "1px solid rgba(197,160,23,0.4)",
+              color: "var(--signal)",
+              letterSpacing: "0.04em",
             }}
           >
             Sign in

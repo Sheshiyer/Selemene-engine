@@ -12,43 +12,59 @@ const s = {
     alignItems: "center",
     justifyContent: "center",
     minHeight: "100vh",
-    background: "var(--bg)",
+    // Full-viewport Kha Arc — the void receiving consciousness
+    background: "linear-gradient(135deg, #070B1D 0%, #2D0050 55%, #0B50FB11 100%)",
     padding: "1.5rem",
   },
   card: {
-    background: "var(--bg-panel)",
-    border: "1px solid var(--line)",
-    borderRadius: "var(--radius)",
-    padding: "2rem",
-    maxWidth: 440,
+    background: "rgba(7,11,29,0.72)",
+    border: "1px solid var(--line-mid)",
+    borderRadius: "var(--r-md)",
+    padding: "2.5rem 2rem",
+    maxWidth: 420,
     width: "100%",
     display: "flex",
     flexDirection: "column" as const,
-    gap: "1.25rem",
+    gap: "1.375rem",
+    backdropFilter: "blur(18px)",
+    boxShadow: "var(--shadow-lg)",
+  },
+  sigilRing: {
+    width: 56,
+    height: 56,
+    margin: "0 auto",
+    borderRadius: "50%",
+    border: "1.5px solid rgba(197,160,23,0.45)",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    boxShadow: "0 0 18px rgba(197,160,23,0.12)",
   },
   logo: {
-    fontFamily: "'Exo 2', sans-serif",
+    fontFamily: "var(--font-display)",
     fontSize: "2rem",
     fontWeight: 800,
-    color: "var(--gold)",
+    color: "var(--signal)",
     textAlign: "center" as const,
-    letterSpacing: "0.08em",
+    letterSpacing: "0.12em",
   },
   subtitle: {
-    fontSize: "0.9rem",
-    color: "var(--text-muted)",
+    fontSize: "0.88rem",
+    color: "var(--muted)",
     textAlign: "center" as const,
-    lineHeight: 1.5,
+    lineHeight: 1.6,
+    fontFamily: "var(--font-body)",
   },
   label: {
-    fontSize: "0.75rem",
-    color: "var(--text-muted)",
+    fontSize: "0.72rem",
+    color: "var(--muted)",
     textTransform: "uppercase" as const,
-    letterSpacing: "0.05em",
+    letterSpacing: "0.06em",
     fontWeight: 600,
     display: "flex",
     flexDirection: "column" as const,
     gap: "0.375rem",
+    fontFamily: "var(--font-body)",
   },
   input: {
     width: "100%",
@@ -58,32 +74,36 @@ const s = {
   button: {
     width: "100%",
     padding: "0.75rem",
-    background: "var(--gold)",
+    // Ba Arc gradient — organic not corporate
+    background: "linear-gradient(90deg, var(--c-emerald) 0%, var(--signal) 100%)",
     color: "#070B1D",
     fontWeight: 700,
     fontSize: "0.9rem",
-    borderRadius: "var(--radius)",
+    borderRadius: "var(--r-sm)",
     border: "none",
     cursor: "pointer",
-    fontFamily: "'Space Grotesk', sans-serif",
+    fontFamily: "var(--font-display)",
+    letterSpacing: "0.06em",
+    textTransform: "uppercase" as const,
     transition: "opacity 0.15s",
   },
   buttonDisabled: {
-    opacity: 0.5,
+    opacity: 0.45,
     cursor: "not-allowed",
   },
+  // Ba Arc tinted Discord button — Noesis aesthetic, not corporate #5865F2
   discordButton: {
     width: "100%",
     padding: "0.75rem",
-    background: "#5865F2",
-    color: "#fff",
-    fontWeight: 700,
+    background: "linear-gradient(90deg, rgba(11,80,251,0.25) 0%, rgba(45,0,80,0.4) 100%)",
+    color: "var(--text)",
+    fontWeight: 600,
     fontSize: "0.9rem",
-    borderRadius: "var(--radius)",
-    border: "none",
+    borderRadius: "var(--r-sm)",
+    border: "1px solid rgba(11,80,251,0.4)",
     cursor: "pointer",
-    fontFamily: "'Space Grotesk', sans-serif",
-    transition: "opacity 0.15s",
+    fontFamily: "var(--font-body)",
+    transition: "opacity 0.15s, border-color 0.15s",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
@@ -93,31 +113,35 @@ const s = {
     display: "flex",
     alignItems: "center",
     gap: "0.75rem",
-    color: "var(--text-muted)",
-    fontSize: "0.8rem",
+    color: "var(--muted)",
+    fontSize: "0.78rem",
+    fontFamily: "var(--font-mono)",
+    letterSpacing: "0.06em",
   },
   dividerLine: {
     flex: 1,
     height: 1,
-    background: "var(--line)",
+    background: "var(--line-mid)",
   },
   errorBox: {
     padding: "0.75rem",
-    background: "rgba(239,107,115,0.1)",
-    border: "1px solid var(--danger)",
-    borderRadius: "var(--radius)",
-    color: "var(--danger)",
+    background: "rgba(198,93,59,0.1)",
+    border: "1px solid var(--error)",
+    borderRadius: "var(--r-sm)",
+    color: "var(--error)",
     fontSize: "0.85rem",
     textAlign: "center" as const,
+    fontFamily: "var(--font-body)",
   },
   successBox: {
     padding: "0.75rem",
-    background: "var(--emerald-soft)",
-    border: "1px solid var(--emerald)",
-    borderRadius: "var(--radius)",
-    color: "var(--emerald)",
+    background: "rgba(16,181,167,0.08)",
+    border: "1px solid rgba(16,181,167,0.35)",
+    borderRadius: "var(--r-sm)",
+    color: "var(--c-emerald)",
     fontSize: "0.85rem",
     textAlign: "center" as const,
+    fontFamily: "var(--font-body)",
   },
 };
 
@@ -170,6 +194,16 @@ export default function AuthPage() {
   return (
     <div style={s.page}>
       <div style={s.card}>
+        {/* Sacred Gold sigil ring above the wordmark */}
+        <div style={s.sigilRing} aria-hidden="true">
+          <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+            <circle cx="14" cy="14" r="10" stroke="rgba(197,160,23,0.6)" strokeWidth="1" />
+            <circle cx="14" cy="14" r="4" stroke="rgba(197,160,23,0.9)" strokeWidth="1.5" />
+            <line x1="14" y1="4" x2="14" y2="24" stroke="rgba(197,160,23,0.3)" strokeWidth="0.75" />
+            <line x1="4" y1="14" x2="24" y2="14" stroke="rgba(197,160,23,0.3)" strokeWidth="0.75" />
+          </svg>
+        </div>
+
         <div style={s.logo}>NOESIS</div>
         <p style={s.subtitle}>
           Sign in with Discord or enter your Selemene API key to access the

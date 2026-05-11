@@ -211,6 +211,12 @@ code, .mono, pre {
   50%       { box-shadow: 0 0 28px rgba(11, 80, 251, 0.8); }
 }
 
+/* EngineCard loading border pulse */
+@keyframes pulse-inset {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(11, 80, 251, 0); border-color: rgba(11, 80, 251, 0.35); }
+  50%       { box-shadow: 0 0 10px rgba(11, 80, 251, 0.4); border-color: rgba(11, 80, 251, 0.75); }
+}
+
 @keyframes goldRing {
   0%   { box-shadow: 0 0 0 0 rgba(197, 160, 23, 0.6); }
   70%  { box-shadow: 0 0 0 12px rgba(197, 160, 23, 0); }

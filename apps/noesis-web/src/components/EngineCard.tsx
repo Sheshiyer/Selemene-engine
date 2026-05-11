@@ -1,50 +1,5 @@
 import type { ReactNode } from "react";
 
-const styles = {
-  card: {
-    background: "var(--bg-panel)",
-    border: "1px solid var(--line)",
-    borderRadius: "var(--radius)",
-    overflow: "hidden",
-  },
-  header: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    padding: "0.75rem 1rem",
-    borderBottom: "1px solid var(--line)",
-  },
-  title: {
-    fontFamily: "var(--font-display)",
-    fontSize: "0.95rem",
-    fontWeight: 700,
-    color: "var(--text)",
-  },
-  badge: {
-    fontSize: "0.65rem",
-    fontWeight: 600,
-    textTransform: "uppercase" as const,
-    letterSpacing: "0.06em",
-    padding: "0.2rem 0.5rem",
-    borderRadius: 4,
-  },
-  badgeReady: {
-    background: "var(--emerald-soft)",
-    color: "var(--emerald)",
-  },
-  badgeLoading: {
-    background: "var(--gold-soft)",
-    color: "var(--gold)",
-  },
-  badgeError: {
-    background: "rgba(239,107,115,0.15)",
-    color: "var(--danger)",
-  },
-  body: {
-    padding: "1rem",
-  },
-};
-
 interface EngineCardProps {
   name: string;
   status: "ready" | "loading" | "error" | "idle";
@@ -52,31 +7,47 @@ interface EngineCardProps {
 }
 
 export default function EngineCard({ name, status, children }: EngineCardProps) {
-  const badgeLabel =
+  const borderState =
     status === "ready"
-      ? "Ready"
+      ? { borderColor: "var(--line-strong)", borderTop: "1px solid var(--c-emerald)" }
       : status === "loading"
-        ? "Loading…"
+        ? { borderColor: "var(--c-indigo)", animation: "pulse-inset 1.6s ease-in-out infinite" }
         : status === "error"
-          ? "Error"
-          : "Idle";
-
-  const badgeStyle =
-    status === "ready"
-      ? styles.badgeReady
-      : status === "loading"
-        ? styles.badgeLoading
-        : status === "error"
-          ? styles.badgeError
-          : styles.badgeLoading;
+          ? { borderColor: "var(--error)", boxShadow: "0 0 8px rgba(198,93,59,0.25)" }
+          : { borderColor: "var(--line-faint)" };
 
   return (
-    <div style={styles.card}>
-      <div style={styles.header}>
-        <span style={styles.title}>{name}</span>
-        <span style={{ ...styles.badge, ...badgeStyle }}>{badgeLabel}</span>
+    <div
+      style={{
+        background: "var(--surface-1)",
+        border: "1px solid var(--line-faint)",
+        borderRadius: "var(--r-md)",
+        overflow: "hidden",
+        transition: "border-color 0.3s, box-shadow 0.3s",
+        ...borderState,
+      }}
+    >
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          padding: "0.75rem 1rem",
+          borderBottom: "1px solid var(--line-mid)",
+        }}
+      >
+        <span
+          style={{
+            fontFamily: "var(--font-display)",
+            fontSize: "1.05rem",
+            fontWeight: 700,
+            color: "var(--text)",
+            letterSpacing: "0.03em",
+          }}
+        >
+          {name}
+        </span>
       </div>
-      <div style={styles.body}>{children}</div>
+      <div style={{ padding: "1rem" }}>{children}</div>
     </div>
   );
 }
