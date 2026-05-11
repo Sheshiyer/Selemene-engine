@@ -923,10 +923,10 @@ pub fn create_router(state: AppState, config: &ApiConfig) -> Router {
             middleware::auth_middleware,
         ))
         .merge(auth_routes);
-// NOTE: auth_routes (register, login, forgot-password, reset-password, discord/*) are
-// intentionally merged AFTER the auth_middleware layer above, which means they are
-// NOT covered by that middleware. This is correct — they are public endpoints.
-// Do NOT move auth_routes inside the layer block or they will be gated behind auth.
+    // NOTE: auth_routes (register, login, forgot-password, reset-password, discord/*) are
+    // intentionally merged AFTER the auth_middleware layer above, which means they are
+    // NOT covered by that middleware. This is correct — they are public endpoints.
+    // Do NOT move auth_routes inside the layer block or they will be gated behind auth.
 
     // Legacy endpoints for backward compatibility with old Selemene API
     // Rate limited by IP (no auth required, but protected against abuse)
@@ -3355,7 +3355,9 @@ pub async fn build_app_state(config: &ApiConfig) -> AppState {
             .await
         {
             Ok(_) => tracing::info!("usage_log partitions ensured for next 3 months"),
-            Err(e) => tracing::warn!(error = %e, "Failed to ensure usage_log partitions — continuing startup"),
+            Err(e) => {
+                tracing::warn!(error = %e, "Failed to ensure usage_log partitions — continuing startup")
+            }
         }
     }
 
