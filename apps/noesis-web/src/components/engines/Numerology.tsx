@@ -22,7 +22,7 @@ const styles = {
   number: {
     fontSize: "1.75rem",
     fontWeight: 800,
-    fontFamily: "'Exo 2', sans-serif",
+    fontFamily: "var(--font-display)",
     color: "var(--gold)",
   },
   name: {

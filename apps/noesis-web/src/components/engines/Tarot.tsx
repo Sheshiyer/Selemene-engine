@@ -19,7 +19,7 @@ const styles = {
     fontSize: "1.1rem",
     fontWeight: 700,
     color: "var(--gold)",
-    fontFamily: "'Exo 2', sans-serif",
+    fontFamily: "var(--font-display)",
   },
   meta: {
     display: "flex",

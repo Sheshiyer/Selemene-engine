@@ -9,7 +9,7 @@ const s = {
   cell: { background: "var(--field)", borderRadius: "var(--radius)", padding: "0.75rem", display: "flex", flexDirection: "column" as const, gap: "0.25rem" },
   label: { fontSize: "0.7rem", color: "var(--text-muted)", textTransform: "uppercase" as const, letterSpacing: "0.06em", fontWeight: 600 },
   value: { fontSize: "1rem", fontWeight: 600, color: "var(--gold)" },
-  sub: { fontSize: "0.8rem", color: "var(--text-muted)", fontFamily: "'IBM Plex Mono', monospace" },
+  sub: { fontSize: "0.8rem", color: "var(--text-muted)", fontFamily: "var(--font-mono)" },
   section: { display: "flex", flexDirection: "column" as const, gap: "0.5rem", marginTop: "0.5rem" },
   sectionTitle: { fontSize: "0.75rem", color: "var(--text-muted)", textTransform: "uppercase" as const, fontWeight: 600, letterSpacing: "0.08em" },
   tag: { display: "inline-block", padding: "0.2rem 0.5rem", borderRadius: 4, background: "var(--gold-soft)", color: "var(--gold)", fontSize: "0.75rem", fontWeight: 600, marginRight: "0.25rem", marginBottom: "0.25rem" },

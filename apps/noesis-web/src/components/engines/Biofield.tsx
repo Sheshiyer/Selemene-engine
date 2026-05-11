@@ -17,7 +17,7 @@ const styles = {
   scoreValue: {
     fontSize: "1.5rem",
     fontWeight: 800,
-    fontFamily: "'Exo 2', sans-serif",
+    fontFamily: "var(--font-display)",
     color: "var(--emerald)",
   },
   chakraRow: {
@@ -44,7 +44,7 @@ const styles = {
   pct: {
     fontSize: "0.75rem",
     color: "var(--text-muted)",
-    fontFamily: "'IBM Plex Mono', monospace",
+    fontFamily: "var(--font-mono)",
     width: 40,
     textAlign: "right" as const,
   },

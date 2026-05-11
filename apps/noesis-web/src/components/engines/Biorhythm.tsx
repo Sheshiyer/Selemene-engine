@@ -23,7 +23,7 @@ const styles = {
   value: {
     fontSize: "1.1rem",
     fontWeight: 700,
-    fontFamily: "'IBM Plex Mono', monospace",
+    fontFamily: "var(--font-mono)",
   },
   barOuter: {
     width: "100%",
@@ -36,7 +36,7 @@ const styles = {
   sub: {
     fontSize: "0.75rem",
     color: "var(--text-muted)",
-    fontFamily: "'IBM Plex Mono', monospace",
+    fontFamily: "var(--font-mono)",
   },
 };
 

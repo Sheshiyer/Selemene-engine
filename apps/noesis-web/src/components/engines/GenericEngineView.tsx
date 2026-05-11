@@ -15,7 +15,7 @@ const styles = {
   value: {
     fontSize: "0.875rem",
     color: "var(--text)",
-    fontFamily: "'IBM Plex Mono', monospace",
+    fontFamily: "var(--font-mono)",
     textAlign: "right" as const,
     maxWidth: "60%",
     wordBreak: "break-word" as const,

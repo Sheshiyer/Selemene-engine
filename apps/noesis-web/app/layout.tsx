@@ -14,6 +14,14 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
+      <head>
+        {/* Tryambakam Noesis brand fonts — Panchang (display) + Satoshi (body) */}
+        <link
+          rel="stylesheet"
+          href="https://api.fontshare.com/v2/css?f[]=panchang@700,800&f[]=satoshi@400,500,600,700&display=swap"
+        />
+        {/* SF Mono is a system font — no CDN needed */}
+      </head>
       <body
         style={{
           minHeight: "100vh",

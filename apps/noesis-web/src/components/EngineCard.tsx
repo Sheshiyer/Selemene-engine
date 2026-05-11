@@ -15,7 +15,7 @@ const styles = {
     borderBottom: "1px solid var(--line)",
   },
   title: {
-    fontFamily: "'Exo 2', sans-serif",
+    fontFamily: "var(--font-display)",
     fontSize: "0.95rem",
     fontWeight: 700,
     color: "var(--text)",

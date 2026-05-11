@@ -27,7 +27,7 @@ const styles = {
   sub: {
     fontSize: "0.8rem",
     color: "var(--text-muted)",
-    fontFamily: "'IBM Plex Mono', monospace",
+    fontFamily: "var(--font-mono)",
   },
   quality: {
     display: "inline-block",

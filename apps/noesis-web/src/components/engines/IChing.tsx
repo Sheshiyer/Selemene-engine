@@ -11,7 +11,7 @@ const styles = {
   hexNumber: {
     fontSize: "2rem",
     fontWeight: 800,
-    fontFamily: "'Exo 2', sans-serif",
+    fontFamily: "var(--font-display)",
     color: "var(--gold)",
   },
   hexName: {

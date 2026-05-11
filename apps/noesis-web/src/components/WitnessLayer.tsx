@@ -12,7 +12,7 @@ const styles = {
     gap: "1rem",
   },
   heading: {
-    fontFamily: "'Exo 2', sans-serif",
+    fontFamily: "var(--font-display)",
     fontSize: "1.25rem",
     fontWeight: 700,
     color: "var(--gold)",

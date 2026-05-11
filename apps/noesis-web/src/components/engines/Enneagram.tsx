@@ -9,7 +9,7 @@ const s = {
   cell: { background: "var(--field)", borderRadius: "var(--radius)", padding: "0.75rem", display: "flex", flexDirection: "column" as const, gap: "0.25rem" },
   label: { fontSize: "0.7rem", color: "var(--text-muted)", textTransform: "uppercase" as const, letterSpacing: "0.06em", fontWeight: 600 },
   value: { fontSize: "1rem", fontWeight: 600, color: "var(--gold)" },
-  typeNum: { fontSize: "3rem", fontWeight: 800, color: "var(--gold)", fontFamily: "'Exo 2', sans-serif", lineHeight: 1 },
+  typeNum: { fontSize: "3rem", fontWeight: 800, color: "var(--gold)", fontFamily: "var(--font-display)", lineHeight: 1 },
   sub: { fontSize: "0.8rem", color: "var(--text-muted)" },
   fearDesire: { padding: "0.75rem 1rem", background: "var(--field)", borderRadius: "var(--radius)", fontSize: "0.875rem", color: "var(--text)", lineHeight: 1.5, borderLeft: "3px solid var(--gold)" },
 };

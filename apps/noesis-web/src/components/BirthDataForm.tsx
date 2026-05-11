@@ -34,7 +34,7 @@ const styles = {
     border: "none",
     cursor: "pointer",
     transition: "opacity 0.15s",
-    fontFamily: "'Space Grotesk', sans-serif",
+    fontFamily: "var(--font-body)",
   },
   submitDisabled: {
     opacity: 0.5,

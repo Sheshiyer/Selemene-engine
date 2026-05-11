@@ -126,7 +126,7 @@ const s = {
     gap: "1.5rem",
   },
   heading: {
-    fontFamily: "'Exo 2', sans-serif",
+    fontFamily: "var(--font-display)",
     fontSize: "1.5rem",
     fontWeight: 800,
     color: "var(--text)",
@@ -149,7 +149,7 @@ const s = {
     border: "none",
     background: "transparent",
     transition: "all 0.15s",
-    fontFamily: "'Space Grotesk', sans-serif",
+    fontFamily: "var(--font-body)",
   },
   tabActive: {
     background: "var(--gold-soft)",
@@ -179,7 +179,7 @@ const s = {
     gap: "1rem",
     fontSize: "0.8rem",
     color: "var(--text-muted)",
-    fontFamily: "'IBM Plex Mono', monospace",
+    fontFamily: "var(--font-mono)",
   },
 };
 

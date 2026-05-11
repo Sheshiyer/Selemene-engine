@@ -24,7 +24,7 @@ const styles = {
     gap: "2rem",
   },
   logo: {
-    fontFamily: "'Exo 2', sans-serif",
+    fontFamily: "var(--font-display)",
     fontWeight: 800,
     fontSize: "1.25rem",
     color: "var(--gold)",
@@ -61,12 +61,12 @@ const styles = {
     fontSize: "0.75rem",
     color: "var(--text)",
     fontWeight: 600,
-    fontFamily: "'Space Grotesk', sans-serif",
+    fontFamily: "var(--font-body)",
   },
   userTier: {
     fontSize: "0.65rem",
     color: "var(--text-muted)",
-    fontFamily: "'IBM Plex Mono', monospace",
+    fontFamily: "var(--font-mono)",
     textTransform: "uppercase" as const,
     letterSpacing: "0.05em",
   },
@@ -76,7 +76,7 @@ const styles = {
     gap: "0.375rem",
     fontSize: "0.75rem",
     color: "var(--emerald)",
-    fontFamily: "'IBM Plex Mono', monospace",
+    fontFamily: "var(--font-mono)",
   },
   dot: {
     width: 6,
@@ -103,7 +103,7 @@ const styles = {
     border: "1px solid var(--line)",
     cursor: "pointer",
     background: "transparent",
-    fontFamily: "'Space Grotesk', sans-serif",
+    fontFamily: "var(--font-body)",
   },
 };
 

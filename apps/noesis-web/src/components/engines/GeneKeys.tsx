@@ -42,7 +42,7 @@ const styles = {
   gateNum: {
     fontSize: "0.8rem",
     color: "var(--text-muted)",
-    fontFamily: "'IBM Plex Mono', monospace",
+    fontFamily: "var(--font-mono)",
   },
   sub: {
     fontSize: "0.8rem",
