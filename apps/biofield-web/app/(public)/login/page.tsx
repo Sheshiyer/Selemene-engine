@@ -3,7 +3,7 @@
 import { FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getStoredAuthSession, setStoredAuthSession } from "@/lib/auth";
-import { BiofieldApiError, getDiscordAuthUrl, login } from "@/lib/api";
+import { BiofieldApiError, getDiscordAuthUrl, login, verifyToken } from "@/lib/api";
 import { getBiofieldDiscordCallbackOverride } from "@/lib/discord-oauth";
 
 const DiscordIcon = () => (
@@ -21,7 +21,32 @@ export default function LoginPage() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
-    if (getStoredAuthSession()) router.replace("/viewer");
+    if (getStoredAuthSession()) {
+      router.replace("/viewer");
+      return;
+    }
+
+    // Token handoff: noesis-web may pass #token=<jwt> in the URL fragment.
+    // The fragment never reaches the server, but we clear it immediately after
+    // consuming it so it doesn't linger in the browser history.
+    const hash = window.location.hash;
+    const tokenMatch = hash.match(/^#token=([A-Za-z0-9\-._~+/]+=*)$/);
+    if (tokenMatch) {
+      // Clear fragment before any async work so it never appears in history.
+      history.replaceState(null, "", window.location.pathname + window.location.search);
+      const candidateToken = tokenMatch[1];
+      // Only forward JWT tokens (eyJ prefix). Skip nk_ API keys.
+      if (candidateToken.startsWith("eyJ")) {
+        verifyToken(candidateToken)
+          .then((session) => {
+            setStoredAuthSession(session);
+            router.replace("/viewer");
+          })
+          .catch(() => {
+            // Invalid/expired token — stay on login, no error shown.
+          });
+      }
+    }
   }, [router]);
 
   async function handleDiscordLogin() {

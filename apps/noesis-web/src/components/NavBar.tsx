@@ -107,10 +107,22 @@ const styles = {
   },
 };
 
+const BIOFIELD_BASE_URL = "https://biofield-web.vercel.app";
+
+function getBiofieldHref(): string {
+  if (typeof window === "undefined") return BIOFIELD_BASE_URL;
+  const key = localStorage.getItem("noesis_api_key");
+  // Only forward JWTs (eyJ prefix). API keys (nk_ prefix) are not valid for biofield-web.
+  if (key && key.startsWith("eyJ")) {
+    return `${BIOFIELD_BASE_URL}/login#token=${key}`;
+  }
+  return BIOFIELD_BASE_URL;
+}
+
 const TABS = [
   { href: "/engines", label: "Engines", external: false },
   { href: "/readings", label: "Readings", external: false },
-  { href: "https://biofield-web.vercel.app", label: "Biofield", external: true },
+  { href: BIOFIELD_BASE_URL, label: "Biofield", external: true },
 ];
 
 export default function NavBar() {
@@ -139,7 +151,7 @@ export default function NavBar() {
             t.external ? (
               <a
                 key={t.href}
-                href={t.href}
+                href={getBiofieldHref()}
                 target="_blank"
                 rel="noreferrer"
                 style={styles.tab}

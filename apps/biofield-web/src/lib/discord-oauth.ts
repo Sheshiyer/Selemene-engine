@@ -1,6 +1,8 @@
 const STABLE_HOSTS = new Set([
   "selemene.tryambakam.space",
   "144.tryambakam.space",
+  "biofield-web.vercel.app",
+  "biofield.tryambakam.space",
 ]);
 
 export function getBiofieldDiscordCallbackOverride(): string | undefined {

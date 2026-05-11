@@ -58,6 +58,30 @@ export async function login(email: string, password: string): Promise<BiofieldAu
   return { token: data.token, userId: data.user_id, email: data.email, tier: data.tier };
 }
 
+interface UserMeResponse {
+  id: string;
+  email: string;
+  full_name: string | null;
+  tier: string;
+}
+
+/**
+ * Verify a JWT issued by the Noesis backend and return a BiofieldAuthSession.
+ * Used by the token handoff flow where noesis-web passes a JWT via URL fragment.
+ */
+export async function verifyToken(token: string): Promise<BiofieldAuthSession> {
+  const url = buildApiUrl("/api/v1/users/me");
+  const response = await fetch(url, {
+    headers: { Authorization: `Bearer ${token}` },
+    cache: "no-store",
+  });
+  if (!response.ok) {
+    throw new BiofieldApiError("Token verification failed", response.status);
+  }
+  const data = (await response.json()) as UserMeResponse;
+  return { token, userId: data.id, email: data.email, tier: data.tier };
+}
+
 export async function getDiscordAuthUrl(redirectUri?: string): Promise<{ url: string }> {
   const qs = redirectUri ? `?redirect_uri=${encodeURIComponent(redirectUri)}` : "";
   return apiRequest<{ url: string }>(`/api/v1/auth/discord/authorize${qs}`);
