@@ -12,12 +12,12 @@
 import type { ConsciousnessEngine, EngineInput, EngineMetadata, EngineOutput } from '../../types'
 import { EngineValidationError } from '../../utils'
 import {
-  getMelakarta,
-  findMelakartaByName,
-  getRaagasForDosha,
-  getPraharForHour,
-  MELAKARTAS,
   type Dosha,
+  MELAKARTAS,
+  findMelakartaByName,
+  getMelakarta,
+  getPraharForHour,
+  getRaagasForDosha,
 } from './wisdom'
 import { generateWitnessPrompts } from './witness'
 
@@ -50,13 +50,15 @@ export class RaagaEngine implements ConsciousnessEngine {
         dosha: {
           type: 'string',
           required: false,
-          description: 'Ayurvedic constitution: "vata" | "pitta" | "kapha". Used for auto-selection and affinity scoring.',
+          description:
+            'Ayurvedic constitution: "vata" | "pitta" | "kapha". Used for auto-selection and affinity scoring.',
           enum: [...VALID_DOSHAS],
         },
         root_hz: {
           type: 'number',
           required: false,
-          description: 'Root frequency for Sa in Hz. Defaults to 220 (A3). Used in ratio annotations.',
+          description:
+            'Root frequency for Sa in Hz. Defaults to 220 (A3). Used in ratio annotations.',
           default: 220,
         },
         include_alternates: {
@@ -107,7 +109,7 @@ export class RaagaEngine implements ConsciousnessEngine {
     } else if (numParam !== undefined) {
       if (!Number.isInteger(numParam) || numParam < 1 || numParam > 72) {
         throw new EngineValidationError(
-          `Melakarta number must be an integer between 1 and 72.`,
+          'Melakarta number must be an integer between 1 and 72.',
           'INVALID_MELAKARTA_NUMBER',
           { provided: numParam },
         )
@@ -128,15 +130,26 @@ export class RaagaEngine implements ConsciousnessEngine {
       melakartaNum = prahar.recommended[0]
     }
 
-    const m = getMelakarta(melakartaNum)!
+    const m = getMelakarta(melakartaNum)
+    if (!m) {
+      throw new EngineValidationError(
+        `No melakarta found for number ${melakartaNum}.`,
+        'MELAKARTA_NOT_FOUND',
+        { melakartaNum },
+      )
+    }
 
     // Build swara annotation (name + ratio)
     const swara_labels = ['Sa', 'Re', 'Ga', 'Ma', 'Pa', 'Dha', 'Ni', "Sa'"]
     const swaras = m.arohana.map((shruti_idx, i) => ({
       swara: swara_labels[i],
       shruti_index: shruti_idx,
-      ratio_num: [1, 256, 16, 10, 9, 32, 6, 5, 81, 4, 27, 45, 729, 3, 128, 8, 5, 27, 16, 9, 15, 243, 2][shruti_idx],
-      ratio_den: [1, 243, 15, 9, 8, 27, 5, 4, 64, 3, 20, 32, 512, 2, 81, 5, 3, 16, 9, 5, 8, 128, 1][shruti_idx],
+      ratio_num: [
+        1, 256, 16, 10, 9, 32, 6, 5, 81, 4, 27, 45, 729, 3, 128, 8, 5, 27, 16, 9, 15, 243, 2,
+      ][shruti_idx],
+      ratio_den: [1, 243, 15, 9, 8, 27, 5, 4, 64, 3, 20, 32, 512, 2, 81, 5, 3, 16, 9, 5, 8, 128, 1][
+        shruti_idx
+      ],
       ratio_decimal: m.ratios[i],
       hz: +(rootHz * m.ratios[i]).toFixed(3),
     }))
@@ -154,12 +167,13 @@ export class RaagaEngine implements ConsciousnessEngine {
     }
 
     // Alternate ragas for same dosha
-    const alternates = includeAlternates && dosha
-      ? getRaagasForDosha(dosha)
-          .filter((x) => x.num !== melakartaNum)
-          .slice(0, 3)
-          .map((x) => ({ num: x.num, name: x.name, chakra: x.chakra, ma_type: x.ma_type }))
-      : []
+    const alternates =
+      includeAlternates && dosha
+        ? getRaagasForDosha(dosha)
+            .filter((x) => x.num !== melakartaNum)
+            .slice(0, 3)
+            .map((x) => ({ num: x.num, name: x.name, chakra: x.chakra, ma_type: x.ma_type }))
+        : []
 
     const result: Record<string, unknown> = {
       melakarta: {
