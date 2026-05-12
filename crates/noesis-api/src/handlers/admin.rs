@@ -1693,7 +1693,15 @@ pub async fn rotate_api_key(
     let rotated = repo
         .rotate_api_key(key_uuid, &key_hash, &key_prefix, actor_user_id)
         .await
-        .map_err(|e| EngineError::InternalError(format!("Failed to rotate api key: {e}")))?;
+        .map_err(|e| {
+            tracing::error!(
+                error = %e,
+                key_id = %key_id,
+                actor_user_id = ?actor_user_id,
+                "rotate_api_key DB error"
+            );
+            EngineError::InternalError(format!("Failed to rotate api key: {e}"))
+        })?;
 
     let Some(rotated) = rotated else {
         return Ok(json_error_response(
