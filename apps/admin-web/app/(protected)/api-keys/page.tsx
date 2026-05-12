@@ -2,9 +2,9 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { ActionRail, MetricSurface, SurfaceCard } from "@/components/admin-primitives";
+import { ActionRail, MetricSurface } from "@/components/admin-primitives";
 import { BulkActionBar, useBulkSelection } from "@/components/bulk-actions";
-import { StateBanner, StatePanel, TableEmptyStateRow } from "@/components/admin-state";
+import { StateBanner, StatePanel } from "@/components/admin-state";
 import { ModalSurface } from "@/components/overlay-surface";
 import { PageShell } from "@/components/page-shell";
 import { getAuthToken } from "@/lib/auth";
@@ -185,6 +185,113 @@ function RevokeIcon() {
   );
 }
 
+// ─── Geometric glyph derived from key ID hash ────────────────────────────────
+function KeyGlyph({ keyId }: { keyId: string }) {
+  let h = 0;
+  for (let i = 0; i < Math.min(keyId.length, 16); i++) {
+    h = ((h << 5) - h + keyId.charCodeAt(i)) | 0;
+  }
+  const hue = (Math.abs(h) % 280) + 20;
+  const sides = (Math.abs(h >> 8) % 3) + 4;
+  const pts = Array.from({ length: sides }, (_, i) => {
+    const a = (i / sides) * 2 * Math.PI - Math.PI / 2;
+    return `${16 + 12 * Number(Math.cos(a).toFixed(2))},${16 + 12 * Number(Math.sin(a).toFixed(2))}`;
+  }).join(" ");
+  return (
+    <svg viewBox="0 0 32 32" className="key-glyph-svg" aria-hidden="true">
+      <polygon points={pts} fill="none" stroke={`hsl(${hue},40%,54%)`} strokeWidth="1.2" opacity="0.8" />
+      <circle cx="16" cy="16" r="3.5" fill={`hsl(${hue},38%,38%)`} opacity="0.7" />
+    </svg>
+  );
+}
+
+// ─── Dedicated secret reveal — independent of selectedKey modal state ─────────
+function SecretRevealModal({
+  secret,
+  source,
+  keyName,
+  onDismiss,
+}: {
+  secret: string;
+  source: "created" | "rotated";
+  keyName: string;
+  onDismiss: () => void;
+}) {
+  const [secondsLeft, setSecondsLeft] = useState(60);
+  const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    const id = window.setInterval(() => {
+      setSecondsLeft((s) => {
+        if (s <= 1) { window.clearInterval(id); onDismiss(); return 0; }
+        return s - 1;
+      });
+    }, 1000);
+    return () => window.clearInterval(id);
+  }, [onDismiss]);
+
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) { if (e.key === "Escape") onDismiss(); }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onDismiss]);
+
+  async function handleCopy() {
+    await copyToClipboard(secret);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2500);
+  }
+
+  const pct = secondsLeft / 60;
+  const r = 26;
+  const circ = 2 * Math.PI * r;
+
+  return (
+    <div className="secret-ceremony-overlay" role="dialog" aria-modal="true" aria-label="Secret key reveal">
+      <div className="secret-ceremony-card">
+        <div className="secret-ceremony-eyebrow">
+          {source === "created" ? "Credential Inscribed" : "Credential Rotated"}
+        </div>
+        <h2 className="secret-ceremony-title">{keyName}</h2>
+        <p className="secret-ceremony-warning">
+          This is the only moment your secret is visible. It cannot be recovered after this window closes.
+        </p>
+
+        <div className="secret-ceremony-timer" aria-label={`${secondsLeft} seconds remaining`}>
+          <svg viewBox="0 0 60 60" className="secret-ceremony-ring" aria-hidden="true">
+            <circle cx="30" cy="30" r={r} className="secret-ceremony-ring-track" />
+            <circle
+              cx="30" cy="30" r={r}
+              className="secret-ceremony-ring-fill"
+              strokeDasharray={`${pct * circ} ${circ}`}
+              strokeDashoffset={circ / 4}
+            />
+          </svg>
+          <span className="secret-ceremony-timer-num">{secondsLeft}</span>
+        </div>
+
+        <div className="secret-ceremony-key-wrap">
+          <code className="secret-ceremony-key">{secret}</code>
+        </div>
+
+        <div className="secret-ceremony-actions">
+          <button
+            type="button"
+            className={`secret-ceremony-copy ${copied ? "copied" : ""}`}
+            onClick={() => void handleCopy()}
+          >
+            <CopyIcon />
+            <span>{copied ? "Copied to clipboard!" : "Copy secret key"}</span>
+          </button>
+          <button type="button" className="secret-ceremony-dismiss" onClick={onDismiss}>
+            I&apos;ve saved it — close
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function ApiKeysPage() {
   const router = useRouter();
   const pathname = usePathname();
@@ -213,6 +320,11 @@ export default function ApiKeysPage() {
   const [secretVisible, setSecretVisible] = useState(false);
   const [secretRevealSecondsLeft, setSecretRevealSecondsLeft] = useState(0);
   const [copiedSecret, setCopiedSecret] = useState(false);
+  const [pendingReveal, setPendingReveal] = useState<{
+    secret: string;
+    source: "created" | "rotated";
+    keyName: string;
+  } | null>(null);
   const [session, setSession] = useState<AdminSession | null>(null);
 
   const [confirmRevoke, setConfirmRevoke] = useState<AdminApiKeyItem | null>(null);
@@ -420,6 +532,7 @@ export default function ApiKeysPage() {
       setSecretVisible(true);
       setSecretRevealSecondsLeft(SECRET_INITIAL_REVEAL_SECONDS);
       setCopiedSecret(false);
+      setPendingReveal({ secret: res.secret_key, source: "created", keyName: res.key.name || res.key.id });
       setSelectedKey(res.key);
       setSuccess(`Created key "${res.key.name || res.key.id}"`);
       setShowCreate(false);
@@ -464,6 +577,7 @@ export default function ApiKeysPage() {
       setSecretVisible(true);
       setSecretRevealSecondsLeft(SECRET_INITIAL_REVEAL_SECONDS);
       setCopiedSecret(false);
+      setPendingReveal({ secret: res.secret_key, source: "rotated", keyName: key.name || key.id });
       setSelectedKey(res.key);
       setSuccess(`Rotated key "${key.name || key.id}"`);
       setConfirmRotate(null);
@@ -671,154 +785,137 @@ export default function ApiKeysPage() {
           description="Resolving key inventory, ownership, permission previews, and lifecycle state."
         />
       ) : (
-        <SurfaceCard
-          eyebrow="Registry"
-          title="Key inventory"
-          summary="Ownership, access, lifecycle, and quick-open controls for credential governance."
-        >
-          <BulkActionBar
-            className="bulk-action-bar-embedded"
-            itemLabel="keys"
-            selectedCount={bulkSelection.selectedCount}
-            visibleCount={filteredKeys.length}
-            allVisibleSelected={bulkSelection.allVisibleSelected}
-            onToggleVisible={bulkSelection.toggleVisible}
-            onClear={bulkSelection.clear}
-          >
-            <button
-              type="button"
-              disabled={selectedRevokableKeys.length === 0 || !canRevokeKeys || submittingId !== null}
-              onClick={queueBulkRevoke}
+        <>
+          <div className="key-vault-header">
+            <div className="key-vault-header-left">
+              <div className="eyebrow">Key Registry</div>
+              <p className="helper">
+                {filteredKeys.length} credential{filteredKeys.length !== 1 ? "s" : ""} — select for bulk operations
+              </p>
+            </div>
+            <BulkActionBar
+              className="bulk-action-bar-embedded"
+              itemLabel="keys"
+              selectedCount={bulkSelection.selectedCount}
+              visibleCount={filteredKeys.length}
+              allVisibleSelected={bulkSelection.allVisibleSelected}
+              onToggleVisible={bulkSelection.toggleVisible}
+              onClear={bulkSelection.clear}
             >
-              Revoke selected
-            </button>
-          </BulkActionBar>
+              <button
+                type="button"
+                disabled={selectedRevokableKeys.length === 0 || !canRevokeKeys || submittingId !== null}
+                onClick={queueBulkRevoke}
+              >
+                Revoke selected
+              </button>
+            </BulkActionBar>
+          </div>
 
-          <div className="table-wrap management-table">
-            <table>
-              <thead>
-                <tr>
-                  <th className="table-select-column">
+          <div className="key-vault-grid">
+            {filteredKeys.map((key) => (
+              <article
+                key={key.id}
+                className={`key-card${!key.is_active ? " key-card-revoked" : ""}${bulkSelection.selectedSet.has(key.id) ? " key-card-selected" : ""}`}
+                tabIndex={0}
+                role="button"
+                aria-label={`Inspect key ${key.name || key.id}`}
+                onClick={() => openKeyModal(key)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openKeyModal(key); }
+                }}
+              >
+                <div className="key-card-top">
+                  <label className="key-card-check-wrap" onClick={(e) => e.stopPropagation()} aria-label={`Select ${key.name || key.id}`}>
                     <input
                       type="checkbox"
-                      aria-label={bulkSelection.allVisibleSelected ? "Clear visible keys" : "Select visible keys"}
-                      checked={bulkSelection.allVisibleSelected}
-                      onChange={() => bulkSelection.toggleVisible()}
-                      disabled={filteredKeys.length === 0}
+                      checked={bulkSelection.selectedSet.has(key.id)}
+                      onChange={() => bulkSelection.toggle(key.id)}
+                      onKeyDown={(e) => e.stopPropagation()}
                     />
-                  </th>
-                  <th>Key</th>
-                  <th>Owner</th>
-                  <th>Access</th>
-                  <th>Usage</th>
-                  <th>Status</th>
-                  <th>Manage</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredKeys.map((key) => (
-                  <tr
-                    key={key.id}
-                    className="clickable-row"
-                    tabIndex={0}
-                    onClick={() => openKeyModal(key)}
-                    onKeyDown={(event) => {
-                      if (event.key === "Enter" || event.key === " ") {
-                        event.preventDefault();
-                        openKeyModal(key);
-                      }
-                    }}
+                  </label>
+                  <KeyGlyph keyId={key.id} />
+                  <div className="key-card-identity">
+                    <div className="key-card-name">{key.name || "Unnamed key"}</div>
+                    <div className="key-card-email">{key.user_email}</div>
+                  </div>
+                  <div className="key-card-badges">
+                    <span className={statusPillClass(key.is_active ? "active" : "revoked")}>
+                      {key.is_active ? "active" : "revoked"}
+                    </span>
+                    <span className={tierPillClass(key.tier)}>{key.tier}</span>
+                  </div>
+                </div>
+
+                <code className="key-card-prefix">{key.key_prefix || `${key.id.slice(0, 8)}…`}</code>
+
+                <div className="key-card-stats">
+                  <div>
+                    <span className="key-stat-label">Last used</span>
+                    <span className="key-stat-value">{formatDateTime(key.last_used)}</span>
+                  </div>
+                  <div>
+                    <span className="key-stat-label">Rate</span>
+                    <span className="key-stat-value">{key.rate_limit}/min</span>
+                  </div>
+                  <div>
+                    <span className="key-stat-label">Expires</span>
+                    <span className="key-stat-value">{key.expires_at ? formatDateTime(key.expires_at) : "Never"}</span>
+                  </div>
+                </div>
+
+                <div className="key-card-perms">
+                  {permissionsPreview(key.permissions).map((p) => (
+                    <span className="permission-chip" key={`${key.id}-${p}`}>{p}</span>
+                  ))}
+                  {key.permissions.length > 2 ? (
+                    <span className="permission-chip muted">+{key.permissions.length - 2}</span>
+                  ) : null}
+                </div>
+
+                <div className="key-card-footer" onClick={(e) => e.stopPropagation()}>
+                  <button
+                    type="button"
+                    className="key-card-btn"
+                    title="Rotate"
+                    disabled={!key.is_active || !canRotateKeys || submittingId !== null}
+                    onClick={(e) => { e.stopPropagation(); setConfirmRotate(key); }}
+                    aria-label={`Rotate ${key.name || key.id}`}
                   >
-                    <td className="table-select-cell">
-                      <input
-                        type="checkbox"
-                        aria-label={`Select ${key.name || key.id}`}
-                        checked={bulkSelection.selectedSet.has(key.id)}
-                        onChange={() => bulkSelection.toggle(key.id)}
-                        onClick={(event) => event.stopPropagation()}
-                        onKeyDown={(event) => event.stopPropagation()}
-                      />
-                    </td>
-                    <td>
-                      <div className="table-primary">{key.name || "Unnamed key"}</div>
-                      <div className="table-secondary-row">
-                        <span className="key-prefix">{key.key_prefix || `${key.id.slice(0, 8)}...`}</span>
-                        <button
-                          type="button"
-                          className="link-btn"
-                          onClick={(event) => {
-                            event.stopPropagation();
-                            void handleCopyValue(key.id, "Key ID");
-                          }}
-                        >
-                          {key.id}
-                        </button>
-                      </div>
-                      <div className="helper">Created {formatDateTime(key.created_at)}</div>
-                    </td>
-                    <td>
-                      <div className="table-primary">{key.user_email}</div>
-                      <button
-                        type="button"
-                        className="link-btn"
-                        onClick={(event) => {
-                          event.stopPropagation();
-                          void handleCopyValue(key.user_id, "User ID");
-                        }}
-                      >
-                        {key.user_id}
-                      </button>
-                    </td>
-                    <td>
-                      <div className="table-chip-row">
-                        <span className={tierPillClass(key.tier)}>{key.tier}</span>
-                        {permissionsPreview(key.permissions).map((permission) => (
-                          <span className="permission-chip" key={`${key.id}-${permission}`}>
-                            {permission}
-                          </span>
-                        ))}
-                        {key.permissions.length > 2 ? (
-                          <span className="permission-chip muted">+{key.permissions.length - 2}</span>
-                        ) : null}
-                      </div>
-                      <div className="helper">{key.rate_limit}/min rate limit</div>
-                    </td>
-                    <td>
-                      <div className="table-primary">{formatDateTime(key.last_used)}</div>
-                      <div className="helper">
-                        {key.expires_at ? `Expires ${formatDateTime(key.expires_at)}` : "No expiration"}
-                      </div>
-                    </td>
-                    <td>
-                      <span className={statusPillClass(key.is_active ? "active" : "revoked")}>
-                        {key.is_active ? "active" : "revoked"}
-                      </span>
-                    </td>
-                    <td>
-                      <button
-                        type="button"
-                        className="manage-trigger"
-                        onClick={(event) => {
-                          event.stopPropagation();
-                          openKeyModal(key);
-                        }}
-                      >
-                        Open
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-                {filteredKeys.length === 0 ? (
-                  <TableEmptyStateRow
-                    colSpan={7}
-                    title="No API keys matched"
-                    description="Try widening the search, tier, or status filters to restore results."
-                  />
-                ) : null}
-              </tbody>
-            </table>
+                    <RotateIcon />
+                  </button>
+                  <button
+                    type="button"
+                    className="key-card-btn danger"
+                    title="Revoke"
+                    disabled={!key.is_active || !canRevokeKeys || submittingId !== null}
+                    onClick={(e) => { e.stopPropagation(); setConfirmRevoke(key); }}
+                    aria-label={`Revoke ${key.name || key.id}`}
+                  >
+                    <RevokeIcon />
+                  </button>
+                  <button
+                    type="button"
+                    className="key-card-open"
+                    onClick={(e) => { e.stopPropagation(); openKeyModal(key); }}
+                  >
+                    Inspect
+                  </button>
+                </div>
+              </article>
+            ))}
+            {filteredKeys.length === 0 ? (
+              <div className="key-vault-empty">
+                <svg viewBox="0 0 48 48" className="key-vault-empty-glyph" aria-hidden="true">
+                  <polygon points="24,4 44,14 44,34 24,44 4,34 4,14" fill="none" stroke="currentColor" strokeWidth="1.2" opacity="0.3" />
+                  <circle cx="24" cy="24" r="6" fill="none" stroke="currentColor" strokeWidth="1.2" opacity="0.3" />
+                </svg>
+                <p>No credentials matched</p>
+                <p className="helper">Widen the search, tier, or status filters.</p>
+              </div>
+            ) : null}
           </div>
-        </SurfaceCard>
+        </>
       )}
 
       <ModalSurface
@@ -1265,6 +1362,15 @@ export default function ApiKeysPage() {
           This removes the stored record itself, not just active access. Prefer revoke if you need audit retention without hard deletion.
         </p>
       </ModalSurface>
+
+      {pendingReveal ? (
+        <SecretRevealModal
+          secret={pendingReveal.secret}
+          source={pendingReveal.source}
+          keyName={pendingReveal.keyName}
+          onDismiss={() => setPendingReveal(null)}
+        />
+      ) : null}
     </PageShell>
   );
 }

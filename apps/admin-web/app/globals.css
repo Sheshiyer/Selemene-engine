@@ -2095,3 +2095,490 @@ tbody tr.clickable-row:focus-visible {
     max-width: none;
   }
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   KEY VAULT — geometric card grid
+   ═══════════════════════════════════════════════════════════════════ */
+
+.key-vault-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  padding: 0 0 0.5rem;
+  border-bottom: 1px solid var(--line-faint);
+}
+
+.key-vault-header-left {
+  display: grid;
+  gap: 0.18rem;
+}
+
+.key-vault-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1rem;
+}
+
+.key-card {
+  position: relative;
+  display: grid;
+  gap: 0.78rem;
+  border: 1px solid var(--line-mid);
+  border-radius: var(--r-xl);
+  padding: 1rem;
+  background:
+    linear-gradient(160deg, rgba(18, 32, 52, 0.92) 0%, rgba(10, 18, 30, 0.94) 100%),
+    radial-gradient(circle at top right, rgba(196,135,59,0.06), transparent 55%);
+  box-shadow: var(--inset-glow);
+  cursor: pointer;
+  transition:
+    border-color 200ms var(--ease-out-expo),
+    transform 200ms var(--ease-out-expo),
+    box-shadow 200ms var(--ease-out-expo);
+  outline: none;
+}
+
+.key-card:hover,
+.key-card:focus-visible {
+  border-color: var(--line-strong);
+  transform: translateY(-2px);
+  box-shadow: var(--inset-glow), var(--shadow-md);
+}
+
+.key-card:focus-visible {
+  box-shadow: var(--inset-glow), 0 0 0 2px var(--accent);
+}
+
+.key-card-revoked {
+  opacity: 0.6;
+  background:
+    linear-gradient(160deg, rgba(14, 22, 36, 0.92) 0%, rgba(9, 15, 24, 0.94) 100%),
+    none;
+}
+
+.key-card-selected {
+  border-color: rgba(var(--accent-rgb), 0.55);
+  box-shadow: var(--inset-glow), 0 0 0 2px rgba(var(--accent-rgb), 0.18);
+}
+
+/* ── Card sections ─────────────────────────────────────────────── */
+
+.key-card-top {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.7rem;
+}
+
+.key-card-check-wrap {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  padding-top: 0.15rem;
+  cursor: pointer;
+}
+
+.key-card-check-wrap input[type="checkbox"] {
+  width: 1rem;
+  height: 1rem;
+  cursor: pointer;
+}
+
+.key-glyph-svg {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+}
+
+.key-card-identity {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  gap: 0.18rem;
+}
+
+.key-card-name {
+  font-size: 0.94rem;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.key-card-email {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.key-card-badges {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.3rem;
+}
+
+.key-card-prefix {
+  display: block;
+  font-family: var(--font-mono), monospace;
+  font-size: 0.78rem;
+  color: rgba(196,135,59,0.85);
+  letter-spacing: 0.04em;
+  border: 1px solid rgba(196,135,59,0.2);
+  border-radius: var(--r-sm);
+  padding: 0.3rem 0.55rem;
+  background: rgba(196,135,59,0.06);
+  width: fit-content;
+}
+
+.key-card-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.4rem;
+  padding: 0.6rem 0;
+  border-top: 1px solid var(--line-faint);
+  border-bottom: 1px solid var(--line-faint);
+}
+
+.key-card-stats > div {
+  display: grid;
+  gap: 0.15rem;
+}
+
+.key-stat-label {
+  font-size: 0.7rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.key-stat-value {
+  font-size: 0.8rem;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.key-card-perms {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+
+.key-card-footer {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding-top: 0.4rem;
+  border-top: 1px solid var(--line-faint);
+}
+
+.key-card-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border: 1px solid var(--line-mid);
+  border-radius: var(--r-md);
+  background: rgba(240,237,227,0.03);
+  color: var(--text-muted);
+  cursor: pointer;
+  box-shadow: var(--inset-glow);
+  transition:
+    border-color 150ms var(--ease-out-expo),
+    color 150ms,
+    background-color 150ms var(--ease-out-expo),
+    transform 120ms var(--ease-spring);
+}
+
+.key-card-btn svg {
+  width: 0.85rem;
+  height: 0.85rem;
+}
+
+.key-card-btn:hover:not(:disabled) {
+  border-color: var(--line-strong);
+  color: var(--text);
+  background: rgba(240,237,227,0.07);
+  transform: translateY(-1px);
+}
+
+.key-card-btn.danger {
+  border-color: rgba(239,107,115,0.3);
+  color: rgba(239,107,115,0.7);
+}
+
+.key-card-btn.danger:hover:not(:disabled) {
+  border-color: rgba(239,107,115,0.55);
+  color: #ffc7cb;
+  background: rgba(95,23,31,0.15);
+}
+
+.key-card-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.key-card-open {
+  margin-left: auto;
+  border: 1px solid var(--line-mid);
+  border-radius: var(--r-md);
+  padding: 0.38rem 0.72rem;
+  font-size: 0.82rem;
+  background: rgba(240,237,227,0.03);
+  color: var(--text-muted);
+  cursor: pointer;
+  box-shadow: var(--inset-glow);
+  transition:
+    border-color 150ms var(--ease-out-expo),
+    color 150ms,
+    background-color 150ms,
+    transform 120ms var(--ease-spring);
+}
+
+.key-card-open:hover {
+  border-color: rgba(var(--accent-rgb), 0.45);
+  color: var(--accent);
+  background: rgba(var(--accent-rgb), 0.06);
+  transform: translateY(-1px);
+}
+
+/* ── Empty state ───────────────────────────────────────────────── */
+
+.key-vault-empty {
+  grid-column: 1 / -1;
+  display: grid;
+  place-items: center;
+  gap: 0.5rem;
+  padding: 4rem 2rem;
+  text-align: center;
+  color: var(--text-muted);
+}
+
+.key-vault-empty-glyph {
+  width: 48px;
+  height: 48px;
+  color: var(--text-muted);
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   SECRET CEREMONY — dedicated reveal overlay
+   ═══════════════════════════════════════════════════════════════════ */
+
+.secret-ceremony-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: rgba(0, 0, 0, 0.82);
+  backdrop-filter: blur(12px) saturate(1.2);
+  -webkit-backdrop-filter: blur(12px) saturate(1.2);
+  display: grid;
+  place-items: center;
+  padding: 1.5rem;
+  animation: ceremony-fade-in 0.25s var(--ease-out-expo);
+}
+
+@keyframes ceremony-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.secret-ceremony-card {
+  width: min(560px, 100%);
+  border: 1px solid rgba(196,135,59,0.55);
+  border-radius: var(--r-xl);
+  padding: 2rem;
+  background:
+    linear-gradient(160deg, rgba(24,16,8,0.98) 0%, rgba(12,10,6,0.99) 100%),
+    radial-gradient(circle at top left, rgba(196,135,59,0.22), transparent 52%);
+  box-shadow:
+    var(--inset-glow),
+    0 0 0 1px rgba(196,135,59,0.12),
+    0 24px 80px rgba(0,0,0,0.7),
+    0 0 60px rgba(196,135,59,0.08);
+  display: grid;
+  gap: 1.2rem;
+  animation: ceremony-slide-up 0.3s var(--ease-out-expo);
+}
+
+@keyframes ceremony-slide-up {
+  from { opacity: 0; transform: translateY(16px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.secret-ceremony-eyebrow {
+  font-family: var(--font-mono), monospace;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.secret-ceremony-title {
+  margin: 0;
+  font-family: var(--font-display), sans-serif;
+  font-size: 1.45rem;
+  letter-spacing: 0.02em;
+  color: var(--text);
+  line-height: 1.25;
+}
+
+.secret-ceremony-warning {
+  margin: 0;
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  line-height: 1.55;
+  border-left: 2px solid rgba(196,135,59,0.4);
+  padding-left: 0.8rem;
+}
+
+.secret-ceremony-timer {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+}
+
+.secret-ceremony-ring {
+  position: absolute;
+  inset: 0;
+  width: 64px;
+  height: 64px;
+  transform: rotate(-90deg);
+}
+
+.secret-ceremony-ring-track {
+  fill: none;
+  stroke: rgba(196,135,59,0.15);
+  stroke-width: 2.5;
+}
+
+.secret-ceremony-ring-fill {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  transition: stroke-dasharray 0.9s linear;
+}
+
+.secret-ceremony-timer-num {
+  position: relative;
+  font-family: var(--font-mono), monospace;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.secret-ceremony-key-wrap {
+  border: 1px solid rgba(196,135,59,0.35);
+  border-radius: var(--r-lg);
+  padding: 1rem 1.1rem;
+  background: rgba(10,7,3,0.7);
+  box-shadow: inset 0 1px 0 rgba(196,135,59,0.1);
+}
+
+.secret-ceremony-key {
+  display: block;
+  font-family: var(--font-mono), monospace;
+  font-size: 0.9rem;
+  color: #f4d6b0;
+  word-break: break-all;
+  white-space: pre-wrap;
+  line-height: 1.6;
+  user-select: all;
+}
+
+.secret-ceremony-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+}
+
+.secret-ceremony-copy {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border: 1px solid rgba(196,135,59,0.5);
+  border-radius: var(--r-md);
+  padding: 0.7rem 1.2rem;
+  background: linear-gradient(135deg, rgba(196,135,59,0.22), rgba(196,135,59,0.1));
+  color: #f4d6b0;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: var(--inset-glow);
+  transition:
+    background 150ms var(--ease-out-expo),
+    border-color 150ms,
+    transform 120ms var(--ease-spring);
+}
+
+.secret-ceremony-copy:hover {
+  background: linear-gradient(135deg, rgba(196,135,59,0.35), rgba(196,135,59,0.18));
+  border-color: rgba(196,135,59,0.7);
+  transform: translateY(-1px);
+}
+
+.secret-ceremony-copy.copied {
+  border-color: rgba(74,124,89,0.55);
+  background: rgba(74,124,89,0.2);
+  color: #d4f0dd;
+}
+
+.secret-ceremony-copy svg {
+  width: 0.95rem;
+  height: 0.95rem;
+  flex-shrink: 0;
+}
+
+.secret-ceremony-dismiss {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--line-mid);
+  border-radius: var(--r-md);
+  padding: 0.7rem 1rem;
+  background: rgba(240,237,227,0.03);
+  color: var(--text-muted);
+  font-size: 0.86rem;
+  cursor: pointer;
+  box-shadow: var(--inset-glow);
+  transition: color 150ms, border-color 150ms;
+}
+
+.secret-ceremony-dismiss:hover {
+  color: var(--text);
+  border-color: var(--line-strong);
+}
+
+/* ── Responsive ────────────────────────────────────────────────── */
+
+@media (max-width: 640px) {
+  .key-vault-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .key-card-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .secret-ceremony-actions {
+    flex-direction: column;
+  }
+
+  .secret-ceremony-copy {
+    flex: none;
+    width: 100%;
+  }
+}
