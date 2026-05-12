@@ -1252,9 +1252,12 @@ impl AdminRepository {
     }
 
     /// Purge revoked API keys older than `days` days. Returns the number deleted.
+    /// Falls back to `created_at` for legacy rows where `revoked_at` is NULL.
     pub async fn purge_revoked_api_keys(&self, days: i64) -> Result<u64, Error> {
         let affected = sqlx::query(
-            "DELETE FROM api_keys WHERE is_active = false AND revoked_at < NOW() - ($1 || ' days')::interval"
+            "DELETE FROM api_keys \
+             WHERE is_active = false \
+               AND COALESCE(revoked_at, created_at) < NOW() - ($1 || ' days')::interval"
         )
         .bind(days)
         .execute(&self.pool)
