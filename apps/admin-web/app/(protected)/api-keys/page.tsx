@@ -571,19 +571,23 @@ export default function ApiKeysPage() {
   async function handleRotate(key: AdminApiKeyItem) {
     const token = getAuthToken();
     if (!token) return;
+    // Close the confirm modal immediately — user already confirmed
+    setConfirmRotate(null);
     setSubmittingId(key.id);
     setError(null);
     setSuccess(null);
     try {
       const res = await rotateAdminApiKey(token, key.id);
+      // Store secret and open the inspect panel showing the rotated key
       setRecentSecret({ keyId: res.key.id, secret: res.secret_key, source: "rotated" });
       setSecretVisible(true);
       setSecretRevealSecondsLeft(SECRET_INITIAL_REVEAL_SECONDS);
       setCopiedSecret(false);
-      setPendingReveal({ secret: res.secret_key, source: "rotated", keyName: key.name || key.id });
+      // Open the inspect panel for the new key so secret is visible there
       setSelectedKey(res.key);
+      // Also show the ceremony overlay as a one-time reveal
+      setPendingReveal({ secret: res.secret_key, source: "rotated", keyName: key.name || key.id });
       setSuccess(`Rotated key "${key.name || key.id}"`);
-      setConfirmRotate(null);
       await loadKeys();
     } catch (err) {
       setError(err instanceof ApiClientError ? err.payload?.error || err.message : "Failed to rotate");
