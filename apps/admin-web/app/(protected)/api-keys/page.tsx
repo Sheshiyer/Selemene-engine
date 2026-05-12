@@ -320,6 +320,7 @@ export default function ApiKeysPage() {
   const [secretVisible, setSecretVisible] = useState(false);
   const [secretRevealSecondsLeft, setSecretRevealSecondsLeft] = useState(0);
   const [copiedSecret, setCopiedSecret] = useState(false);
+  const [secretViewAttempted, setSecretViewAttempted] = useState(false);
   const [pendingReveal, setPendingReveal] = useState<{
     secret: string;
     source: "created" | "rotated";
@@ -469,6 +470,7 @@ export default function ApiKeysPage() {
 
   function openKeyModal(key: AdminApiKeyItem) {
     setSelectedKey(key);
+    setSecretViewAttempted(false);
     if (recentSecret?.keyId !== key.id) {
       setRecentSecret(null);
       setSecretVisible(false);
@@ -483,6 +485,7 @@ export default function ApiKeysPage() {
     setSecretVisible(false);
     setSecretRevealSecondsLeft(0);
     setCopiedSecret(false);
+    setSecretViewAttempted(false);
   }
 
   function revealSecretBriefly() {
@@ -1186,24 +1189,33 @@ export default function ApiKeysPage() {
                     <h4>Secret access</h4>
                     <p className="helper">
                       {secretForSelectedKey
-                        ? `The full secret is available because this key was just ${secretForSelectedKey.source} in this browser session. Reveal access auto-hides after ${SECRET_REVEAL_WINDOW_SECONDS} seconds.`
-                        : "Existing keys cannot reveal their full secret after issuance because only the stored hash is retained. Only the prefix remains visible."}
+                        ? `This key was just ${secretForSelectedKey.source} in this session — the secret is temporarily available.`
+                        : "Only the key hash is stored. The plaintext secret can only be recovered by rotating the key."}
                     </p>
                   </div>
-                  {secretForSelectedKey ? (
-                    <div className="inline-actions">
-                      <button
-                        type="button"
-                        className="icon-action compact"
-                        onClick={toggleSecretReveal}
-                      >
-                        <EyeIcon open={secretVisible} />
-                        <span>
-                          {secretVisible
+                  <div className="inline-actions">
+                    <button
+                      type="button"
+                      className={`icon-action compact${secretVisible ? " active" : ""}`}
+                      title={secretForSelectedKey ? (secretVisible ? "Hide secret" : "View secret") : "Secret not available — rotate to get a new one"}
+                      onClick={() => {
+                        if (secretForSelectedKey) {
+                          toggleSecretReveal();
+                        } else {
+                          setSecretViewAttempted((v) => !v);
+                        }
+                      }}
+                    >
+                      <EyeIcon open={secretVisible} />
+                      <span>
+                        {secretForSelectedKey
+                          ? secretVisible
                             ? `Hide (${secretRevealSecondsLeft}s)`
-                            : `Reveal for ${SECRET_REVEAL_WINDOW_SECONDS}s`}
-                        </span>
-                      </button>
+                            : "View secret"
+                          : "View secret"}
+                      </span>
+                    </button>
+                    {secretForSelectedKey && secretVisible ? (
                       <button
                         type="button"
                         className={`icon-action compact ${copiedSecret ? "success" : ""}`}
@@ -1212,19 +1224,37 @@ export default function ApiKeysPage() {
                         <CopyIcon />
                         <span>{copiedSecret ? "Copied" : "Copy"}</span>
                       </button>
-                    </div>
-                  ) : null}
+                    ) : null}
+                  </div>
                 </div>
 
                 <div className="secret-display">
                   <code>
-                    {secretForSelectedKey
-                      ? secretVisible
-                        ? secretForSelectedKey.secret
-                        : "nk_••••••••••••••••••••••••••••••••"
+                    {secretForSelectedKey && secretVisible
+                      ? secretForSelectedKey.secret
                       : `${selectedKey.key_prefix || "nk_••••"}••••••••••••••••••••`}
                   </code>
                 </div>
+
+                {!secretForSelectedKey && secretViewAttempted ? (
+                  <div className="secret-unavailable-notice" role="alert">
+                    <div className="secret-unavailable-body">
+                      <div className="secret-unavailable-eyebrow">Secret unavailable</div>
+                      <p>
+                        The plaintext secret was only shown at creation and is no longer stored. To access a
+                        new secret, rotate this key — a fresh secret will be revealed immediately.
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      className="secret-unavailable-rotate-btn"
+                      disabled={!selectedKey.is_active || !canRotateKeys || submittingId === selectedKey.id}
+                      onClick={() => { setSecretViewAttempted(false); setConfirmRotate(selectedKey); }}
+                    >
+                      Rotate to reveal
+                    </button>
+                  </div>
+                ) : null}
               </section>
 
               <section className="detail-card detail-card-span danger-zone">
