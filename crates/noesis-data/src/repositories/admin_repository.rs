@@ -1251,6 +1251,19 @@ impl AdminRepository {
         Ok(affected > 0)
     }
 
+    /// Purge revoked API keys older than `days` days. Returns the number deleted.
+    pub async fn purge_revoked_api_keys(&self, days: i64) -> Result<u64, Error> {
+        let affected = sqlx::query(
+            "DELETE FROM api_keys WHERE is_active = false AND revoked_at < NOW() - ($1 || ' days')::interval"
+        )
+        .bind(days)
+        .execute(&self.pool)
+        .await?
+        .rows_affected();
+
+        Ok(affected)
+    }
+
     pub async fn rotate_api_key(
         &self,
         key_id: Uuid,

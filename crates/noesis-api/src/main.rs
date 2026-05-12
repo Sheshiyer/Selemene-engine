@@ -72,6 +72,22 @@ async fn main() {
     let state = build_app_state(&config).await;
     tracing::info!("Application state initialized");
 
+    // Spawn daily background task: purge revoked API keys older than 30 days.
+    if let Some(admin_repo) = state.admin_repository.clone() {
+        tokio::spawn(async move {
+            let mut interval = tokio::time::interval(std::time::Duration::from_secs(24 * 60 * 60));
+            loop {
+                interval.tick().await;
+                match admin_repo.purge_revoked_api_keys(30).await {
+                    Ok(n) if n > 0 => tracing::info!(deleted = n, "Purged revoked API keys older than 30 days"),
+                    Ok(_) => tracing::debug!("No revoked API keys to purge"),
+                    Err(e) => tracing::warn!(error = %e, "Failed to purge revoked API keys"),
+                }
+            }
+        });
+        tracing::info!("API key auto-purge task scheduled (30-day retention for revoked keys)");
+    }
+
     // Create the Axum router with all routes and middleware
     let app = create_router(state, &config);
     tracing::info!("Router configured");

@@ -896,6 +896,16 @@ export default function ApiKeysPage() {
                   </button>
                   <button
                     type="button"
+                    className="key-card-btn danger"
+                    title="Delete record permanently"
+                    disabled={!canDeleteKeys || submittingId !== null}
+                    onClick={(e) => { e.stopPropagation(); setConfirmDelete(key); }}
+                    aria-label={`Delete ${key.name || key.id}`}
+                  >
+                    <TrashIcon />
+                  </button>
+                  <button
+                    type="button"
                     className="key-card-open"
                     onClick={(e) => { e.stopPropagation(); openKeyModal(key); }}
                   >
