@@ -65,19 +65,16 @@ describe('SigilForgeEngine image generation (guidance-only, no API key in test e
   it('returns error in generated_image or a valid result when generate_image=true', async () => {
     const output = await engine.calculate({
       consciousness_level: 1,
-      parameters: { intention: 'I attract peace and clarity', generate_image: true },
+      parameters: { intention: 'I attract peace and clarity', generate_image: true, image_model: 'black-forest-labs/flux.1-schnell' },
       seed: 2,
     })
     const result = output.result as SigilForgeResult
-    // Either the image was generated (key available) or an error was returned (no key)
-    // Either way, generated_image should be a non-null object
     expect(result.generated_image).not.toBeNull()
-    // Must have either a result or a graceful error — never throw
     const img = result.generated_image!
     const hasResult = img.b64_json !== undefined || img.url !== undefined
     const hasError = img.error !== undefined
     expect(hasResult || hasError).toBe(true)
-  })
+  }, 30_000) // NIM calls take 5-15s
 
   it('engine version is 2.0.0', () => {
     expect(engine.metadata().version).toBe('2.0.0')

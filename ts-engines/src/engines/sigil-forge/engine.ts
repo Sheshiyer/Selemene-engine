@@ -92,7 +92,7 @@ export class SigilForgeEngine implements ConsciousnessEngine {
         image_model: {
           type: 'string',
           required: false,
-          description: 'NVIDIA NIM model to use for image generation. Default: flux-dev.',
+          description: 'NVIDIA NIM model. flux.1-dev = best quality; flux.1-schnell = faster.',
           enum: Object.values(NVIDIA_IMAGE_MODELS),
         },
         edit_image_b64: {
@@ -201,13 +201,11 @@ export class SigilForgeEngine implements ConsciousnessEngine {
           const result = await editImage({
             image: editImageB64,
             prompt: builtPrompt.prompt,
-            negative_prompt: builtPrompt.negative_prompt,
             model: imageModel,
             seed,
           })
           generatedImage = {
             b64_json: result.b64_json,
-            url: result.url,
             prompt_used: builtPrompt.prompt,
             model: imageModel ?? 'default',
           }
@@ -233,17 +231,13 @@ export class SigilForgeEngine implements ConsciousnessEngine {
           )
           const result = await generateImage({
             prompt: builtPrompt.prompt,
-            negative_prompt: builtPrompt.negative_prompt,
             model: imageModel ?? NVIDIA_IMAGE_MODELS.FLUX_DEV,
             width: 1024,
             height: 1024,
-            num_inference_steps: builtPrompt.num_inference_steps,
-            guidance_scale: builtPrompt.guidance_scale,
             seed,
           })
           generatedImage = {
             b64_json: result.b64_json,
-            url: result.url,
             prompt_used: builtPrompt.prompt,
             style: builtPrompt.style,
             model: imageModel ?? NVIDIA_IMAGE_MODELS.FLUX_DEV,

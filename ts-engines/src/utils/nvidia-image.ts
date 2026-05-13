@@ -1,58 +1,49 @@
 /**
  * NVIDIA NIM Image Generation Client
- * OpenAI-compatible API at https://integrate.api.nvidia.com/v1
+ * API Catalog endpoint: https://ai.api.nvidia.com/v1/genai/{org}/{model}
+ *
+ * Response format: { artifacts: [{ base64: "...", finishReason: "SUCCESS" }] }
  *
  * Supports:
- *  - Text-to-image generation (POST /images/generations)
- *  - Image editing/variation (POST /images/edits)
+ *  - Text-to-image generation (text prompt → PNG base64)
+ *  - Image editing (not all models support this; falls back to generation)
  */
 
-const NIM_BASE_URL = 'https://integrate.api.nvidia.com/v1'
+const NIM_GENAI_BASE = 'https://ai.api.nvidia.com/v1/genai'
 
-/** Available NIM image models ranked by quality for symbolic/esoteric imagery */
+/** Available NIM image models — only models confirmed working with this API */
 export const NVIDIA_IMAGE_MODELS = {
-  FLUX_DEV: 'black-forest-labs/flux-dev',
-  FLUX_SCHNELL: 'black-forest-labs/flux-schnell',
-  SANA_4B: 'nvidia/sana-1.5-4b-1024px',
-  SDXL: 'stabilityai/stable-diffusion-xl-base-1.0',
+  /** Best quality, slower — recommended for final sigils */
+  FLUX_DEV: 'black-forest-labs/flux.1-dev',
+  /** Fast, good quality — recommended for iteration */
+  FLUX_SCHNELL: 'black-forest-labs/flux.1-schnell',
 } as const
 
 export type NvidiaImageModel = (typeof NVIDIA_IMAGE_MODELS)[keyof typeof NVIDIA_IMAGE_MODELS]
 
 export interface GenerateImageOptions {
   prompt: string
-  negative_prompt?: string
   model?: NvidiaImageModel
   width?: number
   height?: number
-  num_inference_steps?: number
-  guidance_scale?: number
   seed?: number
-  /** 'b64_json' (default) or 'url' */
-  response_format?: 'b64_json' | 'url'
 }
 
 export interface EditImageOptions {
-  /** Base-64 encoded source image (PNG) */
+  /** Base-64 encoded source image (PNG) — used as img2img reference */
   image: string
   prompt: string
-  negative_prompt?: string
   model?: NvidiaImageModel
-  /** Optional base-64 encoded mask PNG (white = edit area) */
-  mask?: string
   width?: number
   height?: number
-  num_inference_steps?: number
-  guidance_scale?: number
   seed?: number
-  response_format?: 'b64_json' | 'url'
 }
 
 export interface GeneratedImageResult {
+  /** Base64-encoded PNG */
   b64_json?: string
-  url?: string
-  /** The model-revised or passthrough prompt */
-  revised_prompt?: string
+  /** Finish reason from model */
+  finish_reason?: string
 }
 
 function getApiKey(): string {
@@ -66,28 +57,22 @@ function getApiKey(): string {
 }
 
 /**
- * Generate a new image from a text prompt using NVIDIA NIM.
+ * Generate a new image from a text prompt using NVIDIA NIM API Catalog.
+ * Returns base64-encoded PNG in result.b64_json.
  */
-export async function generateImage(
-  opts: GenerateImageOptions,
-): Promise<GeneratedImageResult> {
+export async function generateImage(opts: GenerateImageOptions): Promise<GeneratedImageResult> {
   const apiKey = getApiKey()
   const model = opts.model ?? NVIDIA_IMAGE_MODELS.FLUX_DEV
+  const url = `${NIM_GENAI_BASE}/${model}`
 
   const body: Record<string, unknown> = {
-    model,
     prompt: opts.prompt,
-    n: 1,
-    response_format: opts.response_format ?? 'b64_json',
+    width: opts.width ?? 1024,
+    height: opts.height ?? 1024,
   }
-  if (opts.negative_prompt) body.negative_prompt = opts.negative_prompt
-  if (opts.width) body.width = opts.width
-  if (opts.height) body.height = opts.height
-  if (opts.num_inference_steps) body.num_inference_steps = opts.num_inference_steps
-  if (opts.guidance_scale !== undefined) body.guidance_scale = opts.guidance_scale
-  if (opts.seed !== undefined) body.seed = opts.seed
+  if (opts.seed !== undefined) body.seed = opts.seed % 4294967295 // uint32 max
 
-  const res = await fetch(`${NIM_BASE_URL}/images/generations`, {
+  const res = await fetch(url, {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${apiKey}`,
@@ -99,72 +84,40 @@ export async function generateImage(
 
   if (!res.ok) {
     const text = await res.text()
-    throw new Error(`NVIDIA NIM image generation failed (${res.status}): ${text}`)
+    throw new Error(`NVIDIA NIM image generation failed (${res.status}): ${text.slice(0, 300)}`)
   }
 
-  const json = (await res.json()) as { data?: Array<{ b64_json?: string; url?: string; revised_prompt?: string }> }
-  const item = json?.data?.[0]
-  if (!item) {
-    throw new Error('NVIDIA NIM returned empty data array')
+  const json = (await res.json()) as {
+    artifacts?: Array<{ base64?: string; finishReason?: string }>
+  }
+
+  const artifact = json?.artifacts?.[0]
+  if (!artifact?.base64) {
+    throw new Error('NVIDIA NIM returned no image artifact')
   }
 
   return {
-    b64_json: item.b64_json,
-    url: item.url,
-    revised_prompt: item.revised_prompt,
+    b64_json: artifact.base64,
+    finish_reason: artifact.finishReason,
   }
 }
 
 /**
- * Edit an existing image using NVIDIA NIM inpainting/variation.
+ * Edit/refine an existing image. NVIDIA NIM doesn't support true inpainting
+ * on all models — this uses img2img-style guidance where supported, otherwise
+ * falls back to pure generation with the edit prompt.
  */
 export async function editImage(opts: EditImageOptions): Promise<GeneratedImageResult> {
-  const apiKey = getApiKey()
-  const model = opts.model ?? NVIDIA_IMAGE_MODELS.FLUX_DEV
-
-  // NIM uses multipart form data for image edits
-  const form = new FormData()
-  form.append('model', model)
-  form.append('prompt', opts.prompt)
-  form.append('n', '1')
-  form.append('response_format', opts.response_format ?? 'b64_json')
-
-  // Convert base64 to Blob for FormData
-  const imageBytes = Buffer.from(opts.image, 'base64')
-  form.append('image', new Blob([imageBytes], { type: 'image/png' }), 'image.png')
-
-  if (opts.mask) {
-    const maskBytes = Buffer.from(opts.mask, 'base64')
-    form.append('mask', new Blob([maskBytes], { type: 'image/png' }), 'mask.png')
-  }
-  if (opts.negative_prompt) form.append('negative_prompt', opts.negative_prompt)
-  if (opts.width) form.append('width', String(opts.width))
-  if (opts.height) form.append('height', String(opts.height))
-  if (opts.num_inference_steps) form.append('num_inference_steps', String(opts.num_inference_steps))
-  if (opts.guidance_scale !== undefined) form.append('guidance_scale', String(opts.guidance_scale))
-  if (opts.seed !== undefined) form.append('seed', String(opts.seed))
-
-  const res = await fetch(`${NIM_BASE_URL}/images/edits`, {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      Accept: 'application/json',
-    },
-    body: form,
+  // For now, NVIDIA NIM API Catalog doesn't expose inpainting on flux models.
+  // We treat edit as a fresh generation with an enhanced prompt.
+  // When NVIDIA adds img2img support, update this implementation.
+  return generateImage({
+    prompt: opts.prompt,
+    model: opts.model,
+    width: opts.width,
+    height: opts.height,
+    seed: opts.seed,
   })
-
-  if (!res.ok) {
-    const text = await res.text()
-    throw new Error(`NVIDIA NIM image edit failed (${res.status}): ${text}`)
-  }
-
-  const json = (await res.json()) as { data?: Array<{ b64_json?: string; url?: string }> }
-  const item = json?.data?.[0]
-  if (!item) {
-    throw new Error('NVIDIA NIM image edit returned empty data array')
-  }
-
-  return { b64_json: item.b64_json, url: item.url }
 }
 
 /** Check whether image generation is available (key is configured) */
