@@ -474,17 +474,38 @@ impl ConsciousnessEngine for PanchangaEngine {
     async fn calculate(&self, input: EngineInput) -> Result<EngineOutput, EngineError> {
         let start = Instant::now();
 
-        let birth = input.birth_data.as_ref().ok_or_else(|| {
-            EngineError::CalculationError(
-                "birth_data is required for Panchanga calculations".into(),
+        // Determine mode: "daily" uses current_time (today) for cosmic weather;
+        // default uses birth_data.date for the natal birth panchanga.
+        let use_daily = input
+            .options
+            .get("mode")
+            .and_then(|v| v.as_str())
+            == Some("daily");
+
+        let (date_str, time_str, tz_offset) = if use_daily {
+            // Daily mode: use today's date from current_time, birth timezone for offset
+            let today = input.current_time.format("%Y-%m-%d").to_string();
+            let now_time = input.current_time.format("%H:%M").to_string();
+            let tz = input
+                .birth_data
+                .as_ref()
+                .map(|b| tz_offset_from_string(&b.timezone))
+                .unwrap_or(0.0);
+            (today, now_time, tz)
+        } else {
+            let birth = input.birth_data.as_ref().ok_or_else(|| {
+                EngineError::CalculationError(
+                    "birth_data is required for Panchanga calculations".into(),
+                )
+            })?;
+            (
+                birth.date.clone(),
+                birth.time.as_deref().unwrap_or("12:00").to_string(),
+                tz_offset_from_string(&birth.timezone),
             )
-        })?;
+        };
 
-        let date = &birth.date;
-        let time = birth.time.as_deref().unwrap_or("12:00");
-        let tz_offset = tz_offset_from_string(&birth.timezone);
-
-        let result = compute_panchanga(date, time, tz_offset);
+        let result = compute_panchanga(&date_str, &time_str, tz_offset);
         let witness_prompt = generate_witness_prompt(&result);
 
         let result_json = serde_json::to_value(&result).map_err(|e| {
@@ -772,6 +793,102 @@ mod tests {
         let result = engine.calculate(input).await;
         assert!(result.is_err());
     }
+
+    /// mode=daily should use current_time date and NOT require birth_data.
+    /// Vara index must be in 0..=6.
+    #[tokio::test]
+    async fn test_calculate_daily_mode_uses_current_time() {
+        let engine = PanchangaEngine::new();
+        // Use a known Wednesday: 2026-05-13 (UTC).
+        use chrono::TimeZone;
+        let wednesday_2026_05_13 = Utc
+            .with_ymd_and_hms(2026, 5, 13, 6, 0, 0)
+            .unwrap();
+
+        let mut opts = HashMap::new();
+        opts.insert("mode".to_string(), serde_json::json!("daily"));
+
+        let input = EngineInput {
+            birth_data: None, // no birth_data — daily mode must handle this
+            current_time: wednesday_2026_05_13,
+            location: None,
+            precision: Precision::Standard,
+            options: opts,
+        };
+
+        let output = engine.calculate(input).await.expect("daily mode calculate failed");
+        let pr: PanchangaResult =
+            serde_json::from_value(output.result).expect("bad PanchangaResult JSON");
+
+        // Vara index 0..=6 must be valid
+        assert!(pr.vara_index <= 6, "vara_index out of range: {}", pr.vara_index);
+    }
+
+    /// mode=daily with birth_data present: should still use current_time date, not birth date.
+    #[tokio::test]
+    async fn test_daily_mode_ignores_birth_date_uses_today() {
+        let engine = PanchangaEngine::new();
+
+        use chrono::TimeZone;
+        // Pick a day that's different from the birth date in test_input (1991-08-13 = Tuesday)
+        let wednesday_2026_05_13 = Utc
+            .with_ymd_and_hms(2026, 5, 13, 6, 0, 0)
+            .unwrap();
+
+        let mut opts = HashMap::new();
+        opts.insert("mode".to_string(), serde_json::json!("daily"));
+
+        // Birth data present — in daily mode it should only contribute timezone, not the date.
+        let birth = BirthData {
+            name: None,
+            date: "1991-08-13".to_string(), // a Tuesday
+            time: Some("05:30".to_string()),
+            timezone: "Asia/Kolkata".to_string(),
+            latitude: 12.9716,
+            longitude: 77.5946,
+        };
+
+        let input = EngineInput {
+            birth_data: Some(birth),
+            current_time: wednesday_2026_05_13,
+            location: None,
+            precision: Precision::Standard,
+            options: opts,
+        };
+
+        let daily_output = engine.calculate(input.clone()).await.expect("daily mode failed");
+        let daily_pr: PanchangaResult =
+            serde_json::from_value(daily_output.result).expect("bad JSON");
+
+        // Compare against the birth-mode output for the same input
+        let mut birth_opts = HashMap::new();
+        birth_opts.insert("user_id".to_string(), serde_json::json!("test"));
+        let birth_input = EngineInput {
+            birth_data: Some(BirthData {
+                name: None,
+                date: "1991-08-13".to_string(),
+                time: Some("05:30".to_string()),
+                timezone: "Asia/Kolkata".to_string(),
+                latitude: 12.9716,
+                longitude: 77.5946,
+            }),
+            current_time: wednesday_2026_05_13,
+            location: None,
+            precision: Precision::Standard,
+            options: birth_opts,
+        };
+        let birth_output = engine.calculate(birth_input).await.expect("birth mode failed");
+        let birth_pr: PanchangaResult =
+            serde_json::from_value(birth_output.result).expect("bad JSON");
+
+        // Daily and birth-mode vara MUST differ (different dates → different vara)
+        assert_ne!(
+            daily_pr.vara_index, birth_pr.vara_index,
+            "daily and birth vara should differ but both returned {} ({})",
+            daily_pr.vara_index, daily_pr.vara_name
+        );
+    }
+
 
     #[tokio::test]
     async fn test_validate_accepts_good_output() {

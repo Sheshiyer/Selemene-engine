@@ -80,7 +80,14 @@ pub async fn interpret(
         },
     };
 
-    let panchanga_input = make_input(bd.clone());
+    // Panchanga in the witness always reflects TODAY's cosmic weather, not birth.
+    // Pass mode=daily so the engine uses current_time date instead of birth_data.date.
+    let panchanga_input = {
+        let mut inp = make_input(bd.clone());
+        inp.options
+            .insert("mode".to_string(), serde_json::json!("daily"));
+        inp
+    };
     let biorhythm_input = make_input(bd.clone());
     let hd_input = make_input(bd.clone());
     let numerology_input = make_input(bd.clone());
