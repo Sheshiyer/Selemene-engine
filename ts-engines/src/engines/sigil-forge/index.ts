@@ -15,5 +15,9 @@ export {
 // Witness prompts
 export { generateWitnessPrompts } from './witness'
 
+// Prompt builder
+export type { SigilStyle, BuiltPrompt } from './prompt-builder'
+export { buildSigilPrompt, buildSigilEditPrompt } from './prompt-builder'
+
 // Engine
 export { SigilForgeEngine } from './engine'
