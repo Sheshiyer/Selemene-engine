@@ -31,8 +31,8 @@ const STYLE_DESCRIPTORS: Record<SigilStyle, { visual: string; medium: string; pa
     palette: 'pure black and white, maximum contrast',
   },
   organic: {
-    visual: 'biomorphic sacred symbol, flowing botanical glyph, vine-like curves spiraling inward',
-    medium: 'fine pen and ink botanical illustration, delicate linework',
+    visual: 'biomorphic sacred sigil, flowing organic glyph, single spiral contained within a circle, nature-inspired occult symbol, NOT a plant illustration',
+    medium: 'fine pen and ink, delicate linework, contained within a circle, single unified mark',
     palette: 'dark ink on cream, subtle warm tones',
   },
   geometric: {
