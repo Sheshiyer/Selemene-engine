@@ -46,9 +46,9 @@ const STYLE_DESCRIPTORS: Record<SigilStyle, { visual: string; medium: string; pa
     palette: 'dark charcoal on bone, aged texture',
   },
   ethereal: {
-    visual: 'glowing energy sigil, luminous symbol, bioluminescent sacred mark floating in void',
-    medium: 'digital glow effect, light painting photograph, long exposure',
-    palette: 'electric blue and violet light on deep black, ethereal glow',
+    visual: 'neon glowing sigil, luminous unified glyph, intricate rune radiating energy, magical symbol',
+    medium: 'fantasy digital art, masterwork illustration, neon light art aesthetic',
+    palette: 'electric blue and purple neon light on dark indigo background, luminous glowing lines, high luminosity',
   },
 }
 
