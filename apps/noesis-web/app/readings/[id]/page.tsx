@@ -6,7 +6,7 @@ import NavBar from "@/components/NavBar";
 import WitnessLayer from "@/components/WitnessLayer";
 import EngineCard from "@/components/EngineCard";
 import { getApiKey, isAuthenticated } from "@/lib/auth";
-import { getReading, type WorkflowResponse } from "@/lib/api";
+import { getReading, type ReadingSummary } from "@/lib/api";
 
 import Panchanga from "@/components/engines/Panchanga";
 import HumanDesign from "@/components/engines/HumanDesign";
@@ -81,7 +81,7 @@ const s = {
 export default function ReadingDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const router = useRouter();
-  const [reading, setReading] = useState<WorkflowResponse | null>(null);
+  const [reading, setReading] = useState<ReadingSummary | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loadingData, setLoadingData] = useState(true);
   const [activeTab, setActiveTab] = useState<string>("witness");
@@ -97,8 +97,9 @@ export default function ReadingDetailPage({ params }: { params: Promise<{ id: st
       .finally(() => setLoadingData(false));
   }, [id, router]);
 
+  // result_data contains the WorkflowResponse (engine_outputs, witness_layer, etc.)
   const outputsMap = reading
-    ? (reading.engine_outputs ?? reading.engine_results ?? {})
+    ? (reading.result_data?.engine_outputs ?? reading.result_data?.engine_results ?? {})
     : {};
   const engineIds = Object.keys(outputsMap);
 
@@ -110,10 +111,10 @@ export default function ReadingDetailPage({ params }: { params: Promise<{ id: st
           <button style={s.back} onClick={() => router.push("/readings")}>← Readings</button>
           <div>
             <h1 style={s.heading}>{reading?.workflow_id || "Reading"}</h1>
-            {reading?.timestamp && (
+            {reading?.created_at && (
               <p style={{ ...s.meta, marginTop: "0.25rem" }}>
-                {new Date(reading.timestamp).toLocaleString()} · {id}
-                {reading.total_time_ms != null && ` · ${reading.total_time_ms}ms · ${engineIds.length} engines`}
+                {new Date(reading.created_at).toLocaleString()} · {id}
+                {reading.calculation_time_ms != null && ` · ${reading.calculation_time_ms}ms · ${engineIds.length} engines`}
               </p>
             )}
           </div>
@@ -146,10 +147,10 @@ export default function ReadingDetailPage({ params }: { params: Promise<{ id: st
               ))}
             </div>
 
-            {activeTab === "witness" && reading.witness_layer && (
-              <WitnessLayer data={reading.witness_layer} />
+            {activeTab === "witness" && reading.result_data?.witness_layer && (
+              <WitnessLayer data={reading.result_data.witness_layer} />
             )}
-            {activeTab === "witness" && !reading.witness_layer && (
+            {activeTab === "witness" && !reading.result_data?.witness_layer && (
               <p style={{ color: "var(--text-dim)", fontSize: "0.9rem" }}>No synthesis layer for this reading.</p>
             )}
 

@@ -466,16 +466,21 @@ export default function EnginesPage() {
 
     // Auto-load the most recent reading's full results so the user lands on
     // their data without needing to click anything.
+    // Note: API returns Reading struct with fields `id` and `input_data` (not `reading_id`/`birth_data`).
     getReadings(key)
       .then(async (res) => {
         const latest = res.readings?.[0];
         if (!latest) return;
-        if (latest.birth_data) setLastBirthData(latest.birth_data);
-        if (latest.reading_id) {
+        if (latest.input_data) setLastBirthData(latest.input_data);
+        if (latest.id) {
           try {
-            const full = await getReading(latest.reading_id, key);
-            setResponse(full);
-            setActiveTab("witness");
+            const full = await getReading(latest.id, key);
+            // The Reading struct wraps the workflow result in `result_data`.
+            const workflowResult = full.result_data;
+            if (workflowResult && (workflowResult.engine_outputs || workflowResult.engine_results)) {
+              setResponse(workflowResult);
+              setActiveTab("witness");
+            }
           } catch {
             // Can't load full reading — form stays open, birth data pre-filled
           }

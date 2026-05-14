@@ -138,9 +138,9 @@ export default function ReadingsPage() {
 
         {readings.map((r) => (
           <div
-            key={r.reading_id}
+            key={r.id}
             style={s.cardClickable}
-            onClick={() => router.push(`/readings/${r.reading_id}`)}
+            onClick={() => router.push(`/readings/${r.id}`)}
             onMouseEnter={(e) => {
               (e.currentTarget as HTMLDivElement).style.borderColor = "var(--gold)";
               (e.currentTarget as HTMLDivElement).style.background = "var(--bg-hover, var(--bg-panel))";
@@ -155,15 +155,20 @@ export default function ReadingsPage() {
               <span style={s.date}>
                 {r.created_at ? new Date(r.created_at).toLocaleString() : "—"}
               </span>
-              {r.birth_data?.name && (
-                <span style={{ fontSize: "0.8rem", color: "var(--gold)" }}>{r.birth_data.name}</span>
+              {r.input_data?.name && (
+                <span style={{ fontSize: "0.8rem", color: "var(--gold)" }}>{r.input_data.name}</span>
               )}
-              {r.birth_data?.date && (
-                <span style={s.readingId}>{r.birth_data.date}</span>
+              {r.input_data?.date && (
+                <span style={s.readingId}>{r.input_data.date}</span>
               )}
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-              <span style={s.badge}>{r.engine_count} engines</span>
+              {(() => {
+                const count = Object.keys(
+                  r.result_data?.engine_outputs ?? r.result_data?.engine_results ?? {}
+                ).length;
+                return count > 0 ? <span style={s.badge}>{count} engines</span> : null;
+              })()}
               <span style={{ color: "var(--text-muted)", fontSize: "1rem" }}>→</span>
             </div>
           </div>

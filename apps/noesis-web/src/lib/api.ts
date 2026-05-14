@@ -47,16 +47,30 @@ export interface WorkflowResponse {
   reading_id?: string;
 }
 
+/**
+ * Matches the Rust `Reading` struct returned by GET /api/v1/readings and GET /api/v1/readings/:id.
+ * Fields use the actual Rust/Serde names: `id`, `input_data`, `result_data`.
+ */
 export interface ReadingSummary {
-  reading_id: string;
-  workflow_id: string;
-  birth_data: BirthData;
+  id: string;
+  user_id: string;
+  engine_id: string;
+  workflow_id: string | null;
+  /** The birth data input that was used for this reading. */
+  input_data: BirthData;
+  /** The workflow/engine result. For workflow readings this is a WorkflowResponse. */
+  result_data: WorkflowResponse;
+  witness_prompt: string | null;
+  consciousness_level: number;
+  calculation_time_ms: number | null;
   created_at: string;
-  engine_count: number;
 }
 
 export interface ReadingsResponse {
   readings: ReadingSummary[];
+  total: number;
+  limit: number;
+  offset: number;
 }
 
 export interface HealthResponse {
@@ -203,8 +217,8 @@ export async function getReadings(
 export async function getReading(
   readingId: string,
   apiKey: string,
-): Promise<WorkflowResponse> {
-  return request<WorkflowResponse>(
+): Promise<ReadingSummary> {
+  return request<ReadingSummary>(
     `/api/v1/readings/${readingId}`,
     { method: "GET" },
     apiKey,
