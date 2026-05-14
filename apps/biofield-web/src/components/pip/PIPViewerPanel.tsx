@@ -413,7 +413,7 @@ function IdleGeometry() {
     }}>
       <svg
         viewBox="0 0 400 400"
-        style={{ width: "min(55%, 220px)", height: "auto", opacity: 0.28 }}
+        style={{ width: "min(55%, 220px)", height: "auto", opacity: 0.55 }}
       >
         {/* Concentric dot rings */}
         {[60, 100, 140, 180].map((r, ri) =>
@@ -466,9 +466,9 @@ function IdleGeometry() {
         position: "absolute", bottom: "18%",
         margin: 0,
         fontFamily: "var(--font-display)",
-        fontSize: "0.52rem", fontWeight: 700,
-        letterSpacing: "0.26em", textTransform: "uppercase",
-        color: "rgba(240,237,227,0.2)",
+        fontSize: "0.72rem", fontWeight: 700,
+        letterSpacing: "0.22em", textTransform: "uppercase",
+        color: "rgba(240,237,227,0.55)",
       }}>
         Open Field to Begin
       </p>
@@ -576,10 +576,10 @@ function GeometryButton({ onClick, label, accent }: {
   accent: "gold" | "indigo" | "emerald" | "muted";
 }) {
   const colors = {
-    gold:    { text: "rgba(197,160,23,0.75)",   line: "rgba(197,160,23,0.3)"   },
-    indigo:  { text: "rgba(11,80,251,0.85)",     line: "rgba(11,80,251,0.35)"   },
-    emerald: { text: "rgba(16,181,167,0.75)",    line: "rgba(16,181,167,0.3)"   },
-    muted:   { text: "rgba(240,237,227,0.28)",   line: "rgba(240,237,227,0.1)"  },
+    gold:    { text: "rgba(197,160,23,0.95)",   line: "rgba(197,160,23,0.55)"   },
+    indigo:  { text: "rgba(11,80,251,0.95)",     line: "rgba(11,80,251,0.5)"   },
+    emerald: { text: "rgba(16,181,167,0.95)",    line: "rgba(16,181,167,0.5)"   },
+    muted:   { text: "rgba(240,237,227,0.5)",    line: "rgba(240,237,227,0.2)"  },
   };
   const { text, line } = colors[accent];
   return (
@@ -588,19 +588,19 @@ function GeometryButton({ onClick, label, accent }: {
       type="button"
       style={{
         background: "none", border: "none", cursor: "pointer",
-        display: "flex", flexDirection: "column", alignItems: "center", gap: 4,
-        padding: "4px 8px",
+        display: "flex", flexDirection: "column", alignItems: "center", gap: 6,
+        padding: "6px 14px",
       }}
     >
       {/* Diamond glyph */}
-      <svg width="10" height="10" viewBox="0 0 10 10">
-        <polygon points="5,0 10,5 5,10 0,5" fill="none" stroke={line} strokeWidth="0.8" />
+      <svg width="16" height="16" viewBox="0 0 10 10">
+        <polygon points="5,0 10,5 5,10 0,5" fill="none" stroke={line} strokeWidth="1" />
         <circle cx="5" cy="5" r="1.5" fill={text} />
       </svg>
       <span style={{
         fontFamily: "var(--font-display)",
-        fontSize: "0.46rem", fontWeight: 700,
-        letterSpacing: "0.22em", textTransform: "uppercase",
+        fontSize: "0.72rem", fontWeight: 700,
+        letterSpacing: "0.18em", textTransform: "uppercase",
         color: text,
       }}>
         {label}
