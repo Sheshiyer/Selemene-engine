@@ -120,15 +120,16 @@ body {
   overflow-x: hidden;
 }
 
-/* Subtle radial bg gradient */
+/* Atmospheric bg gradient — makes the void-to-violet consciousness arc visible */
 body::before {
   content: "";
   pointer-events: none;
   position: fixed;
   inset: 0;
   background:
-    radial-gradient(ellipse 80% 60% at 15% 8%,  rgba(124,124,255,0.06) 0%, transparent 60%),
-    radial-gradient(ellipse 60% 50% at 90% 85%, rgba(255,179,71,0.04)  0%, transparent 55%);
+    radial-gradient(ellipse 80% 60% at 10% 0%,   rgba(45, 0, 80, 0.45)   0%, transparent 55%),
+    radial-gradient(ellipse 50% 40% at 92% 90%,  rgba(197,160,23, 0.10)  0%, transparent 50%),
+    radial-gradient(ellipse 40% 30% at 50% 105%, rgba(11, 80,251, 0.12)  0%, transparent 50%);
   z-index: 0;
 }
 
@@ -220,7 +221,7 @@ body::before {
   justify-content: center;
   gap: 2.4rem;
   padding: clamp(2.4rem, 6vw, 5rem) clamp(2rem, 5vw, 4.5rem);
-  border-right: 1px solid var(--line-faint);
+  border-right: 1px solid rgba(11, 80, 251, 0.22);
   position: relative;
   overflow: hidden;
 }
@@ -230,7 +231,9 @@ body::before {
   pointer-events: none;
   position: absolute;
   inset: 0;
-  background: radial-gradient(ellipse 90% 60% at -10% 30%, rgba(124,124,255,0.1) 0%, transparent 60%);
+  background:
+    radial-gradient(ellipse 110% 70% at -15% 25%, rgba(45, 0, 80, 0.6)   0%, transparent 55%),
+    radial-gradient(ellipse  70% 50% at  30% 70%, rgba(11, 80,251, 0.18)  0%, transparent 60%);
 }
 
 /* Orbiting glow orb */
@@ -238,14 +241,14 @@ body::before {
   content: "";
   pointer-events: none;
   position: absolute;
-  top: 25%;
-  left: -8%;
-  width: 340px;
-  height: 340px;
+  top: 15%;
+  left: -4%;
+  width: 480px;
+  height: 480px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(124,124,255,0.12) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(45, 0, 80, 0.55) 0%, rgba(11, 80, 251, 0.18) 45%, transparent 70%);
   animation: orbit-glow 8s ease-in-out infinite alternate;
-  filter: blur(24px);
+  filter: blur(40px);
 }
 
 @keyframes orbit-glow {
@@ -258,7 +261,19 @@ body::before {
   align-items: center;
   justify-content: center;
   padding: clamp(2rem, 5vw, 4rem);
+  position: relative;
   background: rgba(255,255,255,0.016);
+}
+
+/* Warm activation glow behind the form — suggests embodied presence (Ba arc) */
+.biofield-login-right::before {
+  content: "";
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 65% 55% at 60% 55%, rgba(16, 181, 167, 0.07) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 35% at 55% 50%, rgba(197,160, 23, 0.05) 0%, transparent 55%);
 }
 
 .biofield-login-form-card {
@@ -266,6 +281,18 @@ body::before {
   max-width: 400px;
   display: grid;
   gap: 1.1rem;
+  position: relative;
+  z-index: 1;
+  padding: 2.2rem 2rem;
+  border-radius: var(--r-xl);
+  border: 1px solid var(--line-mid);
+  background: rgba(14, 20, 40, 0.75);
+  backdrop-filter: blur(24px) saturate(1.3);
+  -webkit-backdrop-filter: blur(24px) saturate(1.3);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.06),
+    0 2px  0 rgba(16,181,167,0.06),
+    0 32px 72px rgba(0,0,0,0.5);
 }
 
 .biofield-login-wordmark {
@@ -451,17 +478,17 @@ body::before {
 
 /* ── Primary (Discord / CTA) ── */
 .biofield-button-primary {
-  background: var(--accent-dim);
-  border-color: var(--accent-border);
-  color: #d4d4ff;
+  background: rgba(11, 80, 251, 0.80);
+  border-color: rgba(11, 80, 251, 0.60);
+  color: #e8e8ff;
   box-shadow: var(--inset-glow), 0 0 0 0 rgba(var(--accent-rgb), 0);
 }
 
 .biofield-button-primary:hover:not(:disabled) {
-  background: rgba(var(--accent-rgb), 0.22);
-  border-color: rgba(var(--accent-rgb), 0.5);
-  box-shadow: var(--inset-glow), 0 0 20px rgba(var(--accent-rgb), 0.18), var(--shadow-md);
-  color: #e8e8ff;
+  background: rgba(11, 80, 251, 0.92);
+  border-color: rgba(11, 80, 251, 0.80);
+  box-shadow: var(--inset-glow), 0 0 24px rgba(var(--accent-rgb), 0.35), var(--shadow-md);
+  color: #fff;
 }
 
 /* ── Danger / destructive ── */
