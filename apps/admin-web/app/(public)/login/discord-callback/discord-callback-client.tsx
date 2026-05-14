@@ -5,12 +5,25 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { setAuthToken } from "@/lib/auth";
 import { ApiClientError, discordCallback, getAdminSession } from "@/lib/api";
 
+const BIOFIELD_ORIGIN = "https://biofield.tryambakam.space";
+
 function currentCallbackUri(): string | null {
   if (typeof window === "undefined") {
     return null;
   }
 
   return `${window.location.origin}${window.location.pathname}`;
+}
+
+/** Extract the optional client identifier from the OAuth state string.
+ *  Format: "{timestamp}" or "{timestamp}:{client}".
+ */
+function parseClientFromState(state: string | null | undefined): string | undefined {
+  if (!state) return undefined;
+  const colonIdx = state.indexOf(":");
+  if (colonIdx === -1) return undefined;
+  const client = state.slice(colonIdx + 1).trim();
+  return client || undefined;
 }
 
 export function DiscordCallbackClient() {
@@ -36,6 +49,16 @@ export function DiscordCallbackClient() {
           currentCallbackUri() ?? undefined
         );
         if (cancelled) return;
+
+        const client = parseClientFromState(state);
+        if (client === "biofield") {
+          // Hand the token back to biofield-web via the fragment handoff pattern.
+          // The fragment never reaches the server and is immediately cleared by
+          // biofield's login page after consumption.
+          window.location.replace(`${BIOFIELD_ORIGIN}/login#token=${auth.token}`);
+          return;
+        }
+
         setAuthToken(auth.token);
         await getAdminSession(auth.token);
         router.replace("/dashboard");

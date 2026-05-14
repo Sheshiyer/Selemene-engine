@@ -53,7 +53,7 @@ export default function LoginPage() {
     setErrorMessage(null);
     setIsDiscordLoading(true);
     try {
-      const { url } = await getDiscordAuthUrl(getBiofieldDiscordCallbackOverride());
+      const { url } = await getDiscordAuthUrl(getBiofieldDiscordCallbackOverride(), "biofield");
       window.location.href = url;
     } catch (error) {
       setIsDiscordLoading(false);

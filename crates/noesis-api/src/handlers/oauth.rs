@@ -43,6 +43,9 @@ pub struct DiscordAuthorizeResponse {
 #[derive(Deserialize)]
 pub struct DiscordAuthorizeQuery {
     pub redirect_uri: Option<String>,
+    /// Optional client identifier (e.g. "biofield") so the admin callback can
+    /// redirect back to the originating app after completing the OAuth exchange.
+    pub client: Option<String>,
 }
 
 #[derive(Deserialize)]
@@ -303,10 +306,13 @@ pub async fn discord_authorize(
         &headers,
     )?;
 
-    // Build a simple state token using a HMAC of a timestamp to prevent CSRF.
-    // In production you'd want a nonce stored server-side; this is a lightweight approach.
+    // Build a simple state token: "{timestamp}" or "{timestamp}:{client}" so the
+    // admin callback can route back to the originating app after OAuth completes.
     let timestamp = chrono::Utc::now().timestamp();
-    let state_token = format!("{}", timestamp);
+    let state_token = match query.client.as_deref() {
+        Some(client) if !client.is_empty() => format!("{}:{}", timestamp, client),
+        _ => format!("{}", timestamp),
+    };
 
     let url = format!(
         "{}?client_id={}&redirect_uri={}&response_type=code&scope=identify%20email&state={}",

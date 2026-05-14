@@ -82,8 +82,11 @@ export async function verifyToken(token: string): Promise<BiofieldAuthSession> {
   return { token, userId: data.id, email: data.email, tier: data.tier };
 }
 
-export async function getDiscordAuthUrl(redirectUri?: string): Promise<{ url: string }> {
-  const qs = redirectUri ? `?redirect_uri=${encodeURIComponent(redirectUri)}` : "";
+export async function getDiscordAuthUrl(redirectUri?: string, client?: string): Promise<{ url: string }> {
+  const params = new URLSearchParams();
+  if (redirectUri) params.set("redirect_uri", redirectUri);
+  if (client) params.set("client", client);
+  const qs = params.toString() ? `?${params.toString()}` : "";
   return apiRequest<{ url: string }>(`/api/v1/auth/discord/authorize${qs}`);
 }
 
