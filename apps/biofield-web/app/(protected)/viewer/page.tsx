@@ -596,9 +596,11 @@ export default function ViewerPage() {
             </div>
 
             <div className="biofield-actions">
-              <Link className="biofield-link" href={`/readings/${captureResult.reading_id}`}>
-                Open reading
-              </Link>
+              {captureResult.reading_id ? (
+                <Link className="biofield-link" href={`/readings/${captureResult.reading_id}`}>
+                  Open reading
+                </Link>
+              ) : null}
               <Link className="biofield-link" href="/history">
                 History
               </Link>

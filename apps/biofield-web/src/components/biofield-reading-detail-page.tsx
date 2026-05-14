@@ -152,6 +152,11 @@ export function BiofieldReadingDetailPage({ readingId }: { readingId: string }) 
         return;
       }
 
+      if (!readingId || readingId === "undefined") {
+        router.replace("/history");
+        return;
+      }
+
       setIsLoading(true);
       setErrorMessage(null);
 
@@ -394,9 +399,11 @@ export function BiofieldReadingDetailPage({ readingId }: { readingId: string }) 
         <section className="biofield-panel biofield-form-panel">
           <p className="biofield-eyebrow">Latest reprocess</p>
           <div className="biofield-actions">
-            <Link className="biofield-link" href={`/readings/${reprocessResult.reading_id}`}>
-              Open reprocessed reading
-            </Link>
+            {reprocessResult.reading_id ? (
+              <Link className="biofield-link" href={`/readings/${reprocessResult.reading_id}`}>
+                Open reprocessed reading
+              </Link>
+            ) : null}
           </div>
         </section>
       ) : null}

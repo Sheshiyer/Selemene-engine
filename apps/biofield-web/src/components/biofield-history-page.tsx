@@ -355,9 +355,11 @@ export function BiofieldHistoryPage() {
                         />
                         <span>{selected ? "Selected" : "Select for baseline"}</span>
                       </label>
-                      <Link className="biofield-link" href={`/readings/${reading.reading_id}`}>
-                        Open detail
-                      </Link>
+                      {reading.reading_id ? (
+                        <Link className="biofield-link" href={`/readings/${reading.reading_id}`}>
+                          Open detail
+                        </Link>
+                      ) : null}
                     </div>
                   </div>
 
