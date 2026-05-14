@@ -16,6 +16,7 @@ import { getApiKey, isAuthenticated } from "@/lib/auth";
 import {
   executeWorkflow,
   getReadings,
+  getReading,
   type BirthData,
   type WorkflowResponse,
   type EngineOutput,
@@ -453,19 +454,32 @@ export default function EnginesPage() {
   const [selectedCompass, setSelectedCompass] =
     useState<CompassMode>("full-spectrum");
   const [lastBirthData, setLastBirthData] = useState<Partial<BirthData> | undefined>(undefined);
+  const [formExpanded, setFormExpanded] = useState(false);
 
   useEffect(() => {
     if (!isAuthenticated()) {
       router.replace("/auth");
       return;
     }
-    // Auto-fill birth data from the most recent reading
     const key = getApiKey();
     if (!key) return;
+
+    // Auto-load the most recent reading's full results so the user lands on
+    // their data without needing to click anything.
     getReadings(key)
-      .then((res) => {
+      .then(async (res) => {
         const latest = res.readings?.[0];
-        if (latest?.birth_data) setLastBirthData(latest.birth_data);
+        if (!latest) return;
+        if (latest.birth_data) setLastBirthData(latest.birth_data);
+        if (latest.reading_id) {
+          try {
+            const full = await getReading(latest.reading_id, key);
+            setResponse(full);
+            setActiveTab("witness");
+          } catch {
+            // Can't load full reading — form stays open, birth data pre-filled
+          }
+        }
       })
       .catch(() => { /* silently ignore — empty form is fine */ });
   }, [router]);
@@ -502,6 +516,8 @@ export default function EnginesPage() {
     try {
       const res = await executeWorkflow(selectedWorkflow.workflowId, birthData, key);
       setResponse(res);
+      setLastBirthData(birthData);
+      setFormExpanded(false);
     } catch (err: unknown) {
       if (err instanceof Error) {
         setError(err.message);
@@ -528,7 +544,50 @@ export default function EnginesPage() {
           selected={selectedCompass}
           onSelect={handleCompassSelect}
         />
-        <BirthDataForm onSubmit={handleSubmit} loading={loading} initialData={lastBirthData} />
+
+        {/* When results are loaded, show a compact birth-data chip instead of the full form */}
+        {response && !formExpanded && lastBirthData ? (
+          <div style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "0.75rem",
+            padding: "0.65rem 1rem",
+            border: "1px solid var(--line-mid)",
+            borderRadius: "var(--r-sm)",
+            background: "var(--surface-1)",
+            fontSize: "0.8rem",
+            fontFamily: "var(--font-mono)",
+            color: "var(--text-2)",
+            flexWrap: "wrap",
+          }}>
+            <span style={{ color: "var(--c-emerald)", marginRight: "0.2rem" }}>◈</span>
+            {lastBirthData.name && <span style={{ color: "var(--text)", fontWeight: 600 }}>{lastBirthData.name}</span>}
+            {lastBirthData.date && <span>{lastBirthData.date}</span>}
+            {lastBirthData.timezone && <span style={{ color: "var(--muted)" }}>{lastBirthData.timezone}</span>}
+            {lastBirthData.latitude != null && (
+              <span style={{ color: "var(--muted)" }}>{Number(lastBirthData.latitude).toFixed(2)}, {Number(lastBirthData.longitude).toFixed(2)}</span>
+            )}
+            <button
+              onClick={() => setFormExpanded(true)}
+              style={{
+                marginLeft: "auto",
+                padding: "0.3rem 0.7rem",
+                border: "1px solid var(--line-mid)",
+                borderRadius: "var(--r-sm)",
+                background: "transparent",
+                color: "var(--signal)",
+                fontSize: "0.72rem",
+                fontFamily: "var(--font-mono)",
+                cursor: "pointer",
+                letterSpacing: "0.06em",
+              }}
+            >
+              ↺ New Reading
+            </button>
+          </div>
+        ) : (
+          <BirthDataForm onSubmit={handleSubmit} loading={loading} initialData={lastBirthData} />
+        )}
 
         {error && <div style={s.errorBox}>{error}</div>}
 
