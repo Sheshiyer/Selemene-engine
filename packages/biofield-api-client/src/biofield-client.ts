@@ -55,7 +55,7 @@ export class BiofieldClient {
     options: BiofieldClientOptions = {},
   ) {
     this.authToken = options.authToken;
-    this.fetchImpl = options.fetchImpl ?? fetch;
+    this.fetchImpl = (options.fetchImpl ?? fetch).bind(globalThis);
   }
 
   async createSession(input: CreateBiofieldSessionRequest = {}): Promise<BiofieldSession> {
