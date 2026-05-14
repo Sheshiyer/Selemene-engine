@@ -70,7 +70,7 @@ export async function generateImage(opts: GenerateImageOptions): Promise<Generat
     width: opts.width ?? 1024,
     height: opts.height ?? 1024,
   }
-  if (opts.seed !== undefined) body.seed = opts.seed % 4294967295 // uint32 max
+  if (opts.seed !== undefined) body.seed = (opts.seed >>> 0) % 4294967295 // clamp to non-negative uint32
 
   const res = await fetch(url, {
     method: 'POST',

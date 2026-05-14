@@ -57,7 +57,7 @@ export class SeededRandom {
   }
 }
 
-/** Get current timestamp seed if no seed provided */
+/** Get current timestamp seed if no seed provided (always returns non-negative uint32) */
 export function getDefaultSeed(): number {
-  return Date.now() ^ (Math.random() * 0x100000000)
+  return (Date.now() ^ Math.floor(Math.random() * 0x100000000)) >>> 0
 }
