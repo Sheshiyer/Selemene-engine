@@ -103,7 +103,16 @@ async function request<T>(
   });
 
   const text = await res.text();
-  const payload = text ? JSON.parse(text) : {};
+  let payload: unknown = {};
+  try {
+    payload = text ? JSON.parse(text) : {};
+  } catch {
+    // Response body is not JSON (e.g. Axum path-param rejection plain-text)
+    if (!res.ok) {
+      throw new ApiError(text || `Request failed: ${res.status}`, res.status);
+    }
+    throw new ApiError(`Unexpected non-JSON response: ${text.slice(0, 120)}`, res.status);
+  }
 
   if (!res.ok) {
     throw new ApiError(
