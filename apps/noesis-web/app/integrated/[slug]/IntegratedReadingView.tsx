@@ -50,6 +50,10 @@ import {
   ChapterNavigator,
   type ChapterDirection,
 } from "@/components/integrated/chapters";
+import {
+  SubjectCompendium,
+  PartBento,
+} from "@/components/integrated/bento";
 import type { IntegratedReading, PassMetric } from "@/lib/integrated/loader";
 import type { Block } from "@/lib/integrated/parseBlocks";
 
@@ -245,6 +249,47 @@ export function IntegratedReadingView({ reading }: ViewProps) {
           integrated reading, pass it through as the witnessLayer prop. */}
       <WitnessLayerOpener />
 
+      {/* Bento — Subject Compendium. 3-up bento cards (one per native) with
+          subject name as massive title + lagna/AK/nakshatra/mahadasha as
+          chips inside the featured zone. Mocked from the subject list for
+          now; later wire to per-subject metadata from witness-agents. */}
+      <SubjectCompendium
+        subjects={reading.subjects.map((name, idx) => {
+          // Hardcoded W×H×Mohan subject metadata for the demo reading.
+          // Later: thread structured per-subject data from witness-agents.
+          const wHm = [
+            {
+              name: "WitnessAlchemist",
+              birth_date: "1991-08-13",
+              birth_place: "Bangalore, India",
+              lagna: "Scorpio",
+              atmakaraka: "Jupiter (exalted, 9th)",
+              birth_nakshatra: "Uttara Phalguni",
+              current_dasha: "Rahu → Jupiter (16 yr)",
+            },
+            {
+              name: "Harshita",
+              birth_date: "1987-10-15",
+              birth_place: "India",
+              lagna: "Aries",
+              atmakaraka: "Sun (exalted, 1st)",
+              birth_nakshatra: "Pushya",
+              current_dasha: "Ketu → Venus (20 yr)",
+            },
+            {
+              name: "Mohan Kumar V",
+              birth_date: "1995-11-17",
+              birth_place: "Tiruchirappalli, Tamil Nadu",
+              lagna: "Capricorn",
+              atmakaraka: "Mercury (Raj Yoga, 10th)",
+              birth_nakshatra: "Shravana",
+              current_dasha: "Mars → Rahu (18 yr)",
+            },
+          ];
+          return wHm[idx] ?? { name };
+        })}
+      />
+
       {/* Each Part is a full ChapterScene. ChapterTransition fills the
           gap between consecutive Parts. */}
       {reading.passes.map((pass, i) => {
@@ -287,23 +332,37 @@ export function IntegratedReadingView({ reading }: ViewProps) {
               words={pass.words}
               xrefs={pass.xrefs}
             >
-              {/* W2: WitnessPulse opener for this Part. WitnessDirection
-                  and ChapterDirection share the same 4-tuple. */}
-              <WitnessPulse
+              {/* Bento-shell wrapping the WitnessPulse + YantraPlate +
+                  optional DashaWaveform in the brand-design-system layout.
+                  The pulse/yantra/waveform render INSIDE bento cards with
+                  proper rounded-card framing and chip metadata. */}
+              <PartBento
+                partNum={meta.partNum}
+                romanNumeral={meta.romanNumeral}
+                title={meta.title}
                 direction={direction as WitnessDirection}
-                title={pass.title}
+                words={pass.words}
+                xrefs={pass.xrefs}
+                pulseSlot={
+                  <WitnessPulse
+                    direction={direction as WitnessDirection}
+                    title={pass.title}
+                  />
+                }
+                yantraSlot={
+                  <div data-proximity="yantra">
+                    <YantraPlate kind={yantraKind} data={yantraData} />
+                  </div>
+                }
+                extraSlot={
+                  i === 2 ? (
+                    <DashaWaveform
+                      periods={mockDashaPeriods}
+                      pivots={mockPivots}
+                    />
+                  ) : undefined
+                }
               />
-
-              {/* W2: Part-signature yantra mandala. W5: cursor-proximity
-                  target. */}
-              <div data-proximity="yantra">
-                <YantraPlate kind={yantraKind} data={yantraData} />
-              </div>
-
-              {/* W2: DashaWaveform between Part III header and verses. */}
-              {i === 2 ? (
-                <DashaWaveform periods={mockDashaPeriods} pivots={mockPivots} />
-              ) : null}
 
               <VerseFlow blocks={pass.blocks} />
             </ChapterScene>
