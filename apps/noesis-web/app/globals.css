@@ -374,3 +374,42 @@ code, .mono, pre {
   position: relative;
   z-index: 1;
 }
+
+/* ──────────────────────────────────────────────
+   Cursor proximity (W5 — integrated reading)
+   See src/components/integrated/audio/CursorProximityScene.tsx.
+   The scene component sets [data-proximity-near="true"] on the
+   nearest [data-proximity] element. CSS does the rest.
+   ────────────────────────────────────────────── */
+
+/* Smooth in/out for every proximity-aware element. */
+[data-proximity] {
+  transition:
+    text-shadow 260ms var(--ease-out-expo, ease-out),
+    color 260ms var(--ease-out-expo, ease-out),
+    transform 260ms var(--ease-out-expo, ease-out),
+    filter 260ms var(--ease-out-expo, ease-out);
+}
+
+/* Bolded text inside verses — subtle gold glow. */
+[data-proximity="strong"][data-proximity-near="true"] {
+  text-shadow:
+    0 0 6px rgba(197, 160, 23, 0.55),
+    0 0 14px rgba(197, 160, 23, 0.22);
+  color: var(--c-gold, #C5A017);
+}
+
+/* Yantra plates — subtle scale + brightness lift. */
+[data-proximity="yantra"][data-proximity-near="true"] {
+  transform: scale(1.012);
+  filter: brightness(1.06) drop-shadow(0 0 14px rgba(197, 160, 23, 0.18));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-proximity] {
+    transition: none;
+  }
+  [data-proximity="yantra"][data-proximity-near="true"] {
+    transform: none;
+  }
+}
