@@ -78,10 +78,9 @@ function toRoman(n: number): string {
 }
 
 // ─── Per-Part yantra plan ───────────────────────────────────────────────
-// Pass α / opening    → triad-mandala (uses witness-agents topology SVG)
-// Pass β / resonance  → vesica-trio
-// Pass γ / phase-lock → dasha-spiral
-// Pass δ / anti-dep   → compass-trine
+// 4 yantras cycled across N parts (the L1-L3 solo reading has 11 parts;
+// composite-triad has 4). Cardinal directions cycle too. Mapping per
+// part index k = parts[k % 4].
 const PART_YANTRAS: YantraKind[] = [
   "triad-mandala",
   "vesica-trio",
@@ -97,6 +96,71 @@ const PART_DIRECTIONS: ChapterDirection[] = [
   "CREATE",
   "MUTATE",
 ];
+
+/** Cycle a value from an array regardless of array length. */
+function cycle<T>(arr: T[], i: number): T {
+  return arr[i % arr.length];
+}
+
+// ─── Subject metadata lookup (demo data; later from witness-agents) ─────
+const SUBJECT_META: Record<
+  string,
+  {
+    name: string;
+    birth_date?: string;
+    birth_place?: string;
+    lagna?: string;
+    atmakaraka?: string;
+    birth_nakshatra?: string;
+    current_dasha?: string;
+  }
+> = {
+  WitnessAlchemist: {
+    name: "WitnessAlchemist",
+    birth_date: "1991-08-13",
+    birth_place: "Bangalore, India",
+    lagna: "Scorpio",
+    atmakaraka: "Jupiter (exalted, 9th)",
+    birth_nakshatra: "Uttara Phalguni",
+    current_dasha: "Rahu → Jupiter (16 yr)",
+  },
+  Harshita: {
+    name: "Harshita",
+    birth_date: "1987-10-15",
+    birth_place: "India",
+    lagna: "Aries",
+    atmakaraka: "Sun (exalted, 1st)",
+    birth_nakshatra: "Pushya",
+    current_dasha: "Ketu → Venus (20 yr)",
+  },
+  "Mohan Kumar V": {
+    name: "Mohan Kumar V",
+    birth_date: "1995-11-17",
+    birth_place: "Tiruchirappalli, Tamil Nadu",
+    lagna: "Capricorn",
+    atmakaraka: "Mercury (Raj Yoga, 10th)",
+    birth_nakshatra: "Shravana",
+    current_dasha: "Mars → Rahu (18 yr)",
+  },
+  "Chitra Shivanagowda": {
+    name: "Chitra Shivanagowda",
+    birth_date: "1967-03-05",
+    birth_place: "Jamakhandi, Karnataka",
+    lagna: "Aquarius",
+    atmakaraka: "Sun (1st)",
+    birth_nakshatra: "Mool",
+    current_dasha: "Saturn",
+  },
+  "Varsha S": {
+    name: "Varsha S",
+    birth_date: "1996",
+    birth_place: "India",
+    lagna: "—",
+    atmakaraka: "—",
+    birth_nakshatra: "—",
+    current_dasha: "—",
+  },
+};
 
 // ─── W×H×Mohan mock dasha (current: Rahu MD → Jupiter pivot 2026-09-14) ──
 const VIMSHOTTARI_YEARS: Record<string, number> = {
@@ -185,13 +249,15 @@ export function IntegratedReadingView({ reading }: ViewProps) {
   const { periods: mockDashaPeriods, pivots: mockPivots } = buildMockDashaSegments();
 
   // Resolve per-Part meta up front so transitions + navigator + progress
-  // can share the same source of truth.
+  // can share the same source of truth. Cardinal directions + yantra
+  // kinds cycle modulo 4 so solo readings (11 parts) and triad readings
+  // (4 parts) both work without per-part hardcoding.
   const partMeta = reading.passes.map((pass, i) => ({
     partNum: i + 1,
     romanNumeral: toRoman(i + 1),
     title: pass.title,
-    direction: PART_DIRECTIONS[i] ?? ("STABILIZE" as ChapterDirection),
-    yantraKind: PART_YANTRAS[i] ?? "triad-mandala",
+    direction: cycle(PART_DIRECTIONS, i),
+    yantraKind: cycle(PART_YANTRAS, i),
   }));
 
   // ─── W6 drill-down state ─────────────────────────────────────────────
@@ -249,45 +315,14 @@ export function IntegratedReadingView({ reading }: ViewProps) {
           integrated reading, pass it through as the witnessLayer prop. */}
       <WitnessLayerOpener />
 
-      {/* Bento — Subject Compendium. 3-up bento cards (one per native) with
-          subject name as massive title + lagna/AK/nakshatra/mahadasha as
-          chips inside the featured zone. Mocked from the subject list for
-          now; later wire to per-subject metadata from witness-agents. */}
+      {/* Bento — Subject Compendium. 1-N bento cards (one per native).
+          Subject metadata is mocked for the demo readings on disk; later
+          witness-agents will emit structured per-subject JSON we can
+          thread directly. */}
       <SubjectCompendium
-        subjects={reading.subjects.map((name, idx) => {
-          // Hardcoded W×H×Mohan subject metadata for the demo reading.
-          // Later: thread structured per-subject data from witness-agents.
-          const wHm = [
-            {
-              name: "WitnessAlchemist",
-              birth_date: "1991-08-13",
-              birth_place: "Bangalore, India",
-              lagna: "Scorpio",
-              atmakaraka: "Jupiter (exalted, 9th)",
-              birth_nakshatra: "Uttara Phalguni",
-              current_dasha: "Rahu → Jupiter (16 yr)",
-            },
-            {
-              name: "Harshita",
-              birth_date: "1987-10-15",
-              birth_place: "India",
-              lagna: "Aries",
-              atmakaraka: "Sun (exalted, 1st)",
-              birth_nakshatra: "Pushya",
-              current_dasha: "Ketu → Venus (20 yr)",
-            },
-            {
-              name: "Mohan Kumar V",
-              birth_date: "1995-11-17",
-              birth_place: "Tiruchirappalli, Tamil Nadu",
-              lagna: "Capricorn",
-              atmakaraka: "Mercury (Raj Yoga, 10th)",
-              birth_nakshatra: "Shravana",
-              current_dasha: "Mars → Rahu (18 yr)",
-            },
-          ];
-          return wHm[idx] ?? { name };
-        })}
+        title={reading.subjects.length === 1 ? "The Native" : "The Native Field"}
+        eyebrow={reading.subjects.length === 1 ? "Compendium · Solo" : "Compendium · Composite"}
+        subjects={reading.subjects.map((name) => SUBJECT_META[name] ?? { name })}
       />
 
       {/* Each Part is a full ChapterScene. ChapterTransition fills the

@@ -82,9 +82,9 @@ export function PartBento({
       }}
     >
       <BentoGrid>
-        {/* Massive Part title card — spans 2 columns */}
+        {/* Massive Part title card — spans full row, embeds field-weight stats */}
         <BentoCard
-          span={2}
+          span={3}
           eyebrow={`Part ${romanNumeral} · ${direction}`}
           title={title}
           description={blurb}
@@ -95,48 +95,53 @@ export function PartBento({
           <div
             style={{
               display: "flex",
-              flexWrap: "wrap",
-              gap: "clamp(0.6rem, 1vw, 1rem)",
-              alignItems: "center",
-            }}
-          >
-            <BentoChip label="Cardinal" variant="gold">
-              {direction}
-            </BentoChip>
-            <BentoChip label="Roman" variant="ghost">
-              {romanNumeral}
-            </BentoChip>
-            <BentoChip label="Part" variant="default">
-              {String(partNum).padStart(2, "0")}
-            </BentoChip>
-          </div>
-        </BentoCard>
-
-        {/* Stat card — words + xrefs */}
-        <BentoCard
-          span={1}
-          eyebrow="Field weight"
-          title=""
-          hasFeature={false}
-        >
-          <div
-            style={{
-              display: "flex",
               flexDirection: "column",
-              gap: "clamp(0.75rem, 1.4vw, 1.4rem)",
-              paddingBottom: "clamp(1.25rem, 2vw, 2rem)",
+              gap: "clamp(1rem, 1.6vw, 1.4rem)",
             }}
           >
-            <BentoStat
-              label="Words"
-              value={words.toLocaleString()}
-              accent="parchment"
-            />
-            <BentoStat
-              label="Cross-refs"
-              value={xrefs.toLocaleString()}
-              accent="emerald"
-            />
+            {/* Chips row */}
+            <div
+              style={{
+                display: "flex",
+                flexWrap: "wrap",
+                gap: "clamp(0.6rem, 1vw, 1rem)",
+                alignItems: "center",
+              }}
+            >
+              <BentoChip label="Cardinal" variant="gold">
+                {direction}
+              </BentoChip>
+              <BentoChip label="Roman" variant="ghost">
+                {romanNumeral}
+              </BentoChip>
+              <BentoChip label="Part" variant="default">
+                {String(partNum).padStart(2, "0")}
+              </BentoChip>
+            </div>
+            {/* Stats row — words + xrefs inline */}
+            <div
+              style={{
+                display: "flex",
+                flexWrap: "wrap",
+                gap: "clamp(1.5rem, 3vw, 3rem)",
+                alignItems: "baseline",
+                paddingTop: "clamp(0.5rem, 1vw, 0.8rem)",
+                borderTop: "1px solid rgba(197,160,23,0.15)",
+              }}
+            >
+              <BentoStat
+                label="Words"
+                value={words.toLocaleString()}
+                direction="horizontal"
+                accent="parchment"
+              />
+              <BentoStat
+                label="Cross-refs"
+                value={xrefs.toLocaleString()}
+                direction="horizontal"
+                accent="emerald"
+              />
+            </div>
           </div>
         </BentoCard>
 
