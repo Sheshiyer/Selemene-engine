@@ -21,15 +21,11 @@
 //
 // Per design § 5.2 + Chapter 0 — Three Laws compliant.
 
-import { Suspense, useEffect, useState } from "react";
-import { Canvas } from "@react-three/fiber";
-import { EffectComposer, Bloom } from "@react-three/postprocessing";
-import { KernelSize } from "postprocessing";
+import { useEffect, useState } from "react";
 import { motion } from "motion/react";
 
-import { AtmosphericRings } from "./AtmosphericRings";
-import { SigilMesh } from "./SigilMesh";
 import { OrbitalCover } from "../OrbitalCover";
+import { SacredScene } from "../sacred-scene/SacredScene";
 
 interface CoverSceneProps {
   title: string;
@@ -156,47 +152,21 @@ export function CoverScene({
         {title}
       </motion.h1>
 
-      {/* ── 3. 3D sigil stage ─────────────────────────────────────── */}
+      {/* ── 3. 3D sigil stage — driven by the SacredScene GLSL primitive
+              (procedural fbm noise, breathing icosahedron, particle aura,
+              wave ribbon, scene fog — all from one shader codebase) ── */}
       <motion.div
         initial={reducedMotion ? { opacity: 1 } : { opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: reducedMotion ? 0 : 0.6, duration: reducedMotion ? 0 : 2.0 }}
         style={{
           position: "relative",
-          width: "min(640px, 70vw, 60vh)",
+          width: "min(720px, 78vw, 68vh)",
           aspectRatio: "1 / 1",
           flexShrink: 0,
         }}
       >
-        <Canvas
-          dpr={[1, 2]}
-          gl={{ alpha: true, antialias: true, powerPreference: "high-performance" }}
-          camera={{ fov: 35, position: [0, 0, 4], near: 0.1, far: 50 }}
-          style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }}
-        >
-          {/* Ambient + directional lights — Three Laws compliant
-              (no clinical fluorescents, soft Goethe-derived warm/cool pair) */}
-          <ambientLight intensity={0.35} color="#F0EDE3" />
-          <directionalLight position={[3, 4, 5]} intensity={0.6} color="#C5A017" />
-          <directionalLight position={[-3, -2, 3]} intensity={0.3} color="#0B50FB" />
-          <pointLight position={[0, 0, 2]} intensity={0.4} color="#10B5A7" />
-
-          <Suspense fallback={null}>
-            <AtmosphericRings reducedMotion={reducedMotion} />
-            <SigilMesh topologySvg={topologySvg} reducedMotion={reducedMotion} />
-          </Suspense>
-
-          <EffectComposer multisampling={0}>
-            <Bloom
-              intensity={1.8}
-              luminanceThreshold={0.7}
-              luminanceSmoothing={0.4}
-              mipmapBlur
-              radius={0.95}
-              kernelSize={KernelSize.LARGE}
-            />
-          </EffectComposer>
-        </Canvas>
+        <SacredScene kind="cover" intensity={1} height="100%" />
       </motion.div>
 
       {/* ── 4. Subjects row ───────────────────────────────────────── */}

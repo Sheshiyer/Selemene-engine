@@ -14,6 +14,8 @@ import { BentoCard } from "./BentoCard";
 import { BentoGrid } from "./BentoGrid";
 import { BentoChip } from "./BentoChip";
 import { BentoStat } from "./BentoStat";
+import { SacredScene } from "../sacred-scene/SacredScene";
+import type { SceneKind } from "../sacred-scene/presets";
 
 interface PartBentoProps {
   partNum: number;
@@ -40,6 +42,13 @@ const DIRECTION_TONE: Record<
   MUTATE: "gold",
 };
 
+const DIRECTION_SACRED_KIND: Record<PartBentoProps["direction"], SceneKind> = {
+  STABILIZE: "stabilize",
+  HEAL: "heal",
+  CREATE: "create",
+  MUTATE: "mutate",
+};
+
 const DIRECTION_BLURB: Record<PartBentoProps["direction"], string> = {
   STABILIZE: "The shared bedrock — what holds the field together.",
   HEAL: "The resonance — how the field receives + repairs itself.",
@@ -60,6 +69,7 @@ export function PartBento({
 }: PartBentoProps) {
   const tone = DIRECTION_TONE[direction];
   const blurb = DIRECTION_BLURB[direction];
+  const sceneKind = DIRECTION_SACRED_KIND[direction];
 
   return (
     <section
@@ -127,6 +137,31 @@ export function PartBento({
               value={xrefs.toLocaleString()}
               accent="emerald"
             />
+          </div>
+        </BentoCard>
+
+        {/* Sacred procedural-shader atmosphere — full-row hero per Part.
+            Same GLSL primitive used for the cover, configured per cardinal
+            direction (stabilize/heal/create/mutate). Each Part feels
+            visually distinct from the same shader codebase. */}
+        <BentoCard
+          span={3}
+          eyebrow="Atmosphere"
+          title="The Field Right Now"
+          description="The procedural geometry of this chapter rendered through Goethe-spectrum shaders."
+          tone={tone}
+          hasFeature
+        >
+          <div
+            style={{
+              position: "relative",
+              width: "100%",
+              minHeight: "clamp(16rem, 32vw, 28rem)",
+              overflow: "hidden",
+              borderRadius: "inherit",
+            }}
+          >
+            <SacredScene kind={sceneKind} intensity={0.95} height="clamp(16rem, 32vw, 28rem)" />
           </div>
         </BentoCard>
 
