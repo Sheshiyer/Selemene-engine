@@ -63,7 +63,7 @@ export function SigilMesh({ topologySvg, reducedMotion = false }: SigilMeshProps
     const elapsed = state.clock.elapsedTime - t0.current;
 
     if (groupRef.current && !reducedMotion) {
-      groupRef.current.rotation.y += delta * 0.05; // 0.05 rad/s
+      groupRef.current.rotation.y += delta * 0.06; // 0.06 rad/s
     }
 
     if (emissiveRef.current) {
