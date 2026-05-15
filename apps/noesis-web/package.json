@@ -11,6 +11,8 @@
   "dependencies": {
     "@strudel/web": "^1.2.6",
     "@supabase/supabase-js": "^2.49.4",
+    "marked": "^18.0.3",
+    "motion": "^12.38.0",
     "next": "16.2.4",
     "pg": "^8.13.1",
     "react": "18.3.1",
