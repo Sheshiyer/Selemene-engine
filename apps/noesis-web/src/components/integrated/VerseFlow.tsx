@@ -1,17 +1,21 @@
 "use client";
 
 // ─── VerseFlow — scroll-illuminated reading column ──────────────────────
-// Per design MD § 3.3. Takes parsed HTML (from marked) and wraps each
-// top-level block (<p>, headings, lists, blockquotes, tables) as a
-// <Verse>. Verses default to dim opacity 0.22 + 0.4px blur; illuminate
-// to full opacity as they enter viewport-center.
+// Takes parsed HTML (from marked) or a typed Block[] (from parseBlocks)
+// and renders each top-level block as a <Verse> — dim opacity 0.22 +
+// 0.4px blur, illuminating to full opacity as it enters viewport-center.
 //
 // Long paragraphs (>160 words, 3+ sentences) split into sentence-grouped
-// sub-verses for the 2-3 line focus rhythm the user asked for.
+// sub-verses for the 2-3 line focus rhythm.
+//
+// Specialised block kinds (hex-trio, cascade, decision) are dispatched to
+// the W3 BlockRenderer instead of being rendered as html.
 
-import { motion, useInView } from "motion/react";
+import { motion, useInView, useReducedMotion } from "motion/react";
 import { useRef, useMemo } from "react";
 import type { ReactNode } from "react";
+import type { Block } from "@/lib/integrated/parseBlocks";
+import { BlockRenderer } from "./data/BlockRenderer";
 
 interface VerseProps {
   children: ReactNode;
@@ -21,6 +25,7 @@ interface VerseProps {
 function Verse({ children, anchor = false }: VerseProps) {
   const ref = useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { margin: "-35% 0% -35% 0%", once: false });
+  const reduced = useReducedMotion();
   return (
     <motion.div
       ref={ref}
@@ -29,10 +34,14 @@ function Verse({ children, anchor = false }: VerseProps) {
         willChange: "opacity, filter",
       }}
       initial={false}
-      animate={{
-        opacity: inView ? 1 : (anchor ? 0.45 : 0.22),
-        filter: inView ? "blur(0px)" : "blur(0.4px)",
-      }}
+      animate={
+        reduced
+          ? { opacity: 1, filter: "blur(0px)" }
+          : {
+              opacity: inView ? 1 : anchor ? 0.45 : 0.22,
+              filter: inView ? "blur(0px)" : "blur(0.4px)",
+            }
+      }
       transition={{ duration: 0.6, ease: [0.2, 0.7, 0.2, 1] }}
     >
       {children}
@@ -41,14 +50,15 @@ function Verse({ children, anchor = false }: VerseProps) {
 }
 
 interface VerseFlowProps {
-  /** Pre-parsed HTML (from marked or similar) */
-  html: string;
+  /** Legacy: pre-parsed HTML (from marked). Used when no `blocks` prop. */
+  html?: string;
+  /** Preferred: parsed typed Block[] from parseMarkdownBlocks. */
+  blocks?: Block[];
 }
 
 /**
- * Server-side splitting: take rendered HTML and break it into top-level
- * blocks. We do this with a permissive regex that matches paragraph-level
- * elements. Long <p> blocks get sentence-split into multiple verses.
+ * Take rendered HTML and break it into top-level blocks. Long <p> blocks
+ * get sentence-split into multiple verses.
  */
 function splitIntoVerses(html: string): Array<{ kind: "block" | "anchor"; html: string }> {
   const blockTags = ["p", "h2", "h3", "h4", "ul", "ol", "blockquote", "table", "pre"];
@@ -90,15 +100,39 @@ function splitIntoVerses(html: string): Array<{ kind: "block" | "anchor"; html: 
   return out;
 }
 
-export function VerseFlow({ html }: VerseFlowProps) {
-  const verses = useMemo(() => splitIntoVerses(html), [html]);
-  return (
-    <div className="verse-flow">
-      {verses.map((v, i) => (
+export function VerseFlow({ html, blocks }: VerseFlowProps) {
+  // Mode A: typed blocks (preferred). HTML chunks are split & illuminated;
+  // specialised blocks dispatch to BlockRenderer.
+  const rendered = useMemo(() => {
+    if (blocks) {
+      const nodes: ReactNode[] = [];
+      blocks.forEach((b, bi) => {
+        if (b.kind === "html") {
+          const verses = splitIntoVerses(b.html);
+          verses.forEach((v, vi) => {
+            nodes.push(
+              <Verse key={`b${bi}-v${vi}`} anchor={v.kind === "anchor"}>
+                <div dangerouslySetInnerHTML={{ __html: v.html }} />
+              </Verse>,
+            );
+          });
+        } else {
+          nodes.push(<BlockRenderer key={`b${bi}`} block={b} />);
+        }
+      });
+      return nodes;
+    }
+    // Mode B (legacy): full html string
+    if (html) {
+      const verses = splitIntoVerses(html);
+      return verses.map((v, i) => (
         <Verse key={i} anchor={v.kind === "anchor"}>
           <div dangerouslySetInnerHTML={{ __html: v.html }} />
         </Verse>
-      ))}
-    </div>
-  );
+      ));
+    }
+    return null;
+  }, [html, blocks]);
+
+  return <div className="verse-flow">{rendered}</div>;
 }

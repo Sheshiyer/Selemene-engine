@@ -6,8 +6,8 @@
 // Example: /integrated/witnessalchemist-x-harshita-x-mohan-l3
 
 import { notFound } from "next/navigation";
-import { marked } from "marked";
 import { loadIntegratedReading, listAvailableReadings } from "@/lib/integrated/loader";
+import { parseMarkdownBlocks, type Block } from "@/lib/integrated/parseBlocks";
 import { IntegratedReadingView } from "./IntegratedReadingView";
 
 interface PageProps {
@@ -21,13 +21,15 @@ export default async function IntegratedReadingPage({ params }: PageProps) {
     notFound();
   }
 
-  // Pre-render each pass's markdown to HTML server-side
-  const passesWithHtml = reading.passes.map((p) => ({
+  // Pre-process each pass's markdown into typed Block[] server-side so
+  // tables, ⌬ ACT blockquotes, and prose all land at the client as a
+  // structured stream rather than an opaque html string.
+  const passesWithBlocks = reading.passes.map((p) => ({
     ...p,
-    html: marked.parse(p.markdown, { gfm: true, breaks: false }) as string,
+    blocks: parseMarkdownBlocks(p.markdown) as Block[],
   }));
 
-  return <IntegratedReadingView reading={{ ...reading, passes: passesWithHtml }} />;
+  return <IntegratedReadingView reading={{ ...reading, passes: passesWithBlocks }} />;
 }
 
 export async function generateStaticParams() {

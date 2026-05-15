@@ -9,14 +9,22 @@
     "typecheck": "tsc --noEmit --incremental false"
   },
   "dependencies": {
+    "@react-three/drei": "^10.7.7",
+    "@react-three/fiber": "^9.6.1",
+    "@react-three/postprocessing": "^3.0.4",
     "@strudel/web": "^1.2.6",
     "@supabase/supabase-js": "^2.49.4",
+    "@tsparticles/react": "^3.0.0",
+    "@tsparticles/slim": "^3.9.1",
+    "@types/three": "^0.184.1",
+    "lottie-react": "^2.4.1",
     "marked": "^18.0.3",
     "motion": "^12.38.0",
     "next": "16.2.4",
     "pg": "^8.13.1",
     "react": "18.3.1",
-    "react-dom": "18.3.1"
+    "react-dom": "18.3.1",
+    "three": "^0.184.0"
   },
   "devDependencies": {
     "@types/node": "20.17.57",
