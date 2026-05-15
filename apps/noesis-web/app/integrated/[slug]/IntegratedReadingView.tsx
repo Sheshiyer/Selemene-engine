@@ -11,7 +11,7 @@
 // Per design MD § 4 (page composition), § 5.3 (WitnessPulse), § 5.4 (YantraPlate),
 // § 5.8 (DashaWaveform).
 
-import { ConstellationGrid } from "@/components/integrated/ConstellationGrid";
+import { ConstellationBackdrop } from "@/components/integrated/backdrop/ConstellationBackdrop";
 import { CoverScene } from "@/components/integrated/cover/CoverScene";
 import { VerseFlow } from "@/components/integrated/VerseFlow";
 import { LaArcFade } from "@/components/integrated/LaArcFade";
@@ -158,7 +158,7 @@ export function IntegratedReadingView({ reading }: ViewProps) {
 
   return (
     <>
-      <ConstellationGrid />
+      <ConstellationBackdrop />
 
       <CoverScene
         title={coverTitle}
