@@ -7,7 +7,7 @@
 // Per design MD § 4 (page composition).
 
 import { ConstellationGrid } from "@/components/integrated/ConstellationGrid";
-import { OrbitalCover } from "@/components/integrated/OrbitalCover";
+import { CoverScene } from "@/components/integrated/cover/CoverScene";
 import { VerseFlow } from "@/components/integrated/VerseFlow";
 import { LaArcFade } from "@/components/integrated/LaArcFade";
 import type { IntegratedReading, PassMetric } from "@/lib/integrated/loader";
@@ -41,7 +41,7 @@ export function IntegratedReadingView({ reading }: ViewProps) {
     <>
       <ConstellationGrid />
 
-      <OrbitalCover
+      <CoverScene
         title={coverTitle}
         birthMeta={birthMeta}
         subjects={reading.subjects}
