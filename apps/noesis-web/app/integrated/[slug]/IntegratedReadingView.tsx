@@ -1,20 +1,35 @@
 "use client";
 
 // ─── IntegratedReadingView — client wrapper for animated rendering ─────
-// Composes: ConstellationGrid backdrop, CoverScene hero (W1), then per Part:
-//   - WitnessPulse (breathing-ring opener, cardinal direction per Part)
-//   - YantraPlate (Part-signature mandala — α triad, β vesica, γ dasha, δ compass)
-//   - DashaWaveform between Part III header and verses
-//   - VerseFlow (illuminated prose body)
-//   - LaArcFade between Parts
+// Composes: ConstellationGrid backdrop, CoverScene hero (W1), then each
+// Part as a full ChapterScene (W7) with ChapterTransition (W7) between
+// consecutive Parts. ChapterProgress + ChapterNavigator (W7) mounted
+// globally. W5 audio + W6 drilldown also live here as global providers.
 //
-// Per design MD § 4 (page composition), § 5.3 (WitnessPulse), § 5.4 (YantraPlate),
-// § 5.8 (DashaWaveform).
+// Per integrated-reading-design-v2.md § 4 (story arc — each reading is
+// a chapter narrative), § 5.3 (WitnessPulse), § 5.4 (YantraPlate),
+// § 5.8 (DashaWaveform), § 5.12 (ChapterTransition).
+
+import React, { useState, useMemo, useCallback } from "react";
 
 import { ConstellationBackdrop } from "@/components/integrated/backdrop/ConstellationBackdrop";
 import { CoverScene } from "@/components/integrated/cover/CoverScene";
 import { VerseFlow } from "@/components/integrated/VerseFlow";
 import { LaArcFade } from "@/components/integrated/LaArcFade";
+import { EngineDrillDown } from "@/components/integrated/drilldown/EngineDrillDown";
+import { WitnessLayerOpener } from "@/components/integrated/drilldown/WitnessLayerOpener";
+import {
+  DrilldownContext,
+  type DrilldownContextValue,
+  type DrilldownTarget,
+} from "@/components/integrated/drilldown/DrilldownContext";
+import {
+  AudioStateProvider,
+  AmbientAudio,
+  CoherenceBreath,
+  AudioControlPanel,
+  CursorProximityScene,
+} from "@/components/integrated/audio";
 import {
   WitnessPulse,
   type WitnessDirection,
@@ -28,6 +43,13 @@ import {
   DashaWaveform,
   type DashaSegment,
 } from "@/components/integrated/yantras/DashaWaveform";
+import {
+  ChapterScene,
+  ChapterTransition,
+  ChapterProgress,
+  ChapterNavigator,
+  type ChapterDirection,
+} from "@/components/integrated/chapters";
 import type { IntegratedReading, PassMetric } from "@/lib/integrated/loader";
 import type { Block } from "@/lib/integrated/parseBlocks";
 
@@ -63,7 +85,9 @@ const PART_YANTRAS: YantraKind[] = [
   "compass-trine",
 ];
 
-const PART_DIRECTIONS: WitnessDirection[] = [
+// WitnessDirection and ChapterDirection share the same 4-tuple — the
+// compass framework (DESIGN.md § 5) maps each Part to one cardinal.
+const PART_DIRECTIONS: ChapterDirection[] = [
   "STABILIZE",
   "HEAL",
   "CREATE",
@@ -156,9 +180,58 @@ export function IntegratedReadingView({ reading }: ViewProps) {
 
   const { periods: mockDashaPeriods, pivots: mockPivots } = buildMockDashaSegments();
 
+  // Resolve per-Part meta up front so transitions + navigator + progress
+  // can share the same source of truth.
+  const partMeta = reading.passes.map((pass, i) => ({
+    partNum: i + 1,
+    romanNumeral: toRoman(i + 1),
+    title: pass.title,
+    direction: PART_DIRECTIONS[i] ?? ("STABILIZE" as ChapterDirection),
+    yantraKind: PART_YANTRAS[i] ?? "triad-mandala",
+  }));
+
+  // ─── W6 drill-down state ─────────────────────────────────────────────
+  // The IntegratedReading shape doesn't (yet) carry engine_outputs; when
+  // the witness-agents pipeline starts emitting them, this hook reads
+  // them off the reading. For now we expose an empty map so term-clicks
+  // open the panel in its "no data yet" placeholder state.
+  const [activeDrilldown, setActiveDrilldown] =
+    useState<DrilldownTarget | null>(null);
+  const engineOutputs = useMemo<
+    Record<string, Record<string, unknown> | undefined>
+  >(() => {
+    const r = reading as unknown as {
+      engineOutputs?: Record<string, { result?: Record<string, unknown> }>;
+    };
+    const map: Record<string, Record<string, unknown> | undefined> = {};
+    if (r.engineOutputs) {
+      for (const [id, eo] of Object.entries(r.engineOutputs)) {
+        map[id] = eo?.result;
+      }
+    }
+    return map;
+  }, [reading]);
+  const openDrilldown = useCallback(
+    (target: DrilldownTarget) => setActiveDrilldown(target),
+    [],
+  );
+  const closeDrilldown = useCallback(() => setActiveDrilldown(null), []);
+  const drilldownValue: DrilldownContextValue = useMemo(
+    () => ({ open: openDrilldown, engineOutputs }),
+    [openDrilldown, engineOutputs],
+  );
+
   return (
-    <>
+    <AudioStateProvider>
+     <DrilldownContext.Provider value={drilldownValue}>
       <ConstellationBackdrop />
+
+      {/* W5 — Audio, atmosphere, cursor proximity. Per integrated-reading-design-v2.md § 5.11. */}
+      {/* Placeholder nakshatra="rohini" — W6/future will wire to subject's primary nakshatra. */}
+      <AmbientAudio nakshatra="rohini" />
+      <CoherenceBreath />
+      <AudioControlPanel />
+      <CursorProximityScene />
 
       <CoverScene
         title={coverTitle}
@@ -167,154 +240,164 @@ export function IntegratedReadingView({ reading }: ViewProps) {
         topologySvg={reading.topologySvg}
       />
 
-      <article
+      {/* W6 — Chapter 0 / pre-reading synthesis spread. Mock data for now;
+          when witness-agents emits a top-level witness_layer for the
+          integrated reading, pass it through as the witnessLayer prop. */}
+      <WitnessLayerOpener />
+
+      {/* Each Part is a full ChapterScene. ChapterTransition fills the
+          gap between consecutive Parts. */}
+      {reading.passes.map((pass, i) => {
+        const meta = partMeta[i];
+        const isLast = i === reading.passes.length - 1;
+        const yantraKind = meta.yantraKind;
+        const direction = meta.direction;
+
+        const yantraData: YantraData = {
+          subjects: reading.subjects,
+          topologySvg:
+            yantraKind === "triad-mandala" ? reading.topologySvg : undefined,
+          dashaPeriods:
+            yantraKind === "dasha-spiral"
+              ? mockDashaPeriods.map((p) => ({
+                  lord: p.lord,
+                  start_iso: p.start_iso,
+                  end_iso: p.end_iso,
+                  current: p.state === "current",
+                }))
+              : undefined,
+          cardinals:
+            yantraKind === "compass-trine"
+              ? {
+                  stabilize: "Ground · root · anchor",
+                  heal: "Restore · integrate",
+                  create: "Activate · express",
+                  mutate: "Transform · see",
+                }
+              : undefined,
+        };
+
+        return (
+          <React.Fragment key={pass.id}>
+            <ChapterScene
+              partNum={meta.partNum}
+              romanNumeral={meta.romanNumeral}
+              title={meta.title}
+              direction={direction}
+              words={pass.words}
+              xrefs={pass.xrefs}
+            >
+              {/* W2: WitnessPulse opener for this Part. WitnessDirection
+                  and ChapterDirection share the same 4-tuple. */}
+              <WitnessPulse
+                direction={direction as WitnessDirection}
+                title={pass.title}
+              />
+
+              {/* W2: Part-signature yantra mandala. W5: cursor-proximity
+                  target. */}
+              <div data-proximity="yantra">
+                <YantraPlate kind={yantraKind} data={yantraData} />
+              </div>
+
+              {/* W2: DashaWaveform between Part III header and verses. */}
+              {i === 2 ? (
+                <DashaWaveform periods={mockDashaPeriods} pivots={mockPivots} />
+              ) : null}
+
+              <VerseFlow blocks={pass.blocks} />
+            </ChapterScene>
+
+            {!isLast && (
+              <ChapterTransition
+                fromPart={meta.partNum}
+                toPart={meta.partNum + 1}
+                toRomanNumeral={partMeta[i + 1].romanNumeral}
+                toTitle={partMeta[i + 1].title}
+                toDirection={partMeta[i + 1].direction}
+              />
+            )}
+          </React.Fragment>
+        );
+      })}
+
+      {/* Closing scene — preserves The Quine footer as a final beat. */}
+      <section
         style={{
           position: "relative",
           width: "100%",
-          background: "linear-gradient(180deg, rgba(7,11,29,0.55) 0%, rgba(7,11,29,0.85) 100%)",
-          backdropFilter: "blur(2px)",
+          padding:
+            "clamp(4rem, 8vh, 7rem) clamp(1rem, 2.4vw, 2.5rem) clamp(4rem, 8vh, 7rem)",
           zIndex: 2,
         }}
       >
-        <div
+        <LaArcFade />
+        <footer
           style={{
-            width: "clamp(18rem, 72vw, 80rem)",
-            margin: "0 auto",
-            padding: "clamp(2rem, 4vw, 5rem) clamp(1rem, 2.4vw, 2.5rem) clamp(3rem, 6vw, 6rem)",
-            fontSize: "clamp(1rem, 0.85rem + 0.45vw, 1.22rem)",
-            lineHeight: 1.65,
-            color: "var(--text)",
+            margin: "clamp(2rem, 4vh, 4rem) auto 0",
+            maxWidth: "60rem",
+            paddingTop: "clamp(1.5rem, 3vw, 3rem)",
+            borderTop: "1px solid var(--line-faint)",
+            fontFamily: "var(--font-mono)",
+            fontSize: "0.85rem",
+            color: "var(--muted)",
+            textAlign: "center" as const,
+            letterSpacing: "0.12em",
           }}
         >
-          {reading.passes.map((pass, i) => {
-            const isLast = i === reading.passes.length - 1;
-            const yantraKind = PART_YANTRAS[i] ?? "triad-mandala";
-            const direction = PART_DIRECTIONS[i] ?? "STABILIZE";
-
-            const yantraData: YantraData = {
-              subjects: reading.subjects,
-              topologySvg:
-                yantraKind === "triad-mandala" ? reading.topologySvg : undefined,
-              dashaPeriods:
-                yantraKind === "dasha-spiral"
-                  ? mockDashaPeriods.map((p) => ({
-                      lord: p.lord,
-                      start_iso: p.start_iso,
-                      end_iso: p.end_iso,
-                      current: p.state === "current",
-                    }))
-                  : undefined,
-              cardinals:
-                yantraKind === "compass-trine"
-                  ? {
-                      stabilize: "Ground · root · anchor",
-                      heal: "Restore · integrate",
-                      create: "Activate · express",
-                      mutate: "Transform · see",
-                    }
-                  : undefined,
-            };
-
-            return (
-              <div key={pass.id} style={{ marginBottom: "clamp(2rem, 6vw, 6rem)" }}>
-                <header
-                  id={`part-${i + 1}`}
-                  style={{ margin: "clamp(2rem, 4vw, 4rem) 0 clamp(1.5rem, 3vw, 3rem)" }}
-                >
-                  <div
-                    style={{
-                      fontFamily: "var(--font-mono)",
-                      fontSize: "clamp(0.72rem, 0.65rem + 0.15vw, 0.85rem)",
-                      letterSpacing: "0.45em",
-                      textTransform: "uppercase",
-                      color: "var(--c-gold)",
-                      marginBottom: "0.85rem",
-                    }}
-                  >
-                    Part {toRoman(i + 1)}
-                  </div>
-                  <h1
-                    style={{
-                      fontFamily: "var(--font-display)",
-                      fontWeight: 800,
-                      fontSize: "clamp(2rem, 1.4rem + 2.4vw, 4.5rem)",
-                      lineHeight: 1.02,
-                      letterSpacing: "-0.022em",
-                      color: "var(--c-parchment)",
-                      margin: 0,
-                    }}
-                  >
-                    {pass.title}
-                  </h1>
-                  <div
-                    style={{
-                      marginTop: "0.85rem",
-                      fontFamily: "var(--font-mono)",
-                      fontSize: "0.85rem",
-                      color: "var(--c-emerald)",
-                      letterSpacing: "0.12em",
-                    }}
-                  >
-                    {pass.words.toLocaleString()} words · {pass.xrefs} cross-references
-                  </div>
-                </header>
-
-                {/* W2: WitnessPulse opener for this Part */}
-                <WitnessPulse direction={direction} title={pass.title} />
-
-                {/* W2: Part-signature yantra mandala */}
-                <YantraPlate kind={yantraKind} data={yantraData} />
-
-                {/* W2: DashaWaveform between Part III header and verses */}
-                {i === 2 ? (
-                  <DashaWaveform
-                    periods={mockDashaPeriods}
-                    pivots={mockPivots}
-                  />
-                ) : null}
-
-                <VerseFlow blocks={pass.blocks} />
-
-                {!isLast && <LaArcFade />}
-              </div>
-            );
-          })}
-
-          <LaArcFade />
-
-          <footer
+          <div
             style={{
-              marginTop: "clamp(3rem, 6vw, 6rem)",
-              paddingTop: "clamp(1.5rem, 3vw, 3rem)",
-              borderTop: "1px solid var(--line-faint)",
-              fontFamily: "var(--font-mono)",
-              fontSize: "0.85rem",
-              color: "var(--muted)",
-              textAlign: "center" as const,
-              letterSpacing: "0.12em",
+              fontFamily: "var(--font-display)",
+              fontStyle: "italic",
+              fontWeight: 500,
+              fontSize: "1.05rem",
+              color: "var(--c-gold)",
+              marginBottom: "0.75rem",
             }}
           >
-            <div
-              style={{
-                fontFamily: "var(--font-display)",
-                fontStyle: "italic",
-                fontWeight: 500,
-                fontSize: "1.05rem",
-                color: "var(--c-gold)",
-                marginBottom: "0.75rem",
-              }}
-            >
-              The Anatomist Who Sees Fractals
-            </div>
-            <div>TRYAMBAKAM NOESIS · 1331.TRYAMBAKAM.SPACE</div>
-            <div style={{ marginTop: "1rem", maxWidth: "48ch", margin: "1rem auto 0", fontStyle: "italic", color: "var(--muted)" }}>
-              This document is documentation of an instrument. The instrument is what
-              you already are. The Quine principle: the system succeeds when you no
-              longer need it.
-            </div>
-          </footer>
-        </div>
-      </article>
-    </>
+            The Anatomist Who Sees Fractals
+          </div>
+          <div>TRYAMBAKAM NOESIS · 1331.TRYAMBAKAM.SPACE</div>
+          <div
+            style={{
+              marginTop: "1rem",
+              maxWidth: "48ch",
+              margin: "1rem auto 0",
+              fontStyle: "italic",
+              color: "var(--muted)",
+            }}
+          >
+            This document is documentation of an instrument. The instrument is
+            what you already are. The Quine principle: the system succeeds when
+            you no longer need it.
+          </div>
+        </footer>
+      </section>
+
+      {/* Global chapter chrome — always visible while reading. */}
+      <ChapterProgress
+        parts={partMeta.map((m) => ({
+          partNum: m.partNum,
+          romanNumeral: m.romanNumeral,
+          title: m.title,
+        }))}
+      />
+      <ChapterNavigator
+        parts={partMeta.map((m) => ({
+          partNum: m.partNum,
+          romanNumeral: m.romanNumeral,
+          title: m.title,
+        }))}
+      />
+
+      {/* W6 — Engine drill-down overlay. Rendered last so it stacks above
+          all article content. AnimatePresence inside handles enter/exit. */}
+      <EngineDrillDown
+        engineId={activeDrilldown?.engineId ?? null}
+        result={activeDrilldown?.result}
+        onClose={closeDrilldown}
+      />
+     </DrilldownContext.Provider>
+    </AudioStateProvider>
   );
 }

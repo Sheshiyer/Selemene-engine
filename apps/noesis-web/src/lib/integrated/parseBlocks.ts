@@ -12,6 +12,8 @@
 // via marked.parser().
 
 import { marked, type Token, type Tokens } from "marked";
+import { enhanceTermsInHtml } from "./enhanceTerms";
+import { injectMicroYantraPlaceholders } from "./microYantraEnhance";
 
 /** Subject-column header tokens that, when seen as the first column of a
  *  table, classify the table as a Native-comparison → HexagonTrio. */
@@ -182,7 +184,10 @@ export function parseMarkdownBlocks(md: string): Block[] {
     // property. We re-attach the top-level links from the lexer result.
     const list = htmlBuffer.slice() as Token[] & { links: Record<string, { href: string; title: string | null }> };
     list.links = (tokens as unknown as { links?: Record<string, { href: string; title: string | null }> }).links ?? {};
-    const html = marked.parser(list as never);
+    const rawHtml = marked.parser(list as never);
+    // W6 § 5.10: wrap technical terms with [data-engine-term] markers
+    // that VerseFlow hydrates into <EngineTermLink> click-targets.
+    const html = enhanceTermsInHtml(rawHtml);
     blocks.push({ kind: "html", html });
     htmlBuffer.length = 0;
   };
