@@ -187,7 +187,13 @@ export function parseMarkdownBlocks(md: string): Block[] {
     const rawHtml = marked.parser(list as never);
     // W6 § 5.10: wrap technical terms with [data-engine-term] markers
     // that VerseFlow hydrates into <EngineTermLink> click-targets.
-    const html = enhanceTermsInHtml(rawHtml);
+    const linked = enhanceTermsInHtml(rawHtml);
+    // W8 § 5.5: inject [data-micro-yantra] placeholder spans next to
+    // common Vedic / HD / Gene-Keys terms. VerseFlow hydrates these
+    // into real <MicroYantra> components on mount. Runs AFTER W6 so
+    // its skip-list (tags, attrs, code blocks) already excludes the
+    // engine-term wrappers' internals.
+    const html = injectMicroYantraPlaceholders(linked);
     blocks.push({ kind: "html", html });
     htmlBuffer.length = 0;
   };
