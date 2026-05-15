@@ -19,6 +19,7 @@
 import { motion, useInView, useReducedMotion } from "motion/react";
 import { useRef } from "react";
 import type { ChapterDirection } from "./ChapterScene";
+import { SacredScene } from "../sacred-scene/SacredScene";
 
 interface ChapterTransitionProps {
   fromPart: number;
@@ -78,14 +79,40 @@ export function ChapterTransition({
         zIndex: 2,
       }}
     >
+      {/* SacredScene full-viewport backdrop — kind="transition" pulses in
+          when the transition enters view. Sits at zIndex 0 with pointer
+          events disabled so the existing overlay text stays interactive
+          (transitions themselves are aria-hidden, but DOM order matters).
+          Intensity ramps from 0 to 1.2 over the inView window. */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={inView && !reduce ? { opacity: 1 } : { opacity: 0 }}
+        transition={{ duration: 1.2, ease: [0.2, 0.7, 0.2, 1] }}
+        style={{
+          position: "absolute",
+          inset: 0,
+          zIndex: 0,
+          pointerEvents: "none",
+        }}
+        aria-hidden="true"
+      >
+        <SacredScene
+          kind="transition"
+          intensity={inView ? 1.2 : 0}
+          height="100%"
+        />
+      </motion.div>
+
       {/* Backdrop softener: very subtle Void Black wash to separate from
-          adjacent chapters' atmospheres. */}
+          adjacent chapters' atmospheres. Sits between the SacredScene and
+          the overlay text. */}
       <div
         style={{
           position: "absolute",
           inset: 0,
+          zIndex: 1,
           background:
-            "radial-gradient(ellipse at center, rgba(7,11,29,0.55) 0%, rgba(7,11,29,0.92) 70%, var(--c-void) 100%)",
+            "radial-gradient(ellipse at center, rgba(7,11,29,0.45) 0%, rgba(7,11,29,0.78) 70%, rgba(7,11,29,0.92) 100%)",
           pointerEvents: "none",
         }}
       />
@@ -109,7 +136,7 @@ export function ChapterTransition({
             "linear-gradient(90deg, transparent 0%, var(--c-gold) 50%, transparent 100%)",
           boxShadow: "var(--glow-gold)",
           transformOrigin: "left center",
-          zIndex: 1,
+          zIndex: 2,
         }}
       />
 
@@ -128,7 +155,7 @@ export function ChapterTransition({
         }}
         style={{
           position: "relative",
-          zIndex: 2,
+          zIndex: 3,
           fontFamily: "var(--font-display)",
           fontWeight: 800,
           fontSize: "clamp(6rem, 14vw, 12rem)",
@@ -154,7 +181,7 @@ export function ChapterTransition({
         }}
         style={{
           position: "relative",
-          zIndex: 2,
+          zIndex: 3,
           marginTop: "1.5rem",
           display: "flex",
           flexDirection: "column",

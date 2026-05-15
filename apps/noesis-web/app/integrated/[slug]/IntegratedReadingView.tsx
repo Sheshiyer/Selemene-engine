@@ -54,6 +54,7 @@ import {
   SubjectCompendium,
   PartBento,
 } from "@/components/integrated/bento";
+import { SacredScene } from "@/components/integrated/sacred-scene";
 import type { IntegratedReading, PassMetric } from "@/lib/integrated/loader";
 import type { Block } from "@/lib/integrated/parseBlocks";
 
@@ -415,16 +416,55 @@ export function IntegratedReadingView({ reading }: ViewProps) {
         );
       })}
 
-      {/* Closing scene — preserves The Quine footer as a final beat. */}
+      {/* Closing scene — preserves The Quine footer as a final beat.
+          Wrapped in a full-bleed 100vh section with a SacredScene
+          kind="closing" backdrop (gold → violet → void collapse to
+          source). Footer content sits on top with zIndex layering. */}
       <section
         style={{
           position: "relative",
           width: "100%",
+          minHeight: "100vh",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
           padding:
             "clamp(4rem, 8vh, 7rem) clamp(1rem, 2.4vw, 2.5rem) clamp(4rem, 8vh, 7rem)",
           zIndex: 2,
+          overflow: "hidden",
         }}
       >
+        {/* SacredScene closing backdrop — quiet collapse to source. */}
+        <div
+          aria-hidden="true"
+          style={{
+            position: "absolute",
+            inset: 0,
+            zIndex: 0,
+            pointerEvents: "none",
+          }}
+        >
+          <SacredScene kind="closing" intensity={0.7} height="100%" />
+        </div>
+        {/* Soft veil for legibility. */}
+        <div
+          aria-hidden="true"
+          style={{
+            position: "absolute",
+            inset: 0,
+            zIndex: 1,
+            pointerEvents: "none",
+            background:
+              "radial-gradient(ellipse at 50% 55%, rgba(7,11,29,0.4) 0%, rgba(7,11,29,0.78) 70%, rgba(7,11,29,0.92) 100%)",
+          }}
+        />
+        <div
+          style={{
+            position: "relative",
+            zIndex: 2,
+            width: "100%",
+          }}
+        >
         <LaArcFade />
         <footer
           style={{
@@ -466,6 +506,7 @@ export function IntegratedReadingView({ reading }: ViewProps) {
             you no longer need it.
           </div>
         </footer>
+        </div>
       </section>
 
       {/* Global chapter chrome — always visible while reading. */}

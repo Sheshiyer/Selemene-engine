@@ -17,6 +17,7 @@
 // witnessLayer prop can be passed when real data is wired through.
 
 import { motion, useReducedMotion } from "motion/react";
+import { SacredScene } from "../sacred-scene/SacredScene";
 
 export interface WitnessLayerData {
   title?: string;
@@ -50,10 +51,25 @@ const s = {
     position: "relative" as const,
     zIndex: 2,
     width: "100%",
+    overflow: "hidden" as const,
+  },
+  sceneBackdrop: {
+    position: "absolute" as const,
+    inset: 0,
+    zIndex: 0,
+    pointerEvents: "none" as const,
+  },
+  sceneVeil: {
+    position: "absolute" as const,
+    inset: 0,
+    zIndex: 1,
+    pointerEvents: "none" as const,
     background:
-      "linear-gradient(180deg, rgba(7,11,29,0.4) 0%, rgba(7,11,29,0.78) 100%)",
+      "linear-gradient(180deg, rgba(7,11,29,0.55) 0%, rgba(7,11,29,0.82) 100%)",
   },
   inner: {
+    position: "relative" as const,
+    zIndex: 2,
     width: "clamp(18rem, 64vw, 64rem)",
     margin: "0 auto",
     padding: "clamp(3rem, 8vw, 7rem) clamp(1rem, 2.4vw, 2.5rem) clamp(3rem, 6vw, 6rem)",
@@ -153,6 +169,13 @@ export function WitnessLayerOpener({ witnessLayer }: WitnessLayerOpenerProps) {
       style={s.wrap}
       aria-label="Witness layer — chapter zero opener"
     >
+      {/* SacredScene ambient backdrop — quiet, contemplative atmosphere
+          behind the chapter-0 spread. Sits at zIndex 0 with a translucent
+          veil at zIndex 1 to preserve text readability. */}
+      <div style={s.sceneBackdrop} aria-hidden="true">
+        <SacredScene kind="ambient" intensity={0.5} height="100%" />
+      </div>
+      <div style={s.sceneVeil} aria-hidden="true" />
       <div style={s.inner}>
         <motion.div style={s.eyebrow} {...fadeUp(0)}>
           Witness Layer
