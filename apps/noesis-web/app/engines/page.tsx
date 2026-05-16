@@ -443,6 +443,19 @@ const s = {
 
 /* ── Page ────────────────────────────────────────────── */
 
+const BIRTH_DATA_KEY = "noesis:lastBirthData";
+
+function saveBirthDataLocally(data: Partial<BirthData>) {
+  try { localStorage.setItem(BIRTH_DATA_KEY, JSON.stringify(data)); } catch { /* quota */ }
+}
+
+function loadBirthDataLocally(): Partial<BirthData> | undefined {
+  try {
+    const raw = localStorage.getItem(BIRTH_DATA_KEY);
+    return raw ? JSON.parse(raw) : undefined;
+  } catch { return undefined; }
+}
+
 export default function EnginesPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -459,32 +472,36 @@ export default function EnginesPage() {
       router.replace("/auth");
       return;
     }
+
+    // Immediately restore birth data from localStorage so the chip shows
+    // without waiting for the API round-trip.
+    const cached = loadBirthDataLocally();
+    if (cached?.date) setLastBirthData(cached);
+
     const key = getApiKey();
     if (!key) return;
 
-    // Auto-load the most recent reading's full results so the user lands on
-    // their data without needing to click anything.
-    // Note: API returns Reading struct with fields `id` and `input_data` (not `reading_id`/`birth_data`).
+    // Also try the API — if it returns data, it wins (more authoritative).
     getReadings(key)
       .then(async (res) => {
         const latest = res.readings?.[0];
         if (!latest) return;
-        if (latest.input_data) setLastBirthData(latest.input_data);
+        if (latest.input_data) {
+          setLastBirthData(latest.input_data);
+          saveBirthDataLocally(latest.input_data);
+        }
         if (latest.id) {
           try {
             const full = await getReading(latest.id, key);
-            // The Reading struct wraps the workflow result in `result_data`.
             const workflowResult = full.result_data;
             if (workflowResult && (workflowResult.engine_outputs || workflowResult.engine_results)) {
               setResponse(workflowResult);
               setActiveTab("witness");
             }
-          } catch {
-            // Can't load full reading — form stays open, birth data pre-filled
-          }
+          } catch { /* can't load full reading — chip still shows */ }
         }
       })
-      .catch(() => { /* silently ignore — empty form is fine */ });
+      .catch(() => { /* API down — localStorage fallback already applied */ });
   }, [router]);
 
   const engineMap = new Map<string, EngineOutput>();
@@ -520,6 +537,7 @@ export default function EnginesPage() {
       const res = await executeWorkflow(selectedWorkflow.workflowId, birthData, key);
       setResponse(res);
       setLastBirthData(birthData);
+      saveBirthDataLocally(birthData);
       setFormExpanded(false);
     } catch (err: unknown) {
       if (err instanceof Error) {
