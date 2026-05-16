@@ -1,0 +1,321 @@
+// ─── DepthScene — depth gallery for the integrated reading ────────────
+// Port of codrops/atmospheric-depth-gallery (Engine + Gallery + Scroll +
+// Background) consolidated into one module that a React Client Component
+// can mount into a canvas.
+//
+// Each "section" of the reading becomes a plane positioned in 3D space.
+// The reader scrolls vertically; scroll velocity drives Z-translation of
+// the camera through the planes + an atmospheric background tint that
+// morphs between adjacent planes' palettes.
+//
+// What we kept from codrops:
+//   • Z-axis depth scrolling (smoothed)
+//   • Per-plane parallax tilt on pointer move
+//   • Plane breath (subtle scale/tilt)
+//   • Background color morph between adjacent planes
+//
+// What we simplified / removed (can re-add later):
+//   • Trail particles + TrailController
+//   • Tweakpane debug panel
+//   • Texture preloading (Phase 1 = colored planes only; textures next)
+//   • Custom GLSL shaders for background (start with vertex-color planes)
+//
+// Click handlers: hit-test on raycaster; emits onPlaneClick(sectionId).
+
+import * as THREE from "three";
+import type { SectionData } from "./data/sections";
+
+export interface DepthSceneOptions {
+  canvas: HTMLCanvasElement;
+  sections: SectionData[];
+  onPlaneClick?: (sectionId: string) => void;
+  onActivePlaneChange?: (sectionId: string) => void;
+}
+
+export class DepthScene {
+  private canvas: HTMLCanvasElement;
+  private sections: SectionData[];
+  private renderer: THREE.WebGLRenderer;
+  private scene: THREE.Scene;
+  private camera: THREE.PerspectiveCamera;
+  private clock: THREE.Clock;
+  private rafId: number | null = null;
+  private isRunning = false;
+  private isDisposed = false;
+
+  // Planes
+  private planes: THREE.Mesh[] = [];
+  private planeGroup: THREE.Group;
+  private raycaster = new THREE.Raycaster();
+  private pointerNdc = new THREE.Vector2(0, 0);
+
+  // Scroll state
+  private scrollY = 0; // virtual scroll position in arbitrary units
+  private scrollVelocity = 0;
+  private cameraZTarget = 6;
+  private cameraZCurrent = 6;
+  private planeGap = 6; // distance in Z between consecutive planes
+
+  // Parallax / breath
+  private pointerTarget = new THREE.Vector2(0, 0);
+  private pointerCurrent = new THREE.Vector2(0, 0);
+  private parallaxAmount = 0.18;
+  private parallaxSmoothing = 0.08;
+  private breathAmplitude = 0.04;
+
+  // Background tint morph
+  private backgroundCurrent = new THREE.Color("#070B1D");
+  private backgroundTarget = new THREE.Color("#070B1D");
+
+  // Active plane tracking
+  private activeIndex = 0;
+
+  // Callbacks
+  private onPlaneClick?: (sectionId: string) => void;
+  private onActivePlaneChange?: (sectionId: string) => void;
+
+  // Bound listeners (so dispose can detach)
+  private boundResize = () => this.resize();
+  private boundWheel = (e: WheelEvent) => this.handleWheel(e);
+  private boundTouchStart = (e: TouchEvent) => this.handleTouchStart(e);
+  private boundTouchMove = (e: TouchEvent) => this.handleTouchMove(e);
+  private boundPointerMove = (e: PointerEvent) => this.handlePointerMove(e);
+  private boundClick = (e: MouseEvent) => this.handleClick(e);
+
+  private touchStartY = 0;
+
+  constructor(opts: DepthSceneOptions) {
+    this.canvas = opts.canvas;
+    this.sections = opts.sections;
+    this.onPlaneClick = opts.onPlaneClick;
+    this.onActivePlaneChange = opts.onActivePlaneChange;
+
+    this.scene = new THREE.Scene();
+    this.scene.background = this.backgroundCurrent;
+    this.scene.fog = new THREE.Fog(this.backgroundCurrent, 8, 35);
+
+    this.camera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
+    this.camera.position.set(0, 0, this.cameraZTarget);
+
+    this.renderer = new THREE.WebGLRenderer({
+      canvas: this.canvas,
+      antialias: true,
+      alpha: false,
+    });
+    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    this.renderer.outputColorSpace = THREE.SRGBColorSpace;
+
+    this.planeGroup = new THREE.Group();
+    this.scene.add(this.planeGroup);
+
+    this.clock = new THREE.Clock();
+
+    this.buildPlanes();
+    this.resize();
+    this.bindEvents();
+  }
+
+  /** Build the 15 planes from section data — colored, no textures yet. */
+  private buildPlanes() {
+    const geo = new THREE.PlaneGeometry(2.6, 3.4, 1, 1);
+    this.sections.forEach((section, i) => {
+      const mat = new THREE.MeshBasicMaterial({
+        color: new THREE.Color(section.accentColor),
+        transparent: true,
+        opacity: 0.92,
+        side: THREE.DoubleSide,
+      });
+      // Add a soft inner gradient via vertex colors? For MVP keep flat.
+      const mesh = new THREE.Mesh(geo, mat);
+      // Position: x from data, y centered, z derived from index
+      mesh.position.set(
+        section.position.x * 2.5,
+        section.position.y,
+        -i * this.planeGap,
+      );
+      mesh.userData.sectionId = section.id;
+      mesh.userData.sectionIndex = i;
+      mesh.userData.baseColor = new THREE.Color(section.accentColor);
+      mesh.userData.backgroundColor = new THREE.Color(section.backgroundColor);
+
+      // A subtle rim plane behind each — slightly larger, lower opacity,
+      // tinted with blob1Color. Gives depth without textures.
+      const rimMat = new THREE.MeshBasicMaterial({
+        color: new THREE.Color(section.blob1Color),
+        transparent: true,
+        opacity: 0.18,
+        side: THREE.DoubleSide,
+      });
+      const rim = new THREE.Mesh(
+        new THREE.PlaneGeometry(3.4, 4.2, 1, 1),
+        rimMat,
+      );
+      rim.position.set(0, 0, -0.05);
+      mesh.add(rim);
+
+      this.planeGroup.add(mesh);
+      this.planes.push(mesh);
+    });
+  }
+
+  start() {
+    if (this.isRunning || this.isDisposed) return;
+    this.isRunning = true;
+    this.clock.start();
+    this.tick();
+  }
+
+  stop() {
+    this.isRunning = false;
+    if (this.rafId !== null) {
+      cancelAnimationFrame(this.rafId);
+      this.rafId = null;
+    }
+  }
+
+  dispose() {
+    this.isDisposed = true;
+    this.stop();
+    window.removeEventListener("resize", this.boundResize);
+    this.canvas.removeEventListener("wheel", this.boundWheel);
+    this.canvas.removeEventListener("touchstart", this.boundTouchStart);
+    this.canvas.removeEventListener("touchmove", this.boundTouchMove);
+    this.canvas.removeEventListener("pointermove", this.boundPointerMove);
+    this.canvas.removeEventListener("click", this.boundClick);
+    this.planes.forEach((mesh) => {
+      mesh.geometry.dispose();
+      const mat = mesh.material as THREE.Material;
+      mat.dispose();
+      mesh.children.forEach((child) => {
+        if (child instanceof THREE.Mesh) {
+          child.geometry.dispose();
+          (child.material as THREE.Material).dispose();
+        }
+      });
+    });
+    this.renderer.dispose();
+  }
+
+  private bindEvents() {
+    window.addEventListener("resize", this.boundResize);
+    this.canvas.addEventListener("wheel", this.boundWheel, { passive: false });
+    this.canvas.addEventListener("touchstart", this.boundTouchStart, { passive: true });
+    this.canvas.addEventListener("touchmove", this.boundTouchMove, { passive: false });
+    this.canvas.addEventListener("pointermove", this.boundPointerMove);
+    this.canvas.addEventListener("click", this.boundClick);
+  }
+
+  private handleWheel(e: WheelEvent) {
+    e.preventDefault();
+    this.scrollVelocity += e.deltaY * 0.0008;
+  }
+
+  private handleTouchStart(e: TouchEvent) {
+    this.touchStartY = e.touches[0]?.clientY ?? 0;
+  }
+
+  private handleTouchMove(e: TouchEvent) {
+    e.preventDefault();
+    const y = e.touches[0]?.clientY ?? 0;
+    const dy = this.touchStartY - y;
+    this.scrollVelocity += dy * 0.001;
+    this.touchStartY = y;
+  }
+
+  private handlePointerMove(e: PointerEvent) {
+    const rect = this.canvas.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+    const y = -(((e.clientY - rect.top) / rect.height) * 2 - 1);
+    this.pointerNdc.set(x, y);
+    this.pointerTarget.set(x, y);
+  }
+
+  private handleClick(e: MouseEvent) {
+    if (!this.onPlaneClick) return;
+    const rect = this.canvas.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+    const y = -(((e.clientY - rect.top) / rect.height) * 2 - 1);
+    this.raycaster.setFromCamera(new THREE.Vector2(x, y), this.camera);
+    const intersects = this.raycaster.intersectObjects(this.planes, false);
+    if (intersects.length > 0) {
+      const hit = intersects[0].object as THREE.Mesh;
+      const sectionId = hit.userData.sectionId as string | undefined;
+      if (sectionId) this.onPlaneClick(sectionId);
+    }
+  }
+
+  private resize() {
+    const w = this.canvas.clientWidth || window.innerWidth || 1;
+    const h = this.canvas.clientHeight || window.innerHeight || 1;
+    this.camera.aspect = w / h;
+    this.camera.updateProjectionMatrix();
+    this.renderer.setSize(w, h, false);
+  }
+
+  private tick() {
+    if (!this.isRunning) return;
+    this.rafId = requestAnimationFrame(() => this.tick());
+    const elapsed = this.clock.getElapsedTime();
+
+    // Decay scroll velocity (friction)
+    this.scrollVelocity *= 0.94;
+    this.scrollY += this.scrollVelocity;
+    // Clamp scrollY so we don't fly off in either direction
+    const maxScroll = (this.sections.length - 1) * this.planeGap;
+    this.scrollY = THREE.MathUtils.clamp(this.scrollY, 0, maxScroll);
+
+    // Camera z lerps toward scroll-derived target
+    this.cameraZTarget = 6 - this.scrollY;
+    this.cameraZCurrent += (this.cameraZTarget - this.cameraZCurrent) * 0.12;
+    this.camera.position.z = this.cameraZCurrent;
+
+    // Pointer parallax — group tilts slightly toward pointer
+    this.pointerCurrent.lerp(this.pointerTarget, this.parallaxSmoothing);
+    this.planeGroup.rotation.y = this.pointerCurrent.x * 0.08;
+    this.planeGroup.rotation.x = -this.pointerCurrent.y * 0.05;
+    // Subtle group x-shift for parallax
+    this.planeGroup.position.x = -this.pointerCurrent.x * this.parallaxAmount * 0.3;
+
+    // Breath — every plane subtly scales 4:7:8 cycle (19s period)
+    const BREATH_PERIOD = 19;
+    const breathPhase =
+      (elapsed % BREATH_PERIOD) / BREATH_PERIOD; // 0..1
+    const breathScale =
+      1 + Math.sin(breathPhase * Math.PI * 2) * this.breathAmplitude;
+    this.planes.forEach((p) => {
+      p.scale.setScalar(breathScale);
+    });
+
+    // Active plane = whichever plane is closest to camera in Z
+    let closestIdx = 0;
+    let closestDist = Infinity;
+    this.planes.forEach((p, i) => {
+      const dist = Math.abs(p.position.z - this.cameraZCurrent + 1);
+      if (dist < closestDist) {
+        closestDist = dist;
+        closestIdx = i;
+      }
+    });
+    if (closestIdx !== this.activeIndex) {
+      this.activeIndex = closestIdx;
+      const sectionId = this.sections[closestIdx]?.id;
+      if (sectionId && this.onActivePlaneChange) {
+        this.onActivePlaneChange(sectionId);
+      }
+    }
+
+    // Background morph — lerp from current to active plane's background
+    const activePlane = this.planes[this.activeIndex];
+    if (activePlane) {
+      this.backgroundTarget = activePlane.userData.backgroundColor as THREE.Color;
+    }
+    this.backgroundCurrent.lerp(this.backgroundTarget, 0.04);
+    (this.scene.background as THREE.Color).copy(this.backgroundCurrent);
+    if (this.scene.fog) {
+      (this.scene.fog as THREE.Fog).color.copy(this.backgroundCurrent);
+    }
+
+    // Render
+    this.renderer.render(this.scene, this.camera);
+  }
+}
