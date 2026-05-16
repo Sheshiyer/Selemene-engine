@@ -56,8 +56,11 @@ export interface ReadingSummary {
   user_id: string;
   engine_id: string;
   workflow_id: string | null;
-  /** The birth data input that was used for this reading. */
-  input_data: BirthData;
+  /**
+   * The full EngineInput serialized to JSON. Birth data is nested under
+   * `input_data.birth_data`, NOT at the top level.
+   */
+  input_data: { birth_data?: BirthData | null } | BirthData | null;
   /** The workflow/engine result. For workflow readings this is a WorkflowResponse. */
   result_data: WorkflowResponse;
   witness_prompt: string | null;

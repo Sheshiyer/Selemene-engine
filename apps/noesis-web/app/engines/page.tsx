@@ -487,8 +487,14 @@ export default function EnginesPage() {
         const latest = res.readings?.[0];
         if (!latest) return;
         if (latest.input_data) {
-          setLastBirthData(latest.input_data);
-          saveBirthDataLocally(latest.input_data);
+          // input_data is EngineInput { birth_data: BirthData, ... }
+          // Extract nested birth_data; fall back to top-level if already flat
+          const raw = latest.input_data as { birth_data?: BirthData | null } & Partial<BirthData>;
+          const bd: Partial<BirthData> | null = raw.birth_data ?? (raw.date ? raw as Partial<BirthData> : null);
+          if (bd?.date) {
+            setLastBirthData(bd);
+            saveBirthDataLocally(bd as BirthData);
+          }
         }
         if (latest.id) {
           try {

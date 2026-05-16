@@ -155,11 +155,11 @@ export default function ReadingsPage() {
               <span style={s.date}>
                 {r.created_at ? new Date(r.created_at).toLocaleString() : "—"}
               </span>
-              {r.input_data?.name && (
-                <span style={{ fontSize: "0.8rem", color: "var(--gold)" }}>{r.input_data.name}</span>
+              {r.input_data && 'name' in r.input_data && (r.input_data as {name?: string}).name && (
+                <span style={{ fontSize: "0.8rem", color: "var(--gold)" }}>{(r.input_data as {name?: string}).name}</span>
               )}
-              {r.input_data?.date && (
-                <span style={s.readingId}>{r.input_data.date}</span>
+              {r.input_data && 'date' in r.input_data && (r.input_data as {date?: string}).date && (
+                <span style={s.readingId}>{(r.input_data as {date?: string}).date}</span>
               )}
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
