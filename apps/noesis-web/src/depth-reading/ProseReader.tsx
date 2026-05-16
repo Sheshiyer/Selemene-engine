@@ -307,9 +307,9 @@ export function ProseReader({ section, prose, onClose }: ProseReaderProps) {
               style={{
                 margin: 0,
                 fontFamily: "var(--font-display, 'Panchang', serif)",
-                fontWeight: 700,
-                fontSize: "clamp(2rem, 4vw, 4.25rem)",
-                letterSpacing: "-0.01em",
+                fontVariationSettings: "'wght' 720",
+                fontSize: "clamp(2em, 4.5vw, 4em)",
+                letterSpacing: "-0.015em",
                 lineHeight: 0.98,
                 color: "var(--c-parchment, #F0EDE3)",
               }}
@@ -323,8 +323,8 @@ export function ProseReader({ section, prose, onClose }: ProseReaderProps) {
                 maxWidth: "44ch",
                 fontFamily: "var(--font-display, 'Panchang', serif)",
                 fontStyle: "italic",
-                fontWeight: 500,
-                fontSize: "clamp(1rem, 1.15vw, 1.25rem)",
+                fontVariationSettings: "'wght' 500",
+                fontSize: "clamp(1em, 1.15vw, 1.2em)",
                 lineHeight: 1.5,
                 color: "rgba(240,237,227,0.78)",
                 opacity: 0,
@@ -346,7 +346,7 @@ export function ProseReader({ section, prose, onClose }: ProseReaderProps) {
                 style={{
                   margin: 0,
                   fontFamily: "var(--font-body, 'Satoshi', sans-serif)",
-                  fontSize: "clamp(1.1rem, 1.25vw, 1.4rem)",
+                  fontSize: "clamp(1.05em, 1.2vw, 1.3em)",
                   lineHeight: 1.55,
                   color: "var(--c-parchment, #F0EDE3)",
                   letterSpacing: "0.005em",

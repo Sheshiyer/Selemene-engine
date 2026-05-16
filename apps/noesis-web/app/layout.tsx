@@ -15,10 +15,13 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        {/* Tryambakam Noesis brand fonts — Panchang (display) + Satoshi (body) */}
+        {/* Tryambakam Noesis brand fonts — VARIABLE axes.
+            `@1` on Fontshare's API = variable-weight version of the font.
+            Lets us drive `font-variation-settings: 'wght' N` continuously
+            (motion can interpolate weight as well as opacity now). */}
         <link
           rel="stylesheet"
-          href="https://api.fontshare.com/v2/css?f[]=panchang@700,800&f[]=satoshi@400,500,600,700&display=swap"
+          href="https://api.fontshare.com/v2/css?f[]=panchang@1&f[]=satoshi@1&display=swap"
         />
         {/* SF Mono is a system font — no CDN needed */}
       </head>
