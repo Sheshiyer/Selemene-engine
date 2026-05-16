@@ -326,38 +326,39 @@ export class DepthScene {
     // Decay scroll velocity (friction)
     this.scrollVelocity *= 0.94;
     this.scrollY += this.scrollVelocity;
-    const maxScroll = (this.sections.length - 1) * this.planeGap;
 
-    // ─── Wrap-around loop ─────────────────────────────────────────────
-    // When scrollY goes past the last plane, wrap to the start. We
-    // briefly mark isWrapping so the trail/bubbles can fade across the
-    // jump (otherwise the trail visibly teleports).
-    if (this.scrollY > maxScroll) {
-      this.scrollY -= maxScroll;
-      this.trail.reset();
-      this.bubbles.clear();
-      this.isWrapping = true;
-      this.wrapStartTime = elapsed;
-      // Re-seed the trail at the new position so it doesn't pop in empty
-      this.seedTrail();
-    } else if (this.scrollY < 0) {
-      // Reverse wrap (scrolling backwards past the start → jump to end)
-      this.scrollY += maxScroll;
-      this.trail.reset();
-      this.bubbles.clear();
-      this.isWrapping = true;
-      this.wrapStartTime = elapsed;
-      this.seedTrail();
-    }
-
-    if (this.isWrapping && elapsed - this.wrapStartTime > this.wrapDuration) {
-      this.isWrapping = false;
-    }
-
-    // Camera z lerps toward scroll-derived target
+    // ─── TRUE CIRCULAR LOOP (infinite carousel) ──────────────────────
+    // scrollY is UNBOUNDED forward + backward. The camera moves forever
+    // in the direction of scroll. Planes recycle around the camera
+    // modulo loopLength so the viewer never sees a teleport — when a
+    // plane passes behind the camera it silently relocates to the front
+    // of the chain (out of view, behind you), then comes back into
+    // view as the camera continues forward.
+    const loopLength = this.sections.length * this.planeGap;
+    // Camera target = unbounded forward motion (no wrap on scrollY)
     this.cameraZTarget = 6 - this.scrollY;
     this.cameraZCurrent += (this.cameraZTarget - this.cameraZCurrent) * 0.12;
     this.camera.position.z = this.cameraZCurrent;
+
+    // Recycle each plane: keep its apparent Z within ±loopLength/2 of
+    // the camera. If a plane is more than half the loop behind, push it
+    // forward (= ahead in the loop). If more than half ahead, pull it
+    // back. Both checks run independently each frame so reverse-scroll
+    // wraps cleanly too.
+    const halfLoop = loopLength / 2;
+    this.planes.forEach((plane, i) => {
+      const baseZ = -i * this.planeGap;
+      let z = baseZ;
+      // Shift plane by integer multiples of loopLength so it lands in
+      // the "active band" (cameraZ - halfLoop, cameraZ + halfLoop)
+      const offset = z - this.cameraZCurrent;
+      if (offset > halfLoop) {
+        z -= loopLength * Math.ceil((offset - halfLoop) / loopLength);
+      } else if (offset < -halfLoop) {
+        z += loopLength * Math.ceil((-offset - halfLoop) / loopLength);
+      }
+      plane.position.z = z;
+    });
 
     // Pointer parallax — group tilts slightly toward pointer
     this.pointerCurrent.lerp(this.pointerTarget, this.parallaxSmoothing);
@@ -405,30 +406,18 @@ export class DepthScene {
       (this.scene.fog as THREE.Fog).color.copy(this.backgroundCurrent);
     }
 
-    // ─── Trail + bubbles ─────────────────────────────────────────────
-    // Progress is normalized scroll position (0 at start, 1 at end).
-    const progress = THREE.MathUtils.clamp(this.scrollY / maxScroll, 0, 1);
-    // During the brief wrap-window we suppress new trail points + dim
-    // the material so the visual jump reads as a graceful loop.
-    const wrapElapsed = elapsed - this.wrapStartTime;
-    const wrapFadeIn =
-      this.isWrapping
-        ? THREE.MathUtils.smoothstep(wrapElapsed / this.wrapDuration, 0, 1)
-        : 1;
-    const trailOpacity = 0.55 * wrapFadeIn;
+    // ─── Trail + bubbles (continuous, no wrap fade needed) ─────────────
+    // Camera moves forever forward; trail accumulates points behind it
+    // and gets trimmed naturally by maxPoints. Wave phase cycles 0→1
+    // per lap via scrollY % loopLength.
+    const lapPosition = ((this.scrollY % loopLength) + loopLength) % loopLength;
+    const progress = lapPosition / loopLength;
+    const trailOpacity = 0.55;
     this.trail.material.opacity = trailOpacity;
 
-    if (!this.isWrapping || wrapElapsed > this.wrapDuration * 0.55) {
-      // Add a new head point on most frames (codrops adds every frame)
-      const head = this.computeTrailHead(progress, this.cameraZCurrent);
-      this.trail.addPoint(head);
-      this.bubbles.update(delta, head, trailOpacity, true);
-    } else {
-      // During the wrap blackout, just keep bubbles spawning at the
-      // current head so they don't all die at once
-      const head = this.computeTrailHead(progress, this.cameraZCurrent);
-      this.bubbles.update(delta, head, trailOpacity * 0.4, false);
-    }
+    const head = this.computeTrailHead(progress, this.cameraZCurrent);
+    this.trail.addPoint(head);
+    this.bubbles.update(delta, head, trailOpacity, true);
 
     // Render
     this.renderer.render(this.scene, this.camera);
