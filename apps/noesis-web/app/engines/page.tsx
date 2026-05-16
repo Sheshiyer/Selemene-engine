@@ -548,8 +548,8 @@ export default function EnginesPage() {
           onSelect={handleCompassSelect}
         />
 
-        {/* When results are loaded, show a compact birth-data chip instead of the full form */}
-        {response && !formExpanded && lastBirthData ? (
+        {/* Collapse form when birth data is known (from DB or prior session) */}
+        {(lastBirthData?.date && !formExpanded) ? (
           <div style={{
             display: "flex",
             alignItems: "center",
@@ -570,23 +570,47 @@ export default function EnginesPage() {
             {lastBirthData.latitude != null && (
               <span style={{ color: "var(--muted)" }}>{Number(lastBirthData.latitude).toFixed(2)}, {Number(lastBirthData.longitude).toFixed(2)}</span>
             )}
-            <button
-              onClick={() => setFormExpanded(true)}
-              style={{
-                marginLeft: "auto",
-                padding: "0.3rem 0.7rem",
-                border: "1px solid var(--line-mid)",
-                borderRadius: "var(--r-sm)",
-                background: "transparent",
-                color: "var(--signal)",
-                fontSize: "0.72rem",
-                fontFamily: "var(--font-mono)",
-                cursor: "pointer",
-                letterSpacing: "0.06em",
-              }}
-            >
-              ↺ New Reading
-            </button>
+            <div style={{ marginLeft: "auto", display: "flex", gap: "0.5rem", alignItems: "center" }}>
+              {/* Show "Run Analysis" when no results are loaded yet (e.g. on fresh page load) */}
+              {!response && (
+                <button
+                  onClick={() => handleSubmit(lastBirthData as BirthData)}
+                  disabled={loading}
+                  style={{
+                    padding: "0.35rem 0.85rem",
+                    border: "none",
+                    borderRadius: "var(--r-sm)",
+                    background: "linear-gradient(90deg, var(--c-emerald) 0%, var(--signal) 100%)",
+                    color: "#070B1D",
+                    fontSize: "0.72rem",
+                    fontFamily: "var(--font-mono)",
+                    fontWeight: 700,
+                    cursor: loading ? "not-allowed" : "pointer",
+                    letterSpacing: "0.06em",
+                    textTransform: "uppercase",
+                    opacity: loading ? 0.5 : 1,
+                  }}
+                >
+                  {loading ? "Calculating…" : "▶ Run Analysis"}
+                </button>
+              )}
+              <button
+                onClick={() => setFormExpanded(true)}
+                style={{
+                  padding: "0.3rem 0.7rem",
+                  border: "1px solid var(--line-mid)",
+                  borderRadius: "var(--r-sm)",
+                  background: "transparent",
+                  color: "var(--signal)",
+                  fontSize: "0.72rem",
+                  fontFamily: "var(--font-mono)",
+                  cursor: "pointer",
+                  letterSpacing: "0.06em",
+                }}
+              >
+                ↺ New Reading
+              </button>
+            </div>
           </div>
         ) : (
           <BirthDataForm onSubmit={handleSubmit} loading={loading} initialData={lastBirthData} />
