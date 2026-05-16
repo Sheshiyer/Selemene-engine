@@ -5,6 +5,7 @@ export type { Gamaka, GamakaKind } from './gamakas/types';
 export { GAMAKA_DEFAULTS, assertNeverGamaka } from './gamakas/types';
 export type { GamakaAnnotation, ApplyGamaka, ApplyGamakaInput, ApplyGamakaOutput } from './gamakas/apply';
 export { applyGamaka } from './gamakas/apply';
+export { deriveGamakas } from './gamakas/derive';
 
 export type { Tala, TalaName } from './talas/types';
 export { TALAS, ALL_TALAS, DEFAULT_TALA } from './talas/data';

@@ -3,6 +3,7 @@
 import { useState, useCallback, useMemo, useRef } from "react";
 import GenericEngineView from "./GenericEngineView";
 import { MELAKARTAS, getRaagaPlayer, type PlayOptions } from "@/lib/raaga";
+import type { AlaapPhase } from "@/lib/raaga/v2/alaap/types";
 import type { SunoStyle } from "@/lib/raaga/suno/types";
 
 interface NadabrahmanProps {
@@ -91,10 +92,12 @@ export default function Nadabrahman({ result }: NadabrahmanProps) {
   const [gamaka, setGamaka] = useState<V2GamakaKind>('kampita');
   const [tala, setTala] = useState<V2Tala>('adi');
   const [breath, setBreath] = useState<V2Breath>('');
+  const [alaapOn, setAlaapOn] = useState(false);
+  const [alaapPhases, setAlaapPhases] = useState<AlaapPhase[]>(['vilambit', 'madhya', 'drut']);
 
-  // Source preference: 'auto' = try Suno clip first, fall back to Strudel.
-  //                    'live' = force V2.5 Strudel synthesis (skip Suno lookup).
-  const [audioSource, setAudioSource] = useState<'auto' | 'live'>('auto');
+  // Default to 'live' — Strudel is the authoritative raga system.
+  // 'auto' tries Suno first (legacy); exposed in UI for opt-in.
+  const [audioSource, setAudioSource] = useState<'auto' | 'live'>('live');
   // <audio> element used for Suno clip playback (separate from Strudel)
   const clipAudioRef = useRef<HTMLAudioElement | null>(null);
 
@@ -112,11 +115,15 @@ export default function Nadabrahman({ result }: NadabrahmanProps) {
       opts.defaultGamaka = { kind: gamaka } as PlayOptions['defaultGamaka'];
       if (tala) opts.tala = tala;
       if (breath) opts.breath = breath;
+      if (alaapOn) {
+        opts.alaap = true;
+        opts.alaapPhases = alaapPhases.length > 0 ? alaapPhases : ['vilambit', 'madhya', 'drut'];
+      }
     } else {
       opts.sound = 'sine';
     }
     return opts;
-  }, [hz, v2On, timbre, gamaka, tala, breath]);
+  }, [hz, v2On, timbre, gamaka, tala, breath, alaapOn, alaapPhases]);
 
   /**
    * Three-tier fallback playback:
@@ -157,7 +164,9 @@ export default function Nadabrahman({ result }: NadabrahmanProps) {
     try {
       setAudioStatus(`Loading audio…`);
       await getRaagaPlayer().play(num, buildPlayOptions());
-      const v2Tag = v2On ? `v2 · ${timbre} · ${gamaka}${tala ? ` · ${tala}` : ''}${breath ? ` · ${breath}` : ''}` : 'v1 sine';
+      const v2Tag = v2On
+        ? `v2 · ${timbre}${alaapOn ? ` · alaap(${alaapPhases.join(',')})` : ` · ${gamaka}`}${tala && !alaapOn ? ` · ${tala}` : ''}${breath ? ` · ${breath}` : ''}`
+        : 'v1 sine';
       const sourceTag = audioSource === 'auto' ? 'Strudel fallback' : 'Strudel live';
       setAudioStatus(`▶ ${name} (#${num}) · ${sourceTag} · ${v2Tag}`);
     } catch (err) {
@@ -301,7 +310,7 @@ export default function Nadabrahman({ result }: NadabrahmanProps) {
       <label style={s.v2Toggle}>
         <input type="checkbox" checked={v2On} onChange={(e) => setV2On(e.target.checked)} />
         <span style={{ color: v2On ? 'var(--gold)' : 'var(--text-muted)' }}>
-          V2 audio: gamakas · timbres · tala · breath (used when Strudel plays)
+          V2 audio: gamakas · timbres · tala · breath · alaap (used when Strudel plays)
         </span>
       </label>
 
@@ -318,7 +327,7 @@ export default function Nadabrahman({ result }: NadabrahmanProps) {
           </div>
           <div style={s.v2Ctrl}>
             <span style={s.label}>Gamaka</span>
-            <select style={s.v2Select} value={gamaka} onChange={(e) => setGamaka(e.target.value as V2GamakaKind)}>
+            <select style={s.v2Select} value={gamaka} onChange={(e) => setGamaka(e.target.value as V2GamakaKind)} disabled={alaapOn}>
               <option value="none">None</option>
               <option value="kampita">Kampita (vibrato)</option>
               <option value="andolana">Andolana (sway)</option>
@@ -329,7 +338,7 @@ export default function Nadabrahman({ result }: NadabrahmanProps) {
           </div>
           <div style={s.v2Ctrl}>
             <span style={s.label}>Tala</span>
-            <select style={s.v2Select} value={tala} onChange={(e) => setTala(e.target.value as V2Tala)}>
+            <select style={s.v2Select} value={tala} onChange={(e) => setTala(e.target.value as V2Tala)} disabled={alaapOn}>
               <option value="">Free</option>
               <option value="adi">Ādi (8)</option>
               <option value="rupakam">Rūpakam (6)</option>
@@ -350,6 +359,33 @@ export default function Nadabrahman({ result }: NadabrahmanProps) {
               <option value="brahmari">Bhrāmarī</option>
               <option value="shitali">Śītalī</option>
             </select>
+          </div>
+          {/* Alaap mode — replaces tala+gamaka with free-time raga exploration */}
+          <div style={{ ...s.v2Ctrl, gridColumn: '1 / -1', borderTop: '1px solid var(--line-gold)', paddingTop: '0.5rem', marginTop: '0.25rem' }}>
+            <label style={s.v2Toggle}>
+              <input type="checkbox" checked={alaapOn} onChange={(e) => setAlaapOn(e.target.checked)} />
+              <span style={{ color: alaapOn ? 'var(--gold)' : 'var(--text-muted)', fontWeight: alaapOn ? 700 : 400 }}>
+                Ālāp mode — free-time raga exploration (vilambit → madhya → drut)
+              </span>
+            </label>
+            {alaapOn && (
+              <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' as const, marginTop: '0.4rem' }}>
+                {(['vilambit', 'madhya', 'drut'] as AlaapPhase[]).map((phase) => (
+                  <label key={phase} style={{ ...s.v2Toggle, fontSize: '0.75rem' }}>
+                    <input
+                      type="checkbox"
+                      checked={alaapPhases.includes(phase)}
+                      onChange={(e) => {
+                        setAlaapPhases(e.target.checked
+                          ? [...alaapPhases, phase]
+                          : alaapPhases.filter((p) => p !== phase));
+                      }}
+                    />
+                    <span>{phase}</span>
+                  </label>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       )}

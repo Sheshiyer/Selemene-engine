@@ -13,19 +13,21 @@ CREATE TABLE raga_clips (
     melakarta_num   SMALLINT        NOT NULL CHECK (melakarta_num BETWEEN 1 AND 72),
     style           VARCHAR(32)     NOT NULL DEFAULT 'ambient'
                     CHECK (style IN ('ambient', 'meditative', 'cinematic', 'acid')),
-    duration_sec    SMALLINT        NOT NULL CHECK (duration_sec > 0 AND duration_sec <= 300),
+    -- REAL matches the f32 sqlx binding in upsert_raga_clip handler
+    duration_sec    REAL            CHECK (duration_sec IS NULL OR (duration_sec > 0 AND duration_sec <= 300)),
     suno_song_id    TEXT            NOT NULL,
-    suno_prompt     TEXT            NOT NULL,
-    r2_key          TEXT            NOT NULL UNIQUE,
+    suno_prompt     TEXT,
+    r2_key          TEXT            UNIQUE,
     cdn_url         TEXT            NOT NULL,
     status          VARCHAR(16)     NOT NULL DEFAULT 'pending'
                     CHECK (status IN ('pending', 'generated', 'approved', 'rejected', 'regenerate')),
     audition_notes  TEXT,
     created_at      TIMESTAMPTZ     NOT NULL DEFAULT NOW(),
+    updated_at      TIMESTAMPTZ     NOT NULL DEFAULT NOW(),
     approved_at     TIMESTAMPTZ,
 
     -- One canonical clip per (raga, style). Re-generations replace via
-    -- DELETE+INSERT in same transaction; old rows go through `rejected` first.
+    -- upsert (ON CONFLICT DO UPDATE); old rows go through `rejected` first.
     UNIQUE (melakarta_num, style)
 );
 

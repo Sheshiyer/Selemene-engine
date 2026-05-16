@@ -52,11 +52,15 @@ const NOESIS_API = process.env.NOESIS_API_URL ?? 'https://selemene.tryambakam.sp
 const INTERNAL_KEY = process.env.INTERNAL_SERVICE_KEY ?? '';
 const BUCKET = process.env.SUPABASE_RAGA_CLIPS_BUCKET ?? 'raga-clips';
 
-const BATCH_SIZE = Number.parseInt(process.env.SUNO_BATCH_SIZE ?? '5', 10);
+const BATCH_SIZE = Number.parseInt(process.env.SUNO_BATCH_SIZE ?? '2', 10);
 const POLL_INTERVAL_MS = Number.parseInt(process.env.SUNO_POLL_INTERVAL_MS ?? '5000', 10);
 const TIMEOUT_MS = Number.parseInt(process.env.SUNO_TIMEOUT_MS ?? '180000', 10);
 const MAX_CREDITS_PER_RUN = Number.parseInt(process.env.MAX_CREDITS_PER_RUN ?? '200', 10);
 const MIN_CREDITS_TO_START = Number.parseInt(process.env.MIN_CREDITS_TO_START ?? '100', 10);
+// Delay between individual submissions within a batch (ms) — prevents Cloudflare 429
+const SUBMIT_STAGGER_MS = Number.parseInt(process.env.SUBMIT_STAGGER_MS ?? '3000', 10);
+// Delay between batches after all polls complete (ms)
+const INTER_BATCH_DELAY_MS = Number.parseInt(process.env.INTER_BATCH_DELAY_MS ?? '30000', 10);
 
 const log = (msg: string) => console.log(`[bulk ${new Date().toISOString()}] ${msg}`);
 
@@ -133,7 +137,8 @@ function saveCheckpoint(cp: Checkpoint) {
   fs.writeFileSync(CHECKPOINT_PATH, JSON.stringify(cp, null, 2));
 }
 
-async function generateOne(num: number, style: SunoStyle): Promise<{ songId: string; cdnUrl: string; durationSec: number }> {
+async function generateOne(num: number, style: SunoStyle, staggerMs = 0): Promise<{ songId: string; cdnUrl: string; durationSec: number }> {
+  if (staggerMs > 0) await new Promise(res => setTimeout(res, staggerMs));
   const prompt = buildPrompt(num, style);
   log(`  #${num} ${style} → submitting`);
   const songs = await submit(prompt);
@@ -183,7 +188,9 @@ async function main() {
     }
     const batch = remaining.slice(i, i + BATCH_SIZE);
     log(`Batch ${Math.floor(i / BATCH_SIZE) + 1}: [${batch.join(', ')}]`);
-    const results = await Promise.allSettled(batch.map(n => generateOne(n, style)));
+    const results = await Promise.allSettled(
+      batch.map((n, idx) => generateOne(n, style, idx * SUBMIT_STAGGER_MS))
+    );
     for (let j = 0; j < batch.length; j++) {
       const n = batch[j];
       if (results[j].status === 'fulfilled') {
@@ -195,6 +202,10 @@ async function main() {
       }
     }
     saveCheckpoint(cp);
+    if (i + BATCH_SIZE < remaining.length) {
+      log(`  ⏳ inter-batch pause ${INTER_BATCH_DELAY_MS / 1000}s…`);
+      await new Promise(res => setTimeout(res, INTER_BATCH_DELAY_MS));
+    }
   }
 
   const finalQuota = await getQuota();
