@@ -24,6 +24,8 @@
 
 import * as THREE from "three";
 import type { SectionData } from "./data/sections";
+import { DepthTrail } from "./DepthTrail";
+import { DepthBubbles } from "./DepthBubbles";
 
 export interface DepthSceneOptions {
   canvas: HTMLCanvasElement;
@@ -70,6 +72,21 @@ export class DepthScene {
   // Active plane tracking
   private activeIndex = 0;
 
+  // ─── Trail + bubbles + wrap-around loop ───────────────────────────────
+  private trail: DepthTrail;
+  private bubbles: DepthBubbles;
+  private trailHead = new THREE.Vector3();
+  // Trail path parameters (parametric waving through the planes)
+  private trailHorizontalCycles = 1.85;
+  private trailHorizontalWidth = 2.4;
+  private trailVerticalCycles = 2.1;
+  private trailVerticalAmplitude = 0.65;
+  private trailDepthAhead = 1.0; // how far ahead of camera the trail head sits
+  // Wrap-loop state — when reader scrolls past the last plane, scrollY wraps
+  private isWrapping = false;
+  private wrapStartTime = 0;
+  private wrapDuration = 0.55; // seconds for the trail to fade-during-wrap
+
   // Callbacks
   private onPlaneClick?: (sectionId: string) => void;
   private onActivePlaneChange?: (sectionId: string) => void;
@@ -108,11 +125,56 @@ export class DepthScene {
     this.planeGroup = new THREE.Group();
     this.scene.add(this.planeGroup);
 
+    // Trail (the wavy thread) + Bubbles (sparkle pool around its head)
+    this.trail = new DepthTrail({
+      color: "#F0EDE3",
+      glowColor: "#C5A017",
+      glowIntensity: 1.4,
+      baseOpacity: 0.55,
+      maxPoints: 220,
+      radiusHead: 0.014,
+      radiusTail: 0.003,
+    });
+    this.bubbles = new DepthBubbles({
+      color: "#F0EDE3",
+      maxParticles: 18,
+      spawnPerSecond: 22,
+      spawnRadius: 0.48,
+    });
+    this.scene.add(this.trail.group);
+    this.scene.add(this.bubbles.group);
+    // Ambient + directional light so the trail's MeshStandardMaterial picks up rim shading
+    this.scene.add(new THREE.AmbientLight(0xffffff, 0.45));
+    const keyLight = new THREE.DirectionalLight(0xfff5e0, 0.55);
+    keyLight.position.set(2, 3, 5);
+    this.scene.add(keyLight);
+
     this.clock = new THREE.Clock();
 
     this.buildPlanes();
+    this.seedTrail();
     this.resize();
     this.bindEvents();
+  }
+
+  /** Pre-populate the trail with a few points so the first frame isn't empty. */
+  private seedTrail() {
+    for (let i = 10; i >= 0; i--) {
+      const seedZ = this.cameraZTarget - i * 0.18;
+      this.trail.addPoint(this.computeTrailHead(0, seedZ));
+    }
+  }
+
+  /** Parametric trail head — waves in X + Y, sits a constant distance
+   *  ahead of the camera in Z. As progress grows the wave phase advances
+   *  so the trail "draws" forward through the planes. */
+  private computeTrailHead(progress: number, cameraZ: number): THREE.Vector3 {
+    const phase = progress * Math.PI * 2;
+    const x = Math.sin(phase * this.trailHorizontalCycles) * this.trailHorizontalWidth * 0.45;
+    const y = Math.sin(phase * this.trailVerticalCycles) * this.trailVerticalAmplitude;
+    // Trail head sits slightly ahead of the camera so we see it leading
+    const z = cameraZ - this.trailDepthAhead - progress * 1.2;
+    return this.trailHead.set(x, y, z);
   }
 
   /** Build the 15 planes from section data — colored, no textures yet. */
@@ -193,6 +255,8 @@ export class DepthScene {
         }
       });
     });
+    this.trail.dispose();
+    this.bubbles.dispose();
     this.renderer.dispose();
   }
 
@@ -255,14 +319,40 @@ export class DepthScene {
   private tick() {
     if (!this.isRunning) return;
     this.rafId = requestAnimationFrame(() => this.tick());
-    const elapsed = this.clock.getElapsedTime();
+    // Capture both delta and elapsed once at the top of each frame
+    const delta = this.clock.getDelta();
+    const elapsed = this.clock.elapsedTime;
 
     // Decay scroll velocity (friction)
     this.scrollVelocity *= 0.94;
     this.scrollY += this.scrollVelocity;
-    // Clamp scrollY so we don't fly off in either direction
     const maxScroll = (this.sections.length - 1) * this.planeGap;
-    this.scrollY = THREE.MathUtils.clamp(this.scrollY, 0, maxScroll);
+
+    // ─── Wrap-around loop ─────────────────────────────────────────────
+    // When scrollY goes past the last plane, wrap to the start. We
+    // briefly mark isWrapping so the trail/bubbles can fade across the
+    // jump (otherwise the trail visibly teleports).
+    if (this.scrollY > maxScroll) {
+      this.scrollY -= maxScroll;
+      this.trail.reset();
+      this.bubbles.clear();
+      this.isWrapping = true;
+      this.wrapStartTime = elapsed;
+      // Re-seed the trail at the new position so it doesn't pop in empty
+      this.seedTrail();
+    } else if (this.scrollY < 0) {
+      // Reverse wrap (scrolling backwards past the start → jump to end)
+      this.scrollY += maxScroll;
+      this.trail.reset();
+      this.bubbles.clear();
+      this.isWrapping = true;
+      this.wrapStartTime = elapsed;
+      this.seedTrail();
+    }
+
+    if (this.isWrapping && elapsed - this.wrapStartTime > this.wrapDuration) {
+      this.isWrapping = false;
+    }
 
     // Camera z lerps toward scroll-derived target
     this.cameraZTarget = 6 - this.scrollY;
@@ -313,6 +403,31 @@ export class DepthScene {
     (this.scene.background as THREE.Color).copy(this.backgroundCurrent);
     if (this.scene.fog) {
       (this.scene.fog as THREE.Fog).color.copy(this.backgroundCurrent);
+    }
+
+    // ─── Trail + bubbles ─────────────────────────────────────────────
+    // Progress is normalized scroll position (0 at start, 1 at end).
+    const progress = THREE.MathUtils.clamp(this.scrollY / maxScroll, 0, 1);
+    // During the brief wrap-window we suppress new trail points + dim
+    // the material so the visual jump reads as a graceful loop.
+    const wrapElapsed = elapsed - this.wrapStartTime;
+    const wrapFadeIn =
+      this.isWrapping
+        ? THREE.MathUtils.smoothstep(wrapElapsed / this.wrapDuration, 0, 1)
+        : 1;
+    const trailOpacity = 0.55 * wrapFadeIn;
+    this.trail.material.opacity = trailOpacity;
+
+    if (!this.isWrapping || wrapElapsed > this.wrapDuration * 0.55) {
+      // Add a new head point on most frames (codrops adds every frame)
+      const head = this.computeTrailHead(progress, this.cameraZCurrent);
+      this.trail.addPoint(head);
+      this.bubbles.update(delta, head, trailOpacity, true);
+    } else {
+      // During the wrap blackout, just keep bubbles spawning at the
+      // current head so they don't all die at once
+      const head = this.computeTrailHead(progress, this.cameraZCurrent);
+      this.bubbles.update(delta, head, trailOpacity * 0.4, false);
     }
 
     // Render
