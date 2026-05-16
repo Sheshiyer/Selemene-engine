@@ -15,6 +15,7 @@ import EngineGrid, { type EngineGridItem } from "@/components/EngineGrid";
 import { getApiKey, isAuthenticated } from "@/lib/auth";
 import {
   executeWorkflow,
+  getMe,
   getReadings,
   getReading,
   type BirthData,
@@ -481,18 +482,36 @@ export default function EnginesPage() {
     const key = getApiKey();
     if (!key) return;
 
-    // Also try the API — if it returns data, it wins (more authoritative).
+    // Primary source: /users/me profile (has birth data stored in Supabase).
+    // This is more reliable than readings since it's explicitly saved by the user.
+    getMe(key)
+      .then((profile) => {
+        if (profile.birth_date) {
+          const bd: Partial<BirthData> = {
+            date: profile.birth_date,
+            time: profile.birth_time ?? undefined,
+            latitude: profile.birth_location?.lat,
+            longitude: profile.birth_location?.lng,
+            timezone: profile.timezone ?? undefined,
+            name: profile.full_name ?? undefined,
+          };
+          setLastBirthData(bd);
+          saveBirthDataLocally(bd as BirthData);
+        }
+      })
+      .catch(() => { /* profile not available — use localStorage/readings fallback */ });
+
+    // Secondary source: last reading's input_data.birth_data
     getReadings(key)
       .then(async (res) => {
         const latest = res.readings?.[0];
         if (!latest) return;
         if (latest.input_data) {
-          // input_data is EngineInput { birth_data: BirthData, ... }
-          // Extract nested birth_data; fall back to top-level if already flat
           const raw = latest.input_data as { birth_data?: BirthData | null } & Partial<BirthData>;
           const bd: Partial<BirthData> | null = raw.birth_data ?? (raw.date ? raw as Partial<BirthData> : null);
+          // Only update if we don't already have profile data (profile wins)
           if (bd?.date) {
-            setLastBirthData(bd);
+            setLastBirthData((prev) => prev?.date ? prev : bd);
             saveBirthDataLocally(bd as BirthData);
           }
         }

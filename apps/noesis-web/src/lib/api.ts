@@ -191,6 +191,14 @@ export interface MeResponse {
   email: string;
   full_name: string;
   tier: string;
+  consciousness_level?: number;
+  experience_points?: number;
+  /** YYYY-MM-DD, e.g. "1990-01-15" */
+  birth_date?: string | null;
+  /** HH:MM:SS, e.g. "14:30:00" */
+  birth_time?: string | null;
+  birth_location?: { lat: number; lng: number; name?: string | null } | null;
+  timezone?: string | null;
 }
 
 export async function getMe(apiKey: string): Promise<MeResponse> {
