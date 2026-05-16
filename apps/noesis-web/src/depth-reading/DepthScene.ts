@@ -23,6 +23,7 @@
 // Click handlers: hit-test on raycaster; emits onPlaneClick(sectionId).
 
 import * as THREE from "three";
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import type { SectionData } from "./data/sections";
 import { DepthTrail } from "./DepthTrail";
 import { DepthBubbles } from "./DepthBubbles";
@@ -217,7 +218,65 @@ export class DepthScene {
 
       this.planeGroup.add(mesh);
       this.planes.push(mesh);
+
+      // ─── Lazy-load Meshy GLB if section has one. The colored plane is
+      //     the SSR-safe placeholder; when the GLB lands we add it as a
+      //     child of the plane (inheriting its position + section userData).
+      //     The plane stays mounted as a fallback in case the GLB fails. ──
+      if (section.meshPath) {
+        this.loadMeshFor(section, mesh);
+      }
     });
+  }
+
+  /** Async load a section's GLB and attach it to its plane. Apply per-
+   *  section meshTransform overrides (scale, rotation, position). */
+  private async loadMeshFor(section: SectionData, planeMesh: THREE.Mesh) {
+    if (!section.meshPath) return;
+    const loader = new GLTFLoader();
+    try {
+      const gltf = await loader.loadAsync(section.meshPath);
+      const root = gltf.scene;
+      // Apply per-section transform overrides
+      const t = section.meshTransform;
+      if (t?.scale) root.scale.setScalar(t.scale);
+      if (t?.rotation) {
+        root.rotation.set(
+          t.rotation.x ?? 0,
+          t.rotation.y ?? 0,
+          t.rotation.z ?? 0,
+        );
+      }
+      if (t?.position) {
+        root.position.set(
+          t.position.x ?? 0,
+          t.position.y ?? 0,
+          t.position.z ?? 0,
+        );
+      }
+      // Make sure the GLB casts no shadow + accepts the scene's lights
+      root.traverse((node) => {
+        if ((node as THREE.Mesh).isMesh) {
+          const m = node as THREE.Mesh;
+          m.castShadow = false;
+          m.receiveShadow = false;
+          m.userData.sectionId = section.id;
+        }
+      });
+      // Attach to the plane: GLB rides the plane's transform + breath
+      planeMesh.add(root);
+      // Once the GLB is in, fade the colored plane to lower opacity so
+      // it acts as a back-shadow / atmosphere rather than competing
+      const planeMat = planeMesh.material as THREE.MeshBasicMaterial;
+      planeMat.opacity = 0.18;
+      planeMat.needsUpdate = true;
+    } catch (err) {
+      // Silent fallback — colored plane stays visible. Most common cause
+      // is GLB not yet uploaded; we'll see this for any meshPath that
+      // 404s, and the user just sees the colored plane.
+      // eslint-disable-next-line no-console
+      console.warn(`[depth-reading] mesh load failed for ${section.id}:`, err);
+    }
   }
 
   start() {

@@ -46,6 +46,19 @@ export interface SectionData {
   textureSrc?: string;
   /** Specs shown in the RIGHT-column data card (codrops Label.js pattern) */
   specs?: Array<{ label: string; value: string }>;
+  /** Path under /depth-reading/meshes/ for the Meshy-generated GLB. When
+   *  present, the DepthScene loader fetches the GLB and renders it in
+   *  place of the flat colored plane. Falls back to the plane otherwise. */
+  meshPath?: string;
+  /** Per-section transform overrides applied to the loaded GLB so each
+   *  section's mesh sits correctly in the gallery. Meshy outputs are at
+   *  arbitrary world scale + facing; tune these per-section after first
+   *  load. */
+  meshTransform?: {
+    scale?: number;
+    rotation?: { x?: number; y?: number; z?: number };
+    position?: { x?: number; y?: number; z?: number };
+  };
 }
 
 // Goethe Consciousness Spectrum (from apps/noesis-web/app/globals.css)
@@ -156,6 +169,8 @@ export function buildSectionsForSubject(
       { label: "ARC", value: "15 SECTIONS" },
       { label: "LINEAGE", value: "TRYAMBAKAM" },
     ],
+    meshPath: "/depth-reading/meshes/cover.glb",
+    meshTransform: { scale: 1.5, rotation: { y: 0 } },
   });
 
   // 1. Witness Layer (chapter 0 — the threshold question)
@@ -219,6 +234,11 @@ export function buildSectionsForSubject(
   for (let i = 0; i < 11; i++) {
     const direction = cardinalForPart(i + 1);
     const accent = accentForCardinal[direction!];
+    // Only parts 1-4 have Meshy GLBs ready today (first batch). Others
+    // fall back to the colored plane until their GLBs land.
+    const meshPath = i < 4
+      ? `/depth-reading/meshes/part-${i + 1}.glb`
+      : undefined;
     sections.push({
       id: `part-${i + 1}`,
       kind: "part",
@@ -238,6 +258,8 @@ export function buildSectionsForSubject(
         { label: "YANTRA", value: partThemes[i].yantra },
         { label: "DEPTH", value: `${i + 1} / 11` },
       ],
+      meshPath,
+      meshTransform: meshPath ? { scale: 1.4 } : undefined,
     });
   }
 
