@@ -44,6 +44,8 @@ export interface SectionData {
   direction?: "STABILIZE" | "HEAL" | "CREATE" | "MUTATE" | "WITNESS" | "QUINE";
   /** Optional texture for the plane (sigil / yantra image) */
   textureSrc?: string;
+  /** Specs shown in the RIGHT-column data card (codrops Label.js pattern) */
+  specs?: Array<{ label: string; value: string }>;
 }
 
 // Goethe Consciousness Spectrum (from apps/noesis-web/app/globals.css)
@@ -148,6 +150,12 @@ export function buildSectionsForSubject(
     blob1Color: VIOLET,
     blob2Color: INDIGO,
     direction: "WITNESS",
+    specs: [
+      { label: "MODE", value: "SOLO" },
+      { label: "REGISTER", value: "L4 · L5" },
+      { label: "ARC", value: "15 SECTIONS" },
+      { label: "LINEAGE", value: "TRYAMBAKAM" },
+    ],
   });
 
   // 1. Witness Layer (chapter 0 — the threshold question)
@@ -164,6 +172,11 @@ export function buildSectionsForSubject(
     blob1Color: INDIGO,
     blob2Color: VIOLET,
     direction: "WITNESS",
+    specs: [
+      { label: "TYPE", value: "OPENER" },
+      { label: "FRAME", value: "WITNESS LAYER" },
+      { label: "PROMPT", value: "READ FIRST" },
+    ],
   });
 
   // 2. Compendium (subject snapshot — Lagna / AK / Nakshatra / Dasha)
@@ -180,10 +193,29 @@ export function buildSectionsForSubject(
     blob1Color: VIOLET,
     blob2Color: EMERALD,
     direction: "WITNESS",
+    specs: [
+      { label: "TYPE", value: "SNAPSHOT" },
+      { label: "AXIS", value: "BIRTH DATA" },
+      { label: "ENGINES", value: "16" },
+    ],
   });
 
   // 3-13. 11 reading parts
   const romanNumerals = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI"];
+  // Per-part theme/yantra label that goes in the RIGHT specs column
+  const partThemes = [
+    { theme: "BEDROCK", yantra: "TRIAD MANDALA" },
+    { theme: "FOUNDATION", yantra: "VESICA TRIO" },
+    { theme: "INHERITANCE", yantra: "DASHA SPIRAL" },
+    { theme: "DHARMA", yantra: "COMPASS TRINE" },
+    { theme: "FLOW", yantra: "TRIAD MANDALA" },
+    { theme: "PARTNERSHIP", yantra: "VESICA TRIO" },
+    { theme: "EMBODIMENT", yantra: "DASHA SPIRAL" },
+    { theme: "LINEAGE", yantra: "COMPASS TRINE" },
+    { theme: "TIMELINE", yantra: "TRIAD MANDALA" },
+    { theme: "PRACTICE", yantra: "VESICA TRIO" },
+    { theme: "SYNTHESIS", yantra: "DASHA SPIRAL" },
+  ];
   for (let i = 0; i < 11; i++) {
     const direction = cardinalForPart(i + 1);
     const accent = accentForCardinal[direction!];
@@ -200,6 +232,12 @@ export function buildSectionsForSubject(
       blob1Color: GOLD,
       blob2Color: EMERALD,
       direction,
+      specs: [
+        { label: "CARDINAL", value: direction ?? "WITNESS" },
+        { label: "THEME", value: partThemes[i].theme },
+        { label: "YANTRA", value: partThemes[i].yantra },
+        { label: "DEPTH", value: `${i + 1} / 11` },
+      ],
     });
   }
 
@@ -217,6 +255,11 @@ export function buildSectionsForSubject(
     blob1Color: VIOLET,
     blob2Color: GOLD,
     direction: "MUTATE",
+    specs: [
+      { label: "TYPE", value: "CRYSTALLIZATION" },
+      { label: "BEAT", value: "FINAL" },
+      { label: "FRAME", value: "ANTI-DEPENDENCY" },
+    ],
   });
 
   // 15. Quine (the system succeeds when you no longer need it)
@@ -233,6 +276,11 @@ export function buildSectionsForSubject(
     blob1Color: VIOLET,
     blob2Color: VOID,
     direction: "QUINE",
+    specs: [
+      { label: "PRINCIPLE", value: "ANTI-DEPENDENCY" },
+      { label: "TELOS", value: "SUCCESS = UNNECESSITY" },
+      { label: "LOOP", value: "RETURN TO START" },
+    ],
   });
 
   return sections;

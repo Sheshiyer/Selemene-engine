@@ -132,6 +132,24 @@ export function DepthReadingClient({
   );
 }
 
+/**
+ * Codrops Label.js pattern adapted to our reading.
+ *
+ * One fixed full-viewport overlay that flanks the 3D canvas:
+ *   LEFT column  (vertically centered, far-left, ~8vw inset)
+ *     - Index (01, 02, … padded)
+ *     - Big WORD / title (Panchang display — the visual focal point)
+ *     - Section summary (one italic line)
+ *     - Color chip (the section's accent)
+ *     - "Read" button to open the prose modal
+ *   RIGHT column (vertically centered, far-right, ~7vw inset)
+ *     - Specs dl — { label: value } rows in monospace
+ *
+ * Mobile (<53em): both columns collapse to a 2-column bottom row.
+ *
+ * The 260ms cross-fade as the active plane changes — content swap is
+ * masked by a brief opacity dip on the whole overlay.
+ */
 function ActiveSectionLabel({
   section,
   onOpen,
@@ -139,87 +157,194 @@ function ActiveSectionLabel({
   section: SectionData;
   onOpen: () => void;
 }) {
+  const indexNumber = section.kind === "part"
+    ? String(parseInt(section.numeral.replace(/[^IVXLCDM]/gi, "") || "1", 10)).padStart(2, "0")
+    : section.numeral;
   return (
-    <div
+    <section
+      className="depth-label-overlay"
       style={{
-        position: "absolute",
-        left: "50%",
-        bottom: "clamp(6rem, 12vh, 9rem)",
-        transform: "translateX(-50%)",
-        maxWidth: "min(36rem, 80vw)",
-        textAlign: "center",
+        position: "fixed",
+        inset: 0,
         zIndex: 5,
-        transition: "opacity 0.4s ease",
+        pointerEvents: "none",
+        color: "var(--c-parchment, #F0EDE3)",
+        transition: "opacity 260ms ease",
+        fontFamily: "var(--font-mono, 'SF Mono', monospace)",
+        textTransform: "uppercase",
+        letterSpacing: "0.08em",
+        lineHeight: 1.2,
       }}
     >
+      {/* ─── LEFT column — index + WORD + summary + chip + button ─── */}
       <div
+        className="depth-label-overlay__left"
         style={{
-          fontFamily: "var(--font-mono, 'SF Mono', monospace)",
-          fontSize: "clamp(0.7rem, 0.85vw, 0.85rem)",
-          letterSpacing: "0.45em",
-          color: section.accentColor,
-          textTransform: "uppercase",
-          marginBottom: "0.85rem",
-          opacity: 0.85,
+          position: "absolute",
+          left: "clamp(2.5rem, 8vw, 12rem)",
+          top: "50%",
+          transform: "translateY(-50%)",
+          display: "grid",
+          gap: "clamp(0.5rem, 1vw, 0.85rem)",
+          maxWidth: "min(38rem, 42vw)",
+          pointerEvents: "auto",
         }}
       >
-        {section.numeral} · {section.direction ?? "WITNESS"}
+        {/* Index — 01 / 02 / etc. */}
+        <p
+          style={{
+            margin: 0,
+            fontSize: "9px",
+            opacity: 0.85,
+          }}
+        >
+          {indexNumber} · {section.direction ?? "WITNESS"}
+        </p>
+
+        {/* The WORD — visual focal point of the whole interface */}
+        <h1
+          style={{
+            margin: 0,
+            fontFamily: "var(--font-display, 'Panchang', serif)",
+            fontWeight: 700,
+            fontSize: "clamp(2rem, 4vw, 4.5rem)",
+            letterSpacing: "-0.005em",
+            lineHeight: 0.95,
+            textTransform: "none",
+            color: "var(--c-parchment, #F0EDE3)",
+            textShadow: "0 2px 32px rgba(0,0,0,0.65)",
+          }}
+        >
+          {section.title}
+        </h1>
+
+        {/* Summary — one italic line under the word */}
+        <p
+          style={{
+            margin: "0.25rem 0 0",
+            maxWidth: "32ch",
+            fontFamily: "var(--font-display, 'Panchang', serif)",
+            fontStyle: "italic",
+            fontWeight: 500,
+            fontSize: "clamp(0.95rem, 1.05vw, 1.15rem)",
+            lineHeight: 1.5,
+            color: "rgba(240,237,227,0.78)",
+            textShadow: "0 2px 14px rgba(0,0,0,0.55)",
+            textTransform: "none",
+            letterSpacing: 0,
+          }}
+        >
+          {section.summary}
+        </p>
+
+        {/* Chip + Read button — paired in a tight row */}
+        <div
+          style={{
+            marginTop: "clamp(0.4rem, 0.8vw, 0.75rem)",
+            display: "flex",
+            alignItems: "center",
+            gap: "0.85rem",
+          }}
+        >
+          <span
+            aria-hidden="true"
+            style={{
+              width: "18px",
+              height: "18px",
+              borderRadius: "50%",
+              display: "inline-block",
+              boxShadow: "0 0 0 1px rgba(255,255,255,0.18)",
+              background: section.accentColor,
+            }}
+          />
+          <button
+            onClick={onOpen}
+            style={{
+              background: "transparent",
+              border: `1px solid ${section.accentColor}`,
+              color: section.accentColor,
+              padding: "clamp(0.45rem, 0.7vw, 0.65rem) clamp(1.2rem, 1.8vw, 1.6rem)",
+              fontFamily: "var(--font-mono, 'SF Mono', monospace)",
+              fontSize: "0.72rem",
+              letterSpacing: "0.32em",
+              textTransform: "uppercase",
+              cursor: "pointer",
+              borderRadius: "999px",
+              transition: "all 0.2s ease",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = section.accentColor;
+              e.currentTarget.style.color = "var(--c-void, #070B1D)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = "transparent";
+              e.currentTarget.style.color = section.accentColor;
+            }}
+          >
+            Read full text
+          </button>
+        </div>
       </div>
-      <h2
-        style={{
-          margin: 0,
-          fontFamily: "var(--font-display, 'Panchang', serif)",
-          fontWeight: 700,
-          fontSize: "clamp(1.75rem, 3vw, 3rem)",
-          letterSpacing: "0.01em",
-          lineHeight: 1.05,
-          color: "var(--c-parchment, #F0EDE3)",
-          textShadow: "0 2px 24px rgba(0,0,0,0.55)",
-        }}
-      >
-        {section.title}
-      </h2>
-      <p
-        style={{
-          margin: "clamp(0.6rem, 1vw, 1rem) 0 1.4rem",
-          fontFamily: "var(--font-display, 'Panchang', serif)",
-          fontStyle: "italic",
-          fontWeight: 500,
-          fontSize: "clamp(0.95rem, 1.05vw, 1.15rem)",
-          lineHeight: 1.5,
-          color: "rgba(240,237,227,0.78)",
-          textShadow: "0 2px 16px rgba(0,0,0,0.5)",
-        }}
-      >
-        {section.summary}
-      </p>
-      <button
-        onClick={onOpen}
-        style={{
-          background: "transparent",
-          border: `1px solid ${section.accentColor}`,
-          color: section.accentColor,
-          padding: "clamp(0.5rem, 0.8vw, 0.75rem) clamp(1.4rem, 2vw, 2rem)",
-          fontFamily: "var(--font-mono, 'SF Mono', monospace)",
-          fontSize: "0.75rem",
-          letterSpacing: "0.32em",
-          textTransform: "uppercase",
-          cursor: "pointer",
-          borderRadius: "999px",
-          transition: "all 0.2s ease",
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.background = section.accentColor;
-          e.currentTarget.style.color = "var(--c-void, #070B1D)";
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.background = "transparent";
-          e.currentTarget.style.color = section.accentColor;
-        }}
-      >
-        Read
-      </button>
-    </div>
+
+      {/* ─── RIGHT column — specs dl (label : value rows) ─── */}
+      {section.specs && section.specs.length > 0 && (
+        <article
+          className="depth-label-overlay__right"
+          style={{
+            position: "absolute",
+            right: "clamp(2.5rem, 7vw, 10rem)",
+            top: "50%",
+            transform: "translateY(-50%)",
+            width: "min(28vw, 320px)",
+            opacity: 1,
+            pointerEvents: "none",
+          }}
+        >
+          <dl
+            style={{
+              margin: 0,
+              display: "grid",
+              gap: "0.5rem",
+            }}
+          >
+            {section.specs.map((spec, i) => (
+              <div
+                key={`${spec.label}-${i}`}
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "5.5rem 1fr",
+                  alignItems: "baseline",
+                  gap: "0.85rem",
+                  paddingBottom: "0.5rem",
+                  borderBottom: i < section.specs!.length - 1
+                    ? "1px solid rgba(240,237,227,0.08)"
+                    : "none",
+                }}
+              >
+                <dt
+                  style={{
+                    margin: 0,
+                    fontSize: "9px",
+                    opacity: 0.6,
+                  }}
+                >
+                  {spec.label}
+                </dt>
+                <dd
+                  style={{
+                    margin: 0,
+                    fontSize: "clamp(9.5px, 0.75vw, 11.5px)",
+                    color: section.accentColor,
+                  }}
+                >
+                  {spec.value}
+                </dd>
+              </div>
+            ))}
+          </dl>
+        </article>
+      )}
+    </section>
   );
 }
 
