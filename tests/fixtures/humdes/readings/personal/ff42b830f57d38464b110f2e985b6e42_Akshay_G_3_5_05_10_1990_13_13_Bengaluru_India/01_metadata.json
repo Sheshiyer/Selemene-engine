@@ -1,0 +1,73 @@
+{
+  "humdes_reading": {
+    "hash": "ff42b830f57d38464b110f2e985b6e42",
+    "code": "G_3_5_3d23956f09",
+    "name": "Akshay, G, 3/5, 05.10.1990, 13:13, Bengaluru, India",
+    "type": "personal",
+    "person_count": 1
+  },
+  "person": {
+    "index": 1,
+    "humdes_person_id": "a5810cf7acd3f2a80c2fd5d75e5e1338",
+    "label": "Akshay, G, 3/5, 05.10.1990, 13:13, Bengaluru, India",
+    "raw": {
+      "id": "a5810cf7acd3f2a80c2fd5d75e5e1338",
+      "data": "304725963e8b52baee7c9417826bffdb",
+      "label": "Akshay, G, 3/5, 05.10.1990, 13:13, Bengaluru, India",
+      "labelList": {
+        "date": "05.10.1990",
+        "type": "Generator",
+        "profile": [
+          "3",
+          "5"
+        ],
+        "vars": [
+          "PRR",
+          "DRR"
+        ],
+        "authority": "Sacr."
+      },
+      "name": "Akshay",
+      "results": "",
+      "date": "1990-10-05",
+      "time": "13:13",
+      "age": 35,
+      "location_id": "1277333",
+      "location": "Bengaluru, India",
+      "timezone": "Asia/Kolkata",
+      "sex": "M",
+      "type": "G",
+      "profile": {
+        "num": [
+          "3",
+          "5"
+        ],
+        "text": [
+          "Martyr",
+          "Heretic"
+        ]
+      },
+      "cross": {
+        "name": "The Right Angle Cross of Tension",
+        "num": [
+          "48",
+          "21",
+          "39",
+          "38"
+        ]
+      },
+      "variables": [
+        "PRR",
+        "DRR"
+      ],
+      "save": true,
+      "active": false
+    }
+  },
+  "source_files": {
+    "reading_dir": "output/2026-05-16_124939_bulk2/readings/personal/ff42b830f57d38464b110f2e985b6e42_Akshay",
+    "ravecard_file": "01_GET_ravecard_ff42b830f57d38464b110f2e985b6e42_site_1.json"
+  },
+  "captured_at": "2026-05-16T12:53:43",
+  "normalised_at": "2026-05-16T11:08:43.885311+00:00"
+}

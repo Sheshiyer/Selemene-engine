@@ -1,0 +1,73 @@
+{
+  "humdes_reading": {
+    "hash": "3809d899197151b352d27d82cc19d689",
+    "code": "G_5_1_b06827bf12",
+    "name": "Rehman ali, G, 5/1, 30.06.2000, 03:00, Ahmedabad, India",
+    "type": "personal",
+    "person_count": 1
+  },
+  "person": {
+    "index": 1,
+    "humdes_person_id": "7228044de7a3b78eaa8e004f83b44fc3",
+    "label": "Rehman ali, G, 5/1, 30.06.2000, 03:00, Ahmedabad, India",
+    "raw": {
+      "id": "7228044de7a3b78eaa8e004f83b44fc3",
+      "data": "5dd72429bf44aaadb78032ebaca7a8ce",
+      "label": "Rehman ali, G, 5/1, 30.06.2000, 03:00, Ahmedabad, India",
+      "labelList": {
+        "date": "30.06.2000",
+        "type": "Generator",
+        "profile": [
+          "5",
+          "1"
+        ],
+        "vars": [
+          "PLR",
+          "DRL"
+        ],
+        "authority": "Emot."
+      },
+      "name": "Rehman ali",
+      "results": "",
+      "date": "2000-06-30",
+      "time": "03:00",
+      "age": 25,
+      "location_id": "1279233",
+      "location": "Ahmedabad, India",
+      "timezone": "Asia/Kolkata",
+      "sex": "M",
+      "type": "G",
+      "profile": {
+        "num": [
+          "5",
+          "1"
+        ],
+        "text": [
+          "Heretic",
+          "Investigator"
+        ]
+      },
+      "cross": {
+        "name": "The Left Angle Cross of Demands",
+        "num": [
+          "52",
+          "58",
+          "21",
+          "48"
+        ]
+      },
+      "variables": [
+        "PLR",
+        "DRL"
+      ],
+      "save": true,
+      "active": false
+    }
+  },
+  "source_files": {
+    "reading_dir": "output/2026-05-16_124939_bulk2/readings/personal/3809d899197151b352d27d82cc19d689_Rehman_ali",
+    "ravecard_file": "01_GET_ravecard_3809d899197151b352d27d82cc19d689_site_1.json"
+  },
+  "captured_at": "2026-05-16T12:58:01",
+  "normalised_at": "2026-05-16T11:08:33.803753+00:00"
+}

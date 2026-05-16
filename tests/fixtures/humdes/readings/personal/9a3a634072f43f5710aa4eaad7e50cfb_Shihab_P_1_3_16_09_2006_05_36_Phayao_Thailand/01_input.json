@@ -1,0 +1,35 @@
+{
+  "birth_data": {
+    "name": "Shihab",
+    "date": "2006-09-16",
+    "time": "05:36:00",
+    "latitude": 19.341673,
+    "longitude": 100.1854539,
+    "timezone": "Asia/Bangkok"
+  },
+  "current_time": "2026-05-16T11:08:39.030712+00:00",
+  "location": {
+    "latitude": 19.341673,
+    "longitude": 100.1854539
+  },
+  "precision": "Standard",
+  "options": {
+    "humdes_reading_hash": "9a3a634072f43f5710aa4eaad7e50cfb",
+    "humdes_reading_code": "P_1_3_81d971e6f2",
+    "humdes_reading_type": "personal",
+    "humdes_person_index": 1,
+    "humdes_person_id": "4a4d60b983db74a4c13d7ca9f8161b13",
+    "humdes_link": "",
+    "humdes_type_code": "P",
+    "humdes_authority_short": "SelfProj.",
+    "humdes_variables": [
+      "PLR",
+      "DRR"
+    ],
+    "humdes_location_string": "Phayao, Thailand",
+    "humdes_location_id": "1151426",
+    "humdes_sex": "M",
+    "geocode_source": "nominatim",
+    "geocode_display_name": "จังหวัดพะเยา, ประเทศไทย"
+  }
+}

@@ -1,0 +1,48 @@
+{
+  "name": "Shashwat Trivedi",
+  "birth_date": "1992-10-13",
+  "birth_time": "13:42:00",
+  "timezone": "Asia/Dubai",
+  "latitude": 25.0742823,
+  "longitude": 55.1885387,
+  "expected": {
+    "type": "Projector",
+    "type_humdes_code": "P",
+    "profile": {
+      "conscious_line": 6,
+      "unconscious_line": 2,
+      "text": "6/2"
+    },
+    "authority": "Splenic",
+    "authority_humdes_label": "Splen.",
+    "variables": [
+      "PLR",
+      "DRR"
+    ],
+    "incarnation_cross": {
+      "name": "The Left Angle Cross of the Clarion",
+      "gates": [
+        57,
+        51,
+        62,
+        61
+      ]
+    },
+    "personality_sun": {
+      "gate": 57
+    },
+    "personality_earth": {
+      "gate": 51
+    },
+    "design_sun": {
+      "gate": 62
+    },
+    "design_earth": {
+      "gate": 61
+    },
+    "active_channels": null,
+    "defined_centers": null,
+    "active_gates": null,
+    "definition": null
+  }
+}

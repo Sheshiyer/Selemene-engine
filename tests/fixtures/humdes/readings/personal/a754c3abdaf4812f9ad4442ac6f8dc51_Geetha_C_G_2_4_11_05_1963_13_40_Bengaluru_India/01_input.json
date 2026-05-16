@@ -1,0 +1,35 @@
+{
+  "birth_data": {
+    "name": "Geetha C",
+    "date": "1963-05-11",
+    "time": "13:40:00",
+    "latitude": 12.9767936,
+    "longitude": 77.590082,
+    "timezone": "Asia/Kolkata"
+  },
+  "current_time": "2026-05-16T11:08:40.952421+00:00",
+  "location": {
+    "latitude": 12.9767936,
+    "longitude": 77.590082
+  },
+  "precision": "Standard",
+  "options": {
+    "humdes_reading_hash": "a754c3abdaf4812f9ad4442ac6f8dc51",
+    "humdes_reading_code": "G_2_4_401b88e3dc",
+    "humdes_reading_type": "personal",
+    "humdes_person_index": 1,
+    "humdes_person_id": "e236f1e9f2ee7d976d16113227604bb4",
+    "humdes_link": "",
+    "humdes_type_code": "G",
+    "humdes_authority_short": "Emot.",
+    "humdes_variables": [
+      "PRL",
+      "DRL"
+    ],
+    "humdes_location_string": "Bengaluru, India",
+    "humdes_location_id": "1277333",
+    "humdes_sex": "F",
+    "geocode_source": "nominatim",
+    "geocode_display_name": "Bengaluru, Bangalore North, Bengaluru Urban, Karnataka, India"
+  }
+}

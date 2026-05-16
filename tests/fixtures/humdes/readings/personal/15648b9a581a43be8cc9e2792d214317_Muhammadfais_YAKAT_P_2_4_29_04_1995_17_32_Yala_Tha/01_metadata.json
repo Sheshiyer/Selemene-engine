@@ -1,0 +1,73 @@
+{
+  "humdes_reading": {
+    "hash": "15648b9a581a43be8cc9e2792d214317",
+    "code": "P_2_4_9b00354b28",
+    "name": "Muhammadfais YAKAT, P, 2/4, 29.04.1995, 17:32, Yala, Thailand",
+    "type": "personal",
+    "person_count": 1
+  },
+  "person": {
+    "index": 1,
+    "humdes_person_id": "e033f407c1833ad2bdb31bfbac7718c8",
+    "label": "Muhammadfais YAKAT, P, 2/4, 29.04.1995, 17:32, Yala, Thailand",
+    "raw": {
+      "id": "e033f407c1833ad2bdb31bfbac7718c8",
+      "data": "ed90cd9623b000ada4f0d82363017730",
+      "label": "Muhammadfais YAKAT, P, 2/4, 29.04.1995, 17:32, Yala, Thailand",
+      "labelList": {
+        "date": "29.04.1995",
+        "type": "Projector",
+        "profile": [
+          "2",
+          "4"
+        ],
+        "vars": [
+          "PRL",
+          "DLR"
+        ],
+        "authority": "Emot."
+      },
+      "name": "Muhammadfais YAKAT",
+      "results": "",
+      "date": "1995-04-29",
+      "time": "17:32",
+      "age": 31,
+      "location_id": "1604870",
+      "location": "Yala, Thailand",
+      "timezone": "Asia/Bangkok",
+      "sex": "M",
+      "type": "P",
+      "profile": {
+        "num": [
+          "2",
+          "4"
+        ],
+        "text": [
+          "Hermit",
+          "Opportunist"
+        ]
+      },
+      "cross": {
+        "name": "The Right Angle Cross of the Four Ways",
+        "num": [
+          "24",
+          "44",
+          "19",
+          "33"
+        ]
+      },
+      "variables": [
+        "PRL",
+        "DLR"
+      ],
+      "save": true,
+      "active": false
+    }
+  },
+  "source_files": {
+    "reading_dir": "output/2026-05-16_124939_bulk2/readings/personal/15648b9a581a43be8cc9e2792d214317_Muhammadfais_YAKAT",
+    "ravecard_file": "01_GET_ravecard_15648b9a581a43be8cc9e2792d214317_site_1.json"
+  },
+  "captured_at": "2026-05-16T12:54:21",
+  "normalised_at": "2026-05-16T11:08:31.713967+00:00"
+}

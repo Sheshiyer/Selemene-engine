@@ -1,0 +1,73 @@
+{
+  "humdes_reading": {
+    "hash": "388b12cf2140a8c3819a382528654090",
+    "code": "compatibility_a6d5186116",
+    "name": "Mohan Kumar  + Vandana",
+    "type": "compatibility",
+    "person_count": 2
+  },
+  "person": {
+    "index": 1,
+    "humdes_person_id": "af82eb7c3827f79bcaa57840787d06d9",
+    "label": "Mohan Kumar , MG, 6/3, 17.11.1995, 11:10, Tiruchirappalli, India",
+    "raw": {
+      "id": "af82eb7c3827f79bcaa57840787d06d9",
+      "data": "d22836d59b34d39088104fdb87423941",
+      "label": "Mohan Kumar , MG, 6/3, 17.11.1995, 11:10, Tiruchirappalli, India",
+      "labelList": {
+        "date": "17.11.1995",
+        "type": "M. Generator",
+        "profile": [
+          "6",
+          "3"
+        ],
+        "vars": [
+          "PLR",
+          "DLL"
+        ],
+        "authority": "Emot."
+      },
+      "name": "Mohan Kumar ",
+      "results": "",
+      "date": "1995-11-17",
+      "time": "11:10",
+      "age": 30,
+      "location_id": "1254388",
+      "location": "Tiruchirappalli, India",
+      "timezone": "Asia/Kolkata",
+      "sex": "M",
+      "type": "MG",
+      "profile": {
+        "num": [
+          "6",
+          "3"
+        ],
+        "text": [
+          "Role Model",
+          "Martyr"
+        ]
+      },
+      "cross": {
+        "name": "The Left Angle Cross of Dedication",
+        "num": [
+          "43",
+          "23",
+          "29",
+          "30"
+        ]
+      },
+      "variables": [
+        "PLR",
+        "DLL"
+      ],
+      "save": true,
+      "active": false
+    }
+  },
+  "source_files": {
+    "reading_dir": "output/2026-05-16_124939_bulk2/readings/compatibility/388b12cf2140a8c3819a382528654090_Mohan_Kumar_Vandana",
+    "ravecard_file": "01_GET_ravecard_388b12cf2140a8c3819a382528654090_site_1.json"
+  },
+  "captured_at": "2026-05-16T13:03:03",
+  "normalised_at": "2026-05-16T11:08:11.720624+00:00"
+}

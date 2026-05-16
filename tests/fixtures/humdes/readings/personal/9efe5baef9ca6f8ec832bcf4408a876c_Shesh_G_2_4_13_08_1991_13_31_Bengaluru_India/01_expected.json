@@ -1,0 +1,48 @@
+{
+  "name": "Shesh",
+  "birth_date": "1991-08-13",
+  "birth_time": "13:31:00",
+  "timezone": "Asia/Kolkata",
+  "latitude": 12.9767936,
+  "longitude": 77.590082,
+  "expected": {
+    "type": "Generator",
+    "type_humdes_code": "G",
+    "profile": {
+      "conscious_line": 2,
+      "unconscious_line": 4,
+      "text": "2/4"
+    },
+    "authority": "Sacral",
+    "authority_humdes_label": "Sacr.",
+    "variables": [
+      "PRL",
+      "DRL"
+    ],
+    "incarnation_cross": {
+      "name": "The Right Angle Cross of Explanation",
+      "gates": [
+        4,
+        49,
+        23,
+        43
+      ]
+    },
+    "personality_sun": {
+      "gate": 4
+    },
+    "personality_earth": {
+      "gate": 49
+    },
+    "design_sun": {
+      "gate": 23
+    },
+    "design_earth": {
+      "gate": 43
+    },
+    "active_channels": null,
+    "defined_centers": null,
+    "active_gates": null,
+    "definition": null
+  }
+}

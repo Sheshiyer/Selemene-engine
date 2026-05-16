@@ -1,0 +1,35 @@
+{
+  "birth_data": {
+    "name": "Muhammadfais YAKAT",
+    "date": "1995-04-29",
+    "time": "17:32:00",
+    "latitude": 6.3344846,
+    "longitude": 101.1409694,
+    "timezone": "Asia/Bangkok"
+  },
+  "current_time": "2026-05-16T11:08:31.713912+00:00",
+  "location": {
+    "latitude": 6.3344846,
+    "longitude": 101.1409694
+  },
+  "precision": "Standard",
+  "options": {
+    "humdes_reading_hash": "15648b9a581a43be8cc9e2792d214317",
+    "humdes_reading_code": "P_2_4_9b00354b28",
+    "humdes_reading_type": "personal",
+    "humdes_person_index": 1,
+    "humdes_person_id": "e033f407c1833ad2bdb31bfbac7718c8",
+    "humdes_link": "",
+    "humdes_type_code": "P",
+    "humdes_authority_short": "Emot.",
+    "humdes_variables": [
+      "PRL",
+      "DLR"
+    ],
+    "humdes_location_string": "Yala, Thailand",
+    "humdes_location_id": "1604870",
+    "humdes_sex": "M",
+    "geocode_source": "nominatim",
+    "geocode_display_name": "จังหวัดยะลา, ประเทศไทย"
+  }
+}

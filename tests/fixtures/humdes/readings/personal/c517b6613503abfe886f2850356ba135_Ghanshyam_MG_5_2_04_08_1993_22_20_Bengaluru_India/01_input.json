@@ -1,0 +1,35 @@
+{
+  "birth_data": {
+    "name": "Ghanshyam",
+    "date": "1993-08-04",
+    "time": "22:20:00",
+    "latitude": 12.9767936,
+    "longitude": 77.590082,
+    "timezone": "Asia/Kolkata"
+  },
+  "current_time": "2026-05-16T11:08:41.183562+00:00",
+  "location": {
+    "latitude": 12.9767936,
+    "longitude": 77.590082
+  },
+  "precision": "Standard",
+  "options": {
+    "humdes_reading_hash": "c517b6613503abfe886f2850356ba135",
+    "humdes_reading_code": "MG_5_2_16c2903d7c",
+    "humdes_reading_type": "personal",
+    "humdes_person_index": 1,
+    "humdes_person_id": "57d6705a1f07c48c99f796cf2c1766e0",
+    "humdes_link": "",
+    "humdes_type_code": "MG",
+    "humdes_authority_short": "Sacr.",
+    "humdes_variables": [
+      "PRR",
+      "DRL"
+    ],
+    "humdes_location_string": "Bengaluru, India",
+    "humdes_location_id": "1277333",
+    "humdes_sex": "M",
+    "geocode_source": "nominatim",
+    "geocode_display_name": "Bengaluru, Bangalore North, Bengaluru Urban, Karnataka, India"
+  }
+}

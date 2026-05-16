@@ -1,0 +1,73 @@
+{
+  "humdes_reading": {
+    "hash": "62fed3949a1e4421f46b20e0efd829c4",
+    "code": "MG_6_2_a1fa83989f",
+    "name": "Paulo Alberto , MG, 6/2, 27.01.2000, 11:29, Bologna, Italy",
+    "type": "personal",
+    "person_count": 1
+  },
+  "person": {
+    "index": 1,
+    "humdes_person_id": "81d698ccd2302e55ee1d4b5988b88d47",
+    "label": "Paulo Alberto , MG, 6/2, 27.01.2000, 11:29, Bologna, Italy",
+    "raw": {
+      "id": "81d698ccd2302e55ee1d4b5988b88d47",
+      "data": "1c205874683db4b5506e3bab8c42a526",
+      "label": "Paulo Alberto , MG, 6/2, 27.01.2000, 11:29, Bologna, Italy",
+      "labelList": {
+        "date": "27.01.2000",
+        "type": "M. Generator",
+        "profile": [
+          "6",
+          "2"
+        ],
+        "vars": [
+          "PRR",
+          "DLR"
+        ],
+        "authority": "Sacr."
+      },
+      "name": "Paulo Alberto ",
+      "results": "",
+      "date": "2000-01-27",
+      "time": "11:29",
+      "age": 26,
+      "location_id": "8977649",
+      "location": "Bologna, Italy",
+      "timezone": "Europe/Rome",
+      "sex": "M",
+      "type": "MG",
+      "profile": {
+        "num": [
+          "6",
+          "2"
+        ],
+        "text": [
+          "Role Model",
+          "Hermit"
+        ]
+      },
+      "cross": {
+        "name": "The Left Angle Cross of the Alpha",
+        "num": [
+          "41",
+          "31",
+          "44",
+          "24"
+        ]
+      },
+      "variables": [
+        "PRR",
+        "DLR"
+      ],
+      "save": true,
+      "active": false
+    }
+  },
+  "source_files": {
+    "reading_dir": "output/2026-05-16_124939_bulk2/readings/personal/62fed3949a1e4421f46b20e0efd829c4_Paulo_Alberto",
+    "ravecard_file": "01_GET_ravecard_62fed3949a1e4421f46b20e0efd829c4_site_1.json"
+  },
+  "captured_at": "2026-05-16T12:54:57",
+  "normalised_at": "2026-05-16T11:08:37.608548+00:00"
+}

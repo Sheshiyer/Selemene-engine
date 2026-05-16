@@ -1,0 +1,35 @@
+{
+  "birth_data": {
+    "name": "Triveni K",
+    "date": "1996-08-21",
+    "time": "05:30:00",
+    "latitude": 19.6090068,
+    "longitude": 84.7080633,
+    "timezone": "Asia/Kolkata"
+  },
+  "current_time": "2026-05-16T11:08:28.285076+00:00",
+  "location": {
+    "latitude": 19.6090068,
+    "longitude": 84.7080633
+  },
+  "precision": "Standard",
+  "options": {
+    "humdes_reading_hash": "830db0a0e62f6f9739adfabc882ae3a8",
+    "humdes_reading_code": "family_c53beb765b",
+    "humdes_reading_type": "family",
+    "humdes_person_index": 3,
+    "humdes_person_id": "bd8accffd962fd710507a2b474256e99",
+    "humdes_link": "",
+    "humdes_type_code": "MG",
+    "humdes_authority_short": "Emot.",
+    "humdes_variables": [
+      "PRR",
+      "DRR"
+    ],
+    "humdes_location_string": "Ganjām, India",
+    "humdes_location_id": "1271621",
+    "humdes_sex": "F",
+    "geocode_source": "nominatim",
+    "geocode_display_name": "Ganjam, Odisha, India"
+  }
+}

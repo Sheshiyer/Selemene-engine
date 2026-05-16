@@ -1,0 +1,73 @@
+{
+  "humdes_reading": {
+    "hash": "a6784adcd7a4151fa325bd0edf576b94",
+    "code": "G_1_3_4655d15f4e",
+    "name": "Apoorva Nayak, G, 1/3, 01.11.1999, 04:55, Hubli, India",
+    "type": "personal",
+    "person_count": 1
+  },
+  "person": {
+    "index": 1,
+    "humdes_person_id": "be40e0fb0d78fb9fae7abbb33eccb177",
+    "label": "Apoorva Nayak, G, 1/3, 01.11.1999, 04:55, Hubli, India",
+    "raw": {
+      "id": "be40e0fb0d78fb9fae7abbb33eccb177",
+      "data": "cd9ee80c328f41526de2c97bece7dc3d",
+      "label": "Apoorva Nayak, G, 1/3, 01.11.1999, 04:55, Hubli, India",
+      "labelList": {
+        "date": "01.11.1999",
+        "type": "Generator",
+        "profile": [
+          "1",
+          "3"
+        ],
+        "vars": [
+          "PRR",
+          "DRL"
+        ],
+        "authority": "Sacr."
+      },
+      "name": "Apoorva Nayak",
+      "results": "",
+      "date": "1999-11-01",
+      "time": "04:55",
+      "age": 26,
+      "location_id": "1269920",
+      "location": "Hubli, India",
+      "timezone": "Asia/Kolkata",
+      "sex": "F",
+      "type": "G",
+      "profile": {
+        "num": [
+          "1",
+          "3"
+        ],
+        "text": [
+          "Investigator",
+          "Martyr"
+        ]
+      },
+      "cross": {
+        "name": "The Right Angle Cross of the Four Ways",
+        "num": [
+          "44",
+          "24",
+          "33",
+          "19"
+        ]
+      },
+      "variables": [
+        "PRR",
+        "DRL"
+      ],
+      "save": true,
+      "active": false
+    }
+  },
+  "source_files": {
+    "reading_dir": "output/2026-05-16_124939_bulk2/readings/personal/a6784adcd7a4151fa325bd0edf576b94_Apoorva_Nayak",
+    "ravecard_file": "01_GET_ravecard_a6784adcd7a4151fa325bd0edf576b94_site_1.json"
+  },
+  "captured_at": "2026-05-16T12:55:08",
+  "normalised_at": "2026-05-16T11:08:40.923359+00:00"
+}

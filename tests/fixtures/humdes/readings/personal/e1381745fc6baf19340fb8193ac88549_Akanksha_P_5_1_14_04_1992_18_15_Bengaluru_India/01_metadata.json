@@ -1,0 +1,73 @@
+{
+  "humdes_reading": {
+    "hash": "e1381745fc6baf19340fb8193ac88549",
+    "code": "P_5_1_45065b97fc",
+    "name": "Akanksha , P, 5/1, 14.04.1992, 18:15, Bengaluru, India",
+    "type": "personal",
+    "person_count": 1
+  },
+  "person": {
+    "index": 1,
+    "humdes_person_id": "6666f76a06d5bc47535eceeca4d25a39",
+    "label": "Akanksha , P, 5/1, 14.04.1992, 18:15, Bengaluru, India",
+    "raw": {
+      "id": "6666f76a06d5bc47535eceeca4d25a39",
+      "data": "1efd87fe809ab58e11af0620a99423c7",
+      "label": "Akanksha , P, 5/1, 14.04.1992, 18:15, Bengaluru, India",
+      "labelList": {
+        "date": "14.04.1992",
+        "type": "Projector",
+        "profile": [
+          "5",
+          "1"
+        ],
+        "vars": [
+          "PLL",
+          "DRL"
+        ],
+        "authority": "Splen."
+      },
+      "name": "Akanksha ",
+      "results": "",
+      "date": "1992-04-14",
+      "time": "18:15",
+      "age": 34,
+      "location_id": "1277333",
+      "location": "Bengaluru, India",
+      "timezone": "Asia/Kolkata",
+      "sex": "F",
+      "type": "P",
+      "profile": {
+        "num": [
+          "5",
+          "1"
+        ],
+        "text": [
+          "Heretic",
+          "Investigator"
+        ]
+      },
+      "cross": {
+        "name": "The Left Angle Cross of Limitation",
+        "num": [
+          "42",
+          "32",
+          "60",
+          "56"
+        ]
+      },
+      "variables": [
+        "PLL",
+        "DRL"
+      ],
+      "save": true,
+      "active": false
+    }
+  },
+  "source_files": {
+    "reading_dir": "output/2026-05-16_124939_bulk2/readings/personal/e1381745fc6baf19340fb8193ac88549_Akanksha",
+    "ravecard_file": "01_GET_ravecard_e1381745fc6baf19340fb8193ac88549_site_1.json"
+  },
+  "captured_at": "2026-05-16T12:49:58",
+  "normalised_at": "2026-05-16T11:08:41.283736+00:00"
+}

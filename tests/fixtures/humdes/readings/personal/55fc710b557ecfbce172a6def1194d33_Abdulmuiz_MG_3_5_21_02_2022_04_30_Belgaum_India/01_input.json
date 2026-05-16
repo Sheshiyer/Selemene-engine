@@ -1,0 +1,35 @@
+{
+  "birth_data": {
+    "name": "Abdulmuiz",
+    "date": "2022-02-21",
+    "time": "04:30:00",
+    "latitude": 15.8572666,
+    "longitude": 74.5069343,
+    "timezone": "Asia/Kolkata"
+  },
+  "current_time": "2026-05-16T11:08:35.718443+00:00",
+  "location": {
+    "latitude": 15.8572666,
+    "longitude": 74.5069343
+  },
+  "precision": "Standard",
+  "options": {
+    "humdes_reading_hash": "55fc710b557ecfbce172a6def1194d33",
+    "humdes_reading_code": "MG_3_5_ed9d6283af",
+    "humdes_reading_type": "personal",
+    "humdes_person_index": 1,
+    "humdes_person_id": "fd14c733d72c2cf7abdbe9e4d55ae1bb",
+    "humdes_link": "",
+    "humdes_type_code": "MG",
+    "humdes_authority_short": "Emot.",
+    "humdes_variables": [
+      "PRL",
+      "DRL"
+    ],
+    "humdes_location_string": "Belgaum, India",
+    "humdes_location_id": "1276533",
+    "humdes_sex": "M",
+    "geocode_source": "nominatim",
+    "geocode_display_name": "Belagavi, Belagavi taluku, Belagavi, Karnataka, 590001, India"
+  }
+}

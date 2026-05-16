@@ -1,0 +1,35 @@
+{
+  "birth_data": {
+    "name": "Johnny",
+    "date": "1969-03-01",
+    "time": "07:15:00",
+    "latitude": 51.328932,
+    "longitude": 4.9299924,
+    "timezone": "Europe/Brussels"
+  },
+  "current_time": "2026-05-16T11:08:37.629203+00:00",
+  "location": {
+    "latitude": 51.328932,
+    "longitude": 4.9299924
+  },
+  "precision": "Standard",
+  "options": {
+    "humdes_reading_hash": "6d1b899435346dcb732f6e1c1a1a8dbd",
+    "humdes_reading_code": "G_6_2_34b85e210a",
+    "humdes_reading_type": "personal",
+    "humdes_person_index": 1,
+    "humdes_person_id": "8e8ceca90557a5bf4bf2bdaf526b1547",
+    "humdes_link": "",
+    "humdes_type_code": "G",
+    "humdes_authority_short": "Emot.",
+    "humdes_variables": [
+      "PLR",
+      "DLL"
+    ],
+    "humdes_location_string": "Turnhout, Belgium",
+    "humdes_location_id": "2785141",
+    "humdes_sex": "M",
+    "geocode_source": "nominatim",
+    "geocode_display_name": "Turnhout, Antwerpen, Vlaanderen, 2300, België / Belgique / Belgien"
+  }
+}

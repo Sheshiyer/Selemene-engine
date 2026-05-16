@@ -1,0 +1,73 @@
+{
+  "humdes_reading": {
+    "hash": "388b12cf2140a8c3819a382528654090",
+    "code": "compatibility_a6d5186116",
+    "name": "Mohan Kumar  + Vandana",
+    "type": "compatibility",
+    "person_count": 2
+  },
+  "person": {
+    "index": 2,
+    "humdes_person_id": "ca38d359a89425f5433eb85ade403111",
+    "label": "Vandana, G, 4/6, 07.09.1994, 09:28, New Delhi, India",
+    "raw": {
+      "id": "ca38d359a89425f5433eb85ade403111",
+      "data": "d306bb923a3e314aa6a1b2aa7e1a9c46",
+      "label": "Vandana, G, 4/6, 07.09.1994, 09:28, New Delhi, India",
+      "labelList": {
+        "date": "07.09.1994",
+        "type": "Generator",
+        "profile": [
+          "4",
+          "6"
+        ],
+        "vars": [
+          "PRR",
+          "DRL"
+        ],
+        "authority": "Sacr."
+      },
+      "name": "Vandana",
+      "results": "",
+      "date": "1994-09-07",
+      "time": "09:28",
+      "age": 31,
+      "location_id": "1261481",
+      "location": "New Delhi, India",
+      "timezone": "Asia/Kolkata",
+      "sex": "F",
+      "type": "G",
+      "profile": {
+        "num": [
+          "4",
+          "6"
+        ],
+        "text": [
+          "Opportunist",
+          "Role Model"
+        ]
+      },
+      "cross": {
+        "name": "The Right Angle Cross of Consciousness",
+        "num": [
+          "64",
+          "63",
+          "35",
+          "5"
+        ]
+      },
+      "variables": [
+        "PRR",
+        "DRL"
+      ],
+      "save": true,
+      "active": false
+    }
+  },
+  "source_files": {
+    "reading_dir": "output/2026-05-16_124939_bulk2/readings/compatibility/388b12cf2140a8c3819a382528654090_Mohan_Kumar_Vandana",
+    "ravecard_file": "01_GET_ravecard_388b12cf2140a8c3819a382528654090_site_1.json"
+  },
+  "captured_at": "2026-05-16T13:03:03",
+  "normalised_at": "2026-05-16T11:08:13.663232+00:00"
+}

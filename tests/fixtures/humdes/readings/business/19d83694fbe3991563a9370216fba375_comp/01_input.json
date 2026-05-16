@@ -1,0 +1,35 @@
+{
+  "birth_data": {
+    "name": "Nikhai Jaysen",
+    "date": "1995-11-23",
+    "time": "09:44:00",
+    "latitude": 12.9767936,
+    "longitude": 77.590082,
+    "timezone": "Asia/Kolkata"
+  },
+  "current_time": "2026-05-16T11:08:02.381793+00:00",
+  "location": {
+    "latitude": 12.9767936,
+    "longitude": 77.590082
+  },
+  "precision": "Standard",
+  "options": {
+    "humdes_reading_hash": "19d83694fbe3991563a9370216fba375",
+    "humdes_reading_code": "business_29781d3296",
+    "humdes_reading_type": "business",
+    "humdes_person_index": 1,
+    "humdes_person_id": "ad81221bdf14e65d719a3ca6b5384413",
+    "humdes_link": "",
+    "humdes_type_code": "MG",
+    "humdes_authority_short": "Emot.",
+    "humdes_variables": [
+      "PRR",
+      "DLR"
+    ],
+    "humdes_location_string": "Bengaluru, India",
+    "humdes_location_id": "1277333",
+    "humdes_sex": "M",
+    "geocode_source": "nominatim",
+    "geocode_display_name": "Bengaluru, Bangalore North, Bengaluru Urban, Karnataka, India"
+  }
+}

@@ -1,0 +1,48 @@
+{
+  "name": "Joshua",
+  "birth_date": "1998-09-28",
+  "birth_time": "12:40:00",
+  "timezone": "Asia/Kolkata",
+  "latitude": 11.8763836,
+  "longitude": 75.3737973,
+  "expected": {
+    "type": "ManifestingGenerator",
+    "type_humdes_code": "MG",
+    "profile": {
+      "conscious_line": 2,
+      "unconscious_line": 4,
+      "text": "2/4"
+    },
+    "authority": "Emotional",
+    "authority_humdes_label": "Emot.",
+    "variables": [
+      "PRR",
+      "DRR"
+    ],
+    "incarnation_cross": {
+      "name": "The Right Angle Cross of Service",
+      "gates": [
+        18,
+        17,
+        52,
+        58
+      ]
+    },
+    "personality_sun": {
+      "gate": null
+    },
+    "personality_earth": {
+      "gate": null
+    },
+    "design_sun": {
+      "gate": null
+    },
+    "design_earth": {
+      "gate": null
+    },
+    "active_channels": null,
+    "defined_centers": null,
+    "active_gates": null,
+    "definition": null
+  }
+}

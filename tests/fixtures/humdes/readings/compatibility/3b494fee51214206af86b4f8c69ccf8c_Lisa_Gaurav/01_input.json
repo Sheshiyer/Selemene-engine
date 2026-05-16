@@ -1,0 +1,35 @@
+{
+  "birth_data": {
+    "name": "Lisa",
+    "date": "1991-11-12",
+    "time": "09:48:00",
+    "latitude": 52.3730796,
+    "longitude": 4.8924534,
+    "timezone": "Europe/Amsterdam"
+  },
+  "current_time": "2026-05-16T11:08:15.685061+00:00",
+  "location": {
+    "latitude": 52.3730796,
+    "longitude": 4.8924534
+  },
+  "precision": "Standard",
+  "options": {
+    "humdes_reading_hash": "3b494fee51214206af86b4f8c69ccf8c",
+    "humdes_reading_code": "compatibility_ff45643bce",
+    "humdes_reading_type": "compatibility",
+    "humdes_person_index": 1,
+    "humdes_person_id": "80564b53a8ddcfc2dbf51a6ad6a082dd",
+    "humdes_link": "",
+    "humdes_type_code": "P",
+    "humdes_authority_short": "Splen.",
+    "humdes_variables": [
+      "PRR",
+      "DRL"
+    ],
+    "humdes_location_string": "Amsterdam, Netherlands",
+    "humdes_location_id": "2759794",
+    "humdes_sex": "M",
+    "geocode_source": "nominatim",
+    "geocode_display_name": "Amsterdam, Noord-Holland, Nederland"
+  }
+}

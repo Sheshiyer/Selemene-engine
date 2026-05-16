@@ -1,0 +1,73 @@
+{
+  "humdes_reading": {
+    "hash": "b5be157b3674210128723dc6abacf197",
+    "code": "MG_6_2_5a8b598bf4",
+    "name": "Manoj, MG, 6/2, 18.02.1996, 23:30, Bengaluru, India",
+    "type": "personal",
+    "person_count": 1
+  },
+  "person": {
+    "index": 1,
+    "humdes_person_id": "54d1757e91efe8652fddd859d514fb47",
+    "label": "Manoj, MG, 6/2, 18.02.1996, 23:30, Bengaluru, India",
+    "raw": {
+      "id": "54d1757e91efe8652fddd859d514fb47",
+      "data": "66b2c80d042f2486ecb6338f37bf2087",
+      "label": "Manoj, MG, 6/2, 18.02.1996, 23:30, Bengaluru, India",
+      "labelList": {
+        "date": "18.02.1996",
+        "type": "M. Generator",
+        "profile": [
+          "6",
+          "2"
+        ],
+        "vars": [
+          "PLL",
+          "DRL"
+        ],
+        "authority": "Emot."
+      },
+      "name": "Manoj",
+      "results": "",
+      "date": "1996-02-18",
+      "time": "23:30",
+      "age": 30,
+      "location_id": "1277333",
+      "location": "Bengaluru, India",
+      "timezone": "Asia/Kolkata",
+      "sex": "M",
+      "type": "MG",
+      "profile": {
+        "num": [
+          "6",
+          "2"
+        ],
+        "text": [
+          "Role Model",
+          "Hermit"
+        ]
+      },
+      "cross": {
+        "name": "The Left Angle Cross of Industry",
+        "num": [
+          "30",
+          "29",
+          "34",
+          "20"
+        ]
+      },
+      "variables": [
+        "PLL",
+        "DRL"
+      ],
+      "save": true,
+      "active": false
+    }
+  },
+  "source_files": {
+    "reading_dir": "output/2026-05-16_124939_bulk2/readings/personal/b5be157b3674210128723dc6abacf197_Manoj",
+    "ravecard_file": "01_GET_ravecard_b5be157b3674210128723dc6abacf197_site_1.json"
+  },
+  "captured_at": "2026-05-16T12:50:32",
+  "normalised_at": "2026-05-16T11:08:41.058671+00:00"
+}

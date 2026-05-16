@@ -1,0 +1,48 @@
+{
+  "name": "Cumbipuram Subramaniam Nateshan ",
+  "birth_date": "1960-11-20",
+  "birth_time": "17:15:00",
+  "timezone": "Asia/Kolkata",
+  "latitude": 12.9767936,
+  "longitude": 77.590082,
+  "expected": {
+    "type": "Projector",
+    "type_humdes_code": "P",
+    "profile": {
+      "conscious_line": 4,
+      "unconscious_line": 1,
+      "text": "4/1"
+    },
+    "authority": "Splenic",
+    "authority_humdes_label": "Splen.",
+    "variables": [
+      "PLL",
+      "DLL"
+    ],
+    "incarnation_cross": {
+      "name": "The Juxtaposition Cross of Empowering",
+      "gates": [
+        14,
+        8,
+        59,
+        55
+      ]
+    },
+    "personality_sun": {
+      "gate": null
+    },
+    "personality_earth": {
+      "gate": null
+    },
+    "design_sun": {
+      "gate": null
+    },
+    "design_earth": {
+      "gate": null
+    },
+    "active_channels": null,
+    "defined_centers": null,
+    "active_gates": null,
+    "definition": null
+  }
+}

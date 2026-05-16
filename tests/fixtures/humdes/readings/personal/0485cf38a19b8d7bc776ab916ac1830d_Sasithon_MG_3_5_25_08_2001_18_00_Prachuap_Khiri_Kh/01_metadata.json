@@ -1,0 +1,73 @@
+{
+  "humdes_reading": {
+    "hash": "0485cf38a19b8d7bc776ab916ac1830d",
+    "code": "MG_3_5_35d7af70dc",
+    "name": "Sasithon , MG, 3/5, 25.08.2001, 18:00, Prachuap Khiri Khan, Thailand",
+    "type": "personal",
+    "person_count": 1
+  },
+  "person": {
+    "index": 1,
+    "humdes_person_id": "69aae4c3f0d82db937edf3d2d2cc263a",
+    "label": "Sasithon , MG, 3/5, 25.08.2001, 18:00, Prachuap Khiri Khan, Thailand",
+    "raw": {
+      "id": "69aae4c3f0d82db937edf3d2d2cc263a",
+      "data": "8246c86cc7cf848406ea790671155833",
+      "label": "Sasithon , MG, 3/5, 25.08.2001, 18:00, Prachuap Khiri Khan, Thailand",
+      "labelList": {
+        "date": "25.08.2001",
+        "type": "M. Generator",
+        "profile": [
+          "3",
+          "5"
+        ],
+        "vars": [
+          "PRR",
+          "DRL"
+        ],
+        "authority": "Emot."
+      },
+      "name": "Sasithon ",
+      "results": "",
+      "date": "2001-08-25",
+      "time": "18:00",
+      "age": 24,
+      "location_id": "1151074",
+      "location": "Prachuap Khiri Khan, Thailand",
+      "timezone": "Asia/Bangkok",
+      "sex": "F",
+      "type": "MG",
+      "profile": {
+        "num": [
+          "3",
+          "5"
+        ],
+        "text": [
+          "Martyr",
+          "Heretic"
+        ]
+      },
+      "cross": {
+        "name": "The Right Angle Cross of the Sleeping Phoenix",
+        "num": [
+          "59",
+          "55",
+          "20",
+          "34"
+        ]
+      },
+      "variables": [
+        "PRR",
+        "DRL"
+      ],
+      "save": true,
+      "active": false
+    }
+  },
+  "source_files": {
+    "reading_dir": "output/2026-05-16_124939_bulk2/readings/personal/0485cf38a19b8d7bc776ab916ac1830d_Sasithon",
+    "ravecard_file": "01_GET_ravecard_0485cf38a19b8d7bc776ab916ac1830d_site_1.json"
+  },
+  "captured_at": "2026-05-16T12:54:08",
+  "normalised_at": "2026-05-16T11:08:30.313935+00:00"
+}

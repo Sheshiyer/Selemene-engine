@@ -1,0 +1,73 @@
+{
+  "humdes_reading": {
+    "hash": "b303162021a531ef84d6a48dc386b6bb",
+    "code": "P_1_3_fa210f825e",
+    "name": "Lisa, P, 1/3, 12.11.1991, 09:48, Amsterdam, Netherlands",
+    "type": "personal",
+    "person_count": 1
+  },
+  "person": {
+    "index": 1,
+    "humdes_person_id": "80564b53a8ddcfc2dbf51a6ad6a082dd",
+    "label": "Lisa, P, 1/3, 12.11.1991, 09:48, Amsterdam, Netherlands",
+    "raw": {
+      "id": "80564b53a8ddcfc2dbf51a6ad6a082dd",
+      "data": "b5dfcd0d130770115d9c04f2e04d3365",
+      "label": "Lisa, P, 1/3, 12.11.1991, 09:48, Amsterdam, Netherlands",
+      "labelList": {
+        "date": "12.11.1991",
+        "type": "Projector",
+        "profile": [
+          "1",
+          "3"
+        ],
+        "vars": [
+          "PRR",
+          "DRL"
+        ],
+        "authority": "Splen."
+      },
+      "name": "Lisa",
+      "results": "",
+      "date": "1991-11-12",
+      "time": "09:48",
+      "age": 34,
+      "location_id": "2759794",
+      "location": "Amsterdam, Netherlands",
+      "timezone": "Europe/Amsterdam",
+      "sex": "M",
+      "type": "P",
+      "profile": {
+        "num": [
+          "1",
+          "3"
+        ],
+        "text": [
+          "Investigator",
+          "Martyr"
+        ]
+      },
+      "cross": {
+        "name": "The Right Angle Cross of Explanation",
+        "num": [
+          "43",
+          "23",
+          "4",
+          "49"
+        ]
+      },
+      "variables": [
+        "PRR",
+        "DRL"
+      ],
+      "save": true,
+      "active": false
+    }
+  },
+  "source_files": {
+    "reading_dir": "output/2026-05-16_124939_bulk2/readings/personal/b303162021a531ef84d6a48dc386b6bb_Lisa",
+    "ravecard_file": "01_GET_ravecard_b303162021a531ef84d6a48dc386b6bb_site_1.json"
+  },
+  "captured_at": "2026-05-16T12:50:55",
+  "normalised_at": "2026-05-16T11:08:41.037118+00:00"
+}

@@ -1,0 +1,73 @@
+{
+  "humdes_reading": {
+    "hash": "55fc710b557ecfbce172a6def1194d33",
+    "code": "MG_3_5_ed9d6283af",
+    "name": "Abdulmuiz, MG, 3/5, 21.02.2022, 04:30, Belgaum, India",
+    "type": "personal",
+    "person_count": 1
+  },
+  "person": {
+    "index": 1,
+    "humdes_person_id": "fd14c733d72c2cf7abdbe9e4d55ae1bb",
+    "label": "Abdulmuiz, MG, 3/5, 21.02.2022, 04:30, Belgaum, India",
+    "raw": {
+      "id": "fd14c733d72c2cf7abdbe9e4d55ae1bb",
+      "data": "cc89ba6d6c97ee2a7b398d7079fbeaac",
+      "label": "Abdulmuiz, MG, 3/5, 21.02.2022, 04:30, Belgaum, India",
+      "labelList": {
+        "date": "21.02.2022",
+        "type": "M. Generator",
+        "profile": [
+          "3",
+          "5"
+        ],
+        "vars": [
+          "PRL",
+          "DRL"
+        ],
+        "authority": "Emot."
+      },
+      "name": "Abdulmuiz",
+      "results": "",
+      "date": "2022-02-21",
+      "time": "04:30",
+      "age": 4,
+      "location_id": "1276533",
+      "location": "Belgaum, India",
+      "timezone": "Asia/Kolkata",
+      "sex": "M",
+      "type": "MG",
+      "profile": {
+        "num": [
+          "3",
+          "5"
+        ],
+        "text": [
+          "Martyr",
+          "Heretic"
+        ]
+      },
+      "cross": {
+        "name": "The Right Angle Cross of the Sleeping Phoenix",
+        "num": [
+          "55",
+          "59",
+          "34",
+          "20"
+        ]
+      },
+      "variables": [
+        "PRL",
+        "DRL"
+      ],
+      "save": true,
+      "active": false
+    }
+  },
+  "source_files": {
+    "reading_dir": "output/2026-05-16_124939_bulk2/readings/personal/55fc710b557ecfbce172a6def1194d33_Abdulmuiz",
+    "ravecard_file": "01_GET_ravecard_55fc710b557ecfbce172a6def1194d33_site_1.json"
+  },
+  "captured_at": "2026-05-16T12:55:32",
+  "normalised_at": "2026-05-16T11:08:35.718604+00:00"
+}
