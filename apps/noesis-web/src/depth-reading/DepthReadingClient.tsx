@@ -12,6 +12,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { DepthScene } from "./DepthScene";
+import { ProseReader } from "./ProseReader";
 import type { SectionData } from "./data/sections";
 
 interface DepthReadingClientProps {
@@ -120,9 +121,12 @@ export function DepthReadingClient({
         ↓ SCROLL · {sections.findIndex((s) => s.id === active.id) + 1} / {sections.length}
       </div>
 
-      {/* Click-modal — placeholder text-reveal pending GSAP inspiration */}
+      {/* Click-modal — codrops-driven text reveal:
+            • Headline: 3D char-stagger reveal on mount (OnScrollTextHighlight effect-1)
+            • Body: 3-4 sentence focus zone with blur-to-sharp scrub
+              (ScrollBlurTypography effect-2 inverted as IntersectionObserver) */}
       {open && (
-        <SectionModal
+        <ProseReader
           section={open}
           prose={openProse}
           onClose={() => setOpenSectionId(null)}
@@ -400,125 +404,3 @@ function ProgressDots({
   );
 }
 
-/** Modal that opens on plane click. Placeholder for now — full GSAP
- *  text-reveal lands once user provides inspiration. */
-function SectionModal({
-  section,
-  prose,
-  onClose,
-}: {
-  section: SectionData;
-  prose: string;
-  onClose: () => void;
-}) {
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
-    };
-    window.addEventListener("keydown", handler);
-    document.body.style.overflow = "hidden";
-    return () => {
-      window.removeEventListener("keydown", handler);
-      document.body.style.overflow = "";
-    };
-  }, [onClose]);
-
-  return (
-    <div
-      style={{
-        position: "fixed",
-        inset: 0,
-        zIndex: 100,
-        background: "rgba(7,11,29,0.92)",
-        backdropFilter: "blur(12px)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: "clamp(1rem, 3vw, 3rem)",
-      }}
-      onClick={onClose}
-    >
-      <div
-        onClick={(e) => e.stopPropagation()}
-        style={{
-          maxWidth: "min(56rem, 90vw)",
-          maxHeight: "80vh",
-          overflowY: "auto",
-          background: "var(--c-void, #070B1D)",
-          border: `1px solid ${section.accentColor}55`,
-          borderRadius: "8px",
-          padding: "clamp(1.5rem, 3vw, 3rem)",
-          position: "relative",
-          boxShadow: `0 0 80px ${section.accentColor}33`,
-        }}
-      >
-        <button
-          onClick={onClose}
-          aria-label="Close"
-          style={{
-            position: "absolute",
-            top: "1rem",
-            right: "1rem",
-            background: "transparent",
-            border: "none",
-            color: "var(--c-parchment, #F0EDE3)",
-            fontSize: "1.5rem",
-            cursor: "pointer",
-            opacity: 0.6,
-          }}
-        >
-          ×
-        </button>
-        <div
-          style={{
-            fontFamily: "var(--font-mono, 'SF Mono', monospace)",
-            fontSize: "0.75rem",
-            letterSpacing: "0.45em",
-            color: section.accentColor,
-            textTransform: "uppercase",
-            marginBottom: "1rem",
-          }}
-        >
-          {section.numeral} · {section.direction ?? "WITNESS"}
-        </div>
-        <h1
-          style={{
-            margin: "0 0 1rem",
-            fontFamily: "var(--font-display, 'Panchang', serif)",
-            fontWeight: 700,
-            fontSize: "clamp(1.75rem, 3vw, 2.75rem)",
-            color: "var(--c-parchment, #F0EDE3)",
-          }}
-        >
-          {section.title}
-        </h1>
-        <p
-          style={{
-            fontStyle: "italic",
-            color: "rgba(240,237,227,0.7)",
-            marginBottom: "2rem",
-          }}
-        >
-          {section.summary}
-        </p>
-        {/* TODO: Replace with GSAP text-reveal (3-4 sentence highlight scroll
-            per user spec) once inspiration lands. For now: plain prose. */}
-        <div
-          style={{
-            fontFamily: "var(--font-body, 'Satoshi', sans-serif)",
-            fontSize: "clamp(1rem, 1.05vw, 1.15rem)",
-            lineHeight: 1.7,
-            color: "var(--c-parchment, #F0EDE3)",
-            whiteSpace: "pre-wrap",
-          }}
-        >
-          {prose || (
-            <em style={{ opacity: 0.5 }}>
-              [Prose for this section will appear here once the soloLoader is wired.]
-            </em>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-}
