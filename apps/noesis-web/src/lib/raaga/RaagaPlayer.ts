@@ -14,6 +14,9 @@ import type { BreathName } from './v2/breaths/data';
 import type { Timbre } from './v2/samples/timbres';
 import { v2Enabled } from './v2/feature-flag';
 import { compose } from './v2/compose';
+import type { AlaapPhase } from './v2/alaap/types';
+import { deriveGamakas } from './v2/gamakas/derive';
+import { RAGA_META } from './raga-meta';
 
 export interface PlayOptions {
   // ── V1 (always honored) ────────────────────────────────────────────────
@@ -30,6 +33,12 @@ export interface PlayOptions {
   tala?: TalaName;
   breath?: BreathName;
   tanpura?: boolean;
+
+  // ── V2.5 alaap mode ────────────────────────────────────────────────────
+  /** Replace the swara sequence with a full alaap (vilambit→madhya→drut). */
+  alaap?: boolean;
+  /** Which phases to include. Defaults to all three. */
+  alaapPhases?: readonly AlaapPhase[];
 }
 
 type StrudelModule = typeof import('@strudel/web');
@@ -85,19 +94,28 @@ export class RaagaPlayer {
     await s.evaluate(code);
   }
 
-  /** V2 path — gamakas, timbres, tala, breath, optional tanpura. */
+  /** V2 path — gamakas, timbres, tala, breath, optional tanpura, optional alaap. */
   private async playV2(m: Melakarta, opts: PlayOptions): Promise<void> {
+    // Use explicit gamakas if provided; otherwise derive from rasa+dosha metadata.
+    let gamakas = opts.gamakas;
+    if (!gamakas || gamakas.length === 0) {
+      const rm = RAGA_META[m.num];
+      gamakas = deriveGamakas(m, rm?.rasa, rm?.dosha);
+    }
+
     const composed = compose({
       melakarta: m,
       rootHz: opts.rootHz,
       cps: opts.cps,
       direction: opts.direction,
       timbre: opts.timbre,
-      gamakas: opts.gamakas,
+      gamakas,
       defaultGamaka: opts.defaultGamaka,
       tala: opts.tala,
       breath: opts.breath,
       tanpura: opts.tanpura,
+      alaap: opts.alaap,
+      alaapPhases: opts.alaapPhases,
     });
     const s = await this.getStrudel();
     await s.evaluate(composed.ragaCode);
