@@ -17,7 +17,7 @@
 // witnessLayer prop can be passed when real data is wired through.
 
 import { motion, useReducedMotion } from "motion/react";
-import { SacredScene } from "../sacred-scene/SacredScene";
+import { DeferredSacredScene } from "../sacred-scene/DeferredSacredScene";
 
 export interface WitnessLayerData {
   title?: string;
@@ -173,7 +173,7 @@ export function WitnessLayerOpener({ witnessLayer }: WitnessLayerOpenerProps) {
           behind the chapter-0 spread. Sits at zIndex 0 with a translucent
           veil at zIndex 1 to preserve text readability. */}
       <div style={s.sceneBackdrop} aria-hidden="true">
-        <SacredScene kind="ambient" intensity={0.5} height="100%" />
+        <DeferredSacredScene kind="ambient" intensity={0.5} height="100%" />
       </div>
       <div style={s.sceneVeil} aria-hidden="true" />
       <div style={s.inner}>

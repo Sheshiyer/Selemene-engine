@@ -19,7 +19,7 @@
 import { motion, useInView, useReducedMotion } from "motion/react";
 import { useRef } from "react";
 import type { ChapterDirection } from "./ChapterScene";
-import { SacredScene } from "../sacred-scene/SacredScene";
+import { DeferredSacredScene } from "../sacred-scene/DeferredSacredScene";
 
 interface ChapterTransitionProps {
   fromPart: number;
@@ -99,7 +99,7 @@ export function ChapterTransition({
         }}
         aria-hidden="true"
       >
-        <SacredScene
+        <DeferredSacredScene
           kind="transition"
           intensity={inView ? 1.2 : 0}
           height="100%"

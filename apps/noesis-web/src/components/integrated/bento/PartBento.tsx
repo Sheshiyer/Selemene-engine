@@ -14,7 +14,7 @@ import { BentoCard } from "./BentoCard";
 import { BentoGrid } from "./BentoGrid";
 import { BentoChip } from "./BentoChip";
 import { BentoStat } from "./BentoStat";
-import { SacredScene } from "../sacred-scene/SacredScene";
+import { DeferredSacredScene } from "../sacred-scene/DeferredSacredScene";
 import type { SceneKind } from "../sacred-scene/presets";
 
 interface PartBentoProps {
@@ -166,7 +166,7 @@ export function PartBento({
               borderRadius: "inherit",
             }}
           >
-            <SacredScene kind={sceneKind} intensity={0.95} height="clamp(16rem, 32vw, 28rem)" />
+            <DeferredSacredScene kind={sceneKind} intensity={0.95} height="clamp(16rem, 32vw, 28rem)" />
           </div>
         </BentoCard>
 

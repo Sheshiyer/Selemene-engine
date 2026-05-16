@@ -54,7 +54,7 @@ import {
   SubjectCompendium,
   PartBento,
 } from "@/components/integrated/bento";
-import { SacredScene } from "@/components/integrated/sacred-scene";
+import { DeferredSacredScene } from "@/components/integrated/sacred-scene";
 import type { IntegratedReading, PassMetric } from "@/lib/integrated/loader";
 import type { Block } from "@/lib/integrated/parseBlocks";
 
@@ -472,7 +472,7 @@ export function IntegratedReadingView({ reading }: ViewProps) {
             pointerEvents: "none",
           }}
         >
-          <SacredScene kind="closing" intensity={0.7} height="100%" />
+          <DeferredSacredScene kind="closing" intensity={0.7} height="100%" />
         </div>
         {/* Soft veil for legibility. */}
         <div
