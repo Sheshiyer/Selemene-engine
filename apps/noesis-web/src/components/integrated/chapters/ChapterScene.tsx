@@ -149,14 +149,15 @@ export function ChapterScene({
       data-chapter-direction={direction}
       style={{
         position: "relative",
-        minHeight: "100vh",
+        // Let content size the chapter — no forced 100vh. Prose +
+        // bento + atmosphere stack naturally; verses stay reachable.
         width: "100%",
         display: "flex",
         flexDirection: "column",
         alignItems: "stretch",
         justifyContent: "flex-start",
-        paddingTop: "clamp(3rem, 8vh, 7rem)",
-        paddingBottom: "clamp(3rem, 8vh, 7rem)",
+        paddingTop: "clamp(2rem, 5vh, 4rem)",
+        paddingBottom: "clamp(2rem, 5vh, 4rem)",
         overflow: "hidden",
         scrollMarginTop: "0px",
         zIndex: 2,

@@ -45,8 +45,11 @@ function Verse({ children, anchor = false }: VerseProps) {
         reduced
           ? { opacity: 1, filter: "blur(0px)" }
           : {
-              opacity: inView ? 1 : anchor ? 0.45 : 0.22,
-              filter: inView ? "blur(0px)" : "blur(0.4px)",
+              // Default opacity raised from 0.22 → 0.55 so prose is
+              // always legibly visible (not "missing"). Illumination
+              // still bumps to 1.0 at viewport-center for focus rhythm.
+              opacity: inView ? 1 : anchor ? 0.75 : 0.55,
+              filter: inView ? "blur(0px)" : "blur(0.2px)",
             }
       }
       transition={{ duration: 0.6, ease: [0.2, 0.7, 0.2, 1] }}

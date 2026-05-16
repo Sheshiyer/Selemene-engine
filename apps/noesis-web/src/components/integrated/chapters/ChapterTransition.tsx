@@ -68,8 +68,11 @@ export function ChapterTransition({
       data-chapter-transition-to={toPart}
       style={{
         position: "relative",
-        height: "100vh",
-        minHeight: "100vh",
+        // Transitions are BRIEF visual flashes between Parts, not full
+        // chapter scenes. ~40vh keeps impact without dominating scroll
+        // or overlapping adjacent ChapterScenes.
+        height: "clamp(20rem, 40vh, 30rem)",
+        minHeight: "clamp(20rem, 40vh, 30rem)",
         width: "100%",
         display: "flex",
         flexDirection: "column",

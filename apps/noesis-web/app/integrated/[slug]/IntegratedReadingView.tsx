@@ -400,7 +400,35 @@ export function IntegratedReadingView({ reading }: ViewProps) {
                 }
               />
 
-              <VerseFlow blocks={pass.blocks} />
+              {/* ── READING — the actual prose, framed as a distinct
+                  beat so it doesn't read as "below the fold detail"
+                  after the bento. Eyebrow + max-width column + breathing
+                  padding. This is the chapter's WORDS. */}
+              <div
+                style={{
+                  width: "100%",
+                  maxWidth: "min(80ch, 92vw)",
+                  margin: "clamp(2rem, 4vw, 3.5rem) auto 0",
+                  padding: "clamp(1.25rem, 2vw, 1.75rem)",
+                  position: "relative",
+                  borderTop: "1px solid rgba(197,160,23,0.18)",
+                }}
+              >
+                <div
+                  style={{
+                    fontFamily: "var(--font-mono)",
+                    fontSize: "clamp(0.7rem, 0.62rem + 0.18vw, 0.82rem)",
+                    letterSpacing: "0.45em",
+                    textTransform: "uppercase",
+                    color: "var(--c-gold)",
+                    marginBottom: "clamp(1.25rem, 2.2vw, 2rem)",
+                    opacity: 0.78,
+                  }}
+                >
+                  Reading · Part {meta.romanNumeral}
+                </div>
+                <VerseFlow blocks={pass.blocks} />
+              </div>
             </ChapterScene>
 
             {!isLast && (
