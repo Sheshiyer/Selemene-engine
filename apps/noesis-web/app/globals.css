@@ -254,6 +254,25 @@ code, .mono, pre {
   50%      { opacity: 1;    filter: drop-shadow(0 0 14px rgba(16,181,167,0.75)); }
 }
 
+/* ── monopo saigon — Deep Ocean atmospheric animations ── */
+
+@keyframes deepOceanOrb {
+  0%, 100% { opacity: 0.14; transform: translate(-50%, -50%) scale(1);    filter: blur(64px); }
+  50%      { opacity: 0.22; transform: translate(-50%, -50%) scale(1.18); filter: blur(72px); }
+}
+
+@keyframes deepOceanScan {
+  0%   { transform: translateY(-2px); opacity: 0; }
+  8%   { opacity: 0.55; }
+  92%  { opacity: 0.55; }
+  100% { transform: translateY(260px); opacity: 0; }
+}
+
+@keyframes deepOceanFadeIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
 /* Respect reduced motion */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {

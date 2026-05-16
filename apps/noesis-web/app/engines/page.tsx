@@ -294,75 +294,73 @@ function ConstellationBg() {
   );
 }
 
-/* ── DX-26 — Constellation empty state ──────────────── */
-
-const EMPTY_RING_STARS = [
-  [60, 10], [85, 28], [95, 52], [78, 72], [55, 82],
-  [35, 72], [18, 52], [22, 28], [48, 18], [60, 44],
-] as const;
-const EMPTY_RING_LINES = [
-  [0,9],[0,1],[1,2],[2,3],[3,4],[4,5],[5,6],[6,7],[7,8],[8,0],[0,3],[0,5],[9,2],[9,7],
-] as const;
+/* ── DX-26 — Awaiting Calculation empty state ───────── */
 
 function EmptyState({ label, glyph }: { label: string; glyph: string }) {
   return (
     <div style={{
-      padding: "2.5rem 2rem",
-      border: "1px solid var(--line-mid)",
-      borderRadius: "var(--r-md)",
-      background: "radial-gradient(circle at 50% 10%, rgba(197,160,23,0.07), transparent 55%), var(--panel)",
+      padding: "4rem 2rem",
+      border: "1px solid rgba(255, 255, 255, 0.08)",
+      borderRadius: "10px",
+      background: "#000000",
       display: "flex",
       flexDirection: "column",
       alignItems: "center",
-      gap: "1.25rem",
+      gap: "1.5rem",
       textAlign: "center",
+      position: "relative",
+      overflow: "hidden",
+      animation: "deepOceanFadeIn 0.6s ease both",
     }}>
-      <svg
-        width="110" height="90" viewBox="0 0 110 90"
-        aria-hidden="true"
-        style={{ opacity: 0.45, animation: "constellationDrift 8s ease-in-out infinite" }}
-      >
-        {EMPTY_RING_LINES.map(([a, b], i) => (
-          <line
-            key={i}
-            x1={EMPTY_RING_STARS[a][0]} y1={EMPTY_RING_STARS[a][1]}
-            x2={EMPTY_RING_STARS[b][0]} y2={EMPTY_RING_STARS[b][1]}
-            stroke="rgba(197,160,23,0.35)" strokeWidth="0.6"
-          />
-        ))}
-        {EMPTY_RING_STARS.map(([cx, cy], i) => (
-          <circle
-            key={i} cx={cx} cy={cy}
-            r={i === 9 ? 5 : 2.5}
-            fill={i === 9 ? "rgba(16,181,167,0.7)" : "rgba(197,160,23,0.75)"}
-          />
-        ))}
-        <text
-          x="60" y="47" textAnchor="middle" dominantBaseline="middle"
-          fontSize="10" fill="rgba(197,160,23,0.6)"
-          fontFamily="sans-serif"
-        >{glyph}</text>
-      </svg>
+      {/* Atmospheric Deep Ocean orb — depth without shadows */}
+      <div aria-hidden style={{
+        position: "absolute",
+        top: "50%", left: "50%",
+        width: 320, height: 320,
+        borderRadius: "50%",
+        background: "linear-gradient(135deg, rgb(160, 224, 171) 0%, rgb(255, 172, 46) 50%, rgb(165, 45, 37) 100%)",
+        animation: "deepOceanOrb 6s ease-in-out infinite",
+        pointerEvents: "none",
+      }} />
+
+      {/* Glyph — etched on frosted surface */}
+      <div style={{
+        position: "relative",
+        width: 64, height: 64,
+        borderRadius: "50%",
+        border: "1px solid rgba(255, 255, 255, 0.12)",
+        background: "rgba(255, 255, 255, 0.03)",
+        display: "flex", alignItems: "center", justifyContent: "center",
+        backdropFilter: "blur(8px)",
+        fontSize: "1.5rem",
+        color: "rgba(255, 255, 255, 0.5)",
+      }} aria-hidden>
+        {glyph}
+      </div>
 
       <span style={{
-        fontFamily: "var(--font-display)",
-        fontSize: "0.68rem",
+        position: "relative",
+        fontFamily: "system-ui, -apple-system, sans-serif",
+        fontSize: "0.6875rem",
+        fontWeight: 400,
         textTransform: "uppercase",
-        letterSpacing: "0.14em",
-        color: "var(--signal)",
+        letterSpacing: "0.2em",
+        color: "#ffffff",
       }}>
         Awaiting Calculation
       </span>
 
       <p style={{
-        color: "var(--text-dim)",
-        fontSize: "0.875rem",
+        position: "relative",
+        color: "#6d6d6d",
+        fontSize: "0.9375rem",
         lineHeight: 1.65,
-        maxWidth: 360,
+        maxWidth: 380,
         margin: 0,
+        fontFamily: "system-ui, -apple-system, sans-serif",
       }}>
         Enter your birth data above and begin the{" "}
-        <span style={{ color: "var(--text-2)" }}>{label}</span>{" "}
+        <span style={{ color: "rgba(255, 255, 255, 0.45)" }}>{label}</span>{" "}
         ritual to reveal your cosmic blueprint.
       </p>
     </div>
