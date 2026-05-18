@@ -1,0 +1,35 @@
+{
+  "birth_data": {
+    "name": "Shekar ",
+    "date": "1959-12-08",
+    "time": "00:00:00",
+    "latitude": 13.0836939,
+    "longitude": 80.270186,
+    "timezone": "Asia/Kolkata"
+  },
+  "current_time": "2026-05-16T11:08:31.729201+00:00",
+  "location": {
+    "latitude": 13.0836939,
+    "longitude": 80.270186
+  },
+  "precision": "Standard",
+  "options": {
+    "humdes_reading_hash": "1c65bd620d390b87a03f067735c3d990",
+    "humdes_reading_code": "MG_4_6_b430723802",
+    "humdes_reading_type": "personal",
+    "humdes_person_index": 1,
+    "humdes_person_id": "1467ede17232e2d677bd3253022a9eaa",
+    "humdes_link": "",
+    "humdes_type_code": "MG",
+    "humdes_authority_short": "Emot.",
+    "humdes_variables": [
+      "PRR",
+      "DLR"
+    ],
+    "humdes_location_string": "Chennai, India",
+    "humdes_location_id": "1264527",
+    "humdes_sex": "M",
+    "geocode_source": "nominatim",
+    "geocode_display_name": "Chennai Corporation, Chennai, Tamil Nadu, India"
+  }
+}

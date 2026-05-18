@@ -1,0 +1,35 @@
+{
+  "birth_data": {
+    "name": "Vandana",
+    "date": "1994-09-07",
+    "time": "09:28:00",
+    "latitude": 28.6138954,
+    "longitude": 77.2090057,
+    "timezone": "Asia/Kolkata"
+  },
+  "current_time": "2026-05-16T11:08:30.360036+00:00",
+  "location": {
+    "latitude": 28.6138954,
+    "longitude": 77.2090057
+  },
+  "precision": "Standard",
+  "options": {
+    "humdes_reading_hash": "14a4936d1f552f96111dc17b522c9864",
+    "humdes_reading_code": "G_4_6_e4289045ad",
+    "humdes_reading_type": "personal",
+    "humdes_person_index": 1,
+    "humdes_person_id": "ca38d359a89425f5433eb85ade403111",
+    "humdes_link": "",
+    "humdes_type_code": "G",
+    "humdes_authority_short": "Sacr.",
+    "humdes_variables": [
+      "PRR",
+      "DRL"
+    ],
+    "humdes_location_string": "New Delhi, India",
+    "humdes_location_id": "1261481",
+    "humdes_sex": "F",
+    "geocode_source": "nominatim",
+    "geocode_display_name": "New Delhi, Delhi, India"
+  }
+}

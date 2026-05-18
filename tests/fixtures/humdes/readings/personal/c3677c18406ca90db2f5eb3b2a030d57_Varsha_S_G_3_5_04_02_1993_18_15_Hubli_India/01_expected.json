@@ -1,0 +1,48 @@
+{
+  "name": "Varsha S",
+  "birth_date": "1993-02-04",
+  "birth_time": "18:15:00",
+  "timezone": "Asia/Kolkata",
+  "latitude": 15.3518378,
+  "longitude": 75.1379848,
+  "expected": {
+    "type": "Generator",
+    "type_humdes_code": "G",
+    "profile": {
+      "conscious_line": 3,
+      "unconscious_line": 5,
+      "text": "3/5"
+    },
+    "authority": "Emotional",
+    "authority_humdes_label": "Emot.",
+    "variables": [
+      "PRR",
+      "DRR"
+    ],
+    "incarnation_cross": {
+      "name": "The Right Angle Cross of the Sphinx",
+      "gates": [
+        13,
+        7,
+        1,
+        2
+      ]
+    },
+    "personality_sun": {
+      "gate": 13
+    },
+    "personality_earth": {
+      "gate": 7
+    },
+    "design_sun": {
+      "gate": 1
+    },
+    "design_earth": {
+      "gate": 2
+    },
+    "active_channels": null,
+    "defined_centers": null,
+    "active_gates": null,
+    "definition": null
+  }
+}

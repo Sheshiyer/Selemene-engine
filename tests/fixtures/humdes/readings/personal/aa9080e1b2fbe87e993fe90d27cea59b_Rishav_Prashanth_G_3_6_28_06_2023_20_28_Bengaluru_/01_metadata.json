@@ -1,0 +1,73 @@
+{
+  "humdes_reading": {
+    "hash": "aa9080e1b2fbe87e993fe90d27cea59b",
+    "code": "G_3_6_2b82ee561f",
+    "name": "Rishav Prashanth, G, 3/6, 28.06.2023, 20:28, Bengaluru, India",
+    "type": "personal",
+    "person_count": 1
+  },
+  "person": {
+    "index": 1,
+    "humdes_person_id": "315a4128bc5dd11fc7d02753e10532fe",
+    "label": "Rishav Prashanth, G, 3/6, 28.06.2023, 20:28, Bengaluru, India",
+    "raw": {
+      "id": "315a4128bc5dd11fc7d02753e10532fe",
+      "data": "b5891359bd8a215ad443a3149c335cb9",
+      "label": "Rishav Prashanth, G, 3/6, 28.06.2023, 20:28, Bengaluru, India",
+      "labelList": {
+        "date": "28.06.2023",
+        "type": "Generator",
+        "profile": [
+          "3",
+          "6"
+        ],
+        "vars": [
+          "PRL",
+          "DRL"
+        ],
+        "authority": "Emot."
+      },
+      "name": "Rishav Prashanth",
+      "results": "",
+      "date": "2023-06-28",
+      "time": "20:28",
+      "age": 2,
+      "location_id": "1277333",
+      "location": "Bengaluru, India",
+      "timezone": "Asia/Kolkata",
+      "sex": "M",
+      "type": "G",
+      "profile": {
+        "num": [
+          "3",
+          "6"
+        ],
+        "text": [
+          "Martyr",
+          "Role Model"
+        ]
+      },
+      "cross": {
+        "name": "The Right Angle Cross of Service",
+        "num": [
+          "52",
+          "58",
+          "17",
+          "18"
+        ]
+      },
+      "variables": [
+        "PRL",
+        "DRL"
+      ],
+      "save": true,
+      "active": false
+    }
+  },
+  "source_files": {
+    "reading_dir": "output/2026-05-16_124939_bulk2/readings/personal/aa9080e1b2fbe87e993fe90d27cea59b_Rishav_Prashanth",
+    "ravecard_file": "01_GET_ravecard_aa9080e1b2fbe87e993fe90d27cea59b_site_1.json"
+  },
+  "captured_at": "2026-05-16T12:53:06",
+  "normalised_at": "2026-05-16T11:08:40.986752+00:00"
+}

@@ -1,0 +1,35 @@
+{
+  "birth_data": {
+    "name": "kevin",
+    "date": "1995-09-18",
+    "time": "13:00:00",
+    "latitude": 22.3053263,
+    "longitude": 70.8028377,
+    "timezone": "Asia/Kolkata"
+  },
+  "current_time": "2026-05-16T11:08:42.343130+00:00",
+  "location": {
+    "latitude": 22.3053263,
+    "longitude": 70.8028377
+  },
+  "precision": "Standard",
+  "options": {
+    "humdes_reading_hash": "e3b33d45f62382a7e0a992cdcbfe8e45",
+    "humdes_reading_code": "MG_3_5_d26578ba83",
+    "humdes_reading_type": "personal",
+    "humdes_person_index": 1,
+    "humdes_person_id": "a7cb2e84e280604442558d186aea2ec8",
+    "humdes_link": "",
+    "humdes_type_code": "MG",
+    "humdes_authority_short": "Emot.",
+    "humdes_variables": [
+      "PRR",
+      "DLR"
+    ],
+    "humdes_location_string": "Rajkot, India",
+    "humdes_location_id": "1258847",
+    "humdes_sex": "M",
+    "geocode_source": "nominatim",
+    "geocode_display_name": "Rajkot, Rajkot East Taluka, Rajkot, Gujarat, 360001, India"
+  }
+}

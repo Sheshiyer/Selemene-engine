@@ -1,0 +1,73 @@
+{
+  "humdes_reading": {
+    "hash": "f25e1bec25a5e09a4d752be96efe6ab4",
+    "code": "MG_5_2_4bbb2e3158",
+    "name": "Sneha Soni, MG, 5/2, 10.01.2002, 10:20, Bhopal, India",
+    "type": "personal",
+    "person_count": 1
+  },
+  "person": {
+    "index": 1,
+    "humdes_person_id": "b7873635be8aa4a7c987577e82808e1f",
+    "label": "Sneha Soni, MG, 5/2, 10.01.2002, 10:20, Bhopal, India",
+    "raw": {
+      "id": "b7873635be8aa4a7c987577e82808e1f",
+      "data": "3252746ba51053f454b20b7332e37af1",
+      "label": "Sneha Soni, MG, 5/2, 10.01.2002, 10:20, Bhopal, India",
+      "labelList": {
+        "date": "10.01.2002",
+        "type": "M. Generator",
+        "profile": [
+          "5",
+          "2"
+        ],
+        "vars": [
+          "PRR",
+          "DLL"
+        ],
+        "authority": "Emot."
+      },
+      "name": "Sneha Soni",
+      "results": "",
+      "date": "2002-01-10",
+      "time": "10:20",
+      "age": 24,
+      "location_id": "1275841",
+      "location": "Bhopal, India",
+      "timezone": "Asia/Kolkata",
+      "sex": "F",
+      "type": "MG",
+      "profile": {
+        "num": [
+          "5",
+          "2"
+        ],
+        "text": [
+          "Heretic",
+          "Hermit"
+        ]
+      },
+      "cross": {
+        "name": "The Left Angle Cross of Cycles",
+        "num": [
+          "54",
+          "53",
+          "32",
+          "42"
+        ]
+      },
+      "variables": [
+        "PRR",
+        "DLL"
+      ],
+      "save": true,
+      "active": false
+    }
+  },
+  "source_files": {
+    "reading_dir": "output/2026-05-16_124939_bulk2/readings/personal/f25e1bec25a5e09a4d752be96efe6ab4_Sneha_Soni",
+    "ravecard_file": "01_GET_ravecard_f25e1bec25a5e09a4d752be96efe6ab4_site_1.json"
+  },
+  "captured_at": "2026-05-16T12:55:20",
+  "normalised_at": "2026-05-16T11:08:43.800991+00:00"
+}

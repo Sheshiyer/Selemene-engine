@@ -1,0 +1,48 @@
+{
+  "name": "Manoj",
+  "birth_date": "1996-02-18",
+  "birth_time": "23:30:00",
+  "timezone": "Asia/Kolkata",
+  "latitude": 12.9767936,
+  "longitude": 77.590082,
+  "expected": {
+    "type": "ManifestingGenerator",
+    "type_humdes_code": "MG",
+    "profile": {
+      "conscious_line": 6,
+      "unconscious_line": 2,
+      "text": "6/2"
+    },
+    "authority": "Emotional",
+    "authority_humdes_label": "Emot.",
+    "variables": [
+      "PLL",
+      "DRL"
+    ],
+    "incarnation_cross": {
+      "name": "The Left Angle Cross of Industry",
+      "gates": [
+        30,
+        29,
+        34,
+        20
+      ]
+    },
+    "personality_sun": {
+      "gate": 30
+    },
+    "personality_earth": {
+      "gate": 29
+    },
+    "design_sun": {
+      "gate": 34
+    },
+    "design_earth": {
+      "gate": 20
+    },
+    "active_channels": null,
+    "defined_centers": null,
+    "active_gates": null,
+    "definition": null
+  }
+}

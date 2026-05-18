@@ -1,0 +1,35 @@
+{
+  "birth_data": {
+    "name": "Jenya",
+    "date": "1997-01-22",
+    "time": "15:00:00",
+    "latitude": 59.9606739,
+    "longitude": 30.1586551,
+    "timezone": "Europe/Moscow"
+  },
+  "current_time": "2026-05-16T11:08:20.782970+00:00",
+  "location": {
+    "latitude": 59.9606739,
+    "longitude": 30.1586551
+  },
+  "precision": "Standard",
+  "options": {
+    "humdes_reading_hash": "9df432b9b409596811075396135e5b1a",
+    "humdes_reading_code": "compatibility_d8b3507bd1",
+    "humdes_reading_type": "compatibility",
+    "humdes_person_index": 1,
+    "humdes_person_id": "8e41e4bafd350619c1f685c07251d8d8",
+    "humdes_link": "",
+    "humdes_type_code": "G",
+    "humdes_authority_short": "Sacr.",
+    "humdes_variables": [
+      "PLR",
+      "DLR"
+    ],
+    "humdes_location_string": "Leningrad, Russia",
+    "humdes_location_id": "498817",
+    "humdes_sex": "M",
+    "geocode_source": "nominatim",
+    "geocode_display_name": "Санкт-Петербург, Северо-Западный федеральный округ, Россия"
+  }
+}

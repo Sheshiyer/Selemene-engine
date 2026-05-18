@@ -1,0 +1,48 @@
+{
+  "name": "Manaswi Bhat",
+  "birth_date": "2008-07-15",
+  "birth_time": "18:12:00",
+  "timezone": "Asia/Kolkata",
+  "latitude": 14.0556503,
+  "longitude": 75.2380553,
+  "expected": {
+    "type": "Generator",
+    "type_humdes_code": "G",
+    "profile": {
+      "conscious_line": 3,
+      "unconscious_line": 5,
+      "text": "3/5"
+    },
+    "authority": "Sacral",
+    "authority_humdes_label": "Sacr.",
+    "variables": [
+      "PRL",
+      "DRL"
+    ],
+    "incarnation_cross": {
+      "name": "The Right Angle Cross of Maya",
+      "gates": [
+        62,
+        61,
+        42,
+        32
+      ]
+    },
+    "personality_sun": {
+      "gate": 62
+    },
+    "personality_earth": {
+      "gate": 61
+    },
+    "design_sun": {
+      "gate": 42
+    },
+    "design_earth": {
+      "gate": 32
+    },
+    "active_channels": null,
+    "defined_centers": null,
+    "active_gates": null,
+    "definition": null
+  }
+}

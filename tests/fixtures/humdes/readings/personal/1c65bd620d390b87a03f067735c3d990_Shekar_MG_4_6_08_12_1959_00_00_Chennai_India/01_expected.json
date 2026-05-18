@@ -1,0 +1,48 @@
+{
+  "name": "Shekar ",
+  "birth_date": "1959-12-08",
+  "birth_time": "00:00:00",
+  "timezone": "Asia/Kolkata",
+  "latitude": 13.0836939,
+  "longitude": 80.270186,
+  "expected": {
+    "type": "ManifestingGenerator",
+    "type_humdes_code": "MG",
+    "profile": {
+      "conscious_line": 4,
+      "unconscious_line": 6,
+      "text": "4/6"
+    },
+    "authority": "Emotional",
+    "authority_humdes_label": "Emot.",
+    "variables": [
+      "PRR",
+      "DLR"
+    ],
+    "incarnation_cross": {
+      "name": "The Right Angle Cross of Consciousness",
+      "gates": [
+        5,
+        35,
+        64,
+        63
+      ]
+    },
+    "personality_sun": {
+      "gate": 5
+    },
+    "personality_earth": {
+      "gate": 35
+    },
+    "design_sun": {
+      "gate": 64
+    },
+    "design_earth": {
+      "gate": 63
+    },
+    "active_channels": null,
+    "defined_centers": null,
+    "active_gates": null,
+    "definition": null
+  }
+}

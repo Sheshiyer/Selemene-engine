@@ -1,0 +1,73 @@
+{
+  "humdes_reading": {
+    "hash": "9a3a634072f43f5710aa4eaad7e50cfb",
+    "code": "P_1_3_81d971e6f2",
+    "name": "Shihab, P, 1/3, 16.09.2006, 05:36, Phayao, Thailand",
+    "type": "personal",
+    "person_count": 1
+  },
+  "person": {
+    "index": 1,
+    "humdes_person_id": "4a4d60b983db74a4c13d7ca9f8161b13",
+    "label": "Shihab, P, 1/3, 16.09.2006, 05:36, Phayao, Thailand",
+    "raw": {
+      "id": "4a4d60b983db74a4c13d7ca9f8161b13",
+      "data": "3606ae74a7e6830ba735b3c892e6d607",
+      "label": "Shihab, P, 1/3, 16.09.2006, 05:36, Phayao, Thailand",
+      "labelList": {
+        "date": "16.09.2006",
+        "type": "Projector",
+        "profile": [
+          "1",
+          "3"
+        ],
+        "vars": [
+          "PLR",
+          "DRR"
+        ],
+        "authority": "SelfProj."
+      },
+      "name": "Shihab",
+      "results": "",
+      "date": "2006-09-16",
+      "time": "05:36",
+      "age": 19,
+      "location_id": "1151426",
+      "location": "Phayao, Thailand",
+      "timezone": "Asia/Bangkok",
+      "sex": "M",
+      "type": "P",
+      "profile": {
+        "num": [
+          "1",
+          "3"
+        ],
+        "text": [
+          "Investigator",
+          "Martyr"
+        ]
+      },
+      "cross": {
+        "name": "The Right Angle Cross of Eden",
+        "num": [
+          "6",
+          "36",
+          "12",
+          "11"
+        ]
+      },
+      "variables": [
+        "PLR",
+        "DRR"
+      ],
+      "save": true,
+      "active": false
+    }
+  },
+  "source_files": {
+    "reading_dir": "output/2026-05-16_124939_bulk2/readings/personal/9a3a634072f43f5710aa4eaad7e50cfb_Shihab",
+    "ravecard_file": "01_GET_ravecard_9a3a634072f43f5710aa4eaad7e50cfb_site_1.json"
+  },
+  "captured_at": "2026-05-16T12:51:54",
+  "normalised_at": "2026-05-16T11:08:39.030865+00:00"
+}

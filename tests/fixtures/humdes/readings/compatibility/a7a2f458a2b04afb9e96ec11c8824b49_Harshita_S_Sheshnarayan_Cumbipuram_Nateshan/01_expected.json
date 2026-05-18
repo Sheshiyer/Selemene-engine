@@ -1,0 +1,48 @@
+{
+  "name": "Harshita S",
+  "birth_date": "1987-10-15",
+  "birth_time": "17:35:00",
+  "timezone": "Asia/Kolkata",
+  "latitude": 12.9767936,
+  "longitude": 77.590082,
+  "expected": {
+    "type": "Projector",
+    "type_humdes_code": "P",
+    "profile": {
+      "conscious_line": 1,
+      "unconscious_line": 4,
+      "text": "1/4"
+    },
+    "authority": "Splenic",
+    "authority_humdes_label": "Splen.",
+    "variables": [
+      "PLL",
+      "DLR"
+    ],
+    "incarnation_cross": {
+      "name": "The Right Angle Cross of Maya",
+      "gates": [
+        32,
+        42,
+        62,
+        61
+      ]
+    },
+    "personality_sun": {
+      "gate": null
+    },
+    "personality_earth": {
+      "gate": null
+    },
+    "design_sun": {
+      "gate": null
+    },
+    "design_earth": {
+      "gate": null
+    },
+    "active_channels": null,
+    "defined_centers": null,
+    "active_gates": null,
+    "definition": null
+  }
+}

@@ -1,0 +1,48 @@
+{
+  "name": "Arjun Kamath",
+  "birth_date": "1987-03-08",
+  "birth_time": "09:24:00",
+  "timezone": "Asia/Kolkata",
+  "latitude": 12.9767936,
+  "longitude": 77.590082,
+  "expected": {
+    "type": "ManifestingGenerator",
+    "type_humdes_code": "MG",
+    "profile": {
+      "conscious_line": 1,
+      "unconscious_line": 3,
+      "text": "1/3"
+    },
+    "authority": "Emotional",
+    "authority_humdes_label": "Emot.",
+    "variables": [
+      "PLR",
+      "DLL"
+    ],
+    "incarnation_cross": {
+      "name": "The Right Angle Cross of Rulership",
+      "gates": [
+        22,
+        47,
+        26,
+        45
+      ]
+    },
+    "personality_sun": {
+      "gate": 22
+    },
+    "personality_earth": {
+      "gate": 47
+    },
+    "design_sun": {
+      "gate": 26
+    },
+    "design_earth": {
+      "gate": 45
+    },
+    "active_channels": null,
+    "defined_centers": null,
+    "active_gates": null,
+    "definition": null
+  }
+}

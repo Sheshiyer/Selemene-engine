@@ -1,0 +1,35 @@
+{
+  "birth_data": {
+    "name": "James true",
+    "date": "1971-05-04",
+    "time": "22:36:00",
+    "latitude": 36.8320081,
+    "longitude": -76.297699,
+    "timezone": "America/New_York"
+  },
+  "current_time": "2026-05-16T11:08:09.882372+00:00",
+  "location": {
+    "latitude": 36.8320081,
+    "longitude": -76.297699
+  },
+  "precision": "Standard",
+  "options": {
+    "humdes_reading_hash": "9c39c4288cc15edc83ef39788fa9ecb8",
+    "humdes_reading_code": "business_f5242f5c87",
+    "humdes_reading_type": "business",
+    "humdes_person_index": 2,
+    "humdes_person_id": "e0e616c7ac4aa06e5f3a9a4c3077a141",
+    "humdes_link": "",
+    "humdes_type_code": "MG",
+    "humdes_authority_short": "Sacr.",
+    "humdes_variables": [
+      "PRL",
+      "DLR"
+    ],
+    "humdes_location_string": "Portsmouth, United States of America",
+    "humdes_location_id": "4779999",
+    "humdes_sex": "M",
+    "geocode_source": "nominatim",
+    "geocode_display_name": "Portsmouth, Virginia, United States"
+  }
+}

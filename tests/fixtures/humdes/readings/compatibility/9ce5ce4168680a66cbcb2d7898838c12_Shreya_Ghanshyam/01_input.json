@@ -1,0 +1,35 @@
+{
+  "birth_data": {
+    "name": "Shreya",
+    "date": "1993-04-25",
+    "time": "11:00:00",
+    "latitude": 19.054999,
+    "longitude": 72.8692035,
+    "timezone": "Asia/Kolkata"
+  },
+  "current_time": "2026-05-16T11:08:19.318276+00:00",
+  "location": {
+    "latitude": 19.054999,
+    "longitude": 72.8692035
+  },
+  "precision": "Standard",
+  "options": {
+    "humdes_reading_hash": "9ce5ce4168680a66cbcb2d7898838c12",
+    "humdes_reading_code": "compatibility_1de44d2393",
+    "humdes_reading_type": "compatibility",
+    "humdes_person_index": 1,
+    "humdes_person_id": "f2354a03219641380cf7846e1d4795d9",
+    "humdes_link": "",
+    "humdes_type_code": "M",
+    "humdes_authority_short": "Emot.",
+    "humdes_variables": [
+      "PLR",
+      "DLL"
+    ],
+    "humdes_location_string": "Mumbai, India",
+    "humdes_location_id": "1275339",
+    "humdes_sex": "F",
+    "geocode_source": "nominatim",
+    "geocode_display_name": "Mumbai, Mumbai Suburban District, Maharashtra, 400051, India"
+  }
+}

@@ -1,0 +1,48 @@
+{
+  "name": "Sahil Singh Sabharwal ",
+  "birth_date": "1992-03-14",
+  "birth_time": "02:22:00",
+  "timezone": "Asia/Kolkata",
+  "latitude": 12.9767936,
+  "longitude": 77.590082,
+  "expected": {
+    "type": "Generator",
+    "type_humdes_code": "G",
+    "profile": {
+      "conscious_line": 1,
+      "unconscious_line": 4,
+      "text": "1/4"
+    },
+    "authority": "Emotional",
+    "authority_humdes_label": "Emot.",
+    "variables": [
+      "PRL",
+      "DRR"
+    ],
+    "incarnation_cross": {
+      "name": "The Right Angle Cross of the Eden",
+      "gates": [
+        36,
+        6,
+        11,
+        12
+      ]
+    },
+    "personality_sun": {
+      "gate": null
+    },
+    "personality_earth": {
+      "gate": null
+    },
+    "design_sun": {
+      "gate": null
+    },
+    "design_earth": {
+      "gate": null
+    },
+    "active_channels": null,
+    "defined_centers": null,
+    "active_gates": null,
+    "definition": null
+  }
+}

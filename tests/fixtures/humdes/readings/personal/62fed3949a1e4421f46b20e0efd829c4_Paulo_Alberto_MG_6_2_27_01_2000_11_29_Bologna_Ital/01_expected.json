@@ -1,0 +1,48 @@
+{
+  "name": "Paulo Alberto ",
+  "birth_date": "2000-01-27",
+  "birth_time": "11:29:00",
+  "timezone": "Europe/Rome",
+  "latitude": 44.4938203,
+  "longitude": 11.3426327,
+  "expected": {
+    "type": "ManifestingGenerator",
+    "type_humdes_code": "MG",
+    "profile": {
+      "conscious_line": 6,
+      "unconscious_line": 2,
+      "text": "6/2"
+    },
+    "authority": "Sacral",
+    "authority_humdes_label": "Sacr.",
+    "variables": [
+      "PRR",
+      "DLR"
+    ],
+    "incarnation_cross": {
+      "name": "The Left Angle Cross of the Alpha",
+      "gates": [
+        41,
+        31,
+        44,
+        24
+      ]
+    },
+    "personality_sun": {
+      "gate": 41
+    },
+    "personality_earth": {
+      "gate": 31
+    },
+    "design_sun": {
+      "gate": 44
+    },
+    "design_earth": {
+      "gate": 24
+    },
+    "active_channels": null,
+    "defined_centers": null,
+    "active_gates": null,
+    "definition": null
+  }
+}

@@ -1,0 +1,73 @@
+{
+  "humdes_reading": {
+    "hash": "cc2eee004338a2048dbd40d4684dce99",
+    "code": "MG_2_4_715e3aaadd",
+    "name": "Joshua, MG, 2/4, 28.09.1998, 12:40, Kannur, India",
+    "type": "personal",
+    "person_count": 1
+  },
+  "person": {
+    "index": 1,
+    "humdes_person_id": "f355d2b323b9c19020ec32bcacab0ea4",
+    "label": "Joshua, MG, 2/4, 28.09.1998, 12:40, Kannur, India",
+    "raw": {
+      "id": "f355d2b323b9c19020ec32bcacab0ea4",
+      "data": "ad77deace7086885aa4665d09b0ef2f8",
+      "label": "Joshua, MG, 2/4, 28.09.1998, 12:40, Kannur, India",
+      "labelList": {
+        "date": "28.09.1998",
+        "type": "M. Generator",
+        "profile": [
+          "2",
+          "4"
+        ],
+        "vars": [
+          "PRR",
+          "DRR"
+        ],
+        "authority": "Emot."
+      },
+      "name": "Joshua",
+      "results": "",
+      "date": "1998-09-28",
+      "time": "12:40",
+      "age": 27,
+      "location_id": "1274987",
+      "location": "Kannur, India",
+      "timezone": "Asia/Kolkata",
+      "sex": "M",
+      "type": "MG",
+      "profile": {
+        "num": [
+          "2",
+          "4"
+        ],
+        "text": [
+          "Hermit",
+          "Opportunist"
+        ]
+      },
+      "cross": {
+        "name": "The Right Angle Cross of Service",
+        "num": [
+          "18",
+          "17",
+          "52",
+          "58"
+        ]
+      },
+      "variables": [
+        "PRR",
+        "DRR"
+      ],
+      "save": true,
+      "active": false
+    }
+  },
+  "source_files": {
+    "reading_dir": "output/2026-05-16_124939_bulk2/readings/personal/cc2eee004338a2048dbd40d4684dce99_Joshua",
+    "ravecard_file": "01_GET_ravecard_cc2eee004338a2048dbd40d4684dce99_site_1.json"
+  },
+  "captured_at": "2026-05-16T12:53:32",
+  "normalised_at": "2026-05-16T11:08:41.243278+00:00"
+}

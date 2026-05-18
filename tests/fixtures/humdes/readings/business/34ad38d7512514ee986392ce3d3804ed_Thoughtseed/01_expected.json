@@ -1,0 +1,48 @@
+{
+  "name": "Mohan Kumar ",
+  "birth_date": "1995-11-17",
+  "birth_time": "11:10:00",
+  "timezone": "Asia/Kolkata",
+  "latitude": 10.8071144,
+  "longitude": 78.6880939,
+  "expected": {
+    "type": "ManifestingGenerator",
+    "type_humdes_code": "MG",
+    "profile": {
+      "conscious_line": 6,
+      "unconscious_line": 3,
+      "text": "6/3"
+    },
+    "authority": "Emotional",
+    "authority_humdes_label": "Emot.",
+    "variables": [
+      "PLR",
+      "DLL"
+    ],
+    "incarnation_cross": {
+      "name": "The Left Angle Cross of Dedication",
+      "gates": [
+        43,
+        23,
+        29,
+        30
+      ]
+    },
+    "personality_sun": {
+      "gate": null
+    },
+    "personality_earth": {
+      "gate": null
+    },
+    "design_sun": {
+      "gate": null
+    },
+    "design_earth": {
+      "gate": null
+    },
+    "active_channels": null,
+    "defined_centers": null,
+    "active_gates": null,
+    "definition": null
+  }
+}

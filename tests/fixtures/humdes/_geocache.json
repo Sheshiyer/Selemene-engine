@@ -1,0 +1,122 @@
+{
+  "Bengaluru, India": {
+    "lat": 12.9767936,
+    "lng": 77.590082,
+    "display_name": "Bengaluru, Bangalore North, Bengaluru Urban, Karnataka, India"
+  },
+  "Tiruchirappalli, India": {
+    "lat": 10.8071144,
+    "lng": 78.6880939,
+    "display_name": "Tiruchirappalli, Tiruchchirāppalli, Tiruchirappalli, Tamil Nadu, India"
+  },
+  "Ahmedabad, India": {
+    "lat": 23.0215374,
+    "lng": 72.5800568,
+    "display_name": "Ahmedabad, Gujarat, 380001, India"
+  },
+  "Kannur, India": {
+    "lat": 11.8763836,
+    "lng": 75.3737973,
+    "display_name": "Kannur, Kerala, 670004, India"
+  },
+  "Portsmouth, United States of America": {
+    "lat": 36.8320081,
+    "lng": -76.297699,
+    "display_name": "Portsmouth, Virginia, United States"
+  },
+  "Prachuap Khiri Khan, Thailand": {
+    "lat": 12.0432669,
+    "lng": 99.7487235,
+    "display_name": "จังหวัดประจวบคีรีขันธ์, ประเทศไทย"
+  },
+  "New Delhi, India": {
+    "lat": 28.6138954,
+    "lng": 77.2090057,
+    "display_name": "New Delhi, Delhi, India"
+  },
+  "Amsterdam, Netherlands": {
+    "lat": 52.3730796,
+    "lng": 4.8924534,
+    "display_name": "Amsterdam, Noord-Holland, Nederland"
+  },
+  "Chennai, India": {
+    "lat": 13.0836939,
+    "lng": 80.270186,
+    "display_name": "Chennai Corporation, Chennai, Tamil Nadu, India"
+  },
+  "Mumbai, India": {
+    "lat": 19.054999,
+    "lng": 72.8692035,
+    "display_name": "Mumbai, Mumbai Suburban District, Maharashtra, 400051, India"
+  },
+  "Leningrad, Russia": {
+    "lat": 59.9606739,
+    "lng": 30.1586551,
+    "display_name": "Санкт-Петербург, Северо-Западный федеральный округ, Россия"
+  },
+  "Dubai, United Arab Emirates": {
+    "lat": 25.0742823,
+    "lng": 55.1885387,
+    "display_name": "دبي, الإمارات العربية المتحدة"
+  },
+  "Shanghai, China": {
+    "lat": 31.2312707,
+    "lng": 121.4700152,
+    "display_name": "上海市, 中国"
+  },
+  "Turnhout, Belgium": {
+    "lat": 51.328932,
+    "lng": 4.9299924,
+    "display_name": "Turnhout, Antwerpen, Vlaanderen, 2300, België / Belgique / Belgien"
+  },
+  "Ganjām, India": {
+    "lat": 19.6090068,
+    "lng": 84.7080633,
+    "display_name": "Ganjam, Odisha, India"
+  },
+  "Velur, India": {
+    "lat": 10.6392839,
+    "lng": 76.1557929,
+    "display_name": "Velur, Kunnamkulam, Thrissur, Kerala, 680601, India"
+  },
+  "Yala, Thailand": {
+    "lat": 6.3344846,
+    "lng": 101.1409694,
+    "display_name": "จังหวัดยะลา, ประเทศไทย"
+  },
+  "Belgaum, India": {
+    "lat": 15.8572666,
+    "lng": 74.5069343,
+    "display_name": "Belagavi, Belagavi taluku, Belagavi, Karnataka, 590001, India"
+  },
+  "Shimoga, India": {
+    "lat": 14.0556503,
+    "lng": 75.2380553,
+    "display_name": "Shimoga, Karnataka, India"
+  },
+  "Bologna, Italy": {
+    "lat": 44.4938203,
+    "lng": 11.3426327,
+    "display_name": "Bologna, Emilia-Romagna, Italia"
+  },
+  "Phayao, Thailand": {
+    "lat": 19.341673,
+    "lng": 100.1854539,
+    "display_name": "จังหวัดพะเยา, ประเทศไทย"
+  },
+  "Hubli, India": {
+    "lat": 15.3518378,
+    "lng": 75.1379848,
+    "display_name": "Hubballi, Hubballi Urban Taluku, Dharwad, Karnataka, 580020, India"
+  },
+  "Rajkot, India": {
+    "lat": 22.3053263,
+    "lng": 70.8028377,
+    "display_name": "Rajkot, Rajkot East Taluka, Rajkot, Gujarat, 360001, India"
+  },
+  "Bhopal, India": {
+    "lat": 23.2584857,
+    "lng": 77.401989,
+    "display_name": "Bhopal, Huzur Tahsil, Bhopal, Madhya Pradesh, 462001, India"
+  }
+}

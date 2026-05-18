@@ -1,0 +1,48 @@
+{
+  "name": "Shihab",
+  "birth_date": "2006-09-16",
+  "birth_time": "05:36:00",
+  "timezone": "Asia/Bangkok",
+  "latitude": 19.341673,
+  "longitude": 100.1854539,
+  "expected": {
+    "type": "Projector",
+    "type_humdes_code": "P",
+    "profile": {
+      "conscious_line": 1,
+      "unconscious_line": 3,
+      "text": "1/3"
+    },
+    "authority": "GCenter",
+    "authority_humdes_label": "SelfProj.",
+    "variables": [
+      "PLR",
+      "DRR"
+    ],
+    "incarnation_cross": {
+      "name": "The Right Angle Cross of Eden",
+      "gates": [
+        6,
+        36,
+        12,
+        11
+      ]
+    },
+    "personality_sun": {
+      "gate": 6
+    },
+    "personality_earth": {
+      "gate": 36
+    },
+    "design_sun": {
+      "gate": 12
+    },
+    "design_earth": {
+      "gate": 11
+    },
+    "active_channels": null,
+    "defined_centers": null,
+    "active_gates": null,
+    "definition": null
+  }
+}

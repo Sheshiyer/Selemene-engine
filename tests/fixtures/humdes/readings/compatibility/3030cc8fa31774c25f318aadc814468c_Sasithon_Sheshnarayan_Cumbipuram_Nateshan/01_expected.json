@@ -1,0 +1,48 @@
+{
+  "name": "Sasithon ",
+  "birth_date": "2001-08-25",
+  "birth_time": "18:00:00",
+  "timezone": "Asia/Bangkok",
+  "latitude": 12.0432669,
+  "longitude": 99.7487235,
+  "expected": {
+    "type": "ManifestingGenerator",
+    "type_humdes_code": "MG",
+    "profile": {
+      "conscious_line": 3,
+      "unconscious_line": 5,
+      "text": "3/5"
+    },
+    "authority": "Emotional",
+    "authority_humdes_label": "Emot.",
+    "variables": [
+      "PRR",
+      "DRL"
+    ],
+    "incarnation_cross": {
+      "name": "The Right Angle Cross of the Sleeping Phoenix",
+      "gates": [
+        59,
+        55,
+        20,
+        34
+      ]
+    },
+    "personality_sun": {
+      "gate": null
+    },
+    "personality_earth": {
+      "gate": null
+    },
+    "design_sun": {
+      "gate": null
+    },
+    "design_earth": {
+      "gate": null
+    },
+    "active_channels": null,
+    "defined_centers": null,
+    "active_gates": null,
+    "definition": null
+  }
+}

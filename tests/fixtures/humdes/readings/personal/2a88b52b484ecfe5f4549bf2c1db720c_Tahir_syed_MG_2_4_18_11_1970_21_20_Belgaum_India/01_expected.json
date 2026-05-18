@@ -1,0 +1,48 @@
+{
+  "name": "Tahir syed",
+  "birth_date": "1970-11-18",
+  "birth_time": "21:20:00",
+  "timezone": "Asia/Kolkata",
+  "latitude": 15.8572666,
+  "longitude": 74.5069343,
+  "expected": {
+    "type": "ManifestingGenerator",
+    "type_humdes_code": "MG",
+    "profile": {
+      "conscious_line": 2,
+      "unconscious_line": 4,
+      "text": "2/4"
+    },
+    "authority": "Emotional",
+    "authority_humdes_label": "Emot.",
+    "variables": [
+      "PRL",
+      "DRL"
+    ],
+    "incarnation_cross": {
+      "name": "The Right Angle Cross of Contagion",
+      "gates": [
+        14,
+        8,
+        29,
+        30
+      ]
+    },
+    "personality_sun": {
+      "gate": 14
+    },
+    "personality_earth": {
+      "gate": 8
+    },
+    "design_sun": {
+      "gate": 29
+    },
+    "design_earth": {
+      "gate": 30
+    },
+    "active_channels": null,
+    "defined_centers": null,
+    "active_gates": null,
+    "definition": null
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "birth_data": {
+    "name": "Akanksha ",
+    "date": "1992-04-14",
+    "time": "18:15:00",
+    "latitude": 12.9767936,
+    "longitude": 77.590082,
+    "timezone": "Asia/Kolkata"
+  },
+  "current_time": "2026-05-16T11:08:22.715039+00:00",
+  "location": {
+    "latitude": 12.9767936,
+    "longitude": 77.590082
+  },
+  "precision": "Standard",
+  "options": {
+    "humdes_reading_hash": "b2d39650f884baf8fda897875f09d1fc",
+    "humdes_reading_code": "compatibility_82330e8d6c",
+    "humdes_reading_type": "compatibility",
+    "humdes_person_index": 1,
+    "humdes_person_id": "6666f76a06d5bc47535eceeca4d25a39",
+    "humdes_link": "",
+    "humdes_type_code": "P",
+    "humdes_authority_short": "Splen.",
+    "humdes_variables": [
+      "PLL",
+      "DRL"
+    ],
+    "humdes_location_string": "Bengaluru, India",
+    "humdes_location_id": "1277333",
+    "humdes_sex": "F",
+    "geocode_source": "nominatim",
+    "geocode_display_name": "Bengaluru, Bangalore North, Bengaluru Urban, Karnataka, India"
+  }
+}

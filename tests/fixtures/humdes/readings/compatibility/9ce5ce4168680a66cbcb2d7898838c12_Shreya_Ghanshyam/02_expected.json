@@ -1,0 +1,48 @@
+{
+  "name": "Ghanshyam",
+  "birth_date": "1993-08-04",
+  "birth_time": "22:20:00",
+  "timezone": "Asia/Kolkata",
+  "latitude": 12.9767936,
+  "longitude": 77.590082,
+  "expected": {
+    "type": "ManifestingGenerator",
+    "type_humdes_code": "MG",
+    "profile": {
+      "conscious_line": 5,
+      "unconscious_line": 2,
+      "text": "5/2"
+    },
+    "authority": "Sacral",
+    "authority_humdes_label": "Sacr.",
+    "variables": [
+      "PRR",
+      "DRL"
+    ],
+    "incarnation_cross": {
+      "name": "The Left Angle Cross of Refinement",
+      "gates": [
+        33,
+        19,
+        2,
+        1
+      ]
+    },
+    "personality_sun": {
+      "gate": null
+    },
+    "personality_earth": {
+      "gate": null
+    },
+    "design_sun": {
+      "gate": null
+    },
+    "design_earth": {
+      "gate": null
+    },
+    "active_channels": null,
+    "defined_centers": null,
+    "active_gates": null,
+    "definition": null
+  }
+}

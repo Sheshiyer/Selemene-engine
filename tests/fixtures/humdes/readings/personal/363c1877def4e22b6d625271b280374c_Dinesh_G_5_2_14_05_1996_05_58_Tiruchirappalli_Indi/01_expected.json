@@ -1,0 +1,48 @@
+{
+  "name": "Dinesh",
+  "birth_date": "1996-05-14",
+  "birth_time": "05:58:00",
+  "timezone": "Asia/Kolkata",
+  "latitude": 10.8071144,
+  "longitude": 78.6880939,
+  "expected": {
+    "type": "Generator",
+    "type_humdes_code": "G",
+    "profile": {
+      "conscious_line": 5,
+      "unconscious_line": 2,
+      "text": "5/2"
+    },
+    "authority": "Emotional",
+    "authority_humdes_label": "Emot.",
+    "variables": [
+      "PRR",
+      "DLL"
+    ],
+    "incarnation_cross": {
+      "name": "The Left Angle Cross of Dedication",
+      "gates": [
+        23,
+        43,
+        30,
+        29
+      ]
+    },
+    "personality_sun": {
+      "gate": 23
+    },
+    "personality_earth": {
+      "gate": 43
+    },
+    "design_sun": {
+      "gate": 30
+    },
+    "design_earth": {
+      "gate": 29
+    },
+    "active_channels": null,
+    "defined_centers": null,
+    "active_gates": null,
+    "definition": null
+  }
+}

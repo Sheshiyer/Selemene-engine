@@ -1,0 +1,48 @@
+{
+  "name": "Vandana",
+  "birth_date": "1994-09-07",
+  "birth_time": "09:28:00",
+  "timezone": "Asia/Kolkata",
+  "latitude": 28.6138954,
+  "longitude": 77.2090057,
+  "expected": {
+    "type": "Generator",
+    "type_humdes_code": "G",
+    "profile": {
+      "conscious_line": 4,
+      "unconscious_line": 6,
+      "text": "4/6"
+    },
+    "authority": "Sacral",
+    "authority_humdes_label": "Sacr.",
+    "variables": [
+      "PRR",
+      "DRL"
+    ],
+    "incarnation_cross": {
+      "name": "The Right Angle Cross of Consciousness",
+      "gates": [
+        64,
+        63,
+        35,
+        5
+      ]
+    },
+    "personality_sun": {
+      "gate": 64
+    },
+    "personality_earth": {
+      "gate": 63
+    },
+    "design_sun": {
+      "gate": 35
+    },
+    "design_earth": {
+      "gate": 5
+    },
+    "active_channels": null,
+    "defined_centers": null,
+    "active_gates": null,
+    "definition": null
+  }
+}

@@ -1,0 +1,48 @@
+{
+  "name": "Gaurav",
+  "birth_date": "1990-07-25",
+  "birth_time": "07:30:00",
+  "timezone": "Asia/Kolkata",
+  "latitude": 13.0836939,
+  "longitude": 80.270186,
+  "expected": {
+    "type": "Projector",
+    "type_humdes_code": "P",
+    "profile": {
+      "conscious_line": 6,
+      "unconscious_line": 3,
+      "text": "6/3"
+    },
+    "authority": "Splenic",
+    "authority_humdes_label": "Splen.",
+    "variables": [
+      "PLR",
+      "DLL"
+    ],
+    "incarnation_cross": {
+      "name": "The Left Angle Cross of Distraction",
+      "gates": [
+        56,
+        60,
+        27,
+        28
+      ]
+    },
+    "personality_sun": {
+      "gate": 56
+    },
+    "personality_earth": {
+      "gate": 60
+    },
+    "design_sun": {
+      "gate": 27
+    },
+    "design_earth": {
+      "gate": 28
+    },
+    "active_channels": null,
+    "defined_centers": null,
+    "active_gates": null,
+    "definition": null
+  }
+}

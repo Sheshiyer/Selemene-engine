@@ -1,0 +1,73 @@
+{
+  "humdes_reading": {
+    "hash": "19d83694fbe3991563a9370216fba375",
+    "code": "business_29781d3296",
+    "name": "comp",
+    "type": "business",
+    "person_count": 3
+  },
+  "person": {
+    "index": 2,
+    "humdes_person_id": "b9f6b9504dbb02338986593e02c841fa",
+    "label": "Sheshnarayan Cumbipuram Nateshan, G, 2/4, 13.08.1991, 13:31, Bengaluru, India",
+    "raw": {
+      "id": "b9f6b9504dbb02338986593e02c841fa",
+      "data": "8c1111fc9114739be711c4b1aae40db5",
+      "label": "Sheshnarayan Cumbipuram Nateshan, G, 2/4, 13.08.1991, 13:31, Bengaluru, India",
+      "labelList": {
+        "date": "13.08.1991",
+        "type": "Generator",
+        "profile": [
+          "2",
+          "4"
+        ],
+        "vars": [
+          "PRL",
+          "DRL"
+        ],
+        "authority": "Sacr."
+      },
+      "name": "Sheshnarayan Cumbipuram Nateshan",
+      "results": "",
+      "date": "1991-08-13",
+      "time": "13:31",
+      "age": 34,
+      "location_id": "1277333",
+      "location": "Bengaluru, India",
+      "timezone": "Asia/Kolkata",
+      "sex": "M",
+      "type": "G",
+      "profile": {
+        "num": [
+          "2",
+          "4"
+        ],
+        "text": [
+          "Hermit",
+          "Opportunist"
+        ]
+      },
+      "cross": {
+        "name": "The Right Angle Cross of Explanation",
+        "num": [
+          "4",
+          "49",
+          "23",
+          "43"
+        ]
+      },
+      "variables": [
+        "PRL",
+        "DRL"
+      ],
+      "save": true,
+      "active": false
+    }
+  },
+  "source_files": {
+    "reading_dir": "output/2026-05-16_124939_bulk2/readings/business/19d83694fbe3991563a9370216fba375_comp",
+    "ravecard_file": "01_GET_ravecard_19d83694fbe3991563a9370216fba375_site_1.json"
+  },
+  "captured_at": "2026-05-16T13:03:26",
+  "normalised_at": "2026-05-16T11:08:02.382976+00:00"
+}

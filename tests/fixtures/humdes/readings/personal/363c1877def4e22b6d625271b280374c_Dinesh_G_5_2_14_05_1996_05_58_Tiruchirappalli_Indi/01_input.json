@@ -1,0 +1,35 @@
+{
+  "birth_data": {
+    "name": "Dinesh",
+    "date": "1996-05-14",
+    "time": "05:58:00",
+    "latitude": 10.8071144,
+    "longitude": 78.6880939,
+    "timezone": "Asia/Kolkata"
+  },
+  "current_time": "2026-05-16T11:08:33.778360+00:00",
+  "location": {
+    "latitude": 10.8071144,
+    "longitude": 78.6880939
+  },
+  "precision": "Standard",
+  "options": {
+    "humdes_reading_hash": "363c1877def4e22b6d625271b280374c",
+    "humdes_reading_code": "G_5_2_236246de17",
+    "humdes_reading_type": "personal",
+    "humdes_person_index": 1,
+    "humdes_person_id": "a297b1fe463955f7e859163836c58ae1",
+    "humdes_link": "",
+    "humdes_type_code": "G",
+    "humdes_authority_short": "Emot.",
+    "humdes_variables": [
+      "PRR",
+      "DLL"
+    ],
+    "humdes_location_string": "Tiruchirappalli, India",
+    "humdes_location_id": "1254388",
+    "humdes_sex": "M",
+    "geocode_source": "nominatim",
+    "geocode_display_name": "Tiruchirappalli, Tiruchchirāppalli, Tiruchirappalli, Tamil Nadu, India"
+  }
+}
