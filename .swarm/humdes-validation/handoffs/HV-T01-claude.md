@@ -2,6 +2,12 @@
 
 > Self-contained handoff packet. Read this only, then begin work.
 
+**Status:** Resolved — documented as known divergence (option b). Selemene's
+strict classifier is canonically correct; humdes' MG label for 7 fixtures is
+internally inconsistent with humdes' own type-mechanics prose. See the new
+"MG/G boundary decision" section in `tests/fixtures/humdes/README.md` for the
+full trace and reasoning. No code change to `analysis.rs` was needed.
+
 ## Issue
 [#853 — HD engine: investigate 7 MG-vs-Generator classification mismatches](https://github.com/Sheshiyer/Selemene-engine/issues/853)
 

@@ -67,11 +67,112 @@ Field-by-field accuracy vs humdes ground truth:
 | type                 | 82 / 89   | 7 cases of MG-vs-G classification disagreement |
 
 The 7 type disagreements all match the same pattern: humdes labels
-"ManifestingGenerator", Selemene engine labels "Generator". This is a
-**known taxonomy boundary** in HD software — humdes is permissive (any G
-with a defined motor-to-Throat is MG), Selemene is strict (G is default,
-MG requires specific channel configuration). Documenting this divergence
-is itself a finding worth reviewing.
+"ManifestingGenerator", Selemene engine labels "Generator". See
+"MG/G boundary decision" below for the resolution.
+
+## MG/G boundary decision
+
+**Decision (HV-T01, issue #853):** Selemene's strict classifier is
+**canonically correct**. The 7 humdes "MG" labels are accepted as a
+known classifier divergence, not as Selemene bugs. No code change to
+`crates/engine-human-design/src/analysis.rs` is required.
+
+### The canonical definition
+
+Ra Uru Hu's original Human Design typology defines a Manifesting
+Generator as a chart with:
+
+1. The **Sacral Centre defined**, AND
+2. The **Throat Centre connected by a defined channel to one of the
+   four motor centres** — Sacral, Heart, Solar Plexus, or Root.
+
+Humdes' own mechanics-tab prose agrees verbatim with this definition.
+From the mechanics body for fixture `c517b66135` (`personal/Ghanshyam`):
+
+> "The Manifesting Generator has a defined Sacral Centre in the Rave
+> Chart, and the Throat is always connected by Channels to at least one
+> of the four motors — the Sacral, the Heart Centre, the Solar Plexus
+> or the Root."
+
+Selemene's `determine_type` + `is_throat_connected_to_motor` enforce
+exactly this rule (motor centres are explicitly `Heart | SolarPlexus |
+Root | Sacral`). Selemene returns `Generator` whenever the throat is
+defined but connected only to non-motor centres (Ajna, Spleen, G,
+Head). This is faithful to the original system.
+
+### Why the 7 fixtures don't qualify
+
+For each of the 7 disagreements, the engine output shows the Throat is
+defined but **none** of the throat-touching channels reach a motor
+centre:
+
+| Fixture | Throat channels found | Motors touching Throat |
+|---|---|---|
+| `compatibility/9ce5ce4168/2` | 17-62 (Ajna), 48-16 (Spleen) | none |
+| `family/0e2d49dced/2`         | 17-62 (Ajna), 48-16 (Spleen) | none |
+| `personal/2a88b52b48/1`       | 8-1 (G)                       | none |
+| `personal/62fed3949a/1`       | 33-13 (G)                     | none |
+| `personal/a2b9b1f2b8/1`       | 17-62 (Ajna), 48-16 (Spleen) | none |
+| `personal/c517b66135/1`       | 17-62 (Ajna), 48-16 (Spleen) | none |
+| `personal/fd3fcad39b/1`       | 17-62 (Ajna), 48-16 (Spleen) | none |
+
+Concretely for `c517b66135` (Ghanshyam, the worked example): defined
+centres are `{Ajna, Throat, Sacral, Spleen, Root, G}`; the four active
+channels are `17-62` (Ajna↔Throat), `48-16` (Spleen↔Throat), `5-15`
+(Sacral↔G) and `32-54` (Spleen↔Root). There is **no path** — direct
+**or transitive** — from Sacral to Throat through motor centres. The
+Sacral connects only to G; the Throat connects only to Ajna and
+Spleen. Per Ra's typology this is a pure Generator with a defined
+Throat, not a Manifesting Generator.
+
+The recurring pattern (5 of 7 fixtures share the same gate signature,
+suggesting these are the same person captured in multiple readings) is
+the **48-16 Spleen-to-Throat channel** ("Wavelength"). Spleen is an
+awareness centre, not a motor — so its presence doesn't satisfy the
+MG criterion regardless of how broadly the rule is read.
+
+### Why humdes labels these as MG anyway
+
+Humdes' classifier is permissive in a way their own descriptive text
+isn't: empirically it labels a chart MG whenever **the Sacral is
+defined and the Throat has any active channel**, regardless of which
+centre that channel reaches. This is internally inconsistent (their
+prose says "one of the four motors") but matches the labels on the
+ground.
+
+We do not match humdes' label here because:
+
+1. It contradicts Ra Uru Hu's foundational definition of Type.
+2. It contradicts humdes' own type-description prose, which Selemene's
+   logic agrees with verbatim.
+3. Selemene's strict rule preserves the meaningful distinction between
+   "energy type with manifesting aura" (true MG) and "Generator who
+   happens to have a defined Throat" (just a Generator). Collapsing
+   these two erases the typology's clinical value.
+
+### Operational consequences
+
+- The validation harness's `type` field will continue to report
+  82/89 (92.1%) when run against the humdes corpus. This is the
+  ceiling for that corpus; further increases on this field require
+  switching to a stricter ground-truth source.
+- The HV-T01 investigation explicitly accepts this gap. Any future
+  drift below 82/89 is a real regression in Selemene and should be
+  investigated.
+- If a downstream consumer needs to mirror humdes' permissive
+  classification (e.g. for a side-by-side comparison UI), add a
+  separate `humdes_compat_type` field rather than weakening the
+  canonical `hd_type` field. Don't touch `analysis.rs::determine_type`.
+
+### Reproducing the trace
+
+The seven fixtures above were inspected by running the HD engine
+against each via `engine_human_design::generate_hd_chart` and dumping
+defined centres + active channels. The same can be reproduced by
+loading any of the fixture `01_input.json` files into the engine
+through `HumanDesignEngine::calculate` and reading the
+`centers`/`channels` keys of the JSON result. The validation report
+itself (above) emits the seven fixture ids.
 
 ## Training-data backend design
 
