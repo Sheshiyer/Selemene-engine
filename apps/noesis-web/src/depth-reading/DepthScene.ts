@@ -24,6 +24,7 @@
 
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
+import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 import type { SectionData } from "./data/sections";
 import { DepthTrail } from "./DepthTrail";
 import { DepthBubbles } from "./DepthBubbles";
@@ -57,14 +58,26 @@ export class DepthScene {
   private scrollVelocity = 0;
   private cameraZTarget = 6;
   private cameraZCurrent = 6;
+
+  // ─── Intro animation state ───────────────────────────────────────────
+  // playIntro() is called from React when the loading shader starts to
+  // fade out. The plane group eases from a small/distant pose to its
+  // natural pose over `introDuration` seconds, so the cards appear to
+  // float into existence behind the dissolving shader.
+  private introPlaying = false;
+  private introStartTime = 0;
+  private introDuration = 1.4;
   private planeGap = 6; // distance in Z between consecutive planes
 
   // Parallax / breath
   private pointerTarget = new THREE.Vector2(0, 0);
   private pointerCurrent = new THREE.Vector2(0, 0);
-  private parallaxAmount = 0.18;
+  // Lowered for less-aggressive zoom + hover response per user feedback —
+  // the landmarks should feel like compact intimate objects, not over-
+  // scaled "lean-in" hero pieces.
+  private parallaxAmount = 0.08;
   private parallaxSmoothing = 0.08;
-  private breathAmplitude = 0.04;
+  private breathAmplitude = 0.025;
 
   // Background tint morph
   private backgroundCurrent = new THREE.Color("#070B1D");
@@ -72,6 +85,16 @@ export class DepthScene {
 
   // Active plane tracking
   private activeIndex = 0;
+
+  // ─── Texture loader + 4-view rotation state ────────────────────────────
+  // Each plane attempts to load up to 4 view PNGs (front/left/back/right).
+  // When the active plane is detected, its material.map is swapped between
+  // the 4 textures based on pointer.x (rotating the user "around" the
+  // landmark). Missing views fall back to "front" silently.
+  private textureLoader = new THREE.TextureLoader();
+  // Tracks the last "view" key applied per plane index to avoid setting
+  // material.needsUpdate every frame for the same texture.
+  private lastViewKey: Array<"front" | "left" | "back" | "right" | null> = [];
 
   // ─── Trail + bubbles + wrap-around loop ───────────────────────────────
   private trail: DepthTrail;
@@ -122,6 +145,11 @@ export class DepthScene {
     });
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
+    // ─── Tone mapping — without this, PBR materials in a black void
+    //     crush to flat-dark. ACES Filmic + slight overexposure pulls
+    //     midtones out so bronze/gold actually reads as metal. ─────────
+    this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    this.renderer.toneMappingExposure = 1.25;
 
     this.planeGroup = new THREE.Group();
     this.scene.add(this.planeGroup);
@@ -144,11 +172,34 @@ export class DepthScene {
     });
     this.scene.add(this.trail.group);
     this.scene.add(this.bubbles.group);
-    // Ambient + directional light so the trail's MeshStandardMaterial picks up rim shading
-    this.scene.add(new THREE.AmbientLight(0xffffff, 0.45));
-    const keyLight = new THREE.DirectionalLight(0xfff5e0, 0.55);
-    keyLight.position.set(2, 3, 5);
+    // ─── 3-point lighting tuned for PBR meshes in deep void ───────────
+    // Without a real key + rim, the GLBs read as muddy unlit blobs
+    // because the background and the material are both near-black.
+    // Key: warm directional from front-top-right (the "sun").
+    // Rim: cool back-light from behind so the silhouette glows against
+    //      the void instead of disappearing into it.
+    // Fill: weak under-light + ambient bloom to keep shadows readable.
+    this.scene.add(new THREE.AmbientLight(0xfff8e7, 0.55));
+    const keyLight = new THREE.DirectionalLight(0xffeac4, 1.35);
+    keyLight.position.set(3, 4, 5);
     this.scene.add(keyLight);
+    const rimLight = new THREE.DirectionalLight(0x8aa6ff, 0.85);
+    rimLight.position.set(-3, 1, -4);
+    this.scene.add(rimLight);
+    const fillLight = new THREE.DirectionalLight(0xd9d2ff, 0.35);
+    fillLight.position.set(0, -3, 3);
+    this.scene.add(fillLight);
+
+    // ─── Environment map — PBR materials need *something* to reflect,
+    //     otherwise metalness > 0 looks like dead matte plastic. The
+    //     PMREMGenerator + RoomEnvironment combo from three's examples
+    //     gives us a soft procedural studio without any HDR file. ─────
+    {
+      const pmrem = new THREE.PMREMGenerator(this.renderer);
+      const envScene = new RoomEnvironment();
+      this.scene.environment = pmrem.fromScene(envScene, 0.04).texture;
+      pmrem.dispose();
+    }
 
     this.clock = new THREE.Clock();
 
@@ -180,17 +231,25 @@ export class DepthScene {
 
   /** Build the 15 planes from section data — colored, no textures yet. */
   private buildPlanes() {
-    const geo = new THREE.PlaneGeometry(2.6, 3.4, 1, 1);
+    // Square geometry matches the 1024×1024 PNG silhouettes exactly so
+    // the void-black surrounding each rendered subject blends pixel-
+    // perfect with the scene background. Sized down from 3.4 to 2.2
+    // per user feedback — the previous size felt over-zoomed and
+    // crowded the canvas; this leaves room for interaction.
+    const geo = new THREE.PlaneGeometry(2.2, 2.2, 1, 1);
     this.sections.forEach((section, i) => {
+      // Start the plane FULLY TRANSPARENT (alpha 0) — invisible until
+      // the PNG texture lands. No colored "box" backdrop is shown at
+      // any point. The PNG itself is the visual; we never want to see
+      // the underlying plane material color.
       const mat = new THREE.MeshBasicMaterial({
-        color: new THREE.Color(section.accentColor),
+        color: 0xffffff,
         transparent: true,
-        opacity: 0.92,
+        opacity: 0, // hidden until PNG texture promotes
         side: THREE.DoubleSide,
+        depthWrite: false, // prevents transparent planes from occluding each other
       });
-      // Add a soft inner gradient via vertex colors? For MVP keep flat.
       const mesh = new THREE.Mesh(geo, mat);
-      // Position: x from data, y centered, z derived from index
       mesh.position.set(
         section.position.x * 2.5,
         section.position.y,
@@ -201,36 +260,70 @@ export class DepthScene {
       mesh.userData.baseColor = new THREE.Color(section.accentColor);
       mesh.userData.backgroundColor = new THREE.Color(section.backgroundColor);
 
-      // A subtle rim plane behind each — slightly larger, lower opacity,
-      // tinted with blob1Color. Gives depth without textures.
-      const rimMat = new THREE.MeshBasicMaterial({
-        color: new THREE.Color(section.blob1Color),
-        transparent: true,
-        opacity: 0.18,
-        side: THREE.DoubleSide,
-      });
-      const rim = new THREE.Mesh(
-        new THREE.PlaneGeometry(3.4, 4.2, 1, 1),
-        rimMat,
-      );
-      rim.position.set(0, 0, -0.05);
-      mesh.add(rim);
-
       this.planeGroup.add(mesh);
       this.planes.push(mesh);
+      this.lastViewKey.push(null);
 
-      // ─── Lazy-load Meshy GLB if section has one. The colored plane is
-      //     the SSR-safe placeholder; when the GLB lands we add it as a
-      //     child of the plane (inheriting its position + section userData).
-      //     The plane stays mounted as a fallback in case the GLB fails. ──
-      if (section.meshPath) {
-        this.loadMeshFor(section, mesh);
-      }
+      // ─── Load the section's PNG view textures. The plane stays
+      //     invisible (opacity 0) until -front.png lands, at which
+      //     point the material is promoted to textured mode.
+      this.loadViewTexturesFor(section.id, mesh);
+
+      // ─── Legacy: Meshy GLB pipeline. The code path is preserved
+      //     (`loadMeshFor`) but no longer invoked — we're 100% on PNG
+      //     textures now. If you want GLBs back, restore the
+      //     `if (section.meshPath) this.loadMeshFor(...)` call here.
     });
   }
 
+  /** Attempt to load up to 4 view textures for a section. Stores the
+   *  loaded set on the plane's `userData.viewTextures`. Promotes the
+   *  material to textured mode when "front" lands. Silently ignores
+   *  views that 404. */
+  private loadViewTexturesFor(sectionId: string, mesh: THREE.Mesh) {
+    const views: Array<"front" | "left" | "back" | "right"> = [
+      "front",
+      "left",
+      "back",
+      "right",
+    ];
+    mesh.userData.viewTextures = {} as Record<string, THREE.Texture>;
+    for (const v of views) {
+      const url = `/depth-reading/images/${sectionId}-${v}.png`;
+      this.textureLoader.load(
+        url,
+        (tex) => {
+          tex.colorSpace = THREE.SRGBColorSpace;
+          tex.anisotropy = 8;
+          (mesh.userData.viewTextures as Record<string, THREE.Texture>)[v] = tex;
+          // Promote to textured mode when front lands. Keep transparent
+          // = true so the per-frame focus-fade in tick() can modulate
+          // opacity (only the closest-to-active plane stays fully lit).
+          if (v === "front") {
+            const mat = mesh.material as THREE.MeshBasicMaterial;
+            mat.map = tex;
+            mat.color.set(0xffffff); // clear accent tint — show PNG color as-is
+            mat.transparent = true; // required for the focus-fade
+            mat.needsUpdate = true;
+          }
+        },
+        undefined,
+        () => {
+          // 404 or load failure — silently skip; pointer rotation will
+          // fall back to "front" for any missing views.
+        },
+      );
+    }
+  }
+
+  /** Per-frame Y-rotation registry — GLB meshes added here auto-rotate
+   *  slowly so the viewer perceives them as 3D, not flat posters. */
+  private rotatingMeshes: Array<{ obj: THREE.Object3D; speed: number }> = [];
+
   /** Async load a section's GLB and attach it to its plane. Apply per-
-   *  section meshTransform overrides (scale, rotation, position). */
+   *  section meshTransform overrides (scale, rotation, position). On
+   *  successful load the colored plane + rim plane are HIDDEN so the
+   *  GLB stands alone — no card frame around it. */
   private async loadMeshFor(section: SectionData, planeMesh: THREE.Mesh) {
     if (!section.meshPath) return;
     const loader = new GLTFLoader();
@@ -254,22 +347,60 @@ export class DepthScene {
           t.position.z ?? 0,
         );
       }
-      // Make sure the GLB casts no shadow + accepts the scene's lights
+      // ─── Override the GLB's baked Hunyuan textures with palette-driven
+      //     polished-metal materials. Hunyuan bakes albedo from the
+      //     ChatGPT-generated reference image, which lands as muddy bronze
+      //     in the void. We want each section to read in its cardinal
+      //     color (gold / violet / indigo / emerald) as if cast in
+      //     polished bronze. Keep normal maps so surface detail survives.
+      const accentColor = (planeMesh.userData.baseColor as THREE.Color) ?? new THREE.Color("#C5A017");
       root.traverse((node) => {
         if ((node as THREE.Mesh).isMesh) {
           const m = node as THREE.Mesh;
           m.castShadow = false;
           m.receiveShadow = false;
           m.userData.sectionId = section.id;
+          // Preserve the original normal map (surface micro-detail) if present
+          const old = m.material as THREE.MeshStandardMaterial;
+          const normalMap = old?.normalMap ?? null;
+          const newMat = new THREE.MeshStandardMaterial({
+            color: accentColor,
+            metalness: 0.85,
+            roughness: 0.28,
+            normalMap,
+            // envMap inherits from scene.environment automatically when null
+            envMapIntensity: 1.15,
+          });
+          m.material = newMat;
+          // Old material's textures can be GC'd
+          if (old && old !== newMat) {
+            old.dispose?.();
+          }
         }
       });
       // Attach to the plane: GLB rides the plane's transform + breath
       planeMesh.add(root);
-      // Once the GLB is in, fade the colored plane to lower opacity so
-      // it acts as a back-shadow / atmosphere rather than competing
+
+      // ─── Keep a FAINT colored backdrop behind the mesh so the eye has
+      //     something to anchor against in the void. Setting to 0 made
+      //     the mesh float in nothing and read as a hovering sticker.
+      //     0.08 gives a barely-there color halo. ─────────────────────
       const planeMat = planeMesh.material as THREE.MeshBasicMaterial;
-      planeMat.opacity = 0.18;
+      planeMat.opacity = 0.08;
+      planeMat.transparent = true;
       planeMat.needsUpdate = true;
+      // The rim plane was added as a child during buildPlanes(). Now
+      // that the GLB is here, hide it too.
+      planeMesh.children.forEach((child) => {
+        if (child === root) return; // don't hide the GLB itself
+        if (child instanceof THREE.Mesh) {
+          child.visible = false;
+        }
+      });
+
+      // ─── Register the GLB for slow auto-rotation so the eye reads it
+      //     as 3D, not a flat poster. Subtle — 0.15 rad/s on Y axis. ───
+      this.rotatingMeshes.push({ obj: root, speed: 0.15 });
     } catch (err) {
       // Silent fallback — colored plane stays visible. Most common cause
       // is GLB not yet uploaded; we'll see this for any meshPath that
@@ -283,7 +414,20 @@ export class DepthScene {
     if (this.isRunning || this.isDisposed) return;
     this.isRunning = true;
     this.clock.start();
+    // Pre-position the plane group at the intro "from" pose so the very
+    // first paint (before the loader fades) is already coherent: small
+    // + pushed back. playIntro() will animate it from here to identity.
+    this.planeGroup.scale.setScalar(0.55);
+    this.planeGroup.position.z = -6;
     this.tick();
+  }
+
+  /** Begin the float-in animation. Typically called by the React parent
+   *  the moment the loading shader starts to fade out. */
+  playIntro() {
+    if (!this.isRunning) return;
+    this.introPlaying = true;
+    this.introStartTime = this.clock.elapsedTime;
   }
 
   stop() {
@@ -419,11 +563,31 @@ export class DepthScene {
       plane.position.z = z;
     });
 
+    // ─── Intro float-in ────────────────────────────────────────────────
+    // Eases planeGroup.scale and planeGroup.position.z from a small/far
+    // pose to identity. Runs once after playIntro() is called by the
+    // React parent (i.e. when the loading shader starts to fade out).
+    if (this.introPlaying) {
+      const tNorm = Math.min(1, (elapsed - this.introStartTime) / this.introDuration);
+      // Cubic ease-out — fast settle, soft landing
+      const ease = 1 - Math.pow(1 - tNorm, 3);
+      const scale = 0.55 + (1 - 0.55) * ease;
+      this.planeGroup.scale.setScalar(scale);
+      this.planeGroup.position.z = -6 + 6 * ease;
+      if (tNorm >= 1) {
+        this.introPlaying = false;
+        this.planeGroup.scale.setScalar(1);
+        this.planeGroup.position.z = 0;
+      }
+    }
+
     // Pointer parallax — group tilts slightly toward pointer
     this.pointerCurrent.lerp(this.pointerTarget, this.parallaxSmoothing);
-    this.planeGroup.rotation.y = this.pointerCurrent.x * 0.08;
-    this.planeGroup.rotation.x = -this.pointerCurrent.y * 0.05;
-    // Subtle group x-shift for parallax
+    // Halved rotation multipliers per user feedback — hover tilt was
+    // too aggressive. Group rotates by ~0.04 rad max instead of 0.08.
+    this.planeGroup.rotation.y = this.pointerCurrent.x * 0.04;
+    this.planeGroup.rotation.x = -this.pointerCurrent.y * 0.025;
+    // Subtle group x-shift for parallax (additive to intro position.z)
     this.planeGroup.position.x = -this.pointerCurrent.x * this.parallaxAmount * 0.3;
 
     // Breath — every plane subtly scales 4:7:8 cycle (19s period)
@@ -436,13 +600,48 @@ export class DepthScene {
       p.scale.setScalar(breathScale);
     });
 
-    // Active plane = whichever plane is closest to camera in Z
-    let closestIdx = 0;
+    // ─── GLB auto-rotation ──────────────────────────────────────────────
+    // Loaded meshes registered via loadMeshFor() spin slowly on Y so the
+    // viewer reads them as 3D objects rather than flat textured cards.
+    for (const r of this.rotatingMeshes) {
+      r.obj.rotation.y += r.speed * delta;
+    }
+
+    // ─── Active plane detection (race-condition-safe) ──────────────────
+    // Camera looks in -Z direction. A plane is "ahead" of the camera
+    // when planeZ < cameraZ → ahead = cameraZ - planeZ > 0.
+    // The "active marker" sits 1 unit ahead of the camera. We want the
+    // plane whose ahead-distance is closest to 1 — BUT we EXCLUDE any
+    // plane that's behind the camera (ahead < -0.2 grace zone) because
+    // such a plane is invisible and shouldn't carry the active label.
+    //
+    // ALSO opacity-fade non-active planes: focusDist drives opacity so
+    // only the closest-to-active plane is visually dominant. This
+    // eliminates the race where the label says one section but the
+    // canvas visually shows an adjacent section's plane.
+    let closestIdx = this.activeIndex; // start from current to provide hysteresis
     let closestDist = Infinity;
     this.planes.forEach((p, i) => {
-      const dist = Math.abs(p.position.z - this.cameraZCurrent + 1);
-      if (dist < closestDist) {
-        closestDist = dist;
+      const ahead = this.cameraZCurrent - p.position.z;
+      // ── Visual fade: planes far from the active marker fade out. ──
+      const focusDist = Math.abs(ahead - 1);
+      // Smooth fall-off: full opacity at focusDist=0, zero at focusDist=4
+      const baseOpacity = Math.max(0, 1 - focusDist / 4);
+      // CRITICAL: only show planes that have actually loaded their PNG.
+      // Without this guard, an untextured plane would lerp toward
+      // baseOpacity and become a glaring solid-color rectangle.
+      const hasTexture = !!(p.userData.viewTextures as
+        | Record<string, THREE.Texture | undefined>
+        | undefined)?.front;
+      const targetOpacity = hasTexture ? baseOpacity : 0;
+      const mat = p.material as THREE.MeshBasicMaterial;
+      // Lerp toward target to soften per-frame jitter
+      mat.opacity = mat.opacity + (targetOpacity - mat.opacity) * 0.18;
+
+      // ── Active selection: skip planes that are behind camera ──
+      if (ahead < -0.2) return; // plane is behind, can't be active
+      if (focusDist < closestDist) {
+        closestDist = focusDist;
         closestIdx = i;
       }
     });
@@ -464,6 +663,54 @@ export class DepthScene {
     if (this.scene.fog) {
       (this.scene.fog as THREE.Fog).color.copy(this.backgroundCurrent);
     }
+
+    // ─── 4-view rotation swap on the active plane ──────────────────────
+    // Pointer position dictates which face of the active landmark is
+    // shown. We "rotate around" the landmark with the mouse:
+    //   pointer.x < -0.5      → "right" view (looking from the left)
+    //   pointer.x in [-0.5, 0.5] → "front"
+    //   pointer.x > 0.5       → "left" view (looking from the right)
+    //   pointer.y < -0.6      → "back" view (looking from above-behind)
+    // Non-active planes always show their front. Missing views fall back
+    // silently to front. Texture swap only fires on key change to avoid
+    // per-frame uniform churn.
+    if (activePlane && activePlane.userData.viewTextures) {
+      const views = activePlane.userData.viewTextures as Record<
+        "front" | "left" | "back" | "right",
+        THREE.Texture | undefined
+      >;
+      let target: "front" | "left" | "back" | "right" = "front";
+      if (this.pointerCurrent.y < -0.6) {
+        target = "back";
+      } else if (this.pointerCurrent.x < -0.5) {
+        target = "right";
+      } else if (this.pointerCurrent.x > 0.5) {
+        target = "left";
+      }
+      // Fall back to front if the chosen view is missing
+      const tex = views[target] ?? views.front;
+      if (tex && this.lastViewKey[this.activeIndex] !== target) {
+        const mat = activePlane.material as THREE.MeshBasicMaterial;
+        mat.map = tex;
+        mat.needsUpdate = true;
+        this.lastViewKey[this.activeIndex] = target;
+      }
+    }
+    // Any plane that lost active status returns to "front" on its next
+    // active turn — reset its lastViewKey lazily here.
+    this.planes.forEach((plane, idx) => {
+      if (idx === this.activeIndex) return;
+      const views = plane.userData.viewTextures as
+        | Record<string, THREE.Texture | undefined>
+        | undefined;
+      if (!views?.front) return;
+      const mat = plane.material as THREE.MeshBasicMaterial;
+      if (mat.map !== views.front) {
+        mat.map = views.front;
+        mat.needsUpdate = true;
+        this.lastViewKey[idx] = "front";
+      }
+    });
 
     // ─── Trail + bubbles (continuous, no wrap fade needed) ─────────────
     // Camera moves forever forward; trail accumulates points behind it

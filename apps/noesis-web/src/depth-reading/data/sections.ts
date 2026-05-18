@@ -169,7 +169,7 @@ export function buildSectionsForSubject(
       { label: "ARC", value: "15 SECTIONS" },
       { label: "LINEAGE", value: "TRYAMBAKAM" },
     ],
-    meshPath: "/depth-reading/meshes/cover.glb",
+    meshPath: "/depth-reading/meshes-fal/cover.glb",
     meshTransform: { scale: 1.5, rotation: { y: 0 } },
   });
 
@@ -234,10 +234,10 @@ export function buildSectionsForSubject(
   for (let i = 0; i < 11; i++) {
     const direction = cardinalForPart(i + 1);
     const accent = accentForCardinal[direction!];
-    // Only parts 1-4 have Meshy GLBs ready today (first batch). Others
-    // fall back to the colored plane until their GLBs land.
-    const meshPath = i < 4
-      ? `/depth-reading/meshes/part-${i + 1}.glb`
+    // Parts 1-9 have Era3D+Hunyuan multi-view GLBs ready (volumetric,
+    // depth-ratio 0.11-0.88, mean 0.49). Parts 10-11 await image gen.
+    const meshPath = i < 9
+      ? `/depth-reading/meshes-fal/part-${i + 1}.glb`
       : undefined;
     sections.push({
       id: `part-${i + 1}`,

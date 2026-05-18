@@ -12,8 +12,15 @@
 
 import { useEffect, useRef, useState } from "react";
 import { DepthScene } from "./DepthScene";
+import { DepthLoader } from "./DepthLoader";
 import { ProseReader } from "./ProseReader";
 import type { SectionData } from "./data/sections";
+
+// Loader timing — held for HOLD ms (admire shader), then faded over FADE
+// ms. The DepthScene intro animation starts the moment we trigger fade,
+// so the two animations overlap for a moment.
+const LOADER_HOLD_MS = 1800;
+const LOADER_FADE_MS = 900;
 
 interface DepthReadingClientProps {
   sections: SectionData[];
@@ -29,6 +36,12 @@ export function DepthReadingClient({
   const sceneRef = useRef<DepthScene | null>(null);
   const [activeSectionId, setActiveSectionId] = useState<string>(sections[0]?.id ?? "");
   const [openSectionId, setOpenSectionId] = useState<string | null>(null);
+
+  // Loader lifecycle: showLoader gates the GLSL overlay's existence;
+  // fadingOut triggers its CSS opacity transition. The DepthScene's
+  // intro animation kicks off the moment fadingOut becomes true.
+  const [showLoader, setShowLoader] = useState(true);
+  const [fadingOut, setFadingOut] = useState(false);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -46,6 +59,17 @@ export function DepthReadingClient({
       sceneRef.current = null;
     };
   }, [sections]);
+
+  // After HOLD ms, trigger the loader fade-out AND the scene intro
+  // animation in lockstep. The scene's planes float in from far back
+  // while the GLSL shader dissolves on top.
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      setFadingOut(true);
+      sceneRef.current?.playIntro();
+    }, LOADER_HOLD_MS);
+    return () => window.clearTimeout(timer);
+  }, []);
 
   const active = sections.find((s) => s.id === activeSectionId) ?? sections[0];
   const open = openSectionId ? sections.find((s) => s.id === openSectionId) : null;
@@ -72,6 +96,16 @@ export function DepthReadingClient({
           display: "block",
         }}
       />
+
+      {/* Loading shader — sits above the canvas while the scene boots,
+          fades out as the planes float in (DepthScene.playIntro). */}
+      {showLoader && (
+        <DepthLoader
+          fadingOut={fadingOut}
+          fadeDurationMs={LOADER_FADE_MS}
+          onFadeComplete={() => setShowLoader(false)}
+        />
+      )}
 
       {/* Active section label — title + summary float over the active plane */}
       <ActiveSectionLabel section={active} onOpen={() => setOpenSectionId(active.id)} />
@@ -125,13 +159,24 @@ export function DepthReadingClient({
             • Headline: 3D char-stagger reveal on mount (OnScrollTextHighlight effect-1)
             • Body: 3-4 sentence focus zone with blur-to-sharp scrub
               (ScrollBlurTypography effect-2 inverted as IntersectionObserver) */}
-      {open && (
-        <ProseReader
-          section={open}
-          prose={openProse}
-          onClose={() => setOpenSectionId(null)}
-        />
-      )}
+      {open && (() => {
+        // Compute neighbor section ids for next/prev navigation. The
+        // reading wraps — past the last section returns to cover, past
+        // the first returns to quine — matching the depth-gallery's
+        // infinite-loop carousel.
+        const idx = sections.findIndex((s) => s.id === open.id);
+        const nextId = sections[(idx + 1) % sections.length]?.id ?? null;
+        const prevId = sections[(idx - 1 + sections.length) % sections.length]?.id ?? null;
+        return (
+          <ProseReader
+            section={open}
+            prose={openProse}
+            onClose={() => setOpenSectionId(null)}
+            onNext={nextId ? () => setOpenSectionId(nextId) : undefined}
+            onPrev={prevId ? () => setOpenSectionId(prevId) : undefined}
+          />
+        );
+      })()}
     </div>
   );
 }

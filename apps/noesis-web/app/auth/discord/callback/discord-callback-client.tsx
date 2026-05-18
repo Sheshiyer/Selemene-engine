@@ -72,7 +72,7 @@ export function DiscordCallbackClient() {
         if (cancelled) return;
         // Store JWT as the session token; authHeaders() sends it as Bearer
         setApiKey(res.token);
-        // Fetch user profile and admin status in parallel, then redirect
+        // Fetch user profile and admin status in parallel
         const [me, isAdmin] = await Promise.all([
           getMe(res.token).catch(() => null),
           checkAdminAccess(res.token).catch(() => false),
@@ -80,7 +80,38 @@ export function DiscordCallbackClient() {
         if (!cancelled && me) {
           setUserProfile({ id: me.id, email: me.email, full_name: me.full_name, tier: me.tier, is_admin: isAdmin });
         }
-        router.replace("/engines");
+
+        // ─── Ephemeral-flow claim handoff ──────────────────────────────
+        // If the user came here from a "Save this reading" CTA on /r/[id],
+        // there's a pendingClaim in localStorage. Hit the backend claim
+        // endpoint to bind the anonymous reading to this user, mark the
+        // local cache as claimed, and redirect back to the reading.
+        const { getPendingClaim, clearPendingClaim, markReadingClaimed } =
+          await import("@/lib/integrated/readingCache");
+        const { claimReading } = await import("@/lib/api");
+        const pending = getPendingClaim();
+        let destination = "/engines";
+        if (pending?.reading_id) {
+          try {
+            await claimReading(pending.reading_id, res.token);
+            markReadingClaimed(pending.reading_id);
+          } catch {
+            // Backend may not have the claim endpoint yet — degrade
+            // gracefully. The reading stays in localStorage and the
+            // user is still signed in.
+          }
+          clearPendingClaim();
+          // Honor the `next` query param if it points back to the reading
+          const params = new URLSearchParams(window.location.search);
+          const next = params.get("next");
+          destination = next && next.startsWith("/r/") ? next : `/r/${pending.reading_id}`;
+        } else {
+          // Generic post-auth redirect — respect `next` if provided
+          const params = new URLSearchParams(window.location.search);
+          const next = params.get("next");
+          destination = next || "/engines";
+        }
+        router.replace(destination);
       } catch (err: unknown) {
         if (cancelled) return;
         const msg =
