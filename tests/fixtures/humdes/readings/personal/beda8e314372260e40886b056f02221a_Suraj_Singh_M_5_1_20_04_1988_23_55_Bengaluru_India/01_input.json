@@ -1,0 +1,30 @@
+{
+  "birth_data": {
+    "name": "Suraj Singh",
+    "date": "1988-04-20",
+    "time": "23:55:00",
+    "timezone": "Asia/Kolkata"
+  },
+  "current_time": "2026-05-18T03:16:02.978476+00:00",
+  "location": null,
+  "precision": "Standard",
+  "options": {
+    "humdes_reading_hash": "beda8e314372260e40886b056f02221a",
+    "humdes_reading_code": "M_5_1_cba23fed0e",
+    "humdes_reading_type": "personal",
+    "humdes_person_index": 1,
+    "humdes_person_id": "b8e5658ad6081811a840ea8f6bd2ea3e",
+    "humdes_link": "",
+    "humdes_type_code": "M",
+    "humdes_authority_short": "Emot.",
+    "humdes_variables": [
+      "PRR",
+      "DRL"
+    ],
+    "humdes_location_string": "Bengaluru, India",
+    "humdes_location_id": "1277333",
+    "humdes_sex": "M",
+    "geocode_source": "none",
+    "geocode_display_name": null
+  }
+}

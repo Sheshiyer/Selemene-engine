@@ -1,0 +1,73 @@
+{
+  "humdes_reading": {
+    "hash": "a754c3abdaf4812f9ad4442ac6f8dc51",
+    "code": "G_2_4_401b88e3dc",
+    "name": "Geetha C, G, 2/4, 11.05.1963, 13:40, Bengaluru, India",
+    "type": "personal",
+    "person_count": 1
+  },
+  "person": {
+    "index": 1,
+    "humdes_person_id": "e236f1e9f2ee7d976d16113227604bb4",
+    "label": "Geetha C, G, 2/4, 11.05.1963, 13:40, Bengaluru, India",
+    "raw": {
+      "id": "e236f1e9f2ee7d976d16113227604bb4",
+      "data": "8256a1fa23e56afac8a29a3e1f05f396",
+      "label": "Geetha C, G, 2/4, 11.05.1963, 13:40, Bengaluru, India",
+      "labelList": {
+        "date": "11.05.1963",
+        "type": "Generator",
+        "profile": [
+          "2",
+          "4"
+        ],
+        "vars": [
+          "PRL",
+          "DRL"
+        ],
+        "authority": "Emot."
+      },
+      "name": "Geetha C",
+      "results": "",
+      "date": "1963-05-11",
+      "time": "13:40",
+      "age": 63,
+      "location_id": "1277333",
+      "location": "Bengaluru, India",
+      "timezone": "Asia/Kolkata",
+      "sex": "F",
+      "type": "G",
+      "profile": {
+        "num": [
+          "2",
+          "4"
+        ],
+        "text": [
+          "Hermit",
+          "Opportunist"
+        ]
+      },
+      "cross": {
+        "name": "The Right Angle Cross of Explanation",
+        "num": [
+          "23",
+          "43",
+          "49",
+          "4"
+        ]
+      },
+      "variables": [
+        "PRL",
+        "DRL"
+      ],
+      "save": true,
+      "active": false
+    }
+  },
+  "source_files": {
+    "reading_dir": "output/2026-05-16_124939_bulk2/readings/personal/a754c3abdaf4812f9ad4442ac6f8dc51_Geetha_C",
+    "ravecard_file": "01_GET_ravecard_a754c3abdaf4812f9ad4442ac6f8dc51_site_1.json"
+  },
+  "captured_at": "2026-05-16T12:51:19",
+  "normalised_at": "2026-05-18T03:16:02.973380+00:00"
+}

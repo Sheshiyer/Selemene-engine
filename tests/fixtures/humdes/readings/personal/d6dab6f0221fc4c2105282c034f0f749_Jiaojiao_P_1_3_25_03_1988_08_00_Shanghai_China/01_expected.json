@@ -1,0 +1,52 @@
+{
+  "name": "Jiaojiao",
+  "birth_date": "1988-03-25",
+  "birth_time": "08:00:00",
+  "timezone": "Asia/Shanghai",
+  "latitude": null,
+  "longitude": null,
+  "expected": {
+    "type": "Projector",
+    "type_humdes_code": "P",
+    "profile": {
+      "conscious_line": 1,
+      "unconscious_line": 3,
+      "text": "1/3"
+    },
+    "authority": "Splenic",
+    "authority_humdes_label": "Splen.",
+    "variables": [
+      "PLR",
+      "DLL"
+    ],
+    "incarnation_cross": {
+      "name": "The Right Angle Cross of Service",
+      "gates": [
+        17,
+        18,
+        58,
+        52
+      ]
+    },
+    "personality_sun": {
+      "gate": 17
+    },
+    "personality_earth": {
+      "gate": 18
+    },
+    "design_sun": {
+      "gate": 58
+    },
+    "design_earth": {
+      "gate": 52
+    },
+    "active_channels": null,
+    "defined_centers": null,
+    "active_gates": null,
+    "definition": null,
+    "strategy": null,
+    "strategy_humdes_label": null,
+    "not_self_theme": null,
+    "not_self_humdes_label": null
+  }
+}

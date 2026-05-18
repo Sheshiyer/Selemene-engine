@@ -1,0 +1,30 @@
+{
+  "birth_data": {
+    "name": "Johnny",
+    "date": "1969-03-01",
+    "time": "07:15:00",
+    "timezone": "Europe/Brussels"
+  },
+  "current_time": "2026-05-18T03:16:02.953791+00:00",
+  "location": null,
+  "precision": "Standard",
+  "options": {
+    "humdes_reading_hash": "f88dd28757f7aefa956a013de1156613",
+    "humdes_reading_code": "compatibility_6d69d6dbc9",
+    "humdes_reading_type": "compatibility",
+    "humdes_person_index": 2,
+    "humdes_person_id": "8e8ceca90557a5bf4bf2bdaf526b1547",
+    "humdes_link": "",
+    "humdes_type_code": "G",
+    "humdes_authority_short": "Emot.",
+    "humdes_variables": [
+      "PLR",
+      "DLL"
+    ],
+    "humdes_location_string": "Turnhout, Belgium",
+    "humdes_location_id": "2785141",
+    "humdes_sex": "M",
+    "geocode_source": "none",
+    "geocode_display_name": null
+  }
+}

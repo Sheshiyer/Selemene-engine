@@ -1,0 +1,73 @@
+{
+  "humdes_reading": {
+    "hash": "34ad38d7512514ee986392ce3d3804ed",
+    "code": "business_cbf759204f",
+    "name": "Thoughtseed",
+    "type": "business",
+    "person_count": 3
+  },
+  "person": {
+    "index": 1,
+    "humdes_person_id": "af82eb7c3827f79bcaa57840787d06d9",
+    "label": "Mohan Kumar , MG, 6/3, 17.11.1995, 11:10, Tiruchirappalli, India",
+    "raw": {
+      "id": "af82eb7c3827f79bcaa57840787d06d9",
+      "data": "d22836d59b34d39088104fdb87423941",
+      "label": "Mohan Kumar , MG, 6/3, 17.11.1995, 11:10, Tiruchirappalli, India",
+      "labelList": {
+        "date": "17.11.1995",
+        "type": "M. Generator",
+        "profile": [
+          "6",
+          "3"
+        ],
+        "vars": [
+          "PLR",
+          "DLL"
+        ],
+        "authority": "Emot."
+      },
+      "name": "Mohan Kumar ",
+      "results": "",
+      "date": "1995-11-17",
+      "time": "11:10",
+      "age": 30,
+      "location_id": "1254388",
+      "location": "Tiruchirappalli, India",
+      "timezone": "Asia/Kolkata",
+      "sex": "M",
+      "type": "MG",
+      "profile": {
+        "num": [
+          "6",
+          "3"
+        ],
+        "text": [
+          "Role Model",
+          "Martyr"
+        ]
+      },
+      "cross": {
+        "name": "The Left Angle Cross of Dedication",
+        "num": [
+          "43",
+          "23",
+          "29",
+          "30"
+        ]
+      },
+      "variables": [
+        "PLR",
+        "DLL"
+      ],
+      "save": true,
+      "active": false
+    }
+  },
+  "source_files": {
+    "reading_dir": "output/2026-05-16_124939_bulk2/readings/business/34ad38d7512514ee986392ce3d3804ed_Thoughtseed",
+    "ravecard_file": "01_GET_ravecard_34ad38d7512514ee986392ce3d3804ed_site_1.json"
+  },
+  "captured_at": "2026-05-16T13:04:33",
+  "normalised_at": "2026-05-18T03:16:02.945037+00:00"
+}

@@ -1,0 +1,73 @@
+{
+  "humdes_reading": {
+    "hash": "a6f670c7e040d85784d7781702b9afb0",
+    "code": "compatibility_7de60fb84e",
+    "name": "Shashwat Trivedi + Yamuna",
+    "type": "compatibility",
+    "person_count": 2
+  },
+  "person": {
+    "index": 1,
+    "humdes_person_id": "27d6188e5a680933a31fecebaebc91fc",
+    "label": "Shashwat Trivedi, P, 6/2, 13.10.1992, 13:42, Dubai, United Arab Emirates",
+    "raw": {
+      "id": "27d6188e5a680933a31fecebaebc91fc",
+      "data": "a5dc9f54e896f94c0610c018bd848164",
+      "label": "Shashwat Trivedi, P, 6/2, 13.10.1992, 13:42, Dubai, United Arab Emirates",
+      "labelList": {
+        "date": "13.10.1992",
+        "type": "Projector",
+        "profile": [
+          "6",
+          "2"
+        ],
+        "vars": [
+          "PLR",
+          "DRR"
+        ],
+        "authority": "Splen."
+      },
+      "name": "Shashwat Trivedi",
+      "results": "",
+      "date": "1992-10-13",
+      "time": "13:42",
+      "age": 33,
+      "location_id": "292223",
+      "location": "Dubai, United Arab Emirates",
+      "timezone": "Asia/Dubai",
+      "sex": "M",
+      "type": "P",
+      "profile": {
+        "num": [
+          "6",
+          "2"
+        ],
+        "text": [
+          "Role Model",
+          "Hermit"
+        ]
+      },
+      "cross": {
+        "name": "The Left Angle Cross of the Clarion",
+        "num": [
+          "57",
+          "51",
+          "62",
+          "61"
+        ]
+      },
+      "variables": [
+        "PLR",
+        "DRR"
+      ],
+      "save": true,
+      "active": false
+    }
+  },
+  "source_files": {
+    "reading_dir": "output/2026-05-16_124939_bulk2/readings/compatibility/a6f670c7e040d85784d7781702b9afb0_Shashwat_Trivedi_Yamuna",
+    "ravecard_file": "01_GET_ravecard_a6f670c7e040d85784d7781702b9afb0_site_1.json"
+  },
+  "captured_at": "2026-05-16T13:00:19",
+  "normalised_at": "2026-05-18T03:16:02.951669+00:00"
+}

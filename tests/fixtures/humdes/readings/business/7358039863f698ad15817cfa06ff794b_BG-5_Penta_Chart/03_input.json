@@ -1,0 +1,30 @@
+{
+  "birth_data": {
+    "name": "Joshua",
+    "date": "1998-09-28",
+    "time": "12:40:00",
+    "timezone": "Asia/Kolkata"
+  },
+  "current_time": "2026-05-18T03:16:02.946631+00:00",
+  "location": null,
+  "precision": "Standard",
+  "options": {
+    "humdes_reading_hash": "7358039863f698ad15817cfa06ff794b",
+    "humdes_reading_code": "business_e19a65bd83",
+    "humdes_reading_type": "business",
+    "humdes_person_index": 3,
+    "humdes_person_id": "f355d2b323b9c19020ec32bcacab0ea4",
+    "humdes_link": "",
+    "humdes_type_code": "MG",
+    "humdes_authority_short": "Emot.",
+    "humdes_variables": [
+      "PRR",
+      "DRR"
+    ],
+    "humdes_location_string": "Kannur, India",
+    "humdes_location_id": "1274987",
+    "humdes_sex": "M",
+    "geocode_source": "none",
+    "geocode_display_name": null
+  }
+}

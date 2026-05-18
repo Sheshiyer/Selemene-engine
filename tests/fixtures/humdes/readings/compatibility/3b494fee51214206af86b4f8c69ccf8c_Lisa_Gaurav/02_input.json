@@ -1,0 +1,30 @@
+{
+  "birth_data": {
+    "name": "Gaurav",
+    "date": "1990-07-25",
+    "time": "07:30:00",
+    "timezone": "Asia/Kolkata"
+  },
+  "current_time": "2026-05-18T03:16:02.949731+00:00",
+  "location": null,
+  "precision": "Standard",
+  "options": {
+    "humdes_reading_hash": "3b494fee51214206af86b4f8c69ccf8c",
+    "humdes_reading_code": "compatibility_ff45643bce",
+    "humdes_reading_type": "compatibility",
+    "humdes_person_index": 2,
+    "humdes_person_id": "3b1dc2b51e6e20a2ac1ba520ec6d26a1",
+    "humdes_link": "",
+    "humdes_type_code": "P",
+    "humdes_authority_short": "Splen.",
+    "humdes_variables": [
+      "PLR",
+      "DLL"
+    ],
+    "humdes_location_string": "Chennai, India",
+    "humdes_location_id": "1264527",
+    "humdes_sex": "M",
+    "geocode_source": "none",
+    "geocode_display_name": null
+  }
+}

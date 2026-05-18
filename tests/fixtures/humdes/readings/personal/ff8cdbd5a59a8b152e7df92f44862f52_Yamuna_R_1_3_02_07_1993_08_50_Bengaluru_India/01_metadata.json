@@ -1,0 +1,73 @@
+{
+  "humdes_reading": {
+    "hash": "ff8cdbd5a59a8b152e7df92f44862f52",
+    "code": "R_1_3_69c66f4920",
+    "name": "Yamuna, R, 1/3, 02.07.1993, 08:50, Bengaluru, India",
+    "type": "personal",
+    "person_count": 1
+  },
+  "person": {
+    "index": 1,
+    "humdes_person_id": "c7b9aaaa763e2a2ac016aa68de6102a9",
+    "label": "Yamuna, R, 1/3, 02.07.1993, 08:50, Bengaluru, India",
+    "raw": {
+      "id": "c7b9aaaa763e2a2ac016aa68de6102a9",
+      "data": "88beb70309841dd3b56ba347a3070f3c",
+      "label": "Yamuna, R, 1/3, 02.07.1993, 08:50, Bengaluru, India",
+      "labelList": {
+        "date": "02.07.1993",
+        "type": "Reflector",
+        "profile": [
+          "1",
+          "3"
+        ],
+        "vars": [
+          "PRL",
+          "DRR"
+        ],
+        "authority": "Lunar"
+      },
+      "name": "Yamuna",
+      "results": "",
+      "date": "1993-07-02",
+      "time": "08:50",
+      "age": 32,
+      "location_id": "1277333",
+      "location": "Bengaluru, India",
+      "timezone": "Asia/Kolkata",
+      "sex": "F",
+      "type": "R",
+      "profile": {
+        "num": [
+          "1",
+          "3"
+        ],
+        "text": [
+          "Investigator",
+          "Martyr"
+        ]
+      },
+      "cross": {
+        "name": "The Right Angle Cross of Tension",
+        "num": [
+          "39",
+          "38",
+          "21",
+          "48"
+        ]
+      },
+      "variables": [
+        "PRL",
+        "DRR"
+      ],
+      "save": true,
+      "active": false
+    }
+  },
+  "source_files": {
+    "reading_dir": "output/2026-05-16_124939_bulk2/readings/personal/ff8cdbd5a59a8b152e7df92f44862f52_Yamuna",
+    "ravecard_file": "01_GET_ravecard_ff8cdbd5a59a8b152e7df92f44862f52_site_1.json"
+  },
+  "captured_at": "2026-05-16T12:50:21",
+  "normalised_at": "2026-05-18T03:16:02.987602+00:00"
+}

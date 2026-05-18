@@ -1,0 +1,30 @@
+{
+  "birth_data": {
+    "name": "Varsha S",
+    "date": "1993-02-04",
+    "time": "18:15:00",
+    "timezone": "Asia/Kolkata"
+  },
+  "current_time": "2026-05-18T03:16:02.979181+00:00",
+  "location": null,
+  "precision": "Standard",
+  "options": {
+    "humdes_reading_hash": "c3677c18406ca90db2f5eb3b2a030d57",
+    "humdes_reading_code": "G_5_1_7a29fc8677",
+    "humdes_reading_type": "personal",
+    "humdes_person_index": 1,
+    "humdes_person_id": "f614f6f2666325aae36965a3d8bc59e3",
+    "humdes_link": "",
+    "humdes_type_code": "G",
+    "humdes_authority_short": "Emot.",
+    "humdes_variables": [
+      "PRR",
+      "DRR"
+    ],
+    "humdes_location_string": "Hubli, India",
+    "humdes_location_id": "1269920",
+    "humdes_sex": "F",
+    "geocode_source": "none",
+    "geocode_display_name": null
+  }
+}

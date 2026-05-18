@@ -1,0 +1,30 @@
+{
+  "birth_data": {
+    "name": "Ghanshyam ",
+    "date": "1993-08-04",
+    "time": "22:20:00",
+    "timezone": "Asia/Kolkata"
+  },
+  "current_time": "2026-05-18T03:16:02.985639+00:00",
+  "location": null,
+  "precision": "Standard",
+  "options": {
+    "humdes_reading_hash": "fd3fcad39bf03dac0d9d2e35ce273993",
+    "humdes_reading_code": "MG_5_2_082230ba37",
+    "humdes_reading_type": "personal",
+    "humdes_person_index": 1,
+    "humdes_person_id": "70204654aa91053d786ceeb4aab16d19",
+    "humdes_link": "",
+    "humdes_type_code": "MG",
+    "humdes_authority_short": "Sacr.",
+    "humdes_variables": [
+      "PRR",
+      "DRL"
+    ],
+    "humdes_location_string": "Bengaluru, India",
+    "humdes_location_id": "1277333",
+    "humdes_sex": "M",
+    "geocode_source": "none",
+    "geocode_display_name": null
+  }
+}

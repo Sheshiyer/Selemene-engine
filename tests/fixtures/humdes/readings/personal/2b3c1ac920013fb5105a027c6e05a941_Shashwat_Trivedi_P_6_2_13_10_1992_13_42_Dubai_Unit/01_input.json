@@ -1,0 +1,30 @@
+{
+  "birth_data": {
+    "name": "Shashwat Trivedi",
+    "date": "1992-10-13",
+    "time": "13:42:00",
+    "timezone": "Asia/Dubai"
+  },
+  "current_time": "2026-05-18T03:16:02.962510+00:00",
+  "location": null,
+  "precision": "Standard",
+  "options": {
+    "humdes_reading_hash": "2b3c1ac920013fb5105a027c6e05a941",
+    "humdes_reading_code": "P_6_2_8ca7eb2157",
+    "humdes_reading_type": "personal",
+    "humdes_person_index": 1,
+    "humdes_person_id": "27d6188e5a680933a31fecebaebc91fc",
+    "humdes_link": "",
+    "humdes_type_code": "P",
+    "humdes_authority_short": "Splen.",
+    "humdes_variables": [
+      "PLR",
+      "DRR"
+    ],
+    "humdes_location_string": "Dubai, United Arab Emirates",
+    "humdes_location_id": "292223",
+    "humdes_sex": "M",
+    "geocode_source": "none",
+    "geocode_display_name": null
+  }
+}

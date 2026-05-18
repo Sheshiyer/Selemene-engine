@@ -1,0 +1,52 @@
+{
+  "name": "Suraj Singh",
+  "birth_date": "1988-04-20",
+  "birth_time": "23:55:00",
+  "timezone": "Asia/Kolkata",
+  "latitude": null,
+  "longitude": null,
+  "expected": {
+    "type": "Manifestor",
+    "type_humdes_code": "M",
+    "profile": {
+      "conscious_line": 5,
+      "unconscious_line": 1,
+      "text": "5/1"
+    },
+    "authority": "Emotional",
+    "authority_humdes_label": "Emot.",
+    "variables": [
+      "PRR",
+      "DRL"
+    ],
+    "incarnation_cross": {
+      "name": "The Left Angle Cross of Wishes",
+      "gates": [
+        3,
+        50,
+        41,
+        31
+      ]
+    },
+    "personality_sun": {
+      "gate": 3
+    },
+    "personality_earth": {
+      "gate": 50
+    },
+    "design_sun": {
+      "gate": 41
+    },
+    "design_earth": {
+      "gate": 31
+    },
+    "active_channels": null,
+    "defined_centers": null,
+    "active_gates": null,
+    "definition": null,
+    "strategy": null,
+    "strategy_humdes_label": null,
+    "not_self_theme": null,
+    "not_self_humdes_label": null
+  }
+}

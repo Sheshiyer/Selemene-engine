@@ -1,0 +1,52 @@
+{
+  "name": "kevin",
+  "birth_date": "1995-09-18",
+  "birth_time": "13:00:00",
+  "timezone": "Asia/Kolkata",
+  "latitude": null,
+  "longitude": null,
+  "expected": {
+    "type": "ManifestingGenerator",
+    "type_humdes_code": "MG",
+    "profile": {
+      "conscious_line": 3,
+      "unconscious_line": 5,
+      "text": "3/5"
+    },
+    "authority": "Emotional",
+    "authority_humdes_label": "Emot.",
+    "variables": [
+      "PRR",
+      "DLR"
+    ],
+    "incarnation_cross": {
+      "name": "The Right Angle Cross of Eden",
+      "gates": [
+        6,
+        36,
+        12,
+        11
+      ]
+    },
+    "personality_sun": {
+      "gate": 6
+    },
+    "personality_earth": {
+      "gate": 36
+    },
+    "design_sun": {
+      "gate": 12
+    },
+    "design_earth": {
+      "gate": 11
+    },
+    "active_channels": null,
+    "defined_centers": null,
+    "active_gates": null,
+    "definition": null,
+    "strategy": null,
+    "strategy_humdes_label": null,
+    "not_self_theme": null,
+    "not_self_humdes_label": null
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "birth_data": {
+    "name": "Gauri",
+    "date": "1999-07-25",
+    "time": "23:15:00",
+    "timezone": "Asia/Kolkata"
+  },
+  "current_time": "2026-05-18T03:16:02.981171+00:00",
+  "location": null,
+  "precision": "Standard",
+  "options": {
+    "humdes_reading_hash": "cb2e0c9dc2cb52a98be9c00b4195eb1a",
+    "humdes_reading_code": "P_1_3_839fabf5e8",
+    "humdes_reading_type": "personal",
+    "humdes_person_index": 1,
+    "humdes_person_id": "a2faf4f7ba4ee8358210ac423ed235b0",
+    "humdes_link": "",
+    "humdes_type_code": "P",
+    "humdes_authority_short": "Emot.",
+    "humdes_variables": [
+      "PLL",
+      "DLL"
+    ],
+    "humdes_location_string": "Bengaluru, India",
+    "humdes_location_id": "1277333",
+    "humdes_sex": "F",
+    "geocode_source": "none",
+    "geocode_display_name": null
+  }
+}

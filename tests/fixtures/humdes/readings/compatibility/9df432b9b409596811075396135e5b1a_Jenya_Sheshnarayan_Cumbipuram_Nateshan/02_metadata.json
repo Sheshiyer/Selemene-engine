@@ -1,0 +1,73 @@
+{
+  "humdes_reading": {
+    "hash": "9df432b9b409596811075396135e5b1a",
+    "code": "compatibility_d8b3507bd1",
+    "name": "Jenya + Sheshnarayan Cumbipuram Nateshan",
+    "type": "compatibility",
+    "person_count": 2
+  },
+  "person": {
+    "index": 2,
+    "humdes_person_id": "b9f6b9504dbb02338986593e02c841fa",
+    "label": "Sheshnarayan Cumbipuram Nateshan, G, 2/4, 13.08.1991, 13:31, Bengaluru, India",
+    "raw": {
+      "id": "b9f6b9504dbb02338986593e02c841fa",
+      "data": "8c1111fc9114739be711c4b1aae40db5",
+      "label": "Sheshnarayan Cumbipuram Nateshan, G, 2/4, 13.08.1991, 13:31, Bengaluru, India",
+      "labelList": {
+        "date": "13.08.1991",
+        "type": "Generator",
+        "profile": [
+          "2",
+          "4"
+        ],
+        "vars": [
+          "PRL",
+          "DRL"
+        ],
+        "authority": "Sacr."
+      },
+      "name": "Sheshnarayan Cumbipuram Nateshan",
+      "results": "",
+      "date": "1991-08-13",
+      "time": "13:31",
+      "age": 34,
+      "location_id": "1277333",
+      "location": "Bengaluru, India",
+      "timezone": "Asia/Kolkata",
+      "sex": "M",
+      "type": "G",
+      "profile": {
+        "num": [
+          "2",
+          "4"
+        ],
+        "text": [
+          "Hermit",
+          "Opportunist"
+        ]
+      },
+      "cross": {
+        "name": "The Right Angle Cross of Explanation",
+        "num": [
+          "4",
+          "49",
+          "23",
+          "43"
+        ]
+      },
+      "variables": [
+        "PRL",
+        "DRL"
+      ],
+      "save": true,
+      "active": false
+    }
+  },
+  "source_files": {
+    "reading_dir": "output/2026-05-16_124939_bulk2/readings/compatibility/9df432b9b409596811075396135e5b1a_Jenya_Sheshnarayan_Cumbipuram_Nateshan",
+    "ravecard_file": "01_GET_ravecard_9df432b9b409596811075396135e5b1a_site_1.json"
+  },
+  "captured_at": "2026-05-16T13:01:53",
+  "normalised_at": "2026-05-18T03:16:02.951171+00:00"
+}

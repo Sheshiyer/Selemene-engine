@@ -1,0 +1,30 @@
+{
+  "birth_data": {
+    "name": "Apoorva Nayak",
+    "date": "1999-11-01",
+    "time": "04:55:00",
+    "timezone": "Asia/Kolkata"
+  },
+  "current_time": "2026-05-18T03:16:02.972733+00:00",
+  "location": null,
+  "precision": "Standard",
+  "options": {
+    "humdes_reading_hash": "a6784adcd7a4151fa325bd0edf576b94",
+    "humdes_reading_code": "G_1_3_4655d15f4e",
+    "humdes_reading_type": "personal",
+    "humdes_person_index": 1,
+    "humdes_person_id": "be40e0fb0d78fb9fae7abbb33eccb177",
+    "humdes_link": "",
+    "humdes_type_code": "G",
+    "humdes_authority_short": "Sacr.",
+    "humdes_variables": [
+      "PRR",
+      "DRL"
+    ],
+    "humdes_location_string": "Hubli, India",
+    "humdes_location_id": "1269920",
+    "humdes_sex": "F",
+    "geocode_source": "none",
+    "geocode_display_name": null
+  }
+}

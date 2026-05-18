@@ -1,0 +1,52 @@
+{
+  "name": "Nikhai Jaysen",
+  "birth_date": "1995-11-23",
+  "birth_time": "09:44:00",
+  "timezone": "Asia/Kolkata",
+  "latitude": null,
+  "longitude": null,
+  "expected": {
+    "type": "ManifestingGenerator",
+    "type_humdes_code": "MG",
+    "profile": {
+      "conscious_line": 1,
+      "unconscious_line": 3,
+      "text": "1/3"
+    },
+    "authority": "Emotional",
+    "authority_humdes_label": "Emot.",
+    "variables": [
+      "PRR",
+      "DLR"
+    ],
+    "incarnation_cross": {
+      "name": "The Right Angle Cross of the Sleeping Phoenix",
+      "gates": [
+        34,
+        20,
+        59,
+        55
+      ]
+    },
+    "personality_sun": {
+      "gate": null
+    },
+    "personality_earth": {
+      "gate": null
+    },
+    "design_sun": {
+      "gate": null
+    },
+    "design_earth": {
+      "gate": null
+    },
+    "active_channels": null,
+    "defined_centers": null,
+    "active_gates": null,
+    "definition": null,
+    "strategy": null,
+    "strategy_humdes_label": null,
+    "not_self_theme": null,
+    "not_self_humdes_label": null
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "birth_data": {
+    "name": "Sneha Soni",
+    "date": "2002-01-10",
+    "time": "10:20:00",
+    "timezone": "Asia/Kolkata"
+  },
+  "current_time": "2026-05-18T03:16:02.985052+00:00",
+  "location": null,
+  "precision": "Standard",
+  "options": {
+    "humdes_reading_hash": "f25e1bec25a5e09a4d752be96efe6ab4",
+    "humdes_reading_code": "MG_5_2_4bbb2e3158",
+    "humdes_reading_type": "personal",
+    "humdes_person_index": 1,
+    "humdes_person_id": "b7873635be8aa4a7c987577e82808e1f",
+    "humdes_link": "",
+    "humdes_type_code": "MG",
+    "humdes_authority_short": "Emot.",
+    "humdes_variables": [
+      "PRR",
+      "DLL"
+    ],
+    "humdes_location_string": "Bhopal, India",
+    "humdes_location_id": "1275841",
+    "humdes_sex": "F",
+    "geocode_source": "none",
+    "geocode_display_name": null
+  }
+}

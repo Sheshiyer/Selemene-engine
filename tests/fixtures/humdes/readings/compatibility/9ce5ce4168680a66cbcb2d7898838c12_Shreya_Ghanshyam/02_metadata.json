@@ -1,0 +1,73 @@
+{
+  "humdes_reading": {
+    "hash": "9ce5ce4168680a66cbcb2d7898838c12",
+    "code": "compatibility_1de44d2393",
+    "name": "Shreya + Ghanshyam",
+    "type": "compatibility",
+    "person_count": 2
+  },
+  "person": {
+    "index": 2,
+    "humdes_person_id": "57d6705a1f07c48c99f796cf2c1766e0",
+    "label": "Ghanshyam, MG, 5/2, 04.08.1993, 22:20, Bengaluru, India",
+    "raw": {
+      "id": "57d6705a1f07c48c99f796cf2c1766e0",
+      "data": "3d15cbb44e0c71fe439cffb957fff30f",
+      "label": "Ghanshyam, MG, 5/2, 04.08.1993, 22:20, Bengaluru, India",
+      "labelList": {
+        "date": "04.08.1993",
+        "type": "M. Generator",
+        "profile": [
+          "5",
+          "2"
+        ],
+        "vars": [
+          "PRR",
+          "DRL"
+        ],
+        "authority": "Sacr."
+      },
+      "name": "Ghanshyam",
+      "results": "",
+      "date": "1993-08-04",
+      "time": "22:20",
+      "age": 32,
+      "location_id": "1277333",
+      "location": "Bengaluru, India",
+      "timezone": "Asia/Kolkata",
+      "sex": "M",
+      "type": "MG",
+      "profile": {
+        "num": [
+          "5",
+          "2"
+        ],
+        "text": [
+          "Heretic",
+          "Hermit"
+        ]
+      },
+      "cross": {
+        "name": "The Left Angle Cross of Refinement",
+        "num": [
+          "33",
+          "19",
+          "2",
+          "1"
+        ]
+      },
+      "variables": [
+        "PRR",
+        "DRL"
+      ],
+      "save": true,
+      "active": false
+    }
+  },
+  "source_files": {
+    "reading_dir": "output/2026-05-16_124939_bulk2/readings/compatibility/9ce5ce4168680a66cbcb2d7898838c12_Shreya_Ghanshyam",
+    "ravecard_file": "01_GET_ravecard_9ce5ce4168680a66cbcb2d7898838c12_site_1.json"
+  },
+  "captured_at": "2026-05-16T13:01:06",
+  "normalised_at": "2026-05-18T03:16:02.950468+00:00"
+}

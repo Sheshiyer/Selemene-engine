@@ -1,0 +1,73 @@
+{
+  "humdes_reading": {
+    "hash": "bc74efac1cd572f87d9e8fb356fbd81f",
+    "code": "M_5_1_7c7850e94f",
+    "name": "Anitha Nateshan, M, 5/1, 01.06.1965, 00:35, Bengaluru, India",
+    "type": "personal",
+    "person_count": 1
+  },
+  "person": {
+    "index": 1,
+    "humdes_person_id": "a01115e2f578c37baafd2188149bbe3f",
+    "label": "Anitha Nateshan, M, 5/1, 01.06.1965, 00:35, Bengaluru, India",
+    "raw": {
+      "id": "a01115e2f578c37baafd2188149bbe3f",
+      "data": "739e65e8d8fdcab835d2226522e4f763",
+      "label": "Anitha Nateshan, M, 5/1, 01.06.1965, 00:35, Bengaluru, India",
+      "labelList": {
+        "date": "01.06.1965",
+        "type": "Manifestor",
+        "profile": [
+          "5",
+          "1"
+        ],
+        "vars": [
+          "PRR",
+          "DRR"
+        ],
+        "authority": "Emot."
+      },
+      "name": "Anitha Nateshan",
+      "results": "",
+      "date": "1965-06-01",
+      "time": "00:35",
+      "age": 60,
+      "location_id": "1277333",
+      "location": "Bengaluru, India",
+      "timezone": "Asia/Kolkata",
+      "sex": "F",
+      "type": "M",
+      "profile": {
+        "num": [
+          "5",
+          "1"
+        ],
+        "text": [
+          "Heretic",
+          "Investigator"
+        ]
+      },
+      "cross": {
+        "name": "The Left Angle Cross of Identification",
+        "num": [
+          "16",
+          "9",
+          "63",
+          "64"
+        ]
+      },
+      "variables": [
+        "PRR",
+        "DRR"
+      ],
+      "save": true,
+      "active": false
+    }
+  },
+  "source_files": {
+    "reading_dir": "output/2026-05-16_124939_bulk2/readings/personal/bc74efac1cd572f87d9e8fb356fbd81f_Anitha_Nateshan",
+    "ravecard_file": "01_GET_ravecard_bc74efac1cd572f87d9e8fb356fbd81f_site_1.json"
+  },
+  "captured_at": "2026-05-16T12:52:17",
+  "normalised_at": "2026-05-18T03:16:02.977827+00:00"
+}

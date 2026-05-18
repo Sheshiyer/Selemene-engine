@@ -1,0 +1,73 @@
+{
+  "humdes_reading": {
+    "hash": "19d83694fbe3991563a9370216fba375",
+    "code": "business_29781d3296",
+    "name": "comp",
+    "type": "business",
+    "person_count": 3
+  },
+  "person": {
+    "index": 1,
+    "humdes_person_id": "ad81221bdf14e65d719a3ca6b5384413",
+    "label": "Nikhai Jaysen, MG, 1/3, 23.11.1995, 09:44, Bengaluru, India",
+    "raw": {
+      "id": "ad81221bdf14e65d719a3ca6b5384413",
+      "data": "3d9793e6697716bf7b85b0729f628387",
+      "label": "Nikhai Jaysen, MG, 1/3, 23.11.1995, 09:44, Bengaluru, India",
+      "labelList": {
+        "date": "23.11.1995",
+        "type": "M. Generator",
+        "profile": [
+          "1",
+          "3"
+        ],
+        "vars": [
+          "PRR",
+          "DLR"
+        ],
+        "authority": "Emot."
+      },
+      "name": "Nikhai Jaysen",
+      "results": "",
+      "date": "1995-11-23",
+      "time": "09:44",
+      "age": 30,
+      "location_id": "1277333",
+      "location": "Bengaluru, India",
+      "timezone": "Asia/Kolkata",
+      "sex": "M",
+      "type": "MG",
+      "profile": {
+        "num": [
+          "1",
+          "3"
+        ],
+        "text": [
+          "Investigator",
+          "Martyr"
+        ]
+      },
+      "cross": {
+        "name": "The Right Angle Cross of the Sleeping Phoenix",
+        "num": [
+          "34",
+          "20",
+          "59",
+          "55"
+        ]
+      },
+      "variables": [
+        "PRR",
+        "DLR"
+      ],
+      "save": true,
+      "active": false
+    }
+  },
+  "source_files": {
+    "reading_dir": "output/2026-05-16_124939_bulk2/readings/business/19d83694fbe3991563a9370216fba375_comp",
+    "ravecard_file": "01_GET_ravecard_19d83694fbe3991563a9370216fba375_site_1.json"
+  },
+  "captured_at": "2026-05-16T13:03:26",
+  "normalised_at": "2026-05-18T03:16:02.943804+00:00"
+}

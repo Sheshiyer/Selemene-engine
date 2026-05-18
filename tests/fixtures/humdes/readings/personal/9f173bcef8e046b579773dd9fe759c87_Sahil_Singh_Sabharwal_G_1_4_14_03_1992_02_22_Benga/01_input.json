@@ -1,0 +1,30 @@
+{
+  "birth_data": {
+    "name": "Sahil Singh Sabharwal ",
+    "date": "1992-03-14",
+    "time": "02:22:00",
+    "timezone": "Asia/Kolkata"
+  },
+  "current_time": "2026-05-18T03:16:02.971183+00:00",
+  "location": null,
+  "precision": "Standard",
+  "options": {
+    "humdes_reading_hash": "9f173bcef8e046b579773dd9fe759c87",
+    "humdes_reading_code": "G_1_4_93acf4c079",
+    "humdes_reading_type": "personal",
+    "humdes_person_index": 1,
+    "humdes_person_id": "2c0913688e82909442b9d8897b666410",
+    "humdes_link": "",
+    "humdes_type_code": "G",
+    "humdes_authority_short": "Emot.",
+    "humdes_variables": [
+      "PRL",
+      "DRR"
+    ],
+    "humdes_location_string": "Bengaluru, India",
+    "humdes_location_id": "1277333",
+    "humdes_sex": "M",
+    "geocode_source": "none",
+    "geocode_display_name": null
+  }
+}

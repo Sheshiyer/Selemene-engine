@@ -1,0 +1,73 @@
+{
+  "humdes_reading": {
+    "hash": "9ce5ce4168680a66cbcb2d7898838c12",
+    "code": "compatibility_1de44d2393",
+    "name": "Shreya + Ghanshyam",
+    "type": "compatibility",
+    "person_count": 2
+  },
+  "person": {
+    "index": 1,
+    "humdes_person_id": "f2354a03219641380cf7846e1d4795d9",
+    "label": "Shreya, M, 4/6, 25.04.1993, 11:00, Mumbai, India",
+    "raw": {
+      "id": "f2354a03219641380cf7846e1d4795d9",
+      "data": "cb3c9ead159c788d01dd0143f5258e09",
+      "label": "Shreya, M, 4/6, 25.04.1993, 11:00, Mumbai, India",
+      "labelList": {
+        "date": "25.04.1993",
+        "type": "Manifestor",
+        "profile": [
+          "4",
+          "6"
+        ],
+        "vars": [
+          "PLR",
+          "DLL"
+        ],
+        "authority": "Emot."
+      },
+      "name": "Shreya",
+      "results": "",
+      "date": "1993-04-25",
+      "time": "11:00",
+      "age": 33,
+      "location_id": "1275339",
+      "location": "Mumbai, India",
+      "timezone": "Asia/Kolkata",
+      "sex": "F",
+      "type": "M",
+      "profile": {
+        "num": [
+          "4",
+          "6"
+        ],
+        "text": [
+          "Opportunist",
+          "Role Model"
+        ]
+      },
+      "cross": {
+        "name": "The Right Angle Cross of the Unexpected",
+        "num": [
+          "27",
+          "28",
+          "41",
+          "31"
+        ]
+      },
+      "variables": [
+        "PLR",
+        "DLL"
+      ],
+      "save": true,
+      "active": false
+    }
+  },
+  "source_files": {
+    "reading_dir": "output/2026-05-16_124939_bulk2/readings/compatibility/9ce5ce4168680a66cbcb2d7898838c12_Shreya_Ghanshyam",
+    "ravecard_file": "01_GET_ravecard_9ce5ce4168680a66cbcb2d7898838c12_site_1.json"
+  },
+  "captured_at": "2026-05-16T13:01:06",
+  "normalised_at": "2026-05-18T03:16:02.950248+00:00"
+}

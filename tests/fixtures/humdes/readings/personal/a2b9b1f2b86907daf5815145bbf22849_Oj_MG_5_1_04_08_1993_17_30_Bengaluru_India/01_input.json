@@ -1,0 +1,30 @@
+{
+  "birth_data": {
+    "name": "Oj",
+    "date": "1993-08-04",
+    "time": "17:30:00",
+    "timezone": "Asia/Kolkata"
+  },
+  "current_time": "2026-05-18T03:16:02.972116+00:00",
+  "location": null,
+  "precision": "Standard",
+  "options": {
+    "humdes_reading_hash": "a2b9b1f2b86907daf5815145bbf22849",
+    "humdes_reading_code": "MG_5_1_aa68970341",
+    "humdes_reading_type": "personal",
+    "humdes_person_index": 1,
+    "humdes_person_id": "3e2f297385d3b6c0e95c9c408b0c45c7",
+    "humdes_link": "",
+    "humdes_type_code": "MG",
+    "humdes_authority_short": "Sacr.",
+    "humdes_variables": [
+      "PRL",
+      "DRL"
+    ],
+    "humdes_location_string": "Bengaluru, India",
+    "humdes_location_id": "1277333",
+    "humdes_sex": "M",
+    "geocode_source": "none",
+    "geocode_display_name": null
+  }
+}

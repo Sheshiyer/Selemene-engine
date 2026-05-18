@@ -1,0 +1,73 @@
+{
+  "humdes_reading": {
+    "hash": "830db0a0e62f6f9739adfabc882ae3a8",
+    "code": "family_c53beb765b",
+    "name": "Family Penta Chart",
+    "type": "family",
+    "person_count": 3
+  },
+  "person": {
+    "index": 3,
+    "humdes_person_id": "bd8accffd962fd710507a2b474256e99",
+    "label": "Triveni K, MG, 4/1, 21.08.1996, 05:30, Ganjām, India",
+    "raw": {
+      "id": "bd8accffd962fd710507a2b474256e99",
+      "data": "c8d9bd78b2cf1b17d5bff8f3d6771a96",
+      "label": "Triveni K, MG, 4/1, 21.08.1996, 05:30, Ganjām, India",
+      "labelList": {
+        "date": "21.08.1996",
+        "type": "M. Generator",
+        "profile": [
+          "4",
+          "1"
+        ],
+        "vars": [
+          "PRR",
+          "DRR"
+        ],
+        "authority": "Emot."
+      },
+      "name": "Triveni K",
+      "results": "",
+      "date": "1996-08-21",
+      "time": "05:30",
+      "age": 29,
+      "location_id": "1271621",
+      "location": "Ganjām, India",
+      "timezone": "Asia/Kolkata",
+      "sex": "F",
+      "type": "MG",
+      "profile": {
+        "num": [
+          "4",
+          "1"
+        ],
+        "text": [
+          "Opportunist",
+          "Investigator"
+        ]
+      },
+      "cross": {
+        "name": "The Juxtaposition Cross of Commitment",
+        "num": [
+          "29",
+          "30",
+          "20",
+          "34"
+        ]
+      },
+      "variables": [
+        "PRR",
+        "DRR"
+      ],
+      "save": true,
+      "active": false
+    }
+  },
+  "source_files": {
+    "reading_dir": "output/2026-05-16_124939_bulk2/readings/family/830db0a0e62f6f9739adfabc882ae3a8_Family_Penta_Chart",
+    "ravecard_file": "01_GET_ravecard_830db0a0e62f6f9739adfabc882ae3a8_site_1.json"
+  },
+  "captured_at": "2026-05-16T13:05:40",
+  "normalised_at": "2026-05-18T03:16:02.956547+00:00"
+}

@@ -1,0 +1,52 @@
+{
+  "name": "Rishav Prashanth",
+  "birth_date": "2023-06-28",
+  "birth_time": "20:28:00",
+  "timezone": "Asia/Kolkata",
+  "latitude": null,
+  "longitude": null,
+  "expected": {
+    "type": "Generator",
+    "type_humdes_code": "G",
+    "profile": {
+      "conscious_line": 3,
+      "unconscious_line": 6,
+      "text": "3/6"
+    },
+    "authority": "Emotional",
+    "authority_humdes_label": "Emot.",
+    "variables": [
+      "PRL",
+      "DRL"
+    ],
+    "incarnation_cross": {
+      "name": "The Right Angle Cross of Service",
+      "gates": [
+        52,
+        58,
+        17,
+        18
+      ]
+    },
+    "personality_sun": {
+      "gate": 52
+    },
+    "personality_earth": {
+      "gate": 58
+    },
+    "design_sun": {
+      "gate": 17
+    },
+    "design_earth": {
+      "gate": 18
+    },
+    "active_channels": null,
+    "defined_centers": null,
+    "active_gates": null,
+    "definition": null,
+    "strategy": null,
+    "strategy_humdes_label": null,
+    "not_self_theme": null,
+    "not_self_humdes_label": null
+  }
+}

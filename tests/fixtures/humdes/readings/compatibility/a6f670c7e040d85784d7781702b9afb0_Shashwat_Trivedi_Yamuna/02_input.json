@@ -1,0 +1,30 @@
+{
+  "birth_data": {
+    "name": "Yamuna",
+    "date": "1993-07-02",
+    "time": "08:50:00",
+    "timezone": "Asia/Kolkata"
+  },
+  "current_time": "2026-05-18T03:16:02.951856+00:00",
+  "location": null,
+  "precision": "Standard",
+  "options": {
+    "humdes_reading_hash": "a6f670c7e040d85784d7781702b9afb0",
+    "humdes_reading_code": "compatibility_7de60fb84e",
+    "humdes_reading_type": "compatibility",
+    "humdes_person_index": 2,
+    "humdes_person_id": "c7b9aaaa763e2a2ac016aa68de6102a9",
+    "humdes_link": "",
+    "humdes_type_code": "R",
+    "humdes_authority_short": "Lunar",
+    "humdes_variables": [
+      "PRL",
+      "DRR"
+    ],
+    "humdes_location_string": "Bengaluru, India",
+    "humdes_location_id": "1277333",
+    "humdes_sex": "F",
+    "geocode_source": "none",
+    "geocode_display_name": null
+  }
+}

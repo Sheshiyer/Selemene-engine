@@ -1,0 +1,73 @@
+{
+  "humdes_reading": {
+    "hash": "7ec8d9aa61a3f3dd0a4ae30f5285e2f3",
+    "code": "P_6_3_132f523d70",
+    "name": "Gaurav, P, 6/3, 25.07.1990, 07:30, Chennai, India",
+    "type": "personal",
+    "person_count": 1
+  },
+  "person": {
+    "index": 1,
+    "humdes_person_id": "3b1dc2b51e6e20a2ac1ba520ec6d26a1",
+    "label": "Gaurav, P, 6/3, 25.07.1990, 07:30, Chennai, India",
+    "raw": {
+      "id": "3b1dc2b51e6e20a2ac1ba520ec6d26a1",
+      "data": "747ed458efe7463ca1eb76a94a382306",
+      "label": "Gaurav, P, 6/3, 25.07.1990, 07:30, Chennai, India",
+      "labelList": {
+        "date": "25.07.1990",
+        "type": "Projector",
+        "profile": [
+          "6",
+          "3"
+        ],
+        "vars": [
+          "PLR",
+          "DLL"
+        ],
+        "authority": "Splen."
+      },
+      "name": "Gaurav",
+      "results": "",
+      "date": "1990-07-25",
+      "time": "07:30",
+      "age": 35,
+      "location_id": "1264527",
+      "location": "Chennai, India",
+      "timezone": "Asia/Kolkata",
+      "sex": "M",
+      "type": "P",
+      "profile": {
+        "num": [
+          "6",
+          "3"
+        ],
+        "text": [
+          "Role Model",
+          "Martyr"
+        ]
+      },
+      "cross": {
+        "name": "The Left Angle Cross of Distraction",
+        "num": [
+          "56",
+          "60",
+          "27",
+          "28"
+        ]
+      },
+      "variables": [
+        "PLR",
+        "DLL"
+      ],
+      "save": true,
+      "active": false
+    }
+  },
+  "source_files": {
+    "reading_dir": "output/2026-05-16_124939_bulk2/readings/personal/7ec8d9aa61a3f3dd0a4ae30f5285e2f3_Gaurav",
+    "ravecard_file": "01_GET_ravecard_7ec8d9aa61a3f3dd0a4ae30f5285e2f3_site_1.json"
+  },
+  "captured_at": "2026-05-16T12:51:07",
+  "normalised_at": "2026-05-18T03:16:02.968674+00:00"
+}

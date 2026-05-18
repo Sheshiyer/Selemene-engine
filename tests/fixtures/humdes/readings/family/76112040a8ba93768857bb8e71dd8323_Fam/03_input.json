@@ -1,0 +1,30 @@
+{
+  "birth_data": {
+    "name": "Sheshnarayan Cumbipuram Nateshan",
+    "date": "1991-08-13",
+    "time": "13:31:00",
+    "timezone": "Asia/Kolkata"
+  },
+  "current_time": "2026-05-18T03:16:02.955706+00:00",
+  "location": null,
+  "precision": "Standard",
+  "options": {
+    "humdes_reading_hash": "76112040a8ba93768857bb8e71dd8323",
+    "humdes_reading_code": "family_11b8cee399",
+    "humdes_reading_type": "family",
+    "humdes_person_index": 3,
+    "humdes_person_id": "b9f6b9504dbb02338986593e02c841fa",
+    "humdes_link": "",
+    "humdes_type_code": "G",
+    "humdes_authority_short": "Sacr.",
+    "humdes_variables": [
+      "PRL",
+      "DRL"
+    ],
+    "humdes_location_string": "Bengaluru, India",
+    "humdes_location_id": "1277333",
+    "humdes_sex": "M",
+    "geocode_source": "none",
+    "geocode_display_name": null
+  }
+}

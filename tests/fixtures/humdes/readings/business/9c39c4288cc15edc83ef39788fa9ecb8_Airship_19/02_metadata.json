@@ -1,0 +1,73 @@
+{
+  "humdes_reading": {
+    "hash": "9c39c4288cc15edc83ef39788fa9ecb8",
+    "code": "business_f5242f5c87",
+    "name": "Airship 19",
+    "type": "business",
+    "person_count": 3
+  },
+  "person": {
+    "index": 2,
+    "humdes_person_id": "e0e616c7ac4aa06e5f3a9a4c3077a141",
+    "label": "James true, MG, 1/3, 04.05.1971, 22:36, Portsmouth, United States of America",
+    "raw": {
+      "id": "e0e616c7ac4aa06e5f3a9a4c3077a141",
+      "data": "c453b97cf5423e3d7bd4ca2aabef8db6",
+      "label": "James true, MG, 1/3, 04.05.1971, 22:36, Portsmouth, United States of America",
+      "labelList": {
+        "date": "04.05.1971",
+        "type": "M. Generator",
+        "profile": [
+          "1",
+          "3"
+        ],
+        "vars": [
+          "PRL",
+          "DLR"
+        ],
+        "authority": "Sacr."
+      },
+      "name": "James true",
+      "results": "",
+      "date": "1971-05-04",
+      "time": "22:36",
+      "age": 55,
+      "location_id": "4779999",
+      "location": "Portsmouth, United States of America",
+      "timezone": "America/New_York",
+      "sex": "M",
+      "type": "MG",
+      "profile": {
+        "num": [
+          "1",
+          "3"
+        ],
+        "text": [
+          "Investigator",
+          "Martyr"
+        ]
+      },
+      "cross": {
+        "name": "The Right Angle Cross of the Sphinx",
+        "num": [
+          "2",
+          "1",
+          "13",
+          "7"
+        ]
+      },
+      "variables": [
+        "PRL",
+        "DLR"
+      ],
+      "save": true,
+      "active": false
+    }
+  },
+  "source_files": {
+    "reading_dir": "output/2026-05-16_124939_bulk2/readings/business/9c39c4288cc15edc83ef39788fa9ecb8_Airship_19",
+    "ravecard_file": "01_GET_ravecard_9c39c4288cc15edc83ef39788fa9ecb8_site_1.json"
+  },
+  "captured_at": "2026-05-16T13:04:11",
+  "normalised_at": "2026-05-18T03:16:02.947347+00:00"
+}

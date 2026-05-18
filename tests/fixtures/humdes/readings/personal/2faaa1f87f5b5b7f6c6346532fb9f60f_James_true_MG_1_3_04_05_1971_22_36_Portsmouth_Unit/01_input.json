@@ -1,0 +1,30 @@
+{
+  "birth_data": {
+    "name": "James true",
+    "date": "1971-05-04",
+    "time": "22:36:00",
+    "timezone": "America/New_York"
+  },
+  "current_time": "2026-05-18T03:16:02.962997+00:00",
+  "location": null,
+  "precision": "Standard",
+  "options": {
+    "humdes_reading_hash": "2faaa1f87f5b5b7f6c6346532fb9f60f",
+    "humdes_reading_code": "MG_1_3_55e5e61a3b",
+    "humdes_reading_type": "personal",
+    "humdes_person_index": 1,
+    "humdes_person_id": "e0e616c7ac4aa06e5f3a9a4c3077a141",
+    "humdes_link": "",
+    "humdes_type_code": "MG",
+    "humdes_authority_short": "Sacr.",
+    "humdes_variables": [
+      "PRL",
+      "DLR"
+    ],
+    "humdes_location_string": "Portsmouth, United States of America",
+    "humdes_location_id": "4779999",
+    "humdes_sex": "M",
+    "geocode_source": "none",
+    "geocode_display_name": null
+  }
+}

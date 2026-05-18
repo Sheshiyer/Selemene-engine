@@ -1,0 +1,73 @@
+{
+  "humdes_reading": {
+    "hash": "76112040a8ba93768857bb8e71dd8323",
+    "code": "family_11b8cee399",
+    "name": "Fam",
+    "type": "family",
+    "person_count": 3
+  },
+  "person": {
+    "index": 2,
+    "humdes_person_id": "df3c538d7201a43b73da415190563f49",
+    "label": "Cumbipuram Subramaniam Nateshan , P, 4/1, 20.11.1960, 17:15, Bengaluru, India",
+    "raw": {
+      "id": "df3c538d7201a43b73da415190563f49",
+      "data": "aaeb165400d99a92fef84d58141639b9",
+      "label": "Cumbipuram Subramaniam Nateshan , P, 4/1, 20.11.1960, 17:15, Bengaluru, India",
+      "labelList": {
+        "date": "20.11.1960",
+        "type": "Projector",
+        "profile": [
+          "4",
+          "1"
+        ],
+        "vars": [
+          "PLL",
+          "DLL"
+        ],
+        "authority": "Splen."
+      },
+      "name": "Cumbipuram Subramaniam Nateshan ",
+      "results": "",
+      "date": "1960-11-20",
+      "time": "17:15",
+      "age": 65,
+      "location_id": "1277333",
+      "location": "Bengaluru, India",
+      "timezone": "Asia/Kolkata",
+      "sex": "M",
+      "type": "P",
+      "profile": {
+        "num": [
+          "4",
+          "1"
+        ],
+        "text": [
+          "Opportunist",
+          "Investigator"
+        ]
+      },
+      "cross": {
+        "name": "The Juxtaposition Cross of Empowering",
+        "num": [
+          "14",
+          "8",
+          "59",
+          "55"
+        ]
+      },
+      "variables": [
+        "PLL",
+        "DLL"
+      ],
+      "save": true,
+      "active": false
+    }
+  },
+  "source_files": {
+    "reading_dir": "output/2026-05-16_124939_bulk2/readings/family/76112040a8ba93768857bb8e71dd8323_Fam",
+    "ravecard_file": "01_GET_ravecard_76112040a8ba93768857bb8e71dd8323_site_1.json"
+  },
+  "captured_at": "2026-05-16T13:05:18",
+  "normalised_at": "2026-05-18T03:16:02.955561+00:00"
+}

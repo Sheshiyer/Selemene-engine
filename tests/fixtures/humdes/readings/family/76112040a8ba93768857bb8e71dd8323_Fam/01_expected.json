@@ -1,0 +1,52 @@
+{
+  "name": "Anitha Nateshan",
+  "birth_date": "1965-06-01",
+  "birth_time": "00:35:00",
+  "timezone": "Asia/Kolkata",
+  "latitude": null,
+  "longitude": null,
+  "expected": {
+    "type": "Manifestor",
+    "type_humdes_code": "M",
+    "profile": {
+      "conscious_line": 5,
+      "unconscious_line": 1,
+      "text": "5/1"
+    },
+    "authority": "Emotional",
+    "authority_humdes_label": "Emot.",
+    "variables": [
+      "PRR",
+      "DRR"
+    ],
+    "incarnation_cross": {
+      "name": "The Left Angle Cross of Identification",
+      "gates": [
+        16,
+        9,
+        63,
+        64
+      ]
+    },
+    "personality_sun": {
+      "gate": null
+    },
+    "personality_earth": {
+      "gate": null
+    },
+    "design_sun": {
+      "gate": null
+    },
+    "design_earth": {
+      "gate": null
+    },
+    "active_channels": null,
+    "defined_centers": null,
+    "active_gates": null,
+    "definition": null,
+    "strategy": null,
+    "strategy_humdes_label": null,
+    "not_self_theme": null,
+    "not_self_humdes_label": null
+  }
+}

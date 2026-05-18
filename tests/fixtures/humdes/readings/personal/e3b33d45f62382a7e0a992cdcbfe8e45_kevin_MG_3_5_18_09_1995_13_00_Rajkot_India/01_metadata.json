@@ -1,0 +1,73 @@
+{
+  "humdes_reading": {
+    "hash": "e3b33d45f62382a7e0a992cdcbfe8e45",
+    "code": "MG_3_5_d26578ba83",
+    "name": "kevin, MG, 3/5, 18.09.1995, 13:00, Rajkot, India",
+    "type": "personal",
+    "person_count": 1
+  },
+  "person": {
+    "index": 1,
+    "humdes_person_id": "a7cb2e84e280604442558d186aea2ec8",
+    "label": "kevin, MG, 3/5, 18.09.1995, 13:00, Rajkot, India",
+    "raw": {
+      "id": "a7cb2e84e280604442558d186aea2ec8",
+      "data": "b02141cd3645451ea24525d634a85a04",
+      "label": "kevin, MG, 3/5, 18.09.1995, 13:00, Rajkot, India",
+      "labelList": {
+        "date": "18.09.1995",
+        "type": "M. Generator",
+        "profile": [
+          "3",
+          "5"
+        ],
+        "vars": [
+          "PRR",
+          "DLR"
+        ],
+        "authority": "Emot."
+      },
+      "name": "kevin",
+      "results": "",
+      "date": "1995-09-18",
+      "time": "13:00",
+      "age": 30,
+      "location_id": "1258847",
+      "location": "Rajkot, India",
+      "timezone": "Asia/Kolkata",
+      "sex": "M",
+      "type": "MG",
+      "profile": {
+        "num": [
+          "3",
+          "5"
+        ],
+        "text": [
+          "Martyr",
+          "Heretic"
+        ]
+      },
+      "cross": {
+        "name": "The Right Angle Cross of Eden",
+        "num": [
+          "6",
+          "36",
+          "12",
+          "11"
+        ]
+      },
+      "variables": [
+        "PRR",
+        "DLR"
+      ],
+      "save": true,
+      "active": false
+    }
+  },
+  "source_files": {
+    "reading_dir": "output/2026-05-16_124939_bulk2/readings/personal/e3b33d45f62382a7e0a992cdcbfe8e45_kevin",
+    "ravecard_file": "01_GET_ravecard_e3b33d45f62382a7e0a992cdcbfe8e45_site_1.json"
+  },
+  "captured_at": "2026-05-16T12:55:44",
+  "normalised_at": "2026-05-18T03:16:02.983804+00:00"
+}

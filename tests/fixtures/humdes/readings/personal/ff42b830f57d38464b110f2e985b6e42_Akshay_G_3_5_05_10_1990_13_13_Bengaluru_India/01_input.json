@@ -1,0 +1,30 @@
+{
+  "birth_data": {
+    "name": "Akshay",
+    "date": "1990-10-05",
+    "time": "13:13:00",
+    "timezone": "Asia/Kolkata"
+  },
+  "current_time": "2026-05-18T03:16:02.986934+00:00",
+  "location": null,
+  "precision": "Standard",
+  "options": {
+    "humdes_reading_hash": "ff42b830f57d38464b110f2e985b6e42",
+    "humdes_reading_code": "G_3_5_3d23956f09",
+    "humdes_reading_type": "personal",
+    "humdes_person_index": 1,
+    "humdes_person_id": "a5810cf7acd3f2a80c2fd5d75e5e1338",
+    "humdes_link": "",
+    "humdes_type_code": "G",
+    "humdes_authority_short": "Sacr.",
+    "humdes_variables": [
+      "PRR",
+      "DRR"
+    ],
+    "humdes_location_string": "Bengaluru, India",
+    "humdes_location_id": "1277333",
+    "humdes_sex": "M",
+    "geocode_source": "none",
+    "geocode_display_name": null
+  }
+}

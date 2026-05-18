@@ -1,0 +1,73 @@
+{
+  "humdes_reading": {
+    "hash": "1c65bd620d390b87a03f067735c3d990",
+    "code": "MG_4_6_b430723802",
+    "name": "Shekar , MG, 4/6, 08.12.1959, 00:00, Chennai, India",
+    "type": "personal",
+    "person_count": 1
+  },
+  "person": {
+    "index": 1,
+    "humdes_person_id": "1467ede17232e2d677bd3253022a9eaa",
+    "label": "Shekar , MG, 4/6, 08.12.1959, 00:00, Chennai, India",
+    "raw": {
+      "id": "1467ede17232e2d677bd3253022a9eaa",
+      "data": "2d64cca1c2af2964cf0178f04b9e0d1d",
+      "label": "Shekar , MG, 4/6, 08.12.1959, 00:00, Chennai, India",
+      "labelList": {
+        "date": "08.12.1959",
+        "type": "M. Generator",
+        "profile": [
+          "4",
+          "6"
+        ],
+        "vars": [
+          "PRR",
+          "DLR"
+        ],
+        "authority": "Emot."
+      },
+      "name": "Shekar ",
+      "results": "",
+      "date": "1959-12-08",
+      "time": "00:00",
+      "age": 66,
+      "location_id": "1264527",
+      "location": "Chennai, India",
+      "timezone": "Asia/Kolkata",
+      "sex": "M",
+      "type": "MG",
+      "profile": {
+        "num": [
+          "4",
+          "6"
+        ],
+        "text": [
+          "Opportunist",
+          "Role Model"
+        ]
+      },
+      "cross": {
+        "name": "The Right Angle Cross of Consciousness",
+        "num": [
+          "5",
+          "35",
+          "64",
+          "63"
+        ]
+      },
+      "variables": [
+        "PRR",
+        "DLR"
+      ],
+      "save": true,
+      "active": false
+    }
+  },
+  "source_files": {
+    "reading_dir": "output/2026-05-16_124939_bulk2/readings/personal/1c65bd620d390b87a03f067735c3d990_Shekar",
+    "ravecard_file": "01_GET_ravecard_1c65bd620d390b87a03f067735c3d990_site_1.json"
+  },
+  "captured_at": "2026-05-16T12:50:43",
+  "normalised_at": "2026-05-18T03:16:02.960450+00:00"
+}

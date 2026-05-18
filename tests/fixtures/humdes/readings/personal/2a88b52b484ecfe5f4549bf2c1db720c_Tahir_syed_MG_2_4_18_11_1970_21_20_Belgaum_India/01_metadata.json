@@ -1,0 +1,73 @@
+{
+  "humdes_reading": {
+    "hash": "2a88b52b484ecfe5f4549bf2c1db720c",
+    "code": "MG_2_4_7a2bafdae8",
+    "name": "Tahir syed, MG, 2/4, 18.11.1970, 21:20, Belgaum, India",
+    "type": "personal",
+    "person_count": 1
+  },
+  "person": {
+    "index": 1,
+    "humdes_person_id": "9c09098a81f32ba64753daac2875e7a6",
+    "label": "Tahir syed, MG, 2/4, 18.11.1970, 21:20, Belgaum, India",
+    "raw": {
+      "id": "9c09098a81f32ba64753daac2875e7a6",
+      "data": "f29c20f31946ff2d41e5dd92d6228e78",
+      "label": "Tahir syed, MG, 2/4, 18.11.1970, 21:20, Belgaum, India",
+      "labelList": {
+        "date": "18.11.1970",
+        "type": "M. Generator",
+        "profile": [
+          "2",
+          "4"
+        ],
+        "vars": [
+          "PRL",
+          "DRL"
+        ],
+        "authority": "Emot."
+      },
+      "name": "Tahir syed",
+      "results": "",
+      "date": "1970-11-18",
+      "time": "21:20",
+      "age": 55,
+      "location_id": "1276533",
+      "location": "Belgaum, India",
+      "timezone": "Asia/Kolkata",
+      "sex": "M",
+      "type": "MG",
+      "profile": {
+        "num": [
+          "2",
+          "4"
+        ],
+        "text": [
+          "Hermit",
+          "Opportunist"
+        ]
+      },
+      "cross": {
+        "name": "The Right Angle Cross of Contagion",
+        "num": [
+          "14",
+          "8",
+          "29",
+          "30"
+        ]
+      },
+      "variables": [
+        "PRL",
+        "DRL"
+      ],
+      "save": true,
+      "active": false
+    }
+  },
+  "source_files": {
+    "reading_dir": "output/2026-05-16_124939_bulk2/readings/personal/2a88b52b484ecfe5f4549bf2c1db720c_Tahir_syed",
+    "ravecard_file": "01_GET_ravecard_2a88b52b484ecfe5f4549bf2c1db720c_site_1.json"
+  },
+  "captured_at": "2026-05-16T12:52:05",
+  "normalised_at": "2026-05-18T03:16:02.961933+00:00"
+}

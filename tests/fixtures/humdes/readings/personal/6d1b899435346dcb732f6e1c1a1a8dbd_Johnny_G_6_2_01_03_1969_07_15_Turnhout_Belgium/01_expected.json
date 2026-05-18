@@ -1,0 +1,52 @@
+{
+  "name": "Johnny",
+  "birth_date": "1969-03-01",
+  "birth_time": "07:15:00",
+  "timezone": "Europe/Brussels",
+  "latitude": null,
+  "longitude": null,
+  "expected": {
+    "type": "Generator",
+    "type_humdes_code": "G",
+    "profile": {
+      "conscious_line": 6,
+      "unconscious_line": 2,
+      "text": "6/2"
+    },
+    "authority": "Emotional",
+    "authority_humdes_label": "Emot.",
+    "variables": [
+      "PLR",
+      "DLL"
+    ],
+    "incarnation_cross": {
+      "name": "The Left Angle Cross of Migration",
+      "gates": [
+        37,
+        40,
+        5,
+        35
+      ]
+    },
+    "personality_sun": {
+      "gate": 37
+    },
+    "personality_earth": {
+      "gate": 40
+    },
+    "design_sun": {
+      "gate": 5
+    },
+    "design_earth": {
+      "gate": 35
+    },
+    "active_channels": null,
+    "defined_centers": null,
+    "active_gates": null,
+    "definition": null,
+    "strategy": null,
+    "strategy_humdes_label": null,
+    "not_self_theme": null,
+    "not_self_humdes_label": null
+  }
+}

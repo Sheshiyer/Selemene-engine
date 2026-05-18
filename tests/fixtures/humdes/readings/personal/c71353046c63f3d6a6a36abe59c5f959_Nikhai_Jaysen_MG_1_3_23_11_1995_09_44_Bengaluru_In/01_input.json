@@ -1,0 +1,30 @@
+{
+  "birth_data": {
+    "name": "Nikhai Jaysen",
+    "date": "1995-11-23",
+    "time": "09:44:00",
+    "timezone": "Asia/Kolkata"
+  },
+  "current_time": "2026-05-18T03:16:02.980505+00:00",
+  "location": null,
+  "precision": "Standard",
+  "options": {
+    "humdes_reading_hash": "c71353046c63f3d6a6a36abe59c5f959",
+    "humdes_reading_code": "MG_1_3_014b426941",
+    "humdes_reading_type": "personal",
+    "humdes_person_index": 1,
+    "humdes_person_id": "ad81221bdf14e65d719a3ca6b5384413",
+    "humdes_link": "",
+    "humdes_type_code": "MG",
+    "humdes_authority_short": "Emot.",
+    "humdes_variables": [
+      "PRR",
+      "DLR"
+    ],
+    "humdes_location_string": "Bengaluru, India",
+    "humdes_location_id": "1277333",
+    "humdes_sex": "M",
+    "geocode_source": "none",
+    "geocode_display_name": null
+  }
+}

@@ -1,0 +1,73 @@
+{
+  "humdes_reading": {
+    "hash": "09b0d7659dcfc8aa12c85c2a7c608d8e",
+    "code": "MG_1_3_6e9c795145",
+    "name": "Arjun Kamath, MG, 1/3, 08.03.1987, 09:24, Bengaluru, India",
+    "type": "personal",
+    "person_count": 1
+  },
+  "person": {
+    "index": 1,
+    "humdes_person_id": "996d837fefbdebd26d2e7502c5f8c639",
+    "label": "Arjun Kamath, MG, 1/3, 08.03.1987, 09:24, Bengaluru, India",
+    "raw": {
+      "id": "996d837fefbdebd26d2e7502c5f8c639",
+      "data": "efcaaa9935e5971c9d7c16d8f2125743",
+      "label": "Arjun Kamath, MG, 1/3, 08.03.1987, 09:24, Bengaluru, India",
+      "labelList": {
+        "date": "08.03.1987",
+        "type": "M. Generator",
+        "profile": [
+          "1",
+          "3"
+        ],
+        "vars": [
+          "PLR",
+          "DLL"
+        ],
+        "authority": "Emot."
+      },
+      "name": "Arjun Kamath",
+      "results": "",
+      "date": "1987-03-08",
+      "time": "09:24",
+      "age": 39,
+      "location_id": "1277333",
+      "location": "Bengaluru, India",
+      "timezone": "Asia/Kolkata",
+      "sex": "M",
+      "type": "MG",
+      "profile": {
+        "num": [
+          "1",
+          "3"
+        ],
+        "text": [
+          "Investigator",
+          "Martyr"
+        ]
+      },
+      "cross": {
+        "name": "The Right Angle Cross of Rulership",
+        "num": [
+          "22",
+          "47",
+          "26",
+          "45"
+        ]
+      },
+      "variables": [
+        "PLR",
+        "DLL"
+      ],
+      "save": true,
+      "active": false
+    }
+  },
+  "source_files": {
+    "reading_dir": "output/2026-05-16_124939_bulk2/readings/personal/09b0d7659dcfc8aa12c85c2a7c608d8e_Arjun_Kamath",
+    "ravecard_file": "01_GET_ravecard_09b0d7659dcfc8aa12c85c2a7c608d8e_site_1.json"
+  },
+  "captured_at": "2026-05-16T12:58:34",
+  "normalised_at": "2026-05-18T03:16:02.958872+00:00"
+}

@@ -1,0 +1,52 @@
+{
+  "name": "Rehman ali",
+  "birth_date": "2000-06-30",
+  "birth_time": "03:00:00",
+  "timezone": "Asia/Kolkata",
+  "latitude": null,
+  "longitude": null,
+  "expected": {
+    "type": "Generator",
+    "type_humdes_code": "G",
+    "profile": {
+      "conscious_line": 5,
+      "unconscious_line": 1,
+      "text": "5/1"
+    },
+    "authority": "Emotional",
+    "authority_humdes_label": "Emot.",
+    "variables": [
+      "PLR",
+      "DRL"
+    ],
+    "incarnation_cross": {
+      "name": "The Left Angle Cross of Demands",
+      "gates": [
+        52,
+        58,
+        21,
+        48
+      ]
+    },
+    "personality_sun": {
+      "gate": null
+    },
+    "personality_earth": {
+      "gate": null
+    },
+    "design_sun": {
+      "gate": null
+    },
+    "design_earth": {
+      "gate": null
+    },
+    "active_channels": null,
+    "defined_centers": null,
+    "active_gates": null,
+    "definition": null,
+    "strategy": null,
+    "strategy_humdes_label": null,
+    "not_self_theme": null,
+    "not_self_humdes_label": null
+  }
+}

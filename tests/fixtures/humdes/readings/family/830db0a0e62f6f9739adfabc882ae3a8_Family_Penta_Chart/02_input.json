@@ -1,0 +1,30 @@
+{
+  "birth_data": {
+    "name": "Rishav Prashanth",
+    "date": "2023-06-28",
+    "time": "20:28:00",
+    "timezone": "Asia/Kolkata"
+  },
+  "current_time": "2026-05-18T03:16:02.956329+00:00",
+  "location": null,
+  "precision": "Standard",
+  "options": {
+    "humdes_reading_hash": "830db0a0e62f6f9739adfabc882ae3a8",
+    "humdes_reading_code": "family_c53beb765b",
+    "humdes_reading_type": "family",
+    "humdes_person_index": 2,
+    "humdes_person_id": "315a4128bc5dd11fc7d02753e10532fe",
+    "humdes_link": "",
+    "humdes_type_code": "G",
+    "humdes_authority_short": "Emot.",
+    "humdes_variables": [
+      "PRL",
+      "DRL"
+    ],
+    "humdes_location_string": "Bengaluru, India",
+    "humdes_location_id": "1277333",
+    "humdes_sex": "M",
+    "geocode_source": "none",
+    "geocode_display_name": null
+  }
+}

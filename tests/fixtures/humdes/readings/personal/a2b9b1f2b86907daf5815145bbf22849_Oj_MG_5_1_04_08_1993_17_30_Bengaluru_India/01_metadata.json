@@ -1,0 +1,73 @@
+{
+  "humdes_reading": {
+    "hash": "a2b9b1f2b86907daf5815145bbf22849",
+    "code": "MG_5_1_aa68970341",
+    "name": "Oj, MG, 5/1, 04.08.1993, 17:30, Bengaluru, India",
+    "type": "personal",
+    "person_count": 1
+  },
+  "person": {
+    "index": 1,
+    "humdes_person_id": "3e2f297385d3b6c0e95c9c408b0c45c7",
+    "label": "Oj, MG, 5/1, 04.08.1993, 17:30, Bengaluru, India",
+    "raw": {
+      "id": "3e2f297385d3b6c0e95c9c408b0c45c7",
+      "data": "4d4d0bb82238efe5194925d3e0e62330",
+      "label": "Oj, MG, 5/1, 04.08.1993, 17:30, Bengaluru, India",
+      "labelList": {
+        "date": "04.08.1993",
+        "type": "M. Generator",
+        "profile": [
+          "5",
+          "1"
+        ],
+        "vars": [
+          "PRL",
+          "DRL"
+        ],
+        "authority": "Sacr."
+      },
+      "name": "Oj",
+      "results": "",
+      "date": "1993-08-04",
+      "time": "17:30",
+      "age": 32,
+      "location_id": "1277333",
+      "location": "Bengaluru, India",
+      "timezone": "Asia/Kolkata",
+      "sex": "M",
+      "type": "MG",
+      "profile": {
+        "num": [
+          "5",
+          "1"
+        ],
+        "text": [
+          "Heretic",
+          "Investigator"
+        ]
+      },
+      "cross": {
+        "name": "The Left Angle Cross of Refinement",
+        "num": [
+          "33",
+          "19",
+          "2",
+          "1"
+        ]
+      },
+      "variables": [
+        "PRL",
+        "DRL"
+      ],
+      "save": true,
+      "active": false
+    }
+  },
+  "source_files": {
+    "reading_dir": "output/2026-05-16_124939_bulk2/readings/personal/a2b9b1f2b86907daf5815145bbf22849_Oj",
+    "ravecard_file": "01_GET_ravecard_a2b9b1f2b86907daf5815145bbf22849_site_1.json"
+  },
+  "captured_at": "2026-05-16T12:53:56",
+  "normalised_at": "2026-05-18T03:16:02.972133+00:00"
+}

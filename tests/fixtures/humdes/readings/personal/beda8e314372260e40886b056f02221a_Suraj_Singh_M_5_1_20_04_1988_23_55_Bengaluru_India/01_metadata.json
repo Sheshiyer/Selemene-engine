@@ -1,0 +1,73 @@
+{
+  "humdes_reading": {
+    "hash": "beda8e314372260e40886b056f02221a",
+    "code": "M_5_1_cba23fed0e",
+    "name": "Suraj Singh, M, 5/1, 20.04.1988, 23:55, Bengaluru, India",
+    "type": "personal",
+    "person_count": 1
+  },
+  "person": {
+    "index": 1,
+    "humdes_person_id": "b8e5658ad6081811a840ea8f6bd2ea3e",
+    "label": "Suraj Singh, M, 5/1, 20.04.1988, 23:55, Bengaluru, India",
+    "raw": {
+      "id": "b8e5658ad6081811a840ea8f6bd2ea3e",
+      "data": "ead89b3e79d9ad7106ef904c201e43e4",
+      "label": "Suraj Singh, M, 5/1, 20.04.1988, 23:55, Bengaluru, India",
+      "labelList": {
+        "date": "20.04.1988",
+        "type": "Manifestor",
+        "profile": [
+          "5",
+          "1"
+        ],
+        "vars": [
+          "PRR",
+          "DRL"
+        ],
+        "authority": "Emot."
+      },
+      "name": "Suraj Singh",
+      "results": "",
+      "date": "1988-04-20",
+      "time": "23:55",
+      "age": 38,
+      "location_id": "1277333",
+      "location": "Bengaluru, India",
+      "timezone": "Asia/Kolkata",
+      "sex": "M",
+      "type": "M",
+      "profile": {
+        "num": [
+          "5",
+          "1"
+        ],
+        "text": [
+          "Heretic",
+          "Investigator"
+        ]
+      },
+      "cross": {
+        "name": "The Left Angle Cross of Wishes",
+        "num": [
+          "3",
+          "50",
+          "41",
+          "31"
+        ]
+      },
+      "variables": [
+        "PRR",
+        "DRL"
+      ],
+      "save": true,
+      "active": false
+    }
+  },
+  "source_files": {
+    "reading_dir": "output/2026-05-16_124939_bulk2/readings/personal/beda8e314372260e40886b056f02221a_Suraj_Singh",
+    "ravecard_file": "01_GET_ravecard_beda8e314372260e40886b056f02221a_site_1.json"
+  },
+  "captured_at": "2026-05-16T12:56:54",
+  "normalised_at": "2026-05-18T03:16:02.978493+00:00"
+}

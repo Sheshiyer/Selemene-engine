@@ -1,0 +1,73 @@
+{
+  "humdes_reading": {
+    "hash": "7358039863f698ad15817cfa06ff794b",
+    "code": "business_e19a65bd83",
+    "name": "BG-5 Penta Chart",
+    "type": "business",
+    "person_count": 3
+  },
+  "person": {
+    "index": 2,
+    "humdes_person_id": "2c0913688e82909442b9d8897b666410",
+    "label": "Sahil Singh Sabharwal , G, 1/4, 14.03.1992, 02:22, Bengaluru, India",
+    "raw": {
+      "id": "2c0913688e82909442b9d8897b666410",
+      "data": "c3127f96ffda6647bbc70cb716c38be9",
+      "label": "Sahil Singh Sabharwal , G, 1/4, 14.03.1992, 02:22, Bengaluru, India",
+      "labelList": {
+        "date": "14.03.1992",
+        "type": "Generator",
+        "profile": [
+          "1",
+          "4"
+        ],
+        "vars": [
+          "PRL",
+          "DRR"
+        ],
+        "authority": "Emot."
+      },
+      "name": "Sahil Singh Sabharwal ",
+      "results": "",
+      "date": "1992-03-14",
+      "time": "02:22",
+      "age": 34,
+      "location_id": "1277333",
+      "location": "Bengaluru, India",
+      "timezone": "Asia/Kolkata",
+      "sex": "M",
+      "type": "G",
+      "profile": {
+        "num": [
+          "1",
+          "4"
+        ],
+        "text": [
+          "Investigator",
+          "Opportunist"
+        ]
+      },
+      "cross": {
+        "name": "The Right Angle Cross of the Eden",
+        "num": [
+          "36",
+          "6",
+          "11",
+          "12"
+        ]
+      },
+      "variables": [
+        "PRL",
+        "DRR"
+      ],
+      "save": true,
+      "active": false
+    }
+  },
+  "source_files": {
+    "reading_dir": "output/2026-05-16_124939_bulk2/readings/business/7358039863f698ad15817cfa06ff794b_BG-5_Penta_Chart",
+    "ravecard_file": "01_GET_ravecard_7358039863f698ad15817cfa06ff794b_site_1.json"
+  },
+  "captured_at": "2026-05-16T13:03:48",
+  "normalised_at": "2026-05-18T03:16:02.946409+00:00"
+}

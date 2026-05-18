@@ -1,0 +1,73 @@
+{
+  "humdes_reading": {
+    "hash": "363c1877def4e22b6d625271b280374c",
+    "code": "G_5_2_236246de17",
+    "name": "Dinesh, G, 5/2, 14.05.1996, 05:58, Tiruchirappalli, India",
+    "type": "personal",
+    "person_count": 1
+  },
+  "person": {
+    "index": 1,
+    "humdes_person_id": "a297b1fe463955f7e859163836c58ae1",
+    "label": "Dinesh, G, 5/2, 14.05.1996, 05:58, Tiruchirappalli, India",
+    "raw": {
+      "id": "a297b1fe463955f7e859163836c58ae1",
+      "data": "cd036044f088b4fc12a02c38c897009f",
+      "label": "Dinesh, G, 5/2, 14.05.1996, 05:58, Tiruchirappalli, India",
+      "labelList": {
+        "date": "14.05.1996",
+        "type": "Generator",
+        "profile": [
+          "5",
+          "2"
+        ],
+        "vars": [
+          "PRR",
+          "DLL"
+        ],
+        "authority": "Emot."
+      },
+      "name": "Dinesh",
+      "results": "",
+      "date": "1996-05-14",
+      "time": "05:58",
+      "age": 30,
+      "location_id": "1254388",
+      "location": "Tiruchirappalli, India",
+      "timezone": "Asia/Kolkata",
+      "sex": "M",
+      "type": "G",
+      "profile": {
+        "num": [
+          "5",
+          "2"
+        ],
+        "text": [
+          "Heretic",
+          "Hermit"
+        ]
+      },
+      "cross": {
+        "name": "The Left Angle Cross of Dedication",
+        "num": [
+          "23",
+          "43",
+          "30",
+          "29"
+        ]
+      },
+      "variables": [
+        "PRR",
+        "DLL"
+      ],
+      "save": true,
+      "active": false
+    }
+  },
+  "source_files": {
+    "reading_dir": "output/2026-05-16_124939_bulk2/readings/personal/363c1877def4e22b6d625271b280374c_Dinesh",
+    "ravecard_file": "01_GET_ravecard_363c1877def4e22b6d625271b280374c_site_1.json"
+  },
+  "captured_at": "2026-05-16T12:56:09",
+  "normalised_at": "2026-05-18T03:16:02.963595+00:00"
+}

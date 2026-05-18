@@ -1,0 +1,30 @@
+{
+  "birth_data": {
+    "name": "Tahir syed",
+    "date": "1970-11-18",
+    "time": "21:20:00",
+    "timezone": "Asia/Kolkata"
+  },
+  "current_time": "2026-05-18T03:16:02.961910+00:00",
+  "location": null,
+  "precision": "Standard",
+  "options": {
+    "humdes_reading_hash": "2a88b52b484ecfe5f4549bf2c1db720c",
+    "humdes_reading_code": "MG_2_4_7a2bafdae8",
+    "humdes_reading_type": "personal",
+    "humdes_person_index": 1,
+    "humdes_person_id": "9c09098a81f32ba64753daac2875e7a6",
+    "humdes_link": "",
+    "humdes_type_code": "MG",
+    "humdes_authority_short": "Emot.",
+    "humdes_variables": [
+      "PRL",
+      "DRL"
+    ],
+    "humdes_location_string": "Belgaum, India",
+    "humdes_location_id": "1276533",
+    "humdes_sex": "M",
+    "geocode_source": "none",
+    "geocode_display_name": null
+  }
+}

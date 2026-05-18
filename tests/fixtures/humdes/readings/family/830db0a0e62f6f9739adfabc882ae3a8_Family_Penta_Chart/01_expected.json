@@ -1,0 +1,52 @@
+{
+  "name": "Prashanth",
+  "birth_date": "1990-05-07",
+  "birth_time": "18:30:00",
+  "timezone": "Asia/Kolkata",
+  "latitude": null,
+  "longitude": null,
+  "expected": {
+    "type": "Projector",
+    "type_humdes_code": "P",
+    "profile": {
+      "conscious_line": 4,
+      "unconscious_line": 6,
+      "text": "4/6"
+    },
+    "authority": "Splenic",
+    "authority_humdes_label": "Splen.",
+    "variables": [
+      "PLL",
+      "DRR"
+    ],
+    "incarnation_cross": {
+      "name": "The Right Angle Cross of the Sphinx",
+      "gates": [
+        2,
+        1,
+        13,
+        7
+      ]
+    },
+    "personality_sun": {
+      "gate": null
+    },
+    "personality_earth": {
+      "gate": null
+    },
+    "design_sun": {
+      "gate": null
+    },
+    "design_earth": {
+      "gate": null
+    },
+    "active_channels": null,
+    "defined_centers": null,
+    "active_gates": null,
+    "definition": null,
+    "strategy": null,
+    "strategy_humdes_label": null,
+    "not_self_theme": null,
+    "not_self_humdes_label": null
+  }
+}

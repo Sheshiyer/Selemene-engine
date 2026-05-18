@@ -1,0 +1,73 @@
+{
+  "humdes_reading": {
+    "hash": "286baff2c337465b4be9fcb7f266e974",
+    "code": "hologenetic_59f561a646",
+    "name": "Shesh",
+    "type": "hologenetic",
+    "person_count": 1
+  },
+  "person": {
+    "index": 1,
+    "humdes_person_id": "9eedbd94728ecd7ea36b87a0dfdad29d",
+    "label": "Shesh, G, 2/4, 13.08.1991, 13:31, Bengaluru, India",
+    "raw": {
+      "id": "9eedbd94728ecd7ea36b87a0dfdad29d",
+      "data": "8c1111fc9114739be711c4b1aae40db5",
+      "label": "Shesh, G, 2/4, 13.08.1991, 13:31, Bengaluru, India",
+      "labelList": {
+        "date": "13.08.1991",
+        "type": "Generator",
+        "profile": [
+          "2",
+          "4"
+        ],
+        "vars": [
+          "PRL",
+          "DRL"
+        ],
+        "authority": "Sacr."
+      },
+      "name": "Shesh",
+      "results": "",
+      "date": "1991-08-13",
+      "time": "13:31",
+      "age": 34,
+      "location_id": "1277333",
+      "location": "Bengaluru, India",
+      "timezone": "Asia/Kolkata",
+      "sex": "M",
+      "type": "G",
+      "profile": {
+        "num": [
+          "2",
+          "4"
+        ],
+        "text": [
+          "Hermit",
+          "Opportunist"
+        ]
+      },
+      "cross": {
+        "name": "The Right Angle Cross of Explanation",
+        "num": [
+          "4",
+          "49",
+          "23",
+          "43"
+        ]
+      },
+      "variables": [
+        "PRL",
+        "DRL"
+      ],
+      "save": true,
+      "active": false
+    }
+  },
+  "source_files": {
+    "reading_dir": "output/2026-05-16_124939_bulk2/readings/hologenetic/286baff2c337465b4be9fcb7f266e974_Shesh",
+    "ravecard_file": "01_GET_ravecard_286baff2c337465b4be9fcb7f266e974_site_1.json"
+  },
+  "captured_at": "2026-05-16T12:59:32",
+  "normalised_at": "2026-05-18T03:16:02.957118+00:00"
+}

@@ -1,0 +1,52 @@
+{
+  "name": "Triveni K",
+  "birth_date": "1996-08-21",
+  "birth_time": "05:30:00",
+  "timezone": "Asia/Kolkata",
+  "latitude": null,
+  "longitude": null,
+  "expected": {
+    "type": "ManifestingGenerator",
+    "type_humdes_code": "MG",
+    "profile": {
+      "conscious_line": 4,
+      "unconscious_line": 1,
+      "text": "4/1"
+    },
+    "authority": "Emotional",
+    "authority_humdes_label": "Emot.",
+    "variables": [
+      "PRR",
+      "DRR"
+    ],
+    "incarnation_cross": {
+      "name": "The Juxtaposition Cross of Commitment",
+      "gates": [
+        29,
+        30,
+        20,
+        34
+      ]
+    },
+    "personality_sun": {
+      "gate": 29
+    },
+    "personality_earth": {
+      "gate": 30
+    },
+    "design_sun": {
+      "gate": 20
+    },
+    "design_earth": {
+      "gate": 34
+    },
+    "active_channels": null,
+    "defined_centers": null,
+    "active_gates": null,
+    "definition": null,
+    "strategy": null,
+    "strategy_humdes_label": null,
+    "not_self_theme": null,
+    "not_self_humdes_label": null
+  }
+}

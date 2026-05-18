@@ -1,0 +1,73 @@
+{
+  "humdes_reading": {
+    "hash": "6d1b899435346dcb732f6e1c1a1a8dbd",
+    "code": "G_6_2_34b85e210a",
+    "name": "Johnny, G, 6/2, 01.03.1969, 07:15, Turnhout, Belgium",
+    "type": "personal",
+    "person_count": 1
+  },
+  "person": {
+    "index": 1,
+    "humdes_person_id": "8e8ceca90557a5bf4bf2bdaf526b1547",
+    "label": "Johnny, G, 6/2, 01.03.1969, 07:15, Turnhout, Belgium",
+    "raw": {
+      "id": "8e8ceca90557a5bf4bf2bdaf526b1547",
+      "data": "3dc1a56b9b1a9f8f864fcbcb871d0f8e",
+      "label": "Johnny, G, 6/2, 01.03.1969, 07:15, Turnhout, Belgium",
+      "labelList": {
+        "date": "01.03.1969",
+        "type": "Generator",
+        "profile": [
+          "6",
+          "2"
+        ],
+        "vars": [
+          "PLR",
+          "DLL"
+        ],
+        "authority": "Emot."
+      },
+      "name": "Johnny",
+      "results": "",
+      "date": "1969-03-01",
+      "time": "07:15",
+      "age": 57,
+      "location_id": "2785141",
+      "location": "Turnhout, Belgium",
+      "timezone": "Europe/Brussels",
+      "sex": "M",
+      "type": "G",
+      "profile": {
+        "num": [
+          "6",
+          "2"
+        ],
+        "text": [
+          "Role Model",
+          "Hermit"
+        ]
+      },
+      "cross": {
+        "name": "The Left Angle Cross of Migration",
+        "num": [
+          "37",
+          "40",
+          "5",
+          "35"
+        ]
+      },
+      "variables": [
+        "PLR",
+        "DLL"
+      ],
+      "save": true,
+      "active": false
+    }
+  },
+  "source_files": {
+    "reading_dir": "output/2026-05-16_124939_bulk2/readings/personal/6d1b899435346dcb732f6e1c1a1a8dbd_Johnny",
+    "ravecard_file": "01_GET_ravecard_6d1b899435346dcb732f6e1c1a1a8dbd_site_1.json"
+  },
+  "captured_at": "2026-05-16T12:56:32",
+  "normalised_at": "2026-05-18T03:16:02.967333+00:00"
+}

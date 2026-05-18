@@ -1,0 +1,52 @@
+{
+  "name": "Muhammadfais YAKAT",
+  "birth_date": "1995-04-29",
+  "birth_time": "17:32:00",
+  "timezone": "Asia/Bangkok",
+  "latitude": null,
+  "longitude": null,
+  "expected": {
+    "type": "Projector",
+    "type_humdes_code": "P",
+    "profile": {
+      "conscious_line": 2,
+      "unconscious_line": 4,
+      "text": "2/4"
+    },
+    "authority": "Emotional",
+    "authority_humdes_label": "Emot.",
+    "variables": [
+      "PRL",
+      "DLR"
+    ],
+    "incarnation_cross": {
+      "name": "The Right Angle Cross of the Four Ways",
+      "gates": [
+        24,
+        44,
+        19,
+        33
+      ]
+    },
+    "personality_sun": {
+      "gate": 24
+    },
+    "personality_earth": {
+      "gate": 44
+    },
+    "design_sun": {
+      "gate": 19
+    },
+    "design_earth": {
+      "gate": 33
+    },
+    "active_channels": null,
+    "defined_centers": null,
+    "active_gates": null,
+    "definition": null,
+    "strategy": null,
+    "strategy_humdes_label": null,
+    "not_self_theme": null,
+    "not_self_humdes_label": null
+  }
+}

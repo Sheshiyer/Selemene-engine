@@ -1,0 +1,52 @@
+{
+  "name": "Akanksha ",
+  "birth_date": "1992-04-14",
+  "birth_time": "18:15:00",
+  "timezone": "Asia/Kolkata",
+  "latitude": null,
+  "longitude": null,
+  "expected": {
+    "type": "Projector",
+    "type_humdes_code": "P",
+    "profile": {
+      "conscious_line": 5,
+      "unconscious_line": 1,
+      "text": "5/1"
+    },
+    "authority": "Splenic",
+    "authority_humdes_label": "Splen.",
+    "variables": [
+      "PLL",
+      "DRL"
+    ],
+    "incarnation_cross": {
+      "name": "The Left Angle Cross of Limitation",
+      "gates": [
+        42,
+        32,
+        60,
+        56
+      ]
+    },
+    "personality_sun": {
+      "gate": 42
+    },
+    "personality_earth": {
+      "gate": 32
+    },
+    "design_sun": {
+      "gate": 60
+    },
+    "design_earth": {
+      "gate": 56
+    },
+    "active_channels": null,
+    "defined_centers": null,
+    "active_gates": null,
+    "definition": null,
+    "strategy": null,
+    "strategy_humdes_label": null,
+    "not_self_theme": null,
+    "not_self_humdes_label": null
+  }
+}

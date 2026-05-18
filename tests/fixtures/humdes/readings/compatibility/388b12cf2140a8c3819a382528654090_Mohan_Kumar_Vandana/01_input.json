@@ -1,0 +1,30 @@
+{
+  "birth_data": {
+    "name": "Mohan Kumar ",
+    "date": "1995-11-17",
+    "time": "11:10:00",
+    "timezone": "Asia/Kolkata"
+  },
+  "current_time": "2026-05-18T03:16:02.948798+00:00",
+  "location": null,
+  "precision": "Standard",
+  "options": {
+    "humdes_reading_hash": "388b12cf2140a8c3819a382528654090",
+    "humdes_reading_code": "compatibility_a6d5186116",
+    "humdes_reading_type": "compatibility",
+    "humdes_person_index": 1,
+    "humdes_person_id": "af82eb7c3827f79bcaa57840787d06d9",
+    "humdes_link": "",
+    "humdes_type_code": "MG",
+    "humdes_authority_short": "Emot.",
+    "humdes_variables": [
+      "PLR",
+      "DLL"
+    ],
+    "humdes_location_string": "Tiruchirappalli, India",
+    "humdes_location_id": "1254388",
+    "humdes_sex": "M",
+    "geocode_source": "none",
+    "geocode_display_name": null
+  }
+}

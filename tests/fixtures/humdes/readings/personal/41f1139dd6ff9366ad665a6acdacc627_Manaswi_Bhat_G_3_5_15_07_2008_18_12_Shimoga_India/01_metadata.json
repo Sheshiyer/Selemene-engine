@@ -1,0 +1,73 @@
+{
+  "humdes_reading": {
+    "hash": "41f1139dd6ff9366ad665a6acdacc627",
+    "code": "G_3_5_e9648c5144",
+    "name": "Manaswi Bhat, G, 3/5, 15.07.2008, 18:12, Shimoga, India",
+    "type": "personal",
+    "person_count": 1
+  },
+  "person": {
+    "index": 1,
+    "humdes_person_id": "9b9c72d5b4beffe79d8cf000155ad698",
+    "label": "Manaswi Bhat, G, 3/5, 15.07.2008, 18:12, Shimoga, India",
+    "raw": {
+      "id": "9b9c72d5b4beffe79d8cf000155ad698",
+      "data": "e7ba6288a3d356da854c062ec637d80a",
+      "label": "Manaswi Bhat, G, 3/5, 15.07.2008, 18:12, Shimoga, India",
+      "labelList": {
+        "date": "15.07.2008",
+        "type": "Generator",
+        "profile": [
+          "3",
+          "5"
+        ],
+        "vars": [
+          "PRL",
+          "DRL"
+        ],
+        "authority": "Sacr."
+      },
+      "name": "Manaswi Bhat",
+      "results": "",
+      "date": "2008-07-15",
+      "time": "18:12",
+      "age": 17,
+      "location_id": "1256515",
+      "location": "Shimoga, India",
+      "timezone": "Asia/Kolkata",
+      "sex": "M",
+      "type": "G",
+      "profile": {
+        "num": [
+          "3",
+          "5"
+        ],
+        "text": [
+          "Martyr",
+          "Heretic"
+        ]
+      },
+      "cross": {
+        "name": "The Right Angle Cross of Maya",
+        "num": [
+          "62",
+          "61",
+          "42",
+          "32"
+        ]
+      },
+      "variables": [
+        "PRL",
+        "DRL"
+      ],
+      "save": true,
+      "active": false
+    }
+  },
+  "source_files": {
+    "reading_dir": "output/2026-05-16_124939_bulk2/readings/personal/41f1139dd6ff9366ad665a6acdacc627_Manaswi_Bhat",
+    "ravecard_file": "01_GET_ravecard_41f1139dd6ff9366ad665a6acdacc627_site_1.json"
+  },
+  "captured_at": "2026-05-16T12:58:24",
+  "normalised_at": "2026-05-18T03:16:02.964834+00:00"
+}

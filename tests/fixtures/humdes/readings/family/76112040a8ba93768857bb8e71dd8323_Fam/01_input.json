@@ -1,0 +1,30 @@
+{
+  "birth_data": {
+    "name": "Anitha Nateshan",
+    "date": "1965-06-01",
+    "time": "00:35:00",
+    "timezone": "Asia/Kolkata"
+  },
+  "current_time": "2026-05-18T03:16:02.955390+00:00",
+  "location": null,
+  "precision": "Standard",
+  "options": {
+    "humdes_reading_hash": "76112040a8ba93768857bb8e71dd8323",
+    "humdes_reading_code": "family_11b8cee399",
+    "humdes_reading_type": "family",
+    "humdes_person_index": 1,
+    "humdes_person_id": "a01115e2f578c37baafd2188149bbe3f",
+    "humdes_link": "",
+    "humdes_type_code": "M",
+    "humdes_authority_short": "Emot.",
+    "humdes_variables": [
+      "PRR",
+      "DRR"
+    ],
+    "humdes_location_string": "Bengaluru, India",
+    "humdes_location_id": "1277333",
+    "humdes_sex": "F",
+    "geocode_source": "none",
+    "geocode_display_name": null
+  }
+}

@@ -1,0 +1,73 @@
+{
+  "humdes_reading": {
+    "hash": "7693c0b109ff745ee78acbc2af6ae989",
+    "code": "P_4_6_282f2b62f5",
+    "name": "Prashanth, P, 4/6, 07.05.1990, 18:30, Bengaluru, India",
+    "type": "personal",
+    "person_count": 1
+  },
+  "person": {
+    "index": 1,
+    "humdes_person_id": "d362e1e376bce8da20e8e23549f62ad6",
+    "label": "Prashanth, P, 4/6, 07.05.1990, 18:30, Bengaluru, India",
+    "raw": {
+      "id": "d362e1e376bce8da20e8e23549f62ad6",
+      "data": "f348ee121af6aa854f216af7637eb151",
+      "label": "Prashanth, P, 4/6, 07.05.1990, 18:30, Bengaluru, India",
+      "labelList": {
+        "date": "07.05.1990",
+        "type": "Projector",
+        "profile": [
+          "4",
+          "6"
+        ],
+        "vars": [
+          "PLL",
+          "DRR"
+        ],
+        "authority": "Splen."
+      },
+      "name": "Prashanth",
+      "results": "",
+      "date": "1990-05-07",
+      "time": "18:30",
+      "age": 36,
+      "location_id": "1277333",
+      "location": "Bengaluru, India",
+      "timezone": "Asia/Kolkata",
+      "sex": "M",
+      "type": "P",
+      "profile": {
+        "num": [
+          "4",
+          "6"
+        ],
+        "text": [
+          "Opportunist",
+          "Role Model"
+        ]
+      },
+      "cross": {
+        "name": "The Right Angle Cross of the Sphinx",
+        "num": [
+          "2",
+          "1",
+          "13",
+          "7"
+        ]
+      },
+      "variables": [
+        "PLL",
+        "DRR"
+      ],
+      "save": true,
+      "active": false
+    }
+  },
+  "source_files": {
+    "reading_dir": "output/2026-05-16_124939_bulk2/readings/personal/7693c0b109ff745ee78acbc2af6ae989_Prashanth",
+    "ravecard_file": "01_GET_ravecard_7693c0b109ff745ee78acbc2af6ae989_site_1.json"
+  },
+  "captured_at": "2026-05-16T12:53:19",
+  "normalised_at": "2026-05-18T03:16:02.968018+00:00"
+}

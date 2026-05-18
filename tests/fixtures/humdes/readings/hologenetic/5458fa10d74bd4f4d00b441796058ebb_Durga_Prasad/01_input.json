@@ -1,0 +1,30 @@
+{
+  "birth_data": {
+    "name": "Durga Prasad",
+    "date": "1992-04-02",
+    "time": "08:00:00",
+    "timezone": "Asia/Kolkata"
+  },
+  "current_time": "2026-05-18T03:16:02.957577+00:00",
+  "location": null,
+  "precision": "Standard",
+  "options": {
+    "humdes_reading_hash": "5458fa10d74bd4f4d00b441796058ebb",
+    "humdes_reading_code": "hologenetic_b3c95eab5f",
+    "humdes_reading_type": "hologenetic",
+    "humdes_person_index": 1,
+    "humdes_person_id": "36d2231e749d96fcc29c172c50050c18",
+    "humdes_link": "",
+    "humdes_type_code": "G",
+    "humdes_authority_short": "Emot.",
+    "humdes_variables": [
+      "PRR",
+      "DRL"
+    ],
+    "humdes_location_string": "Velur, India",
+    "humdes_location_id": "1253278",
+    "humdes_sex": "M",
+    "geocode_source": "none",
+    "geocode_display_name": null
+  }
+}

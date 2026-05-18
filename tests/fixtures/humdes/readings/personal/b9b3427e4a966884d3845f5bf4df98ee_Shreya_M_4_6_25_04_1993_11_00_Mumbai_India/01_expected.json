@@ -1,0 +1,52 @@
+{
+  "name": "Shreya",
+  "birth_date": "1993-04-25",
+  "birth_time": "11:00:00",
+  "timezone": "Asia/Kolkata",
+  "latitude": null,
+  "longitude": null,
+  "expected": {
+    "type": "Manifestor",
+    "type_humdes_code": "M",
+    "profile": {
+      "conscious_line": 4,
+      "unconscious_line": 6,
+      "text": "4/6"
+    },
+    "authority": "Emotional",
+    "authority_humdes_label": "Emot.",
+    "variables": [
+      "PLR",
+      "DLL"
+    ],
+    "incarnation_cross": {
+      "name": "The Right Angle Cross of the Unexpected",
+      "gates": [
+        27,
+        28,
+        41,
+        31
+      ]
+    },
+    "personality_sun": {
+      "gate": 27
+    },
+    "personality_earth": {
+      "gate": 28
+    },
+    "design_sun": {
+      "gate": 41
+    },
+    "design_earth": {
+      "gate": 31
+    },
+    "active_channels": null,
+    "defined_centers": null,
+    "active_gates": null,
+    "definition": null,
+    "strategy": null,
+    "strategy_humdes_label": null,
+    "not_self_theme": null,
+    "not_self_humdes_label": null
+  }
+}

@@ -1,0 +1,73 @@
+{
+  "humdes_reading": {
+    "hash": "cb2e0c9dc2cb52a98be9c00b4195eb1a",
+    "code": "P_1_3_839fabf5e8",
+    "name": "Gauri, P, 1/3, 25.07.1999, 23:15, Bengaluru, India",
+    "type": "personal",
+    "person_count": 1
+  },
+  "person": {
+    "index": 1,
+    "humdes_person_id": "a2faf4f7ba4ee8358210ac423ed235b0",
+    "label": "Gauri, P, 1/3, 25.07.1999, 23:15, Bengaluru, India",
+    "raw": {
+      "id": "a2faf4f7ba4ee8358210ac423ed235b0",
+      "data": "430210fbc68aa5bdd25cd89d68e248be",
+      "label": "Gauri, P, 1/3, 25.07.1999, 23:15, Bengaluru, India",
+      "labelList": {
+        "date": "25.07.1999",
+        "type": "Projector",
+        "profile": [
+          "1",
+          "3"
+        ],
+        "vars": [
+          "PLL",
+          "DLL"
+        ],
+        "authority": "Emot."
+      },
+      "name": "Gauri",
+      "results": "",
+      "date": "1999-07-25",
+      "time": "23:15",
+      "age": 26,
+      "location_id": "1277333",
+      "location": "Bengaluru, India",
+      "timezone": "Asia/Kolkata",
+      "sex": "F",
+      "type": "P",
+      "profile": {
+        "num": [
+          "1",
+          "3"
+        ],
+        "text": [
+          "Investigator",
+          "Martyr"
+        ]
+      },
+      "cross": {
+        "name": "The Right Angle Cross of the Unexpected",
+        "num": [
+          "31",
+          "41",
+          "27",
+          "28"
+        ]
+      },
+      "variables": [
+        "PLL",
+        "DLL"
+      ],
+      "save": true,
+      "active": false
+    }
+  },
+  "source_files": {
+    "reading_dir": "output/2026-05-16_124939_bulk2/readings/personal/cb2e0c9dc2cb52a98be9c00b4195eb1a_Gauri",
+    "ravecard_file": "01_GET_ravecard_cb2e0c9dc2cb52a98be9c00b4195eb1a_site_1.json"
+  },
+  "captured_at": "2026-05-16T12:58:12",
+  "normalised_at": "2026-05-18T03:16:02.981189+00:00"
+}

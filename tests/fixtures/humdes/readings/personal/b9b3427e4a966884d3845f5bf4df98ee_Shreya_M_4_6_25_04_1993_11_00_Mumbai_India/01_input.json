@@ -1,0 +1,30 @@
+{
+  "birth_data": {
+    "name": "Shreya",
+    "date": "1993-04-25",
+    "time": "11:00:00",
+    "timezone": "Asia/Kolkata"
+  },
+  "current_time": "2026-05-18T03:16:02.977131+00:00",
+  "location": null,
+  "precision": "Standard",
+  "options": {
+    "humdes_reading_hash": "b9b3427e4a966884d3845f5bf4df98ee",
+    "humdes_reading_code": "M_4_6_780edaa958",
+    "humdes_reading_type": "personal",
+    "humdes_person_index": 1,
+    "humdes_person_id": "f2354a03219641380cf7846e1d4795d9",
+    "humdes_link": "",
+    "humdes_type_code": "M",
+    "humdes_authority_short": "Emot.",
+    "humdes_variables": [
+      "PLR",
+      "DLL"
+    ],
+    "humdes_location_string": "Mumbai, India",
+    "humdes_location_id": "1275339",
+    "humdes_sex": "F",
+    "geocode_source": "none",
+    "geocode_display_name": null
+  }
+}

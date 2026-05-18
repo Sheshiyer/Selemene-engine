@@ -1,0 +1,30 @@
+{
+  "birth_data": {
+    "name": "Jenya",
+    "date": "1997-01-22",
+    "time": "15:00:00",
+    "timezone": "Europe/Moscow"
+  },
+  "current_time": "2026-05-18T03:16:02.974646+00:00",
+  "location": null,
+  "precision": "Standard",
+  "options": {
+    "humdes_reading_hash": "b1356925afdf76c87dc0ba6db05bf53e",
+    "humdes_reading_code": "G_1_3_4865e22938",
+    "humdes_reading_type": "personal",
+    "humdes_person_index": 1,
+    "humdes_person_id": "8e41e4bafd350619c1f685c07251d8d8",
+    "humdes_link": "",
+    "humdes_type_code": "G",
+    "humdes_authority_short": "Sacr.",
+    "humdes_variables": [
+      "PLR",
+      "DLR"
+    ],
+    "humdes_location_string": "Leningrad, Russia",
+    "humdes_location_id": "498817",
+    "humdes_sex": "M",
+    "geocode_source": "none",
+    "geocode_display_name": null
+  }
+}

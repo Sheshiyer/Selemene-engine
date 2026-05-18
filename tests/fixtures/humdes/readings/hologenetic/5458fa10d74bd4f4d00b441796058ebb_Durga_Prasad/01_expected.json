@@ -1,0 +1,52 @@
+{
+  "name": "Durga Prasad",
+  "birth_date": "1992-04-02",
+  "birth_time": "08:00:00",
+  "timezone": "Asia/Kolkata",
+  "latitude": null,
+  "longitude": null,
+  "expected": {
+    "type": "Generator",
+    "type_humdes_code": "G",
+    "profile": {
+      "conscious_line": 4,
+      "unconscious_line": 6,
+      "text": "4/6"
+    },
+    "authority": "Emotional",
+    "authority_humdes_label": "Emot.",
+    "variables": [
+      "PRR",
+      "DRL"
+    ],
+    "incarnation_cross": {
+      "name": "The Right Angle Cross of Tension",
+      "gates": [
+        21,
+        48,
+        38,
+        39
+      ]
+    },
+    "personality_sun": {
+      "gate": 21
+    },
+    "personality_earth": {
+      "gate": 48
+    },
+    "design_sun": {
+      "gate": 38
+    },
+    "design_earth": {
+      "gate": 39
+    },
+    "active_channels": null,
+    "defined_centers": null,
+    "active_gates": null,
+    "definition": null,
+    "strategy": null,
+    "strategy_humdes_label": null,
+    "not_self_theme": null,
+    "not_self_humdes_label": null
+  }
+}

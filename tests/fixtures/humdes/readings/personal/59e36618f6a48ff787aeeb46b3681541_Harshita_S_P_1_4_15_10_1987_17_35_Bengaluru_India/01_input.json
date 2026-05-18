@@ -1,0 +1,30 @@
+{
+  "birth_data": {
+    "name": "Harshita S",
+    "date": "1987-10-15",
+    "time": "17:35:00",
+    "timezone": "Asia/Kolkata"
+  },
+  "current_time": "2026-05-18T03:16:02.966042+00:00",
+  "location": null,
+  "precision": "Standard",
+  "options": {
+    "humdes_reading_hash": "59e36618f6a48ff787aeeb46b3681541",
+    "humdes_reading_code": "P_1_4_177febac2e",
+    "humdes_reading_type": "personal",
+    "humdes_person_index": 1,
+    "humdes_person_id": "ba76fd22395097801e8fe0d59e0412cd",
+    "humdes_link": "",
+    "humdes_type_code": "P",
+    "humdes_authority_short": "Splen.",
+    "humdes_variables": [
+      "PLL",
+      "DLR"
+    ],
+    "humdes_location_string": "Bengaluru, India",
+    "humdes_location_id": "1277333",
+    "humdes_sex": "F",
+    "geocode_source": "none",
+    "geocode_display_name": null
+  }
+}

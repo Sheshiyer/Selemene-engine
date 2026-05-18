@@ -1,0 +1,73 @@
+{
+  "humdes_reading": {
+    "hash": "59e36618f6a48ff787aeeb46b3681541",
+    "code": "P_1_4_177febac2e",
+    "name": "Harshita S, P, 1/4, 15.10.1987, 17:35, Bengaluru, India",
+    "type": "personal",
+    "person_count": 1
+  },
+  "person": {
+    "index": 1,
+    "humdes_person_id": "ba76fd22395097801e8fe0d59e0412cd",
+    "label": "Harshita S, P, 1/4, 15.10.1987, 17:35, Bengaluru, India",
+    "raw": {
+      "id": "ba76fd22395097801e8fe0d59e0412cd",
+      "data": "a686e6409e84468cf8d99d6356c77596",
+      "label": "Harshita S, P, 1/4, 15.10.1987, 17:35, Bengaluru, India",
+      "labelList": {
+        "date": "15.10.1987",
+        "type": "Projector",
+        "profile": [
+          "1",
+          "4"
+        ],
+        "vars": [
+          "PLL",
+          "DLR"
+        ],
+        "authority": "Splen."
+      },
+      "name": "Harshita S",
+      "results": "",
+      "date": "1987-10-15",
+      "time": "17:35",
+      "age": 38,
+      "location_id": "1277333",
+      "location": "Bengaluru, India",
+      "timezone": "Asia/Kolkata",
+      "sex": "F",
+      "type": "P",
+      "profile": {
+        "num": [
+          "1",
+          "4"
+        ],
+        "text": [
+          "Investigator",
+          "Opportunist"
+        ]
+      },
+      "cross": {
+        "name": "The Right Angle Cross of Maya",
+        "num": [
+          "32",
+          "42",
+          "62",
+          "61"
+        ]
+      },
+      "variables": [
+        "PLL",
+        "DLR"
+      ],
+      "save": true,
+      "active": false
+    }
+  },
+  "source_files": {
+    "reading_dir": "output/2026-05-16_124939_bulk2/readings/personal/59e36618f6a48ff787aeeb46b3681541_Harshita_S",
+    "ravecard_file": "01_GET_ravecard_59e36618f6a48ff787aeeb46b3681541_site_1.json"
+  },
+  "captured_at": "2026-05-16T12:57:05",
+  "normalised_at": "2026-05-18T03:16:02.966059+00:00"
+}

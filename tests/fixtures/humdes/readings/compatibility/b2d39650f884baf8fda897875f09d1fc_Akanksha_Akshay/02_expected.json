@@ -1,0 +1,52 @@
+{
+  "name": "Akshay",
+  "birth_date": "1990-10-05",
+  "birth_time": "13:13:00",
+  "timezone": "Asia/Kolkata",
+  "latitude": null,
+  "longitude": null,
+  "expected": {
+    "type": "Generator",
+    "type_humdes_code": "G",
+    "profile": {
+      "conscious_line": 3,
+      "unconscious_line": 5,
+      "text": "3/5"
+    },
+    "authority": "Sacral",
+    "authority_humdes_label": "Sacr.",
+    "variables": [
+      "PRR",
+      "DRR"
+    ],
+    "incarnation_cross": {
+      "name": "The Right Angle Cross of Tension",
+      "gates": [
+        48,
+        21,
+        39,
+        38
+      ]
+    },
+    "personality_sun": {
+      "gate": null
+    },
+    "personality_earth": {
+      "gate": null
+    },
+    "design_sun": {
+      "gate": null
+    },
+    "design_earth": {
+      "gate": null
+    },
+    "active_channels": null,
+    "defined_centers": null,
+    "active_gates": null,
+    "definition": null,
+    "strategy": null,
+    "strategy_humdes_label": null,
+    "not_self_theme": null,
+    "not_self_humdes_label": null
+  }
+}

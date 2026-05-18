@@ -1,0 +1,30 @@
+{
+  "birth_data": {
+    "name": "Jiaojiao",
+    "date": "1988-03-25",
+    "time": "08:00:00",
+    "timezone": "Asia/Shanghai"
+  },
+  "current_time": "2026-05-18T03:16:02.982527+00:00",
+  "location": null,
+  "precision": "Standard",
+  "options": {
+    "humdes_reading_hash": "d6dab6f0221fc4c2105282c034f0f749",
+    "humdes_reading_code": "P_1_3_1fc1d1c04d",
+    "humdes_reading_type": "personal",
+    "humdes_person_index": 1,
+    "humdes_person_id": "2b7f2e0bf5cd8195de107c540026be47",
+    "humdes_link": "",
+    "humdes_type_code": "P",
+    "humdes_authority_short": "Splen.",
+    "humdes_variables": [
+      "PLR",
+      "DLL"
+    ],
+    "humdes_location_string": "Shanghai, China",
+    "humdes_location_id": "1796236",
+    "humdes_sex": "F",
+    "geocode_source": "none",
+    "geocode_display_name": null
+  }
+}
