@@ -43,6 +43,10 @@
     "active_channels": null,
     "defined_centers": null,
     "active_gates": null,
-    "definition": null
+    "definition": "TripleSplit",
+    "strategy": "WaitForInvitation",
+    "strategy_humdes_label": "Wait for an invitation",
+    "not_self_theme": "Bitterness",
+    "not_self_humdes_label": "The bitterness of not recognizing their merits"
   }
 }
