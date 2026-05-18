@@ -320,40 +320,14 @@ jobs:
         if: env.ADMIN_WEB_URL != '' && env.API_BASE_URL != ''
         run: bash scripts/smoke_admin_web.sh
 
-  # Deploy noesis-web to Vercel production
-  deploy-noesis-web:
-    name: Deploy noesis-web (Vercel)
-    runs-on: ubuntu-latest
-    needs: [build-api]
-    if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci --workspace apps/noesis-web
-
-      - name: Deploy to Vercel production
-        # Note: we deliberately use `vercel deploy` WITHOUT `--prebuilt`
-        # so Vercel builds the app on its own runners. The previous
-        # `vercel build --prebuilt` flow was producing an output bundle
-        # that Vercel's serverless runtime couldn't ingest in this
-        # monorepo layout (ENOENT on next-server runtime files). Vercel's
-        # native build environment handles the monorepo workspace
-        # correctly and is the same path that PR previews use.
-        run: |
-          npm install -g vercel
-          vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
-          vercel deploy --prod --token=${{ secrets.VERCEL_TOKEN }}
-        working-directory: apps/noesis-web
-        env:
-          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+  # noesis-web + biofield-web deploys are handled NATIVELY by Vercel via
+  # the GitHub integration (project root: apps/noesis-web and
+  # apps/biofield-web respectively, production branch: main). No CI
+  # job is needed here — Vercel auto-builds + deploys on every push to
+  # main that touches the relevant subdirectory. The previous custom
+  # `vercel build --prebuilt` flow hit a monorepo path conflict and was
+  # blocking deploys for days; the native Git integration sidesteps it
+  # entirely.
 
   # Create GitHub Release for tags
   release:
