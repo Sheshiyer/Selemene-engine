@@ -295,7 +295,7 @@ Recommended flow:
 
 The same input.json files validate every engine that takes birth data:
 - engine-panchanga
-- engine-numerology (date only)
+- engine-numerology (date + name only)
 - engine-biorhythm (date only)
 - engine-vimshottari
 - engine-gene-keys (re-uses HD gates)
@@ -303,10 +303,43 @@ The same input.json files validate every engine that takes birth data:
 - engine-face-reading (no birth data needed — separate corpus)
 - engine-transits
 
-Add `tests/humdes_cross_engine.rs` that runs each engine on the same 89
-fixtures and reports calc-time + non-empty-output rate. Even without
-humdes ground truth for non-HD engines, this catches "engine X errors on
-all charts from 1960 due to ephemeris range" type bugs cheaply.
+Each engine's crate carries a small `tests/humdes_smoke_tests.rs` with
+the same shape: 1-2 cheap smoke tests on every `cargo test`, plus one
+`#[tokio::test] #[ignore]` "full report" that exercises all 89 fixtures
+and prints ok / fail / latency. Even without humdes ground truth for
+non-HD engines, this catches "engine X errors on all charts from 1960
+due to ephemeris range" type bugs cheaply.
+
+#### Current cross-engine status (HV-T03, issue #855)
+
+Both initial cross-engine smokes land green:
+
+| Engine     | Test file                                                    | Smoke | Full report (89 fixtures) |
+|------------|--------------------------------------------------------------|-------|---------------------------|
+| panchanga  | `crates/engine-panchanga/tests/humdes_smoke_tests.rs`        | 2 pass | ok = 89 / 89, fail = 0, avg ≈ 0.07 ms/calc |
+| numerology | `crates/engine-numerology/tests/humdes_smoke_tests.rs`       | 2 pass | ok = 89 / 89, fail = 0, avg ≈ 0.01 ms/calc |
+
+Reproduce:
+
+```bash
+cargo test --package engine-panchanga  --test humdes_smoke_tests   # smoke only
+cargo test --package engine-numerology --test humdes_smoke_tests   # smoke only
+
+cargo test --package engine-panchanga  --test humdes_smoke_tests -- --ignored --nocapture
+cargo test --package engine-numerology --test humdes_smoke_tests -- --ignored --nocapture
+```
+
+Notes:
+- Panchanga gates on `has_coords` (needs lat/lng/time/tz). All 89 humdes
+  fixtures carry coords today, so nothing is skipped.
+- Numerology requires `birth_data.name + date` and ignores `has_coords`.
+  All 89 fixtures carry a non-empty name today.
+- Both reports are diagnostic — they only fail the test if zero fixtures
+  ran successfully. Per-fixture failures are listed in stdout, not as
+  assertion failures, so a single engine bug doesn't block the suite.
+
+Remaining engines (biorhythm / vimshottari / gene-keys / vedic-clock /
+transits) follow the same template — left as follow-up work.
 
 ## Open work
 
