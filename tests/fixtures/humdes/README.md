@@ -212,9 +212,10 @@ Versioned per-snapshot. Each new `humdes_to_selemene.py` run writes a
 fresh `_index.json`; old `tests/fixtures/humdes/_snapshots/<date>/` could
 preserve history if you cron the refresh.
 
-### Tier 2 — Engine-output deltas (proposed)
+### Tier 2 — Engine-output deltas (HV-T04 / #856)
 
-Add a `noesis-data` table:
+Landed as migration `031_humdes_validation.sql` (mirrored at
+`supabase/migrations/20260518000031_031_humdes_validation.sql`). The schema:
 
 ```sql
 CREATE TABLE humdes_validation_runs (
@@ -223,26 +224,100 @@ CREATE TABLE humdes_validation_runs (
     engine_version  TEXT NOT NULL,            -- env!("CARGO_PKG_VERSION")
     selemene_commit TEXT NOT NULL,            -- git sha
     fixtures_count  INT  NOT NULL,
-    per_field_pct   JSONB NOT NULL,           -- {type: 92.1, profile: 100.0, ...}
+    per_field_pct   JSONB NOT NULL,           -- {"type": 92.1, "profile": 100.0, ...}
     notes           TEXT
 );
 
 CREATE TABLE humdes_validation_records (
     id              UUID PRIMARY KEY,
-    run_id          UUID REFERENCES humdes_validation_runs(id) ON DELETE CASCADE,
-    person_id       TEXT NOT NULL,            -- humdes person_id
+    run_id          UUID NOT NULL
+                    REFERENCES humdes_validation_runs(id) ON DELETE CASCADE,
+    person_id       TEXT NOT NULL,
     reading_hash    TEXT NOT NULL,
-    reading_type    TEXT NOT NULL,            -- personal/holo/compat/business/family
-    field           TEXT NOT NULL,            -- 'type'|'profile'|'authority'|'personality_sun'|...
-    expected        JSONB,                    -- humdes value
+    reading_type    TEXT NOT NULL,            -- personal|hologenetic|compatibility|business|family
+    field           TEXT NOT NULL,            -- see noesis_data::humdes_validation::KNOWN_FIELDS
+    expected        JSONB,                    -- humdes value (NULL = no ground truth)
     got             JSONB NOT NULL,           -- engine value
     matched         BOOL NOT NULL,
     notes           TEXT
 );
+
+CREATE INDEX idx_humdes_records_run_field    ON humdes_validation_records (run_id, field);
+CREATE INDEX idx_humdes_records_person_field ON humdes_validation_records (person_id, field);
 ```
 
-A `cargo test --features=record-validation` invocation could insert into
-these tables (gate behind a feature so normal CI doesn't write). Lets you:
+The writer lives at `crates/noesis-data/src/humdes_validation.rs`, gated
+behind the `record-validation` Cargo feature. The default build of
+`noesis-data` carries no reference to it, so CI and production paths are
+untouched unless the feature is explicitly enabled.
+
+Call shape (intended for a one-shot binary or future post-test hook —
+deliberately not bolted into `humdes_validation_tests.rs` itself):
+
+```rust
+use noesis_data::humdes_validation::{
+    record_validation_run, ValidationRun, ValidationRecord,
+};
+
+let run_id = record_validation_run(&pool, run, records).await?;
+```
+
+A working example is at `crates/noesis-data/examples/record_humdes_run.rs`:
+
+```bash
+DATABASE_URL=postgres://localhost/scratch_humdes \
+    cargo run --package noesis-data --features record-validation \
+        --example record_humdes_run
+```
+
+Top-level trend query — per-engine-version drift on the corpus, newest first:
+
+```sql
+SELECT
+    engine_version,
+    selemene_commit,
+    fixtures_count,
+    (per_field_pct->>'type')::float              AS type_pct,
+    (per_field_pct->>'profile')::float           AS profile_pct,
+    (per_field_pct->>'authority')::float         AS authority_pct,
+    (per_field_pct->>'incarnation_cross')::float AS cross_pct,
+    (per_field_pct->>'definition')::float        AS definition_pct,
+    (per_field_pct->>'strategy')::float          AS strategy_pct,
+    (per_field_pct->>'not_self_theme')::float    AS not_self_pct,
+    run_at
+FROM humdes_validation_runs
+ORDER BY run_at DESC
+LIMIT 20;
+```
+
+Per-fixture drill-down — "which charts started failing `type` in the
+latest run?":
+
+```sql
+WITH latest AS (
+    SELECT id FROM humdes_validation_runs
+    ORDER BY run_at DESC LIMIT 1
+)
+SELECT person_id, reading_hash, reading_type, expected, got, notes
+FROM humdes_validation_records
+WHERE run_id = (SELECT id FROM latest)
+  AND field = 'type'
+  AND NOT matched
+ORDER BY person_id;
+```
+
+Per-person trajectory — "when did fixture X start failing `type`?":
+
+```sql
+SELECT r.run_at, runs.engine_version, r.expected, r.got, r.matched
+FROM humdes_validation_records r
+JOIN humdes_validation_runs runs ON runs.id = r.run_id
+WHERE r.person_id = 'c517b66135'
+  AND r.field = 'type'
+ORDER BY r.run_at DESC;
+```
+
+Lets you:
 - Track regressions across engine versions
 - Quantify drift after each refactor
 - Surface specific birth-times that newly broke
@@ -324,8 +399,9 @@ all charts from 1960 due to ephemeris range" type bugs cheaply.
       and decide whether to align (and which direction).
 - [ ] **Snapshot policy.** Cron `humdes_to_selemene.py` weekly so we have
       history for tracking schema drift on humdes's side.
-- [ ] **Tier 2 table migrations** in `noesis-data` + a writer behind a
-      feature flag.
+- [x] **Tier 2 table migrations** in `noesis-data` + a writer behind a
+      feature flag. *(HV-T04 #856 — migration `031_humdes_validation.sql`
+      and `noesis_data::humdes_validation` behind `record-validation`.)*
 - [ ] **Phase-1 extension for `compatibility`/`family` extra people.**
       Person[2+] doesn't get cardinal gates from `_row.json`; we'd need
       either per-person ravecard fetches or HTML parsing.

@@ -16,3 +16,16 @@ tracing = "0.1"
 
 # Internal dependencies
 noesis-core = { path = "../noesis-core" }
+
+[features]
+# Opt-in writer for the humdes ground-truth validation harness. Gates the
+# `humdes_validation` module + the `record_humdes_run` example binary so the
+# default build of dependents carries no reference to validation persistence.
+# See: migrations/031_humdes_validation.sql and issue #856.
+record-validation = []
+
+# One-shot binary that demonstrates the writer end-to-end. Compiled only when
+# the `record-validation` feature is active so it never enters the default build.
+[[example]]
+name = "record_humdes_run"
+required-features = ["record-validation"]
