@@ -214,6 +214,24 @@ export async function getReadings(
   );
 }
 
+/**
+ * Claim a previously-anonymous reading and associate it with the
+ * authenticated user. Called after Discord OAuth completes when
+ * there's a pendingClaim in localStorage. Backend implementation note:
+ * if the endpoint doesn't exist yet, this will 404 — the frontend
+ * gracefully degrades (the reading remains in localStorage only).
+ */
+export async function claimReading(
+  readingId: string,
+  apiKey: string,
+): Promise<{ ok: boolean; reading?: ReadingSummary }> {
+  return request<{ ok: boolean; reading?: ReadingSummary }>(
+    `/api/v1/readings/${encodeURIComponent(readingId)}/claim`,
+    { method: "POST" },
+    apiKey,
+  );
+}
+
 export async function getReading(
   readingId: string,
   apiKey: string,
