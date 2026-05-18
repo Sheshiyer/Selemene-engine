@@ -43,6 +43,10 @@
     "active_channels": null,
     "defined_centers": null,
     "active_gates": null,
-    "definition": null
+    "definition": "QuadrupleSplit",
+    "strategy": "WaitToRespond",
+    "strategy_humdes_label": "Wait for an opportunity to respond",
+    "not_self_theme": "Frustration",
+    "not_self_humdes_label": "Frustration"
   }
 }

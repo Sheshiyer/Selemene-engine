@@ -43,6 +43,10 @@
     "active_channels": null,
     "defined_centers": null,
     "active_gates": null,
-    "definition": null
+    "definition": "NoDefinition",
+    "strategy": "LunarCycle",
+    "strategy_humdes_label": "Make decisions after waiting out the lunar cycle",
+    "not_self_theme": "Disappointment",
+    "not_self_humdes_label": "Disappointment in other people"
   }
 }

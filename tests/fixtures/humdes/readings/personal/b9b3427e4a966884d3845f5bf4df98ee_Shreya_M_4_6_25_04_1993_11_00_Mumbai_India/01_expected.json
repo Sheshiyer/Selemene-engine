@@ -43,6 +43,10 @@
     "active_channels": null,
     "defined_centers": null,
     "active_gates": null,
-    "definition": null
+    "definition": "Single",
+    "strategy": "Inform about your intentions",
+    "strategy_humdes_label": "Inform about your intentions",
+    "not_self_theme": "Feeling angry and angry",
+    "not_self_humdes_label": "Feeling angry and angry"
   }
 }

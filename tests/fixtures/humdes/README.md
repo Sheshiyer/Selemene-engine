@@ -40,10 +40,15 @@ source .venv/bin/activate
 python login.py            # once, interactive
 python auto_capture.py     # ~30s
 python bulk_fetch_v2.py    # ~5 min, captures 65 readings × ~9 tabs
+python bulk_fetch_v3.py    # optional; v3 extends v2 to also fetch high-value
+                           # sub-tabs (mechanics/certainty, gates/design+personal,
+                           # etc.) via context.request — requires a fresh session.
 
-# Normalise into this directory
-python humdes_to_selemene.py
-python humdes_html_enrich.py   # currently a no-op for missing sub-tabs
+# Normalise into this directory (use --stable-timestamp to avoid spurious
+# per-fixture diffs from `current_time`/`normalised_at` re-rolls):
+python humdes_to_selemene.py --stable-timestamp
+python humdes_html_enrich.py   # extracts definition + strategy + not_self_theme
+                               # from the Ravechart summary HTML where available
 ```
 
 ## Validation status (last run)
@@ -174,6 +179,28 @@ through `HumanDesignEngine::calculate` and reading the
 `centers`/`channels` keys of the JSON result. The validation report
 itself (above) emits the seven fixture ids.
 
+### New fields in this revision (HV-T02 / #854)
+
+Three additional ground-truth fields are now populated from the existing
+humdes capture, extracted from the per-person Ravechart summary HTML in
+`tabs/ravecard/ravecard/`:
+
+| Field                  | Type                | Coverage  | Values |
+|------------------------|---------------------|-----------|--------|
+| `definition`           | enum                | 49 / 89   | `Single`, `Split`, `TripleSplit`, `QuadrupleSplit`, `NoDefinition` |
+| `strategy`             | canonical token     | 49 / 89   | `WaitToRespond`, `WaitForInvitation`, `LunarCycle`, `Inform` |
+| `not_self_theme`       | canonical token     | 49 / 89   | `Frustration`, `Bitterness`, `Anger`, `Disappointment` |
+
+Each canonical field is shipped alongside its verbatim humdes label for
+audit purposes (`strategy_humdes_label`, `not_self_humdes_label`). The
+49/89 coverage corresponds to the 47 personal + 2 hologenetic readings;
+multi-person readings (compatibility/business/family) don't expose the
+per-person Ravechart summary in their existing capture and would require
+an additional sub-tab fetch (blocked here on session re-auth — see "Open
+work" below).
+
+Validation harness consumption of these new fields lands in HV-T03.
+
 ## Training-data backend design
 
 The 89 fixtures are the seed for a longer-running training corpus. The
@@ -285,7 +312,13 @@ all charts from 1960 due to ephemeris range" type bugs cheaply.
 
 - [ ] **Capture the missing sub-tabs** (`tabs/gates/design/`,
       `tabs/mechanics/certainty/`, etc.) so we get humdes's per-gate
-      activations + definition type as ground truth for additional fields.
+      activations + per-center definition data as ground truth for the
+      remaining ≥40 fixtures. `bulk_fetch_v3.py` is the v2 fork that
+      handles this — blocked here on a fresh humdes session
+      (`storageState.json` expired). Once a fresh login lands, running
+      `python bulk_fetch_v3.py` then `python humdes_html_enrich.py`
+      against the new bulk3 capture will extend coverage to all 89
+      fixtures and unlock `defined_centers` + `active_channels` extraction.
 - [ ] **MG-vs-G disagreement investigation.** Pick one of the 7
       mismatching fixtures, hand-trace through humdes vs Selemene logic,
       and decide whether to align (and which direction).
