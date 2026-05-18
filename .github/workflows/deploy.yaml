@@ -339,11 +339,17 @@ jobs:
         run: npm ci --workspace apps/noesis-web
 
       - name: Deploy to Vercel production
+        # Note: we deliberately use `vercel deploy` WITHOUT `--prebuilt`
+        # so Vercel builds the app on its own runners. The previous
+        # `vercel build --prebuilt` flow was producing an output bundle
+        # that Vercel's serverless runtime couldn't ingest in this
+        # monorepo layout (ENOENT on next-server runtime files). Vercel's
+        # native build environment handles the monorepo workspace
+        # correctly and is the same path that PR previews use.
         run: |
           npm install -g vercel
           vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
-          vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
-          vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
+          vercel deploy --prod --token=${{ secrets.VERCEL_TOKEN }}
         working-directory: apps/noesis-web
         env:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
