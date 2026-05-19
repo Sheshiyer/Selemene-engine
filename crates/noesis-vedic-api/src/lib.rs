@@ -64,6 +64,9 @@
 // Configuration
 pub mod config;
 
+// Astronomical primitives shared across native facades (PR3: sunrise/sunset).
+pub mod astro;
+
 /// Default API base URL for FreeAstrologyAPI.com
 pub const API_BASE_URL: &str = "https://json.freeastrologyapi.com";
 

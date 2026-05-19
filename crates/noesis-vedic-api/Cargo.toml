@@ -47,6 +47,9 @@ engine-vimshottari = { path = "../engine-vimshottari" }
 engine-transits = { path = "../engine-transits" }
 engine-human-design = { path = "../engine-human-design" }
 
+# Sunrise/sunset primitive (PR3: blocks muhurta date-range search)
+sunrise = "1.2"
+
 [dev-dependencies]
 tokio-test = "0.4"
 wiremock = "0.6"
