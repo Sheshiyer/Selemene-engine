@@ -232,36 +232,16 @@ impl VedicApiClient {
         tzone: f64,
     ) -> Result<Panchang> {
         info!(
-            "Fetching Panchang for {}/{}/{} {}:{}:{}",
+            "Computing Panchang natively for {}/{}/{} {}:{}:{}",
             year, month, day, hour, minute, second
         );
 
-        let params = serde_json::json!({
-            "year": year,
-            "month": month,
-            "date": day,
-            "hours": hour,
-            "minutes": minute,
-            "seconds": second,
-            "latitude": lat,
-            "longitude": lng,
-            "timezone": tzone,
-            "config": {
-                "observation_point": "topocentric",
-                "ayanamsha": "lahiri"
-            }
-        });
-
-        let response = self
-            .execute_with_retry(|| {
-                self.build_request(reqwest::Method::POST, "complete-panchang")
-                    .json(&params)
-            })
-            .await?;
-        let panchang: Panchang = response.json().await?;
+        let panchang = crate::panchang::api::compute_panchang_native(
+            year, month, day, hour, minute, second, lat, lng, tzone,
+        )?;
 
         info!(
-            "Panchang retrieved: Tithi={}, Nakshatra={}",
+            "Panchang computed: Tithi={}, Nakshatra={}",
             panchang.tithi.name(),
             panchang.nakshatra.name()
         );
