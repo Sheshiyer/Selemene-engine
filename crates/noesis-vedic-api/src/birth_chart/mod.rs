@@ -1,12 +1,10 @@
-//! Birth chart enrichment helpers
+//! Birth chart enrichment helpers over the typed `chart::BirthChart`:
+//! [`aspects`], [`dignities`], and [`status`] computations, plus the
+//! enrichment-layer [`types`] (re-exported below).
 
-pub mod api;
 pub mod aspects;
 pub mod dignities;
-pub mod mappers;
 pub mod status;
 pub mod types;
 
-pub use api::*;
-pub use mappers::*;
 pub use types::*;

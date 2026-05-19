@@ -22,6 +22,7 @@ import { useRouter } from "next/navigation";
 import { PIPViewerPanel } from "@/components/pip/PIPViewerPanel";
 import { BiofieldLiveMetrics } from "@/components/BiofieldLiveMetrics";
 import type { CompositeScores } from "@/components/pip/types";
+import { DyadChamber, type Speaker } from "@selemene/dyad-ui";
 
 // Interval at which live metrics are posted to the Noesis biofield engine.
 const METRICS_SUBMIT_INTERVAL_MS = 30_000;
@@ -397,6 +398,27 @@ export default function ViewerPage() {
         padding: "0.75rem",
         overflowY: "auto",
       }}>
+
+        {/* Canonical DyadChamber intake chrome — banner variant.
+            Speaker reflects session phase:
+              · no session         → "both"  (witnesses wait at the threshold)
+              · starting/hydrating → "pichet" + submitting (structure steps forward)
+              · active session     → "aletheios" (witness reads the field)
+              · closing session    → "both"  (joined field at the close)
+            The banner sits above the session strip so the operator
+            sees the witnesses before they hit Start session. */}
+        <DyadChamber
+          speaker={
+            isStartingSession || isHydratingSession
+              ? "pichet"
+              : hasActiveSession
+                ? "aletheios"
+                : ("both" as Speaker)
+          }
+          submitting={isStartingSession || isHydratingSession || isClosingSession}
+          variant="banner"
+        />
+
 
         {/* Session strip */}
         <section style={{

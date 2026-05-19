@@ -1,5 +1,29 @@
 "use client";
 
+/**
+ * EngineGrid — hex honeycomb engine selector.
+ *
+ * Replaces the previous 5-column rounded-square bento layout.
+ * Renders 17 engines (or any subset returned by a compass workflow)
+ * as a staggered hex grid that collapses cleanly on mobile.
+ *
+ * Architecture:
+ *   - Each cell uses CSS clip-path: polygon(...) for the hex shape.
+ *   - Rows of 4 hexes alternate with rows of 3 hexes, with the
+ *     3-row offset by half a cell so the geometry interlocks
+ *     (3-4-3-4-3 for 17 cells; falls back to flat-flex for smaller sets).
+ *   - The center cell (when 17 engines, index 8) is the WITNESS hub,
+ *     rendered slightly larger with sacred-gold border.
+ *   - States: inactive (parchment 60%), hover (coherence-emerald edge),
+ *     active (sacred-gold edge + flow-indigo glow), has-data (emerald dot).
+ *
+ * Mobile (<= 640px) collapses to a flat 3-column grid (still hex cells)
+ * because staggered hex math gets brittle below ~360px.
+ *
+ * No bento, no rectangles. Sacred geometry as load-bearing architecture.
+ */
+
+import { useId } from "react";
 import type { CompassMode } from "@/components/CompassSelector";
 
 export interface EngineGridItem {
@@ -16,91 +40,33 @@ const directionColor: Record<EngineGridItem["direction"], string> = {
   mutate: "var(--signal)",
 };
 
-const styles = {
-  wrapper: {
-    display: "flex",
-    flexDirection: "column" as const,
-    gap: "0.875rem",
-  },
-  header: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    gap: "1rem",
-  },
-  title: {
-    fontFamily: "var(--font-display)",
-    fontSize: "1rem",
-    letterSpacing: "0.06em",
-    color: "var(--signal)",
-  },
-  meta: {
-    fontFamily: "var(--font-mono)",
-    fontSize: "0.68rem",
-    letterSpacing: "0.08em",
-    color: "var(--muted)",
-    textTransform: "uppercase" as const,
-  },
-  grid: {
-    display: "grid",
-    gap: "0.75rem",
-  },
-  cell: {
-    width: 80,
-    minHeight: 108,
-    display: "flex",
-    flexDirection: "column" as const,
-    alignItems: "center",
-    gap: "0.45rem",
-    color: "var(--muted)",
-    textAlign: "center" as const,
-    animation: "growIn 0.35s var(--ease-out-expo) both",
-  },
-  square: {
-    position: "relative" as const,
-    width: 80,
-    height: 80,
-    padding: 1,
-    borderRadius: "var(--r-sm)",
-    background: "var(--line-mid)",
-    transition: "box-shadow 0.18s, background 0.18s, transform 0.18s",
-  },
-  squareInner: {
-    width: "100%",
-    height: "100%",
-    borderRadius: "calc(var(--r-sm) - 1px)",
-    background: "var(--surface)",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  activeSquare: {
-    background: "var(--grad-ba)",
-    boxShadow: "var(--glow-indigo)",
-    transform: "translateY(-1px)",
-  },
-  sigil: {
-    fontFamily: "var(--font-display)",
-    fontSize: "1.65rem",
-    lineHeight: 1,
-  },
-  dot: {
-    position: "absolute" as const,
-    top: 7,
-    right: 7,
-    width: 7,
-    height: 7,
-    borderRadius: "50%",
-    background: "var(--c-emerald)",
-    boxShadow: "var(--glow-emerald)",
-  },
-  label: {
-    fontFamily: "var(--font-mono)",
-    fontSize: "0.62rem",
-    lineHeight: 1.25,
-    letterSpacing: "0.04em",
-  },
-};
+/* ── Hex layout planning ────────────────────────────────
+ * For exactly 17 engines, lay out as 3-4-3-4-3 staggered rows.
+ * The middle cell (row 2, col 1 of the second 4-row) is the
+ * WITNESS hub by convention — index 8 in zero-based ordering.
+ * For other lengths (compass workflows), fall back to a single
+ * flex row that wraps — same hex cells, just no staggering.
+ * ──────────────────────────────────────────────────────── */
+
+interface RowSpec {
+  count: number;
+  offset: boolean; // half-cell horizontal offset
+}
+
+const HONEYCOMB_17: RowSpec[] = [
+  { count: 3, offset: true },
+  { count: 4, offset: false },
+  { count: 3, offset: true },
+  { count: 4, offset: false },
+  { count: 3, offset: true },
+];
+
+function planRows(items: EngineGridItem[]): RowSpec[] | null {
+  if (items.length === 17) return HONEYCOMB_17;
+  return null;
+}
+
+/* ── Component ──────────────────────────────────────── */
 
 interface EngineGridProps {
   engines: EngineGridItem[];
@@ -115,53 +81,124 @@ export default function EngineGrid({
   availableEngineIds,
   onSelect,
 }: EngineGridProps) {
+  const labelId = useId();
+  const honeycomb = planRows(engines);
+
   return (
-    <section style={styles.wrapper} aria-label="Engine geometry grid">
-      <div style={styles.header}>
-        <h2 style={styles.title}>Engine Mandala</h2>
-        <span style={styles.meta}>{engines.length} visible engines</span>
-      </div>
-      <div className="engine-icon-grid" style={styles.grid}>
-        {engines.map((engine, index) => {
-          const active = activeEngineId === engine.id;
-          const hasData = availableEngineIds.has(engine.id);
-          return (
-            <button
+    <section
+      className="engine-honeycomb"
+      aria-labelledby={labelId}
+    >
+      <header className="engine-honeycomb-header">
+        <h2 id={labelId} className="engine-honeycomb-title">
+          Engine Mandala
+        </h2>
+        <span className="engine-honeycomb-meta">
+          {engines.length} {engines.length === 1 ? "engine" : "engines"}
+        </span>
+      </header>
+
+      {honeycomb ? (
+        <div className="hex-honeycomb" role="tablist" aria-label="Engine selector">
+          {(() => {
+            let cursor = 0;
+            return honeycomb.map((row, rowIdx) => {
+              const slice = engines.slice(cursor, cursor + row.count);
+              const startIdx = cursor;
+              cursor += row.count;
+              return (
+                <div
+                  key={rowIdx}
+                  className={`hex-row ${row.offset ? "hex-row-offset" : ""}`}
+                >
+                  {slice.map((engine, i) => {
+                    const cellIdx = startIdx + i;
+                    const isCenter = cellIdx === 8; // WITNESS hub for 17
+                    return (
+                      <HexCell
+                        key={engine.id}
+                        engine={engine}
+                        active={activeEngineId === engine.id}
+                        hasData={availableEngineIds.has(engine.id)}
+                        hub={isCenter}
+                        delayMs={cellIdx * 28}
+                        onSelect={onSelect}
+                      />
+                    );
+                  })}
+                </div>
+              );
+            });
+          })()}
+        </div>
+      ) : (
+        <div className="hex-flow" role="tablist" aria-label="Engine selector">
+          {engines.map((engine, idx) => (
+            <HexCell
               key={engine.id}
-              type="button"
-              onClick={() => onSelect(engine.id)}
-              style={{
-                ...styles.cell,
-                animationDelay: `${index * 30}ms`,
-                color: active ? "var(--text)" : "var(--muted)",
-              }}
-              aria-pressed={active}
-            >
-              <span
-                style={{
-                  ...styles.square,
-                  ...(active ? styles.activeSquare : {}),
-                }}
-              >
-                <span style={styles.squareInner}>
-                  <span
-                    style={{
-                      ...styles.sigil,
-                      color: active
-                        ? "var(--signal)"
-                        : directionColor[engine.direction],
-                    }}
-                  >
-                    {engine.sigil}
-                  </span>
-                </span>
-                {hasData && <span style={styles.dot} aria-hidden />}
-              </span>
-              <span style={styles.label}>{engine.label}</span>
-            </button>
-          );
-        })}
-      </div>
+              engine={engine}
+              active={activeEngineId === engine.id}
+              hasData={availableEngineIds.has(engine.id)}
+              hub={false}
+              delayMs={idx * 30}
+              onSelect={onSelect}
+            />
+          ))}
+        </div>
+      )}
     </section>
+  );
+}
+
+/* ── HexCell ────────────────────────────────────────── */
+
+interface HexCellProps {
+  engine: EngineGridItem;
+  active: boolean;
+  hasData: boolean;
+  hub: boolean;
+  delayMs: number;
+  onSelect: (id: string) => void;
+}
+
+function HexCell({
+  engine,
+  active,
+  hasData,
+  hub,
+  delayMs,
+  onSelect,
+}: HexCellProps) {
+  const sigilColor = active ? "var(--signal)" : directionColor[engine.direction];
+
+  return (
+    <button
+      type="button"
+      role="tab"
+      aria-selected={active}
+      aria-label={engine.label}
+      onClick={() => onSelect(engine.id)}
+      className={[
+        "hex-cell",
+        active ? "is-active" : "",
+        hub ? "is-hub" : "",
+      ]
+        .filter(Boolean)
+        .join(" ")}
+      style={{ animationDelay: `${delayMs}ms` }}
+    >
+      <span className="hex-cell-frame" aria-hidden>
+        <span className="hex-cell-inner">
+          <span
+            className="hex-cell-sigil"
+            style={{ color: sigilColor }}
+          >
+            {engine.sigil}
+          </span>
+        </span>
+        {hasData && <span className="hex-cell-pulse" aria-hidden />}
+      </span>
+      <span className="hex-cell-label">{engine.label}</span>
+    </button>
   );
 }

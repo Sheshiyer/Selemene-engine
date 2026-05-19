@@ -9,6 +9,7 @@
     "typecheck": "tsc --noEmit --incremental false"
   },
   "dependencies": {
+    "@selemene/dyad-ui": "*",
     "@strudel/web": "^1.2.6",
     "@supabase/supabase-js": "^2.49.4",
     "@types/three": "^0.184.1",

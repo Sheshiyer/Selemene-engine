@@ -2,6 +2,49 @@
 
 FreeAstrologyAPI.com integration for accurate Vedic astrology calculations in the Tryambakam Noesis platform.
 
+## Live endpoint status (validated 2026-05-19)
+
+A live probe of `https://json.freeastrologyapi.com` established which routes
+actually exist. Full catalog and probe artefacts in
+[`docs/FREEASTROLOGYAPI_DISCOVERY.md`](../../docs/FREEASTROLOGYAPI_DISCOVERY.md).
+
+| This crate's surface          | Vendor path                                                                 | Status (PR1)                                                 |
+|-------------------------------|-----------------------------------------------------------------------------|--------------------------------------------------------------|
+| `VedicApiClient::get_birth_chart` / `get_birth_chart_raw` | `POST /planets`                                | ✅ Live, returns Ascendant + 13 grahas + houses + retrograde |
+| `VedicApiClient::get_navamsa_chart` / `get_navamsa_chart_raw` | `POST /navamsa-chart-info`                 | ✅ Live, returns D9 Ascendant + grahas                       |
+| `houses::fetch_houses` / `get_western_houses_raw` | `POST /western/houses`                                          | ✅ Live, returns 12 cusps with signs                         |
+| `panchang` module             | `GET /panchang`, `GET /sunrise-sunset`                                      | ❌ Vendor routes do not exist — deferred to PR2 (native fallback) |
+| `vimshottari` module          | `POST /vimshottari-dasha`                                                   | ❌ Vendor route does not exist — deferred to PR2             |
+| `transits` module             | `POST /transits`                                                            | ❌ Vendor route does not exist — deferred to PR2             |
+| `yogas` module                | `POST /yogas`                                                               | ❌ Vendor route does not exist — deferred to PR3             |
+| `shadbala` module             | `POST /shadbala`                                                            | ❌ Vendor route does not exist — deferred to PR3             |
+| `ashtakavarga` module         | `POST /ashtakavarga`                                                        | ❌ Vendor route does not exist — deferred to PR3             |
+| `muhurta` module              | `POST /muhurta`                                                             | ❌ Vendor route does not exist — deferred to PR3             |
+
+### Known gaps (deferred to PR2 / PR3)
+
+PR1 fixes the typed `D1` (`get_birth_chart`) and `D9` (`get_navamsa_chart`)
+paths and introduces the new `houses` module. The mappers in
+`chart_mapping.rs` populate every field the vendor returns; the following
+fields on `chart::PlanetPosition` are **temporarily defaulted** because the
+vendor's `/planets` endpoint does not return them:
+
+- `nakshatra` (string defaulted to `""`)
+- `pada` (defaulted to `0`)
+- `speed` (defaulted to `0.0`)
+- `latitude` (ecliptic, defaulted to `0.0`)
+- `is_combust` (defaulted to `false`)
+
+These will be computed by the native engines (`engine-panchanga`, Swiss
+ephemeris) and overlaid on the API-mapped chart in **PR2**.
+
+The eight non-functional modules (`panchang`, `vimshottari`, `transits`,
+`yogas`, `shadbala`, `ashtakavarga`, `muhurta`, plus any future `report`-
+generator paths that depended on them) are untouched in PR1 — their public
+APIs still compile, their callers still link, but live calls into them will
+continue to return HTTP 403 until **PR2** (native façades) and **PR3**
+(native implementations) replace the underlying transport.
+
 ## Overview
 
 This crate provides a production-grade Rust client for [FreeAstrologyAPI.com](https://freeastrologyapi.com), offering accurate Panchang, Vimshottari Dasha, Birth Charts, and advanced Vedic astrology features. It is the recommended way to perform Vedic calculations in Selemene Engine.

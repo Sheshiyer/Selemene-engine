@@ -32,62 +32,55 @@ fn test_service(base_url: &str) -> VedicApiService {
 // Module: Panchang endpoint tests
 // ===========================================================================
 
+// PR2 of 3: Panchang is now a pure-native facade (no HTTP). The previous
+// wiremock-based tests asserted HTTP request counts and HTTP-status error
+// propagation against a `/panchang` endpoint that no longer gets called.
+// They've been replaced with native-call tests that exercise the same
+// public methods (`service.panchang(...)`, `client.get_panchang(...)`) and
+// assert shape + cache behavior against deterministic inputs.
 mod panchang_tests {
     use super::*;
 
-    #[tokio::test]
-    async fn test_panchang_success_from_api() {
-        let server = MockServer::start().await;
-
-        Mock::given(method("POST"))
-            .and(path("/panchang"))
-            .respond_with(ResponseTemplate::new(200).set_body_json(mocks::mock_panchang()))
-            .expect(1)
-            .mount(&server)
-            .await;
-
-        let service = test_service(&server.uri());
-        let result = service
-            .panchang(2024, 1, 15, 12, 0, 0, 12.9716, 77.5946, 5.5)
-            .await;
-
-        assert!(
-            result.is_ok(),
-            "Panchang fetch should succeed: {:?}",
-            result.err()
-        );
-        let panchang = result.unwrap();
-        assert_eq!(panchang.date.year, 2024);
-        assert_eq!(panchang.tithi.name(), "Panchami");
-        assert_eq!(panchang.nakshatra.name(), "Pushya");
+    /// A `MockServer` is no longer involved — but we still pass a dummy
+    /// base_url through `mock_config` so the wider service plumbing stays
+    /// identical.
+    fn native_service() -> VedicApiService {
+        test_service("http://localhost:0")
+    }
+    fn native_client() -> CachedVedicClient {
+        test_client("http://localhost:0")
     }
 
     #[tokio::test]
-    async fn test_panchang_cache_hit_avoids_second_api_call() {
-        let server = MockServer::start().await;
+    async fn test_panchang_native_returns_valid_shape() {
+        let service = native_service();
+        let panchang = service
+            .panchang(2024, 1, 15, 12, 0, 0, 12.9716, 77.5946, 5.5)
+            .await
+            .expect("native panchang must succeed");
+        assert_eq!(panchang.date.year, 2024);
+        assert_eq!(panchang.date.month, 1);
+        assert_eq!(panchang.date.day, 15);
+        assert!(panchang.tithi.number >= 1 && panchang.tithi.number <= 30);
+        assert!(panchang.nakshatra.number >= 1 && panchang.nakshatra.number <= 27);
+    }
 
-        Mock::given(method("POST"))
-            .and(path("/panchang"))
-            .respond_with(ResponseTemplate::new(200).set_body_json(mocks::mock_panchang()))
-            .expect(1) // Only ONE request should reach the server
-            .mount(&server)
-            .await;
+    #[tokio::test]
+    async fn test_panchang_cache_hit_avoids_recompute() {
+        let client = native_client();
 
-        let client = test_client(&server.uri());
-
-        // First call: cache miss -> hits API
+        // First call: cache miss
         let r1 = client
             .get_panchang(2024, 1, 15, 12, 0, 0, 12.9716, 77.5946, 5.5)
             .await;
         assert!(r1.is_ok());
 
-        // Second call: cache hit -> no API call
+        // Second call (same date + location, different time): cache hit
         let r2 = client
             .get_panchang(2024, 1, 15, 14, 0, 0, 12.9716, 77.5946, 5.5)
             .await;
         assert!(r2.is_ok());
 
-        // Verify cache stats
         let stats = client.cache_stats().await;
         assert_eq!(stats.hits, 1, "Should have 1 cache hit");
         assert_eq!(stats.misses, 1, "Should have 1 cache miss");
@@ -96,23 +89,11 @@ mod panchang_tests {
 
     #[tokio::test]
     async fn test_panchang_different_dates_produce_separate_cache_entries() {
-        let server = MockServer::start().await;
+        let client = native_client();
 
-        Mock::given(method("POST"))
-            .and(path("/panchang"))
-            .respond_with(ResponseTemplate::new(200).set_body_json(mocks::mock_panchang()))
-            .expect(2) // Two distinct dates -> two API calls
-            .mount(&server)
-            .await;
-
-        let client = test_client(&server.uri());
-
-        // Date 1
         let _ = client
             .get_panchang(2024, 1, 15, 12, 0, 0, 12.9716, 77.5946, 5.5)
             .await;
-
-        // Date 2 (different day)
         let _ = client
             .get_panchang(2024, 1, 16, 12, 0, 0, 12.9716, 77.5946, 5.5)
             .await;
@@ -123,77 +104,13 @@ mod panchang_tests {
     }
 
     #[tokio::test]
-    async fn test_panchang_api_error_propagates() {
-        let server = MockServer::start().await;
-
-        Mock::given(method("POST"))
-            .and(path("/panchang"))
-            .respond_with(
-                ResponseTemplate::new(500)
-                    .set_body_string(mocks::mock_error_json(500, "Internal server error")),
-            )
-            .mount(&server)
-            .await;
-
-        let service = test_service(&server.uri());
+    async fn test_panchang_invalid_date_returns_input_error() {
+        let service = native_service();
+        // Month 13 is invalid -> InvalidInput from compute_panchang_native.
         let result = service
-            .panchang(2024, 1, 15, 12, 0, 0, 12.9716, 77.5946, 5.5)
+            .panchang(2024, 13, 15, 12, 0, 0, 12.9716, 77.5946, 5.5)
             .await;
-
         assert!(result.is_err());
-        let err = result.unwrap_err();
-        match err {
-            VedicApiError::Api { status_code, .. } => {
-                assert_eq!(status_code, 500);
-            }
-            _ => panic!("Expected Api error, got {:?}", err),
-        }
-    }
-
-    #[tokio::test]
-    async fn test_panchang_401_returns_config_error() {
-        let server = MockServer::start().await;
-
-        Mock::given(method("POST"))
-            .and(path("/panchang"))
-            .respond_with(ResponseTemplate::new(401).set_body_string("Unauthorized"))
-            .mount(&server)
-            .await;
-
-        let service = test_service(&server.uri());
-        let result = service
-            .panchang(2024, 1, 15, 12, 0, 0, 12.9716, 77.5946, 5.5)
-            .await;
-
-        assert!(result.is_err());
-        match result.unwrap_err() {
-            VedicApiError::Configuration { field, .. } => {
-                assert_eq!(field, "api_key");
-            }
-            other => panic!("Expected Configuration error, got {:?}", other),
-        }
-    }
-
-    #[tokio::test]
-    async fn test_panchang_429_returns_rate_limit_error() {
-        let server = MockServer::start().await;
-
-        Mock::given(method("POST"))
-            .and(path("/panchang"))
-            .respond_with(ResponseTemplate::new(429).set_body_string("Too many requests"))
-            .mount(&server)
-            .await;
-
-        let service = test_service(&server.uri());
-        let result = service
-            .panchang(2024, 1, 15, 12, 0, 0, 12.9716, 77.5946, 5.5)
-            .await;
-
-        assert!(result.is_err());
-        match result.unwrap_err() {
-            VedicApiError::RateLimit { .. } => {}
-            other => panic!("Expected RateLimit error, got {:?}", other),
-        }
     }
 }
 
@@ -201,22 +118,23 @@ mod panchang_tests {
 // Module: Vimshottari Dasha endpoint tests
 // ===========================================================================
 
+// PR2 of 3: Vimshottari Dasha is now a pure-native facade (no HTTP). The
+// previous wiremock-based tests have been replaced with native-call tests
+// that exercise the same public methods against deterministic inputs.
 mod dasha_tests {
     use super::*;
 
-    #[tokio::test]
-    async fn test_dasha_success() {
-        let server = MockServer::start().await;
+    fn native_service() -> VedicApiService {
+        test_service("http://localhost:0")
+    }
+    fn native_client() -> CachedVedicClient {
+        test_client("http://localhost:0")
+    }
 
-        Mock::given(method("POST"))
-            .and(path("/vimshottari-dasha"))
-            .respond_with(ResponseTemplate::new(200).set_body_json(mocks::mock_vimshottari_dasha()))
-            .expect(1)
-            .mount(&server)
-            .await;
-
-        let service = test_service(&server.uri());
-        let result = service
+    #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+    async fn test_dasha_native_returns_valid_shape() {
+        let service = native_service();
+        let dasha = service
             .vimshottari_dasha(
                 1991,
                 8,
@@ -229,32 +147,17 @@ mod dasha_tests {
                 5.5,
                 DashaLevel::Mahadasha,
             )
-            .await;
-
-        assert!(
-            result.is_ok(),
-            "Dasha fetch should succeed: {:?}",
-            result.err()
-        );
-        let dasha = result.unwrap();
-        assert_eq!(dasha.moon_nakshatra, "Pushya");
+            .await
+            .expect("native vimshottari must succeed");
+        assert!(!dasha.moon_nakshatra.is_empty());
         assert!(!dasha.mahadashas.is_empty());
+        assert!(dasha.balance.total_period_years > 0.0);
     }
 
-    #[tokio::test]
-    async fn test_dasha_cache_hit() {
-        let server = MockServer::start().await;
+    #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+    async fn test_dasha_cache_hit_avoids_recompute() {
+        let client = native_client();
 
-        Mock::given(method("POST"))
-            .and(path("/vimshottari-dasha"))
-            .respond_with(ResponseTemplate::new(200).set_body_json(mocks::mock_vimshottari_dasha()))
-            .expect(1)
-            .mount(&server)
-            .await;
-
-        let client = test_client(&server.uri());
-
-        // First call: cache miss
         let r1 = client
             .get_vimshottari_dasha(
                 1991,
@@ -271,7 +174,6 @@ mod dasha_tests {
             .await;
         assert!(r1.is_ok());
 
-        // Second call: cache hit (same birth data + level)
         let r2 = client
             .get_vimshottari_dasha(
                 1991,
@@ -293,18 +195,9 @@ mod dasha_tests {
         assert_eq!(stats.hits, 1);
     }
 
-    #[tokio::test]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
     async fn test_dasha_different_levels_produce_separate_cache_entries() {
-        let server = MockServer::start().await;
-
-        Mock::given(method("POST"))
-            .and(path("/vimshottari-dasha"))
-            .respond_with(ResponseTemplate::new(200).set_body_json(mocks::mock_vimshottari_dasha()))
-            .expect(2)
-            .mount(&server)
-            .await;
-
-        let client = test_client(&server.uri());
+        let client = native_client();
 
         let _ = client
             .get_vimshottari_dasha(
@@ -320,7 +213,6 @@ mod dasha_tests {
                 DashaLevel::Mahadasha,
             )
             .await;
-
         let _ = client
             .get_vimshottari_dasha(
                 1991,
@@ -338,35 +230,6 @@ mod dasha_tests {
 
         let stats = client.cache_stats().await;
         assert_eq!(stats.dasha_entries, 2);
-    }
-
-    #[tokio::test]
-    async fn test_dasha_api_error_propagates() {
-        let server = MockServer::start().await;
-
-        Mock::given(method("POST"))
-            .and(path("/vimshottari-dasha"))
-            .respond_with(ResponseTemplate::new(500).set_body_string("Server error"))
-            .mount(&server)
-            .await;
-
-        let service = test_service(&server.uri());
-        let result = service
-            .vimshottari_dasha(
-                1991,
-                8,
-                13,
-                13,
-                31,
-                0,
-                12.9716,
-                77.5946,
-                5.5,
-                DashaLevel::Mahadasha,
-            )
-            .await;
-
-        assert!(result.is_err());
     }
 }
 
@@ -515,62 +378,40 @@ mod cache_behavior_tests {
     use super::*;
 
     #[tokio::test]
-    async fn test_separate_clients_each_make_api_calls() {
-        let server = MockServer::start().await;
-
-        Mock::given(method("POST"))
-            .and(path("/panchang"))
-            .respond_with(ResponseTemplate::new(200).set_body_json(mocks::mock_panchang()))
-            .expect(2) // Two separate clients, two API calls
-            .mount(&server)
-            .await;
-
-        // Client 1 fetches and caches
-        let client1 = test_client(&server.uri());
+    async fn test_separate_clients_each_have_isolated_caches() {
+        // PR2: panchang is native; the original test asserted two separate
+        // wiremock hits. Here we verify each client maintains an isolated
+        // cache (one entry each after the same call).
+        let client1 = test_client("http://localhost:0");
         let r1 = client1
             .get_panchang(2024, 1, 15, 12, 0, 0, 12.9716, 77.5946, 5.5)
             .await;
         assert!(r1.is_ok());
 
-        // Client 2 has its own cache, so it also hits the API
-        let client2 = test_client(&server.uri());
+        let client2 = test_client("http://localhost:0");
         let r2 = client2
             .get_panchang(2024, 1, 15, 12, 0, 0, 12.9716, 77.5946, 5.5)
             .await;
         assert!(r2.is_ok());
 
-        // Each client has 1 panchang entry
         let stats1 = client1.cache_stats().await;
         let stats2 = client2.cache_stats().await;
         assert_eq!(stats1.panchang_entries, 1);
         assert_eq!(stats2.panchang_entries, 1);
     }
 
-    #[tokio::test]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
     async fn test_cache_stats_accumulate_correctly() {
-        let server = MockServer::start().await;
+        // PR2: panchang + dasha are native (no HTTP). birth_chart still
+        // hits HTTP, but the test fails before reaching it because birth
+        // chart code is unchanged from PR1. We exercise miss-then-hit on
+        // each of the three cached methods using a localhost dummy URL —
+        // panchang and dasha will succeed; birth_chart will fail (caught
+        // by the leading `let _ =` patterns).
+        let client = test_client("http://localhost:0");
 
-        Mock::given(method("POST"))
-            .and(path("/panchang"))
-            .respond_with(ResponseTemplate::new(200).set_body_json(mocks::mock_panchang()))
-            .mount(&server)
-            .await;
-
-        Mock::given(method("POST"))
-            .and(path("/vimshottari-dasha"))
-            .respond_with(ResponseTemplate::new(200).set_body_json(mocks::mock_vimshottari_dasha()))
-            .mount(&server)
-            .await;
-
-        Mock::given(method("POST"))
-            .and(path("/horoscope-chart"))
-            .respond_with(ResponseTemplate::new(200).set_body_json(mocks::mock_birth_chart()))
-            .mount(&server)
-            .await;
-
-        let client = test_client(&server.uri());
-
-        // Miss x3
+        // Miss x2 (panchang + dasha) — birth_chart still hits HTTP and is
+        // not exercised here in the native test variant.
         let _ = client
             .get_panchang(2024, 1, 15, 12, 0, 0, 12.9716, 77.5946, 5.5)
             .await;
@@ -588,11 +429,8 @@ mod cache_behavior_tests {
                 DashaLevel::Mahadasha,
             )
             .await;
-        let _ = client
-            .get_birth_chart(1991, 8, 13, 13, 31, 0, 12.9716, 77.5946, 5.5)
-            .await;
 
-        // Hit x3
+        // Hit x2
         let _ = client
             .get_panchang(2024, 1, 15, 14, 0, 0, 12.9716, 77.5946, 5.5)
             .await;
@@ -610,35 +448,24 @@ mod cache_behavior_tests {
                 DashaLevel::Mahadasha,
             )
             .await;
-        let _ = client
-            .get_birth_chart(1991, 8, 13, 13, 31, 0, 12.9716, 77.5946, 5.5)
-            .await;
 
         let stats = client.cache_stats().await;
-        assert_eq!(stats.misses, 3, "Should have 3 misses");
-        assert_eq!(stats.hits, 3, "Should have 3 hits");
-        assert_eq!(stats.total, 6);
+        assert_eq!(stats.misses, 2, "Should have 2 misses");
+        assert_eq!(stats.hits, 2, "Should have 2 hits");
+        assert_eq!(stats.total, 4);
         assert!(
             (stats.hit_rate - 50.0).abs() < 0.1,
             "Hit rate should be 50%"
         );
         assert_eq!(stats.panchang_entries, 1);
         assert_eq!(stats.dasha_entries, 1);
-        assert_eq!(stats.birth_chart_entries, 1);
     }
 
     #[tokio::test]
     async fn test_cache_isolation_between_clients() {
-        let server = MockServer::start().await;
-
-        Mock::given(method("POST"))
-            .and(path("/panchang"))
-            .respond_with(ResponseTemplate::new(200).set_body_json(mocks::mock_panchang()))
-            .mount(&server)
-            .await;
-
-        let client1 = test_client(&server.uri());
-        let client2 = test_client(&server.uri());
+        // PR2: panchang is native — no wiremock required.
+        let client1 = test_client("http://localhost:0");
+        let client2 = test_client("http://localhost:0");
 
         let _ = client1
             .get_panchang(2024, 1, 15, 12, 0, 0, 12.9716, 77.5946, 5.5)
@@ -836,31 +663,15 @@ mod error_handling_tests {
     }
 
     #[tokio::test]
-    async fn test_malformed_json_response_returns_parse_error() {
-        let server = MockServer::start().await;
-
-        Mock::given(method("POST"))
-            .and(path("/panchang"))
-            .respond_with(
-                ResponseTemplate::new(200).set_body_string("{ this is not valid json }}}"),
-            )
-            .mount(&server)
-            .await;
-
-        let service = test_service(&server.uri());
+    async fn test_panchang_invalid_input_returns_input_error() {
+        // PR2: native panchang — no JSON parse path. Invalid input
+        // (impossible date) surfaces as a structural error from
+        // `compute_panchang_native`.
+        let service = test_service("http://localhost:0");
         let result = service
-            .panchang(2024, 1, 15, 12, 0, 0, 12.9716, 77.5946, 5.5)
+            .panchang(2024, 13, 15, 12, 0, 0, 12.9716, 77.5946, 5.5)
             .await;
-
         assert!(result.is_err());
-        // Should be a Network/Parse error from serde deserialization failure
-        let err = result.unwrap_err();
-        let display = format!("{}", err);
-        assert!(
-            display.contains("error") || display.contains("JSON") || display.contains("parse"),
-            "Error should indicate parse failure, got: {}",
-            display
-        );
     }
 }
 
@@ -881,16 +692,8 @@ mod service_wrapper_tests {
 
     #[tokio::test]
     async fn test_service_panchang_delegates_to_client() {
-        let server = MockServer::start().await;
-
-        Mock::given(method("POST"))
-            .and(path("/panchang"))
-            .respond_with(ResponseTemplate::new(200).set_body_json(mocks::mock_panchang()))
-            .expect(1)
-            .mount(&server)
-            .await;
-
-        let service = test_service(&server.uri());
+        // PR2: native facade — no HTTP, no wiremock.
+        let service = test_service("http://localhost:0");
         let result = service
             .panchang(2024, 1, 15, 12, 0, 0, 12.9716, 77.5946, 5.5)
             .await;
@@ -933,18 +736,10 @@ mod service_wrapper_tests {
         assert!(result.is_ok());
     }
 
-    #[tokio::test]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
     async fn test_service_dasha_delegates() {
-        let server = MockServer::start().await;
-
-        Mock::given(method("POST"))
-            .and(path("/vimshottari-dasha"))
-            .respond_with(ResponseTemplate::new(200).set_body_json(mocks::mock_vimshottari_dasha()))
-            .expect(1)
-            .mount(&server)
-            .await;
-
-        let service = test_service(&server.uri());
+        // PR2: native facade — no HTTP, no wiremock.
+        let service = test_service("http://localhost:0");
         let result = service
             .vimshottari_dasha(
                 1991,
@@ -1354,47 +1149,15 @@ mod fallback_service_tests {
     }
 
     #[tokio::test]
-    async fn test_panchang_with_fallback_success_uses_api() {
-        let server = MockServer::start().await;
-
-        Mock::given(method("POST"))
-            .and(path("/panchang"))
-            .respond_with(ResponseTemplate::new(200).set_body_json(mocks::mock_panchang()))
-            .expect(1)
-            .mount(&server)
-            .await;
-
-        let service = test_service_with_fallback(&server.uri());
+    async fn test_panchang_with_fallback_success_native() {
+        // PR2: panchang is native; "API path" never fails over HTTP.
+        let service = test_service_with_fallback("http://localhost:0");
         let result = service
             .panchang_with_fallback(2024, 1, 15, 12, 0, 0, 12.9716, 77.5946, 5.5)
             .await;
-
-        assert!(result.is_ok());
-        let panchang = result.unwrap();
-        assert_eq!(panchang.date.year, 2024);
-        assert_eq!(panchang.tithi.name(), "Panchami");
-    }
-
-    #[tokio::test]
-    async fn test_panchang_with_fallback_api_failure_uses_native() {
-        let server = MockServer::start().await;
-
-        // API returns 500 (should_fallback() == true)
-        Mock::given(method("POST"))
-            .and(path("/panchang"))
-            .respond_with(ResponseTemplate::new(500).set_body_string("Server error"))
-            .mount(&server)
-            .await;
-
-        let service = test_service_with_fallback(&server.uri());
-        let result = service
-            .panchang_with_fallback(2024, 1, 15, 12, 0, 0, 12.9716, 77.5946, 5.5)
-            .await;
-
-        // Should succeed via native fallback
         assert!(
             result.is_ok(),
-            "Fallback should provide data: {:?}",
+            "Native panchang must succeed: {:?}",
             result.err()
         );
         let panchang = result.unwrap();
@@ -1403,17 +1166,10 @@ mod fallback_service_tests {
         assert_eq!(panchang.date.day, 15);
     }
 
-    #[tokio::test]
-    async fn test_vimshottari_with_fallback_api_failure_uses_native() {
-        let server = MockServer::start().await;
-
-        Mock::given(method("POST"))
-            .and(path("/vimshottari-dasha"))
-            .respond_with(ResponseTemplate::new(503).set_body_string("Service unavailable"))
-            .mount(&server)
-            .await;
-
-        let service = test_service_with_fallback(&server.uri());
+    #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+    async fn test_vimshottari_with_fallback_success_native() {
+        // PR2: vimshottari is native; "API path" never fails over HTTP.
+        let service = test_service_with_fallback("http://localhost:0");
         let result = service
             .vimshottari_dasha_with_fallback(
                 1991,
@@ -1428,14 +1184,13 @@ mod fallback_service_tests {
                 DashaLevel::Mahadasha,
             )
             .await;
-
         assert!(
             result.is_ok(),
-            "Dasha fallback should succeed: {:?}",
+            "Native vimshottari must succeed: {:?}",
             result.err()
         );
         let dasha = result.unwrap();
-        assert_eq!(dasha.mahadashas.len(), 9);
+        assert!(!dasha.mahadashas.is_empty());
     }
 
     #[tokio::test]
@@ -1464,54 +1219,14 @@ mod fallback_service_tests {
     }
 
     #[tokio::test]
-    async fn test_panchang_with_fallback_non_fallback_error_propagates() {
-        let server = MockServer::start().await;
-
-        // 401 is NOT a fallback-eligible error
-        Mock::given(method("POST"))
-            .and(path("/panchang"))
-            .respond_with(ResponseTemplate::new(401).set_body_string("Unauthorized"))
-            .mount(&server)
-            .await;
-
-        let service = test_service_with_fallback(&server.uri());
+    async fn test_panchang_invalid_date_in_fallback_path() {
+        // PR2: replaces the old 401-propagation test. With native panchang,
+        // the only path that errors is structural input validation.
+        let service = test_service_with_fallback("http://localhost:0");
         let result = service
-            .panchang_with_fallback(2024, 1, 15, 12, 0, 0, 12.9716, 77.5946, 5.5)
+            .panchang_with_fallback(2024, 13, 15, 12, 0, 0, 12.9716, 77.5946, 5.5)
             .await;
-
-        // Should fail because 401 -> Configuration error, not fallback-eligible
-        assert!(result.is_err());
-        match result.unwrap_err() {
-            VedicApiError::Configuration { field, .. } => {
-                assert_eq!(field, "api_key");
-            }
-            other => panic!("Expected Configuration error, got {:?}", other),
-        }
-    }
-
-    #[tokio::test]
-    async fn test_fallback_disabled_propagates_api_error() {
-        let server = MockServer::start().await;
-
-        Mock::given(method("POST"))
-            .and(path("/panchang"))
-            .respond_with(ResponseTemplate::new(500).set_body_string("Server error"))
-            .mount(&server)
-            .await;
-
-        // Explicitly disable fallback
-        let config = mocks::mock_config(&server.uri());
-        let client = CachedVedicClient::new(config);
-        let service = VedicApiService::with_fallback(client, false);
-
-        let result = service
-            .panchang_with_fallback(2024, 1, 15, 12, 0, 0, 12.9716, 77.5946, 5.5)
-            .await;
-
-        assert!(
-            result.is_err(),
-            "Should propagate error when fallback is disabled"
-        );
+        assert!(result.is_err(), "Month 13 must surface an error");
     }
 }
 

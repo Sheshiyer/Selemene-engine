@@ -31,6 +31,10 @@ use crate::panchang::{
     DateInfo, DayBoundaries, Karana, KaranaName, KaranaType, Location, Nakshatra, NakshatraName,
     Paksha, Panchang, PlanetaryPositions, Tithi, TithiName, Vara, Yoga, YogaName,
 };
+use crate::transits::api::{
+    JupiterTransitResponse, NatalAspectResponse, SadeSatiResponse, TransitApiResponse,
+    TransitPlanetResponse,
+};
 
 // ---------------------------------------------------------------------------
 // Constants: Shesh's birth data
@@ -192,6 +196,14 @@ impl MockApiClient {
     pub fn get_navamsa_chart(&self) -> NavamsaChart {
         self.increment();
         shesh_navamsa_chart()
+    }
+
+    /// Mock get_transits — returns a stable transit analysis fixture for
+    /// Shesh's birth chart against a fixed transit date (2024-01-15). Added
+    /// in PR2 alongside the native transits façade.
+    pub fn get_transits(&self) -> TransitApiResponse {
+        self.increment();
+        shesh_transit_analysis()
     }
 }
 
@@ -847,6 +859,123 @@ fn shesh_native_info() -> NativeInfo {
 }
 
 // ---------------------------------------------------------------------------
+// Transit fixture (PR2 of 3)
+// ---------------------------------------------------------------------------
+
+/// Stable transit analysis fixture for Shesh's birth chart against a fixed
+/// transit date (2024-01-15). Used by `MockApiClient::get_transits` and for
+/// downstream callers that need a Transit shape without spinning up the
+/// Swiss Ephemeris global state.
+pub fn shesh_transit_analysis() -> TransitApiResponse {
+    let transits = vec![
+        TransitPlanetResponse {
+            planet: "Sun".to_string(),
+            sign: "Capricorn".to_string(),
+            degree: 0.5,
+            is_retrograde: Some(false),
+            natal_aspects: Some(vec![NatalAspectResponse {
+                natal_planet: "Moon".to_string(),
+                aspect_type: "Trine".to_string(),
+                orb: 2.1,
+            }]),
+        },
+        TransitPlanetResponse {
+            planet: "Moon".to_string(),
+            sign: "Cancer".to_string(),
+            degree: 10.0,
+            is_retrograde: Some(false),
+            natal_aspects: None,
+        },
+        TransitPlanetResponse {
+            planet: "Mercury".to_string(),
+            sign: "Sagittarius".to_string(),
+            degree: 25.0,
+            is_retrograde: Some(false),
+            natal_aspects: None,
+        },
+        TransitPlanetResponse {
+            planet: "Venus".to_string(),
+            sign: "Scorpio".to_string(),
+            degree: 12.0,
+            is_retrograde: Some(false),
+            natal_aspects: None,
+        },
+        TransitPlanetResponse {
+            planet: "Mars".to_string(),
+            sign: "Sagittarius".to_string(),
+            degree: 18.0,
+            is_retrograde: Some(false),
+            natal_aspects: None,
+        },
+        TransitPlanetResponse {
+            planet: "Jupiter".to_string(),
+            sign: "Aries".to_string(),
+            degree: 5.0,
+            is_retrograde: Some(false),
+            natal_aspects: None,
+        },
+        TransitPlanetResponse {
+            planet: "Saturn".to_string(),
+            sign: "Aquarius".to_string(),
+            degree: 22.0,
+            is_retrograde: Some(false),
+            natal_aspects: None,
+        },
+        TransitPlanetResponse {
+            planet: "Uranus".to_string(),
+            sign: "Taurus".to_string(),
+            degree: 15.0,
+            is_retrograde: Some(true),
+            natal_aspects: None,
+        },
+        TransitPlanetResponse {
+            planet: "Neptune".to_string(),
+            sign: "Pisces".to_string(),
+            degree: 24.0,
+            is_retrograde: Some(false),
+            natal_aspects: None,
+        },
+        TransitPlanetResponse {
+            planet: "Pluto".to_string(),
+            sign: "Capricorn".to_string(),
+            degree: 28.0,
+            is_retrograde: Some(false),
+            natal_aspects: None,
+        },
+        TransitPlanetResponse {
+            planet: "Rahu".to_string(),
+            sign: "Aries".to_string(),
+            degree: 14.0,
+            is_retrograde: Some(true),
+            natal_aspects: None,
+        },
+        TransitPlanetResponse {
+            planet: "Ketu".to_string(),
+            sign: "Libra".to_string(),
+            degree: 14.0,
+            is_retrograde: Some(true),
+            natal_aspects: None,
+        },
+    ];
+
+    TransitApiResponse {
+        transits,
+        sade_sati: Some(SadeSatiResponse {
+            is_active: false,
+            phase: None,
+            saturn_sign: "Aquarius".to_string(),
+            moon_sign: "Virgo".to_string(),
+        }),
+        jupiter_transit: Some(JupiterTransitResponse {
+            sign: "Aries".to_string(),
+            from_ascendant: 6,
+            from_moon: 8,
+            quality: Some("Challenging".to_string()),
+        }),
+    }
+}
+
+// ---------------------------------------------------------------------------
 // Tests
 // ---------------------------------------------------------------------------
 
@@ -1103,6 +1232,16 @@ mod tests {
         let deserialized: NavamsaChart = serde_json::from_str(&json).unwrap();
         assert_eq!(deserialized.d9_lagna, ZodiacSign::Cancer);
         assert_eq!(deserialized.navamsa_positions.len(), 9);
+    }
+
+    // ---- Transit fixture validation (PR2) ----
+
+    #[test]
+    fn test_shesh_transit_analysis_has_twelve_planets() {
+        let t = shesh_transit_analysis();
+        assert_eq!(t.transits.len(), 12);
+        assert!(t.sade_sati.is_some());
+        assert!(t.jupiter_transit.is_some());
     }
 
     // ---- MockResponses validation ----

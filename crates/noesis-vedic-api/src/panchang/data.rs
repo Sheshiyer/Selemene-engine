@@ -791,6 +791,23 @@ impl KaranaName {
             KaranaName::Kimstughna => "Kimstughna",
         }
     }
+
+    /// Inverse of [`from_number`]. Returns the 1..=11 karana index.
+    pub fn number(&self) -> u8 {
+        match self {
+            KaranaName::Bava => 1,
+            KaranaName::Balava => 2,
+            KaranaName::Kaulava => 3,
+            KaranaName::Taitila => 4,
+            KaranaName::Gara => 5,
+            KaranaName::Vanija => 6,
+            KaranaName::Vishti => 7,
+            KaranaName::Shakuni => 8,
+            KaranaName::Chatushpada => 9,
+            KaranaName::Naga => 10,
+            KaranaName::Kimstughna => 11,
+        }
+    }
 }
 
 /// Type of Karana

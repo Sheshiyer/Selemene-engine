@@ -368,9 +368,12 @@ impl FallbackChain {
         let vara_num = (((jdn as i64 + 1) % 7) as u8).max(1);
         let vara = Vara::from_number(vara_num).unwrap_or(Vara::Monday);
 
-        // Approximate sunrise/sunset (simplified for latitude)
+        // Approximate sunrise/sunset (simplified for latitude). `next_sunrise`
+        // must be tomorrow's sunrise — feeding `sunrise` itself collapses the
+        // downstream night window in choghadiya/hora helpers to zero.
         let sunrise = approximate_sunrise(lat, jdn);
         let sunset = approximate_sunset(lat, jdn);
+        let next_sunrise = approximate_sunrise(lat, jdn + 1.0);
 
         Ok(Panchang {
             date: DateInfo {
@@ -446,9 +449,9 @@ impl FallbackChain {
                 ketu: None,
             },
             day_boundaries: DayBoundaries {
-                sunrise: sunrise.clone(),
-                sunset: sunset.clone(),
-                next_sunrise: sunrise,
+                sunrise,
+                sunset,
+                next_sunrise,
                 day_duration: "12:00".to_string(),
                 night_duration: "12:00".to_string(),
             },

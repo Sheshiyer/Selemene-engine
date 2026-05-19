@@ -211,7 +211,10 @@ export function createServer(engineRegistry: EngineRegistry = registry) {
       return result.body
     })
     .post('/suno/custom_generate', async ({ body, set }) => {
-      const result = await proxyToSuno('/api/custom_generate', { method: 'POST', body: JSON.stringify(body) })
+      const result = await proxyToSuno('/api/custom_generate', {
+        method: 'POST',
+        body: JSON.stringify(body),
+      })
       set.status = result.status
       return result.body
     })
@@ -240,19 +243,22 @@ async function proxyToSuno(
     'Content-Type': 'application/json',
     Accept: 'application/json',
   }
-  if (SUNO_COOKIE) headers['Cookie'] = SUNO_COOKIE
+  if (SUNO_COOKIE) headers.Cookie = SUNO_COOKIE
 
   try {
     const res = await fetch(`${SUNO_BRIDGE_URL}${path}`, {
       ...init,
-      headers: { ...headers, ...(init.headers as Record<string, string> ?? {}) },
+      headers: { ...headers, ...((init.headers as Record<string, string>) ?? {}) },
     })
     const body = await res.json().catch(() => ({ error: 'non-json response' }))
     return { status: res.status, body }
   } catch (err) {
     return {
       status: 502,
-      body: { error: 'suno bridge unreachable', detail: err instanceof Error ? err.message : String(err) },
+      body: {
+        error: 'suno bridge unreachable',
+        detail: err instanceof Error ? err.message : String(err),
+      },
     }
   }
 }

@@ -306,6 +306,7 @@ code, .mono, pre {
 .animate-grow-in  { animation: growIn 0.4s var(--ease-out-expo) both; }
 .animate-slide-up { animation: slideUp 0.4s var(--ease-out-expo) both; }
 
+/* ── DEPRECATED: previous bento 5-col engine grid (kept for legacy callers) ── */
 .engine-icon-grid {
   grid-template-columns: repeat(5, 80px);
   justify-content: start;
@@ -316,6 +317,310 @@ code, .mono, pre {
     grid-template-columns: repeat(3, 80px);
     justify-content: center;
   }
+}
+
+/* ══════════════════════════════════════════════
+   ENGINE HONEYCOMB — hex grid replacing bento
+   ══════════════════════════════════════════════ */
+
+/* Container + header */
+.engine-honeycomb {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.engine-honeycomb-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.engine-honeycomb-title {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  letter-spacing: 0.06em;
+  color: var(--signal);
+  margin: 0;
+}
+
+.engine-honeycomb-meta {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+
+/* Honeycomb layout
+   ────────────────
+   Cells are 88px flat-to-flat. We use CSS clip-path for the hex shape
+   on the FRAME (the outer 1px-bg border) and on the INNER cell.
+
+   Row geometry:
+     - row height = sqrt(3)/2 * width ≈ 76px for an 88px hex
+     - rows overlap by 1/4 of width (22px) for tight honeycomb packing
+     - odd-indexed rows (rows 1, 3) get half-cell horizontal offset
+       to stagger into the gaps of even rows.
+   We achieve this with negative margin-top between rows. */
+
+.hex-honeycomb {
+  --hex-w: 104px;
+  --hex-gap: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;        /* center rows under each other for honeycomb balance */
+  gap: 0;
+  /* container box for symmetric centering: the 3-cell rows + half-offset
+     match the 4-cell row width, so align-items:center balances visually */
+}
+
+.hex-honeycomb .hex-row {
+  display: flex;
+  gap: var(--hex-gap);
+  /* Row vertical advance: leave room for the external label
+     and breathing space. Slight overlap (1/8 of hex height)
+     gives the honeycomb feel without burying the label of
+     the previous row under the points of the next. */
+  margin-top: calc(var(--hex-w) * -0.04);
+}
+
+.hex-honeycomb .hex-row:first-child {
+  margin-top: 0;
+}
+
+/* Half-cell horizontal offset for the staggered rows so points
+   of one row sit in the gaps of the other row (interlocking). */
+.hex-honeycomb .hex-row-offset {
+  margin-left: calc((var(--hex-w) + var(--hex-gap)) / 2);
+}
+
+/* Single-row flow layout for non-17-engine sets (compass workflows) */
+.hex-flow {
+  --hex-w: 96px;
+  --hex-gap: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--hex-gap);
+}
+
+/* ── HexCell ──────────────────────────────────────────── */
+
+.hex-cell {
+  --hex-cell-w: var(--hex-w, 96px);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0;
+  background: none;
+  border: none;
+  color: var(--text-2);
+  cursor: pointer;
+  font-family: inherit;
+  text-align: center;
+  animation: growIn 0.4s var(--ease-out-expo) both;
+  transition: color 0.18s ease;
+}
+
+.hex-cell:hover {
+  color: var(--text);
+}
+
+.hex-cell-frame {
+  position: relative;
+  width: var(--hex-cell-w);
+  height: calc(var(--hex-cell-w) * 1.155);   /* tall hex (point-top) */
+  /* Hex point-top: 6-sided polygon with vertices at 12/2/4/6/8/10 o'clock */
+  clip-path: polygon(
+    50% 0%,
+    100% 25%,
+    100% 75%,
+    50% 100%,
+    0% 75%,
+    0% 25%
+  );
+  background: var(--line-strong);       /* outer 1px-equivalent border layer */
+  transition: background 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.hex-cell:hover .hex-cell-frame {
+  background: var(--c-emerald);
+}
+
+.hex-cell.is-active .hex-cell-frame {
+  background: var(--signal);
+  box-shadow: var(--glow-indigo);
+}
+
+.hex-cell.is-hub .hex-cell-frame {
+  background: linear-gradient(135deg, var(--c-emerald) 0%, var(--signal) 100%);
+}
+
+.hex-cell-inner {
+  /* The "fill" sits inside the frame, leaving a 2px hex border */
+  position: absolute;
+  inset: 2px;
+  clip-path: polygon(
+    50% 0%,
+    100% 25%,
+    100% 75%,
+    50% 100%,
+    0% 75%,
+    0% 25%
+  );
+  background: var(--surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s ease;
+}
+
+.hex-cell.is-active .hex-cell-inner {
+  background: linear-gradient(
+    135deg,
+    rgba(11, 80, 251, 0.18) 0%,
+    rgba(197, 160, 23, 0.10) 100%
+  );
+}
+
+.hex-cell.is-hub .hex-cell-inner {
+  background: radial-gradient(
+    circle at center,
+    rgba(11, 80, 251, 0.22) 0%,
+    var(--surface) 75%
+  );
+}
+
+.hex-cell-sigil {
+  font-family: var(--font-display);
+  font-size: 1.55rem;
+  line-height: 1;
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.hex-cell.is-hub .hex-cell-sigil {
+  font-size: 1.85rem;
+  color: var(--signal);
+}
+
+.hex-cell:hover .hex-cell-sigil {
+  transform: scale(1.05);
+}
+
+/* Coherence-emerald pulse marker indicating data-available */
+.hex-cell-pulse {
+  position: absolute;
+  top: 10%;
+  right: 18%;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--c-emerald);
+  box-shadow: 0 0 8px var(--c-emerald), 0 0 16px rgba(16, 181, 167, 0.5);
+  animation: emeraldGlow 2s ease-in-out infinite;
+}
+
+.hex-cell-label {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  line-height: 1.2;
+  letter-spacing: 0.05em;
+  color: var(--text-2);
+  text-transform: uppercase;
+  max-width: var(--hex-cell-w);
+  transition: color 0.18s ease;
+}
+
+.hex-cell.is-active .hex-cell-label {
+  color: var(--signal);
+}
+
+.hex-cell.is-hub .hex-cell-label {
+  color: var(--signal);
+  font-weight: 700;
+}
+
+/* ── Mobile collapse: flat 3-col grid, smaller cells, no stagger ── */
+@media (max-width: 640px) {
+  .hex-honeycomb {
+    --hex-w: 80px;
+    --hex-gap: 8px;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .hex-honeycomb .hex-row {
+    display: contents; /* dissolve row structure */
+  }
+
+  .hex-honeycomb .hex-row-offset {
+    margin-left: 0;
+  }
+
+  .hex-flow {
+    --hex-w: 80px;
+    --hex-gap: 8px;
+    justify-content: center;
+  }
+
+  .hex-cell-sigil {
+    font-size: 1.35rem;
+  }
+
+  .hex-cell.is-hub .hex-cell-sigil {
+    font-size: 1.55rem;
+  }
+}
+
+/* Focus ring for keyboard navigation — replaces default outline */
+.hex-cell:focus-visible {
+  outline: none;
+}
+.hex-cell:focus-visible .hex-cell-frame {
+  box-shadow: 0 0 0 2px var(--c-emerald), var(--glow-indigo);
+}
+
+/* ══════════════════════════════════════════════
+   DYAD-CHAMBER — Pichet + Aletheios witness chrome
+   See src/components/dyad/ for the React components
+   See SYSTEM.md → DYAD-CHAMBER PATTERN for rationale
+   ══════════════════════════════════════════════ */
+
+/* Submission pulse — gentle scale-up on the active witness while
+   a workflow is in flight. Tinted gold (Pichet) by default; the
+   component re-tints via filter:drop-shadow at runtime. */
+@keyframes thresholdPulse {
+  0%, 100% {
+    transform: scale(0.98);
+    filter: drop-shadow(0 0 18px rgba(197, 160, 23, 0.45));
+  }
+  50% {
+    transform: scale(1.04);
+    filter: drop-shadow(0 0 36px rgba(197, 160, 23, 0.80));
+  }
+}
+
+/* Orbital ring drift — the faint double-circle between witnesses
+   rotates slowly at 120s/rev to ground the dyad as one field. */
+@keyframes thresholdRingDrift {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* Step transition fade — used by consuming flows on their
+   step-content wrapper. Apply via className="threshold-step-enter" */
+@keyframes thresholdStepFade {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.threshold-step-enter {
+  animation: thresholdStepFade 600ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
 }
 
 .sigil-path {

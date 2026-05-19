@@ -1257,7 +1257,7 @@ impl AdminRepository {
         let affected = sqlx::query(
             "DELETE FROM api_keys \
              WHERE is_active = false \
-               AND COALESCE(revoked_at, created_at) < NOW() - ($1 || ' days')::interval"
+               AND COALESCE(revoked_at, created_at) < NOW() - ($1 || ' days')::interval",
         )
         .bind(days)
         .execute(&self.pool)

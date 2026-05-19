@@ -79,7 +79,9 @@ async fn main() {
             loop {
                 interval.tick().await;
                 match admin_repo.purge_revoked_api_keys(30).await {
-                    Ok(n) if n > 0 => tracing::info!(deleted = n, "Purged revoked API keys older than 30 days"),
+                    Ok(n) if n > 0 => {
+                        tracing::info!(deleted = n, "Purged revoked API keys older than 30 days")
+                    }
                     Ok(_) => tracing::debug!("No revoked API keys to purge"),
                     Err(e) => tracing::warn!(error = %e, "Failed to purge revoked API keys"),
                 }

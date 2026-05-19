@@ -254,6 +254,18 @@ impl ZodiacSign {
         }
     }
 
+    /// Create from FreeAstrologyAPI 1-indexed sign number.
+    ///
+    /// The upstream `/planets`, `/d*-chart-info`, and `/western/houses` endpoints
+    /// emit `current_sign` / `zodiac_sign.number` in the range `1..=12`
+    /// (1 = Aries, 12 = Pisces). Returns `None` for out-of-range values.
+    pub fn from_number(num: u8) -> Option<Self> {
+        if !(1..=12).contains(&num) {
+            return None;
+        }
+        Some(Self::from_index((num - 1) as usize))
+    }
+
     /// Get sign name
     pub fn as_str(&self) -> &'static str {
         match self {

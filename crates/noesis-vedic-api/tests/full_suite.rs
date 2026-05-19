@@ -220,7 +220,17 @@ mod shesh_mock_verification {
         let d = shesh_vimshottari_dasha();
         let c = shesh_birth_chart();
 
-        // Moon nakshatra must match across all three
+        // Moon nakshatra must match across all three.
+        //
+        // FIXED IN PR2: `chart_mapping::map_planets_envelope_to_birth_chart`
+        // now derives Moon nakshatra/pada from sidereal longitude via
+        // `engine_vimshottari::get_nakshatra_from_longitude`, so the live
+        // mapper path produces the same nakshatra string as the dasha engine.
+        // `shesh_birth_chart()` is still a hand-crafted mock for this test, so
+        // the assertion is mock-consistent; for the live-path correctness
+        // proof see `chart_mapping::tests::test_maps_planets_envelope_fixture`
+        // which asserts `chart.moon.nakshatra == "Hasta"` from the captured
+        // Bangalore fixture.
         assert_eq!(p.nakshatra.name(), d.moon_nakshatra);
         assert_eq!(d.moon_nakshatra, c.moon.nakshatra);
     }

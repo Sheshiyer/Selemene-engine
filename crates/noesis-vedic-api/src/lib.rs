@@ -112,6 +112,12 @@ pub mod vimshottari;
 // Chart types
 pub mod chart;
 
+// Mappers from upstream JSON envelopes into typed chart::BirthChart / NavamsaChart.
+pub mod chart_mapping;
+
+// House cusps from POST /western/houses
+pub mod houses;
+
 // Birth chart enrichments
 pub mod birth_chart;
 
