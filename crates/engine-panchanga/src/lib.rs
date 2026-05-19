@@ -5,7 +5,7 @@
 
 use async_trait::async_trait;
 use chrono::{NaiveDate, NaiveDateTime, NaiveTime, TimeZone, Utc};
-use engine_human_design::ephemeris::{EphemerisCalculator, HDPlanet};
+use engine_human_design::ephemeris::{lahiri_ayanamsa, EphemerisCalculator, HDPlanet};
 use noesis_core::{CalculationMetadata, ValidationResult};
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
@@ -134,12 +134,14 @@ const VARA_NAMES: [&str; 7] = [
     "Shanivara (Saturday)",
 ];
 
-/// Approximate Lahiri ayanamsa used to convert tropical longitudes to sidereal.
-const LAHIRI_AYANAMSA_DEGREES: f64 = 23.72;
-
-/// Convert tropical longitude to sidereal longitude using Lahiri ayanamsa.
-fn to_sidereal_longitude(tropical_longitude: f64) -> f64 {
-    (tropical_longitude - LAHIRI_AYANAMSA_DEGREES).rem_euclid(360.0)
+/// Convert tropical longitude to sidereal longitude using the canonical
+/// Lahiri ayanamsa for the given Julian Day (UT).
+///
+/// PR5: previously a frozen `LAHIRI_AYANAMSA_DEGREES = 23.72` constant.
+/// Now date-aware via `engine_human_design::ephemeris::lahiri_ayanamsa`,
+/// which is the single SwissEph-grounded source for the whole workspace.
+fn to_sidereal_longitude(tropical_longitude: f64, jd_ut: f64) -> f64 {
+    (tropical_longitude - lahiri_ayanamsa(jd_ut)).rem_euclid(360.0)
 }
 
 fn parse_local_datetime_to_utc(
@@ -342,8 +344,8 @@ pub fn compute_panchanga(date: &str, time: &str, tz_offset_hours: f64) -> Pancha
     let (solar_lng_tropical, lunar_lng_tropical) =
         precise_tropical_positions(date, time, tz_offset_hours)
             .unwrap_or_else(|| (calculate_solar_position(jd), calculate_lunar_position(jd)));
-    let solar_lng = to_sidereal_longitude(solar_lng_tropical);
-    let lunar_lng = to_sidereal_longitude(lunar_lng_tropical);
+    let solar_lng = to_sidereal_longitude(solar_lng_tropical, jd);
+    let lunar_lng = to_sidereal_longitude(lunar_lng_tropical, jd);
 
     let tithi_val = calculate_tithi(solar_lng, lunar_lng);
     let nakshatra_val = calculate_nakshatra(lunar_lng);
