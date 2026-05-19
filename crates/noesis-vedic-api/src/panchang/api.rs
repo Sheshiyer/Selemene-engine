@@ -8,7 +8,7 @@
 //! `get_complete_panchang`, and `noesis-integration::fetch_panchang` keep
 //! working with the same public contract.
 
-use chrono::{NaiveDate, NaiveTime, NaiveDateTime};
+use chrono::{NaiveDate, NaiveDateTime, NaiveTime};
 use serde::{Deserialize, Serialize};
 
 use crate::client::VedicApiClient;
@@ -211,12 +211,11 @@ pub fn compute_panchang_native(
     lng: f64,
     tz_offset_hours: f64,
 ) -> VedicApiResult<Panchang> {
-    let _date = NaiveDate::from_ymd_opt(year, month, day).ok_or_else(|| {
-        VedicApiError::InvalidInput {
+    let _date =
+        NaiveDate::from_ymd_opt(year, month, day).ok_or_else(|| VedicApiError::InvalidInput {
             field: "date".to_string(),
             message: format!("invalid date {}-{:02}-{:02}", year, month, day),
-        }
-    })?;
+        })?;
     let _time = NaiveTime::from_hms_opt(hour, minute, second).ok_or_else(|| {
         VedicApiError::InvalidInput {
             field: "time".to_string(),
@@ -278,8 +277,7 @@ pub fn compute_panchang_native(
     // ---- Day boundaries ----
     let sunrise = crate::resilience::approximate_sunrise(lat, result.julian_day);
     let sunset = crate::resilience::approximate_sunset(lat, result.julian_day);
-    let next_sunrise =
-        crate::resilience::approximate_sunrise(lat, result.julian_day + 1.0);
+    let next_sunrise = crate::resilience::approximate_sunrise(lat, result.julian_day + 1.0);
     let day_boundaries = DayBoundaries {
         sunrise,
         sunset,
@@ -427,11 +425,7 @@ impl VedicApiClient {
             VedicApiError::ParseError(format!("invalid date '{}': {}", request.date, e))
         })?;
         let _ = date;
-        let jdn = engine_panchanga::calculate_julian_day(
-            &request.date,
-            "12:00",
-            request.timezone,
-        );
+        let jdn = engine_panchanga::calculate_julian_day(&request.date, "12:00", request.timezone);
         let sunrise = crate::resilience::approximate_sunrise(request.latitude, jdn);
         let sunset = crate::resilience::approximate_sunset(request.latitude, jdn);
         Ok(SunriseSunsetResponse {
