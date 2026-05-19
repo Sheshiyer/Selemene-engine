@@ -400,7 +400,7 @@ impl VedicApiClient {
                 meaning: None,
             },
             karana: KaranaApiResponse {
-                number: 0,
+                number: panchang.karana.name_karana.number(),
                 name: panchang.karana.name().to_string(),
                 end_time: Some(panchang.karana.end_time.clone()),
             },
