@@ -1,5 +1,78 @@
 # Migration Guide: Noesis Vedic API
 
+## PR2 — `validation/vedic-hardening-pr2` (2026-05-19)
+
+**Three modules become pure-native — no API key required for them.**
+
+Previously the `panchang`, `vimshottari`, and `transits` modules POSTed to
+vendor endpoints (`/panchang`, `/vimshottari-dasha`, `/transits`) which all
+return HTTP 403 — they don't exist on FreeAstrologyAPI. PR2 swaps the
+internals of each module for direct calls into the workspace's existing
+Rust engines:
+
+| Module | New compute path |
+|---|---|
+| `panchang` | `engine_panchanga::compute_panchanga(date, time, tz)` |
+| `vimshottari` | `engine_vimshottari` pipeline (`get_nakshatra_from_longitude` → `calculate_dasha_balance` → `calculate_mahadashas` → `calculate_complete_timeline`); Moon longitude from `engine_transits::ephemeris::calculate_position` wrapped in `tokio::task::spawn_blocking` |
+| `transits` | `engine_transits::ephemeris::calculate_all_positions` wrapped in `tokio::task::spawn_blocking` |
+
+**Behavioural shifts callers should note:**
+
+- `FREE_ASTROLOGY_API_KEY` is no longer required for `get_panchang`,
+  `get_complete_panchang`, `get_vimshottari_dasha`, `get_transits`, or
+  `get_current_transits`. (Still required for `get_birth_chart`,
+  `get_navamsa_chart`, `get_western_houses` — those still hit live
+  `/planets`, `/navamsa-chart-info`, `/western/houses`.)
+- The three native modules are now **offline-capable** and **deterministic**.
+- `VedicApiClient::health_check` now probes `POST /planets` (the only live
+  vendor endpoint we still depend on) instead of the dead `/complete-panchang`.
+- All Swiss-Ephemeris calls (transits, vimshottari Moon-longitude lookup)
+  serialize through `tokio::task::spawn_blocking` — the global C mutex in
+  `libswisseph-sys` is honoured.
+- `Panchang.ayanamsa` is now computed from Julian Day via a Lahiri
+  approximation (≈±10″ accurate, J2000 anchor) rather than the previous
+  hard-coded `24.0`. Real Lahiri drift (~50.27″/yr) is tracked.
+- `KaranaApiResponse.number` is correctly populated 1..=11 (previously
+  always `0`).
+- `resilience.rs::native_panchang`'s `DayBoundaries.next_sunrise` is now
+  tomorrow's sunrise (previously the same value as today's `sunrise`,
+  which collapsed the downstream night-window in choghadiya/hora helpers
+  to zero).
+- `chart_mapping::map_planets_envelope_to_birth_chart` now fills
+  `MoonInfo.nakshatra`, `MoonInfo.pada`, `AscendantInfo.nakshatra`,
+  `AscendantInfo.pada`, and per-`PlanetPosition` `nakshatra`/`pada` from
+  the sidereal longitude via `engine_vimshottari::get_nakshatra_from_longitude`
+  (previously placeholder empty strings + zero pada — PR1 landmine
+  documented in `tests/full_suite.rs:225`, now resolved).
+
+**Placeholder fields still pending (PR3 territory):**
+
+- `Tithi.start_time`, `Tithi.end_time`, `Nakshatra.start_time`,
+  `Nakshatra.end_time`, `Yoga.start_time`, `Yoga.end_time`,
+  `Karana.start_time`, `Karana.end_time` — require Brent-solve over
+  Sun/Moon longitudes; PR3 yogas/muhurta work covers this.
+- `PlanetaryPositions::{mars, mercury, jupiter, venus, saturn, rahu, ketu}`
+  are `None` in the native panchang result — full panchang planet ladder
+  comes from `engine-transits` integration in PR3.
+- `PlanetPosition.speed`, `PlanetPosition.latitude`, `PlanetPosition.is_combust`
+  in `chart_mapping` — Swiss Ephemeris derivation, PR3.
+- `AscendantInfo.nakshatra` on the divisional/navamsa output —
+  `/navamsa-chart-info` doesn't include `fullDegree`, so derivation is
+  deferred until PR3 computes D9 longitudes natively.
+
+**Known follow-ups (filed as child issues, not blocking PR2):**
+
+- H-5: `transits::get_transits` does two sequential `spawn_blocking`
+  calls (natal + transit); these can be combined into one closure.
+- H-6: current-period dasha lookup uses string comparison on YYYY-MM-DD;
+  works but should be `DateTime<Utc>` for robustness.
+- H-7: Pratyantardasha `duration_years` derived as `duration_days / 365.25`
+  while Antardasha uses the engine field directly. Engine may expose a
+  matching `duration_years` we should use.
+- M-1..M-5: dedup wins (cross-module `local_to_utc` helper, single
+  `pada_from_longitude` source, transit fixture extraction, `clamp` vs
+  `min.max`, `VedicPlanet → DashaPlanet` as a `From` impl).
+
 ## PR1 — `validation/vedic-hardening` (2026-05-19)
 
 **Breaking change in `VedicApiClient::get_birth_chart` and
