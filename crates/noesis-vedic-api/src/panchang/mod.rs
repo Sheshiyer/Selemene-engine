@@ -27,6 +27,9 @@
 pub mod data;
 pub mod dto;
 
+// PR2: Native facade replacing the dead `/panchang` vendor endpoint.
+pub mod api;
+
 // Muhurta calculations
 pub mod muhurta;
 
