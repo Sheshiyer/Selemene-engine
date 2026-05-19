@@ -220,7 +220,16 @@ mod shesh_mock_verification {
         let d = shesh_vimshottari_dasha();
         let c = shesh_birth_chart();
 
-        // Moon nakshatra must match across all three
+        // Moon nakshatra must match across all three.
+        //
+        // NOTE (PR1 of 3): The `c.moon.nakshatra` arm currently passes because
+        // `shesh_birth_chart()` is a hand-crafted mock. Once PR2 routes
+        // `get_birth_chart` through the live `chart_mapping` (which currently
+        // sets `moon.nakshatra = String::new()` as a placeholder pending native
+        // nakshatra derivation), the equality on line below will start failing.
+        // PR2 / PR3 must either: (a) populate nakshatra from Moon's longitude
+        // before this assertion, or (b) gate this assertion behind the mock
+        // path explicitly. See MIGRATION.md "Placeholder fields" section.
         assert_eq!(p.nakshatra.name(), d.moon_nakshatra);
         assert_eq!(d.moon_nakshatra, c.moon.nakshatra);
     }
