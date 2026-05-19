@@ -593,6 +593,7 @@ diffs against the engines' actual output.
 - [Deployment Guide](../../docs/deployment/) - Docker and Railway deployment
 - [CHANGELOG](../../CHANGELOG.md) - Version history
 - [Vedic Validation Report v1](../../docs/VEDIC_VALIDATION_REPORT_v1.md) - PR4 Phase-1 numerical accuracy report
+- [Vedic Validation Report v2](../../docs/VEDIC_VALIDATION_REPORT_v2.md) - PR5 ayanamsa unification (v1 hypothesis falsified, drift lives in engine algorithm, not ayanamsa)
 
 ## License
 
