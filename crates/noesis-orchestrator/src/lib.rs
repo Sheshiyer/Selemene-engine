@@ -64,7 +64,9 @@ pub use noesis_bridge::{BridgeEngine, BridgeManager, DEFAULT_TS_SERVER_URL};
 // Re-export engine types for convenience
 pub use engine_biofield::BiofieldEngine;
 pub use engine_biofield_capture::BiofieldCaptureEngine;
-pub use engine_human_design::ephemeris::{EphemerisCalculator, HDPlanet, PlanetPosition};
+pub use engine_human_design::ephemeris::{
+    lahiri_ayanamsa, EphemerisCalculator, HDPlanet, PlanetPosition,
+};
 
 use chrono::Utc;
 use futures::stream::{self, StreamExt};

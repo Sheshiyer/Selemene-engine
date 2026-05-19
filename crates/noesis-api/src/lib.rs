@@ -55,7 +55,10 @@ use noesis_data::repositories::readings_repository::ReadingsRepository;
 use noesis_data::repositories::usage_repository::UsageRepository;
 use noesis_data::repositories::user_repository::UserRepository;
 use noesis_metrics::NoesisMetrics;
-use noesis_orchestrator::{EphemerisCalculator, HDPlanet, WorkflowOrchestrator};
+use noesis_orchestrator::{
+    lahiri_ayanamsa as canonical_lahiri_ayanamsa, EphemerisCalculator, HDPlanet,
+    WorkflowOrchestrator,
+};
 use sentry_tower::{NewSentryLayer, SentryHttpLayer};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -1623,9 +1626,16 @@ const VEDIC_PLANETS: &[(HDPlanet, &str)] = &[
 ];
 
 /// Lahiri (Chitrapaksha) ayanamsa in degrees for a given Julian Day.
+///
+/// PR5: delegates to the canonical SwissEph-grounded helper at
+/// `engine_human_design::ephemeris::lahiri_ayanamsa`, re-exported via
+/// `noesis_orchestrator` (the existing dependency path noesis-api already
+/// uses for `EphemerisCalculator` and `HDPlanet`). Previously the
+/// Julian-century polynomial `23.85 + t * 1.3968`, ~86″ off canonical at
+/// modern births. Local signature preserved so the `tropical_ascendant`
+/// downstream caller keeps compiling unchanged.
 fn lahiri_ayanamsa(jd: f64) -> f64 {
-    let t = (jd - 2451545.0) / 36525.0;
-    23.85 + t * 1.3968 // ~50.3"/year drift
+    canonical_lahiri_ayanamsa(jd)
 }
 
 /// Julian Day (UT) from a UTC chrono DateTime.
