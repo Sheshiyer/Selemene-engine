@@ -11,14 +11,15 @@
 
 import type { ConsciousnessEngine, EngineInput, EngineMetadata, EngineOutput } from '../../types'
 import { EngineValidationError } from '../../utils'
-import { SeededRandom, getDefaultSeed } from '../../utils/random'
 import {
+  NVIDIA_IMAGE_MODELS,
+  type NvidiaImageModel,
   editImage,
   generateImage,
   isImageGenAvailable,
-  NVIDIA_IMAGE_MODELS,
-  type NvidiaImageModel,
 } from '../../utils/nvidia-image'
+import { SeededRandom, getDefaultSeed } from '../../utils/random'
+import { type SigilStyle, buildSigilEditPrompt, buildSigilPrompt } from './prompt-builder'
 import {
   CHARGING_METHODS,
   SIGIL_METHODS,
@@ -27,11 +28,6 @@ import {
   processWordElimination,
 } from './wisdom'
 import { generateWitnessPrompts } from './witness'
-import {
-  buildSigilPrompt,
-  buildSigilEditPrompt,
-  type SigilStyle,
-} from './prompt-builder'
 
 export class SigilForgeEngine implements ConsciousnessEngine {
   private safeSvgPreview(template?: string): {
@@ -69,7 +65,8 @@ export class SigilForgeEngine implements ConsciousnessEngine {
         intention: {
           type: 'string',
           required: true,
-          description: 'The intention or desire to encode into a sigil. Write as a present-tense statement.',
+          description:
+            'The intention or desire to encode into a sigil. Write as a present-tense statement.',
         },
         method: {
           type: 'string',
@@ -80,7 +77,8 @@ export class SigilForgeEngine implements ConsciousnessEngine {
         generate_image: {
           type: 'boolean',
           required: false,
-          description: 'When true, generates an AI sigil image via NVIDIA NIM. Requires NVIDIA_API_KEY.',
+          description:
+            'When true, generates an AI sigil image via NVIDIA NIM. Requires NVIDIA_API_KEY.',
           default: false,
         },
         image_style: {
@@ -103,7 +101,8 @@ export class SigilForgeEngine implements ConsciousnessEngine {
         edit_instruction: {
           type: 'string',
           required: false,
-          description: 'Edit instruction for refining an existing sigil (used with edit_image_b64).',
+          description:
+            'Edit instruction for refining an existing sigil (used with edit_image_b64).',
         },
       },
     }
@@ -219,7 +218,8 @@ export class SigilForgeEngine implements ConsciousnessEngine {
       // Generation mode: create new sigil image
       if (!isImageGenAvailable()) {
         generatedImage = {
-          error: 'NVIDIA_API_KEY not configured. Set it in Railway env vars to enable image generation.',
+          error:
+            'NVIDIA_API_KEY not configured. Set it in Railway env vars to enable image generation.',
         }
       } else {
         try {
@@ -273,23 +273,25 @@ export class SigilForgeEngine implements ConsciousnessEngine {
         description: c.description,
       })),
       guidance: {
-        note: generateImageFlag || editImageB64
-          ? 'AI-generated sigil image included. The symbol is a starting point — refine it intuitively or use it as-is in your practice.'
-          : 'This engine provides the process for sigil creation. The actual visual sigil must be created by you — this personal investment is essential to the magic.',
-        next_steps: generateImageFlag || generatedImage?.b64_json
-          ? [
-              'Contemplate the generated image — does it resonate with your intention?',
-              'You may print, trace, or redraw the sigil by hand to further charge it',
-              `Choose a charging method: ${chargingSuggestions.map(c => c.name).join(' or ')}`,
-              'Release attachment to outcome after charging',
-            ]
-          : [
-              'Gather your materials (paper, pen, or digital canvas)',
-              `Follow the ${method.name} steps above`,
-              'Allow intuition to guide the final form',
-              'Choose a charging method that resonates',
-              'Release attachment to outcome',
-            ],
+        note:
+          generateImageFlag || editImageB64
+            ? 'AI-generated sigil image included. The symbol is a starting point — refine it intuitively or use it as-is in your practice.'
+            : 'This engine provides the process for sigil creation. The actual visual sigil must be created by you — this personal investment is essential to the magic.',
+        next_steps:
+          generateImageFlag || generatedImage?.b64_json
+            ? [
+                'Contemplate the generated image — does it resonate with your intention?',
+                'You may print, trace, or redraw the sigil by hand to further charge it',
+                `Choose a charging method: ${chargingSuggestions.map((c) => c.name).join(' or ')}`,
+                'Release attachment to outcome after charging',
+              ]
+            : [
+                'Gather your materials (paper, pen, or digital canvas)',
+                `Follow the ${method.name} steps above`,
+                'Allow intuition to guide the final form',
+                'Choose a charging method that resonates',
+                'Release attachment to outcome',
+              ],
       },
       svg_preview: svgPreview,
       generated_image: generatedImage,

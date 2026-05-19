@@ -123,25 +123,20 @@ fn load_index() -> Option<HumdesIndex> {
     if !path.exists() {
         return None;
     }
-    let s = fs::read_to_string(&path)
-        .unwrap_or_else(|e| panic!("read {}: {}", path.display(), e));
+    let s = fs::read_to_string(&path).unwrap_or_else(|e| panic!("read {}: {}", path.display(), e));
     Some(serde_json::from_str(&s).expect("parse _index.json"))
 }
 
 fn load_input(rel: &str) -> EngineInput {
     let path = fixtures_root().join(rel);
-    let s = fs::read_to_string(&path)
-        .unwrap_or_else(|e| panic!("read {}: {}", path.display(), e));
-    serde_json::from_str(&s)
-        .unwrap_or_else(|e| panic!("parse {}: {}", path.display(), e))
+    let s = fs::read_to_string(&path).unwrap_or_else(|e| panic!("read {}: {}", path.display(), e));
+    serde_json::from_str(&s).unwrap_or_else(|e| panic!("parse {}: {}", path.display(), e))
 }
 
 fn load_expected(rel: &str) -> HumdesExpectedFile {
     let path = fixtures_root().join(rel);
-    let s = fs::read_to_string(&path)
-        .unwrap_or_else(|e| panic!("read {}: {}", path.display(), e));
-    serde_json::from_str(&s)
-        .unwrap_or_else(|e| panic!("parse {}: {}", path.display(), e))
+    let s = fs::read_to_string(&path).unwrap_or_else(|e| panic!("read {}: {}", path.display(), e));
+    serde_json::from_str(&s).unwrap_or_else(|e| panic!("parse {}: {}", path.display(), e))
 }
 
 // --- Diff record ---------------------------------------------------------
@@ -214,9 +209,8 @@ fn humdes_first_5_inputs_deserialize_cleanly() {
             entry.input
         );
         let bd = input.birth_data.unwrap();
-        bd.validate().unwrap_or_else(|e| {
-            panic!("invalid birth_data in {}: {}", entry.input, e)
-        });
+        bd.validate()
+            .unwrap_or_else(|e| panic!("invalid birth_data in {}: {}", entry.input, e));
     }
 }
 
@@ -225,9 +219,7 @@ fn humdes_first_5_inputs_deserialize_cleanly() {
 #[tokio::test]
 #[ignore = "long-running: runs HD engine on every humdes fixture (~89 persons)"]
 async fn humdes_engine_full_validation_report() {
-    let idx = load_index().expect(
-        "humdes fixtures missing — run humdes_to_selemene.py first",
-    );
+    let idx = load_index().expect("humdes fixtures missing — run humdes_to_selemene.py first");
     println!(
         "\n========== HUMDES validation report ==========\
          \n  source persons : {}\
@@ -317,11 +309,7 @@ async fn humdes_engine_full_validation_report() {
             .map(|v| v as u8);
 
         // Compare scalars
-        type_res.record(
-            &id,
-            expected.expected.type_.as_deref(),
-            &got_type,
-        );
+        type_res.record(&id, expected.expected.type_.as_deref(), &got_type);
 
         let exp_profile_text = expected
             .expected
@@ -330,26 +318,38 @@ async fn humdes_engine_full_validation_report() {
             .map(|p| format!("{}/{}", p.conscious_line, p.unconscious_line));
         prof_res.record(&id, exp_profile_text.as_deref(), &got_profile);
 
-        auth_res.record(
-            &id,
-            expected.expected.authority.as_deref(),
-            &got_authority,
-        );
+        auth_res.record(&id, expected.expected.authority.as_deref(), &got_authority);
 
-        let exp_psun_s = expected.expected.personality_sun.gate.map(|g| g.to_string());
-        let got_psun_s = got_psun.map(|g| g.to_string()).unwrap_or_else(|| "?".into());
+        let exp_psun_s = expected
+            .expected
+            .personality_sun
+            .gate
+            .map(|g| g.to_string());
+        let got_psun_s = got_psun
+            .map(|g| g.to_string())
+            .unwrap_or_else(|| "?".into());
         psun_res.record(&id, exp_psun_s.as_deref(), &got_psun_s);
 
-        let exp_pearth_s = expected.expected.personality_earth.gate.map(|g| g.to_string());
-        let got_pearth_s = got_pearth.map(|g| g.to_string()).unwrap_or_else(|| "?".into());
+        let exp_pearth_s = expected
+            .expected
+            .personality_earth
+            .gate
+            .map(|g| g.to_string());
+        let got_pearth_s = got_pearth
+            .map(|g| g.to_string())
+            .unwrap_or_else(|| "?".into());
         pearth_res.record(&id, exp_pearth_s.as_deref(), &got_pearth_s);
 
         let exp_dsun_s = expected.expected.design_sun.gate.map(|g| g.to_string());
-        let got_dsun_s = got_dsun.map(|g| g.to_string()).unwrap_or_else(|| "?".into());
+        let got_dsun_s = got_dsun
+            .map(|g| g.to_string())
+            .unwrap_or_else(|| "?".into());
         dsun_res.record(&id, exp_dsun_s.as_deref(), &got_dsun_s);
 
         let exp_dearth_s = expected.expected.design_earth.gate.map(|g| g.to_string());
-        let got_dearth_s = got_dearth.map(|g| g.to_string()).unwrap_or_else(|| "?".into());
+        let got_dearth_s = got_dearth
+            .map(|g| g.to_string())
+            .unwrap_or_else(|| "?".into());
         dearth_res.record(&id, exp_dearth_s.as_deref(), &got_dearth_s);
 
         // Cross: compare 4 ordered gates
@@ -392,13 +392,13 @@ async fn humdes_engine_full_validation_report() {
     }
 
     println!("\n--- Per-field results ---");
-    print_field("type",            &type_res);
-    print_field("profile",         &prof_res);
-    print_field("authority",       &auth_res);
+    print_field("type", &type_res);
+    print_field("profile", &prof_res);
+    print_field("authority", &auth_res);
     print_field("personality_sun", &psun_res);
     print_field("personality_earth", &pearth_res);
-    print_field("design_sun",      &dsun_res);
-    print_field("design_earth",    &dearth_res);
+    print_field("design_sun", &dsun_res);
+    print_field("design_earth", &dearth_res);
     print_field("incarnation_cross", &cross_res);
 
     println!(
@@ -428,8 +428,7 @@ fn fixtures_root_path_is_workspace_relative() {
     let root = fixtures_root();
     let s = root.to_string_lossy();
     assert!(
-        s.ends_with("/tests/fixtures/humdes")
-            || s.ends_with("\\tests\\fixtures\\humdes"),
+        s.ends_with("/tests/fixtures/humdes") || s.ends_with("\\tests\\fixtures\\humdes"),
         "unexpected fixtures path: {}",
         s
     );

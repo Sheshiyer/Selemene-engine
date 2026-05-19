@@ -476,11 +476,7 @@ impl ConsciousnessEngine for PanchangaEngine {
 
         // Determine mode: "daily" uses current_time (today) for cosmic weather;
         // default uses birth_data.date for the natal birth panchanga.
-        let use_daily = input
-            .options
-            .get("mode")
-            .and_then(|v| v.as_str())
-            == Some("daily");
+        let use_daily = input.options.get("mode").and_then(|v| v.as_str()) == Some("daily");
 
         let (date_str, time_str, tz_offset) = if use_daily {
             // Daily mode: use today's date from current_time, birth timezone for offset
@@ -801,9 +797,7 @@ mod tests {
         let engine = PanchangaEngine::new();
         // Use a known Wednesday: 2026-05-13 (UTC).
         use chrono::TimeZone;
-        let wednesday_2026_05_13 = Utc
-            .with_ymd_and_hms(2026, 5, 13, 6, 0, 0)
-            .unwrap();
+        let wednesday_2026_05_13 = Utc.with_ymd_and_hms(2026, 5, 13, 6, 0, 0).unwrap();
 
         let mut opts = HashMap::new();
         opts.insert("mode".to_string(), serde_json::json!("daily"));
@@ -816,12 +810,19 @@ mod tests {
             options: opts,
         };
 
-        let output = engine.calculate(input).await.expect("daily mode calculate failed");
+        let output = engine
+            .calculate(input)
+            .await
+            .expect("daily mode calculate failed");
         let pr: PanchangaResult =
             serde_json::from_value(output.result).expect("bad PanchangaResult JSON");
 
         // Vara index 0..=6 must be valid
-        assert!(pr.vara_index <= 6, "vara_index out of range: {}", pr.vara_index);
+        assert!(
+            pr.vara_index <= 6,
+            "vara_index out of range: {}",
+            pr.vara_index
+        );
     }
 
     /// mode=daily with birth_data present: should still use current_time date, not birth date.
@@ -831,9 +832,7 @@ mod tests {
 
         use chrono::TimeZone;
         // Pick a day that's different from the birth date in test_input (1991-08-13 = Tuesday)
-        let wednesday_2026_05_13 = Utc
-            .with_ymd_and_hms(2026, 5, 13, 6, 0, 0)
-            .unwrap();
+        let wednesday_2026_05_13 = Utc.with_ymd_and_hms(2026, 5, 13, 6, 0, 0).unwrap();
 
         let mut opts = HashMap::new();
         opts.insert("mode".to_string(), serde_json::json!("daily"));
@@ -856,7 +855,10 @@ mod tests {
             options: opts,
         };
 
-        let daily_output = engine.calculate(input.clone()).await.expect("daily mode failed");
+        let daily_output = engine
+            .calculate(input.clone())
+            .await
+            .expect("daily mode failed");
         let daily_pr: PanchangaResult =
             serde_json::from_value(daily_output.result).expect("bad JSON");
 
@@ -877,7 +879,10 @@ mod tests {
             precision: Precision::Standard,
             options: birth_opts,
         };
-        let birth_output = engine.calculate(birth_input).await.expect("birth mode failed");
+        let birth_output = engine
+            .calculate(birth_input)
+            .await
+            .expect("birth mode failed");
         let birth_pr: PanchangaResult =
             serde_json::from_value(birth_output.result).expect("bad JSON");
 
@@ -888,7 +893,6 @@ mod tests {
             daily_pr.vara_index, daily_pr.vara_name
         );
     }
-
 
     #[tokio::test]
     async fn test_validate_accepts_good_output() {

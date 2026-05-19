@@ -65,11 +65,16 @@ describe('SigilForgeEngine image generation (guidance-only, no API key in test e
   it('returns error in generated_image or a valid result when generate_image=true', async () => {
     const output = await engine.calculate({
       consciousness_level: 1,
-      parameters: { intention: 'I attract peace and clarity', generate_image: true, image_model: 'black-forest-labs/flux.1-schnell' },
+      parameters: {
+        intention: 'I attract peace and clarity',
+        generate_image: true,
+        image_model: 'black-forest-labs/flux.1-schnell',
+      },
       seed: 2,
     })
     const result = output.result as SigilForgeResult
     expect(result.generated_image).not.toBeNull()
+    // biome-ignore lint/style/noNonNullAssertion: asserted non-null above
     const img = result.generated_image!
     const hasResult = img.b64_json !== undefined || img.url !== undefined
     const hasError = img.error !== undefined
@@ -89,6 +94,7 @@ describe('SigilForgeEngine image generation (guidance-only, no API key in test e
 
 describe('buildSigilPrompt', () => {
   it('produces non-empty prompt and negative_prompt', () => {
+    // biome-ignore lint/style/noNonNullAssertion: SIGIL_METHODS is a literal const tuple
     const method = SIGIL_METHODS[0]! // word-elimination
     const built = buildSigilPrompt('I release what no longer serves me', method, 'RLSWN')
     expect(built.prompt.length).toBeGreaterThan(20)
@@ -99,12 +105,14 @@ describe('buildSigilPrompt', () => {
   })
 
   it('assigns geometric style for numerological method', () => {
-    const method = SIGIL_METHODS.find(m => m.id === 'numerological') ?? SIGIL_METHODS[0]!
+    // biome-ignore lint/style/noNonNullAssertion: SIGIL_METHODS is a non-empty const tuple
+    const method = SIGIL_METHODS.find((m) => m.id === 'numerological') ?? SIGIL_METHODS[0]!
     const built = buildSigilPrompt('I embody mastery', method, undefined, 'geometric')
     expect(built.style).toBe('geometric')
   })
 
   it('does not include processedLetters hint when undefined', () => {
+    // biome-ignore lint/style/noNonNullAssertion: SIGIL_METHODS has known-fixed length
     const method = SIGIL_METHODS[2]! // pictographic
     const built = buildSigilPrompt('I am calm and strong', method, undefined)
     // When no processedLetters, the letter hint portion should not appear
