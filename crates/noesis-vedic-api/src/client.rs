@@ -293,12 +293,17 @@ impl VedicApiClient {
 
     // ==================== VIMSHOTTARI DASHA ENDPOINTS ====================
 
-    /// Get Vimshottari Dasha periods
+    /// Get Vimshottari Dasha periods.
+    ///
+    /// PR2: native facade — no HTTP call. Delegates to
+    /// `engine-vimshottari` via `compute_vimshottari_native`. Swiss-Ephemeris
+    /// Moon-longitude lookup runs on a blocking thread inside that helper.
     ///
     /// # Arguments
     /// * `year`, `month`, `day` - Birth date
     /// * `hour`, `minute`, `second` - Birth time
-    /// * `lat`, `lng` - Birth location
+    /// * `lat`, `lng` - Birth location (unused; geodesy doesn't change Moon
+    ///   longitude for Vimshottari)
     /// * `tzone` - Timezone offset
     /// * `level` - Dasha depth level (Maha, Antar, Pratyantar, Sookshma)
     pub async fn get_vimshottari_dasha(
@@ -309,48 +314,32 @@ impl VedicApiClient {
         hour: u32,
         minute: u32,
         second: u32,
-        lat: f64,
-        lng: f64,
+        _lat: f64,
+        _lng: f64,
         tzone: f64,
         level: DashaLevel,
     ) -> Result<VimshottariDasha> {
-        info!("Fetching Vimshottari Dasha level: {:?}", level);
+        info!("Computing Vimshottari Dasha natively at level: {:?}", level);
 
-        let dasha_type = match level {
-            DashaLevel::Mahadasha => "maha-dasha",
-            DashaLevel::Antardasha => "antar-dasha",
-            DashaLevel::Pratyantardasha => "pratyantar-dasha",
-            DashaLevel::Sookshma => "sookshma-dasha",
-            DashaLevel::Praana => "praana-dasha",
+        // Map canonical `DashaLevel` (with Praana) → vimshottari internal
+        // level (with Prana). The semantic granularity is identical.
+        let req_level = match level {
+            DashaLevel::Mahadasha => crate::vimshottari::types::DashaLevel::Mahadasha,
+            DashaLevel::Antardasha => crate::vimshottari::types::DashaLevel::Antardasha,
+            DashaLevel::Pratyantardasha => crate::vimshottari::types::DashaLevel::Pratyantardasha,
+            DashaLevel::Sookshma => crate::vimshottari::types::DashaLevel::Sookshma,
+            DashaLevel::Praana => crate::vimshottari::types::DashaLevel::Prana,
         };
 
-        let params = serde_json::json!({
-            "year": year,
-            "month": month,
-            "date": day,
-            "hours": hour,
-            "minutes": minute,
-            "seconds": second,
-            "latitude": lat,
-            "longitude": lng,
-            "timezone": tzone,
-            "config": {
-                "dasha_type": dasha_type,
-                "ayanamsha": "lahiri"
-            }
-        });
-
-        let response = self
-            .execute_with_retry(|| {
-                self.build_request(reqwest::Method::POST, "vimshottari-dasha")
-                    .json(&params)
-            })
-            .await?;
-        let dasha: VimshottariDasha = response.json().await?;
+        let dasha = crate::vimshottari::api::compute_vimshottari_native(
+            year, month, day, hour, minute, second, tzone, req_level,
+        )
+        .await?;
 
         info!(
-            "Vimshottari Dasha retrieved with {} mahadashas",
-            dasha.mahadashas.len()
+            "Native Vimshottari Dasha computed: {} mahadashas, moon_nakshatra={}",
+            dasha.mahadashas.len(),
+            dasha.moon_nakshatra
         );
 
         Ok(dasha)
