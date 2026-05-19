@@ -10,6 +10,28 @@ use std::sync::{Mutex, Once};
 /// Swiss Ephemeris sidereal mode constant for Lahiri ayanamsa.
 const SE_SIDM_LAHIRI: i32 = 1;
 
+/// Compute a Universal-Time Julian Day from a `DateTime<Utc>` using the
+/// Swiss Ephemeris `swe_julday` calendar with the Gregorian flag.
+///
+/// Exposed as a `pub fn` so other Vedic engines (engine-vimshottari,
+/// engine-panchanga, etc.) can compute the same JD that
+/// `EphemerisCalculator` uses internally without each crate carrying its
+/// own polynomial approximation.
+pub fn datetime_to_jd_ut(dt: &DateTime<Utc>) -> f64 {
+    let year = dt.year();
+    let month = dt.month() as i32;
+    let day = dt.day() as i32;
+    let hour = dt.hour() as f64 + dt.minute() as f64 / 60.0 + dt.second() as f64 / 3600.0;
+    swisseph::swe::julday(year, month, day, hour, 1)
+}
+
+/// Convenience: `lahiri_ayanamsa` for a `DateTime<Utc>`.
+///
+/// Equivalent to `lahiri_ayanamsa(datetime_to_jd_ut(dt))`.
+pub fn lahiri_ayanamsa_at(dt: &DateTime<Utc>) -> f64 {
+    lahiri_ayanamsa(datetime_to_jd_ut(dt))
+}
+
 /// Lahiri ayanamsa in decimal degrees for a Julian Day in Universal Time.
 ///
 /// This is the canonical, Swiss-Ephemeris-grounded Lahiri ayanamsa for the

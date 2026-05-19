@@ -49,12 +49,16 @@ impl VimshottariEngine {
         }
     }
 
-    /// Approximate Lahiri ayanamsa used to convert tropical Moon longitude to sidereal.
-    const LAHIRI_AYANAMSA_DEGREES: f64 = 23.72;
-
-    /// Convert tropical longitude to sidereal (Lahiri).
-    fn to_sidereal_longitude(tropical_longitude: f64) -> f64 {
-        (tropical_longitude - Self::LAHIRI_AYANAMSA_DEGREES).rem_euclid(360.0)
+    /// Convert tropical longitude to sidereal using the canonical Lahiri
+    /// ayanamsa for the given UTC datetime.
+    ///
+    /// PR5: previously a frozen `LAHIRI_AYANAMSA_DEGREES = 23.72` constant.
+    /// Now date-aware via
+    /// `engine_human_design::ephemeris::lahiri_ayanamsa_at`, the
+    /// SwissEph-grounded canonical source for the whole workspace.
+    fn to_sidereal_longitude(tropical_longitude: f64, dt: &chrono::DateTime<Utc>) -> f64 {
+        (tropical_longitude - engine_human_design::ephemeris::lahiri_ayanamsa_at(dt))
+            .rem_euclid(360.0)
     }
 
     /// Parse timezone offsets from either IANA shortcuts or explicit +HH:MM format.
@@ -254,7 +258,9 @@ impl ConsciousnessEngine for VimshottariEngine {
             let ephe = engine_human_design::ephemeris::EphemerisCalculator::new("");
             let moon_pos =
                 ephe.get_planet_position(engine_human_design::ephemeris::HDPlanet::Moon, &utc_dt)?;
-            let sidereal_moon_longitude = Self::to_sidereal_longitude(moon_pos.longitude);
+            // PR5: convert to sidereal via the canonical date-aware Lahiri
+            // helper instead of the old frozen 23.72° constant.
+            let sidereal_moon_longitude = Self::to_sidereal_longitude(moon_pos.longitude, &utc_dt);
 
             (sidereal_moon_longitude, utc_dt, "swiss-ephemeris-sidereal")
         } else if input.options.contains_key("moon_longitude") {

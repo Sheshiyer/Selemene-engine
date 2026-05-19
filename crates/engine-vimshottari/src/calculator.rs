@@ -7,7 +7,7 @@
 
 use crate::models::{Mahadasha, Nakshatra, Pratyantardasha, VedicPlanet};
 use chrono::{DateTime, Duration, Utc};
-use engine_human_design::ephemeris::{EphemerisCalculator, HDPlanet};
+use engine_human_design::ephemeris::{lahiri_ayanamsa_at, EphemerisCalculator, HDPlanet};
 use lazy_static::lazy_static;
 use noesis_core::EngineError;
 
@@ -326,13 +326,23 @@ pub fn calculate_birth_nakshatra(
     birth_time: DateTime<Utc>,
     ephe_path: &str,
 ) -> Result<Nakshatra, EngineError> {
-    // Get Moon longitude using Swiss Ephemeris from HD engine
+    // Get Moon longitude using Swiss Ephemeris from HD engine.
+    // The EphemerisCalculator returns TROPICAL longitude (flags = 258 =
+    // SEFLG_SPEED | SEFLG_SWIEPH, no SEFLG_SIDEREAL bit), so we must
+    // apply the canonical Lahiri ayanamsa correction before classifying
+    // into a nakshatra (which is a sidereal partition of the ecliptic).
     let ephe = EphemerisCalculator::new(ephe_path);
     let moon_position = ephe.get_planet_position(HDPlanet::Moon, &birth_time)?;
 
-    // Determine nakshatra: floor(longitude / 13.333) gives index 0-26
-    let moon_longitude = moon_position.longitude;
-    let nakshatra = get_nakshatra_from_longitude(moon_longitude);
+    // PR5: apply Lahiri sidereal correction. Previously this passed
+    // tropical longitude straight to get_nakshatra_from_longitude — a
+    // latent bug masked in production by the noesis-vedic-api outer
+    // pipeline doing its own sidereal conversion, but a real bug for
+    // any direct caller (tests, future integrations).
+    let ayanamsa = lahiri_ayanamsa_at(&birth_time);
+    let sidereal_moon_longitude = (moon_position.longitude - ayanamsa).rem_euclid(360.0);
+
+    let nakshatra = get_nakshatra_from_longitude(sidereal_moon_longitude);
 
     Ok(nakshatra.clone())
 }
@@ -1745,5 +1755,31 @@ mod tests {
                 }
             }
         }
+    }
+
+    /// PR5 regression: `calculate_birth_nakshatra` must apply the canonical
+    /// Lahiri sidereal correction before classifying the Moon position into
+    /// a nakshatra. Before this fix, it passed the raw TROPICAL Moon
+    /// longitude from `EphemerisCalculator` straight to
+    /// `get_nakshatra_from_longitude`, which always returns the wrong
+    /// nakshatra (off by ~23-24°, i.e. ~2 nakshatras).
+    ///
+    /// Reference birth: Shesh 1990-07-15 09:00 UT (= 14:30 IST in Bangalore).
+    /// JHora ground truth: Moon in Revati (nakshatra #27, sidereal ~13.3° in
+    /// the last 13.33° band of the zodiac).
+    #[test]
+    fn calculate_birth_nakshatra_applies_sidereal_correction_shesh_1990() {
+        use chrono::TimeZone;
+        let birth_utc = Utc.with_ymd_and_hms(1990, 7, 15, 9, 0, 0).unwrap();
+        let nakshatra =
+            calculate_birth_nakshatra(birth_utc, "").expect("calculate_birth_nakshatra failed");
+        assert_eq!(
+            nakshatra.name, "Revati",
+            "Shesh 1990-07-15 14:30 IST Moon should land in Revati after \
+             Lahiri sidereal correction, got {} (nakshatra #{}). \
+             A wrong answer here means the tropical→sidereal conversion \
+             regressed.",
+            nakshatra.name, nakshatra.number
+        );
     }
 }
