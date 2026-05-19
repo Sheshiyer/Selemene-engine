@@ -9,5 +9,5 @@ pub mod types;
 
 pub use api::*;
 pub use dhana_yogas::detect_dhana_yogas;
-pub use raj_yogas::detect_raj_yogas;
+pub use raj_yogas::{detect_kendra_trikona_yogas, detect_raj_yogas};
 pub use types::*;

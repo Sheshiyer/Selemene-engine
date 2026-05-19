@@ -4,6 +4,7 @@
 
 pub mod aspects;
 pub mod dignities;
+pub mod native;
 pub mod status;
 pub mod types;
 

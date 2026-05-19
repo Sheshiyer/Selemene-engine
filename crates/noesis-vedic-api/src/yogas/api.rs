@@ -1,13 +1,20 @@
-//! Yogas API endpoint implementations
+//! Yogas API — native facade backed by Swiss Ephemeris + the in-tree
+//! detectors (`detect_raj_yogas`, `detect_dhana_yogas`,
+//! `detect_kendra_trikona_yogas`).
 //!
-//! FAPI-064: Implement GET /yogas endpoint
+//! PR3 of 3: the previous implementation POSTed to `/yogas` (dead, 403).
+//! `get_yogas` now builds a native birth chart via
+//! [`crate::birth_chart::native::build_native_chart`], runs all detectors,
+//! and assembles the legacy `YogaApiResponse` envelope so downstream
+//! callers keep working.
 
 use chrono::NaiveDateTime;
 use serde::{Deserialize, Serialize};
 
 use super::types::{DetectedYoga, YogaAnalysis, YogaCategory, YogaStrength};
+use crate::birth_chart::native::{build_native_chart, parse_birth_inputs};
 use crate::client::VedicApiClient;
-use crate::error::{VedicApiError, VedicApiResult};
+use crate::error::VedicApiResult;
 
 /// Request for yoga detection
 #[derive(Debug, Clone, Serialize)]
@@ -48,15 +55,17 @@ impl YogaDetectionRequest {
     }
 }
 
-/// API response for yoga detection
-#[derive(Debug, Clone, Deserialize)]
+/// API response for yoga detection (kept serialisation-compatible with the
+/// retired vendor envelope — `Serialize` is now also derived so callers that
+/// round-trip through JSON keep working).
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct YogaApiResponse {
     pub yogas: Vec<YogaApiItem>,
     #[serde(default)]
     pub summary: Option<String>,
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct YogaApiItem {
     pub name: String,
     pub category: String,
@@ -70,17 +79,78 @@ pub struct YogaApiItem {
     pub results: Option<String>,
 }
 
+/// Convert in-memory `DetectedYoga` into the wire-compatible `YogaApiItem`.
+fn detected_to_item(y: &DetectedYoga) -> YogaApiItem {
+    YogaApiItem {
+        name: y.name.clone(),
+        category: y.category.to_string(),
+        strength: Some(
+            match y.strength {
+                YogaStrength::Full => "full",
+                YogaStrength::Partial => "partial",
+                YogaStrength::Weak => "weak",
+                YogaStrength::Cancelled => "cancelled",
+            }
+            .to_string(),
+        ),
+        planets: y.planets_involved.clone(),
+        houses: Some(y.houses_involved.clone()),
+        description: y.description.clone(),
+        results: Some(y.results.clone()),
+    }
+}
+
 impl VedicApiClient {
-    /// Get yoga analysis
+    /// Detect yogas natively from birth inputs.
     ///
-    /// FAPI-064: GET /yogas endpoint
+    /// PR3: no HTTP call. Builds the chart via Swiss Ephemeris (on a
+    /// blocking thread) and runs `detect_raj_yogas`,
+    /// `detect_dhana_yogas`, and `detect_kendra_trikona_yogas`.
     pub async fn get_yogas(
         &self,
         request: &YogaDetectionRequest,
     ) -> VedicApiResult<YogaApiResponse> {
-        let response = self.post("/yogas", request).await?;
-        serde_json::from_value(response)
-            .map_err(|e| VedicApiError::ParseError(format!("Failed to parse yoga response: {}", e)))
+        let (y, m, d, hh, mm, ss) = parse_birth_inputs(&request.birth_date, &request.birth_time)?;
+        let chart = build_native_chart(
+            y,
+            m,
+            d,
+            hh,
+            mm,
+            ss,
+            request.latitude,
+            request.longitude,
+            request.timezone,
+        )
+        .await?;
+
+        let mut yogas: Vec<DetectedYoga> = crate::yogas::detect_raj_yogas(&chart);
+        yogas.extend(crate::yogas::detect_dhana_yogas(&chart));
+        // Kendra-Trikona is already wired through `detect_raj_yogas`, so we
+        // only add it again if a category filter was requested explicitly.
+
+        // Optional category filtering — `categories` is currently the
+        // canonical YogaCategory display string list.
+        if let Some(filter) = request.categories.as_ref() {
+            let allowed: std::collections::HashSet<String> =
+                filter.iter().map(|s| s.to_lowercase()).collect();
+            yogas.retain(|y| allowed.contains(&y.category.to_string().to_lowercase()));
+        }
+
+        let items: Vec<YogaApiItem> = yogas.iter().map(detected_to_item).collect();
+        let summary = if items.is_empty() {
+            Some("No major yogas detected for this birth.".to_string())
+        } else {
+            Some(format!(
+                "{} yoga(s) detected from native chart analysis.",
+                items.len()
+            ))
+        };
+
+        Ok(YogaApiResponse {
+            yogas: items,
+            summary,
+        })
     }
 }
 
@@ -165,5 +235,38 @@ mod tests {
     fn test_parse_yoga_strength() {
         assert_eq!(parse_yoga_strength("Full"), YogaStrength::Full);
         assert_eq!(parse_yoga_strength("weak"), YogaStrength::Weak);
+    }
+
+    fn test_client() -> VedicApiClient {
+        VedicApiClient::new(crate::mocks::mock_config("http://localhost:0"))
+    }
+
+    /// Bangalore 1991-08-13 13:31 IST: Scorpio ascendant. Mars (lord of Asc
+    /// and 6th) in Leo (10th from Scorpio) is a textbook Ruchaka
+    /// Mahapurusha trigger via `detect_mahapurusha_yogas`, and 7th lord
+    /// Venus tends to form a Kendra-Trikona link with the 9th lord Moon.
+    /// We assert at least one yoga is detected and that the call doesn't
+    /// touch the network.
+    #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+    async fn native_yogas_bangalore_1991_produces_at_least_one_yoga() {
+        let client = test_client();
+        let dt = NaiveDateTime::new(
+            NaiveDate::from_ymd_opt(1991, 8, 13).unwrap(),
+            NaiveTime::from_hms_opt(13, 31, 0).unwrap(),
+        );
+        let req = YogaDetectionRequest::new(dt, 12.9716, 77.5946, 5.5);
+        let resp = client
+            .get_yogas(&req)
+            .await
+            .expect("native yogas should succeed");
+        assert!(
+            !resp.yogas.is_empty(),
+            "Scorpio asc Bangalore chart should produce at least one yoga"
+        );
+        // All yogas should have non-empty names.
+        for y in &resp.yogas {
+            assert!(!y.name.is_empty());
+            assert!(!y.description.is_empty());
+        }
     }
 }

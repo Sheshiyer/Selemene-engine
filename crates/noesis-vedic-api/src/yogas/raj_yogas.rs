@@ -186,10 +186,185 @@ fn detect_mahapurusha_yogas(chart: &BirthChart) -> Vec<DetectedYoga> {
     yogas
 }
 
-/// Detect Kendra-Trikona Raj Yogas
-fn detect_kendra_trikona_yogas(_chart: &BirthChart) -> Vec<DetectedYoga> {
-    // Simplified - would need full house lord calculation
-    vec![]
+const KENDRA_HOUSES: [u8; 4] = [1, 4, 7, 10];
+const TRIKONA_HOUSES: [u8; 3] = [1, 5, 9];
+
+/// Minimum orb (degrees) within which two planets are treated as conjunct.
+const CONJUNCTION_ORB_DEGREES: f64 = 8.0;
+
+/// Angular separation (degrees) between two longitudes, normalised to [0, 180].
+fn angular_separation(a: f64, b: f64) -> f64 {
+    let diff = (a - b).abs() % 360.0;
+    if diff > 180.0 {
+        360.0 - diff
+    } else {
+        diff
+    }
+}
+
+/// Compute the whole-sign house (1..=12) of a sign relative to the lagna.
+fn sign_house(sign: ZodiacSign, lagna: ZodiacSign) -> u8 {
+    let diff = (sign.number() as i16 - lagna.number() as i16).rem_euclid(12);
+    (diff + 1) as u8
+}
+
+/// Find the planet that rules a given house number in the chart by looking
+/// up the sign on the (whole-sign) house cusp and returning its ruler.
+fn house_lord(chart: &BirthChart, house: u8) -> Option<Planet> {
+    let lagna_idx = chart.ascendant_sign.number() as i16;
+    let target_sign_idx = ((lagna_idx - 1 + (house as i16 - 1)).rem_euclid(12)) + 1;
+    ZodiacSign::from_number(target_sign_idx as u8).map(|s| s.ruler())
+}
+
+/// Detect Kendra–Trikona Raj Yogas.
+///
+/// Classical rule (Parashara): when the lord of a Kendra house (1, 4, 7, 10)
+/// and the lord of a Trikona house (1, 5, 9) form a strong relationship,
+/// the chart carries a Raj Yoga. We treat any of the following as a
+/// "strong relationship":
+///
+/// * **Same sign** — the two lords share the same sign (full conjunction).
+/// * **Conjunction within 8° orb** — same or adjacent signs with longitudes
+///   inside `CONJUNCTION_ORB_DEGREES`.
+/// * **Mutual exchange (Parivartana)** — Kendra lord sits in the Trikona
+///   lord's sign and vice versa.
+/// * **Mutual Vedic aspect** — both lords cast a sign-based aspect on each
+///   other via [`crate::transits::aspects::check_vedic_aspects`].
+///
+/// House 1 is both a Kendra and a Trikona; the loop skips
+/// (lord_1, lord_1) self-pairs but still detects the (lord_1, lord_5) /
+/// (lord_1, lord_9) / (lord_4, lord_1) / etc. cases that classical
+/// commentators treat as Raj Yoga.
+pub fn detect_kendra_trikona_yogas(chart: &BirthChart) -> Vec<DetectedYoga> {
+    let mut detected = Vec::new();
+    let mut seen: std::collections::HashSet<(Planet, Planet, u8, u8)> =
+        std::collections::HashSet::new();
+
+    for &k_house in KENDRA_HOUSES.iter() {
+        for &t_house in TRIKONA_HOUSES.iter() {
+            if k_house == t_house {
+                // 1st house is shared; pairing the same lord with itself
+                // is not a yoga.
+                continue;
+            }
+            let Some(k_lord) = house_lord(chart, k_house) else {
+                continue;
+            };
+            let Some(t_lord) = house_lord(chart, t_house) else {
+                continue;
+            };
+            if k_lord == t_lord {
+                // Same planet rules both — automatic yoga (Yogakaraka),
+                // but we record it once.
+                let key = (k_lord, t_lord, k_house, t_house);
+                if seen.insert(key) {
+                    if let Some(pos) = chart.get_planet(k_lord) {
+                        detected.push(DetectedYoga {
+                            name: format!(
+                                "Kendra-Trikona Yogakaraka ({} ruling {} and {})",
+                                k_lord, k_house, t_house
+                            ),
+                            category: YogaCategory::RajYoga,
+                            strength: if pos.is_combust {
+                                YogaStrength::Partial
+                            } else {
+                                YogaStrength::Full
+                            },
+                            planets_involved: vec![k_lord.to_string()],
+                            houses_involved: vec![k_house, t_house],
+                            description: format!(
+                                "{} is the lord of both kendra ({}) and trikona ({}) — a Raj Yogakaraka",
+                                k_lord, k_house, t_house
+                            ),
+                            results: "Power, authority, success, and fortune through the karaka's significations".to_string(),
+                            activation_periods: vec![format!("{} Dasha", k_lord)],
+                        });
+                    }
+                }
+                continue;
+            }
+
+            let Some(k_pos) = chart.get_planet(k_lord) else {
+                continue;
+            };
+            let Some(t_pos) = chart.get_planet(t_lord) else {
+                continue;
+            };
+
+            let same_sign = k_pos.sign == t_pos.sign;
+            let within_orb =
+                angular_separation(k_pos.longitude, t_pos.longitude) <= CONJUNCTION_ORB_DEGREES;
+            let parivartana = k_pos.sign.ruler() == t_lord && t_pos.sign.ruler() == k_lord;
+            // Sign-based Vedic aspect.
+            let k_aspects_t = crate::transits::aspects::check_vedic_aspects(
+                k_lord,
+                k_pos.sign.number(),
+                t_pos.sign.number(),
+            )
+            .is_some();
+            let t_aspects_k = crate::transits::aspects::check_vedic_aspects(
+                t_lord,
+                t_pos.sign.number(),
+                k_pos.sign.number(),
+            )
+            .is_some();
+            let mutual_aspect = k_aspects_t && t_aspects_k;
+
+            if !(same_sign || within_orb || parivartana || mutual_aspect) {
+                continue;
+            }
+
+            let key = (k_lord, t_lord, k_house, t_house);
+            if !seen.insert(key) {
+                continue;
+            }
+
+            let mut planets = vec![k_lord.to_string(), t_lord.to_string()];
+            planets.sort();
+            planets.dedup();
+
+            let relation = if parivartana {
+                "Parivartana (mutual exchange)"
+            } else if same_sign {
+                "Conjunction in same sign"
+            } else if within_orb {
+                "Tight conjunction within 8 degrees"
+            } else {
+                "Mutual Vedic aspect"
+            };
+
+            let strength = if (same_sign || within_orb) && !k_pos.is_combust && !t_pos.is_combust {
+                YogaStrength::Full
+            } else if mutual_aspect && (k_pos.is_combust || t_pos.is_combust) {
+                YogaStrength::Weak
+            } else {
+                YogaStrength::Partial
+            };
+
+            // Whole-sign houses of the involved lords help readers locate the yoga.
+            let k_lord_house = sign_house(k_pos.sign, chart.ascendant_sign);
+            let t_lord_house = sign_house(t_pos.sign, chart.ascendant_sign);
+
+            detected.push(DetectedYoga {
+                name: format!(
+                    "Kendra-Trikona Raj Yoga ({} of {}H + {} of {}H)",
+                    k_lord, k_house, t_lord, t_house
+                ),
+                category: YogaCategory::RajYoga,
+                strength,
+                planets_involved: planets,
+                houses_involved: vec![k_lord_house, t_lord_house],
+                description: format!(
+                    "Lord of kendra ({}H={}) and lord of trikona ({}H={}) connected via {}",
+                    k_house, k_lord, t_house, t_lord, relation
+                ),
+                results: "Confers power, recognition, status and prosperity".to_string(),
+                activation_periods: vec![format!("{} Dasha", k_lord), format!("{} Dasha", t_lord)],
+            });
+        }
+    }
+
+    detected
 }
 
 /// Detect Lakshmi Yoga
