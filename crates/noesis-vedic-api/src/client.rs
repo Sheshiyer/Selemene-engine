@@ -7,7 +7,8 @@ use std::time::{Duration, Instant};
 use tracing::{debug, error, info, warn};
 
 use crate::{
-    chart::{BirthChart, NavamsaChart},
+    chart::{BirthChart, NativeInfo, NavamsaChart},
+    chart_mapping::{map_navamsa_envelope_to_navamsa_chart, map_planets_envelope_to_birth_chart},
     config::Config,
     dasha::{DashaLevel, VimshottariDasha},
     error::Result,
@@ -338,7 +339,17 @@ impl VedicApiClient {
 
     // ==================== BIRTH CHART ENDPOINTS ====================
 
-    /// Get Rashi chart (D1) - main birth chart
+    /// Get Rashi chart (D1) - main birth chart.
+    ///
+    /// Internally this fetches the raw `/planets` envelope (via
+    /// [`Self::get_birth_chart_raw`]) and maps it to the typed
+    /// `chart::BirthChart` exported from this crate. The public signature is
+    /// unchanged so existing callers (notably `cached_client`) keep compiling.
+    ///
+    /// PR1 note: several fields on `chart::PlanetPosition` that the upstream
+    /// `/planets` endpoint does not supply (`nakshatra`, `pada`, `speed`,
+    /// `latitude`, `is_combust`) are defaulted. PR2/PR3 will compute and
+    /// overlay them from the native engines. See `MIGRATION.md`.
     pub async fn get_birth_chart(
         &self,
         year: i32,
@@ -353,30 +364,19 @@ impl VedicApiClient {
     ) -> Result<BirthChart> {
         info!("Fetching birth chart for {}/{}/{}", year, month, day);
 
-        let params = serde_json::json!({
-            "year": year,
-            "month": month,
-            "date": day,
-            "hours": hour,
-            "minutes": minute,
-            "seconds": second,
-            "latitude": lat,
-            "longitude": lng,
-            "timezone": tzone,
-            "config": {
-                "observation_point": "topocentric",
-                "ayanamsha": "lahiri",
-                "house_system": "placidus"
-            }
-        });
-
-        let response = self
-            .execute_with_retry(|| {
-                self.build_request(reqwest::Method::POST, "horoscope-chart")
-                    .json(&params)
-            })
+        let raw = self
+            .get_birth_chart_raw(year, month, day, hour, minute, second, lat, lng, tzone)
             .await?;
-        let chart: BirthChart = response.json().await?;
+
+        let native = NativeInfo {
+            birth_date: format!("{:04}-{:02}-{:02}", year, month, day),
+            birth_time: format!("{:02}:{:02}:{:02}", hour, minute, second),
+            latitude: lat,
+            longitude: lng,
+            timezone: tzone,
+        };
+
+        let chart = map_planets_envelope_to_birth_chart(&raw, native)?;
 
         info!(
             "Birth chart retrieved: Ascendant={}",
@@ -386,7 +386,15 @@ impl VedicApiClient {
         Ok(chart)
     }
 
-    /// Get Navamsa chart (D9)
+    /// Get Navamsa chart (D9).
+    ///
+    /// Internally this fetches the raw `/navamsa-chart-info` envelope (via
+    /// [`Self::get_navamsa_chart_raw`]) and maps it to the typed
+    /// `chart::NavamsaChart`. The public signature is unchanged.
+    ///
+    /// PR1 note: divisional endpoints do not return per-planet degrees, so
+    /// `NavamsaPosition::degree` is zero and `vargottama` is empty until PR2
+    /// cross-references the D1 chart.
     pub async fn get_navamsa_chart(
         &self,
         year: i32,
@@ -401,29 +409,24 @@ impl VedicApiClient {
     ) -> Result<NavamsaChart> {
         info!("Fetching Navamsa chart");
 
-        let params = serde_json::json!({
-            "year": year,
-            "month": month,
-            "date": day,
-            "hours": hour,
-            "minutes": minute,
-            "seconds": second,
-            "latitude": lat,
-            "longitude": lng,
-            "timezone": tzone,
-            "config": {
-                "divisional_chart": "D9",
-                "ayanamsha": "lahiri"
-            }
-        });
-
-        let response = self
-            .execute_with_retry(|| {
-                self.build_request(reqwest::Method::POST, "navamsa-chart")
-                    .json(&params)
-            })
+        let raw = self
+            .get_navamsa_chart_raw(year, month, day, hour, minute, second, lat, lng, tzone)
             .await?;
-        let chart: NavamsaChart = response.json().await?;
+
+        let source = NativeInfo {
+            birth_date: format!("{:04}-{:02}-{:02}", year, month, day),
+            birth_time: format!("{:02}:{:02}:{:02}", hour, minute, second),
+            latitude: lat,
+            longitude: lng,
+            timezone: tzone,
+        };
+
+        let chart = map_navamsa_envelope_to_navamsa_chart(&raw, source)?;
+
+        info!(
+            "Navamsa chart retrieved: D9 Lagna={}",
+            chart.d9_lagna.as_str()
+        );
 
         Ok(chart)
     }
@@ -526,6 +529,61 @@ impl VedicApiClient {
                 .await
                 .map_err(|e| crate::error::VedicApiError::Parse {
                     message: format!("Failed to parse /navamsa-chart-info response: {}", e),
+                })?;
+
+        Ok(raw)
+    }
+
+    /// Get house cusps — raw JSON from the upstream `POST /western/houses` endpoint.
+    ///
+    /// Despite the "western" route name, the endpoint accepts the same
+    /// `config.ayanamsha: "lahiri"` knob as `/planets` and returns sidereal
+    /// cusps when Lahiri is requested. Returned verbatim as `serde_json::Value`;
+    /// pass through [`crate::houses::map_houses_envelope`] for typed output,
+    /// or call [`crate::houses::fetch_houses`] for the one-shot wrapper.
+    pub async fn get_western_houses_raw(
+        &self,
+        year: i32,
+        month: u32,
+        day: u32,
+        hour: u32,
+        minute: u32,
+        second: u32,
+        lat: f64,
+        lng: f64,
+        tzone: f64,
+    ) -> Result<serde_json::Value> {
+        info!("Fetching house cusps via /western/houses");
+
+        let params = serde_json::json!({
+            "year": year,
+            "month": month,
+            "date": day,
+            "hours": hour,
+            "minutes": minute,
+            "seconds": second,
+            "latitude": lat,
+            "longitude": lng,
+            "timezone": tzone,
+            "config": {
+                "observation_point": "topocentric",
+                "ayanamsha": "lahiri"
+            }
+        });
+
+        let response = self
+            .execute_with_retry(|| {
+                self.build_request(reqwest::Method::POST, "western/houses")
+                    .json(&params)
+            })
+            .await?;
+
+        let raw: serde_json::Value =
+            response
+                .json()
+                .await
+                .map_err(|e| crate::error::VedicApiError::Parse {
+                    message: format!("Failed to parse /western/houses response: {}", e),
                 })?;
 
         Ok(raw)
