@@ -542,12 +542,57 @@ The client maps to these FreeAstrologyAPI.com endpoints:
 | Dasha | <1ms | 200-400ms | ~3ms |
 | Complete Panchang | <1ms | 800-1500ms (multi-call) | N/A |
 
+## Validation
+
+PR4 introduces an offline ground-truth validation harness for the native
+Vedic engines (`engine-panchanga`, `engine-vimshottari`, `engine-transits`).
+The harness reads the JHora-verified reference data living under
+`tests/fixtures/reference_data/` in this crate and runs per-field accuracy
+diffs against the engines' actual output.
+
+- Full Phase-1 numbers: [`docs/VEDIC_VALIDATION_REPORT_v1.md`](../../docs/VEDIC_VALIDATION_REPORT_v1.md)
+- Test locations:
+  - `crates/engine-panchanga/tests/vedic_validation_tests.rs`
+  - `crates/engine-vimshottari/tests/vedic_validation_tests.rs`
+  - `crates/engine-transits/tests/humdes_smoke_tests.rs`
+- Reproduce:
+  ```bash
+  cargo test --package engine-panchanga    --test vedic_validation_tests -- --ignored --nocapture
+  cargo test --package engine-vimshottari  --test vedic_validation_tests -- --ignored --nocapture
+  cargo test --package engine-transits     --test humdes_smoke_tests      -- --ignored --nocapture
+  ```
+
+### Phase-2 follow-ups (not in PR4)
+
+1. **`tools/humdes-extractor/compute_vedic_kundali.py`** — a `pyswisseph`
+   script that ingests a humdes `*_input.json` and emits a sibling
+   `*_vedic_expected.json` with the full panchang + dasha ground truth
+   per person. This artefact was referenced in the original session brief
+   but does not currently exist on disk (see
+   `.swarm/vedic-validation/GROUND_TRUTH.md` §A).
+2. **Per-person Vedic capture for all 89 humdes fixtures** — run (1) over
+   every humdes input to build a parallel `_vedic_expected.json` corpus.
+3. **Extend `vedic_validation_tests.rs` to iterate all 89** — once (2)
+   exists, the panchanga and vimshottari harnesses can switch from the 6-
+   and 4-point ground truth used in v1 to the full 89-person sweep, using
+   the same `FieldResult` per-field accounting.
+4. **Moon-longitude drift investigation** — the Phase-1 vimshottari report
+   shows 3/4 reference charts diverge on `moon_nakshatra` (large, multi-
+   nakshatra drift). Dump the engine's intermediate
+   `sidereal_moon_longitude` per chart and compare against
+   `moon_data.moon_longitude` in `dasha_reference.json`.
+5. **engine-transits per-field validation** — add a
+   `vedic_validation_tests.rs` for transits once per-person transit ground
+   truth exists. Today only the survival smoke (89 fixtures, ok/fail/
+   avg_ms) is in place.
+
 ## Related Documentation
 
 - [Migration Guide: Native to FreeAstrologyAPI](../../docs/MIGRATION_TO_FREE_ASTROLOGY_API.md) - How to migrate from native engines
 - [Migration Guide: v1 to v2 (internal)](./MIGRATION.md) - Migrating from VedicApiClient to VedicApiService
 - [Deployment Guide](../../docs/deployment/) - Docker and Railway deployment
 - [CHANGELOG](../../CHANGELOG.md) - Version history
+- [Vedic Validation Report v1](../../docs/VEDIC_VALIDATION_REPORT_v1.md) - PR4 Phase-1 numerical accuracy report
 
 ## License
 
