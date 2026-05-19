@@ -8,18 +8,18 @@ A live probe of `https://json.freeastrologyapi.com` established which routes
 actually exist. Full catalog and probe artefacts in
 [`docs/FREEASTROLOGYAPI_DISCOVERY.md`](../../docs/FREEASTROLOGYAPI_DISCOVERY.md).
 
-| This crate's surface          | Vendor path                                                                 | Status (PR1)                                                 |
+| This crate's surface          | Vendor path                                                                 | Status (post-PR3)                                            |
 |-------------------------------|-----------------------------------------------------------------------------|--------------------------------------------------------------|
-| `VedicApiClient::get_birth_chart` / `get_birth_chart_raw` | `POST /planets`                                | ✅ Live, returns Ascendant + 13 grahas + houses + retrograde |
-| `VedicApiClient::get_navamsa_chart` / `get_navamsa_chart_raw` | `POST /navamsa-chart-info`                 | ✅ Live, returns D9 Ascendant + grahas                       |
-| `houses::fetch_houses` / `get_western_houses_raw` | `POST /western/houses`                                          | ✅ Live, returns 12 cusps with signs                         |
-| `panchang` module             | `GET /panchang`, `GET /sunrise-sunset`                                      | ❌ Vendor routes do not exist — deferred to PR2 (native fallback) |
-| `vimshottari` module          | `POST /vimshottari-dasha`                                                   | ❌ Vendor route does not exist — deferred to PR2             |
-| `transits` module             | `POST /transits`                                                            | ❌ Vendor route does not exist — deferred to PR2             |
-| `yogas` module                | `POST /yogas`                                                               | ❌ Vendor route does not exist — deferred to PR3             |
-| `shadbala` module             | `POST /shadbala`                                                            | ❌ Vendor route does not exist — deferred to PR3             |
-| `ashtakavarga` module         | `POST /ashtakavarga`                                                        | ❌ Vendor route does not exist — deferred to PR3             |
-| `muhurta` module              | `POST /muhurta`                                                             | ❌ Vendor route does not exist — deferred to PR3             |
+| `VedicApiClient::get_birth_chart` / `get_birth_chart_raw` | `POST /planets`                                | Live, returns Ascendant + 13 grahas + houses + retrograde    |
+| `VedicApiClient::get_navamsa_chart` / `get_navamsa_chart_raw` | `POST /navamsa-chart-info`                 | Live, returns D9 Ascendant + grahas                          |
+| `houses::fetch_houses` / `get_western_houses_raw` | `POST /western/houses`                                          | Live, returns 12 cusps with signs                            |
+| `panchang` module             | `GET /panchang`, `GET /sunrise-sunset`                                      | Native (offline-capable) — PR2 wired `engine-panchanga`      |
+| `vimshottari` module          | `POST /vimshottari-dasha`                                                   | Native (offline-capable) — PR2 wired `engine-vimshottari`    |
+| `transits` module             | `POST /transits`                                                            | Native (offline-capable) — PR2 wired `engine-transits`       |
+| `yogas` module                | `POST /yogas`                                                               | Native (offline-capable) — PR3 wired in-tree detectors       |
+| `shadbala` module             | `POST /shadbala`                                                            | Native (offline-capable) — PR3 full Kala + Drik bala         |
+| `ashtakavarga` module         | `POST /ashtakavarga`                                                        | Native (offline-capable) — PR3 BPHS BAV contribution tables  |
+| `muhurta` module              | `POST /muhurta`                                                             | Native (offline-capable) — PR3 date-range search loop        |
 
 ### Known gaps (deferred to PR2 / PR3)
 
@@ -38,12 +38,14 @@ vendor's `/planets` endpoint does not return them:
 These will be computed by the native engines (`engine-panchanga`, Swiss
 ephemeris) and overlaid on the API-mapped chart in **PR2**.
 
-The eight non-functional modules (`panchang`, `vimshottari`, `transits`,
-`yogas`, `shadbala`, `ashtakavarga`, `muhurta`, plus any future `report`-
-generator paths that depended on them) are untouched in PR1 — their public
-APIs still compile, their callers still link, but live calls into them will
-continue to return HTTP 403 until **PR2** (native façades) and **PR3**
-(native implementations) replace the underlying transport.
+The eight previously non-functional modules are all native now:
+PR2 wired `panchang`, `vimshottari`, and `transits`; PR3 wired `yogas`,
+`shadbala`, `ashtakavarga`, and `muhurta`. The only methods that still
+issue HTTP requests are `get_birth_chart`, `get_navamsa_chart`, and
+`get_western_houses` — these still POST `/planets`,
+`/navamsa-chart-info`, and `/western/houses` respectively. The full
+behavioural diff, including the Kala Bala completeness gap and BAV
+table provenance notes, is in [`MIGRATION.md`](./MIGRATION.md).
 
 ## Overview
 

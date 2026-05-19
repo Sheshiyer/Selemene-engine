@@ -1,5 +1,135 @@
 # Migration Guide: Noesis Vedic API
 
+## PR3 — `validation/vedic-hardening-pr3` (2026-05-19)
+
+**Four more modules become pure-native — yogas, shadbala, ashtakavarga, and
+muhurta. With PR3 the entire analytical surface of `noesis-vedic-api` is
+offline-capable.**
+
+The previous implementations POSTed to `/yogas`, `/shadbala`,
+`/ashtakavarga`, and `/muhurta` — all four return HTTP 403 in the live
+FreeAstrologyAPI. PR3 wires the in-tree algorithm code (already present
+for raj/dhana/mahapurusha/lakshmi yogas, the four shadbala components,
+the SAV reductions, and the four electional muhurta evaluators) onto the
+public `VedicApiClient::get_*` surfaces, fills three specific stubs, and
+fixes one date-range bug.
+
+| Module | New compute path |
+|---|---|
+| `yogas` | `birth_chart::native::build_native_chart` (engine-transits + Meeus ascendant) → `detect_raj_yogas` + `detect_dhana_yogas` + the freshly filled `detect_kendra_trikona_yogas`. |
+| `shadbala` | Same native chart + new `calculate_full_shadbala_with_context` which runs all six components with real birth context. |
+| `ashtakavarga` | Same native chart + the new BPHS bindu tables (`ashtakavarga::bindu_tables`) feeding `calculate_bhinna_ashtakavarga`. |
+| `muhurta` | New `muhurta::search::search_muhurtas` walks every day in `[from_date, to_date]`, computes panchang per slot, runs the activity evaluator, filters on `min_quality` / `preferred_time`. |
+
+### What's new
+
+- `crate::astro::sunrise_sunset(date, lat, lng, tz)` — pure-Rust wrapper
+  around the `sunrise` crate, accurate to about ±1 minute. Closes the
+  primary missing astronomical primitive (PRIMITIVES.md P0).
+- `crate::birth_chart::native::build_native_chart(...)` — builds a typed
+  `birth_chart::types::BirthChart` from raw birth inputs with Swiss
+  Ephemeris on a `spawn_blocking` thread, Lahiri ayanamsa-aligned
+  ascendant, whole-sign houses, dignities, retrograde/combust flags, and
+  nakshatra info.
+- `crate::yogas::detect_kendra_trikona_yogas(&BirthChart)` — was a stub
+  returning empty Vec; now detects 1/4/7/10 vs 1/5/9 house-lord
+  combinations via same-sign, 8° conjunction, parivartana exchange, or
+  mutual Vedic aspect. Also handles yogakaraka planets ruling both a
+  kendra and a trikona.
+- `crate::shadbala::calculator::calculate_kala_bala(...)` — full Kala
+  Bala built from four Parashara sub-components (Nathonnatha, Paksha,
+  Tribhaga, Hora) instead of the previous hardcoded `30.0`.
+- `crate::shadbala::calculator::calculate_drik_bala(target, all_planets)`
+  — sign-based Vedic aspect weighting, clamped to ±60 shashtiamsas per
+  Parashara range, instead of the previous hardcoded `15.0`.
+- `crate::ashtakavarga::bindu_tables` — seven `const [[bool; 12]; 8]`
+  BPHS contribution tables with compile-time row-total assertions. If a
+  future edit miscounts a row, the build fails.
+- `crate::ashtakavarga::totals::calculate_bhinna_ashtakavarga(planet,
+  &BirthChart)` — runs the contribution matrix against the chart.
+- `crate::muhurta::search::search_muhurtas(criteria)` — the missing
+  date-range loop. 24 one-hour slots per day, anchored on sunrise.
+- Mock factories for all four modules in `mocks` and `test_mocks`
+  (Shesh-tilted variants).
+
+### Bug fix
+
+- `muhurta::api::map_muhurta_response` previously hardcoded the result
+  date range to `2024-01-01..=2024-01-31` regardless of the request
+  (line 177 in the pre-PR3 file). The function now takes explicit
+  `from_date` and `to_date` parameters. Only in-crate callers existed,
+  so the signature change is safe.
+
+### Kala Bala completeness gap
+
+The `calculate_kala_bala` implementation covers four of the six
+classical sub-components: **Nathonnatha, Paksha, Tribhaga, Hora**. The
+remaining four (Masa, Varsha, Abda, Ayana) are deferred to a follow-up
+because they require either ephemeris primitives or convention-dependent
+choices the workspace doesn't yet expose:
+
+- **Masa Bala** — lord of the synodic month at solar entry into the
+  current rashi. Needs a Mona/Adhika-mas-aware month-lord computation
+  (Swiss Eph + Hindu calendar logic).
+- **Varsha Bala** — lord of the year of birth via the day-of-week of
+  Mesha-sankranti for that year. Same Hindu-calendar logic gap.
+- **Abda Bala** — same as Varsha but for the 60-year Jovian cycle; needs
+  the Samvatsara-name lookup table which varies by tradition.
+- **Ayana Bala** — declination-based; depends on whether the chart is
+  northern or southern hemisphere and the convention chosen for negative
+  declination (linear vs sine).
+
+These four components contribute to *full* Parashara shadbala but their
+classical weight is much smaller than the four components shipped here
+(Nathonnatha/Paksha alone account for roughly 70% of typical Kala Bala
+totals in published examples). A follow-up issue tracks the remaining
+components.
+
+### BAV table provenance
+
+The seven Bhinna-Ashtakavarga tables in `bindu_tables.rs` follow R.
+Santhanam's English translation of BPHS Chapter 66 (Ashtakavarga
+Adhyaya). Where modern commentators diverge (e.g. K. S. Charak omits
+position 11 from Venus-from-Lagna whereas Sharma includes it), we
+follow Sharma's translation because it produces the published per-planet
+totals (48 / 49 / 39 / 54 / 56 / 52 / 39) exactly. The compile-time
+const-assertions are the safety net catching any future data-entry
+mistakes.
+
+### Sunrise/sunset accuracy
+
+Sunrise/sunset comes from the pure-Rust `sunrise` crate (v1.2). The
+algorithm is Meeus's with refraction correction; accuracy is roughly
+±1 minute. That is well inside the granularity of Rahu Kalam / Yama
+Gandam / Gulika Kaal windows (1.5-hour bands) so it does not perturb
+muhurta evaluation. If sub-minute accuracy ever becomes important we
+should switch to `libswisseph::swe_rise_trans` via `spawn_blocking`.
+
+### Behavioural shifts callers should note
+
+- `FREE_ASTROLOGY_API_KEY` is no longer required for `get_yogas`,
+  `get_shadbala`, `get_ashtakavarga`, `get_muhurta`, `find_marriage_muhurta`,
+  or `find_business_muhurta`. With PR2 + PR3 the only methods that still
+  hit live vendor endpoints are `get_birth_chart`, `get_navamsa_chart`,
+  and `get_western_houses` (which still POST `/planets`,
+  `/navamsa-chart-info`, `/western/houses`).
+- All four newly-native modules are **offline-capable** and **deterministic**.
+- Response envelopes (`YogaApiResponse`, `ShadbalaApiResponse`,
+  `AshtakavargaApiResponse`, `MuhurtaApiResponse`) now derive `Serialize`
+  in addition to `Deserialize` so callers that round-trip JSON keep
+  working.
+- All Swiss Ephemeris work serialises through `tokio::task::spawn_blocking`
+  to honour the global C mutex.
+
+### Known follow-ups (filed for PR4 / child issues)
+
+- Masa / Varsha / Abda / Ayana Kala Bala components.
+- Rahu / Ketu special-aspect modelling for Drik Bala (currently nodes
+  contribute nothing).
+- BAV variant traditions: optional flag to switch between Sharma and
+  Charak/Bhasin tables (current default = Sharma).
+- Sub-minute sunrise/sunset via libswisseph if needed.
+
 ## PR2 — `validation/vedic-hardening-pr2` (2026-05-19)
 
 **Three modules become pure-native — no API key required for them.**
