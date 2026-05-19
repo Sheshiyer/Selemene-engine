@@ -1,0 +1,5 @@
+playwright>=1.45
+
+# Optional: only needed if you fall back to the cookie-decryption path
+requests>=2.31
+pycryptodome>=3.20
