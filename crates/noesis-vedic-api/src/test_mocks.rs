@@ -1350,4 +1350,166 @@ mod tests {
         // Both should report Uttara Phalguni
         assert_eq!(d.moon_nakshatra, p.nakshatra.name());
     }
+
+    // PR3 — smoke tests for Shesh-specific factories.
+
+    #[test]
+    fn pr3_shesh_yoga_includes_ruchaka() {
+        let y = super::shesh_yoga_analysis();
+        assert!(
+            y.yogas.iter().any(|yg| yg.name.contains("Ruchaka")),
+            "Shesh Scorpio asc must include Ruchaka in mock"
+        );
+    }
+
+    #[test]
+    fn pr3_shesh_shadbala_strongest_is_mars() {
+        let s = super::shesh_shadbala_analysis();
+        assert_eq!(s.strongest_planet, "Mars");
+    }
+
+    #[test]
+    fn pr3_shesh_ashtakavarga_scorpio_boosted() {
+        let a = super::shesh_ashtakavarga_analysis();
+        // Sum of Scorpio bindus across planets should be at least 7+ (we
+        // added one per planet to the template).
+        let scorpio_total: u8 = a
+            .sarva_ashtakavarga
+            .planets
+            .iter()
+            .map(|p| p.sign_points[7])
+            .sum();
+        assert!(
+            scorpio_total >= 7,
+            "Scorpio bindu boost not applied: {scorpio_total}"
+        );
+    }
+
+    #[test]
+    fn pr3_shesh_muhurta_is_travel_focused() {
+        let r = super::shesh_muhurta_results();
+        assert_eq!(r.activity, crate::muhurta::types::MuhurtaActivity::Travel);
+        assert!(!r.muhurtas.is_empty());
+    }
+}
+
+// ---------------------------------------------------------------------------
+// PR3 — Shesh-specific mock factories for the four newly native modules.
+// These mirror `mocks::mock_*` but tilt the data to match the Scorpio-
+// ascendant Shesh profile (1991-09-14 09:30 IST Bangalore).
+// ---------------------------------------------------------------------------
+
+use crate::ashtakavarga::types::AshtakavargaAnalysis;
+use crate::muhurta::types::{MuhurtaActivity, MuhurtaQuality, MuhurtaResults, SelectedMuhurta};
+use crate::shadbala::types::ShadbalaAnalysis;
+use crate::yogas::types::{DetectedYoga, YogaAnalysis, YogaCategory, YogaStrength};
+
+/// Shesh's yoga analysis: Mars-Ruchaka (Mars in Leo from Scorpio asc),
+/// Sun-Mercury Budha-Aditya proxied as a raj yoga, and a Dhana yoga from
+/// Venus in the 11th.
+pub fn shesh_yoga_analysis() -> YogaAnalysis {
+    let mut analysis = YogaAnalysis::empty();
+    analysis.add_yoga(DetectedYoga {
+        name: "Ruchaka Yoga".to_string(),
+        category: YogaCategory::MahapurushaYoga,
+        strength: YogaStrength::Full,
+        planets_involved: vec!["Mars".to_string()],
+        houses_involved: vec![10],
+        description: "Mars in own sign in 10th house from Scorpio ascendant".to_string(),
+        results: "Courage, leadership, action".to_string(),
+        activation_periods: vec!["Mars Dasha".to_string()],
+    });
+    analysis.add_yoga(DetectedYoga {
+        name: "Budha-Aditya Yoga".to_string(),
+        category: YogaCategory::RajYoga,
+        strength: YogaStrength::Partial,
+        planets_involved: vec!["Sun".to_string(), "Mercury".to_string()],
+        houses_involved: vec![10],
+        description: "Sun and Mercury conjunct".to_string(),
+        results: "Intelligence, recognition, eloquence".to_string(),
+        activation_periods: vec!["Sun Dasha".to_string(), "Mercury Dasha".to_string()],
+    });
+    analysis.add_yoga(DetectedYoga {
+        name: "Eleventh House Dhana Yoga".to_string(),
+        category: YogaCategory::DhanaYoga,
+        strength: YogaStrength::Partial,
+        planets_involved: vec!["Venus".to_string()],
+        houses_involved: vec![11],
+        description: "Venus aspecting 11th from Scorpio asc".to_string(),
+        results: "Income from luxury, art, or aesthetic ventures".to_string(),
+        activation_periods: vec!["Venus Dasha".to_string()],
+    });
+    analysis.calculate_score();
+    analysis.generate_summary();
+    analysis
+}
+
+/// Shesh's shadbala analysis — Scorpio asc means Mars is lagna lord and
+/// reasonably strong; mirror that in the rupas distribution.
+pub fn shesh_shadbala_analysis() -> ShadbalaAnalysis {
+    // Reuse the generic builder but bias Mars higher.
+    let mut base = super::mocks::mock_shadbala_analysis();
+    for p in base.planets.iter_mut() {
+        if p.planet == "Mars" {
+            p.total_rupas = 460.0;
+            p.strength_ratio = p.total_rupas / p.required_minimum;
+            p.is_strong = p.strength_ratio >= 1.0;
+        }
+    }
+    base.strongest_planet = "Mars".to_string();
+    base
+}
+
+/// Shesh's ashtakavarga — same shape as the generic mock; Scorpio sign
+/// gets a small bindu boost over the template to reflect the natal
+/// lagna emphasis.
+pub fn shesh_ashtakavarga_analysis() -> AshtakavargaAnalysis {
+    let mut base = super::mocks::mock_ashtakavarga_analysis();
+    // Index 7 = Scorpio. Add 1 to each planet's Scorpio bindu so the
+    // sign-strength shifts measurably.
+    for planet in base.sarva_ashtakavarga.planets.iter_mut() {
+        planet.sign_points[7] = planet.sign_points[7].saturating_add(1);
+        planet.recalculate_total();
+    }
+    base.sarva_ashtakavarga.calculate_from_planets();
+    base
+}
+
+/// Shesh muhurta results: travel-friendly window aligned to a Mars
+/// mahadasha for adventurous activities.
+pub fn shesh_muhurta_results() -> MuhurtaResults {
+    use chrono::{NaiveDate, NaiveDateTime, NaiveTime};
+    let mk = |y, m, d, h, q: MuhurtaQuality, s| SelectedMuhurta {
+        start_time: NaiveDateTime::new(
+            NaiveDate::from_ymd_opt(y, m, d).unwrap(),
+            NaiveTime::from_hms_opt(h, 0, 0).unwrap(),
+        ),
+        end_time: NaiveDateTime::new(
+            NaiveDate::from_ymd_opt(y, m, d).unwrap(),
+            NaiveTime::from_hms_opt(h + 1, 0, 0).unwrap(),
+        ),
+        quality: q,
+        tithi: "Saptami (Shukla)".to_string(),
+        nakshatra: "Hasta".to_string(),
+        yoga: "Shiva".to_string(),
+        karana: "Bava".to_string(),
+        vara: "Wednesday".to_string(),
+        score: s,
+        favorable_factors: vec!["Hasta nakshatra favors action".to_string()],
+        unfavorable_factors: vec![],
+        recommendation: format!("{} for travel at {:02}:00", q, h),
+    };
+    let muhurtas = vec![
+        mk(2024, 5, 8, 10, MuhurtaQuality::Excellent, 88),
+        mk(2024, 5, 10, 14, MuhurtaQuality::Good, 72),
+    ];
+    MuhurtaResults {
+        activity: MuhurtaActivity::Travel,
+        from_date: chrono::NaiveDate::from_ymd_opt(2024, 5, 8).unwrap(),
+        to_date: chrono::NaiveDate::from_ymd_opt(2024, 5, 14).unwrap(),
+        muhurtas,
+        excellent_count: 1,
+        good_count: 1,
+        advice: "Travel during the first hora of Wednesday for best outcome.".to_string(),
+    }
 }

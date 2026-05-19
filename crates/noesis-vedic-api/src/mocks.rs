@@ -1207,4 +1207,275 @@ mod tests {
         let config = mock_config_with_fallback("http://localhost:9999");
         assert!(config.fallback_enabled);
     }
+
+    // PR3 — smoke tests for the four new analytical mock factories.
+
+    #[test]
+    fn pr3_mock_yoga_analysis_has_content() {
+        let y = super::mock_yoga_analysis();
+        assert!(
+            !y.yogas.is_empty(),
+            "mock yoga analysis must yield at least one yoga"
+        );
+        assert!(y.total_yoga_score > 0.0);
+        assert!(!y.summary.is_empty());
+    }
+
+    #[test]
+    fn pr3_mock_shadbala_analysis_all_seven_planets() {
+        let s = super::mock_shadbala_analysis();
+        assert_eq!(s.planets.len(), 7);
+        for p in &s.planets {
+            assert!(p.total_rupas > 0.0);
+            assert_eq!(p.components.len(), 6);
+        }
+    }
+
+    #[test]
+    fn pr3_mock_ashtakavarga_analysis_sav_bounded() {
+        let a = super::mock_ashtakavarga_analysis();
+        assert_eq!(a.sarva_ashtakavarga.planets.len(), 7);
+        assert!(a.sarva_ashtakavarga.grand_total <= 337);
+        assert_eq!(a.strongest_signs.len(), 3);
+    }
+
+    #[test]
+    fn pr3_mock_muhurta_results_quality_tiers() {
+        let r = super::mock_muhurta_results();
+        assert_eq!(r.muhurtas.len(), 3);
+        assert_eq!(r.excellent_count, 1);
+        assert_eq!(r.good_count, 1);
+        assert!(r.from_date < r.to_date);
+    }
+}
+
+// ---------------------------------------------------------------------------
+// PR3 — mock factories for the four newly native analytical modules.
+// These mirror realistic Bangalore 2024-01-15 fixtures so downstream tests
+// can render full UIs without spinning up the native Swiss-Ephemeris path.
+// ---------------------------------------------------------------------------
+
+use crate::ashtakavarga::types::{
+    AshtakavargaAnalysis, PlanetAshtakavarga, SarvaAshtakavarga, SignStrength, StrengthCategory,
+};
+use crate::muhurta::types::{MuhurtaActivity, MuhurtaQuality, MuhurtaResults, SelectedMuhurta};
+use crate::shadbala::types::{
+    ChartStrength, PlanetShadbala, ShadbalaAnalysis, ShadbalaComponent, ShadbalaValue,
+};
+use crate::yogas::types::{DetectedYoga, YogaAnalysis, YogaCategory, YogaStrength};
+
+/// Mock yoga analysis (PR3) — three representative yogas across raj/dhana/
+/// mahapurusha categories, plus the aggregated YogaAnalysis envelope.
+pub fn mock_yoga_analysis() -> YogaAnalysis {
+    let mut analysis = YogaAnalysis::empty();
+    analysis.add_yoga(DetectedYoga {
+        name: "Gaja Kesari Yoga".to_string(),
+        category: YogaCategory::RajYoga,
+        strength: YogaStrength::Full,
+        planets_involved: vec!["Moon".to_string(), "Jupiter".to_string()],
+        houses_involved: vec![1, 4],
+        description: "Moon and Jupiter in mutual kendras".to_string(),
+        results: "Fame, recognition, wisdom".to_string(),
+        activation_periods: vec!["Moon Dasha".to_string(), "Jupiter Dasha".to_string()],
+    });
+    analysis.add_yoga(DetectedYoga {
+        name: "Ruchaka Yoga".to_string(),
+        category: YogaCategory::MahapurushaYoga,
+        strength: YogaStrength::Full,
+        planets_involved: vec!["Mars".to_string()],
+        houses_involved: vec![10],
+        description: "Mars in own sign in a kendra".to_string(),
+        results: "Courage, leadership, success".to_string(),
+        activation_periods: vec!["Mars Dasha".to_string()],
+    });
+    analysis.add_yoga(DetectedYoga {
+        name: "Eleventh House Dhana Yoga".to_string(),
+        category: YogaCategory::DhanaYoga,
+        strength: YogaStrength::Partial,
+        planets_involved: vec!["Venus".to_string()],
+        houses_involved: vec![11],
+        description: "Strong 11th house indicating gains".to_string(),
+        results: "Income from multiple sources".to_string(),
+        activation_periods: vec!["Venus Dasha".to_string()],
+    });
+    analysis.calculate_score();
+    analysis.generate_summary();
+    analysis
+}
+
+/// Mock Shadbala analysis (PR3) — populated with plausible rupas/ratios for
+/// every classical planet so dashboards can render bars without running
+/// Swiss Ephemeris.
+pub fn mock_shadbala_analysis() -> ShadbalaAnalysis {
+    fn p(name: &str, total: f64, required: f64) -> PlanetShadbala {
+        // Distribute total roughly evenly across the six components.
+        let share = total / 6.0;
+        PlanetShadbala {
+            planet: name.to_string(),
+            components: vec![
+                ShadbalaValue {
+                    component: ShadbalaComponent::SthanaBala,
+                    rupas: share,
+                    shashtiamsas: share,
+                },
+                ShadbalaValue {
+                    component: ShadbalaComponent::DigBala,
+                    rupas: share,
+                    shashtiamsas: share,
+                },
+                ShadbalaValue {
+                    component: ShadbalaComponent::KalaBala,
+                    rupas: share,
+                    shashtiamsas: share,
+                },
+                ShadbalaValue {
+                    component: ShadbalaComponent::ChestaBala,
+                    rupas: share,
+                    shashtiamsas: share,
+                },
+                ShadbalaValue {
+                    component: ShadbalaComponent::NaisargikaBala,
+                    rupas: share,
+                    shashtiamsas: share,
+                },
+                ShadbalaValue {
+                    component: ShadbalaComponent::DrikBala,
+                    rupas: share,
+                    shashtiamsas: share,
+                },
+            ],
+            total_rupas: total,
+            total_shashtiamsas: total,
+            required_minimum: required,
+            strength_ratio: total / required,
+            is_strong: total >= required,
+        }
+    }
+    let planets = vec![
+        p("Sun", 420.0, 390.0),
+        p("Moon", 380.0, 360.0),
+        p("Mars", 310.0, 300.0),
+        p("Mercury", 450.0, 420.0),
+        p("Jupiter", 400.0, 390.0),
+        p("Venus", 350.0, 330.0),
+        p("Saturn", 290.0, 300.0),
+    ];
+    ShadbalaAnalysis {
+        strongest_planet: "Mercury".to_string(),
+        weakest_planet: "Saturn".to_string(),
+        chart_strength: ChartStrength::Strong,
+        planets,
+    }
+}
+
+/// Mock Ashtakavarga analysis (PR3) — uniformly seeded BAV per planet,
+/// SAV grand total well under the 337 classical max, and pre-computed
+/// sign-strength rankings so dashboards have rendering data.
+pub fn mock_ashtakavarga_analysis() -> AshtakavargaAnalysis {
+    let mut sarva = SarvaAshtakavarga::empty();
+    let template = [4u8, 5, 3, 4, 5, 3, 4, 5, 4, 4, 3, 4];
+    for name in [
+        "Sun", "Moon", "Mars", "Mercury", "Jupiter", "Venus", "Saturn",
+    ] {
+        let mut av = PlanetAshtakavarga::empty(name);
+        av.sign_points = template;
+        av.recalculate_total();
+        sarva.add_planet(av);
+    }
+    let sign_names = [
+        "Aries",
+        "Taurus",
+        "Gemini",
+        "Cancer",
+        "Leo",
+        "Virgo",
+        "Libra",
+        "Scorpio",
+        "Sagittarius",
+        "Capricorn",
+        "Aquarius",
+        "Pisces",
+    ];
+    let strongest = sign_names
+        .iter()
+        .enumerate()
+        .map(|(i, n)| SignStrength {
+            sign: (i + 1) as u8,
+            sign_name: n.to_string(),
+            points: sarva.sarva_points[i],
+            category: StrengthCategory::from_sarva_points(sarva.sarva_points[i]),
+        })
+        .take(3)
+        .collect::<Vec<_>>();
+    let weakest = sign_names
+        .iter()
+        .enumerate()
+        .rev()
+        .map(|(i, n)| SignStrength {
+            sign: (i + 1) as u8,
+            sign_name: n.to_string(),
+            points: sarva.sarva_points[i],
+            category: StrengthCategory::from_sarva_points(sarva.sarva_points[i]),
+        })
+        .take(3)
+        .collect::<Vec<_>>();
+    AshtakavargaAnalysis {
+        sarva_ashtakavarga: sarva,
+        strongest_signs: strongest,
+        weakest_signs: weakest,
+        transit_recommendations: vec![
+            "Favourable transits expected through Taurus and Leo.".to_string(),
+            "Use caution during Pisces transits.".to_string(),
+        ],
+    }
+}
+
+/// Mock muhurta results (PR3) — three slots spread over a 7-day Bangalore
+/// search, one Excellent + one Good + one Average so dashboards can render
+/// every quality tier.
+pub fn mock_muhurta_results() -> MuhurtaResults {
+    use chrono::{NaiveDate, NaiveDateTime, NaiveTime};
+    let make_slot =
+        |y: i32, m: u32, d: u32, h: u32, q: MuhurtaQuality, score: u8| SelectedMuhurta {
+            start_time: NaiveDateTime::new(
+                NaiveDate::from_ymd_opt(y, m, d).unwrap(),
+                NaiveTime::from_hms_opt(h, 0, 0).unwrap(),
+            ),
+            end_time: NaiveDateTime::new(
+                NaiveDate::from_ymd_opt(y, m, d).unwrap(),
+                NaiveTime::from_hms_opt(h + 1, 0, 0).unwrap(),
+            ),
+            quality: q,
+            tithi: "Panchami (Shukla)".to_string(),
+            nakshatra: "Rohini".to_string(),
+            yoga: "Siddhi".to_string(),
+            karana: "Bava".to_string(),
+            vara: "Thursday".to_string(),
+            score,
+            favorable_factors: vec!["Rohini nakshatra is very auspicious".to_string()],
+            unfavorable_factors: vec![],
+            recommendation: format!("{} muhurta at {:02}:00", q, h),
+        };
+    let muhurtas = vec![
+        make_slot(2024, 5, 2, 9, MuhurtaQuality::Excellent, 85),
+        make_slot(2024, 5, 4, 11, MuhurtaQuality::Good, 70),
+        make_slot(2024, 5, 6, 15, MuhurtaQuality::Average, 55),
+    ];
+    let excellent = muhurtas
+        .iter()
+        .filter(|m| m.quality == MuhurtaQuality::Excellent)
+        .count();
+    let good = muhurtas
+        .iter()
+        .filter(|m| m.quality == MuhurtaQuality::Good)
+        .count();
+    MuhurtaResults {
+        activity: MuhurtaActivity::General,
+        from_date: chrono::NaiveDate::from_ymd_opt(2024, 5, 1).unwrap(),
+        to_date: chrono::NaiveDate::from_ymd_opt(2024, 5, 7).unwrap(),
+        muhurtas,
+        excellent_count: excellent,
+        good_count: good,
+        advice: "Three favourable slots identified across the window.".to_string(),
+    }
 }
