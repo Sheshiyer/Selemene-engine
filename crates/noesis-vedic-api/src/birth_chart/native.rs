@@ -26,11 +26,13 @@ use crate::error::{VedicApiError, VedicApiResult};
 
 /// Lahiri (Chitrapaksha) ayanamsa in degrees for a Julian Day.
 ///
-/// Matches the formula used in `noesis-api` so downstream sidereal values
-/// stay aligned across crates.
+/// PR5: delegates to the canonical SwissEph-grounded helper at
+/// `engine_human_design::ephemeris::lahiri_ayanamsa`. Previously a
+/// Julian-century polynomial `23.85 + t * 1.3968`, ~86″ off truth at
+/// modern births. Local name/signature preserved so callers in
+/// `build_birth_chart_native` and friends keep compiling unchanged.
 fn lahiri_ayanamsa(jd: f64) -> f64 {
-    let t = (jd - 2451545.0) / 36525.0;
-    23.85 + t * 1.3968
+    engine_human_design::ephemeris::lahiri_ayanamsa(jd)
 }
 
 /// Julian Day (UT) from a UTC chrono DateTime.
