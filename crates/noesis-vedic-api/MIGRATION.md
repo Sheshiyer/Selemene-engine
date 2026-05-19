@@ -1,4 +1,70 @@
-# Migration Guide: Noesis Vedic API v1 to v2
+# Migration Guide: Noesis Vedic API
+
+## PR1 — `validation/vedic-hardening` (2026-05-19)
+
+**Breaking change in `VedicApiClient::get_birth_chart` and
+`VedicApiClient::get_navamsa_chart` response payload.** These methods
+previously POSTed to `/horoscope-chart` and `/navamsa-chart`, both of which
+return HTTP 403 ("route not found") on the live FreeAstrologyAPI — i.e.
+they have been broken in production since shipped. They now route through
+`/planets` and `/navamsa-chart-info` (the real, working endpoints) via the
+typed `chart_mapping` module, returning correctly populated
+`chart::BirthChart` and `chart::NavamsaChart` values.
+
+**Public method signatures are unchanged**, so callers do not need to
+recompile against a new shape; the change is purely "this method now
+returns real data where it previously returned an error".
+
+**Temporarily defaulted fields** on the mapped `chart::BirthChart` (the
+vendor's `/planets` endpoint does not return them — PR2 will overlay them
+from the native engines):
+
+- `chart::PlanetPosition::nakshatra` → `""`
+- `chart::PlanetPosition::pada` → `0`
+- `chart::PlanetPosition::speed` → `0.0`
+- `chart::PlanetPosition::latitude` → `0.0`
+- `chart::PlanetPosition::is_combust` → `false`
+- `chart::AscendantInfo::nakshatra` → `""`
+- `chart::AscendantInfo::pada` → `0`
+- `chart::MoonInfo::nakshatra` → `""`
+- `chart::MoonInfo::pada` → `0`
+- `chart::NavamsaPosition::degree` → `0.0`
+- `chart::NavamsaChart::vargottama` → `Vec::new()`
+
+Houses on the mapped `BirthChart` use **whole-sign** counted from the
+Ascendant (Vedic default). For Placidus cusps with explicit degrees, use
+the new `noesis_vedic_api::houses::fetch_houses(...)` wrapper or
+`VedicApiClient::get_western_houses_raw(...)`.
+
+**Removed dead modules** (they targeted vendor routes that do not exist
+and were not part of the live call graph):
+
+- `noesis_vedic_api::birth_chart::api` (had `BirthChartRequest`,
+  `BirthChartApiResponse`, `fetch_birth_chart`, `fetch_birth_chart_simple`)
+- `noesis_vedic_api::birth_chart::mappers` (consumed the above types only)
+- `noesis_vedic_api::vargas::api` (had `VargaChartRequest`,
+  `VargaChartApiResponse`, `get_varga_chart`, `get_dasamsa_chart` — was
+  never wired through `vargas/mod.rs`, so already dead on disk)
+
+`birth_chart::types::*`, `birth_chart::aspects`, `birth_chart::dignities`,
+`birth_chart::status`, `vargas::types`, and `vargas::navamsa_mappers` are
+unchanged.
+
+**Added**
+
+- `noesis_vedic_api::chart_mapping` — maps the upstream JSON envelopes to
+  `chart::BirthChart` / `chart::NavamsaChart`.
+- `noesis_vedic_api::houses` — typed wrapper around `POST /western/houses`.
+- `VedicApiClient::get_western_houses_raw(...)` — raw JSON variant.
+- `ZodiacSign::from_number(u8 1..=12) -> Option<ZodiacSign>` — 1-indexed
+  helper matching the vendor's `current_sign` field.
+
+See [`docs/FREEASTROLOGYAPI_DISCOVERY.md`](../../docs/FREEASTROLOGYAPI_DISCOVERY.md)
+for the full live endpoint catalog.
+
+---
+
+## v1 to v2 (historical)
 
 This guide covers migrating from direct `VedicApiClient` usage (v1) to the unified `VedicApiService` layer (v2). The v2 layer adds automatic caching, rate limiting, metrics, circuit breaker protection, and native fallback -- all transparent to the caller.
 
