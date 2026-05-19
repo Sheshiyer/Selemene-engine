@@ -1193,6 +1193,7 @@ dependencies = [
  "chrono-tz",
  "criterion",
  "lazy_static",
+ "libswisseph-sys",
  "noesis-core",
  "serde",
  "serde_json",
