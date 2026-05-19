@@ -23,6 +23,23 @@ use crate::chart::{
 };
 use crate::error::{VedicApiError, VedicApiResult};
 
+/// One pada = 3°20' = 200'. Derives the 1..=4 pada index of a planet given
+/// its ecliptic longitude in degrees.
+pub(crate) fn pada_from_longitude(longitude: f64) -> u8 {
+    let nakshatra_span = 360.0_f64 / 27.0; // ≈ 13.333°
+    let pada_span = nakshatra_span / 4.0; // ≈ 3.333°
+    let pos_in_nakshatra = longitude.rem_euclid(nakshatra_span);
+    (((pos_in_nakshatra / pada_span).floor() as i32) + 1).clamp(1, 4) as u8
+}
+
+/// Lookup the nakshatra name for a given ecliptic longitude using the
+/// `engine-vimshottari` table. Falls back to an empty string if the engine
+/// returns an unrecognised position (shouldn't happen for in-range inputs).
+pub(crate) fn nakshatra_name_for(longitude: f64) -> String {
+    let nak = engine_vimshottari::get_nakshatra_from_longitude(longitude);
+    nak.name.clone()
+}
+
 /// Stringified indices `"0".."13"`, pre-allocated so the hot mapping loops
 /// don't allocate one fresh `String` per planet per call.
 const PLANET_KEYS: [&str; 14] = [
@@ -51,6 +68,7 @@ pub fn map_planets_envelope_to_birth_chart(
         })?;
     let ascendant_sign = read_sign(ascendant_raw, "Ascendant")?;
     let ascendant_norm = read_f64(ascendant_raw, "normDegree").unwrap_or(0.0);
+    let ascendant_full = read_f64(ascendant_raw, "fullDegree").unwrap_or(0.0);
 
     // Single pass over keys "1".."13": real planets get appended, the
     // synthetic "ayanamsa" entry at "13" gets harvested.
@@ -72,14 +90,17 @@ pub fn map_planets_envelope_to_birth_chart(
         planets.push(planet_from_entry(entry)?);
     }
 
+    // Moon nakshatra + pada derived from Moon's sidereal longitude (the
+    // vendor returns Lahiri-sidereal when config.ayanamsha = "lahiri").
+    // Falls back to defaults if no Moon entry was present.
     let moon = planets
         .iter()
         .find(|p| p.name.eq_ignore_ascii_case("Moon"))
         .map(|p| MoonInfo {
             sign: p.sign,
             degree: p.degree,
-            nakshatra: String::new(),
-            pada: 0,
+            nakshatra: nakshatra_name_for(p.longitude),
+            pada: pada_from_longitude(p.longitude),
             rashi_lord: p.sign.ruler().to_string(),
         })
         .unwrap_or_else(|| MoonInfo {
@@ -120,8 +141,8 @@ pub fn map_planets_envelope_to_birth_chart(
         ascendant: AscendantInfo {
             sign: ascendant_sign,
             degree: ascendant_norm,
-            nakshatra: String::new(),
-            pada: 0,
+            nakshatra: nakshatra_name_for(ascendant_full),
+            pada: pada_from_longitude(ascendant_full),
         },
         moon,
         special_points: SpecialPoints {
@@ -194,9 +215,11 @@ fn planet_from_entry(entry: &Value) -> VedicApiResult<PlanetPosition> {
         .unwrap_or(0) as u8;
     let is_retrograde = parse_retro(entry, &name)?;
 
-    // TODO(PR2/PR3): nakshatra, pada, speed, latitude, combust come from
-    // native engines (engine-panchanga + Swiss ephemeris); the vendor's
-    // `/planets` endpoint does not supply them.
+    // Per-planet nakshatra + pada come from the sidereal longitude. Speed /
+    // ecliptic latitude / combust still pending — vendor's `/planets` does not
+    // supply them; PR3 will source them from Swiss Ephemeris directly.
+    let nakshatra = nakshatra_name_for(full);
+    let pada = pada_from_longitude(full);
     Ok(PlanetPosition {
         name,
         longitude: full,
@@ -206,8 +229,8 @@ fn planet_from_entry(entry: &Value) -> VedicApiResult<PlanetPosition> {
         house,
         is_retrograde,
         is_combust: false,
-        nakshatra: String::new(),
-        pada: 0,
+        nakshatra,
+        pada,
         speed: 0.0,
         latitude: 0.0,
     })
@@ -353,6 +376,47 @@ mod tests {
         assert!(saturn.is_retrograde);
 
         assert_eq!(chart.planets.len(), 12);
+
+        // PR2 CF-1: Moon nakshatra + pada must now be populated from the real
+        // sidereal longitude via engine-vimshottari. Moon fullDegree in the
+        // fixture is 160.26° → Hasta nakshatra at sidereal Lahiri.
+        assert_eq!(chart.moon.nakshatra, "Hasta");
+        assert!(
+            (1..=4).contains(&chart.moon.pada),
+            "Moon pada out of range: {}",
+            chart.moon.pada
+        );
+
+        // Ascendant nakshatra also derived. fullDegree 222.12° falls in
+        // Anuradha (213.33°–226.66° in 1-indexed nakshatra space).
+        assert_eq!(chart.ascendant.sign, ZodiacSign::Scorpio);
+        assert_eq!(chart.ascendant.nakshatra, "Anuradha");
+        assert!((1..=4).contains(&chart.ascendant.pada));
+
+        // Per-planet nakshatra is filled too.
+        let sun_nak = chart
+            .planets
+            .iter()
+            .find(|p| p.name == "Sun")
+            .unwrap()
+            .nakshatra
+            .clone();
+        assert!(!sun_nak.is_empty(), "Sun nakshatra must be populated");
+    }
+
+    #[test]
+    fn pada_math_is_correct() {
+        // Start of Ashwini (Aries 0°) → pada 1.
+        assert_eq!(pada_from_longitude(0.0), 1);
+        // Middle of pada 2 of Ashwini (3°20' to 6°40' → use 5°).
+        assert_eq!(pada_from_longitude(5.0), 2);
+        // End of Ashwini (13°20' - epsilon) → pada 4.
+        assert_eq!(pada_from_longitude(13.3), 4);
+        // First degree of Bharani (start of fresh nakshatra) → pada 1.
+        assert_eq!(pada_from_longitude(13.4), 1);
+        // Hasta middle pada (Moon at 160.26° in our Bangalore fixture).
+        let hasta_pada = pada_from_longitude(160.26);
+        assert!((1..=4).contains(&hasta_pada));
     }
 
     #[test]
