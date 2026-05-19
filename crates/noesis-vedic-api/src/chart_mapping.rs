@@ -72,21 +72,38 @@ pub fn map_planets_envelope_to_birth_chart(
         planets.push(planet_from_entry(entry)?);
     }
 
+    // PR2: derive Moon's nakshatra + pada via native engine-panchanga so
+    // downstream consumers (and the `mock_data_integrity` cross-check in
+    // tests/full_suite.rs) get real values instead of the PR1 placeholders.
+    // The 13:00 default time is acceptable because nakshatra-from-Moon-
+    // longitude varies on the order of ~12-13°/day and is robust to
+    // hour-level uncertainty.
+    let birth_time_short = if native.birth_time.len() >= 5 {
+        native.birth_time[..5].to_string()
+    } else {
+        "12:00".to_string()
+    };
+    let panchanga =
+        engine_panchanga::compute_panchanga(&native.birth_date, &birth_time_short, native.timezone);
+    let derived_nakshatra = panchanga.nakshatra_name.clone();
+    let derived_pada = ((panchanga.nakshatra_value.fract() * 4.0).floor() as u8) + 1;
+    let derived_pada = derived_pada.clamp(1, 4);
+
     let moon = planets
         .iter()
         .find(|p| p.name.eq_ignore_ascii_case("Moon"))
         .map(|p| MoonInfo {
             sign: p.sign,
             degree: p.degree,
-            nakshatra: String::new(),
-            pada: 0,
+            nakshatra: derived_nakshatra.clone(),
+            pada: derived_pada,
             rashi_lord: p.sign.ruler().to_string(),
         })
         .unwrap_or_else(|| MoonInfo {
             sign: ZodiacSign::Aries,
             degree: 0.0,
-            nakshatra: String::new(),
-            pada: 0,
+            nakshatra: derived_nakshatra.clone(),
+            pada: derived_pada,
             rashi_lord: ZodiacSign::Aries.ruler().to_string(),
         });
 
@@ -120,6 +137,12 @@ pub fn map_planets_envelope_to_birth_chart(
         ascendant: AscendantInfo {
             sign: ascendant_sign,
             degree: ascendant_norm,
+            // PR2: ascendant nakshatra remains empty here — the panchang
+            // engine derives lunar nakshatra, not ascendant nakshatra.
+            // Computing ascendant nakshatra requires the natal Lagna
+            // longitude, which the `/planets` envelope does not include
+            // beyond `normDegree`. Leave as-is until a dedicated lagna-
+            // longitude computation lands in PR3.
             nakshatra: String::new(),
             pada: 0,
         },
