@@ -16,7 +16,26 @@ use crate::{
     logging,
     panchang::Panchang,
     rate_limit::RateLimitHandler,
+    types::BirthData,
 };
+
+/// Build the request body shared by every upstream astro endpoint
+/// (`/planets`, `/navamsa-chart-info`, `/western/houses`, ...). The `config`
+/// sub-object is the only piece that varies per endpoint.
+fn build_astro_body(b: &BirthData, config: serde_json::Value) -> serde_json::Value {
+    serde_json::json!({
+        "year": b.year,
+        "month": b.month,
+        "date": b.day,
+        "hours": b.hour,
+        "minutes": b.minute,
+        "seconds": b.second,
+        "latitude": b.coordinates.latitude,
+        "longitude": b.coordinates.longitude,
+        "timezone": b.timezone_offset,
+        "config": config,
+    })
+}
 
 /// HTTP client for FreeAstrologyAPI.com
 #[derive(Debug, Clone)]
@@ -339,41 +358,19 @@ impl VedicApiClient {
 
     // ==================== BIRTH CHART ENDPOINTS ====================
 
-    /// Get Rashi chart (D1) - main birth chart.
-    ///
-    /// Internally this fetches the raw `/planets` envelope (via
-    /// [`Self::get_birth_chart_raw`]) and maps it to the typed
-    /// `chart::BirthChart` exported from this crate. The public signature is
-    /// unchanged so existing callers (notably `cached_client`) keep compiling.
-    ///
-    /// PR1 note: several fields on `chart::PlanetPosition` that the upstream
-    /// `/planets` endpoint does not supply (`nakshatra`, `pada`, `speed`,
-    /// `latitude`, `is_combust`) are defaulted. PR2/PR3 will compute and
-    /// overlay them from the native engines. See `MIGRATION.md`.
-    pub async fn get_birth_chart(
-        &self,
-        year: i32,
-        month: u32,
-        day: u32,
-        hour: u32,
-        minute: u32,
-        second: u32,
-        lat: f64,
-        lng: f64,
-        tzone: f64,
-    ) -> Result<BirthChart> {
-        info!("Fetching birth chart for {}/{}/{}", year, month, day);
+    /// Get Rashi chart (D1) - main birth chart. Maps the live `/planets`
+    /// envelope into a typed [`BirthChart`].
+    pub async fn get_birth_chart_with(&self, b: &BirthData) -> Result<BirthChart> {
+        info!("Fetching birth chart for {}/{}/{}", b.year, b.month, b.day);
 
-        let raw = self
-            .get_birth_chart_raw(year, month, day, hour, minute, second, lat, lng, tzone)
-            .await?;
+        let raw = self.get_birth_chart_raw_with(b).await?;
 
         let native = NativeInfo {
-            birth_date: format!("{:04}-{:02}-{:02}", year, month, day),
-            birth_time: format!("{:02}:{:02}:{:02}", hour, minute, second),
-            latitude: lat,
-            longitude: lng,
-            timezone: tzone,
+            birth_date: format!("{:04}-{:02}-{:02}", b.year, b.month, b.day),
+            birth_time: format!("{:02}:{:02}:{:02}", b.hour, b.minute, b.second),
+            latitude: b.coordinates.latitude,
+            longitude: b.coordinates.longitude,
+            timezone: b.timezone_offset,
         };
 
         let chart = map_planets_envelope_to_birth_chart(&raw, native)?;
@@ -386,16 +383,9 @@ impl VedicApiClient {
         Ok(chart)
     }
 
-    /// Get Navamsa chart (D9).
-    ///
-    /// Internally this fetches the raw `/navamsa-chart-info` envelope (via
-    /// [`Self::get_navamsa_chart_raw`]) and maps it to the typed
-    /// `chart::NavamsaChart`. The public signature is unchanged.
-    ///
-    /// PR1 note: divisional endpoints do not return per-planet degrees, so
-    /// `NavamsaPosition::degree` is zero and `vargottama` is empty until PR2
-    /// cross-references the D1 chart.
-    pub async fn get_navamsa_chart(
+    /// Get Rashi chart (D1). 9-positional-arg shim for callers that don't
+    /// yet hold a [`BirthData`]; delegates to [`Self::get_birth_chart_with`].
+    pub async fn get_birth_chart(
         &self,
         year: i32,
         month: u32,
@@ -406,19 +396,26 @@ impl VedicApiClient {
         lat: f64,
         lng: f64,
         tzone: f64,
-    ) -> Result<NavamsaChart> {
+    ) -> Result<BirthChart> {
+        self.get_birth_chart_with(&BirthData::new(
+            year, month, day, hour, minute, second, lat, lng, tzone,
+        ))
+        .await
+    }
+
+    /// Get Navamsa chart (D9). Maps the live `/navamsa-chart-info` envelope
+    /// into a typed [`NavamsaChart`].
+    pub async fn get_navamsa_chart_with(&self, b: &BirthData) -> Result<NavamsaChart> {
         info!("Fetching Navamsa chart");
 
-        let raw = self
-            .get_navamsa_chart_raw(year, month, day, hour, minute, second, lat, lng, tzone)
-            .await?;
+        let raw = self.get_navamsa_chart_raw_with(b).await?;
 
         let source = NativeInfo {
-            birth_date: format!("{:04}-{:02}-{:02}", year, month, day),
-            birth_time: format!("{:02}:{:02}:{:02}", hour, minute, second),
-            latitude: lat,
-            longitude: lng,
-            timezone: tzone,
+            birth_date: format!("{:04}-{:02}-{:02}", b.year, b.month, b.day),
+            birth_time: format!("{:02}:{:02}:{:02}", b.hour, b.minute, b.second),
+            latitude: b.coordinates.latitude,
+            longitude: b.coordinates.longitude,
+            timezone: b.timezone_offset,
         };
 
         let chart = map_navamsa_envelope_to_navamsa_chart(&raw, source)?;
@@ -431,10 +428,54 @@ impl VedicApiClient {
         Ok(chart)
     }
 
+    /// Get Navamsa chart (D9). 9-positional-arg shim; delegates to
+    /// [`Self::get_navamsa_chart_with`].
+    pub async fn get_navamsa_chart(
+        &self,
+        year: i32,
+        month: u32,
+        day: u32,
+        hour: u32,
+        minute: u32,
+        second: u32,
+        lat: f64,
+        lng: f64,
+        tzone: f64,
+    ) -> Result<NavamsaChart> {
+        self.get_navamsa_chart_with(&BirthData::new(
+            year, month, day, hour, minute, second, lat, lng, tzone,
+        ))
+        .await
+    }
+
     /// Get D1 (Rashi) birth chart — raw JSON from the upstream `/planets` endpoint.
-    ///
-    /// Returns the provider's response verbatim as `serde_json::Value` so the caller
-    /// can pass it straight through to API clients without type-mapping.
+    pub async fn get_birth_chart_raw_with(&self, b: &BirthData) -> Result<serde_json::Value> {
+        info!("Fetching D1 birth chart via /planets");
+
+        let body = build_astro_body(
+            b,
+            serde_json::json!({
+                "observation_point": "topocentric",
+                "ayanamsha": "lahiri",
+            }),
+        );
+
+        let response = self
+            .execute_with_retry(|| {
+                self.build_request(reqwest::Method::POST, "planets")
+                    .json(&body)
+            })
+            .await?;
+
+        response
+            .json::<serde_json::Value>()
+            .await
+            .map_err(|e| crate::error::VedicApiError::Parse {
+                message: format!("Failed to parse /planets response: {}", e),
+            })
+    }
+
+    /// 9-positional-arg shim for [`Self::get_birth_chart_raw_with`].
     pub async fn get_birth_chart_raw(
         &self,
         year: i32,
@@ -447,45 +488,40 @@ impl VedicApiClient {
         lng: f64,
         tzone: f64,
     ) -> Result<serde_json::Value> {
-        info!("Fetching D1 birth chart via /planets");
+        self.get_birth_chart_raw_with(&BirthData::new(
+            year, month, day, hour, minute, second, lat, lng, tzone,
+        ))
+        .await
+    }
 
-        let params = serde_json::json!({
-            "year": year,
-            "month": month,
-            "date": day,
-            "hours": hour,
-            "minutes": minute,
-            "seconds": second,
-            "latitude": lat,
-            "longitude": lng,
-            "timezone": tzone,
-            "config": {
+    /// Get D9 (Navamsa) chart — raw JSON from `/navamsa-chart-info`.
+    pub async fn get_navamsa_chart_raw_with(&self, b: &BirthData) -> Result<serde_json::Value> {
+        info!("Fetching D9 Navamsa chart via /navamsa-chart-info");
+
+        let body = build_astro_body(
+            b,
+            serde_json::json!({
                 "observation_point": "topocentric",
-                "ayanamsha": "lahiri"
-            }
-        });
+                "ayanamsha": "lahiri",
+            }),
+        );
 
         let response = self
             .execute_with_retry(|| {
-                self.build_request(reqwest::Method::POST, "planets")
-                    .json(&params)
+                self.build_request(reqwest::Method::POST, "navamsa-chart-info")
+                    .json(&body)
             })
             .await?;
 
-        let raw: serde_json::Value =
-            response
-                .json()
-                .await
-                .map_err(|e| crate::error::VedicApiError::Parse {
-                    message: format!("Failed to parse /planets response: {}", e),
-                })?;
-
-        Ok(raw)
+        response
+            .json::<serde_json::Value>()
+            .await
+            .map_err(|e| crate::error::VedicApiError::Parse {
+                message: format!("Failed to parse /navamsa-chart-info response: {}", e),
+            })
     }
 
-    /// Get D9 (Navamsa) chart — raw JSON from the upstream `/navamsa-chart-info` endpoint.
-    ///
-    /// Returns the provider's response verbatim as `serde_json::Value`.
+    /// 9-positional-arg shim for [`Self::get_navamsa_chart_raw_with`].
     pub async fn get_navamsa_chart_raw(
         &self,
         year: i32,
@@ -498,49 +534,41 @@ impl VedicApiClient {
         lng: f64,
         tzone: f64,
     ) -> Result<serde_json::Value> {
-        info!("Fetching D9 Navamsa chart via /navamsa-chart-info");
+        self.get_navamsa_chart_raw_with(&BirthData::new(
+            year, month, day, hour, minute, second, lat, lng, tzone,
+        ))
+        .await
+    }
 
-        let params = serde_json::json!({
-            "year": year,
-            "month": month,
-            "date": day,
-            "hours": hour,
-            "minutes": minute,
-            "seconds": second,
-            "latitude": lat,
-            "longitude": lng,
-            "timezone": tzone,
-            "config": {
+    /// Get house cusps — raw JSON from `POST /western/houses`. Sidereal when
+    /// `config.ayanamsha = "lahiri"` (despite the "western" route name).
+    pub async fn get_western_houses_raw_with(&self, b: &BirthData) -> Result<serde_json::Value> {
+        info!("Fetching house cusps via /western/houses");
+
+        let body = build_astro_body(
+            b,
+            serde_json::json!({
                 "observation_point": "topocentric",
-                "ayanamsha": "lahiri"
-            }
-        });
+                "ayanamsha": "lahiri",
+            }),
+        );
 
         let response = self
             .execute_with_retry(|| {
-                self.build_request(reqwest::Method::POST, "navamsa-chart-info")
-                    .json(&params)
+                self.build_request(reqwest::Method::POST, "western/houses")
+                    .json(&body)
             })
             .await?;
 
-        let raw: serde_json::Value =
-            response
-                .json()
-                .await
-                .map_err(|e| crate::error::VedicApiError::Parse {
-                    message: format!("Failed to parse /navamsa-chart-info response: {}", e),
-                })?;
-
-        Ok(raw)
+        response
+            .json::<serde_json::Value>()
+            .await
+            .map_err(|e| crate::error::VedicApiError::Parse {
+                message: format!("Failed to parse /western/houses response: {}", e),
+            })
     }
 
-    /// Get house cusps — raw JSON from the upstream `POST /western/houses` endpoint.
-    ///
-    /// Despite the "western" route name, the endpoint accepts the same
-    /// `config.ayanamsha: "lahiri"` knob as `/planets` and returns sidereal
-    /// cusps when Lahiri is requested. Returned verbatim as `serde_json::Value`;
-    /// pass through [`crate::houses::map_houses_envelope`] for typed output,
-    /// or call [`crate::houses::fetch_houses`] for the one-shot wrapper.
+    /// 9-positional-arg shim for [`Self::get_western_houses_raw_with`].
     pub async fn get_western_houses_raw(
         &self,
         year: i32,
@@ -553,40 +581,10 @@ impl VedicApiClient {
         lng: f64,
         tzone: f64,
     ) -> Result<serde_json::Value> {
-        info!("Fetching house cusps via /western/houses");
-
-        let params = serde_json::json!({
-            "year": year,
-            "month": month,
-            "date": day,
-            "hours": hour,
-            "minutes": minute,
-            "seconds": second,
-            "latitude": lat,
-            "longitude": lng,
-            "timezone": tzone,
-            "config": {
-                "observation_point": "topocentric",
-                "ayanamsha": "lahiri"
-            }
-        });
-
-        let response = self
-            .execute_with_retry(|| {
-                self.build_request(reqwest::Method::POST, "western/houses")
-                    .json(&params)
-            })
-            .await?;
-
-        let raw: serde_json::Value =
-            response
-                .json()
-                .await
-                .map_err(|e| crate::error::VedicApiError::Parse {
-                    message: format!("Failed to parse /western/houses response: {}", e),
-                })?;
-
-        Ok(raw)
+        self.get_western_houses_raw_with(&BirthData::new(
+            year, month, day, hour, minute, second, lat, lng, tzone,
+        ))
+        .await
     }
 
     // ==================== UTILITY METHODS ====================

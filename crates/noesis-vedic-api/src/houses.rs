@@ -23,6 +23,7 @@ use serde_json::Value;
 use crate::chart::ZodiacSign;
 use crate::client::VedicApiClient;
 use crate::error::{VedicApiError, VedicApiResult};
+use crate::types::BirthData;
 
 /// Typed projection of `/western/houses` for the 12 cusps.
 #[derive(Debug, Clone, PartialEq)]
@@ -43,10 +44,17 @@ pub struct HouseCusp {
     pub sign: ZodiacSign,
 }
 
-/// Fetch and parse the 12 house cusps for the given birth data.
-///
-/// This is a thin wrapper that flows through the same retry/circuit-breaker
-/// path as every other live call (via `VedicApiClient::get_western_houses_raw`).
+/// Fetch and parse the 12 house cusps for the given birth data. Flows
+/// through the same retry / circuit-breaker path as every other live call.
+pub async fn fetch_houses_with(
+    client: &VedicApiClient,
+    b: &BirthData,
+) -> VedicApiResult<HousesApiResponse> {
+    let raw = client.get_western_houses_raw_with(b).await?;
+    map_houses_envelope(&raw)
+}
+
+/// 9-positional-arg shim for [`fetch_houses_with`].
 pub async fn fetch_houses(
     client: &VedicApiClient,
     year: i32,
@@ -59,10 +67,11 @@ pub async fn fetch_houses(
     lng: f64,
     tzone: f64,
 ) -> VedicApiResult<HousesApiResponse> {
-    let raw = client
-        .get_western_houses_raw(year, month, day, hour, minute, second, lat, lng, tzone)
-        .await?;
-    map_houses_envelope(&raw)
+    fetch_houses_with(
+        client,
+        &BirthData::new(year, month, day, hour, minute, second, lat, lng, tzone),
+    )
+    .await
 }
 
 /// Map a captured `/western/houses` JSON envelope into the typed response.
