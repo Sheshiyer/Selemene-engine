@@ -346,16 +346,14 @@ pub fn compute_panchang_native(
 
 /// Lahiri (Chitrapaksha) ayanamsa as a function of Julian Day.
 ///
-/// Linear approximation around the 1990–2050 epoch — Lahiri drifts at
-/// roughly 50.27″/yr from the reference point (JD 2451545.0 = 2000-01-01,
-/// 23.853°). Good to ±10″ across modern births; sufficient for sign /
-/// nakshatra boundaries.  PR3 will replace this with the engine's
-/// internally-computed value once `engine-panchanga` exposes it.
+/// PR5: delegates to the canonical SwissEph-grounded helper at
+/// `engine_human_design::ephemeris::lahiri_ayanamsa`. Previously a J2000
+/// linear polynomial (`23.853 + (jd-J2000) * 50.2876/3600/365.25`) which
+/// drifted ~75″ off SwissEph truth at modern births. Public signature
+/// preserved so all existing call sites in `noesis-vedic-api` continue
+/// to work unchanged.
 pub(crate) fn lahiri_ayanamsa_from_julian_day(jd: f64) -> f64 {
-    const J2000: f64 = 2_451_545.0;
-    const AYANAMSA_AT_J2000: f64 = 23.853;
-    const PRECESSION_DEG_PER_DAY: f64 = 50.2876 / 3600.0 / 365.25;
-    AYANAMSA_AT_J2000 + (jd - J2000) * PRECESSION_DEG_PER_DAY
+    engine_human_design::ephemeris::lahiri_ayanamsa(jd)
 }
 
 impl VedicApiClient {
