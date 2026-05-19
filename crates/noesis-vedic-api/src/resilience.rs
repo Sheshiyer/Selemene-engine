@@ -455,7 +455,7 @@ impl FallbackChain {
                 day_duration: "12:00".to_string(),
                 night_duration: "12:00".to_string(),
             },
-            ayanamsa: 24.17, // Approximate Lahiri ayanamsa for modern era
+            ayanamsa: engine_human_design::ephemeris::lahiri_ayanamsa(jdn),
         })
     }
 }
