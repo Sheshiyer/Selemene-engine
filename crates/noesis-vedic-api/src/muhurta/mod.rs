@@ -6,6 +6,7 @@ pub mod api;
 pub mod business;
 pub mod general;
 pub mod marriage;
+pub mod search;
 pub mod travel;
 pub mod types;
 
@@ -13,5 +14,6 @@ pub use api::*;
 pub use business::*;
 pub use general::*;
 pub use marriage::*;
+pub use search::search_muhurtas;
 pub use travel::*;
 pub use types::*;
