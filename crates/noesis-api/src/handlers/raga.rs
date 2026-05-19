@@ -215,11 +215,7 @@ pub async fn upsert_raga_clip(
     .await;
 
     match result {
-        Ok(_) => (
-            StatusCode::CREATED,
-            Json(serde_json::json!({ "ok": true })),
-        )
-            .into_response(),
+        Ok(_) => (StatusCode::CREATED, Json(serde_json::json!({ "ok": true }))).into_response(),
         Err(e) => {
             tracing::error!(
                 melakarta_num = body.melakarta_num,

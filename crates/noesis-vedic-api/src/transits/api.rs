@@ -113,9 +113,8 @@ fn parse_local_to_utc(
     time_str: &str,
     tz_offset_hours: f64,
 ) -> VedicApiResult<chrono::DateTime<Utc>> {
-    let date = NaiveDate::parse_from_str(date_str, "%Y-%m-%d").map_err(|e| {
-        VedicApiError::ParseError(format!("invalid date '{}': {}", date_str, e))
-    })?;
+    let date = NaiveDate::parse_from_str(date_str, "%Y-%m-%d")
+        .map_err(|e| VedicApiError::ParseError(format!("invalid date '{}': {}", date_str, e)))?;
     let time = NaiveTime::parse_from_str(time_str, "%H:%M:%S")
         .or_else(|_| NaiveTime::parse_from_str(time_str, "%H:%M"))
         .map_err(|e| VedicApiError::ParseError(format!("invalid time '{}': {}", time_str, e)))?;
@@ -126,9 +125,7 @@ fn parse_local_to_utc(
     let utc = Utc
         .from_utc_datetime(&naive)
         .checked_sub_signed(chrono::Duration::seconds(offset_seconds))
-        .ok_or_else(|| {
-            VedicApiError::ParseError("datetime out of range".to_string())
-        })?;
+        .ok_or_else(|| VedicApiError::ParseError("datetime out of range".to_string()))?;
     Ok(utc)
 }
 
@@ -148,9 +145,7 @@ async fn compute_positions(
 }
 
 /// Map a native engine `PlanetaryPosition` into the API-shaped `TransitPlanetResponse`.
-fn position_to_response(
-    pos: &engine_transits::models::PlanetaryPosition,
-) -> TransitPlanetResponse {
+fn position_to_response(pos: &engine_transits::models::PlanetaryPosition) -> TransitPlanetResponse {
     TransitPlanetResponse {
         planet: pos.planet.name().to_string(),
         sign: pos.sign.name().to_string(),
@@ -221,16 +216,13 @@ impl VedicApiClient {
         request: &TransitRequest,
     ) -> VedicApiResult<TransitApiResponse> {
         // 1) Natal datetime (for Moon sign / Sade Sati reference).
-        let natal_dt = parse_local_to_utc(
-            &request.birth_date,
-            &request.birth_time,
-            request.timezone,
-        )?;
+        let natal_dt =
+            parse_local_to_utc(&request.birth_date, &request.birth_time, request.timezone)?;
 
         // 2) Transit datetime — date at noon UTC is a stable reference for
         //    "today's transits". The vendor endpoint had no time component.
-        let transit_date = NaiveDate::parse_from_str(&request.transit_date, "%Y-%m-%d")
-            .map_err(|e| {
+        let transit_date =
+            NaiveDate::parse_from_str(&request.transit_date, "%Y-%m-%d").map_err(|e| {
                 VedicApiError::ParseError(format!(
                     "invalid transit_date '{}': {}",
                     request.transit_date, e
@@ -259,10 +251,7 @@ impl VedicApiClient {
             .cloned();
 
         // 5) Assemble response.
-        let transits = transit_positions
-            .iter()
-            .map(position_to_response)
-            .collect();
+        let transits = transit_positions.iter().map(position_to_response).collect();
 
         let sade_sati = match (natal_moon.as_ref(), transit_saturn.as_ref()) {
             (Some(m), Some(s)) => Some(sade_sati_from_positions(m, s)),

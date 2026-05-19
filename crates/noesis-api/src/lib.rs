@@ -901,10 +901,7 @@ pub fn create_router(state: AppState, config: &ApiConfig) -> Router {
         .route("/readings/stats", get(readings_stats_handler))
         .route("/readings/:reading_id", get(get_reading_handler))
         // Raga clip lookup (SUNO-03)
-        .route(
-            "/raga/:num/clip",
-            get(handlers::raga::get_raga_clip),
-        )
+        .route("/raga/:num/clip", get(handlers::raga::get_raga_clip))
         // OpenClaw onboarding routes
         .route(
             "/onboarding/invite",

@@ -26,29 +26,35 @@ const STYLE_DESCRIPTORS: Record<SigilStyle, { visual: string; medium: string; pa
     palette: 'sepia and black, high contrast, antique',
   },
   chaos: {
-    visual: 'chaos magick sigil, deconstructed letterforms merged into abstract glyph, angular angular',
+    visual:
+      'chaos magick sigil, deconstructed letterforms merged into abstract glyph, angular angular',
     medium: 'bold black marker on white, stark graphic, cut paper collage aesthetic',
     palette: 'pure black and white, maximum contrast',
   },
   organic: {
-    visual: 'biomorphic sacred sigil, flowing organic glyph, single spiral contained within a circle, nature-inspired occult symbol, NOT a plant illustration',
+    visual:
+      'biomorphic sacred sigil, flowing organic glyph, single spiral contained within a circle, nature-inspired occult symbol, NOT a plant illustration',
     medium: 'fine pen and ink, delicate linework, contained within a circle, single unified mark',
     palette: 'dark ink on cream, subtle warm tones',
   },
   geometric: {
-    visual: 'sacred geometry sigil, overlapping circles and triangles forming a unified glyph, Metatrons cube influence',
+    visual:
+      'sacred geometry sigil, overlapping circles and triangles forming a unified glyph, Metatrons cube influence',
     medium: 'precise geometric line drawing, compass and straightedge aesthetic',
     palette: 'gold on black, or black on white, exact',
   },
   runic: {
-    visual: 'runic sigil, angular interlocking staves, bind rune, Elder Futhark inspired unified glyph',
+    visual:
+      'runic sigil, angular interlocking staves, bind rune, Elder Futhark inspired unified glyph',
     medium: 'carved stone inscription, woodburned symbol, bold angular marks',
     palette: 'dark charcoal on bone, aged texture',
   },
   ethereal: {
-    visual: 'neon glowing sigil, luminous unified glyph, intricate rune radiating energy, magical symbol',
+    visual:
+      'neon glowing sigil, luminous unified glyph, intricate rune radiating energy, magical symbol',
     medium: 'fantasy digital art, masterwork illustration, neon light art aesthetic',
-    palette: 'electric blue and purple neon light on dark indigo background, luminous glowing lines, high luminosity',
+    palette:
+      'electric blue and purple neon light on dark indigo background, luminous glowing lines, high luminosity',
   },
 }
 
@@ -66,19 +72,26 @@ function elementFromIntention(intention: string): string {
   const lower = intention.toLowerCase()
   if (/fire|passion|will|power|strength|courage|bold/.test(lower)) return 'fire element influence'
   if (/water|flow|emotion|heal|love|heart|feel/.test(lower)) return 'water element influence'
-  if (/earth|ground|stable|safe|home|body|manifest|physical/.test(lower)) return 'earth element influence'
+  if (/earth|ground|stable|safe|home|body|manifest|physical/.test(lower))
+    return 'earth element influence'
   if (/air|mind|clarity|wisdom|truth|speak|voice|word/.test(lower)) return 'air element influence'
-  if (/spirit|soul|divine|cosmic|infinite|transcend|higher/.test(lower)) return 'spirit/aether influence'
+  if (/spirit|soul|divine|cosmic|infinite|transcend|higher/.test(lower))
+    return 'spirit/aether influence'
   return 'balanced elemental influence'
 }
 
 function qualityFromIntention(intention: string): string {
   const lower = intention.toLowerCase()
-  if (/protect|shield|ward|guard|banish|repel/.test(lower)) return 'protective ward, banishing sigil'
-  if (/attract|draw|bring|receive|abundance|love|magnet/.test(lower)) return 'attraction sigil, drawing energy'
-  if (/transform|change|shift|evolve|release|break/.test(lower)) return 'transformation sigil, releasing old patterns'
-  if (/create|manifest|build|grow|become|achieve/.test(lower)) return 'manifestation sigil, creative force'
-  if (/know|learn|understand|see|reveal|clarity|insight/.test(lower)) return 'divination sigil, revealing hidden knowledge'
+  if (/protect|shield|ward|guard|banish|repel/.test(lower))
+    return 'protective ward, banishing sigil'
+  if (/attract|draw|bring|receive|abundance|love|magnet/.test(lower))
+    return 'attraction sigil, drawing energy'
+  if (/transform|change|shift|evolve|release|break/.test(lower))
+    return 'transformation sigil, releasing old patterns'
+  if (/create|manifest|build|grow|become|achieve/.test(lower))
+    return 'manifestation sigil, creative force'
+  if (/know|learn|understand|see|reveal|clarity|insight/.test(lower))
+    return 'divination sigil, revealing hidden knowledge'
   return 'intention sigil'
 }
 
@@ -110,16 +123,16 @@ export function buildSigilPrompt(
     : ''
 
   const prompt = [
-    `A single unified sigil symbol,`,
+    'A single unified sigil symbol,',
     `${quality},`,
     letterHint,
     `${element},`,
     `${sd.visual},`,
     `${sd.medium},`,
     `${sd.palette},`,
-    `centered on plain background, isolated symbol, no text, no words, no labels,`,
-    `single glyph, hermetic tradition, occult art, esoteric symbol,`,
-    `masterwork, intricate fine detail, spiritually charged`,
+    'centered on plain background, isolated symbol, no text, no words, no labels,',
+    'single glyph, hermetic tradition, occult art, esoteric symbol,',
+    'masterwork, intricate fine detail, spiritually charged',
   ]
     .filter(Boolean)
     .join(' ')
@@ -156,10 +169,10 @@ export function buildSigilEditPrompt(
   return {
     prompt: [
       `Refine this sigil: ${editInstruction}.`,
-      `Maintain the unified symbolic form,`,
+      'Maintain the unified symbolic form,',
       `${sd.visual},`,
       `${sd.medium},`,
-      `no text, no words, single glyph, occult art`,
+      'no text, no words, single glyph, occult art',
     ].join(' '),
     negative_prompt:
       'text, letters, words, photograph, realistic, multiple symbols, blurry, low quality',
