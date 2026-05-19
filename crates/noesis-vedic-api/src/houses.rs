@@ -21,6 +21,7 @@
 use serde_json::Value;
 
 use crate::chart::ZodiacSign;
+use crate::chart_mapping::{require_f64, require_u64};
 use crate::client::VedicApiClient;
 use crate::error::{VedicApiError, VedicApiResult};
 use crate::types::BirthData;
@@ -88,38 +89,19 @@ pub fn map_houses_envelope(raw: &Value) -> VedicApiResult<HousesApiResponse> {
 
     let mut houses = Vec::with_capacity(arr.len());
     for entry in arr {
-        let house =
-            entry
-                .get("House")
-                .and_then(Value::as_u64)
-                .ok_or_else(|| VedicApiError::Parse {
-                    message: "house entry missing 'House' field".to_string(),
-                })? as u8;
-        let degree =
-            entry
-                .get("degree")
-                .and_then(Value::as_f64)
-                .ok_or_else(|| VedicApiError::Parse {
-                    message: format!("house {} missing 'degree'", house),
-                })?;
-        let norm_degree = entry
-            .get("normDegree")
-            .and_then(Value::as_f64)
-            .ok_or_else(|| VedicApiError::Parse {
-                message: format!("house {} missing 'normDegree'", house),
-            })?;
+        let house = require_u64(entry, "House", "house entry")? as u8;
+        let ctx = format!("house {}", house);
+        let degree = require_f64(entry, "degree", &ctx)?;
+        let norm_degree = require_f64(entry, "normDegree", &ctx)?;
         let sign_num = entry
             .get("zodiac_sign")
             .and_then(|z| z.get("number"))
             .and_then(Value::as_u64)
             .ok_or_else(|| VedicApiError::Parse {
-                message: format!("house {} missing zodiac_sign.number", house),
+                message: format!("{}: missing zodiac_sign.number", ctx),
             })? as u8;
         let sign = ZodiacSign::from_number(sign_num).ok_or_else(|| VedicApiError::Parse {
-            message: format!(
-                "house {} has out-of-range zodiac_sign.number={}",
-                house, sign_num
-            ),
+            message: format!("{}: out-of-range zodiac_sign.number={}", ctx, sign_num),
         })?;
 
         houses.push(HouseCusp {
