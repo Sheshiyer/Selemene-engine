@@ -190,10 +190,7 @@ fn duration_days(start: chrono::DateTime<Utc>, end: chrono::DateTime<Utc>) -> u3
 /// Build the canonical `crate::dasha::DashaPeriod` tree from an engine-native
 /// `Mahadasha`, honoring the requested `level` (deeper levels populate
 /// `sub_periods`).
-fn build_period(
-    md: &engine_vimshottari::models::Mahadasha,
-    level: DashaLevel,
-) -> CanonicalPeriod {
+fn build_period(md: &engine_vimshottari::models::Mahadasha, level: DashaLevel) -> CanonicalPeriod {
     let antardashas: Option<Vec<CanonicalPeriod>> = if matches!(
         level,
         DashaLevel::Antardasha
@@ -266,12 +263,11 @@ pub(crate) async fn compute_vimshottari_native(
     tz_offset_hours: f64,
     level: DashaLevel,
 ) -> VedicApiResult<VimshottariDasha> {
-    let date = NaiveDate::from_ymd_opt(year, month, day).ok_or_else(|| {
-        VedicApiError::InvalidInput {
+    let date =
+        NaiveDate::from_ymd_opt(year, month, day).ok_or_else(|| VedicApiError::InvalidInput {
             field: "birth_date".to_string(),
             message: format!("invalid date {}-{:02}-{:02}", year, month, day),
-        }
-    })?;
+        })?;
     let time = NaiveTime::from_hms_opt(hour, minute, second).ok_or_else(|| {
         VedicApiError::InvalidInput {
             field: "birth_time".to_string(),
@@ -292,17 +288,12 @@ pub(crate) async fn compute_vimshottari_native(
     })
     .await
     .map_err(|e| VedicApiError::ServiceUnavailable(format!("ephemeris task join failed: {}", e)))?
-    .map_err(|e| {
-        VedicApiError::ServiceUnavailable(format!("Moon ephemeris failed: {}", e))
-    })?;
+    .map_err(|e| VedicApiError::ServiceUnavailable(format!("Moon ephemeris failed: {}", e)))?;
 
     let nakshatra = engine_vimshottari::get_nakshatra_from_longitude(moon_longitude);
     let balance_years = engine_vimshottari::calculate_dasha_balance(moon_longitude, nakshatra);
-    let mahadashas_raw = engine_vimshottari::calculate_mahadashas(
-        birth_utc,
-        nakshatra.ruling_planet,
-        balance_years,
-    );
+    let mahadashas_raw =
+        engine_vimshottari::calculate_mahadashas(birth_utc, nakshatra.ruling_planet, balance_years);
     let mahadashas_full = engine_vimshottari::calculate_complete_timeline(mahadashas_raw);
 
     // Build canonical periods at requested depth.
@@ -316,23 +307,27 @@ pub(crate) async fn compute_vimshottari_native(
     let today = ymd(now);
     let current_mahadasha = mahadashas
         .iter()
-        .find(|md| md.start_date.as_str() <= today.as_str() && today.as_str() <= md.end_date.as_str())
+        .find(|md| {
+            md.start_date.as_str() <= today.as_str() && today.as_str() <= md.end_date.as_str()
+        })
         .cloned()
         .unwrap_or_else(|| mahadashas[0].clone());
-    let current_antardasha = current_mahadasha
-        .sub_periods
-        .as_ref()
-        .and_then(|subs| {
-            subs.iter()
-                .find(|ad| ad.start_date.as_str() <= today.as_str() && today.as_str() <= ad.end_date.as_str())
-                .cloned()
-        });
+    let current_antardasha = current_mahadasha.sub_periods.as_ref().and_then(|subs| {
+        subs.iter()
+            .find(|ad| {
+                ad.start_date.as_str() <= today.as_str() && today.as_str() <= ad.end_date.as_str()
+            })
+            .cloned()
+    });
     let current_pratyantardasha = current_antardasha
         .as_ref()
         .and_then(|ad| ad.sub_periods.as_ref())
         .and_then(|subs| {
             subs.iter()
-                .find(|pd| pd.start_date.as_str() <= today.as_str() && today.as_str() <= pd.end_date.as_str())
+                .find(|pd| {
+                    pd.start_date.as_str() <= today.as_str()
+                        && today.as_str() <= pd.end_date.as_str()
+                })
                 .cloned()
         });
 
@@ -400,7 +395,9 @@ fn to_api_response(d: &VimshottariDasha) -> VimshottariApiResponse {
             name: d.moon_nakshatra.clone(),
             number: 0,
             lord: d.balance.planet.as_str().to_string(),
-            pada: Some(((d.moon_longitude.rem_euclid(13.333_333) / 13.333_333) * 4.0).floor() as u8 + 1),
+            pada: Some(
+                ((d.moon_longitude.rem_euclid(13.333_333) / 13.333_333) * 4.0).floor() as u8 + 1,
+            ),
             degree: Some(d.moon_longitude),
         },
         dasha_balance: DashaBalanceResponse {
@@ -425,7 +422,10 @@ impl VedicApiClient {
         request: &VimshottariRequest,
     ) -> VedicApiResult<VimshottariApiResponse> {
         let date = NaiveDate::parse_from_str(&request.birth_date, "%Y-%m-%d").map_err(|e| {
-            VedicApiError::ParseError(format!("invalid birth_date '{}': {}", request.birth_date, e))
+            VedicApiError::ParseError(format!(
+                "invalid birth_date '{}': {}",
+                request.birth_date, e
+            ))
         })?;
         let time = NaiveTime::parse_from_str(&request.birth_time, "%H:%M:%S")
             .or_else(|_| NaiveTime::parse_from_str(&request.birth_time, "%H:%M"))
@@ -524,7 +524,10 @@ pub fn parse_dasha_lord(lord: &str) -> VedicApiResult<DashaLord> {
         "mercury" | "budha" => Ok(DashaLord::Mercury),
         "ketu" => Ok(DashaLord::Ketu),
         "venus" | "shukra" => Ok(DashaLord::Venus),
-        _ => Err(VedicApiError::ParseError(format!("Unknown dasha lord: {}", lord))),
+        _ => Err(VedicApiError::ParseError(format!(
+            "Unknown dasha lord: {}",
+            lord
+        ))),
     }
 }
 
@@ -533,7 +536,9 @@ pub fn parse_date(date_str: &str) -> VedicApiResult<NaiveDate> {
     NaiveDate::parse_from_str(date_str, "%Y-%m-%d")
         .or_else(|_| NaiveDate::parse_from_str(date_str, "%d-%m-%Y"))
         .or_else(|_| NaiveDate::parse_from_str(date_str, "%d/%m/%Y"))
-        .map_err(|e| VedicApiError::ParseError(format!("Invalid date format '{}': {}", date_str, e)))
+        .map_err(|e| {
+            VedicApiError::ParseError(format!("Invalid date format '{}': {}", date_str, e))
+        })
 }
 
 #[cfg(test)]
@@ -580,7 +585,11 @@ mod tests {
             .expect("native vimshottari computation must succeed");
 
         // 120-year mahadasha sequence (typically 9..=10 periods).
-        assert!(dasha.mahadashas.len() >= 9, "got {} mahadashas", dasha.mahadashas.len());
+        assert!(
+            dasha.mahadashas.len() >= 9,
+            "got {} mahadashas",
+            dasha.mahadashas.len()
+        );
         // Birth nakshatra name must be non-empty.
         assert!(!dasha.moon_nakshatra.is_empty());
         // Each mahadasha must have antardashas at this level.

@@ -151,7 +151,7 @@ impl DashaPeriod {
         if as_of > self.end_date {
             return 100.0;
         }
-        
+
         let total_days = (self.end_date - self.start_date).num_days() as f64;
         let elapsed_days = (as_of - self.start_date).num_days() as f64;
         (elapsed_days / total_days) * 100.0
@@ -194,11 +194,19 @@ impl VimshottariTimeline {
     /// Get all current dasha levels at a given date
     pub fn current_dashas_at(&self, date: NaiveDate) -> CurrentDashas {
         let mahadasha = self.current_mahadasha(date).cloned();
-        let antardasha = mahadasha.as_ref()
-            .and_then(|md| md.sub_periods.iter().find(|ad| ad.contains_date(date)).cloned());
-        let pratyantardasha = antardasha.as_ref()
-            .and_then(|ad| ad.sub_periods.iter().find(|pd| pd.contains_date(date)).cloned());
-        
+        let antardasha = mahadasha.as_ref().and_then(|md| {
+            md.sub_periods
+                .iter()
+                .find(|ad| ad.contains_date(date))
+                .cloned()
+        });
+        let pratyantardasha = antardasha.as_ref().and_then(|ad| {
+            ad.sub_periods
+                .iter()
+                .find(|pd| pd.contains_date(date))
+                .cloned()
+        });
+
         CurrentDashas {
             mahadasha,
             antardasha,
@@ -260,9 +268,12 @@ mod tests {
         assert_eq!(DashaLord::Sun.mahadasha_years(), 6.0);
         assert_eq!(DashaLord::Moon.mahadasha_years(), 10.0);
         assert_eq!(DashaLord::Venus.mahadasha_years(), 20.0);
-        
+
         // Total should be 120 years
-        let total: f64 = DashaLord::sequence().iter().map(|l| l.mahadasha_years()).sum();
+        let total: f64 = DashaLord::sequence()
+            .iter()
+            .map(|l| l.mahadasha_years())
+            .sum();
         assert_eq!(total, 120.0);
     }
 
