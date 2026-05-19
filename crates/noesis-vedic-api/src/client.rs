@@ -558,9 +558,13 @@ impl VedicApiClient {
 
     // ==================== UTILITY METHODS ====================
 
-    /// Health check - verify API is accessible
+    /// Health check — verify the live FreeAstrologyAPI surface this crate
+    /// depends on is reachable. PR1/PR2: probes `/planets` (one of the three
+    /// real endpoints — see `docs/FREEASTROLOGYAPI_DISCOVERY.md`) rather than
+    /// the dead `/complete-panchang` legacy stub. Panchang/Vimshottari/Transits
+    /// are now native (no network), so this is a pure FAPI reachability test.
     pub async fn health_check(&self) -> Result<bool> {
-        debug!("Performing health check");
+        debug!("Performing health check via POST /planets");
 
         let health_body = serde_json::json!({
             "year": 2024,
@@ -571,12 +575,16 @@ impl VedicApiClient {
             "seconds": 0,
             "latitude": 28.6139,
             "longitude": 77.2090,
-            "timezone": 5.5
+            "timezone": 5.5,
+            "config": {
+                "observation_point": "topocentric",
+                "ayanamsha": "lahiri",
+            },
         });
 
         match self
             .execute_with_retry(|| {
-                self.build_request(reqwest::Method::POST, "complete-panchang")
+                self.build_request(reqwest::Method::POST, "planets")
                     .json(&health_body)
             })
             .await
