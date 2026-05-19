@@ -838,6 +838,130 @@ pub fn mock_circuit_breaker_error() -> VedicApiError {
 }
 
 // ---------------------------------------------------------------------------
+// Transit mocks (PR2: native facade — used for `MockApiClient::get_transits`
+// and for downstream callers that need a stable Transit fixture without
+// hitting Swiss Ephemeris).
+// ---------------------------------------------------------------------------
+
+use crate::transits::api::{
+    JupiterTransitResponse, NatalAspectResponse, SadeSatiResponse, TransitApiResponse,
+    TransitPlanetResponse,
+};
+
+/// Create a realistic mock `TransitApiResponse` matching the shape returned
+/// by the native facade. Twelve planets, Sade-Sati populated, Jupiter
+/// transit summary populated. Used by `MockApiClient::get_transits` and by
+/// downstream consumers that don't want to spin up Swiss Ephemeris.
+pub fn mock_transit_analysis() -> TransitApiResponse {
+    let transits = vec![
+        TransitPlanetResponse {
+            planet: "Sun".to_string(),
+            sign: "Capricorn".to_string(),
+            degree: 0.5,
+            is_retrograde: Some(false),
+            natal_aspects: Some(vec![NatalAspectResponse {
+                natal_planet: "Moon".to_string(),
+                aspect_type: "Trine".to_string(),
+                orb: 2.1,
+            }]),
+        },
+        TransitPlanetResponse {
+            planet: "Moon".to_string(),
+            sign: "Cancer".to_string(),
+            degree: 10.0,
+            is_retrograde: Some(false),
+            natal_aspects: None,
+        },
+        TransitPlanetResponse {
+            planet: "Mercury".to_string(),
+            sign: "Sagittarius".to_string(),
+            degree: 25.0,
+            is_retrograde: Some(false),
+            natal_aspects: None,
+        },
+        TransitPlanetResponse {
+            planet: "Venus".to_string(),
+            sign: "Scorpio".to_string(),
+            degree: 12.0,
+            is_retrograde: Some(false),
+            natal_aspects: None,
+        },
+        TransitPlanetResponse {
+            planet: "Mars".to_string(),
+            sign: "Sagittarius".to_string(),
+            degree: 18.0,
+            is_retrograde: Some(false),
+            natal_aspects: None,
+        },
+        TransitPlanetResponse {
+            planet: "Jupiter".to_string(),
+            sign: "Aries".to_string(),
+            degree: 5.0,
+            is_retrograde: Some(false),
+            natal_aspects: None,
+        },
+        TransitPlanetResponse {
+            planet: "Saturn".to_string(),
+            sign: "Aquarius".to_string(),
+            degree: 22.0,
+            is_retrograde: Some(false),
+            natal_aspects: None,
+        },
+        TransitPlanetResponse {
+            planet: "Uranus".to_string(),
+            sign: "Taurus".to_string(),
+            degree: 15.0,
+            is_retrograde: Some(true),
+            natal_aspects: None,
+        },
+        TransitPlanetResponse {
+            planet: "Neptune".to_string(),
+            sign: "Pisces".to_string(),
+            degree: 24.0,
+            is_retrograde: Some(false),
+            natal_aspects: None,
+        },
+        TransitPlanetResponse {
+            planet: "Pluto".to_string(),
+            sign: "Capricorn".to_string(),
+            degree: 28.0,
+            is_retrograde: Some(false),
+            natal_aspects: None,
+        },
+        TransitPlanetResponse {
+            planet: "Rahu".to_string(),
+            sign: "Aries".to_string(),
+            degree: 14.0,
+            is_retrograde: Some(true),
+            natal_aspects: None,
+        },
+        TransitPlanetResponse {
+            planet: "Ketu".to_string(),
+            sign: "Libra".to_string(),
+            degree: 14.0,
+            is_retrograde: Some(true),
+            natal_aspects: None,
+        },
+    ];
+
+    TransitApiResponse {
+        transits,
+        sade_sati: Some(SadeSatiResponse {
+            is_active: false,
+            phase: None,
+            saturn_sign: "Aquarius".to_string(),
+            moon_sign: "Cancer".to_string(),
+        }),
+        jupiter_transit: Some(JupiterTransitResponse {
+            sign: "Aries".to_string(),
+            from_ascendant: 10,
+            from_moon: 10,
+            quality: Some("Challenging".to_string()),
+        }),
+    }
+}
+
+// ---------------------------------------------------------------------------
 // JSON response mocks (for wiremock / HTTP-level testing)
 // ---------------------------------------------------------------------------
 
