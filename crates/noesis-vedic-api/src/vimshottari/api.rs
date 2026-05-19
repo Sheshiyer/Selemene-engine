@@ -303,6 +303,9 @@ pub(crate) async fn compute_vimshottari_native(
         .collect();
 
     // Locate "now"-period at each level via linear scan against today's date.
+    // String comparison works because both sides are formatted YYYY-MM-DD.
+    // If `now` is before the entire timeline (engine bug or empty result),
+    // fall back to the first period if any exists — never panic.
     let now = Utc::now();
     let today = ymd(now);
     let current_mahadasha = mahadashas
@@ -311,7 +314,10 @@ pub(crate) async fn compute_vimshottari_native(
             md.start_date.as_str() <= today.as_str() && today.as_str() <= md.end_date.as_str()
         })
         .cloned()
-        .unwrap_or_else(|| mahadashas[0].clone());
+        .or_else(|| mahadashas.first().cloned())
+        .ok_or_else(|| VedicApiError::Parse {
+            message: "engine-vimshottari returned an empty mahadasha timeline".to_string(),
+        })?;
     let current_antardasha = current_mahadasha.sub_periods.as_ref().and_then(|subs| {
         subs.iter()
             .find(|ad| {
