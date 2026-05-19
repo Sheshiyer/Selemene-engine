@@ -1,1 +1,8 @@
 .vercel
+
+# Design-system reference artifacts — kept on disk for local reference,
+# excluded from the repo to keep clones small. The SYSTEM.md canonical
+# spec lives in /docs/ (committed) — these are unconsumed source assets
+# that will move to repo once they're wired into production components.
+public/design-system/
+public/icons/

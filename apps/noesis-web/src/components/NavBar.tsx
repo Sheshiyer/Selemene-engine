@@ -39,46 +39,62 @@ const styles = {
     display: "flex",
     alignItems: "center",
     justifyContent: "space-between",
-    padding: "0 1.5rem",
+    padding: "0 1.25rem",
     height: 56,
-    background: "linear-gradient(90deg, #070B1D 0%, rgba(45,0,80,0.4) 50%, #070B1D 100%)",
+    background: "var(--bg)",
     borderBottom: "1px solid var(--line-mid)",
-    boxShadow: "0 1px 0 var(--line-faint), inset 0 -1px 0 rgba(11,80,251,0.06)",
+    boxShadow: "inset 0 -1px 0 rgba(11,80,251,0.10)",
     position: "sticky" as const,
     top: 0,
     zIndex: 100,
+    /* Instrument-voice hairline at the bottom edge — acts as the chrome
+       indicator that the operator UI is "armed". */
   },
   left: {
     display: "flex",
     alignItems: "center",
-    gap: "2rem",
+    gap: "1.5rem",
   },
   logo: {
     fontFamily: "var(--font-display)",
     fontWeight: 800,
-    fontSize: "1.1rem",
+    fontSize: "1rem",
     color: "var(--signal)",
-    letterSpacing: "0.12em",
+    letterSpacing: "0.18em",
     textTransform: "uppercase" as const,
+    display: "inline-flex",
+    alignItems: "center",
+    gap: "0.5rem",
+  },
+  logoMark: {
+    /* trinity-hex logomark — a small SVG would replace this in v2;
+       for now use the geometric ◈ at uppercase-cap height to read
+       as an Instrument-voice glyph rather than a generic word logo */
+    fontSize: "0.85rem",
+    color: "var(--c-emerald)",
+    filter: "drop-shadow(0 0 6px rgba(16,181,167,0.45))",
   },
   tabs: {
     display: "flex",
-    gap: "0.125rem",
+    gap: "0.25rem",
   },
   tab: {
-    padding: "0.3rem 0.75rem",
-    borderRadius: "var(--r-pill)",
-    fontSize: "0.82rem",
-    fontWeight: 500,
+    padding: "0.35rem 0.85rem",
+    borderRadius: "var(--r-xs)",
+    fontSize: "0.74rem",
+    fontWeight: 600,
     color: "var(--muted)",
-    transition: "all 0.15s",
-    fontFamily: "var(--font-body)",
-    letterSpacing: "0.02em",
+    transition: "color 0.15s, border-color 0.15s, background 0.15s",
+    fontFamily: "var(--font-mono)",
+    letterSpacing: "0.10em",
+    textTransform: "uppercase" as const,
+    border: "1px solid transparent",
+    background: "transparent",
   },
   tabActive: {
-    background: "linear-gradient(90deg, rgba(16,181,167,0.15) 0%, rgba(197,160,23,0.15) 100%)",
     color: "var(--signal)",
-    border: "1px solid rgba(197,160,23,0.25)",
+    border: "1px solid rgba(197,160,23,0.45)",
+    background: "rgba(197,160,23,0.06)",
   },
   right: {
     display: "flex",
@@ -320,7 +336,8 @@ export default function NavBar() {
   return (
     <nav style={styles.nav}>
       <div style={styles.left}>
-        <Link href="/engines" style={styles.logo}>
+        <Link href="/engines" style={styles.logo} aria-label="Noesis — home">
+          <span style={styles.logoMark} aria-hidden>◈</span>
           NOESIS
         </Link>
         <div style={styles.tabs}>

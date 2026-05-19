@@ -5,9 +5,11 @@ import { useRouter } from "next/navigation";
 import { setApiKey, setUserProfile } from "@/lib/auth";
 import { getHealth, getDiscordAuthUrl, getMe, checkAdminAccess } from "@/lib/api";
 import { getDiscordCallbackUri } from "@/lib/discord-oauth";
+import { DyadChamber } from "@selemene/dyad-ui";
 
 const s = {
   page: {
+    position: "relative" as const,
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
@@ -15,6 +17,7 @@ const s = {
     // Full-viewport Kha Arc — the void receiving consciousness
     background: "linear-gradient(135deg, #070B1D 0%, #2D0050 55%, #0B50FB11 100%)",
     padding: "1.5rem",
+    overflow: "hidden",
   },
   card: {
     background: "rgba(7,11,29,0.72)",
@@ -193,7 +196,17 @@ export default function AuthPage() {
 
   return (
     <div style={s.page}>
-      <div style={s.card}>
+      {/* Canonical DyadChamber chrome — the sign-in moment is dyadic:
+          both witnesses present, joined field. The orbital ring rotates
+          slowly behind the card. While Discord OAuth or API-key
+          submission is in flight, both witnesses pulse together. */}
+      <DyadChamber
+        speaker="both"
+        submitting={discordLoading || checking}
+        variant="full"
+      />
+
+      <div style={{ ...s.card, position: "relative", zIndex: 1 }}>
         {/* Sacred Gold sigil ring above the wordmark */}
         <div style={s.sigilRing} aria-hidden="true">
           <svg width="28" height="28" viewBox="0 0 28 28" fill="none">

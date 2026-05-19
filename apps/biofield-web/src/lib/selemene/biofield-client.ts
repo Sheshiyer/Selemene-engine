@@ -55,7 +55,13 @@ export class BiofieldClient {
     options: BiofieldClientOptions = {},
   ) {
     this.authToken = options.authToken;
-    this.fetchImpl = options.fetchImpl ?? fetch;
+    // Bind `fetch` to globalThis. Without this, assigning the bare
+    // reference to a class field strips the implicit Window binding —
+    // calling `this.fetchImpl(...)` then throws "Failed to execute
+    // 'fetch' on 'Window': Illegal invocation". Matches the fix in
+    // packages/biofield-api-client/src/biofield-client.ts so the two
+    // copies stay aligned.
+    this.fetchImpl = (options.fetchImpl ?? fetch).bind(globalThis);
   }
 
   async createSession(input: CreateBiofieldSessionRequest = {}): Promise<BiofieldSession> {

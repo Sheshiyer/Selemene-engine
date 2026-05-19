@@ -19,6 +19,14 @@ import {
 } from "@/lib/integrated/witnessAccess";
 import { cacheReading } from "@/lib/integrated/readingCache";
 import type { ReadingPayload } from "@/lib/integrated/payloadLoader";
+import {
+  DyadChamber,
+  StepIndicator,
+  SPEAKER_COLOR,
+  SPEAKER_LABEL,
+  type Speaker,
+  type DyadStep,
+} from "@selemene/dyad-ui";
 
 type Step = 0 | 1 | 2 | 3 | 4 | 5;
 type WorkflowKey = "daily" | "integrated";
@@ -64,8 +72,8 @@ const STEP_HELPER: Record<Step, string> = {
 };
 
 /** Which witness owns each step — drives visual emphasis (active
- *  character lit + forward, the other dimmed + watching). */
-type Speaker = "aletheios" | "pichet" | "both";
+ *  character lit + forward, the other dimmed + watching). The Speaker
+ *  type and SPEAKER_LABEL constant now live in @/components/dyad. */
 const STEP_SPEAKER: Record<Step, Speaker> = {
   0: "both",
   1: "aletheios",
@@ -75,17 +83,15 @@ const STEP_SPEAKER: Record<Step, Speaker> = {
   5: "both",
 };
 
-const SPEAKER_LABEL: Record<Speaker, string> = {
-  aletheios: "ALETHEIOS",
-  pichet: "PICHET",
-  both: "ALETHEIOS + PICHET",
-};
-
-const SPEAKER_COLOR: Record<Speaker, string> = {
-  aletheios: "#10B5A7", // Coherence Emerald
-  pichet: "#C5A017",    // Sacred Gold
-  both: "#F0EDE3",      // Parchment (joined)
-};
+/** Sigil-token shapes per step for the StepIndicator. Steps 1+ visible;
+ *  step 0 is the intro (no indicator shown). */
+const FLOW_STEPS: ReadonlyArray<DyadStep> = [
+  { speaker: "aletheios", symbol: "vesica" },
+  { speaker: "pichet",    symbol: "hex" },
+  { speaker: "aletheios", symbol: "vesica" },
+  { speaker: "pichet",    symbol: "hex" },
+  { speaker: "both",      symbol: "trinity" },
+];
 
 // ─── Page ───────────────────────────────────────────────────────────────
 export default function GetReadingPage() {
@@ -246,10 +252,18 @@ export default function GetReadingPage() {
         if (state.step === 0) setStep(1);
       }}
     >
-      <DyadChamber step={state.step} submitting={state.submitting} />
+      <DyadChamber
+        speaker={STEP_SPEAKER[state.step]}
+        submitting={state.submitting !== null}
+      />
 
       <div style={s.stage} onClick={(e) => e.stopPropagation()}>
-        <StepIndicator step={state.step} onJump={(n) => setStep(n)} />
+        <StepIndicator
+          steps={FLOW_STEPS}
+          currentIndex={state.step - 1}
+          onJump={(i) => setStep((i + 1) as Step)}
+          ariaLabel="Threshold ritual progress"
+        />
 
         <div style={s.prompt}>
           {/* Voice attribution eyebrow — who's speaking this step */}
@@ -327,212 +341,18 @@ export default function GetReadingPage() {
           Power-user account access is reachable from /readings or
           /engines (visible only AFTER a reading exists). */}
 
-      {/* Global styles + keyframes */}
-      <style jsx global>{`
-        @keyframes thresholdPulse {
-          0%, 100% { transform: scale(0.98); filter: drop-shadow(0 0 18px rgba(197,160,23,0.45)); }
-          50%      { transform: scale(1.04); filter: drop-shadow(0 0 36px rgba(197,160,23,0.80)); }
-        }
-        @keyframes thresholdRingDrift {
-          from { transform: rotate(0deg); }
-          to   { transform: rotate(360deg); }
-        }
-        @keyframes thresholdStepFade {
-          from { opacity: 0; transform: translateY(8px); }
-          to   { opacity: 1; transform: translateY(0); }
-        }
-        .threshold-step-enter { animation: thresholdStepFade 600ms cubic-bezier(0.2,0.7,0.2,1) both; }
-      `}</style>
+      {/* Keyframes (thresholdPulse, thresholdRingDrift, thresholdStepFade)
+          and the .threshold-step-enter helper now live in app/globals.css
+          under the DYAD-CHAMBER section, since DyadChamber is canonical
+          and used outside this file. */}
     </div>
   );
 }
 
-// ─── DyadChamber — both witness characters always visible ──────────────
-// Pichet on the left, Aletheios on the right. The character owning the
-// current step is fully lit + slightly forward; the other dims back
-// + watches. At step 5 (dyadic fork), BOTH are equally lit. At step 0,
-// both are dim but symmetric — the dyad awakes.
-function DyadChamber({
-  step,
-  submitting,
-}: {
-  step: Step;
-  submitting: WorkflowKey | null;
-}) {
-  const speaker = STEP_SPEAKER[step];
-  const pichetActive = speaker === "pichet" || speaker === "both";
-  const aletheiosActive = speaker === "aletheios" || speaker === "both";
-
-  // Submission state pulses brightness on whichever character corresponds
-  // to the chosen lens; for "both" we accelerate both.
-  const isSubmitting = submitting !== null;
-
-  return (
-    <div style={s.sigilStage} aria-hidden="true">
-      {/* Faint orbital sigil between the two witnesses — present but subtle. */}
-      <svg
-        viewBox="0 0 200 200"
-        style={{
-          position: "absolute",
-          width: "clamp(360px, 50vmin, 720px)",
-          height: "clamp(360px, 50vmin, 720px)",
-          opacity: 0.25,
-          pointerEvents: "none",
-        }}
-      >
-        <g style={{ animation: "thresholdRingDrift 120s linear infinite", transformOrigin: "100px 100px" }}>
-          <circle cx="100" cy="100" r="94" fill="none" stroke="#C5A017" strokeOpacity="0.4" strokeWidth="0.4" />
-          <circle cx="100" cy="100" r="78" fill="none" stroke="#10B5A7" strokeOpacity="0.4" strokeWidth="0.4" />
-        </g>
-      </svg>
-
-      <WitnessFigure
-        side="left"
-        name="pichet"
-        active={pichetActive}
-        submitting={isSubmitting && (speaker === "pichet" || speaker === "both")}
-      />
-      <WitnessFigure
-        side="right"
-        name="aletheios"
-        active={aletheiosActive}
-        submitting={isSubmitting && (speaker === "aletheios" || speaker === "both")}
-      />
-    </div>
-  );
-}
-
-function WitnessFigure({
-  side,
-  name,
-  active,
-  submitting,
-}: {
-  side: "left" | "right";
-  name: "pichet" | "aletheios";
-  active: boolean;
-  submitting: boolean;
-}) {
-  // Active witness: full opacity + subtle forward step + soft glow.
-  // Inactive witness: dim (~30%) + subtle backward step + watching toward center.
-  const opacity = active ? 1 : 0.35;
-  const translateX = active
-    ? (side === "left" ? "8px" : "-8px")
-    : (side === "left" ? "-12px" : "12px");
-  const glowColor = name === "pichet" ? "rgba(197,160,23,0.4)" : "rgba(16,181,167,0.4)";
-  const filter = active ? `drop-shadow(0 0 24px ${glowColor})` : "saturate(0.4) brightness(0.6)";
-
-  return (
-    <div
-      style={{
-        position: "absolute",
-        top: "50%",
-        [side]: "clamp(0px, 4vw, 4rem)",
-        transform: `translateY(-50%) translateX(${translateX})`,
-        height: "clamp(50vh, 75vh, 90vh)",
-        width: "auto",
-        aspectRatio: "1 / 1.4",
-        backgroundImage: `url(/depth-reading/characters/${name}-front.png)`,
-        backgroundSize: "contain",
-        backgroundRepeat: "no-repeat",
-        backgroundPosition: side === "left" ? "left center" : "right center",
-        opacity,
-        filter,
-        transition:
-          "opacity 700ms cubic-bezier(0.2,0.7,0.2,1), transform 700ms cubic-bezier(0.2,0.7,0.2,1), filter 700ms cubic-bezier(0.2,0.7,0.2,1)",
-        pointerEvents: "none",
-        animation: submitting ? "thresholdPulse 1.2s ease-in-out infinite" : undefined,
-      }}
-    />
-  );
-}
-
-// ─── StepIndicator — 5 sigil tokens, gold for Pichet's steps,
-//      emerald for Aletheios's, trinity-dot for step 5 (both). ─────────
-function StepIndicator({
-  step,
-  onJump,
-}: {
-  step: Step;
-  onJump: (n: Step) => void;
-}) {
-  // Step 1: Aletheios (vesica), 2: Pichet (hex), 3: Aletheios (vesica),
-  // 4: Pichet (hex), 5: both (trinity-dot)
-  const tokens: Array<{ stepNum: Step; speaker: Speaker; symbol: "vesica" | "hex" | "trinity" }> = [
-    { stepNum: 1 as Step, speaker: "aletheios", symbol: "vesica" },
-    { stepNum: 2 as Step, speaker: "pichet",    symbol: "hex" },
-    { stepNum: 3 as Step, speaker: "aletheios", symbol: "vesica" },
-    { stepNum: 4 as Step, speaker: "pichet",    symbol: "hex" },
-    { stepNum: 5 as Step, speaker: "both",      symbol: "trinity" },
-  ];
-
-  return (
-    <div style={s.progress} role="progressbar" aria-valuemin={1} aria-valuemax={5} aria-valuenow={step}>
-      {tokens.map((t) => {
-        const isActive = t.stepNum === step;
-        const isPast = t.stepNum < step;
-        const color = SPEAKER_COLOR[t.speaker];
-        const intensity = isActive ? 1 : isPast ? 0.55 : 0.18;
-        return (
-          <button
-            key={t.stepNum}
-            type="button"
-            onClick={() => onJump(t.stepNum)}
-            aria-label={`Step ${t.stepNum}`}
-            title={SPEAKER_LABEL[t.speaker]}
-            style={{
-              ...s.tokenButton,
-              transform: isActive ? "scale(1.25)" : "scale(1)",
-              filter: isActive ? `drop-shadow(0 0 8px ${color})` : undefined,
-            }}
-          >
-            <SigilToken symbol={t.symbol} color={color} opacity={intensity} />
-          </button>
-        );
-      })}
-    </div>
-  );
-}
-
-function SigilToken({
-  symbol,
-  color,
-  opacity,
-}: {
-  symbol: "vesica" | "hex" | "trinity";
-  color: string;
-  opacity: number;
-}) {
-  if (symbol === "hex") {
-    return (
-      <svg width="14" height="16" viewBox="0 0 14 16" aria-hidden="true">
-        <polygon
-          points="7,1 13,4.5 13,11.5 7,15 1,11.5 1,4.5"
-          fill="none"
-          stroke={color}
-          strokeWidth="1.2"
-          opacity={opacity}
-        />
-      </svg>
-    );
-  }
-  if (symbol === "vesica") {
-    return (
-      <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
-        <circle cx="5.5" cy="8" r="4.2" fill="none" stroke={color} strokeWidth="1.0" opacity={opacity} />
-        <circle cx="10.5" cy="8" r="4.2" fill="none" stroke={color} strokeWidth="1.0" opacity={opacity} />
-      </svg>
-    );
-  }
-  // trinity dot — three small dots in a triangle
-  return (
-    <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true">
-      <circle cx="7"  cy="3"   r="1.4" fill={color} opacity={opacity} />
-      <circle cx="3"  cy="10"  r="1.4" fill={color} opacity={opacity} />
-      <circle cx="11" cy="10"  r="1.4" fill={color} opacity={opacity} />
-    </svg>
-  );
-}
+// DyadChamber, WitnessFigure, StepIndicator, and SigilToken
+// were extracted to src/components/dyad/ — see the import at the
+// top of this file. They are now the canonical guided-flow chrome
+// for the entire app.
 
 // ─── NameInput ──────────────────────────────────────────────────────────
 function NameInput({
@@ -587,16 +407,23 @@ function DateInput({
   const [m, setM] = useState(initMonth);
   const [y, setY] = useState(initYear);
 
-  // Compose YYYY-MM-DD when all three are valid
+  // Compose YYYY-MM-DD when all three are valid.
+  //
+  // Guard against infinite render loop: the parent passes a fresh
+  // `onChange` reference on every render, so without a value-equality
+  // check this effect would fire → setState → parent re-renders →
+  // new onChange identity → effect re-fires forever.
+  // The `composed !== value` check makes the effect idempotent.
   useEffect(() => {
     if (/^\d{1,2}$/.test(d) && /^\d{1,2}$/.test(m) && /^\d{4}$/.test(y)) {
       const dd = d.padStart(2, "0");
       const mm = m.padStart(2, "0");
       if (parseInt(dd, 10) >= 1 && parseInt(dd, 10) <= 31 && parseInt(mm, 10) >= 1 && parseInt(mm, 10) <= 12) {
-        onChange(`${y}-${mm}-${dd}`);
+        const composed = `${y}-${mm}-${dd}`;
+        if (composed !== value) onChange(composed);
       }
     }
-  }, [d, m, y, onChange]);
+  }, [d, m, y, value, onChange]);
 
   const inputs = useMemo(
     () =>
@@ -652,17 +479,21 @@ function TimeInput({
   const [h, setH] = useState(parts?.[1] ?? "");
   const [m, setM] = useState(parts?.[2] ?? "");
 
+  // Same idempotency guard as DateInput — compose only when the new
+  // value differs from the current prop, else parent's fresh onChange
+  // reference triggers an infinite render loop.
   useEffect(() => {
     if (/^\d{1,2}$/.test(h) && /^\d{1,2}$/.test(m)) {
       const hh = h.padStart(2, "0");
       const mm = m.padStart(2, "0");
       if (parseInt(hh, 10) <= 23 && parseInt(mm, 10) <= 59) {
-        onChange(`${hh}:${mm}`);
+        const composed = `${hh}:${mm}`;
+        if (composed !== value) onChange(composed);
       }
-    } else if (!h && !m) {
+    } else if (!h && !m && value !== "") {
       onChange("");
     }
-  }, [h, m, onChange]);
+  }, [h, m, value, onChange]);
 
   return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "1.5rem" }}>

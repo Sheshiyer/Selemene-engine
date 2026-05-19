@@ -12,6 +12,7 @@ import CompassSelector, {
   type CompassMode,
 } from "@/components/CompassSelector";
 import EngineGrid, { type EngineGridItem } from "@/components/EngineGrid";
+import { DyadChamber, type Speaker } from "@selemene/dyad-ui";
 import { getApiKey, isAuthenticated } from "@/lib/auth";
 import {
   executeWorkflow,
@@ -575,11 +576,35 @@ export default function EnginesPage() {
     }
   }, [selectedWorkflow.workflowId]);
 
+  /* Derive the dyad's speaker from current workflow phase:
+   *   loading  → Aletheios reads (witness in flow) + submitting pulse
+   *   response → both (joined field once results are in)
+   *   form     → Pichet asks (structure / coordinates) when we have data,
+   *              both when we don't (welcoming)
+   * The dyad becomes the page's emotional thermostat — it stays visible
+   * and reflects state instead of being a static decoration. */
+  const dyadSpeaker: Speaker = loading
+    ? "aletheios"
+    : response
+      ? "both"
+      : lastBirthData?.date
+        ? "pichet"
+        : "both";
+
   return (
     <div style={s.page}>
       <ConstellationBg />
       <NavBar />
       <main className="page-content" style={s.content}>
+        {/* Canonical DyadChamber chrome — banner variant for content-dense
+            engines surface. Speaker reflects workflow state; submitting
+            pulses the active witness while a calculation runs. */}
+        <DyadChamber
+          speaker={dyadSpeaker}
+          submitting={loading}
+          variant="banner"
+        />
+
         <h1 style={s.heading}>{selectedWorkflow.label}</h1>
         <p style={s.intro}>
           Choose a compass direction before calculation. Full Spectrum keeps the

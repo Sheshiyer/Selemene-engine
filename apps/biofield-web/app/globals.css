@@ -933,3 +933,35 @@ body::before {
   color: var(--muted);
   background: rgba(255,255,255,0.03);
 }
+
+/* ══════════════════════════════════════════════
+   DYAD-CHAMBER — Pichet + Aletheios witness chrome
+   See src/components/dyad/ for the React components.
+   Ported from noesis-web. Keep these definitions in sync
+   until a shared packages/dyad-ui workspace exists.
+   ══════════════════════════════════════════════ */
+
+@keyframes thresholdPulse {
+  0%, 100% {
+    transform: scale(0.98);
+    filter: drop-shadow(0 0 18px rgba(197, 160, 23, 0.45));
+  }
+  50% {
+    transform: scale(1.04);
+    filter: drop-shadow(0 0 36px rgba(197, 160, 23, 0.80));
+  }
+}
+
+@keyframes thresholdRingDrift {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+@keyframes thresholdStepFade {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.threshold-step-enter {
+  animation: thresholdStepFade 600ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
