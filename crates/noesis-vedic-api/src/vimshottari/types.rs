@@ -99,11 +99,12 @@ impl std::fmt::Display for DashaLord {
 }
 
 /// Level of Dasha detail to retrieve
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
 pub enum DashaLevel {
     /// Mahadasha only (9 periods)
     Mahadasha,
     /// Mahadasha + Antardasha (81 periods)
+    #[default]
     Antardasha,
     /// Down to Pratyantardasha (729 periods)
     Pratyantardasha,
@@ -111,12 +112,6 @@ pub enum DashaLevel {
     Sookshma,
     /// Down to Prana Dasha (full detail)
     Prana,
-}
-
-impl Default for DashaLevel {
-    fn default() -> Self {
-        DashaLevel::Antardasha
-    }
 }
 
 /// A single Dasha period

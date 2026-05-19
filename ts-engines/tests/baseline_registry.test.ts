@@ -42,7 +42,19 @@ describe('TS baseline registry', () => {
       'sigil-forge',
       'tarot',
     ])
-    expect(body.engines.every((engine: any) => engine.version === '1.0.0')).toBe(true)
+    // sigil-forge bumped to 2.0.0 when image-gen support shipped; the
+    // other four remain at 1.0.0. Test the actual version mapping rather
+    // than asserting global 1.0.0 (which silently drifted out of date).
+    const versionsById = Object.fromEntries(
+      body.engines.map((engine: any) => [engine.id, engine.version]),
+    )
+    expect(versionsById).toEqual({
+      enneagram: '1.0.0',
+      'i-ching': '1.0.0',
+      'sacred-geometry': '1.0.0',
+      'sigil-forge': '2.0.0',
+      tarot: '1.0.0',
+    })
   })
 
   it('reports healthy sidecar readiness for the five registered engines', async () => {
