@@ -254,33 +254,72 @@ function BannerWitness({ side, name, active, submitting }: WitnessFigureProps) {
 }
 
 export function WitnessFigure({ side, name, active, submitting }: WitnessFigureProps) {
-  const opacity = active ? 1 : 0.35;
+  /* Use the canonical front-facing portraits. The side-direction PNGs
+     (*-left, *-right, *-back) are inconsistent — some are profile views
+     of the same character, some are entirely different art assets.
+     The *-front.png views are the canonical Pichet/Aletheios renders
+     and both are already naturally posed gesturing inward, so two
+     front views read as a dyad facing each other. */
+  const imageUrl = `/depth-reading/characters/${name}-front.png`;
+
+  const opacity = active ? 1 : 0.42;
+
+  /* Active witness leans into the room; inactive recedes toward the edge.
+     Combined with the rotateY below this reads as physical orientation,
+     not a CSS scale-up. */
   const translateX = active
-    ? side === "left" ? "8px" : "-8px"
-    : side === "left" ? "-12px" : "12px";
-  const glowColor = name === "pichet" ? "rgba(197,160,23,0.4)" : "rgba(16,181,167,0.4)";
+    ? side === "left" ? "12px" : "-12px"
+    : side === "left" ? "-22px" : "22px";
+
+  /* Very subtle faux-3D rotation. The portraits already include their
+     own body angle in the art, so the CSS rotateY is just a tiny
+     reinforcement (~1.5° toward center when active, slightly away
+     when inactive). Anything stronger reads as "tilted trading card"
+     because the PNG itself stays flat. */
+  const rotateY = active
+    ? side === "left" ? "1.5deg" : "-1.5deg"
+    : side === "left" ? "-4deg" : "4deg";
+
+  /* Goethe-tinted key light cast inward + ambient drop for ground feel.
+     Pichet (left) casts gold to the right; Aletheios (right) casts
+     emerald to the left. Both characters also drop a soft ambient
+     shadow below them so they sit in space, not float. */
+  const keyLight =
+    name === "pichet"
+      ? "drop-shadow(8px 4px 28px rgba(197,160,23,0.45))"
+      : "drop-shadow(-8px 4px 28px rgba(16,181,167,0.45))";
+  const ambient = "drop-shadow(0 26px 36px rgba(0,0,0,0.55))";
+
   const filter = active
-    ? `drop-shadow(0 0 24px ${glowColor})`
-    : "saturate(0.4) brightness(0.6)";
+    ? `${keyLight} ${ambient}`
+    : `saturate(0.35) brightness(0.55) ${ambient}`;
 
   return (
     <div
       style={{
         position: "absolute",
         top: "50%",
-        [side]: "clamp(0px, 4vw, 4rem)",
-        transform: `translateY(-50%) translateX(${translateX})`,
-        height: "clamp(50vh, 75vh, 90vh)",
+        [side]: "clamp(0px, 4vw, 6rem)",
+        /* Sized so two witnesses + center column fit cleanly at 1920px:
+           each ≈ 420px wide leaves ~1080px clear horizontal channel
+           for the form (vs. 770px at the previous 62vh height). */
+        height: "clamp(42vh, 55vh, 70vh)",
         width: "auto",
         aspectRatio: "1 / 1.4",
-        backgroundImage: `url(/depth-reading/characters/${name}-front.png)`,
+        backgroundImage: `url(${imageUrl})`,
         backgroundSize: "contain",
         backgroundRepeat: "no-repeat",
         backgroundPosition: side === "left" ? "left center" : "right center",
         opacity,
         filter,
+        /* perspective() turns rotateY into foreshortening — characters
+           feel like they're standing in a room rather than pasted
+           against the screen. transformOrigin anchored to the edge so
+           the rotation hinges on their outside foot. */
+        transform: `translateY(-50%) translateX(${translateX}) perspective(1400px) rotateY(${rotateY})`,
+        transformOrigin: side === "left" ? "left center" : "right center",
         transition:
-          "opacity 700ms cubic-bezier(0.2,0.7,0.2,1), transform 700ms cubic-bezier(0.2,0.7,0.2,1), filter 700ms cubic-bezier(0.2,0.7,0.2,1)",
+          "opacity 700ms cubic-bezier(0.2,0.7,0.2,1), transform 900ms cubic-bezier(0.2,0.7,0.2,1), filter 700ms cubic-bezier(0.2,0.7,0.2,1)",
         pointerEvents: "none",
         animation: submitting ? "thresholdPulse 1.2s ease-in-out infinite" : undefined,
       }}
