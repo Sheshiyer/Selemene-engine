@@ -19,6 +19,13 @@ import {
 } from "@/lib/integrated/witnessAccess";
 import { cacheReading } from "@/lib/integrated/readingCache";
 import type { ReadingPayload } from "@/lib/integrated/payloadLoader";
+import { getApiKey, isAuthenticated } from "@/lib/auth";
+
+/** localStorage key holding `"1"` while the user is in the middle of a
+ *  Discord-OAuth round-trip for the integrated reading. Set just before
+ *  redirecting to /auth, read on /get-reading mount to auto-replay the
+ *  submission once the user comes back authenticated. */
+const PENDING_INTEGRATED_KEY = "noesis:pending_integrated";
 import {
   DyadChamber,
   StepIndicator,
@@ -159,6 +166,22 @@ export default function GetReadingPage() {
         return;
       }
 
+      /* Discord OAuth gate for the integrated (Pichet · Sixteen mirrors)
+         path: the full-spectrum workflow is a heavyweight 17-engine
+         compute meant to be tied to an identity and saved across
+         sessions. If the user is anonymous, we round-trip them through
+         Discord OAuth before running the workflow, then auto-replay on
+         return. Daily-practice stays anonymous-first. */
+      if (workflow === "integrated" && !isAuthenticated()) {
+        try {
+          localStorage.setItem(PENDING_INTEGRATED_KEY, "1");
+        } catch { /* quota — degrade to ungated submit */ }
+        // Persist form state happens via the existing useEffect on
+        // state changes, so the round-trip preserves date/time/place/name.
+        window.location.assign("/auth?next=/get-reading");
+        return;
+      }
+
       setState((s) => ({ ...s, submitting: workflow, error: null }));
 
       const payload: Record<string, unknown> = {
@@ -176,9 +199,21 @@ export default function GetReadingPage() {
         const url = workflow === "integrated"
           ? INTEGRATED_READING_WORKFLOW_URL
           : DAILY_WITNESS_WORKFLOW_URL;
+        const apiKey = workflow === "integrated" ? getApiKey() : null;
+        const headers: Record<string, string> = { "Content-Type": "application/json" };
+        if (apiKey) {
+          // Match the convention used elsewhere (lib/api.ts): keys
+          // prefixed with `nk_` use the x-api-key header; OAuth-derived
+          // tokens (Discord login → JWT) use Authorization: Bearer.
+          if (apiKey.startsWith("nk_")) {
+            headers["x-api-key"] = apiKey;
+          } else {
+            headers["Authorization"] = `Bearer ${apiKey}`;
+          }
+        }
         const res = await fetch(url, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers,
           body: JSON.stringify(payload),
         });
         const body = (await res.json().catch(() => null)) as
@@ -209,6 +244,31 @@ export default function GetReadingPage() {
     },
     [state.birth_date, state.birth_time, state.location_key, state.name],
   );
+
+  /* OAuth round-trip replay: if the user was bounced through Discord
+     login from the integrated path, the PENDING_INTEGRATED_KEY flag
+     is sitting in localStorage. As soon as the hydrated form has the
+     fields it needs (date + location) AND we're now authenticated,
+     fire the integrated submit automatically — the user sees the
+     workflow run without having to re-click. Guarded by a ref so it
+     only fires once per mount. */
+  const integratedReplayedRef = useRef(false);
+  useEffect(() => {
+    if (integratedReplayedRef.current) return;
+    if (!state.birth_date || !state.location_key) return;
+    let pending: string | null = null;
+    try {
+      pending = localStorage.getItem(PENDING_INTEGRATED_KEY);
+    } catch { /* ignore */ }
+    if (pending !== "1") return;
+    if (!isAuthenticated()) return;
+    // All conditions met — clear flag, fire submission.
+    try {
+      localStorage.removeItem(PENDING_INTEGRATED_KEY);
+    } catch { /* ignore */ }
+    integratedReplayedRef.current = true;
+    submit("integrated");
+  }, [state.birth_date, state.location_key, submit]);
 
   // ─── Keyboard nav ────────────────────────────────────────────────────
   useEffect(() => {

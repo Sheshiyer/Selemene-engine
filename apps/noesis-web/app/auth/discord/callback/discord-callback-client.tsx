@@ -106,10 +106,22 @@ export function DiscordCallbackClient() {
           const next = params.get("next");
           destination = next && next.startsWith("/r/") ? next : `/r/${pending.reading_id}`;
         } else {
-          // Generic post-auth redirect — respect `next` if provided
+          // Generic post-auth redirect — respect `next` if provided.
+          // Also check for the `noesis:pending_integrated` flag set by
+          // /get-reading when an anonymous user picks "Sixteen mirrors,
+          // full synthesis": that path requires identity, so the user
+          // was bounced through Discord OAuth and now needs to return
+          // to /get-reading so the auto-replay effect can fire the
+          // integrated workflow with their fresh auth token.
           const params = new URLSearchParams(window.location.search);
           const next = params.get("next");
-          destination = next || "/engines";
+          let pendingIntegrated: string | null = null;
+          try {
+            pendingIntegrated = localStorage.getItem("noesis:pending_integrated");
+          } catch { /* SSR / quota */ }
+          destination =
+            next ||
+            (pendingIntegrated === "1" ? "/get-reading" : "/engines");
         }
         router.replace(destination);
       } catch (err: unknown) {
