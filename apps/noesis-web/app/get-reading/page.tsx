@@ -744,16 +744,19 @@ const s: Record<string, React.CSSProperties> = {
   stage: {
     position: "relative",
     zIndex: 3, // above the witness figures
-    width: "min(560px, 92vw)",
+    // Was min(560px, 92vw) — too narrow on wide viewports, forced the
+    // heading to wrap to 5 short lines. Widened to ~820px so the prompt
+    // copy has room to breathe between the two witnesses.
+    width: "min(820px, 92vw)",
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
     gap: "clamp(1.25rem, 2.5vh, 2rem)",
-    // Add backdrop blur behind the center column so witness figures
-    // don't visually fight with the dialog text on narrow viewports
+    // Vignette behind the center column so the witness figures recede
+    // visually and the dialog reads cleanly. Widened with the column.
     background:
-      "radial-gradient(ellipse at center, rgba(7,11,29,0.55) 0%, rgba(7,11,29,0.0) 70%)",
-    padding: "clamp(1rem, 3vh, 2.5rem)",
+      "radial-gradient(ellipse at center, rgba(7,11,29,0.62) 0%, rgba(7,11,29,0.0) 70%)",
+    padding: "clamp(1rem, 3vh, 2.5rem) clamp(1rem, 4vw, 3rem)",
     borderRadius: "24px",
   },
   progress: {
@@ -794,18 +797,31 @@ const s: Record<string, React.CSSProperties> = {
     letterSpacing: "0.32em",
     textTransform: "uppercase",
     color: "rgba(240,237,227,0.55)",
-    maxWidth: "44ch",
+    maxWidth: "56ch",
     lineHeight: 1.6,
   },
   question: {
     margin: 0,
     fontFamily: "var(--font-display, 'Panchang', serif)",
     fontVariationSettings: "'wght' 720",
-    fontSize: "clamp(1.7em, min(4.5vw, 7vh), 3em)",
-    lineHeight: 1.06,
+    // Capped at 2.5em (was 3em) so the heading fits 2-3 lines in the
+    // ~770px channel between the two witnesses on wide viewports
+    // instead of breaking to 4-5 lines. Still scales down at smaller
+    // viewports via the clamp lower bound.
+    fontSize: "clamp(1.6em, min(3.6vw, 6vh), 2.5em)",
+    lineHeight: 1.08,
     letterSpacing: "-0.012em",
     color: "#F0EDE3",
-    maxWidth: "20ch",
+    textAlign: "center" as const,
+    // The h1 is a flex-column child under `alignItems: center`, which
+    // makes it collapse to its content's natural width — so a bare
+    // maxWidth never took effect. width:100% forces the h1 to fill
+    // the available column, then maxWidth caps it at the stage width.
+    width: "100%",
+    // Tracks the stage column (820px). Lets the heading wrap on the
+    // natural sentence break ("Coordinates required." / "The date that
+    // anchored your arrival.") instead of word-by-word breaks.
+    maxWidth: "min(780px, 100%)",
   },
   field: {
     width: "100%",
