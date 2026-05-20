@@ -186,7 +186,7 @@ fn karana_type_from_index(idx: u8) -> KaranaType {
     // Kimstughna). The remaining karanas are movable.
     match idx {
         7 => KaranaType::Vishti, // Vishti / Bhadra
-        8 | 9 | 10 => KaranaType::Fixed,
+        8..=10 => KaranaType::Fixed,
         _ => KaranaType::Movable,
     }
 }
@@ -244,7 +244,7 @@ pub fn compute_panchang_native(
     let nakshatra = Nakshatra {
         number: nakshatra_number,
         name_nakshatra: NakshatraName::from_number(nakshatra_number as u32),
-        pada: pada.min(4).max(1),
+        pada: pada.clamp(1, 4),
         start_time: String::new(),
         end_time: String::new(),
         longitude: result.lunar_longitude,
