@@ -11,6 +11,7 @@ export {
   SPEAKER_COLOR,
   SPEAKER_LABEL,
   type Speaker,
+  type WitnessPose,
 } from "./DyadChamber";
 
 export {

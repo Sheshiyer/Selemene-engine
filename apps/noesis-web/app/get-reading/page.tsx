@@ -32,6 +32,7 @@ import {
   SPEAKER_COLOR,
   SPEAKER_LABEL,
   type Speaker,
+  type WitnessPose,
   type DyadStep,
 } from "@selemene/dyad-ui";
 
@@ -88,6 +89,23 @@ const STEP_SPEAKER: Record<Step, Speaker> = {
   3: "aletheios",
   4: "pichet",
   5: "both",
+};
+
+/** Pose choreography per step so the dyad shifts physically across
+ *  the ritual instead of standing static. Asset constraint: Pichet has
+ *  front/left/right native poses, Aletheios has front/right (no left).
+ *
+ *  Pattern: when a witness is the SPEAKER they face front (looking at
+ *  the user). When they're listening, they turn slightly toward the
+ *  speaker side. Pichet's left/right alternates so the motion across
+ *  steps reads as alive rather than flipping a single switch. */
+const STEP_POSES: Record<Step, { pichet: WitnessPose; aletheios: WitnessPose }> = {
+  0: { pichet: "front", aletheios: "front" }, // both — joined field
+  1: { pichet: "right", aletheios: "front" }, // Aletheios names; Pichet turns toward her
+  2: { pichet: "front", aletheios: "right" }, // Pichet asks; Aletheios turns toward him (her only inward angle)
+  3: { pichet: "left",  aletheios: "front" }, // Aletheios returns; Pichet shifts to other side (uses 3rd pose)
+  4: { pichet: "front", aletheios: "right" }, // Pichet roots; Aletheios listens
+  5: { pichet: "front", aletheios: "front" }, // both — depth fork
 };
 
 /** Sigil-token shapes per step for the StepIndicator. Steps 1+ visible;
@@ -312,9 +330,15 @@ export default function GetReadingPage() {
         if (state.step === 0) setStep(1);
       }}
     >
+      {/* Metallic fractalNoise grain over the fluid gradient. Pure
+          atmosphere — pointer-events:none so it never blocks clicks. */}
+      <div className="threshold-noise" aria-hidden="true" />
+
       <DyadChamber
         speaker={STEP_SPEAKER[state.step]}
         submitting={state.submitting !== null}
+        pichetPose={STEP_POSES[state.step].pichet}
+        aletheiosPose={STEP_POSES[state.step].aletheios}
       />
 
       <div style={s.stage} onClick={(e) => e.stopPropagation()}>
@@ -769,7 +793,22 @@ const s: Record<string, React.CSSProperties> = {
     position: "fixed",
     inset: 0,
     overflow: "hidden",
-    background: "radial-gradient(ellipse at 30% 20%, #2D005066 0%, #070B1D 70%), #070B1D",
+    /* Metallic fluid backdrop — four overlapping radial gradients in
+       the Goethe palette, drifting slowly via background-position over
+       32s. Read together the gradients form a shifting metallic field
+       rather than a single static vignette. The black floor (#070B1D)
+       sits underneath everything so the gradients tint without losing
+       depth. A fractalNoise overlay is applied in .threshold-noise
+       below via globals.css for the metallic texture. */
+    background: [
+      "radial-gradient(ellipse 70% 55% at 18% 28%, rgba(45, 0, 80, 0.58), transparent 62%)",
+      "radial-gradient(ellipse 60% 65% at 82% 72%, rgba(11, 80, 251, 0.36), transparent 62%)",
+      "radial-gradient(ellipse 45% 40% at 62% 16%, rgba(197, 160, 23, 0.20), transparent 58%)",
+      "radial-gradient(ellipse 45% 40% at 28% 84%, rgba(16, 181, 167, 0.20), transparent 58%)",
+      "#070B1D",
+    ].join(", "),
+    backgroundSize: "220% 220%, 220% 220%, 220% 220%, 220% 220%, auto",
+    animation: "thresholdFluidDrift 32s ease-in-out infinite alternate",
     color: "#F0EDE3",
     display: "flex",
     flexDirection: "column",
