@@ -10,7 +10,12 @@ export const WITNESS_ORIGIN =
   process.env.NEXT_PUBLIC_WITNESS_ORIGIN ?? "https://48.tryambakam.space";
 
 export const DAILY_WITNESS_WORKFLOW_URL = `${WITNESS_ORIGIN}/api/v1/workflows/daily-practice/execute`;
-export const INTEGRATED_READING_WORKFLOW_URL = `${WITNESS_ORIGIN}/api/v1/workflows/integrated-reading/execute`;
+// Backend orchestrator registers workflow IDs: birth-blueprint, creative-expression,
+// daily-practice, decision-support, full-spectrum, self-inquiry. The 17-engine
+// "Pichet · Sixteen mirrors, full synthesis" path is the `full-spectrum` workflow —
+// `integrated-reading` was never registered, which is why production was returning
+// "WORKFLOW NOT FOUND: INTEGRATED-READING" on the depth-pick step.
+export const INTEGRATED_READING_WORKFLOW_URL = `${WITNESS_ORIGIN}/api/v1/workflows/full-spectrum/execute`;
 
 export interface WitnessLocation {
   key: string;
