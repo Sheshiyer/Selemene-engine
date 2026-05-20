@@ -623,6 +623,54 @@ code, .mono, pre {
   animation: thresholdStepFade 600ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
 }
 
+/* Fluid drift — the Goethe-palette radial-gradient stack on /get-reading
+   shifts its background-position so the metallic field slowly morphs.
+   ~32s per cycle keeps it ambient (no attention-grabbing motion).
+   The fixed black floor stays still (the last layer is `auto`). */
+@keyframes thresholdFluidDrift {
+  0% {
+    background-position:
+      0% 0%,
+      100% 100%,
+      0% 100%,
+      100% 0%,
+      0 0;
+  }
+  50% {
+    background-position:
+      40% 30%,
+      60% 70%,
+      55% 55%,
+      45% 45%,
+      0 0;
+  }
+  100% {
+    background-position:
+      55% 55%,
+      45% 45%,
+      65% 35%,
+      35% 65%,
+      0 0;
+  }
+}
+
+/* Metallic noise overlay — fractalNoise via inline SVG data URI.
+   Applied as a fixed, screen-blended layer on the threshold pages so
+   the smooth radial gradients gain a fine metallic grain. Use by
+   adding <div class="threshold-noise" aria-hidden /> inside the page
+   wrapper. pointer-events:none ensures it never interferes with form
+   clicks. */
+.threshold-noise {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.09;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.9 0 0 0 0 0.85 0 0 0 0 0.95 0 0 0 1 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)' opacity='0.6'/></svg>");
+  background-repeat: repeat;
+}
+
 .sigil-path {
   stroke-dasharray: 480;
   stroke-dashoffset: 480;

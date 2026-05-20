@@ -94,7 +94,7 @@ describe('SigilForgeEngine image generation (guidance-only, no API key in test e
 
 describe('buildSigilPrompt', () => {
   it('produces non-empty prompt and negative_prompt', () => {
-    // biome-ignore lint/style/noNonNullAssertion: SIGIL_METHODS is a non-empty const tuple
+    // biome-ignore lint/style/noNonNullAssertion: SIGIL_METHODS is a literal const tuple
     const method = SIGIL_METHODS[0]! // word-elimination
     const built = buildSigilPrompt('I release what no longer serves me', method, 'RLSWN')
     expect(built.prompt.length).toBeGreaterThan(20)

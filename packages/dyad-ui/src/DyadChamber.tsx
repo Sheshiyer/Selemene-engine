@@ -44,6 +44,32 @@ export const SPEAKER_LABEL: Record<Speaker, string> = {
 };
 
 /**
+ * Witness poses. The portrait PNGs come in three usable angles per
+ * character; the consuming flow chooses which to render per step so
+ * the dyad feels alive across the ritual instead of static.
+ *
+ * Asset availability:
+ *   - Pichet:    front, left, right   (3 native poses)
+ *   - Aletheios: front, right         (2 native poses; left is not
+ *                                      shipped — the *-left.png slot
+ *                                      was a different-project leak)
+ *
+ * Callers that ask for an unavailable pose silently fall back to
+ * "front" so the page never 404s on a portrait.
+ */
+export type WitnessPose = "front" | "left" | "right";
+
+const AVAILABLE_POSES: Record<"pichet" | "aletheios", WitnessPose[]> = {
+  pichet: ["front", "left", "right"],
+  aletheios: ["front", "right"],
+};
+
+function resolvePose(name: "pichet" | "aletheios", pose: WitnessPose | undefined): WitnessPose {
+  if (!pose) return "front";
+  return AVAILABLE_POSES[name].includes(pose) ? pose : "front";
+}
+
+/**
  * Variants:
  *   - "full":   Full-bleed chamber. Portraits at ~75vh on either edge.
  *               Use on dedicated ritual surfaces (get-reading, auth,
@@ -62,6 +88,13 @@ interface DyadChamberProps {
   /** Layout variant. Defaults to "full". */
   variant?: DyadVariant;
   /**
+   * Pose override per witness. Consuming flow can rotate poses
+   * across steps so the dyad feels physically alive instead of
+   * static. Defaults to "front" if omitted or unavailable.
+   */
+  pichetPose?: WitnessPose;
+  aletheiosPose?: WitnessPose;
+  /**
    * Optional className for the wrapping stage. Allows consuming flows
    * to control position (absolute vs relative) and z-index without
    * overriding the witness positioning logic.
@@ -78,10 +111,14 @@ export function DyadChamber({
   speaker,
   submitting = false,
   variant = "full",
+  pichetPose,
+  aletheiosPose,
   className,
 }: DyadChamberProps) {
   const pichetActive = speaker === "pichet" || speaker === "both";
   const aletheiosActive = speaker === "aletheios" || speaker === "both";
+  const resolvedPichetPose = resolvePose("pichet", pichetPose);
+  const resolvedAletheiosPose = resolvePose("aletheios", aletheiosPose);
 
   /* Banner variant: an in-flow strip rather than absolute overlay.
      Portraits are smaller, sit on a single horizontal row with the
@@ -184,12 +221,14 @@ export function DyadChamber({
       <WitnessFigure
         side="left"
         name="pichet"
+        pose={resolvedPichetPose}
         active={pichetActive}
         submitting={submitting && (speaker === "pichet" || speaker === "both")}
       />
       <WitnessFigure
         side="right"
         name="aletheios"
+        pose={resolvedAletheiosPose}
         active={aletheiosActive}
         submitting={submitting && (speaker === "aletheios" || speaker === "both")}
       />
@@ -211,6 +250,8 @@ interface WitnessFigureProps {
   name: "pichet" | "aletheios";
   active: boolean;
   submitting: boolean;
+  /** Pose to render. Optional; the dyad chamber resolves it before calling. */
+  pose?: WitnessPose;
 }
 
 /* ── BannerWitness ────────────────────────────────────
@@ -253,57 +294,49 @@ function BannerWitness({ side, name, active, submitting }: WitnessFigureProps) {
   );
 }
 
-export function WitnessFigure({ side, name, active, submitting }: WitnessFigureProps) {
-  /* Use the canonical front-facing portraits. The side-direction PNGs
-     (*-left, *-right, *-back) are inconsistent — some are profile views
-     of the same character, some are entirely different art assets.
-     The *-front.png views are the canonical Pichet/Aletheios renders
-     and both are already naturally posed gesturing inward, so two
-     front views read as a dyad facing each other. */
-  const imageUrl = `/depth-reading/characters/${name}-front.png`;
+export function WitnessFigure({ side, name, active, submitting, pose }: WitnessFigureProps) {
+  /* Pose is resolved by DyadChamber (falls back to "front" if a caller
+     passes an unavailable angle). Pichet has front/left/right native
+     poses; Aletheios has front/right. Rotating poses across steps gives
+     the dyad visible motion across the ritual. */
+  const resolvedPose = resolvePose(name, pose);
+  const imageUrl = `/depth-reading/characters/${name}-${resolvedPose}.png`;
 
-  const opacity = active ? 1 : 0.42;
+  const opacity = active ? 1 : 0.55;
 
   /* Active witness leans into the room; inactive recedes toward the edge.
-     Combined with the rotateY below this reads as physical orientation,
-     not a CSS scale-up. */
+     The translateX stays subtle so the pose-swap (front ↔ right) carries
+     most of the "this witness just shifted attention" signal. */
   const translateX = active
-    ? side === "left" ? "12px" : "-12px"
-    : side === "left" ? "-22px" : "22px";
+    ? side === "left" ? "10px" : "-10px"
+    : side === "left" ? "-18px" : "18px";
 
-  /* Very subtle faux-3D rotation. The portraits already include their
-     own body angle in the art, so the CSS rotateY is just a tiny
-     reinforcement (~1.5° toward center when active, slightly away
-     when inactive). Anything stronger reads as "tilted trading card"
-     because the PNG itself stays flat. */
+  /* Very subtle faux-3D rotation. The PNG itself stays flat so anything
+     stronger reads as "tilted trading card." Keep this low. */
   const rotateY = active
     ? side === "left" ? "1.5deg" : "-1.5deg"
     : side === "left" ? "-4deg" : "4deg";
 
-  /* Goethe-tinted key light cast inward + ambient drop for ground feel.
-     Pichet (left) casts gold to the right; Aletheios (right) casts
-     emerald to the left. Both characters also drop a soft ambient
-     shadow below them so they sit in space, not float. */
-  const keyLight =
-    name === "pichet"
-      ? "drop-shadow(8px 4px 28px rgba(197,160,23,0.45))"
-      : "drop-shadow(-8px 4px 28px rgba(16,181,167,0.45))";
-  const ambient = "drop-shadow(0 26px 36px rgba(0,0,0,0.55))";
-
+  /* The portraits ship with real alpha channels now (chroma-keyed
+     against the noesis void color in tools/alpha_witnesses.py), so
+     we don't need mix-blend-mode tricks — drop-shadow would just
+     pile on. The character silhouette IS the figure. Apply only
+     subtle saturation/brightness for the active/inactive state. */
   const filter = active
-    ? `${keyLight} ${ambient}`
-    : `saturate(0.35) brightness(0.55) ${ambient}`;
+    ? "saturate(1.15) brightness(1.06) contrast(1.02)"
+    : "saturate(0.35) brightness(0.55) blur(0.5px)";
 
   return (
     <div
       style={{
         position: "absolute",
         top: "50%",
-        [side]: "clamp(0px, 4vw, 6rem)",
-        /* Sized so two witnesses + center column fit cleanly at 1920px:
-           each ≈ 420px wide leaves ~1080px clear horizontal channel
-           for the form (vs. 770px at the previous 62vh height). */
-        height: "clamp(42vh, 55vh, 70vh)",
+        [side]: "clamp(0px, 2vw, 3rem)",
+        /* ~80vh per user request — fills the chamber. With
+           mix-blend-mode: screen the black PNG bg disappears so
+           "bigger" no longer means "more rectangle in the user's
+           face," only "more character." */
+        height: "clamp(58vh, 80vh, 92vh)",
         width: "auto",
         aspectRatio: "1 / 1.4",
         backgroundImage: `url(${imageUrl})`,
@@ -312,10 +345,9 @@ export function WitnessFigure({ side, name, active, submitting }: WitnessFigureP
         backgroundPosition: side === "left" ? "left center" : "right center",
         opacity,
         filter,
-        /* perspective() turns rotateY into foreshortening — characters
-           feel like they're standing in a room rather than pasted
-           against the screen. transformOrigin anchored to the edge so
-           the rotation hinges on their outside foot. */
+        /* No mix-blend-mode — the PNGs now have real alpha channels
+           (chroma-keyed in tools/alpha_witnesses.py) so character art
+           composites cleanly against the new fluid backdrop. */
         transform: `translateY(-50%) translateX(${translateX}) perspective(1400px) rotateY(${rotateY})`,
         transformOrigin: side === "left" ? "left center" : "right center",
         transition:
