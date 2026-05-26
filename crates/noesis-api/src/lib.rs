@@ -1402,7 +1402,7 @@ async fn health_handler(State(state): State<AppState>) -> Json<HealthResponse> {
 
     Json(HealthResponse {
         status: "ok".to_string(),
-        version: "3.3.0".to_string(),
+        version: env!("CARGO_PKG_VERSION").to_string(),
         uptime_seconds: uptime,
         engines_loaded,
         workflows_loaded,
