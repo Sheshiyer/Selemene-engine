@@ -271,6 +271,7 @@ async fn test_vedic_chart_endpoint_rejects_missing_birth_data() {
 #[tokio::test]
 #[serial]
 async fn test_openapi_includes_vedic_chart_endpoint() {
+    let _env = EnvGuard::set(&[("ENABLE_SWAGGER_UI", "true".to_string())]);
     let router = build_router().await;
 
     let response = router
