@@ -2,8 +2,8 @@
   "generated_at": "2026-03-13",
   "inventory_scope": "/api/v1",
   "source": "crates/noesis-api/src/lib.rs",
-  "path_count": 63,
-  "route_count": 67,
+  "path_count": 74,
+  "route_count": 78,
   "routes": [
     {
       "path": "/auth/register",
@@ -79,6 +79,17 @@
         {
           "method": "POST",
           "handler": "handlers::auth::change_password"
+        }
+      ]
+    },
+    {
+      "path": "/auth/logout",
+      "auth_requirement": "bearer_or_api_key",
+      "uses_orchestrator": false,
+      "methods": [
+        {
+          "method": "POST",
+          "handler": "handlers::auth::logout"
         }
       ]
     },
@@ -524,6 +535,94 @@
       ]
     },
     {
+      "path": "/admin/billing/overview",
+      "auth_requirement": "bearer_or_api_key",
+      "uses_orchestrator": false,
+      "methods": [
+        {
+          "method": "GET",
+          "handler": "handlers::admin_billing::overview"
+        }
+      ]
+    },
+    {
+      "path": "/admin/billing/subscriptions",
+      "auth_requirement": "bearer_or_api_key",
+      "uses_orchestrator": false,
+      "methods": [
+        {
+          "method": "GET",
+          "handler": "handlers::admin_billing::list_subscriptions"
+        }
+      ]
+    },
+    {
+      "path": "/admin/billing/subscriptions/:id",
+      "auth_requirement": "bearer_or_api_key",
+      "uses_orchestrator": false,
+      "methods": [
+        {
+          "method": "GET",
+          "handler": "handlers::admin_billing::get_subscription"
+        }
+      ]
+    },
+    {
+      "path": "/admin/billing/subscriptions/:id/cancel",
+      "auth_requirement": "bearer_or_api_key",
+      "uses_orchestrator": false,
+      "methods": [
+        {
+          "method": "POST",
+          "handler": "handlers::admin_billing::cancel_subscription"
+        }
+      ]
+    },
+    {
+      "path": "/admin/billing/webhook-events",
+      "auth_requirement": "bearer_or_api_key",
+      "uses_orchestrator": false,
+      "methods": [
+        {
+          "method": "GET",
+          "handler": "handlers::admin_billing::list_webhook_events"
+        }
+      ]
+    },
+    {
+      "path": "/admin/billing/reconcile/drift",
+      "auth_requirement": "bearer_or_api_key",
+      "uses_orchestrator": false,
+      "methods": [
+        {
+          "method": "GET",
+          "handler": "handlers::admin_billing::reconcile_drift"
+        }
+      ]
+    },
+    {
+      "path": "/admin/billing/reconcile/run",
+      "auth_requirement": "bearer_or_api_key",
+      "uses_orchestrator": false,
+      "methods": [
+        {
+          "method": "POST",
+          "handler": "handlers::admin_billing::reconcile_trigger"
+        }
+      ]
+    },
+    {
+      "path": "/admin/billing/plans",
+      "auth_requirement": "bearer_or_api_key",
+      "uses_orchestrator": false,
+      "methods": [
+        {
+          "method": "GET",
+          "handler": "handlers::admin_billing::list_plans"
+        }
+      ]
+    },
+    {
       "path": "/status",
       "auth_requirement": "bearer_or_api_key",
       "uses_orchestrator": true,
@@ -649,6 +748,17 @@
       ]
     },
     {
+      "path": "/witness/interpret",
+      "auth_requirement": "bearer_or_api_key",
+      "uses_orchestrator": false,
+      "methods": [
+        {
+          "method": "POST",
+          "handler": "handlers::witness::interpret"
+        }
+      ]
+    },
+    {
       "path": "/readings",
       "auth_requirement": "bearer_or_api_key",
       "uses_orchestrator": false,
@@ -678,6 +788,17 @@
         {
           "method": "GET",
           "handler": "get_reading_handler"
+        }
+      ]
+    },
+    {
+      "path": "/raga/:num/clip",
+      "auth_requirement": "bearer_or_api_key",
+      "uses_orchestrator": false,
+      "methods": [
+        {
+          "method": "GET",
+          "handler": "handlers::raga::get_raga_clip"
         }
       ]
     },

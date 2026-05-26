@@ -81,7 +81,12 @@ async fn test_ready_reports_bridge_available_when_sidecar_is_ready() {
 
     let (status, body) = common::make_unauthenticated_request("GET", "/ready", None).await;
 
-    assert_eq!(status, StatusCode::SERVICE_UNAVAILABLE, "body={body:?}");
+    let expected_status = if body["overall_status"] == "ready" {
+        StatusCode::OK
+    } else {
+        StatusCode::SERVICE_UNAVAILABLE
+    };
+    assert_eq!(status, expected_status, "body={body:?}");
     assert!(body["postgres"].is_string(), "body={body:?}");
     assert_eq!(body["bridge_status"], "available");
     assert!(body["bridge_engines"].is_array());

@@ -34,6 +34,7 @@ use tower::ServiceExt;
 use uuid::Uuid;
 
 const FORWARD_SECRET: &str = "billing-replay-forward-secret-very-long-static";
+const E2E_BASIC_DODO_PRODUCT_ID: &str = "pdt_e2e_basic";
 
 fn database_url() -> String {
     std::env::var("DATABASE_URL").unwrap_or_else(|_| {
@@ -54,6 +55,7 @@ async fn build_state_and_router() -> (axum::Router, PgPool) {
         .connect(&url)
         .await
         .expect("connect to local Postgres for replay tests");
+    ensure_basic_product_id(&pool).await;
 
     let cache = CacheManager::new(String::new(), 100, Duration::from_secs(60), false);
     let auth = AuthService::new("replay-jwt-secret-must-be-at-least-32-chars-long-xy".into());
@@ -143,6 +145,16 @@ async fn fetch_basic_product_id(pool: &PgPool) -> String {
             .expect("fetch basic plan");
     row.0
         .expect("plan_catalog.dodo_product_id for 'basic' must be wired")
+}
+
+async fn ensure_basic_product_id(pool: &PgPool) {
+    sqlx::query(
+        "UPDATE plan_catalog SET dodo_product_id = COALESCE(dodo_product_id, $1) WHERE code = 'basic'",
+    )
+    .bind(E2E_BASIC_DODO_PRODUCT_ID)
+    .execute(pool)
+    .await
+    .expect("seed basic plan Dodo product ID for replay tests");
 }
 
 async fn post_envelope(
