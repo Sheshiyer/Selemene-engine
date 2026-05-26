@@ -46,6 +46,9 @@ static SHARED_ROUTER: OnceCell<Router> = OnceCell::const_new();
 pub async fn get_router() -> &'static Router {
     SHARED_ROUTER
         .get_or_init(|| async {
+            // OpenAPI regression tests exercise the test router directly, so make
+            // the otherwise production-gated Swagger/OpenAPI routes available here.
+            std::env::set_var("ENABLE_SWAGGER_UI", "true");
             let config = ApiConfig::from_env().expect("failed to load test config");
             let state = build_app_state_lazy_db(&config).await;
             create_router(state, &config)
