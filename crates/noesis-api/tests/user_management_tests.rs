@@ -217,16 +217,16 @@ async fn test_update_me_valid_token_valid_body() {
 }
 
 // ---------------------------------------------------------------------------
-// 5. PATCH /api/v1/users/me -- invalid email format => 422
+// 5. PATCH /api/v1/users/me -- invalid timezone => 422
 // ---------------------------------------------------------------------------
 
 #[tokio::test]
-async fn test_update_me_invalid_email_returns_422() {
+async fn test_update_me_invalid_timezone_returns_422() {
     let router = get_test_router().await;
     let token = generate_test_token(5);
 
     let payload = json!({
-        "email": "not-an-email"
+        "timezone": ""
     });
 
     let (status, body) =
@@ -235,18 +235,18 @@ async fn test_update_me_invalid_email_returns_422() {
 
     if is_db_unavailable(status) {
         eprintln!(
-            "SKIP: PATCH /api/v1/users/me invalid email -- DB not available (status {})",
+            "SKIP: PATCH /api/v1/users/me invalid timezone -- DB not available (status {})",
             status
         );
         return;
     }
 
-    // The validate() method in UpdateUserRequest checks email format before
-    // touching the DB. "not-an-email" has no '@' or '.', so it should fail.
+    // The validate() method in UpdateUserRequest checks timezone before touching
+    // the DB, so this should fail even when the shared test token user is absent.
     assert_eq!(
         status,
         StatusCode::UNPROCESSABLE_ENTITY,
-        "Expected 422 for invalid email, got {}: {:?}",
+        "Expected 422 for invalid timezone, got {}: {:?}",
         status,
         body
     );
