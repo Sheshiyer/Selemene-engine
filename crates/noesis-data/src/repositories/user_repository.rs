@@ -50,7 +50,7 @@ impl UserRepository {
         .bind(email)
         .bind(password_hash)
         .bind(full_name)
-        .bind("Free") // Default tier
+        .bind("free") // Default tier
         .bind(0)      // Default consciousness level
         .bind(created_at)
         .bind(created_at)
@@ -80,7 +80,7 @@ impl UserRepository {
         .bind(email)
         .bind(password_hash)
         .bind(full_name)
-        .bind("Free")
+        .bind("free")
         .bind(0)
         .bind(Utc::now())
         .bind(Utc::now())
