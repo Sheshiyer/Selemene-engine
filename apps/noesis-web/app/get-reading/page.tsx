@@ -19,7 +19,7 @@ import {
 } from "@/lib/integrated/witnessAccess";
 import { cacheReading } from "@/lib/integrated/readingCache";
 import type { ReadingPayload } from "@/lib/integrated/payloadLoader";
-import { getApiKey, isAuthenticated } from "@/lib/auth";
+import { isAuthenticated } from "@/lib/auth";
 
 /** localStorage key holding `"1"` while the user is in the middle of a
  *  Discord-OAuth round-trip for the integrated reading. Set just before
@@ -217,21 +217,17 @@ export default function GetReadingPage() {
         const url = workflow === "integrated"
           ? INTEGRATED_READING_WORKFLOW_URL
           : DAILY_WITNESS_WORKFLOW_URL;
-        const apiKey = workflow === "integrated" ? getApiKey() : null;
-        const headers: Record<string, string> = { "Content-Type": "application/json" };
-        if (apiKey) {
-          // Match the convention used elsewhere (lib/api.ts): keys
-          // prefixed with `nk_` use the x-api-key header; OAuth-derived
-          // tokens (Discord login → JWT) use Authorization: Bearer.
-          if (apiKey.startsWith("nk_")) {
-            headers["x-api-key"] = apiKey;
-          } else {
-            headers["Authorization"] = `Bearer ${apiKey}`;
-          }
-        }
+        // witness-agents (48.tryambakam.space) is an unauthenticated workflow
+        // service: it has no JWT secret to validate a bearer token, and its CORS
+        // only allows the Content-Type request header. Attaching Authorization
+        // here is both unused and fatal — the browser's preflight for the
+        // integrated path is rejected (surfaces as "failed to fetch"). The
+        // Discord gate above already enforces login client-side, and the reading
+        // is cached locally rather than tied to a server identity, so we send
+        // only Content-Type (identical to the daily path, which works).
         const res = await fetch(url, {
           method: "POST",
-          headers,
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
         });
         const body = (await res.json().catch(() => null)) as
