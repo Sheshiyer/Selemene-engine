@@ -172,33 +172,73 @@ fn build_context_message(ctx: &WitnessContext) -> String {
 }
 
 fn format_engine_data(v: &Value) -> String {
-    // Pretty-print key fields; skip nested metadata/calculation_time noise
+    // Pretty-print ALL key fields; skip metadata noise but preserve wisdom content
     match v {
         Value::Object(map) => {
             let mut out = vec![];
-            for (k, val) in map.iter().take(12) {
+            for (k, val) in map.iter() {
+                // Skip metadata noise fields
                 if matches!(
                     k.as_str(),
                     "metadata" | "calculation_time_ms" | "cached" | "engine_version" | "backend"
                 ) {
                     continue;
                 }
-                let val_str = match val {
-                    Value::String(s) => s.clone(),
-                    Value::Number(n) => n.to_string(),
-                    Value::Bool(b) => b.to_string(),
-                    Value::Array(a) if a.len() <= 4 => a
-                        .iter()
-                        .map(|x| x.to_string())
-                        .collect::<Vec<_>>()
-                        .join(", "),
-                    _ => serde_json::to_string(val).unwrap_or_default(),
-                };
+                let val_str = format_value(val, 1);
                 out.push(format!("- {k}: {val_str}"));
             }
             out.join("\n")
         }
         _ => serde_json::to_string_pretty(v).unwrap_or_default(),
+    }
+}
+
+/// Recursively format a JSON value with proper indentation for readability
+fn format_value(v: &Value, depth: usize) -> String {
+    let inner_indent = "  ".repeat(depth + 1);
+
+    match v {
+        Value::String(s) => s.clone(),
+        Value::Number(n) => n.to_string(),
+        Value::Bool(b) => b.to_string(),
+        Value::Null => "null".to_string(),
+        Value::Array(arr) => {
+            if arr.is_empty() {
+                "[]".to_string()
+            } else if arr.len() <= 3 && arr.iter().all(|x| matches!(x, Value::String(_) | Value::Number(_) | Value::Bool(_))) {
+                // Short arrays of primitives: inline
+                let items: Vec<String> = arr.iter().map(|x| format_value(x, 0)).collect();
+                format!("[{}]", items.join(", "))
+            } else {
+                // Longer arrays or arrays with complex items: one per line
+                let mut lines = vec![String::new()];
+                for item in arr {
+                    let formatted = format_value(item, depth + 1);
+                    lines.push(format!("{inner_indent}- {formatted}"));
+                }
+                lines.join("\n")
+            }
+        }
+        Value::Object(map) => {
+            if map.is_empty() {
+                "{}".to_string()
+            } else {
+                // Nested object: format each field with indentation
+                let mut lines = vec![String::new()];
+                for (k, val) in map.iter() {
+                    // Skip noise in nested objects too
+                    if matches!(
+                        k.as_str(),
+                        "metadata" | "calculation_time_ms" | "cached" | "engine_version" | "backend"
+                    ) {
+                        continue;
+                    }
+                    let formatted = format_value(val, depth + 1);
+                    lines.push(format!("{inner_indent}{k}: {formatted}"));
+                }
+                lines.join("\n")
+            }
+        }
     }
 }
 
