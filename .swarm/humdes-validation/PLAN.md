@@ -129,10 +129,10 @@ Tasks are 1:1 with GitHub issues — already filed at issues
 
 | Task ID | Issue | Owner | Wave | Swarm | Status |
 |---|---|---|---|---|---|
-| HV-T01 | #853 | claude  | W1 | A engine | planned |
-| HV-T02 | #854 | codex   | W1 | B extractor | planned |
-| HV-T03 | #855 | copilot | W2 | A engines | planned |
-| HV-T04 | #856 | gemini  | W2 | B storage | planned |
+| HV-T01 | #853 | claude  | W1 | A engine | done (merged via PR #858) |
+| HV-T02 | #854 | codex   | W1 | B extractor | done (merged via PR #859) |
+| HV-T03 | #855 | copilot | W2 | A engines | done (merged via PR #860) |
+| HV-T04 | #856 | gemini  | W2 | B storage | done (merged via PR #861) |
 
 Per-task agent handoff packets in `.swarm/humdes-validation/handoffs/`:
 - [`HV-T01-claude.md`](handoffs/HV-T01-claude.md)

@@ -1,0 +1,115 @@
+version: "3.3.0-fapi-phase10-progress"
+
+patches:
+  - file: .context/CODEBASE_INDEX.md
+    replace_section: |
+      #### Phase 10: Integration & Testing ⚠️ (1/19 tasks)
+      - ✅ Unified VedicApiService
+      - ⏳ API response mocks (FAPI-093)
+      - ⏳ Integration tests (FAPI-094)
+      - ⏳ JHora validation (FAPI-095)
+      - ⏳ Reference validation (FAPI-096, FAPI-097)
+      - ⏳ Fallback to native (FAPI-098)
+      - ⏳ Metrics (FAPI-099)
+      - ⏳ Rate limit handling (FAPI-105)
+      - ⏳ Batch optimization (FAPI-106)
+      - ⏳ API versioning (FAPI-107)
+      - ⏳ Migration guide (FAPI-108)
+      - ⏳ Full test suite (FAPI-110)
+    new_content: |
+      #### Phase 10: Integration & Testing ⚠️ (11/19 tasks)
+      - ✅ Unified VedicApiService
+      - ✅ API response mocks (FAPI-093)
+      - ✅ Integration tests (FAPI-094)
+      - ✅ JHora validation (FAPI-095)
+      - ✅ Reference validation (FAPI-096, FAPI-097)
+      - ✅ Fallback to native (FAPI-098)
+      - ✅ Metrics (FAPI-099)
+      - ✅ Rate limit handling (FAPI-105)
+      - ✅ Batch optimization (FAPI-106)
+      - ✅ API versioning (FAPI-107)
+      - ✅ Migration guide (FAPI-108)
+      - ✅ Full test suite (FAPI-110)
+
+  - file: .context/CODEBASE_INDEX.md
+    replace_section: "- **Remaining:** Testing, validation, fallback, metrics"
+    new_content: "- **Remaining:** 8 remaining tasks in Phase 10 outside FAPI-093-110"
+
+  - file: .context/CODEBASE_INDEX.md
+    replace_section: |
+      ### Immediate (Phase 10 completion)
+      1. ✅ Complete API response mocks (FAPI-093)
+      2. ⏳ Integration tests (FAPI-094)
+      3. ⏳ JHora validation (FAPI-095)
+      4. ⏳ Reference validation (FAPI-096, FAPI-097)
+      5. ⏳ Fallback to native (FAPI-098)
+      6. ⏳ Metrics integration (FAPI-099)
+    new_content: |
+      ### Immediate (Phase 10 completion)
+      1. ✅ Complete API response mocks (FAPI-093)
+      2. ✅ Integration tests (FAPI-094)
+      3. ✅ JHora validation (FAPI-095)
+      4. ✅ Reference validation (FAPI-096, FAPI-097)
+      5. ✅ Fallback to native (FAPI-098)
+      6. ✅ Metrics and monitoring (FAPI-099)
+      7. ✅ Rate limit handling (FAPI-105)
+      8. ✅ Batch request optimization (FAPI-106)
+      9. ✅ API versioning support (FAPI-107)
+      10. ✅ Migration guide (FAPI-108)
+      11. ✅ Full test suite (FAPI-110)
+
+  - file: .swarm/humdes-validation/PLAN.md
+    replace_section: |
+      | HV-T01 | #853 | claude  | W1 | A engine | planned |
+      | HV-T02 | #854 | codex   | W1 | B extractor | planned |
+      | HV-T03 | #855 | copilot | W2 | A engines | planned |
+      | HV-T04 | #856 | gemini  | W2 | B storage | planned |
+    new_content: |
+      | HV-T01 | #853 | claude  | W1 | A engine | done (merged via PR #858) |
+      | HV-T02 | #854 | codex   | W1 | B extractor | done (merged via PR #859) |
+      | HV-T03 | #855 | copilot | W2 | A engines | done (merged via PR #860) |
+      | HV-T04 | #856 | gemini  | W2 | B storage | done (merged via PR #861) |
+
+  - file: memory.md
+    replace_section: "  - Phase 10 (Integration & Testing) is primary remaining work: 1/19 tasks complete\n  - Pending: FAPI-093 through FAPI-110 (mocks, tests, validation, fallback, metrics)"
+    new_content: "  - Phase 10 (Integration & Testing) moved to 11/19 tasks complete\n  - Completed: FAPI-093 through FAPI-110 (mocks, tests, validation, fallback, metrics)"
+
+  - file: todo.md
+    replace_section: |
+      ## In Progress
+      - [ ] FAPI-093: API response mocks for tests
+
+      ## Pending
+      - [ ] FAPI-094: Integration tests
+      - [ ] FAPI-095: Panchang vs JHora validation
+      - [ ] FAPI-096: Vimshottari reference validation
+      - [ ] FAPI-097: Shesh profile validation
+      - [ ] FAPI-098: API fallback to native calculation
+      - [ ] FAPI-099: Metrics and monitoring
+      - [ ] FAPI-105: Rate limit handling
+      - [ ] FAPI-106: Batch request optimization
+      - [ ] FAPI-107: API versioning support
+      - [ ] FAPI-108: Migration guide
+      - [ ] FAPI-110: Full test suite
+
+      ## Completed (move to memory.md)
+      - [DONE] ~~FAPI-092: Unified Vedic API service~~
+    new_content: |
+      ## In Progress
+
+      ## Pending
+
+      ## Completed (move to memory.md)
+      - [DONE] ~~FAPI-093: API response mocks for tests~~
+      - [DONE] ~~FAPI-092: Unified Vedic API service~~
+      - [DONE] ~~FAPI-094: Integration tests~~
+      - [DONE] ~~FAPI-095: Panchang vs JHora validation~~
+      - [DONE] ~~FAPI-096: Vimshottari reference validation~~
+      - [DONE] ~~FAPI-097: Shesh profile validation~~
+      - [DONE] ~~FAPI-098: API fallback to native calculation~~
+      - [DONE] ~~FAPI-099: Metrics and monitoring~~
+      - [DONE] ~~FAPI-105: Rate limit handling~~
+      - [DONE] ~~FAPI-106: Batch request optimization~~
+      - [DONE] ~~FAPI-107: API versioning support~~
+      - [DONE] ~~FAPI-108: Migration guide~~
+      - [DONE] ~~FAPI-110: Full test suite~~
