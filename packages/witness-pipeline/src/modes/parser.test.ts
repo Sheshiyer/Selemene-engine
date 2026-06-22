@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parseModeDocument } from './parser.js';
+import { parseModeDocument, getPassTemplate, getTargetWordsForRegister } from './parser.js';
 
 const sampleMode = `---
 mode: composite-dyad
@@ -24,10 +24,21 @@ house_overlay: [1, 4, 7, 10]
 bridge_mandates:
   - "Braid Vedic and HD data"
 svg_topology: dyad-arc
+register_variants:
+  l1_l3:
+    target_words:
+      min: 8000
+      max: 10000
+    overrides:
+      - pass_id: alpha
+        template: pass-alpha-template-l1-l3
 ---
 
 ## pass-alpha-template
 This is the alpha prompt.
+
+## pass-alpha-template-l1-l3
+This is the L1-L3 alpha prompt.
 
 ## lessons
 
@@ -39,16 +50,30 @@ This is the alpha prompt.
 describe('parseModeDocument', () => {
   it('parses frontmatter and body sections', () => {
     const parsed = parseModeDocument(sampleMode, 'composite-dyad.md');
-    expect(parsed.mode).toBe('composite-dyad');
-    expect(parsed.subject_count).toEqual({ min: 2, max: 2 });
-    expect(parsed.pass_plan).toHaveLength(1);
-    expect(parsed.pass_plan[0].template).toBe('pass-alpha-template');
-    expect(parsed.templates['pass-alpha-template']).toBe('This is the alpha prompt.');
+    expect(parsed.frontmatter.mode).toBe('composite-dyad');
+    expect(parsed.frontmatter.subject_count).toEqual({ min: 2, max: 2 });
+    expect(parsed.frontmatter.pass_plan).toHaveLength(1);
+    expect(parsed.frontmatter.pass_plan[0].template).toBe('pass-alpha-template');
+    expect(parsed.sections['pass-alpha-template']).toBe('This is the alpha prompt.');
     expect(parsed.lessons).toHaveLength(1);
     expect(parsed.lessons[0].title).toBe('Test lesson');
   });
 
   it('throws when frontmatter is missing', () => {
-    expect(() => parseModeDocument('no frontmatter', 'bad.md')).toThrow('Missing frontmatter');
+    expect(() => parseModeDocument('no frontmatter', 'bad.md')).toThrow('missing leading');
+  });
+
+  it('resolves register-variant template override', () => {
+    const parsed = parseModeDocument(sampleMode, 'composite-dyad.md');
+    const l1 = getPassTemplate(parsed, 'alpha', 'l1_l3');
+    expect(l1).toBe('This is the L1-L3 alpha prompt.');
+    const l4 = getPassTemplate(parsed, 'alpha', 'l4_l5');
+    expect(l4).toBe('This is the alpha prompt.');
+  });
+
+  it('returns register-specific target words', () => {
+    const parsed = parseModeDocument(sampleMode, 'composite-dyad.md');
+    expect(getTargetWordsForRegister(parsed, 'l1_l3')).toEqual({ min: 8000, max: 10000 });
+    expect(getTargetWordsForRegister(parsed, 'l4_l5')).toEqual({ min: 9000, max: 11000 });
   });
 });

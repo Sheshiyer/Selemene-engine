@@ -1,19 +1,31 @@
 {
-  "name": "@tryambakam/witness-pipeline",
-  "version": "0.0.1",
+  "name": "@noesis/witness-pipeline",
+  "version": "0.1.0",
+  "description": "Premium integrated reading pipeline ported from witness-agents",
   "type": "module",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
   "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "typecheck": "tsc --noEmit"
+    "smoke": "tsx scripts/smoke.ts",
+    "clean": "rm -rf dist"
   },
   "dependencies": {
     "js-yaml": "^4.1.0"
   },
   "devDependencies": {
     "@types/js-yaml": "^4.0.9",
-    "typescript": "^5.4.0",
-    "vitest": "^1.6.0"
+    "@types/node": "^22.0.0",
+    "tsx": "^4.21.0",
+    "typescript": "^5.7.0",
+    "vitest": "^2.1.8"
   }
 }

@@ -12,7 +12,9 @@ use axum::{
 use chrono::Utc;
 use noesis_auth::AuthUser;
 use noesis_core::{BirthData, EngineInput};
-use noesis_witness::interpret::{interpret_with_llm, LiveBiofieldScores, WitnessContext};
+use noesis_witness::{
+    interpret_with_llm, LiveBiofieldScores, RelationshipMode, WitnessContext,
+};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use utoipa::ToSchema;
@@ -29,6 +31,11 @@ pub struct WitnessInterpretRequest {
     pub consciousness_level: u8,
     /// Optional display name for personalised language.
     pub user_name: Option<String>,
+    /// Optional second-person birth data for synastry / composite readings.
+    pub partner_birth_data: Option<BirthData>,
+    /// Relationship framing for synastry / composite readings.
+    #[serde(default)]
+    pub relationship_mode: RelationshipMode,
 }
 
 /// Witness Dyad interpretation response.
@@ -61,11 +68,13 @@ pub async fn interpret(
     let now = Utc::now();
     let consciousness_level = req.consciousness_level.max(user.consciousness_level);
     let user_name = req.user_name;
+    let relationship_mode = req.relationship_mode;
 
     // ── Run engines in parallel ───────────────────────────────────────────────
     // Only birth-dependent engines run when birth_data is present.
     // Biorhythm and panchanga always run (they use current time).
     let bd = req.birth_data.clone();
+    let partner_bd = req.partner_birth_data.clone();
     let level = consciousness_level;
 
     let make_input = |bd_override: Option<BirthData>| EngineInput {
@@ -108,6 +117,33 @@ pub async fn interpret(
         run_engine(&orch, "vimshottari", vimshottari_input, level),
     );
 
+    // ── Partner context (if synastry/composite) ───────────────────────────────
+    let partner_context = if let Some(partner_bd) = partner_bd {
+        let partner_input = |bd: Option<BirthData>| EngineInput {
+            birth_data: bd,
+            current_time: now,
+            location: None,
+            precision: noesis_core::Precision::Standard,
+            options: std::collections::HashMap::new(),
+        };
+        let (p_hd, p_num, p_gk, p_vim) = tokio::join!(
+            run_engine(&orch, "human-design", partner_input(Some(partner_bd.clone())), level),
+            run_engine(&orch, "numerology", partner_input(Some(partner_bd.clone())), level),
+            run_engine(&orch, "gene-keys", partner_input(Some(partner_bd.clone())), level),
+            run_engine(&orch, "vimshottari", partner_input(Some(partner_bd.clone())), level),
+        );
+        Some(Box::new(WitnessContext {
+            user_name: partner_bd.name,
+            human_design: p_hd,
+            numerology: p_num,
+            gene_keys: p_gk,
+            vimshottari: p_vim,
+            ..Default::default()
+        }))
+    } else {
+        None
+    };
+
     // ── Build witness context ─────────────────────────────────────────────────
     let ctx = WitnessContext {
         live_scores: req.live_scores,
@@ -120,6 +156,8 @@ pub async fn interpret(
         transits,
         gene_keys,
         vimshottari,
+        partner_context,
+        relationship_mode,
     };
 
     // ── LLM interpretation (with rule-based fallback) ─────────────────────────
@@ -134,16 +172,16 @@ pub async fn interpret(
         }));
     }
 
-    // Fallback: rule-based dyad from biofield metrics
-    let (aletheios, pichet, synthesis, witness_question) =
-        rule_based_dyad_from_scores(&ctx.live_scores, consciousness_level);
+    // Fallback: rule-based dyad from biofield metrics and available engine context
+    let (aletheios, pichet, synthesis, witness_question, engines_used) =
+        rule_based_dyad(&ctx, &user.tier);
 
     Ok(Json(WitnessInterpretResponse {
         aletheios,
         pichet,
         synthesis,
         witness_question,
-        engines_used: vec!["biofield".to_string()],
+        engines_used,
         llm_powered: false,
     }))
 }
@@ -163,11 +201,20 @@ async fn run_engine(
     }
 }
 
-/// Rule-based fallback dyad — used when no OPENAI_API_KEY is set.
-fn rule_based_dyad_from_scores(
-    scores: &LiveBiofieldScores,
-    level: u8,
-) -> (String, String, String, String) {
+/// Rule-based fallback dyad — used when no OPENAI_API_KEY is set or LLM call fails.
+/// Takes full context and tier for richer, tier-gated responses.
+fn rule_based_dyad(
+    ctx: &WitnessContext,
+    tier: &str,
+) -> (String, String, String, String, Vec<String>) {
+    let scores = &ctx.live_scores;
+    let level = ctx.consciousness_level;
+    let mut engines_used = vec!["biofield".to_string()];
+
+    // Tier gating: free/basic gets simpler responses
+    let is_premium = matches!(tier, "premium" | "enterprise" | "founder");
+
+    // Build Aletheios response (truth-revealing, still)
     let aletheios = if scores.coherence > 0.72 {
         format!(
             "Coherence is at {:.0}% — the field has found a temporary equilibrium. \
@@ -179,6 +226,14 @@ fn rule_based_dyad_from_scores(
         "One half of your biofield is quieter than the other. That quieter half is not broken — \
          it is waiting. What has it been waiting to say?"
             .to_string()
+    } else if is_premium && ctx.vimshottari.is_some() {
+        engines_used.push("vimshottari".to_string());
+        format!(
+            "Energy at {:.0}%, regulation at {:.0}%. Your dasha period colors how this energy \
+             expresses. What does your body already know that your attention has not yet reached?",
+            scores.energy * 100.0,
+            scores.regulation * 100.0
+        )
     } else {
         format!(
             "Energy at {:.0}%, regulation at {:.0}%. The field is in motion. \
@@ -188,12 +243,30 @@ fn rule_based_dyad_from_scores(
         )
     };
 
+    // Build Pichet response (vitalizing, action-oriented)
     let pichet = if scores.energy > 0.72 {
+        if is_premium && ctx.gene_keys.is_some() {
+            engines_used.push("gene-keys".to_string());
+            format!(
+                "Your biofield is at {:.0}% energy — there is aliveness present. \
+                 Your Gene Keys point to where this energy wants to express. \
+                 Let it move. Notice what your hands want to do right now.",
+                scores.energy * 100.0
+            )
+        } else {
+            format!(
+                "Your biofield is at {:.0}% energy — there is aliveness present. \
+                 Let it move. Notice what your hands want to do right now. \
+                 Feel the edge where stillness meets motion.",
+                scores.energy * 100.0
+            )
+        }
+    } else if is_premium && ctx.biorhythm.is_some() {
+        engines_used.push("biorhythm".to_string());
         format!(
-            "Your biofield is at {:.0}% energy — there is aliveness present. \
-             Let it move. Notice what your hands want to do right now. \
-             Feel the edge where stillness meets motion.",
-            scores.energy * 100.0
+            "Regulation at {:.0}% — your system is recalibrating with your biorhythm cycles. \
+             What one small action would feel like a genuine yes? Not a should. A yes.",
+            scores.regulation * 100.0
         )
     } else {
         format!(
@@ -204,15 +277,41 @@ fn rule_based_dyad_from_scores(
         )
     };
 
-    let synthesis = "The field holds both truth and aliveness simultaneously. \
-                     Neither is more important than the other right now."
-        .to_string();
+    // Synthesis varies by tier
+    let synthesis = if is_premium && ctx.panchanga.is_some() {
+        engines_used.push("panchanga".to_string());
+        "The field holds both truth and aliveness simultaneously, shaped by today's \
+         cosmic weather. Neither is more important than the other right now."
+            .to_string()
+    } else {
+        "The field holds both truth and aliveness simultaneously. \
+         Neither is more important than the other right now."
+            .to_string()
+    };
 
+    // Witness question based on consciousness level
     let question = match level {
         0 | 1 => "What are you noticing right now, without adding a story?".to_string(),
         2 => "Who is the one watching all of this?".to_string(),
-        _ => "What wants to emerge through you right now?".to_string(),
+        3 => {
+            if is_premium {
+                "What pattern wants to complete itself through you today?".to_string()
+            } else {
+                "What wants to emerge through you right now?".to_string()
+            }
+        }
+        _ => {
+            if is_premium {
+                "What is the next smallest step that serves the whole?".to_string()
+            } else {
+                "What wants to emerge through you right now?".to_string()
+            }
+        }
     };
 
-    (aletheios, pichet, synthesis, question)
+    // Deduplicate engines_used
+    engines_used.sort();
+    engines_used.dedup();
+
+    (aletheios, pichet, synthesis, question, engines_used)
 }

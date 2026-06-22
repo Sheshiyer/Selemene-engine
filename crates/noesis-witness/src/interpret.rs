@@ -8,6 +8,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
 use crate::llm::LlmClient;
+use crate::routing::{routing_for_engine, RoutingMode};
 
 /// Live biofield composite scores from the PIP camera analysis.
 #[derive(Serialize, Deserialize, Clone, Debug, Default)]
@@ -18,6 +19,17 @@ pub struct LiveBiofieldScores {
     pub complexity: f64,
     pub regulation: f64,
     pub color_balance: f64,
+}
+
+/// Relationship framing for composite / synastry readings.
+#[derive(Serialize, Deserialize, Clone, Debug, Default, PartialEq, Eq)]
+pub enum RelationshipMode {
+    #[default]
+    None,
+    CompositeDyad,
+    PartnerSynastry,
+    FamilyTriad,
+    BusinessPartners,
 }
 
 /// Rich multi-engine context for the Witness Dyad interpretation.
@@ -35,6 +47,10 @@ pub struct WitnessContext {
     pub transits: Option<Value>,
     pub gene_keys: Option<Value>,
     pub vimshottari: Option<Value>,
+    /// Optional second-person context for synastry/composite readings.
+    pub partner_context: Option<Box<WitnessContext>>,
+    /// Relationship framing for composite/synastry readings.
+    pub relationship_mode: RelationshipMode,
 }
 
 /// Structured output from the Witness Dyad interpretation.
@@ -110,6 +126,12 @@ fn build_context_message(ctx: &WitnessContext) -> String {
 
     let name = ctx.user_name.as_deref().unwrap_or("the person");
     lines.push(format!("# Consciousness Snapshot for {name}"));
+    if ctx.relationship_mode != RelationshipMode::None {
+        lines.push(format!(
+            "## Relationship Framing: {}",
+            relationship_label(&ctx.relationship_mode)
+        ));
+    }
     lines.push(format!(
         "\n## Live Biofield Scores (PIP camera analysis)\n\
          - Energy flow: {:.0}%\n\
@@ -128,46 +150,105 @@ fn build_context_message(ctx: &WitnessContext) -> String {
         ctx.consciousness_level,
     ));
 
-    if let Some(p) = &ctx.panchanga {
-        lines.push(format!(
-            "\n## Vedic Panchanga (Today's Cosmic Moment)\n{}",
-            format_engine_data(p)
-        ));
-    }
-    if let Some(hd) = &ctx.human_design {
-        lines.push(format!(
-            "\n## Human Design Bodygraph\n{}",
-            format_engine_data(hd)
-        ));
-    }
-    if let Some(gk) = &ctx.gene_keys {
-        lines.push(format!(
-            "\n## Gene Keys Activations\n{}",
-            format_engine_data(gk)
-        ));
-    }
-    if let Some(n) = &ctx.numerology {
-        lines.push(format!(
-            "\n## Numerological Currents\n{}",
-            format_engine_data(n)
-        ));
-    }
-    if let Some(b) = &ctx.biorhythm {
-        lines.push(format!("\n## Biorhythm Cycles\n{}", format_engine_data(b)));
-    }
-    if let Some(t) = &ctx.transits {
-        lines.push(format!(
-            "\n## Planetary Transits\n{}",
-            format_engine_data(t)
-        ));
-    }
-    if let Some(v) = &ctx.vimshottari {
-        lines.push(format!(
-            "\n## Vimshottari Dasha Period\n{}",
-            format_engine_data(v)
-        ));
+    // Group engine data by routing tag.
+    let mut aletheios_engines: Vec<(&str, &Value)> = vec![];
+    let mut pichet_engines: Vec<(&str, &Value)> = vec![];
+    let mut dyad_engines: Vec<(&str, &Value)> = vec![];
+
+    for (engine_id, value) in [
+        ("panchanga", ctx.panchanga.as_ref()),
+        ("human-design", ctx.human_design.as_ref()),
+        ("gene-keys", ctx.gene_keys.as_ref()),
+        ("numerology", ctx.numerology.as_ref()),
+        ("biorhythm", ctx.biorhythm.as_ref()),
+        ("transits", ctx.transits.as_ref()),
+        ("vimshottari", ctx.vimshottari.as_ref()),
+    ] {
+        if let Some(value) = value {
+            match routing_for_engine(engine_id) {
+                Some(RoutingMode::AletheiosPrimary) => aletheios_engines.push((engine_id, value)),
+                Some(RoutingMode::PichetPrimary) => pichet_engines.push((engine_id, value)),
+                _ => dyad_engines.push((engine_id, value)),
+            }
+        }
     }
 
+    if !aletheios_engines.is_empty() {
+        lines.push("\n## Engines for Aletheios (truth/stillness)".to_string());
+        for (engine_id, value) in aletheios_engines {
+            lines.push(format!("\n### {}\n{}", engine_title(engine_id), format_engine_data(value)));
+        }
+    }
+
+    if !pichet_engines.is_empty() {
+        lines.push("\n## Engines for Pichet (vitality/movement)".to_string());
+        for (engine_id, value) in pichet_engines {
+            lines.push(format!("\n### {}\n{}", engine_title(engine_id), format_engine_data(value)));
+        }
+    }
+
+    if !dyad_engines.is_empty() {
+        lines.push("\n## Engines for Both Pillars".to_string());
+        for (engine_id, value) in dyad_engines {
+            lines.push(format!("\n### {}\n{}", engine_title(engine_id), format_engine_data(value)));
+        }
+    }
+
+    if let Some(partner) = ctx.partner_context.as_deref() {
+        lines.push("\n# Partner Snapshot".to_string());
+        lines.push(build_partner_snapshot(partner));
+    }
+
+    lines.join("\n")
+}
+
+fn relationship_label(mode: &RelationshipMode) -> &str {
+    match mode {
+        RelationshipMode::CompositeDyad => "composite dyad",
+        RelationshipMode::PartnerSynastry => "partner synastry",
+        RelationshipMode::FamilyTriad => "family triad",
+        RelationshipMode::BusinessPartners => "business partnership",
+        RelationshipMode::None => "none",
+    }
+}
+
+fn engine_title(engine_id: &str) -> String {
+    let title = match engine_id {
+        "panchanga" => "Vedic Panchanga (Today's Cosmic Moment)",
+        "human-design" => "Human Design Bodygraph",
+        "gene-keys" => "Gene Keys Activations",
+        "numerology" => "Numerological Currents",
+        "biorhythm" => "Biorhythm Cycles",
+        "transits" => "Planetary Transits",
+        "vimshottari" => "Vimshottari Dasha Period",
+        _ => engine_id,
+    };
+    title.to_string()
+}
+
+fn build_partner_snapshot(ctx: &WitnessContext) -> String {
+    let mut lines = vec![];
+    let name = ctx.user_name.as_deref().unwrap_or("the partner");
+    lines.push(format!("## Consciousness Snapshot for {name}"));
+    lines.push(format!(
+        "- Energy flow: {:.0}%\n- Coherence: {:.0}%\n- Consciousness level: {}/5",
+        ctx.live_scores.energy * 100.0,
+        ctx.live_scores.coherence * 100.0,
+        ctx.consciousness_level,
+    ));
+    for (engine_id, value) in [
+        ("panchanga", ctx.panchanga.as_ref()),
+        ("human-design", ctx.human_design.as_ref()),
+        ("gene-keys", ctx.gene_keys.as_ref()),
+        ("numerology", ctx.numerology.as_ref()),
+        ("biorhythm", ctx.biorhythm.as_ref()),
+        ("transits", ctx.transits.as_ref()),
+        ("vimshottari", ctx.vimshottari.as_ref()),
+    ] {
+        if let Some(value) = value {
+            lines.push(format!("\n### {}\n{}", engine_title(engine_id), format_engine_data(value)));
+        }
+    }
     lines.join("\n")
 }
 
@@ -627,5 +708,63 @@ mod tests {
 
         // Should preserve deep nesting
         assert!(result.contains("deep_value: found it"));
+    }
+
+    #[test]
+    fn build_context_message_groups_engines_by_routing() {
+        let ctx = WitnessContext {
+            user_name: Some("Aria".to_string()),
+            live_scores: LiveBiofieldScores {
+                energy: 0.72,
+                coherence: 0.68,
+                ..Default::default()
+            },
+            consciousness_level: 3,
+            panchanga: Some(json!({"tithi": "Navami"})),
+            vimshottari: Some(json!({"major": "Jupiter"})),
+            biorhythm: Some(json!({"physical": 0.5})),
+            ..Default::default()
+        };
+        let msg = build_context_message(&ctx);
+
+        assert!(msg.contains("Engines for Aletheios (truth/stillness)"));
+        assert!(msg.contains("Engines for Pichet (vitality/movement)"));
+        assert!(msg.contains("Engines for Both Pillars"));
+        assert!(msg.contains("Vedic Panchanga"));
+        assert!(msg.contains("Vimshottari Dasha Period"));
+        assert!(msg.contains("Biorhythm Cycles"));
+        assert!(!msg.contains("Numerological Currents")); // not provided
+    }
+
+    #[test]
+    fn build_context_message_includes_partner_snapshot() {
+        let partner = WitnessContext {
+            user_name: Some("Sam".to_string()),
+            live_scores: LiveBiofieldScores {
+                energy: 0.55,
+                coherence: 0.80,
+                ..Default::default()
+            },
+            consciousness_level: 2,
+            relationship_mode: RelationshipMode::None,
+            ..Default::default()
+        };
+        let ctx = WitnessContext {
+            user_name: Some("Aria".to_string()),
+            relationship_mode: RelationshipMode::PartnerSynastry,
+            partner_context: Some(Box::new(partner)),
+            live_scores: LiveBiofieldScores {
+                energy: 0.72,
+                coherence: 0.68,
+                ..Default::default()
+            },
+            consciousness_level: 3,
+            ..Default::default()
+        };
+        let msg = build_context_message(&ctx);
+
+        assert!(msg.contains("Partner Snapshot"));
+        assert!(msg.contains("Relationship Framing: partner synastry"));
+        assert!(msg.contains("Sam"));
     }
 }

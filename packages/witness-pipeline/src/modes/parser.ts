@@ -1,110 +1,281 @@
-import yaml from 'js-yaml';
-import type { ModeDocument, LessonEntry, PassSpec } from './types.js';
+// ─── Mode-doc parser ───────────────────────────────────────────────────
+// Parses a reading-mode Markdown document into typed config + named body
+// sections + structured lessons list.
+//
+// Frontmatter spec mirrors witness-agents/scripts/integratedreading/modes/_schema.md.
 
-export function parseModeDocument(content: string, sourcePath: string): ModeDocument {
-  const trimmed = content.trim();
-  if (!trimmed.startsWith('---')) {
-    throw new Error(`Missing frontmatter in ${sourcePath}`);
+import { readFileSync } from 'node:fs';
+import { load as loadYAML } from 'js-yaml';
+import type {
+  ArchitectureKey,
+  LessonsEntry,
+  ModeConfig,
+  ParsedModeDoc,
+  RegisterBand,
+  TopologyKey,
+} from './types.js';
+
+const REQUIRED_KEYS: Array<keyof ModeConfig> = [
+  'mode',
+  'subject_count',
+  'roles',
+  'target_words',
+  'architecture',
+  'pass_plan',
+  'engine_overlay_weights',
+  'house_overlay',
+  'bridge_mandates',
+  'svg_topology',
+];
+
+const VALID_TOPOLOGIES: ReadonlyArray<TopologyKey> = [
+  'dyad-arc',
+  'triad-triangle',
+  'pentagon',
+  'web-graph',
+];
+
+const VALID_ARCHITECTURES: ReadonlyArray<ArchitectureKey> = ['linear', 'hierarchical'];
+
+function assertModeConfig(fm: unknown, path: string): asserts fm is ModeConfig {
+  if (!fm || typeof fm !== 'object') {
+    throw new Error(`Mode doc ${path}: frontmatter missing or not an object`);
   }
-
-  const end = trimmed.indexOf('---', 3);
-  if (end === -1) {
-    throw new Error(`Missing closing frontmatter delimiter in ${sourcePath}`);
-  }
-
-  const frontmatterText = trimmed.slice(3, end).trim();
-  const bodyText = trimmed.slice(end + 3).trim();
-
-  const frontmatter = yaml.load(frontmatterText) as Record<string, unknown>;
-  if (!frontmatter || typeof frontmatter !== 'object') {
-    throw new Error(`Malformed frontmatter YAML in ${sourcePath}`);
-  }
-
-  const templates: Record<string, string> = {};
-  const sections = parseBodySections(bodyText);
-
-  const requiredKeys = [
-    'mode', 'subject_count', 'roles', 'target_words', 'architecture',
-    'pass_plan', 'engine_overlay_weights', 'house_overlay', 'bridge_mandates', 'svg_topology',
-  ];
-  for (const key of requiredKeys) {
-    if (!(key in frontmatter)) {
-      throw new Error(`Missing required frontmatter key ${key} in ${sourcePath}`);
+  const obj = fm as Record<string, unknown>;
+  for (const key of REQUIRED_KEYS) {
+    if (!(key in obj)) {
+      throw new Error(`Mode doc ${path}: missing required frontmatter key '${key}'`);
     }
   }
-
-  const passPlan = (frontmatter.pass_plan as PassSpec[]).map((p) => {
+  if (!VALID_TOPOLOGIES.includes(obj.svg_topology as TopologyKey)) {
+    throw new Error(
+      `Mode doc ${path}: invalid svg_topology '${obj.svg_topology}'. ` +
+        `Valid: ${VALID_TOPOLOGIES.join(' | ')}`,
+    );
+  }
+  if (!VALID_ARCHITECTURES.includes(obj.architecture as ArchitectureKey)) {
+    throw new Error(
+      `Mode doc ${path}: invalid architecture '${obj.architecture}'. ` +
+        `Valid: ${VALID_ARCHITECTURES.join(' | ')}`,
+    );
+  }
+  if (!Array.isArray(obj.pass_plan) || obj.pass_plan.length === 0) {
+    throw new Error(`Mode doc ${path}: pass_plan must be a non-empty array`);
+  }
+  for (const [i, p] of (obj.pass_plan as Array<Record<string, unknown>>).entries()) {
     if (!p.id || !p.title || !p.template || typeof p.target_words !== 'number') {
-      throw new Error(`Invalid pass spec in ${sourcePath}: ${JSON.stringify(p)}`);
+      throw new Error(
+        `Mode doc ${path}: pass_plan[${i}] missing one of {id, title, template, target_words}`,
+      );
     }
-    if (!sections[p.template]) {
-      throw new Error(`Template section ${p.template} not found in ${sourcePath}`);
-    }
-    return p;
-  });
-
-  for (const p of passPlan) {
-    templates[p.template] = sections[p.template];
   }
-
-  return {
-    mode: String(frontmatter.mode),
-    subject_count: frontmatter.subject_count as ModeDocument['subject_count'],
-    roles: frontmatter.roles as string[],
-    target_words: frontmatter.target_words as ModeDocument['target_words'],
-    architecture: frontmatter.architecture as ModeDocument['architecture'],
-    pass_plan: passPlan,
-    engine_overlay_weights: frontmatter.engine_overlay_weights as Record<string, number>,
-    house_overlay: frontmatter.house_overlay as number[],
-    bridge_mandates: frontmatter.bridge_mandates as string[],
-    svg_topology: frontmatter.svg_topology as ModeDocument['svg_topology'],
-    register_variants: frontmatter.register_variants as ModeDocument['register_variants'],
-    templates,
-    overlay_rules: sections['overlay-rules'],
-    glossary: sections['glossary'],
-    interactions: sections['interactions'],
-    lessons: parseLessons(sections['lessons'] ?? ''),
-  };
+  const subjectCount = obj.subject_count as { min?: number; max?: number };
+  if (typeof subjectCount.min !== 'number' || typeof subjectCount.max !== 'number') {
+    throw new Error(`Mode doc ${path}: subject_count.{min,max} must be numbers`);
+  }
+  if (subjectCount.min > subjectCount.max) {
+    throw new Error(`Mode doc ${path}: subject_count.min > subject_count.max`);
+  }
 }
 
-function parseBodySections(body: string): Record<string, string> {
+interface SplitResult {
+  yaml: string;
+  body: string;
+}
+
+function splitFrontmatter(raw: string, path: string): SplitResult {
+  if (!raw.startsWith('---')) {
+    throw new Error(`Mode doc ${path}: missing leading '---' frontmatter delimiter`);
+  }
+  const closeIdx = raw.indexOf('\n---', 3);
+  if (closeIdx === -1) {
+    throw new Error(`Mode doc ${path}: missing closing '---' frontmatter delimiter`);
+  }
+  const yaml = raw.slice(3, closeIdx).trim();
+  const bodyStart = raw.indexOf('\n', closeIdx + 4);
+  const body = bodyStart === -1 ? '' : raw.slice(bodyStart + 1);
+  return { yaml, body };
+}
+
+function splitSections(body: string): Record<string, string> {
   const sections: Record<string, string> = {};
-  const regex = /^##\s+(.+)$/gm;
-  let match: RegExpExecArray | null;
-  const matches: Array<{ name: string; start: number }> = [];
-  while ((match = regex.exec(body)) !== null) {
-    matches.push({ name: match[1].trim().toLowerCase().replace(/\s+/g, '-'), start: match.index });
+  const headerRe = /^## (.+?)\s*$/gm;
+  const matches: Array<{ slug: string; index: number; headerEnd: number }> = [];
+  let m: RegExpExecArray | null;
+  while ((m = headerRe.exec(body)) !== null) {
+    const slug = m[1]
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+    matches.push({ slug, index: m.index, headerEnd: m.index + m[0].length });
   }
   for (let i = 0; i < matches.length; i++) {
-    const current = matches[i];
-    const next = matches[i + 1];
-    const end = next ? next.start : body.length;
-    const header = `## ${matches[i].name.replace(/-/g, ' ')}`;
-    sections[current.name] = body.slice(current.start + header.length + 1, end).trim();
+    const start = matches[i].headerEnd;
+    const end = i + 1 < matches.length ? matches[i + 1].index : body.length;
+    sections[matches[i].slug] = body.slice(start, end).trim();
   }
   return sections;
 }
 
-function parseLessons(lessonsText: string): LessonEntry[] {
-  const entries: LessonEntry[] = [];
-  const headingRegex = /^###\s+(\d{4}-\d{2}-\d{2})\s*[-–—]\s*(.+)$/gm;
-  let match: RegExpExecArray | null;
-  const matches: Array<{ date: string; title: string; start: number }> = [];
-  while ((match = headingRegex.exec(lessonsText)) !== null) {
-    matches.push({ date: match[1], title: match[2].trim(), start: match.index });
+function parseLessons(lessonsBody: string | undefined): LessonsEntry[] {
+  if (!lessonsBody || !lessonsBody.trim()) return [];
+  const entries: LessonsEntry[] = [];
+  const entryRe = /^### (\d{4}-\d{2}-\d{2})\s*[—–-]\s*(.+?)$/gm;
+  const headers: Array<{ date: string; title: string; index: number; headerEnd: number }> = [];
+  let m: RegExpExecArray | null;
+  while ((m = entryRe.exec(lessonsBody)) !== null) {
+    headers.push({
+      date: m[1],
+      title: m[2].trim(),
+      index: m.index,
+      headerEnd: m.index + m[0].length,
+    });
   }
-  for (let i = 0; i < matches.length; i++) {
-    const current = matches[i];
-    const next = matches[i + 1];
-    const end = next ? next.start : lessonsText.length;
-    const body = lessonsText.slice(current.start, end).trim();
-    const fields: Record<string, string> = {};
-    const fieldRegex = /^\*\*(.+?)\*\*:\s*(.+)$/gm;
-    let fmatch: RegExpExecArray | null;
-    while ((fmatch = fieldRegex.exec(body)) !== null) {
-      fields[fmatch[1].toLowerCase().replace(/\s+/g, '_')] = fmatch[2].trim();
+  for (let i = 0; i < headers.length; i++) {
+    const body = lessonsBody.slice(
+      headers[i].headerEnd,
+      i + 1 < headers.length ? headers[i + 1].index : lessonsBody.length,
+    );
+    const fields: Partial<LessonsEntry> = {};
+    for (const fieldName of ['Question', 'Variants', 'Winner', 'Adopted', 'Reference'] as const) {
+      const re = new RegExp(`\\*\\*${fieldName}:\\*\\*\\s*(.+?)(?=\\n\\*\\*|\\n\\n|$)`, 's');
+      const fm = body.match(re);
+      if (fm) {
+        const value = fm[1].trim();
+        if (fieldName === 'Variants') {
+          fields.variants = value
+            .split(/[,\/]\s*/)
+            .map((v) => v.trim())
+            .filter(Boolean);
+        } else {
+          (fields as Record<string, string>)[fieldName.toLowerCase()] = value;
+        }
+      }
     }
-    entries.push({ date: current.date, title: current.title, fields });
+    entries.push({ date: headers[i].date, title: headers[i].title, ...fields });
   }
   return entries;
+}
+
+function validateRegisterVariants(
+  fm: ModeConfig,
+  sections: Record<string, string>,
+  path: string,
+): void {
+  if (!fm.register_variants) return;
+  for (const band of ['l1_l3', 'l4_l5'] as RegisterBand[]) {
+    const variant = fm.register_variants[band];
+    if (!variant?.overrides) continue;
+    for (const ov of variant.overrides) {
+      const pass = fm.pass_plan.find((p) => p.id === ov.pass_id);
+      if (!pass) {
+        throw new Error(
+          `Mode doc ${path}: register_variants.${band}.overrides[].pass_id '${ov.pass_id}' has no matching pass in pass_plan`,
+        );
+      }
+      if (!sections[ov.template]) {
+        throw new Error(
+          `Mode doc ${path}: register_variants.${band}.overrides for pass '${ov.pass_id}' references template '${ov.template}' which has no '## ${ov.template}' section`,
+        );
+      }
+    }
+  }
+}
+
+/** Parse a mode-doc Markdown file at `path`. Throws on missing required fields. */
+export function parseModeDoc(path: string): ParsedModeDoc {
+  const raw = readFileSync(path, 'utf-8');
+  const { yaml, body } = splitFrontmatter(raw, path);
+
+  let frontmatter: unknown;
+  try {
+    frontmatter = loadYAML(yaml);
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
+    throw new Error(`Mode doc ${path}: malformed YAML frontmatter — ${message}`);
+  }
+
+  assertModeConfig(frontmatter, path);
+
+  const sections = splitSections(body);
+  const lessons = parseLessons(sections.lessons);
+
+  for (const pass of frontmatter.pass_plan) {
+    if (!sections[pass.template]) {
+      throw new Error(
+        `Mode doc ${path}: pass_plan[${pass.id}].template '${pass.template}' has no matching '## ${pass.template}' section`,
+      );
+    }
+  }
+
+  validateRegisterVariants(frontmatter, sections, path);
+
+  return {
+    frontmatter,
+    sections,
+    lessons,
+    raw_path: path,
+  };
+}
+
+export function parseModeDocument(content: string, sourcePath: string): ParsedModeDoc {
+  const { yaml, body } = splitFrontmatter(content, sourcePath);
+  let frontmatter: unknown;
+  try {
+    frontmatter = loadYAML(yaml);
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
+    throw new Error(`Mode doc ${sourcePath}: malformed YAML frontmatter — ${message}`);
+  }
+  assertModeConfig(frontmatter, sourcePath);
+  const sections = splitSections(body);
+  const lessons = parseLessons(sections.lessons);
+  for (const pass of frontmatter.pass_plan) {
+    if (!sections[pass.template]) {
+      throw new Error(
+        `Mode doc ${sourcePath}: pass_plan[${pass.id}].template '${pass.template}' has no matching '## ${pass.template}' section`,
+      );
+    }
+  }
+  validateRegisterVariants(frontmatter, sections, sourcePath);
+  return { frontmatter, sections, lessons, raw_path: sourcePath };
+}
+
+export function summarizeLessons(lessons: LessonsEntry[], maxEntries = 5): string {
+  if (lessons.length === 0) return '';
+  const recent = lessons.slice(-maxEntries);
+  const lines = recent.map((l) => {
+    const adopted = l.adopted ? ` — Adopted: ${l.adopted}` : '';
+    return `• ${l.date} ${l.title}${adopted}`;
+  });
+  return `## Prior Autoresearch Findings\n\n${lines.join('\n')}`;
+}
+
+export function getPassTemplate(
+  doc: ParsedModeDoc,
+  pass_id: string,
+  register: RegisterBand,
+): string {
+  const pass = doc.frontmatter.pass_plan.find((p) => p.id === pass_id);
+  if (!pass) {
+    throw new Error(`No pass with id '${pass_id}' in mode '${doc.frontmatter.mode}'`);
+  }
+  const variant = doc.frontmatter.register_variants?.[register];
+  const override = variant?.overrides?.find((o) => o.pass_id === pass_id);
+  const templateName = override?.template ?? pass.template;
+  const content = doc.sections[templateName];
+  if (content === undefined) {
+    throw new Error(
+      `Pass '${pass_id}' (register ${register}) resolves to template '${templateName}' which has no matching '## ${templateName}' section in mode '${doc.frontmatter.mode}'`,
+    );
+  }
+  return content;
+}
+
+export function getTargetWordsForRegister(
+  doc: ParsedModeDoc,
+  register: RegisterBand,
+): { min: number; max: number } {
+  const variant = doc.frontmatter.register_variants?.[register];
+  return variant?.target_words ?? doc.frontmatter.target_words;
 }

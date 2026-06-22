@@ -6,8 +6,12 @@
 
 pub mod interpret;
 pub mod llm;
+pub mod routing;
 
-pub use interpret::{interpret_with_llm, LiveBiofieldScores, WitnessContext, WitnessDyadLlm};
+pub use interpret::{
+    interpret_with_llm, LiveBiofieldScores, RelationshipMode, WitnessContext, WitnessDyadLlm,
+};
+pub use routing::{partition_by_routing, routing_for_engine, RoutingMode};
 
 /// Generate a witness prompt appropriate to the user's consciousness level (rule-based fallback).
 pub fn generate_witness_prompt(engine_id: &str, level: u8, _context: &serde_json::Value) -> String {
