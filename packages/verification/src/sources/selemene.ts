@@ -10,13 +10,25 @@ export class SelemeneApiError extends Error {
   constructor(message: string) {
     super(message);
     this.name = 'SelemeneApiError';
+    Object.setPrototypeOf(this, SelemeneApiError.prototype);
+  }
+}
+
+function formatError(error: unknown): string {
+  if (typeof error === 'string') {
+    return error;
+  }
+  try {
+    return JSON.stringify(error);
+  } catch {
+    return String(error);
   }
 }
 
 export async function fetchEngineResult(subject: Subject, engineId: SelemeneEngineId, opts: SelemeneOptions = {}): Promise<unknown> {
   const apiKey = opts.apiKey ?? (await loadSelemeneKey());
   if (!apiKey) {
-    throw new Error('SELEMENE_API_KEY not found. Set the SELEMENE_API_KEY environment variable.');
+    throw new SelemeneApiError('SELEMENE_API_KEY not found. Set the SELEMENE_API_KEY environment variable.');
   }
 
   const birthData: BirthData = {
@@ -41,7 +53,7 @@ export async function fetchEngineResult(subject: Subject, engineId: SelemeneEngi
   const [result] = results;
 
   if (result._error) {
-    throw new SelemeneApiError(`Selemene ${engineId} failed: ${result._error}`);
+    throw new SelemeneApiError(`Selemene ${engineId} failed: ${formatError(result._error)}`);
   }
 
   return result.result;

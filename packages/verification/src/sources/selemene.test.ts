@@ -27,9 +27,10 @@ const subject: Subject = {
 };
 
 describe('fetchEngineResult', () => {
-  it('throws a clear error when the API key is missing', async () => {
+  it('throws SelemeneApiError when the API key is missing', async () => {
     mockLoadSelemeneKey.mockResolvedValue(undefined);
 
+    await expect(fetchEngineResult(subject, 'panchanga')).rejects.toThrow(SelemeneApiError);
     await expect(fetchEngineResult(subject, 'panchanga')).rejects.toThrow(
       'SELEMENE_API_KEY not found. Set the SELEMENE_API_KEY environment variable.'
     );
@@ -59,6 +60,85 @@ describe('fetchEngineResult', () => {
     await expect(fetchEngineResult(subject, 'panchanga')).rejects.toThrow(SelemeneApiError);
     await expect(fetchEngineResult(subject, 'panchanga')).rejects.toThrow(
       'Selemene panchanga failed: calculation failed'
+    );
+  });
+
+  it('safely stringifies non-string _error values', async () => {
+    mockLoadSelemeneKey.mockResolvedValue('test-api-key');
+    mockFetchAllEngines.mockResolvedValue([
+      {
+        engine_id: 'panchanga',
+        result: null,
+        witness_prompt: '',
+        consciousness_level: 0,
+        metadata: {
+          calculation_time_ms: 0,
+          backend: 'test',
+          precision_achieved: 'none',
+          cached: false,
+          timestamp: new Date().toISOString(),
+          engine_version: '0.0.0',
+        },
+        envelope_version: '1.0.0',
+        _error: { detail: 'missing field' },
+      },
+    ]);
+
+    await expect(fetchEngineResult(subject, 'panchanga')).rejects.toThrow(SelemeneApiError);
+    await expect(fetchEngineResult(subject, 'panchanga')).rejects.toThrow(
+      'Selemene panchanga failed: {"detail":"missing field"}'
+    );
+  });
+
+  it('coerces numeric _error values to strings', async () => {
+    mockLoadSelemeneKey.mockResolvedValue('test-api-key');
+    mockFetchAllEngines.mockResolvedValue([
+      {
+        engine_id: 'panchanga',
+        result: null,
+        witness_prompt: '',
+        consciousness_level: 0,
+        metadata: {
+          calculation_time_ms: 0,
+          backend: 'test',
+          precision_achieved: 'none',
+          cached: false,
+          timestamp: new Date().toISOString(),
+          engine_version: '0.0.0',
+        },
+        envelope_version: '1.0.0',
+        _error: 500,
+      },
+    ]);
+
+    await expect(fetchEngineResult(subject, 'panchanga')).rejects.toThrow(SelemeneApiError);
+    await expect(fetchEngineResult(subject, 'panchanga')).rejects.toThrow(
+      'Selemene panchanga failed: 500'
+    );
+  });
+
+  it('throws SelemeneApiError when the result array length is greater than one', async () => {
+    mockLoadSelemeneKey.mockResolvedValue('test-api-key');
+    const resultTemplate = {
+      engine_id: 'panchanga',
+      result: null,
+      witness_prompt: '',
+      consciousness_level: 0,
+      metadata: {
+        calculation_time_ms: 0,
+        backend: 'test',
+        precision_achieved: 'none',
+        cached: false,
+        timestamp: new Date().toISOString(),
+        engine_version: '0.0.0',
+      },
+      envelope_version: '1.0.0',
+    };
+    mockFetchAllEngines.mockResolvedValue([resultTemplate, resultTemplate]);
+
+    await expect(fetchEngineResult(subject, 'panchanga')).rejects.toThrow(SelemeneApiError);
+    await expect(fetchEngineResult(subject, 'panchanga')).rejects.toThrow(
+      'Expected exactly one result for panchanga, got 2'
     );
   });
 
