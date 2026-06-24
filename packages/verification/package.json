@@ -1,0 +1,29 @@
+{
+  "name": "@noesis/verification",
+  "version": "0.1.0",
+  "description": "Premium reading verification and regression test suite",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "benchmark": "tsx src/cli/benchmark.ts"
+  },
+  "dependencies": {
+    "@noesis/witness-pipeline": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsx": "^4.21.0",
+    "typescript": "^5.7.0",
+    "vitest": "^2.1.8"
+  }
+}
