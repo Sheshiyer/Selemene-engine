@@ -53,6 +53,17 @@ export class MatrixRunner {
   }
 
   async verify(subject: Subject, golden: GoldenFile): Promise<VerificationResult> {
+    if (golden.engine !== this.engine) {
+      return {
+        subject: subject.id,
+        engine: this.engine,
+        accuracy: 0,
+        fields: {},
+        missingFields: [],
+        error: `Engine mismatch: expected ${this.engine}, got ${golden.engine}`,
+      };
+    }
+
     try {
       const result = await this.fetchEngine(subject, this.engine);
       const extractors = ENGINE_FIELD_EXTRACTORS[this.engine] ?? {};
@@ -80,7 +91,7 @@ export class MatrixRunner {
         engine: this.engine,
         accuracy: 0,
         fields: {},
-        missingFields: Object.keys(golden.fields),
+        missingFields: [],
         error: err instanceof Error ? err.message : String(err),
       };
     }

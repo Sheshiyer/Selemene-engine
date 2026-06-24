@@ -6,7 +6,7 @@ export function extract(result: unknown, path: string): unknown {
     if (acc === undefined || acc === null) return undefined;
     if (Array.isArray(acc)) {
       const idx = Number(key);
-      return Number.isNaN(idx) ? undefined : acc[idx];
+      return Number.isInteger(idx) && idx >= 0 ? acc[idx] : undefined;
     }
     return (acc as Record<string, unknown>)[key];
   }, result);
