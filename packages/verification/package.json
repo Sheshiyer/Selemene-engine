@@ -14,8 +14,7 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run",
-    "benchmark": "tsx src/cli/benchmark.ts"
+    "test": "vitest run"
   },
   "dependencies": {
     "@noesis/witness-pipeline": "workspace:*"

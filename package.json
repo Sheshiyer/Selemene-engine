@@ -3,6 +3,10 @@
     "apps/*",
     "packages/*"
   ],
+  "scripts": {
+    "verify:typecheck": "pnpm --filter @noesis/verification typecheck",
+    "verify": "pnpm --filter @noesis/verification test"
+  },
   "overrides": {
     "postcss": "^8.5.10",
     "next": {
