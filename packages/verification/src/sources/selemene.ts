@@ -6,10 +6,17 @@ export interface SelemeneOptions {
   apiKey?: string;
 }
 
+export class SelemeneApiError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'SelemeneApiError';
+  }
+}
+
 export async function fetchEngineResult(subject: Subject, engineId: SelemeneEngineId, opts: SelemeneOptions = {}): Promise<unknown> {
   const apiKey = opts.apiKey ?? (await loadSelemeneKey());
   if (!apiKey) {
-    throw new Error('SELEMENE_API_KEY not found. Set env var or add to ~/.claude/.env');
+    throw new Error('SELEMENE_API_KEY not found. Set the SELEMENE_API_KEY environment variable.');
   }
 
   const birthData: BirthData = {
@@ -21,14 +28,20 @@ export async function fetchEngineResult(subject: Subject, engineId: SelemeneEngi
     name: subject.name,
   };
 
-  const [result] = await fetchAllEngines(birthData, {
+  const results = await fetchAllEngines(birthData, {
     api_key: apiKey,
     base_url: opts.baseUrl,
     engines: [engineId],
   });
 
+  if (results.length !== 1) {
+    throw new SelemeneApiError(`Expected exactly one result for ${engineId}, got ${results.length}`);
+  }
+
+  const [result] = results;
+
   if (result._error) {
-    throw new Error(`Selemene ${engineId} failed: ${result._error}`);
+    throw new SelemeneApiError(`Selemene ${engineId} failed: ${result._error}`);
   }
 
   return result.result;

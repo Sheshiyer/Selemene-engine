@@ -7,7 +7,7 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'node',
-    include: ['tests/**/*.test.ts'],
+    include: ['src/**/*.test.ts', 'tests/**/*.test.ts'],
     passWithNoTests: true,
     env: {
       SELEMENE_API_URL: process.env.SELEMENE_API_URL ?? 'https://selemene.tryambakam.space',
