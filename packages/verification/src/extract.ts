@@ -43,15 +43,6 @@ export const ENGINE_FIELD_EXTRACTORS: Partial<Record<SelemeneEngineId, Record<st
     attraction: 'hologenetic_profile.attraction',
     reaction_shadow: 'hologenetic_profile.eq.shadow',
   },
-  'vedic-clock': {
-    lagna_sign: 'd1.ascendant.sign',
-    lagna_nakshatra: 'd1.ascendant.nakshatra',
-    moon_sign: 'd1.planets.Moon.sign',
-    moon_nakshatra: 'd1.planets.Moon.nakshatra',
-    mars_dignity: 'd1.planets.Mars.dignity',
-    mercury_dignity: 'd1.planets.Mercury.dignity',
-    saturn_dignity: 'd1.planets.Saturn.dignity',
-  },
   vimshottari: {
     current_mahadasha: 'current_mahadasha.planet',
     current_antardasha: 'current_antardasha.planet',
