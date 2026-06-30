@@ -65,7 +65,7 @@ DODO_PRODUCT_PREMIUM_ID=<live-premium-id>
 DODO_INTERNAL_FORWARD_SECRET=<unchanged or new value>
 ```
 
-Restart biofield-web + noesis-api on staging.
+Restart admin-web + noesis-api on staging.
 
 ### Step 4 — Verify boot in live mode (5 min)
 
@@ -188,7 +188,7 @@ SELECT current_database(), inet_server_addr();   -- should NOT be staging
 
 ### Step 4 — Restart production (5 min)
 
-Roll-restart noesis-api + biofield-web. Watch logs for the boot
+Roll-restart noesis-api + admin-web. Watch logs for the boot
 message: `"Dodo billing emitter installed" env_mode=live`.
 
 ### Step 5 — First real customer charge (passive, watch only)

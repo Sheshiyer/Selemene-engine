@@ -386,7 +386,7 @@ async function provisionWebhook(): Promise<string | null> {
   }
   const created = await dodo<DodoWebhook>("POST", "/webhooks", {
     url: webhookUrl,
-    description: "Selemene biofield-web inbound webhook (provisioned by script)",
+    description: "Selemene admin-web inbound webhook (provisioned by script)",
     filter_types: WEBHOOK_EVENTS,
     disabled: false,
   });

@@ -23,8 +23,8 @@ below.
 ## Routes
 
 Frontend lives in **`apps/admin-web`** (the dedicated operator app on port
-3001), under the `(protected)` route group. The end-user `apps/biofield-web`
-on port 3000 has no admin surface — it is the engine output area only.
+3001), under the `(protected)` route group. The end-user web surface has been
+moved to the `sankalpa` repo; it is the engine output area only.
 
 | Path (admin-web) | Purpose |
 |---|---|

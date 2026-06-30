@@ -1,5 +1,10 @@
 # Roadmap — Milestone m1 (2026-02-24 → 2026-05-03)
 
+> **Note (2026-06-30):** `apps/noesis-web` and `apps/biofield-web` have been
+> retired. References to those apps in this historical roadmap point at code
+> that no longer exists in this repo; engine renderers and public assets have
+> moved to [Sankalpa](../../sankalpa/).
+
 ## Phases
 
 | # | Phase | Sprint | Dates | Status |

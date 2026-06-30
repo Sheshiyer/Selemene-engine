@@ -1,10 +1,15 @@
 # Noesis Biofield — Visual System (frozen)
 
+> **Note (2026-06-30):** `apps/biofield-web` has been retired from this repo.
+> This design reference is preserved; production UI is being implemented in
+> [Sankalpa](../../sankalpa/). Paths referencing `apps/biofield-web` are
+> historical.
+
 Brand-grounded design reference for biofield-web. **Build against these before writing UI.**
 
 ## Source of truth
 `brand-docs-final/tryambakam-noesis-aleph/06-visual-identity.md` + `14-visual-prompt-cookbook.md`.
-Generated with the gpt-image-2 skill, grounded in the real API contracts (`apps/biofield-web/src/components/pip/types.ts`, `lib/selemene/biofield-domain.ts`) and the brand's Goethe/Kha-Ba-La system.
+Generated with the gpt-image-2 skill, grounded in the real API contracts (historically `apps/biofield-web/src/components/pip/types.ts`, `lib/selemene/biofield-domain.ts`) and the brand's Goethe/Kha-Ba-La system.
 
 ## Palette (Goethe's Zur Farbenlehre — polarity, not spectrum)
 | Color | Hex | State / Kha-Ba-La |

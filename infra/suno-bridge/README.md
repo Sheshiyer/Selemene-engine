@@ -6,10 +6,10 @@ This folder documents how Selemene deploys the [gcui-art/suno-api](https://githu
 
 ```
                                     ┌──────────────────────┐
-  noesis-web                        │  suno-bridge         │
-  (apps/noesis-web/scripts)  ───►   │  (Vercel)            │
-  - suno-smoke.ts                   │                      │
-  - suno-bulk-gen.ts                │  - /api/get_limit    │
+  Selemene backend / Sankalpa       │  suno-bridge         │
+  (consumer TBD)           ───►     │  (Vercel)            │
+                                    │                      │
+                                    │  - /api/get_limit    │
                                     │  - /api/custom_gen.. │   ┌─────────┐
                                     │  - /api/get          │──►│ suno.com│
                                     │                      │   └─────────┘
@@ -79,27 +79,28 @@ The wrapper is community-maintained — upstream may break Suno auth without not
 3. Subscribe to upstream release notifications.
 4. When upgrading, smoke-test on a preview deployment before promoting to prod.
 
-## Wiring `noesis-web` to use the bridge
+## Wiring a client to use the bridge
 
-Add to `apps/noesis-web/.env.local` (and the same variable in Vercel/Railway production env):
+> **Status:** `apps/noesis-web` has been retired. The Suno bridge remains a backend-only service until the Sankalpa desktop integration is ready.
+
+Set `SUNO_BRIDGE_URL` in your backend environment or in `sankalpa/.env.local`:
 
 ```
 SUNO_BRIDGE_URL=https://suno-bridge.tryambakam.space
 ```
 
-The Suno client (`apps/noesis-web/src/lib/raaga/suno/client.ts`) reads this env var.
+The former Suno client was at `apps/noesis-web/src/lib/raaga/suno/client.ts` (deleted).
 
 ## Testing the full chain
 
-After all env vars are set:
+After all env vars are set, test from a backend or scripts directory that still has access to the Suno client code:
 
 ```bash
-cd apps/noesis-web
 SUNO_SMOKE_DRY_RUN=1 pnpm tsx scripts/suno-smoke.ts 15  # prints prompt, no API call
 pnpm tsx scripts/suno-smoke.ts 15                        # full smoke (uses ~10 credits)
 ```
 
-If smoke succeeds: ready for bulk generation (Phase 2).
+The original smoke scripts lived under `apps/noesis-web/scripts/` and have been retired with the app.
 
 ## See also
 

@@ -1,5 +1,8 @@
 # Human Design — Data Reference
 
+
+> **Note (2026-06-30):** `apps/noesis-web` has been retired. Engine renderers are being ported to [Sankalpa](../../sankalpa/). Paths referencing `apps/noesis-web` below are historical.
+
 The BodyGraph for a moment of birth: Type, Strategy, Authority, Profile, plus the 9 centers (defined/undefined), 36 channels, and 64 gates derived from two activation sets (personality at birth, design ~88° of solar arc before birth).
 
 ## 1. Identity

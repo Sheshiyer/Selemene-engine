@@ -1,5 +1,10 @@
 # 🎵 RAAGA ENGINE — Melakarta-Mahapurusha Body Harmonics
 
+> **Note (2026-06-30):** `apps/noesis-web` has been retired from this repo.
+> The Nādashakti modules that lived under `apps/noesis-web/src/lib/raaga` are
+> no longer present here. This document is kept as the authoritative reference
+> for the engine; paths referencing `apps/noesis-web` are historical.
+
 **Engine Name**: "Nādashakti"  
 **Japanese**: "音霊の体" (Onryō no Karada)  
 **Translation**: "Sound-Spirit Body"  

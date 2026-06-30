@@ -1,5 +1,8 @@
 # Sacred Geometry — Data Reference
 
+
+> **Note (2026-06-30):** `apps/noesis-web` has been retired. Engine renderers are being ported to [Sankalpa](../../sankalpa/). Paths referencing `apps/noesis-web` below are historical.
+
 A contemplative engine: pick (or randomly seed) one sacred geometric **form** — Flower of Life, Metatron's Cube, Sri Yantra, a Platonic solid… — and return its symbolism, elements, a numerology number, and a meditation prompt. The brand's core motif: the whole design system *is* sacred geometry, so this renderer is its most literal expression.
 
 > ⚠️ **The README lists this engine as "stub only / runtime source unconfirmed." That is wrong.** There is no Rust `engine-*` crate, but there **is** a fully-implemented **TypeScript** producer (`ts-engines/src/engines/sacred-geometry/`). The Rust side is an HTTP proxy. See §1 and §7.

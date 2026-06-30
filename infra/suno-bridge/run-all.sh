@@ -231,24 +231,13 @@ step_deploy_bridge() {
 }
 
 # ──────────────────────────────────────────────────────────────────────────
-# Step 2 — Write SUNO_BRIDGE_URL into apps/noesis-web/.env.local
+# Step 2 — Env wiring (noesis-web consumer retired; bridge remains backend-only
+# until Sankalpa integration)
 # ──────────────────────────────────────────────────────────────────────────
 step_wire_env() {
-  local url; url=$(state_get "bridge_url")
-  if [[ -z "$url" ]]; then
-    warn "no bridge_url in state — did step 1 succeed?"
-    return 1
-  fi
-  local env_local="$REPO_ROOT/apps/noesis-web/.env.local"
-  if [[ -f "$env_local" ]] && grep -q "^SUNO_BRIDGE_URL=" "$env_local"; then
-    local tmp; tmp=$(mktemp)
-    sed -E "s|^SUNO_BRIDGE_URL=.*|SUNO_BRIDGE_URL=$url|" "$env_local" > "$tmp"
-    mv "$tmp" "$env_local"
-    ok "updated SUNO_BRIDGE_URL in $env_local"
-  else
-    echo "SUNO_BRIDGE_URL=$url" >> "$env_local"
-    ok "appended SUNO_BRIDGE_URL to $env_local"
-  fi
+  warn "noesis-web has been retired; skipping .env.local write."
+  warn "Set SUNO_BRIDGE_URL in your backend or Sankalpa env manually."
+  return 0
 }
 
 # ──────────────────────────────────────────────────────────────────────────

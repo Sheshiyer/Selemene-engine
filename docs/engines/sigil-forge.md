@@ -1,5 +1,8 @@
 # Sigil Forge — Data Reference
 
+
+> **Note (2026-06-30):** `apps/noesis-web` has been retired. Engine renderers are being ported to [Sankalpa](../../sankalpa/). Paths referencing `apps/noesis-web` below are historical.
+
 Guided sigil creation: turns a present-tense **intention** into a chosen **method** (word-elimination, rose-wheel, pictographic, chaos-star) with process steps, charging suggestions, and witness prompts — plus an *optional* AI-generated sigil image (NVIDIA NIM, base64 PNG). It does **not** auto-generate a vector glyph.
 
 > ⚠️ **Read [§7](#7-open-questions--assumptions) first.** The OpenAPI stub (`sigil_id` / `intention` / `vector_path`) describes a glyph-generating engine that **does not exist in this repo**. No code anywhere produces a `vector_path` / SVG `d` string. Build against the **TS producer** + **renderer**, not the stub.

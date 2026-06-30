@@ -1,16 +1,23 @@
 # Cross-App Authentication — Fragment Token Handoff
 
-This document describes the pattern used to pass an authenticated session from
+> **ARCHIVED / RETIRED** — 2026-06-30. `noesis-web` and `biofield-web` have been
+> removed from this repository; the fragment-token handoff between those two
+> apps is no longer active. `admin-web` is now the only web frontend and uses
+> direct Discord OAuth + session cookies on its own origin.
+>
+> This document is kept as a historical reference for the security model.
+
+This document described the pattern used to pass an authenticated session from
 `noesis-web` (the 17-engine dashboard) into `biofield-web` (the biofield viewer)
 without requiring the user to re-authenticate via Discord.
 
 ## Motivation
 
-`noesis-web` and `biofield-web` are deployed as **separate Vercel projects** with
+`noesis-web` and `biofield-web` were deployed as **separate Vercel projects** with
 separate origins. Browsers enforce the same-origin policy, so cookies and
 localStorage values from one app are not readable in the other. Rather than
 sharing a session cookie across origins (which requires a common parent domain
-and careful SameSite configuration), we use a single JWT forwarded via the URL
+and careful SameSite configuration), we used a single JWT forwarded via the URL
 fragment (`#`) — which is never sent to any server.
 
 ## Flow
@@ -46,19 +53,18 @@ biofield-web login page (app/(public)/login/page.tsx)
 | JWT validated before session created | `verifyToken()` calls `/api/v1/users/me`; only a valid Bearer token succeeds |
 | No CSRF risk | No state change triggered by the fragment alone; requires server round-trip |
 
-## Code locations
+## Code locations (retired)
 
-| File | Role |
-|---|---|
-| `apps/noesis-web/src/components/NavBar.tsx` | Generates `getBiofieldHref()` — reads localStorage, appends `#token=<jwt>` if JWT |
-| `apps/biofield-web/app/(public)/login/page.tsx` | Consumes `#token` fragment; clears it; verifies; redirects or falls through |
-| `apps/biofield-web/src/lib/api.ts` | `verifyToken(token)` → calls `/api/v1/users/me` with `Authorization: Bearer` |
-| `apps/biofield-web/src/lib/discord-oauth.ts` | `STABLE_HOSTS` set — controls whether callback override is sent |
+| File | Role | Status |
+|---|---|---|
+| `apps/noesis-web/src/components/NavBar.tsx` | Generated `getBiofieldHref()` — reads localStorage, appends `#token=<jwt>` if JWT | Removed with `noesis-web` |
+| `apps/biofield-web/app/(public)/login/page.tsx` | Consumed `#token` fragment; cleared it; verified; redirected or fell through | Removed with `biofield-web` |
+| `apps/biofield-web/src/lib/api.ts` | `verifyToken(token)` → called `/api/v1/users/me` with `Authorization: Bearer` | Removed with `biofield-web` |
+| `apps/biofield-web/src/lib/discord-oauth.ts` | `STABLE_HOSTS` set — controlled whether callback override is sent | Removed with `biofield-web` |
 
-## Discord OAuth for biofield-web
+## Discord OAuth for admin-web
 
-`biofield-web` has its own Discord OAuth flow (for users who aren't already
-logged in via noesis-web). The Rust backend validates redirect URIs against:
+`admin-web` has its own Discord OAuth flow. The Rust backend validates redirect URIs against:
 
 ```
 ALLOWED_DISCORD_CALLBACK_PATHS = [
@@ -68,6 +74,9 @@ ALLOWED_DISCORD_CALLBACK_PATHS = [
     "/auth/discord/callback",
 ]
 ```
+
+Session state is stored in an HTTP-only cookie on the `admin-web` origin.
+
 
 For **stable production** hosts (`selemene.tryambakam.space`, `144.tryambakam.space`),
 the server uses its configured `DISCORD_REDIRECT_URI` env var (currently pointing to

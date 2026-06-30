@@ -71,5 +71,5 @@ fi
 echo ""
 echo "✅ Deploy complete."
 echo "   Bridge URL:  https://${URL:-<see vercel ls>}"
-echo "   Next step:   add SUNO_BRIDGE_URL=https://${URL:-<...>} to apps/noesis-web/.env.local"
+echo "   Next step:   set SUNO_BRIDGE_URL=https://${URL:-<...>} in your backend or Sankalpa env"
 echo "   Custom domain (optional): vercel domains add suno-bridge.tryambakam.space selemene-suno-bridge"

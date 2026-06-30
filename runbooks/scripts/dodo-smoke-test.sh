@@ -3,7 +3,7 @@
 # Dodo's relay through Next.js → Rust → Postgres and verifies tier flips.
 #
 # Reviewer's manual gate before merging PR #683. Run on a workstation with
-# the dev stack (Postgres + biofield-web dev server + noesis-api).
+# the dev stack (Postgres + admin-web dev server + noesis-api).
 #
 # Prerequisites:
 #   1. Postgres running:  docker compose up -d postgres
@@ -11,8 +11,8 @@
 #   3. .env populated with DODO_PAYMENTS_API_KEY (test mode), webhook key,
 #      forward secret, product/entitlement/meter IDs.
 #   4. `dodo` CLI installed and `dodo login` completed.
-#   5. Both biofield-web (port 3000) and noesis-api (port 8080) running:
-#        Terminal A: cd apps/biofield-web && npm run dev
+#   5. Both admin-web (port 3001) and noesis-api (port 8080) running:
+#        Terminal A: cd apps/admin-web && npm run dev
 #        Terminal B: cargo run --bin noesis-server
 #
 # Usage: bash runbooks/scripts/dodo-smoke-test.sh
@@ -63,15 +63,15 @@ fi
 ok "Rust noesis-server responding"
 
 # Next.js webhook route
-if ! curl -sf -X POST http://localhost:3000/api/webhook/dodo-payments \
+if ! curl -sf -X POST http://localhost:3001/api/webhook/dodo-payments \
        -H "Content-Type: application/json" -d '{}' > /dev/null 2>&1; then
   # The route should reject without proper signature, but it should at
   # least respond. Anything other than network refusal is fine.
-  curl -s -X POST http://localhost:3000/api/webhook/dodo-payments \
+  curl -s -X POST http://localhost:3001/api/webhook/dodo-payments \
        -H "Content-Type: application/json" -d '{}' > /dev/null \
-    || fail "biofield-web not responding on :3000 — run: cd apps/biofield-web && npm run dev"
+    || fail "admin-web not responding on :3001 — run: cd apps/admin-web && npm run dev"
 fi
-ok "biofield-web responding on :3000"
+ok "admin-web responding on :3001"
 
 # Required env
 [[ -n "${DODO_PAYMENTS_API_KEY:-}" ]] || fail "DODO_PAYMENTS_API_KEY not set in .env"
@@ -114,8 +114,8 @@ Now fire a real \`subscription.active\` event from Dodo:
        $TEST_UUID
     5. Click "Send"
 
-  Option B — \`dodo wh listen\` + \`dodo wh trigger\`:
-    Terminal C: dodo wh listen  (point at http://localhost:3000/api/webhook/dodo-payments)
+  Option B — `dodo wh listen` + `dodo wh trigger`:
+    Terminal C: dodo wh listen  (point at http://localhost:3001/api/webhook/dodo-payments)
     Terminal D: dodo wh trigger → subscription.active, edit metadata.selemene_user_id
 
 The event must reference user_id $TEST_UUID and product_id $DODO_PRODUCT_BASIC_ID.

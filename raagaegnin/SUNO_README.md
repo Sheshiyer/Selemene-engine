@@ -1,5 +1,10 @@
 # Suno Integration — Setup Guide
 
+> **Note (2026-06-30):** `apps/noesis-web` has been retired from this repo.
+> The TypeScript Suno modules that lived under `apps/noesis-web` are no longer
+> present here. The R2/CDN backend setup described in this guide remains valid;
+> the client integration will be ported to [Sankalpa](../../sankalpa/).
+
 This is the "your turn" checklist after the code-side Phase 1 lands. The TypeScript modules, scripts, SQL migration, and runbooks are all committed. Below: what's already provisioned for you (R2 bucket + CDN URL) vs what still needs your hands.
 
 > **Plan reference:** [`SUNO_INTEGRATION_PLAN.md`](./SUNO_INTEGRATION_PLAN.md) — full 52-task swarm plan.

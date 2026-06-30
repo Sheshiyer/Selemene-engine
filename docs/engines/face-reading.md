@@ -1,5 +1,8 @@
 # Face Reading — Data Reference
 
+
+> **Note (2026-06-30):** `apps/noesis-web` has been retired. Engine renderers are being ported to [Sankalpa](../../sankalpa/). Paths referencing `apps/noesis-web` below are historical.
+
 Constitutional analysis from facial features, fusing **Ayurvedic dosha** typing, **TCM Five Elements (Mian Xiang)**, and **Western physiognomy** — into a constitution, an elemental balance, personality traits, and per-zone health indicators. **Stub engine:** no image processing yet; output is deterministic-heuristic / mock (`crates/engine-face-reading/src/lib.rs:8-11`).
 
 ## 1. Identity

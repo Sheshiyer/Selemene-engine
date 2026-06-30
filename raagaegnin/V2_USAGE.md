@@ -1,5 +1,10 @@
 # Nādashakti V2 — Usage Guide
 
+> **Note (2026-06-30):** `apps/noesis-web` has been retired from this repo.
+> The `@/lib/raaga` paths below are historical. The standalone HTML demos in
+> this directory remain runnable; the production renderer will be ported to
+> [Sankalpa](../../sankalpa/).
+
 **For:** developers consuming `@/lib/raaga` in `noesis-web`, or anyone embedding the standalone HTML demos.
 **Companion:** [`RAAGA_ENGINE.md`](./RAAGA_ENGINE.md), [`SHRUTI_THEORY.md`](./SHRUTI_THEORY.md), [`V2_AUDIO_RICHNESS_PLAN.md`](./V2_AUDIO_RICHNESS_PLAN.md)
 **Verifier:** `node src/lib/raaga/verify-v2.mjs` — 52 contract assertions, must stay green.

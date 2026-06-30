@@ -1,5 +1,9 @@
 # 🎼 SHRUTI THEORY — Why the Raaga Engine Cannot Use Western 12-TET
 
+> **Note (2026-06-30):** `apps/noesis-web` has been retired from this repo.
+> Paths referencing `apps/noesis-web/src/lib/raaga` are historical; the tuning
+> theory in this document remains valid regardless of where the renderer lives.
+
 **Companion document to `RAAGA_ENGINE.md`** — explains the tuning substrate that makes the 72-Melakarta-Mahapurusha map *audibly* meaningful.
 
 > *Source lecture:* [Sangeeta Shankar — *Indian Classical Music Lesson: The Fundamentals Behind the 22 Shrutis*](https://www.youtube.com/watch?v=k2_Ldw9ioCs)

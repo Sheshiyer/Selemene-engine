@@ -1,5 +1,8 @@
 # Panchanga — Data Reference
 
+
+> **Note (2026-06-30):** `apps/noesis-web` has been retired. Engine renderers are being ported to [Sankalpa](../../sankalpa/). Paths referencing `apps/noesis-web` below are historical.
+
 The five limbs of Vedic time (pañcāṅga) for a moment + place: tithi, nakshatra, yoga, karana, vara.
 
 ## 1. Identity

@@ -1,5 +1,8 @@
 # Transits — Data Reference
 
+
+> **Note (2026-06-30):** `apps/noesis-web` has been retired. Engine renderers are being ported to [Sankalpa](../../sankalpa/). Paths referencing `apps/noesis-web` below are historical.
+
 Current planetary positions vs. the natal chart: where the 12 grahas sit *now*, the angular aspects they make to their natal placements (conjunction/sextile/square/trine/opposition with orbs), Sade Sati status, and an overall period quality. The orbital constellation engine.
 
 ## 1. Identity

@@ -13,7 +13,7 @@
 - Grafana **Webhook 401 / 400 (auth + freshness rejections)** panel
   spikes above baseline.
 - Sentry: bursts of `[dodo-webhook] signature verification failed` from
-  biofield-web.
+  admin-web.
 - New Dodo events stop landing in `processed_webhook_events`:
   ```sql
   SELECT MAX(processed_at) FROM processed_webhook_events
@@ -24,7 +24,7 @@
 ### Likely causes (ordered by probability)
 1. **Dodo rolled the signing key** without us updating
    `DODO_PAYMENTS_WEBHOOK_KEY` in env.
-2. **Forward secret drift** — biofield-web and noesis-api have
+2. **Forward secret drift** — admin-web and noesis-api have
    different `DODO_INTERNAL_FORWARD_SECRET` values after a partial
    deploy.
 3. **Dodo's webhook endpoint URL** in their dashboard points at a
@@ -41,11 +41,11 @@ WEBHOOK_ID=$(curl -s -H "Authorization: Bearer $API_KEY" \
   https://test.dodopayments.com/webhooks | jq -r '.data[0].id')
 NEW_SECRET=$(curl -s -H "Authorization: Bearer $API_KEY" \
   https://test.dodopayments.com/webhooks/$WEBHOOK_ID/secret | jq -r '.secret')
-echo "DODO_PAYMENTS_WEBHOOK_KEY=$NEW_SECRET"  # paste into .env, then redeploy biofield-web
+echo "DODO_PAYMENTS_WEBHOOK_KEY=$NEW_SECRET"  # paste into .env, then redeploy admin-web
 
 # 3. If forward-secret drift suspected, regenerate and set on BOTH services:
 openssl rand -base64 48
-# → set as DODO_INTERNAL_FORWARD_SECRET in noesis-api AND biofield-web env, restart both.
+# → set as DODO_INTERNAL_FORWARD_SECRET in noesis-api AND admin-web env, restart both.
 
 # 4. Trigger a test event from the Dodo dashboard.
 #    Verify in Rust logs: "processing webhook" should appear within 5s.
@@ -120,13 +120,13 @@ Use this when **`DODO_PAYMENTS_WEBHOOK_KEY` is suspected leaked** (committed by 
 sed -i.bak 's|^DODO_PAYMENTS_WEBHOOK_KEY=.*|DODO_PAYMENTS_WEBHOOK_KEY=whsec_NEW|' .env
 # Repeat on each host (or update the secret manager: Railway / Vercel / k8s).
 
-# 3. Redeploy biofield-web (the secret is read at request time by the
+# 3. Redeploy admin-web (the secret is read at request time by the
 #    Standard Webhooks library — a process restart is sufficient).
 #    No noesis-api redeploy needed; signature verification is Next.js-side.
 
 # 4. Verify:
 #    Dodo dashboard → Webhooks → "Send test event"
-#    Watch biofield-web logs for "processing webhook" — should reach
+#    Watch admin-web logs for "processing webhook" — should reach
 #    Rust within 5 s. If "signature verification failed" still
 #    appears, double-check the env var landed (no surrounding quotes,
 #    no whitespace).
@@ -189,7 +189,7 @@ mismatched rows.
 |---|---|
 | Webhooks rejected en masse | `cargo run --bin dodo_reconcile` (verify gap), then refetch `whsec_…` from Dodo |
 | User says "I cancelled but still paying" | `psql -c "SELECT * FROM billing_subscriptions WHERE provider_subscription_id='sub_…'"` |
-| Suspected key leak | Roll signing key in Dodo dashboard → update env → redeploy biofield-web |
+| Suspected key leak | Roll signing key in Dodo dashboard → update env → redeploy admin-web |
 | Long outage recovery | `cargo run --bin dodo_reconcile`, then redeliver from Dodo dashboard logs |
 
 ## Where to look

@@ -2,10 +2,12 @@
 
 > Pre-merge security audit of the Dodo Payments billing pipeline.
 > **Scope:** crates/noesis-api/src/billing.rs, handlers/billing.rs, the
-> bin/dodo_reconcile bin, biofield-web webhook + checkout routes, and the
+> bin/dodo_reconcile bin, admin-web webhook + checkout routes, and the
 > three migrations (020, 021, 022).
 > **Date:** 2026-05-06
 > **Reviewer:** Claude Opus 4.7 (paired with Sheshnarayan Iyer)
+> **Update:** 2026-06-30 — webhook + checkout routes now live in `apps/admin-web`
+> after `biofield-web` was retired.
 
 ---
 
@@ -25,7 +27,7 @@ Two follow-ups noted; neither is a blocker.
 
 | Layer | Where | What it verifies | Failure mode |
 |---|---|---|---|
-| **Standard Webhooks signature** | biofield-web `/api/webhook/dodo-payments/route.ts` via `@dodopayments/core` `verifyWebhookPayload` | HMAC of (`webhook-id`, `webhook-timestamp`, raw body) using `DODO_PAYMENTS_WEBHOOK_KEY` | 401 to caller, no forward to Rust |
+| **Standard Webhooks signature** | admin-web `/api/webhook/dodo-payments/route.ts` via `@dodopayments/core` `verifyWebhookPayload` | HMAC of (`webhook-id`, `webhook-timestamp`, raw body) using `DODO_PAYMENTS_WEBHOOK_KEY` | 401 to caller, no forward to Rust |
 | **X-Forward-Secret shared key** | Rust `events_forward` via constant-time compare | Random 48-byte `DODO_INTERNAL_FORWARD_SECRET` matches between Next.js → Rust | 401, no DB writes, metric increment |
 | **Timestamp freshness ±5 min** | Rust `validate_timestamp_freshness` | `webhook_timestamp` is within 300 s of now (with +30 s skew tolerance) | 400, no DB writes, metric increment |
 | **Postgres PK idempotency** | `processed_webhook_events` | Same `webhook_id` cannot be processed twice | Returns 200 dedup=true |

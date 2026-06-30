@@ -1,5 +1,8 @@
 # Biorhythm — Data Reference
 
+
+> **Note (2026-06-30):** `apps/noesis-web` has been retired. Engine renderers are being ported to [Sankalpa](../../sankalpa/). Paths referencing `apps/noesis-web` below are historical.
+
 Classic biorhythm: sine cycles seeded at birth, sampled at a target date. Six cycles (physical/emotional/intellectual + intuitive/aesthetic/spiritual), three composites (mastery/passion/wisdom), critical-day detection, an optional forecast window, and an optional two-person compatibility block.
 
 ## 1. Identity

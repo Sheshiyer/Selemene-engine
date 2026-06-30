@@ -1,7 +1,9 @@
 # Engine Data References
 
 > Per-engine data contracts for the Noesis calculation engines: **what each engine outputs, the value ranges/constraints, which component renders it, and how the data maps to (and changes) the visual.**
-> These ground the Wave-2 engine-renderer work (`apps/noesis-web/src/components/engines/*`) the same way `docs/design/biofield-web/` grounds biofield-web.
+> > **Note (2026-06-30):** `apps/noesis-web` and `apps/biofield-web` have been retired. Engine renderers are being ported to [Sankalpa](../../sankalpa/). The paths below that reference `apps/noesis-web` are historical.
+
+These ground the Wave-2 engine-renderer work (`apps/noesis-web/src/components/engines/*`) the same way `docs/design/biofield-web/` grounds biofield-web.
 
 Source of truth: the Rust engine crates (`crates/engine-*`), the Vedic API (`crates/noesis-vedic-api`), the **TypeScript engines** (`ts-engines/src/engines/*`), the schema registry (`crates/noesis-core/src/types.rs`), the renderers (`apps/noesis-web/src/components/engines/*.tsx`), and the JHora/reference fixtures (`crates/**/tests/**`). **Nothing here is invented** — every field/range is cited to a file, and unknowns are flagged.
 

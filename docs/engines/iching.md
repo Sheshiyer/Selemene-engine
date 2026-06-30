@@ -1,5 +1,8 @@
 # I Ching — Data Reference
 
+
+> **Note (2026-06-30):** `apps/noesis-web` has been retired. Engine renderers are being ported to [Sankalpa](../../sankalpa/). Paths referencing `apps/noesis-web` below are historical.
+
 Hexagram divination: a primary hexagram (1–64, six yin/yang lines), optional changing lines, and a relating (transformed) hexagram, with judgment + image text.
 
 ## 1. Identity

@@ -1,5 +1,8 @@
 # Numerology — Data Reference
 
+
+> **Note (2026-06-30):** `apps/noesis-web` has been retired. Engine renderers are being ported to [Sankalpa](../../sankalpa/). Paths referencing `apps/noesis-web` below are historical.
+
 Six core numbers derived from a person's birth date + full name, each reduced to a single digit (1–9) or a preserved master number (11/22/33), with the full reduction chain and a short meaning.
 
 ## 1. Identity

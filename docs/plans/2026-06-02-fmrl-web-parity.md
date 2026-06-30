@@ -2,6 +2,7 @@
 
 **Date:** 2026-06-02
 **Status:** Living checklist (planning)
+**Archive note (2026-06-30):** `apps/biofield-web` and `apps/noesis-web` have been retired from this repo. Web parity work continues in [Sankalpa](../../sankalpa/).
 **Decision:** Keep **two web apps** — enrich `apps/biofield-web` and `apps/noesis-web` **separately**. Do NOT unify into one fmrl-style app.
 
 ## Context

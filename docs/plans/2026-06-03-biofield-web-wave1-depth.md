@@ -1,5 +1,9 @@
 # Biofield-Web Wave 1 — Analysis Depth Implementation Plan
 
+> **Archive note (2026-06-30):** `apps/biofield-web` has been retired from this
+> repo. This plan is preserved for historical context; biofield depth work has
+> moved to [Sankalpa](../../sankalpa/).
+
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
 **Goal:** Bring `apps/biofield-web`'s `/viewer` from a basic live view up to fmrl's analysis depth — persistent score panel, time-series graph, rich capture controls, result modal, and detail pages — wired to biofield-web's existing data layer.

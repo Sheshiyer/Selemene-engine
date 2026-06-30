@@ -1,5 +1,8 @@
 # Enneagram — Data Reference
 
+
+> **Note (2026-06-30):** `apps/noesis-web` has been retired. Engine renderers are being ported to [Sankalpa](../../sankalpa/). Paths referencing `apps/noesis-web` below are historical.
+
 A typology of nine interconnected personality patterns. Given an assessment (45 answers) **or** a direct type number, returns the primary type + adjacent wing + integration/disintegration lines + center/group taxonomy. The Enneagram is framed throughout as *patterns of perception*, **not** fixed identity.
 
 ## 1. Identity

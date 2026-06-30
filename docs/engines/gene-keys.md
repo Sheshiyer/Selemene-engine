@@ -1,5 +1,8 @@
 # Gene Keys — Data Reference
 
+
+> **Note (2026-06-30):** `apps/noesis-web` has been retired. Engine renderers are being ported to [Sankalpa](../../sankalpa/). Paths referencing `apps/noesis-web` below are historical.
+
 The 64 Gene Keys derived from the Human Design gates: each gate becomes a contemplative archetype with a **Shadow → Gift → Siddhi** frequency spectrum and a **Line (1–6)**, organised into sequences. This engine emits the **Activation Sequence** (the four prime gifts) plus every active key enriched with frequency data.
 
 ## 1. Identity

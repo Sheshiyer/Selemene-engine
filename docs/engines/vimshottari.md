@@ -1,5 +1,8 @@
 # Vimshottari Dasha — Data Reference
 
+
+> **Note (2026-06-30):** `apps/noesis-web` has been retired. Engine renderers are being ported to [Sankalpa](../../sankalpa/). Paths referencing `apps/noesis-web` below are historical.
+
 The 120-year planetary-period timeline of Vedic time: a fixed cycle of 9 lords, each ruling a major period (Mahadasha) nested into sub-periods (Antardasha/Bhukti → Pratyantardasha …), with the period active *now* and its upcoming transitions.
 
 ## 1. Identity

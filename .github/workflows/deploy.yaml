@@ -320,14 +320,13 @@ jobs:
         if: env.ADMIN_WEB_URL != '' && env.API_BASE_URL != ''
         run: bash scripts/smoke_admin_web.sh
 
-  # noesis-web + biofield-web deploys are handled NATIVELY by Vercel via
-  # the GitHub integration (project root: apps/noesis-web and
-  # apps/biofield-web respectively, production branch: main). No CI
-  # job is needed here — Vercel auto-builds + deploys on every push to
-  # main that touches the relevant subdirectory. The previous custom
-  # `vercel build --prebuilt` flow hit a monorepo path conflict and was
-  # blocking deploys for days; the native Git integration sidesteps it
-  # entirely.
+  # admin-web is the only web frontend deployed from this repo. It is
+  # handled NATIVELY by Vercel via the GitHub integration (project root:
+  # apps/admin-web, production branch: main). No CI job is needed here —
+  # Vercel auto-builds + deploys on every push to main that touches the
+  # relevant subdirectory. The previous custom `vercel build --prebuilt`
+  # flow hit a monorepo path conflict and was blocking deploys for days;
+  # the native Git integration sidesteps it entirely.
 
   # Create GitHub Release for tags
   release:

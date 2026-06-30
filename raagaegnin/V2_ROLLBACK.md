@@ -1,5 +1,9 @@
 # V2 Rollback Runbook
 
+> **Note (2026-06-30):** `apps/noesis-web` has been retired from this repo.
+> The production rollback paths below that reference `apps/noesis-web` are
+> historical. The standalone HTML demos in this directory are still usable.
+
 **Audience:** anyone needing to flip Nādashakti V2 off in production within 5 minutes.
 **Trigger:** v2 audio path causing browser hangs, audible glitches across multiple users, sample CDN downtime, or a critical pitch-correctness regression caught by `verify-v2.mjs` after deploy.
 

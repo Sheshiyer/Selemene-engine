@@ -48,11 +48,11 @@ ON CONFLICT DO NOTHING;
 
 **Caller setup (don't tell the driver):**
 Edit `DODO_PAYMENTS_WEBHOOK_KEY` on staging to a wrong value
-(`whsec_INVALID`). Restart biofield-web staging.
+(`whsec_INVALID`). Restart admin-web staging.
 
 **Caller says:**
 > "Sentry just paged. We're getting bursts of `signature verification
-> failed` from biofield-web. New Dodo events haven't landed in
+> failed` from admin-web. New Dodo events haven't landed in
 > `processed_webhook_events` for 17 minutes. Customer support has 2
 > tickets about 'I paid but I'm still on Free.' Go."
 
@@ -63,7 +63,7 @@ Scenario 1.
 - Driver runs the diagnostic SQL within 5 min
 - Driver identifies "signing key drift" as likely cause
 - Driver re-fetches the signing key via the curl in the runbook
-- Driver updates env + restarts biofield-web
+- Driver updates env + restarts admin-web
 - Test event from dashboard reaches Rust within 15 min total
 
 **Caller cleanup:** revert env to the real signing key, confirm test
@@ -111,8 +111,8 @@ earlier outage.
 
 **Pass criteria:**
 - Driver finds the "Roll signing key" button in Dodo dashboard
-- Driver updates env on biofield-web
-- Driver restarts biofield-web (NOT noesis-api — Rust doesn't read this
+- Driver updates env on admin-web
+- Driver restarts admin-web (NOT noesis-api — Rust doesn't read this
   key)
 - Driver verifies a new test event delivers ok
 - **Bonus:** driver thinks to check whether any in-flight retries from
@@ -126,12 +126,12 @@ earlier outage.
 ## Scenario 4 — Extended outage recovery
 
 **Caller setup:**
-On staging, stop biofield-web entirely for 5 minutes. During the
+On staging, stop admin-web entirely for 5 minutes. During the
 window, fire 3 test events from the Dodo dashboard (different event
-types). Restart biofield-web.
+types). Restart admin-web.
 
 **Caller says:**
-> "biofield-web was down for 5 minutes. We just brought it back up.
+> "admin-web was down for 5 minutes. We just brought it back up.
 > Tell me what events we missed and how to recover them."
 
 **Pass criteria:**

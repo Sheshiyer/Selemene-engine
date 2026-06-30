@@ -146,10 +146,10 @@ Repeat for all 3 products. **Save** each time.
 | Field | Value |
 |---|---|
 | URL (test mode) | `https://<your-staging-host>/api/webhook/dodo-payments` |
-| Description | `Selemene biofield-web inbound webhook` |
+| Description | `Selemene admin-web inbound webhook` |
 | Status | Active |
 
-> For local development: use a public tunnel (`ngrok http 3000` or `cloudflared`)
+> For local development: use a public tunnel (`ngrok http 3001` or `cloudflared`)
 > and paste that URL. Re-edit when the tunnel rotates.
 
 Subscribe to exactly these **8 event categories** (the credit-pool variants
@@ -250,7 +250,7 @@ full matrix.
 DODO_PAYMENTS_API_KEY=sk_test_…
 DODO_PAYMENTS_WEBHOOK_KEY=whsec_…
 DODO_PAYMENTS_ENV=test
-DODO_PAYMENTS_RETURN_URL=http://localhost:3000/billing?status=success
+DODO_PAYMENTS_RETURN_URL=http://localhost:3001/billing?status=success
 
 DODO_PRODUCT_FREE_ID=prod_…
 DODO_PRODUCT_BASIC_ID=prod_…
@@ -289,7 +289,7 @@ ID. Until these UPDATE statements run, /api/billing/checkout returns 400.
 
 | Symptom | Likely cause | Fix |
 |---|---|---|
-| Test event shows "URL unreachable" | Tunnel down or staging not deployed | Restart `ngrok http 3000` or redeploy biofield-web staging |
+| Test event shows "URL unreachable" | Tunnel down or staging not deployed | Restart `ngrok http 3001` or redeploy admin-web staging |
 | `cargo run` warns "DODO_PAYMENTS_API_KEY is set without webhook signing key" | webhook key not in `.env` | Re-do step 5 |
 | `cargo run` rejects `DODO_PAYMENTS_ENV` | typo or wrong value | Set exactly `test` or `live` |
 | Curl returns 401 | Wrong API key, or you switched to live mode by mistake | Re-fetch test-mode key from Settings → API Keys |

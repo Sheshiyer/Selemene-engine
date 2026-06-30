@@ -1,5 +1,8 @@
 # Vedic Clock — Data Reference
 
+
+> **Note (2026-06-30):** `apps/noesis-web` has been retired. Engine renderers are being ported to [Sankalpa](../../sankalpa/). Paths referencing `apps/noesis-web` below are historical.
+
 A TCM organ clock (12 × 2-hour windows) fused with Ayurvedic dosha periods (3 × two daily cycles) plus optional Panchanga overlays — temporal recommendations for *now* at a place. **Note the naming gap:** the OpenAPI stub describes a *Vedic muhurta / guna* clock (Brahma Muhurta, Sattva…), but the actual engine ships a *TCM-organ + dosha* clock. They are different systems under one `engine_id` (see §2, §7).
 
 ## 1. Identity

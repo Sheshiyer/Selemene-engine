@@ -1,5 +1,10 @@
 # Port witness-agents Premium Pipeline + Upgrade Internal Witness Dyad Implementation Plan
 
+> **Archive note (2026-06-30):** `apps/noesis-web` has been retired from this
+> repo. The `packages/witness-pipeline` package remains and is used by
+> `packages/verification`. The optional `apps/noesis-web` client helper
+> referenced in this plan was removed with the app.
+
 ## ✅ COMPLETED — 2026-06-22
 
 All 17 tasks have been implemented. The branch `feat/port-witness-premium-pipeline` is ready for merge.

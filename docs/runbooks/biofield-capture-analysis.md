@@ -1,15 +1,14 @@
 # Biofield Capture Analysis Runbook
 
 Date: 2026-04-09
-Status: BF3 local verification path
+Status: **ARCHIVED** — `biofield-web` was retired on 2026-06-30. The API endpoints and Python sidecar workflow below are still valid, but the web app consumer has moved to [Sankalpa](../../sankalpa/).
 
 ## Purpose
 
-This runbook covers the local verification path for the current biofield vertical slice.
+This runbook covers the local verification path for the biofield vertical slice.
 
 It proves that:
 
-- the standalone `biofield-web` app boots
 - the main Noesis API is reachable
 - the private Python biofield sidecar is reachable
 - a user can register and log in
@@ -24,7 +23,6 @@ It proves that:
 
 ## Expected Local Ports
 
-- `biofield-web`: `3002`
 - `noesis-server`: `8080`
 - `biofield_cv_service`: `8002`
 - `postgres`: `5432`
@@ -99,12 +97,12 @@ export PYTHON_BIOFIELD_TIMEOUT_MS="10000"
 cargo run --bin noesis-server
 ```
 
-### 4. Start the web app
+### 4. Start the desktop client
 
 ```bash
-cd /Volumes/madara/2026/witnessos/Selemene-engine/apps/biofield-web
-export NEXT_PUBLIC_API_BASE_URL="http://127.0.0.1:8080"
-npm run dev
+cd /Volumes/madara/2026/twc-vault/01-Projects/tryambakam-noesis/sankalpa
+export VITE_BIOFIELD_API_URL="http://127.0.0.1:8080"
+npm run electron:dev
 ```
 
 ## Smoke Check

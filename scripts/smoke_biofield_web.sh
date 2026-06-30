@@ -157,7 +157,7 @@ if [[ ! -f "$BIOFIELD_CAPTURE_IMAGE" ]]; then
   fail "BIOFIELD_CAPTURE_IMAGE does not exist: $BIOFIELD_CAPTURE_IMAGE"
 fi
 
-echo "Running biofield-web BF3 smoke checks"
+echo "Running biofield-service BF3 smoke checks"
 echo "BIOFIELD_WEB_URL=$BIOFIELD_WEB_URL"
 echo "API_BASE_URL=$API_BASE_URL"
 echo "PYTHON_BIOFIELD_URL=$PYTHON_BIOFIELD_URL"
@@ -205,7 +205,7 @@ if [[ -z "$TOKEN" ]]; then
 fi
 AUTH_HEADER="Authorization: Bearer $TOKEN"
 
-session_payload='{"client_device_id":"biofield-smoke","viewer_version":"biofield-web/smoke","context":{"platform":"smoke-script"}}'
+session_payload='{"client_device_id":"biofield-smoke","viewer_version":"biofield-service/smoke","context":{"platform":"smoke-script"}}'
 post_json "$API_BASE_URL/api/v1/biofield/sessions" "201" "$session_payload" "$SESSION_BODY" "$AUTH_HEADER"
 SESSION_ID="$(json_field "$SESSION_BODY" id)"
 if [[ -z "$SESSION_ID" ]]; then

@@ -76,8 +76,7 @@ def process(path: Path) -> tuple[int, int, tuple[int, int, int]]:
     return transparent, im.size[0] * im.size[1], bg
 
 ROOTS = [
-    Path("/Volumes/madara/2026/twc-vault/01-Projects/tryambakam-noesis/Selemene-engine/apps/noesis-web/public/depth-reading/characters"),
-    Path("/Volumes/madara/2026/twc-vault/01-Projects/tryambakam-noesis/Selemene-engine/apps/biofield-web/public/depth-reading/characters"),
+    Path("/Volumes/madara/2026/twc-vault/01-Projects/tryambakam-noesis/sankalpa/public/depth-reading/characters"),
 ]
 
 for root in ROOTS:

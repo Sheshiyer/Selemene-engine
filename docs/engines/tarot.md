@@ -1,5 +1,8 @@
 # Tarot — Data Reference
 
+
+> **Note (2026-06-30):** `apps/noesis-web` has been retired. Engine renderers are being ported to [Sankalpa](../../sankalpa/). Paths referencing `apps/noesis-web` below are historical.
+
 A seeded card draw laid on a named spread: per-position card (name, arcana, suit, element, upright/reversed) with position meaning + keywords, plus reflective witness prompts. No "synthesis" field is produced at runtime (that's stub-only).
 
 ## 1. Identity

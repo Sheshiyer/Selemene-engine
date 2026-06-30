@@ -1,5 +1,8 @@
 # Nadabrahman — Data Reference
 
+
+> **Note (2026-06-30):** `apps/noesis-web` has been retired. Engine renderers are being ported to [Sankalpa](../../sankalpa/). Paths referencing `apps/noesis-web` below are historical.
+
 Raga-based sound therapy: given a moment (and optional dosha / rasa / chakra), recommends Melakarta ragas by **prahar** (3-hour time block), plus a chakra Solfeggio frequency for tuning. "Nāda Brahman" = sound as the substrate of consciousness.
 
 ## 1. Identity

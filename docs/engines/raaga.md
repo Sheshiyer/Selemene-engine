@@ -1,5 +1,8 @@
 # Raaga — Data Reference
 
+
+> **Note (2026-06-30):** `apps/noesis-web` has been retired. Engine renderers are being ported to [Sankalpa](../../sankalpa/). Paths referencing `apps/noesis-web` below are historical.
+
 Carnatic **melakarta** sound-therapy: takes a melakarta number/name (or auto-selects by dosha × time-of-day) and returns its just-intonation swaras, shruti indices, chakra/dosha context, prahar timing, and Strudel-compatible ratio arrays so the web `RaagaPlayer` can render the raga as sound. Distinct from NadaBrahman (which *recommends* a raga); Raaga gives a chosen melakarta its full musical + therapeutic profile (`engine.ts:1-10`).
 
 ## 1. Identity

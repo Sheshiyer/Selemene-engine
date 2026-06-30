@@ -619,6 +619,7 @@ crates/
 |-----------|------------|
 | **Compute** | [Railway](https://railway.app) |
 | **Admin Frontend** | [Vercel](https://vercel.com) (`apps/admin-web`) · billing at `/billing` |
+| **Desktop Client** | [Sankalpa](../sankalpa/) · Electron app replacing retired `biofield-web` and `noesis-web` |
 | **Payments** | [Dodo Payments](https://dodopayments.com) — plan catalog, subscriptions, webhooks |
 | **Database** | [Supabase](https://supabase.com) PostgreSQL |
 | **Cache** | Redis (L2) + LRU (L1) |

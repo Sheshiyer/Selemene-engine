@@ -90,7 +90,7 @@ covers anything older than that.
 
 ## § API
 
-### Inbound webhooks (Dodo → biofield-web → noesis-api)
+### Inbound webhooks (Dodo → admin-web → noesis-api)
 
 The Next.js adaptor verifies Standard Webhooks signatures (`webhook-id`,
 `webhook-signature`, `webhook-timestamp` headers) and forwards the verified
@@ -164,7 +164,7 @@ engine response.
 
 ### Customer balance proxy
 
-`GET /api/v1/billing/balance` (authenticated, biofield-web → noesis-api)
+`GET /api/v1/billing/balance` (authenticated, admin-web → noesis-api)
 
 Rust handler:
 1. Look up `users.dodo_customer_id` for the JWT subject.
@@ -279,8 +279,8 @@ CREATE TABLE reconcile_runs (
 ### Frontend surface
 
 Route group: `apps/admin-web/app/(protected)/billing/*` (port 3001 in dev).
-Admin-web is the dedicated operator app — `apps/biofield-web` (port 3000)
-remains the end-user engine output area only.
+Admin-web is the dedicated operator app. The end-user engine output area
+lives in the `sankalpa` repo after `apps/biofield-web` was retired.
 
 The existing `(protected)/layout.tsx` already gates routes via
 `requiredPermissionForPath()` + `hasPermission()`. The billing routes are

@@ -1,5 +1,9 @@
 # Nādashakti V2 — Audio Richness Plan
 
+> **Note (2026-06-30):** `apps/noesis-web` has been retired from this repo.
+> The v1 callsites in `apps/noesis-web` referenced below are historical; the
+> production renderer will be ported to [Sankalpa](../../sankalpa/).
+
 **Document type:** Swarm Architect phase→wave→swarm plan
 **Companion:** `RAAGA_ENGINE.md`, `SHRUTI_THEORY.md`
 **Author:** Claude (orchestrator), 2026-05-09
