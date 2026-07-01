@@ -31,7 +31,7 @@ describe("NoesisClient", () => {
       expect(res.engine_id).toBe("ok");
     }
 
-    expect(fetchMock).toHaveBeenCalledTimes(16);
+    expect(fetchMock).toHaveBeenCalledTimes(ENGINE_IDS.length);
   });
 
   it("supports all 6 workflow execute calls", async () => {

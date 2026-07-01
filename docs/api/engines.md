@@ -5,6 +5,8 @@
 Engine endpoints provide direct access to individual symbolic mirrors.
 All engines use the shared `EngineInput` schema and return `EngineOutput` for reflection and inquiry.
 
+**Witness prompts:** Each engine returns a lightweight `witness_prompt` (rule-based, non-prescriptive). Rich Aletheios/Pichet dyad interpretation and premium asset generation are served from Selemene (see `/api/v1/witness/interpret` and additive asset surfaces). witness-agents is now reference + asset source only.
+
 ## Base Path
 
 ```

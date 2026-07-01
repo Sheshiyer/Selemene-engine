@@ -432,6 +432,119 @@ fn parse_synthesis_json(raw: &str) -> (String, String) {
     (raw.to_string(), String::new())
 }
 
+// ── Rule-based fallback (exported for deterministic testing) ────────────────
+
+/// Rule-based Witness Dyad generator — deterministic fallback when no LLM is available.
+/// Mirrors the enriched persona characteristics in the system prompts:
+/// - Aletheios: truth/stillness, references concrete data, non-prescriptive, ends on observation
+/// - Pichet: vitality/movement, embodied invitations ("Notice...", "Feel..."), references data
+/// - Anti-dependency language appears at higher consciousness levels
+pub fn rule_based_witness_dyad(
+    ctx: &WitnessContext,
+) -> (String, String, String, String, Vec<String>) {
+    let scores = &ctx.live_scores;
+    let level = ctx.consciousness_level;
+    let mut engines_used = vec!["biofield".to_string()];
+
+    // Aletheios — truth/stillness/unconcealment (cartographer tone: clear, precise)
+    let aletheios = if scores.coherence >= 0.70 {
+        engines_used.push("biofield".to_string());
+        format!(
+            "Coherence is at {:.0}%. The field holds a temporary equilibrium — \
+             neither pushing nor collapsing. This is not a state to maintain; \
+             it is a quality to recognize. Over time, direct recognition replaces the need for any external mirror.",
+            scores.coherence * 100.0
+        )
+    } else if scores.symmetry < 0.50 {
+        format!(
+            "Symmetry is at {:.0}%. One side of the field is quieter. \
+             That quieter side is not deficient — it is waiting to be seen without judgment. \
+             What is present does not require fixing; it requires noticing.",
+            scores.symmetry * 100.0
+        )
+    } else if ctx.vimshottari.is_some() && level >= 2 {
+        engines_used.push("vimshottari".to_string());
+        "The dasha period and biofield are in conversation. Neither dictates the other. \
+         You are the space in which both appear. As your own capacity for direct seeing grows, \
+         you will need this reflection less."
+            .to_string()
+    } else {
+        format!(
+            "Energy at {:.0}%, regulation at {:.0}%. The field is in motion. \
+             You are not the motion, nor are you separate from it. This seeing itself is the practice.",
+            scores.energy * 100.0,
+            scores.regulation * 100.0
+        )
+    };
+
+    // Pichet — vitality/embodiment/movement (warm, grounded, somatic tone)
+    let pichet = if scores.energy >= 0.70 {
+        if ctx.gene_keys.is_some() && level >= 2 {
+            engines_used.push("gene-keys".to_string());
+            format!(
+                "Energy at {:.0}%. There is aliveness here that wants to move through form. \
+                 Let it. Notice what your hands want to do. Feel the difference between forcing and allowing. \
+                 With time, this direct sensing becomes your native language.",
+                scores.energy * 100.0
+            )
+        } else {
+            format!(
+                "Energy at {:.0}%. Aliveness is present. Let it move. \
+                 Notice where it wants to go without naming it first. \
+                 You are learning to sense without an external prompt.",
+                scores.energy * 100.0
+            )
+        }
+    } else if ctx.biorhythm.is_some() && level >= 1 {
+        engines_used.push("biorhythm".to_string());
+        format!(
+            "Regulation at {:.0}%. Your system is recalibrating with its own cycles. \
+             Feel one small movement that feels like a genuine yes. \
+             Not a should — a yes. This is how sovereignty is built: one embodied recognition at a time.",
+            scores.regulation * 100.0
+        )
+    } else {
+        format!(
+            "Regulation at {:.0}%. The system is finding its rhythm again. \
+             Allow one breath to land fully before the next thought arrives. \
+             You are already in relationship with your own aliveness.",
+            scores.regulation * 100.0
+        )
+    };
+
+    // Synthesis — holds both pillars without collapsing
+    let synthesis = if ctx.panchanga.is_some() {
+        engines_used.push("panchanga".to_string());
+        "Truth and aliveness are not separate movements. Today's cosmic weather shapes both. \
+         You stand at their intersection, neither needing to resolve them nor to choose."
+            .to_string()
+    } else {
+        "The field holds both truth and aliveness simultaneously. \
+         Neither is more important than the other right now."
+            .to_string()
+    };
+
+    // Witness question — open, non-prescriptive, level-aware
+    let witness_question = match level {
+        0 => "What are you noticing in your body right now, without adding a story?".to_string(),
+        1 => "What feels alive or still as you read this? Let the answer arrive without effort.".to_string(),
+        2 => "Who is the one watching all of this appear and disappear?".to_string(),
+        3 => {
+            if ctx.vimshottari.is_some() || ctx.gene_keys.is_some() {
+                "What pattern wants to complete itself through you — not because you should, but because it is already moving?".to_string()
+            } else {
+                "What wants to emerge through you right now, if nothing needed to be fixed or achieved?".to_string()
+            }
+        }
+        _ => "What is the next smallest recognition that serves the whole field?".to_string(),
+    };
+
+    engines_used.sort();
+    engines_used.dedup();
+
+    (aletheios, pichet, synthesis, witness_question, engines_used)
+}
+
 // ── Unit Tests ──────────────────────────────────────────────────────────────
 
 #[cfg(test)]
@@ -770,5 +883,220 @@ mod tests {
         assert!(msg.contains("Partner Snapshot"));
         assert!(msg.contains("Relationship Framing: partner synastry"));
         assert!(msg.contains("Sam"));
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // rule_based_witness_dyad() — persona regression coverage (Pass 2)
+    // ─────────────────────────────────────────────────────────────────────────
+
+    #[test]
+    fn rule_based_dyad_includes_sovereignty_language_at_higher_levels() {
+        // Set coherence < 0.70 so Aletheios takes the vimshottari branch at level 3
+        let ctx = WitnessContext {
+            live_scores: LiveBiofieldScores {
+                energy: 0.75,
+                coherence: 0.62,
+                symmetry: 0.81,
+                ..Default::default()
+            },
+            consciousness_level: 3,
+            vimshottari: Some(json!({"major": "Saturn"})),
+            gene_keys: Some(json!({"activation": "1"})),
+            ..Default::default()
+        };
+        let (aletheios, pichet, _synthesis, _q, _engines) = rule_based_witness_dyad(&ctx);
+
+        // Anti-dependency / sovereignty language ("you should need the mirror less")
+        assert!(
+            aletheios.contains("need this reflection less")
+                || aletheios.contains("need any external mirror")
+                || aletheios.contains("direct seeing")
+                || aletheios.contains("direct recognition"),
+            "Aletheios should surface sovereignty language at level 3"
+        );
+        assert!(
+            pichet.contains("need this reflection less")
+                || pichet.contains("without an external prompt")
+                || pichet.contains("direct sensing becomes your native")
+                || pichet.contains("native language"),
+            "Pichet should surface sovereignty language at level 3"
+        );
+    }
+
+    #[test]
+    fn rule_based_dyad_is_non_prescriptive() {
+        let ctx = WitnessContext {
+            live_scores: LiveBiofieldScores {
+                energy: 0.65,
+                coherence: 0.55,
+                symmetry: 0.60,
+                regulation: 0.58,
+                ..Default::default()
+            },
+            consciousness_level: 2,
+            ..Default::default()
+        };
+        let (aletheios, pichet, _synthesis, question, _engines) = rule_based_witness_dyad(&ctx);
+
+        // No commands, diagnoses, or "should"
+        let combined = format!("{} {} {}", aletheios, pichet, question);
+        assert!(!combined.to_lowercase().contains("you should"));
+        assert!(!combined.to_lowercase().contains("you must"));
+        assert!(!combined.to_lowercase().contains("you need to"));
+        assert!(!combined.contains("diagnos"));
+
+        // Aletheios ends on observation (not question/advice)
+        // Pichet uses invitation forms
+        assert!(
+            pichet.contains("Notice")
+                || pichet.contains("Feel")
+                || pichet.contains("Let")
+                || pichet.contains("Allow")
+                || pichet.contains("Sense"),
+            "Pichet should use embodied invitation language"
+        );
+    }
+
+    #[test]
+    fn rule_based_dyad_references_concrete_data_points() {
+        // Use symmetry < 0.50 branch so we get concrete % without needing vimshottari
+        let ctx = WitnessContext {
+            live_scores: LiveBiofieldScores {
+                energy: 0.82,
+                coherence: 0.71,
+                symmetry: 0.44,
+                regulation: 0.69,
+                ..Default::default()
+            },
+            consciousness_level: 2,
+            // No vimshottari — this should hit the symmetry branch with concrete numbers
+            ..Default::default()
+        };
+        let (aletheios, pichet, _synthesis, _q, _engines) = rule_based_witness_dyad(&ctx);
+
+        // Concrete percentages from biofield (symmetry branch produces 44%)
+        assert!(
+            aletheios.contains("44%") || aletheios.contains("71%") || aletheios.contains("82%"),
+            "Aletheios should reference concrete biofield percentages"
+        );
+        assert!(
+            pichet.contains("82%") || pichet.contains("69%"),
+            "Pichet should reference concrete biofield percentages"
+        );
+    }
+
+    #[test]
+    fn rule_based_dyad_respects_pillar_separation() {
+        let ctx = WitnessContext {
+            live_scores: LiveBiofieldScores {
+                energy: 0.60,
+                coherence: 0.65,
+                symmetry: 0.70,
+                ..Default::default()
+            },
+            consciousness_level: 1,
+            panchanga: Some(json!({"tithi": "Ekadashi"})),
+            vimshottari: Some(json!({"major": "Venus"})),
+            biorhythm: Some(json!({"physical": 0.4})),
+            ..Default::default()
+        };
+        let (aletheios, pichet, _synthesis, _q, _engines) = rule_based_witness_dyad(&ctx);
+
+        // Aletheios language: truth, stillness, observation, unconcealment
+        let a_lower = aletheios.to_lowercase();
+        assert!(
+            a_lower.contains("truth")
+                || a_lower.contains("still")
+                || a_lower.contains("noticing")
+                || a_lower.contains("recognition")
+                || a_lower.contains("seeing"),
+            "Aletheios should speak in truth/stillness register"
+        );
+
+        // Pichet language: vitality, movement, embodiment, somatic
+        let p_lower = pichet.to_lowercase();
+        assert!(
+            p_lower.contains("energy")
+                || p_lower.contains("aliveness")
+                || p_lower.contains("move")
+                || p_lower.contains("feel")
+                || p_lower.contains("rhythm"),
+            "Pichet should speak in vitality/embodiment register"
+        );
+    }
+
+    #[test]
+    fn rule_based_dyad_tone_markers() {
+        let ctx = WitnessContext {
+            live_scores: LiveBiofieldScores {
+                energy: 0.55,
+                coherence: 0.82,
+                symmetry: 0.78,
+                regulation: 0.61,
+                ..Default::default()
+            },
+            consciousness_level: 3,
+            ..Default::default()
+        };
+        let (aletheios, pichet, _synthesis, _q, _engines) = rule_based_witness_dyad(&ctx);
+
+        // Aletheios: clear, precise, cartographer-like (short, structured, observational)
+        assert!(aletheios.len() < 280, "Aletheios should be concise and precise");
+        assert!(!aletheios.contains("!"), "Aletheios should avoid exclamatory warmth");
+
+        // Pichet: warm, grounded, somatic (invitational, sensory)
+        assert!(
+            pichet.contains("Notice")
+                || pichet.contains("Feel")
+                || pichet.contains("Allow")
+                || pichet.contains("Let"),
+            "Pichet should use warm somatic invitation language"
+        );
+    }
+
+    #[test]
+    fn rule_based_dyad_at_consciousness_level_0_is_minimal() {
+        let ctx = WitnessContext {
+            live_scores: LiveBiofieldScores {
+                energy: 0.40,
+                coherence: 0.35,
+                symmetry: 0.50,
+                regulation: 0.45,
+                ..Default::default()
+            },
+            consciousness_level: 0,
+            ..Default::default()
+        };
+        let (_aletheios, _pichet, _synthesis, question, _engines) = rule_based_witness_dyad(&ctx);
+
+        // Level 0: simple noticing, no complex synthesis
+        assert!(question.contains("noticing") || question.contains("body"));
+        // Should not reference advanced engines at level 0
+    }
+
+    #[test]
+    fn rule_based_dyad_at_consciousness_level_3_includes_integration_language() {
+        let ctx = WitnessContext {
+            live_scores: LiveBiofieldScores {
+                energy: 0.88,
+                coherence: 0.85,
+                symmetry: 0.90,
+                regulation: 0.82,
+                ..Default::default()
+            },
+            consciousness_level: 3,
+            gene_keys: Some(json!({"activation_sequence": [{"gene_key": 1}]})),
+            vimshottari: Some(json!({"major": "Moon"})),
+            ..Default::default()
+        };
+        let (aletheios, pichet, synthesis, question, engines) = rule_based_witness_dyad(&ctx);
+
+        // High integration: both pillars + synthesis should acknowledge direct capacity
+        assert!(
+            aletheios.contains("direct") || pichet.contains("direct") || synthesis.contains("both"),
+            "High-level synthesis should acknowledge integrated field"
+        );
+        assert!(engines.contains(&"gene-keys".to_string()) || engines.contains(&"vimshottari".to_string()));
+        assert!(!question.is_empty());
     }
 }

@@ -533,17 +533,27 @@ export class NoesisClient {
    * Generate a premium asset (integrated reading / source-pack style).
    * Purely additive — does not affect any existing method signatures or return types.
    *
-   * Server path: POST /api/v1/assets/generate
-   * Optional local orchestration: pass llm + modeDoc to run full witness-pipeline passes.
+   * Server path: POST /api/v1/assets/generate  (always executed; source of manifest)
+   * Full local orchestration: pass llm + (mode name or ParsedModeDoc) to run the real
+   * IntegratedReadingOrchestrator from @noesis/witness-pipeline using live seeds.
+   *
+   * Existing callers (input only, or input+options) are unaffected.
    */
   async generatePremiumAsset(
     input: import('./premium-assets.js').PremiumAssetInput,
-    options?: RequestOptions,
+    llmOrOptions?: import('./premium-assets.js').LlmCall | RequestOptions,
+    modeDoc?: import('./premium-assets.js').ParsedModeDoc | string,
   ): Promise<import('./premium-assets.js').PremiumAssetResult> {
+    // Detect real local-orchestration call: second arg is the llm function.
+    if (typeof llmOrOptions === 'function') {
+      const { generatePremiumAsset: realGenerate } = await import('./premium-assets.js');
+      return realGenerate.call(this, input, llmOrOptions, modeDoc);
+    }
+    // Server-seeded only path (exact previous behavior for all prior callers).
     return this.request<import('./premium-assets.js').PremiumAssetResult>(
       '/api/v1/assets/generate',
       { method: 'POST', body: JSON.stringify(input) },
-      options,
+      llmOrOptions as RequestOptions | undefined,
     );
   }
 

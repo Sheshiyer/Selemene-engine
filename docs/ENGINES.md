@@ -356,6 +356,18 @@ All engines return this unified structure:
 
 ---
 
+## Rich Witness Dyad and Premium Assets
+
+Selemene is the canonical service for rich Aletheios + Pichet voice interpretation and premium integrated reading / asset generation.
+
+- Every engine returns a lightweight `witness_prompt` — this is the rule-based, non-prescriptive mirror entry point and remains unchanged.
+- Rich dyad interpretation (Aletheios voice, Pichet voice, synthesis) is served from Selemene via `/api/v1/witness/interpret` (and SDK `interpretWitness`).
+- Multi-pass premium assets are available via additive surfaces (e.g. `POST /api/v1/assets/generate`, SDK `generatePremiumAsset`).
+
+**Retirement note:** witness-agents is now reference + asset source only (personas, mode documents, historical batches). All live rich dyad and premium asset traffic uses Selemene endpoints and the existing SDK surface. The non-prescriptive "mirror" philosophy is preserved.
+
+---
+
 <br>
 
 <p align="center">

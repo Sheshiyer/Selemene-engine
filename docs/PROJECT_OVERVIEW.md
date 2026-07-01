@@ -9,6 +9,8 @@
 
 > March 10, 2026 correction: the active Vedic runtime path is native Rust for `panchanga`, `vimshottari`, and `transits`. `noesis-vedic-api` remains in-repo as an optional provider client, but it is not the current production calculation path for those engines.
 
+> **Witness Dyad and Premium Assets (2026-07 retirement note):** Selemene is the single canonical service for rich Aletheios + Pichet voice interpretation (dyad synthesis) and premium multi-pass integrated reading / asset generation. Lightweight per-engine `witness_prompt` remains the rule-based mirror entry point. Additive surfaces (e.g. `/api/v1/assets/generate`, SDK `generatePremiumAsset`) expose premium assets. witness-agents is now reference + asset source only (personas, mode docs, historical batches). All live rich dyad and premium asset traffic uses Selemene endpoints and SDK. Non-prescriptive "mirror" philosophy preserved.
+
 ---
 
 ## 1. What Is Working

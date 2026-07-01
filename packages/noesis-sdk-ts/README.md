@@ -108,6 +108,11 @@ console.log(result.witness_layer?.question); // "What are you not saying?"
 | `getBillingPortal(options?)` | `/api/v1/billing/portal` — Dodo portal URL |
 | `listReadings(opts?, options?)` | `/api/v1/readings` — reading history |
 | `getReading(readingId, options?)` | `/api/v1/readings/{id}` |
-| `interpretWitness(input, options?)` | `/api/v1/witness/interpret` |
+| `interpretWitness(input, options?)` | `/api/v1/witness/interpret` — rich Aletheios + Pichet dyad (Selemene canonical) |
 | `validateEngine(engineId, options?)` | Returns `{ valid: boolean }` |
 | `rateLimitInfo` | Last parsed `X-RateLimit-*` headers |
+| `generatePremiumAsset(...)` (additive) | Premium multi-pass asset generation (additive surface; Selemene canonical) |
+
+**Witness and premium assets:** Selemene is the canonical service for rich Aletheios/Pichet dyad interpretation and premium integrated reading / asset generation. `interpretWitness` surfaces the rich voices + synthesis. Engine-level `witness_prompt` remains the lightweight rule-based mirror entry point. Additive premium asset surfaces (e.g. `generatePremiumAsset`) provide multi-pass source-pack artifacts.
+
+**Retirement note:** witness-agents is now reference + asset source only (personas, modes, historical batches). All live rich dyad and premium asset traffic uses Selemene endpoints and SDK surfaces. Non-prescriptive "mirror" philosophy preserved.

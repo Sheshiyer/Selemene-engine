@@ -100,6 +100,8 @@ curl -X POST http://localhost:8080/api/v1/workflows/birth-blueprint/execute \
 }
 ```
 
+**Witness prompts in workflows:** Each engine output includes its lightweight `witness_prompt` (rule-based mirror entry point). Rich Aletheios/Pichet dyad and premium asset generation are handled by Selemene's canonical surfaces (see Witness section in API README). witness-agents is reference + asset source only.
+
 ## Workflow Output Semantics
 
 - A successful workflow response can still be partial.

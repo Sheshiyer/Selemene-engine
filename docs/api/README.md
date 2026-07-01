@@ -159,9 +159,13 @@ Full reference: [billing.md](./billing.md).
 
 ### Witness
 
-- `POST /api/v1/witness/interpret` — generate witness interpretation from engine outputs
+- `POST /api/v1/witness/interpret` — generate rich witness dyad interpretation (Aletheios + Pichet voices + synthesis) from engine outputs. Selemene is the canonical service for rich Aletheios/Pichet dyad interpretation.
   - Input: `{ engine_outputs: [...], context?: {...} }`
-  - Output: reading-object with `witness_layer` fields
+  - Output: reading-object with `witness_layer` fields (fixed 6-field dyad contract)
+- Individual engine outputs continue to include a lightweight `witness_prompt` — this remains the rule-based, non-prescriptive mirror entry point. Rich persona voices and multi-pass synthesis live in the dyad path.
+- Additive premium asset surfaces (e.g. `POST /api/v1/assets/generate` and SDK `generatePremiumAsset`) provide access to multi-pass integrated reading generation and source-pack artifacts. These are additive and do not affect existing contracts.
+
+**Retirement note:** witness-agents is now reference + asset source only (personas, mode documents, historical batches). All live rich dyad and premium asset traffic uses Selemene endpoints and SDK surfaces. The non-prescriptive "mirror" philosophy is preserved.
 
 ### User Profile
 
