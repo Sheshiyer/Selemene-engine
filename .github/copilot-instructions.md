@@ -1,9 +1,9 @@
 # Noesis Engine — AI Coding Agent Instructions
 
 ## Project Overview
-Noesis (formerly Selemene Engine) is a consciousness calculation platform with **16 engines** (11 Rust + 5 TypeScript), deployed on **Railway** with **Supabase** PostgreSQL for auth/DB. It serves a RESTful API at `https://selemene.tryambakam.space`.
+Noesis (formerly Selemene Engine) is a consciousness calculation platform with **17 engines** (11 Rust + 6 TypeScript), deployed on **Railway** with **Supabase** PostgreSQL for auth/DB. It serves a RESTful API at `https://selemene.tryambakam.space`.
 
-**Current Status**: Production — all 16 engines live and calculating.
+**Current Status**: Production — all 17 engines live and calculating.
 
 ## Architecture
 
@@ -23,8 +23,8 @@ All engines implement the `ConsciousnessEngine` trait in [crates/noesis-core/src
 - `engine-nadabrahman` — Sound consciousness engine
 - `engine-transits` — Planetary transits, aspects & Sade Sati
 
-**5 TypeScript Engines** (in `ts-engines/`, deployed as Railway sidecar on port 3001):
-- Tarot, I-Ching, Enneagram, Sacred Geometry, Sigil Forge
+**6 TypeScript Engines** (in `ts-engines/`, deployed as Railway sidecar on port 3001):
+- Tarot, I-Ching, Enneagram, Sacred Geometry, Sigil Forge, Raaga
 - Bridged to Rust via `BridgeEngine` in [crates/noesis-bridge/](../crates/noesis-bridge/)
 
 ### Infrastructure

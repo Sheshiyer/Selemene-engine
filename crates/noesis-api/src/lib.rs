@@ -139,6 +139,7 @@ use workflow_parity::log_workflow_registry_parity;
         handlers::biofield::list_baselines,
         handlers::biofield::create_baseline,
         handlers::biofield::create_export,
+        handlers::assets::generate,
     ),
     components(
         schemas(
@@ -264,6 +265,9 @@ use workflow_parity::log_workflow_registry_parity;
             handlers::biofield::ListBiofieldBaselinesResponse,
             handlers::biofield::ReprocessBiofieldReadingRequest,
             handlers::biofield::BiofieldReadingDetail,
+            handlers::assets::AssetGenerateRequest,
+            handlers::assets::AssetGenerateResponse,
+            handlers::assets::AssetPass,
         )
     ),
     tags(
@@ -275,6 +279,7 @@ use workflow_parity::log_workflow_registry_parity;
         (name = "admin", description = "Admin session and management surfaces"),
         (name = "auth", description = "Authentication endpoints (register, login, password reset)"),
         (name = "biofield", description = "Biofield capture session and reading endpoints"),
+        (name = "assets", description = "Premium asset generation (additive)"),
     ),
     modifiers(&SecurityAddon),
     info(
@@ -915,6 +920,8 @@ pub fn create_router(state: AppState, config: &ApiConfig) -> Router {
             "/onboarding/:code/openclaw.txt",
             get(handlers::onboarding::get_onboarding),
         )
+        // Additive premium asset surface (witness-pipeline backed)
+        .route("/assets/generate", post(handlers::assets::generate))
         // Layers are applied bottom-to-top, so rate_limit runs AFTER auth
         .layer(axum_middleware::from_fn_with_state(
             rate_limiter.clone(),

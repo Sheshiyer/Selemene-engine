@@ -29,7 +29,7 @@ Sentry error tracking is integrated (`sentry 0.34`, `sentry-tower`), configured 
 
 ### Engines That Calculate Real Values
 
-All 16 engines (11 Rust + 5 TypeScript) produce genuine calculations:
+All 17 engines (11 Rust + 6 TypeScript) produce genuine calculations:
 
 **Panchanga** (native Rust): Computes Julian Day conversion, solar/lunar longitudes, tithi, nakshatra, yoga, karana, and vara. The current engine prefers Swiss-Ephemeris-backed solar/lunar positions and falls back to local approximations only when needed. Recent hygiene fixes validated the canonical `1991-08-13 13:31 Asia/Kolkata` birth chart and the `2026-03-10` Bengaluru day Panchang karana sequence against trusted references.
 
@@ -53,7 +53,7 @@ All 16 engines (11 Rust + 5 TypeScript) produce genuine calculations:
 
 **Vedic API Client** (`noesis-vedic-api`): Full FreeAstrologyAPI.com client covering 15+ endpoints (Panchang, Dasha, Birth Chart, Vargas, Transits, Yogas, Shadbala, Ashtakavarga, Muhurta, and more). It remains useful as an integration/client crate, but it is not the active production runtime path for the current Vedic engine calculations after the March 2026 hygiene corrections.
 
-**Bridge** (552 LOC): HTTP adapter connecting to 5 TypeScript engines (Tarot, I-Ching, Enneagram, Sacred Geometry, Sigil Forge) via Bun/Elysia. Health check, configurable timeout, connection retry. Production-ready but depends on external TS server availability.
+**Bridge** (552 LOC): HTTP adapter connecting to 6 TypeScript engines (Tarot, I-Ching, Enneagram, Sacred Geometry, Sigil Forge, Raaga) via Bun/Elysia. Health check, configurable timeout, connection retry. Production-ready but depends on external TS server availability.
 
 **Auth** (~400 LOC + password module): JWT + API key authentication. Argon2id password hashing. Postgres-backed key validation with SHA-256 hashing. Tiered rate limiting (60/1,000/10,000 req/min). Dual-write for API key persistence.
 
@@ -271,12 +271,12 @@ The engine calculation times are genuinely fast — Gene Keys at 0.012ms, most o
 
 ## 9. Summary
 
-The Selemene Engine is a serious piece of infrastructure. 16 engines (11 Rust + 5 TypeScript) produce real calculations, the auth system works end-to-end against Supabase, the deployment pipeline is solid, and the test coverage is strong. The codebase is honest about what's stubbed (biofield, face reading) and the architecture supports clean extension.
+The Selemene Engine is a serious piece of infrastructure. 17 engines (11 Rust + 6 TypeScript) produce real calculations, the auth system works end-to-end against Supabase, the deployment pipeline is solid, and the test coverage is strong. The codebase is honest about what's stubbed (biofield, face reading) and the architecture supports clean extension.
 
 The most impactful improvements are: rotating the exposed JWT secret (security), completing the workflow synthesizers (product value), and re-enabling Redis L2 cache (performance). Everything else is polish, cleanup, or future roadmap.
 
 **Total LOC**: ~54,000 Rust + ~2,000 TypeScript scaffolding
 **Tests**: 1,321+ functions across 41 files
-**Engines**: 16 (11 Rust + 5 TypeScript)
+**Engines**: 17 (11 Rust + 6 TypeScript)
 **Live**: https://selemene.tryambakam.space
 **Auth**: Working end-to-end with Supabase PostgreSQL

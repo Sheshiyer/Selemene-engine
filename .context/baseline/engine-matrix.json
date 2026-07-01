@@ -2,8 +2,8 @@
   "generated_at": "2026-03-11",
   "counts": {
     "rust_engines": 11,
-    "ts_engines": 5,
-    "total_engines": 16
+    "ts_engines": 6,
+    "total_engines": 17
   },
   "rust_engines": [
     {
@@ -160,17 +160,32 @@
       "health_status": "verified-by ts-engines/tests/baseline_registry.test.ts"
     },
     {
-      "engine_id": "tarot",
-      "engine_name": "Tarot",
+      "engine_id": "sigil-forge",
+      "engine_name": "Sigil Forge",
       "package_name": "noesis-ts-engines",
       "package_version": "1.0.0",
       "engine_version": "1.0.0",
-      "required_phase": 0,
+      "required_phase": 1,
       "runtime": "ts-sidecar",
       "bridge_url_env": "TS_ENGINES_URL",
       "default_bridge_url": "http://localhost:3001",
       "health_endpoint": "/health/ready",
       "health_status": "verified-by ts-engines/tests/baseline_registry.test.ts"
+    },
+    {
+      "engine_id": "raaga",
+      "engine_name": "Raaga",
+      "package_name": "noesis-web",
+      "package_version": "1.0.0",
+      "engine_version": "1.0.0",
+      "required_phase": 1,
+      "runtime": "ts-embedded",
+      "bridge_url_env": "TS_ENGINES_URL",
+      "default_bridge_url": "http://localhost:3001",
+      "health_endpoint": "/health/ready",
+      "health_status": "verified-by apps/noesis-web/src/lib/raaga/tests"
     }
+  ]
+}
   ]
 }

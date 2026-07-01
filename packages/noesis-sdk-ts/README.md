@@ -1,6 +1,6 @@
 # @noesis/sdk
 
-TypeScript SDK for the Noesis Consciousness Engine — 16 engines covering Vedic astrology, Human Design, Gene Keys, numerology, biorhythm, Tarot, I-Ching, and more.
+TypeScript SDK for the Noesis Consciousness Engine — 17 engines covering Vedic astrology, Human Design, Gene Keys, numerology, biorhythm, Tarot, I-Ching, Raaga, and more.
 
 **API**: `https://selemene.tryambakam.space` | **Web viewer**: `https://noesis.tryambakam.space`
 
@@ -48,9 +48,9 @@ const result = await client.calculate("numerology", {
 console.log(result.engine_id);
 ```
 
-## Engine coverage (16)
+## Engine coverage (17)
 
-`biofield`, `biorhythm`, `enneagram`, `face-reading`, `gene-keys`, `human-design`, `i-ching`, `nadabrahman`, `numerology`, `panchanga`, `sacred-geometry`, `sigil-forge`, `tarot`, `transits`, `vedic-clock`, `vimshottari`
+`biofield`, `biorhythm`, `enneagram`, `face-reading`, `gene-keys`, `human-design`, `i-ching`, `nadabrahman`, `numerology`, `panchanga`, `raaga`, `sacred-geometry`, `sigil-forge`, `tarot`, `transits`, `vedic-clock`, `vimshottari`
 
 ## Workflow coverage (6)
 

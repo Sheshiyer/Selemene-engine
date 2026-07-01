@@ -2,11 +2,11 @@
   <img src="assets/images/engines/2C-stained-glass-logo-nanobananapro-v2.png" alt="Selemene Engine" width="400">
 </p>
 
-<h1 align="center">The 16 Engines</h1>
+<h1 align="center">The 17 Engines</h1>
 
 <p align="center">
-  <em>Sixteen implemented engines acting as mirrors for inquiry and synthesis.</em><br>
-  <sub>16 implemented engines across Rust and TypeScript surfaces</sub>
+  <em>Seventeen implemented engines acting as mirrors for inquiry and synthesis.</em><br>
+  <sub>17 implemented engines across Rust and TypeScript surfaces</sub>
 </p>
 
 <br>
@@ -179,7 +179,7 @@ Maps voice characteristics to raaga resonance and chakra activations.
 
 <br>
 
-# TypeScript Engines (5)
+# TypeScript Engines (6)
 
 Esoteric calculation engines built in TypeScript, bridged to main Rust API.
 
@@ -248,6 +248,17 @@ Includes Flower of Life, Metatron's Cube, Sri Yantra, Golden Spiral.
 **Endpoint:** `POST /api/v1/engines/sigil-forge/calculate`
 
 Combines Austin Osman Spare's method with planetary and angelic signatures.
+
+<br>
+
+## 17. Raaga Engine
+
+**Generative rāga composition** — Melodic maps from the 72 Melakarta system for state-specific sonic practice and entrainment.
+
+**Input:** `raga_params (melakarta_number, time_of_day, mood)`  
+**Endpoint:** `POST /api/v1/engines/raaga/calculate`
+
+Maps Hindustani rāga resonance to consciousness state and biofield layer activation.
 
 <br>
 

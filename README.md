@@ -12,7 +12,7 @@
 <p align="center">
   <strong>Live:</strong> <a href="https://selemene.tryambakam.space/health/live">selemene.tryambakam.space</a>
   &nbsp;·&nbsp;
-  <strong>16 engines</strong>
+  <strong>17 engines</strong>
   &nbsp;·&nbsp;
   <strong>6 workflows</strong>
   &nbsp;·&nbsp;
@@ -48,7 +48,7 @@
 >
 > **Every system you've tried positioned you as user, not author.**
 >
-> Selemene Engine offers something different: 16 symbolic mirrors that reflect patterns in your birth data, timing, and energetic signature. Not to give answers, but to train self-consciousness.
+> Selemene Engine offers something different: 17 symbolic mirrors that reflect patterns in your birth data, timing, and energetic signature. Not to give answers, but to train self-consciousness.
 >
 > Built in Rust. Sub-millisecond calculations. 100% astronomical accuracy.
 >
@@ -64,12 +64,12 @@ Apps that gamify meditation. Courses that promise transformation. Retreats that 
 
 Each delivered value while creating dependency.
 
-Selemene offers something different: **16 symbolic mirrors** that reflect patterns in your birth data, timing, and energetic signature. Not to give answers, but to train the capacity to witness yourself.
+Selemene offers something different: **17 symbolic mirrors** that reflect patterns in your birth data, timing, and energetic signature. Not to give answers, but to train the capacity to witness yourself.
 
 ### Built Different
 - **Sub-millisecond calculations** — Technical rigor in service of inquiry
 - **Swiss Ephemeris-backed Vedic core** — Panchanga, Vimshottari, and Transits validated against trusted chart references
-- **16 engines, one coherence** — Vedic, Western, and biofield traditions integrated
+- **17 engines, one coherence** — Vedic, Western, and biofield traditions integrated
 - **Anti-dependency design** — Succeeds when you outgrow it
 
 <br>
@@ -89,7 +89,7 @@ Each promised clarity while positioning you as dependent user, not sovereign aut
 - **Productivity:** Optimizes actions, but who chose the target?
 
 ### The Alternative
-Selemene doesn't deliver answers. It offers **mirrors** — 16 symbolic lenses calibrated to reflect different frequencies of your pattern.
+Selemene doesn't deliver answers. It offers **mirrors** — 17 symbolic lenses calibrated to reflect different frequencies of your pattern.
 
 **Not prediction. Reflection. Inquiry. Witness.**
 
@@ -203,7 +203,7 @@ let output = client.calculate("numerology", profile.to_engine_input()).await?;
 println!("{}", MarkdownRenderer::new().render_engine_output(&output));
 ```
 
-**Features:** HTTP client for all 16 engines & 6 workflows, local profile management (`~/.noesis/profile.json`), macOS Keychain API key storage, Markdown/JSON report rendering, TOML + env config.
+**Features:** HTTP client for all 17 engines & 6 workflows, local profile management (`~/.noesis/profile.json`), macOS Keychain API key storage, Markdown/JSON report rendering, TOML + env config.
 
 ### Terminal TUI (`noesis-tui`)
 
@@ -213,7 +213,7 @@ Full interactive terminal interface built with Ratatui. Run engines, browse work
 cargo run --bin noesis-tui
 ```
 
-**Screens:** Welcome (with connection status) · Onboarding wizard (8-step profile setup) · Engine picker (16 engines, `/` to filter) · Workflow picker (6 workflows) · Result display (styled Markdown, scroll, export) · History browser (past readings) · Profile editor (birth data + API key)
+**Screens:** Welcome (with connection status) · Onboarding wizard (8-step profile setup) · Engine picker (17 engines, `/` to filter) · Workflow picker (6 workflows) · Result display (styled Markdown, scroll, export) · History browser (past readings) · Profile editor (birth data + API key)
 
 **Keybinds:** `j/k` navigate · `Enter` select · `/` filter · `e` export MD · `J` export JSON · `r` re-run · `?` help overlay · `Ctrl+Q` quit
 
@@ -241,7 +241,7 @@ cargo run --bin noesis-tui
 
 <br>
 
-## ✦ The 16 Engines
+## ✦ The 17 Engines
 
 Each engine is a **mirror**, not a method. They don't predict; they reflect. The value isn't in the calculation — it's in what you witness when you see the pattern.
 
@@ -321,7 +321,7 @@ Each engine is a **mirror**, not a method. They don't predict; they reflect. The
 
 <br>
 
-### TypeScript Engines (5)
+### TypeScript Engines (6)
 
 > **Note:** These engines run in a separate `ts-engines` service. The API attempts to connect to them at startup (with 30s retry logic). If the service is unreachable, these endpoints will be unavailable.
 
@@ -351,6 +351,11 @@ Each engine is a **mirror**, not a method. They don't predict; they reflect. The
 <strong>Sigil Forge</strong><br>
 <sub>Intent Manifestation</sub><br>
 <code>intent_text</code>
+</td>
+<td align="center" width="20%">
+<strong>Raaga</strong><br>
+<sub>Raga Resonance · 72 Melakarta</sub><br>
+<code>raga_params</code>
 </td>
 </tr>
 </table>
@@ -444,14 +449,14 @@ True to the name *Noesis* (the act of knowing), workflows train direct intellect
 **`creative-expression`** — *Sigil Forge + Sacred Geometry*
 > Intent made visible. Symbols as seeds, geometry as meditation.
 
-**`full-spectrum`** — *All 16 Engines*
+**`full-spectrum`** — *All 17 Engines*
 > Complete consciousness portrait. Every lens, every frequency.
 
 </td>
 </tr>
 </table>
 
-<sub>*Workflows referencing TypeScript engines (Tarot, I-Ching, Enneagram, Sacred Geometry, Sigil Forge) require the TS engines server. See [Bridge CLI](bridges/cli/README.md) for setup.*</sub>
+<sub>*Workflows referencing TypeScript engines (Tarot, I-Ching, Enneagram, Sacred Geometry, Sigil Forge, Raaga) require the TS engines server. See [Bridge CLI](bridges/cli/README.md) for setup.*</sub>
 
 <details>
 <summary><strong>Execute a Workflow</strong></summary>
@@ -527,7 +532,7 @@ graph LR
     API --> Orch["⚙️ noesis-orchestrator"]
     Orch --> RE["🧮 Rust Engines (11)"]
     Orch --> Bridge["🌉 noesis-bridge"]
-    Bridge --> TSE["📦 TS Engines (5)<br>(Bun)"]
+    Bridge --> TSE["📦 TS Engines (6)<br>(Bun)"]
     API --> Cache["🔴 noesis-cache<br>(L1 LRU · L2 Redis · L3 Disk)"]
     Auth --> DB[("🗄️ Supabase<br>PostgreSQL")]
     API --> Metrics["📊 Prometheus<br>/metrics"]
@@ -536,7 +541,7 @@ graph LR
 
 Engine families:
 - Rust native: Panchanga, Human Design, Gene Keys, Vimshottari, Numerology, Biorhythm, Vedic Clock, Biofield, Face Reading, Nadabrahman, Transits
-- TypeScript bridged: Tarot, I-Ching, Enneagram, Sacred Geometry, Sigil Forge
+- TypeScript bridged: Tarot, I-Ching, Enneagram, Sacred Geometry, Sigil Forge, Raaga
 
 <details>
 <summary><strong>Crate Structure</strong></summary>
@@ -756,7 +761,7 @@ The onboarding instructions include:
 - OpenClaw Gateway adapter configuration
 - Gateway URL and authentication tokens
 - Connectivity test commands
-- List of all 16 engines and 6 workflows
+- List of all 17 engines and 6 workflows
 
 See [OpenClaw Integration](docs/api/OPENCLAW_INTEGRATION.md) for detailed setup.
 

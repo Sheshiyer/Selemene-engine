@@ -1,4 +1,5 @@
 export * from "./billing.js";
+export * from "./premium-assets.js";
 
 export const ENGINE_IDS = [
   "biofield",
@@ -524,6 +525,26 @@ export class NoesisClient {
     } catch {
       return { valid: false };
     }
+  }
+
+  // ── Premium Assets (additive, witness-pipeline backed) ──────────────────────
+
+  /**
+   * Generate a premium asset (integrated reading / source-pack style).
+   * Purely additive — does not affect any existing method signatures or return types.
+   *
+   * Server path: POST /api/v1/assets/generate
+   * Optional local orchestration: pass llm + modeDoc to run full witness-pipeline passes.
+   */
+  async generatePremiumAsset(
+    input: import('./premium-assets.js').PremiumAssetInput,
+    options?: RequestOptions,
+  ): Promise<import('./premium-assets.js').PremiumAssetResult> {
+    return this.request<import('./premium-assets.js').PremiumAssetResult>(
+      '/api/v1/assets/generate',
+      { method: 'POST', body: JSON.stringify(input) },
+      options,
+    );
   }
 
   private async request<T>(
