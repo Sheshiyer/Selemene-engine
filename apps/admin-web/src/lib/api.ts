@@ -206,25 +206,6 @@ export async function login(email: string, password: string): Promise<LoginRespo
   });
 }
 
-export async function getDiscordAuthUrl(redirectUri?: string): Promise<{ url: string }> {
-  return request<{ url: string }>(
-    `/api/v1/auth/discord/authorize${buildQuery({
-      redirect_uri: redirectUri
-    })}`
-  );
-}
-
-export async function discordCallback(
-  code: string,
-  state?: string,
-  redirectUri?: string
-): Promise<LoginResponse> {
-  return request<LoginResponse>("/api/v1/auth/discord/callback", {
-    method: "POST",
-    body: { code, state, redirect_uri: redirectUri }
-  });
-}
-
 export async function getAdminSession(token: string): Promise<AdminSession> {
   return request<AdminSession>("/api/v1/admin/session", {
     method: "GET",
