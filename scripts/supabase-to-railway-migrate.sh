@@ -29,6 +29,22 @@ DRY_RUN=0
 YES=0
 FORCE=0
 
+CRITICAL_TABLES=(
+  users
+  user_profiles
+  api_keys
+  user_roles
+  user_account_state
+  billing_subscriptions
+  processed_webhook_events
+  usage_logs
+  readings
+  biofield_sessions
+  biofield_measurements
+  raga_clips
+  reconcile_runs
+)
+
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --source) SOURCE_URL="${2:-}"; shift 2 ;;
@@ -90,6 +106,51 @@ require_command pg_dump
 require_command pg_restore
 require_command psql
 
+run_cmd() {
+  if [[ "$DRY_RUN" -eq 1 ]]; then
+    printf '+ '
+    printf '%q ' "$@"
+    printf '\n'
+    return 0
+  fi
+  "$@"
+}
+
+run_sql() {
+  local sql="$1"
+  run_cmd psql "$TARGET_URL" -v ON_ERROR_STOP=1 -c "$sql"
+}
+
+restore_schema_only() {
+  run_cmd bash -c 'pg_dump --format=custom --no-owner --no-acl --schema-only "$1" | pg_restore --no-owner --no-acl --clean --if-exists --dbname "$2"' _ "$SOURCE_URL" "$TARGET_URL"
+}
+
+restore_data_only() {
+  run_cmd bash -c 'pg_dump --format=custom --no-owner --no-acl --data-only "$1" | pg_restore --no-owner --no-acl --disable-triggers --dbname "$2"' _ "$SOURCE_URL" "$TARGET_URL"
+}
+
+restore_critical_tables() {
+  local args=()
+  for table in "${CRITICAL_TABLES[@]}"; do
+    args+=(--table "public.$table")
+  done
+  run_cmd pg_dump --format=custom --no-owner --no-acl --data-only "${args[@]}" --file /tmp/noesis-critical-tables.dump "$SOURCE_URL"
+  run_cmd pg_restore --no-owner --no-acl --disable-triggers --dbname "$TARGET_URL" /tmp/noesis-critical-tables.dump
+}
+
+restore_full() {
+  restore_schema_only
+  restore_data_only
+}
+
 echo "mode=$MODE dry_run=$DRY_RUN force=$FORCE"
 echo "source=$(redact_url "$SOURCE_URL")"
 echo "target=$(redact_url "$TARGET_URL")"
+
+case "$MODE" in
+  schema-only) restore_schema_only ;;
+  data-only) restore_data_only ;;
+  critical-tables) restore_critical_tables ;;
+  full) restore_full ;;
+  *) echo "Unsupported mode: $MODE" >&2; exit 2 ;;
+esac
