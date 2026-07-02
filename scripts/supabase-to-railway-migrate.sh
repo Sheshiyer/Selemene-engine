@@ -56,5 +56,40 @@ if [[ "$DRY_RUN" -eq 0 && "$YES" -eq 0 ]]; then
   exit 2
 fi
 
+redact_url() {
+  local url="$1"
+  printf '%s\n' "$url" | sed -E 's#(postgres(ql)?://)[^:@/]+(:[^@/]+)?@#\1***:***@#'
+}
+
+require_command() {
+  local name="$1"
+  if ! command -v "$name" >/dev/null 2>&1; then
+    echo "Required command not found: $name" >&2
+    exit 2
+  fi
+}
+
+validate_postgres_url() {
+  local label="$1"
+  local url="$2"
+  if [[ ! "$url" =~ ^postgres(ql)?:// ]]; then
+    echo "$label must start with postgres:// or postgresql://" >&2
+    exit 2
+  fi
+}
+
+validate_postgres_url "--source" "$SOURCE_URL"
+validate_postgres_url "--target" "$TARGET_URL"
+
+if [[ "$SOURCE_URL" == "$TARGET_URL" ]]; then
+  echo "Refusing to use identical source and target URLs" >&2
+  exit 2
+fi
+
+require_command pg_dump
+require_command pg_restore
+require_command psql
+
 echo "mode=$MODE dry_run=$DRY_RUN force=$FORCE"
-echo "source=*** target=***"
+echo "source=$(redact_url "$SOURCE_URL")"
+echo "target=$(redact_url "$TARGET_URL")"
