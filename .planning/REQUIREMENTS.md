@@ -43,7 +43,7 @@ Brownfield: P1–P3 capabilities are validated; P4 + P5 + Hygiene tracks are ope
 - ✓ TS sidecar bridge reliability + schema parity (Gate C)
 - ✓ Witness prompt quality contract — all 16 engines (#432)
 - ✓ Agent-dispatch + auto-ready + merge-lane + post-merge pipeline (#568, #596, #597)
-- ✓ Discord OAuth + API key auth
+- ✓ Cloudflare Zero Trust + API key auth
 - ✓ Native Vedic charts (D1/D9) via Swiss Ephemeris
 
 ## Traceability

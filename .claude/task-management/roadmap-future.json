@@ -104,7 +104,7 @@
         { "id": "FUT-050", "title": "Cookie consent", "source": "W3-S10-06", "status": "pending" },
         { "id": "FUT-051", "title": "Incident response plan", "source": "W3-S10-08", "status": "pending" },
         { "id": "FUT-052", "title": "Penetration testing", "source": "W3-S9-10", "status": "pending" },
-        { "id": "FUT-053", "title": "Supabase RLS policies", "source": "P4-S2-06", "status": "pending" }
+        { "id": "FUT-053", "title": "Railway Postgres RLS policies", "source": "P4-S2-06", "status": "pending" }
       ]
     },
     {
