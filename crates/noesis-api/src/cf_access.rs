@@ -1,4 +1,5 @@
 use noesis_auth::AuthUser;
+use std::collections::BTreeSet;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct CfIdentity {
@@ -7,16 +8,66 @@ pub struct CfIdentity {
     pub groups: Vec<String>,
 }
 
+const SUPPORTED_ROLES: &[&str] = &["viewer", "support", "admin", "platform-admin"];
+
 pub fn map_cf_group_to_role(group: &str) -> String {
-    todo!("map CF group to local role")
+    match group.trim() {
+        "selemene-admin" => "platform-admin".to_string(),
+        other => other.to_string(),
+    }
 }
 
 pub fn roles_from_cf_groups(groups: &[String]) -> Vec<String> {
-    todo!("map CF groups to user_roles values")
+    let supported: BTreeSet<&str> = SUPPORTED_ROLES.iter().copied().collect();
+    let mut roles = groups
+        .iter()
+        .map(|group| map_cf_group_to_role(group))
+        .filter(|role| supported.contains(role.as_str()))
+        .collect::<BTreeSet<_>>()
+        .into_iter()
+        .collect::<Vec<_>>();
+
+    if roles.is_empty() {
+        roles.push("viewer".to_string());
+    }
+
+    roles
+}
+
+pub fn permissions_for_roles(roles: &[String]) -> Vec<String> {
+    let mut permissions = BTreeSet::from(["basic:access".to_string()]);
+
+    if roles
+        .iter()
+        .any(|role| role == "platform-admin" || role == "admin")
+    {
+        permissions.extend([
+            "admin:users".to_string(),
+            "admin:analytics".to_string(),
+            "admin:system:read".to_string(),
+            "admin:audit:list".to_string(),
+            "admin:audit:read".to_string(),
+        ]);
+    }
+
+    permissions.into_iter().collect()
 }
 
 pub fn development_auth_user(dev_token: &str, provided: Option<&str>) -> Option<AuthUser> {
-    todo!("return platform-admin user when dev token matches")
+    if dev_token.is_empty() || provided != Some(dev_token) {
+        return None;
+    }
+
+    let roles = vec!["platform-admin".to_string()];
+    Some(AuthUser {
+        user_id: "00000000-0000-0000-0000-000000000001".to_string(),
+        tier: "enterprise".to_string(),
+        permissions: permissions_for_roles(&roles),
+        rate_limit: 10_000,
+        consciousness_level: 5,
+        jti: None,
+        token_exp: None,
+    })
 }
 
 #[cfg(test)]

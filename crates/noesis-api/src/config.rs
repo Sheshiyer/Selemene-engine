@@ -55,6 +55,15 @@ pub struct ApiConfig {
     /// Discord OAuth2 redirect URI (optional — Discord login disabled when unset)
     pub discord_redirect_uri: Option<String>,
 
+    /// Cloudflare Access issuer URL, usually https://<team>.cloudflareaccess.com
+    pub cf_access_issuer: Option<String>,
+
+    /// Cloudflare Access application audience tag.
+    pub cf_access_audience: Option<String>,
+
+    /// Local development bypass token. Only honored outside production.
+    pub cf_dev_bypass_token: Option<String>,
+
     /// Dodo Payments API key (optional — billing integration disabled when unset)
     pub dodo_payments_api_key: Option<String>,
 
@@ -204,6 +213,10 @@ impl ApiConfig {
             .ok();
         let dodo_payments_env = env::var("DODO_PAYMENTS_ENV").ok();
 
+        let cf_access_issuer = env::var("CF_ACCESS_ISSUER").ok();
+        let cf_access_audience = env::var("CF_ACCESS_AUDIENCE").ok();
+        let cf_dev_bypass_token = env::var("CF_DEV_BYPASS_TOKEN").ok();
+
         let python_biofield_url = env::var("PYTHON_BIOFIELD_URL")
             .unwrap_or_else(|_| DEFAULT_PYTHON_BIOFIELD_URL.to_string());
 
@@ -236,6 +249,9 @@ impl ApiConfig {
             discord_client_id,
             discord_client_secret,
             discord_redirect_uri,
+            cf_access_issuer,
+            cf_access_audience,
+            cf_dev_bypass_token,
             dodo_payments_api_key,
             dodo_payments_webhook_key,
             dodo_payments_env,
@@ -421,6 +437,9 @@ mod tests {
             discord_client_id: None,
             discord_client_secret: None,
             discord_redirect_uri: None,
+            cf_access_issuer: None,
+            cf_access_audience: None,
+            cf_dev_bypass_token: None,
             dodo_payments_api_key: None,
             dodo_payments_webhook_key: None,
             dodo_payments_env: None,
@@ -450,6 +469,9 @@ mod tests {
             discord_client_id: None,
             discord_client_secret: None,
             discord_redirect_uri: None,
+            cf_access_issuer: None,
+            cf_access_audience: None,
+            cf_dev_bypass_token: None,
             dodo_payments_api_key: None,
             dodo_payments_webhook_key: None,
             dodo_payments_env: None,
@@ -479,6 +501,9 @@ mod tests {
             discord_client_id: None,
             discord_client_secret: None,
             discord_redirect_uri: None,
+            cf_access_issuer: None,
+            cf_access_audience: None,
+            cf_dev_bypass_token: None,
             dodo_payments_api_key: None,
             dodo_payments_webhook_key: None,
             dodo_payments_env: None,
@@ -509,6 +534,9 @@ mod tests {
                 discord_client_id: None,
                 discord_client_secret: None,
                 discord_redirect_uri: None,
+                cf_access_issuer: None,
+                cf_access_audience: None,
+                cf_dev_bypass_token: None,
                 dodo_payments_api_key: None,
                 dodo_payments_webhook_key: None,
                 dodo_payments_env: None,
@@ -543,6 +571,9 @@ mod tests {
             discord_client_id: None,
             discord_client_secret: None,
             discord_redirect_uri: None,
+            cf_access_issuer: None,
+            cf_access_audience: None,
+            cf_dev_bypass_token: None,
             dodo_payments_api_key: None,
             dodo_payments_webhook_key: None,
             dodo_payments_env: None,
@@ -660,6 +691,9 @@ mod tests {
             discord_client_id: None,
             discord_client_secret: None,
             discord_redirect_uri: None,
+            cf_access_issuer: None,
+            cf_access_audience: None,
+            cf_dev_bypass_token: None,
             dodo_payments_api_key: None,
             dodo_payments_webhook_key: None,
             dodo_payments_env: None,
@@ -689,6 +723,9 @@ mod tests {
             discord_client_id: None,
             discord_client_secret: None,
             discord_redirect_uri: None,
+            cf_access_issuer: None,
+            cf_access_audience: None,
+            cf_dev_bypass_token: None,
             dodo_payments_api_key: None,
             dodo_payments_webhook_key: None,
             dodo_payments_env: None,
@@ -718,6 +755,9 @@ mod tests {
             discord_client_id: None,
             discord_client_secret: None,
             discord_redirect_uri: None,
+            cf_access_issuer: None,
+            cf_access_audience: None,
+            cf_dev_bypass_token: None,
             dodo_payments_api_key: Some("dodo_key".to_string()),
             dodo_payments_webhook_key: Some("dodo_webhook".to_string()),
             dodo_payments_env: Some("staging".to_string()),
