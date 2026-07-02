@@ -3,11 +3,11 @@ title: Authentication
 sidebar_position: 2
 ---
 
-Noesis API supports two auth mechanisms.
+Noesis API supports two auth mechanisms for programmatic access.
 
 ## 1) JWT Bearer
 
-Pass a bearer token obtained from email/password or Discord OAuth sign-in:
+Pass a bearer token obtained from Cloudflare Access sign-in:
 
 ```http
 Authorization: Bearer <jwt>
@@ -23,9 +23,14 @@ X-API-Key: nk_xxx
 
 API keys are prefixed with `nk_`. Each key is a unique user identity — rate limits and credit balances are per-key.
 
-## Discord OAuth
+## Cloudflare Access
 
-Sign in with Discord at `/api/v1/auth/discord/authorize`. The callback is `/api/v1/auth/discord/callback`. On success, returns a JWT.
+Human and admin authentication is enforced by Cloudflare Zero Trust. The Rust API validates Cloudflare Access identity for protected routes and maps CF groups into local `user_roles`.
+
+Group mapping:
+
+- `selemene-admin` → `platform-admin`
+- Other supported local role groups map directly: `viewer`, `support`, `admin`, `platform-admin`
 
 ## Example
 

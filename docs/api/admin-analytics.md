@@ -6,9 +6,9 @@ All endpoints under `/api/v1/admin/billing/` and `/api/v1/admin/usage/` require 
 
 To grant `billing-admin`:
 ```sql
--- Run in Supabase SQL editor
+-- Run in PostgreSQL against Railway Postgres
 INSERT INTO user_roles (user_id, role)
-SELECT id, 'billing-admin' FROM auth.users WHERE email = 'your@email.com'
+SELECT id, 'billing-admin' FROM users WHERE email = 'your@email.com'
 ON CONFLICT DO NOTHING;
 ```
 
