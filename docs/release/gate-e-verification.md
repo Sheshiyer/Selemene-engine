@@ -168,7 +168,7 @@ Final state:
 | Rust API (`/health/live`) | ✅ `200 ok` |
 | Readiness (`/health/ready`) | ✅ all systems ready |
 | Redis | ✅ ok |
-| Postgres (Supabase) | ✅ ok |
+| Postgres (Railway) | ✅ ok |
 | TS Bridge sidecar | ✅ available |
 | All 5 TS engines | ✅ healthy |
 | Prometheus metrics | ✅ scrape-ready |

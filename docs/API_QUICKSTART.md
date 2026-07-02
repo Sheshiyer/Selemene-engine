@@ -12,12 +12,12 @@ https://selemene.tryambakam.space
 
 ## Step 1: Choose an Auth Method
 
-You can call the API with either JWT session auth (email/Discord sign-in) or an API key.
+You can call the API with either JWT session auth (Cloudflare Access) or an API key.
 
 - Use `Authorization: Bearer <token>` for user-facing apps after sign-in.
 - Use `X-API-Key: nk_...` for CLI, scripts, server-to-server, and external interfaces.
 
-Email and Discord sign-in do **not** require an API key.
+Cloudflare Access sign-in does **not** require an API key.
 
 ### Option A: API Key (CLI / integrations)
 
@@ -39,9 +39,9 @@ This creates an admin user and 5 API keys across tiers (enterprise, premium, fre
 export NOESIS_API_KEY="nk_your_key_here"
 ```
 
-### Option B: JWT (email or Discord sign-in)
+### Option B: JWT (Cloudflare Access)
 
-1. Sign in with email/password or Discord OAuth.
+1. Sign in through Cloudflare Access.
 2. Use the returned JWT as `Authorization: Bearer <token>`.
 3. Call the same engine and workflow endpoints with that bearer token.
 
@@ -247,10 +247,10 @@ Two methods:
 
 | Method | Header | Use Case |
 |--------|--------|----------|
-| **JWT Token** | `Authorization: Bearer <token>` | User sessions (email/Discord sign-in) |
+| **JWT Token** | `Authorization: Bearer <token>` | User sessions (Cloudflare Access) |
 | **API Key** | `X-API-Key: nk_...` | CLI, server-to-server, and external interfaces |
 
-If a user is authenticated via email or Discord login, a JWT is sufficient. API keys are optional unless you are using non-session clients.
+If a user is authenticated via Cloudflare Access, a JWT is sufficient. API keys are optional unless you are using non-session clients.
 
 ### API Key Tiers
 

@@ -283,7 +283,7 @@ cargo build && cargo test
 ```
 
 All gate-relevant tests are part of the standard `cargo test` workspace run. No external
-services (Redis, Supabase, sidecar) are required — the test harness uses in-process stubs.
+services (Redis, Railway Postgres, sidecar) are required — the test harness uses in-process stubs.
 
 ---
 
