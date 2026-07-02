@@ -5,7 +5,7 @@
 //   2. POST to Suno bridge → get song id
 //   3. Poll until ready (~30-90s)
 //   4. Download MP3
-//   5. Upload to Supabase Storage
+//   5. Upload to Cloudflare R2
 //   6. POST /internal/raga/clip to persist the row
 //
 // Usage:
@@ -16,15 +16,18 @@
 // Required env:
 //   SUNO_BRIDGE_URL            — e.g. https://suno-bridge.tryambakam.space
 //   SUNO_COOKIE                — Suno session cookie
-//   NEXT_PUBLIC_SUPABASE_URL   — for storage uploads
-//   SUPABASE_SERVICE_ROLE_KEY  — service-role key
+//   R2_ACCOUNT_ID
+//   R2_ACCESS_KEY_ID
+//   R2_SECRET_ACCESS_KEY
+//   R2_PUBLIC_BASE_URL
 //   NOESIS_API_URL             — e.g. https://selemene.tryambakam.space
 //   INTERNAL_SERVICE_KEY       — shared secret for /internal/raga/clip
 //
 // Optional:
+//   R2_RAGA_CLIPS_BUCKET     — optional, default selemene-raga-clips
 //   SUNO_SMOKE_DRY_RUN=1       — skip actual Suno call, print prompt + exit
 
-import { createClient } from '@supabase/supabase-js';
+import { uploadToR2 } from './r2-upload';
 
 type SunoStyle = 'ambient' | 'traditional';
 
@@ -35,11 +38,8 @@ const durationSec = Number.parseInt(args[2] ?? '45', 10);
 
 const SUNO_BRIDGE_URL = process.env.SUNO_BRIDGE_URL ?? 'https://suno-bridge.tryambakam.space';
 const SUNO_COOKIE = process.env.SUNO_COOKIE ?? '';
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL ?? '';
-const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY ?? '';
 const NOESIS_API = process.env.NOESIS_API_URL ?? 'https://selemene.tryambakam.space';
 const INTERNAL_KEY = process.env.INTERNAL_SERVICE_KEY ?? '';
-const BUCKET = process.env.SUPABASE_RAGA_CLIPS_BUCKET ?? 'raga-clips';
 
 const log = (msg: string) => console.log(`[smoke ${new Date().toISOString()}] ${msg}`);
 
@@ -75,22 +75,20 @@ async function pollUntilReady(id: string, intervalMs = 5000, timeoutMs = 180_000
   throw new Error(`Poll timeout for ${id}`);
 }
 
-async function uploadToSupabase(key: string, buffer: Buffer): Promise<string> {
-  const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
-  const { error } = await supabase.storage.from(BUCKET).upload(key, buffer, {
-    contentType: 'audio/mpeg',
-    cacheControl: '31536000',
-    upsert: true,
-  });
-  if (error) throw new Error(`Supabase upload: ${error.message}`);
-  return `${SUPABASE_URL}/storage/v1/object/public/${BUCKET}/${key}`;
-}
-
-async function upsertClip(melakartaNum: number, style: string, songId: string, cdnUrl: string, duration: number) {
+async function upsertClip(melakartaNum: number, style: string, songId: string, sunoPrompt: string, r2Key: string, cdnUrl: string, duration: number) {
   const r = await fetch(`${NOESIS_API}/internal/raga/clip`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'x-internal-key': INTERNAL_KEY },
-    body: JSON.stringify({ melakarta_num: melakartaNum, style, suno_song_id: songId, cdn_url: cdnUrl, duration_sec: duration, status: 'pending' }),
+    body: JSON.stringify({
+      melakarta_num: melakartaNum,
+      style,
+      suno_song_id: songId,
+      suno_prompt: sunoPrompt,
+      r2_key: r2Key,
+      cdn_url: cdnUrl,
+      duration_sec: Math.round(duration),
+      status: 'generated'
+    }),
   });
   if (!r.ok) throw new Error(`upsert clip: ${r.status} ${await r.text()}`);
 }
@@ -122,7 +120,6 @@ async function main() {
   }
 
   if (!SUNO_COOKIE) throw new Error('SUNO_COOKIE env var required');
-  if (!SUPABASE_URL || !SUPABASE_KEY) throw new Error('Supabase env vars required');
   if (!INTERNAL_KEY) throw new Error('INTERNAL_SERVICE_KEY env var required');
 
   const quotaBefore = await getQuota();
@@ -142,11 +139,11 @@ async function main() {
   log(`Downloaded ${(buffer.length / 1024).toFixed(1)} KiB`);
 
   const key = `clips/${style}/${String(melakartaNum).padStart(2, '0')}-${song.id}.mp3`;
-  const cdnUrl = await uploadToSupabase(key, buffer);
+  const cdnUrl = await uploadToR2(key, buffer);
   log(`Uploaded → ${cdnUrl}`);
 
-  await upsertClip(melakartaNum, style, song.id, cdnUrl, ready.duration);
-  log(`DB row upserted → status=pending`);
+  await upsertClip(melakartaNum, style, song.id, prompt.prompt, key, cdnUrl, ready.duration);
+  log(`DB row upserted → status=generated`);
 
   const quotaAfter = await getQuota();
   log(`Quota after: ${quotaAfter.credits_left} (used ${quotaBefore.credits_left - quotaAfter.credits_left})`);

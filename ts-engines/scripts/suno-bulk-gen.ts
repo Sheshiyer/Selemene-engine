@@ -1,7 +1,7 @@
 #!/usr/bin/env bun
 // Bulk generator for the 72-melakarta library — rewritten for ts-engines (SUNO-04).
 //
-// Walks 1..72, submits to Suno, polls, downloads, uploads to Supabase Storage,
+// Walks 1..72, submits to Suno, polls, downloads, uploads to Cloudflare R2,
 // then POSTs /internal/raga/clip to persist the row.
 // Resumable via .suno-checkpoint.json — re-running skips completed ragas.
 //
@@ -13,8 +13,10 @@
 // Required env (copy .env.template to .env and fill):
 //   SUNO_BRIDGE_URL
 //   SUNO_COOKIE
-//   NEXT_PUBLIC_SUPABASE_URL
-//   SUPABASE_SERVICE_ROLE_KEY
+//   R2_ACCOUNT_ID
+//   R2_ACCESS_KEY_ID
+//   R2_SECRET_ACCESS_KEY
+//   R2_PUBLIC_BASE_URL
 //   NOESIS_API_URL
 //   INTERNAL_SERVICE_KEY
 //
@@ -24,9 +26,9 @@
 //   SUNO_TIMEOUT_MS          (default 180000)
 //   MAX_CREDITS_PER_RUN      (default 200)
 //   MIN_CREDITS_TO_START     (default 100)
-//   SUPABASE_RAGA_CLIPS_BUCKET (default "raga-clips")
+//   R2_RAGA_CLIPS_BUCKET     (default selemene-raga-clips)
 
-import { createClient } from '@supabase/supabase-js';
+import { uploadToR2 } from './r2-upload';
 import fs from 'node:fs';
 import path from 'node:path';
 
@@ -46,11 +48,8 @@ const endNum = Number.parseInt(args[2] ?? '72', 10);
 
 const SUNO_BRIDGE_URL = process.env.SUNO_BRIDGE_URL ?? '';
 const SUNO_COOKIE = process.env.SUNO_COOKIE ?? '';
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL ?? '';
-const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY ?? '';
 const NOESIS_API = process.env.NOESIS_API_URL ?? 'https://selemene.tryambakam.space';
 const INTERNAL_KEY = process.env.INTERNAL_SERVICE_KEY ?? '';
-const BUCKET = process.env.SUPABASE_RAGA_CLIPS_BUCKET ?? 'raga-clips';
 
 const BATCH_SIZE = Number.parseInt(process.env.SUNO_BATCH_SIZE ?? '5', 10);
 const POLL_INTERVAL_MS = Number.parseInt(process.env.SUNO_POLL_INTERVAL_MS ?? '5000', 10);
@@ -92,22 +91,20 @@ async function pollUntilReady(id: string) {
   throw new Error(`Poll timeout for ${id}`);
 }
 
-async function uploadToSupabase(key: string, buffer: Buffer): Promise<string> {
-  const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
-  const { error } = await supabase.storage.from(BUCKET).upload(key, buffer, {
-    contentType: 'audio/mpeg',
-    cacheControl: '31536000',
-    upsert: true,
-  });
-  if (error) throw new Error(`Supabase upload: ${error.message}`);
-  return `${SUPABASE_URL}/storage/v1/object/public/${BUCKET}/${key}`;
-}
-
-async function upsertClip(melakartaNum: number, style: string, songId: string, cdnUrl: string, duration: number) {
+async function upsertClip(melakartaNum: number, style: string, songId: string, sunoPrompt: string, r2Key: string, cdnUrl: string, duration: number) {
   const r = await fetch(`${NOESIS_API}/internal/raga/clip`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'x-internal-key': INTERNAL_KEY },
-    body: JSON.stringify({ melakarta_num: melakartaNum, style, suno_song_id: songId, cdn_url: cdnUrl, duration_sec: duration, status: 'pending' }),
+    body: JSON.stringify({
+      melakarta_num: melakartaNum,
+      style,
+      suno_song_id: songId,
+      suno_prompt: sunoPrompt,
+      r2_key: r2Key,
+      cdn_url: cdnUrl,
+      duration_sec: Math.round(duration),
+      status: 'generated'
+    }),
   });
   if (!r.ok) throw new Error(`upsert clip: ${r.status} ${await r.text()}`);
 }
@@ -144,8 +141,8 @@ async function generateOne(num: number, style: SunoStyle): Promise<{ songId: str
   if (!r.ok) throw new Error(`MP3 download for ${song.id}: ${r.status}`);
   const buffer = Buffer.from(await r.arrayBuffer());
   const key = `clips/${style}/${String(num).padStart(2, '0')}-${song.id}.mp3`;
-  const cdnUrl = await uploadToSupabase(key, buffer);
-  await upsertClip(num, style, song.id, cdnUrl, ready.duration);
+  const cdnUrl = await uploadToR2(key, buffer);
+  await upsertClip(num, style, song.id, prompt.prompt, key, cdnUrl, ready.duration);
   log(`  #${num} ${style} ✓ ${(buffer.length / 1024).toFixed(0)} KiB → ${cdnUrl}`);
   return { songId: song.id, cdnUrl, durationSec: ready.duration };
 }
@@ -155,8 +152,6 @@ async function main() {
   const missing = [
     !SUNO_BRIDGE_URL && 'SUNO_BRIDGE_URL',
     !SUNO_COOKIE && 'SUNO_COOKIE',
-    !SUPABASE_URL && 'NEXT_PUBLIC_SUPABASE_URL',
-    !SUPABASE_KEY && 'SUPABASE_SERVICE_ROLE_KEY',
     !INTERNAL_KEY && 'INTERNAL_SERVICE_KEY',
   ].filter(Boolean);
   if (missing.length) throw new Error(`Missing env vars: ${missing.join(', ')}`);
