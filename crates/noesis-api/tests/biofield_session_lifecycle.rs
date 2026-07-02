@@ -195,7 +195,6 @@ impl BiofieldSessionHarness {
             biofield_repository: Some(biofield_repository.clone()),
             readings_repository: None,
             usage_repository: None,
-            oauth_repository: None,
             startup_time: Instant::now(),
             db_available: true,
             discord_client_id: None,

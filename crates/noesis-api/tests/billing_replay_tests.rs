@@ -99,7 +99,6 @@ async fn build_state_and_router() -> (axum::Router, PgPool) {
         biofield_repository: None,
         readings_repository: None,
         usage_repository: None,
-        oauth_repository: None,
         db_available: true,
         discord_client_id: None,
         discord_client_secret: None,

@@ -90,7 +90,6 @@ fn build_test_app_state() -> (noesis_api::AppState, ApiConfig) {
         biofield_repository: None,
         readings_repository: None,
         usage_repository: None,
-        oauth_repository: None,
         startup_time: Instant::now(),
         db_available: false,
         discord_client_id: None,

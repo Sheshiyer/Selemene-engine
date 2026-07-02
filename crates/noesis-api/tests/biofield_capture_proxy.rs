@@ -334,7 +334,6 @@ impl BiofieldCaptureHarness {
             biofield_repository: Some(biofield_repository.clone()),
             readings_repository: Some(readings_repository.clone()),
             usage_repository: None,
-            oauth_repository: None,
             startup_time: Instant::now(),
             db_available: true,
             discord_client_id: None,

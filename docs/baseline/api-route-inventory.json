@@ -2,8 +2,8 @@
   "generated_at": "2026-03-13",
   "inventory_scope": "/api/v1",
   "source": "crates/noesis-api/src/lib.rs",
-  "path_count": 74,
-  "route_count": 78,
+  "path_count": 72,
+  "route_count": 76,
   "routes": [
     {
       "path": "/auth/register",
@@ -46,28 +46,6 @@
         {
           "method": "POST",
           "handler": "handlers::auth::reset_password"
-        }
-      ]
-    },
-    {
-      "path": "/auth/discord/authorize",
-      "auth_requirement": "public",
-      "uses_orchestrator": false,
-      "methods": [
-        {
-          "method": "GET",
-          "handler": "handlers::oauth::discord_authorize"
-        }
-      ]
-    },
-    {
-      "path": "/auth/discord/callback",
-      "auth_requirement": "public",
-      "uses_orchestrator": false,
-      "methods": [
-        {
-          "method": "POST",
-          "handler": "handlers::oauth::discord_callback"
         }
       ]
     },

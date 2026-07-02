@@ -6,6 +6,7 @@
 
 mod billing;
 mod biofield_client;
+pub mod cf_access;
 mod config;
 pub mod error;
 pub mod error_mapper;
@@ -419,7 +420,6 @@ pub struct AppState {
     pub biofield_repository: Option<Arc<BiofieldRepository>>,
     pub readings_repository: Option<Arc<ReadingsRepository>>,
     pub usage_repository: Option<Arc<UsageRepository>>,
-    pub oauth_repository: Option<Arc<noesis_data::repositories::oauth_repository::OAuthRepository>>,
     pub startup_time: Instant,
     pub db_available: bool,
     pub discord_client_id: Option<String>,
@@ -703,15 +703,7 @@ pub fn create_router(state: AppState, config: &ApiConfig) -> Router {
             "/auth/forgot-password",
             post(handlers::auth::forgot_password),
         )
-        .route("/auth/reset-password", post(handlers::auth::reset_password))
-        .route(
-            "/auth/discord/authorize",
-            get(handlers::oauth::discord_authorize),
-        )
-        .route(
-            "/auth/discord/callback",
-            post(handlers::oauth::discord_callback),
-        );
+        .route("/auth/reset-password", post(handlers::auth::reset_password));
 
     let api_v1 = Router::new()
         .route(
@@ -3372,10 +3364,6 @@ pub async fn build_app_state(config: &ApiConfig) -> AppState {
         }
     }
 
-    let oauth_repository = pool.as_ref().map(|p| {
-        Arc::new(noesis_data::repositories::oauth_repository::OAuthRepository::new(p.clone()))
-    });
-
     let user_repository = Arc::new(UserRepository::new(pool.unwrap_or_else(|| {
         // Create a lazy pool with a dummy URL — queries will fail at runtime,
         // but the server can still boot and serve non-DB endpoints.
@@ -3409,7 +3397,6 @@ pub async fn build_app_state(config: &ApiConfig) -> AppState {
         biofield_repository,
         readings_repository,
         usage_repository,
-        oauth_repository,
         startup_time: Instant::now(),
         db_available,
         discord_client_id: config.discord_client_id.clone(),
@@ -3492,9 +3479,6 @@ pub async fn build_app_state_lazy_db(config: &ApiConfig) -> AppState {
     let usage_repository = pool
         .as_ref()
         .map(|p| Arc::new(UsageRepository::new(p.clone())));
-    let oauth_repository = pool.as_ref().map(|p| {
-        Arc::new(noesis_data::repositories::oauth_repository::OAuthRepository::new(p.clone()))
-    });
 
     let user_repository = Arc::new(UserRepository::new(pool.unwrap_or_else(|| {
         PgPoolOptions::new()
@@ -3523,7 +3507,6 @@ pub async fn build_app_state_lazy_db(config: &ApiConfig) -> AppState {
         biofield_repository,
         readings_repository,
         usage_repository,
-        oauth_repository,
         startup_time: Instant::now(),
         db_available,
         discord_client_id: config.discord_client_id.clone(),
