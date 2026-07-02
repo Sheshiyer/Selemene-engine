@@ -143,6 +143,15 @@ restore_full() {
   restore_data_only
 }
 
+verify_target() {
+  echo "Verifying target database"
+  run_sql "SELECT 1 AS target_ok;"
+  run_sql "SELECT ensure_usage_log_partitions(3);"
+  run_sql "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_name IN ('users', 'api_keys', 'user_roles', 'user_account_state', 'billing_subscriptions', 'usage_logs', 'raga_clips', 'reconcile_runs') ORDER BY table_name;"
+  run_sql "SELECT 'users' AS table_name, count(*) FROM users UNION ALL SELECT 'api_keys', count(*) FROM api_keys UNION ALL SELECT 'user_roles', count(*) FROM user_roles UNION ALL SELECT 'user_account_state', count(*) FROM user_account_state UNION ALL SELECT 'raga_clips', count(*) FROM raga_clips;"
+  run_sql "SELECT inhrelid::regclass::text AS partition_name FROM pg_inherits WHERE inhparent = 'usage_logs'::regclass ORDER BY 1;"
+}
+
 echo "mode=$MODE dry_run=$DRY_RUN force=$FORCE"
 echo "source=$(redact_url "$SOURCE_URL")"
 echo "target=$(redact_url "$TARGET_URL")"
@@ -154,3 +163,5 @@ case "$MODE" in
   full) restore_full ;;
   *) echo "Unsupported mode: $MODE" >&2; exit 2 ;;
 esac
+
+verify_target
