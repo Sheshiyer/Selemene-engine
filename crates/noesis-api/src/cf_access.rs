@@ -70,6 +70,28 @@ pub fn development_auth_user(dev_token: &str, provided: Option<&str>) -> Option<
     })
 }
 
+pub fn auth_user_from_parts(
+    user_id: uuid::Uuid,
+    tier: &str,
+    consciousness_level: i32,
+    roles: &[String],
+) -> AuthUser {
+    AuthUser {
+        user_id: user_id.to_string(),
+        tier: tier.to_string(),
+        permissions: permissions_for_roles(roles),
+        rate_limit: match tier {
+            "enterprise" => 10_000,
+            "premium" => 1_000,
+            "free" => 60,
+            _ => 10,
+        },
+        consciousness_level: consciousness_level.clamp(0, 5) as u8,
+        jti: None,
+        token_exp: None,
+    }
+}
+
 #[derive(Debug, Clone, serde::Deserialize)]
 pub struct CfAccessClaims {
     pub sub: String,
@@ -194,5 +216,17 @@ mod tests {
             identity_from_claims(claims).unwrap_err(),
             "Cloudflare identity email missing"
         );
+    }
+
+    #[test]
+    fn auth_user_from_parts_uses_roles_for_permissions() {
+        let user_id = uuid::Uuid::parse_str("11111111-1111-1111-1111-111111111111").unwrap();
+        let roles = vec!["platform-admin".to_string()];
+        let user = auth_user_from_parts(user_id, "premium", 4, &roles);
+
+        assert_eq!(user.user_id, user_id.to_string());
+        assert_eq!(user.tier, "premium");
+        assert_eq!(user.consciousness_level, 4);
+        assert!(user.permissions.contains(&"admin:system:read".to_string()));
     }
 }

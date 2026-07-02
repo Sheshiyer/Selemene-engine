@@ -418,6 +418,77 @@ impl UserRepository {
         Ok(())
     }
 
+    pub async fn find_or_create_cloudflare_user(
+        &self,
+        email: &str,
+        cf_sub: &str,
+    ) -> Result<User, Error> {
+        let normalized_email = email.trim().to_ascii_lowercase();
+        let full_name = normalized_email
+            .split('@')
+            .next()
+            .filter(|name| !name.is_empty())
+            .unwrap_or("Cloudflare User");
+
+        let mut tx = self.pool.begin().await?;
+        let existing = sqlx::query_as::<_, User>(
+            r#"
+            SELECT
+                id,
+                email,
+                COALESCE(password_hash, '') AS password_hash,
+                COALESCE(full_name, '') AS full_name,
+                COALESCE(tier, 'free') AS tier,
+                COALESCE(consciousness_level, 0) AS consciousness_level,
+                COALESCE(experience_points, 0) AS experience_points,
+                created_at,
+                updated_at,
+                reset_token,
+                reset_token_expires_at,
+                last_login_at,
+                COALESCE(failed_login_attempts, 0) AS failed_login_attempts,
+                locked_until
+            FROM users
+            WHERE lower(btrim(email)) = lower(btrim($1))
+            "#,
+        )
+        .bind(&normalized_email)
+        .fetch_optional(&mut *tx)
+        .await?;
+
+        let user = if let Some(user) = existing {
+            user
+        } else {
+            sqlx::query_as::<_, User>(
+                r#"
+                INSERT INTO users (id, email, password_hash, full_name, tier, consciousness_level, created_at, updated_at)
+                VALUES ($1, $2, $3, $4, 'free', 0, NOW(), NOW())
+                RETURNING *
+                "#,
+            )
+            .bind(Uuid::new_v4())
+            .bind(&normalized_email)
+            .bind(format!("cf-access:{}", cf_sub))
+            .bind(full_name)
+            .fetch_one(&mut *tx)
+            .await?
+        };
+
+        sqlx::query(
+            r#"
+            INSERT INTO user_account_state (user_id, state)
+            VALUES ($1, 'active')
+            ON CONFLICT (user_id) DO NOTHING
+            "#,
+        )
+        .bind(user.id)
+        .execute(&mut *tx)
+        .await?;
+
+        tx.commit().await?;
+        Ok(user)
+    }
+
     /// Update last_login_at timestamp and reset failed login tracking.
     /// Called on every successful login.
     pub async fn update_last_login(&self, user_id: Uuid) -> Result<(), Error> {
