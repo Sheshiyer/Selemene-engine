@@ -3225,8 +3225,9 @@ pub async fn build_app_state(config: &ApiConfig) -> AppState {
 
     // -- Database (optional — server runs in degraded mode without it) --
     //
-    // Supabase uses PgBouncer in transaction mode, which conflicts with SQLx
-    // prepared statement caching. Disable the cache to avoid:
+    // Railway Postgres (and other external pooled Postgres services) use
+    // PgBouncer in transaction mode, which conflicts with SQLx prepared
+    // statement caching. Disable the cache to avoid:
     //   "prepared statement 'sqlx_s_N' already exists"
     let pool = if let Some(ref db_url) = config.database_url {
         let connect_options: PgConnectOptions = db_url

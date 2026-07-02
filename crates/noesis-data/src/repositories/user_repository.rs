@@ -850,55 +850,6 @@ mod tests {
     use super::*;
     use crate::repositories::admin_repository::AdminRepository;
     use sqlx::postgres::PgPoolOptions;
-    use std::fs;
-    use std::path::PathBuf;
-
-    fn repo_root() -> PathBuf {
-        PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-            .parent()
-            .expect("workspace crate dir")
-            .parent()
-            .expect("workspace root")
-            .to_path_buf()
-    }
-
-    #[test]
-    fn migration_014_exists_in_root_and_supabase() {
-        let root_sql = fs::read_to_string(
-            repo_root().join("migrations/014_plan_catalog_billing_subscriptions.sql"),
-        )
-        .expect("root migration 014");
-        let supabase_sql =
-            fs::read_to_string(repo_root().join(
-                "supabase/migrations/20260313000014_014_plan_catalog_billing_subscriptions.sql",
-            ))
-            .expect("supabase migration 014");
-
-        for sql in [&root_sql, &supabase_sql] {
-            assert!(sql.contains("CREATE TABLE IF NOT EXISTS plan_catalog"));
-            assert!(sql.contains("CREATE TABLE IF NOT EXISTS billing_subscriptions"));
-            assert!(sql.contains("CREATE OR REPLACE VIEW user_active_plan_resolutions"));
-            assert!(sql.contains("uq_billing_subscriptions_active_user"));
-        }
-    }
-
-    #[test]
-    fn migration_016_exists_in_root_and_supabase() {
-        let root_sql =
-            fs::read_to_string(repo_root().join("migrations/016_dodo_billing_foundation.sql"))
-                .expect("root migration 016");
-        let supabase_sql = fs::read_to_string(
-            repo_root().join("supabase/migrations/20260331000016_016_dodo_billing_foundation.sql"),
-        )
-        .expect("supabase migration 016");
-
-        for sql in [&root_sql, &supabase_sql] {
-            assert!(sql.contains("CREATE TABLE IF NOT EXISTS billing_customers"));
-            assert!(sql.contains("CREATE TABLE IF NOT EXISTS billing_webhook_events"));
-            assert!(sql.contains("on_hold"));
-            assert!(sql.contains("failed"));
-        }
-    }
 
     async fn connect_test_pool() -> Option<sqlx::PgPool> {
         let database_url = match std::env::var("DATABASE_URL") {
