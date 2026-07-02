@@ -350,11 +350,11 @@ async fn test_register_valid_fields() {
 }
 
 // ---------------------------------------------------------------------------
-// 9. POST /api/v1/auth/login -- wrong credentials => 401
+// 9. POST /api/v1/auth/login -- disabled => 410 Gone
 // ---------------------------------------------------------------------------
 
 #[tokio::test]
-async fn test_login_wrong_credentials_returns_401() {
+async fn test_login_retired_returns_410() {
     let router = get_test_router().await;
 
     let payload = json!({
@@ -365,22 +365,8 @@ async fn test_login_wrong_credentials_returns_401() {
     let (status, body) =
         make_unauthenticated_request(router, "POST", "/api/v1/auth/login", Some(payload)).await;
 
-    if is_db_unavailable(status) {
-        eprintln!(
-            "SKIP: POST /api/v1/auth/login -- DB not available (status {})",
-            status
-        );
-        return;
-    }
-
-    // "Invalid email or password" maps to EngineError::AuthError => 401
-    assert_eq!(
-        status,
-        StatusCode::UNAUTHORIZED,
-        "Expected 401 for wrong credentials, got {}: {:?}",
-        status,
-        body
-    );
+    assert_eq!(status, StatusCode::GONE);
+    assert_eq!(body["error_code"], "AUTH_RETIRED");
 }
 
 // ---------------------------------------------------------------------------

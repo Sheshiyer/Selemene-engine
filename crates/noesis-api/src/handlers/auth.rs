@@ -39,6 +39,7 @@ pub struct RegisterResponse {
 }
 
 #[derive(Deserialize, ToSchema)]
+#[allow(dead_code)]
 pub struct LoginRequest {
     pub email: String,
     pub password: String,
@@ -182,97 +183,17 @@ pub async fn register(
     )
 )]
 pub async fn login(
-    State(state): State<AppState>,
-    Json(payload): Json<LoginRequest>,
+    State(_state): State<AppState>,
+    Json(_payload): Json<LoginRequest>,
 ) -> Result<Response, ApiError> {
-    require_db(&state)?;
-    let normalized_email = payload.email.trim().to_ascii_lowercase();
-
-    // 1. Get user by email
-    let user_opt = state
-        .user_repository
-        .get_user_by_email(&normalized_email)
-        .await
-        .map_err(|e| EngineError::InternalError(format!("Database error: {}", e)))?;
-
-    // 2. Verify password (constant-time: always run Argon2 to prevent timing-based email enumeration)
-    let user = match user_opt {
-        Some(user) => {
-            // Check account lockout before verifying password
-            if let Some(locked_until) = user.locked_until {
-                if locked_until > Utc::now() {
-                    let retry_after = (locked_until - Utc::now()).num_seconds().max(1);
-                    tracing::warn!(
-                        event = "auth.login_failure",
-                        email = %normalized_email,
-                        reason = "account_locked",
-                        "Login attempt on locked account"
-                    );
-                    return Err(EngineError::AuthError(format!(
-                        "Account temporarily locked. Try again in {} seconds",
-                        retry_after
-                    ))
-                    .into());
-                }
-            }
-
-            let valid_password = verify_password(&payload.password, &user.password_hash)?;
-            if !valid_password {
-                // Increment failed attempts (fire-and-forget via DB)
-                let lock_until = Utc::now() + Duration::minutes(15);
-                let _ = state
-                    .user_repository
-                    .increment_failed_login(user.id, lock_until)
-                    .await;
-
-                tracing::warn!(
-                    event = "auth.login_failure",
-                    email = %normalized_email,
-                    reason = "invalid_password",
-                    "Failed login attempt"
-                );
-                return Err(EngineError::AuthError("Invalid email or password".to_string()).into());
-            }
-            user
-        }
-        None => {
-            // Perform dummy hash to equalize timing — prevents email enumeration
-            let _ = hash_password("dummy-password-for-timing");
-            tracing::warn!(
-                event = "auth.login_failure",
-                email = %normalized_email,
-                reason = "user_not_found",
-                "Login attempt for non-existent user"
-            );
-            return Err(EngineError::AuthError("Invalid email or password".to_string()).into());
-        }
-    };
-
-    // 3. Update last login + reset failed attempts
-    let _ = state.user_repository.update_last_login(user.id).await;
-
-    // 4. Generate JWT token
-    let permissions = vec!["basic:access".to_string()];
-    let consciousness_level = user.consciousness_level as u8;
-
-    let token = state.auth.generate_jwt_token(
-        &user.id.to_string(),
-        &user.tier,
-        &permissions,
-        consciousness_level,
-    )?;
-
-    tracing::info!(event = "auth.login_success", user_id = %user.id, email = %user.email, "User logged in");
-
-    // 5. Return token
-    let response = LoginResponse {
-        token,
-        user_id: user.id.to_string(),
-        email: user.email,
-        tier: user.tier,
-    };
-
-    Ok((StatusCode::OK, Json(response)).into_response())
+    Ok((
+        StatusCode::GONE,
+        Json(serde_json::json!({
+            "error": "Password login has been retired. Use Cloudflare Access.",
+            "error_code": "AUTH_RETIRED"
+        })),
+    )
+        .into_response())
 }
 
 /// POST /api/v1/auth/forgot-password -- request a password reset token
