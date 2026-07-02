@@ -749,6 +749,35 @@ impl AdminRepository {
         Ok(Some(updated_keys))
     }
 
+    pub async fn replace_user_roles_from_cloudflare(
+        &self,
+        user_id: Uuid,
+        roles: &[String],
+    ) -> Result<(), Error> {
+        let mut tx = self.pool.begin().await?;
+        sqlx::query("DELETE FROM user_roles WHERE user_id = $1")
+            .bind(user_id)
+            .execute(&mut *tx)
+            .await?;
+
+        for role in roles {
+            sqlx::query(
+                r#"
+                INSERT INTO user_roles (user_id, role)
+                VALUES ($1, $2)
+                ON CONFLICT (user_id, role) DO NOTHING
+                "#,
+            )
+            .bind(user_id)
+            .bind(role)
+            .execute(&mut *tx)
+            .await?;
+        }
+
+        tx.commit().await?;
+        Ok(())
+    }
+
     pub async fn get_user_tier(&self, user_id: Uuid) -> Result<Option<String>, Error> {
         sqlx::query_scalar::<_, String>("SELECT tier FROM users WHERE id = $1")
             .bind(user_id)

@@ -92,6 +92,10 @@ pub fn auth_user_from_parts(
     }
 }
 
+pub fn role_values_for_sql(groups: &[String]) -> Vec<String> {
+    roles_from_cf_groups(groups)
+}
+
 #[derive(Debug, Clone, serde::Deserialize)]
 pub struct CfAccessClaims {
     pub sub: String,
@@ -228,5 +232,11 @@ mod tests {
         assert_eq!(user.tier, "premium");
         assert_eq!(user.consciousness_level, 4);
         assert!(user.permissions.contains(&"admin:system:read".to_string()));
+    }
+
+    #[test]
+    fn role_values_for_sql_are_deterministic() {
+        let groups = vec!["support".to_string(), "selemene-admin".to_string(), "admin".to_string()];
+        assert_eq!(role_values_for_sql(&groups), vec!["admin", "platform-admin", "support"]);
     }
 }
