@@ -425,6 +425,8 @@ pub struct AppState {
     pub discord_client_id: Option<String>,
     pub discord_client_secret: Option<String>,
     pub discord_redirect_uri: Option<String>,
+    pub cf_access_validator: Option<Arc<crate::cf_access::CfAccessValidator>>,
+    pub cf_dev_bypass_token: Option<String>,
     /// SHA256 checksums of ephemeris `.se1` files, keyed by filename.
     /// Computed once at startup from the `data/ephemeris/` directory.
     pub ephemeris_checksums: Arc<HashMap<String, String>>,
@@ -687,8 +689,6 @@ mod cors_tests {
 /// * `state` - Application state with orchestrator, cache, auth, metrics
 /// * `config` - API configuration with CORS, rate limiting, etc.
 pub fn create_router(state: AppState, config: &ApiConfig) -> Router {
-    let auth_state = state.auth.clone();
-
     // Create rate limiter with config values
     let rate_limiter = Arc::new(middleware::RateLimiter::new_with_config(
         config.rate_limit_requests,
@@ -920,7 +920,7 @@ pub fn create_router(state: AppState, config: &ApiConfig) -> Router {
             middleware::rate_limit_middleware,
         ))
         .layer(axum_middleware::from_fn_with_state(
-            auth_state,
+            state.clone(),
             middleware::auth_middleware,
         ))
         .merge(auth_routes);
@@ -3373,6 +3373,16 @@ pub async fn build_app_state(config: &ApiConfig) -> AppState {
             .expect("Failed to create placeholder pool")
     })));
 
+    let cf_access_validator = match (
+        config.cf_access_issuer.as_ref(),
+        config.cf_access_audience.as_ref(),
+    ) {
+        (Some(issuer), Some(audience)) => Some(Arc::new(
+            crate::cf_access::CfAccessValidator::new(issuer.clone(), audience.clone()),
+        )),
+        _ => None,
+    };
+
     // -- Metrics --
     let metrics = shared_metrics();
 
@@ -3402,6 +3412,8 @@ pub async fn build_app_state(config: &ApiConfig) -> AppState {
         discord_client_id: config.discord_client_id.clone(),
         discord_client_secret: config.discord_client_secret.clone(),
         discord_redirect_uri: config.discord_redirect_uri.clone(),
+        cf_access_validator,
+        cf_dev_bypass_token: config.cf_dev_bypass_token.clone(),
         ephemeris_checksums,
     }
 }
@@ -3487,6 +3499,16 @@ pub async fn build_app_state_lazy_db(config: &ApiConfig) -> AppState {
             .expect("Failed to create placeholder pool")
     })));
 
+    let cf_access_validator = match (
+        config.cf_access_issuer.as_ref(),
+        config.cf_access_audience.as_ref(),
+    ) {
+        (Some(issuer), Some(audience)) => Some(Arc::new(
+            crate::cf_access::CfAccessValidator::new(issuer.clone(), audience.clone()),
+        )),
+        _ => None,
+    };
+
     // -- Metrics --
     let metrics = shared_metrics();
 
@@ -3512,6 +3534,8 @@ pub async fn build_app_state_lazy_db(config: &ApiConfig) -> AppState {
         discord_client_id: config.discord_client_id.clone(),
         discord_client_secret: config.discord_client_secret.clone(),
         discord_redirect_uri: config.discord_redirect_uri.clone(),
+        cf_access_validator,
+        cf_dev_bypass_token: config.cf_dev_bypass_token.clone(),
         ephemeris_checksums,
     }
 }
