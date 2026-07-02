@@ -4,6 +4,8 @@
 
 `/migrations` at repo root is the **canonical migration source of truth** for runtime schema used by the API and services.
 
+The `supabase/` migration mirror and `scripts/check_migration_drift.sh` have been retired as part of the Supabase retirement plan. Root migrations remain the only schema authority.
+
 ## Why
 
 The runtime Rust services (`noesis-api`, `noesis-auth`, `noesis-data`) are built against the schema evolved by root migrations:
@@ -17,21 +19,9 @@ The runtime Rust services (`noesis-api`, `noesis-auth`, `noesis-data`) are built
 
 Using multiple migration authorities causes drift and production defects.
 
-## Supabase Alignment Rule
+## Supabase Alignment Rule (Retired)
 
-`/supabase/migrations` is **not** an independent authority.
-
-It must be kept aligned with canonical root migrations and used only as a projection for Supabase CLI workflows.
-
-Allowed pattern:
-
-1. Introduce migration in `/migrations` first.
-2. Validate runtime behavior/tests.
-3. Mirror equivalent change to `/supabase/migrations` if needed for Supabase-managed environments.
-
-Disallowed pattern:
-
-- Adding schema changes only in `/supabase/migrations` without a corresponding root migration.
+The `/supabase/migrations` mirror and `scripts/check_migration_drift.sh` are retired. They were used only as a projection for Supabase CLI workflows and are no longer maintained. Root `/migrations` is the sole schema authority.
 
 ## Operational Workflow
 
@@ -52,5 +42,4 @@ Deploy pipelines and runbooks must reference root migrations as canonical migrat
 ## Drift Prevention
 
 - Every schema PR must include migration files under `/migrations`.
-- If Supabase files are updated, PR must reference the matching root migration IDs.
-- Periodically run schema diff checks between a database bootstrapped from `/migrations` and Supabase-projected schema.
+- The retired `/supabase/migrations` mirror must not be updated; it exists only as historical reference.

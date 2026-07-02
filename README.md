@@ -16,7 +16,7 @@
   &nbsp;·&nbsp;
   <strong>6 workflows</strong>
   &nbsp;·&nbsp;
-  <strong>Rust + Axum + Supabase + Railway</strong>
+  <strong>Rust + Axum + Railway Postgres + Railway</strong>
 </p>
 
 <p align="center">
@@ -511,7 +511,7 @@ The system adapts witness prompts based on your relationship with awareness.
 
 **Seed API Keys:**
 ```bash
-DATABASE_URL="your-supabase-postgres-url" \
+DATABASE_URL="your-railway-postgres-url" \
   cargo run --package noesis-auth --features postgres --example seed_api_keys
 ```
 
@@ -534,7 +534,7 @@ graph LR
     Orch --> Bridge["🌉 noesis-bridge"]
     Bridge --> TSE["📦 TS Engines (6)<br>(Bun)"]
     API --> Cache["🔴 noesis-cache<br>(L1 LRU · L2 Redis · L3 Disk)"]
-    Auth --> DB[("🗄️ Supabase<br>PostgreSQL")]
+    Auth --> DB[("🗄️ Railway<br>Postgres")]
     API --> Metrics["📊 Prometheus<br>/metrics"]
     API --> Sentry["🔍 Sentry"]
 ```
@@ -550,7 +550,7 @@ Engine families:
 crates/
   noesis-api/             Axum HTTP server (the binary you deploy)
   noesis-orchestrator/    Multi-engine parallel execution + workflow synthesis
-  noesis-auth/            JWT + API key auth (Supabase Postgres)
+  noesis-auth/            JWT + API key auth (Railway Postgres)
   noesis-cache/           3-layer cache (L1 memory, L2 Redis, L3 disk)
   noesis-metrics/         Prometheus instrumentation
   noesis-core/            Shared types (EngineInput, EngineOutput, BirthData)
@@ -626,7 +626,7 @@ crates/
 | **Admin Frontend** | [Vercel](https://vercel.com) (`apps/admin-web`) · billing at `/billing` |
 | **Desktop Client** | [Sankalpa](../sankalpa/) · Electron app replacing retired `biofield-web` and `noesis-web` |
 | **Payments** | [Dodo Payments](https://dodopayments.com) — plan catalog, subscriptions, webhooks |
-| **Database** | [Supabase](https://supabase.com) PostgreSQL |
+| **Database** | Railway Postgres |
 | **Cache** | Redis (L2) + LRU (L1) |
 
 </td>
@@ -709,7 +709,7 @@ docker-compose up -d                                     # Docker
 Copy `.env.example` to `.env`. Required variables:
 - `RUST_ENV` — `development` or `production`
 - `JWT_SECRET` — signing key for JWT tokens
-- `DATABASE_URL` — Supabase Postgres connection URL (optional — runs degraded without)
+- `DATABASE_URL` — Railway Postgres connection URL (optional locally; required in production)
 
 See [`.env.example`](.env.example) for full list.
 
