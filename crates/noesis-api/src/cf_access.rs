@@ -70,6 +70,59 @@ pub fn development_auth_user(dev_token: &str, provided: Option<&str>) -> Option<
     })
 }
 
+#[derive(Debug, Clone, serde::Deserialize)]
+pub struct CfAccessClaims {
+    pub sub: String,
+    pub email: Option<String>,
+    pub aud: serde_json::Value,
+    #[serde(default)]
+    pub groups: Vec<String>,
+    #[serde(default)]
+    pub identity_nonce: Option<String>,
+    pub exp: usize,
+    pub iat: usize,
+    pub iss: String,
+}
+
+pub fn identity_from_claims(claims: CfAccessClaims) -> Result<CfIdentity, String> {
+    let email = claims
+        .email
+        .map(|email| email.trim().to_ascii_lowercase())
+        .filter(|email| !email.is_empty())
+        .ok_or_else(|| "Cloudflare identity email missing".to_string())?;
+
+    if claims.sub.trim().is_empty() {
+        return Err("Cloudflare identity sub missing".to_string());
+    }
+
+    Ok(CfIdentity {
+        sub: claims.sub,
+        email,
+        groups: claims.groups,
+    })
+}
+
+#[derive(Debug, Clone)]
+pub struct CfAccessValidator {
+    issuer: String,
+    audience: String,
+}
+
+impl CfAccessValidator {
+    pub fn new(issuer: String, audience: String) -> Self {
+        Self { issuer, audience }
+    }
+
+    pub async fn validate_token(&self,
+        _token: &str,
+    ) -> Result<CfIdentity, String> {
+        Err(format!(
+            "Cloudflare Access JWT validation not fully wired for issuer {} and audience {}",
+            self.issuer, self.audience
+        ))
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -103,5 +156,43 @@ mod tests {
         assert_eq!(user.user_id, "00000000-0000-0000-0000-000000000001");
         assert!(user.permissions.contains(&"admin:system:read".to_string()));
         assert_eq!(user.tier, "enterprise");
+    }
+
+    #[test]
+    fn extracts_identity_from_claims() {
+        let claims = CfAccessClaims {
+            sub: "cf-sub-123".to_string(),
+            email: Some("USER@Example.COM".to_string()),
+            aud: serde_json::json!(["aud"]),
+            groups: vec!["support".to_string()],
+            identity_nonce: None,
+            exp: 4_102_444_800,
+            iat: 1,
+            iss: "https://team.cloudflareaccess.com".to_string(),
+        };
+
+        let identity = identity_from_claims(claims).expect("identity");
+        assert_eq!(identity.sub, "cf-sub-123");
+        assert_eq!(identity.email, "user@example.com");
+        assert_eq!(identity.groups, vec!["support"]);
+    }
+
+    #[test]
+    fn rejects_claims_without_email() {
+        let claims = CfAccessClaims {
+            sub: "cf-sub-123".to_string(),
+            email: None,
+            aud: serde_json::json!(["aud"]),
+            groups: vec![],
+            identity_nonce: None,
+            exp: 4_102_444_800,
+            iat: 1,
+            iss: "https://team.cloudflareaccess.com".to_string(),
+        };
+
+        assert_eq!(
+            identity_from_claims(claims).unwrap_err(),
+            "Cloudflare identity email missing"
+        );
     }
 }
