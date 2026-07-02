@@ -924,7 +924,7 @@ pub fn create_router(state: AppState, config: &ApiConfig) -> Router {
             middleware::auth_middleware,
         ))
         .merge(auth_routes);
-    // NOTE: auth_routes (register, login, forgot-password, reset-password, discord/*) are
+    // NOTE: auth_routes (register, login, forgot-password, reset-password) are
     // intentionally merged AFTER the auth_middleware layer above, which means they are
     // NOT covered by that middleware. This is correct — they are public endpoints.
     // Do NOT move auth_routes inside the layer block or they will be gated behind auth.
