@@ -305,56 +305,6 @@ mod tests {
     use crate::repositories::user_repository::UserRepository;
     use serde_json::json;
     use sqlx::postgres::PgPoolOptions;
-    use std::fs;
-    use std::path::PathBuf;
-
-    fn repo_root() -> PathBuf {
-        PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-            .parent()
-            .expect("workspace crate dir")
-            .parent()
-            .expect("workspace root")
-            .to_path_buf()
-    }
-
-    #[test]
-    fn migration_013_exists_in_root_and_supabase() {
-        let root_sql =
-            fs::read_to_string(repo_root().join("migrations/013_history_sync_schema.sql"))
-                .expect("root migration 013");
-        let supabase_sql = fs::read_to_string(
-            repo_root().join("supabase/migrations/20260313000013_013_history_sync_schema.sql"),
-        )
-        .expect("supabase migration 013");
-
-        for sql in [&root_sql, &supabase_sql] {
-            assert!(sql.contains("CREATE TABLE IF NOT EXISTS user_devices"));
-            assert!(sql.contains("CREATE TABLE IF NOT EXISTS history_sync_state"));
-            assert!(sql.contains("ADD COLUMN IF NOT EXISTS client_event_id"));
-            assert!(sql.contains("ADD COLUMN IF NOT EXISTS sync_cursor"));
-            assert!(sql.contains("idx_readings_user_client_event_id"));
-        }
-    }
-
-    #[test]
-    fn migration_017_exists_in_root_and_supabase() {
-        let root_sql = fs::read_to_string(repo_root().join("migrations/017_biofield_sessions.sql"))
-            .expect("root migration 017");
-        let supabase_sql = fs::read_to_string(
-            repo_root().join("supabase/migrations/20260405000017_017_biofield_sessions.sql"),
-        )
-        .expect("supabase migration 017");
-
-        assert_eq!(root_sql, supabase_sql);
-
-        for sql in [&root_sql, &supabase_sql] {
-            assert!(sql.contains("CREATE TABLE IF NOT EXISTS biofield_sessions"));
-            assert!(sql.contains("CREATE TABLE IF NOT EXISTS biofield_capture_artifacts"));
-            assert!(sql.contains("REFERENCES readings(id) ON DELETE SET NULL"));
-            assert!(sql.contains("biofield_sessions_status_check"));
-            assert!(sql.contains("biofield_capture_artifacts_kind_check"));
-        }
-    }
 
     #[tokio::test]
     async fn save_reading_is_idempotent_when_client_event_id_is_present() {

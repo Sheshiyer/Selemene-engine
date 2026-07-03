@@ -140,9 +140,11 @@ pub struct UpsertRagaClipRequest {
     pub melakarta_num: i32,
     pub style: String,
     pub suno_song_id: String,
+    pub suno_prompt: String,
+    pub r2_key: String,
     pub cdn_url: String,
-    pub duration_sec: Option<f64>,
-    /// status: "pending" | "approved" | "rejected"
+    pub duration_sec: i32,
+    /// status: "pending" | "generated" | "approved" | "rejected" | "regenerate"
     pub status: Option<String>,
 }
 
@@ -178,8 +180,14 @@ pub async fn upsert_raga_clip(
             .into_response();
     }
 
-    let status = body.status.as_deref().unwrap_or("pending");
-    let duration = body.duration_sec.map(|d| d as f32);
+    let status = body.status.as_deref().unwrap_or("generated");
+
+    if !matches!(body.style.as_str(), "ambient" | "meditative" | "cinematic" | "acid") {
+        return (StatusCode::UNPROCESSABLE_ENTITY, Json(serde_json::json!({ "error": "unsupported style" }))).into_response();
+    }
+    if !matches!(status, "pending" | "generated" | "approved" | "rejected" | "regenerate") {
+        return (StatusCode::UNPROCESSABLE_ENTITY, Json(serde_json::json!({ "error": "unsupported status" }))).into_response();
+    }
 
     let pool = match state.auth.pool() {
         Some(p) => p,
@@ -194,22 +202,25 @@ pub async fn upsert_raga_clip(
 
     let result = sqlx::query(
         r#"
-        INSERT INTO raga_clips (melakarta_num, style, suno_song_id, cdn_url, duration_sec, status)
-        VALUES ($1, $2, $3, $4, $5, $6)
+        INSERT INTO raga_clips (melakarta_num, style, suno_song_id, suno_prompt, r2_key, cdn_url, duration_sec, status)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
         ON CONFLICT (melakarta_num, style)
         DO UPDATE SET
           suno_song_id = EXCLUDED.suno_song_id,
+          suno_prompt  = EXCLUDED.suno_prompt,
+          r2_key       = EXCLUDED.r2_key,
           cdn_url      = EXCLUDED.cdn_url,
           duration_sec = EXCLUDED.duration_sec,
-          status       = EXCLUDED.status,
-          updated_at   = now()
+          status       = EXCLUDED.status
         "#,
     )
     .bind(body.melakarta_num)
     .bind(&body.style)
     .bind(&body.suno_song_id)
+    .bind(&body.suno_prompt)
+    .bind(&body.r2_key)
     .bind(&body.cdn_url)
-    .bind(duration)
+    .bind(body.duration_sec)
     .bind(status)
     .execute(pool)
     .await;
@@ -247,4 +258,27 @@ fn internal_key_ok(headers: &HeaderMap) -> bool {
         .and_then(|v| v.to_str().ok())
         .map(|v| v == expected)
         .unwrap_or(false)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn upsert_request_accepts_r2_metadata() {
+        let body = serde_json::json!({
+            "melakarta_num": 15,
+            "style": "ambient",
+            "suno_song_id": "song_123",
+            "suno_prompt": "A meditative raga prompt",
+            "r2_key": "clips/ambient/15-song_123.mp3",
+            "cdn_url": "https://cdn.example.com/clips/ambient/15-song_123.mp3",
+            "duration_sec": 45,
+            "status": "generated"
+        });
+
+        let parsed: UpsertRagaClipRequest = serde_json::from_value(body).expect("request parses");
+        assert_eq!(parsed.suno_prompt, "A meditative raga prompt");
+        assert_eq!(parsed.r2_key, "clips/ambient/15-song_123.mp3");
+    }
 }

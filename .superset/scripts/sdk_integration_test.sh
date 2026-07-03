@@ -1,7 +1,7 @@
 #!/bin/bash
 # SDK Integration Test - Test API key authentication and SDK endpoints
 # Production URL: https://selemene.tryambakam.space
-# Architecture: Railway + Supabase + Cloudflare
+# Architecture: Railway + Cloudflare
 
 set -e
 
@@ -19,10 +19,10 @@ if [ -z "$NOESIS_API_KEY" ] && [ -z "$API_KEY" ]; then
   echo "ERROR: No API key set."
   echo "Please set NOESIS_API_KEY or API_KEY environment variable."
   echo ""
-  echo "To get an API key:"
-  echo "  1. Go to https://selemene.tryambakam.space"
-  echo "  2. Sign up/login via Supabase auth"
-  echo "  3. Generate an API key from the dashboard"
+echo "To get an API key:"
+echo "  1. Go to https://selemene.tryambakam.space"
+echo "  2. Sign up/login via Cloudflare Access"
+echo "  3. Generate an API key from the dashboard"
   echo ""
   echo "Usage:"
   echo "  NOESIS_API_KEY=your_key_here .superset/scripts/sdk_integration_test.sh"
@@ -163,7 +163,7 @@ echo "============================================"
 echo ""
 echo "Architecture:"
 echo "  - Backend: Railway (https://railway.app)"
-echo "  - Auth/DB: Supabase (https://supabase.com)"
+echo "  - Auth: Cloudflare Access (https://cloudflare.com)"
 echo "  - Domain: Cloudflare (https://cloudflare.com)"
 echo ""
 echo "All tests passed! SDK is properly integrated."

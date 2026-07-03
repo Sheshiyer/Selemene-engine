@@ -16,7 +16,7 @@
 
 | Table | Role |
 |---|---|
-| `users` | identity, tier mirror, Discord OAuth join key |
+| `users` | identity, tier mirror, Cloudflare Access user identity |
 | `plan_catalog` | canonical plan codes (`free`, `basic`, `premium`, `enterprise`) seeded by 014 |
 | `billing_subscriptions` | per-user subscription rows, multi-provider via `provider` column |
 | `user_active_plan_resolutions` | view joining the two for read-side queries |

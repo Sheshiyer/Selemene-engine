@@ -1,7 +1,7 @@
 # Noesis Engine — AI Coding Agent Instructions
 
 ## Project Overview
-Noesis (formerly Selemene Engine) is a consciousness calculation platform with **17 engines** (11 Rust + 6 TypeScript), deployed on **Railway** with **Supabase** PostgreSQL for auth/DB. It serves a RESTful API at `https://selemene.tryambakam.space`.
+Noesis (formerly Selemene Engine) is a consciousness calculation platform with **17 engines** (11 Rust + 6 TypeScript), deployed on **Railway** with **Railway Postgres** for the primary database and **Cloudflare Zero Trust** for human/admin authentication. It serves a RESTful API at `https://selemene.tryambakam.space`.
 
 **Current Status**: Production — all 17 engines live and calculating.
 
@@ -29,7 +29,8 @@ All engines implement the `ConsciousnessEngine` trait in [crates/noesis-core/src
 
 ### Infrastructure
 - **Deployment**: Railway (Rust API on port 8080, TS sidecar on port 3001)
-- **Database/Auth**: Supabase PostgreSQL
+- **Database**: Railway Postgres
+- **Human/Admin Auth**: Cloudflare Zero Trust
 - **Cache**: Redis (L1 in-memory + L2 Redis)
 - **API URL**: `https://selemene.tryambakam.space`
 - **Binary**: `noesis-server` (defined in [crates/noesis-api/Cargo.toml](../crates/noesis-api/Cargo.toml))
@@ -39,7 +40,7 @@ All engines implement the `ConsciousnessEngine` trait in [crates/noesis-core/src
 crates/
   noesis-api/             Axum HTTP server (binary: noesis-server)
   noesis-orchestrator/    Multi-engine parallel execution + workflow synthesis
-  noesis-auth/            JWT + API key auth (Supabase Postgres)
+  noesis-auth/            JWT + API key auth (Railway Postgres)
   noesis-cache/           Cache layer (L1 memory, L2 Redis)
   noesis-core/            Shared traits (ConsciousnessEngine, EngineInput/Output)
   noesis-bridge/          TS engine bridge (HTTP → ConsciousnessEngine trait)
@@ -108,7 +109,8 @@ GET  /health/ready                          — Readiness probe
 - **E2E tests**: In `tests/e2e/` for full API workflow testing
 
 ## External Dependencies
-- **Supabase**: PostgreSQL for auth/users/API keys
+- **Railway Postgres**: PostgreSQL for auth/users/API keys
+- **Cloudflare Zero Trust**: Human/admin authentication
 - **Redis**: Required for cache in production (optional for local dev)
 - **FreeAstrologyAPI**: External API for Vedic calculations (via `noesis-vedic-api`)
 - **Ephemeris data**: In `data/ephemeris/` for planetary calculations

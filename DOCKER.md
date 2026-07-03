@@ -1,9 +1,9 @@
 # Docker Deployment Guide - Noesis API
 
 ## Overview
-This directory contains Docker configuration for running the Noesis API with all dependencies (Redis, Supabase PostgreSQL) in a containerized environment.
+This directory contains Docker configuration for running the Noesis API with all dependencies (Redis, PostgreSQL) in a containerized environment.
 
-> **Note:** Production uses **Supabase PostgreSQL**. The local PostgreSQL container included in `docker-compose.yml` is for **development only**. See the [Railway Deployment](#railway-deployment) section for production configuration.
+> **Note:** Production uses **Railway Postgres**. The local PostgreSQL container included in `docker-compose.yml` is for **development only**. See the [Railway Deployment](#railway-deployment) section for production configuration.
 
 ## Files
 - `Dockerfile`: Multi-stage build configuration for noesis-api
@@ -133,7 +133,7 @@ Key variables (see `.env.example` for full list):
 SERVER_PORT=8080
 RUST_LOG=info
 
-# Database (local dev uses Docker Postgres; production uses Supabase — see Railway section)
+# Database (local dev uses Docker Postgres; production uses Railway Postgres — see Railway section)
 DATABASE_URL=postgresql://user:pass@postgres:5432/noesis
 
 # Redis
@@ -183,7 +183,7 @@ cat backup.sql | docker-compose exec -T postgres psql -U noesis_user noesis
 
 ### Security Checklist
 - [ ] Change `JWT_SECRET` to a strong random value
-- [ ] Change `POSTGRES_PASSWORD` to a strong password (local dev only; production uses Supabase)
+- [ ] Change `POSTGRES_PASSWORD` to a strong password (local dev only; production uses Railway Postgres)
 - [ ] Set `RUST_LOG=warn` or `error` for production
 - [ ] Remove port bindings for internal services (postgres, redis)
 - [ ] Use secrets management (Docker Secrets, Vault, etc.)
@@ -252,13 +252,13 @@ docker-compose logs --tail=100 noesis-api
 
 ## Development Workflow
 
-> **Note:** The local PostgreSQL container is for development only. Production deployments connect to **Supabase PostgreSQL** via the `DATABASE_URL` configured in Railway (see [Railway Deployment](#railway-deployment)).
+> **Note:** The local PostgreSQL container is for development only. Production deployments connect to **Railway Postgres** via the `DATABASE_URL` configured in Railway (see [Railway Deployment](#railway-deployment)).
 
 ### Local Development with Hot Reload
 For active development, use cargo directly instead of Docker:
 
 ```bash
-# Start only dependencies (local Postgres for dev; production uses Supabase)
+# Start only dependencies (local Postgres for dev; production uses Railway Postgres)
 docker-compose up -d redis postgres
 
 # Run API locally with hot reload
@@ -295,7 +295,7 @@ docker-compose run --rm noesis-api cargo test --test integration_tests
            ▼                    ▼
     ┌──────────┐         ┌────────────────────┐
     │  Redis   │         │ Postgres (local)   │
-    │  (Cache) │         │ / Supabase (prod)  │
+    │  (Cache) │         │ / Railway (prod)   │
     └──────────┘         └────────────────────┘
 ```
 
@@ -313,7 +313,7 @@ The project is configured for Railway deployment using `Dockerfile.prod` (see `r
 | Variable | Value | Notes |
 |----------|-------|-------|
 | `JWT_SECRET` | Strong random string | `openssl rand -base64 32` |
-| `DATABASE_URL` | Supabase connection string | From Supabase Dashboard |
+| `DATABASE_URL` | Railway Postgres connection string | From Railway Dashboard |
 
 5. Railway auto-injects `REDIS_URL` if you provision the Redis add-on
 

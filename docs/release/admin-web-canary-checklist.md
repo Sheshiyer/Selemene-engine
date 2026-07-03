@@ -14,7 +14,7 @@
 - [ ] No new `console.error` calls introduced in production code paths
 
 ### Functional Smoke (staging)
-- [ ] Login via Discord OAuth completes and redirects to `/dashboard`
+- [ ] Login via Cloudflare Access completes and redirects to `/dashboard`
 - [ ] All 7 nav routes render without JS errors: Dashboard, Users, API Keys, History Sync, Analytics, System, Audit
 - [ ] Command palette opens (Cmd/Ctrl+K), filters items, navigates on Enter, closes on Escape
 - [ ] Drawer opens and closes on Users and API Keys pages

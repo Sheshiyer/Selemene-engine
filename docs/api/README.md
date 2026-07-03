@@ -174,13 +174,13 @@ Full reference: [billing.md](./billing.md).
 
 ### Auth
 
-- `POST /api/v1/auth/register`
-- `POST /api/v1/auth/login`
+- `POST /api/v1/auth/register` — registration remains available; login issuance is retired
+- `POST /api/v1/auth/login` — returns `410 AUTH_RETIRED`; use Cloudflare Access for human login
 - `POST /api/v1/auth/forgot-password`
 - `POST /api/v1/auth/reset-password`
 - `POST /api/v1/auth/change-password`
-- `GET /api/v1/auth/discord/authorize` — Discord OAuth initiation
-- `GET /api/v1/auth/discord/callback` — Discord OAuth callback
+- `GET /api/v1/auth/discord/authorize` — retired
+- `GET /api/v1/auth/discord/callback` — retired
 
 ### Readings History
 

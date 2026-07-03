@@ -63,8 +63,8 @@ echo ""
 echo "📝 Please provide the following credentials:"
 echo ""
 
-# Supabase DATABASE_URL
-read -p "Supabase DATABASE_URL (from Supabase Dashboard → Settings → Database → Connection Pooling): " DATABASE_URL
+# Railway Postgres DATABASE_URL
+read -p "Railway Postgres DATABASE_URL (from Railway → Postgres service → Connect tab): " DATABASE_URL
 if [ -z "$DATABASE_URL" ]; then
     echo "❌ DATABASE_URL is required"
     exit 1

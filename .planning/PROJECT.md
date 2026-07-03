@@ -13,7 +13,7 @@ Reflective consciousness work without prescriptive output. Every engine surface 
 - **API**: Rust workspace (axum, tokio, sqlx) — 11 native engines + 5 TS-bridge engines
 - **Sidecar**: TypeScript engines via Bun (enneagram, i-ching, sacred-geometry, sigil-forge, tarot)
 - **Storage**: PostgreSQL (sqlx), Redis (caching, queues)
-- **Auth**: Discord OAuth + API keys
+- **Auth**: Cloudflare Zero Trust + API keys
 - **Frontends**: admin-web, biofield-web (Next.js)
 - **Charts**: Native Swiss Ephemeris (libswisseph-sys) — D1/D9 raw passthrough
 - **Deploy**: Docker + Kubernetes; Railway sidecar
@@ -39,7 +39,7 @@ This repo runs **two complementary documentation systems**:
 - ✓ 16 engines registered with workflow-parity contract (`cargo test -p noesis-api workflow_parity`)
 - ✓ Witness prompt quality contract (#432) — all 16 engines question-formatted, non-prescriptive, ≥24 chars
 - ✓ Agent-dispatch pipeline (`agent-ready` label triggers scaffold + Copilot kickoff)
-- ✓ Discord OAuth + API key auth
+- ✓ Cloudflare Zero Trust + API key auth
 - ✓ Native Vedic charts (D1/D9 via Swiss Ephemeris, replacing FreeAstrologyAPI)
 - ✓ Admin dashboard (api-keys, audit, history-sync, system, users)
 - ✓ Biofield web app (capture → readings → comparison/export)

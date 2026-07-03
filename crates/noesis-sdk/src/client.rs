@@ -145,7 +145,7 @@ impl NoesisClient {
     }
 
     /// Get the authenticated user's server-side profile.
-    /// Returns consciousness_level and experience_points from Supabase.
+    /// Returns consciousness_level and experience_points from the Postgres database.
     #[instrument(skip(self))]
     pub async fn get_me(&self) -> Result<UserProfile> {
         let url = format!("{}/api/v1/users/me", self.base_url);

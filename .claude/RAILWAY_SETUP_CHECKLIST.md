@@ -59,29 +59,21 @@ JWT_SECRET=yM9HmenTks5FCXMsgXcUrjkhRLSu2CnGCU6egQcODcSdgSa87p7K4nToBg2XULKd
 JWT_EXPIRY=3600
 ```
 
-### Database (Supabase)
+### Database (Railway Postgres)
 
 ```bash
-# Supabase Postgres connection string
-# FORMAT: postgresql://postgres.PROJECT_REF:[PASSWORD]@aws-0-[REGION].pooler.supabase.com:6543/postgres?sslmode=require
+# Railway Postgres connection string
+# FORMAT: postgresql://[USER]:[PASSWORD]@[HOST]:[PORT]/[DATABASE]?sslmode=require
 #
 # HOW TO GET THIS:
-# 1. Go to Supabase Dashboard → Project Settings → Database
-# 2. Copy "Connection Pooling" → "Connection string" (NOT "Direct connection")
-# 3. Use Pooler (port 6543) for better connection management
-# 4. Replace [YOUR-PASSWORD] with your Supabase database password
+# 1. In Railway, open your Postgres service → "Connect" tab
+# 2. Copy the "Database URL" (or "Postgres Connection URL")
+# 3. Railway handles connection pooling; no manual PgBouncer is required
 #
-DATABASE_URL=postgresql://postgres.PROJECT_REF:[YOUR-PASSWORD]@aws-0-us-west-1.pooler.supabase.com:6543/postgres?sslmode=require
+DATABASE_URL=postgresql://postgres:[PASSWORD]@switchback.railway.internal:5432/railway?sslmode=require
 ```
 
-**⚠️ CRITICAL:** If you have Supabase MCP connected, you can get the exact connection string by running:
-```bash
-# Check if MCP provides connection string
-echo $SUPABASE_DB_URL
-# Or use Supabase CLI
-supabase projects list
-supabase db show --project-ref [PROJECT_REF]
-```
+**⚠️ CRITICAL:** Do not use Supabase connection strings for new deployments. The project has retired Supabase in favor of Railway Postgres.
 
 ### CORS Origins
 
@@ -313,9 +305,10 @@ After setting all env vars and provisioning Redis:
 
 ### Issue: "Failed to connect to database"
 **Solution:**
-- Use Supabase **Pooler** connection string (port 6543), not direct connection (port 5432)
+- Verify `DATABASE_URL` points to Railway Postgres (not a retired Supabase string)
 - Verify password is correct
 - Check `?sslmode=require` is appended
+- Confirm the Railway Postgres service is healthy in the Railway dashboard
 
 ### Issue: "Redis connection failed"
 **Solution:**
@@ -357,9 +350,9 @@ After setting all env vars and provisioning Redis:
 
 Please provide these values so I can help you configure:
 
-1. **Supabase DATABASE_URL:**
-   - Format: `postgresql://postgres.PROJECT_REF:[PASSWORD]@aws-0-[REGION].pooler.supabase.com:6543/postgres?sslmode=require`
-   - Get from: Supabase Dashboard → Settings → Database → "Connection Pooling"
+1. **Railway Postgres DATABASE_URL:**
+   - Format: `postgresql://[USER]:[PASSWORD]@[HOST]:[PORT]/[DATABASE]?sslmode=require`
+   - Get from: Railway → Postgres service → "Connect" tab → "Database URL"
 
 2. **Railway URL (after first deploy):**
    - Format: `[PROJECT-NAME]-production.up.railway.app`

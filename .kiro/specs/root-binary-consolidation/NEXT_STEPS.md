@@ -59,13 +59,13 @@ open https://<railway-url>/api/docs
 
 Once Railway deployment succeeds, proceed with Phase 1 MVP tasks:
 
-### Phase 1 Sprint 1: Supabase Integration & Railway Deployment
+### Phase 1 Sprint 1: Railway Postgres & Railway Deployment
 
 **Tasks (16 total, ~57 hours):**
 
 1. **Database Layer** (Tasks P1-S1-01 to P1-S1-08)
-   - Create Supabase project and schema
-   - Migrate AuthService to Postgres-backed
+   - Create Railway Postgres database and schema
+   - Configure Cloudflare Zero Trust + API key authentication
    - Create API key seeding script
    - Write unit tests
 
@@ -194,7 +194,6 @@ Once Railway deployment succeeds, proceed with Phase 1 MVP tasks:
 
 ### External Services
 - **Railway Dashboard:** https://railway.app
-- **Supabase Dashboard:** https://supabase.com
 - **Cloudflare Dashboard:** https://dash.cloudflare.com
 - **FreeAstrologyAPI:** https://freeastrologyapi.com
 

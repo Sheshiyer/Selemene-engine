@@ -749,6 +749,35 @@ impl AdminRepository {
         Ok(Some(updated_keys))
     }
 
+    pub async fn replace_user_roles_from_cloudflare(
+        &self,
+        user_id: Uuid,
+        roles: &[String],
+    ) -> Result<(), Error> {
+        let mut tx = self.pool.begin().await?;
+        sqlx::query("DELETE FROM user_roles WHERE user_id = $1")
+            .bind(user_id)
+            .execute(&mut *tx)
+            .await?;
+
+        for role in roles {
+            sqlx::query(
+                r#"
+                INSERT INTO user_roles (user_id, role)
+                VALUES ($1, $2)
+                ON CONFLICT (user_id, role) DO NOTHING
+                "#,
+            )
+            .bind(user_id)
+            .bind(role)
+            .execute(&mut *tx)
+            .await?;
+        }
+
+        tx.commit().await?;
+        Ok(())
+    }
+
     pub async fn get_user_tier(&self, user_id: Uuid) -> Result<Option<String>, Error> {
         sqlx::query_scalar::<_, String>("SELECT tier FROM users WHERE id = $1")
             .bind(user_id)
@@ -2279,17 +2308,6 @@ fn missing_plan_billing_schema(err: &Error) -> bool {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::fs;
-    use std::path::PathBuf;
-
-    fn repo_root() -> PathBuf {
-        PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-            .parent()
-            .expect("workspace crate dir")
-            .parent()
-            .expect("workspace root")
-            .to_path_buf()
-    }
 
     #[test]
     fn role_permissions_include_platform_admin_controls() {
@@ -2297,64 +2315,5 @@ mod tests {
         assert!(perms.contains(&"admin:*"));
         assert!(perms.contains(&"admin:users:roles:update"));
         assert!(perms.contains(&"admin:keys:rotate"));
-    }
-
-    #[test]
-    fn migration_010_exists_in_root_and_supabase() {
-        let root_sql =
-            fs::read_to_string(repo_root().join("migrations/010_user_roles_account_state.sql"))
-                .expect("root migration 010");
-        let supabase_sql = fs::read_to_string(
-            repo_root().join("supabase/migrations/20260313000010_010_user_roles_account_state.sql"),
-        )
-        .expect("supabase migration 010");
-
-        for sql in [&root_sql, &supabase_sql] {
-            assert!(sql.contains("CREATE TABLE IF NOT EXISTS user_roles"));
-            assert!(sql.contains("CREATE TABLE IF NOT EXISTS user_account_state"));
-            assert!(sql.contains("INSERT INTO user_roles"));
-            assert!(sql.contains("INSERT INTO user_account_state"));
-        }
-    }
-
-    #[test]
-    fn migration_011_exists_in_root_and_supabase() {
-        let root_sql = fs::read_to_string(repo_root().join("migrations/011_api_key_events.sql"))
-            .expect("root migration 011");
-        let supabase_sql = fs::read_to_string(
-            repo_root().join("supabase/migrations/20260313000011_011_api_key_events.sql"),
-        )
-        .expect("supabase migration 011");
-
-        for sql in [&root_sql, &supabase_sql] {
-            assert!(sql.contains("CREATE TABLE IF NOT EXISTS api_key_events"));
-            assert!(sql.contains("ADD COLUMN IF NOT EXISTS created_by_user_id"));
-            assert!(sql.contains("ADD COLUMN IF NOT EXISTS revoked_at"));
-            assert!(sql.contains("ADD COLUMN IF NOT EXISTS rotated_from_key_id"));
-            assert!(sql.contains("INSERT INTO api_key_events"));
-        }
-    }
-
-    #[test]
-    fn migration_012_and_partition_check_script_exist() {
-        let root_sql =
-            fs::read_to_string(repo_root().join("migrations/012_usage_partition_maintenance.sql"))
-                .expect("root migration 012");
-        let supabase_sql = fs::read_to_string(
-            repo_root()
-                .join("supabase/migrations/20260313000012_012_usage_partition_maintenance.sql"),
-        )
-        .expect("supabase migration 012");
-        let script = fs::read_to_string(repo_root().join("scripts/check_usage_log_partitions.sh"))
-            .expect("partition check script");
-
-        for sql in [&root_sql, &supabase_sql] {
-            assert!(sql.contains("CREATE OR REPLACE FUNCTION ensure_usage_log_partitions"));
-            assert!(sql.contains("to_regclass"));
-            assert!(sql.contains("CREATE TABLE %I PARTITION OF usage_logs"));
-        }
-
-        assert!(script.contains("ensure_usage_log_partitions"));
-        assert!(script.contains("ALERT: usage_logs partition maintenance failed"));
     }
 }

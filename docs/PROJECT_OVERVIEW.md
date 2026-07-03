@@ -4,7 +4,7 @@
 
 **Date**: 2026-02-09
 **Codebase**: ~54,000 LOC across 18 workspace crates
-**Status**: Production-live on Railway, auth working against Supabase PostgreSQL
+**Status**: Production-live on Railway with Railway Postgres and Cloudflare Zero Trust for human/admin auth
 **Overall Maturity**: 78% production-ready
 
 > March 10, 2026 correction: the active Vedic runtime path is native Rust for `panchanga`, `vimshottari`, and `transits`. `noesis-vedic-api` remains in-repo as an optional provider client, but it is not the current production calculation path for those engines.
@@ -23,7 +23,7 @@ The deployment pipeline is solid. The Axum HTTP server (`noesis-server`) runs on
 
 The health check system works correctly: `/health/live` always returns 200 for liveness probes, `/health/ready` checks database, Redis, and orchestrator state before returning 200. This separation prevents Railway from killing the container during transient dependency outages.
 
-Supabase PostgreSQL is live with 4 migrations applied (users, password_reset, user_progression, api_keys). The api_keys table uses SHA-256 hashing with monthly-partitioned usage_logs (2026-01 through 2026-12 pre-created). The auth flow is fully operational: API keys validate against Postgres via `validate_from_postgres()`, the seed script creates an admin user with FK-linked keys across three tiers (enterprise, premium, free), and the `add_api_key()` method dual-writes to Postgres and in-memory HashMap for persistence plus fast fallback.
+Railway Postgres is live with 4 migrations applied (users, password_reset, user_progression, api_keys). The api_keys table uses SHA-256 hashing with monthly-partitioned usage_logs (2026-01 through 2026-12 pre-created). The auth flow is fully operational: API keys validate against Postgres via `validate_from_postgres()`, the seed script creates an admin user with FK-linked keys across three tiers (enterprise, premium, free), and the `add_api_key()` method dual-writes to Postgres and in-memory HashMap for persistence plus fast fallback.
 
 Redis is deployed on Railway as an L2 cache add-on. In-memory LRU (L1) handles sub-millisecond lookups. The 3-layer cache architecture is structurally sound, though L2 Redis operations have 8 TODO markers indicating the Redis cache layer needs re-enabling after a refactor.
 
@@ -195,9 +195,9 @@ Each engine carries its own wisdom data in `data/`:
 
 This data represents significant domain knowledge encoded as structured JSON. It's one of the project's most valuable non-code assets. The wisdom data is what transforms raw calculations into meaningful witness prompts.
 
-### Supabase PostgreSQL
+### Railway Postgres
 
-The database runs on Supabase with connection pooling via `aws-1-ap-south-1.pooler.supabase.com`. Four migrations are applied: users (with profiles), password reset tokens, user progression tracking, and API keys with partitioned usage logs. The schema uses UUIDs as primary keys, TIMESTAMPTZ for all timestamps, JSONB for permissions and preferences, and row-level security (RLS) is available but not currently enforced through Supabase policies.
+The database runs on Railway Postgres with connection pooling handled by Railway. Four migrations are applied: users (with profiles), password reset tokens, user progression tracking, and API keys with partitioned usage logs. The schema uses UUIDs as primary keys, TIMESTAMPTZ for all timestamps, JSONB for permissions and preferences. Human/admin authentication is enforced by Cloudflare Zero Trust; the API validates CF identity headers and maps CF groups into local `user_roles`.
 
 ### Railway Redis
 
@@ -273,7 +273,7 @@ The engine calculation times are genuinely fast — Gene Keys at 0.012ms, most o
 
 ## 9. Summary
 
-The Selemene Engine is a serious piece of infrastructure. 17 engines (11 Rust + 6 TypeScript) produce real calculations, the auth system works end-to-end against Supabase, the deployment pipeline is solid, and the test coverage is strong. The codebase is honest about what's stubbed (biofield, face reading) and the architecture supports clean extension.
+The Selemene Engine is a serious piece of infrastructure. 17 engines (11 Rust + 6 TypeScript) produce real calculations, the auth system works end-to-end against Railway Postgres with Cloudflare Zero Trust for human/admin access, the deployment pipeline is solid, and the test coverage is strong. The codebase is honest about what's stubbed (biofield, face reading) and the architecture supports clean extension.
 
 The most impactful improvements are: rotating the exposed JWT secret (security), completing the workflow synthesizers (product value), and re-enabling Redis L2 cache (performance). Everything else is polish, cleanup, or future roadmap.
 
@@ -281,4 +281,4 @@ The most impactful improvements are: rotating the exposed JWT secret (security),
 **Tests**: 1,321+ functions across 41 files
 **Engines**: 17 (11 Rust + 6 TypeScript)
 **Live**: https://selemene.tryambakam.space
-**Auth**: Working end-to-end with Supabase PostgreSQL
+**Auth**: Working end-to-end with Railway Postgres and Cloudflare Zero Trust

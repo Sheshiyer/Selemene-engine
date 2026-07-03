@@ -285,7 +285,7 @@ step_smoke() {
     err "smoke test failed (timeout or error). Common causes:"
     echo "    - SUNO_BRIDGE_URL invalid → check $SCRIPT_DIR/.env"
     echo "    - Suno cookie expired → refresh SUNO_COOKIE in $SCRIPT_DIR/.env"
-    echo "    - Supabase Storage bucket 'raga-clips' not created"
+    echo "    - R2 bucket 'selemene-raga-clips' not created or R2 credentials missing"
     return 1
   fi
 }

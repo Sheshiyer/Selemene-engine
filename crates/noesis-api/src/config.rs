@@ -46,14 +46,14 @@ pub struct ApiConfig {
     /// Log format: "pretty" or "json" (default: "pretty" for dev, "json" for prod)
     pub log_format: String,
 
-    /// Discord OAuth2 client ID (optional — Discord login disabled when unset)
-    pub discord_client_id: Option<String>,
+    /// Cloudflare Access issuer URL, usually https://<team>.cloudflareaccess.com
+    pub cf_access_issuer: Option<String>,
 
-    /// Discord OAuth2 client secret (optional — Discord login disabled when unset)
-    pub discord_client_secret: Option<String>,
+    /// Cloudflare Access application audience tag.
+    pub cf_access_audience: Option<String>,
 
-    /// Discord OAuth2 redirect URI (optional — Discord login disabled when unset)
-    pub discord_redirect_uri: Option<String>,
+    /// Local development bypass token. Only honored outside production.
+    pub cf_dev_bypass_token: Option<String>,
 
     /// Dodo Payments API key (optional — billing integration disabled when unset)
     pub dodo_payments_api_key: Option<String>,
@@ -193,9 +193,6 @@ impl ApiConfig {
 
         let log_format = env::var("LOG_FORMAT").unwrap_or_else(|_| "pretty".to_string());
 
-        let discord_client_id = env::var("DISCORD_CLIENT_ID").ok();
-        let discord_client_secret = env::var("DISCORD_CLIENT_SECRET").ok();
-        let discord_redirect_uri = env::var("DISCORD_REDIRECT_URI").ok();
         let dodo_payments_api_key = env::var("DODO_PAYMENTS_API_KEY")
             .or_else(|_| env::var("DODO_API_KEY"))
             .ok();
@@ -203,6 +200,10 @@ impl ApiConfig {
             .or_else(|_| env::var("DODO_WEBHOOK_KEY"))
             .ok();
         let dodo_payments_env = env::var("DODO_PAYMENTS_ENV").ok();
+
+        let cf_access_issuer = env::var("CF_ACCESS_ISSUER").ok();
+        let cf_access_audience = env::var("CF_ACCESS_AUDIENCE").ok();
+        let cf_dev_bypass_token = env::var("CF_DEV_BYPASS_TOKEN").ok();
 
         let python_biofield_url = env::var("PYTHON_BIOFIELD_URL")
             .unwrap_or_else(|_| DEFAULT_PYTHON_BIOFIELD_URL.to_string());
@@ -233,9 +234,9 @@ impl ApiConfig {
             request_timeout_secs,
             log_level,
             log_format,
-            discord_client_id,
-            discord_client_secret,
-            discord_redirect_uri,
+            cf_access_issuer,
+            cf_access_audience,
+            cf_dev_bypass_token,
             dodo_payments_api_key,
             dodo_payments_webhook_key,
             dodo_payments_env,
@@ -418,9 +419,9 @@ mod tests {
             request_timeout_secs: 30,
             log_level: "info".to_string(),
             log_format: "pretty".to_string(),
-            discord_client_id: None,
-            discord_client_secret: None,
-            discord_redirect_uri: None,
+            cf_access_issuer: None,
+            cf_access_audience: None,
+            cf_dev_bypass_token: None,
             dodo_payments_api_key: None,
             dodo_payments_webhook_key: None,
             dodo_payments_env: None,
@@ -447,9 +448,9 @@ mod tests {
             request_timeout_secs: 30,
             log_level: "info".to_string(),
             log_format: "pretty".to_string(),
-            discord_client_id: None,
-            discord_client_secret: None,
-            discord_redirect_uri: None,
+            cf_access_issuer: None,
+            cf_access_audience: None,
+            cf_dev_bypass_token: None,
             dodo_payments_api_key: None,
             dodo_payments_webhook_key: None,
             dodo_payments_env: None,
@@ -476,9 +477,9 @@ mod tests {
             request_timeout_secs: 30,
             log_level: "info".to_string(),
             log_format: "pretty".to_string(),
-            discord_client_id: None,
-            discord_client_secret: None,
-            discord_redirect_uri: None,
+            cf_access_issuer: None,
+            cf_access_audience: None,
+            cf_dev_bypass_token: None,
             dodo_payments_api_key: None,
             dodo_payments_webhook_key: None,
             dodo_payments_env: None,
@@ -506,9 +507,9 @@ mod tests {
                 request_timeout_secs: 30,
                 log_level: "info".to_string(),
                 log_format: "pretty".to_string(),
-                discord_client_id: None,
-                discord_client_secret: None,
-                discord_redirect_uri: None,
+                cf_access_issuer: None,
+                cf_access_audience: None,
+                cf_dev_bypass_token: None,
                 dodo_payments_api_key: None,
                 dodo_payments_webhook_key: None,
                 dodo_payments_env: None,
@@ -540,9 +541,9 @@ mod tests {
             request_timeout_secs: 0, // Invalid!
             log_level: "info".to_string(),
             log_format: "pretty".to_string(),
-            discord_client_id: None,
-            discord_client_secret: None,
-            discord_redirect_uri: None,
+            cf_access_issuer: None,
+            cf_access_audience: None,
+            cf_dev_bypass_token: None,
             dodo_payments_api_key: None,
             dodo_payments_webhook_key: None,
             dodo_payments_env: None,
@@ -657,9 +658,9 @@ mod tests {
             request_timeout_secs: 30,
             log_level: "info".to_string(),
             log_format: "pretty".to_string(),
-            discord_client_id: None,
-            discord_client_secret: None,
-            discord_redirect_uri: None,
+            cf_access_issuer: None,
+            cf_access_audience: None,
+            cf_dev_bypass_token: None,
             dodo_payments_api_key: None,
             dodo_payments_webhook_key: None,
             dodo_payments_env: None,
@@ -686,9 +687,9 @@ mod tests {
             request_timeout_secs: 30,
             log_level: "info".to_string(),
             log_format: "pretty".to_string(),
-            discord_client_id: None,
-            discord_client_secret: None,
-            discord_redirect_uri: None,
+            cf_access_issuer: None,
+            cf_access_audience: None,
+            cf_dev_bypass_token: None,
             dodo_payments_api_key: None,
             dodo_payments_webhook_key: None,
             dodo_payments_env: None,
@@ -715,9 +716,9 @@ mod tests {
             request_timeout_secs: 30,
             log_level: "info".to_string(),
             log_format: "pretty".to_string(),
-            discord_client_id: None,
-            discord_client_secret: None,
-            discord_redirect_uri: None,
+            cf_access_issuer: None,
+            cf_access_audience: None,
+            cf_dev_bypass_token: None,
             dodo_payments_api_key: Some("dodo_key".to_string()),
             dodo_payments_webhook_key: Some("dodo_webhook".to_string()),
             dodo_payments_env: Some("staging".to_string()),

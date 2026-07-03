@@ -10,7 +10,7 @@ use axum::{
 };
 use chrono::{DateTime, Duration, Utc};
 use dashmap::DashMap;
-use noesis_auth::{AuthService, AuthUser};
+use noesis_auth::AuthUser;
 use std::sync::Arc;
 use std::time::Instant;
 use tracing::{info, info_span, Instrument};
@@ -78,26 +78,100 @@ pub async fn request_logging_middleware(req: Request, next: Next) -> Response {
     .await
 }
 
-/// Authentication middleware that validates JWT tokens or API keys.
+/// Authentication middleware that validates Cloudflare Access tokens, JWT tokens, or API keys.
 ///
-/// Extracts:
+/// Extracts in priority order:
+/// - Cloudflare Access token from `cf-authorization` or `CF_Authorization` header (production)
+/// - Development bypass from `x-noesis-dev-auth` header (RUST_ENV=development only)
 /// - JWT from `Authorization: Bearer <token>` header
-/// - OR API key from `X-API-Key` header
+/// - API key from `X-API-Key` header
 ///
 /// Validates using `AuthService::validate_jwt_token()` or `validate_api_key()`.
 /// Injects `AuthUser` into request extensions for handler access.
 ///
 /// Returns 401 UNAUTHORIZED if authentication fails.
 pub async fn auth_middleware(
-    State(auth): State<Arc<AuthService>>,
+    State(state): State<crate::AppState>,
     mut req: Request,
     next: Next,
 ) -> Result<Response, (StatusCode, Json<ErrorResponse>)> {
-    // Try JWT token first
+    let is_development = std::env::var("RUST_ENV").as_deref() == Ok("development");
+    if is_development {
+        if let Some(expected) = state.cf_dev_bypass_token.as_deref() {
+            let provided = req
+                .headers()
+                .get("x-noesis-dev-auth")
+                .and_then(|v| v.to_str().ok());
+            if let Some(user) = crate::cf_access::development_auth_user(expected, provided) {
+                req.extensions_mut().insert(user);
+                return Ok(next.run(req).await);
+            }
+        }
+    }
+
+    if let Some(validator) = state.cf_access_validator.as_ref() {
+        let cf_token = req
+            .headers()
+            .get("cf-authorization")
+            .or_else(|| req.headers().get("CF_Authorization"))
+            .and_then(|value| value.to_str().ok())
+            .map(str::trim)
+            .filter(|value| !value.is_empty());
+
+        if let Some(token) = cf_token {
+            match validator.validate_token(token).await {
+                Ok(identity) => {
+                    let user = state
+                        .user_repository
+                        .find_or_create_cloudflare_user(&identity.email, &identity.sub)
+                        .await
+                        .map_err(|e| {
+                            ErrorMapper::response(
+                                StatusCode::UNAUTHORIZED,
+                                "UNAUTHORIZED",
+                                "Cloudflare identity could not be resolved",
+                                Some(serde_json::json!({ "auth_method": "cloudflare", "error": e.to_string() })),
+                            )
+                        })?;
+                    let roles = crate::cf_access::role_values_for_sql(&identity.groups);
+                    if let Some(repo) = state.admin_repository.as_ref() {
+                        repo.replace_user_roles_from_cloudflare(user.id, &roles)
+                            .await
+                            .map_err(|e| {
+                                ErrorMapper::response(
+                                    StatusCode::UNAUTHORIZED,
+                                    "UNAUTHORIZED",
+                                    "Cloudflare roles could not be synchronized",
+                                    Some(serde_json::json!({ "auth_method": "cloudflare", "error": e.to_string() })),
+                                )
+                            })?;
+                    }
+                    req.extensions_mut().insert(crate::cf_access::auth_user_from_parts(
+                        user.id,
+                        &user.tier,
+                        user.consciousness_level,
+                        &roles,
+                    ));
+                    return Ok(next.run(req).await);
+                }
+                Err(e) => {
+                    tracing::warn!(error = %e, "Cloudflare Access validation failed");
+                    return Err(ErrorMapper::response(
+                        StatusCode::UNAUTHORIZED,
+                        "UNAUTHORIZED",
+                        "Invalid Cloudflare Access token",
+                        Some(serde_json::json!({ "auth_method": "cloudflare" })),
+                    ));
+                }
+            }
+        }
+    }
+
+    // Try JWT token next
     if let Some(auth_header) = req.headers().get(AUTHORIZATION) {
         if let Ok(auth_str) = auth_header.to_str() {
             if let Some(token) = auth_str.strip_prefix("Bearer ") {
-                match auth.validate_jwt_token(token).await {
+                match state.auth.validate_jwt_token(token).await {
                     Ok(user) => {
                         // Insert authenticated user into request extensions
                         req.extensions_mut().insert(user);
@@ -124,7 +198,7 @@ pub async fn auth_middleware(
     // Try API key next
     if let Some(api_key_header) = req.headers().get("X-API-Key") {
         if let Ok(api_key) = api_key_header.to_str() {
-            match auth.validate_api_key(api_key).await {
+            match state.auth.validate_api_key(api_key).await {
                 Ok(user) => {
                     // Insert authenticated user into request extensions
                     req.extensions_mut().insert(user);
@@ -640,4 +714,19 @@ pub async fn rate_limit_middleware(
     }
 
     Ok(response)
+}
+
+#[cfg(test)]
+mod cf_auth_tests {
+    #[test]
+    fn extracts_dev_bypass_header() {
+        let mut headers = axum::http::HeaderMap::new();
+        headers.insert("x-noesis-dev-auth", "dev-secret".parse().unwrap());
+        assert_eq!(
+            headers
+                .get("x-noesis-dev-auth")
+                .and_then(|v| v.to_str().ok()),
+            Some("dev-secret")
+        );
+    }
 }

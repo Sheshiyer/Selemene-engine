@@ -70,7 +70,7 @@
   },
   "notes": {
     "production_url": "https://selemene.tryambakam.space",
-    "architecture": "Railway (backend) + Supabase (auth/DB) + Cloudflare (domain)",
+    "architecture": "Railway (backend) + Cloudflare (domain)",
     "engines": [
       "vimshottari", "human-design", "gene-keys", "transits", "vedic-clock",
       "panchanga", "biofield", "biorhythm", "face-reading", "numerology",

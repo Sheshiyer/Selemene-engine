@@ -27,7 +27,7 @@ Viewport: **1440 × 900** (desktop Chrome). Threshold: ≤ 2% pixel diff ratio.
    ```bash
    npx playwright codegen --save-storage=tests/visual/auth.json http://localhost:3001/login
    ```
-   Log in through the Discord OAuth flow. The resulting `auth.json` stores cookies/localStorage for subsequent test runs.
+   Log in through Cloudflare Access. The resulting `auth.json` stores cookies/localStorage for subsequent test runs.
 
 3. Start the dev server: `npm run dev` (port 3001)
 

@@ -88,7 +88,7 @@ The project includes automated CI/CD workflows:
 
 ### Migration Authority
 
-Database migration source-of-truth and Supabase alignment policy:
+Database migration source-of-truth and retired-mirror policy (see `DB_MIGRATION_AUTHORITY.md`):
 
 - [DB_MIGRATION_AUTHORITY.md](./DB_MIGRATION_AUTHORITY.md)
 

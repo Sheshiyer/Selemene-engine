@@ -143,12 +143,13 @@ SELECT EXISTS (
 );
 ```
 
-To apply via Supabase CLI:
+To apply via `psql` against Railway Postgres:
+
 ```bash
-npx supabase db push --linked
+psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f migrations/023_reconcile_runs.sql
 ```
 
-Or apply manually in the Supabase SQL editor by copying the contents of `migrations/023_reconcile_runs.sql`.
+Or apply manually in your PostgreSQL editor by copying the contents of `migrations/023_reconcile_runs.sql`.
 
 ---
 
