@@ -55,7 +55,7 @@ async fn assets_generate_is_additive_and_returns_expected_shape() {
 
     // Requirement: passes.length > 0 (real engine context flowed)
     let passes = json["passes"].as_array().expect("passes must be array");
-    assert!(passes.len() > 0, "passes must not be empty for valid mode");
+    assert!(!passes.is_empty(), "passes must not be empty for valid mode");
 
     // Requirement: assembled present and non-trivial (pipeline-like assembly)
     let assembled = json["assembled"].as_str().expect("assembled must be string");
@@ -118,7 +118,7 @@ async fn assets_generate_register_band_l4_l5_for_high_consciousness() {
     // High consciousness must map to l4_l5 register band
     assert_eq!(json["register"].as_str().unwrap(), "l4_l5");
     let passes = json["passes"].as_array().unwrap();
-    assert!(passes.len() > 0);
+    assert!(!passes.is_empty());
 }
 
 #[tokio::test]

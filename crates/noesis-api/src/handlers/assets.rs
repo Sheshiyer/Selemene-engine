@@ -30,6 +30,11 @@ pub struct AssetGenerateRequest {
     #[serde(default)]
     pub consciousness_level: u8,
     /// Free-form options (passed through to pipeline).
+    /// This field is part of the public additive contract for /assets/generate.
+    /// It is intentionally accepted even if not yet fully consumed inside the
+    /// Rust mirror (full LLM pass-through lives in @noesis/witness-pipeline).
+    /// Marked allow(dead_code) to satisfy release gate (clippy -D warnings).
+    #[allow(dead_code)]
     pub options: Option<Value>,
 }
 
