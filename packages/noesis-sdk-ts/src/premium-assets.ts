@@ -197,9 +197,142 @@ When register is l1_l3, avoid or soften Gene Keys shadow language and siddhi lan
 **Adopted:** Yes — l1_l3 synthesis template must explicitly instruct lighter language and forbid siddhi framing.
 `;
 
+const INTEGRATED_KUNDALI_L0_DOC = `---
+mode: integrated-kundali-l0
+subject_count:
+  min: 1
+  max: 1
+roles:
+  - subject
+target_words:
+  min: 15000
+  max: 21000
+architecture: linear
+pass_plan:
+  - id: opening
+    title: Opening
+    target_words: 450
+    template: opening-pass
+  - id: convergence-map
+    title: Part I — The Convergence Map
+    target_words: 1600
+    template: convergence-map-pass
+  - id: vedic-foundation
+    title: Part II — The Vedic Foundation
+    target_words: 3800
+    template: vedic-foundation-pass
+  - id: karmic-architecture
+    title: Part III — The Karmic Architecture
+    target_words: 1500
+    template: karmic-architecture-pass
+  - id: career-dharma
+    title: Part IV — Career and Dharma
+    target_words: 1600
+    template: career-dharma-pass
+  - id: wealth
+    title: Part V — The Wealth Architecture
+    target_words: 1200
+    template: wealth-pass
+  - id: love-marriage
+    title: Part VI — Love and Marriage
+    target_words: 1500
+    template: love-marriage-pass
+  - id: health
+    title: Part VII — Health
+    target_words: 1100
+    template: health-pass
+  - id: family-lineage
+    title: Part VIII — Family, Roots, and Lineage
+    target_words: 1050
+    template: family-lineage-pass
+  - id: master-timeline
+    title: Part IX — The Master Timeline
+    target_words: 2200
+    template: master-timeline-pass
+  - id: remedies-practices
+    title: Part X — Remedies and Practices
+    target_words: 1700
+    template: remedies-practices-pass
+  - id: final-synthesis
+    title: Part XI — The Final Synthesis
+    target_words: 1300
+    template: final-synthesis-pass
+engine_overlay_weights:
+  panchanga: 1.0
+  vimshottari: 1.0
+  human-design: 0.9
+  gene-keys: 0.85
+  transits: 0.8
+  numerology: 0.35
+house_overlay: [1, 2, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+bridge_mandates:
+  - "Use deterministic chart data first; interpretation must follow cited facts."
+  - "Preserve the premium kundali report shape: section-by-section, not one-shot."
+  - "Keep Witness safeguards in money, marriage, children, and health sections."
+  - "Frame synthesis as pattern-reading, not certainty, diagnosis, or fate."
+svg_topology: dyad-arc
+register_variants:
+  l1_l3:
+    target_words:
+      min: 13000
+      max: 17000
+    overrides:
+      - pass_id: final-synthesis
+        template: final-synthesis-pass-l1-l3
+  l4_l5:
+    target_words:
+      min: 17000
+      max: 23000
+---
+
+## opening-pass
+Open {{subject_names}}'s premium integrated kundali report. Name the five-system stack and state that this is deterministic-data synthesis with interpretive layering, not a one-shot oracle.
+
+## convergence-map-pass
+Create the five-system convergence map. Require concrete facts from at least three deterministic systems before naming a convergence.
+
+## vedic-foundation-pass
+Use D1/D9 chart facts, lagna, planets, karakas, yogas, functional roles, Rahu-Ketu, and transit state where present. Do not infer missing chart data.
+
+## karmic-architecture-pass
+Read Rahu-Ketu, Moon nakshatra, atmakaraka curriculum, and mahadasha trail as symbolic pattern architecture, not literal proof.
+
+## career-dharma-pass
+Synthesize career houses/lords, HD mechanics, Gene Keys vocation/pearl, and timing. Give directional fields, not absolute job prescriptions.
+
+## wealth-pass
+Read 2nd/11th houses, wealth karakas, dasha timing, and relevant HD/Gene Keys material. Do not guarantee financial outcomes, investment gains, inheritance, debt resolution, or property events. Frame money as capacity, pattern, timing pressure, and decision hygiene.
+
+## love-marriage-pass
+Read the 7th house, darakaraka, Venus/Mars/Jupiter, D9, relationship mechanics, and timing windows. Do not predict marriage inevitability, divorce, spouse identity, or fixed relationship outcomes. Present timing as relational weather and readiness windows.
+
+## health-pass
+Read constitutional tendencies, 6th/8th/12th indicators, planetary stressors, and vitality context. Do not diagnose, treat, forecast disease, replace medical care, or claim certainty about health events. Use non-medical language.
+
+## family-lineage-pass
+Read mother, father, siblings, children, in-laws, roots, and inherited patterns from house and karaka indicators. Do not predict childbirth, infertility, child outcomes, parent death, estrangement, or family events.
+
+## master-timeline-pass
+Make timing the spine: current mahadasha/antardasha, upcoming transitions, Sade Sati/transit overlays, and major life chapters. Distinguish exact dates from interpretation.
+
+## remedies-practices-pass
+Offer Vedic remedies, HD practices, Gene Keys contemplation, and practical corrections as optional supports. Do not present remedies as guaranteed fixes.
+
+## final-synthesis-pass
+Close with single-sentence reading, biggest lesson, avoid, pursue, strengths, karmic purpose, pattern-not-fate honest prediction, and one integrating practice.
+
+## final-synthesis-pass-l1-l3
+Use simpler language, fewer esoteric terms, and more observable pattern recognition. Keep any honest prediction as possibility, not fate.
+
+## overlay-rules
+Every major section must name which deterministic system supplied each load-bearing fact. Never use this report to diagnose, prescribe, promise outcomes, or remove agency. Do not guarantee financial outcomes. Do not predict marriage inevitability. Do not diagnose. Do not predict childbirth.
+`;
+
 const BUILTIN_MODES: Record<string, string> = {
   'integrated-reading': INTEGRATED_READING_DOC,
-  'integrated_reading': INTEGRATED_READING_DOC,
+  'integrated-kundali-l0': INTEGRATED_KUNDALI_L0_DOC,
+  'kundali-l0': INTEGRATED_KUNDALI_L0_DOC,
+  'kundali': INTEGRATED_KUNDALI_L0_DOC,
 };
 
 /** Resolve a mode name (for common modes) or return the provided doc. Purely additive. */

@@ -3,6 +3,7 @@
 
 import { describe, it, expect } from 'vitest';
 import { NoesisClient } from '../src/index.js';
+import { resolveModeDoc } from './premium-assets.js';
 
 describe('Premium asset additive surface (contract)', () => {
   const baseUrl = process.env.NOESIS_BASE_URL || 'http://localhost:3000';
@@ -14,6 +15,23 @@ describe('Premium asset additive surface (contract)', () => {
     expect(typeof client.interpretWitness).toBe('function');
     expect(typeof client.calculate).toBe('function');
     expect(typeof client.workflow).toBe('function');
+  });
+
+  it('resolves integrated-kundali-l0 as a built-in premium mode', () => {
+    const mode = resolveModeDoc('kundali-l0');
+
+    expect(mode.frontmatter.mode).toBe('integrated-kundali-l0');
+    expect(mode.frontmatter.pass_plan).toHaveLength(12);
+    expect(mode.sections['health-pass']).toContain('Do not diagnose');
+    expect(mode.sections['love-marriage-pass']).toContain('Do not predict marriage inevitability');
+    expect(mode.sections['wealth-pass']).toContain('Do not guarantee financial outcomes');
+    expect(mode.sections['family-lineage-pass']).toContain('Do not predict childbirth');
+  });
+
+  it('surfaces orchestrator section rubrics for local premium generation', async () => {
+    const mode = resolveModeDoc('kundali-l0');
+
+    expect(mode.frontmatter.pass_plan[0].target_words).toBeGreaterThan(0);
   });
 
   it('POST /api/v1/assets/generate returns the additive envelope', async () => {

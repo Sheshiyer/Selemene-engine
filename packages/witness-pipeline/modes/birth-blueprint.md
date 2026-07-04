@@ -1,5 +1,6 @@
 ---
 mode: birth-blueprint
+report_level: L1
 subject_count:
   min: 1
   max: 1

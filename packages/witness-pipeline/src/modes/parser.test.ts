@@ -76,4 +76,30 @@ describe('parseModeDocument', () => {
     expect(getTargetWordsForRegister(parsed, 'l1_l3')).toEqual({ min: 8000, max: 10000 });
     expect(getTargetWordsForRegister(parsed, 'l4_l5')).toEqual({ min: 9000, max: 11000 });
   });
+
+  it('parses optional report level metadata', () => {
+    const doc = parseModeDocument(`---
+mode: test-report
+report_level: L3
+subject_count: { min: 1, max: 1 }
+roles: [subject]
+target_words: { min: 100, max: 200 }
+architecture: linear
+pass_plan:
+  - id: synthesis
+    title: Synthesis
+    target_words: 100
+    template: synthesis-pass
+engine_overlay_weights: { panchanga: 1 }
+house_overlay: [1]
+bridge_mandates: ["Use facts"]
+svg_topology: dyad-arc
+---
+
+## synthesis-pass
+Write.
+`, 'test-report.md');
+
+    expect(doc.frontmatter.report_level).toBe('L3');
+  });
 });

@@ -11,3 +11,6 @@ export {
 export * from './orchestrator/integrated.js';
 export * from './assets/factory.js';
 export * from './assets/audit.js';
+export * from './intake/types.js';
+export * from './patterns/types.js';
+export * from './patterns/extractor.js';

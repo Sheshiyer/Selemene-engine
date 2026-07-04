@@ -62,4 +62,21 @@ describe('createSourcePack', () => {
       rmSync(dir, { recursive: true, force: true });
     }
   });
+
+  it('stores pattern learning provenance when provided', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'source-pack-learning-'));
+    try {
+      const pack = await createSourcePack({
+        personId: 'p1',
+        readingMarkdown: 'reading text',
+        engineResults: [makeEngine('panchanga'), makeEngine('vimshottari'), makeEngine('human-design')],
+        outputDir: dir,
+        patternLearning: { extracted: 2, upserted: 1, skipped: 1 },
+      });
+
+      expect(pack.manifest.quality.pattern_learning).toEqual({ extracted: 2, upserted: 1, skipped: 1 });
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
 });

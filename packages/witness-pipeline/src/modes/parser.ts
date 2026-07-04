@@ -12,6 +12,7 @@ import type {
   ModeConfig,
   ParsedModeDoc,
   RegisterBand,
+  ReportLevel,
   TopologyKey,
 } from './types.js';
 
@@ -36,6 +37,8 @@ const VALID_TOPOLOGIES: ReadonlyArray<TopologyKey> = [
 ];
 
 const VALID_ARCHITECTURES: ReadonlyArray<ArchitectureKey> = ['linear', 'hierarchical'];
+
+const VALID_REPORT_LEVELS: ReadonlyArray<ReportLevel> = ['L0', 'L1', 'L2', 'L3', 'L4', 'L5'];
 
 function assertModeConfig(fm: unknown, path: string): asserts fm is ModeConfig {
   if (!fm || typeof fm !== 'object') {
@@ -75,6 +78,9 @@ function assertModeConfig(fm: unknown, path: string): asserts fm is ModeConfig {
   }
   if (subjectCount.min > subjectCount.max) {
     throw new Error(`Mode doc ${path}: subject_count.min > subject_count.max`);
+  }
+  if ('report_level' in obj && !VALID_REPORT_LEVELS.includes(obj.report_level as ReportLevel)) {
+    throw new Error(`Mode doc ${path}: invalid report_level '${obj.report_level}'`);
   }
 }
 

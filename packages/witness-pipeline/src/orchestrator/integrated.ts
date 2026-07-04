@@ -3,6 +3,9 @@
 
 import type { ParsedModeDoc, RegisterBand, SelemeneEngineOutput } from '../index.js';
 import { getPassTemplate, getTargetWordsForRegister, summarizeLessons } from '../modes/parser.js';
+import { auditSectionOutput } from './rubric.js';
+import { extractReportPatterns } from '../patterns/extractor.js';
+import type { ExtractedPattern } from '../patterns/types.js';
 
 export interface OrchestratorInput {
   subjectNames: string[];
@@ -10,10 +13,31 @@ export interface OrchestratorInput {
   consciousnessLevel: number;
 }
 
+export type RubricGate = 'pass' | 'warn' | 'fail';
+
+export interface SectionRubric {
+  section_id: string;
+  title: string;
+  target_words: number;
+  actual_words: number;
+  word_count_fit: RubricGate;
+  word_count_ratio: number;
+  deterministic_fact_count: number;
+  deterministic_fact_gate: RubricGate;
+  integrated_layer_count: number;
+  integrated_layering_gate: RubricGate;
+  guardrail_gate: 'pass' | 'fail';
+  guardrail_violations: string[];
+  model_requested: string;
+  model_used: string;
+  latency_ms: number;
+}
+
 export interface PassResult {
   id: string;
   title: string;
   output: string;
+  rubric: SectionRubric;
 }
 
 export interface OrchestratorOutput {
@@ -22,6 +46,7 @@ export interface OrchestratorOutput {
   register: RegisterBand;
   passes: PassResult[];
   assembled: string;
+  patterns: ExtractedPattern[];
 }
 
 export interface LlmCall {
@@ -71,10 +96,29 @@ export class IntegratedReadingOrchestrator {
       const prompt = this.renderPassTemplate(templateContent, pass, input, prior, register);
       const system = this.buildSystemPrompt(pass, input, register);
       const { max } = resolveTargetWords(this.mode, register, pass.id);
+      const started = Date.now();
       const output = await this.llm(system, prompt, { max_tokens: Math.round(max * 2) });
-      passOutputs.push({ id: pass.id, title: pass.title, output });
+      const latencyMs = Date.now() - started;
+      const model = pass.model ?? 'tier-default';
+      const rubric = auditSectionOutput({
+        sectionId: pass.id,
+        title: pass.title,
+        targetWords: pass.target_words,
+        output,
+        modelRequested: model,
+        modelUsed: model,
+        latencyMs,
+      });
+      passOutputs.push({ id: pass.id, title: pass.title, output, rubric });
       assembled += `\n\n## ${pass.title}\n\n${output}`;
     }
+
+    const patterns = extractReportPatterns({
+      mode: this.mode.frontmatter.mode,
+      reportLevel: (this.mode.frontmatter as any).report_level ?? 'L3',
+      subjectNames: input.subjectNames,
+      passes: passOutputs,
+    });
 
     return {
       mode: this.mode.frontmatter.mode,
@@ -82,6 +126,7 @@ export class IntegratedReadingOrchestrator {
       register,
       passes: passOutputs,
       assembled: assembled.trim(),
+      patterns,
     };
   }
 

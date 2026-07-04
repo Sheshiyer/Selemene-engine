@@ -3,6 +3,7 @@
 export type TopologyKey = 'dyad-arc' | 'triad-triangle' | 'pentagon' | 'web-graph';
 export type ArchitectureKey = 'linear' | 'hierarchical';
 export type RegisterBand = 'l1_l3' | 'l4_l5';
+export type ReportLevel = 'L0' | 'L1' | 'L2' | 'L3' | 'L4' | 'L5';
 
 export interface PassSpec {
   id: string;
@@ -39,6 +40,7 @@ export interface ModeConfig {
   bridge_mandates: string[];
   svg_topology: TopologyKey;
   register_variants?: RegisterVariants;
+  report_level?: ReportLevel;
 }
 
 export interface LessonsEntry {

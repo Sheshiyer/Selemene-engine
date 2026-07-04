@@ -122,6 +122,65 @@ async fn assets_generate_register_band_l4_l5_for_high_consciousness() {
 }
 
 #[tokio::test]
+async fn assets_generate_supports_integrated_kundali_l0_mode() {
+    let router = common::get_router().await;
+    let token = common::generate_test_token(4);
+
+    let req = Request::builder()
+        .method("POST")
+        .uri("/api/v1/assets/generate")
+        .header(header::AUTHORIZATION, format!("Bearer {}", token))
+        .header(header::CONTENT_TYPE, "application/json")
+        .body(Body::from(
+            serde_json::to_vec(&json!({
+                "birth_data": {
+                    "date": "1990-01-15",
+                    "time": "14:30",
+                    "latitude": 12.9716,
+                    "longitude": 77.5946,
+                    "timezone": "Asia/Kolkata",
+                    "name": "KundaliMode"
+                },
+                "mode": "integrated-kundali-l0",
+                "consciousness_level": 4
+            }))
+            .unwrap(),
+        ))
+        .unwrap();
+
+    let response = router.clone().oneshot(req).await.unwrap();
+    assert_eq!(response.status(), StatusCode::OK);
+
+    let body = axum::body::to_bytes(response.into_body(), usize::MAX).await.unwrap();
+    let json: Value = serde_json::from_slice(&body).unwrap();
+
+    assert_eq!(json["mode"].as_str().unwrap(), "integrated-kundali-l0");
+    assert_eq!(json["register"].as_str().unwrap(), "l4_l5");
+    let passes = json["passes"].as_array().unwrap();
+    assert_eq!(passes.len(), 12);
+    assert_eq!(passes[0]["id"].as_str().unwrap(), "opening");
+    assert_eq!(passes[11]["id"].as_str().unwrap(), "final-synthesis");
+
+    let assembled = json["assembled"].as_str().unwrap();
+    assert!(assembled.contains("Do not guarantee financial outcomes"));
+    assert!(assembled.contains("Do not predict marriage inevitability"));
+    assert!(assembled.contains("Do not diagnose"));
+    assert!(assembled.contains("Do not predict childbirth"));
+
+    let sp = &json["source_pack"];
+    let sections = sp["quality"]["sections"]
+        .as_array()
+        .expect("sections rubric matrix");
+    assert_eq!(sections.len(), 12);
+    for section in sections {
+        assert!(section.get("target_words").is_some());
+        assert!(section.get("actual_words").is_some());
+        assert!(section.get("model_used").is_some());
+        assert!(section.get("latency_ms").is_some());
+    }
+}
+
+#[tokio::test]
 async fn witness_interpret_contract_unchanged() {
     let router = common::get_router().await;
     let token = common::generate_test_token(2);

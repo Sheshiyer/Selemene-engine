@@ -150,6 +150,7 @@ pub async fn generate(
         &assembled,
         &engines_used,
         facts_count,
+        build_section_rubrics(&passes),
     ));
 
     Ok(Json(AssetGenerateResponse {
@@ -207,6 +208,58 @@ fn load_mode_document(mode: &str) -> ModeDoc {
                 },
             ],
         },
+        "integrated-kundali-l0" | "kundali-l0" | "kundali" => ModeDoc {
+            pass_plan: vec![
+                PassDef {
+                    id: "opening".to_string(),
+                    title: "Opening".to_string(),
+                },
+                PassDef {
+                    id: "convergence-map".to_string(),
+                    title: "Part I — The Convergence Map".to_string(),
+                },
+                PassDef {
+                    id: "vedic-foundation".to_string(),
+                    title: "Part II — The Vedic Foundation".to_string(),
+                },
+                PassDef {
+                    id: "karmic-architecture".to_string(),
+                    title: "Part III — The Karmic Architecture".to_string(),
+                },
+                PassDef {
+                    id: "career-dharma".to_string(),
+                    title: "Part IV — Career and Dharma".to_string(),
+                },
+                PassDef {
+                    id: "wealth".to_string(),
+                    title: "Part V — The Wealth Architecture".to_string(),
+                },
+                PassDef {
+                    id: "love-marriage".to_string(),
+                    title: "Part VI — Love and Marriage".to_string(),
+                },
+                PassDef {
+                    id: "health".to_string(),
+                    title: "Part VII — Health".to_string(),
+                },
+                PassDef {
+                    id: "family-lineage".to_string(),
+                    title: "Part VIII — Family, Roots, and Lineage".to_string(),
+                },
+                PassDef {
+                    id: "master-timeline".to_string(),
+                    title: "Part IX — The Master Timeline".to_string(),
+                },
+                PassDef {
+                    id: "remedies-practices".to_string(),
+                    title: "Part X — Remedies and Practices".to_string(),
+                },
+                PassDef {
+                    id: "final-synthesis".to_string(),
+                    title: "Part XI — The Final Synthesis".to_string(),
+                },
+            ],
+        },
         _ => ModeDoc {
             pass_plan: vec![PassDef {
                 id: "default".to_string(),
@@ -232,7 +285,56 @@ fn render_pass_output(pass: &PassDef, seeds: &[(String, Value)]) -> String {
     if lines.len() == 1 {
         lines.push("(partial seed context)".to_string());
     }
+    if matches!(
+        pass.id.as_str(),
+        "wealth" | "love-marriage" | "health" | "family-lineage"
+    ) {
+        lines.push(safeguard_for_pass(&pass.id).to_string());
+    }
     lines.join("\n")
+}
+
+fn safeguard_for_pass(pass_id: &str) -> &'static str {
+    match pass_id {
+        "wealth" => "Witness safeguard: Do not guarantee financial outcomes.",
+        "love-marriage" => "Witness safeguard: Do not predict marriage inevitability.",
+        "health" => "Witness safeguard: Do not diagnose.",
+        "family-lineage" => "Witness safeguard: Do not predict childbirth.",
+        _ => "",
+    }
+}
+
+fn build_section_rubrics(passes: &[AssetPass]) -> Vec<Value> {
+    passes
+        .iter()
+        .map(|pass| {
+            serde_json::json!({
+                "section_id": pass.id,
+                "target_words": target_words_for_pass(&pass.id),
+                "actual_words": pass.output.split_whitespace().count(),
+                "model_used": "server-seed-renderer",
+                "latency_ms": 0,
+            })
+        })
+        .collect()
+}
+
+fn target_words_for_pass(pass_id: &str) -> usize {
+    match pass_id {
+        "opening" => 450,
+        "convergence-map" => 1600,
+        "vedic-foundation" => 3800,
+        "karmic-architecture" => 1500,
+        "career-dharma" => 1600,
+        "wealth" => 1200,
+        "love-marriage" => 1500,
+        "health" => 1100,
+        "family-lineage" => 1050,
+        "master-timeline" => 2200,
+        "remedies-practices" => 1700,
+        "final-synthesis" => 1300,
+        _ => 0,
+    }
 }
 
 // Factory + audit shape (mirrors packages/witness-pipeline/src/assets/{factory,audit}.ts)
@@ -241,6 +343,7 @@ fn build_source_pack_with_audit(
     reading_markdown: &str,
     engines: &[String],
     facts_count: usize,
+    section_rubrics: Vec<Value>,
 ) -> Value {
     let now = Utc::now().to_rfc3339();
     let gate = if facts_count >= 3 { "ready" } else { "partial" };
@@ -257,6 +360,7 @@ fn build_source_pack_with_audit(
         "quality": {
             "facts_count": facts_count,
             "gate_status": gate,
+            "sections": section_rubrics,
         },
         "audit": {
             "blockers": [],

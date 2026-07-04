@@ -1,5 +1,6 @@
 ---
 mode: integrated-reading
+report_level: L3
 subject_count:
   min: 1
   max: 2

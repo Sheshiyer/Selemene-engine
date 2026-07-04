@@ -12,6 +12,7 @@ export interface SourcePackInput {
   engineResults: SelemeneEngineOutput[];
   outputDir: string;
   deterministicOnly?: boolean;
+  patternLearning?: { extracted: number; upserted: number; skipped: number };
 }
 
 export interface SourcePack {
@@ -21,7 +22,7 @@ export interface SourcePack {
     created_at: string;
     reading_length: number;
     engines: string[];
-    quality: { facts_count: number; gate_status: string };
+    quality: { facts_count: number; gate_status: string; pattern_learning?: { extracted: number; upserted: number; skipped: number } };
   };
   reflectionQuestions: string[];
   paths: {
@@ -61,15 +62,19 @@ export async function createSourcePack(input: SourcePackInput): Promise<SourcePa
   await fs.mkdir(input.outputDir, { recursive: true });
   const deterministicOnly = input.deterministicOnly ?? false;
   const factsCount = countDeterministicFacts(input.engineResults, deterministicOnly);
+  const quality: SourcePack['manifest']['quality'] = {
+    facts_count: factsCount,
+    gate_status: factsCount >= 3 ? 'ready' : 'blocked',
+  };
+  if (input.patternLearning) {
+    (quality as any).pattern_learning = input.patternLearning;
+  }
   const manifest: SourcePack['manifest'] = {
     person_id: input.personId,
     created_at: new Date().toISOString(),
     reading_length: input.readingMarkdown.length,
     engines: input.engineResults.map((e) => e.engine_id),
-    quality: {
-      facts_count: factsCount,
-      gate_status: factsCount >= 3 ? 'ready' : 'blocked',
-    },
+    quality,
   };
 
   const manifestPath = join(input.outputDir, 'manifest.json');
