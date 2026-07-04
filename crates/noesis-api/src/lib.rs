@@ -936,13 +936,23 @@ pub fn create_router(state: AppState, config: &ApiConfig) -> Router {
             middleware::rate_limit_middleware,
         ));
 
-    // Internal endpoints. Auth is by shared secret in X-Forward-Secret, NOT
-    // JWT. Today this is just the Dodo billing webhook ingest from the
-    // biofield-web Next.js adaptor. No JWT middleware applied.
+    // Internal endpoints. Auth is by shared secret in X-Forward-Secret or
+    // x-internal-key, NOT JWT. These secrets are enforced in middleware so
+    // the check runs before body deserialization.
     let internal_routes = Router::new()
-        .route("/billing/events", post(handlers::billing::events_forward))
+        .route(
+            "/billing/events",
+            post(handlers::billing::events_forward).layer(axum_middleware::from_fn(
+                middleware::billing_forward_secret_middleware,
+            )),
+        )
         // Raga clip upsert — called by ts-engines bulk-gen (SUNO-05)
-        .route("/raga/clip", post(handlers::raga::upsert_raga_clip))
+        .route(
+            "/raga/clip",
+            post(handlers::raga::upsert_raga_clip).layer(axum_middleware::from_fn(
+                middleware::raga_internal_key_middleware,
+            )),
+        )
         .layer(axum_middleware::from_fn_with_state(
             rate_limiter,
             middleware::rate_limit_middleware,

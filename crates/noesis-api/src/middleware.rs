@@ -227,6 +227,72 @@ pub async fn auth_middleware(
 }
 
 // ---------------------------------------------------------------------------
+// Internal shared-secret middleware
+// ---------------------------------------------------------------------------
+
+/// Middleware that validates the `X-Forward-Secret` header for
+/// `POST /internal/billing/events`. Runs before the handler so a malformed
+/// body cannot bypass the secret check.
+pub async fn billing_forward_secret_middleware(
+    req: Request,
+    next: Next,
+) -> Result<Response, (StatusCode, &'static str)> {
+    let provided = req
+        .headers()
+        .get("x-forward-secret")
+        .or_else(|| req.headers().get("X-Forward-Secret"))
+        .and_then(|v| v.to_str().ok())
+        .unwrap_or("");
+    let expected = std::env::var("DODO_INTERNAL_FORWARD_SECRET").unwrap_or_default();
+    if expected.is_empty()
+        || provided.is_empty()
+        || !constant_time_eq(provided.as_bytes(), expected.as_bytes())
+    {
+        return Err((StatusCode::UNAUTHORIZED, "forbidden"));
+    }
+    Ok(next.run(req).await)
+}
+
+/// Middleware that validates the `x-internal-key` header for
+/// `POST /internal/raga/clip`. Runs before the handler so a malformed body
+/// cannot bypass the secret check.
+pub async fn raga_internal_key_middleware(
+    req: Request,
+    next: Next,
+) -> Result<Response, (StatusCode, Json<ErrorResponse>)> {
+    let provided = req
+        .headers()
+        .get("x-internal-key")
+        .or_else(|| req.headers().get("X-Internal-Key"))
+        .and_then(|v| v.to_str().ok())
+        .unwrap_or("");
+    let expected = std::env::var("INTERNAL_SERVICE_KEY").unwrap_or_default();
+    if expected.is_empty() || provided != expected {
+        tracing::warn!(
+            "INTERNAL_SERVICE_KEY not set or mismatch — rejecting /internal/raga/clip call"
+        );
+        return Err(ErrorMapper::response(
+            StatusCode::UNAUTHORIZED,
+            "UNAUTHORIZED",
+            "forbidden",
+            None,
+        ));
+    }
+    Ok(next.run(req).await)
+}
+
+fn constant_time_eq(a: &[u8], b: &[u8]) -> bool {
+    if a.len() != b.len() {
+        return false;
+    }
+    let mut diff: u8 = 0;
+    for (x, y) in a.iter().zip(b.iter()) {
+        diff |= x ^ y;
+    }
+    diff == 0
+}
+
+// ---------------------------------------------------------------------------
 // Rate limiting middleware
 // ---------------------------------------------------------------------------
 
