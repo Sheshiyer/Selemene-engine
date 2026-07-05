@@ -22,15 +22,16 @@ use utoipa::ToSchema;
 
 #[derive(Deserialize, ToSchema)]
 pub struct AssetGenerateRequest {
-    /// Birth data for engine calculations.
-    pub birth_data: Option<BirthData>,
-    /// Mode key, e.g. "integrated-reading", "birth-blueprint".
+    pub birth_data: Option<noesis_core::BirthData>, // legacy path
     pub mode: String,
-    /// User's consciousness level (0–5). Server will max with auth level.
     #[serde(default)]
     pub consciousness_level: u8,
-    /// Free-form options (passed through to pipeline).
     pub options: Option<Value>,
+
+    // New rich intake (preferred for L0-L5 + synastry)
+    pub report_level: Option<String>,
+    pub subjects: Option<Vec<noesis_core::intake::ReportSubjectInput>>,
+    pub relationship_context: Option<noesis_core::intake::RelationshipContext>,
 }
 
 #[derive(Serialize, ToSchema)]
