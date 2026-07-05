@@ -15,10 +15,35 @@ use axum::{
 };
 use chrono::Utc;
 use noesis_auth::AuthUser;
-use noesis_core::{BirthData, EngineInput};
+use noesis_core::EngineInput;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use utoipa::ToSchema;
+
+/// Internal helper: convert legacy flat BirthData to the new subjects[] shape.
+/// Used only inside the handler to support the old path while the rich contract
+/// (subjects + normalized_location) is the preferred form.
+fn legacy_birth_to_subjects(bd: &noesis_core::BirthData) -> Vec<noesis_core::intake::ReportSubjectInput> {
+    vec![noesis_core::intake::ReportSubjectInput {
+        role: "primary".to_string(),
+        name: bd.name.clone(),
+        gender: None,
+        sex_for_external_chart_source: None,
+        birth_date: bd.date.clone(),
+        birth_time: bd.time.clone(),
+        birth_time_confidence: None,
+        birth_location_query: None,
+        normalized_location: Some(noesis_core::intake::NormalizedLocation {
+            display_name: "legacy".to_string(),
+            latitude: bd.latitude,
+            longitude: bd.longitude,
+            timezone: bd.timezone.clone(),
+            provider: "legacy".to_string(),
+            confidence: "legacy".to_string(),
+        }),
+        relationship_label: None,
+    }]
+}
 
 #[derive(Deserialize, ToSchema)]
 pub struct AssetGenerateRequest {
