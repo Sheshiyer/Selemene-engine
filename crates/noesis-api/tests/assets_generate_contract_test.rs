@@ -363,3 +363,69 @@ async fn assets_generate_rejects_incomplete_subjects_missing_normalized_location
         json
     );
 }
+
+// Task 9: explicit L0 using rich subjects shape (no legacy birth_data)
+#[tokio::test]
+async fn assets_generate_accepts_l0_with_rich_subjects_shape() {
+    let router = common::get_router().await;
+    let token = common::generate_test_token(5); // l4_l5 for full L0
+
+    let req_body = json!({
+        "mode": "integrated-kundali-l0",
+        "consciousness_level": 5,
+        "report_level": "L0",
+        "subjects": [
+            {
+                "role": "primary",
+                "name": "L0Subject",
+                "birth_date": "1990-01-15",
+                "birth_time": "14:30",
+                "normalized_location": {
+                    "display_name": "Bengaluru, India",
+                    "latitude": 12.9716,
+                    "longitude": 77.5946,
+                    "timezone": "Asia/Kolkata",
+                    "provider": "manual",
+                    "confidence": "exact"
+                }
+            }
+        ]
+    });
+
+    let req = Request::builder()
+        .method("POST")
+        .uri("/api/v1/assets/generate")
+        .header(header::AUTHORIZATION, format!("Bearer {}", token))
+        .header(header::CONTENT_TYPE, "application/json")
+        .body(Body::from(serde_json::to_vec(&req_body).unwrap()))
+        .unwrap();
+
+    let response = router.clone().oneshot(req).await.unwrap();
+    assert_eq!(response.status(), StatusCode::OK);
+
+    let body = axum::body::to_bytes(response.into_body(), usize::MAX).await.unwrap();
+    let json: Value = serde_json::from_slice(&body).unwrap();
+
+    // Assert level echoed in response and source_pack (Task 9 requirement)
+    assert_eq!(json["mode"].as_str().unwrap(), "integrated-kundali-l0");
+    assert_eq!(json["register"].as_str().unwrap(), "l4_l5");
+
+    let sp = &json["source_pack"];
+    assert_eq!(
+        sp["report_level"].as_str().unwrap_or("MISSING"),
+        "L0",
+        "report_level L0 should be captured from rich subjects request into source_pack"
+    );
+
+    // subjects reflected in source_pack
+    let subs = sp["subjects"].as_array().expect("subjects array in source_pack for L0 rich");
+    assert_eq!(subs.len(), 1);
+    assert_eq!(subs[0]["role"].as_str().unwrap_or(""), "primary");
+    assert_eq!(subs[0]["name"].as_str().unwrap_or(""), "L0Subject");
+
+    // L0 contract: exactly 12 passes with opening/final-synthesis (same as legacy L0 test)
+    let passes = json["passes"].as_array().unwrap();
+    assert_eq!(passes.len(), 12, "L0 via rich subjects must still yield 12 passes");
+    assert_eq!(passes[0]["id"].as_str().unwrap(), "opening");
+    assert_eq!(passes[11]["id"].as_str().unwrap(), "final-synthesis");
+}
