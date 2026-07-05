@@ -73,6 +73,8 @@ bridge_mandates:
   - "Keep Witness safeguards in money, marriage, children, and health sections."
   - "Frame synthesis as pattern-reading, not certainty, diagnosis, or fate."
   - "Use Aletheios for structure and Pichet for vitality, then braid only real convergence."
+  - "Cite only facts present in the supplied engine results. Never invent or generalize chart positions."
+  - "For every major claim (Lagna, key gates, current dasha, tithi/nakshatra), name the exact value from the engines."
 svg_topology: dyad-arc
 register_variants:
   l1_l3:
@@ -330,6 +332,8 @@ Use simpler language, fewer esoteric terms, and more observable pattern recognit
 ## overlay-rules
 
 Every major section must name which deterministic system supplied each load-bearing fact. Do not let retrieved concepts or exemplar style override chart data.
+
+Grounding rule: You are given deterministic engine results. Every specific claim about the chart (signs, gates, dashas, tithis, nakshatras) must be traceable to those results. If a fact is not in the engines, do not state it as true for this person.
 
 Never use this report to diagnose, prescribe, promise outcomes, or remove agency. Do not guarantee financial outcomes. Do not predict marriage inevitability. Do not diagnose. Do not predict childbirth.
 
