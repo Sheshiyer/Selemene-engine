@@ -99,6 +99,26 @@ pub async fn generate(
     let consciousness_level = req.consciousness_level.max(user.consciousness_level);
     let now = Utc::now();
 
+    // Derive effective subjects: prefer req.subjects when provided and non-empty,
+    // else fall back to legacy birth_data conversion (Task 5 helper).
+    let effective_subjects: Vec<noesis_core::intake::ReportSubjectInput> =
+        if let Some(subs) = &req.subjects {
+            if !subs.is_empty() {
+                subs.clone()
+            } else if let Some(bd) = &req.birth_data {
+                legacy_birth_to_subjects(bd)
+            } else {
+                vec![]
+            }
+        } else if let Some(bd) = &req.birth_data {
+            legacy_birth_to_subjects(bd)
+        } else {
+            vec![]
+        };
+
+    // Prefer explicit report_level when provided.
+    let effective_report_level: Option<String> = req.report_level.clone();
+
     let make_input = || EngineInput {
         birth_data: req.birth_data.clone(),
         current_time: now,
@@ -108,6 +128,9 @@ pub async fn generate(
             let mut m = std::collections::HashMap::new();
             m.insert("user_id".to_string(), serde_json::json!(user.user_id));
             m.insert("mode".to_string(), serde_json::json!(req.mode.clone()));
+            if let Some(rl) = &effective_report_level {
+                m.insert("report_level".to_string(), serde_json::json!(rl));
+            }
             m
         },
     };
@@ -177,6 +200,8 @@ pub async fn generate(
         &engines_used,
         facts_count,
         build_section_rubrics(&passes),
+        effective_report_level.as_deref(),
+        &effective_subjects,
     ));
 
     Ok(Json(AssetGenerateResponse {
@@ -370,6 +395,8 @@ fn build_source_pack_with_audit(
     engines: &[String],
     facts_count: usize,
     section_rubrics: Vec<Value>,
+    report_level: Option<&str>,
+    subjects: &[noesis_core::intake::ReportSubjectInput],
 ) -> Value {
     let now = Utc::now().to_rfc3339();
     let gate = if facts_count >= 3 { "ready" } else { "partial" };
@@ -377,7 +404,7 @@ fn build_source_pack_with_audit(
     if reading_markdown.len() < 100 {
         warnings.push("reading_short");
     }
-    serde_json::json!({
+    let mut sp = serde_json::json!({
         "person_id": person_id,
         "created_at": now,
         "mode": "asset",
@@ -393,5 +420,28 @@ fn build_source_pack_with_audit(
             "warnings": warnings,
             "passed": facts_count >= 3,
         }
-    })
+    });
+    if let Some(rl) = report_level {
+        if let Some(obj) = sp.as_object_mut() {
+            obj.insert("report_level".to_string(), serde_json::json!(rl));
+        }
+    }
+    if !subjects.is_empty() {
+        let subs_json: Vec<Value> = subjects
+            .iter()
+            .map(|s| {
+                serde_json::json!({
+                    "role": s.role,
+                    "name": s.name,
+                    "birth_date": s.birth_date,
+                    "birth_time": s.birth_time,
+                    "normalized_location": s.normalized_location,
+                })
+            })
+            .collect();
+        if let Some(obj) = sp.as_object_mut() {
+            obj.insert("subjects".to_string(), serde_json::json!(subs_json));
+        }
+    }
+    sp
 }

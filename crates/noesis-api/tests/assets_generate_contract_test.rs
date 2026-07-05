@@ -241,3 +241,60 @@ async fn witness_interpret_contract_unchanged() {
         assert!(e.is_string(), "engines_used entries must be strings");
     }
 }
+
+#[tokio::test]
+async fn assets_generate_accepts_report_level_and_subjects_rich_path() {
+    let router = common::get_router().await;
+    let token = common::generate_test_token(3);
+
+    let req_body = json!({
+        "mode": "integrated-reading",
+        "consciousness_level": 3,
+        "report_level": "L2",
+        "subjects": [
+            {
+                "role": "primary",
+                "name": "TestSubject",
+                "birth_date": "1990-01-15",
+                "birth_time": "14:30",
+                "normalized_location": {
+                    "display_name": "Bengaluru, India",
+                    "latitude": 12.9716,
+                    "longitude": 77.5946,
+                    "timezone": "Asia/Kolkata",
+                    "provider": "manual",
+                    "confidence": "exact"
+                }
+            }
+        ]
+    });
+
+    let req = Request::builder()
+        .method("POST")
+        .uri("/api/v1/assets/generate")
+        .header(header::AUTHORIZATION, format!("Bearer {}", token))
+        .header(header::CONTENT_TYPE, "application/json")
+        .body(Body::from(serde_json::to_vec(&req_body).unwrap()))
+        .unwrap();
+
+    let response = router.clone().oneshot(req).await.unwrap();
+    assert_eq!(response.status(), StatusCode::OK);
+
+    let body = axum::body::to_bytes(response.into_body(), usize::MAX).await.unwrap();
+    let json: Value = serde_json::from_slice(&body).unwrap();
+
+    // The handler should prefer report_level and subjects when provided (Task 6).
+    // Assert they are reflected inside source_pack so callers see the contract was accepted.
+    let sp = &json["source_pack"];
+    assert_eq!(
+        sp["report_level"].as_str().unwrap_or("MISSING"),
+        "L2",
+        "report_level should be captured from request into source_pack"
+    );
+    let subjects = sp.get("subjects").and_then(|v| v.as_array());
+    assert!(subjects.is_some(), "subjects array should be present in source_pack");
+    let subs = subjects.unwrap();
+    assert_eq!(subs.len(), 1, "should have one subject");
+    assert_eq!(subs[0]["name"].as_str().unwrap_or(""), "TestSubject");
+    assert_eq!(subs[0]["role"].as_str().unwrap_or(""), "primary");
+}
