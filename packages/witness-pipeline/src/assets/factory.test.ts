@@ -24,6 +24,9 @@ function makeEngine(id: string, deterministic = true, error?: string): SelemeneE
   };
 }
 
+// NOTE: These tests exercise SourcePack manifest quality (facts_count/gate_status/pattern_learning).
+// They do NOT construct raw SectionRubric objects. chart_fidelity_score (added in Task 1)
+// lives on per-section rubrics, not here. Source pack path remains unaffected.
 describe('createSourcePack', () => {
   it('creates a manifest and reflection questions', async () => {
     const dir = mkdtempSync(join(tmpdir(), 'witness-pack-'));
