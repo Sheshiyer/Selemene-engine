@@ -269,6 +269,11 @@ use workflow_parity::log_workflow_registry_parity;
             handlers::assets::AssetGenerateRequest,
             handlers::assets::AssetGenerateResponse,
             handlers::assets::AssetPass,
+            // Rich intake contract types (for report_level, subjects[], normalized_location, relationship_context)
+            noesis_core::intake::NormalizedLocation,
+            noesis_core::intake::ReportSubjectInput,
+            noesis_core::intake::ReportGenerationRequest,
+            noesis_core::intake::RelationshipContext,
         )
     ),
     tags(
