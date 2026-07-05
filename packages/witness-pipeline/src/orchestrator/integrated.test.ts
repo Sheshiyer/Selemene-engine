@@ -2,6 +2,46 @@ import { describe, it, expect, vi } from 'vitest';
 import { IntegratedReadingOrchestrator } from './integrated.js';
 import type { ParsedModeDoc, SelemeneEngineOutput } from '../index.js';
 
+function makeEngineWithLagnaAndGate(lagna: string, gate: number): SelemeneEngineOutput {
+  return {
+    engine_id: 'composite',
+    result: { lagna_sign: lagna, gates: [gate] },
+    witness_prompt: '',
+    consciousness_level: 5,
+    metadata: {
+      calculation_time_ms: 0,
+      backend: 'native',
+      precision_achieved: 'standard',
+      cached: false,
+      timestamp: '',
+      engine_version: '1',
+    },
+    envelope_version: '1',
+  };
+}
+
+const mockKundaliMode: ParsedModeDoc = {
+  frontmatter: {
+    mode: 'integrated-kundali',
+    subject_count: { min: 1, max: 1 },
+    roles: ['subject'],
+    target_words: { min: 50, max: 200 },
+    architecture: 'linear',
+    pass_plan: [
+      { id: 'opening', title: 'Opening', target_words: 80, template: 'pass-opening-template' },
+    ],
+    engine_overlay_weights: {},
+    house_overlay: [],
+    bridge_mandates: [],
+    svg_topology: 'single',
+  },
+  sections: {
+    'pass-opening-template': 'Write about {{subject_names}}.',
+  },
+  lessons: [],
+  raw_path: 'mock-kundali.md',
+};
+
 const mockMode: ParsedModeDoc = {
   frontmatter: {
     mode: 'composite-dyad',
@@ -73,5 +113,16 @@ describe('IntegratedReadingOrchestrator', () => {
       consciousnessLevel: 5,
     });
     expect(result.register).toBe('l4_l5');
+  });
+
+  it('populates chart_fidelity_score when engines are passed', async () => {
+    const llm = vi.fn().mockResolvedValue('Lagna is Aries with gate 34 and Vimshottari dasha active.');
+    const orchestrator = new IntegratedReadingOrchestrator({ mode: mockKundaliMode, llm });
+    const result = await orchestrator.run({
+      subjectNames: ['A'],
+      engineResultsBySubject: [[makeEngineWithLagnaAndGate('aries', 34)]],
+      consciousnessLevel: 5,
+    });
+    expect(result.passes[0].rubric.chart_fidelity_score).toBeGreaterThan(0);
   });
 });

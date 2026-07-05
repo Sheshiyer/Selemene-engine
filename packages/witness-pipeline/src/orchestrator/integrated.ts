@@ -110,6 +110,7 @@ export class IntegratedReadingOrchestrator {
         modelRequested: model,
         modelUsed: model,
         latencyMs,
+        engineResults: input.engineResultsBySubject[0] ?? [],
       });
       passOutputs.push({ id: pass.id, title: pass.title, output, rubric });
       assembled += `\n\n## ${pass.title}\n\n${output}`;
