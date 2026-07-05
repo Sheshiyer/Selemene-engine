@@ -297,6 +297,20 @@ async fn assets_generate_accepts_report_level_and_subjects_rich_path() {
     assert_eq!(subs.len(), 1, "should have one subject");
     assert_eq!(subs[0]["name"].as_str().unwrap_or(""), "TestSubject");
     assert_eq!(subs[0]["role"].as_str().unwrap_or(""), "primary");
+
+    // Task 8: small assertion that report_level + subject info (count + first normalized summary) flow into source_pack
+    assert_eq!(
+        sp.get("subject_count").and_then(|v| v.as_u64()).unwrap_or(0),
+        1,
+        "subject_count should be emitted in source_pack for rich contract"
+    );
+    let first_loc = sp.get("first_normalized_location");
+    assert!(first_loc.is_some(), "first_normalized_location summary should be present");
+    assert_eq!(
+        first_loc.unwrap().get("display_name").and_then(|v| v.as_str()).unwrap_or("MISSING"),
+        "Bengaluru, India",
+        "first normalized location summary should reflect the subject's location"
+    );
 }
 
 #[tokio::test]

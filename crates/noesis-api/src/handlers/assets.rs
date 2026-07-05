@@ -463,6 +463,15 @@ fn build_source_pack_with_audit(
             .collect();
         if let Some(obj) = sp.as_object_mut() {
             obj.insert("subjects".to_string(), serde_json::json!(subs_json));
+            obj.insert("subject_count".to_string(), serde_json::json!(subjects.len()));
+            if let Some(first) = subjects.first().and_then(|s| s.normalized_location.as_ref()) {
+                obj.insert("first_normalized_location".to_string(), serde_json::json!({
+                    "display_name": first.display_name,
+                    "latitude": first.latitude,
+                    "longitude": first.longitude,
+                    "timezone": first.timezone,
+                }));
+            }
         }
     }
     sp
