@@ -37,6 +37,34 @@ svg_topology: dyad-arc
 Write about {{subject_names}} using {{overlay_summary}} and {{bridge_mandates}}.
 `;
 
+const fidelityModeDoc = `---
+mode: composite-dyad
+subject_count:
+  min: 1
+  max: 1
+roles:
+  - subject
+target_words:
+  min: 50
+  max: 100
+architecture: linear
+pass_plan:
+  - id: opening
+    title: Opening
+    target_words: 50
+    template: pass-opening-template
+engine_overlay_weights:
+  panchanga: 1.0
+house_overlay: [1]
+bridge_mandates:
+  - "Use facts"
+svg_topology: dyad-arc
+---
+
+## pass-opening-template
+Lagna {{lagna}} with gate {{gate}} and dasha {{dasha}}.
+`;
+
 const mockEngines: SelemeneEngineOutput[] = [
   {
     engine_id: 'panchanga',
@@ -141,5 +169,57 @@ describe('IntegratedReadingOrchestrator end-to-end', () => {
     expect(result.passes).toHaveLength(2);
     expect(result.register).toBe('l4_l5');
     expect(result.assembled).toContain('BIRTH BLUEPRINT OUTPUT');
+  });
+
+  it('records non-zero chart fidelity when output cites real engine facts', async () => {
+    const mode = parseModeDocument(fidelityModeDoc, 'fidelity-e2e.md');
+    const llm = vi.fn().mockResolvedValue('Lagna is Aries with gate 34 in dasha Rahu.');
+    const orchestrator = new IntegratedReadingOrchestrator({ mode, llm });
+    const engineWithFacts: SelemeneEngineOutput[] = [
+      {
+        engine_id: 'panchanga',
+        result: { lagna: 'Aries' },
+        witness_prompt: 'Observe.',
+        consciousness_level: 2,
+        metadata: { calculation_time_ms: 1, backend: 'native', precision_achieved: 'standard', cached: false, timestamp: '2026-06-22T00:00:00Z', engine_version: '1' },
+        envelope_version: '1',
+      },
+      {
+        engine_id: 'human-design',
+        result: { gate: 34 },
+        witness_prompt: 'Observe.',
+        consciousness_level: 2,
+        metadata: { calculation_time_ms: 1, backend: 'native', precision_achieved: 'standard', cached: false, timestamp: '2026-06-22T00:00:00Z', engine_version: '1' },
+        envelope_version: '1',
+      },
+      {
+        engine_id: 'vimshottari',
+        result: { dasha: 'Rahu' },
+        witness_prompt: 'Observe.',
+        consciousness_level: 2,
+        metadata: { calculation_time_ms: 1, backend: 'native', precision_achieved: 'standard', cached: false, timestamp: '2026-06-22T00:00:00Z', engine_version: '1' },
+        envelope_version: '1',
+      },
+    ];
+    const result = await orchestrator.run({
+      subjectNames: ['TestSubject'],
+      engineResultsBySubject: [engineWithFacts],
+      consciousnessLevel: 2,
+    });
+    expect(result.passes.find(p => p.id === 'opening')?.rubric?.chart_fidelity_score).toBeGreaterThan(0);
+  });
+
+  it('drops patterns that contained private birth data even after scrub', async () => {
+    const modePath = resolve(__dirname, '../../modes/integrated-reading.md');
+    const mode = parseModeDoc(modePath);
+    const llm = vi.fn().mockResolvedValue('Born 1960-06-01 at 12.97,77.59. Lagna Aries.');
+    const orchestrator = new IntegratedReadingOrchestrator({ mode, llm });
+    const result = await orchestrator.run({
+      subjectNames: ['PrivateTest'],
+      engineResultsBySubject: [mockEngines],
+      consciousnessLevel: 2,
+      birthContext: { date: '1960-06-01', lat: 12.97, lon: 77.59 },
+    });
+    expect(result.patterns.filter(p => p.text.includes('1960') || p.text.includes('12.97')).length).toBe(0);
   });
 });
