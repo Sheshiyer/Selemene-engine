@@ -62,4 +62,29 @@ describe('auditSectionOutput', () => {
 
     expect(rubric.deterministic_fact_gate).toBe('fail');
   });
+
+  // Minimal helper factories for fidelity test (as specified in plan)
+  function makeEngineWithLagna(lagna: string): any {
+    return { result: { lagna_sign: lagna } };
+  }
+  function makeEngineWithGate(gate: number): any {
+    return { result: { gates: [gate] } };
+  }
+
+  it('computes chart_fidelity_score when engine results are supplied', () => {
+    const engines = [makeEngineWithLagna('aries'), makeEngineWithGate(34)];
+    const rubric = auditSectionOutput({
+      sectionId: 'opening',
+      title: 'Opening',
+      targetWords: 100,
+      output: 'Lagna is Aries and Human Design gate 34 is active.',
+      modelRequested: 'tier-default',
+      modelUsed: 'tier-default',
+      latencyMs: 10,
+      engineResults: engines,
+    });
+
+    expect(rubric.chart_fidelity_score).toBeGreaterThanOrEqual(0.5);
+    expect(rubric.chart_fidelity_score).toBeLessThanOrEqual(1.0);
+  });
 });

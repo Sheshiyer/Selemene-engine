@@ -31,6 +31,8 @@ export interface SectionRubric {
   model_requested: string;
   model_used: string;
   latency_ms: number;
+  chart_fidelity_score?: number;
+  chart_fidelity_details?: string[];
 }
 
 export interface PassResult {

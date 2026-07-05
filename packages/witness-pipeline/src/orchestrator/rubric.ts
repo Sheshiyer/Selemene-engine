@@ -8,6 +8,7 @@ export interface AuditSectionInput {
   modelRequested: string;
   modelUsed: string;
   latencyMs: number;
+  engineResults?: any[];
 }
 
 const SYSTEM_PATTERNS = [
@@ -51,6 +52,33 @@ const SECTION_THRESHOLDS: Record<string, { minFacts: number; minLayers: number }
 
 const DEFAULT_THRESHOLDS = { minFacts: 3, minLayers: 3 };
 
+function extractKeyFactsFromEngines(engines: any[]): Set<string> {
+  const facts = new Set<string>();
+  for (const e of engines) {
+    const r = e.result || {};
+    if (r.lagna_sign) facts.add(`lagna:${String(r.lagna_sign).toLowerCase()}`);
+    if (r.lagna) facts.add(`lagna:${String(r.lagna).toLowerCase()}`);
+    if (Array.isArray(r.gates)) r.gates.forEach((g: any) => facts.add(`gate:${g}`));
+    if (Array.isArray(r.channels)) r.channels.forEach((c: any) => facts.add(`channel:${c}`));
+    if (r.mahadasha || r.current_mahadasha) facts.add(`dasha:${(r.mahadasha || r.current_mahadasha)}`.toLowerCase());
+    if (r.tithi_name) facts.add(`tithi:${r.tithi_name}`.toLowerCase());
+    if (r.nakshatra_name) facts.add(`nakshatra:${r.nakshatra_name}`.toLowerCase());
+  }
+  return facts;
+}
+
+function computeFidelity(output: string, engineFacts: Set<string>): { score: number; details: string[] } {
+  if (engineFacts.size === 0) return { score: 0, details: ['no engine facts provided'] };
+  const lower = output.toLowerCase();
+  let hits = 0;
+  const details: string[] = [];
+  for (const f of engineFacts) {
+    const token = f.split(':')[1] || f;
+    if (lower.includes(token)) { hits++; details.push(`hit:${f}`); }
+  }
+  return { score: hits / engineFacts.size, details };
+}
+
 export function auditSectionOutput(input: AuditSectionInput): SectionRubric {
   const words = input.output.trim().split(/\s+/).filter(Boolean).length;
   const ratio = input.targetWords > 0 ? words / input.targetWords : 0;
@@ -62,6 +90,9 @@ export function auditSectionOutput(input: AuditSectionInput): SectionRubric {
   const guardrailViolations = (GUARDRAILS[input.sectionId] ?? [])
     .filter((re) => re.test(input.output))
     .map((re) => re.source);
+
+  const engineFacts = extractKeyFactsFromEngines(input.engineResults || []);
+  const fid = computeFidelity(input.output, engineFacts);
 
   return {
     section_id: input.sectionId,
@@ -79,6 +110,8 @@ export function auditSectionOutput(input: AuditSectionInput): SectionRubric {
     model_requested: input.modelRequested,
     model_used: input.modelUsed,
     latency_ms: input.latencyMs,
+    chart_fidelity_score: engineFacts.size > 0 ? Number(fid.score.toFixed(3)) : undefined,
+    chart_fidelity_details: engineFacts.size > 0 ? fid.details : undefined,
   };
 }
 
