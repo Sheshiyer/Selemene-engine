@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { IntegratedReadingOrchestrator } from './integrated.js';
 import type { ParsedModeDoc, SelemeneEngineOutput } from '../index.js';
+import type { PatternVectorRetriever, RetrievedPattern } from '../patterns/retrieval.js';
 
 function makeEngineWithLagnaAndGate(lagna: string, gate: number): SelemeneEngineOutput {
   return {
@@ -124,5 +125,27 @@ describe('IntegratedReadingOrchestrator', () => {
       consciousnessLevel: 5,
     });
     expect(result.passes[0].rubric.chart_fidelity_score).toBeGreaterThan(0);
+  });
+
+  it('attaches retrieved patterns to prompt and output when retriever provided', async () => {
+    const fakeRetriever: PatternVectorRetriever = {
+      async retrieveSimilar() {
+        const r: RetrievedPattern[] = [{ text: 'Use analogy of the projector pacing authority', score: 0.9 }];
+        return r;
+      },
+    };
+    const llm = vi.fn().mockResolvedValue('output using analogy');
+    const orchestrator = new IntegratedReadingOrchestrator({ mode: mockMode, llm });
+    const result = await orchestrator.run({
+      subjectNames: ['A', 'B'],
+      engineResultsBySubject: [mockEngineResults],
+      consciousnessLevel: 2,
+      retriever: fakeRetriever,
+      retrievalQuery: 'projector pacing authority',
+    });
+    expect(result.retrieved_patterns?.length).toBeGreaterThan(0);
+    const prompt = llm.mock.calls[0][1] as string;
+    expect(prompt).toContain('Retrieved synthesis patterns are not deterministic facts');
+    expect(prompt).toContain('projector pacing authority');
   });
 });

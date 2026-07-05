@@ -16,3 +16,6 @@ export * from './intake/location.js';
 export * from './intake/questions.js';
 export * from './patterns/types.js';
 export * from './patterns/extractor.js';
+export * from './patterns/retrieval.js';
+export * from './patterns/vector-store.js';
+export * from './patterns/cloudflare-vectorize.js';

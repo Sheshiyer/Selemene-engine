@@ -60,7 +60,7 @@
 ## Notes for Future Releases
 - This is a **patch** addition. No breaking changes to existing `/witness/interpret` or public SDK surfaces.
 - Retrieved patterns are **synthesis aids only** — current chart data always overrides.
-- Next: real Vectorize binding + retrieval in Cloudflare worker (see `docs/plans/2026-07-04-cloudflare-vectorize-pattern-memory.md`).
+- Vectorize retrieval + orchestrator attachment complete: `IntegratedReadingOrchestrator` accepts optional `retriever` + `retrievalQuery`/`filters`; `retrieved_patterns` in output; `renderRetrievedPatternsForPrompt` always prefixes with non-deterministic warning; safe metadata only; private birth data rejected before upsert. Real Worker bindings (`REPORT_PATTERNS`, `AI`, optional R2/D1) remain the deployment surface per the Vectorize plan.
 
 ---
 

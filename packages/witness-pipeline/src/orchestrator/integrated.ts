@@ -6,11 +6,16 @@ import { getPassTemplate, getTargetWordsForRegister, summarizeLessons } from '..
 import { auditSectionOutput } from './rubric.js';
 import { extractReportPatterns } from '../patterns/extractor.js';
 import type { ExtractedPattern } from '../patterns/types.js';
+import type { PatternVectorRetriever, RetrievedPattern } from '../patterns/retrieval.js';
+import { renderRetrievedPatternsForPrompt } from '../patterns/retrieval.js';
 
 export interface OrchestratorInput {
   subjectNames: string[];
   engineResultsBySubject: SelemeneEngineOutput[][];
   consciousnessLevel: number;
+  retriever?: PatternVectorRetriever;
+  retrievalQuery?: string;
+  retrievalFilters?: import('../patterns/retrieval.js').RetrievalFilters;
 }
 
 export type RubricGate = 'pass' | 'warn' | 'fail';
@@ -49,6 +54,7 @@ export interface OrchestratorOutput {
   passes: PassResult[];
   assembled: string;
   patterns: ExtractedPattern[];
+  retrieved_patterns?: RetrievedPattern[];
 }
 
 export interface LlmCall {
@@ -58,6 +64,7 @@ export interface LlmCall {
 export interface OrchestratorOptions {
   mode: ParsedModeDoc;
   llm: LlmCall;
+  retriever?: PatternVectorRetriever;
 }
 
 function resolveRegister(level: number): RegisterBand {
@@ -81,10 +88,12 @@ function resolveTargetWords(doc: ParsedModeDoc, register: RegisterBand, passId?:
 export class IntegratedReadingOrchestrator {
   private mode: ParsedModeDoc;
   private llm: LlmCall;
+  private retriever?: PatternVectorRetriever;
 
   constructor(opts: OrchestratorOptions) {
     this.mode = opts.mode;
     this.llm = opts.llm;
+    this.retriever = opts.retriever;
   }
 
   async run(input: OrchestratorInput): Promise<OrchestratorOutput> {
@@ -92,10 +101,26 @@ export class IntegratedReadingOrchestrator {
     const passOutputs: PassResult[] = [];
     let assembled = '';
 
+    let retrieved: RetrievedPattern[] = [];
+    const effectiveRetriever = input.retriever ?? this.retriever;
+    if (effectiveRetriever && input.retrievalQuery) {
+      try {
+        retrieved = await effectiveRetriever.retrieveSimilar(
+          input.retrievalQuery,
+          input.retrievalFilters,
+          5,
+        );
+      } catch {
+        retrieved = [];
+      }
+    }
+    const retrievedBlock = renderRetrievedPatternsForPrompt(retrieved);
+
     for (const pass of this.mode.frontmatter.pass_plan) {
       const prior = assembled.slice(-4000);
       const templateContent = getPassTemplate(this.mode, pass.id, register);
-      const prompt = this.renderPassTemplate(templateContent, pass, input, prior, register);
+      const basePrompt = this.renderPassTemplate(templateContent, pass, input, prior, register);
+      const prompt = retrievedBlock ? `${basePrompt}\n\n${retrievedBlock}` : basePrompt;
       const system = this.buildSystemPrompt(pass, input, register);
       const { max } = resolveTargetWords(this.mode, register, pass.id);
       const started = Date.now();
@@ -123,7 +148,7 @@ export class IntegratedReadingOrchestrator {
       passes: passOutputs,
     });
 
-    return {
+    const out: OrchestratorOutput = {
       mode: this.mode.frontmatter.mode,
       subject_names: input.subjectNames,
       register,
@@ -131,6 +156,8 @@ export class IntegratedReadingOrchestrator {
       assembled: assembled.trim(),
       patterns,
     };
+    if (retrieved.length) out.retrieved_patterns = retrieved;
+    return out;
   }
 
   private renderPassTemplate(

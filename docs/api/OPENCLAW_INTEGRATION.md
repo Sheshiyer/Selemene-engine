@@ -11,7 +11,7 @@ Use this guide to connect OpenClaw agents to Selemene/Noesis as a reflection int
 - Workflow info: `GET /api/v1/workflows/{workflow_id}/info`
 - Compatibility aliases: `POST/GET /api/v1/workflows/{workflow_id}`
 
-All 16 engines are called through the main API endpoint. TypeScript engines are sidecar-bridged internally and are transparent to OpenClaw callers.
+All active engines (currently 17) are called through the main API endpoint. TypeScript engines are sidecar-bridged internally and are transparent to OpenClaw callers.
 
 ## OpenClaw Skill Alignment
 
@@ -51,13 +51,13 @@ This bridge path keeps OpenClaw tool contracts synced with live OpenAPI specs.
 
 ## Engine + Workflow Coverage
 
-### Engines (16)
+### Engines (17)
 
 Rust-native (11):
 - `panchanga`, `human-design`, `gene-keys`, `vimshottari`, `numerology`, `biorhythm`, `vedic-clock`, `biofield`, `face-reading`, `nadabrahman`, `transits`
 
-TS-bridged (5):
-- `tarot`, `i-ching`, `enneagram`, `sacred-geometry`, `sigil-forge`
+TS-bridged (6):
+- `tarot`, `i-ching`, `enneagram`, `sacred-geometry`, `sigil-forge`, `raaga` (note: raaga added post-16 baseline)
 
 ### Workflows (6)
 

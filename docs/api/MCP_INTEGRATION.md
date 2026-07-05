@@ -1,6 +1,6 @@
 # Purpose
 
-Provide a deterministic MCP-facing integration contract for Noesis engines and workflows.
+Provide a deterministic MCP-facing integration contract for Noesis engines and workflows (current: 17 engines).
 
 # Base Contract
 
