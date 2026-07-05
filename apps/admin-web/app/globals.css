@@ -2,11 +2,11 @@
    Tryambakam Noesis — Admin Design System
    Palette: Bronze (operator) · Verdant (signal)
    Typography: Panchang (display) · Satoshi (body) · SF Mono (data)
-   Shared geometry system with biofield-web
+    Shared geometry system
    ───────────────────────────────────────────────────────── */
 
 :root {
-  /* ── Brand Typography — matches noesis-web + biofield-web ─────────────── */
+  /* ── Brand Typography ──────────────────────────────────────────────── */
   --font-display: "Panchang", system-ui, sans-serif;
   --font-sans:    "Satoshi", system-ui, sans-serif;
   --font-body:    "Satoshi", system-ui, sans-serif;
@@ -18,7 +18,7 @@
   --bg-soft:    #182a3f;
   --bg-panel:   rgba(14, 24, 39, 0.9);
 
-  /* ── Surface aliases (shared with biofield-web) ────────────────────── */
+  /* ── Surface aliases ───────────────────────────────────────────────── */
   --surface:       #112035;
   --surface-2:     #182a3f;
   --panel:         rgba(14, 24, 39, 0.9);
@@ -62,7 +62,7 @@
   --glow-bronze:  rgba(196, 135, 59, 0.18);
   --glow-verdant: rgba(74, 124, 89, 0.12);
 
-  /* ── Radius scale (matches biofield-web) ────────────────────────────── */
+  /* ── Radius scale ──────────────────────────────────────────────────── */
   --r-xs:  4px;
   --r-sm:  6px;
   --r-md:  10px;

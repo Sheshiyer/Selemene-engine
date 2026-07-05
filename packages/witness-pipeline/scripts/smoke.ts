@@ -41,6 +41,13 @@ import {
   // Chain audit
   runChainAudit,
   type AuditResult,
+  // Intake (location normalization)
+  isCompleteReportRequest,
+  normalizeManualLocation,
+  confirmNormalizedLocation,
+  searchBirthplace,
+  buildReportIntakeQuestions,
+  type ReportGenerationRequest,
 } from '../src/index.js';
 
 async function smoke() {
@@ -58,6 +65,11 @@ async function smoke() {
   if (!IntegratedReadingOrchestrator) throw new Error('IntegratedReadingOrchestrator not exported');
   if (!createSourcePack) throw new Error('createSourcePack not exported');
   if (!runChainAudit) throw new Error('runChainAudit not exported');
+  if (!isCompleteReportRequest) throw new Error('isCompleteReportRequest not exported');
+  if (!normalizeManualLocation) throw new Error('normalizeManualLocation not exported');
+  if (!confirmNormalizedLocation) throw new Error('confirmNormalizedLocation not exported');
+  if (!searchBirthplace) throw new Error('searchBirthplace not exported');
+  if (!buildReportIntakeQuestions) throw new Error('buildReportIntakeQuestions not exported');
   console.log('   ✓ All exports accessible\n');
 
   // 2. Test ENGINE_ID_MAP
@@ -117,6 +129,49 @@ async function smoke() {
     throw new Error(`Audit failed: ${auditResult.blockers.join(', ')}`);
   }
   console.log(`   ✓ Audit passed with ${auditResult.facts_count} deterministic facts\n`);
+
+  // 8. Intake location normalization contract
+  console.log('8. Checking intake location normalization...');
+  const incomplete: ReportGenerationRequest = {
+    report_level: 'L3',
+    report_mode: 'integrated-reading',
+    subjects: [{
+      role: 'primary',
+      name: 'Test',
+      birth_date: '1990-01-01',
+      birth_time_confidence: 'exact',
+      birth_location_query: 'Bengaluru, India',
+    }],
+    output: { format: 'markdown', include_rubric: true, include_pattern_extraction: true },
+  };
+  if (isCompleteReportRequest(incomplete)) {
+    throw new Error('isCompleteReportRequest should be false without normalized_location');
+  }
+
+  const confirmed = confirmNormalizedLocation({
+    manual: { displayName: 'Bengaluru, Karnataka, India', latitude: 12.9716, longitude: 77.5946, timezone: 'Asia/Kolkata' },
+  });
+  incomplete.subjects[0].normalized_location = confirmed;
+  if (!isCompleteReportRequest(incomplete)) {
+    throw new Error('isCompleteReportRequest should be true after normalized_location present');
+  }
+
+  const manualLoc = normalizeManualLocation({
+    displayName: 'Mumbai',
+    latitude: 19.076,
+    longitude: 72.877,
+    timezone: 'Asia/Kolkata',
+  });
+  if (!manualLoc || manualLoc.provider !== 'manual') {
+    throw new Error('normalizeManualLocation failed');
+  }
+
+  const qs = buildReportIntakeQuestions({ subjectCount: 1, relationship: false });
+  if (!qs.some((q) => q.header === 'Birthplace')) {
+    throw new Error('buildReportIntakeQuestions missing Birthplace');
+  }
+
+  console.log('   ✓ Intake location normalization contract verified\n');
 
   console.log('🎉 All smoke tests passed!\n');
 }

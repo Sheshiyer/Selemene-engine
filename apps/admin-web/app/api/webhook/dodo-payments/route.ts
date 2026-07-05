@@ -6,8 +6,7 @@
 //      noesis-api endpoint POST /internal/billing/events
 //   3. Rust handles idempotency, persistence, and tier mirror updates
 //
-// Previously lived in apps/biofield-web; moved to admin-web after biofield-web
-// was retired. Contract: .context/billing/contracts.md § API.
+// Contract: .context/billing/contracts.md § API.
 // Runtime: Node (Standard Webhooks library uses Node crypto).
 
 import { verifyWebhookPayload } from "@dodopayments/core/webhook";

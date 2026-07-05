@@ -4,7 +4,7 @@ import type { ParsedModeDoc, SelemeneEngineOutput } from '../index.js';
 
 function makeEngineWithLagnaAndGate(lagna: string, gate: number): SelemeneEngineOutput {
   return {
-    engine_id: 'composite',
+    engine_id: 'panchanga',
     result: { lagna_sign: lagna, gates: [gate] },
     witness_prompt: '',
     consciousness_level: 5,
@@ -33,7 +33,7 @@ const mockKundaliMode: ParsedModeDoc = {
     engine_overlay_weights: {},
     house_overlay: [],
     bridge_mandates: [],
-    svg_topology: 'single',
+    svg_topology: 'web-graph',
   },
   sections: {
     'pass-opening-template': 'Write about {{subject_names}}.',

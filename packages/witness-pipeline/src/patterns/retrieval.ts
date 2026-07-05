@@ -4,6 +4,18 @@ export interface RetrievedPattern {
   metadata?: Record<string, unknown>;
 }
 
+export interface RetrievalFilters {
+  mode?: string;
+  report_level?: string;
+  kind?: string;
+  version?: string;
+  systems?: string[];
+}
+
+export interface PatternVectorRetriever {
+  retrieveSimilar(query: string, filters?: RetrievalFilters, limit?: number): Promise<RetrievedPattern[]>;
+}
+
 export function renderRetrievedPatternsForPrompt(patterns: RetrievedPattern[]): string {
   if (patterns.length === 0) return '';
   return [

@@ -218,7 +218,6 @@ describe('IntegratedReadingOrchestrator end-to-end', () => {
       subjectNames: ['PrivateTest'],
       engineResultsBySubject: [mockEngines],
       consciousnessLevel: 2,
-      birthContext: { date: '1960-06-01', lat: 12.97, lon: 77.59 },
     });
     expect(result.patterns.filter(p => p.text.includes('1960') || p.text.includes('12.97')).length).toBe(0);
   });
