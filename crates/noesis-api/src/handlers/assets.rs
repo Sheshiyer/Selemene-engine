@@ -45,6 +45,12 @@ fn legacy_birth_to_subjects(bd: &noesis_core::BirthData) -> Vec<noesis_core::int
     }]
 }
 
+/// Rust equivalent of TS `isCompleteReportRequest`.
+/// Requires non-empty subjects AND every subject to have a `normalized_location`.
+fn has_complete_locations(subjects: &[noesis_core::intake::ReportSubjectInput]) -> bool {
+    !subjects.is_empty() && subjects.iter().all(|s| s.normalized_location.is_some())
+}
+
 #[derive(Deserialize, ToSchema)]
 pub struct AssetGenerateRequest {
     pub birth_data: Option<noesis_core::BirthData>, // legacy path
@@ -115,6 +121,22 @@ pub async fn generate(
         } else {
             vec![]
         };
+
+    // is_complete gate (Rust equivalent of TS isCompleteReportRequest)
+    // If client sends the rich subjects form, every subject must have normalized_location.
+    if let Some(subs) = &req.subjects {
+        if !subs.is_empty() && !has_complete_locations(&effective_subjects) {
+            return Err(crate::ErrorMapper::response(
+                StatusCode::UNPROCESSABLE_ENTITY,
+                "INCOMPLETE_SUBJECTS",
+                "Every subject must include a normalized_location (isCompleteReportRequest contract)",
+                Some(serde_json::json!({
+                    "subject_count": subs.len(),
+                    "subjects_missing_location": subs.iter().filter(|s| s.normalized_location.is_none()).count()
+                })),
+            ));
+        }
+    }
 
     // Prefer explicit report_level when provided.
     let effective_report_level: Option<String> = req.report_level.clone();

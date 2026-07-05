@@ -298,3 +298,54 @@ async fn assets_generate_accepts_report_level_and_subjects_rich_path() {
     assert_eq!(subs[0]["name"].as_str().unwrap_or(""), "TestSubject");
     assert_eq!(subs[0]["role"].as_str().unwrap_or(""), "primary");
 }
+
+#[tokio::test]
+async fn assets_generate_rejects_incomplete_subjects_missing_normalized_location() {
+    let router = common::get_router().await;
+    let token = common::generate_test_token(3);
+
+    // Rich subjects form but one subject lacks normalized_location → should 422 (is_complete gate)
+    let req_body = json!({
+        "mode": "integrated-reading",
+        "consciousness_level": 3,
+        "report_level": "L1",
+        "subjects": [
+            {
+                "role": "primary",
+                "name": "IncompleteSubject",
+                "birth_date": "1990-01-15",
+                "birth_time": "14:30"
+                // deliberately no normalized_location
+            }
+        ]
+    });
+
+    let req = Request::builder()
+        .method("POST")
+        .uri("/api/v1/assets/generate")
+        .header(header::AUTHORIZATION, format!("Bearer {}", token))
+        .header(header::CONTENT_TYPE, "application/json")
+        .body(Body::from(serde_json::to_vec(&req_body).unwrap()))
+        .unwrap();
+
+    let response = router.clone().oneshot(req).await.unwrap();
+    let status = response.status();
+
+    // Per plan: assert 422 or clear error when subject lacks normalized_location
+    assert_eq!(
+        status,
+        StatusCode::UNPROCESSABLE_ENTITY,
+        "expected 422 for rich subjects missing normalized_location, got {}: {:?}",
+        status,
+        axum::body::to_bytes(response.into_body(), usize::MAX).await.unwrap()
+    );
+
+    // Body should be a structured error (ErrorResponse shape)
+    let body = axum::body::to_bytes(response.into_body(), usize::MAX).await.unwrap();
+    let json: Value = serde_json::from_slice(&body).unwrap();
+    assert!(
+        json.get("error_code").is_some() || json.get("message").is_some() || json.get("error").is_some(),
+        "response should carry clear error signal, got: {}",
+        json
+    );
+}
