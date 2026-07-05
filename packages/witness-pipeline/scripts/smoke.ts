@@ -131,6 +131,9 @@ async function smoke() {
   console.log(`   ✓ Audit passed with ${auditResult.facts_count} deterministic facts\n`);
 
   // 8. Intake location normalization contract
+  // Note: The rich ReportGenerationRequest shape (report_level + subjects[] + normalized_location)
+  // is the canonical contract. The public Rust API (/api/v1/assets/generate) now accepts it
+  // (via AssetGenerateRequest + ReportGenerationRequest in noesis-core). TS types here are the source of truth.
   console.log('8. Checking intake location normalization...');
   const incomplete: ReportGenerationRequest = {
     report_level: 'L3',
