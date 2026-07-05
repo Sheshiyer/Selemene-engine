@@ -1,6 +1,7 @@
 import type { PassResult } from '../orchestrator/integrated.js';
 import type { ReportLevel } from '../modes/types.js';
 import type { ExtractedPattern } from './types.js';
+import { scrubPrivateBirthData } from './privacy.js';
 
 export interface ExtractReportPatternsInput {
   mode: string;
@@ -53,19 +54,26 @@ export function extractReportPatterns(input: ExtractReportPatternsInput): Extrac
   return input.passes
     .filter((p) => p.rubric.guardrail_gate === 'pass')
     .filter((p) => p.rubric.integrated_layering_gate === 'pass')
-    .map((p) => ({
-      id: `${input.mode}:${p.id}:v1`,
-      text: anonymize(extractPatternText(p.output), input.subjectNames),
-      kind: inferKind(p.id),
-      source_section_id: p.id,
-      source_rubric_score: scoreRubric(p.rubric),
-      metadata: {
-        mode: input.mode,
-        report_level: input.reportLevel,
-        systems: inferSystems(p.output),
-        source: 'post-report-extraction' as const,
-        version: '1',
-      },
-    }))
+    .map((p) => {
+      const { scrubbed, hadPrivate } = scrubPrivateBirthData(p.output);
+      if (hadPrivate) {
+        return null;
+      }
+      return {
+        id: `${input.mode}:${p.id}:v1`,
+        text: anonymize(extractPatternText(scrubbed), input.subjectNames),
+        kind: inferKind(p.id),
+        source_section_id: p.id,
+        source_rubric_score: scoreRubric(p.rubric),
+        metadata: {
+          mode: input.mode,
+          report_level: input.reportLevel,
+          systems: inferSystems(scrubbed),
+          source: 'post-report-extraction' as const,
+          version: '1',
+        },
+      };
+    })
+    .filter((p): p is ExtractedPattern => p !== null)
     .filter((p) => p.text.length >= 40);
 }
