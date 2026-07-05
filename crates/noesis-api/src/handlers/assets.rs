@@ -51,6 +51,21 @@ fn has_complete_locations(subjects: &[noesis_core::intake::ReportSubjectInput]) 
     !subjects.is_empty() && subjects.iter().all(|s| s.normalized_location.is_some())
 }
 
+/// Internal bridge: when rich subjects are provided, synthesize a minimal BirthData
+/// from the first subject's normalized_location + birth fields so the engine layer
+/// (which still expects legacy BirthData) can execute and populate engines_used.
+/// This is additive support only — the rich path is the contract of record.
+fn first_subject_to_birth_data(sub: &noesis_core::intake::ReportSubjectInput) -> Option<noesis_core::BirthData> {
+    sub.normalized_location.as_ref().map(|loc| noesis_core::BirthData {
+        name: sub.name.clone(),
+        date: sub.birth_date.clone(),
+        time: sub.birth_time.clone(),
+        latitude: loc.latitude,
+        longitude: loc.longitude,
+        timezone: loc.timezone.clone(),
+    })
+}
+
 #[derive(Deserialize, ToSchema)]
 pub struct AssetGenerateRequest {
     pub birth_data: Option<noesis_core::BirthData>, // legacy path
@@ -141,8 +156,16 @@ pub async fn generate(
     // Prefer explicit report_level when provided.
     let effective_report_level: Option<String> = req.report_level.clone();
 
+    // Bridge rich subjects → birth_data for engine execution.
+    // Prefer explicit birth_data (legacy), else synthesize from first rich subject.
+    let bridged_birth_data: Option<noesis_core::BirthData> = if req.birth_data.is_some() {
+        req.birth_data.clone()
+    } else {
+        effective_subjects.first().and_then(first_subject_to_birth_data)
+    };
+
     let make_input = || EngineInput {
-        birth_data: req.birth_data.clone(),
+        birth_data: bridged_birth_data.clone(),
         current_time: now,
         location: None,
         precision: noesis_core::Precision::Standard,

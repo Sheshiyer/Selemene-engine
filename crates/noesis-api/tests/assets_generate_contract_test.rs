@@ -429,3 +429,95 @@ async fn assets_generate_accepts_l0_with_rich_subjects_shape() {
     assert_eq!(passes[0]["id"].as_str().unwrap(), "opening");
     assert_eq!(passes[11]["id"].as_str().unwrap(), "final-synthesis");
 }
+
+// Task 9: two-subject (synastry) rich shape → no crash + engines_used populated
+#[tokio::test]
+async fn assets_generate_accepts_two_subjects_synastry_rich_shape() {
+    let router = common::get_router().await;
+    let token = common::generate_test_token(4);
+
+    let req_body = json!({
+        "mode": "composite-dyad",
+        "consciousness_level": 4,
+        "report_level": "L3",
+        "subjects": [
+            {
+                "role": "primary",
+                "name": "PrimaryPerson",
+                "birth_date": "1990-01-15",
+                "birth_time": "14:30",
+                "normalized_location": {
+                    "display_name": "Bengaluru, India",
+                    "latitude": 12.9716,
+                    "longitude": 77.5946,
+                    "timezone": "Asia/Kolkata",
+                    "provider": "manual",
+                    "confidence": "exact"
+                }
+            },
+            {
+                "role": "partner",
+                "name": "PartnerPerson",
+                "birth_date": "1992-06-20",
+                "birth_time": "09:15",
+                "normalized_location": {
+                    "display_name": "Mumbai, India",
+                    "latitude": 19.0760,
+                    "longitude": 72.8777,
+                    "timezone": "Asia/Kolkata",
+                    "provider": "manual",
+                    "confidence": "exact"
+                }
+            }
+        ],
+        "relationship_context": {
+            "type": "romantic",
+            "mapping_goal": "compatibility",
+            "sensitivity_level": "standard"
+        }
+    });
+
+    let req = Request::builder()
+        .method("POST")
+        .uri("/api/v1/assets/generate")
+        .header(header::AUTHORIZATION, format!("Bearer {}", token))
+        .header(header::CONTENT_TYPE, "application/json")
+        .body(Body::from(serde_json::to_vec(&req_body).unwrap()))
+        .unwrap();
+
+    let response = router.clone().oneshot(req).await.unwrap();
+    // Task 9 requirement: no crash (must be 200)
+    assert_eq!(response.status(), StatusCode::OK, "two-subject synastry rich shape must not crash");
+
+    let body = axum::body::to_bytes(response.into_body(), usize::MAX).await.unwrap();
+    let json: Value = serde_json::from_slice(&body).unwrap();
+
+    // engines_used must be populated (non-empty array of strings)
+    let engines = json["engines_used"].as_array().expect("engines_used must be array");
+    assert!(
+        !engines.is_empty(),
+        "engines_used must be populated for two-subject synastry request"
+    );
+    for e in engines {
+        assert!(e.is_string(), "engines_used entries must be strings");
+    }
+
+    // report_level and both subjects must flow to source_pack
+    let sp = &json["source_pack"];
+    assert_eq!(
+        sp["report_level"].as_str().unwrap_or("MISSING"),
+        "L3",
+        "report_level should be captured for synastry rich request"
+    );
+    let subs = sp["subjects"].as_array().expect("subjects array in source_pack for synastry");
+    assert_eq!(subs.len(), 2, "synastry request must carry two subjects");
+    assert_eq!(subs[0]["role"].as_str().unwrap_or(""), "primary");
+    assert_eq!(subs[1]["role"].as_str().unwrap_or(""), "partner");
+
+    // subject_count should reflect 2
+    assert_eq!(
+        sp.get("subject_count").and_then(|v| v.as_u64()).unwrap_or(0),
+        2,
+        "subject_count should be 2 for synastry"
+    );
+}
