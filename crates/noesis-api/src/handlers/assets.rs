@@ -67,16 +67,43 @@ fn first_subject_to_birth_data(sub: &noesis_core::intake::ReportSubjectInput) ->
 }
 
 #[derive(Deserialize, ToSchema)]
+#[schema(example = r#"{
+  "mode": "integrated-kundali-l0",
+  "report_level": "L0",
+  "subjects": [{
+    "role": "primary",
+    "name": "Aarav Sharma",
+    "birth_date": "1992-03-14",
+    "birth_time": "06:45",
+    "normalized_location": {
+      "display_name": "Bengaluru, Karnataka, India",
+      "latitude": 12.9716,
+      "longitude": 77.5946,
+      "timezone": "Asia/Kolkata",
+      "provider": "manual",
+      "confidence": "exact"
+    }
+  }]
+}"#)]
 pub struct AssetGenerateRequest {
-    pub birth_data: Option<noesis_core::BirthData>, // legacy path
+    /// Legacy flat birth data. Still accepted for backward compatibility.
+    /// Prefer `subjects[]` + `report_level` for L0-L5 and multi-subject flows.
+    pub birth_data: Option<noesis_core::BirthData>,
     pub mode: String,
     #[serde(default)]
     pub consciousness_level: u8,
     pub options: Option<Value>,
 
-    // New rich intake (preferred for L0-L5 + synastry)
+    // === Rich intake (preferred contract) ===
+    /// Report depth: "L0" | "L1" | "L2" | "L3" | "L4" | "L5".
+    #[schema(example = "L0")]
     pub report_level: Option<String>,
+
+    /// One or more subjects (primary + optional partners).
+    /// Every subject MUST carry a `normalized_location` for the rich path
+    /// (enforced by the isComplete gate).
     pub subjects: Option<Vec<noesis_core::intake::ReportSubjectInput>>,
+
     pub relationship_context: Option<noesis_core::intake::RelationshipContext>,
 }
 
