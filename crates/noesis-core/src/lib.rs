@@ -5,6 +5,7 @@
 
 pub mod error;
 pub mod types;
+pub mod intake;
 
 pub use error::*;
 pub use types::*;
