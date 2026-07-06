@@ -1,0 +1,46 @@
+# Vercel deploy context excludes — keep the payload small for monorepo builds.
+# Vercel's rootDirectory is apps/admin-web, but the builder still receives the
+# repository root, so heavy, unrelated directories must be ignored.
+
+# Git metadata (massive)
+.git
+.gitattributes
+
+# Documentation and historical archives (hundreds of MB)
+docs/
+docs/archive/
+
+# Rust backend crates — not consumed by the Next.js admin dashboard
+crates/
+
+# Planning / context / tasks — not part of the web build
+.context/
+.planning/
+tasks/
+tasks/archive/
+
+# Local tooling / scratch directories
+.commandcode/
+
+# Workers are deployed separately to Cloudflare, not to Vercel
+workers/
+
+# OS and editor artifacts
+.DS_Store
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Test / coverage outputs (keep source tests, ignore artifacts)
+coverage/
+.nyc_output/
+*.tsbuildinfo
+
+# Node modules are reinstalled by Vercel; never upload them
+node_modules/
+
+# Local environment / secrets
+.env*
+!.env.production.local.example
