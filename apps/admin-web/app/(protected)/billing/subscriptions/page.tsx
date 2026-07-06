@@ -38,14 +38,13 @@ export default function AdminBillingSubscriptionsPage() {
   const [data, setData] = useState<AdminBillingSubscriptionsResponse | null>(null);
   const [statusFilter, setStatusFilter] = useState<string>("");
   const [offset, setOffset] = useState(0);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const token = getAuthToken();
     if (!token) return;
     let cancelled = false;
-    setLoading(true);
     getAdminBillingSubscriptions(token, {
       status: statusFilter || undefined,
       limit: PAGE_SIZE,
@@ -106,6 +105,7 @@ export default function AdminBillingSubscriptionsPage() {
               id="status-filter"
               value={statusFilter}
               onChange={(e) => {
+                setLoading(true);
                 setOffset(0);
                 setStatusFilter(e.target.value);
               }}
@@ -167,7 +167,10 @@ export default function AdminBillingSubscriptionsPage() {
             type="button"
             className="button button-secondary"
             disabled={offset === 0}
-            onClick={() => setOffset(Math.max(0, offset - PAGE_SIZE))}
+            onClick={() => {
+              setLoading(true);
+              setOffset(Math.max(0, offset - PAGE_SIZE));
+            }}
           >
             ← Prev
           </button>
@@ -175,7 +178,10 @@ export default function AdminBillingSubscriptionsPage() {
             type="button"
             className="button button-secondary"
             disabled={offset + items.length >= total}
-            onClick={() => setOffset(offset + PAGE_SIZE)}
+            onClick={() => {
+              setLoading(true);
+              setOffset(offset + PAGE_SIZE);
+            }}
           >
             Next →
           </button>

@@ -46,75 +46,81 @@ export default function AnalyticsPage() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  const [rangeDays, setRangeDays] = useState(() =>
-    getNumberParam(searchParams, "range_days", 30, 7, 90)
-  );
-  const [autoRefreshSec, setAutoRefreshSec] = useState(() =>
-    getNumberParam(searchParams, "refresh", 0, 0, 60)
-  );
+  const rangeDays = getNumberParam(searchParams, "range_days", 30, 7, 90);
+  const autoRefreshSec = getNumberParam(searchParams, "refresh", 0, 0, 60);
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [lastUpdatedAt, setLastUpdatedAt] = useState<string | null>(null);
   const [usage, setUsage] = useState<AdminUsageSummaryResponse | null>(null);
 
-  useEffect(() => {
-    setRangeDays(getNumberParam(searchParams, "range_days", 30, 7, 90));
-    setAutoRefreshSec(getNumberParam(searchParams, "refresh", 0, 0, 60));
-  }, [searchParams]);
-
-  useEffect(() => {
-    const nextQuery = buildQueryString(searchParams, {
-      range_days: rangeDays,
-      refresh: autoRefreshSec > 0 ? autoRefreshSec : undefined
-    });
-    router.replace(nextQuery ? `${pathname}?${nextQuery}` : pathname, { scroll: false });
-  }, [autoRefreshSec, pathname, rangeDays, router, searchParams]);
+  const updateQuery = useCallback(
+    (updates: { range_days?: number; refresh?: number }) => {
+      const nextQuery = buildQueryString(searchParams, {
+        range_days: updates.range_days,
+        refresh: updates.refresh && updates.refresh > 0 ? updates.refresh : undefined
+      });
+      router.replace(nextQuery ? `${pathname}?${nextQuery}` : pathname, { scroll: false });
+    },
+    [pathname, router, searchParams]
+  );
 
   const loadUsage = useCallback(async () => {
     const token = getAuthToken();
     if (!token) {
-      setError("Missing session token. Please sign in again.");
-      setLoading(false);
-      return;
+      throw new Error("Missing session token. Please sign in again.");
     }
 
+    const currentRangeDays = getNumberParam(searchParams, "range_days", 30, 7, 90);
+    return getAdminUsageSummary(token, {
+      range_days: currentRangeDays,
+      engine_limit: 10,
+      top_users_limit: 10
+    });
+  }, [searchParams]);
+
+  const handleFetch = useCallback((promise: Promise<AdminUsageSummaryResponse>) => {
     setLoading(true);
     setError(null);
-
-    try {
-      const response = await getAdminUsageSummary(token, {
-        range_days: rangeDays,
-        engine_limit: 10,
-        top_users_limit: 10
+    promise
+      .then((response) => {
+        setUsage(response);
+        setLastUpdatedAt(new Date().toISOString());
+      })
+      .catch((err) => {
+        if (err instanceof ApiClientError) {
+          setError(err.payload?.error || err.message);
+        } else if (err instanceof Error) {
+          setError(err.message);
+        } else {
+          setError("Failed to load usage analytics");
+        }
+      })
+      .finally(() => {
+        setLoading(false);
       });
-
-      setUsage(response);
-      setLastUpdatedAt(new Date().toISOString());
-    } catch (err) {
-      if (err instanceof ApiClientError) {
-        setError(err.payload?.error || err.message);
-      } else {
-        setError("Failed to load usage analytics");
-      }
-    } finally {
-      setLoading(false);
-    }
-  }, [rangeDays]);
+  }, []);
 
   useEffect(() => {
-    void loadUsage();
-  }, [loadUsage]);
+    let cancelled = false;
+    queueMicrotask(() => {
+      if (cancelled) return;
+      handleFetch(loadUsage());
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [handleFetch, loadUsage]);
 
   useEffect(() => {
     if (autoRefreshSec <= 0) {
       return;
     }
     const interval = window.setInterval(() => {
-      void loadUsage();
+      handleFetch(loadUsage());
     }, autoRefreshSec * 1000);
     return () => window.clearInterval(interval);
-  }, [autoRefreshSec, loadUsage]);
+  }, [autoRefreshSec, handleFetch, loadUsage]);
 
   const chartData = useMemo(() => usage?.daily_requests ?? [], [usage]);
 
@@ -128,7 +134,9 @@ export default function AnalyticsPage() {
           Date range
           <select
             value={rangeDays}
-            onChange={(event) => setRangeDays(Number.parseInt(event.target.value, 10))}
+            onChange={(event) =>
+              updateQuery({ range_days: Number.parseInt(event.target.value, 10) })
+            }
           >
             {RANGE_DAY_OPTIONS.map((value) => (
               <option key={value} value={value}>
@@ -141,7 +149,9 @@ export default function AnalyticsPage() {
           Auto refresh
           <select
             value={autoRefreshSec}
-            onChange={(event) => setAutoRefreshSec(Number.parseInt(event.target.value, 10))}
+            onChange={(event) =>
+              updateQuery({ refresh: Number.parseInt(event.target.value, 10) })
+            }
           >
             {REFRESH_OPTIONS.map((value) => (
               <option key={value} value={value}>
@@ -150,7 +160,7 @@ export default function AnalyticsPage() {
             ))}
           </select>
         </label>
-        <button type="button" onClick={() => void loadUsage()}>
+        <button type="button" onClick={() => handleFetch(loadUsage())}>
           Refresh
         </button>
       </div>

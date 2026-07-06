@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useReducer, useRef } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { ActionRail, MetricSurface, SurfaceCard } from "@/components/admin-primitives";
 import { StateBanner, StatePanel, TableEmptyStateRow } from "@/components/admin-state";
@@ -47,61 +47,137 @@ function toIso(value: string): string | undefined {
 
 const REFRESH_OPTIONS = [0, 15, 30, 60] as const;
 
+type AuditState = {
+  loading: boolean;
+  detailLoading: boolean;
+  error: string | null;
+  success: string | null;
+  lastUpdatedAt: string | null;
+  actions: string[];
+  events: AdminAuditEventItem[];
+  total: number;
+  selected: AdminAuditEventItem | null;
+};
+
+type AuditAction =
+  | { type: "FETCH_START" }
+  | {
+      type: "FETCH_SUCCESS";
+      actions: string[];
+      events: AdminAuditEventItem[];
+      total: number;
+      selected: AdminAuditEventItem | null;
+    }
+  | { type: "FETCH_ERROR"; error: string }
+  | { type: "DETAIL_START" }
+  | { type: "DETAIL_SUCCESS"; event: AdminAuditEventItem }
+  | { type: "DETAIL_ERROR"; error: string }
+  | { type: "CLEAR_SELECTED" }
+  | { type: "SHOW_SUCCESS"; message: string }
+  | { type: "CLEAR_SUCCESS" }
+  | { type: "SHOW_ERROR"; error: string };
+
+const initialAuditState: AuditState = {
+  loading: true,
+  detailLoading: false,
+  error: null,
+  success: null,
+  lastUpdatedAt: null,
+  actions: [],
+  events: [],
+  total: 0,
+  selected: null
+};
+
+function auditReducer(state: AuditState, action: AuditAction): AuditState {
+  switch (action.type) {
+    case "FETCH_START":
+      return { ...state, loading: true, error: null };
+    case "FETCH_SUCCESS":
+      return {
+        ...state,
+        loading: false,
+        error: null,
+        actions: action.actions,
+        events: action.events,
+        total: action.total,
+        lastUpdatedAt: new Date().toISOString(),
+        selected: action.selected
+      };
+    case "FETCH_ERROR":
+      return { ...state, loading: false, error: action.error };
+    case "DETAIL_START":
+      return { ...state, detailLoading: true, error: null };
+    case "DETAIL_SUCCESS":
+      return { ...state, detailLoading: false, selected: action.event };
+    case "DETAIL_ERROR":
+      return { ...state, detailLoading: false, error: action.error };
+    case "CLEAR_SELECTED":
+      return { ...state, selected: null };
+    case "SHOW_SUCCESS":
+      return { ...state, success: action.message };
+    case "CLEAR_SUCCESS":
+      return { ...state, success: null };
+    case "SHOW_ERROR":
+      return { ...state, error: action.error };
+    default:
+      return state;
+  }
+}
+
 export default function AuditPage() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  const [actor, setActor] = useState(() => getStringParam(searchParams, "actor"));
-  const [action, setAction] = useState(() => getStringParam(searchParams, "action"));
-  const [result, setResult] = useState(() => getStringParam(searchParams, "result"));
-  const [from, setFrom] = useState(() => getStringParam(searchParams, "from"));
-  const [to, setTo] = useState(() => getStringParam(searchParams, "to"));
-  const [autoRefreshSec, setAutoRefreshSec] = useState(() =>
-    getNumberParam(searchParams, "refresh", 0, 0, 60)
+  const actor = getStringParam(searchParams, "actor");
+  const action = getStringParam(searchParams, "action");
+  const result = getStringParam(searchParams, "result");
+  const from = getStringParam(searchParams, "from");
+  const to = getStringParam(searchParams, "to");
+  const autoRefreshSec = useMemo(
+    () => getNumberParam(searchParams, "refresh", 0, 0, 60),
+    [searchParams]
   );
 
-  const [loading, setLoading] = useState(true);
-  const [detailLoading, setDetailLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
-  const [lastUpdatedAt, setLastUpdatedAt] = useState<string | null>(null);
-  const [actions, setActions] = useState<string[]>([]);
-  const [events, setEvents] = useState<AdminAuditEventItem[]>([]);
-  const [total, setTotal] = useState(0);
-  const [selected, setSelected] = useState<AdminAuditEventItem | null>(null);
+  const [audit, dispatch] = useReducer(auditReducer, initialAuditState);
+  const selectedRef = useRef(audit.selected);
 
   useEffect(() => {
-    setActor(getStringParam(searchParams, "actor"));
-    setAction(getStringParam(searchParams, "action"));
-    setResult(getStringParam(searchParams, "result"));
-    setFrom(getStringParam(searchParams, "from"));
-    setTo(getStringParam(searchParams, "to"));
-    setAutoRefreshSec(getNumberParam(searchParams, "refresh", 0, 0, 60));
-  }, [searchParams]);
+    selectedRef.current = audit.selected;
+  }, [audit.selected]);
 
-  useEffect(() => {
-    const nextQuery = buildQueryString(searchParams, {
-      actor,
-      action,
-      result,
-      from,
-      to,
-      refresh: autoRefreshSec > 0 ? autoRefreshSec : undefined
-    });
-    router.replace(nextQuery ? `${pathname}?${nextQuery}` : pathname, { scroll: false });
-  }, [action, actor, autoRefreshSec, from, pathname, result, router, searchParams, to]);
+  const updateFilters = useCallback(
+    (
+      updates: Partial<
+        Record<
+          "actor" | "action" | "result" | "from" | "to" | "refresh",
+          string | number | undefined
+        >
+      >
+    ) => {
+      const refreshValue = typeof updates.refresh === "number" ? updates.refresh : autoRefreshSec;
+      const nextQuery = buildQueryString(searchParams, {
+        actor: updates.actor ?? actor,
+        action: updates.action ?? action,
+        result: updates.result ?? result,
+        from: updates.from ?? from,
+        to: updates.to ?? to,
+        refresh: refreshValue > 0 ? refreshValue : undefined
+      });
+      router.replace(nextQuery ? `${pathname}?${nextQuery}` : pathname, { scroll: false });
+    },
+    [action, actor, autoRefreshSec, from, pathname, result, router, searchParams, to]
+  );
 
   const loadAudit = useCallback(async () => {
     const token = getAuthToken();
     if (!token) {
-      setError("Missing session token. Please sign in again.");
-      setLoading(false);
+      dispatch({ type: "FETCH_ERROR", error: "Missing session token. Please sign in again." });
       return;
     }
 
-    setLoading(true);
-    setError(null);
+    dispatch({ type: "FETCH_START" });
 
     try {
       const [actionsResponse, eventsResponse] = await Promise.all([
@@ -117,47 +193,44 @@ export default function AuditPage() {
         })
       ]);
 
-      setActions(actionsResponse.actions);
-      setEvents(eventsResponse.items);
-      setTotal(eventsResponse.total);
-      setLastUpdatedAt(new Date().toISOString());
+      const updated = selectedRef.current
+        ? eventsResponse.items.find((event) => event.event_id === selectedRef.current?.event_id) ?? null
+        : null;
 
-      if (selected) {
-        const updated = eventsResponse.items.find((event) => event.event_id === selected.event_id);
-        setSelected(updated ?? null);
-      }
+      dispatch({
+        type: "FETCH_SUCCESS",
+        actions: actionsResponse.actions,
+        events: eventsResponse.items,
+        total: eventsResponse.total,
+        selected: updated
+      });
     } catch (err) {
       if (err instanceof ApiClientError) {
-        setError(err.payload?.error || err.message);
+        dispatch({ type: "FETCH_ERROR", error: err.payload?.error || err.message });
       } else {
-        setError("Failed to load audit events");
+        dispatch({ type: "FETCH_ERROR", error: "Failed to load audit events" });
       }
-    } finally {
-      setLoading(false);
     }
-  }, [action, actor, from, result, selected, to]);
+  }, [action, actor, from, result, to]);
 
   async function openDetail(eventId: string) {
     const token = getAuthToken();
     if (!token) {
-      setError("Missing session token. Please sign in again.");
+      dispatch({ type: "SHOW_ERROR", error: "Missing session token. Please sign in again." });
       return;
     }
 
-    setDetailLoading(true);
-    setError(null);
+    dispatch({ type: "DETAIL_START" });
 
     try {
       const detail = await getAuditEvent(token, eventId);
-      setSelected(detail.event);
+      dispatch({ type: "DETAIL_SUCCESS", event: detail.event });
     } catch (err) {
       if (err instanceof ApiClientError) {
-        setError(err.payload?.error || err.message);
+        dispatch({ type: "DETAIL_ERROR", error: err.payload?.error || err.message });
       } else {
-        setError("Failed to load audit event detail");
+        dispatch({ type: "DETAIL_ERROR", error: "Failed to load audit event detail" });
       }
-    } finally {
-      setDetailLoading(false);
     }
   }
 
@@ -176,24 +249,24 @@ export default function AuditPage() {
   }, [autoRefreshSec, loadAudit]);
 
   const failureCount = useMemo(
-    () => events.filter((event) => event.result !== "success").length,
-    [events]
+    () => audit.events.filter((event) => event.result !== "success").length,
+    [audit.events]
   );
 
   async function handleCopy(value: string, label: string) {
     try {
       await copyToClipboard(value);
-      setSuccess(`${label} copied`);
-      window.setTimeout(() => setSuccess(null), 1500);
+      dispatch({ type: "SHOW_SUCCESS", message: `${label} copied` });
+      window.setTimeout(() => dispatch({ type: "CLEAR_SUCCESS" }), 1500);
     } catch {
-      setError("Failed to copy value to clipboard");
+      dispatch({ type: "SHOW_ERROR", error: "Failed to copy value to clipboard" });
     }
   }
 
   function handleExportCsv() {
     exportCsv(
       `admin-audit-events-${new Date().toISOString().slice(0, 10)}.csv`,
-      events,
+      audit.events,
       [
         { key: "event_id", header: "Event ID" },
         { key: "request_id", header: "Request ID" },
@@ -209,7 +282,7 @@ export default function AuditPage() {
   }
 
   function handleExportJson() {
-    exportJson(`admin-audit-events-${new Date().toISOString().slice(0, 10)}.json`, events);
+    exportJson(`admin-audit-events-${new Date().toISOString().slice(0, 10)}.json`, audit.events);
   }
 
   return (
@@ -221,10 +294,10 @@ export default function AuditPage() {
           <button type="button" onClick={() => void loadAudit()}>
             Refresh
           </button>
-          <button type="button" onClick={handleExportCsv} disabled={events.length === 0}>
+          <button type="button" onClick={handleExportCsv} disabled={audit.events.length === 0}>
             Export CSV
           </button>
-          <button type="button" onClick={handleExportJson} disabled={events.length === 0}>
+          <button type="button" onClick={handleExportJson} disabled={audit.events.length === 0}>
             Export JSON
           </button>
         </ActionRail>
@@ -235,15 +308,15 @@ export default function AuditPage() {
           Actor
           <input
             value={actor}
-            onChange={(event) => setActor(event.target.value)}
+            onChange={(event) => updateFilters({ actor: event.target.value })}
             placeholder="email or user UUID"
           />
         </label>
         <label>
           Action
-          <select value={action} onChange={(event) => setAction(event.target.value)}>
+          <select value={action} onChange={(event) => updateFilters({ action: event.target.value })}>
             <option value="">All actions</option>
-            {actions.map((item) => (
+            {audit.actions.map((item) => (
               <option key={item} value={item}>
                 {item}
               </option>
@@ -252,7 +325,7 @@ export default function AuditPage() {
         </label>
         <label>
           Result
-          <select value={result} onChange={(event) => setResult(event.target.value)}>
+          <select value={result} onChange={(event) => updateFilters({ result: event.target.value })}>
             <option value="">All</option>
             <option value="success">success</option>
             <option value="failure">failure</option>
@@ -260,17 +333,25 @@ export default function AuditPage() {
         </label>
         <label>
           From
-          <input type="datetime-local" value={from} onChange={(event) => setFrom(event.target.value)} />
+          <input
+            type="datetime-local"
+            value={from}
+            onChange={(event) => updateFilters({ from: event.target.value })}
+          />
         </label>
         <label>
           To
-          <input type="datetime-local" value={to} onChange={(event) => setTo(event.target.value)} />
+          <input
+            type="datetime-local"
+            value={to}
+            onChange={(event) => updateFilters({ to: event.target.value })}
+          />
         </label>
         <label>
           Auto refresh
           <select
             value={autoRefreshSec}
-            onChange={(event) => setAutoRefreshSec(Number.parseInt(event.target.value, 10))}
+            onChange={(event) => updateFilters({ refresh: Number.parseInt(event.target.value, 10) })}
           >
             {REFRESH_OPTIONS.map((value) => (
               <option key={value} value={value}>
@@ -281,17 +362,17 @@ export default function AuditPage() {
         </label>
       </div>
 
-      <p className="helper">Last updated: {formatDateTime(lastUpdatedAt)}</p>
+      <p className="helper">Last updated: {formatDateTime(audit.lastUpdatedAt)}</p>
 
       <div className="grid metrics">
         <MetricSurface
           label="Matching events"
-          value={loading ? "--" : total}
+          value={audit.loading ? "--" : audit.total}
           detail="Server-side count for the active filter combination."
         />
         <MetricSurface
           label="Visible rows"
-          value={events.length}
+          value={audit.events.length}
           detail="Rows currently loaded into the table viewport."
         />
         <MetricSurface
@@ -301,9 +382,9 @@ export default function AuditPage() {
         />
       </div>
 
-      {error ? <StateBanner variant="error" title={error} /> : null}
-      {success ? <StateBanner variant="success" title={success} /> : null}
-      {loading ? (
+      {audit.error ? <StateBanner variant="error" title={audit.error} /> : null}
+      {audit.success ? <StateBanner variant="success" title={audit.success} /> : null}
+      {audit.loading ? (
         <StatePanel
           variant="loading"
           title="Loading audit events"
@@ -316,7 +397,7 @@ export default function AuditPage() {
         title="Events"
         summary="Request-scoped trace records with copyable identifiers and contextual target data."
       >
-        {events.length === 0 ? (
+        {audit.events.length === 0 ? (
           <div className="state-table-empty event-stream-empty">
             <div className="telemetry-caption">Empty</div>
             <div className="state-table-empty-title">No audit events matched</div>
@@ -326,7 +407,7 @@ export default function AuditPage() {
           </div>
         ) : (
           <EventStream label="Audit event stream">
-            {events.map((event) => (
+            {audit.events.map((event) => (
               <EventStreamItem
                 key={event.event_id}
                 eyebrow="Audit event"
@@ -370,7 +451,7 @@ export default function AuditPage() {
         )}
       </SurfaceCard>
 
-      {detailLoading ? (
+      {audit.detailLoading ? (
         <StatePanel
           variant="loading"
           title="Loading selected event"
@@ -380,42 +461,45 @@ export default function AuditPage() {
       ) : null}
 
       <DrawerSurface
-        open={Boolean(selected)}
-        onClose={() => setSelected(null)}
+        open={Boolean(audit.selected)}
+        onClose={() => dispatch({ type: "CLEAR_SELECTED" })}
         eyebrow="Event Detail"
-        title={selected?.action ?? "Audit event"}
+        title={audit.selected?.action ?? "Audit event"}
         summary={
-          selected
-            ? `${selected.actor_email} · ${selected.target_type} / ${selected.target_id ?? "--"}`
+          audit.selected
+            ? `${audit.selected.actor_email} · ${audit.selected.target_type} / ${audit.selected.target_id ?? "--"}`
             : undefined
         }
         footer={
-          <button type="button" onClick={() => setSelected(null)}>
+          <button type="button" onClick={() => dispatch({ type: "CLEAR_SELECTED" })}>
             Close
           </button>
         }
       >
-        {selected ? (
+        {audit.selected ? (
           <div className="grid overlay-detail-grid">
             <div className="helper">
-              Event ID: {selected.event_id}{" "}
+              Event ID: {audit.selected.event_id}{" "}
               <button
                 type="button"
                 className="link-btn"
-                onClick={() => void handleCopy(selected.event_id, "Event ID")}
+                onClick={() => {
+                  if (!audit.selected) return;
+                  void handleCopy(audit.selected.event_id, "Event ID");
+                }}
               >
                 copy
               </button>
             </div>
-            <div className="helper">Occurred at: {formatDateTime(selected.occurred_at)}</div>
+            <div className="helper">Occurred at: {formatDateTime(audit.selected.occurred_at)}</div>
             <div className="helper">
-              Actor: {selected.actor_email} ({selected.actor_user_id})
+              Actor: {audit.selected.actor_email} ({audit.selected.actor_user_id})
             </div>
             <div className="helper">
-              Action: {selected.action} · Target: {selected.target_type} / {selected.target_id ?? "--"}
+              Action: {audit.selected.action} · Target: {audit.selected.target_type} / {audit.selected.target_id ?? "--"}
             </div>
-            <div className="helper">Request ID: {selected.request_id}</div>
-            <pre className="overlay-json-block">{JSON.stringify(selected.metadata, null, 2)}</pre>
+            <div className="helper">Request ID: {audit.selected.request_id}</div>
+            <pre className="overlay-json-block">{JSON.stringify(audit.selected.metadata, null, 2)}</pre>
           </div>
         ) : null}
       </DrawerSurface>

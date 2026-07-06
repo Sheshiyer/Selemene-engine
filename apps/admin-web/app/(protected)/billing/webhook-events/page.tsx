@@ -22,7 +22,6 @@ export default function AdminBillingWebhookEventsPage() {
     const token = getAuthToken();
     if (!token) return;
     let cancelled = false;
-    setLoading(true);
     getAdminBillingWebhookEvents(token, { limit: 100 })
       .then((resp) => {
         if (!cancelled) {

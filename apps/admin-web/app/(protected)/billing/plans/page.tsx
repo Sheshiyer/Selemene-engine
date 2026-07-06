@@ -22,7 +22,6 @@ export default function AdminBillingPlansPage() {
     const token = getAuthToken();
     if (!token) return;
     let cancelled = false;
-    setLoading(true);
     getAdminBillingPlans(token)
       .then((resp) => {
         if (!cancelled) {

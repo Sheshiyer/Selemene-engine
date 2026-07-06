@@ -45,7 +45,6 @@ export default function AdminBillingSubscriptionDetailPage({
     const token = getAuthToken();
     if (!token) return;
     let cancelled = false;
-    setLoading(true);
 
     // Core read data — page MUST render this even if session lookup fails.
     getAdminBillingSubscription(token, id)

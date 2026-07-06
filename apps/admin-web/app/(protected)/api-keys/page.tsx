@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { ActionRail, MetricSurface } from "@/components/admin-primitives";
 import { BulkActionBar, useBulkSelection } from "@/components/bulk-actions";
@@ -185,6 +185,22 @@ function RevokeIcon() {
   );
 }
 
+async function fetchKeysData(query: string, activeOnly: boolean) {
+  const token = getAuthToken();
+  if (!token) {
+    throw new Error("Missing session token. Please sign in again.");
+  }
+
+  const res = await getAdminApiKeys(token, {
+    query: query || undefined,
+    active_only: activeOnly,
+    limit: 200,
+    offset: 0,
+  });
+
+  return res;
+}
+
 // ─── Geometric glyph derived from key ID hash ────────────────────────────────
 function KeyGlyph({ keyId }: { keyId: string }) {
   let h = 0;
@@ -297,9 +313,10 @@ export default function ApiKeysPage() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  const [query, setQuery] = useState(() => getStringParam(searchParams, "query"));
-  const [tierFilter, setTierFilter] = useState(() => getStringParam(searchParams, "tier", "all"));
-  const [statusFilter, setStatusFilter] = useState(() => getStringParam(searchParams, "status", "all"));
+  const query = getStringParam(searchParams, "query");
+  const tierFilter = getStringParam(searchParams, "tier", "all");
+  const statusFilter = getStringParam(searchParams, "status", "all");
+  const [now] = useState(() => Date.now());
   const [loading, setLoading] = useState(true);
   const [keys, setKeys] = useState<AdminApiKeyItem[]>([]);
   const [total, setTotal] = useState(0);
@@ -361,10 +378,10 @@ export default function ApiKeysPage() {
       keys.filter((k) => {
         if (!k.expires_at || !k.is_active) return false;
         const expiresAt = new Date(k.expires_at).getTime();
-        const inSevenDays = Date.now() + 7 * 24 * 60 * 60 * 1000;
+        const inSevenDays = now + 7 * 24 * 60 * 60 * 1000;
         return Number.isFinite(expiresAt) && expiresAt < inSevenDays;
       }).length,
-    [keys]
+    [keys, now]
   );
 
   const canDeleteKeys = hasPermission(session?.permissions ?? [], "admin:keys:delete");
@@ -372,6 +389,11 @@ export default function ApiKeysPage() {
   const canRevokeKeys = hasPermission(session?.permissions ?? [], "admin:keys:revoke");
   const secretForSelectedKey =
     selectedKey && recentSecret?.keyId === selectedKey.id ? recentSecret : null;
+
+  function updateParam(key: string, value: string) {
+    const nextQuery = buildQueryString(searchParams, { [key]: value !== "all" ? value : undefined });
+    router.replace(nextQuery ? `${pathname}?${nextQuery}` : pathname, { scroll: false });
+  }
 
   useEffect(() => {
     const token = getAuthToken();
@@ -383,29 +405,6 @@ export default function ApiKeysPage() {
         // Ignore permission refresh failures and let route guards / action errors handle auth state.
       });
   }, []);
-
-  useEffect(() => {
-    setQuery(getStringParam(searchParams, "query"));
-    setTierFilter(getStringParam(searchParams, "tier", "all"));
-    setStatusFilter(getStringParam(searchParams, "status", "all"));
-  }, [searchParams]);
-
-  useEffect(() => {
-    const nextQuery = buildQueryString(searchParams, {
-      query,
-      tier: tierFilter !== "all" ? tierFilter : undefined,
-      status: statusFilter !== "all" ? statusFilter : undefined,
-    });
-    router.replace(nextQuery ? `${pathname}?${nextQuery}` : pathname, { scroll: false });
-  }, [pathname, query, router, searchParams, statusFilter, tierFilter]);
-
-  useEffect(() => {
-    if (!selectedKey) return;
-    const fresh = keys.find((item) => item.id === selectedKey.id);
-    if (fresh) {
-      setSelectedKey(fresh);
-    }
-  }, [keys, selectedKey]);
 
   useEffect(() => {
     if (!secretVisible || !secretForSelectedKey) {
@@ -428,24 +427,21 @@ export default function ApiKeysPage() {
     return () => window.clearInterval(intervalId);
   }, [secretForSelectedKey, secretVisible]);
 
-  const loadKeys = useCallback(async () => {
-    const token = getAuthToken();
-    if (!token) {
-      setError("Missing session token. Please sign in again.");
-      setLoading(false);
-      return;
-    }
+  async function loadKeys() {
     setLoading(true);
     setError(null);
+
     try {
-      const res = await getAdminApiKeys(token, {
-        query: query || undefined,
-        active_only: activeOnly,
-        limit: 200,
-        offset: 0,
-      });
+      const res = await fetchKeysData(query, activeOnly);
       setKeys(res.items);
       setTotal(res.total);
+
+      if (selectedKey) {
+        const fresh = res.items.find((item) => item.id === selectedKey.id);
+        if (fresh) {
+          setSelectedKey(fresh);
+        }
+      }
     } catch (err) {
       setError(
         err instanceof ApiClientError ? err.payload?.error || err.message : "Failed to load API keys"
@@ -453,11 +449,51 @@ export default function ApiKeysPage() {
     } finally {
       setLoading(false);
     }
-  }, [activeOnly, query]);
+  }
 
   useEffect(() => {
-    void loadKeys();
-  }, [loadKeys]);
+    let cancelled = false;
+
+    async function run() {
+      setLoading(true);
+      setError(null);
+
+      try {
+        const res = await fetchKeysData(query, activeOnly);
+        if (!cancelled) {
+          setKeys(res.items);
+          setTotal(res.total);
+
+          if (selectedKey) {
+            const fresh = res.items.find((item) => item.id === selectedKey.id);
+            if (fresh) {
+              setSelectedKey(fresh);
+            }
+          }
+
+          setError(null);
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setError(
+            err instanceof ApiClientError ? err.payload?.error || err.message : "Failed to load API keys"
+          );
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    }
+
+    void run();
+
+    return () => {
+      cancelled = true;
+    };
+    // selectedKey is read only to refresh the open modal after a fetch; we do not want to refetch when the modal opens/closes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeOnly, query]);
 
   function resetCreateForm() {
     setCreateName("");
@@ -747,13 +783,13 @@ export default function ApiKeysPage() {
           Search
           <input
             value={query}
-            onChange={(e) => setQuery(e.target.value)}
+            onChange={(e) => updateParam("query", e.target.value)}
             placeholder="name, email, key id"
           />
         </label>
         <label>
           Tier
-          <select value={tierFilter} onChange={(e) => setTierFilter(e.target.value)}>
+          <select value={tierFilter} onChange={(e) => updateParam("tier", e.target.value)}>
             <option value="all">All tiers</option>
             <option value="free">Free</option>
             <option value="premium">Premium</option>
@@ -762,7 +798,7 @@ export default function ApiKeysPage() {
         </label>
         <label>
           Status
-          <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
+          <select value={statusFilter} onChange={(e) => updateParam("status", e.target.value)}>
             <option value="all">All</option>
             <option value="active">Active</option>
             <option value="revoked">Revoked</option>

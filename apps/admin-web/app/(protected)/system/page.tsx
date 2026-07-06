@@ -53,12 +53,8 @@ export default function SystemPage() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  const [windowHours, setWindowHours] = useState(() =>
-    getNumberParam(searchParams, "window_hours", 24, 1, 24 * 30)
-  );
-  const [autoRefreshSec, setAutoRefreshSec] = useState(() =>
-    getNumberParam(searchParams, "refresh", 0, 0, 60)
-  );
+  const windowHours = getNumberParam(searchParams, "window_hours", 24, 1, 24 * 30);
+  const autoRefreshSec = getNumberParam(searchParams, "refresh", 0, 0, 60);
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -69,18 +65,16 @@ export default function SystemPage() {
   const [services, setServices] = useState<AdminSystemServiceItem[]>([]);
   const [workflows, setWorkflows] = useState<AdminSystemWorkflowItem[]>([]);
 
-  useEffect(() => {
-    setWindowHours(getNumberParam(searchParams, "window_hours", 24, 1, 24 * 30));
-    setAutoRefreshSec(getNumberParam(searchParams, "refresh", 0, 0, 60));
-  }, [searchParams]);
-
-  useEffect(() => {
-    const nextQuery = buildQueryString(searchParams, {
-      window_hours: windowHours,
-      refresh: autoRefreshSec > 0 ? autoRefreshSec : undefined
-    });
-    router.replace(nextQuery ? `${pathname}?${nextQuery}` : pathname, { scroll: false });
-  }, [autoRefreshSec, pathname, router, searchParams, windowHours]);
+  const updateQuery = useCallback(
+    (updates: { window_hours?: number; refresh?: number }) => {
+      const nextQuery = buildQueryString(searchParams, {
+        window_hours: updates.window_hours,
+        refresh: updates.refresh && updates.refresh > 0 ? updates.refresh : undefined
+      });
+      router.replace(nextQuery ? `${pathname}?${nextQuery}` : pathname, { scroll: false });
+    },
+    [pathname, router, searchParams]
+  );
 
   const degradedServiceCount = useMemo(
     () => services.filter((service) => service.status !== "healthy").length,
@@ -90,52 +84,76 @@ export default function SystemPage() {
   const loadSystemViews = useCallback(async () => {
     const token = getAuthToken();
     if (!token) {
-      setError("Missing session token. Please sign in again.");
-      setLoading(false);
-      return;
+      throw new Error("Missing session token. Please sign in again.");
     }
 
-    setLoading(true);
-    setError(null);
+    const currentWindowHours = getNumberParam(searchParams, "window_hours", 24, 1, 24 * 30);
+    const [healthResponse, servicesResponse, workflowsResponse, cacheResponse] =
+      await Promise.all([
+        getSystemHealth(token),
+        getSystemServices(token, { limit: 50, offset: 0 }),
+        getSystemWorkflows(token, { window_hours: currentWindowHours, limit: 100, offset: 0 }),
+        getSystemCache(token)
+      ]);
 
-    try {
-      const [healthResponse, servicesResponse, workflowsResponse, cacheResponse] =
-        await Promise.all([
-          getSystemHealth(token),
-          getSystemServices(token, { limit: 50, offset: 0 }),
-          getSystemWorkflows(token, { window_hours: windowHours, limit: 100, offset: 0 }),
-          getSystemCache(token)
-        ]);
+    return { healthResponse, servicesResponse, workflowsResponse, cacheResponse };
+  }, [searchParams]);
 
-      setHealth(healthResponse);
-      setServices(servicesResponse.items);
-      setWorkflows(workflowsResponse.items);
-      setCache(cacheResponse);
-      setLastUpdatedAt(new Date().toISOString());
-    } catch (err) {
-      if (err instanceof ApiClientError) {
-        setError(err.payload?.error || err.message);
-      } else {
-        setError("Failed to load system operations data");
-      }
-    } finally {
-      setLoading(false);
-    }
-  }, [windowHours]);
+  const handleFetch = useCallback(
+    (
+      promise: Promise<{
+        healthResponse: AdminSystemHealthResponse;
+        servicesResponse: { items: AdminSystemServiceItem[] };
+        workflowsResponse: { items: AdminSystemWorkflowItem[] };
+        cacheResponse: AdminSystemCacheResponse;
+      }>
+    ) => {
+      setLoading(true);
+      setError(null);
+      promise
+        .then(({ healthResponse, servicesResponse, workflowsResponse, cacheResponse }) => {
+          setHealth(healthResponse);
+          setServices(servicesResponse.items);
+          setWorkflows(workflowsResponse.items);
+          setCache(cacheResponse);
+          setLastUpdatedAt(new Date().toISOString());
+        })
+        .catch((err) => {
+          if (err instanceof ApiClientError) {
+            setError(err.payload?.error || err.message);
+          } else if (err instanceof Error) {
+            setError(err.message);
+          } else {
+            setError("Failed to load system operations data");
+          }
+        })
+        .finally(() => {
+          setLoading(false);
+        });
+    },
+    []
+  );
 
   useEffect(() => {
-    void loadSystemViews();
-  }, [loadSystemViews]);
+    let cancelled = false;
+    queueMicrotask(() => {
+      if (cancelled) return;
+      handleFetch(loadSystemViews());
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [handleFetch, loadSystemViews]);
 
   useEffect(() => {
     if (autoRefreshSec <= 0) {
       return;
     }
     const interval = window.setInterval(() => {
-      void loadSystemViews();
+      handleFetch(loadSystemViews());
     }, autoRefreshSec * 1000);
     return () => window.clearInterval(interval);
-  }, [autoRefreshSec, loadSystemViews]);
+  }, [autoRefreshSec, handleFetch, loadSystemViews]);
 
   return (
     <PageShell
@@ -147,7 +165,9 @@ export default function SystemPage() {
           Workflow window
           <select
             value={windowHours}
-            onChange={(event) => setWindowHours(Number.parseInt(event.target.value, 10))}
+            onChange={(event) =>
+              updateQuery({ window_hours: Number.parseInt(event.target.value, 10) })
+            }
           >
             <option value={24}>Last 24 hours</option>
             <option value={72}>Last 72 hours</option>
@@ -158,7 +178,9 @@ export default function SystemPage() {
           Auto refresh
           <select
             value={autoRefreshSec}
-            onChange={(event) => setAutoRefreshSec(Number.parseInt(event.target.value, 10))}
+            onChange={(event) =>
+              updateQuery({ refresh: Number.parseInt(event.target.value, 10) })
+            }
           >
             {REFRESH_OPTIONS.map((value) => (
               <option key={value} value={value}>
@@ -167,7 +189,7 @@ export default function SystemPage() {
             ))}
           </select>
         </label>
-        <button type="button" onClick={() => void loadSystemViews()}>
+        <button type="button" onClick={() => handleFetch(loadSystemViews())}>
           Refresh
         </button>
       </div>

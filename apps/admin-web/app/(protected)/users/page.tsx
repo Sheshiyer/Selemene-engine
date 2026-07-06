@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState, type KeyboardEvent as ReactKeyboardEvent } from "react";
+import { useEffect, useMemo, useState, type KeyboardEvent as ReactKeyboardEvent } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { MetricSurface, SurfaceCard } from "@/components/admin-primitives";
 import { BulkActionBar, useBulkSelection } from "@/components/bulk-actions";
@@ -96,6 +96,23 @@ function inferRoleFromPermissions(permissions: string[]): RoleOption {
   return "viewer";
 }
 
+async function fetchUsersData(query: string, tierFilter: string, stateFilter: string) {
+  const token = getAuthToken();
+  if (!token) {
+    throw new Error("Missing session token. Please sign in again.");
+  }
+
+  const response = await getAdminUsers(token, {
+    query: query || undefined,
+    tier: tierFilter || undefined,
+    state: stateFilter || undefined,
+    limit: 100,
+    offset: 0
+  });
+
+  return response;
+}
+
 function onRowKeyboardOpen(event: ReactKeyboardEvent<HTMLTableRowElement>, onOpen: () => void) {
   if (event.key !== "Enter" && event.key !== " ") {
     return;
@@ -110,9 +127,9 @@ export default function UsersPage() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  const [query, setQuery] = useState(() => getStringParam(searchParams, "query"));
-  const [tierFilter, setTierFilter] = useState(() => getStringParam(searchParams, "tier"));
-  const [stateFilter, setStateFilter] = useState(() => getStringParam(searchParams, "state"));
+  const query = getStringParam(searchParams, "query");
+  const tierFilter = getStringParam(searchParams, "tier");
+  const stateFilter = getStringParam(searchParams, "state");
 
   const [loading, setLoading] = useState(true);
   const [submittingId, setSubmittingId] = useState<string | null>(null);
@@ -127,20 +144,10 @@ export default function UsersPage() {
   const [pendingAction, setPendingAction] = useState<PendingUserAction | null>(null);
   const [bulkAction, setBulkAction] = useState<BulkUserAction | null>(null);
 
-  useEffect(() => {
-    setQuery(getStringParam(searchParams, "query"));
-    setTierFilter(getStringParam(searchParams, "tier"));
-    setStateFilter(getStringParam(searchParams, "state"));
-  }, [searchParams]);
-
-  useEffect(() => {
-    const nextQuery = buildQueryString(searchParams, {
-      query,
-      tier: tierFilter,
-      state: stateFilter
-    });
+  function updateParam(key: string, value: string) {
+    const nextQuery = buildQueryString(searchParams, { [key]: value || undefined });
     router.replace(nextQuery ? `${pathname}?${nextQuery}` : pathname, { scroll: false });
-  }, [pathname, query, router, searchParams, stateFilter, tierFilter]);
+  }
 
   const activeCount = useMemo(
     () => users.filter((user) => user.state === "active").length,
@@ -165,32 +172,12 @@ export default function UsersPage() {
     [selectedUsers]
   );
 
-  useEffect(() => {
-    if (selectedUserId && !selectedUser) {
-      setSelectedUserId(null);
-      setPendingAction(null);
-    }
-  }, [selectedUser, selectedUserId]);
-
-  const loadUsers = useCallback(async () => {
-    const token = getAuthToken();
-    if (!token) {
-      setError("Missing session token. Please sign in again.");
-      setLoading(false);
-      return;
-    }
-
+  async function loadUsers() {
     setLoading(true);
     setError(null);
 
     try {
-      const response = await getAdminUsers(token, {
-        query: query || undefined,
-        tier: tierFilter || undefined,
-        state: stateFilter || undefined,
-        limit: 100,
-        offset: 0
-      });
+      const response = await fetchUsersData(query, tierFilter, stateFilter);
 
       setUsers(response.items);
       setTotal(response.total);
@@ -210,20 +197,79 @@ export default function UsersPage() {
         }
         return next;
       });
+
+      if (selectedUserId && !response.items.some((user) => user.id === selectedUserId)) {
+        setSelectedUserId(null);
+        setPendingAction(null);
+      }
     } catch (err) {
       if (err instanceof ApiClientError) {
         setError(err.payload?.error || err.message);
+      } else if (err instanceof Error) {
+        setError(err.message);
       } else {
         setError("Failed to load users");
       }
     } finally {
       setLoading(false);
     }
-  }, [query, stateFilter, tierFilter]);
+  }
 
   useEffect(() => {
-    void loadUsers();
-  }, [loadUsers]);
+    let cancelled = false;
+
+    async function run() {
+      setLoading(true);
+      setError(null);
+
+      try {
+        const response = await fetchUsersData(query, tierFilter, stateFilter);
+
+        if (!cancelled) {
+          setUsers(response.items);
+          setTotal(response.total);
+
+          setTierDrafts((prev) => {
+            const next = { ...prev };
+            for (const user of response.items) {
+              next[user.id] = next[user.id] ?? user.tier;
+            }
+            return next;
+          });
+
+          setRoleDrafts((prev) => {
+            const next = { ...prev };
+            for (const user of response.items) {
+              next[user.id] = next[user.id] ?? inferRoleFromPermissions(user.permissions);
+            }
+            return next;
+          });
+
+          setError(null);
+        }
+      } catch (err) {
+        if (!cancelled) {
+          if (err instanceof ApiClientError) {
+            setError(err.payload?.error || err.message);
+          } else if (err instanceof Error) {
+            setError(err.message);
+          } else {
+            setError("Failed to load users");
+          }
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    }
+
+    void run();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [query, stateFilter, tierFilter]);
 
   async function handleCopy(value: string, label: string) {
     try {
@@ -460,7 +506,7 @@ export default function UsersPage() {
           Search
           <input
             value={query}
-            onChange={(event) => setQuery(event.target.value)}
+            onChange={(event) => updateParam("query", event.target.value)}
             placeholder="email or name"
           />
         </label>
@@ -468,13 +514,13 @@ export default function UsersPage() {
           Tier
           <input
             value={tierFilter}
-            onChange={(event) => setTierFilter(event.target.value)}
+            onChange={(event) => updateParam("tier", event.target.value)}
             placeholder="free / premium / enterprise"
           />
         </label>
         <label>
           State
-          <select value={stateFilter} onChange={(event) => setStateFilter(event.target.value)}>
+          <select value={stateFilter} onChange={(event) => updateParam("state", event.target.value)}>
             <option value="">All</option>
             <option value="active">Active</option>
             <option value="locked">Locked</option>

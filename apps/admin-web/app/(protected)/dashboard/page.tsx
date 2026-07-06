@@ -58,9 +58,7 @@ export default function DashboardPage() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  const [autoRefreshSec, setAutoRefreshSec] = useState(() =>
-    getNumberParam(searchParams, "refresh", 0, 0, 60)
-  );
+  const autoRefreshSec = getNumberParam(searchParams, "refresh", 0, 0, 60);
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -70,63 +68,84 @@ export default function DashboardPage() {
   const [timeseries, setTimeseries] = useState<AdminAnalyticsTimeseriesPoint[]>([]);
   const [topConsumers, setTopConsumers] = useState<AdminAnalyticsTopConsumerItem[]>([]);
 
-  useEffect(() => {
-    setAutoRefreshSec(getNumberParam(searchParams, "refresh", 0, 0, 60));
-  }, [searchParams]);
-
-  useEffect(() => {
-    const nextQuery = buildQueryString(searchParams, {
-      refresh: autoRefreshSec > 0 ? autoRefreshSec : undefined
-    });
-    router.replace(nextQuery ? `${pathname}?${nextQuery}` : pathname, { scroll: false });
-  }, [autoRefreshSec, pathname, router, searchParams]);
+  const updateQuery = useCallback(
+    (updates: { refresh?: number }) => {
+      const nextQuery = buildQueryString(searchParams, {
+        refresh: updates.refresh && updates.refresh > 0 ? updates.refresh : undefined
+      });
+      router.replace(nextQuery ? `${pathname}?${nextQuery}` : pathname, { scroll: false });
+    },
+    [pathname, router, searchParams]
+  );
 
   const loadDashboard = useCallback(async () => {
     const token = getAuthToken();
     if (!token) {
-      setError("Missing session token. Please sign in again.");
-      setLoading(false);
-      return;
+      throw new Error("Missing session token. Please sign in again.");
     }
 
-    setLoading(true);
-    setError(null);
+    const [summaryResponse, timeseriesResponse, topConsumersResponse] = await Promise.all([
+      getAnalyticsSummary(token, { window_hours: 24 }),
+      getAnalyticsTimeseries(token, { window_hours: 24, bucket: "hour" }),
+      getAnalyticsTopConsumers(token, { window_hours: 24, limit: 5 })
+    ]);
 
-    try {
-      const [summaryResponse, timeseriesResponse, topConsumersResponse] = await Promise.all([
-        getAnalyticsSummary(token, { window_hours: 24 }),
-        getAnalyticsTimeseries(token, { window_hours: 24, bucket: "hour" }),
-        getAnalyticsTopConsumers(token, { window_hours: 24, limit: 5 })
-      ]);
-
-      setSummary(summaryResponse);
-      setTimeseries(timeseriesResponse.points);
-      setTopConsumers(topConsumersResponse.items);
-      setLastUpdatedAt(new Date().toISOString());
-    } catch (err) {
-      if (err instanceof ApiClientError) {
-        setError(err.payload?.error || err.message);
-      } else {
-        setError("Failed to load dashboard");
-      }
-    } finally {
-      setLoading(false);
-    }
+    return { summaryResponse, timeseriesResponse, topConsumersResponse };
   }, []);
 
+  const handleFetch = useCallback(
+    (
+      promise: Promise<{
+        summaryResponse: AdminAnalyticsSummaryResponse;
+        timeseriesResponse: { points: AdminAnalyticsTimeseriesPoint[] };
+        topConsumersResponse: { items: AdminAnalyticsTopConsumerItem[] };
+      }>
+    ) => {
+      setLoading(true);
+      setError(null);
+      promise
+        .then(({ summaryResponse, timeseriesResponse, topConsumersResponse }) => {
+          setSummary(summaryResponse);
+          setTimeseries(timeseriesResponse.points);
+          setTopConsumers(topConsumersResponse.items);
+          setLastUpdatedAt(new Date().toISOString());
+        })
+        .catch((err) => {
+          if (err instanceof ApiClientError) {
+            setError(err.payload?.error || err.message);
+          } else if (err instanceof Error) {
+            setError(err.message);
+          } else {
+            setError("Failed to load dashboard");
+          }
+        })
+        .finally(() => {
+          setLoading(false);
+        });
+    },
+    []
+  );
+
   useEffect(() => {
-    void loadDashboard();
-  }, [loadDashboard]);
+    let cancelled = false;
+    queueMicrotask(() => {
+      if (cancelled) return;
+      handleFetch(loadDashboard());
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [handleFetch, loadDashboard]);
 
   useEffect(() => {
     if (autoRefreshSec <= 0) {
       return;
     }
     const interval = window.setInterval(() => {
-      void loadDashboard();
+      handleFetch(loadDashboard());
     }, autoRefreshSec * 1000);
     return () => window.clearInterval(interval);
-  }, [autoRefreshSec, loadDashboard]);
+  }, [autoRefreshSec, handleFetch, loadDashboard]);
 
   return (
     <PageShell
@@ -138,7 +157,9 @@ export default function DashboardPage() {
             <span className="sr-only">Auto refresh</span>
             <select
               value={autoRefreshSec}
-              onChange={(event) => setAutoRefreshSec(Number.parseInt(event.target.value, 10))}
+              onChange={(event) =>
+                updateQuery({ refresh: Number.parseInt(event.target.value, 10) })
+              }
             >
               {REFRESH_OPTIONS.map((value) => (
                 <option key={value} value={value}>
@@ -147,7 +168,7 @@ export default function DashboardPage() {
               ))}
             </select>
           </label>
-          <button type="button" onClick={() => void loadDashboard()}>
+          <button type="button" onClick={() => handleFetch(loadDashboard())}>
             Refresh
           </button>
         </ActionRail>

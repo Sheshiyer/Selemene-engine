@@ -31,6 +31,29 @@ function formatDateTime(value: string | null): string {
   return date.toLocaleString();
 }
 
+async function fetchHistorySyncData(eventStatus: string) {
+  const token = getAuthToken();
+  if (!token) {
+    throw new Error("Missing session token. Please sign in again.");
+  }
+
+  const [usersResponse, devicesResponse, eventsResponse] = await Promise.all([
+    getHistorySyncUsers(token, { limit: 50, offset: 0 }),
+    getHistorySyncDevices(token, { limit: 50, offset: 0 }),
+    getHistorySyncEvents(token, {
+      status: eventStatus || undefined,
+      limit: 50,
+      offset: 0
+    })
+  ]);
+
+  return {
+    users: usersResponse.items,
+    devices: devicesResponse.items,
+    events: eventsResponse.items
+  };
+}
+
 export default function HistorySyncPage() {
   const [eventStatus, setEventStatus] = useState("");
 
@@ -42,33 +65,19 @@ export default function HistorySyncPage() {
   const [events, setEvents] = useState<AdminHistorySyncEventItem[]>([]);
 
   async function loadHistorySync() {
-    const token = getAuthToken();
-    if (!token) {
-      setError("Missing session token. Please sign in again.");
-      setLoading(false);
-      return;
-    }
-
     setLoading(true);
     setError(null);
 
     try {
-      const [usersResponse, devicesResponse, eventsResponse] = await Promise.all([
-        getHistorySyncUsers(token, { limit: 50, offset: 0 }),
-        getHistorySyncDevices(token, { limit: 50, offset: 0 }),
-        getHistorySyncEvents(token, {
-          status: eventStatus || undefined,
-          limit: 50,
-          offset: 0
-        })
-      ]);
-
-      setUsers(usersResponse.items);
-      setDevices(devicesResponse.items);
-      setEvents(eventsResponse.items);
+      const data = await fetchHistorySyncData(eventStatus);
+      setUsers(data.users);
+      setDevices(data.devices);
+      setEvents(data.events);
     } catch (err) {
       if (err instanceof ApiClientError) {
         setError(err.payload?.error || err.message);
+      } else if (err instanceof Error) {
+        setError(err.message);
       } else {
         setError("Failed to load history sync views");
       }
@@ -78,8 +87,41 @@ export default function HistorySyncPage() {
   }
 
   useEffect(() => {
-    void loadHistorySync();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    let cancelled = false;
+
+    async function run() {
+      setLoading(true);
+      setError(null);
+
+      try {
+        const data = await fetchHistorySyncData(eventStatus);
+        if (!cancelled) {
+          setUsers(data.users);
+          setDevices(data.devices);
+          setEvents(data.events);
+        }
+      } catch (err) {
+        if (!cancelled) {
+          if (err instanceof ApiClientError) {
+            setError(err.payload?.error || err.message);
+          } else if (err instanceof Error) {
+            setError(err.message);
+          } else {
+            setError("Failed to load history sync views");
+          }
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    }
+
+    void run();
+
+    return () => {
+      cancelled = true;
+    };
   }, [eventStatus]);
 
   return (

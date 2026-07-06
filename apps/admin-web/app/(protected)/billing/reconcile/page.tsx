@@ -35,7 +35,6 @@ export default function AdminBillingReconcilePage() {
     const token = getAuthToken();
     if (!token) return;
     let cancelled = false;
-    setLoading(true);
 
     // Core read-only data — page MUST render this even if session lookup fails.
     getAdminBillingReconcileDrift(token)
