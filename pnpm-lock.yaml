@@ -64,6 +64,9 @@ importers:
 
   packages/noesis-sdk-ts:
     devDependencies:
+      '@noesis/witness-pipeline':
+        specifier: workspace:*
+        version: link:../witness-pipeline
       typescript:
         specifier: ^5.6.3
         version: 5.9.3
