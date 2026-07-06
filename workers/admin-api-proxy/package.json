@@ -1,0 +1,14 @@
+{
+  "name": "selemene-admin-api-proxy",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "deploy": "wrangler deploy",
+    "dev": "wrangler dev",
+    "tail": "wrangler tail"
+  },
+  "devDependencies": {
+    "wrangler": "^4.95.0",
+    "@cloudflare/workers-types": "^4.20250601.0"
+  }
+}

@@ -103,7 +103,7 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
   };
 
   const loadSession = useCallback(
-    async (authToken: string) => {
+    async (authToken?: string) => {
       setLoading(true);
       try {
         const result = await getAdminSession(authToken);
@@ -131,18 +131,12 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
 
   useEffect(() => {
     let cancelled = false;
-    const token = getAuthToken();
-
-    if (!token) {
-      const returnTo = encodeURIComponent(relativePath);
-      router.replace(`/login?redirect=${returnTo}`);
-      return;
-    }
-    const authToken = token;
 
     async function hydrateSession() {
       try {
-        const result = await getAdminSession(authToken);
+        // Prefer the stored bearer token if present, otherwise rely on the
+        // Cloudflare Access cookie sent via credentials: "include".
+        const result = await getAdminSession(getAuthToken() ?? undefined);
         if (cancelled) {
           return;
         }
@@ -207,13 +201,8 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
   }, [router]);
 
   const handleRefreshSession = useCallback(() => {
-    const token = getAuthToken();
-    if (!token) {
-      handleSignOut();
-      return;
-    }
-    void loadSession(token);
-  }, [handleSignOut, loadSession]);
+    void loadSession(getAuthToken() ?? undefined);
+  }, [loadSession]);
 
   const commandPaletteItems = useMemo(() => {
     if (!session) {

@@ -207,10 +207,10 @@ export async function login(email: string, password: string): Promise<LoginRespo
   });
 }
 
-export async function getAdminSession(token: string): Promise<AdminSession> {
+export async function getAdminSession(token?: string): Promise<AdminSession> {
   return request<AdminSession>("/api/v1/admin/session", {
     method: "GET",
-    token
+    ...(token ? { token } : {})
   });
 }
 

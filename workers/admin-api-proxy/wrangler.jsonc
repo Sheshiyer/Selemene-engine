@@ -1,0 +1,13 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "selemene-admin-api-proxy",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-07-06",
+  "routes": [
+    {
+      "pattern": "144.tryambakam.space/api/*",
+      "custom_domain": false
+    }
+  ],
+  "workers_dev": false
+}
