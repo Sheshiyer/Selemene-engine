@@ -10,8 +10,10 @@
 docs/
 docs/archive/
 
-# Rust backend crates — not consumed by the Next.js admin dashboard
+# Rust backend crates and build artifacts — not consumed by the web build
 crates/
+target/
+Cargo.lock
 
 # Planning / context / tasks — not part of the web build
 .context/
@@ -21,8 +23,10 @@ tasks/archive/
 
 # Local tooling / scratch directories
 .commandcode/
+.codegraph/
 
-# Workers are deployed separately to Cloudflare, not to Vercel
+# Infrastructure / deployments live elsewhere
+infra/
 workers/
 
 # OS and editor artifacts
@@ -37,9 +41,17 @@ pnpm-debug.log*
 coverage/
 .nyc_output/
 *.tsbuildinfo
+*.tsbuildinfo.*
 
 # Node modules are reinstalled by Vercel; never upload them
 node_modules/
+
+# Next.js / Vercel local build outputs
+.next/
+.vercel/output/
+
+# Ephemeris data files are not used by the admin dashboard build
+data/
 
 # Local environment / secrets
 .env*
