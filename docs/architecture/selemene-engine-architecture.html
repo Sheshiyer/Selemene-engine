@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Selemene Engine — Engine-Specific Architecture</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'JetBrains Mono', monospace; background: #020617; min-height: 100vh; padding: 2rem; color: white; }
+    .container { max-width: 1280px; margin: 0 auto; }
+    .header { margin-bottom: 1.5rem; }
+    .header-row { display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem; }
+    .pulse-dot { width: 12px; height: 12px; background: #22d3ee; border-radius: 50%; animation: pulse 2s infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+    h1 { font-size: 1.5rem; font-weight: 700; letter-spacing: -0.025em; }
+    .subtitle { color: #94a3b8; font-size: 0.875rem; margin-left: 1.75rem; }
+    .diagram-container { background: rgba(15, 23, 42, 0.5); border-radius: 1rem; border: 1px solid #1e293b; padding: 1.25rem; overflow-x: auto; }
+    svg { width: 100%; min-width: 1100px; display: block; }
+    .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem; margin-top: 1.75rem; }
+    .card { background: rgba(15, 23, 42, 0.5); border-radius: 0.75rem; border: 1px solid #1e293b; padding: 1.1rem; }
+    .card-header { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.65rem; }
+    .card-dot { width: 8px; height: 8px; border-radius: 50%; }
+    .card-dot.cyan { background: #22d3ee; }
+    .card-dot.emerald { background: #34d399; }
+    .card-dot.violet { background: #a78bfa; }
+    .card-dot.amber { background: #fbbf24; }
+    .card-dot.rose { background: #fb7185; }
+    .card h3 { font-size: 0.8rem; font-weight: 600; }
+    .card ul { list-style: none; color: #94a3b8; font-size: 0.72rem; line-height: 1.35; }
+    .card li { margin-bottom: 0.25rem; }
+    .footer { text-align: center; margin-top: 1.25rem; color: #475569; font-size: 0.7rem; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="header-row">
+        <div class="pulse-dot"></div>
+        <h1>Selemene Engine — Engine-Specific Architecture</h1>
+      </div>
+      <p class="subtitle">Rust native path vs TypeScript bridge • 5 canonical deterministic engines highlighted</p>
+    </div>
+
+    <div class="diagram-container">
+      <svg viewBox="0 0 1200 780">
+        <defs>
+          <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" fill="#64748b" />
+          </marker>
+          <marker id="arrowhead-emerald" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" fill="#34d399" />
+          </marker>
+          <marker id="arrowhead-violet" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" fill="#a78bfa" />
+          </marker>
+          <marker id="arrowhead-amber" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" fill="#fbbf24" />
+          </marker>
+          <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+            <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#1e293b" stroke-width="0.5"/>
+          </pattern>
+        </defs>
+
+        <rect width="100%" height="100%" fill="url(#grid)" />
+
+        <!-- ===== ORCHESTRATOR ENTRY ===== -->
+        <rect x="480" y="30" width="240" height="55" rx="8" fill="rgba(6,78,59,0.4)" stroke="#34d399" stroke-width="1.5"/>
+        <text x="600" y="52" fill="white" font-size="11" font-weight="600" text-anchor="middle">Orchestrator (Rust)</text>
+        <text x="600" y="68" fill="#94a3b8" font-size="8" text-anchor="middle">Workflow select • Phase gate • Parallel dispatch</text>
+
+        <!-- ===== RUST NATIVE ENGINES ===== -->
+        <text x="60" y="120" fill="#34d399" font-size="11" font-weight="700">RUST NATIVE (11) — DETERMINISTIC CORE</text>
+
+        <rect x="40" y="135" width="680" height="240" rx="10" fill="rgba(6,78,59,0.2)" stroke="#34d399" stroke-width="1.5"/>
+        <text x="55" y="153" fill="#34d399" font-size="9" font-weight="600">High-performance • Swiss Ephemeris • Sub-millisecond</text>
+
+        <!-- 5 CANONICAL -->
+        <text x="55" y="175" fill="#fbbf24" font-size="9" font-weight="700">★ CANONICAL 5 FOR L0</text>
+
+        <!-- Panchanga -->
+        <rect x="55" y="190" width="120" height="75" rx="6" fill="rgba(6,78,59,0.4)" stroke="#34d399" stroke-width="1.5"/>
+        <text x="115" y="210" fill="white" font-size="10" font-weight="600" text-anchor="middle">Panchanga</text>
+        <text x="115" y="226" fill="#94a3b8" font-size="7" text-anchor="middle">Tithi • Nakshatra</text>
+        <text x="115" y="240" fill="#94a3b8" font-size="7" text-anchor="middle">Yoga • Karana • Vara</text>
+        <text x="115" y="254" fill="#34d399" font-size="7" text-anchor="middle">Swiss Ephemeris</text>
+
+        <!-- Vimshottari -->
+        <rect x="190" y="190" width="120" height="75" rx="6" fill="rgba(6,78,59,0.4)" stroke="#34d399" stroke-width="1.5"/>
+        <text x="250" y="210" fill="white" font-size="10" font-weight="600" text-anchor="middle">Vimshottari</text>
+        <text x="250" y="226" fill="#94a3b8" font-size="7" text-anchor="middle">120-year Dasha</text>
+        <text x="250" y="240" fill="#94a3b8" font-size="7" text-anchor="middle">Maha/Antar/Praty</text>
+        <text x="250" y="254" fill="#34d399" font-size="7" text-anchor="middle">Sidereal Moon</text>
+
+        <!-- Transits -->
+        <rect x="325" y="190" width="120" height="75" rx="6" fill="rgba(6,78,59,0.4)" stroke="#34d399" stroke-width="1.5"/>
+        <text x="385" y="210" fill="white" font-size="10" font-weight="600" text-anchor="middle">Transits</text>
+        <text x="385" y="226" fill="#94a3b8" font-size="7" text-anchor="middle">Aspects • Retro</text>
+        <text x="385" y="240" fill="#94a3b8" font-size="7" text-anchor="middle">Sade Sati</text>
+        <text x="385" y="254" fill="#34d399" font-size="7" text-anchor="middle">Lahiri ayanamsha</text>
+
+        <!-- Human Design -->
+        <rect x="460" y="190" width="120" height="75" rx="6" fill="rgba(6,78,59,0.4)" stroke="#34d399" stroke-width="1.5"/>
+        <text x="520" y="210" fill="white" font-size="10" font-weight="600" text-anchor="middle">Human Design</text>
+        <text x="520" y="226" fill="#94a3b8" font-size="7" text-anchor="middle">Type • Authority</text>
+        <text x="520" y="240" fill="#94a3b8" font-size="7" text-anchor="middle">9 Centers • 64 Gates</text>
+        <text x="520" y="254" fill="#34d399" font-size="7" text-anchor="middle">88° arc • Profile</text>
+
+        <!-- Gene Keys -->
+        <rect x="595" y="190" width="105" height="75" rx="6" fill="rgba(6,78,59,0.4)" stroke="#34d399" stroke-width="1.5"/>
+        <text x="647" y="210" fill="white" font-size="10" font-weight="600" text-anchor="middle">Gene Keys</text>
+        <text x="647" y="226" fill="#94a3b8" font-size="7" text-anchor="middle">4 Sequences</text>
+        <text x="647" y="240" fill="#94a3b8" font-size="7" text-anchor="middle">Shadow→Gift→Siddhi</text>
+        <text x="647" y="254" fill="#34d399" font-size="7" text-anchor="middle">HD-derived</text>
+
+        <!-- Other Rust -->
+        <text x="55" y="285" fill="#94a3b8" font-size="8" font-weight="600">OTHER RUST (6)</text>
+
+        <rect x="55" y="295" width="95" height="30" rx="4" fill="rgba(6,78,59,0.35)" stroke="#34d399" stroke-width="1"/>
+        <text x="102" y="314" fill="white" font-size="8" font-weight="600" text-anchor="middle">Vedic Clock</text>
+
+        <rect x="160" y="295" width="95" height="30" rx="4" fill="rgba(6,78,59,0.35)" stroke="#34d399" stroke-width="1"/>
+        <text x="207" y="314" fill="white" font-size="8" font-weight="600" text-anchor="middle">Numerology</text>
+
+        <rect x="265" y="295" width="95" height="30" rx="4" fill="rgba(6,78,59,0.35)" stroke="#34d399" stroke-width="1"/>
+        <text x="312" y="314" fill="white" font-size="8" font-weight="600" text-anchor="middle">Biorhythm</text>
+
+        <rect x="370" y="295" width="95" height="30" rx="4" fill="rgba(6,78,59,0.35)" stroke="#34d399" stroke-width="1"/>
+        <text x="417" y="314" fill="white" font-size="8" font-weight="600" text-anchor="middle">Enneagram</text>
+
+        <rect x="475" y="295" width="95" height="30" rx="4" fill="rgba(6,78,59,0.35)" stroke="#34d399" stroke-width="1"/>
+        <text x="522" y="314" fill="white" font-size="8" font-weight="600" text-anchor="middle">Biofield</text>
+
+        <rect x="580" y="295" width="120" height="30" rx="4" fill="rgba(6,78,59,0.35)" stroke="#34d399" stroke-width="1"/>
+        <text x="640" y="314" fill="white" font-size="8" font-weight="600" text-anchor="middle">+ Face / Nadabrahman</text>
+
+        <!-- ===== TYPE SCRIPT BRIDGE ===== -->
+        <text x="60" y="360" fill="#fbbf24" font-size="11" font-weight="700">TYPESCRIPT BRIDGE (6) — SYMBOLIC / ADVISORY</text>
+
+        <rect x="40" y="375" width="680" height="95" rx="10" fill="rgba(120,53,15,0.2)" stroke="#fbbf24" stroke-width="1.5"/>
+        <text x="55" y="393" fill="#fbbf24" font-size="9" font-weight="600">Bun/Elysia • HTTP bridge • Non-deterministic</text>
+
+        <rect x="55" y="405" width="95" height="50" rx="5" fill="rgba(120,53,15,0.35)" stroke="#fbbf24" stroke-width="1"/>
+        <text x="102" y="423" fill="white" font-size="9" font-weight="600" text-anchor="middle">Tarot</text>
+        <text x="102" y="438" fill="#94a3b8" font-size="7" text-anchor="middle">Celtic • CC • Single</text>
+
+        <rect x="160" y="405" width="95" height="50" rx="5" fill="rgba(120,53,15,0.35)" stroke="#fbbf24" stroke-width="1"/>
+        <text x="207" y="423" fill="white" font-size="9" font-weight="600" text-anchor="middle">I-Ching</text>
+        <text x="207" y="438" fill="#94a3b8" font-size="7" text-anchor="middle">Hexagrams</text>
+
+        <rect x="265" y="405" width="95" height="50" rx="5" fill="rgba(120,53,15,0.35)" stroke="#fbbf24" stroke-width="1"/>
+        <text x="312" y="423" fill="white" font-size="9" font-weight="600" text-anchor="middle">Enneagram</text>
+        <text x="312" y="438" fill="#94a3b8" font-size="7" text-anchor="middle">Types • Wings</text>
+
+        <rect x="370" y="405" width="95" height="50" rx="5" fill="rgba(120,53,15,0.35)" stroke="#fbbf24" stroke-width="1"/>
+        <text x="417" y="423" fill="white" font-size="9" font-weight="600" text-anchor="middle">Sacred Geometry</text>
+        <text x="417" y="438" fill="#94a3b8" font-size="7" text-anchor="middle">Platonic • Ratios</text>
+
+        <rect x="475" y="405" width="95" height="50" rx="5" fill="rgba(120,53,15,0.35)" stroke="#fbbf24" stroke-width="1"/>
+        <text x="522" y="423" fill="white" font-size="9" font-weight="600" text-anchor="middle">Sigil Forge</text>
+        <text x="522" y="438" fill="#94a3b8" font-size="7" text-anchor="middle">Intent → Glyph</text>
+
+        <rect x="580" y="405" width="120" height="50" rx="5" fill="rgba(120,53,15,0.35)" stroke="#fbbf24" stroke-width="1"/>
+        <text x="640" y="423" fill="white" font-size="9" font-weight="600" text-anchor="middle">Raaga (Music)</text>
+        <text x="640" y="438" fill="#94a3b8" font-size="7" text-anchor="middle">Raga • Shruti • Suno</text>
+
+        <!-- ===== SHARED RUNTIME ===== -->
+        <text x="60" y="500" fill="#a78bfa" font-size="11" font-weight="700">SHARED RUNTIME (both paths)</text>
+
+        <rect x="40" y="515" width="680" height="85" rx="10" fill="rgba(76,29,149,0.15)" stroke="#a78bfa" stroke-width="1.5"/>
+        <text x="55" y="533" fill="#a78bfa" font-size="9" font-weight="600">Swiss Ephemeris (sepl_18.se1, semo_18.se1, seas_18.se1) • Timezone handling • Cache (L1 LRU + Redis L2)</text>
+
+        <rect x="55" y="545" width="150" height="40" rx="5" fill="rgba(76,29,149,0.3)" stroke="#a78bfa" stroke-width="1"/>
+        <text x="130" y="562" fill="white" font-size="9" font-weight="600" text-anchor="middle">Ephemeris Data</text>
+        <text x="130" y="575" fill="#94a3b8" font-size="7" text-anchor="middle">data/ephemeris/</text>
+
+        <rect x="220" y="545" width="150" height="40" rx="5" fill="rgba(76,29,149,0.3)" stroke="#a78bfa" stroke-width="1"/>
+        <text x="295" y="562" fill="white" font-size="9" font-weight="600" text-anchor="middle">Cache Layer</text>
+        <text x="295" y="575" fill="#94a3b8" font-size="7" text-anchor="middle">L1 + Redis L2</text>
+
+        <rect x="385" y="545" width="150" height="40" rx="5" fill="rgba(76,29,149,0.3)" stroke="#a78bfa" stroke-width="1"/>
+        <text x="460" y="562" fill="white" font-size="9" font-weight="600" text-anchor="middle">Timezone Resolver</text>
+        <text x="460" y="575" fill="#94a3b8" font-size="7" text-anchor="middle">chrono-tz</text>
+
+        <rect x="550" y="545" width="155" height="40" rx="5" fill="rgba(76,29,149,0.3)" stroke="#a78bfa" stroke-width="1"/>
+        <text x="627" y="562" fill="white" font-size="9" font-weight="600" text-anchor="middle">Witness Prompt Gen</text>
+        <text x="627" y="575" fill="#94a3b8" font-size="7" text-anchor="middle">Rule-based mirror</text>
+
+        <!-- ===== DATA PERSISTENCE ===== -->
+        <rect x="760" y="135" width="400" height="465" rx="12" fill="rgba(30,41,59,0.5)" stroke="#94a3b8" stroke-width="1.5"/>
+        <text x="775" y="153" fill="#94a3b8" font-size="10" font-weight="600">Persistence &amp; Telemetry</text>
+
+        <rect x="775" y="170" width="180" height="70" rx="6" fill="rgba(76,29,149,0.35)" stroke="#a78bfa" stroke-width="1.5"/>
+        <text x="865" y="192" fill="white" font-size="10" font-weight="600" text-anchor="middle">PostgreSQL</text>
+        <text x="865" y="208" fill="#94a3b8" font-size="8" text-anchor="middle">Users • API Keys (SHA-256)</text>
+        <text x="865" y="222" fill="#94a3b8" font-size="8" text-anchor="middle">Progression • Usage Logs</text>
+
+        <rect x="970" y="170" width="170" height="70" rx="6" fill="rgba(76,29,149,0.35)" stroke="#a78bfa" stroke-width="1.5"/>
+        <text x="1055" y="192" fill="white" font-size="10" font-weight="600" text-anchor="middle">Redis</text>
+        <text x="1055" y="208" fill="#94a3b8" font-size="8" text-anchor="middle">L2 Cache • Sessions</text>
+        <text x="1055" y="222" fill="#94a3b8" font-size="8" text-anchor="middle">Rate limit counters</text>
+
+        <rect x="775" y="255" width="365" height="55" rx="6" fill="rgba(30,41,59,0.6)" stroke="#94a3b8" stroke-width="1"/>
+        <text x="957" y="275" fill="white" font-size="10" font-weight="600" text-anchor="middle">In-Memory LRU (L1)</text>
+        <text x="957" y="290" fill="#94a3b8" font-size="8" text-anchor="middle">Sub-ms engine result cache • Per-process</text>
+
+        <rect x="775" y="325" width="365" height="55" rx="6" fill="rgba(30,41,59,0.6)" stroke="#94a3b8" stroke-width="1"/>
+        <text x="957" y="345" fill="white" font-size="10" font-weight="600" text-anchor="middle">Sentry + Tracing</text>
+        <text x="957" y="360" fill="#94a3b8" font-size="8" text-anchor="middle">10% sampling • Error aggregation</text>
+
+        <rect x="775" y="395" width="365" height="55" rx="6" fill="rgba(30,41,59,0.6)" stroke="#94a3b8" stroke-width="1"/>
+        <text x="957" y="415" fill="white" font-size="10" font-weight="600" text-anchor="middle">Health Endpoints</text>
+        <text x="957" y="430" fill="#94a3b8" font-size="8" text-anchor="middle">/health/live (always 200) • /health/ready (deps)</text>
+
+        <rect x="775" y="465" width="365" height="55" rx="6" fill="rgba(30,41,59,0.6)" stroke="#94a3b8" stroke-width="1"/>
+        <text x="957" y="485" fill="white" font-size="10" font-weight="600" text-anchor="middle">API Key Metering</text>
+        <text x="957" y="500" fill="#94a3b8" font-size="8" text-anchor="middle">Monthly partitions • SHA-256 hashed keys</text>
+
+        <rect x="775" y="535" width="365" height="55" rx="6" fill="rgba(30,41,59,0.6)" stroke="#94a3b8" stroke-width="1"/>
+        <text x="957" y="555" fill="white" font-size="10" font-weight="600" text-anchor="middle">Ephemeris Files (bundled)</text>
+        <text x="957" y="570" fill="#94a3b8" font-size="8" text-anchor="middle">Swiss Ephemeris .se1 files • data/ephemeris/</text>
+
+        <!-- Arrows to persistence -->
+        <line x1="720" y1="250" x2="760" y2="250" stroke="#a78bfa" stroke-width="1.3" marker-end="url(#arrowhead-violet)"/>
+        <line x1="720" y1="420" x2="760" y2="420" stroke="#a78bfa" stroke-width="1.3" marker-end="url(#arrowhead-violet)"/>
+
+        <!-- Legend -->
+        <text x="860" y="55" fill="white" font-size="10" font-weight="600">Legend</text>
+        <rect x="860" y="67" width="14" height="10" rx="2" fill="rgba(6,78,59,0.4)" stroke="#34d399" stroke-width="1"/>
+        <text x="880" y="75" fill="#94a3b8" font-size="7">Rust Native (Deterministic)</text>
+        <rect x="860" y="83" width="14" height="10" rx="2" fill="rgba(120,53,15,0.35)" stroke="#fbbf24" stroke-width="1"/>
+        <text x="880" y="91" fill="#94a3b8" font-size="7">TS Bridge (Symbolic)</text>
+        <rect x="860" y="99" width="14" height="10" rx="2" fill="rgba(76,29,149,0.35)" stroke="#a78bfa" stroke-width="1"/>
+        <text x="880" y="107" fill="#94a3b8" font-size="7">Shared / Data</text>
+        <rect x="860" y="115" width="14" height="10" rx="2" fill="rgba(30,41,59,0.6)" stroke="#94a3b8" stroke-width="1"/>
+        <text x="880" y="123" fill="#94a3b8" font-size="7">Infrastructure</text>
+      </svg>
+    </div>
+
+    <div class="cards">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-dot emerald"></div>
+          <h3>Canonical 5 (L0 Contract)</h3>
+        </div>
+        <ul>
+          <li>• Panchanga — 5 limbs of time</li>
+          <li>• Vimshottari — 120y Dasha</li>
+          <li>• Transits — Aspects + Sade Sati</li>
+          <li>• Human Design — Bodygraph</li>
+          <li>• Gene Keys — Shadow→Siddhi</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-dot amber"></div>
+          <h3>TS Bridge (6)</h3>
+        </div>
+        <ul>
+          <li>• Tarot, I-Ching, Enneagram</li>
+          <li>• Sacred Geometry, Sigil Forge</li>
+          <li>• Raaga (music)</li>
+          <li>• Non-deterministic</li>
+          <li>• Advisory / symbolic only</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-dot violet"></div>
+          <h3>Shared Substrate</h3>
+        </div>
+        <ul>
+          <li>• Swiss Ephemeris .se1 files</li>
+          <li>• L1 LRU + Redis L2 cache</li>
+          <li>• Timezone resolver</li>
+          <li>• Witness prompt generator</li>
+          <li>• Health + metering</li>
+        </ul>
+      </div>
+    </div>
+
+    <p class="footer">Selemene Engine • Engine Architecture • Rust Deterministic Core + TS Symbolic Bridge</p>
+  </div>
+</body>
+</html>

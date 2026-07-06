@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Selemene Engine — Overall Architecture</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'JetBrains Mono', monospace; background: #020617; min-height: 100vh; padding: 2rem; color: white; }
+    .container { max-width: 1280px; margin: 0 auto; }
+    .header { margin-bottom: 1.5rem; }
+    .header-row { display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem; }
+    .pulse-dot { width: 12px; height: 12px; background: #22d3ee; border-radius: 50%; animation: pulse 2s infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+    h1 { font-size: 1.5rem; font-weight: 700; letter-spacing: -0.025em; }
+    .subtitle { color: #94a3b8; font-size: 0.875rem; margin-left: 1.75rem; }
+    .diagram-container { background: rgba(15, 23, 42, 0.5); border-radius: 1rem; border: 1px solid #1e293b; padding: 1.25rem; overflow-x: auto; }
+    svg { width: 100%; min-width: 1100px; display: block; }
+    .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem; margin-top: 1.75rem; }
+    .card { background: rgba(15, 23, 42, 0.5); border-radius: 0.75rem; border: 1px solid #1e293b; padding: 1.1rem; }
+    .card-header { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.65rem; }
+    .card-dot { width: 8px; height: 8px; border-radius: 50%; }
+    .card-dot.cyan { background: #22d3ee; }
+    .card-dot.emerald { background: #34d399; }
+    .card-dot.violet { background: #a78bfa; }
+    .card-dot.amber { background: #fbbf24; }
+    .card-dot.rose { background: #fb7185; }
+    .card h3 { font-size: 0.8rem; font-weight: 600; }
+    .card ul { list-style: none; color: #94a3b8; font-size: 0.72rem; line-height: 1.35; }
+    .card li { margin-bottom: 0.25rem; }
+    .footer { text-align: center; margin-top: 1.25rem; color: #475569; font-size: 0.7rem; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="header-row">
+        <div class="pulse-dot"></div>
+        <h1>Selemene Engine — Overall Architecture</h1>
+      </div>
+      <p class="subtitle">Reflection-first consciousness calculation engine • 17 engines • 6 workflows • Rust + Axum + Railway</p>
+    </div>
+
+    <div class="diagram-container">
+      <svg viewBox="0 0 1200 720">
+        <defs>
+          <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" fill="#64748b" />
+          </marker>
+          <marker id="arrowhead-cyan" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" fill="#22d3ee" />
+          </marker>
+          <marker id="arrowhead-emerald" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" fill="#34d399" />
+          </marker>
+          <marker id="arrowhead-violet" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" fill="#a78bfa" />
+          </marker>
+          <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+            <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#1e293b" stroke-width="0.5"/>
+          </pattern>
+        </defs>
+
+        <!-- Background -->
+        <rect width="100%" height="100%" fill="url(#grid)" />
+
+        <!-- ========== CLIENT LAYER ========== -->
+        <rect x="30" y="40" width="160" height="70" rx="8" fill="rgba(8,51,68,0.4)" stroke="#22d3ee" stroke-width="1.5"/>
+        <text x="110" y="62" fill="white" font-size="11" font-weight="600" text-anchor="middle">Web Clients</text>
+        <text x="110" y="78" fill="#94a3b8" font-size="8" text-anchor="middle">Admin UI • TUI • OpenClaw</text>
+        <text x="110" y="92" fill="#22d3ee" font-size="7" text-anchor="middle">Browser + CLI</text>
+
+        <rect x="220" y="40" width="150" height="70" rx="8" fill="rgba(8,51,68,0.4)" stroke="#22d3ee" stroke-width="1.5"/>
+        <text x="295" y="62" fill="white" font-size="11" font-weight="600" text-anchor="middle">Witness Pipeline</text>
+        <text x="295" y="78" fill="#94a3b8" font-size="8" text-anchor="middle">L0 Kundali • Source Packs</text>
+        <text x="295" y="92" fill="#22d3ee" font-size="7" text-anchor="middle">TS + LLM + Folio PDF</text>
+
+        <rect x="400" y="40" width="120" height="70" rx="8" fill="rgba(30,41,59,0.5)" stroke="#94a3b8" stroke-width="1.5"/>
+        <text x="460" y="62" fill="white" font-size="11" font-weight="600" text-anchor="middle">External</text>
+        <text x="460" y="78" fill="#94a3b8" font-size="8" text-anchor="middle">SDK Consumers</text>
+        <text x="460" y="92" fill="#94a3b8" font-size="7" text-anchor="middle">API Integrations</text>
+
+        <!-- Cloudflare Edge -->
+        <rect x="30" y="140" width="490" height="55" rx="10" fill="rgba(120,53,15,0.2)" stroke="#fbbf24" stroke-width="1" stroke-dasharray="8,4"/>
+        <text x="45" y="158" fill="#fbbf24" font-size="9" font-weight="600">Cloudflare Zero Trust + Edge</text>
+        <text x="45" y="174" fill="#94a3b8" font-size="8">Auth • Rate Limiting • DDoS</text>
+
+        <!-- ========== API LAYER ========== -->
+        <rect x="30" y="220" width="490" height="110" rx="10" fill="rgba(6,78,59,0.25)" stroke="#34d399" stroke-width="1.5"/>
+        <text x="45" y="238" fill="#34d399" font-size="10" font-weight="600">Selemene API Layer (Axum + Rust)</text>
+
+        <!-- Auth -->
+        <rect x="50" y="255" width="130" height="55" rx="6" fill="rgba(136,19,55,0.4)" stroke="#fb7185" stroke-width="1.5"/>
+        <text x="115" y="275" fill="white" font-size="10" font-weight="600" text-anchor="middle">Auth Service</text>
+        <text x="115" y="290" fill="#94a3b8" font-size="8" text-anchor="middle">JWT • API Keys (Argon2)</text>
+        <text x="115" y="303" fill="#fb7185" font-size="7" text-anchor="middle">Postgres-backed</text>
+
+        <!-- Core Server -->
+        <rect x="200" y="255" width="150" height="55" rx="6" fill="rgba(6,78,59,0.4)" stroke="#34d399" stroke-width="1.5"/>
+        <text x="275" y="275" fill="white" font-size="10" font-weight="600" text-anchor="middle">noesis-server (Axum)</text>
+        <text x="275" y="290" fill="#94a3b8" font-size="8" text-anchor="middle">/api/v1/engines • Health</text>
+        <text x="275" y="303" fill="#34d399" font-size="7" text-anchor="middle">Rate Limit + Sentry</text>
+
+        <!-- Orchestrator -->
+        <rect x="370" y="255" width="130" height="55" rx="6" fill="rgba(6,78,59,0.4)" stroke="#34d399" stroke-width="1.5"/>
+        <text x="435" y="275" fill="white" font-size="10" font-weight="600" text-anchor="middle">Orchestrator</text>
+        <text x="435" y="290" fill="#94a3b8" font-size="8" text-anchor="middle">6 Workflows • Phases 0-5</text>
+        <text x="435" y="303" fill="#34d399" font-size="7" text-anchor="middle">Parallel Execution</text>
+
+        <!-- ========== ENGINE LAYER ========== -->
+        <rect x="30" y="360" width="720" height="200" rx="12" fill="rgba(15,23,42,0.6)" stroke="#475569" stroke-width="1"/>
+        <text x="45" y="378" fill="#cbd5e1" font-size="10" font-weight="600">Engine Layer — 17 Mirrors</text>
+
+        <!-- Rust Native Engines Block -->
+        <rect x="50" y="395" width="340" height="145" rx="8" fill="rgba(6,78,59,0.35)" stroke="#34d399" stroke-width="1.5"/>
+        <text x="65" y="412" fill="#34d399" font-size="9" font-weight="600">Rust Native (11) — Sub-ms • Swiss Ephemeris</text>
+
+        <!-- Individual Rust engines -->
+        <rect x="60" y="425" width="95" height="42" rx="5" fill="rgba(6,78,59,0.4)" stroke="#34d399" stroke-width="1"/>
+        <text x="107" y="442" fill="white" font-size="9" font-weight="600" text-anchor="middle">Panchanga</text>
+        <text x="107" y="455" fill="#94a3b8" font-size="7" text-anchor="middle">Tithi • Nakshatra</text>
+
+        <rect x="165" y="425" width="95" height="42" rx="5" fill="rgba(6,78,59,0.4)" stroke="#34d399" stroke-width="1"/>
+        <text x="212" y="442" fill="white" font-size="9" font-weight="600" text-anchor="middle">Vimshottari</text>
+        <text x="212" y="455" fill="#94a3b8" font-size="7" text-anchor="middle">Dasha Timeline</text>
+
+        <rect x="270" y="425" width="95" height="42" rx="5" fill="rgba(6,78,59,0.4)" stroke="#34d399" stroke-width="1"/>
+        <text x="317" y="442" fill="white" font-size="9" font-weight="600" text-anchor="middle">Transits</text>
+        <text x="317" y="455" fill="#94a3b8" font-size="7" text-anchor="middle">Aspects • Sade Sati</text>
+
+        <rect x="60" y="475" width="95" height="42" rx="5" fill="rgba(6,78,59,0.4)" stroke="#34d399" stroke-width="1"/>
+        <text x="107" y="492" fill="white" font-size="9" font-weight="600" text-anchor="middle">Human Design</text>
+        <text x="107" y="505" fill="#94a3b8" font-size="7" text-anchor="middle">Bodygraph • Gates</text>
+
+        <rect x="165" y="475" width="95" height="42" rx="5" fill="rgba(6,78,59,0.4)" stroke="#34d399" stroke-width="1"/>
+        <text x="212" y="492" fill="white" font-size="9" font-weight="600" text-anchor="middle">Gene Keys</text>
+        <text x="212" y="505" fill="#94a3b8" font-size="7" text-anchor="middle">Shadow→Siddhi</text>
+
+        <rect x="270" y="475" width="95" height="42" rx="5" fill="rgba(6,78,59,0.4)" stroke="#34d399" stroke-width="1"/>
+        <text x="317" y="492" fill="white" font-size="9" font-weight="600" text-anchor="middle">+ Vedic Clock</text>
+        <text x="317" y="505" fill="#94a3b8" font-size="7" text-anchor="middle">Numerology • Biorhythm</text>
+
+        <!-- TS Bridge -->
+        <rect x="420" y="395" width="310" height="145" rx="8" fill="rgba(120,53,15,0.25)" stroke="#fbbf24" stroke-width="1.5"/>
+        <text x="435" y="412" fill="#fbbf24" font-size="9" font-weight="600">TypeScript Bridge (6) — Bun/Elysia</text>
+
+        <rect x="435" y="430" width="85" height="38" rx="5" fill="rgba(120,53,15,0.3)" stroke="#fbbf24" stroke-width="1"/>
+        <text x="477" y="446" fill="white" font-size="8" font-weight="600" text-anchor="middle">Tarot</text>
+        <text x="477" y="458" fill="#94a3b8" font-size="6" text-anchor="middle">Spreads</text>
+
+        <rect x="530" y="430" width="85" height="38" rx="5" fill="rgba(120,53,15,0.3)" stroke="#fbbf24" stroke-width="1"/>
+        <text x="572" y="446" fill="white" font-size="8" font-weight="600" text-anchor="middle">I-Ching</text>
+        <text x="572" y="458" fill="#94a3b8" font-size="6" text-anchor="middle">Hexagrams</text>
+
+        <rect x="625" y="430" width="85" height="38" rx="5" fill="rgba(120,53,15,0.3)" stroke="#fbbf24" stroke-width="1"/>
+        <text x="667" y="446" fill="white" font-size="8" font-weight="600" text-anchor="middle">Enneagram</text>
+        <text x="667" y="458" fill="#94a3b8" font-size="6" text-anchor="middle">Types</text>
+
+        <rect x="435" y="478" width="85" height="38" rx="5" fill="rgba(120,53,15,0.3)" stroke="#fbbf24" stroke-width="1"/>
+        <text x="477" y="494" fill="white" font-size="8" font-weight="600" text-anchor="middle">Sacred Geo</text>
+
+        <rect x="530" y="478" width="85" height="38" rx="5" fill="rgba(120,53,15,0.3)" stroke="#fbbf24" stroke-width="1"/>
+        <text x="572" y="494" fill="white" font-size="8" font-weight="600" text-anchor="middle">Sigil Forge</text>
+
+        <rect x="625" y="478" width="85" height="38" rx="5" fill="rgba(120,53,15,0.3)" stroke="#fbbf24" stroke-width="1"/>
+        <text x="667" y="494" fill="white" font-size="8" font-weight="600" text-anchor="middle">Raaga</text>
+
+        <!-- ========== DATA LAYER ========== -->
+        <rect x="780" y="220" width="380" height="340" rx="12" fill="rgba(76,29,149,0.2)" stroke="#a78bfa" stroke-width="1.5"/>
+        <text x="795" y="238" fill="#a78bfa" font-size="10" font-weight="600">Data &amp; Persistence Layer</text>
+
+        <rect x="800" y="260" width="165" height="65" rx="6" fill="rgba(76,29,149,0.4)" stroke="#a78bfa" stroke-width="1.5"/>
+        <text x="882" y="280" fill="white" font-size="10" font-weight="600" text-anchor="middle">PostgreSQL (Railway)</text>
+        <text x="882" y="296" fill="#94a3b8" font-size="8" text-anchor="middle">Users • API Keys • Progression</text>
+        <text x="882" y="310" fill="#a78bfa" font-size="7" text-anchor="middle">SHA-256 hashed keys</text>
+
+        <rect x="980" y="260" width="160" height="65" rx="6" fill="rgba(76,29,149,0.4)" stroke="#a78bfa" stroke-width="1.5"/>
+        <text x="1060" y="280" fill="white" font-size="10" font-weight="600" text-anchor="middle">Redis (L2)</text>
+        <text x="1060" y="296" fill="#94a3b8" font-size="8" text-anchor="middle">Cache • Sessions</text>
+        <text x="1060" y="310" fill="#a78bfa" font-size="7" text-anchor="middle">Railway Addon</text>
+
+        <rect x="800" y="340" width="340" height="55" rx="6" fill="rgba(30,41,59,0.5)" stroke="#94a3b8" stroke-width="1"/>
+        <text x="970" y="360" fill="white" font-size="10" font-weight="600" text-anchor="middle">In-Memory LRU (L1) + Swiss Ephemeris Files</text>
+        <text x="970" y="376" fill="#94a3b8" font-size="8" text-anchor="middle">Sub-ms lookups • sepl_18.se1 • semo_18.se1</text>
+
+        <rect x="800" y="410" width="340" height="55" rx="6" fill="rgba(30,41,59,0.5)" stroke="#94a3b8" stroke-width="1"/>
+        <text x="970" y="430" fill="white" font-size="10" font-weight="600" text-anchor="middle">Usage Logs (partitioned monthly)</text>
+        <text x="970" y="446" fill="#94a3b8" font-size="8" text-anchor="middle">API key metering • 2026 partitions pre-created</text>
+
+        <!-- Arrows -->
+        <!-- Clients to Edge -->
+        <line x1="110" y1="110" x2="110" y2="140" stroke="#22d3ee" stroke-width="1.5" marker-end="url(#arrowhead-cyan)"/>
+        <line x1="295" y1="110" x2="295" y2="140" stroke="#22d3ee" stroke-width="1.5" marker-end="url(#arrowhead-cyan)"/>
+        <line x1="460" y1="110" x2="460" y2="140" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+
+        <!-- Edge to API -->
+        <line x1="275" y1="195" x2="275" y2="220" stroke="#34d399" stroke-width="1.5" marker-end="url(#arrowhead-emerald)"/>
+
+        <!-- API internal -->
+        <line x1="180" y1="282" x2="200" y2="282" stroke="#fb7185" stroke-width="1.2" marker-end="url(#arrowhead)"/>
+        <line x1="350" y1="282" x2="370" y2="282" stroke="#34d399" stroke-width="1.2" marker-end="url(#arrowhead-emerald)"/>
+
+        <!-- Orchestrator to Engines -->
+        <line x1="435" y1="310" x2="435" y2="360" stroke="#34d399" stroke-width="1.5" marker-end="url(#arrowhead-emerald)"/>
+        <text x="448" y="338" fill="#94a3b8" font-size="8">route</text>
+
+        <!-- Engines to Data -->
+        <line x1="750" y1="460" x2="780" y2="460" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#arrowhead-violet)"/>
+
+        <!-- Legend -->
+        <text x="820" y="55" fill="white" font-size="10" font-weight="600">Legend</text>
+        <rect x="820" y="67" width="14" height="10" rx="2" fill="rgba(8,51,68,0.4)" stroke="#22d3ee" stroke-width="1"/>
+        <text x="840" y="75" fill="#94a3b8" font-size="7">Frontend / Clients</text>
+        <rect x="820" y="83" width="14" height="10" rx="2" fill="rgba(6,78,59,0.4)" stroke="#34d399" stroke-width="1"/>
+        <text x="840" y="91" fill="#94a3b8" font-size="7">Backend / API</text>
+        <rect x="820" y="99" width="14" height="10" rx="2" fill="rgba(76,29,149,0.4)" stroke="#a78bfa" stroke-width="1"/>
+        <text x="840" y="107" fill="#94a3b8" font-size="7">Data Layer</text>
+        <rect x="820" y="115" width="14" height="10" rx="2" fill="rgba(120,53,15,0.3)" stroke="#fbbf24" stroke-width="1"/>
+        <text x="840" y="123" fill="#94a3b8" font-size="7">Cloud / TS Bridge</text>
+        <line x1="820" y1="135" x2="834" y2="135" stroke="#fb7185" stroke-width="1" stroke-dasharray="3,3"/>
+        <text x="840" y="138" fill="#94a3b8" font-size="7">Auth / Security Flow</text>
+      </svg>
+    </div>
+
+    <div class="cards">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-dot emerald"></div>
+          <h3>Core Principles</h3>
+        </div>
+        <ul>
+          <li>• Reflection-first, not prediction</li>
+          <li>• 17 symbolic mirrors (11 Rust + 6 TS)</li>
+          <li>• Sub-millisecond deterministic calc</li>
+          <li>• Swiss Ephemeris precision</li>
+          <li>• Anti-dependency design</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-dot cyan"></div>
+          <h3>Key Surfaces</h3>
+        </div>
+        <ul>
+          <li>• REST API (Axum) + SDK</li>
+          <li>• 6 Workflows (L0–L5 phase gated)</li>
+          <li>• Witness Pipeline (L0 Kundali)</li>
+          <li>• Source Packs + Folio PDF/HTML</li>
+          <li>• Health: /live + /ready</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-dot violet"></div>
+          <h3>Deterministic Core</h3>
+        </div>
+        <ul>
+          <li>• Panchanga, Vimshottari, Transits</li>
+          <li>• Human Design + Gene Keys</li>
+          <li>• Vedic Clock, Numerology, Biorhythm</li>
+          <li>• 5 canonical systems for L0 reports</li>
+          <li>• Ephemeris-backed, timezone aware</li>
+        </ul>
+      </div>
+    </div>
+
+    <p class="footer">Selemene Engine • Tryambakam Noesis • Reflection • Inquiry • Witness</p>
+  </div>
+</body>
+</html>

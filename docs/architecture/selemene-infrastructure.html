@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Selemene Engine — Infrastructure Diagram</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'JetBrains Mono', monospace; background: #020617; min-height: 100vh; padding: 2rem; color: white; }
+    .container { max-width: 1280px; margin: 0 auto; }
+    .header { margin-bottom: 1.5rem; }
+    .header-row { display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem; }
+    .pulse-dot { width: 12px; height: 12px; background: #22d3ee; border-radius: 50%; animation: pulse 2s infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+    h1 { font-size: 1.5rem; font-weight: 700; letter-spacing: -0.025em; }
+    .subtitle { color: #94a3b8; font-size: 0.875rem; margin-left: 1.75rem; }
+    .diagram-container { background: rgba(15, 23, 42, 0.5); border-radius: 1rem; border: 1px solid #1e293b; padding: 1.25rem; overflow-x: auto; }
+    svg { width: 100%; min-width: 1100px; display: block; }
+    .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem; margin-top: 1.75rem; }
+    .card { background: rgba(15, 23, 42, 0.5); border-radius: 0.75rem; border: 1px solid #1e293b; padding: 1.1rem; }
+    .card-header { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.65rem; }
+    .card-dot { width: 8px; height: 8px; border-radius: 50%; }
+    .card-dot.cyan { background: #22d3ee; }
+    .card-dot.emerald { background: #34d399; }
+    .card-dot.violet { background: #a78bfa; }
+    .card-dot.amber { background: #fbbf24; }
+    .card-dot.rose { background: #fb7185; }
+    .card h3 { font-size: 0.8rem; font-weight: 600; }
+    .card ul { list-style: none; color: #94a3b8; font-size: 0.72rem; line-height: 1.35; }
+    .card li { margin-bottom: 0.25rem; }
+    .footer { text-align: center; margin-top: 1.25rem; color: #475569; font-size: 0.7rem; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="header-row">
+        <div class="pulse-dot"></div>
+        <h1>Selemene Engine — Infrastructure</h1>
+      </div>
+      <p class="subtitle">Railway • Cloudflare • Docker • Multi-stage deployment • 3-layer cache</p>
+    </div>
+
+    <div class="diagram-container">
+      <svg viewBox="0 0 1200 780">
+        <defs>
+          <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" fill="#64748b" />
+          </marker>
+          <marker id="arrowhead-amber" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" fill="#fbbf24" />
+          </marker>
+          <marker id="arrowhead-cyan" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" fill="#22d3ee" />
+          </marker>
+          <marker id="arrowhead-rose" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" fill="#fb7185" />
+          </marker>
+          <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+            <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#1e293b" stroke-width="0.5"/>
+          </pattern>
+        </defs>
+
+        <rect width="100%" height="100%" fill="url(#grid)" />
+
+        <!-- ===== INTERNET / CLIENTS ===== -->
+        <rect x="40" y="30" width="1120" height="70" rx="10" fill="rgba(30,41,59,0.5)" stroke="#94a3b8" stroke-width="1.5"/>
+        <text x="55" y="48" fill="#94a3b8" font-size="10" font-weight="600">INTERNET / CLIENTS</text>
+
+        <rect x="60" y="55" width="160" height="35" rx="5" fill="rgba(8,51,68,0.4)" stroke="#22d3ee" stroke-width="1.5"/>
+        <text x="140" y="72" fill="white" font-size="9" font-weight="600" text-anchor="middle">Web Clients</text>
+        <text x="140" y="85" fill="#94a3b8" font-size="7" text-anchor="middle">Admin UI • TUI • SDK</text>
+
+        <rect x="240" y="55" width="160" height="35" rx="5" fill="rgba(8,51,68,0.4)" stroke="#22d3ee" stroke-width="1.5"/>
+        <text x="320" y="72" fill="white" font-size="9" font-weight="600" text-anchor="middle">Witness Pipeline</text>
+        <text x="320" y="85" fill="#94a3b8" font-size="7" text-anchor="middle">L0 flow + PDF</text>
+
+        <rect x="420" y="55" width="150" height="35" rx="5" fill="rgba(8,51,68,0.4)" stroke="#22d3ee" stroke-width="1.5"/>
+        <text x="495" y="72" fill="white" font-size="9" font-weight="600" text-anchor="middle">External SDK</text>
+        <text x="495" y="85" fill="#94a3b8" font-size="7" text-anchor="middle">Programmatic</text>
+
+        <rect x="590" y="55" width="160" height="35" rx="5" fill="rgba(8,51,68,0.4)" stroke="#22d3ee" stroke-width="1.5"/>
+        <text x="670" y="72" fill="white" font-size="9" font-weight="600" text-anchor="middle">OpenClaw / Agents</text>
+        <text x="670" y="85" fill="#94a3b8" font-size="7" text-anchor="middle">MCP + Tools</text>
+
+        <rect x="770" y="55" width="160" height="35" rx="5" fill="rgba(8,51,68,0.4)" stroke="#22d3ee" stroke-width="1.5"/>
+        <text x="850" y="72" fill="white" font-size="9" font-weight="600" text-anchor="middle">CLI / TUI</text>
+        <text x="850" y="85" fill="#94a3b8" font-size="7" text-anchor="middle">Direct API</text>
+
+        <rect x="950" y="55" width="180" height="35" rx="5" fill="rgba(8,51,68,0.4)" stroke="#22d3ee" stroke-width="1.5"/>
+        <text x="1040" y="72" fill="white" font-size="9" font-weight="600" text-anchor="middle">Browser / Mobile</text>
+        <text x="1040" y="85" fill="#94a3b8" font-size="7" text-anchor="middle">HTTPS consumers</text>
+
+        <!-- ===== CLOUDFLARE EDGE ===== -->
+        <text x="55" y="125" fill="#fbbf24" font-size="11" font-weight="700">CLOUDFLARE EDGE (Zero Trust + DDoS + Rate Limit)</text>
+
+        <rect x="40" y="140" width="1120" height="75" rx="10" fill="rgba(120,53,15,0.2)" stroke="#fbbf24" stroke-width="1.5" stroke-dasharray="8,4"/>
+        <text x="55" y="158" fill="#fbbf24" font-size="9" font-weight="600">Cloudflare Zero Trust • WAF • Rate Limiting (60/1k/10k) • DDoS Protection</text>
+
+        <rect x="60" y="170" width="160" height="35" rx="5" fill="rgba(120,53,15,0.35)" stroke="#fbbf24" stroke-width="1.5"/>
+        <text x="140" y="187" fill="white" font-size="9" font-weight="600" text-anchor="middle">Auth Gateway</text>
+        <text x="140" y="200" fill="#94a3b8" font-size="7" text-anchor="middle">OAuth • JWT verify</text>
+
+        <rect x="240" y="170" width="160" height="35" rx="5" fill="rgba(120,53,15,0.35)" stroke="#fbbf24" stroke-width="1.5"/>
+        <text x="320" y="187" fill="white" font-size="9" font-weight="600" text-anchor="middle">CDN / Static</text>
+        <text x="320" y="200" fill="#94a3b8" font-size="7" text-anchor="middle">Assets • Docs</text>
+
+        <rect x="420" y="170" width="160" height="35" rx="5" fill="rgba(120,53,15,0.35)" stroke="#fbbf24" stroke-width="1.5"/>
+        <text x="500" y="187" fill="white" font-size="9" font-weight="600" text-anchor="middle">Rate Limiter</text>
+        <text x="500" y="200" fill="#94a3b8" font-size="7" text-anchor="middle">Tiered per key</text>
+
+        <rect x="600" y="170" width="160" height="35" rx="5" fill="rgba(120,53,15,0.35)" stroke="#fbbf24" stroke-width="1.5"/>
+        <text x="680" y="187" fill="white" font-size="9" font-weight="600" text-anchor="middle">DDoS Shield</text>
+        <text x="680" y="200" fill="#94a3b8" font-size="7" text-anchor="middle">L3/L4/L7</text>
+
+        <rect x="780" y="170" width="160" height="35" rx="5" fill="rgba(120,53,15,0.35)" stroke="#fbbf24" stroke-width="1.5"/>
+        <text x="860" y="187" fill="white" font-size="9" font-weight="600" text-anchor="middle">WAF Rules</text>
+        <text x="860" y="200" fill="#94a3b8" font-size="7" text-anchor="middle">Bot + Abuse</text>
+
+        <rect x="960" y="170" width="170" height="35" rx="5" fill="rgba(120,53,15,0.35)" stroke="#fbbf24" stroke-width="1.5"/>
+        <text x="1045" y="187" fill="white" font-size="9" font-weight="600" text-anchor="middle">Tunnel / Spectrum</text>
+        <text x="1045" y="200" fill="#94a3b8" font-size="7" text-anchor="middle">Origin protection</text>
+
+        <!-- ===== RAILWAY PLATFORM ===== -->
+        <text x="55" y="240" fill="#34d399" font-size="11" font-weight="700">RAILWAY PLATFORM</text>
+
+        <rect x="40" y="255" width="1120" height="200" rx="10" fill="rgba(6,78,59,0.15)" stroke="#34d399" stroke-width="1.5"/>
+
+        <!-- noesis-server -->
+        <rect x="60" y="275" width="260" height="160" rx="8" fill="rgba(6,78,59,0.35)" stroke="#34d399" stroke-width="1.5"/>
+        <text x="75" y="293" fill="#34d399" font-size="10" font-weight="600">noesis-server (Axum)</text>
+        <text x="75" y="310" fill="#94a3b8" font-size="8">Rust binary • opt-level 3</text>
+        <text x="75" y="324" fill="#94a3b8" font-size="8">Multi-stage Docker</text>
+
+        <rect x="75" y="340" width="115" height="30" rx="4" fill="rgba(6,78,59,0.4)" stroke="#34d399" stroke-width="1"/>
+        <text x="132" y="355" fill="white" font-size="8" font-weight="600" text-anchor="middle">/api/v1/engines</text>
+        <text x="132" y="366" fill="#94a3b8" font-size="6" text-anchor="middle">REST</text>
+
+        <rect x="200" y="340" width="100" height="30" rx="4" fill="rgba(6,78,59,0.4)" stroke="#34d399" stroke-width="1"/>
+        <text x="250" y="355" fill="white" font-size="8" font-weight="600" text-anchor="middle">Health</text>
+        <text x="250" y="366" fill="#94a3b8" font-size="6" text-anchor="middle">/live /ready</text>
+
+        <rect x="75" y="380" width="225" height="45" rx="4" fill="rgba(30,41,59,0.6)" stroke="#94a3b8" stroke-width="1"/>
+        <text x="187" y="398" fill="white" font-size="8" font-weight="600" text-anchor="middle">Sentry + Tracing (10%)</text>
+        <text x="187" y="412" fill="#94a3b8" font-size="7" text-anchor="middle">Env: SENTRY_DSN (optional)</text>
+
+        <!-- Orchestrator -->
+        <rect x="340" y="275" width="200" height="160" rx="8" fill="rgba(6,78,59,0.35)" stroke="#34d399" stroke-width="1.5"/>
+        <text x="355" y="293" fill="#34d399" font-size="10" font-weight="600">Orchestrator</text>
+        <text x="355" y="310" fill="#94a3b8" font-size="8">6 Workflows • Phase 0-5</text>
+        <text x="355" y="324" fill="#94a3b8" font-size="8">Parallel futures::join_all</text>
+
+        <rect x="355" y="340" width="85" height="30" rx="4" fill="rgba(6,78,59,0.4)" stroke="#34d399" stroke-width="1"/>
+        <text x="397" y="355" fill="white" font-size="8" font-weight="600" text-anchor="middle">Registry</text>
+        <text x="397" y="366" fill="#94a3b8" font-size="6" text-anchor="middle">L0-L5</text>
+
+        <rect x="450" y="340" width="75" height="30" rx="4" fill="rgba(6,78,59,0.4)" stroke="#34d399" stroke-width="1"/>
+        <text x="487" y="355" fill="white" font-size="8" font-weight="600" text-anchor="middle">Cache</text>
+        <text x="487" y="366" fill="#94a3b8" font-size="6" text-anchor="middle">L1/L2</text>
+
+        <rect x="355" y="380" width="170" height="45" rx="4" fill="rgba(30,41,59,0.6)" stroke="#94a3b8" stroke-width="1"/>
+        <text x="440" y="398" fill="white" font-size="8" font-weight="600" text-anchor="middle">Bridge to TS Engines</text>
+        <text x="440" y="412" fill="#94a3b8" font-size="7" text-anchor="middle">HTTP • 6 symbolic</text>
+
+        <!-- Rust Core Services -->
+        <rect x="560" y="275" width="280" height="160" rx="8" fill="rgba(6,78,59,0.3)" stroke="#34d399" stroke-width="1"/>
+        <text x="575" y="293" fill="#34d399" font-size="10" font-weight="600">Rust Core Services</text>
+
+        <rect x="575" y="310" width="125" height="50" rx="5" fill="rgba(6,78,59,0.4)" stroke="#34d399" stroke-width="1.5"/>
+        <text x="637" y="328" fill="white" font-size="9" font-weight="600" text-anchor="middle">Auth Service</text>
+        <text x="637" y="342" fill="#94a3b8" font-size="7" text-anchor="middle">JWT • Argon2 • Keys</text>
+        <text x="637" y="354" fill="#34d399" font-size="6" text-anchor="middle">Postgres dual-write</text>
+
+        <rect x="710" y="310" width="115" height="50" rx="5" fill="rgba(6,78,59,0.4)" stroke="#34d399" stroke-width="1.5"/>
+        <text x="767" y="328" fill="white" font-size="9" font-weight="600" text-anchor="middle">Engine Registry</text>
+        <text x="767" y="342" fill="#94a3b8" font-size="7" text-anchor="middle">17 engines</text>
+        <text x="767" y="354" fill="#34d399" font-size="6" text-anchor="middle">Route + Weights</text>
+
+        <rect x="575" y="375" width="250" height="50" rx="5" fill="rgba(30,41,59,0.6)" stroke="#94a3b8" stroke-width="1"/>
+        <text x="700" y="393" fill="white" font-size="9" font-weight="600" text-anchor="middle">Cache: L1 (LRU in-proc) + L2 (Redis)</text>
+        <text x="700" y="407" fill="#94a3b8" font-size="7" text-anchor="middle">Engine results • Ephemeris • Rate counters</text>
+
+        <!-- ===== DATA LAYER ===== -->
+        <text x="55" y="485" fill="#a78bfa" font-size="11" font-weight="700">DATA LAYER (Railway Add-ons + Local)</text>
+
+        <rect x="40" y="500" width="1120" height="130" rx="10" fill="rgba(76,29,149,0.15)" stroke="#a78bfa" stroke-width="1.5"/>
+
+        <!-- Postgres -->
+        <rect x="60" y="520" width="260" height="95" rx="8" fill="rgba(76,29,149,0.35)" stroke="#a78bfa" stroke-width="1.5"/>
+        <text x="75" y="538" fill="#a78bfa" font-size="10" font-weight="600">PostgreSQL (Railway)</text>
+        <text x="75" y="554" fill="#94a3b8" font-size="8">Users • Password Reset • Progression</text>
+        <text x="75" y="568" fill="#94a3b8" font-size="8">API Keys (SHA-256) • Usage Logs (partitioned)</text>
+        <text x="75" y="582" fill="#a78bfa" font-size="7">4 migrations • Monthly partitions pre-created</text>
+
+        <!-- Redis -->
+        <rect x="340" y="520" width="220" height="95" rx="8" fill="rgba(76,29,149,0.35)" stroke="#a78bfa" stroke-width="1.5"/>
+        <text x="355" y="538" fill="#a78bfa" font-size="10" font-weight="600">Redis (Railway)</text>
+        <text x="355" y="554" fill="#94a3b8" font-size="8">L2 Cache • Sessions</text>
+        <text x="355" y="568" fill="#94a3b8" font-size="8">Rate limit counters</text>
+        <text x="355" y="582" fill="#a78bfa" font-size="7">8 TODOs noted for re-enable</text>
+
+        <!-- Ephemeris -->
+        <rect x="580" y="520" width="220" height="95" rx="8" fill="rgba(30,41,59,0.6)" stroke="#94a3b8" stroke-width="1.5"/>
+        <text x="595" y="538" fill="#94a3b8" font-size="10" font-weight="600">Ephemeris Files (bundled)</text>
+        <text x="595" y="554" fill="#94a3b8" font-size="8">sepl_18.se1 • semo_18.se1 • seas_18.se1</text>
+        <text x="595" y="568" fill="#94a3b8" font-size="8">data/ephemeris/</text>
+        <text x="595" y="582" fill="#94a3b8" font-size="7">Required for HD/GK/Vedic</text>
+
+        <!-- Docker Compose -->
+        <rect x="820" y="520" width="310" height="95" rx="8" fill="rgba(30,41,59,0.6)" stroke="#94a3b8" stroke-width="1.5"/>
+        <text x="835" y="538" fill="#94a3b8" font-size="10" font-weight="600">Local Dev (docker-compose)</text>
+        <text x="835" y="554" fill="#94a3b8" font-size="8">postgres • redis • noesis-api</text>
+        <text x="835" y="568" fill="#94a3b8" font-size="8">mediapipe • biofield-cv • ts-engines</text>
+        <text x="835" y="582" fill="#94a3b8" font-size="7">.env.example driven</text>
+
+        <!-- ===== DEPLOYMENT PIPELINE ===== -->
+        <text x="55" y="655" fill="#fb7185" font-size="11" font-weight="700">DEPLOYMENT PIPELINE</text>
+
+        <rect x="40" y="670" width="1120" height="70" rx="10" fill="rgba(136,19,55,0.15)" stroke="#fb7185" stroke-width="1.5"/>
+
+        <rect x="60" y="685" width="180" height="40" rx="6" fill="rgba(136,19,55,0.4)" stroke="#fb7185" stroke-width="1.5"/>
+        <text x="150" y="703" fill="white" font-size="9" font-weight="600" text-anchor="middle">GitHub Actions</text>
+        <text x="150" y="716" fill="#94a3b8" font-size="7" text-anchor="middle">test.yml + deploy.yaml</text>
+
+        <rect x="260" y="685" width="180" height="40" rx="6" fill="rgba(136,19,55,0.4)" stroke="#fb7185" stroke-width="1.5"/>
+        <text x="350" y="703" fill="white" font-size="9" font-weight="600" text-anchor="middle">Multi-stage Docker</text>
+        <text x="350" y="716" fill="#94a3b8" font-size="7" text-anchor="middle">Cache deps • ~2-3min rebuild</text>
+
+        <rect x="460" y="685" width="180" height="40" rx="6" fill="rgba(136,19,55,0.4)" stroke="#fb7185" stroke-width="1.5"/>
+        <text x="550" y="703" fill="white" font-size="9" font-weight="600" text-anchor="middle">Railway Deploy</text>
+        <text x="550" y="716" fill="#94a3b8" font-size="7" text-anchor="middle">Prod binary &lt;100MB</text>
+
+        <rect x="660" y="685" width="180" height="40" rx="6" fill="rgba(136,19,55,0.4)" stroke="#fb7185" stroke-width="1.5"/>
+        <text x="750" y="703" fill="white" font-size="9" font-weight="600" text-anchor="middle">Health Probes</text>
+        <text x="750" y="716" fill="#94a3b8" font-size="7" text-anchor="middle">/live always 200</text>
+
+        <rect x="860" y="685" width="270" height="40" rx="6" fill="rgba(136,19,55,0.4)" stroke="#fb7185" stroke-width="1.5"/>
+        <text x="995" y="703" fill="white" font-size="9" font-weight="600" text-anchor="middle">Canary + Incident Runbooks</text>
+        <text x="995" y="716" fill="#94a3b8" font-size="7" text-anchor="middle">docs/runbooks/*</text>
+
+        <!-- Arrows -->
+        <line x1="600" y1="100" x2="600" y2="140" stroke="#fbbf24" stroke-width="1.5" marker-end="url(#arrowhead-amber)"/>
+        <line x1="600" y1="215" x2="600" y2="255" stroke="#34d399" stroke-width="1.5" marker-end="url(#arrowhead-emerald)"/>
+        <line x1="190" y1="435" x2="190" y2="500" stroke="#a78bfa" stroke-width="1.3" marker-end="url(#arrowhead-violet)"/>
+        <line x1="440" y1="435" x2="440" y2="500" stroke="#a78bfa" stroke-width="1.3" marker-end="url(#arrowhead-violet)"/>
+        <line x1="700" y1="435" x2="700" y2="500" stroke="#a78bfa" stroke-width="1.3" marker-end="url(#arrowhead-violet)"/>
+
+        <!-- Legend -->
+        <text x="55" y="765" fill="white" font-size="9" font-weight="600">Legend:</text>
+        <rect x="130" y="755" width="12" height="9" rx="2" fill="rgba(8,51,68,0.4)" stroke="#22d3ee" stroke-width="1"/>
+        <text x="146" y="763" fill="#94a3b8" font-size="7">Client</text>
+        <rect x="185" y="755" width="12" height="9" rx="2" fill="rgba(120,53,15,0.35)" stroke="#fbbf24" stroke-width="1"/>
+        <text x="201" y="763" fill="#94a3b8" font-size="7">Edge / CDN</text>
+        <rect x="255" y="755" width="12" height="9" rx="2" fill="rgba(6,78,59,0.35)" stroke="#34d399" stroke-width="1"/>
+        <text x="271" y="763" fill="#94a3b8" font-size="7">App / Compute</text>
+        <rect x="340" y="755" width="12" height="9" rx="2" fill="rgba(76,29,149,0.35)" stroke="#a78bfa" stroke-width="1"/>
+        <text x="356" y="763" fill="#94a3b8" font-size="7">Data</text>
+        <rect x="390" y="755" width="12" height="9" rx="2" fill="rgba(30,41,59,0.6)" stroke="#94a3b8" stroke-width="1"/>
+        <text x="406" y="763" fill="#94a3b8" font-size="7">Infra / Dev</text>
+        <rect x="455" y="755" width="12" height="9" rx="2" fill="rgba(136,19,55,0.4)" stroke="#fb7185" stroke-width="1"/>
+        <text x="471" y="763" fill="#94a3b8" font-size="7">Deploy / CI</text>
+      </svg>
+    </div>
+
+    <div class="cards">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-dot amber"></div>
+          <h3>Edge &amp; Security</h3>
+        </div>
+        <ul>
+          <li>• Cloudflare Zero Trust</li>
+          <li>• Tiered rate limiting</li>
+          <li>• WAF + DDoS</li>
+          <li>• Auth gateway</li>
+          <li>• Tunnel / Spectrum</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-dot emerald"></div>
+          <h3>Compute &amp; Runtime</h3>
+        </div>
+        <ul>
+          <li>• Railway platform</li>
+          <li>• Multi-stage Docker</li>
+          <li>• Axum + Rust (opt-3)</li>
+          <li>• Orchestrator + Bridge</li>
+          <li>• Health probes (live/ready)</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-dot violet"></div>
+          <h3>Data &amp; Dev</h3>
+        </div>
+        <ul>
+          <li>• Railway Postgres</li>
+          <li>• Railway Redis (L2)</li>
+          <li>• Ephemeris files</li>
+          <li>• docker-compose local</li>
+          <li>• GitHub Actions CI/CD</li>
+        </ul>
+      </div>
+    </div>
+
+    <p class="footer">Selemene Engine • Infrastructure • Railway + Cloudflare + Docker • 3-layer cache • Health-first</p>
+  </div>
+</body>
+</html>
