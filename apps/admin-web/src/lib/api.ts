@@ -154,7 +154,8 @@ async function request<T>(
         ...(options.token ? { Authorization: `Bearer ${options.token}` } : {})
       },
       body: options.body ? JSON.stringify(options.body) : undefined,
-      cache: "no-store"
+      cache: "no-store",
+      credentials: "include"
     });
   } catch {
     throw new ApiClientError(
