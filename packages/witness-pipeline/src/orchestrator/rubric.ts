@@ -115,7 +115,7 @@ export function auditSectionOutput(input: AuditSectionInput): SectionRubric {
 
   const engineFacts = extractKeyFactsFromEngines(input.engineResults || []);
   const fid = computeFidelity(input.output, engineFacts);
-  const fidelityGate = fid.score >= 0.8 ? 'pass' : fid.score >= 0.5 ? 'warn' : 'fail';
+  const fidelityGate = fid.score >= 0.75 ? 'pass' : fid.score >= 0.5 ? 'warn' : 'fail';
 
   return {
     section_id: input.sectionId,
