@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { parseModeDocument, getPassTemplate, getTargetWordsForRegister } from './parser.js';
+import path from 'node:path';
+import { parseModeDocument, parseModeDoc, getPassTemplate, getTargetWordsForRegister } from './parser.js';
 
 const sampleMode = `---
 mode: composite-dyad
@@ -101,5 +102,11 @@ Write.
 `, 'test-report.md');
 
     expect(doc.frontmatter.report_level).toBe('L3');
+  });
+
+  it('contains engine_results placeholder in pass templates', () => {
+    const doc = parseModeDoc(path.resolve(import.meta.dirname, '../../modes/integrated-kundali-l0.md'));
+    const opening = doc.sections['opening-pass'];
+    expect(opening).toContain('{{engine_results}}');
   });
 });

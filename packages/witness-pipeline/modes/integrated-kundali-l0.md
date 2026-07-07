@@ -105,6 +105,9 @@ Overlay:
 Mandates:
 {{bridge_mandates}}
 
+Engine results:
+{{engine_results}}
+
 Target ~{{target_words}} words. Pass: {{pass_id}}.
 
 Open with a sacred but grounded tone. Name the five-system stack: Vedic astrology, Human Design, Gene Keys, Vimshottari timing, and transits. State that the report is a deterministic-data synthesis with interpretive layering, not a one-shot oracle. Do not make predictions in the opening.
@@ -123,6 +126,9 @@ Overlay:
 
 Mandates:
 {{bridge_mandates}}
+
+Engine results:
+{{engine_results}}
 
 Target ~{{target_words}} words. Pass: {{pass_id}}.
 
@@ -143,6 +149,9 @@ Overlay:
 Mandates:
 {{bridge_mandates}}
 
+Engine results:
+{{engine_results}}
+
 Target ~{{target_words}} words. Pass: {{pass_id}}.
 
 Use D1/D9 chart facts, lagna, Moon, Sun, atmakaraka, darakaraka, planetary placements, yogas, functional benefics/malefics, Rahu-Ketu, and Sade Sati/transit state where present. Prefer table-like clarity for placements and yogas. Do not infer missing chart data.
@@ -161,6 +170,9 @@ Overlay:
 
 Mandates:
 {{bridge_mandates}}
+
+Engine results:
+{{engine_results}}
 
 Target ~{{target_words}} words. Pass: {{pass_id}}.
 
@@ -181,6 +193,9 @@ Overlay:
 Mandates:
 {{bridge_mandates}}
 
+Engine results:
+{{engine_results}}
+
 Target ~{{target_words}} words. Pass: {{pass_id}}.
 
 Synthesize Vedic career houses/lords, Human Design mechanics, Gene Keys vocation/pearl, and timing periods. Give directional fields and fit patterns, not absolute job prescriptions. Separate dharma from career outcome.
@@ -199,6 +214,9 @@ Overlay:
 
 Mandates:
 {{bridge_mandates}}
+
+Engine results:
+{{engine_results}}
 
 Target ~{{target_words}} words. Pass: {{pass_id}}.
 
@@ -219,6 +237,9 @@ Overlay:
 Mandates:
 {{bridge_mandates}}
 
+Engine results:
+{{engine_results}}
+
 Target ~{{target_words}} words. Pass: {{pass_id}}.
 
 Read the 7th house, darakaraka, Venus/Mars/Jupiter, D9, relationship mechanics, and timing windows. Do not predict marriage inevitability, divorce, spouse identity, or fixed relationship outcomes. Present timing as relational weather and readiness windows. Preserve agency and consent.
@@ -237,6 +258,9 @@ Overlay:
 
 Mandates:
 {{bridge_mandates}}
+
+Engine results:
+{{engine_results}}
 
 Target ~{{target_words}} words. Pass: {{pass_id}}.
 
@@ -257,6 +281,9 @@ Overlay:
 Mandates:
 {{bridge_mandates}}
 
+Engine results:
+{{engine_results}}
+
 Target ~{{target_words}} words. Pass: {{pass_id}}.
 
 Read mother, father, siblings, children, in-laws, roots, and inherited patterns from house and karaka indicators. Do not predict childbirth, infertility, child outcomes, parent death, estrangement, or family events. Treat lineage as symbolic patterning and relational inheritance, not fixed biography.
@@ -275,6 +302,9 @@ Overlay:
 
 Mandates:
 {{bridge_mandates}}
+
+Engine results:
+{{engine_results}}
 
 Target ~{{target_words}} words. Pass: {{pass_id}}.
 
@@ -295,6 +325,9 @@ Overlay:
 Mandates:
 {{bridge_mandates}}
 
+Engine results:
+{{engine_results}}
+
 Target ~{{target_words}} words. Pass: {{pass_id}}.
 
 Offer Vedic remedies, HD practices, Gene Keys contemplation, and practical life corrections as optional supports. Avoid coercive language. Do not prescribe gemstones, fasting, donations, mantras, or rituals as guaranteed fixes. Include gentle cautions when strengthening a planet could over-amplify a chart tension.
@@ -314,6 +347,9 @@ Overlay:
 Mandates:
 {{bridge_mandates}}
 
+Engine results:
+{{engine_results}}
+
 Target ~{{target_words}} words. Pass: {{pass_id}}.
 
 Close with the exemplar structure: single-sentence reading, biggest lesson, what to avoid, what to pursue, destiny strengths, karmic purpose, honest prediction framed as pattern-not-fate, and one integrating practice. Keep the final claim humble, grounded, and autonomy-preserving.
@@ -324,6 +360,9 @@ Build the L1-L3 final synthesis for {{subject_names}}.
 
 Prior sections:
 {{prior_pass}}
+
+Engine results:
+{{engine_results}}
 
 Target ~{{target_words}} words. Pass: {{pass_id}}.
 
