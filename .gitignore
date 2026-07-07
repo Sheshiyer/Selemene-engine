@@ -53,3 +53,25 @@ __pycache__/
 *.pyo
 .pytest_cache/
 packages/verification/dist/
+
+# Agent dispatch transient task files (created/deleted by agent workflows)
+.agent-tasks/
+.agent-tasks
+
+# Local runtime / session artifacts
+.local/
+.local
+
+# JS/TS build outputs (never commit dist)
+packages/*/dist/
+**/dist/
+
+# Claude local settings (machine-specific)
+.claude/settings.local.json
+.claude/task-management/*.json
+.claude/task-management/*.md
+
+# Large generated context assets (brand images, pitch materials)
+# Keep source docs, ignore bulky generated/
+.context/generated/
+.context/pitchdeck/
