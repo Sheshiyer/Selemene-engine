@@ -430,6 +430,173 @@ async fn assets_generate_accepts_l0_with_rich_subjects_shape() {
     assert_eq!(passes[11]["id"].as_str().unwrap(), "final-synthesis");
 }
 
+// Akshay (humdes-extracted) solo L0 end-to-end smoke.
+// Uses the auto-extracted fields from tests/fixtures/humdes/readings/personal/...Akshay...
+#[tokio::test]
+async fn assets_generate_akshay_humdes_solo_l0() {
+    let router = common::get_router().await;
+    let token = common::generate_test_token(5); // l4_l5 for full L0
+
+    let req_body = json!({
+        "mode": "integrated-kundali-l0",
+        "consciousness_level": 5,
+        "report_level": "L0",
+        "subjects": [
+            {
+                "role": "primary",
+                "name": "Akshay",
+                "gender": "male",
+                "sex_for_external_chart_source": "M",
+                "birth_date": "1990-10-05",
+                "birth_time": "13:13:00",
+                "birth_time_confidence": "exact",
+                "birth_location_query": "Bengaluru, India",
+                "normalized_location": {
+                    "display_name": "Bengaluru, Bangalore North, Bengaluru Urban, Karnataka, India",
+                    "latitude": 12.9767936,
+                    "longitude": 77.590082,
+                    "timezone": "Asia/Kolkata",
+                    "provider": "nominatim",
+                    "confidence": "exact"
+                }
+            }
+        ]
+    });
+
+    let req = Request::builder()
+        .method("POST")
+        .uri("/api/v1/assets/generate")
+        .header(header::AUTHORIZATION, format!("Bearer {}", token))
+        .header(header::CONTENT_TYPE, "application/json")
+        .body(Body::from(serde_json::to_vec(&req_body).unwrap()))
+        .unwrap();
+
+    let response = router.clone().oneshot(req).await.unwrap();
+    assert_eq!(response.status(), StatusCode::OK, "Akshay humdes solo L0 must succeed");
+
+    let body = axum::body::to_bytes(response.into_body(), usize::MAX).await.unwrap();
+    let json: Value = serde_json::from_slice(&body).unwrap();
+
+    assert_eq!(json["mode"].as_str().unwrap(), "integrated-kundali-l0");
+    assert_eq!(json["register"].as_str().unwrap(), "l4_l5");
+
+    let passes = json["passes"].as_array().unwrap();
+    assert_eq!(passes.len(), 12, "Akshay L0 must yield 12 passes");
+    assert_eq!(passes[0]["id"].as_str().unwrap(), "opening");
+    assert_eq!(passes[11]["id"].as_str().unwrap(), "final-synthesis");
+
+    let assembled = json["assembled"].as_str().unwrap();
+    assert!(!assembled.trim().is_empty(), "assembled report must be non-empty");
+
+    let engines = json["engines_used"].as_array().expect("engines_used must be array");
+    assert!(
+        !engines.is_empty(),
+        "engines_used must be populated for Akshay solo L0"
+    );
+
+    let sp = &json["source_pack"];
+    assert_eq!(sp["report_level"].as_str().unwrap_or("MISSING"), "L0");
+    assert_eq!(sp["subject_count"].as_u64().unwrap_or(0), 1);
+
+    let subs = sp["subjects"].as_array().expect("subjects array in source_pack");
+    assert_eq!(subs.len(), 1);
+    assert_eq!(subs[0]["name"].as_str().unwrap_or(""), "Akshay");
+    assert_eq!(subs[0]["role"].as_str().unwrap_or(""), "primary");
+    // Note: source_pack currently echoes only role/name/birth fields + normalized_location,
+    // so sex_for_external_chart_source is accepted by intake but not mirrored here.
+
+    let first_loc = sp["first_normalized_location"].as_object().expect("first_normalized_location");
+    assert_eq!(
+        first_loc["display_name"].as_str().unwrap_or(""),
+        "Bengaluru, Bangalore North, Bengaluru Urban, Karnataka, India"
+    );
+    assert_eq!(first_loc["latitude"].as_f64().unwrap(), 12.9767936);
+    assert_eq!(first_loc["longitude"].as_f64().unwrap(), 77.590082);
+
+    let quality = sp["quality"].as_object().expect("quality object");
+    assert_eq!(quality["gate_status"].as_str().unwrap_or(""), "ready");
+    let sections = quality["sections"].as_array().expect("sections rubric matrix");
+    assert_eq!(sections.len(), 12, "source pack rubric matrix must cover all 12 passes");
+}
+
+// Same Akshay L0 run, but persists the full API response JSONs to disk
+// so we have a minimum artifact store for every reading.
+#[tokio::test]
+async fn assets_generate_akshay_humdes_solo_l0_persist() {
+    use std::fs;
+    use std::path::PathBuf;
+
+    let router = common::get_router().await;
+    let token = common::generate_test_token(5);
+
+    let req_body = json!({
+        "mode": "integrated-kundali-l0",
+        "consciousness_level": 5,
+        "report_level": "L0",
+        "subjects": [
+            {
+                "role": "primary",
+                "name": "Akshay",
+                "gender": "male",
+                "sex_for_external_chart_source": "M",
+                "birth_date": "1990-10-05",
+                "birth_time": "13:13:00",
+                "birth_time_confidence": "exact",
+                "birth_location_query": "Bengaluru, India",
+                "normalized_location": {
+                    "display_name": "Bengaluru, Bangalore North, Bengaluru Urban, Karnataka, India",
+                    "latitude": 12.9767936,
+                    "longitude": 77.590082,
+                    "timezone": "Asia/Kolkata",
+                    "provider": "nominatim",
+                    "confidence": "exact"
+                }
+            }
+        ]
+    });
+
+    let req = Request::builder()
+        .method("POST")
+        .uri("/api/v1/assets/generate")
+        .header(header::AUTHORIZATION, format!("Bearer {}", token))
+        .header(header::CONTENT_TYPE, "application/json")
+        .body(Body::from(serde_json::to_vec(&req_body).unwrap()))
+        .unwrap();
+
+    let response = router.clone().oneshot(req).await.unwrap();
+    assert_eq!(response.status(), StatusCode::OK);
+
+    let body = axum::body::to_bytes(response.into_body(), usize::MAX).await.unwrap();
+    let json: Value = serde_json::from_slice(&body).unwrap();
+
+    // Persist minimum JSON artifacts.
+    let out_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("../..")
+        .join(".local/akshay-l0-api-run");
+    fs::create_dir_all(&out_dir).expect("create output dir");
+
+    let request_path = out_dir.join("request.json");
+    let response_path = out_dir.join("response.json");
+    let source_pack_path = out_dir.join("source-pack.json");
+
+    fs::write(&request_path, serde_json::to_string_pretty(&req_body).unwrap())
+        .expect("write request.json");
+    fs::write(&response_path, serde_json::to_string_pretty(&json).unwrap())
+        .expect("write response.json");
+    if let Some(sp) = json.get("source_pack") {
+        fs::write(&source_pack_path, serde_json::to_string_pretty(sp).unwrap())
+            .expect("write source-pack.json");
+    }
+
+    println!("Persisted Akshay L0 API run:");
+    println!("  request.json   -> {}", request_path.canonicalize().unwrap_or(request_path).display());
+    println!("  response.json  -> {}", response_path.canonicalize().unwrap_or_else(|_| response_path.clone()).display());
+    println!("  source-pack.json -> {}", source_pack_path.canonicalize().unwrap_or_else(|_| source_pack_path.clone()).display());
+
+    assert!(response_path.exists());
+    assert!(source_pack_path.exists());
+}
+
 // Task 9: two-subject (synastry) rich shape → no crash + engines_used populated
 #[tokio::test]
 async fn assets_generate_accepts_two_subjects_synastry_rich_shape() {
