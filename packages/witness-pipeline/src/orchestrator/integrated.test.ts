@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { IntegratedReadingOrchestrator } from './integrated.js';
+import { parseModeDocument } from '../modes/parser.js';
 import type { ParsedModeDoc, SelemeneEngineOutput } from '../index.js';
 import type { PatternVectorRetriever, RetrievedPattern } from '../patterns/retrieval.js';
 
@@ -147,5 +148,89 @@ describe('IntegratedReadingOrchestrator', () => {
     const prompt = llm.mock.calls[0][1] as string;
     expect(prompt).toContain('Retrieved synthesis patterns are not deterministic facts');
     expect(prompt).toContain('projector pacing authority');
+  });
+
+  const sampleEngineResults: SelemeneEngineOutput[] = [
+    {
+      engine_id: 'panchanga',
+      result: { tithi_name: 'Navami (Krishna)', nakshatra_name: 'Pushya' },
+      witness_prompt: '',
+      consciousness_level: 1,
+      metadata: {
+        calculation_time_ms: 0,
+        backend: 'test',
+        precision_achieved: 'test',
+        cached: false,
+        timestamp: new Date().toISOString(),
+        engine_version: 'test',
+      },
+      envelope_version: '1.0',
+    },
+    {
+      engine_id: 'vimshottari',
+      result: {
+        current_period: {
+          mahadasha: { planet: 'Ketu' },
+          antardasha: { planet: 'Mercury' },
+          pratyantardasha: { planet: 'Moon' },
+        },
+      },
+      witness_prompt: '',
+      consciousness_level: 1,
+      metadata: {
+        calculation_time_ms: 0,
+        backend: 'test',
+        precision_achieved: 'test',
+        cached: false,
+        timestamp: new Date().toISOString(),
+        engine_version: 'test',
+      },
+      envelope_version: '1.0',
+    },
+  ];
+
+  const engineResultsModeDoc = `---
+mode: integrated-kundali-l0
+subject_count:
+  min: 1
+  max: 1
+roles:
+  - subject
+target_words:
+  min: 50
+  max: 100
+architecture: linear
+pass_plan:
+  - id: opening
+    title: Opening
+    target_words: 80
+    template: pass-opening-template
+engine_overlay_weights: {}
+house_overlay: []
+bridge_mandates: []
+svg_topology: dyad-arc
+---
+
+## pass-opening-template
+Engine results:
+{{engine_results}}
+`;
+
+  it('includes engine results in the rendered prompt', async () => {
+    const prompts: string[] = [];
+    const llm = async (_system: string, prompt: string) => {
+      prompts.push(prompt);
+      return 'ok';
+    };
+    const parsedModeDoc = parseModeDocument(engineResultsModeDoc, 'task2-test.md');
+    const orchestrator = new IntegratedReadingOrchestrator({ mode: parsedModeDoc, llm });
+    await orchestrator.run({
+      subjectNames: ['Harshita'],
+      engineResultsBySubject: [sampleEngineResults],
+      consciousnessLevel: 2,
+    });
+    expect(prompts.length).toBeGreaterThan(0);
+    expect(prompts[0]).toContain('## Deterministic Engine Results');
+    expect(prompts[0]).toContain('Pushya');
   });
 });

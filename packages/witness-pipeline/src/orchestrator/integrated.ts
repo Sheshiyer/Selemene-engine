@@ -4,6 +4,7 @@
 import type { ParsedModeDoc, RegisterBand, SelemeneEngineOutput } from '../index.js';
 import { getPassTemplate, getTargetWordsForRegister, summarizeLessons } from '../modes/parser.js';
 import { auditSectionOutput } from './rubric.js';
+import { formatEngineResultsForPrompt } from './engine-formatter.js';
 import { extractReportPatterns } from '../patterns/extractor.js';
 import type { ExtractedPattern } from '../patterns/types.js';
 import type { PatternVectorRetriever, RetrievedPattern } from '../patterns/retrieval.js';
@@ -171,6 +172,7 @@ export class IntegratedReadingOrchestrator {
     const overlaySummary = this.buildOverlaySummary();
     const bridgeMandates = this.mode.frontmatter.bridge_mandates.map((m) => `- ${m}`).join('\n');
     const lessonsSummary = summarizeLessons(this.mode.lessons, 5);
+    const engineResults = formatEngineResultsForPrompt(input.engineResultsBySubject[0] ?? []);
 
     return template
       .replace(/\{\{subject_names\}\}/g, input.subjectNames.join(', '))
@@ -178,6 +180,7 @@ export class IntegratedReadingOrchestrator {
       .replace(/\{\{overlay_summary\}\}/g, overlaySummary)
       .replace(/\{\{bridge_mandates\}\}/g, bridgeMandates)
       .replace(/\{\{lessons_summary\}\}/g, lessonsSummary)
+      .replace(/\{\{engine_results\}\}/g, engineResults)
       .replace(/\{\{register\}\}/g, register)
       .replace(/\{\{pass_id\}\}/g, pass.id)
       .replace(/\{\{target_words\}\}/g, String(pass.target_words));
