@@ -87,4 +87,35 @@ describe('auditSectionOutput', () => {
     expect(rubric.chart_fidelity_score).toBeGreaterThanOrEqual(0.5);
     expect(rubric.chart_fidelity_score).toBeLessThanOrEqual(1.0);
   });
+
+  const sampleEngineResults = [
+    {
+      engine_id: 'panchanga',
+      result: { tithi_name: 'Navami (Krishna)', nakshatra_name: 'Pushya' },
+    },
+    {
+      engine_id: 'vimshottari',
+      result: {
+        current_period: {
+          mahadasha: { planet: 'Ketu' },
+          antardasha: { planet: 'Mercury' },
+          pratyantardasha: { planet: 'Moon' },
+        },
+      },
+    },
+  ];
+
+  it('flags unsubstituted placeholders', () => {
+    const rubric = auditSectionOutput({
+      sectionId: 'opening',
+      title: 'Opening',
+      targetWords: 450,
+      output: 'Your Lagna is [exact sign from engine results].',
+      modelRequested: 'test',
+      modelUsed: 'test',
+      latencyMs: 0,
+      engineResults: sampleEngineResults,
+    });
+    expect(rubric.placeholder_gate).toBe('fail');
+  });
 });

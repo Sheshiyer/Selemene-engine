@@ -33,6 +33,7 @@ export interface SectionRubric {
   integrated_layering_gate: RubricGate;
   guardrail_gate: 'pass' | 'fail';
   guardrail_violations: string[];
+  placeholder_gate: 'pass' | 'fail';
   model_requested: string;
   model_used: string;
   latency_ms: number;

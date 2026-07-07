@@ -18,6 +18,7 @@ describe('extractReportPatterns', () => {
             deterministic_fact_count: 4, deterministic_fact_gate: 'pass',
             integrated_layer_count: 2, integrated_layering_gate: 'pass',
             guardrail_gate: 'pass', guardrail_violations: [],
+            placeholder_gate: 'pass',
             model_requested: 'tier-default', model_used: 'tier-default', latency_ms: 1,
           },
         },

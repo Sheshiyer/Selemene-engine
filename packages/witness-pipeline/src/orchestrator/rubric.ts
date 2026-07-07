@@ -11,6 +11,12 @@ export interface AuditSectionInput {
   engineResults?: any[];
 }
 
+const PLACEHOLDER_RE = /\[[^\]]+\bfrom engine results\b[^\]]*\]/gi;
+
+function hasPlaceholder(output: string): boolean {
+  return PLACEHOLDER_RE.test(output);
+}
+
 const SYSTEM_PATTERNS = [
   /\b(Vedic|Lagna|house|planet|nakshatra|pada|dasha|antardasha|Sade Sati)\b/gi,
   /\b(Human Design|HD|gate|channel|profile|authority|type|center)\b/gi,
@@ -107,6 +113,7 @@ export function auditSectionOutput(input: AuditSectionInput): SectionRubric {
     integrated_layering_gate: thresholdGate(integratedLayerCount, thresholds.minLayers),
     guardrail_gate: guardrailViolations.length === 0 ? 'pass' : 'fail',
     guardrail_violations: guardrailViolations,
+    placeholder_gate: hasPlaceholder(input.output) ? 'fail' : 'pass',
     model_requested: input.modelRequested,
     model_used: input.modelUsed,
     latency_ms: input.latencyMs,

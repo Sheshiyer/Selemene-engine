@@ -82,4 +82,15 @@ describe('createSourcePack', () => {
       rmSync(dir, { recursive: true, force: true });
     }
   });
+
+  it('includes report_level in manifest', async () => {
+    const pack = await createSourcePack({
+      personId: 'harshita',
+      readingMarkdown: '# Test',
+      engineResults: [],
+      outputDir: tmpdir(),
+      reportLevel: 'L0',
+    });
+    expect(pack.manifest.report_level).toBe('L0');
+  });
 });
