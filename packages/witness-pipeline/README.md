@@ -72,6 +72,20 @@ console.log('Manifest:', pack.manifest);
 console.log('Paths:', pack.paths);
 ```
 
+## Rendering L0 artifacts to HTML/PDF
+
+After generating a source pack, render the `local/` artifacts:
+
+```bash
+pnpm --filter @noesis/witness-pipeline exec tsx scripts/l0-render.ts harshita
+```
+
+This writes:
+- `local/reading.html`
+- `local/reading.pdf`
+
+Brand tokens are loaded from `brand-docs-final/tryambakam-noesis-aleph/brand-config.yaml`.
+
 ## Engine Routing
 
 Each Selemene engine is routed to a synthesis pillar:

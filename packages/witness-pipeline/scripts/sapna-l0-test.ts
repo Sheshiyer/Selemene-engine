@@ -10,6 +10,8 @@ import {
   type ReportGenerationRequest,
   type SelemeneEngineOutput,
 } from '../src/index.js';
+import { runFinalVerification } from '../src/orchestrator/final-verification.js';
+import { renderLocalArtifacts } from '../src/assets/render-pipeline.js';
 
 const SOLO_DIR = '/Volumes/madara/2026/twc-vault/01-Projects/tryambakam-noesis/723/Solos/sapna-sabharwal';
 const BATCH_INPUT = '/Volumes/madara/2026/twc-vault/01-Projects/tryambakam-noesis/witness-agents/.batch-inputs/sapna-sabharwal.json';
@@ -57,19 +59,22 @@ async function main() {
   const mode = parseModeDoc(MODE_PATH);
   console.log('Mode loaded:', mode.frontmatter.mode, 'passes:', mode.frontmatter.pass_plan.length);
 
-  // 4. Stub LLM with lots of system terms (to pass rubrics)
+  // 4. Stub LLM with lots of system terms (to pass rubrics) plus engine facts (to pass fidelity)
   const systemTerms = 'Vedic Lagna house planet nakshatra pada dasha antardasha Vimshottari Human Design gate channel profile authority type center Gene Keys Life\'s Work Evolution Vocation Pearl Radiance Purpose transit panchanga tithi yoga karana. ';
   const guard = ' Layered integration across systems. Guardrail safe framing. No guarantees no diagnosis. ';
+  const factBlock = buildEngineFactBlock(engineResults);
   const llm = async (system: string, user: string, opts: { max_tokens: number }) => {
-    // Produce long repetitive text with system terms to hit fact/layer counts
-    const block = systemTerms.repeat(80) + guard;
-    // Scale roughly to target (opts max is 2x target, we aim ~target words)
+    // Produce long repetitive text with system terms to hit fact/layer counts, plus engine facts for fidelity
+    const prefix = factBlock ? factBlock + ' ' : '';
+    const base = systemTerms.repeat(80) + guard;
     const targetWords = Math.max(400, Math.floor(opts.max_tokens / 3));
-    let out = '';
-    while (out.split(/\s+/).filter(Boolean).length < targetWords) {
-      out += block;
+    let body = '';
+    while ((prefix + body).split(/\s+/).filter(Boolean).length < targetWords) {
+      body += base;
     }
-    return out.slice(0, targetWords * 6); // rough char scaling
+    const all = prefix + body;
+    const words = all.split(/\s+/).filter(Boolean);
+    return words.slice(0, targetWords).join(' ');
   };
 
   // 5. Run orchestrator at consciousness 5 (l4_l5)
@@ -126,11 +131,30 @@ async function main() {
     engineResults,
     outputDir: sourcePackDir,
     patternLearning,
+    reportLevel: 'L0',
   });
   console.log('Source pack created at', sourcePackDir);
   console.log('Manifest quality:', sourcePack.manifest.quality);
 
-  // 10. Write artifacts to solo/new-l0-...
+  // 10. Render HTML/PDF local artifacts
+  const localDir = join(SOLO_DIR, 'new-l0-local');
+  await fs.mkdir(localDir, { recursive: true });
+  const rendered = await renderLocalArtifacts({
+    sourcePackDir,
+    outputDir: localDir,
+    brandConfigPath: '/Volumes/madara/2026/twc-vault/01-Projects/tryambakam-noesis/brand-docs-final/tryambakam-noesis-aleph/brand-config.yaml',
+  });
+  console.log('Rendered artifacts:', rendered.htmlPath, rendered.pdfPath);
+
+  // 11. Final verification gate
+  const verification = runFinalVerification({
+    passes: runResult.passes,
+    pdfPath: rendered.pdfPath,
+  });
+  console.log('Final verification:', verification.passed ? 'PASS' : 'FAIL', verification.blockers);
+  if (!verification.passed) process.exit(1);
+
+  // 12. Write artifacts to solo/new-l0-...
   const resultPath = join(SOLO_DIR, 'new-l0-result.json');
   const resultArtifact = {
     passes: sectionRubrics,
@@ -140,7 +164,7 @@ async function main() {
   await fs.writeFile(resultPath, JSON.stringify(resultArtifact, null, 2), 'utf8');
   console.log('Wrote', resultPath);
 
-  // 11. Summary
+  // 13. Summary
   const summary = {
     solo: 'sapna-sabharwal',
     mode: mode.frontmatter.mode,
@@ -173,6 +197,28 @@ async function main() {
   console.log('🔧 CHANGE: new-l0-result.json + new-l0-source-pack/ created');
   console.log('✅ VERIFY: rubrics captured, isComplete=true, mock upsert, source pack gate=' + summary.source_pack.gate);
   console.log('🗣️ noesisX: L0 kundali run complete for sapna-sabharwal at consciousness 5');
+}
+
+function buildEngineFactBlock(engines: SelemeneEngineOutput[]): string {
+  const facts: string[] = [];
+  for (const e of engines) {
+    const r = (e as any).result ?? {};
+    if (r.tithi_name) facts.push(`Tithi ${r.tithi_name}`);
+    if (r.nakshatra_name) facts.push(`Nakshatra ${r.nakshatra_name}`);
+    if (r.vara_name) facts.push(`Vara ${r.vara_name}`);
+    if (r.yoga_name) facts.push(`Yoga ${r.yoga_name}`);
+    if (r.karana_name) facts.push(`Karana ${r.karana_name}`);
+    if (r.current_period?.mahadasha?.planet) facts.push(`Mahadasha ${r.current_period.mahadasha.planet}`);
+    if (r.current_period?.antardasha?.planet) facts.push(`Antardasha ${r.current_period.antardasha.planet}`);
+    if (r.current_period?.pratyantardasha?.planet) facts.push(`Pratyantardasha ${r.current_period.pratyantardasha.planet}`);
+    if (Array.isArray(r.active_channels)) facts.push(`Channels ${r.active_channels.join(' ')}`);
+    if (r.hd_type) facts.push(`Human Design type ${r.hd_type}`);
+    if (r.profile) facts.push(`Profile ${r.profile}`);
+    if (r.authority) facts.push(`Authority ${r.authority}`);
+    if (r.definition) facts.push(`Definition ${r.definition}`);
+    if (Array.isArray(r.defined_centers)) facts.push(`Defined centers ${r.defined_centers.join(' ')}`);
+  }
+  return facts.length > 0 ? facts.join('. ') + '.' : '';
 }
 
 main().catch(e => { console.error(e); process.exit(1); });

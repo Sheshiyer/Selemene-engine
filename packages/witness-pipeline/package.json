@@ -15,7 +15,7 @@
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "smoke": "tsx scripts/smoke.ts",
+    "smoke": "tsx scripts/sapna-l0-test.ts",
     "clean": "rm -rf dist"
   },
   "dependencies": {
