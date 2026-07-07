@@ -118,4 +118,18 @@ describe('auditSectionOutput', () => {
     });
     expect(rubric.placeholder_gate).toBe('fail');
   });
+
+  it('fails chart fidelity when score is below threshold', () => {
+    const rubric = auditSectionOutput({
+      sectionId: 'opening',
+      title: 'Opening',
+      targetWords: 450,
+      output: 'Generic text with no specific facts.',
+      modelRequested: 'test',
+      modelUsed: 'test',
+      latencyMs: 0,
+      engineResults: sampleEngineResults,
+    });
+    expect(rubric.chart_fidelity_gate).toBe('fail');
+  });
 });

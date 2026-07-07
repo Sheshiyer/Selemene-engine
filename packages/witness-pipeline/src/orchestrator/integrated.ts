@@ -40,6 +40,7 @@ export interface SectionRubric {
   latency_ms: number;
   chart_fidelity_score?: number;
   chart_fidelity_details?: string[];
+  chart_fidelity_gate: RubricGate;
 }
 
 export interface PassResult {

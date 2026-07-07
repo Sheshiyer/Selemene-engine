@@ -64,11 +64,27 @@ function extractKeyFactsFromEngines(engines: any[]): Set<string> {
     const r = e.result || {};
     if (r.lagna_sign) facts.add(`lagna:${String(r.lagna_sign).toLowerCase()}`);
     if (r.lagna) facts.add(`lagna:${String(r.lagna).toLowerCase()}`);
-    if (Array.isArray(r.gates)) r.gates.forEach((g: any) => facts.add(`gate:${g}`));
-    if (Array.isArray(r.channels)) r.channels.forEach((c: any) => facts.add(`channel:${c}`));
-    if (r.mahadasha || r.current_mahadasha) facts.add(`dasha:${(r.mahadasha || r.current_mahadasha)}`.toLowerCase());
     if (r.tithi_name) facts.add(`tithi:${r.tithi_name}`.toLowerCase());
     if (r.nakshatra_name) facts.add(`nakshatra:${r.nakshatra_name}`.toLowerCase());
+    if (r.current_period?.mahadasha?.planet) {
+      facts.add(`dasha:${r.current_period.mahadasha.planet}`.toLowerCase());
+    }
+    if (r.current_period?.antardasha?.planet) {
+      facts.add(`antardasha:${r.current_period.antardasha.planet}`.toLowerCase());
+    }
+    if (Array.isArray(r.active_channels)) {
+      r.active_channels.forEach((c: string) => facts.add(`channel:${c}`));
+    }
+    if (r.design_activations) {
+      Object.values(r.design_activations).forEach((a: any) => {
+        if (a.gate) facts.add(`gate:${a.gate}`);
+      });
+    }
+    if (r.personality_activations) {
+      Object.values(r.personality_activations).forEach((a: any) => {
+        if (a.gate) facts.add(`gate:${a.gate}`);
+      });
+    }
   }
   return facts;
 }
@@ -99,6 +115,7 @@ export function auditSectionOutput(input: AuditSectionInput): SectionRubric {
 
   const engineFacts = extractKeyFactsFromEngines(input.engineResults || []);
   const fid = computeFidelity(input.output, engineFacts);
+  const fidelityGate = fid.score >= 0.8 ? 'pass' : fid.score >= 0.5 ? 'warn' : 'fail';
 
   return {
     section_id: input.sectionId,
@@ -119,6 +136,7 @@ export function auditSectionOutput(input: AuditSectionInput): SectionRubric {
     latency_ms: input.latencyMs,
     chart_fidelity_score: engineFacts.size > 0 ? Number(fid.score.toFixed(3)) : undefined,
     chart_fidelity_details: engineFacts.size > 0 ? fid.details : undefined,
+    chart_fidelity_gate: engineFacts.size > 0 ? fidelityGate : 'warn',
   };
 }
 

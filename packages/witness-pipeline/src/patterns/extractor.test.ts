@@ -19,6 +19,7 @@ describe('extractReportPatterns', () => {
             integrated_layer_count: 2, integrated_layering_gate: 'pass',
             guardrail_gate: 'pass', guardrail_violations: [],
             placeholder_gate: 'pass',
+            chart_fidelity_gate: 'pass',
             model_requested: 'tier-default', model_used: 'tier-default', latency_ms: 1,
           },
         },
