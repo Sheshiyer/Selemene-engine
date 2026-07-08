@@ -34,11 +34,21 @@ interface LlmOptions {
 
 function loadKey(varName: string): string | undefined {
   if (process.env[varName]) return process.env[varName];
+  // Try .claude/.env
   try {
     const home = process.env.HOME || '/Users/sheshnarayaniyer';
     const env = readFileSync(`${home}/.claude/.env`, 'utf8');
     const match = env.match(new RegExp(`${varName}=(.+)`));
     if (match) return match[1].trim();
+  } catch {}
+  return undefined;
+}
+
+function loadCodexOAuthToken(): string | undefined {
+  try {
+    const home = process.env.HOME || '/Users/sheshnarayaniyer';
+    const auth = JSON.parse(readFileSync(`${home}/.codex/auth.json`, 'utf8'));
+    return auth?.tokens?.access_token;
   } catch {}
   return undefined;
 }
@@ -81,7 +91,7 @@ const PROVIDERS: Provider[] = [
 ];
 
 const PROVIDER_KEY_VARS: Record<string, string> = {
-  'command-code': 'COMMAND_CODE_API_KEY',
+  'command-code': 'COMMANDCODE_API_KEY',
   nvidia: 'NVIDIA_API_KEY',
   openrouter: 'OPENROUTER_API_KEY',
   openai: 'OPENAI_API_KEY',
@@ -168,11 +178,21 @@ export function createLlmCall(opts: LlmOptions = {}): LlmCall {
     const errors: string[] = [];
 
     for (const provider of PROVIDERS) {
-      const keyVar = PROVIDER_KEY_VARS[provider.name];
-      const apiKey = loadKey(keyVar);
-      if (!apiKey) {
-        errors.push(`${provider.name}: no key (${keyVar})`);
-        continue;
+      let apiKey: string | undefined;
+      if (provider.name === 'command-code') {
+        // Command Code: try direct API key first, then Codex OAuth token
+        apiKey = loadKey('COMMANDCODE_API_KEY') || loadCodexOAuthToken();
+        if (!apiKey) {
+          errors.push('command-code: no key (COMMANDCODE_API_KEY or Codex OAuth)');
+          continue;
+        }
+      } else {
+        const keyVar = PROVIDER_KEY_VARS[provider.name];
+        apiKey = loadKey(keyVar);
+        if (!apiKey) {
+          errors.push(`${provider.name}: no key (${keyVar})`);
+          continue;
+        }
       }
 
       const start = Date.now();
