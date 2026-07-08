@@ -12,13 +12,15 @@ import {
 } from '../src/index.js';
 import { runFinalVerification } from '../src/orchestrator/final-verification.js';
 import { renderLocalArtifacts } from '../src/assets/render-pipeline.js';
+import { createLlmCall } from './lib/multi-llm.js';
 
 const SOLO_DIR = process.argv[2];
+const LIVE_MODE = process.argv.includes('--live');
 const BRAND_CONFIG = '/Volumes/madara/2026/twc-vault/01-Projects/tryambakam-noesis/brand-docs-final/tryambakam-noesis-aleph/brand-config.yaml';
 const MODE_PATH = resolve(process.cwd(), 'modes/integrated-kundali-l0.md');
 
 if (!SOLO_DIR) {
-  console.error('Usage: tsx scripts/solo-l0-runner.ts <solo-dir>');
+  console.error('Usage: tsx scripts/solo-l0-runner.ts <solo-dir> [--live]');
   process.exit(1);
 }
 
@@ -68,21 +70,9 @@ async function main() {
   const mode = parseModeDoc(MODE_PATH);
   console.log('Mode loaded:', mode.frontmatter.mode, 'passes:', mode.frontmatter.pass_plan.length);
 
-  const systemTerms = 'Vedic Lagna house planet nakshatra pada dasha antardasha Vimshottari Human Design gate channel profile authority type center Gene Keys Life\'s Work Evolution Vocation Pearl Radiance Purpose transit panchanga tithi yoga karana. ';
-  const guard = ' Layered integration across systems. Guardrail safe framing. No guarantees no diagnosis. ';
-  const factBlock = buildEngineFactBlock(engineResults);
-  const llm = async (_system: string, _user: string, opts: { max_tokens: number }) => {
-    const prefix = factBlock ? factBlock + ' ' : '';
-    const base = systemTerms.repeat(80) + guard;
-    const targetWords = Math.max(400, Math.floor(opts.max_tokens / 3));
-    let body = '';
-    while ((prefix + body).split(/\s+/).filter(Boolean).length < targetWords) {
-      body += base;
-    }
-    const all = prefix + body;
-    const words = all.split(/\s+/).filter(Boolean);
-    return words.slice(0, targetWords).join(' ');
-  };
+  const llm = LIVE_MODE
+    ? createLlmCall({ temperature: 0.7, timeout_ms: 180000 })
+    : createStubLLM(engineResults);
 
   const orchestrator = new IntegratedReadingOrchestrator({ mode, llm });
   const runResult = await orchestrator.run({
@@ -181,6 +171,24 @@ async function main() {
   console.log(JSON.stringify(summary, null, 2));
 
   if (!verification.passed) process.exit(1);
+}
+
+function createStubLLM(engineResults: SelemeneEngineOutput[]) {
+  const systemTerms = 'Vedic Lagna house planet nakshatra pada dasha antardasha Vimshottari Human Design gate channel profile authority type center Gene Keys Life\'s Work Evolution Vocation Pearl Radiance Purpose transit panchanga tithi yoga karana. ';
+  const guard = ' Layered integration across systems. Guardrail safe framing. No guarantees no diagnosis. ';
+  const factBlock = buildEngineFactBlock(engineResults);
+  return async (_system: string, _user: string, opts: { max_tokens: number }) => {
+    const prefix = factBlock ? factBlock + ' ' : '';
+    const base = systemTerms.repeat(80) + guard;
+    const targetWords = Math.max(400, Math.floor(opts.max_tokens / 3));
+    let body = '';
+    while ((prefix + body).split(/\s+/).filter(Boolean).length < targetWords) {
+      body += base;
+    }
+    const all = prefix + body;
+    const words = all.split(/\s+/).filter(Boolean);
+    return words.slice(0, targetWords).join(' ');
+  };
 }
 
 function buildEngineFactBlock(engines: SelemeneEngineOutput[]): string {

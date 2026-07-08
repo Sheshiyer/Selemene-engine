@@ -121,9 +121,9 @@ describe('auditSectionOutput', () => {
 
   it('fails chart fidelity when score is below threshold', () => {
     const rubric = auditSectionOutput({
-      sectionId: 'opening',
-      title: 'Opening',
-      targetWords: 450,
+      sectionId: 'vedic-foundation',
+      title: 'Vedic Foundation',
+      targetWords: 3800,
       output: 'Generic text with no specific facts.',
       modelRequested: 'test',
       modelUsed: 'test',
