@@ -58,9 +58,9 @@ function loadCodexOAuthToken(): string | undefined {
 const PROVIDERS: Provider[] = [
   {
     name: 'command-code',
-    hostname: 'api.openai.com',
-    path: '/v1/chat/completions',
-    model: 'gpt-4o-mini',
+    hostname: 'api.commandcode.ai',
+    path: '/provider/v1/chat/completions',
+    model: 'MiniMaxAI/MiniMax-M3',
     headers: (key) => ({ 'Authorization': `Bearer ${key}` }),
   },
   {
@@ -91,7 +91,7 @@ const PROVIDERS: Provider[] = [
 ];
 
 const PROVIDER_KEY_VARS: Record<string, string> = {
-  'command-code': 'COMMANDCODE_API_KEY_OPENAI',  // will be absent → skip to NVIDIA
+  'command-code': 'COMMANDCODE_API_KEY',
   nvidia: 'NVIDIA_API_KEY',
   openrouter: 'OPENROUTER_API_KEY',
   openai: 'OPENAI_API_KEY',
@@ -147,9 +147,9 @@ async function callProvider(
               reject(new Error(`API error: ${parsed.error.message || parsed.error.code}`));
               return;
             }
-            const content = parsed.choices?.[0]?.message?.content;
-            const reasoning = parsed.choices?.[0]?.message?.reasoning_content;
-            const final = (content || reasoning || '').trim();
+const content = parsed.choices?.[0]?.message?.content;
+             const reasoning = parsed.choices?.[0]?.message?.reasoning_content || parsed.choices?.[0]?.message?.reasoning;
+             const final = (content || reasoning || '').trim();
             if (!final) {
               reject(new Error('Empty response content'));
               return;
@@ -178,21 +178,11 @@ export function createLlmCall(opts: LlmOptions = {}): LlmCall {
     const errors: string[] = [];
 
     for (const provider of PROVIDERS) {
-      let apiKey: string | undefined;
-      if (provider.name === 'command-code') {
-        // Command Code: try direct API key first, then Codex OAuth token
-        apiKey = loadKey('COMMANDCODE_API_KEY') || loadCodexOAuthToken();
-        if (!apiKey) {
-          errors.push('command-code: no key (COMMANDCODE_API_KEY or Codex OAuth)');
-          continue;
-        }
-      } else {
-        const keyVar = PROVIDER_KEY_VARS[provider.name];
-        apiKey = loadKey(keyVar);
-        if (!apiKey) {
-          errors.push(`${provider.name}: no key (${keyVar})`);
-          continue;
-        }
+      const keyVar = PROVIDER_KEY_VARS[provider.name];
+      const apiKey = loadKey(keyVar);
+      if (!apiKey) {
+        errors.push(`${provider.name}: no key (${keyVar})`);
+        continue;
       }
 
       const start = Date.now();
