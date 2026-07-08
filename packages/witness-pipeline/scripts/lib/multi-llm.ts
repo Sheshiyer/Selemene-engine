@@ -91,7 +91,7 @@ const PROVIDERS: Provider[] = [
 ];
 
 const PROVIDER_KEY_VARS: Record<string, string> = {
-  'command-code': 'COMMANDCODE_API_KEY',
+  'command-code': 'COMMANDCODE_API_KEY_OPENAI',  // will be absent → skip to NVIDIA
   nvidia: 'NVIDIA_API_KEY',
   openrouter: 'OPENROUTER_API_KEY',
   openai: 'OPENAI_API_KEY',
