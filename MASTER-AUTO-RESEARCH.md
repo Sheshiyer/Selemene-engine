@@ -148,8 +148,10 @@ Re-run the 14 originally failing solos. Priority order by severity: `prashanth`,
 
 ## Verification
 
-- 51 solo L0 runs, 100% PASS rate
-- 612 pass rubrics, 612/612 fidelity_pass, 612/612 placeholder_pass, 612/612 facts_pass, 612/612 layers_pass, 612/612 guard_pass
+- 51 solo L0 stub runs, 100% PASS rate (deterministic / stub LLM)
+- 612 stub-run pass rubrics, 612/612 fidelity_pass, 612/612 placeholder_pass, 612/612 facts_pass, 612/612 layers_pass, 612/612 guard_pass
 - 51/612 word_fit_pass (stub LLM limitation, consistent across all)
 - Zero pipeline crashes, zero engine fetch failures (minus expected sigil-forge)
 - HumDes fixtures validated: all HD types/profile/authority from `01_input.json` match Selemene engine output
+- 51 solo L0 live LLM runs via Command Code MiniMax M3: 37/51 PASS, 14/51 FAIL on `chart_fidelity_gate`
+- Calibrated rubric fix validated by 88 passing tests and live spot-check on `prashanth` (fidelity 10/12, patterns 10, verification PASS)
