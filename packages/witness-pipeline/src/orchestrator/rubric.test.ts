@@ -201,7 +201,60 @@ describe('auditSectionOutput', () => {
     expect(rubric.chart_fidelity_score).toBeGreaterThan(0.5);
   });
 
-  it('extracts section-specific family-lineage facts from numerology and human-design engines', () => {
+  it('extracts short keyword tokens from biofield areas_of_attention for remedies-practices', () => {
+    const engines = [
+      {
+        engine_id: 'nadabrahman',
+        result: {
+          recommendations: [
+            {
+              raga_name: 'Harikambhoji',
+              mood: 'bhakti',
+              reason: 'Balances pitta energy in afternoon hours',
+              therapeutic_qualities: ['calming', 'devotional', 'centering'],
+            },
+          ],
+        },
+      },
+      {
+        engine_id: 'biofield',
+        result: {
+          areas_of_attention: [
+            'Vishuddha (Throat) (Throat area) - lower activity linked to Mercury placement',
+            'Anahata (Heart) - balanced',
+          ],
+        },
+      },
+    ];
+    const facts = extractSectionFacts(engines, 'remedies-practices');
+    const values = Array.from(facts).map((f) => f.split(':')[1]);
+
+    expect(values).toContain('vishuddha');
+    expect(values).toContain('throat');
+    expect(values).toContain('mercury');
+    expect(values).toContain('lower');
+    expect(values).toContain('anahata');
+    expect(values).toContain('heart');
+    expect(values).toContain('balanced');
+    expect(values).toContain('harikambhoji');
+    expect(values).toContain('bhakti');
+    expect(values).toContain('calming');
+
+    const rubric = auditSectionOutput({
+      sectionId: 'remedies-practices',
+      title: 'Remedies & Practices',
+      targetWords: 200,
+      output: 'Your Throat chakra (Vishuddha) shows lower activity and relates to Mercury. The Heart center is balanced. Listen to Harikambhoji in the afternoon for its calming bhakti qualities.',
+      modelRequested: 'test',
+      modelUsed: 'test',
+      latencyMs: 0,
+      engineResults: engines,
+    });
+    expect(rubric.chart_fidelity_score).toBeGreaterThan(0.5);
+    expect(rubric.chart_fidelity_gate).toBe('pass');
+  });
+
+  it('extracts section-specific family-lineage facts from engines', () => {
     const engines = [
       {
         engine_id: 'numerology',
@@ -209,7 +262,7 @@ describe('auditSectionOutput', () => {
       },
       {
         engine_id: 'human-design',
-        result: { profile: '5/1', active_channels: [{ gate1: 5, gate2: 15 }] },
+        result: { profile: '5/1', hd_type: 'Generator', authority: 'Sacral', defined_centers: ['Root', 'Sacral', 'G', 'Spleen'] },
       },
       {
         engine_id: 'gene-keys',
@@ -221,5 +274,9 @@ describe('auditSectionOutput', () => {
     expect(factValues).toContain('7');
     expect(factValues).toContain('5/1');
     expect(factValues).toContain('genekey-1');
+    expect(factValues).toContain('generator');
+    expect(factValues).toContain('sacral');
+    expect(factValues).toContain('root');
+    expect(factValues).toContain('spleen');
   });
 });

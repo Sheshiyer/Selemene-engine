@@ -296,7 +296,7 @@ Engine results:
 
 Target ~{{target_words}} words. Pass: {{pass_id}}.
 
-Begin by naming the Human Design profile, defined centers, and Numerology life path from the engines.
+Begin by naming the Human Design type, profile, defined centers, authority, Numerology life path / soul urge / expression, and active Gene Key numbers from the engines. Name at least 4-6 specific engine facts.
 
 Read mother, father, siblings, children, in-laws, roots, and inherited patterns from house and karaka indicators. Do not predict childbirth, infertility, child outcomes, parent death, estrangement, or family events. Treat lineage as symbolic patterning and relational inheritance, not fixed biography.
 

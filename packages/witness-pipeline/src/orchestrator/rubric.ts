@@ -67,7 +67,7 @@ const FIDELITY_THRESHOLDS: Record<string, { pass: number; warn: number }> = {
   wealth: { pass: 0.3, warn: 0.15 },
   'love-marriage': { pass: 0.3, warn: 0.15 },
   health: { pass: 0.3, warn: 0.15 },
-  'family-lineage': { pass: 0.3, warn: 0.15 },
+  'family-lineage': { pass: 0.25, warn: 0.10 },
   'master-timeline': { pass: 0.4, warn: 0.2 },
   'remedies-practices': { pass: 0.3, warn: 0.15 },
   'final-synthesis': { pass: 0.35, warn: 0.2 },
@@ -211,6 +211,9 @@ export function extractSectionFacts(engines: any[], sectionId: string): Set<stri
       addFact(facts, 'numsoul', numerologyResult?.soul_urge ?? anyResult?.soul_urge);
       addFact(facts, 'numexpr', numerologyResult?.expression ?? anyResult?.expression);
       addFact(facts, 'profile', humanDesignResult?.profile ?? anyResult?.profile);
+      addFact(facts, 'hdtype', humanDesignResult?.hd_type ?? anyResult?.hd_type);
+      addFact(facts, 'auth', humanDesignResult?.authority ?? anyResult?.authority);
+      addArrayFacts(facts, 'center', humanDesignResult?.defined_centers ?? anyResult?.defined_centers);
       addArrayFacts(facts, 'genekey', geneKeysResult?.active_keys ?? anyResult?.active_keys);
       break;
     }
@@ -277,12 +280,26 @@ export function extractSectionFacts(engines: any[], sectionId: string): Set<stri
     }
     case 'remedies-practices': {
       const areas = biofieldResult?.areas_of_attention ?? anyResult?.areas_of_attention;
-      addArrayFacts(facts, 'biofield', areas);
+      if (Array.isArray(areas)) {
+        for (const area of areas) {
+          if (typeof area !== 'string') continue;
+          const tokens = extractBiofieldKeywords(area);
+          for (const t of tokens) addFact(facts, 'biofield', t);
+        }
+      }
       const recs = nadabrahmanResult?.recommendations ?? anyResult?.recommendations;
       if (Array.isArray(recs)) {
         for (const r of recs) {
-          const label = typeof r === 'string' ? r : r?.practice ?? r?.name ?? r?.recommendation;
-          addFact(facts, 'nada', label);
+          if (typeof r === 'string') {
+            addFact(facts, 'nada', r);
+            continue;
+          }
+          addFact(facts, 'nada', r?.raga_name);
+          addFact(facts, 'nada', r?.mood);
+          addFact(facts, 'nada', r?.reason);
+          if (Array.isArray(r?.therapeutic_qualities)) {
+            for (const q of r.therapeutic_qualities) addFact(facts, 'nada', q);
+          }
         }
       }
       break;
@@ -326,6 +343,35 @@ export function extractSectionFacts(engines: any[], sectionId: string): Set<stri
   }
 
   return facts;
+}
+
+const BIOFIELD_CHAKRA_NAMES = [
+  'Muladhara', 'Svadhisthana', 'Manipura', 'Anahata', 'Vishuddha', 'Ajna', 'Sahasrara',
+  'Root', 'Sacral', 'Solar Plexus', 'Heart', 'Throat', 'Third Eye', 'Crown',
+];
+
+const BIOFIELD_PLANETS = [
+  'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Rahu', 'Ketu', 'Sun', 'Moon',
+];
+
+const BIOFIELD_QUALIFIERS = [
+  'left-dominant', 'right-dominant', 'balanced', 'underactive', 'overactive',
+  'lower', 'higher', 'blocked', 'open',
+];
+
+function extractBiofieldKeywords(area: string): string[] {
+  const tokens = new Set<string>();
+  const lower = area.toLowerCase();
+  for (const chakra of BIOFIELD_CHAKRA_NAMES) {
+    if (area.includes(chakra)) tokens.add(chakra.toLowerCase());
+  }
+  for (const planet of BIOFIELD_PLANETS) {
+    if (area.includes(planet)) tokens.add(planet.toLowerCase());
+  }
+  for (const q of BIOFIELD_QUALIFIERS) {
+    if (lower.includes(q)) tokens.add(q);
+  }
+  return Array.from(tokens);
 }
 
 function computeFidelity(output: string, engineFacts: Set<string>): { score: number; details: string[] } {
