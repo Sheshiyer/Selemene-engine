@@ -233,4 +233,58 @@ Engine results:
     expect(prompts[0]).toContain('## Deterministic Engine Results');
     expect(prompts[0]).toContain('Pushya');
   });
+
+  it('produces a long pass at >= 70% of target word count', async () => {
+    const longPassModeDoc = parseModeDocument(`---
+mode: integrated-kundali-l0
+subject_count:
+  min: 1
+  max: 1
+roles:
+  - subject
+target_words:
+  min: 50
+  max: 500
+architecture: linear
+pass_plan:
+  - id: long-pass
+    title: Long Pass
+    target_words: 600
+    template: long-pass-template
+engine_overlay_weights: {}
+house_overlay: []
+bridge_mandates: []
+svg_topology: dyad-arc
+---
+## long-pass-template
+Write about {{subject_names}}. Target ~{{target_words}} words. Pass: {{pass_id}}.
+`, 'long-pass-test.md');
+
+    const systemTerms = 'Vedic Lagna house planet nakshatra pada dasha antardasha Vimshottari Human Design gate channel profile authority type center Gene Keys Life\'s Work Evolution Vocation Pearl Radiance Purpose transit panchanga tithi yoga karana. ';
+    const guard = ' Layered integration across systems. Guardrail safe framing. No guarantees no diagnosis. ';
+    const llm = async (_system: string, _user: string, opts: { max_tokens: number }) => {
+      const targetWords = Math.max(200, Math.floor((opts.max_tokens ?? 600) / 1.3));
+      let words = 0;
+      let body = '';
+      while (words < targetWords) {
+        const chunk = systemTerms.repeat(20) + guard;
+        body += chunk;
+        words = body.split(/\s+/).filter(Boolean).length;
+      }
+      const allWords = body.split(/\s+/).filter(Boolean);
+      return allWords.slice(0, targetWords).join(' ');
+    };
+
+    const orchestrator = new IntegratedReadingOrchestrator({ mode: longPassModeDoc, llm });
+    const result = await orchestrator.run({
+      subjectNames: ['Prashanth'],
+      engineResultsBySubject: [sampleEngineResults],
+      consciousnessLevel: 5,
+    });
+
+    expect(result.passes).toHaveLength(1);
+    const actualWords = result.passes[0].rubric.actual_words;
+    const targetWords = result.passes[0].rubric.target_words;
+    expect(actualWords).toBeGreaterThanOrEqual(targetWords * 0.7);
+  });
 });

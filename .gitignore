@@ -75,3 +75,4 @@ packages/*/dist/
 # Keep source docs, ignore bulky generated/
 .context/generated/
 .context/pitchdeck/
+workers/pattern-memory/node_modules/

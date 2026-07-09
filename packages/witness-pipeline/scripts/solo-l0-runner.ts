@@ -178,16 +178,19 @@ function createStubLLM(engineResults: SelemeneEngineOutput[]) {
   const guard = ' Layered integration across systems. Guardrail safe framing. No guarantees no diagnosis. ';
   const factBlock = buildEngineFactBlock(engineResults);
   return async (_system: string, _user: string, opts: { max_tokens: number }) => {
-    const prefix = factBlock ? factBlock + ' ' : '';
-    const base = systemTerms.repeat(80) + guard;
-    const targetWords = Math.max(400, Math.floor(opts.max_tokens / 3));
+    const targetTokens = opts.max_tokens || 600;
+    const targetWords = Math.max(200, Math.floor(targetTokens / 1.3));
+    let words = 0;
     let body = '';
-    while ((prefix + body).split(/\s+/).filter(Boolean).length < targetWords) {
-      body += base;
+    const prefix = factBlock ? factBlock + ' ' : '';
+    while (words < targetWords) {
+      const chunk = systemTerms.repeat(20) + guard;
+      body += chunk;
+      words = (prefix + body).split(/\s+/).filter(Boolean).length;
     }
     const all = prefix + body;
-    const words = all.split(/\s+/).filter(Boolean);
-    return words.slice(0, targetWords).join(' ');
+    const allWords = all.split(/\s+/).filter(Boolean);
+    return allWords.slice(0, targetWords).join(' ');
   };
 }
 

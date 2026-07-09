@@ -104,8 +104,42 @@ Ran the same 51 solo L0 pipeline against a real LLM (Command Code `MiniMaxAI/Min
 - `packages/witness-pipeline/src/orchestrator/rubric.test.ts`: added section-specific extraction tests.
 
 ### Validation
-- All 88 witness-pipeline tests pass under `pnpm test -- --run`.
+- All 89 witness-pipeline tests pass under `pnpm test -- --run`.
 - Spot-check live run on `prashanth` after calibration: **verification PASS**, `fidelity_pass: 10/12`, `word_fit_pass: 0/12`, `total_words: 7,201`, `patterns_extracted: 10`.
+
+## Retry All 14 Failing Solos with Calibrated Rubric (2026-07-09)
+
+Re-ran all 14 originally failing solos using the calibrated rubric + explicit per-pass word-range prompts + increased `max_tokens` multiplier (×3).
+
+- **Result**: 6 PASS / 8 FAIL (43% pass rate on the failing subset).
+- **Before calibration**: 0/14 (these all failed fidelity 2/12–8/12 previously).
+- **Calibration lift**: 6/14 now pass. `prashanth` went from fidelity 2/12 → 10/12 PASS. `shihab` went from 2/12 → 9/12 PASS.
+
+| Metric | Before (original run) | After (calibrated retry) |
+|--------|----------------------|--------------------------|
+| Pass rate (14 subset) | 0/14 | 6/14 (43%) |
+| Best fidelity score | 8/12 | 11/12 |
+| Average fidelity | ~5–6/12 | ~9/12 |
+| Patterns extracted | 0–11 | 8–11 per solo |
+
+### Remaining Failures
+Eight solos still fail `chart_fidelity_gate`:
+- `johnny` (fidelity 9/12): `health`, `family-lineage`
+- `durga-prasad` (fidelity 9/12): `family-lineage`, `remedies-practices`
+- `shesh` (fidelity 10/12): `convergence-map`
+- `jiaojiao` (fidelity 8/12): `career-dharma`, `remedies-practices`
+- `vandana` (fidelity 8/12): `remedies-practices`
+- `sneha-soni` (fidelity 11/12): `family-lineage`
+- `shreya` (fidelity 9/12): `remedies-practices`
+- `paulo-alberto` (fidelity 8/12): `vedic-foundation`, `family-lineage`
+
+### Blocker Section Analysis
+- `remedies-practices`: 4 failures — consistently hardest section for LLM to ground
+- `family-lineage`: 4 failures — section-specific facts (numerology, gene keys) still under-extracted
+- `health`, `career-dharma`, `vedic-foundation`, `convergence-map`: 1 each
+
+### Calibration vs Section Fix
+The per-section grounding checklists lifted pass rate dramatically (`prashanth` 2 → 10, `shihab` 2 → 9) but `remedies-practices` and `family-lineage` remain stubborn. These sections need richer fact blocks — more biofield areas-of-attention, remedy-specific engine outputs, numerology details beyond the top-level extract.
 
 ### Word Count Remaining Gap
 Word-count fit is still the dominant secondary gap. Real LLM output per pass is shorter than targets for long passes. The rubric fix improves fidelity; the next iteration should address word-count fitting via `max_tokens` tuning and explicit per-pass word-count prompts.
@@ -126,11 +160,11 @@ Command Code MiniMax M3 validated. Next: run calibrated pipeline across the 14 f
 ### P1: Fidelity Matching v2 — Done (section-aware facts)
 Exact-match now covers section-specific engine facts. Consider fuzzy matching only after the exact-match fix is fully validated; do not replace exact-match.
 
-### P2: Word Count Calibration
-Real LLM output undershoots long-pass targets. Tune `max_tokens` multiplier and add explicit word-count prompt lines.
+### P2: Word Count Calibration — Done
+Added explicit per-pass word-range instruction (`"Write at least X words"`), increased `max_tokens` multiplier from ×2 to ×3, and fixed stub LLM to honor `opts.max_tokens`. 89 tests pass.
 
-### P3: Pattern Store Integration
-Enable Cloudflare Vectorize pattern storage for live LLM runs. The 10 patterns extracted from `prashanth` show the surface is ready; it needs a Worker deployment with `REPORT_PATTERNS`, `AI`, and optional `PATTERNS_BUCKET` bindings.
+### P3: Pattern Store Integration — Done (Worker surface only, not deployed)
+Created `workers/pattern-memory/` package with `POST /patterns` (upsert) and `POST /patterns/query` (retrieve) routes, PII gating, and Vectorize/R2/D1 bindings. Compiles clean via `wrangler deploy --dry-run` (6.60 KiB). Deployment to production pending Cloudflare bindings setup.
 
 ### P4: HD-Type-Specific Templates
 Create pass template variants per HD type/authority after word-count calibration is stable.

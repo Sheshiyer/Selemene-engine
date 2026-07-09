@@ -123,11 +123,13 @@ export class IntegratedReadingOrchestrator {
       const prior = assembled.slice(-4000);
       const templateContent = getPassTemplate(this.mode, pass.id, register);
       const basePrompt = this.renderPassTemplate(templateContent, pass, input, prior, register);
-      const prompt = retrievedBlock ? `${basePrompt}\n\n${retrievedBlock}` : basePrompt;
+      const wordTarget = resolveTargetWords(this.mode, register, pass.id);
+      const wordInstruction = `\n\n---\nThis section must contain between ${wordTarget.min} and ${wordTarget.max} words. Write at least ${wordTarget.min} words for this section.`;
+      const prompt = (retrievedBlock ? `${basePrompt}\n\n${retrievedBlock}` : basePrompt) + wordInstruction;
       const system = this.buildSystemPrompt(pass, input, register);
-      const { max } = resolveTargetWords(this.mode, register, pass.id);
+      const { max } = wordTarget;
       const started = Date.now();
-      const output = await this.llm(system, prompt, { max_tokens: Math.round(max * 2) });
+      const output = await this.llm(system, prompt, { max_tokens: Math.round(max * 3) });
       const latencyMs = Date.now() - started;
       const model = pass.model ?? 'tier-default';
       const rubric = auditSectionOutput({
