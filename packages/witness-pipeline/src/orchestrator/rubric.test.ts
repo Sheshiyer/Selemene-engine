@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { auditSectionOutput } from './rubric.js';
+import { auditSectionOutput, extractSectionFacts } from './rubric.js';
 
 describe('auditSectionOutput', () => {
   it('passes word count when output is within 80-125 percent of target', () => {
@@ -131,5 +131,95 @@ describe('auditSectionOutput', () => {
       engineResults: sampleEngineResults,
     });
     expect(rubric.chart_fidelity_gate).toBe('fail');
+  });
+
+  it('extracts section-specific health facts from biofield and biorhythm engines', () => {
+    const engines = [
+      {
+        engine_id: 'biofield',
+        result: {
+          areas_of_attention: ['liver', 'adrenal rhythm'],
+          chakra_readings: [{ chakra: 'manipura' }, { chakra: 'anahata' }],
+        },
+      },
+      {
+        engine_id: 'biorhythm',
+        result: { physical: 'high', emotional: 'low', spiritual: 'neutral', overall_energy: 'recalibrating' },
+      },
+    ];
+    const facts = extractSectionFacts(engines, 'health');
+    expect(facts.size).toBeGreaterThan(0);
+    const factValues = Array.from(facts).map((f) => f.split(':')[1]);
+    expect(factValues).toContain('liver');
+    expect(factValues).toContain('manipura');
+    expect(factValues).toContain('high');
+
+    const rubric = auditSectionOutput({
+      sectionId: 'health',
+      title: 'Health',
+      targetWords: 200,
+      output: 'The biofield flags liver and adrenal rhythm, with manipura and anahata active. Biorhythm physical is high while emotional is low and overall energy is recalibrating.',
+      modelRequested: 'test',
+      modelUsed: 'test',
+      latencyMs: 0,
+      engineResults: engines,
+    });
+    expect(rubric.chart_fidelity_score).toBeGreaterThan(0.5);
+  });
+
+  it('extracts section-specific timeline facts from vimshottari and transits engines', () => {
+    const engines = [
+      {
+        engine_id: 'vimshottari',
+        result: {
+          current_period: { mahadasha: { planet: 'Saturn' }, antardasha: { planet: 'Venus' } },
+          upcoming_transitions: [{ event: 'Jupiter antardasha', year: 2027 }, { event: 'Saturn return', year: 2031 }],
+        },
+      },
+      {
+        engine_id: 'transits',
+        result: { sade_sati: 'peak', retrograde_planets: ['Mercury', 'Saturn'] },
+      },
+    ];
+    const facts = extractSectionFacts(engines, 'master-timeline');
+    const factValues = Array.from(facts).map((f) => f.split(':')[1]);
+    expect(factValues).toContain('saturn');
+    expect(factValues).toContain('venus');
+    expect(factValues).toContain('jupiter antardasha');
+    expect(factValues).toContain('peak');
+
+    const rubric = auditSectionOutput({
+      sectionId: 'master-timeline',
+      title: 'Master Timeline',
+      targetWords: 300,
+      output: 'You are in Saturn mahadasha with Venus antardasha. The next major transition is Jupiter antardasha in 2027. Sade Sati is at peak and Mercury is retrograde.',
+      modelRequested: 'test',
+      modelUsed: 'test',
+      latencyMs: 0,
+      engineResults: engines,
+    });
+    expect(rubric.chart_fidelity_score).toBeGreaterThan(0.5);
+  });
+
+  it('extracts section-specific family-lineage facts from numerology and human-design engines', () => {
+    const engines = [
+      {
+        engine_id: 'numerology',
+        result: { life_path: 7, soul_urge: 3, expression: 9 },
+      },
+      {
+        engine_id: 'human-design',
+        result: { profile: '5/1', active_channels: [{ gate1: 5, gate2: 15 }] },
+      },
+      {
+        engine_id: 'gene-keys',
+        result: { active_keys: ['genekey-1', 'genekey-2'] },
+      },
+    ];
+    const facts = extractSectionFacts(engines, 'family-lineage');
+    const factValues = Array.from(facts).map((f) => f.split(':')[1]);
+    expect(factValues).toContain('7');
+    expect(factValues).toContain('5/1');
+    expect(factValues).toContain('genekey-1');
   });
 });

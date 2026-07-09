@@ -154,6 +154,8 @@ Engine results:
 
 Target ~{{target_words}} words. Pass: {{pass_id}}.
 
+Begin by naming the lagna, Moon nakshatra, tithi, vara, yoga, current dasha/antardasha, and key planet placements from the engines.
+
 Use D1/D9 chart facts, lagna, Moon, Sun, atmakaraka, darakaraka, planetary placements, yogas, functional benefics/malefics, Rahu-Ketu, and Sade Sati/transit state where present. Prefer table-like clarity for placements and yogas. Do not infer missing chart data.
 
 ## karmic-architecture-pass
@@ -175,6 +177,8 @@ Engine results:
 {{engine_results}}
 
 Target ~{{target_words}} words. Pass: {{pass_id}}.
+
+Begin by naming the Moon nakshatra, Rahu-Ketu axis, Human Design active channels, and Gene Keys active keys from the engines.
 
 Read Rahu-Ketu, Moon nakshatra, atmakaraka curriculum, and lived mahadasha trail as pattern architecture. Use karmic language as symbolic interpretation, not literal proof of past lives. Distinguish deterministic timing from reflective meaning.
 
@@ -220,6 +224,8 @@ Engine results:
 
 Target ~{{target_words}} words. Pass: {{pass_id}}.
 
+Begin by naming the Numerology expression/life path, Human Design type, and current dasha from the engines.
+
 Read 2nd/11th houses, wealth karakas, dasha timing, and relevant HD/Gene Keys material. Do not guarantee financial outcomes, investment gains, inheritance, debt resolution, or property events. Frame money as capacity, pattern, timing pressure, and decision hygiene. Include cautions as reflective risk patterns, not financial advice.
 
 ## love-marriage-pass
@@ -241,6 +247,8 @@ Engine results:
 {{engine_results}}
 
 Target ~{{target_words}} words. Pass: {{pass_id}}.
+
+Begin by naming the Human Design authority/defined centers and any Venus/Mars/Jupiter facts from the engines.
 
 Read the 7th house, darakaraka, Venus/Mars/Jupiter, D9, relationship mechanics, and timing windows. Do not predict marriage inevitability, divorce, spouse identity, or fixed relationship outcomes. Present timing as relational weather and readiness windows. Preserve agency and consent.
 
@@ -264,6 +272,8 @@ Engine results:
 
 Target ~{{target_words}} words. Pass: {{pass_id}}.
 
+Begin by naming the biofield areas of attention and the biorhythm physical/emotional phase from the engines.
+
 Read constitutional tendencies, 6th/8th/12th house indicators, planetary stressors, biofield/vitality context where available, and practical regulation themes. Do not diagnose, treat, forecast disease, replace medical care, or claim certainty about health events. Use non-medical language: tendency, load, rhythm, recovery, vitality, support.
 
 ## family-lineage-pass
@@ -285,6 +295,8 @@ Engine results:
 {{engine_results}}
 
 Target ~{{target_words}} words. Pass: {{pass_id}}.
+
+Begin by naming the Human Design profile, defined centers, and Numerology life path from the engines.
 
 Read mother, father, siblings, children, in-laws, roots, and inherited patterns from house and karaka indicators. Do not predict childbirth, infertility, child outcomes, parent death, estrangement, or family events. Treat lineage as symbolic patterning and relational inheritance, not fixed biography.
 
@@ -308,6 +320,8 @@ Engine results:
 
 Target ~{{target_words}} words. Pass: {{pass_id}}.
 
+Begin by naming the current mahadasha/antardasha and the next major transition from the engines.
+
 Make timing the spine: current mahadasha/antardasha, upcoming transitions, Sade Sati/transit overlays, and major life chapters. Use cross-reference tables where helpful. Distinguish exact deterministic dates from interpretive strategic readings.
 
 ## remedies-practices-pass
@@ -329,6 +343,8 @@ Engine results:
 {{engine_results}}
 
 Target ~{{target_words}} words. Pass: {{pass_id}}.
+
+Begin by naming the biofield areas of attention and the nadabrahman recommendations from the engines.
 
 Offer Vedic remedies, HD practices, Gene Keys contemplation, and practical life corrections as optional supports. Avoid coercive language. Do not prescribe gemstones, fasting, donations, mantras, or rituals as guaranteed fixes. Include gentle cautions when strengthening a planet could over-amplify a chart tension.
 
