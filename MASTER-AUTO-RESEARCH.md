@@ -84,26 +84,59 @@ Zero pipeline crashes across 51 runs. Every solo produces:
 
 The pipeline is production-stable at the infrastructure level.
 
+## Live LLM Run Results (2026-07-09)
+
+Ran the same 51 solo L0 pipeline against a real LLM (Command Code `MiniMaxAI/MiniMax-M3`) to replace the stub-LLM results above.
+
+- **Pass rate**: 37/51 (72.5%) final verification PASS.
+- **Failures**: 14/51 all blocked by `chart_fidelity_gate`. No `placeholder_gate` failures.
+- **Worst failures**: `prashanth` (fidelity 2/12, 7,737 words), `shihab` (2/12, 10,524 words), `johnny` (8/12 but word_fit 0/12, 7,562 words), `durga-prasad` (7/12, 7,889 words).
+- **Common failure sections**: `health`, `family-lineage`, `love-marriage`, `vedic-foundation`, `remedies-practices`, `master-timeline`, `wealth`.
+- **Pattern extraction**: real LLM runs produced 0–11 patterns per solo (stub produced 0), confirming Vectorize pattern memory is now meaningful.
+- **Root cause**: `chart_fidelity_score` measured only ~7 generic engine facts per section. Thematic sections did not extract section-specific facts (e.g., biofield for health, numerology/gene-keys for family-lineage, upcoming transitions for master-timeline), so the LLM could produce a grounded section and still score poorly.
+
+## Calibration Applied (2026-07-09)
+
+### Code Changes
+- `packages/witness-pipeline/src/orchestrator/rubric.ts`: added `extractSectionFacts()` with section-specific fact extraction and structured-value extraction for numerology, gene keys, biofield, biorhythm, vimshottari, transits.
+- `packages/witness-pipeline/src/orchestrator/engine-formatter.ts`: added a top-level "Key facts" summary before per-engine JSON blocks.
+- `packages/witness-pipeline/modes/integrated-kundali-l0.md`: added per-section "Begin by naming..." grounding checklist sentences.
+- `packages/witness-pipeline/src/orchestrator/rubric.test.ts`: added section-specific extraction tests.
+
+### Validation
+- All 88 witness-pipeline tests pass under `pnpm test -- --run`.
+- Spot-check live run on `prashanth` after calibration: **verification PASS**, `fidelity_pass: 10/12`, `word_fit_pass: 0/12`, `total_words: 7,201`, `patterns_extracted: 10`.
+
+### Word Count Remaining Gap
+Word-count fit is still the dominant secondary gap. Real LLM output per pass is shorter than targets for long passes. The rubric fix improves fidelity; the next iteration should address word-count fitting via `max_tokens` tuning and explicit per-pass word-count prompts.
+
+## Embedding / Vectorize / Dyad Sync Architecture
+
+See `docs/plans/2026-07-09-embedding-vectorize-dyad-sync-memo.md` for the full review. Key takeaways:
+- **Do not use embeddings for chart-fidelity verification.** It must stay deterministic token-inclusion against engine outputs.
+- **Cloudflare Vectorize is already implemented** for post-report pattern memory (`packages/witness-pipeline/src/patterns/cloudflare-vectorize.ts`) with PII gating, R2/D1 durable store, and BGE-small embeddings.
+- **Dyad/sync currently has no embedding consumer.** Future dyad work should only use embeddings for retrieval-augmented synthesis, never as a compatibility or sync truth source.
+- **NVIDIA embedding candidates**: `nvidia/nv-embedqa-e5-v5` or `nvidia/embed-qa-4` if the project later wants higher-quality retrieval than BGE-small.
+
 ## Optimization Roadmap (Post-Research)
 
-### P0: Production LLM Integration
-Replace the stub LLM with GPT-4o or Claude Sonnet. Run a subset (5 diverse solos) to:
-1. Establish real fidelity baseline (does 0.75 still work?)
-2. Calibrate word count fitting with real output
-3. Begin pattern extraction (stub LLM produces zero patterns)
-4. Evaluate narrative quality differentiation by HD type
+### P0: Production LLM Integration — Done for initial 51-solo run
+Command Code MiniMax M3 validated. Next: run calibrated pipeline across the 14 failing solos to confirm pass-rate lift.
 
-### P1: Fidelity Matching v2
-Add semantic/fuzzy matching to `computeFidelity`. A production LLM might say "your life path is guided by the energy of the 34th gate" instead of "Gate 34" — current exact-match misses this.
+### P1: Fidelity Matching v2 — Done (section-aware facts)
+Exact-match now covers section-specific engine facts. Consider fuzzy matching only after the exact-match fix is fully validated; do not replace exact-match.
 
 ### P2: Word Count Calibration
-With production LLM output, recalibrate `resolveTargetWords` / pass targets per register level. The L4-L5 register currently targets 400-2533 words per pass; verify these are achievable and appropriate.
+Real LLM output undershoots long-pass targets. Tune `max_tokens` multiplier and add explicit word-count prompt lines.
 
 ### P3: Pattern Store Integration
-Enable Cloudflare Vectorize pattern storage for real LLM runs. The 0-pattern-extracted metric across all 51 stub runs is a false negative — real LLM output will produce recurring semantic/thematic patterns across solos.
+Enable Cloudflare Vectorize pattern storage for live LLM runs. The 10 patterns extracted from `prashanth` show the surface is ready; it needs a Worker deployment with `REPORT_PATTERNS`, `AI`, and optional `PATTERNS_BUCKET` bindings.
 
 ### P4: HD-Type-Specific Templates
-Create pass template variants per HD type/authority. A Reflector (Lunar authority) needs different narrative framing than a ManifestingGenerator (Sacral authority). The current template is type-agnostic.
+Create pass template variants per HD type/authority after word-count calibration is stable.
+
+### P5: Retry Failed Solos with Calibrated Rubric
+Re-run the 14 originally failing solos. Priority order by severity: `prashanth`, `shihab`, `johnny`, `durga-prasad`, `yamuna`, `witnessalchemist`, `shesh`, then the remaining 7.
 
 ## Data Artifact Locations
 
