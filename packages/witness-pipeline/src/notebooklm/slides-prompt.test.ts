@@ -97,4 +97,12 @@ describe('generateSlidesPrompt', () => {
     // In the first slice we accept an extension point; the test documents the intent
     expect(prompt).toContain('No investment or outcome guarantees');
   });
+
+  /*
+  Example usage (copy into a script or NotebookLM workflow):
+
+  import { generateSlidesPrompt } from '@noesis/witness-pipeline';
+  const prompt = generateSlidesPrompt(orchestratorResult, { language: 'hi' });
+  // Paste `prompt` into NotebookLM "Create slides from text" or "Audio overview" source.
+  */
 });
