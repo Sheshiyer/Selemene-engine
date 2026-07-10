@@ -40,4 +40,18 @@ describe('generateSlidesPrompt', () => {
     expect(prompt).toContain('Mother-Son Lineage Mapping — non-predictive pattern witness');
     expect(prompt).toContain('Facts only. No prediction');
   });
+
+  it('produces a clean solo prompt when no relationship_context is present', () => {
+    const out: OrchestratorOutput = {
+      mode: 'birth-blueprint',
+      subject_names: ['Subject'],
+      register: 'l4_l5',
+      passes: [],
+      assembled: 'Solo content',
+      patterns: [],
+    };
+    const prompt = generateSlidesPrompt(out, { language: 'en' });
+    expect(prompt).toContain('Solo Reading — non-predictive pattern witness');
+    expect(prompt).not.toContain('Mother-Son');
+  });
 });
