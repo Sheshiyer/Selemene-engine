@@ -101,6 +101,7 @@ describe('IntegratedReadingOrchestrator end-to-end', () => {
       subjectNames: ['Arathi', 'Rohan'],
       engineResultsBySubject: [mockEngines, mockEngines],
       consciousnessLevel: 2,
+      language: 'en',
     });
     expect(result.passes).toHaveLength(1);
     expect(result.assembled).toContain('PASS OUTPUT');
