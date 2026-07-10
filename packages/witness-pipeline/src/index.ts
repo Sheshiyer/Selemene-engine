@@ -19,3 +19,4 @@ export * from './patterns/extractor.js';
 export * from './patterns/retrieval.js';
 export * from './patterns/vector-store.js';
 export * from './patterns/cloudflare-vectorize.js';
+export * from './notebooklm/slides-prompt.js';
