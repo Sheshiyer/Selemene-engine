@@ -54,4 +54,28 @@ describe('generateSlidesPrompt', () => {
     expect(prompt).toContain('Solo Reading — non-predictive pattern witness');
     expect(prompt).not.toContain('Mother-Son');
   });
+
+  it('produces usable NotebookLM prompt from a mother-son matrix-style output', () => {
+    const motherSonOut: OrchestratorOutput = {
+      mode: 'mother-son-lineage',
+      subject_names: ['Aarav', 'Vikram'],
+      register: 'l1_l3',
+      relationship_header: 'Mother-Son Lineage Mapping — non-predictive pattern witness',
+      passes: [
+        { id: 'opening', title: 'Opening', output: 'Observable fact A.', rubric: { guardrail_gate: 'pass' } as any },
+        { id: 'lineage', title: 'Lineage Field', output: 'Observable fact B.', rubric: { guardrail_gate: 'pass' } as any },
+      ],
+      assembled: 'Mother-Son Lineage Mapping...\n\n## Opening\n\nObservable fact A.\n\n## Lineage Field\n\nObservable fact B.',
+      patterns: [],
+    };
+
+    const prompt = generateSlidesPrompt(motherSonOut, { language: 'hi' });
+
+    expect(prompt).toContain('Language: hi');
+    expect(prompt).toContain('Mother-Son Lineage Mapping — non-predictive pattern witness');
+    expect(prompt).toContain('Facts only. No prediction');
+    expect(prompt).toContain('Pass count: 2');
+    // The prompt should be safe to paste directly into NotebookLM
+    expect(prompt.length).toBeGreaterThan(200);
+  });
 });
