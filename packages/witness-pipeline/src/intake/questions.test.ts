@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildReportIntakeQuestions } from './questions.js';
+import { buildReportIntakeQuestions, getLanguageQuestion } from './questions.js';
 
 describe('buildReportIntakeQuestions', () => {
   it('includes Birthplace and Confirm Location questions', () => {
@@ -8,4 +8,11 @@ describe('buildReportIntakeQuestions', () => {
     expect(headers).toContain('Birthplace');
     expect(headers).toContain('Confirm Location');
   });
+});
+
+it('exposes language question with en as default option', () => {
+  const q = getLanguageQuestion();
+  expect(q.header).toBe('Language');
+  const labels = (q.options ?? []).map(o => o.label);
+  expect(labels).toContain('en');
 });

@@ -37,3 +37,16 @@ export function buildReportIntakeQuestions(_opts: { subjectCount: number; relati
     },
   ];
 }
+
+export function getLanguageQuestion(): IntakeQuestion {
+  return {
+    header: 'Language',
+    question: 'In which language should the report and any generated assets be produced?',
+    options: [
+      { label: 'en', description: 'English (default)' },
+      { label: 'hi', description: 'Hindi' },
+      { label: 'es', description: 'Spanish' },
+      // Add more as needed; free-text fallback allowed downstream
+    ],
+  };
+}
