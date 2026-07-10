@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { isCompleteReportRequest } from './types.js';
+import { isCompleteReportRequest, createMotherSonRequest } from './types.js';
 
 describe('isCompleteReportRequest', () => {
   it('requires normalized location for every subject', () => {
@@ -72,4 +72,12 @@ describe('isCompleteReportRequest', () => {
     });
     expect(empty).toBe(false);
   });
+});
+
+it('accepts optional language on ReportGenerationRequest (defaults to en in usage)', () => {
+  const req = {
+    ...createMotherSonRequest(),
+    language: 'hi',
+  } as any;
+  expect(req.language).toBe('hi');
 });
