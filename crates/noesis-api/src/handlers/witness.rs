@@ -11,7 +11,7 @@ use axum::{
 };
 use chrono::Utc;
 use noesis_auth::AuthUser;
-use noesis_core::{BirthData, EngineInput};
+use noesis_core::{BirthData, EngineInput, intake};
 use noesis_witness::{
     interpret_with_llm, LiveBiofieldScores, RelationshipMode, WitnessContext,
 };
@@ -33,9 +33,16 @@ pub struct WitnessInterpretRequest {
     pub user_name: Option<String>,
     /// Optional second-person birth data for synastry / composite readings.
     pub partner_birth_data: Option<BirthData>,
-    /// Relationship framing for synastry / composite readings.
+    /// Relationship framing for synastry / composite readings (narrow enum).
     #[serde(default)]
     pub relationship_mode: RelationshipMode,
+    /// Optional richer relationship context (preferred for parity with assets path).
+    pub relationship_context: Option<intake::RelationshipContext>,
+
+    /// Optional language code (additive for future orchestrator/prompt parity with assets path).
+    /// Not used by the narrow RelationshipMode dyad path; language is orchestrator concern.
+    #[serde(default)]
+    pub language: Option<String>,
 }
 
 /// Witness Dyad interpretation response.
@@ -68,7 +75,18 @@ pub async fn interpret(
     let now = Utc::now();
     let consciousness_level = req.consciousness_level.max(user.consciousness_level);
     let user_name = req.user_name;
-    let relationship_mode = req.relationship_mode;
+
+    // Map rich relationship_context to narrow RelationshipMode for WitnessContext parity.
+    let relationship_mode = if req.relationship_mode != RelationshipMode::None {
+        req.relationship_mode
+    } else if let Some(rc) = &req.relationship_context {
+        map_relationship_context_to_mode(rc)
+    } else if req.partner_birth_data.is_some() {
+        // Sensible default for narrow dyad path when partner present but no explicit mode.
+        RelationshipMode::CompositeDyad
+    } else {
+        RelationshipMode::None
+    };
 
     // ── Run engines in parallel ───────────────────────────────────────────────
     // Only birth-dependent engines run when birth_data is present.
@@ -314,4 +332,34 @@ fn rule_based_dyad(
     engines_used.dedup();
 
     (aletheios, pichet, synthesis, question, engines_used)
+}
+
+/// Map rich relationship_context.type (or mapping_goal) strings to the narrow RelationshipMode.
+/// Used to keep the narrow dyad path in parity with rich multi-subject requests.
+fn map_relationship_context_to_mode(rc: &intake::RelationshipContext) -> RelationshipMode {
+    // Prefer explicit type if present.
+    if let Some(t) = rc.r#type.as_deref() {
+        let t = t.to_ascii_lowercase();
+        return match t.as_str() {
+            "family" | "family-triad" => RelationshipMode::FamilyTriad,
+            "business-partners" => RelationshipMode::BusinessPartners,
+            "unmarried-partners" | "married-partners" | "partner-synastry" => RelationshipMode::PartnerSynastry,
+            "composite-dyad" | "composite" => RelationshipMode::CompositeDyad,
+            _ => RelationshipMode::CompositeDyad,
+        };
+    }
+    // Fallback: inspect mapping_goal for keywords.
+    if let Some(goal) = rc.mapping_goal.as_deref() {
+        let g = goal.to_ascii_lowercase();
+        if g.contains("family") || g.contains("mother") || g.contains("father") || g.contains("son") || g.contains("daughter") {
+            return RelationshipMode::FamilyTriad;
+        }
+        if g.contains("business") || g.contains("partner") {
+            return RelationshipMode::BusinessPartners;
+        }
+        if g.contains("partner") || g.contains("spouse") || g.contains("husband") || g.contains("wife") {
+            return RelationshipMode::PartnerSynastry;
+        }
+    }
+    RelationshipMode::CompositeDyad
 }

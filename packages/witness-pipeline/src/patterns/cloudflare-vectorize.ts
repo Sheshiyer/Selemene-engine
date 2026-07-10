@@ -68,6 +68,7 @@ export class CloudflareVectorizePatternStore implements PatternVectorStore {
       const meta: Record<string, any> = {
         mode: p.metadata.mode,
         report_level: p.metadata.report_level,
+        language: p.metadata.language,
         kind: p.kind,
         version: p.metadata.version,
         systems: p.metadata.systems,

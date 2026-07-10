@@ -8,6 +8,7 @@ import { extractReportPatterns } from '../patterns/extractor.js';
 import type { ExtractedPattern } from '../patterns/types.js';
 import type { PatternVectorRetriever, RetrievedPattern } from '../patterns/retrieval.js';
 import { renderRetrievedPatternsForPrompt } from '../patterns/retrieval.js';
+import { renderFolioRelationshipHeader } from './folio-header.js';
 
 export interface OrchestratorInput {
   subjectNames: string[];
@@ -107,7 +108,10 @@ export class IntegratedReadingOrchestrator {
     let assembled = '';
 
     const relationship_header = input.relationshipContext
-      ? `${(input.subjectRoles || []).map(r => r.role).join('-') || 'Relationship'} ${input.relationshipContext.type} — non-predictive pattern witness`
+      ? renderFolioRelationshipHeader({
+          subjectRoles: (input.subjectRoles || []).map(r => ({ role: r.role, name: r.name, label: r.label })),
+          relationshipContext: input.relationshipContext,
+        })
       : undefined;
 
     let retrieved: RetrievedPattern[] = [];

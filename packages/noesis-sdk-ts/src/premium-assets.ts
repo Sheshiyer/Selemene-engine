@@ -26,6 +26,7 @@ export interface PremiumAssetInput {
   mode: string;
   consciousness_level?: number;
   options?: Record<string, unknown>;
+  language?: string; // e.g. 'en', 'hi' — passed to orchestrator when present
 }
 
 export interface PremiumAssetPass {
@@ -469,6 +470,7 @@ export async function generatePremiumAsset(
       subjectNames: [input.birth_data?.name || 'Subject'],
       engineResultsBySubject: [seeds],
       consciousnessLevel: input.consciousness_level ?? 3,
+      ...(input.language ? { language: input.language } : {}),
     };
 
     const orchOut: OrchestratorOutput = await orchestrator.run(orchInput);

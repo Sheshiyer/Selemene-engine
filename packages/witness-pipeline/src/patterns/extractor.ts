@@ -8,6 +8,8 @@ export interface ExtractReportPatternsInput {
   reportLevel: ReportLevel;
   subjectNames: string[];
   passes: PassResult[];
+  language?: string;
+  relationship_type?: string;
 }
 
 function anonymize(text: string, subjectNames: string[]): string {
@@ -68,6 +70,8 @@ export function extractReportPatterns(input: ExtractReportPatternsInput): Extrac
         metadata: {
           mode: input.mode,
           report_level: input.reportLevel,
+          language: (input as any).language ?? 'en',
+          relationship_type: (input as any).relationship_type,
           systems: inferSystems(scrubbed),
           source: 'post-report-extraction' as const,
           version: '1',

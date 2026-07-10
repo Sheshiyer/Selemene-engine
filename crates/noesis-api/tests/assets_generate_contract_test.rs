@@ -597,7 +597,8 @@ async fn assets_generate_akshay_humdes_solo_l0_persist() {
     assert!(source_pack_path.exists());
 }
 
-// Task 9: two-subject (synastry) rich shape → no crash + engines_used populated
+// Task 9 + relationship_context parity: two-subject rich shape with family context.
+// Asserts relationship_context flows into source_pack and subjects carry roles (and optionally relationship_label).
 #[tokio::test]
 async fn assets_generate_accepts_two_subjects_synastry_rich_shape() {
     let router = common::get_router().await;
@@ -609,10 +610,10 @@ async fn assets_generate_accepts_two_subjects_synastry_rich_shape() {
         "report_level": "L3",
         "subjects": [
             {
-                "role": "primary",
-                "name": "PrimaryPerson",
-                "birth_date": "1990-01-15",
-                "birth_time": "14:30",
+                "role": "mother",
+                "name": "MotherPerson",
+                "birth_date": "1965-03-12",
+                "birth_time": "08:00",
                 "normalized_location": {
                     "display_name": "Bengaluru, India",
                     "latitude": 12.9716,
@@ -620,11 +621,12 @@ async fn assets_generate_accepts_two_subjects_synastry_rich_shape() {
                     "timezone": "Asia/Kolkata",
                     "provider": "manual",
                     "confidence": "exact"
-                }
+                },
+                "relationship_label": "mother"
             },
             {
-                "role": "partner",
-                "name": "PartnerPerson",
+                "role": "son",
+                "name": "SonPerson",
                 "birth_date": "1992-06-20",
                 "birth_time": "09:15",
                 "normalized_location": {
@@ -634,13 +636,14 @@ async fn assets_generate_accepts_two_subjects_synastry_rich_shape() {
                     "timezone": "Asia/Kolkata",
                     "provider": "manual",
                     "confidence": "exact"
-                }
+                },
+                "relationship_label": "son"
             }
         ],
         "relationship_context": {
-            "type": "romantic",
-            "mapping_goal": "compatibility",
-            "sensitivity_level": "standard"
+            "type": "family",
+            "mapping_goal": "mother-son lineage and dharma",
+            "sensitivity_level": "high"
         }
     });
 
@@ -678,8 +681,10 @@ async fn assets_generate_accepts_two_subjects_synastry_rich_shape() {
     );
     let subs = sp["subjects"].as_array().expect("subjects array in source_pack for synastry");
     assert_eq!(subs.len(), 2, "synastry request must carry two subjects");
-    assert_eq!(subs[0]["role"].as_str().unwrap_or(""), "primary");
-    assert_eq!(subs[1]["role"].as_str().unwrap_or(""), "partner");
+    assert_eq!(subs[0]["role"].as_str().unwrap_or(""), "mother");
+    assert_eq!(subs[1]["role"].as_str().unwrap_or(""), "son");
+    assert_eq!(subs[0]["relationship_label"].as_str().unwrap_or(""), "mother");
+    assert_eq!(subs[1]["relationship_label"].as_str().unwrap_or(""), "son");
 
     // subject_count should reflect 2
     assert_eq!(
@@ -687,4 +692,118 @@ async fn assets_generate_accepts_two_subjects_synastry_rich_shape() {
         2,
         "subject_count should be 2 for synastry"
     );
+
+    // Core requirement: relationship_context from rich request must appear in source_pack
+    let rc = sp.get("relationship_context").expect("relationship_context must be present in source_pack for rich request");
+    assert_eq!(
+        rc.get("type").and_then(|v| v.as_str()).unwrap_or("MISSING"),
+        "family",
+        "relationship_context.type must be echoed from request"
+    );
+    assert!(
+        rc.get("mapping_goal").is_some(),
+        "relationship_context.mapping_goal should be present"
+    );
+
+    // Mother-son style assertion (relationship_label + family framing)
+    assert_eq!(subs[0]["relationship_label"].as_str().unwrap_or(""), "mother");
+    assert_eq!(subs[1]["relationship_label"].as_str().unwrap_or(""), "son");
+    assert_eq!(rc.get("type").and_then(|v| v.as_str()).unwrap_or(""), "family");
+}
+
+// TDD: failing test first — expects language + relationship_context to round-trip into source_pack.
+// This will fail until language is added to AssetGenerateRequest and wired to build_source_pack_with_audit.
+#[tokio::test]
+async fn assets_generate_roundtrips_language_with_relationship_context() {
+    let router = common::get_router().await;
+    let token = common::generate_test_token(3);
+
+    let req_body = json!({
+        "mode": "composite-dyad",
+        "consciousness_level": 3,
+        "report_level": "L2",
+        "subjects": [
+            {
+                "role": "mother",
+                "name": "Mother",
+                "birth_date": "1965-03-12",
+                "birth_time": "08:00",
+                "normalized_location": {
+                    "display_name": "Bengaluru, India",
+                    "latitude": 12.9716,
+                    "longitude": 77.5946,
+                    "timezone": "Asia/Kolkata",
+                    "provider": "manual",
+                    "confidence": "exact"
+                }
+            },
+            {
+                "role": "son",
+                "name": "Son",
+                "birth_date": "1992-06-20",
+                "birth_time": "09:15",
+                "normalized_location": {
+                    "display_name": "Mumbai, India",
+                    "latitude": 19.0760,
+                    "longitude": 72.8777,
+                    "timezone": "Asia/Kolkata",
+                    "provider": "manual",
+                    "confidence": "exact"
+                }
+            }
+        ],
+        "relationship_context": {
+            "type": "family",
+            "mapping_goal": "mother-son lineage",
+            "sensitivity_level": "high"
+        },
+        "language": "hi"
+    });
+
+    let req = Request::builder()
+        .method("POST")
+        .uri("/api/v1/assets/generate")
+        .header(header::AUTHORIZATION, format!("Bearer {}", token))
+        .header(header::CONTENT_TYPE, "application/json")
+        .body(Body::from(serde_json::to_vec(&req_body).unwrap()))
+        .unwrap();
+
+    let response = router.clone().oneshot(req).await.unwrap();
+    assert_eq!(response.status(), StatusCode::OK);
+
+    let body = axum::body::to_bytes(response.into_body(), usize::MAX).await.unwrap();
+    let json: Value = serde_json::from_slice(&body).unwrap();
+
+    let sp = &json["source_pack"];
+
+    // language must round-trip into source_pack (orchestrator/prompt metadata for TS side)
+    assert_eq!(
+        sp.get("language").and_then(|v| v.as_str()),
+        Some("hi"),
+        "language must be echoed in source_pack for orchestrator/prompt use"
+    );
+
+    // relationship_context present and not mutated
+    let rc = sp.get("relationship_context").expect("relationship_context must be present in source_pack");
+    assert_eq!(
+        rc.get("type").and_then(|v| v.as_str()),
+        Some("family"),
+        "relationship_context.type must be preserved"
+    );
+    assert_eq!(
+        rc.get("mapping_goal").and_then(|v| v.as_str()),
+        Some("mother-son lineage"),
+        "relationship_context.mapping_goal must be preserved"
+    );
+    assert_eq!(
+        rc.get("sensitivity_level").and_then(|v| v.as_str()),
+        Some("high"),
+        "relationship_context.sensitivity_level must be preserved"
+    );
+
+    // subjects also present (not mutated)
+    let subs = sp.get("subjects").and_then(|v| v.as_array()).expect("subjects array in source_pack");
+    assert_eq!(subs.len(), 2);
+    assert_eq!(subs[0]["role"].as_str().unwrap_or(""), "mother");
+    assert_eq!(subs[1]["role"].as_str().unwrap_or(""), "son");
 }

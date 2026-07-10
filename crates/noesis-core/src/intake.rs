@@ -44,4 +44,7 @@ pub struct ReportGenerationRequest {
     pub subjects: Vec<ReportSubjectInput>,
     pub relationship_context: Option<RelationshipContext>,
     pub output: Option<serde_json::Value>,
+    /// Optional language code for prompt/orchestrator selection (e.g. "hi", "en").
+    /// Top-level on request (orchestrator concern, not relationship_context).
+    pub language: Option<String>,
 }

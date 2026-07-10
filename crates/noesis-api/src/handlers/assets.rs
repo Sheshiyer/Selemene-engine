@@ -104,7 +104,13 @@ pub struct AssetGenerateRequest {
     /// (enforced by the isComplete gate).
     pub subjects: Option<Vec<noesis_core::intake::ReportSubjectInput>>,
 
+    /// Rich relationship framing for multi-subject reports (e.g. synastry, family, business).
     pub relationship_context: Option<noesis_core::intake::RelationshipContext>,
+
+    /// Optional language code for orchestrator/prompt selection (e.g. "hi", "en").
+    /// Additive first-class field. Top-level (not inside relationship_context).
+    #[serde(default)]
+    pub language: Option<String>,
 }
 
 #[derive(Serialize, ToSchema)]
@@ -203,6 +209,9 @@ pub async fn generate(
             if let Some(rl) = &effective_report_level {
                 m.insert("report_level".to_string(), serde_json::json!(rl));
             }
+            if let Some(lang) = &req.language {
+                m.insert("language".to_string(), serde_json::json!(lang));
+            }
             m
         },
     };
@@ -273,7 +282,9 @@ pub async fn generate(
         facts_count,
         build_section_rubrics(&passes),
         effective_report_level.as_deref(),
+        req.language.as_deref(),
         &effective_subjects,
+        req.relationship_context.as_ref(),
     ));
 
     Ok(Json(AssetGenerateResponse {
@@ -468,7 +479,9 @@ fn build_source_pack_with_audit(
     facts_count: usize,
     section_rubrics: Vec<Value>,
     report_level: Option<&str>,
+    language: Option<&str>,
     subjects: &[noesis_core::intake::ReportSubjectInput],
+    relationship_context: Option<&noesis_core::intake::RelationshipContext>,
 ) -> Value {
     let now = Utc::now().to_rfc3339();
     let gate = if facts_count >= 3 { "ready" } else { "partial" };
@@ -502,13 +515,19 @@ fn build_source_pack_with_audit(
         let subs_json: Vec<Value> = subjects
             .iter()
             .map(|s| {
-                serde_json::json!({
+                let mut subj = serde_json::json!({
                     "role": s.role,
                     "name": s.name,
                     "birth_date": s.birth_date,
                     "birth_time": s.birth_time,
                     "normalized_location": s.normalized_location,
-                })
+                });
+                if let Some(lbl) = &s.relationship_label {
+                    if let Some(o) = subj.as_object_mut() {
+                        o.insert("relationship_label".to_string(), serde_json::json!(lbl));
+                    }
+                }
+                subj
             })
             .collect();
         if let Some(obj) = sp.as_object_mut() {
@@ -522,6 +541,16 @@ fn build_source_pack_with_audit(
                     "timezone": first.timezone,
                 }));
             }
+        }
+    }
+    if let Some(rc) = relationship_context {
+        if let Some(obj) = sp.as_object_mut() {
+            obj.insert("relationship_context".to_string(), serde_json::to_value(rc).unwrap_or(serde_json::json!({})));
+        }
+    }
+    if let Some(lang) = language {
+        if let Some(obj) = sp.as_object_mut() {
+            obj.insert("language".to_string(), serde_json::json!(lang));
         }
     }
     sp
