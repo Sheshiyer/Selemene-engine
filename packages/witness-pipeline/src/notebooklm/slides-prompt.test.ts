@@ -78,4 +78,23 @@ describe('generateSlidesPrompt', () => {
     // The prompt should be safe to paste directly into NotebookLM
     expect(prompt.length).toBeGreaterThan(200);
   });
+
+  it('includes a bridge mandate when supplied via a minimal mode-like surface (future: pass mode doc)', () => {
+    // For v1 we simulate by allowing an optional mandates array on the call
+    const out: OrchestratorOutput = {
+      mode: 'business-partners',
+      subject_names: ['Priya', 'Rahul'],
+      register: 'l1_l3',
+      relationship_header: 'Business-Partners Synergy Audit — non-predictive pattern witness',
+      passes: [],
+      assembled: '',
+      patterns: [],
+    };
+    const prompt = generateSlidesPrompt(out, {
+      language: 'en',
+      bridgeMandates: ['No investment or outcome guarantees'],
+    });
+    // In the first slice we accept an extension point; the test documents the intent
+    expect(prompt).toContain('No investment or outcome guarantees');
+  });
 });
