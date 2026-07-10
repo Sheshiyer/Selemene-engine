@@ -43,6 +43,32 @@ const mockKundaliMode: ParsedModeDoc = {
   raw_path: 'mock-kundali.md',
 };
 
+const mockTriadMode: ParsedModeDoc = {
+  frontmatter: {
+    mode: 'triad-triangle-test',
+    subject_count: { min: 3, max: 3 },
+    roles: ['partner', 'partner', 'partner'],
+    target_words: { min: 300, max: 500 },
+    architecture: 'linear',
+    pass_plan: [
+      { id: 'opening', title: 'Opening', target_words: 100, template: 'opening-template' },
+      { id: 'field', title: 'Field', target_words: 150, template: 'field-template' },
+    ],
+    engine_overlay_weights: { 'human-design': 1 },
+    house_overlay: [1, 7],
+    bridge_mandates: ['Use triad language'],
+    svg_topology: 'triad-triangle',
+    relationship_types: ['unmarried-partners'],
+    report_level: 'L2',
+  },
+  sections: {
+    'opening-template': '# {{relationship_header}}\nTriad field for {{subject_names}}.',
+    'field-template': 'Witness the triangle between the three partners.',
+  },
+  lessons: [],
+  raw_path: 'triad-triangle-test.md',
+};
+
 const mockMode: ParsedModeDoc = {
   frontmatter: {
     mode: 'composite-dyad',
@@ -59,7 +85,7 @@ const mockMode: ParsedModeDoc = {
     svg_topology: 'dyad-arc',
   },
   sections: {
-    'pass-alpha-template': 'Write about {{subject_names}} using {{overlay_summary}}.',
+    'pass-alpha-template': 'Write about {{subject_names}} using {{overlay_summary}} in {{language}}.',
   },
   lessons: [],
   raw_path: 'composite-dyad.md',
@@ -147,5 +173,18 @@ describe('IntegratedReadingOrchestrator', () => {
     const prompt = llm.mock.calls[0][1] as string;
     expect(prompt).toContain('Retrieved synthesis patterns are not deterministic facts');
     expect(prompt).toContain('projector pacing authority');
+  });
+
+  it('injects language into prompts when supplied', async () => {
+    const llm = vi.fn().mockResolvedValue('ok');
+    const orchestrator = new IntegratedReadingOrchestrator({ mode: mockMode, llm });
+    await orchestrator.run({
+      subjectNames: ['A'],
+      engineResultsBySubject: [mockEngineResults],
+      consciousnessLevel: 2,
+      language: 'hi',
+    });
+    const user = llm.mock.calls[0][1] as string;
+    expect(user).toContain('hi'); // via {{language}} or system line
   });
 });

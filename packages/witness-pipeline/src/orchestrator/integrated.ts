@@ -16,6 +16,10 @@ export interface OrchestratorInput {
   retriever?: PatternVectorRetriever;
   retrievalQuery?: string;
   retrievalFilters?: import('../patterns/retrieval.js').RetrievalFilters;
+  // additive for matrix / relationship / language
+  subjectRoles?: Array<{ role: string; label?: string; name: string }>;
+  relationshipContext?: { type: string; mapping_goal: string; sensitivity_level: 'low' | 'medium' | 'high' };
+  language?: string;
 }
 
 export type RubricGate = 'pass' | 'warn' | 'fail';
@@ -51,6 +55,7 @@ export interface OrchestratorOutput {
   mode: string;
   subject_names: string[];
   register: RegisterBand;
+  relationship_header?: string;
   passes: PassResult[];
   assembled: string;
   patterns: ExtractedPattern[];
@@ -101,6 +106,10 @@ export class IntegratedReadingOrchestrator {
     const passOutputs: PassResult[] = [];
     let assembled = '';
 
+    const relationship_header = input.relationshipContext
+      ? `${(input.subjectRoles || []).map(r => r.role).join('-') || 'Relationship'} ${input.relationshipContext.type} — non-predictive pattern witness`
+      : undefined;
+
     let retrieved: RetrievedPattern[] = [];
     const effectiveRetriever = input.retriever ?? this.retriever;
     if (effectiveRetriever && input.retrievalQuery) {
@@ -136,6 +145,7 @@ export class IntegratedReadingOrchestrator {
         modelUsed: model,
         latencyMs,
         engineResults: input.engineResultsBySubject[0] ?? [],
+        relationshipType: input.relationshipContext?.type,
       });
       passOutputs.push({ id: pass.id, title: pass.title, output, rubric });
       assembled += `\n\n## ${pass.title}\n\n${output}`;
@@ -146,7 +156,13 @@ export class IntegratedReadingOrchestrator {
       reportLevel: (this.mode.frontmatter as any).report_level ?? 'L3',
       subjectNames: input.subjectNames,
       passes: passOutputs,
+      language: input.language,
+      relationship_type: input.relationshipContext?.type,
     });
+
+    if (relationship_header) {
+      assembled = `${relationship_header}\n\n${assembled}`;
+    }
 
     const out: OrchestratorOutput = {
       mode: this.mode.frontmatter.mode,
@@ -156,6 +172,7 @@ export class IntegratedReadingOrchestrator {
       assembled: assembled.trim(),
       patterns,
     };
+    if (relationship_header) (out as any).relationship_header = relationship_header;
     if (retrieved.length) out.retrieved_patterns = retrieved;
     return out;
   }
@@ -171,15 +188,30 @@ export class IntegratedReadingOrchestrator {
     const bridgeMandates = this.mode.frontmatter.bridge_mandates.map((m) => `- ${m}`).join('\n');
     const lessonsSummary = summarizeLessons(this.mode.lessons, 5);
 
+    const subjectRolesStr = input.subjectRoles && input.subjectRoles.length > 0
+      ? input.subjectRoles.map((r) => `${r.name} (${r.role}${r.label ? ` — ${r.label}` : ''})`).join(', ')
+      : input.subjectNames.join(', ');
+
+    const relationshipHeader = input.relationshipContext
+      ? `${input.subjectRoles?.map((r) => r.role).join('-') || 'Relationship'} ${input.relationshipContext.type} — non-predictive pattern witness`
+      : '';
+
+    const relationshipCtxJson = input.relationshipContext ? JSON.stringify(input.relationshipContext) : '';
+
     return template
       .replace(/\{\{subject_names\}\}/g, input.subjectNames.join(', '))
+      .replace(/\{\{subject_roles\}\}/g, subjectRolesStr)
+      .replace(/\{\{relationship_header\}\}/g, relationshipHeader)
+      .replace(/\{\{relationship_context\}\}/g, relationshipCtxJson)
+      .replace(/\{\{mapping_goal\}\}/g, input.relationshipContext?.mapping_goal || '')
       .replace(/\{\{prior_pass\}\}/g, priorPass)
       .replace(/\{\{overlay_summary\}\}/g, overlaySummary)
       .replace(/\{\{bridge_mandates\}\}/g, bridgeMandates)
       .replace(/\{\{lessons_summary\}\}/g, lessonsSummary)
       .replace(/\{\{register\}\}/g, register)
       .replace(/\{\{pass_id\}\}/g, pass.id)
-      .replace(/\{\{target_words\}\}/g, String(pass.target_words));
+      .replace(/\{\{target_words\}\}/g, String(pass.target_words))
+      .replace(/\{\{language\}\}/g, input.language ?? 'en');
   }
 
   private buildSystemPrompt(
@@ -188,10 +220,19 @@ export class IntegratedReadingOrchestrator {
     register: RegisterBand,
   ): string {
     const { min, max } = resolveTargetWords(this.mode, register, pass.id);
+    const rolesLine = input.subjectRoles && input.subjectRoles.length > 0
+      ? `Subjects (roles): ${input.subjectRoles.map((r) => `${r.name}=${r.role}`).join(', ')}`
+      : `Subjects: ${input.subjectNames.join(', ')}`;
+    const relLine = input.relationshipContext
+      ? `Relationship: type=${input.relationshipContext.type}; goal="${input.relationshipContext.mapping_goal}"; sensitivity=${input.relationshipContext.sensitivity_level}`
+      : '';
+    const langLine = input.language ? `Language: ${input.language}.` : '';
     return `You are writing pass "${pass.title}" (id: ${pass.id}) for the ${this.mode.frontmatter.mode} reading mode.
 Register band: ${register}.
 Target length: ~${pass.target_words} words (acceptable range ${min}-${max}).
-Subjects: ${input.subjectNames.join(', ')}.
+${rolesLine}
+${relLine}
+${langLine}
 ${this.mode.sections['overlay-rules'] ?? ''}`;
   }
 
