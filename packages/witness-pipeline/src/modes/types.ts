@@ -39,6 +39,7 @@ export interface ModeConfig {
   house_overlay: number[];
   bridge_mandates: string[];
   svg_topology: TopologyKey;
+  relationship_types?: string[];
   register_variants?: RegisterVariants;
   report_level?: ReportLevel;
 }

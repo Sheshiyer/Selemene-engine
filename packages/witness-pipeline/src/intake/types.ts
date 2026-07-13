@@ -3,7 +3,7 @@ import type { ReportLevel } from '../modes/types.js';
 export type ReportMode = 'kundali' | 'birth-blueprint' | 'integrated-reading' | 'synastry' | string;
 export type Gender = 'female' | 'male' | 'nonbinary' | 'other' | 'prefer_not_to_say' | 'unknown';
 export type ExternalChartSex = 'female' | 'male' | 'unknown';
-export type SubjectRole = 'primary' | 'partner' | 'family_member' | 'friend' | 'business_partner' | 'custom';
+export type SubjectRole = 'primary' | 'partner' | 'family_member' | 'mother' | 'father' | 'son' | 'daughter' | 'child' | 'friend' | 'business_partner' | 'custom';
 
 export interface NormalizedLocation {
   display_name: string;
@@ -68,8 +68,8 @@ export function createBusinessDyadRequest(): ReportGenerationRequest {
     report_level: 'L2',
     report_mode: 'synastry',
     subjects: [
-      { role: 'business-partner', name: 'Priya', relationship_label: 'co-founder & CEO', birth_date: '1985-03-01', birth_time_confidence: 'exact', birth_location_query: 'Mumbai, India' },
-      { role: 'business-partner', name: 'Rahul', relationship_label: 'co-founder & CTO', birth_date: '1986-07-01', birth_time_confidence: 'exact', birth_location_query: 'Mumbai, India' },
+      { role: 'business_partner', name: 'Priya', relationship_label: 'co-founder & CEO', birth_date: '1985-03-01', birth_time_confidence: 'exact', birth_location_query: 'Mumbai, India' },
+      { role: 'business_partner', name: 'Rahul', relationship_label: 'co-founder & CTO', birth_date: '1986-07-01', birth_time_confidence: 'exact', birth_location_query: 'Mumbai, India' },
     ],
     relationship_context: {
       type: 'business-partners',
@@ -85,13 +85,15 @@ export function createFamilyPentaRequest(): ReportGenerationRequest {
   return {
     report_level: 'L3',
     report_mode: 'synastry',
-    subjects: [
-      { role: 'mother', name: 'Lakshmi' },
-      { role: 'father', name: 'Ramesh' },
-      { role: 'child1', name: 'Anika' },
-      { role: 'child2', name: 'Arjun' },
-      { role: 'child3', name: 'Meera' },
-    ].map((s) => ({
+    subjects: (
+      [
+        { role: 'mother', name: 'Lakshmi' },
+        { role: 'father', name: 'Ramesh' },
+        { role: 'child', name: 'Anika' },
+        { role: 'child', name: 'Arjun' },
+        { role: 'child', name: 'Meera' },
+      ] as const
+    ).map((s) => ({
       ...s,
       birth_date: '1990-01-01',
       birth_time_confidence: 'exact' as const,

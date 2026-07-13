@@ -8,6 +8,7 @@ export interface RetrievalFilters {
   mode?: string;
   report_level?: string;
   language?: string;
+  relationship_type?: string;
   kind?: string;
   version?: string;
   systems?: string[];

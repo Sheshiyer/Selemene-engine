@@ -53,7 +53,7 @@ function inferSystems(output: string): string[] {
 }
 
 export function extractReportPatterns(input: ExtractReportPatternsInput): ExtractedPattern[] {
-  return input.passes
+  const candidates = input.passes
     .filter((p) => p.rubric.guardrail_gate === 'pass')
     .filter((p) => p.rubric.integrated_layering_gate === 'pass')
     .map((p) => {
@@ -70,14 +70,14 @@ export function extractReportPatterns(input: ExtractReportPatternsInput): Extrac
         metadata: {
           mode: input.mode,
           report_level: input.reportLevel,
-          language: (input as any).language ?? 'en',
-          relationship_type: (input as any).relationship_type,
+          language: input.language ?? 'en',
+          relationship_type: input.relationship_type,
           systems: inferSystems(scrubbed),
           source: 'post-report-extraction' as const,
           version: '1',
         },
       };
-    })
-    .filter((p): p is ExtractedPattern => p !== null)
-    .filter((p) => p.text.length >= 40);
+    });
+  const extracted = candidates.filter((p) => p !== null) as ExtractedPattern[];
+  return extracted.filter((p) => p.text.length >= 40);
 }

@@ -11,6 +11,8 @@ export interface ExtractedPattern {
   metadata: {
     mode: string;
     report_level: ReportLevel;
+    language?: string;
+    relationship_type?: string;
     systems: string[];
     source: 'post-report-extraction';
     version: string;

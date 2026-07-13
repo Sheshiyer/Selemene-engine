@@ -9,6 +9,7 @@ export interface AuditSectionInput {
   modelUsed: string;
   latencyMs: number;
   engineResults?: any[];
+  relationshipType?: string;
 }
 
 const SYSTEM_PATTERNS = [
