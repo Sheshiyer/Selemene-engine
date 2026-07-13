@@ -2,8 +2,8 @@
   "generated_at": "2026-03-13",
   "inventory_scope": "/api/v1",
   "source": "crates/noesis-api/src/lib.rs",
-  "path_count": 73,
-  "route_count": 77,
+  "path_count": 90,
+  "route_count": 94,
   "routes": [
     {
       "path": "/auth/register",
@@ -469,6 +469,138 @@
       ]
     },
     {
+      "path": "/admin/bridge/health",
+      "auth_requirement": "bearer_or_api_key",
+      "uses_orchestrator": false,
+      "methods": [
+        {
+          "method": "GET",
+          "handler": "handlers::admin::bridge_health"
+        }
+      ]
+    },
+    {
+      "path": "/admin/bridge/sidecar",
+      "auth_requirement": "bearer_or_api_key",
+      "uses_orchestrator": false,
+      "methods": [
+        {
+          "method": "GET",
+          "handler": "handlers::admin::sidecar_detail"
+        }
+      ]
+    },
+    {
+      "path": "/admin/bridge/hermes/status",
+      "auth_requirement": "bearer_or_api_key",
+      "uses_orchestrator": false,
+      "methods": [
+        {
+          "method": "GET",
+          "handler": "handlers::admin::hermes_bridge_status"
+        }
+      ]
+    },
+    {
+      "path": "/admin/bridge/suno/status",
+      "auth_requirement": "bearer_or_api_key",
+      "uses_orchestrator": false,
+      "methods": [
+        {
+          "method": "GET",
+          "handler": "handlers::admin::suno_bridge_status"
+        }
+      ]
+    },
+    {
+      "path": "/admin/bridge/llm-proxy/status",
+      "auth_requirement": "bearer_or_api_key",
+      "uses_orchestrator": false,
+      "methods": [
+        {
+          "method": "GET",
+          "handler": "handlers::admin::llm_proxy_status"
+        }
+      ]
+    },
+    {
+      "path": "/admin/observability/summary",
+      "auth_requirement": "bearer_or_api_key",
+      "uses_orchestrator": false,
+      "methods": [
+        {
+          "method": "GET",
+          "handler": "handlers::admin::observability_summary"
+        }
+      ]
+    },
+    {
+      "path": "/admin/skills/status",
+      "auth_requirement": "bearer_or_api_key",
+      "uses_orchestrator": false,
+      "methods": [
+        {
+          "method": "GET",
+          "handler": "handlers::admin::skills_ecosystem_status"
+        }
+      ]
+    },
+    {
+      "path": "/admin/system/engines",
+      "auth_requirement": "bearer_or_api_key",
+      "uses_orchestrator": true,
+      "methods": [
+        {
+          "method": "GET",
+          "handler": "handlers::admin::list_engines_admin"
+        }
+      ]
+    },
+    {
+      "path": "/admin/system/engines/:engine_id",
+      "auth_requirement": "bearer_or_api_key",
+      "uses_orchestrator": true,
+      "methods": [
+        {
+          "method": "GET",
+          "handler": "handlers::admin::get_engine_admin"
+        }
+      ]
+    },
+    {
+      "path": "/admin/system/workflows/:workflow_id/detail",
+      "auth_requirement": "bearer_or_api_key",
+      "uses_orchestrator": false,
+      "methods": [
+        {
+          "method": "GET",
+          "handler": "handlers::admin::get_workflow_admin"
+        }
+      ]
+    },
+    {
+      "path": "/admin/biofield/sessions",
+      "auth_requirement": "bearer_or_api_key",
+      "uses_orchestrator": false,
+      "methods": [
+        {
+          "method": "GET",
+          "handler": "handlers::admin::list_biofield_sessions"
+        }
+      ]
+    },
+    {
+      "path": "/admin/biofield/sessions/:session_id",
+      "auth_requirement": "bearer_or_api_key",
+      "uses_orchestrator": false,
+      "methods": [
+        {
+          "method": "GET",
+          "handler": "handlers::admin::get_biofield_session"
+        }
+      ]
+    },
+    {
       "path": "/admin/ephemeris/checksums",
       "auth_requirement": "bearer_or_api_key",
       "uses_orchestrator": false,
@@ -597,6 +729,61 @@
         {
           "method": "GET",
           "handler": "handlers::admin_billing::list_plans"
+        }
+      ]
+    },
+    {
+      "path": "/admin/witness-dyad/executions",
+      "auth_requirement": "bearer_or_api_key",
+      "uses_orchestrator": false,
+      "methods": [
+        {
+          "method": "GET",
+          "handler": "handlers::admin::list_witness_dyad_executions"
+        }
+      ]
+    },
+    {
+      "path": "/admin/witness-dyad/executions/:execution_id",
+      "auth_requirement": "bearer_or_api_key",
+      "uses_orchestrator": false,
+      "methods": [
+        {
+          "method": "GET",
+          "handler": "handlers::admin::get_witness_dyad_execution"
+        }
+      ]
+    },
+    {
+      "path": "/admin/witness-dyad/analytics",
+      "auth_requirement": "bearer_or_api_key",
+      "uses_orchestrator": false,
+      "methods": [
+        {
+          "method": "GET",
+          "handler": "handlers::admin::witness_dyad_analytics"
+        }
+      ]
+    },
+    {
+      "path": "/admin/readings",
+      "auth_requirement": "bearer_or_api_key",
+      "uses_orchestrator": false,
+      "methods": [
+        {
+          "method": "GET",
+          "handler": "handlers::admin::list_all_readings"
+        }
+      ]
+    },
+    {
+      "path": "/admin/readings/engine-breakdown",
+      "auth_requirement": "bearer_or_api_key",
+      "uses_orchestrator": false,
+      "methods": [
+        {
+          "method": "GET",
+          "handler": "handlers::admin::readings_engine_breakdown"
         }
       ]
     },
