@@ -2151,9 +2151,8 @@ impl AdminRepository {
         status: Option<&str>,
         user_id: Option<Uuid>,
     ) -> Result<i64, Error> {
-        let mut qb: QueryBuilder<Postgres> = QueryBuilder::new(
-            "SELECT COUNT(*)::BIGINT FROM biofield_sessions bs WHERE 1=1",
-        );
+        let mut qb: QueryBuilder<Postgres> =
+            QueryBuilder::new("SELECT COUNT(*)::BIGINT FROM biofield_sessions bs WHERE 1=1");
 
         if let Some(s) = status.map(str::trim).filter(|s| !s.is_empty()) {
             qb.push(" AND bs.status = ").push_bind(s);
@@ -2294,9 +2293,8 @@ impl AdminRepository {
         from: Option<DateTime<Utc>>,
         to: Option<DateTime<Utc>>,
     ) -> Result<i64, Error> {
-        let mut qb: QueryBuilder<Postgres> = QueryBuilder::new(
-            "SELECT COUNT(*)::BIGINT FROM witness_dyad_executions WHERE 1=1",
-        );
+        let mut qb: QueryBuilder<Postgres> =
+            QueryBuilder::new("SELECT COUNT(*)::BIGINT FROM witness_dyad_executions WHERE 1=1");
 
         if let Some(uid) = user_id {
             qb.push(" AND user_id = ").push_bind(uid);
@@ -2455,10 +2453,7 @@ impl AdminRepository {
         .await
     }
 
-    pub async fn witness_dyad_avg_llm_duration_ms(
-        &self,
-        window_hours: i64,
-    ) -> Result<f64, Error> {
+    pub async fn witness_dyad_avg_llm_duration_ms(&self, window_hours: i64) -> Result<f64, Error> {
         sqlx::query_scalar::<_, Option<f64>>(
             r#"
             SELECT AVG(llm_duration_ms)::DOUBLE PRECISION

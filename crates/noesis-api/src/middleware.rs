@@ -150,12 +150,13 @@ pub async fn auth_middleware(
                                 )
                             })?;
                     }
-                    req.extensions_mut().insert(crate::cf_access::auth_user_from_parts(
-                        user.id,
-                        &user.tier,
-                        user.consciousness_level,
-                        &roles,
-                    ));
+                    req.extensions_mut()
+                        .insert(crate::cf_access::auth_user_from_parts(
+                            user.id,
+                            &user.tier,
+                            user.consciousness_level,
+                            &roles,
+                        ));
                     return Ok(next.run(req).await);
                 }
                 Err(e) => {

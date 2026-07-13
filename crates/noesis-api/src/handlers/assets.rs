@@ -23,7 +23,9 @@ use utoipa::ToSchema;
 /// Internal helper: convert legacy flat BirthData to the new subjects[] shape.
 /// Used only inside the handler to support the old path while the rich contract
 /// (subjects + normalized_location) is the preferred form.
-fn legacy_birth_to_subjects(bd: &noesis_core::BirthData) -> Vec<noesis_core::intake::ReportSubjectInput> {
+fn legacy_birth_to_subjects(
+    bd: &noesis_core::BirthData,
+) -> Vec<noesis_core::intake::ReportSubjectInput> {
     vec![noesis_core::intake::ReportSubjectInput {
         role: "primary".to_string(),
         name: bd.name.clone(),
@@ -55,15 +57,19 @@ fn has_complete_locations(subjects: &[noesis_core::intake::ReportSubjectInput]) 
 /// from the first subject's normalized_location + birth fields so the engine layer
 /// (which still expects legacy BirthData) can execute and populate engines_used.
 /// This is additive support only — the rich path is the contract of record.
-fn first_subject_to_birth_data(sub: &noesis_core::intake::ReportSubjectInput) -> Option<noesis_core::BirthData> {
-    sub.normalized_location.as_ref().map(|loc| noesis_core::BirthData {
-        name: sub.name.clone(),
-        date: sub.birth_date.clone(),
-        time: sub.birth_time.clone(),
-        latitude: loc.latitude,
-        longitude: loc.longitude,
-        timezone: loc.timezone.clone(),
-    })
+fn first_subject_to_birth_data(
+    sub: &noesis_core::intake::ReportSubjectInput,
+) -> Option<noesis_core::BirthData> {
+    sub.normalized_location
+        .as_ref()
+        .map(|loc| noesis_core::BirthData {
+            name: sub.name.clone(),
+            date: sub.birth_date.clone(),
+            time: sub.birth_time.clone(),
+            latitude: loc.latitude,
+            longitude: loc.longitude,
+            timezone: loc.timezone.clone(),
+        })
 }
 
 #[derive(Deserialize, ToSchema)]
@@ -194,7 +200,9 @@ pub async fn generate(
     let bridged_birth_data: Option<noesis_core::BirthData> = if req.birth_data.is_some() {
         req.birth_data.clone()
     } else {
-        effective_subjects.first().and_then(first_subject_to_birth_data)
+        effective_subjects
+            .first()
+            .and_then(first_subject_to_birth_data)
     };
 
     let make_input = || EngineInput {
@@ -532,20 +540,32 @@ fn build_source_pack_with_audit(
             .collect();
         if let Some(obj) = sp.as_object_mut() {
             obj.insert("subjects".to_string(), serde_json::json!(subs_json));
-            obj.insert("subject_count".to_string(), serde_json::json!(subjects.len()));
-            if let Some(first) = subjects.first().and_then(|s| s.normalized_location.as_ref()) {
-                obj.insert("first_normalized_location".to_string(), serde_json::json!({
-                    "display_name": first.display_name,
-                    "latitude": first.latitude,
-                    "longitude": first.longitude,
-                    "timezone": first.timezone,
-                }));
+            obj.insert(
+                "subject_count".to_string(),
+                serde_json::json!(subjects.len()),
+            );
+            if let Some(first) = subjects
+                .first()
+                .and_then(|s| s.normalized_location.as_ref())
+            {
+                obj.insert(
+                    "first_normalized_location".to_string(),
+                    serde_json::json!({
+                        "display_name": first.display_name,
+                        "latitude": first.latitude,
+                        "longitude": first.longitude,
+                        "timezone": first.timezone,
+                    }),
+                );
             }
         }
     }
     if let Some(rc) = relationship_context {
         if let Some(obj) = sp.as_object_mut() {
-            obj.insert("relationship_context".to_string(), serde_json::to_value(rc).unwrap_or(serde_json::json!({})));
+            obj.insert(
+                "relationship_context".to_string(),
+                serde_json::to_value(rc).unwrap_or(serde_json::json!({})),
+            );
         }
     }
     if let Some(lang) = language {

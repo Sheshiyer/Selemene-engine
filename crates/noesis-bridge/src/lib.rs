@@ -731,9 +731,7 @@ impl BridgeManager {
                         BridgeCircuitBreakerSnapshot {
                             state: cb.state().as_str().to_string(),
                             failure_count: cb.failure_count(),
-                            last_failure_at: cb
-                                .last_failure_at()
-                                .map(|dt| dt.to_rfc3339()),
+                            last_failure_at: cb.last_failure_at().map(|dt| dt.to_rfc3339()),
                         }
                     })
                     .unwrap_or(BridgeCircuitBreakerSnapshot {

@@ -56,8 +56,8 @@ use noesis_data::repositories::readings_repository::ReadingsRepository;
 use noesis_data::repositories::usage_repository::UsageRepository;
 use noesis_data::repositories::user_repository::UserRepository;
 use noesis_metrics::NoesisMetrics;
-use noesis_orchestrator::{EphemerisCalculator, HDPlanet, WorkflowOrchestrator};
 use noesis_orchestrator::workflow::registry::WorkflowRegistry;
+use noesis_orchestrator::{EphemerisCalculator, HDPlanet, WorkflowOrchestrator};
 use sentry_tower::{NewSentryLayer, SentryHttpLayer};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -860,10 +860,7 @@ pub fn create_router(state: AppState, config: &ApiConfig) -> Router {
             get(handlers::admin::system_workflows),
         )
         .route("/admin/system/cache", get(handlers::admin::system_cache))
-        .route(
-            "/admin/bridge/health",
-            get(handlers::admin::bridge_health),
-        )
+        .route("/admin/bridge/health", get(handlers::admin::bridge_health))
         .route(
             "/admin/bridge/sidecar",
             get(handlers::admin::sidecar_detail),
@@ -969,10 +966,7 @@ pub fn create_router(state: AppState, config: &ApiConfig) -> Router {
             "/admin/witness-dyad/analytics",
             get(handlers::admin::witness_dyad_analytics),
         )
-        .route(
-            "/admin/readings",
-            get(handlers::admin::list_all_readings),
-        )
+        .route("/admin/readings", get(handlers::admin::list_all_readings))
         .route(
             "/admin/readings/engine-breakdown",
             get(handlers::admin::readings_engine_breakdown),
@@ -3492,9 +3486,10 @@ pub async fn build_app_state(config: &ApiConfig) -> AppState {
         config.cf_access_issuer.as_ref(),
         config.cf_access_audience.as_ref(),
     ) {
-        (Some(issuer), Some(audience)) => Some(Arc::new(
-            crate::cf_access::CfAccessValidator::new(issuer.clone(), audience.clone()),
-        )),
+        (Some(issuer), Some(audience)) => Some(Arc::new(crate::cf_access::CfAccessValidator::new(
+            issuer.clone(),
+            audience.clone(),
+        ))),
         _ => None,
     };
 
@@ -3616,9 +3611,10 @@ pub async fn build_app_state_lazy_db(config: &ApiConfig) -> AppState {
         config.cf_access_issuer.as_ref(),
         config.cf_access_audience.as_ref(),
     ) {
-        (Some(issuer), Some(audience)) => Some(Arc::new(
-            crate::cf_access::CfAccessValidator::new(issuer.clone(), audience.clone()),
-        )),
+        (Some(issuer), Some(audience)) => Some(Arc::new(crate::cf_access::CfAccessValidator::new(
+            issuer.clone(),
+            audience.clone(),
+        ))),
         _ => None,
     };
 

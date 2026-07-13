@@ -1,5 +1,5 @@
 // crates/noesis-core/tests/intake_types_test.rs
-use noesis_core::intake::{NormalizedLocation, ReportSubjectInput, ReportGenerationRequest};
+use noesis_core::intake::{NormalizedLocation, ReportGenerationRequest, ReportSubjectInput};
 
 #[test]
 fn normalized_location_roundtrips() {

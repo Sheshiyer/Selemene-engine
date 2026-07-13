@@ -30,7 +30,9 @@ pub fn routing_for_engine(engine_id: &str) -> Option<RoutingMode> {
 }
 
 /// Partition a list of engine results by routing mode.
-pub fn partition_by_routing(results: &[(String, Value)]) -> (Vec<&Value>, Vec<&Value>, Vec<&Value>) {
+pub fn partition_by_routing(
+    results: &[(String, Value)],
+) -> (Vec<&Value>, Vec<&Value>, Vec<&Value>) {
     let mut aletheios = vec![];
     let mut pichet = vec![];
     let mut dyad = vec![];
@@ -51,9 +53,18 @@ mod tests {
 
     #[test]
     fn routing_for_engine_maps_known_ids() {
-        assert_eq!(routing_for_engine("vimshottari"), Some(RoutingMode::AletheiosPrimary));
-        assert_eq!(routing_for_engine("biofield"), Some(RoutingMode::PichetPrimary));
-        assert_eq!(routing_for_engine("panchanga"), Some(RoutingMode::DyadSynthesis));
+        assert_eq!(
+            routing_for_engine("vimshottari"),
+            Some(RoutingMode::AletheiosPrimary)
+        );
+        assert_eq!(
+            routing_for_engine("biofield"),
+            Some(RoutingMode::PichetPrimary)
+        );
+        assert_eq!(
+            routing_for_engine("panchanga"),
+            Some(RoutingMode::DyadSynthesis)
+        );
         assert_eq!(routing_for_engine("unknown"), None);
     }
 

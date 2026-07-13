@@ -182,11 +182,25 @@ pub async fn upsert_raga_clip(
 
     let status = body.status.as_deref().unwrap_or("generated");
 
-    if !matches!(body.style.as_str(), "ambient" | "meditative" | "cinematic" | "acid") {
-        return (StatusCode::UNPROCESSABLE_ENTITY, Json(serde_json::json!({ "error": "unsupported style" }))).into_response();
+    if !matches!(
+        body.style.as_str(),
+        "ambient" | "meditative" | "cinematic" | "acid"
+    ) {
+        return (
+            StatusCode::UNPROCESSABLE_ENTITY,
+            Json(serde_json::json!({ "error": "unsupported style" })),
+        )
+            .into_response();
     }
-    if !matches!(status, "pending" | "generated" | "approved" | "rejected" | "regenerate") {
-        return (StatusCode::UNPROCESSABLE_ENTITY, Json(serde_json::json!({ "error": "unsupported status" }))).into_response();
+    if !matches!(
+        status,
+        "pending" | "generated" | "approved" | "rejected" | "regenerate"
+    ) {
+        return (
+            StatusCode::UNPROCESSABLE_ENTITY,
+            Json(serde_json::json!({ "error": "unsupported status" })),
+        )
+            .into_response();
     }
 
     let pool = match state.auth.pool() {

@@ -11,11 +11,9 @@ use axum::{
 };
 use chrono::Utc;
 use noesis_auth::AuthUser;
-use noesis_core::{BirthData, EngineInput, intake};
+use noesis_core::{intake, BirthData, EngineInput};
 use noesis_data::models::witness_dyad::NewWitnessDyadExecution;
-use noesis_witness::{
-    interpret_with_llm, LiveBiofieldScores, RelationshipMode, WitnessContext,
-};
+use noesis_witness::{interpret_with_llm, LiveBiofieldScores, RelationshipMode, WitnessContext};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::time::Instant;
@@ -149,10 +147,30 @@ pub async fn interpret(
             options: std::collections::HashMap::new(),
         };
         let (p_hd, p_num, p_gk, p_vim) = tokio::join!(
-            run_engine(&orch, "human-design", partner_input(Some(partner_bd.clone())), level),
-            run_engine(&orch, "numerology", partner_input(Some(partner_bd.clone())), level),
-            run_engine(&orch, "gene-keys", partner_input(Some(partner_bd.clone())), level),
-            run_engine(&orch, "vimshottari", partner_input(Some(partner_bd.clone())), level),
+            run_engine(
+                &orch,
+                "human-design",
+                partner_input(Some(partner_bd.clone())),
+                level
+            ),
+            run_engine(
+                &orch,
+                "numerology",
+                partner_input(Some(partner_bd.clone())),
+                level
+            ),
+            run_engine(
+                &orch,
+                "gene-keys",
+                partner_input(Some(partner_bd.clone())),
+                level
+            ),
+            run_engine(
+                &orch,
+                "vimshottari",
+                partner_input(Some(partner_bd.clone())),
+                level
+            ),
         );
         Some(Box::new(WitnessContext {
             user_name: partner_bd.name,
@@ -184,13 +202,27 @@ pub async fn interpret(
 
     // ── Compute engines_available for persistence ─────────────────────────────
     let mut engines_available = vec!["biofield".to_string()];
-    if ctx.panchanga.is_some() { engines_available.push("panchanga".into()); }
-    if ctx.human_design.is_some() { engines_available.push("human-design".into()); }
-    if ctx.numerology.is_some() { engines_available.push("numerology".into()); }
-    if ctx.biorhythm.is_some() { engines_available.push("biorhythm".into()); }
-    if ctx.transits.is_some() { engines_available.push("transits".into()); }
-    if ctx.gene_keys.is_some() { engines_available.push("gene-keys".into()); }
-    if ctx.vimshottari.is_some() { engines_available.push("vimshottari".into()); }
+    if ctx.panchanga.is_some() {
+        engines_available.push("panchanga".into());
+    }
+    if ctx.human_design.is_some() {
+        engines_available.push("human-design".into());
+    }
+    if ctx.numerology.is_some() {
+        engines_available.push("numerology".into());
+    }
+    if ctx.biorhythm.is_some() {
+        engines_available.push("biorhythm".into());
+    }
+    if ctx.transits.is_some() {
+        engines_available.push("transits".into());
+    }
+    if ctx.gene_keys.is_some() {
+        engines_available.push("gene-keys".into());
+    }
+    if ctx.vimshottari.is_some() {
+        engines_available.push("vimshottari".into());
+    }
     engines_available.sort();
     engines_available.dedup();
 
@@ -429,7 +461,9 @@ fn map_relationship_context_to_mode(rc: &intake::RelationshipContext) -> Relatio
         return match t.as_str() {
             "family" | "family-triad" => RelationshipMode::FamilyTriad,
             "business-partners" => RelationshipMode::BusinessPartners,
-            "unmarried-partners" | "married-partners" | "partner-synastry" => RelationshipMode::PartnerSynastry,
+            "unmarried-partners" | "married-partners" | "partner-synastry" => {
+                RelationshipMode::PartnerSynastry
+            }
             "composite-dyad" | "composite" => RelationshipMode::CompositeDyad,
             _ => RelationshipMode::CompositeDyad,
         };
@@ -437,13 +471,22 @@ fn map_relationship_context_to_mode(rc: &intake::RelationshipContext) -> Relatio
     // Fallback: inspect mapping_goal for keywords.
     if let Some(goal) = rc.mapping_goal.as_deref() {
         let g = goal.to_ascii_lowercase();
-        if g.contains("family") || g.contains("mother") || g.contains("father") || g.contains("son") || g.contains("daughter") {
+        if g.contains("family")
+            || g.contains("mother")
+            || g.contains("father")
+            || g.contains("son")
+            || g.contains("daughter")
+        {
             return RelationshipMode::FamilyTriad;
         }
         if g.contains("business") || g.contains("partner") {
             return RelationshipMode::BusinessPartners;
         }
-        if g.contains("partner") || g.contains("spouse") || g.contains("husband") || g.contains("wife") {
+        if g.contains("partner")
+            || g.contains("spouse")
+            || g.contains("husband")
+            || g.contains("wife")
+        {
             return RelationshipMode::PartnerSynastry;
         }
     }

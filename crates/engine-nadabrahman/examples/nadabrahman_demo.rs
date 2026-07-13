@@ -108,7 +108,10 @@ async fn main() {
         },
         "timestamp": full_output.metadata.timestamp,
     });
-    println!("{}", serde_json::to_string_pretty(&raycast_payload).unwrap());
+    println!(
+        "{}",
+        serde_json::to_string_pretty(&raycast_payload).unwrap()
+    );
 
     // ------------------------------------------------------------------
     // Test 5: Validation
@@ -144,21 +147,37 @@ fn print_engine_output(output: &noesis_core::EngineOutput) {
 
     if let Some(time_rec) = result.get("time_recommendation") {
         let tr = time_rec.as_object().unwrap();
-        println!("  Prahar:     {} ({})",
-            tr.get("prahar_name").and_then(|v| v.as_str()).unwrap_or("?"),
+        println!(
+            "  Prahar:     {} ({})",
+            tr.get("prahar_name")
+                .and_then(|v| v.as_str())
+                .unwrap_or("?"),
             tr.get("time_range").and_then(|v| v.as_str()).unwrap_or("?"),
         );
-        println!("  Dosha:      {}",
-            tr.get("dosha_dominance").and_then(|v| v.as_str()).unwrap_or("?"),
+        println!(
+            "  Dosha:      {}",
+            tr.get("dosha_dominance")
+                .and_then(|v| v.as_str())
+                .unwrap_or("?"),
         );
-        println!("  Energy:     {}",
-            tr.get("energy_quality").and_then(|v| v.as_str()).unwrap_or("?"),
+        println!(
+            "  Energy:     {}",
+            tr.get("energy_quality")
+                .and_then(|v| v.as_str())
+                .unwrap_or("?"),
         );
 
         if let Some(primary) = tr.get("primary_raga").and_then(|v| v.as_object()) {
-            println!("  Primary:    #{} — {}",
-                primary.get("raga_number").and_then(|v| v.as_u64()).unwrap_or(0),
-                primary.get("raga_name").and_then(|v| v.as_str()).unwrap_or("?"),
+            println!(
+                "  Primary:    #{} — {}",
+                primary
+                    .get("raga_number")
+                    .and_then(|v| v.as_u64())
+                    .unwrap_or(0),
+                primary
+                    .get("raga_name")
+                    .and_then(|v| v.as_str())
+                    .unwrap_or("?"),
             );
         }
     }
@@ -167,7 +186,8 @@ fn print_engine_output(output: &noesis_core::EngineOutput) {
         println!("  Recommendations ({}):", recs.len());
         for (i, rec) in recs.iter().take(3).enumerate() {
             let r = rec.as_object().unwrap();
-            println!("    {}. #{} {} (score: {:.2})",
+            println!(
+                "    {}. #{} {} (score: {:.2})",
                 i + 1,
                 r.get("raga_number").and_then(|v| v.as_u64()).unwrap_or(0),
                 r.get("raga_name").and_then(|v| v.as_str()).unwrap_or("?"),
@@ -178,10 +198,15 @@ fn print_engine_output(output: &noesis_core::EngineOutput) {
 
     if let Some(freq) = result.get("chakra_frequency") {
         let f = freq.as_object().unwrap();
-        println!("  Chakra:     {} — {}Hz (binaural {:.1}Hz)",
+        println!(
+            "  Chakra:     {} — {}Hz (binaural {:.1}Hz)",
             f.get("chakra_name").and_then(|v| v.as_str()).unwrap_or("?"),
-            f.get("solfeggio_hz").and_then(|v| v.as_f64()).unwrap_or(0.0),
-            f.get("binaural_target_hz").and_then(|v| v.as_f64()).unwrap_or(0.0),
+            f.get("solfeggio_hz")
+                .and_then(|v| v.as_f64())
+                .unwrap_or(0.0),
+            f.get("binaural_target_hz")
+                .and_then(|v| v.as_f64())
+                .unwrap_or(0.0),
         );
     }
 
@@ -193,6 +218,9 @@ fn print_engine_output(output: &noesis_core::EngineOutput) {
         println!("  Rasa:       {}", rasa.as_str().unwrap_or("?"));
     }
 
-    println!("  Witness:    {}", output.witness_prompt.chars().take(80).collect::<String>());
+    println!(
+        "  Witness:    {}",
+        output.witness_prompt.chars().take(80).collect::<String>()
+    );
     println!("  Calc time:  {:.2}ms", output.metadata.calculation_time_ms);
 }

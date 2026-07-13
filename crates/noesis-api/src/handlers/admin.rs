@@ -2862,17 +2862,20 @@ pub async fn system_workflows(
                 "healthy".to_string()
             };
 
-            let (synthesis_type, engine_ids, required_phase, cache_hits, cache_entries) =
-                state.workflow_registry.as_ref()
-                    .and_then(|reg| reg.get(&workflow.id))
-                    .map(|ext| (
+            let (synthesis_type, engine_ids, required_phase, cache_hits, cache_entries) = state
+                .workflow_registry
+                .as_ref()
+                .and_then(|reg| reg.get(&workflow.id))
+                .map(|ext| {
+                    (
                         Some(format!("{:?}", ext.synthesis_type)),
                         Some(ext.engine_ids.clone()),
                         Some(ext.required_phase as i32),
                         None::<i64>,
                         None::<i64>,
-                    ))
-                    .unwrap_or((None, None, None, None, None));
+                    )
+                })
+                .unwrap_or((None, None, None, None, None));
 
             AdminSystemWorkflowItem {
                 workflow_id: workflow.id.clone(),
@@ -3250,9 +3253,7 @@ pub async fn list_witness_dyad_executions(
         )
         .await
         .map_err(|e| {
-            EngineError::InternalError(format!(
-                "Failed to list witness dyad executions: {e}"
-            ))
+            EngineError::InternalError(format!("Failed to list witness dyad executions: {e}"))
         })?
         .into_iter()
         .map(map_witness_dyad_admin_record)
@@ -3268,9 +3269,7 @@ pub async fn list_witness_dyad_executions(
         )
         .await
         .map_err(|e| {
-            EngineError::InternalError(format!(
-                "Failed to count witness dyad executions: {e}"
-            ))
+            EngineError::InternalError(format!("Failed to count witness dyad executions: {e}"))
         })?;
 
     Ok((
@@ -3308,9 +3307,12 @@ pub async fn get_witness_dyad_execution(
         Err(resp) => return Ok(resp),
     };
 
-    let execution = repo.get_witness_dyad_execution(exec_uuid).await.map_err(|e| {
-        EngineError::InternalError(format!("Failed to fetch witness dyad execution: {e}"))
-    })?;
+    let execution = repo
+        .get_witness_dyad_execution(exec_uuid)
+        .await
+        .map_err(|e| {
+            EngineError::InternalError(format!("Failed to fetch witness dyad execution: {e}"))
+        })?;
 
     let Some(execution) = execution else {
         return Ok(json_error_response(
@@ -3380,9 +3382,7 @@ pub async fn witness_dyad_analytics(
         .witness_engine_coverage(window_hours)
         .await
         .map_err(|e| {
-            EngineError::InternalError(format!(
-                "Failed to fetch witness engine coverage: {e}"
-            ))
+            EngineError::InternalError(format!("Failed to fetch witness engine coverage: {e}"))
         })?
         .into_iter()
         .map(|row| AdminAnalyticsBreakdownEntry {
@@ -3417,9 +3417,7 @@ pub async fn witness_dyad_analytics(
         .collect::<Vec<_>>();
 
     let tier_breakdown = repo
-        .list_witness_dyad_executions(
-            None, None, None, None, None, 500, 0,
-        )
+        .list_witness_dyad_executions(None, None, None, None, None, 500, 0)
         .await
         .map(|executions| {
             let mut tier_map: HashMap<String, (i64, i64)> = HashMap::new();
@@ -3433,11 +3431,13 @@ pub async fn witness_dyad_analytics(
             }
             tier_map
                 .into_iter()
-                .map(|(tier, (llm_count, rule_count))| AdminWitnessDyadTierEntry {
-                    tier,
-                    llm_count,
-                    rule_count,
-                })
+                .map(
+                    |(tier, (llm_count, rule_count))| AdminWitnessDyadTierEntry {
+                        tier,
+                        llm_count,
+                        rule_count,
+                    },
+                )
                 .collect::<Vec<_>>()
         })
         .unwrap_or_default();
@@ -3565,9 +3565,7 @@ pub async fn readings_engine_breakdown(
         .readings_platform_engine_breakdown(window_hours)
         .await
         .map_err(|e| {
-            EngineError::InternalError(format!(
-                "Failed to fetch readings engine breakdown: {e}"
-            ))
+            EngineError::InternalError(format!("Failed to fetch readings engine breakdown: {e}"))
         })?
         .into_iter()
         .map(|row| AdminAnalyticsBreakdownEntry {
@@ -3760,10 +3758,7 @@ pub async fn get_biofield_session(
 
 // ── Engine Registry Admin ────────────────────────────────────────────────────
 
-fn classify_engine_category(
-    engine_id: &str,
-    bridge_engine_ids: &BTreeSet<String>,
-) -> String {
+fn classify_engine_category(engine_id: &str, bridge_engine_ids: &BTreeSet<String>) -> String {
     if engine_id == "biofield-capture" {
         "python-sidecar".to_string()
     } else if bridge_engine_ids.contains(engine_id) {
@@ -3828,7 +3823,10 @@ pub async fn list_engines_admin(
         seen.insert(engine_id.to_string());
 
         let (engine_name, required_phase) = match registry_engines.get(engine_id) {
-            Some(engine) => (engine.engine_name().to_string(), engine.required_phase() as i32),
+            Some(engine) => (
+                engine.engine_name().to_string(),
+                engine.required_phase() as i32,
+            ),
             None => (engine_id.to_string(), 0),
         };
         let category = classify_engine_category(engine_id, &bridge_engine_ids);
@@ -3888,7 +3886,10 @@ pub async fn get_engine_admin(
 
     let registry_engines = state.orchestrator.registry();
     let engine = registry_engines.get(&engine_id).ok_or_else(|| {
-        ApiError(EngineError::EngineNotFound(format!("Engine '{}' not found", engine_id)))
+        ApiError(EngineError::EngineNotFound(format!(
+            "Engine '{}' not found",
+            engine_id
+        )))
     })?;
 
     let bridge_engine_ids: BTreeSet<String> = state
@@ -3907,15 +3908,11 @@ pub async fn get_engine_admin(
             EngineError::InternalError(format!("Failed to fetch engine detail analytics: {e}"))
         })?;
 
-    let engine_analytics = analytics_detail
-        .iter()
-        .find(|a| a.engine_id == engine_id);
+    let engine_analytics = analytics_detail.iter().find(|a| a.engine_id == engine_id);
 
     let recent_runs = engine_analytics.map(|a| a.request_count).unwrap_or(0);
     let failure_runs = engine_analytics.map(|a| a.failure_count).unwrap_or(0);
-    let avg_duration = engine_analytics
-        .map(|a| a.avg_duration_ms)
-        .unwrap_or(0.0);
+    let avg_duration = engine_analytics.map(|a| a.avg_duration_ms).unwrap_or(0.0);
 
     let status = if recent_runs == 0 {
         "unknown".to_string()
@@ -3973,9 +3970,10 @@ pub async fn get_workflow_admin(
             )))
         })?;
 
-    let extended = state.workflow_registry.as_ref().and_then(|reg| {
-        reg.get(&workflow_id).cloned()
-    });
+    let extended = state
+        .workflow_registry
+        .as_ref()
+        .and_then(|reg| reg.get(&workflow_id).cloned());
 
     let snapshots = repo
         .system_workflow_snapshots(window_hours)
@@ -3984,9 +3982,7 @@ pub async fn get_workflow_admin(
             EngineError::InternalError(format!("Failed to fetch workflow snapshots: {e}"))
         })?;
 
-    let snapshot = snapshots
-        .iter()
-        .find(|s| s.workflow_id == workflow_id);
+    let snapshot = snapshots.iter().find(|s| s.workflow_id == workflow_id);
 
     let recent_runs = snapshot.map(|s| s.request_count).unwrap_or(0);
     let failure_runs = snapshot.map(|s| s.failure_count).unwrap_or(0);
@@ -4218,11 +4214,7 @@ pub async fn bridge_health(
                 })
                 .collect();
 
-            (
-                engines,
-                vec!["ts-sidecar".to_string()],
-                vec![],
-            )
+            (engines, vec!["ts-sidecar".to_string()], vec![])
         }
     };
 
@@ -4459,11 +4451,14 @@ pub async fn suno_bridge_status(
                 } else {
                     None
                 };
-                (Some(AdminBridgeProbe {
-                    reachable,
-                    status: Some(status.as_u16() as i32),
-                    detail,
-                }), credit)
+                (
+                    Some(AdminBridgeProbe {
+                        reachable,
+                        status: Some(status.as_u16() as i32),
+                        detail,
+                    }),
+                    credit,
+                )
             }
             Err(e) => (
                 Some(AdminBridgeProbe {
@@ -4790,14 +4785,12 @@ pub async fn skills_ecosystem_status(
             .unwrap_or_else(|_| "selemene-report-patterns".to_string()),
         binding: std::env::var("VECTORIZE_BINDING")
             .unwrap_or_else(|_| "REPORT_PATTERNS".to_string()),
-        ai_binding: std::env::var("AI_BINDING")
-            .unwrap_or_else(|_| "AI".to_string()),
+        ai_binding: std::env::var("AI_BINDING").unwrap_or_else(|_| "AI".to_string()),
         r2_bucket: std::env::var("PATTERNS_R2_BUCKET")
             .unwrap_or_else(|_| "selemene-patterns".to_string()),
         d1_database: std::env::var("PATTERNS_D1_DATABASE")
             .unwrap_or_else(|_| "selemene-patterns".to_string()),
-        status: std::env::var("VECTORIZE_STATUS")
-            .unwrap_or_else(|_| "configured".to_string()),
+        status: std::env::var("VECTORIZE_STATUS").unwrap_or_else(|_| "configured".to_string()),
     };
 
     let report_modes = vec![
@@ -4850,7 +4843,13 @@ pub async fn skills_ecosystem_status(
             report_level: "—".to_string(),
             subject_count_min: 3,
             subject_count_max: 7,
-            roles: vec!["mother".to_string(), "father".to_string(), "child1".to_string(), "child2".to_string(), "child3".to_string()],
+            roles: vec![
+                "mother".to_string(),
+                "father".to_string(),
+                "child1".to_string(),
+                "child2".to_string(),
+                "child3".to_string(),
+            ],
             target_words_min: 6000,
             target_words_max: 9000,
             architecture: "hierarchical".to_string(),
@@ -4905,7 +4904,10 @@ pub async fn skills_ecosystem_status(
             report_level: "—".to_string(),
             subject_count_min: 2,
             subject_count_max: 2,
-            roles: vec!["business-partner".to_string(), "business-partner".to_string()],
+            roles: vec![
+                "business-partner".to_string(),
+                "business-partner".to_string(),
+            ],
             target_words_min: 3500,
             target_words_max: 5500,
             architecture: "linear".to_string(),

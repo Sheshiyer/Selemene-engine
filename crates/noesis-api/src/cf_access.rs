@@ -222,12 +222,9 @@ impl CfAccessValidator {
         validation.set_audience(&[self.audience.as_str()]);
         validation.leeway = 60; // 1 minute clock skew
 
-        let token_data: TokenData<CfAccessClaims> = jsonwebtoken::decode(
-            token,
-            &decoding_key,
-            &validation,
-        )
-        .map_err(|e| format!("Cloudflare Access JWT validation failed: {}", e))?;
+        let token_data: TokenData<CfAccessClaims> =
+            jsonwebtoken::decode(token, &decoding_key, &validation)
+                .map_err(|e| format!("Cloudflare Access JWT validation failed: {}", e))?;
 
         identity_from_claims(token_data.claims)
     }
@@ -250,9 +247,9 @@ impl CfAccessValidator {
         self.fetch_jwks().await?;
 
         let read = self.jwks.read().await;
-        let cached = read.as_ref().ok_or_else(|| {
-            "Cloudflare Access JWKS cache unavailable after fetch".to_string()
-        })?;
+        let cached = read
+            .as_ref()
+            .ok_or_else(|| "Cloudflare Access JWKS cache unavailable after fetch".to_string())?;
         cached
             .keys
             .get(kid)
@@ -264,12 +261,12 @@ impl CfAccessValidator {
     async fn fetch_jwks(&self) -> Result<(), String> {
         let certs_url = format!("{}/cdn-cgi/access/certs", self.issuer);
 
-        let response = self
-            .client
-            .get(&certs_url)
-            .send()
-            .await
-            .map_err(|e| format!("Failed to fetch Cloudflare Access JWKS from {}: {}", certs_url, e))?;
+        let response = self.client.get(&certs_url).send().await.map_err(|e| {
+            format!(
+                "Failed to fetch Cloudflare Access JWKS from {}: {}",
+                certs_url, e
+            )
+        })?;
 
         if !response.status().is_success() {
             return Err(format!(
@@ -278,9 +275,10 @@ impl CfAccessValidator {
             ));
         }
 
-        let jwks: JwksResponse = response.json().await.map_err(|e| {
-            format!("Failed to parse Cloudflare Access JWKS response: {}", e)
-        })?;
+        let jwks: JwksResponse = response
+            .json()
+            .await
+            .map_err(|e| format!("Failed to parse Cloudflare Access JWKS response: {}", e))?;
 
         let keys: HashMap<String, JwksKey> = jwks
             .keys
@@ -326,7 +324,10 @@ mod tests {
             "selemene-admin".to_string(),
             "random-group".to_string(),
         ];
-        assert_eq!(roles_from_cf_groups(&groups), vec!["platform-admin", "support"]);
+        assert_eq!(
+            roles_from_cf_groups(&groups),
+            vec!["platform-admin", "support"]
+        );
     }
 
     #[test]

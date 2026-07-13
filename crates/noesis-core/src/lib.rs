@@ -4,8 +4,8 @@
 //! This crate provides the universal interface, shared types, and error definitions.
 
 pub mod error;
-pub mod types;
 pub mod intake;
+pub mod types;
 
 pub use error::*;
 pub use types::*;

@@ -180,21 +180,33 @@ fn build_context_message(ctx: &WitnessContext) -> String {
     if !aletheios_engines.is_empty() {
         lines.push("\n## Engines for Aletheios (truth/stillness)".to_string());
         for (engine_id, value) in aletheios_engines {
-            lines.push(format!("\n### {}\n{}", engine_title(engine_id), format_engine_data(value)));
+            lines.push(format!(
+                "\n### {}\n{}",
+                engine_title(engine_id),
+                format_engine_data(value)
+            ));
         }
     }
 
     if !pichet_engines.is_empty() {
         lines.push("\n## Engines for Pichet (vitality/movement)".to_string());
         for (engine_id, value) in pichet_engines {
-            lines.push(format!("\n### {}\n{}", engine_title(engine_id), format_engine_data(value)));
+            lines.push(format!(
+                "\n### {}\n{}",
+                engine_title(engine_id),
+                format_engine_data(value)
+            ));
         }
     }
 
     if !dyad_engines.is_empty() {
         lines.push("\n## Engines for Both Pillars".to_string());
         for (engine_id, value) in dyad_engines {
-            lines.push(format!("\n### {}\n{}", engine_title(engine_id), format_engine_data(value)));
+            lines.push(format!(
+                "\n### {}\n{}",
+                engine_title(engine_id),
+                format_engine_data(value)
+            ));
         }
     }
 
@@ -250,7 +262,11 @@ fn build_partner_snapshot(ctx: &WitnessContext) -> String {
         ("vimshottari", ctx.vimshottari.as_ref()),
     ] {
         if let Some(value) = value {
-            lines.push(format!("\n### {}\n{}", engine_title(engine_id), format_engine_data(value)));
+            lines.push(format!(
+                "\n### {}\n{}",
+                engine_title(engine_id),
+                format_engine_data(value)
+            ));
         }
     }
     lines.join("\n")
@@ -290,7 +306,11 @@ fn format_value(v: &Value, depth: usize) -> String {
         Value::Array(arr) => {
             if arr.is_empty() {
                 "[]".to_string()
-            } else if arr.len() <= 3 && arr.iter().all(|x| matches!(x, Value::String(_) | Value::Number(_) | Value::Bool(_))) {
+            } else if arr.len() <= 3
+                && arr
+                    .iter()
+                    .all(|x| matches!(x, Value::String(_) | Value::Number(_) | Value::Bool(_)))
+            {
                 // Short arrays of primitives: inline
                 let items: Vec<String> = arr.iter().map(|x| format_value(x, 0)).collect();
                 format!("[{}]", items.join(", "))
@@ -314,7 +334,11 @@ fn format_value(v: &Value, depth: usize) -> String {
                     // Skip noise in nested objects too
                     if matches!(
                         k.as_str(),
-                        "metadata" | "calculation_time_ms" | "cached" | "engine_version" | "backend"
+                        "metadata"
+                            | "calculation_time_ms"
+                            | "cached"
+                            | "engine_version"
+                            | "backend"
                     ) {
                         continue;
                     }
@@ -527,7 +551,8 @@ pub fn rule_based_witness_dyad(
     // Witness question — open, non-prescriptive, level-aware
     let witness_question = match level {
         0 => "What are you noticing in your body right now, without adding a story?".to_string(),
-        1 => "What feels alive or still as you read this? Let the answer arrive without effort.".to_string(),
+        1 => "What feels alive or still as you read this? Let the answer arrive without effort."
+            .to_string(),
         2 => "Who is the one watching all of this appear and disappear?".to_string(),
         3 => {
             if ctx.vimshottari.is_some() || ctx.gene_keys.is_some() {
@@ -1041,8 +1066,14 @@ mod tests {
         let (aletheios, pichet, _synthesis, _q, _engines) = rule_based_witness_dyad(&ctx);
 
         // Aletheios: clear, precise, cartographer-like (short, structured, observational)
-        assert!(aletheios.len() < 280, "Aletheios should be concise and precise");
-        assert!(!aletheios.contains("!"), "Aletheios should avoid exclamatory warmth");
+        assert!(
+            aletheios.len() < 280,
+            "Aletheios should be concise and precise"
+        );
+        assert!(
+            !aletheios.contains("!"),
+            "Aletheios should avoid exclamatory warmth"
+        );
 
         // Pichet: warm, grounded, somatic (invitational, sensory)
         assert!(
@@ -1096,7 +1127,10 @@ mod tests {
             aletheios.contains("direct") || pichet.contains("direct") || synthesis.contains("both"),
             "High-level synthesis should acknowledge integrated field"
         );
-        assert!(engines.contains(&"gene-keys".to_string()) || engines.contains(&"vimshottari".to_string()));
+        assert!(
+            engines.contains(&"gene-keys".to_string())
+                || engines.contains(&"vimshottari".to_string())
+        );
         assert!(!question.is_empty());
     }
 }

@@ -58,12 +58,20 @@ async fn assets_generate_is_additive_and_returns_expected_shape() {
     assert!(passes.len() > 0, "passes must not be empty for valid mode");
 
     // Requirement: assembled present and non-trivial (pipeline-like assembly)
-    let assembled = json["assembled"].as_str().expect("assembled must be string");
-    assert!(!assembled.trim().is_empty(), "assembled must contain content");
+    let assembled = json["assembled"]
+        .as_str()
+        .expect("assembled must be string");
+    assert!(
+        !assembled.trim().is_empty(),
+        "assembled must contain content"
+    );
     // Pipeline-style assembly: contains pass titles and engine seed references
     // (current wiring uses lowercase engine ids from orchestrator seeds)
     assert!(
-        assembled.contains("Structural") || assembled.contains("Somatic") || assembled.contains("panchanga") || assembled.contains("numerology"),
+        assembled.contains("Structural")
+            || assembled.contains("Somatic")
+            || assembled.contains("panchanga")
+            || assembled.contains("numerology"),
         "assembled should contain pipeline pass titles or engine seeds"
     );
 
@@ -112,7 +120,9 @@ async fn assets_generate_register_band_l4_l5_for_high_consciousness() {
     let response = router.clone().oneshot(req).await.unwrap();
     assert_eq!(response.status(), StatusCode::OK);
 
-    let body = axum::body::to_bytes(response.into_body(), usize::MAX).await.unwrap();
+    let body = axum::body::to_bytes(response.into_body(), usize::MAX)
+        .await
+        .unwrap();
     let json: Value = serde_json::from_slice(&body).unwrap();
 
     // High consciousness must map to l4_l5 register band
@@ -151,7 +161,9 @@ async fn assets_generate_supports_integrated_kundali_l0_mode() {
     let response = router.clone().oneshot(req).await.unwrap();
     assert_eq!(response.status(), StatusCode::OK);
 
-    let body = axum::body::to_bytes(response.into_body(), usize::MAX).await.unwrap();
+    let body = axum::body::to_bytes(response.into_body(), usize::MAX)
+        .await
+        .unwrap();
     let json: Value = serde_json::from_slice(&body).unwrap();
 
     assert_eq!(json["mode"].as_str().unwrap(), "integrated-kundali-l0");
@@ -218,7 +230,12 @@ async fn witness_interpret_contract_unchanged() {
     // Must have exactly these 6 fields, no more, no less.
     let obj = json.as_object().expect("response must be object");
     let keys: Vec<&String> = obj.keys().collect();
-    assert_eq!(keys.len(), 6, "WitnessInterpretResponse must have exactly 6 fields, got: {:?}", keys);
+    assert_eq!(
+        keys.len(),
+        6,
+        "WitnessInterpretResponse must have exactly 6 fields, got: {:?}",
+        keys
+    );
 
     // Explicit field presence (frozen public contract)
     assert!(json.get("aletheios").is_some());
@@ -280,7 +297,9 @@ async fn assets_generate_accepts_report_level_and_subjects_rich_path() {
     let response = router.clone().oneshot(req).await.unwrap();
     assert_eq!(response.status(), StatusCode::OK);
 
-    let body = axum::body::to_bytes(response.into_body(), usize::MAX).await.unwrap();
+    let body = axum::body::to_bytes(response.into_body(), usize::MAX)
+        .await
+        .unwrap();
     let json: Value = serde_json::from_slice(&body).unwrap();
 
     // The handler should prefer report_level and subjects when provided (Task 6).
@@ -292,7 +311,10 @@ async fn assets_generate_accepts_report_level_and_subjects_rich_path() {
         "report_level should be captured from request into source_pack"
     );
     let subjects = sp.get("subjects").and_then(|v| v.as_array());
-    assert!(subjects.is_some(), "subjects array should be present in source_pack");
+    assert!(
+        subjects.is_some(),
+        "subjects array should be present in source_pack"
+    );
     let subs = subjects.unwrap();
     assert_eq!(subs.len(), 1, "should have one subject");
     assert_eq!(subs[0]["name"].as_str().unwrap_or(""), "TestSubject");
@@ -300,14 +322,23 @@ async fn assets_generate_accepts_report_level_and_subjects_rich_path() {
 
     // Task 8: small assertion that report_level + subject info (count + first normalized summary) flow into source_pack
     assert_eq!(
-        sp.get("subject_count").and_then(|v| v.as_u64()).unwrap_or(0),
+        sp.get("subject_count")
+            .and_then(|v| v.as_u64())
+            .unwrap_or(0),
         1,
         "subject_count should be emitted in source_pack for rich contract"
     );
     let first_loc = sp.get("first_normalized_location");
-    assert!(first_loc.is_some(), "first_normalized_location summary should be present");
+    assert!(
+        first_loc.is_some(),
+        "first_normalized_location summary should be present"
+    );
     assert_eq!(
-        first_loc.unwrap().get("display_name").and_then(|v| v.as_str()).unwrap_or("MISSING"),
+        first_loc
+            .unwrap()
+            .get("display_name")
+            .and_then(|v| v.as_str())
+            .unwrap_or("MISSING"),
         "Bengaluru, India",
         "first normalized location summary should reflect the subject's location"
     );
@@ -351,14 +382,20 @@ async fn assets_generate_rejects_incomplete_subjects_missing_normalized_location
         StatusCode::UNPROCESSABLE_ENTITY,
         "expected 422 for rich subjects missing normalized_location, got {}: {:?}",
         status,
-        axum::body::to_bytes(response.into_body(), usize::MAX).await.unwrap()
+        axum::body::to_bytes(response.into_body(), usize::MAX)
+            .await
+            .unwrap()
     );
 
     // Body should be a structured error (ErrorResponse shape)
-    let body = axum::body::to_bytes(response.into_body(), usize::MAX).await.unwrap();
+    let body = axum::body::to_bytes(response.into_body(), usize::MAX)
+        .await
+        .unwrap();
     let json: Value = serde_json::from_slice(&body).unwrap();
     assert!(
-        json.get("error_code").is_some() || json.get("message").is_some() || json.get("error").is_some(),
+        json.get("error_code").is_some()
+            || json.get("message").is_some()
+            || json.get("error").is_some(),
         "response should carry clear error signal, got: {}",
         json
     );
@@ -403,7 +440,9 @@ async fn assets_generate_accepts_l0_with_rich_subjects_shape() {
     let response = router.clone().oneshot(req).await.unwrap();
     assert_eq!(response.status(), StatusCode::OK);
 
-    let body = axum::body::to_bytes(response.into_body(), usize::MAX).await.unwrap();
+    let body = axum::body::to_bytes(response.into_body(), usize::MAX)
+        .await
+        .unwrap();
     let json: Value = serde_json::from_slice(&body).unwrap();
 
     // Assert level echoed in response and source_pack (Task 9 requirement)
@@ -418,14 +457,20 @@ async fn assets_generate_accepts_l0_with_rich_subjects_shape() {
     );
 
     // subjects reflected in source_pack
-    let subs = sp["subjects"].as_array().expect("subjects array in source_pack for L0 rich");
+    let subs = sp["subjects"]
+        .as_array()
+        .expect("subjects array in source_pack for L0 rich");
     assert_eq!(subs.len(), 1);
     assert_eq!(subs[0]["role"].as_str().unwrap_or(""), "primary");
     assert_eq!(subs[0]["name"].as_str().unwrap_or(""), "L0Subject");
 
     // L0 contract: exactly 12 passes with opening/final-synthesis (same as legacy L0 test)
     let passes = json["passes"].as_array().unwrap();
-    assert_eq!(passes.len(), 12, "L0 via rich subjects must still yield 12 passes");
+    assert_eq!(
+        passes.len(),
+        12,
+        "L0 via rich subjects must still yield 12 passes"
+    );
     assert_eq!(passes[0]["id"].as_str().unwrap(), "opening");
     assert_eq!(passes[11]["id"].as_str().unwrap(), "final-synthesis");
 }
@@ -472,9 +517,15 @@ async fn assets_generate_akshay_humdes_solo_l0() {
         .unwrap();
 
     let response = router.clone().oneshot(req).await.unwrap();
-    assert_eq!(response.status(), StatusCode::OK, "Akshay humdes solo L0 must succeed");
+    assert_eq!(
+        response.status(),
+        StatusCode::OK,
+        "Akshay humdes solo L0 must succeed"
+    );
 
-    let body = axum::body::to_bytes(response.into_body(), usize::MAX).await.unwrap();
+    let body = axum::body::to_bytes(response.into_body(), usize::MAX)
+        .await
+        .unwrap();
     let json: Value = serde_json::from_slice(&body).unwrap();
 
     assert_eq!(json["mode"].as_str().unwrap(), "integrated-kundali-l0");
@@ -486,9 +537,14 @@ async fn assets_generate_akshay_humdes_solo_l0() {
     assert_eq!(passes[11]["id"].as_str().unwrap(), "final-synthesis");
 
     let assembled = json["assembled"].as_str().unwrap();
-    assert!(!assembled.trim().is_empty(), "assembled report must be non-empty");
+    assert!(
+        !assembled.trim().is_empty(),
+        "assembled report must be non-empty"
+    );
 
-    let engines = json["engines_used"].as_array().expect("engines_used must be array");
+    let engines = json["engines_used"]
+        .as_array()
+        .expect("engines_used must be array");
     assert!(
         !engines.is_empty(),
         "engines_used must be populated for Akshay solo L0"
@@ -498,14 +554,18 @@ async fn assets_generate_akshay_humdes_solo_l0() {
     assert_eq!(sp["report_level"].as_str().unwrap_or("MISSING"), "L0");
     assert_eq!(sp["subject_count"].as_u64().unwrap_or(0), 1);
 
-    let subs = sp["subjects"].as_array().expect("subjects array in source_pack");
+    let subs = sp["subjects"]
+        .as_array()
+        .expect("subjects array in source_pack");
     assert_eq!(subs.len(), 1);
     assert_eq!(subs[0]["name"].as_str().unwrap_or(""), "Akshay");
     assert_eq!(subs[0]["role"].as_str().unwrap_or(""), "primary");
     // Note: source_pack currently echoes only role/name/birth fields + normalized_location,
     // so sex_for_external_chart_source is accepted by intake but not mirrored here.
 
-    let first_loc = sp["first_normalized_location"].as_object().expect("first_normalized_location");
+    let first_loc = sp["first_normalized_location"]
+        .as_object()
+        .expect("first_normalized_location");
     assert_eq!(
         first_loc["display_name"].as_str().unwrap_or(""),
         "Bengaluru, Bangalore North, Bengaluru Urban, Karnataka, India"
@@ -515,8 +575,14 @@ async fn assets_generate_akshay_humdes_solo_l0() {
 
     let quality = sp["quality"].as_object().expect("quality object");
     assert_eq!(quality["gate_status"].as_str().unwrap_or(""), "ready");
-    let sections = quality["sections"].as_array().expect("sections rubric matrix");
-    assert_eq!(sections.len(), 12, "source pack rubric matrix must cover all 12 passes");
+    let sections = quality["sections"]
+        .as_array()
+        .expect("sections rubric matrix");
+    assert_eq!(
+        sections.len(),
+        12,
+        "source pack rubric matrix must cover all 12 passes"
+    );
 }
 
 // Same Akshay L0 run, but persists the full API response JSONs to disk
@@ -566,7 +632,9 @@ async fn assets_generate_akshay_humdes_solo_l0_persist() {
     let response = router.clone().oneshot(req).await.unwrap();
     assert_eq!(response.status(), StatusCode::OK);
 
-    let body = axum::body::to_bytes(response.into_body(), usize::MAX).await.unwrap();
+    let body = axum::body::to_bytes(response.into_body(), usize::MAX)
+        .await
+        .unwrap();
     let json: Value = serde_json::from_slice(&body).unwrap();
 
     // Persist minimum JSON artifacts.
@@ -579,8 +647,11 @@ async fn assets_generate_akshay_humdes_solo_l0_persist() {
     let response_path = out_dir.join("response.json");
     let source_pack_path = out_dir.join("source-pack.json");
 
-    fs::write(&request_path, serde_json::to_string_pretty(&req_body).unwrap())
-        .expect("write request.json");
+    fs::write(
+        &request_path,
+        serde_json::to_string_pretty(&req_body).unwrap(),
+    )
+    .expect("write request.json");
     fs::write(&response_path, serde_json::to_string_pretty(&json).unwrap())
         .expect("write response.json");
     if let Some(sp) = json.get("source_pack") {
@@ -589,9 +660,27 @@ async fn assets_generate_akshay_humdes_solo_l0_persist() {
     }
 
     println!("Persisted Akshay L0 API run:");
-    println!("  request.json   -> {}", request_path.canonicalize().unwrap_or(request_path).display());
-    println!("  response.json  -> {}", response_path.canonicalize().unwrap_or_else(|_| response_path.clone()).display());
-    println!("  source-pack.json -> {}", source_pack_path.canonicalize().unwrap_or_else(|_| source_pack_path.clone()).display());
+    println!(
+        "  request.json   -> {}",
+        request_path
+            .canonicalize()
+            .unwrap_or(request_path)
+            .display()
+    );
+    println!(
+        "  response.json  -> {}",
+        response_path
+            .canonicalize()
+            .unwrap_or_else(|_| response_path.clone())
+            .display()
+    );
+    println!(
+        "  source-pack.json -> {}",
+        source_pack_path
+            .canonicalize()
+            .unwrap_or_else(|_| source_pack_path.clone())
+            .display()
+    );
 
     assert!(response_path.exists());
     assert!(source_pack_path.exists());
@@ -657,13 +746,21 @@ async fn assets_generate_accepts_two_subjects_synastry_rich_shape() {
 
     let response = router.clone().oneshot(req).await.unwrap();
     // Task 9 requirement: no crash (must be 200)
-    assert_eq!(response.status(), StatusCode::OK, "two-subject synastry rich shape must not crash");
+    assert_eq!(
+        response.status(),
+        StatusCode::OK,
+        "two-subject synastry rich shape must not crash"
+    );
 
-    let body = axum::body::to_bytes(response.into_body(), usize::MAX).await.unwrap();
+    let body = axum::body::to_bytes(response.into_body(), usize::MAX)
+        .await
+        .unwrap();
     let json: Value = serde_json::from_slice(&body).unwrap();
 
     // engines_used must be populated (non-empty array of strings)
-    let engines = json["engines_used"].as_array().expect("engines_used must be array");
+    let engines = json["engines_used"]
+        .as_array()
+        .expect("engines_used must be array");
     assert!(
         !engines.is_empty(),
         "engines_used must be populated for two-subject synastry request"
@@ -679,22 +776,31 @@ async fn assets_generate_accepts_two_subjects_synastry_rich_shape() {
         "L3",
         "report_level should be captured for synastry rich request"
     );
-    let subs = sp["subjects"].as_array().expect("subjects array in source_pack for synastry");
+    let subs = sp["subjects"]
+        .as_array()
+        .expect("subjects array in source_pack for synastry");
     assert_eq!(subs.len(), 2, "synastry request must carry two subjects");
     assert_eq!(subs[0]["role"].as_str().unwrap_or(""), "mother");
     assert_eq!(subs[1]["role"].as_str().unwrap_or(""), "son");
-    assert_eq!(subs[0]["relationship_label"].as_str().unwrap_or(""), "mother");
+    assert_eq!(
+        subs[0]["relationship_label"].as_str().unwrap_or(""),
+        "mother"
+    );
     assert_eq!(subs[1]["relationship_label"].as_str().unwrap_or(""), "son");
 
     // subject_count should reflect 2
     assert_eq!(
-        sp.get("subject_count").and_then(|v| v.as_u64()).unwrap_or(0),
+        sp.get("subject_count")
+            .and_then(|v| v.as_u64())
+            .unwrap_or(0),
         2,
         "subject_count should be 2 for synastry"
     );
 
     // Core requirement: relationship_context from rich request must appear in source_pack
-    let rc = sp.get("relationship_context").expect("relationship_context must be present in source_pack for rich request");
+    let rc = sp
+        .get("relationship_context")
+        .expect("relationship_context must be present in source_pack for rich request");
     assert_eq!(
         rc.get("type").and_then(|v| v.as_str()).unwrap_or("MISSING"),
         "family",
@@ -706,9 +812,15 @@ async fn assets_generate_accepts_two_subjects_synastry_rich_shape() {
     );
 
     // Mother-son style assertion (relationship_label + family framing)
-    assert_eq!(subs[0]["relationship_label"].as_str().unwrap_or(""), "mother");
+    assert_eq!(
+        subs[0]["relationship_label"].as_str().unwrap_or(""),
+        "mother"
+    );
     assert_eq!(subs[1]["relationship_label"].as_str().unwrap_or(""), "son");
-    assert_eq!(rc.get("type").and_then(|v| v.as_str()).unwrap_or(""), "family");
+    assert_eq!(
+        rc.get("type").and_then(|v| v.as_str()).unwrap_or(""),
+        "family"
+    );
 }
 
 // TDD: failing test first — expects language + relationship_context to round-trip into source_pack.
@@ -771,7 +883,9 @@ async fn assets_generate_roundtrips_language_with_relationship_context() {
     let response = router.clone().oneshot(req).await.unwrap();
     assert_eq!(response.status(), StatusCode::OK);
 
-    let body = axum::body::to_bytes(response.into_body(), usize::MAX).await.unwrap();
+    let body = axum::body::to_bytes(response.into_body(), usize::MAX)
+        .await
+        .unwrap();
     let json: Value = serde_json::from_slice(&body).unwrap();
 
     let sp = &json["source_pack"];
@@ -784,7 +898,9 @@ async fn assets_generate_roundtrips_language_with_relationship_context() {
     );
 
     // relationship_context present and not mutated
-    let rc = sp.get("relationship_context").expect("relationship_context must be present in source_pack");
+    let rc = sp
+        .get("relationship_context")
+        .expect("relationship_context must be present in source_pack");
     assert_eq!(
         rc.get("type").and_then(|v| v.as_str()),
         Some("family"),
@@ -802,7 +918,10 @@ async fn assets_generate_roundtrips_language_with_relationship_context() {
     );
 
     // subjects also present (not mutated)
-    let subs = sp.get("subjects").and_then(|v| v.as_array()).expect("subjects array in source_pack");
+    let subs = sp
+        .get("subjects")
+        .and_then(|v| v.as_array())
+        .expect("subjects array in source_pack");
     assert_eq!(subs.len(), 2);
     assert_eq!(subs[0]["role"].as_str().unwrap_or(""), "mother");
     assert_eq!(subs[1]["role"].as_str().unwrap_or(""), "son");
