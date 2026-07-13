@@ -30,8 +30,7 @@ export default function EngineDetailPage() {
   const [engine, setEngine] = useState<AdminSystemEngineItem | null>(null);
 
   const loadData = useCallback(async () => {
-    const token = getAuthToken();
-    if (!token) throw new Error("Missing session token. Please sign in again.");
+    const token = getAuthToken() ?? undefined;
     if (!id) throw new Error("Missing engine ID.");
     return getAdminEngine(token, id);
   }, [id]);

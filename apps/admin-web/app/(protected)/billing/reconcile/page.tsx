@@ -32,9 +32,8 @@ export default function AdminBillingReconcilePage() {
   const [triggering, setTriggering] = useState(false);
 
   useEffect(() => {
-    const token = getAuthToken();
-    if (!token) return;
-    let cancelled = false;
+    const token = getAuthToken() ?? undefined;
+let cancelled = false;
 
     // Core read-only data — page MUST render this even if session lookup fails.
     getAdminBillingReconcileDrift(token)
@@ -79,9 +78,8 @@ export default function AdminBillingReconcilePage() {
     hasPermission(session.permissions, "admin:billing:reconcile:trigger");
 
   async function handleTrigger() {
-    const token = getAuthToken();
-    if (!token) return;
-    setTriggering(true);
+    const token = getAuthToken() ?? undefined;
+setTriggering(true);
     try {
       const resp = await triggerAdminBillingReconcile(token);
       setTriggerCmd(resp.command);

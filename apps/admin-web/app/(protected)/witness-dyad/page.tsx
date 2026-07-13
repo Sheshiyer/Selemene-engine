@@ -54,8 +54,7 @@ export default function WitnessDyadPage() {
   );
 
   const loadData = useCallback(async () => {
-    const token = getAuthToken();
-    if (!token) throw new Error("Missing session token. Please sign in again.");
+    const token = getAuthToken() ?? undefined;
 
     const currentTier = getStringParam(searchParams, "tier");
     const currentLlmPowered = getStringParam(searchParams, "llm_powered");

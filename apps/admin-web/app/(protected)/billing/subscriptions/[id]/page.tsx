@@ -42,9 +42,8 @@ export default function AdminBillingSubscriptionDetailPage({
   const [actionResult, setActionResult] = useState<string | null>(null);
 
   useEffect(() => {
-    const token = getAuthToken();
-    if (!token) return;
-    let cancelled = false;
+    const token = getAuthToken() ?? undefined;
+let cancelled = false;
 
     // Core read data — page MUST render this even if session lookup fails.
     getAdminBillingSubscription(token, id)
@@ -89,7 +88,7 @@ export default function AdminBillingSubscriptionDetailPage({
     hasPermission(session.permissions, "admin:billing:subscriptions:cancel");
 
   async function handleCancel() {
-    const token = getAuthToken();
+    const token = getAuthToken() ?? undefined;
     if (!token || !sub) return;
     setSubmitting(true);
     try {

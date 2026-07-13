@@ -642,36 +642,53 @@ export interface AdminObservabilitySummary {
 
 // ─── Skills Ecosystem ────────────────────────────────────────────────────────
 
-export interface AdminSkillsClusterStatus {
-  path: string;
-  active_clusters: number;
-  health_available: boolean;
+export interface AdminSelemeneSkill {
+  name: string;
+  description: string;
+  origin: string;
+  location: string;
+  status: string;
 }
 
-export interface AdminSkillsCodegraphStatus {
-  initialized: boolean;
-  files_indexed: number;
-  symbols: number;
+export interface AdminSelemeneReportMode {
+  mode: string;
+  report_level: string;
+  subject_count_min: number;
+  subject_count_max: number;
+  roles: string[];
+  target_words_min: number;
+  target_words_max: number;
+  architecture: string;
+  pass_count: number;
 }
 
-export interface AdminSkillsWitnessPipelineStatus {
-  version: string;
-  pattern_count: number;
-  vectors_available: boolean;
+export interface AdminSelemeneAutoresearch {
+  enabled: boolean;
+  testing_grounds: string;
+  description: string;
 }
 
-export interface AdminSkillsBridgesStatus {
-  hermes_configured: boolean;
-  suno_configured: boolean;
-  llm_proxy_deployed: boolean;
-  universal_tool_server: boolean;
-  bridge_cli_installed: boolean;
+export interface AdminSelemeneVectorize {
+  index_name: string;
+  binding: string;
+  ai_binding: string;
+  r2_bucket: string;
+  d1_database: string;
+  status: string;
+}
+
+export interface AdminSelemeneMcp {
+  configured: boolean;
+  base_url: string;
+  auth_methods: string[];
+  tool_count: number;
+  tools: string[];
 }
 
 export interface AdminSkillsEcosystemStatus {
-  cluster_system: AdminSkillsClusterStatus;
-  skills_indexed: number;
-  codegraph_status: AdminSkillsCodegraphStatus | null;
-  witness_pipeline: AdminSkillsWitnessPipelineStatus;
-  bridges: AdminSkillsBridgesStatus;
+  selemene_skills: AdminSelemeneSkill[];
+  autoresearch: AdminSelemeneAutoresearch;
+  vectorize: AdminSelemeneVectorize;
+  report_modes: AdminSelemeneReportMode[];
+  mcp: AdminSelemeneMcp;
 }

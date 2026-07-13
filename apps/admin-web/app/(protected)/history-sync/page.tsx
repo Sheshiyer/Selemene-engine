@@ -32,10 +32,7 @@ function formatDateTime(value: string | null): string {
 }
 
 async function fetchHistorySyncData(eventStatus: string) {
-  const token = getAuthToken();
-  if (!token) {
-    throw new Error("Missing session token. Please sign in again.");
-  }
+  const token = getAuthToken() ?? undefined;
 
   const [usersResponse, devicesResponse, eventsResponse] = await Promise.all([
     getHistorySyncUsers(token, { limit: 50, offset: 0 }),

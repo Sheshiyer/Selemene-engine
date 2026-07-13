@@ -19,9 +19,8 @@ export default function AdminBillingWebhookEventsPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const token = getAuthToken();
-    if (!token) return;
-    let cancelled = false;
+    const token = getAuthToken() ?? undefined;
+let cancelled = false;
     getAdminBillingWebhookEvents(token, { limit: 100 })
       .then((resp) => {
         if (!cancelled) {

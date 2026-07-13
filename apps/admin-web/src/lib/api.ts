@@ -232,7 +232,7 @@ export async function getAdminSession(token?: string): Promise<AdminSession> {
 }
 
 export async function getAdminUsers(
-  token: string,
+  token: string | undefined | undefined,
   params: {
     query?: string;
     tier?: string;
@@ -254,7 +254,7 @@ export async function getAdminUsers(
 }
 
 export async function updateAdminUserState(
-  token: string,
+  token: string | undefined,
   userId: string,
   payload: {
     state: "active" | "locked";
@@ -269,7 +269,7 @@ export async function updateAdminUserState(
 }
 
 export async function updateAdminUserTier(
-  token: string,
+  token: string | undefined,
   userId: string,
   payload: { tier: string }
 ): Promise<UpdateUserTierResponse> {
@@ -281,7 +281,7 @@ export async function updateAdminUserTier(
 }
 
 export async function updateAdminUserRoles(
-  token: string,
+  token: string | undefined,
   userId: string,
   payload: { roles: string[] }
 ): Promise<UpdateUserRolesResponse> {
@@ -293,7 +293,7 @@ export async function updateAdminUserRoles(
 }
 
 export async function getAdminApiKeys(
-  token: string,
+  token: string | undefined,
   params: {
     query?: string;
     user_id?: string;
@@ -315,7 +315,7 @@ export async function getAdminApiKeys(
 }
 
 export async function createAdminApiKey(
-  token: string,
+  token: string | undefined,
   payload: {
     user_id: string;
     name?: string;
@@ -333,7 +333,7 @@ export async function createAdminApiKey(
   });
 }
 
-export async function revokeAdminApiKey(token: string, keyId: string): Promise<void> {
+export async function revokeAdminApiKey(token: string | undefined, keyId: string): Promise<void> {
   await request<Record<string, unknown>>(`/api/v1/admin/api-keys/${keyId}/revoke`, {
     method: "POST",
     token
@@ -341,7 +341,7 @@ export async function revokeAdminApiKey(token: string, keyId: string): Promise<v
 }
 
 export async function rotateAdminApiKey(
-  token: string,
+  token: string | undefined,
   keyId: string
 ): Promise<RotateApiKeyResponse> {
   return request<RotateApiKeyResponse>(`/api/v1/admin/api-keys/${keyId}/rotate`, {
@@ -350,7 +350,7 @@ export async function rotateAdminApiKey(
   });
 }
 
-export async function deleteAdminApiKey(token: string, keyId: string): Promise<void> {
+export async function deleteAdminApiKey(token: string | undefined, keyId: string): Promise<void> {
   await request<Record<string, unknown>>(`/api/v1/admin/api-keys/${keyId}`, {
     method: "DELETE",
     token
@@ -358,7 +358,7 @@ export async function deleteAdminApiKey(token: string, keyId: string): Promise<v
 }
 
 export async function getHistorySyncUsers(
-  token: string,
+  token: string | undefined,
   params: { limit?: number; offset?: number } = {}
 ): Promise<AdminHistorySyncUsersResponse> {
   return request<AdminHistorySyncUsersResponse>(
@@ -371,7 +371,7 @@ export async function getHistorySyncUsers(
 }
 
 export async function getHistorySyncDevices(
-  token: string,
+  token: string | undefined,
   params: { limit?: number; offset?: number } = {}
 ): Promise<AdminHistorySyncDevicesResponse> {
   return request<AdminHistorySyncDevicesResponse>(
@@ -384,7 +384,7 @@ export async function getHistorySyncDevices(
 }
 
 export async function getHistorySyncEvents(
-  token: string,
+  token: string | undefined,
   params: { status?: string; limit?: number; offset?: number } = {}
 ): Promise<AdminHistorySyncEventsResponse> {
   return request<AdminHistorySyncEventsResponse>(
@@ -398,7 +398,7 @@ export async function getHistorySyncEvents(
 }
 
 export async function getAdminUsageSummary(
-  token: string,
+  token: string | undefined,
   params: { engine_limit?: number; top_users_limit?: number; range_days?: number } = {}
 ): Promise<AdminUsageSummaryResponse> {
   return request<AdminUsageSummaryResponse>(
@@ -412,7 +412,7 @@ export async function getAdminUsageSummary(
 }
 
 export async function getAnalyticsSummary(
-  token: string,
+  token: string | undefined,
   params: { window_hours?: number } = {}
 ): Promise<AdminAnalyticsSummaryResponse> {
   return request<AdminAnalyticsSummaryResponse>(
@@ -424,7 +424,7 @@ export async function getAnalyticsSummary(
 }
 
 export async function getAnalyticsTimeseries(
-  token: string,
+  token: string | undefined,
   params: { window_hours?: number; bucket?: "hour" | "day" } = {}
 ): Promise<AdminAnalyticsTimeseriesResponse> {
   return request<AdminAnalyticsTimeseriesResponse>(
@@ -437,7 +437,7 @@ export async function getAnalyticsTimeseries(
 }
 
 export async function getAnalyticsBreakdown(
-  token: string,
+  token: string | undefined,
   params: { window_hours?: number; limit?: number } = {}
 ): Promise<AdminAnalyticsBreakdownResponse> {
   return request<AdminAnalyticsBreakdownResponse>(
@@ -450,7 +450,7 @@ export async function getAnalyticsBreakdown(
 }
 
 export async function getAnalyticsTopConsumers(
-  token: string,
+  token: string | undefined,
   params: { window_hours?: number; limit?: number } = {}
 ): Promise<AdminAnalyticsTopConsumersResponse> {
   return request<AdminAnalyticsTopConsumersResponse>(
@@ -462,12 +462,12 @@ export async function getAnalyticsTopConsumers(
   );
 }
 
-export async function getSystemHealth(token: string): Promise<AdminSystemHealthResponse> {
+export async function getSystemHealth(token: string | undefined): Promise<AdminSystemHealthResponse> {
   return request<AdminSystemHealthResponse>("/api/v1/admin/system/health", { token });
 }
 
 export async function getSystemServices(
-  token: string,
+  token: string | undefined,
   params: { limit?: number; offset?: number } = {}
 ): Promise<AdminSystemServicesResponse> {
   return request<AdminSystemServicesResponse>(
@@ -480,7 +480,7 @@ export async function getSystemServices(
 }
 
 export async function getSystemWorkflows(
-  token: string,
+  token: string | undefined,
   params: { window_hours?: number; limit?: number; offset?: number } = {}
 ): Promise<AdminSystemWorkflowsResponse> {
   return request<AdminSystemWorkflowsResponse>(
@@ -493,12 +493,12 @@ export async function getSystemWorkflows(
   );
 }
 
-export async function getSystemCache(token: string): Promise<AdminSystemCacheResponse> {
+export async function getSystemCache(token: string | undefined): Promise<AdminSystemCacheResponse> {
   return request<AdminSystemCacheResponse>("/api/v1/admin/system/cache", { token });
 }
 
 export async function getAuditEvents(
-  token: string,
+  token: string | undefined,
   params: {
     actor?: string;
     action?: string;
@@ -524,26 +524,26 @@ export async function getAuditEvents(
 }
 
 export async function getAuditEvent(
-  token: string,
+  token: string | undefined,
   eventId: string
 ): Promise<AdminAuditEventDetailResponse> {
   return request<AdminAuditEventDetailResponse>(`/api/v1/admin/audit-events/${eventId}`, { token });
 }
 
-export async function getAuditActions(token: string): Promise<AdminAuditActionsResponse> {
+export async function getAuditActions(token: string | undefined): Promise<AdminAuditActionsResponse> {
   return request<AdminAuditActionsResponse>("/api/v1/admin/audit-events/actions", { token });
 }
 
 // ─── Billing (Dodo Payments) ─────────────────────────────────────────────────
 
 export async function getAdminBillingOverview(
-  token: string
+  token: string | undefined
 ): Promise<AdminBillingOverviewResponse> {
   return request<AdminBillingOverviewResponse>("/api/v1/admin/billing/overview", { token });
 }
 
 export async function getAdminBillingSubscriptions(
-  token: string,
+  token: string | undefined,
   params: { status?: string; limit?: number; offset?: number } = {}
 ): Promise<AdminBillingSubscriptionsResponse> {
   const qs = new URLSearchParams();
@@ -558,7 +558,7 @@ export async function getAdminBillingSubscriptions(
 }
 
 export async function getAdminBillingSubscription(
-  token: string,
+  token: string | undefined,
   id: string
 ): Promise<AdminBillingSubscriptionDetailResponse> {
   return request<AdminBillingSubscriptionDetailResponse>(
@@ -568,7 +568,7 @@ export async function getAdminBillingSubscription(
 }
 
 export async function cancelAdminBillingSubscription(
-  token: string,
+  token: string | undefined,
   id: string
 ): Promise<AdminBillingCancelSubscriptionResponse> {
   return request<AdminBillingCancelSubscriptionResponse>(
@@ -578,7 +578,7 @@ export async function cancelAdminBillingSubscription(
 }
 
 export async function getAdminBillingWebhookEvents(
-  token: string,
+  token: string | undefined,
   params: { provider?: string; limit?: number } = {}
 ): Promise<AdminBillingWebhookEventsResponse> {
   const qs = new URLSearchParams();
@@ -592,7 +592,7 @@ export async function getAdminBillingWebhookEvents(
 }
 
 export async function getAdminBillingReconcileDrift(
-  token: string
+  token: string | undefined
 ): Promise<AdminBillingReconcileDriftResponse> {
   return request<AdminBillingReconcileDriftResponse>(
     "/api/v1/admin/billing/reconcile/drift",
@@ -601,7 +601,7 @@ export async function getAdminBillingReconcileDrift(
 }
 
 export async function triggerAdminBillingReconcile(
-  token: string
+  token: string | undefined
 ): Promise<AdminBillingReconcileTriggerResponse> {
   return request<AdminBillingReconcileTriggerResponse>(
     "/api/v1/admin/billing/reconcile/run",
@@ -610,13 +610,13 @@ export async function triggerAdminBillingReconcile(
 }
 
 export async function getAdminBillingPlans(
-  token: string
+  token: string | undefined
 ): Promise<AdminBillingPlansResponse> {
   return request<AdminBillingPlansResponse>("/api/v1/admin/billing/plans", { token });
 }
 
 export async function getWitnessDyadExecutions(
-  token: string,
+  token: string | undefined,
   params: {
     user_id?: string;
     tier?: string;
@@ -642,7 +642,7 @@ export async function getWitnessDyadExecutions(
 }
 
 export async function getWitnessDyadExecution(
-  token: string,
+  token: string | undefined,
   executionId: string
 ): Promise<AdminWitnessDyadExecutionItem> {
   return request<AdminWitnessDyadExecutionItem>(
@@ -652,7 +652,7 @@ export async function getWitnessDyadExecution(
 }
 
 export async function getWitnessDyadAnalytics(
-  token: string,
+  token: string | undefined,
   params: { window_hours?: number } = {}
 ): Promise<AdminWitnessDyadAnalyticsResponse> {
   return request<AdminWitnessDyadAnalyticsResponse>(
@@ -664,7 +664,7 @@ export async function getWitnessDyadAnalytics(
 }
 
 export async function getAdminReadings(
-  token: string,
+  token: string | undefined,
   params: {
     user_id?: string;
     engine_id?: string;
@@ -684,7 +684,7 @@ export async function getAdminReadings(
 }
 
 export async function getAdminReadingsEngineBreakdown(
-  token: string,
+  token: string | undefined,
   params: { window_hours?: number } = {}
 ): Promise<AdminReadingsEngineBreakdownResponse> {
   return request<AdminReadingsEngineBreakdownResponse>(
@@ -696,7 +696,7 @@ export async function getAdminReadingsEngineBreakdown(
 }
 
 export async function getAdminEngines(
-  token: string
+  token: string | undefined
 ): Promise<AdminSystemEnginesResponse> {
   return request<AdminSystemEnginesResponse>("/api/v1/admin/system/engines", {
     token
@@ -704,7 +704,7 @@ export async function getAdminEngines(
 }
 
 export async function getAdminEngine(
-  token: string,
+  token: string | undefined,
   engineId: string
 ): Promise<AdminSystemEngineItem> {
   return request<AdminSystemEngineItem>(
@@ -713,34 +713,34 @@ export async function getAdminEngine(
   );
 }
 
-export async function getAdminBridgeHealth(token: string): Promise<AdminBridgeHealthResponse> {
+export async function getAdminBridgeHealth(token: string | undefined): Promise<AdminBridgeHealthResponse> {
   return request<AdminBridgeHealthResponse>("/api/v1/admin/bridge/health", { token });
 }
 
-export async function getAdminHermesBridgeStatus(token: string): Promise<AdminHermesBridgeStatus> {
+export async function getAdminHermesBridgeStatus(token: string | undefined): Promise<AdminHermesBridgeStatus> {
   return request<AdminHermesBridgeStatus>("/api/v1/admin/bridge/hermes/status", { token });
 }
 
-export async function getAdminSunoBridgeStatus(token: string): Promise<AdminSunoBridgeStatus> {
+export async function getAdminSunoBridgeStatus(token: string | undefined): Promise<AdminSunoBridgeStatus> {
   return request<AdminSunoBridgeStatus>("/api/v1/admin/bridge/suno/status", { token });
 }
 
-export async function getAdminLlmProxyStatus(token: string): Promise<AdminLlmProxyStatus> {
+export async function getAdminLlmProxyStatus(token: string | undefined): Promise<AdminLlmProxyStatus> {
   return request<AdminLlmProxyStatus>("/api/v1/admin/bridge/llm-proxy/status", { token });
 }
 
-export async function getAdminObservabilitySummary(token: string): Promise<AdminObservabilitySummary> {
+export async function getAdminObservabilitySummary(token: string | undefined): Promise<AdminObservabilitySummary> {
   return request<AdminObservabilitySummary>("/api/v1/admin/observability/summary", { token });
 }
 
-export async function getAdminSkillsEcosystemStatus(token: string): Promise<AdminSkillsEcosystemStatus> {
+export async function getAdminSkillsEcosystemStatus(token: string | undefined): Promise<AdminSkillsEcosystemStatus> {
   return request<AdminSkillsEcosystemStatus>("/api/v1/admin/skills/status", { token });
 }
 
 export { ApiClientError };
 
 export async function getAdminBiofieldSessions(
-  token: string,
+  token: string | undefined,
   params: { status?: string; user_id?: string; limit?: number; offset?: number } = {}
 ): Promise<AdminBiofieldSessionsResponse> {
   return request<AdminBiofieldSessionsResponse>(
@@ -753,17 +753,17 @@ export async function getAdminBiofieldSessions(
 }
 
 export async function getAdminBiofieldSession(
-  token: string, sessionId: string
+  token: string | undefined, sessionId: string
 ): Promise<AdminBiofieldSessionItem> {
   return request<AdminBiofieldSessionItem>(`/api/v1/admin/biofield/sessions/${sessionId}`, { token });
 }
 
 export async function getAdminWorkflow(
-  token: string, workflowId: string
+  token: string | undefined, workflowId: string
 ): Promise<AdminSystemWorkflowItem> {
   return request<AdminSystemWorkflowItem>(`/api/v1/admin/system/workflows/${workflowId}/detail`, { token });
 }
 
-export async function getAdminSidecarDetail(token: string): Promise<AdminSidecarDetail> {
+export async function getAdminSidecarDetail(token: string | undefined): Promise<AdminSidecarDetail> {
   return request<AdminSidecarDetail>("/api/v1/admin/bridge/sidecar", { token });
 }

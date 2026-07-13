@@ -86,10 +86,7 @@ export default function DashboardPage() {
   );
 
   const loadDashboard = useCallback(async () => {
-    const token = getAuthToken();
-    if (!token) {
-      throw new Error("Missing session token. Please sign in again.");
-    }
+    const token = getAuthToken() ?? undefined;
 
     const [summaryResponse, timeseriesResponse, topConsumersResponse, witnessDyadResponse, bridgeHealthResponse] = await Promise.all([
       getAnalyticsSummary(token, { window_hours: 24 }),

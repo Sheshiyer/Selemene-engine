@@ -171,11 +171,7 @@ export default function AuditPage() {
   );
 
   const loadAudit = useCallback(async () => {
-    const token = getAuthToken();
-    if (!token) {
-      dispatch({ type: "FETCH_ERROR", error: "Missing session token. Please sign in again." });
-      return;
-    }
+    const token = getAuthToken() ?? undefined;
 
     dispatch({ type: "FETCH_START" });
 
@@ -214,11 +210,7 @@ export default function AuditPage() {
   }, [action, actor, from, result, to]);
 
   async function openDetail(eventId: string) {
-    const token = getAuthToken();
-    if (!token) {
-      dispatch({ type: "SHOW_ERROR", error: "Missing session token. Please sign in again." });
-      return;
-    }
+    const token = getAuthToken() ?? undefined;
 
     dispatch({ type: "DETAIL_START" });
 

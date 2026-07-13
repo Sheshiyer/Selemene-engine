@@ -40,10 +40,7 @@ export default function WorkflowDetailPage({ params }: { params: Promise<{ id: s
   const [listFallback, setListFallback] = useState<AdminSystemWorkflowItem | null>(null);
 
   const loadDetail = useCallback(async () => {
-    const token = getAuthToken();
-    if (!token) {
-      throw new Error("Missing session token. Please sign in again.");
-    }
+    const token = getAuthToken() ?? undefined;
 
     try {
       const result = await getAdminWorkflow(token, id);

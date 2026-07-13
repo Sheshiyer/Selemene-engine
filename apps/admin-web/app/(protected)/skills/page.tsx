@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { ActionRail, SurfaceCard } from "@/components/admin-primitives";
-import { StateBanner, StatePanel } from "@/components/admin-state";
+import { StateBanner, StatePanel, TableEmptyStateRow } from "@/components/admin-state";
 import { PageShell } from "@/components/page-shell";
 import { getAuthToken } from "@/lib/auth";
 import { ApiClientError, getAdminSkillsEcosystemStatus } from "@/lib/api";
@@ -48,10 +48,7 @@ export default function SkillsPage() {
   );
 
   const loadEcosystem = useCallback(async () => {
-    const token = getAuthToken();
-    if (!token) {
-      throw new Error("Missing session token. Please sign in again.");
-    }
+    const token = getAuthToken() ?? undefined;
 
     return getAdminSkillsEcosystemStatus(token);
   }, []);
@@ -104,8 +101,8 @@ export default function SkillsPage() {
 
   return (
     <PageShell
-      title="Skills & Pipelines"
-      summary="Skill cluster health, CodeGraph index, witness pipeline status, and bridge deployment posture."
+      title="Selemene Skills & Pipelines"
+      summary="Selemene skills, report modes, autoresearch testing, Vectorize pattern memory, and MCP server posture."
       actions={
         <ActionRail label="Skills actions">
           <label>
@@ -136,171 +133,230 @@ export default function SkillsPage() {
       {loading ? (
         <StatePanel
           variant="loading"
-          title="Loading skills ecosystem status"
-          description="Resolving cluster system health, CodeGraph index, witness pipeline, and bridge posture."
+          title="Loading Selemene skills ecosystem"
+          description="Resolving Selemene skills, report modes, autoresearch, Vectorize bindings, and MCP status."
         />
       ) : (
         <>
-          {/* Cluster System */}
+          {/* Selemene Skills */}
           <SurfaceCard
-            eyebrow="Infrastructure"
-            title="Cluster System"
-            summary="Skill cluster directory path, active cluster count, and health check availability."
+            eyebrow="Skills"
+            title="Selemene Skills"
+            summary="Active Selemene skills from project-local .claude/skills and the ~/.agents skills cluster."
+          >
+            <div className="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Origin</th>
+                    <th>Location</th>
+                    <th>Status</th>
+                    <th>Description</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {ecosystem?.selemene_skills.map((skill) => (
+                    <tr key={skill.name}>
+                      <td>
+                        <div className="table-primary">{skill.name}</div>
+                      </td>
+                      <td>
+                        <span className={statusPillClass(skill.origin)}>{skill.origin}</span>
+                      </td>
+                      <td>
+                        <div className="helper">{skill.location}</div>
+                      </td>
+                      <td>
+                        <span className={statusPillClass(skill.status)}>{skill.status}</span>
+                      </td>
+                      <td>
+                        <div className="helper">{skill.description}</div>
+                      </td>
+                    </tr>
+                  ))}
+                  {ecosystem?.selemene_skills.length === 0 ? (
+                    <TableEmptyStateRow
+                      colSpan={5}
+                      title="No Selemene skills found"
+                      description="Check the skills cluster and .claude/skills directory."
+                    />
+                  ) : null}
+                </tbody>
+              </table>
+            </div>
+          </SurfaceCard>
+
+          {/* Autoresearch */}
+          <SurfaceCard
+            eyebrow="Testing"
+            title="Autoresearch"
+            summary="Autoresearch loop status and testing grounds for skills, prompts, and agent evaluation."
           >
             <div className="grid metrics">
               <article className="metric">
-                <div className="label">Path</div>
-                <div className="value helper">{ecosystem?.cluster_system.path ?? "--"}</div>
-              </article>
-              <article className="metric">
-                <div className="label">Active Clusters</div>
-                <div className="value">{ecosystem?.cluster_system.active_clusters ?? "--"}</div>
-              </article>
-              <article className="metric">
-                <div className="label">Health Available</div>
+                <div className="label">Enabled</div>
                 <div className="value">
                   <span
                     className={statusPillClass(
-                      ecosystem?.cluster_system.health_available ? "healthy" : "unavailable"
+                      ecosystem?.autoresearch.enabled ? "healthy" : "unavailable"
                     )}
                   >
-                    {ecosystem?.cluster_system.health_available ? "Yes" : "No"}
+                    {ecosystem?.autoresearch.enabled ? "Yes" : "No"}
                   </span>
                 </div>
               </article>
               <article className="metric">
-                <div className="label">Skills Indexed</div>
-                <div className="value">{ecosystem?.skills_indexed ?? "--"}</div>
+                <div className="label">Testing Grounds</div>
+                <div className="value">{ecosystem?.autoresearch.testing_grounds ?? "--"}</div>
+              </article>
+              <article className="metric wide">
+                <div className="label">Description</div>
+                <div className="value helper">{ecosystem?.autoresearch.description ?? "--"}</div>
               </article>
             </div>
           </SurfaceCard>
 
-          {/* CodeGraph Status */}
+          {/* Vectorize */}
           <SurfaceCard
-            eyebrow="Index"
-            title="CodeGraph"
-            summary="Structural code intelligence index readiness, file count, and total indexed symbols."
+            eyebrow="Pattern Memory"
+            title="Vectorize Connection"
+            summary="Cloudflare Vectorize binding, AI binding, and durable storage for report pattern memory."
           >
             <div className="grid metrics">
               <article className="metric">
-                <div className="label">Initialized</div>
+                <div className="label">Status</div>
                 <div className="value">
                   <span
                     className={statusPillClass(
-                      ecosystem?.codegraph_status?.initialized ? "healthy" : "unavailable"
+                      ecosystem?.vectorize.status === "configured" ? "healthy" : "unavailable"
                     )}
                   >
-                    {ecosystem?.codegraph_status?.initialized ? "Yes" : "No"}
+                    {ecosystem?.vectorize.status ?? "--"}
                   </span>
                 </div>
               </article>
               <article className="metric">
-                <div className="label">Files Indexed</div>
-                <div className="value">{ecosystem?.codegraph_status?.files_indexed ?? "--"}</div>
+                <div className="label">Index Name</div>
+                <div className="value helper">{ecosystem?.vectorize.index_name ?? "--"}</div>
               </article>
               <article className="metric">
-                <div className="label">Symbols</div>
-                <div className="value">{ecosystem?.codegraph_status?.symbols ?? "--"}</div>
+                <div className="label">Vectorize Binding</div>
+                <div className="value helper">{ecosystem?.vectorize.binding ?? "--"}</div>
+              </article>
+              <article className="metric">
+                <div className="label">AI Binding</div>
+                <div className="value helper">{ecosystem?.vectorize.ai_binding ?? "--"}</div>
+              </article>
+              <article className="metric">
+                <div className="label">R2 Bucket</div>
+                <div className="value helper">{ecosystem?.vectorize.r2_bucket ?? "--"}</div>
+              </article>
+              <article className="metric">
+                <div className="label">D1 Database</div>
+                <div className="value helper">{ecosystem?.vectorize.d1_database ?? "--"}</div>
               </article>
             </div>
           </SurfaceCard>
 
-          {/* Witness Pipeline */}
+          {/* Report Modes */}
           <SurfaceCard
-            eyebrow="Pipeline"
-            title="Witness Pipeline"
-            summary="Witness pipeline version, available pattern count, and vector store posture."
+            eyebrow="Witness Pipeline"
+            title="Report Modes"
+            summary="Available witness-pipeline report modes, levels, subject counts, and pass architectures."
           >
-            <div className="grid metrics">
-              <article className="metric">
-                <div className="label">Version</div>
-                <div className="value">{ecosystem?.witness_pipeline.version ?? "--"}</div>
-              </article>
-              <article className="metric">
-                <div className="label">Pattern Count</div>
-                <div className="value">{ecosystem?.witness_pipeline.pattern_count ?? "--"}</div>
-              </article>
-              <article className="metric">
-                <div className="label">Vectors Available</div>
-                <div className="value">
-                  <span
-                    className={statusPillClass(
-                      ecosystem?.witness_pipeline.vectors_available ? "healthy" : "unavailable"
-                    )}
-                  >
-                    {ecosystem?.witness_pipeline.vectors_available ? "Yes" : "No"}
-                  </span>
-                </div>
-              </article>
+            <div className="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Mode</th>
+                    <th>Level</th>
+                    <th>Subjects</th>
+                    <th>Roles</th>
+                    <th>Target Words</th>
+                    <th>Architecture</th>
+                    <th>Passes</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {ecosystem?.report_modes.map((mode) => (
+                    <tr key={mode.mode}>
+                      <td>
+                        <div className="table-primary">{mode.mode}</div>
+                      </td>
+                      <td>
+                        <span className={statusPillClass(`level-${mode.report_level}`)}>
+                          {mode.report_level}
+                        </span>
+                      </td>
+                      <td>
+                        {mode.subject_count_min === mode.subject_count_max
+                          ? mode.subject_count_min
+                          : `${mode.subject_count_min}–${mode.subject_count_max}`}
+                      </td>
+                      <td>
+                        <div className="helper">{mode.roles.join(", ")}</div>
+                      </td>
+                      <td>
+                        {mode.target_words_min.toLocaleString()}–
+                        {mode.target_words_max.toLocaleString()}
+                      </td>
+                      <td>
+                        <span className={statusPillClass(mode.architecture)}>
+                          {mode.architecture}
+                        </span>
+                      </td>
+                      <td>{mode.pass_count}</td>
+                    </tr>
+                  ))}
+                  {ecosystem?.report_modes.length === 0 ? (
+                    <TableEmptyStateRow
+                      colSpan={7}
+                      title="No report modes found"
+                      description="Check packages/witness-pipeline/modes for mode markdown files."
+                    />
+                  ) : null}
+                </tbody>
+              </table>
             </div>
           </SurfaceCard>
 
-          {/* Bridges Status */}
+          {/* MCP Server */}
           <SurfaceCard
-            eyebrow="Connectivity"
-            title="Bridges Status"
-            summary="Bridge integration posture across Hermes, Suno, LLM Proxy, universal tool server, and CLI tooling."
+            eyebrow="Integration"
+            title="Selemene MCP Server"
+            summary="MCP server base URL, authentication methods, and exposed tool surface."
           >
             <div className="grid metrics">
               <article className="metric">
-                <div className="label">Hermes</div>
+                <div className="label">Configured</div>
                 <div className="value">
                   <span
                     className={statusPillClass(
-                      ecosystem?.bridges.hermes_configured ? "healthy" : "unavailable"
+                      ecosystem?.mcp.configured ? "healthy" : "unavailable"
                     )}
                   >
-                    {ecosystem?.bridges.hermes_configured ? "Configured" : "Missing"}
+                    {ecosystem?.mcp.configured ? "Yes" : "No"}
                   </span>
                 </div>
               </article>
+              <article className="metric wide">
+                <div className="label">Base URL</div>
+                <div className="value helper">{ecosystem?.mcp.base_url ?? "--"}</div>
+              </article>
               <article className="metric">
-                <div className="label">Suno</div>
-                <div className="value">
-                  <span
-                    className={statusPillClass(
-                      ecosystem?.bridges.suno_configured ? "healthy" : "unavailable"
-                    )}
-                  >
-                    {ecosystem?.bridges.suno_configured ? "Configured" : "Missing"}
-                  </span>
+                <div className="label">Auth Methods</div>
+                <div className="value helper">
+                  {ecosystem?.mcp.auth_methods.join(", ") ?? "--"}
                 </div>
               </article>
               <article className="metric">
-                <div className="label">LLM Proxy</div>
-                <div className="value">
-                  <span
-                    className={statusPillClass(
-                      ecosystem?.bridges.llm_proxy_deployed ? "healthy" : "unavailable"
-                    )}
-                  >
-                    {ecosystem?.bridges.llm_proxy_deployed ? "Deployed" : "Not Deployed"}
-                  </span>
-                </div>
+                <div className="label">Tool Count</div>
+                <div className="value">{ecosystem?.mcp.tool_count ?? "--"}</div>
               </article>
-              <article className="metric">
-                <div className="label">Universal Tool Server</div>
-                <div className="value">
-                  <span
-                    className={statusPillClass(
-                      ecosystem?.bridges.universal_tool_server ? "healthy" : "unavailable"
-                    )}
-                  >
-                    {ecosystem?.bridges.universal_tool_server ? "Yes" : "No"}
-                  </span>
-                </div>
-              </article>
-              <article className="metric">
-                <div className="label">Bridge CLI</div>
-                <div className="value">
-                  <span
-                    className={statusPillClass(
-                      ecosystem?.bridges.bridge_cli_installed ? "healthy" : "unavailable"
-                    )}
-                  >
-                    {ecosystem?.bridges.bridge_cli_installed ? "Installed" : "Missing"}
-                  </span>
-                </div>
+              <article className="metric wide">
+                <div className="label">Tools</div>
+                <div className="value helper">{ecosystem?.mcp.tools.join(", ") ?? "--"}</div>
               </article>
             </div>
           </SurfaceCard>

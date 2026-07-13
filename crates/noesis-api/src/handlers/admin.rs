@@ -4063,6 +4063,30 @@ pub struct AdminBridgeEngineHealth {
 }
 
 #[derive(Serialize, ToSchema)]
+pub struct AdminSidecarEngineHealth {
+    pub engine_id: String,
+    pub healthy: bool,
+    pub detail: String,
+    pub latency_ms: u64,
+}
+
+#[derive(Serialize, ToSchema)]
+pub struct AdminSidecarCircuitBreaker {
+    pub state: String,
+    pub failures: u32,
+    pub last_failure_ts: Option<String>,
+}
+
+#[derive(Serialize, ToSchema)]
+pub struct AdminSidecarDetail {
+    pub base_url: String,
+    pub status: String,
+    pub engines: Vec<AdminSidecarEngineHealth>,
+    pub failed_engines: Vec<String>,
+    pub circuit_breakers: HashMap<String, AdminSidecarCircuitBreaker>,
+}
+
+#[derive(Serialize, ToSchema)]
 pub struct AdminBridgeConfig {
     pub timeout_secs: u32,
     pub cb_threshold: u32,
@@ -4244,7 +4268,7 @@ pub async fn sidecar_detail(
     let base_url = state.bridge_manager.base_url().to_string();
     let sidecar_reachable = state.bridge_manager.is_available().await;
 
-    let engines: Vec<AdminBridgeEngineHealth> = state
+    let engines: Vec<AdminSidecarEngineHealth> = state
         .bridge_manager
         .engines()
         .iter()
@@ -4255,45 +4279,58 @@ pub async fn sidecar_detail(
                 .ok()
                 .and_then(|s| s.engines.iter().find(|e| e.engine_id == eid));
 
-            let (circuit_state, circuit_failures, circuit_last_failure) = {
-                let circuit = engine
-                    .as_ref()
-                    .as_any()
-                    .downcast_ref::<noesis_bridge::BridgeEngine>()
-                    .map(|be| be.circuit_breaker());
-                match circuit {
-                    Some(cb) => (
-                        cb.state().as_str().to_string(),
-                        cb.failure_count(),
-                        cb.last_failure_at().map(|dt| dt.to_rfc3339()),
-                    ),
-                    None => ("unknown".to_string(), 0u32, None),
-                }
-            };
-
-            AdminBridgeEngineHealth {
+            AdminSidecarEngineHealth {
                 engine_id: eid,
-                engine_name: engine.engine_name().to_string(),
                 healthy: sidecar_data.map(|s| s.healthy).unwrap_or(false),
                 detail: sidecar_data
                     .map(|s| s.detail.clone())
                     .unwrap_or_else(|| "unreachable".to_string()),
                 latency_ms: sidecar_data.map(|s| s.latency_ms).unwrap_or(0),
-                circuit_state,
-                circuit_failures,
-                circuit_last_failure,
-                required_phase: engine.required_phase(),
             }
+        })
+        .collect();
+
+    let failed_engines: Vec<String> = engines
+        .iter()
+        .filter(|e| !e.healthy)
+        .map(|e| e.engine_id.clone())
+        .collect();
+
+    let circuit_breakers: HashMap<String, AdminSidecarCircuitBreaker> = state
+        .bridge_manager
+        .engines()
+        .iter()
+        .filter_map(|engine| {
+            let eid = engine.engine_id().to_string();
+            let circuit = engine
+                .as_ref()
+                .as_any()
+                .downcast_ref::<noesis_bridge::BridgeEngine>()
+                .map(|be| be.circuit_breaker())?;
+            Some((
+                eid,
+                AdminSidecarCircuitBreaker {
+                    state: circuit.state().as_str().to_string(),
+                    failures: circuit.failure_count(),
+                    last_failure_ts: circuit.last_failure_at().map(|dt| dt.to_rfc3339()),
+                },
+            ))
         })
         .collect();
 
     Ok((
         StatusCode::OK,
-        Json(serde_json::json!({
-            "base_url": base_url,
-            "sidecar_reachable": sidecar_reachable,
-            "engines": engines,
-        })),
+        Json(AdminSidecarDetail {
+            base_url,
+            status: if sidecar_reachable {
+                "healthy".to_string()
+            } else {
+                "unavailable".to_string()
+            },
+            engines,
+            failed_engines,
+            circuit_breakers,
+        }),
     )
         .into_response())
 }
@@ -4634,45 +4671,63 @@ pub async fn observability_summary(
 // ── Skills Ecosystem Status (T-025) ───────────────────────────────────────────
 
 #[derive(Serialize, ToSchema)]
+pub struct AdminSelemeneSkill {
+    pub name: String,
+    pub description: String,
+    pub origin: String,
+    pub location: String,
+    pub status: String,
+}
+
+#[derive(Serialize, ToSchema)]
+pub struct AdminSelemeneReportMode {
+    pub mode: String,
+    pub report_level: String,
+    pub subject_count_min: i32,
+    pub subject_count_max: i32,
+    pub roles: Vec<String>,
+    pub target_words_min: i32,
+    pub target_words_max: i32,
+    pub architecture: String,
+    pub pass_count: usize,
+}
+
+#[derive(Serialize, ToSchema)]
+pub struct AdminSelemeneAutoresearch {
+    pub enabled: bool,
+    pub testing_grounds: String,
+    pub description: String,
+}
+
+#[derive(Serialize, ToSchema)]
+pub struct AdminSelemeneVectorize {
+    pub index_name: String,
+    pub binding: String,
+    pub ai_binding: String,
+    pub r2_bucket: String,
+    pub d1_database: String,
+    pub status: String,
+}
+
+#[derive(Serialize, ToSchema)]
+pub struct AdminSelemeneMcp {
+    pub configured: bool,
+    pub base_url: String,
+    pub auth_methods: Vec<String>,
+    pub tool_count: usize,
+    pub tools: Vec<String>,
+}
+
+#[derive(Serialize, ToSchema)]
 pub struct AdminSkillsEcosystemStatus {
-    pub cluster_system: AdminSkillsClusterStatus,
-    pub skills_indexed: i64,
-    pub codegraph_status: Option<AdminSkillsCodegraphStatus>,
-    pub witness_pipeline: AdminSkillsWitnessPipelineStatus,
-    pub bridges: AdminSkillsBridgesStatus,
+    pub selemene_skills: Vec<AdminSelemeneSkill>,
+    pub autoresearch: AdminSelemeneAutoresearch,
+    pub vectorize: AdminSelemeneVectorize,
+    pub report_modes: Vec<AdminSelemeneReportMode>,
+    pub mcp: AdminSelemeneMcp,
 }
 
-#[derive(Serialize, ToSchema)]
-pub struct AdminSkillsClusterStatus {
-    pub path: String,
-    pub active_clusters: i32,
-    pub health_available: bool,
-}
-
-#[derive(Serialize, ToSchema)]
-pub struct AdminSkillsCodegraphStatus {
-    pub initialized: bool,
-    pub files_indexed: i32,
-    pub symbols: i32,
-}
-
-#[derive(Serialize, ToSchema)]
-pub struct AdminSkillsWitnessPipelineStatus {
-    pub version: String,
-    pub pattern_count: i64,
-    pub vectors_available: bool,
-}
-
-#[derive(Serialize, ToSchema)]
-pub struct AdminSkillsBridgesStatus {
-    pub hermes_configured: bool,
-    pub suno_configured: bool,
-    pub llm_proxy_deployed: bool,
-    pub universal_tool_server: bool,
-    pub bridge_cli_installed: bool,
-}
-
-/// GET /api/v1/admin/skills/status — skills ecosystem status
+/// GET /api/v1/admin/skills/status — Selemene skills, report modes, Vectorize, MCP, and autoresearch
 pub async fn skills_ecosystem_status(
     State(_state): State<AppState>,
     Extension(auth_user): Extension<AuthUser>,
@@ -4683,42 +4738,207 @@ pub async fn skills_ecosystem_status(
         return Ok(resp);
     }
 
-    let hermes_configured = std::env::var("HERMES_BASE_URL").is_ok();
-    let suno_configured =
-        std::env::var("SUNO_BASE_URL").is_ok() || std::env::var("SUNO_SESSION_ID").is_ok();
-    let llm_proxy_deployed = std::env::var("LLM_PROXY_URL").is_ok();
-    let bridge_cli_installed = std::process::Command::new("which")
-        .arg("runcomfy")
-        .output()
-        .map(|o| o.status.success())
-        .unwrap_or(false);
+    let selemene_skills = vec![
+        AdminSelemeneSkill {
+            name: "selemene-bridge".to_string(),
+            description: "Query 16 consciousness engines and 6 workflows for witnessing cosmic patterns. Non-prescriptive mirror — generates inquiry, not advice.".to_string(),
+            origin: "project-local".to_string(),
+            location: ".claude/skills/selemene-bridge".to_string(),
+            status: "active".to_string(),
+        },
+        AdminSelemeneSkill {
+            name: "selemene-report".to_string(),
+            description: "Generate Selemene narrative witness readings and route deterministic reports.".to_string(),
+            origin: "agents".to_string(),
+            location: "~/.agents/skills/selemene-report".to_string(),
+            status: "active".to_string(),
+        },
+        AdminSelemeneSkill {
+            name: "selemene-notebooklm".to_string(),
+            description: "Turn a Selemene witness-pipeline OrchestratorOutput into a ready-to-paste NotebookLM prompt.".to_string(),
+            origin: "agents".to_string(),
+            location: "~/.agents/skills/selemene-notebooklm".to_string(),
+            status: "active".to_string(),
+        },
+        AdminSelemeneSkill {
+            name: "task-master-planner".to_string(),
+            description: "Generate system-engineering task plans from repo specs and .context docs.".to_string(),
+            origin: "project-local".to_string(),
+            location: ".claude/skills/task-master-planner".to_string(),
+            status: "active".to_string(),
+        },
+        AdminSelemeneSkill {
+            name: "dispatching-parallel-agents".to_string(),
+            description: "Dispatch multiple Claude agents to investigate and fix independent problems concurrently.".to_string(),
+            origin: "project-local".to_string(),
+            location: ".claude/skills/dispatching-parallel-agents".to_string(),
+            status: "active".to_string(),
+        },
+    ];
+
+    let autoresearch = AdminSelemeneAutoresearch {
+        enabled: std::env::var("AUTORESEARCH_ENABLED")
+            .map(|v| v.eq_ignore_ascii_case("true") || v == "1")
+            .unwrap_or(true),
+        testing_grounds: std::env::var("AUTORESEARCH_GROUNDS")
+            .unwrap_or_else(|_| "local".to_string()),
+        description: "Autoresearch loop for skills, prompts, and agent evaluation. Operates locally with LLM-as-judge.".to_string(),
+    };
+
+    let vectorize = AdminSelemeneVectorize {
+        index_name: std::env::var("VECTORIZE_INDEX_NAME")
+            .unwrap_or_else(|_| "selemene-report-patterns".to_string()),
+        binding: std::env::var("VECTORIZE_BINDING")
+            .unwrap_or_else(|_| "REPORT_PATTERNS".to_string()),
+        ai_binding: std::env::var("AI_BINDING")
+            .unwrap_or_else(|_| "AI".to_string()),
+        r2_bucket: std::env::var("PATTERNS_R2_BUCKET")
+            .unwrap_or_else(|_| "selemene-patterns".to_string()),
+        d1_database: std::env::var("PATTERNS_D1_DATABASE")
+            .unwrap_or_else(|_| "selemene-patterns".to_string()),
+        status: std::env::var("VECTORIZE_STATUS")
+            .unwrap_or_else(|_| "configured".to_string()),
+    };
+
+    let report_modes = vec![
+        AdminSelemeneReportMode {
+            mode: "birth-blueprint".to_string(),
+            report_level: "L1".to_string(),
+            subject_count_min: 1,
+            subject_count_max: 1,
+            roles: vec!["subject".to_string()],
+            target_words_min: 1600,
+            target_words_max: 2400,
+            architecture: "linear".to_string(),
+            pass_count: 2,
+        },
+        AdminSelemeneReportMode {
+            mode: "integrated-kundali-l0".to_string(),
+            report_level: "L0".to_string(),
+            subject_count_min: 1,
+            subject_count_max: 1,
+            roles: vec!["subject".to_string()],
+            target_words_min: 15000,
+            target_words_max: 21000,
+            architecture: "linear".to_string(),
+            pass_count: 11,
+        },
+        AdminSelemeneReportMode {
+            mode: "integrated-reading".to_string(),
+            report_level: "L3".to_string(),
+            subject_count_min: 1,
+            subject_count_max: 2,
+            roles: vec!["subject".to_string()],
+            target_words_min: 4200,
+            target_words_max: 5800,
+            architecture: "linear".to_string(),
+            pass_count: 3,
+        },
+        AdminSelemeneReportMode {
+            mode: "integrated-reading-l4".to_string(),
+            report_level: "L4".to_string(),
+            subject_count_min: 1,
+            subject_count_max: 2,
+            roles: vec!["subject".to_string()],
+            target_words_min: 4800,
+            target_words_max: 6500,
+            architecture: "linear".to_string(),
+            pass_count: 2,
+        },
+        AdminSelemeneReportMode {
+            mode: "family-penta".to_string(),
+            report_level: "—".to_string(),
+            subject_count_min: 3,
+            subject_count_max: 7,
+            roles: vec!["mother".to_string(), "father".to_string(), "child1".to_string(), "child2".to_string(), "child3".to_string()],
+            target_words_min: 6000,
+            target_words_max: 9000,
+            architecture: "hierarchical".to_string(),
+            pass_count: 5,
+        },
+        AdminSelemeneReportMode {
+            mode: "mother-son-lineage".to_string(),
+            report_level: "—".to_string(),
+            subject_count_min: 2,
+            subject_count_max: 2,
+            roles: vec!["mother".to_string(), "son".to_string()],
+            target_words_min: 4000,
+            target_words_max: 6000,
+            architecture: "linear".to_string(),
+            pass_count: 4,
+        },
+        AdminSelemeneReportMode {
+            mode: "partner-synastry".to_string(),
+            report_level: "—".to_string(),
+            subject_count_min: 2,
+            subject_count_max: 2,
+            roles: vec!["partner".to_string(), "partner".to_string()],
+            target_words_min: 3500,
+            target_words_max: 5500,
+            architecture: "linear".to_string(),
+            pass_count: 4,
+        },
+        AdminSelemeneReportMode {
+            mode: "unmarried-partners".to_string(),
+            report_level: "—".to_string(),
+            subject_count_min: 2,
+            subject_count_max: 2,
+            roles: vec!["partner".to_string(), "partner".to_string()],
+            target_words_min: 3500,
+            target_words_max: 5500,
+            architecture: "linear".to_string(),
+            pass_count: 4,
+        },
+        AdminSelemeneReportMode {
+            mode: "married-partners".to_string(),
+            report_level: "—".to_string(),
+            subject_count_min: 2,
+            subject_count_max: 2,
+            roles: vec!["partner".to_string(), "partner".to_string()],
+            target_words_min: 3500,
+            target_words_max: 5500,
+            architecture: "linear".to_string(),
+            pass_count: 4,
+        },
+        AdminSelemeneReportMode {
+            mode: "business-partners".to_string(),
+            report_level: "—".to_string(),
+            subject_count_min: 2,
+            subject_count_max: 2,
+            roles: vec!["business-partner".to_string(), "business-partner".to_string()],
+            target_words_min: 3500,
+            target_words_max: 5500,
+            architecture: "linear".to_string(),
+            pass_count: 4,
+        },
+    ];
+
+    let mcp = AdminSelemeneMcp {
+        configured: std::env::var("MCP_CONFIGURED")
+            .map(|v| v.eq_ignore_ascii_case("true") || v == "1")
+            .unwrap_or(true),
+        base_url: std::env::var("MCP_BASE_URL")
+            .unwrap_or_else(|_| "https://selemene.tryambakam.space".to_string()),
+        auth_methods: vec!["X-API-Key".to_string(), "Bearer JWT".to_string()],
+        tool_count: 6,
+        tools: vec![
+            "noesis_list_engines".to_string(),
+            "noesis_calculate_engine".to_string(),
+            "noesis_validate_engine".to_string(),
+            "noesis_list_workflows".to_string(),
+            "noesis_workflow_info".to_string(),
+            "noesis_execute_workflow".to_string(),
+        ],
+    };
 
     Ok((
         StatusCode::OK,
         Json(AdminSkillsEcosystemStatus {
-            cluster_system: AdminSkillsClusterStatus {
-                path: "~/.agents/skill-clusters".to_string(),
-                active_clusters: 8,
-                health_available: true,
-            },
-            skills_indexed: 240,
-            codegraph_status: Some(AdminSkillsCodegraphStatus {
-                initialized: true,
-                files_indexed: 946,
-                symbols: 12000,
-            }),
-            witness_pipeline: AdminSkillsWitnessPipelineStatus {
-                version: "3.3.0".to_string(),
-                pattern_count: 42,
-                vectors_available: true,
-            },
-            bridges: AdminSkillsBridgesStatus {
-                hermes_configured,
-                suno_configured,
-                llm_proxy_deployed,
-                universal_tool_server: true,
-                bridge_cli_installed,
-            },
+            selemene_skills,
+            autoresearch,
+            vectorize,
+            report_modes,
+            mcp,
         }),
     )
         .into_response())

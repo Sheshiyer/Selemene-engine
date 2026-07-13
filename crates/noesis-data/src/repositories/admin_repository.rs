@@ -2117,7 +2117,7 @@ impl AdminRepository {
                 bs.client_device_id,
                 bs.viewer_version,
                 bs.started_at,
-                bs.closed_at,
+                bs.ended_at AS closed_at,
                 bs.created_at,
                 COALESCE((SELECT COUNT(*) FROM biofield_capture_artifacts bca WHERE bca.session_id = bs.id), 0)::BIGINT AS artifact_count,
                 COALESCE((SELECT COUNT(DISTINCT bca.reading_id) FROM biofield_capture_artifacts bca WHERE bca.session_id = bs.id AND bca.reading_id IS NOT NULL), 0)::BIGINT AS reading_count,

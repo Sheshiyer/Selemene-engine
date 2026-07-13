@@ -114,9 +114,13 @@ pub async fn auth_middleware(
             .headers()
             .get("cf-authorization")
             .or_else(|| req.headers().get("CF_Authorization"))
+            .or_else(|| req.headers().get("CF-Access-Jwt-Assertion"))
             .and_then(|value| value.to_str().ok())
             .map(str::trim)
             .filter(|value| !value.is_empty());
+
+        let cf_token_present = cf_token.is_some();
+        tracing::info!(cf_token_present, path = %req.uri().path(), "Cloudflare Access header check");
 
         if let Some(token) = cf_token {
             match validator.validate_token(token).await {
@@ -155,7 +159,7 @@ pub async fn auth_middleware(
                     return Ok(next.run(req).await);
                 }
                 Err(e) => {
-                    tracing::warn!(error = %e, "Cloudflare Access validation failed");
+                    tracing::warn!(error = %e, token_present = true, "Cloudflare Access validation failed");
                     return Err(ErrorMapper::response(
                         StatusCode::UNAUTHORIZED,
                         "UNAUTHORIZED",
@@ -164,6 +168,8 @@ pub async fn auth_middleware(
                     ));
                 }
             }
+        } else {
+            tracing::warn!(cf_token_present = false, "Cloudflare Access header missing");
         }
     }
 

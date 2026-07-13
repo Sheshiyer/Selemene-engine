@@ -75,10 +75,7 @@ export default function ObservabilityPage() {
   );
 
   const loadSummary = useCallback(async () => {
-    const token = getAuthToken();
-    if (!token) {
-      throw new Error("Missing session token. Please sign in again.");
-    }
+    const token = getAuthToken() ?? undefined;
 
     return getAdminObservabilitySummary(token);
   }, []);

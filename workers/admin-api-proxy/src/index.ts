@@ -39,9 +39,16 @@ export default {
     // Railway middleware expects it as a request header. Extract it from the
     // cookie and add it as a header if not already present.
     const existingCfAuth =
-      headers.get("cf-authorization") ?? headers.get("CF_Authorization");
+      headers.get("cf-authorization") ??
+      headers.get("CF_Authorization") ??
+      headers.get("CF-Access-Jwt-Assertion");
+    const cookieHeader = headers.get("cookie") ?? "";
+    const cookieNames = cookieHeader
+      .split(";")
+      .map((c) => c.trim().split("=")[0])
+      .filter(Boolean);
+    console.log("[admin-api-proxy]", request.method, url.pathname, "existingCfAuth=", existingCfAuth ? "present" : "missing", "cookies=", cookieNames.join(","));
     if (!existingCfAuth) {
-      const cookieHeader = headers.get("cookie") ?? "";
       const cfAuthCookie = cookieHeader
         .split(";")
         .map((c) => c.trim())
@@ -49,6 +56,9 @@ export default {
       if (cfAuthCookie) {
         const token = cfAuthCookie.slice("CF_Authorization=".length);
         headers.set("CF_Authorization", token);
+        console.log("[admin-api-proxy] set CF_Authorization header from cookie");
+      } else {
+        console.log("[admin-api-proxy] no CF_Authorization cookie found");
       }
     }
 

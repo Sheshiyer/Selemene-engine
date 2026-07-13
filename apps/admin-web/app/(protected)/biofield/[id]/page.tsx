@@ -47,14 +47,7 @@ export default function BiofieldSessionDetailPage({ params }: { params: Promise<
 
   useEffect(() => {
     let cancelled = false;
-    const token = getAuthToken();
-    if (!token) {
-      if (!cancelled) {
-        setError("Missing session token. Please sign in again.");
-        setLoading(false);
-      }
-      return;
-    }
+    const token = getAuthToken() ?? undefined;
 
     setError(null);
     setLoading(true);

@@ -66,10 +66,7 @@ export default function AnalyticsPage() {
   );
 
   const loadUsage = useCallback(async () => {
-    const token = getAuthToken();
-    if (!token) {
-      throw new Error("Missing session token. Please sign in again.");
-    }
+    const token = getAuthToken() ?? undefined;
 
     const currentRangeDays = getNumberParam(searchParams, "range_days", 30, 7, 90);
     return getAdminUsageSummary(token, {

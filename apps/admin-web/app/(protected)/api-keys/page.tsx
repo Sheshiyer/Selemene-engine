@@ -186,10 +186,7 @@ function RevokeIcon() {
 }
 
 async function fetchKeysData(query: string, activeOnly: boolean) {
-  const token = getAuthToken();
-  if (!token) {
-    throw new Error("Missing session token. Please sign in again.");
-  }
+  const token = getAuthToken() ?? undefined;
 
   const res = await getAdminApiKeys(token, {
     query: query || undefined,
@@ -396,10 +393,8 @@ export default function ApiKeysPage() {
   }
 
   useEffect(() => {
-    const token = getAuthToken();
-    if (!token) return;
-
-    void getAdminSession(token)
+    const token = getAuthToken() ?? undefined;
+void getAdminSession(token)
       .then(setSession)
       .catch(() => {
         // Ignore permission refresh failures and let route guards / action errors handle auth state.
@@ -543,11 +538,7 @@ export default function ApiKeysPage() {
   }
 
   async function handleCreate() {
-    const token = getAuthToken();
-    if (!token) {
-      setError("Missing session token.");
-      return;
-    }
+    const token = getAuthToken() ?? undefined;
     if (!createUserId.trim()) {
       setError("User ID is required.");
       return;
@@ -587,9 +578,8 @@ export default function ApiKeysPage() {
   }
 
   async function handleRevoke(key: AdminApiKeyItem) {
-    const token = getAuthToken();
-    if (!token) return;
-    setSubmittingId(key.id);
+    const token = getAuthToken() ?? undefined;
+setSubmittingId(key.id);
     setError(null);
     setSuccess(null);
     try {
@@ -605,9 +595,8 @@ export default function ApiKeysPage() {
   }
 
   async function handleRotate(key: AdminApiKeyItem) {
-    const token = getAuthToken();
-    if (!token) return;
-    // Close the confirm modal immediately — user already confirmed
+    const token = getAuthToken() ?? undefined;
+// Close the confirm modal immediately — user already confirmed
     setConfirmRotate(null);
     setSubmittingId(key.id);
     setError(null);
@@ -633,9 +622,8 @@ export default function ApiKeysPage() {
   }
 
   async function handleDelete(key: AdminApiKeyItem) {
-    const token = getAuthToken();
-    if (!token) return;
-    setSubmittingId(key.id);
+    const token = getAuthToken() ?? undefined;
+setSubmittingId(key.id);
     setError(null);
     setSuccess(null);
     try {
@@ -669,11 +657,7 @@ export default function ApiKeysPage() {
       return;
     }
 
-    const token = getAuthToken();
-    if (!token) {
-      setError("Missing session token.");
-      return;
-    }
+    const token = getAuthToken() ?? undefined;
 
     const bulkIds = confirmBulkRevokeIds;
     setSubmittingId("bulk-key-revoke");

@@ -82,10 +82,7 @@ export default function SystemPage() {
   );
 
   const loadSystemViews = useCallback(async () => {
-    const token = getAuthToken();
-    if (!token) {
-      throw new Error("Missing session token. Please sign in again.");
-    }
+    const token = getAuthToken() ?? undefined;
 
     const currentWindowHours = getNumberParam(searchParams, "window_hours", 24, 1, 24 * 30);
     const [healthResponse, servicesResponse, workflowsResponse, cacheResponse] =

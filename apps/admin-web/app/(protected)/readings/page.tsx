@@ -50,8 +50,7 @@ export default function ReadingsPage() {
   );
 
   const loadData = useCallback(async () => {
-    const token = getAuthToken();
-    if (!token) throw new Error("Missing session token. Please sign in again.");
+    const token = getAuthToken() ?? undefined;
 
     const currentUserId = getStringParam(searchParams, "user_id");
     const currentEngineId = getStringParam(searchParams, "engine_id");

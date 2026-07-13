@@ -55,8 +55,7 @@ export default function WitnessDyadAnalyticsPage() {
   );
 
   const loadData = useCallback(async () => {
-    const token = getAuthToken();
-    if (!token) throw new Error("Missing session token. Please sign in again.");
+    const token = getAuthToken() ?? undefined;
     const currentWindowHours = getNumberParam(searchParams, "window_hours", 168, 1, 720);
     return getWitnessDyadAnalytics(token, { window_hours: currentWindowHours });
   }, [searchParams]);

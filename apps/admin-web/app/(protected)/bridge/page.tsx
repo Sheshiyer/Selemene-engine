@@ -75,10 +75,7 @@ export default function BridgePage() {
   );
 
   const loadBridge = useCallback(async () => {
-    const token = getAuthToken();
-    if (!token) {
-      throw new Error("Missing session token. Please sign in again.");
-    }
+    const token = getAuthToken() ?? undefined;
 
     const [bridgeResponse, hermesResponse, sunoResponse, llmProxyResponse] = await Promise.all([
       getAdminBridgeHealth(token),

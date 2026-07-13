@@ -32,8 +32,7 @@ export default function WitnessDyadDetailPage() {
   const [execution, setExecution] = useState<AdminWitnessDyadExecutionItem | null>(null);
 
   const loadData = useCallback(async () => {
-    const token = getAuthToken();
-    if (!token) throw new Error("Missing session token. Please sign in again.");
+    const token = getAuthToken() ?? undefined;
     if (!id) throw new Error("Missing execution ID.");
     return getWitnessDyadExecution(token, id);
   }, [id]);

@@ -42,9 +42,8 @@ export default function AdminBillingSubscriptionsPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const token = getAuthToken();
-    if (!token) return;
-    let cancelled = false;
+    const token = getAuthToken() ?? undefined;
+let cancelled = false;
     getAdminBillingSubscriptions(token, {
       status: statusFilter || undefined,
       limit: PAGE_SIZE,

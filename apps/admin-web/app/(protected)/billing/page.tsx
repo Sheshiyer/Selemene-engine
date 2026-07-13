@@ -19,9 +19,8 @@ export default function AdminBillingOverviewPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const token = getAuthToken();
-    if (!token) return;
-    let cancelled = false;
+    const token = getAuthToken() ?? undefined;
+let cancelled = false;
     getAdminBillingOverview(token)
       .then((resp) => {
         if (!cancelled) {

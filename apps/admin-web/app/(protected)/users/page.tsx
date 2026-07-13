@@ -97,10 +97,7 @@ function inferRoleFromPermissions(permissions: string[]): RoleOption {
 }
 
 async function fetchUsersData(query: string, tierFilter: string, stateFilter: string) {
-  const token = getAuthToken();
-  if (!token) {
-    throw new Error("Missing session token. Please sign in again.");
-  }
+  const token = getAuthToken() ?? undefined;
 
   const response = await getAdminUsers(token, {
     query: query || undefined,
@@ -368,11 +365,7 @@ export default function UsersPage() {
       return;
     }
 
-    const token = getAuthToken();
-    if (!token) {
-      setError("Missing session token. Please sign in again.");
-      return;
-    }
+    const token = getAuthToken() ?? undefined;
 
     setSubmittingId(pendingAction.userId);
     setError(null);
@@ -423,11 +416,7 @@ export default function UsersPage() {
       return;
     }
 
-    const token = getAuthToken();
-    if (!token) {
-      setError("Missing session token. Please sign in again.");
-      return;
-    }
+    const token = getAuthToken() ?? undefined;
 
     const activeBulkAction = bulkAction;
     setSubmittingId(`bulk-users-${activeBulkAction.kind}`);
