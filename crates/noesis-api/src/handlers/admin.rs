@@ -9,12 +9,10 @@ use noesis_auth::{sha256_hex, ApiKey, AuthUser};
 use noesis_bridge;
 use noesis_core::EngineError;
 use noesis_data::models::reading::AdminReadingRecord;
-use noesis_data::models::witness_dyad::{
-    WitnessDyadExecutionAdminRecord, WitnessDyadExecutionRecord,
-};
+use noesis_data::models::witness_dyad::WitnessDyadExecutionAdminRecord;
 use noesis_data::repositories::admin_repository::{
     AdminApiKeyRecord, AdminRepository, AdminUserRecord, AuditEventRecord,
-    BiofieldSessionAdminRecord, SystemWorkflowSnapshotRecord,
+    SystemWorkflowSnapshotRecord,
 };
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -4122,7 +4120,7 @@ pub async fn bridge_health(
 
     let readiness = state.bridge_manager.readiness_status().await;
 
-    let (engines, failed_engines, sidecar_engines) = match readiness {
+    let (engines, failed_engines, _sidecar_engines) = match readiness {
         Ok(status) => {
             let sidecar_map: HashMap<String, noesis_bridge::SidecarEngineHealth> = status
                 .engines

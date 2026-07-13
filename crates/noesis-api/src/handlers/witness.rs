@@ -43,6 +43,7 @@ pub struct WitnessInterpretRequest {
     /// Optional language code (additive for future orchestrator/prompt parity with assets path).
     /// Not used by the narrow RelationshipMode dyad path; language is orchestrator concern.
     #[serde(default)]
+    #[allow(dead_code)]
     pub language: Option<String>,
 }
 

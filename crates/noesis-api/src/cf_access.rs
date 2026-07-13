@@ -140,6 +140,7 @@ struct JwksKey {
     kid: String,
     kty: String,
     #[serde(default)]
+    #[allow(dead_code)]
     alg: Option<String>,
     n: String,
     e: String,
@@ -185,6 +186,7 @@ impl CfAccessValidator {
     }
 
     #[cfg(test)]
+    #[allow(dead_code)]
     fn with_client(issuer: String, audience: String, client: Client) -> Self {
         Self {
             issuer: issuer.trim_end_matches('/').to_string(),

@@ -98,6 +98,7 @@ pub struct AssetGenerateRequest {
     pub mode: String,
     #[serde(default)]
     pub consciousness_level: u8,
+    #[allow(dead_code)]
     pub options: Option<Value>,
 
     // === Rich intake (preferred contract) ===
@@ -480,6 +481,7 @@ fn target_words_for_pass(pass_id: &str) -> usize {
 }
 
 // Factory + audit shape (mirrors packages/witness-pipeline/src/assets/{factory,audit}.ts)
+#[allow(clippy::too_many_arguments)]
 fn build_source_pack_with_audit(
     person_id: &str,
     reading_markdown: &str,
