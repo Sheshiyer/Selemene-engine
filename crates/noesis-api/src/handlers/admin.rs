@@ -3786,7 +3786,7 @@ pub async fn list_engines_admin(
     let window_hours = query.window_hours.unwrap_or(24).clamp(1, 24 * 30);
 
     let bridge_engine_ids: BTreeSet<String> = state
-        .bridge_manager
+        .bridge()
         .engines()
         .iter()
         .map(|e| e.engine_id().to_string())
@@ -3891,7 +3891,7 @@ pub async fn get_engine_admin(
     })?;
 
     let bridge_engine_ids: BTreeSet<String> = state
-        .bridge_manager
+        .bridge()
         .engines()
         .iter()
         .map(|e| e.engine_id().to_string())
@@ -4105,7 +4105,7 @@ pub async fn bridge_health(
         return Ok(resp);
     }
 
-    let base_url = state.bridge_manager.base_url().to_string();
+    let base_url = state.bridge().base_url().to_string();
     let timeout_secs = read_env_u32("TS_BRIDGE_TIMEOUT", 30);
     let cb_threshold = read_env_u32("TS_BRIDGE_CB_THRESHOLD", 5);
     let cb_reset_secs = read_env_u32("TS_BRIDGE_CB_RESET_SECS", 30);
@@ -4116,9 +4116,9 @@ pub async fn bridge_health(
         cb_reset_secs,
     };
 
-    let sidecar_reachable = state.bridge_manager.is_available().await;
+    let sidecar_reachable = state.bridge().is_available().await;
 
-    let readiness = state.bridge_manager.readiness_status().await;
+    let readiness = state.bridge().readiness_status().await;
 
     let (engines, failed_engines, _sidecar_engines) = match readiness {
         Ok(status) => {
@@ -4130,7 +4130,7 @@ pub async fn bridge_health(
                 .collect();
 
             let engines: Vec<AdminBridgeEngineHealth> = state
-                .bridge_manager
+                .bridge()
                 .engines()
                 .iter()
                 .map(|engine| {
@@ -4177,7 +4177,7 @@ pub async fn bridge_health(
         }
         Err(e) => {
             let engines: Vec<AdminBridgeEngineHealth> = state
-                .bridge_manager
+                .bridge()
                 .engines()
                 .iter()
                 .map(|engine| {
@@ -4254,12 +4254,12 @@ pub async fn sidecar_detail(
         return Ok(resp);
     }
 
-    let readiness = state.bridge_manager.readiness_status().await;
-    let base_url = state.bridge_manager.base_url().to_string();
-    let sidecar_reachable = state.bridge_manager.is_available().await;
+    let readiness = state.bridge().readiness_status().await;
+    let base_url = state.bridge().base_url().to_string();
+    let sidecar_reachable = state.bridge().is_available().await;
 
     let engines: Vec<AdminSidecarEngineHealth> = state
-        .bridge_manager
+        .bridge()
         .engines()
         .iter()
         .map(|engine| {
@@ -4287,7 +4287,7 @@ pub async fn sidecar_detail(
         .collect();
 
     let circuit_breakers: HashMap<String, AdminSidecarCircuitBreaker> = state
-        .bridge_manager
+        .bridge()
         .engines()
         .iter()
         .filter_map(|engine| {

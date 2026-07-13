@@ -468,6 +468,14 @@ pub struct AppState {
     pub ephemeris_checksums: Arc<HashMap<String, String>>,
 }
 
+impl AppState {
+    /// Access the bridge manager through the orchestrator abstraction so
+    /// handler code does not directly reference the concrete manager type.
+    pub fn bridge(&self) -> &Arc<noesis_bridge::BridgeManager> {
+        &self.bridge_manager
+    }
+}
+
 /// Compute SHA256 checksums for all `.se1` files in `dir`.
 ///
 /// Returns a map of `filename → hex-encoded SHA256`.  Missing or
@@ -1553,7 +1561,7 @@ async fn readiness_handler(State(state): State<AppState>) -> impl IntoResponse {
     };
 
     let (bridge_status, bridge_engines, bridge_failed_engines) =
-        match state.bridge_manager.readiness_status().await {
+        match state.bridge().readiness_status().await {
             Ok(status) => (
                 if status.failed_engines.is_empty() {
                     "available".to_string()
