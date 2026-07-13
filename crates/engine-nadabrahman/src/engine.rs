@@ -361,6 +361,9 @@ impl ConsciousnessEngine for NadaBrahmanEngine {
         let hash = format!("{:x}", Sha256::digest(raw.as_bytes()));
         format!("nadabrahman:{}", hash)
     }
+    fn as_any(&self) -> &dyn std::any::Any {
+        self
+    }
 }
 
 #[cfg(test)]

@@ -110,6 +110,9 @@ impl ConsciousnessEngine for ProbeEngine {
     fn cache_key(&self, _input: &EngineInput) -> String {
         format!("probe-{}", self.id)
     }
+    fn as_any(&self) -> &dyn std::any::Any {
+        self
+    }
 }
 
 pub struct RoutingHarness {
@@ -166,6 +169,7 @@ impl RoutingHarness {
         let state = AppState {
             orchestrator: Arc::new(orchestrator),
             bridge_manager: Arc::new(noesis_bridge::BridgeManager::from_env()),
+            workflow_registry: None,
             cache: Arc::new(cache),
             auth: Arc::new(auth),
             metrics,

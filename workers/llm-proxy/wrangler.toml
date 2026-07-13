@@ -1,0 +1,8 @@
+name = "selemene-llm-proxy"
+main = "src/index.ts"
+compatibility_date = "2025-04-01"
+
+[[kv_namespaces]]
+binding = "LLM_SECRETS"
+id = "SELEMENE_LLM_SECRETS"
+preview_id = "SELEMENE_LLM_SECRETS_PREVIEW"

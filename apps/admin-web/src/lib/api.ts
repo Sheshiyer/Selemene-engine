@@ -16,16 +16,33 @@ import type {
   AdminBillingSubscriptionDetailResponse,
   AdminBillingSubscriptionsResponse,
   AdminBillingWebhookEventsResponse,
+  AdminBiofieldSessionItem,
+  AdminBiofieldSessionsResponse,
+  AdminBridgeHealthResponse,
+  AdminHermesBridgeStatus,
   AdminHistorySyncDevicesResponse,
   AdminHistorySyncEventsResponse,
   AdminHistorySyncUsersResponse,
+  AdminLlmProxyStatus,
+  AdminObservabilitySummary,
+  AdminReadingsEngineBreakdownResponse,
+  AdminReadingsResponse,
   AdminSession,
+  AdminSidecarDetail,
+  AdminSkillsEcosystemStatus,
+  AdminSunoBridgeStatus,
   AdminSystemCacheResponse,
+  AdminSystemEngineItem,
+  AdminSystemEnginesResponse,
   AdminSystemHealthResponse,
   AdminSystemServicesResponse,
+  AdminSystemWorkflowItem,
   AdminSystemWorkflowsResponse,
   AdminUsageSummaryResponse,
   AdminUsersResponse,
+  AdminWitnessDyadAnalyticsResponse,
+  AdminWitnessDyadExecutionItem,
+  AdminWitnessDyadExecutionsResponse,
   ApiErrorPayload,
   CreateApiKeyResponse,
   LoginResponse,
@@ -598,4 +615,155 @@ export async function getAdminBillingPlans(
   return request<AdminBillingPlansResponse>("/api/v1/admin/billing/plans", { token });
 }
 
+export async function getWitnessDyadExecutions(
+  token: string,
+  params: {
+    user_id?: string;
+    tier?: string;
+    llm_powered?: boolean;
+    from?: string;
+    to?: string;
+    limit?: number;
+    offset?: number;
+  } = {}
+): Promise<AdminWitnessDyadExecutionsResponse> {
+  return request<AdminWitnessDyadExecutionsResponse>(
+    `/api/v1/admin/witness-dyad/executions${buildQuery({
+      user_id: params.user_id,
+      tier: params.tier,
+      llm_powered: params.llm_powered,
+      from: params.from,
+      to: params.to,
+      limit: params.limit,
+      offset: params.offset
+    })}`,
+    { token }
+  );
+}
+
+export async function getWitnessDyadExecution(
+  token: string,
+  executionId: string
+): Promise<AdminWitnessDyadExecutionItem> {
+  return request<AdminWitnessDyadExecutionItem>(
+    `/api/v1/admin/witness-dyad/executions/${executionId}`,
+    { token }
+  );
+}
+
+export async function getWitnessDyadAnalytics(
+  token: string,
+  params: { window_hours?: number } = {}
+): Promise<AdminWitnessDyadAnalyticsResponse> {
+  return request<AdminWitnessDyadAnalyticsResponse>(
+    `/api/v1/admin/witness-dyad/analytics${buildQuery({
+      window_hours: params.window_hours
+    })}`,
+    { token }
+  );
+}
+
+export async function getAdminReadings(
+  token: string,
+  params: {
+    user_id?: string;
+    engine_id?: string;
+    limit?: number;
+    offset?: number;
+  } = {}
+): Promise<AdminReadingsResponse> {
+  return request<AdminReadingsResponse>(
+    `/api/v1/admin/readings${buildQuery({
+      user_id: params.user_id,
+      engine_id: params.engine_id,
+      limit: params.limit,
+      offset: params.offset
+    })}`,
+    { token }
+  );
+}
+
+export async function getAdminReadingsEngineBreakdown(
+  token: string,
+  params: { window_hours?: number } = {}
+): Promise<AdminReadingsEngineBreakdownResponse> {
+  return request<AdminReadingsEngineBreakdownResponse>(
+    `/api/v1/admin/readings/engine-breakdown${buildQuery({
+      window_hours: params.window_hours
+    })}`,
+    { token }
+  );
+}
+
+export async function getAdminEngines(
+  token: string
+): Promise<AdminSystemEnginesResponse> {
+  return request<AdminSystemEnginesResponse>("/api/v1/admin/system/engines", {
+    token
+  });
+}
+
+export async function getAdminEngine(
+  token: string,
+  engineId: string
+): Promise<AdminSystemEngineItem> {
+  return request<AdminSystemEngineItem>(
+    `/api/v1/admin/system/engines/${engineId}`,
+    { token }
+  );
+}
+
+export async function getAdminBridgeHealth(token: string): Promise<AdminBridgeHealthResponse> {
+  return request<AdminBridgeHealthResponse>("/api/v1/admin/bridge/health", { token });
+}
+
+export async function getAdminHermesBridgeStatus(token: string): Promise<AdminHermesBridgeStatus> {
+  return request<AdminHermesBridgeStatus>("/api/v1/admin/bridge/hermes/status", { token });
+}
+
+export async function getAdminSunoBridgeStatus(token: string): Promise<AdminSunoBridgeStatus> {
+  return request<AdminSunoBridgeStatus>("/api/v1/admin/bridge/suno/status", { token });
+}
+
+export async function getAdminLlmProxyStatus(token: string): Promise<AdminLlmProxyStatus> {
+  return request<AdminLlmProxyStatus>("/api/v1/admin/bridge/llm-proxy/status", { token });
+}
+
+export async function getAdminObservabilitySummary(token: string): Promise<AdminObservabilitySummary> {
+  return request<AdminObservabilitySummary>("/api/v1/admin/observability/summary", { token });
+}
+
+export async function getAdminSkillsEcosystemStatus(token: string): Promise<AdminSkillsEcosystemStatus> {
+  return request<AdminSkillsEcosystemStatus>("/api/v1/admin/skills/status", { token });
+}
+
 export { ApiClientError };
+
+export async function getAdminBiofieldSessions(
+  token: string,
+  params: { status?: string; user_id?: string; limit?: number; offset?: number } = {}
+): Promise<AdminBiofieldSessionsResponse> {
+  return request<AdminBiofieldSessionsResponse>(
+    `/api/v1/admin/biofield/sessions${buildQuery({
+      status: params.status, user_id: params.user_id,
+      limit: params.limit, offset: params.offset
+    })}`,
+    { token }
+  );
+}
+
+export async function getAdminBiofieldSession(
+  token: string, sessionId: string
+): Promise<AdminBiofieldSessionItem> {
+  return request<AdminBiofieldSessionItem>(`/api/v1/admin/biofield/sessions/${sessionId}`, { token });
+}
+
+export async function getAdminWorkflow(
+  token: string, workflowId: string
+): Promise<AdminSystemWorkflowItem> {
+  return request<AdminSystemWorkflowItem>(`/api/v1/admin/system/workflows/${workflowId}/detail`, { token });
+}
+
+export async function getAdminSidecarDetail(token: string): Promise<AdminSidecarDetail> {
+  return request<AdminSidecarDetail>("/api/v1/admin/bridge/sidecar", { token });
+}

@@ -1,5 +1,11 @@
+use jsonwebtoken::{Algorithm, DecodingKey, TokenData, Validation};
 use noesis_auth::AuthUser;
-use std::collections::BTreeSet;
+use reqwest::Client;
+use serde::Deserialize;
+use std::collections::{BTreeSet, HashMap};
+use std::sync::Arc;
+use std::time::{Duration, Instant};
+use tokio::sync::RwLock;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct CfIdentity {
@@ -128,24 +134,172 @@ pub fn identity_from_claims(claims: CfAccessClaims) -> Result<CfIdentity, String
     })
 }
 
+/// A single JWKS key returned by Cloudflare Access.
+#[derive(Debug, Clone, Deserialize)]
+struct JwksKey {
+    kid: String,
+    kty: String,
+    #[serde(default)]
+    alg: Option<String>,
+    n: String,
+    e: String,
+}
+
+/// JWKS response from Cloudflare Access `/cdn-cgi/access/certs`.
+#[derive(Debug, Clone, Deserialize)]
+struct JwksResponse {
+    keys: Vec<JwksKey>,
+}
+
+#[derive(Debug, Clone)]
+struct CachedJwks {
+    keys: HashMap<String, JwksKey>,
+    fetched_at: Instant,
+}
+
+impl CachedJwks {
+    fn is_stale(&self, ttl: Duration) -> bool {
+        self.fetched_at.elapsed() > ttl
+    }
+}
+
+/// Validates Cloudflare Access JSON Web Tokens against the issuer's JWKS endpoint.
 #[derive(Debug, Clone)]
 pub struct CfAccessValidator {
     issuer: String,
     audience: String,
+    client: Client,
+    jwks: Arc<RwLock<Option<CachedJwks>>>,
+    jwks_ttl: Duration,
 }
 
 impl CfAccessValidator {
     pub fn new(issuer: String, audience: String) -> Self {
-        Self { issuer, audience }
+        Self {
+            issuer: issuer.trim_end_matches('/').to_string(),
+            audience,
+            client: Client::new(),
+            jwks: Arc::new(RwLock::new(None)),
+            jwks_ttl: Duration::from_secs(3600),
+        }
     }
 
-    pub async fn validate_token(&self,
-        _token: &str,
-    ) -> Result<CfIdentity, String> {
-        Err(format!(
-            "Cloudflare Access JWT validation not fully wired for issuer {} and audience {}",
-            self.issuer, self.audience
-        ))
+    #[cfg(test)]
+    fn with_client(issuer: String, audience: String, client: Client) -> Self {
+        Self {
+            issuer: issuer.trim_end_matches('/').to_string(),
+            audience,
+            client,
+            jwks: Arc::new(RwLock::new(None)),
+            jwks_ttl: Duration::from_secs(3600),
+        }
+    }
+
+    /// Validates a Cloudflare Access JWT token.
+    ///
+    /// Steps:
+    /// 1. Decode the token header to extract the key ID (`kid`).
+    /// 2. Fetch the JWKS from `{issuer}/cdn-cgi/access/certs` (cached for 1 hour).
+    /// 3. Build an RSA decoding key from the matching public key.
+    /// 4. Verify the signature, issuer, audience, and expiration.
+    /// 5. Extract identity claims (email, sub, groups).
+    pub async fn validate_token(&self, token: &str) -> Result<CfIdentity, String> {
+        let header = jsonwebtoken::decode_header(token)
+            .map_err(|e| format!("Invalid Cloudflare Access token header: {}", e))?;
+
+        let kid = header
+            .kid
+            .as_deref()
+            .ok_or_else(|| "Cloudflare Access token missing 'kid' header claim".to_string())?;
+
+        let key = self.get_key(kid).await?;
+
+        let decoding_key = DecodingKey::from_rsa_components(&key.n, &key.e)
+            .map_err(|e| format!("Invalid Cloudflare Access JWKS key ({}): {}", kid, e))?;
+
+        let mut validation = Validation::new(Algorithm::RS256);
+        validation.set_issuer(&[self.issuer.as_str()]);
+        validation.set_audience(&[self.audience.as_str()]);
+        validation.leeway = 60; // 1 minute clock skew
+
+        let token_data: TokenData<CfAccessClaims> = jsonwebtoken::decode(
+            token,
+            &decoding_key,
+            &validation,
+        )
+        .map_err(|e| format!("Cloudflare Access JWT validation failed: {}", e))?;
+
+        identity_from_claims(token_data.claims)
+    }
+
+    /// Returns a cached JWKS key, fetching the JWKS if missing, stale, or unknown key.
+    async fn get_key(&self, kid: &str) -> Result<JwksKey, String> {
+        // Fast path: check cache without stale check if the key exists.
+        {
+            let read = self.jwks.read().await;
+            if let Some(cached) = read.as_ref() {
+                if let Some(key) = cached.keys.get(kid) {
+                    if !cached.is_stale(self.jwks_ttl) {
+                        return Ok(key.clone());
+                    }
+                }
+            }
+        }
+
+        // Slow path: refresh JWKS and retry.
+        self.fetch_jwks().await?;
+
+        let read = self.jwks.read().await;
+        let cached = read.as_ref().ok_or_else(|| {
+            "Cloudflare Access JWKS cache unavailable after fetch".to_string()
+        })?;
+        cached
+            .keys
+            .get(kid)
+            .cloned()
+            .ok_or_else(|| format!("Cloudflare Access key '{}' not found in JWKS", kid))
+    }
+
+    /// Fetches the Cloudflare Access JWKS and caches the RSA keys by `kid`.
+    async fn fetch_jwks(&self) -> Result<(), String> {
+        let certs_url = format!("{}/cdn-cgi/access/certs", self.issuer);
+
+        let response = self
+            .client
+            .get(&certs_url)
+            .send()
+            .await
+            .map_err(|e| format!("Failed to fetch Cloudflare Access JWKS from {}: {}", certs_url, e))?;
+
+        if !response.status().is_success() {
+            return Err(format!(
+                "Cloudflare Access JWKS endpoint returned status {}",
+                response.status()
+            ));
+        }
+
+        let jwks: JwksResponse = response.json().await.map_err(|e| {
+            format!("Failed to parse Cloudflare Access JWKS response: {}", e)
+        })?;
+
+        let keys: HashMap<String, JwksKey> = jwks
+            .keys
+            .into_iter()
+            .filter(|k| k.kty.eq_ignore_ascii_case("RSA"))
+            .map(|k| (k.kid.clone(), k))
+            .collect();
+
+        if keys.is_empty() {
+            return Err("Cloudflare Access JWKS contained no RSA keys".to_string());
+        }
+
+        let mut write = self.jwks.write().await;
+        *write = Some(CachedJwks {
+            keys,
+            fetched_at: Instant::now(),
+        });
+
+        Ok(())
     }
 }
 
@@ -236,7 +390,14 @@ mod tests {
 
     #[test]
     fn role_values_for_sql_are_deterministic() {
-        let groups = vec!["support".to_string(), "selemene-admin".to_string(), "admin".to_string()];
-        assert_eq!(role_values_for_sql(&groups), vec!["admin", "platform-admin", "support"]);
+        let groups = vec![
+            "support".to_string(),
+            "selemene-admin".to_string(),
+            "admin".to_string(),
+        ];
+        assert_eq!(
+            role_values_for_sql(&groups),
+            vec!["admin", "platform-admin", "support"]
+        );
     }
 }

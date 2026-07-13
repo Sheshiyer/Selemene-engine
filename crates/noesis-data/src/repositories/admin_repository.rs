@@ -1,4 +1,5 @@
 use chrono::{DateTime, Utc};
+use serde::Serialize;
 use serde_json::Value;
 use sqlx::{Error, PgPool, Postgres, QueryBuilder};
 use std::collections::BTreeSet;
@@ -116,6 +117,30 @@ pub struct AnalyticsTimeseriesPointRecord {
 pub struct AnalyticsBreakdownRecord {
     pub label: String,
     pub request_count: i64,
+}
+
+#[derive(Debug, Clone, sqlx::FromRow, Serialize)]
+pub struct BiofieldSessionAdminRecord {
+    pub id: Uuid,
+    pub user_id: Uuid,
+    pub user_email: String,
+    pub status: String,
+    pub client_device_id: Option<String>,
+    pub viewer_version: Option<String>,
+    pub started_at: DateTime<Utc>,
+    pub closed_at: Option<DateTime<Utc>>,
+    pub created_at: DateTime<Utc>,
+    pub artifact_count: i64,
+    pub reading_count: i64,
+    pub latest_reading_at: Option<DateTime<Utc>>,
+}
+
+#[derive(Debug, Clone, sqlx::FromRow, Serialize)]
+pub struct AnalyticsEngineDetailRecord {
+    pub engine_id: String,
+    pub request_count: i64,
+    pub failure_count: i64,
+    pub avg_duration_ms: f64,
 }
 
 #[derive(Debug, Clone, sqlx::FromRow)]
@@ -2071,6 +2096,381 @@ impl AdminRepository {
         )
         .fetch_all(&self.pool)
         .await
+    }
+
+    // ── Biofield sessions ────────────────────────────────────────────────────
+
+    pub async fn list_biofield_sessions(
+        &self,
+        status: Option<&str>,
+        user_id: Option<Uuid>,
+        limit: i64,
+        offset: i64,
+    ) -> Result<Vec<BiofieldSessionAdminRecord>, Error> {
+        let mut qb: QueryBuilder<Postgres> = QueryBuilder::new(
+            r#"
+            SELECT
+                bs.id,
+                bs.user_id,
+                u.email AS user_email,
+                bs.status,
+                bs.client_device_id,
+                bs.viewer_version,
+                bs.started_at,
+                bs.closed_at,
+                bs.created_at,
+                COALESCE((SELECT COUNT(*) FROM biofield_capture_artifacts bca WHERE bca.session_id = bs.id), 0)::BIGINT AS artifact_count,
+                COALESCE((SELECT COUNT(DISTINCT bca.reading_id) FROM biofield_capture_artifacts bca WHERE bca.session_id = bs.id AND bca.reading_id IS NOT NULL), 0)::BIGINT AS reading_count,
+                (SELECT MAX(r.created_at) FROM biofield_capture_artifacts bca JOIN readings r ON r.id = bca.reading_id WHERE bca.session_id = bs.id) AS latest_reading_at
+            FROM biofield_sessions bs
+            INNER JOIN users u ON u.id = bs.user_id
+            WHERE 1=1
+            "#,
+        );
+
+        if let Some(s) = status.map(str::trim).filter(|s| !s.is_empty()) {
+            qb.push(" AND bs.status = ").push_bind(s);
+        }
+
+        if let Some(uid) = user_id {
+            qb.push(" AND bs.user_id = ").push_bind(uid);
+        }
+
+        qb.push(" ORDER BY bs.started_at DESC LIMIT ")
+            .push_bind(limit)
+            .push(" OFFSET ")
+            .push_bind(offset);
+
+        qb.build_query_as::<BiofieldSessionAdminRecord>()
+            .fetch_all(&self.pool)
+            .await
+    }
+
+    pub async fn count_biofield_sessions(
+        &self,
+        status: Option<&str>,
+        user_id: Option<Uuid>,
+    ) -> Result<i64, Error> {
+        let mut qb: QueryBuilder<Postgres> = QueryBuilder::new(
+            "SELECT COUNT(*)::BIGINT FROM biofield_sessions bs WHERE 1=1",
+        );
+
+        if let Some(s) = status.map(str::trim).filter(|s| !s.is_empty()) {
+            qb.push(" AND bs.status = ").push_bind(s);
+        }
+
+        if let Some(uid) = user_id {
+            qb.push(" AND bs.user_id = ").push_bind(uid);
+        }
+
+        qb.build_query_scalar::<i64>().fetch_one(&self.pool).await
+    }
+
+    // ── Engine detail analytics ──────────────────────────────────────────────
+
+    pub async fn analytics_engine_detail(
+        &self,
+        window_hours: i64,
+    ) -> Result<Vec<AnalyticsEngineDetailRecord>, Error> {
+        sqlx::query_as::<_, AnalyticsEngineDetailRecord>(
+            r#"
+            SELECT
+                COALESCE(engine_id, 'unknown') AS engine_id,
+                COUNT(*)::BIGINT AS request_count,
+                COUNT(*) FILTER (WHERE status != 'success')::BIGINT AS failure_count,
+                COALESCE(AVG(duration_ms), 0)::DOUBLE PRECISION AS avg_duration_ms
+            FROM usage_logs
+            WHERE created_at >= NOW() - ($1 * INTERVAL '1 hour')
+            GROUP BY engine_id
+            ORDER BY request_count DESC
+            "#,
+        )
+        .bind(window_hours)
+        .fetch_all(&self.pool)
+        .await
+    }
+
+    // ── Witness Dyad executions ──────────────────────────────────────────────
+
+    pub async fn save_witness_dyad_execution(
+        &self,
+        record: &crate::models::witness_dyad::NewWitnessDyadExecution,
+    ) -> Result<Uuid, Error> {
+        sqlx::query_scalar::<_, Uuid>(
+            r#"
+            INSERT INTO witness_dyad_executions (
+                user_id, tier, consciousness_level, live_scores, relationship_mode,
+                engines_available, aletheios, pichet, synthesis, witness_question,
+                engines_used, llm_powered, llm_provider, llm_model_aletheios,
+                llm_model_pichet, llm_model_synthesis, llm_duration_ms,
+                error_message, request_ip_hash
+            )
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)
+            RETURNING id
+            "#,
+        )
+        .bind(record.user_id)
+        .bind(&record.tier)
+        .bind(record.consciousness_level)
+        .bind(&record.live_scores)
+        .bind(&record.relationship_mode)
+        .bind(&record.engines_available)
+        .bind(&record.aletheios)
+        .bind(&record.pichet)
+        .bind(&record.synthesis)
+        .bind(&record.witness_question)
+        .bind(&record.engines_used)
+        .bind(record.llm_powered)
+        .bind(&record.llm_provider)
+        .bind(&record.llm_model_aletheios)
+        .bind(&record.llm_model_pichet)
+        .bind(&record.llm_model_synthesis)
+        .bind(record.llm_duration_ms)
+        .bind(&record.error_message)
+        .bind(&record.request_ip_hash)
+        .fetch_one(&self.pool)
+        .await
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    pub async fn list_witness_dyad_executions(
+        &self,
+        user_id: Option<Uuid>,
+        tier: Option<&str>,
+        llm_powered: Option<bool>,
+        from: Option<DateTime<Utc>>,
+        to: Option<DateTime<Utc>>,
+        limit: i64,
+        offset: i64,
+    ) -> Result<Vec<crate::models::witness_dyad::WitnessDyadExecutionAdminRecord>, Error> {
+        let mut qb: QueryBuilder<Postgres> = QueryBuilder::new(
+            r#"
+            SELECT
+                wde.id, wde.user_id, u.email AS user_email, wde.tier,
+                wde.consciousness_level, wde.live_scores, wde.relationship_mode,
+                wde.engines_available, wde.aletheios, wde.pichet, wde.synthesis,
+                wde.witness_question, wde.engines_used, wde.llm_powered,
+                wde.llm_provider, wde.llm_model_aletheios, wde.llm_model_pichet,
+                wde.llm_model_synthesis, wde.llm_duration_ms, wde.error_message,
+                wde.created_at
+            FROM witness_dyad_executions wde
+            INNER JOIN users u ON u.id = wde.user_id
+            WHERE 1=1
+            "#,
+        );
+
+        if let Some(uid) = user_id {
+            qb.push(" AND wde.user_id = ").push_bind(uid);
+        }
+        if let Some(t) = tier.map(str::trim).filter(|t| !t.is_empty()) {
+            qb.push(" AND wde.tier = ").push_bind(t);
+        }
+        if let Some(lp) = llm_powered {
+            qb.push(" AND wde.llm_powered = ").push_bind(lp);
+        }
+        if let Some(from_ts) = from {
+            qb.push(" AND wde.created_at >= ").push_bind(from_ts);
+        }
+        if let Some(to_ts) = to {
+            qb.push(" AND wde.created_at < ").push_bind(to_ts);
+        }
+
+        qb.push(" ORDER BY wde.created_at DESC LIMIT ")
+            .push_bind(limit)
+            .push(" OFFSET ")
+            .push_bind(offset);
+
+        qb.build_query_as::<crate::models::witness_dyad::WitnessDyadExecutionAdminRecord>()
+            .fetch_all(&self.pool)
+            .await
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    pub async fn count_witness_dyad_executions(
+        &self,
+        user_id: Option<Uuid>,
+        tier: Option<&str>,
+        llm_powered: Option<bool>,
+        from: Option<DateTime<Utc>>,
+        to: Option<DateTime<Utc>>,
+    ) -> Result<i64, Error> {
+        let mut qb: QueryBuilder<Postgres> = QueryBuilder::new(
+            "SELECT COUNT(*)::BIGINT FROM witness_dyad_executions WHERE 1=1",
+        );
+
+        if let Some(uid) = user_id {
+            qb.push(" AND user_id = ").push_bind(uid);
+        }
+        if let Some(t) = tier.map(str::trim).filter(|t| !t.is_empty()) {
+            qb.push(" AND tier = ").push_bind(t);
+        }
+        if let Some(lp) = llm_powered {
+            qb.push(" AND llm_powered = ").push_bind(lp);
+        }
+        if let Some(from_ts) = from {
+            qb.push(" AND created_at >= ").push_bind(from_ts);
+        }
+        if let Some(to_ts) = to {
+            qb.push(" AND created_at < ").push_bind(to_ts);
+        }
+
+        qb.build_query_scalar::<i64>().fetch_one(&self.pool).await
+    }
+
+    pub async fn get_witness_dyad_execution(
+        &self,
+        execution_id: Uuid,
+    ) -> Result<Option<crate::models::witness_dyad::WitnessDyadExecutionRecord>, Error> {
+        sqlx::query_as::<_, crate::models::witness_dyad::WitnessDyadExecutionRecord>(
+            r#"
+            SELECT
+                id, user_id, tier, consciousness_level, live_scores, relationship_mode,
+                engines_available, aletheios, pichet, synthesis, witness_question,
+                engines_used, llm_powered, llm_provider, llm_model_aletheios,
+                llm_model_pichet, llm_model_synthesis, llm_duration_ms,
+                error_message, created_at
+            FROM witness_dyad_executions
+            WHERE id = $1
+            "#,
+        )
+        .bind(execution_id)
+        .fetch_optional(&self.pool)
+        .await
+    }
+
+    pub async fn witness_dyad_mode_breakdown(
+        &self,
+        window_hours: i64,
+    ) -> Result<Vec<crate::models::witness_dyad::WitnessDyadModeBreakdown>, Error> {
+        sqlx::query_as::<_, crate::models::witness_dyad::WitnessDyadModeBreakdown>(
+            r#"
+            SELECT
+                llm_powered,
+                COUNT(*)::BIGINT AS count
+            FROM witness_dyad_executions
+            WHERE created_at >= NOW() - ($1 * INTERVAL '1 hour')
+            GROUP BY llm_powered
+            ORDER BY llm_powered
+            "#,
+        )
+        .bind(window_hours)
+        .fetch_all(&self.pool)
+        .await
+    }
+
+    pub async fn witness_engine_coverage(
+        &self,
+        window_hours: i64,
+    ) -> Result<Vec<AnalyticsBreakdownRecord>, Error> {
+        sqlx::query_as::<_, AnalyticsBreakdownRecord>(
+            r#"
+            SELECT
+                engine AS label,
+                COUNT(*)::BIGINT AS request_count
+            FROM witness_dyad_executions,
+                 UNNEST(engines_used) AS engine
+            WHERE created_at >= NOW() - ($1 * INTERVAL '1 hour')
+            GROUP BY engine
+            ORDER BY request_count DESC
+            "#,
+        )
+        .bind(window_hours)
+        .fetch_all(&self.pool)
+        .await
+    }
+
+    // ── Admin-scoped readings ────────────────────────────────────────────────
+
+    pub async fn list_all_readings(
+        &self,
+        user_id: Option<Uuid>,
+        engine_id: Option<&str>,
+        limit: i64,
+        offset: i64,
+    ) -> Result<Vec<crate::models::reading::AdminReadingRecord>, Error> {
+        let mut qb: QueryBuilder<Postgres> = QueryBuilder::new(
+            r#"
+            SELECT
+                r.id, r.user_id, u.email AS user_email, r.engine_id, r.workflow_id,
+                r.input_hash, r.input_data, r.result_data, r.witness_prompt,
+                r.consciousness_level, r.calculation_time_ms, r.created_at
+            FROM readings r
+            INNER JOIN users u ON u.id = r.user_id
+            WHERE 1=1
+            "#,
+        );
+
+        if let Some(uid) = user_id {
+            qb.push(" AND r.user_id = ").push_bind(uid);
+        }
+        if let Some(eid) = engine_id.map(str::trim).filter(|e| !e.is_empty()) {
+            qb.push(" AND r.engine_id = ").push_bind(eid);
+        }
+
+        qb.push(" ORDER BY r.created_at DESC LIMIT ")
+            .push_bind(limit)
+            .push(" OFFSET ")
+            .push_bind(offset);
+
+        qb.build_query_as::<crate::models::reading::AdminReadingRecord>()
+            .fetch_all(&self.pool)
+            .await
+    }
+
+    pub async fn count_all_readings(
+        &self,
+        user_id: Option<Uuid>,
+        engine_id: Option<&str>,
+    ) -> Result<i64, Error> {
+        let mut qb: QueryBuilder<Postgres> =
+            QueryBuilder::new("SELECT COUNT(*)::BIGINT FROM readings WHERE 1=1");
+
+        if let Some(uid) = user_id {
+            qb.push(" AND user_id = ").push_bind(uid);
+        }
+        if let Some(eid) = engine_id.map(str::trim).filter(|e| !e.is_empty()) {
+            qb.push(" AND engine_id = ").push_bind(eid);
+        }
+
+        qb.build_query_scalar::<i64>().fetch_one(&self.pool).await
+    }
+
+    pub async fn readings_platform_engine_breakdown(
+        &self,
+        window_hours: i64,
+    ) -> Result<Vec<AnalyticsBreakdownRecord>, Error> {
+        sqlx::query_as::<_, AnalyticsBreakdownRecord>(
+            r#"
+            SELECT
+                engine_id AS label,
+                COUNT(*)::BIGINT AS request_count
+            FROM readings
+            WHERE created_at >= NOW() - ($1 * INTERVAL '1 hour')
+            GROUP BY engine_id
+            ORDER BY request_count DESC
+            "#,
+        )
+        .bind(window_hours)
+        .fetch_all(&self.pool)
+        .await
+    }
+
+    pub async fn witness_dyad_avg_llm_duration_ms(
+        &self,
+        window_hours: i64,
+    ) -> Result<f64, Error> {
+        sqlx::query_scalar::<_, Option<f64>>(
+            r#"
+            SELECT AVG(llm_duration_ms)::DOUBLE PRECISION
+            FROM witness_dyad_executions
+            WHERE llm_powered = true
+              AND created_at >= NOW() - ($1 * INTERVAL '1 hour')
+            "#,
+        )
+        .bind(window_hours)
+        .fetch_one(&self.pool)
+        .await
+        .map(|v| v.unwrap_or(0.0))
     }
 }
 

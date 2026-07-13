@@ -46,3 +46,19 @@ pub struct NewReading {
     pub device_platform: Option<String>,
     pub device_app_version: Option<String>,
 }
+
+#[derive(Debug, Clone, Serialize, Deserialize, FromRow)]
+pub struct AdminReadingRecord {
+    pub id: Uuid,
+    pub user_id: Uuid,
+    pub user_email: String,
+    pub engine_id: String,
+    pub workflow_id: Option<String>,
+    pub input_hash: String,
+    pub input_data: serde_json::Value,
+    pub result_data: serde_json::Value,
+    pub witness_prompt: Option<String>,
+    pub consciousness_level: i16,
+    pub calculation_time_ms: Option<f64>,
+    pub created_at: DateTime<Utc>,
+}

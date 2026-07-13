@@ -375,6 +375,9 @@ impl ConsciousnessEngine for BiorhythmEngine {
 
         format!("{:x}", hasher.finalize())
     }
+    fn as_any(&self) -> &dyn std::any::Any {
+        self
+    }
 }
 
 // ---------------------------------------------------------------------------

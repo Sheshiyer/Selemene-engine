@@ -81,6 +81,9 @@ impl ConsciousnessEngine for BenchMockEngine {
     fn cache_key(&self, _input: &EngineInput) -> String {
         format!("bench-{}", self.id)
     }
+    fn as_any(&self) -> &dyn std::any::Any {
+        self
+    }
 }
 
 // ---------------------------------------------------------------------------

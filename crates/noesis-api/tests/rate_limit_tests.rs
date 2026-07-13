@@ -81,6 +81,7 @@ fn build_test_app_state() -> (noesis_api::AppState, ApiConfig) {
     let state = noesis_api::AppState {
         orchestrator: Arc::new(orchestrator),
         bridge_manager: Arc::new(noesis_bridge::BridgeManager::from_env()),
+        workflow_registry: None,
         cache: Arc::new(cache),
         auth: Arc::new(auth),
         metrics,

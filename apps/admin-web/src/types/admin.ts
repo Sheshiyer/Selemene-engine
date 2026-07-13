@@ -274,6 +274,11 @@ export interface AdminSystemWorkflowItem {
   failure_runs: number;
   last_seen_at: string | null;
   status: string;
+  synthesis_type?: string;
+  engine_ids?: string[];
+  required_phase?: number;
+  cache_hits?: number;
+  cache_entries?: number;
 }
 
 export interface AdminSystemWorkflowsResponse {
@@ -419,4 +424,254 @@ export interface AdminBillingPlansResponse {
 export interface AdminBillingCancelSubscriptionResponse {
   ok: boolean;
   subscription_id: string;
+}
+
+export interface AdminBiofieldSessionItem {
+  session_id: string;
+  user_id: string;
+  user_email: string;
+  status: string;
+  client_device_id: string | null;
+  viewer_version: string | null;
+  started_at: string;
+  closed_at: string | null;
+  artifact_count: number;
+  reading_count: number;
+  latest_reading_at: string | null;
+}
+
+export interface AdminBiofieldSessionsResponse {
+  items: AdminBiofieldSessionItem[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+export interface AdminBiofieldSessionDetail {
+  session: AdminBiofieldSessionItem;
+}
+
+export interface AdminSidecarEngineHealth {
+  engine_id: string;
+  healthy: boolean;
+  detail: string;
+  latency_ms: number;
+}
+
+export interface AdminSidecarDetail {
+  base_url: string;
+  status: string;
+  engines: AdminSidecarEngineHealth[];
+  failed_engines: string[];
+  circuit_breakers?: Record<string, { state: string; failures: number; last_failure_ts: string | null }>;
+}
+
+export interface AdminWitnessDyadExecutionItem {
+  id: string;
+  user_id: string;
+  user_email: string;
+  tier: string;
+  consciousness_level: number;
+  live_scores: Record<string, number>;
+  relationship_mode: string;
+  engines_available: string[];
+  aletheios: string | null;
+  pichet: string | null;
+  synthesis: string | null;
+  witness_question: string | null;
+  engines_used: string[];
+  llm_powered: boolean;
+  llm_provider: string | null;
+  llm_model_aletheios: string | null;
+  llm_model_pichet: string | null;
+  llm_model_synthesis: string | null;
+  llm_duration_ms: number | null;
+  error_message: string | null;
+  created_at: string;
+}
+
+export interface AdminWitnessDyadExecutionsResponse {
+  items: AdminWitnessDyadExecutionItem[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+export interface AdminWitnessDyadAnalyticsResponse {
+  window_hours: number;
+  llm_vs_rule_based: Array<{ llm_powered: boolean; count: number }>;
+  llm_rate_pct: number;
+  engine_coverage: Array<{ label: string; request_count: number }>;
+  tier_breakdown: Array<{ tier: string; llm_count: number; rule_count: number }>;
+  avg_llm_duration_ms: number;
+}
+
+export interface AdminReadingItem {
+  id: string;
+  user_id: string;
+  user_email: string;
+  engine_id: string;
+  workflow_id: string | null;
+  input_hash: string;
+  input_data: Record<string, unknown>;
+  result_data: Record<string, unknown>;
+  witness_prompt: string | null;
+  consciousness_level: number;
+  calculation_time_ms: number | null;
+  created_at: string;
+}
+
+export interface AdminReadingsResponse {
+  items: AdminReadingItem[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+export interface AdminReadingsEngineBreakdownResponse {
+  window_hours: number;
+  engines: Array<{ label: string; request_count: number }>;
+}
+
+export interface AdminSystemEngineItem {
+  engine_id: string;
+  engine_name: string;
+  required_phase: number;
+  category: string;
+  recent_runs: number;
+  failure_runs: number;
+  avg_duration_ms: number;
+  status: string;
+}
+
+export interface AdminSystemEnginesResponse {
+  items: AdminSystemEngineItem[];
+  total: number;
+}
+
+// ─── Bridge Health ───────────────────────────────────────────────────────────
+
+export interface AdminBridgeEngineHealth {
+  engine_id: string;
+  engine_name: string;
+  healthy: boolean;
+  detail: string;
+  latency_ms: number;
+  circuit_state: string;
+  circuit_failures: number;
+  circuit_last_failure: string | null;
+  required_phase: number;
+}
+
+export interface AdminBridgeConfig {
+  timeout_secs: number;
+  cb_threshold: number;
+  cb_reset_secs: number;
+}
+
+export interface AdminBridgeHealthResponse {
+  base_url: string;
+  sidecar_reachable: boolean;
+  overall_status: string;
+  total_engines: number;
+  healthy_engines: number;
+  degraded_engines: number;
+  engines: AdminBridgeEngineHealth[];
+  failed_engines: string[];
+  config: AdminBridgeConfig;
+}
+
+// ─── Hermes Bridge ───────────────────────────────────────────────────────────
+
+export interface AdminHermesBridgeStatus {
+  configured: boolean;
+  base_url: string | null;
+  model: string | null;
+  mode: string | null;
+  noesis_api_key_configured: boolean;
+  tools_available: number;
+  health: { status: string; model_reachable: boolean; noesis_reachable: boolean; latency_ms: number } | null;
+}
+
+// ─── Suno Bridge ─────────────────────────────────────────────────────────────
+
+export interface AdminSunoBridgeStatus {
+  configured: boolean;
+  base_url: string | null;
+  health: { status: string; reachable: boolean } | null;
+  credit_info: Record<string, unknown> | null;
+}
+
+// ─── LLM Proxy ───────────────────────────────────────────────────────────────
+
+export interface AdminLlmProxyStatus {
+  deployed: boolean;
+  endpoint: string | null;
+  active_provider: string | null;
+  providers: string[];
+  health: { status: string; reachable: boolean } | null;
+}
+
+// ─── Observability ───────────────────────────────────────────────────────────
+
+export interface AdminObservabilityService {
+  configured: boolean;
+  url: string | null;
+  reachable: boolean;
+}
+
+export interface AdminActiveAlert {
+  name: string;
+  severity: string;
+  summary: string;
+  since: string | null;
+  service: string;
+}
+
+export interface AdminObservabilitySummary {
+  prometheus: AdminObservabilityService | null;
+  alertmanager: AdminObservabilityService | null;
+  grafana: AdminObservabilityService | null;
+  loki: AdminObservabilityService | null;
+  jaeger: AdminObservabilityService | null;
+  active_alerts: AdminActiveAlert[];
+  grafana_dashboards: string[];
+  uptime_seconds: number;
+  metrics_endpoint: string;
+}
+
+// ─── Skills Ecosystem ────────────────────────────────────────────────────────
+
+export interface AdminSkillsClusterStatus {
+  path: string;
+  active_clusters: number;
+  health_available: boolean;
+}
+
+export interface AdminSkillsCodegraphStatus {
+  initialized: boolean;
+  files_indexed: number;
+  symbols: number;
+}
+
+export interface AdminSkillsWitnessPipelineStatus {
+  version: string;
+  pattern_count: number;
+  vectors_available: boolean;
+}
+
+export interface AdminSkillsBridgesStatus {
+  hermes_configured: boolean;
+  suno_configured: boolean;
+  llm_proxy_deployed: boolean;
+  universal_tool_server: boolean;
+  bridge_cli_installed: boolean;
+}
+
+export interface AdminSkillsEcosystemStatus {
+  cluster_system: AdminSkillsClusterStatus;
+  skills_indexed: number;
+  codegraph_status: AdminSkillsCodegraphStatus | null;
+  witness_pipeline: AdminSkillsWitnessPipelineStatus;
+  bridges: AdminSkillsBridgesStatus;
 }

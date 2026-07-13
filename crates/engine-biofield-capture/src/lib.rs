@@ -223,6 +223,9 @@ impl ConsciousnessEngine for BiofieldCaptureEngine {
         hasher.update(user_id.as_bytes());
         format!("{:x}", hasher.finalize())
     }
+    fn as_any(&self) -> &dyn std::any::Any {
+        self
+    }
 }
 
 #[cfg(test)]

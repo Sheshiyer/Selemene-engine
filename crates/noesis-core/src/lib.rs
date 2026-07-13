@@ -39,6 +39,10 @@ pub trait ConsciousnessEngine: Send + Sync {
     /// Generate a deterministic cache key for the given input.
     /// Uses SHA-256 to ensure consistency across restarts.
     fn cache_key(&self, input: &EngineInput) -> String;
+
+    /// Returns `self` as `&dyn Any` for downcasting to concrete engine types.
+    /// Every implementor MUST provide this method. Use `self` as the body.
+    fn as_any(&self) -> &dyn std::any::Any;
 }
 
 /// Result of validating an engine output

@@ -607,6 +607,9 @@ impl ConsciousnessEngine for PanchangaEngine {
         let hash = Sha256::digest(raw.as_bytes());
         format!("panchanga:{:x}", hash)
     }
+    fn as_any(&self) -> &dyn std::any::Any {
+        self
+    }
 }
 
 // ---------------------------------------------------------------------------

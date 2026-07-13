@@ -12,12 +12,15 @@ use axum::{
 use chrono::Utc;
 use noesis_auth::AuthUser;
 use noesis_core::{BirthData, EngineInput, intake};
+use noesis_data::models::witness_dyad::NewWitnessDyadExecution;
 use noesis_witness::{
     interpret_with_llm, LiveBiofieldScores, RelationshipMode, WitnessContext,
 };
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
+use std::time::Instant;
 use utoipa::ToSchema;
+use uuid::Uuid;
 
 /// Request body for the witness interpret endpoint.
 #[derive(Deserialize, ToSchema)]
@@ -75,6 +78,7 @@ pub async fn interpret(
     let now = Utc::now();
     let consciousness_level = req.consciousness_level.max(user.consciousness_level);
     let user_name = req.user_name;
+    let start = Instant::now();
 
     // Map rich relationship_context to narrow RelationshipMode for WitnessContext parity.
     let relationship_mode = if req.relationship_mode != RelationshipMode::None {
@@ -164,7 +168,7 @@ pub async fn interpret(
 
     // ── Build witness context ─────────────────────────────────────────────────
     let ctx = WitnessContext {
-        live_scores: req.live_scores,
+        live_scores: req.live_scores.clone(),
         consciousness_level,
         user_name,
         panchanga,
@@ -175,11 +179,60 @@ pub async fn interpret(
         gene_keys,
         vimshottari,
         partner_context,
-        relationship_mode,
+        relationship_mode: relationship_mode.clone(),
     };
 
+    // ── Compute engines_available for persistence ─────────────────────────────
+    let mut engines_available = vec!["biofield".to_string()];
+    if ctx.panchanga.is_some() { engines_available.push("panchanga".into()); }
+    if ctx.human_design.is_some() { engines_available.push("human-design".into()); }
+    if ctx.numerology.is_some() { engines_available.push("numerology".into()); }
+    if ctx.biorhythm.is_some() { engines_available.push("biorhythm".into()); }
+    if ctx.transits.is_some() { engines_available.push("transits".into()); }
+    if ctx.gene_keys.is_some() { engines_available.push("gene-keys".into()); }
+    if ctx.vimshottari.is_some() { engines_available.push("vimshottari".into()); }
+    engines_available.sort();
+    engines_available.dedup();
+
     // ── LLM interpretation (with rule-based fallback) ─────────────────────────
+    let user_id_for_persist = Uuid::parse_str(&user.user_id).ok();
+    let tier_for_persist = user.tier.clone();
+    let admin_repo = state.admin_repository.clone();
+
     if let Some(llm_result) = interpret_with_llm(&ctx, &user.tier).await {
+        let duration_ms = start.elapsed().as_secs_f64() * 1000.0;
+
+        // Fire-and-forget persistence
+        if let (Some(uid), Some(repo)) = (user_id_for_persist, admin_repo) {
+            let persist_record = NewWitnessDyadExecution {
+                user_id: uid,
+                tier: tier_for_persist,
+                consciousness_level: consciousness_level as i16,
+                live_scores: serde_json::to_value(&req.live_scores).unwrap_or_default(),
+                relationship_mode: serde_json::to_string(&relationship_mode)
+                    .unwrap_or_else(|_| "None".into())
+                    .trim_matches('"')
+                    .to_string(),
+                engines_available: engines_available.clone(),
+                aletheios: Some(llm_result.aletheios.clone()),
+                pichet: Some(llm_result.pichet.clone()),
+                synthesis: Some(llm_result.synthesis.clone()),
+                witness_question: Some(llm_result.witness_question.clone()),
+                engines_used: llm_result.engines_used.clone(),
+                llm_powered: true,
+                llm_provider: Some("nvidia/openrouter".into()),
+                llm_model_aletheios: None,
+                llm_model_pichet: None,
+                llm_model_synthesis: None,
+                llm_duration_ms: Some(duration_ms),
+                error_message: None,
+                request_ip_hash: None,
+            };
+            tokio::spawn(async move {
+                let _ = repo.save_witness_dyad_execution(&persist_record).await;
+            });
+        }
+
         return Ok(Json(WitnessInterpretResponse {
             aletheios: llm_result.aletheios,
             pichet: llm_result.pichet,
@@ -193,6 +246,39 @@ pub async fn interpret(
     // Fallback: rule-based dyad from biofield metrics and available engine context
     let (aletheios, pichet, synthesis, witness_question, engines_used) =
         rule_based_dyad(&ctx, &user.tier);
+
+    let duration_ms = start.elapsed().as_secs_f64() * 1000.0;
+
+    // Fire-and-forget persistence for rule-based fallback
+    if let (Some(uid), Some(repo)) = (user_id_for_persist, admin_repo) {
+        let persist_record = NewWitnessDyadExecution {
+            user_id: uid,
+            tier: tier_for_persist,
+            consciousness_level: consciousness_level as i16,
+            live_scores: serde_json::to_value(&req.live_scores).unwrap_or_default(),
+            relationship_mode: serde_json::to_string(&relationship_mode)
+                .unwrap_or_else(|_| "None".into())
+                .trim_matches('"')
+                .to_string(),
+            engines_available: engines_available.clone(),
+            aletheios: Some(aletheios.clone()),
+            pichet: Some(pichet.clone()),
+            synthesis: Some(synthesis.clone()),
+            witness_question: Some(witness_question.clone()),
+            engines_used: engines_used.clone(),
+            llm_powered: false,
+            llm_provider: None,
+            llm_model_aletheios: None,
+            llm_model_pichet: None,
+            llm_model_synthesis: None,
+            llm_duration_ms: Some(duration_ms),
+            error_message: None,
+            request_ip_hash: None,
+        };
+        tokio::spawn(async move {
+            let _ = repo.save_witness_dyad_execution(&persist_record).await;
+        });
+    }
 
     Ok(Json(WitnessInterpretResponse {
         aletheios,

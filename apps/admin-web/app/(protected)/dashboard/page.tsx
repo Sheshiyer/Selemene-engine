@@ -17,15 +17,20 @@ import { PageShell } from "@/components/page-shell";
 import { getAuthToken } from "@/lib/auth";
 import {
   ApiClientError,
+  getAdminBridgeHealth,
   getAnalyticsSummary,
   getAnalyticsTimeseries,
-  getAnalyticsTopConsumers
+  getAnalyticsTopConsumers,
+  getWitnessDyadAnalytics
 } from "@/lib/api";
+import { statusPillClass } from "@/lib/status";
 import { buildQueryString, getNumberParam } from "@/lib/url-query";
 import type {
   AdminAnalyticsSummaryResponse,
   AdminAnalyticsTimeseriesPoint,
-  AdminAnalyticsTopConsumerItem
+  AdminAnalyticsTopConsumerItem,
+  AdminBridgeHealthResponse,
+  AdminWitnessDyadAnalyticsResponse
 } from "@/types/admin";
 
 const REFRESH_OPTIONS = [0, 15, 30, 60] as const;
@@ -67,6 +72,8 @@ export default function DashboardPage() {
   const [summary, setSummary] = useState<AdminAnalyticsSummaryResponse | null>(null);
   const [timeseries, setTimeseries] = useState<AdminAnalyticsTimeseriesPoint[]>([]);
   const [topConsumers, setTopConsumers] = useState<AdminAnalyticsTopConsumerItem[]>([]);
+  const [witnessDyadAnalytics, setWitnessDyadAnalytics] = useState<AdminWitnessDyadAnalyticsResponse | null>(null);
+  const [bridgeHealth, setBridgeHealth] = useState<AdminBridgeHealthResponse | null>(null);
 
   const updateQuery = useCallback(
     (updates: { refresh?: number }) => {
@@ -84,13 +91,15 @@ export default function DashboardPage() {
       throw new Error("Missing session token. Please sign in again.");
     }
 
-    const [summaryResponse, timeseriesResponse, topConsumersResponse] = await Promise.all([
+    const [summaryResponse, timeseriesResponse, topConsumersResponse, witnessDyadResponse, bridgeHealthResponse] = await Promise.all([
       getAnalyticsSummary(token, { window_hours: 24 }),
       getAnalyticsTimeseries(token, { window_hours: 24, bucket: "hour" }),
-      getAnalyticsTopConsumers(token, { window_hours: 24, limit: 5 })
+      getAnalyticsTopConsumers(token, { window_hours: 24, limit: 5 }),
+      getWitnessDyadAnalytics(token, { window_hours: 24 }),
+      getAdminBridgeHealth(token)
     ]);
 
-    return { summaryResponse, timeseriesResponse, topConsumersResponse };
+    return { summaryResponse, timeseriesResponse, topConsumersResponse, witnessDyadResponse, bridgeHealthResponse };
   }, []);
 
   const handleFetch = useCallback(
@@ -99,15 +108,19 @@ export default function DashboardPage() {
         summaryResponse: AdminAnalyticsSummaryResponse;
         timeseriesResponse: { points: AdminAnalyticsTimeseriesPoint[] };
         topConsumersResponse: { items: AdminAnalyticsTopConsumerItem[] };
+        witnessDyadResponse: AdminWitnessDyadAnalyticsResponse;
+        bridgeHealthResponse: AdminBridgeHealthResponse;
       }>
     ) => {
       setLoading(true);
       setError(null);
       promise
-        .then(({ summaryResponse, timeseriesResponse, topConsumersResponse }) => {
+        .then(({ summaryResponse, timeseriesResponse, topConsumersResponse, witnessDyadResponse, bridgeHealthResponse }) => {
           setSummary(summaryResponse);
           setTimeseries(timeseriesResponse.points);
           setTopConsumers(topConsumersResponse.items);
+          setWitnessDyadAnalytics(witnessDyadResponse);
+          setBridgeHealth(bridgeHealthResponse);
           setLastUpdatedAt(new Date().toISOString());
         })
         .catch((err) => {
@@ -194,13 +207,27 @@ export default function DashboardPage() {
           value={summary ? `${summary.error_rate_pct.toFixed(2)}%` : "--"}
           detail="Failure ratio for the same 24h request population."
         />
+        <article className="metric">
+          <div className="label">Witness Dyad LLM Rate</div>
+          <div className="value">{witnessDyadAnalytics ? `${witnessDyadAnalytics.llm_rate_pct.toFixed(1)}%` : "--"}</div>
+        </article>
+        <article className="metric">
+          <div className="label">Bridge Status</div>
+          <div className="value">
+            {bridgeHealth ? (
+              <span className={bridgeHealth.overall_status === "healthy" ? "pill ok" : "pill warn"}>
+                {bridgeHealth.overall_status}
+              </span>
+            ) : "--"}
+          </div>
+        </article>
       </div>
 
       {loading ? (
         <StatePanel
           variant="loading"
           title="Loading dashboard metrics"
-          description="Resolving analytics summary, 24h timeseries, and top-consumer telemetry."
+          description="Resolving analytics summary, 24h timeseries, top-consumer telemetry, witness dyad metrics, and bridge health."
         />
       ) : (
         <>
@@ -284,6 +311,103 @@ export default function DashboardPage() {
               </table>
             </div>
           </SurfaceCard>
+
+          {witnessDyadAnalytics ? (
+            <SurfaceCard
+              eyebrow="Consciousness"
+              title="Witness Dyad Quick Stats"
+              summary="LLM routing split, engine coverage, and tier distribution for the 24h traffic window."
+            >
+              <div className="grid metrics">
+                <article className="metric">
+                  <div className="label">LLM Rate</div>
+                  <div className="value">{witnessDyadAnalytics.llm_rate_pct.toFixed(1)}%</div>
+                </article>
+                <article className="metric">
+                  <div className="label">Avg LLM Duration</div>
+                  <div className="value">{witnessDyadAnalytics.avg_llm_duration_ms.toFixed(1)} ms</div>
+                </article>
+              </div>
+              {witnessDyadAnalytics.engine_coverage.length > 0 ? (
+                <div className="grid metrics">
+                  {witnessDyadAnalytics.engine_coverage.map((entry) => (
+                    <article key={entry.label} className="metric">
+                      <div className="label">{entry.label}</div>
+                      <div className="value">{formatNumber(entry.request_count)}</div>
+                    </article>
+                  ))}
+                </div>
+              ) : null}
+              {witnessDyadAnalytics.tier_breakdown.length > 0 ? (
+                <div className="table-wrap compact">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Tier</th>
+                        <th>LLM Count</th>
+                        <th>Rule Count</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {witnessDyadAnalytics.tier_breakdown.map((entry) => (
+                        <tr key={entry.tier}>
+                          <td>
+                            <div className="table-primary">{entry.tier}</div>
+                          </td>
+                          <td>{formatNumber(entry.llm_count)}</td>
+                          <td>{formatNumber(entry.rule_count)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : null}
+            </SurfaceCard>
+          ) : null}
+
+          {bridgeHealth ? (
+            <SurfaceCard
+              eyebrow="Connectivity"
+              title="Engines Quick View"
+              summary="Sidecar engine fleet health, circuit posture, and connectivity status."
+            >
+              <div className="grid metrics">
+                <article className="metric">
+                  <div className="label">Overall Status</div>
+                  <div className="value">
+                    <span className={statusPillClass(bridgeHealth.overall_status)}>
+                      {bridgeHealth.overall_status}
+                    </span>
+                  </div>
+                </article>
+                <article className="metric">
+                  <div className="label">Total Engines</div>
+                  <div className="value">{bridgeHealth.total_engines}</div>
+                </article>
+                <article className="metric">
+                  <div className="label">Healthy</div>
+                  <div className="value">{bridgeHealth.healthy_engines}</div>
+                </article>
+                <article className="metric">
+                  <div className="label">Degraded</div>
+                  <div className="value">{bridgeHealth.degraded_engines}</div>
+                </article>
+                <article className="metric">
+                  <div className="label">Sidecar Reachable</div>
+                  <div className="value">
+                    <span className={statusPillClass(bridgeHealth.sidecar_reachable ? "healthy" : "unavailable")}>
+                      {bridgeHealth.sidecar_reachable ? "Yes" : "No"}
+                    </span>
+                  </div>
+                </article>
+              </div>
+              {bridgeHealth.failed_engines.length > 0 ? (
+                <div className="helper">
+                  Failed engines: {bridgeHealth.failed_engines.join(", ")}
+                </div>
+              ) : null}
+            </SurfaceCard>
+          ) : null}
         </>
       )}
     </PageShell>

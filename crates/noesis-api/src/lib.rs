@@ -57,6 +57,7 @@ use noesis_data::repositories::usage_repository::UsageRepository;
 use noesis_data::repositories::user_repository::UserRepository;
 use noesis_metrics::NoesisMetrics;
 use noesis_orchestrator::{EphemerisCalculator, HDPlanet, WorkflowOrchestrator};
+use noesis_orchestrator::workflow::registry::WorkflowRegistry;
 use sentry_tower::{NewSentryLayer, SentryHttpLayer};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -231,6 +232,21 @@ use workflow_parity::log_workflow_registry_parity;
             handlers::admin::AdminAnalyticsTopConsumerItem,
             handlers::admin::AdminSystemHealthResponse,
             handlers::admin::AdminSystemSubsystemStatus,
+            handlers::admin::AdminBridgeHealthResponse,
+            handlers::admin::AdminBridgeEngineHealth,
+            handlers::admin::AdminBridgeConfig,
+            handlers::admin::AdminHermesBridgeStatus,
+            handlers::admin::AdminSunoBridgeStatus,
+            handlers::admin::AdminLlmProxyStatus,
+            handlers::admin::AdminObservabilitySummary,
+            handlers::admin::AdminObservabilityService,
+            handlers::admin::AdminActiveAlert,
+            handlers::admin::AdminSkillsEcosystemStatus,
+            handlers::admin::AdminSkillsClusterStatus,
+            handlers::admin::AdminSkillsCodegraphStatus,
+            handlers::admin::AdminSkillsWitnessPipelineStatus,
+            handlers::admin::AdminSkillsBridgesStatus,
+            handlers::admin::AdminBridgeProbe,
             handlers::admin::AdminSystemServicesResponse,
             handlers::admin::AdminSystemServiceItem,
             handlers::admin::AdminSystemWorkflowsResponse,
@@ -241,6 +257,22 @@ use workflow_parity::log_workflow_registry_parity;
             handlers::admin::AdminAuditEventDetailResponse,
             handlers::admin::AdminAuditActionsResponse,
             handlers::admin::EphemerisChecksumsResponse,
+            handlers::admin::AdminBiofieldSessionsResponse,
+            handlers::admin::AdminBiofieldSessionItem,
+            handlers::admin::AdminSystemEnginesResponse,
+            handlers::admin::AdminSystemEngineItem,
+            handlers::admin::AdminSystemEngineDetailResponse,
+            handlers::admin::AdminSystemWorkflowDetailResponse,
+            handlers::admin::AdminSystemWorkflowDetailItem,
+            handlers::admin::AdminWitnessDyadExecutionsResponse,
+            handlers::admin::AdminWitnessDyadExecutionItem,
+            handlers::admin::AdminWitnessDyadExecutionDetailResponse,
+            handlers::admin::AdminWitnessDyadAnalyticsResponse,
+            handlers::admin::AdminWitnessDyadModeEntry,
+            handlers::admin::AdminWitnessDyadTierEntry,
+            handlers::admin::AdminReadingsResponse,
+            handlers::admin::AdminReadingItem,
+            handlers::admin::AdminReadingsEngineBreakdownResponse,
             handlers::auth::RegisterRequest,
             handlers::auth::RegisterResponse,
             handlers::auth::LoginRequest,
@@ -416,6 +448,7 @@ impl Modify for SecurityAddon {
 pub struct AppState {
     pub orchestrator: Arc<WorkflowOrchestrator>,
     pub bridge_manager: Arc<noesis_bridge::BridgeManager>,
+    pub workflow_registry: Option<Arc<WorkflowRegistry>>,
     pub cache: Arc<CacheManager>,
     pub auth: Arc<AuthService>,
     pub metrics: Arc<NoesisMetrics>,
@@ -827,6 +860,54 @@ pub fn create_router(state: AppState, config: &ApiConfig) -> Router {
         )
         .route("/admin/system/cache", get(handlers::admin::system_cache))
         .route(
+            "/admin/bridge/health",
+            get(handlers::admin::bridge_health),
+        )
+        .route(
+            "/admin/bridge/sidecar",
+            get(handlers::admin::sidecar_detail),
+        )
+        .route(
+            "/admin/bridge/hermes/status",
+            get(handlers::admin::hermes_bridge_status),
+        )
+        .route(
+            "/admin/bridge/suno/status",
+            get(handlers::admin::suno_bridge_status),
+        )
+        .route(
+            "/admin/bridge/llm-proxy/status",
+            get(handlers::admin::llm_proxy_status),
+        )
+        .route(
+            "/admin/observability/summary",
+            get(handlers::admin::observability_summary),
+        )
+        .route(
+            "/admin/skills/status",
+            get(handlers::admin::skills_ecosystem_status),
+        )
+        .route(
+            "/admin/system/engines",
+            get(handlers::admin::list_engines_admin),
+        )
+        .route(
+            "/admin/system/engines/:engine_id",
+            get(handlers::admin::get_engine_admin),
+        )
+        .route(
+            "/admin/system/workflows/:workflow_id/detail",
+            get(handlers::admin::get_workflow_admin),
+        )
+        .route(
+            "/admin/biofield/sessions",
+            get(handlers::admin::list_biofield_sessions),
+        )
+        .route(
+            "/admin/biofield/sessions/:session_id",
+            get(handlers::admin::get_biofield_session),
+        )
+        .route(
             "/admin/ephemeris/checksums",
             get(handlers::admin::ephemeris_checksums),
         )
@@ -874,6 +955,26 @@ pub fn create_router(state: AppState, config: &ApiConfig) -> Router {
         .route(
             "/admin/billing/plans",
             get(handlers::admin_billing::list_plans),
+        )
+        .route(
+            "/admin/witness-dyad/executions",
+            get(handlers::admin::list_witness_dyad_executions),
+        )
+        .route(
+            "/admin/witness-dyad/executions/:execution_id",
+            get(handlers::admin::get_witness_dyad_execution),
+        )
+        .route(
+            "/admin/witness-dyad/analytics",
+            get(handlers::admin::witness_dyad_analytics),
+        )
+        .route(
+            "/admin/readings",
+            get(handlers::admin::list_all_readings),
+        )
+        .route(
+            "/admin/readings/engine-breakdown",
+            get(handlers::admin::readings_engine_breakdown),
         )
         .route("/status", get(status_handler))
         .route("/charts/vedic", post(vedic_chart_handler))
@@ -3411,6 +3512,7 @@ pub async fn build_app_state(config: &ApiConfig) -> AppState {
     AppState {
         orchestrator: Arc::new(orchestrator),
         bridge_manager,
+        workflow_registry: Some(Arc::new(WorkflowRegistry::new())),
         cache: Arc::new(cache),
         auth: Arc::new(auth),
         metrics,
@@ -3530,6 +3632,7 @@ pub async fn build_app_state_lazy_db(config: &ApiConfig) -> AppState {
     AppState {
         orchestrator: Arc::new(orchestrator),
         bridge_manager,
+        workflow_registry: Some(Arc::new(WorkflowRegistry::new())),
         cache: Arc::new(cache),
         auth: Arc::new(auth),
         metrics,

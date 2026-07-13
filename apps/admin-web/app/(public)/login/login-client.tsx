@@ -27,7 +27,7 @@ export function LoginClient() {
         <h1>Selemene Admin</h1>
         <p>Access is managed by Cloudflare Zero Trust.</p>
         <p>If you can see this page directly, your Access policy may not be applied to the admin route.</p>
-        <Link className="discord-btn" href={redirectTarget}>Continue to dashboard</Link>
+        <Link className="continue-btn" href={redirectTarget}>Continue to dashboard</Link>
       </section>
     </main>
   );

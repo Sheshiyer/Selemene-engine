@@ -16,7 +16,7 @@ interface NavItem {
   href: string;
   label: string;
   permission: string;
-  section: "Control" | "Observability";
+  section: "Control" | "Consciousness" | "Observability";
 }
 
 const NAV_ITEMS: NavItem[] = [
@@ -27,7 +27,16 @@ const NAV_ITEMS: NavItem[] = [
   { href: "/history-sync", label: "History Sync", permission: "admin:history-sync:read", section: "Control" },
   { href: "/analytics", label: "Analytics", permission: "admin:analytics:read", section: "Observability" },
   { href: "/system", label: "System", permission: "admin:system:read", section: "Observability" },
-  { href: "/audit", label: "Audit", permission: "admin:audit:list", section: "Observability" }
+  { href: "/audit", label: "Audit", permission: "admin:audit:list", section: "Observability" },
+  { href: "/bridge", label: "Bridge", permission: "admin:system:read", section: "Consciousness" },
+  { href: "/observability", label: "Observability", permission: "admin:system:read", section: "Consciousness" },
+  { href: "/skills", label: "Skills", permission: "admin:system:read", section: "Consciousness" },
+  { href: "/witness-dyad", label: "Witness Dyad", permission: "admin:analytics:read", section: "Consciousness" },
+  { href: "/readings", label: "Readings", permission: "admin:analytics:read", section: "Consciousness" },
+  { href: "/engines", label: "Engines", permission: "admin:system:read", section: "Consciousness" },
+  { href: "/biofield", label: "Biofield", permission: "admin:system:read", section: "Consciousness" },
+  { href: "/workflows", label: "Workflows", permission: "admin:system:read", section: "Consciousness" },
+  { href: "/sidecars", label: "Sidecars", permission: "admin:system:read", section: "Consciousness" }
 ];
 
 const ROUTE_META: Record<string, { eyebrow: string; title: string; summary: string }> = {
@@ -70,7 +79,16 @@ const ROUTE_META: Record<string, { eyebrow: string; title: string; summary: stri
     eyebrow: "Revenue",
     title: "Billing & Subscriptions",
     summary: "Subscription state, webhook ingest, plan catalog, and reconcile drift across the Dodo Payments integration."
-  }
+  },
+  "/bridge": { eyebrow: "Connectivity", title: "Bridge Health", summary: "Sidecar readiness, circuit breaker states, and external bridge connectivity across all service boundaries." },
+  "/observability": { eyebrow: "Monitoring", title: "Observability Stack", summary: "Prometheus, Alertmanager, Grafana, Loki, and Jaeger status with active alert feed." },
+  "/skills": { eyebrow: "Ecosystem", title: "Skills & Pipelines", summary: "Skill cluster health, CodeGraph index, witness pipeline status, and bridge deployment posture." },
+  "/witness-dyad": { eyebrow: "Interpretation", title: "Witness Dyad Executions", summary: "Browse LLM-powered and rule-based dyad interpretations with full pillar text and metadata." },
+  "/readings": { eyebrow: "Content", title: "Readings Browser", summary: "Browse completed readings across all users with engine, workflow, and witness prompt context." },
+  "/engines": { eyebrow: "Registry", title: "Engine Registry", summary: "View all 16 consciousness engines with category, status, and performance metrics." },
+  "/biofield": { eyebrow: "Biometrics", title: "Biofield Sessions", summary: "Browse biofield capture sessions with device tracking and artifact metadata." },
+  "/workflows": { eyebrow: "Orchestration", title: "Workflow Registry", summary: "View synthesis types, engine composition, and execution metrics for all 6 canonical workflows." },
+  "/sidecars": { eyebrow: "Runtime", title: "Sidecar Health", summary: "Monitor TypeScript engine server and Python biofield CV service health with per-engine detail." }
 };
 
 function toRelativeAdminPath(pathname: string): string {
@@ -186,6 +204,10 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
       {
         label: "Observability",
         items: NAV_ITEMS.filter((item) => item.section === "Observability")
+      },
+      {
+        label: "Consciousness",
+        items: NAV_ITEMS.filter((item) => item.section === "Consciousness")
       }
     ],
     []

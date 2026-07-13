@@ -78,5 +78,14 @@ export function requiredPermissionForPath(pathname: string): string | null {
   if (normalized.startsWith("/billing")) {
     return "admin:billing:read";
   }
+  if (normalized.startsWith("/bridge")) return "admin:system:read";
+  if (normalized.startsWith("/observability")) return "admin:system:read";
+  if (normalized.startsWith("/skills")) return "admin:system:read";
+  if (normalized.startsWith("/witness-dyad")) return "admin:analytics:read";
+  if (normalized.startsWith("/readings")) return "admin:analytics:read";
+  if (normalized.startsWith("/engines")) return "admin:system:read";
+  if (normalized.startsWith("/biofield")) return "admin:system:read";
+  if (normalized.startsWith("/workflows")) return "admin:system:read";
+  if (normalized.startsWith("/sidecars")) return "admin:system:read";
   return null;
 }

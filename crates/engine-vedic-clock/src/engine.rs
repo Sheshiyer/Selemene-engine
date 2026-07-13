@@ -380,6 +380,9 @@ impl ConsciousnessEngine for VedicClockEngine {
             hour_bucket, timezone.offset_minutes, activity, tithi, nakshatra
         )
     }
+    fn as_any(&self) -> &dyn std::any::Any {
+        self
+    }
 }
 
 #[cfg(test)]

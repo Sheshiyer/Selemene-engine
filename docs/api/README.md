@@ -19,7 +19,9 @@ Not prediction. Reflection. Inquiry. Witness.
 - **Admin Analytics**: [admin-analytics.md](./admin-analytics.md)
 - **Admin Reconciliation**: [admin-reconcile.md](./admin-reconcile.md)
 - **LLM and Agent Guide**: [LLM_AGENT_GUIDE.md](./LLM_AGENT_GUIDE.md)
-- **OpenClaw Integration**: [OPENCLAW_INTEGRATION.md](./OPENCLAW_INTEGRATION.md)
+- **Agent Flow (Current Canonical)**: [AGENT_FLOW.md](./AGENT_FLOW.md) — rich contract, 3 shapes, 8-step guided flow, language/relationship/Folio/NotebookLM
+- **OpenClaw Integration**: [OPENCLAW_INTEGRATION.md](./OPENCLAW_INTEGRATION.md) (points to AGENT_FLOW)
+- **Hermes Integration**: [HERMES_INTEGRATION.md](./HERMES_INTEGRATION.md) (points to AGENT_FLOW)
 - **MCP Integration**: [MCP_INTEGRATION.md](./MCP_INTEGRATION.md)
 
 ## Base URLs
@@ -157,15 +159,19 @@ Full reference: [billing.md](./billing.md).
 - `POST /api/v1/biofield/sessions/{session_id}/captures` — capture frame
 - `POST /api/v1/biofield/sessions/{session_id}/close` — close session
 
-### Witness
+### Witness & Rich Narrative (Updated 2026-07)
 
-- `POST /api/v1/witness/interpret` — generate rich witness dyad interpretation (Aletheios + Pichet voices + synthesis) from engine outputs. Selemene is the canonical service for rich Aletheios/Pichet dyad interpretation.
-  - Input: `{ engine_outputs: [...], context?: {...} }`
-  - Output: reading-object with `witness_layer` fields (fixed 6-field dyad contract)
-- Individual engine outputs continue to include a lightweight `witness_prompt` — this remains the rule-based, non-prescriptive mirror entry point. Rich persona voices and multi-pass synthesis live in the dyad path.
-- Additive premium asset surfaces (e.g. `POST /api/v1/assets/generate` and SDK `generatePremiumAsset`) provide access to multi-pass integrated reading generation and source-pack artifacts. These are additive and do not affect existing contracts.
+- `POST /api/v1/assets/generate` — primary endpoint for rich narrative witness readings (multi-subject, relationship-aware, language-aware, L0-L5).
+  - Uses the current rich contract: `subjects[]` + `relationship_context` + `language` + `report_level`.
+  - Returns `OrchestratorOutput` shape (with `relationship_header`, `assembled`, `passes`, `patterns`).
+- `POST /api/v1/witness/interpret` remains for the classic Aletheios + Pichet dyad (engine outputs only).
+- Individual engines still return a lightweight `witness_prompt` (rule-based mirror).
+- Post-processing:
+  - Folio B-surface header is prepended to `assembled` when `relationship_context` is supplied.
+  - Source pack via `createSourcePack` (witness-pipeline).
+  - NotebookLM slides prompt via `generateSlidesPrompt` (see `selemene-notebooklm` skill).
 
-**Retirement note:** witness-agents is now reference + asset source only (personas, mode documents, historical batches). All live rich dyad and premium asset traffic uses Selemene endpoints and SDK surfaces. The non-prescriptive "mirror" philosophy is preserved.
+**Agent guidance:** See `AGENT_FLOW.md` for the 3 canonical shapes and 8-step guided flow. Use `selemene-report` + `selemene-notebooklm` skills for structured Q&A with coding agents.
 
 ### User Profile
 

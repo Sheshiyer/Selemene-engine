@@ -1,0 +1,16 @@
+{
+  "name": "selemene-llm-proxy",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "deploy": "wrangler deploy",
+    "dev": "wrangler dev",
+    "kv:put": "wrangler kv:key put --binding=LLM_SECRETS",
+    "kv:list": "wrangler kv:key list --binding=LLM_SECRETS"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20250510.0",
+    "wrangler": "^4.12.0"
+  }
+}

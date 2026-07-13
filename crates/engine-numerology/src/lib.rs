@@ -432,6 +432,9 @@ impl ConsciousnessEngine for NumerologyEngine {
         let hash = hasher.finalize();
         format!("numerology:{:x}", hash)
     }
+    fn as_any(&self) -> &dyn std::any::Any {
+        self
+    }
 }
 
 // ---------------------------------------------------------------------------

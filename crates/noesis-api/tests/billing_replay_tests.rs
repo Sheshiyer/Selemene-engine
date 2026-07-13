@@ -90,6 +90,7 @@ async fn build_state_and_router() -> (axum::Router, PgPool) {
     let state = AppState {
         orchestrator: Arc::new(WorkflowOrchestrator::new()),
         bridge_manager: Arc::new(noesis_bridge::BridgeManager::from_env()),
+        workflow_registry: None,
         cache: Arc::new(cache),
         auth: Arc::new(auth),
         metrics,

@@ -700,6 +700,9 @@ mod tests {
         fn cache_key(&self, _input: &EngineInput) -> String {
             format!("mock-{}", self.id)
         }
+    fn as_any(&self) -> &dyn std::any::Any {
+        self
+    }
     }
 
     /// Helper to build a standard test input.

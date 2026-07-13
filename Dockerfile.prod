@@ -75,6 +75,8 @@ RUN for crate in \
     echo "fn main() {}" > crates/noesis-auth/examples/seed_api_keys.rs && \
     echo "fn main() {}" > crates/noesis-auth/examples/rotate_api_key.rs && \
     echo "fn main() {}" > crates/noesis-auth/examples/issue_api_key_from_existing.rs && \
+    mkdir -p crates/noesis-data/examples && \
+    echo "fn main() {}" > crates/noesis-data/examples/record_humdes_run.rs && \
     mkdir -p crates/engine-gene-keys/benches && echo "fn main() {}" > crates/engine-gene-keys/benches/gk_performance.rs && \
     mkdir -p crates/engine-human-design/benches && echo "fn main() {}" > crates/engine-human-design/benches/hd_performance.rs
 

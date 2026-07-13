@@ -81,6 +81,9 @@ impl ConsciousnessEngine for TimedMockEngine {
     fn cache_key(&self, _input: &EngineInput) -> String {
         format!("mock-{}", self.id)
     }
+    fn as_any(&self) -> &dyn std::any::Any {
+        self
+    }
 }
 
 fn test_input() -> EngineInput {

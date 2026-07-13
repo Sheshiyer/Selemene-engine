@@ -429,6 +429,9 @@ impl ConsciousnessEngine for GeneKeysEngine {
             format!("gk:invalid:{}", Utc::now().timestamp())
         }
     }
+    fn as_any(&self) -> &dyn std::any::Any {
+        self
+    }
 }
 
 #[cfg(test)]

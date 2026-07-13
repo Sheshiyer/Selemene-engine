@@ -19,6 +19,7 @@ use std::sync::Arc;
 use std::time::Duration;
 
 use async_trait::async_trait;
+use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use sha2::{Digest, Sha256};
@@ -84,10 +85,27 @@ const CB_THRESHOLD_ENV: &str = "TS_BRIDGE_CB_THRESHOLD";
 /// Env var to override the reset window in seconds.
 const CB_RESET_ENV: &str = "TS_BRIDGE_CB_RESET_SECS";
 
+#[derive(Debug, Clone, Serialize)]
+pub enum CircuitBreakerState {
+    Closed,
+    Open,
+    HalfOpen,
+}
+
+impl CircuitBreakerState {
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            CircuitBreakerState::Closed => "closed",
+            CircuitBreakerState::Open => "open",
+            CircuitBreakerState::HalfOpen => "half_open",
+        }
+    }
+}
+
 /// Simple three-state circuit breaker: Closed → Open → Half-Open → Closed.
 ///
 /// All state is stored in atomics so the breaker is cheaply shared via `Arc`.
-struct BridgeCircuitBreaker {
+pub struct BridgeCircuitBreaker {
     /// Consecutive failure count.
     failure_count: std::sync::atomic::AtomicU32,
     /// Unix timestamp (seconds) of the last failure.
@@ -155,6 +173,38 @@ impl BridgeCircuitBreaker {
         }
         let last = self.last_failure_ts.load(Relaxed);
         Self::now_secs().saturating_sub(last) < self.reset_secs
+    }
+
+    /// Returns the current circuit breaker state (Closed, Open, or HalfOpen).
+    pub fn state(&self) -> CircuitBreakerState {
+        use std::sync::atomic::Ordering::Relaxed;
+        let failures = self.failure_count.load(Relaxed);
+        if failures < self.open_threshold {
+            return CircuitBreakerState::Closed;
+        }
+        let last = self.last_failure_ts.load(Relaxed);
+        if Self::now_secs().saturating_sub(last) >= self.reset_secs {
+            CircuitBreakerState::HalfOpen
+        } else {
+            CircuitBreakerState::Open
+        }
+    }
+
+    /// Returns the consecutive failure count.
+    pub fn failure_count(&self) -> u32 {
+        use std::sync::atomic::Ordering::Relaxed;
+        self.failure_count.load(Relaxed)
+    }
+
+    /// Returns the timestamp of the last failure, if any.
+    pub fn last_failure_at(&self) -> Option<DateTime<Utc>> {
+        use std::sync::atomic::Ordering::Relaxed;
+        let ts = self.last_failure_ts.load(Relaxed);
+        if ts == 0 {
+            None
+        } else {
+            chrono::DateTime::from_timestamp(ts as i64, 0)
+        }
     }
 }
 
@@ -301,6 +351,11 @@ impl BridgeEngine {
     /// Create a Raaga engine bridge with custom URL.
     pub fn raaga_with_url(base_url: impl Into<String>) -> Self {
         Self::new("raaga", "Raaga", 0, base_url)
+    }
+
+    /// Return a reference to the circuit breaker for admin observability.
+    pub fn circuit_breaker(&self) -> &BridgeCircuitBreaker {
+        &self.circuit
     }
 
     fn extract_question(options: &std::collections::HashMap<String, Value>) -> Option<String> {
@@ -511,6 +566,10 @@ impl ConsciousnessEngine for BridgeEngine {
         let hash = format!("{:x}", Sha256::digest(raw.as_bytes()));
         format!("{}:{}", self.engine_id, hash)
     }
+
+    fn as_any(&self) -> &dyn std::any::Any {
+        self
+    }
 }
 
 // ---------------------------------------------------------------------------
@@ -657,6 +716,43 @@ impl BridgeManager {
     pub async fn is_available(&self) -> bool {
         self.health_check().await.is_ok()
     }
+
+    /// Return circuit breaker states for all bridge engines, keyed by engine ID.
+    pub fn circuit_breaker_states(&self) -> Vec<(String, BridgeCircuitBreakerSnapshot)> {
+        self.engines
+            .iter()
+            .map(|engine| {
+                let snapshot = engine
+                    .as_ref()
+                    .as_any()
+                    .downcast_ref::<BridgeEngine>()
+                    .map(|be| {
+                        let cb = be.circuit_breaker();
+                        BridgeCircuitBreakerSnapshot {
+                            state: cb.state().as_str().to_string(),
+                            failure_count: cb.failure_count(),
+                            last_failure_at: cb
+                                .last_failure_at()
+                                .map(|dt| dt.to_rfc3339()),
+                        }
+                    })
+                    .unwrap_or(BridgeCircuitBreakerSnapshot {
+                        state: "unknown".to_string(),
+                        failure_count: 0,
+                        last_failure_at: None,
+                    });
+                (engine.engine_id().to_string(), snapshot)
+            })
+            .collect()
+    }
+}
+
+/// Snapshot of a bridge engine's circuit breaker for admin observability.
+#[derive(Debug, Clone, Serialize)]
+pub struct BridgeCircuitBreakerSnapshot {
+    pub state: String,
+    pub failure_count: u32,
+    pub last_failure_at: Option<String>,
 }
 
 // ===========================================================================

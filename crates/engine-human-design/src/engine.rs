@@ -256,6 +256,9 @@ impl ConsciousnessEngine for HumanDesignEngine {
             format!("hd:invalid:{}", chrono::Utc::now().timestamp())
         }
     }
+    fn as_any(&self) -> &dyn std::any::Any {
+        self
+    }
 }
 
 #[cfg(test)]

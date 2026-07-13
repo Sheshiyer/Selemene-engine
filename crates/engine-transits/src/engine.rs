@@ -319,6 +319,9 @@ impl ConsciousnessEngine for TransitsEngine {
         let hash = format!("{:x}", Sha256::digest(raw.as_bytes()));
         format!("transits:{}", hash)
     }
+    fn as_any(&self) -> &dyn std::any::Any {
+        self
+    }
 }
 
 /// Assess overall period quality from aspects, Sade Sati, and retrogrades.

@@ -253,6 +253,8 @@ print(agent.run("List the available Noesis engines."))
 | **Hermes (this)** | `bridges/hermes/` | OpenAI function calling + XML |
 | OpenClaw | `docs/api/OPENCLAW_INTEGRATION.md` | skill-based |
 
+**For rich narrative witness reports (2026-07+):** Use the current contract in `docs/api/AGENT_FLOW.md` (subjects + relationship_context + language + Folio header + NotebookLM shaper). The classic 22 engine/workflow tools remain for direct calls.
+
 ## Architecture
 
 ```
