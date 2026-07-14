@@ -37,7 +37,7 @@ tracing = "0.1"
 noesis-core = { path = "../noesis-core" }
 
 [dev-dependencies]
-dotenv = "0.15"
+dotenvy = "0.15"
 
 [features]
 default = []

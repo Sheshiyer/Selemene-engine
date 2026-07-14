@@ -3,7 +3,7 @@ use noesis_western_api::{types::WesternRequest, Config, WesternApiClient};
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Load API key from env
-    dotenv::dotenv().ok();
+    dotenvy::dotenv().ok();
 
     let config = Config::from_env().unwrap_or_else(|_| {
         println!(

@@ -35,12 +35,6 @@ config = "0.14"
 # Tracing/Logging
 tracing = "0.1"
 
-# Retry logic
-tokio-retry = "0.3"
-
-# Circuit breaker
-backoff = { version = "0.4", features = ["tokio"] }
-
 # Native Vedic engines (PR2: replace dead vendor endpoints with native facades)
 engine-panchanga = { path = "../engine-panchanga" }
 engine-vimshottari = { path = "../engine-vimshottari" }
