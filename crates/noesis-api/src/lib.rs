@@ -332,9 +332,9 @@ use workflow_parity::log_workflow_registry_parity;
 )]
 struct ApiDoc;
 
-use utoipa::openapi::path::PathItemType;
+use utoipa::openapi::schema::{SchemaType, Type};
 use utoipa::openapi::security::{ApiKey, ApiKeyValue, HttpAuthScheme, HttpBuilder, SecurityScheme};
-use utoipa::openapi::{HeaderBuilder, ObjectBuilder, Ref, RefOr, ResponseBuilder, SchemaType};
+use utoipa::openapi::{HeaderBuilder, ObjectBuilder, Ref, RefOr, ResponseBuilder};
 use utoipa::Modify;
 
 struct SecurityAddon;
@@ -359,7 +359,7 @@ impl Modify for SecurityAddon {
         }
 
         let integer_header_schema = ObjectBuilder::new()
-            .schema_type(SchemaType::Integer)
+            .schema_type(SchemaType::Type(Type::Integer))
             .build();
 
         let rate_limited_response = ResponseBuilder::new()
@@ -402,39 +402,40 @@ impl Modify for SecurityAddon {
             .content(
                 "application/json",
                 utoipa::openapi::ContentBuilder::new()
-                    .schema(RefOr::Ref(Ref::from_schema_name("ErrorResponse")))
+                    .schema(Some(RefOr::Ref(Ref::from_schema_name("ErrorResponse"))))
                     .build(),
             )
             .build();
 
         for path_item in openapi.paths.paths.values_mut() {
-            for method in [
-                PathItemType::Get,
-                PathItemType::Post,
-                PathItemType::Put,
-                PathItemType::Patch,
-                PathItemType::Delete,
-                PathItemType::Head,
-                PathItemType::Options,
-                PathItemType::Trace,
-                PathItemType::Connect,
-            ] {
-                if let Some(operation) = path_item.operations.get_mut(&method) {
-                    let is_secured = operation
-                        .security
-                        .as_ref()
-                        .map(|security| !security.is_empty())
-                        .unwrap_or(false);
+            let operations = [
+                &mut path_item.get,
+                &mut path_item.put,
+                &mut path_item.post,
+                &mut path_item.delete,
+                &mut path_item.options,
+                &mut path_item.head,
+                &mut path_item.patch,
+                &mut path_item.trace,
+            ];
+            for operation in operations {
+                let Some(operation) = operation.as_mut() else {
+                    continue;
+                };
+                let is_secured = operation
+                    .security
+                    .as_ref()
+                    .map(|security| !security.is_empty())
+                    .unwrap_or(false);
 
-                    if !is_secured {
-                        continue;
-                    }
-
-                    operation
-                        .responses
-                        .responses
-                        .insert("429".to_string(), RefOr::T(rate_limited_response.clone()));
+                if !is_secured {
+                    continue;
                 }
+
+                operation
+                    .responses
+                    .responses
+                    .insert("429".to_string(), RefOr::T(rate_limited_response.clone()));
             }
         }
     }

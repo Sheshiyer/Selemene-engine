@@ -496,7 +496,7 @@ mod tests {
         fs::write(&path, content).unwrap();
 
         // Load
-        let loaded = Config::load_from_path(&path.into()).unwrap();
+        let loaded = Config::load_from_path(&path).unwrap();
         assert_eq!(loaded.api_url, "http://test.local");
         assert_eq!(loaded.api_key, Some("test_key_123".into()));
     }

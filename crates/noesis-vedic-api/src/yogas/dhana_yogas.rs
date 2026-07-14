@@ -150,6 +150,5 @@ mod tests {
     #[test]
     fn test_dhana_detection_placeholder() {
         // Would need a full birth chart
-        assert!(true);
     }
 }

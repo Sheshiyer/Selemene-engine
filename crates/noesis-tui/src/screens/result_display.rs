@@ -73,11 +73,11 @@ impl ResultDisplay {
                 let level = output.consciousness_level;
                 let level_info = consciousness::get_level(level);
                 format!(
-                    "✦ {} — {} {} {}",
+                    "✦ {} — {} {} (Phase {}/5)",
                     format_name(engine_id),
                     level_info.state,
                     level_info.dots,
-                    format!("(Phase {}/5)", level),
+                    level,
                 )
             }
             ResultKind::Workflow {
@@ -162,9 +162,9 @@ impl ResultDisplay {
         self.rendered_text
             .lines()
             .map(|line| {
-                if line.starts_with("# ") {
+                if let Some(stripped) = line.strip_prefix("# ") {
                     Line::from(Span::styled(
-                        &line[2..],
+                        stripped,
                         Style::default()
                             .fg(Color::Cyan)
                             .add_modifier(Modifier::BOLD),
@@ -176,16 +176,16 @@ impl ResultDisplay {
                             .fg(Color::Yellow)
                             .add_modifier(Modifier::BOLD),
                     ))
-                } else if line.starts_with("## ") {
+                } else if let Some(stripped) = line.strip_prefix("## ") {
                     Line::from(Span::styled(
-                        &line[3..],
+                        stripped,
                         Style::default()
                             .fg(Color::Magenta)
                             .add_modifier(Modifier::BOLD),
                     ))
-                } else if line.starts_with("> ") {
+                } else if let Some(stripped) = line.strip_prefix("> ") {
                     Line::from(Span::styled(
-                        &line[2..],
+                        stripped,
                         Style::default()
                             .fg(Color::Yellow)
                             .add_modifier(Modifier::ITALIC),

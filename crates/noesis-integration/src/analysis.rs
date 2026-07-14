@@ -499,7 +499,7 @@ impl UnifiedAnalysis {
             numerology_perspective: format!(
                 "Birth Day {} emphasizes {} qualities. Physical activity is important for your well-being.",
                 numerology.birth_day_number,
-                if numerology.birth_day_number % 2 == 0 { "receptive" } else { "active" },
+                if numerology.birth_day_number.is_multiple_of(2) { "receptive" } else { "active" },
             ),
             synthesized: format!(
                 "Maintain physical vitality through balanced exercise supporting both Mars energy and your {} constitution. Focus on {} organs during their peak hours.",

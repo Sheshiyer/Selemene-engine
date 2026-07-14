@@ -73,7 +73,7 @@ dotenvy = "0.15"
 toml = "0.8"
 
 # Database
-sqlx = { version = "0.7", features = ["runtime-tokio-native-tls", "postgres", "chrono", "uuid"] }
+sqlx = { version = "0.8", features = ["runtime-tokio-native-tls", "postgres", "chrono", "uuid"] }
 
 # Authentication
 jsonwebtoken = "9.3"

@@ -135,7 +135,7 @@ mod mock_data_integrity {
 
     #[test]
     fn test_mock_error_variants() {
-        let errors = vec![
+        let errors = [
             mocks::mock_rate_limit_error(),
             mocks::mock_network_error(),
             mocks::mock_api_server_error(),

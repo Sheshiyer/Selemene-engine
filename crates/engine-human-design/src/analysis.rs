@@ -647,7 +647,7 @@ mod tests {
 
         // With only one gate, no channels can be complete, so all centers should be undefined
         assert_eq!(centers.len(), 9);
-        for (_, state) in centers.iter() {
+        for state in centers.values() {
             assert!(
                 !state.defined,
                 "Centers should be undefined with incomplete channels"

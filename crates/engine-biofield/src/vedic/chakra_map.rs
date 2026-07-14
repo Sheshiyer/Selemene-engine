@@ -344,7 +344,7 @@ mod tests {
         for chakra in Chakra::all() {
             let activity = chakra_activity(chakra, &strengths);
             assert!(
-                activity >= 0.0 && activity <= 1.0,
+                (0.0..=1.0).contains(&activity),
                 "{:?} activity {} out of range",
                 chakra,
                 activity
@@ -364,7 +364,7 @@ mod tests {
         for chakra in Chakra::all() {
             let balance = chakra_balance(chakra, &aspects);
             assert!(
-                balance >= -1.0 && balance <= 1.0,
+                (-1.0..=1.0).contains(&balance),
                 "{:?} balance {} out of range",
                 chakra,
                 balance
@@ -392,8 +392,8 @@ mod tests {
 
         assert_eq!(readings.len(), 7);
         for reading in &readings {
-            assert!(reading.activity_level >= 0.0 && reading.activity_level <= 1.0);
-            assert!(reading.balance >= -1.0 && reading.balance <= 1.0);
+            assert!((0.0..=1.0).contains(&reading.activity_level));
+            assert!((-1.0..=1.0).contains(&reading.balance));
             assert!(!reading.color_intensity.is_empty());
         }
     }
@@ -407,7 +407,7 @@ mod tests {
             .collect();
         let aspects = super::super::planetary::calculate_natal_aspects(&clustered);
         let fd_clustered = calculate_fractal_dimension(&clustered, &aspects);
-        assert!(fd_clustered >= 1.0 && fd_clustered <= 2.0);
+        assert!((1.0..=2.0).contains(&fd_clustered));
 
         // Planets spread across signs
         let spread: Vec<_> = VedicPlanet::all()
@@ -417,7 +417,7 @@ mod tests {
             .collect();
         let aspects_spread = super::super::planetary::calculate_natal_aspects(&spread);
         let fd_spread = calculate_fractal_dimension(&spread, &aspects_spread);
-        assert!(fd_spread >= 1.0 && fd_spread <= 2.0);
+        assert!((1.0..=2.0).contains(&fd_spread));
 
         // Spread should have higher FD than clustered
         assert!(
@@ -524,7 +524,7 @@ mod tests {
     #[test]
     fn test_vitality_index_range() {
         let vitality = calculate_vitality_index(1.5, 0.55, 0.65, 0.75);
-        assert!(vitality >= 0.0 && vitality <= 1.0);
+        assert!((0.0..=1.0).contains(&vitality));
         assert!(
             vitality > 0.4,
             "Good values should give decent vitality: {}",

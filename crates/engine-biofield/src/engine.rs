@@ -691,14 +691,14 @@ mod tests {
 
             let fd = metrics["fractal_dimension"].as_f64().unwrap();
             assert!(
-                fd >= 1.0 && fd <= 2.0,
+                (1.0..=2.0).contains(&fd),
                 "fractal_dimension {} out of range",
                 fd
             );
 
             for field in ["entropy", "coherence", "symmetry", "vitality_index"] {
                 let val = metrics[field].as_f64().unwrap();
-                assert!(val >= 0.0 && val <= 1.0, "{} {} out of range", field, val);
+                assert!((0.0..=1.0).contains(&val), "{} {} out of range", field, val);
             }
         }
     }

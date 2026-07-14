@@ -23,7 +23,7 @@ rand = "0.8"
 tracing = "0.1"
 
 # Optional: Postgres-backed auth (enable with `features = ["postgres"]`)
-sqlx = { version = "0.7", features = ["postgres", "runtime-tokio-rustls", "uuid", "chrono", "json", "macros"], optional = true }
+sqlx = { version = "0.8", features = ["postgres", "runtime-tokio-rustls", "uuid", "chrono", "json", "macros"], optional = true }
 
 [[example]]
 name = "seed_api_keys"

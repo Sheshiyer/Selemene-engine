@@ -270,6 +270,10 @@ mod tests {
             &self.id
         }
 
+        fn as_any(&self) -> &dyn std::any::Any {
+            self
+        }
+
         fn engine_name(&self) -> &str {
             &self.id
         }

@@ -601,7 +601,7 @@ mod tests {
         // Each mahadasha must have antardashas at this level.
         let first = &dasha.mahadashas[0];
         assert!(
-            first.sub_periods.as_ref().map_or(false, |s| !s.is_empty()),
+            first.sub_periods.as_ref().is_some_and(|s| !s.is_empty()),
             "first mahadasha missing antardashas"
         );
     }

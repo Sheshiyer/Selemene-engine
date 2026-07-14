@@ -371,7 +371,7 @@ impl ProfileBuilder {
             timezone,
         };
 
-        birth_data.validate().map_err(|e| Error::Profile(e))?;
+        birth_data.validate().map_err(Error::Profile)?;
 
         Ok(LocalProfile::new(name, birth_data))
     }

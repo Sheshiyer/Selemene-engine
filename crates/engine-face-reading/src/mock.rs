@@ -307,7 +307,7 @@ mod tests {
         for _ in 0..10 {
             let analysis = generate_mock_analysis(None);
             let count = analysis.personality_indicators.len();
-            assert!(count >= 3 && count <= 5);
+            assert!((3..=5).contains(&count));
         }
     }
 
@@ -316,7 +316,7 @@ mod tests {
         for _ in 0..10 {
             let analysis = generate_mock_analysis(None);
             let count = analysis.health_indicators.len();
-            assert!(count >= 2 && count <= 3);
+            assert!((2..=3).contains(&count));
         }
     }
 

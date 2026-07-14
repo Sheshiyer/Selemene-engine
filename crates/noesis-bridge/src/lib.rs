@@ -918,7 +918,6 @@ mod tests {
 
     #[tokio::test]
     async fn circuit_breaker_trips_after_threshold() {
-        use std::time::Duration;
         let cb = BridgeCircuitBreaker {
             failure_count: std::sync::atomic::AtomicU32::new(0),
             last_failure_ts: std::sync::atomic::AtomicU64::new(0),

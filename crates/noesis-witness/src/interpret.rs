@@ -12,6 +12,7 @@ use crate::routing::{routing_for_engine, RoutingMode};
 
 /// Live biofield composite scores from the PIP camera analysis.
 #[derive(Serialize, Deserialize, Clone, Debug, Default)]
+#[cfg_attr(feature = "utoipa", derive(utoipa::ToSchema))]
 pub struct LiveBiofieldScores {
     pub energy: f64,
     pub coherence: f64,
@@ -23,6 +24,7 @@ pub struct LiveBiofieldScores {
 
 /// Relationship framing for composite / synastry readings.
 #[derive(Serialize, Deserialize, Clone, Debug, Default, PartialEq, Eq)]
+#[cfg_attr(feature = "utoipa", derive(utoipa::ToSchema))]
 pub enum RelationshipMode {
     #[default]
     None,
@@ -592,8 +594,8 @@ mod tests {
         let v = json!(42);
         assert_eq!(format_value(&v, 0), "42");
 
-        let v_float = json!(3.14159);
-        assert_eq!(format_value(&v_float, 0), "3.14159");
+        let v_float = json!(std::f64::consts::PI);
+        assert_eq!(format_value(&v_float, 0), "3.141592653589793");
     }
 
     #[test]

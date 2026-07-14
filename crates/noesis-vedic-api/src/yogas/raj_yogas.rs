@@ -224,6 +224,5 @@ mod tests {
     fn test_mahapurusha_detection() {
         // Would need a full birth chart to test
         // This is a placeholder
-        assert!(true);
     }
 }

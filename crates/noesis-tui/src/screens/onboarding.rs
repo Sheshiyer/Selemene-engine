@@ -434,10 +434,10 @@ impl OnboardingWizard {
             }
             OnboardingStep::BirthTime => {
                 // Optional — empty is fine
-                if !self.time_input.is_empty() {
-                    if chrono::NaiveTime::parse_from_str(&self.time_input, "%H:%M").is_err() {
-                        return Err("Invalid time format. Use HH:MM (24h)".into());
-                    }
+                if !self.time_input.is_empty()
+                    && chrono::NaiveTime::parse_from_str(&self.time_input, "%H:%M").is_err()
+                {
+                    return Err("Invalid time format. Use HH:MM (24h)".into());
                 }
             }
             OnboardingStep::Latitude => match self.lat_input.parse::<f64>() {
@@ -503,21 +503,19 @@ impl OnboardingWizard {
                     self.consciousness_level += 1;
                 }
             }
-            KeyCode::Backspace => {
+            KeyCode::Char(c)
                 if self.step != OnboardingStep::Confirm
-                    && self.step != OnboardingStep::ConsciousnessLevel
-                {
-                    self.current_input_mut().pop();
-                    self.error = None;
-                }
+                    && self.step != OnboardingStep::ConsciousnessLevel =>
+            {
+                self.current_input_mut().push(c);
+                self.error = None;
             }
-            KeyCode::Char(c) => {
+            KeyCode::Backspace
                 if self.step != OnboardingStep::Confirm
-                    && self.step != OnboardingStep::ConsciousnessLevel
-                {
-                    self.current_input_mut().push(c);
-                    self.error = None;
-                }
+                    && self.step != OnboardingStep::ConsciousnessLevel =>
+            {
+                self.current_input_mut().pop();
+                self.error = None;
             }
             _ => {}
         }

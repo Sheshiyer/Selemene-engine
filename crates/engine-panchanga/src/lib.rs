@@ -654,14 +654,14 @@ mod tests {
     fn test_solar_position_range() {
         let jd = calculate_julian_day("1991-08-13", "13:31", 5.5);
         let solar = calculate_solar_position(jd);
-        assert!(solar >= 0.0 && solar < 360.0, "solar = {solar}");
+        assert!((0.0..360.0).contains(&solar), "solar = {solar}");
     }
 
     #[test]
     fn test_lunar_position_range() {
         let jd = calculate_julian_day("1991-08-13", "13:31", 5.5);
         let lunar = calculate_lunar_position(jd);
-        assert!(lunar >= 0.0 && lunar < 360.0, "lunar = {lunar}");
+        assert!((0.0..360.0).contains(&lunar), "lunar = {lunar}");
     }
 
     #[test]
@@ -670,7 +670,7 @@ mod tests {
         let solar = calculate_solar_position(jd);
         let lunar = calculate_lunar_position(jd);
         let tithi = calculate_tithi(solar, lunar);
-        assert!(tithi >= 0.0 && tithi < 30.0, "tithi = {tithi}");
+        assert!((0.0..30.0).contains(&tithi), "tithi = {tithi}");
     }
 
     #[test]
@@ -678,7 +678,7 @@ mod tests {
         let jd = calculate_julian_day("1991-08-13", "13:31", 5.5);
         let lunar = calculate_lunar_position(jd);
         let nak = calculate_nakshatra(lunar);
-        assert!(nak >= 0.0 && nak < 27.0, "nakshatra = {nak}");
+        assert!((0.0..27.0).contains(&nak), "nakshatra = {nak}");
     }
 
     #[test]
@@ -687,7 +687,7 @@ mod tests {
         let solar = calculate_solar_position(jd);
         let lunar = calculate_lunar_position(jd);
         let yoga = calculate_yoga(solar, lunar);
-        assert!(yoga >= 0.0 && yoga < 27.0, "yoga = {yoga}");
+        assert!((0.0..27.0).contains(&yoga), "yoga = {yoga}");
     }
 
     #[test]

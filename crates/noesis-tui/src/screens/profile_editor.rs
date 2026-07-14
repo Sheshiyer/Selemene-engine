@@ -131,8 +131,6 @@ impl ProfileEditor {
 
                     let value_style = if is_editing {
                         Style::default().fg(Color::Cyan)
-                    } else if is_selected {
-                        Style::default().fg(Color::White)
                     } else {
                         Style::default().fg(Color::White)
                     };
