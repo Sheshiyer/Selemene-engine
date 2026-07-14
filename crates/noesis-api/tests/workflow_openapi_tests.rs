@@ -99,6 +99,18 @@ async fn test_workflow_synthesis_schemas_are_typed() {
             })
             .unwrap_or(false)
             || synthesis
+                .get("oneOf")
+                .and_then(|v| v.as_array())
+                .map(|items| {
+                    items.iter().any(|item| {
+                        item.get("$ref")
+                            .and_then(|r| r.as_str())
+                            .map(|r| r.contains("SynthesisSchema"))
+                            .unwrap_or(false)
+                    })
+                })
+                .unwrap_or(false)
+            || synthesis
                 .get("$ref")
                 .and_then(|r| r.as_str())
                 .map(|r| r.contains("SynthesisSchema"))
