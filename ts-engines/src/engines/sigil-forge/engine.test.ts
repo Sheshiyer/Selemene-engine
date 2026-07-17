@@ -2,6 +2,7 @@ import { describe, expect, it } from 'bun:test'
 import { SigilForgeEngine } from './engine'
 import { buildSigilPrompt } from './prompt-builder'
 import { SIGIL_METHODS } from './wisdom'
+// T-028: test provider + top-level generated_image per FROZEN (T-002 contracts)
 
 type SigilForgeResult = {
   intention?: string
@@ -60,6 +61,8 @@ describe('SigilForgeEngine image generation (guidance-only, no API key in test e
     })
     const result = output.result as SigilForgeResult
     expect(result.generated_image).toBeNull()
+    // T-028 FROZEN: no top generated when guidance only
+    expect((output as any).generated_image).toBeUndefined()
   })
 
   it('returns error in generated_image or a valid result when generate_image=true', async () => {
@@ -79,6 +82,8 @@ describe('SigilForgeEngine image generation (guidance-only, no API key in test e
     const hasResult = img.b64_json !== undefined || img.url !== undefined
     const hasError = img.error !== undefined
     expect(hasResult || hasError).toBe(true)
+    // T-028: also top-level per FROZEN EngineOutput
+    expect((output as any).generated_image).toBeDefined()
   }, 30_000) // NIM calls take 5-15s
 
   it('engine version is 2.0.0', () => {

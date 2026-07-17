@@ -17,7 +17,9 @@ import {
   editImage,
   generateImage,
   isImageGenAvailable,
+  createDefaultImageProvider,
 } from '../../utils/nvidia-image'
+import type { ImageProvider } from '../../providers/image-provider'
 import { SeededRandom, getDefaultSeed } from '../../utils/random'
 import { type SigilStyle, buildSigilEditPrompt, buildSigilPrompt } from './prompt-builder'
 import {
@@ -30,6 +32,12 @@ import {
 import { generateWitnessPrompts } from './witness'
 
 export class SigilForgeEngine implements ConsciousnessEngine {
+  private imageProvider: ImageProvider
+
+  constructor(imageProvider?: ImageProvider) {
+    this.imageProvider = imageProvider ?? createDefaultImageProvider()
+  }
+
   private safeSvgPreview(template?: string): {
     status: 'absent' | 'accepted' | 'rejected'
     reason?: string
@@ -51,9 +59,9 @@ export class SigilForgeEngine implements ConsciousnessEngine {
   }
 
   metadata(): EngineMetadata {
-    const imageGenNote = isImageGenAvailable()
-      ? 'Set parameters.generate_image=true to receive an AI-generated sigil image via NVIDIA NIM.'
-      : 'Image generation is not configured (NVIDIA_API_KEY missing). Guidance-only mode active.'
+    const imageGenNote = this.imageProvider.isAvailable()
+      ? `Set parameters.generate_image=true to receive an AI-generated sigil image via ${this.imageProvider.name}.`
+      : `Image generation is not configured (${this.imageProvider.name}). Guidance-only mode active.`
 
     return {
       id: 'sigil-forge',
@@ -192,16 +200,17 @@ export class SigilForgeEngine implements ConsciousnessEngine {
 
     if (editImageB64) {
       // Edit mode: refine an existing sigil
-      if (!isImageGenAvailable()) {
-        generatedImage = { error: 'NVIDIA_API_KEY not configured. Cannot edit image.' }
+      if (!this.imageProvider.isAvailable()) {
+        generatedImage = { error: `${this.imageProvider.name} not configured. Cannot edit image.` }
       } else {
         try {
           const builtPrompt = buildSigilEditPrompt(cleanIntention, editInstruction, imageStyle)
-          const result = await editImage({
+          const result = await this.imageProvider.edit!({
             image: editImageB64,
             prompt: builtPrompt.prompt,
             model: imageModel,
             seed,
+            style: imageStyle,
           })
           generatedImage = {
             b64_json: result.b64_json,
@@ -216,10 +225,9 @@ export class SigilForgeEngine implements ConsciousnessEngine {
       }
     } else if (generateImageFlag) {
       // Generation mode: create new sigil image
-      if (!isImageGenAvailable()) {
+      if (!this.imageProvider.isAvailable()) {
         generatedImage = {
-          error:
-            'NVIDIA_API_KEY not configured. Set it in Railway env vars to enable image generation.',
+          error: `${this.imageProvider.name} not configured. Cannot generate image.`,
         }
       } else {
         try {
@@ -229,12 +237,13 @@ export class SigilForgeEngine implements ConsciousnessEngine {
             processedLetters ?? undefined,
             imageStyle,
           )
-          const result = await generateImage({
+          const result = await this.imageProvider.generate({
             prompt: builtPrompt.prompt,
             model: imageModel ?? NVIDIA_IMAGE_MODELS.FLUX_DEV,
             width: 1024,
             height: 1024,
             seed,
+            style: imageStyle,
           })
           generatedImage = {
             b64_json: result.b64_json,
@@ -295,9 +304,21 @@ export class SigilForgeEngine implements ConsciousnessEngine {
       },
       svg_preview: svgPreview,
       generated_image: generatedImage,
-      image_gen_available: isImageGenAvailable(),
+      image_gen_available: this.imageProvider.isAvailable(),
       seed,
     }
+
+    // Per FROZEN contract (T-002/T-028): also surface generated_image at top-level EngineOutput
+    const topGeneratedImage = generatedImage && !generatedImage.error ? {
+      b64_json: generatedImage.b64_json,
+      url: (generatedImage as any).url,
+      metadata: {
+        model: generatedImage.model ?? 'default',
+        prompt: generatedImage.prompt_used ?? '',
+        provider: 'nvidia',
+        style: generatedImage.style,
+      }
+    } : undefined
 
     return {
       engine_id: 'sigil-forge',
@@ -305,6 +326,7 @@ export class SigilForgeEngine implements ConsciousnessEngine {
       witness_prompts: witnessPrompts,
       calculated_at: new Date().toISOString(),
       processing_time_ms: Math.round(endTime - startTime),
+      ...(topGeneratedImage ? { generated_image: topGeneratedImage } : {}),
     }
   }
 }

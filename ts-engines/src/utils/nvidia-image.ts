@@ -124,3 +124,61 @@ export async function editImage(opts: EditImageOptions): Promise<GeneratedImageR
 export function isImageGenAvailable(): boolean {
   return Boolean(Bun.env.NVIDIA_API_KEY)
 }
+
+// --- T-003 contract: implement ImageProvider interface (see ../providers/image-provider.ts) per FROZEN ---
+// Cites: resources-and-assets (sigil nvidia), gaps (provider abstraction), goal (T-003), P1W1-CONTRACTS-FROZEN, detailed T-003/T-028, bootstrap packet, EXECUTION-STATUS, ext-harness
+import type { ImageProvider, ImageGenOptions, ImageEditOptions, GeneratedImage } from '../providers/image-provider'
+
+export class NvidiaImageProvider implements ImageProvider {
+  readonly name = 'nvidia'
+
+  isAvailable(): boolean {
+    return isImageGenAvailable()
+  }
+
+  async generate(opts: ImageGenOptions): Promise<GeneratedImage> {
+    const res = await generateImage({
+      prompt: opts.prompt,
+      model: opts.model as any,
+      width: opts.width,
+      height: opts.height,
+      seed: opts.seed,
+    })
+    return {
+      b64_json: res.b64_json,
+      metadata: {
+        model: opts.model ?? 'flux.1-dev',
+        prompt: opts.prompt,
+        provider: this.name,
+        style: (opts as any).style,
+        seed: opts.seed,
+        finish_reason: res.finish_reason,
+      },
+    }
+  }
+
+  async edit(opts: ImageEditOptions): Promise<GeneratedImage> {
+    const res = await editImage({
+      image: opts.image,
+      prompt: opts.prompt,
+      model: opts.model as any,
+      width: opts.width,
+      height: opts.height,
+      seed: opts.seed,
+    })
+    return {
+      b64_json: res.b64_json,
+      metadata: {
+        model: opts.model ?? 'flux.1-dev',
+        prompt: opts.prompt,
+        provider: this.name,
+        style: (opts as any).style,
+        seed: opts.seed,
+      },
+    }
+  }
+}
+
+export function createDefaultImageProvider(): ImageProvider {
+  return new NvidiaImageProvider()
+}

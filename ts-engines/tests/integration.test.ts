@@ -1,7 +1,8 @@
 /**
- * Integration Tests for Noesis TypeScript Engines
- * Tests all 5 engines: Tarot, I-Ching, Enneagram, Sacred Geometry, Sigil Forge
- */
+  * Integration Tests for Noesis TypeScript Engines
+  * Tests all 6 engines (incl raaga/sigil media outputs per FROZEN T-028)
+  * Cites: p1-w1-worker-bootstrap-packet.md, 3 extraction files, P1W1-CONTRACTS-FROZEN.md, detailed-task-list T-028, EXECUTION-STATUS, ext-contract-harness.ts, ts-engines/README.md
+  */
 
 import { afterAll, beforeAll, describe, expect, it } from 'bun:test'
 import { createServer, registry } from '../src/server'
@@ -10,6 +11,7 @@ import { EnneagramEngine } from '../src/engines/enneagram'
 import { IChingEngine } from '../src/engines/i-ching'
 import { SacredGeometryEngine } from '../src/engines/sacred-geometry'
 import { SigilForgeEngine } from '../src/engines/sigil-forge'
+import { RaagaEngine } from '../src/engines/raaga'
 // Import and register engines
 import { TarotEngine } from '../src/engines/tarot'
 
@@ -37,12 +39,13 @@ async function apiCall(
 }
 
 beforeAll(() => {
-  // Register all engines
+  // Register all engines (6 incl raaga per FROZEN media update T-028)
   registry.register(new TarotEngine())
   registry.register(new IChingEngine())
   registry.register(new EnneagramEngine())
   registry.register(new SacredGeometryEngine())
   registry.register(new SigilForgeEngine())
+  registry.register(new RaagaEngine())
 
   // Start server
   server = createServer()
@@ -78,13 +81,14 @@ describe('Server Health', () => {
     expect(engines).toContain('enneagram')
     expect(engines).toContain('sacred-geometry')
     expect(engines).toContain('sigil-forge')
+    expect(engines).toContain('raaga')
   })
 
-  it('GET /engines lists all 5 engines', async () => {
+  it('GET /engines lists all 6 engines', async () => {
     const { status, data } = await apiCall('GET', '/engines')
     expect(status).toBe(200)
-    expect((data as any).count).toBe(5)
-    expect((data as any).engines.length).toBe(5)
+    expect((data as any).count).toBe(6)
+    expect((data as any).engines.length).toBe(6)
   })
 })
 
@@ -558,5 +562,47 @@ describe('Error Handling', () => {
       })
       expect(status).toBe(200)
     }
+  })
+})
+
+// ============================================================================
+// Raaga Media Output (T-028 per FROZEN)
+// ============================================================================
+
+describe('Raaga Engine media output (generated_audio per FROZEN contracts)', () => {
+  it('returns generated_audio with strudel_ratios + clip_url (null) + result strudel', async () => {
+    const now = new Date().toISOString()
+    const consentRaaga = { granted: true, scopes: ['raaga-audio'], timestamp: now }
+    // FROZEN sample style (from ext-contract-harness.ts + P1W1-CONTRACTS-FROZEN.md)
+    const { status, data } = await apiCall('POST', '/engines/raaga/calculate', {
+      consciousness_level: 0,
+      parameters: { melakarta: 1, dosha: 'vata' },
+      audio_ref: { reference: 'file:local.m4a', consent: consentRaaga },
+      consent: consentRaaga,
+    })
+    expect(status).toBe(200)
+    const d = data as any
+    expect(d.engine_id).toBe('raaga')
+    expect(d.generated_audio).toBeDefined()
+    expect(d.generated_audio.strudel_ratios).toBeInstanceOf(Array)
+    expect(d.generated_audio.strudel_ratios.length).toBe(8)
+    expect(d.generated_audio.clip_url).toBeNull()
+    expect(d.generated_audio.root_hz).toBeGreaterThan(0)
+    expect(d.generated_audio.metadata.engine).toBe('raaga')
+    // also legacy in result
+    expect((d.result as any).strudel_ratios).toBeInstanceOf(Array)
+    expect((d.result as any).strudel_ratios.length).toBe(8)
+  })
+
+  it('accepts FROZEN-style input with image_data/consent (ignored for raaga but schema ok)', async () => {
+    const tinyPng = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=='
+    const now = new Date().toISOString()
+    const { status } = await apiCall('POST', '/engines/raaga/calculate', {
+      consciousness_level: 1,
+      parameters: { melakarta: 15 },
+      image_data: { b64: tinyPng, mime_type: 'image/png', consent: { granted: true, scopes: ['raaga-audio'], timestamp: now } },
+      consent: { granted: true, scopes: ['raaga-audio'], timestamp: now },
+    })
+    expect(status).toBe(200)
   })
 })
