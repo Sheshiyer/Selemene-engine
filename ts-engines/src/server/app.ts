@@ -198,6 +198,12 @@ export function createServer(engineRegistry: EngineRegistry = registry) {
           parameters: t.Record(t.String(), t.Unknown()),
           seed: t.Optional(t.Number()),
           question: t.Optional(t.String()),
+          // P1/P2 media per FROZEN (T-002/T-005/T-031) -- allow top-level for audio_ref/consent/image_data in raaga/sigil etc samples
+          // Cites all mandatory: p1-w1-worker-bootstrap-packet.md + 3 extraction + P1W1-CONTRACTS-FROZEN.md + detailed-task-list T-031 + ext-contract-harness.ts + EXECUTION-STATUS + P1W2-HANDOFF + tags phase:integration-p1 wave:integration-w2 engine-raaga
+          image_data: t.Optional(t.Any()),
+          audio_ref: t.Optional(t.Any()),
+          consent: t.Optional(t.Any()),
+          quality: t.Optional(t.Any()),
         }),
       },
     )
