@@ -24,6 +24,9 @@ pub fn generate_mock_analysis(seed: Option<u64>) -> FaceAnalysis {
         elemental_balance: generate_elemental_balance(&mut rng),
         health_indicators: generate_health_indicators(&mut rng),
         is_mock_data: true,
+        // T-027: consent/quality from frozen (None for mock path)
+        consent: None,
+        quality: None,
     }
 }
 
