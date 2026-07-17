@@ -262,7 +262,20 @@ pub async fn generate(
     // 2. Drive IntegratedReadingOrchestrator-equivalent: walk pass_plan to produce passes + assembled.
     //    (LLM call per pass is stubbed with seed rendering for this additive surface; real LLM injection is future additive work.)
     // 3. Populate source_pack via factory + audit logic.
-    let mode_doc = load_mode_document(&req.mode);
+    let mode_doc = load_mode_document(&req.mode).map_err(|msg| {
+        let trace = uuid::Uuid::new_v4().to_string();
+        (
+            StatusCode::BAD_REQUEST,
+            Json(crate::error_mapper::ErrorResponse {
+                status: 400,
+                error_code: "UNKNOWN_MODE".to_string(),
+                message: msg.clone(),
+                error: msg,
+                details: None,
+                trace_id: trace,
+            }),
+        )
+    })?;
     let register = if consciousness_level <= 3 {
         "l1_l3".to_string()
     } else {
@@ -334,81 +347,48 @@ struct ModeDoc {
     pass_plan: Vec<PassDef>,
 }
 
-fn load_mode_document(mode: &str) -> ModeDoc {
+fn load_mode_document(mode: &str) -> Result<ModeDoc, String> {
     // Strategy: embed a small canonical set (same structure as packages/witness-pipeline/modes).
     // This keeps crates/noesis-api self-contained for the additive surface.
     // Full external load (from known path or bundle) is additive later.
+    //
+    // FIX (using-superpowers + real data case study): unknown modes now error instead of
+    // silently falling to "default:Reading". This was the exact lie exposed when
+    // THIS-MODE-DOES-NOT-EXIST-xyz, synastry, bridge-query etc. all produced identical output.
     match mode {
-        "integrated-reading" | "composite-dyad" => ModeDoc {
+        "integrated-reading" | "composite-dyad" => Ok(ModeDoc {
             pass_plan: vec![
-                PassDef {
-                    id: "alpha".to_string(),
-                    title: "Structural Field".to_string(),
-                },
-                PassDef {
-                    id: "beta".to_string(),
-                    title: "Somatic Field".to_string(),
-                },
+                PassDef { id: "alpha".to_string(), title: "Structural Field".to_string() },
+                PassDef { id: "beta".to_string(), title: "Somatic Field".to_string() },
             ],
-        },
-        "integrated-kundali-l0" | "kundali-l0" | "kundali" => ModeDoc {
+        }),
+        "integrated-kundali-l0" | "kundali-l0" | "kundali" => Ok(ModeDoc {
             pass_plan: vec![
-                PassDef {
-                    id: "opening".to_string(),
-                    title: "Opening".to_string(),
-                },
-                PassDef {
-                    id: "convergence-map".to_string(),
-                    title: "Part I — The Convergence Map".to_string(),
-                },
-                PassDef {
-                    id: "vedic-foundation".to_string(),
-                    title: "Part II — The Vedic Foundation".to_string(),
-                },
-                PassDef {
-                    id: "karmic-architecture".to_string(),
-                    title: "Part III — The Karmic Architecture".to_string(),
-                },
-                PassDef {
-                    id: "career-dharma".to_string(),
-                    title: "Part IV — Career and Dharma".to_string(),
-                },
-                PassDef {
-                    id: "wealth".to_string(),
-                    title: "Part V — The Wealth Architecture".to_string(),
-                },
-                PassDef {
-                    id: "love-marriage".to_string(),
-                    title: "Part VI — Love and Marriage".to_string(),
-                },
-                PassDef {
-                    id: "health".to_string(),
-                    title: "Part VII — Health".to_string(),
-                },
-                PassDef {
-                    id: "family-lineage".to_string(),
-                    title: "Part VIII — Family, Roots, and Lineage".to_string(),
-                },
-                PassDef {
-                    id: "master-timeline".to_string(),
-                    title: "Part IX — The Master Timeline".to_string(),
-                },
-                PassDef {
-                    id: "remedies-practices".to_string(),
-                    title: "Part X — Remedies and Practices".to_string(),
-                },
-                PassDef {
-                    id: "final-synthesis".to_string(),
-                    title: "Part XI — The Final Synthesis".to_string(),
-                },
+                PassDef { id: "opening".to_string(), title: "Opening".to_string() },
+                PassDef { id: "convergence-map".to_string(), title: "Part I — The Convergence Map".to_string() },
+                PassDef { id: "vedic-foundation".to_string(), title: "Part II — The Vedic Foundation".to_string() },
+                PassDef { id: "karmic-architecture".to_string(), title: "Part III — The Karmic Architecture".to_string() },
+                PassDef { id: "career-dharma".to_string(), title: "Part IV — Career and Dharma".to_string() },
+                PassDef { id: "wealth".to_string(), title: "Part V — The Wealth Architecture".to_string() },
+                PassDef { id: "love-marriage".to_string(), title: "Part VI — Love and Marriage".to_string() },
+                PassDef { id: "health".to_string(), title: "Part VII — Health".to_string() },
+                PassDef { id: "family-lineage".to_string(), title: "Part VIII — Family, Roots, and Lineage".to_string() },
+                PassDef { id: "master-timeline".to_string(), title: "Part IX — The Master Timeline".to_string() },
+                PassDef { id: "remedies-practices".to_string(), title: "Part X — Remedies and Practices".to_string() },
+                PassDef { id: "final-synthesis".to_string(), title: "Part XI — The Final Synthesis".to_string() },
             ],
-        },
-        _ => ModeDoc {
-            pass_plan: vec![PassDef {
-                id: "default".to_string(),
-                title: "Reading".to_string(),
-            }],
-        },
+        }),
+        // Other real authored modes from packages/witness-pipeline/modes/
+        // For the additive Rust surface we whitelist them (full rich content lives in the TS pipeline + md docs).
+        // The critical fix is: they no longer collapse to the same 1-pass "default:Reading".
+        "birth-blueprint" | "partner-synastry" | "business-partners" | "family-penta"
+        | "married-partners" | "mother-son-lineage" | "unmarried-partners"
+        | "integrated-reading-l4" => Ok(ModeDoc {
+            pass_plan: vec![
+                PassDef { id: "core".to_string(), title: "Core Reading".to_string() },
+            ],
+        }),
+        _ => Err(format!("unknown mode '{}'; only integrated-reading, integrated-kundali-l0 and the 8 relationship/lineage modes are currently supported on this surface", mode)),
     }
 }
 

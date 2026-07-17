@@ -298,6 +298,18 @@ jobs:
         if: steps.smoke-gate.outputs.skip != 'true'
         run: bash scripts/smoke-test-runner.sh "${API_BASE_URL}"
 
+      # The mode contract is checked against the DEPLOYED engine, not just in
+      # `cargo test`. Those drifted before and nobody noticed: /assets/generate
+      # answered every mode with a generic "default: Reading", so a typo'd mode
+      # was indistinguishable from a real reading and a whole fake surface looked
+      # healthy. Unit tests can't catch "green locally, not shipped".
+      - name: Verify mode contract on the deployed engine
+        if: steps.smoke-gate.outputs.skip != 'true'
+        env:
+          ENGINE_URL: ${{ vars.API_BASE_URL }}
+          ENGINE_TOKEN: ${{ secrets.SMOKE_TEST_JWT }}
+        run: node scripts/verify-mode-contract.mjs "${ENGINE_URL}"
+
   admin-smoke:
     name: Admin Smoke Checks
     runs-on: ubuntu-latest
