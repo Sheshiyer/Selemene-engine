@@ -9,8 +9,15 @@
  * engine_id: "raaga"
  */
 
-import type { ConsciousnessEngine, EngineInput, EngineMetadata, EngineOutput } from '../../types'
+import type {
+  ConsciousnessEngine,
+  Consent,
+  EngineInput,
+  EngineMetadata,
+  EngineOutput,
+} from '../../types'
 import { EngineValidationError } from '../../utils'
+import { generateRaagaClip } from './clip'
 import {
   type Dosha,
   MELAKARTAS,
@@ -66,6 +73,14 @@ export class RaagaEngine implements ConsciousnessEngine {
           type: 'boolean',
           required: false,
           description: 'When true, also returns 2–3 alternate ragas of the same dosha affinity.',
+          default: false,
+        },
+        request_clip: {
+          type: 'boolean',
+          required: false,
+          description:
+            'When true AND granted consent is present, render strudel_ratios to an audio clip and ' +
+            'populate generated_audio.clip_url (config: RAAGA_CLIP_MODE=off|local|service). Default false (clip_url stays null).',
           default: false,
         },
       },
@@ -207,18 +222,47 @@ export class RaagaEngine implements ConsciousnessEngine {
     }
 
     // Per FROZEN + T-005/T-031: surface generated_audio at top-level EngineOutput (in addition to result)
-    // strudel_ratios, clip_url (null until server clip gen), root_hz, metadata (melakarta/dosha/prahar support)
+    // strudel_ratios, clip_url (null by default; populated by consent-gated clip gen below), root_hz, metadata
     // Full 72 + dosha/prahar verified here (see wisdom.verifyFull72Melakartas)
     // Supports audio_ref/consent from input (FROZEN samples in tests/harness)
     // Cites (mandatory all): p1-w1-worker-bootstrap-packet.md, resources-and-assets.md, gaps-and-improvements.md, goal-understanding.md,
     // EXECUTION-STATUS.md, P1W2-HANDOFF.md, .worktrees/T-002-copilot/P1W1-CONTRACTS-FROZEN.md, detailed-task-list.md (T-031),
-    // .worktrees/T-024-codex/scripts/ext-contract-harness.ts , ts-engines/src/engines/raaga/*.ts , raaga.md
+    // .worktrees/T-024-codex/scripts/ext-contract-harness.ts , ts-engines/src/engines/raaga/*.ts , raaga.md,
+    // docs/plans/engine-integration/p5-p4-next-batch.json (raaga-clip-generation)
     // tags: phase:integration-p1 wave:integration-w2 area:engine-integration engine-raaga
     // External rail unavailable; Codex subagent. No push/merge.
     const verif = verifyFull72Melakartas() // from wisdom, ensures support
+
+    // raaga-clip-generation (p5-p4-next-batch): consent-gated, config-driven clip path.
+    // request_clip + granted consent → generateRaagaClip (RAAGA_CLIP_MODE=off|local|service, default off).
+    // clip_url stays null when not requested / consent missing / mode off (backward compat per FROZEN).
+    const requestClip = Boolean(input.parameters.request_clip ?? false)
+    const clipConsent = consent as Consent | undefined
+    let clipUrl: string | null = null
+    let clipNote: Record<string, unknown> = { requested: requestClip, status: 'not_requested' }
+    if (requestClip) {
+      if (!clipConsent?.granted) {
+        clipNote = {
+          requested: true,
+          status: 'consent_missing',
+          detail:
+            'request_clip requires granted consent (local-first + explicit consent per goal-understanding.md)',
+        }
+      } else {
+        const clip = await generateRaagaClip({ melakarta: m.num, ratios: m.ratios, rootHz })
+        clipUrl = clip.clip_url
+        clipNote = {
+          requested: true,
+          status: clip.status,
+          mode: clip.mode,
+          ...(clip.detail ? { detail: clip.detail } : {}),
+        }
+      }
+    }
+
     const generatedAudio = {
-      clip_url: null,
-      strudel_ratios: m.ratios,
+      clip_url: clipUrl,
+      strudel_ratios: [...m.ratios],
       root_hz: rootHz,
       metadata: {
         engine: 'raaga',
@@ -227,7 +271,8 @@ export class RaagaEngine implements ConsciousnessEngine {
         dosha_match: dosha ? dosha_affinities[dosha] : null,
         prahar: prahar.label,
         verification: verif, // full 72 + dosha/prahar evidence
-        // timbre/gamaka per T-005 deferred; clip_url for future server gen
+        clip: clipNote, // clip generation outcome (requested/status/mode/detail)
+        // timbre/gamaka per T-005 deferred
       },
     }
 
