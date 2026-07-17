@@ -2,6 +2,8 @@
 //!
 //! Routes to Vedic birth-data-driven analysis when birth_data is provided,
 //! falls back to mock data when absent.
+//! T-026 P2 harden start: Vedic path + capture result mapping to frozen contracts (11 metrics, consent).
+//! Cites: p1-w1-worker-bootstrap-packet.md + resources-and-assets.md + gaps-and-improvements.md + goal-understanding.md + P1W1-CONTRACTS-FROZEN.md + detailed-task-list.md (T-026) + EXECUTION-STATUS.md + noesis-core frozen media (worktree). Keep is_mock for now. Minimal no creep.
 
 use async_trait::async_trait;
 use chrono::Utc;
@@ -112,11 +114,35 @@ impl BiofieldEngine {
     }
 
     /// Perform biofield analysis — routes to Vedic or mock path
+    /// T-026: added capture result mapping branch for frozen contracts (11 metrics, consent)
+    /// refs p1-w1-worker-bootstrap-packet + 3 extraction + FROZEN + detailed-task-list T-026 + EXECUTION-STATUS. Keep is_mock.
     fn analyze(&self, input: &EngineInput) -> Result<AnalysisOutcome, EngineError> {
-        // If birth_data is provided, use real Vedic analysis
+        // If birth_data is provided, use real Vedic analysis (T-026 Vedic path harden)
         if let Some(birth_data) = &input.birth_data {
             let result = self.analyzer.analyze(birth_data, input.current_time)?;
             return Ok(AnalysisOutcome::Vedic(result));
+        }
+
+        // T-026 capture mapping: if consent or image_data-like in options, map to 11-metric frozen shape (biofield-capture contract)
+        let has_capture = input.options.get("image_data").is_some() || input.options.get("consent").is_some() || input.options.get("capture").is_some();
+        if has_capture {
+            // minimal capture mock mapping to 11 metrics per FROZEN (from py: light_quanta... pattern_regularity) + consent echo; keep is_mock
+            let seed = input.options.get("seed").and_then(|v| v.as_u64()).unwrap_or(42);
+            let m = generate_mock_metrics(Some(seed));
+            // extend to 11 via placeholders matching frozen contract example
+            let consent_val = input.options.get("consent").cloned();
+            let qual = input.options.get("quality").cloned();
+            // for result we'll special case in serialize; here return mock with flags
+            let interpretation = "Capture-mapped (11 metrics per frozen; T-026)".to_string();
+            let areas = vec!["see result.metrics for 11 fields".to_string()];
+            return Ok(AnalysisOutcome::Mock(BiofieldAnalysis {
+                metrics: m,
+                interpretation,
+                areas_of_attention: areas,
+                is_mock_data: true,
+                consent: consent_val,
+                quality: qual,
+            }));
         }
 
         // Fall back to mock data
@@ -135,10 +161,13 @@ impl BiofieldEngine {
             interpretation,
             areas_of_attention,
             is_mock_data: true,
+            consent: None,
+            quality: None,
         }))
     }
 
     /// Serialize analysis result to JSON
+    /// T-026: capture result mapping -- when consent present, emit 11-metric frozen shape (see P1W1-CONTRACTS-FROZEN + py 11 keys) + echo consent/quality
     fn serialize_result(analysis: &BiofieldAnalysis) -> Value {
         let chakra_readings: Vec<Value> = analysis
             .metrics
@@ -162,7 +191,7 @@ impl BiofieldEngine {
             })
             .collect();
 
-        json!({
+        let mut res = json!({
             "metrics": {
                 "fractal_dimension": analysis.metrics.fractal_dimension,
                 "entropy": analysis.metrics.entropy,
@@ -175,7 +204,33 @@ impl BiofieldEngine {
             "interpretation": analysis.interpretation,
             "areas_of_attention": analysis.areas_of_attention,
             "is_mock_data": analysis.is_mock_data,
-        })
+        });
+
+        // T-026 capture mapping to frozen (11 metrics + consent) -- used when analyze saw capture flag
+        if analysis.consent.is_some() || analysis.quality.is_some() {
+            // emit 11 per FROZEN example (py sidecar keys + body_symmetry etc); values from base + placeholders for now
+            res["metrics"] = json!({
+                "light_quanta_density": analysis.metrics.fractal_dimension * 1e8,
+                "normalized_area": analysis.metrics.symmetry,
+                "average_intensity": analysis.metrics.vitality_index,
+                "inner_noise": analysis.metrics.entropy,
+                "energy_analysis": {"low": 0.3, "medium": 0.5, "high": 0.2},
+                "entropy_form_coefficient": analysis.metrics.entropy,
+                "fractal_dimension": analysis.metrics.fractal_dimension,
+                "correlation_dimension": analysis.metrics.coherence,
+                "body_symmetry": analysis.metrics.symmetry,
+                "contour_complexity": analysis.metrics.entropy,
+                "pattern_regularity": analysis.metrics.coherence,
+            });
+            if let Some(c) = &analysis.consent {
+                res["consent"] = c.clone();
+            }
+            if let Some(q) = &analysis.quality {
+                res["quality_assessment"] = q.clone();
+            }
+            res["computation_mode"] = json!("capture-mock");
+        }
+        res
     }
 }
 
@@ -244,7 +299,12 @@ impl ConsciousnessEngine for BiofieldEngine {
 
         let mut result = Self::serialize_result(analysis);
 
-        if analysis.is_mock_data {
+        if analysis.consent.is_some() {
+            // T-026 capture: preserve 11-metric + consent from serialize (frozen contract); no full mock notice
+            if result.get("computation_mode").is_none() {
+                result["computation_mode"] = json!("capture-mock");
+            }
+        } else if analysis.is_mock_data {
             result["notice"] = json!(
                 "This is simulated data. Full biofield analysis requires PIP hardware integration."
             );
@@ -701,5 +761,34 @@ mod tests {
                 assert!((0.0..=1.0).contains(&val), "{} {} out of range", field, val);
             }
         }
+    }
+
+    // T-026 P2 start roundtrip test: capture mapping to frozen (11 metrics, consent)
+    // refs extraction files + FROZEN + bootstrap + detailed-task-list T-026 + EXECUTION-STATUS. Keep is_mock.
+    #[tokio::test]
+    async fn test_calculate_capture_roundtrip_maps_to_frozen_11_metrics_consent() {
+        let engine = BiofieldEngine::new();
+        let mut options = HashMap::new();
+        options.insert("capture".to_string(), json!(true));
+        options.insert("consent".to_string(), json!({"granted":true,"scopes":["biofield-capture"],"timestamp":"2026-07-17T12:00:00Z"}));
+
+        let input = EngineInput {
+            birth_data: None,
+            current_time: Utc::now(),
+            location: None,
+            precision: Precision::Standard,
+            options,
+        };
+
+        let output = engine.calculate(input).await.unwrap();
+        assert_eq!(output.engine_id, "biofield");
+        let res = &output.result;
+        // 11 metrics present per frozen contract
+        let m = res.get("metrics").expect("metrics");
+        for key in ["light_quanta_density", "normalized_area", "average_intensity", "inner_noise", "energy_analysis", "entropy_form_coefficient", "fractal_dimension", "correlation_dimension", "body_symmetry", "contour_complexity", "pattern_regularity"] {
+            assert!(m.get(key).is_some(), "missing 11-metric key in capture map: {}", key);
+        }
+        assert!(res.get("consent").is_some(), "consent echoed for frozen");
+        assert_eq!(res.get("computation_mode").and_then(|v| v.as_str()), Some("capture-mock"));
     }
 }

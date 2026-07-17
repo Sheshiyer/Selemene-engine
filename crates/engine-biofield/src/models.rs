@@ -5,6 +5,7 @@
 
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
+use serde_json::Value;
 
 /// Core biofield metrics from PIP analysis
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -108,6 +109,13 @@ pub struct BiofieldAnalysis {
     /// Always true for stub implementation
     /// Full implementation with PIP hardware will set this to false
     pub is_mock_data: bool,
+
+    // T-026 P2 start: capture result mapping to frozen contracts (11 metrics + consent)
+    // refs: p1-w1-worker-bootstrap-packet.md + resources-and-assets.md + gaps-and-improvements.md + goal-understanding.md + P1W1-CONTRACTS-FROZEN.md (11 metrics from py sidecar + sankalpa) + detailed-task-list T-026 + EXECUTION-STATUS + noesis-core frozen media types. Keep is_mock for now.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub consent: Option<Value>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub quality: Option<Value>,
 }
 
 #[cfg(test)]

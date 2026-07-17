@@ -394,6 +394,8 @@ mod tests {
             interpretation: "Test interpretation".to_string(),
             areas_of_attention: vec!["Test area".to_string()],
             is_mock_data: true,
+            consent: None,
+            quality: None,
         }
     }
 
@@ -449,6 +451,8 @@ mod tests {
             interpretation: String::new(),
             areas_of_attention: vec![],
             is_mock_data: true,
+            consent: None,
+            quality: None,
         };
 
         // Low coherence metrics
@@ -459,6 +463,8 @@ mod tests {
             interpretation: String::new(),
             areas_of_attention: vec![],
             is_mock_data: true,
+            consent: None,
+            quality: None,
         };
 
         let prompts1 = generate_witness_prompts(&analysis1);
@@ -483,6 +489,8 @@ mod tests {
                 interpretation: String::new(),
                 areas_of_attention: vec![],
                 is_mock_data: true,
+                consent: None,
+                quality: None,
             };
             let prompt = generate_witness_prompt(&analysis);
 
