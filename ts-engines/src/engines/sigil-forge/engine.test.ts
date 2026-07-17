@@ -4,6 +4,7 @@ import { buildSigilPrompt } from './prompt-builder'
 import { SIGIL_METHODS } from './wisdom'
 import type { ImageProvider } from '../../providers/image-provider'
 import { MockImageProvider, createImageProvider } from '../../providers/image-provider' // T-035 provider tests
+import { buildYantraPrompt } from '../../providers/kimi' // T-061 yantra templates
 
 type SigilForgeResult = {
   intention?: string
@@ -185,5 +186,26 @@ describe('SigilForgeEngine with ImageProvider (T-035)', () => {
     })
     expect((output.result as any).provider).toBe('nano-banana')
     expect((output as any).generated_image?.metadata?.provider).toBe('nano-banana')
+  })
+
+  // T-061 kimi provider + yantra prompt templates
+  it('config-only switch to kimi provider (selectable, mock-safe)', async () => {
+    const prov = createImageProvider({ provider: 'kimi' })
+    const engine = new SigilForgeEngine(prov)
+    const output = await engine.calculate({
+      consciousness_level: 1,
+      parameters: { intention: 'I manifest clarity through sacred form', generate_image: true, image_style: 'yantra' },
+    })
+    expect((output.result as any).provider).toBe('kimi')
+    expect((output as any).generated_image?.metadata?.provider).toBe('kimi')
+    expect((output as any).generated_image?.b64_json).toBeDefined()
+  })
+
+  it('yantra prompt template produces precise sacred geometry (T-061)', () => {
+    const yan = buildYantraPrompt('I attract divine harmony')
+    expect(yan.prompt).toContain('yantra')
+    expect(yan.prompt).toContain('interlocking triangles')
+    expect(yan.negative_prompt).toContain('text')
+    expect(yan.style).toBe('yantra')
   })
 })
