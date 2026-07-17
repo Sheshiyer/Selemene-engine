@@ -1022,8 +1022,8 @@ async fn assets_generate_modes_are_differentiated() {
             .collect()
     }
 
-    let reading = pass_ids(&router, &token, "integrated-reading").await;
-    let kundali = pass_ids(&router, &token, "integrated-kundali-l0").await;
+    let reading = pass_ids(router, &token, "integrated-reading").await;
+    let kundali = pass_ids(router, &token, "integrated-kundali-l0").await;
 
     assert_ne!(
         reading, kundali,
