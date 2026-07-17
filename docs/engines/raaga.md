@@ -3,6 +3,8 @@
 
 > **Note (2026-06-30):** `apps/noesis-web` has been retired. Engine renderers are being ported to [Sankalpa](../../sankalpa/). Paths referencing `apps/noesis-web` below are historical.
 
+> **🧊 P1 W1 Frozen (2026-07-17):** Contracts per [P1W1-CONTRACTS-FROZEN.md](../plans/engine-integration/P1W1-CONTRACTS-FROZEN.md) (worktree `.worktrees/T-002-copilot`). EngineInput/Output media, capture lifecycle, image provider, raaga audio locked (T-002+). Cite extraction: goal-understanding.md, resources-and-assets.md, gaps-and-improvements.md. See updated engine-matrix.json. Do not mutate w/o re-freeze. Handoff W2.
+
 Carnatic **melakarta** sound-therapy: takes a melakarta number/name (or auto-selects by dosha × time-of-day) and returns its just-intonation swaras, shruti indices, chakra/dosha context, prahar timing, and Strudel-compatible ratio arrays so the web `RaagaPlayer` can render the raga as sound. Distinct from NadaBrahman (which *recommends* a raga); Raaga gives a chosen melakarta its full musical + therapeutic profile (`engine.ts:1-10`).
 
 ## 1. Identity

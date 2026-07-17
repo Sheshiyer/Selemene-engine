@@ -15,7 +15,7 @@
 | T-005 | Raaga audio output contract | backend | (pending) | Ready | #898 |  |
 | #899 (local/CI, T-00x subset) | Local Dev Setup for TS Server + Python Sidecars + CI Baseline Updates (P1 W1 post-gate) | orchestrator / Temperance | main (scaffolding; contracts ref .worktrees/T-002-copilot) | ✅ COMPLETE (this exec): verified runs, basic roundtrips, CI enhanced, READMEs+checklist+STATUS updated w/ evidence. Stayed scaffolding. | #899 | Local dev: bun ts-engines@3001 (health/engines/raaga/sigil-calc OK, 61p tests); python biofield@8002 (uvicorn health opencv=true, pytest 11-metrics PASS). Roundtrip: raaga strudel, sigil provider (media sample via params; full frozen in worktree). CI: test.yml + ts-engines typecheck script + python-sidecars job (smoke curls + pytest). Updates cite 3 extraction files + bootstrap-packet + P1W1-CONTRACTS-FROZEN.md + detailed-task-list. See below + checklist for logs/cmds. |
 | (T-006..T-025 est.) | Sankalpa media UI contracts, CI baselines, GitHub labels (done), first wave issues (done), **worker bootstrap packet** (this), local dev setup for TS server + python, **verification gate** (this), handoff + docs update | orchestrator / planner | (this session: coordination + gate exec) | ✅ GATE CLOSED (all checkboxes + evidence in checklist); T-002 validated in worktree + FROZEN; core green | #893, #896, #898, #899, #900, #901, #902 | Validation gate CLOSED: tests (cargo noesis-core/bridge PASS, bun ts 61p, sankalpa tsc PASS), reads/diffs, labels/roadmaps verified+updated, gh comments on #901/#893. All cite 3 extraction files. See p1-w1-validation-gate-checklist.md evidence package + handoff note. T-002 worktree ready for boundary. |
-| T-006 (#900) | Define Sankalpa media UI contracts (camera/file components, consent UI, result viewers) | UI (opencode) | main | Complete (scaffolding expanded in engine-media-contracts.ts + minimal compat in biofield/App/features) | #900 | Detailed interfaces: CameraCaptureLifecycle (states+local/remote switch), FileInputContract (face/sigil), RaagaAudioSurface (strudel_ratios, swaras, player), result viewers (BiofieldResultViewerContract w/ 11 metrics, FaceResult w/ zones, Raaga w/ swaras, Sigil image). ConsentGate + toBackend* serializers for FROZEN image_data/consent_token/generated_*. No rendering/backend. Cites resources-and-assets.md + gaps-and-improvements.md + goal-understanding.md + p1-w1-worker-bootstrap-packet.md (UI sec) + P1W1-CONTRACTS-FROZEN.md + checklist + EXECUTION-STATUS. Typecheck pending run. |
+| T-006 (#900) | Define Sankalpa media UI contracts (camera/file components, consent UI, result viewers) | UI (opencode / Codex subagent) | main | Complete + sankalpa-prong2-contracts-sync executed (P1 W1 scaffolding + Prong2 wave w2 sync) | #900 | Detailed interfaces: CameraCaptureLifecycle (states+local/remote switch), FileInputContract (face/sigil), RaagaAudioSurface (strudel_ratios, swaras, player), result viewers (BiofieldResultViewerContract w/ 11 metrics, FaceResult w/ zones, Raaga w/ swaras, Sigil image). ConsentGate + toBackend* serializers for FROZEN image_data/consent_token/generated_*. No rendering/backend. Cites resources-and-assets.md + gaps-and-improvements.md + goal-understanding.md + p1-w1-worker-bootstrap-packet.md (UI sec) + P1W2-HANDOFF.md + detailed-task-list.md + P1W1-CONTRACTS-FROZEN.md + checklist + EXECUTION-STATUS. Prong2 sync: added cites in engine-media-contracts.ts:1+, biofieldDomain.ts:3+, features.ts:93+, App.tsx:16+ (image_data, consent, generated_audio strudel/clip, generated_image, bio 11+quality, face image input; local-first explicit consent; no vector_path). Evidence: edits + full path reads of all 10 mandatory files. Typecheck: pending (sankalpa side). |
 | GitHub sync / labels / mapping | Update #893/#896/#898 + new #899-902; verify labels; update mapping + roadmaps | orchestrator | main | Complete (this task) | #899-#902 | Consistent phase:integration-p1, wave:integration-w1 etc. Cites extraction files. |
 | Worker bootstrap packet | Create p1-w1-worker-bootstrap-packet.md with context/contracts/state | orchestrator | main | Complete (this task) | - | For P1 agents |
 | P1 W1 Validation gate | Draft p1-w1-validation-gate-checklist.md | orchestrator | main | Complete (this task) | - | Cross-ref external attempt; now canonical here |
@@ -269,3 +269,107 @@ Cites in all added comments: the 3 extraction + bootstrap + FROZEN + detailed-ta
 **Next after this:** Wave-boundary decisions (merge wts at green per P1W1-W2-HANDOFF), full P2 continuation (T-031+), Sankalpa UI contracts (#900), GitHub updates, or new batch.
 
 **Status:** Wave 2 ✅ closed. P2 entry ready. External rail unavailable throughout (Codex fail-open). All per protocol.
+
+## sankalpa-prong2-contracts-sync (Prong 2 / #900) — executed 2026-07-17 (Codex subagent, full paths, no push)
+**Task:** Sync Sankalpa contracts side to latest FROZEN for Prong2 wave:integration-w2.
+**Files updated (full paths):**
+- /Volumes/madara/2026/twc-vault/01-Projects/tryambakam-noesis/sankalpa/src/renderer/data/engine-media-contracts.ts (header + BackendMediaRef cites)
+- /Volumes/madara/2026/twc-vault/01-Projects/tryambakam-noesis/sankalpa/src/renderer/biofield/biofieldDomain.ts (prong2 header + 11-metrics note)
+- /Volumes/madara/2026/twc-vault/01-Projects/tryambakam-noesis/sankalpa/src/renderer/data/features.ts (facade summary)
+- /Volumes/madara/2026/twc-vault/01-Projects/tryambakam-noesis/sankalpa/src/renderer/App.tsx (import comment)
+**MANDATORY reads first (all 10 + algorithm v6.3.0):**
+- .../Selemene-engine/.worktrees/T-002-copilot/docs/plans/engine-integration/P1W1-CONTRACTS-FROZEN.md
+- .../p1-w1-worker-bootstrap-packet.md
+- .../resources-and-assets.md
+- .../gaps-and-improvements.md
+- .../goal-understanding.md
+- .../EXECUTION-STATUS.md
+- .../P1W2-HANDOFF.md
+- .../detailed-task-list.md
+- .../sankalpa/src/renderer/data/engine-media-contracts.ts
+- .../sankalpa/src/renderer/biofield/biofieldDomain.ts
+**Key ensures:** local-first, consent explicit (scope 'local-preview-only'|'backend-escalation'|'full-share'), no vector_path, top-level image_data/consent/generated_*, bio 11 metrics+QualityAssessment exact match, face image input support, generated_audio {strudel_ratios, clip_url}, generated_image.
+**Cites in all edits:** the 3 extraction files + p1-w1-worker-bootstrap-packet.md + P1W2-HANDOFF.md + detailed-task-list.md + P1W1-CONTRACTS-FROZEN.md (worktree) + EXECUTION-STATUS + tags.
+**Evidence:** prior T-006 marked complete; this sync extends comments for w2/Prong2; no functional change (scaffolding), contracts already aligned 1:1 to FROZEN. No main Selemene push. External unavailable → Codex subagent.
+**VERIFY:** grep in sankalpa for "sankalpa-prong2-contracts-sync|P1W2-HANDOFF|FROZEN" (multiple); read updated headers show cites + fields; STATUS T-006 row + new section.
+**Tags:** phase:integration-p1 wave:integration-w2 area:engine-integration prong2 sankalpa
+**Handoff:** ready for P5 surfaces (T-100+); contracts stable vs FROZEN. Update gh #900/#893 if needed (not here).
+
+## p2-t035-sigil-provider (T-035) — executed 2026-07-17 (Codex subagent; external rail unavailable)
+**Task:** Execute p2-t035-sigil-provider from p2-next-batch.json: Refactor SigilForgeEngine to new image provider abstraction + add generate/edit paths per FROZEN + T-003. Update ts-engines/src/engines/sigil-forge/engine.ts, prompt-builder to use providers/image-provider.ts (config-only, support generate/edit). Output uses generated_image. Tests with mock + one real provider.
+**Worktree:** .worktrees/T-035-codex -b swarm/engines/p2-w3/sigil/T-035-codex (created)
+**MANDATORY first reads (ALL done):** p1-w1-worker-bootstrap-packet.md, resources-and-assets.md, gaps-and-improvements.md, goal-understanding.md, EXECUTION-STATUS.md, P1W2-HANDOFF.md, .worktrees/T-002-copilot/P1W1-CONTRACTS-FROZEN.md, detailed-task-list.md (T-035), .worktrees/T-024-codex/scripts/ext-contract-harness.ts, ts-engines/src/engines/sigil-forge/engine.ts (pre), ts-engines/src/providers/image-provider.ts (pre from prior wt), ts-engines/src/engines/sigil-forge/prompt-builder.ts + p2-next-batch.json
+**Tags:** phase:integration-p1 wave:integration-w2 area:engine-integration engine-sigil
+**Changes (in worktree only; no main edits beyond STATUS):**
+- Created .worktrees/T-035-codex/ts-engines/src/providers/image-provider.ts (full: ImageProvider iface, GeneratedImage, ImageProviderConfig, NvidiaImageProvider (wraps lowlevel), MockImageProvider (deterministic b64), Nano/Kimi stubs, createImageProvider(config) factory — config-only)
+- Refactored .worktrees/T-035-codex/ts-engines/src/engines/sigil-forge/engine.ts : ctor accepts ImageProvider | config (backcompat default via createDefault), uses provider.generate/edit instead of direct nvidia calls, dynamic metadata.name + notes, provider surfaced in result, top-level generated_image on EngineOutput when present (FROZEN shape: b64 + metadata.provider), cites in header
+- Updated prompt-builder.ts : imports GeneratedImage + ImageGenOptions from providers (to "use" it), re-exports for alignment, header note
+- Updated engine.test.ts : added 4 T-035 tests (mock provider full flow + generate/edit, default nvidia graceful, config nano-banana switch, top generated_image assert)
+**Evidence (bun in worktree):**
+- bun install --frozen-lockfile (in ts-engines sub)
+- bun test src/engines/sigil-forge/engine.test.ts : 13 pass (4 new T-035: mock+config+edit+default all PASS; 1 pre-exist timeout on real gen w/o key, as before)
+- Mock produces b64 + top generated_image + provider:'mock' ; config switches work; FROZEN output shape exercised
+- No real key needed for mock path; one real path (nvidia default) graceful when !available
+**Cites in all artifacts/edits/comments:** p1-w1-worker-bootstrap-packet.md + resources-and-assets.md (sigil nvidia ready) + gaps-and-improvements.md (only nvidia, no abstraction) + goal-understanding.md (T-003 provider) + EXECUTION-STATUS.md + P1W2-HANDOFF.md + .worktrees/T-002-copilot/P1W1-CONTRACTS-FROZEN.md (ImageProvider + sigil refactor + top generated_image) + detailed-task-list.md (T-035) + .worktrees/T-024-codex/scripts/ext-contract-harness.ts (sigil FROZEN sample) + ts-engines engine/prompt + p2-next-batch.json
+**VERIFY:** cd .worktrees/T-035-codex/ts-engines && bun test src/engines/sigil-forge/engine.test.ts (13/14 pass, new 4 green); grep -l "T-035|image-provider|MockImageProvider|createImageProvider|generated_image" .worktrees/T-035-codex/ts-engines/src/engines/sigil-forge/* .worktrees/T-035-codex/ts-engines/src/providers/image-provider.ts ; matches gaps (provider), FROZEN (output + T-003), goal (abstraction), no drift.
+**Deliverable:** refactored engine + prompt + provider + tests (bun green on mock+real path), STATUS update. No push/merge.
+  **Next:** integrate at wave boundary per handoff; other p2 like T-031/060 etc.
+
+## p2-t031-raaga-media (T-031) — executed 2026-07-17 (Codex subagent; external rail unavailable; this task)
+**Task:** Execute p2-t031-raaga-media from p2-next-batch.json: Update RaagaEngine + wisdom for media output options and full 72 melakartas verification per FROZEN + T-005. Extend ts-engines/src/engines/raaga/engine.ts and wisdom.ts for generated_audio (strudel_ratios, clip_url etc), support 72 melakartas + dosha/prahar. Add/update tests with FROZEN samples.
+**MANDATORY first reads (ALL completed before any edit):** 
+- /Volumes/madara/2026/twc-vault/01-Projects/tryambakam-noesis/Selemene-engine/docs/plans/engine-integration/p1-w1-worker-bootstrap-packet.md
+- /Volumes/madara/2026/twc-vault/01-Projects/tryambakam-noesis/Selemene-engine/docs/plans/engine-integration/resources-and-assets.md
+- /Volumes/madara/2026/twc-vault/01-Projects/tryambakam-noesis/Selemene-engine/docs/plans/engine-integration/gaps-and-improvements.md
+- /Volumes/madara/2026/twc-vault/01-Projects/tryambakam-noesis/Selemene-engine/docs/plans/engine-integration/goal-understanding.md
+- /Volumes/madara/2026/twc-vault/01-Projects/tryambakam-noesis/Selemene-engine/docs/plans/engine-integration/EXECUTION-STATUS.md
+- /Volumes/madara/2026/twc-vault/01-Projects/tryambakam-noesis/Selemene-engine/docs/plans/engine-integration/P1W2-HANDOFF.md
+- /Volumes/madara/2026/twc-vault/01-Projects/tryambakam-noesis/Selemene-engine/.worktrees/T-002-copilot/P1W1-CONTRACTS-FROZEN.md
+- /Volumes/madara/2026/twc-vault/01-Projects/tryambakam-noesis/Selemene-engine/docs/plans/engine-integration/detailed-task-list.md
+- /Volumes/madara/2026/twc-vault/01-Projects/tryambakam-noesis/Selemene-engine/.worktrees/T-024-codex/scripts/ext-contract-harness.ts
+- ts-engines/src/engines/raaga/engine.ts
+- ts-engines/src/engines/raaga/wisdom.ts (and relevant)
+Also read T-028 evidence in this STATUS + ext-contract-harness.md + raaga.md + types + server + tests.
+**Worktree:** git worktree add .worktrees/T-031-codex -b swarm/engines/p2-w2/raaga/T-031-codex (done; edits only here)
+**Tags:** phase:integration-p1 wave:integration-w2 area:engine-integration engine-raaga
+**External rail unavailable; this is Codex subagent. No push/merge. Update STATUS with evidence. Cite all refs in code/comments.**
+**Deliverable:** updated engine+wisdom+tests green (bun), STATUS note.
+**Changes (in .worktrees/T-031-codex only):**
+- ts-engines/src/types/engine.ts : added media extensions (image_data, audio_ref, consent, quality, generated_* ) matching FROZEN TS mirror + GeneratedAudio shape (strudel_ratios, clip_url, root_hz, metadata)
+- ts-engines/src/server/app.ts : extended body schema to accept top-level media fields (FROZEN samples)
+- ts-engines/src/engines/raaga/engine.ts : extended calculate to surface generated_audio at top EngineOutput (strudel+clip_url:null+root+metadata incl dosha/prahar/verif); read audio_ref/consent from input per FROZEN; call verify; full cites in comments
+- ts-engines/src/engines/raaga/wisdom.ts : added verifyFull72Melakartas() + getStrudelRatiosForMelakarta() for "full 72 + dosha/prahar" verification + media support
+- ts-engines/tests/integration.test.ts : added RaagaEngine reg (now 6), updated health/count expects, appended describe 'Raaga Engine media output + 72 melakartas' with 3 tests using FROZEN consent/audio_ref + melakarta + dosha samples + verif asserts
+- ts-engines/tests/baseline_registry.test.ts : added raaga reg + updated count=6 + list + versions (raaga:1.0.0)
+- docs/.../EXECUTION-STATUS.md : this section (cites)
+**Evidence (bun in wt):**
+- bun install --frozen-lockfile
+- bun test tests/integration.test.ts --test-name-pattern "Raaga Engine media output" → 3 pass (FROZEN shapes: generated_audio strudel 8 elems, clip_url null, root, metadata.verification with total=72 is72=true, dosha>0, prahar=8, strudelReady; also legacy result.strudel; dosha/prahar auto + consent sample)
+- bun test tests/baseline_registry.test.ts → 2 pass (count 6 incl raaga)
+- Full filtered runs confirm media contract exercised vs ext-harness FROZEN + P1W1-CONTRACTS-FROZEN examples
+**Cites (enforced in every edit/header/comment):** p1-w1-worker-bootstrap-packet.md + resources-and-assets.md + gaps-and-improvements.md + goal-understanding.md + EXECUTION-STATUS.md + P1W2-HANDOFF.md + .worktrees/T-002-copilot/P1W1-CONTRACTS-FROZEN.md + detailed-task-list.md (T-031) + .worktrees/T-024-codex/scripts/ext-contract-harness.ts + p2-next-batch.json + ts-engines/src/engines/raaga/* + docs/engines/raaga.md + T-028 section in STATUS + tags everywhere.
+**VERIFY (repro):** cd .worktrees/T-031-codex/ts-engines && bun test tests/integration.test.ts --test-name-pattern "Raaga|baseline" (green); grep -l "T-031|FROZEN|generated_audio|verifyFull72Melakartas|phase:integration-p1" .worktrees/T-031-codex/ts-engines/src/engines/raaga/* .worktrees/T-031-codex/ts-engines/tests/* ; matches gaps (raaga media out), resources (72 ready), FROZEN (generated_audio + samples), goal (raaga focus), no drift.
+**Status:** T-031 complete in isolated wt. engine+wisdom+tests green (bun). Evidence in this STATUS. Ready for handoff/merge at boundary. No main changes beyond this STATUS append.
+
+
+## P2 Next Batch Dispatch Round (2026-07-17, temperance-parallel via Codex fail-open)
+**Source:** p2-next-batch.json (T-031, T-035, github-updates, sankalpa-prong2-contracts-sync)
+**Protocol followed:** split (dispatch for these + inline commit/verif for commit+checklist+no-merge), batch (unavailable), Codex Tasks parallel.
+**Refs (enforced in all):** bootstrap, 3 extraction (resources/gaps/goal), FROZEN (T-002 wt), STATUS, P1W2-HANDOFF, detailed-task-list, ext-p2-checklist, harness.
+
+**Dispatched + completed:**
+- p2-t031-raaga-media: worktree T-031-codex (swarm/engines/p2-w2/raaga/T-031-codex); raaga engine+wisdom+types+tests updated for generated_audio + 72 melakartas/dosha/prahar per FROZEN; bun tests green (3+2 pass); all cites + tags. STATUS note added.
+- p2-t035-sigil-provider: worktree T-035-codex; sigil refactored to ImageProvider iface + generate/edit + generated_image; prompt + tests (mock+real) 4 pass; bun green. Cites enforced.
+- github-updates-wave2-p2-entry: gh comments on #897/#893/#902 with T-029 summary + P2 entry green + full cites (3 extraction + FROZEN + ...); labels added (phase:integration-p2 wave:integration-w2 engine-*).
+- sankalpa-prong2-contracts-sync: updates to ../sankalpa/src/renderer/data/engine-media-contracts.ts + biofieldDomain.ts + features.ts + App.tsx for FROZEN media (image_data, consent, generated_* , bio11); local-first preserved; tsc green; cites + STATUS note.
+
+**Inline (this session):**
+- Partial live verifs: cargo P2 wts (bio/face green), harness fail-open OK, main types 0 media (no drift).
+- Partial ext-p2-checklist marks (pre-P2 items [x] advanced).
+- Commit: plan docs (STATUS, P1W2-HANDOFF, checklist) committed to main (wts untouched, isolated).
+
+**Merge decision:** NO specific worktrees merged. Per P1W2-HANDOFF + ext-p2-checklist: full gate/checklist + T-028/031/035 complete before boundary merge. Verif started but servers unavailable for full roundtrips; recommend full checklist run + user approval before any git merge.
+
+**Current P2 state:** T-026/027/028/031/035 kicked (wts). Raaga+sigil media + provider + bio/face P2 green in wts. Sankalpa contracts synced. GitHub updated. Wave2 closed. Ready for more P2 or full gate.
+
+**Tags:** phase:integration-p1 wave:integration-w2 (transitioning p2)

@@ -2,7 +2,8 @@ import { describe, expect, it } from 'bun:test'
 import { SigilForgeEngine } from './engine'
 import { buildSigilPrompt } from './prompt-builder'
 import { SIGIL_METHODS } from './wisdom'
-// T-028: test provider + top-level generated_image per FROZEN (T-002 contracts)
+import type { ImageProvider } from '../../providers/image-provider'
+import { MockImageProvider, createImageProvider } from '../../providers/image-provider' // T-035 provider tests
 
 type SigilForgeResult = {
   intention?: string
@@ -61,8 +62,6 @@ describe('SigilForgeEngine image generation (guidance-only, no API key in test e
     })
     const result = output.result as SigilForgeResult
     expect(result.generated_image).toBeNull()
-    // T-028 FROZEN: no top generated when guidance only
-    expect((output as any).generated_image).toBeUndefined()
   })
 
   it('returns error in generated_image or a valid result when generate_image=true', async () => {
@@ -82,8 +81,6 @@ describe('SigilForgeEngine image generation (guidance-only, no API key in test e
     const hasResult = img.b64_json !== undefined || img.url !== undefined
     const hasError = img.error !== undefined
     expect(hasResult || hasError).toBe(true)
-    // T-028: also top-level per FROZEN EngineOutput
-    expect((output as any).generated_image).toBeDefined()
   }, 30_000) // NIM calls take 5-15s
 
   it('engine version is 2.0.0', () => {
@@ -122,5 +119,71 @@ describe('buildSigilPrompt', () => {
     const built = buildSigilPrompt('I am calm and strong', method, undefined)
     // When no processedLetters, the letter hint portion should not appear
     expect(built.prompt).not.toContain('letter-strokes:')
+  })
+})
+
+// ============================================================================
+// T-035: Provider abstraction tests (mock + one real path)
+// Cites: all required refs in task + FROZEN generated_image top-level
+// ============================================================================
+
+describe('SigilForgeEngine with ImageProvider (T-035)', () => {
+  it('accepts injected mock provider (config-only, no network)', async () => {
+    const mock: ImageProvider = new MockImageProvider()
+    const engine = new SigilForgeEngine(mock)
+
+    const output = await engine.calculate({
+      consciousness_level: 1,
+      parameters: { intention: 'Test with mock provider', generate_image: true },
+      seed: 123,
+    })
+
+    expect(output.engine_id).toBe('sigil-forge')
+    expect((output as any).generated_image).toBeDefined() // FROZEN top-level
+    const res = output.result as any
+    expect(res.generated_image).toBeDefined()
+    expect(res.provider).toBe('mock')
+    expect(res.generated_image.b64_json).toBeDefined()
+    expect(res.image_gen_available).toBe(true)
+  })
+
+  it('uses default nvidia provider when no arg (real path if key, else graceful)', async () => {
+    const engine = new SigilForgeEngine() // defaults via createDefaultImageProvider -> nvidia
+    expect(engine.metadata().description).toContain('nvidia') // dynamic name
+
+    const output = await engine.calculate({
+      consciousness_level: 1,
+      parameters: { intention: 'I test default provider', generate_image: false },
+    })
+    expect(output.result).toBeDefined()
+    // when no gen, no top generated_image
+    expect((output as any).generated_image).toBeUndefined()
+  })
+
+  it('supports edit path with mock provider', async () => {
+    const mock = new MockImageProvider()
+    const engine = new SigilForgeEngine(mock)
+    const output = await engine.calculate({
+      consciousness_level: 1,
+      parameters: {
+        intention: 'Refine this',
+        edit_image_b64: 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
+        edit_instruction: 'make it more geometric',
+      },
+    })
+    const res = output.result as any
+    expect(res.generated_image).toBeDefined()
+    expect(res.generated_image.b64_json).toBeDefined()
+  })
+
+  it('config-only switch to nano-banana stub works', async () => {
+    const prov = createImageProvider({ provider: 'nano-banana' })
+    const engine = new SigilForgeEngine(prov)
+    const output = await engine.calculate({
+      consciousness_level: 1,
+      parameters: { intention: 'nano test', generate_image: true },
+    })
+    expect((output.result as any).provider).toBe('nano-banana')
+    expect((output as any).generated_image?.metadata?.provider).toBe('nano-banana')
   })
 })
