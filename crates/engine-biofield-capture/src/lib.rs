@@ -73,6 +73,8 @@ impl BiofieldCaptureEngine {
     }
 
     fn build_result(reading: &Reading) -> Value {
+        // T-065: mapping from python real-CV (mediapipe) 11 metrics in result_data -> FROZEN shape
+        // phase:integration-p1 wave:integration-w2 engine-biofield ; refs T-026, FROZEN, detailed T-065
         json!({
             "available": true,
             "reading_id": reading.id,

@@ -38,6 +38,13 @@ def test_health_includes_numpy_availability() -> None:
     assert isinstance(data["numpy_available"], bool)
 
 
+def test_health_includes_mediapipe_availability() -> None:
+    response = client.get("/health")
+    data = response.json()
+    assert "mediapipe_available" in data
+    assert isinstance(data["mediapipe_available"], bool)
+
+
 def test_health_status_is_healthy() -> None:
     response = client.get("/health")
     data = response.json()

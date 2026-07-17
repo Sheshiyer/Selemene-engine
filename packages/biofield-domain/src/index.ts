@@ -61,6 +61,9 @@ export interface QualityAssessment {
 }
 
 export interface BiofieldMetrics {
+  // T-065: 11+ real CV metrics from python biofield_cv (mediapipe selfie seg primary)
+  // mapped to FROZEN; phase:integration-p1 wave:integration-w2 engine-biofield
+  // see python-services/biofield_cv_service/analyze.py + T-026
   light_quanta_density: number;
   normalized_area: number;
   average_intensity: number;
