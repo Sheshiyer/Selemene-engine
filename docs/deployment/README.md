@@ -29,6 +29,7 @@ Deployment is infrastructure for a reflection-first system: operational reliabil
    # export REDIS_URL=redis://localhost:6379
    # export DATABASE_URL=postgresql://postgres:password@localhost:5432/selemene
    # export SWISS_EPHEMERIS_PATH=./data/ephemeris
+   # For P1 W1 contracts: TS + python sidecars (see below)
    ```
 
 3. **Start the engine**
@@ -40,6 +41,39 @@ Deployment is infrastructure for a reflection-first system: operational reliabil
    ```bash
    curl http://localhost:8080/health/live
    ```
+
+### P1 W1 Local Dev: TS-engines (Bun :3001) + Python Biofield CV Sidecar (:8002)
+
+For testing media contracts (EngineInput/Output extensions, raaga audio, biofield capture, sigil image) end-to-end per plan:
+
+See dedicated docs (reference extraction files + bootstrap + checklist):
+- `ts-engines/README.md` (created for P1 W1)
+- `python-services/README.md` (updated)
+- `docs/plans/engine-integration/p1-w1-validation-gate-checklist.md` (CI/local section)
+
+**TS server (Bun):**
+```bash
+cd ts-engines
+bun install
+bun run dev   # http://localhost:3001 (PORT= env)
+curl http://localhost:3001/health
+# POST /engines/raaga/calculate or sigil-forge (media fields for contracts)
+```
+
+**Python biofield_cv (for T-004 capture contracts):**
+```bash
+cd python-services
+python -m venv .venv && source .venv/bin/activate
+pip install -e ".[dev]"
+biofield-cv-service  # or uvicorn ... --port 8002
+curl http://localhost:8002/health
+```
+
+**Integration note (noesis-api):** `PYTHON_BIOFIELD_URL=http://127.0.0.1:8002` ; TS via bridge default localhost:3001. See crates/noesis-api/src/biofield_client.rs .
+
+**Consent / local-first:** Per goal-understanding.md — Sankalpa handles explicit opt-in + local preview; these are backend only. 
+
+(Full Rust server still `cargo run --bin noesis-server` after sidecars.)
 
 ### Environment Variables
 
