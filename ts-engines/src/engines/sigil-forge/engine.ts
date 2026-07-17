@@ -14,10 +14,10 @@
  *
  * Cites (ALL MANDATORY): p1-w1-worker-bootstrap-packet.md + resources-and-assets.md + gaps-and-improvements.md
  * + goal-understanding.md + EXECUTION-STATUS.md + P1W2-HANDOFF.md + .worktrees/T-002-copilot/P1W1-CONTRACTS-FROZEN.md
- * + detailed-task-list.md (T-035,T-060) + .worktrees/T-024-codex/scripts/ext-contract-harness.ts + T-028 evidence
- * + ts-engines/src/engines/sigil-forge/engine.ts (this) + prompt-builder + wisdom + providers/image-provider.ts + nano-banana.ts (T-060)
+ * + detailed-task-list.md (T-035,T-060,T-061) + .worktrees/T-024-codex/scripts/ext-contract-harness.ts + T-028 evidence
+ * + prompt-builder + providers/image-provider.ts + nano-banana.ts (T-060) + kimi.ts (T-061, yantra prompts)
  * Tags: phase:integration-p1 wave:integration-w2 area:engine-integration engine-sigil
- * External rail unavailable; Codex subagent. No push/merge. Tests: mock + real(nvidia if key). T-060 nano integrated.
+ * Tests: mock + real (nvidia if key). T-060 nano + T-061 kimi both integrated, provider config-selectable.
  */
 
 import type { ConsciousnessEngine, EngineInput, EngineMetadata, EngineOutput } from '../../types'
@@ -102,8 +102,8 @@ export class SigilForgeEngine implements ConsciousnessEngine {
         image_style: {
           type: 'string',
           required: false,
-          description: 'Visual style for generated sigil. Default is method-dependent.',
-          enum: ['ceremonial', 'chaos', 'organic', 'geometric', 'runic', 'ethereal'],
+          description: 'Visual style for generated sigil. Default is method-dependent. yantra for kimi vedic precision.',
+          enum: ['ceremonial', 'chaos', 'organic', 'geometric', 'runic', 'ethereal', 'yantra'],
         },
         image_model: {
           type: 'string',

@@ -19,6 +19,7 @@ export type SigilStyle =
   | 'geometric' // sacred geometry, platonic solids, mandalas
   | 'runic' // Norse/Elder Futhark influenced angular forms
   | 'ethereal' // soft glowing light on dark field
+  | 'yantra' // Vedic yantra / Sri Yantra interlocking triangles (T-061 kimi focus)
 
 const STYLE_DESCRIPTORS: Record<SigilStyle, { visual: string; medium: string; palette: string }> = {
   ceremonial: {
@@ -57,6 +58,12 @@ const STYLE_DESCRIPTORS: Record<SigilStyle, { visual: string; medium: string; pa
     palette:
       'electric blue and purple neon light on dark indigo background, luminous glowing lines, high luminosity',
   },
+  yantra: {
+    visual:
+      'sri yantra, nine interlocking triangles (four upward, five downward) forming precise 43-triangle mandala, bindu center, concentric circles lotus petals, vedic sacred geometry yantra',
+    medium: 'traditional tantric line drawing, red ink on aged parchment, exact compass straightedge proportions, temple art precision',
+    palette: 'deep red, black, gold accents on cream/off-white, high symmetry, spiritually charged',
+  },
 }
 
 /** Map sigil method to best default visual style */
@@ -67,6 +74,8 @@ const METHOD_STYLE_MAP: Record<string, SigilStyle> = {
   'chaos-star': 'chaos',
   numerological: 'geometric',
   runic: 'runic',
+  // T-061: yantra for vedic/sacred-geometry intentions
+  yantra: 'yantra',
 }
 
 function elementFromIntention(intention: string): string {
@@ -150,9 +159,9 @@ export function buildSigilPrompt(
     'cross, star of david, swastika, satanic, demonic, skull',
   ].join(' ')
 
-  // Flux dev uses more steps; schnell/sana are faster
-  const num_inference_steps = style === 'ethereal' ? 30 : 25
-  const guidance_scale = style === 'geometric' ? 8.0 : 7.5
+  // Flux dev uses more steps; schnell/sana are faster; yantra needs precision
+  const num_inference_steps = style === 'ethereal' ? 30 : style === 'yantra' ? 28 : 25
+  const guidance_scale = style === 'geometric' || style === 'yantra' ? 8.5 : 7.5
 
   return { prompt, negative_prompt, num_inference_steps, guidance_scale, style }
 }

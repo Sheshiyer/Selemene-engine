@@ -1,21 +1,18 @@
 /**
- * Image Generation Provider Abstraction (P1 W1 T-003 + P2 T-035)
+ * Image Generation Provider Abstraction (P1 W1 T-003 + P2 T-035 + P3 T-061)
  *
  * Config-only switch. SigilForgeEngine accepts injected provider or config.
  * Supports generate + edit paths.
  * Output shape uses GeneratedImage (b64_json | url + metadata)
  *
- * Current impl: nvidia (via low-level utils)
- * T-060: nano-banana (real via runcomfy when RUNCOMFY_TOKEN; graceful mock else) — implemented in src/providers/nano-banana.ts
- * Kimi stub remains.
+ * T-060: nano-banana (real via runcomfy when RUNCOMFY_TOKEN; graceful mock else) — src/providers/nano-banana.ts
+ * T-061: kimi (full adapter + yantra prompts) — src/providers/kimi.ts
  *
- * Cites (MANDATORY per task): p1-w1-worker-bootstrap-packet.md, resources-and-assets.md,
- * gaps-and-improvements.md (provider abstraction gap), goal-understanding.md (T-003,T-060),
+ * Cites (MANDATORY): p1-w1-worker-bootstrap-packet.md, resources-and-assets.md,
+ * gaps-and-improvements.md (provider abstraction gap), goal-understanding.md (T-003,T-060,T-061),
  * EXECUTION-STATUS.md, P1W2-HANDOFF.md, .worktrees/T-002-copilot/docs/plans/engine-integration/P1W1-CONTRACTS-FROZEN.md,
- * detailed-task-list.md (T-035,T-060), .worktrees/T-024-codex/scripts/ext-contract-harness.ts,
- * ts-engines/src/engines/sigil-forge/* , providers contract in FROZEN.
+ * detailed-task-list.md (T-035,T-060,T-061), ts-engines/src/engines/sigil-forge/*, kimi.ts, nano-banana.ts.
  * Tags: phase:integration-p1 wave:integration-w2 area:engine-integration engine-sigil
- * External rail unavailable; Codex subagent. No push/merge.
  */
 
 import {
@@ -25,6 +22,7 @@ import {
   NVIDIA_IMAGE_MODELS,
   type NvidiaImageModel,
 } from '../utils/nvidia-image'
+import { KimiImageProvider } from './kimi'
 
 // T-060: real nano-banana impl (not stub). Separate module per task spec + FROZEN style.
 import {
@@ -173,31 +171,9 @@ export class NvidiaImageProvider implements ImageProvider {
 /** NanoBananaImageProvider — re-exported from T-060 impl (src/providers/nano-banana.ts). Real runcomfy when token, mock graceful else. */
 export { NanoBananaImageProvider } from './nano-banana'
 
-/** Kimi stub (for yantra/runic; T-061) */
-export class KimiImageProvider implements ImageProvider {
-  readonly name = 'kimi'
-  constructor(private config: ImageProviderConfig) {}
-
-  isAvailable(): boolean {
-    return !!this.config.apiKey || !!this.config.endpoint
-  }
-
-  async generate(opts: ImageGenOptions): Promise<GeneratedImage> {
-    return {
-      b64_json: 'kimi-mock-b64',
-      metadata: {
-        model: opts.model ?? 'kimi-yantra',
-        prompt: opts.prompt,
-        provider: this.name,
-        style: opts.style,
-      },
-    }
-  }
-
-  async edit(opts: ImageEditOptions): Promise<GeneratedImage> {
-    return this.generate(opts as any)
-  }
-}
+// KimiImageProvider now implemented in ./kimi.ts (T-061) — imported above for factory + re-export for back-compat
+export { KimiImageProvider } from './kimi'
+export { YANTRA_PROMPT_TEMPLATES, buildYantraPrompt } from './kimi'
 
 /** Config-only factory. Defaults to nvidia. Supports override for tests. T-060: nano integrated. */
 export function createImageProvider(config: Partial<ImageProviderConfig> = {}): ImageProvider {
