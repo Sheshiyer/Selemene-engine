@@ -41,16 +41,46 @@ ALL_ALGORITHMS = [
 ]
 
 
-# ─── T-674-1: Segmentation mask ─────────────────────────────────────────────
+# ─── T-674-1: Segmentation mask (mediapipe selfie + opencv fallback) ──────────
+
+_mp_selfie = None
+
+def _get_mediapipe_selfie():
+    global _mp_selfie
+    if _mp_selfie is None:
+        try:
+            import mediapipe as mp
+            selfie = mp.solutions.selfie_segmentation.SelfieSegmentation(model_selection=1)
+            _mp_selfie = selfie
+        except Exception:
+            _mp_selfie = False  # mark unavailable
+    return _mp_selfie if _mp_selfie is not False else None
+
 
 def _extract_mask(img_bgr: np.ndarray) -> np.ndarray:
     """Return a binary mask (H×W uint8, 0 or 255) for the person/subject.
 
-    PIP captures already have background removed by MediaPipe on the client,
-    so the background is either black or transparent (alpha=0 in PNG). We use
-    Otsu thresholding on the luminance channel plus a morphological close to
-    fill small gaps. Falls back to a full-frame mask if Otsu produces empty output.
+    Uses MediaPipe Selfie Segmentation (real CV) for accurate foreground mask
+    when available (model_selection=1 for landscape). Falls back to Otsu on
+    luminance + morphological close (for client-pre-masked PIP images or when
+    mediapipe not present). Full-frame mask on empty.
     """
+    # Try real CV with mediapipe first
+    selfie = _get_mediapipe_selfie()
+    if selfie is not None:
+        try:
+            rgb = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2RGB)
+            results = selfie.process(rgb)
+            if results.segmentation_mask is not None:
+                mask = (results.segmentation_mask > 0.5).astype(np.uint8) * 255
+                kernel = np.ones((5, 5), np.uint8)
+                mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel)
+                if mask.sum() > 0:
+                    return mask
+        except Exception:
+            pass  # fallback below
+
+    # Fallback: Otsu (client may have pre-masked to black/alpha)
     gray = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2GRAY)
     _, mask = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
     kernel = np.ones((5, 5), np.uint8)

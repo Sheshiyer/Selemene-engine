@@ -23,6 +23,14 @@ def _check_numpy() -> bool:
         return False
 
 
+def _check_mediapipe() -> bool:
+    try:
+        import mediapipe  # noqa: F401
+        return True
+    except ImportError:
+        return False
+
+
 @router.get("/health", response_model=dict)
 def health() -> dict:
     resp = HealthResponse(
@@ -34,4 +42,5 @@ def health() -> dict:
         **resp.model_dump(),
         "opencv_available": _check_opencv(),
         "numpy_available": _check_numpy(),
+        "mediapipe_available": _check_mediapipe(),
     }

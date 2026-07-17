@@ -26,6 +26,11 @@ impl BiofieldClient {
         }
     }
 
+    // T-065: python biofield CV integration (mediapipe real 11+ metrics path)
+    // wiring to FROZEN BiofieldResult via capture result_data; see analyze.py:real-cv/v1
+    // phase:integration-p1 wave:integration-w2 engine-biofield
+    // refs: T-026, 3 extraction, FROZEN, detailed-task-list T-065, python-services, noesis-api
+
     pub fn from_config(config: &ApiConfig) -> Self {
         Self::new(
             config.python_biofield_url.clone(),
