@@ -114,6 +114,9 @@ impl FaceReadingEngine {
                 },
             ],
             is_mock_data: false,
+            // T-027: consent/quality from FROZEN (set by caller in calculate for image_data path)
+            consent: None,
+            quality: None,
         }
     }
 
@@ -137,6 +140,18 @@ impl FaceReadingEngine {
             acc.wrapping_add((*b as u64) * ((idx as u64 % 31) + 1))
         });
         Self::heuristic_from_seed(seed)
+    }
+
+    /// T-027: placeholder for real landmark hook (MediaPipe / dlib per FROZEN/contracts + gaps)
+    /// Currently delegates to heuristic fallback; future: parse landmarks -> zone scores
+    /// phase:integration-p1 wave:integration-w2 area:engine-integration swarm:selemene-backend engine-face-reading
+    fn analysis_from_landmark_hook(image_data: &[u8]) -> FaceAnalysis {
+        // TODO(T-027): wire actual landmark detection here for P2+ CV path
+        // e.g. extract 468 landmarks, map to zones (forehead/eyes..), compute precise elemental
+        let mut analysis = Self::analysis_from_image_data(image_data);
+        // mark as heuristic (not yet real-landmark) until hook implemented
+        analysis.is_mock_data = false;
+        analysis
     }
 
     /// Serialize face analysis to JSON with additional metadata
@@ -225,30 +240,59 @@ impl ConsciousnessEngine for FaceReadingEngine {
         // Extract optional seed for reproducibility
         let seed = input.options.get("seed").and_then(|v| v.as_u64());
 
-        let image_bytes = input
-            .options
-            .get("image_data")
-            .and_then(|v| v.as_str())
-            .map(|s| s.as_bytes().to_vec());
+        // T-027: support image_data + consent from FROZEN/contracts (exact shape: image_data {b64?, consent?} or str)
+        // phase:integration-p1 wave:integration-w2 area:engine-integration swarm:selemene-backend engine-face-reading
+        // Uses options for compat (no top-level media on EngineInput yet; see T-002 worktree FROZEN + T-026 pattern)
+        // heuristic fallback + landmark hook placeholder
+        // cites: p1-w1-worker-bootstrap-packet.md + resources-and-assets.md + gaps-and-improvements.md + goal-understanding.md + P1W1-CONTRACTS-FROZEN.md + detailed-task-list.md (T-027) + EXECUTION-STATUS.md
+        let (image_bytes, consent_val, qual_val) = {
+            let img_val = input.options.get("image_data").cloned().or_else(|| {
+                // also check top-level if present in future frozen merge
+                // for now options-driven per current base types
+                None
+            });
+            let bytes = if let Some(v) = &img_val {
+                if let Some(s) = v.as_str() {
+                    Some(s.as_bytes().to_vec())
+                } else if let Some(obj) = v.as_object() {
+                    obj.get("b64")
+                        .and_then(|b| b.as_str())
+                        .map(|s| s.as_bytes().to_vec())
+                        .or_else(|| v.as_str().map(|s| s.as_bytes().to_vec()))
+                } else {
+                    None
+                }
+            } else {
+                None
+            };
+            let cons = img_val.as_ref().and_then(|v| v.get("consent").cloned())
+                .or_else(|| input.options.get("consent").cloned());
+            let qual = input.options.get("quality").cloned();
+            (bytes, cons, qual)
+        };
 
-        let (analysis, backend_name, precision) = if let Some(ref bytes) = image_bytes {
-            (
-                Self::analysis_from_image_data(bytes),
-                "heuristic-image-backend".to_string(),
-                "estimated".to_string(),
-            )
+        let mut analysis = if let Some(ref bytes) = image_bytes {
+            // use landmark hook (heuristic now, placeholder for real CV)
+            Self::analysis_from_landmark_hook(bytes)
         } else if let Some(ref birth_data) = input.birth_data {
-            (
-                Self::analysis_from_birth_data(birth_data),
-                "birth-physiognomy-fallback".to_string(),
-                "birth-derived".to_string(),
-            )
+            Self::analysis_from_birth_data(birth_data)
         } else {
-            (
-                generate_mock_analysis(seed),
-                "mock-stub".to_string(),
-                "simulated".to_string(),
-            )
+            generate_mock_analysis(seed)
+        };
+
+        // attach consent/quality if provided (frozen contract)
+        if consent_val.is_some() || qual_val.is_some() {
+            analysis.is_mock_data = false; // real input path
+            analysis.consent = consent_val.clone();
+            analysis.quality = qual_val.clone();
+        }
+
+        let (backend_name, precision) = if image_bytes.is_some() {
+            ("heuristic-image-landmark-hook".to_string(), "estimated".to_string())
+        } else if input.birth_data.is_some() {
+            ("birth-physiognomy-fallback".to_string(), "birth-derived".to_string())
+        } else {
+            ("mock-stub".to_string(), "simulated".to_string())
         };
 
         // Get consciousness level for prompt generation
@@ -271,9 +315,22 @@ impl ConsciousnessEngine for FaceReadingEngine {
 
         let elapsed = start.elapsed();
 
+        let mut result = Self::serialize_analysis(&analysis);
+
+        // T-027: echo consent/quality in result for frozen contract roundtrip (like biofield T-026)
+        if let Some(c) = &analysis.consent {
+            result["consent"] = c.clone();
+        }
+        if let Some(q) = &analysis.quality {
+            result["quality"] = q.clone();
+        }
+        if analysis.consent.is_some() || analysis.quality.is_some() {
+            result["computation_mode"] = json!("image-heuristic-capture");
+        }
+
         Ok(EngineOutput {
             engine_id: self.engine_id.clone(),
-            result: Self::serialize_analysis(&analysis),
+            result,
             witness_prompt,
             consciousness_level,
             metadata: CalculationMetadata {
@@ -318,9 +375,10 @@ impl ConsciousnessEngine for FaceReadingEngine {
                 valid = false;
             }
 
-            // Verify mock data flag is present and true (for stub)
+            // T-027: mock flag: true only for pure stub; heuristic (image_data/birth per FROZEN) sets false -- do not fail validation on false
+            // phase:integration-p1 wave:integration-w2 area:engine-integration swarm:selemene-backend engine-face-reading
             if let Some(is_mock) = analysis.get("is_mock_data") {
-                if !is_mock.as_bool().unwrap_or(false) {
+                if is_mock.as_bool().unwrap_or(false) == false && output.metadata.backend == "mock-stub" {
                     messages.push("Stub implementation should have is_mock_data=true".to_string());
                 }
             }
@@ -607,7 +665,7 @@ mod tests {
             .unwrap_or(true);
 
         assert!(!is_mock);
-        assert_eq!(output.metadata.backend, "heuristic-image-backend");
+        assert_eq!(output.metadata.backend, "heuristic-image-landmark-hook");
     }
 
     #[tokio::test]
@@ -624,5 +682,56 @@ mod tests {
         assert!(tradition_strs.iter().any(|t| t.contains("Mian Xiang")));
         assert!(tradition_strs.iter().any(|t| t.contains("Ayurvedic")));
         assert!(tradition_strs.iter().any(|t| t.contains("Physiognomy")));
+    }
+
+    // T-027 P2 start: new test using exact FROZEN sample for image_data + consent
+    // phase:integration-p1 wave:integration-w2 area:engine-integration swarm:selemene-backend engine-face-reading
+    // per P1W1-CONTRACTS-FROZEN.md face example + detailed-task-list T-027 + gaps (stub to heuristic)
+    #[tokio::test]
+    async fn test_calculate_with_frozen_image_data_consent_sample() {
+        let engine = FaceReadingEngine::new();
+        let mut input = create_test_input();
+        // FROZEN sample shape (from types.rs examples + P1W1-CONTRACTS-FROZEN)
+        let frozen_image = json!({
+            "b64": "iVBORw0KGgoAAAANSUhEUgAA...",
+            "mime_type": "image/png",
+            "consent": {
+                "granted": true,
+                "scopes": ["face-image"],
+                "timestamp": "2026-07-17T12:00:00Z",
+                "token": "consent-face-001"
+            }
+        });
+        input.options.insert("image_data".to_string(), frozen_image);
+        input.options.insert("consent".to_string(), json!({
+            "granted": true,
+            "scopes": ["face-image"],
+            "timestamp": "2026-07-17T12:00:00Z"
+        }));
+
+        let output = engine.calculate(input).await.unwrap();
+        assert_eq!(output.engine_id, "face-reading");
+        assert!(!output.witness_prompt.is_empty());
+
+        // from image + consent -> non-mock, heuristic+hook backend
+        let is_mock = output
+            .result
+            .get("analysis")
+            .and_then(|a| a.get("is_mock_data"))
+            .and_then(|v| v.as_bool())
+            .unwrap_or(true);
+        assert!(!is_mock, "FROZEN image_data path must use heuristic (not mock)");
+
+        assert_eq!(output.metadata.backend, "heuristic-image-landmark-hook");
+
+        // consent echoed per frozen contract
+        assert!(output.result.get("consent").is_some(), "consent must be present for frozen sample");
+        let cons = output.result.get("consent").unwrap();
+        assert_eq!(cons.get("granted"), Some(&json!(true)));
+        assert!(output.result.get("computation_mode").is_some());
+
+        // result shape still valid (analysis etc)
+        assert!(output.result.get("analysis").is_some());
+        assert!(output.result.get("analysis").unwrap().get("constitution").is_some());
     }
 }
