@@ -984,11 +984,7 @@ async fn assets_generate_modes_are_differentiated() {
     let router = common::get_router().await;
     let token = common::generate_test_token(3);
 
-    async fn pass_ids(
-        router: &axum::Router,
-        token: &str,
-        mode: &str,
-    ) -> Vec<String> {
+    async fn pass_ids(router: &axum::Router, token: &str, mode: &str) -> Vec<String> {
         let req = Request::builder()
             .method("POST")
             .uri("/api/v1/assets/generate")
@@ -1008,8 +1004,15 @@ async fn assets_generate_modes_are_differentiated() {
             ))
             .unwrap();
         let res = router.clone().oneshot(req).await.unwrap();
-        assert_eq!(res.status(), StatusCode::OK, "mode {} should be served", mode);
-        let body = axum::body::to_bytes(res.into_body(), usize::MAX).await.unwrap();
+        assert_eq!(
+            res.status(),
+            StatusCode::OK,
+            "mode {} should be served",
+            mode
+        );
+        let body = axum::body::to_bytes(res.into_body(), usize::MAX)
+            .await
+            .unwrap();
         let json: Value = serde_json::from_slice(&body).unwrap();
         json["passes"]
             .as_array()

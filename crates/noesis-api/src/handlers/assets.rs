@@ -262,18 +262,20 @@ pub async fn generate(
     // 2. Drive IntegratedReadingOrchestrator-equivalent: walk pass_plan to produce passes + assembled.
     //    (LLM call per pass is stubbed with seed rendering for this additive surface; real LLM injection is future additive work.)
     // 3. Populate source_pack via factory + audit logic.
-    let mode_doc = load_mode_document(&req.mode)
-        .map_err(|msg| {
-            let trace = uuid::Uuid::new_v4().to_string();
-            (StatusCode::BAD_REQUEST, Json(crate::error_mapper::ErrorResponse {
+    let mode_doc = load_mode_document(&req.mode).map_err(|msg| {
+        let trace = uuid::Uuid::new_v4().to_string();
+        (
+            StatusCode::BAD_REQUEST,
+            Json(crate::error_mapper::ErrorResponse {
                 status: 400,
                 error_code: "UNKNOWN_MODE".to_string(),
                 message: msg.clone(),
                 error: msg,
                 details: None,
                 trace_id: trace,
-            }))
-        })?;
+            }),
+        )
+    })?;
     let register = if consciousness_level <= 3 {
         "l1_l3".to_string()
     } else {
