@@ -6,12 +6,13 @@
  * Output shape uses GeneratedImage (b64_json | url + metadata)
  *
  * Current impl: nvidia (via low-level utils)
- * Future: nano-banana, kimi (config driven, stubs return mock for now)
+ * T-060: nano-banana (real via runcomfy when RUNCOMFY_TOKEN; graceful mock else) — implemented in src/providers/nano-banana.ts
+ * Kimi stub remains.
  *
  * Cites (MANDATORY per task): p1-w1-worker-bootstrap-packet.md, resources-and-assets.md,
- * gaps-and-improvements.md (provider abstraction gap), goal-understanding.md (T-003),
- * EXECUTION-STATUS.md, P1W2-HANDOFF.md, .worktrees/T-002-copilot/P1W1-CONTRACTS-FROZEN.md,
- * detailed-task-list.md (T-035), .worktrees/T-024-codex/scripts/ext-contract-harness.ts,
+ * gaps-and-improvements.md (provider abstraction gap), goal-understanding.md (T-003,T-060),
+ * EXECUTION-STATUS.md, P1W2-HANDOFF.md, .worktrees/T-002-copilot/docs/plans/engine-integration/P1W1-CONTRACTS-FROZEN.md,
+ * detailed-task-list.md (T-035,T-060), .worktrees/T-024-codex/scripts/ext-contract-harness.ts,
  * ts-engines/src/engines/sigil-forge/* , providers contract in FROZEN.
  * Tags: phase:integration-p1 wave:integration-w2 area:engine-integration engine-sigil
  * External rail unavailable; Codex subagent. No push/merge.
@@ -24,6 +25,13 @@ import {
   NVIDIA_IMAGE_MODELS,
   type NvidiaImageModel,
 } from '../utils/nvidia-image'
+
+// T-060: real nano-banana impl (not stub). Separate module per task spec + FROZEN style.
+import {
+  NanoBananaImageProvider,
+  isNanoBananaAvailable,
+  createNanoBananaProvider,
+} from './nano-banana'
 
 export interface ImageGenOptions {
   prompt: string
@@ -162,41 +170,8 @@ export class NvidiaImageProvider implements ImageProvider {
   }
 }
 
-/** Nano banana stub (config driven, for T-060 later; returns mock for now) */
-export class NanoBananaImageProvider implements ImageProvider {
-  readonly name = 'nano-banana'
-  constructor(private config: ImageProviderConfig) {}
-
-  isAvailable(): boolean {
-    return true // assume configured via endpoint
-  }
-
-  async generate(opts: ImageGenOptions): Promise<GeneratedImage> {
-    // stub: in real would call runcomfy / google nano
-    return {
-      b64_json: 'nano-banana-mock-b64',
-      metadata: {
-        model: opts.model ?? this.config.defaultModel ?? 'nano-banana-2',
-        prompt: opts.prompt,
-        provider: this.name,
-        style: opts.style,
-        seed: opts.seed,
-      },
-    }
-  }
-
-  async edit(opts: ImageEditOptions): Promise<GeneratedImage> {
-    return {
-      b64_json: 'nano-banana-edit-mock-b64',
-      metadata: {
-        model: opts.model ?? this.config.defaultModel ?? 'nano-banana-2',
-        prompt: opts.prompt,
-        provider: this.name,
-        style: opts.style,
-      },
-    }
-  }
-}
+/** NanoBananaImageProvider — re-exported from T-060 impl (src/providers/nano-banana.ts). Real runcomfy when token, mock graceful else. */
+export { NanoBananaImageProvider } from './nano-banana'
 
 /** Kimi stub (for yantra/runic; T-061) */
 export class KimiImageProvider implements ImageProvider {
@@ -224,7 +199,7 @@ export class KimiImageProvider implements ImageProvider {
   }
 }
 
-/** Config-only factory. Defaults to nvidia. Supports override for tests. */
+/** Config-only factory. Defaults to nvidia. Supports override for tests. T-060: nano integrated. */
 export function createImageProvider(config: Partial<ImageProviderConfig> = {}): ImageProvider {
   const full: ImageProviderConfig = {
     provider: 'nvidia',
@@ -242,7 +217,10 @@ export function createImageProvider(config: Partial<ImageProviderConfig> = {}): 
   }
 }
 
-/** Default export for back-compat in registry etc */
+/** Default export for back-compat in registry etc. T-060: integrate nano — use nano-banana if RUNCOMFY_TOKEN present else nvidia (config-only). */
 export function createDefaultImageProvider(): ImageProvider {
+  if (isNanoBananaAvailable()) {
+    return createImageProvider({ provider: 'nano-banana' })
+  }
   return createImageProvider({ provider: 'nvidia' })
 }

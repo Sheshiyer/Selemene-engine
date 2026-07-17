@@ -14,10 +14,10 @@
  *
  * Cites (ALL MANDATORY): p1-w1-worker-bootstrap-packet.md + resources-and-assets.md + gaps-and-improvements.md
  * + goal-understanding.md + EXECUTION-STATUS.md + P1W2-HANDOFF.md + .worktrees/T-002-copilot/P1W1-CONTRACTS-FROZEN.md
- * + detailed-task-list.md (T-035) + .worktrees/T-024-codex/scripts/ext-contract-harness.ts + T-028 evidence
- * + ts-engines/src/engines/sigil-forge/engine.ts (this) + prompt-builder + wisdom + providers/image-provider.ts
+ * + detailed-task-list.md (T-035,T-060) + .worktrees/T-024-codex/scripts/ext-contract-harness.ts + T-028 evidence
+ * + ts-engines/src/engines/sigil-forge/engine.ts (this) + prompt-builder + wisdom + providers/image-provider.ts + nano-banana.ts (T-060)
  * Tags: phase:integration-p1 wave:integration-w2 area:engine-integration engine-sigil
- * External rail unavailable; Codex subagent. No push/merge. Tests: mock + real(nvidia if key).
+ * External rail unavailable; Codex subagent. No push/merge. Tests: mock + real(nvidia if key). T-060 nano integrated.
  */
 
 import type { ConsciousnessEngine, EngineInput, EngineMetadata, EngineOutput } from '../../types'
