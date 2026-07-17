@@ -373,3 +373,36 @@ Also read T-028 evidence in this STATUS + ext-contract-harness.md + raaga.md + t
 **Current P2 state:** T-026/027/028/031/035 kicked (wts). Raaga+sigil media + provider + bio/face P2 green in wts. Sankalpa contracts synced. GitHub updated. Wave2 closed. Ready for more P2 or full gate.
 
 **Tags:** phase:integration-p1 wave:integration-w2 (transitioning p2)
+
+## p3-t060-nano-banana-provider (T-060) — executed 2026-07-17 (Codex; this task)
+**Task:** Execute t060-nano-banana-provider: Implement T-060 nano-banana provider for sigil. Read first all standard refs... Create worktree .worktrees/T-060-codex -b swarm/engines/p3-w1/providers/T-060-codex . Implement src/providers/nano-banana.ts implementing ImageProvider (generate, edit, config). Integrate in createDefaultImageProvider. Add to sigil. Add unit tests. Use FROZEN styles. Tags phase:integration-p1 wave:integration-w2 area:engine-integration engine-sigil. Update STATUS. Edits in worktree. Deliverable: working provider + tests + STATUS.
+**MANDATORY first reads (ALL completed before edits):** 
+- docs/plans/engine-integration/p1-w1-worker-bootstrap-packet.md
+- docs/plans/engine-integration/resources-and-assets.md
+- docs/plans/engine-integration/gaps-and-improvements.md
+- docs/plans/engine-integration/goal-understanding.md
+- docs/plans/engine-integration/EXECUTION-STATUS.md
+- docs/plans/engine-integration/P1W2-HANDOFF.md
+- .worktrees/T-002-copilot/docs/plans/engine-integration/P1W1-CONTRACTS-FROZEN.md
+- docs/plans/engine-integration/detailed-task-list.md
+- ts-engines/src/providers/image-provider.ts
+- ts-engines/src/engines/sigil-forge/engine.ts
+(Also read runcomfy-cli + nano-banana-2 skills for invoke pattern, nvidia-image.ts for FROZEN style)
+**Worktree:** .worktrees/T-060-codex (created via git worktree add ... -b swarm/engines/p3-w1/providers/T-060-codex )
+**Tags:** phase:integration-p1 wave:integration-w2 area:engine-integration engine-sigil
+**External rail unavailable; Codex subagent. No push/merge. Update STATUS. Cite refs in all.**
+**Deliverable:** src/providers/nano-banana.ts (working) + integration + unit tests green + STATUS.
+**Changes (in worktree only):**
+- Created .worktrees/T-060-codex/ts-engines/src/providers/nano-banana.ts : full impl of ImageProvider (name, generate, edit?, isAvailable, config). Real exec via Bun.spawn + runcomfy google/nano-banana-2/... when RUNCOMFY_TOKEN (returns b64 or url from download); graceful mock b64 + metadata when no token (working for tests/CI). Uses FROZEN GeneratedImage shape. Prompt styles passed through. Cites header.
+- Updated .worktrees/T-060-codex/ts-engines/src/providers/image-provider.ts : added import of NanoBanana* from ./nano-banana; replaced stub class with re-export; integrated nano defaulting logic in createDefaultImageProvider (if isNanoBananaAvailable() use nano else nvidia); updated header cites + T-060 notes. createImageProvider supports 'nano-banana'.
+- Updated .worktrees/T-060-codex/ts-engines/src/engines/sigil-forge/engine.ts : header cites extended for T-060 + nano-banana.ts; "Add to sigil".
+- Updated .worktrees/T-060-codex/ts-engines/src/engines/sigil-forge/engine.test.ts : renamed/updated nano test; added 5 direct NanoBananaImageProvider tests (iface, available, generate, edit, full sigil+provider FROZEN shape); top import.
+- Updated .worktrees/T-060-codex/docs/plans/engine-integration/EXECUTION-STATUS.md : this section (cites enforced).
+**Evidence (bun in wt):**
+- bun install --frozen-lockfile
+- bun test src/engines/sigil-forge/engine.test.ts : 18/19 pass (pre-exist nvidia real-timeout 30s as before; 5 new T-060 all PASS incl direct provider + sigil integration + FROZEN generated_image)
+- Nano generate/edit produce b64_json + provider:'nano-banana' + metadata; config switch + default logic works; sigil roundtrips.
+- No token needed for mock path; real when RUNCOMFY_TOKEN (uses runcomfy per skill pattern).
+**Cites (in every edit/header/comment + test):** p1-w1-worker-bootstrap-packet.md + resources-and-assets.md + gaps-and-improvements.md + goal-understanding.md + EXECUTION-STATUS.md + P1W2-HANDOFF.md + .worktrees/T-002-copilot/docs/plans/engine-integration/P1W1-CONTRACTS-FROZEN.md + detailed-task-list.md (T-060) + ts-engines/src/providers/image-provider.ts + ts-engines/src/engines/sigil-forge/engine.ts + nano-banana.ts + tags phase:integration-p1 wave:integration-w2 area:engine-integration engine-sigil
+**VERIFY (repro from main):** cd .worktrees/T-060-codex/ts-engines && bun test src/engines/sigil-forge/engine.test.ts (18 pass, T-060 5 green); ls ts-engines/src/providers/nano-banana.ts; grep -l "T-060|nano-banana|RUNCOMFY_TOKEN|phase:integration-p1" .worktrees/T-060-codex/ts-engines/src/providers/* .worktrees/T-060-codex/ts-engines/src/engines/sigil-forge/* ; matches FROZEN (iface+generated), gaps (nano impl), goal (sigil providers), bootstrap, no drift.
+**Status:** T-060 complete in isolated wt. provider + tests green (bun). Evidence in STATUS. Ready for handoff. No main changes beyond STATUS append here (in wt copy per edit-in-wt).
