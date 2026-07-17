@@ -39,7 +39,20 @@ class ImageQuality(BaseModel):
     sufficient_quality: bool
 
 
+# face-cv-hook-p3 (T-027 landmark hook -> real CV): contract fields added per
+# FROZEN (P1W1-CONTRACTS-FROZEN.md face example) + T-065 biofield pattern
+# (contract_version / analysis_version / consent echo).
+# phase:integration-p1 wave:integration-w2 engine-face-reading
 class FaceMeshResponse(BaseModel):
+    contract_version: str = Field(default="face-cv/v1")
+    analysis_version: str = Field(
+        default="deterministic-fallback/v1",
+        description="mediapipe-facemesh/v1 when real CV ran, deterministic-fallback/v1 otherwise",
+    )
+    landmark_source: str = Field(
+        default="deterministic-fallback",
+        description="mediapipe-facemesh | deterministic-fallback",
+    )
     face_detected: bool
     num_faces: int | None = None
     landmarks: list[Landmark]
@@ -47,6 +60,11 @@ class FaceMeshResponse(BaseModel):
     proportions: FacialProportions | None = None
     processing_time_ms: float
     image_quality: ImageQuality | None = None
+    consent: dict | None = Field(
+        default=None,
+        description="Consent object echoed from caller (local-first invariant, goal-understanding.md)",
+    )
+    consent_granted: bool = False
 
 
 # ---------- Biofield CV service models ----------
