@@ -189,3 +189,57 @@ scripts/sync-plans-to-github-issues.sh --apply --repo Sheshiyer/Selemene-engine
 # Backward-compatible wrapper
 scripts/import-tasks-to-github.sh --apply --repo Sheshiyer/Selemene-engine
 ```
+
+## Selemene + Sankalpa Engine Integration Plan (2026)
+
+**Epic:** #893  
+**Focus:** Two-prong integration of media-heavy consciousness engines (biofield/BV-PIP capture, face-reading, raaga, sigil-forge outputting runic/vedic sigils/yantras) + general engines.
+
+- **Prong 1 (Core):** Selemene-engine — complete Rust/TS engines, bridges (noesis-bridge for TS), python CV sidecars, image gen providers (extend to nano-banana + kimi via API), core contracts for media I/O, SDK, API exposure.
+- **Prong 2 (Frontend):** Sankalpa (Electron) — local-safe media capture (camera for biofield/face, file for sigil), rich output rendering (mandalas, swara wheels, image viewers), engine consumption surfaces, integration into Noesis workflows.
+
+**Phases & Tags (aligned with existing flow):**
+- phase:integration-p1 : Contracts, Discovery & Foundation (see #894)
+- phase:integration-p2 : Selemene Core Engine Hardening
+- phase:integration-p3 : Infrastructure & Providers (nano-banana, kimi, CV)
+- phase:integration-p4 : API / Bridge / Orchestration
+- phase:integration-p5 : Sankalpa Frontend Media I/O + Engine Surfaces (see #895)
+- phase:integration-p6 : Integration, Testing, Witness Flows
+- phase:integration-p7 : Validation, Hardening, Rollout
+- Waves: wave:integration-w1, w2, ... per phase
+- Swarms: swarm:selemene-backend, swarm:sankalpa-frontend, etc.
+
+**Labels in use (consistent with project):**
+- `engine-biofield`, `engine-face-reading`, `engine-raaga`, `engine-sigil-forge`
+- `area:engine-integration`, `area:backend`, `area:frontend`
+- `swarm:selemene-backend`, `swarm:sankalpa-frontend`
+- `phase:integration-p1`, `phase:integration-p5` (extending phase:Px pattern)
+- `wave:integration-w1` etc.
+- `roadmap`, `enhancement`
+
+**Plan artifacts:**
+- Full Swarm Architect plan: `docs/plans/engine-integration/selemene-sankalpa-full-integration-swarm-plan.md`
+- Deepened pre-execution extraction (2026-07-17, before any code):
+  - `docs/plans/engine-integration/resources-and-assets.md` (what exists: code, docs, prior work)
+  - `docs/plans/engine-integration/gaps-and-improvements.md` (stubs, mismatches, wiring gaps)
+  - `docs/plans/engine-integration/goal-understanding.md` (objective, success criteria, drift risks)
+- Discovery: `docs/plans/engine-integration/discovery-summary.md`
+- Detailed tasks (130+ granular): `docs/plans/engine-integration/detailed-task-list.md`
+- GitHub mapping: `docs/plans/engine-integration/github-issue-mapping.md`
+
+**GitHub Mapping Strategy:**
+- One issue per key phase/wave or task bundle.
+- All use the tags above for filtering in project views (By Wave/Phase, By Engine).
+- Dependencies tracked in issue bodies.
+- Validation evidence required before close (per swarm-architect playbooks).
+
+**Current Status (as of 2026-07-17):** 
+- Deepened pre-execution analysis complete (resources, gaps, goal extracted from all prior work to prevent drift).
+- All planning artifacts (plan + 3 extraction files + mapping + task list) committed to repo.
+- GitHub issues: #893 (epic), #894 (P1), #895 (P5) + new issues for deepened artifacts + phase waves.
+- Labels/tagging standardized (phase:integration-*, wave:integration-*, swarm:*, engine-*, area:engine-integration).
+- Next: Roll out remaining phase issues from detailed-task-list, begin P1 contract work (wave-boundary merges only).
+- Sankalpa side: see sibling repo ROADMAP Milestone 4b.
+- No stale planning docs for this initiative (old web-app refs are historical/retired and correctly annotated in engine docs).
+
+See also sankalpa/ROADMAP.md for frontend-specific milestones.
