@@ -15,8 +15,10 @@
 - #893: Main plan epic (links to docs/plans/engine-integration/* + deepened files)
 - #894: P1 Contracts & Foundation (see detailed-task-list.md for T-001..)
 - #895: P5 Sankalpa Frontend Media + Surfaces
-- New: Deepened pre-execution artifacts issue (resources-and-assets, gaps-and-improvements, goal-understanding committed + linked)
-- Phase/wave issues to be rolled out from detailed-task-list (P2-P7 + key contracts)
+- #896: Deepened pre-execution artifacts (resources-and-assets.md, gaps-and-improvements.md, goal-understanding.md committed + linked)
+- #897: P2 Selemene Core Engine Hardening
+- #898: P1 W1 Media Contracts & Provider Abstraction (T-002..T-005)
+- More phase/wave/task issues to be rolled out from detailed-task-list (P3-P7 + remaining)
 
 **Deepened Artifacts (now primary anti-drift references):**
 - resources-and-assets.md — inventory of all existing code/docs/prior work
