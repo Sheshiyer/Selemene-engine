@@ -548,3 +548,21 @@ img = np.zeros((100,100,3), dtype=np.uint8); img[20:80,20:80]=255; m=_extract_ma
 **VERIFY (repro):** start ts-engines (`cd ts-engines && bun run start`) + python (`cd python-services && .venv/bin/uvicorn biofield_cv_service.main:app --port 8002`); `bun run scripts/ext-contract-harness.ts` → 3/4 + face FAIL-OPEN; `cargo test -p engine-biofield --quiet` 65p; `cargo test -p engine-face-reading --quiet` 35p+1; `cd ts-engines && bun test` 68p/1 pre-exist; checklist shows all [x]. Matches gaps (stubs→hardened), resources (inventory), goal (two-prong/local-first/4 engines), FROZEN (shapes), detailed-task-list (T-024/026/027/028/031/035).
 
 **Status:** ext-p2-validation-checklist ✅ GREEN in full. P2 hardening validated live end-to-end in main. No push performed.
+
+## P3/P5 Entry Batch + Consolidation (2026-07-17, temperance-parallel via Codex fail-open)
+**Source:** p2-full-checklist-and-next.json (6 tasks; 3 empty-result tasks re-dispatched per fail-open, all completed on retry)
+**Dispatched + completed:**
+- full-p2-checklist-live-roundtrips: ✅ ALL 25 items in ext-p2-validation-checklist.md marked green with live evidence (servers up: ts@3001, py@8002; raaga/sigil/biofield curls FROZEN-exact; face = Rust cargo FROZEN test; harness integrated to main scripts/ext-contract-harness.ts, 3/4 live + face fail-open-by-design; cargo 65/35+1; bun 68p/1 pre-exist timeout; pytest 23p)
+- t060-nano-banana-provider: ✅ nano-banana.ts (real runcomfy + graceful mock), factory prefers token, 6 tests; MERGED to main
+- t061-kimi-provider: ✅ kimi.ts + yantra prompt templates, selectable, tests; MERGED (doc-conflict resolved, both providers registered)
+- t065-python-biofield-cv: ✅ mediapipe full 11+ metrics + api client + health test (8 files); MERGED to main
+- t100-sankalpa-camera-capture: ✅ CameraCapture.tsx (Electron getUserMedia, local preview, consent gate, opt-in backend) wired into App; typecheck green; COMMITTED in sankalpa repo
+- t105-sankalpa-raaga-ui: ✅ RaagaSurface.tsx (melakarta selector, SwaraWheel SVG, WebAudio Strudel player, theory panel, consent-gated client, clip_url handling) wired at /raaga; typecheck + 35 tests + vite build green; COMMITTED in sankalpa repo
+
+**Merges to main this round:** T-060, T-061, T-065 (all P3 providers/CV). Prior P2 merges: T-026, T-027, T-028, T-031, T-035. All conflicts doc-comment/STATUS-only, resolved keeping union content.
+**Post-merge verification:** sigil 20p/1 (pre-exist 30s real-gen timeout), raaga media 3p, cargo bio/face green, sankalpa typecheck+build green.
+
+**Current state:** Wave 2 closed; P2 hardening (T-026/27/28/31/35) merged + checklist 25/25 green; P3 entry (T-060/061/065) merged; P5 entry (T-100/105) committed in sankalpa. GitHub issues #893/897/902 updated with P2 entry evidence + labels. FROZEN contracts unchanged (T-002 wt retained). No drift.
+
+**Remaining worktrees (kept):** T-002-copilot (FROZEN ref), T-021/T-022-023/T-024/T-025/T-029 (W2 scaffolding branches, unmerged doc/infra artifacts).
+**Next candidates:** T-115 sigil UI + T-120 face UI (P5), face CV hook, raaga clip generation (suno-bridge), P4 api/bridge/sdk, P6/P7.
