@@ -198,12 +198,27 @@ export class RaagaEngine implements ConsciousnessEngine {
       total_melakartas: MELAKARTAS.length,
     }
 
+    // Per FROZEN (T-002/T-005/T-028): surface generated_audio at top-level EngineOutput
+    // strudel_ratios + clip_url (clip_url null until server-side generation; result also carries for legacy)
+    // Cites: P1W1-CONTRACTS-FROZEN.md, detailed-task-list T-028, EXECUTION-STATUS wave2-t028, ext-contract-harness.ts (FROZEN sample), raaga.md (strudel), resources/gaps/goal-understanding, bootstrap-packet, tags: phase:integration-p1 wave:integration-w2 engine-raaga
+    const generatedAudio = {
+      clip_url: null,
+      strudel_ratios: m.ratios,
+      root_hz: rootHz,
+      metadata: {
+        engine: 'raaga',
+        melakarta: m.num,
+        // timbre/gamaka deferred to later per FROZEN note
+      },
+    }
+
     return {
       engine_id: 'raaga',
       result,
       witness_prompts: generateWitnessPrompts(m, dosha),
       calculated_at: new Date().toISOString(),
       processing_time_ms: Math.round(performance.now() - startTime),
+      generated_audio: generatedAudio,
     }
   }
 }

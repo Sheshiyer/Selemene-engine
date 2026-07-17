@@ -16,6 +16,21 @@ export interface WitnessPrompt {
   themes?: string[]
 }
 
+/** Consent for media (matches Rust FROZEN) */
+export interface Consent {
+  granted: boolean
+  scopes: string[]
+  timestamp: string
+  token?: string
+}
+
+/** Quality gate (matches Rust FROZEN) */
+export interface QualitySpec {
+  sufficient?: boolean
+  min_coherence?: number
+  scores?: Record<string, number>
+}
+
 /** Input to any consciousness engine */
 export interface EngineInput {
   /** User's consciousness phase (0-5) */
@@ -26,6 +41,13 @@ export interface EngineInput {
   seed?: number
   /** User's question or intention (optional) */
   question?: string
+
+  // --- P1 W1 media contract extensions (T-002, per FROZEN) ---
+  image_data?: { b64?: string; reference?: string; mime_type?: string; consent?: Consent }
+  video_ref?: string
+  audio_ref?: string
+  consent?: Consent
+  quality?: QualitySpec
 }
 
 /** Output from any consciousness engine */
@@ -40,6 +62,10 @@ export interface EngineOutput {
   calculated_at: string
   /** Processing time in milliseconds */
   processing_time_ms: number
+
+  // --- P1 W1 media contract extensions (T-002, per FROZEN) ---
+  generated_image?: { b64_json?: string; url?: string; metadata?: Record<string, unknown> }
+  generated_audio?: { clip_url?: string; strudel_ratios?: number[]; root_hz?: number; metadata?: Record<string, unknown> }
 }
 
 /** Metadata about an engine */
