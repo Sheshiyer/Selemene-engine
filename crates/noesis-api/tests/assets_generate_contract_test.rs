@@ -929,3 +929,103 @@ async fn assets_generate_roundtrips_language_with_relationship_context() {
     assert_eq!(subs[0]["role"].as_str().unwrap_or(""), "mother");
     assert_eq!(subs[1]["role"].as_str().unwrap_or(""), "son");
 }
+
+// --- Regression guards for the mode contract -------------------------------
+//
+// Context: /assets/generate was mode-keyed but never validated `mode`. An
+// unknown mode returned 200 with a generic one-pass "default: Reading" that was
+// indistinguishable from a real reading, so a typo — and a whole fake surface —
+// looked healthy. These two tests encode the contract that makes that
+// impossible to reintroduce.
+
+#[tokio::test]
+async fn assets_generate_rejects_unknown_mode() {
+    let router = common::get_router().await;
+    let token = common::generate_test_token(3);
+
+    let req = Request::builder()
+        .method("POST")
+        .uri("/api/v1/assets/generate")
+        .header(header::AUTHORIZATION, format!("Bearer {}", token))
+        .header(header::CONTENT_TYPE, "application/json")
+        .body(Body::from(
+            serde_json::to_vec(&json!({
+                "birth_data": {
+                    "date": "1990-01-15", "time": "14:30",
+                    "latitude": 12.9716, "longitude": 77.5946,
+                    "timezone": "Asia/Kolkata", "name": "Test"
+                },
+                "mode": "THIS-MODE-DOES-NOT-EXIST-xyz",
+                "consciousness_level": 3
+            }))
+            .unwrap(),
+        ))
+        .unwrap();
+
+    let response = router.clone().oneshot(req).await.unwrap();
+    assert_eq!(
+        response.status(),
+        StatusCode::BAD_REQUEST,
+        "an unknown mode must be rejected, not silently answered with a default reading"
+    );
+
+    let body = axum::body::to_bytes(response.into_body(), usize::MAX)
+        .await
+        .unwrap();
+    let json: Value = serde_json::from_slice(&body).unwrap();
+    assert_eq!(json["error_code"], "UNKNOWN_MODE");
+}
+
+#[tokio::test]
+async fn assets_generate_modes_are_differentiated() {
+    // A mode is only real if its pass plan differs from other modes'. Asserting
+    // merely "200" or "passes[0] != default" both pass for a mode that is
+    // accepted but unimplemented — which is exactly how this hid before.
+    let router = common::get_router().await;
+    let token = common::generate_test_token(3);
+
+    async fn pass_ids(
+        router: &axum::Router,
+        token: &str,
+        mode: &str,
+    ) -> Vec<String> {
+        let req = Request::builder()
+            .method("POST")
+            .uri("/api/v1/assets/generate")
+            .header(header::AUTHORIZATION, format!("Bearer {}", token))
+            .header(header::CONTENT_TYPE, "application/json")
+            .body(Body::from(
+                serde_json::to_vec(&json!({
+                    "birth_data": {
+                        "date": "1990-01-15", "time": "14:30",
+                        "latitude": 12.9716, "longitude": 77.5946,
+                        "timezone": "Asia/Kolkata", "name": "Test"
+                    },
+                    "mode": mode,
+                    "consciousness_level": 3
+                }))
+                .unwrap(),
+            ))
+            .unwrap();
+        let res = router.clone().oneshot(req).await.unwrap();
+        assert_eq!(res.status(), StatusCode::OK, "mode {} should be served", mode);
+        let body = axum::body::to_bytes(res.into_body(), usize::MAX).await.unwrap();
+        let json: Value = serde_json::from_slice(&body).unwrap();
+        json["passes"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|p| p["id"].as_str().unwrap_or_default().to_string())
+            .collect()
+    }
+
+    let reading = pass_ids(&router, &token, "integrated-reading").await;
+    let kundali = pass_ids(&router, &token, "integrated-kundali-l0").await;
+
+    assert_ne!(
+        reading, kundali,
+        "distinct modes must have distinct pass plans; identical plans mean the surface is undifferentiated"
+    );
+    assert_eq!(reading, vec!["alpha", "beta"]);
+    assert_eq!(kundali.len(), 12, "kundali is the 12-part reading");
+}
