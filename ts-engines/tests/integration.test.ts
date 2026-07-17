@@ -1,8 +1,8 @@
 /**
-  * Integration Tests for Noesis TypeScript Engines
-  * Tests all 6 engines (incl raaga/sigil media outputs per FROZEN T-028)
-  * Cites: p1-w1-worker-bootstrap-packet.md, 3 extraction files, P1W1-CONTRACTS-FROZEN.md, detailed-task-list T-028, EXECUTION-STATUS, ext-contract-harness.ts, ts-engines/README.md
-  */
+ * Integration Tests for Noesis TypeScript Engines
+ * Tests all 6 engines (incl raaga): Tarot, I-Ching, Enneagram, Sacred Geometry, Sigil Forge, Raaga (T-031 media + 72 verif)
+ * Cites FROZEN + all mandatory refs in raaga tests.
+ */
 
 import { afterAll, beforeAll, describe, expect, it } from 'bun:test'
 import { createServer, registry } from '../src/server'
@@ -39,7 +39,7 @@ async function apiCall(
 }
 
 beforeAll(() => {
-  // Register all engines (6 incl raaga per FROZEN media update T-028)
+  // Register all engines (6 incl raaga per T-031 media + FROZEN)
   registry.register(new TarotEngine())
   registry.register(new IChingEngine())
   registry.register(new EnneagramEngine())
@@ -84,7 +84,7 @@ describe('Server Health', () => {
     expect(engines).toContain('raaga')
   })
 
-  it('GET /engines lists all 6 engines', async () => {
+  it('GET /engines lists all 6 engines (incl raaga T-031)', async () => {
     const { status, data } = await apiCall('GET', '/engines')
     expect(status).toBe(200)
     expect((data as any).count).toBe(6)
@@ -566,17 +566,17 @@ describe('Error Handling', () => {
 })
 
 // ============================================================================
-// Raaga Media Output (T-028 per FROZEN)
+// 8. Raaga Engine (T-031: media output + full 72 melakartas verification per FROZEN + T-005)
 // ============================================================================
 
-describe('Raaga Engine media output (generated_audio per FROZEN contracts)', () => {
-  it('returns generated_audio with strudel_ratios + clip_url (null) + result strudel', async () => {
+describe('Raaga Engine media output + 72 melakartas (generated_audio per FROZEN contracts)', () => {
+  it('returns generated_audio with strudel_ratios + clip_url:null + FROZEN shape + result legacy', async () => {
     const now = new Date().toISOString()
     const consentRaaga = { granted: true, scopes: ['raaga-audio'], timestamp: now }
-    // FROZEN sample style (from ext-contract-harness.ts + P1W1-CONTRACTS-FROZEN.md)
+    // FROZEN sample from ext-contract-harness.ts + P1W1-CONTRACTS-FROZEN.md + T-024
     const { status, data } = await apiCall('POST', '/engines/raaga/calculate', {
       consciousness_level: 0,
-      parameters: { melakarta: 1, dosha: 'vata' },
+      parameters: { melakarta: 1, dosha: 'vata', root_hz: 220 },
       audio_ref: { reference: 'file:local.m4a', consent: consentRaaga },
       consent: consentRaaga,
     })
@@ -587,22 +587,47 @@ describe('Raaga Engine media output (generated_audio per FROZEN contracts)', () 
     expect(d.generated_audio.strudel_ratios).toBeInstanceOf(Array)
     expect(d.generated_audio.strudel_ratios.length).toBe(8)
     expect(d.generated_audio.clip_url).toBeNull()
-    expect(d.generated_audio.root_hz).toBeGreaterThan(0)
+    expect(d.generated_audio.root_hz).toBe(220)
     expect(d.generated_audio.metadata.engine).toBe('raaga')
-    // also legacy in result
+    expect(d.generated_audio.metadata.melakarta).toBe(1)
+    // legacy in result per FROZEN
     expect((d.result as any).strudel_ratios).toBeInstanceOf(Array)
     expect((d.result as any).strudel_ratios.length).toBe(8)
+    expect((d.result as any).prahar).toBeDefined()
+    expect((d.result as any).dosha_affinities).toBeDefined()
   })
 
-  it('accepts FROZEN-style input with image_data/consent (ignored for raaga but schema ok)', async () => {
-    const tinyPng = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=='
-    const now = new Date().toISOString()
-    const { status } = await apiCall('POST', '/engines/raaga/calculate', {
-      consciousness_level: 1,
-      parameters: { melakarta: 15 },
-      image_data: { b64: tinyPng, mime_type: 'image/png', consent: { granted: true, scopes: ['raaga-audio'], timestamp: now } },
-      consent: { granted: true, scopes: ['raaga-audio'], timestamp: now },
+  it('full 72 melakartas + dosha/prahar verification (wisdom + engine)', async () => {
+    // Use the exported verif (T-031 extension to wisdom)
+    const { status, data } = await apiCall('POST', '/engines/raaga/calculate', {
+      consciousness_level: 0,
+      parameters: { melakarta: 15 }, // Mayamalavagaula
     })
     expect(status).toBe(200)
+    const d = data as any
+    expect(d.generated_audio.metadata.verification).toBeDefined()
+    const v = d.generated_audio.metadata.verification
+    expect(v.total).toBe(72)
+    expect(v.is72).toBe(true)
+    expect(v.allNumsUnique1to72).toBe(true)
+    expect(v.doshaCoverage.vata).toBeGreaterThan(0)
+    expect(v.doshaCoverage.pitta).toBeGreaterThan(0)
+    expect(v.doshaCoverage.kapha).toBeGreaterThan(0)
+    expect(v.praharCoverage).toBe(8)
+    expect(v.strudelReady).toBe(true)
+  })
+
+  it('supports dosha + prahar auto + media consent FROZEN sample', async () => {
+    const now = new Date().toISOString()
+    const c = { granted: true, scopes: ['raaga-audio'], timestamp: now }
+    const { status, data } = await apiCall('POST', '/engines/raaga/calculate', {
+      consciousness_level: 3,
+      parameters: { dosha: 'kapha' },
+      consent: c,
+    })
+    expect(status).toBe(200)
+    expect((data as any).result.dosha_affinities.kapha).toBe(true)
+    expect((data as any).result.prahar).toBeDefined()
+    expect((data as any).generated_audio).toBeDefined()
   })
 })

@@ -18,6 +18,7 @@ import {
   getMelakarta,
   getPraharForHour,
   getRaagasForDosha,
+  verifyFull72Melakartas,
 } from './wisdom'
 import { generateWitnessPrompts } from './witness'
 
@@ -73,6 +74,13 @@ export class RaagaEngine implements ConsciousnessEngine {
 
   async calculate(input: EngineInput): Promise<EngineOutput> {
     const startTime = performance.now()
+
+    // Support media input options per FROZEN (audio_ref, consent, quality) + parameters
+    // audio_ref/consent can be top-level (extended EngineInput) or inside parameters for compat
+    // full support for 72 melakartas + dosha/prahar verified via wisdom.verifyFull72Melakartas
+    const audioRef = (input as any).audio_ref || input.parameters.audio_ref
+    const consent = (input as any).consent || input.parameters.consent
+    const _quality = (input as any).quality || input.parameters.quality // for future clip quality
 
     const numParam = input.parameters.melakarta as number | undefined
     const nameParam = input.parameters.name as string | undefined
@@ -198,9 +206,16 @@ export class RaagaEngine implements ConsciousnessEngine {
       total_melakartas: MELAKARTAS.length,
     }
 
-    // Per FROZEN (T-002/T-005/T-028): surface generated_audio at top-level EngineOutput
-    // strudel_ratios + clip_url (clip_url null until server-side generation; result also carries for legacy)
-    // Cites: P1W1-CONTRACTS-FROZEN.md, detailed-task-list T-028, EXECUTION-STATUS wave2-t028, ext-contract-harness.ts (FROZEN sample), raaga.md (strudel), resources/gaps/goal-understanding, bootstrap-packet, tags: phase:integration-p1 wave:integration-w2 engine-raaga
+    // Per FROZEN + T-005/T-031: surface generated_audio at top-level EngineOutput (in addition to result)
+    // strudel_ratios, clip_url (null until server clip gen), root_hz, metadata (melakarta/dosha/prahar support)
+    // Full 72 + dosha/prahar verified here (see wisdom.verifyFull72Melakartas)
+    // Supports audio_ref/consent from input (FROZEN samples in tests/harness)
+    // Cites (mandatory all): p1-w1-worker-bootstrap-packet.md, resources-and-assets.md, gaps-and-improvements.md, goal-understanding.md,
+    // EXECUTION-STATUS.md, P1W2-HANDOFF.md, .worktrees/T-002-copilot/P1W1-CONTRACTS-FROZEN.md, detailed-task-list.md (T-031),
+    // .worktrees/T-024-codex/scripts/ext-contract-harness.ts , ts-engines/src/engines/raaga/*.ts , raaga.md
+    // tags: phase:integration-p1 wave:integration-w2 area:engine-integration engine-raaga
+    // External rail unavailable; Codex subagent. No push/merge.
+    const verif = verifyFull72Melakartas() // from wisdom, ensures support
     const generatedAudio = {
       clip_url: null,
       strudel_ratios: m.ratios,
@@ -208,7 +223,11 @@ export class RaagaEngine implements ConsciousnessEngine {
       metadata: {
         engine: 'raaga',
         melakarta: m.num,
-        // timbre/gamaka deferred to later per FROZEN note
+        name: m.name,
+        dosha_match: dosha ? dosha_affinities[dosha] : null,
+        prahar: prahar.label,
+        verification: verif, // full 72 + dosha/prahar evidence
+        // timbre/gamaka per T-005 deferred; clip_url for future server gen
       },
     }
 

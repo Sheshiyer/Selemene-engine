@@ -274,3 +274,53 @@ export function getPraharForHour(hour: number): PraharInfo {
   }
   return PRAHARS[0]
 }
+
+// ---------------------------------------------------------------------------
+// Full 72 melakartas + dosha/prahar verification (T-031 per FROZEN + T-005)
+// Supports media output options contract (strudel etc via getMelakarta ratios)
+// Cites: detailed-task-list.md T-031, P1W1-CONTRACTS-FROZEN.md (raaga generated_audio), ext-contract-harness.ts (FROZEN samples),
+// p1-w1-worker-bootstrap-packet.md, resources-and-assets.md (72 melakartas production-ready), gaps-and-improvements.md,
+// goal-understanding.md (raaga audio), EXECUTION-STATUS, P1W2-HANDOFF.md, bootstrap, tags: phase:integration-p1 wave:integration-w2 area:engine-integration engine-raaga
+// ---------------------------------------------------------------------------
+
+export interface MelakartaVerification {
+  total: number
+  is72: boolean
+  allNumsUnique1to72: boolean
+  doshaCoverage: Record<Dosha, number>
+  praharCoverage: number // how many prahars have recs
+  strudelReady: boolean // ratios present for all
+}
+
+export function verifyFull72Melakartas(): MelakartaVerification {
+  const total = MELAKARTAS.length
+  const is72 = total === 72
+  const nums = MELAKARTAS.map(m => m.num)
+  const unique = new Set(nums)
+  const allNumsUnique1to72 = unique.size === 72 && Math.min(...nums) === 1 && Math.max(...nums) === 72
+
+  const doshaCoverage: Record<Dosha, number> = {
+    vata: getRaagasForDosha('vata').length,
+    pitta: getRaagasForDosha('pitta').length,
+    kapha: getRaagasForDosha('kapha').length,
+  }
+
+  const praharCoverage = PRAHARS.filter(p => p.recommended.length > 0).length
+
+  const strudelReady = MELAKARTAS.every(m => Array.isArray(m.ratios) && m.ratios.length === 8)
+
+  return {
+    total,
+    is72,
+    allNumsUnique1to72,
+    doshaCoverage,
+    praharCoverage,
+    strudelReady,
+  }
+}
+
+// For media output: strudel_ratios etc derived from melakarta ratios (already in build)
+export function getStrudelRatiosForMelakarta(num: number): readonly number[] | undefined {
+  const m = getMelakarta(num)
+  return m ? m.ratios : undefined
+}

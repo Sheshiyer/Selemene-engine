@@ -3,6 +3,7 @@ import { EnneagramEngine } from '../src/engines/enneagram'
 import { IChingEngine } from '../src/engines/i-ching'
 import { SacredGeometryEngine } from '../src/engines/sacred-geometry'
 import { SigilForgeEngine } from '../src/engines/sigil-forge'
+import { RaagaEngine } from '../src/engines/raaga'
 import { TarotEngine } from '../src/engines/tarot'
 import { createServer, EngineRegistry } from '../src/server'
 
@@ -18,6 +19,7 @@ beforeAll(() => {
   registry.register(new EnneagramEngine())
   registry.register(new SacredGeometryEngine())
   registry.register(new SigilForgeEngine())
+  registry.register(new RaagaEngine())
 
   server = createServer(registry)
   server.listen(TEST_PORT)
@@ -29,15 +31,16 @@ afterAll(() => {
 })
 
 describe('TS baseline registry', () => {
-  it('registers the five bridge engines with stable metadata', async () => {
+  it('registers the six bridge engines (incl raaga T-031) with stable metadata', async () => {
     const response = await fetch(`${baseUrl}/engines`)
     const body = await response.json()
 
     expect(response.status).toBe(200)
-    expect(body.count).toBe(5)
+    expect(body.count).toBe(6)
     expect(body.engines.map((engine: any) => engine.id).sort()).toEqual([
       'enneagram',
       'i-ching',
+      'raaga',
       'sacred-geometry',
       'sigil-forge',
       'tarot',
@@ -51,19 +54,20 @@ describe('TS baseline registry', () => {
     expect(versionsById).toEqual({
       enneagram: '1.0.0',
       'i-ching': '1.0.0',
+      raaga: '1.0.0',
       'sacred-geometry': '1.0.0',
       'sigil-forge': '2.0.0',
       tarot: '1.0.0',
     })
   })
 
-  it('reports healthy sidecar readiness for the five registered engines', async () => {
+  it('reports healthy sidecar readiness for the six registered engines (T-031)', async () => {
     const response = await fetch(`${baseUrl}/health/ready`)
     const body = await response.json()
 
     expect(response.status).toBe(200)
     expect(body.status).toBe('ready')
-    expect(body.engines).toHaveLength(5)
+    expect(body.engines).toHaveLength(6)
     expect(body.failed_engines).toEqual([])
   })
 })

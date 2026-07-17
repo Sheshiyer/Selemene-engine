@@ -16,21 +16,6 @@ export interface WitnessPrompt {
   themes?: string[]
 }
 
-/** Consent for media (matches Rust FROZEN) */
-export interface Consent {
-  granted: boolean
-  scopes: string[]
-  timestamp: string
-  token?: string
-}
-
-/** Quality gate (matches Rust FROZEN) */
-export interface QualitySpec {
-  sufficient?: boolean
-  min_coherence?: number
-  scores?: Record<string, number>
-}
-
 /** Input to any consciousness engine */
 export interface EngineInput {
   /** User's consciousness phase (0-5) */
@@ -42,12 +27,28 @@ export interface EngineInput {
   /** User's question or intention (optional) */
   question?: string
 
-  // --- P1 W1 media contract extensions (T-002, per FROZEN) ---
+  // --- P1 W1 / P2 media extensions per FROZEN (T-002/T-005/T-031) + bootstrap-packet + ext-contract-harness.ts + P1W1-CONTRACTS-FROZEN.md + detailed-task-list T-031
+  // Cites: resources-and-assets.md (raaga production), gaps-and-improvements.md (no prior media), goal-understanding.md (two-prong local-first consent), EXECUTION-STATUS, P1W2-HANDOFF.md, .worktrees/T-024-codex/scripts/ext-contract-harness.ts, p1-w1-worker-bootstrap-packet.md
+  // tags: phase:integration-p1 wave:integration-w2 area:engine-integration engine-raaga
   image_data?: { b64?: string; reference?: string; mime_type?: string; consent?: Consent }
-  video_ref?: string
-  audio_ref?: string
+  audio_ref?: { reference?: string; consent?: Consent }
   consent?: Consent
   quality?: QualitySpec
+}
+
+/** Consent for media (FROZEN match) */
+export interface Consent {
+  granted: boolean
+  scopes: string[]
+  timestamp: string
+  token?: string
+}
+
+/** Quality (FROZEN) */
+export interface QualitySpec {
+  sufficient?: boolean
+  min_coherence?: number
+  scores?: Record<string, number>
 }
 
 /** Output from any consciousness engine */
@@ -63,9 +64,10 @@ export interface EngineOutput {
   /** Processing time in milliseconds */
   processing_time_ms: number
 
-  // --- P1 W1 media contract extensions (T-002, per FROZEN) ---
+  // --- P1 W1 media + generated_audio for raaga per FROZEN T-005/T-031
+  // generated_audio: {strudel_ratios, clip_url etc} ; result still carries legacy
   generated_image?: { b64_json?: string; url?: string; metadata?: Record<string, unknown> }
-  generated_audio?: { clip_url?: string; strudel_ratios?: number[]; root_hz?: number; metadata?: Record<string, unknown> }
+  generated_audio?: { clip_url?: string | null; strudel_ratios?: number[]; root_hz?: number; metadata?: Record<string, unknown> }
 }
 
 /** Metadata about an engine */
