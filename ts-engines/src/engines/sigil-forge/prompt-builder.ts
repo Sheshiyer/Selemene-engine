@@ -9,6 +9,7 @@
  */
 
 import type { SigilMethod } from './wisdom'
+import type { GeneratedImage, ImageGenOptions } from '../providers/image-provider' // T-035: prompt builder uses provider abstraction types (config-only generate/edit)
 
 /** Visual style presets for different sigil aesthetics */
 export type SigilStyle =
@@ -178,3 +179,6 @@ export function buildSigilEditPrompt(
       'text, letters, words, photograph, realistic, multiple symbols, blurry, low quality',
   }
 }
+
+// T-035: re-export provider-aligned types for consumers (prompts feed ImageProvider.generate/edit)
+export type { GeneratedImage, ImageGenOptions } from '../providers/image-provider'
