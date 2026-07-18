@@ -108,7 +108,7 @@ resolve once the P4 api/bridge exposure lands (`p5-p4-next-batch.json` → `p4-a
 | `biofield.createCapture` | `biofield-capture` | always (uploads and persists a capture frame) |
 | `biofield.calculate` | `biofield-capture` | `image_data` attached |
 | `faceReading.calculate` | `face-image` | `image_data` attached |
-| `raaga.calculate` | `raaga-audio` | `audio_ref` attached |
+| `raaga.calculate` | `raaga-audio` | `audio_ref` attached or `parameters.request_clip: true` |
 | `sigilForge.calculate` | `sigil-gen` | `parameters.generate_image === true` |
 
 Consent resolution order: `input.consent` → `mediaRef.consent` (harness pattern).
