@@ -1,26 +1,29 @@
 ---
 project: Selemene-engine
-task: "P5 trusted desktop gateway and Biofield-to-Noesis handoff"
+task: "P6 multi-engine practice assembly and daily witness continuity"
 effort: E3
 effort_source: classifier
-phase: complete
-progress: 82/82
+phase: verify
+progress: 138/138
 mode: algorithm
 started: 2026-07-18T15:00:00+05:30
-updated: 2026-07-18T22:50:00+05:30
+updated: 2026-07-18T23:46:00+05:30
 ---
 
 ## Problem
 
-P4 is now verified on Selemene main, and Sankalpa already presents camera, Raaga, Sigil, Face, and Command Center surfaces. The remaining user journey is fragmented: the SDK is private source-only TypeScript, renderer components call authenticated API routes directly without authorization, Biofield camera capture fabricates an analyzed record before a real backend response, and `ReadingPayload.engine_results` is ignored by the Noesis section builder. The next wave must create one trusted desktop boundary and carry a consented Biofield result into a provenance-safe Noesis witness flow.
+P5 is verified on both mains: each focus engine can produce a bounded result artifact and open a one-engine Noesis witness reading. The remaining Phase 6 break is continuity across practices: every handoff replaces the reading with one artifact, the threshold intake cannot assemble prior engine observations, and the Command Center cannot resume or clear a current multi-engine practice. The next wave must turn four isolated handoffs into one local, resumable witness session without weakening the P5 trust boundary.
 
 ## Vision
 
-Sankalpa feels like one coherent instrument rather than four disconnected demos. A user can keep a capture local, explicitly consent to authenticated analysis, understand whether the result came from local approximation or the backend, and continue that exact result into Noesis depth and witness reflection. Credentials remain in the Electron main process, unavailable services degrade honestly, and auth or consent failures never masquerade as successful local analysis.
+Sankalpa remembers the current practice without becoming dependent or invasive. A user can begin with an inquiry, visit any sequence of Biofield, Face, Raaga, and Sigil surfaces, see which safe observations are assembled, and open one Noesis witness that reflects the whole session. The session remains local, bounded, reversible, provenance-labelled, and free of raw media or credentials.
 
 ## Out of Scope
 
 - Reopening the completed P4 API, bridge, health, raaga clip, face CV, or media-contract work.
+- Reopening the completed P5 SDK, gateway, consent, Biofield, or single-result handoff boundaries.
+- Phase 6 Wave 2 performance tuning, broad accessibility remediation, or redesign of every engine error state.
+- Cloud synchronization, cross-device sessions, account identity, telemetry, or server persistence for practice state.
 - Rebuilding T-125: the live Sankalpa Command Center already launches Noesis and all four focus engines.
 - Production Discord OAuth, token refresh, operating-system keychain storage, billing, or account synchronization.
 - Publishing the SDK to a public registry; this wave proves a packable standalone artifact.
@@ -58,7 +61,7 @@ Sankalpa feels like one coherent instrument rather than four disconnected demos.
 
 ## Goal
 
-Ship the next integration wave across Selemene and Sankalpa: a distributable typed engine SDK, a main/preload-owned authenticated EngineGateway, a real consented Biofield session-and-capture path, and a bounded engine-result artifact that opens in Noesis depth with provenance and witness context. Done means the packaged client installs standalone, no focus-engine request needs renderer-held credentials, local-only consent produces zero network activity, real Biofield responses replace fabricated analysis, all four result adapters are cache-safe, and repository gates pass on the integrated branches. Completion evidence must include both integrated main branches, package and runtime gates, security review, browser validation, and the fully checked ISC record.
+Ship Phase 6 Wave 1 as a local current-practice assembly layer in Sankalpa. Done means threshold context and up to four sanitized focus-engine artifacts accumulate into one bounded session, each engine surface can add without forced navigation, the Command Center can resume or clear the practice, and Noesis opens the exact assembled payload with provenance and self-inquiry language intact. Completion evidence must include pure-function tests, storage failure tests, full build gates, adversarial persistence scans, and a browser-verified multi-route journey.
 
 ## Criteria
 
@@ -181,6 +184,67 @@ Ship the next integration wave across Selemene and Sankalpa: a distributable typ
 - [x] ISC-81: Cross-repository contract fixtures remain green after SDK packaging (probe: fixture validator command).
 - [x] ISC-82: Anti: no credential enters renderer code, no raw media enters reading storage, and no remote sync or destructive git action occurs (probe: bundle, cache, diff, and command audit).
 
+### P6 current practice state
+
+- [x] ISC-83: Current practice day keys derive from an injected timestamp and timezone (probe: deterministic date test).
+- [x] ISC-84: Current practice reading IDs are stable within one explicit local day (probe: ID equality test).
+- [x] ISC-85: The first engine artifact creates a new current-practice reading (probe: empty-cache unit test).
+- [x] ISC-86: Updating inquiry context preserves existing engine artifacts (probe: merge assertion).
+- [x] ISC-87: Adding an engine artifact sanitizes it at session ingress (probe: adversarial fixture assertion).
+- [x] ISC-88: A newer artifact for one engine replaces that engine's prior artifact (probe: unit test).
+- [x] ISC-89: The store accepts exactly the four focus-engine artifact IDs (probe: parameterized unit test).
+- [x] ISC-90: An unknown engine artifact is rejected before persistence (probe: negative unit test).
+- [x] ISC-91: Adding one engine preserves every unrelated engine slot (probe: merge assertion).
+- [x] ISC-92: Crossing midnight in the injected timezone creates a new reading ID (probe: rollover test).
+- [x] ISC-93: Corrupt stored threshold JSON degrades to the default draft (probe: malformed-storage test).
+- [x] ISC-94: A threshold localStorage write failure does not throw into the renderer (probe: throwing-storage test).
+- [x] ISC-95: Oversized aggregate payloads fail before replacing the prior cached reading (probe: transactional size test).
+- [x] ISC-96: Stored practice state contains no raw media bodies (probe: serialized-record scan).
+
+### P6 reading assembly
+
+- [x] ISC-97: Reading assembly includes every sanitized current-practice artifact (probe: four-fixture equality test).
+- [x] ISC-98: Reading assembly preserves the practice subject (probe: payload assertion).
+- [x] ISC-99: Reading assembly preserves the practice inquiry in witness context (probe: payload assertion).
+- [x] ISC-100: Assembled readings use the deterministic current-practice identifier (probe: ID assertion).
+- [x] ISC-101: Assembled readings use a Phase 6 workflow identifier (probe: workflow assertion).
+- [x] ISC-102: Assembled payload creation enforces the existing route-size ceiling (probe: oversized-payload test).
+- [x] ISC-103: Caching an assembled reading stores the exact sanitized payload (probe: cache equality test).
+- [x] ISC-104: The assembled hash decodes to the exact cached payload (probe: route round-trip test).
+- [x] ISC-105: Existing single-artifact witness construction remains compatible (probe: regression test).
+
+### P6 daily-use interface
+
+- [x] ISC-106: Handoff navigation occurs only after transactional aggregate caching succeeds (probe: navigation-target test).
+- [x] ISC-107: A successful add reports the engine label (probe: rendered-text assertion).
+- [x] ISC-108: A successful add reports local or backend provenance (probe: rendered-text assertion).
+- [x] ISC-109: The handoff reports the current artifact count (probe: rendered-text assertion).
+- [x] ISC-110: Opening the combined witness navigates to its exact assembled route (probe: navigation-target test).
+- [x] ISC-111: Failed combined assembly exposes an accessible alert (probe: component test).
+- [x] ISC-112: Threshold submission uses the deterministic current-practice reading ID (probe: integration test).
+- [x] ISC-113: Threshold submission seeds the current practice inquiry (probe: integration test).
+- [x] ISC-114: Threshold preview includes already accumulated engine artifacts (probe: integration test).
+- [x] ISC-115: Command Center shows the current practice artifact count (probe: browser text assertion).
+- [x] ISC-116: Command Center resume opens the exact assembled witness route (probe: browser route assertion).
+- [x] ISC-117: Command Center clear removes the resumable practice (probe: browser interaction assertion).
+- [x] ISC-118: Command Center shows an explicit empty-practice state after clear (probe: browser text assertion).
+
+### P6 wave gate
+
+- [x] ISC-119: Sankalpa documentation describes local multi-engine practice assembly (probe: documentation scan).
+- [x] ISC-120: The full Sankalpa test suite exits zero (probe: `npm test`).
+- [x] ISC-121: Sankalpa typecheck and production build exit zero (probe: package commands).
+- [x] ISC-122: Anti: session, cache, history, hash, and production bundle scans reveal no raw media or credential aliases (probe: adversarial source and runtime scan).
+- [x] ISC-123: Antecedent: Resume is offered only when the current practice contains inquiry context or an engine artifact (probe: empty/non-empty fixture test).
+- [x] ISC-124: Current-practice read and write paths share one day-key function across DST boundaries (probe: timezone parity test).
+- [x] ISC-125: A failed current-practice cache transaction produces no resumable ghost entry (probe: throwing-storage rollback test).
+- [x] ISC-126: A cached current practice with the wrong assembly version fails closed (probe: stale-version fixture test).
+- [x] ISC-127: Clearing today's practice removes matching last-reading and history references (probe: referential-consistency test).
+- [x] ISC-128: Canonical timezone identity is part of the reading ID so equal day keys in different zones cannot collide (probe: cross-zone ID test).
+- [x] ISC-129: Unicode subject and inquiry context round-trip through the exact hash before any cache commit (probe: UTF-8 route and precommit-failure tests).
+- [x] ISC-130: Cached subject and witness context are rebuilt through a strict sanitizing allowlist before resume (probe: poisoned-cache fixture).
+- [x] ISC-131: Last-reading and history commit through one atomic versioned cache envelope (probe: structural-corruption and throwing-storage tests).
+
 ## Test Strategy
 
 | isc | type | check | threshold | tool |
@@ -197,6 +261,10 @@ Ship the next integration wave across Selemene and Sankalpa: a distributable typ
 | ISC-64..70 | Biofield journey | local zero-call, ordered remote session/upload, real response mapping, provenance | all fixtures and transport assertions pass | Vitest plus optional live stack probe |
 | ISC-71..78 | Noesis handoff | normalize, redact, bound, sectionize, preserve witness/disclaimer, open cache route | all pure-function and source assertions pass | Vitest |
 | ISC-79..82 | wave gate | both repository gates, contract fixtures, anti audit | zero new failures or prohibited state | Bun, npm, git, source scans |
+| ISC-83..96, ISC-124..131 | practice identity | timezone/day identity, exact IDs, versioning, replacement, rollover, corruption, atomic write failure, Unicode, context sanitization, clear consistency, size | all date, merge, route, and storage fixtures pass | Vitest with injected clocks and MemoryStorage variants |
+| ISC-97..105 | reading assembly | subject, inquiry, four artifacts, stable IDs, cache/hash equality, size, compatibility | exact payload assertions pass | Vitest |
+| ISC-106..118, ISC-123 | daily-use UI | transactional navigation, provenance/count status, combined open, threshold seed, command resume/clear, meaningful resume antecedent | helper, component, and browser probes pass | Vitest plus browser automation |
+| ISC-119..122 | wave gate | docs, full suite, type/build, persistence and bundle anti-scans | zero failures or sensitive fields | npm, rg, browser automation |
 
 ## Features
 
@@ -213,9 +281,23 @@ Ship the next integration wave across Selemene and Sankalpa: a distributable typ
 | RealBiofieldCapture | Replace fabricated camera analysis with ordered consented session and capture transport | ISC-64..70 | TrustedDesktopGateway | true |
 | NoesisResultHandoff | Normalize, redact, cache, and narrate four engine result artifacts | ISC-71..78 | TrustedDesktopGateway | true |
 | P5WaveGate | Verify both repositories and reconcile status evidence | ISC-79..82 | RealBiofieldCapture, NoesisResultHandoff | false |
+| CurrentPracticeIdentity | Reuse one versioned, transactionally cached reading per local day instead of duplicating session state | ISC-83..96, ISC-124..131 | NoesisResultHandoff | true |
+| PracticeReadingAssembly | Build, cache, and route the exact combined Noesis payload | ISC-97..105 | CurrentPracticeIdentity | true |
+| DailyPracticeControls | Add, resume, clear, and seed the current practice across engine, threshold, and command surfaces | ISC-106..118, ISC-123 | CurrentPracticeIdentity, PracticeReadingAssembly | false |
+| P6WaveGate | Verify storage, routing, user journey, documentation, sensitive-data boundaries, Unicode, and atomic persistence | ISC-119..122, ISC-128..131 | DailyPracticeControls | false |
 
 ## Decisions
 
+- 2026-07-18 23:00: refined: Live state shows T-130/T-135 are complete; the next unresolved roadmap boundary is Phase 6 Wave 1, multi-engine witness assembly, not more engine transport.
+- 2026-07-18 23:00: The current practice is a local derived session containing only sanitized artifacts and inquiry context; it is not a new backend entity or cloud-sync surface.
+- 2026-07-18 23:00: Phase 6 Wave 2 resilience and performance work stays separate so this wave has one falsifiable journey: accumulate, inspect, resume, and open one witness.
+- 2026-07-18 23:05: Council live-code audits converged on deterministic current-reading accumulation; the design reuses the reading cache and existing multi-artifact renderer instead of creating a second artifact store.
+- 2026-07-18 23:05: The independently discovered depth recovery, package-size, accessibility, and runtime-status gaps are queued for Phase 6 Wave 2 rather than mixed into witness assembly.
+- 2026-07-18 23:12: Advisor initially assumed database transactions, RNG, and replay that do not exist in this local artifact-assembly slice; the required conflict re-call removed those phantom requirements.
+- 2026-07-18 23:12: Advisor's remaining valid blockers became ISC-124..127: canonical DST-safe identity, assembly version rejection, cache-write ghost prevention, and referentially consistent clear.
+- 2026-07-18 23:15: Root-cause-at-ingestion: `cacheEngineResultForDepth` creates a fresh one-artifact payload before cache ingress. Fixing aggregation there upgrades all four handoffs simultaneously; display-only merging would leave the data loss intact.
+- 2026-07-18 23:15: Deliverable D1 maps to CurrentPracticeIdentity/P6WaveGate through Codex plus external worktree rails; D2 maps to all four P6 features and ISC-83..127.
+- 2026-07-18 23:49: The fail-open adversarial rail reproduced Unicode route failure, timezone ID collision, poisoned context reuse, and two-key rollback risk; ISC-128..131 require upstream fixes before verification.
 - 2026-07-18: refined: P4 remains complete and immutable; this iteration appends a P5 trusted-desktop and Biofield-to-Noesis feature surface at ISC-43 onward without renumbering prior criteria.
 - 2026-07-18: Live ancestry and source audit supersede stale status prose. T-125 is already satisfied by the Command Center actions and is not reopened.
 - 2026-07-18: Quick Council convergence selected a single desktop gateway and provenance-bearing result artifact before any further UI expansion.
@@ -312,3 +394,7 @@ Ship the next integration wave across Selemene and Sankalpa: a distributable typ
 - ISC-82: Source, bundle, persistence, git-command, and final read-only boundary audits found no renderer credential, raw-media reading persistence, backend CSP bypass, unauthorized file navigation, remote sync, or destructive git action. Final review verdict: `GO — no correctness blockers remain`.
 - Merge evidence: Selemene main contains `f2cc7a83a` and `d4f071434`; Sankalpa main is `8692370`, containing integration merge `7e08431` from source `7002d5f` plus the nested-worktree test-discovery guard.
 - Browser evidence: Gate 4 at 1440×1000 measured Sigil and Face main widths at 1140/1140 with zero horizontal overflow, Face camera at a readable 420 px single column, one Biofield consent control, no page errors or failed requests, and an exact sanitized Raaga-to-Noesis handoff.
+- ISC-83..105 and ISC-123..131: Focused current-practice, threshold-storage, and Noesis regression suites passed after adversarial remediation, covering DST/day identity, collision-free canonical timezone IDs, four-engine replacement, Unicode routes, poison-cache allowlisting, aggregate limits, stale versions, and atomic envelope failures.
+- ISC-106..119: Browser Gate 4 passed Unicode Threshold → Raaga → Sigil → combined Noesis → clear. It visibly proved two observations, retained inquiry, exact engine labels, a concrete current-practice route, and the explicit empty state without functional console, page, request, or HTTP errors.
+- ISC-120..122: The final Sankalpa gate passed with 85/85 tests, both TypeScript projects, production build, whitespace checks, and sensitive fixture-value bundle scans. The only build warning is the known Three.js chunk-size optimization queued for Wave 2.
+- Final review: Independent code audit returned GO with no P0/P1 findings after Unicode, strict context allowlists, single-envelope cache atomicity, malformed-state resilience, and timezone-collision remediation.
