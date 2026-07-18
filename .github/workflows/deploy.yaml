@@ -321,7 +321,10 @@ jobs:
         if: steps.smoke-gate.outputs.skip != 'true'
         env:
           ENGINE_URL: ${{ vars.API_BASE_URL }}
+          # The engine takes a Bearer JWT or an X-API-Key; the gate uses whichever
+          # is provided, so the Selemene API key works here too.
           ENGINE_TOKEN: ${{ secrets.SMOKE_TEST_JWT }}
+          ENGINE_API_KEY: ${{ secrets.SMOKE_TEST_API_KEY }}
         run: node scripts/verify-mode-contract.mjs "${ENGINE_URL}"
 
   admin-smoke:
