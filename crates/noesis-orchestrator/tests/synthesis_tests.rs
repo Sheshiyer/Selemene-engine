@@ -42,6 +42,8 @@ fn mock_output(engine_id: &str, result: serde_json::Value) -> EngineOutput {
             engine_version: String::new(),
         },
     }
+            generated_image: None,
+            generated_audio: None,
 }
 
 fn test_input() -> EngineInput {

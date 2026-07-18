@@ -27,6 +27,28 @@ pub struct EngineInput {
     /// Engine-specific options
     #[serde(default)]
     pub options: HashMap<String, Value>,
+
+    // --- P1 W1 media contract extensions (T-002) ---
+    /// Image input (b64 or ref) for face-reading, sigil, biofield-capture
+    #[serde(default)]
+    #[cfg_attr(feature = "openapi", schema(nullable = true))]
+    pub image_data: Option<MediaRef>,
+    /// Video reference (future capture)
+    #[serde(default)]
+    #[cfg_attr(feature = "openapi", schema(nullable = true))]
+    pub video_ref: Option<String>,
+    /// Audio reference for raaga or other
+    #[serde(default)]
+    #[cfg_attr(feature = "openapi", schema(nullable = true))]
+    pub audio_ref: Option<String>,
+    /// Explicit consent for media ops (required for camera/image/gen)
+    #[serde(default)]
+    #[cfg_attr(feature = "openapi", schema(nullable = true))]
+    pub consent: Option<Consent>,
+    /// Quality requirements / gate
+    #[serde(default)]
+    #[cfg_attr(feature = "openapi", schema(nullable = true))]
+    pub quality: Option<QualitySpec>,
 }
 
 fn default_current_time() -> DateTime<Utc> {
@@ -48,6 +70,16 @@ pub struct EngineOutput {
     pub consciousness_level: u8,
     /// Calculation metadata (timing, backend, precision)
     pub metadata: CalculationMetadata,
+
+    // --- P1 W1 media contract extensions (T-002) ---
+    /// Generated image (sigil etc) with b64 or url + metadata
+    #[serde(default)]
+    #[cfg_attr(feature = "openapi", schema(nullable = true))]
+    pub generated_image: Option<GeneratedImage>,
+    /// Generated / clip audio (raaga strudel + optional server clip)
+    #[serde(default)]
+    #[cfg_attr(feature = "openapi", schema(nullable = true))]
+    pub generated_audio: Option<GeneratedAudio>,
 }
 
 /// Birth data for chart-based calculations
@@ -155,6 +187,7 @@ pub struct CalculationMetadata {
     /// Whether the result was retrieved from cache
     pub cached: bool,
     /// Timestamp of calculation
+    #[cfg_attr(feature = "openapi", schema(value_type = String))]
     pub timestamp: DateTime<Utc>,
     /// Engine version (from crate Cargo.toml)
     #[serde(default)]
@@ -180,6 +213,7 @@ pub struct WorkflowResult {
     #[cfg_attr(feature = "openapi", schema(nullable = true))]
     pub synthesis: Option<Value>,
     pub total_time_ms: f64,
+    #[cfg_attr(feature = "openapi", schema(value_type = String))]
     pub timestamp: DateTime<Utc>,
 }
 
@@ -256,12 +290,21 @@ pub struct VimshottariResultSchema {
 #[cfg(feature = "openapi")]
 #[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
 pub struct BiofieldResultSchema {
+    // NOTE (T-002 fix): stub was inaccurate for both paths.
+    // Birth biofield (engine-biofield): nested "metrics" + chakra_readings (see engine-biofield/models.rs)
+    // Capture (biofield-capture): 11 flat metrics + quality from Sankalpa biofieldDomain.ts + python sidecar.
+    // Use result as Value; this schema is illustrative only. Do not generate clients from it.
     #[schema(example = "earth")]
-    pub dominant_element: String,
+    pub dominant_element: Option<String>,
     #[schema(example = 0.72)]
     pub coherence_score: f64,
     #[schema(example = "grounding")]
-    pub recommended_practice: String,
+    pub recommended_practice: Option<String>,
+    // For capture path example
+    #[cfg_attr(feature = "openapi", schema(nullable = true))]
+    pub metrics: Option<serde_json::Value>,
+    #[cfg_attr(feature = "openapi", schema(nullable = true))]
+    pub quality_assessment: Option<serde_json::Value>,
 }
 
 #[cfg(feature = "openapi")]
@@ -355,12 +398,17 @@ pub struct SacredGeometryResultSchema {
 #[cfg(feature = "openapi")]
 #[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
 pub struct SigilForgeResultSchema {
-    #[schema(example = "SIG-20260303-9A7")]
-    pub sigil_id: String,
-    #[schema(example = "clarity")]
+    // NOTE (T-002 fix): removed phantom `vector_path` / sigil_id (see gaps: no code ever emits vector/SVG path).
+    // Real runtime (ts-engines/sigil-forge/engine.ts): intention + method obj + optional generated_image {b64_json}
+    // + processing, charging_suggestions. svg_preview is {status} object, not path.
+    #[schema(example = "I attract peace and clarity")]
     pub intention: String,
-    #[schema(example = "M1 L10,2 L15,8 ...")]
-    pub vector_path: String,
+    #[schema(example = "word-elimination")]
+    pub method: String,
+    #[cfg_attr(feature = "openapi", schema(nullable = true))]
+    pub generated_image: Option<serde_json::Value>,
+    #[cfg_attr(feature = "openapi", schema(nullable = true))]
+    pub processing: Option<serde_json::Value>,
 }
 
 #[cfg(feature = "openapi")]
@@ -384,3 +432,169 @@ pub enum EngineResultData {
     SacredGeometry(SacredGeometryResultSchema),
     SigilForge(SigilForgeResultSchema),
 }
+
+// ---------------------------------------------------------------------------
+// Media & Consent extensions for P1 contract freeze (T-002)
+// image_data supports b64 (small) | reference (url/ref for large/video/audio)
+// generated_* for outputs from sigil, raaga clip etc.
+// Fixes: biofield stub was inaccurate (nested vs flat); sigil had phantom vector_path
+// ---------------------------------------------------------------------------
+
+/// Consent record for any media capture or generation (local-first + opt-in)
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[cfg_attr(feature = "openapi", derive(ToSchema))]
+pub struct Consent {
+    pub granted: bool,
+    /// e.g. ["biofield-capture", "face-image", "sigil-gen"]
+    pub scopes: Vec<String>,
+    #[cfg_attr(feature = "openapi", schema(value_type = String))]
+    pub timestamp: DateTime<Utc>,
+    #[cfg_attr(feature = "openapi", schema(nullable = true))]
+    pub token: Option<String>,
+}
+
+/// Quality gate for capture (from Sankalpa PIP + sidecar)
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[cfg_attr(feature = "openapi", derive(ToSchema))]
+pub struct QualitySpec {
+    #[cfg_attr(feature = "openapi", schema(nullable = true))]
+    pub sufficient: Option<bool>,
+    #[cfg_attr(feature = "openapi", schema(nullable = true))]
+    pub min_coherence: Option<f64>,
+    /// engine-specific scores e.g. sharpness, contrast
+    #[serde(default)]
+    pub scores: HashMap<String, f64>,
+}
+
+/// Unified media reference for input (image_data, audio, video)
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[cfg_attr(feature = "openapi", derive(ToSchema))]
+pub struct MediaRef {
+    /// Base64 data (for small images, <~1-2MB recommended to keep payloads sane)
+    #[cfg_attr(feature = "openapi", schema(nullable = true))]
+    pub b64: Option<String>,
+    /// External ref (URL, R2 key, upload_id, file path token)
+    #[cfg_attr(feature = "openapi", schema(nullable = true))]
+    pub reference: Option<String>,
+    #[cfg_attr(feature = "openapi", schema(nullable = true))]
+    pub mime_type: Option<String>,
+    #[cfg_attr(feature = "openapi", schema(nullable = true))]
+    pub consent: Option<Consent>,
+}
+
+/// Generated image output (sigil, future yantra etc)
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(ToSchema))]
+pub struct GeneratedImage {
+    #[cfg_attr(feature = "openapi", schema(nullable = true))]
+    pub b64_json: Option<String>,
+    #[cfg_attr(feature = "openapi", schema(nullable = true))]
+    pub url: Option<String>,
+    pub metadata: GeneratedImageMetadata,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(ToSchema))]
+pub struct GeneratedImageMetadata {
+    pub model: String,
+    pub prompt: String,
+    #[cfg_attr(feature = "openapi", schema(nullable = true))]
+    pub style: Option<String>,
+    #[cfg_attr(feature = "openapi", schema(nullable = true))]
+    pub provider: Option<String>,
+    #[cfg_attr(feature = "openapi", schema(nullable = true))]
+    pub seed: Option<u64>,
+}
+
+/// Generated audio output (raaga clips, future)
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(ToSchema))]
+pub struct GeneratedAudio {
+    /// Optional server-side clip URL (once generated/exported)
+    #[cfg_attr(feature = "openapi", schema(nullable = true))]
+    pub clip_url: Option<String>,
+    /// Strudel-compatible just-intonation ratios (for raaga)
+    #[cfg_attr(feature = "openapi", schema(nullable = true))]
+    pub strudel_ratios: Option<Vec<f64>>,
+    #[cfg_attr(feature = "openapi", schema(nullable = true))]
+    pub root_hz: Option<f64>,
+    pub metadata: GeneratedAudioMetadata,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(ToSchema))]
+pub struct GeneratedAudioMetadata {
+    pub engine: String,
+    #[cfg_attr(feature = "openapi", schema(nullable = true))]
+    pub melakarta: Option<u32>,
+    #[cfg_attr(feature = "openapi", schema(nullable = true))]
+    pub timbre: Option<String>,
+}
+
+// T-004: Biofield-capture + face image lifecycle contract (shared with sankalpa biofieldDomain.ts)
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[cfg_attr(feature = "openapi", derive(ToSchema))]
+pub enum CaptureState {
+    Requested,
+    Uploaded,
+    Analyzed,
+    Persisted,
+    Rejected,
+    Reprocessed,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[cfg_attr(feature = "openapi", derive(ToSchema))]
+pub enum SessionStatus {
+    Active,
+    Closed,
+    Abandoned,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(ToSchema))]
+pub struct CaptureLifecycle {
+    pub state: CaptureState,
+    pub session_id: String,
+    pub reading_id: Option<String>,
+    pub consent: Consent,
+    pub quality: QualitySpec,
+    #[cfg_attr(feature = "openapi", schema(nullable = true))]
+    pub artifacts: Option<Vec<String>>, // refs
+}
+
+// ---------------------------------------------------------------------------
+// Contract examples (T-002) - validate for 4 engines. Roundtrip + schema ok.
+// These are source of truth for P1; update engine docs if drift.
+// ---------------------------------------------------------------------------
+
+/*
+Example EngineInput for biofield-capture (matches sankalpa biofieldDomain + consent gate):
+{
+  "current_time": "2026-07-17T12:00:00Z",
+  "options": { "consciousness_level": 2 },
+  "image_data": {
+    "b64": "iVBORw0KGgoAAAANSUhEUgAA...",  // or reference
+    "mime_type": "image/png",
+    "consent": { "granted": true, "scopes": ["biofield-capture"], "timestamp": "2026-..." }
+  },
+  "consent": { "granted": true, "scopes": ["biofield-capture"], "timestamp": "..." },
+  "quality": { "sufficient": true, "scores": { "sharpness": 0.82 } }
+}
+
+Example EngineOutput for biofield-capture (11 metrics + quality; flat here, nested in birth path):
+{ "engine_id": "biofield-capture", "result": { "metrics": { "fractal_dimension": 1.52, ... "body_symmetry": 0.74 }, "quality_assessment": {..} }, ... "generated_image": null }
+
+Example for sigil-forge (no vector_path):
+Input: { "options": { "intention": "I attract peace", "generate_image": true, "image_style": "runic" }, "consent": {...} }
+Output: { "engine_id": "sigil-forge", "result": { "intention": "...", "method": { "id": "word-elimination", ... }, "generated_image": { "b64_json": "...", "metadata": { "model": "flux...", "prompt": "..." } } }, "generated_image": { "b64_json": "...", "metadata": {...} } }
+
+Example for raaga (T-005 extension ready):
+Output result has "strudel_ratios": [1.0, 1.066..., ...], and top-level "generated_audio": { "strudel_ratios": [...], "clip_url": null, "metadata": { "melakarta": 15 } }
+
+Example for face-reading (image_data input):
+Input adds "image_data": { "b64": "...", "consent": ... }
+Output: { "result": { "analysis": { "constitution": { "primary_dosha": "vata", ... }, "elemental_balance": {...} } } }
+
+Schema validation: cargo test (future) + utoipa openapi gen will cover. Existing form engines unaffected (all new fields default/Option).
+*/

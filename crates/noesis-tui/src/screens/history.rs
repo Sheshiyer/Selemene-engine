@@ -211,7 +211,9 @@ impl HistoryBrowser {
                                     timestamp: entry.created_at,
                                     engine_version: String::new(),
                                 },
-                            };
+                            }
+            generated_image: None,
+            generated_audio: None,;
                             Action::ShowEngineResult {
                                 engine_id: entry.engine_id.clone(),
                                 output,

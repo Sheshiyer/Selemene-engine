@@ -35,12 +35,15 @@ pub use python_client::PythonServiceClient;
 pub use ts_client::{TsHealthResponse, WitnessPrompt};
 
 pub use noesis_core::{
-    CalculationMetadata, ConsciousnessEngine, EngineError, EngineInput, EngineOutput,
-    ValidationResult,
+    CalculationMetadata, ConsciousnessEngine, Consent, EngineError, EngineInput, EngineOutput,
+    GeneratedAudio, GeneratedImage, MediaRef, QualitySpec, ValidationResult,
 };
 
 /// Default URL for the TypeScript engines server.
 pub const DEFAULT_TS_SERVER_URL: &str = "http://localhost:3001";
+
+/// Default URL for the Python sidecar (biofield-capture / face-reading CV services).
+pub const DEFAULT_PYTHON_SERVER_URL: &str = "http://localhost:8002";
 
 /// Default timeout for HTTP requests in seconds (overridable via `TS_BRIDGE_TIMEOUT` env var).
 pub const DEFAULT_TIMEOUT_SECS: u64 = 30;
@@ -374,9 +377,23 @@ impl BridgeEngine {
     }
 
     fn to_ts_request(&self, input: &EngineInput) -> crate::ts_client::TsEngineRequest {
+        let mut parameters = input.options.clone();
+        // T-002: forward media contract fields into parameters for TS engines (sigil, raaga, future)
+        if let Some(ref img) = input.image_data {
+            parameters.insert("image_data".to_string(), serde_json::to_value(img).unwrap_or(serde_json::Value::Null));
+        }
+        if let Some(ref r) = input.audio_ref {
+            parameters.insert("audio_ref".to_string(), serde_json::Value::String(r.clone()));
+        }
+        if let Some(ref r) = input.video_ref {
+            parameters.insert("video_ref".to_string(), serde_json::Value::String(r.clone()));
+        }
+        if let Some(ref c) = input.consent {
+            parameters.insert("consent".to_string(), serde_json::to_value(c).unwrap_or(serde_json::Value::Null));
+        }
         crate::ts_client::TsEngineRequest {
             consciousness_level: self.required_phase,
-            parameters: input.options.clone(),
+            parameters,
             seed: None,
             question: Self::extract_question(&input.options),
         }
@@ -508,6 +525,8 @@ impl ConsciousnessEngine for BridgeEngine {
                 timestamp: Utc::now(),
                 engine_version: env!("CARGO_PKG_VERSION").to_string(),
             },
+            generated_image: None,
+            generated_audio: None,
         })
     }
 
@@ -605,6 +624,44 @@ impl BridgeManager {
             base_url = %base_url,
             engine_count = engines.len(),
             "BridgeManager initialized"
+        );
+
+        Self { base_url, engines }
+    }
+
+    /// Create a new manager with only the four media-enabled focus engines.
+    ///
+    /// This is used for P4 bridge registration verification: biofield (capture),
+    /// face-reading, raaga, sigil-forge.  Each engine is registered with its
+    /// media contract so that callers can assert round-trip field preservation.
+    pub fn new_focus_engines(base_url: impl Into<String>) -> Self {
+        let base_url: String = base_url.into();
+
+        let engines: Vec<Arc<dyn ConsciousnessEngine>> = vec![
+            // biofield-capture: media-enabled via Python sidecar (image_data + consent)
+            Arc::new(BridgeEngine::new(
+                "biofield-capture",
+                "Biofield Capture",
+                1,
+                DEFAULT_PYTHON_SERVER_URL,
+            )),
+            // face-reading: media-enabled via Python sidecar / TS fallback (image_data + consent)
+            Arc::new(BridgeEngine::new(
+                "face-reading",
+                "Face Reading",
+                1,
+                &base_url,
+            )),
+            // raaga: audio media contract (audio_ref + generated_audio)
+            Arc::new(BridgeEngine::raaga_with_url(&base_url)),
+            // sigil-forge: generative image contract (generate_image + generated_image)
+            Arc::new(BridgeEngine::sigil_forge_with_url(&base_url)),
+        ];
+
+        info!(
+            base_url = %base_url,
+            engine_count = engines.len(),
+            "BridgeManager focus engines initialized"
         );
 
         Self { base_url, engines }
@@ -760,6 +817,7 @@ pub struct BridgeCircuitBreakerSnapshot {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::ts_client::TsEngineRequest;
     use chrono::Utc;
     use serde_json::json;
     use std::collections::HashMap;
@@ -771,6 +829,12 @@ mod tests {
             location: None,
             precision: noesis_core::Precision::Standard,
             options: HashMap::new(),
+            // P1 W1 media extensions (defaults for legacy test inputs)
+            image_data: None,
+            video_ref: None,
+            audio_ref: None,
+            consent: None,
+            quality: None,
         }
     }
 
@@ -993,5 +1057,197 @@ mod tests {
     async fn bridge_manager_is_available_false_when_not_running() {
         let manager = BridgeManager::new("http://localhost:59999");
         assert!(!manager.is_available().await);
+    }
+
+    // -----------------------------------------------------------------------
+    // P4 bridge registration verification for media-enabled focus engines.
+    // Builds EngineInput with FROZEN samples, converts via bridge to
+    // TsEngineRequest and back (via deserialization), asserts no loss of media
+    // fields.  Cites: p1-w1-worker-bootstrap-packet.md, resources-and-assets.md,
+    // gaps-and-improvements.md, goal-understanding.md,
+    // P1W1-CONTRACTS-FROZEN.md, detailed-task-list.md (T-085..T-089),
+    // crates/noesis-bridge/src/, EXECUTION-STATUS.md.
+    // Tags: phase:integration-p1 wave:integration-w2 area:engine-integration
+    // -----------------------------------------------------------------------
+
+    /// tiny valid 1x1 PNG b64 (FROZEN sample)
+    const TINY_PNG_B64: &str = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==";
+
+    fn frozen_media_input(engine: &str) -> EngineInput {
+        let now = Utc::now();
+        let mut options = HashMap::new();
+        let mut image_data: Option<MediaRef> = None;
+        let mut audio_ref: Option<String> = None;
+        let mut consent = Consent::default();
+        consent.granted = true;
+        consent.timestamp = now;
+
+        match engine {
+            "biofield-capture" => {
+                consent.scopes = vec!["biofield-capture".to_string()];
+                image_data = Some(MediaRef {
+                    b64: Some(TINY_PNG_B64.to_string()),
+                    reference: None,
+                    mime_type: Some("image/png".to_string()),
+                    consent: Some(consent.clone()),
+                });
+                options.insert("consciousness_level".to_string(), json!(2));
+            }
+            "face-reading" => {
+                consent.scopes = vec!["face-image".to_string()];
+                image_data = Some(MediaRef {
+                    b64: Some(TINY_PNG_B64.to_string()),
+                    reference: None,
+                    mime_type: Some("image/jpeg".to_string()),
+                    consent: Some(consent.clone()),
+                });
+                options.insert("consciousness_level".to_string(), json!(1));
+            }
+            "raaga" => {
+                consent.scopes = vec!["raaga-audio".to_string()];
+                audio_ref = Some("file:local.m4a".to_string());
+                options.insert("melakarta".to_string(), json!(1));
+                options.insert("dosha".to_string(), json!("vata"));
+            }
+            "sigil-forge" | _ => {
+                consent.scopes = vec!["sigil-gen".to_string()];
+                options.insert("intention".to_string(), json!("I witness my patterns clearly"));
+                options.insert("generate_image".to_string(), json!(true));
+                options.insert("image_style".to_string(), json!("runic"));
+            }
+        }
+
+        EngineInput {
+            birth_data: None,
+            current_time: now,
+            location: None,
+            precision: noesis_core::Precision::Standard,
+            options,
+            image_data,
+            video_ref: None,
+            audio_ref,
+            consent: Some(consent),
+            quality: Some(QualitySpec {
+                sufficient: Some(true),
+                min_coherence: Some(0.6),
+                scores: [("sharpness".to_string(), 0.82_f64)].into_iter().collect(),
+            }),
+        }
+    }
+
+    fn assert_ts_request_preserves_media(
+        req: &TsEngineRequest,
+        engine: &str,
+        original: &EngineInput,
+        expected_phase: u8,
+    ) {
+        assert_eq!(
+            req.consciousness_level, expected_phase,
+            "{}: required_phase mismatch",
+            engine
+        );
+
+        // options are merged into parameters
+        if engine == "sigil-forge" {
+            assert_eq!(
+                req.parameters.get("intention").and_then(Value::as_str),
+                Some("I witness my patterns clearly"),
+                "{}: intention lost from options",
+                engine
+            );
+        }
+
+        if let Some(ref img) = original.image_data {
+            let req_img = req.parameters.get("image_data").expect("image_data missing");
+            let roundtrip: MediaRef = serde_json::from_value(req_img.clone())
+                .expect("image_data should roundtrip as MediaRef");
+            assert_eq!(roundtrip.b64, img.b64, "{}: b64 lost", engine);
+            assert_eq!(roundtrip.mime_type, img.mime_type, "{}: mime_type lost", engine);
+            let roundtrip_consent = roundtrip.consent.as_ref().expect("consent missing");
+            assert!(roundtrip_consent.granted, "{}: consent.granted lost", engine);
+            // Scope is engine-specific per FROZEN examples (biofield-capture, face-image, ...)
+            assert!(
+                !roundtrip_consent.scopes.is_empty(),
+                "{}: consent scopes must not be empty",
+                engine
+            );
+        }
+
+        if let Some(ref audio) = original.audio_ref {
+            assert_eq!(
+                req.parameters.get("audio_ref").and_then(Value::as_str),
+                Some(audio.as_str()),
+                "{}: audio_ref lost",
+                engine
+            );
+        }
+
+        if let Some(ref consent) = original.consent {
+            let req_consent = req.parameters.get("consent").expect("consent missing");
+            let roundtrip: Consent = serde_json::from_value(req_consent.clone())
+                .expect("consent should roundtrip as Consent");
+            assert_eq!(roundtrip.granted, consent.granted, "{}: consent.granted lost", engine);
+            assert_eq!(roundtrip.scopes, consent.scopes, "{}: consent.scopes lost", engine);
+        }
+    }
+
+    #[test]
+    fn bridge_manager_focus_engines_registration() {
+        let manager = BridgeManager::new_focus_engines("http://localhost:3001");
+        let engines = manager.engines();
+        let ids: Vec<&str> = engines.iter().map(|e| e.engine_id()).collect();
+        assert_eq!(engines.len(), 4, "focus manager must expose 4 engines");
+        assert!(ids.contains(&"biofield-capture"), "biofield-capture missing");
+        assert!(ids.contains(&"face-reading"), "face-reading missing");
+        assert!(ids.contains(&"raaga"), "raaga missing");
+        assert!(ids.contains(&"sigil-forge"), "sigil-forge missing");
+    }
+
+    #[test]
+    fn bridge_to_ts_request_preserves_biofield_capture_media() {
+        let engine = BridgeEngine::new("biofield-capture", "Biofield Capture", 1, DEFAULT_PYTHON_SERVER_URL);
+        let input = frozen_media_input("biofield-capture");
+        let req = engine.to_ts_request(&input);
+        assert_ts_request_preserves_media(&req, "biofield-capture", &input, 1);
+    }
+
+    #[test]
+    fn bridge_to_ts_request_preserves_face_reading_media() {
+        let engine = BridgeEngine::new("face-reading", "Face Reading", 1, DEFAULT_TS_SERVER_URL);
+        let input = frozen_media_input("face-reading");
+        let req = engine.to_ts_request(&input);
+        assert_ts_request_preserves_media(&req, "face-reading", &input, 1);
+    }
+
+    #[test]
+    fn bridge_to_ts_request_preserves_raaga_audio_ref() {
+        let engine = BridgeEngine::raaga();
+        let input = frozen_media_input("raaga");
+        let req = engine.to_ts_request(&input);
+        assert_ts_request_preserves_media(&req, "raaga", &input, 0);
+    }
+
+    #[test]
+    fn bridge_to_ts_request_preserves_sigil_generate_image_request() {
+        let engine = BridgeEngine::sigil_forge();
+        let input = frozen_media_input("sigil-forge");
+        let req = engine.to_ts_request(&input);
+        assert_ts_request_preserves_media(&req, "sigil-forge", &input, 1);
+        assert_eq!(
+            req.parameters.get("generate_image").and_then(Value::as_bool),
+            Some(true),
+            "sigil-forge: generate_image flag lost"
+        );
+    }
+
+    #[test]
+    fn bridge_engine_cache_key_includes_media_fields() {
+        let engine = BridgeEngine::sigil_forge();
+        let input = frozen_media_input("sigil-forge");
+        let key1 = engine.cache_key(&input);
+        let mut input2 = input.clone();
+        input2.consent.as_mut().unwrap().scopes.push("extra".to_string());
+        let key2 = engine.cache_key(&input2);
+        assert_ne!(key1, key2, "cache key must vary when consent scopes vary");
     }
 }

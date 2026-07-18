@@ -285,6 +285,8 @@ impl ConsciousnessEngine for NadaBrahmanEngine {
                 timestamp: Utc::now(),
                 engine_version: env!("CARGO_PKG_VERSION").to_string(),
             },
+            generated_image: None,
+            generated_audio: None,
         })
     }
 
@@ -516,6 +518,8 @@ mod tests {
                 timestamp: Utc::now(),
                 engine_version: String::new(),
             },
+            generated_image: None,
+            generated_audio: None,
         };
 
         let validation = engine.validate(&output).await.unwrap();

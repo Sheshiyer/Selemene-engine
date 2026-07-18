@@ -96,7 +96,9 @@ impl ConsciousnessEngine for ProbeEngine {
                 timestamp: Utc::now(),
                 engine_version: "test".to_string(),
             },
-        })
+        }
+            generated_image: None,
+            generated_audio: None,)
     }
 
     async fn validate(&self, _output: &EngineOutput) -> Result<ValidationResult, EngineError> {

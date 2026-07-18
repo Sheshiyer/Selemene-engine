@@ -282,6 +282,8 @@ impl ConsciousnessEngine for BiorhythmEngine {
                 timestamp: Utc::now(),
                 engine_version: env!("CARGO_PKG_VERSION").to_string(),
             },
+            generated_image: None,
+            generated_audio: None,
         })
     }
 

@@ -638,6 +638,8 @@ mod tests {
                 engine_version: String::new(),
             },
         }
+            generated_image: None,
+            generated_audio: None,
     }
 
     fn mock_geometry_output() -> EngineOutput {
@@ -659,6 +661,8 @@ mod tests {
                 engine_version: String::new(),
             },
         }
+            generated_image: None,
+            generated_audio: None,
     }
 
     fn test_input() -> EngineInput {

@@ -641,6 +641,8 @@ mod tests {
                 engine_version: String::new(),
             },
         }
+            generated_image: None,
+            generated_audio: None,
     }
 
     #[test]

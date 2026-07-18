@@ -299,7 +299,9 @@ mod tests {
                     timestamp: Utc::now(),
                     engine_version: String::new(),
                 },
-            })
+            }
+            generated_image: None,
+            generated_audio: None,)
         }
 
         async fn validate(

@@ -93,7 +93,9 @@ impl ConsciousnessEngine for DelayMockEngine {
                 timestamp: Utc::now(),
                 engine_version: String::new(),
             },
-        })
+        }
+            generated_image: None,
+            generated_audio: None,)
     }
 
     async fn validate(&self, _output: &EngineOutput) -> Result<ValidationResult, EngineError> {

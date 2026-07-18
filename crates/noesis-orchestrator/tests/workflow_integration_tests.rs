@@ -108,7 +108,9 @@ impl ConsciousnessEngine for MockEngine {
                 timestamp: Utc::now(),
                 engine_version: String::new(),
             },
-        })
+        }
+            generated_image: None,
+            generated_audio: None,)
     }
 
     async fn validate(&self, _output: &EngineOutput) -> Result<ValidationResult, EngineError> {
@@ -708,7 +710,9 @@ async fn test_synthesis_theme_detection() {
                 timestamp: Utc::now(),
                 engine_version: String::new(),
             },
-        },
+        }
+            generated_image: None,
+            generated_audio: None,,
     );
     successful_outputs.insert(
         "engine2".to_string(),
@@ -725,7 +729,9 @@ async fn test_synthesis_theme_detection() {
                 timestamp: Utc::now(),
                 engine_version: String::new(),
             },
-        },
+        }
+            generated_image: None,
+            generated_audio: None,,
     );
     successful_outputs.insert(
         "engine3".to_string(),
@@ -742,7 +748,9 @@ async fn test_synthesis_theme_detection() {
                 timestamp: Utc::now(),
                 engine_version: String::new(),
             },
-        },
+        }
+            generated_image: None,
+            generated_audio: None,,
     );
 
     let result = FullSpectrumResult {

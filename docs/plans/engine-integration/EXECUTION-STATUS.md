@@ -594,3 +594,28 @@ img = np.zeros((100,100,3), dtype=np.uint8); img[20:80,20:80]=255; m=_extract_ma
 **Cites (enforced in all new/edited files + this entry):** p1-w1-worker-bootstrap-packet.md + resources-and-assets.md + gaps-and-improvements.md + goal-understanding.md + EXECUTION-STATUS.md + P1W2-HANDOFF.md + P1W1-CONTRACTS-FROZEN.md + detailed-task-list.md + data/face-reading/facial_landmark_mappings.json + T-065 biofield pattern files + p5-p4-next-batch.json.
 **VERIFY:** cargo test -p engine-face-reading (46+1 green); pytest python-services/tests (53 green); grep -l "face-cv-hook-p3" crates/engine-face-reading/src/*.rs python-services/mediapipe_service/analyze.py python-services/tests/test_mediapipe_face_cv.py python-services/shared/models.py. No drift: FROZEN contracts untouched; heuristic fallback + mock stub paths unchanged; consent required before pixels leave engine (local-first). No push/merge — orchestrator merges at boundary.
 **Next:** P4 api exposure of face CV path (config), Sankalpa T-120 face UI can target landmark_analysis when present.
+
+## p4-bridge-verify (P4 bridge registration verification for media-enabled engines) — EXECUTED (2026-07-18, Codex/opencode; worktree only, no push/merge)
+**Task:** Execute p4-bridge-verify from p4-split-batch.json: Implement P4 noesis-bridge registration verification for media-enabled engines (biofield, face-reading, raaga, sigil-forge).
+**Worktree:** .worktrees/p4-bridge-verify-codex -b swarm/engines/p4-w1/bridge/p4-bridge-verify-codex.
+**Tags:** phase:integration-p1 wave:integration-w2 area:engine-integration engine-biofield engine-face-reading engine-raaga engine-sigil-forge.
+
+**MANDATORY first reads (ALL completed before any edit):** p1-w1-worker-bootstrap-packet.md, resources-and-assets.md, gaps-and-improvements.md, goal-understanding.md, EXECUTION-STATUS.md, P1W2-HANDOFF.md, .worktrees/T-002-copilot/docs/plans/engine-integration/P1W1-CONTRACTS-FROZEN.md, detailed-task-list.md (Phase 4 bridge tasks), crates/noesis-bridge/src/.
+
+**Changes (worktree only):**
+- crates/noesis-core/src/types.rs : merged FROZEN media contracts from T-002-copilot (EngineInput/Output media fields + MediaRef/Consent/QualitySpec/GeneratedImage/GeneratedAudio/CaptureLifecycle).
+- crates/noesis-core/Cargo.toml : utoipa chrono feature for openapi schema.
+- crates/noesis-bridge/src/lib.rs :
+  - Added `BridgeManager::new_focus_engines()` registering the four media-enabled focus engines (biofield-capture @ DEFAULT_PYTHON_SERVER_URL, face-reading, raaga, sigil-forge).
+  - Added `DEFAULT_PYTHON_SERVER_URL` constant.
+  - Updated `to_ts_request` to forward `image_data`, `audio_ref`, `video_ref`, `consent` from EngineInput into TS parameters (T-002 forward).
+  - Added 6 verification tests using FROZEN samples: focus-engine registration, biofield-capture image_data+consent roundtrip, face-reading image_data+consent roundtrip, raaga audio_ref roundtrip, sigil-forge generate_image request roundtrip, cache-key varies with consent scopes.
+
+**Evidence (repro):**
+- `cd .worktrees/p4-bridge-verify-codex && cargo test -p noesis-bridge` → **41 passed + 1 doc-test passed; 0 failed** (baseline 35 + 6 new P4 verification tests).
+- `cargo test -p noesis-core --features openapi` green (2 passed).
+- FROZEN samples exercised: 1x1 PNG b64, consent scopes (biofield-capture, face-image, raaga-audio, sigil-gen), audio_ref, generate_image flag. Bridge to_ts_request roundtrips media fields via serde_json without loss.
+
+**Cites (enforced in all edits/comments):** p1-w1-worker-bootstrap-packet.md, resources-and-assets.md, gaps-and-improvements.md, goal-understanding.md, EXECUTION-STATUS.md, P1W2-HANDOFF.md, .worktrees/T-002-copilot/docs/plans/engine-integration/P1W1-CONTRACTS-FROZEN.md, detailed-task-list.md (Phase 4 bridge tasks), crates/noesis-bridge/src/, p4-split-batch.json.
+**VERIFY:** `cd .worktrees/p4-bridge-verify-codex && cargo test -p noesis-bridge` (41p green); new tests: `bridge_manager_focus_engines_registration`, `bridge_to_ts_request_preserves_biofield_capture_media`, `bridge_to_ts_request_preserves_face_reading_media`, `bridge_to_ts_request_preserves_raaga_audio_ref`, `bridge_to_ts_request_preserves_sigil_generate_image_request`, `bridge_engine_cache_key_includes_media_fields`.
+**No push/merge.** Worktree ready for wave-boundary integration per P1W2-HANDOFF.md.
