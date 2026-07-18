@@ -27,15 +27,24 @@ use tower::ServiceExt;
 #[derive(Clone, Default)]
 pub struct ProbeExecutionLog {
     counts: Arc<Mutex<HashMap<String, u64>>>,
+    inputs: Arc<Mutex<HashMap<String, Vec<EngineInput>>>>,
 }
 
 impl ProbeExecutionLog {
-    pub fn record(&self, engine_id: &str) {
+    pub fn record(&self, engine_id: &str, input: &EngineInput) {
         let mut counts = self
             .counts
             .lock()
             .expect("probe counts lock should not poison");
         *counts.entry(engine_id.to_string()).or_insert(0) += 1;
+        drop(counts);
+
+        self.inputs
+            .lock()
+            .expect("probe inputs lock should not poison")
+            .entry(engine_id.to_string())
+            .or_default()
+            .push(input.clone());
     }
 
     pub fn count(&self, engine_id: &str) -> u64 {
@@ -44,6 +53,15 @@ impl ProbeExecutionLog {
             .lock()
             .expect("probe counts lock should not poison");
         counts.get(engine_id).copied().unwrap_or(0)
+    }
+
+    pub fn last_input(&self, engine_id: &str) -> Option<EngineInput> {
+        self.inputs
+            .lock()
+            .expect("probe inputs lock should not poison")
+            .get(engine_id)
+            .and_then(|inputs| inputs.last())
+            .cloned()
     }
 }
 
@@ -78,14 +96,35 @@ impl ConsciousnessEngine for ProbeEngine {
     }
 
     async fn calculate(&self, input: EngineInput) -> Result<EngineOutput, EngineError> {
-        self.log.record(&self.id);
+        self.log.record(&self.id, &input);
+
+        let generated_audio = (self.id == "raaga").then(|| {
+            json!({
+                "clip_url": null,
+                "strudel_ratios": [1.0, 1.125, 1.25],
+                "root_hz": 256
+            })
+        });
+        let generated_image = (self.id == "sigil-forge").then(|| {
+            json!({
+                "b64_json": "AAECf4D/",
+                "metadata": {"provider": "probe"}
+            })
+        });
+        let mut result = json!({
+            "route_marker": format!("probe::{}", self.id),
+            "birth_data_present": input.birth_data.is_some(),
+        });
+        if let Some(generated_audio) = generated_audio {
+            result["generated_audio"] = generated_audio;
+        }
+        if let Some(generated_image) = generated_image {
+            result["generated_image"] = generated_image;
+        }
 
         Ok(EngineOutput {
             engine_id: self.id.clone(),
-            result: json!({
-                "route_marker": format!("probe::{}", self.id),
-                "birth_data_present": input.birth_data.is_some(),
-            }),
+            result,
             witness_prompt: format!("probe prompt for {}", self.id),
             consciousness_level: self.required_phase,
             metadata: CalculationMetadata {
@@ -258,7 +297,7 @@ impl RoutingHarness {
         response.1
     }
 
-    async fn send_authenticated_json(
+    pub async fn send_authenticated_json(
         &self,
         method: &str,
         uri: &str,

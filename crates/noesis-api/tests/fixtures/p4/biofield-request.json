@@ -1,0 +1,18 @@
+{
+  "consciousness_level": 2,
+  "parameters": {},
+  "image_data": {
+    "b64": "AAECf4D/",
+    "mime_type": "image/png",
+    "consent": {
+      "granted": true,
+      "scopes": ["biofield-capture"],
+      "timestamp": "2026-07-18T00:00:00Z"
+    }
+  },
+  "consent": {
+    "granted": true,
+    "scopes": ["biofield-capture"],
+    "timestamp": "2026-07-18T00:00:00Z"
+  }
+}

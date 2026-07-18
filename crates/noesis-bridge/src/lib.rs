@@ -42,6 +42,10 @@ pub use noesis_core::{
 /// Default URL for the TypeScript engines server.
 pub const DEFAULT_TS_SERVER_URL: &str = "http://localhost:3001";
 
+/// The P4 media focus engines whose actual runtime is the TypeScript sidecar.
+/// Native/Python focus engines must never be added to this set.
+pub const P4_TS_FOCUS_ENGINE_IDS: [&str; 2] = ["raaga", "sigil-forge"];
+
 /// Default timeout for HTTP requests in seconds (overridable via `TS_BRIDGE_TIMEOUT` env var).
 pub const DEFAULT_TIMEOUT_SECS: u64 = 30;
 
@@ -374,11 +378,31 @@ impl BridgeEngine {
     }
 
     fn to_ts_request(&self, input: &EngineInput) -> crate::ts_client::TsEngineRequest {
+        let mut parameters = input.options.clone();
+        let consciousness_level = parameters
+            .remove("consciousness_level")
+            .and_then(|value| value.as_u64())
+            .and_then(|value| u8::try_from(value).ok())
+            .unwrap_or(self.required_phase);
+        let seed = parameters.remove("seed").and_then(|value| value.as_u64());
+        let question = parameters
+            .remove("question")
+            .and_then(|value| value.as_str().map(str::to_owned))
+            .or_else(|| Self::extract_question(&parameters));
+        let image_data = parameters.remove("image_data");
+        let audio_ref = parameters.remove("audio_ref");
+        let consent = parameters.remove("consent");
+        let quality = parameters.remove("quality");
+
         crate::ts_client::TsEngineRequest {
-            consciousness_level: self.required_phase,
-            parameters: input.options.clone(),
-            seed: None,
-            question: Self::extract_question(&input.options),
+            consciousness_level,
+            parameters,
+            seed,
+            question,
+            image_data,
+            audio_ref,
+            consent,
+            quality,
         }
     }
 }
@@ -488,12 +512,23 @@ impl ConsciousnessEngine for BridgeEngine {
             "Bridge calculate succeeded"
         );
 
-        // Convert TsEngineResponse to EngineOutput
-        use chrono::Utc;
+        // Convert TsEngineResponse to EngineOutput. Preserve the TS timestamp;
+        // falling back to receipt time is only for malformed legacy sidecars.
+        let calculated_at = parse_ts_calculated_at(&ts_response.calculated_at);
+
+        let mut result = ts_response.result;
+        if let Some(object) = result.as_object_mut() {
+            if let Some(generated_image) = ts_response.generated_image {
+                object.insert("generated_image".to_string(), generated_image);
+            }
+            if let Some(generated_audio) = ts_response.generated_audio {
+                object.insert("generated_audio".to_string(), generated_audio);
+            }
+        }
 
         Ok(EngineOutput {
             engine_id: ts_response.engine_id,
-            result: ts_response.result,
+            result,
             witness_prompt: ts_response
                 .witness_prompts
                 .first()
@@ -505,7 +540,7 @@ impl ConsciousnessEngine for BridgeEngine {
                 backend: "typescript".to_string(),
                 precision_achieved: "exact".to_string(),
                 cached: false,
-                timestamp: Utc::now(),
+                timestamp: calculated_at,
                 engine_version: env!("CARGO_PKG_VERSION").to_string(),
             },
         })
@@ -570,6 +605,12 @@ impl ConsciousnessEngine for BridgeEngine {
     fn as_any(&self) -> &dyn std::any::Any {
         self
     }
+}
+
+fn parse_ts_calculated_at(value: &str) -> chrono::DateTime<chrono::Utc> {
+    chrono::DateTime::parse_from_rfc3339(value)
+        .map(|timestamp| timestamp.with_timezone(&chrono::Utc))
+        .unwrap_or_else(|_| chrono::Utc::now())
 }
 
 // ---------------------------------------------------------------------------
@@ -846,6 +887,34 @@ mod tests {
     }
 
     #[test]
+    fn bridge_engine_cache_key_changes_with_media_and_consent() {
+        let engine = BridgeEngine::raaga();
+        let mut first = test_input();
+        first.options.insert(
+            "audio_ref".to_string(),
+            json!({"reference": "file:first.m4a"}),
+        );
+        first.options.insert(
+            "consent".to_string(),
+            json!({"granted": true, "scopes": ["raaga-audio"]}),
+        );
+
+        let mut changed_media = first.clone();
+        changed_media.options.insert(
+            "audio_ref".to_string(),
+            json!({"reference": "file:second.m4a"}),
+        );
+        let mut changed_consent = first.clone();
+        changed_consent.options.insert(
+            "consent".to_string(),
+            json!({"granted": false, "scopes": ["raaga-audio"]}),
+        );
+
+        assert_ne!(engine.cache_key(&first), engine.cache_key(&changed_media));
+        assert_ne!(engine.cache_key(&first), engine.cache_key(&changed_consent));
+    }
+
+    #[test]
     fn bridge_engine_default_timeout() {
         let engine = BridgeEngine::tarot();
         assert_eq!(engine.timeout, Duration::from_secs(DEFAULT_TIMEOUT_SECS));
@@ -896,6 +965,80 @@ mod tests {
     }
 
     #[test]
+    fn bridge_engine_forwards_frozen_media_at_top_level() {
+        let engine = BridgeEngine::raaga();
+        let mut input = test_input();
+        input
+            .options
+            .insert("consciousness_level".to_string(), json!(3));
+        input.options.insert("melakarta".to_string(), json!(29));
+        input.options.insert(
+            "audio_ref".to_string(),
+            json!({"reference": "file:local.m4a"}),
+        );
+        input.options.insert(
+            "consent".to_string(),
+            json!({
+                "granted": true,
+                "scopes": ["raaga-audio"],
+                "timestamp": "2026-07-18T00:00:00Z"
+            }),
+        );
+        input
+            .options
+            .insert("quality".to_string(), json!({"sufficient": true}));
+
+        let request = engine.to_ts_request(&input);
+
+        assert_eq!(request.consciousness_level, 3);
+        assert_eq!(
+            request.parameters,
+            HashMap::from([("melakarta".to_string(), json!(29))])
+        );
+        assert_eq!(
+            request.audio_ref,
+            Some(json!({"reference": "file:local.m4a"}))
+        );
+        assert_eq!(request.quality, Some(json!({"sufficient": true})));
+        assert!(request.consent.is_some());
+        assert!(!request.parameters.contains_key("audio_ref"));
+    }
+
+    #[test]
+    fn generated_media_deserializes_from_ts_top_level() {
+        let response: crate::ts_client::TsEngineResponse = serde_json::from_value(json!({
+            "engine_id": "raaga",
+            "result": {"melakarta": 29},
+            "witness_prompts": [],
+            "calculated_at": "2026-07-18T00:00:00Z",
+            "processing_time_ms": 1.5,
+            "generated_audio": {
+                "clip_url": null,
+                "strudel_ratios": [1.0, 1.125],
+                "root_hz": 256
+            }
+        }))
+        .expect("FROZEN TS response should deserialize");
+
+        assert_eq!(
+            response.generated_audio,
+            Some(json!({
+                "clip_url": null,
+                "strudel_ratios": [1.0, 1.125],
+                "root_hz": 256
+            }))
+        );
+    }
+
+    #[test]
+    fn ts_calculated_at_is_preserved() {
+        assert_eq!(
+            parse_ts_calculated_at("2026-07-18T00:00:00Z").to_rfc3339(),
+            "2026-07-18T00:00:00+00:00"
+        );
+    }
+
+    #[test]
     fn bridge_manager_creates_all_engines() {
         let manager = BridgeManager::new("http://localhost:3001");
         let engines = manager.engines();
@@ -908,6 +1051,28 @@ mod tests {
         assert!(ids.contains(&"sacred-geometry"));
         assert!(ids.contains(&"sigil-forge"));
         assert!(ids.contains(&"raaga"));
+    }
+
+    #[test]
+    fn p4_ts_focus_set_excludes_native_and_python_engines() {
+        let manager = BridgeManager::new("http://localhost:3001");
+        let focus_engines = manager
+            .engines()
+            .iter()
+            .filter(|engine| P4_TS_FOCUS_ENGINE_IDS.contains(&engine.engine_id()))
+            .cloned()
+            .collect::<Vec<_>>();
+        let ids: Vec<&str> = focus_engines
+            .iter()
+            .map(|engine| engine.engine_id())
+            .collect();
+
+        assert_eq!(ids.len(), 2);
+        assert!(ids.contains(&"raaga"));
+        assert!(ids.contains(&"sigil-forge"));
+        assert!(!P4_TS_FOCUS_ENGINE_IDS.contains(&"biofield"));
+        assert!(!P4_TS_FOCUS_ENGINE_IDS.contains(&"biofield-capture"));
+        assert!(!P4_TS_FOCUS_ENGINE_IDS.contains(&"face-reading"));
     }
 
     #[test]

@@ -1,0 +1,13 @@
+{
+  "options": {
+    "melakarta": 1,
+    "audio_ref": {
+      "reference": "file:legacy.m4a"
+    },
+    "consent": {
+      "granted": true,
+      "scopes": ["raaga-audio"],
+      "timestamp": "2026-07-18T00:00:00Z"
+    }
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "clip_url": null,
+  "strudel_ratios": [1.0, 1.125, 1.25],
+  "root_hz": 256,
+  "metadata": {
+    "engine": "raaga",
+    "melakarta": 29,
+    "dosha": "vata"
+  }
+}

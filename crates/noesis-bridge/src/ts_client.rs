@@ -21,6 +21,18 @@ pub struct TsEngineRequest {
     /// Optional question/intention
     #[serde(skip_serializing_if = "Option::is_none")]
     pub question: Option<String>,
+    /// FROZEN top-level image reference.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub image_data: Option<Value>,
+    /// FROZEN top-level audio reference.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub audio_ref: Option<Value>,
+    /// FROZEN top-level consent grant.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub consent: Option<Value>,
+    /// FROZEN top-level quality specification.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub quality: Option<Value>,
 }
 
 /// Response format from TypeScript engines
@@ -36,6 +48,12 @@ pub struct TsEngineResponse {
     pub calculated_at: String,
     /// Processing time in milliseconds (float-safe: TS engines may return fractional ms)
     pub processing_time_ms: f64,
+    /// FROZEN top-level generated image.
+    #[serde(default)]
+    pub generated_image: Option<Value>,
+    /// FROZEN top-level generated audio.
+    #[serde(default)]
+    pub generated_audio: Option<Value>,
 }
 
 /// A prompt for self-reflection/witnessing
@@ -84,6 +102,10 @@ impl TsEngineRequest {
             parameters,
             seed: None,
             question: None,
+            image_data: None,
+            audio_ref: None,
+            consent: None,
+            quality: None,
         }
     }
 
