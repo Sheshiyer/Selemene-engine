@@ -1,0 +1,17 @@
+[
+  {
+    "id": "ext-nano-kimi-provider-sketches",
+    "task": "Based on the P1W1 frozen contracts (MediaRef, ImageProvider interface from FROZEN.md and noesis-core types), the current nvidia-image.ts, and sigil-forge engine, provide complete TypeScript code sketches for NanoBananaProvider and KimiProvider. Include class implementing the interface, config (apiKey, model, endpoint if needed), prompt builder for sigil/yantra styles (runic, vedic, chaos), generate/edit methods returning b64 or url, error handling, and registration example. Keep self-contained, match existing style, note any open questions like exact kimi API from research.",
+    "backend": "grok"
+  },
+  {
+    "id": "ext-contract-roundtrip-examples",
+    "task": "Generate 4 complete, realistic roundtrip examples (Input -> process -> Output) for the frozen media contracts: 1. biofield-capture (image_data + metrics), 2. face-reading (image_data + analysis), 3. raaga (melakarta + audio options), 4. sigil-forge (intention + generated image via provider). Use the exact field names from contracts (image_data, consent_token, generated_image, generated_audio with strudel_ratios, etc.). Output as JSON + short TS test snippet for each. Reference goal-understanding for local-first/consent.",
+    "backend": "command-code"
+  },
+  {
+    "id": "ext-wave2-task-breakdown",
+    "task": "From the selemene-sankalpa-full-integration-swarm-plan.md Phase 1 Wave 2 (Scaffolding & baselines: project setup, CI, test harnesses, local dev for TS server + python) and P2 start, plus detailed-task-list, create a detailed task breakdown for Wave 2 with 8-10 granular tasks (id, title, owner_role, est_hours, dependencies, deliverable, acceptance, validation). Include references to 3 extraction files, bootstrap packet, and new issues #899-902. Format as markdown table or list ready for STATUS or mapping.",
+    "backend": "grok"
+  }
+]

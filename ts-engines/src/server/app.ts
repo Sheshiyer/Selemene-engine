@@ -1,5 +1,6 @@
 import { swagger } from '@elysiajs/swagger'
 import { Elysia, t } from 'elysia'
+import { resolveClipDir, resolveStoredClip } from '../engines/raaga/clip'
 import type {
   EngineHealthStatus,
   EngineInput,
@@ -207,6 +208,28 @@ export function createServer(engineRegistry: EngineRegistry = registry) {
         }),
       },
     )
+
+    // Raaga clip store (raaga-clip-generation, p5-p4-next-batch)
+    // Serves locally rendered raaga WAV clips written under RAAGA_CLIP_DIR (default <tmp>/raaga-clips).
+    // Local-first: no external fetch; path-traversal guarded; 404 when clip absent.
+    // Cites: goal-understanding.md (local-first), P1W1-CONTRACTS-FROZEN.md (generated_audio.clip_url),
+    // gaps-and-improvements.md §4 (audio clip path missing), p1-w1-worker-bootstrap-packet.md
+    // tags: phase:integration-p1 wave:integration-w2 area:engine-integration engine-raaga
+    .get('/clips/raaga/:file', async ({ params, set }) => {
+      const path = resolveStoredClip(resolveClipDir(), params.file)
+      if (!path) {
+        set.status = 404
+        return {
+          error: `Clip not found: ${params.file}`,
+          error_code: 'CLIP_NOT_FOUND',
+        } as ErrorResponse
+      }
+      set.headers['Content-Type'] = 'audio/wav'
+      set.headers['Cache-Control'] = 'public, max-age=31536000, immutable'
+      return new Response(await Bun.file(path).arrayBuffer(), {
+        headers: { 'Content-Type': 'audio/wav' },
+      })
+    })
 
     // Suno bridge proxy routes (SUNO-02)
     // Forwards to the Suno API wrapper with SUNO_COOKIE injected server-side.

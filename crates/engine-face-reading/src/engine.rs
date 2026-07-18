@@ -12,6 +12,10 @@ use noesis_core::{
 use serde_json::{json, Value};
 use std::time::Instant;
 
+use crate::landmarks::{
+    analysis_from_landmarks, decode_image_bytes, fetch_face_landmarks, is_real_landmark_response,
+    landmark_summary_json, FaceCvConfig,
+};
 use crate::mock::generate_mock_analysis;
 use crate::models::{
     BodyType, ConstitutionAnalysis, Dosha, Element, ElementalBalance, FaceAnalysis, FaceZone,
@@ -142,16 +146,48 @@ impl FaceReadingEngine {
         Self::heuristic_from_seed(seed)
     }
 
-    /// T-027: placeholder for real landmark hook (MediaPipe / dlib per FROZEN/contracts + gaps)
-    /// Currently delegates to heuristic fallback; future: parse landmarks -> zone scores
-    /// phase:integration-p1 wave:integration-w2 area:engine-integration swarm:selemene-backend engine-face-reading
-    fn analysis_from_landmark_hook(image_data: &[u8]) -> FaceAnalysis {
-        // TODO(T-027): wire actual landmark detection here for P2+ CV path
-        // e.g. extract 468 landmarks, map to zones (forehead/eyes..), compute precise elemental
+    /// T-027 placeholder upgraded by face-cv-hook-p3: real CV path.
+    ///
+    /// Calls the python mediapipe face-mesh sidecar (config-driven URL via
+    /// `options["face_cv_url"]` → `SELEMENE_FACE_CV_URL` → default 127.0.0.1:8001)
+    /// when image_data is present AND consent is granted (local-first invariant,
+    /// goal-understanding.md). Any gap (no consent, disabled, unreachable,
+    /// service fallback) degrades gracefully to the deterministic heuristic.
+    ///
+    /// Cites: gaps-and-improvements.md (face: no landmark detection) +
+    /// P1W1-CONTRACTS-FROZEN.md (face example) + T-065 biofield pattern +
+    /// data/face-reading/facial_landmark_mappings.json.
+    /// phase:integration-p1 wave:integration-w2 engine-face-reading
+    async fn analysis_from_landmark_hook(
+        image_data: &[u8],
+        mime_type: &str,
+        consent: Option<&Value>,
+        options: &std::collections::HashMap<String, Value>,
+    ) -> (FaceAnalysis, Option<Value>) {
+        let consent_granted = consent
+            .and_then(|c| c.get("granted"))
+            .and_then(|g| g.as_bool())
+            .unwrap_or(false);
+
+        if consent_granted {
+            if let Some(config) = FaceCvConfig::resolve(options) {
+                let bytes = decode_image_bytes(image_data);
+                match fetch_face_landmarks(&config, bytes, mime_type, consent).await {
+                    Ok(resp) if is_real_landmark_response(&resp) => {
+                        let mut analysis = analysis_from_landmarks(&resp);
+                        analysis.consent = consent.cloned();
+                        return (analysis, Some(landmark_summary_json(&resp)));
+                    }
+                    Ok(_) => { /* service fell back deterministically; stay heuristic */ }
+                    Err(_) => { /* unreachable / timeout / bad status; stay heuristic */ }
+                }
+            }
+        }
+
+        // Graceful fallback: deterministic heuristic from image bytes.
         let mut analysis = Self::analysis_from_image_data(image_data);
-        // mark as heuristic (not yet real-landmark) until hook implemented
         analysis.is_mock_data = false;
-        analysis
+        (analysis, None)
     }
 
     /// Serialize face analysis to JSON with additional metadata
@@ -245,7 +281,7 @@ impl ConsciousnessEngine for FaceReadingEngine {
         // Uses options for compat (no top-level media on EngineInput yet; see T-002 worktree FROZEN + T-026 pattern)
         // heuristic fallback + landmark hook placeholder
         // cites: p1-w1-worker-bootstrap-packet.md + resources-and-assets.md + gaps-and-improvements.md + goal-understanding.md + P1W1-CONTRACTS-FROZEN.md + detailed-task-list.md (T-027) + EXECUTION-STATUS.md
-        let (image_bytes, consent_val, qual_val) = {
+        let (image_bytes, consent_val, qual_val, mime_type) = {
             let img_val = input.options.get("image_data").cloned().or_else(|| {
                 // also check top-level if present in future frozen merge
                 // for now options-driven per current base types
@@ -265,32 +301,66 @@ impl ConsciousnessEngine for FaceReadingEngine {
             } else {
                 None
             };
-            let cons = img_val.as_ref().and_then(|v| v.get("consent").cloned())
+            let mime = img_val
+                .as_ref()
+                .and_then(|v| v.get("mime_type"))
+                .and_then(|m| m.as_str())
+                .unwrap_or("image/png")
+                .to_string();
+            let cons = img_val
+                .as_ref()
+                .and_then(|v| v.get("consent").cloned())
                 .or_else(|| input.options.get("consent").cloned());
             let qual = input.options.get("quality").cloned();
-            (bytes, cons, qual)
+            (bytes, cons, qual, mime)
         };
 
-        let mut analysis = if let Some(ref bytes) = image_bytes {
-            // use landmark hook (heuristic now, placeholder for real CV)
-            Self::analysis_from_landmark_hook(bytes)
+        // face-cv-hook-p3: hook is async now — real CV via python face service
+        // with consent gate + graceful heuristic fallback (see landmarks.rs).
+        let (mut analysis, landmark_summary) = if let Some(ref bytes) = image_bytes {
+            let (a, summary) = Self::analysis_from_landmark_hook(
+                bytes,
+                &mime_type,
+                consent_val.as_ref(),
+                &input.options,
+            )
+            .await;
+            (a, summary)
         } else if let Some(ref birth_data) = input.birth_data {
-            Self::analysis_from_birth_data(birth_data)
+            (Self::analysis_from_birth_data(birth_data), None)
         } else {
-            generate_mock_analysis(seed)
+            (generate_mock_analysis(seed), None)
         };
 
-        // attach consent/quality if provided (frozen contract)
+        // attach consent/quality if provided (frozen contract); CV path already
+        // carries service-measured quality + consent echo (do not overwrite).
         if consent_val.is_some() || qual_val.is_some() {
             analysis.is_mock_data = false; // real input path
-            analysis.consent = consent_val.clone();
-            analysis.quality = qual_val.clone();
+            if analysis.consent.is_none() {
+                analysis.consent = consent_val.clone();
+            }
+            if analysis.quality.is_none() {
+                analysis.quality = qual_val.clone();
+            }
         }
 
         let (backend_name, precision) = if image_bytes.is_some() {
-            ("heuristic-image-landmark-hook".to_string(), "estimated".to_string())
+            if landmark_summary.is_some() {
+                (
+                    "mediapipe-face-cv".to_string(),
+                    "cv-468-landmarks".to_string(),
+                )
+            } else {
+                (
+                    "heuristic-image-landmark-hook".to_string(),
+                    "estimated".to_string(),
+                )
+            }
         } else if input.birth_data.is_some() {
-            ("birth-physiognomy-fallback".to_string(), "birth-derived".to_string())
+            (
+                "birth-physiognomy-fallback".to_string(),
+                "birth-derived".to_string(),
+            )
         } else {
             ("mock-stub".to_string(), "simulated".to_string())
         };
@@ -326,6 +396,14 @@ impl ConsciousnessEngine for FaceReadingEngine {
         }
         if analysis.consent.is_some() || analysis.quality.is_some() {
             result["computation_mode"] = json!("image-heuristic-capture");
+        }
+        // face-cv-hook-p3: surface real CV pass details + override mode/notice.
+        if let Some(summary) = &landmark_summary {
+            result["landmark_analysis"] = summary.clone();
+            result["computation_mode"] = json!("image-cv-capture");
+            result["notice"] = json!(
+                "CV landmark analysis: 468 MediaPipe face-mesh landmarks mapped to zones, elements, and indicators."
+            );
         }
 
         Ok(EngineOutput {
@@ -378,7 +456,9 @@ impl ConsciousnessEngine for FaceReadingEngine {
             // T-027: mock flag: true only for pure stub; heuristic (image_data/birth per FROZEN) sets false -- do not fail validation on false
             // phase:integration-p1 wave:integration-w2 area:engine-integration swarm:selemene-backend engine-face-reading
             if let Some(is_mock) = analysis.get("is_mock_data") {
-                if is_mock.as_bool().unwrap_or(false) == false && output.metadata.backend == "mock-stub" {
+                if is_mock.as_bool().unwrap_or(false) == false
+                    && output.metadata.backend == "mock-stub"
+                {
                     messages.push("Stub implementation should have is_mock_data=true".to_string());
                 }
             }
@@ -703,11 +783,14 @@ mod tests {
             }
         });
         input.options.insert("image_data".to_string(), frozen_image);
-        input.options.insert("consent".to_string(), json!({
-            "granted": true,
-            "scopes": ["face-image"],
-            "timestamp": "2026-07-17T12:00:00Z"
-        }));
+        input.options.insert(
+            "consent".to_string(),
+            json!({
+                "granted": true,
+                "scopes": ["face-image"],
+                "timestamp": "2026-07-17T12:00:00Z"
+            }),
+        );
 
         let output = engine.calculate(input).await.unwrap();
         assert_eq!(output.engine_id, "face-reading");
@@ -720,18 +803,285 @@ mod tests {
             .and_then(|a| a.get("is_mock_data"))
             .and_then(|v| v.as_bool())
             .unwrap_or(true);
-        assert!(!is_mock, "FROZEN image_data path must use heuristic (not mock)");
+        assert!(
+            !is_mock,
+            "FROZEN image_data path must use heuristic (not mock)"
+        );
 
         assert_eq!(output.metadata.backend, "heuristic-image-landmark-hook");
 
         // consent echoed per frozen contract
-        assert!(output.result.get("consent").is_some(), "consent must be present for frozen sample");
+        assert!(
+            output.result.get("consent").is_some(),
+            "consent must be present for frozen sample"
+        );
         let cons = output.result.get("consent").unwrap();
         assert_eq!(cons.get("granted"), Some(&json!(true)));
         assert!(output.result.get("computation_mode").is_some());
 
         // result shape still valid (analysis etc)
         assert!(output.result.get("analysis").is_some());
-        assert!(output.result.get("analysis").unwrap().get("constitution").is_some());
+        assert!(output
+            .result
+            .get("analysis")
+            .unwrap()
+            .get("constitution")
+            .is_some());
+    }
+
+    // ─── face-cv-hook-p3 tests ───────────────────────────────────────────────
+    // phase:integration-p1 wave:integration-w2 engine-face-reading
+    // cites: gaps-and-improvements.md (no real CV) + goal-understanding.md
+    // (consent gate) + T-065 biofield pattern + FROZEN face example.
+
+    fn frozen_consent() -> Value {
+        json!({
+            "granted": true,
+            "scopes": ["face-image"],
+            "timestamp": "2026-07-17T12:00:00Z",
+            "token": "consent-face-001"
+        })
+    }
+
+    fn synthetic_face_cv_response() -> Value {
+        let landmarks: Vec<Value> = (0..468)
+            .map(|i| {
+                json!({
+                    "index": i,
+                    "x": 0.5 + 0.2 * ((i as f64 * 0.37).sin()),
+                    "y": 0.15 + 0.7 * (i as f64 / 468.0),
+                    "z": 0.01 * (i as f64 * 0.11).cos(),
+                })
+            })
+            .collect();
+        json!({
+            "contract_version": "face-cv/v1",
+            "analysis_version": "mediapipe-facemesh/v1",
+            "landmark_source": "mediapipe-facemesh",
+            "face_detected": true,
+            "num_faces": 1,
+            "landmarks": landmarks,
+            "proportions": {
+                "golden_ratio_score": 0.88,
+                "symmetry_score": 0.9,
+                "face_width_height_ratio": 0.7,
+                "eye_distance_ratio": 0.33,
+                "nose_mouth_ratio": 0.65,
+                "forehead_ratio": 0.35,
+                "jaw_width_ratio": 0.78
+            },
+            "image_quality": {
+                "sharpness": 0.8,
+                "brightness": 0.55,
+                "face_size_ratio": 0.4,
+                "sufficient_quality": true
+            },
+            "processing_time_ms": 12.0,
+            "consent_granted": true
+        })
+    }
+
+    #[tokio::test]
+    async fn test_cv_hook_falls_back_without_consent() {
+        let engine = FaceReadingEngine::new();
+        let mut input = create_test_input();
+        input
+            .options
+            .insert("image_data".to_string(), json!("fake-image-bytes"));
+        // no consent key at all -> CV must not be attempted, heuristic fallback
+        input.options.insert(
+            "face_cv_url".to_string(),
+            json!("http://127.0.0.1:1"), // would fail instantly if attempted
+        );
+
+        let output = engine.calculate(input).await.unwrap();
+        assert_eq!(output.metadata.backend, "heuristic-image-landmark-hook");
+        assert!(output.result.get("landmark_analysis").is_none());
+        let is_mock = output.result["analysis"]["is_mock_data"].as_bool().unwrap();
+        assert!(!is_mock);
+    }
+
+    #[tokio::test]
+    async fn test_cv_hook_falls_back_when_service_unreachable() {
+        let engine = FaceReadingEngine::new();
+        let mut input = create_test_input();
+        input.options.insert(
+            "image_data".to_string(),
+            json!({"b64": "aGVsbG8taW1hZ2U=", "mime_type": "image/png"}),
+        );
+        input
+            .options
+            .insert("consent".to_string(), frozen_consent());
+        input.options.insert(
+            "face_cv_url".to_string(),
+            json!("http://127.0.0.1:1"), // closed port -> instant refusal
+        );
+        input
+            .options
+            .insert("face_cv_timeout_ms".to_string(), json!(300));
+
+        let output = engine.calculate(input).await.unwrap();
+        assert_eq!(output.metadata.backend, "heuristic-image-landmark-hook");
+        assert_eq!(output.metadata.precision_achieved, "estimated");
+        assert!(output.result.get("landmark_analysis").is_none());
+    }
+
+    #[tokio::test]
+    async fn test_cv_hook_falls_back_when_disabled() {
+        let engine = FaceReadingEngine::new();
+        let mut input = create_test_input();
+        input.options.insert(
+            "image_data".to_string(),
+            json!({"b64": "aGVsbG8taW1hZ2U=", "mime_type": "image/png"}),
+        );
+        input
+            .options
+            .insert("consent".to_string(), frozen_consent());
+        input
+            .options
+            .insert("face_cv_disabled".to_string(), json!(true));
+
+        let output = engine.calculate(input).await.unwrap();
+        assert_eq!(output.metadata.backend, "heuristic-image-landmark-hook");
+        assert!(output.result.get("landmark_analysis").is_none());
+    }
+
+    #[tokio::test]
+    async fn test_cv_hook_uses_service_when_consented_and_available() {
+        use wiremock::{
+            matchers::{method, path},
+            Mock, MockServer, ResponseTemplate,
+        };
+
+        let server = MockServer::start().await;
+        Mock::given(method("POST"))
+            .and(path("/analyze"))
+            .respond_with(ResponseTemplate::new(200).set_body_json(synthetic_face_cv_response()))
+            .mount(&server)
+            .await;
+
+        let engine = FaceReadingEngine::new();
+        let mut input = create_test_input();
+        input.options.insert(
+            "image_data".to_string(),
+            json!({"b64": "aGVsbG8taW1hZ2U=", "mime_type": "image/png"}),
+        );
+        input
+            .options
+            .insert("consent".to_string(), frozen_consent());
+        input
+            .options
+            .insert("face_cv_url".to_string(), json!(server.uri()));
+
+        let output = engine.calculate(input).await.unwrap();
+        assert_eq!(output.metadata.backend, "mediapipe-face-cv");
+        assert_eq!(output.metadata.precision_achieved, "cv-468-landmarks");
+
+        let summary = output
+            .result
+            .get("landmark_analysis")
+            .expect("landmark_analysis must be present for CV path");
+        assert_eq!(summary["num_landmarks"], json!(468));
+        assert_eq!(summary["landmark_source"], json!("mediapipe-facemesh"));
+
+        // consent echoed per FROZEN contract; service-measured quality surfaced
+        assert_eq!(output.result["consent"]["granted"], json!(true));
+        assert_eq!(
+            output.result["quality"]["source"],
+            json!("mediapipe-face-cv")
+        );
+        assert_eq!(output.result["computation_mode"], json!("image-cv-capture"));
+
+        // CV-derived mapping is non-mock + zone rich
+        let analysis = &output.result["analysis"];
+        assert_eq!(analysis["is_mock_data"], json!(false));
+        assert!(
+            analysis["health_indicators"].as_array().unwrap().len() >= 4,
+            "CV path must map landmarks to zone indicators"
+        );
+        let balance = &analysis["elemental_balance"];
+        let sum = balance["wood"].as_f64().unwrap()
+            + balance["fire"].as_f64().unwrap()
+            + balance["earth"].as_f64().unwrap()
+            + balance["metal"].as_f64().unwrap()
+            + balance["water"].as_f64().unwrap();
+        assert!((sum - 1.0).abs() < 1e-6);
+
+        // validation still passes for the CV output
+        let validation = engine.validate(&output).await.unwrap();
+        assert!(
+            validation.valid,
+            "CV output invalid: {:?}",
+            validation.messages
+        );
+    }
+
+    #[tokio::test]
+    async fn test_cv_hook_falls_back_on_service_500() {
+        use wiremock::{
+            matchers::{method, path},
+            Mock, MockServer, ResponseTemplate,
+        };
+
+        let server = MockServer::start().await;
+        Mock::given(method("POST"))
+            .and(path("/analyze"))
+            .respond_with(ResponseTemplate::new(500))
+            .mount(&server)
+            .await;
+
+        let engine = FaceReadingEngine::new();
+        let mut input = create_test_input();
+        input.options.insert(
+            "image_data".to_string(),
+            json!({"b64": "aGVsbG8taW1hZ2U=", "mime_type": "image/png"}),
+        );
+        input
+            .options
+            .insert("consent".to_string(), frozen_consent());
+        input
+            .options
+            .insert("face_cv_url".to_string(), json!(server.uri()));
+
+        let output = engine.calculate(input).await.unwrap();
+        assert_eq!(output.metadata.backend, "heuristic-image-landmark-hook");
+        assert!(output.result.get("landmark_analysis").is_none());
+    }
+
+    #[tokio::test]
+    async fn test_cv_hook_ignores_deterministic_service_fallback() {
+        use wiremock::{
+            matchers::{method, path},
+            Mock, MockServer, ResponseTemplate,
+        };
+
+        let mut body = synthetic_face_cv_response();
+        body["landmark_source"] = json!("deterministic-fallback");
+        body["analysis_version"] = json!("deterministic-fallback/v1");
+
+        let server = MockServer::start().await;
+        Mock::given(method("POST"))
+            .and(path("/analyze"))
+            .respond_with(ResponseTemplate::new(200).set_body_json(body))
+            .mount(&server)
+            .await;
+
+        let engine = FaceReadingEngine::new();
+        let mut input = create_test_input();
+        input.options.insert(
+            "image_data".to_string(),
+            json!({"b64": "aGVsbG8taW1hZ2U=", "mime_type": "image/png"}),
+        );
+        input
+            .options
+            .insert("consent".to_string(), frozen_consent());
+        input
+            .options
+            .insert("face_cv_url".to_string(), json!(server.uri()));
+
+        let output = engine.calculate(input).await.unwrap();
+        // service-side fallback is not trusted as real CV -> engine heuristic
+        assert_eq!(output.metadata.backend, "heuristic-image-landmark-hook");
+        assert!(output.result.get("landmark_analysis").is_none());
     }
 }

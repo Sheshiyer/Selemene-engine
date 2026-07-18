@@ -40,6 +40,7 @@
 //! ```
 
 pub mod engine;
+pub mod landmarks;
 pub mod mock;
 pub mod models;
 pub mod wisdom;
@@ -47,6 +48,7 @@ pub mod witness;
 
 // Re-export main types
 pub use engine::FaceReadingEngine;
+pub use landmarks::{analysis_from_landmarks, fetch_face_landmarks, FaceCvConfig, FaceCvResponse};
 pub use mock::generate_mock_analysis;
 pub use models::{
     BodyType, ConstitutionAnalysis, Dosha, Element, ElementalBalance, FaceAnalysis, FaceZone,

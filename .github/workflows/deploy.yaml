@@ -130,15 +130,24 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-  # Deploy to Kubernetes
+  # Deploy to Kubernetes — OPT-IN, and currently dormant.
+  #
+  # This cluster is not the live target: api.selemene.witnessos.io does not
+  # resolve, and the running engine is served by Railway. The job previously ran
+  # on every push and reported success while every step self-skipped for a
+  # missing KUBECONFIG — a green tick for a deploy to a host that isn't there.
+  # Enable it deliberately with vars.ENABLE_K8S_DEPLOY=true (and set KUBECONFIG),
+  # at which point a missing kubeconfig is a hard failure.
   deploy:
     name: Deploy to Kubernetes
     runs-on: ubuntu-latest
     needs: [build-api, build-ts-engines]
-    if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
+    if: |
+      vars.ENABLE_K8S_DEPLOY == 'true' &&
+      (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))
     environment:
       name: ${{ github.event.inputs.environment || 'staging' }}
-      url: https://api.selemene.witnessos.io
+      url: ${{ vars.K8S_ENVIRONMENT_URL }}
     steps:
       - uses: actions/checkout@v4
       
@@ -150,16 +159,16 @@ jobs:
       - name: Set up Kustomize
         uses: imranismail/setup-kustomize@v2
       
+      # The job only runs when K8s deploys are explicitly enabled, so a missing
+      # kubeconfig is a misconfiguration — not a reason to pass quietly.
       - name: Configure kubectl
         run: |
-          if [ -n "${{ secrets.KUBECONFIG }}" ]; then
-            echo "${{ secrets.KUBECONFIG }}" | base64 -d > kubeconfig.yaml
-            echo "KUBECONFIG=$(pwd)/kubeconfig.yaml" >> $GITHUB_ENV
-            echo "HAS_KUBECONFIG=true" >> $GITHUB_ENV
-          else
-            echo "HAS_KUBECONFIG=false" >> $GITHUB_ENV
-            echo "No KUBECONFIG secret configured; skipping cluster deploy steps."
+          if [ -z "${{ secrets.KUBECONFIG }}" ]; then
+            echo "::error title=KUBECONFIG missing::vars.ENABLE_K8S_DEPLOY is true but no KUBECONFIG secret is set, so this job would report success without deploying."
+            exit 1
           fi
+          echo "${{ secrets.KUBECONFIG }}" | base64 -d > kubeconfig.yaml
+          echo "KUBECONFIG=$(pwd)/kubeconfig.yaml" >> $GITHUB_ENV
       
       - name: Update image tags
         run: |
@@ -174,42 +183,37 @@ jobs:
           kustomize build . > /tmp/manifests.yaml
 
       - name: Validate manifests
-        if: env.HAS_KUBECONFIG == 'true'
         run: |
           kubectl apply --dry-run=client -f /tmp/manifests.yaml
 
-      - name: Skip cluster deploy (no kubeconfig)
-        if: env.HAS_KUBECONFIG != 'true'
-        run: |
-          echo "KUBECONFIG secret is not configured; skipping Kubernetes validation and deploy."
-      
       - name: Deploy to cluster
         run: |
           cd k8s
           kustomize build . | kubectl apply -f -
-        if: env.HAS_KUBECONFIG == 'true'
-      
+
       - name: Wait for rollout
         run: |
           kubectl rollout status deployment/selemene-api -n selemene --timeout=300s
           kubectl rollout status deployment/selemene-ts-engines -n selemene --timeout=300s
-        if: env.HAS_KUBECONFIG == 'true'
-      
+
       - name: Verify deployment
         run: |
           # Check pods are running
           kubectl get pods -n selemene -l app=selemene
-          
+
           # Check endpoints are ready
           kubectl get endpoints -n selemene
-        if: env.HAS_KUBECONFIG == 'true'
 
-  # Deploy to Railway (optional, gated by secrets)
+  # Deploy to Railway — the live engine's actual target.
+  # Runs unless deploys are explicitly disabled (vars.DEPLOY_TARGET=none).
+  # Missing credentials FAIL the job rather than skipping it silently.
   deploy-railway:
     name: Deploy to Railway
     runs-on: ubuntu-latest
     needs: [build-api]
-    if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
+    if: |
+      vars.DEPLOY_TARGET != 'none' &&
+      (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))
     env:
       RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
       RAILWAY_PROJECT_ID: ${{ secrets.RAILWAY_PROJECT_ID }}
@@ -218,26 +222,28 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Railway serves the live engine (selemene.tryambakam.space). If its
+      # credentials are absent this job used to `exit 0` — reporting a green
+      # deploy while shipping nothing. That is exactly how a merged fix sat
+      # unshipped behind an all-green CD run. A deploy that cannot deploy is a
+      # failure, not a pass.
       - name: Validate Railway configuration
         run: |
           if [[ -z "${RAILWAY_TOKEN}" || -z "${RAILWAY_PROJECT_ID}" ]]; then
-            echo "RAILWAY_TOKEN or RAILWAY_PROJECT_ID not configured; skipping Railway deploy."
-            exit 0
+            echo "::error title=Railway not configured::RAILWAY_TOKEN and/or RAILWAY_PROJECT_ID are missing, so this run would report success while deploying nothing. Set them as repository secrets, or set vars.DEPLOY_TARGET=none to declare that this repo intentionally does not deploy."
+            exit 1
           fi
 
       - name: Install Railway CLI
-        if: env.RAILWAY_TOKEN != '' && env.RAILWAY_PROJECT_ID != ''
         run: npm install -g @railway/cli
 
       - name: Deploy to Railway service
-        if: env.RAILWAY_TOKEN != '' && env.RAILWAY_PROJECT_ID != ''
         run: |
           railway --version
           railway link -p "${RAILWAY_PROJECT_ID}" -e "${RAILWAY_ENVIRONMENT}" -s "${RAILWAY_SERVICE}"
           railway up --ci --detach
 
       - name: Verify Railway health
-        if: env.RAILWAY_TOKEN != '' && env.RAILWAY_PROJECT_ID != ''
         run: |
           railway link -p "${RAILWAY_PROJECT_ID}" -e "${RAILWAY_ENVIRONMENT}" -s "${RAILWAY_SERVICE}"
           RAILWAY_STATUS=$(railway status 2>&1)
@@ -266,31 +272,40 @@ jobs:
           cat /tmp/railway-health.json || true
           exit 1
 
-  # Post-deploy admin surface smoke check (frontend + backend)
+  # Post-deploy verification. Runs after the Railway deploy — the K8s job being
+  # skipped (opt-in) must NOT cascade-skip this, or the mode-contract gate below
+  # silently never runs, which is the very failure this file is closing.
   smoke-test:
     name: API Smoke Tests
     runs-on: ubuntu-latest
     needs: [deploy, deploy-railway]
-    if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
+    if: |
+      always() &&
+      needs.deploy-railway.result == 'success' &&
+      (needs.deploy.result == 'success' || needs.deploy.result == 'skipped') &&
+      (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))
     env:
       API_BASE_URL: ${{ vars.API_BASE_URL }}
       SMOKE_TEST_JWT: ${{ secrets.SMOKE_TEST_JWT }}
       SMOKE_TEST_API_KEY: ${{ secrets.SMOKE_TEST_API_KEY }}
+      SKIP_SMOKE: ${{ vars.SKIP_SMOKE }}
     steps:
       - uses: actions/checkout@v4
 
+      # A deploy with no post-deploy verification is a deploy you can't trust —
+      # so missing config FAILS rather than skipping. Opt out deliberately with
+      # vars.SKIP_SMOKE=true if this repo genuinely has nothing to verify.
       - name: Validate smoke env configuration
         id: smoke-gate
         run: |
-          if [[ -z "${API_BASE_URL}" ]]; then
-            echo "API_BASE_URL not configured as repository variable; skipping smoke tests."
+          if [[ "${SKIP_SMOKE}" == "true" ]]; then
+            echo "::warning title=Smoke skipped::vars.SKIP_SMOKE=true — post-deploy verification is explicitly disabled."
             echo "skip=true" >> "$GITHUB_OUTPUT"
             exit 0
           fi
-          if [[ -z "${SMOKE_TEST_JWT}" && -z "${SMOKE_TEST_API_KEY}" ]]; then
-            echo "SMOKE_TEST_JWT or SMOKE_TEST_API_KEY not configured; skipping protected smoke checks."
-            echo "skip=true" >> "$GITHUB_OUTPUT"
-            exit 0
+          if [[ -z "${API_BASE_URL}" || ( -z "${SMOKE_TEST_JWT}" && -z "${SMOKE_TEST_API_KEY}" ) ]]; then
+            echo "::error title=Smoke not configured::A deploy ran but cannot be verified — set vars.API_BASE_URL and secrets.SMOKE_TEST_JWT (or SMOKE_TEST_API_KEY), or set vars.SKIP_SMOKE=true to opt out deliberately."
+            exit 1
           fi
           echo "skip=false" >> "$GITHUB_OUTPUT"
 
@@ -298,11 +313,27 @@ jobs:
         if: steps.smoke-gate.outputs.skip != 'true'
         run: bash scripts/smoke-test-runner.sh "${API_BASE_URL}"
 
+      # The mode contract is checked against the DEPLOYED engine, not just in
+      # `cargo test`. Those drifted before and nobody noticed: /assets/generate
+      # answered every mode with a generic "default: Reading", so a typo'd mode
+      # was indistinguishable from a real reading and a whole fake surface looked
+      # healthy. Unit tests can't catch "green locally, not shipped".
+      - name: Verify mode contract on the deployed engine
+        if: steps.smoke-gate.outputs.skip != 'true'
+        env:
+          ENGINE_URL: ${{ vars.API_BASE_URL }}
+          ENGINE_TOKEN: ${{ secrets.SMOKE_TEST_JWT }}
+        run: node scripts/verify-mode-contract.mjs "${ENGINE_URL}"
+
   admin-smoke:
     name: Admin Smoke Checks
     runs-on: ubuntu-latest
     needs: [deploy, deploy-railway]
-    if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
+    if: |
+      always() &&
+      needs.deploy-railway.result == 'success' &&
+      (needs.deploy.result == 'success' || needs.deploy.result == 'skipped') &&
+      (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))
     env:
       ADMIN_WEB_URL: ${{ vars.ADMIN_WEB_URL }}
       API_BASE_URL: ${{ vars.API_BASE_URL }}
@@ -332,8 +363,16 @@ jobs:
   release:
     name: Create Release
     runs-on: ubuntu-latest
-    needs: [build-api, deploy, smoke-test, admin-smoke]
-    if: startsWith(github.ref, 'refs/tags/v')
+    # Gate the release on the real deploy + verification, tolerating the opt-in
+    # K8s job being skipped. Don't cut a release off an unverified deploy.
+    needs: [build-api, deploy, deploy-railway, smoke-test, admin-smoke]
+    if: |
+      always() &&
+      startsWith(github.ref, 'refs/tags/v') &&
+      needs.build-api.result == 'success' &&
+      needs.deploy-railway.result == 'success' &&
+      needs.smoke-test.result == 'success' &&
+      needs.admin-smoke.result == 'success'
     permissions:
       contents: write
     steps:

@@ -8,11 +8,20 @@ import pytest
 from fastapi.testclient import TestClient
 
 from biofield_cv_service.main import app as biofield_app
+from mediapipe_service.main import app as mediapipe_app
 
 
 @pytest.fixture
 def biofield_client() -> TestClient:
     return TestClient(biofield_app)
+
+
+# face-cv-hook-p3: ASGI TestClient for the mediapipe face service (fixes the
+# previously gated/missing fixture; runs in-process, no port 8001 needed).
+# phase:integration-p1 wave:integration-w2 engine-face-reading
+@pytest.fixture
+def mediapipe_client() -> TestClient:
+    return TestClient(mediapipe_app)
 
 
 def _encode_png(arr: np.ndarray) -> io.BytesIO:

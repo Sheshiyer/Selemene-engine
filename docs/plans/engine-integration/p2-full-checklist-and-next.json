@@ -1,0 +1,32 @@
+[
+  {
+    "id": "full-p2-checklist-live-roundtrips",
+    "task": "Execute the FULL ext-p2-validation-checklist.md with live roundtrips: start ts-engines (bun run start in bg from main), python biofield (uvicorn in bg @8002), sleep 10s, run all suggested curls and harness from the checklist using FROZEN samples (TINY_PNG_B64 from harness, consent granted scopes biofield-capture/face etc, image_data, audio_ref, parameters for raaga/sigil). Run cargo tests for biofield/face, bun test for raaga/sigil. Run the 4-engine harness. Then, update the ext-p2-validation-checklist.md to mark ALL [ ] to [x] with the actual run outputs, logs, curl responses, test results as Evidence. Update EXECUTION-STATUS.md with 'full p2 checklist green, roundtrips passed with FROZEN samples'. Read first: ext-p2-validation-checklist.md, P1W2-HANDOFF.md, EXECUTION-STATUS.md, .worktrees/T-002-copilot/docs/plans/engine-integration/P1W1-CONTRACTS-FROZEN.md, the ext-contract-harness.ts for samples, detailed-task-list.md, 3 extraction files. Use bash to start/kill servers (record PIDs). All cites enforced. phase:integration-p1 wave:integration-w2. After green, confirm readiness for merge (but merges already done inline for prior).",
+    "backend": "codex"
+  },
+  {
+    "id": "t060-nano-banana-provider",
+    "task": "Implement T-060: nano-banana provider module (text-to-image + edit) for sigil/yantras. In ts-engines, add src/providers/nano-banana.ts implementing the ImageProvider iface (from FROZEN/T-003), with config, generate/edit returning b64/url. Register in createDefault. Use runcomfy if needed but mock first. Create worktree .worktrees/T-060-codex -b swarm/engines/p3-w1/providers/T-060-codex. Add tests. Reference: bootstrap, 3 extraction, P1W2-HANDOFF, FROZEN, detailed-task-list T-060, current providers/image-provider.ts, sigil engine. Tags: phase:integration-p1 wave:integration-w2 area:engine-integration engine-sigil. Deliverable: provider code + integration + tests green. Read refs first. Use worktree for edits.",
+    "backend": "codex"
+  },
+  {
+    "id": "t061-kimi-provider",
+    "task": "Implement T-061: kimi provider path for sigil generation/edit. Add src/providers/kimi.ts adapter implementing ImageProvider, prompt templates for yantras/runic/vedic. Integrated in abstraction, selectable via config. Tests with mock. Worktree .worktrees/T-061-codex -b swarm/engines/p3-w1/providers/T-061-codex. Reference all standard (bootstrap, 3 extraction, FROZEN, detailed T-061, providers, sigil). Tags phase:integration-p1 wave:integration-w2 engine-sigil. Deliverable: kimi provider + tests + STATUS update.",
+    "backend": "codex"
+  },
+  {
+    "id": "t065-python-biofield-cv",
+    "task": "Implement T-065: Integrate python biofield CV service (mediapipe + full 11+ metrics) into capture flow. Update python-services for real CV (not just mock), api client in ts or bridge, result mapping to FROZEN BiofieldResult. Worktree .worktrees/T-065-codex -b swarm/engines/p3-w2/cv/T-065-codex. Reference: bootstrap, 3 extraction, FROZEN, detailed T-065, T-026, python-services code, noesis-api. Tags phase:integration-p1 wave:integration-w2 engine-biofield. Deliverable: CV integration, tests, roundtrip with real metrics.",
+    "backend": "codex"
+  },
+  {
+    "id": "t100-sankalpa-camera-capture",
+    "task": "Implement T-100: safe camera capture component in Sankalpa (Electron media perms, local preview, consent). Edit files in /Volumes/madara/2026/twc-vault/01-Projects/tryambakam-noesis/sankalpa using full paths (src/renderer/ for PipPortal, capture hooks, consent UI). Local pixels + opt-in to backend. Reference: bootstrap, 3 extraction, FROZEN, detailed-task-list T-100, goal-understanding (local-first). Tags phase:integration-p1 wave:integration-w2 prong2 sankalpa. Deliverable: capture component + consent + test notes in STATUS.",
+    "backend": "codex"
+  },
+  {
+    "id": "t105-sankalpa-raaga-ui",
+    "task": "Implement T-105: Build raaga engine surface in Sankalpa (melakarta input, swara wheel, Strudel player, clip option). Edit /Volumes/madara/2026/twc-vault/01-Projects/tryambakam-noesis/sankalpa files for new route/component + engine client integration. Plays correct ratios, shows theory, optional backend clip. Reference standard + T-031, T-005. Tags phase:integration-p1 wave:integration-w2 prong2 sankalpa engine-raaga. Deliverable: UI surface + integration.",
+    "backend": "codex"
+  }
+]
