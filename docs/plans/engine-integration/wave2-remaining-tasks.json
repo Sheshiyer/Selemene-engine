@@ -1,0 +1,17 @@
+[
+  {
+    "id": "wave2-t025-root-setup",
+    "task": "Complete T-025: Update root project setup / harnesses (ts-engines + py package scripts, .env.example, engine-matrix baseline for p1_w2). Reference completed T-020-024 worktrees and main STATUS. Integrate 'test:harness' etc. Add matrix entry. Reference: bootstrap packet, 3 extraction files, EXECUTION-STATUS.md, P1W1-W2-HANDOFF.md, FROZEN.md, detailed-task-list T-025, ext-contract-harness.md (in T-024 worktree or main), package.json, ts-engines/README, python-services/README, engine-matrix.json. Tags: phase:integration-p1 wave:integration-w2 area:engine-integration. Deliverable: package.json + .env.example + engine-matrix updated + STATUS + evidence. Worktree if mutating: swarm/engines/p1-w2/setup/T-025.",
+    "backend": "codex"
+  },
+  {
+    "id": "wave2-t028-raaga-sigil-media",
+    "task": "Complete T-028 (P2): Update raaga/sigil TS for media output options (strudel + generated per FROZEN contracts). Extend ts-engines/src/engines/{raaga,sigil-forge}/engine.ts + tests to return generated_audio strudel_ratios + clip_url for raaga; provider for sigil. Use FROZEN samples. Create worktree swarm/engines/p2-w1/media/T-028-codex. Reference: FROZEN, 3 extraction, bootstrap, STATUS (T-005/T-003), P1W1-W2-HANDOFF, detailed-task-list T-028, prior T-020/024 harness. Tags: phase:integration-p1 wave:integration-w2 area:engine-integration engine-raaga engine-sigil. Deliverable: code + tests + STATUS update + evidence (bun test + sample).",
+    "backend": "codex"
+  },
+  {
+    "id": "wave2-t029-close-validation",
+    "task": "Complete T-029: Wave 2 close + P2 entry validation (baselines green, P2 tasks kicked off, handoff to W3/P2 full). Run gate-like checklist (smokes + 1 P2 test each for bio/face), update EXECUTION-STATUS + create P1W2-HANDOFF.md + engine-matrix + perhaps gh comments note. Reference ALL prior: bootstrap, 3 extraction, STATUS, FROZEN (T-002), P1W1-W2-HANDOFF, ext-p2-validation-checklist.md, ext-contract-harness (T-024 wt), all worktrees T-02x, detailed-task-list, #899-902. Verify no contract drift. Tags: phase:integration-p1 wave:integration-w2. Deliverable: updated STATUS + new P1W2-HANDOFF.md + validation evidence + matrix + readiness note. Worktree: swarm/engines/p1-w2/close/T-029 if needed.",
+    "backend": "codex"
+  }
+]

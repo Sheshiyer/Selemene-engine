@@ -1,0 +1,22 @@
+[
+  {
+    "id": "p2-t031-raaga-media",
+    "task": "Execute T-031: Update RaagaEngine + wisdom for media output options and full 72 melakartas verification per FROZEN + T-005. In ts-engines/src/engines/raaga/ extend engine.ts and wisdom.ts for generated_audio (strudel_ratios, clip_url etc), support 72 melakartas + dosha/prahar. Add/update tests with FROZEN samples. Create worktree .worktrees/T-031-codex -b swarm/engines/p2-w2/raaga/T-031-codex. Reference: p1-w1-worker-bootstrap-packet.md, resources-and-assets.md, gaps-and-improvements.md, goal-understanding.md, EXECUTION-STATUS.md, P1W2-HANDOFF.md, .worktrees/T-002-copilot/P1W1-CONTRACTS-FROZEN.md, detailed-task-list.md (T-031), T-024 harness, T-028 evidence if present, ts-engines/src/engines/raaga/*.ts . Test with FROZEN consent/audio. Tags: phase:integration-p1 wave:integration-w2 area:engine-integration engine-raaga. Deliverable: code+tests green, STATUS update, evidence. All cites enforced. External unavailable; Codex. No push/merge. Read all refs first.",
+    "backend": "codex"
+  },
+  {
+    "id": "p2-t035-sigil-provider",
+    "task": "Execute T-035: Refactor SigilForgeEngine to new image provider abstraction + add generate/edit paths per FROZEN + T-003. Update ts-engines/src/engines/sigil-forge/engine.ts , prompt-builder, use providers/image-provider.ts (Nvidia + hooks for nano/kimi). Output uses generated_image. Tests with >=2 providers (mock+). Create worktree .worktrees/T-035-codex -b swarm/engines/p2-w3/sigil/T-035-codex. Reference: bootstrap, 3 extraction files, EXECUTION-STATUS, P1W2-HANDOFF, FROZEN in T-002, detailed-task-list T-035, T-024 harness, T-028, ts-engines providers and sigil. Tags: phase:integration-p1 wave:integration-w2 area:engine-integration engine-sigil. Deliverable: refactored code + tests, STATUS update. Read refs first. Codex only.",
+    "backend": "codex"
+  },
+  {
+    "id": "github-updates-wave2-p2-entry",
+    "task": "Perform GitHub updates for Wave 2 close + P2 entry: Use gh CLI to comment on #897 (P2 epic), #893, #902 with summary from P1W2-HANDOFF.md + EXECUTION-STATUS T-029 section + evidence (baselines green, T-026/27/28 kicked in wts, P1W2-HANDOFF created, no drift, readiness for full P2). Add labels: phase:integration-p2 wave:integration-w2 engine-biofield engine-face-reading etc if missing. Reference all: 3 extraction, FROZEN, bootstrap, detailed-task-list, checklist. Attach links to handoff and STATUS. Self-contained. Tags consistent. Read the md files first for accurate evidence. No code changes.",
+    "backend": "codex"
+  },
+  {
+    "id": "sankalpa-prong2-contracts-sync",
+    "task": "Sync Sankalpa Prong 2 contracts (#900): In ../sankalpa (or full path /Volumes/madara/2026/twc-vault/01-Projects/tryambakam-noesis/sankalpa), update src/renderer/data/engine-media-contracts.ts and biofieldDomain.ts + any App/features to align with latest FROZEN from engine .worktrees/T-002-copilot/P1W1-CONTRACTS-FROZEN.md + P2 starts (image_data, consent, generated_audio/image, bio 11 metrics, face). Ensure local-first consent, no vector_path. Add notes citing extraction files + P1W2-HANDOFF. Create branch if needed but isolated. Reference: bootstrap, 3 extraction, STATUS, P1W2-HANDOFF, FROZEN, detailed T-100 series. Tags phase:integration-p1 wave:integration-w2. Read FROZEN and sankalpa files first. Deliverable: updated contracts + STATUS note. Codex subagent.",
+    "backend": "codex"
+  }
+]

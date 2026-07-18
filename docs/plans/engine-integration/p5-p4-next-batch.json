@@ -1,0 +1,32 @@
+[
+  {
+    "id": "t115-sankalpa-sigil-ui",
+    "task": "Implement T-115: Sigil Forge UI in Sankalpa (intention + method + provider select + b64 image viewer + manual draw guidance). Edit sankalpa repo directly (no worktree, follow T-100/T-105 pattern): NEW src/renderer/sigil/SigilForgeSurface.tsx (+ index.ts), wire into App.tsx. Use engine-media-contracts.ts types (generated_image, consent), local-first + consent gate, provider select (nvidia/nano-banana/kimi per merged P3), b64 viewer, save/export, guidance-first design per FROZEN. Reference: p1-w1-worker-bootstrap-packet.md, 3 extraction files, FROZEN (P1W1-CONTRACTS-FROZEN.md in T-002 wt), P1W2-HANDOFF.md, EXECUTION-STATUS.md, detailed-task-list.md T-115, existing sankalpa T-100/T-105 components. Verify: sankalpa typecheck + tests + vite build green. Update Selemene EXECUTION-STATUS.md. Tags: phase:integration-p1 wave:integration-w2 prong2 sankalpa engine-sigil.",
+    "backend": "codex"
+  },
+  {
+    "id": "t120-sankalpa-face-ui",
+    "task": "Implement T-120: Face reading capture + result visualization in Sankalpa (face map, elemental, health zones). Edit sankalpa repo directly: NEW src/renderer/face/FaceReadingSurface.tsx (+ index.ts), wire into App.tsx. Reuse CameraCapture pattern from T-100 for image capture (local-first + consent), call face-reading engine (Rust engine via api/bridge or fallback heuristic), visualize FaceAnalysis (constitution, elemental, health zones per FROZEN). Reference: standard refs (bootstrap, 3 extraction, FROZEN, P1W2-HANDOFF, STATUS, detailed T-120) + T-027 merged engine + T-100 CameraCapture. Verify: sankalpa typecheck + tests + build green. Update STATUS. Tags: phase:integration-p1 wave:integration-w2 prong2 sankalpa engine-face-reading.",
+    "backend": "codex"
+  },
+  {
+    "id": "face-cv-hook-p3",
+    "task": "Implement face CV hook (P3): extend engine-face-reading landmark_hook placeholder (merged T-027) with real CV path — wire to a python face service (mediapipe face mesh landmarks) similar to T-065 biofield pattern, or python-services face endpoint; engine calls it when image_data present with consent, fallback heuristic stays. Create worktree .worktrees/face-cv-codex -b swarm/engines/p3-w2/cv/face-cv-codex. Reference: bootstrap, 3 extraction, FROZEN, detailed-task-list, P1W2-HANDOFF, STATUS, T-027/T-065 merged code (crates/engine-face-reading, python-services). Tests: unit + integration with FROZEN sample; cargo + pytest green. Tags: phase:integration-p1 wave:integration-w2 engine-face-reading. Deliverable: real landmark extraction path + graceful fallback + STATUS update. Worktree edits only.",
+    "backend": "codex"
+  },
+  {
+    "id": "raaga-clip-generation",
+    "task": "Implement raaga clip generation (P3 suno-bridge or server-side): fill generated_audio.clip_url (currently null per T-031) — add a clip generation path for raaga: render strudel_ratios to audio (offline render or external service per goal-understanding), return clip_url (local file/serve or service URL), consent-gated, config-driven. Create worktree .worktrees/raaga-clip-codex -b swarm/engines/p3-w3/raaga/raaga-clip-codex. Reference: bootstrap, 3 extraction, FROZEN generated_audio contract, detailed-task-list, STATUS, T-031 merged raaga engine + wisdom. Tests green (bun). Tags: phase:integration-p1 wave:integration-w2 engine-raaga. Deliverable: clip_url populated via generation path + tests + STATUS update. Worktree only.",
+    "backend": "codex"
+  },
+  {
+    "id": "p4-api-bridge-health",
+    "task": "Implement P4 api/bridge/health tasks (T-080..T-094 subset): verify + extend noesis-api exposure for all 4 focus engines with media contracts (biofield, face, raaga, sigil endpoints accept/return FROZEN media fields), noesis-bridge registration verification for media-enabled engines, health endpoints reporting engine readiness (incl. python sidecar status). Create worktree .worktrees/p4-api-codex -b swarm/engines/p4-w1/api/p4-api-codex. Reference: bootstrap, 3 extraction, FROZEN, detailed-task-list (Phase 4 T-080..094), STATUS, merged P2/P3 code, crates/noesis-api, crates/noesis-bridge, ts-engines server. Tests: cargo api/bridge tests + integration roundtrips green. Tags: phase:integration-p1 wave:integration-w2 area:engine-integration. Deliverable: api exposure verified/extended + health + STATUS update. Worktree only.",
+    "backend": "codex"
+  },
+  {
+    "id": "p4-sdk-client",
+    "task": "Implement P4 SDK task: client SDK for the 4 focus engines (TS package) — typed client wrapping api endpoints with FROZEN media contracts (image_data, consent, generated_*), used by sankalpa + harness; include error handling + local-first consent enforcement. Create worktree .worktrees/p4-sdk-codex -b swarm/engines/p4-w1/sdk/p4-sdk-codex. Reference: bootstrap, 3 extraction, FROZEN, detailed-task-list Phase 4, STATUS, ts-engines types, engine-media-contracts.ts (sankalpa), scripts/ext-contract-harness.ts. Tests green. Tags: phase:integration-p1 wave:integration-w2 area:engine-integration. Deliverable: SDK package + tests + STATUS update. Worktree only.",
+    "backend": "codex"
+  }
+]

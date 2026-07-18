@@ -1,0 +1,17 @@
+[
+  {
+    "id": "ext-research-providers",
+    "task": "Research and provide ready-to-use prompt templates and API integration notes for image generation of sigils/yantras using nano-banana (Google Gemini image model) and kimi (Moonshot or equivalent). Focus on turning present-tense intentions into runic, vedic, chaos-star, rose-wheel sigils. Include style descriptors, aspect ratios, negative prompts if applicable, and example calls. Output structured with sections for each provider, 4-5 example prompts per, and code sketch for a TS provider module. Base purely on general knowledge of these models; do not assume repo internals beyond the sigil-forge description.",
+    "backend": "grok"
+  },
+  {
+    "id": "ext-draft-media-contracts",
+    "task": "Draft comprehensive example payloads for the new media-extended EngineInput and EngineOutput contracts supporting the four focus engines. Use the current schemas from the engine reference docs: biofield (11 metrics capture + 5 analysis), face-reading (image input -> constitution + zones), raaga (melakarta input -> swaras + strudel ratios + optional audio), sigil-forge (intention + method -> steps + optional image b64). Add fields for: image_data (b64 or ref), video_ref, audio_ref, generated_image_url or b64, consent_token, quality_score, local_only boolean. Provide 1 full example per engine for both Input and Output, plus TypeScript interface suggestions. Cross reference the gaps file for known mismatches to fix (e.g. no phantom vector_path).",
+    "backend": "command-code"
+  },
+  {
+    "id": "ext-contract-validation-checklist",
+    "task": "Create a complete P1 Wave 1 validation checklist for the contract freeze. Items must cover: schema validation (JSON schema + examples), roundtrip for each of 4 engines, Sankalpa local preview compatibility (biofieldDomain.ts etc), consent flow, no auto-upload, bridge registration test, OpenAPI update, unit tests in core and ts-engines, UI component contracts for inputs/outputs. Format as markdown with checkboxes, acceptance criteria from the plan, and suggested test commands. Include anti-drift checks from the goal-understanding file.",
+    "backend": "kimi"
+  }
+]

@@ -1,0 +1,7 @@
+[
+  {
+    "id": "ext-contract-samples-final",
+    "task": "Generate 4 complete realistic EngineInput/Output example payloads using the exact media extensions from P1W1-CONTRACTS-FROZEN.md (image_data, generated_*, consent, quality, audio options etc). One roundtrip example per focus engine (biofield-capture, face-reading, raaga, sigil-forge). Output as JSON blocks ready for tests or docs. Include short notes on how each satisfies the contracts and anti-drift from goal-understanding.md.",
+    "backend": "grok"
+  }
+]

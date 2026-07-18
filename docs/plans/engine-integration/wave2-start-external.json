@@ -1,0 +1,12 @@
+[
+  {
+    "id": "ext-contract-harness",
+    "task": "Generate a self-contained test harness (TS + curl examples + simple script) for contract roundtrips using the 4 examples from previous re-dispatch (biofield-capture image_data, face image_data, raaga melakarta+audio, sigil intention+image). Include consent local-first guards, schema validation notes, and how to run against ts-engines@3001 or python@8002. Reference FROZEN, types, goal-understanding local-first. Output as markdown + code files ready to add to repo (e.g. scripts/contract-roundtrips.ts or README section).",
+    "backend": "grok"
+  },
+  {
+    "id": "ext-p2-validation-checklist",
+    "task": "Draft a P2 entry validation checklist (similar to P1W1 one) based on plan P2 (biofield Vedic+ capture mapping, face image input, raaga/sigil media updates per T-026/27/28/31/35). Include 8-10 items for hardening, tests, anti-drift vs extraction files, roundtrips with frozen contracts, no scope creep. Format as markdown with checkboxes, evidence requirements, commands. Cite plan, detailed-task-list, 3 extraction, FROZEN, bootstrap, #897.",
+    "backend": "command-code"
+  }
+]

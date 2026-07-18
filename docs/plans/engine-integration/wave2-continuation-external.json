@@ -1,0 +1,22 @@
+[
+  {
+    "id": "wave2-t021-python-ci",
+    "task": "Enhance .github/workflows/test.yml for T-021: add complete python-sidecars CI job for biofield (pytest 11-metrics + quality using FROZEN samples, uvicorn health @8002). Integrate with existing (needs ts-engines). Use FROZEN contracts, local dev from #899. Reference: p1-w1-worker-bootstrap-packet.md, 3 extraction files (resources-and-assets.md, gaps-and-improvements.md, goal-understanding.md), EXECUTION-STATUS.md, P1W1-W2-HANDOFF.md, detailed-task-list T-021, FROZEN.md (in .worktrees/T-002-copilot). Tags: phase:integration-p1, wave:integration-w2, area:engine-integration, swarm:selemene-backend, engine-biofield. Deliverable: updated test.yml + STATUS update + evidence (logs). Create branch/worktree if needed: swarm/engines/p1-w2/ci/T-021.",
+    "backend": "codex"
+  },
+  {
+    "id": "wave2-t022-t023-local-baselines-verify",
+    "task": "Verify/complete local dev baselines T-022 (ts-engines@3001 with media roundtrips using FROZEN examples, update README if needed) and T-023 (python biofield@8002 pytest + health). Run commands to confirm (bun start, curls with consent/image_data, python uvicorn + pytest). Reference: bootstrap packet, 3 extraction, STATUS, handoff, checklist, FROZEN, ts-engines/README.md, python-services/README.md. Tags: phase:integration-p1 wave:integration-w2 area:engine-integration swarm:selemene-backend. Deliverable: verified runs + STATUS + README updates + evidence. Worktree if mutating: swarm/engines/p1-w2/local/T-022-023.",
+    "backend": "codex"
+  },
+  {
+    "id": "wave2-t024-harness-integration",
+    "task": "Integrate harness for T-024: use previous ext-contract-harness.md (or generate), add to scripts/ or ts-engines/python as test harness for 4 engines roundtrips (FROZEN samples, consent local-first), update package.json scripts, enhance test.yml smoke, document in READMEs. Ensure uses frozen contracts (image_data, consent, generated_*). Reference: FROZEN, 3 extraction, bootstrap, STATUS, checklist, detailed-task-list T-024, #899-902. Tags: phase:integration-p1 wave:integration-w2 area:engine-integration swarm:selemene-backend. Deliverable: integrated files + CI/docs + STATUS + evidence. Worktree: swarm/engines/p1-w2/harness/T-024.",
+    "backend": "codex"
+  },
+  {
+    "id": "wave2-t027-face-p2-start",
+    "task": "Start T-027 (P2 face): extend engine-face-reading for image_data input (heuristic + landmark hook per FROZEN/contracts). Create worktree swarm/engines/p2-w1/face/T-027-codex. Edit crates/engine-face-reading/src/ (engine.rs, models.rs) to support image_data + consent from frozen. Add test with FROZEN sample. Reference: FROZEN, 3 extraction, bootstrap, handoff, STATUS, detailed-task-list T-027, goal-understanding. Tags: phase:integration-p1 wave:integration-w2 area:engine-integration swarm:selemene-backend engine-face-reading. Deliverable: code + tests + STATUS + evidence.",
+    "backend": "codex"
+  }
+]

@@ -1,0 +1,17 @@
+[
+  {
+    "id": "ext-generate-contract-samples",
+    "task": "Using the P1W1-CONTRACTS-FROZEN.md and the frozen media extensions described (MediaRef, Consent, QualitySpec, GeneratedImage/GeneratedAudio etc in noesis-core), generate 4 complete realistic example payloads: one full EngineInput + EngineOutput roundtrip for each focus engine (biofield-capture with image_data, face-reading with image_data, raaga with audio options, sigil-forge with generated image via provider). Include the exact new fields. Output as clean JSON + short explanation of how each uses the contracts. Make them suitable for tests or API examples.",
+    "backend": "grok"
+  },
+  {
+    "id": "ext-validation-evidence-draft",
+    "task": "Expand the p1-w1-validation-gate-checklist.md with detailed 'Evidence' suggestions and sample commands/outputs for each major checkbox, especially the core contracts section (T-002 to T-005), roundtrips, Sankalpa compatibility, and anti-drift checks. Base on the plan, bootstrap packet, FROZEN.md, and goal-understanding. Format additions as ready-to-paste updates or additional sections. Focus on what a validation agent would produce.",
+    "backend": "command-code"
+  },
+  {
+    "id": "ext-provider-implementation-sketches",
+    "task": "Now that the ImageProvider abstraction is frozen (per FROZEN.md and T-003), provide TypeScript code sketches for two new providers: NanoBananaProvider and KimiProvider. Include the interface implementation, config shape, prompt building for sigil/yantra styles (runic, vedic, etc.), error handling, and how to register/switch in the sigil engine. Keep sketches self-contained and matching the current nvidia-image.ts style from the repo description. Note any open questions like endpoints.",
+    "backend": "grok"
+  }
+]
