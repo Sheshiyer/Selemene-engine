@@ -22,7 +22,10 @@
 
 const args = process.argv.slice(2)
 const BASE = (args.find((a) => !a.startsWith('--')) || process.env.ENGINE_URL || '').replace(/\/+$/, '')
+// The engine accepts either a Bearer JWT or an X-API-Key. Support both so the
+// same gate runs from CI (JWT) or from the Selemene API key.
 const TOKEN = process.env.ENGINE_TOKEN || (args.includes('--token') ? args[args.indexOf('--token') + 1] : '')
+const API_KEY = process.env.ENGINE_API_KEY || (args.includes('--api-key') ? args[args.indexOf('--api-key') + 1] : '')
 
 if (!BASE) {
   console.error('usage: node scripts/verify-mode-contract.mjs <baseUrl>   (or set ENGINE_URL)')
@@ -41,6 +44,7 @@ const call = async (mode) => {
     headers: {
       'Content-Type': 'application/json',
       ...(TOKEN ? { Authorization: `Bearer ${TOKEN}` } : {}),
+      ...(API_KEY ? { 'X-API-Key': API_KEY } : {}),
     },
     body: JSON.stringify({ birth_data: BIRTH, mode, consciousness_level: 3 }),
   })
