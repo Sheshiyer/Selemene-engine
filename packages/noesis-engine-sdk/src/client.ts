@@ -378,12 +378,13 @@ export class RaagaEngineApi {
 
   /**
    * Raaga calculate (melakarta → swaras + strudel_ratios; generated_audio per FROZEN T-005/T-031).
-   * Consent scope raaga-audio required when audio_ref is attached. Melakarta-only calls are consent-free.
+   * Consent scope raaga-audio required when audio_ref is attached or a server clip is requested.
+   * Melakarta-only calls are consent-free.
    */
   async calculate(input: RaagaCalculateInput = {}): Promise<EngineOutput<RaagaResult>> {
-    if (input.audio_ref) {
+    if (input.audio_ref || input.parameters?.request_clip === true) {
       requireConsent(
-        resolveConsent(input.consent, input.audio_ref.consent),
+        resolveConsent(input.consent, input.audio_ref?.consent),
         CONSENT_SCOPES.RAAGA_AUDIO,
         'raaga',
       )

@@ -317,7 +317,7 @@ export interface FaceReadingCalculateInput extends EngineCallBase {
   consent?: Consent
 }
 
-/** raaga calculate. Consent scope raaga-audio required when audio_ref present. */
+/** raaga calculate. Consent scope raaga-audio required for audio_ref or parameters.request_clip. */
 export interface RaagaCalculateInput extends EngineCallBase {
   parameters?: Record<string, unknown> & {
     melakarta?: number | string

@@ -145,6 +145,28 @@ describe('raaga.calculate', () => {
     ).rejects.toBeInstanceOf(ConsentError)
     expect(calls).toHaveLength(0)
   })
+
+  it('requires raaga-audio consent before requesting a generated clip', async () => {
+    const { fetchImpl, calls } = mockFetch(() => jsonResponse(raagaOutput))
+    const client = new EngineClient({ fetchImpl })
+
+    await expect(
+      client.raaga.calculate({ parameters: { request_clip: true } }),
+    ).rejects.toBeInstanceOf(ConsentError)
+    expect(calls).toHaveLength(0)
+  })
+
+  it('accepts exact-scope consent for generated clip requests', async () => {
+    const { fetchImpl, calls } = mockFetch(() => jsonResponse(raagaOutput))
+    const client = new EngineClient({ fetchImpl })
+
+    await client.raaga.calculate({
+      parameters: { request_clip: true },
+      consent: consentRaaga,
+    })
+
+    expect(calls).toHaveLength(1)
+  })
 })
 
 // ---------------------------------------------------------------------------
