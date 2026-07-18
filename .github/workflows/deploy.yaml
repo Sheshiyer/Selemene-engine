@@ -240,35 +240,34 @@ jobs:
       - name: Deploy to Railway service
         run: |
           railway --version
-          railway link -p "${RAILWAY_PROJECT_ID}" -e "${RAILWAY_ENVIRONMENT}" -s "${RAILWAY_SERVICE}"
-          railway up --ci --detach
+          # RAILWAY_TOKEN here is a project token (environment-scoped — the
+          # CI-recommended type). It CANNOT run `railway link`, which is an
+          # account-level operation and 401s ("Unauthorized"). The token already
+          # implies the project + environment, so deploy the target service
+          # directly — railway up accepts --service without linking.
+          railway up --service "${RAILWAY_SERVICE}" --ci
 
       - name: Verify Railway health
+        env:
+          HEALTH_BASE: ${{ vars.API_BASE_URL }}
         run: |
-          railway link -p "${RAILWAY_PROJECT_ID}" -e "${RAILWAY_ENVIRONMENT}" -s "${RAILWAY_SERVICE}"
-          RAILWAY_STATUS=$(railway status 2>&1)
-          RAILWAY_URL=$(echo "${RAILWAY_STATUS}" | grep -oE "https://[a-zA-Z0-9.-]+\.railway\.app" | head -1 || true)
-          if [[ -z "${RAILWAY_URL}" ]]; then
-            echo "Could not determine Railway service URL from railway status output."
-            echo "Status output:"
-            echo "${RAILWAY_STATUS}"
-            exit 1
-          fi
-
-          echo "Checking Railway health at ${RAILWAY_URL}/health/live"
-          for attempt in {1..12}; do
-            STATUS_CODE=$(curl -sS -o /tmp/railway-health.json -w "%{http_code}" "${RAILWAY_URL}/health/live" || echo "000")
+          # A project token can't run `railway status` to discover the .railway.app
+          # URL (also an account op), so verify the real production endpoint
+          # (custom domain) directly.
+          BASE="${HEALTH_BASE:-https://selemene.tryambakam.space}"
+          echo "Checking ${BASE}/health/live after deploy..."
+          for attempt in {1..18}; do
+            STATUS_CODE=$(curl -sS -o /tmp/railway-health.json -w "%{http_code}" "${BASE}/health/live" || echo "000")
             if [[ "${STATUS_CODE}" == "200" ]]; then
-              echo "Railway health check passed on attempt ${attempt}."
+              echo "Health check passed on attempt ${attempt}."
               cat /tmp/railway-health.json
               exit 0
             fi
-
-            echo "Attempt ${attempt}/12: health returned ${STATUS_CODE}; retrying in 10s..."
+            echo "Attempt ${attempt}/18: health returned ${STATUS_CODE}; retrying in 10s..."
             sleep 10
           done
 
-          echo "Railway health check failed after retries."
+          echo "Health check failed after retries."
           cat /tmp/railway-health.json || true
           exit 1
 
