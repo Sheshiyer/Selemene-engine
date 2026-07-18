@@ -34,6 +34,7 @@ use axum::{
     routing::{delete, get, patch, post, put},
     Extension, Router,
 };
+use base64::Engine as _;
 use chrono::{
     Datelike, LocalResult, NaiveDate, NaiveDateTime, NaiveTime, Offset, TimeZone, Timelike,
 };
@@ -41,12 +42,12 @@ use chrono_tz::Tz;
 use noesis_auth::{AuthService, AuthUser};
 use noesis_cache::CacheManager;
 use noesis_core::{
-    BiofieldResultSchema, BiorhythmResultSchema, EngineError, EngineInput, EngineOutput,
-    EngineResultData, EnneagramResultSchema, FaceReadingResultSchema, GeneKeysResultSchema,
-    HumanDesignResultSchema, IChingResultSchema, NadabrahmanResultSchema, NumerologyResultSchema,
-    PanchangaResultSchema, Precision, SacredGeometryResultSchema, SigilForgeResultSchema,
-    TarotResultSchema, TransitsResultSchema, ValidationResult, VedicClockResultSchema,
-    VimshottariResultSchema, WorkflowResult,
+    BiofieldResultSchema, BiorhythmResultSchema, Coordinates, EngineError, EngineInput,
+    EngineOutput, EngineResultData, EnneagramResultSchema, FaceReadingResultSchema,
+    GeneKeysResultSchema, HumanDesignResultSchema, IChingResultSchema, NadabrahmanResultSchema,
+    NumerologyResultSchema, PanchangaResultSchema, Precision, SacredGeometryResultSchema,
+    SigilForgeResultSchema, TarotResultSchema, TransitsResultSchema, ValidationResult,
+    VedicClockResultSchema, VimshottariResultSchema, WorkflowResult,
 };
 use noesis_data::models::reading::NewReading;
 use noesis_data::repositories::admin_repository::AdminRepository;
@@ -81,6 +82,7 @@ use workflow_parity::log_workflow_registry_parity;
     paths(
         health_handler,
         readiness_handler,
+        dependency_health_handler,
         status_handler,
         vedic_chart_handler,
         list_engines_handler,
@@ -146,6 +148,7 @@ use workflow_parity::log_workflow_registry_parity;
     components(
         schemas(
             EngineInput,
+            ApiEngineInput,
             EngineOutput,
             EngineResultData,
             PanchangaResultSchema,
@@ -167,9 +170,12 @@ use workflow_parity::log_workflow_registry_parity;
             ValidationResult,
             WorkflowResult,
             ApiEngineOutputResponse,
+            ApiWitnessPrompt,
             ApiWorkflowResultResponse,
             HealthResponse,
             ReadinessResponse,
+            DependencyHealthResponse,
+            DependencyHealthEntry,
             StatusResponse,
             WorkflowSummary,
             EngineInfoResponse,
@@ -1076,9 +1082,15 @@ pub fn create_router(state: AppState, config: &ApiConfig) -> Router {
     }
 
     // Now add stateful routes
+    let dependency_health_config = Arc::new(DependencyHealthConfig::from_env());
+
     base.route("/health", get(health_handler))
         .route("/health/live", get(health_handler)) // Kubernetes liveness probe
         .route("/health/ready", get(readiness_handler)) // Kubernetes readiness probe
+        .route(
+            "/health/dependencies",
+            get(dependency_health_handler).layer(Extension(dependency_health_config)),
+        )
         .route("/ready", get(readiness_handler))
         .route("/metrics", get(metrics_handler))
         .nest("/api/v1", api_v1)
@@ -1125,6 +1137,79 @@ struct BridgeEngineStatus {
     healthy: bool,
     detail: String,
     latency_ms: u64,
+}
+
+#[derive(Clone)]
+struct DependencyHealthConfig {
+    biofield_url: String,
+    biofield_timeout: Duration,
+    face_url: String,
+    face_timeout: Duration,
+    face_disabled: bool,
+    configured_providers: Vec<String>,
+}
+
+fn configured_provider_ids(values: [(&str, Option<String>); 3]) -> Vec<String> {
+    values
+        .into_iter()
+        .filter_map(|(id, value)| {
+            value
+                .filter(|token| !token.trim().is_empty())
+                .map(|_| id.to_string())
+        })
+        .collect()
+}
+
+impl DependencyHealthConfig {
+    fn from_env() -> Self {
+        fn bounded_timeout(env_name: &str, fallback_ms: u64) -> Duration {
+            let requested = std::env::var(env_name)
+                .ok()
+                .and_then(|value| value.trim().parse::<u64>().ok())
+                .unwrap_or(fallback_ms);
+            Duration::from_millis(requested.clamp(1, 500))
+        }
+
+        let configured_providers = configured_provider_ids([
+            ("nvidia", std::env::var("NVIDIA_API_KEY").ok()),
+            ("nano-banana", std::env::var("RUNCOMFY_TOKEN").ok()),
+            ("kimi", std::env::var("KIMI_API_KEY").ok()),
+        ]);
+
+        Self {
+            biofield_url: std::env::var("PYTHON_BIOFIELD_URL")
+                .ok()
+                .filter(|value| !value.trim().is_empty())
+                .unwrap_or_else(|| config::DEFAULT_PYTHON_BIOFIELD_URL.to_string()),
+            biofield_timeout: bounded_timeout("PYTHON_BIOFIELD_TIMEOUT_MS", 500),
+            face_url: std::env::var("SELEMENE_FACE_CV_URL")
+                .ok()
+                .filter(|value| !value.trim().is_empty())
+                .unwrap_or_else(|| "http://127.0.0.1:8001".to_string()),
+            face_timeout: bounded_timeout("SELEMENE_FACE_CV_TIMEOUT_MS", 500),
+            face_disabled: std::env::var("SELEMENE_FACE_CV_DISABLED")
+                .ok()
+                .is_some_and(|value| matches!(value.trim(), "1" | "true" | "TRUE" | "yes" | "YES")),
+            configured_providers,
+        }
+    }
+}
+
+/// Deliberately small, allowlisted dependency entry. URLs, versions, errors,
+/// credentials, and transport details never cross this response boundary.
+#[derive(Debug, Clone, Serialize, ToSchema)]
+struct DependencyHealthEntry {
+    id: String,
+    status: String,
+    reason: String,
+}
+
+#[derive(Debug, Clone, Serialize, ToSchema)]
+struct DependencyHealthResponse {
+    status: String,
+    engines: Vec<DependencyHealthEntry>,
+    sidecars: Vec<DependencyHealthEntry>,
+    providers: Vec<DependencyHealthEntry>,
 }
 
 #[derive(Serialize, ToSchema)]
@@ -1185,15 +1270,119 @@ struct ApiEngineOutputResponse {
     #[serde(flatten)]
     output: EngineOutput,
     envelope_version: String,
+    witness_prompts: Vec<ApiWitnessPrompt>,
+    calculated_at: String,
+    processing_time_ms: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    generated_image: Option<Value>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    generated_audio: Option<Value>,
+}
+
+/// API-boundary input compatible with the merged engine SDK while retaining
+/// the legacy Rust `options` envelope. Canonical SDK fields are normalized
+/// once into `EngineInput::options` before dispatch.
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+struct ApiEngineInput {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    consciousness_level: Option<u8>,
+    #[serde(default)]
+    parameters: HashMap<String, Value>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    seed: Option<u64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    question: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    image_data: Option<Value>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    audio_ref: Option<Value>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    consent: Option<Value>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    quality: Option<Value>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    birth_data: Option<noesis_core::BirthData>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    current_time: Option<chrono::DateTime<chrono::Utc>>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    location: Option<Coordinates>,
+    #[serde(default, skip_serializing_if = "is_standard_precision")]
+    precision: Precision,
+    #[serde(default, skip_serializing_if = "HashMap::is_empty")]
+    options: HashMap<String, Value>,
+}
+
+fn is_standard_precision(precision: &Precision) -> bool {
+    *precision == Precision::Standard
+}
+
+impl ApiEngineInput {
+    fn normalize(self) -> EngineInput {
+        let mut options = self.options;
+
+        // The merged SDK's canonical parameter map wins over duplicate legacy
+        // option keys. Top-level transport/media fields win over both.
+        options.extend(self.parameters);
+        if let Some(value) = self.consciousness_level {
+            options.insert("consciousness_level".to_string(), Value::from(value));
+        }
+        if let Some(value) = self.seed {
+            options.insert("seed".to_string(), Value::from(value));
+        }
+        if let Some(value) = self.question {
+            options.insert("question".to_string(), Value::from(value));
+        }
+        for (key, value) in [
+            ("image_data", self.image_data),
+            ("audio_ref", self.audio_ref),
+            ("consent", self.consent),
+            ("quality", self.quality),
+        ] {
+            if let Some(value) = value {
+                options.insert(key.to_string(), value);
+            }
+        }
+
+        EngineInput {
+            birth_data: self.birth_data,
+            current_time: self.current_time.unwrap_or_else(chrono::Utc::now),
+            location: self.location,
+            precision: self.precision,
+            options,
+        }
+    }
 }
 
 impl From<EngineOutput> for ApiEngineOutputResponse {
     fn from(output: EngineOutput) -> Self {
+        let generated_image = output.result.get("generated_image").cloned();
+        let generated_audio = output.result.get("generated_audio").cloned();
+        let witness_prompts = vec![ApiWitnessPrompt {
+            prompt: output.witness_prompt.clone(),
+            context: None,
+            themes: Vec::new(),
+        }];
+        let calculated_at = output.metadata.timestamp.to_rfc3339();
+        let processing_time_ms = output.metadata.calculation_time_ms;
+
         Self {
             output,
             envelope_version: "1".to_string(),
+            witness_prompts,
+            calculated_at,
+            processing_time_ms,
+            generated_image,
+            generated_audio,
         }
     }
+}
+
+#[derive(Serialize, ToSchema)]
+struct ApiWitnessPrompt {
+    prompt: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    context: Option<String>,
+    themes: Vec<String>,
 }
 
 #[derive(Serialize, ToSchema)]
@@ -1444,6 +1633,82 @@ fn validate_engine_input(input: &EngineInput) -> Result<(), (StatusCode, Json<Er
     Ok(())
 }
 
+fn effective_media_consent<'a>(input: &'a EngineInput, media_key: &str) -> Option<&'a Value> {
+    input.options.get("consent").or_else(|| {
+        input
+            .options
+            .get(media_key)
+            .and_then(|media| media.get("consent"))
+    })
+}
+
+#[allow(clippy::result_large_err)]
+fn require_consent_scope(
+    engine_id: &str,
+    required_scope: &str,
+    consent: Option<&Value>,
+) -> Result<(), (StatusCode, Json<ErrorResponse>)> {
+    let valid = consent
+        .filter(|value| value.get("granted").and_then(Value::as_bool) == Some(true))
+        .and_then(|value| value.get("scopes"))
+        .and_then(Value::as_array)
+        .is_some_and(|scopes| {
+            scopes
+                .iter()
+                .any(|scope| scope.as_str() == Some(required_scope))
+        });
+
+    if valid {
+        return Ok(());
+    }
+
+    Err(ErrorMapper::response(
+        StatusCode::UNPROCESSABLE_ENTITY,
+        "CONSENT_REQUIRED",
+        format!(
+            "{} requires granted consent with scope '{}'.",
+            engine_id, required_scope
+        ),
+        Some(serde_json::json!({
+            "engine_id": engine_id,
+            "required_scope": required_scope,
+        })),
+    ))
+}
+
+/// Enforce the same per-engine consent rules as the merged TypeScript SDK.
+#[allow(clippy::result_large_err)]
+fn validate_focus_engine_consent(
+    engine_id: &str,
+    input: &EngineInput,
+) -> Result<(), (StatusCode, Json<ErrorResponse>)> {
+    match engine_id {
+        "biofield" | "biofield-capture" if input.options.contains_key("image_data") => {
+            require_consent_scope(
+                engine_id,
+                "biofield-capture",
+                effective_media_consent(input, "image_data"),
+            )
+        }
+        "face-reading" if input.options.contains_key("image_data") => require_consent_scope(
+            engine_id,
+            "face-image",
+            effective_media_consent(input, "image_data"),
+        ),
+        "raaga" if input.options.contains_key("audio_ref") => require_consent_scope(
+            engine_id,
+            "raaga-audio",
+            effective_media_consent(input, "audio_ref"),
+        ),
+        "sigil-forge"
+            if input.options.get("generate_image").and_then(Value::as_bool) == Some(true) =>
+        {
+            require_consent_scope(engine_id, "sigil-gen", input.options.get("consent"))
+        }
+        _ => Ok(()),
+    }
+}
+
 fn should_persist_engine_output(engine_id: &str) -> bool {
     engine_id != "biofield-capture"
 }
@@ -1614,6 +1879,161 @@ async fn readiness_handler(State(state): State<AppState>) -> impl IntoResponse {
     } else {
         (StatusCode::SERVICE_UNAVAILABLE, Json(response)).into_response()
     }
+}
+
+async fn probe_dependency_sidecar(
+    id: &'static str,
+    base_url: String,
+    timeout: Duration,
+    disabled: bool,
+) -> DependencyHealthEntry {
+    if disabled {
+        return DependencyHealthEntry {
+            id: id.to_string(),
+            status: "unavailable".to_string(),
+            reason: "disabled by configuration".to_string(),
+        };
+    }
+
+    let client = match reqwest::Client::builder()
+        .connect_timeout(timeout)
+        .timeout(timeout)
+        .build()
+    {
+        Ok(client) => client,
+        Err(_) => {
+            return DependencyHealthEntry {
+                id: id.to_string(),
+                status: "unavailable".to_string(),
+                reason: "health client unavailable".to_string(),
+            };
+        }
+    };
+
+    let health_url = format!("{}/health", base_url.trim_end_matches('/'));
+    match client.get(health_url).send().await {
+        Ok(response) if response.status().is_success() => DependencyHealthEntry {
+            id: id.to_string(),
+            status: "ready".to_string(),
+            reason: "health check passed".to_string(),
+        },
+        Ok(_) => DependencyHealthEntry {
+            id: id.to_string(),
+            status: "unavailable".to_string(),
+            reason: "health check failed".to_string(),
+        },
+        Err(error) if error.is_timeout() => DependencyHealthEntry {
+            id: id.to_string(),
+            status: "unavailable".to_string(),
+            reason: "health check timed out".to_string(),
+        },
+        Err(_) => DependencyHealthEntry {
+            id: id.to_string(),
+            status: "unavailable".to_string(),
+            reason: "health check failed".to_string(),
+        },
+    }
+}
+
+/// GET /health/dependencies -- bounded, non-generative dependency probes.
+#[utoipa::path(
+    get,
+    path = "/health/dependencies",
+    tag = "health",
+    responses(
+        (status = 200, description = "Dependency status report", body = DependencyHealthResponse),
+    )
+)]
+async fn dependency_health_handler(
+    State(state): State<AppState>,
+    Extension(config): Extension<Arc<DependencyHealthConfig>>,
+) -> Json<DependencyHealthResponse> {
+    let registered = state.orchestrator.list_engines();
+    let bridge_probe = tokio::time::timeout(
+        Duration::from_millis(500),
+        state.bridge().readiness_status(),
+    );
+    let biofield_probe = probe_dependency_sidecar(
+        "biofield-cv",
+        config.biofield_url.clone(),
+        config.biofield_timeout,
+        false,
+    );
+    let face_probe = probe_dependency_sidecar(
+        "mediapipe-face-mesh",
+        config.face_url.clone(),
+        config.face_timeout,
+        config.face_disabled,
+    );
+
+    let (bridge_result, biofield_sidecar, face_sidecar) =
+        tokio::join!(bridge_probe, biofield_probe, face_probe);
+
+    let mut engines = Vec::with_capacity(4);
+    for id in ["biofield", "face-reading"] {
+        let ready = registered.iter().any(|registered_id| registered_id == id);
+        engines.push(DependencyHealthEntry {
+            id: id.to_string(),
+            status: if ready { "ready" } else { "unavailable" }.to_string(),
+            reason: if ready {
+                "registered in native runtime"
+            } else {
+                "not registered in native runtime"
+            }
+            .to_string(),
+        });
+    }
+
+    for id in noesis_bridge::P4_TS_FOCUS_ENGINE_IDS {
+        let bridge_engine = bridge_result
+            .as_ref()
+            .ok()
+            .and_then(|result| result.as_ref().ok())
+            .and_then(|status| status.engines.iter().find(|engine| engine.engine_id == id));
+        let ready = bridge_engine.is_some_and(|engine| engine.healthy);
+        engines.push(DependencyHealthEntry {
+            id: id.to_string(),
+            status: if ready { "ready" } else { "unavailable" }.to_string(),
+            reason: if ready {
+                "registered in TypeScript runtime"
+            } else {
+                "TypeScript runtime unavailable"
+            }
+            .to_string(),
+        });
+    }
+
+    let sidecars = vec![biofield_sidecar, face_sidecar];
+    let providers = config
+        .configured_providers
+        .iter()
+        .map(|id| DependencyHealthEntry {
+            id: id.clone(),
+            status: "ready".to_string(),
+            reason: "configured".to_string(),
+        })
+        .collect::<Vec<_>>();
+    let all_entries = engines
+        .iter()
+        .chain(sidecars.iter())
+        .chain(providers.iter());
+    let status = if all_entries
+        .clone()
+        .any(|entry| entry.status == "unavailable")
+    {
+        "unavailable"
+    } else if all_entries.clone().any(|entry| entry.status == "degraded") {
+        "degraded"
+    } else {
+        "ready"
+    };
+
+    Json(DependencyHealthResponse {
+        status: status.to_string(),
+        engines,
+        sidecars,
+        providers,
+    })
 }
 
 /// GET /metrics -- Prometheus metrics endpoint
@@ -2129,7 +2549,7 @@ fn increment_free_tier_counter(state: &AppState, user: &AuthUser) {
     params(
         ("engine_id" = String, Path, description = "Engine identifier (e.g., 'panchanga', 'numerology', 'biorhythm')"),
     ),
-    request_body = EngineInput,
+    request_body = ApiEngineInput,
     responses(
         (status = 200, description = "Calculation successful", body = ApiEngineOutputResponse),
         (status = 401, description = "Unauthorized", body = ErrorResponse),
@@ -2147,12 +2567,14 @@ async fn calculate_handler(
     State(state): State<AppState>,
     Extension(user): Extension<AuthUser>,
     Path(engine_id): Path<String>,
-    Json(input): Json<EngineInput>,
+    Json(api_input): Json<ApiEngineInput>,
 ) -> Result<Json<ApiEngineOutputResponse>, (StatusCode, Json<ErrorResponse>)> {
     let start = Instant::now();
+    let input = api_input.normalize();
 
     // Validate input at the API boundary (lat/lon bounds, options size cap).
     validate_engine_input(&input)?;
+    validate_focus_engine_consent(&engine_id, &input)?;
 
     // Free-tier monthly cap. 402 with upgrade hint when exceeded.
     enforce_free_tier_quota(&state, &user).await?;
@@ -2163,7 +2585,12 @@ async fn calculate_handler(
     // Extract birth_data for profile auto-population (before input is moved)
     let birth_data_for_profile = input.birth_data.clone();
 
-    let runtime_input = inject_internal_auth_context(input, &user);
+    let mut runtime_input = inject_internal_auth_context(input, &user);
+    // Authentication, never the caller-provided SDK hint, is authoritative.
+    runtime_input.options.insert(
+        "consciousness_level".to_string(),
+        Value::from(user.consciousness_level),
+    );
 
     let result = state
         .orchestrator
@@ -2318,6 +2745,8 @@ async fn face_reading_upload_handler(
     mut multipart: Multipart,
 ) -> Result<Json<FaceUploadResponse>, (StatusCode, Json<ErrorResponse>)> {
     let mut image_bytes: Option<Vec<u8>> = None;
+    let mut image_mime_type = "application/octet-stream".to_string();
+    let mut consent: Option<Value> = None;
 
     while let Some(field) = multipart.next_field().await.map_err(|e| {
         ErrorMapper::response(
@@ -2329,6 +2758,10 @@ async fn face_reading_upload_handler(
     })? {
         let field_name = field.name().unwrap_or_default().to_string();
         if field_name == "file" || field_name == "image" {
+            image_mime_type = field
+                .content_type()
+                .map(ToString::to_string)
+                .unwrap_or_else(|| "application/octet-stream".to_string());
             let bytes = field.bytes().await.map_err(|e| {
                 ErrorMapper::response(
                     StatusCode::BAD_REQUEST,
@@ -2338,7 +2771,23 @@ async fn face_reading_upload_handler(
                 )
             })?;
             image_bytes = Some(bytes.to_vec());
-            break;
+        } else if field_name == "consent" {
+            let raw = field.text().await.map_err(|e| {
+                ErrorMapper::response(
+                    StatusCode::BAD_REQUEST,
+                    "INVALID_CONSENT",
+                    format!("Failed to read consent field: {}", e),
+                    None,
+                )
+            })?;
+            consent = Some(serde_json::from_str(&raw).map_err(|_| {
+                ErrorMapper::response(
+                    StatusCode::BAD_REQUEST,
+                    "INVALID_CONSENT",
+                    "The multipart consent field must contain valid JSON.",
+                    None,
+                )
+            })?);
         }
     }
 
@@ -2351,11 +2800,14 @@ async fn face_reading_upload_handler(
         )
     })?;
 
+    require_consent_scope("face-reading", "face-image", consent.as_ref())?;
+
     let mut options = std::collections::HashMap::new();
     options.insert(
         "image_data".to_string(),
-        Value::String(String::from_utf8_lossy(&image_bytes).to_string()),
+        upload_media_ref(&image_bytes, &image_mime_type, consent.as_ref()),
     );
+    options.insert("consent".to_string(), consent.expect("validated above"));
 
     let input = EngineInput {
         birth_data: None,
@@ -2388,6 +2840,17 @@ async fn face_reading_upload_handler(
         analysis,
         is_mock_data,
     }))
+}
+
+fn upload_media_ref(image_bytes: &[u8], mime_type: &str, consent: Option<&Value>) -> Value {
+    let mut media = serde_json::json!({
+        "b64": base64::engine::general_purpose::STANDARD.encode(image_bytes),
+        "mime_type": mime_type,
+    });
+    if let Some(consent) = consent {
+        media["consent"] = consent.clone();
+    }
+    media
 }
 
 /// POST /api/v1/engines/:engine_id/validate -- validate an engine output
@@ -3701,5 +4164,283 @@ mod checksum_tests {
         assert!(map.contains_key("a.se1"));
         assert!(map.contains_key("b.se1"));
         assert!(!map.contains_key("c.txt"));
+    }
+}
+
+#[cfg(test)]
+mod p4_contract_tests {
+    use super::*;
+    use noesis_core::CalculationMetadata;
+
+    fn fixture(path: &str) -> Value {
+        let raw = match path {
+            "biofield" => include_str!("../tests/fixtures/p4/biofield-request.json"),
+            "face" => include_str!("../tests/fixtures/p4/face-reading-request.json"),
+            "raaga" => include_str!("../tests/fixtures/p4/raaga-request.json"),
+            "sigil" => include_str!("../tests/fixtures/p4/sigil-forge-request.json"),
+            "legacy" => include_str!("../tests/fixtures/p4/legacy-options-request.json"),
+            "audio" => include_str!("../tests/fixtures/p4/generated-audio.json"),
+            "image" => include_str!("../tests/fixtures/p4/generated-image.json"),
+            _ => panic!("unknown fixture"),
+        };
+        serde_json::from_str(raw).expect("fixture must contain valid JSON")
+    }
+
+    #[test]
+    fn frozen_sdk_requests_round_trip_exactly() {
+        for name in ["biofield", "face", "raaga", "sigil"] {
+            let expected = fixture(name);
+            let input: ApiEngineInput =
+                serde_json::from_value(expected.clone()).expect("SDK request should deserialize");
+            assert_eq!(serde_json::to_value(input).unwrap(), expected);
+        }
+    }
+
+    #[test]
+    fn frozen_sdk_fields_normalize_into_canonical_options() {
+        let input: ApiEngineInput =
+            serde_json::from_value(fixture("raaga")).expect("SDK request should deserialize");
+        let normalized = input.normalize();
+
+        assert_eq!(normalized.options["melakarta"], serde_json::json!(29));
+        assert_eq!(
+            normalized.options["audio_ref"]["reference"],
+            "file:local.m4a"
+        );
+        assert_eq!(
+            normalized.options["consent"]["scopes"],
+            serde_json::json!(["raaga-audio"])
+        );
+        assert!(validate_focus_engine_consent("raaga", &normalized).is_ok());
+    }
+
+    #[test]
+    fn legacy_options_payload_remains_compatible() {
+        let input: ApiEngineInput = serde_json::from_value(fixture("legacy")).unwrap();
+        let normalized = input.normalize();
+
+        assert_eq!(normalized.options["melakarta"], serde_json::json!(1));
+        assert!(validate_focus_engine_consent("raaga", &normalized).is_ok());
+    }
+
+    #[test]
+    fn legacy_biofield_media_options_remain_compatible() {
+        let input: ApiEngineInput = serde_json::from_value(serde_json::json!({
+            "options": {
+                "image_data": {
+                    "b64": "AAECf4D/",
+                    "mime_type": "image/png"
+                },
+                "consent": {
+                    "granted": true,
+                    "scopes": ["biofield-capture"],
+                    "timestamp": "2026-07-18T00:00:00Z"
+                }
+            }
+        }))
+        .unwrap();
+        let normalized = input.normalize();
+
+        assert_eq!(normalized.options["image_data"]["mime_type"], "image/png");
+        assert!(validate_focus_engine_consent("biofield", &normalized).is_ok());
+    }
+
+    #[test]
+    fn canonical_fields_override_duplicate_legacy_options() {
+        let input: ApiEngineInput = serde_json::from_value(serde_json::json!({
+            "consciousness_level": 3,
+            "parameters": {"melakarta": 29},
+            "audio_ref": {"reference": "file:canonical.m4a"},
+            "options": {
+                "consciousness_level": 1,
+                "melakarta": 1,
+                "audio_ref": {"reference": "file:legacy.m4a"}
+            }
+        }))
+        .unwrap();
+        let normalized = input.normalize();
+
+        assert_eq!(normalized.options["consciousness_level"], 3);
+        assert_eq!(normalized.options["melakarta"], 29);
+        assert_eq!(
+            normalized.options["audio_ref"]["reference"],
+            "file:canonical.m4a"
+        );
+    }
+
+    #[test]
+    fn all_focus_engine_fixtures_satisfy_exact_consent_matrix() {
+        for (engine_id, fixture_name) in [
+            ("biofield", "biofield"),
+            ("face-reading", "face"),
+            ("raaga", "raaga"),
+            ("sigil-forge", "sigil"),
+        ] {
+            let input: ApiEngineInput = serde_json::from_value(fixture(fixture_name)).unwrap();
+            assert!(
+                validate_focus_engine_consent(engine_id, &input.normalize()).is_ok(),
+                "{engine_id} fixture must carry its exact SDK consent scope"
+            );
+        }
+    }
+
+    #[test]
+    fn consent_scope_is_engine_specific_and_matches_sdk_error_code() {
+        let input: ApiEngineInput = serde_json::from_value(serde_json::json!({
+            "parameters": {},
+            "image_data": {"b64": "AAEC"},
+            "consent": {
+                "granted": true,
+                "scopes": ["biofield-capture"],
+                "timestamp": "2026-07-18T00:00:00Z"
+            }
+        }))
+        .unwrap();
+        let error = validate_focus_engine_consent("face-reading", &input.normalize())
+            .expect_err("wrong scope must fail closed");
+
+        let (_, Json(response)) = error;
+        assert_eq!(response.error_code, "CONSENT_REQUIRED");
+    }
+
+    #[test]
+    fn multipart_image_encoding_preserves_every_byte() {
+        let bytes = [0, 1, 2, 127, 128, 255, 0, 13, 10];
+        let consent = serde_json::json!({
+            "granted": true,
+            "scopes": ["face-image"],
+            "timestamp": "2026-07-18T00:00:00Z"
+        });
+        let media = upload_media_ref(&bytes, "image/png", Some(&consent));
+        let decoded = base64::engine::general_purpose::STANDARD
+            .decode(media["b64"].as_str().unwrap())
+            .unwrap();
+
+        assert_eq!(decoded, bytes);
+        assert_eq!(media["mime_type"], "image/png");
+        assert_eq!(media["consent"], consent);
+    }
+
+    #[test]
+    fn generated_media_aliases_match_frozen_fixtures_exactly() {
+        let generated_audio = fixture("audio");
+        let generated_image = fixture("image");
+        let output = EngineOutput {
+            engine_id: "raaga".to_string(),
+            result: serde_json::json!({
+                "generated_audio": generated_audio,
+                "generated_image": generated_image,
+            }),
+            witness_prompt: "What do you hear?".to_string(),
+            consciousness_level: 3,
+            metadata: CalculationMetadata {
+                calculation_time_ms: 1.5,
+                backend: "typescript".to_string(),
+                precision_achieved: "exact".to_string(),
+                cached: false,
+                timestamp: chrono::DateTime::parse_from_rfc3339("2026-07-18T00:00:00Z")
+                    .unwrap()
+                    .with_timezone(&chrono::Utc),
+                engine_version: "fixture".to_string(),
+            },
+        };
+        let response = serde_json::to_value(ApiEngineOutputResponse::from(output)).unwrap();
+
+        assert_eq!(response["generated_audio"], fixture("audio"));
+        assert_eq!(response["generated_image"], fixture("image"));
+        assert_eq!(response["result"]["generated_audio"], fixture("audio"));
+        assert_eq!(response["result"]["generated_image"], fixture("image"));
+        assert_eq!(response["processing_time_ms"], 1.5);
+        assert_eq!(response["calculated_at"], "2026-07-18T00:00:00+00:00");
+        assert_eq!(
+            response["witness_prompts"][0]["prompt"],
+            "What do you hear?"
+        );
+    }
+
+    #[test]
+    fn dependency_response_has_strict_allowlisted_shape_and_no_leaks() {
+        let response = DependencyHealthResponse {
+            status: "unavailable".to_string(),
+            engines: vec![DependencyHealthEntry {
+                id: "raaga".to_string(),
+                status: "unavailable".to_string(),
+                reason: "TypeScript runtime unavailable".to_string(),
+            }],
+            sidecars: vec![DependencyHealthEntry {
+                id: "mediapipe-face-mesh".to_string(),
+                status: "unavailable".to_string(),
+                reason: "health check failed".to_string(),
+            }],
+            providers: vec![DependencyHealthEntry {
+                id: "nvidia".to_string(),
+                status: "ready".to_string(),
+                reason: "configured".to_string(),
+            }],
+        };
+        let value = serde_json::to_value(response).unwrap();
+        let top_keys = value
+            .as_object()
+            .unwrap()
+            .keys()
+            .cloned()
+            .collect::<Vec<_>>();
+        let entry_keys = value["engines"][0]
+            .as_object()
+            .unwrap()
+            .keys()
+            .cloned()
+            .collect::<Vec<_>>();
+        let body = value.to_string();
+
+        assert_eq!(top_keys, ["engines", "providers", "sidecars", "status"]);
+        assert_eq!(entry_keys, ["id", "reason", "status"]);
+        for forbidden in [
+            "token", "api_key", "http://", "https://", "version", "stack", "trace",
+        ] {
+            assert!(!body.to_ascii_lowercase().contains(forbidden));
+        }
+    }
+
+    #[test]
+    fn dependency_providers_include_only_nonempty_configuration() {
+        let providers = configured_provider_ids([
+            ("nvidia", Some("configured-secret".to_string())),
+            ("nano-banana", Some("   ".to_string())),
+            ("kimi", None),
+        ]);
+
+        assert_eq!(providers, ["nvidia"]);
+        assert!(!format!("{providers:?}").contains("configured-secret"));
+    }
+
+    #[test]
+    fn legacy_liveness_schema_is_unchanged() {
+        let value = serde_json::to_value(HealthResponse {
+            status: "ok".to_string(),
+            version: env!("CARGO_PKG_VERSION").to_string(),
+            uptime_seconds: 0,
+            engines_loaded: 21,
+            workflows_loaded: 6,
+        })
+        .unwrap();
+        let keys = value
+            .as_object()
+            .unwrap()
+            .keys()
+            .cloned()
+            .collect::<Vec<_>>();
+
+        assert_eq!(
+            keys,
+            [
+                "engines_loaded",
+                "status",
+                "uptime_seconds",
+                "version",
+                "workflows_loaded"
+            ]
+        );
+        assert_eq!(value["status"], "ok");
     }
 }

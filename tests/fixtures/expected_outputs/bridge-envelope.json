@@ -48,6 +48,14 @@
       "type": "number",
       "minimum": 0,
       "description": "Processing time in milliseconds"
+    },
+    "generated_image": {
+      "type": "object",
+      "description": "Optional FROZEN top-level generated image reference"
+    },
+    "generated_audio": {
+      "type": "object",
+      "description": "Optional FROZEN top-level generated audio reference"
     }
   }
 }

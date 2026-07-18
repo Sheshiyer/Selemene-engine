@@ -1,0 +1,21 @@
+{
+  "consciousness_level": 3,
+  "parameters": {
+    "melakarta": 29,
+    "dosha": "vata",
+    "generated_audio": true
+  },
+  "audio_ref": {
+    "reference": "file:local.m4a",
+    "consent": {
+      "granted": true,
+      "scopes": ["raaga-audio"],
+      "timestamp": "2026-07-18T00:00:00Z"
+    }
+  },
+  "consent": {
+    "granted": true,
+    "scopes": ["raaga-audio"],
+    "timestamp": "2026-07-18T00:00:00Z"
+  }
+}

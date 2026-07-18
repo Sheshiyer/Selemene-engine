@@ -2769,6 +2769,7 @@ version = "3.1.0"
 dependencies = [
  "async-trait",
  "axum 0.7.9",
+ "base64 0.22.1",
  "chrono",
  "chrono-tz",
  "criterion",

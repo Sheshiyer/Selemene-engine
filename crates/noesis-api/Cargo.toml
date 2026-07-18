@@ -41,6 +41,7 @@ sha2 = "0.10"
 redis = { version = "0.26", features = ["tokio-comp", "connection-manager"] }
 urlencoding = "2"
 jsonwebtoken = "9.3"
+base64 = "0.22"
 
 [features]
 default = []

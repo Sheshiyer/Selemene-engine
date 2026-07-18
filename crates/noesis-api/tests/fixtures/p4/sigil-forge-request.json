@@ -1,0 +1,15 @@
+{
+  "consciousness_level": 3,
+  "parameters": {
+    "intention": "I witness my patterns clearly",
+    "method": "word-reduction",
+    "generate_image": true,
+    "provider": "nvidia",
+    "style": "runic"
+  },
+  "consent": {
+    "granted": true,
+    "scopes": ["sigil-gen"],
+    "timestamp": "2026-07-18T00:00:00Z"
+  }
+}
