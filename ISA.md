@@ -1,27 +1,30 @@
 ---
 project: Selemene-engine
-task: "Resume and complete P4 API bridge health integration"
-effort: E4
+task: "P5 trusted desktop gateway and Biofield-to-Noesis handoff"
+effort: E3
 effort_source: classifier
 phase: complete
-progress: 49/49
-mode: interactive
+progress: 89/89
+mode: algorithm
 started: 2026-07-18T15:00:00+05:30
-updated: 2026-07-18T17:50:00+05:30
+updated: 2026-07-18T22:40:00+05:30
 ---
 
 ## Problem
 
-An OpenCode execution session stopped at a Kimi billing-cycle limit while coordinating the Selemene + Sankalpa media integration. Its narrative handoff is already stale: main now contains the raaga clip, face CV, and P4 SDK merges; Sankalpa contains committed T-115/T-120 surfaces; and three split P4 worktrees contain different degrees of API, bridge, and health progress. The remaining risk is not merely unfinished code but integrating uncommitted and divergent worktree changes without losing user work, duplicating already-landed changes, or accepting reported success without test evidence.
+P4 is now verified on Selemene main, and Sankalpa already presents camera, Raaga, Sigil, Face, and Command Center surfaces. The remaining user journey is fragmented: the SDK is private source-only TypeScript, renderer components call authenticated API routes directly without authorization, Biofield camera capture fabricates an analyzed record before a real backend response, and `ReadingPayload.engine_results` is ignored by the Noesis section builder. The next wave must create one trusted desktop boundary and carry a consented Biofield result into a provenance-safe Noesis witness flow.
 
 ## Vision
 
-The continuation feels seamless: the operator does not need to reconstruct the previous session, completed changes remain intact, and the unfinished P4 surface converges into a small set of reviewed commits. One authoritative Rust API exposes all four focus engines with FROZEN media fields, verifies each engine at its real native/TS/Python boundary, and offers a detailed dependency-health report without turning liveness into a network fan-out or making paid calls. Every claim is backed by branch ancestry, focused tests, and repository-level regression checks.
+Sankalpa feels like one coherent instrument rather than four disconnected demos. A user can keep a capture local, explicitly consent to authenticated analysis, understand whether the result came from local approximation or the backend, and continue that exact result into Noesis depth and witness reflection. Credentials remain in the Electron main process, unavailable services degrade honestly, and auth or consent failures never masquerade as successful local analysis.
 
 ## Out of Scope
 
-- Reimplementing the already-merged raaga clip, face CV, or P4 SDK work.
-- Rewriting the committed Sankalpa T-115 sigil and T-120 face-reading surfaces.
+- Reopening the completed P4 API, bridge, health, raaga clip, face CV, or media-contract work.
+- Rebuilding T-125: the live Sankalpa Command Center already launches Noesis and all four focus engines.
+- Production Discord OAuth, token refresh, operating-system keychain storage, billing, or account synchronization.
+- Publishing the SDK to a public registry; this wave proves a packable standalone artifact.
+- Persisting raw camera pixels or generated base64 media inside localStorage or Noesis reading payloads.
 - Pulling, rebasing, force-updating, or otherwise reconciling the three remote commits that local main is behind.
 - Pushing branches, opening pull requests, deploying, or mutating external issue trackers.
 - Changing FROZEN media contracts unless a failing test proves an existing contract cannot round-trip.
@@ -47,11 +50,15 @@ The continuation feels seamless: the operator does not need to reconstruct the p
 - Keep `/health`, `/ready`, and `/health/live` backward compatible.
 - Provider readiness may inspect token presence only; secrets must never be printed or returned.
 - API and bridge code must compile in the current Rust workspace and TS engine tests must remain compatible.
-- Sankalpa is a separate repository; its clean committed state is evidence, not a target for new edits in this continuation.
+- Sankalpa remains a separate repository and must consume a built SDK artifact, never a sibling source-tree link.
+- Renderer code must never receive API credentials or an unrestricted raw-fetch IPC primitive.
+- Availability failures may activate explicit local fallback; authentication, authorization, validation, and consent failures must fail closed.
+- Local preview, local approximation, and authenticated remote analysis are distinct provenance classes.
+- Keep Sankalpa's Electron isolation guarantees: context isolation on, Node integration off, sandbox on, allowlisted IPC only.
 
 ## Goal
 
-Safely complete and integrate the remaining P4 API endpoint, engine-boundary verification, and aggregated dependency-health work on Selemene main while preserving all prior OpenCode progress and user changes. Done means the four focus engines accept the merged SDK's real top-level FROZEN media shape, generated media remains top-level, native/Python engines avoid the TS bridge, `/health` and `/health/live` stay cheap and backward compatible, a separate detailed endpoint reports engines/sidecars/configured providers without paid calls or secret exposure, focused and regression tests pass, and status documentation matches the proven commit state.
+Ship the next integration wave across Selemene and Sankalpa: a distributable typed engine SDK, a main/preload-owned authenticated EngineGateway, a real consented Biofield session-and-capture path, and a bounded engine-result artifact that opens in Noesis depth with provenance and witness context. Done means the packaged client installs standalone, no focus-engine request needs renderer-held credentials, local-only consent produces zero network activity, real Biofield responses replace fabricated analysis, all four result adapters are cache-safe, and repository gates pass on the integrated branches.
 
 ## Criteria
 
@@ -119,6 +126,61 @@ Safely complete and integrate the remaining P4 API endpoint, engine-boundary ver
 - [x] ISC-41: `EXECUTION-STATUS.md` describes only test-verified P4 results (probe: diff review).
 - [x] ISC-42: Anti: no paid provider call, secret output, force operation, stale bulk merge, or unrelated remote sync occurs (probe: diff/command audit).
 
+### P5 SDK distribution
+
+- [x] ISC-43: The engine SDK package exports executable JavaScript from `dist` (probe: package-manifest assertion).
+- [x] ISC-44: The SDK build emits JavaScript entrypoints (probe: file existence assertion).
+- [x] ISC-45: The SDK build emits declaration entrypoints (probe: file existence assertion).
+- [x] ISC-46: The packed SDK artifact excludes raw `src` implementation files (probe: `npm pack --dry-run --json`).
+- [x] ISC-47: A temporary standalone TypeScript project imports the packed SDK (probe: fixture typecheck).
+- [x] ISC-48: SDK default headers reach authenticated requests unchanged (probe: mocked-fetch assertion).
+- [x] ISC-49: The SDK creates a typed Biofield session at the canonical route (probe: mocked-fetch assertion).
+- [x] ISC-50: The SDK uploads Biofield media under the accepted multipart `image` field (probe: FormData assertion).
+
+### P5 trusted desktop gateway
+
+- [x] ISC-51: The Electron gateway accepts only the four focus engine IDs (probe: allowlist unit test).
+- [x] ISC-52: The Electron main process owns backend-origin resolution (probe: source assertion).
+- [x] ISC-53: Renderer bundles contain no API token environment variable access (probe: production-bundle text scan).
+- [x] ISC-54: Preload exposes only typed engine, Biofield, and reading operations (probe: API-shape unit test).
+- [x] ISC-55: A disallowed engine ID causes zero network calls (probe: mocked-fetch assertion).
+- [x] ISC-56: Revoked or missing consent causes zero IPC calls (probe: renderer adapter unit test).
+- [x] ISC-57: HTTP 401 and 403 are classified as fail-closed auth errors (probe: gateway error test).
+- [x] ISC-58: HTTP 422 is classified as a fail-closed validation or consent error (probe: gateway error test).
+- [x] ISC-59: Network, timeout, 502, 503, and 504 errors alone are fallback-eligible (probe: table-driven classifier test).
+- [x] ISC-60: Focus-engine renderer modules contain no direct `fetch()` calls (probe: source scan).
+- [x] ISC-61: Face media consent serializes to scope `face-image` (probe: serializer unit test).
+- [x] ISC-62: Sigil generation consent serializes to scope `sigil-gen` (probe: serializer unit test).
+- [x] ISC-63: Raaga clip requests set `request_clip: true` (probe: request-mapper unit test).
+
+### P5 real Biofield capture
+
+- [x] ISC-64: Local-only Biofield capture causes zero IPC calls (probe: transport mock assertion).
+- [x] ISC-65: Remote Biofield submission creates a session before uploading media (probe: ordered-call assertion).
+- [x] ISC-66: Camera capture no longer installs fixed fabricated metrics (probe: source and mapper test).
+- [x] ISC-67: A remote Biofield result contains all eleven canonical metrics (probe: response fixture assertion).
+- [x] ISC-68: A remote Biofield result preserves quality assessment (probe: response fixture assertion).
+- [x] ISC-69: Biofield results visibly distinguish local from remote provenance (probe: view-model unit test).
+- [x] ISC-70: Successful Biofield persistence exposes stable session and reading identifiers (probe: response adapter test).
+
+### P5 Noesis result handoff
+
+- [x] ISC-71: Fixture adapters normalize Biofield, Face, Raaga, and Sigil outputs (probe: parameterized unit test).
+- [x] ISC-72: Engine result artifacts strip inline base64 media before persistence (probe: redaction unit test).
+- [x] ISC-73: Engine result artifacts enforce a bounded serialized size (probe: oversized-fixture test).
+- [x] ISC-74: `buildSectionsFromPayload` consumes normalized `engine_results` (probe: Noesis section test).
+- [x] ISC-75: Engine witness prompts appear in the resulting witness section (probe: section-text assertion).
+- [x] ISC-76: The handoff CTA opens the exact cached `#/noesis/depth/:id` route (probe: path assertion).
+- [x] ISC-77: The non-predictive self-inquiry disclaimer survives engine-result integration (probe: prose assertion).
+- [x] ISC-78: T-125 remains satisfied by the existing Command Center instead of duplicate UI (probe: route/action source assertion).
+
+### Wave integration
+
+- [x] ISC-79: Selemene SDK tests and typecheck exit zero on the wave branch (probe: package commands).
+- [x] ISC-80: Sankalpa tests, typecheck, and production build exit zero on the wave branch (probe: package commands).
+- [x] ISC-81: Cross-repository contract fixtures remain green after SDK packaging (probe: fixture validator command).
+- [x] ISC-82: Anti: no credential enters renderer code, no raw media enters reading storage, and no remote sync or destructive git action occurs (probe: bundle, cache, diff, and command audit).
+
 ## Test Strategy
 
 | isc | type | check | threshold | tool |
@@ -130,6 +192,11 @@ Safely complete and integrate the remaining P4 API endpoint, engine-boundary ver
 | ISC-37..40 | regression | package-level Rust and TS suites | zero new failures | Cargo and Bun test commands |
 | ISC-41 | documentation | status statements map to command evidence | no unsupported completion claims | `git diff` plus evidence table |
 | ISC-42 | anti | review commands and diffs for prohibited actions | zero prohibited actions | shell history in this run plus `git diff` |
+| ISC-43..50 | SDK artifact | build, pack, standalone install, auth header, Biofield multipart | all artifact and mocked-fetch assertions pass | Bun, npm pack, temporary TypeScript fixture |
+| ISC-51..63 | desktop trust boundary | IPC allowlist, auth ownership, error classes, canonical consent/request mapping | all unit and bundle scans pass | Vitest, TypeScript, Vite bundle scan |
+| ISC-64..70 | Biofield journey | local zero-call, ordered remote session/upload, real response mapping, provenance | all fixtures and transport assertions pass | Vitest plus optional live stack probe |
+| ISC-71..78 | Noesis handoff | normalize, redact, bound, sectionize, preserve witness/disclaimer, open cache route | all pure-function and source assertions pass | Vitest |
+| ISC-79..82 | wave gate | both repository gates, contract fixtures, anti audit | zero new failures or prohibited state | Bun, npm, git, source scans |
 
 ## Features
 
@@ -141,9 +208,22 @@ Safely complete and integrate the remaining P4 API endpoint, engine-boundary ver
 | AggregatedHealth | Integrate engine, sidecar, and provider readiness reporting | ISC-28..36 | StateRecovery | true |
 | RegressionGate | Run focused and package-level suites on the integrated result | ISC-37..40 | ApiMediaExposure, BridgeVerification, AggregatedHealth | false |
 | StatusReconciliation | Rewrite status claims to match verified evidence | ISC-41..42 | RegressionGate | false |
+| PackagedEngineSdk | Build a standalone SDK artifact with authenticated Biofield session support | ISC-43..50, ISC-79, ISC-81 | ApiMediaExposure | true |
+| TrustedDesktopGateway | Keep origin, credentials, consent mapping, and error taxonomy outside the renderer | ISC-51..63, ISC-82 | PackagedEngineSdk | false |
+| RealBiofieldCapture | Replace fabricated camera analysis with ordered consented session and capture transport | ISC-64..70 | TrustedDesktopGateway | true |
+| NoesisResultHandoff | Normalize, redact, cache, and narrate four engine result artifacts | ISC-71..78 | TrustedDesktopGateway | true |
+| P5WaveGate | Verify both repositories and reconcile status evidence | ISC-79..82 | RealBiofieldCapture, NoesisResultHandoff | false |
 
 ## Decisions
 
+- 2026-07-18: refined: P4 remains complete and immutable; this iteration appends a P5 trusted-desktop and Biofield-to-Noesis feature surface at ISC-43 onward without renumbering prior criteria.
+- 2026-07-18: Live ancestry and source audit supersede stale status prose. T-125 is already satisfied by the Command Center actions and is not reopened.
+- 2026-07-18: Quick Council convergence selected a single desktop gateway and provenance-bearing result artifact before any further UI expansion.
+- 2026-07-18: Advisor verdict `GO` for an ordered four-task wave: packable SDK, trusted gateway, real Biofield capture, then T-130 Noesis handoff.
+- 2026-07-18: The external Temperance rail created a run directory but produced no index, summary, or task artifacts; the protocol's fail-open path re-dispatched the same audits to Codex agents.
+- 2026-07-18: Authentication, authorization, validation, and consent failures fail closed. Only availability-class failures may enter an explicit local fallback state.
+- 2026-07-18: Renderer-held credentials, generic raw-fetch IPC, sibling source links, fabricated remote analysis, and raw/base64 reading persistence are prohibited.
+- 2026-07-18: The full swarm plan owns the historical T-105 Biofield/T-110 Raaga meaning; condensed-list drift is recorded rather than resolved by renumbering.
 - 2026-07-18: refined: The stale handoff proposed redispatching three P4 tasks, but live state proves those worktrees already exist; continuation starts by auditing and integrating them instead of creating duplicate branches.
 - 2026-07-18: The P4 API and health worktrees contain uncommitted changes and are preserved as user work. Integration will use reviewed patches or commits, never destructive cleanup.
 - 2026-07-18: The bridge worktree has a large committed diff because it reintroduces FROZEN contracts from an older base. Only changes absent from current main should be integrated.
@@ -166,6 +246,9 @@ Safely complete and integrate the remaining P4 API endpoint, engine-boundary ver
 - 2026-07-18: final advisor verdict `GO`; fail-open adversarial re-audit verdict `GO` with no remaining blockers. The Cato role itself was unavailable, so the required audit was retried through a read-only explorer and explicitly re-audited after fixes.
 - 2026-07-18: billing is recorded as unchanged environmental failure, not validated behavior. The same four `billing_e2e_tests` fail at line 55 with `PoolTimedOut` on both pre-change and post-merge main because local Postgres is absent.
 - 2026-07-18 17:50: Documentation sync skipped because this run changed no PAI system file; only project code, project status, ISA, and required learning logs changed.
+- 2026-07-18: Merged the packable SDK as `f2cc7a83a` and the Raaga clip-consent correction as `d4f071434`; the final package has 22 files and no raw source entries.
+- 2026-07-18: Merged Sankalpa trusted gateway and result continuity as `7e08431`; Electron main now owns authenticated transport, exact operation consent, runtime input validation, CSP/navigation restrictions, and trusted-top-frame IPC.
+- 2026-07-18: Final independent boundary review returned `GO`, and browser Gate 4 returned `PASS` after measured Sigil/Face layout and Biofield consent-control corrections.
 
 ## Changelog
 
@@ -181,6 +264,18 @@ Safely complete and integrate the remaining P4 API endpoint, engine-boundary ver
   refuted_by: adversarial review showed they did not exercise HTTP authentication, consent rejection, orchestrator dispatch, or unknown-engine routing
   learned: contract fixtures and route-level probes are complementary; neither substitutes for the other
   criterion_now: ISC-11 through ISC-19 are backed by both exact fixture equality and `p4_media_engines_tests`
+- 2026-07-18 | conjectured: compile-time IPC types and renderer consent controls were sufficient for a trusted desktop boundary
+  refuted_by: correctness review reproduced clip generation, malformed media, and unauthenticated requests crossing the boundary before runtime guards existed
+  learned: main must validate sender, authentication, operation-specific consent, serialization, size, MIME, and base64 before the first remote call
+  criterion_now: ISC-51 through ISC-70 require zero-call proofs for invalid, unauthenticated, revoked, tokenless, and wrong-scope requests
+- 2026-07-18 | conjectured: a generic sanitized object walk would remove every sensitive engine field
+  refuted_by: nested `credential`, `x_api_key`, and `auth_header` aliases survived the first redaction list
+  learned: persistence boundaries need adversarial key-alias fixtures and a second sanitization pass at cache ingress
+  criterion_now: ISC-72 and ISC-82 require sensitive aliases to be absent from artifact, cache, history, and hash payload
+- 2026-07-18 | conjectured: functional focus-engine forms were ready once unit and build gates passed
+  refuted_by: browser QA measured Sigil overflow, a collapsed Face camera, and duplicate Biofield consent controls at the desktop viewport
+  learned: continuity features need measured browser geometry and interaction validation in addition to pure-function tests
+  criterion_now: ISC-80 includes Gate 4 browser validation of the integrated focus-to-Noesis journey
 
 ## Verification
 
@@ -207,3 +302,13 @@ Safely complete and integrate the remaining P4 API endpoint, engine-boundary ver
 - Regression: `cargo check -p noesis-api -p noesis-bridge --all-targets --locked` passed; target-only Clippy with `--no-deps -D warnings` passed. Workspace-wide formatting remains blocked only by pre-existing formatting in `engine-biofield` and `handlers/assets.rs`, neither changed by this integration.
 - Environmental parity: pre-change and post-merge `cargo test -p noesis-api --test billing_e2e_tests --locked` each produced exactly four `PoolTimedOut` failures at line 55 and no additional failures; billing behavior itself remains unvalidated without Postgres.
 - Reviews: the final Advisor returned `GO`; the fail-open adversarial re-audit of `0430cff9` returned `GO — all three prior blockers are resolved`.
+- ISC-43..50: `bun test` in `packages/noesis-engine-sdk` returned 33/33; `npm run typecheck` and `npm run build` exited zero. `npm pack --dry-run --json` listed 22 files, executable ESM/declarations, 20.4 kB packed/76.3 kB unpacked, and no `src` files. The packed artifact imported in standalone Node and in Sankalpa; mocked requests prove default auth headers, canonical Biofield session route, consent-before-fetch, and multipart field `image`.
+- ISC-51..63: Sankalpa main-gateway, renderer-adapter, media-contract, and desktop-foundation tests prove the four-ID allowlist; main-owned HTTPS/loopback origin, headers, and timeout; narrow preload methods; zero calls for disallowed/malformed/unauthenticated requests; exact auth/consent/validation/rate classifications; exact four scopes; and `request_clip: true`. Source and bundle audits found no focus renderer `fetch`, backend Vite variable, or token access; production CSP contains no backend origin.
+- ISC-64..70: Biofield tests prove local-only zero IPC, pixel-derived local analysis, independent capture/consent transitions, revocation, strict MIME/canonical-base64/size checks, main consent and auth preflight, session-before-capture ordering, canonical `image` multipart, backend metric/quality replacement, and stable session/reading identifiers.
+- ISC-71..78: Four engine fixtures normalize into versioned artifacts; recursive redaction removes base64, data URLs, consent, raw errors, tokens, credentials, `x_api_key`, and `auth_header`; artifact and route ceilings are 24 KiB/48 KiB; cache and hash share the exact payload; Noesis renders provenance, safe summaries, witness prompts, and non-prescriptive self-inquiry language. Browser QA exercised Raaga to the exact depth route with a 1,508-byte safe payload. Existing Command Center actions remain the T-125 surface.
+- ISC-79: SDK 33/33, package typecheck, build, pack, and packed runtime import passed on merged Selemene code.
+- ISC-80: A clean Sankalpa `npm ci` followed by 66/66 tests, renderer and Electron typecheck, production build, and unsigned arm64 package completed. Merged-main verification again returned 66/66 after `vitest.config.ts` excluded nested `.worktrees`; production-only `npm audit --omit=dev` found zero vulnerabilities, and the known Vite advisory remains only a Three.js chunk-size optimization note.
+- ISC-81: Sankalpa installs the rebuilt SDK tarball by verified SHA-512 lock integrity; its production Electron build and main-gateway tests execute the packaged declarations/runtime rather than a sibling source path.
+- ISC-82: Source, bundle, persistence, git-command, and final read-only boundary audits found no renderer credential, raw-media reading persistence, backend CSP bypass, unauthorized file navigation, remote sync, or destructive git action. Final review verdict: `GO — no correctness blockers remain`.
+- Merge evidence: Selemene main contains `f2cc7a83a` and `d4f071434`; Sankalpa main is `8692370`, containing integration merge `7e08431` from source `7002d5f` plus the nested-worktree test-discovery guard.
+- Browser evidence: Gate 4 at 1440×1000 measured Sigil and Face main widths at 1140/1140 with zero horizontal overflow, Face camera at a readable 420 px single column, one Biofield consent control, no page errors or failed requests, and an exact sanitized Raaga-to-Noesis handoff.
