@@ -4,10 +4,10 @@ task: "P5 trusted desktop gateway and Biofield-to-Noesis handoff"
 effort: E3
 effort_source: classifier
 phase: complete
-progress: 89/89
+progress: 82/82
 mode: algorithm
 started: 2026-07-18T15:00:00+05:30
-updated: 2026-07-18T22:40:00+05:30
+updated: 2026-07-18T22:50:00+05:30
 ---
 
 ## Problem
@@ -58,7 +58,7 @@ Sankalpa feels like one coherent instrument rather than four disconnected demos.
 
 ## Goal
 
-Ship the next integration wave across Selemene and Sankalpa: a distributable typed engine SDK, a main/preload-owned authenticated EngineGateway, a real consented Biofield session-and-capture path, and a bounded engine-result artifact that opens in Noesis depth with provenance and witness context. Done means the packaged client installs standalone, no focus-engine request needs renderer-held credentials, local-only consent produces zero network activity, real Biofield responses replace fabricated analysis, all four result adapters are cache-safe, and repository gates pass on the integrated branches.
+Ship the next integration wave across Selemene and Sankalpa: a distributable typed engine SDK, a main/preload-owned authenticated EngineGateway, a real consented Biofield session-and-capture path, and a bounded engine-result artifact that opens in Noesis depth with provenance and witness context. Done means the packaged client installs standalone, no focus-engine request needs renderer-held credentials, local-only consent produces zero network activity, real Biofield responses replace fabricated analysis, all four result adapters are cache-safe, and repository gates pass on the integrated branches. Completion evidence must include both integrated main branches, package and runtime gates, security review, browser validation, and the fully checked ISC record.
 
 ## Criteria
 
