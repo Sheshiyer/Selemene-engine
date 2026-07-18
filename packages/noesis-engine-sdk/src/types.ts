@@ -34,6 +34,8 @@ export interface MediaRef {
   b64?: string
   reference?: string
   mime_type?: string
+  /** Optional multipart filename used by capture-upload endpoints. */
+  file_name?: string
   consent?: Consent
 }
 
@@ -253,6 +255,60 @@ export interface BiofieldAnalyzeInput {
   algorithms?: string[]
   options?: Record<string, unknown>
   capture_metadata?: Record<string, unknown>
+}
+
+/** Request body for `POST /api/v1/biofield/sessions`. */
+export interface BiofieldCreateSessionInput {
+  client_device_id?: string
+  viewer_version?: string
+  context?: Record<string, unknown>
+}
+
+/** Typed session resource returned by the noesis-api biofield lifecycle routes. */
+export interface BiofieldSession {
+  id: string
+  status: string
+  started_at: string
+  closed_at: string | null
+  client_device_id: string | null
+  viewer_version: string | null
+}
+
+/** Inline image accepted by the authenticated noesis-api capture route. */
+export interface BiofieldCaptureImage extends MediaRef {
+  b64: string
+  file_name?: string
+}
+
+/**
+ * Capture upload for `POST /api/v1/biofield/sessions/{session_id}/captures`.
+ * The SDK serializes `image_data` as the multipart field named exactly `image`.
+ */
+export interface BiofieldCreateCaptureInput {
+  image_data: BiofieldCaptureImage
+  /** Explicit consent (or set `image_data.consent`). Scope biofield-capture is required. */
+  consent?: Consent
+  algorithms?: string[]
+  options?: Record<string, unknown>
+  capture_metadata?: Record<string, unknown>
+}
+
+export interface BiofieldCaptureArtifact {
+  id: string | null
+  kind: string
+  mime_type: string
+  storage_path: string | null
+  byte_size: number | null
+}
+
+/** Typed server response after analysis and persistence of a session capture. */
+export interface BiofieldCapture {
+  reading_id: string
+  session_id: string
+  analysis_version: string
+  metrics: BiofieldMetrics
+  quality_assessment: BiofieldQualityAssessment
+  artifacts: BiofieldCaptureArtifact[]
 }
 
 /** face-reading calculate. Consent scope face-image required when image_data present. */

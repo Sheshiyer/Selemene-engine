@@ -14,8 +14,8 @@
  * Tags: phase:integration-p1 wave:integration-w2 area:engine-integration
  */
 
-import { ConsentError } from './errors'
-import type { Consent } from './types'
+import { ConsentError } from './errors.js'
+import type { Consent } from './types.js'
 
 /** FROZEN consent scopes (scripts/ext-contract-harness.ts:75-78). */
 export const CONSENT_SCOPES = {

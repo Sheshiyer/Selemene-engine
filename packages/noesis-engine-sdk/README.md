@@ -23,9 +23,11 @@ Lives at `packages/noesis-engine-sdk` in the Selemene-engine pnpm workspace
 
 ```bash
 cd packages/noesis-engine-sdk
-bun install
-bun test        # 27 tests, mocked fetch, no network
-bunx tsc --noEmit
+pnpm install
+pnpm test       # mocked fetch, no network
+pnpm typecheck
+pnpm build      # executable ESM + declarations in dist/
+npm pack --dry-run
 ```
 
 ## Quick start
@@ -62,6 +64,22 @@ const analysis = await client.biofield.analyze({
 analysis.metrics                  // 11 spatial metrics (biofield-cv/v1)
 analysis.quality_assessment
 
+// persisted biofield lifecycle — authenticated noesis-api session then capture
+const apiClient = new EngineClient({
+  apiUrl: 'https://api.noesis.example',
+  defaultHeaders: { Authorization: `Bearer ${token}` },
+})
+const session = await apiClient.biofield.createSession({
+  client_device_id: 'desktop-1',
+  viewer_version: 'sankalpa-0.2.0',
+})
+const persisted = await apiClient.biofield.createCapture(session.id, {
+  image_data: { b64: pngB64, mime_type: 'image/png', file_name: 'capture.png' },
+  consent: createConsent([CONSENT_SCOPES.BIOFIELD_CAPTURE]),
+  capture_metadata: { platform: 'electron' },
+})
+persisted.reading_id
+
 // biofield engine calculate (Rust engine via ts proxy today, api when P4 lands)
 await client.biofield.calculate({ parameters: { /* birth data */ } })
 
@@ -75,7 +93,7 @@ const { ts, python } = await client.health()
 |---|---|---|
 | ts-engines server | `http://localhost:3001` (`tsEnginesUrl`) | `POST /engines/{id}/calculate`, `GET /health` |
 | python biofield sidecar | `http://localhost:8002` (`pythonBiofieldUrl`) | `POST /analyze` (multipart), `GET /health` |
-| noesis-api (P4) | `apiUrl` when configured | `POST /api/v1/engines/{id}/calculate` |
+| noesis-api (P4/P5) | `apiUrl` when configured | `POST /api/v1/engines/{id}/calculate`, `POST /api/v1/biofield/sessions`, `POST /api/v1/biofield/sessions/{id}/captures` |
 
 When `apiUrl` is set, **all** engine `calculate` calls route to the P4 api surface instead
 of the ts server. Today the ts registry hosts raaga + sigil-forge live
@@ -87,6 +105,7 @@ resolve once the P4 api/bridge exposure lands (`p5-p4-next-batch.json` → `p4-a
 | Engine call | Scope | Required when |
 |---|---|---|
 | `biofield.analyze` | `biofield-capture` | always (transmits a capture frame) |
+| `biofield.createCapture` | `biofield-capture` | always (uploads and persists a capture frame) |
 | `biofield.calculate` | `biofield-capture` | `image_data` attached |
 | `faceReading.calculate` | `face-image` | `image_data` attached |
 | `raaga.calculate` | `raaga-audio` | `audio_ref` attached |
