@@ -7,18 +7,24 @@
  * Tags: phase:integration-p1 wave:integration-w2 area:engine-integration
  */
 
-export { EngineClient } from './client'
-export type { EngineClientConfig } from './client'
-export { BiofieldEngineApi, FaceReadingEngineApi, RaagaEngineApi, SigilForgeEngineApi } from './client'
-export { EngineSdkError, ConsentError } from './errors'
-export { CONSENT_SCOPES, consentAgeMs, createConsent, requireConsent, resolveConsent } from './consent'
-export type { ConsentScope } from './consent'
+export { EngineClient } from './client.js'
+export type { EngineClientConfig } from './client.js'
+export { BiofieldEngineApi, FaceReadingEngineApi, RaagaEngineApi, SigilForgeEngineApi } from './client.js'
+export { EngineSdkError, ConsentError } from './errors.js'
+export { CONSENT_SCOPES, consentAgeMs, createConsent, requireConsent, resolveConsent } from './consent.js'
+export type { ConsentScope } from './consent.js'
 export type {
   BiofieldAnalyzeInput,
   BiofieldAnalyzeResponse,
   BiofieldCalculateInput,
+  BiofieldCapture,
+  BiofieldCaptureArtifact,
+  BiofieldCaptureImage,
+  BiofieldCreateCaptureInput,
+  BiofieldCreateSessionInput,
   BiofieldMetrics,
   BiofieldQualityAssessment,
+  BiofieldSession,
   ConsciousnessPhase,
   Consent,
   EngineInput,
@@ -37,4 +43,4 @@ export type {
   SigilForgeCalculateInput,
   SigilForgeResult,
   WitnessPrompt,
-} from './types'
+} from './types.js'

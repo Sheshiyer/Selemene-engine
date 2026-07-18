@@ -342,6 +342,160 @@ describe('biofield.analyze (python sidecar)', () => {
   })
 })
 
+describe('biofield session capture (noesis-api)', () => {
+  const sessionId = '4b4255db-1606-4a9d-b742-d69f17dde72f'
+  const sessionResponse = {
+    id: sessionId,
+    status: 'active',
+    started_at: NOW,
+    closed_at: null,
+    client_device_id: 'desktop-1',
+    viewer_version: 'sankalpa-0.2.0',
+  }
+  const captureResponse = {
+    reading_id: 'd8406b4e-e441-4a86-ae10-26a7da10ab9d',
+    session_id: sessionId,
+    analysis_version: 'real-cv/v1',
+    metrics: {
+      light_quanta_density: 1,
+      normalized_area: 0.5,
+      average_intensity: 0.5,
+      inner_noise: 0.1,
+      energy_analysis: { low: 0.2, medium: 0.5, high: 0.3, total: 1 },
+      entropy_form_coefficient: 2,
+      fractal_dimension: 1.4,
+      correlation_dimension: 1.2,
+      body_symmetry: 0.8,
+      contour_complexity: 0.3,
+      pattern_regularity: 0.7,
+    },
+    quality_assessment: {
+      sharpness: 0.9,
+      contrast: 0.8,
+      noise_level: 0.1,
+      exposure: 0.6,
+      sufficient_quality: true,
+    },
+    artifacts: [
+      {
+        id: '21e16ae6-6f37-4f1c-b93f-6ae8f033c885',
+        kind: 'source-image',
+        mime_type: 'image/png',
+        storage_path: `biofield/${sessionId}/capture.png`,
+        byte_size: 70,
+      },
+    ],
+  }
+
+  it('creates a session then uploads ordered multipart to the authenticated API routes', async () => {
+    const { fetchImpl, calls } = mockFetch((url) =>
+      jsonResponse(url.endsWith('/captures') ? captureResponse : sessionResponse, 201),
+    )
+    const client = new EngineClient({
+      apiUrl: 'https://api.noesis.example/',
+      defaultHeaders: {
+        Authorization: 'Bearer desktop-token',
+        'X-Noesis-Device': 'desktop-1',
+      },
+      fetchImpl,
+    })
+
+    const session = await client.biofield.createSession({
+      client_device_id: 'desktop-1',
+      viewer_version: 'sankalpa-0.2.0',
+      context: { platform: 'macos' },
+    })
+    const capture = await client.biofield.createCapture(session.id, {
+      image_data: {
+        b64: TINY_PNG_B64,
+        mime_type: 'image/png',
+        file_name: 'aura-frame.png',
+      },
+      consent: consentBio,
+      algorithms: ['fractal_dimension'],
+      options: { mode: 'capture' },
+      capture_metadata: { platform: 'electron' },
+    })
+
+    expect(calls.map((call) => call.url)).toEqual([
+      'https://api.noesis.example/api/v1/biofield/sessions',
+      `https://api.noesis.example/api/v1/biofield/sessions/${sessionId}/captures`,
+    ])
+    expect(calls.map((call) => call.init?.method)).toEqual(['POST', 'POST'])
+    expect(JSON.parse(String(calls[0].init?.body))).toEqual({
+      client_device_id: 'desktop-1',
+      viewer_version: 'sankalpa-0.2.0',
+      context: { platform: 'macos' },
+    })
+
+    const sessionHeaders = calls[0].init?.headers as Record<string, string>
+    expect(sessionHeaders.Authorization).toBe('Bearer desktop-token')
+    expect(sessionHeaders['Content-Type']).toBe('application/json')
+
+    const form = calls[1].init?.body as FormData
+    expect(form).toBeInstanceOf(FormData)
+    expect([...form.keys()]).toEqual(['image', 'algorithms', 'options', 'capture_metadata'])
+    expect(form.has('file')).toBe(false)
+    const image = form.get('image') as File
+    expect(image).toBeInstanceOf(Blob)
+    expect(image.name).toBe('aura-frame.png')
+    expect(image.type).toBe('image/png')
+    expect(JSON.parse(String(form.get('algorithms')))).toEqual(['fractal_dimension'])
+    expect(JSON.parse(String(form.get('options')))).toEqual({ mode: 'capture' })
+    expect(JSON.parse(String(form.get('capture_metadata')))).toEqual({
+      platform: 'electron',
+      consent: consentBio,
+    })
+
+    const captureHeaders = calls[1].init?.headers as Record<string, string>
+    expect(captureHeaders.Authorization).toBe('Bearer desktop-token')
+    expect(captureHeaders['X-Noesis-Device']).toBe('desktop-1')
+    expect(captureHeaders['Content-Type']).toBeUndefined()
+    expect(capture.reading_id).toBe(captureResponse.reading_id)
+    expect(capture.metrics.fractal_dimension).toBe(1.4)
+  })
+
+  it('accepts consent carried by image_data and defaults the upload filename', async () => {
+    const { fetchImpl, calls } = mockFetch(() => jsonResponse(captureResponse, 201))
+    const client = new EngineClient({ apiUrl: 'https://api.noesis.example', fetchImpl })
+
+    await client.biofield.createCapture(sessionId, {
+      image_data: {
+        b64: TINY_PNG_B64,
+        mime_type: 'image/jpeg',
+        consent: consentBio,
+      },
+    })
+
+    const form = calls[0].init?.body as FormData
+    expect((form.get('image') as File).name).toBe('capture.jpeg')
+    expect([...form.keys()]).toEqual(['image', 'capture_metadata'])
+  })
+
+  it('rejects capture without consent before API URL validation or network', async () => {
+    const { fetchImpl, calls } = mockFetch(() => jsonResponse(captureResponse, 201))
+    const client = new EngineClient({ fetchImpl })
+
+    await expect(
+      client.biofield.createCapture(sessionId, {
+        image_data: { b64: TINY_PNG_B64, mime_type: 'image/png' },
+      }),
+    ).rejects.toBeInstanceOf(ConsentError)
+    expect(calls).toHaveLength(0)
+  })
+
+  it('requires apiUrl for session lifecycle requests', async () => {
+    const { fetchImpl, calls } = mockFetch(() => jsonResponse(sessionResponse, 201))
+    const client = new EngineClient({ fetchImpl })
+
+    await expect(client.biofield.createSession()).rejects.toMatchObject({
+      status: 0,
+      code: 'API_URL_REQUIRED',
+    })
+    expect(calls).toHaveLength(0)
+  })
+})
+
 describe('biofield.calculate', () => {
   it('routes to ts server with consent when image_data attached', async () => {
     const { fetchImpl, calls } = mockFetch(() =>

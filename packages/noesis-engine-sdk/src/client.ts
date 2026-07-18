@@ -24,12 +24,17 @@
  * Tags: phase:integration-p1 wave:integration-w2 area:engine-integration
  */
 
-import { CONSENT_SCOPES, requireConsent, resolveConsent } from './consent'
-import { EngineSdkError } from './errors'
+import { CONSENT_SCOPES, requireConsent, resolveConsent } from './consent.js'
+import { EngineSdkError } from './errors.js'
 import type {
   BiofieldAnalyzeInput,
   BiofieldAnalyzeResponse,
   BiofieldCalculateInput,
+  BiofieldCapture,
+  BiofieldCreateCaptureInput,
+  BiofieldCreateSessionInput,
+  BiofieldSession,
+  Consent,
   EngineInput,
   EngineOutput,
   FaceReadingCalculateInput,
@@ -40,7 +45,7 @@ import type {
   RaagaResult,
   SigilForgeCalculateInput,
   SigilForgeResult,
-} from './types'
+} from './types.js'
 
 export interface EngineClientConfig {
   /** ts-engines server base URL. Default http://localhost:3001 (TS_ENGINES_URL). */
@@ -70,14 +75,12 @@ function stripTrailingSlash(url: string): string {
   return url.endsWith('/') ? url.slice(0, -1) : url
 }
 
-function b64ToBytes(b64: string): Uint8Array {
-  if (typeof atob === 'function') {
-    const bin = atob(b64)
-    const bytes = new Uint8Array(bin.length)
-    for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i)
-    return bytes
-  }
-  return new Uint8Array(Buffer.from(b64, 'base64'))
+function b64ToArrayBuffer(b64: string): ArrayBuffer {
+  const bin = atob(b64)
+  const buffer = new ArrayBuffer(bin.length)
+  const bytes = new Uint8Array(buffer)
+  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i)
+  return buffer
 }
 
 function parsePayload(text: string): unknown {
@@ -165,7 +168,7 @@ export class EngineClient {
     }
     const mime = input.image_data.mime_type ?? 'image/png'
     const ext = mime.split('/')[1] ?? 'png'
-    const blob = new Blob([b64ToBytes(b64)], { type: mime })
+    const blob = new Blob([b64ToArrayBuffer(b64)], { type: mime })
     form.append('image', blob, `capture.${ext}`)
     if (input.algorithms && input.algorithms.length > 0) {
       form.append('algorithms', JSON.stringify(input.algorithms))
@@ -177,6 +180,73 @@ export class EngineClient {
     return this.request<BiofieldAnalyzeResponse>('POST', `${this.pyUrl}/analyze`, {
       body: form,
     })
+  }
+
+  /** @internal Create an authenticated noesis-api biofield session. */
+  async biofieldCreateSession(
+    input: BiofieldCreateSessionInput,
+  ): Promise<BiofieldSession> {
+    return this.request<BiofieldSession>(
+      'POST',
+      `${this.requireApiUrl('biofield session creation')}/api/v1/biofield/sessions`,
+      { body: JSON.stringify(input) },
+    )
+  }
+
+  /** @internal Upload a consent-approved capture to an active noesis-api session. */
+  async biofieldCreateCapture(
+    sessionId: string,
+    input: BiofieldCreateCaptureInput,
+    consent: Consent,
+  ): Promise<BiofieldCapture> {
+    if (!sessionId.trim()) {
+      throw new EngineSdkError(
+        'biofield.createCapture requires a non-empty session id.',
+        0,
+        'SESSION_ID_REQUIRED',
+      )
+    }
+
+    const b64 = input.image_data.b64
+    if (!b64) {
+      throw new EngineSdkError(
+        'biofield.createCapture requires image_data.b64 (inline capture frame).',
+        0,
+        'MEDIA_REQUIRED',
+      )
+    }
+
+    const form = new FormData()
+    const mime = input.image_data.mime_type ?? 'image/png'
+    const ext = mime.split('/')[1] ?? 'png'
+    const blob = new Blob([b64ToArrayBuffer(b64)], { type: mime })
+
+    // The authenticated API contract requires this field name exactly. Keep it first so
+    // multipart consumers can start streaming the payload without buffering metadata.
+    form.append('image', blob, input.image_data.file_name ?? `capture.${ext}`)
+    if (input.algorithms && input.algorithms.length > 0) {
+      form.append('algorithms', JSON.stringify(input.algorithms))
+    }
+    if (input.options) form.append('options', JSON.stringify(input.options))
+    form.append(
+      'capture_metadata',
+      JSON.stringify({ ...input.capture_metadata, consent }),
+    )
+
+    return this.request<BiofieldCapture>(
+      'POST',
+      `${this.requireApiUrl('biofield capture upload')}/api/v1/biofield/sessions/${encodeURIComponent(sessionId)}/captures`,
+      { body: form },
+    )
+  }
+
+  private requireApiUrl(surface: string): string {
+    if (this.apiUrl) return this.apiUrl
+    throw new EngineSdkError(
+      `${surface} requires EngineClient({ apiUrl }).`,
+      0,
+      'API_URL_REQUIRED',
+    )
   }
 
   /** @internal shared fetch with JSON/error handling. */
@@ -263,6 +333,24 @@ export class BiofieldEngineApi {
       'biofield-capture',
     )
     return this.client.biofieldAnalyze(input)
+  }
+
+  /** Create an authenticated biofield lifecycle session through noesis-api. */
+  async createSession(input: BiofieldCreateSessionInput = {}): Promise<BiofieldSession> {
+    return this.client.biofieldCreateSession(input)
+  }
+
+  /**
+   * Upload an image to an active biofield session using multipart field `image`.
+   * Consent is verified locally before URL validation, FormData construction, or fetch.
+   */
+  async createCapture(
+    sessionId: string,
+    input: BiofieldCreateCaptureInput,
+  ): Promise<BiofieldCapture> {
+    const consent = resolveConsent(input.consent, input.image_data?.consent)
+    requireConsent(consent, CONSENT_SCOPES.BIOFIELD_CAPTURE, 'biofield-capture')
+    return this.client.biofieldCreateCapture(sessionId, input, consent)
   }
 }
 
