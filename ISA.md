@@ -1,28 +1,28 @@
 ---
 project: Selemene-engine
-task: "P6 multi-engine practice assembly and daily witness continuity"
+task: "P6 Wave 2 performance, recovery, runtime status, and accessible depth"
 effort: E3
 effort_source: classifier
 phase: complete
-progress: 138/138
+progress: 170/170
 mode: algorithm
 started: 2026-07-18T15:00:00+05:30
-updated: 2026-07-18T23:59:00+05:30
+updated: 2026-07-19T03:05:00+05:30
 ---
 
 ## Problem
 
-P5 is verified on both mains: each focus engine can produce a bounded result artifact and open a one-engine Noesis witness reading. The remaining Phase 6 break is continuity across practices: every handoff replaces the reading with one artifact, the threshold intake cannot assemble prior engine observations, and the Command Center cannot resume or clear a current multi-engine practice. The next wave must turn four isolated handoffs into one local, resumable witness session without weakening the P5 trust boundary.
+Phase 6 Wave 1 is verified on both mains: Sankalpa assembles and resumes one bounded current practice. The remaining Phase 6 break is resilience at the route boundary. Noesis eagerly ships Three.js in the initial renderer bundle, missing readings become fabricated empty galleries, payload provenance and remote failures collapse to `null`, gateway readiness is invisible, and the depth experience lacks a complete reduced-motion, keyboard, dialog-focus, and WebGL-failure path.
 
 ## Vision
 
-Sankalpa remembers the current practice without becoming dependent or invasive. A user can begin with an inquiry, visit any sequence of Biofield, Face, Raaga, and Sigil surfaces, see which safe observations are assembled, and open one Noesis witness that reflects the whole session. The session remains local, bounded, reversible, provenance-labelled, and free of raw media or credentials.
+Sankalpa opens quickly and tells the truth about every runtime state. A reading either loads from a named source, offers a useful recovery path, or explains a bounded failure; it never invents evidence. The optional Three.js depth layer loads only when needed, degrades to an equivalent readable navigator, respects motion preferences, and preserves the existing Electron trust boundary.
 
 ## Out of Scope
 
 - Reopening the completed P4 API, bridge, health, raaga clip, face CV, or media-contract work.
 - Reopening the completed P5 SDK, gateway, consent, Biofield, or single-result handoff boundaries.
-- Phase 6 Wave 2 performance tuning, broad accessibility remediation, or redesign of every engine error state.
+- Broad visual redesign of every engine surface or remediation beyond the Noesis depth, reading recovery, and Account gateway-status paths.
 - Cloud synchronization, cross-device sessions, account identity, telemetry, or server persistence for practice state.
 - Rebuilding T-125: the live Sankalpa Command Center already launches Noesis and all four focus engines.
 - Production Discord OAuth, token refresh, operating-system keychain storage, billing, or account synchronization.
@@ -61,7 +61,7 @@ Sankalpa remembers the current practice without becoming dependent or invasive. 
 
 ## Goal
 
-Ship Phase 6 Wave 1 as a local current-practice assembly layer in Sankalpa. Done means threshold context and up to four sanitized focus-engine artifacts accumulate into one bounded session, each engine surface can add without forced navigation, the Command Center can resume or clear the practice, and Noesis opens the exact assembled payload with provenance and self-inquiry language intact. Completion evidence must include pure-function tests, storage failure tests, full build gates, adversarial persistence scans, and a browser-verified multi-route journey.
+Ship Phase 6 Wave 2 as a resilient, accessible, performance-bounded Noesis route. Done means the initial app bundle excludes Three.js, reading loads expose source and explicit loading/empty/error/retry states, Account reports the real typed gateway status without leaking configuration, and depth navigation remains readable and keyboard-operable under reduced motion or WebGL failure. Completion evidence must include focused tests, bundle inspection, full build gates, sensitive-data scans, and browser verification across desktop, narrow, recovery, and reduced-motion states.
 
 ## Criteria
 
@@ -245,6 +245,50 @@ Ship Phase 6 Wave 1 as a local current-practice assembly layer in Sankalpa. Done
 - [x] ISC-130: Cached subject and witness context are rebuilt through a strict sanitizing allowlist before resume (probe: poisoned-cache fixture).
 - [x] ISC-131: Last-reading and history commit through one atomic versioned cache envelope (probe: structural-corruption and throwing-storage tests).
 
+### P6 Wave 2 performance boundary
+
+- [x] ISC-132: The Noesis route dynamically imports `DepthGallery` instead of including it in the shell entry graph (probe: source assertion and bundle manifest).
+- [x] ISC-133: Three.js is absent from the initial renderer entry chunk (probe: production bundle import graph).
+- [x] ISC-134: The initial renderer entry JavaScript remains below 250 KiB raw and 100 KiB gzip (probe: build artifact sizes).
+- [x] ISC-135: Three.js and depth rendering ship in a separately named asynchronous chunk (probe: production asset inventory).
+- [x] ISC-136: A readable loading fallback is visible while the asynchronous depth surface resolves (probe: component/browser assertion).
+- [x] ISC-137: The build reports the large optional visualization separately rather than treating it as initial application cost (probe: build log and chunk inventory).
+
+### P6 Wave 2 reading recovery
+
+- [x] ISC-138: Reading resolution reports whether the payload came from hash, cache, or remote (probe: loader fixture tests).
+- [x] ISC-139: An invalid inline hash safely falls through to cache and remote resolution (probe: malformed-hash fixture).
+- [x] ISC-140: The Noesis reading route exposes an explicit accessible loading state (probe: rendered-state assertion).
+- [x] ISC-141: An absent reading produces a truthful empty/recovery surface and never a fabricated gallery payload (probe: not-found fixture and source audit).
+- [x] ISC-142: Remote load failure produces a bounded safe error category without backend details (probe: gateway-error fixtures).
+- [x] ISC-143: Retry repeats reading resolution and can transition error or missing state to loaded (probe: state-machine test).
+- [x] ISC-144: A stale asynchronous response cannot overwrite a newer route request (probe: deferred-promise race test).
+- [x] ISC-145: Reading recovery offers a direct Threshold action (probe: rendered action assertion).
+- [x] ISC-146: Reading recovery offers the cached current practice when one meaningfully exists (probe: cache fixture assertion).
+- [x] ISC-147: Reading failures are announced through an accessible alert without exposing payload contents (probe: accessibility and sensitive-text assertion).
+
+### P6 Wave 2 runtime status
+
+- [x] ISC-148: Account reads the real typed `getGatewayStatus` preload method (probe: component/source test).
+- [x] ISC-149: Account exposes an explicit gateway-status loading state (probe: deferred-status fixture).
+- [x] ISC-150: An unconfigured gateway is described as local-only operation (probe: status fixture).
+- [x] ISC-151: A configured but unauthenticated gateway is described as authentication required (probe: status fixture).
+- [x] ISC-152: An authenticated configured gateway is described as remote-ready (probe: status fixture).
+- [x] ISC-153: Gateway status failure degrades to safe local guidance (probe: rejected-status fixture).
+- [x] ISC-154: Account can retry gateway-status resolution after failure (probe: interaction test).
+- [x] ISC-155: Anti: Account never renders gateway URLs, tokens, authorization headers, or secret-shaped configuration (probe: source and rendered-text scan).
+
+### P6 Wave 2 accessible depth and gate
+
+- [x] ISC-156: Reduced-motion preference prevents continuous depth animation while preserving the reading navigator (probe: media-query fixture and RAF assertion).
+- [x] ISC-157: WebGL initialization failure falls back to readable section navigation and full text (probe: throwing-renderer fixture).
+- [x] ISC-158: Arrow keys move backward and forward through reading sections (probe: keyboard interaction test).
+- [x] ISC-159: Opening full text moves focus into the dialog (probe: focus assertion).
+- [x] ISC-160: Escape closes full text and restores focus to its opener (probe: keyboard/focus assertion).
+- [x] ISC-161: Texture callbacks and animation work are ignored after depth unmount (probe: delayed-loader cleanup test).
+- [x] ISC-162: Full tests, typecheck, production build, and browser journeys pass at desktop, narrow, recovery, and reduced-motion states (probe: repository and browser gates).
+- [x] ISC-163: Anti: Wave 2 introduces no raw media, credentials, unrestricted renderer fetch, or Electron-boundary regression (probe: source, bundle, and trust-boundary scans).
+
 ## Test Strategy
 
 | isc | type | check | threshold | tool |
@@ -265,6 +309,10 @@ Ship Phase 6 Wave 1 as a local current-practice assembly layer in Sankalpa. Done
 | ISC-97..105 | reading assembly | subject, inquiry, four artifacts, stable IDs, cache/hash equality, size, compatibility | exact payload assertions pass | Vitest |
 | ISC-106..118, ISC-123 | daily-use UI | transactional navigation, provenance/count status, combined open, threshold seed, command resume/clear, meaningful resume antecedent | helper, component, and browser probes pass | Vitest plus browser automation |
 | ISC-119..122 | wave gate | docs, full suite, type/build, persistence and bundle anti-scans | zero failures or sensitive fields | npm, rg, browser automation |
+| ISC-132..137 | performance | lazy route boundary, initial-entry size, async depth inventory, loading fallback | initial entry under 250 KiB raw/100 KiB gzip and Three.js excluded | Vite build, asset graph, Vitest, browser automation |
+| ISC-138..147 | recovery | source-aware resolution, malformed hash fallback, loading/empty/error/retry/race and recovery actions | exact state transitions and zero fabricated evidence | Vitest plus browser automation |
+| ISC-148..155 | runtime status | live typed status, local/auth-required/remote-ready/error/retry and anti-secret rendering | exact fixtures and zero sensitive configuration | Vitest, rg, browser automation |
+| ISC-156..163 | accessible depth gate | reduced motion, WebGL fallback, keyboard/dialog focus, cleanup, full gates and trust anti-scan | all focused and repository gates pass | Vitest, npm, rg, browser automation |
 
 ## Features
 
@@ -285,9 +333,21 @@ Ship Phase 6 Wave 1 as a local current-practice assembly layer in Sankalpa. Done
 | PracticeReadingAssembly | Build, cache, and route the exact combined Noesis payload | ISC-97..105 | CurrentPracticeIdentity | true |
 | DailyPracticeControls | Add, resume, clear, and seed the current practice across engine, threshold, and command surfaces | ISC-106..118, ISC-123 | CurrentPracticeIdentity, PracticeReadingAssembly | false |
 | P6WaveGate | Verify storage, routing, user journey, documentation, sensitive-data boundaries, Unicode, and atomic persistence | ISC-119..122, ISC-128..131 | DailyPracticeControls | false |
+| LazyDepthBoundary | Remove optional Three.js depth rendering from the initial shell graph and expose a readable loading boundary | ISC-132..137 | NoesisResultHandoff | true |
+| ReadingRecoveryState | Preserve load source and bounded failures across explicit loading, empty, retry, race, and recovery actions | ISC-138..147 | CurrentPracticeIdentity, LazyDepthBoundary | true |
+| GatewayStatusSurface | Render the existing narrow gateway readiness contract without exposing privileged configuration | ISC-148..155 | TrustedDesktopGateway | true |
+| AccessibleDepthFallback | Preserve witness navigation under reduced motion, WebGL failure, keyboard use, dialog focus, and unmount races | ISC-156..161 | LazyDepthBoundary | true |
+| P6Wave2Gate | Verify performance, recovery, runtime status, accessibility, trust boundaries, and responsive browser journeys | ISC-162..163 | ReadingRecoveryState, GatewayStatusSurface, AccessibleDepthFallback | false |
 
 ## Decisions
 
+- 2026-07-19 02:15: refined: The live integration plan names Phase 6 Wave 2 as performance, empty states, and error handling; Wave 1 is complete and remains immutable.
+- 2026-07-19 02:15: Root-cause-at-ingestion: payload provenance and failure detail disappear inside `payloadLoader`, while Three.js enters the shell through the synchronous `App.tsx` import; both seams must be fixed before display polish.
+- 2026-07-19 02:15: The accessible fallback is an equivalent text-and-section navigator, not an error page; reduced motion and unavailable WebGL must never hide witness content.
+- 2026-07-19 02:15: Runtime status reuses the existing typed preload method and may expose only configured/authenticated/transport classes, never origins, headers, or credentials.
+- 2026-07-19 02:25: Advisor's conditional GO added module-loading status, depth-scoped styles, and explicit proof that reduced motion and WebGL failure share one fallback mode; its proposed payload-before-module boot chain was rejected because payload resolution precedes lazy rendering by construction.
+- 2026-07-19 02:30: The external Temperance worktree rail produced invalid wholesale-deletion checkouts and no index or summary, so no external diff was integrated; fail-open Codex rails completed the same two isolated contracts.
+- 2026-07-19 03:00: ReReadCheck and independent final audit returned GO after confirming provenance, stale-request rejection, packaged-relative chunk loading, cleanup, focus restoration, status secrecy, and exact entry-budget enforcement.
 - 2026-07-18 23:00: refined: Live state shows T-130/T-135 are complete; the next unresolved roadmap boundary is Phase 6 Wave 1, multi-engine witness assembly, not more engine transport.
 - 2026-07-18 23:00: The current practice is a local derived session containing only sanitized artifacts and inquiry context; it is not a new backend entity or cloud-sync surface.
 - 2026-07-18 23:00: Phase 6 Wave 2 resilience and performance work stays separate so this wave has one falsifiable journey: accumulate, inspect, resume, and open one witness.
@@ -361,6 +421,14 @@ Ship Phase 6 Wave 1 as a local current-practice assembly layer in Sankalpa. Done
 
 ## Verification
 
+- ISC-132..137: Production Vite build emitted `index-CYgISPpb.js` at 249,275 raw/79,819 gzip bytes and `DepthGallery-5EhUnFqv.js` at 515,503 raw/129,200 gzip bytes; `npm run check:renderer-budget` proved Three.js is absent from entry and present in the single async depth chunk.
+- ISC-138..147: Focused loader tests prove hash/cache/remote provenance, malformed-hash fallback, 404 not-found, typed failure, safe rejected-IPC conversion, legacy nullable compatibility, and the deferred-promise gate rejects stale completions.
+- ISC-148..155: Gateway renderer tests cover all configured/authenticated combinations; browser Account QA displayed only `Local-only`, fixed guidance, and no URL, token, header, exception, console error, or failed request.
+- ISC-156..161: Pure navigation tests cover arrows/Home/End; browser reduced-motion QA rendered no canvas, changed 1/7→2/7→7/7→1/7, opened a native modal with focus inside, and restored the exact opener after Escape.
+- ISC-162: Full gate passed 12 test files and 100 tests, renderer/Electron typechecks, production build, unsigned arm64 package, desktop 1440×1000 and narrow 390×844 browser journeys, zero overflow, zero console warnings/errors, and six successful requests including the async chunk.
+- ISC-163: `git diff --check`, direct-renderer-fetch scan, production-bundle credential scan, main/preload contract review, and independent read-only final audit returned clean/GO.
+- Package smoke: `npm run package:dir` produced unsigned `release/mac-arm64/Sankalpa.app`; the packaged `app.asar` contains `dist/index.html`, the renderer entry, CSS, and the asynchronous `DepthGallery` asset.
+- Temperance dispatch: external worktree checkouts were invalid and emitted neither `index.json` nor `SUMMARY.md`; fail-open Codex workers changed only their assigned loader, gateway, and depth files and all focused gates passed.
 - ISC-1: `git branch --show-current` returned `main`.
 - ISC-2: `git status --short --branch` showed no merge state; only the pre-existing status edit and untracked `.agents/`/`.worktrees/` entries.
 - ISC-3: `git log --oneline` contains `51c3e6f5 Merge raaga-clip-codex`.
