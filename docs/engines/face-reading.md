@@ -3,6 +3,8 @@
 
 > **Note (2026-06-30):** `apps/noesis-web` has been retired. Engine renderers are being ported to [Sankalpa](../../sankalpa/). Paths referencing `apps/noesis-web` below are historical.
 
+> **🧊 P1 W1 Frozen (2026-07-17):** Contracts per [P1W1-CONTRACTS-FROZEN.md](../plans/engine-integration/P1W1-CONTRACTS-FROZEN.md) (worktree `.worktrees/T-002-copilot`). EngineInput/Output media, capture lifecycle, image provider, raaga audio locked (T-002+). Cite extraction: goal-understanding.md, resources-and-assets.md, gaps-and-improvements.md. See updated engine-matrix.json. Do not mutate w/o re-freeze. Handoff W2.
+
 Constitutional analysis from facial features, fusing **Ayurvedic dosha** typing, **TCM Five Elements (Mian Xiang)**, and **Western physiognomy** — into a constitution, an elemental balance, personality traits, and per-zone health indicators. **Stub engine:** no image processing yet; output is deterministic-heuristic / mock (`crates/engine-face-reading/src/lib.rs:8-11`).
 
 ## 1. Identity

@@ -16,6 +16,7 @@ dependencies = [
     "opencv-python-headless>=4.8",
     "scipy>=1.11",
     "scikit-image>=0.22",
+    "mediapipe>=0.10",
 ]
 
 [project.optional-dependencies]

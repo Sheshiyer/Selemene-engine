@@ -1726,6 +1726,8 @@ pub async fn create_capture(
     };
 
     let sidecar_client = build_biofield_client_from_env();
+    // T-065: real CV (mediapipe in python biofield_cv_service) -> metrics mapped to FROZEN via result_data
+    // phase:integration-p1 wave:integration-w2 engine-biofield ; cites T-026 + standard refs + detailed T-065
     let sidecar_response = match sidecar_client
         .analyze_capture(BiofieldAnalyzeRequest {
             image_data: image_bytes.clone(),

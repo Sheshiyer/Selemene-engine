@@ -2,6 +2,8 @@
 
 > **Note (2026-06-30):** `apps/noesis-web` and `apps/biofield-web` have been retired. Engine renderers are being ported to [Sankalpa](../../sankalpa/). Paths below that reference the retired apps are historical.
 
+> **🧊 P1 W1 Frozen (2026-07-17):** Contracts per [P1W1-CONTRACTS-FROZEN.md](../plans/engine-integration/P1W1-CONTRACTS-FROZEN.md) (worktree `.worktrees/T-002-copilot`). EngineInput/Output media, capture lifecycle, image provider, raaga audio locked (T-002+). Cite extraction: goal-understanding.md, resources-and-assets.md, gaps-and-improvements.md. See updated engine-matrix.json. Do not mutate w/o re-freeze. Handoff W2.
+
 The energetic field around a person, read **two different ways**: a server-side **birth-data analysis** (`engine-biofield`, currently mock) and a client **live camera capture** (`sankalpa` desktop app + `engine-biofield-capture` + a Python CV sidecar). They share vocabulary (coherence, symmetry, fractal dimension, chakras) but are **separate engines with separate `engine_id`s, separate metric sets, and separate runtime producers** — do not conflate them.
 
 > ⚠️ Read [`README.md` §"Three schema layers"](README.md) first. Biofield additionally has **two engines**, so it has *two* domain structs to keep straight.

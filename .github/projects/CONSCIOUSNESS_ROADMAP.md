@@ -233,13 +233,17 @@ scripts/import-tasks-to-github.sh --apply --repo Sheshiyer/Selemene-engine
 - Dependencies tracked in issue bodies.
 - Validation evidence required before close (per swarm-architect playbooks).
 
-**Current Status (as of 2026-07-17):** 
-- Deepened pre-execution analysis complete (resources, gaps, goal extracted from all prior work to prevent drift).
-- All planning artifacts (plan + 3 extraction files + mapping + task list) committed to repo.
-- GitHub issues: #893 (epic), #894 (P1), #895 (P5) + new issues for deepened artifacts + phase waves.
+**Current Status (as of 2026-07-17, P1 W1 execution in progress):** 
+- Deepened pre-execution analysis complete (resources, gaps, goal extracted from all prior work to prevent drift). Cites: resources-and-assets.md, gaps-and-improvements.md, goal-understanding.md (the 3 extraction files — read before any P1 work).
+- All planning artifacts (plan + 3 extraction files + mapping + task list + bootstrap + checklist + STATUS) committed.
+- GitHub issues: #893 (epic), #894 (P1), #895 (P5) + #896 (deepened), #897 (P2), #898 (P1 W1 contracts T-002..), + new #899 (local dev + CI baselines), #900 (Sankalpa media UI contracts), #901 (P1 W1 validation gate execution), #902 (per-engine docs + handoff + matrix update).
+- **P1 W1 GitHub/scaffolding/validation prep + batch issues complete:** Issues #893/#896/#898/#899/#900/#901/#902 synced with links; labels verified (phase:integration-p1, wave:integration-w1 etc); created p1-w1-worker-bootstrap-packet.md, p1-w1-validation-gate-checklist.md, EXECUTION-STATUS.md (tracks T-002 worktree + owners/branches).
+- Contracts: T-002 (media contracts lock zone) complete in worktree `swarm/engines/p1-w1/contracts/T-002-copilot`; P1W1-CONTRACTS-FROZEN.md present (see worktree). T-003/4/5 pending. Gate drafted in checklist.
 - Labels/tagging standardized (phase:integration-*, wave:integration-*, swarm:*, engine-*, area:engine-integration).
-- Next: Roll out remaining phase issues from detailed-task-list, begin P1 contract work (wave-boundary merges only).
-- Sankalpa side: see sibling repo ROADMAP Milestone 4b.
+- Next: Complete remaining P1 W1 contracts (T-003-005) + run validation gate (#901) per checklist + EXECUTION-STATUS; roll out remaining phases from detailed-task-list; wave-boundary merges only.
+- Sankalpa side: see sibling repo ROADMAP Milestone 4b (references same deepened extraction files).
 - No stale planning docs for this initiative (old web-app refs are historical/retired and correctly annotated in engine docs).
+
+**Execution Start Note (P1 W1, 2026-07-17, continued):** P1 Wave 1 coordination (GitHub sync, bootstrap packet, validation prep, status tracking, 4 new issues #899-902) handled 2026-07-17. See docs/plans/engine-integration/EXECUTION-STATUS.md for live started tasks (T-002 in worktree, gate drafted). Links: bootstrap p1-w1-worker-bootstrap-packet.md, checklist p1-w1-validation-gate-checklist.md, STATUS, FROZEN .worktrees/T-002-copilot/docs/plans/engine-integration/P1W1-CONTRACTS-FROZEN.md. All work references the 3 extraction files (resources-and-assets.md, gaps-and-improvements.md, goal-understanding.md). Current status: contracts in worktree, gate drafted. See also new issues for local dev/CI, Sankalpa contracts, validation exec, docs/handoff.
 
 See also sankalpa/ROADMAP.md for frontend-specific milestones.

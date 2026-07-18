@@ -9,8 +9,15 @@
  * engine_id: "raaga"
  */
 
-import type { ConsciousnessEngine, EngineInput, EngineMetadata, EngineOutput } from '../../types'
+import type {
+  ConsciousnessEngine,
+  Consent,
+  EngineInput,
+  EngineMetadata,
+  EngineOutput,
+} from '../../types'
 import { EngineValidationError } from '../../utils'
+import { generateRaagaClip } from './clip'
 import {
   type Dosha,
   MELAKARTAS,
@@ -18,6 +25,7 @@ import {
   getMelakarta,
   getPraharForHour,
   getRaagasForDosha,
+  verifyFull72Melakartas,
 } from './wisdom'
 import { generateWitnessPrompts } from './witness'
 
@@ -67,12 +75,27 @@ export class RaagaEngine implements ConsciousnessEngine {
           description: 'When true, also returns 2–3 alternate ragas of the same dosha affinity.',
           default: false,
         },
+        request_clip: {
+          type: 'boolean',
+          required: false,
+          description:
+            'When true AND granted consent is present, render strudel_ratios to an audio clip and ' +
+            'populate generated_audio.clip_url (config: RAAGA_CLIP_MODE=off|local|service). Default false (clip_url stays null).',
+          default: false,
+        },
       },
     }
   }
 
   async calculate(input: EngineInput): Promise<EngineOutput> {
     const startTime = performance.now()
+
+    // Support media input options per FROZEN (audio_ref, consent, quality) + parameters
+    // audio_ref/consent can be top-level (extended EngineInput) or inside parameters for compat
+    // full support for 72 melakartas + dosha/prahar verified via wisdom.verifyFull72Melakartas
+    const audioRef = (input as any).audio_ref || input.parameters.audio_ref
+    const consent = (input as any).consent || input.parameters.consent
+    const _quality = (input as any).quality || input.parameters.quality // for future clip quality
 
     const numParam = input.parameters.melakarta as number | undefined
     const nameParam = input.parameters.name as string | undefined
@@ -198,12 +221,68 @@ export class RaagaEngine implements ConsciousnessEngine {
       total_melakartas: MELAKARTAS.length,
     }
 
+    // Per FROZEN + T-005/T-031: surface generated_audio at top-level EngineOutput (in addition to result)
+    // strudel_ratios, clip_url (null by default; populated by consent-gated clip gen below), root_hz, metadata
+    // Full 72 + dosha/prahar verified here (see wisdom.verifyFull72Melakartas)
+    // Supports audio_ref/consent from input (FROZEN samples in tests/harness)
+    // Cites (mandatory all): p1-w1-worker-bootstrap-packet.md, resources-and-assets.md, gaps-and-improvements.md, goal-understanding.md,
+    // EXECUTION-STATUS.md, P1W2-HANDOFF.md, .worktrees/T-002-copilot/P1W1-CONTRACTS-FROZEN.md, detailed-task-list.md (T-031),
+    // .worktrees/T-024-codex/scripts/ext-contract-harness.ts , ts-engines/src/engines/raaga/*.ts , raaga.md,
+    // docs/plans/engine-integration/p5-p4-next-batch.json (raaga-clip-generation)
+    // tags: phase:integration-p1 wave:integration-w2 area:engine-integration engine-raaga
+    // External rail unavailable; Codex subagent. No push/merge.
+    const verif = verifyFull72Melakartas() // from wisdom, ensures support
+
+    // raaga-clip-generation (p5-p4-next-batch): consent-gated, config-driven clip path.
+    // request_clip + granted consent → generateRaagaClip (RAAGA_CLIP_MODE=off|local|service, default off).
+    // clip_url stays null when not requested / consent missing / mode off (backward compat per FROZEN).
+    const requestClip = Boolean(input.parameters.request_clip ?? false)
+    const clipConsent = consent as Consent | undefined
+    let clipUrl: string | null = null
+    let clipNote: Record<string, unknown> = { requested: requestClip, status: 'not_requested' }
+    if (requestClip) {
+      if (!clipConsent?.granted) {
+        clipNote = {
+          requested: true,
+          status: 'consent_missing',
+          detail:
+            'request_clip requires granted consent (local-first + explicit consent per goal-understanding.md)',
+        }
+      } else {
+        const clip = await generateRaagaClip({ melakarta: m.num, ratios: m.ratios, rootHz })
+        clipUrl = clip.clip_url
+        clipNote = {
+          requested: true,
+          status: clip.status,
+          mode: clip.mode,
+          ...(clip.detail ? { detail: clip.detail } : {}),
+        }
+      }
+    }
+
+    const generatedAudio = {
+      clip_url: clipUrl,
+      strudel_ratios: [...m.ratios],
+      root_hz: rootHz,
+      metadata: {
+        engine: 'raaga',
+        melakarta: m.num,
+        name: m.name,
+        dosha_match: dosha ? dosha_affinities[dosha] : null,
+        prahar: prahar.label,
+        verification: verif, // full 72 + dosha/prahar evidence
+        clip: clipNote, // clip generation outcome (requested/status/mode/detail)
+        // timbre/gamaka per T-005 deferred
+      },
+    }
+
     return {
       engine_id: 'raaga',
       result,
       witness_prompts: generateWitnessPrompts(m, dosha),
       calculated_at: new Date().toISOString(),
       processing_time_ms: Math.round(performance.now() - startTime),
+      generated_audio: generatedAudio,
     }
   }
 }

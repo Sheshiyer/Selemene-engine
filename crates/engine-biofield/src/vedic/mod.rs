@@ -124,6 +124,9 @@ impl VedicBiofieldAnalyzer {
                 interpretation,
                 areas_of_attention,
                 is_mock_data: false,
+                // T-026: capture mapping placeholder (consent/quality for frozen); keep None here for Vedic birth path
+                consent: None,
+                quality: None,
             },
             context,
         })

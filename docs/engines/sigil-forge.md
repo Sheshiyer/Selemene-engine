@@ -3,6 +3,8 @@
 
 > **Note (2026-06-30):** `apps/noesis-web` has been retired. Engine renderers are being ported to [Sankalpa](../../sankalpa/). Paths referencing `apps/noesis-web` below are historical.
 
+> **🧊 P1 W1 Frozen (2026-07-17):** Contracts per [P1W1-CONTRACTS-FROZEN.md](../plans/engine-integration/P1W1-CONTRACTS-FROZEN.md) (worktree `.worktrees/T-002-copilot`). EngineInput/Output media, capture lifecycle, image provider, raaga audio locked (T-002+). Cite extraction: goal-understanding.md, resources-and-assets.md, gaps-and-improvements.md. See updated engine-matrix.json. Do not mutate w/o re-freeze. Handoff W2.
+
 Guided sigil creation: turns a present-tense **intention** into a chosen **method** (word-elimination, rose-wheel, pictographic, chaos-star) with process steps, charging suggestions, and witness prompts — plus an *optional* AI-generated sigil image (NVIDIA NIM, base64 PNG). It does **not** auto-generate a vector glyph.
 
 > ⚠️ **Read [§7](#7-open-questions--assumptions) first.** The OpenAPI stub (`sigil_id` / `intention` / `vector_path`) describes a glyph-generating engine that **does not exist in this repo**. No code anywhere produces a `vector_path` / SVG `d` string. Build against the **TS producer** + **renderer**, not the stub.

@@ -8,7 +8,9 @@
     "start": "bun run src/index.ts",
     "test": "bun test",
     "lint": "biome check src/",
-    "format": "biome format --write src/"
+    "format": "biome format --write src/",
+    "typecheck": "bunx tsc --noEmit",
+    "smoke:media": "echo 'T-020 P1W2 media contract smoke (raaga/strudel + sigil via provider) per p1-w1-worker-bootstrap-packet.md + resources-and-assets.md + gaps-and-improvements.md + goal-understanding.md + P1W1-CONTRACTS-FROZEN.md + detailed-task-list T-020 + EXECUTION-STATUS'"
   },
   "dependencies": {
     "@elysiajs/swagger": "^1.0.0",

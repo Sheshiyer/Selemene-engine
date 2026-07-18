@@ -6,6 +6,7 @@
 //! - Western Physiognomy
 
 use serde::{Deserialize, Serialize};
+use serde_json::Value;
 
 /// Complete face analysis result
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -20,6 +21,15 @@ pub struct FaceAnalysis {
     pub health_indicators: Vec<HealthIndicator>,
     /// Always true for stub implementation
     pub is_mock_data: bool,
+
+    // T-027 P2 start: extend for image_data input + consent from FROZEN/contracts
+    // phase:integration-p1 wave:integration-w2 area:engine-integration swarm:selemene-backend engine-face-reading
+    // heuristic + landmark hook placeholder; matches P1W1-CONTRACTS-FROZEN face example + gaps (no image)
+    // consent local-first per goal-understanding; quality for capture gate
+    #[serde(default)]
+    pub consent: Option<Value>,
+    #[serde(default)]
+    pub quality: Option<Value>,
 }
 
 /// Constitutional analysis combining Ayurveda and TCM
