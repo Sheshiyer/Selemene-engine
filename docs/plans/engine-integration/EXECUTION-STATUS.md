@@ -566,3 +566,33 @@ img = np.zeros((100,100,3), dtype=np.uint8); img[20:80,20:80]=255; m=_extract_ma
 
 **Remaining worktrees (kept):** T-002-copilot (FROZEN ref), T-021/T-022-023/T-024/T-025/T-029 (W2 scaffolding branches, unmerged doc/infra artifacts).
 **Next candidates:** T-115 sigil UI + T-120 face UI (P5), face CV hook, raaga clip generation (suno-bridge), P4 api/bridge/sdk, P6/P7.
+
+## p4-sdk-client (P4 SDK) — executed 2026-07-17 (Codex; p5-p4-next-batch.json)
+
+**Task:** Implement P4 SDK task (p5-p4-next-batch.json `p4-sdk-client`; detailed-task-list.md Phase 4 T-080..T-094): typed TS client SDK for the 4 focus engines with FROZEN media contracts (image_data, consent, generated_*), used by sankalpa + harness; error handling + local-first consent enforcement.
+**Worktree:** `.worktrees/p4-sdk-codex` (branch `swarm/engines/p4-w1/sdk/p4-sdk-codex`, based on main f8c1bb4a post T-060/061/065 merges). Worktree edits only. No push/merge.
+**MANDATORY first reads (ALL done):** p1-w1-worker-bootstrap-packet.md, resources-and-assets.md, gaps-and-improvements.md, goal-understanding.md, EXECUTION-STATUS.md, P1W2-HANDOFF.md (merged on main), .worktrees/T-002-copilot/docs/plans/engine-integration/P1W1-CONTRACTS-FROZEN.md, detailed-task-list.md (Phase 4), scripts/ext-contract-harness.ts (FROZEN payloads + scopes), sankalpa/src/renderer/data/engine-media-contracts.ts, ts-engines/src/types/engine.ts (merged FROZEN mirror), packages/biofield-api-client (client conventions), ts-engines/src/server/app.ts (routes), python-services/biofield_cv_service/analyze.py (/analyze multipart contract biofield-cv/v1).
+
+**Deliverable (new package `packages/noesis-engine-sdk` — pnpm workspace `packages/*` convention per pnpm-workspace.yaml; biofield-api-client style):**
+- `package.json` (@selemene/engine-sdk, private, bun test + typecheck scripts, @types/bun devDep), `tsconfig.json` (strict, bundler resolution, mirrors ts-engines conventions).
+- `src/types.ts` — FROZEN contract mirrors: Consent, MediaRef, QualitySpec, GeneratedImageRef (no vector_path), GeneratedAudioRef (strudel_ratios + clip_url), media-extended EngineInput/EngineOutput<T>, ErrorResponse, health shapes; per-engine payloads: BiofieldMetrics (11) + QualityAssessment + BiofieldAnalyzeResponse (biofield-cv/v1), FaceReadingResult, RaagaResult (melakarta/swaras/strudel_ratios/prahar), SigilForgeResult (intention/method/steps).
+- `src/consent.ts` — CONSENT_SCOPES (biofield-capture/face-image/raaga-audio/sigil-gen per ext-contract-harness.ts:75-78), requireConsent (throws ConsentError; fail-closed vs harness fail-open), resolveConsent (input.consent → mediaRef.consent), consentAgeMs, createConsent.
+- `src/errors.ts` — EngineSdkError (status/code/details; 0 = client-side guard, -1 = network), ConsentError (carries engineId + requiredScope).
+- `src/client.ts` — EngineClient with configurable base URLs (tsEnginesUrl default :3001, pythonBiofieldUrl default :8002, apiUrl for P4 → routes /api/v1/engines/{id}/calculate; fetchImpl injection; defaultHeaders). Per-engine APIs: biofield.analyze (multipart FormData to python /analyze; b64→Blob; ALWAYS consent-gated) + biofield.calculate, faceReading.calculate (consent when image_data), raaga.calculate (consent when audio_ref; melakarta-only is consent-free), sigilForge.calculate (consent when generate_image=true; guidance-only consent-free), health() aggregate (ts /health + py /health).
+- `src/index.ts` — public exports.
+- `tests/engine-client.test.ts` — 27 bun tests, mocked fetch, zero network: all 4 engines happy paths (URL + body shape asserted, FormData multipart fields asserted), consent guard (throws BEFORE network, fetch never called; wrong-scope rejected; granted=false rejected; consent-on-media-ref accepted), MEDIA_REQUIRED on missing b64, custom ts/py/api base URLs (trailing slash, P4 api routing), defaultHeaders, error paths (404 ENGINE_NOT_FOUND, 422 validation, 500, non-JSON body, fetch rejection → NETWORK_ERROR, health failure), consent primitives.
+- `README.md` — usage from sankalpa (via engine-media-contracts.ts toBackendMediaRef serializers + consent gates; no secrets in renderer), usage from harness (swap raw fetch for typed client; harness fail-open vs SDK fail-closed), endpoints table, consent-scope table, error handling, full reference list.
+
+**Evidence (run in worktree):**
+- `cd packages/noesis-engine-sdk && bun test` → **27 pass / 0 fail** (74 expect calls).
+- `bunx tsc --noEmit` → **clean (exit 0)**.
+- FROZEN shapes asserted: raaga generated_audio (strudel_ratios + clip_url null per T-031), sigil generated_image (b64_json + metadata.provider; no vector_path), face image_data+consent top-level, biofield 11 metrics + quality_assessment.
+- Local-first invariant enforced fail-closed: every media/generative path throws ConsentError with zero fetch calls (asserted via recorded calls array length 0).
+
+**Cites (enforced in every file header):** p1-w1-worker-bootstrap-packet.md, resources-and-assets.md (raaga/sigil ready, dual biofield paths), gaps-and-improvements.md (§2 media contracts missing → this SDK; §5 consent/privacy gaps), goal-understanding.md (two-prong, local-first + explicit consent invariant), EXECUTION-STATUS.md, P1W2-HANDOFF.md, P1W1-CONTRACTS-FROZEN.md (.worktrees/T-002-copilot), detailed-task-list.md (Phase 4 T-080..T-094), p5-p4-next-batch.json (p4-sdk-client), scripts/ext-contract-harness.ts (FROZEN payloads/scopes), ts-engines/src/types/engine.ts, sankalpa engine-media-contracts.ts, python-services/biofield_cv_service/analyze.py, packages/biofield-api-client.
+
+**Anti-drift / scope:** New package only + this STATUS append; no engine code, no frozen contract edits (FROZEN unchanged; do-not-edit honored); dual biofield paths kept distinct (python biofield-capture analyze vs Rust biofield calculate); consent scopes match FROZEN harness exactly; no vector_path; clip_url nullable per T-031; two-prong honored (SDK is the Prong2→Prong1 bridge surface for sankalpa + harness).
+**Tags:** phase:integration-p1 wave:integration-w2 area:engine-integration
+
+**VERIFY (repro):** `cd .worktrees/p4-sdk-codex/packages/noesis-engine-sdk && bun install && bun test` (27p) && `bunx tsc --noEmit` (clean). Matches: gaps §2 (no unified engine client → SDK), resources (packages/* convention), goal (local-first + consent, two-prong), FROZEN (shapes 1:1), detailed-task-list Phase 4 (sdk), p5-p4-next-batch p4-sdk-client deliverable.
+**Next:** P4 api/bridge/health (p4-api-bridge-health) can point SDK apiUrl at noesis-api; sankalpa T-115/T-120 surfaces consume this SDK; harness typed-roundtrip swap optional per README.
