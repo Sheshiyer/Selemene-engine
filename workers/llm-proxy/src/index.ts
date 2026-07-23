@@ -65,10 +65,11 @@ const PROVIDERS: Provider[] = [
   },
   {
     name: 'nebius',
-    hostname: 'api.studio.nebius.com',
+    hostname: 'api.tokenfactory.nebius.com',
     path: '/v1/chat/completions',
-    // TODO: verify against the live catalog once NEBIUS_API_KEY lands in KV.
-    defaultModel: 'meta-llama/Llama-3.3-70B-Instruct',
+    // Token Factory catalog verified live 2026-07-24; same model family as
+    // the command-code primary for voice-consistent failover.
+    defaultModel: 'deepseek-ai/DeepSeek-V4-Pro',
     keyKvKey: 'NEBIUS_API_KEY',
   },
   {

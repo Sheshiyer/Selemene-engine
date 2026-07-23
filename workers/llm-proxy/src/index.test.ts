@@ -121,7 +121,7 @@ test('command-code default: Provider API endpoint + deepseek/deepseek-v4-pro', a
   }
 });
 
-test('nebius fallback: Nebius AI Studio endpoint + Llama-3.3-70B default model', async () => {
+test('nebius fallback: Token Factory endpoint + DeepSeek-V4-Pro default model', async () => {
   const env = {
     // No COMMANDCODE key → chain falls through to nebius.
     LLM_SECRETS: { get: async (key: string) => (key === 'NEBIUS_API_KEY' ? 'nb-key' : null) },
@@ -140,8 +140,8 @@ test('nebius fallback: Nebius AI Studio endpoint + Llama-3.3-70B default model',
     assert.equal(res.status, 200);
     const body = (await res.json()) as { provider?: string };
     assert.equal(body.provider, 'nebius');
-    assert.equal(calledUrl, 'https://api.studio.nebius.com/v1/chat/completions');
-    assert.equal(sentBody.model, 'meta-llama/Llama-3.3-70B-Instruct');
+    assert.equal(calledUrl, 'https://api.tokenfactory.nebius.com/v1/chat/completions');
+    assert.equal(sentBody.model, 'deepseek-ai/DeepSeek-V4-Pro');
   } finally {
     globalThis.fetch = originalFetch;
   }
