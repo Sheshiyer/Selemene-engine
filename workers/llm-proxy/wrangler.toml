@@ -4,5 +4,5 @@ compatibility_date = "2025-04-01"
 
 [[kv_namespaces]]
 binding = "LLM_SECRETS"
-id = "SELEMENE_LLM_SECRETS"
-preview_id = "SELEMENE_LLM_SECRETS_PREVIEW"
+id = "310ee556e91d465eb54d55586a541e49"
+preview_id = "ab6f688eed234a0c9648920921d21ed7"

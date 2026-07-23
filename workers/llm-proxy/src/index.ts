@@ -3,6 +3,17 @@
 // Provider chain (in order): Command Code → NVIDIA NIM → OpenRouter → OpenAI
 //
 // Endpoint: POST /v1/chat/completions  (OpenAI-compatible)
+//
+// Command Code uses the official Provider API (OpenAI-compatible shape) at
+// https://api.commandcode.ai/provider/v1 — NOT the CLI-only /alpha/generate
+// route (proxying the CLI endpoint violates Command Code TOS). The owner's
+// preferred narrator model `claude-sonnet-5` exists in the Provider catalog
+// but requires the Anthropic Messages shape (/provider/v1/messages) AND a
+// non-exhausted premium credit balance; as of 2026-07-24 the account returns
+// PREMIUM_CREDITS_EXHAUSTED, so the default is the verified-working
+// open model `deepseek/deepseek-v4-pro` (tool calling verified).
+// NVIDIA NIM default mirrors the witness dyad enterprise tier
+// (crates/noesis-witness/src/llm.rs): nvidia/llama-3.3-nemotron-super-49b-v1.5.
 
 interface Env {
   LLM_SECRETS: KVNamespace;
@@ -31,6 +42,9 @@ interface ChatRequest {
   messages: Array<{ role: string; content: string }>;
   max_tokens?: number;
   temperature?: number;
+  /** OpenAI-style tool definitions; forwarded verbatim when present. */
+  tools?: unknown[];
+  tool_choice?: unknown;
 }
 
 interface Provider {
@@ -44,16 +58,16 @@ interface Provider {
 const PROVIDERS: Provider[] = [
   {
     name: 'command-code',
-    hostname: 'api.openai.com',
-    path: '/v1/chat/completions',
-    defaultModel: 'gpt-4o-mini',
+    hostname: 'api.commandcode.ai',
+    path: '/provider/v1/chat/completions',
+    defaultModel: 'deepseek/deepseek-v4-pro',
     keyKvKey: 'COMMANDCODE_API_KEY',
   },
   {
     name: 'nvidia',
     hostname: 'integrate.api.nvidia.com',
     path: '/v1/chat/completions',
-    defaultModel: 'meta/llama-3.1-8b-instruct',
+    defaultModel: 'nvidia/llama-3.3-nemotron-super-49b-v1.5',
     keyKvKey: 'NVIDIA_API_KEY',
   },
   {
@@ -93,6 +107,7 @@ async function callProvider(
     messages: body.messages,
     max_tokens: Math.min(body.max_tokens || 4096, 16384),
     temperature: body.temperature ?? 0.7,
+    ...(body.tools?.length ? { tools: body.tools, tool_choice: body.tool_choice ?? 'auto' } : {}),
   });
 
   return fetch(`https://${provider.hostname}${provider.path}`, {

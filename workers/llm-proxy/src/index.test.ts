@@ -87,3 +87,62 @@ test('fetch: unconfigured token keeps the pre-W2 open behavior end to end', asyn
     globalThis.fetch = originalFetch;
   }
 });
+
+test('command-code default: Provider API endpoint + deepseek/deepseek-v4-pro', async () => {
+  const env = {
+    LLM_SECRETS: { get: async (key: string) => (key === 'COMMANDCODE_API_KEY' ? 'provider-key' : null) },
+  } as TestEnv as never;
+
+  const originalFetch = globalThis.fetch;
+  let calledUrl = '';
+  let sentBody: { model?: string; tools?: unknown[]; tool_choice?: unknown } = {};
+  globalThis.fetch = (async (url: unknown, init?: { body?: string }) => {
+    calledUrl = String(url);
+    sentBody = JSON.parse(init?.body ?? '{}');
+    return Response.json({ choices: [{ message: { content: 'ok' } }] });
+  }) as typeof fetch;
+  try {
+    const req = new Request('https://llm-proxy.test/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        messages: [{ role: 'user', content: 'hi' }],
+        tools: [{ type: 'function', function: { name: 'record_intake', parameters: {} } }],
+      }),
+    });
+    const res = await worker.fetch(req, env);
+    assert.equal(res.status, 200);
+    assert.equal(calledUrl, 'https://api.commandcode.ai/provider/v1/chat/completions');
+    assert.equal(sentBody.model, 'deepseek/deepseek-v4-pro'); // omitted model → provider default
+    assert.equal(Array.isArray(sentBody.tools), true, 'tools must be forwarded');
+    assert.equal(sentBody.tool_choice, 'auto');
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test('nvidia fallback: NIM endpoint + nemotron-super-49b default model', async () => {
+  const env = {
+    // No COMMANDCODE key → chain falls through to nvidia.
+    LLM_SECRETS: { get: async (key: string) => (key === 'NVIDIA_API_KEY' ? 'nv-key' : null) },
+  } as TestEnv as never;
+
+  const originalFetch = globalThis.fetch;
+  let calledUrl = '';
+  let sentBody: { model?: string } = {};
+  globalThis.fetch = (async (url: unknown, init?: { body?: string }) => {
+    calledUrl = String(url);
+    sentBody = JSON.parse(init?.body ?? '{}');
+    return Response.json({ choices: [{ message: { content: 'ok' } }] });
+  }) as typeof fetch;
+  try {
+    const res = await worker.fetch(chatReq(), env);
+    assert.equal(res.status, 200);
+    const body = (await res.json()) as { provider?: string };
+    assert.equal(body.provider, 'nvidia');
+    assert.equal(calledUrl, 'https://integrate.api.nvidia.com/v1/chat/completions');
+    assert.equal(sentBody.model, 'nvidia/llama-3.3-nemotron-super-49b-v1.5');
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
