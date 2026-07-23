@@ -6,6 +6,8 @@
   "scripts": {
     "deploy": "wrangler deploy",
     "dev": "wrangler dev",
+    "test": "node --test 'src/**/*.test.ts'",
+    "typecheck": "tsc --noEmit",
     "kv:put": "wrangler kv:key put --binding=LLM_SECRETS",
     "kv:list": "wrangler kv:key list --binding=LLM_SECRETS"
   },

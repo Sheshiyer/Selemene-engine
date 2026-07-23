@@ -6,6 +6,24 @@
 
 interface Env {
   LLM_SECRETS: KVNamespace;
+  /**
+   * Optional shared-secret gate for the chat endpoint (urania chat
+   * onboarding, Phase 1 W2). When configured, requests must carry
+   * `x-chat-key: <token>`; when unset the worker behaves exactly as before
+   * (no auth check). Set via `wrangler secret put CHAT_PROXY_TOKEN`.
+   */
+  CHAT_PROXY_TOKEN?: string;
+}
+
+/**
+ * Shared-secret gate, inert by default: when CHAT_PROXY_TOKEN is not
+ * configured every request is authorized (pre-W2 behavior); when configured,
+ * the `x-chat-key` header must match exactly. Exported for tests.
+ */
+export function isChatRequestAuthorized(request: Request, env: Env): boolean {
+  const token = env.CHAT_PROXY_TOKEN?.trim();
+  if (!token) return true;
+  return request.headers.get('x-chat-key') === token;
 }
 
 interface ChatRequest {
@@ -89,6 +107,16 @@ export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     if (request.method !== 'POST') {
       return new Response('POST only', { status: 405 });
+    }
+
+    // Shared-secret gate (W2) — checked before any KV/provider work so an
+    // unauthorized request costs nothing and learns nothing. Inert when
+    // CHAT_PROXY_TOKEN is unset.
+    if (!isChatRequestAuthorized(request, env)) {
+      return Response.json(
+        { error: { message: 'unauthorized: missing or invalid x-chat-key header' } },
+        { status: 401 },
+      );
     }
 
     let body: ChatRequest;
