@@ -1,6 +1,6 @@
 // Selemene LLM Proxy Worker
 // Stores provider API keys in KV, routes to the active provider.
-// Provider chain (in order): Command Code → NVIDIA NIM → OpenRouter → OpenAI
+// Provider chain (in order): Command Code → Nebius → NVIDIA NIM → Kimi (Moonshot)
 //
 // Endpoint: POST /v1/chat/completions  (OpenAI-compatible)
 //
@@ -64,6 +64,14 @@ const PROVIDERS: Provider[] = [
     keyKvKey: 'COMMANDCODE_API_KEY',
   },
   {
+    name: 'nebius',
+    hostname: 'api.studio.nebius.com',
+    path: '/v1/chat/completions',
+    // TODO: verify against the live catalog once NEBIUS_API_KEY lands in KV.
+    defaultModel: 'meta-llama/Llama-3.3-70B-Instruct',
+    keyKvKey: 'NEBIUS_API_KEY',
+  },
+  {
     name: 'nvidia',
     hostname: 'integrate.api.nvidia.com',
     path: '/v1/chat/completions',
@@ -71,18 +79,11 @@ const PROVIDERS: Provider[] = [
     keyKvKey: 'NVIDIA_API_KEY',
   },
   {
-    name: 'openrouter',
-    hostname: 'openrouter.ai',
-    path: '/api/v1/chat/completions',
-    defaultModel: 'anthropic/claude-sonnet-4',
-    keyKvKey: 'OPENROUTER_API_KEY',
-  },
-  {
-    name: 'openai',
-    hostname: 'api.openai.com',
+    name: 'kimi',
+    hostname: 'api.moonshot.ai',
     path: '/v1/chat/completions',
-    defaultModel: 'gpt-4o-mini',
-    keyKvKey: 'OPENAI_API_KEY',
+    defaultModel: 'kimi-k2.6',
+    keyKvKey: 'MOONSHOT_API_KEY',
   },
 ];
 
@@ -97,10 +98,6 @@ async function callProvider(
     'Authorization': `Bearer ${apiKey}`,
     'Content-Type': 'application/json',
   };
-  if (provider.name === 'openrouter') {
-    headers['HTTP-Referer'] = 'https://tryambakam.space';
-    headers['X-Title'] = 'Selemene L0 Witness';
-  }
 
   const fetchBody = JSON.stringify({
     model,
