@@ -1,6 +1,6 @@
 [package]
 name = "engine-panchanga"
-version = "3.1.0"
+version.workspace = true
 edition = "2021"
 description = "Panchanga (Vedic almanac) consciousness engine — Tithi, Nakshatra, Yoga, Karana, Vara"
 

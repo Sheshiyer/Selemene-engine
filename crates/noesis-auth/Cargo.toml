@@ -1,6 +1,6 @@
 [package]
 name = "noesis-auth"
-version = "3.1.0"
+version.workspace = true
 edition = "2021"
 description = "Authentication and authorization (JWT + API keys) for Noesis platform"
 

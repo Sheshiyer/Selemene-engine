@@ -71,7 +71,19 @@ packages/*/dist/
 .claude/task-management/*.json
 .claude/task-management/*.md
 
+# Agent / worktree artifacts
+.agents/
+.worktrees/
+
+# Worker artifacts
+workers/*/.wrangler/
+workers/*/package-lock.json
+workers/*/node_modules/
+
 # Large generated context assets (brand images, pitch materials)
+# Keep source docs, ignore bulky generated/
+.context/generated/
+.context/pitchdeck/
 # Keep source docs, ignore bulky generated/
 .context/generated/
 .context/pitchdeck/

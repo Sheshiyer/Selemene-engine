@@ -1,6 +1,6 @@
 [package]
 name = "noesis-orchestrator"
-version = "3.1.0"
+version.workspace = true
 edition = "2021"
 description = "Workflow orchestrator for parallel multi-engine execution"
 

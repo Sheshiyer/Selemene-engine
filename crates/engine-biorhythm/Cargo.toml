@@ -1,6 +1,6 @@
 [package]
 name = "engine-biorhythm"
-version = "3.1.0"
+version.workspace = true
 edition = "2021"
 description = "Biorhythm consciousness engine — physical, emotional, intellectual cycles"
 

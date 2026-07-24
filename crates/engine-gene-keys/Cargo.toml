@@ -1,6 +1,6 @@
 [package]
 name = "engine-gene-keys"
-version = "3.1.0"
+version.workspace = true
 edition = "2021"
 description = "Gene Keys consciousness engine — Shadow-Gift-Siddhi transformation sequences"
 

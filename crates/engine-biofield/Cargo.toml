@@ -1,6 +1,6 @@
 [package]
 name = "engine-biofield"
-version = "3.1.0"
+version.workspace = true
 edition = "2021"
 description = "Biofield consciousness engine — biometric analysis compute core (stub with mock data)"
 

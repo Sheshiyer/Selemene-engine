@@ -1,6 +1,6 @@
 [package]
 name = "engine-biofield-capture"
-version = "3.1.0"
+version.workspace = true
 edition = "2021"
 description = "Capture-derived biofield engine for persisted reading lookup"
 

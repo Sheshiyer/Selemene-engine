@@ -1,6 +1,6 @@
 [package]
 name = "noesis-bridge"
-version = "3.1.0"
+version.workspace = true
 edition = "2021"
 description = "HTTP bridge adapter for TypeScript consciousness engines"
 

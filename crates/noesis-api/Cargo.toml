@@ -1,6 +1,6 @@
 [package]
 name = "noesis-api"
-version = "3.1.0"
+version.workspace = true
 edition = "2021"
 description = "HTTP API server for the Tryambakam Noesis platform"
 
