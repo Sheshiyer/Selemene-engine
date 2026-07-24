@@ -329,7 +329,7 @@ use workflow_parity::log_workflow_registry_parity;
     modifiers(&SecurityAddon),
     info(
         title = "Noesis API",
-        version = "3.3.0",
+        version = "3.3.1",
         description = "HTTP API for the Tryambakam Noesis consciousness engine platform. Provides endpoints for astrological calculations (Panchanga), numerology, biorhythms, and multi-engine workflows.",
         contact(
             name = "Tryambakam Team",
