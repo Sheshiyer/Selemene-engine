@@ -45,6 +45,9 @@ pub struct NewReading {
     pub client_device_id: Option<String>,
     pub device_platform: Option<String>,
     pub device_app_version: Option<String>,
+    /// Validated first-party client claim. This is descriptive, not an
+    /// authenticated identity or authorization signal.
+    pub claimed_source_client: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, FromRow)]
@@ -60,5 +63,6 @@ pub struct AdminReadingRecord {
     pub witness_prompt: Option<String>,
     pub consciousness_level: i16,
     pub calculation_time_ms: Option<f64>,
+    pub claimed_source_client: Option<String>,
     pub created_at: DateTime<Utc>,
 }

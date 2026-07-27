@@ -15,7 +15,7 @@ impl ReadingsRepository {
     pub async fn save_reading(&self, reading: &NewReading) -> Result<Uuid, Error> {
         match self.save_reading_with_history_sync(reading).await {
             Ok(id) => Ok(id),
-            Err(err) if missing_history_sync_schema(&err) => {
+            Err(err) if missing_optional_reading_schema(&err) => {
                 self.save_reading_legacy(reading).await
             }
             Err(err) => Err(err),
@@ -62,12 +62,16 @@ impl ReadingsRepository {
                     user_id, engine_id, workflow_id, input_hash,
                     input_data, result_data, witness_prompt,
                     consciousness_level, calculation_time_ms,
-                    client_event_id, source_device_id
+                    client_event_id, source_device_id, claimed_source_client
                 )
-                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
                 ON CONFLICT (user_id, client_event_id) WHERE client_event_id IS NOT NULL
                 DO UPDATE SET
-                    source_device_id = COALESCE(EXCLUDED.source_device_id, readings.source_device_id)
+                    source_device_id = COALESCE(EXCLUDED.source_device_id, readings.source_device_id),
+                    claimed_source_client = COALESCE(
+                        EXCLUDED.claimed_source_client,
+                        readings.claimed_source_client
+                    )
                 RETURNING id, sync_cursor
                 "#,
             )
@@ -82,6 +86,7 @@ impl ReadingsRepository {
             .bind(reading.calculation_time_ms)
             .bind(reading.client_event_id.as_deref())
             .bind(source_device_id)
+            .bind(reading.claimed_source_client.as_deref())
             .fetch_one(&mut *tx)
             .await?
         } else {
@@ -91,9 +96,9 @@ impl ReadingsRepository {
                     user_id, engine_id, workflow_id, input_hash,
                     input_data, result_data, witness_prompt,
                     consciousness_level, calculation_time_ms,
-                    client_event_id, source_device_id
+                    client_event_id, source_device_id, claimed_source_client
                 )
-                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, NULL, $10)
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, NULL, $10, $11)
                 RETURNING id, sync_cursor
                 "#,
             )
@@ -107,6 +112,7 @@ impl ReadingsRepository {
             .bind(reading.consciousness_level)
             .bind(reading.calculation_time_ms)
             .bind(source_device_id)
+            .bind(reading.claimed_source_client.as_deref())
             .fetch_one(&mut *tx)
             .await?
         };
@@ -278,7 +284,7 @@ impl ReadingsRepository {
     }
 }
 
-fn missing_history_sync_schema(err: &Error) -> bool {
+fn missing_optional_reading_schema(err: &Error) -> bool {
     let Some(db_err) = err.as_database_error() else {
         return false;
     };
@@ -293,6 +299,7 @@ fn missing_history_sync_schema(err: &Error) -> bool {
             message.contains("client_event_id")
                 || message.contains("source_device_id")
                 || message.contains("sync_cursor")
+                || message.contains("claimed_source_client")
         }
         _ => false,
     }
@@ -373,6 +380,7 @@ mod tests {
             client_device_id: Some("ios-phone-1".to_string()),
             device_platform: Some("ios".to_string()),
             device_app_version: Some("1.0.0".to_string()),
+            claimed_source_client: Some("urania".to_string()),
         };
 
         let first_id = readings_repo

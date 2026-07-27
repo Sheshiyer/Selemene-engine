@@ -1291,6 +1291,40 @@ struct ApiEngineOutputResponse {
 /// the legacy Rust `options` envelope. Canonical SDK fields are normalized
 /// once into `EngineInput::options` before dispatch.
 #[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+#[serde(rename_all = "kebab-case")]
+enum ClaimedSourceClient {
+    Urania,
+    Sankalpa,
+    RaycastNoesis,
+}
+
+impl ClaimedSourceClient {
+    fn as_str(&self) -> &'static str {
+        match self {
+            Self::Urania => "urania",
+            Self::Sankalpa => "sankalpa",
+            Self::RaycastNoesis => "raycast-noesis",
+        }
+    }
+}
+
+/// Optional first-party client metadata. `source_client` is a validated,
+/// self-asserted claim for operations visibility; authentication remains the
+/// sole authority for user identity and permissions.
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+struct ClientContext {
+    source_client: ClaimedSourceClient,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    client_event_id: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    client_device_id: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    device_platform: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    device_app_version: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
 struct ApiEngineInput {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     consciousness_level: Option<u8>,
@@ -1318,6 +1352,8 @@ struct ApiEngineInput {
     precision: Precision,
     #[serde(default, skip_serializing_if = "HashMap::is_empty")]
     options: HashMap<String, Value>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    client_context: Option<ClientContext>,
 }
 
 fn is_standard_precision(precision: &Precision) -> bool {
@@ -1636,6 +1672,56 @@ fn validate_engine_input(input: &EngineInput) -> Result<(), (StatusCode, Json<Er
             ),
             None,
         ));
+    }
+
+    Ok(())
+}
+
+#[allow(clippy::result_large_err)]
+fn validate_client_context(
+    context: Option<&ClientContext>,
+) -> Result<(), (StatusCode, Json<ErrorResponse>)> {
+    let Some(context) = context else {
+        return Ok(());
+    };
+
+    for (field, value, max_len) in [
+        (
+            "client_context.client_event_id",
+            context.client_event_id.as_deref(),
+            128,
+        ),
+        (
+            "client_context.client_device_id",
+            context.client_device_id.as_deref(),
+            128,
+        ),
+        (
+            "client_context.device_platform",
+            context.device_platform.as_deref(),
+            32,
+        ),
+        (
+            "client_context.device_app_version",
+            context.device_app_version.as_deref(),
+            32,
+        ),
+    ] {
+        if let Some(value) = value {
+            let valid = !value.is_empty()
+                && value.len() <= max_len
+                && value
+                    .bytes()
+                    .all(|byte| byte.is_ascii_graphic() || byte == b' ');
+            if !valid {
+                return Err(ErrorMapper::response(
+                    StatusCode::UNPROCESSABLE_ENTITY,
+                    "VALIDATION_ERROR",
+                    format!("{field} must contain 1-{max_len} printable ASCII characters"),
+                    Some(serde_json::json!({ "field": field })),
+                ));
+            }
+        }
     }
 
     Ok(())
@@ -2361,7 +2447,7 @@ fn build_d9_chart(_birth: &ResolvedBirthDetails, d1: &serde_json::Value) -> serd
     post,
     path = "/api/v1/charts/vedic",
     tag = "charts",
-    request_body = EngineInput,
+    request_body = ApiEngineInput,
     responses(
         (status = 200, description = "Vedic D1 and D9 chart bundle", body = VedicChartBundleResponseSchema),
         (status = 401, description = "Unauthorized", body = ErrorResponse),
@@ -2578,6 +2664,8 @@ async fn calculate_handler(
     Json(api_input): Json<ApiEngineInput>,
 ) -> Result<Json<ApiEngineOutputResponse>, (StatusCode, Json<ErrorResponse>)> {
     let start = Instant::now();
+    validate_client_context(api_input.client_context.as_ref())?;
+    let client_context = api_input.client_context.clone();
     let input = api_input.normalize();
 
     // Validate input at the API boundary (lat/lon bounds, options size cap).
@@ -2635,10 +2723,21 @@ async fn calculate_handler(
                     witness_prompt: Some(output.witness_prompt.clone()),
                     consciousness_level: output.consciousness_level as i16,
                     calculation_time_ms: Some(duration_ms),
-                    client_event_id: None,
-                    client_device_id: None,
-                    device_platform: None,
-                    device_app_version: None,
+                    client_event_id: client_context
+                        .as_ref()
+                        .and_then(|context| context.client_event_id.clone()),
+                    client_device_id: client_context
+                        .as_ref()
+                        .and_then(|context| context.client_device_id.clone()),
+                    device_platform: client_context
+                        .as_ref()
+                        .and_then(|context| context.device_platform.clone()),
+                    device_app_version: client_context
+                        .as_ref()
+                        .and_then(|context| context.device_app_version.clone()),
+                    claimed_source_client: client_context
+                        .as_ref()
+                        .map(|context| context.source_client.as_str().to_string()),
                 };
                 let readings_repo = state.readings_repository.clone();
                 let usage_repo = state.usage_repository.clone();
@@ -2990,9 +3089,18 @@ async fn workflow_execute_handler(
     State(state): State<AppState>,
     Extension(user): Extension<AuthUser>,
     Path(workflow_id): Path<String>,
-    Json(input): Json<EngineInput>,
+    Json(api_input): Json<ApiEngineInput>,
 ) -> Result<Json<ApiWorkflowResultResponse>, (StatusCode, Json<ErrorResponse>)> {
-    execute_workflow_by_id(state, user, workflow_id, input).await
+    validate_client_context(api_input.client_context.as_ref())?;
+    let client_context = api_input.client_context.clone();
+    execute_workflow_by_id(
+        state,
+        user,
+        workflow_id,
+        api_input.normalize(),
+        client_context,
+    )
+    .await
 }
 
 async fn execute_workflow_by_id(
@@ -3000,6 +3108,7 @@ async fn execute_workflow_by_id(
     user: AuthUser,
     workflow_id: String,
     input: EngineInput,
+    client_context: Option<ClientContext>,
 ) -> Result<Json<ApiWorkflowResultResponse>, (StatusCode, Json<ErrorResponse>)> {
     let start = Instant::now();
 
@@ -3053,10 +3162,21 @@ async fn execute_workflow_by_id(
                     witness_prompt: None,
                     consciousness_level: user.consciousness_level as i16,
                     calculation_time_ms: Some(duration_ms),
-                    client_event_id: None,
-                    client_device_id: None,
-                    device_platform: None,
-                    device_app_version: None,
+                    client_event_id: client_context
+                        .as_ref()
+                        .and_then(|context| context.client_event_id.clone()),
+                    client_device_id: client_context
+                        .as_ref()
+                        .and_then(|context| context.client_device_id.clone()),
+                    device_platform: client_context
+                        .as_ref()
+                        .and_then(|context| context.device_platform.clone()),
+                    device_app_version: client_context
+                        .as_ref()
+                        .and_then(|context| context.device_app_version.clone()),
+                    claimed_source_client: client_context
+                        .as_ref()
+                        .map(|context| context.source_client.as_str().to_string()),
                 };
                 let readings_repo = state.readings_repository.clone();
                 let usage_repo = state.usage_repository.clone();
@@ -3168,7 +3288,7 @@ async fn birth_blueprint_execute_doc(
     Extension(user): Extension<AuthUser>,
     Json(input): Json<EngineInput>,
 ) -> Result<Json<ApiWorkflowResultResponse>, (StatusCode, Json<ErrorResponse>)> {
-    execute_workflow_by_id(state, user, "birth-blueprint".to_string(), input).await
+    execute_workflow_by_id(state, user, "birth-blueprint".to_string(), input, None).await
 }
 
 /// POST /api/v1/workflows/daily-practice/execute -- workflow-specific OpenAPI shape
@@ -3193,7 +3313,7 @@ async fn daily_practice_execute_doc(
     Extension(user): Extension<AuthUser>,
     Json(input): Json<EngineInput>,
 ) -> Result<Json<ApiWorkflowResultResponse>, (StatusCode, Json<ErrorResponse>)> {
-    execute_workflow_by_id(state, user, "daily-practice".to_string(), input).await
+    execute_workflow_by_id(state, user, "daily-practice".to_string(), input, None).await
 }
 
 /// POST /api/v1/workflows/decision-support/execute -- workflow-specific OpenAPI shape
@@ -3218,7 +3338,7 @@ async fn decision_support_execute_doc(
     Extension(user): Extension<AuthUser>,
     Json(input): Json<EngineInput>,
 ) -> Result<Json<ApiWorkflowResultResponse>, (StatusCode, Json<ErrorResponse>)> {
-    execute_workflow_by_id(state, user, "decision-support".to_string(), input).await
+    execute_workflow_by_id(state, user, "decision-support".to_string(), input, None).await
 }
 
 /// POST /api/v1/workflows/self-inquiry/execute -- workflow-specific OpenAPI shape
@@ -3243,7 +3363,7 @@ async fn self_inquiry_execute_doc(
     Extension(user): Extension<AuthUser>,
     Json(input): Json<EngineInput>,
 ) -> Result<Json<ApiWorkflowResultResponse>, (StatusCode, Json<ErrorResponse>)> {
-    execute_workflow_by_id(state, user, "self-inquiry".to_string(), input).await
+    execute_workflow_by_id(state, user, "self-inquiry".to_string(), input, None).await
 }
 
 /// POST /api/v1/workflows/creative-expression/execute -- workflow-specific OpenAPI shape
@@ -3268,7 +3388,7 @@ async fn creative_expression_execute_doc(
     Extension(user): Extension<AuthUser>,
     Json(input): Json<EngineInput>,
 ) -> Result<Json<ApiWorkflowResultResponse>, (StatusCode, Json<ErrorResponse>)> {
-    execute_workflow_by_id(state, user, "creative-expression".to_string(), input).await
+    execute_workflow_by_id(state, user, "creative-expression".to_string(), input, None).await
 }
 
 /// POST /api/v1/workflows/full-spectrum/execute -- workflow-specific OpenAPI shape
@@ -3293,7 +3413,7 @@ async fn full_spectrum_execute_doc(
     Extension(user): Extension<AuthUser>,
     Json(input): Json<EngineInput>,
 ) -> Result<Json<ApiWorkflowResultResponse>, (StatusCode, Json<ErrorResponse>)> {
-    execute_workflow_by_id(state, user, "full-spectrum".to_string(), input).await
+    execute_workflow_by_id(state, user, "full-spectrum".to_string(), input, None).await
 }
 
 /// GET /api/v1/workflows -- list all workflow IDs
@@ -4229,6 +4349,41 @@ mod p4_contract_tests {
 
         assert_eq!(normalized.options["melakarta"], serde_json::json!(1));
         assert!(validate_focus_engine_consent("raaga", &normalized).is_ok());
+    }
+
+    #[test]
+    fn claimed_client_context_is_allowlisted_and_not_forwarded_to_engines() {
+        let input: ApiEngineInput = serde_json::from_value(serde_json::json!({
+            "parameters": {"seed": 9},
+            "client_context": {
+                "source_client": "urania",
+                "device_platform": "web",
+                "device_app_version": "1.0.0"
+            }
+        }))
+        .expect("known first-party source should deserialize");
+
+        assert!(validate_client_context(input.client_context.as_ref()).is_ok());
+        let normalized = input.normalize();
+        assert!(!normalized.options.contains_key("client_context"));
+        assert_eq!(normalized.options["seed"], 9);
+    }
+
+    #[test]
+    fn unknown_or_oversized_claimed_client_context_is_rejected() {
+        let unknown = serde_json::from_value::<ApiEngineInput>(serde_json::json!({
+            "client_context": {"source_client": "untrusted-client"}
+        }));
+        assert!(unknown.is_err(), "unknown source_client must fail closed");
+
+        let oversized: ApiEngineInput = serde_json::from_value(serde_json::json!({
+            "client_context": {
+                "source_client": "sankalpa",
+                "device_app_version": "x".repeat(33)
+            }
+        }))
+        .unwrap();
+        assert!(validate_client_context(oversized.client_context.as_ref()).is_err());
     }
 
     #[test]

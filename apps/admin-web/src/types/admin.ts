@@ -518,6 +518,7 @@ export interface AdminReadingItem {
   witness_prompt: string | null;
   consciousness_level: number;
   calculation_time_ms: number | null;
+  claimed_source_client: "urania" | "sankalpa" | "raycast-noesis" | null;
   created_at: string;
 }
 

@@ -686,6 +686,8 @@ pub struct AdminReadingItem {
     pub witness_prompt: Option<String>,
     pub consciousness_level: i16,
     pub calculation_time_ms: Option<f64>,
+    /// Validated but self-asserted first-party client hint. Never an auth signal.
+    pub claimed_source_client: Option<String>,
     pub created_at: DateTime<Utc>,
 }
 
@@ -699,6 +701,7 @@ pub struct AdminReadingsEngineBreakdownResponse {
 pub struct AdminReadingsQuery {
     pub user_id: Option<String>,
     pub engine_id: Option<String>,
+    pub claimed_source_client: Option<String>,
     pub limit: Option<i64>,
     pub offset: Option<i64>,
 }
@@ -3635,6 +3638,7 @@ fn map_admin_reading_record(record: AdminReadingRecord) -> AdminReadingItem {
         witness_prompt: record.witness_prompt,
         consciousness_level: record.consciousness_level,
         calculation_time_ms: record.calculation_time_ms,
+        claimed_source_client: record.claimed_source_client,
         created_at: record.created_at,
     }
 }
@@ -3668,7 +3672,13 @@ pub async fn list_all_readings(
     let (limit, offset) = normalize_limit_offset(query.limit, query.offset, 50, 200);
 
     let items = repo
-        .list_all_readings(user_filter, query.engine_id.as_deref(), limit, offset)
+        .list_all_readings(
+            user_filter,
+            query.engine_id.as_deref(),
+            query.claimed_source_client.as_deref(),
+            limit,
+            offset,
+        )
         .await
         .map_err(|e| EngineError::InternalError(format!("Failed to list readings: {e}")))?
         .into_iter()
@@ -3676,7 +3686,11 @@ pub async fn list_all_readings(
         .collect::<Vec<_>>();
 
     let total = repo
-        .count_all_readings(user_filter, query.engine_id.as_deref())
+        .count_all_readings(
+            user_filter,
+            query.engine_id.as_deref(),
+            query.claimed_source_client.as_deref(),
+        )
         .await
         .map_err(|e| EngineError::InternalError(format!("Failed to count readings: {e}")))?;
 

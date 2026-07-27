@@ -591,6 +591,32 @@ describe('configurable base URLs', () => {
     expect(calls[0].url).toBe('https://api.noesis.example/api/v1/engines/raaga/calculate')
   })
 
+  it('preserves bounded client context in noesis-api calculate requests', async () => {
+    const { fetchImpl, calls } = mockFetch(() =>
+      jsonResponse({
+        engine_id: 'raaga',
+        result: {},
+        witness_prompts: [],
+        calculated_at: NOW,
+        processing_time_ms: 1,
+      }),
+    )
+    const client = new EngineClient({ apiUrl: 'https://api.noesis.example', fetchImpl })
+
+    await client.raaga.calculate({
+      parameters: { melakarta: 1 },
+      client_context: {
+        source_client: 'sankalpa',
+        device_platform: 'darwin',
+      },
+    })
+
+    expect(JSON.parse(String(calls[0].init?.body)).client_context).toEqual({
+      source_client: 'sankalpa',
+      device_platform: 'darwin',
+    })
+  })
+
   it('sends defaultHeaders on every request', async () => {
     const { fetchImpl, calls } = mockFetch(() =>
       jsonResponse({

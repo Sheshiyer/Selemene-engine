@@ -576,6 +576,7 @@ async fn create_persisted_biofield_reading(
             client_device_id: Some("test-device".to_string()),
             device_platform: Some("test".to_string()),
             device_app_version: Some("biofield-web/test".to_string()),
+            claimed_source_client: None,
         })
         .await
         .expect("reading should be created");

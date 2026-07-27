@@ -80,6 +80,18 @@ export interface GeneratedAudioRef {
 }
 
 /**
+ * Bounded client metadata used for operational attribution. `source_client`
+ * is a self-asserted first-party claim, never an authorization signal.
+ */
+export interface ClientContext {
+  source_client: "urania" | "sankalpa" | "raycast-noesis"
+  client_event_id?: string
+  client_device_id?: string
+  device_platform?: string
+  device_app_version?: string
+}
+
+/**
  * Engine input with FROZEN media extensions at top level.
  * Matches ts-engines/src/types/engine.ts EngineInput (media block lines 30-37).
  */
@@ -95,6 +107,7 @@ export interface EngineInput {
   /** FROZEN: explicit consent; required whenever media is sent or generative output is requested. */
   consent?: Consent
   quality?: QualitySpec
+  client_context?: ClientContext
 }
 
 /** Engine output with FROZEN generated_* at top level. */
@@ -237,6 +250,7 @@ export interface EngineCallBase {
   seed?: number
   question?: string
   quality?: QualitySpec
+  client_context?: ClientContext
 }
 
 /** biofield birth/engine calculate (Rust engine via noesis-api when P4 lands, or ts proxy). */

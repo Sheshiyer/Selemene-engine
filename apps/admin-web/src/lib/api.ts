@@ -670,6 +670,7 @@ export async function getAdminReadings(
   params: {
     user_id?: string;
     engine_id?: string;
+    claimed_source_client?: string;
     limit?: number;
     offset?: number;
   } = {}
@@ -678,6 +679,7 @@ export async function getAdminReadings(
     `/api/v1/admin/readings${buildQuery({
       user_id: params.user_id,
       engine_id: params.engine_id,
+      claimed_source_client: params.claimed_source_client,
       limit: params.limit,
       offset: params.offset
     })}`,

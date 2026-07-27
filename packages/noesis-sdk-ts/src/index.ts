@@ -42,11 +42,20 @@ export interface BirthData {
   name?: string;
 }
 
+export interface ClientContext {
+  source_client: "urania" | "sankalpa" | "raycast-noesis";
+  client_event_id?: string;
+  client_device_id?: string;
+  device_platform?: string;
+  device_app_version?: string;
+}
+
 export interface EngineInput {
   birth_data?: BirthData;
   current_time?: string;
   precision?: "Standard" | "High" | "Extreme";
   options?: Record<string, unknown>;
+  client_context?: ClientContext;
   [key: string]: unknown;
 }
 

@@ -30,6 +30,7 @@ export default function ReadingsPage() {
 
   const userId = getStringParam(searchParams, "user_id");
   const engineId = getStringParam(searchParams, "engine_id");
+  const claimedSourceClient = getStringParam(searchParams, "claimed_source_client");
   const limit = getNumberParam(searchParams, "limit", 25, 1, 100);
   const offset = getNumberParam(searchParams, "offset", 0, 0, 10000);
 
@@ -54,12 +55,17 @@ export default function ReadingsPage() {
 
     const currentUserId = getStringParam(searchParams, "user_id");
     const currentEngineId = getStringParam(searchParams, "engine_id");
+    const currentClaimedSourceClient = getStringParam(
+      searchParams,
+      "claimed_source_client"
+    );
     const currentLimit = getNumberParam(searchParams, "limit", 25, 1, 100);
     const currentOffset = getNumberParam(searchParams, "offset", 0, 0, 10000);
 
     return getAdminReadings(token, {
       user_id: currentUserId || undefined,
       engine_id: currentEngineId || undefined,
+      claimed_source_client: currentClaimedSourceClient || undefined,
       limit: currentLimit,
       offset: currentOffset
     });
@@ -101,7 +107,7 @@ export default function ReadingsPage() {
   return (
     <PageShell
       title="Readings Browser"
-      summary="Browse completed readings across all users with engine, workflow, and witness prompt context."
+      summary="Browse canonical Selemene readings across users, engines, workflows, and claimed client sources."
       actions={
         <ActionRail label="Readings actions">
           <button type="button" onClick={() => window.location.reload()}>
@@ -131,6 +137,23 @@ export default function ReadingsPage() {
             placeholder="engine_id"
           />
         </label>
+        <label>
+          Claimed source
+          <select
+            value={claimedSourceClient}
+            onChange={(event) =>
+              updateQuery({
+                claimed_source_client: event.target.value || undefined,
+                offset: undefined
+              })
+            }
+          >
+            <option value="">All sources</option>
+            <option value="urania">Urania</option>
+            <option value="sankalpa">Sankalpa</option>
+            <option value="raycast-noesis">Raycast Noesis</option>
+          </select>
+        </label>
       </div>
 
       {error ? <StateBanner variant="error" title={error} /> : null}
@@ -151,6 +174,7 @@ export default function ReadingsPage() {
                   <th>User</th>
                   <th>Engine</th>
                   <th>Workflow</th>
+                  <th>Claimed source</th>
                   <th>Consciousness</th>
                   <th>Witness Prompt</th>
                   <th>Created</th>
@@ -170,6 +194,7 @@ export default function ReadingsPage() {
                     </td>
                     <td>{item.engine_id}</td>
                     <td>{item.workflow_id ?? "--"}</td>
+                    <td>{item.claimed_source_client ?? "Legacy / unknown"}</td>
                     <td>{item.consciousness_level}</td>
                     <td className="cell-wrap">{truncate(item.witness_prompt, 60)}</td>
                     <td>{formatDateTime(item.created_at)}</td>
@@ -177,7 +202,7 @@ export default function ReadingsPage() {
                 ))}
                 {items.length === 0 ? (
                   <TableEmptyStateRow
-                    colSpan={6}
+                    colSpan={7}
                     title="No readings found"
                     description="Adjust user or engine filters to widen the reading view."
                   />
@@ -230,6 +255,9 @@ export default function ReadingsPage() {
           <div className="grid overlay-detail-grid">
             <div className="helper">Reading ID: {selected.id}</div>
             <div className="helper">Input hash: {selected.input_hash}</div>
+            <div className="helper">
+              Claimed source: {selected.claimed_source_client ?? "Legacy / unknown"}
+            </div>
             <div className="helper">
               Calculation time:{" "}
               {selected.calculation_time_ms === null ? "--" : `${selected.calculation_time_ms} ms`}

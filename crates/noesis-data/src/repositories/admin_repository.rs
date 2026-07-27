@@ -2388,6 +2388,7 @@ impl AdminRepository {
         &self,
         user_id: Option<Uuid>,
         engine_id: Option<&str>,
+        claimed_source_client: Option<&str>,
         limit: i64,
         offset: i64,
     ) -> Result<Vec<crate::models::reading::AdminReadingRecord>, Error> {
@@ -2396,7 +2397,8 @@ impl AdminRepository {
             SELECT
                 r.id, r.user_id, u.email AS user_email, r.engine_id, r.workflow_id,
                 r.input_hash, r.input_data, r.result_data, r.witness_prompt,
-                r.consciousness_level, r.calculation_time_ms, r.created_at
+                r.consciousness_level, r.calculation_time_ms,
+                r.claimed_source_client, r.created_at
             FROM readings r
             INNER JOIN users u ON u.id = r.user_id
             WHERE 1=1
@@ -2408,6 +2410,12 @@ impl AdminRepository {
         }
         if let Some(eid) = engine_id.map(str::trim).filter(|e| !e.is_empty()) {
             qb.push(" AND r.engine_id = ").push_bind(eid);
+        }
+        if let Some(source) = claimed_source_client
+            .map(str::trim)
+            .filter(|source| !source.is_empty())
+        {
+            qb.push(" AND r.claimed_source_client = ").push_bind(source);
         }
 
         qb.push(" ORDER BY r.created_at DESC LIMIT ")
@@ -2424,6 +2432,7 @@ impl AdminRepository {
         &self,
         user_id: Option<Uuid>,
         engine_id: Option<&str>,
+        claimed_source_client: Option<&str>,
     ) -> Result<i64, Error> {
         let mut qb: QueryBuilder<Postgres> =
             QueryBuilder::new("SELECT COUNT(*)::BIGINT FROM readings WHERE 1=1");
@@ -2433,6 +2442,12 @@ impl AdminRepository {
         }
         if let Some(eid) = engine_id.map(str::trim).filter(|e| !e.is_empty()) {
             qb.push(" AND engine_id = ").push_bind(eid);
+        }
+        if let Some(source) = claimed_source_client
+            .map(str::trim)
+            .filter(|source| !source.is_empty())
+        {
+            qb.push(" AND claimed_source_client = ").push_bind(source);
         }
 
         qb.build_query_scalar::<i64>().fetch_one(&self.pool).await
