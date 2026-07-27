@@ -404,6 +404,14 @@ mod tests {
         .expect("count query should succeed");
         assert_eq!(matching_count, 1);
 
+        let claimed_source: Option<String> =
+            sqlx::query_scalar("SELECT claimed_source_client FROM readings WHERE id = $1")
+                .bind(first_id)
+                .fetch_one(&pool)
+                .await
+                .expect("claimed source query should succeed");
+        assert_eq!(claimed_source.as_deref(), Some("urania"));
+
         let delta = readings_repo
             .list_readings_after_cursor(user.id, 0, 10)
             .await
