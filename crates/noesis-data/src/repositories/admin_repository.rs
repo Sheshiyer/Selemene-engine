@@ -1,3 +1,4 @@
+use crate::repositories::living_readings_repository::LivingReadingsRepository;
 use chrono::{DateTime, Utc};
 use serde::Serialize;
 use serde_json::Value;
@@ -189,6 +190,10 @@ struct ExistingApiKeyRecord {
 impl AdminRepository {
     pub fn new(pool: PgPool) -> Self {
         Self { pool }
+    }
+
+    pub fn living_readings(&self) -> LivingReadingsRepository {
+        LivingReadingsRepository::new(self.pool.clone())
     }
 
     pub async fn list_users(

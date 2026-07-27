@@ -981,6 +981,14 @@ pub fn create_router(state: AppState, config: &ApiConfig) -> Router {
             "/admin/witness-dyad/analytics",
             get(handlers::admin::witness_dyad_analytics),
         )
+        .route(
+            "/admin/living-readings",
+            get(handlers::admin::list_living_readings),
+        )
+        .route(
+            "/admin/living-readings/:reading_id",
+            get(handlers::admin::get_living_reading),
+        )
         .route("/admin/readings", get(handlers::admin::list_all_readings))
         .route(
             "/admin/readings/engine-breakdown",
