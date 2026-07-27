@@ -8,6 +8,7 @@ use chrono::{DateTime, Duration, Utc};
 use noesis_auth::{sha256_hex, ApiKey, AuthUser};
 use noesis_bridge;
 use noesis_core::EngineError;
+use noesis_data::models::living_reading::LivingReadingListFilters;
 use noesis_data::models::reading::AdminReadingRecord;
 use noesis_data::models::witness_dyad::WitnessDyadExecutionAdminRecord;
 use noesis_data::repositories::admin_repository::{
@@ -685,6 +686,8 @@ pub struct AdminReadingItem {
     pub witness_prompt: Option<String>,
     pub consciousness_level: i16,
     pub calculation_time_ms: Option<f64>,
+    /// Validated but self-asserted first-party client hint. Never an auth signal.
+    pub claimed_source_client: Option<String>,
     pub created_at: DateTime<Utc>,
 }
 
@@ -698,6 +701,19 @@ pub struct AdminReadingsEngineBreakdownResponse {
 pub struct AdminReadingsQuery {
     pub user_id: Option<String>,
     pub engine_id: Option<String>,
+    pub claimed_source_client: Option<String>,
+    pub limit: Option<i64>,
+    pub offset: Option<i64>,
+}
+
+#[derive(Deserialize, Default)]
+pub struct AdminLivingReadingsQuery {
+    pub owner_user_id: Option<String>,
+    pub subject_id: Option<String>,
+    pub relationship_id: Option<String>,
+    pub source_id: Option<String>,
+    pub import_run_id: Option<String>,
+    pub editorial_state: Option<String>,
     pub limit: Option<i64>,
     pub offset: Option<i64>,
 }
@@ -3469,6 +3485,146 @@ pub async fn witness_dyad_analytics(
 
 // ── Admin readings handlers ──────────────────────────────────────────────────
 
+const LIVING_READING_EDITORIAL_STATES: &[&str] = &[
+    "imported",
+    "needs_review",
+    "in_review",
+    "approved",
+    "rejected",
+    "published",
+    "archived",
+];
+
+#[allow(clippy::result_large_err)]
+fn parse_optional_uuid_filter(value: Option<&str>, field: &str) -> Result<Option<Uuid>, Response> {
+    value
+        .map(str::trim)
+        .filter(|value| !value.is_empty())
+        .map(|value| parse_uuid_or_422(value, field))
+        .transpose()
+}
+
+/// GET /api/v1/admin/living-readings -- canonical archive browser
+pub async fn list_living_readings(
+    State(state): State<AppState>,
+    Extension(auth_user): Extension<AuthUser>,
+    Query(query): Query<AdminLivingReadingsQuery>,
+) -> Result<Response, ApiError> {
+    let effective_permissions = effective_permissions(&state, &auth_user).await?;
+    if let Some(response) =
+        require_permission_or_forbidden(&effective_permissions, "admin:analytics:read")
+    {
+        return Ok(response);
+    }
+
+    let admin_repo = match admin_repo_or_503(&state) {
+        Ok(repo) => repo,
+        Err(response) => return Ok(response),
+    };
+
+    let owner_user_id =
+        match parse_optional_uuid_filter(query.owner_user_id.as_deref(), "owner_user_id") {
+            Ok(value) => value,
+            Err(response) => return Ok(response),
+        };
+    let subject_id = match parse_optional_uuid_filter(query.subject_id.as_deref(), "subject_id") {
+        Ok(value) => value,
+        Err(response) => return Ok(response),
+    };
+    let relationship_id =
+        match parse_optional_uuid_filter(query.relationship_id.as_deref(), "relationship_id") {
+            Ok(value) => value,
+            Err(response) => return Ok(response),
+        };
+    let source_id = match parse_optional_uuid_filter(query.source_id.as_deref(), "source_id") {
+        Ok(value) => value,
+        Err(response) => return Ok(response),
+    };
+    let import_run_id =
+        match parse_optional_uuid_filter(query.import_run_id.as_deref(), "import_run_id") {
+            Ok(value) => value,
+            Err(response) => return Ok(response),
+        };
+
+    let editorial_state = query
+        .editorial_state
+        .as_deref()
+        .map(str::trim)
+        .filter(|value| !value.is_empty())
+        .map(str::to_string);
+    if let Some(editorial_state) = editorial_state.as_deref() {
+        if !LIVING_READING_EDITORIAL_STATES.contains(&editorial_state) {
+            return Ok(json_error_response(
+                StatusCode::UNPROCESSABLE_ENTITY,
+                "Invalid editorial_state",
+                "INVALID_INPUT",
+                Some(serde_json::json!({
+                    "editorial_state": editorial_state,
+                    "allowed": LIVING_READING_EDITORIAL_STATES,
+                })),
+            ));
+        }
+    }
+
+    let (limit, offset) = normalize_limit_offset(query.limit, query.offset, 25, 100);
+    let filters = LivingReadingListFilters {
+        owner_user_id,
+        subject_id,
+        relationship_id,
+        source_id,
+        import_run_id,
+        editorial_state,
+    };
+    let page = admin_repo
+        .living_readings()
+        .list(&filters, limit, offset)
+        .await
+        .map_err(|error| {
+            EngineError::InternalError(format!("Failed to list living readings: {error}"))
+        })?;
+
+    Ok((StatusCode::OK, Json(page)).into_response())
+}
+
+/// GET /api/v1/admin/living-readings/:reading_id -- canonical archive detail
+pub async fn get_living_reading(
+    State(state): State<AppState>,
+    Extension(auth_user): Extension<AuthUser>,
+    Path(reading_id): Path<String>,
+) -> Result<Response, ApiError> {
+    let effective_permissions = effective_permissions(&state, &auth_user).await?;
+    if let Some(response) =
+        require_permission_or_forbidden(&effective_permissions, "admin:analytics:read")
+    {
+        return Ok(response);
+    }
+
+    let admin_repo = match admin_repo_or_503(&state) {
+        Ok(repo) => repo,
+        Err(response) => return Ok(response),
+    };
+    let reading_id = match parse_uuid_or_422(&reading_id, "reading_id") {
+        Ok(reading_id) => reading_id,
+        Err(response) => return Ok(response),
+    };
+
+    match admin_repo
+        .living_readings()
+        .get(reading_id)
+        .await
+        .map_err(|error| {
+            EngineError::InternalError(format!("Failed to fetch living reading: {error}"))
+        })? {
+        Some(detail) => Ok((StatusCode::OK, Json(detail)).into_response()),
+        None => Ok(json_error_response(
+            StatusCode::NOT_FOUND,
+            "Living reading not found",
+            "LIVING_READING_NOT_FOUND",
+            Some(serde_json::json!({ "reading_id": reading_id })),
+        )),
+    }
+}
+
 fn map_admin_reading_record(record: AdminReadingRecord) -> AdminReadingItem {
     AdminReadingItem {
         id: record.id.to_string(),
@@ -3482,6 +3638,7 @@ fn map_admin_reading_record(record: AdminReadingRecord) -> AdminReadingItem {
         witness_prompt: record.witness_prompt,
         consciousness_level: record.consciousness_level,
         calculation_time_ms: record.calculation_time_ms,
+        claimed_source_client: record.claimed_source_client,
         created_at: record.created_at,
     }
 }
@@ -3515,7 +3672,13 @@ pub async fn list_all_readings(
     let (limit, offset) = normalize_limit_offset(query.limit, query.offset, 50, 200);
 
     let items = repo
-        .list_all_readings(user_filter, query.engine_id.as_deref(), limit, offset)
+        .list_all_readings(
+            user_filter,
+            query.engine_id.as_deref(),
+            query.claimed_source_client.as_deref(),
+            limit,
+            offset,
+        )
         .await
         .map_err(|e| EngineError::InternalError(format!("Failed to list readings: {e}")))?
         .into_iter()
@@ -3523,7 +3686,11 @@ pub async fn list_all_readings(
         .collect::<Vec<_>>();
 
     let total = repo
-        .count_all_readings(user_filter, query.engine_id.as_deref())
+        .count_all_readings(
+            user_filter,
+            query.engine_id.as_deref(),
+            query.claimed_source_client.as_deref(),
+        )
         .await
         .map_err(|e| EngineError::InternalError(format!("Failed to count readings: {e}")))?;
 
@@ -5016,5 +5183,17 @@ mod tests {
         let permissions = vec!["admin:users".to_string()];
         let normalized = normalize_effective_permissions(&permissions);
         assert!(normalized.iter().any(|perm| perm == "admin:keys:delete"));
+    }
+
+    #[test]
+    fn living_readings_require_analytics_read_permission() {
+        assert!(!has_permission(
+            &["basic:access".to_string()],
+            "admin:analytics:read"
+        ));
+        assert!(has_permission(
+            &["admin:analytics:read".to_string()],
+            "admin:analytics:read"
+        ));
     }
 }

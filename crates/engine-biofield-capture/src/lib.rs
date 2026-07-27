@@ -333,6 +333,7 @@ mod tests {
             client_device_id: None,
             device_platform: None,
             device_app_version: None,
+            claimed_source_client: None,
         })
         .await
         .expect("reading should be created")

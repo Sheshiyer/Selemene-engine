@@ -24,6 +24,8 @@ import type {
   AdminHistorySyncEventsResponse,
   AdminHistorySyncUsersResponse,
   AdminLlmProxyStatus,
+  AdminLivingReadingDetail,
+  AdminLivingReadingsResponse,
   AdminObservabilitySummary,
   AdminReadingsEngineBreakdownResponse,
   AdminReadingsResponse,
@@ -668,6 +670,7 @@ export async function getAdminReadings(
   params: {
     user_id?: string;
     engine_id?: string;
+    claimed_source_client?: string;
     limit?: number;
     offset?: number;
   } = {}
@@ -676,6 +679,7 @@ export async function getAdminReadings(
     `/api/v1/admin/readings${buildQuery({
       user_id: params.user_id,
       engine_id: params.engine_id,
+      claimed_source_client: params.claimed_source_client,
       limit: params.limit,
       offset: params.offset
     })}`,
@@ -691,6 +695,44 @@ export async function getAdminReadingsEngineBreakdown(
     `/api/v1/admin/readings/engine-breakdown${buildQuery({
       window_hours: params.window_hours
     })}`,
+    { token }
+  );
+}
+
+export async function getAdminLivingReadings(
+  token: string | undefined,
+  params: {
+    owner_user_id?: string;
+    subject_id?: string;
+    relationship_id?: string;
+    source_id?: string;
+    import_run_id?: string;
+    editorial_state?: string;
+    limit?: number;
+    offset?: number;
+  } = {}
+): Promise<AdminLivingReadingsResponse> {
+  return request<AdminLivingReadingsResponse>(
+    `/api/v1/admin/living-readings${buildQuery({
+      owner_user_id: params.owner_user_id,
+      subject_id: params.subject_id,
+      relationship_id: params.relationship_id,
+      source_id: params.source_id,
+      import_run_id: params.import_run_id,
+      editorial_state: params.editorial_state,
+      limit: params.limit,
+      offset: params.offset
+    })}`,
+    { token }
+  );
+}
+
+export async function getAdminLivingReading(
+  token: string | undefined,
+  readingId: string
+): Promise<AdminLivingReadingDetail> {
+  return request<AdminLivingReadingDetail>(
+    `/api/v1/admin/living-readings/${readingId}`,
     { token }
   );
 }

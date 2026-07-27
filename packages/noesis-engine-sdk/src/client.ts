@@ -291,6 +291,7 @@ function buildEngineInput(base: {
   image_data?: EngineInput['image_data']
   audio_ref?: EngineInput['image_data']
   consent?: EngineInput['consent']
+  client_context?: EngineInput['client_context']
 }): EngineInput {
   return {
     consciousness_level: base.consciousness_level ?? 2,
@@ -301,6 +302,7 @@ function buildEngineInput(base: {
     ...(base.image_data !== undefined ? { image_data: base.image_data } : {}),
     ...(base.audio_ref !== undefined ? { audio_ref: base.audio_ref } : {}),
     ...(base.consent !== undefined ? { consent: base.consent } : {}),
+    ...(base.client_context !== undefined ? { client_context: base.client_context } : {}),
   }
 }
 

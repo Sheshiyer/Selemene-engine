@@ -518,6 +518,7 @@ export interface AdminReadingItem {
   witness_prompt: string | null;
   consciousness_level: number;
   calculation_time_ms: number | null;
+  claimed_source_client: "urania" | "sankalpa" | "raycast-noesis" | null;
   created_at: string;
 }
 
@@ -531,6 +532,139 @@ export interface AdminReadingsResponse {
 export interface AdminReadingsEngineBreakdownResponse {
   window_hours: number;
   engines: Array<{ label: string; request_count: number }>;
+}
+
+export interface AdminLivingReadingSubject {
+  id: string;
+  subject_key: string;
+  canonical_name: string;
+  subject_type: string;
+  role: string;
+  confidence: number | null;
+  aliases: string[];
+}
+
+export interface AdminLivingReadingItem {
+  id: string;
+  owner_user_id: string;
+  owner_email: string;
+  stable_reading_id: string;
+  title: string;
+  reading_type: string;
+  language_tag: string;
+  producer_kind: string;
+  producer_ref: string | null;
+  source_id: string;
+  source_locator: string;
+  source_sha256: string | null;
+  import_run_id: string;
+  import_manifest_id: string;
+  relationship_id: string | null;
+  relationship_label: string | null;
+  relationship_kind: string | null;
+  editorial_state: string | null;
+  editorial_visibility: string | null;
+  subjects: AdminLivingReadingSubject[];
+  captured_at: string | null;
+  created_at: string;
+}
+
+export interface AdminLivingReadingsResponse {
+  items: AdminLivingReadingItem[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+export interface AdminLivingReadingSource {
+  id: string;
+  stable_source_id: string;
+  source_kind: string;
+  locator: string;
+  content_sha256: string | null;
+  byte_size: number | null;
+  media_type: string | null;
+  observed_at: string | null;
+  metadata: Record<string, unknown>;
+}
+
+export interface AdminLivingReadingImportRun {
+  id: string;
+  manifest_id: string;
+  manifest_schema_version: string;
+  manifest_sha256: string;
+  source_root_locator: string;
+  state: string;
+  stats: Record<string, unknown>;
+  error_message: string | null;
+  started_at: string;
+  finished_at: string | null;
+}
+
+export interface AdminLivingReadingRelationship {
+  id: string;
+  relationship_key: string;
+  relationship_kind: string;
+  label: string | null;
+  reconciliation_state: string;
+  members: Array<{
+    subject_id: string;
+    canonical_name: string;
+    role: string;
+    position: number;
+  }>;
+}
+
+export interface AdminLivingReadingArtifact {
+  id: string;
+  artifact_key: string;
+  artifact_role: string;
+  storage_provider: string;
+  object_locator: string;
+  content_sha256: string;
+  byte_size: number;
+  media_type: string | null;
+  availability_state: string;
+  metadata: Record<string, unknown>;
+  created_at: string;
+}
+
+export interface AdminLivingReadingEvidence {
+  id: string;
+  source_id: string | null;
+  artifact_id: string | null;
+  evidence_key: string;
+  evidence_type: string;
+  claim: string;
+  excerpt: string | null;
+  review_state: string;
+  confidence: number | null;
+  metadata: Record<string, unknown>;
+  created_at: string;
+}
+
+export interface AdminLivingReadingEditorialState {
+  id: string;
+  state: string;
+  visibility: string;
+  changed_by_user_id: string | null;
+  changed_by_email: string | null;
+  change_role: string;
+  revision: number;
+  is_current: boolean;
+  rationale: string | null;
+  created_at: string;
+}
+
+export interface AdminLivingReadingDetail {
+  access_reason: string;
+  reading: AdminLivingReadingItem;
+  source: AdminLivingReadingSource;
+  import_run: AdminLivingReadingImportRun;
+  relationships: AdminLivingReadingRelationship[];
+  artifacts: AdminLivingReadingArtifact[];
+  evidence: AdminLivingReadingEvidence[];
+  editorial_history: AdminLivingReadingEditorialState[];
 }
 
 export interface AdminSystemEngineItem {

@@ -36,6 +36,21 @@ const BIOFIELD_EXPORT_CONTRACT_VERSION: &str = "biofield-export/v1";
 const DEFAULT_BIOFIELD_READINGS_LIMIT: u32 = 20;
 const MAX_BIOFIELD_READINGS_LIMIT: u32 = 100;
 
+fn claimed_source_from_session(session: &BiofieldSession) -> Option<String> {
+    let source = session
+        .notes
+        .as_deref()
+        .and_then(|notes| serde_json::from_str::<Value>(notes).ok())
+        .and_then(|context| {
+            context
+                .get("source_client")
+                .and_then(Value::as_str)
+                .map(str::to_string)
+        })?;
+
+    matches!(source.as_str(), "urania" | "sankalpa" | "raycast-noesis").then_some(source)
+}
+
 #[derive(Debug, Deserialize, ToSchema)]
 pub struct CreateBiofieldSessionRequest {
     pub client_device_id: Option<String>,
@@ -1172,6 +1187,7 @@ async fn save_reprocessed_reading(
             client_device_id: session.client_device_id.clone(),
             device_platform,
             device_app_version: session.viewer_version.clone(),
+            claimed_source_client: claimed_source_from_session(session),
         })
         .await
 }
@@ -1477,6 +1493,7 @@ async fn save_capture_reading(
             client_device_id,
             device_platform,
             device_app_version,
+            claimed_source_client: claimed_source_from_session(session),
         })
         .await
 }
