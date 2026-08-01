@@ -7,7 +7,7 @@
  * 
  * Steps:
  *   1. Validate: clean tree, gh auth, no existing tag
- *   2. Bump: workspace Cargo.toml version + API doc version
+ *   2. Bump: workspace Cargo.toml version + API doc version + baseline artifacts
  *   3. Generate grouped release notes from git log
  *   4. Commit, tag, push
  *   5. Create GitHub release
@@ -87,6 +87,53 @@ function setApiDocVersion(newVersion) {
   let src = readFileSync(path, 'utf-8');
   src = src.replace(/(version\s*=\s*")([\d.]+)("\s*,)/, `$1${newVersion}$3`);
   writeFileSync(path, src);
+}
+
+/**
+ * Baseline artifacts that record a crate version per entry.
+ *
+ * `crates/noesis-orchestrator/tests/baseline_artifact_tests.rs` compares every
+ * one of these against live `cargo metadata`, so a release that bumps
+ * Cargo.toml without updating them turns CI red. That is exactly what happened
+ * at v3.3.1: the baselines sat at 3.1.0 and two tests failed from the release
+ * commit onward, unnoticed because test.yml was separately broken.
+ *
+ * Every crate under `crates/` sets `version.workspace = true`, so a single
+ * workspace version applies to all entries. The fields are rewritten in place
+ * rather than regenerated, because engine-matrix.json also carries
+ * hand-authored provenance notes that a regeneration would discard.
+ */
+const VERSIONED_BASELINES = [
+  'docs/baseline/engine-matrix.json',
+  'docs/baseline/dependency-graph.json',
+];
+
+function setBaselineVersions(newVersion) {
+  const updated = [];
+  for (const rel of VERSIONED_BASELINES) {
+    const path = resolve(CWD, rel);
+    let src;
+    try {
+      src = readFileSync(path, 'utf-8');
+    } catch {
+      bail(`Baseline artifact missing: ${rel}. baseline_artifact_tests will fail after release.`);
+    }
+    const before = src;
+    src = src.replace(/("version"\s*:\s*")[\d.]+(")/g, `$1${newVersion}$2`);
+    if (src === before) {
+      bail(`No version fields rewritten in ${rel}. Its shape changed; update release.mjs.`);
+    }
+    // Fail loudly rather than commit a baseline that no longer parses.
+    try {
+      JSON.parse(src);
+    } catch (e) {
+      bail(`Rewriting versions in ${rel} produced invalid JSON: ${e.message}`);
+    }
+    writeFileSync(path, src);
+    const count = (before.match(/"version"\s*:\s*"[\d.]+"/g) || []).length;
+    updated.push(`${rel} (${count} entries)`);
+  }
+  return updated;
 }
 
 function getCommitsSince(lastTag) {
@@ -177,6 +224,9 @@ async function main() {
     console.log('\n─── DRY-RUN PLAN ───');
     dry(`Bump Cargo.toml workspace version: ${current} → ${next}`);
     dry(`Bump API doc version in noesis-api/src/lib.rs: ${current} → ${next}`);
+    for (const rel of VERSIONED_BASELINES) {
+      dry(`Rewrite version fields in ${rel}: ${current} → ${next}`);
+    }
     dry(`Commit: "chore(release): v${next}"`);
     dry(`Tag: v${next}`);
     dry(`Push: git push origin main --tags`);
@@ -195,10 +245,12 @@ async function main() {
   // 8. Bump versions
   setWorkspaceVersion(next);
   setApiDocVersion(next);
+  const baselines = setBaselineVersions(next);
   ok(`Bumped version to ${next}`);
+  for (const b of baselines) ok(`Baseline synced: ${b}`);
 
   // 9. Commit
-  run(`git add Cargo.toml crates/noesis-api/src/lib.rs`);
+  run(`git add Cargo.toml crates/noesis-api/src/lib.rs ${VERSIONED_BASELINES.join(' ')}`);
   run(`git commit -m "chore(release): v${next}"`);
   ok('Version commit created');
 
