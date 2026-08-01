@@ -98,6 +98,10 @@ fn bench_witness_prompt(c: &mut Criterion) {
         interpretation: "Vitality is in a moderate range".to_string(),
         areas_of_attention: vec!["coherence".to_string()],
         is_mock_data: true,
+        // Capture-path fields (T-026). This bench measures prompt generation
+        // from a plain analysis, so no capture payload is attached.
+        consent: None,
+        quality: None,
     };
     let mut group = c.benchmark_group("biofield_core");
 

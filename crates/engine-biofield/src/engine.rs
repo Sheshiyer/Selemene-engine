@@ -124,10 +124,16 @@ impl BiofieldEngine {
         }
 
         // T-026 capture mapping: if consent or image_data-like in options, map to 11-metric frozen shape (biofield-capture contract)
-        let has_capture = input.options.get("image_data").is_some() || input.options.get("consent").is_some() || input.options.get("capture").is_some();
+        let has_capture = input.options.contains_key("image_data")
+            || input.options.contains_key("consent")
+            || input.options.contains_key("capture");
         if has_capture {
             // minimal capture mock mapping to 11 metrics per FROZEN (from py: light_quanta... pattern_regularity) + consent echo; keep is_mock
-            let seed = input.options.get("seed").and_then(|v| v.as_u64()).unwrap_or(42);
+            let seed = input
+                .options
+                .get("seed")
+                .and_then(|v| v.as_u64())
+                .unwrap_or(42);
             let m = generate_mock_metrics(Some(seed));
             // extend to 11 via placeholders matching frozen contract example
             let consent_val = input.options.get("consent").cloned();
@@ -785,10 +791,29 @@ mod tests {
         let res = &output.result;
         // 11 metrics present per frozen contract
         let m = res.get("metrics").expect("metrics");
-        for key in ["light_quanta_density", "normalized_area", "average_intensity", "inner_noise", "energy_analysis", "entropy_form_coefficient", "fractal_dimension", "correlation_dimension", "body_symmetry", "contour_complexity", "pattern_regularity"] {
-            assert!(m.get(key).is_some(), "missing 11-metric key in capture map: {}", key);
+        for key in [
+            "light_quanta_density",
+            "normalized_area",
+            "average_intensity",
+            "inner_noise",
+            "energy_analysis",
+            "entropy_form_coefficient",
+            "fractal_dimension",
+            "correlation_dimension",
+            "body_symmetry",
+            "contour_complexity",
+            "pattern_regularity",
+        ] {
+            assert!(
+                m.get(key).is_some(),
+                "missing 11-metric key in capture map: {}",
+                key
+            );
         }
         assert!(res.get("consent").is_some(), "consent echoed for frozen");
-        assert_eq!(res.get("computation_mode").and_then(|v| v.as_str()), Some("capture-mock"));
+        assert_eq!(
+            res.get("computation_mode").and_then(|v| v.as_str()),
+            Some("capture-mock")
+        );
     }
 }
