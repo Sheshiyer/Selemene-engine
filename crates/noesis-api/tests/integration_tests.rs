@@ -210,7 +210,11 @@ async fn test_health_check_no_auth_required() {
 
     assert_eq!(status, StatusCode::OK);
     assert_eq!(body["status"], "ok");
-    assert_eq!(body["version"], "3.1.0");
+    // The handler reports env!("CARGO_PKG_VERSION") for this crate, so assert
+    // against the same macro. A hardcoded literal here silently rots at every
+    // release bump, which is how this drifted to 3.1.0 against a 3.3.1
+    // workspace without anything reporting it.
+    assert_eq!(body["version"], env!("CARGO_PKG_VERSION"));
 }
 
 #[tokio::test]
