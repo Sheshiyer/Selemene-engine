@@ -6,7 +6,8 @@ use noesis_orchestrator::WorkflowOrchestrator;
 use std::collections::BTreeSet;
 use std::fs;
 
-const RUST_ENGINE_IDS: [&str; 11] = [
+const RUST_ENGINE_IDS: [&str; 12] = [
+    "financial-biosensor",
     "panchanga",
     "numerology",
     "biorhythm",
@@ -100,6 +101,10 @@ routing_enforcement_engine_test!(
 routing_enforcement_engine_test!(
     routing_enforcement_calculate_routes_through_orchestrator_for_transits,
     "transits"
+);
+routing_enforcement_engine_test!(
+    routing_enforcement_calculate_routes_through_orchestrator_for_financial_biosensor,
+    "financial-biosensor"
 );
 
 workflow_routing_test!(
@@ -197,6 +202,7 @@ fn routing_enforcement_runtime_api_does_not_depend_on_native_engine_crates() {
         "engine-face-reading",
         "engine-nadabrahman",
         "engine-transits",
+        "engine-financial-biosensor",
     ] {
         assert!(
             !dependencies_section.contains(dependency),
@@ -219,6 +225,7 @@ fn routing_enforcement_runtime_api_does_not_depend_on_native_engine_crates() {
         "engine_face_reading::",
         "engine_nadabrahman::",
         "engine_transits::",
+        "engine_financial_biosensor::",
     ] {
         assert!(
             !lib_source.contains(runtime_import),

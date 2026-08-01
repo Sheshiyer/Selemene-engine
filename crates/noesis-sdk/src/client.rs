@@ -1,6 +1,7 @@
 //! Noesis API Client — Typed HTTP client for Selemene Engine
 //!
-//! Provides a high-level async client for calling all 16 engines and 6 workflows.
+//! Provides a high-level async client for calling all 16 lens engines, the
+//! composed surfaces built over them, and 6 workflows.
 
 use crate::{Config, Error, Result};
 use noesis_core::{EngineInput, EngineOutput, WorkflowResult};
@@ -29,6 +30,9 @@ pub const ENGINES: &[&str] = &[
     "enneagram",
     "sacred-geometry",
     "sigil-forge",
+    // Composed surfaces — built over the lens engines above rather than
+    // reading a tradition of their own.
+    "financial-biosensor",
 ];
 
 /// List of all available workflows
@@ -443,9 +447,11 @@ mod tests {
 
     #[test]
     fn test_engines_list() {
-        assert_eq!(ENGINES.len(), 16);
+        // 16 lens engines plus the composed decision-reflection surface.
+        assert_eq!(ENGINES.len(), 17);
         assert!(ENGINES.contains(&"panchanga"));
         assert!(ENGINES.contains(&"tarot"));
+        assert!(ENGINES.contains(&"financial-biosensor"));
     }
 
     #[test]

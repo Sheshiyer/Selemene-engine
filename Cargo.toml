@@ -31,6 +31,7 @@ members = [
     "crates/engine-biofield",
     "crates/engine-biofield-capture",
     "crates/engine-face-reading",
+    "crates/engine-financial-biosensor",
     "crates/engine-nadabrahman",
     "crates/engine-transits",
 ]

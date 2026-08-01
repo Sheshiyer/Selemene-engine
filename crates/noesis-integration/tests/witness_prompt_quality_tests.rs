@@ -73,6 +73,11 @@ fn sample_prompts_by_engine() -> HashMap<&'static str, &'static str> {
             "sigil-forge",
             "What intention is becoming more coherent as you encode it into living symbol?",
         ),
+        (
+            "financial-biosensor",
+            "Before you saw this number, which way were you already leaning, and what would it \
+             cost you to say so out loud?",
+        ),
     ])
 }
 
@@ -99,7 +104,7 @@ fn assert_prompt_contract(engine_id: &str, prompt: &str) {
 }
 
 #[test]
-fn witness_prompt_quality_contract_covers_all_16_engines() {
+fn witness_prompt_quality_contract_covers_all_17_engines() {
     let prompts = sample_prompts_by_engine();
 
     let expected_engine_ids = [
@@ -107,6 +112,7 @@ fn witness_prompt_quality_contract_covers_all_16_engines() {
         "biorhythm",
         "enneagram",
         "face-reading",
+        "financial-biosensor",
         "gene-keys",
         "human-design",
         "i-ching",
@@ -124,7 +130,7 @@ fn witness_prompt_quality_contract_covers_all_16_engines() {
     assert_eq!(
         prompts.len(),
         expected_engine_ids.len(),
-        "Prompt contract must include all 16 engines"
+        "Prompt contract must include all 17 engines"
     );
 
     for engine_id in expected_engine_ids {

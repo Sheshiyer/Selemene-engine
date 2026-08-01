@@ -24,6 +24,7 @@ fn engine_schema_names() -> Vec<&'static str> {
         "IChingResultSchema",
         "SacredGeometryResultSchema",
         "SigilForgeResultSchema",
+        "FinancialBiosensorResultSchema",
     ]
 }
 
@@ -70,7 +71,7 @@ async fn test_openapi_contains_per_engine_result_schemas() {
         found += 1;
     }
 
-    assert_eq!(found, 16, "should include 16 per-engine schemas");
+    assert_eq!(found, 17, "should include 17 per-engine schemas");
 }
 
 #[tokio::test]

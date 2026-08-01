@@ -363,6 +363,22 @@ pub struct SigilForgeResultSchema {
     pub vector_path: String,
 }
 
+/// Financial Biosensor — a composed decision-reflection surface.
+///
+/// The index is a declared house model, not a forecast. `formula_version`
+/// identifies the constants that produced it, so two numbers from two builds
+/// are never silently compared.
+#[cfg(feature = "openapi")]
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+pub struct FinancialBiosensorResultSchema {
+    #[schema(example = 0.612)]
+    pub daily_decision_index: f64,
+    #[schema(example = "partial")]
+    pub convergence: String,
+    #[schema(example = "financial-biosensor/composite@1")]
+    pub formula_version: String,
+}
+
 #[cfg(feature = "openapi")]
 #[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
 #[serde(untagged)]
@@ -383,4 +399,5 @@ pub enum EngineResultData {
     IChing(IChingResultSchema),
     SacredGeometry(SacredGeometryResultSchema),
     SigilForge(SigilForgeResultSchema),
+    FinancialBiosensor(FinancialBiosensorResultSchema),
 }

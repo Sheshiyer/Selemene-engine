@@ -1,31 +1,230 @@
 {
-  "workspace_crate_count": 26,
+  "workspace_crate_count": 27,
   "packages": [
-    { "name": "engine-biofield",         "version": "3.1.0", "dependencies": ["engine-human-design", "noesis-core"] },
-    { "name": "engine-biofield-capture", "version": "3.1.0", "dependencies": ["noesis-core", "noesis-data"] },
-    { "name": "engine-biorhythm",        "version": "3.1.0", "dependencies": ["noesis-core"] },
-    { "name": "engine-face-reading",     "version": "3.1.0", "dependencies": ["noesis-core"] },
-    { "name": "engine-gene-keys",        "version": "3.1.0", "dependencies": ["engine-human-design", "noesis-core"] },
-    { "name": "engine-human-design",     "version": "3.1.0", "dependencies": ["noesis-core"] },
-    { "name": "engine-nadabrahman",      "version": "3.1.0", "dependencies": ["noesis-core"] },
-    { "name": "engine-numerology",       "version": "3.1.0", "dependencies": ["noesis-core"] },
-    { "name": "engine-panchanga",        "version": "3.1.0", "dependencies": ["engine-human-design", "noesis-core"] },
-    { "name": "engine-transits",         "version": "3.1.0", "dependencies": ["engine-human-design", "noesis-core"] },
-    { "name": "engine-vedic-clock",      "version": "3.1.0", "dependencies": ["noesis-core", "noesis-vedic-api"] },
-    { "name": "engine-vimshottari",      "version": "3.1.0", "dependencies": ["engine-human-design", "noesis-core"] },
-    { "name": "noesis-api",              "version": "3.1.0", "dependencies": ["noesis-auth", "noesis-bridge", "noesis-cache", "noesis-core", "noesis-data", "noesis-metrics", "noesis-orchestrator", "noesis-witness"] },
-    { "name": "noesis-auth",             "version": "3.1.0", "dependencies": ["noesis-core"] },
-    { "name": "noesis-bridge",           "version": "3.1.0", "dependencies": ["noesis-core"] },
-    { "name": "noesis-cache",            "version": "3.1.0", "dependencies": ["noesis-core"] },
-    { "name": "noesis-core",             "version": "3.1.0", "dependencies": [] },
-    { "name": "noesis-data",             "version": "3.1.0", "dependencies": ["noesis-core"] },
-    { "name": "noesis-integration",      "version": "3.1.0", "dependencies": ["engine-biorhythm", "engine-numerology", "engine-panchanga", "engine-vimshottari", "noesis-core", "noesis-vedic-api"] },
-    { "name": "noesis-metrics",          "version": "3.1.0", "dependencies": [] },
-    { "name": "noesis-orchestrator",     "version": "3.1.0", "dependencies": ["engine-biofield", "engine-biofield-capture", "engine-biorhythm", "engine-face-reading", "engine-gene-keys", "engine-human-design", "engine-nadabrahman", "engine-numerology", "engine-panchanga", "engine-transits", "engine-vedic-clock", "engine-vimshottari", "noesis-bridge", "noesis-cache", "noesis-core", "noesis-metrics", "noesis-witness"] },
-    { "name": "noesis-sdk",              "version": "3.3.0", "dependencies": ["noesis-core"] },
-    { "name": "noesis-tui",              "version": "3.3.0", "dependencies": ["noesis-core", "noesis-sdk"] },
-    { "name": "noesis-vedic-api",        "version": "3.1.0", "dependencies": [] },
-    { "name": "noesis-western-api",      "version": "3.1.0", "dependencies": ["noesis-core"] },
-    { "name": "noesis-witness",          "version": "3.1.0", "dependencies": ["noesis-core"] }
+    {
+      "name": "engine-biofield",
+      "version": "3.3.1",
+      "dependencies": [
+        "engine-human-design",
+        "noesis-core"
+      ]
+    },
+    {
+      "name": "engine-biofield-capture",
+      "version": "3.3.1",
+      "dependencies": [
+        "noesis-core",
+        "noesis-data"
+      ]
+    },
+    {
+      "name": "engine-biorhythm",
+      "version": "3.3.1",
+      "dependencies": [
+        "noesis-core"
+      ]
+    },
+    {
+      "name": "engine-face-reading",
+      "version": "3.3.1",
+      "dependencies": [
+        "noesis-core"
+      ]
+    },
+    {
+      "name": "engine-financial-biosensor",
+      "version": "3.3.1",
+      "dependencies": [
+        "noesis-core"
+      ]
+    },
+    {
+      "name": "engine-gene-keys",
+      "version": "3.3.1",
+      "dependencies": [
+        "engine-human-design",
+        "noesis-core"
+      ]
+    },
+    {
+      "name": "engine-human-design",
+      "version": "3.3.1",
+      "dependencies": [
+        "noesis-core"
+      ]
+    },
+    {
+      "name": "engine-nadabrahman",
+      "version": "3.3.1",
+      "dependencies": [
+        "noesis-core"
+      ]
+    },
+    {
+      "name": "engine-numerology",
+      "version": "3.3.1",
+      "dependencies": [
+        "noesis-core"
+      ]
+    },
+    {
+      "name": "engine-panchanga",
+      "version": "3.3.1",
+      "dependencies": [
+        "engine-human-design",
+        "noesis-core"
+      ]
+    },
+    {
+      "name": "engine-transits",
+      "version": "3.3.1",
+      "dependencies": [
+        "engine-human-design",
+        "noesis-core"
+      ]
+    },
+    {
+      "name": "engine-vedic-clock",
+      "version": "3.3.1",
+      "dependencies": [
+        "noesis-core",
+        "noesis-vedic-api"
+      ]
+    },
+    {
+      "name": "engine-vimshottari",
+      "version": "3.3.1",
+      "dependencies": [
+        "engine-human-design",
+        "noesis-core"
+      ]
+    },
+    {
+      "name": "noesis-api",
+      "version": "3.3.1",
+      "dependencies": [
+        "noesis-auth",
+        "noesis-bridge",
+        "noesis-cache",
+        "noesis-core",
+        "noesis-data",
+        "noesis-metrics",
+        "noesis-orchestrator",
+        "noesis-witness"
+      ]
+    },
+    {
+      "name": "noesis-auth",
+      "version": "3.3.1",
+      "dependencies": [
+        "noesis-core"
+      ]
+    },
+    {
+      "name": "noesis-bridge",
+      "version": "3.3.1",
+      "dependencies": [
+        "noesis-core"
+      ]
+    },
+    {
+      "name": "noesis-cache",
+      "version": "3.3.1",
+      "dependencies": [
+        "noesis-core"
+      ]
+    },
+    {
+      "name": "noesis-core",
+      "version": "3.3.1",
+      "dependencies": []
+    },
+    {
+      "name": "noesis-data",
+      "version": "3.3.1",
+      "dependencies": [
+        "noesis-core"
+      ]
+    },
+    {
+      "name": "noesis-integration",
+      "version": "3.3.1",
+      "dependencies": [
+        "engine-biorhythm",
+        "engine-numerology",
+        "engine-panchanga",
+        "engine-vimshottari",
+        "noesis-core",
+        "noesis-vedic-api"
+      ]
+    },
+    {
+      "name": "noesis-metrics",
+      "version": "3.3.1",
+      "dependencies": []
+    },
+    {
+      "name": "noesis-orchestrator",
+      "version": "3.3.1",
+      "dependencies": [
+        "engine-biofield",
+        "engine-biofield-capture",
+        "engine-biorhythm",
+        "engine-face-reading",
+        "engine-financial-biosensor",
+        "engine-gene-keys",
+        "engine-human-design",
+        "engine-nadabrahman",
+        "engine-numerology",
+        "engine-panchanga",
+        "engine-transits",
+        "engine-vedic-clock",
+        "engine-vimshottari",
+        "noesis-bridge",
+        "noesis-cache",
+        "noesis-core",
+        "noesis-metrics",
+        "noesis-witness"
+      ]
+    },
+    {
+      "name": "noesis-sdk",
+      "version": "3.3.1",
+      "dependencies": [
+        "noesis-core"
+      ]
+    },
+    {
+      "name": "noesis-tui",
+      "version": "3.3.1",
+      "dependencies": [
+        "noesis-core",
+        "noesis-sdk"
+      ]
+    },
+    {
+      "name": "noesis-vedic-api",
+      "version": "3.3.1",
+      "dependencies": [
+        "engine-human-design",
+        "engine-panchanga",
+        "engine-transits",
+        "engine-vimshottari"
+      ]
+    },
+    {
+      "name": "noesis-western-api",
+      "version": "3.3.1",
+      "dependencies": [
+        "noesis-core"
+      ]
+    },
+    {
+      "name": "noesis-witness",
+      "version": "3.3.1",
+      "dependencies": [
+        "noesis-core"
+      ]
+    }
   ]
 }

@@ -5,11 +5,11 @@ Rust** engine to Selemene.
 
 It is grounded in the live runtime surfaces:
 
-- trait contract in [crates/noesis-core/src/lib.rs](/Volumes/madara/2026/witnessos/Selemene-engine/crates/noesis-core/src/lib.rs)
-- shared types in [crates/noesis-core/src/types.rs](/Volumes/madara/2026/witnessos/Selemene-engine/crates/noesis-core/src/types.rs)
-- orchestrator registration in [crates/noesis-orchestrator/src/lib.rs](/Volumes/madara/2026/witnessos/Selemene-engine/crates/noesis-orchestrator/src/lib.rs)
-- workflow registry in [crates/noesis-orchestrator/src/workflow/registry.rs](/Volumes/madara/2026/witnessos/Selemene-engine/crates/noesis-orchestrator/src/workflow/registry.rs)
-- API runtime registration in [crates/noesis-api/src/lib.rs](/Volumes/madara/2026/witnessos/Selemene-engine/crates/noesis-api/src/lib.rs)
+- trait contract in [crates/noesis-core/src/lib.rs](../../crates/noesis-core/src/lib.rs)
+- shared types in [crates/noesis-core/src/types.rs](../../crates/noesis-core/src/types.rs)
+- orchestrator registration in [crates/noesis-orchestrator/src/lib.rs](../../crates/noesis-orchestrator/src/lib.rs)
+- workflow registry in [crates/noesis-orchestrator/src/workflow/registry.rs](../../crates/noesis-orchestrator/src/workflow/registry.rs)
+- API runtime registration in [crates/noesis-api/src/lib.rs](../../crates/noesis-api/src/lib.rs)
 
 ## Scope
 
@@ -18,7 +18,7 @@ This guide is for **Rust-native engines** that implement the
 
 TypeScript engines follow the HTTP bridge path instead:
 
-- [crates/noesis-bridge/src/lib.rs](/Volumes/madara/2026/witnessos/Selemene-engine/crates/noesis-bridge/src/lib.rs)
+- [crates/noesis-bridge/src/lib.rs](../../crates/noesis-bridge/src/lib.rs)
 - `BridgeEngine`
 - `BridgeManager`
 
@@ -67,6 +67,7 @@ Every engine must implement:
 - `calculate()`
 - `validate()`
 - `cache_key()`
+- `as_any()` — every implementor must provide this; the body is just `self`
 
 Minimal example:
 
@@ -157,7 +158,7 @@ impl ConsciousnessEngine for ExampleEngine {
 
 ## Step 3: Use the Shared Input and Output Types Correctly
 
-The contract is defined in [crates/noesis-core/src/types.rs](/Volumes/madara/2026/witnessos/Selemene-engine/crates/noesis-core/src/types.rs).
+The contract is defined in [crates/noesis-core/src/types.rs](../../crates/noesis-core/src/types.rs).
 
 Important constraints:
 
@@ -185,27 +186,64 @@ Avoid:
 
 Existing examples:
 
-- [crates/engine-numerology/src/lib.rs](/Volumes/madara/2026/witnessos/Selemene-engine/crates/engine-numerology/src/lib.rs)
-- [crates/engine-panchanga/src/lib.rs](/Volumes/madara/2026/witnessos/Selemene-engine/crates/engine-panchanga/src/lib.rs)
-- [crates/engine-nadabrahman/src/engine.rs](/Volumes/madara/2026/witnessos/Selemene-engine/crates/engine-nadabrahman/src/engine.rs)
+- [crates/engine-numerology/src/lib.rs](../../crates/engine-numerology/src/lib.rs)
+- [crates/engine-panchanga/src/lib.rs](../../crates/engine-panchanga/src/lib.rs)
+- [crates/engine-nadabrahman/src/engine.rs](../../crates/engine-nadabrahman/src/engine.rs)
 
 ## Step 5: Register the Engine
 
 ### Orchestrator Registration
 
-Register the new engine in the API app-state builder:
+Register the new engine in `WorkflowOrchestrator::register_native_runtime_engines`:
 
 ```rust
-orchestrator.register_engine(Arc::new(engine_example::ExampleEngine::new()));
+self.register_engine(Arc::new(engine_example::ExampleEngine::new()));
 ```
 
 The live registration pattern is in:
 
-- [crates/noesis-api/src/lib.rs](/Volumes/madara/2026/witnessos/Selemene-engine/crates/noesis-api/src/lib.rs)
+- [crates/noesis-orchestrator/src/lib.rs](../../crates/noesis-orchestrator/src/lib.rs)
 
 You must also add the crate dependency to:
 
-- [crates/noesis-api/Cargo.toml](/Volumes/madara/2026/witnessos/Selemene-engine/crates/noesis-api/Cargo.toml)
+- [crates/noesis-orchestrator/Cargo.toml](../../crates/noesis-orchestrator/Cargo.toml)
+
+**Do not register engines from `noesis-api`, and do not add an engine crate to
+its `Cargo.toml`.** Engine construction is centralized in the orchestrator so
+transport crates stay free of it, and
+[crates/noesis-api/tests/routing_enforcement_tests.rs](../../crates/noesis-api/tests/routing_enforcement_tests.rs)
+fails the build if `noesis-api` gains a dependency on, or an import from, any
+engine crate.
+
+Finally, add the engine id to `SUPPORTED_ENGINE_IDS` in the same file, keeping
+the array alphabetical and bumping its length. An inline test asserts that the
+constant and the registered set agree.
+
+### Composed Engines
+
+An engine may be built over other engines rather than over a tradition of its
+own. Take the sources as `Arc<dyn ConsciousnessEngine>` in a constructor and
+let the orchestrator hand them in — see `FinancialBiosensorEngine::with_sources`
+and the older concrete-typed precedent `GeneKeysEngine::with_hd_engine`.
+Trait objects are preferred for new work: the crate then depends only on
+`noesis-core`, and `engine_id()` plus `metadata.engine_version` are exactly
+what a provenance record needs.
+
+Two rules apply:
+
+1. **A composed engine's `required_phase` must be at or above the maximum of
+   its sources'.** It calls them directly rather than through
+   `EngineRegistry::execute_routed`, so their own phase gates are never
+   consulted on that route. Declaring the higher phase is what keeps the gate
+   sound.
+2. **A source that fails is an absence, not an error.** Degrade and say which
+   source could not be read, rather than failing the whole calculation — unless
+   nothing at all could be read.
+
+Record composed engines in
+[docs/baseline/engine-matrix.json](../baseline/engine-matrix.json) with
+`"kind": "composed-surface"` and a `composes` list. They are counted in the
+workspace engine totals but not in the sixteen public lens engines.
 
 ### Workflow Integration
 
@@ -213,7 +251,7 @@ Only add the new engine to workflows if you have a real synthesis reason.
 
 Workflow definitions live in:
 
-- [crates/noesis-orchestrator/src/workflow/registry.rs](/Volumes/madara/2026/witnessos/Selemene-engine/crates/noesis-orchestrator/src/workflow/registry.rs)
+- [crates/noesis-orchestrator/src/workflow/registry.rs](../../crates/noesis-orchestrator/src/workflow/registry.rs)
 
 If you add an engine to a workflow, update the corresponding workflow tests and
 baseline artifacts.
@@ -231,9 +269,9 @@ Minimum checklist before opening a PR:
 
 Helpful existing verification surfaces:
 
-- [crates/noesis-orchestrator/tests/trait_conformance_tests.rs](/Volumes/madara/2026/witnessos/Selemene-engine/crates/noesis-orchestrator/tests/trait_conformance_tests.rs)
-- [crates/noesis-api/tests/workflow_tests.rs](/Volumes/madara/2026/witnessos/Selemene-engine/crates/noesis-api/tests/workflow_tests.rs)
-- [crates/noesis-api/tests/routing_enforcement_tests.rs](/Volumes/madara/2026/witnessos/Selemene-engine/crates/noesis-api/tests/routing_enforcement_tests.rs)
+- [crates/noesis-orchestrator/tests/trait_conformance_tests.rs](../../crates/noesis-orchestrator/tests/trait_conformance_tests.rs)
+- [crates/noesis-api/tests/workflow_tests.rs](../../crates/noesis-api/tests/workflow_tests.rs)
+- [crates/noesis-api/tests/routing_enforcement_tests.rs](../../crates/noesis-api/tests/routing_enforcement_tests.rs)
 
 ## Step 7: Prove the Guide Works
 

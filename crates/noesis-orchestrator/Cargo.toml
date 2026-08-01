@@ -14,6 +14,7 @@ engine-biorhythm = { path = "../engine-biorhythm" }
 engine-biofield = { path = "../engine-biofield" }
 engine-biofield-capture = { path = "../engine-biofield-capture" }
 engine-face-reading = { path = "../engine-face-reading" }
+engine-financial-biosensor = { path = "../engine-financial-biosensor" }
 engine-gene-keys = { path = "../engine-gene-keys" }
 engine-human-design = { path = "../engine-human-design" }
 engine-nadabrahman = { path = "../engine-nadabrahman" }

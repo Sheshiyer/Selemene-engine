@@ -252,12 +252,13 @@ impl Default for EngineRegistry {
 /// Routing invariant: all user-facing engine and workflow calculations should
 /// enter the runtime through this orchestrator boundary so phase-gating,
 /// bridge registration, and workflow semantics stay centralized.
-pub const SUPPORTED_ENGINE_IDS: [&str; 18] = [
+pub const SUPPORTED_ENGINE_IDS: [&str; 19] = [
     "biofield",
     "biofield-capture",
     "biorhythm",
     "enneagram",
     "face-reading",
+    "financial-biosensor",
     "gene-keys",
     "human-design",
     "i-ching",
@@ -305,24 +306,45 @@ impl WorkflowOrchestrator {
     pub fn register_native_runtime_engines(&mut self) {
         self.register_engine(Arc::new(engine_panchanga::PanchangaEngine::new()));
         self.register_engine(Arc::new(engine_numerology::NumerologyEngine::new()));
-        self.register_engine(Arc::new(engine_biorhythm::BiorhythmEngine::new()));
+
+        let biorhythm_engine = Arc::new(engine_biorhythm::BiorhythmEngine::new());
+        self.register_engine(biorhythm_engine.clone());
 
         let hd_engine = Arc::new(engine_human_design::HumanDesignEngine::new());
         self.register_engine(hd_engine.clone());
 
-        self.register_engine(Arc::new(engine_gene_keys::GeneKeysEngine::with_hd_engine(
+        let gene_keys_engine = Arc::new(engine_gene_keys::GeneKeysEngine::with_hd_engine(
             hd_engine.clone(),
-        )));
-
-        self.register_engine(Arc::new(
-            engine_vimshottari::VimshottariEngine::with_hd_engine(hd_engine),
         ));
+        self.register_engine(gene_keys_engine.clone());
+
+        let vimshottari_engine = Arc::new(engine_vimshottari::VimshottariEngine::with_hd_engine(
+            hd_engine.clone(),
+        ));
+        self.register_engine(vimshottari_engine.clone());
 
         self.register_engine(Arc::new(engine_biofield::BiofieldEngine::new()));
         self.register_engine(Arc::new(engine_vedic_clock::VedicClockEngine::new()));
         self.register_engine(Arc::new(engine_face_reading::FaceReadingEngine::new()));
         self.register_engine(Arc::new(engine_nadabrahman::NadaBrahmanEngine::new()));
-        self.register_engine(Arc::new(engine_transits::TransitsEngine::new()));
+
+        let transits_engine = Arc::new(engine_transits::TransitsEngine::new());
+        self.register_engine(transits_engine.clone());
+
+        // Decision-reflection surface composed over five engines registered
+        // above. It calls them directly rather than through the registry, so
+        // its own `required_phase` must stay at or above the maximum of theirs.
+        self.register_engine(Arc::new(
+            engine_financial_biosensor::FinancialBiosensorEngine::with_sources(
+                engine_financial_biosensor::SourceEngines {
+                    human_design: hd_engine,
+                    gene_keys: gene_keys_engine,
+                    vimshottari: vimshottari_engine,
+                    transits: transits_engine,
+                    biorhythm: biorhythm_engine,
+                },
+            ),
+        ));
     }
 
     /// Register a custom workflow definition.
@@ -907,7 +929,8 @@ mod tests {
         orchestrator.register_native_runtime_engines();
 
         let engines = orchestrator.list_engines();
-        assert_eq!(engines.len(), 11);
+        // 11 lens engines plus the composed decision-reflection surface.
+        assert_eq!(engines.len(), 12);
         for engine_id in [
             "panchanga",
             "numerology",
@@ -920,6 +943,7 @@ mod tests {
             "face-reading",
             "nadabrahman",
             "transits",
+            "financial-biosensor",
         ] {
             assert!(engines.contains(&engine_id.to_string()));
         }
