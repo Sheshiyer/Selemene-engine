@@ -252,6 +252,27 @@ impl Default for EngineRegistry {
 /// Routing invariant: all user-facing engine and workflow calculations should
 /// enter the runtime through this orchestrator boundary so phase-gating,
 /// bridge registration, and workflow semantics stay centralized.
+pub const SUPPORTED_ENGINE_IDS: [&str; 18] = [
+    "biofield",
+    "biofield-capture",
+    "biorhythm",
+    "enneagram",
+    "face-reading",
+    "gene-keys",
+    "human-design",
+    "i-ching",
+    "nadabrahman",
+    "numerology",
+    "panchanga",
+    "raaga",
+    "sacred-geometry",
+    "sigil-forge",
+    "tarot",
+    "transits",
+    "vedic-clock",
+    "vimshottari",
+];
+
 pub struct WorkflowOrchestrator {
     registry: EngineRegistry,
     workflows: HashMap<String, WorkflowDefinition>,
@@ -514,77 +535,14 @@ impl WorkflowOrchestrator {
     // -- Default workflows ------------------------------------------------
 
     fn default_workflows() -> HashMap<String, WorkflowDefinition> {
-        let definitions = vec![
-            WorkflowDefinition {
-                id: "birth-blueprint".into(),
-                name: "Birth Blueprint".into(),
-                description: "Core identity mapping through birth data".into(),
-                engine_ids: vec![
-                    "numerology".into(),
-                    "human-design".into(),
-                    "gene-keys".into(),
-                ],
-            },
-            WorkflowDefinition {
-                id: "daily-practice".into(),
-                name: "Daily Practice".into(),
-                description: "Daily rhythm and awareness tools".into(),
-                engine_ids: vec![
-                    "panchanga".into(),
-                    "vedic-clock".into(),
-                    "biorhythm".into(),
-                    "transits".into(),
-                ],
-            },
-            WorkflowDefinition {
-                id: "decision-support".into(),
-                name: "Decision Support".into(),
-                description: "Multi-system decision mirrors".into(),
-                engine_ids: vec!["tarot".into(), "i-ching".into(), "human-design".into()],
-            },
-            WorkflowDefinition {
-                id: "self-inquiry".into(),
-                name: "Self-Inquiry".into(),
-                description: "Deep self-consciousness exploration".into(),
-                engine_ids: vec!["gene-keys".into(), "enneagram".into()],
-            },
-            WorkflowDefinition {
-                id: "creative-expression".into(),
-                name: "Creative Expression".into(),
-                description: "Creative and aesthetic exploration".into(),
-                engine_ids: vec![
-                    "sigil-forge".into(),
-                    "sacred-geometry".into(),
-                    "raaga".into(),
-                ],
-            },
-            WorkflowDefinition {
-                id: "full-spectrum".into(),
-                name: "Full Spectrum".into(),
-                description: "All available engines".into(),
-                engine_ids: vec![
-                    "numerology".into(),
-                    "human-design".into(),
-                    "biorhythm".into(),
-                    "panchanga".into(),
-                    "vimshottari".into(),
-                    "gene-keys".into(),
-                    "vedic-clock".into(),
-                    "biofield".into(),
-                    "face-reading".into(),
-                    "nadabrahman".into(),
-                    "raaga".into(),
-                    "transits".into(),
-                    "tarot".into(),
-                    "i-ching".into(),
-                    "enneagram".into(),
-                    "sacred-geometry".into(),
-                    "sigil-forge".into(),
-                ],
-            },
-        ];
-
-        definitions.into_iter().map(|w| (w.id.clone(), w)).collect()
+        WorkflowRegistry::new()
+            .list()
+            .into_iter()
+            .map(|workflow| {
+                let workflow = workflow.to_base();
+                (workflow.id.clone(), workflow)
+            })
+            .collect()
     }
 
     // -- Health check -----------------------------------------------------
@@ -828,8 +786,111 @@ mod tests {
         assert_eq!(wf.name, "Birth Blueprint");
         assert_eq!(
             wf.engine_ids,
-            vec!["numerology", "human-design", "gene-keys"]
+            vec![
+                "numerology",
+                "human-design",
+                "vimshottari",
+                "biofield",
+                "face-reading"
+            ]
         );
+    }
+
+    #[test]
+    fn orchestrator_and_extended_registry_memberships_align() {
+        let orchestrator = WorkflowOrchestrator::new();
+        let registry = WorkflowRegistry::new();
+        let expected = [
+            (
+                "birth-blueprint",
+                vec![
+                    "numerology",
+                    "human-design",
+                    "vimshottari",
+                    "biofield",
+                    "face-reading",
+                ],
+            ),
+            (
+                "daily-practice",
+                vec![
+                    "panchanga",
+                    "vedic-clock",
+                    "biorhythm",
+                    "transits",
+                    "nadabrahman",
+                ],
+            ),
+            (
+                "decision-support",
+                vec!["tarot", "i-ching", "human-design", "enneagram", "gene-keys"],
+            ),
+            (
+                "self-inquiry",
+                vec!["gene-keys", "enneagram", "face-reading", "biofield"],
+            ),
+            (
+                "creative-expression",
+                vec![
+                    "sigil-forge",
+                    "sacred-geometry",
+                    "nadabrahman",
+                    "numerology",
+                    "raaga",
+                ],
+            ),
+            (
+                "full-spectrum",
+                vec![
+                    "numerology",
+                    "human-design",
+                    "vimshottari",
+                    "panchanga",
+                    "vedic-clock",
+                    "biorhythm",
+                    "gene-keys",
+                    "biofield",
+                    "face-reading",
+                    "transits",
+                    "nadabrahman",
+                    "tarot",
+                    "i-ching",
+                    "enneagram",
+                    "sacred-geometry",
+                    "sigil-forge",
+                    "raaga",
+                ],
+            ),
+        ];
+
+        assert_eq!(orchestrator.list_workflows().len(), expected.len());
+        assert_eq!(registry.len(), expected.len());
+        for (workflow_id, expected_engine_ids) in expected {
+            let extended = registry
+                .get(workflow_id)
+                .unwrap_or_else(|| panic!("extended workflow {workflow_id} is missing"));
+            let runtime = orchestrator
+                .get_workflow(workflow_id)
+                .unwrap_or_else(|| panic!("runtime workflow {workflow_id} is missing"));
+            assert_eq!(
+                runtime
+                    .engine_ids
+                    .iter()
+                    .map(String::as_str)
+                    .collect::<Vec<_>>(),
+                expected_engine_ids,
+                "runtime workflow {workflow_id} has drifted"
+            );
+            assert_eq!(
+                extended
+                    .engine_ids
+                    .iter()
+                    .map(String::as_str)
+                    .collect::<Vec<_>>(),
+                expected_engine_ids,
+                "extended workflow {workflow_id} has drifted"
+            );
+        }
     }
 
     #[test]
@@ -862,6 +923,22 @@ mod tests {
         ] {
             assert!(engines.contains(&engine_id.to_string()));
         }
+    }
+
+    #[test]
+    fn supported_engine_ids_match_native_bridge_and_conditional_capture_contracts() {
+        let mut orchestrator = WorkflowOrchestrator::new();
+        orchestrator.register_native_runtime_engines();
+        let bridge = BridgeManager::new("http://127.0.0.1:1");
+        orchestrator.register_bridge_engines(&bridge);
+
+        let mut registered = orchestrator.list_engines();
+        registered.push("biofield-capture".to_string());
+        registered.sort();
+
+        let mut supported = SUPPORTED_ENGINE_IDS.map(str::to_string).to_vec();
+        supported.sort();
+        assert_eq!(registered, supported);
     }
 
     #[tokio::test]
@@ -915,7 +992,7 @@ mod tests {
         let mut orchestrator = WorkflowOrchestrator::new();
         orchestrator.register_engine(Arc::new(MockEngine::new("numerology", 0)));
         orchestrator.register_engine(Arc::new(MockEngine::new("human-design", 0)));
-        orchestrator.register_engine(Arc::new(MockEngine::new("gene-keys", 1)));
+        orchestrator.register_engine(Arc::new(MockEngine::new("vimshottari", 1)));
 
         let result = orchestrator
             .execute_workflow("birth-blueprint", test_input(), 1)
@@ -926,7 +1003,7 @@ mod tests {
         assert_eq!(result.engine_outputs.len(), 3);
         assert!(result.engine_outputs.contains_key("numerology"));
         assert!(result.engine_outputs.contains_key("human-design"));
-        assert!(result.engine_outputs.contains_key("gene-keys"));
+        assert!(result.engine_outputs.contains_key("vimshottari"));
         assert!(result.total_time_ms >= 0.0);
     }
 
@@ -945,9 +1022,9 @@ mod tests {
         let mut orchestrator = WorkflowOrchestrator::new();
         orchestrator.register_engine(Arc::new(MockEngine::new("numerology", 0)));
         orchestrator.register_engine(Arc::new(MockEngine::new("human-design", 0)));
-        orchestrator.register_engine(Arc::new(MockEngine::new("gene-keys", 3))); // requires phase 3
+        orchestrator.register_engine(Arc::new(MockEngine::new("vimshottari", 3))); // requires phase 3
 
-        // User is phase 1 -- gene-keys should be omitted
+        // User is phase 1 -- vimshottari should be omitted
         let result = orchestrator
             .execute_workflow("birth-blueprint", test_input(), 1)
             .await
@@ -956,10 +1033,10 @@ mod tests {
         assert_eq!(result.engine_outputs.len(), 2);
         assert!(result.engine_outputs.contains_key("numerology"));
         assert!(result.engine_outputs.contains_key("human-design"));
-        assert!(!result.engine_outputs.contains_key("gene-keys"));
+        assert!(!result.engine_outputs.contains_key("vimshottari"));
 
         let snapshot = orchestrator.registry().execution_routing_snapshot();
-        assert_eq!(snapshot.orchestrated_execute_calls, 3);
+        assert_eq!(snapshot.orchestrated_execute_calls, 5);
         assert_eq!(snapshot.direct_execute_calls, 0);
         assert_eq!(snapshot.bypass_count, 0);
     }
@@ -969,7 +1046,7 @@ mod tests {
         let mut orchestrator = WorkflowOrchestrator::new();
         orchestrator.register_engine(Arc::new(MockEngine::new("numerology", 0)));
         orchestrator.register_engine(Arc::new(MockEngine::failing("human-design", 0)));
-        orchestrator.register_engine(Arc::new(MockEngine::new("gene-keys", 0)));
+        orchestrator.register_engine(Arc::new(MockEngine::new("vimshottari", 0)));
 
         let result = orchestrator
             .execute_workflow("birth-blueprint", test_input(), 5)
@@ -980,13 +1057,13 @@ mod tests {
         assert_eq!(result.engine_outputs.len(), 2);
         assert!(result.engine_outputs.contains_key("numerology"));
         assert!(!result.engine_outputs.contains_key("human-design"));
-        assert!(result.engine_outputs.contains_key("gene-keys"));
+        assert!(result.engine_outputs.contains_key("vimshottari"));
     }
 
     #[tokio::test]
     async fn execute_workflow_missing_engine_skipped() {
         let mut orchestrator = WorkflowOrchestrator::new();
-        // Only register numerology; human-design and gene-keys are missing
+        // Only register numerology; the other birth-blueprint engines are missing
         orchestrator.register_engine(Arc::new(MockEngine::new("numerology", 0)));
 
         let result = orchestrator
