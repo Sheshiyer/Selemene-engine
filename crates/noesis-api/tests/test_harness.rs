@@ -12,14 +12,23 @@ async fn test_harness_can_assert_single_engine_route_delegation() {
 
 #[tokio::test]
 async fn test_harness_can_assert_workflow_route_delegation() {
-    let harness =
-        RoutingHarness::with_probe_engines(&["numerology", "human-design", "gene-keys"]).await;
+    // The canonical birth-blueprint engine set, per WorkflowRegistry and
+    // docs/baseline/workflow-parity.json. A second, divergent definition used
+    // to live in WorkflowOrchestrator::default_workflows() and listed
+    // gene-keys instead; consolidating onto the registry left this assertion
+    // behind.
+    let engine_ids = [
+        "numerology",
+        "human-design",
+        "vimshottari",
+        "biofield",
+        "face-reading",
+    ];
+
+    let harness = RoutingHarness::with_probe_engines(&engine_ids).await;
 
     harness
-        .assert_workflow_execute_routed(
-            "birth-blueprint",
-            &["numerology", "human-design", "gene-keys"],
-        )
+        .assert_workflow_execute_routed("birth-blueprint", &engine_ids)
         .await;
 }
 
