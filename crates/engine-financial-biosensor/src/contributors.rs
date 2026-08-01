@@ -780,7 +780,10 @@ mod tests {
     // -- energetic authority ---------------------------------------------
 
     fn hd(authority: &str) -> (Value, String) {
-        (json!({ "authority": authority }), "test-fixture".to_string())
+        (
+            json!({ "authority": authority }),
+            "test-fixture".to_string(),
+        )
     }
 
     #[test]
