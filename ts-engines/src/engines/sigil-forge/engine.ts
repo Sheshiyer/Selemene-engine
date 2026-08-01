@@ -20,6 +20,12 @@
  * Tests: mock + real (nvidia if key). T-060 nano + T-061 kimi both integrated, provider config-selectable.
  */
 
+import type {
+  GeneratedImage,
+  ImageProvider,
+  ImageProviderConfig,
+} from '../../providers/image-provider'
+import { createDefaultImageProvider, createImageProvider } from '../../providers/image-provider'
 import type { ConsciousnessEngine, EngineInput, EngineMetadata, EngineOutput } from '../../types'
 import { EngineValidationError } from '../../utils'
 import { SeededRandom, getDefaultSeed } from '../../utils/random'
@@ -32,8 +38,6 @@ import {
   processWordElimination,
 } from './wisdom'
 import { generateWitnessPrompts } from './witness'
-import type { ImageProvider, ImageProviderConfig, GeneratedImage } from '../../providers/image-provider'
-import { createImageProvider, createDefaultImageProvider } from '../../providers/image-provider'
 
 export class SigilForgeEngine implements ConsciousnessEngine {
   private imageProvider: ImageProvider
@@ -102,7 +106,8 @@ export class SigilForgeEngine implements ConsciousnessEngine {
         image_style: {
           type: 'string',
           required: false,
-          description: 'Visual style for generated sigil. Default is method-dependent. yantra for kimi vedic precision.',
+          description:
+            'Visual style for generated sigil. Default is method-dependent. yantra for kimi vedic precision.',
           enum: ['ceremonial', 'chaos', 'organic', 'geometric', 'runic', 'ethereal', 'yantra'],
         },
         image_model: {
@@ -325,19 +330,20 @@ export class SigilForgeEngine implements ConsciousnessEngine {
     }
 
     // Per FROZEN (T-002/T-003/T-035): surface generated_image at top-level EngineOutput when present (no error)
-    const topGenerated: GeneratedImage | undefined = generatedImage && !generatedImage.error
-      ? {
-          b64_json: generatedImage.b64_json,
-          url: generatedImage.url,
-          metadata: {
-            model: generatedImage.model ?? 'default',
-            prompt: generatedImage.prompt_used ?? cleanIntention,
-            provider: provider.name,
-            style: generatedImage.style,
-            seed,
-          },
-        }
-      : undefined
+    const topGenerated: GeneratedImage | undefined =
+      generatedImage && !generatedImage.error
+        ? {
+            b64_json: generatedImage.b64_json,
+            url: generatedImage.url,
+            metadata: {
+              model: generatedImage.model ?? 'default',
+              prompt: generatedImage.prompt_used ?? cleanIntention,
+              provider: provider.name,
+              style: generatedImage.style,
+              seed,
+            },
+          }
+        : undefined
 
     const output: EngineOutput = {
       engine_id: 'sigil-forge',
@@ -348,7 +354,7 @@ export class SigilForgeEngine implements ConsciousnessEngine {
     }
 
     if (topGenerated) {
-      ;(output as any).generated_image = topGenerated
+      output.generated_image = topGenerated
     }
 
     return output

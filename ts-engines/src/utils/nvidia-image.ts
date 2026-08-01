@@ -127,7 +127,12 @@ export function isImageGenAvailable(): boolean {
 
 // --- T-003 contract: implement ImageProvider interface (see ../providers/image-provider.ts) per FROZEN ---
 // Cites: resources-and-assets (sigil nvidia), gaps (provider abstraction), goal (T-003), P1W1-CONTRACTS-FROZEN, detailed T-003/T-028, bootstrap packet, EXECUTION-STATUS, ext-harness
-import type { ImageProvider, ImageGenOptions, ImageEditOptions, GeneratedImage } from '../providers/image-provider'
+import type {
+  GeneratedImage,
+  ImageEditOptions,
+  ImageGenOptions,
+  ImageProvider,
+} from '../providers/image-provider'
 
 export class NvidiaImageProvider implements ImageProvider {
   readonly name = 'nvidia'
@@ -139,7 +144,9 @@ export class NvidiaImageProvider implements ImageProvider {
   async generate(opts: ImageGenOptions): Promise<GeneratedImage> {
     const res = await generateImage({
       prompt: opts.prompt,
-      model: opts.model as any,
+      // ImageGenOptions.model is a free-form string; the NIM client accepts only
+      // the known model ids.
+      model: opts.model as NvidiaImageModel | undefined,
       width: opts.width,
       height: opts.height,
       seed: opts.seed,
@@ -150,7 +157,7 @@ export class NvidiaImageProvider implements ImageProvider {
         model: opts.model ?? 'flux.1-dev',
         prompt: opts.prompt,
         provider: this.name,
-        style: (opts as any).style,
+        style: opts.style,
         seed: opts.seed,
         finish_reason: res.finish_reason,
       },
@@ -161,7 +168,9 @@ export class NvidiaImageProvider implements ImageProvider {
     const res = await editImage({
       image: opts.image,
       prompt: opts.prompt,
-      model: opts.model as any,
+      // ImageGenOptions.model is a free-form string; the NIM client accepts only
+      // the known model ids.
+      model: opts.model as NvidiaImageModel | undefined,
       width: opts.width,
       height: opts.height,
       seed: opts.seed,
@@ -172,7 +181,7 @@ export class NvidiaImageProvider implements ImageProvider {
         model: opts.model ?? 'flux.1-dev',
         prompt: opts.prompt,
         provider: this.name,
-        style: (opts as any).style,
+        style: opts.style,
         seed: opts.seed,
       },
     }

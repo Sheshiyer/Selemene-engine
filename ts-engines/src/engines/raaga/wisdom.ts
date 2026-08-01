@@ -295,9 +295,10 @@ export interface MelakartaVerification {
 export function verifyFull72Melakartas(): MelakartaVerification {
   const total = MELAKARTAS.length
   const is72 = total === 72
-  const nums = MELAKARTAS.map(m => m.num)
+  const nums = MELAKARTAS.map((m) => m.num)
   const unique = new Set(nums)
-  const allNumsUnique1to72 = unique.size === 72 && Math.min(...nums) === 1 && Math.max(...nums) === 72
+  const allNumsUnique1to72 =
+    unique.size === 72 && Math.min(...nums) === 1 && Math.max(...nums) === 72
 
   const doshaCoverage: Record<Dosha, number> = {
     vata: getRaagasForDosha('vata').length,
@@ -305,9 +306,9 @@ export function verifyFull72Melakartas(): MelakartaVerification {
     kapha: getRaagasForDosha('kapha').length,
   }
 
-  const praharCoverage = PRAHARS.filter(p => p.recommended.length > 0).length
+  const praharCoverage = PRAHARS.filter((p) => p.recommended.length > 0).length
 
-  const strudelReady = MELAKARTAS.every(m => Array.isArray(m.ratios) && m.ratios.length === 8)
+  const strudelReady = MELAKARTAS.every((m) => Array.isArray(m.ratios) && m.ratios.length === 8)
 
   return {
     total,

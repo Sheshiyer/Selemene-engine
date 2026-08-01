@@ -8,8 +8,8 @@
  * - High contrast, suitable for charging rituals
  */
 
-import type { SigilMethod } from './wisdom'
 import type { GeneratedImage, ImageGenOptions } from '../../providers/image-provider' // T-035 + T-060: correct relative (engines/sigil → providers)
+import type { SigilMethod } from './wisdom'
 
 /** Visual style presets for different sigil aesthetics */
 export type SigilStyle =
@@ -61,7 +61,8 @@ const STYLE_DESCRIPTORS: Record<SigilStyle, { visual: string; medium: string; pa
   yantra: {
     visual:
       'sri yantra, nine interlocking triangles (four upward, five downward) forming precise 43-triangle mandala, bindu center, concentric circles lotus petals, vedic sacred geometry yantra',
-    medium: 'traditional tantric line drawing, red ink on aged parchment, exact compass straightedge proportions, temple art precision',
+    medium:
+      'traditional tantric line drawing, red ink on aged parchment, exact compass straightedge proportions, temple art precision',
     palette: 'deep red, black, gold accents on cream/off-white, high symmetry, spiritually charged',
   },
 }

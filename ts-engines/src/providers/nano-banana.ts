@@ -20,10 +20,10 @@
  */
 
 import type {
-  ImageProvider,
-  ImageGenOptions,
-  ImageEditOptions,
   GeneratedImage,
+  ImageEditOptions,
+  ImageGenOptions,
+  ImageProvider,
   ImageProviderConfig,
 } from './image-provider'
 
@@ -83,18 +83,21 @@ async function execRuncomfy(input: Record<string, unknown>, endpoint: string): P
   const errText = await new Response(proc.stderr).text()
 
   if (exitCode !== 0) {
-    throw new Error(`runcomfy nano-banana failed (${exitCode}): ${errText.slice(0, 400) || outText.slice(0, 400)}`)
+    throw new Error(
+      `runcomfy nano-banana failed (${exitCode}): ${errText.slice(0, 400) || outText.slice(0, 400)}`,
+    )
   }
 
-  // Parse json output for image path or url
-  let json: any
+  // Parse json output for image path or url. The shape is whatever the CLI
+  // emitted, so it is read defensively rather than typed.
+  let json: { images?: unknown }
   try {
     json = JSON.parse(outText.trim().split('\n').pop() || outText)
   } catch {
     json = {}
   }
 
-  const images: string[] = json?.images || []
+  const images: string[] = Array.isArray(json?.images) ? (json.images as string[]) : []
   if (images.length === 0) {
     // fallback: look for downloaded file in tmpDir
     try {
@@ -146,7 +149,8 @@ export class NanoBananaImageProvider implements ImageProvider {
     if (!isNanoBananaAvailable()) {
       // mock path — working deterministic b64 (1x1 png) + metadata; real when token
       return {
-        b64_json: 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
+        b64_json:
+          'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
         metadata: {
           model,
           prompt,
@@ -188,7 +192,8 @@ export class NanoBananaImageProvider implements ImageProvider {
     } catch (err) {
       // graceful degrade to mock on failure (like nvidia test path)
       return {
-        b64_json: 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
+        b64_json:
+          'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
         metadata: {
           model,
           prompt,
@@ -210,7 +215,8 @@ export class NanoBananaImageProvider implements ImageProvider {
 
     if (!isNanoBananaAvailable()) {
       return {
-        b64_json: 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
+        b64_json:
+          'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
         metadata: {
           model,
           prompt,
@@ -227,7 +233,8 @@ export class NanoBananaImageProvider implements ImageProvider {
       return await this.generate({ ...opts, prompt })
     } catch {
       return {
-        b64_json: 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
+        b64_json:
+          'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
         metadata: {
           model,
           prompt,
@@ -241,7 +248,9 @@ export class NanoBananaImageProvider implements ImageProvider {
 }
 
 /** Factory helper for direct use */
-export function createNanoBananaProvider(config?: Partial<ImageProviderConfig>): NanoBananaImageProvider {
+export function createNanoBananaProvider(
+  config?: Partial<ImageProviderConfig>,
+): NanoBananaImageProvider {
   return new NanoBananaImageProvider({ provider: 'nano-banana', ...config })
 }
 

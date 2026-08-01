@@ -67,7 +67,12 @@ export interface EngineOutput {
   // --- P1 W1 media + generated_audio for raaga per FROZEN T-005/T-031
   // generated_audio: {strudel_ratios, clip_url etc} ; result still carries legacy
   generated_image?: { b64_json?: string; url?: string; metadata?: Record<string, unknown> }
-  generated_audio?: { clip_url?: string | null; strudel_ratios?: number[]; root_hz?: number; metadata?: Record<string, unknown> }
+  generated_audio?: {
+    clip_url?: string | null
+    strudel_ratios?: number[]
+    root_hz?: number
+    metadata?: Record<string, unknown>
+  }
 }
 
 /** Metadata about an engine */

@@ -93,9 +93,9 @@ export class RaagaEngine implements ConsciousnessEngine {
     // Support media input options per FROZEN (audio_ref, consent, quality) + parameters
     // audio_ref/consent can be top-level (extended EngineInput) or inside parameters for compat
     // full support for 72 melakartas + dosha/prahar verified via wisdom.verifyFull72Melakartas
-    const audioRef = (input as any).audio_ref || input.parameters.audio_ref
-    const consent = (input as any).consent || input.parameters.consent
-    const _quality = (input as any).quality || input.parameters.quality // for future clip quality
+    const audioRef = input.audio_ref || input.parameters.audio_ref
+    const consent = input.consent || input.parameters.consent
+    const _quality = input.quality || input.parameters.quality // for future clip quality
 
     const numParam = input.parameters.melakarta as number | undefined
     const nameParam = input.parameters.name as string | undefined

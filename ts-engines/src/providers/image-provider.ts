@@ -16,19 +16,19 @@
  */
 
 import {
-  generateImage as nvidiaGenerate,
-  editImage as nvidiaEdit,
-  isImageGenAvailable as nvidiaAvailable,
   NVIDIA_IMAGE_MODELS,
   type NvidiaImageModel,
+  isImageGenAvailable as nvidiaAvailable,
+  editImage as nvidiaEdit,
+  generateImage as nvidiaGenerate,
 } from '../utils/nvidia-image'
 import { KimiImageProvider } from './kimi'
 
 // T-060: real nano-banana impl (not stub). Separate module per task spec + FROZEN style.
 import {
   NanoBananaImageProvider,
-  isNanoBananaAvailable,
   createNanoBananaProvider,
+  isNanoBananaAvailable,
 } from './nano-banana'
 
 export interface ImageGenOptions {
@@ -84,7 +84,8 @@ export class MockImageProvider implements ImageProvider {
   async generate(opts: ImageGenOptions): Promise<GeneratedImage> {
     this.callCount++
     return {
-      b64_json: 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==', // tiny png
+      b64_json:
+        'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==', // tiny png
       metadata: {
         model: opts.model ?? 'mock-model',
         prompt: opts.prompt,
@@ -99,7 +100,8 @@ export class MockImageProvider implements ImageProvider {
   async edit(opts: ImageEditOptions): Promise<GeneratedImage> {
     this.callCount++
     return {
-      b64_json: 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
+      b64_json:
+        'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
       metadata: {
         model: opts.model ?? 'mock-edit',
         prompt: opts.prompt,

@@ -21,7 +21,6 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { createServer, registry } from '../../server'
 import type { Consent } from '../../types'
-import { RaagaEngine } from './engine'
 import {
   generateRaagaClip,
   renderRaagaClipWav,
@@ -29,6 +28,7 @@ import {
   resolveStoredClip,
   storeClip,
 } from './clip'
+import { RaagaEngine } from './engine'
 
 const CLIP_ENV_KEYS = [
   'RAAGA_CLIP_MODE',
@@ -93,6 +93,7 @@ describe('RaagaEngine clip generation (generated_audio.clip_url)', () => {
     for (const key of CLIP_ENV_KEYS) savedEnv[key] = process.env[key]
     process.env.RAAGA_CLIP_DIR = clipDir
     process.env.RAAGA_CLIP_MODE = 'off'
+    // biome-ignore lint/performance/noDelete: assigning undefined to a process.env key stores the string "undefined"; delete is the only way to unset it
     delete process.env.RAAGA_CLIP_SERVICE_URL
   })
 
@@ -231,6 +232,7 @@ describe('raaga clip HTTP surface', () => {
       expect([400, 404]).toContain(traversal.status)
     } finally {
       server.stop()
+      // biome-ignore lint/performance/noDelete: assigning undefined to a process.env key stores the string "undefined"; delete is the only way to unset it
       if (savedDir === undefined) delete process.env.RAAGA_CLIP_DIR
       else process.env.RAAGA_CLIP_DIR = savedDir
       rmSync(clipDir, { recursive: true, force: true })
