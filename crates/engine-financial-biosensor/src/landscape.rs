@@ -308,7 +308,7 @@ mod tests {
                     { "date": "2026-08-03", "physical": 30.0, "emotional": 30.0, "intellectual": 30.0 },
                 ],
             }),
-            "3.3.1".to_string(),
+            "test-fixture".to_string(),
         );
         let vimshottari = (
             json!({
@@ -318,7 +318,7 @@ mod tests {
                     "date": "2026-08-05T00:00:00Z", "days_until": 4
                 }],
             }),
-            "3.3.1".to_string(),
+            "test-fixture".to_string(),
         );
         DateSeries::build(Some(&biorhythm), Some(&vimshottari))
     }

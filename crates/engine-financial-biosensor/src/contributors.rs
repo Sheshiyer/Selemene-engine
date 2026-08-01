@@ -630,7 +630,7 @@ mod tests {
                 "emotional": { "percentage": e },
                 "intellectual": { "percentage": i },
             }),
-            "3.3.1".to_string(),
+            "test-fixture".to_string(),
         )
     }
 
@@ -675,7 +675,7 @@ mod tests {
                 "current_period": if has_period { json!({ "mahadasha": {} }) } else { Value::Null },
                 "upcoming_transitions": transitions,
             }),
-            "3.3.1".to_string(),
+            "test-fixture".to_string(),
         )
     }
 
@@ -728,7 +728,7 @@ mod tests {
     }
 
     fn transits(aspects: Value) -> (Value, String) {
-        (json!({ "aspects": aspects }), "3.3.1".to_string())
+        (json!({ "aspects": aspects }), "test-fixture".to_string())
     }
 
     #[test]
@@ -780,7 +780,7 @@ mod tests {
     // -- energetic authority ---------------------------------------------
 
     fn hd(authority: &str) -> (Value, String) {
-        (json!({ "authority": authority }), "3.3.1".to_string())
+        (json!({ "authority": authority }), "test-fixture".to_string())
     }
 
     #[test]
@@ -819,7 +819,7 @@ mod tests {
     fn spectrum_absent_when_gene_keys_serializes_null() {
         let gk = (
             json!({ "frequency_assessments": [{ "suggested_frequency": Value::Null }] }),
-            "3.3.1".to_string(),
+            "test-fixture".to_string(),
         );
         let c = gift_shadow_spectrum(Some(&gk), &HashMap::new());
         assert!(matches!(
