@@ -130,12 +130,24 @@ fn test_input() -> EngineInput {
     }
 }
 
-/// Build an orchestrator with 3 delay engines registered for birth-blueprint.
+/// The canonical birth-blueprint engine set, per `WorkflowRegistry` and
+/// `docs/baseline/workflow-parity.json`. A second, divergent definition once
+/// lived in `WorkflowOrchestrator::default_workflows()` and listed
+/// `["numerology", "human-design", "gene-keys"]`; these tests were written
+/// against that one.
+const BIRTH_BLUEPRINT_ENGINES: [&str; 5] = [
+    "numerology",
+    "human-design",
+    "vimshottari",
+    "biofield",
+    "face-reading",
+];
+
 fn build_parallel_orchestrator(delay: Duration) -> WorkflowOrchestrator {
     let mut orchestrator = WorkflowOrchestrator::new();
-    orchestrator.register_engine(Arc::new(DelayMockEngine::new("numerology", 0, delay)));
-    orchestrator.register_engine(Arc::new(DelayMockEngine::new("human-design", 0, delay)));
-    orchestrator.register_engine(Arc::new(DelayMockEngine::new("gene-keys", 0, delay)));
+    for engine_id in BIRTH_BLUEPRINT_ENGINES {
+        orchestrator.register_engine(Arc::new(DelayMockEngine::new(engine_id, 0, delay)));
+    }
     orchestrator
 }
 
@@ -145,10 +157,10 @@ fn build_parallel_orchestrator(delay: Duration) -> WorkflowOrchestrator {
 
 #[tokio::test]
 async fn test_birth_blueprint_workflow_parallelism() {
-    // birth-blueprint workflow includes: numerology, human-design, gene-keys
+    // birth-blueprint fans out to BIRTH_BLUEPRINT_ENGINES
     // Each engine delays ~50ms
-    // Sequential would be ~150ms
-    // Parallel should be ~50ms (max of the three)
+    // Sequential would be ~250ms across the five engines
+    // Parallel should be ~50ms (max of the five)
 
     let delay = Duration::from_millis(50);
     let orchestrator = build_parallel_orchestrator(delay);
@@ -160,27 +172,22 @@ async fn test_birth_blueprint_workflow_parallelism() {
         .expect("Workflow execution should succeed");
     let elapsed = start.elapsed();
 
-    // All three engines should have produced results
-    assert!(
-        result.engine_outputs.contains_key("numerology"),
-        "numerology engine output missing"
-    );
-    assert!(
-        result.engine_outputs.contains_key("human-design"),
-        "human-design engine output missing"
-    );
-    assert!(
-        result.engine_outputs.contains_key("gene-keys"),
-        "gene-keys engine output missing"
-    );
-    assert_eq!(result.engine_outputs.len(), 3);
+    // Every engine in the workflow should have produced a result
+    for engine_id in BIRTH_BLUEPRINT_ENGINES {
+        assert!(
+            result.engine_outputs.contains_key(engine_id),
+            "{} engine output missing",
+            engine_id
+        );
+    }
+    assert_eq!(result.engine_outputs.len(), BIRTH_BLUEPRINT_ENGINES.len());
 
     // Verify parallel execution: total time approximately max(engine_times), not sum
-    // With parallel: ~50ms, sequential would be ~150ms
+    // With parallel: ~50ms, sequential would be ~250ms
     // Allow generous margin for CI/test environment variance
     assert!(
         elapsed.as_millis() < 130,
-        "Expected parallel execution (<130ms) but took {}ms (sequential would be ~150ms)",
+        "Expected parallel execution (<130ms) but took {}ms (sequential would be ~250ms)",
         elapsed.as_millis()
     );
     assert!(
@@ -251,7 +258,7 @@ async fn test_workflow_result_synthesis() {
     assert_eq!(result.workflow_id, "birth-blueprint");
 
     // Verify each engine result is a complete EngineOutput
-    for engine_id in ["numerology", "human-design", "gene-keys"] {
+    for engine_id in BIRTH_BLUEPRINT_ENGINES {
         let output = result
             .engine_outputs
             .get(engine_id)
@@ -402,7 +409,10 @@ async fn test_workflow_concurrent_execution() {
         let wf_result = result
             .as_ref()
             .unwrap_or_else(|e| panic!("Workflow {} failed: {}", i, e));
-        assert_eq!(wf_result.engine_outputs.len(), 3);
+        assert_eq!(
+            wf_result.engine_outputs.len(),
+            BIRTH_BLUEPRINT_ENGINES.len()
+        );
     }
 
     // 3 workflows in parallel should not take 3x the single workflow time
