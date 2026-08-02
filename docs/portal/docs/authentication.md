@@ -25,12 +25,16 @@ API keys are prefixed with `nk_`. Each key is a unique user identity — rate li
 
 ## Cloudflare Access
 
-Human and admin authentication is enforced by Cloudflare Zero Trust. The Rust API validates Cloudflare Access identity for protected routes and maps CF groups into local `user_roles`.
+Human and admin authentication is enforced by Cloudflare Zero Trust. The Rust API validates the Access token signature, issuer, and audience before mapping identity into local `user_roles`.
 
-Group mapping:
+Role mapping:
 
-- `selemene-admin` → `platform-admin`
-- Other supported local role groups map directly: `viewer`, `support`, `admin`, `platform-admin`
+- Supported identity-provider group names map directly.
+- An IdP `selemene-admin` claim maps to `platform-admin`.
+- Cloudflare Access rule groups are policy collections, not JWT identity groups.
+  Exact administrators therefore require a second, fail-closed match in
+  `CF_PLATFORM_ADMIN_EMAILS` after token validation.
+- Unmatched identities retain `viewer`.
 
 ## Example
 

@@ -137,7 +137,11 @@ pub async fn auth_middleware(
                                 Some(serde_json::json!({ "auth_method": "cloudflare", "error": e.to_string() })),
                             )
                         })?;
-                    let roles = crate::cf_access::role_values_for_sql(&identity.groups);
+                    let platform_admin_emails = std::env::var("CF_PLATFORM_ADMIN_EMAILS").ok();
+                    let roles = crate::cf_access::role_values_for_identity(
+                        &identity,
+                        platform_admin_emails.as_deref(),
+                    );
                     if let Some(repo) = state.admin_repository.as_ref() {
                         repo.replace_user_roles_from_cloudflare(user.id, &roles)
                             .await

@@ -2,8 +2,8 @@
   "generated_at": "2026-03-13",
   "inventory_scope": "/api/v1",
   "source": "crates/noesis-api/src/lib.rs",
-  "path_count": 90,
-  "route_count": 94,
+  "path_count": 95,
+  "route_count": 100,
   "routes": [
     {
       "path": "/auth/register",
@@ -46,6 +46,17 @@
         {
           "method": "POST",
           "handler": "handlers::auth::reset_password"
+        }
+      ]
+    },
+    {
+      "path": "/living-readings/:reading_id/invitation",
+      "auth_requirement": "public",
+      "uses_orchestrator": false,
+      "methods": [
+        {
+          "method": "GET",
+          "handler": "handlers::living_reading_invites::resolve_invitation"
         }
       ]
     },
@@ -762,6 +773,54 @@
         {
           "method": "GET",
           "handler": "handlers::admin::witness_dyad_analytics"
+        }
+      ]
+    },
+    {
+      "path": "/admin/living-readings",
+      "auth_requirement": "bearer_or_api_key",
+      "uses_orchestrator": false,
+      "methods": [
+        {
+          "method": "GET",
+          "handler": "handlers::admin::list_living_readings"
+        }
+      ]
+    },
+    {
+      "path": "/admin/living-readings/:reading_id",
+      "auth_requirement": "bearer_or_api_key",
+      "uses_orchestrator": false,
+      "methods": [
+        {
+          "method": "GET",
+          "handler": "handlers::admin::get_living_reading"
+        }
+      ]
+    },
+    {
+      "path": "/admin/living-readings/:reading_id/invitations",
+      "auth_requirement": "bearer_or_api_key",
+      "uses_orchestrator": false,
+      "methods": [
+        {
+          "method": "GET",
+          "handler": "handlers::admin::list_living_reading_invitations"
+        },
+        {
+          "method": "POST",
+          "handler": "handlers::admin::create_living_reading_invitation"
+        }
+      ]
+    },
+    {
+      "path": "/admin/living-readings/:reading_id/invitations/:invitation_id/revoke",
+      "auth_requirement": "bearer_or_api_key",
+      "uses_orchestrator": false,
+      "methods": [
+        {
+          "method": "POST",
+          "handler": "handlers::admin::revoke_living_reading_invitation"
         }
       ]
     },

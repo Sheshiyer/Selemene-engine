@@ -11,6 +11,7 @@ mod config;
 pub mod error;
 pub mod error_mapper;
 mod handlers;
+mod living_reading_publication;
 mod logging;
 mod middleware;
 pub mod workflow_parity;
@@ -756,7 +757,11 @@ pub fn create_router(state: AppState, config: &ApiConfig) -> Router {
             "/auth/forgot-password",
             post(handlers::auth::forgot_password),
         )
-        .route("/auth/reset-password", post(handlers::auth::reset_password));
+        .route("/auth/reset-password", post(handlers::auth::reset_password))
+        .route(
+            "/living-readings/:reading_id/invitation",
+            get(handlers::living_reading_invites::resolve_invitation),
+        );
 
     let api_v1 = Router::new()
         .route(
@@ -982,6 +987,23 @@ pub fn create_router(state: AppState, config: &ApiConfig) -> Router {
         .route(
             "/admin/witness-dyad/analytics",
             get(handlers::admin::witness_dyad_analytics),
+        )
+        .route(
+            "/admin/living-readings",
+            get(handlers::admin::list_living_readings),
+        )
+        .route(
+            "/admin/living-readings/:reading_id",
+            get(handlers::admin::get_living_reading),
+        )
+        .route(
+            "/admin/living-readings/:reading_id/invitations",
+            get(handlers::admin::list_living_reading_invitations)
+                .post(handlers::admin::create_living_reading_invitation),
+        )
+        .route(
+            "/admin/living-readings/:reading_id/invitations/:invitation_id/revoke",
+            post(handlers::admin::revoke_living_reading_invitation),
         )
         .route("/admin/readings", get(handlers::admin::list_all_readings))
         .route(

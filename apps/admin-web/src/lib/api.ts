@@ -24,6 +24,9 @@ import type {
   AdminHistorySyncEventsResponse,
   AdminHistorySyncUsersResponse,
   AdminLlmProxyStatus,
+  AdminLivingReadingDetail,
+  AdminLivingReadingInvitationsResponse,
+  AdminLivingReadingsResponse,
   AdminObservabilitySummary,
   AdminReadingsEngineBreakdownResponse,
   AdminReadingsResponse,
@@ -45,7 +48,9 @@ import type {
   AdminWitnessDyadExecutionsResponse,
   ApiErrorPayload,
   CreateApiKeyResponse,
+  CreateLivingReadingInvitationResponse,
   LoginResponse,
+  LivingReadingInvitationResolution,
   RotateApiKeyResponse,
   UpdateUserRolesResponse,
   UpdateUserStateResponse,
@@ -691,6 +696,93 @@ export async function getAdminReadingsEngineBreakdown(
     `/api/v1/admin/readings/engine-breakdown${buildQuery({
       window_hours: params.window_hours
     })}`,
+    { token }
+  );
+}
+
+export async function getAdminLivingReadings(
+  token: string | undefined,
+  params: {
+    query?: string;
+    reading_type?: "solo" | "synastry";
+    owner_user_id?: string;
+    subject_id?: string;
+    relationship_id?: string;
+    source_id?: string;
+    import_run_id?: string;
+    editorial_state?: string;
+    limit?: number;
+    offset?: number;
+  } = {}
+): Promise<AdminLivingReadingsResponse> {
+  return request<AdminLivingReadingsResponse>(
+    `/api/v1/admin/living-readings${buildQuery({
+      query: params.query,
+      reading_type: params.reading_type,
+      owner_user_id: params.owner_user_id,
+      subject_id: params.subject_id,
+      relationship_id: params.relationship_id,
+      source_id: params.source_id,
+      import_run_id: params.import_run_id,
+      editorial_state: params.editorial_state,
+      limit: params.limit,
+      offset: params.offset
+    })}`,
+    { token }
+  );
+}
+
+export async function getAdminLivingReadingInvitations(
+  token: string | undefined,
+  readingId: string
+): Promise<AdminLivingReadingInvitationsResponse> {
+  return request<AdminLivingReadingInvitationsResponse>(
+    `/api/v1/admin/living-readings/${readingId}/invitations`,
+    { token }
+  );
+}
+
+export async function createAdminLivingReadingInvitation(
+  token: string | undefined,
+  readingId: string,
+  expiresInHours: number
+): Promise<CreateLivingReadingInvitationResponse> {
+  return request<CreateLivingReadingInvitationResponse>(
+    `/api/v1/admin/living-readings/${readingId}/invitations`,
+    {
+      method: "POST",
+      token,
+      body: { expires_in_hours: expiresInHours }
+    }
+  );
+}
+
+export async function revokeAdminLivingReadingInvitation(
+  token: string | undefined,
+  readingId: string,
+  invitationId: string
+): Promise<void> {
+  await request<Record<string, unknown>>(
+    `/api/v1/admin/living-readings/${readingId}/invitations/${invitationId}/revoke`,
+    { method: "POST", token }
+  );
+}
+
+export async function resolveLivingReadingInvitation(
+  readingId: string,
+  token: string
+): Promise<LivingReadingInvitationResolution> {
+  return request<LivingReadingInvitationResolution>(
+    `/api/v1/living-readings/${encodeURIComponent(readingId)}/invitation?token=${encodeURIComponent(token)}`
+  );
+}
+
+export async function getAdminLivingReading(
+  token: string | undefined,
+  readingId: string
+): Promise<AdminLivingReadingDetail> {
+  return request<AdminLivingReadingDetail>(
+    `/api/v1/admin/living-readings/${readingId}`,
     { token }
   );
 }

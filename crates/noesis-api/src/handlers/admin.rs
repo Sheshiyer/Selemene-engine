@@ -1,19 +1,25 @@
-use crate::{error::ApiError, AppState, ErrorMapper};
+use crate::{
+    error::ApiError, living_reading_publication::LivingReadingPublicationResolver, AppState,
+    ErrorMapper,
+};
 use axum::{
     extract::{Extension, Json, Path, Query, State},
     http::StatusCode,
     response::{IntoResponse, Response},
 };
+use base64::{engine::general_purpose::URL_SAFE_NO_PAD, Engine as _};
 use chrono::{DateTime, Duration, Utc};
 use noesis_auth::{sha256_hex, ApiKey, AuthUser};
 use noesis_bridge;
 use noesis_core::EngineError;
+use noesis_data::models::living_reading::{LivingReadingListFilters, LivingReadingTypeFilter};
 use noesis_data::models::reading::AdminReadingRecord;
 use noesis_data::models::witness_dyad::WitnessDyadExecutionAdminRecord;
 use noesis_data::repositories::admin_repository::{
     AdminApiKeyRecord, AdminRepository, AdminUserRecord, AuditEventRecord,
     SystemWorkflowSnapshotRecord,
 };
+use rand::{rngs::OsRng, RngCore};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::{
@@ -700,6 +706,32 @@ pub struct AdminReadingsQuery {
     pub engine_id: Option<String>,
     pub limit: Option<i64>,
     pub offset: Option<i64>,
+}
+
+#[derive(Deserialize, Default)]
+pub struct AdminLivingReadingsQuery {
+    pub query: Option<String>,
+    pub reading_type: Option<String>,
+    pub owner_user_id: Option<String>,
+    pub subject_id: Option<String>,
+    pub relationship_id: Option<String>,
+    pub source_id: Option<String>,
+    pub import_run_id: Option<String>,
+    pub editorial_state: Option<String>,
+    pub limit: Option<i64>,
+    pub offset: Option<i64>,
+}
+
+#[derive(Deserialize, ToSchema)]
+pub struct CreateLivingReadingInvitationRequest {
+    pub expires_in_hours: Option<i64>,
+}
+
+#[derive(Serialize)]
+pub struct CreateLivingReadingInvitationResponse {
+    pub invitation: noesis_data::models::living_reading::LivingReadingInvitation,
+    pub token: String,
+    pub recipient_path: String,
 }
 
 pub(crate) fn has_permission(permissions: &[String], required: &str) -> bool {
@@ -3469,6 +3501,362 @@ pub async fn witness_dyad_analytics(
 
 // ── Admin readings handlers ──────────────────────────────────────────────────
 
+const LIVING_READING_EDITORIAL_STATES: &[&str] = &[
+    "imported",
+    "needs_review",
+    "in_review",
+    "approved",
+    "rejected",
+    "published",
+    "archived",
+];
+const LIVING_READING_TYPES: &[&str] = &["solo", "synastry"];
+
+fn parse_living_reading_type_filter(
+    value: Option<&str>,
+) -> Result<Option<LivingReadingTypeFilter>, ()> {
+    match value.map(str::trim).filter(|value| !value.is_empty()) {
+        Some("solo") => Ok(Some(LivingReadingTypeFilter::Solo)),
+        Some("synastry") => Ok(Some(LivingReadingTypeFilter::Synastry)),
+        Some(_) => Err(()),
+        None => Ok(None),
+    }
+}
+
+#[allow(clippy::result_large_err)]
+fn parse_optional_uuid_filter(value: Option<&str>, field: &str) -> Result<Option<Uuid>, Response> {
+    value
+        .map(str::trim)
+        .filter(|value| !value.is_empty())
+        .map(|value| parse_uuid_or_422(value, field))
+        .transpose()
+}
+
+/// GET /api/v1/admin/living-readings -- canonical archive browser
+pub async fn list_living_readings(
+    State(state): State<AppState>,
+    Extension(auth_user): Extension<AuthUser>,
+    Query(query): Query<AdminLivingReadingsQuery>,
+) -> Result<Response, ApiError> {
+    let effective_permissions = effective_permissions(&state, &auth_user).await?;
+    if let Some(response) =
+        require_permission_or_forbidden(&effective_permissions, "admin:analytics:read")
+    {
+        return Ok(response);
+    }
+
+    let admin_repo = match admin_repo_or_503(&state) {
+        Ok(repo) => repo,
+        Err(response) => return Ok(response),
+    };
+
+    let owner_user_id =
+        match parse_optional_uuid_filter(query.owner_user_id.as_deref(), "owner_user_id") {
+            Ok(value) => value,
+            Err(response) => return Ok(response),
+        };
+    let subject_id = match parse_optional_uuid_filter(query.subject_id.as_deref(), "subject_id") {
+        Ok(value) => value,
+        Err(response) => return Ok(response),
+    };
+    let relationship_id =
+        match parse_optional_uuid_filter(query.relationship_id.as_deref(), "relationship_id") {
+            Ok(value) => value,
+            Err(response) => return Ok(response),
+        };
+    let source_id = match parse_optional_uuid_filter(query.source_id.as_deref(), "source_id") {
+        Ok(value) => value,
+        Err(response) => return Ok(response),
+    };
+    let import_run_id =
+        match parse_optional_uuid_filter(query.import_run_id.as_deref(), "import_run_id") {
+            Ok(value) => value,
+            Err(response) => return Ok(response),
+        };
+
+    let editorial_state = query
+        .editorial_state
+        .as_deref()
+        .map(str::trim)
+        .filter(|value| !value.is_empty())
+        .map(str::to_string);
+    if let Some(editorial_state) = editorial_state.as_deref() {
+        if !LIVING_READING_EDITORIAL_STATES.contains(&editorial_state) {
+            return Ok(json_error_response(
+                StatusCode::UNPROCESSABLE_ENTITY,
+                "Invalid editorial_state",
+                "INVALID_INPUT",
+                Some(serde_json::json!({
+                    "editorial_state": editorial_state,
+                    "allowed": LIVING_READING_EDITORIAL_STATES,
+                })),
+            ));
+        }
+    }
+
+    let reading_type = match parse_living_reading_type_filter(query.reading_type.as_deref()) {
+        Ok(value) => value,
+        Err(()) => {
+            return Ok(json_error_response(
+                StatusCode::UNPROCESSABLE_ENTITY,
+                "Invalid reading_type",
+                "INVALID_INPUT",
+                Some(serde_json::json!({
+                    "reading_type": query.reading_type,
+                    "allowed": LIVING_READING_TYPES,
+                })),
+            ))
+        }
+    };
+
+    let (limit, offset) = normalize_limit_offset(query.limit, query.offset, 25, 100);
+    let filters = LivingReadingListFilters {
+        query: query
+            .query
+            .as_deref()
+            .map(str::trim)
+            .filter(|value| !value.is_empty())
+            .map(str::to_string),
+        reading_type,
+        owner_user_id,
+        subject_id,
+        relationship_id,
+        source_id,
+        import_run_id,
+        editorial_state,
+    };
+    let page = admin_repo
+        .living_readings()
+        .list(&filters, limit, offset)
+        .await
+        .map_err(|error| {
+            EngineError::InternalError(format!("Failed to list living readings: {error}"))
+        })?;
+
+    Ok((StatusCode::OK, Json(page)).into_response())
+}
+
+fn generate_living_reading_invitation_token() -> String {
+    let mut bytes = [0_u8; 32];
+    OsRng.fill_bytes(&mut bytes);
+    URL_SAFE_NO_PAD.encode(bytes)
+}
+
+/// POST /api/v1/admin/living-readings/:reading_id/invitations
+pub async fn create_living_reading_invitation(
+    State(state): State<AppState>,
+    Extension(auth_user): Extension<AuthUser>,
+    Path(reading_id): Path<String>,
+    Json(payload): Json<CreateLivingReadingInvitationRequest>,
+) -> Result<Response, ApiError> {
+    let effective_permissions = effective_permissions(&state, &auth_user).await?;
+    if let Some(response) =
+        require_permission_or_forbidden(&effective_permissions, "admin:analytics:write")
+    {
+        return Ok(response);
+    }
+    let repo = match admin_repo_or_503(&state) {
+        Ok(repo) => repo,
+        Err(response) => return Ok(response),
+    };
+    let reading_id = match parse_uuid_or_422(&reading_id, "reading_id") {
+        Ok(value) => value,
+        Err(response) => return Ok(response),
+    };
+    let expires_in_hours = payload.expires_in_hours.unwrap_or(72);
+    if !(1..=24 * 30).contains(&expires_in_hours) {
+        return Ok(json_error_response(
+            StatusCode::UNPROCESSABLE_ENTITY,
+            "expires_in_hours must be between 1 and 720",
+            "INVALID_INPUT",
+            None,
+        ));
+    }
+
+    let candidate = repo
+        .living_readings()
+        .find_invitable_publication(reading_id)
+        .await
+        .map_err(|error| {
+            EngineError::InternalError(format!(
+                "Failed to find invitable reading publication: {error}"
+            ))
+        })?;
+    let publication_is_verified = match candidate.as_ref() {
+        Some(candidate) => match LivingReadingPublicationResolver::from_env()
+            .and_then(|resolver| resolver.resolve(candidate))
+        {
+            Ok(_) => true,
+            Err(error) => {
+                tracing::warn!(reason = %error, "Living-reading publication is not invitable");
+                false
+            }
+        },
+        None => false,
+    };
+    if !publication_is_verified {
+        return Ok(json_error_response(
+            StatusCode::CONFLICT,
+            "Reading has no safely resolvable published artifact",
+            "READING_ARTIFACT_UNAVAILABLE",
+            None,
+        ));
+    }
+
+    let token = generate_living_reading_invitation_token();
+    let token_digest = sha256_hex(&token);
+    let actor_user_id = Uuid::parse_str(&auth_user.user_id).ok();
+    let created = repo
+        .living_readings()
+        .create_invitation(
+            noesis_data::models::living_reading::NewLivingReadingInvitation {
+                reading_id,
+                token_digest,
+                created_by_user_id: actor_user_id,
+                expires_at: Utc::now() + Duration::hours(expires_in_hours),
+            },
+        )
+        .await
+        .map_err(|error| {
+            EngineError::InternalError(format!("Failed to create reading invitation: {error}"))
+        })?;
+
+    let Some(invitation) = created else {
+        return Ok(json_error_response(
+            StatusCode::CONFLICT,
+            "Reading is unavailable or not completed for invitation",
+            "READING_NOT_INVITABLE",
+            None,
+        ));
+    };
+    let recipient_path = format!("/reading-invites/{}?token={}", invitation.reading_id, token);
+    Ok((
+        StatusCode::CREATED,
+        Json(CreateLivingReadingInvitationResponse {
+            invitation,
+            token,
+            recipient_path,
+        }),
+    )
+        .into_response())
+}
+
+/// GET /api/v1/admin/living-readings/:reading_id/invitations
+pub async fn list_living_reading_invitations(
+    State(state): State<AppState>,
+    Extension(auth_user): Extension<AuthUser>,
+    Path(reading_id): Path<String>,
+) -> Result<Response, ApiError> {
+    let effective_permissions = effective_permissions(&state, &auth_user).await?;
+    if let Some(response) =
+        require_permission_or_forbidden(&effective_permissions, "admin:analytics:read")
+    {
+        return Ok(response);
+    }
+    let repo = match admin_repo_or_503(&state) {
+        Ok(repo) => repo,
+        Err(response) => return Ok(response),
+    };
+    let reading_id = match parse_uuid_or_422(&reading_id, "reading_id") {
+        Ok(value) => value,
+        Err(response) => return Ok(response),
+    };
+    let items = repo
+        .living_readings()
+        .list_invitations(reading_id)
+        .await
+        .map_err(|error| {
+            EngineError::InternalError(format!("Failed to list reading invitations: {error}"))
+        })?;
+    Ok((StatusCode::OK, Json(serde_json::json!({ "items": items }))).into_response())
+}
+
+/// POST /api/v1/admin/living-readings/:reading_id/invitations/:invitation_id/revoke
+pub async fn revoke_living_reading_invitation(
+    State(state): State<AppState>,
+    Extension(auth_user): Extension<AuthUser>,
+    Path((reading_id, invitation_id)): Path<(String, String)>,
+) -> Result<Response, ApiError> {
+    let effective_permissions = effective_permissions(&state, &auth_user).await?;
+    if let Some(response) =
+        require_permission_or_forbidden(&effective_permissions, "admin:analytics:write")
+    {
+        return Ok(response);
+    }
+    let repo = match admin_repo_or_503(&state) {
+        Ok(repo) => repo,
+        Err(response) => return Ok(response),
+    };
+    let reading_id = match parse_uuid_or_422(&reading_id, "reading_id") {
+        Ok(value) => value,
+        Err(response) => return Ok(response),
+    };
+    let invitation_id = match parse_uuid_or_422(&invitation_id, "invitation_id") {
+        Ok(value) => value,
+        Err(response) => return Ok(response),
+    };
+    let actor_user_id = Uuid::parse_str(&auth_user.user_id).ok();
+    let revoked = repo
+        .living_readings()
+        .revoke_invitation(reading_id, invitation_id, actor_user_id)
+        .await
+        .map_err(|error| {
+            EngineError::InternalError(format!("Failed to revoke reading invitation: {error}"))
+        })?;
+    if !revoked {
+        return Ok(json_error_response(
+            StatusCode::NOT_FOUND,
+            "Active invitation not found",
+            "NOT_FOUND",
+            None,
+        ));
+    }
+    Ok((
+        StatusCode::OK,
+        Json(serde_json::json!({ "invitation_id": invitation_id, "revoked": true })),
+    )
+        .into_response())
+}
+
+/// GET /api/v1/admin/living-readings/:reading_id -- canonical archive detail
+pub async fn get_living_reading(
+    State(state): State<AppState>,
+    Extension(auth_user): Extension<AuthUser>,
+    Path(reading_id): Path<String>,
+) -> Result<Response, ApiError> {
+    let effective_permissions = effective_permissions(&state, &auth_user).await?;
+    if let Some(response) =
+        require_permission_or_forbidden(&effective_permissions, "admin:analytics:read")
+    {
+        return Ok(response);
+    }
+
+    let admin_repo = match admin_repo_or_503(&state) {
+        Ok(repo) => repo,
+        Err(response) => return Ok(response),
+    };
+    let reading_id = match parse_uuid_or_422(&reading_id, "reading_id") {
+        Ok(reading_id) => reading_id,
+        Err(response) => return Ok(response),
+    };
+
+    match admin_repo
+        .living_readings()
+        .get(reading_id)
+        .await
+        .map_err(|error| {
+            EngineError::InternalError(format!("Failed to fetch living reading: {error}"))
+        })? {
+        Some(detail) => Ok((StatusCode::OK, Json(detail)).into_response()),
+        None => Ok(json_error_response(
+            StatusCode::NOT_FOUND,
+            "Living reading not found",
+            "LIVING_READING_NOT_FOUND",
+            Some(serde_json::json!({ "reading_id": reading_id })),
+        )),
+    }
+}
+
 fn map_admin_reading_record(record: AdminReadingRecord) -> AdminReadingItem {
     AdminReadingItem {
         id: record.id.to_string(),
@@ -5016,5 +5404,46 @@ mod tests {
         let permissions = vec!["admin:users".to_string()];
         let normalized = normalize_effective_permissions(&permissions);
         assert!(normalized.iter().any(|perm| perm == "admin:keys:delete"));
+    }
+
+    #[test]
+    fn living_readings_require_analytics_read_permission() {
+        assert!(!has_permission(
+            &["basic:access".to_string()],
+            "admin:analytics:read"
+        ));
+        assert!(has_permission(
+            &["admin:analytics:read".to_string()],
+            "admin:analytics:read"
+        ));
+    }
+
+    #[test]
+    fn living_reading_type_query_is_bounded() {
+        assert_eq!(
+            parse_living_reading_type_filter(Some("solo")),
+            Ok(Some(LivingReadingTypeFilter::Solo))
+        );
+        assert_eq!(
+            parse_living_reading_type_filter(Some("synastry")),
+            Ok(Some(LivingReadingTypeFilter::Synastry))
+        );
+        assert_eq!(
+            parse_living_reading_type_filter(Some("relationship")),
+            Err(())
+        );
+        assert_eq!(parse_living_reading_type_filter(None), Ok(None));
+    }
+
+    #[test]
+    fn living_reading_invitation_tokens_are_256_bit_url_safe_secrets() {
+        let first = generate_living_reading_invitation_token();
+        let second = generate_living_reading_invitation_token();
+        assert_eq!(first.len(), 43);
+        assert_ne!(first, second);
+        assert!(first
+            .bytes()
+            .all(|byte| byte.is_ascii_alphanumeric() || byte == b'-' || byte == b'_'));
+        assert_eq!(sha256_hex(&first).len(), 64);
     }
 }

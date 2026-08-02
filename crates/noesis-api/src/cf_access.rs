@@ -102,6 +102,34 @@ pub fn role_values_for_sql(groups: &[String]) -> Vec<String> {
     roles_from_cf_groups(groups)
 }
 
+/// Resolve roles from a validated Cloudflare Access identity.
+///
+/// Access rule groups are policy-building blocks, not identity-provider
+/// groups, so their names are not guaranteed to appear in the JWT `groups`
+/// claim. An explicitly configured email allowlist provides a fail-closed
+/// backend mapping after signature, issuer, and audience validation.
+pub fn role_values_for_identity(
+    identity: &CfIdentity,
+    platform_admin_emails: Option<&str>,
+) -> Vec<String> {
+    let mut roles = role_values_for_sql(&identity.groups);
+    let is_platform_admin = platform_admin_emails
+        .into_iter()
+        .flat_map(|emails| emails.split(','))
+        .map(str::trim)
+        .filter(|email| !email.is_empty())
+        .any(|email| email.eq_ignore_ascii_case(&identity.email));
+
+    if is_platform_admin {
+        roles.retain(|role| role != "viewer");
+        roles.push("platform-admin".to_string());
+        roles.sort();
+        roles.dedup();
+    }
+
+    roles
+}
+
 #[derive(Debug, Clone, serde::Deserialize)]
 pub struct CfAccessClaims {
     pub sub: String,
@@ -401,6 +429,28 @@ mod tests {
         assert_eq!(
             role_values_for_sql(&groups),
             vec!["admin", "platform-admin", "support"]
+        );
+    }
+
+    #[test]
+    fn validated_identity_requires_explicit_email_match_for_platform_admin() {
+        let identity = CfIdentity {
+            sub: "cf-sub-123".to_string(),
+            email: "sheshnarayan.iyer@gmail.com".to_string(),
+            groups: vec![],
+        };
+
+        assert_eq!(role_values_for_identity(&identity, None), vec!["viewer"]);
+        assert_eq!(
+            role_values_for_identity(&identity, Some("other@example.com")),
+            vec!["viewer"]
+        );
+        assert_eq!(
+            role_values_for_identity(
+                &identity,
+                Some("other@example.com, SHESHNARAYAN.IYER@GMAIL.COM")
+            ),
+            vec!["platform-admin"]
         );
     }
 }

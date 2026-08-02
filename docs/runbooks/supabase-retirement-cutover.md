@@ -4,9 +4,13 @@
 
 - Railway Postgres is provisioned and reachable.
 - Cloudflare Access application protects admin-web and API routes that require human/admin auth.
-- CF groups exist: `selemene-admin`, plus optional direct local roles `viewer`, `support`, `admin`, `platform-admin`.
+- The Access policy uses the `selemene-admin` rule group, while
+  `CF_PLATFORM_ADMIN_EMAILS` explicitly names the validated identities that
+  become local `platform-admin` users.
 - R2 bucket exists: `selemene-raga-clips`.
-- Runtime secrets are set: `DATABASE_URL`, `CF_ACCESS_ISSUER`, `CF_ACCESS_AUDIENCE`, Dodo envs, `INTERNAL_SERVICE_KEY`, and R2 envs for TS generation jobs.
+- Runtime secrets are set: `DATABASE_URL`, `CF_ACCESS_ISSUER`,
+  `CF_ACCESS_AUDIENCE`, `CF_PLATFORM_ADMIN_EMAILS`, Dodo envs,
+  `INTERNAL_SERVICE_KEY`, and R2 envs for TS generation jobs.
 
 ## Database Migration
 
@@ -29,7 +33,8 @@
 
 - `curl -fsS https://selemene.tryambakam.space/health/live`
 - `curl -fsS https://selemene.tryambakam.space/health/ready`
-- CF-authenticated admin session returns platform-admin for `selemene-admin` group.
+- A fresh CF-authenticated allowlisted admin session returns `platform-admin`;
+  an authenticated non-allowlisted identity remains `viewer`.
 - Dodo webhook forward path still accepts valid `X-Forward-Secret`.
 - Raga generation uploads to R2 and `/internal/raga/clip` persists the row.
 

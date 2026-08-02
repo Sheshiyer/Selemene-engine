@@ -31,6 +31,15 @@ Not prediction. Reflection. Inquiry. Witness.
 | Local | `http://localhost:8080` | Rust API server |
 | Production | `https://selemene.tryambakam.space` | Production deployment |
 
+### Living-reading artifact delivery
+
+Filesystem `rendered_reading` artifacts are resolved only beneath the canonical
+directory configured by `LIVING_READING_ARTIFACT_ROOT`. Recipient delivery and
+new invitation creation fail closed when the root is missing, invalid, or the
+artifact fails containment, type, size, UTF-8, or checksum verification.
+`LIVING_READING_PUBLICATION_MAX_BYTES` optionally lowers or raises the default
+2 MiB body cap, up to the enforced 8 MiB ceiling.
+
 ## Interactive API Explorer
 
 - Swagger UI: `GET /api/docs`
