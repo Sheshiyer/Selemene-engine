@@ -250,6 +250,7 @@ a {
 
 .content {
   padding: 1.25rem 1.35rem 1.5rem;
+  min-width: 0;
 }
 
 .shell-content {
@@ -316,6 +317,8 @@ a {
 
 .surface-card {
   position: relative;
+  min-width: 0;
+  max-width: 100%;
   border: 1px solid var(--line-mid);
   border-radius: var(--r-xl);
   background:
@@ -357,6 +360,13 @@ a {
 .surface-card-body {
   display: grid;
   gap: 0.9rem;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.surface-card-body > * {
+  min-width: 0;
+  max-width: 100%;
 }
 
 .panel h2,
@@ -423,10 +433,13 @@ a {
   flex-wrap: wrap;
   justify-content: flex-end;
   gap: 0.55rem;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .action-rail > * {
   flex: 0 0 auto;
+  max-width: 100%;
 }
 
 .action-rail button,
@@ -603,12 +616,14 @@ a {
   gap: 0.65rem;
   grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
   align-items: end;
+  min-width: 0;
 }
 
 .panel-inline label {
   display: grid;
   gap: 0.35rem;
   font-size: 0.86rem;
+  min-width: 0;
 }
 
 .panel-inline .checkbox {
@@ -646,8 +661,17 @@ a {
   cursor: pointer;
 }
 
+.panel-inline input,
+.panel-inline select,
+.panel-inline button {
+  min-width: 0;
+  max-width: 100%;
+}
+
 .table-wrap {
   width: 100%;
+  min-width: 0;
+  max-width: 100%;
   overflow: auto;
   border: 1px solid var(--line-mid);
   border-radius: var(--r-lg);
@@ -1520,6 +1544,7 @@ tbody tr.clickable-row:focus-visible {
 .detail-list > div {
   display: grid;
   gap: 0.2rem;
+  min-width: 0;
 }
 
 .detail-label {
@@ -2039,10 +2064,132 @@ tbody tr.clickable-row:focus-visible {
 
 .page-shell-grid {
   gap: 1rem;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.page-shell-grid > * {
+  min-width: 0;
+  max-width: 100%;
 }
 
 .filigree-frame {
   overflow: hidden;
+}
+
+.reading-publication {
+  margin-top: 1.5rem;
+}
+
+.advanced-filters {
+  margin: 0 0 1rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  background: var(--panel);
+}
+
+.advanced-filters > summary {
+  cursor: pointer;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.advanced-filters[open] > summary {
+  margin-bottom: 0.75rem;
+}
+
+.advanced-filters .panel-inline {
+  margin-bottom: 0;
+}
+
+.invitation-link {
+  margin-top: 0.9rem;
+  min-width: 0;
+}
+
+.invitation-link-value {
+  display: block;
+  max-width: 100%;
+  padding: 0.65rem 0.75rem;
+  overflow-wrap: anywhere;
+  word-break: break-all;
+  white-space: normal;
+  border: 1px solid var(--line-mid);
+  border-radius: var(--r-md);
+  background: var(--field);
+  user-select: all;
+}
+
+.invitation-history {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.invitation-history-item {
+  display: grid;
+  grid-template-columns: minmax(7rem, 0.7fr) repeat(2, minmax(10rem, 1fr)) minmax(7rem, auto);
+  gap: 0.75rem;
+  align-items: end;
+  min-width: 0;
+  padding: 0.85rem;
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  background: rgba(240, 237, 227, 0.02);
+}
+
+.invitation-history-item > div {
+  display: grid;
+  gap: 0.3rem;
+  min-width: 0;
+}
+
+.invitation-history-action button {
+  width: 100%;
+  min-height: 2.5rem;
+  border: 1px solid var(--line-mid);
+  border-radius: var(--r-md);
+  background: var(--field);
+  color: var(--text);
+  cursor: pointer;
+}
+
+.reading-publication-frame {
+  width: 100%;
+  min-height: 34rem;
+  margin-top: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  background: #fff;
+}
+
+.reading-publication-text {
+  max-height: 44rem;
+  margin-top: 0.75rem;
+  padding: 1rem;
+  overflow: auto;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  background: var(--panel-strong);
+  color: var(--text);
+  font: inherit;
+  line-height: 1.65;
+}
+
+.reading-conversation-link {
+  display: inline-flex;
+  margin-top: 1.5rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--accent);
+  border-radius: 999px;
+  color: var(--text);
+  text-decoration: none;
+}
+
+.reading-conversation-link:hover {
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
 }
 
 .filigree-frame::after {
@@ -2114,6 +2261,48 @@ tbody tr.clickable-row:focus-visible {
 
   .topbar-action-rail {
     max-width: none;
+  }
+
+  .invitation-history-item {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 560px) {
+  .content {
+    padding-inline: 0.75rem;
+  }
+
+  .surface-card,
+  .panel {
+    min-width: 0;
+    padding: 0.85rem;
+  }
+
+  .surface-card-actions,
+  .action-rail,
+  .action-rail > *,
+  .action-rail button,
+  .action-rail a,
+  .panel-inline button {
+    width: 100%;
+  }
+
+  .panel-inline {
+    grid-template-columns: minmax(0, 1fr);
+    width: 100%;
+  }
+
+  .panel-inline > *,
+  .panel-inline input,
+  .panel-inline select,
+  .panel-inline button {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .invitation-history-item {
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 

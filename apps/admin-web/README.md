@@ -4,12 +4,16 @@ This app is the Vercel-hosted admin dashboard for Selemene Engine.
 
 ## Authentication
 
-Admin access is enforced by Cloudflare Zero Trust in front of the deployed admin surface. The Rust API validates Cloudflare Access identity for protected API calls and maps CF groups into local `user_roles`.
+Admin access is enforced by Cloudflare Zero Trust in front of the deployed admin surface. The Rust API validates the Access token signature, issuer, and audience before mapping identity into local `user_roles`.
 
-Group mapping:
+Role mapping:
 
-- `selemene-admin` -> `platform-admin`
-- Any supported local role group maps directly: `viewer`, `support`, `admin`, `platform-admin`
+- Identity-provider groups map directly when they use a supported local role name.
+- `selemene-admin` in an identity-provider `groups` claim maps to `platform-admin`.
+- Access rule-group names are not identity claims. Exact human administrators
+  must also be listed in the fail-closed `CF_PLATFORM_ADMIN_EMAILS` runtime
+  allowlist; the match occurs only after Access JWT validation.
+- An identity with neither a supported IdP group nor an allowlisted email is `viewer`.
 
 Local development can use `RUST_ENV=development` with `CF_DEV_BYPASS_TOKEN` and the `x-noesis-dev-auth` header.
 
@@ -39,6 +43,8 @@ Default URL: `http://localhost:3001/admin/login`
 
 ```bash
 NEXT_PUBLIC_API_BASE_URL=http://localhost:8080
+# Optional override; defaults to the current public Urania host.
+NEXT_PUBLIC_URANIA_URL=https://urania.tryambakam.space
 # Optional local bootstrap mode for non-admin tokens:
 NEXT_PUBLIC_ADMIN_DEV_MODE=false
 ```
@@ -55,6 +61,7 @@ If `NEXT_PUBLIC_API_BASE_URL` is missing in a non-local deployment, login/sessio
 - `vercel.json` pins framework preset to Next.js
 - Required env:
   - `NEXT_PUBLIC_API_BASE_URL` -> Railway API base URL
+  - `NEXT_PUBLIC_URANIA_URL` -> Urania origin for invitation conversation handoff
   - `NEXT_PUBLIC_ADMIN_DEV_MODE=false`
 
 Current project wiring:

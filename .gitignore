@@ -77,6 +77,7 @@ packages/*/dist/
 
 # Worker artifacts
 workers/*/.wrangler/
+.wrangler/
 workers/*/package-lock.json
 workers/*/node_modules/
 
