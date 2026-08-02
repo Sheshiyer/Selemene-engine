@@ -282,11 +282,10 @@ impl ConsciousnessEngine for FaceReadingEngine {
         // heuristic fallback + landmark hook placeholder
         // cites: p1-w1-worker-bootstrap-packet.md + resources-and-assets.md + gaps-and-improvements.md + goal-understanding.md + P1W1-CONTRACTS-FROZEN.md + detailed-task-list.md (T-027) + EXECUTION-STATUS.md
         let (image_bytes, consent_val, qual_val, mime_type) = {
-            let img_val = input.options.get("image_data").cloned().or_else(|| {
-                // also check top-level if present in future frozen merge
-                // for now options-driven per current base types
-                None
-            });
+            // Options-driven per the current base types. A future frozen merge may
+            // also carry image_data at the top level; there is no such field yet, so
+            // there is nothing to fall back to.
+            let img_val = input.options.get("image_data").cloned();
             let bytes = if let Some(v) = &img_val {
                 if let Some(s) = v.as_str() {
                     Some(s.as_bytes().to_vec())
@@ -456,9 +455,7 @@ impl ConsciousnessEngine for FaceReadingEngine {
             // T-027: mock flag: true only for pure stub; heuristic (image_data/birth per FROZEN) sets false -- do not fail validation on false
             // phase:integration-p1 wave:integration-w2 area:engine-integration swarm:selemene-backend engine-face-reading
             if let Some(is_mock) = analysis.get("is_mock_data") {
-                if is_mock.as_bool().unwrap_or(false) == false
-                    && output.metadata.backend == "mock-stub"
-                {
+                if !is_mock.as_bool().unwrap_or(false) && output.metadata.backend == "mock-stub" {
                     messages.push("Stub implementation should have is_mock_data=true".to_string());
                 }
             }

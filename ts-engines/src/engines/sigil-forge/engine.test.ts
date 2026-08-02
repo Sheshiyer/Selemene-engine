@@ -1,14 +1,20 @@
 import { describe, expect, it } from 'bun:test'
+import type { ImageProvider } from '../../providers/image-provider'
+import { MockImageProvider, createImageProvider } from '../../providers/image-provider' // T-035 provider tests
+import { buildYantraPrompt } from '../../providers/kimi' // T-061 yantra templates
+import {
+  NanoBananaImageProvider,
+  createNanoBananaProvider,
+  isNanoBananaAvailable,
+} from '../../providers/nano-banana' // T-060
 import { SigilForgeEngine } from './engine'
 import { buildSigilPrompt } from './prompt-builder'
 import { SIGIL_METHODS } from './wisdom'
-import type { ImageProvider } from '../../providers/image-provider'
-import { MockImageProvider, createImageProvider } from '../../providers/image-provider' // T-035 provider tests
-import { NanoBananaImageProvider, createNanoBananaProvider, isNanoBananaAvailable } from '../../providers/nano-banana' // T-060
-import { buildYantraPrompt } from '../../providers/kimi' // T-061 yantra templates
 
 type SigilForgeResult = {
   intention?: string
+  /** Image provider that served the request: mock, nano-banana, kimi. */
+  provider?: string
   generated_image?: {
     b64_json?: string
     url?: string
@@ -141,8 +147,8 @@ describe('SigilForgeEngine with ImageProvider (T-035)', () => {
     })
 
     expect(output.engine_id).toBe('sigil-forge')
-    expect((output as any).generated_image).toBeDefined() // FROZEN top-level
-    const res = output.result as any
+    expect(output.generated_image).toBeDefined() // FROZEN top-level
+    const res = output.result as SigilForgeResult
     expect(res.generated_image).toBeDefined()
     expect(res.provider).toBe('mock')
     expect(res.generated_image.b64_json).toBeDefined()
@@ -159,7 +165,7 @@ describe('SigilForgeEngine with ImageProvider (T-035)', () => {
     })
     expect(output.result).toBeDefined()
     // when no gen, no top generated_image
-    expect((output as any).generated_image).toBeUndefined()
+    expect(output.generated_image).toBeUndefined()
   })
 
   it('supports edit path with mock provider', async () => {
@@ -169,11 +175,12 @@ describe('SigilForgeEngine with ImageProvider (T-035)', () => {
       consciousness_level: 1,
       parameters: {
         intention: 'Refine this',
-        edit_image_b64: 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
+        edit_image_b64:
+          'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
         edit_instruction: 'make it more geometric',
       },
     })
-    const res = output.result as any
+    const res = output.result as SigilForgeResult
     expect(res.generated_image).toBeDefined()
     expect(res.generated_image.b64_json).toBeDefined()
   })
@@ -185,8 +192,8 @@ describe('SigilForgeEngine with ImageProvider (T-035)', () => {
       consciousness_level: 1,
       parameters: { intention: 'nano test', generate_image: true },
     })
-    expect((output.result as any).provider).toBe('nano-banana')
-    expect((output as any).generated_image?.metadata?.provider).toBe('nano-banana')
+    expect((output.result as SigilForgeResult).provider).toBe('nano-banana')
+    expect(output.generated_image?.metadata?.provider).toBe('nano-banana')
   })
 
   // T-061 kimi provider + yantra prompt templates
@@ -195,11 +202,15 @@ describe('SigilForgeEngine with ImageProvider (T-035)', () => {
     const engine = new SigilForgeEngine(prov)
     const output = await engine.calculate({
       consciousness_level: 1,
-      parameters: { intention: 'I manifest clarity through sacred form', generate_image: true, image_style: 'yantra' },
+      parameters: {
+        intention: 'I manifest clarity through sacred form',
+        generate_image: true,
+        image_style: 'yantra',
+      },
     })
-    expect((output.result as any).provider).toBe('kimi')
-    expect((output as any).generated_image?.metadata?.provider).toBe('kimi')
-    expect((output as any).generated_image?.b64_json).toBeDefined()
+    expect((output.result as SigilForgeResult).provider).toBe('kimi')
+    expect(output.generated_image?.metadata?.provider).toBe('kimi')
+    expect(output.generated_image?.b64_json).toBeDefined()
   })
 
   it('yantra prompt template produces precise sacred geometry (T-061)', () => {
@@ -242,7 +253,8 @@ describe('NanoBananaImageProvider (T-060)', () => {
   it('edit path returns result (falls back gracefully)', async () => {
     const p = new NanoBananaImageProvider()
     const res = await p.edit({
-      image: 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
+      image:
+        'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
       prompt: 'refine sigil',
       instruction: 'more geometric',
     })
@@ -257,10 +269,10 @@ describe('NanoBananaImageProvider (T-060)', () => {
       consciousness_level: 1,
       parameters: { intention: 'I seal the working', generate_image: true, image_style: 'runic' },
     })
-    const top = (output as any).generated_image
+    const top = output.generated_image
     expect(top).toBeDefined()
     expect(top.metadata?.provider).toBe('nano-banana')
-    const res = output.result as any
+    const res = output.result as SigilForgeResult
     expect(res.provider).toBe('nano-banana')
     expect(res.generated_image?.b64_json || top.b64_json).toBeDefined()
   })

@@ -44,10 +44,11 @@ use noesis_cache::CacheManager;
 use noesis_core::{
     BiofieldResultSchema, BiorhythmResultSchema, Coordinates, EngineError, EngineInput,
     EngineOutput, EngineResultData, EnneagramResultSchema, FaceReadingResultSchema,
-    GeneKeysResultSchema, HumanDesignResultSchema, IChingResultSchema, NadabrahmanResultSchema,
-    NumerologyResultSchema, PanchangaResultSchema, Precision, SacredGeometryResultSchema,
-    SigilForgeResultSchema, TarotResultSchema, TransitsResultSchema, ValidationResult,
-    VedicClockResultSchema, VimshottariResultSchema, WorkflowResult,
+    FinancialBiosensorResultSchema, GeneKeysResultSchema, HumanDesignResultSchema,
+    IChingResultSchema, NadabrahmanResultSchema, NumerologyResultSchema, PanchangaResultSchema,
+    Precision, SacredGeometryResultSchema, SigilForgeResultSchema, TarotResultSchema,
+    TransitsResultSchema, ValidationResult, VedicClockResultSchema, VimshottariResultSchema,
+    WorkflowResult,
 };
 use noesis_data::models::reading::NewReading;
 use noesis_data::repositories::admin_repository::AdminRepository;
@@ -167,6 +168,7 @@ use workflow_parity::log_workflow_registry_parity;
             IChingResultSchema,
             SacredGeometryResultSchema,
             SigilForgeResultSchema,
+            FinancialBiosensorResultSchema,
             ValidationResult,
             WorkflowResult,
             ApiEngineOutputResponse,

@@ -16,11 +16,11 @@
  */
 
 import type {
+  GeneratedImage,
+  ImageEditOptions,
+  ImageGenOptions,
   ImageProvider,
   ImageProviderConfig,
-  ImageGenOptions,
-  ImageEditOptions,
-  GeneratedImage,
 } from './image-provider'
 
 const KIMI_BASE = 'https://api.moonshot.cn/v1' // placeholder; real yantra image may route via runcomfy/kimi or partner endpoint per unresolved gaps
@@ -34,13 +34,16 @@ function getKimiEndpoint(): string {
 }
 
 /** Low-level generate (mock-first until kimi image endpoint confirmed) */
-async function kimiGenerate(opts: ImageGenOptions & { apiKey?: string }): Promise<{ b64_json?: string; url?: string; model: string; finish_reason?: string }> {
+async function kimiGenerate(
+  opts: ImageGenOptions & { apiKey?: string },
+): Promise<{ b64_json?: string; url?: string; model: string; finish_reason?: string }> {
   const key = opts.apiKey || getKimiKey()
   const model = opts.model ?? 'kimi-yantra-v1'
   if (!key) {
     // graceful mock for tests / unconfigured (matches nano stub pattern)
     return {
-      b64_json: 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
+      b64_json:
+        'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
       model,
       finish_reason: 'MOCK_NO_KEY',
     }
@@ -49,13 +52,16 @@ async function kimiGenerate(opts: ImageGenOptions & { apiKey?: string }): Promis
   // For now, return deterministic mock to keep selectable + non-breaking (T-061 acceptance: integrated, selectable, tests)
   // TODO: replace with actual fetch when "kimi code on api" details resolved (see gaps-and-improvements.md)
   return {
-    b64_json: 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
+    b64_json:
+      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
     model,
     finish_reason: 'SUCCESS_KIMI_PLACEHOLDER',
   }
 }
 
-async function kimiEdit(opts: ImageEditOptions & { apiKey?: string }): Promise<{ b64_json?: string; url?: string; model: string; finish_reason?: string }> {
+async function kimiEdit(
+  opts: ImageEditOptions & { apiKey?: string },
+): Promise<{ b64_json?: string; url?: string; model: string; finish_reason?: string }> {
   // Edit re-uses generate with instruction-augmented (same as current nvidia fallback)
   return kimiGenerate({
     prompt: opts.instruction ? `${opts.prompt} [edit: ${opts.instruction}]` : opts.prompt,
@@ -139,10 +145,14 @@ export const YANTRA_PROMPT_TEMPLATES = {
     `Hybrid yantra-rune: sri yantra geometry fused with angular Elder Futhark bind-runes, interlocking triangles containing stave forms, sacred proportions, carved stone + parchment texture, dark charcoal and crimson, unified glyph, no text labels, occult vedic-norse synthesis, intention: ${intention}`,
 
   // negative for yantra styles
-  negative_yantra: 'text, letters, words, alphabet, human, face, body, 3d, realistic, blurry, low contrast, asymmetric, extra lines, watermark, photograph, illustration of deity, multiple disconnected symbols',
+  negative_yantra:
+    'text, letters, words, alphabet, human, face, body, 3d, realistic, blurry, low contrast, asymmetric, extra lines, watermark, photograph, illustration of deity, multiple disconnected symbols',
 }
 
-export function buildYantraPrompt(intention: string, variant: keyof typeof YANTRA_PROMPT_TEMPLATES = 'general_yantra'): { prompt: string; negative_prompt: string; style: string } {
+export function buildYantraPrompt(
+  intention: string,
+  variant: keyof typeof YANTRA_PROMPT_TEMPLATES = 'general_yantra',
+): { prompt: string; negative_prompt: string; style: string } {
   const promptFn = YANTRA_PROMPT_TEMPLATES[variant] ?? YANTRA_PROMPT_TEMPLATES.general_yantra
   const prompt = typeof promptFn === 'function' ? promptFn(intention) : promptFn
   return {

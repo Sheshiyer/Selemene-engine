@@ -3,6 +3,7 @@ use engine_biofield::BiofieldEngine;
 use engine_biofield_capture::BiofieldCaptureEngine;
 use engine_biorhythm::BiorhythmEngine;
 use engine_face_reading::FaceReadingEngine;
+use engine_financial_biosensor::{FinancialBiosensorEngine, SourceEngines};
 use engine_gene_keys::GeneKeysEngine;
 use engine_human_design::HumanDesignEngine;
 use engine_nadabrahman::NadaBrahmanEngine;
@@ -118,6 +119,22 @@ fn trait_conformance_panchanga() {
 fn trait_conformance_transits() {
     let engine = TransitsEngine::new();
     assert_engine_conformance(&engine, "transits", 0);
+}
+
+#[test]
+fn trait_conformance_financial_biosensor() {
+    let hd = Arc::new(HumanDesignEngine::new());
+    let engine = FinancialBiosensorEngine::with_sources(SourceEngines {
+        human_design: hd.clone(),
+        gene_keys: Arc::new(GeneKeysEngine::with_hd_engine(hd.clone())),
+        vimshottari: Arc::new(VimshottariEngine::with_hd_engine(hd)),
+        transits: Arc::new(TransitsEngine::new()),
+        biorhythm: Arc::new(BiorhythmEngine::new()),
+    });
+    // At or above the maximum required_phase of its sources (gene-keys and
+    // vimshottari are 2), because it calls them directly rather than through
+    // the registry and so bypasses their own gates.
+    assert_engine_conformance(&engine, "financial-biosensor", 3);
 }
 
 #[test]

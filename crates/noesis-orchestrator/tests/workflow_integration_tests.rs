@@ -261,8 +261,10 @@ async fn test_birth_blueprint_workflow() {
     assert_eq!(output.workflow_id, "birth-blueprint");
     assert!(output.engine_outputs.contains_key("numerology"));
     assert!(output.engine_outputs.contains_key("human-design"));
-    assert!(output.engine_outputs.contains_key("gene-keys"));
-    assert_eq!(output.engine_outputs.len(), 3);
+    assert!(output.engine_outputs.contains_key("vimshottari"));
+    assert!(output.engine_outputs.contains_key("biofield"));
+    assert!(output.engine_outputs.contains_key("face-reading"));
+    assert_eq!(output.engine_outputs.len(), 5);
 }
 
 #[tokio::test]
@@ -435,7 +437,7 @@ async fn test_workflow_handles_engine_failure() {
 
     orchestrator.register_engine(Arc::new(MockEngine::new("numerology")));
     orchestrator.register_engine(Arc::new(MockEngine::new("human-design").failing()));
-    orchestrator.register_engine(Arc::new(MockEngine::new("gene-keys")));
+    orchestrator.register_engine(Arc::new(MockEngine::new("vimshottari")));
 
     let result = orchestrator
         .execute_workflow("birth-blueprint", create_birth_input(), 5)
@@ -451,7 +453,7 @@ async fn test_workflow_handles_engine_failure() {
     assert_eq!(output.engine_outputs.len(), 2);
     assert!(output.engine_outputs.contains_key("numerology"));
     assert!(!output.engine_outputs.contains_key("human-design"));
-    assert!(output.engine_outputs.contains_key("gene-keys"));
+    assert!(output.engine_outputs.contains_key("vimshottari"));
 }
 
 #[tokio::test]
@@ -550,9 +552,9 @@ async fn test_phase_access_control() {
 
     orchestrator.register_engine(Arc::new(MockEngine::new("numerology").with_phase(0)));
     orchestrator.register_engine(Arc::new(MockEngine::new("human-design").with_phase(0)));
-    orchestrator.register_engine(Arc::new(MockEngine::new("gene-keys").with_phase(3)));
+    orchestrator.register_engine(Arc::new(MockEngine::new("vimshottari").with_phase(3)));
 
-    // User at phase 1 cannot access gene-keys (requires phase 3)
+    // User at phase 1 cannot access vimshottari (requires phase 3)
     let result = orchestrator
         .execute_workflow("birth-blueprint", create_birth_input(), 1)
         .await
@@ -561,7 +563,7 @@ async fn test_phase_access_control() {
     assert_eq!(result.engine_outputs.len(), 2);
     assert!(result.engine_outputs.contains_key("numerology"));
     assert!(result.engine_outputs.contains_key("human-design"));
-    assert!(!result.engine_outputs.contains_key("gene-keys"));
+    assert!(!result.engine_outputs.contains_key("vimshottari"));
 }
 
 // ---------------------------------------------------------------------------

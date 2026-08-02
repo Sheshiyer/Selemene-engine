@@ -1,28 +1,130 @@
 {
   "rust_engines": [
-    { "engine_id": "biofield",      "crate_name": "engine-biofield",      "version": "3.1.0", "required_phase": 1, "p1_w1": "frozen 2026-07-17 (T-002+; P1W1-CONTRACTS-FROZEN.md; worktree T-002-copilot; cites goal-understanding.md resources-and-assets.md gaps-and-improvements.md)", "p1_w2": "baselines + P2 entry 2026-07-17 T-029 (T-026 kicked: Vedic+11m capture map green 65p; cites 3 extraction + FROZEN + bootstrap + detailed + ext-p2-checklist + P1W2-HANDOFF + STATUS; harness smoke + no drift)", "p2_entry": "green per T-029 (bio 65p incl frozen roundtrip test; see .worktrees/T-026-copilot)" },
-    { "engine_id": "biorhythm",     "crate_name": "engine-biorhythm",     "version": "3.1.0", "required_phase": 0 },
-    { "engine_id": "face-reading",  "crate_name": "engine-face-reading",  "version": "3.1.0", "required_phase": 1, "p1_w1": "frozen 2026-07-17 (T-002+; P1W1-CONTRACTS-FROZEN.md; worktree T-002-copilot; cites goal-understanding.md resources-and-assets.md gaps-and-improvements.md)", "p1_w2": "baselines + P2 entry 2026-07-17 T-029 (T-027 kicked: image_data+consent+heuristic+landmark green 35p+doc; cites 3 extraction + FROZEN + bootstrap + detailed + ext-p2-checklist + P1W2-HANDOFF + STATUS; harness + no drift)", "p2_entry": "green per T-029 (face 35p+1 incl frozen sample test; see .worktrees/T-027-codex)" },
-    { "engine_id": "gene-keys",     "crate_name": "engine-gene-keys",     "version": "3.1.0", "required_phase": 2 },
-    { "engine_id": "human-design",  "crate_name": "engine-human-design",  "version": "3.1.0", "required_phase": 1 },
-    { "engine_id": "nadabrahman",   "crate_name": "engine-nadabrahman",   "version": "3.1.0", "required_phase": 0 },
-    { "engine_id": "numerology",    "crate_name": "engine-numerology",    "version": "3.1.0", "required_phase": 0 },
-    { "engine_id": "panchanga",     "crate_name": "engine-panchanga",     "version": "3.1.0", "required_phase": 0 },
-    { "engine_id": "transits",      "crate_name": "engine-transits",      "version": "3.1.0", "required_phase": 0 },
-    { "engine_id": "vedic-clock",   "crate_name": "engine-vedic-clock",   "version": "3.1.0", "required_phase": 0 },
-    { "engine_id": "vimshottari",   "crate_name": "engine-vimshottari",   "version": "3.1.0", "required_phase": 2 }
+    {
+      "engine_id": "biofield",
+      "crate_name": "engine-biofield",
+      "version": "3.3.1",
+      "required_phase": 1,
+      "p1_w1": "frozen 2026-07-17 (T-002+; P1W1-CONTRACTS-FROZEN.md; worktree T-002-copilot; cites goal-understanding.md resources-and-assets.md gaps-and-improvements.md)",
+      "p1_w2": "baselines + P2 entry 2026-07-17 T-029 (T-026 kicked: Vedic+11m capture map green 65p; cites 3 extraction + FROZEN + bootstrap + detailed + ext-p2-checklist + P1W2-HANDOFF + STATUS; harness smoke + no drift)",
+      "p2_entry": "green per T-029 (bio 65p incl frozen roundtrip test; see .worktrees/T-026-copilot)"
+    },
+    {
+      "engine_id": "biorhythm",
+      "crate_name": "engine-biorhythm",
+      "version": "3.3.1",
+      "required_phase": 0
+    },
+    {
+      "engine_id": "face-reading",
+      "crate_name": "engine-face-reading",
+      "version": "3.3.1",
+      "required_phase": 1,
+      "p1_w1": "frozen 2026-07-17 (T-002+; P1W1-CONTRACTS-FROZEN.md; worktree T-002-copilot; cites goal-understanding.md resources-and-assets.md gaps-and-improvements.md)",
+      "p1_w2": "baselines + P2 entry 2026-07-17 T-029 (T-027 kicked: image_data+consent+heuristic+landmark green 35p+doc; cites 3 extraction + FROZEN + bootstrap + detailed + ext-p2-checklist + P1W2-HANDOFF + STATUS; harness + no drift)",
+      "p2_entry": "green per T-029 (face 35p+1 incl frozen sample test; see .worktrees/T-027-codex)"
+    },
+    {
+      "engine_id": "financial-biosensor",
+      "crate_name": "engine-financial-biosensor",
+      "version": "3.3.1",
+      "required_phase": 3,
+      "kind": "composed-surface",
+      "composes": [
+        "human-design",
+        "gene-keys",
+        "vimshottari",
+        "transits",
+        "biorhythm"
+      ],
+      "note": "Decision-reflection surface, not a tradition lens. The public count of 16 lens engines is unchanged; this engine reads the lenses rather than a tradition of its own."
+    },
+    {
+      "engine_id": "gene-keys",
+      "crate_name": "engine-gene-keys",
+      "version": "3.3.1",
+      "required_phase": 2
+    },
+    {
+      "engine_id": "human-design",
+      "crate_name": "engine-human-design",
+      "version": "3.3.1",
+      "required_phase": 1
+    },
+    {
+      "engine_id": "nadabrahman",
+      "crate_name": "engine-nadabrahman",
+      "version": "3.3.1",
+      "required_phase": 0
+    },
+    {
+      "engine_id": "numerology",
+      "crate_name": "engine-numerology",
+      "version": "3.3.1",
+      "required_phase": 0
+    },
+    {
+      "engine_id": "panchanga",
+      "crate_name": "engine-panchanga",
+      "version": "3.3.1",
+      "required_phase": 0
+    },
+    {
+      "engine_id": "transits",
+      "crate_name": "engine-transits",
+      "version": "3.3.1",
+      "required_phase": 0
+    },
+    {
+      "engine_id": "vedic-clock",
+      "crate_name": "engine-vedic-clock",
+      "version": "3.3.1",
+      "required_phase": 0
+    },
+    {
+      "engine_id": "vimshottari",
+      "crate_name": "engine-vimshottari",
+      "version": "3.3.1",
+      "required_phase": 2
+    }
   ],
   "ts_engines": [
-    { "engine_id": "enneagram",       "engine_version": "1.0.0" },
-    { "engine_id": "i-ching",         "engine_version": "1.0.0" },
-    { "engine_id": "raaga",           "engine_version": "1.0.0", "p1_w1": "frozen 2026-07-17 (T-002+; P1W1-CONTRACTS-FROZEN.md; worktree T-002-copilot; cites goal-understanding.md resources-and-assets.md gaps-and-improvements.md)", "p1_w2": "baselines 2026-07-17 T-029 (smokes/harness green; T-028 media pending per wave2-remaining; cites 3 extraction + FROZEN + bootstrap + detailed + ext-p2 + P1W2-HANDOFF + STATUS; ts 61p; no drift)", "p2_entry": "entry validated T-029 (raaga strudel ready per T-005; full T-028 next)" },
-    { "engine_id": "sacred-geometry", "engine_version": "1.0.0" },
-    { "engine_id": "sigil-forge",     "engine_version": "1.0.0", "p1_w1": "frozen 2026-07-17 (T-002+; P1W1-CONTRACTS-FROZEN.md; worktree T-002-copilot; cites goal-understanding.md resources-and-assets.md gaps-and-improvements.md)", "p1_w2": "baselines 2026-07-17 T-029 (smokes/harness green; T-028 media/provider pending per wave2-remaining; cites 3 extraction + FROZEN + bootstrap + detailed + ext-p2 + P1W2-HANDOFF + STATUS; ts 61p; no drift)", "p2_entry": "entry validated T-029 (sigil provider T-003 ready; full T-028/T-035 next)" },
-    { "engine_id": "tarot",           "engine_version": "1.0.0" }
+    {
+      "engine_id": "enneagram",
+      "engine_version": "1.0.0"
+    },
+    {
+      "engine_id": "i-ching",
+      "engine_version": "1.0.0"
+    },
+    {
+      "engine_id": "raaga",
+      "engine_version": "1.0.0",
+      "p1_w1": "frozen 2026-07-17 (T-002+; P1W1-CONTRACTS-FROZEN.md; worktree T-002-copilot; cites goal-understanding.md resources-and-assets.md gaps-and-improvements.md)",
+      "p1_w2": "baselines 2026-07-17 T-029 (smokes/harness green; T-028 media pending per wave2-remaining; cites 3 extraction + FROZEN + bootstrap + detailed + ext-p2 + P1W2-HANDOFF + STATUS; ts 61p; no drift)",
+      "p2_entry": "entry validated T-029 (raaga strudel ready per T-005; full T-028 next)"
+    },
+    {
+      "engine_id": "sacred-geometry",
+      "engine_version": "1.0.0"
+    },
+    {
+      "engine_id": "sigil-forge",
+      "engine_version": "1.0.0",
+      "p1_w1": "frozen 2026-07-17 (T-002+; P1W1-CONTRACTS-FROZEN.md; worktree T-002-copilot; cites goal-understanding.md resources-and-assets.md gaps-and-improvements.md)",
+      "p1_w2": "baselines 2026-07-17 T-029 (smokes/harness green; T-028 media/provider pending per wave2-remaining; cites 3 extraction + FROZEN + bootstrap + detailed + ext-p2 + P1W2-HANDOFF + STATUS; ts 61p; no drift)",
+      "p2_entry": "entry validated T-029 (sigil provider T-003 ready; full T-028/T-035 next)"
+    },
+    {
+      "engine_id": "tarot",
+      "engine_version": "1.0.0"
+    }
   ],
   "counts": {
-    "rust_engines": 11,
+    "rust_engines": 12,
     "ts_engines": 6,
-    "total_engines": 17
+    "total_engines": 18,
+    "lens_engines_public": 16,
+    "composed_surfaces": 1
   }
 }

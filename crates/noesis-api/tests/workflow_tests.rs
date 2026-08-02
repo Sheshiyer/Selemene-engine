@@ -361,7 +361,7 @@ async fn test_vimshottari_calculate_with_moon_longitude() {
 // ---------------------------------------------------------------------------
 
 #[tokio::test]
-async fn test_birth_blueprint_workflow_includes_gene_keys() {
+async fn test_birth_blueprint_workflow_engine_composition() {
     let router = get_test_router().await;
     let token = generate_test_token(5);
 
@@ -375,17 +375,30 @@ async fn test_birth_blueprint_workflow_includes_gene_keys() {
         .expect("Should have engine_ids");
     let ids: Vec<&str> = engine_ids.iter().filter_map(|e| e.as_str()).collect();
 
+    // The canonical composition, per WorkflowRegistry and
+    // docs/baseline/workflow-parity.json.
+    for expected in [
+        "numerology",
+        "human-design",
+        "vimshottari",
+        "biofield",
+        "face-reading",
+    ] {
+        assert!(
+            ids.contains(&expected),
+            "birth-blueprint should include {}",
+            expected
+        );
+    }
+
+    // This test was written in Wave 1, when numerology, human-design and
+    // gene-keys were the entire engine set, and it asserted that
+    // birth-blueprint contained gene-keys. It no longer does: gene-keys is
+    // canonically part of self-inquiry, decision-support and full-spectrum.
+    // Asserted negatively so the composition cannot drift back unnoticed.
     assert!(
-        ids.contains(&"numerology"),
-        "birth-blueprint should include numerology"
-    );
-    assert!(
-        ids.contains(&"human-design"),
-        "birth-blueprint should include human-design"
-    );
-    assert!(
-        ids.contains(&"gene-keys"),
-        "birth-blueprint should include gene-keys"
+        !ids.contains(&"gene-keys"),
+        "gene-keys belongs to self-inquiry / decision-support, not birth-blueprint"
     );
 }
 

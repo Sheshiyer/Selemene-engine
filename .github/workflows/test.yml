@@ -237,7 +237,11 @@ jobs:
         run: bun test
 
       - name: Typecheck (T-020 Wave2 + P1W1 media contract notes; refs p1-w1-worker-bootstrap-packet.md + 3 extraction (resources-and-assets.md gaps-and-improvements.md goal-understanding.md) + P1W1-CONTRACTS-FROZEN.md + detailed-task-list + EXECUTION-STATUS)
-        run: bun run typecheck || echo "pre-existing TS errors (app.ts generic metadata return typing + unknown body in tests); not media-related; see worktree .worktrees/T-002-copilot for frozen EngineInput/Output with image_data/consent/generated_*; bun test passes; refs: p1-w1-worker-bootstrap-packet.md + 3 extraction files (resources-and-assets.md etc) + P1W1-CONTRACTS-FROZEN.md + T-020"
+        # Block scalar, not a plain one: the message below contains ": ", which
+        # is illegal in an unquoted YAML scalar and silently killed this entire
+        # workflow file at startup.
+        run: |
+          bun run typecheck || echo "pre-existing TS errors (app.ts generic metadata return typing + unknown body in tests); not media-related; see worktree .worktrees/T-002-copilot for frozen EngineInput/Output with image_data/consent/generated_*; bun test passes; refs: p1-w1-worker-bootstrap-packet.md + 3 extraction files (resources-and-assets.md etc) + P1W1-CONTRACTS-FROZEN.md + T-020"
  
       - name: P1 W2 / T-020 media contract smoke (TS server + roundtrip; raaga/strudel T-005, sigil image via provider T-003; use frozen samples; cite extraction + FROZEN + bootstrap)
         run: |
