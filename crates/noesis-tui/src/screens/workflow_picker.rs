@@ -26,7 +26,7 @@ const WORKFLOW_LIST: &[WorkflowEntry] = &[
         id: "daily-practice",
         name: "Daily Practice",
         icon: "🌅",
-        description: "Daily rhythm optimization — panchanga, vedic clock, biorhythm",
+        description: "Daily rhythm calibration — panchanga, vedic clock, biorhythm",
         engines: "panchanga, vedic-clock, biorhythm",
     },
     WorkflowEntry {

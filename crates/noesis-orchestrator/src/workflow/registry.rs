@@ -39,11 +39,11 @@ impl WorkflowRegistry {
             default_options: HashMap::new(),
         });
 
-        // Daily Practice: Temporal optimization for daily activities
+        // Daily Practice: Temporal calibration for daily activities
         self.register(ExtendedWorkflowDefinition {
             id: "daily-practice".into(),
             name: "Daily Practice".into(),
-            description: "Daily rhythm optimization through temporal analysis".into(),
+            description: "Daily rhythm calibration through temporal analysis".into(),
             required_phase: 0,
             engine_ids: vec![
                 "panchanga".into(),

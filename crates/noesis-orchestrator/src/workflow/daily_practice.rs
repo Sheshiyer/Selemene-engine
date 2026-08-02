@@ -1,4 +1,4 @@
-//! Daily Practice Workflow — Temporal optimization
+//! Daily Practice Workflow — Temporal calibration
 //!
 //! Executes: panchanga, vedic-clock, biorhythm
 //! Synthesizes daily rhythms for optimal activity timing.
