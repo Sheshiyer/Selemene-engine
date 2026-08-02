@@ -6,6 +6,7 @@ FastAPI application. Listens on $PORT (default 8002) so Railway can route correc
 import os
 import uvicorn
 from fastapi import FastAPI
+from shared.version import SERVICE_VERSION
 from fastapi.middleware.cors import CORSMiddleware
 
 from biofield_cv_service.health import router as health_router
@@ -13,7 +14,7 @@ from biofield_cv_service.analyze import router as analyze_router
 
 app = FastAPI(
     title="Selemene Biofield CV Service",
-    version="3.0.0",
+    version=SERVICE_VERSION,
     description="Python sidecar service for biofield image analysis using OpenCV.",
 )
 

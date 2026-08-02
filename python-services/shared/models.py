@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from pydantic import BaseModel, Field
+from shared.version import SERVICE_VERSION
 
 
 # ---------- Common ----------
@@ -10,7 +11,7 @@ from pydantic import BaseModel, Field
 class HealthResponse(BaseModel):
     status: str = "healthy"
     service: str
-    version: str = "3.0.0"
+    version: str = SERVICE_VERSION
 
 
 # ---------- MediaPipe service models ----------

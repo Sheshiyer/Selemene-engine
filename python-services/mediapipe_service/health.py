@@ -3,6 +3,7 @@
 from fastapi import APIRouter
 
 from shared.models import HealthResponse
+from shared.version import SERVICE_VERSION
 
 router = APIRouter()
 
@@ -20,7 +21,7 @@ def health() -> dict:
     resp = HealthResponse(
         status="healthy",
         service="mediapipe-face-mesh",
-        version="3.0.0",
+        version=SERVICE_VERSION,
     )
     return {
         **resp.model_dump(),

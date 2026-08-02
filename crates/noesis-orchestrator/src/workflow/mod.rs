@@ -6,7 +6,7 @@
 //! # Workflows
 //!
 //! - **Birth Blueprint**: Core identity mapping (numerology, human-design, vimshottari)
-//! - **Daily Practice**: Temporal optimization (panchanga, vedic-clock, biorhythm)
+//! - **Daily Practice**: Temporal calibration (panchanga, vedic-clock, biorhythm)
 //! - **Decision Support**: Multi-perspective guidance (tarot, i-ching, human-design)
 //! - **Self-Inquiry**: Shadow work synthesis (gene-keys, enneagram)
 //! - **Creative Expression**: Generative guidance (sigil-forge, sacred-geometry)

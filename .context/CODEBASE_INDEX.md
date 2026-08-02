@@ -292,7 +292,7 @@ tests/
 | Workflow | Engines | Purpose | Status |
 |----------|---------|---------|--------|
 | `birth-blueprint` | Numerology, HD, Vimshottari | Natal analysis | ✅ |
-| `daily-practice` | Panchanga, VedicClock, Biorhythm | Temporal optimization | ✅ |
+| `daily-practice` | Panchanga, VedicClock, Biorhythm | Temporal calibration | ✅ |
 | `decision-support` | Tarot, I-Ching, HD Authority | Multi-perspective guidance | ✅ |
 | `self-inquiry` | Gene Keys, Enneagram | Shadow work | ✅ |
 | `creative-expression` | Sigil Forge, Sacred Geometry | Generative guidance | ✅ |

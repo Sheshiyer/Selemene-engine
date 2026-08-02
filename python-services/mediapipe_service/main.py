@@ -5,6 +5,7 @@ FastAPI application on port 8001. Called by the Rust face-reading engine via HTT
 
 import uvicorn
 from fastapi import FastAPI
+from shared.version import SERVICE_VERSION
 from fastapi.middleware.cors import CORSMiddleware
 
 from mediapipe_service.health import router as health_router
@@ -12,7 +13,7 @@ from mediapipe_service.analyze import router as analyze_router
 
 app = FastAPI(
     title="Selemene MediaPipe Face Mesh Service",
-    version="3.0.0",
+    version=SERVICE_VERSION,
     description="Python sidecar service for MediaPipe Face Mesh landmark detection.",
 )
 

@@ -3,6 +3,7 @@
 from fastapi.testclient import TestClient
 
 from biofield_cv_service.main import app
+from shared.version import SERVICE_VERSION
 
 client = TestClient(app)
 
@@ -21,7 +22,7 @@ def test_health_returns_correct_service_name() -> None:
 def test_health_returns_version() -> None:
     response = client.get("/health")
     data = response.json()
-    assert data["version"] == "3.0.0"
+    assert data["version"] == SERVICE_VERSION
 
 
 def test_health_includes_opencv_availability() -> None:

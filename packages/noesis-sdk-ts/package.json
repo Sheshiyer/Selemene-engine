@@ -1,6 +1,6 @@
 {
   "name": "@noesis/sdk",
-  "version": "3.3.0",
+  "version": "3.3.1",
   "description": "TypeScript SDK for Noesis Consciousness Engine",
   "type": "module",
   "main": "dist/index.js",
