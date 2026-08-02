@@ -16,7 +16,7 @@ keychain = ["keyring"]
 
 [dependencies]
 # Core types from noesis-core
-noesis-core = { version = "3.0.0", path = "../noesis-core" }
+noesis-core = { version = "3.3.1", path = "../noesis-core" }
 
 # Async runtime
 tokio = { workspace = true }

@@ -7,7 +7,7 @@
  * 
  * Steps:
  *   1. Validate: clean tree, gh auth, no existing tag
- *   2. Bump: workspace Cargo.toml version + API doc version + baseline artifacts
+ *   2. Bump: workspace Cargo.toml + API doc + baseline artifacts + satellites
  *   3. Generate grouped release notes from git log
  *   4. Commit, tag, push
  *   5. Create GitHub release
@@ -87,6 +87,54 @@ function setApiDocVersion(newVersion) {
   let src = readFileSync(path, 'utf-8');
   src = src.replace(/(version\s*=\s*")([\d.]+)("\s*,)/, `$1${newVersion}$3`);
   writeFileSync(path, src);
+}
+
+/**
+ * Satellite files that state the project version but are not Cargo manifests,
+ * so nothing else keeps them honest.
+ *
+ * Each entry names a file and the exact pattern to rewrite. These drifted to
+ * 3.0.0 (and 3.3.0 for the TS SDK) against a 3.3.1 workspace: no test asserts
+ * them, so the only symptom was published images and a CLI reporting a version
+ * from three releases ago.
+ *
+ * Deliberately excluded: python-services/** is its own version domain, and
+ * anything matching `"openapi": "3.0.x"` is an OpenAPI format version rather
+ * than a project version.
+ */
+const VERSIONED_SATELLITES = [
+  {
+    file: 'Dockerfile.prod',
+    pattern: /(org\.opencontainers\.image\.version=")[\d.]+(")/,
+  },
+  { file: 'bridges/cli/package.json', pattern: /("version"\s*:\s*")[\d.]+(")/ },
+  { file: 'bridges/cli/src/cli.ts', pattern: /(\.version\(")[\d.]+("\))/ },
+  { file: 'apps/admin-web/package.json', pattern: /("version"\s*:\s*")[\d.]+(")/ },
+  { file: 'packages/noesis-sdk-ts/package.json', pattern: /("version"\s*:\s*")[\d.]+(")/ },
+  {
+    file: 'crates/noesis-sdk/Cargo.toml',
+    pattern: /(noesis-core\s*=\s*\{\s*version\s*=\s*")[\d.]+(")/,
+  },
+];
+
+function setSatelliteVersions(newVersion) {
+  const updated = [];
+  for (const { file, pattern } of VERSIONED_SATELLITES) {
+    const path = resolve(CWD, file);
+    let src;
+    try {
+      src = readFileSync(path, 'utf-8');
+    } catch {
+      bail(`Versioned file missing: ${file}. Update VERSIONED_SATELLITES in release.mjs.`);
+    }
+    const next = src.replace(pattern, `$1${newVersion}$2`);
+    if (next === src) {
+      bail(`No version field rewritten in ${file}. Its shape changed; update release.mjs.`);
+    }
+    writeFileSync(path, next);
+    updated.push(file);
+  }
+  return updated;
 }
 
 /**
@@ -227,6 +275,9 @@ async function main() {
     for (const rel of VERSIONED_BASELINES) {
       dry(`Rewrite version fields in ${rel}: ${current} → ${next}`);
     }
+    for (const { file } of VERSIONED_SATELLITES) {
+      dry(`Rewrite version in ${file}: ${current} → ${next}`);
+    }
     dry(`Commit: "chore(release): v${next}"`);
     dry(`Tag: v${next}`);
     dry(`Push: git push origin main --tags`);
@@ -246,11 +297,13 @@ async function main() {
   setWorkspaceVersion(next);
   setApiDocVersion(next);
   const baselines = setBaselineVersions(next);
+  const satellites = setSatelliteVersions(next);
   ok(`Bumped version to ${next}`);
   for (const b of baselines) ok(`Baseline synced: ${b}`);
+  for (const f of satellites) ok(`Version synced: ${f}`);
 
   // 9. Commit
-  run(`git add Cargo.toml crates/noesis-api/src/lib.rs ${VERSIONED_BASELINES.join(' ')}`);
+  run(`git add Cargo.toml crates/noesis-api/src/lib.rs ${VERSIONED_BASELINES.join(' ')} ${VERSIONED_SATELLITES.map(v => v.file).join(' ')}`);
   run(`git commit -m "chore(release): v${next}"`);
   ok('Version commit created');
 
