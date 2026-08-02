@@ -114,7 +114,27 @@ impl GeneKeysEngine {
         Ok((personality_sun, personality_earth, design_sun, design_earth))
     }
 
-    /// Create Gene Keys chart from gates only (simplified version)
+    /// Create Gene Keys chart from gates only (simplified version).
+    ///
+    /// # Known limitation: `line` is a placeholder on this path
+    ///
+    /// This constructor receives four gate numbers and nothing else, so the
+    /// hexagram line is not derivable here and every activation is assigned a
+    /// fixed `line: 3`. Any consumer reading `active_keys[*].line` from a chart
+    /// built this way is reading a constant, not a calculation.
+    ///
+    /// This is not a value that can be guessed: the line comes from the
+    /// fractional position within a gate, which requires the ephemeris
+    /// longitude. The Human Design engine does compute it — its activations are
+    /// shaped `{ gate, line, longitude }` — but the `hd_gates` option this path
+    /// consumes carries only the four gate numbers (see
+    /// [`Self::extract_hd_gates_from_options`]), so the line is discarded
+    /// before it ever reaches here.
+    ///
+    /// Fixing it properly means widening the `hd_gates` option to carry the
+    /// line alongside the gate and updating its producers. That is a contract
+    /// change and deliberately out of scope; until then the limitation is
+    /// documented rather than papered over.
     fn create_chart_from_gates(
         personality_sun: u8,
         personality_earth: u8,
@@ -134,7 +154,8 @@ impl GeneKeysEngine {
         let active_keys = vec![
             GeneKeyActivation {
                 key_number: personality_sun,
-                line: 3, // Default line
+                // Placeholder, not a calculation -- see the fn doc comment.
+                line: 3,
                 source: ActivationSource::PersonalitySun,
                 gene_key_data: get_gene_key(personality_sun).cloned(),
             },
@@ -218,8 +239,13 @@ impl GeneKeysEngine {
         Ok((personality_sun, personality_earth, design_sun, design_earth))
     }
 
-    /// Serialize GeneKeysChart to JSON value
-    fn serialize_chart(chart: &GeneKeysChart) -> Value {
+    /// Serialize GeneKeysChart to JSON value.
+    ///
+    /// `consciousness_level` is threaded in because the frequency assessment
+    /// derives `suggested_frequency` from it. Passing `None` there silently
+    /// nulls that field for every active key, which is what this payload did
+    /// until the level was wired through.
+    fn serialize_chart(chart: &GeneKeysChart, consciousness_level: u8) -> Value {
         // Enrich active keys with full Gene Key data
         let enriched_keys: Vec<Value> = chart
             .active_keys
@@ -243,7 +269,7 @@ impl GeneKeysEngine {
             .collect();
 
         // Calculate frequency assessments
-        let frequency_assessments = assess_frequencies(chart, None);
+        let frequency_assessments = assess_frequencies(chart, Some(consciousness_level));
 
         json!({
             "activation_sequence": {
@@ -332,7 +358,7 @@ impl ConsciousnessEngine for GeneKeysEngine {
 
         Ok(EngineOutput {
             engine_id: self.engine_id.clone(),
-            result: Self::serialize_chart(&chart),
+            result: Self::serialize_chart(&chart, consciousness_level),
             witness_prompt,
             consciousness_level,
             metadata: CalculationMetadata {
@@ -512,6 +538,48 @@ mod tests {
         assert_eq!(output.engine_id, "gene-keys");
         assert!(!output.witness_prompt.is_empty());
         assert_eq!(output.consciousness_level, 3); // Default
+    }
+
+    /// Regression: `suggested_frequency` was null for every active key because
+    /// `serialize_chart` called `assess_frequencies(chart, None)`. The level is
+    /// now threaded through, so the field must be populated and must track the
+    /// level: 0..=2 Shadow, 3..=4 Gift, 5..=6 Siddhi.
+    #[tokio::test]
+    async fn test_suggested_frequency_is_populated_and_tracks_level() {
+        let engine = GeneKeysEngine::new();
+
+        for (level, expected) in [(1_u64, "Shadow"), (3, "Gift"), (6, "Siddhi")] {
+            let mut input = create_test_input_with_gates();
+            input
+                .options
+                .insert("consciousness_level".to_string(), json!(level));
+
+            let output = engine
+                .calculate(input)
+                .await
+                .expect("calculation should succeed");
+
+            let assessments = output.result["frequency_assessments"]
+                .as_array()
+                .expect("frequency_assessments should be an array");
+            assert!(
+                !assessments.is_empty(),
+                "expected at least one frequency assessment"
+            );
+
+            for a in assessments {
+                let suggested = &a["suggested_frequency"];
+                assert!(
+                    !suggested.is_null(),
+                    "suggested_frequency must not be null at level {level}"
+                );
+                assert_eq!(
+                    suggested.as_str(),
+                    Some(expected),
+                    "level {level} should map to {expected}"
+                );
+            }
+        }
     }
 
     #[tokio::test]
