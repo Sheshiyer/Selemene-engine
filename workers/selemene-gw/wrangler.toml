@@ -1,0 +1,9 @@
+name = "selemene-gw"
+account_id = "9d9d23b27f32e70ae3afb6a1aa2c0f10"
+main = "src/index.js"
+compatibility_date = "2026-07-01"
+workers_dev = true
+
+[[kv_namespaces]]
+binding = "SELEMENE_SECRETS"
+id = "7d11ab631a5145bfa8076546da6a9e27"

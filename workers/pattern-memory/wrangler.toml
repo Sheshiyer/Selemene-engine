@@ -1,0 +1,23 @@
+name = "selemene-pattern-memory"
+main = "src/index.ts"
+compatibility_date = "2025-04-01"
+
+[[kv_namespaces]]
+binding = "LLM_SECRETS"
+id = "SELEMENE_LLM_SECRETS"
+
+[[vectorize]]
+binding = "REPORT_PATTERNS"
+index_name = "SELEMENE_REPORT_PATTERNS"
+
+[ai]
+binding = "AI"
+
+[[r2_buckets]]
+binding = "PATTERNS_BUCKET"
+bucket_name = "selemene-patterns-bucket"
+
+[[d1_databases]]
+binding = "PATTERNS_D1"
+database_name = "selemene-patterns-d1"
+database_id = "SELEMENE_PATTERNS_D1"

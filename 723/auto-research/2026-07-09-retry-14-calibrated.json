@@ -1,0 +1,152 @@
+{
+  "date": "2026-07-09T05:43:08.619Z",
+  "command": "tsx packages/witness-pipeline/scripts/solo-l0-runner.ts \"/Volumes/madara/2026/twc-vault/01-Projects/tryambakam-noesis/723/Solos/<slug>\" --live",
+  "solos": [
+    {
+      "slug": "prashanth",
+      "passed": true,
+      "fidelity_pass": 10,
+      "word_fit_pass": 1,
+      "total_words": 7986,
+      "patterns_extracted": 10,
+      "blockers": []
+    },
+    {
+      "slug": "shihab",
+      "passed": true,
+      "fidelity_pass": 9,
+      "word_fit_pass": 0,
+      "total_words": 6613,
+      "patterns_extracted": 8,
+      "blockers": []
+    },
+    {
+      "slug": "johnny",
+      "passed": false,
+      "fidelity_pass": 9,
+      "word_fit_pass": 0,
+      "total_words": 6747,
+      "patterns_extracted": 8,
+      "blockers": [
+        "health:chart_fidelity_gate",
+        "family-lineage:chart_fidelity_gate"
+      ]
+    },
+    {
+      "slug": "durga-prasad",
+      "passed": false,
+      "fidelity_pass": 9,
+      "word_fit_pass": 1,
+      "total_words": 7436,
+      "patterns_extracted": 8,
+      "blockers": [
+        "family-lineage:chart_fidelity_gate",
+        "remedies-practices:chart_fidelity_gate"
+      ]
+    },
+    {
+      "slug": "shesh",
+      "passed": false,
+      "fidelity_pass": 10,
+      "word_fit_pass": 0,
+      "total_words": 9161,
+      "patterns_extracted": 9,
+      "blockers": [
+        "convergence-map:chart_fidelity_gate"
+      ]
+    },
+    {
+      "slug": "yamuna",
+      "passed": true,
+      "fidelity_pass": 9,
+      "word_fit_pass": 0,
+      "total_words": 6740,
+      "patterns_extracted": 11,
+      "blockers": []
+    },
+    {
+      "slug": "witnessalchemist",
+      "passed": true,
+      "fidelity_pass": 10,
+      "word_fit_pass": 0,
+      "total_words": 7698,
+      "patterns_extracted": 10,
+      "blockers": []
+    },
+    {
+      "slug": "jiaojiao",
+      "passed": false,
+      "fidelity_pass": 8,
+      "word_fit_pass": 2,
+      "total_words": 7769,
+      "patterns_extracted": 8,
+      "blockers": [
+        "career-dharma:chart_fidelity_gate",
+        "remedies-practices:chart_fidelity_gate"
+      ]
+    },
+    {
+      "slug": "vandana",
+      "passed": false,
+      "fidelity_pass": 8,
+      "word_fit_pass": 1,
+      "total_words": 6923,
+      "patterns_extracted": 8,
+      "blockers": [
+        "remedies-practices:chart_fidelity_gate"
+      ]
+    },
+    {
+      "slug": "sneha-soni",
+      "passed": false,
+      "fidelity_pass": 11,
+      "word_fit_pass": 0,
+      "total_words": 6807,
+      "patterns_extracted": 9,
+      "blockers": [
+        "family-lineage:chart_fidelity_gate"
+      ]
+    },
+    {
+      "slug": "shreya",
+      "passed": false,
+      "fidelity_pass": 9,
+      "word_fit_pass": 1,
+      "total_words": 7746,
+      "patterns_extracted": 9,
+      "blockers": [
+        "remedies-practices:chart_fidelity_gate"
+      ]
+    },
+    {
+      "slug": "gaurav",
+      "passed": true,
+      "fidelity_pass": 10,
+      "word_fit_pass": 1,
+      "total_words": 7895,
+      "patterns_extracted": 8,
+      "blockers": []
+    },
+    {
+      "slug": "paulo-alberto",
+      "passed": false,
+      "fidelity_pass": 8,
+      "word_fit_pass": 1,
+      "total_words": 7520,
+      "patterns_extracted": 10,
+      "blockers": [
+        "vedic-foundation:chart_fidelity_gate",
+        "family-lineage:chart_fidelity_gate"
+      ]
+    },
+    {
+      "slug": "dinesh",
+      "passed": true,
+      "fidelity_pass": 11,
+      "word_fit_pass": 1,
+      "total_words": 6668,
+      "patterns_extracted": 9,
+      "blockers": []
+    }
+  ]
+}

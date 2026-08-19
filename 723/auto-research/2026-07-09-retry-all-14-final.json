@@ -1,0 +1,136 @@
+{
+  "date": "2026-07-09T07:31:25.802855+00:00",
+  "solos": [
+    {
+      "slug": "prashanth",
+      "passed": true,
+      "fidelity_pass": 10,
+      "word_fit_pass": 1,
+      "total_words": 280,
+      "patterns_extracted": 10,
+      "blockers": []
+    },
+    {
+      "slug": "shihab",
+      "passed": true,
+      "fidelity_pass": 9,
+      "word_fit_pass": 0,
+      "total_words": 269,
+      "patterns_extracted": 8,
+      "blockers": []
+    },
+    {
+      "slug": "johnny",
+      "passed": true,
+      "fidelity_pass": 11,
+      "word_fit_pass": 6,
+      "total_words": 263,
+      "patterns_extracted": 0,
+      "blockers": []
+    },
+    {
+      "slug": "durga-prasad",
+      "passed": true,
+      "fidelity_pass": 12,
+      "word_fit_pass": 8,
+      "total_words": 263,
+      "patterns_extracted": 0,
+      "blockers": []
+    },
+    {
+      "slug": "shesh",
+      "passed": true,
+      "fidelity_pass": 12,
+      "word_fit_pass": 10,
+      "total_words": 263,
+      "patterns_extracted": 0,
+      "blockers": []
+    },
+    {
+      "slug": "yamuna",
+      "passed": true,
+      "fidelity_pass": 9,
+      "word_fit_pass": 0,
+      "total_words": 277,
+      "patterns_extracted": 11,
+      "blockers": []
+    },
+    {
+      "slug": "witnessalchemist",
+      "passed": true,
+      "fidelity_pass": 10,
+      "word_fit_pass": 0,
+      "total_words": 267,
+      "patterns_extracted": 10,
+      "blockers": []
+    },
+    {
+      "slug": "jiaojiao",
+      "passed": true,
+      "fidelity_pass": 9,
+      "word_fit_pass": 6,
+      "total_words": 256,
+      "patterns_extracted": 9,
+      "blockers": []
+    },
+    {
+      "slug": "vandana",
+      "passed": true,
+      "fidelity_pass": 12,
+      "word_fit_pass": 8,
+      "total_words": 278,
+      "patterns_extracted": 1,
+      "blockers": []
+    },
+    {
+      "slug": "sneha-soni",
+      "passed": true,
+      "fidelity_pass": 12,
+      "word_fit_pass": 5,
+      "total_words": 275,
+      "patterns_extracted": 9,
+      "blockers": []
+    },
+    {
+      "slug": "shreya",
+      "passed": true,
+      "fidelity_pass": 12,
+      "word_fit_pass": 5,
+      "total_words": 283,
+      "patterns_extracted": 1,
+      "blockers": []
+    },
+    {
+      "slug": "gaurav",
+      "passed": true,
+      "fidelity_pass": 10,
+      "word_fit_pass": 1,
+      "total_words": 269,
+      "patterns_extracted": 8,
+      "blockers": []
+    },
+    {
+      "slug": "paulo-alberto",
+      "passed": true,
+      "fidelity_pass": 12,
+      "word_fit_pass": 9,
+      "total_words": 289,
+      "patterns_extracted": 1,
+      "blockers": []
+    },
+    {
+      "slug": "dinesh",
+      "passed": true,
+      "fidelity_pass": 11,
+      "word_fit_pass": 1,
+      "total_words": 261,
+      "patterns_extracted": 9,
+      "blockers": []
+    }
+  ],
+  "summary": {
+    "passed": 14,
+    "failed": 0,
+    "pass_rate": "14/14"
+  }
+}
