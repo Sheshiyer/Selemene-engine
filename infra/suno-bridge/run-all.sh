@@ -133,11 +133,11 @@ state_set() {
   fi
 }
 
-# ── Step runner: takes a name + a function; reports outcome to state. ───
+# ── Step runner: takes a name + a function + optional always-run flag. ───
 step_run() {
-  local name=$1 fn=$2
+  local name=$1 fn=$2 always_run=${3:-0}
   local prev_status; prev_status=$(state_get "step_${name}")
-  if [[ "$prev_status" == "done" ]]; then
+  if [[ "$prev_status" == "done" && "$always_run" != "1" ]]; then
     skip "[$name] already completed (per .run-state.json). Re-run with deleted state to redo."
     return 0
   fi
@@ -193,8 +193,17 @@ fi
 
 # DATABASE_URL
 if [[ -n "${DATABASE_URL:-}" ]]; then ok "DATABASE_URL set (${DATABASE_URL%%@*}@***)";
-elif [[ -f "$REPO_ROOT/.env" ]] && grep -q "DATABASE_URL=" "$REPO_ROOT/.env"; then ok "DATABASE_URL in repo .env";
-else warn "DATABASE_URL not set — migration step will be skipped"; fi
+else
+  err "DATABASE_URL not set — export it before running the required migration step"
+  if (( ! BULK_ONLY )); then PREFLIGHT_OK=0; fi
+fi
+
+if has_cmd psql; then
+  ok "psql installed for fail-closed migration application"
+else
+  err "psql not installed — install PostgreSQL client tools before running migrations"
+  if (( ! BULK_ONLY )); then PREFLIGHT_OK=0; fi
+fi
 
 if (( ! PREFLIGHT_OK && ! DRY_RUN )); then
   echo
@@ -244,18 +253,19 @@ step_wire_env() {
 # Step 3 — Apply migration
 # ──────────────────────────────────────────────────────────────────────────
 step_migrate() {
-  if [[ -z "${DATABASE_URL:-}" ]] && ! grep -q "DATABASE_URL=" "$REPO_ROOT/.env" 2>/dev/null; then
-    warn "DATABASE_URL not set — skipping migration step. Apply manually with:"
-    echo "    sqlx migrate run --source ./migrations --database-url \"\$DATABASE_URL\""
-    return 0  # not a hard failure
+  if [[ -z "${DATABASE_URL:-}" ]]; then
+    err "DATABASE_URL not set — migration is required and cannot be skipped"
+    return 1
   fi
-  if ! has_cmd sqlx; then
-    warn "sqlx CLI not installed (cargo install sqlx-cli) — skipping. Migration SQL at migrations/028_raga_clips.sql and 029_readings_consciousness_check.sql"
-    return 0
+  if ! has_cmd psql; then
+    err "psql CLI not installed — migration is required and cannot be skipped"
+    return 1
   fi
   log "Applying migrations (${TIMEOUT_MIGRATION}s timeout)…"
   if with_timeout "$TIMEOUT_MIGRATION" \
-      bash -c "cd '$REPO_ROOT' && sqlx migrate run --source ./migrations ${DATABASE_URL:+--database-url \"$DATABASE_URL\"}" 2>&1 | tee -a "$LOG_FILE"; then
+      bash "$REPO_ROOT/scripts/apply-migrations.sh" \
+        --migrations-dir "$REPO_ROOT/migrations" \
+        -- --dbname "$DATABASE_URL" 2>&1 | tee -a "$LOG_FILE"; then
     return 0
   else
     err "migration failed — check DATABASE_URL credentials + table conflicts"
@@ -320,7 +330,9 @@ info "Orchestrating Suno bridge → smoke → bulk-gen pipeline"
 if (( ! BULK_ONLY )); then
   step_run "1_deploy_bridge"  step_deploy_bridge  || true
   step_run "2_wire_env"       step_wire_env       || true
-  step_run "3_migrate"        step_migrate        || true
+  # The canonical runner is incremental. Always invoke it so persistent
+  # orchestration state can never hide newly added migrations.
+  step_run "3_migrate"        step_migrate 1      || true
   step_run "4_smoke_test"     step_smoke          || true
 fi
 

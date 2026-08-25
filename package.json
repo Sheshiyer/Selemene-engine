@@ -5,7 +5,11 @@
   ],
   "scripts": {
     "verify:typecheck": "pnpm --filter @noesis/verification typecheck",
-    "verify": "pnpm --filter @noesis/verification test"
+    "verify": "pnpm --filter @noesis/verification test",
+    "gate:scripts": "python3 scripts/validate_migrations.py && python3 scripts/validate_docker_workspace.py && python3 -m pytest tests/scripts -q",
+    "gate:verification": "pnpm --filter @noesis/witness-pipeline build && pnpm run verify && pnpm run verify:typecheck",
+    "gate:ts": "cd ts-engines && bun run typecheck && bun test",
+    "gate": "pnpm run gate:scripts && pnpm run gate:verification && pnpm run gate:ts"
   },
   "overrides": {
     "postcss": "^8.5.10",

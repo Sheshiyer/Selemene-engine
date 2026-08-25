@@ -4,6 +4,7 @@ import { resolveClipDir, resolveStoredClip } from '../engines/raaga/clip'
 import type {
   EngineHealthStatus,
   EngineInput,
+  EngineMetadata,
   EnginesHealthResponse,
   ErrorResponse,
   HealthResponse,
@@ -117,14 +118,7 @@ export function createServer(engineRegistry: EngineRegistry = registry) {
     // Get engine info by ID
     .get(
       '/engines/:id/info',
-      ({
-        params,
-        set,
-      }): ReturnType<typeof registry.get> extends infer T
-        ? T extends undefined
-          ? ErrorResponse
-          : ReturnType<NonNullable<T>['metadata']>
-        : never => {
+      ({ params, set }): EngineMetadata | ErrorResponse => {
         const engine = engineRegistry.get(params.id)
         if (!engine) {
           set.status = 404
@@ -133,7 +127,7 @@ export function createServer(engineRegistry: EngineRegistry = registry) {
             error_code: 'ENGINE_NOT_FOUND',
           } as ErrorResponse
         }
-        return engine.metadata() as unknown
+        return engine.metadata()
       },
       {
         params: t.Object({

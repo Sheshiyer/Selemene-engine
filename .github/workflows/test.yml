@@ -1,6 +1,7 @@
 name: CI - Test & Lint
 
 on:
+  workflow_call:
   push:
     branches: [ main, develop ]
   pull_request:
@@ -12,12 +13,54 @@ env:
   RUST_BACKTRACE: 1
 
 jobs:
+  repository-gate:
+    name: Workspace Gate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.33.0
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: 1.3.13
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install repository gate dependencies
+        run: python -m pip install --disable-pip-version-check -r requirements-gates.txt
+
+      - name: Install workspace dependencies
+        run: |
+          pnpm install --frozen-lockfile
+          cd ts-engines
+          bun install --frozen-lockfile
+
+      - name: Run canonical repository gate
+        run: pnpm run gate
+
   # Run all linting checks
   lint:
     name: Lint
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
       
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
@@ -39,6 +82,8 @@ jobs:
     needs: lint
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
 
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
@@ -85,6 +130,8 @@ jobs:
           --health-retries 5
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
 
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
@@ -93,12 +140,9 @@ jobs:
         uses: Swatinem/rust-cache@v2
 
       - name: Apply database migrations
-        run: |
-          for migration in migrations/*.sql; do
-            if [ -f "$migration" ]; then
-              PGPASSWORD=noesis_test_password psql -h localhost -U noesis_test -d noesis_test -f "$migration" || true
-            fi
-          done
+        run: >-
+          bash scripts/apply-migrations.sh --migrations-dir migrations --
+          --host localhost --username noesis_test --dbname noesis_test
         env:
           PGPASSWORD: noesis_test_password
 
@@ -143,6 +187,8 @@ jobs:
           --health-retries 5
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
 
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
@@ -151,12 +197,11 @@ jobs:
         uses: Swatinem/rust-cache@v2
 
       - name: Apply database migrations
-        run: |
-          for migration in migrations/*.sql; do
-            if [ -f "$migration" ]; then
-              PGPASSWORD=noesis_test_password psql -h localhost -U noesis_test -d noesis_test -f "$migration" || true
-            fi
-          done
+        run: >-
+          bash scripts/apply-migrations.sh --migrations-dir migrations --
+          --host localhost --username noesis_test --dbname noesis_test
+        env:
+          PGPASSWORD: noesis_test_password
 
       - name: Run integration tests
         run: cargo test --test '*' -- --test-threads=1
@@ -170,6 +215,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
       - name: Install cargo-audit
         run: cargo install cargo-audit --locked
       - name: Run security audit
@@ -182,6 +229,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
+          ref: ${{ github.sha }}
           fetch-depth: 0
 
       - name: TruffleHog secret scan
@@ -196,6 +244,8 @@ jobs:
     needs: [lint, test]
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
       
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
@@ -210,7 +260,7 @@ jobs:
         run: |
           BINARY_SIZE=$(stat -c%s target/release/noesis-server || echo "0")
           echo "Binary size: $BINARY_SIZE bytes"
-          echo "Binary size: $(numfmt --to=iec-i --suffix=B $BINARY_SIZE)"
+          echo "Binary size: $(numfmt --to=iec-i --suffix=B "$BINARY_SIZE")"
 
   # TypeScript engines lint and test
   ts-engines:
@@ -221,14 +271,16 @@ jobs:
         working-directory: ts-engines
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
       
       - name: Setup Bun
         uses: oven-sh/setup-bun@v1
         with:
-          bun-version: latest
+          bun-version: 1.3.13
       
       - name: Install dependencies
-        run: bun install
+        run: bun install --frozen-lockfile
       
       - name: Lint
         run: bun run lint
@@ -236,32 +288,65 @@ jobs:
       - name: Run tests
         run: bun test
 
-      - name: Typecheck (T-020 Wave2 + P1W1 media contract notes; refs p1-w1-worker-bootstrap-packet.md + 3 extraction (resources-and-assets.md gaps-and-improvements.md goal-understanding.md) + P1W1-CONTRACTS-FROZEN.md + detailed-task-list + EXECUTION-STATUS)
-        # Block scalar, not a plain one: the message below contains ": ", which
-        # is illegal in an unquoted YAML scalar and silently killed this entire
-        # workflow file at startup.
-        run: |
-          bun run typecheck || echo "pre-existing TS errors (app.ts generic metadata return typing + unknown body in tests); not media-related; see worktree .worktrees/T-002-copilot for frozen EngineInput/Output with image_data/consent/generated_*; bun test passes; refs: p1-w1-worker-bootstrap-packet.md + 3 extraction files (resources-and-assets.md etc) + P1W1-CONTRACTS-FROZEN.md + T-020"
+      - name: Typecheck
+        run: bun run typecheck
  
       - name: P1 W2 / T-020 media contract smoke (TS server + roundtrip; raaga/strudel T-005, sigil image via provider T-003; use frozen samples; cite extraction + FROZEN + bootstrap)
         run: |
+          set -euo pipefail
           sudo apt-get update -qq && sudo apt-get install -y -qq jq
           bun run start &
           SERVER_PID=$!
-          sleep 5
+          cleanup() {
+            kill "$SERVER_PID" 2>/dev/null || true
+            wait "$SERVER_PID" 2>/dev/null || true
+          }
+          trap cleanup EXIT
+
           echo "=== HEALTH ==="
-          curl -s http://localhost:3001/health | head -c 300
-          echo
+          ready=0
+          for attempt in {1..20}; do
+            if curl --fail-with-body --show-error --silent \
+                --output "$RUNNER_TEMP/ts-health.json" \
+                http://localhost:3001/health \
+              && jq -e '.status == "healthy"' "$RUNNER_TEMP/ts-health.json" >/dev/null; then
+              ready=1
+              break
+            fi
+            echo "TS engine readiness attempt ${attempt}/20 failed"
+            sleep 1
+          done
+          if [[ "$ready" -ne 1 ]]; then
+            echo "TS engine did not become healthy within 20 seconds" >&2
+            exit 1
+          fi
+          jq -c '{status, engines, version}' "$RUNNER_TEMP/ts-health.json"
+
           echo "=== RAAGA (strudel audio per T-005 FROZEN; refs bootstrap + resources-and-assets + gaps + goal-understanding + P1W1-CONTRACTS-FROZEN) ==="
-          curl -s -X POST http://localhost:3001/engines/raaga/calculate \
+          curl --fail-with-body --show-error --silent \
+            --output "$RUNNER_TEMP/raaga.json" \
+            -X POST http://localhost:3001/engines/raaga/calculate \
             -H 'Content-Type: application/json' \
-            -d '{"consciousness_level":2,"parameters":{"melakarta":1},"consent":{"granted":true,"scopes":["raaga-audio"],"timestamp":"2026-07-17T12:00:00Z"}}' | jq -c '{engine_id, melakarta: .result.melakarta.name, has_strudel: (.result.strudel_ratios != null)}' || echo "raaga smoke (jq optional)"
-          echo "=== SIGIL (image via provider T-003 per FROZEN; refs extraction + bootstrap + detailed-task-list T-020) ==="
-          curl -s -X POST http://localhost:3001/engines/sigil-forge/calculate \
+            -d '{"consciousness_level":2,"parameters":{"melakarta":1},"consent":{"granted":true,"scopes":["raaga-audio"],"timestamp":"2026-07-17T12:00:00Z"}}'
+          jq -e '
+            .engine_id == "raaga" and
+            .result.melakarta.num == 1 and
+            (.generated_audio.strudel_ratios | type == "array" and length == 8) and
+            .generated_audio.metadata.engine == "raaga"
+          ' "$RUNNER_TEMP/raaga.json"
+
+          echo "=== SIGIL (deterministic guidance-only contract; provider media remains separately mocked/config-gated per T-003 FROZEN) ==="
+          curl --fail-with-body --show-error --silent \
+            --output "$RUNNER_TEMP/sigil.json" \
+            -X POST http://localhost:3001/engines/sigil-forge/calculate \
             -H 'Content-Type: application/json' \
-            -d '{"consciousness_level":1,"parameters":{"intention":"witness patterns"},"consent":{"granted":true,"scopes":["sigil-gen"],"timestamp":"2026-07-17T12:00:00Z"}}' | jq -c '{engine_id, has_method: (.result.method != null), generated_image_null: (.generated_image == null)}' || echo "sigil smoke (jq optional)"
-          kill $SERVER_PID 2>/dev/null || true
-          pkill -f "bun run start" 2>/dev/null || true
+            -d '{"consciousness_level":1,"parameters":{"intention":"witness patterns"},"consent":{"granted":true,"scopes":["sigil-gen"],"timestamp":"2026-07-17T12:00:00Z"}}'
+          jq -e '
+            .engine_id == "sigil-forge" and
+            (.result.method.id | type == "string" and length > 0) and
+            .result.svg_preview.status == "absent" and
+            .result.generated_image == null
+          ' "$RUNNER_TEMP/sigil.json"
 
 
   # P1 W1 Python sidecar smoke (biofield CV for capture contracts T-004; refs extraction + bootstrap + FROZEN)
@@ -271,6 +356,8 @@ jobs:
     needs: [ts-engines]
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -292,17 +379,111 @@ jobs:
 
       - name: Biofield sidecar smoke (health + basic /analyze contract)
         run: |
+          set -euo pipefail
+          sudo apt-get update -qq && sudo apt-get install -y -qq jq
           cd python-services
-          python -m venv .venv
-          source .venv/bin/activate
-          python -m pip install -e ".[dev]" -q
           python -m uvicorn biofield_cv_service.main:app --host 127.0.0.1 --port 8002 --log-level error &
           UV_PID=$!
-          sleep 6
+          cleanup() {
+            kill "$UV_PID" 2>/dev/null || true
+            wait "$UV_PID" 2>/dev/null || true
+          }
+          trap cleanup EXIT
+
           echo "=== BIOFIELD HEALTH (T-004 capture contract) ==="
-          curl -s --max-time 3 http://127.0.0.1:8002/health | cat
-          echo
-          # basic analyze uses test fixture internally; here smoke health as proxy (full image POST in pytest)
-          echo "=== SMOKE COMPLETE (see pytest for full 11-metric contract per gaps-and-improvements + goal-understanding dual biofield) ==="
-          kill $UV_PID 2>/dev/null || true
-          pkill -f uvicorn 2>/dev/null || true
+          ready=0
+          for attempt in {1..20}; do
+            if curl --fail-with-body --show-error --silent --max-time 3 \
+                --output "$RUNNER_TEMP/biofield-health.json" \
+                http://127.0.0.1:8002/health \
+              && jq -e '
+                .status == "healthy" and
+                .service == "biofield-cv" and
+                .opencv_available == true and
+                .numpy_available == true
+              ' "$RUNNER_TEMP/biofield-health.json" >/dev/null; then
+              ready=1
+              break
+            fi
+            echo "Biofield readiness attempt ${attempt}/20 failed"
+            sleep 1
+          done
+          if [[ "$ready" -ne 1 ]]; then
+            echo "Biofield sidecar did not become ready within 20 seconds" >&2
+            exit 1
+          fi
+
+          export BIOFIELD_SMOKE_IMAGE="$RUNNER_TEMP/biofield-smoke.png"
+          python - <<'PY'
+          import os
+          import cv2
+          import numpy as np
+
+          image = np.zeros((64, 64, 3), dtype=np.uint8)
+          cv2.circle(image, (32, 32), 20, (180, 160, 140), -1)
+          cv2.rectangle(image, (20, 32), (44, 60), (160, 140, 120), -1)
+          if not cv2.imwrite(os.environ["BIOFIELD_SMOKE_IMAGE"], image):
+              raise SystemExit("failed to write biofield smoke fixture")
+          PY
+
+          echo "=== BIOFIELD ANALYZE (dual-biofield real-cv/v1 + 11 metrics) ==="
+          curl --fail-with-body --show-error --silent --max-time 30 \
+            --output "$RUNNER_TEMP/biofield-analyze.json" \
+            -X POST http://127.0.0.1:8002/analyze \
+            -F "image=@$BIOFIELD_SMOKE_IMAGE;type=image/png"
+          jq -e '
+            .contract_version == "biofield-cv/v1" and
+            .analysis_version == "real-cv/v1" and
+            (.metrics | keys | length == 11) and
+            (.metrics.light_quanta_density | type == "number") and
+            (.metrics.energy_analysis.low | type == "number") and
+            (.metrics.fractal_dimension | type == "number") and
+            (.metrics.body_symmetry | type == "number") and
+            (.algorithms_run | length == 11) and
+            (.quality_assessment.sufficient_quality | type == "boolean") and
+            (.processing_time_ms | type == "number")
+          ' "$RUNNER_TEMP/biofield-analyze.json"
+
+  ci-gate:
+    name: CI Gate
+    runs-on: ubuntu-latest
+    if: always()
+    needs:
+      - repository-gate
+      - lint
+      - workflow-parity
+      - test
+      - integration
+      - security
+      - secrets
+      - build
+      - ts-engines
+      - python-sidecars
+    steps:
+      - name: Require every CI lane to succeed
+        env:
+          REPOSITORY_GATE: ${{ needs.repository-gate.result }}
+          LINT: ${{ needs.lint.result }}
+          WORKFLOW_PARITY: ${{ needs.workflow-parity.result }}
+          TEST: ${{ needs.test.result }}
+          INTEGRATION: ${{ needs.integration.result }}
+          SECURITY: ${{ needs.security.result }}
+          SECRETS: ${{ needs.secrets.result }}
+          BUILD: ${{ needs.build.result }}
+          TS_ENGINES: ${{ needs.ts-engines.result }}
+          PYTHON_SIDECARS: ${{ needs.python-sidecars.result }}
+        run: |
+          failed=0
+          for result_name in \
+            REPOSITORY_GATE LINT WORKFLOW_PARITY TEST INTEGRATION \
+            SECURITY SECRETS BUILD TS_ENGINES PYTHON_SIDECARS; do
+            result="${!result_name}"
+            echo "${result_name}=${result}"
+            if [[ "${result}" != "success" ]]; then
+              failed=1
+            fi
+          done
+          if ((failed != 0)); then
+            echo "::error::One or more required CI lanes did not succeed."
+            exit 1
+          fi

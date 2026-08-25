@@ -151,6 +151,9 @@ describe('SigilForgeEngine with ImageProvider (T-035)', () => {
     const res = output.result as SigilForgeResult
     expect(res.generated_image).toBeDefined()
     expect(res.provider).toBe('mock')
+    if (!res.generated_image) {
+      throw new Error('mock provider did not return generated_image')
+    }
     expect(res.generated_image.b64_json).toBeDefined()
     expect(res.image_gen_available).toBe(true)
   })
@@ -182,6 +185,9 @@ describe('SigilForgeEngine with ImageProvider (T-035)', () => {
     })
     const res = output.result as SigilForgeResult
     expect(res.generated_image).toBeDefined()
+    if (!res.generated_image) {
+      throw new Error('mock edit provider did not return generated_image')
+    }
     expect(res.generated_image.b64_json).toBeDefined()
   })
 
@@ -271,6 +277,9 @@ describe('NanoBananaImageProvider (T-060)', () => {
     })
     const top = output.generated_image
     expect(top).toBeDefined()
+    if (!top) {
+      throw new Error('nano provider did not return top-level generated_image')
+    }
     expect(top.metadata?.provider).toBe('nano-banana')
     const res = output.result as SigilForgeResult
     expect(res.provider).toBe('nano-banana')
