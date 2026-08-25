@@ -3,6 +3,16 @@
 builder = "DOCKERFILE"
 # Dockerfile is auto-detected, but we can specify it explicitly
 dockerfilePath = "Dockerfile.prod"
+watchPatterns = [
+  "crates/**",
+  "data/**",
+  "migrations/**",
+  "Cargo.toml",
+  "Cargo.lock",
+  "Dockerfile.prod",
+  ".dockerignore",
+  "railway.toml"
+]
 
 [deploy]
 # Start command - Railway will use the Dockerfile's ENTRYPOINT by default
@@ -20,29 +30,3 @@ restartPolicyMaxRetries = 3
 [deploy.resources]
 memory = 1024  # MB
 cpu = 1.0      # vCPU
-
-[deploy.watch]
-# Watch paths - trigger deployment only when these files change
-# This prevents unnecessary rebuilds when docs/tests change
-include = [
-  "src/**",
-  "crates/**",
-  "data/**",
-  "Cargo.toml",
-  "Cargo.lock",
-  "Dockerfile.prod",
-  ".dockerignore"
-]
-
-# Ignore these paths - won't trigger deployments
-exclude = [
-  "*.md",
-  "docs/**",
-  "tests/**",
-  "benches/**",
-  ".claude/**",
-  ".context/**",
-  ".github/**",
-  "*.test.*",
-  "*.spec.*"
-]
