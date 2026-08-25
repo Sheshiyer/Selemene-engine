@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'bun:test'
+import { afterAll, beforeAll, describe, expect, it } from 'bun:test'
 import type { ImageProvider } from '../../providers/image-provider'
 import { MockImageProvider, createImageProvider } from '../../providers/image-provider' // T-035 provider tests
 import { buildYantraPrompt } from '../../providers/kimi' // T-061 yantra templates
@@ -10,6 +10,26 @@ import {
 import { SigilForgeEngine } from './engine'
 import { buildSigilPrompt } from './prompt-builder'
 import { SIGIL_METHODS } from './wisdom'
+
+const PROVIDER_ENV_KEYS = ['NVIDIA_API_KEY', 'RUNCOMFY_TOKEN', 'KIMI_API_KEY'] as const
+const savedProviderEnv = new Map<string, string | undefined>()
+
+beforeAll(() => {
+  for (const key of PROVIDER_ENV_KEYS) {
+    savedProviderEnv.set(key, process.env[key])
+    // biome-ignore lint/performance/noDelete: the tests must make provider credentials genuinely absent
+    delete process.env[key]
+  }
+})
+
+afterAll(() => {
+  for (const key of PROVIDER_ENV_KEYS) {
+    const value = savedProviderEnv.get(key)
+    // biome-ignore lint/performance/noDelete: assigning undefined would create a literal "undefined" credential
+    if (value === undefined) delete process.env[key]
+    else process.env[key] = value
+  }
+})
 
 type SigilForgeResult = {
   intention?: string
@@ -59,8 +79,8 @@ describe('SigilForgeEngine input compatibility', () => {
   })
 })
 
-describe('SigilForgeEngine image generation (guidance-only, no API key in test env)', () => {
-  const engine = new SigilForgeEngine()
+describe('SigilForgeEngine image generation (isolated mock provider)', () => {
+  const engine = new SigilForgeEngine(new MockImageProvider())
 
   it('returns generated_image=null when generate_image=false (default)', async () => {
     const output = await engine.calculate({
@@ -72,7 +92,7 @@ describe('SigilForgeEngine image generation (guidance-only, no API key in test e
     expect(result.generated_image).toBeNull()
   })
 
-  it('returns error in generated_image or a valid result when generate_image=true', async () => {
+  it('returns a generated image without consulting ambient provider credentials', async () => {
     const output = await engine.calculate({
       consciousness_level: 1,
       parameters: {
@@ -86,10 +106,8 @@ describe('SigilForgeEngine image generation (guidance-only, no API key in test e
     expect(result.generated_image).not.toBeNull()
     // biome-ignore lint/style/noNonNullAssertion: asserted non-null above
     const img = result.generated_image!
-    const hasResult = img.b64_json !== undefined || img.url !== undefined
-    const hasError = img.error !== undefined
-    expect(hasResult || hasError).toBe(true)
-  }, 30_000) // NIM calls take 5-15s
+    expect(img.b64_json !== undefined || img.url !== undefined).toBe(true)
+  })
 
   it('engine version is 2.0.0', () => {
     expect(engine.metadata().version).toBe('2.0.0')
