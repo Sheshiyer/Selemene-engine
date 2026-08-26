@@ -50,9 +50,12 @@ fn canonical_result_deserializes_typed_provenance_and_prompts() {
 
     assert_eq!(result.contract_version.as_str(), "v1");
     assert_eq!(result.engine_id, "numerology");
-    assert_eq!(result.witness_prompts.len(), 1);
-    assert_eq!(result.provenance.runtime_kind, RuntimeKind::Native);
-    assert!(!result.provenance.fallback_used);
+    assert_eq!(result.witness_prompts.as_ref().unwrap().len(), 1);
+    assert_eq!(
+        result.provenance.as_ref().unwrap().runtime_kind,
+        RuntimeKind::Native
+    );
+    assert!(!result.provenance.as_ref().unwrap().fallback_used);
 }
 
 #[test]
@@ -75,4 +78,22 @@ fn canonical_capability_deserializes_runtime_truth() {
     assert_eq!(capability.availability, CapabilityAvailability::Available);
     assert_eq!(capability.runtime_kind, RuntimeKind::Native);
     assert!(capability.dependencies.is_empty());
+}
+
+#[test]
+fn canonical_result_accepts_singular_prompt_without_provenance() {
+    let result: ContractEngineResult = serde_json::from_value(serde_json::json!({
+        "contract_version": "v1",
+        "engine_id": "numerology",
+        "result": {},
+        "consciousness_level": 2,
+        "witness_prompt": "What is witnessed?",
+        "calculated_at": "2026-08-26T06:30:00Z",
+        "processing_time_ms": 1.0
+    }))
+    .expect("every canonical-compatible result must deserialize");
+
+    assert_eq!(result.witness_prompt.as_deref(), Some("What is witnessed?"));
+    assert!(result.witness_prompts.is_none());
+    assert!(result.provenance.is_none());
 }

@@ -45,13 +45,24 @@ const canonicalResult: ContractEngineResult = {
   },
 };
 
+const singularLegacyResult: ContractEngineResult = {
+  contract_version: "v1",
+  engine_id: "numerology",
+  result: {},
+  consciousness_level: 2,
+  witness_prompt: "What is witnessed?",
+  calculated_at: "2026-08-26T06:30:00Z",
+  processing_time_ms: 1,
+};
+
 describe("contract authority v1", () => {
   it("retains public mirror IDs and canonical envelope fields", () => {
     expect(CONTRACT_VERSION).toBe("v1");
     expect(ENGINE_IDS).toHaveLength(17);
     expect(ENGINE_IDS).toContain(canonicalCapability.engine_id);
     expect(canonicalResult.contract_version).toBe(CONTRACT_VERSION);
-    expect(canonicalResult.witness_prompts[0]?.prompt).toBe("What is witnessed?");
+    expect(canonicalResult.witness_prompts?.[0]?.prompt).toBe("What is witnessed?");
+    expect(singularLegacyResult.provenance).toBeUndefined();
   });
 });
 

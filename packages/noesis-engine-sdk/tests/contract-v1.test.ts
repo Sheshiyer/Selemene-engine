@@ -36,6 +36,15 @@ const capability: ContractEngineCapability = {
   runtime_kind: capabilityFixture.runtime_kind as RuntimeKind,
   required_phase: capabilityFixture.required_phase as ConsciousnessPhase,
 }
+const singularLegacyResult: ContractEngineResult = {
+  contract_version: CONTRACT_VERSION,
+  engine_id: 'numerology',
+  result: {},
+  consciousness_level: 2,
+  witness_prompt: 'What is witnessed?',
+  calculated_at: '2026-08-26T06:30:00Z',
+  processing_time_ms: 1,
+}
 
 describe('canonical v1 fixtures', () => {
   test('engine SDK consumes request and result authority', () => {
@@ -43,8 +52,9 @@ describe('canonical v1 fixtures', () => {
     expect(request.contract_version).toBe(CONTRACT_VERSION)
     expect(request.image_data?.consent?.scopes).toEqual(['face-image'])
     expect(result.engine_id).toBe('numerology')
-    expect(result.provenance.runtime_kind).toBe('native')
+    expect(result.provenance?.runtime_kind).toBe('native')
     expect(result.witness_prompts).toHaveLength(1)
+    expect(singularLegacyResult.provenance).toBeUndefined()
   })
 
   test('engine SDK consumes error and capability authority', () => {

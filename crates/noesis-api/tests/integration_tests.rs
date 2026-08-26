@@ -297,6 +297,94 @@ async fn test_calculate_panchanga_success() {
 }
 
 #[tokio::test]
+async fn test_calculate_accepts_canonical_v1_request() {
+    let router = get_test_router().await;
+    let token = generate_test_token(5);
+    let mut input = serde_json::to_value(create_test_birth_input()).unwrap();
+    input["contract_version"] = json!("v1");
+    input["consciousness_level"] = json!(5);
+    input["parameters"] = json!({});
+
+    let (status, body) = make_authenticated_request(
+        router,
+        "POST",
+        "/api/v1/engines/panchanga/calculate",
+        &token,
+        Some(input),
+    )
+    .await;
+
+    assert_eq!(status, StatusCode::OK, "Body: {body:?}");
+    assert_eq!(body["contract_version"], "v1");
+}
+
+#[tokio::test]
+async fn test_calculate_rejects_unknown_contract_version() {
+    let router = get_test_router().await;
+    let token = generate_test_token(5);
+    let mut input = serde_json::to_value(create_test_birth_input()).unwrap();
+    input["contract_version"] = json!("v2");
+    input["consciousness_level"] = json!(5);
+    input["parameters"] = json!({});
+
+    let (status, body) = make_authenticated_request(
+        router,
+        "POST",
+        "/api/v1/engines/panchanga/calculate",
+        &token,
+        Some(input),
+    )
+    .await;
+
+    assert_eq!(status, StatusCode::UNPROCESSABLE_ENTITY, "Body: {body:?}");
+    assert_eq!(body["contract_version"], "v1");
+    assert_eq!(body["error_code"], "VALIDATION_ERROR");
+}
+
+#[tokio::test]
+async fn test_calculate_rejects_v1_request_without_canonical_parameters() {
+    let router = get_test_router().await;
+    let token = generate_test_token(5);
+    let mut input = serde_json::to_value(create_test_birth_input()).unwrap();
+    input["contract_version"] = json!("v1");
+    input["consciousness_level"] = json!(5);
+
+    let (status, body) = make_authenticated_request(
+        router,
+        "POST",
+        "/api/v1/engines/panchanga/calculate",
+        &token,
+        Some(input),
+    )
+    .await;
+
+    assert_eq!(status, StatusCode::UNPROCESSABLE_ENTITY, "Body: {body:?}");
+    assert_eq!(body["error_code"], "VALIDATION_ERROR");
+}
+
+#[tokio::test]
+async fn test_calculate_rejects_v1_consciousness_level_above_five() {
+    let router = get_test_router().await;
+    let token = generate_test_token(5);
+    let mut input = serde_json::to_value(create_test_birth_input()).unwrap();
+    input["contract_version"] = json!("v1");
+    input["consciousness_level"] = json!(6);
+    input["parameters"] = json!({});
+
+    let (status, body) = make_authenticated_request(
+        router,
+        "POST",
+        "/api/v1/engines/panchanga/calculate",
+        &token,
+        Some(input),
+    )
+    .await;
+
+    assert_eq!(status, StatusCode::UNPROCESSABLE_ENTITY, "Body: {body:?}");
+    assert_eq!(body["error_code"], "VALIDATION_ERROR");
+}
+
+#[tokio::test]
 async fn test_calculate_numerology_success() {
     let router = get_test_router().await;
     let token = generate_test_token(5);

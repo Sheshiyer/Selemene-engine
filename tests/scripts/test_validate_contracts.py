@@ -142,3 +142,67 @@ def test_contract_version_drift_fails_closed(tmp_path: Path) -> None:
     assert result.returncode != 0
     assert "engine-capability.json" in result.stderr
     assert "contract_version" in result.stderr
+
+
+def test_empty_fixture_manifest_fails_closed(tmp_path: Path) -> None:
+    authority = copy_authority(tmp_path)
+    manifest_path = authority / "manifest.json"
+    manifest = read_json(manifest_path)
+    manifest["fixtures"] = []
+    write_json(manifest_path, manifest)
+
+    result = run_validator(authority)
+
+    assert result.returncode != 0
+    assert "fixtures" in result.stderr
+
+
+def test_duplicate_fixture_entry_fails_closed(tmp_path: Path) -> None:
+    authority = copy_authority(tmp_path)
+    manifest_path = authority / "manifest.json"
+    manifest = read_json(manifest_path)
+    fixtures = manifest["fixtures"]
+    assert isinstance(fixtures, list)
+    manifest["fixtures"] = [fixtures[0], *fixtures]
+    write_json(manifest_path, manifest)
+
+    result = run_validator(authority)
+
+    assert result.returncode != 0
+    assert "duplicate" in result.stderr.lower()
+
+
+def test_fixture_path_cannot_escape_authority_root(tmp_path: Path) -> None:
+    authority = copy_authority(tmp_path)
+    outside = authority.parent / "outside.json"
+    outside.write_text(
+        (authority / "fixtures" / "engine-request.json").read_text(encoding="utf-8"),
+        encoding="utf-8",
+    )
+    manifest_path = authority / "manifest.json"
+    manifest = read_json(manifest_path)
+    fixtures = manifest["fixtures"]
+    assert isinstance(fixtures, list)
+    assert isinstance(fixtures[0], dict)
+    fixtures[0]["path"] = "../outside.json"
+    write_json(manifest_path, manifest)
+
+    result = run_validator(authority)
+
+    assert result.returncode != 0
+    assert "../outside.json" in result.stderr
+
+
+def test_broken_internal_fragment_reference_fails_closed(tmp_path: Path) -> None:
+    authority = copy_authority(tmp_path)
+    schema_path = authority / "schemas" / "engine-result.schema.json"
+    schema = read_json(schema_path)
+    properties = schema["properties"]
+    assert isinstance(properties, dict)
+    properties["latent_broken_field"] = {"$ref": "#/$defs/missingPrompt"}
+    write_json(schema_path, schema)
+
+    result = run_validator(authority)
+
+    assert result.returncode != 0
+    assert "missingPrompt" in result.stderr

@@ -109,12 +109,12 @@ export interface ContractEngineResult {
   result: Record<string, unknown>;
   consciousness_level: number;
   witness_prompt?: string;
-  witness_prompts: ContractWitnessPrompt[];
+  witness_prompts?: ContractWitnessPrompt[];
   calculated_at: string;
   processing_time_ms: number;
   generated_image?: Record<string, unknown>;
   generated_audio?: Record<string, unknown>;
-  provenance: ContractProvenance;
+  provenance?: ContractProvenance;
 }
 
 export interface ContractError {

@@ -1313,11 +1313,12 @@ struct ApiEngineOutputResponse {
 #[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
 struct ApiEngineInput {
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[schema(pattern = "^v1$")]
     contract_version: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     consciousness_level: Option<u8>,
     #[serde(default)]
-    parameters: HashMap<String, Value>,
+    parameters: Option<HashMap<String, Value>>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     seed: Option<u64>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -1347,12 +1348,41 @@ fn is_standard_precision(precision: &Precision) -> bool {
 }
 
 impl ApiEngineInput {
+    fn validate_contract_version(&self) -> Result<(), EngineError> {
+        if let Some(version) = self.contract_version.as_deref() {
+            if version != noesis_core::contract::CONTRACT_VERSION {
+                return Err(EngineError::ValidationError(format!(
+                    "unsupported contract_version {version}; expected {}",
+                    noesis_core::contract::CONTRACT_VERSION
+                )));
+            }
+            let consciousness_level = self.consciousness_level.ok_or_else(|| {
+                EngineError::ValidationError(
+                    "canonical v1 requests require consciousness_level".to_string(),
+                )
+            })?;
+            if consciousness_level > 5 {
+                return Err(EngineError::ValidationError(
+                    "consciousness_level must be between 0 and 5".to_string(),
+                ));
+            }
+            if self.parameters.is_none() {
+                return Err(EngineError::ValidationError(
+                    "canonical v1 requests require parameters".to_string(),
+                ));
+            }
+        }
+        Ok(())
+    }
+
     fn normalize(self) -> EngineInput {
         let mut options = self.options;
 
         // The merged SDK's canonical parameter map wins over duplicate legacy
         // option keys. Top-level transport/media fields win over both.
-        options.extend(self.parameters);
+        if let Some(parameters) = self.parameters {
+            options.extend(parameters);
+        }
         if let Some(value) = self.consciousness_level {
             options.insert("consciousness_level".to_string(), Value::from(value));
         }
@@ -2602,6 +2632,9 @@ async fn calculate_handler(
     Json(api_input): Json<ApiEngineInput>,
 ) -> Result<Json<ApiEngineOutputResponse>, (StatusCode, Json<ErrorResponse>)> {
     let start = Instant::now();
+    api_input
+        .validate_contract_version()
+        .map_err(ErrorMapper::map)?;
     let input = api_input.normalize();
 
     // Validate input at the API boundary (lat/lon bounds, options size cap).

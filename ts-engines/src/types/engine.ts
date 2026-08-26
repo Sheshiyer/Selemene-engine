@@ -64,7 +64,7 @@ export interface EngineOutput {
   /** Calculation results (engine-specific) */
   result: Record<string, unknown>
   /** Witness prompts for self-inquiry */
-  witness_prompts: WitnessPrompt[]
+  witness_prompts?: WitnessPrompt[]
   /** Calculation timestamp */
   calculated_at: string
   /** Processing time in milliseconds */
@@ -162,12 +162,12 @@ export interface ContractEngineResult {
   result: Record<string, unknown>
   consciousness_level: ConsciousnessPhase
   witness_prompt?: string
-  witness_prompts: WitnessPrompt[]
+  witness_prompts?: WitnessPrompt[]
   calculated_at: string
   processing_time_ms: number
   generated_image?: EngineOutput['generated_image']
   generated_audio?: EngineOutput['generated_audio']
-  provenance: ContractProvenance
+  provenance?: ContractProvenance
 }
 
 export interface ContractError {

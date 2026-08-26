@@ -152,14 +152,16 @@ pub struct ContractEngineResult {
     pub consciousness_level: u8,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub witness_prompt: Option<String>,
-    pub witness_prompts: Vec<WitnessPrompt>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub witness_prompts: Option<Vec<WitnessPrompt>>,
     pub calculated_at: DateTime<Utc>,
     pub processing_time_ms: f64,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub generated_image: Option<Value>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub generated_audio: Option<Value>,
-    pub provenance: Provenance,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub provenance: Option<Provenance>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]

@@ -36,13 +36,23 @@ const capability: ContractEngineCapability = {
   runtime_kind: capabilityFixture.runtime_kind as RuntimeKind,
   required_phase: capabilityFixture.required_phase as ConsciousnessPhase,
 }
+const singularLegacyResult: ContractEngineResult = {
+  contract_version: CONTRACT_VERSION,
+  engine_id: 'numerology',
+  result: {},
+  consciousness_level: 2,
+  witness_prompt: 'What is witnessed?',
+  calculated_at: '2026-08-26T06:30:00Z',
+  processing_time_ms: 1,
+}
 
 describe('contract authority v1', () => {
   test('TypeScript engine boundary consumes request and result fixtures', () => {
     expect(request.contract_version).toBe(CONTRACT_VERSION)
     expect(request.consciousness_level).toBe(2)
     expect(result.contract_version).toBe(CONTRACT_VERSION)
-    expect(result.provenance.cached).toBe(false)
+    expect(result.provenance?.cached).toBe(false)
+    expect(singularLegacyResult.witness_prompts).toBeUndefined()
   })
 
   test('TypeScript engine boundary consumes error and capability fixtures', () => {

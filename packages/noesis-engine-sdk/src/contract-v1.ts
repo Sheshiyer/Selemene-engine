@@ -45,12 +45,12 @@ export interface ContractEngineResult<TResult = Record<string, unknown>> {
   result: TResult
   consciousness_level: ConsciousnessPhase
   witness_prompt?: string
-  witness_prompts: WitnessPrompt[]
+  witness_prompts?: WitnessPrompt[]
   calculated_at: string
   processing_time_ms: number
   generated_image?: GeneratedImageRef
   generated_audio?: GeneratedAudioRef
-  provenance: ContractProvenance
+  provenance?: ContractProvenance
 }
 
 export interface ContractError {

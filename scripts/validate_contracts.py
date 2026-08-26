@@ -24,6 +24,13 @@ EXPECTED_SCHEMAS = {
     "schemas/provenance.schema.json",
     "schemas/engine-capability.schema.json",
 }
+EXPECTED_FIXTURES = {
+    "fixtures/engine-request.json": "schemas/engine-request.schema.json",
+    "fixtures/engine-request-legacy.json": "schemas/engine-request.schema.json",
+    "fixtures/engine-result.json": "schemas/engine-result.schema.json",
+    "fixtures/error.json": "schemas/error.schema.json",
+    "fixtures/engine-capability.json": "schemas/engine-capability.schema.json",
+}
 SENSITIVE_KEY = re.compile(
     r"(^|_)(api_)?(token|secret|password|credential|stack|endpoint)(_|$)", re.IGNORECASE
 )
@@ -68,6 +75,34 @@ def sensitive_keys(value: Any, prefix: str = "$") -> list[str]:
     return findings
 
 
+def authority_path(root: Path, relative: str) -> Path:
+    if Path(relative).is_absolute():
+        raise ContractValidationError(f"{relative}: authority path must be relative")
+    resolved_root = root.resolve()
+    resolved = (resolved_root / relative).resolve()
+    try:
+        resolved.relative_to(resolved_root)
+    except ValueError as error:
+        raise ContractValidationError(f"{relative}: path escapes contract authority root") from error
+    return resolved
+
+
+def resolve_fragment(document: Any, fragment: str, context: str) -> None:
+    if not fragment:
+        return
+    if not fragment.startswith("/"):
+        raise ContractValidationError(f"{context}: unsupported fragment #{fragment}")
+    current = document
+    for raw_part in fragment.removeprefix("/").split("/"):
+        part = raw_part.replace("~1", "/").replace("~0", "~")
+        if isinstance(current, dict) and part in current:
+            current = current[part]
+        elif isinstance(current, list) and part.isdigit() and int(part) < len(current):
+            current = current[int(part)]
+        else:
+            raise ContractValidationError(f"{context}: unresolved fragment #{fragment}")
+
+
 def validate_authority(root: Path) -> tuple[int, int]:
     manifest_path = root / "manifest.json"
     manifest = load_json(manifest_path)
@@ -92,7 +127,7 @@ def validate_authority(root: Path) -> tuple[int, int]:
     schemas: dict[str, dict[str, Any]] = {}
     schema_paths: dict[str, Path] = {}
     for relative in schema_entries:
-        path = root / relative
+        path = authority_path(root, relative)
         schema = load_json(path)
         if not isinstance(schema, dict):
             raise ContractValidationError(f"{path}: schema must be an object")
@@ -111,13 +146,12 @@ def validate_authority(root: Path) -> tuple[int, int]:
     known_ids = set(schemas)
     for schema_id, schema in schemas.items():
         for reference in iter_refs(schema):
-            if reference.startswith("#"):
-                continue
-            target, _ = urldefrag(urljoin(schema_id, reference))
+            target, fragment = urldefrag(urljoin(schema_id, reference))
             if target not in known_ids:
                 raise ContractValidationError(
                     f"{schema_paths[schema_id]}: unresolved local $ref {reference}"
                 )
+            resolve_fragment(schemas[target], fragment, f"{schema_paths[schema_id]}: $ref {reference}")
 
     registry = Registry().with_resources(
         (schema_id, Resource.from_contents(schema)) for schema_id, schema in schemas.items()
@@ -125,6 +159,20 @@ def validate_authority(root: Path) -> tuple[int, int]:
     fixtures = manifest.get("fixtures")
     if not isinstance(fixtures, list):
         raise ContractValidationError(f"{manifest_path}: fixtures must be an array")
+
+    fixture_bindings: list[tuple[str, str]] = []
+    for entry in fixtures:
+        if isinstance(entry, dict) and isinstance(entry.get("path"), str) and isinstance(entry.get("schema"), str):
+            fixture_bindings.append((entry["path"], entry["schema"]))
+    if len(fixture_bindings) != len(set(fixture_bindings)):
+        raise ContractValidationError(f"{manifest_path}: duplicate fixture entry")
+    for fixture_relative, schema_relative in fixture_bindings:
+        authority_path(root, fixture_relative)
+        authority_path(root, schema_relative)
+    if dict(fixture_bindings) != EXPECTED_FIXTURES or len(fixture_bindings) != len(EXPECTED_FIXTURES):
+        raise ContractValidationError(
+            f"{manifest_path}: fixtures must exactly match {sorted(EXPECTED_FIXTURES)}"
+        )
 
     for entry in fixtures:
         if not isinstance(entry, dict) or set(entry) != {"path", "schema"}:
@@ -135,9 +183,9 @@ def validate_authority(root: Path) -> tuple[int, int]:
             raise ContractValidationError(f"{manifest_path}: fixture path and schema must be strings")
         if schema_relative not in entry_set:
             raise ContractValidationError(f"{manifest_path}: unknown fixture schema {schema_relative}")
-        fixture_path = root / fixture_relative
+        fixture_path = authority_path(root, fixture_relative)
         fixture = load_json(fixture_path)
-        schema_path = root / schema_relative
+        schema_path = authority_path(root, schema_relative)
         schema = next(value for key, value in schemas.items() if schema_paths[key] == schema_path)
         validator = Draft202012Validator(schema, registry=registry, format_checker=FormatChecker())
         errors = sorted(validator.iter_errors(fixture), key=lambda error: list(error.absolute_path))
