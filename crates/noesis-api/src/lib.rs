@@ -1293,6 +1293,7 @@ struct VedicChartBundleResponseSchema {
 struct ApiEngineOutputResponse {
     #[serde(flatten)]
     output: EngineOutput,
+    contract_version: String,
     envelope_version: String,
     witness_prompts: Vec<ApiWitnessPrompt>,
     calculated_at: String,
@@ -1308,6 +1309,8 @@ struct ApiEngineOutputResponse {
 /// once into `EngineInput::options` before dispatch.
 #[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
 struct ApiEngineInput {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    contract_version: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     consciousness_level: Option<u8>,
     #[serde(default)]
@@ -1391,6 +1394,7 @@ impl From<EngineOutput> for ApiEngineOutputResponse {
 
         Self {
             output,
+            contract_version: noesis_core::contract::CONTRACT_VERSION.to_string(),
             envelope_version: "1".to_string(),
             witness_prompts,
             calculated_at,

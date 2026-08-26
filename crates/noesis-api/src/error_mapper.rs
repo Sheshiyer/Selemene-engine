@@ -11,6 +11,7 @@ tokio::task_local! {
 
 #[derive(Serialize, ToSchema)]
 pub struct ErrorResponse {
+    pub contract_version: String,
     pub status: u16,
     pub error_code: String,
     pub message: String,
@@ -147,6 +148,7 @@ impl ErrorMapper {
         (
             status,
             Json(ErrorResponse {
+                contract_version: noesis_core::contract::CONTRACT_VERSION.to_string(),
                 status: status.as_u16(),
                 error_code,
                 message: message.clone(),

@@ -3,6 +3,7 @@ source: crates/noesis-api/tests/error_response_snapshot_tests.rs
 expression: json
 ---
 {
+  "contract_version": "v1",
   "error": "An internal ephemeris error occurred",
   "error_code": "SWISS_EPHEMERIS_ERROR",
   "message": "An internal ephemeris error occurred",
