@@ -1,0 +1,19 @@
+{
+  "contract_version": "v1",
+  "engine_id": "numerology",
+  "result": { "life_path_number": 7 },
+  "consciousness_level": 2,
+  "witness_prompt": "Where does reflection become avoidance?",
+  "witness_prompts": [
+    { "prompt": "Where does reflection become avoidance?", "themes": ["discernment"] }
+  ],
+  "calculated_at": "2026-08-26T06:30:00Z",
+  "processing_time_ms": 12.5,
+  "provenance": {
+    "runtime_kind": "native",
+    "implementation_version": "3.3.1",
+    "cached": false,
+    "fallback_used": false,
+    "backend_id": "rust"
+  }
+}

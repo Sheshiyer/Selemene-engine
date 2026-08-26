@@ -1,10 +1,17 @@
 from __future__ import annotations
 
+import json
 import stat
 import subprocess
 from pathlib import Path
 
 from .conftest import REPO_ROOT, merged_env
+
+
+def test_gate_scripts_runs_contract_validator() -> None:
+    scripts = json.loads((REPO_ROOT / "package.json").read_text(encoding="utf-8"))["scripts"]
+
+    assert "python3 scripts/validate_contracts.py" in scripts["gate:scripts"]
 
 
 def bash_function(source: str, name: str) -> str:

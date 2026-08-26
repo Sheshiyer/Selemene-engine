@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://noesis.tryambakam.org/contracts/v1/error.schema.json",
+  "title": "Selemene Error v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contract_version", "status", "error_code", "message", "error", "trace_id"],
+  "properties": {
+    "contract_version": { "const": "v1" },
+    "status": { "type": "integer", "minimum": 400, "maximum": 599 },
+    "error_code": { "type": "string", "minLength": 1 },
+    "message": { "type": "string", "minLength": 1 },
+    "error": { "type": "string", "minLength": 1 },
+    "details": { "type": "object", "additionalProperties": true },
+    "trace_id": { "type": "string", "minLength": 1 }
+  }
+}

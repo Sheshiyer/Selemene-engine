@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://noesis.tryambakam.org/contracts/v1/engine-capability.schema.json",
+  "title": "Selemene Engine Capability v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contract_version", "engine_id", "display_name", "availability", "runtime_kind", "dependencies"],
+  "properties": {
+    "contract_version": { "const": "v1" },
+    "engine_id": { "type": "string", "minLength": 1 },
+    "display_name": { "type": "string", "minLength": 1 },
+    "availability": { "enum": ["declared", "available", "degraded", "unavailable"] },
+    "runtime_kind": { "enum": ["native", "typescript", "python", "database-conditional", "composed"] },
+    "dependencies": { "type": "array", "uniqueItems": true, "items": { "type": "string", "minLength": 1 } },
+    "required_phase": { "type": "integer", "minimum": 0, "maximum": 5 },
+    "implementation_version": { "type": "string", "minLength": 1 }
+  }
+}

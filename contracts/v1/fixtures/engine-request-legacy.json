@@ -1,0 +1,17 @@
+{
+  "contract_version": "v1",
+  "consciousness_level": 1,
+  "parameters": {},
+  "birth_data": {
+    "name": "Witness",
+    "date": "1990-01-01",
+    "time": "14:30",
+    "latitude": 12.9716,
+    "longitude": 77.5946,
+    "timezone": "Asia/Kolkata"
+  },
+  "current_time": "2026-08-26T06:30:00Z",
+  "location": { "latitude": 12.9716, "longitude": 77.5946, "altitude": null },
+  "precision": "Standard",
+  "options": { "ayanamsa": "lahiri" }
+}

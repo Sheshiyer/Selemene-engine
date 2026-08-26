@@ -1,0 +1,10 @@
+{
+  "contract_version": "v1",
+  "engine_id": "numerology",
+  "display_name": "Numerology",
+  "availability": "available",
+  "runtime_kind": "native",
+  "dependencies": [],
+  "required_phase": 0,
+  "implementation_version": "3.3.1"
+}

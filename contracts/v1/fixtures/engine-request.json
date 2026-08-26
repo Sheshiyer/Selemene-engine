@@ -1,0 +1,16 @@
+{
+  "contract_version": "v1",
+  "consciousness_level": 2,
+  "parameters": { "date": "2026-08-26" },
+  "question": "What pattern is ready to be witnessed?",
+  "image_data": {
+    "reference": "local://capture/01",
+    "mime_type": "image/png",
+    "consent": {
+      "granted": true,
+      "scopes": ["face-image"],
+      "timestamp": "2026-08-26T06:30:00Z"
+    }
+  },
+  "quality": { "sufficient": true, "score": 0.92 }
+}

@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://noesis.tryambakam.org/contracts/v1/consent.schema.json",
+  "title": "Selemene Consent v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["granted", "scopes", "timestamp"],
+  "properties": {
+    "granted": { "type": "boolean" },
+    "scopes": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string", "minLength": 1 } },
+    "timestamp": { "type": "string", "format": "date-time" },
+    "token": { "type": "string", "minLength": 1 }
+  }
+}

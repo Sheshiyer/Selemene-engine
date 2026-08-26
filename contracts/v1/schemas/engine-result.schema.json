@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://noesis.tryambakam.org/contracts/v1/engine-result.schema.json",
+  "title": "Selemene Engine Result v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contract_version", "engine_id", "result", "consciousness_level", "calculated_at", "processing_time_ms", "provenance"],
+  "properties": {
+    "contract_version": { "const": "v1" },
+    "engine_id": { "type": "string", "minLength": 1 },
+    "result": { "type": "object", "additionalProperties": true },
+    "consciousness_level": { "type": "integer", "minimum": 0, "maximum": 5 },
+    "witness_prompt": { "type": "string" },
+    "witness_prompts": { "type": "array", "items": { "$ref": "#/$defs/witnessPrompt" } },
+    "calculated_at": { "type": "string", "format": "date-time" },
+    "processing_time_ms": { "type": "number", "minimum": 0 },
+    "generated_image": { "$ref": "#/$defs/generatedImage" },
+    "generated_audio": { "$ref": "#/$defs/generatedAudio" },
+    "provenance": { "$ref": "provenance.schema.json" }
+  },
+  "anyOf": [{ "required": ["witness_prompt"] }, { "required": ["witness_prompts"] }],
+  "$defs": {
+    "witnessPrompt": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["prompt"],
+      "properties": {
+        "prompt": { "type": "string" },
+        "context": { "type": "string" },
+        "themes": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "generatedImage": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "b64_json": { "type": "string" },
+        "url": { "type": "string" },
+        "metadata": { "type": "object", "additionalProperties": true }
+      }
+    },
+    "generatedAudio": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "clip_url": { "type": ["string", "null"] },
+        "strudel_ratios": { "type": "array", "items": { "type": "number" } },
+        "root_hz": { "type": "number" },
+        "metadata": { "type": "object", "additionalProperties": true }
+      }
+    }
+  }
+}

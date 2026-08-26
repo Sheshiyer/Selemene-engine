@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://noesis.tryambakam.org/contracts/v1/provenance.schema.json",
+  "title": "Selemene Provenance v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["runtime_kind", "implementation_version", "cached", "fallback_used"],
+  "properties": {
+    "runtime_kind": { "enum": ["native", "typescript", "python", "database-conditional", "composed"] },
+    "implementation_version": { "type": "string", "minLength": 1 },
+    "cached": { "type": "boolean" },
+    "fallback_used": { "type": "boolean" },
+    "backend_id": { "type": "string", "minLength": 1 },
+    "provider_id": { "type": "string", "minLength": 1 }
+  }
+}
