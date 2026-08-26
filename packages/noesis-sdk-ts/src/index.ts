@@ -1,6 +1,11 @@
 export * from "./billing.js";
 export * from "./premium-assets.js";
 
+export const CONTRACT_VERSION = "v1" as const;
+export type ContractVersion = typeof CONTRACT_VERSION;
+export type RuntimeKind = "native" | "typescript" | "python" | "database-conditional" | "composed";
+export type CapabilityAvailability = "declared" | "available" | "degraded" | "unavailable";
+
 export const ENGINE_IDS = [
   "biofield",
   "biorhythm",
@@ -43,6 +48,9 @@ export interface BirthData {
 }
 
 export interface EngineInput {
+  contract_version?: ContractVersion;
+  consciousness_level?: number;
+  parameters?: Record<string, unknown>;
   birth_data?: BirthData;
   current_time?: string;
   precision?: "Standard" | "High" | "Extreme";
@@ -51,12 +59,83 @@ export interface EngineInput {
 }
 
 export interface EngineOutput {
+  contract_version?: ContractVersion;
   engine_id: string;
   result: Record<string, unknown>;
   witness_prompt?: string;
   witness_prompts?: string[];
   metadata?: Record<string, unknown>;
   consciousness_level?: number;
+  calculated_at?: string;
+  processing_time_ms?: number;
+  provenance?: ContractProvenance;
+}
+
+export interface ContractWitnessPrompt {
+  prompt: string;
+  context?: string;
+  themes?: string[];
+}
+
+export interface ContractProvenance {
+  runtime_kind: RuntimeKind;
+  implementation_version: string;
+  cached: boolean;
+  fallback_used: boolean;
+  backend_id?: string;
+  provider_id?: string;
+}
+
+export interface ContractEngineRequest {
+  contract_version: ContractVersion;
+  consciousness_level: number;
+  parameters: Record<string, unknown>;
+  seed?: number;
+  question?: string;
+  birth_data?: BirthData;
+  current_time?: string;
+  location?: Record<string, unknown>;
+  precision?: "standard" | "high" | "extreme" | "Standard" | "High" | "Extreme";
+  options?: Record<string, unknown>;
+  image_data?: Record<string, unknown>;
+  audio_ref?: Record<string, unknown>;
+  consent?: Record<string, unknown>;
+  quality?: Record<string, unknown>;
+}
+
+export interface ContractEngineResult {
+  contract_version: ContractVersion;
+  engine_id: string;
+  result: Record<string, unknown>;
+  consciousness_level: number;
+  witness_prompt?: string;
+  witness_prompts: ContractWitnessPrompt[];
+  calculated_at: string;
+  processing_time_ms: number;
+  generated_image?: Record<string, unknown>;
+  generated_audio?: Record<string, unknown>;
+  provenance: ContractProvenance;
+}
+
+export interface ContractError {
+  contract_version: ContractVersion;
+  status: number;
+  error_code: string;
+  message: string;
+  error: string;
+  details?: Record<string, unknown>;
+  trace_id: string;
+}
+
+export interface ContractEngineCapability {
+  contract_version: ContractVersion;
+  engine_id: string;
+  display_name: string;
+  availability: CapabilityAvailability;
+  runtime_kind: RuntimeKind;
+  dependencies: string[];
+  required_phase?: number;
+  implementation_version?: string;
 }
 
 /** v3.3.0 reading-object contract fields */
@@ -101,6 +180,9 @@ export interface HealthResponse {
 export interface EngineInfo {
   id: string;
   name: string;
+  engine_id?: string;
+  engine_name?: string;
+  required_phase?: number;
   description?: string;
   version?: string;
 }

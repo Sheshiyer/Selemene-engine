@@ -84,6 +84,7 @@ export interface GeneratedAudioRef {
  * Matches ts-engines/src/types/engine.ts EngineInput (media block lines 30-37).
  */
 export interface EngineInput {
+  contract_version?: 'v1'
   consciousness_level: ConsciousnessPhase
   parameters: Record<string, unknown>
   seed?: number
@@ -99,11 +100,15 @@ export interface EngineInput {
 
 /** Engine output with FROZEN generated_* at top level. */
 export interface EngineOutput<TResult = Record<string, unknown>> {
+  contract_version?: 'v1'
   engine_id: string
   result: TResult
   witness_prompts: WitnessPrompt[]
   calculated_at: string
   processing_time_ms: number
+  consciousness_level?: ConsciousnessPhase
+  witness_prompt?: string
+  provenance?: import('./contract-v1.js').ContractProvenance
   /** FROZEN: sigil-forge image (provider T-003/T-060/T-061). */
   generated_image?: GeneratedImageRef
   /** FROZEN: raaga audio (strudel_ratios + optional clip_url). */
@@ -112,9 +117,13 @@ export interface EngineOutput<TResult = Record<string, unknown>> {
 
 /** Error response shape returned by ts-engines server + noesis-api. */
 export interface ErrorResponse {
+  contract_version?: 'v1'
+  status?: number
   error: string
   error_code: string
+  message?: string
   details?: Record<string, unknown>
+  trace_id?: string
 }
 
 /** ts-engines /health response. */
