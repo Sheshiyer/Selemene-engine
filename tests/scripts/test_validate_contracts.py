@@ -206,3 +206,16 @@ def test_broken_internal_fragment_reference_fails_closed(tmp_path: Path) -> None
 
     assert result.returncode != 0
     assert "missingPrompt" in result.stderr
+
+
+def test_negative_seed_is_not_a_canonical_v1_request(tmp_path: Path) -> None:
+    authority = copy_authority(tmp_path)
+    fixture_path = authority / "fixtures" / "engine-request.json"
+    fixture = read_json(fixture_path)
+    fixture["seed"] = -1
+    write_json(fixture_path, fixture)
+
+    result = run_validator(authority)
+
+    assert result.returncode != 0
+    assert "seed" in result.stderr

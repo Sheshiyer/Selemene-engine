@@ -29,6 +29,7 @@ impl ContractVersion {
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(ToSchema))]
 #[serde(deny_unknown_fields)]
 pub struct Consent {
     pub granted: bool,
@@ -39,6 +40,7 @@ pub struct Consent {
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(ToSchema))]
 #[serde(deny_unknown_fields)]
 pub struct Quality {
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -54,6 +56,7 @@ pub struct Quality {
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(ToSchema))]
 #[serde(deny_unknown_fields)]
 pub struct ImageData {
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -67,6 +70,7 @@ pub struct ImageData {
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(ToSchema))]
 #[serde(deny_unknown_fields)]
 pub struct AudioReference {
     pub reference: String,

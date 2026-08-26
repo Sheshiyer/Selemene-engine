@@ -9,7 +9,7 @@
     "contract_version": { "const": "v1" },
     "consciousness_level": { "type": "integer", "minimum": 0, "maximum": 5 },
     "parameters": { "type": "object", "additionalProperties": true },
-    "seed": { "type": "integer" },
+    "seed": { "type": "integer", "minimum": 0 },
     "question": { "type": "string" },
     "birth_data": { "$ref": "#/$defs/birthData" },
     "current_time": { "type": "string", "format": "date-time" },

@@ -53,6 +53,7 @@ pub struct EngineOutput {
 /// Birth data for chart-based calculations
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[cfg_attr(feature = "openapi", derive(ToSchema))]
+#[serde(deny_unknown_fields)]
 pub struct BirthData {
     #[cfg_attr(feature = "openapi", schema(nullable = true))]
     pub name: Option<String>,
@@ -121,6 +122,7 @@ impl BirthData {
 /// Geographic coordinates
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[cfg_attr(feature = "openapi", derive(ToSchema))]
+#[serde(deny_unknown_fields)]
 pub struct Coordinates {
     /// Latitude in decimal degrees
     pub latitude: f64,
@@ -137,8 +139,11 @@ pub struct Coordinates {
 #[derive(Default)]
 pub enum Precision {
     #[default]
+    #[serde(alias = "standard")]
     Standard = 1,
+    #[serde(alias = "high")]
     High = 2,
+    #[serde(alias = "extreme")]
     Extreme = 3,
 }
 
