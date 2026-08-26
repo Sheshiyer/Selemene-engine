@@ -1,0 +1,3411 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc 3.10.2" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Selemene Engine: Self-Consciousness as Technology</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: 1.5em;}
+    div.column{flex: auto;}
+    @media screen {
+    div.columns{gap: min(4vw, 1.5em);}
+    div.column{overflow-x: auto;}
+    }
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    /* CSS for citations */
+    div.csl-bib-body { }
+    div.csl-entry {
+      clear: both;
+    }
+    .hanging-indent div.csl-entry {
+      margin-left:2em;
+      text-indent:-2em;
+    }
+    div.csl-left-margin {
+      min-width:2em;
+      float:left;
+    }
+    div.csl-right-inline {
+      margin-left:2em;
+      padding-left:1em;
+    }
+    div.csl-indent {
+      margin-left: 2em;
+    }  </style>
+  <link rel="stylesheet" href="whitepaper.css" />
+  <script defer=""
+  src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script>document.addEventListener("DOMContentLoaded", function () {
+ var mathElements = document.getElementsByClassName("math");
+ var macros = [];
+ for (var i = 0; i < mathElements.length; i++) {
+  var texText = mathElements[i].firstChild;
+  if (mathElements[i].tagName == "SPAN") {
+   katex.render(texText.data, mathElements[i], {
+    displayMode: mathElements[i].classList.contains('display'),
+    throwOnError: false,
+    macros: macros,
+    fleqn: false
+   });
+}}});
+  </script>
+  <link rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" />
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">Selemene Engine: Self-Consciousness as Technology</h1>
+<p class="subtitle">A symbolic-computational framework for embodied
+reflection, structured interpretation, and authored meaning</p>
+</header>
+<nav id="TOC" role="doc-toc">
+<ul>
+<li><a href="#selemene-engine-self-consciousness-as-technology"
+id="toc-selemene-engine-self-consciousness-as-technology">Selemene
+Engine: Self-Consciousness as Technology</a>
+<ul>
+<li><a href="#abstract" id="toc-abstract">Abstract</a></li>
+<li><a href="#keywords" id="toc-keywords">Keywords</a></li>
+<li><a href="#contents" id="toc-contents">Contents</a></li>
+<li><a href="#introduction" id="toc-introduction">1.
+Introduction</a></li>
+<li><a href="#core-definitions" id="toc-core-definitions">2. Core
+Definitions</a></li>
+<li><a href="#kha-ba-la-as-governing-grammar"
+id="toc-kha-ba-la-as-governing-grammar">3. Kha-Ba-La as Governing
+Grammar</a></li>
+<li><a href="#the-sixteen-engine-coherence-matrix"
+id="toc-the-sixteen-engine-coherence-matrix">4. The Sixteen-Engine
+Coherence Matrix</a></li>
+<li><a href="#witnessing-authorship-and-non-prescription"
+id="toc-witnessing-authorship-and-non-prescription">5. Witnessing,
+Authorship, and Non-Prescription</a></li>
+<li><a href="#related-work-and-research-lineage"
+id="toc-related-work-and-research-lineage">6. Related Work and Research
+Lineage</a></li>
+<li><a href="#system-model" id="toc-system-model">7. System
+Model</a></li>
+<li><a
+href="#analytical-framework-for-bounded-interpretation-and-demonstration"
+id="toc-analytical-framework-for-bounded-interpretation-and-demonstration">8.
+Analytical Framework for Bounded Interpretation and
+Demonstration</a></li>
+<li><a href="#safety-ethics-and-governance"
+id="toc-safety-ethics-and-governance">9. Safety, Ethics, and
+Governance</a></li>
+<li><a href="#evaluation-design-and-review-protocol"
+id="toc-evaluation-design-and-review-protocol">10. Evaluation Design and
+Review Protocol</a></li>
+<li><a href="#cultural-and-traditional-source-boundaries"
+id="toc-cultural-and-traditional-source-boundaries">11. Cultural and
+Traditional-Source Boundaries</a></li>
+<li><a href="#ecosystem-expression" id="toc-ecosystem-expression">12.
+Ecosystem Expression</a></li>
+<li><a href="#roadmap-of-inquiry" id="toc-roadmap-of-inquiry">13.
+Roadmap of Inquiry</a></li>
+<li><a href="#conclusion" id="toc-conclusion">14. Conclusion</a></li>
+<li><a href="#references" id="toc-references">15. References</a></li>
+<li><a href="#appendix-a-notation-and-derivations"
+id="toc-appendix-a-notation-and-derivations">Appendix A: Notation and
+Derivations</a></li>
+<li><a href="#appendix-b-engine-family-notes"
+id="toc-appendix-b-engine-family-notes">Appendix B: Engine Family
+Notes</a></li>
+<li><a href="#appendix-c-review-rubric"
+id="toc-appendix-c-review-rubric">Appendix C: Review Rubric</a></li>
+<li><a href="#appendix-d-artifact-review-questions"
+id="toc-appendix-d-artifact-review-questions">Appendix D: Artifact
+Review Questions</a></li>
+</ul></li>
+</ul>
+</nav>
+<h1 id="selemene-engine-self-consciousness-as-technology">Selemene
+Engine: Self-Consciousness as Technology</h1>
+<p><em>A symbolic-computational framework for embodied reflection,
+structured interpretation, and authored meaning.</em></p>
+<h2 id="abstract">Abstract</h2>
+<p>Selemene Engine is a symbolic-computational framework for reflective
+self-inquiry. It approaches personal meaning not as a problem to be
+solved by prediction, diagnosis, or automated advice, but as a field of
+interpretation that can be structured, bounded, and returned to the
+practitioner as a mirror. The system organizes sixteen engines across
+temporal, archetypal, somatic, relational, geometric, and narrative
+modalities. Its governing grammar, Kha-Ba-La, treats self-consciousness
+as technology, the body as medium, and breath as interface. This paper
+introduces the conceptual model, engine taxonomy, non-prescriptive
+witness principle, consent and provenance ethics, formal notation,
+evaluation philosophy, and open boundaries required for a reflection
+system that uses computation without converting symbolic ambiguity into
+false certainty.</p>
+<h2 id="keywords">Keywords</h2>
+<p>self-consciousness; symbolic computation; reflective systems;
+personal informatics; computational hermeneutics; embodied interaction;
+consent; provenance; non-prescriptive AI; interpretive artifacts</p>
+<h2 id="contents">Contents</h2>
+<ol type="1">
+<li>Introduction</li>
+<li>Core Definitions</li>
+<li>Kha-Ba-La as Governing Grammar</li>
+<li>The Sixteen-Engine Coherence Matrix</li>
+<li>Witnessing, Authorship, and Non-Prescription</li>
+<li>Related Work and Research Lineage</li>
+<li>System Model</li>
+<li>Analytical Framework for Bounded Interpretation and
+Demonstration</li>
+<li>Safety, Ethics, and Governance</li>
+<li>Evaluation Design and Review Protocol</li>
+<li>Cultural and Traditional-Source Boundaries</li>
+<li>Ecosystem Expression</li>
+<li>Roadmap of Inquiry</li>
+<li>Conclusion</li>
+<li>References</li>
+<li>Appendix A: Notation and Derivations</li>
+<li>Appendix B: Engine Family Notes</li>
+<li>Appendix C: Review Rubric</li>
+<li>Appendix D: Artifact Review Questions</li>
+</ol>
+<h2 id="introduction">1. Introduction</h2>
+<p>The problem Selemene addresses is not the scarcity of frameworks for
+self-understanding. The modern practitioner is surrounded by dashboards,
+journals, psychometrics, meditation systems, coaching scripts,
+generative models, contemplative taxonomies, and quantified-self
+metrics. What remains underspecified is authorship: the capacity to
+examine the machinery by which experience becomes meaning before that
+machinery hardens into identity, choice, or worldview.</p>
+<p>Most reflective tools inherit a hidden premise: that more
+interpretation is inherently useful. Selemene rejects that premise.
+Interpretation is powerful precisely because it can organize attention,
+memory, choice, and identity. A reflection system that produces
+interpretation must therefore be disciplined about what it is doing. It
+must separate what is computed from what is framed, what is selected
+from what is inferred, what is culturally inherited from what is
+personally authored, and what is known from what remains ambiguous.</p>
+<p>Selemene begins from a simple claim: reflection systems become safer
+and more useful when they are explicit about the difference between
+computation, interpretation, and authorship. A system may calculate a
+temporal relation, render an archetypal pattern, detect a rhythm,
+assemble a symbolic prompt, or preserve a provenance trail. It must not
+confuse any of those operations with knowing the practitioner’s fate,
+health, value, future, or obligation.</p>
+<p>The contribution of Selemene is therefore not a new claim of
+certainty. It is a new way of holding uncertainty with structure. It
+treats symbolic systems as lenses, not verdicts. It treats embodied
+signals as context, not command. It treats generated language as
+witness, not authority. And it treats the practitioner as author, not
+patient, follower, consumer, or node in a retention loop.</p>
+<p>This matters because contemporary computation is exceptionally good
+at producing the feeling of coherence. A fluent model can make an
+interpretation sound earned even when the underlying material is thin. A
+polished interface can make a weak inference feel measured. A beautiful
+image can make a speculative association feel revealed. A long artifact
+can make a partial result feel complete. Selemene is designed against
+that failure. It assumes that reflective systems need more than
+generation; they need boundaries that remain visible when the artifact
+is compelling.</p>
+<p>The design premise is therefore double. First, symbolic and temporal
+systems can be useful as structured attention. They can organize
+contrasts, reveal recurring motifs, and invite practitioners to examine
+their own interpretive habits. Second, that usefulness depends on not
+pretending that symbolic structure is the same as empirical proof. A
+lens may be meaningful without being predictive. A prompt may be
+fruitful without being authoritative. A pattern may be worth
+contemplating without becoming a command.</p>
+<p>The paper uses the word “engine” because Selemene treats each lens as
+a bounded transformation rather than a loose content category. An engine
+has an input domain, a transformation discipline, a result form, a
+refusal surface, and a witness boundary. This does not make every lens
+equivalent. A calendrical calculation, a symbolic spread, a media-aware
+artifact, and a narrative synthesis differ in evidence, risk, and
+interpretive status. Calling them engines makes those differences easier
+to inspect instead of hiding them under a single mystical or wellness
+vocabulary.</p>
+<p>The larger aspiration is a practice architecture for
+self-consciousness. In ordinary life, the machinery of interpretation
+often works invisibly. People inherit metaphors, loyalties, fears,
+ambitions, bodily habits, cultural scripts, family myths, and
+technological suggestions long before they consciously choose them.
+Selemene cannot solve that condition for the practitioner. It can,
+however, provide formal mirrors that make some of the machinery easier
+to see, question, and reshape. The system is successful only when the
+practitioner becomes more capable of authorship outside the system.</p>
+<h2 id="core-definitions">2. Core Definitions</h2>
+<p>An engine is a bounded lens that transforms a specific class of input
+into an interpretive artifact. A mirror is the rendered artifact
+returned to the practitioner. A witness is the system voice that frames
+the artifact without prescribing action. A workflow is an ordered
+inquiry context in which one or more engines are combined. A
+practitioner is not a user to be retained but an author whose
+independence is the measure of success.</p>
+<p>Selemene uses “self-consciousness” in its technical sense: the
+recursive capacity to examine the structures through which consciousness
+interprets itself. Consciousness is the capacity to experience;
+self-consciousness is the practiced capacity to observe, question,
+refine, and author the interpreter.</p>
+<p>The term “symbolic computation” is used here in a deliberately
+bounded sense. It does not mean that symbols mechanically determine
+reality. It means that symbolic systems can be represented, transformed,
+compared, and rendered in structured ways. A calendar, a hexagram, a
+card spread, a number pattern, a geometric form, a rhythm, and a
+resonance map can all become computational artifacts. Their value lies
+not in replacing judgment, but in giving judgment something precise to
+examine.</p>
+<p>The term “technical” also has a wider meaning in Selemene than
+software implementation alone. A technique is a repeatable way of doing
+something. A technical reflection system therefore includes computation,
+language, ritual structure, consent, memory, refusal, provenance,
+sensory form, and the timing of when an artifact appears. The technology
+is not only the machine. The technology is the disciplined arrangement
+of attention.</p>
+<p>This definition also prevents a common category error. If the system
+is described only as software, then its ethical boundary appears to be
+merely a matter of data handling. If it is described only as a
+contemplative or symbolic practice, then its computational boundary
+disappears. Selemene sits between these categories. It is software
+insofar as it transforms structured inputs into artifacts. It is
+practice insofar as the artifact matters only when a practitioner brings
+attention, disagreement, memory, and choice to it.</p>
+<p>A mirror, in this paper, is not a claim that the system accurately
+reflects the whole self. It is a deliberately limited surface. A
+physical mirror returns light from one angle under particular
+conditions; it does not reveal history, motive, worth, or destiny. A
+Selemene mirror is similar. It returns a structured interpretation from
+selected lenses under declared boundaries. The practitioner may
+recognize something in it, reject it, revise it, or use it as contrast.
+The mirror’s humility is part of its usefulness.</p>
+<p>A workflow is the choreography of lenses. It decides which inputs are
+appropriate, which engines may be invoked, which omissions must be
+shown, which witness register is safe, and what kind of artifact should
+be returned. A workflow is not an escalation from less truth to more
+truth. It is a change in context and depth. A short daily reflection and
+a long-form symbolic reading may use different amounts of material, but
+both remain bounded mirrors.</p>
+<p>The practitioner is the final term because Selemene’s truth model is
+incomplete without them. The system can produce artifacts, but meaning
+is completed in encounter. This does not reduce the artifact to
+arbitrary preference; structure still matters. It means that the
+artifact is not allowed to close the loop by itself. The practitioner’s
+capacity to say “yes,” “no,” “not now,” “this reminds me of something,”
+or “this is not mine” is part of the system’s intended operation.</p>
+<h2 id="kha-ba-la-as-governing-grammar">3. Kha-Ba-La as Governing
+Grammar</h2>
+<p>Kha-Ba-La is the structural grammar of Selemene. Kha names the
+observing field, the author-drive, and the capacity to witness without
+immediately becoming the pattern witnessed. Ba names embodiment: the
+body as medium, carrier, measurement ground, and practice surface. La
+names inertia: resistance, friction, gravity, constraint, and the
+form-giving force that prevents insight from evaporating into
+abstraction.</p>
+<p>This triad is not decorative vocabulary. It is the design rule that
+keeps Selemene from becoming either pure calculation or pure narrative.
+Kha without Ba becomes disembodied abstraction. Ba without Kha becomes
+sensation without authorship. La without either becomes friction without
+meaning. The engine operates where the three co-arise.</p>
+<p>Kha governs the reflective orientation of the system. It asks: what
+is being observed, from where, and by whom? In a computational setting,
+this becomes an insistence on situated perspective. The system must not
+pretend to view the practitioner from nowhere. Every output is produced
+from an inquiry context, an input boundary, an engine lens, and a
+witness register. Kha is the refusal of the false god-view.</p>
+<p>Ba governs embodiment and medium. It asks: what does this pattern
+have to do with time, breath, body, sensation, attention, image, sound,
+and practice? Ba prevents reflection from becoming only conceptual. An
+insight that cannot be inhabited remains fragile. Selemene’s engine
+grammar therefore makes room for rhythmic timing, somatic context,
+visual form, auditory form, and the body as the baseline of
+experience.</p>
+<p>La governs constraint. It asks: where is the friction that makes the
+pattern real? La is the discipline of boundaries, refusals, delays,
+scope limits, consent checks, degraded states, and unfinished work. It
+is tempting for reflective systems to remove friction in the name of
+seamless experience. Selemene takes the opposite view: some friction
+protects authorship. The pause before interpretation, the explicit
+refusal, the visible unknown, and the preserved ambiguity are not
+failures of flow. They are part of the engine’s ethics.</p>
+<figure>
+<img src="figures/raster/fig-001-kha-ba-la-imagegen-v1.png"
+alt="Figure 1: Kha-Ba-La as a three-force grammar for reflection." />
+<figcaption aria-hidden="true">Figure 1: Kha-Ba-La as a three-force
+grammar for reflection.</figcaption>
+</figure>
+<p>Figure 1 shows the grammar as a three-force relation rather than a
+hierarchy. Kha observes, Ba embodies, and La constrains. None of the
+three is sufficient alone. A reflective artifact that is only Kha
+becomes clever abstraction. A reflective artifact that is only Ba
+becomes sensation without inquiry. A reflective artifact that is only La
+becomes refusal without imagination. The center is the authored mirror:
+an artifact that can be encountered, questioned, and revised.</p>
+<p>This grammar supplies a check on every section of the system. When a
+lens is added, Kha asks whether the lens makes observation clearer. Ba
+asks whether the lens remains connected to embodied or lived context. La
+asks whether the lens has a visible boundary. When a witness phrase is
+written, Kha asks whether it clarifies perspective, Ba asks whether it
+can be inhabited without dissociation, and La asks whether it
+overreaches. The triad is therefore not a slogan but a recurring review
+instrument.</p>
+<p>Kha-Ba-La also explains why Selemene does not aim for frictionless
+personalization. Personalization can be useful, but it can also become
+an invisible adaptation layer that tells the practitioner exactly what
+will be most persuasive to them. Selemene’s stance is different. It
+allows resonance, but not manipulation. It allows continuity, but not
+hidden dependence. It allows symbolic intensity, but not loss of
+authorship. La keeps the mirror from becoming a trap.</p>
+<p>The triad can also be read as an observer-restoration discipline.
+Many technical systems hide the observer behind aggregate behavior,
+model confidence, or interface fluency. Selemene makes the observer
+explicit: an artifact is always produced from a standpoint, through a
+medium, under constraint. In formal terms, a reflective event is not a
+direct map from data to meaning. It is a constrained encounter:</p>
+<p><span class="math display">
+\rho = \langle K, B, L, q, S, \ell \rangle
+</span></p>
+<p>where (K) is the observer standpoint, (B) is the embodied and
+material ground, (L) is the constraint field, (q) is the inquiry
+context, (S) is the selected lens set, and () is the witness register.
+The artifact is valid only as a function of the whole tuple:</p>
+<p><span class="math display">
+A = W_{\ell}(M(q,S), K, B, L)
+</span></p>
+<p>This notation prevents a quiet category error. The system does not
+discover a person. It renders a bounded artifact from a declared
+encounter. Kha keeps the standpoint visible. Ba keeps the artifact tied
+to lived and sensory ground. La keeps the result from pretending to
+exceed its conditions.</p>
+<h2 id="the-sixteen-engine-coherence-matrix">4. The Sixteen-Engine
+Coherence Matrix</h2>
+<p>Selemene is organized as a sixteen-engine coherence matrix. The
+engines can be grouped into temporal, archetypal, symbolic, somatic,
+geometric, and resonance lenses. Temporal engines render timing, cycles,
+and planetary or rhythmic context. Archetypal engines render symbolic
+pattern and narrative resonance. Somatic engines relate the body to
+attention, practice, media, and sensed state. Geometric and resonance
+engines translate form, proportion, image, sound, and symbolic intent
+into artifacts for reflection.</p>
+<p>The engine matrix is designed for triangulation. No single lens is
+sovereign. Each engine contributes a partial view, and the practitioner
+remains responsible for synthesis. This is the opposite of oracle
+theater. The point is not to ask one system for the answer; the point is
+to reveal several structured perspectives so the practitioner can see
+the shape of their own interpretation.</p>
+<h3 id="temporal-lenses">4.1 Temporal lenses</h3>
+<p>Temporal lenses organize attention around time. They may render a
+day, a cycle, a phase, a period, or a relation between a personal
+timestamp and a larger symbolic calendar. Their purpose is not to prove
+that time commands the practitioner. Their purpose is to make timing
+available as a reflective dimension. A practitioner can then ask: what
+is the quality of this interval, what pattern repeats, what kind of
+attention does this moment invite, and what would it mean to act with
+timing rather than against it?</p>
+<p>Temporal lenses are especially vulnerable to overclaim. A calendar
+can easily become a superstition if its output is treated as command.
+Selemene treats temporal outputs as structured context. Timing can
+inform inquiry. It cannot remove responsibility.</p>
+<h3 id="archetypal-and-symbolic-lenses">4.2 Archetypal and symbolic
+lenses</h3>
+<p>Archetypal and symbolic lenses render meaning through images,
+numbers, hexagrams, cards, types, gates, lines, and recurring forms.
+Their usefulness is not that they secretly know the practitioner. Their
+usefulness is that they produce a disciplined surface for projection,
+recognition, disagreement, and revision. A good symbolic artifact does
+not end inquiry. It sharpens it.</p>
+<p>Symbolic lenses also create a productive tension between tradition
+and present experience. A symbol may carry inherited meaning, but the
+practitioner’s encounter with it is situated. Selemene therefore treats
+symbolic output as a dialogue between received structure and lived
+context. The system may frame the symbolic field; it must not claim
+ownership of the practitioner’s interpretation.</p>
+<h3 id="somatic-and-media-aware-lenses">4.3 Somatic and media-aware
+lenses</h3>
+<p>Somatic and media-aware lenses bring the body and sensory artifacts
+into the reflection field. This can include rhythmic context, embodied
+timing, visual pattern, auditory form, or consented media. The point is
+not to reduce the body to data. The point is to prevent reflection from
+floating above the body as if meaning were made nowhere.</p>
+<p>This class of lens requires special restraint. Any body- or
+media-adjacent output can drift toward diagnosis, surveillance, or
+aestheticized certainty. Selemene’s public boundary is clear:
+media-aware and somatic artifacts are reflective contexts, not clinical
+findings. They may help a practitioner notice, question, compare, or
+revisit a pattern. They must not impersonate medical assessment.</p>
+<h3 id="geometric-and-resonance-lenses">4.4 Geometric and resonance
+lenses</h3>
+<p>Geometric and resonance lenses translate structure into form. They
+may render proportion, symmetry, symbolic geometry, sound, or
+artifact-like representations of intention. Their technical role is to
+let inquiry take shape beyond prose. A diagram, tone, sigil, or
+patterned object can carry attention differently than a paragraph
+can.</p>
+<p>Here again, the boundary matters. Form is not proof. Beauty is not
+evidence. Resonance language must remain grounded in what is actually
+generated, perceived, or practiced. Selemene can use form to hold
+attention; it must not use form to smuggle certainty.</p>
+<figure>
+<img src="figures/raster/fig-002-engine-taxonomy-imagegen-v1.png"
+alt="Figure 2: Sixteen-engine taxonomy by temporal, symbolic, somatic, geometric, and resonance modalities." />
+<figcaption aria-hidden="true">Figure 2: Sixteen-engine taxonomy by
+temporal, symbolic, somatic, geometric, and resonance
+modalities.</figcaption>
+</figure>
+<h3 id="relational-lenses">4.5 Relational lenses</h3>
+<p>Relational lenses examine patterns between subjects, roles,
+questions, and shared contexts. They are especially delicate because
+relation is where interpretation can become pressure. A relational
+artifact must not presume romance, hierarchy, obligation, blame,
+compatibility, fate, or superiority. It should describe the declared
+frame, preserve each subject’s dignity, and avoid collapsing a
+multi-person context into a single person’s certainty.</p>
+<p>The relational lens is useful when it keeps difference visible. Two
+people may share a pattern without sharing its meaning. A family role,
+creative collaboration, friendship, or partnership may bring different
+expectations to the same symbol. A reflective system must therefore
+avoid treating relation as a hidden diagnosis of the bond. Its better
+use is to reveal the questions the relation is already carrying: what is
+being inherited, negotiated, projected, protected, repeated, or
+avoided?</p>
+<h3 id="narrative-lenses">4.6 Narrative lenses</h3>
+<p>Narrative lenses organize outputs into sequence, motif, contrast, and
+reflective arc. They are powerful because human beings often understand
+themselves through stories. They are risky for the same reason. A
+generated narrative can become too smooth. It can convert uncertainty
+into inevitability, complexity into plot, and living change into
+character identity.</p>
+<p>Selemene’s narrative lens must remain porous. It should leave room
+for contradiction, counterexample, and revision. It should avoid the
+seductive closure of “this is who you are.” A safer narrative artifact
+says: “Here is one way the selected material can be arranged; notice
+what you accept, resist, or want to rewrite.” Narrative is used as an
+inquiry form, not as a biographical verdict.</p>
+<h3 id="the-sixteen-as-a-coherence-matrix">4.7 The sixteen as a
+coherence matrix</h3>
+<p>The number sixteen matters here as a conceptual completeness pattern,
+not as a proof of exhaustive coverage. Sixteen lenses create enough
+variety to move between time, symbol, body, relation, form, sound,
+inquiry, and synthesis without reducing the system to one dominant
+vocabulary. The matrix gives Selemene a broad palette while preserving
+boundedness at each lens.</p>
+<p>The coherence matrix can be read in two directions. Horizontally, it
+groups lenses by modality: temporal, symbolic, somatic, geometric,
+resonance, relational, and narrative. Vertically, it asks what kind of
+evidence each lens can responsibly provide. Some lenses can provide
+deterministic structural output. Some provide selected symbolic
+material. Some provide generated artifacts. Some provide only reflective
+framing. The same word “engine” does not imply the same strength of
+claim.</p>
+<p>This is why the system must avoid completion inflation. An engine may
+be conceptually declared, partially implemented, executable in a
+constrained environment, integrated into a workflow, available through
+one surface, or operational in a production-like setting. Those are
+different claims. The whitepaper’s public stance is that every engine
+should be described by its actual evidence boundary. A declared lens is
+not a mature lens. A mature lens is not necessarily an operational lens.
+An operational lens is not proof of human benefit.</p>
+<h3 id="engine-output-as-lens-material">4.8 Engine output as lens
+material</h3>
+<p>An engine output is not yet a reflection. It is material for
+reflection. A temporal output may be a relation of cycles. A symbolic
+output may be a spread or pattern. A somatic output may be a
+quality-labeled observation. A generated image or sound may be a sensory
+anchor. The witness layer decides how to return that material without
+pretending the material has spoken on its own.</p>
+<p>This distinction keeps the system from collapsing into either raw
+calculation or free prose. Raw calculation can be precise but inert.
+Free prose can be moving but ungrounded. Selemene’s engine model aims
+for a middle condition: structured enough to be inspectable, expressive
+enough to be encountered, and bounded enough to remain honest.</p>
+<h2 id="witnessing-authorship-and-non-prescription">5. Witnessing,
+Authorship, and Non-Prescription</h2>
+<p>Selemene’s output voice is a witness, not an authority. It may name
+patterns, tensions, questions, repetitions, contrasts, or symbolic
+correspondences. It may propose reflective prompts. It may preserve
+ambiguity. It must not diagnose, command, predict, moralize, flatter, or
+replace the practitioner’s agency.</p>
+<p>The witness principle follows a core boundary: the engine reflects
+what is active; the practitioner authors what it means. This makes
+restraint part of the system’s intelligence. A strong reflection system
+does not merely generate more language. It knows where language should
+stop.</p>
+<p>The witness has three obligations. First, it must keep the source of
+a statement clear in ordinary language: is this a computed relation, a
+symbolic association, a practitioner-provided context, a generated
+synthesis, or an explicit unknown? Second, it must preserve plurality:
+when multiple readings are possible, it should not collapse them into
+the most dramatic interpretation. Third, it must return agency: the
+artifact should end with better questions, not borrowed certainty.</p>
+<p>This makes Selemene different from advice systems. Advice narrows
+action. Witnessing clarifies perception. Advice often aims at
+compliance: do this, avoid that, choose this direction, trust this
+score. Witnessing aims at authorship: what do you notice, what repeats,
+what feels inherited, what becomes possible when the pattern is named,
+and what remains yours to decide?</p>
+<p>Non-prescription does not mean vagueness. A witness can be precise.
+It can identify tensions, name contradictions, expose avoidance, and
+refuse flattering interpretations. But its precision is anatomical
+rather than authoritarian. It shows the structure. It does not seize the
+steering wheel.</p>
+<h3 id="the-witness-register">5.1 The witness register</h3>
+<p>The witness register is the discipline of how the system speaks.
+Register includes vocabulary, degree of certainty, emotional
+temperature, depth of interpretation, and the kind of invitation offered
+to the practitioner. A shallow register may simply summarize a pattern
+and ask one question. A deeper register may hold multiple tensions,
+trace symbolic motifs, and invite comparison with lived context. Depth
+changes complexity, not authority.</p>
+<p>This is a crucial distinction. A deeper artifact is not allowed to
+become more prescriptive merely because it has more material. Depth
+should increase nuance, source clarity, and interpretive plurality. It
+should not increase coercion. A long-form reading that sounds like fate
+is less mature than a brief prompt that preserves agency.</p>
+<h3 id="the-grammar-of-refusal">5.2 The grammar of refusal</h3>
+<p>A witness must know how to refuse gracefully. Refusal can be needed
+when consent is missing, when a media signal is too weak, when a request
+asks for prediction, when a body-related inference would become
+diagnostic, or when relational framing would become manipulative. A bad
+refusal merely blocks the practitioner. A good refusal explains the
+boundary and, where safe, offers a bounded alternative.</p>
+<p>For example, instead of answering a request for a guaranteed outcome,
+the witness can reframe toward inquiry: “The selected lenses cannot
+determine an outcome. They can, however, help examine the assumptions,
+timing, and emotional charge around the question.” This preserves the
+practitioner’s dignity while protecting the system’s boundary.</p>
+<h3 id="authorship-as-measurable-property">5.3 Authorship as measurable
+property</h3>
+<p>Authorship sounds philosophical, but it can be operationalized for
+review. A witness artifact preserves authorship when it identifies
+sources, offers questions rather than commands, names uncertainty,
+avoids hidden hierarchy, permits disagreement, and does not imply that
+the system knows the practitioner better than the practitioner does.
+These properties can be checked in language review even before human
+studies exist.</p>
+<p>The authorship measure introduced in the formal section is therefore
+not a claim to quantify consciousness. It is a review proxy. It asks
+whether the artifact’s surface keeps the practitioner in the loop. Does
+the artifact invite a response? Does it reveal its own limits? Does it
+distinguish suggestion from fact? Does it make room for “this does not
+fit”? If not, the artifact has failed one of Selemene’s core tests.</p>
+<h2 id="related-work-and-research-lineage">6. Related Work and Research
+Lineage</h2>
+<p>Selemene sits near several research lineages without reducing itself
+to any one of them. Personal informatics motivates tools that help
+people reflect on lived patterns rather than merely track metrics <span
+class="citation" data-cites="song2026godSaengPersonalInformatics">(<a
+href="#ref-song2026godSaengPersonalInformatics"
+role="doc-biblioref">Song et al. 2026</a>)</span>. Computational
+hermeneutics frames generated cultural artifacts as situated, plural,
+ambiguous, and evaluation-sensitive <span class="citation"
+data-cites="kommers2026computationalHermeneutics">(<a
+href="#ref-kommers2026computationalHermeneutics"
+role="doc-biblioref"><span class="nocase">Kommers et al.</span>
+2026</a>)</span>. Semiotic engineering treats interaction as a
+communication act between designer and user through the signs,
+behaviors, and affordances of a system <span class="citation"
+data-cites="desouza2005semioticEngineering">(<a
+href="#ref-desouza2005semioticEngineering" role="doc-biblioref">Souza
+2005</a>)</span>. LLM-supported reflection research motivates
+scaffolding that preserves user agency rather than replacing user
+meaning-making <span class="citation"
+data-cites="song2025exploreself">(<a href="#ref-song2025exploreself"
+role="doc-biblioref">Song et al. 2025</a>)</span>.</p>
+<p>Additional methodological support comes from dynamic consent,
+provenance, and socio-technical evaluation. Consent work motivates
+revocable, contextual, granular control over sensitive data <span
+class="citation" data-cites="norval2019automatingDynamicConsent">(<a
+href="#ref-norval2019automatingDynamicConsent"
+role="doc-biblioref">Norval and Henderson 2019</a>)</span>. Evaluation
+research argues that model behavior must be related to downstream human
+requirements without mistaking technical scores for human benefit <span
+class="citation" data-cites="liao2025rethinkingEvaluation">(<a
+href="#ref-liao2025rethinkingEvaluation" role="doc-biblioref">Liao and
+Xiao 2025</a>)</span>.</p>
+<p>These sources support vocabulary and method. They do not validate any
+symbolic tradition, clinical effect, divinatory claim, or guaranteed
+outcome. This distinction is central. Research can help design a better
+reflective instrument without turning the instrument into a medical
+device, moral authority, or proof of metaphysical certainty.</p>
+<p>This paper also draws on several adjacent intellectual neighborhoods.
+Narrative identity research treats selfhood as an evolving life story
+that integrates remembered past, perceived present, and imagined future
+<span class="citation" data-cites="mcadams2013narrativeIdentity">(<a
+href="#ref-mcadams2013narrativeIdentity" role="doc-biblioref">McAdams
+and McLean 2013</a>)</span>. Embodied interaction motivates the claim
+that meaning in human-computer systems arises through situated action,
+material setting, and bodily practice rather than abstract
+representation alone <span class="citation"
+data-cites="dourish2001whereAction">(<a
+href="#ref-dourish2001whereAction" role="doc-biblioref">Dourish
+2001</a>)</span>. Gut-brain and bioelectricity research provide narrow
+scientific anchors for body-adjacent caution: the body is not a passive
+container for cognition, but neither is it a license for diagnostic
+over-reading <span class="citation"
+data-cites="carabotti2015gutBrainAxis levin2014molecularBioelectricity">(<a
+href="#ref-carabotti2015gutBrainAxis" role="doc-biblioref">Carabotti et
+al. 2015</a>; <a href="#ref-levin2014molecularBioelectricity"
+role="doc-biblioref">Levin 2014</a>)</span>. Process philosophy and
+duration give language for events, becoming, relation, and lived time
+rather than static substance or mere clock sequence <span
+class="citation"
+data-cites="whitehead1978processReality lawlorMoulardLeonard2025bergson">(<a
+href="#ref-whitehead1978processReality" role="doc-biblioref">Whitehead
+1978</a>; <a href="#ref-lawlorMoulardLeonard2025bergson"
+role="doc-biblioref">Lawlor and Moulard Leonard 2025</a>)</span>.
+Gebser’s account of consciousness structures offers a philosophical
+vocabulary for perspective, transparency, and integral perception, while
+remaining a historical-philosophical source rather than empirical
+validation <span class="citation"
+data-cites="gebser1985everPresentOrigin">(<a
+href="#ref-gebser1985everPresentOrigin" role="doc-biblioref">Gebser
+1985</a>)</span>. Scholarship on Western esotericism gives the paper a
+way to treat hiddenness, correspondence, and symbolic traditions as
+historically situated objects of study rather than as proof claims <span
+class="citation" data-cites="hanegraaff2012esotericismAcademy">(<a
+href="#ref-hanegraaff2012esotericismAcademy"
+role="doc-biblioref">Hanegraaff 2012</a>)</span>.</p>
+<h3 id="personal-informatics-and-reflective-instrumentation">6.1
+Personal informatics and reflective instrumentation</h3>
+<p>Personal informatics research is relevant because it studies how
+people collect, interpret, and use personal data over time. The most
+important lesson for Selemene is not that more tracking is better. It is
+that data becomes meaningful only through lived context, reflection, and
+interpretation. A number by itself rarely changes a life. A number
+placed into a reflective practice may help a person notice rhythm,
+mismatch, avoidance, or desire.</p>
+<p>Selemene extends this lesson beyond ordinary metrics. Its lenses may
+include temporal, symbolic, somatic, and sensory material, but the same
+discipline applies: collected or computed material must be returned in a
+way that supports meaning-making rather than compliance. The system
+should not turn the practitioner into a dashboard. It should help the
+practitioner inspect how a dashboard, symbol, rhythm, or story is
+already shaping attention.</p>
+<p>The “God-Saeng” personal informatics work is useful here because it
+emphasizes everyday well-being as culturally situated practice rather
+than a universal improvement program <span class="citation"
+data-cites="song2026godSaengPersonalInformatics">(<a
+href="#ref-song2026godSaengPersonalInformatics"
+role="doc-biblioref">Song et al. 2026</a>)</span>. Selemene adopts the
+situated aspect while avoiding the claim that its artifacts improve
+well-being. The allowed claim is methodological: reflective systems
+should be designed around lived meaning, context, and agency.</p>
+<h3 id="computational-hermeneutics">6.2 Computational hermeneutics</h3>
+<p>Computational hermeneutics gives Selemene language for generated
+cultural interpretation. Hermeneutics is concerned with interpretation,
+context, ambiguity, and the relation between text, reader, tradition,
+and world. When computation enters this space, the danger is that
+generated outputs may sound culturally literate while flattening the
+contexts they invoke. Computational hermeneutics makes evaluation itself
+a cultural question, not merely a fluency question <span
+class="citation" data-cites="kommers2026computationalHermeneutics">(<a
+href="#ref-kommers2026computationalHermeneutics"
+role="doc-biblioref"><span class="nocase">Kommers et al.</span>
+2026</a>)</span>.</p>
+<p>For Selemene, the implication is direct. A symbolic artifact should
+not be judged only by whether it is coherent, elegant, or emotionally
+resonant. It should also be judged by whether it names its frame,
+preserves ambiguity, avoids universality claims, and leaves the
+practitioner free to interpret. This gives the witness layer a scholarly
+neighbor without forcing Selemene into the shape of an academic
+hermeneutics system.</p>
+<p>Semiotic engineering sharpens this point. If an interface is a
+message from its designers to its users, then a reflective artifact is
+never neutral packaging. Its typography, labels, omissions, ritual
+pacing, refusal states, and diagrams all tell the practitioner how to
+read the system <span class="citation"
+data-cites="desouza2005semioticEngineering">(<a
+href="#ref-desouza2005semioticEngineering" role="doc-biblioref">Souza
+2005</a>)</span>. Selemene therefore treats signs as design commitments.
+A card, glyph, tone, line, or geometric figure is not merely content
+placed into an interface; it is part of the interface’s argument about
+how interpretation should happen.</p>
+<p>This is the public-safe form of symbolic literacy. Symbols can be
+precise without being predictive. They can be structured without being
+scientifically certified. They can carry cultural inheritance without
+becoming universal property. The research task is not to prove that a
+symbol secretly determines a life. It is to design artifacts in which
+symbolic material remains legible, situated, bounded, and available for
+disagreement.</p>
+<h3 id="media-ritual-and-symbolic-environments">6.2.1 Media, ritual, and
+symbolic environments</h3>
+<p>Media-aware symbolic interpretation requires an additional boundary.
+Contemporary media, images, games, film, interfaces, and generated
+artifacts can all behave like symbolic environments: they organize
+attention, repeat motifs, encode values, and train expectation. This
+does not mean every recurrence is intentional or every pattern is
+evidence. It means that media literacy belongs near semiotics and
+hermeneutics in the whitepaper’s method.</p>
+<p>The safe claim is that Selemene can treat media as an object of
+reflective reading when the practitioner has consented to that frame.
+The unsafe claim would be that media patterns prove hidden control,
+destiny, or metaphysical causation. The paper therefore treats
+media-symbolic analysis as a disciplined lens: useful for noticing
+motif, repetition, framing, affect, and attention capture; insufficient
+for prediction or total explanation.</p>
+<h3 id="llm-supported-reflection-and-agency">6.3 LLM-supported
+reflection and agency</h3>
+<p>LLM-supported reflection work is relevant because it shows how
+generated prompts can support user-directed exploration when designed
+around agency rather than replacement <span class="citation"
+data-cites="song2025exploreself">(<a href="#ref-song2025exploreself"
+role="doc-biblioref">Song et al. 2025</a>)</span>. Selemene’s witness
+principle shares that concern. The system may help the practitioner
+articulate themes, compare perspectives, and hold difficult questions,
+but it should not become the owner of insight.</p>
+<p>This boundary becomes more important as generated language becomes
+smoother. The practitioner may feel seen by the artifact, and that
+feeling can be valuable. It can also be risky. Being “seen” by a system
+can become a form of authority transfer. Selemene’s witness should
+therefore prefer formulations that keep the practitioner active: “What
+do you notice?” “Where does this fit or fail?” “Which part feels
+inherited?” “What would you revise?” The language of agency is not soft
+decoration; it is a safety control.</p>
+<p>Narrative identity research adds a second boundary: the system may
+help arrange material into a story-like form, but it must not seize
+authorship of the practitioner’s life story <span class="citation"
+data-cites="mcadams2013narrativeIdentity">(<a
+href="#ref-mcadams2013narrativeIdentity" role="doc-biblioref">McAdams
+and McLean 2013</a>)</span>. This distinction is subtle. Narrative
+coherence can be helpful, but too much coherence can become coercive. A
+polished generated story may make a person feel explained before they
+have agreed that the explanation belongs to them. Selemene therefore
+treats narrative as a provisional artifact. It can be annotated,
+contradicted, split into alternatives, or refused.</p>
+<h3 id="dynamic-consent-and-contextual-privacy">6.4 Dynamic consent and
+contextual privacy</h3>
+<p>Dynamic consent is relevant because Selemene may handle sensitive
+personal material. Consent cannot be treated as a single global
+permission. A practitioner might consent to local rendering but not
+external processing, to a one-time media use but not retention, to
+textual context but not biometric interpretation, or to a long-form
+artifact but not future reuse. The consent model must allow such
+differences.</p>
+<p>The dynamic consent literature supports this granular posture <span
+class="citation" data-cites="norval2019automatingDynamicConsent">(<a
+href="#ref-norval2019automatingDynamicConsent"
+role="doc-biblioref">Norval and Henderson 2019</a>)</span>. It also
+warns against assuming that consent can be fully automated without risk.
+Selemene’s safer stance is that consent should be visible, revocable,
+contextual, and tied to the material being used. If the system cannot
+determine whether a sensitive use is allowed, it should fail closed and
+explain the boundary.</p>
+<h3 id="provenance-and-inspectable-artifacts">6.5 Provenance and
+inspectable artifacts</h3>
+<p>Provenance research and standards are useful because Selemene
+produces assembled artifacts. A reflective artifact may include
+practitioner-provided context, computed material, selected symbolic
+structures, generated witness language, omitted sources, and degraded
+states. Without provenance, these components blur together. The
+practitioner may not know whether a sentence came from a calculation, a
+symbolic association, a generated synthesis, or a fallback.</p>
+<p>The W3C PROV model is not imported wholesale as a serialization
+requirement in this paper. Its value is conceptual: entities,
+activities, and responsible agents can be represented so that the
+production of a result remains inspectable <span class="citation"
+data-cites="w3c2013provdm">(<a href="#ref-w3c2013provdm"
+role="doc-biblioref">Moreau and Missier 2013</a>)</span>. Selemene
+translates that lesson into reader-facing artifacts: show origin
+classes, show omissions, and show when a result is degraded.</p>
+<p>Provenance also has a broader authorial meaning. A reflective system
+does not emerge from nowhere. It is shaped by relations, disciplines,
+sources, constraints, failures, translations, and the material
+conditions that allowed it to be built. Public artifacts should not turn
+that lineage into mystique or borrowed authority. They should treat it
+as a humility obligation: name the kind of inheritance when it matters,
+distinguish influence from evidence, and avoid pretending that a
+system’s grammar is self-originating.</p>
+<h3 id="socio-technical-evaluation">6.6 Socio-technical evaluation</h3>
+<p>Socio-technical evaluation is necessary because Selemene’s success
+cannot be reduced to whether an engine ran or a sentence was
+grammatical. A reflective system can be technically functional and still
+harmful if it encourages dependence, hides uncertainty, or misleads the
+practitioner about the strength of its claims. Conversely, a technically
+modest artifact can be valuable if it preserves agency and helps a
+practitioner notice something without surrendering judgment.</p>
+<p>Evaluation work on narrowing the socio-technical gap is useful
+because it distinguishes model behavior from downstream human
+requirements <span class="citation"
+data-cites="liao2025rethinkingEvaluation">(<a
+href="#ref-liao2025rethinkingEvaluation" role="doc-biblioref">Liao and
+Xiao 2025</a>)</span>. Selemene uses that distinction to avoid inflated
+claims. A system test can show that a boundary was enforced. A language
+review can show that witness phrasing stayed non-prescriptive. A user
+study, if later conducted, would ask different questions about
+comprehension, agency, and lived use. The evidence types should not
+impersonate each other.</p>
+<h3 id="embodied-interaction-and-living-form">6.7 Embodied interaction
+and living form</h3>
+<p>Embodied interaction matters because Selemene is not only a text
+generator. Even when the returned artifact is textual, the subject
+matter can include timing, rhythm, sensation, image, sound, posture, and
+later practice. Dourish’s account of embodied interaction gives a useful
+frame: interfaces do not merely transmit information; they shape action
+in the world <span class="citation"
+data-cites="dourish2001whereAction">(<a
+href="#ref-dourish2001whereAction" role="doc-biblioref">Dourish
+2001</a>)</span>. For Selemene, this means the artifact should be
+designed as an object of attention, not as a verdict.</p>
+<p>Bioelectric morphogenesis provides a second caution. Levin’s work on
+endogenous voltage potentials supports the narrow scientific claim that
+electrical patterning can regulate cell behavior and anatomical pattern
+formation <span class="citation"
+data-cites="levin2014molecularBioelectricity">(<a
+href="#ref-levin2014molecularBioelectricity" role="doc-biblioref">Levin
+2014</a>)</span>. It does not support reading a practitioner’s state,
+future, virtue, or destiny from body-adjacent signals. Its relevance
+here is methodological: body-adjacent systems should treat pattern,
+signal, and interpretation with precision. A responsible reflective
+engine should distinguish measured physiology, computed structure,
+symbolic association, and generated language.</p>
+<p>Gut-brain-axis research adds a more ordinary but useful grounding
+point: cognition, emotion, and bodily regulation are entangled through
+bidirectional communication among central, enteric, endocrine, immune,
+and microbial systems <span class="citation"
+data-cites="carabotti2015gutBrainAxis">(<a
+href="#ref-carabotti2015gutBrainAxis" role="doc-biblioref">Carabotti et
+al. 2015</a>)</span>. This does not make the body an oracle. It does
+make disembodied interpretation incomplete. Selemene can therefore speak
+about embodied reflection while refusing to convert bodily sensation,
+face, voice, or rhythm into diagnosis.</p>
+<h3 id="process-perspective-and-symbolic-primitives">6.8 Process,
+perspective, and symbolic primitives</h3>
+<p>Process philosophy is relevant because a reflective artifact is not a
+static object with one final meaning. It is an event in which prior
+material, present inquiry, selected lenses, and practitioner response
+become a new occasion of interpretation <span class="citation"
+data-cites="whitehead1978processReality">(<a
+href="#ref-whitehead1978processReality" role="doc-biblioref">Whitehead
+1978</a>)</span>. This supports Selemene’s refusal to define the
+practitioner. The artifact is part of a process; it is not the owner of
+the process.</p>
+<p>Bergson’s philosophy of duration deepens the temporal side of this
+claim. Lived time is not merely a sequence of external units; it is
+qualitative continuity, memory, and change held together <span
+class="citation" data-cites="lawlorMoulardLeonard2025bergson">(<a
+href="#ref-lawlorMoulardLeonard2025bergson" role="doc-biblioref">Lawlor
+and Moulard Leonard 2025</a>)</span>. For Selemene, this matters because
+temporal engines should not reduce time to date arithmetic alone. Time
+can be computed, but it is encountered as recurrence, threshold,
+pressure, waiting, ripeness, fatigue, anticipation, and return. The
+artifact should preserve that distinction: calculation supplies
+structure; lived duration supplies interpretive context.</p>
+<p>Gebser’s work is useful as a philosophical neighbor for Selemene’s
+treatment of perspective. A system can become deficient when it treats
+one mode of seeing as the only real mode. Selemene instead treats lenses
+as plural structures. Temporal, symbolic, somatic, geometric, resonance,
+relational, and narrative outputs are not competitors for absolute
+authority. They are distinct ways of making a question visible <span
+class="citation" data-cites="gebser1985everPresentOrigin">(<a
+href="#ref-gebser1985everPresentOrigin" role="doc-biblioref">Gebser
+1985</a>)</span>.</p>
+<p>Symbolic primitives add a final layer. A symbol, syllable, diagram,
+tone, or geometric form can be treated as a primitive that carries
+attention before it carries explanation. This does not make the
+primitive scientifically proven. It means the design problem is partly
+semiotic: how can a system return forms that invite disciplined
+interpretation without coercing belief? The answer is not more mystique.
+It is clearer framing, stronger provenance, and more room for
+disagreement.</p>
+<p>Process, duration, and perspective are especially useful because they
+block a common category error. A reflective artifact is not a final
+report about a fixed object. It is an occasion in an unfolding relation
+between practitioner, lens, context, and response. This makes revision
+part of the ontology of the system rather than a concession after
+failure.</p>
+<h3 id="lineage-as-provenance">6.9 Lineage as provenance</h3>
+<p>Lineage is the missing middle between biography and bibliography. A
+bibliography names formal sources. Biography names personal history.
+Lineage names the conditions through which a system becomes possible:
+relational support, intellectual inheritance, material discipline,
+disagreement, translation, craft, and constraint. For Selemene, this
+matters because self-consciousness as technology cannot be framed as an
+abstract idea floating above embodiment. It has to be understood as
+something that becomes buildable only when observation, body, language,
+and friction are held together.</p>
+<p>The public claim is deliberately narrow. Lineage does not prove the
+system. It does not make a symbolic grammar true, and it does not
+transfer authority from a teacher, tradition, text, partner, family, or
+institution into the artifact. It simply prevents false
+self-origination. A reflective system should be able to say that it is
+authored, conditioned, translated, and bounded.</p>
+<p>This gives Selemene a cleaner way to handle influence. The engine can
+acknowledge that its grammar is inherited and synthesized without
+turning the whitepaper into a monument to personalities. It can treat
+intellectual ancestors as structural sources, relational support as a
+condition of emergence, and material constraints as design forces. The
+result is a form of provenance deeper than citation but humbler than
+authority.</p>
+<p>In this frame, Kha-Ba-La is not a decorative triad. Observation
+without embodiment becomes abstraction. Embodiment without friction
+becomes sentiment. Friction without observation becomes repetition. A
+reflective engine requires all three: the observing position, the lived
+medium, and the resistant ground that forces ideas into form.</p>
+<figure>
+<img src="figures/raster/fig-011-lineage-boundary-imagegen-v1.png"
+alt="Figure 11: Lineage, boundary, and evidence are related but not interchangeable." />
+<figcaption aria-hidden="true">Figure 11: Lineage, boundary, and
+evidence are related but not interchangeable.</figcaption>
+</figure>
+<h3 id="esoteric-source-scholarship-and-translation">6.10
+Esoteric-source scholarship and translation</h3>
+<p>Several of Selemene’s lens families touch symbolic traditions that
+are often excluded from ordinary technical discourse. The academic task
+is not to rehabilitate every esoteric claim as true. It is to handle
+such material without caricature, theft, or proof-smuggling. Scholarship
+on Western esotericism is useful here because it studies how certain
+bodies of knowledge were categorized as rejected, hidden, occult,
+mystical, or marginal, and how those categories shaped modern academic
+boundaries <span class="citation"
+data-cites="hanegraaff2012esotericismAcademy">(<a
+href="#ref-hanegraaff2012esotericismAcademy"
+role="doc-biblioref">Hanegraaff 2012</a>)</span>.</p>
+<p>This matters because a reflective engine can fail in two opposite
+ways. It can flatten symbolic traditions into decorative assets, or it
+can treat them as unquestionable revelation. Selemene rejects both. A
+symbolic source can be meaningful, historically situated, internally
+rigorous, and experientially powerful while still requiring careful
+public boundaries. The artifact should disclose whether a claim is
+historical, interpretive, formal, empirical, or philosophical.</p>
+<p>Translation is part of the same problem. When a symbolic vocabulary
+crosses languages, traditions, and media forms, it changes. A term may
+function as doctrine in one context, metaphor in another, design
+primitive in a third, and personal prompt in a fourth. Selemene should
+not pretend these are identical. Its contribution is to make the
+translation visible enough that the practitioner can evaluate it.</p>
+<h3 id="controversial-theories-as-boundary-tests">6.11 Controversial
+theories as boundary tests</h3>
+<p>The lineage pool also includes ambitious theories of consciousness,
+morphogenesis, subtle causation, and mind-matter relation. These are
+useful for Selemene only when handled with discipline. A controversial
+theory can reveal a design temptation: the desire to turn a suggestive
+framework into an engine of certainty. The correct response is not
+automatic dismissal or credulous adoption. It is claim
+classification.</p>
+<p>For example, morphic-resonance discussions can be used to ask how
+habit, recurrence, and formative pattern should be bounded, but they
+should not be used as biological proof for a reflective artifact <span
+class="citation" data-cites="gomezMarin2021sheldrakeHypothesis">(<a
+href="#ref-gomezMarin2021sheldrakeHypothesis"
+role="doc-biblioref">Gomez-Marin 2021</a>)</span>. Quantum-consciousness
+proposals such as Orch OR can be used as examples of how ambitious
+consciousness claims require unusually strong evidence and careful
+criticism <span class="citation" data-cites="hameroff2014orchOr">(<a
+href="#ref-hameroff2014orchOr" role="doc-biblioref">Hameroff and Penrose
+2014</a>)</span>. Their role in this paper is methodological: they help
+define what Selemene must not smuggle into public claims.</p>
+<p>The principle is simple:</p>
+<p><span class="math display">
+\mathrm{conceptual\ fertility}\not\Rightarrow \mathrm{claim\ authority}
+</span></p>
+<p>An idea may be generative for design while remaining too weak,
+contested, or category-mismatched to support a public assertion. This is
+not a loss of depth. It is the discipline that lets depth survive
+contact with review.</p>
+<h2 id="system-model">7. System Model</h2>
+<p>The public system model has four layers: input, engine, witness, and
+artifact. Inputs may include time, place, birth data, stated inquiry,
+consented media, symbolic selections, biometric context, or prior
+reflective context. Engines transform those inputs into typed
+interpretive material. The witness layer shapes that material into
+non-prescriptive prompts and reflections. The artifact layer preserves
+the output as something the practitioner can revisit, compare, reject,
+annotate, or carry into practice.</p>
+<p>The wider ecosystem expresses this model through multiple surfaces:
+fast consultations, extended readings, daily practice, exportable
+artifacts, web-based access, local use, and media-aware interactions.
+These are delivery expressions of one grammar, not separate
+philosophies.</p>
+<h3 id="input-layer">7.1 Input layer</h3>
+<p>The input layer defines what enters the reflective field. It may
+contain objective fields, such as time and place; selected fields, such
+as inquiry mode or symbolic focus; contextual fields, such as a
+practitioner’s question; and sensitive fields, such as media or
+biometric context. Each class of input carries a different ethical
+weight. A timestamp and a face image are not the same kind of material.
+A symbolic selection and a health-adjacent signal are not
+interchangeable.</p>
+<p>The technical principle is input dignity: every input should retain
+its class, origin, scope, and allowed use. This prevents the system from
+quietly promoting a weak signal into a strong claim. It also prevents
+the practitioner from being over-read by an engine that has not earned
+that authority.</p>
+<h3 id="engine-layer">7.2 Engine layer</h3>
+<p>The engine layer transforms inputs through bounded lenses. Some
+engines are primarily calculative: they produce structured relations
+from time, date, place, cycle, or numeric form. Some are interpretive:
+they select or arrange symbolic material. Some are sensory or
+media-aware: they derive reflective artifacts from images, audio,
+rhythm, or embodied state. Some are synthetic: they hold several outputs
+together without pretending they collapse into a single truth.</p>
+<p>The engine layer must preserve partiality. An unavailable dependency,
+missing input, weak signal, ambiguous result, or fallback state should
+remain visible in the artifact. The system should never hide uncertainty
+simply to maintain the aesthetic of completion.</p>
+<h3 id="witness-layer">7.3 Witness layer</h3>
+<p>The witness layer translates engine material into human-readable
+reflection. It is where tone, restraint, and agency matter most. The
+witness may organize the artifact around contrasts, questions, recurring
+motifs, or tensions between lenses. It may also decline to interpret a
+field if the underlying material is insufficient.</p>
+<p>The witness layer is not an answer generator. It is a framing
+function. Its task is to preserve the practitioner’s authorship while
+making the engine’s output legible enough to engage.</p>
+<h3 id="artifact-layer">7.4 Artifact layer</h3>
+<p>The artifact layer gives reflection a durable form. An artifact may
+be a compact reading, a longer report, a diagram, an audio cue, a
+symbolic image, a practice prompt, or an exportable record. Durability
+matters because reflection is not always immediate. A practitioner may
+reject an artifact at first encounter, return later, annotate it,
+compare it with future states, or notice that a pattern changed.</p>
+<p>Artifacts should preserve enough context to remain inspectable
+without becoming surveillance records. The artifact is a mirror held for
+practice, not a dossier held over the practitioner.</p>
+<figure>
+<img src="figures/raster/fig-003-system-flow-imagegen-v1.png"
+alt="Figure 3: Input-engine-witness-artifact flow." />
+<figcaption aria-hidden="true">Figure 3: Input-engine-witness-artifact
+flow.</figcaption>
+</figure>
+<h3 id="boundary-layer">7.5 Boundary layer</h3>
+<p>Although the public model has four layers, a boundary layer surrounds
+all of them. Boundary is not merely validation at the beginning. It is a
+continuous discipline across input, engine, witness, artifact, and later
+reuse. An input boundary asks whether the material belongs in the
+inquiry. An engine boundary asks whether the lens is allowed and able to
+transform it. A witness boundary asks whether the language preserves
+authorship. An artifact boundary asks whether the result remains
+inspectable and safe to revisit.</p>
+<p>The boundary layer is why Selemene treats refusal as a normal output.
+Many systems treat refusal as a failure of user experience. Selemene
+treats unsafe fluency as the deeper failure. If an artifact cannot be
+produced without overclaiming, the correct behavior is not to produce a
+prettier artifact. The correct behavior is to reveal why the mirror
+cannot be responsibly formed.</p>
+<h3 id="inquiry-lifecycle">7.6 Inquiry lifecycle</h3>
+<p>The lifecycle of a Selemene inquiry can be described in seven
+moments. First, the practitioner brings a question or context. Second,
+the system identifies which material is needed and which material is
+optional. Third, consent and scope are checked for sensitive inputs.
+Fourth, selected engines produce bounded lens material or explicit
+omissions. Fifth, the witness organizes the material into reflective
+form. Sixth, the artifact is returned with provenance, limits, and
+prompts. Seventh, the practitioner may accept, reject, annotate, revise,
+or discard it.</p>
+<p>This lifecycle is intentionally slower than pure generation. The
+purpose is not latency for its own sake. The purpose is to keep
+attention from being captured by immediate fluency. In a reflective
+system, the most dangerous output is often the one that arrives
+instantly, sounds complete, and hides the conditions of its own
+production.</p>
+<p>The same lifecycle can be described as a four-phase transformation
+grammar: opacity, clarification, articulation, and integration. Opacity
+is the moment in which the question is not yet well formed.
+Clarification separates material that belongs in the inquiry from
+material that does not. Articulation turns bounded engine material into
+a witness artifact. Integration returns the artifact to the
+practitioner, who decides what it means, whether it should be revised,
+and whether it should be retained.</p>
+<p><span class="math display">
+\Omega_0 \xrightarrow{\;V_v,C\;} \Omega_1
+\xrightarrow{\;\{f_i\}_{i \in S}\;} \Omega_2
+\xrightarrow{\;W_\ell\;} \Omega_3
+\xrightarrow{\;\alpha,\pi\;} \Omega_4
+</span></p>
+<p>Here (_0) is pre-articulated inquiry, (_1) is bounded material, (_2)
+is lens output, (_3) is witness artifact, and (_4) is
+practitioner-authored uptake. The final arrow is essential. Without
+uptake, the artifact may be polished, but the reflective event is
+incomplete.</p>
+<h3 id="depth-without-authority">7.7 Depth without authority</h3>
+<p>Depth in Selemene is a matter of scope, nuance, and context. A deeper
+artifact may include more lenses, more cross-comparison, more
+provenance, more ambiguity, and more practitioner prompts. It should not
+claim more authority over the practitioner. This is the central
+difference between depth and domination.</p>
+<p>The same rule applies across modalities. A deeper temporal artifact
+may compare more cycles but still cannot predict the future. A deeper
+symbolic artifact may compare more motifs but still cannot define
+identity. A deeper somatic artifact may include more context but still
+cannot diagnose. A deeper narrative artifact may be more moving but
+still cannot become biography without the practitioner’s authorship.</p>
+<h3 id="artifact-portability">7.8 Artifact portability</h3>
+<p>A reflective artifact should remain legible when carried between
+contexts. This does not mean it must reveal private system details. It
+means the artifact should contain enough public structure for the
+practitioner to understand what it is: which lens family was used, what
+material entered, what was omitted, what was generated, what boundary
+applies, and what kind of response is invited.</p>
+<p>Portability is also a guard against lock-in. If the artifact only
+makes sense inside a seductive interface, then the interface owns the
+meaning. Selemene’s goal is the opposite: the artifact should retain its
+reflective value when printed, saved, read aloud, summarized, or
+revisited privately. The system should help create objects of attention
+that the practitioner can carry without surrendering agency.</p>
+<h2
+id="analytical-framework-for-bounded-interpretation-and-demonstration">8.
+Analytical Framework for Bounded Interpretation and Demonstration</h2>
+<p>The analytical framework represents Selemene as a family of bounded
+interpretive transformations. The notation is intentionally modest. It
+does not try to quantify consciousness, prove symbolic truth, or convert
+interpretation into prediction. It gives the paper a compact language
+for boundary validation, partial engines, consent, provenance, synthesis
+with omissions, witness restraint, review adequacy, and exclusion of
+disallowed claims.</p>
+<figure>
+<img src="figures/raster/fig-006-transform-stack-imagegen-v1.png"
+alt="Figure 4: Bounded transformation stack from inquiry to artifact." />
+<figcaption aria-hidden="true">Figure 4: Bounded transformation stack
+from inquiry to artifact.</figcaption>
+</figure>
+<h3 id="boundary-validation">8.1 Boundary validation</h3>
+<p>Let (z) be a proposed input, intermediate object, or artifact, and
+let (_v) be the boundary grammar for version (v). Boundary validation
+is:</p>
+<p><span class="math display">
+V_v(z) =
+\begin{cases}
+\mathrm{accept}(z) &amp; \text{if } z \in \mathcal{B}_v \\
+\mathrm{reject}(e) &amp; \text{if } z \notin \mathcal{B}_v
+\end{cases}
+</span></p>
+<p>where (e) is a structured refusal reason. This function says only
+that an object is well-formed for the boundary being used. It does not
+say that the interpretation is true, useful, complete, or ethically
+safe.</p>
+<p>The boundary can also be written as a predicate over required
+properties:</p>
+<p><span class="math display">
+z \in \mathcal{B}_v
+\Leftrightarrow
+\bigwedge_{b \in R_v} b(z)=1
+</span></p>
+<p>where (R_v) is the set of required boundary predicates. This
+formulation is useful because it keeps rejection local: the artifact
+fails for named reasons rather than as an undifferentiated error.</p>
+<h3 id="engines-as-partial-functions">8.2 Engines as partial
+functions</h3>
+<p>Let each engine be a partial function:</p>
+<p><span class="math display">
+f_i : X_i \rightharpoonup Y_i \cup E_i
+</span></p>
+<p>where (X_i) is the input domain for engine (i), (Y_i) is the
+structured artifact space, and (E_i) is the set of explicit failure or
+refusal states.</p>
+<p>The arrow is partial because not every inquiry deserves an output.
+Missing context, ungranted sensitive material, degraded modalities, weak
+signals, and unsafe requests should produce explicit refusal or
+degraded-state artifacts rather than theatrical certainty.</p>
+<p>For an engine set (S), the executable domain is the intersection of
+lens requirements and practitioner-granted material:</p>
+<p><span class="math display">
+\mathcal{D}(S,r)=
+\{x_i \in X_i \mid i \in S \land V_v(x_i)=\mathrm{accept}(x_i)
+\land C_i(r,x_i)=1\}
+</span></p>
+<p>An engine outside ((S,r)) is not a failed personality of the system;
+it is a declared omission.</p>
+<h3 id="consent-predicate">8.3 Consent predicate</h3>
+<p>For media and biometric contexts, consent is represented as a
+continuing predicate:</p>
+<p><span class="math display">
+C(r,m) =
+\forall s \in \mathrm{scopes}(m),\;
+s \in \mathrm{grant}(r) \land \mathrm{fresh}(r)
+</span></p>
+<p>where request (r) may carry material (m) only when every required
+scope is granted and fresh. If (C(r,m)) is false, the system must not
+silently continue as though the missing consent were an ordinary absent
+value.</p>
+<h3 id="provenance-graph">8.4 Provenance graph</h3>
+<p>A reflective artifact has a provenance graph:</p>
+<p><span class="math display">
+G_p = (N, E, \tau)
+</span></p>
+<p>where (N) is the set of artifact nodes, (E) is the set of derivation
+edges, and () labels each node or edge by origin class:
+practitioner-supplied, computed, selected, generated, omitted, degraded,
+or refused.</p>
+<p>The graph does not certify meaning. It preserves the construction of
+meaning so the practitioner can inspect the mirror instead of being
+trapped inside it.</p>
+<p>Provenance completeness can be represented as:</p>
+<p><span class="math display">
+\rho(A)=
+\frac{\left|\{n \in N_A \mid \tau(n)\ \mathrm{is\ defined}\}\right|}
+{\left|N_A\right|}
+</span></p>
+<p>where (N_A) is the node set needed to explain artifact (A). A mature
+artifact should approach ((A)=1), while still allowing nodes to be
+labeled as omitted, degraded, or refused.</p>
+<h3 id="capability-evidence-matrix">8.5 Capability evidence matrix</h3>
+<p>For each engine (i) and evidence axis (a), define:</p>
+<p><span class="math display">
+M_{i,a} \in \left\{0,\frac{1}{2},1\right\}
+</span></p>
+<p>where (0) means absent, () means partial or qualified, and (1) means
+supported for that axis. A public claim about an engine must not exceed
+its weakest required axis:</p>
+<p><span class="math display">
+Q_i(A^\ast)=\min_{a \in A^\ast} M_{i,a}
+</span></p>
+<p>where (A^) is the set of axes required by the claim. If
+(Q_i(A^)&lt;1), the public artifact must speak in partial or qualified
+language.</p>
+<figure>
+<img src="figures/raster/fig-007-evidence-axes-imagegen-v1.png"
+alt="Figure 5: Capability evidence axes used to prevent overstatement." />
+<figcaption aria-hidden="true">Figure 5: Capability evidence axes used
+to prevent overstatement.</figcaption>
+</figure>
+<h3 id="multi-engine-synthesis-with-omitted-source-reporting">8.6
+Multi-engine synthesis with omitted-source reporting</h3>
+<p>A multi-engine inquiry can be represented as:</p>
+<p><span class="math display">
+M(q, S) = \{ f_i(x_i) \mid i \in S,\; x_i \in X_i \}
+</span></p>
+<p>where (q) is the inquiry context and (S) is the selected engine set.
+When a synthesis score is used, it must report omissions:</p>
+<p><span class="math display">
+O_t =
+\{i \in S_t \mid f_i(x_i) \in E_i \lor C_i(t)=0\}
+</span></p>
+<p><span class="math display">
+\sigma(t)=
+\frac{
+\sum_{i \in S_t \setminus O_t} w_i c_i(t)\phi_i(t)
+}{
+\sum_{i \in S_t \setminus O_t} w_i c_i(t)
+}
+</span></p>
+<p>where (w_i) is the lens weight, (c_i(t)) is the confidence available
+at time (t), and (_i(t)) is the normalized contribution of lens (i). The
+rendered synthesis is not ((t)) alone:</p>
+<p><span class="math display">
+R(t) = \left(\sigma(t), O_t, \Delta_t\right)
+</span></p>
+<p>where (_t) records degraded or qualified inputs. If every selected
+lens is omitted, ((t)) is undefined and the system must render refusal
+or insufficiency rather than a score.</p>
+<h3 id="witness-transform">8.7 Witness transform</h3>
+<p>The witness function does not collapse these outputs into a single
+truth. It frames them:</p>
+<p><span class="math display">
+W_\ell : \mathcal{P}(Y) \times \mathcal{C} \times \mathcal{R}_\ell
+\rightarrow A \cup E_W
+</span></p>
+<p>where (W_) is the witness register at level (), () is context, (_) is
+the restraint policy for that register, (A) is an artifact for
+reflection, and (E_W) is the set of witness refusals.</p>
+<p>The witness must satisfy an authorship condition:</p>
+<p><span class="math display">
+\alpha(W_\ell(M,c)) \geq \alpha_{\min}
+</span></p>
+<p>where () measures whether the artifact preserves practitioner agency
+through questions, plurality, source clarity, and non-prescriptive
+language.</p>
+<h3 id="anti-prediction-exclusion">8.8 Anti-prediction exclusion</h3>
+<p>Let ((A)) be true when artifact (A) contains a disallowed claim:
+prediction, diagnosis, medical instruction, financial instruction,
+guaranteed transformation, or certainty unsupported by its evidence
+axes. The publication rule is:</p>
+<p><span class="math display">
+\mathrm{allow}(A)=1
+\Rightarrow
+\neg \Pi(A)
+</span></p>
+<p>Equivalently, when ((A)) is true:</p>
+<p><span class="math display">
+W_\ell(M,c) \rightarrow E_W
+</span></p>
+<p>The essential mathematical point is partiality. The engine family is
+not modeled as a total function because not every inquiry should produce
+an answer. Some inputs are missing. Some scopes are not granted. Some
+modalities are unavailable. Some symbolic combinations would overstate
+the evidence. In those cases, refusal or degradation is not an exception
+to the model. It is part of the model.</p>
+<h3 id="evidence-freshness">8.9 Evidence freshness</h3>
+<p>A claim may be supported at one time and weaker later. Let (e) be an
+evidence item observed at time (t_e), and let (_e) represent drift risk.
+Evidence freshness can be modeled as:</p>
+<p><span class="math display">
+\phi(e,t)=\exp\left(-\lambda_e(t-t_e)\right)
+</span></p>
+<p>where (t t_e). Low-drift evidence, such as a stable mathematical
+definition, decays slowly. High-drift evidence, such as availability of
+an external runtime or a current operational state, decays quickly. The
+model does not decide truth by itself. It reminds the paper to avoid
+treating old observations as present proof.</p>
+<h3 id="interpretive-plurality">8.10 Interpretive plurality</h3>
+<p>Let (Q_) be the set of safe witness prompts at register (). A witness
+transform should return a subset of possible prompts rather than a
+single authoritative meaning:</p>
+<p><span class="math display">
+W_\ell(y,c,p) \subseteq Q_\ell
+</span></p>
+<p>For a non-empty bounded artifact:</p>
+<p><span class="math display">
+1 \leq |W_\ell(y,c,p)| \leq |Q_\ell|
+</span></p>
+<p>This captures the principle that interpretation is plural but not
+unconstrained. The witness may choose from a bounded prompt space; it
+may not claim that one prompt exhausts the practitioner’s meaning.</p>
+<h3 id="consent-and-external-use">8.11 Consent and external use</h3>
+<p>The media privacy boundary can be written as:</p>
+<p><span class="math display">
+\forall m \in \mathrm{Media},\;
+\neg C(r,m) \Rightarrow
+\neg \exists a \in A_{\mathrm{external}}:\mathrm{uses}(a,m)
+</span></p>
+<p>If consent is absent or stale, no external activity may use the
+material. This equation is deliberately stronger than “do not interpret
+strongly.” It says the material must not enter the external activity at
+all.</p>
+<h3 id="claim-class-function">8.12 Claim class function</h3>
+<p>Let (c) be a claim in an artifact or paper. Define:</p>
+<p><span class="math display">
+\kappa(c) \in
+\{\mathrm{formal},\mathrm{technical},\mathrm{operational},
+\mathrm{empirical},\mathrm{interpretive},\mathrm{philosophical}\}
+</span></p>
+<p>Each claim class requires a different support type. A formal claim
+needs coherent notation. A technical claim needs current behavior. An
+operational claim needs fresh observation. An empirical claim needs
+study evidence. An interpretive claim needs clearly bounded meaning. A
+philosophical claim needs explicit positioning. Misclassifying claims is
+how reflection systems become inflated.</p>
+<p>For a claim (c), let (E_c) be the available evidence set and
+(T_{(c)}) the evidence type required by its class. Support adequacy
+is:</p>
+<p><span class="math display">
+S(c)=
+\begin{cases}
+1 &amp; \text{if } \exists e \in E_c:\mathrm{type}(e)=T_{\kappa(c)}
+\land \phi(e,t)\geq \theta_{\kappa(c)} \\
+0 &amp; \text{otherwise}
+\end{cases}
+</span></p>
+<p>The publication rule is then:</p>
+<p><span class="math display">
+\mathrm{publish}(c)=1
+\Rightarrow
+S(c)=1 \land \neg \Pi(c)
+</span></p>
+<p>This rule is intentionally conservative. It prevents a citation about
+reflection from certifying an implementation claim, and it prevents a
+successful technical check from certifying human benefit.</p>
+<h3 id="demonstration-a-fictional-mirror-trace">8.13 Demonstration: a
+fictional mirror trace</h3>
+<p>The preceding formalism becomes useful only if a reader can inspect
+it in a concrete artifact. This section therefore gives a fully
+fictional, public-safe trace. It is not an anonymized real reading, not
+a private practitioner record, and not a claim about a living person. It
+is a synthetic demonstration designed to show how source status, lens
+boundaries, witness language, omissions, and review gates should travel
+together.</p>
+<p>The demonstration subject is:</p>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+<th>Source status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Subject label</td>
+<td>S-001, fictional adult</td>
+<td>Public demonstration fixture</td>
+</tr>
+<tr>
+<td>Display name</td>
+<td>Mira, fictional</td>
+<td>Public demonstration fixture</td>
+</tr>
+<tr>
+<td>Birth date</td>
+<td>1991-04-18</td>
+<td>Public demonstration fixture</td>
+</tr>
+<tr>
+<td>Birth time</td>
+<td>06:42, declared local time</td>
+<td>Public demonstration fixture</td>
+</tr>
+<tr>
+<td>Coordinate field</td>
+<td>synthetic coordinate field, latitude 12.0000, longitude 77.0000,
+UTC+05:30</td>
+<td>Public demonstration fixture</td>
+</tr>
+<tr>
+<td>Inquiry</td>
+<td>“What can this birth-timed mirror offer as material for
+reflection?”</td>
+<td>Public demonstration fixture</td>
+</tr>
+<tr>
+<td>Consent scope</td>
+<td>temporal-symbolic demonstration only</td>
+<td>Declared scope</td>
+</tr>
+<tr>
+<td>Excluded material</td>
+<td>image, voice, body-adjacent signals, private notes, relationship
+material</td>
+<td>Omitted by design</td>
+</tr>
+</tbody>
+</table>
+<p>The example uses a verified synthetic engine run performed on
+2026-08-26. It does not use private practitioner material. Exact
+production readings may be richer, but the source-status rule is the
+same. A lens output is not yet a reading. A witness sentence is not a
+deterministic fact. An omitted source is not silently replaced by a more
+confident story.</p>
+<figure>
+<img src="figures/fig-012-fictional-mirror-trace.svg"
+alt="Trace Figure A: Fictional mirror trace from synthetic fixture to reviewed artifact." />
+<figcaption aria-hidden="true">Trace Figure A: Fictional mirror trace
+from synthetic fixture to reviewed artifact.</figcaption>
+</figure>
+<p>The source-status legend used in the trace is:</p>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Label</th>
+<th>Meaning</th>
+<th>Artifact obligation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Practitioner-supplied</td>
+<td>Entered by the practitioner or demonstration fixture.</td>
+<td>Keep scope and sensitivity visible.</td>
+</tr>
+<tr>
+<td>Deterministic</td>
+<td>Produced by a declared rule from declared inputs.</td>
+<td>Show the transform or enough metadata to audit it.</td>
+</tr>
+<tr>
+<td>Selected</td>
+<td>Chosen from a symbolic map, taxonomy, spread, or table.</td>
+<td>Name the selection as lens material, not universal truth.</td>
+</tr>
+<tr>
+<td>Generated</td>
+<td>Produced as witness language from prior materials.</td>
+<td>Mark as framing, synthesis, or invitation.</td>
+</tr>
+<tr>
+<td>Omitted</td>
+<td>Not used because unavailable, unnecessary, or outside scope.</td>
+<td>Keep omission visible so the artifact does not appear complete.</td>
+</tr>
+<tr>
+<td>Refused</td>
+<td>Blocked because the request would become prediction, diagnosis,
+pressure, or overclaim.</td>
+<td>Replace with a bounded reflective alternative where possible.</td>
+</tr>
+</tbody>
+</table>
+<figure>
+<img src="figures/fig-013-source-status-legend.svg"
+alt="Trace Figure B: Source-status labels distinguish supplied, computed, selected, generated, omitted, and refused material." />
+<figcaption aria-hidden="true">Trace Figure B: Source-status labels
+distinguish supplied, computed, selected, generated, omitted, and
+refused material.</figcaption>
+</figure>
+<p>Let the synthetic reading input be:</p>
+<p><span class="math display">
+x^{\star}=(d,t,z,p,q,c)
+</span></p>
+<p>where (d=), (t=), (z=), (p=(12.0000,77.0000)) is the synthetic
+coordinate field, (q) is the declared inquiry, and (c) is the consent
+object. The normalized timestamp is:</p>
+<p><span class="math display">
+\operatorname{utc}(x^{\star})=\text{1991-04-18T01:12:00Z}
+</span></p>
+<p>The demonstration lens set is:</p>
+<p><span class="math display">
+S^{\star}=\{
+\lambda_{\mathrm{time}},
+\lambda_{\mathrm{number}},
+\lambda_{\mathrm{period}},
+\lambda_{\mathrm{type}},
+\lambda_{\mathrm{witness}}
+\}
+</span></p>
+<p>and the omitted set is:</p>
+<p><span class="math display">
+O^{\star}=\{
+\lambda_{\mathrm{media}},
+\lambda_{\mathrm{voice}},
+\lambda_{\mathrm{somatic}},
+\lambda_{\mathrm{relation}}
+\}
+</span></p>
+<p>The omitted set is not decorative. It prevents a reader from assuming
+that the artifact used face, voice, biometric, relational, or
+private-note material when it did not.</p>
+<p>For each lens (_i), the lens result is:</p>
+<p><span class="math display">
+r_i =
+\begin{cases}
+f_i(x_i), &amp; c \models \operatorname{scope}(\lambda_i) \land
+\operatorname{valid}(x_i) \\
+\bot_{\mathrm{omit}}, &amp; \neg(c \models
+\operatorname{scope}(\lambda_i)) \lor \neg \operatorname{available}(x_i)
+\\
+\bot_{\mathrm{refuse}}, &amp; \operatorname{disallowed}(q,\lambda_i)
+\end{cases}
+</span></p>
+<p>The witness transform is separate:</p>
+<p><span class="math display">
+w_i = W_{\ell}(r_i,q,B)
+</span></p>
+<p>where (W_{}) is the witness register and (B) is the boundary policy.
+This equation is the ethical hinge of the system: (w_i) may phrase,
+contextualize, and invite; it may not retroactively become evidence
+stronger than (r_i).</p>
+<p>The demonstration trace can then be written as:</p>
+<table>
+<colgroup>
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+</colgroup>
+<thead>
+<tr>
+<th>Step</th>
+<th>Lens or operation</th>
+<th>Demonstration result</th>
+<th>Source status</th>
+<th>Boundary note</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Normalize time</td>
+<td>(19910418T01{:}12{:}00Z)</td>
+<td>Deterministic</td>
+<td>Only date, time, zone, and synthetic coordinate field are used.</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Number-symbol lens</td>
+<td>life path (6), birthday (9), expression (11), personality (5), soul
+urge (6)</td>
+<td>Deterministic/selected</td>
+<td>Arithmetic and symbolic labels are lens material, not trait
+proof.</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Period-timing lens</td>
+<td>birth nakshatra Rohini; run-timestamp period Jupiter / Mercury /
+Rahu</td>
+<td>Deterministic/selected</td>
+<td>Traditional-source labels require cultural care and do not predict
+outcomes.</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Archetypal type lens</td>
+<td>Generator; Sacral authority; profile (2/4); Split definition; active
+channels (3313), (360)</td>
+<td>Deterministic/selected</td>
+<td>Type vocabulary is a reflective taxonomy, not an identity
+verdict.</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Body/media-adjacent outputs</td>
+<td>excluded from the public miniature despite being configured in the
+run</td>
+<td>Omitted</td>
+<td>Consent scope is temporal-symbolic only; no image, voice, or body
+signal contributes.</td>
+</tr>
+<tr>
+<td>6</td>
+<td>Lightweight witness prompts</td>
+<td>returned by engine layer but not quoted directly</td>
+<td>Generated/reviewed</td>
+<td>Returned prompts still require public voice review before
+publication.</td>
+</tr>
+<tr>
+<td>7</td>
+<td>Reviewed witness sentence</td>
+<td>“One way to read the verified synthetic trace is to ask how
+responsibility, response, and timing can become questions of pacing
+rather than identity.”</td>
+<td>Generated/reviewed</td>
+<td>Invitation only; no command, diagnosis, prediction, or
+guarantee.</td>
+</tr>
+</tbody>
+</table>
+<p>The assembled artifact is:</p>
+<p><span class="math display">
+A^{\star}=
+\operatorname{assemble}
+\left(
+\{(r_i,w_i,\tau_i)\}_{i=1}^{4},
+P^{\star},
+O^{\star},
+R^{\star}
+\right)
+</span></p>
+<p>where (_i) is the source-status label, (P^{}) is the provenance
+record, (O^{}) is the omitted/refused set, and (R^{}) is the review
+rubric. A portable artifact should preserve enough of this tuple that it
+does not become a free-floating statement detached from its
+boundary.</p>
+<h4 id="a-miniature-fictional-mirror">A miniature fictional mirror</h4>
+<p>The following miniature mirror illustrates how the final language
+should carry its own provenance. Bracketed labels are shown here for
+auditability; a user-facing artifact may place them in margins,
+footnotes, or a provenance table.</p>
+<blockquote>
+<p>[Practitioner-supplied] Mira is a fictional demonstration subject
+with a declared birth date of 1991-04-18, a declared local time of
+06:42, and a synthetic coordinate field. [Deterministic] Normalizing the
+declared time to UTC gives 1991-04-18T01:12:00Z.
+[Deterministic/selected] A verified synthetic engine run returned
+number-symbol outputs of life path 6, birthday 9, expression 11,
+personality 5, and soul urge 6. [Deterministic/selected] The same run
+returned a period-timing label of Rohini for the birth nakshatra and, at
+the run timestamp, a Jupiter / Mercury / Rahu period stack.
+[Deterministic/selected] It also returned an archetypal type profile:
+Generator, Sacral authority, 2/4 profile, Split definition, and active
+channels 33-13 and 3-60. [Generated/reviewed] One way to read this
+mirror is not as a statement about Mira’s destiny, but as a question
+about pacing: where do responsibility, response, and timing become
+easier to hold when they are treated as inquiries rather than identity
+claims? [Omitted] This public miniature has not used images, voice,
+body-adjacent signals, private notes, or relationship material.
+[Boundary] It cannot infer health, fate, compatibility, vocation, or
+future events.</p>
+</blockquote>
+<p>This small example shows the discipline that a longer reading must
+preserve. Generated witness language may be beautiful, but beauty does
+not raise the evidence class. A sentence remains generated even when it
+feels accurate. A symbolic phrase remains selected even when it
+resonates. A deterministic transform remains narrow even when later
+interpretation makes it meaningful.</p>
+<h4 id="multi-pass-witness-protocol">Multi-pass witness protocol</h4>
+<p>A full artifact should not be produced by a single uncontrolled act
+of fluency. The witness layer is better understood as a multi-pass
+protocol:</p>
+<figure>
+<img src="figures/fig-014-multipass-witness-protocol.svg"
+alt="Trace Figure C: Multi-pass witness protocol with review gates." />
+<figcaption aria-hidden="true">Trace Figure C: Multi-pass witness
+protocol with review gates.</figcaption>
+</figure>
+<table>
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>Pass</th>
+<th>Input</th>
+<th>Output</th>
+<th>Gate</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Ingest</td>
+<td>Synthetic subject data, inquiry, consent</td>
+<td>Validated inquiry object</td>
+<td>Missing or unauthorized material is omitted or refused.</td>
+</tr>
+<tr>
+<td>Lens computation</td>
+<td>Declared lens inputs</td>
+<td>Lens results</td>
+<td>Each lens may output only its own evidence class.</td>
+</tr>
+<tr>
+<td>Structural synthesis</td>
+<td>Lens results and omissions</td>
+<td>Pattern map</td>
+<td>Computed, selected, generated, and omitted material remain
+distinguishable.</td>
+</tr>
+<tr>
+<td>Interpretive bridge</td>
+<td>Pattern map and inquiry</td>
+<td>Witness framing</td>
+<td>No prediction, diagnosis, command, guarantee, or moral
+pressure.</td>
+</tr>
+<tr>
+<td>Autonomy return</td>
+<td>Witness framing</td>
+<td>Question or practice invitation</td>
+<td>Meaning is returned to the practitioner.</td>
+</tr>
+<tr>
+<td>Review</td>
+<td>Full artifact</td>
+<td>Pass, qualified pass, revise, or refuse</td>
+<td>A failed guardrail cannot be offset by prose quality.</td>
+</tr>
+</tbody>
+</table>
+<p>The review score is intentionally conjunctive rather than
+compensatory:</p>
+<p><span class="math display">
+\nu(A^{\star})=
+\min
+\left(
+\nu_{\mathrm{consent}},
+\nu_{\mathrm{source}},
+\nu_{\mathrm{grounding}},
+\nu_{\mathrm{witness}},
+\nu_{\mathrm{privacy}},
+\nu_{\mathrm{culture}}
+\right)
+</span></p>
+<p>This means an artifact with excellent language and poor source
+clarity still fails. A mirror that cannot show what it used, what it did
+not use, and what kind of claim each sentence makes is not mature enough
+for a sensitive context.</p>
+<p>An applied review of the miniature mirror is:</p>
+<table>
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>Rubric dimension</th>
+<th>Evidence in miniature mirror</th>
+<th>Verdict</th>
+<th>Revision if failed</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Source clarity</td>
+<td>Each sentence carries a source-status label.</td>
+<td>Pass</td>
+<td>Add labels or provenance notes.</td>
+</tr>
+<tr>
+<td>Deterministic grounding</td>
+<td>Time, number-symbol, period-timing, and type claims trace to the
+verified synthetic run.</td>
+<td>Pass</td>
+<td>Remove or relabel unsupported claims.</td>
+</tr>
+<tr>
+<td>Integrated layering</td>
+<td>Synthesis uses only the admitted lenses declared in (S^{}).</td>
+<td>Pass</td>
+<td>Do not imply omitted sources contributed.</td>
+</tr>
+<tr>
+<td>Guardrail language</td>
+<td>Returned prompts are not quoted directly; the public witness
+sentence is reviewed into non-predictive inquiry.</td>
+<td>Pass</td>
+<td>Rewrite as inquiry or refusal.</td>
+</tr>
+<tr>
+<td>Privacy</td>
+<td>Subject is synthetic; sensitive media and private notes are
+omitted.</td>
+<td>Pass</td>
+<td>Redact, omit, or regenerate with synthetic material.</td>
+</tr>
+<tr>
+<td>Cultural care</td>
+<td>Rohini, period, and type terms are framed as lens labels, not
+universal authority.</td>
+<td>Qualified pass</td>
+<td>Add source context before using tradition-specific terms.</td>
+</tr>
+</tbody>
+</table>
+<h4 id="privacy-and-export-boundary">Privacy and export boundary</h4>
+<p>Public examples should be synthetic rather than anonymized. Birth
+date, birth time, place, relationship context, and reflective text can
+become identifying when combined. Pseudonymization reduces exposure; it
+does not erase identifiability. The safe publication pattern is:</p>
+<figure>
+<img src="figures/fig-015-privacy-redaction-boundary.svg"
+alt="Trace Figure D: Privacy boundary from sensitive input to public artifact." />
+<figcaption aria-hidden="true">Trace Figure D: Privacy boundary from
+sensitive input to public artifact.</figcaption>
+</figure>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Data class</th>
+<th>Public demonstration rule</th>
+<th>Real artifact rule</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Name</td>
+<td>Use fictional or pseudonymous labels.</td>
+<td>Show only when intended for the recipient artifact.</td>
+</tr>
+<tr>
+<td>Birth date, time, place</td>
+<td>Use synthetic fixtures.</td>
+<td>Treat as sensitive personal context.</td>
+</tr>
+<tr>
+<td>Relationship context</td>
+<td>Omit unless required for the example.</td>
+<td>Require explicit roles, declared scope, and sensitivity level.</td>
+</tr>
+<tr>
+<td>Image, video, voice, body-adjacent signal</td>
+<td>Omit from public examples by default.</td>
+<td>Require separate consent and non-diagnostic boundary.</td>
+</tr>
+<tr>
+<td>Private notes or reflective context</td>
+<td>Omit from public examples.</td>
+<td>Minimize, redact, and avoid reuse beyond declared scope.</td>
+</tr>
+<tr>
+<td>Generated witness text</td>
+<td>Allowed with source-status labels.</td>
+<td>Preserve provenance and review status.</td>
+</tr>
+</tbody>
+</table>
+<p>The export rule is:</p>
+<p><span class="math display">
+\operatorname{public}(A)=1
+\Rightarrow
+\operatorname{synthetic}(x)
+\land
+\operatorname{redacted}(A)
+\land
+\operatorname{visible}(O)
+\land
+\operatorname{visible}(\tau)
+</span></p>
+<p>If a public artifact cannot satisfy this rule, it should not be
+published as an example. The paper can still describe the class of lens,
+but it must not use private material to make the system feel more
+convincing.</p>
+<h2 id="safety-ethics-and-governance">9. Safety, Ethics, and
+Governance</h2>
+<p>Selemene is a reflective system, not a clinical, financial, legal, or
+predictive authority. That boundary is not a disclaimer added after the
+fact; it is a design constraint. The system may compute relations,
+arrange symbolic material, preserve provenance, and generate
+self-inquiry prompts. It must not diagnose, prescribe, predict outcomes,
+or convert interpretive material into commands.</p>
+<p>The ethical frame is adapted from three familiar families of
+guidance. First, Belmont-style principles emphasize respect for persons,
+beneficence, and justice; here they are used as product-scoped design
+constraints rather than as a claim that this paper is human-subjects
+research <span class="citation" data-cites="belmont1979ethical">(<a
+href="#ref-belmont1979ethical" role="doc-biblioref">National Commission
+for the Protection of Human Subjects of Biomedical and Behavioral
+Research 1979</a>)</span>. Second, dynamic consent research motivates
+granular, contextual, revisable permissions for sensitive data <span
+class="citation" data-cites="norval2019automatingDynamicConsent">(<a
+href="#ref-norval2019automatingDynamicConsent"
+role="doc-biblioref">Norval and Henderson 2019</a>)</span>. Third, AI
+risk guidance motivates continuous governance across mapping,
+measurement, management, and oversight rather than a single launch-time
+approval <span class="citation" data-cites="nist2023airmf">(<a
+href="#ref-nist2023airmf" role="doc-biblioref">National Institute of
+Standards and Technology 2023</a>)</span>.</p>
+<figure>
+<img src="figures/raster/fig-008-consent-lifecycle-imagegen-v1.png"
+alt="Figure 6: Consent lifecycle for sensitive reflective material." />
+<figcaption aria-hidden="true">Figure 6: Consent lifecycle for sensitive
+reflective material.</figcaption>
+</figure>
+<h3 id="autonomy-and-authorship">9.1 Autonomy and authorship</h3>
+<p>The first obligation is autonomy. A practitioner must remain the
+author of meaning. The witness voice therefore avoids imperatives,
+certainty theatre, dependency hooks, and language that implies the
+system has privileged access to the practitioner’s inner life. It may
+offer prompts, contrasts, patterns, and questions. It must leave
+refusal, revision, disagreement, and non-use available.</p>
+<p>Autonomy also governs memory. Reflective continuity can be valuable,
+but continuity becomes unsafe when it quietly hardens into surveillance
+or identity fixation. A prior artifact should be available as context
+only when the practitioner can understand why it is present and can
+reject, revise, or remove its influence.</p>
+<h3 id="harm-minimization">9.2 Harm minimization</h3>
+<p>The central harm pattern is over-reading. A partial signal, fluent
+interpretation, striking visual form, or coherent symbolic synthesis can
+feel more authoritative than it is. Selemene therefore treats
+uncertainty, omitted material, weak signal quality, and refusal states
+as first-class parts of the artifact rather than hidden defects.</p>
+<p>Harm minimization also requires domain separation. A reflection about
+grief is not therapy. A reflection about work is not career instruction.
+A reflection about money is not financial advice. A reflection about the
+body is not diagnosis. These boundaries should be present in the
+artifact’s language, not buried where the practitioner will only find
+them after trust has already formed.</p>
+<h3 id="justice-and-access">9.3 Justice and access</h3>
+<p>Justice matters because reflective systems can easily privilege
+people who share the designer’s language, culture, literacy, metaphors,
+devices, or assumptions. Selemene should avoid treating one symbolic
+vocabulary as universal. It should also avoid making rich or
+sensory-heavy forms the only mature forms. A lightweight text artifact,
+a low-bandwidth interaction, and a private local session can be
+ethically preferable when they preserve comprehension, consent, and
+agency.</p>
+<p>Fair access does not require flattening every tradition into the same
+interface. It requires explaining the interpretive frame, respecting
+cultural specificity, and letting the practitioner choose a mode of
+encounter that does not demand unnecessary exposure.</p>
+<h3 id="consent-and-privacy">9.4 Consent and privacy</h3>
+<p>Sensitive reflection systems must treat consent as a continuing
+condition, not a one-time checkbox. For media and biometric contexts,
+consent can be represented as a predicate:</p>
+<p><span class="math display">
+C(r,m) = \forall s \in \mathrm{scopes}(m),\; s \in \mathrm{grant}(r)
+\land \mathrm{fresh}(r)
+</span></p>
+<p>where request (r) may carry material (m) only when every required
+scope is granted and fresh.</p>
+<p>The practical interpretation is a lifecycle: grant, scope, use,
+display, retention, revision, and revocation. Consent is not merely
+permission to begin; it is an ongoing boundary around what may be used,
+how strongly it may be interpreted, whether it may leave the local
+environment, and when it must stop influencing future artifacts.</p>
+<p>Consent should also be specific to modality. A practitioner may be
+comfortable providing a date, a question, or a symbolic selection while
+declining image, audio, body-adjacent, or relational material. The
+system should not treat refusal of one modality as failure of the whole
+inquiry. It should continue only within the remaining boundary and show
+what was omitted.</p>
+<p>This creates an important design obligation: privacy must be legible
+at the moment of reflection, not only at the moment of configuration. If
+an artifact uses sensitive material, the artifact should make that fact
+visible in plain language. If it does not use sensitive material, it
+should not imply that it did. The practitioner should not have to
+reverse-engineer the system to know which parts of themselves were
+invited into the mirror.</p>
+<h3 id="provenance-as-humility">9.5 Provenance as humility</h3>
+<p>Provenance is often treated as an audit feature. In Selemene it is
+also a humility feature. It forces the system to say, in effect: this
+came from the practitioner, this came from calculation, this came from
+symbolic tradition, this came from generative framing, this was omitted,
+this was uncertain, this was refused. This aligns with the W3C PROV
+family’s broad aim of representing entities, activities, and responsible
+agents involved in producing a result <span class="citation"
+data-cites="w3c2013provdm">(<a href="#ref-w3c2013provdm"
+role="doc-biblioref">Moreau and Missier 2013</a>)</span>.</p>
+<p>Provenance does not make an interpretation true; it makes the
+construction of the artifact inspectable. That distinction protects both
+sides of the mirror. It protects the practitioner from over-reading the
+artifact, and it protects the system from pretending that assembled
+meaning is the same as truth.</p>
+<figure>
+<img src="figures/raster/fig-004-provenance-graph-imagegen-v1.png"
+alt="Figure 7: Provenance graph for a bounded reflective artifact." />
+<figcaption aria-hidden="true">Figure 7: Provenance graph for a bounded
+reflective artifact.</figcaption>
+</figure>
+<h3 id="misuse-cases-and-mitigations">9.6 Misuse cases and
+mitigations</h3>
+<p>The safety model is easiest to state by naming what can go wrong.</p>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Misuse case</th>
+<th>Failure pattern</th>
+<th>Required mitigation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Diagnosis</td>
+<td>Symbolic or media-aware output is read as clinical assessment.</td>
+<td>Refuse diagnostic language; keep body-related artifacts reflective
+and non-clinical.</td>
+</tr>
+<tr>
+<td>Dependence</td>
+<td>The practitioner returns for permission rather than inquiry.</td>
+<td>Preserve authorship, disagreement, and exit; avoid authority
+theatre.</td>
+</tr>
+<tr>
+<td>Prediction</td>
+<td>A pattern is treated as a guaranteed future event.</td>
+<td>Exclude future-outcome claims and keep temporal material
+interpretive.</td>
+</tr>
+<tr>
+<td>Concealed external processing</td>
+<td>Sensitive material is silently sent outside the practitioner’s
+expected boundary.</td>
+<td>Require explicit consent, visible scope, and local-first handling
+where appropriate.</td>
+</tr>
+<tr>
+<td>Over-reading partial media</td>
+<td>Weak or degraded media produces strong claims.</td>
+<td>Label quality, fallback, omitted inputs, and uncertainty in ordinary
+language.</td>
+</tr>
+<tr>
+<td>Cultural flattening</td>
+<td>Traditions become interchangeable aesthetics.</td>
+<td>Name adaptation, context, and limits; include cultural review before
+stronger public claims.</td>
+</tr>
+</tbody>
+</table>
+<p>Risk can be expressed as a function of sensitivity, certainty,
+exposure, and reversibility:</p>
+<p><span class="math display">
+\mathcal{R}(A)=
+\frac{s(A)\,u(A)\,x(A)}{1+r(A)}
+</span></p>
+<p>where (s(A)) is material sensitivity, (u(A)) is unearned certainty in
+the artifact, (x(A)) is exposure beyond the practitioner’s private
+context, and (r(A)) is reversibility. The equation is not a universal
+risk metric; it is a design heuristic. It makes clear why a sensitive,
+highly certain, widely shared, hard-to-reverse artifact requires the
+strongest restraint.</p>
+<h3 id="failure-and-degradation-semantics">9.7 Failure and degradation
+semantics</h3>
+<p>Failure is not a single state. Selemene distinguishes at least five
+public classes of incomplete output:</p>
+<ol type="1">
+<li>unavailable material, where a required input or modality is not
+present;</li>
+<li>ungranted material, where the practitioner has not authorized a
+sensitive input;</li>
+<li>weak material, where a signal exists but should not carry a strong
+claim;</li>
+<li>degraded material, where a fallback or simplified rendering is
+used;</li>
+<li>withheld material, where the system refuses because the requested
+interpretation would become prescriptive, diagnostic, predictive, or
+otherwise unsafe.</li>
+</ol>
+<p>These states should be visible in ordinary language. A practitioner
+should be able to tell whether an artifact is complete, partial,
+degraded, or refused without reading machinery logs. The public
+principle is simple: never hide the missing bone under prettier
+skin.</p>
+<h3 id="governance-as-recurring-practice">9.8 Governance as recurring
+practice</h3>
+<p>Governance is not a board that approves the system once. It is the
+recurring practice of checking whether the system’s behavior still
+matches its boundary. In Selemene, governance has at least six recurring
+questions:</p>
+<ol type="1">
+<li>Are the strongest public claims still supported?</li>
+<li>Are sensitive inputs still handled according to their consent
+scope?</li>
+<li>Are partial or degraded states visible to the practitioner?</li>
+<li>Has witness language drifted toward advice, prediction, diagnosis,
+or dependence?</li>
+<li>Are cultural sources being handled with enough specificity and
+humility?</li>
+<li>Are new expressive surfaces increasing agency or merely increasing
+persuasion?</li>
+</ol>
+<p>These questions are intentionally ordinary. Good governance should
+not require private mystique. It should be possible for a technical
+reviewer, cultural reviewer, safety reviewer, and practitioner advocate
+to inspect the same artifact and ask where the system overreaches.</p>
+<h3 id="the-ethics-of-beauty">9.9 The ethics of beauty</h3>
+<p>Selemene is designed to become expressive: visual, auditory,
+narrative, ritual, and multisensory. That expressive ambition creates a
+specific ethical problem. Beauty can lower skepticism. A diagram, tone,
+or image can make the practitioner feel that something has been revealed
+when something has only been rendered. The more beautiful an artifact
+becomes, the more clearly its limits must be carried with it.</p>
+<p>This does not mean beauty is unsafe. Beauty can hold attention,
+dignify practice, and make difficult inquiry bearable. The ethical
+question is whether beauty clarifies or conceals. A beautiful artifact
+is aligned with Selemene when it reveals its own construction, invites
+interpretation, and leaves authorship intact. It is misaligned when it
+uses intensity to bypass discernment.</p>
+<h2 id="evaluation-design-and-review-protocol">10. Evaluation Design and
+Review Protocol</h2>
+<p>This paper is a technical whitepaper with a PRISMA-inspired scoping
+review posture. It is not a clinical trial, ethnography, systematic
+review, or efficacy study. PRISMA 2020 is designed for transparent
+reporting of systematic reviews; Selemene borrows its discipline of
+explicit source selection, exclusion, and claim-bounding without
+claiming systematic-review completeness <span class="citation"
+data-cites="page2021prisma2020">(<a href="#ref-page2021prisma2020"
+role="doc-biblioref">Page et al. 2021</a>)</span>.</p>
+<p>The method separates three questions that are often collapsed:</p>
+<ol type="1">
+<li>What does the system claim to do?</li>
+<li>What evidence supports that claim today?</li>
+<li>What kind of evidence would be required for a stronger claim?</li>
+</ol>
+<p>This separation is especially important for reflective systems. A
+structural rule can be satisfied while an interpretation remains weak. A
+generated prompt can be fluent while being prescriptive. A workflow can
+run while failing to preserve agency. A reflection can feel meaningful
+without constituting evidence of clinical benefit.</p>
+<h3 id="evidence-hierarchy">10.1 Evidence hierarchy</h3>
+<p>Selemene’s evidence hierarchy is ordered by proximity to present
+behavior:</p>
+<ol type="1">
+<li>direct behavior of the current system;</li>
+<li>typed boundary definitions and accepted examples;</li>
+<li>executable checks and fresh probes;</li>
+<li>current design and capability notes;</li>
+<li>historical reports and prior summaries.</li>
+</ol>
+<p>The hierarchy is not a prestige ladder. It is a drift ladder. The
+farther a statement is from current behavior, the more carefully it must
+be bounded. A past pass does not prove a present state. A live health
+response does not prove semantic correctness. A research citation does
+not prove a system feature exists. A system check does not prove human
+benefit.</p>
+<figure>
+<img src="figures/raster/fig-009-evidence-hierarchy-imagegen-v1.png"
+alt="Figure 8: Evidence hierarchy and drift gradient." />
+<figcaption aria-hidden="true">Figure 8: Evidence hierarchy and drift
+gradient.</figcaption>
+</figure>
+<h3 id="claim-classes">10.2 Claim classes</h3>
+<p>Every material claim belongs to one class. Formal claims concern
+notation and boundaries. Technical claims concern present system
+behavior. Operational claims concern current runtime or availability
+state. Empirical claims concern measured human or social effects.
+Interpretive claims concern symbolic meaning. Philosophical claims
+concern the project’s declared stance.</p>
+<p>Each class has a different admissible evidence type. Mixing classes
+is the root of most whitepaper inflation. An empirical paper can support
+the design rationale for agency-preserving reflection, but it cannot
+certify Selemene’s user benefit. A green system check can support
+structural validity, but it cannot certify psychological outcome. A
+philosophical principle can guide design, but it cannot certify
+operational readiness.</p>
+<figure>
+<img src="figures/raster/fig-010-claim-evidence-map-imagegen-v1.png"
+alt="Figure 9: Claim class to admissible evidence mapping." />
+<figcaption aria-hidden="true">Figure 9: Claim class to admissible
+evidence mapping.</figcaption>
+</figure>
+<h3 id="structural-validity">10.3 Structural validity</h3>
+<p>Structural validity asks whether an artifact has the right shape:
+required fields are present, sensitive material is scoped, outputs are
+labeled, and refusal states are representable. This is the lowest layer
+of trust. It can prove that the container is coherent. It cannot prove
+that the reflection is meaningful.</p>
+<h3 id="engine-level-correctness">10.4 Engine-level correctness</h3>
+<p>Engine-level correctness asks whether a specific lens performed the
+transformation it claims to perform. For a temporal lens, this may mean
+the right calendar relation or period calculation. For a symbolic lens,
+it may mean deterministic handling of selections, spreads, lines, or
+archetypal mappings. For a media-aware lens, it may mean correct
+handling of consent, input quality, fallback, and non-diagnostic
+language.</p>
+<h3 id="witness-review">10.5 Witness review</h3>
+<p>Witness review asks whether the artifact preserves authorship. The
+key failure modes are subtle: flattering certainty, implied advice,
+hidden diagnosis, moral pressure, unearned intimacy, dramatic
+overinterpretation, or language that makes the practitioner feel decoded
+rather than invited into inquiry. A witness can be strong. It cannot be
+coercive.</p>
+<p>LLM-mediated reflection research is useful here because it
+foregrounds user-directed exploration and adaptive scaffolding rather
+than replacement of the user’s own interpretation <span class="citation"
+data-cites="song2025exploreself">(<a href="#ref-song2025exploreself"
+role="doc-biblioref">Song et al. 2025</a>)</span>. Selemene adopts that
+posture narrowly: generated witness language should support inquiry, not
+simulate a therapist, guru, oracle, or final judge.</p>
+<h3 id="cultural-review">10.6 Cultural review</h3>
+<p>Cultural review asks whether symbolic systems are handled as situated
+traditions rather than flattened content libraries. This includes
+checking whether terms are named accurately, whether living traditions
+are reduced to aesthetics, whether modern adaptations are confused with
+ancient authority, and whether the paper claims universality where it
+only has interpretive context. Computational hermeneutics supports this
+stance by treating cultural outputs as situated, plural, and
+evaluation-sensitive rather than context-free truths <span
+class="citation" data-cites="kommers2026computationalHermeneutics">(<a
+href="#ref-kommers2026computationalHermeneutics"
+role="doc-biblioref"><span class="nocase">Kommers et al.</span>
+2026</a>)</span>.</p>
+<h3 id="practitioner-centered-evaluation">10.7 Practitioner-centered
+evaluation</h3>
+<p>Practitioner-centered evaluation asks different questions from
+technical testing. Did the artifact help the practitioner notice
+something? Did it preserve agency? Was the boundary clear? Did the
+practitioner understand which parts were computed, symbolic, generated,
+uncertain, or refused? Did the system invite authorship rather than
+dependence?</p>
+<p>These are empirical questions. They require study, feedback, and
+field evidence. They should not be answered by technical success alone.
+Socio-technical evaluation work is useful precisely because it warns
+against treating model behavior as a substitute for downstream human
+requirements <span class="citation"
+data-cites="liao2025rethinkingEvaluation">(<a
+href="#ref-liao2025rethinkingEvaluation" role="doc-biblioref">Liao and
+Xiao 2025</a>)</span>.</p>
+<h3 id="methodological-exclusions">10.8 Methodological exclusions</h3>
+<p>This paper does not test whether symbolic systems predict life
+events. It does not test clinical outcomes. It does not estimate
+therapeutic effect. It does not claim that generated artifacts improve
+well-being. It does not treat user fascination, fluent prose, or visual
+intensity as proof of truth. Those questions would require different
+study designs, participant protections, preregistered outcome
+definitions where applicable, and independent review.</p>
+<p>The current methodological claim is narrower: a
+symbolic-computational reflection system can be described, bounded,
+evaluated structurally, and governed so that its claims remain
+legible.</p>
+<p>This exclusion becomes sharper in the presence of ambitious source
+theories. The fact that a framework is philosophically fertile,
+personally meaningful, historically influential, or aesthetically
+coherent does not determine its evidence class. Selemene therefore uses
+a source-quality ladder:</p>
+<p><span class="math display">
+\mathrm{influence}
+\;&lt;\;
+\mathrm{interpretive\ frame}
+\;&lt;\;
+\mathrm{scholarly\ source}
+\;&lt;\;
+\mathrm{empirical\ evidence}
+\;&lt;\;
+\mathrm{current\ system\ behavior}
+</span></p>
+<p>The ladder is not a value ranking. A lineage source may matter deeply
+while still carrying less public claim authority than a current
+behavioral check or a peer-reviewed empirical study. This keeps the
+paper from confusing importance with admissibility.</p>
+<h3 id="review-protocol">10.9 Review protocol</h3>
+<p>A release-quality Selemene artifact should pass a layered review
+protocol before it is treated as mature. The review begins with form:
+the artifact must have a clear inquiry context, declared lens family,
+visible omissions, provenance, and boundary language. It then moves to
+language: the witness must avoid commands, diagnosis, prediction, moral
+pressure, and unearned certainty. It then moves to cultural handling:
+symbols must be framed as situated lenses, not universal facts. Finally,
+it moves to practitioner comprehension: a reader should be able to state
+what was computed, what was interpreted, what was generated, what was
+omitted, and what remains theirs to decide.</p>
+<p>The protocol is deliberately not a single score. A single score would
+invite false precision. Instead, each layer produces a bounded verdict:
+pass, qualified pass, revise, or refuse. A qualified pass is not a
+failure if the qualification is visible. In reflective systems, honest
+incompleteness is often safer than polished overreach.</p>
+<h3 id="evaluation-matrix">10.10 Evaluation matrix</h3>
+<p>The evaluation matrix can be summarized as follows:</p>
+<table>
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>Layer</th>
+<th>Question</th>
+<th>Evidence type</th>
+<th>Failure mode</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Boundary</td>
+<td>Is the artifact allowed to exist in this form?</td>
+<td>Input, consent, refusal, and claim checks</td>
+<td>Unsafe output is generated anyway.</td>
+</tr>
+<tr>
+<td>Structure</td>
+<td>Is the artifact well formed?</td>
+<td>Shape, required fields, labels, and omissions</td>
+<td>Components blur together.</td>
+</tr>
+<tr>
+<td>Lens</td>
+<td>Did each selected lens do only what it claims?</td>
+<td>Engine-level examples and review</td>
+<td>Partial material becomes strong claim.</td>
+</tr>
+<tr>
+<td>Witness</td>
+<td>Does the voice preserve authorship?</td>
+<td>Language review and refusal review</td>
+<td>The artifact becomes advice or authority.</td>
+</tr>
+<tr>
+<td>Culture</td>
+<td>Are symbolic sources handled responsibly?</td>
+<td>Source comparison and expert review when needed</td>
+<td>Tradition becomes decoration.</td>
+</tr>
+<tr>
+<td>Comprehension</td>
+<td>Can the practitioner understand the boundary?</td>
+<td>Reader testing or structured feedback</td>
+<td>The user trusts more than the artifact earns.</td>
+</tr>
+<tr>
+<td>Field use</td>
+<td>Does extended use preserve agency?</td>
+<td>Extended field study where appropriate</td>
+<td>Reflection becomes dependence.</td>
+</tr>
+</tbody>
+</table>
+<p>This matrix lets Selemene make progress without inflating its claims.
+Structural and lens-level evidence can mature before practitioner
+outcome evidence exists. Practitioner studies can later strengthen
+human-centered claims without being confused with the mechanical fact
+that an artifact rendered.</p>
+<p>Let the review verdict for artifact (A) be:</p>
+<p><span class="math display">
+\nu(A)=
+\min_{d \in D_{\mathrm{review}}} r_d(A)
+</span></p>
+<p>where (D_{}) is the review-dimension set and (r_d(A){0,,1}) is the
+rating for dimension (d). The minimum rule prevents a beautiful artifact
+from compensating for a failed consent, boundary, or cultural-care
+dimension.</p>
+<h3 id="human-outcome-claims">10.11 Human outcome claims</h3>
+<p>Human outcome claims require special care. A practitioner may report
+that a mirror was meaningful, clarifying, uncomfortable, or useful. Such
+reports matter, but they do not automatically prove broad benefit. They
+are situated accounts of encounter. A stronger claim would require
+defined outcomes, recruitment criteria, comparison conditions where
+appropriate, and ethical oversight suited to the sensitivity of the
+material.</p>
+<p>Selemene can still be serious before those studies exist. A telescope
+did not become useful only after every astronomy question was settled;
+its value came from giving observers a better instrument. Selemene’s
+present claim is instrument-level: it proposes a disciplined way to
+structure reflective material. Claims about what the instrument does to
+people over time remain future empirical work.</p>
+<h3 id="evaluation-of-refusal">10.12 Evaluation of refusal</h3>
+<p>Refusal should itself be evaluated. Many systems test only successful
+outputs. Selemene must test whether it refuses in the right places and
+whether the refusal preserves agency. A refusal that says “I cannot
+help” may be technically safe but reflectively poor. A better refusal
+names the boundary and offers a safe adjacent inquiry.</p>
+<p>For example, if the practitioner asks for a prediction, the system
+can refuse the prediction while offering to examine assumptions, timing,
+fear, desire, and available choices. If the practitioner asks for
+diagnosis, the system can refuse clinical interpretation while offering
+reflective questions about lived experience and encouraging appropriate
+professional support without simulating that support. The refusal is
+part of the witness craft.</p>
+<h2 id="cultural-and-traditional-source-boundaries">11. Cultural and
+Traditional-Source Boundaries</h2>
+<p>Selemene draws from living, historical, and modern symbolic systems.
+That creates a responsibility to avoid flattening traditions into
+interchangeable aesthetics or claiming universality where only
+interpretation is present. Each tradition should be handled as a source
+of structured meaning, cultural practice, and symbolic language, not as
+a blank asset library.</p>
+<p>The safest public claim is modest: Selemene uses computational
+structure to render symbolic perspectives for self-inquiry. It does not
+claim that symbolic systems are scientifically validated predictors of
+life events, health, relationship outcomes, or financial decisions.</p>
+<h3 id="tradition-is-not-decoration">11.1 Tradition is not
+decoration</h3>
+<p>When a symbolic system enters software, it can easily be stripped of
+history, practice, controversy, lineage, and context. A diagram becomes
+an icon. A card becomes a content block. A calendar becomes a score.
+Selemene must resist that flattening. The role of computation is to
+structure encounter, not to launder complexity away.</p>
+<h3 id="modern-adaptation-must-be-named-as-adaptation">11.2 Modern
+adaptation must be named as adaptation</h3>
+<p>Many contemporary symbolic systems are modern syntheses,
+reinterpretations, or hybrid practices. That does not make them invalid
+as reflective lenses. It does mean they should not be presented as
+timeless, universal, or culturally uncontested. Public language should
+distinguish tradition, adaptation, computation, and practitioner
+experience.</p>
+<h3 id="ambiguity-is-a-feature">11.3 Ambiguity is a feature</h3>
+<p>Symbolic systems often work through productive ambiguity. A symbol
+can be precise without being singular. It can point without closing. In
+Selemene, ambiguity is not a defect to be eliminated by synthesis. It is
+a reflective condition to be preserved until the practitioner decides
+what, if anything, becomes actionable.</p>
+<h3 id="strong-form-requires-stronger-review">11.4 Strong form requires
+stronger review</h3>
+<p>The more culturally specific a claim becomes, the stronger its review
+obligation becomes. A broad design statement may need only careful
+wording. A named traditional interpretation may need source comparison.
+A contested historical claim may need specialist review. A practice
+recommendation may be out of scope entirely. This graded review keeps
+the system from using beauty as a license to simplify what deserves
+reverence, disagreement, or silence.</p>
+<h3 id="translation-and-language">11.5 Translation and language</h3>
+<p>Language is not a neutral container. Symbolic systems often change
+when translated. A term may carry ritual, poetic, technical, lineage, or
+regional meanings that do not map cleanly into another language.
+Selemene should therefore treat translation as interpretation, not as a
+mechanical substitution of words. When a term is uncertain, contested,
+or used in a modern adaptation, the safer artifact names that
+uncertainty instead of smoothing it away.</p>
+<p>This matters for witness output as well. A prompt that sounds
+respectful in one language can sound presumptive in another. A metaphor
+that feels precise in one tradition can feel appropriative or hollow in
+another. Cultural review therefore includes tone, translation, and
+metaphor, not just factual naming.</p>
+<h3 id="the-practitioners-living-context">11.6 The practitioner’s living
+context</h3>
+<p>Traditional-source boundaries do not end with historical accuracy.
+The practitioner’s living context also matters. A symbol may carry one
+meaning in a source tradition, another in contemporary practice, and
+another in the practitioner’s personal history. Selemene should not
+force these meanings into a single official answer. It should let the
+artifact disclose the lens and then invite the practitioner to test
+resonance, resistance, and relevance.</p>
+<p>This is another reason the system avoids universalizing claims. The
+same artifact can be meaningful to one person, inert to another, and
+uncomfortable to a third. That variability is not a defect to be hidden.
+It is part of the interpretive situation.</p>
+<h2 id="ecosystem-expression">12. Ecosystem Expression</h2>
+<p>A reflection engine becomes real through interfaces. Some interfaces
+are fast and lightweight. Others are immersive, narrative, visual,
+auditory, or exportable. Some are designed for private daily use; others
+for longer-form inquiry. What matters is that every surface preserves
+the same grammar: the engine computes or frames; the witness does not
+prescribe; the practitioner authors meaning.</p>
+<p>The ecosystem goal is coherence across surfaces without dependency on
+any single interface. The practitioner should be able to enter through a
+small prompt, a full reading, a symbolic artifact, a daily practice, a
+media interaction, or an exported record and still encounter the same
+boundary: this is a mirror, not a command.</p>
+<h3 id="surface-independence">12.1 Surface independence</h3>
+<p>Surface independence means the philosophy does not depend on one
+device, application, or format. A reflection can begin as a brief
+consultation, become a longer artifact, appear as a visual form, recur
+through daily practice, or remain private as a local record. The same
+boundary should hold everywhere. If a surface makes the system more
+seductive but less honest, the surface is not mature.</p>
+<h3 id="artifact-continuity">12.2 Artifact continuity</h3>
+<p>Artifact continuity means reflection can accumulate without becoming
+surveillance. A practitioner should be able to carry forward context,
+compare prior outputs, and notice changes across time. But continuity
+should serve authorship, not dependency. The system should remember only
+what it is allowed to remember, reveal how context is being used, and
+permit the practitioner to reject, revise, or discard inherited
+framing.</p>
+<h3 id="expression-after-boundary">12.3 Expression after boundary</h3>
+<p>The ecosystem can become beautiful, multisensory, and expansive. It
+can use image, sound, text, ritual form, and interactive practice. But
+expression must come after boundary. The more powerful the artifact, the
+more visible its limits must be. Otherwise the system becomes theater
+with a memory.</p>
+<h3 id="locality-and-exposure">12.4 Locality and exposure</h3>
+<p>Different surfaces imply different exposure. A private local note, a
+generated image, an audio artifact, and a shared report do not carry the
+same risk. Selemene’s ecosystem model should therefore treat exposure as
+a design dimension. The more widely an artifact can travel, the more
+carefully it should carry its boundary, provenance, and consent
+assumptions.</p>
+<p>This is especially important for media-aware artifacts. A visual or
+auditory artifact can be detached from its original context and
+interpreted by someone who never saw the boundary. A portable artifact
+should therefore include enough reader-facing context to prevent it from
+becoming a free-floating claim.</p>
+<h3 id="multiplicity-without-fragmentation">12.5 Multiplicity without
+fragmentation</h3>
+<p>The ecosystem may support multiple forms of encounter: brief,
+extended, visual, auditory, daily, relational, private, or exportable.
+Multiplicity becomes fragmentation when each surface invents its own
+truth model. Selemene avoids this by keeping a common grammar across
+surfaces. The lens may change. The artifact form may change. The
+boundary does not.</p>
+<p>This principle also protects the practitioner from surface authority.
+A rich interface should not be treated as more true than a simple one.
+It may be more immersive, more expressive, or better suited to a
+particular practice, but truth status depends on evidence, boundary, and
+authorship, not production value.</p>
+<h2 id="roadmap-of-inquiry">13. Roadmap of Inquiry</h2>
+<p>The conceptual roadmap is sequential because honesty has
+dependencies. First, the system must preserve clear boundaries around
+claims. Second, the engines must make their partiality visible. Third,
+consent and provenance must travel with sensitive inputs. Fourth,
+cultural review must prevent symbolic flattening. Fifth, evaluation must
+distinguish technical success from human meaning.</p>
+<p>Only after those disciplines are stable should Selemene expand
+expressive surfaces. Expansion without boundary creates spectacle.
+Boundary without expression creates sterile machinery. The project aims
+for the harder synthesis: expressive enough to matter, bounded enough to
+trust, and humble enough to return authorship to the practitioner.</p>
+<figure>
+<img src="figures/raster/fig-005-roadmap-imagegen-v1.png"
+alt="Figure 10: Roadmap from boundary discipline to ecosystem expression." />
+<figcaption aria-hidden="true">Figure 10: Roadmap from boundary
+discipline to ecosystem expression.</figcaption>
+</figure>
+<h3 id="near-term-inquiry">13.1 Near-term inquiry</h3>
+<p>The near-term work is to make boundary conditions more explicit.
+Every lens should be able to say what it needs, what it can produce,
+what it cannot produce, and what happens when material is missing or
+unsafe. This is not glamorous work, but it is the foundation for
+trustworthy expression. Without it, the system can appear mature while
+silently confusing declared possibility with verified capability.</p>
+<p>Near-term work also includes sharper claim language. Public artifacts
+should distinguish conceptual vision, implemented behavior, current
+availability, and future research. This prevents the paper from making
+the same mistake it critiques: converting symbolic coherence into
+unearned certainty.</p>
+<h3 id="medium-term-inquiry">13.2 Medium-term inquiry</h3>
+<p>The medium-term work is semantic maturity. Each lens should be
+reviewed not only for whether it produces output, but for whether the
+output faithfully represents the lens’s stated logic. Symbolic
+selections should preserve their own internal structure. Temporal lenses
+should show their assumptions. Media-aware lenses should label quality
+and uncertainty. Synthetic lenses should report omissions rather than
+silently reweighting the remaining material.</p>
+<p>This phase is where Selemene becomes more than a collection of
+interesting mirrors. It becomes a coherent reflection instrument whose
+parts can be compared, combined, and refused without losing their
+specific boundaries.</p>
+<h3 id="long-term-inquiry">13.3 Long-term inquiry</h3>
+<p>The long-term work is field evidence. Once artifacts are structurally
+mature and ethically bounded, Selemene can ask human-centered questions:
+Do practitioners understand the boundary? Does use preserve agency?
+Which artifact forms support reflection without dependence? How do
+cultural backgrounds affect interpretation? Which witness registers
+invite authorship, and which become too persuasive?</p>
+<p>These questions require humility because their answers may refute
+design assumptions. A beautiful artifact may be confusing. A minimal
+artifact may be more empowering. A deeply symbolic artifact may need
+stronger cultural framing. A continuity feature may feel helpful to some
+practitioners and intrusive to others. Long-term inquiry must be
+prepared to change the system.</p>
+<h3 id="success-condition">13.4 Success condition</h3>
+<p>The success condition is not that Selemene becomes the most
+persuasive interpreter. It is that Selemene becomes a disciplined
+mirror: technically inspectable, culturally careful, ethically bounded,
+and experientially alive. It should help practitioners see their own
+interpretive machinery more clearly, then return the authorship of
+meaning to them.</p>
+<h2 id="conclusion">14. Conclusion</h2>
+<p>Selemene Engine proposes that reflective computation can be rigorous
+without becoming reductive. Its contribution is not a claim that
+machines know the self better than the self does. Its contribution is a
+structured environment in which temporal, symbolic, somatic, geometric,
+and narrative lenses can be computed or rendered without being mistaken
+for fate.</p>
+<p>The engine reflects what is active. The practitioner authors what it
+means.</p>
+<p>The hardest part of this proposal is not the computation alone. It is
+the refusal to let computation borrow more authority than it has earned.
+Selemene’s central discipline is to hold several truths together:
+symbols can matter without predicting; bodies can guide inquiry without
+becoming diagnostic objects; generated language can be useful without
+becoming an oracle; memory can support continuity without becoming
+surveillance; beauty can deepen attention without replacing
+discernment.</p>
+<p>If the system remains faithful to that discipline, its novelty is not
+merely a set of engines. Its novelty is a form of reflective
+infrastructure in which computation, embodiment, symbolic tradition,
+provenance, consent, and witness language are made mutually accountable.
+The purpose is not to automate meaning. The purpose is to give
+meaning-making a clearer instrument.</p>
+<h2 id="references">15. References</h2>
+<p>References will include only sources that support the specific
+methodological claim for which they are cited. Research sources support
+framing, evaluation, and design discipline; they do not validate
+prediction, diagnosis, therapy, divination accuracy, or guaranteed
+transformation.</p>
+<h2 id="appendix-a-notation-and-derivations">Appendix A: Notation and
+Derivations</h2>
+<h3 id="a.1-notation">A.1 Notation</h3>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>Symbol</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>(v)</td>
+<td>Boundary grammar version</td>
+</tr>
+<tr>
+<td>(z)</td>
+<td>Candidate input, intermediate object, or artifact</td>
+</tr>
+<tr>
+<td>(_v)</td>
+<td>Public boundary grammar for version (v)</td>
+</tr>
+<tr>
+<td>(V_v)</td>
+<td>Boundary validation function</td>
+</tr>
+<tr>
+<td>(i)</td>
+<td>Engine index</td>
+</tr>
+<tr>
+<td>(X_i)</td>
+<td>Input domain for engine (i)</td>
+</tr>
+<tr>
+<td>(Y_i)</td>
+<td>Structured artifact space for engine (i)</td>
+</tr>
+<tr>
+<td>(E_i)</td>
+<td>Explicit failure, refusal, or unavailable states</td>
+</tr>
+<tr>
+<td>(q)</td>
+<td>Practitioner inquiry context</td>
+</tr>
+<tr>
+<td>(S)</td>
+<td>Selected engine set</td>
+</tr>
+<tr>
+<td>(M)</td>
+<td>Multi-engine result family</td>
+</tr>
+<tr>
+<td>(M_{i,a})</td>
+<td>Capability evidence value for engine (i) on axis (a)</td>
+</tr>
+<tr>
+<td>(Q_i(A^))</td>
+<td>Claim qualification floor for engine (i) across required axes</td>
+</tr>
+<tr>
+<td>(O_t)</td>
+<td>Omitted lens set at time (t)</td>
+</tr>
+<tr>
+<td>(_t)</td>
+<td>Degraded or qualified input record</td>
+</tr>
+<tr>
+<td>((t))</td>
+<td>Synthesis score with omissions removed and reported</td>
+</tr>
+<tr>
+<td>(W_)</td>
+<td>Witness function at register or depth level ()</td>
+</tr>
+<tr>
+<td>(_)</td>
+<td>Restraint policy for witness level ()</td>
+</tr>
+<tr>
+<td>()</td>
+<td>Authorship preservation measure</td>
+</tr>
+<tr>
+<td>(A)</td>
+<td>Reflective artifact</td>
+</tr>
+<tr>
+<td>(r)</td>
+<td>Request or inquiry event</td>
+</tr>
+<tr>
+<td>(m)</td>
+<td>Sensitive material, such as media or biometric context</td>
+</tr>
+<tr>
+<td>(C(r,m))</td>
+<td>Consent predicate for request (r) and media (m)</td>
+</tr>
+<tr>
+<td>(G_p)</td>
+<td>Provenance graph</td>
+</tr>
+<tr>
+<td>((A))</td>
+<td>Disallowed-claim predicate</td>
+</tr>
+</tbody>
+</table>
+<h3 id="a.2-worked-example-temporal-lens">A.2 Worked example: temporal
+lens</h3>
+<p>Let a temporal lens receive a time-place inquiry (x_i X_i). If the
+required fields are present and the boundary check accepts the
+object:</p>
+<p><span class="math display">
+V_v(x_i)=\mathrm{accept}(x_i)
+</span></p>
+<p>the engine may produce:</p>
+<p><span class="math display">
+f_i(x_i)=y_i,\quad y_i \in Y_i
+</span></p>
+<p>The witness may then frame (y_i) as timing context:</p>
+<p><span class="math display">
+W_\ell(\{y_i\},c) \rightarrow A
+</span></p>
+<p>but the artifact must not turn timing context into command:</p>
+<p><span class="math display">
+\Pi(A)=0
+</span></p>
+<p>The allowed public sentence is of the form “this interval may be used
+as reflective timing context.” The disallowed sentence is of the form
+“this interval determines what the practitioner should do.”</p>
+<h3 id="a.3-worked-example-media-aware-lens">A.3 Worked example:
+media-aware lens</h3>
+<p>Let a media-aware lens require material (m). Before
+interpretation:</p>
+<p><span class="math display">
+C(r,m)=
+\forall s \in \mathrm{scopes}(m),\;
+s \in \mathrm{grant}(r) \land \mathrm{fresh}(r)
+</span></p>
+<p>If consent is absent:</p>
+<p><span class="math display">
+C(r,m)=0 \Rightarrow f_i(x_i)=e_i,\quad e_i \in E_i
+</span></p>
+<p>The omitted lens set records the absence:</p>
+<p><span class="math display">
+i \in O_t
+</span></p>
+<p>and the rendered artifact must include the omission rather than
+silently replacing it with invented certainty:</p>
+<p><span class="math display">
+R(t)=\left(\sigma(t),O_t,\Delta_t\right)
+</span></p>
+<h3 id="a.4-provenance-graph">A.4 Provenance graph</h3>
+<p><span class="math display">
+G_p = (N, E, \tau)
+</span></p>
+<p>where (N) is the set of artifact nodes, (E) is the set of derivation
+edges, and () labels each node or edge with its origin class.</p>
+<p>For a simple reflective artifact:</p>
+<p><span class="math display">
+N =
+\{n_{\mathrm{input}}, n_{\mathrm{engine}}, n_{\mathrm{witness}},
+n_{\mathrm{artifact}}\}
+</span></p>
+<p><span class="math display">
+E =
+\{(n_{\mathrm{input}},n_{\mathrm{engine}}),
+(n_{\mathrm{engine}},n_{\mathrm{witness}}),
+(n_{\mathrm{witness}},n_{\mathrm{artifact}})\}
+</span></p>
+<p>The labels () should distinguish practitioner-supplied context,
+computed material, generated framing, omitted material, degraded
+material, and refusals.</p>
+<h3 id="a.5-boundary-rule">A.5 Boundary rule</h3>
+<p>An output should be published only when its construction is
+bounded:</p>
+<p><span class="math display">
+B(A) = C(r,m) \land P(A) \land \neg D(A)
+</span></p>
+<p>where (P(A)) means the artifact has inspectable provenance and (D(A))
+means the artifact contains disallowed prescriptive, diagnostic,
+predictive, or outcome-guaranteeing language.</p>
+<p>Using ((A)) for the broader disallowed-claim predicate:</p>
+<p><span class="math display">
+B(A) = C(r,m) \land P(A) \land \neg \Pi(A)
+</span></p>
+<h3 id="a.6-rejected-claim-example">A.6 Rejected claim example</h3>
+<p>Suppose a generated artifact contains a sentence equivalent to “this
+symbolic output predicts a future event.” Then:</p>
+<p><span class="math display">
+\Pi(A)=1
+</span></p>
+<p>and therefore:</p>
+<p><span class="math display">
+\mathrm{allow}(A)=0
+</span></p>
+<p>The artifact may be revised into reflective language only if the
+witness transform preserves ambiguity and agency:</p>
+<p><span class="math display">
+\Pi(W_\ell(M,c))=0
+\quad\land\quad
+\alpha(W_\ell(M,c)) \geq \alpha_{\min}
+</span></p>
+<h3 id="a.7-authorship-measure">A.7 Authorship measure</h3>
+<p>Authorship preservation can be decomposed into reviewable surface
+features:</p>
+<p><span class="math display">
+\alpha(A)=
+\omega_q q(A)+\omega_p p(A)+\omega_s s(A)+\omega_o o(A)+\omega_d d(A)
+</span></p>
+<p>where (q(A)) measures question orientation, (p(A)) measures
+plurality, (s(A)) measures source clarity, (o(A)) measures omission
+visibility, and (d(A)) measures disagreement affordance. The weights ()
+are review parameters, not claims about consciousness.</p>
+<h3 id="a.8-figure-ground-ratio">A.8 Figure-ground ratio</h3>
+<p>A reflective artifact should not overwhelm the practitioner with
+generated framing. Let (g(A)) be generated witness language and (l(A))
+be lens-grounded material. A figure-ground ratio can be used as a review
+heuristic:</p>
+<p><span class="math display">
+\gamma(A)=\frac{g(A)}{g(A)+l(A)}
+</span></p>
+<p>When ((A)) approaches (1), the artifact risks becoming free-floating
+prose. When ((A)) approaches (0), it may become raw output without
+reflection. The desirable range depends on the artifact type, but the
+ratio should be inspectable.</p>
+<h3 id="a.9-scale-recursive-interpretation">A.9 Scale-recursive
+interpretation</h3>
+<p>A symbolic pattern may appear at several scales: a daily choice, a
+relationship, a practice rhythm, a recurring motif, or an institutional
+frame. Selemene should not treat scale recurrence as proof. It may treat
+recurrence as a prompt for careful comparison.</p>
+<p>Let () be a set of scales and (p) a candidate pattern. A recurrence
+observation is:</p>
+<p><span class="math display">
+\mathrm{rec}(p)=\{s \in \mathcal{S}\mid p \in \mathrm{patterns}(s)\}
+</span></p>
+<p>The pattern becomes reviewable only when its occurrences are
+described, not merely asserted:</p>
+<p><span class="math display">
+|\mathrm{rec}(p)| \geq 2
+\;\not\Rightarrow\;
+\mathrm{truth}(p)
+</span></p>
+<p>The allowed inference is weaker:</p>
+<p><span class="math display">
+|\mathrm{rec}(p)| \geq 2
+\Rightarrow
+\mathrm{compare}(p,\mathrm{rec}(p))
+</span></p>
+<p>This rule protects the paper from a common symbolic fallacy: seeing
+the same form twice and treating resemblance as evidence. Recurrence
+authorizes comparison, not certainty.</p>
+<h3 id="a.10-phase-transition-discipline">A.10 Phase transition
+discipline</h3>
+<p>The inquiry lifecycle can be modeled as a monotone transition system
+when each phase preserves the boundary conditions of the previous
+phase.</p>
+<p><span class="math display">
+T_j:\Omega_j \rightarrow \Omega_{j+1}
+</span></p>
+<p>For a transition to be admissible:</p>
+<p><span class="math display">
+\mathrm{adm}(T_j)=
+V_v(\Omega_j)\land C_j \land P_j \land \neg \Pi_j
+</span></p>
+<p>If any condition fails, the transition should return an explicit
+refusal or degraded state:</p>
+<p><span class="math display">
+\neg \mathrm{adm}(T_j)
+\Rightarrow
+T_j(\Omega_j)=e_j,\quad e_j \in E
+</span></p>
+<p>This converts depth into discipline. A later phase may be richer, but
+it is not allowed to erase the limits of an earlier phase.</p>
+<h3 id="a.11-lineage-graph">A.11 Lineage graph</h3>
+<p>Lineage can be represented as a provenance graph without turning
+influence into proof. Let:</p>
+<p><span class="math display">
+G_L=(N_L,E_L,\tau_L,\rho_L)
+</span></p>
+<p>where (N_L) is a set of lineage nodes, (E_L) is a set of directed
+conditioning edges, (_L) assigns each node a type, and (_L) records the
+relation between a lineage node and a public claim.</p>
+<p>The allowed node types are intentionally broad:</p>
+<p><span class="math display">
+\tau_L(n)\in
+\{\mathrm{relation},\mathrm{text},\mathrm{practice},\mathrm{constraint},\mathrm{translation},\mathrm{review}\}
+</span></p>
+<p>An edge ((n_a,n_b)E_L) means that one node enabled, constrained,
+translated, contested, or carried another. It does not mean that the
+first node proves the second. The core anti-inflation rule is:</p>
+<p><span class="math display">
+\mathrm{influence}(n,A)\not\Rightarrow \mathrm{proof}(A)
+</span></p>
+<p>When a public claim (c) depends on a lineage node (n), the dependency
+must be typed:</p>
+<p><span class="math display">
+\rho_L(n,c)\in
+\{\mathrm{conceptual},\mathrm{historical},\mathrm{methodological},\mathrm{empirical},\mathrm{formal}\}
+</span></p>
+<p>Only empirical or formal dependencies can support empirical or formal
+claims:</p>
+<p><span class="math display">
+\mathrm{class}(c)\in\{\mathrm{empirical},\mathrm{formal}\}
+\Rightarrow
+\exists n\in N_L:
+\rho_L(n,c)=\mathrm{class}(c)
+</span></p>
+<p>Conceptual lineage may motivate a frame, vocabulary, or design
+posture. It cannot certify that an artifact benefits a practitioner,
+that a symbolic relation is true, or that an engine is operationally
+mature. In short:</p>
+<p><span class="math display">
+\mathrm{lineage}(A)\neq \mathrm{authority}(A)
+</span></p>
+<p>This equation is one of the paper’s practical safeguards. It lets
+Selemene remain authored without becoming personality-driven, situated
+without becoming provincial, and symbolically deep without becoming
+unverifiable.</p>
+<h2 id="appendix-b-engine-family-notes">Appendix B: Engine Family
+Notes</h2>
+<p>This appendix describes the sixteen-engine model at the family level.
+It does not assert that every lens has the same maturity, evidence, or
+operational status. The aim is to define what each family contributes to
+the reflective grammar and what public boundary must accompany it.</p>
+<h3 id="b.1-temporal-family">B.1 Temporal family</h3>
+<p>Temporal lenses work with date, time, cycle, interval, rhythm,
+recurrence, and symbolic calendars. Their contribution is orientation.
+They help the practitioner ask what kind of attention belongs to a
+moment, what pattern has repeated, what interval is ending or beginning,
+and how time itself is being interpreted.</p>
+<p>The boundary is that timing is not command. A temporal artifact may
+name a phase, relation, or rhythm. It may not claim that the phase
+determines an outcome. The safest language is invitational: “this timing
+can be used as a reflective context.” Unsafe language turns timing into
+fate.</p>
+<p>Temporal lenses are valuable because human life is not experienced as
+neutral sequence. Morning, threshold, anniversary, deadline, moon,
+season, age, and recurrence all affect meaning. A computational temporal
+lens can structure these relations without claiming that they remove
+choice.</p>
+<h3 id="b.2-archetypal-family">B.2 Archetypal family</h3>
+<p>Archetypal lenses work with recurring images, roles, figures, motifs,
+cards, gates, lines, or symbolic types. Their contribution is pattern
+recognition. They give the practitioner a way to externalize a question
+and encounter it through a form that is not merely autobiographical.</p>
+<p>The boundary is that an archetype is not an identity sentence. It can
+illuminate a pattern without defining the person. A symbolic type can be
+a prompt, not a prison. The witness should avoid “you are” formulations
+when “this lens suggests” or “one possible reading is” preserves agency
+more honestly.</p>
+<p>Archetypal lenses also require cultural care. Some symbols come from
+living traditions, some from modern systems, and some from hybrid
+adaptation. The artifact should not present all symbols as if they came
+from the same source or carried the same authority.</p>
+<h3 id="b.3-somatic-family">B.3 Somatic family</h3>
+<p>Somatic lenses work with body-adjacent context: breath, rhythm,
+posture of attention, sensory state, media, or other embodied material.
+Their contribution is grounding. They remind the practitioner that
+meaning is made by an embodied being, not by an abstract mind floating
+above circumstance.</p>
+<p>The boundary is non-clinical. A somatic lens may invite noticing; it
+may not diagnose. It may say that a signal is weak, absent, degraded, or
+reflective only. It may not convert body-adjacent material into claims
+about disease, pathology, treatment, or certainty.</p>
+<p>Somatic lenses should also be consent-heavy. A date can be processed
+with relatively low exposure; a face image, voice sample, or
+body-adjacent signal is different. The system should treat such material
+as sensitive even when the practitioner offers it casually.</p>
+<h3 id="b.4-geometric-family">B.4 Geometric family</h3>
+<p>Geometric lenses work with proportion, symmetry, topology, shape, and
+spatial relation. Their contribution is form. They let the practitioner
+see an inquiry as arrangement rather than as prose alone. Geometry can
+clarify relation, balance, emphasis, and tension.</p>
+<p>The boundary is that form is not proof. A beautiful geometric
+artifact can feel inevitable. That feeling should not be mistaken for
+evidence. The artifact should make clear whether the form was generated
+from selected symbolic material, a deterministic rule, or an aesthetic
+choice.</p>
+<p>Geometric lenses are especially useful when words become too linear.
+Some reflective questions are better encountered as center and
+periphery, crossing and enclosure, spiral and return, symmetry and
+break. Geometry provides a language of relation without pretending to
+settle interpretation.</p>
+<h3 id="b.5-resonance-family">B.5 Resonance family</h3>
+<p>Resonance lenses work with sound, rhythm, tone, pattern, repetition,
+and sensory continuity. Their contribution is temporal embodiment. Sound
+can hold attention differently from text. It can mark a practice, open
+or close an inquiry, or render a symbolic pattern as rhythm.</p>
+<p>The boundary is that resonance is not therapy by default. A sound
+artifact may be contemplative, aesthetic, or reflective. It should not
+claim treatment effect, physiological guarantee, or clinical entrainment
+unless a separate evidence standard is met. The paper does not make such
+claims.</p>
+<p>Resonance lenses also raise accessibility questions. Not every
+practitioner hears, processes, or wants sound in the same way. A mature
+resonance artifact should have alternatives or clear descriptions so
+that the reflective function is not locked inside a single sensory
+channel.</p>
+<h3 id="b.6-relational-family">B.6 Relational family</h3>
+<p>Relational lenses work with declared roles, shared questions, and
+multi-subject contexts. Their contribution is differentiation. They can
+help reveal where meanings are shared, projected, inherited, or held
+differently by different people.</p>
+<p>The boundary is non-presumption. A relational artifact must not
+assume romance, hierarchy, compatibility, blame, destiny, or obligation
+from the mere presence of more than one subject. It should honor the
+declared relationship type and mapping goal while preserving each
+subject’s independence.</p>
+<p>Relational lenses are high-risk because people can use interpretation
+to pressure others. The witness should therefore avoid verdicts about
+who is right, who is evolved, who must change, or what the relation is
+destined to become. The safer artifact returns questions about pattern,
+role, care, boundary, and authorship.</p>
+<h3 id="b.7-narrative-family">B.7 Narrative family</h3>
+<p>Narrative lenses work with sequence, motif, contrast, recurrence, and
+reflective arc. Their contribution is coherence. They help the
+practitioner hold multiple outputs together without reducing them to a
+list.</p>
+<p>The boundary is anti-totalizing. A story can make a person feel
+known, but it can also become a cage. Selemene’s narrative lens should
+keep its own status visible: this is an arrangement of selected
+material, not the final story of a life. The practitioner may rewrite
+it.</p>
+<p>Narrative maturity means including contradictions. A flat story says,
+“this is the pattern.” A better reflective story says, “this pattern
+appears here, is challenged there, and may mean different things
+depending on what the practitioner recognizes or refuses.” Good
+narrative keeps the door open.</p>
+<h2 id="appendix-c-review-rubric">Appendix C: Review Rubric</h2>
+<p>This rubric is intended for reviewers of Selemene artifacts. It is
+public-facing and does not depend on private implementation knowledge.
+Each row can be assessed as pass, qualified pass, revise, or refuse.</p>
+<table>
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>Dimension</th>
+<th>Pass condition</th>
+<th>Qualified condition</th>
+<th>Refuse condition</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Boundary clarity</td>
+<td>The artifact states what kind of mirror it is.</td>
+<td>The boundary is present but not prominent.</td>
+<td>The artifact implies prediction, diagnosis, or command.</td>
+</tr>
+<tr>
+<td>Source clarity</td>
+<td>Computed, selected, generated, omitted, and practitioner-supplied
+material are distinguishable.</td>
+<td>Most sources are clear, but one class is ambiguous.</td>
+<td>The artifact hides origin in a way that changes trust.</td>
+</tr>
+<tr>
+<td>Consent</td>
+<td>Sensitive material is used only inside visible scope.</td>
+<td>Sensitive material is absent or partially unavailable and clearly
+labeled.</td>
+<td>Sensitive material is used without adequate permission.</td>
+</tr>
+<tr>
+<td>Partiality</td>
+<td>Missing, weak, degraded, or refused material is visible.</td>
+<td>Partiality is named but not easy to notice.</td>
+<td>The artifact appears complete while material is missing.</td>
+</tr>
+<tr>
+<td>Witness voice</td>
+<td>The language invites inquiry and preserves agency.</td>
+<td>The voice is mostly safe but too certain in places.</td>
+<td>The voice commands, diagnoses, predicts, flatters, or
+pressures.</td>
+</tr>
+<tr>
+<td>Cultural care</td>
+<td>Symbols are framed as situated lenses.</td>
+<td>Cultural context is thin but not misleading.</td>
+<td>The artifact universalizes, appropriates, or fabricates
+authority.</td>
+</tr>
+<tr>
+<td>Practitioner comprehension</td>
+<td>A reader can tell what remains theirs to decide.</td>
+<td>The reader may need a short explanatory note.</td>
+<td>The artifact transfers authority to the system.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="c.1-boundary-clarity-questions">C.1 Boundary clarity
+questions</h3>
+<p>A reviewer should ask: Does the artifact state whether it is
+temporal, symbolic, somatic, relational, geometric, resonance-based,
+narrative, or synthetic? Does it identify whether the result is
+computed, selected, generated, or framed? Does it avoid making one lens
+sound like a total account of the practitioner?</p>
+<p>If the answer is unclear, the artifact should be revised before
+publication or use in a high-sensitivity context. A boundary that exists
+only in the designer’s mind is not a boundary the practitioner can rely
+on.</p>
+<h3 id="c.2-witness-voice-questions">C.2 Witness voice questions</h3>
+<p>A reviewer should mark any sentence that begins to sound like
+command, fate, diagnosis, moral ranking, or hidden certainty. The most
+dangerous sentences are often elegant. “You are meant to…” can be more
+harmful than a clumsy error because it carries the music of authority.
+Selemene should prefer phrasing that gives the practitioner room to
+answer back.</p>
+<p>Good witness phrasing often uses conditional or invitational forms:
+“one way to read this,” “this may be useful as a question,” “notice
+whether this fits,” “the selected lenses do not determine an outcome,”
+or “this material is insufficient for that claim.” Such phrasing is not
+weakness. It is precision about the kind of thing being offered.</p>
+<h3 id="c.3-cultural-care-questions">C.3 Cultural care questions</h3>
+<p>A reviewer should ask whether the artifact treats symbolic material
+as situated. Does it distinguish tradition from modern adaptation? Does
+it avoid presenting contested systems as universal science? Does it
+avoid using sacred or culturally specific language merely as aesthetic
+charge? Does it make space for disagreement?</p>
+<p>When cultural confidence is low, the artifact should use modest
+language. The system can still offer a reflective lens without claiming
+mastery of a tradition. Humility is not a lack of seriousness; it is
+what seriousness looks like when the subject deserves care.</p>
+<h3 id="c.4-practitioner-comprehension-questions">C.4 Practitioner
+comprehension questions</h3>
+<p>A reviewer should imagine a careful practitioner reading the artifact
+without access to its internal machinery. Could they tell what was used?
+Could they tell what was not used? Could they tell whether the artifact
+is advice, reflection, or refusal? Could they disagree without feeling
+that they are resisting authority?</p>
+<p>If a practitioner cannot tell these things, the artifact is not yet
+safe enough. The aim is not merely to avoid legal risk. The aim is to
+preserve the practitioner’s authorship at the moment the artifact
+becomes personally meaningful.</p>
+<h2 id="appendix-d-artifact-review-questions">Appendix D: Artifact
+Review Questions</h2>
+<p>This appendix provides a compact review checklist for future
+whitepaper revisions and public artifacts.</p>
+<h3 id="d.1-claim-discipline">D.1 Claim discipline</h3>
+<ol type="1">
+<li>What is the strongest sentence in the artifact?</li>
+<li>What evidence type would be needed to support it?</li>
+<li>Does the artifact currently have that evidence?</li>
+<li>If not, can the sentence be weakened without losing the idea?</li>
+<li>Is any philosophical claim being written as if it were
+empirical?</li>
+<li>Is any technical capability being written as if it were human
+benefit?</li>
+<li>Is any operational observation being written as if it were durable
+state?</li>
+</ol>
+<h3 id="d.2-consent-discipline">D.2 Consent discipline</h3>
+<ol type="1">
+<li>Does the artifact involve sensitive material?</li>
+<li>Is the scope of that material visible?</li>
+<li>Is retention or reuse implied?</li>
+<li>Could the practitioner revoke or reject future use?</li>
+<li>Does the artifact remain useful if sensitive material is
+omitted?</li>
+<li>Are omissions shown in ordinary language?</li>
+<li>Is local or external use clear to the practitioner?</li>
+</ol>
+<h3 id="d.3-witness-discipline">D.3 Witness discipline</h3>
+<ol type="1">
+<li>Does the artifact end by returning agency?</li>
+<li>Are questions stronger than commands?</li>
+<li>Does the artifact preserve multiple possible interpretations?</li>
+<li>Does it avoid flattering certainty?</li>
+<li>Does it avoid unearned intimacy?</li>
+<li>Does it avoid telling the practitioner who they are?</li>
+<li>Does it leave silence available?</li>
+</ol>
+<h3 id="d.4-figure-discipline">D.4 Figure discipline</h3>
+<ol type="1">
+<li>Does the figure explain a real relationship in the paper?</li>
+<li>Could the figure be misunderstood as proof?</li>
+<li>Does the caption keep the claim bounded?</li>
+<li>Does the figure avoid private implementation terms?</li>
+<li>Does it remain legible without decorative excess?</li>
+<li>Does it support the reader’s understanding more than prose
+alone?</li>
+<li>Is the source of the figure’s structure recorded?</li>
+</ol>
+<h3 id="d.5-revision-discipline">D.5 Revision discipline</h3>
+<p>Future revisions should preserve the paper’s central correction:
+private evidence can guide drafting, but reader-facing artifacts should
+present only the coherent framework and its boundaries. The workrooms
+matter; they keep the framework honest. But the public paper must show
+the instrument, not the backstage.</p>
+<div id="refs" class="references csl-bib-body hanging-indent"
+role="list">
+<div id="ref-carabotti2015gutBrainAxis" class="csl-entry"
+role="listitem">
+Carabotti, Marilia, Annunziata Scirocco, Maria Antonietta Maselli, and
+Carola Severi. 2015. <span>“The Gut-Brain Axis: Interactions Between
+Enteric Microbiota, Central and Enteric Nervous Systems.”</span>
+<em>Annals of Gastroenterology</em> 28 (2): 203–9. <a
+href="https://pubmed.ncbi.nlm.nih.gov/25830558/">https://pubmed.ncbi.nlm.nih.gov/25830558/</a>.
+</div>
+<div id="ref-dourish2001whereAction" class="csl-entry" role="listitem">
+Dourish, Paul. 2001. <em>Where the Action Is: The Foundations of
+Embodied Interaction</em>. MIT Press. <a
+href="https://dl.acm.org/doi/book/10.5555/513034">https://dl.acm.org/doi/book/10.5555/513034</a>.
+</div>
+<div id="ref-gebser1985everPresentOrigin" class="csl-entry"
+role="listitem">
+Gebser, Jean. 1985. <em>The Ever-Present Origin</em>. Translated by Noel
+Barstad and Algis Mickunas. Ohio University Press. <a
+href="https://philpapers.org/rec/GEBTEO-2">https://philpapers.org/rec/GEBTEO-2</a>.
+</div>
+<div id="ref-gomezMarin2021sheldrakeHypothesis" class="csl-entry"
+role="listitem">
+Gomez-Marin, Alex. 2021. <span>“Facing Biology’s Open Questions: Rupert
+Sheldrake’s <span>‘Heretical’</span> Hypothesis Turns 40.”</span>
+<em>BioEssays</em> 43 (6): e2100025. <a
+href="https://doi.org/10.1002/bies.202100025">https://doi.org/10.1002/bies.202100025</a>.
+</div>
+<div id="ref-hameroff2014orchOr" class="csl-entry" role="listitem">
+Hameroff, Stuart, and Roger Penrose. 2014. <span>“Consciousness in the
+Universe: A Review of the ’Orch OR’ Theory.”</span> <em>Physics of Life
+Reviews</em> 11 (1): 39–78. <a
+href="https://doi.org/10.1016/j.plrev.2013.08.002">https://doi.org/10.1016/j.plrev.2013.08.002</a>.
+</div>
+<div id="ref-hanegraaff2012esotericismAcademy" class="csl-entry"
+role="listitem">
+Hanegraaff, Wouter J. 2012. <em>Esotericism and the Academy: Rejected
+Knowledge in Western Culture</em>. Cambridge University Press. <a
+href="https://www.cambridge.org/core/books/esotericism-and-the-academy/4532A70CA2235EED1DD9FD7F5BCAC100">https://www.cambridge.org/core/books/esotericism-and-the-academy/4532A70CA2235EED1DD9FD7F5BCAC100</a>.
+</div>
+<div id="ref-kommers2026computationalHermeneutics" class="csl-entry"
+role="listitem">
+<span class="nocase">Kommers, Cody, Ruth Ahnert, Maria Antoniak,
+Emmanouil Benetos, Steve Benford, et al.</span> 2026. <em>Computational
+Hermeneutics: Evaluating Generative AI as a Cultural Technology</em>. <a
+href="https://arxiv.org/abs/2604.16403">https://arxiv.org/abs/2604.16403</a>.
+</div>
+<div id="ref-lawlorMoulardLeonard2025bergson" class="csl-entry"
+role="listitem">
+Lawlor, Leonard, and Valentine Moulard Leonard. 2025. <em>Henri
+Bergson</em>. The Stanford Encyclopedia of Philosophy. <a
+href="https://plato.stanford.edu/entries/bergson/">https://plato.stanford.edu/entries/bergson/</a>.
+</div>
+<div id="ref-levin2014molecularBioelectricity" class="csl-entry"
+role="listitem">
+Levin, Michael. 2014. <span>“Molecular Bioelectricity: How Endogenous
+Voltage Potentials Control Cell Behavior and Instruct Pattern Regulation
+in Vivo.”</span> <em>Molecular Biology of the Cell</em> 25 (24):
+3835–50. <a
+href="https://doi.org/10.1091/mbc.E13-12-0708">https://doi.org/10.1091/mbc.E13-12-0708</a>.
+</div>
+<div id="ref-liao2025rethinkingEvaluation" class="csl-entry"
+role="listitem">
+Liao, Q. Vera, and Ziang Xiao. 2025. <em>Rethinking Model Evaluation as
+Narrowing the Socio-Technical Gap</em>. <a
+href="https://arxiv.org/abs/2306.03100">https://arxiv.org/abs/2306.03100</a>.
+</div>
+<div id="ref-mcadams2013narrativeIdentity" class="csl-entry"
+role="listitem">
+McAdams, Dan P., and Kate C. McLean. 2013. <span>“Narrative
+Identity.”</span> <em>Current Directions in Psychological Science</em>
+22 (3): 233–38. <a
+href="https://doi.org/10.1177/0963721413475622">https://doi.org/10.1177/0963721413475622</a>.
+</div>
+<div id="ref-w3c2013provdm" class="csl-entry" role="listitem">
+Moreau, Luc, and Paolo Missier. 2013. <em>PROV-DM: The PROV Data
+Model</em>. World Wide Web Consortium. <a
+href="https://www.w3.org/TR/prov-dm/">https://www.w3.org/TR/prov-dm/</a>.
+</div>
+<div id="ref-belmont1979ethical" class="csl-entry" role="listitem">
+National Commission for the Protection of Human Subjects of Biomedical
+and Behavioral Research. 1979. <em>The Belmont Report: Ethical
+Principles and Guidelines for the Protection of Human Subjects of
+Research</em>. U.S. Department of Health, Education,; Welfare. <a
+href="https://www.hhs.gov/ohrp/regulations-and-policy/belmont-report/read-the-belmont-report/index.html">https://www.hhs.gov/ohrp/regulations-and-policy/belmont-report/read-the-belmont-report/index.html</a>.
+</div>
+<div id="ref-nist2023airmf" class="csl-entry" role="listitem">
+National Institute of Standards and Technology. 2023. <em>Artificial
+Intelligence Risk Management Framework (AI RMF 1.0)</em>. NIST AI 100-1.
+National Institute of Standards; Technology. <a
+href="https://doi.org/10.6028/NIST.AI.100-1">https://doi.org/10.6028/NIST.AI.100-1</a>.
+</div>
+<div id="ref-norval2019automatingDynamicConsent" class="csl-entry"
+role="listitem">
+Norval, Chris, and Tristan Henderson. 2019. <em>Automating Dynamic
+Consent Decisions for the Processing of Social Media Data in Health
+Research</em>. <a
+href="https://arxiv.org/abs/1910.05265">https://arxiv.org/abs/1910.05265</a>.
+</div>
+<div id="ref-page2021prisma2020" class="csl-entry" role="listitem">
+Page, Matthew J., Joanne E. McKenzie, Patrick M. Bossuyt, et al. 2021.
+<span>“The PRISMA 2020 Statement: An Updated Guideline for Reporting
+Systematic Reviews.”</span> <em>BMJ</em> 372: n71. <a
+href="https://doi.org/10.1136/bmj.n71">https://doi.org/10.1136/bmj.n71</a>.
+</div>
+<div id="ref-song2026godSaengPersonalInformatics" class="csl-entry"
+role="listitem">
+Song, Inhwa, Kwangyoung Lee, Janghee Cho, Amon Rapp, and Hwajung Hong.
+2026. <em>Constructing Everyday Well-Being: Insights from God-Saeng for
+Personal Informatics</em>. <a
+href="https://arxiv.org/abs/2603.00847">https://arxiv.org/abs/2603.00847</a>.
+</div>
+<div id="ref-song2025exploreself" class="csl-entry" role="listitem">
+Song, Inhwa, SoHyun Park, Sachin R. Pendse, Jessica Lee Schleider,
+Munmun De Choudhury, and Young-Ho Kim. 2025. <span>“ExploreSelf:
+Fostering User-Driven Exploration and Reflection on Personal Challenges
+with Adaptive Guidance by Large Language Models.”</span> <em>Proceedings
+of the 2025 CHI Conference on Human Factors in Computing Systems</em>.
+<a
+href="https://doi.org/10.1145/3706598.3713883">https://doi.org/10.1145/3706598.3713883</a>.
+</div>
+<div id="ref-desouza2005semioticEngineering" class="csl-entry"
+role="listitem">
+Souza, Clarisse Sieckenius de. 2005. <em>The Semiotic Engineering of
+Human-Computer Interaction</em>. MIT Press. <a
+href="https://mitpress.mit.edu/9780262042208/the-semiotic-engineering-of-human-computer-interaction/">https://mitpress.mit.edu/9780262042208/the-semiotic-engineering-of-human-computer-interaction/</a>.
+</div>
+<div id="ref-whitehead1978processReality" class="csl-entry"
+role="listitem">
+Whitehead, Alfred North. 1978. <em>Process and Reality: An Essay in
+Cosmology</em>. Corrected edition. Edited by David Ray Griffin and
+Donald W. Sherburne. Free Press. <a
+href="https://books.google.com/books/about/Process_and_Reality.html?id=5uF6uwEACAAJ">https://books.google.com/books/about/Process_and_Reality.html?id=5uF6uwEACAAJ</a>.
+</div>
+</div>
+</body>
+</html>

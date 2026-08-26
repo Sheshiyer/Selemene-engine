@@ -1,0 +1,112 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="920" viewBox="0 0 1600 920" role="img" aria-labelledby="title desc">
+  <title id="title">Fictional mirror trace</title>
+  <desc id="desc">A deterministic vector flow showing a synthetic fixture becoming lens results, witness passes, review gates, and a bounded artifact.</desc>
+  <defs>
+    <marker id="arrow-trace" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto">
+      <path d="M0,0 L14,7 L0,14 Z" fill="#d8b16a"/>
+    </marker>
+    <style>
+      .bg{fill:#0e1118}
+      .title{font:700 46px Georgia,serif;fill:#f4dfad}
+      .subtitle{font:22px Inter,Arial,sans-serif;fill:#c9bda9}
+      .box{fill:#171d2b;stroke:#d8b16a;stroke-width:3}
+      .gate{fill:#13243a;stroke:#78a6ff;stroke-width:3}
+      .omit{fill:#251824;stroke:#c982b7;stroke-width:3}
+      .artifact{fill:#1d261d;stroke:#9cc47a;stroke-width:3}
+      .label{font:700 28px Inter,Arial,sans-serif;fill:#fff1c9}
+      .small{font:20px Inter,Arial,sans-serif;fill:#dfd1bc}
+      .tiny{font:17px Inter,Arial,sans-serif;fill:#bdb2a3}
+      .tag{font:700 16px Inter,Arial,sans-serif;fill:#0e1118}
+      .tagbox{fill:#f4dfad}
+      .arrow{stroke:#d8b16a;stroke-width:4;marker-end:url(#arrow-trace);fill:none}
+      .dashed{stroke:#c982b7;stroke-width:3;stroke-dasharray:10 10;fill:none}
+    </style>
+  </defs>
+  <rect class="bg" width="1600" height="920"/>
+  <text class="title" x="800" y="72" text-anchor="middle">Fictional Mirror Trace</text>
+  <text class="subtitle" x="800" y="110" text-anchor="middle">verified synthetic engine run → admitted lenses → reviewed witness</text>
+
+  <g transform="translate(70 180)">
+    <rect class="box" width="280" height="220" rx="28"/>
+    <rect class="tagbox" x="28" y="24" width="104" height="28" rx="14"/>
+    <text class="tag" x="80" y="44" text-anchor="middle">SUPPLIED</text>
+    <text class="label" x="140" y="88" text-anchor="middle">S-001 Mira</text>
+    <text class="small" x="140" y="126" text-anchor="middle">1991-04-18 · 06:42</text>
+    <text class="small" x="140" y="158" text-anchor="middle">UTC+05:30</text>
+    <text class="tiny" x="140" y="194" text-anchor="middle">temporal-symbolic consent</text>
+  </g>
+
+  <path class="arrow" d="M370 290 H440"/>
+
+  <g transform="translate(460 120)">
+    <rect class="gate" width="310" height="120" rx="26"/>
+    <rect class="tagbox" x="28" y="24" width="142" height="28" rx="14"/>
+    <text class="tag" x="99" y="44" text-anchor="middle">DETERMINISTIC</text>
+    <text class="label" x="155" y="80" text-anchor="middle">Time</text>
+    <text class="small" x="155" y="108" text-anchor="middle">UTC 1991-04-18T01:12Z</text>
+  </g>
+
+  <g transform="translate(460 270)">
+    <rect class="gate" width="310" height="120" rx="26"/>
+    <rect class="tagbox" x="28" y="24" width="142" height="28" rx="14"/>
+    <text class="tag" x="99" y="44" text-anchor="middle">DETERMINISTIC</text>
+    <text class="label" x="155" y="80" text-anchor="middle">Numbers</text>
+    <text class="small" x="155" y="108" text-anchor="middle">LP 6 · Expr 11 · Soul 6</text>
+  </g>
+
+  <g transform="translate(460 420)">
+    <rect class="gate" width="310" height="120" rx="26"/>
+    <rect class="tagbox" x="28" y="24" width="94" height="28" rx="14"/>
+    <text class="tag" x="75" y="44" text-anchor="middle">SELECTED</text>
+    <text class="label" x="155" y="80" text-anchor="middle">Period</text>
+    <text class="small" x="155" y="108" text-anchor="middle">Rohini · Jupiter/Mercury/Rahu</text>
+  </g>
+
+  <path class="arrow" d="M790 290 H870"/>
+
+  <g transform="translate(900 170)">
+    <rect class="box" width="280" height="210" rx="28"/>
+    <rect class="tagbox" x="28" y="24" width="94" height="28" rx="14"/>
+    <text class="tag" x="75" y="44" text-anchor="middle">SELECTED</text>
+    <text class="label" x="140" y="86" text-anchor="middle">Type lens</text>
+    <text class="small" x="140" y="124" text-anchor="middle">Generator · Sacral</text>
+    <text class="small" x="140" y="154" text-anchor="middle">2/4 · Split</text>
+    <text class="tiny" x="140" y="190" text-anchor="middle">reflective taxonomy only</text>
+  </g>
+
+  <path class="arrow" d="M1195 290 H1260"/>
+
+  <g transform="translate(1285 145)">
+    <rect class="artifact" width="250" height="250" rx="30"/>
+    <rect class="tagbox" x="28" y="24" width="104" height="28" rx="14"/>
+    <text class="tag" x="80" y="44" text-anchor="middle">GENERATED</text>
+    <text class="label" x="125" y="88" text-anchor="middle">Witness</text>
+    <text class="small" x="125" y="128" text-anchor="middle">question, not</text>
+    <text class="small" x="125" y="158" text-anchor="middle">prediction</text>
+    <text class="tiny" x="125" y="196" text-anchor="middle">artifact carries labels</text>
+    <text class="tiny" x="125" y="224" text-anchor="middle">and review verdict</text>
+  </g>
+
+  <g transform="translate(115 610)">
+    <rect class="omit" width="520" height="170" rx="28"/>
+    <rect class="tagbox" x="28" y="24" width="88" height="28" rx="14"/>
+    <text class="tag" x="72" y="44" text-anchor="middle">OMITTED</text>
+    <text class="label" x="260" y="88" text-anchor="middle">Outside consent or absent</text>
+    <text class="small" x="260" y="122" text-anchor="middle">image · voice · body-adjacent signals</text>
+    <text class="small" x="260" y="154" text-anchor="middle">relationship material</text>
+  </g>
+
+  <path class="dashed" d="M380 405 C420 560 500 635 635 670"/>
+  <path class="dashed" d="M760 540 C720 610 690 650 635 670"/>
+
+  <g transform="translate(815 560)">
+    <rect class="gate" width="610" height="210" rx="30"/>
+    <text class="label" x="305" y="56" text-anchor="middle">Review gates</text>
+    <text class="small" x="305" y="98" text-anchor="middle">consent · source clarity · grounding · witness restraint</text>
+    <text class="small" x="305" y="132" text-anchor="middle">privacy · cultural care · refusal semantics</text>
+    <text class="tiny" x="305" y="176" text-anchor="middle">A failed guardrail cannot be offset by beautiful prose.</text>
+  </g>
+
+  <path class="arrow" d="M1120 395 C1120 470 1120 515 1120 550"/>
+  <text class="tiny" x="800" y="842" text-anchor="middle">Trace Figure A · all labels are deterministic SVG text, not generated raster lettering.</text>
+</svg>

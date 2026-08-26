@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="820" viewBox="0 0 1440 820" role="img" aria-labelledby="title desc">
+  <title id="title">Claim class to evidence mapping</title>
+  <desc id="desc">Matrix diagram mapping formal, technical, operational, empirical, interpretive, and philosophical claims to admissible evidence types.</desc>
+  <defs><style>.bg{fill:#11131a}.cell{fill:#1a2030;stroke:#53627d;stroke-width:1.5}.hit{fill:#2a2f42;stroke:#d9b778;stroke-width:2.5}.title{font:700 40px Georgia,serif;fill:#f5dfaa}.head{font:700 16px Inter,Arial,sans-serif;fill:#f8e7bd}.text{font:15px Inter,Arial,sans-serif;fill:#d8c7b0}.mark{font:700 28px Inter,Arial,sans-serif;fill:#f0cf86}</style></defs>
+  <rect class="bg" width="1440" height="820"/>
+  <text class="title" x="720" y="62" text-anchor="middle">Claim Classes Require Matched Evidence</text>
+  <g transform="translate(260 120)">
+    <text class="head" x="80" y="-22" text-anchor="middle">Notation</text><text class="head" x="230" y="-22" text-anchor="middle">Behavior</text><text class="head" x="380" y="-22" text-anchor="middle">Fresh observation</text><text class="head" x="530" y="-22" text-anchor="middle">Study evidence</text><text class="head" x="680" y="-22" text-anchor="middle">Bounded meaning</text><text class="head" x="830" y="-22" text-anchor="middle">Declared stance</text>
+    <text class="head" x="-70" y="48" text-anchor="end">Formal</text>
+    <text class="head" x="-70" y="138" text-anchor="end">Technical</text>
+    <text class="head" x="-70" y="228" text-anchor="end">Operational</text>
+    <text class="head" x="-70" y="318" text-anchor="end">Empirical</text>
+    <text class="head" x="-70" y="408" text-anchor="end">Interpretive</text>
+    <text class="head" x="-70" y="498" text-anchor="end">Philosophical</text>
+    <g>
+      <rect class="hit" x="0" y="0" width="135" height="70" rx="12"/><rect class="cell" x="150" y="0" width="135" height="70" rx="12"/><rect class="cell" x="300" y="0" width="135" height="70" rx="12"/><rect class="cell" x="450" y="0" width="135" height="70" rx="12"/><rect class="cell" x="600" y="0" width="135" height="70" rx="12"/><rect class="cell" x="750" y="0" width="135" height="70" rx="12"/>
+      <rect class="cell" x="0" y="90" width="135" height="70" rx="12"/><rect class="hit" x="150" y="90" width="135" height="70" rx="12"/><rect class="cell" x="300" y="90" width="135" height="70" rx="12"/><rect class="cell" x="450" y="90" width="135" height="70" rx="12"/><rect class="cell" x="600" y="90" width="135" height="70" rx="12"/><rect class="cell" x="750" y="90" width="135" height="70" rx="12"/>
+      <rect class="cell" x="0" y="180" width="135" height="70" rx="12"/><rect class="cell" x="150" y="180" width="135" height="70" rx="12"/><rect class="hit" x="300" y="180" width="135" height="70" rx="12"/><rect class="cell" x="450" y="180" width="135" height="70" rx="12"/><rect class="cell" x="600" y="180" width="135" height="70" rx="12"/><rect class="cell" x="750" y="180" width="135" height="70" rx="12"/>
+      <rect class="cell" x="0" y="270" width="135" height="70" rx="12"/><rect class="cell" x="150" y="270" width="135" height="70" rx="12"/><rect class="cell" x="300" y="270" width="135" height="70" rx="12"/><rect class="hit" x="450" y="270" width="135" height="70" rx="12"/><rect class="cell" x="600" y="270" width="135" height="70" rx="12"/><rect class="cell" x="750" y="270" width="135" height="70" rx="12"/>
+      <rect class="cell" x="0" y="360" width="135" height="70" rx="12"/><rect class="cell" x="150" y="360" width="135" height="70" rx="12"/><rect class="cell" x="300" y="360" width="135" height="70" rx="12"/><rect class="cell" x="450" y="360" width="135" height="70" rx="12"/><rect class="hit" x="600" y="360" width="135" height="70" rx="12"/><rect class="cell" x="750" y="360" width="135" height="70" rx="12"/>
+      <rect class="cell" x="0" y="450" width="135" height="70" rx="12"/><rect class="cell" x="150" y="450" width="135" height="70" rx="12"/><rect class="cell" x="300" y="450" width="135" height="70" rx="12"/><rect class="cell" x="450" y="450" width="135" height="70" rx="12"/><rect class="cell" x="600" y="450" width="135" height="70" rx="12"/><rect class="hit" x="750" y="450" width="135" height="70" rx="12"/>
+    </g>
+    <text class="mark" x="68" y="48" text-anchor="middle">✓</text><text class="mark" x="218" y="138" text-anchor="middle">✓</text><text class="mark" x="368" y="228" text-anchor="middle">✓</text><text class="mark" x="518" y="318" text-anchor="middle">✓</text><text class="mark" x="668" y="408" text-anchor="middle">✓</text><text class="mark" x="818" y="498" text-anchor="middle">✓</text>
+  </g>
+  <text class="text" x="720" y="765" text-anchor="middle">Evidence can support adjacent rationale, but it must not certify a different claim class.</text>
+</svg>

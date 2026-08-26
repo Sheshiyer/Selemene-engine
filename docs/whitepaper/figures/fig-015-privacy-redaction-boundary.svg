@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="860" viewBox="0 0 1600 860" role="img" aria-labelledby="title desc">
+  <title id="title">Privacy redaction boundary</title>
+  <desc id="desc">A zone diagram showing sensitive input, bounded processing, recipient artifact, and public example boundary.</desc>
+  <defs>
+    <marker id="arrow-privacy" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto">
+      <path d="M0,0 L14,7 L0,14 Z" fill="#d8b16a"/>
+    </marker>
+    <style>
+      .bg{fill:#0e1118}
+      .title{font:700 48px Georgia,serif;fill:#f4dfad}
+      .subtitle{font:22px Inter,Arial,sans-serif;fill:#c9bda9}
+      .zone{stroke-width:3}
+      .private{fill:#261620;stroke:#e47777}
+      .process{fill:#13243a;stroke:#78a6ff}
+      .recipient{fill:#1d261d;stroke:#9cc47a}
+      .public{fill:#171d2b;stroke:#d8b16a}
+      .label{font:700 28px Inter,Arial,sans-serif;fill:#fff1c9}
+      .small{font:20px Inter,Arial,sans-serif;fill:#dfd1bc}
+      .tiny{font:17px Inter,Arial,sans-serif;fill:#bdb2a3}
+      .arrow{stroke:#d8b16a;stroke-width:4;marker-end:url(#arrow-privacy);fill:none}
+      .barrier{stroke:#e47777;stroke-width:5;stroke-dasharray:16 12}
+    </style>
+  </defs>
+  <rect class="bg" width="1600" height="860"/>
+  <text class="title" x="800" y="72" text-anchor="middle">Privacy and Export Boundary</text>
+  <text class="subtitle" x="800" y="110" text-anchor="middle">public examples are synthetic; pseudonymized personal material is still sensitive</text>
+
+  <g transform="translate(70 210)">
+    <rect class="zone private" width="320" height="330" rx="34"/>
+    <text class="label" x="160" y="58" text-anchor="middle">Sensitive input</text>
+    <text class="small" x="160" y="110" text-anchor="middle">birth data</text>
+    <text class="small" x="160" y="145" text-anchor="middle">relationship context</text>
+    <text class="small" x="160" y="180" text-anchor="middle">voice · image · notes</text>
+    <text class="small" x="160" y="215" text-anchor="middle">body-adjacent signals</text>
+    <text class="tiny" x="160" y="280" text-anchor="middle">not suitable for public examples</text>
+  </g>
+
+  <path class="arrow" d="M405 375 H500"/>
+
+  <g transform="translate(525 210)">
+    <rect class="zone process" width="320" height="330" rx="34"/>
+    <text class="label" x="160" y="58" text-anchor="middle">Bounded processing</text>
+    <text class="small" x="160" y="110" text-anchor="middle">scope check</text>
+    <text class="small" x="160" y="145" text-anchor="middle">lens transform</text>
+    <text class="small" x="160" y="180" text-anchor="middle">source labels</text>
+    <text class="small" x="160" y="215" text-anchor="middle">omission record</text>
+    <text class="tiny" x="160" y="280" text-anchor="middle">no hidden reuse beyond scope</text>
+  </g>
+
+  <path class="arrow" d="M860 375 H955"/>
+
+  <g transform="translate(980 210)">
+    <rect class="zone recipient" width="320" height="330" rx="34"/>
+    <text class="label" x="160" y="58" text-anchor="middle">Recipient artifact</text>
+    <text class="small" x="160" y="110" text-anchor="middle">mirror text</text>
+    <text class="small" x="160" y="145" text-anchor="middle">provenance</text>
+    <text class="small" x="160" y="180" text-anchor="middle">review status</text>
+    <text class="small" x="160" y="215" text-anchor="middle">visible boundaries</text>
+    <text class="tiny" x="160" y="280" text-anchor="middle">for the intended recipient</text>
+  </g>
+
+  <line class="barrier" x1="1335" y1="160" x2="1335" y2="610"/>
+  <text class="tiny" x="1335" y="640" text-anchor="middle">publication boundary</text>
+
+  <g transform="translate(1380 235)">
+    <rect class="zone public" width="170" height="280" rx="30"/>
+    <text class="label" x="85" y="56" text-anchor="middle">Public</text>
+    <text class="small" x="85" y="102" text-anchor="middle">synthetic</text>
+    <text class="small" x="85" y="136" text-anchor="middle">redacted</text>
+    <text class="small" x="85" y="170" text-anchor="middle">labeled</text>
+    <text class="small" x="85" y="204" text-anchor="middle">reviewed</text>
+  </g>
+
+  <path class="arrow" d="M1220 565 C1290 690 1390 675 1465 530"/>
+
+  <rect x="245" y="690" width="1110" height="78" rx="30" fill="#171d2b" stroke="#3f4758" stroke-width="2"/>
+  <text class="small" x="800" y="737" text-anchor="middle">Export rule: synthetic input + redacted artifact + visible omissions + visible source-status labels.</text>
+</svg>

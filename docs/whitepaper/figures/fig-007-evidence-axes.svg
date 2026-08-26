@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1320" height="760" viewBox="0 0 1320 760" role="img" aria-labelledby="title desc">
+  <title id="title">Capability evidence axes</title>
+  <desc id="desc">A bar-style chart showing six independent evidence axes used to prevent capability overstatement.</desc>
+  <defs><style>.bg{fill:#11131a}.axis{stroke:#60708a;stroke-width:2}.bar{fill:#243149;stroke:#d9b778;stroke-width:2}.cap{fill:#d9b778}.title{font:700 40px Georgia,serif;fill:#f5dfaa}.label{font:700 20px Inter,Arial,sans-serif;fill:#f8e7bd}.small{font:16px Inter,Arial,sans-serif;fill:#d8c7b0}</style></defs>
+  <rect class="bg" width="1320" height="760"/>
+  <text class="title" x="660" y="64" text-anchor="middle">Capability Evidence Is a Vector, Not a Badge</text>
+  <line class="axis" x1="190" y1="600" x2="1150" y2="600"/>
+  <line class="axis" x1="190" y1="160" x2="190" y2="600"/>
+  <g transform="translate(235 0)"><rect class="bar" x="0" y="230" width="100" height="370" rx="12"/><rect class="cap" x="0" y="230" width="100" height="370" rx="12"/><text class="label" x="50" y="636" text-anchor="middle">Declared</text></g>
+  <g transform="translate(390 0)"><rect class="bar" x="0" y="270" width="100" height="330" rx="12"/><rect class="cap" x="0" y="270" width="100" height="330" rx="12"/><text class="label" x="50" y="636" text-anchor="middle">Built</text></g>
+  <g transform="translate(545 0)"><rect class="bar" x="0" y="300" width="100" height="300" rx="12"/><rect class="cap" x="0" y="300" width="100" height="300" rx="12"/><text class="label" x="50" y="636" text-anchor="middle">Executable</text></g>
+  <g transform="translate(700 0)"><rect class="bar" x="0" y="330" width="100" height="270" rx="12"/><rect class="cap" x="0" y="330" width="100" height="270" rx="12"/><text class="label" x="50" y="636" text-anchor="middle">Integrated</text></g>
+  <g transform="translate(855 0)"><rect class="bar" x="0" y="390" width="100" height="210" rx="12"/><rect class="cap" x="0" y="390" width="100" height="210" rx="12"/><text class="label" x="50" y="636" text-anchor="middle">Available</text></g>
+  <g transform="translate(1010 0)"><rect class="bar" x="0" y="430" width="100" height="170" rx="12"/><rect class="cap" x="0" y="430" width="100" height="170" rx="12"/><text class="label" x="50" y="636" text-anchor="middle">Observed</text></g>
+  <text class="small" x="660" y="704" text-anchor="middle">A public claim may not exceed the weakest evidence axis required by that claim.</text>
+</svg>
