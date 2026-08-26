@@ -20,6 +20,7 @@ def test_root_gate_runs_cross_language_contract_parity() -> None:
     assert "gate:contracts" in scripts["gate"]
     assert "contract_v1_authority" in scripts["gate:contracts"]
     assert "openapi_schema_tests" in scripts["gate:contracts"]
+    assert "integration_tests test_calculate_" in scripts["gate:contracts"]
     assert "@selemene/engine-sdk" in scripts["gate:contracts"]
     assert "@noesis/sdk" in scripts["gate:contracts"]
 
