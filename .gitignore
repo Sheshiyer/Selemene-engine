@@ -61,6 +61,7 @@ packages/verification/dist/
 # Local runtime / session artifacts
 .local/
 .local
+.temperance/
 
 # JS/TS build outputs (never commit dist)
 packages/*/dist/
