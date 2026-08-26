@@ -102,6 +102,7 @@ async fn contract_v1_openapi_surfaces_canonical_compatibility_fields() {
                 "consciousness_level",
                 "calculated_at",
                 "processing_time_ms",
+                "provenance",
                 "generated_image",
                 "generated_audio",
             ]
@@ -130,6 +131,45 @@ async fn contract_v1_openapi_surfaces_canonical_compatibility_fields() {
                 "{schema_name} must expose canonical v1 field {field}"
             );
         }
+    }
+}
+
+#[tokio::test]
+async fn contract_v1_result_schema_accepts_the_additive_api_envelope() {
+    let canonical: Value = serde_json::from_str(include_str!(
+        "../../../contracts/v1/schemas/engine-result.schema.json"
+    ))
+    .expect("canonical result schema JSON");
+    let canonical_properties: BTreeSet<String> = canonical["properties"]
+        .as_object()
+        .expect("canonical result properties")
+        .keys()
+        .cloned()
+        .collect();
+    let canonical_required: BTreeSet<String> = canonical["required"]
+        .as_array()
+        .expect("canonical result required")
+        .iter()
+        .map(|value| value.as_str().expect("required field string").to_string())
+        .collect();
+
+    let spec = openapi_spec().await;
+    let schemas = spec["components"]["schemas"]
+        .as_object()
+        .expect("components.schemas object");
+    let api_properties = schema_properties(&schemas["ApiEngineOutputResponse"], schemas);
+
+    for field in &api_properties {
+        assert!(
+            canonical_properties.contains(field),
+            "canonical result schema must permit additive API field {field}"
+        );
+    }
+    for field in &canonical_required {
+        assert!(
+            api_properties.contains(field),
+            "API result envelope must represent canonical required field {field}"
+        );
     }
 }
 

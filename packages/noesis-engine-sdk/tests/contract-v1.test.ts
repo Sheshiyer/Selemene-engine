@@ -1,22 +1,44 @@
 import { describe, expect, test } from 'bun:test'
+import capabilityFixture from '../../../contracts/v1/fixtures/engine-capability.json'
+import errorFixture from '../../../contracts/v1/fixtures/error.json'
+import requestFixture from '../../../contracts/v1/fixtures/engine-request.json'
+import resultFixture from '../../../contracts/v1/fixtures/engine-result.json'
 import {
   CONTRACT_VERSION,
+  type CapabilityAvailability,
+  type ConsciousnessPhase,
   type ContractEngineCapability,
   type ContractEngineRequest,
   type ContractEngineResult,
   type ContractError,
+  type RuntimeKind,
 } from '../src/index.js'
 
-async function fixture<T>(name: string): Promise<T> {
-  const path = new URL(`../../../contracts/v1/fixtures/${name}`, import.meta.url)
-  return (await Bun.file(path).json()) as T
+const request: ContractEngineRequest = {
+  ...requestFixture,
+  contract_version: CONTRACT_VERSION,
+  consciousness_level: requestFixture.consciousness_level as ConsciousnessPhase,
+}
+const result: ContractEngineResult = {
+  ...resultFixture,
+  contract_version: CONTRACT_VERSION,
+  consciousness_level: resultFixture.consciousness_level as ConsciousnessPhase,
+  provenance: {
+    ...resultFixture.provenance,
+    runtime_kind: resultFixture.provenance.runtime_kind as RuntimeKind,
+  },
+}
+const error: ContractError = { ...errorFixture, contract_version: CONTRACT_VERSION }
+const capability: ContractEngineCapability = {
+  ...capabilityFixture,
+  contract_version: CONTRACT_VERSION,
+  availability: capabilityFixture.availability as CapabilityAvailability,
+  runtime_kind: capabilityFixture.runtime_kind as RuntimeKind,
+  required_phase: capabilityFixture.required_phase as ConsciousnessPhase,
 }
 
 describe('canonical v1 fixtures', () => {
-  test('engine SDK consumes request and result authority', async () => {
-    const request = await fixture<ContractEngineRequest>('engine-request.json')
-    const result = await fixture<ContractEngineResult>('engine-result.json')
-
+  test('engine SDK consumes request and result authority', () => {
     expect(CONTRACT_VERSION).toBe('v1')
     expect(request.contract_version).toBe(CONTRACT_VERSION)
     expect(request.image_data?.consent?.scopes).toEqual(['face-image'])
@@ -25,10 +47,7 @@ describe('canonical v1 fixtures', () => {
     expect(result.witness_prompts).toHaveLength(1)
   })
 
-  test('engine SDK consumes error and capability authority', async () => {
-    const error = await fixture<ContractError>('error.json')
-    const capability = await fixture<ContractEngineCapability>('engine-capability.json')
-
+  test('engine SDK consumes error and capability authority', () => {
     expect(error.error_code).toBe('VALIDATION_ERROR')
     expect(error.contract_version).toBe(CONTRACT_VERSION)
     expect(capability.availability).toBe('available')

@@ -9,6 +9,9 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::collections::BTreeMap;
 
+#[cfg(feature = "openapi")]
+use utoipa::ToSchema;
+
 pub const CONTRACT_VERSION: &str = "v1";
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -112,6 +115,7 @@ pub struct WitnessPrompt {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(ToSchema))]
 pub enum RuntimeKind {
     #[serde(rename = "native")]
     Native,
@@ -126,6 +130,7 @@ pub enum RuntimeKind {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(ToSchema))]
 #[serde(deny_unknown_fields)]
 pub struct Provenance {
     pub runtime_kind: RuntimeKind,

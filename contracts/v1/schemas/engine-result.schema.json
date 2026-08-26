@@ -4,9 +4,10 @@
   "title": "Selemene Engine Result v1",
   "type": "object",
   "additionalProperties": false,
-  "required": ["contract_version", "engine_id", "result", "consciousness_level", "calculated_at", "processing_time_ms", "provenance"],
+  "required": ["contract_version", "engine_id", "result", "consciousness_level", "calculated_at", "processing_time_ms"],
   "properties": {
     "contract_version": { "const": "v1" },
+    "envelope_version": { "const": "1" },
     "engine_id": { "type": "string", "minLength": 1 },
     "result": { "type": "object", "additionalProperties": true },
     "consciousness_level": { "type": "integer", "minimum": 0, "maximum": 5 },
@@ -14,6 +15,7 @@
     "witness_prompts": { "type": "array", "items": { "$ref": "#/$defs/witnessPrompt" } },
     "calculated_at": { "type": "string", "format": "date-time" },
     "processing_time_ms": { "type": "number", "minimum": 0 },
+    "metadata": { "type": "object", "additionalProperties": true },
     "generated_image": { "$ref": "#/$defs/generatedImage" },
     "generated_audio": { "$ref": "#/$defs/generatedAudio" },
     "provenance": { "$ref": "provenance.schema.json" }

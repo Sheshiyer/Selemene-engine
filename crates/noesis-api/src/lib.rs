@@ -1298,6 +1298,9 @@ struct ApiEngineOutputResponse {
     witness_prompts: Vec<ApiWitnessPrompt>,
     calculated_at: String,
     processing_time_ms: f64,
+    #[schema(inline)]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    provenance: Option<noesis_core::contract::Provenance>,
     #[serde(skip_serializing_if = "Option::is_none")]
     generated_image: Option<Value>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -1399,6 +1402,7 @@ impl From<EngineOutput> for ApiEngineOutputResponse {
             witness_prompts,
             calculated_at,
             processing_time_ms,
+            provenance: None,
             generated_image,
             generated_audio,
         }

@@ -20,7 +20,7 @@
   ],
   "scripts": {
     "test": "bun test",
-    "typecheck": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json && tsc -p tsconfig.contract-tests.json",
     "build": "tsc -p tsconfig.build.json",
     "prepack": "npm run build"
   },
