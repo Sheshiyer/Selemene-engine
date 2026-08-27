@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1320" height="760" viewBox="0 0 1320 760" role="img" aria-labelledby="title desc">
+  <title id="title">Evidence hierarchy and drift gradient</title>
+  <desc id="desc">Pyramid chart showing current behavior, typed boundaries, executable checks, current notes, and historical summaries with increasing drift risk.</desc>
+  <defs><style>.bg{fill:#11131a}.tier{stroke:#11131a;stroke-width:4}.t1{fill:#d9b778}.t2{fill:#b99b70}.t3{fill:#8f86a7}.t4{fill:#65799c}.t5{fill:#40516b}.title{font:700 40px Georgia,serif;fill:#f5dfaa}.label{font:700 20px Inter,Arial,sans-serif;fill:#11131a}.light{font:700 20px Inter,Arial,sans-serif;fill:#f8e7bd}.small{font:16px Inter,Arial,sans-serif;fill:#d8c7b0}</style></defs>
+  <rect class="bg" width="1320" height="760"/>
+  <text class="title" x="660" y="64" text-anchor="middle">Evidence Proximity and Drift</text>
+  <polygon class="tier t5" points="180,620 1140,620 1010,510 310,510"/>
+  <polygon class="tier t4" points="310,510 1010,510 900,410 420,410"/>
+  <polygon class="tier t3" points="420,410 900,410 800,315 520,315"/>
+  <polygon class="tier t2" points="520,315 800,315 735,230 585,230"/>
+  <polygon class="tier t1" points="585,230 735,230 660,130"/>
+  <text class="label" x="660" y="205" text-anchor="middle">Current behavior</text>
+  <text class="label" x="660" y="282" text-anchor="middle">Typed boundaries and accepted examples</text>
+  <text class="light" x="660" y="366" text-anchor="middle">Executable checks and fresh probes</text>
+  <text class="light" x="660" y="468" text-anchor="middle">Current design and capability notes</text>
+  <text class="light" x="660" y="574" text-anchor="middle">Historical summaries and prior reports</text>
+  <text class="small" x="660" y="700" text-anchor="middle">The farther evidence is from present behavior, the more carefully claims must be bounded.</text>
+</svg>

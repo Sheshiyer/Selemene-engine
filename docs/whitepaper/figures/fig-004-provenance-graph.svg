@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1320" height="840" viewBox="0 0 1320 840" role="img" aria-labelledby="title desc">
+  <title id="title">Provenance graph for a reflective artifact</title>
+  <desc id="desc">A node and edge diagram showing practitioner material, computed material, symbolic source, generated framing, omitted material, and final artifact.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M0,0 L12,6 L0,12 Z" fill="#d9b778"/>
+    </marker>
+    <style>
+      .bg{fill:#11131a}
+      .node{fill:#1b2230;stroke:#d9b778;stroke-width:2.5}
+      .omit{fill:#2b1d24;stroke:#ef8f8f;stroke-width:2.5}
+      .artifact{fill:#241d2b;stroke:#f0cf86;stroke-width:3}
+      .edge{stroke:#d9b778;stroke-width:2.8;marker-end:url(#arrow);fill:none}
+      .weak{stroke:#ef8f8f;stroke-width:2.8;stroke-dasharray:7 8;marker-end:url(#arrow);fill:none}
+      .title{font:700 40px Georgia,serif;fill:#f5dfaa}
+      .label{font:700 22px Inter,Arial,sans-serif;fill:#f8e7bd}
+      .small{font:16px Inter,Arial,sans-serif;fill:#d8c7b0}
+      .note{font:18px Inter,Arial,sans-serif;fill:#e4d6bf}
+    </style>
+  </defs>
+  <rect class="bg" width="1320" height="840"/>
+  <text class="title" x="660" y="66" text-anchor="middle">Provenance as Humility</text>
+  <g transform="translate(90 150)">
+    <rect class="node" width="245" height="105" rx="22"/>
+    <text class="label" x="122" y="42" text-anchor="middle">Practitioner</text>
+    <text class="small" x="122" y="72" text-anchor="middle">question and context</text>
+  </g>
+  <g transform="translate(90 330)">
+    <rect class="node" width="245" height="105" rx="22"/>
+    <text class="label" x="122" y="42" text-anchor="middle">Computed</text>
+    <text class="small" x="122" y="72" text-anchor="middle">bounded lens output</text>
+  </g>
+  <g transform="translate(90 510)">
+    <rect class="node" width="245" height="105" rx="22"/>
+    <text class="label" x="122" y="42" text-anchor="middle">Symbolic source</text>
+    <text class="small" x="122" y="72" text-anchor="middle">situated meaning frame</text>
+  </g>
+  <g transform="translate(530 240)">
+    <rect class="node" width="260" height="115" rx="24"/>
+    <text class="label" x="130" y="44" text-anchor="middle">Witness framing</text>
+    <text class="small" x="130" y="74" text-anchor="middle">questions, contrasts, limits</text>
+  </g>
+  <g transform="translate(530 455)">
+    <rect class="omit" width="260" height="115" rx="24"/>
+    <text class="label" x="130" y="44" text-anchor="middle">Omitted or weak</text>
+    <text class="small" x="130" y="74" text-anchor="middle">shown, not hidden</text>
+  </g>
+  <g transform="translate(980 330)">
+    <rect class="artifact" width="250" height="145" rx="30"/>
+    <text class="label" x="125" y="54" text-anchor="middle">Reflective artifact</text>
+    <text class="small" x="125" y="86" text-anchor="middle">inspectable mirror</text>
+    <text class="small" x="125" y="114" text-anchor="middle">open to revision</text>
+  </g>
+  <path class="edge" d="M335 202 C420 205 455 250 530 288"/>
+  <path class="edge" d="M335 382 C420 375 455 342 530 320"/>
+  <path class="edge" d="M335 562 C430 558 468 528 530 510"/>
+  <path class="edge" d="M790 298 C870 305 920 342 980 382"/>
+  <path class="weak" d="M790 512 C875 506 930 456 980 430"/>
+  <text class="note" x="660" y="742" text-anchor="middle">Origin classes make the artifact inspectable; they do not convert interpretation into certainty.</text>
+</svg>

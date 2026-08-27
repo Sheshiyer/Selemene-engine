@@ -1,0 +1,19 @@
+{
+  "contract_version": "v1",
+  "schema_draft": "https://json-schema.org/draft/2020-12/schema",
+  "schemas": [
+    "schemas/engine-request.schema.json",
+    "schemas/engine-result.schema.json",
+    "schemas/error.schema.json",
+    "schemas/consent.schema.json",
+    "schemas/provenance.schema.json",
+    "schemas/engine-capability.schema.json"
+  ],
+  "fixtures": [
+    { "path": "fixtures/engine-request.json", "schema": "schemas/engine-request.schema.json" },
+    { "path": "fixtures/engine-request-legacy.json", "schema": "schemas/engine-request.schema.json" },
+    { "path": "fixtures/engine-result.json", "schema": "schemas/engine-result.schema.json" },
+    { "path": "fixtures/error.json", "schema": "schemas/error.schema.json" },
+    { "path": "fixtures/engine-capability.json", "schema": "schemas/engine-capability.schema.json" }
+  ]
+}

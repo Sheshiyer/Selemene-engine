@@ -4,6 +4,8 @@
 //! All engine calculations and workflow executions are exposed through versioned
 //! JSON endpoints under `/api/v1/`.
 
+#![allow(clippy::result_large_err)]
+
 mod billing;
 mod biofield_client;
 pub mod cf_access;
@@ -28,7 +30,7 @@ pub use error_mapper::{ErrorMapper, ErrorResponse};
 pub use logging::{init_tracing, init_tracing_json};
 
 use axum::{
-    extract::{DefaultBodyLimit, Json, Multipart, Path, State},
+    extract::{rejection::JsonRejection, DefaultBodyLimit, Json, Multipart, Path, State},
     http::{HeaderValue, Method, StatusCode},
     middleware as axum_middleware,
     response::IntoResponse,
@@ -1293,10 +1295,14 @@ struct VedicChartBundleResponseSchema {
 struct ApiEngineOutputResponse {
     #[serde(flatten)]
     output: EngineOutput,
+    contract_version: String,
     envelope_version: String,
     witness_prompts: Vec<ApiWitnessPrompt>,
     calculated_at: String,
     processing_time_ms: f64,
+    #[schema(inline)]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    provenance: Option<noesis_core::contract::Provenance>,
     #[serde(skip_serializing_if = "Option::is_none")]
     generated_image: Option<Value>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -1307,23 +1313,31 @@ struct ApiEngineOutputResponse {
 /// the legacy Rust `options` envelope. Canonical SDK fields are normalized
 /// once into `EngineInput::options` before dispatch.
 #[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+#[serde(deny_unknown_fields)]
 struct ApiEngineInput {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[schema(pattern = "^v1$")]
+    contract_version: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     consciousness_level: Option<u8>,
     #[serde(default)]
-    parameters: HashMap<String, Value>,
+    parameters: Option<HashMap<String, Value>>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     seed: Option<u64>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     question: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    image_data: Option<Value>,
+    #[schema(inline)]
+    image_data: Option<noesis_core::contract::ImageData>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    audio_ref: Option<Value>,
+    #[schema(inline)]
+    audio_ref: Option<noesis_core::contract::AudioReference>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    consent: Option<Value>,
+    #[schema(inline)]
+    consent: Option<noesis_core::contract::Consent>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    quality: Option<Value>,
+    #[schema(inline)]
+    quality: Option<noesis_core::contract::Quality>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     birth_data: Option<noesis_core::BirthData>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -1341,12 +1355,106 @@ fn is_standard_precision(precision: &Precision) -> bool {
 }
 
 impl ApiEngineInput {
+    fn validate_contract_version(&self) -> Result<(), EngineError> {
+        if let Some(version) = self.contract_version.as_deref() {
+            if version != noesis_core::contract::CONTRACT_VERSION {
+                return Err(EngineError::ValidationError(format!(
+                    "unsupported contract_version {version}; expected {}",
+                    noesis_core::contract::CONTRACT_VERSION
+                )));
+            }
+            let consciousness_level = self.consciousness_level.ok_or_else(|| {
+                EngineError::ValidationError(
+                    "canonical v1 requests require consciousness_level".to_string(),
+                )
+            })?;
+            if consciousness_level > 5 {
+                return Err(EngineError::ValidationError(
+                    "consciousness_level must be between 0 and 5".to_string(),
+                ));
+            }
+            if self.parameters.is_none() {
+                return Err(EngineError::ValidationError(
+                    "canonical v1 requests require parameters".to_string(),
+                ));
+            }
+            self.validate_canonical_fields()?;
+        }
+        Ok(())
+    }
+
+    fn validate_canonical_fields(&self) -> Result<(), EngineError> {
+        if let Some(birth_data) = &self.birth_data {
+            chrono::NaiveDate::parse_from_str(&birth_data.date, "%Y-%m-%d").map_err(|_| {
+                EngineError::ValidationError(
+                    "birth_data.date must be a valid YYYY-MM-DD date".to_string(),
+                )
+            })?;
+        }
+        if let Some(location) = &self.location {
+            if !(-90.0..=90.0).contains(&location.latitude)
+                || !(-180.0..=180.0).contains(&location.longitude)
+            {
+                return Err(EngineError::ValidationError(
+                    "location coordinates are outside canonical bounds".to_string(),
+                ));
+            }
+        }
+        if let Some(consent) = &self.consent {
+            validate_contract_consent(consent, "consent")?;
+        }
+        if let Some(image) = &self.image_data {
+            if image.b64.as_deref().is_none_or(str::is_empty)
+                && image.reference.as_deref().is_none_or(str::is_empty)
+            {
+                return Err(EngineError::ValidationError(
+                    "image_data requires nonempty b64 or reference".to_string(),
+                ));
+            }
+            if image.mime_type.as_deref().is_some_and(str::is_empty) {
+                return Err(EngineError::ValidationError(
+                    "image_data.mime_type cannot be empty".to_string(),
+                ));
+            }
+            if let Some(consent) = &image.consent {
+                validate_contract_consent(consent, "image_data.consent")?;
+            }
+        }
+        if let Some(audio) = &self.audio_ref {
+            if audio.reference.is_empty() {
+                return Err(EngineError::ValidationError(
+                    "audio_ref.reference cannot be empty".to_string(),
+                ));
+            }
+            if let Some(consent) = &audio.consent {
+                validate_contract_consent(consent, "audio_ref.consent")?;
+            }
+        }
+        if let Some(quality) = &self.quality {
+            let bounded = |value: f64| value.is_finite() && (0.0..=1.0).contains(&value);
+            if quality.score.is_some_and(|value| !bounded(value))
+                || quality.min_coherence.is_some_and(|value| !bounded(value))
+                || quality
+                    .scores
+                    .as_ref()
+                    .is_some_and(|scores| scores.values().any(|value| !bounded(*value)))
+            {
+                return Err(EngineError::ValidationError(
+                    "quality scores must be finite values between 0 and 1".to_string(),
+                ));
+            }
+        }
+        Ok(())
+    }
+
     fn normalize(self) -> EngineInput {
         let mut options = self.options;
 
         // The merged SDK's canonical parameter map wins over duplicate legacy
         // option keys. Top-level transport/media fields win over both.
-        options.extend(self.parameters);
+        if let Some(parameters) = self.parameters {
+            options.extend(parameters);
+        }
         if let Some(value) = self.consciousness_level {
             options.insert("consciousness_level".to_string(), Value::from(value));
         }
@@ -1356,15 +1464,29 @@ impl ApiEngineInput {
         if let Some(value) = self.question {
             options.insert("question".to_string(), Value::from(value));
         }
-        for (key, value) in [
-            ("image_data", self.image_data),
-            ("audio_ref", self.audio_ref),
-            ("consent", self.consent),
-            ("quality", self.quality),
-        ] {
-            if let Some(value) = value {
-                options.insert(key.to_string(), value);
-            }
+        if let Some(value) = self.image_data {
+            options.insert(
+                "image_data".to_string(),
+                serde_json::to_value(value).unwrap_or_default(),
+            );
+        }
+        if let Some(value) = self.audio_ref {
+            options.insert(
+                "audio_ref".to_string(),
+                serde_json::to_value(value).unwrap_or_default(),
+            );
+        }
+        if let Some(value) = self.consent {
+            options.insert(
+                "consent".to_string(),
+                serde_json::to_value(value).unwrap_or_default(),
+            );
+        }
+        if let Some(value) = self.quality {
+            options.insert(
+                "quality".to_string(),
+                serde_json::to_value(value).unwrap_or_default(),
+            );
         }
 
         EngineInput {
@@ -1375,6 +1497,27 @@ impl ApiEngineInput {
             options,
         }
     }
+}
+
+fn validate_contract_consent(
+    consent: &noesis_core::contract::Consent,
+    field: &str,
+) -> Result<(), EngineError> {
+    if consent.scopes.is_empty()
+        || consent.scopes.iter().any(String::is_empty)
+        || consent
+            .scopes
+            .iter()
+            .collect::<std::collections::HashSet<_>>()
+            .len()
+            != consent.scopes.len()
+        || consent.token.as_deref().is_some_and(str::is_empty)
+    {
+        return Err(EngineError::ValidationError(format!(
+            "{field} must contain unique nonempty scopes and a nonempty token when present"
+        )));
+    }
+    Ok(())
 }
 
 impl From<EngineOutput> for ApiEngineOutputResponse {
@@ -1391,10 +1534,12 @@ impl From<EngineOutput> for ApiEngineOutputResponse {
 
         Self {
             output,
+            contract_version: noesis_core::contract::CONTRACT_VERSION.to_string(),
             envelope_version: "1".to_string(),
             witness_prompts,
             calculated_at,
             processing_time_ms,
+            provenance: None,
             generated_image,
             generated_audio,
         }
@@ -2591,9 +2736,20 @@ async fn calculate_handler(
     State(state): State<AppState>,
     Extension(user): Extension<AuthUser>,
     Path(engine_id): Path<String>,
-    Json(api_input): Json<ApiEngineInput>,
+    api_input: Result<Json<ApiEngineInput>, JsonRejection>,
 ) -> Result<Json<ApiEngineOutputResponse>, (StatusCode, Json<ErrorResponse>)> {
     let start = Instant::now();
+    let Json(api_input) = api_input.map_err(|_| {
+        ErrorMapper::response(
+            StatusCode::UNPROCESSABLE_ENTITY,
+            "VALIDATION_ERROR",
+            "request body does not satisfy the engine contract",
+            None,
+        )
+    })?;
+    api_input
+        .validate_contract_version()
+        .map_err(ErrorMapper::map)?;
     let input = api_input.normalize();
 
     // Validate input at the API boundary (lat/lon bounds, options size cap).

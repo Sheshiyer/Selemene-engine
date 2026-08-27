@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://noesis.tryambakam.org/contracts/v1/engine-request.schema.json",
+  "title": "Selemene Engine Request v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contract_version", "consciousness_level", "parameters"],
+  "properties": {
+    "contract_version": { "const": "v1" },
+    "consciousness_level": { "type": "integer", "minimum": 0, "maximum": 5 },
+    "parameters": { "type": "object", "additionalProperties": true },
+    "seed": { "type": "integer", "minimum": 0 },
+    "question": { "type": "string" },
+    "birth_data": { "$ref": "#/$defs/birthData" },
+    "current_time": { "type": "string", "format": "date-time" },
+    "location": { "$ref": "#/$defs/location" },
+    "precision": { "enum": ["standard", "high", "extreme", "Standard", "High", "Extreme"] },
+    "options": { "type": "object", "additionalProperties": true },
+    "image_data": { "$ref": "#/$defs/imageData" },
+    "audio_ref": { "$ref": "#/$defs/audioRef" },
+    "consent": { "$ref": "consent.schema.json" },
+    "quality": { "$ref": "#/$defs/quality" }
+  },
+  "$defs": {
+    "birthData": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["date", "latitude", "longitude", "timezone"],
+      "properties": {
+        "name": { "type": ["string", "null"] },
+        "date": { "type": "string", "format": "date" },
+        "time": { "type": ["string", "null"] },
+        "latitude": { "type": "number", "minimum": -90, "maximum": 90 },
+        "longitude": { "type": "number", "minimum": -180, "maximum": 180 },
+        "timezone": { "type": "string", "minLength": 1 }
+      }
+    },
+    "location": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["latitude", "longitude"],
+      "properties": {
+        "latitude": { "type": "number", "minimum": -90, "maximum": 90 },
+        "longitude": { "type": "number", "minimum": -180, "maximum": 180 },
+        "altitude": { "type": ["number", "null"] }
+      }
+    },
+    "imageData": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "b64": { "type": "string", "minLength": 1 },
+        "reference": { "type": "string", "minLength": 1 },
+        "mime_type": { "type": "string", "minLength": 1 },
+        "consent": { "$ref": "consent.schema.json" }
+      },
+      "anyOf": [{ "required": ["b64"] }, { "required": ["reference"] }]
+    },
+    "audioRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["reference"],
+      "properties": {
+        "reference": { "type": "string", "minLength": 1 },
+        "consent": { "$ref": "consent.schema.json" }
+      }
+    },
+    "quality": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "sufficient": { "type": "boolean" },
+        "score": { "type": "number", "minimum": 0, "maximum": 1 },
+        "min_coherence": { "type": "number", "minimum": 0, "maximum": 1 },
+        "scores": { "type": "object", "additionalProperties": { "type": "number", "minimum": 0, "maximum": 1 } },
+        "diagnostics": { "type": "array", "items": { "type": "string" } }
+      }
+    }
+  }
+}

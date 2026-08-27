@@ -13,6 +13,17 @@ export { BiofieldEngineApi, FaceReadingEngineApi, RaagaEngineApi, SigilForgeEngi
 export { EngineSdkError, ConsentError } from './errors.js'
 export { CONSENT_SCOPES, consentAgeMs, createConsent, requireConsent, resolveConsent } from './consent.js'
 export type { ConsentScope } from './consent.js'
+export { CONTRACT_VERSION } from './contract-v1.js'
+export type {
+  CapabilityAvailability,
+  ContractEngineCapability,
+  ContractEngineRequest,
+  ContractEngineResult,
+  ContractError,
+  ContractProvenance,
+  ContractVersion,
+  RuntimeKind,
+} from './contract-v1.js'
 export type {
   BiofieldAnalyzeInput,
   BiofieldAnalyzeResponse,

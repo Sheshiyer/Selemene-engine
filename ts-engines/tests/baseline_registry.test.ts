@@ -12,6 +12,55 @@ const TEST_PORT = Number(process.env.TS_ENGINES_BASELINE_TEST_PORT ?? '3099')
 let server: ReturnType<typeof createServer> | null = null
 let baseUrl: string
 
+interface EngineSummary {
+  id: string
+  version: string
+}
+
+interface EngineListBody {
+  count: number
+  engines: EngineSummary[]
+}
+
+interface ReadinessBody {
+  status: string
+  engines: unknown[]
+  failed_engines: unknown[]
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null
+}
+
+function parseEngineListBody(value: unknown): EngineListBody {
+  if (!isRecord(value) || typeof value.count !== 'number' || !Array.isArray(value.engines)) {
+    throw new Error('invalid /engines response shape')
+  }
+  const engines = value.engines.map((engine): EngineSummary => {
+    if (!isRecord(engine) || typeof engine.id !== 'string' || typeof engine.version !== 'string') {
+      throw new Error('invalid engine metadata in /engines response')
+    }
+    return { id: engine.id, version: engine.version }
+  })
+  return { count: value.count, engines }
+}
+
+function parseReadinessBody(value: unknown): ReadinessBody {
+  if (
+    !isRecord(value) ||
+    typeof value.status !== 'string' ||
+    !Array.isArray(value.engines) ||
+    !Array.isArray(value.failed_engines)
+  ) {
+    throw new Error('invalid /health/ready response shape')
+  }
+  return {
+    status: value.status,
+    engines: value.engines,
+    failed_engines: value.failed_engines,
+  }
+}
+
 beforeAll(() => {
   const registry = new EngineRegistry()
   registry.register(new TarotEngine())
@@ -33,11 +82,11 @@ afterAll(() => {
 describe('TS baseline registry', () => {
   it('registers the six bridge engines (incl raaga T-031) with stable metadata', async () => {
     const response = await fetch(`${baseUrl}/engines`)
-    const body = await response.json()
+    const body = parseEngineListBody(await response.json())
 
     expect(response.status).toBe(200)
     expect(body.count).toBe(6)
-    expect(body.engines.map((engine: any) => engine.id).sort()).toEqual([
+    expect(body.engines.map((engine) => engine.id).sort()).toEqual([
       'enneagram',
       'i-ching',
       'raaga',
@@ -49,7 +98,7 @@ describe('TS baseline registry', () => {
     // other four remain at 1.0.0. Test the actual version mapping rather
     // than asserting global 1.0.0 (which silently drifted out of date).
     const versionsById = Object.fromEntries(
-      body.engines.map((engine: any) => [engine.id, engine.version]),
+      body.engines.map((engine) => [engine.id, engine.version]),
     )
     expect(versionsById).toEqual({
       enneagram: '1.0.0',
@@ -63,7 +112,7 @@ describe('TS baseline registry', () => {
 
   it('reports healthy sidecar readiness for the six registered engines (T-031)', async () => {
     const response = await fetch(`${baseUrl}/health/ready`)
-    const body = await response.json()
+    const body = parseReadinessBody(await response.json())
 
     expect(response.status).toBe(200)
     expect(body.status).toBe('ready')

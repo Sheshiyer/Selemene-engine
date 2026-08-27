@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="900" viewBox="0 0 1400 900" role="img" aria-labelledby="title desc">
+  <title id="title">Sixteen-engine taxonomy</title>
+  <desc id="desc">A radial taxonomy grouping sixteen reflective engines by temporal, symbolic, somatic, geometric, resonance, relational, and narrative families.</desc>
+  <defs>
+    <style>
+      .bg{fill:#11131a}
+      .hub{fill:#241d2b;stroke:#f0cf86;stroke-width:3}
+      .group{fill:#1b2230;stroke:#8fb6ff;stroke-width:2;opacity:.96}
+      .item{fill:#151923;stroke:#c9a96c;stroke-width:1.6}
+      .line{stroke:#6f87b8;stroke-width:2;opacity:.58}
+      .title{font:700 42px Georgia,serif;fill:#f5dfaa}
+      .hubtext{font:700 28px Georgia,serif;fill:#f8e7bd}
+      .grouptext{font:700 22px Inter,Arial,sans-serif;fill:#e5edf9}
+      .itemtext{font:15px Inter,Arial,sans-serif;fill:#d8c7b0}
+      .note{font:18px Inter,Arial,sans-serif;fill:#e4d6bf}
+    </style>
+  </defs>
+  <rect class="bg" width="1400" height="900"/>
+  <text class="title" x="700" y="64" text-anchor="middle">Sixteen-Engine Coherence Matrix</text>
+  <circle class="hub" cx="700" cy="450" r="108"/>
+  <text class="hubtext" x="700" y="435" text-anchor="middle">Selemene</text>
+  <text class="hubtext" x="700" y="470" text-anchor="middle">Mirror Field</text>
+  <g>
+    <line class="line" x1="610" y1="390" x2="312" y2="186"/>
+    <line class="line" x1="790" y1="390" x2="1088" y2="186"/>
+    <line class="line" x1="588" y1="468" x2="230" y2="470"/>
+    <line class="line" x1="812" y1="468" x2="1170" y2="470"/>
+    <line class="line" x1="620" y1="526" x2="350" y2="720"/>
+    <line class="line" x1="780" y1="526" x2="1050" y2="720"/>
+  </g>
+  <g transform="translate(120 120)">
+    <rect class="group" width="380" height="132" rx="24"/>
+    <text class="grouptext" x="190" y="36" text-anchor="middle">Temporal</text>
+    <rect class="item" x="28" y="58" width="98" height="42" rx="12"/><text class="itemtext" x="77" y="84" text-anchor="middle">Calendar</text>
+    <rect class="item" x="140" y="58" width="98" height="42" rx="12"/><text class="itemtext" x="189" y="84" text-anchor="middle">Cycle</text>
+    <rect class="item" x="252" y="58" width="98" height="42" rx="12"/><text class="itemtext" x="301" y="84" text-anchor="middle">Transit</text>
+  </g>
+  <g transform="translate(900 120)">
+    <rect class="group" width="380" height="132" rx="24"/>
+    <text class="grouptext" x="190" y="36" text-anchor="middle">Symbolic</text>
+    <rect class="item" x="22" y="58" width="80" height="42" rx="12"/><text class="itemtext" x="62" y="84" text-anchor="middle">Cards</text>
+    <rect class="item" x="112" y="58" width="90" height="42" rx="12"/><text class="itemtext" x="157" y="84" text-anchor="middle">Hexagram</text>
+    <rect class="item" x="214" y="58" width="72" height="42" rx="12"/><text class="itemtext" x="250" y="84" text-anchor="middle">Type</text>
+    <rect class="item" x="296" y="58" width="62" height="42" rx="12"/><text class="itemtext" x="327" y="84" text-anchor="middle">Line</text>
+  </g>
+  <g transform="translate(60 402)">
+    <rect class="group" width="340" height="136" rx="24"/>
+    <text class="grouptext" x="170" y="36" text-anchor="middle">Somatic</text>
+    <rect class="item" x="30" y="58" width="88" height="42" rx="12"/><text class="itemtext" x="74" y="84" text-anchor="middle">Breath</text>
+    <rect class="item" x="128" y="58" width="82" height="42" rx="12"/><text class="itemtext" x="169" y="84" text-anchor="middle">Media</text>
+    <rect class="item" x="220" y="58" width="88" height="42" rx="12"/><text class="itemtext" x="264" y="84" text-anchor="middle">Sensing</text>
+  </g>
+  <g transform="translate(1000 402)">
+    <rect class="group" width="340" height="136" rx="24"/>
+    <text class="grouptext" x="170" y="36" text-anchor="middle">Form</text>
+    <rect class="item" x="32" y="58" width="96" height="42" rx="12"/><text class="itemtext" x="80" y="84" text-anchor="middle">Geometry</text>
+    <rect class="item" x="140" y="58" width="74" height="42" rx="12"/><text class="itemtext" x="177" y="84" text-anchor="middle">Sigil</text>
+    <rect class="item" x="226" y="58" width="82" height="42" rx="12"/><text class="itemtext" x="267" y="84" text-anchor="middle">Image</text>
+  </g>
+  <g transform="translate(160 660)">
+    <rect class="group" width="380" height="132" rx="24"/>
+    <text class="grouptext" x="190" y="36" text-anchor="middle">Resonance</text>
+    <rect class="item" x="60" y="58" width="92" height="42" rx="12"/><text class="itemtext" x="106" y="84" text-anchor="middle">Sound</text>
+    <rect class="item" x="166" y="58" width="92" height="42" rx="12"/><text class="itemtext" x="212" y="84" text-anchor="middle">Rhythm</text>
+    <rect class="item" x="272" y="58" width="62" height="42" rx="12"/><text class="itemtext" x="303" y="84" text-anchor="middle">Tone</text>
+  </g>
+  <g transform="translate(860 660)">
+    <rect class="group" width="380" height="132" rx="24"/>
+    <text class="grouptext" x="190" y="36" text-anchor="middle">Relational and Narrative</text>
+    <rect class="item" x="42" y="58" width="92" height="42" rx="12"/><text class="itemtext" x="88" y="84" text-anchor="middle">Roles</text>
+    <rect class="item" x="148" y="58" width="88" height="42" rx="12"/><text class="itemtext" x="192" y="84" text-anchor="middle">Inquiry</text>
+    <rect class="item" x="250" y="58" width="88" height="42" rx="12"/><text class="itemtext" x="294" y="84" text-anchor="middle">Story</text>
+  </g>
+  <text class="note" x="700" y="842" text-anchor="middle">The matrix groups lenses by reflective contribution; it does not imply equal maturity or predictive authority.</text>
+</svg>

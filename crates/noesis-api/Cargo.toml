@@ -31,8 +31,8 @@ chrono = { version = "0.4", features = ["serde"] }
 chrono-tz = "0.10"
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter", "fmt", "json"] }
-tracing-opentelemetry = { version = "0.22", optional = true }
-opentelemetry = { version = "0.22", features = ["trace"], optional = true }
+tracing-opentelemetry = { version = "0.33", optional = true }
+opentelemetry = { version = "0.32", features = ["trace"], optional = true }
 dashmap = "5.5"
 utoipa = { version = "5", features = ["axum_extras", "chrono"] }
 utoipa-swagger-ui = { version = "8", features = ["axum"] }

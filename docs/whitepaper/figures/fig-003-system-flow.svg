@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="760" viewBox="0 0 1400 760" role="img" aria-labelledby="title desc">
+  <title id="title">Input engine witness artifact flow</title>
+  <desc id="desc">A flow diagram showing practitioner inquiry entering input, engine, witness, and artifact layers, with boundary checks surrounding each stage.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M0,0 L12,6 L0,12 Z" fill="#d9b778"/>
+    </marker>
+    <style>
+      .bg{fill:#11131a}
+      .box{fill:#1a2030;stroke:#d9b778;stroke-width:2.5}
+      .guard{fill:none;stroke:#79a9ff;stroke-width:2;stroke-dasharray:8 8;opacity:.8}
+      .arrow{stroke:#d9b778;stroke-width:3;marker-end:url(#arrow);fill:none}
+      .title{font:700 42px Georgia,serif;fill:#f5dfaa}
+      .label{font:700 26px Inter,Arial,sans-serif;fill:#f8e7bd}
+      .small{font:17px Inter,Arial,sans-serif;fill:#d8c7b0}
+      .guardtext{font:18px Inter,Arial,sans-serif;fill:#bcd3ff}
+    </style>
+  </defs>
+  <rect class="bg" width="1400" height="760"/>
+  <text class="title" x="700" y="68" text-anchor="middle">Input → Engine → Witness → Artifact</text>
+  <rect class="guard" x="64" y="122" width="1272" height="494" rx="42"/>
+  <text class="guardtext" x="700" y="646" text-anchor="middle">Boundary checks surround every stage: allowed material, partiality, voice restraint, and inspectable result.</text>
+  <g transform="translate(110 245)">
+    <rect class="box" width="250" height="190" rx="28"/>
+    <text class="label" x="125" y="50" text-anchor="middle">Input</text>
+    <text class="small" x="125" y="88" text-anchor="middle">time · question</text>
+    <text class="small" x="125" y="118" text-anchor="middle">symbol · media</text>
+    <text class="small" x="125" y="148" text-anchor="middle">role · context</text>
+  </g>
+  <path class="arrow" d="M380 340 H500"/>
+  <g transform="translate(520 245)">
+    <rect class="box" width="250" height="190" rx="28"/>
+    <text class="label" x="125" y="50" text-anchor="middle">Engine</text>
+    <text class="small" x="125" y="88" text-anchor="middle">bounded lens</text>
+    <text class="small" x="125" y="118" text-anchor="middle">typed result</text>
+    <text class="small" x="125" y="148" text-anchor="middle">visible omission</text>
+  </g>
+  <path class="arrow" d="M790 340 H910"/>
+  <g transform="translate(930 245)">
+    <rect class="box" width="250" height="190" rx="28"/>
+    <text class="label" x="125" y="50" text-anchor="middle">Witness</text>
+    <text class="small" x="125" y="88" text-anchor="middle">non-prescriptive</text>
+    <text class="small" x="125" y="118" text-anchor="middle">plural prompts</text>
+    <text class="small" x="125" y="148" text-anchor="middle">authorship kept</text>
+  </g>
+  <path class="arrow" d="M1180 340 H1260"/>
+  <g transform="translate(1010 500)">
+    <rect class="box" width="280" height="88" rx="22"/>
+    <text class="label" x="140" y="38" text-anchor="middle">Artifact</text>
+    <text class="small" x="140" y="65" text-anchor="middle">mirror that can be revised</text>
+  </g>
+  <path class="arrow" d="M1070 438 C1090 470 1128 485 1150 498"/>
+  <text class="small" x="240" y="180" text-anchor="middle">Practitioner inquiry enters only through declared material.</text>
+  <text class="small" x="700" y="180" text-anchor="middle">Each lens is partial and can refuse.</text>
+  <text class="small" x="1100" y="180" text-anchor="middle">Language returns agency rather than command.</text>
+</svg>

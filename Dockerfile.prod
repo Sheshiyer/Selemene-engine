@@ -37,6 +37,8 @@ COPY crates/noesis-api/Cargo.toml ./crates/noesis-api/Cargo.toml
 COPY crates/noesis-vedic-api/Cargo.toml ./crates/noesis-vedic-api/Cargo.toml
 COPY crates/noesis-western-api/Cargo.toml ./crates/noesis-western-api/Cargo.toml
 COPY crates/noesis-integration/Cargo.toml ./crates/noesis-integration/Cargo.toml
+COPY crates/noesis-sdk/Cargo.toml ./crates/noesis-sdk/Cargo.toml
+COPY crates/noesis-tui/Cargo.toml ./crates/noesis-tui/Cargo.toml
 COPY crates/engine-panchanga/Cargo.toml ./crates/engine-panchanga/Cargo.toml
 COPY crates/engine-numerology/Cargo.toml ./crates/engine-numerology/Cargo.toml
 COPY crates/engine-biorhythm/Cargo.toml ./crates/engine-biorhythm/Cargo.toml
@@ -45,7 +47,9 @@ COPY crates/engine-vimshottari/Cargo.toml ./crates/engine-vimshottari/Cargo.toml
 COPY crates/engine-gene-keys/Cargo.toml ./crates/engine-gene-keys/Cargo.toml
 COPY crates/engine-vedic-clock/Cargo.toml ./crates/engine-vedic-clock/Cargo.toml
 COPY crates/engine-biofield/Cargo.toml ./crates/engine-biofield/Cargo.toml
+COPY crates/engine-biofield-capture/Cargo.toml ./crates/engine-biofield-capture/Cargo.toml
 COPY crates/engine-face-reading/Cargo.toml ./crates/engine-face-reading/Cargo.toml
+COPY crates/engine-financial-biosensor/Cargo.toml ./crates/engine-financial-biosensor/Cargo.toml
 COPY crates/engine-nadabrahman/Cargo.toml ./crates/engine-nadabrahman/Cargo.toml
 COPY crates/engine-transits/Cargo.toml ./crates/engine-transits/Cargo.toml
 
@@ -54,10 +58,11 @@ COPY crates/engine-transits/Cargo.toml ./crates/engine-transits/Cargo.toml
 RUN for crate in \
       noesis-core noesis-data noesis-cache noesis-auth noesis-metrics \
       noesis-witness noesis-orchestrator noesis-bridge noesis-vedic-api \
-      noesis-western-api noesis-integration \
+      noesis-western-api noesis-integration noesis-sdk \
       engine-panchanga engine-numerology engine-biorhythm engine-human-design \
       engine-vimshottari engine-gene-keys engine-vedic-clock engine-biofield \
-      engine-face-reading engine-nadabrahman engine-transits; do \
+      engine-biofield-capture engine-face-reading engine-financial-biosensor \
+      engine-nadabrahman engine-transits; do \
         mkdir -p "crates/$crate/src" && \
         echo "" > "crates/$crate/src/lib.rs"; \
     done && \
@@ -67,6 +72,8 @@ RUN for crate in \
     echo "fn main() {}" > crates/noesis-api/src/main.rs && \
     echo "fn main() {}" > crates/noesis-api/src/bin/generate_load_test_tokens.rs && \
     echo "fn main() {}" > crates/noesis-api/src/bin/generate_test_credentials.rs && \
+    mkdir -p crates/noesis-tui/src && \
+    echo "fn main() {}" > crates/noesis-tui/src/main.rs && \
     # Create dummy benches and examples to satisfy Cargo.toml manifests during pre-build
     mkdir -p crates/noesis-orchestrator/benches && echo "fn main() {}" > crates/noesis-orchestrator/benches/workflow_bench.rs && \
     mkdir -p crates/noesis-api/benches && echo "fn main() {}" > crates/noesis-api/benches/engine_comparison.rs && \
@@ -77,15 +84,21 @@ RUN for crate in \
     echo "fn main() {}" > crates/noesis-auth/examples/issue_api_key_from_existing.rs && \
     mkdir -p crates/noesis-data/examples && \
     echo "fn main() {}" > crates/noesis-data/examples/record_humdes_run.rs && \
+    mkdir -p crates/engine-biofield/benches && echo "fn main() {}" > crates/engine-biofield/benches/biofield_bench.rs && \
+    mkdir -p crates/engine-biorhythm/benches && echo "fn main() {}" > crates/engine-biorhythm/benches/biorhythm_bench.rs && \
+    mkdir -p crates/engine-face-reading/benches && echo "fn main() {}" > crates/engine-face-reading/benches/face_reading_bench.rs && \
     mkdir -p crates/engine-gene-keys/benches && echo "fn main() {}" > crates/engine-gene-keys/benches/gk_performance.rs && \
-    mkdir -p crates/engine-human-design/benches && echo "fn main() {}" > crates/engine-human-design/benches/hd_performance.rs
+    echo "fn main() {}" > crates/engine-gene-keys/benches/gene_keys_bench.rs && \
+    mkdir -p crates/engine-human-design/benches && echo "fn main() {}" > crates/engine-human-design/benches/hd_performance.rs && \
+    mkdir -p crates/engine-nadabrahman/benches && echo "fn main() {}" > crates/engine-nadabrahman/benches/nadabrahman_bench.rs && \
+    mkdir -p crates/engine-transits/benches && echo "fn main() {}" > crates/engine-transits/benches/transits_bench.rs && \
+    mkdir -p crates/engine-vedic-clock/benches && echo "fn main() {}" > crates/engine-vedic-clock/benches/vedic_clock_bench.rs && \
+    echo "fn main() {}" > crates/engine-vimshottari/benches/vimshottari_bench.rs
 
 # --- Layer 3: Build dependencies only (THIS LAYER IS CACHED on source-only changes) ---
-# The build may produce warnings or partial errors for missing data files (include_str!
-# paths that don't exist yet) — that is expected and intentional. The goal of this
-# layer is only to pre-compile third-party dependencies. Any real build failure (linker
-# errors, Rust errors) will surface in Layer 6 where all sources are present.
-RUN cargo build --release --bin noesis-server 2>&1 || true
+# This cache-prime build is a real build gate. Stubs above must represent every
+# workspace target needed by Cargo metadata, and any failure stops the image build.
+RUN cargo build --release --bin noesis-server
 
 # --- Layer 4: Copy data files (changes infrequently) ---
 COPY data/ ./data/

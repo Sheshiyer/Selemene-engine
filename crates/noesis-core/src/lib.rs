@@ -3,6 +3,7 @@
 //! All 16 consciousness engines implement the `ConsciousnessEngine` trait defined here.
 //! This crate provides the universal interface, shared types, and error definitions.
 
+pub mod contract;
 pub mod error;
 pub mod intake;
 pub mod types;

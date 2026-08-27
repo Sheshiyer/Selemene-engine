@@ -27,7 +27,7 @@ anyhow = "1.0"
 chrono = { version = "0.4", features = ["serde"] }
 
 # Caching
-lru = "0.12"
+lru = "0.18.2"
 
 # Configuration
 config = "0.14"

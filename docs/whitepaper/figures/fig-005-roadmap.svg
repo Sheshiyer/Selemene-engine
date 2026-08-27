@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="620" viewBox="0 0 1400 620" role="img" aria-labelledby="title desc">
+  <title id="title">Roadmap from boundary discipline to ecosystem expression</title>
+  <desc id="desc">A sequence diagram showing boundary, partiality, consent and provenance, cultural review, evaluation, and expressive ecosystem stages.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M0,0 L12,6 L0,12 Z" fill="#d9b778"/>
+    </marker>
+    <style>
+      .bg{fill:#11131a}
+      .step{fill:#1a2030;stroke:#d9b778;stroke-width:2.2}
+      .future{fill:#1b2230;stroke:#79a9ff;stroke-width:2.2}
+      .line{stroke:#d9b778;stroke-width:3;marker-end:url(#arrow);fill:none}
+      .title{font:700 40px Georgia,serif;fill:#f5dfaa}
+      .label{font:700 20px Inter,Arial,sans-serif;fill:#f8e7bd}
+      .small{font:15px Inter,Arial,sans-serif;fill:#d8c7b0}
+      .note{font:18px Inter,Arial,sans-serif;fill:#e4d6bf}
+    </style>
+  </defs>
+  <rect class="bg" width="1400" height="620"/>
+  <text class="title" x="700" y="64" text-anchor="middle">Roadmap of Inquiry</text>
+  <g transform="translate(80 185)">
+    <rect class="step" width="170" height="150" rx="24"/>
+    <text class="label" x="85" y="44" text-anchor="middle">1 Boundary</text>
+    <text class="small" x="85" y="78" text-anchor="middle">claim limits</text>
+    <text class="small" x="85" y="104" text-anchor="middle">refusal surface</text>
+  </g>
+  <path class="line" d="M260 260 H345"/>
+  <g transform="translate(360 185)">
+    <rect class="step" width="170" height="150" rx="24"/>
+    <text class="label" x="85" y="44" text-anchor="middle">2 Partiality</text>
+    <text class="small" x="85" y="78" text-anchor="middle">lens maturity</text>
+    <text class="small" x="85" y="104" text-anchor="middle">omissions shown</text>
+  </g>
+  <path class="line" d="M540 260 H625"/>
+  <g transform="translate(640 185)">
+    <rect class="step" width="170" height="150" rx="24"/>
+    <text class="label" x="85" y="44" text-anchor="middle">3 Consent</text>
+    <text class="small" x="85" y="78" text-anchor="middle">scope and use</text>
+    <text class="small" x="85" y="104" text-anchor="middle">origin visible</text>
+  </g>
+  <path class="line" d="M820 260 H905"/>
+  <g transform="translate(920 185)">
+    <rect class="future" width="170" height="150" rx="24"/>
+    <text class="label" x="85" y="44" text-anchor="middle">4 Culture</text>
+    <text class="small" x="85" y="78" text-anchor="middle">situated symbols</text>
+    <text class="small" x="85" y="104" text-anchor="middle">review depth</text>
+  </g>
+  <path class="line" d="M1100 260 H1185"/>
+  <g transform="translate(1200 185)">
+    <rect class="future" width="170" height="150" rx="24"/>
+    <text class="label" x="85" y="44" text-anchor="middle">5 Expression</text>
+    <text class="small" x="85" y="78" text-anchor="middle">multisensory forms</text>
+    <text class="small" x="85" y="104" text-anchor="middle">same boundary</text>
+  </g>
+  <g transform="translate(360 420)">
+    <rect class="future" width="680" height="84" rx="24"/>
+    <text class="label" x="340" y="35" text-anchor="middle">Evaluation runs across all stages</text>
+    <text class="small" x="340" y="62" text-anchor="middle">structural validity · witness review · cultural care · practitioner comprehension · field evidence</text>
+  </g>
+  <text class="note" x="700" y="570" text-anchor="middle">Expansion follows boundary; expression is mature only when limits travel with the artifact.</text>
+</svg>

@@ -1,0 +1,9 @@
+{
+  "contract_version": "v1",
+  "status": 422,
+  "error_code": "VALIDATION_ERROR",
+  "message": "The request did not satisfy the engine contract.",
+  "error": "validation_error",
+  "details": { "field": "consciousness_level", "reason": "must be between 0 and 5" },
+  "trace_id": "trace-contract-v1-001"
+}

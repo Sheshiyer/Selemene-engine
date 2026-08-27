@@ -1,0 +1,86 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="980" viewBox="0 0 1500 980" role="img" aria-labelledby="title desc">
+  <title id="title">Multi-pass witness protocol</title>
+  <desc id="desc">A vertical protocol showing ingest, lens computation, structural synthesis, interpretive bridge, autonomy return, and review gates.</desc>
+  <defs>
+    <marker id="arrow-pass" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto">
+      <path d="M0,0 L14,7 L0,14 Z" fill="#d8b16a"/>
+    </marker>
+    <style>
+      .bg{fill:#0e1118}
+      .title{font:700 48px Georgia,serif;fill:#f4dfad}
+      .subtitle{font:22px Inter,Arial,sans-serif;fill:#c9bda9}
+      .pass{fill:#171d2b;stroke:#d8b16a;stroke-width:3}
+      .gate{fill:#13243a;stroke:#78a6ff;stroke-width:3}
+      .label{font:700 28px Inter,Arial,sans-serif;fill:#fff1c9}
+      .small{font:20px Inter,Arial,sans-serif;fill:#dfd1bc}
+      .tiny{font:17px Inter,Arial,sans-serif;fill:#bdb2a3}
+      .arrow{stroke:#d8b16a;stroke-width:4;marker-end:url(#arrow-pass);fill:none}
+      .side{fill:#101722;stroke:#3f4758;stroke-width:2}
+    </style>
+  </defs>
+  <rect class="bg" width="1500" height="980"/>
+  <text class="title" x="750" y="70" text-anchor="middle">Multi-Pass Witness Protocol</text>
+  <text class="subtitle" x="750" y="108" text-anchor="middle">fluency is reviewed through gates before it becomes an artifact</text>
+
+  <g transform="translate(425 155)">
+    <rect class="pass" width="650" height="92" rx="26"/>
+    <text class="label" x="325" y="39" text-anchor="middle">1 · Ingest</text>
+    <text class="small" x="325" y="68" text-anchor="middle">synthetic subject · inquiry · consent scope</text>
+  </g>
+  <path class="arrow" d="M750 252 V294"/>
+
+  <g transform="translate(425 300)">
+    <rect class="pass" width="650" height="92" rx="26"/>
+    <text class="label" x="325" y="39" text-anchor="middle">2 · Lens computation</text>
+    <text class="small" x="325" y="68" text-anchor="middle">each lens outputs only its own evidence class</text>
+  </g>
+  <path class="arrow" d="M750 397 V439"/>
+
+  <g transform="translate(425 445)">
+    <rect class="pass" width="650" height="92" rx="26"/>
+    <text class="label" x="325" y="39" text-anchor="middle">3 · Structural synthesis</text>
+    <text class="small" x="325" y="68" text-anchor="middle">computed · selected · generated · omitted remain distinct</text>
+  </g>
+  <path class="arrow" d="M750 542 V584"/>
+
+  <g transform="translate(425 590)">
+    <rect class="pass" width="650" height="92" rx="26"/>
+    <text class="label" x="325" y="39" text-anchor="middle">4 · Interpretive bridge</text>
+    <text class="small" x="325" y="68" text-anchor="middle">witness framing without prediction or diagnosis</text>
+  </g>
+  <path class="arrow" d="M750 687 V729"/>
+
+  <g transform="translate(425 735)">
+    <rect class="pass" width="650" height="92" rx="26"/>
+    <text class="label" x="325" y="39" text-anchor="middle">5 · Autonomy return</text>
+    <text class="small" x="325" y="68" text-anchor="middle">question or invitation; meaning remains with the practitioner</text>
+  </g>
+  <path class="arrow" d="M750 832 V874"/>
+
+  <g transform="translate(425 880)">
+    <rect class="gate" width="650" height="72" rx="26"/>
+    <text class="label" x="325" y="45" text-anchor="middle">6 · Review: pass · qualified · revise · refuse</text>
+  </g>
+
+  <g transform="translate(85 305)">
+    <rect class="side" width="270" height="330" rx="28"/>
+    <text class="label" x="135" y="48" text-anchor="middle">Refusal rail</text>
+    <text class="small" x="135" y="92" text-anchor="middle">fate</text>
+    <text class="small" x="135" y="126" text-anchor="middle">diagnosis</text>
+    <text class="small" x="135" y="160" text-anchor="middle">guarantee</text>
+    <text class="small" x="135" y="194" text-anchor="middle">moral pressure</text>
+    <text class="tiny" x="135" y="252" text-anchor="middle">unsafe claims exit</text>
+    <text class="tiny" x="135" y="280" text-anchor="middle">as bounded alternatives</text>
+  </g>
+
+  <g transform="translate(1145 305)">
+    <rect class="side" width="270" height="330" rx="28"/>
+    <text class="label" x="135" y="48" text-anchor="middle">Audit rail</text>
+    <text class="small" x="135" y="92" text-anchor="middle">source clarity</text>
+    <text class="small" x="135" y="126" text-anchor="middle">grounding</text>
+    <text class="small" x="135" y="160" text-anchor="middle">privacy</text>
+    <text class="small" x="135" y="194" text-anchor="middle">cultural care</text>
+    <text class="tiny" x="135" y="252" text-anchor="middle">beauty cannot repair</text>
+    <text class="tiny" x="135" y="280" text-anchor="middle">a failed boundary</text>
+  </g>
+</svg>

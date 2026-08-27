@@ -267,6 +267,7 @@ pub async fn generate(
         (
             StatusCode::BAD_REQUEST,
             Json(crate::error_mapper::ErrorResponse {
+                contract_version: noesis_core::contract::CONTRACT_VERSION.to_string(),
                 status: 400,
                 error_code: "UNKNOWN_MODE".to_string(),
                 message: msg.clone(),

@@ -1,10 +1,13 @@
 import { describe, expect, it, vi } from "vitest";
 import {
+  CONTRACT_VERSION,
   ENGINE_IDS,
   NoesisClient,
   SelemeneError,
   WORKFLOW_IDS,
   type EngineInput,
+  type ContractEngineCapability,
+  type ContractEngineResult,
 } from "./index.js";
 
 const input: EngineInput = {
@@ -16,6 +19,52 @@ const input: EngineInput = {
     timezone: "Asia/Kolkata",
   },
 };
+
+const canonicalCapability: ContractEngineCapability = {
+  contract_version: "v1",
+  engine_id: "numerology",
+  display_name: "Numerology",
+  availability: "available",
+  runtime_kind: "native",
+  dependencies: [],
+};
+
+const canonicalResult: ContractEngineResult = {
+  contract_version: "v1",
+  engine_id: "numerology",
+  result: { life_path_number: 7 },
+  consciousness_level: 2,
+  witness_prompts: [{ prompt: "What is witnessed?" }],
+  calculated_at: "2026-08-26T06:30:00Z",
+  processing_time_ms: 12.5,
+  provenance: {
+    runtime_kind: "native",
+    implementation_version: "3.3.1",
+    cached: false,
+    fallback_used: false,
+  },
+};
+
+const singularLegacyResult: ContractEngineResult = {
+  contract_version: "v1",
+  engine_id: "numerology",
+  result: {},
+  consciousness_level: 2,
+  witness_prompt: "What is witnessed?",
+  calculated_at: "2026-08-26T06:30:00Z",
+  processing_time_ms: 1,
+};
+
+describe("contract authority v1", () => {
+  it("retains public mirror IDs and canonical envelope fields", () => {
+    expect(CONTRACT_VERSION).toBe("v1");
+    expect(ENGINE_IDS).toHaveLength(17);
+    expect(ENGINE_IDS).toContain(canonicalCapability.engine_id);
+    expect(canonicalResult.contract_version).toBe(CONTRACT_VERSION);
+    expect(canonicalResult.witness_prompts?.[0]?.prompt).toBe("What is witnessed?");
+    expect(singularLegacyResult.provenance).toBeUndefined();
+  });
+});
 
 describe("NoesisClient", () => {
   it("supports all 16 engine calculate calls", async () => {

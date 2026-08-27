@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="760" viewBox="0 0 1600 760" role="img" aria-labelledby="title desc">
+  <title id="title">Source-status legend</title>
+  <desc id="desc">Six source-status lanes used to distinguish supplied, deterministic, selected, generated, omitted, and refused material.</desc>
+  <defs>
+    <style>
+      .bg{fill:#0e1118}
+      .title{font:700 48px Georgia,serif;fill:#f4dfad}
+      .subtitle{font:22px Inter,Arial,sans-serif;fill:#c9bda9}
+      .lane{stroke-width:3}
+      .h{font:700 26px Inter,Arial,sans-serif;fill:#0e1118}
+      .body{font:20px Inter,Arial,sans-serif;fill:#f4ead4}
+      .note{font:18px Inter,Arial,sans-serif;fill:#c8baa5}
+      .rule{stroke:#3f4758;stroke-width:2}
+    </style>
+  </defs>
+  <rect class="bg" width="1600" height="760"/>
+  <text class="title" x="800" y="72" text-anchor="middle">Source-Status Legend</text>
+  <text class="subtitle" x="800" y="110" text-anchor="middle">every sentence in a sensitive mirror should know where its authority comes from</text>
+
+  <g transform="translate(90 165)">
+    <rect class="lane" width="220" height="88" rx="24" fill="#f4dfad" stroke="#f4dfad"/>
+    <text class="h" x="110" y="54" text-anchor="middle">SUPPLIED</text>
+    <text class="body" x="260" y="36">Entered by the practitioner or synthetic fixture.</text>
+    <text class="note" x="260" y="68">Obligation: preserve consent scope and sensitivity.</text>
+  </g>
+  <line class="rule" x1="90" y1="277" x2="1510" y2="277"/>
+
+  <g transform="translate(90 300)">
+    <rect class="lane" width="220" height="88" rx="24" fill="#78a6ff" stroke="#78a6ff"/>
+    <text class="h" x="110" y="54" text-anchor="middle">DETERMINISTIC</text>
+    <text class="body" x="260" y="36">Produced by a declared rule from declared inputs.</text>
+    <text class="note" x="260" y="68">Obligation: show transform, timestamp, or audit metadata.</text>
+  </g>
+  <line class="rule" x1="90" y1="412" x2="1510" y2="412"/>
+
+  <g transform="translate(90 435)">
+    <rect class="lane" width="220" height="88" rx="24" fill="#d8b16a" stroke="#d8b16a"/>
+    <text class="h" x="110" y="54" text-anchor="middle">SELECTED</text>
+    <text class="body" x="260" y="36">Chosen from a symbolic map, taxonomy, table, or spread.</text>
+    <text class="note" x="260" y="68">Obligation: frame as lens material, not universal fact.</text>
+  </g>
+
+  <g transform="translate(870 165)">
+    <rect class="lane" width="220" height="88" rx="24" fill="#9cc47a" stroke="#9cc47a"/>
+    <text class="h" x="110" y="54" text-anchor="middle">GENERATED</text>
+    <text class="body" x="260" y="36">Witness language from prior material.</text>
+    <text class="note" x="260" y="68">Obligation: mark as framing or invitation.</text>
+  </g>
+  <line class="rule" x1="870" y1="277" x2="1510" y2="277"/>
+
+  <g transform="translate(870 300)">
+    <rect class="lane" width="220" height="88" rx="24" fill="#c982b7" stroke="#c982b7"/>
+    <text class="h" x="110" y="54" text-anchor="middle">OMITTED</text>
+    <text class="body" x="260" y="36">Absent, unnecessary, or outside scope.</text>
+    <text class="note" x="260" y="68">Obligation: keep omission visible.</text>
+  </g>
+  <line class="rule" x1="870" y1="412" x2="1510" y2="412"/>
+
+  <g transform="translate(870 435)">
+    <rect class="lane" width="220" height="88" rx="24" fill="#e47777" stroke="#e47777"/>
+    <text class="h" x="110" y="54" text-anchor="middle">REFUSED</text>
+    <text class="body" x="260" y="36">Blocked because it would overclaim.</text>
+    <text class="note" x="260" y="68">Obligation: offer bounded alternative.</text>
+  </g>
+
+  <rect x="220" y="615" width="1160" height="74" rx="28" fill="#171d2b" stroke="#3f4758" stroke-width="2"/>
+  <text class="body" x="800" y="660" text-anchor="middle">Generated witness language never becomes deterministic evidence merely because it feels coherent.</text>
+</svg>

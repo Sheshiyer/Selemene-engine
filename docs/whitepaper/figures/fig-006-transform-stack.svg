@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1320" height="780" viewBox="0 0 1320 780" role="img" aria-labelledby="title desc">
+  <title id="title">Bounded transformation stack</title>
+  <desc id="desc">Layered academic diagram showing inquiry passing through boundary, lens, synthesis, witness, and artifact strata.</desc>
+  <defs>
+    <style>
+      .bg{fill:#11131a}.layer{fill:#1a2030;stroke:#d9b778;stroke-width:2.3}.guard{fill:#201824;stroke:#efb86c;stroke-width:2.3}.title{font:700 40px Georgia,serif;fill:#f5dfaa}.label{font:700 23px Inter,Arial,sans-serif;fill:#f8e7bd}.small{font:16px Inter,Arial,sans-serif;fill:#d8c7b0}.eq{font:18px Georgia,serif;fill:#bcd3ff}
+    </style>
+  </defs>
+  <rect class="bg" width="1320" height="780"/>
+  <text class="title" x="660" y="64" text-anchor="middle">Bounded Transformation Stack</text>
+  <rect class="layer" x="155" y="120" width="1010" height="82" rx="24"/>
+  <text class="label" x="250" y="170">Inquiry</text><text class="small" x="430" y="170">question, context, role, timing, selected material</text>
+  <rect class="guard" x="155" y="220" width="1010" height="82" rx="24"/>
+  <text class="label" x="250" y="270">Boundary</text><text class="eq" x="430" y="270">Vᵥ(z), C(r,m), Π(A)</text>
+  <rect class="layer" x="155" y="320" width="1010" height="82" rx="24"/>
+  <text class="label" x="250" y="370">Lens</text><text class="eq" x="430" y="370">fᵢ : Xᵢ ⇀ Yᵢ ∪ Eᵢ</text>
+  <rect class="layer" x="155" y="420" width="1010" height="82" rx="24"/>
+  <text class="label" x="250" y="470">Synthesis</text><text class="eq" x="430" y="470">R(t) = (σ(t), Oₜ, Δₜ)</text>
+  <rect class="layer" x="155" y="520" width="1010" height="82" rx="24"/>
+  <text class="label" x="250" y="570">Witness</text><text class="eq" x="430" y="570">Wℓ → prompts, contrasts, refusals</text>
+  <rect class="guard" x="155" y="620" width="1010" height="82" rx="24"/>
+  <text class="label" x="250" y="670">Artifact</text><text class="eq" x="430" y="670">inspectable mirror with provenance and limits</text>
+</svg>

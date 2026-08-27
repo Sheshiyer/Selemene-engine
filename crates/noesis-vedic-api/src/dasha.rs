@@ -336,7 +336,7 @@ impl CurrentDashas {
 
     /// Format as standard dasha notation (MD-AD-PD)
     pub fn to_notation(&self) -> String {
-        let mut parts = vec![format!("{}", self.mahadasha.planet.as_str())];
+        let mut parts = vec![self.mahadasha.planet.as_str().to_string()];
 
         if let Some(ref ant) = self.antardasha {
             parts.push(ant.planet.as_str().to_string());
