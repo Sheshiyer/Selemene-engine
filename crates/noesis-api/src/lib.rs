@@ -90,6 +90,7 @@ use workflow_parity::log_workflow_registry_parity;
         status_handler,
         vedic_chart_handler,
         list_engines_handler,
+        list_engine_capabilities_handler,
         calculate_handler,
         face_reading_upload_handler,
         validate_handler,
@@ -185,6 +186,8 @@ use workflow_parity::log_workflow_registry_parity;
             WorkflowSummary,
             EngineInfoResponse,
             EngineListResponse,
+            EngineCapabilityListResponse,
+            ApiEngineCapability,
             WorkflowListResponse,
             WorkflowInfoResponse,
             VedicChartBundleResponseSchema,
@@ -1015,6 +1018,10 @@ pub fn create_router(state: AppState, config: &ApiConfig) -> Router {
         .route("/status", get(status_handler))
         .route("/charts/vedic", post(vedic_chart_handler))
         .route("/engines", get(list_engines_handler))
+        .route(
+            "/engines/capabilities",
+            get(list_engine_capabilities_handler),
+        )
         .route("/engines/:engine_id/calculate", post(calculate_handler))
         .route(
             "/engines/face-reading/upload",
@@ -1262,6 +1269,26 @@ struct EngineInfoResponse {
 #[derive(Serialize, ToSchema)]
 struct EngineListResponse {
     engines: Vec<String>,
+}
+
+#[derive(Serialize, ToSchema)]
+struct EngineCapabilityListResponse {
+    count: usize,
+    capabilities: Vec<ApiEngineCapability>,
+}
+
+#[derive(Serialize, ToSchema)]
+struct ApiEngineCapability {
+    contract_version: String,
+    engine_id: String,
+    display_name: String,
+    availability: String,
+    runtime_kind: String,
+    dependencies: Vec<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    required_phase: Option<u8>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    implementation_version: Option<String>,
 }
 
 #[derive(Serialize, ToSchema)]
@@ -3133,6 +3160,68 @@ async fn engine_info_handler(
 async fn list_engines_handler(State(state): State<AppState>) -> Json<EngineListResponse> {
     Json(EngineListResponse {
         engines: state.orchestrator.list_engines(),
+    })
+}
+
+fn capability_for_registered_engine(
+    engine: &Arc<dyn noesis_core::ConsciousnessEngine>,
+) -> ApiEngineCapability {
+    let is_ts_bridge = engine.as_any().is::<noesis_bridge::BridgeEngine>();
+    let is_database_conditional = engine
+        .as_any()
+        .is::<noesis_orchestrator::BiofieldCaptureEngine>();
+
+    let (availability, runtime_kind, dependencies) = if is_ts_bridge {
+        ("declared", "typescript", vec!["ts-engines".to_string()])
+    } else if is_database_conditional {
+        (
+            "available",
+            "database-conditional",
+            vec!["postgres".to_string()],
+        )
+    } else {
+        ("available", "native", vec![])
+    };
+
+    ApiEngineCapability {
+        contract_version: noesis_core::contract::CONTRACT_VERSION.to_string(),
+        engine_id: engine.engine_id().to_string(),
+        display_name: engine.engine_name().to_string(),
+        availability: availability.to_string(),
+        runtime_kind: runtime_kind.to_string(),
+        dependencies,
+        required_phase: Some(engine.required_phase()),
+        implementation_version: None,
+    }
+}
+
+/// GET /api/v1/engines/capabilities -- list contract-v1 capability rows
+#[utoipa::path(
+    get,
+    path = "/api/v1/engines/capabilities",
+    tag = "engines",
+    responses(
+        (status = 200, description = "List of runtime capability records", body = EngineCapabilityListResponse),
+    ),
+    security(
+        ("bearer_auth" = []),
+        ("api_key" = [])
+    )
+)]
+async fn list_engine_capabilities_handler(
+    State(state): State<AppState>,
+) -> Json<EngineCapabilityListResponse> {
+    let capabilities: Vec<ApiEngineCapability> = state
+        .orchestrator
+        .list_engines()
+        .into_iter()
+        .filter_map(|engine_id| state.orchestrator.registry().get(&engine_id))
+        .map(|engine| capability_for_registered_engine(&engine))
+        .collect();
+
+    Json(EngineCapabilityListResponse {
+        count: capabilities.len(),
+        capabilities,
     })
 }
 

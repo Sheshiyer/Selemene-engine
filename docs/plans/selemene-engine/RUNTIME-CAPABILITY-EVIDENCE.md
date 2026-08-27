@@ -2,11 +2,13 @@
 
 Date: 2026-08-27
 Branch: `codex/selemene-runtime-capability`
-Scope: TypeScript sidecar runtime capability adoption plus a pinned local TypeScript verifier dependency; no engine algorithms, providers, credentials, databases, deployments, remotes, GitHub issues, or external services are changed by this source slice.
+Scope: TypeScript sidecar and Rust/API runtime capability adoption plus a pinned local TypeScript verifier dependency; no engine algorithms, providers, credentials, databases, deployments, remotes, GitHub issues, or external services are changed by this source slice.
 
 ## Boundary
 
 This slice begins the post-contract runtime layer by exposing registered TypeScript engines as live `contracts/v1` capability records. It derives each record from the actual sidecar registry and existing per-engine self-checks, so registered metadata is no longer the only runtime discovery surface.
+
+The Rust/API slice adds a matching authenticated `contracts/v1` capability discovery surface for the main API router. It derives rows from the live orchestrator registry and classifies native Rust engines, TypeScript bridge engines, and database-conditional engines without invoking providers, sidecars, databases, or remotes.
 
 ## Behavior
 
@@ -16,6 +18,21 @@ This slice begins the post-contract runtime layer by exposing registered TypeScr
 - Registered engines with failing self-checks report `availability: "unavailable"` instead of being advertised as live.
 - The endpoint does not call providers, generation APIs, databases, remotes, or deployment surfaces.
 - `ts-engines` now declares and locks `typescript@5.6.3` so `bun run typecheck` resolves from the project lock instead of a floating `bunx` registry lookup.
+- `GET /api/v1/engines/capabilities` returns authenticated main-API capability rows with contract version `v1`, display name, runtime kind, availability, dependencies, and required phase.
+- Main-API native Rust engines report `runtime_kind: "native"` and `availability: "available"`.
+- Main-API TypeScript bridge engines report `runtime_kind: "typescript"`, `availability: "declared"`, and `dependencies: ["ts-engines"]`.
+- Main-API database-conditional engines report `runtime_kind: "database-conditional"` and `dependencies: ["postgres"]`.
+
+## HITL operational gate recovery
+
+This operational step repaired the production smoke credential boundary after human authorization. The secret value was never printed, read back, or written to the repository.
+
+- Railway project: `robust-adventure` (`11eedde4-41e6-4f51-b86b-cf77111cf592`), environment `production` (`702b945e-2c66-4d5a-bae1-4c67ea14c3bb`), service `Selemene-engine`.
+- A fresh scoped smoke API key was created in production Postgres with name `ci-smoke-gh-actions-20260827T173428Z`.
+- Local production smoke preflight against `https://selemene.tryambakam.space` passed: 7 checks, 0 failed.
+- GitHub secret `SMOKE_TEST_API_KEY` was updated at `2026-08-27T17:34:53Z`.
+- GitHub Actions run `33048319592` (`CD - Build & Deploy`) was rerun and live-read back as `status: completed`, `conclusion: success`, `headSha: ae3e2cef402bd0cf28d1c7a102800d215cc5f2c2`, `updatedAt: 2026-08-27T17:36:34Z`.
+- The rerun `API Smoke Tests` job passed, including `Run API smoke runner` and `Verify mode contract on the deployed engine`.
 
 ## TDD receipts
 
@@ -28,6 +45,11 @@ This slice begins the post-contract runtime layer by exposing registered TypeScr
 - `bun install --frozen-lockfile`: passed; installed locked `typescript@5.6.3`.
 - `bun run typecheck && bun test tests/baseline_registry.test.ts tests/health.test.ts`: typecheck passed; 9 tests passed, 0 failed.
 - `bun test`: 92 tests passed, 0 failed.
+- `cargo fmt --package noesis-api && cargo test -p noesis-api --test capability_route_tests`: formatted `noesis-api`; 1 test passed, 0 failed.
+
+### Broader local check
+
+- `cargo test -p noesis-api`: compiled and passed the unit/OpenAPI/asset lanes reached before billing E2E; failed in `billing_e2e_tests` because all four webhook tests timed out connecting to local Postgres (`PoolTimedOut`). This failure is outside the new capability route path; rerun with a reachable local E2E Postgres before using the full package result as a release gate.
 
 ## Remote infra readback
 
