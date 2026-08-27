@@ -22,6 +22,22 @@ interface EngineListBody {
   engines: EngineSummary[]
 }
 
+interface EngineCapabilitySummary {
+  contract_version: 'v1'
+  engine_id: string
+  display_name: string
+  availability: string
+  runtime_kind: string
+  dependencies: string[]
+  required_phase?: number
+  implementation_version?: string
+}
+
+interface EngineCapabilityListBody {
+  count: number
+  capabilities: EngineCapabilitySummary[]
+}
+
 interface ReadinessBody {
   status: string
   engines: unknown[]
@@ -43,6 +59,27 @@ function parseEngineListBody(value: unknown): EngineListBody {
     return { id: engine.id, version: engine.version }
   })
   return { count: value.count, engines }
+}
+
+function parseEngineCapabilityListBody(value: unknown): EngineCapabilityListBody {
+  if (!isRecord(value) || typeof value.count !== 'number' || !Array.isArray(value.capabilities)) {
+    throw new Error('invalid /engines/capabilities response shape')
+  }
+  const capabilities = value.capabilities.map((capability): EngineCapabilitySummary => {
+    if (
+      !isRecord(capability) ||
+      capability.contract_version !== 'v1' ||
+      typeof capability.engine_id !== 'string' ||
+      typeof capability.display_name !== 'string' ||
+      typeof capability.availability !== 'string' ||
+      typeof capability.runtime_kind !== 'string' ||
+      !Array.isArray(capability.dependencies)
+    ) {
+      throw new Error('invalid engine capability in /engines/capabilities response')
+    }
+    return capability as unknown as EngineCapabilitySummary
+  })
+  return { count: value.count, capabilities }
 }
 
 function parseReadinessBody(value: unknown): ReadinessBody {
@@ -108,6 +145,40 @@ describe('TS baseline registry', () => {
       'sigil-forge': '2.0.0',
       tarot: '1.0.0',
     })
+  })
+
+  it('exposes registered engines as live v1 TypeScript capability records', async () => {
+    const response = await fetch(`${baseUrl}/engines/capabilities`)
+    expect(response.status).toBe(200)
+
+    const body = parseEngineCapabilityListBody(await response.json())
+
+    expect(body.count).toBe(6)
+    const capabilitiesById = Object.fromEntries(
+      body.capabilities.map((capability) => [capability.engine_id, capability]),
+    )
+    expect(Object.keys(capabilitiesById).sort()).toEqual([
+      'enneagram',
+      'i-ching',
+      'raaga',
+      'sacred-geometry',
+      'sigil-forge',
+      'tarot',
+    ])
+    expect(capabilitiesById.tarot).toEqual({
+      contract_version: 'v1',
+      engine_id: 'tarot',
+      display_name: 'Tarot Consciousness Engine',
+      availability: 'available',
+      runtime_kind: 'typescript',
+      dependencies: [],
+      required_phase: 0,
+      implementation_version: '1.0.0',
+    })
+    expect(body.capabilities.every((capability) => capability.runtime_kind === 'typescript')).toBe(
+      true,
+    )
+    expect(body.capabilities.every((capability) => capability.contract_version === 'v1')).toBe(true)
   })
 
   it('reports healthy sidecar readiness for the six registered engines (T-031)', async () => {

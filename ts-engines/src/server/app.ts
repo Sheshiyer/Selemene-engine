@@ -2,6 +2,8 @@ import { swagger } from '@elysiajs/swagger'
 import { Elysia, t } from 'elysia'
 import { resolveClipDir, resolveStoredClip } from '../engines/raaga/clip'
 import type {
+  CapabilityAvailability,
+  ContractEngineCapability,
   EngineHealthStatus,
   EngineInput,
   EngineMetadata,
@@ -48,6 +50,17 @@ async function runSelfCheck(engineRegistry: EngineRegistry): Promise<EngineHealt
         }
       }
     }),
+  )
+}
+
+function availabilityFromHealth(
+  engineHealth: EngineHealthStatus[],
+): Map<string, CapabilityAvailability> {
+  return new Map(
+    engineHealth.map((engine) => [
+      engine.engine_id,
+      engine.healthy ? 'available' : 'unavailable',
+    ]),
   )
 }
 
@@ -114,6 +127,18 @@ export function createServer(engineRegistry: EngineRegistry = registry) {
       engines: engineRegistry.listMetadata(),
       count: engineRegistry.count(),
     }))
+
+    // List live contract-v1 capability records
+    .get('/engines/capabilities', async (): Promise<{
+      capabilities: ContractEngineCapability[]
+      count: number
+    }> => {
+      const engineHealth = await runSelfCheck(engineRegistry)
+      return {
+        capabilities: engineRegistry.listCapabilities(availabilityFromHealth(engineHealth)),
+        count: engineRegistry.count(),
+      }
+    })
 
     // Get engine info by ID
     .get(
