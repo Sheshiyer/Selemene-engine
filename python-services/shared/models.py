@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Literal
+
 from pydantic import BaseModel, Field
 from shared.version import SERVICE_VERSION
 
@@ -12,6 +14,15 @@ class HealthResponse(BaseModel):
     status: str = "healthy"
     service: str
     version: str = SERVICE_VERSION
+
+
+class RuntimeCapability(BaseModel):
+    contract_version: str = "v1"
+    engine_id: str
+    display_name: str
+    availability: Literal["available", "degraded", "unavailable"]
+    runtime_kind: str = "python"
+    dependencies: list[str] = Field(default_factory=list)
 
 
 # ---------- MediaPipe service models ----------

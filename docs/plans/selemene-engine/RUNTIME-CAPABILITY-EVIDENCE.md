@@ -2,13 +2,15 @@
 
 Date: 2026-08-27
 Branch: `codex/selemene-runtime-capability`
-Scope: TypeScript sidecar and Rust/API runtime capability adoption plus a pinned local TypeScript verifier dependency; no engine algorithms, providers, credentials, databases, deployments, remotes, GitHub issues, or external services are changed by this source slice.
+Scope: TypeScript sidecar, Rust/API, and Python sidecar runtime capability adoption plus a pinned local TypeScript verifier dependency; no engine algorithms, providers, credentials, databases, deployments, remotes, GitHub issues, or external services are changed by this source slice.
 
 ## Boundary
 
 This slice begins the post-contract runtime layer by exposing registered TypeScript engines as live `contracts/v1` capability records. It derives each record from the actual sidecar registry and existing per-engine self-checks, so registered metadata is no longer the only runtime discovery surface.
 
 The Rust/API slice adds a matching authenticated `contracts/v1` capability discovery surface for the main API router. It derives rows from the live orchestrator registry and classifies native Rust engines, TypeScript bridge engines, and database-conditional engines without invoking providers, sidecars, databases, or remotes.
+
+The Python sidecar slice extends health responses with contract-v1 capability records derived from import/self-check state only. It keeps the Railway-facing health status as `healthy` or `degraded`, while capability availability carries the more precise `available`, `degraded`, or `unavailable` state.
 
 ## Behavior
 
@@ -22,6 +24,10 @@ The Rust/API slice adds a matching authenticated `contracts/v1` capability disco
 - Main-API native Rust engines report `runtime_kind: "native"` and `availability: "available"`.
 - Main-API TypeScript bridge engines report `runtime_kind: "typescript"`, `availability: "declared"`, and `dependencies: ["ts-engines"]`.
 - Main-API database-conditional engines report `runtime_kind: "database-conditional"` and `dependencies: ["postgres"]`.
+- Python Biofield CV `/health` includes `capabilities` with `runtime_kind: "python"` and dependency checks for `opencv`, `numpy`, and `mediapipe`.
+- Python Biofield CV reports capability `available` when all checks pass, `degraded` when optional MediaPipe is absent, and `unavailable` when required OpenCV or NumPy is absent.
+- Python MediaPipe Face Mesh `/health` includes `capabilities` with `runtime_kind: "python"` and dependency check `mediapipe`.
+- Python MediaPipe Face Mesh reports capability `available` when MediaPipe is present and `unavailable` when absent.
 
 ## HITL operational gate recovery
 
@@ -46,10 +52,13 @@ This operational step repaired the production smoke credential boundary after hu
 - `bun run typecheck && bun test tests/baseline_registry.test.ts tests/health.test.ts`: typecheck passed; 9 tests passed, 0 failed.
 - `bun test`: 92 tests passed, 0 failed.
 - `cargo fmt --package noesis-api && cargo test -p noesis-api --test capability_route_tests`: formatted `noesis-api`; 1 test passed, 0 failed.
+- `env PYTHONPATH="$PWD" uv run --no-project --python 3.11 --with fastapi --with pydantic python -c '...'`: direct Python sidecar health capability probe passed for Biofield available/degraded/unavailable and MediaPipe available/unavailable states.
+- `env PYTHONPATH="$PWD" uv run --no-project --python 3.11 --with fastapi --with pydantic --with pytest --with httpx python -m pytest tests/test_biofield_health.py tests/test_mediapipe_health.py -q --noconftest`: 17 tests passed, 0 failed; 1 Starlette/TestClient deprecation warning.
 
 ### Broader local check
 
 - `cargo test -p noesis-api`: compiled and passed the unit/OpenAPI/asset lanes reached before billing E2E; failed in `billing_e2e_tests` because all four webhook tests timed out connecting to local Postgres (`PoolTimedOut`). This failure is outside the new capability route path; rerun with a reachable local E2E Postgres before using the full package result as a release gate.
+- `PYTHONPATH=. python -m pytest tests/test_biofield_health.py tests/test_mediapipe_health.py -q`: collection failed before tests because host Python had no `cv2` module. A later full `uv run --python 3.11 --extra dev ...` attempt was interrupted after slow CV wheel downloads left no usable FastAPI/CV environment; generated `.venv` and `uv.lock` artifacts were removed. The focused router-only health tests above verify this source slice without requiring the full CV analyze stack.
 
 ## Remote infra readback
 

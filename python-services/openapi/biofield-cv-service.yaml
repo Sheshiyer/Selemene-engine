@@ -61,13 +61,37 @@ components:
   schemas:
     HealthResponse:
       type: object
-      required: [status, service, version]
+      required: [status, service, version, capabilities]
       properties:
         status: { type: string, enum: [healthy, degraded] }
         service: { type: string, example: "biofield-cv" }
         version: { type: string, example: "3.0.0" }
         opencv_available: { type: boolean }
         numpy_available: { type: boolean }
+        mediapipe_available: { type: boolean }
+        capabilities:
+          type: array
+          items:
+            $ref: "#/components/schemas/RuntimeCapability"
+
+    RuntimeCapability:
+      type: object
+      required:
+        - contract_version
+        - engine_id
+        - display_name
+        - availability
+        - runtime_kind
+        - dependencies
+      properties:
+        contract_version: { type: string, enum: ["v1"] }
+        engine_id: { type: string, example: "biofield-cv" }
+        display_name: { type: string, example: "Biofield CV" }
+        availability: { type: string, enum: [available, degraded, unavailable] }
+        runtime_kind: { type: string, enum: [python] }
+        dependencies:
+          type: array
+          items: { type: string }
 
     BiofieldCVResponse:
       type: object
