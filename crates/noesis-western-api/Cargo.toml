@@ -27,7 +27,7 @@ anyhow = "1.0"
 chrono = { version = "0.4", features = ["serde"] }
 
 # Caching
-lru = "0.12"
+lru = "0.18.2"
 dashed-map = { package = "dashmap", version = "5.5" }
 
 # Logging
@@ -41,4 +41,3 @@ dotenvy = "0.15"
 
 [features]
 default = []
-

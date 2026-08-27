@@ -7,7 +7,7 @@
     "verify:typecheck": "pnpm --filter @noesis/verification typecheck",
     "verify": "pnpm --filter @noesis/verification test",
     "gate:scripts": "python3 scripts/validate_contracts.py && python3 scripts/validate_migrations.py && python3 scripts/validate_docker_workspace.py && python3 -m pytest tests/scripts -q",
-    "gate:contracts": "cargo test -p noesis-core --test contract_v1_authority --locked && cargo test -p noesis-api --test openapi_schema_tests --locked && cargo test -p noesis-api --test integration_tests test_calculate_ --locked && pnpm --filter @selemene/engine-sdk test && pnpm --filter @selemene/engine-sdk typecheck && pnpm --filter @noesis/sdk test && pnpm --filter @noesis/sdk typecheck",
+    "gate:contracts": "cargo test -p noesis-core --test contract_v1_authority --locked && cargo test -p noesis-api --test openapi_schema_tests --locked && cargo test -p noesis-api --test integration_tests test_calculate_ --locked && pnpm --filter @selemene/engine-sdk test && pnpm --filter @selemene/engine-sdk typecheck && pnpm --filter @noesis/witness-pipeline build && pnpm --filter @noesis/sdk test && pnpm --filter @noesis/sdk typecheck",
     "gate:verification": "pnpm --filter @noesis/witness-pipeline build && pnpm run verify && pnpm run verify:typecheck",
     "gate:ts": "cd ts-engines && bun run typecheck && bun test",
     "gate": "pnpm run gate:scripts && pnpm run gate:contracts && pnpm run gate:verification && pnpm run gate:ts"

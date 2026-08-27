@@ -8,12 +8,14 @@ use prometheus::{
     Counter, Gauge, Histogram, HistogramOpts, HistogramVec, IntCounterVec, IntGauge, IntGaugeVec,
     Opts, Registry,
 };
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 
 use lazy_static::lazy_static;
 
 lazy_static! {
     pub static ref REGISTRY: Registry = Registry::new();
+    static ref OTEL_TRACER_PROVIDER: Mutex<Option<opentelemetry_sdk::trace::SdkTracerProvider>> =
+        Mutex::new(None);
     static ref API_ERRORS_TOTAL: IntCounterVec = {
         let metric = IntCounterVec::new(
             Opts::new(
@@ -147,27 +149,32 @@ pub fn record_dodo_reconcile_drift(class: &str, count: u64) {
 pub async fn init_otel_tracing(
     service_name: &str,
     otlp_endpoint: &str,
-) -> Result<opentelemetry_sdk::trace::Tracer, Box<dyn std::error::Error + Send + Sync>> {
+) -> Result<opentelemetry_sdk::trace::SdkTracer, Box<dyn std::error::Error + Send + Sync>> {
+    use opentelemetry::trace::TracerProvider as _;
     use opentelemetry::KeyValue;
-    use opentelemetry_otlp::WithExportConfig;
-    use opentelemetry_sdk::{runtime, trace as sdktrace, Resource};
+    use opentelemetry_otlp::{SpanExporter, WithExportConfig};
+    use opentelemetry_sdk::{trace as sdktrace, Resource};
 
-    let tracer = opentelemetry_otlp::new_pipeline()
-        .tracing()
-        .with_exporter(
-            opentelemetry_otlp::new_exporter()
-                .tonic()
-                .with_endpoint(otlp_endpoint),
+    let exporter = SpanExporter::builder()
+        .with_tonic()
+        .with_endpoint(otlp_endpoint)
+        .build()?;
+
+    let provider = sdktrace::SdkTracerProvider::builder()
+        .with_batch_exporter(exporter)
+        .with_sampler(sdktrace::Sampler::AlwaysOn)
+        .with_resource(
+            Resource::builder()
+                .with_service_name(service_name.to_string())
+                .with_attribute(KeyValue::new("service.version", env!("CARGO_PKG_VERSION")))
+                .build(),
         )
-        .with_trace_config(
-            sdktrace::Config::default()
-                .with_resource(Resource::new(vec![
-                    KeyValue::new("service.name", service_name.to_string()),
-                    KeyValue::new("service.version", env!("CARGO_PKG_VERSION")),
-                ]))
-                .with_sampler(sdktrace::Sampler::AlwaysOn),
-        )
-        .install_batch(runtime::Tokio)?;
+        .build();
+    let tracer = provider.tracer(service_name.to_string());
+    opentelemetry::global::set_tracer_provider(provider.clone());
+    if let Ok(mut active_provider) = OTEL_TRACER_PROVIDER.lock() {
+        *active_provider = Some(provider);
+    }
 
     tracing::info!(
         "OpenTelemetry tracing initialized: service={}, endpoint={}",
@@ -181,8 +188,18 @@ pub async fn init_otel_tracing(
 /// Shutdown OpenTelemetry tracing gracefully.
 /// Call this before application exit to ensure all spans are exported.
 pub fn shutdown_tracing() {
-    opentelemetry::global::shutdown_tracer_provider();
-    tracing::info!("OpenTelemetry tracing shut down");
+    match OTEL_TRACER_PROVIDER.lock() {
+        Ok(mut active_provider) => {
+            if let Some(provider) = active_provider.take() {
+                if let Err(error) = provider.shutdown() {
+                    tracing::warn!("OpenTelemetry tracing shutdown failed: {error}");
+                    return;
+                }
+            }
+            tracing::info!("OpenTelemetry tracing shut down");
+        }
+        Err(error) => tracing::warn!("OpenTelemetry tracing shutdown lock failed: {error}"),
+    }
 }
 
 // ---------------------------------------------------------------------------

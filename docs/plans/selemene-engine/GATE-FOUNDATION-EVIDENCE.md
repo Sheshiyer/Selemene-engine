@@ -52,6 +52,16 @@ Scope: repository-owned gates only; no deployment, push, merge, secret, branch-p
 
 ## TDD receipts
 
+### Security audit recovery (2026-08-27)
+
+- Worktree: `.worktrees/security-audit-recovery`; branch `codex/selemene-security-audit-recovery`; no remote push, deploy, secret read, or live-service mutation performed.
+- RED audit reproduced `RUSTSEC-2026-0258` for `h2 0.3.27` and `h2 0.4.13`, plus warnings for `event-listener 5.4.1`, `lru 0.12.5`, and `lru 0.18.1`.
+- Dependency ownership readback mapped `h2 0.3.27` through `opentelemetry-otlp 0.15.0 -> tonic 0.11.0 -> hyper 0.14.32`, `h2 0.4.13` through current `hyper`/`reqwest`, `event-listener 5.4.1` through `sqlx-core 0.8.6`, and direct `lru 0.12` pins in cache/API crates.
+- Repair upgraded the telemetry family (`opentelemetry 0.32`, `opentelemetry_sdk 0.32`, `opentelemetry-otlp 0.32`, `tracing-opentelemetry 0.33`), updated OTLP initialization to the current SDK builder/provider API, and retained graceful provider shutdown without the removed global shutdown helper.
+- Repair pinned direct `lru` manifests to `0.18.2`; lockfile readback removed `h2 0.3.27`, `lru 0.12.5`, and `lru 0.18.1`, and retained only patched `h2 0.4.16`, `event-listener 5.4.2`, and `lru 0.18.2`.
+- Clean-worktree gate recovery: `@noesis/sdk` tests import `@noesis/witness-pipeline`, whose declared package export points at `dist`; `gate:contracts` now builds `@noesis/witness-pipeline` before those SDK tests so a fresh worktree does not depend on stale local build artifacts.
+- Verification receipts: `cargo check -p noesis-metrics --locked` passed; `cargo check -p noesis-api --features otel --locked` passed with only the existing unused `init_tracing_with_otel` warning; `cargo audit --json` reported zero vulnerabilities and zero warnings; `cargo fmt --all --check`, `git diff --check`, and `PATH="$PWD/.venv/bin:$PATH" pnpm run gate` all exited `0`.
+
 ### RED
 
 - `bun run typecheck`: exit `1`; `TS5102` (`baseUrl` removed) and `TS5090` (non-relative alias).
