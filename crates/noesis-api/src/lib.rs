@@ -4,6 +4,8 @@
 //! All engine calculations and workflow executions are exposed through versioned
 //! JSON endpoints under `/api/v1/`.
 
+#![allow(clippy::result_large_err)]
+
 mod billing;
 mod biofield_client;
 pub mod cf_access;
