@@ -886,6 +886,10 @@ pub fn create_router(state: AppState, config: &ApiConfig) -> Router {
         .route("/admin/system/cache", get(handlers::admin::system_cache))
         .route("/admin/bridge/health", get(handlers::admin::bridge_health))
         .route(
+            "/admin/engines/capabilities",
+            get(handlers::admin::engine_capabilities),
+        )
+        .route(
             "/admin/bridge/sidecar",
             get(handlers::admin::sidecar_detail),
         )
