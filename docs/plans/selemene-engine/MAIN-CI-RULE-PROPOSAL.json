@@ -1,0 +1,43 @@
+{
+  "operation": "update existing branch ruleset only after critical approval",
+  "repository": "Sheshiyer/Selemene-engine",
+  "rulesetId": 15597830,
+  "preserve": [
+    "name",
+    "target",
+    "enforcement",
+    "conditions",
+    "bypass_actors",
+    "existing deletion and non_fast_forward rules"
+  ],
+  "addRule": {
+    "type": "required_status_checks",
+    "parameters": {
+      "strict_required_status_checks_policy": true,
+      "do_not_enforce_on_create": false,
+      "required_status_checks": [
+        {
+          "context": "CI Gate",
+          "integration_id": 15368
+        }
+      ]
+    }
+  },
+  "preconditions": [
+    "Read current ruleset again and abort if unrelated changes appeared",
+    "Verify GitHub Actions app id for CI Gate before applying integration_id",
+    "Verify current candidate CI Gate is green at its exact source revision"
+  ],
+  "effects": [
+    "Main updates require a successful up-to-date CI Gate",
+    "No review-count, bypass, branch deletion, force push or deployment policy is changed"
+  ],
+  "approvalStatus": "pending",
+  "verifiedEvidence": {
+    "githubActionsAppId": 15368,
+    "ciGateHead": "520e439f3fb7ad79f9d838885dfe40a9d8af8801",
+    "ciRun": 33962684609,
+    "conclusion": "success",
+    "candidateRun": "pending"
+  }
+}

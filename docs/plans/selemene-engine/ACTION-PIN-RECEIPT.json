@@ -1,0 +1,127 @@
+{
+  "observedAt": "2026-09-05",
+  "references": {
+    "Swatinem/rust-cache@v2": {
+      "sha": "6323deb102c322ba6fcbdcafc7e3dddab59af2b6",
+      "repository": "Swatinem/rust-cache",
+      "originalRef": "v2",
+      "verifiedUrl": "https://github.com/Swatinem/rust-cache/commit/6323deb102c322ba6fcbdcafc7e3dddab59af2b6"
+    },
+    "actions-rs/toolchain@v1": {
+      "sha": "16499b5e05bf2e26879000db0c1d13f7e13fa3af",
+      "repository": "actions-rs/toolchain",
+      "originalRef": "v1",
+      "verifiedUrl": "https://github.com/actions-rs/toolchain/commit/16499b5e05bf2e26879000db0c1d13f7e13fa3af"
+    },
+    "actions/cache@v3": {
+      "sha": "6f8efc29b200d32929f49075959781ed54ec270c",
+      "repository": "actions/cache",
+      "originalRef": "v3",
+      "verifiedUrl": "https://github.com/actions/cache/commit/6f8efc29b200d32929f49075959781ed54ec270c"
+    },
+    "actions/checkout@v4": {
+      "sha": "11d5960a326750d5838078e36cf38b85af677262",
+      "repository": "actions/checkout",
+      "originalRef": "v4",
+      "verifiedUrl": "https://github.com/actions/checkout/commit/11d5960a326750d5838078e36cf38b85af677262"
+    },
+    "actions/github-script@v7": {
+      "sha": "f28e40c7f34bde8b3046d885e986cb6290c5673b",
+      "repository": "actions/github-script",
+      "originalRef": "v7",
+      "verifiedUrl": "https://github.com/actions/github-script/commit/f28e40c7f34bde8b3046d885e986cb6290c5673b"
+    },
+    "actions/setup-node@v4": {
+      "sha": "49933ea5288caeca8642d1e84afbd3f7d6820020",
+      "repository": "actions/setup-node",
+      "originalRef": "v4",
+      "verifiedUrl": "https://github.com/actions/setup-node/commit/49933ea5288caeca8642d1e84afbd3f7d6820020"
+    },
+    "actions/setup-python@v5": {
+      "sha": "a26af69be951a213d495a4c3e4e4022e16d87065",
+      "repository": "actions/setup-python",
+      "originalRef": "v5",
+      "verifiedUrl": "https://github.com/actions/setup-python/commit/a26af69be951a213d495a4c3e4e4022e16d87065"
+    },
+    "azure/setup-kubectl@v3": {
+      "sha": "901a10e89ea615cf61f57ac05cecdf23e7de06d8",
+      "repository": "azure/setup-kubectl",
+      "originalRef": "v3",
+      "verifiedUrl": "https://github.com/Azure/setup-kubectl/commit/901a10e89ea615cf61f57ac05cecdf23e7de06d8"
+    },
+    "docker/build-push-action@v5": {
+      "sha": "ca052bb54ab0790a636c9b5f226502c73d547a25",
+      "repository": "docker/build-push-action",
+      "originalRef": "v5",
+      "verifiedUrl": "https://github.com/docker/build-push-action/commit/ca052bb54ab0790a636c9b5f226502c73d547a25"
+    },
+    "docker/login-action@v3": {
+      "sha": "c94ce9fb468520275223c153574b00df6fe4bcc9",
+      "repository": "docker/login-action",
+      "originalRef": "v3",
+      "verifiedUrl": "https://github.com/docker/login-action/commit/c94ce9fb468520275223c153574b00df6fe4bcc9"
+    },
+    "docker/metadata-action@v5": {
+      "sha": "c299e40c65443455700f0fdfc63efafe5b349051",
+      "repository": "docker/metadata-action",
+      "originalRef": "v5",
+      "verifiedUrl": "https://github.com/docker/metadata-action/commit/c299e40c65443455700f0fdfc63efafe5b349051"
+    },
+    "docker/setup-buildx-action@v3": {
+      "sha": "8d2750c68a42422c14e847fe6c8ac0403b4cbd6f",
+      "repository": "docker/setup-buildx-action",
+      "originalRef": "v3",
+      "verifiedUrl": "https://github.com/docker/setup-buildx-action/commit/8d2750c68a42422c14e847fe6c8ac0403b4cbd6f"
+    },
+    "dtolnay/rust-toolchain@stable": {
+      "sha": "6bed0761d98439e5a578e2877258200ad565ba87",
+      "repository": "dtolnay/rust-toolchain",
+      "originalRef": "stable",
+      "verifiedUrl": "https://github.com/dtolnay/rust-toolchain/commit/6bed0761d98439e5a578e2877258200ad565ba87"
+    },
+    "imranismail/setup-kustomize@v2": {
+      "sha": "2ba527d4d055ab63514ba50a99456fc35684947f",
+      "repository": "imranismail/setup-kustomize",
+      "originalRef": "v2",
+      "verifiedUrl": "https://github.com/imranismail/setup-kustomize/commit/2ba527d4d055ab63514ba50a99456fc35684947f"
+    },
+    "oven-sh/setup-bun@v1": {
+      "sha": "f4d14e03ff726c06358e5557344e1da148b56cf7",
+      "repository": "oven-sh/setup-bun",
+      "originalRef": "v1",
+      "verifiedUrl": "https://github.com/oven-sh/setup-bun/commit/f4d14e03ff726c06358e5557344e1da148b56cf7"
+    },
+    "pnpm/action-setup@v4": {
+      "sha": "b906affcce14559ad1aafd4ab0e942779e9f58b1",
+      "repository": "pnpm/action-setup",
+      "originalRef": "v4",
+      "verifiedUrl": "https://github.com/pnpm/action-setup/commit/b906affcce14559ad1aafd4ab0e942779e9f58b1"
+    },
+    "softprops/action-gh-release@v1": {
+      "sha": "de2c0eb89ae2a093876385947365aca7b0e5f844",
+      "repository": "softprops/action-gh-release",
+      "originalRef": "v1",
+      "verifiedUrl": "https://github.com/softprops/action-gh-release/commit/de2c0eb89ae2a093876385947365aca7b0e5f844"
+    },
+    "softprops/action-gh-release@v2": {
+      "sha": "3bb12739c298aeb8a4eeaf626c5b8d85266b0e65",
+      "repository": "softprops/action-gh-release",
+      "originalRef": "v2",
+      "verifiedUrl": "https://github.com/softprops/action-gh-release/commit/3bb12739c298aeb8a4eeaf626c5b8d85266b0e65"
+    },
+    "stefanzweifel/git-auto-commit-action@v5": {
+      "sha": "b863ae1933cb653a53c021fe36dbb774e1fb9403",
+      "repository": "stefanzweifel/git-auto-commit-action",
+      "originalRef": "v5",
+      "verifiedUrl": "https://github.com/stefanzweifel/git-auto-commit-action/commit/b863ae1933cb653a53c021fe36dbb774e1fb9403"
+    },
+    "trufflesecurity/trufflehog@main": {
+      "sha": "30a032af512f08a1d4e7d1aaf0d4119ad6910d63",
+      "repository": "trufflesecurity/trufflehog",
+      "originalRef": "main",
+      "verifiedUrl": "https://github.com/trufflesecurity/trufflehog/commit/30a032af512f08a1d4e7d1aaf0d4119ad6910d63"
+    }
+  },
+  "usesPinned": 77,
+  "scope": "Third-party uses references only; local reusable workflows allowed; Docker base/service tags are not covered."
+}
