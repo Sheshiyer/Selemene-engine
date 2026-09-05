@@ -4,7 +4,7 @@ task: "Continue Selemene waves through verified planning, gates and infrastructu
 effort: E4
 effort_source: classifier
 phase: verify
-progress: 320/325
+progress: 321/325
 mode: algorithm
 iteration: 5
 started: 2026-07-18T15:00:00+05:30
@@ -478,7 +478,7 @@ Complete the existing dependency-ordered Selemene program through the GSD phase 
 - [x] ISC-302: Capability documentation no longer claims native or conditional engines are covered by six TS rows.
 - [x] ISC-303: GitHub control planning is reconciled against the new evidence without closing unproven work.
 - [x] ISC-304: Current source changes are packaged as scoped reviewable commits with exact verification evidence.
-- [ ] ISC-305: Required remote CI is green on the reviewed source revision before merge approval.
+- [x] ISC-305: Required remote CI is green on the reviewed source revision before merge approval.
 - [x] ISC-306: Immutable action pins and complete Python/admin release-gate coverage are verified.
 - [ ] ISC-307: Production release can identify source and schema revisions for the approved image digests.
 - [ ] ISC-308: Original Wave 0 through Wave 6 exit criteria are all verified before overall goal completion.
@@ -864,4 +864,6 @@ _Last refreshed: 2026-08-25T17:34:40.307Z_
 - ISC-303: GitHub readback — all eight control bodies updated; original exit checkboxes, OPEN state and labels preserved. GITHUB-RECONCILIATION-2026-09-05.json records hashes. All 570 engine issues remain untouched.
 - ISC-306: GitHub CI — at source 9b618de, both Python image import jobs, Python 3.11/3.12 contracts/smoke and required admin checks pass. Both release paths depend on complete CI; all 77 Action uses pass the immutable pin validator. Full CI remains separately governed by ISC-305.
 - ISC-310: privacy verification — 32 recovery artifacts pass personal-email/private-path checks; GitHub TruffleHog job 101312749961 passes. No authenticated personal records, credential values or secret variable values were saved in these receipts.
-- Capability fixture: disposable PostgreSQL 18.4 reproduces the original 500/timeout; a shared test-binary runtime passes all three existing cases against the same migrated database. Remote PostgreSQL 16 rerun is required.
+- Capability fixture: disposable PostgreSQL 18.4 reproduces the original 500/timeout; a shared test-binary runtime passes all three existing cases against the same migrated database. GitHub's PostgreSQL 16 integration rerun passes all three cases.
+- ISC-305: GitHub run 33971363162 passes all 16 jobs at 19b80826fcc1ef787d95960a44dd4762ceb74968, including the full integration suite and CI Gate. GitHub's pull-request merge tree is byte-identical to the source tree. Vercel reports READY for the same candidate. PR #1488 remains draft, mergeable, without auto-merge.
+- Plan sync: an explicit dry run against the candidate finds no docs/planning JSON inputs and performs no issue changes. A main push will start the workflow because its file changed, but the same tree has no rows to apply.

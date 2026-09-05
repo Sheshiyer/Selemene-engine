@@ -47,7 +47,7 @@ Original wave scope remains in `docs/plans/selemene-engine/ROADMAP.md`; phase nu
 5. Complete remaining registry/release receipt authority and immutable action pins.
 6. Prepare protected release and promotion decisions before any production-triggering merge.
 
-**Plans:** 7 validated plans; 01–04 source scopes verified, 05 current CI/protection decision, 06–07 verified gap-closure plans for registry/release authority
+**Plans:** 7 validated plans; 01–05 verified to the main-protection gate, 06–07 verified gap-closure plans for registry/release authority
 
 ### Phase 3: Capability and contract closure
 
