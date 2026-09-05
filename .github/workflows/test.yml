@@ -496,6 +496,9 @@ jobs:
       - name: Setup workspace dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Build @noesis/witness-pipeline prerequisite
+        run: pnpm --filter @noesis/witness-pipeline run build
+
       - name: Build @noesis/sdk prerequisite
         run: pnpm --filter @noesis/sdk run build
 
