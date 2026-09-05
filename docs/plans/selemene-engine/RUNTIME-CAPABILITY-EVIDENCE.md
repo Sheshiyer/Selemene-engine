@@ -67,10 +67,61 @@ All commands in this section were read-only. No deploy, config edit, variable re
 - `https://ts-engines-production.up.railway.app/health/ready`: six bridge engines healthy, no failed engines.
 - `https://ts-engines-production.up.railway.app/engines/capabilities`: `404` on live deployment, confirming this local endpoint is not yet deployed.
 
+## Slice 2: Rust/API and Python sidecar capability parity (2026-08-31, Task 3)
+
+Date: 2026-08-31. Branch: `codex/selemene-task3-task4-capability-parity`, stacked on `codex/selemene-runtime-capability-endpoint` (PR #1486). Scope: extend the `contracts/v1` capability-discovery surface from TypeScript-only to Rust/API and Python sidecars, closing two of the boundaries this document originally left open. No provider, generation-API, database, or remote calls were added.
+
+### Behavior
+
+- `GET /api/v1/admin/engines/capabilities` (new, `noesis-api`) returns a JSON array of `contracts/v1` `EngineCapability` records for the bridge-proxied TypeScript engines, gated behind the same `admin:system:read` permission as the existing `/admin/bridge/health` route. Availability is derived from `state.bridge().readiness_status()` — the identical self-check data source `/admin/bridge/health` already uses — with no new provider/database/remote calls.
+- `crates/noesis-core::contract::EngineCapability`, `CapabilityAvailability`, and `RuntimeKind` (already defined pre-existing this session) are reused, not redefined.
+- `python-services/shared/models.py` adds `HealthResponse.capability_status: Literal["available","degraded","unavailable"]`, computed only from each sidecar's existing local self-check booleans:
+  - `biofield-cv`: `available` iff both `opencv` and `numpy` are up; `degraded` if `opencv`+`numpy` are up but `mediapipe` is missing; `unavailable` if `opencv` or `numpy` is missing.
+  - `mediapipe-face-mesh`: `available` if `mediapipe` is up, else `unavailable`.
+
+### TDD receipts
+
+**RED**
+- `cargo test -p noesis-api --test capability_route_tests --locked`: 3 tests failed against the not-yet-existing `/api/v1/admin/engines/capabilities` route.
+- `python3 -m pytest python-services/tests/test_capability_health.py -q`: failed, `capability_status` field absent from `/health`.
+
+**GREEN**
+- `cargo test -p noesis-api --test capability_route_tests --locked`: 3 passed, 0 failed (independently re-run this session).
+- `PATH="$PWD/python-services/.venv/bin:$PATH" python3 -m pytest python-services/tests -q`: 61 passed, 0 failed, 1 pre-existing unrelated deprecation warning (independently re-run this session, matching the 53-prior + 8-new count reported by the implementing pass).
+- `pnpm run gate:contracts`: passed.
+- `cargo build --workspace --locked`: no regressions across the Rust workspace.
+
+Every claim above was independently reproduced in a fresh check this session (not just accepted from the implementing pass) before this doc was written.
+
+## Slice 3: Tarot provenance/confidence truth surface (2026-08-31, Task 4, partial slice against #1461)
+
+Date: 2026-08-31. Same branch as Slice 2. Scope: **partial** slice toward GitHub issue [#1461](https://github.com/Sheshiyer/Selemene-engine/issues/1461) (`[W3E:tarot:07] Expose provenance, confidence, and degradation`) — Task 4's own execution steps (one missing-state test, then the minimal truth surface) intentionally do not cover #1461's full six-axis, multi-fixture acceptance criteria. Tarot was selected as the pilot engine because it is the only Task-4 candidate with its full W3E slot set (`06,07,09,10,17,18,25,27,28`) open as distinct issues and it already reports `available` on the capability endpoint.
+
+### Behavior
+
+- `ts-engines/src/types/engine.ts`: `ContractProvenance` gains an optional `confidence?: number` field (0–1).
+- `ts-engines/src/engines/tarot/engine.ts`: `TarotEngine.calculate()` now populates `EngineOutput.provenance` with `runtime_kind: 'typescript'`, `implementation_version` (engine metadata version), `cached: false`, `fallback_used: false`, `confidence: 1` — accurate as-is because tarot's interpretation text comes entirely from the local deterministic `wisdom.ts` data with no fallback/generated-text path today.
+- No other engine's output changed.
+
+### TDD receipts
+
+**RED**: `bun test tests/tarot_provenance.test.ts` failed — `output.provenance` was `undefined`.
+
+**GREEN**
+- `bun test tests/tarot_provenance.test.ts`: passed.
+- `bun test tests/integration.test.ts tests/baseline_registry.test.ts && bun run typecheck`: passed, no other engine's behavior changed.
+- Full suite, independently re-run this session: `bun run typecheck && bun test` → typecheck clean, **93 passed, 0 failed** (up from the 92/0 baseline recorded in Slice 1 — exactly the one new provenance test, nothing else moved).
+
+### What #1461 still needs (explicitly not covered by this slice)
+
+- Confidence/degradation for the other five engines' evidence axes described in #1461's acceptance criteria (positive/boundary/negative/degraded fixtures, bridge/API/SDK/CLI compatibility probes, six-axis evidence table).
+- Any actual fallback path for tarot — none exists today, so `fallback_used` is trivially always `false`; if a fallback path is later added, this field must be revisited.
+- W3E slots `06`, `09`, `10`, `17`, `18`, `25`, `27`, `28` for tarot, and slot `07` (this pattern) for the other six Task-4 candidate engines (biofield, face-reading, raaga, sigil-forge, i-ching, sacred-geometry) — all remain open follow-up work.
+
 ## Remaining boundaries
 
-- Native Rust/API runtime capability adoption remains a separate slice.
-- Python/database-conditional capability reporting remains a separate slice.
-- Per-engine semantic completion repair remains a separate slice.
+- ~~Native Rust/API runtime capability adoption remains a separate slice.~~ **Closed by Slice 2** above (2026-08-31) for the bridge-proxied capability-discovery surface specifically; native (non-bridge-proxied) Rust engines, if any are added later, are still a separate concern.
+- ~~Python/database-conditional capability reporting remains a separate slice.~~ **Partially closed by Slice 2**: Python sidecar local self-check capability status is done. `database-conditional` `RuntimeKind` reporting (for any future DB-backed engine) remains open — nothing in this repo currently needs it.
+- Per-engine semantic completion repair remains a separate slice, now begun (partially) for tarot slot `07` only — see Slice 3.
 - GitHub Actions immutable SHA pinning (`ISC-217`) remains open.
-- No push, publication, deployment, or remote mutation occurred in this slice.
+- No push, publication, deployment, or remote mutation to GitHub issues beyond what was explicitly authorized occurred in Slices 2–3; no deploy occurred.

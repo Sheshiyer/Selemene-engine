@@ -18,12 +18,14 @@ def _check_mediapipe() -> bool:
 
 @router.get("/health", response_model=dict)
 def health() -> dict:
+    mediapipe_available = _check_mediapipe()
     resp = HealthResponse(
         status="healthy",
         service="mediapipe-face-mesh",
         version=SERVICE_VERSION,
+        capability_status="available" if mediapipe_available else "unavailable",
     )
     return {
         **resp.model_dump(),
-        "mediapipe_available": _check_mediapipe(),
+        "mediapipe_available": mediapipe_available,
     }
