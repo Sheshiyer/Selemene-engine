@@ -7,7 +7,7 @@ last_updated: 2026-09-05T13:47:55.589355+00:00
 progress:
   total_phases: 7
   completed_phases: 1
-  total_plans: 7
+  total_plans: 9
   completed_plans: 6
 stopped_at: Phase 2 source repair verified locally; independent review fixes and candidate CI in progress
 ---
@@ -17,7 +17,7 @@ stopped_at: Phase 2 source repair verified locally; independent review fixes and
 ## Current Position
 
 Phase: 02 of 7 (reproducible gates dependency repair)
-Plan: 05 of 5 (01–04 source tasks verified)
+Plan: 05 of 7 (01–04 source tasks verified; 06–07 gap plans checked)
 Status: Executing and verifying
 Last activity: 2026-09-05
 
@@ -33,4 +33,4 @@ PR #1486 formatter repair passes CI at 520e439; #1487 remains stacked. Candidate
 
 ## Session Continuity
 
-Resume from this file, current ISA recovery criteria and the phase verification file. Phase 1 recovery is verified. Phase 2 has five validated plans, recommended discussion decisions and research. Independent review and GitHub control reconciliation are complete for this slice. Finish the current-source remote CI after the reproduced capability fixture repair, then present the prepared main CI protection decision. Keep remote merge/deployment decisions separate from local completion.
+Resume from this file, current ISA recovery criteria and the phase verification file. Phase 1 recovery is verified. Phase 2 has five validated plans, recommended discussion decisions and research. Independent review and GitHub control reconciliation are complete for this slice. Finish current-source remote CI after the capability fixture and generated route-inventory repairs, then present the prepared main CI protection decision. Gap plans 06–07 are independently checked and remain queued for registry/release authority. Keep remote merge/deployment decisions separate from local completion.

@@ -207,7 +207,7 @@ jobs:
           PGPASSWORD: noesis_test_password
 
       - name: Run integration tests
-        run: cargo test --test '*' -- --test-threads=1
+        run: cargo test --test '*' --no-fail-fast -- --test-threads=1
         env:
           REDIS_URL: redis://localhost:6379
           DATABASE_URL: postgresql://noesis_test:noesis_test_password@localhost:5432/noesis_test

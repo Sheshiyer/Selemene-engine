@@ -22,3 +22,9 @@ The next run, [33968504428](https://github.com/Sheshiyer/Selemene-engine/actions
 A new disposable local PostgreSQL 18.4 instance with repository migrations reproduces the same 500 failure using the original fixture. A test-binary-owned runtime keeps all three independently named cases alive in one runtime and passes 3/3 with the same database, UUID identities, real permission lookup and unchanged assertions. CI supplies PostgreSQL 16, so the complete remote rerun remains necessary. Production permission handling was not relaxed. The inaccurate comment claiming no database calls was corrected.
 
 The `noesis-build` response returned an intention instead of code and was rejected. The bounded `noesis-fast` response resolved to `codex/gpt-5.6-luna`; its small fixture edits were reviewed. Its large replacement altered a field name and had no exact anchor, so that replacement was rejected. The original assertion body was wrapped mechanically instead. Compiler/test evidence applies to the integrated result, not the provider's unreviewed proposal.
+
+## Generated route inventory
+
+Run [33970102616](https://github.com/Sheshiyer/Selemene-engine/actions/runs/33970102616) proves all three database-backed capability route tests pass in CI. It then fails the strict API route inventory comparison because the earlier capability slice did not regenerate the baseline JSON. The repository's existing generator adds only GET `/admin/engines/capabilities`, changing 95 paths/100 methods to 96/101. The unchanged comparison test passes after generation; its generator remains an explicitly invoked ignored helper, not a skipped required assertion.
+
+Integration CI now uses `--no-fail-fast` so all test binaries run and report failures while the overall job still fails. Actionlint and all 67 script tests pass after that command change. The current-source full rerun remains required; no failed CI run is waived.
