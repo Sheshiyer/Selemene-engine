@@ -41,37 +41,36 @@ export default function BiofieldSessionDetailPage({ params }: { params: Promise<
   const router = useRouter();
   const { id } = use(params);
 
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [session, setSession] = useState<AdminBiofieldSessionItem | null>(null);
+  const [fetchResult, setFetchResult] = useState<{
+    key: string;
+    session: AdminBiofieldSessionItem | null;
+    error: string | null;
+    settled: boolean;
+  }>({ key: "", session: null, error: null, settled: false });
+
+  const loading = !fetchResult.settled || fetchResult.key !== id;
+  const error = fetchResult.key === id ? fetchResult.error : null;
+  const session = fetchResult.key === id ? fetchResult.session : null;
 
   useEffect(() => {
     let cancelled = false;
     const token = getAuthToken() ?? undefined;
 
-    setError(null);
-    setLoading(true);
-
     getAdminBiofieldSession(token, id)
       .then((data) => {
         if (!cancelled) {
-          setSession(data);
+          setFetchResult({ key: id, session: data, error: null, settled: true });
         }
       })
       .catch((err) => {
         if (!cancelled) {
+          let message = "Failed to load session detail";
           if (err instanceof ApiClientError) {
-            setError(err.payload?.error || err.message);
+            message = err.payload?.error || err.message;
           } else if (err instanceof Error) {
-            setError(err.message);
-          } else {
-            setError("Failed to load session detail");
+            message = err.message;
           }
-        }
-      })
-      .finally(() => {
-        if (!cancelled) {
-          setLoading(false);
+          setFetchResult({ key: id, session: null, error: message, settled: true });
         }
       });
 

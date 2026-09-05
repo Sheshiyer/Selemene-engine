@@ -34,10 +34,16 @@ export default function WorkflowDetailPage({ params }: { params: Promise<{ id: s
   const router = useRouter();
   const { id } = use(params);
 
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [workflow, setWorkflow] = useState<AdminSystemWorkflowItem | null>(null);
-  const [listFallback, setListFallback] = useState<AdminSystemWorkflowItem | null>(null);
+  const [fetchResult, setFetchResult] = useState<{
+    key: string;
+    workflow: AdminSystemWorkflowItem | null;
+    error: string | null;
+    settled: boolean;
+  }>({ key: "", workflow: null, error: null, settled: false });
+
+  const loading = !fetchResult.settled || fetchResult.key !== id;
+  const error = fetchResult.key === id ? fetchResult.error : null;
+  const workflow = fetchResult.key === id ? fetchResult.workflow : null;
 
   const loadDetail = useCallback(async () => {
     const token = getAuthToken() ?? undefined;
@@ -62,36 +68,28 @@ export default function WorkflowDetailPage({ params }: { params: Promise<{ id: s
   useEffect(() => {
     let cancelled = false;
 
-    setError(null);
-    setLoading(true);
-
     loadDetail()
       .then((data) => {
         if (!cancelled) {
-          setWorkflow(data);
+          setFetchResult({ key: id, workflow: data, error: null, settled: true });
         }
       })
       .catch((err) => {
         if (!cancelled) {
+          let message = "Failed to load workflow detail";
           if (err instanceof ApiClientError) {
-            setError(err.payload?.error || err.message);
+            message = err.payload?.error || err.message;
           } else if (err instanceof Error) {
-            setError(err.message);
-          } else {
-            setError("Failed to load workflow detail");
+            message = err.message;
           }
-        }
-      })
-      .finally(() => {
-        if (!cancelled) {
-          setLoading(false);
+          setFetchResult({ key: id, workflow: null, error: message, settled: true });
         }
       });
 
     return () => {
       cancelled = true;
     };
-  }, [loadDetail]);
+  }, [id, loadDetail]);
 
   const runChartData =
     workflow
