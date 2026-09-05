@@ -20,7 +20,7 @@ on:
       dry_run:
         description: "If true, report candidates without merging"
         required: false
-        default: false
+        default: true
         type: boolean
 
 jobs:
@@ -30,16 +30,42 @@ jobs:
       contents: read
       pull-requests: write
       issues: write
+      checks: read
 
     steps:
       - name: Merge eligible agent PRs in lane
-        uses: actions/github-script@v7
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
         with:
           script: |
-            const lane = core.getInput('lane') || 'qa-docs';
-            const limit = parseInt(core.getInput('limit') || '5', 10);
-            const dryRun = String(core.getInput('dry_run')) === 'true';
+            const payloadInputs = context.payload && context.payload.inputs ? context.payload.inputs : {};
+            const lane = payloadInputs.lane || 'qa-docs';
+            const limitInput = payloadInputs.limit === undefined ? '5' : payloadInputs.limit;
+            const dryRunInput = payloadInputs.dry_run === undefined ? 'true' : String(payloadInputs.dry_run).toLowerCase();
+            if (!['true', 'false'].includes(dryRunInput)) {
+              core.setFailed('dry_run must be true or false.');
+              return;
+            }
+            const dryRun = dryRunInput === 'true';
             const { owner, repo } = context.repo;
+            const repoFullName = `${owner}/${repo}`;
+            const allowedLanes = ['qa-docs', 'backend', 'all'];
+
+            if (!allowedLanes.includes(lane)) {
+              core.setFailed(`Invalid lane "${lane}". Allowed lanes are: ${allowedLanes.join(', ')}`);
+              return;
+            }
+
+            const limitText = String(limitInput).trim();
+            if (!/^[0-9]+$/.test(limitText)) {
+              core.setFailed(`Invalid limit "${limitInput}". Must be an integer between 1 and 25.`);
+              return;
+            }
+
+            const limit = parseInt(limitText, 10);
+            if (!Number.isInteger(limit) || limit < 1 || limit > 25) {
+              core.setFailed(`Invalid limit "${limitInput}". Must be an integer between 1 and 25.`);
+              return;
+            }
 
             function issueNumFromHead(headRef) {
               const m = /^agent\/issue-(\d+)-/.exec(headRef || '');
@@ -52,6 +78,62 @@ jobs:
               return 'all';
             }
 
+            function isMergeCandidateReady(prData, capturedHeadSha) {
+              return (
+                prData &&
+                prData.state === 'open' &&
+                !prData.draft &&
+                prData.head &&
+                prData.head.sha === capturedHeadSha &&
+                prData.base &&
+                (prData.base.ref === 'main' || prData.base.ref === 'develop') &&
+                prData.head.repo &&
+                prData.head.repo.full_name === repoFullName &&
+                prData.mergeable === true &&
+                prData.mergeable_state === 'clean'
+              );
+            }
+
+            async function hasPassingCiGate(headSha) {
+              try {
+                const checks = await github.paginate(github.rest.checks.listForRef, {
+                  owner,
+                  repo,
+                  ref: headSha,
+                  per_page: 100,
+                });
+
+                const ciGateChecks = (checks || []).filter((check) => {
+                  const app = check && check.app ? check.app : null;
+                  return (
+                    check &&
+                    check.name === 'CI Gate' &&
+                    check.head_sha === headSha &&
+                    app &&
+                    app.id === 15368
+                  );
+                });
+
+                if (!ciGateChecks.length) {
+                  return { ok: false, reason: 'Missing CI Gate check for this commit.' };
+                }
+
+                ciGateChecks.sort((a, b) => b.id - a.id);
+                const latest = ciGateChecks[0];
+
+                if (!latest || latest.status !== 'completed' || latest.conclusion !== 'success') {
+                  return {
+                    ok: false,
+                    reason: `Latest CI Gate check is not completed + success (status=${latest ? latest.status : 'unknown'}, conclusion=${latest ? latest.conclusion : 'unknown'})`
+                  };
+                }
+
+                return { ok: true };
+              } catch (e) {
+                return { ok: false, reason: `Could not verify checks: ${e.message}` };
+              }
+            }
+
             const { data: pulls } = await github.rest.pulls.list({
               owner,
               repo,
@@ -61,6 +143,8 @@ jobs:
 
             const agentPulls = pulls.filter(p => p.head.ref.startsWith('agent/issue-'));
             const candidates = [];
+            const merged = [];
+            const failed = [];
 
             for (const pr of agentPulls) {
               if (pr.draft) continue;
@@ -80,10 +164,32 @@ jobs:
               const prLane = laneForArea(area);
               if (lane !== 'all' && prLane !== lane) continue;
 
+              const capturedHeadSha = pr.head.sha;
+
+              let currentPr;
+              try {
+                const { data: freshPr } = await github.rest.pulls.get({ owner, repo, pull_number: pr.number });
+                currentPr = freshPr;
+              } catch (e) {
+                core.warning(`Could not refresh PR #${pr.number} before checks: ${e.message}`);
+                continue;
+              }
+
+              if (!isMergeCandidateReady(currentPr, capturedHeadSha)) {
+                core.warning(`Skipping PR #${pr.number}: not in expected mergeable state`);
+                continue;
+              }
+
+              const checksResult = await hasPassingCiGate(capturedHeadSha);
+              if (!checksResult.ok) {
+                core.warning(`Skipping PR #${pr.number}: ${checksResult.reason}`);
+                continue;
+              }
+
               candidates.push({
                 number: pr.number,
                 title: pr.title,
-                headSha: pr.head.sha,
+                headSha: capturedHeadSha,
                 issueNum,
                 area,
                 lane: prLane,
@@ -99,17 +205,34 @@ jobs:
               return;
             }
 
-            const merged = [];
-            const failed = [];
-
             for (const item of batch) {
+              let refreshedPr;
+              try {
+                const { data: freshPull } = await github.rest.pulls.get({ owner, repo, pull_number: item.number });
+                refreshedPr = freshPull;
+              } catch (e) {
+                failed.push({ ...item, error: `Could not re-read PR #${item.number}: ${e.message}` });
+                continue;
+              }
+
+              if (!isMergeCandidateReady(refreshedPr, item.headSha)) {
+                failed.push({ ...item, error: 'PR state changed after checks.' });
+                continue;
+              }
+
+              const finalChecks = await hasPassingCiGate(item.headSha);
+              if (!finalChecks.ok) {
+                failed.push({ ...item, error: finalChecks.reason });
+                continue;
+              }
+
               if (dryRun) {
                 merged.push({ ...item, dryRun: true });
                 continue;
               }
 
               try {
-                await github.rest.pulls.merge({
+                const { data: mergeResult } = await github.rest.pulls.merge({
                   owner,
                   repo,
                   pull_number: item.number,
@@ -117,6 +240,12 @@ jobs:
                   sha: item.headSha,
                   commit_title: `[agent][${item.lane}] ${item.title}`,
                 });
+
+                if (!mergeResult || mergeResult.merged !== true) {
+                  failed.push({ ...item, error: `Merge API did not return merged=true` });
+                  continue;
+                }
+
                 merged.push(item);
               } catch (e) {
                 failed.push({ ...item, error: e.message });

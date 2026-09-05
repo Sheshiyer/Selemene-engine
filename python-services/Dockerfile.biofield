@@ -8,10 +8,15 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 COPY pyproject.toml .
+COPY uv.lock .
 COPY shared/ shared/
+COPY mediapipe_service/ mediapipe_service/
 COPY biofield_cv_service/ biofield_cv_service/
 
-RUN pip install --no-cache-dir -e .
+RUN pip install --no-cache-dir uv==0.7.13 \
+    && uv sync --locked --no-dev --no-editable --python /usr/local/bin/python
+
+ENV PATH="/app/.venv/bin:${PATH}"
 
 EXPOSE 8002
 

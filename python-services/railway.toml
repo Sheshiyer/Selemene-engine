@@ -8,6 +8,7 @@ watchPatterns = [
  "python-services/shared/**",
  "python-services/pyproject.toml",
  "python-services/Dockerfile.biofield",
+ "python-services/uv.lock",
  "python-services/railway.toml"
 ]
 
