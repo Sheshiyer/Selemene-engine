@@ -14,3 +14,11 @@ The Next.js failure matches the [upstream standalone/adapter regression](https:/
 The first run also passes the complete Node audit, Rust security audit, secret scan, TypeScript engines, Python 3.11/3.12 contracts and live sidecar smoke, Biofield Linux image imports and workflow registry parity. These results belong to the initial candidate. Read the latest PR checks for the repaired revision; do not treat this dated receipt as an assertion that every check or deployment is complete.
 
 No production promotion, ruleset change, database mutation or live infrastructure edit is part of these repairs.
+
+## Database-backed capability fixture
+
+The next run, [33968504428](https://github.com/Sheshiyer/Selemene-engine/actions/runs/33968504428), passes the repaired workspace/admin checks, both Linux Python images, both Python contract/smoke versions, audits, Rust tests and release build. Integration tests expose a preserved capability test defect: its shared Router/PgPool outlives the separate Tokio runtimes created by three test attributes. A valid UUID admin request then times out resolving database permissions.
+
+A new disposable local PostgreSQL 18.4 instance with repository migrations reproduces the same 500 failure using the original fixture. A test-binary-owned runtime keeps all three independently named cases alive in one runtime and passes 3/3 with the same database, UUID identities, real permission lookup and unchanged assertions. CI supplies PostgreSQL 16, so the complete remote rerun remains necessary. Production permission handling was not relaxed. The inaccurate comment claiming no database calls was corrected.
+
+The `noesis-build` response returned an intention instead of code and was rejected. The bounded `noesis-fast` response resolved to `codex/gpt-5.6-luna`; its small fixture edits were reviewed. Its large replacement altered a field name and had no exact anchor, so that replacement was rejected. The original assertion body was wrapped mechanically instead. Compiler/test evidence applies to the integrated result, not the provider's unreviewed proposal.

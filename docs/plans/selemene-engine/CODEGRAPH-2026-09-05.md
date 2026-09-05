@@ -15,3 +15,9 @@ The graph database remains local and ignored. Runtime index receipts are retaine
 The isolated Superset recovery worktree has its own index. Incremental sync reported up-to-date but a targeted query missed the newly added merge-lane test. A forced full index was therefore run and checked, rather than trusting that status alone. Fresh MCP status then reported 863 files, 14,905 nodes, 36,284 edges, 42.85MB, 70 Python and 47 YAML entries. Exact symbol probes resolve `engine_capabilities` and the new `test_merge_lane_safety` at `tests/scripts/test_merge_lane_safety.py:117`.
 
 Use exact symbol queries before broad natural-language context: the broad context request returned unrelated API-key symbols, while the exact handler query resolved correctly. Keep this retrieval limitation explicit; graph availability is not a guarantee that every semantic search is relevant.
+
+## Final source-content check
+
+At candidate `9b618de`, incremental sync again reported up-to-date while `nextConfig` still showed its old standalone value. A second forced full index fixed the stale entry. Fresh symbol queries then showed the conditional Vercel packaging comment and the merge-lane safety test. The index reports 863 files, 14,905 nodes, 36,284 edges and 44.00 MB. Treat forced indexing plus a changed-symbol readback as the reliable update procedure until incremental invalidation is repaired.
+
+After the capability fixture repair, the final forced index reports 863 files, 14,909 nodes and 36,292 edges (44.00 MB). `test_runtime` resolves to `crates/noesis-api/tests/capability_route_tests.rs:20`, and its static runtime is at line 18. Both the changed Next configuration and the new runtime helper resolve from the current source.

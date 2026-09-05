@@ -1,0 +1,83 @@
+{
+  "sourceCandidate": "9b618deff890e7aecfb3dd445eb37fa31dd9565a",
+  "controls": [
+    {
+      "number": 893,
+      "url": "https://github.com/Sheshiyer/Selemene-engine/issues/893",
+      "state": "open",
+      "verifiedAt": "2026-09-05T13:21:09.488123+00:00",
+      "bodySha256": "8bb7a17fa865d1bf0d66ae3095a7044e51624797e457d34a85434797d1b37e1f",
+      "checkboxesPreserved": true,
+      "labelsPreserved": true
+    },
+    {
+      "number": 896,
+      "url": "https://github.com/Sheshiyer/Selemene-engine/issues/896",
+      "state": "open",
+      "verifiedAt": "2026-09-05T13:21:11.694756+00:00",
+      "bodySha256": "d05cdb3c2f901f95fa2755d51f3304d0b8074ac8f26053513dbca58f2b6f40f6",
+      "checkboxesPreserved": true,
+      "labelsPreserved": true
+    },
+    {
+      "number": 901,
+      "url": "https://github.com/Sheshiyer/Selemene-engine/issues/901",
+      "state": "open",
+      "verifiedAt": "2026-09-05T13:21:14.029424+00:00",
+      "bodySha256": "119c31eaaf90d129fec4314052239a736cc02acd497d5c80441f5210b57988aa",
+      "checkboxesPreserved": true,
+      "labelsPreserved": true
+    },
+    {
+      "number": 894,
+      "url": "https://github.com/Sheshiyer/Selemene-engine/issues/894",
+      "state": "open",
+      "verifiedAt": "2026-09-05T13:21:16.145713+00:00",
+      "bodySha256": "1cfdd1fcd641281d1902195915368da54a9be3143de226e5c75f54a3b26dafb2",
+      "checkboxesPreserved": true,
+      "labelsPreserved": true
+    },
+    {
+      "number": 897,
+      "url": "https://github.com/Sheshiyer/Selemene-engine/issues/897",
+      "state": "open",
+      "verifiedAt": "2026-09-05T13:21:18.289522+00:00",
+      "bodySha256": "994e0c6ba223a9de9bd704b1bcc3f7665f8dd61d04f7aebff381255504d7385e",
+      "checkboxesPreserved": true,
+      "labelsPreserved": true
+    },
+    {
+      "number": 913,
+      "url": "https://github.com/Sheshiyer/Selemene-engine/issues/913",
+      "state": "open",
+      "verifiedAt": "2026-09-05T13:21:20.382999+00:00",
+      "bodySha256": "35dd8c51757ca9a5bad880345128e50142fed6bc8b49c7acb08831c3780203b5",
+      "checkboxesPreserved": true,
+      "labelsPreserved": true
+    },
+    {
+      "number": 908,
+      "url": "https://github.com/Sheshiyer/Selemene-engine/issues/908",
+      "state": "open",
+      "verifiedAt": "2026-09-05T13:21:22.421526+00:00",
+      "bodySha256": "dcd8d08d386a5348671ce1f09876c91fe83a3e6dbc208e58bcb91b335d553813",
+      "checkboxesPreserved": true,
+      "labelsPreserved": true
+    },
+    {
+      "number": 914,
+      "url": "https://github.com/Sheshiyer/Selemene-engine/issues/914",
+      "state": "open",
+      "verifiedAt": "2026-09-05T13:21:24.622996+00:00",
+      "bodySha256": "be3f72cbe0b6df087cdf9d906a9a4e269ad5cdec1379748538cdda2cfa6c7c2d",
+      "checkboxesPreserved": true,
+      "labelsPreserved": true
+    }
+  ],
+  "engineIssues": {
+    "open": 570,
+    "engines": 19,
+    "slotsPerEngine": 30,
+    "mutated": 0
+  }
+}

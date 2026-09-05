@@ -400,5 +400,53 @@
     "Health status does not prove per-engine semantics, deployed capability parity, data durability or rollback.",
     "Historical source manifests have placeholders for pattern-memory; no resources were created.",
     "Initial DNS API error10000 remains API-scope evidence. Later authenticated browser verified targeted DNS records without changing credentials or DNS."
-  ]
+  ],
+  "repositoryCI": {
+    "adminSmoke": {
+      "name": "ADMIN_WEB_URL",
+      "value": "https://144.tryambakam.space",
+      "before": "absent",
+      "verifiedAt": "2026-09-05T13:29:07.683276+00:00",
+      "purpose": "Existing admin origin for required post-deploy smoke",
+      "probe": {
+        "adminLogin": 302,
+        "apiLiveness": 200,
+        "unauthenticatedSession": 302,
+        "unauthenticatedApiKeys": 302
+      },
+      "scope": "repository Actions variable only; no workflow dispatched"
+    },
+    "deploymentPreflight": {
+      "variables": {
+        "API_BASE_URL": "https://selemene.tryambakam.space",
+        "ADMIN_WEB_URL": "https://144.tryambakam.space"
+      },
+      "secretNamesPresent": {
+        "RAILWAY_PROJECT_ID": true,
+        "SMOKE_TEST_API_KEY": true,
+        "SMOKE_TEST_JWT": false,
+        "RAILWAY_TOKEN": true
+      }
+    }
+  },
+  "vercel": {
+    "production": {
+      "id": "dpl_HhkGqfwkFw4u9YG9ebFe2GfKoe7C",
+      "url": "enantiodromia-engine-dashboard-4nv3lhkb8-sheshiyers-projects.vercel.app",
+      "target": "production",
+      "readyState": "READY",
+      "createdAt": 1787814342834,
+      "sourceCommit": "ae3e2cef402bd0cf28d1c7a102800d215cc5f2c2",
+      "sourceEvidence": "Deployment build log: Branch main, Commit ae3e2ce"
+    },
+    "preview": {
+      "id": "dpl_4LmvAZHxoDXrGNKjmxCoXD72mcTe",
+      "url": "enantiodromia-engine-dashboard-50te7xy3g-sheshiyers-projects.vercel.app",
+      "target": "preview",
+      "readyState": "READY",
+      "createdAt": 1788614292687
+    },
+    "previewSource": "9b618deff890e7aecfb3dd445eb37fa31dd9565a",
+    "previewBrowserAcceptance": "Vercel deployment protection requires a separate login; production admin login does not authorize the preview browser session"
+  }
 }

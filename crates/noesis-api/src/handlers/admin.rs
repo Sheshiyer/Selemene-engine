@@ -4638,8 +4638,8 @@ pub async fn bridge_health(
 /// the TypeScript `/engines/capabilities` endpoint, using the same bridge
 /// readiness self-check data source as `/admin/bridge/health`: a healthy
 /// self-check maps to `available`, a failing one maps to `unavailable`. This
-/// handler makes no provider, database, or additional remote calls beyond
-/// the bridge readiness check itself.
+/// capability collection only probes bridge readiness and does not generate
+/// provider output. Permission resolution reads the admin database when configured.
 pub async fn engine_capabilities(
     State(state): State<AppState>,
     Extension(auth_user): Extension<AuthUser>,

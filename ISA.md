@@ -4,11 +4,11 @@ task: "Continue Selemene waves through verified planning, gates and infrastructu
 effort: E4
 effort_source: classifier
 phase: verify
-progress: 317/325
+progress: 320/325
 mode: algorithm
 iteration: 5
 started: 2026-07-18T15:00:00+05:30
-updated: 2026-09-05T12:58:11.837076+00:00
+updated: 2026-09-05T13:47:55.589355+00:00
 ---
 
 > **Active continuation — 2026-09-05:** Restore the existing seven-wave Selemene program, use GSD research/discuss/plan/execute/verify with recommended defaults, review infrastructure/dependencies and refresh CodeGraph. Criteria ISC-279 onward describe this continuation. Older entries are preserved dated evidence; their checked status does not imply current production acceptance. This file is the acceptance ledger; `.planning/` is the execution adapter.
@@ -476,14 +476,14 @@ Complete the existing dependency-ordered Selemene program through the GSD phase 
 - [x] ISC-300: TS capability formatter repair passes lint, typecheck and the complete TS test suite.
 - [x] ISC-301: GSD Phase 2 has dependency-ordered plans for the remaining gate and source-config work.
 - [x] ISC-302: Capability documentation no longer claims native or conditional engines are covered by six TS rows.
-- [ ] ISC-303: GitHub control planning is reconciled against the new evidence without closing unproven work.
+- [x] ISC-303: GitHub control planning is reconciled against the new evidence without closing unproven work.
 - [x] ISC-304: Current source changes are packaged as scoped reviewable commits with exact verification evidence.
 - [ ] ISC-305: Required remote CI is green on the reviewed source revision before merge approval.
-- [ ] ISC-306: Immutable action pins and complete Python/admin release-gate coverage are verified.
+- [x] ISC-306: Immutable action pins and complete Python/admin release-gate coverage are verified.
 - [ ] ISC-307: Production release can identify source and schema revisions for the approved image digests.
 - [ ] ISC-308: Original Wave 0 through Wave 6 exit criteria are all verified before overall goal completion.
 - [x] ISC-309: Anti: starting checkout, preserved planning stash and existing user worktrees are not overwritten or discarded.
-- [ ] ISC-310: Anti: recovery artifacts contain no credential values, personal runtime payloads or secret variable values.
+- [x] ISC-310: Anti: recovery artifacts contain no credential values, personal runtime payloads or secret variable values.
 - [x] ISC-311: Accepted Hands worker output has substantive artifacts and actual provider/model attribution.
 - [ ] ISC-312: Every originally partial engine row has semantic and integration evidence or an explicitly approved reduced scope.
 - [x] ISC-313: Critical DNS/security/production decisions remain explicit until the exact requested operation is authorized.
@@ -705,6 +705,8 @@ _Last refreshed: 2026-08-25T17:34:40.307Z_
 - 2026-09-05T10:35:44.959123+00:00: Earlier noesis-observe and initial Hands calls returned gateway errors/empty outputs and are not accepted as completed work. A smaller isolated Superset Claude worker continues on noesis-execute.
 - 2026-09-05T10:35:44.959123+00:00: Selected analytical capabilities: ContextSearch (prior planning evidence), ISA (history reconciliation), Advisor (bounded plan review), FirstPrinciples, SystemsThinking, Science and ReReadCheck (explicit lenses in the external review). None of those reviews substitutes for source verification.
 
+- 2026-09-05T13:47:55.589355+00:00: GitHub control bodies are reconciled with readback hashes; the missing public admin smoke URL is configured to its verified origin. The next critical decision is the additive main CI requirement. Production promotion remains held for release identity and rollback evidence.
+
 ## Changelog
 
 - 2026-08-26 | conjectured: schema-valid fixtures and additive DTOs alone proved cross-language contract convergence
@@ -762,6 +764,11 @@ _Last refreshed: 2026-08-25T17:34:40.307Z_
   refuted_by: three authority files were only in a preserved stash, its ISA contains 285 historical criteria, two capability PRs are unmerged, 570 engine issues are open and production capabilities return 404
   learned: recover source authority by stable identity and keep local, CI, deployment and operational evidence distinct
   criterion_now: ISC-279 through ISC-314 govern the current continuation without renumbering historical criteria
+
+- 2026-09-05T13:47:55.589355+00:00 | conjectured: local gate success implied the candidate would pass every clean CI surface
+  refuted_by: clean-runner imports/build ordering, Vercel packaging and a database-backed fixture lifetime failure
+  learned: validate provider packaging and DB-configured test lifetimes on disposable services before promotion
+  criterion_now: ISC-305 remains open until current-source CI Gate passes; ISC-306 records verified Python/admin coverage without claiming complete release receipts
 
 ## Verification
 
@@ -853,3 +860,8 @@ _Last refreshed: 2026-08-25T17:34:40.307Z_
 - ISC-316: executable workflow probe — 14 mocked scenarios execute the actual agent-merge-lane.yml script and pass; full script suite: 67 passed.
 - ISC-317: browser read — account 9d9d zone DNS table shows selemene->Railway proxied,144->Vercel proxied,48->Railway DNS only; no DNS mutation.
 - ISC-318: browser read — deployed admin lists 19 engine routes; sidecar health shows six TS engines. Stale count and Python description corrected in source; candidate is not yet deployed.
+
+- ISC-303: GitHub readback — all eight control bodies updated; original exit checkboxes, OPEN state and labels preserved. GITHUB-RECONCILIATION-2026-09-05.json records hashes. All 570 engine issues remain untouched.
+- ISC-306: GitHub CI — at source 9b618de, both Python image import jobs, Python 3.11/3.12 contracts/smoke and required admin checks pass. Both release paths depend on complete CI; all 77 Action uses pass the immutable pin validator. Full CI remains separately governed by ISC-305.
+- ISC-310: privacy verification — 32 recovery artifacts pass personal-email/private-path checks; GitHub TruffleHog job 101312749961 passes. No authenticated personal records, credential values or secret variable values were saved in these receipts.
+- Capability fixture: disposable PostgreSQL 18.4 reproduces the original 500/timeout; a shared test-binary runtime passes all three existing cases against the same migrated database. Remote PostgreSQL 16 rerun is required.

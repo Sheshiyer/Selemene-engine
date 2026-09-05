@@ -37,7 +37,102 @@
     "githubActionsAppId": 15368,
     "ciGateHead": "520e439f3fb7ad79f9d838885dfe40a9d8af8801",
     "ciRun": 33962684609,
-    "conclusion": "success",
-    "candidateRun": "pending"
+    "conclusion": "success"
+  },
+  "expectedCurrentState": {
+    "name": "noesis-admin",
+    "target": "branch",
+    "enforcement": "active",
+    "conditions": {
+      "ref_name": {
+        "exclude": [],
+        "include": [
+          "~DEFAULT_BRANCH",
+          "refs/heads/main"
+        ]
+      }
+    },
+    "rules": [
+      {
+        "type": "deletion"
+      },
+      {
+        "type": "non_fast_forward"
+      }
+    ],
+    "bypass_actors": []
+  },
+  "request": {
+    "method": "PUT",
+    "endpoint": "repos/Sheshiyer/Selemene-engine/rulesets/15597830",
+    "body": {
+      "name": "noesis-admin",
+      "target": "branch",
+      "enforcement": "active",
+      "conditions": {
+        "ref_name": {
+          "exclude": [],
+          "include": [
+            "~DEFAULT_BRANCH",
+            "refs/heads/main"
+          ]
+        }
+      },
+      "rules": [
+        {
+          "type": "deletion"
+        },
+        {
+          "type": "non_fast_forward"
+        },
+        {
+          "type": "required_status_checks",
+          "parameters": {
+            "strict_required_status_checks_policy": true,
+            "do_not_enforce_on_create": false,
+            "required_status_checks": [
+              {
+                "context": "CI Gate",
+                "integration_id": 15368
+              }
+            ]
+          }
+        }
+      ],
+      "bypass_actors": []
+    }
+  },
+  "rollbackRequest": {
+    "method": "PUT",
+    "endpoint": "repos/Sheshiyer/Selemene-engine/rulesets/15597830",
+    "body": {
+      "name": "noesis-admin",
+      "target": "branch",
+      "enforcement": "active",
+      "conditions": {
+        "ref_name": {
+          "exclude": [],
+          "include": [
+            "~DEFAULT_BRANCH",
+            "refs/heads/main"
+          ]
+        }
+      },
+      "rules": [
+        {
+          "type": "deletion"
+        },
+        {
+          "type": "non_fast_forward"
+        }
+      ],
+      "bypass_actors": []
+    },
+    "condition": "Only if explicitly approved; first verify no concurrent changes"
+  },
+  "liveCandidatePrecondition": {
+    "pullRequest": 1488,
+    "base": "main",
+    "rule": "Re-query the reviewed head and require current successful CI Gate from GitHub Actions before applying"
   }
 }
