@@ -69,7 +69,7 @@ export default function EnginesPage() {
   return (
     <PageShell
       title="Engine Registry"
-      summary="View all 16 consciousness engines with category, status, and performance metrics."
+      summary="Browse the runtime engine registry with category, status, and performance metrics."
       actions={
         <ActionRail label="Engine actions">
           <button type="button" onClick={() => window.location.reload()}>

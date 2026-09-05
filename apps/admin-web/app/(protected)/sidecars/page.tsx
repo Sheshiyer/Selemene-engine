@@ -60,7 +60,7 @@ export default function SidecarsPage() {
   return (
     <PageShell
       title="Sidecar Health"
-      summary="Monitor TypeScript engine server and Python biofield CV service health with per-engine detail."
+      summary="Monitor TypeScript sidecar health, per-engine status, and circuit breakers."
     >
       {error ? <StateBanner variant="error" title={error} /> : null}
 
