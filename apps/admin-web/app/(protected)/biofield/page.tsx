@@ -138,7 +138,10 @@ export default function BiofieldPage() {
             placeholder="user uuid"
           />
         </label>
-        <button type="button" onClick={() => { updateParam("status", ""); updateParam("user_id", ""); }}>
+        <button type="button" onClick={() => {
+          const nextQuery = buildQueryString(searchParams, { status: undefined, user_id: undefined, offset: undefined });
+          router.replace(nextQuery ? `${pathname}?${nextQuery}` : pathname, { scroll: false });
+        }}>
           Clear
         </button>
       </div>
@@ -153,11 +156,11 @@ export default function BiofieldPage() {
           <div className="value">{sessions.length}</div>
         </article>
         <article className="metric">
-          <div className="label">Active</div>
+          <div className="label">Active on this page</div>
           <div className="value">{activeCount}</div>
         </article>
         <article className="metric">
-          <div className="label">Abandoned</div>
+          <div className="label">Abandoned on this page</div>
           <div className="value">{abandonedCount}</div>
         </article>
       </div>
