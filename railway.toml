@@ -4,29 +4,28 @@ builder = "DOCKERFILE"
 # Dockerfile is auto-detected, but we can specify it explicitly
 dockerfilePath = "Dockerfile.prod"
 watchPatterns = [
-  "crates/**",
-  "data/**",
-  "migrations/**",
-  "Cargo.toml",
-  "Cargo.lock",
-  "Dockerfile.prod",
-  ".dockerignore",
-  "railway.toml"
+ "crates/**",
+ "data/**",
+ "migrations/**",
+ "Cargo.toml",
+ "Cargo.lock",
+ "Dockerfile.prod",
+ ".dockerignore",
+ "railway.toml"
 ]
 
 [deploy]
 # Start command - Railway will use the Dockerfile's ENTRYPOINT by default
-# startCommand = "/app/noesis-server"  # Uncomment if you need to override
+# startCommand = "/app/noesis-server" # Uncomment if you need to override
 
 # Healthcheck endpoint - Railway will call this before marking deployment as successful
 healthcheckPath = "/health/live"
-healthcheckTimeout = 300  # 5 minutes for initial startup (Rust app takes time)
+healthcheckTimeout = 300 # 5 minutes for initial startup (Rust app takes time)
 
 # Restart policy - restart on failure
 restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 3
 
-# Resource limits — prevents OOM kills from being silent/ungraceful (#706)
-[deploy.resources]
-memory = 1024  # MB
-cpu = 1.0      # vCPU
+# Prior intent was ~1024MB / 1 vCPU; unverified — no active override declared
+# (deploy.resources unsupported; live serviceManifest.limitOverride is null).
+# docs/plans/selemene-engine/RECOVERY-2026-09-05.md
