@@ -1,23 +1,18 @@
 [build]
 builder = "DOCKERFILE"
 dockerfilePath = "Dockerfile.biofield"
+# watchPatterns are repo-root relative; only build.watchPatterns is schema-valid.
+# docs/plans/selemene-engine/RECOVERY-2026-09-05.md
+watchPatterns = [
+ "python-services/biofield_cv_service/**",
+ "python-services/shared/**",
+ "python-services/pyproject.toml",
+ "python-services/Dockerfile.biofield",
+ "python-services/railway.toml"
+]
 
 [deploy]
 healthcheckPath = "/health"
 healthcheckTimeout = 60
 restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 3
-
-[deploy.watch]
-include = [
-  "biofield_cv_service/**",
-  "shared/**",
-  "pyproject.toml",
-  "Dockerfile.biofield",
-]
-exclude = [
-  "*.md",
-  "tests/**",
-  "mediapipe_service/**",
-  "Dockerfile.mediapipe",
-]

@@ -1,8 +1,19 @@
 [build]
-# Use Nixpacks builder (auto-detects Bun)
-builder = "NIXPACKS"
-# Dockerfile is in the current directory (when root is /ts-engines)
+# builder = DOCKERFILE matches live manifest and ts-engines/railway.json.
+# docs/plans/selemene-engine/RECOVERY-2026-09-05.md
+builder = "DOCKERFILE"
+# Dockerfile is in current directory (when root is /ts-engines)
 dockerfilePath = "Dockerfile"
+# watchPatterns are repo-root relative (Root Directory does not re-base paths).
+# docs/plans/selemene-engine/RECOVERY-2026-09-05.md
+watchPatterns = [
+ "ts-engines/src/**",
+ "ts-engines/package.json",
+ "ts-engines/bun.lock",
+ "ts-engines/Dockerfile",
+ "ts-engines/railway.toml",
+ "ts-engines/railway.json"
+]
 
 [deploy]
 # Start command (Dockerfile already defines this)
@@ -15,20 +26,3 @@ healthcheckTimeout = 60
 # Restart policy - restart on failure
 restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 3
-
-[deploy.watch]
-# Watch paths - relative to /ts-engines
-include = [
-  "src/**",
-  "package.json",
-  "bun.lock",
-  "Dockerfile",
-  "railway.toml",
-  "railway.json"
-]
-
-# Ignore
-exclude = [
-  "tests/**",
-  "*.md"
-]
