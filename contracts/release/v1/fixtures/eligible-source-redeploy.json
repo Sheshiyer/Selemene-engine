@@ -6,7 +6,10 @@
   "promotion_mode": "source-redeploy",
   "target": {
     "environment": "test",
-    "provider_scope": ["ghcr", "railway"]
+    "provider_scope": [
+      "ghcr",
+      "railway"
+    ]
   },
   "authority": {
     "contract_id": "selemene.release-receipt/v1",
@@ -119,7 +122,7 @@
     },
     "rollback_compatibility": {
       "status": "available",
-      "value": "candidate verified backward-compatible with previous schema",
+      "value": "verified-backward-compatible",
       "source": "synthetic rollback rehearsal"
     }
   },
@@ -136,6 +139,11 @@
         "status": "available",
         "value": "702b945e-2c66-4d5a-bae1-4c67ea14c3bb",
         "source": "infrastructure map environment"
+      },
+      "project_id": {
+        "status": "available",
+        "value": "11eedde4-41e6-4f51-b86b-cf77111cf592",
+        "source": "infrastructure map Railway project"
       }
     },
     {
@@ -150,6 +158,11 @@
         "status": "available",
         "value": "702b945e-2c66-4d5a-bae1-4c67ea14c3bb",
         "source": "infrastructure map environment"
+      },
+      "project_id": {
+        "status": "available",
+        "value": "11eedde4-41e6-4f51-b86b-cf77111cf592",
+        "source": "infrastructure map Railway project"
       }
     },
     {
@@ -164,6 +177,11 @@
         "status": "available",
         "value": "702b945e-2c66-4d5a-bae1-4c67ea14c3bb",
         "source": "infrastructure map environment"
+      },
+      "project_id": {
+        "status": "available",
+        "value": "11eedde4-41e6-4f51-b86b-cf77111cf592",
+        "source": "infrastructure map Railway project"
       }
     }
   ],
@@ -189,17 +207,29 @@
     {
       "id": "postgresql",
       "required": true,
-      "state": {"status": "available", "value": "enabled", "source": "synthetic readiness receipt"}
+      "state": {
+        "status": "available",
+        "value": "enabled",
+        "source": "synthetic readiness receipt"
+      }
     },
     {
       "id": "redis",
       "required": true,
-      "state": {"status": "available", "value": "enabled", "source": "synthetic readiness receipt"}
+      "state": {
+        "status": "available",
+        "value": "enabled",
+        "source": "synthetic readiness receipt"
+      }
     },
     {
       "id": "biofield-cv",
       "required": false,
-      "state": {"status": "available", "value": "enabled", "source": "synthetic sidecar receipt"}
+      "state": {
+        "status": "available",
+        "value": "enabled",
+        "source": "synthetic sidecar receipt"
+      }
     },
     {
       "id": "mediapipe",
@@ -214,7 +244,11 @@
     {
       "id": "ephemeris-data",
       "required": true,
-      "source": {"status": "available", "value": "repo://data/ephemeris", "source": "synthetic asset manifest"},
+      "source": {
+        "status": "available",
+        "value": "repo://data/ephemeris",
+        "source": "synthetic asset manifest"
+      },
       "integrity": {
         "status": "available",
         "value": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
@@ -225,12 +259,20 @@
         "value": "retained with the candidate image and source revision",
         "source": "synthetic retention policy"
       },
-      "release_inclusion": {"status": "available", "value": true, "source": "synthetic image inspection"}
+      "release_inclusion": {
+        "status": "available",
+        "value": true,
+        "source": "synthetic image inspection"
+      }
     },
     {
       "id": "wisdom-data",
       "required": true,
-      "source": {"status": "available", "value": "repo://data/wisdom-docs", "source": "synthetic asset manifest"},
+      "source": {
+        "status": "available",
+        "value": "repo://data/wisdom-docs",
+        "source": "synthetic asset manifest"
+      },
       "integrity": {
         "status": "available",
         "value": "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
@@ -241,7 +283,11 @@
         "value": "retained with the candidate image and source revision",
         "source": "synthetic retention policy"
       },
-      "release_inclusion": {"status": "available", "value": true, "source": "synthetic image inspection"}
+      "release_inclusion": {
+        "status": "available",
+        "value": true,
+        "source": "synthetic image inspection"
+      }
     }
   ],
   "rollback": {
@@ -262,7 +308,7 @@
     },
     "schema_restore": {
       "status": "available",
-      "value": "restore prior image only after verifying migration 037 backward compatibility",
+      "value": "not-required-backward-compatible",
       "source": "synthetic rollback rehearsal"
     },
     "procedure": {

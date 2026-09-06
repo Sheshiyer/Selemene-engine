@@ -153,6 +153,168 @@ def test_source_redeploy_cannot_satisfy_immutable_image_workflow() -> None:
     assert "promotion_mode does not match the workflow" in result.stderr
 
 
+def test_operational_validation_rejects_synthetic_test_receipt() -> None:
+    result = run_receipt(
+        ELIGIBLE_SOURCE,
+        "--operational",
+        "--target-profile",
+        "deploy-production",
+        "--expected-artifact-digest",
+        "api=sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "--expected-artifact-digest",
+        "typescript-engines=sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    )
+
+    assert result.returncode == 1
+    assert "rejects receipts containing test_fixture metadata" in result.stderr
+    assert "target.environment does not match workflow authority" in result.stderr
+
+
+def test_operational_validation_requires_expected_source(tmp_path: Path) -> None:
+    receipt = load_json(ELIGIBLE_SOURCE)
+    receipt.pop("test_fixture")
+    receipt["target"]["environment"] = "production"
+    receipt_path = tmp_path / "operational.json"
+    receipt_path.write_text(json.dumps(receipt), encoding="utf-8")
+
+    result = run_receipt(
+        receipt_path,
+        "--operational",
+        "--target-profile",
+        "deploy-production",
+        "--expected-artifact-digest",
+        "api=sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "--expected-artifact-digest",
+        "typescript-engines=sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    )
+
+    assert result.returncode == 1
+    assert "operational validation requires an expected source revision" in result.stderr
+
+
+def test_target_profile_rejects_wrong_provider_scope() -> None:
+    receipt = load_json(ELIGIBLE_SOURCE)
+    receipt.pop("test_fixture")
+    receipt["target"] = {
+        "environment": "production",
+        "provider_scope": ["railway"],
+    }
+
+    errors = validate_release_receipt(
+        receipt,
+        REPO_ROOT,
+        target_profile="deploy-production",
+    )
+
+    assert "missing target providers: ['ghcr']" in errors
+
+
+def test_service_target_identity_is_bound_to_manifest_authority() -> None:
+    receipt = load_json(ELIGIBLE_SOURCE)
+    api = next(row for row in receipt["service_roles"] if row["role"] == "api")
+    api["provider"] = "vercel"
+    api["project_id"]["value"] = "fabricated-project"
+    api["service_id"]["value"] = "fabricated-api-service"
+    api["environment_id"]["value"] = "fabricated-environment"
+
+    errors = validate_release_receipt(receipt, REPO_ROOT)
+
+    assert "service_roles.api.provider does not match release authority" in errors
+    assert "service_roles.api.project_id does not match release authority" in errors
+    assert "service_roles.api.service_id does not match release authority" in errors
+    assert "service_roles.api.environment_id does not match release authority" in errors
+
+
+def test_operational_validation_emits_only_manifest_bound_deploy_selector(
+    tmp_path: Path,
+) -> None:
+    receipt = load_json(ELIGIBLE_SOURCE)
+    receipt.pop("test_fixture")
+    receipt["target"]["environment"] = "production"
+    receipt_path = tmp_path / "operational.json"
+    output_path = tmp_path / "github-output"
+    receipt_path.write_text(json.dumps(receipt), encoding="utf-8")
+
+    result = run_receipt(
+        receipt_path,
+        "--expected-source",
+        SYNTHETIC_SOURCE,
+        "--required-promotion-mode",
+        "source-redeploy",
+        "--target-profile",
+        "deploy-production",
+        "--expected-artifact-digest",
+        "api=sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "--expected-artifact-digest",
+        "typescript-engines=sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "--github-output",
+        str(output_path),
+        "--operational",
+    )
+
+    assert result.returncode == 0, f"{result.stdout}{result.stderr}"
+    assert output_path.read_text(encoding="utf-8").splitlines() == [
+        "railway_project_id=11eedde4-41e6-4f51-b86b-cf77111cf592",
+        "railway_environment_id=702b945e-2c66-4d5a-bae1-4c67ea14c3bb",
+        "railway_service_id=48b3bd23-5620-4f7b-8e5d-96bc5c5d7fc4",
+    ]
+
+
+def test_operational_validation_binds_every_actual_artifact_digest() -> None:
+    receipt = load_json(ELIGIBLE_SOURCE)
+    receipt.pop("test_fixture")
+    receipt["target"] = {
+        "environment": "production",
+        "provider_scope": ["ghcr", "railway"],
+    }
+
+    errors = validate_release_receipt(
+        receipt,
+        REPO_ROOT,
+        target_profile="deploy-production",
+        expected_artifact_digests={
+            "api": "sha256:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+        },
+        operational=True,
+    )
+
+    assert "missing expected artifact digest roles: ['typescript-engines']" in errors
+    assert (
+        "artifacts.api.built.image_digest does not match workflow artifact" in errors
+    )
+
+
+@pytest.mark.parametrize(
+    ("path", "value"),
+    [
+        (("schema_identity", "applied_revision", "value"), "x"),
+        (("schema_identity", "rollback_compatibility", "value"), "x"),
+        (("rollback", "schema_restore", "value"), "x"),
+        (("rollback", "procedure", "value"), "x"),
+        (("rollback", "tested_at", "value"), "x"),
+    ],
+)
+def test_schema_and_rollback_identity_reject_meaningless_strings(
+    path: tuple[str, ...],
+    value: str,
+) -> None:
+    receipt = load_json(ELIGIBLE_SOURCE)
+    target = receipt
+    for part in path[:-1]:
+        target = target[part]
+    target[path[-1]] = value
+
+    errors = validate_release_receipt(receipt, REPO_ROOT)
+
+    assert any(
+        "is not valid" in error
+        or "is not one of" in error
+        or "does not match" in error
+        or "is not a" in error
+        for error in errors
+    )
+
+
 def test_unavailable_optional_dependency_is_unknown_not_not_applicable() -> None:
     receipt = load_json(ELIGIBLE_SOURCE)
     mediapipe = next(row for row in receipt["dependencies"] if row["id"] == "mediapipe")
@@ -195,7 +357,15 @@ def test_validator_has_no_network_or_provider_client_path() -> None:
         encoding="utf-8"
     )
 
-    for forbidden in ("requests", "urllib.request", "subprocess", "socket", "curl", "railway"):
+    for forbidden in (
+        "requests",
+        "urllib.request",
+        "subprocess",
+        "socket",
+        "curl",
+        "https://backboard.railway.com",
+        "railway up",
+    ):
         assert forbidden not in source
 
 

@@ -7,7 +7,9 @@ import argparse
 import copy
 import hashlib
 import json
+import re
 import sys
+from datetime import datetime
 from pathlib import Path
 from typing import Any
 
@@ -86,6 +88,13 @@ def set_difference_error(
         errors.append(f"unknown {label}: {sorted(unknown)}")
 
 
+def validate_timestamp(value: str, label: str, errors: list[str]) -> None:
+    try:
+        datetime.fromisoformat(value.removesuffix("Z") + "+00:00")
+    except ValueError:
+        errors.append(f"{label} must be a valid UTC RFC3339 timestamp")
+
+
 def schema_errors(receipt: Any, schema: dict[str, Any]) -> list[str]:
     try:
         Draft202012Validator.check_schema(schema)
@@ -108,6 +117,9 @@ def validate_release_receipt(
     *,
     expected_source: str | None = None,
     required_promotion_mode: str | None = None,
+    target_profile: str | None = None,
+    expected_artifact_digests: dict[str, str] | None = None,
+    operational: bool = False,
 ) -> list[str]:
     """Return every eligibility error; an empty list means eligible."""
 
@@ -117,6 +129,7 @@ def validate_release_receipt(
     errors = schema_errors(receipt, schema)
     if errors:
         return errors
+    validate_timestamp(receipt["generated_at"], "generated_at", errors)
 
     authority = receipt["authority"]
     if authority["contract_id"] != manifest["contract_id"]:
@@ -136,6 +149,31 @@ def validate_release_receipt(
             "release manifest engine registry digest is stale: "
             f"declared={manifest_registry['sha256']} actual={actual_registry_digest}"
         )
+
+    target = receipt["target"]
+    if operational and "test_fixture" in receipt:
+        errors.append("operational validation rejects receipts containing test_fixture metadata")
+    if operational and target_profile is None:
+        errors.append("operational validation requires a target profile")
+    if operational and expected_source is None:
+        errors.append("operational validation requires an expected source revision")
+
+    profile = None
+    if target_profile is not None:
+        profile = manifest["workflow_targets"].get(target_profile)
+        if profile is None:
+            errors.append(f"unknown target profile: {target_profile}")
+        else:
+            if target["environment"] != profile["environment"]:
+                errors.append(
+                    "target.environment does not match workflow authority: "
+                    f"required={profile['environment']} actual={target['environment']}"
+                )
+            expected_providers = set(profile["provider_scope"])
+            actual_providers = set(target["provider_scope"])
+            set_difference_error(
+                "target providers", expected_providers, actual_providers, errors
+            )
 
     source = receipt["source"]
     if source["repository"] != manifest["repository"]:
@@ -158,10 +196,24 @@ def validate_release_receipt(
             "promotion_mode does not match the workflow: "
             f"required={required_promotion_mode} actual={promotion_mode}"
         )
+    if profile is not None and promotion_mode != profile["promotion_mode"]:
+        errors.append(
+            "promotion_mode does not match target profile: "
+            f"required={profile['promotion_mode']} actual={promotion_mode}"
+        )
 
     artifact_rows = indexed_rows(receipt["artifacts"], "role", "artifact roles", errors)
     expected_artifacts = set(manifest["required_artifact_roles"])
     set_difference_error("artifact roles", expected_artifacts, set(artifact_rows), errors)
+    if operational:
+        supplied_digest_roles = set(expected_artifact_digests or {})
+        set_difference_error(
+            "expected artifact digest roles",
+            expected_artifacts,
+            supplied_digest_roles,
+            errors,
+        )
+    built_digests: dict[str, str] = {}
     for role in sorted(expected_artifacts & set(artifact_rows)):
         artifact = artifact_rows[role]
         built = artifact["built"]
@@ -173,6 +225,8 @@ def validate_release_receipt(
         built_digest = evidence_value(
             built["image_digest"], f"artifacts.{role}.built.image_digest", errors
         )
+        if built_digest is not None:
+            built_digests[role] = built_digest
         evidence_value(
             deployed["deployment_id"], f"artifacts.{role}.deployed.deployment_id", errors
         )
@@ -200,6 +254,17 @@ def validate_release_receipt(
                     errors.append(
                         f"artifacts.{role}.deployed image digest must equal built image digest"
                     )
+        expected_digest = (expected_artifact_digests or {}).get(role)
+        if expected_digest is not None and built_digest is not None:
+            if built_digest != expected_digest:
+                errors.append(
+                    f"artifacts.{role}.built.image_digest does not match workflow artifact"
+                )
+            if promotion_mode == "immutable-image" and deployed_digest is not None:
+                if deployed_digest != expected_digest:
+                    errors.append(
+                        f"artifacts.{role}.deployed.image_digest does not match workflow artifact"
+                    )
 
     schema_identity = receipt["schema_identity"]
     manifest_history = manifest["migration_history"]
@@ -218,10 +283,19 @@ def validate_release_receipt(
         )
     if history_digest is not None and history_digest != actual_history_digest:
         errors.append("schema_identity.migration_history_digest does not match repository history")
-    evidence_value(
+    applied_revision = evidence_value(
         schema_identity["applied_revision"], "schema_identity.applied_revision", errors
     )
-    evidence_value(
+    expected_applied_revision = f"migration-ledger-through-{manifest_history['head']}"
+    if (
+        applied_revision is not None
+        and applied_revision != expected_applied_revision
+    ):
+        errors.append(
+            "schema_identity.applied_revision does not match migration authority: "
+            f"required={expected_applied_revision} actual={applied_revision}"
+        )
+    rollback_compatibility = evidence_value(
         schema_identity["rollback_compatibility"],
         "schema_identity.rollback_compatibility",
         errors,
@@ -232,12 +306,42 @@ def validate_release_receipt(
     )
     expected_services = set(manifest["required_service_roles"])
     set_difference_error("service roles", expected_services, set(service_rows), errors)
+    service_authority = manifest["service_targets"]
+    set_difference_error(
+        "service target roles", expected_services, set(service_authority), errors
+    )
     for role in sorted(expected_services & set(service_rows)):
         service = service_rows[role]
-        evidence_value(service["service_id"], f"service_roles.{role}.service_id", errors)
-        evidence_value(
+        project_id = evidence_value(
+            service["project_id"], f"service_roles.{role}.project_id", errors
+        )
+        service_id = evidence_value(
+            service["service_id"], f"service_roles.{role}.service_id", errors
+        )
+        environment_id = evidence_value(
             service["environment_id"], f"service_roles.{role}.environment_id", errors
         )
+        expected_service = service_authority.get(role)
+        if expected_service is not None:
+            if service["provider"] != expected_service["provider"]:
+                errors.append(
+                    f"service_roles.{role}.provider does not match release authority"
+                )
+            if project_id is not None and project_id != expected_service["project_id"]:
+                errors.append(
+                    f"service_roles.{role}.project_id does not match release authority"
+                )
+            if service_id is not None and service_id != expected_service["service_id"]:
+                errors.append(
+                    f"service_roles.{role}.service_id does not match release authority"
+                )
+            if (
+                environment_id is not None
+                and environment_id != expected_service["environment_id"]
+            ):
+                errors.append(
+                    f"service_roles.{role}.environment_id does not match release authority"
+                )
 
     check_rows: dict[tuple[str, int], dict[str, Any]] = {}
     duplicate_checks: set[tuple[str, int]] = set()
@@ -340,16 +444,40 @@ def validate_release_receipt(
         "rollback.previous_source_revision",
         errors,
     )
-    for field in (
-        "previous_deployment_id",
-        "previous_artifact_digest",
-        "schema_restore",
-        "procedure",
-        "tested_at",
-    ):
+    for field in ("previous_deployment_id", "procedure"):
         evidence_value(rollback[field], f"rollback.{field}", errors)
+    previous_artifact_digest = evidence_value(
+        rollback["previous_artifact_digest"],
+        "rollback.previous_artifact_digest",
+        errors,
+    )
+    schema_restore = evidence_value(
+        rollback["schema_restore"], "rollback.schema_restore", errors
+    )
+    tested_at = evidence_value(rollback["tested_at"], "rollback.tested_at", errors)
+    if tested_at is not None:
+        validate_timestamp(tested_at, "rollback.tested_at", errors)
     if source_revision is not None and previous_source == source_revision:
         errors.append("rollback.previous_source_revision must differ from source.revision")
+    if (
+        previous_artifact_digest is not None
+        and previous_artifact_digest in built_digests.values()
+    ):
+        errors.append(
+            "rollback.previous_artifact_digest must differ from candidate artifact digests"
+        )
+    if rollback_compatibility == "verified-backward-compatible":
+        if schema_restore != "not-required-backward-compatible":
+            errors.append(
+                "rollback.schema_restore must be not-required-backward-compatible "
+                "when schema is verified backward-compatible"
+            )
+    if rollback_compatibility == "verified-forward-only-with-restore":
+        if schema_restore != "verified-restore-rehearsal":
+            errors.append(
+                "rollback.schema_restore must be verified-restore-rehearsal "
+                "for forward-only schema compatibility"
+            )
 
     return errors
 
@@ -426,11 +554,85 @@ def validate_fixture_suite(repo_root: Path) -> tuple[int, int]:
     return receipt_count, case_count
 
 
+def parse_role_values(values: list[str], label: str) -> dict[str, str]:
+    parsed: dict[str, str] = {}
+    for raw in values:
+        role, separator, value = raw.partition("=")
+        if not separator or not role or not value:
+            raise ReleaseReceiptError(f"{label} must use ROLE=VALUE: {raw!r}")
+        if role in parsed:
+            raise ReleaseReceiptError(f"duplicate {label} role: {role}")
+        if not re.fullmatch(r"[a-z0-9]+(?:-[a-z0-9]+)*", role):
+            raise ReleaseReceiptError(f"invalid {label} role: {role!r}")
+        if label == "expected artifact digest" and not re.fullmatch(
+            r"sha256:[0-9a-f]{64}", value
+        ):
+            raise ReleaseReceiptError(f"invalid {label} for {role}: {value!r}")
+        parsed[role] = value
+    return parsed
+
+
+def emit_github_outputs(
+    output_path: Path,
+    receipt: dict[str, Any],
+    repo_root: Path,
+    target_profile: str | None,
+) -> None:
+    """Emit the manifest-bound deployment selector only after validation passes."""
+
+    manifest = load_json(repo_root / MANIFEST_PATH)
+    profile = manifest["workflow_targets"].get(target_profile or "")
+    if profile is None or "deployment_service_role" not in profile:
+        raise ReleaseReceiptError(
+            "GitHub target output requires a workflow profile with deployment_service_role"
+        )
+    role = profile["deployment_service_role"]
+    service = next(
+        (row for row in receipt["service_roles"] if row["role"] == role), None
+    )
+    if service is None or service["provider"] != "railway":
+        raise ReleaseReceiptError(
+            "workflow deployment_service_role must resolve to a validated Railway service"
+        )
+    values = {
+        "railway_project_id": service["project_id"]["value"],
+        "railway_environment_id": service["environment_id"]["value"],
+        "railway_service_id": service["service_id"]["value"],
+    }
+    try:
+        with output_path.open("a", encoding="utf-8") as output:
+            for key, value in values.items():
+                output.write(f"{key}={value}\n")
+    except OSError as error:
+        raise ReleaseReceiptError(f"{output_path}: {error}") from error
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("receipt", nargs="?", type=Path)
     parser.add_argument("--repo-root", type=Path, default=Path(__file__).resolve().parents[1])
     parser.add_argument("--expected-source")
+    parser.add_argument(
+        "--target-profile",
+        help="manifest workflow target profile that the receipt must match exactly",
+    )
+    parser.add_argument(
+        "--expected-artifact-digest",
+        action="append",
+        default=[],
+        metavar="ROLE=SHA256",
+        help="actual prebuilt or registry-read artifact digest; repeat for each role",
+    )
+    parser.add_argument(
+        "--operational",
+        action="store_true",
+        help="reject test fixtures and require a target profile plus every artifact digest",
+    )
+    parser.add_argument(
+        "--github-output",
+        type=Path,
+        help="append manifest-bound deployment target IDs after successful validation",
+    )
     parser.add_argument(
         "--required-promotion-mode",
         choices=("source-redeploy", "immutable-image"),
@@ -443,6 +645,8 @@ def parse_args() -> argparse.Namespace:
     args = parser.parse_args()
     if args.validate_fixtures == (args.receipt is not None):
         parser.error("provide exactly one receipt path or --validate-fixtures")
+    if args.github_output is not None and not args.operational:
+        parser.error("--github-output requires --operational")
     return args
 
 
@@ -461,11 +665,17 @@ def main() -> int:
         receipt = load_json(args.receipt)
         if not isinstance(receipt, dict):
             raise ReleaseReceiptError(f"{args.receipt}: receipt must be a JSON object")
+        expected_artifact_digests = parse_role_values(
+            args.expected_artifact_digest, "expected artifact digest"
+        )
         errors = validate_release_receipt(
             receipt,
             repo_root,
             expected_source=args.expected_source,
             required_promotion_mode=args.required_promotion_mode,
+            target_profile=args.target_profile,
+            expected_artifact_digests=expected_artifact_digests,
+            operational=args.operational,
         )
     except ReleaseReceiptError as error:
         print(f"release receipt validation error: {error}", file=sys.stderr)
@@ -476,6 +686,18 @@ def main() -> int:
         for error in errors:
             print(f"- {error}", file=sys.stderr)
         return 1
+
+    if args.github_output is not None:
+        try:
+            emit_github_outputs(
+                args.github_output,
+                receipt,
+                repo_root,
+                args.target_profile,
+            )
+        except ReleaseReceiptError as error:
+            print(f"release receipt validation error: {error}", file=sys.stderr)
+            return 2
 
     source_revision = receipt["source"]["revision"]["value"]
     print(

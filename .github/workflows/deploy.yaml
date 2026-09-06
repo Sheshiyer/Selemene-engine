@@ -3,8 +3,6 @@ name: CD - Build & Deploy
 on:
   push:
     branches: [ main ]
-    tags:
-      - 'v*'
   workflow_dispatch:
     inputs:
       environment:
@@ -48,6 +46,91 @@ jobs:
           fi
           echo "sha=${actual_sha}" >> "$GITHUB_OUTPUT"
 
+  # Build candidate images without registry output. Their content digests are
+  # inputs to the operational receipt gate; no image tag or build record is
+  # published from these jobs.
+  prebuild-api:
+    name: Prebuild API Image
+    runs-on: ubuntu-latest
+    needs: validate-source
+    outputs:
+      image-digest: ${{ steps.build.outputs.digest }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ needs.validate-source.outputs.source-sha }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@c299e40c65443455700f0fdfc63efafe5b349051 # v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_API }}
+          tags: |
+            type=ref,event=branch
+            type=raw,value=sha-${{ needs.validate-source.outputs.source-sha }}
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build candidate without publication
+        id: build
+        uses: docker/build-push-action@ca052bb54ab0790a636c9b5f226502c73d547a25 # v5
+        env:
+          DOCKER_BUILD_RECORD_UPLOAD: "false"
+        with:
+          context: .
+          file: ./Dockerfile.prod
+          push: false
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: |
+            org.opencontainers.image.source=https://github.com/${{ github.repository }}
+            org.opencontainers.image.revision=${{ needs.validate-source.outputs.source-sha }}
+          cache-from: type=gha
+          platforms: linux/amd64
+          provenance: false
+
+  prebuild-ts-engines:
+    name: Prebuild TypeScript Engines Image
+    runs-on: ubuntu-latest
+    needs: validate-source
+    outputs:
+      image-digest: ${{ steps.build.outputs.digest }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ needs.validate-source.outputs.source-sha }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@c299e40c65443455700f0fdfc63efafe5b349051 # v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_TS }}
+          tags: |
+            type=ref,event=branch
+            type=raw,value=sha-${{ needs.validate-source.outputs.source-sha }}
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build candidate without publication
+        id: build
+        uses: docker/build-push-action@ca052bb54ab0790a636c9b5f226502c73d547a25 # v5
+        env:
+          DOCKER_BUILD_RECORD_UPLOAD: "false"
+        with:
+          context: ./ts-engines
+          file: ./ts-engines/Dockerfile
+          push: false
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: |
+            org.opencontainers.image.source=https://github.com/${{ github.repository }}
+            org.opencontainers.image.revision=${{ needs.validate-source.outputs.source-sha }}
+          cache-from: type=gha
+          platforms: linux/amd64
+          provenance: false
+
   # A source-bound receipt is required before this workflow can publish an
   # image, mutate a deployment, or create a release. The receipt is public
   # metadata supplied as base64 in a repository variable; it contains no
@@ -56,9 +139,17 @@ jobs:
   validate-release-receipt:
     name: Validate Release Receipt
     runs-on: ubuntu-latest
-    needs: validate-source
+    needs: [validate-source, prebuild-api, prebuild-ts-engines]
+    outputs:
+      railway_project_id: ${{ steps.receipt.outputs.railway_project_id }}
+      railway_environment_id: ${{ steps.receipt.outputs.railway_environment_id }}
+      railway_service_id: ${{ steps.receipt.outputs.railway_service_id }}
     env:
-      RELEASE_RECEIPT_B64: ${{ vars.RELEASE_RECEIPT_B64 }}
+      RELEASE_RECEIPT_B64: ${{ vars.DEPLOY_RELEASE_RECEIPT_B64 }}
+      REQUESTED_ENVIRONMENT: ${{ github.event.inputs.environment || 'production' }}
+      ENABLE_K8S_DEPLOY: ${{ vars.ENABLE_K8S_DEPLOY }}
+      EXPECTED_API_DIGEST: ${{ needs.prebuild-api.outputs.image-digest }}
+      EXPECTED_TS_DIGEST: ${{ needs.prebuild-ts-engines.outputs.image-digest }}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
@@ -69,7 +160,7 @@ jobs:
         run: |
           set -euo pipefail
           if [[ -z "${RELEASE_RECEIPT_B64:-}" ]]; then
-            echo "::error title=Release receipt missing::Set vars.RELEASE_RECEIPT_B64 to a reviewed v1 source-redeploy receipt for this exact source revision."
+            echo "::error title=Release receipt missing::Set vars.DEPLOY_RELEASE_RECEIPT_B64 to a reviewed v1 deploy-production receipt for this exact source revision and prebuilt digests."
             exit 1
           fi
           umask 077
@@ -84,19 +175,33 @@ jobs:
         run: python -m pip install --disable-pip-version-check -r requirements-gates.txt
 
       - name: Validate source-bound release receipt
+        id: receipt
         shell: bash
         run: |
           set -euo pipefail
+          if [[ "${REQUESTED_ENVIRONMENT}" != "production" ]]; then
+            echo "::error title=Target profile unavailable::No staging service/schema/rollback target profile is authoritative; production receipt validation cannot authorize ${REQUESTED_ENVIRONMENT}."
+            exit 1
+          fi
+          if [[ "${ENABLE_K8S_DEPLOY:-false}" == "true" ]]; then
+            echo "::error title=Kubernetes target unauthorized::The current receipt authority covers active Railway and GHCR targets only. Add an exact Kubernetes target profile before enabling this job."
+            exit 1
+          fi
           python3 scripts/validate_release_receipt.py \
             "$RUNNER_TEMP/selemene-release-receipt.json" \
             --expected-source "$GITHUB_SHA" \
-            --required-promotion-mode source-redeploy
+            --required-promotion-mode source-redeploy \
+            --target-profile deploy-production \
+            --expected-artifact-digest "api=${EXPECTED_API_DIGEST}" \
+            --expected-artifact-digest "typescript-engines=${EXPECTED_TS_DIGEST}" \
+            --github-output "$GITHUB_OUTPUT" \
+            --operational
 
   # Build and push Rust API Docker image
   build-api:
     name: Build API Image
     runs-on: ubuntu-latest
-    needs: [validate-source, validate-release-receipt]
+    needs: [validate-source, prebuild-api, validate-release-receipt]
     permissions:
       contents: read
       packages: write
@@ -131,21 +236,41 @@ jobs:
             type=raw,value=sha-${{ needs.validate-source.outputs.source-sha }}
             type=raw,value=latest,enable={{is_default_branch}}
       
-      - name: Build and push
+      - name: Build API image locally
         id: build
+        env:
+          DOCKER_BUILD_RECORD_UPLOAD: "false"
         uses: docker/build-push-action@ca052bb54ab0790a636c9b5f226502c73d547a25 # v5
         with:
           context: .
           file: ./Dockerfile.prod
-          push: true
+          push: false
+          load: true
           tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+          labels: |
+            org.opencontainers.image.source=https://github.com/${{ github.repository }}
+            org.opencontainers.image.revision=${{ needs.validate-source.outputs.source-sha }}
           cache-from: type=gha
-          cache-to: type=gha,mode=max
           # swisseph currently fails to compile on arm64 in this Docker build path
           # (libswisseph-sys pointer type mismatch under buildx/qemu). Keep deploys
           # deterministic on amd64 until arm64 toolchain/dependency parity is fixed.
           platforms: linux/amd64
+          provenance: false
+
+      - name: Verify local API digest matches receipt
+        run: |
+          if [[ "${{ steps.build.outputs.digest }}" != "${{ needs.prebuild-api.outputs.image-digest }}" ]]; then
+            echo "::error title=Local digest drift::API image differs from the prepublication digest authorized by the receipt; no registry tag was changed."
+            exit 1
+          fi
+
+      - name: Publish validated API image
+        shell: bash
+        run: |
+          set -euo pipefail
+          while IFS= read -r image_tag; do
+            [[ -n "${image_tag}" ]] && docker push "${image_tag}"
+          done <<< "${{ steps.meta.outputs.tags }}"
       
       - name: Check image size
         run: |
@@ -163,12 +288,13 @@ jobs:
   build-ts-engines:
     name: Build TS Engines Image
     runs-on: ubuntu-latest
-    needs: [validate-source, validate-release-receipt]
+    needs: [validate-source, prebuild-ts-engines, validate-release-receipt]
     permissions:
       contents: read
       packages: write
     outputs:
       image-tag: ${{ steps.meta.outputs.tags }}
+      image-digest: ${{ steps.build.outputs.digest }}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
@@ -195,16 +321,38 @@ jobs:
             type=raw,value=sha-${{ needs.validate-source.outputs.source-sha }}
             type=raw,value=latest,enable={{is_default_branch}}
       
-      - name: Build and push
+      - name: Build TypeScript image locally
+        id: build
+        env:
+          DOCKER_BUILD_RECORD_UPLOAD: "false"
         uses: docker/build-push-action@ca052bb54ab0790a636c9b5f226502c73d547a25 # v5
         with:
           context: ./ts-engines
           file: ./ts-engines/Dockerfile
-          push: true
+          push: false
+          load: true
           tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+          labels: |
+            org.opencontainers.image.source=https://github.com/${{ github.repository }}
+            org.opencontainers.image.revision=${{ needs.validate-source.outputs.source-sha }}
           cache-from: type=gha
-          cache-to: type=gha,mode=max
+          platforms: linux/amd64
+          provenance: false
+
+      - name: Verify local TypeScript digest matches receipt
+        run: |
+          if [[ "${{ steps.build.outputs.digest }}" != "${{ needs.prebuild-ts-engines.outputs.image-digest }}" ]]; then
+            echo "::error title=Local digest drift::TypeScript image differs from the prepublication digest authorized by the receipt; no registry tag was changed."
+            exit 1
+          fi
+
+      - name: Publish validated TypeScript image
+        shell: bash
+        run: |
+          set -euo pipefail
+          while IFS= read -r image_tag; do
+            [[ -n "${image_tag}" ]] && docker push "${image_tag}"
+          done <<< "${{ steps.meta.outputs.tags }}"
 
   # Deploy to Kubernetes — OPT-IN, and currently dormant.
   #
@@ -294,9 +442,9 @@ jobs:
       (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))
     env:
       RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-      RAILWAY_PROJECT_ID: ${{ secrets.RAILWAY_PROJECT_ID }}
-      RAILWAY_ENVIRONMENT: ${{ vars.RAILWAY_ENVIRONMENT || 'production' }}
-      RAILWAY_SERVICE: ${{ vars.RAILWAY_SERVICE || 'Selemene-engine' }}
+      RAILWAY_PROJECT_ID: ${{ needs.validate-release-receipt.outputs.railway_project_id }}
+      RAILWAY_ENVIRONMENT_ID: ${{ needs.validate-release-receipt.outputs.railway_environment_id }}
+      RAILWAY_SERVICE_ID: ${{ needs.validate-release-receipt.outputs.railway_service_id }}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
@@ -309,23 +457,39 @@ jobs:
       # failure, not a pass.
       - name: Validate Railway configuration
         run: |
-          if [[ -z "${RAILWAY_TOKEN}" || -z "${RAILWAY_PROJECT_ID}" ]]; then
-            echo "::error title=Railway not configured::RAILWAY_TOKEN and/or RAILWAY_PROJECT_ID are missing, so this run would report success while deploying nothing. Set them as repository secrets, or set vars.DEPLOY_TARGET=none to declare that this repo intentionally does not deploy."
+          if [[ -z "${RAILWAY_TOKEN}" || -z "${RAILWAY_PROJECT_ID}" || -z "${RAILWAY_ENVIRONMENT_ID}" || -z "${RAILWAY_SERVICE_ID}" ]]; then
+            echo "::error title=Railway not configured::The Railway project token or a manifest-bound deployment selector is missing. Set RAILWAY_TOKEN, or set vars.DEPLOY_TARGET=none to declare that this repo intentionally does not deploy."
+            exit 1
+          fi
+
+      - name: Verify Railway token scope
+        shell: bash
+        run: |
+          set -euo pipefail
+          scope_json="$(curl --fail-with-body --silent --show-error \
+            --request POST \
+            --url https://backboard.railway.com/graphql/v2 \
+            --header "Project-Access-Token: ${RAILWAY_TOKEN}" \
+            --header 'Content-Type: application/json' \
+            --data '{"query":"query { projectToken { projectId environmentId } }"}')"
+          actual_project_id="$(jq -er '.data.projectToken.projectId' <<< "${scope_json}")"
+          actual_environment_id="$(jq -er '.data.projectToken.environmentId' <<< "${scope_json}")"
+          if [[ "${actual_project_id}" != "${RAILWAY_PROJECT_ID}" || "${actual_environment_id}" != "${RAILWAY_ENVIRONMENT_ID}" ]]; then
+            echo "::error title=Railway token scope mismatch::The project token is not scoped to the manifest-authorized production project and environment."
             exit 1
           fi
 
       - name: Install Railway CLI
-        run: npm install -g @railway/cli
+        run: npm install -g @railway/cli@5.41.0
 
       - name: Deploy to Railway service
         run: |
           railway --version
-          # RAILWAY_TOKEN here is a project token (environment-scoped — the
-          # CI-recommended type). It CANNOT run `railway link`, which is an
-          # account-level operation and 401s ("Unauthorized"). The token already
-          # implies the project + environment, so deploy the target service
-          # directly — railway up accepts --service without linking.
-          railway up --service "${RAILWAY_SERVICE}" --ci
+          railway up \
+            --project "${RAILWAY_PROJECT_ID}" \
+            --environment "${RAILWAY_ENVIRONMENT_ID}" \
+            --service "${RAILWAY_SERVICE_ID}" \
+            --ci
 
       - name: Verify Railway health
         env:
@@ -438,56 +602,8 @@ jobs:
       - name: Run admin smoke script
         run: bash scripts/smoke_admin_web.sh
 
-  # admin-web is the only web frontend deployed from this repo. It is
-  # handled NATIVELY by Vercel via the GitHub integration (project root:
-  # apps/admin-web, production branch: main). No CI job is needed here —
-  # Vercel auto-builds + deploys on every push to main that touches the
-  # relevant subdirectory. The previous custom `vercel build --prebuilt`
-  # flow hit a monorepo path conflict and was blocking deploys for days;
-  # the native Git integration sidesteps it entirely.
-
-  # Create GitHub Release for tags
-  release:
-    name: Create Release
-    runs-on: ubuntu-latest
-    # Gate the release on the real deploy + verification, tolerating the opt-in
-    # K8s job being skipped. Don't cut a release off an unverified deploy.
-    needs: [validate-source, validate-release-receipt, build-api, build-ts-engines, deploy, deploy-railway, smoke-test, admin-smoke]
-    if: |
-      always() &&
-      startsWith(github.ref, 'refs/tags/v') &&
-      needs.validate-source.result == 'success' &&
-      needs.build-api.result == 'success' &&
-      needs.build-ts-engines.result == 'success' &&
-      needs.deploy-railway.result == 'success' &&
-      needs.smoke-test.result == 'success' &&
-      needs.admin-smoke.result == 'success'
-    permissions:
-      contents: write
-    steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
-        with:
-          ref: ${{ needs.validate-source.outputs.source-sha }}
-      
-      - name: Create Release
-        uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2
-        with:
-          generate_release_notes: true
-          body: |
-            ## Docker Images
-            
-            - API: `${{ env.REGISTRY }}/${{ env.IMAGE_NAME_API }}:sha-${{ needs.validate-source.outputs.source-sha }}`
-            - TS Engines: `${{ env.REGISTRY }}/${{ env.IMAGE_NAME_TS }}:sha-${{ needs.validate-source.outputs.source-sha }}`
-            
-            ## Deploy
-            
-            ```bash
-            # Pull latest images
-            docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_API }}:sha-${{ needs.validate-source.outputs.source-sha }}
-            docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_TS }}:sha-${{ needs.validate-source.outputs.source-sha }}
-            
-            # Or deploy to Kubernetes
-            kubectl set image deployment/selemene-api \
-              selemene-api=${{ env.REGISTRY }}/${{ env.IMAGE_NAME_API }}:sha-${{ needs.validate-source.outputs.source-sha }} \
-              -n selemene
-            ```
+  # admin-web is the only web frontend deployed from this repo. It is handled
+  # by Vercel's native Git integration (project root: apps/admin-web,
+  # production branch: main). That provider-side mutation happens outside this
+  # workflow, so production promotion remains HOLD until an explicit Vercel
+  # deployment-protection decision binds it to the same receipt authority.

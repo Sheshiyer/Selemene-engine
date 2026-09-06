@@ -30,7 +30,11 @@
       "minLength": 3,
       "maxLength": 120
     },
-    "generated_at": {"type": "string", "format": "date-time"},
+    "generated_at": {
+      "type": "string",
+      "format": "date-time",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+    },
     "promotion_mode": {"enum": ["source-redeploy", "immutable-image"]},
     "target": {
       "type": "object",
@@ -97,8 +101,8 @@
       "properties": {
         "migration_history_path": {"const": "migrations/history.sha256"},
         "migration_history_digest": {"$ref": "#/$defs/digestEvidence"},
-        "applied_revision": {"$ref": "#/$defs/stringEvidence"},
-        "rollback_compatibility": {"$ref": "#/$defs/stringEvidence"}
+        "applied_revision": {"$ref": "#/$defs/migrationRevisionEvidence"},
+        "rollback_compatibility": {"$ref": "#/$defs/rollbackCompatibilityEvidence"}
       }
     },
     "service_roles": {
@@ -107,10 +111,11 @@
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["role", "provider", "service_id", "environment_id"],
+        "required": ["role", "provider", "project_id", "service_id", "environment_id"],
         "properties": {
           "role": {"type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"},
           "provider": {"enum": ["railway", "vercel", "kubernetes"]},
+          "project_id": {"$ref": "#/$defs/stringEvidence"},
           "service_id": {"$ref": "#/$defs/stringEvidence"},
           "environment_id": {"$ref": "#/$defs/stringEvidence"}
         }
@@ -179,9 +184,9 @@
         "previous_source_revision": {"$ref": "#/$defs/revisionEvidence"},
         "previous_deployment_id": {"$ref": "#/$defs/stringEvidence"},
         "previous_artifact_digest": {"$ref": "#/$defs/digestEvidence"},
-        "schema_restore": {"$ref": "#/$defs/stringEvidence"},
-        "procedure": {"$ref": "#/$defs/stringEvidence"},
-        "tested_at": {"$ref": "#/$defs/stringEvidence"}
+        "schema_restore": {"$ref": "#/$defs/schemaRestoreEvidence"},
+        "procedure": {"$ref": "#/$defs/runbookEvidence"},
+        "tested_at": {"$ref": "#/$defs/dateTimeEvidence"}
       }
     },
     "test_fixture": {
@@ -295,6 +300,85 @@
         },
         {"$ref": "#/$defs/unavailableEvidence"},
         {"$ref": "#/$defs/notApplicableEvidence"}
+      ]
+    },
+    "migrationRevisionEvidence": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["status", "value", "source"],
+          "properties": {
+            "status": {"const": "available"},
+            "value": {"type": "string", "pattern": "^migration-ledger-through-[0-9]{3}$"},
+            "source": {"type": "string", "minLength": 8}
+          }
+        },
+        {"$ref": "#/$defs/unavailableEvidence"}
+      ]
+    },
+    "rollbackCompatibilityEvidence": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["status", "value", "source"],
+          "properties": {
+            "status": {"const": "available"},
+            "value": {"enum": ["verified-backward-compatible", "verified-forward-only-with-restore"]},
+            "source": {"type": "string", "minLength": 8}
+          }
+        },
+        {"$ref": "#/$defs/unavailableEvidence"}
+      ]
+    },
+    "schemaRestoreEvidence": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["status", "value", "source"],
+          "properties": {
+            "status": {"const": "available"},
+            "value": {"enum": ["not-required-backward-compatible", "verified-restore-rehearsal"]},
+            "source": {"type": "string", "minLength": 8}
+          }
+        },
+        {"$ref": "#/$defs/unavailableEvidence"}
+      ]
+    },
+    "runbookEvidence": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["status", "value", "source"],
+          "properties": {
+            "status": {"const": "available"},
+            "value": {"type": "string", "pattern": "^(?:https://|runbook://)[^\\s]+$"},
+            "source": {"type": "string", "minLength": 8}
+          }
+        },
+        {"$ref": "#/$defs/unavailableEvidence"}
+      ]
+    },
+    "dateTimeEvidence": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["status", "value", "source"],
+          "properties": {
+            "status": {"const": "available"},
+            "value": {
+              "type": "string",
+              "format": "date-time",
+              "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+            },
+            "source": {"type": "string", "minLength": 8}
+          }
+        },
+        {"$ref": "#/$defs/unavailableEvidence"}
       ]
     },
     "artifactIdentity": {

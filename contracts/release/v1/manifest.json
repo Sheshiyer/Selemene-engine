@@ -11,10 +11,57 @@
   },
   "migration_history": {
     "path": "migrations/history.sha256",
-    "sha256": "sha256:857f35af41c8f60e98acff63c3dbf02fe065c46d7114fbe85915b10a9f1b534c"
+    "sha256": "sha256:857f35af41c8f60e98acff63c3dbf02fe065c46d7114fbe85915b10a9f1b534c",
+    "head": "037"
   },
-  "required_artifact_roles": ["api", "typescript-engines"],
-  "required_service_roles": ["api", "typescript-engines", "biofield-cv"],
+  "required_artifact_roles": [
+    "api",
+    "typescript-engines"
+  ],
+  "required_service_roles": [
+    "api",
+    "typescript-engines",
+    "biofield-cv"
+  ],
+  "service_targets": {
+    "api": {
+      "provider": "railway",
+      "service_id": "48b3bd23-5620-4f7b-8e5d-96bc5c5d7fc4",
+      "environment_id": "702b945e-2c66-4d5a-bae1-4c67ea14c3bb",
+      "project_id": "11eedde4-41e6-4f51-b86b-cf77111cf592"
+    },
+    "typescript-engines": {
+      "provider": "railway",
+      "service_id": "94419a41-9003-4a31-8bfe-d55b39ca4cb2",
+      "environment_id": "702b945e-2c66-4d5a-bae1-4c67ea14c3bb",
+      "project_id": "11eedde4-41e6-4f51-b86b-cf77111cf592"
+    },
+    "biofield-cv": {
+      "provider": "railway",
+      "service_id": "f596e31b-e190-409c-993d-a3b618d29a73",
+      "environment_id": "702b945e-2c66-4d5a-bae1-4c67ea14c3bb",
+      "project_id": "11eedde4-41e6-4f51-b86b-cf77111cf592"
+    }
+  },
+  "workflow_targets": {
+    "deploy-production": {
+      "promotion_mode": "source-redeploy",
+      "environment": "production",
+      "provider_scope": [
+        "ghcr",
+        "railway"
+      ],
+      "deployment_service_role": "api"
+    },
+    "release-production": {
+      "promotion_mode": "immutable-image",
+      "environment": "production",
+      "provider_scope": [
+        "github",
+        "ghcr"
+      ]
+    }
+  },
   "required_checks": [
     {
       "name": "CI Gate",
@@ -23,14 +70,26 @@
     }
   ],
   "dependencies": {
-    "postgresql": {"required": true},
-    "redis": {"required": true},
-    "biofield-cv": {"required": false},
-    "mediapipe": {"required": false}
+    "postgresql": {
+      "required": true
+    },
+    "redis": {
+      "required": true
+    },
+    "biofield-cv": {
+      "required": false
+    },
+    "mediapipe": {
+      "required": false
+    }
   },
   "assets": {
-    "ephemeris-data": {"required": true},
-    "wisdom-data": {"required": true}
+    "ephemeris-data": {
+      "required": true
+    },
+    "wisdom-data": {
+      "required": true
+    }
   },
   "receipt_fixtures": [
     {
@@ -44,5 +103,15 @@
       "promotion_mode": "source-redeploy"
     }
   ],
-  "mutation_cases": "fixtures/mutation-cases.json"
+  "mutation_cases": "fixtures/mutation-cases.json",
+  "artifact_scope": {
+    "kind": "container-images-only",
+    "roles": [
+      "api",
+      "typescript-engines"
+    ],
+    "excluded_publications": [
+      "native-binaries"
+    ]
+  }
 }

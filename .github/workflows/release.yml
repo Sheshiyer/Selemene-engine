@@ -9,6 +9,11 @@ permissions:
   contents: write
   packages: write
 
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME_API: ${{ github.repository_owner }}/selemene-engine
+  IMAGE_NAME_TS: ${{ github.repository_owner }}/selemene-ts-engines
+
 jobs:
   # Gate: the same complete CI suite must pass before release artifacts are built.
   pre-release-tests:
@@ -16,15 +21,61 @@ jobs:
     uses: ./.github/workflows/test.yml
     secrets: inherit
 
+  # Resolve the immutable images already published by the main deployment
+  # workflow. This job performs registry reads only; it does not create or move
+  # a tag.
+  resolve-release-artifacts:
+    name: Resolve immutable release artifacts
+    runs-on: ubuntu-latest
+    needs: pre-release-tests
+    permissions:
+      contents: read
+      packages: read
+    outputs:
+      api-digest: ${{ steps.resolve.outputs.api-digest }}
+      ts-digest: ${{ steps.resolve.outputs.ts-digest }}
+    steps:
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Resolve source-tag digests
+        id: resolve
+        shell: bash
+        run: |
+          set -euo pipefail
+          resolve_digest() {
+            local image_ref="$1"
+            local digest
+            digest="$(docker buildx imagetools inspect "${image_ref}" | awk '$1 == "Digest:" { print $2; exit }')"
+            if [[ ! "${digest}" =~ ^sha256:[0-9a-f]{64}$ ]]; then
+              echo "::error title=Artifact digest unavailable::Could not resolve an immutable digest for ${image_ref}."
+              exit 1
+            fi
+            printf '%s' "${digest}"
+          }
+          api_ref="${REGISTRY}/${IMAGE_NAME_API}:sha-${GITHUB_SHA}"
+          ts_ref="${REGISTRY}/${IMAGE_NAME_TS}:sha-${GITHUB_SHA}"
+          echo "api-digest=$(resolve_digest "${api_ref}")" >> "$GITHUB_OUTPUT"
+          echo "ts-digest=$(resolve_digest "${ts_ref}")" >> "$GITHUB_OUTPUT"
+
   # Release publication is denied until a reviewed immutable-image receipt is
-  # bound to this tag's exact source revision. The repository variable carries
-  # public evidence metadata only; no credential belongs in the receipt.
+  # bound to the tag source, exact registry-read digests and manifest-owned
+  # production target. Test fixtures are rejected even when internally valid.
   validate-release-receipt:
     name: Validate Release Receipt
     runs-on: ubuntu-latest
-    needs: pre-release-tests
+    needs: [pre-release-tests, resolve-release-artifacts]
     env:
-      RELEASE_RECEIPT_B64: ${{ vars.RELEASE_RECEIPT_B64 }}
+      RELEASE_RECEIPT_B64: ${{ vars.PUBLISH_RELEASE_RECEIPT_B64 }}
+      EXPECTED_API_DIGEST: ${{ needs.resolve-release-artifacts.outputs.api-digest }}
+      EXPECTED_TS_DIGEST: ${{ needs.resolve-release-artifacts.outputs.ts-digest }}
     steps:
       - name: Checkout code
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
@@ -36,7 +87,7 @@ jobs:
         run: |
           set -euo pipefail
           if [[ -z "${RELEASE_RECEIPT_B64:-}" ]]; then
-            echo "::error title=Release receipt missing::Set vars.RELEASE_RECEIPT_B64 to a reviewed v1 immutable-image receipt for this exact source revision."
+            echo "::error title=Release receipt missing::Set vars.PUBLISH_RELEASE_RECEIPT_B64 to a reviewed v1 release-production receipt for this exact source revision and registry-read digests."
             exit 1
           fi
           umask 077
@@ -57,11 +108,65 @@ jobs:
           python3 scripts/validate_release_receipt.py \
             "$RUNNER_TEMP/selemene-release-receipt.json" \
             --expected-source "$GITHUB_SHA" \
-            --required-promotion-mode immutable-image
+            --required-promotion-mode immutable-image \
+            --target-profile release-production \
+            --expected-artifact-digest "api=${EXPECTED_API_DIGEST}" \
+            --expected-artifact-digest "typescript-engines=${EXPECTED_TS_DIGEST}" \
+            --operational
+
+  # Promote the exact source-tag descriptors validated above. No Dockerfile is
+  # rebuilt on the tag path.
+  promote-images:
+    name: Promote immutable image digests
+    runs-on: ubuntu-latest
+    needs: [validate-release-receipt, resolve-release-artifacts]
+    permissions:
+      contents: read
+      packages: write
+    env:
+      API_DIGEST: ${{ needs.resolve-release-artifacts.outputs.api-digest }}
+      TS_DIGEST: ${{ needs.resolve-release-artifacts.outputs.ts-digest }}
+    steps:
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Promote validated digests
+        shell: bash
+        run: |
+          set -euo pipefail
+          version="${GITHUB_REF_NAME#v}"
+          if [[ ! "${version}" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error title=Invalid release tag::Expected vMAJOR.MINOR.PATCH, got ${GITHUB_REF_NAME}."
+            exit 1
+          fi
+          minor="${version%.*}"
+          major="${version%%.*}"
+          promote() {
+            local repository="$1"
+            local digest="$2"
+            docker buildx imagetools create --prefer-index=false \
+              --tag "${repository}:${version}" \
+              --tag "${repository}:${minor}" \
+              --tag "${repository}:${major}" \
+              --tag "${repository}:latest" \
+              "${repository}@${digest}"
+          }
+          promote "${REGISTRY}/${IMAGE_NAME_API}" "${API_DIGEST}"
+          promote "${REGISTRY}/${IMAGE_NAME_TS}" "${TS_DIGEST}"
 
   create-release:
-    needs: validate-release-receipt
+    needs: [validate-release-receipt, resolve-release-artifacts, promote-images]
     runs-on: ubuntu-latest
+    env:
+      API_DIGEST: ${{ needs.resolve-release-artifacts.outputs.api-digest }}
+      TS_DIGEST: ${{ needs.resolve-release-artifacts.outputs.ts-digest }}
     steps:
       - name: Checkout code
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
@@ -81,141 +186,30 @@ jobs:
             echo "EXISTS=false" >> $GITHUB_OUTPUT
           fi
 
+      - name: Prepare source-bound release body
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "${{ steps.check_notes.outputs.EXISTS }}" == "true" ]]; then
+            cp "RELEASE_NOTES_${{ steps.version.outputs.VERSION }}.md" release-body.md
+          else
+            cp CHANGELOG.md release-body.md
+          fi
+          printf '\n## Immutable container artifacts\n\n' >> release-body.md
+          printf -- '- API: `%s/%s@%s`\n' "${REGISTRY}" "${IMAGE_NAME_API}" "${API_DIGEST}" >> release-body.md
+          printf -- '- TypeScript engines: `%s/%s@%s`\n' "${REGISTRY}" "${IMAGE_NAME_TS}" "${TS_DIGEST}" >> release-body.md
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@de2c0eb89ae2a093876385947365aca7b0e5f844 # v1
         with:
           tag_name: ${{ steps.version.outputs.VERSION }}
           name: Release ${{ steps.version.outputs.VERSION }}
-          body_path: ${{ steps.check_notes.outputs.EXISTS == 'true' && format('RELEASE_NOTES_{0}.md', steps.version.outputs.VERSION) || 'CHANGELOG.md' }}
+          body_path: release-body.md
           draft: false
           prerelease: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  build-docker:
-    needs: create-release
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
-
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Extract metadata
-        id: meta
-        uses: docker/metadata-action@c299e40c65443455700f0fdfc63efafe5b349051 # v5
-        with:
-          images: ghcr.io/${{ github.repository }}
-          tags: |
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=semver,pattern={{major}}
-            type=raw,value=latest
-
-      - name: Build and push Docker image
-        uses: docker/build-push-action@ca052bb54ab0790a636c9b5f226502c73d547a25 # v5
-        with:
-          context: .
-          file: ./Dockerfile.prod
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-
-  build-binaries:
-    needs: create-release
-    strategy:
-      matrix:
-        include:
-          - os: ubuntu-latest
-            target: x86_64-unknown-linux-gnu
-            artifact_name: noesis-server-linux-x86_64
-          - os: macos-latest
-            target: x86_64-apple-darwin
-            artifact_name: noesis-server-macos-x86_64
-          - os: macos-latest
-            target: aarch64-apple-darwin
-            artifact_name: noesis-server-macos-arm64
-
-    runs-on: ${{ matrix.os }}
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
-
-      - name: Setup Rust
-        uses: actions-rs/toolchain@16499b5e05bf2e26879000db0c1d13f7e13fa3af # v1
-        with:
-          toolchain: stable
-          target: ${{ matrix.target }}
-          override: true
-
-      - name: Cache cargo registry
-        uses: actions/cache@6f8efc29b200d32929f49075959781ed54ec270c # v3
-        with:
-          path: ~/.cargo/registry
-          key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
-
-      - name: Cache cargo index
-        uses: actions/cache@6f8efc29b200d32929f49075959781ed54ec270c # v3
-        with:
-          path: ~/.cargo/git
-          key: ${{ runner.os }}-cargo-git-${{ hashFiles('**/Cargo.lock') }}
-
-      - name: Cache target directory
-        uses: actions/cache@6f8efc29b200d32929f49075959781ed54ec270c # v3
-        with:
-          path: target
-          key: ${{ runner.os }}-target-${{ matrix.target }}-${{ hashFiles('**/Cargo.lock') }}
-
-      - name: Build release binary
-        run: cargo build --release --target ${{ matrix.target }}
-
-      - name: Package binary
-        run: |
-          cd target/${{ matrix.target }}/release
-          tar czf ${{ matrix.artifact_name }}.tar.gz noesis-server
-          mv ${{ matrix.artifact_name }}.tar.gz ${{ github.workspace }}/
-
-      - name: Upload binary to release
-        uses: softprops/action-gh-release@de2c0eb89ae2a093876385947365aca7b0e5f844 # v1
-        with:
-          files: ${{ matrix.artifact_name }}.tar.gz
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  update-changelog:
-    needs: [create-release, build-docker, build-binaries]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
-        with:
-          ref: main
-
-      - name: Extract version
-        id: version
-        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
-
-      - name: Update CHANGELOG
-        run: |
-          if [ -f "RELEASE_NOTES_${{ steps.version.outputs.VERSION }}.md" ]; then
-            cat RELEASE_NOTES_${{ steps.version.outputs.VERSION }}.md >> CHANGELOG.md.new
-            echo "" >> CHANGELOG.md.new
-            cat CHANGELOG.md >> CHANGELOG.md.new
-            mv CHANGELOG.md.new CHANGELOG.md
-          fi
-
-      - name: Commit changelog
-        uses: stefanzweifel/git-auto-commit-action@b863ae1933cb653a53c021fe36dbb774e1fb9403 # v5
-        with:
-          commit_message: "docs: Update CHANGELOG for ${{ steps.version.outputs.VERSION }}"
-          file_pattern: CHANGELOG.md
+  # Release receipt v1 authorizes container-image identity only. Native binary
+  # publication stays disabled until a later receipt version records each
+  # platform build and digest before the GitHub release is mutated.

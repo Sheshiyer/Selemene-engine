@@ -6,7 +6,10 @@
   "promotion_mode": "source-redeploy",
   "target": {
     "environment": "production",
-    "provider_scope": ["railway", "vercel"]
+    "provider_scope": [
+      "railway",
+      "vercel"
+    ]
   },
   "authority": {
     "contract_id": "selemene.release-receipt/v1",
@@ -129,6 +132,11 @@
         "status": "available",
         "value": "702b945e-2c66-4d5a-bae1-4c67ea14c3bb",
         "source": "docs/plans/selemene-engine/INFRASTRUCTURE-MAP.json"
+      },
+      "project_id": {
+        "status": "available",
+        "value": "11eedde4-41e6-4f51-b86b-cf77111cf592",
+        "source": "infrastructure map Railway project"
       }
     },
     {
@@ -143,6 +151,11 @@
         "status": "available",
         "value": "702b945e-2c66-4d5a-bae1-4c67ea14c3bb",
         "source": "docs/plans/selemene-engine/INFRASTRUCTURE-MAP.json"
+      },
+      "project_id": {
+        "status": "available",
+        "value": "11eedde4-41e6-4f51-b86b-cf77111cf592",
+        "source": "infrastructure map Railway project"
       }
     },
     {
@@ -157,6 +170,11 @@
         "status": "available",
         "value": "702b945e-2c66-4d5a-bae1-4c67ea14c3bb",
         "source": "docs/plans/selemene-engine/INFRASTRUCTURE-MAP.json"
+      },
+      "project_id": {
+        "status": "available",
+        "value": "11eedde4-41e6-4f51-b86b-cf77111cf592",
+        "source": "infrastructure map Railway project"
       }
     }
   ],
@@ -182,17 +200,29 @@
     {
       "id": "postgresql",
       "required": true,
-      "state": {"status": "available", "value": "enabled", "source": "production readiness probe"}
+      "state": {
+        "status": "available",
+        "value": "enabled",
+        "source": "production readiness probe"
+      }
     },
     {
       "id": "redis",
       "required": true,
-      "state": {"status": "available", "value": "enabled", "source": "production readiness probe"}
+      "state": {
+        "status": "available",
+        "value": "enabled",
+        "source": "production readiness probe"
+      }
     },
     {
       "id": "biofield-cv",
       "required": false,
-      "state": {"status": "available", "value": "enabled", "source": "Railway running-instance snapshot"}
+      "state": {
+        "status": "available",
+        "value": "enabled",
+        "source": "Railway running-instance snapshot"
+      }
     },
     {
       "id": "mediapipe",
@@ -207,18 +237,44 @@
     {
       "id": "ephemeris-data",
       "required": true,
-      "source": {"status": "available", "value": "repo://data/ephemeris", "source": "Dockerfile.prod"},
-      "integrity": {"status": "unavailable", "reason": "no production asset manifest checksum was captured"},
-      "retention": {"status": "unavailable", "reason": "no production asset retention receipt was captured"},
-      "release_inclusion": {"status": "unavailable", "reason": "the active API image contents were not inspected"}
+      "source": {
+        "status": "available",
+        "value": "repo://data/ephemeris",
+        "source": "Dockerfile.prod"
+      },
+      "integrity": {
+        "status": "unavailable",
+        "reason": "no production asset manifest checksum was captured"
+      },
+      "retention": {
+        "status": "unavailable",
+        "reason": "no production asset retention receipt was captured"
+      },
+      "release_inclusion": {
+        "status": "unavailable",
+        "reason": "the active API image contents were not inspected"
+      }
     },
     {
       "id": "wisdom-data",
       "required": true,
-      "source": {"status": "available", "value": "repo://data/wisdom-docs", "source": "Dockerfile.prod"},
-      "integrity": {"status": "unavailable", "reason": "no production asset manifest checksum was captured"},
-      "retention": {"status": "unavailable", "reason": "no production asset retention receipt was captured"},
-      "release_inclusion": {"status": "unavailable", "reason": "the active API image contents were not inspected"}
+      "source": {
+        "status": "available",
+        "value": "repo://data/wisdom-docs",
+        "source": "Dockerfile.prod"
+      },
+      "integrity": {
+        "status": "unavailable",
+        "reason": "no production asset manifest checksum was captured"
+      },
+      "retention": {
+        "status": "unavailable",
+        "reason": "no production asset retention receipt was captured"
+      },
+      "release_inclusion": {
+        "status": "unavailable",
+        "reason": "the active API image contents were not inspected"
+      }
     }
   ],
   "rollback": {
