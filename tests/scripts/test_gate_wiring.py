@@ -3,6 +3,7 @@ from __future__ import annotations
 import base64
 import copy
 import json
+import re
 import stat
 import subprocess
 import sys
@@ -274,6 +275,47 @@ def workflow_step_by_name(document: dict, job_name: str, step_name: str) -> dict
     )
 
 
+def evaluate_provider_job_condition(
+    expression: str,
+    *,
+    github_ref: str,
+    variables: dict[str, str],
+) -> bool:
+    normalized = " ".join(expression.split())
+    match = re.fullmatch(
+        r"vars\.([A-Z0-9_]+) (==|!=) '([^']+)' && "
+        r"\(github\.ref == '([^']+)' \|\| startsWith\(github\.ref, '([^']+)'\)\)",
+        normalized,
+    )
+    if match is None:
+        raise AssertionError(f"unsupported provider job condition: {normalized}")
+    variable, operator, expected_value, exact_ref, ref_prefix = match.groups()
+    actual_value = variables.get(variable, "")
+    variable_matches = actual_value == expected_value
+    if operator == "!=":
+        variable_matches = not variable_matches
+    return variable_matches and (
+        github_ref == exact_ref or github_ref.startswith(ref_prefix)
+    )
+
+
+def write_recording_shim(path: Path, body: str = "") -> None:
+    path.write_text(
+        "#!/usr/bin/env bash\n"
+        "set -euo pipefail\n"
+        "{ printf '%s' \"$PWD\"; printf '\\t%s' \"$@\"; printf '\\n'; } >> \"$CALL_LOG\"\n"
+        f"{body}",
+        encoding="utf-8",
+    )
+    path.chmod(path.stat().st_mode | stat.S_IEXEC)
+
+
+def read_recorded_calls(path: Path) -> list[list[str]]:
+    if not path.exists():
+        return []
+    return [line.split("\t") for line in path.read_text(encoding="utf-8").splitlines()]
+
+
 def eligible_receipt(workflow_name: str) -> dict:
     receipt = json.loads(
         (RELEASE_FIXTURE_ROOT / "eligible-source-redeploy.json").read_text(
@@ -305,38 +347,11 @@ def eligible_receipt(workflow_name: str) -> dict:
     return receipt
 
 
-class MutationSpy:
-    def __init__(self) -> None:
-        self.calls: list[str] = []
-
-    def call(self, job_name: str) -> None:
-        self.calls.append(job_name)
-
-
-def execute_mocked_mutation_graph(document: dict, spy: MutationSpy) -> None:
-    jobs = document["jobs"]
-    mutation_jobs = workflow_mutation_jobs(document)
-    completed = set(jobs) - mutation_jobs
-    remaining = set(mutation_jobs)
-    while remaining:
-        ready = sorted(
-            job_name
-            for job_name in remaining
-            if job_needs(jobs[job_name]) <= completed
-        )
-        if not ready:
-            raise AssertionError(f"mocked mutation graph is blocked: {sorted(remaining)}")
-        for job_name in ready:
-            spy.call(job_name)
-            completed.add(job_name)
-            remaining.remove(job_name)
-
-
-def mocked_workflow_mutations(
+def run_workflow_receipt_gate(
     workflow_name: str,
     tmp_path: Path,
     receipt: dict | None,
-) -> tuple[set[str], str]:
+) -> tuple[bool, str]:
     document = load_workflow(workflow_name)
     materialize = workflow_step_by_name(
         document, "validate-release-receipt", "Materialize candidate release receipt"
@@ -376,7 +391,7 @@ def mocked_workflow_mutations(
     )
     output = f"{materialized.stdout}{materialized.stderr}"
     if materialized.returncode != 0:
-        return set(), output
+        return False, output
 
     validated = subprocess.run(
         ["bash", "-c", validate],
@@ -388,10 +403,8 @@ def mocked_workflow_mutations(
     )
     output += f"{validated.stdout}{validated.stderr}"
     if validated.returncode != 0:
-        return set(), output
-    spy = MutationSpy()
-    execute_mocked_mutation_graph(document, spy)
-    return set(spy.calls), output
+        return False, output
+    return True, output
 
 
 def test_every_release_mutation_depends_on_receipt_validation() -> None:
@@ -702,6 +715,393 @@ def test_health_checks_use_only_manifest_outputs_and_require_source_markers() ->
     assert ".[ $source_field ] == $source_revision" in health_step
 
 
+def test_provider_job_conditions_are_evaluated_for_fixed_event_contexts() -> None:
+    deploy = load_workflow("deploy.yaml")
+    railway_condition = deploy["jobs"]["deploy-railway"]["if"]
+    kubernetes_condition = deploy["jobs"]["deploy"]["if"]
+
+    assert evaluate_provider_job_condition(
+        railway_condition,
+        github_ref="refs/heads/main",
+        variables={"DEPLOY_TARGET": "railway"},
+    )
+    assert evaluate_provider_job_condition(
+        railway_condition,
+        github_ref="refs/tags/v1.2.3",
+        variables={"DEPLOY_TARGET": "railway"},
+    )
+    assert not evaluate_provider_job_condition(
+        railway_condition,
+        github_ref="refs/heads/feature/unreviewed",
+        variables={"DEPLOY_TARGET": "railway"},
+    )
+    assert not evaluate_provider_job_condition(
+        railway_condition,
+        github_ref="refs/heads/main",
+        variables={"DEPLOY_TARGET": "none"},
+    )
+    assert evaluate_provider_job_condition(
+        kubernetes_condition,
+        github_ref="refs/heads/main",
+        variables={"ENABLE_K8S_DEPLOY": "true"},
+    )
+    assert not evaluate_provider_job_condition(
+        kubernetes_condition,
+        github_ref="refs/heads/main",
+        variables={"ENABLE_K8S_DEPLOY": "false"},
+    )
+
+    inverted = railway_condition.replace(
+        "refs/tags/v", "refs/heads/feature/"
+    )
+    assert evaluate_provider_job_condition(
+        inverted,
+        github_ref="refs/heads/feature/unreviewed",
+        variables={"DEPLOY_TARGET": "railway"},
+    )
+
+
+def test_actual_railway_script_records_exact_multi_service_argv(tmp_path: Path) -> None:
+    deploy = load_workflow("deploy.yaml")
+    script = workflow_step_by_name(
+        deploy, "deploy-railway", "Deploy to Railway services"
+    )["run"]
+    assert script.count("railway up") == 2
+
+    fake_bin = tmp_path / "bin"
+    fake_bin.mkdir()
+    call_log = tmp_path / "calls.tsv"
+    write_recording_shim(fake_bin / "railway")
+    env = merged_env(
+        {
+            "PATH": f"{fake_bin}:/usr/bin:/bin",
+            "CALL_LOG": str(call_log),
+            "RAILWAY_TOKEN": "synthetic-test-token",
+            "RAILWAY_API_PROJECT_ID": "project-authority",
+            "RAILWAY_API_ENVIRONMENT_ID": "production-authority",
+            "RAILWAY_API_SERVICE_ID": "api-authority",
+            "RAILWAY_API_SOURCE_ROOT": ".",
+            "RAILWAY_TS_PROJECT_ID": "project-authority",
+            "RAILWAY_TS_ENVIRONMENT_ID": "production-authority",
+            "RAILWAY_TS_SERVICE_ID": "typescript-authority",
+            "RAILWAY_TS_SOURCE_ROOT": "ts-engines",
+        }
+    )
+
+    result = subprocess.run(
+        ["bash", "-c", script],
+        cwd=REPO_ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
+        env=env,
+    )
+
+    assert result.returncode == 0, f"{result.stdout}{result.stderr}"
+    assert read_recorded_calls(call_log) == [
+        [
+            str(REPO_ROOT),
+            "up",
+            "--project",
+            "project-authority",
+            "--environment",
+            "production-authority",
+            "--service",
+            "api-authority",
+            "--ci",
+        ],
+        [
+            str(REPO_ROOT / "ts-engines"),
+            "up",
+            "--project",
+            "project-authority",
+            "--environment",
+            "production-authority",
+            "--service",
+            "typescript-authority",
+            "--ci",
+        ],
+    ]
+
+    removed = script.replace("railway up", ":")
+    call_log.unlink()
+    result = subprocess.run(
+        ["bash", "-c", removed],
+        cwd=REPO_ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
+        env=env,
+    )
+    assert result.returncode == 0
+    assert read_recorded_calls(call_log) == []
+
+
+def test_actual_docker_and_kubernetes_scripts_record_exact_argv(tmp_path: Path) -> None:
+    deploy = load_workflow("deploy.yaml")
+    fake_bin = tmp_path / "bin"
+    fake_bin.mkdir()
+    call_log = tmp_path / "calls.tsv"
+    write_recording_shim(fake_bin / "docker")
+    write_recording_shim(fake_bin / "kustomize", "printf '%s\n' 'apiVersion: v1'\n")
+    write_recording_shim(fake_bin / "kubectl", "cat >/dev/null\n")
+    env = merged_env(
+        {
+            "PATH": f"{fake_bin}:/usr/bin:/bin",
+            "CALL_LOG": str(call_log),
+            "IMAGE_TAGS": "ghcr.io/sheshiyer/selemene-engine:sha-1111111111111111111111111111111111111111",
+        }
+    )
+
+    api_publish = workflow_step_by_name(
+        deploy, "build-api", "Publish validated API image"
+    )["run"]
+    result = subprocess.run(
+        ["bash", "-c", api_publish],
+        cwd=REPO_ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
+        env=env,
+    )
+    assert result.returncode == 0, f"{result.stdout}{result.stderr}"
+
+    env["IMAGE_TAGS"] = (
+        "ghcr.io/sheshiyer/selemene-ts-engines:sha-1111111111111111111111111111111111111111"
+    )
+    ts_publish = workflow_step_by_name(
+        deploy, "build-ts-engines", "Publish validated TypeScript image"
+    )["run"]
+    result = subprocess.run(
+        ["bash", "-c", ts_publish],
+        cwd=REPO_ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
+        env=env,
+    )
+    assert result.returncode == 0, f"{result.stdout}{result.stderr}"
+
+    kubernetes = workflow_step_by_name(
+        deploy, "deploy", "Deploy to cluster"
+    )["run"]
+    result = subprocess.run(
+        ["bash", "-c", kubernetes],
+        cwd=REPO_ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
+        env=env,
+    )
+    assert result.returncode == 0, f"{result.stdout}{result.stderr}"
+    calls = read_recorded_calls(call_log)
+    assert calls[:2] == [
+        [
+            str(REPO_ROOT),
+            "push",
+            "ghcr.io/sheshiyer/selemene-engine:sha-1111111111111111111111111111111111111111",
+        ],
+        [
+            str(REPO_ROOT),
+            "push",
+            "ghcr.io/sheshiyer/selemene-ts-engines:sha-1111111111111111111111111111111111111111",
+        ],
+    ]
+    assert sorted(calls[2:]) == sorted(
+        [
+            [str(REPO_ROOT / "k8s"), "build", "."],
+            [str(REPO_ROOT / "k8s"), "apply", "-f", "-"],
+        ]
+    )
+
+
+def test_actual_health_script_requires_both_bound_source_markers(tmp_path: Path) -> None:
+    deploy = load_workflow("deploy.yaml")
+    script = workflow_step_by_name(
+        deploy, "deploy-railway", "Verify manifest-bound Railway health and source"
+    )["run"]
+    fake_bin = tmp_path / "bin"
+    fake_bin.mkdir()
+    call_log = tmp_path / "calls.tsv"
+    write_recording_shim(
+        fake_bin / "curl",
+        "output_file=''\n"
+        "url=''\n"
+        "while [[ $# -gt 0 ]]; do\n"
+        "  case \"$1\" in\n"
+        "    --output) output_file=\"$2\"; shift 2 ;;\n"
+        "    http*) url=\"$1\"; shift ;;\n"
+        "    *) shift ;;\n"
+        "  esac\n"
+        "done\n"
+        "printf '{\"status\":\"healthy\",\"source_revision\":\"%s\"}\n' \"$GITHUB_SHA\" > \"$output_file\"\n",
+    )
+    env = merged_env(
+        {
+            "PATH": f"{fake_bin}:/usr/bin:/bin",
+            "CALL_LOG": str(call_log),
+            "GITHUB_SHA": SYNTHETIC_SOURCE,
+            "RAILWAY_API_HEALTH_ORIGIN": "https://api.authority.example",
+            "RAILWAY_API_HEALTH_PATH": "/health/live",
+            "RAILWAY_API_HEALTH_STATUS_FIELD": "status",
+            "RAILWAY_API_HEALTH_STATUS_VALUE": "healthy",
+            "RAILWAY_API_SOURCE_REVISION_FIELD": "source_revision",
+            "RAILWAY_TS_HEALTH_ORIGIN": "https://typescript.authority.example",
+            "RAILWAY_TS_HEALTH_PATH": "/health",
+            "RAILWAY_TS_HEALTH_STATUS_FIELD": "status",
+            "RAILWAY_TS_HEALTH_STATUS_VALUE": "healthy",
+            "RAILWAY_TS_SOURCE_REVISION_FIELD": "source_revision",
+        }
+    )
+
+    result = subprocess.run(
+        ["bash", "-c", script],
+        cwd=REPO_ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
+        env=env,
+    )
+
+    assert result.returncode == 0, f"{result.stdout}{result.stderr}"
+    calls = read_recorded_calls(call_log)
+    assert [call[-1] for call in calls] == [
+        "https://api.authority.example/health/live",
+        "https://typescript.authority.example/health",
+    ]
+    assert all(call[1:4] == ["--fail-with-body", "--silent", "--show-error"] for call in calls)
+
+
+def test_actual_token_scope_script_uses_bound_project_and_environment(
+    tmp_path: Path,
+) -> None:
+    deploy = load_workflow("deploy.yaml")
+    script = workflow_step_by_name(
+        deploy, "deploy-railway", "Verify Railway token scope"
+    )["run"]
+    fake_bin = tmp_path / "bin"
+    fake_bin.mkdir()
+    call_log = tmp_path / "calls.tsv"
+    write_recording_shim(
+        fake_bin / "curl",
+        "printf '%s\n' '{\"data\":{\"projectToken\":{\"projectId\":\"project-authority\",\"environmentId\":\"production-authority\"}}}'\n",
+    )
+    env = merged_env(
+        {
+            "PATH": f"{fake_bin}:/usr/bin:/bin",
+            "CALL_LOG": str(call_log),
+            "RAILWAY_TOKEN": "synthetic-test-token",
+            "RAILWAY_API_PROJECT_ID": "project-authority",
+            "RAILWAY_API_ENVIRONMENT_ID": "production-authority",
+        }
+    )
+
+    result = subprocess.run(
+        ["bash", "-c", script],
+        cwd=REPO_ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
+        env=env,
+    )
+
+    assert result.returncode == 0, f"{result.stdout}{result.stderr}"
+    assert read_recorded_calls(call_log) == [
+        [
+            str(REPO_ROOT),
+            "--fail-with-body",
+            "--silent",
+            "--show-error",
+            "--request",
+            "POST",
+            "--url",
+            "https://backboard.railway.com/graphql/v2",
+            "--header",
+            "Project-Access-Token: synthetic-test-token",
+            "--header",
+            "Content-Type: application/json",
+            "--data",
+            '{"query":"query { projectToken { projectId environmentId } }"}',
+        ]
+    ]
+
+
+def test_actual_release_scripts_are_read_only_and_end_in_hold(tmp_path: Path) -> None:
+    release = load_workflow("release.yml")
+    resolve = workflow_step_by_name(
+        release, "resolve-release-artifacts", "Resolve source-tag digests"
+    )["run"]
+    hold = workflow_step_by_name(
+        release, "release-result", "Enforce atomic promotion hold"
+    )["run"]
+    fake_bin = tmp_path / "bin"
+    fake_bin.mkdir()
+    call_log = tmp_path / "calls.tsv"
+    github_output = tmp_path / "github-output"
+    write_recording_shim(
+        fake_bin / "docker",
+        "if [[ \"$*\" == *selemene-ts-engines* ]]; then\n"
+        f"  printf 'Digest: %s\\n' '{TS_DIGEST}'\n"
+        "else\n"
+        f"  printf 'Digest: %s\\n' '{API_DIGEST}'\n"
+        "fi\n",
+    )
+    write_recording_shim(fake_bin / "gh")
+    env = merged_env(
+        {
+            "PATH": f"{fake_bin}:/usr/bin:/bin",
+            "CALL_LOG": str(call_log),
+            "GITHUB_OUTPUT": str(github_output),
+            "GITHUB_SHA": SYNTHETIC_SOURCE,
+            "REGISTRY": "ghcr.io",
+            "IMAGE_NAME_API": "sheshiyer/selemene-engine",
+            "IMAGE_NAME_TS": "sheshiyer/selemene-ts-engines",
+        }
+    )
+
+    resolved = subprocess.run(
+        ["bash", "-c", resolve],
+        cwd=REPO_ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
+        env=env,
+    )
+    held = subprocess.run(
+        ["bash", "-c", hold],
+        cwd=REPO_ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
+        env=env,
+    )
+
+    assert resolved.returncode == 0, f"{resolved.stdout}{resolved.stderr}"
+    assert github_output.read_text(encoding="utf-8").splitlines() == [
+        f"api-digest={API_DIGEST}",
+        f"ts-digest={TS_DIGEST}",
+    ]
+    assert read_recorded_calls(call_log) == [
+        [
+            str(REPO_ROOT),
+            "buildx",
+            "imagetools",
+            "inspect",
+            f"ghcr.io/sheshiyer/selemene-engine:sha-{SYNTHETIC_SOURCE}",
+        ],
+        [
+            str(REPO_ROOT),
+            "buildx",
+            "imagetools",
+            "inspect",
+            f"ghcr.io/sheshiyer/selemene-ts-engines:sha-{SYNTHETIC_SOURCE}",
+        ],
+    ]
+    assert held.returncode == 1
+    assert "No aliases or GitHub release were changed" in held.stdout
+    assert all("create" not in call for call in read_recorded_calls(call_log))
+
+
 def test_deploy_publishes_only_source_immutable_candidate_tags() -> None:
     deploy = load_workflow("deploy.yaml")
     expected = "type=raw,value=sha-${{ needs.validate-source.outputs.source-sha }}"
@@ -744,14 +1144,14 @@ def test_release_workflows_retain_immutable_action_pins() -> None:
         assert result.returncode == 0, f"{result.stdout}{result.stderr}"
 
 
-def test_mocked_workflows_make_zero_mutations_without_valid_receipt(
+def test_workflow_receipt_gates_reject_missing_and_mismatched_receipts(
     tmp_path: Path,
 ) -> None:
     for workflow_name in ("deploy.yaml", "release.yml"):
-        mutations, output = mocked_workflow_mutations(
+        authorized, output = run_workflow_receipt_gate(
             workflow_name, tmp_path, None
         )
-        assert mutations == set()
+        assert authorized is False
         assert "Release receipt missing" in output
 
         mismatched = eligible_receipt(workflow_name)
@@ -761,14 +1161,14 @@ def test_mocked_workflows_make_zero_mutations_without_valid_receipt(
         mismatched["source"]["validated_revision"]["value"] = (
             "2222222222222222222222222222222222222222"
         )
-        mutations, output = mocked_workflow_mutations(
+        authorized, output = run_workflow_receipt_gate(
             workflow_name, tmp_path, mismatched
         )
-        assert mutations == set()
+        assert authorized is False
         assert "does not match expected source" in output
 
 
-def test_mocked_workflows_reject_synthetic_and_wrong_target_receipts(
+def test_workflow_receipt_gates_reject_synthetic_and_wrong_targets(
     tmp_path: Path,
 ) -> None:
     synthetic = json.loads(
@@ -777,22 +1177,22 @@ def test_mocked_workflows_reject_synthetic_and_wrong_target_receipts(
         )
     )
     for workflow_name in ("deploy.yaml", "release.yml"):
-        mutations, output = mocked_workflow_mutations(
+        authorized, output = run_workflow_receipt_gate(
             workflow_name, tmp_path, synthetic
         )
-        assert mutations == set()
+        assert authorized is False
         assert "rejects receipts containing test_fixture metadata" in output
 
         wrong_target = eligible_receipt(workflow_name)
         wrong_target["target"]["environment"] = "staging"
-        mutations, output = mocked_workflow_mutations(
+        authorized, output = run_workflow_receipt_gate(
             workflow_name, tmp_path, wrong_target
         )
-        assert mutations == set()
+        assert authorized is False
         assert "target.environment does not match workflow authority" in output
 
 
-def test_mocked_workflows_reject_wrong_service_and_artifact_identity(
+def test_workflow_receipt_gates_reject_wrong_service_and_artifact_identity(
     tmp_path: Path,
 ) -> None:
     for workflow_name in ("deploy.yaml", "release.yml"):
@@ -803,10 +1203,10 @@ def test_mocked_workflows_reject_wrong_service_and_artifact_identity(
         api["provider"] = "vercel"
         api["project_id"]["value"] = "fabricated-project"
         api["service_id"]["value"] = "fabricated-api-service"
-        mutations, output = mocked_workflow_mutations(
+        authorized, output = run_workflow_receipt_gate(
             workflow_name, tmp_path, wrong_service
         )
-        assert mutations == set()
+        assert authorized is False
         assert "service_roles.api.provider does not match release authority" in output
         assert "service_roles.api.project_id does not match release authority" in output
         assert "service_roles.api.service_id does not match release authority" in output
@@ -818,17 +1218,17 @@ def test_mocked_workflows_reject_wrong_service_and_artifact_identity(
         api["built"]["image_digest"]["value"] = (
             "sha256:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
         )
-        mutations, output = mocked_workflow_mutations(
+        authorized, output = run_workflow_receipt_gate(
             workflow_name, tmp_path, wrong_digest
         )
-        assert mutations == set()
+        assert authorized is False
         assert "does not match workflow artifact" in output
 
 
-def test_production_profiles_hold_all_mocked_mutations(tmp_path: Path) -> None:
+def test_production_profiles_deny_mutation_authorization(tmp_path: Path) -> None:
     for workflow_name in ("deploy.yaml", "release.yml"):
-        mutations, output = mocked_workflow_mutations(
+        authorized, output = run_workflow_receipt_gate(
             workflow_name, tmp_path, eligible_receipt(workflow_name)
         )
-        assert mutations == set()
+        assert authorized is False
         assert "production mutation is disabled" in output

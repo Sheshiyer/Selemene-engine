@@ -288,11 +288,13 @@ jobs:
 
       - name: Publish validated API image
         shell: bash
+        env:
+          IMAGE_TAGS: ${{ steps.meta.outputs.tags }}
         run: |
           set -euo pipefail
           while IFS= read -r image_tag; do
             [[ -n "${image_tag}" ]] && docker push "${image_tag}"
-          done <<< "${{ steps.meta.outputs.tags }}"
+          done <<< "${IMAGE_TAGS}"
       
       - name: Check image size
         run: |
@@ -367,11 +369,13 @@ jobs:
 
       - name: Publish validated TypeScript image
         shell: bash
+        env:
+          IMAGE_TAGS: ${{ steps.meta.outputs.tags }}
         run: |
           set -euo pipefail
           while IFS= read -r image_tag; do
             [[ -n "${image_tag}" ]] && docker push "${image_tag}"
-          done <<< "${{ steps.meta.outputs.tags }}"
+          done <<< "${IMAGE_TAGS}"
 
   # Deploy to Kubernetes — OPT-IN, and currently dormant.
   #
