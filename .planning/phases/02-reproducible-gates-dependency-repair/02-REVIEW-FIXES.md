@@ -12,6 +12,9 @@ rechecked_at: 2026-09-06T14:49:30Z
 second_recheck_findings: 5
 second_recheck_fixed: 5
 second_rechecked_at: 2026-09-06T15:08:34Z
+final_recheck_findings: 1
+final_recheck_fixed: 1
+final_rechecked_at: 2026-09-06T15:18:15Z
 status: all_fixed
 production_promotion: HOLD
 ---
@@ -87,7 +90,7 @@ Anchored `.tsx` and `.jsx` references now fail as unsupported until a JSX-aware 
 
 **Disposition:** Fixed.
 
-Markdown anchor collection now tracks backtick and tilde fences and removes multiline HTML comments before recognizing ATX headings. Headings inside either non-rendered region reject, while a rendered ATX heading resolves.
+Markdown anchor collection uses ordered block state: an active backtick or tilde fence takes precedence, comment markers inside it are inert, and HTML comment state outside fences suppresses headings until a real close. Headings inside either non-rendered region reject, while a rendered ATX heading resolves.
 
 ### WR-R2-05: The fix ledger overstated the first resolver
 
@@ -110,6 +113,27 @@ The first follow-up language above now states only what its tests proved. This s
 **Files:** `scripts/validate_contracts.py`, `tests/scripts/test_validate_contracts.py`, `contracts/v1/registries/engines.json`, `contracts/release/v1/manifest.json`, `contracts/release/v1/fixtures/eligible-source-redeploy.json`, `contracts/release/v1/fixtures/current-production-incomplete.json`.
 
 **Commit:** Atomic WR-R2 follow-up commit containing this evidence entry.
+
+## Final Markdown State-Ordering Follow-up
+
+### Fence-contained unclosed comment markers masked later headings
+
+**Disposition:** Fixed.
+
+The earlier two-pass implementation removed HTML comments across the whole document before detecting fences. An unclosed `<!--` inside fenced code therefore blanked a real heading after the fence closed. `markdown_anchors` is now a single ordered block-state parser. Active fence state consumes fence content and closing delimiters before comment processing, so comment markers inside backtick and tilde fences remain inert. Outside a fence, an unclosed HTML comment continues excluding all later headings.
+
+**Red/green evidence:** With the final regression probes added first, the focused Markdown selection reported 2 failed, 4 passed and 69 deselected. After the ordered parser change, the expanded selection passed 7 cases with 68 deselected. Both fence variants now preserve a real heading after their closing delimiter, while closed and unclosed outside-fence comments remain excluded.
+
+**Final verification:**
+
+- `python3 -m pytest tests/scripts/test_validate_contracts.py -q`: 75 passed.
+- Focused Markdown state selection: 7 passed, 68 deselected.
+- `python3 scripts/validate_contracts.py`: `schemas=6 fixtures=5 registries=1 engines=19`.
+- `python3 -m py_compile scripts/validate_contracts.py tests/scripts/test_validate_contracts.py`: passed.
+
+**Files:** `scripts/validate_contracts.py`, `tests/scripts/test_validate_contracts.py`.
+
+**Commit:** Atomic final Markdown state-ordering follow-up containing this evidence entry.
 
 ## Production Mutation Disposition
 

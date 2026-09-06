@@ -133,22 +133,12 @@ def markdown_anchor(heading: str) -> str:
 
 
 def markdown_anchors(source: str) -> set[str]:
-    """Collect rendered ATX headings, excluding comments and fenced code."""
-
-    characters = list(source)
-    index = 0
-    while index < len(source):
-        opening = source.find("<!--", index)
-        if opening == -1:
-            break
-        closing = source.find("-->", opening + 4)
-        end = len(source) if closing == -1 else closing + 3
-        _blank_non_newlines(characters, opening, end)
-        index = end
+    """Collect rendered ATX headings with ordered fence and comment state."""
 
     anchors: set[str] = set()
     fence: tuple[str, int] | None = None
-    for line in "".join(characters).splitlines():
+    in_html_comment = False
+    for line in source.splitlines():
         indent = len(line) - len(line.lstrip(" "))
         candidate = line[indent:] if indent <= 3 else line
         fence_match = re.match(r"(?P<run>`{3,}|~{3,})(?P<rest>.*)$", candidate)
@@ -161,11 +151,39 @@ def markdown_anchors(source: str) -> set[str]:
             ):
                 fence = None
             continue
-        if fence_match is not None:
+        if not in_html_comment and fence_match is not None:
             run = fence_match.group("run")
             fence = (run[0], len(run))
             continue
-        heading = re.match(r"^ {0,3}#{1,6}\s+(.+?)\s*$", line)
+
+        characters = list(line)
+        index = 0
+        while index < len(line):
+            if in_html_comment:
+                closing = line.find("-->", index)
+                if closing == -1:
+                    _blank_non_newlines(characters, index, len(line))
+                    break
+                end = closing + 3
+                _blank_non_newlines(characters, index, end)
+                in_html_comment = False
+                index = end
+                continue
+
+            opening = line.find("<!--", index)
+            if opening == -1:
+                break
+            closing = line.find("-->", opening + 4)
+            if closing == -1:
+                _blank_non_newlines(characters, opening, len(line))
+                in_html_comment = True
+                break
+            end = closing + 3
+            _blank_non_newlines(characters, opening, end)
+            index = end
+
+        visible_line = "".join(characters)
+        heading = re.match(r"^ {0,3}#{1,6}\s+(.+?)\s*$", visible_line)
         if heading is not None:
             anchors.add(markdown_anchor(heading.group(1)))
     return anchors

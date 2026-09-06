@@ -853,6 +853,7 @@ def test_tsx_jsx_source_anchors_fail_closed(
         "```markdown\n# hidden-markdown-anchor\n```\n",
         "~~~markdown\n# hidden-markdown-anchor\n~~~\n",
         "<!--\n# hidden-markdown-anchor\n-->\n",
+        "<!--\n# hidden-markdown-anchor\n",
     ],
 )
 def test_markdown_anchor_rejects_heading_in_non_rendered_content(
@@ -876,6 +877,31 @@ def test_markdown_anchor_accepts_rendered_heading(tmp_path: Path) -> None:
 
     validate_repo_reference(
         "repo://rendered-heading.md#rendered-heading",
+        tmp_path,
+        "test evidence",
+    )
+
+
+@pytest.mark.parametrize(
+    ("opening_fence", "closing_fence"),
+    [
+        ("```markdown", "```"),
+        ("~~~markdown", "~~~"),
+    ],
+)
+def test_markdown_comment_marker_inside_fence_is_inert_and_later_heading_resolves(
+    tmp_path: Path,
+    opening_fence: str,
+    closing_fence: str,
+) -> None:
+    source_path = tmp_path / "heading-after-fence.md"
+    source_path.write_text(
+        f"{opening_fence}\n<!--\n{closing_fence}\n# Heading after fence\n",
+        encoding="utf-8",
+    )
+
+    validate_repo_reference(
+        "repo://heading-after-fence.md#heading-after-fence",
         tmp_path,
         "test evidence",
     )
