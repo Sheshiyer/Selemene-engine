@@ -88,12 +88,36 @@ def test_immutable_image_receipt_requires_matching_built_and_deployed_digests(
         receipt_path,
         "--expected-source",
         SYNTHETIC_SOURCE,
+        "--expected-release-tag",
+        "v1.2.3",
         "--required-promotion-mode",
         "immutable-image",
     )
 
     assert result.returncode == 0, f"{result.stdout}{result.stderr}"
     assert "mode=immutable-image" in result.stdout
+
+
+def test_release_receipt_cannot_authorize_a_different_semantic_tag(
+    tmp_path: Path,
+) -> None:
+    receipt_path = tmp_path / "release.json"
+    receipt_path.write_text(
+        json.dumps(materialize_case("eligible-immutable-image")), encoding="utf-8"
+    )
+
+    result = run_receipt(
+        receipt_path,
+        "--expected-source",
+        SYNTHETIC_SOURCE,
+        "--expected-release-tag",
+        "v1.2.4",
+        "--required-promotion-mode",
+        "immutable-image",
+    )
+
+    assert result.returncode == 1
+    assert "release.tag does not match expected release tag" in result.stderr
 
 
 @pytest.mark.parametrize(

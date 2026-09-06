@@ -108,6 +108,7 @@ jobs:
           python3 scripts/validate_release_receipt.py \
             "$RUNNER_TEMP/selemene-release-receipt.json" \
             --expected-source "$GITHUB_SHA" \
+            --expected-release-tag "$GITHUB_REF_NAME" \
             --required-promotion-mode immutable-image \
             --target-profile release-production \
             --expected-artifact-digest "api=${EXPECTED_API_DIGEST}" \

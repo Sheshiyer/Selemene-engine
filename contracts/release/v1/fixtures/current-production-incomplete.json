@@ -3,6 +3,9 @@
   "receipt_version": "v1",
   "receipt_id": "fixture.current-production.incomplete",
   "generated_at": "2026-09-05T10:32:24Z",
+  "release": {
+    "tag": null
+  },
   "promotion_mode": "source-redeploy",
   "target": {
     "environment": "production",

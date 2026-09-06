@@ -3,6 +3,9 @@
   "receipt_version": "v1",
   "receipt_id": "fixture.source-redeploy.eligible",
   "generated_at": "2026-09-06T00:00:00Z",
+  "release": {
+    "tag": null
+  },
   "promotion_mode": "source-redeploy",
   "target": {
     "environment": "test",

@@ -287,6 +287,7 @@ def eligible_receipt(workflow_name: str) -> dict:
         artifact["built"]["image_digest"]["value"] = expected_digests[artifact["role"]]
     if workflow_name == "release.yml":
         receipt["promotion_mode"] = "immutable-image"
+        receipt["release"]["tag"] = "v1.2.3"
         receipt["target"]["provider_scope"] = ["github", "ghcr"]
         for artifact in receipt["artifacts"]:
             artifact["deployed"]["image_digest"] = copy.deepcopy(
@@ -346,6 +347,7 @@ def mocked_workflow_mutations(
         {
             "RUNNER_TEMP": str(runner_temp),
             "GITHUB_SHA": SYNTHETIC_SOURCE,
+            "GITHUB_REF_NAME": "v1.2.3",
             "REQUESTED_ENVIRONMENT": "production",
             "ENABLE_K8S_DEPLOY": "false",
             "EXPECTED_API_DIGEST": API_DIGEST,
@@ -492,6 +494,7 @@ def test_prepublication_builds_and_registry_reads_feed_exact_digest_gate() -> No
     assert "docker buildx imagetools inspect" in release_source
     assert '"${repository}@${digest}"' in release_source
     assert "--target-profile release-production" in release_source
+    assert '--expected-release-tag "$GITHUB_REF_NAME"' in release_source
     assert "update-changelog:" not in release_source
     assert "ref: main" not in release_source
     assert "build-binaries:" not in release_source

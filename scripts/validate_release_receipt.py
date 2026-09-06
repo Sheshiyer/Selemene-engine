@@ -119,6 +119,7 @@ def validate_release_receipt(
     required_promotion_mode: str | None = None,
     target_profile: str | None = None,
     expected_artifact_digests: dict[str, str] | None = None,
+    expected_release_tag: str | None = None,
     operational: bool = False,
 ) -> list[str]:
     """Return every eligibility error; an empty list means eligible."""
@@ -191,6 +192,18 @@ def validate_release_receipt(
             )
 
     promotion_mode = receipt["promotion_mode"]
+    release_tag = receipt["release"]["tag"]
+    if promotion_mode == "source-redeploy" and release_tag is not None:
+        errors.append("release.tag must be null for source-redeploy authorization")
+    if promotion_mode == "immutable-image" and release_tag is None:
+        errors.append("release.tag is required for immutable-image authorization")
+    if expected_release_tag is not None and release_tag != expected_release_tag:
+        errors.append(
+            "release.tag does not match expected release tag: "
+            f"required={expected_release_tag} actual={release_tag}"
+        )
+    if operational and promotion_mode == "immutable-image" and expected_release_tag is None:
+        errors.append("operational immutable-image validation requires an expected release tag")
     if required_promotion_mode is not None and promotion_mode != required_promotion_mode:
         errors.append(
             "promotion_mode does not match the workflow: "
@@ -613,6 +626,10 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--repo-root", type=Path, default=Path(__file__).resolve().parents[1])
     parser.add_argument("--expected-source")
     parser.add_argument(
+        "--expected-release-tag",
+        help="exact canonical vMAJOR.MINOR.PATCH tag authorized by the receipt",
+    )
+    parser.add_argument(
         "--target-profile",
         help="manifest workflow target profile that the receipt must match exactly",
     )
@@ -675,6 +692,7 @@ def main() -> int:
             required_promotion_mode=args.required_promotion_mode,
             target_profile=args.target_profile,
             expected_artifact_digests=expected_artifact_digests,
+            expected_release_tag=args.expected_release_tag,
             operational=args.operational,
         )
     except ReleaseReceiptError as error:
