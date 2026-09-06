@@ -7,7 +7,7 @@
     "path": "contracts/v1/registries/engines.json",
     "registry_version": "v1",
     "contract_version": "v1",
-    "sha256": "sha256:fad914e23c79eda16420b57ddcbdf0bec62feedb38319a9fd71a810002d4bdd2"
+    "sha256": "sha256:362133fc8350de26b667fede429bc411e194cfda6139c3cfdda12b7b87173ebc"
   },
   "migration_history": {
     "path": "migrations/history.sha256",

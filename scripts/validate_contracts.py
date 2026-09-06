@@ -63,6 +63,7 @@ EXPECTED_ISSUE_ROLES = {
     "deployment_recovery",
 }
 RUNTIME_ID = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
+SOURCE_SYMBOL = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*(?:::[A-Za-z_][A-Za-z0-9_]*)*$")
 SENSITIVE_KEY = re.compile(
     r"(^|_)(api_)?(token|secret|password|credential|stack|endpoint)(_|$)", re.IGNORECASE
 )
@@ -121,6 +122,77 @@ def authority_path(root: Path, relative: str) -> Path:
     return resolved
 
 
+def markdown_anchor(heading: str) -> str:
+    """Return the stable GitHub-style anchor used by repository evidence links."""
+
+    normalized = heading.strip().lower()
+    normalized = re.sub(r"[^a-z0-9 _-]", "", normalized)
+    return re.sub(r"[ _-]+", "-", normalized).strip("-")
+
+
+def validate_repo_reference(reference: str, repo_root: Path, context: str) -> None:
+    """Resolve one repo:// path and its supported source or Markdown anchor."""
+
+    if not reference.startswith("repo://"):
+        raise ContractValidationError(f"{context}: references must use repo:// provenance")
+    payload = reference.removeprefix("repo://")
+    relative, separator, fragment = payload.partition("#")
+    if (
+        not relative
+        or relative.startswith("/")
+        or "\\" in relative
+        or "%" in relative
+        or any(part in {"", ".", ".."} for part in relative.split("/"))
+    ):
+        raise ContractValidationError(
+            f"{context}: unsafe repo:// path in reference {reference!r}"
+        )
+
+    resolved_root = repo_root.resolve()
+    resolved = (resolved_root / relative).resolve()
+    try:
+        resolved.relative_to(resolved_root)
+    except ValueError as error:
+        raise ContractValidationError(
+            f"{context}: repo:// path escapes repository root: {reference!r}"
+        ) from error
+    if not resolved.exists():
+        raise ContractValidationError(
+            f"{context}: repo:// path does not exist: {reference!r}"
+        )
+    if not separator:
+        return
+    if not fragment:
+        raise ContractValidationError(f"{context}: empty repo:// anchor: {reference!r}")
+    if not resolved.is_file():
+        raise ContractValidationError(
+            f"{context}: repo:// anchors require a file: {reference!r}"
+        )
+
+    source = resolved.read_text(encoding="utf-8")
+    if resolved.suffix.lower() == ".md":
+        anchors = {
+            markdown_anchor(match.group(1))
+            for line in source.splitlines()
+            if (match := re.match(r"^#{1,6}\s+(.+?)\s*$", line))
+        }
+        if fragment not in anchors:
+            raise ContractValidationError(
+                f"{context}: repo:// Markdown anchor does not exist: {reference!r}"
+            )
+        return
+
+    if not SOURCE_SYMBOL.fullmatch(fragment):
+        raise ContractValidationError(
+            f"{context}: unsupported repo:// source anchor: {reference!r}"
+        )
+    for symbol in fragment.split("::"):
+        if re.search(rf"\b{re.escape(symbol)}\b", source) is None:
+            raise ContractValidationError(
+                f"{context}: repo:// source anchor does not exist: {reference!r}"
+            )
+
+
 def resolve_fragment(document: Any, fragment: str, context: str) -> None:
     if not fragment:
         return
@@ -137,7 +209,7 @@ def resolve_fragment(document: Any, fragment: str, context: str) -> None:
             raise ContractValidationError(f"{context}: unresolved fragment #{fragment}")
 
 
-def validate_engine_registry(path: Path) -> int:
+def validate_engine_registry(path: Path, repo_root: Path) -> int:
     registry = load_json(path)
     if not isinstance(registry, dict):
         raise ContractValidationError(f"{path}: engine registry must be an object")
@@ -338,10 +410,8 @@ def validate_engine_registry(path: Path) -> int:
                 raise ContractValidationError(
                     f"{axis_context}: {status} status requires at least one reference"
                 )
-            if any(not reference.startswith("repo://") for reference in references):
-                raise ContractValidationError(
-                    f"{axis_context}: references must use repo:// provenance"
-                )
+            for reference in references:
+                validate_repo_reference(reference, repo_root, axis_context)
 
     ids_in_order = [row["id"] for row in rows]
     if ids_in_order != sorted(ids_in_order):
@@ -364,7 +434,7 @@ def validate_engine_registry(path: Path) -> int:
     return len(rows)
 
 
-def validate_authority(root: Path) -> tuple[int, int, int]:
+def validate_authority(root: Path, repo_root: Path) -> tuple[int, int, int]:
     manifest_path = root / "manifest.json"
     manifest = load_json(manifest_path)
     if not isinstance(manifest, dict):
@@ -389,7 +459,7 @@ def validate_authority(root: Path) -> tuple[int, int, int]:
             f"{manifest_path}: registry manifest drift; missing={missing}, unexpected={unexpected}"
         )
     registry_row_count = sum(
-        validate_engine_registry(authority_path(root, relative))
+        validate_engine_registry(authority_path(root, relative), repo_root)
         for relative in registry_entries
     )
 
@@ -534,10 +604,16 @@ def main() -> int:
         default=Path(__file__).resolve().parents[1] / "contracts" / "v1",
         help="contract authority root (default: repository contracts/v1)",
     )
+    parser.add_argument(
+        "--repo-root",
+        type=Path,
+        default=Path(__file__).resolve().parents[1],
+        help="repository root used to resolve repo:// evidence references",
+    )
     args = parser.parse_args()
     try:
         schema_count, fixture_count, registry_row_count = validate_authority(
-            args.root.resolve()
+            args.root.resolve(), args.repo_root.resolve()
         )
     except ContractValidationError as error:
         print(f"contract validation failed: {error}", file=sys.stderr)

@@ -12,7 +12,13 @@ AUTHORITY_ROOT = REPO_ROOT / "contracts" / "v1"
 
 
 def run_validator(root: Path) -> subprocess.CompletedProcess[str]:
-    return run_python_script("scripts/validate_contracts.py", "--root", root)
+    return run_python_script(
+        "scripts/validate_contracts.py",
+        "--root",
+        root,
+        "--repo-root",
+        REPO_ROOT,
+    )
 
 
 def copy_authority(tmp_path: Path) -> Path:
@@ -360,3 +366,49 @@ def test_evidenced_axis_without_reference_fails_closed(tmp_path: Path) -> None:
 
     assert result.returncode != 0
     assert "evidenced status requires at least one reference" in result.stderr
+
+
+def test_registry_evidence_missing_repo_path_fails_closed(tmp_path: Path) -> None:
+    authority = copy_authority(tmp_path)
+    registry_path, registry = engine_registry(authority)
+    evidence = engine_row(registry, "biofield")["evidence"]
+    assert isinstance(evidence, dict)
+    evidence["declared"]["references"][0] = (
+        "repo://definitely/missing/file.rs#nonexistent"
+    )
+    write_json(registry_path, registry)
+
+    result = run_validator(authority)
+
+    assert result.returncode != 0
+    assert "repo:// path does not exist" in result.stderr
+
+
+def test_registry_evidence_missing_source_anchor_fails_closed(tmp_path: Path) -> None:
+    authority = copy_authority(tmp_path)
+    registry_path, registry = engine_registry(authority)
+    evidence = engine_row(registry, "biofield")["evidence"]
+    assert isinstance(evidence, dict)
+    evidence["declared"]["references"][0] = (
+        "repo://crates/noesis-orchestrator/src/lib.rs#DefinitelyMissingSymbol"
+    )
+    write_json(registry_path, registry)
+
+    result = run_validator(authority)
+
+    assert result.returncode != 0
+    assert "repo:// source anchor does not exist" in result.stderr
+
+
+def test_registry_evidence_traversal_path_fails_closed(tmp_path: Path) -> None:
+    authority = copy_authority(tmp_path)
+    registry_path, registry = engine_registry(authority)
+    evidence = engine_row(registry, "biofield")["evidence"]
+    assert isinstance(evidence, dict)
+    evidence["declared"]["references"][0] = "repo://../outside.rs#symbol"
+    write_json(registry_path, registry)
+
+    result = run_validator(authority)
+
+    assert result.returncode != 0
+    assert "unsafe repo:// path" in result.stderr
