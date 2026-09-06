@@ -23,7 +23,10 @@ fourth_recheck_findings: 1
 fourth_recheck_fixes_applied: 1
 fourth_recheck_reviewed_head: f2e45efe3386692a6fdec6858dc6e00d47352e35
 fourth_recheck_fixed_at: 2026-09-06T16:08:22Z
-status: fixes_complete_pending_independent_recheck
+fifth_recheck_findings: 0
+fifth_recheck_reviewed_head: 4305265acee96461c40594fbb2689306d357f59d
+fifth_rechecked_at: 2026-09-06T16:17:58Z
+status: independently_rechecked_clean
 production_promotion: HOLD
 ---
 
@@ -151,7 +154,7 @@ they remain pending an independent review of the resulting committed snapshot.
 
 ### WR-R3-01: Expression and macro token trees crossed declaration scope
 
-**Disposition:** Fix applied; pending independent recheck.
+**Disposition:** Fixed; independently rechecked clean at `4305265acee96461c40594fbb2689306d357f59d`.
 
 Rust source scope now uses a strict stack for every `()[]{}` delimiter. Unqualified
 items must be in the empty file frame, and qualified methods must be in the direct
@@ -174,7 +177,7 @@ assignments, parentheses, arrays, arguments, conditionals, or arrow bodies do no
 
 ### WR-R3-02: Regex literals corrupted JavaScript and TypeScript brace depth
 
-**Disposition:** Fix applied; pending independent recheck.
+**Disposition:** Fixed; independently rechecked clean at `4305265acee96461c40594fbb2689306d357f59d`.
 
 The handwritten JavaScript slash classifier was removed. A small Node helper parses
 the original source through the exact root dependency `typescript@5.9.3`; its
@@ -198,12 +201,12 @@ not alter that parser.
 
 ### WR-R3-04: The ledger asserted clean status despite residual defects
 
-**Disposition:** Fixed as a status correction; pending independent recheck.
+**Disposition:** Fixed as a status correction; independently rechecked clean at `4305265acee96461c40594fbb2689306d357f59d`.
 
-This ledger now records the exact third-recheck head and uses
-`fixes_complete_pending_independent_recheck`. It does not assert a clean result from
-its own local tests. Production promotion remains `HOLD`, and both production
-mutation profiles remain disabled.
+This ledger records each reviewed head and now cites the fifth independent recheck,
+which reports zero Critical, Warning, or Info findings at
+`4305265acee96461c40594fbb2689306d357f59d`. Production promotion remains `HOLD`,
+and both production mutation profiles remain disabled.
 
 **Red/green evidence:** Before the initial R3 implementation, its focused selection
 reported 22 failed, 6 passed and 75 deselected. After the parser-backed repair and
@@ -235,12 +238,12 @@ evidence entry.
 
 The independent review of exact head
 `f2e45efe3386692a6fdec6858dc6e00d47352e35` found one residual warning in
-qualified Rust impl resolution. The local repair below remains pending review of
-its resulting committed snapshot.
+qualified Rust impl resolution. The fifth independent recheck closed it at
+`4305265acee96461c40594fbb2689306d357f59d` with zero remaining findings.
 
 ### WR-R4-01: Function return arrows terminated leading Rust impl generics
 
-**Disposition:** Fix applied; pending independent recheck.
+**Disposition:** Fixed; independently rechecked clean at `4305265acee96461c40594fbb2689306d357f59d`.
 
 Both bounded impl-header scans counted every `>` while stripping or locating
 leading generics. In a valid header such as
@@ -293,21 +296,21 @@ All commands ran with production database variables removed where applicable.
 
 | Check | Result |
 |---|---|
-| `python3 -m pytest tests/scripts/test_validate_release_receipt.py tests/scripts/test_gate_wiring.py tests/scripts/test_validate_contracts.py -q` | 95 passed |
+| Fifth independent resolver/release recheck | 181 passed: 141 contract and 40 release tests; 0 findings |
 | `cargo test -p noesis-api database_conditional_registration --locked` | 2 passed |
 | `python3 scripts/validate_action_pins.py` | Passed |
 | Parse every `.github/workflows/*.{yml,yaml}` with PyYAML | Passed |
 | `python3 scripts/validate_contracts.py` | `schemas=6 fixtures=5 registries=1 engines=19` |
 | `python3 scripts/validate_release_receipt.py --validate-fixtures` | `receipts=2 mutation_cases=9` |
 | Current-production negative fixture | Exit 1 with 29 unavailable facts |
-| `env -u DATABASE_URL -u TEST_DATABASE_URL pnpm run gate:scripts` | 140 passed; all validators passed |
-| `env -u DATABASE_URL -u TEST_DATABASE_URL pnpm run gate` | Exit 0; 140 script, 9 core, 4 OpenAPI, 16 API integration, 35 engine SDK, 11 Noesis SDK, 36 verification and 94 TypeScript tests; all builds/typechecks passed |
+| `env -u DATABASE_URL -u TEST_DATABASE_URL pnpm run gate:scripts` | 255 passed; all validators passed |
+| `env -u DATABASE_URL -u TEST_DATABASE_URL pnpm run gate` | Exit 0; 255 script, 9 core, 4 OpenAPI, 16 API integration, 35 engine SDK, 11 Noesis SDK, 36 verification and 94 TypeScript tests; all builds/typechecks passed |
 | `git diff --check` | Passed |
 
 ## Remaining Evidence Boundary
 
-The WR-R3 repair has local test and canonical-validator evidence, but it has not yet
-received an independent committed-snapshot recheck. Phase 2 remains `gaps_found`
-until that recheck and current-source remote CI exist. The disabled production
-profiles and the production `HOLD` remain until their named external authorities
-are observed and reviewed.
+The fifth independent committed-snapshot recheck reports zero findings at
+`4305265acee96461c40594fbb2689306d357f59d`, and the full database-free local gate
+passes. Phase 2 remains `gaps_found` only until current-source remote CI passes.
+The disabled production profiles and the production `HOLD` remain until their named
+external authorities are observed and reviewed.

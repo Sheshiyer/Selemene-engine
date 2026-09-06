@@ -1,0 +1,143 @@
+{
+  "schemaVersion": 1,
+  "observedAt": "2026-09-06T14:39:12Z",
+  "candidateSource": "4305265acee96461c40594fbb2689306d357f59d",
+  "scope": "Read-only provider, DNS, runtime, and repository-control refresh; no secrets or provider mutations",
+  "railway": {
+    "cliVersion": "5.41.0",
+    "workspaceId": "871e554f-2c1b-4a0e-850a-d09019b4036d",
+    "projectId": "11eedde4-41e6-4f51-b86b-cf77111cf592",
+    "projectName": "robust-adventure",
+    "environmentId": "702b945e-2c66-4d5a-bae1-4c67ea14c3bb",
+    "environmentName": "production",
+    "manifestTargetComparison": {
+      "api": {
+        "serviceId": "48b3bd23-5620-4f7b-8e5d-96bc5c5d7fc4",
+        "projectMatch": true,
+        "environmentMatch": true,
+        "serviceMatch": true,
+        "deploymentId": "075f03de-7b60-42fd-8cc2-e0119d5ff2c9",
+        "status": "SUCCESS",
+        "instanceState": "RUNNING",
+        "sourceCommit": null,
+        "imageDigest": "sha256:ac78840ad8e33b58c72e2cefcc56f1f012670559c147271f4cee43cf2173bc5e"
+      },
+      "typescript-engines": {
+        "serviceId": "94419a41-9003-4a31-8bfe-d55b39ca4cb2",
+        "projectMatch": true,
+        "environmentMatch": true,
+        "serviceMatch": true,
+        "deploymentId": "e13dcbfa-fc0d-4493-85fc-3f3799f6b6cd",
+        "status": "SUCCESS",
+        "instanceState": "RUNNING",
+        "sourceCommit": "ae3e2cef402bd0cf28d1c7a102800d215cc5f2c2",
+        "imageDigest": "sha256:d7d80604b63b89d8707375a9c1b5de11ed83dd23e9ce7f5af181cfa45776423b"
+      },
+      "biofield-cv": {
+        "serviceId": "f596e31b-e190-409c-993d-a3b618d29a73",
+        "projectMatch": true,
+        "environmentMatch": true,
+        "serviceMatch": true,
+        "deploymentId": "11bcc687-9c4b-4682-b5ff-bbba49f824d3",
+        "status": "SUCCESS",
+        "instanceState": "RUNNING",
+        "sourceCommit": "0efc3d8ae939f1c793537a700d0c3e37c2cdd38e",
+        "imageDigest": "sha256:f9f5b718cde9a009ad40c2a8e6211138bf337f0fccf4f38047e57916415d7f2d"
+      }
+    },
+    "inventory": {
+      "serviceCount": 7,
+      "allLatestDeploymentsSuccessful": true,
+      "allLatestInstancesRunning": true
+    }
+  },
+  "cloudflare": {
+    "requiredAccountId": "9d9d23b27f32e70ae3afb6a1aa2c0f10",
+    "sourceConfigFiles": 4,
+    "sourceConfigsAllUseRequiredAccount": true,
+    "workerDryRuns": {
+      "selemene-gw": "passed",
+      "selemene-llm-proxy": "passed",
+      "selemene-admin-api-proxy": "passed",
+      "selemene-pattern-memory": "passed-with-declared-placeholder-bindings"
+    },
+    "priorScopedAccountEvidence": {
+      "observedAt": "2026-09-05T10:32:24.973076Z",
+      "accountOwnedZone": "tryambakam.space",
+      "zoneStatus": "active",
+      "liveWorkers": [
+        "selemene-gw",
+        "selemene-llm-proxy",
+        "selemene-admin-api-proxy"
+      ],
+      "absentWorker": "selemene-pattern-memory"
+    },
+    "currentOperatorContext": {
+      "wranglerOAuthAccountId": "9d7cec1b5a32b2df8c6cdc1321ccd00b",
+      "matchesRequiredAccount": false,
+      "requiredAccountDeploymentRead": "denied-code-10000",
+      "disposition": "Do not mutate or infer 9d9d provider state from the current default Wrangler session; use an explicit 9d9d-scoped profile or authenticated dashboard session."
+    }
+  },
+  "dnsAndRuntime": {
+    "resolvers": [
+      "1.1.1.1",
+      "8.8.8.8"
+    ],
+    "recordsConsistentAcrossResolvers": true,
+    "probes": {
+      "https://selemene.tryambakam.space/health/live": {
+        "httpStatus": 200,
+        "version": "3.3.1",
+        "enginesLoaded": 19,
+        "workflowsLoaded": 6
+      },
+      "https://ts-engines-production.up.railway.app/health": {
+        "httpStatus": 200,
+        "status": "healthy",
+        "engineCount": 6
+      },
+      "https://144.tryambakam.space/admin/dashboard": {
+        "httpStatus": 302,
+        "boundary": "Cloudflare Access login"
+      },
+      "https://48.tryambakam.space/": {
+        "httpStatus": 200,
+        "cname": "6636vvzi.up.railway.app"
+      }
+    }
+  },
+  "github": {
+    "variables": {
+      "API_BASE_URL": "https://selemene.tryambakam.space",
+      "ADMIN_WEB_URL": "https://144.tryambakam.space"
+    },
+    "secretNamesPresent": {
+      "RAILWAY_PROJECT_ID": true,
+      "RAILWAY_TOKEN": true,
+      "SMOKE_TEST_API_KEY": true,
+      "SMOKE_TEST_JWT": false
+    },
+    "mainRuleset": {
+      "id": 15597830,
+      "name": "noesis-admin",
+      "enforcement": "active",
+      "strictRequiredCheck": "CI Gate",
+      "deletionProtected": true,
+      "nonFastForwardProtected": true,
+      "bypassActors": []
+    }
+  },
+  "releaseBoundary": {
+    "deployProduction": "disabled",
+    "releaseProduction": "disabled",
+    "productionPromotion": "HOLD",
+    "candidateDeployed": false
+  },
+  "limitations": [
+    "The current default Wrangler OAuth account is not the required 9d9d account, so current account-level Worker and DNS inventory was not refreshed through the CLI.",
+    "The Railway API service still lacks a provider-reported source commit, so its healthy response cannot identify its source revision.",
+    "Healthy endpoints prove liveness and registry counts, not semantic engine correctness, data durability, rollback, or candidate deployment.",
+    "The pattern-memory Worker and its declared placeholder resources remain absent from verified production inventory."
+  ]
+}

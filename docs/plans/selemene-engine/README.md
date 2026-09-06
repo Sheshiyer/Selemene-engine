@@ -81,3 +81,5 @@ The active evidence table is [`CAPABILITY-LEDGER.md`](./CAPABILITY-LEDGER.md). T
 ## Continuation overlay — 2026-09-05
 
 The original 2026-08-25 baseline above is preserved. Current recovery evidence is [RECOVERY-2026-09-05.md](./RECOVERY-2026-09-05.md), with the [infrastructure map](./INFRASTRUCTURE-MAP.json), [dependency audit](./DEPENDENCY-AUDIT-2026-09-05.md), [CodeGraph receipt](./CODEGRAPH-2026-09-05.md), and [570-issue index](./ENGINE-ISSUE-INDEX.json). `ISA.md` remains the acceptance ledger; `.planning/ROADMAP.md` maps GSD phases to these original waves. Recovery and local passing checks do not close a wave or establish deployment.
+
+The 2026-09-06 read-only refresh adds [current infrastructure evidence](./INFRASTRUCTURE-REFRESH-2026-09-06.json), a [current dependency audit](./DEPENDENCY-AUDIT-REFRESH-2026-09-06.md), and a [forced CodeGraph receipt](./CODEGRAPH-REFRESH-2026-09-06.md). It records exact Railway target matches, live runtime/DNS probes, active GitHub protection, the current Wrangler account mismatch, and a fresh structural graph without changing provider state.
