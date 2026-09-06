@@ -434,6 +434,86 @@ def test_workflow_dispatch_cannot_bypass_receipt_validation() -> None:
     assert "fixtures/" not in json.dumps(receipt_job)
 
 
+def test_deploy_ref_admission_executes_for_main_tag_and_feature(
+    tmp_path: Path,
+) -> None:
+    deploy = load_workflow("deploy.yaml")
+    source_step = workflow_step_by_name(
+        deploy, "validate-source", "Witness exact source revision"
+    )["run"]
+    head = subprocess.run(
+        ["git", "rev-parse", "HEAD"],
+        cwd=REPO_ROOT,
+        capture_output=True,
+        text=True,
+        check=True,
+    ).stdout.strip()
+
+    for ref, expected_code in (
+        ("refs/heads/main", 0),
+        ("refs/tags/v1.2.3", 0),
+        ("refs/heads/feature/unreviewed", 1),
+        ("refs/tags/v1.2", 1),
+    ):
+        output_path = tmp_path / ref.replace("/", "-")
+        result = subprocess.run(
+            ["bash", "-c", source_step],
+            cwd=REPO_ROOT,
+            capture_output=True,
+            text=True,
+            check=False,
+            env=merged_env(
+                {
+                    "GITHUB_REF": ref,
+                    "GITHUB_SHA": head,
+                    "GITHUB_OUTPUT": str(output_path),
+                    "REQUESTED_ENVIRONMENT": "production",
+                }
+            ),
+        )
+        assert result.returncode == expected_code, f"{ref}: {result.stdout}{result.stderr}"
+
+
+def test_final_deployment_result_cannot_pass_when_railway_is_skipped() -> None:
+    deploy = load_workflow("deploy.yaml")
+    result_job = deploy["jobs"]["deployment-result"]
+    result_script = workflow_step_by_name(
+        deploy, "deployment-result", "Enforce authoritative deployment result"
+    )["run"]
+    successful = {
+        "SOURCE_RESULT": "success",
+        "RECEIPT_RESULT": "success",
+        "API_BUILD_RESULT": "success",
+        "TS_BUILD_RESULT": "success",
+        "K8S_RESULT": "skipped",
+        "RAILWAY_RESULT": "success",
+        "API_SMOKE_RESULT": "success",
+        "ADMIN_SMOKE_RESULT": "success",
+    }
+
+    assert result_job["if"] == "always()"
+    passed = subprocess.run(
+        ["bash", "-c", result_script],
+        cwd=REPO_ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
+        env=merged_env(successful),
+    )
+    skipped = subprocess.run(
+        ["bash", "-c", result_script],
+        cwd=REPO_ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
+        env=merged_env({**successful, "RAILWAY_RESULT": "skipped"}),
+    )
+
+    assert passed.returncode == 0, f"{passed.stdout}{passed.stderr}"
+    assert skipped.returncode == 1
+    assert "RAILWAY_RESULT was skipped" in f"{skipped.stdout}{skipped.stderr}"
+
+
 def test_semver_tags_have_one_authoritative_publication_workflow() -> None:
     deploy_source = (REPO_ROOT / ".github/workflows/deploy.yaml").read_text(
         encoding="utf-8"

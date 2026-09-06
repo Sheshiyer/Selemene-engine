@@ -38,7 +38,18 @@ jobs:
 
       - name: Witness exact source revision
         id: source
+        env:
+          REQUESTED_ENVIRONMENT: ${{ github.event.inputs.environment || 'production' }}
         run: |
+          set -euo pipefail
+          if [[ "${REQUESTED_ENVIRONMENT}" != "production" ]]; then
+            echo "::error title=Unsupported deployment environment::No authoritative deployment profile exists for ${REQUESTED_ENVIRONMENT}."
+            exit 1
+          fi
+          if [[ "${GITHUB_REF}" != "refs/heads/main" && ! "${GITHUB_REF}" =~ ^refs/tags/v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]]; then
+            echo "::error title=Unsupported deployment ref::Production deploys require refs/heads/main or a canonical vMAJOR.MINOR.PATCH tag; got ${GITHUB_REF}."
+            exit 1
+          fi
           actual_sha="$(git rev-parse HEAD)"
           if [[ "${actual_sha}" != "${GITHUB_SHA}" ]]; then
             echo "::error::Checked out ${actual_sha}, expected triggering SHA ${GITHUB_SHA}."
@@ -630,6 +641,45 @@ jobs:
 
       - name: Run admin smoke script
         run: bash scripts/smoke_admin_web.sh
+
+  deployment-result:
+    name: Authoritative Deployment Result
+    runs-on: ubuntu-latest
+    needs:
+      - validate-source
+      - validate-release-receipt
+      - build-api
+      - build-ts-engines
+      - deploy
+      - deploy-railway
+      - smoke-test
+      - admin-smoke
+    if: always()
+    env:
+      SOURCE_RESULT: ${{ needs.validate-source.result }}
+      RECEIPT_RESULT: ${{ needs.validate-release-receipt.result }}
+      API_BUILD_RESULT: ${{ needs.build-api.result }}
+      TS_BUILD_RESULT: ${{ needs.build-ts-engines.result }}
+      K8S_RESULT: ${{ needs.deploy.result }}
+      RAILWAY_RESULT: ${{ needs.deploy-railway.result }}
+      API_SMOKE_RESULT: ${{ needs.smoke-test.result }}
+      ADMIN_SMOKE_RESULT: ${{ needs.admin-smoke.result }}
+    steps:
+      - name: Enforce authoritative deployment result
+        shell: bash
+        run: |
+          set -euo pipefail
+          for result_name in SOURCE_RESULT RECEIPT_RESULT API_BUILD_RESULT TS_BUILD_RESULT RAILWAY_RESULT API_SMOKE_RESULT ADMIN_SMOKE_RESULT; do
+            if [[ "${!result_name}" != "success" ]]; then
+              echo "::error title=Deployment incomplete::${result_name} was ${!result_name}; the production workflow did not complete its authoritative deployment path."
+              exit 1
+            fi
+          done
+          if [[ "${K8S_RESULT}" != "success" && "${K8S_RESULT}" != "skipped" ]]; then
+            echo "::error title=Kubernetes result invalid::K8S_RESULT was ${K8S_RESULT}."
+            exit 1
+          fi
+          echo "Authoritative deployment and required post-deploy checks succeeded."
 
   # admin-web is the only web frontend deployed from this repo. It is handled
   # by Vercel's native Git integration (project root: apps/admin-web,
