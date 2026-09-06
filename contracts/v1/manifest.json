@@ -9,6 +9,9 @@
     "schemas/provenance.schema.json",
     "schemas/engine-capability.schema.json"
   ],
+  "registries": [
+    "registries/engines.json"
+  ],
   "fixtures": [
     { "path": "fixtures/engine-request.json", "schema": "schemas/engine-request.schema.json" },
     { "path": "fixtures/engine-request-legacy.json", "schema": "schemas/engine-request.schema.json" },

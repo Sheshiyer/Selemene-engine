@@ -1,0 +1,1104 @@
+{
+  "registry_version": "v1",
+  "contract_version": "v1",
+  "authority": "Selemene runtime registration and evidence-axis registry",
+  "counts": {
+    "runtime_ids": 19,
+    "public_mirror_groups": 17,
+    "runtime_classes": {
+      "native": 12,
+      "database-conditional": 1,
+      "typescript": 6
+    }
+  },
+  "public_count_policy": "The 17 public mirrors exclude the composed financial-biosensor surface and the operational biofield-capture runtime ID.",
+  "evidence_axes": [
+    "declared",
+    "implemented",
+    "executable",
+    "integrated",
+    "deployed",
+    "operational"
+  ],
+  "evidence_statuses": [
+    "evidenced",
+    "partial",
+    "absent",
+    "unknown",
+    "not-applicable"
+  ],
+  "issue_source": "docs/plans/selemene-engine/ENGINE-ISSUE-INDEX.json",
+  "engines": [
+    {
+      "id": "biofield",
+      "display_name": "Biofield",
+      "runtime_class": "native",
+      "owner": "crates/engine-biofield",
+      "public_mirror_group": "biofield",
+      "public_mirror_exclusion": null,
+      "issue_ids": {
+        "authority_baseline": 915,
+        "runtime_registration": 925,
+        "golden_fixtures": 941,
+        "release_gate": 943,
+        "deployment_recovery": 944
+      },
+      "evidence": {
+        "declared": {
+          "status": "evidenced",
+          "references": [
+            "repo://crates/noesis-orchestrator/src/lib.rs#SUPPORTED_ENGINE_IDS",
+            "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#engine-runtime-ledger"
+          ]
+        },
+        "implemented": {
+          "status": "partial",
+          "references": [
+            "repo://crates/engine-biofield",
+            "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#engine-runtime-ledger"
+          ]
+        },
+        "executable": {
+          "status": "evidenced",
+          "references": [
+            "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#engine-runtime-ledger"
+          ]
+        },
+        "integrated": {
+          "status": "partial",
+          "references": [
+            "repo://crates/noesis-orchestrator/src/lib.rs#register_native_runtime_engines",
+            "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#engine-runtime-ledger"
+          ]
+        },
+        "deployed": {
+          "status": "partial",
+          "references": [
+            "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#fresh-probe-receipt"
+          ]
+        },
+        "operational": {
+          "status": "partial",
+          "references": [
+            "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#fresh-probe-receipt"
+          ]
+        }
+      }
+    },
+    {
+      "id": "biofield-capture",
+      "display_name": "Biofield Capture",
+      "runtime_class": "database-conditional",
+      "owner": "crates/engine-biofield-capture",
+      "public_mirror_group": null,
+      "public_mirror_exclusion": "Operational database-backed capture lookup; excluded from the 17 public mirror count.",
+      "issue_ids": {
+        "authority_baseline": 945,
+        "runtime_registration": 955,
+        "golden_fixtures": 971,
+        "release_gate": 973,
+        "deployment_recovery": 974
+      },
+      "evidence": {
+        "declared": {
+          "status": "evidenced",
+          "references": [
+            "repo://crates/noesis-orchestrator/src/lib.rs#SUPPORTED_ENGINE_IDS",
+            "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#engine-runtime-ledger"
+          ]
+        },
+        "implemented": {
+          "status": "evidenced",
+          "references": [
+            "repo://crates/engine-biofield-capture",
+            "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#engine-runtime-ledger"
+          ]
+        },
+        "executable": {
+          "status": "evidenced",
+          "references": [
+            "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#engine-runtime-ledger"
+          ]
+        },
+        "integrated": {
+          "status": "partial",
+          "references": [
+            "repo://crates/noesis-api/src/lib.rs#database-conditional-biofield-capture-registration",
+            "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#engine-runtime-ledger"
+          ]
+        },
+        "deployed": {
+          "status": "partial",
+          "references": [
+            "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#fresh-probe-receipt"
+          ]
+        },
+        "operational": {
+          "status": "partial",
+          "references": [
+            "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#fresh-probe-receipt"
+          ]
+        }
+      }
+    },
+    {
+      "id": "biorhythm",
+      "display_name": "Biorhythm",
+      "runtime_class": "native",
+      "owner": "crates/engine-biorhythm",
+      "public_mirror_group": "biorhythm",
+      "public_mirror_exclusion": null,
+      "issue_ids": {
+        "authority_baseline": 975,
+        "runtime_registration": 985,
+        "golden_fixtures": 1001,
+        "release_gate": 1003,
+        "deployment_recovery": 1004
+      },
+      "evidence": {
+        "declared": {
+          "status": "evidenced",
+          "references": [
+            "repo://crates/noesis-orchestrator/src/lib.rs#SUPPORTED_ENGINE_IDS",
+            "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#engine-runtime-ledger"
+          ]
+        },
+        "implemented": {
+          "status": "evidenced",
+          "references": [
+            "repo://crates/engine-biorhythm",
+            "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#engine-runtime-ledger"
+          ]
+        },
+        "executable": {
+          "status": "evidenced",
+          "references": [
+            "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#engine-runtime-ledger"
+          ]
+        },
+        "integrated": {
+          "status": "evidenced",
+          "references": [
+            "repo://crates/noesis-orchestrator/src/lib.rs#register_native_runtime_engines",
+            "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#engine-runtime-ledger"
+          ]
+        },
+        "deployed": {
+          "status": "partial",
+          "references": [
+            "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#fresh-probe-receipt"
+          ]
+        },
+        "operational": {
+          "status": "partial",
+          "references": [
+            "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#fresh-probe-receipt"
+          ]
+        }
+      }
+    },
+    {
+      "id": "enneagram",
+      "display_name": "Enneagram",
+      "runtime_class": "typescript",
+      "owner": "ts-engines/src/engines/enneagram",
+      "public_mirror_group": "enneagram",
+      "public_mirror_exclusion": null,
+      "issue_ids": {
+        "authority_baseline": 1305,
+        "runtime_registration": 1315,
+        "golden_fixtures": 1331,
+        "release_gate": 1333,
+        "deployment_recovery": 1334
+      },
+      "evidence": {
+        "declared": {
+          "status": "evidenced",
+          "references": [
+            "repo://crates/noesis-orchestrator/src/lib.rs#SUPPORTED_ENGINE_IDS",
+            "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#engine-runtime-ledger"
+          ]
+        },
+        "implemented": {
+          "status": "evidenced",
+          "references": [
+            "repo://ts-engines/src/engines/enneagram",
+            "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#engine-runtime-ledger"
+          ]
+        },
+        "executable": {
+          "status": "evidenced",
+          "references": [
+            "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#engine-runtime-ledger"
+          ]
+        },
+        "integrated": {
+          "status": "evidenced",
+          "references": [
+            "repo://ts-engines/src/index.ts#runtime-registration",
+            "repo://crates/noesis-bridge/src/lib.rs#BridgeManager::new",
+            "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#engine-runtime-ledger"
+          ]
+        },
+        "deployed": {
+          "status": "partial",
+          "references": [
+            "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#fresh-probe-receipt"
+          ]
+        },
+        "operational": {
+          "status": "partial",
+          "references": [
+            "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#fresh-probe-receipt"
+          ]
+        }
+      }
+    },
+    {
+      "id": "face-reading",
+      "display_name": "Face Reading",
+      "runtime_class": "native",
+      "owner": "crates/engine-face-reading",
+      "public_mirror_group": "face-reading",
+      "public_mirror_exclusion": null,
+      "issue_ids": {
+        "authority_baseline": 1005,
+        "runtime_registration": 1015,
+        "golden_fixtures": 1031,
+        "release_gate": 1033,
+        "deployment_recovery": 1034
+      },
+      "evidence": {
+        "declared": {
+          "status": "evidenced",
+          "references": [
+            "repo://crates/noesis-orchestrator/src/lib.rs#SUPPORTED_ENGINE_IDS",
+            "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#engine-runtime-ledger"
+          ]
+        },
+        "implemented": {
+          "status": "partial",
+          "references": [
+            "repo://crates/engine-face-reading",
+            "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#engine-runtime-ledger"
+          ]
+        },
+        "executable": {
+          "status": "evidenced",
+          "references": [
+            "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#engine-runtime-ledger"
+          ]
+        },
+        "integrated": {
+          "status": "partial",
+          "references": [
+            "repo://crates/noesis-orchestrator/src/lib.rs#register_native_runtime_engines",
+            "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#engine-runtime-ledger"
+          ]
+        },
+        "deployed": {
+          "status": "partial",
+          "references": [
+            "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#fresh-probe-receipt"
+          ]
+        },
+        "operational": {
+          "status": "partial",
+          "references": [
+            "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#fresh-probe-receipt"
+          ]
+        }
+      }
+    },
+    {
+      "id": "financial-biosensor",
+      "display_name": "Financial Biosensor",
+      "runtime_class": "native",
+      "owner": "crates/engine-financial-biosensor",
+      "public_mirror_group": null,
+      "public_mirror_exclusion": "Composed decision-reflection surface; excluded from the 17 public mirror count.",
+      "issue_ids": {
+        "authority_baseline": 1035,
+        "runtime_registration": 1045,
+        "golden_fixtures": 1061,
+        "release_gate": 1063,
+        "deployment_recovery": 1064
+      },
+      "evidence": {
+        "declared": {
+          "status": "evidenced",
+          "references": [
+            "repo://crates/noesis-orchestrator/src/lib.rs#SUPPORTED_ENGINE_IDS",
+            "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#engine-runtime-ledger"
+          ]
+        },
+        "implemented": {
+          "status": "partial",
+          "references": [
+            "repo://crates/engine-financial-biosensor",
+            "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#engine-runtime-ledger"
+          ]
+        },
+        "executable": {
+          "status": "evidenced",
+          "references": [
+            "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#engine-runtime-ledger"
+          ]
+        },
+        "integrated": {
+          "status": "evidenced",
+          "references": [
+            "repo://crates/noesis-orchestrator/src/lib.rs#register_native_runtime_engines",
+            "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#engine-runtime-ledger"
+          ]
+        },
+        "deployed": {
+          "status": "partial",
+          "references": [
+            "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#fresh-probe-receipt"
+          ]
+        },
+        "operational": {
+          "status": "partial",
+          "references": [
+            "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#fresh-probe-receipt"
+          ]
+        }
+      }
+    },
+    {
+      "id": "gene-keys",
+      "display_name": "Gene Keys",
+      "runtime_class": "native",
+      "owner": "crates/engine-gene-keys",
+      "public_mirror_group": "gene-keys",
+      "public_mirror_exclusion": null,
+      "issue_ids": {
+        "authority_baseline": 1065,
+        "runtime_registration": 1075,
+        "golden_fixtures": 1091,
+        "release_gate": 1093,
+        "deployment_recovery": 1094
+      },
+      "evidence": {
+        "declared": {
+          "status": "evidenced",
+          "references": [
+            "repo://crates/noesis-orchestrator/src/lib.rs#SUPPORTED_ENGINE_IDS",
+            "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#engine-runtime-ledger"
+          ]
+        },
+        "implemented": {
+          "status": "partial",
+          "references": [
+            "repo://crates/engine-gene-keys",
+            "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#engine-runtime-ledger"
+          ]
+        },
+        "executable": {
+          "status": "evidenced",
+          "references": [
+            "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#engine-runtime-ledger"
+          ]
+        },
+        "integrated": {
+          "status": "evidenced",
+          "references": [
+            "repo://crates/noesis-orchestrator/src/lib.rs#register_native_runtime_engines",
+            "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#engine-runtime-ledger"
+          ]
+        },
+        "deployed": {
+          "status": "partial",
+          "references": [
+            "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#fresh-probe-receipt"
+          ]
+        },
+        "operational": {
+          "status": "partial",
+          "references": [
+            "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#fresh-probe-receipt"
+          ]
+        }
+      }
+    },
+    {
+      "id": "human-design",
+      "display_name": "Human Design",
+      "runtime_class": "native",
+      "owner": "crates/engine-human-design",
+      "public_mirror_group": "human-design",
+      "public_mirror_exclusion": null,
+      "issue_ids": {
+        "authority_baseline": 1095,
+        "runtime_registration": 1105,
+        "golden_fixtures": 1121,
+        "release_gate": 1123,
+        "deployment_recovery": 1124
+      },
+      "evidence": {
+        "declared": {
+          "status": "evidenced",
+          "references": [
+            "repo://crates/noesis-orchestrator/src/lib.rs#SUPPORTED_ENGINE_IDS",
+            "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#engine-runtime-ledger"
+          ]
+        },
+        "implemented": {
+          "status": "evidenced",
+          "references": [
+            "repo://crates/engine-human-design",
+            "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#engine-runtime-ledger"
+          ]
+        },
+        "executable": {
+          "status": "evidenced",
+          "references": [
+            "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#engine-runtime-ledger"
+          ]
+        },
+        "integrated": {
+          "status": "evidenced",
+          "references": [
+            "repo://crates/noesis-orchestrator/src/lib.rs#register_native_runtime_engines",
+            "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#engine-runtime-ledger"
+          ]
+        },
+        "deployed": {
+          "status": "partial",
+          "references": [
+            "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#fresh-probe-receipt"
+          ]
+        },
+        "operational": {
+          "status": "partial",
+          "references": [
+            "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#fresh-probe-receipt"
+          ]
+        }
+      }
+    },
+    {
+      "id": "i-ching",
+      "display_name": "I Ching",
+      "runtime_class": "typescript",
+      "owner": "ts-engines/src/engines/i-ching",
+      "public_mirror_group": "i-ching",
+      "public_mirror_exclusion": null,
+      "issue_ids": {
+        "authority_baseline": 1335,
+        "runtime_registration": 1345,
+        "golden_fixtures": 1361,
+        "release_gate": 1363,
+        "deployment_recovery": 1364
+      },
+      "evidence": {
+        "declared": {
+          "status": "evidenced",
+          "references": [
+            "repo://crates/noesis-orchestrator/src/lib.rs#SUPPORTED_ENGINE_IDS",
+            "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#engine-runtime-ledger"
+          ]
+        },
+        "implemented": {
+          "status": "partial",
+          "references": [
+            "repo://ts-engines/src/engines/i-ching",
+            "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#engine-runtime-ledger"
+          ]
+        },
+        "executable": {
+          "status": "evidenced",
+          "references": [
+            "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#engine-runtime-ledger"
+          ]
+        },
+        "integrated": {
+          "status": "evidenced",
+          "references": [
+            "repo://ts-engines/src/index.ts#runtime-registration",
+            "repo://crates/noesis-bridge/src/lib.rs#BridgeManager::new",
+            "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#engine-runtime-ledger"
+          ]
+        },
+        "deployed": {
+          "status": "partial",
+          "references": [
+            "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#fresh-probe-receipt"
+          ]
+        },
+        "operational": {
+          "status": "partial",
+          "references": [
+            "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#fresh-probe-receipt"
+          ]
+        }
+      }
+    },
+    {
+      "id": "nadabrahman",
+      "display_name": "Nada Brahman",
+      "runtime_class": "native",
+      "owner": "crates/engine-nadabrahman",
+      "public_mirror_group": "nadabrahman",
+      "public_mirror_exclusion": null,
+      "issue_ids": {
+        "authority_baseline": 1125,
+        "runtime_registration": 1135,
+        "golden_fixtures": 1151,
+        "release_gate": 1153,
+        "deployment_recovery": 1154
+      },
+      "evidence": {
+        "declared": {
+          "status": "evidenced",
+          "references": [
+            "repo://crates/noesis-orchestrator/src/lib.rs#SUPPORTED_ENGINE_IDS",
+            "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#engine-runtime-ledger"
+          ]
+        },
+        "implemented": {
+          "status": "evidenced",
+          "references": [
+            "repo://crates/engine-nadabrahman",
+            "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#engine-runtime-ledger"
+          ]
+        },
+        "executable": {
+          "status": "evidenced",
+          "references": [
+            "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#engine-runtime-ledger"
+          ]
+        },
+        "integrated": {
+          "status": "evidenced",
+          "references": [
+            "repo://crates/noesis-orchestrator/src/lib.rs#register_native_runtime_engines",
+            "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#engine-runtime-ledger"
+          ]
+        },
+        "deployed": {
+          "status": "partial",
+          "references": [
+            "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#fresh-probe-receipt"
+          ]
+        },
+        "operational": {
+          "status": "partial",
+          "references": [
+            "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#fresh-probe-receipt"
+          ]
+        }
+      }
+    },
+    {
+      "id": "numerology",
+      "display_name": "Numerology",
+      "runtime_class": "native",
+      "owner": "crates/engine-numerology",
+      "public_mirror_group": "numerology",
+      "public_mirror_exclusion": null,
+      "issue_ids": {
+        "authority_baseline": 1155,
+        "runtime_registration": 1165,
+        "golden_fixtures": 1181,
+        "release_gate": 1183,
+        "deployment_recovery": 1184
+      },
+      "evidence": {
+        "declared": {
+          "status": "evidenced",
+          "references": [
+            "repo://crates/noesis-orchestrator/src/lib.rs#SUPPORTED_ENGINE_IDS",
+            "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#engine-runtime-ledger"
+          ]
+        },
+        "implemented": {
+          "status": "evidenced",
+          "references": [
+            "repo://crates/engine-numerology",
+            "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#engine-runtime-ledger"
+          ]
+        },
+        "executable": {
+          "status": "evidenced",
+          "references": [
+            "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#engine-runtime-ledger"
+          ]
+        },
+        "integrated": {
+          "status": "evidenced",
+          "references": [
+            "repo://crates/noesis-orchestrator/src/lib.rs#register_native_runtime_engines",
+            "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#engine-runtime-ledger"
+          ]
+        },
+        "deployed": {
+          "status": "partial",
+          "references": [
+            "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#fresh-probe-receipt"
+          ]
+        },
+        "operational": {
+          "status": "partial",
+          "references": [
+            "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#fresh-probe-receipt"
+          ]
+        }
+      }
+    },
+    {
+      "id": "panchanga",
+      "display_name": "Panchanga",
+      "runtime_class": "native",
+      "owner": "crates/engine-panchanga",
+      "public_mirror_group": "panchanga",
+      "public_mirror_exclusion": null,
+      "issue_ids": {
+        "authority_baseline": 1185,
+        "runtime_registration": 1195,
+        "golden_fixtures": 1211,
+        "release_gate": 1213,
+        "deployment_recovery": 1214
+      },
+      "evidence": {
+        "declared": {
+          "status": "evidenced",
+          "references": [
+            "repo://crates/noesis-orchestrator/src/lib.rs#SUPPORTED_ENGINE_IDS",
+            "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#engine-runtime-ledger"
+          ]
+        },
+        "implemented": {
+          "status": "partial",
+          "references": [
+            "repo://crates/engine-panchanga",
+            "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#engine-runtime-ledger"
+          ]
+        },
+        "executable": {
+          "status": "evidenced",
+          "references": [
+            "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#engine-runtime-ledger"
+          ]
+        },
+        "integrated": {
+          "status": "evidenced",
+          "references": [
+            "repo://crates/noesis-orchestrator/src/lib.rs#register_native_runtime_engines",
+            "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#engine-runtime-ledger"
+          ]
+        },
+        "deployed": {
+          "status": "partial",
+          "references": [
+            "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#fresh-probe-receipt"
+          ]
+        },
+        "operational": {
+          "status": "partial",
+          "references": [
+            "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#fresh-probe-receipt"
+          ]
+        }
+      }
+    },
+    {
+      "id": "raaga",
+      "display_name": "Raaga",
+      "runtime_class": "typescript",
+      "owner": "ts-engines/src/engines/raaga",
+      "public_mirror_group": "raaga",
+      "public_mirror_exclusion": null,
+      "issue_ids": {
+        "authority_baseline": 1365,
+        "runtime_registration": 1375,
+        "golden_fixtures": 1391,
+        "release_gate": 1393,
+        "deployment_recovery": 1394
+      },
+      "evidence": {
+        "declared": {
+          "status": "evidenced",
+          "references": [
+            "repo://crates/noesis-orchestrator/src/lib.rs#SUPPORTED_ENGINE_IDS",
+            "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#engine-runtime-ledger"
+          ]
+        },
+        "implemented": {
+          "status": "partial",
+          "references": [
+            "repo://ts-engines/src/engines/raaga",
+            "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#engine-runtime-ledger"
+          ]
+        },
+        "executable": {
+          "status": "evidenced",
+          "references": [
+            "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#engine-runtime-ledger"
+          ]
+        },
+        "integrated": {
+          "status": "evidenced",
+          "references": [
+            "repo://ts-engines/src/index.ts#runtime-registration",
+            "repo://crates/noesis-bridge/src/lib.rs#BridgeManager::new",
+            "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#engine-runtime-ledger"
+          ]
+        },
+        "deployed": {
+          "status": "partial",
+          "references": [
+            "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#fresh-probe-receipt"
+          ]
+        },
+        "operational": {
+          "status": "partial",
+          "references": [
+            "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#fresh-probe-receipt"
+          ]
+        }
+      }
+    },
+    {
+      "id": "sacred-geometry",
+      "display_name": "Sacred Geometry",
+      "runtime_class": "typescript",
+      "owner": "ts-engines/src/engines/sacred-geometry",
+      "public_mirror_group": "sacred-geometry",
+      "public_mirror_exclusion": null,
+      "issue_ids": {
+        "authority_baseline": 1395,
+        "runtime_registration": 1405,
+        "golden_fixtures": 1421,
+        "release_gate": 1423,
+        "deployment_recovery": 1424
+      },
+      "evidence": {
+        "declared": {
+          "status": "evidenced",
+          "references": [
+            "repo://crates/noesis-orchestrator/src/lib.rs#SUPPORTED_ENGINE_IDS",
+            "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#engine-runtime-ledger"
+          ]
+        },
+        "implemented": {
+          "status": "partial",
+          "references": [
+            "repo://ts-engines/src/engines/sacred-geometry",
+            "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#engine-runtime-ledger"
+          ]
+        },
+        "executable": {
+          "status": "evidenced",
+          "references": [
+            "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#engine-runtime-ledger"
+          ]
+        },
+        "integrated": {
+          "status": "evidenced",
+          "references": [
+            "repo://ts-engines/src/index.ts#runtime-registration",
+            "repo://crates/noesis-bridge/src/lib.rs#BridgeManager::new",
+            "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#engine-runtime-ledger"
+          ]
+        },
+        "deployed": {
+          "status": "partial",
+          "references": [
+            "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#fresh-probe-receipt"
+          ]
+        },
+        "operational": {
+          "status": "partial",
+          "references": [
+            "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#fresh-probe-receipt"
+          ]
+        }
+      }
+    },
+    {
+      "id": "sigil-forge",
+      "display_name": "Sigil Forge",
+      "runtime_class": "typescript",
+      "owner": "ts-engines/src/engines/sigil-forge",
+      "public_mirror_group": "sigil-forge",
+      "public_mirror_exclusion": null,
+      "issue_ids": {
+        "authority_baseline": 1425,
+        "runtime_registration": 1435,
+        "golden_fixtures": 1451,
+        "release_gate": 1453,
+        "deployment_recovery": 1454
+      },
+      "evidence": {
+        "declared": {
+          "status": "evidenced",
+          "references": [
+            "repo://crates/noesis-orchestrator/src/lib.rs#SUPPORTED_ENGINE_IDS",
+            "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#engine-runtime-ledger"
+          ]
+        },
+        "implemented": {
+          "status": "partial",
+          "references": [
+            "repo://ts-engines/src/engines/sigil-forge",
+            "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#engine-runtime-ledger"
+          ]
+        },
+        "executable": {
+          "status": "evidenced",
+          "references": [
+            "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#engine-runtime-ledger"
+          ]
+        },
+        "integrated": {
+          "status": "evidenced",
+          "references": [
+            "repo://ts-engines/src/index.ts#runtime-registration",
+            "repo://crates/noesis-bridge/src/lib.rs#BridgeManager::new",
+            "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#engine-runtime-ledger"
+          ]
+        },
+        "deployed": {
+          "status": "partial",
+          "references": [
+            "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#fresh-probe-receipt"
+          ]
+        },
+        "operational": {
+          "status": "partial",
+          "references": [
+            "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#fresh-probe-receipt"
+          ]
+        }
+      }
+    },
+    {
+      "id": "tarot",
+      "display_name": "Tarot",
+      "runtime_class": "typescript",
+      "owner": "ts-engines/src/engines/tarot",
+      "public_mirror_group": "tarot",
+      "public_mirror_exclusion": null,
+      "issue_ids": {
+        "authority_baseline": 1455,
+        "runtime_registration": 1465,
+        "golden_fixtures": 1481,
+        "release_gate": 1483,
+        "deployment_recovery": 1484
+      },
+      "evidence": {
+        "declared": {
+          "status": "evidenced",
+          "references": [
+            "repo://crates/noesis-orchestrator/src/lib.rs#SUPPORTED_ENGINE_IDS",
+            "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#engine-runtime-ledger"
+          ]
+        },
+        "implemented": {
+          "status": "partial",
+          "references": [
+            "repo://ts-engines/src/engines/tarot",
+            "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#engine-runtime-ledger"
+          ]
+        },
+        "executable": {
+          "status": "evidenced",
+          "references": [
+            "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#engine-runtime-ledger"
+          ]
+        },
+        "integrated": {
+          "status": "evidenced",
+          "references": [
+            "repo://ts-engines/src/index.ts#runtime-registration",
+            "repo://crates/noesis-bridge/src/lib.rs#BridgeManager::new",
+            "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#engine-runtime-ledger"
+          ]
+        },
+        "deployed": {
+          "status": "partial",
+          "references": [
+            "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#fresh-probe-receipt"
+          ]
+        },
+        "operational": {
+          "status": "partial",
+          "references": [
+            "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#fresh-probe-receipt"
+          ]
+        }
+      }
+    },
+    {
+      "id": "transits",
+      "display_name": "Transits",
+      "runtime_class": "native",
+      "owner": "crates/engine-transits",
+      "public_mirror_group": "transits",
+      "public_mirror_exclusion": null,
+      "issue_ids": {
+        "authority_baseline": 1215,
+        "runtime_registration": 1225,
+        "golden_fixtures": 1241,
+        "release_gate": 1243,
+        "deployment_recovery": 1244
+      },
+      "evidence": {
+        "declared": {
+          "status": "evidenced",
+          "references": [
+            "repo://crates/noesis-orchestrator/src/lib.rs#SUPPORTED_ENGINE_IDS",
+            "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#engine-runtime-ledger"
+          ]
+        },
+        "implemented": {
+          "status": "evidenced",
+          "references": [
+            "repo://crates/engine-transits",
+            "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#engine-runtime-ledger"
+          ]
+        },
+        "executable": {
+          "status": "evidenced",
+          "references": [
+            "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#engine-runtime-ledger"
+          ]
+        },
+        "integrated": {
+          "status": "evidenced",
+          "references": [
+            "repo://crates/noesis-orchestrator/src/lib.rs#register_native_runtime_engines",
+            "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#engine-runtime-ledger"
+          ]
+        },
+        "deployed": {
+          "status": "partial",
+          "references": [
+            "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#fresh-probe-receipt"
+          ]
+        },
+        "operational": {
+          "status": "partial",
+          "references": [
+            "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#fresh-probe-receipt"
+          ]
+        }
+      }
+    },
+    {
+      "id": "vedic-clock",
+      "display_name": "Vedic Clock",
+      "runtime_class": "native",
+      "owner": "crates/engine-vedic-clock",
+      "public_mirror_group": "vedic-clock",
+      "public_mirror_exclusion": null,
+      "issue_ids": {
+        "authority_baseline": 1245,
+        "runtime_registration": 1255,
+        "golden_fixtures": 1271,
+        "release_gate": 1273,
+        "deployment_recovery": 1274
+      },
+      "evidence": {
+        "declared": {
+          "status": "evidenced",
+          "references": [
+            "repo://crates/noesis-orchestrator/src/lib.rs#SUPPORTED_ENGINE_IDS",
+            "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#engine-runtime-ledger"
+          ]
+        },
+        "implemented": {
+          "status": "evidenced",
+          "references": [
+            "repo://crates/engine-vedic-clock",
+            "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#engine-runtime-ledger"
+          ]
+        },
+        "executable": {
+          "status": "evidenced",
+          "references": [
+            "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#engine-runtime-ledger"
+          ]
+        },
+        "integrated": {
+          "status": "evidenced",
+          "references": [
+            "repo://crates/noesis-orchestrator/src/lib.rs#register_native_runtime_engines",
+            "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#engine-runtime-ledger"
+          ]
+        },
+        "deployed": {
+          "status": "partial",
+          "references": [
+            "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#fresh-probe-receipt"
+          ]
+        },
+        "operational": {
+          "status": "partial",
+          "references": [
+            "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#fresh-probe-receipt"
+          ]
+        }
+      }
+    },
+    {
+      "id": "vimshottari",
+      "display_name": "Vimshottari",
+      "runtime_class": "native",
+      "owner": "crates/engine-vimshottari",
+      "public_mirror_group": "vimshottari",
+      "public_mirror_exclusion": null,
+      "issue_ids": {
+        "authority_baseline": 1275,
+        "runtime_registration": 1285,
+        "golden_fixtures": 1301,
+        "release_gate": 1303,
+        "deployment_recovery": 1304
+      },
+      "evidence": {
+        "declared": {
+          "status": "evidenced",
+          "references": [
+            "repo://crates/noesis-orchestrator/src/lib.rs#SUPPORTED_ENGINE_IDS",
+            "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#engine-runtime-ledger"
+          ]
+        },
+        "implemented": {
+          "status": "evidenced",
+          "references": [
+            "repo://crates/engine-vimshottari",
+            "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#engine-runtime-ledger"
+          ]
+        },
+        "executable": {
+          "status": "evidenced",
+          "references": [
+            "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#engine-runtime-ledger"
+          ]
+        },
+        "integrated": {
+          "status": "evidenced",
+          "references": [
+            "repo://crates/noesis-orchestrator/src/lib.rs#register_native_runtime_engines",
+            "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#engine-runtime-ledger"
+          ]
+        },
+        "deployed": {
+          "status": "partial",
+          "references": [
+            "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#fresh-probe-receipt"
+          ]
+        },
+        "operational": {
+          "status": "partial",
+          "references": [
+            "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#fresh-probe-receipt"
+          ]
+        }
+      }
+    }
+  ]
+}
+
