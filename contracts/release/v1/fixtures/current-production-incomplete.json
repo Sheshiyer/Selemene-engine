@@ -58,22 +58,6 @@
           "status": "unavailable",
           "reason": "the deployed API digest is not tied to a repository build receipt"
         }
-      },
-      "deployed": {
-        "deployment_id": {
-          "status": "available",
-          "value": "075f03de-7b60-42fd-8cc2-e0119d5ff2c9",
-          "source": "docs/plans/selemene-engine/INFRASTRUCTURE-MAP.json"
-        },
-        "source_revision": {
-          "status": "unavailable",
-          "reason": "Railway returned no source commit for the active API deployment"
-        },
-        "image_digest": {
-          "status": "available",
-          "value": "sha256:ac78840ad8e33b58c72e2cefcc56f1f012670559c147271f4cee43cf2173bc5e",
-          "source": "docs/plans/selemene-engine/INFRASTRUCTURE-MAP.json"
-        }
       }
     },
     {
@@ -82,23 +66,6 @@
         "build_id": {
           "status": "unavailable",
           "reason": "the infrastructure snapshot does not identify the producing CI run"
-        },
-        "source_revision": {
-          "status": "available",
-          "value": "ae3e2cef402bd0cf28d1c7a102800d215cc5f2c2",
-          "source": "docs/plans/selemene-engine/INFRASTRUCTURE-MAP.json"
-        },
-        "image_digest": {
-          "status": "available",
-          "value": "sha256:d7d80604b63b89d8707375a9c1b5de11ed83dd23e9ce7f5af181cfa45776423b",
-          "source": "docs/plans/selemene-engine/INFRASTRUCTURE-MAP.json"
-        }
-      },
-      "deployed": {
-        "deployment_id": {
-          "status": "available",
-          "value": "e13dcbfa-fc0d-4493-85fc-3f3799f6b6cd",
-          "source": "docs/plans/selemene-engine/INFRASTRUCTURE-MAP.json"
         },
         "source_revision": {
           "status": "available",

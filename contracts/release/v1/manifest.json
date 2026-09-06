@@ -52,6 +52,15 @@
   "workflow_targets": {
     "deploy-production": {
       "workflow": ".github/workflows/deploy.yaml",
+      "mutation_policy": {
+        "status": "disabled",
+        "reason": "production source redeploy lacks durable one-use receipt consumption, provider-returned post-deploy attestation, and atomic multi-service coordination",
+        "required_authority": [
+          "durable-one-use-receipt-consumption",
+          "railway-post-deploy-source-and-status-attestation",
+          "atomic-api-typescript-service-coordination"
+        ]
+      },
       "promotion_mode": "source-redeploy",
       "environment": "production",
       "provider_scope": [
@@ -62,6 +71,14 @@
     },
     "release-production": {
       "workflow": ".github/workflows/release.yml",
+      "mutation_policy": {
+        "status": "disabled",
+        "reason": "production release lacks durable one-use receipt consumption and atomic multi-registry alias promotion with compensation",
+        "required_authority": [
+          "durable-one-use-receipt-consumption",
+          "atomic-multi-registry-alias-promotion"
+        ]
+      },
       "promotion_mode": "immutable-image",
       "environment": "production",
       "provider_scope": [

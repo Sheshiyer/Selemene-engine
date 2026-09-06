@@ -225,6 +225,13 @@ def validate_release_receipt(
             )
             if operation["workflow"] != profile["workflow"]:
                 errors.append("operation.workflow does not match target profile")
+            mutation_policy = profile["mutation_policy"]
+            if operational and mutation_policy["status"] != "enabled":
+                required = ", ".join(mutation_policy["required_authority"])
+                errors.append(
+                    f"target profile {target_profile} production mutation is disabled: "
+                    f"{mutation_policy['reason']}; required_authority={required}"
+                )
 
     source = receipt["source"]
     if source["repository"] != manifest["repository"]:
@@ -280,7 +287,6 @@ def validate_release_receipt(
     for role in sorted(expected_artifacts & set(artifact_rows)):
         artifact = artifact_rows[role]
         built = artifact["built"]
-        deployed = artifact["deployed"]
         evidence_value(built["build_id"], f"artifacts.{role}.built.build_id", errors)
         built_source = evidence_value(
             built["source_revision"], f"artifacts.{role}.built.source_revision", errors
@@ -290,44 +296,15 @@ def validate_release_receipt(
         )
         if built_digest is not None:
             built_digests[role] = built_digest
-        evidence_value(
-            deployed["deployment_id"], f"artifacts.{role}.deployed.deployment_id", errors
-        )
-        deployed_source = evidence_value(
-            deployed["source_revision"],
-            f"artifacts.{role}.deployed.source_revision",
-            errors,
-        )
-        deployed_digest = evidence_value(
-            deployed["image_digest"],
-            f"artifacts.{role}.deployed.image_digest",
-            errors,
-            allow_not_applicable=promotion_mode == "source-redeploy",
-        )
         if source_revision is not None:
             if built_source is not None and built_source != source_revision:
                 errors.append(f"artifacts.{role}.built.source_revision must equal source.revision")
-            if deployed_source is not None and deployed_source != source_revision:
-                errors.append(
-                    f"artifacts.{role}.deployed.source_revision must equal source.revision"
-                )
-        if promotion_mode == "immutable-image":
-            if built_digest is not None and deployed_digest is not None:
-                if built_digest != deployed_digest:
-                    errors.append(
-                        f"artifacts.{role}.deployed image digest must equal built image digest"
-                    )
         expected_digest = (expected_artifact_digests or {}).get(role)
         if expected_digest is not None and built_digest is not None:
             if built_digest != expected_digest:
                 errors.append(
                     f"artifacts.{role}.built.image_digest does not match workflow artifact"
                 )
-            if promotion_mode == "immutable-image" and deployed_digest is not None:
-                if deployed_digest != expected_digest:
-                    errors.append(
-                        f"artifacts.{role}.deployed.image_digest does not match workflow artifact"
-                    )
 
     schema_identity = receipt["schema_identity"]
     manifest_history = manifest["migration_history"]

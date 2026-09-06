@@ -121,11 +121,10 @@
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["role", "built", "deployed"],
+        "required": ["role", "built"],
         "properties": {
           "role": {"type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"},
-          "built": {"$ref": "#/$defs/artifactIdentity"},
-          "deployed": {"$ref": "#/$defs/deployedArtifactIdentity"}
+          "built": {"$ref": "#/$defs/artifactIdentity"}
         }
       }
     },
@@ -422,16 +421,6 @@
       "required": ["build_id", "source_revision", "image_digest"],
       "properties": {
         "build_id": {"$ref": "#/$defs/stringEvidence"},
-        "source_revision": {"$ref": "#/$defs/revisionEvidence"},
-        "image_digest": {"$ref": "#/$defs/digestEvidence"}
-      }
-    },
-    "deployedArtifactIdentity": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["deployment_id", "source_revision", "image_digest"],
-      "properties": {
-        "deployment_id": {"$ref": "#/$defs/stringEvidence"},
         "source_revision": {"$ref": "#/$defs/revisionEvidence"},
         "image_digest": {"$ref": "#/$defs/digestEvidence"}
       }

@@ -299,13 +299,6 @@ def eligible_receipt(workflow_name: str) -> dict:
         receipt["promotion_mode"] = "immutable-image"
         receipt["release"]["tag"] = "v1.2.3"
         receipt["target"]["provider_scope"] = ["github", "ghcr"]
-        for artifact in receipt["artifacts"]:
-            artifact["deployed"]["image_digest"] = copy.deepcopy(
-                artifact["built"]["image_digest"]
-            )
-            artifact["deployed"]["image_digest"]["source"] = (
-                "synthetic mocked workflow readback"
-            )
     else:
         receipt["promotion_mode"] = "source-redeploy"
         receipt["target"]["provider_scope"] = ["ghcr", "railway"]
@@ -649,10 +642,6 @@ def test_mocked_workflows_reject_wrong_service_and_artifact_identity(
         api["built"]["image_digest"]["value"] = (
             "sha256:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
         )
-        if workflow_name == "release.yml":
-            api["deployed"]["image_digest"]["value"] = (
-                "sha256:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
-            )
         mutations, output = mocked_workflow_mutations(
             workflow_name, tmp_path, wrong_digest
         )
@@ -660,21 +649,10 @@ def test_mocked_workflows_reject_wrong_service_and_artifact_identity(
         assert "does not match workflow artifact" in output
 
 
-def test_correct_receipts_reach_only_mocked_mutation_graph(tmp_path: Path) -> None:
-    expected = {
-        "deploy.yaml": {
-            "build-api",
-            "build-ts-engines",
-            "deploy",
-            "deploy-railway",
-        },
-        "release.yml": {
-            "create-release",
-            "promote-images",
-        },
-    }
-    for workflow_name, expected_mutations in expected.items():
+def test_production_profiles_hold_all_mocked_mutations(tmp_path: Path) -> None:
+    for workflow_name in ("deploy.yaml", "release.yml"):
         mutations, output = mocked_workflow_mutations(
             workflow_name, tmp_path, eligible_receipt(workflow_name)
         )
-        assert mutations == expected_mutations, output
+        assert mutations == set()
+        assert "production mutation is disabled" in output

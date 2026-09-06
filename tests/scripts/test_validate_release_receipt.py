@@ -92,7 +92,7 @@ def test_complete_source_redeploy_receipt_is_eligible() -> None:
     assert "mode=source-redeploy" in result.stdout
 
 
-def test_immutable_image_receipt_requires_matching_built_and_deployed_digests(
+def test_immutable_image_receipt_carries_source_bound_candidate_digests(
     tmp_path: Path,
 ) -> None:
     receipt_path = tmp_path / "immutable.json"
@@ -140,7 +140,7 @@ def test_release_receipt_cannot_authorize_a_different_semantic_tag(
     ("case_id", "expected_error"),
     [
         ("wrong-source", "source.validated_revision must equal source.revision"),
-        ("wrong-image", "deployed image digest must equal built image digest"),
+        ("wrong-artifact-source", "artifacts.api.built.source_revision must equal source.revision"),
         ("missing-build-identity", "artifacts.api.built.build_id evidence is unavailable"),
         ("wrong-service-role", "missing service roles"),
         ("wrong-required-check", "missing required check identity"),
@@ -270,7 +270,7 @@ def test_service_target_identity_is_bound_to_manifest_authority() -> None:
     assert "service_roles.api.environment_id does not match release authority" in errors
 
 
-def test_operational_validation_emits_only_manifest_bound_deploy_selector(
+def test_operational_validation_refuses_outputs_while_provider_attestation_is_unavailable(
     tmp_path: Path,
 ) -> None:
     receipt = operational_receipt()
@@ -302,12 +302,9 @@ def test_operational_validation_emits_only_manifest_bound_deploy_selector(
         "--operational",
     )
 
-    assert result.returncode == 0, f"{result.stdout}{result.stderr}"
-    assert output_path.read_text(encoding="utf-8").splitlines() == [
-        "railway_project_id=11eedde4-41e6-4f51-b86b-cf77111cf592",
-        "railway_environment_id=702b945e-2c66-4d5a-bae1-4c67ea14c3bb",
-        "railway_service_id=48b3bd23-5620-4f7b-8e5d-96bc5c5d7fc4",
-    ]
+    assert result.returncode == 1
+    assert "production mutation is disabled" in result.stderr
+    assert not output_path.exists()
 
 
 def test_operational_validation_binds_every_actual_artifact_digest() -> None:
@@ -373,7 +370,8 @@ def test_operational_receipt_rejects_expiry_boundary_and_replayed_attempt() -> N
         **common,
     )
 
-    assert before_expiry == []
+    assert not any("stale" in error or "expired" in error for error in before_expiry)
+    assert any("production mutation is disabled" in error for error in before_expiry)
     assert "release authorization is expired" in at_expiry
     assert any("operation.id does not match expected workflow operation" in error for error in replayed_attempt)
 
@@ -403,6 +401,22 @@ def test_operational_receipt_rejects_stale_authorization_and_rollback() -> None:
     assert "release authorization is stale" in errors
     assert "release authorization is expired" in errors
     assert "rollback rehearsal is stale" in errors
+
+
+def test_pre_deploy_receipt_rejects_fabricated_future_deployment_identity() -> None:
+    receipt = load_json(ELIGIBLE_SOURCE)
+    receipt["artifacts"][0]["deployed"] = {
+        "deployment_id": {
+            "status": "available",
+            "value": "fabricated-before-deployment",
+            "source": "self assertion",
+        }
+    }
+
+    errors = validate_release_receipt(receipt, REPO_ROOT)
+
+    assert any("Additional properties are not allowed" in error for error in errors)
+    assert any("'deployed'" in error for error in errors)
 
 
 @pytest.mark.parametrize(

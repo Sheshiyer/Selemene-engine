@@ -13,25 +13,7 @@
         {"op": "replace", "path": "/release/tag", "value": "v1.2.3"},
         {"op": "replace", "path": "/promotion_mode", "value": "immutable-image"},
         {"op": "replace", "path": "/target/provider_scope", "value": ["github", "ghcr"]},
-        {
-          "op": "replace",
-          "path": "/artifacts/0/deployed/image_digest",
-          "value": {
-            "status": "available",
-            "value": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-            "source": "synthetic deployed image readback"
-          }
-        },
-        {
-          "op": "replace",
-          "path": "/artifacts/1/deployed/image_digest",
-          "value": {
-            "status": "available",
-            "value": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
-            "source": "synthetic deployed image readback"
-          }
-        },
-        {"op": "replace", "path": "/test_fixture/scenario", "value": "built image digests equal deployed image digests"}
+        {"op": "replace", "path": "/test_fixture/scenario", "value": "source-bound immutable image candidates"}
       ]
     },
     {
@@ -47,28 +29,14 @@
       ]
     },
     {
-      "id": "wrong-image",
+      "id": "wrong-artifact-source",
       "expected_eligible": false,
-      "expected_error": "deployed image digest must equal built image digest",
+      "expected_error": "artifacts.api.built.source_revision must equal source.revision",
       "mutations": [
-        {"op": "replace", "path": "/promotion_mode", "value": "immutable-image"},
         {
           "op": "replace",
-          "path": "/artifacts/0/deployed/image_digest",
-          "value": {
-            "status": "available",
-            "value": "sha256:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
-            "source": "synthetic mismatched deployment readback"
-          }
-        },
-        {
-          "op": "replace",
-          "path": "/artifacts/1/deployed/image_digest",
-          "value": {
-            "status": "available",
-            "value": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
-            "source": "synthetic deployed image readback"
-          }
+          "path": "/artifacts/0/built/source_revision/value",
+          "value": "2222222222222222222222222222222222222222"
         }
       ]
     },
