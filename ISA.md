@@ -4,11 +4,11 @@ task: "Continue Selemene waves through verified planning, gates and infrastructu
 effort: E4
 effort_source: classifier
 phase: verify
-progress: 331/335
+progress: 332/335
 mode: algorithm
 iteration: 5
 started: 2026-07-18T15:00:00+05:30
-updated: 2026-09-06T12:13:42+00:00
+updated: 2026-09-06T16:50:15+00:00
 ---
 
 > **Active continuation — 2026-09-05:** Restore the existing seven-wave Selemene program, use GSD research/discuss/plan/execute/verify with recommended defaults, review infrastructure/dependencies and refresh CodeGraph. Criteria ISC-279 onward describe this continuation. Older entries are preserved dated evidence; their checked status does not imply current production acceptance. This file is the acceptance ledger; `.planning/` is the execution adapter.
@@ -381,7 +381,7 @@ Complete the existing dependency-ordered Selemene program through the GSD phase 
 - [x] ISC-214: Deployment jobs cannot start when repository validation fails or is absent (probe: workflow dependency validation).
 - [x] ISC-215: Deployment artifact identity derives from the exact validated triggering commit (probe: workflow expression validation).
 - [x] ISC-216: Required API and TypeScript build artifacts share the same validated source revision (probe: workflow dependency inspection).
-- [ ] ISC-217: Toolchain and action versions used by the gate are deterministic rather than floating (probe: workflow and manifest scan).
+- [x] ISC-217: Toolchain and action versions used by the gate are deterministic rather than floating (probe: workflow and manifest scan).
 - [x] ISC-218: The unified repository gate exits zero from a clean isolated worktree (probe: fresh full command).
 - [x] ISC-219: Changed-file formatting and whitespace checks pass (probe: format checks and `git diff --check`).
 - [x] ISC-220: Independent correctness review finds no false-green or migration-history blocker (probe: adversarial review).
@@ -786,7 +786,7 @@ _Last refreshed: 2026-08-25T17:34:40.307Z_
 - 2026-09-05T13:47:55.589355+00:00 | conjectured: local gate success implied the candidate would pass every clean CI surface
   refuted_by: clean-runner imports/build ordering, Vercel packaging and a database-backed fixture lifetime failure
   learned: validate provider packaging and DB-configured test lifetimes on disposable services before promotion
-  criterion_now: ISC-305 remains open until current-source CI Gate passes; ISC-306 records verified Python/admin coverage without claiming complete release receipts
+  criterion_now: ISC-305 and ISC-217 close only after current-source CI Gate and immutable action-pin validation pass; neither implies production readiness
 
 ## Verification
 
@@ -796,7 +796,7 @@ _Last refreshed: 2026-08-25T17:34:40.307Z_
 - ISC-276: Fresh `pnpm run gate` exited zero at committed implementation candidate `0df208d`. The subsequent evidence-only commit `59a38ed` passed `git diff --check` and does not alter executable behavior.
 - ISC-277: Independent read-only review returned GO at `0df208d` after two earlier BLOCK cycles and found no remaining P0/P1 contract drift, compatibility break, false-green path, or engine-scope leak. It independently reran `gate:scripts`, `gate:contracts`, and `git diff --check 01160e5..HEAD`.
 - ISC-278 ReReadCheck: “Gate foundation merged; contract convergence is isolated, green, and next.- proceed” — addressed exactly through the contract layer. The branch remains isolated and unmerged; engines remain deliberately untouched until separately authorized work begins.
-- Remaining criterion: ISC-217 stays open because GitHub Actions still use floating version tags rather than immutable commit SHAs. Contract completion does not overwrite or imply closure of that historical gate gap.
+- Historical gate-foundation receipt: ISC-217 remained open there because GitHub Actions still used floating version tags. Later Phase 2 evidence below supersedes that historical gap with immutable pins and exact-head CI.
 - ISC-225..231: Gate changes were committed as `c11bc39` and `5cf48b9`, integrated into local `main` by merge commits `130397a` and `01160e5`, and verified as ancestors. All fourteen pre-existing dirty files retained identical SHA-256 digests. The completed worktree was removed and the merged branch deleted with `git branch -d`, never force.
 - ISC-228..229: The first merged gate run correctly failed when the primary checkout exposed an ambient provider credential. A sentinel-credential focused run then passed 21/21 after credential isolation, and the final merged `pnpm run gate` passed 31 Python gate tests, 36 verification tests, strict TypeScript checks, and 88/88 Bun tests with 268 expectations.
 - ISC-232..234: `.worktrees/selemene-contract-convergence` was created on `codex/selemene-contract-convergence` from `01160e5`. After pnpm and Bun dependency setup, its baseline `pnpm run gate` passed the same 31, 36, and 88 test groups. No external repository, live service, database, cloud resource, remote branch, or engine semantic path was changed.
@@ -893,4 +893,5 @@ _Last refreshed: 2026-08-25T17:34:40.307Z_
 - ISC-324–326: receipt validator — `python3 scripts/validate_release_receipt.py --validate-fixtures` reports `receipts=2 mutation_cases=9`; the 95-test focused receipt/wiring/provenance suite includes cross-tag, expiry, replayed-attempt, stale rollback, future-deployment, wrong role/target, missing source anchor and asset tree/inclusion rejection. The current-production fixture exits 1 with 29 unavailable API, schema, asset and rollback facts.
 - ISC-327–328: workflow gate — immutable Action pins and YAML parsing pass. Executed scripts under Docker, Railway, Kustomize, Kubectl, curl and release shims assert exact provider argv, cwd, ref conditions, credential scope and health source markers. Deploy can expose only immutable source candidates; release has no mutation and ends in HOLD. `env -u DATABASE_URL -u TEST_DATABASE_URL pnpm run gate` exits zero with 140 script, 9 core, 4 OpenAPI, 16 API integration, 35 engine SDK, 11 Noesis SDK, 36 verification and 94 TypeScript tests plus all builds/typechecks.
 - Plan sync: `scripts/sync-plans-to-github-issues.sh --repo Sheshiyer/Selemene-engine` ran in dry-run mode, found no matching plan JSON inputs and performed no issue mutation.
-- Evidence boundary: code source `941e3cfd059831330f7f3adb2f90f526384426c5` has focused and complete local-gate evidence plus a finding-by-finding remediation ledger. No current-source remote CI run exists before parent reconciliation/push, and no deployment, publication, tag, cloud/DNS, GitHub setting, schema/data, production-database or secret mutation was performed. Both repository production profiles are disabled pending durable one-use, provider attestation, atomic coordination and source-bound asset inclusion authority; Vercel's native main deployment remains outside the gate, so promotion stays HOLD.
+- ISC-217 and ISC-305 Phase 2 closure: all 77 workflow action uses pass immutable-SHA validation, and GitHub `CI - Test & Lint` run 34046002390 passes all 16 jobs, including aggregate `CI Gate`, at exact evidence head `ba2d149106345bb9637e1d31fec8160e703c5501`. Pull-request merge commit `e163c86b7070484e193b178741ab290c7c1ad199` and the branch head share tree `3e693be8778b7f9eccff18112f5504cbf0dea512`.
+- Phase 2 verification boundary: all seven plans, the complete database-free local gate, the ten-Critical/four-Warning remediation ledger, five clean independent rechecks and exact-head remote CI pass. Draft PR #1488 remains open and unmerged. No deployment, publication, tag, cloud/DNS, schema/data, production-database or secret mutation was performed. Both repository production profiles remain disabled pending durable one-use, provider attestation, atomic coordination and source-bound asset inclusion authority; Vercel's native main deployment remains outside the gate, so promotion stays HOLD.

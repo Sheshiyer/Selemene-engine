@@ -1,14 +1,14 @@
 ---
 phase: 02-reproducible-gates-dependency-repair
-status: gaps_found
-verified: 2026-09-06T16:25:13+00:00
-source_commit: 4305265acee96461c40594fbb2689306d357f59d
+status: passed
+verified: 2026-09-06T16:50:15+00:00
+source_commit: ba2d149106345bb9637e1d31fec8160e703c5501
 ---
 # Phase 2 verification
 
 | Requirement | Status | Evidence or gap |
 |---|---|---|
-| GATE-01 | Local pass; current-source remote CI pending | The database-free repository gate passes at `4305265`, including 255 script tests and every Rust/API/SDK/verification/TypeScript stage. The earlier complete 16-job run 33973728459 covers source `7a5793d`; the current candidate has not yet been pushed, so exact-head remote CI does not exist. |
+| GATE-01 | Pass locally and remotely | The database-free repository gate passes at code source `4305265`, including 255 script tests and every Rust/API/SDK/verification/TypeScript stage. GitHub [run 34046002390](https://github.com/Sheshiyer/Selemene-engine/actions/runs/34046002390) then passed all 16 jobs, including `CI Gate`, at exact evidence head `ba2d149`. The pull-request merge commit and branch head have the same tree object `3e693be8778b7f9eccff18112f5504cbf0dea512`. |
 | GATE-02 | Pass locally | Node production and complete-graph audits report zero findings after the direct TypeScript parser dependency; Rust reports zero advisories with one recorded inactive yank warning. |
 | GATE-03 | Pass | A fresh archive installs all eight Node workspaces offline from the frozen lock and resolves exact root `typescript@5.9.3`; `uv.lock`, Python audit, Python 3.11/3.12 contract/smoke and Linux image imports retain their recorded passing evidence. |
 | GATE-04 | Source and read-only provider pass | Railway project/environment/service selectors match the release manifest; all seven latest deployments report successful/running. Four Cloudflare configs bind account `9d9d23b27f32b2df8c6cdc1321aa2c0f10` and dry-run, while the default Wrangler login is a different account and cannot refresh live 9d9d inventory. No provider mutation was performed. |
@@ -52,8 +52,17 @@ At code source `4305265acee96461c40594fbb2689306d357f59d`:
 - `env -u DATABASE_URL -u TEST_DATABASE_URL pnpm run gate`: exit 0 with 255 script, 9 core, 4 OpenAPI, 16 API integration, 35 engine SDK, 11 Noesis SDK, 36 verification and 94 TypeScript tests; all builds/typechecks pass.
 - Forced CodeGraph rebuild and follow-up sync: up to date at 867 files, 15,164 nodes and 37,101 edges; functional queries resolved all three runtime registration seams and both release-authority validators.
 
-## Remaining Gap
+## Exact-Head Remote Verification
 
-Phase 2 does not transition to verified complete until this candidate and its evidence documents are pushed and a full exact-head GitHub Actions run passes. GATE-01 therefore remains pending even though all seven execution plans, all deep-review findings, five independent rechecks and the complete local gate now pass.
+At evidence head `ba2d149106345bb9637e1d31fec8160e703c5501`:
+
+- GitHub `CI - Test & Lint` run [34046002390](https://github.com/Sheshiyer/Selemene-engine/actions/runs/34046002390) completed successfully at `2026-09-06T16:50:15Z`.
+- All 16 jobs passed: required admin web, security audit, both Python images, secret scanning, lint, workspace gate, Node dependency audit, TS engines, Python 3.11 and 3.12 sidecars, workflow registry parity, tests, build, integration tests and aggregate `CI Gate`.
+- The generated pull-request merge commit `e163c86b7070484e193b178741ab290c7c1ad199` has parents `main@ae3e2cef402bd0cf28d1c7a102800d215cc5f2c2` and candidate `ba2d149`; its tree equals the candidate tree exactly.
+- Draft PR [#1488](https://github.com/Sheshiyer/Selemene-engine/pull/1488) remained open, draft and mergeable. No merge, auto-merge, deployment or release was performed.
+
+## Production Hold
+
+Phase 2 is verified complete: all seven plans executed, all deep-review findings were closed, five independent rechecks ended clean, the complete local gate passed, and the exact pushed evidence head passed the full remote CI matrix.
 
 Production promotion remains **HOLD** independently of remote CI. Re-enabling repository-owned production mutation requires durable one-use receipt consumption, Railway-returned deployment/source/status attestation, atomic API/TypeScript coordination, source-bound image asset attestation and atomic multi-registry alias promotion with compensation. Vercel provider-side main deployment protection, exact staging/Kubernetes profiles, real production schema/rollback evidence and per-platform native-binary authority remain later work.

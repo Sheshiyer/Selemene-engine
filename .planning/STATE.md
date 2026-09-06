@@ -2,28 +2,28 @@
 gsd_state_version: 1.0
 milestone: v1.0-continuation
 milestone_name: Existing Selemene wave completion
-status: verifying
-stopped_at: Phase 02 deep-review fixes complete locally; current-source CI and production authorities pending
-last_updated: "2026-09-06T13:42:29.000Z"
-last_activity: 2026-09-06 — All 14 deep-review findings fixed or closed by explicit fail-closed production holds
+status: ready
+stopped_at: Phase 02 verified complete; Phase 03 discussion and research next
+last_updated: "2026-09-06T16:50:15.000Z"
+last_activity: 2026-09-06 — Exact-head 16-job CI passed and Phase 02 verification closed
 progress:
   total_phases: 7
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 9
   completed_plans: 9
-  percent: 14
+  percent: 29
 ---
 
 # Project state
 
 ## Current Position
 
-Phase: 02 (reproducible-gates-dependency-repair) — VERIFYING
-Plan: 7 of 7 (all plans executed)
-Status: Gaps found — current-source remote CI and production authority pending
-Last activity: 2026-09-06 — Deep-review remediation and full local gate completed
+Phase: 03 (capability-and-contract-closure) — READY FOR DISCUSSION
+Plan: 0 of TBD
+Status: Phase 02 verified; Phase 03 discussion and research ready
+Last activity: 2026-09-06 — GitHub run 34046002390 passed all 16 jobs at exact evidence head ba2d149
 
-Progress: [██████████] 100%
+Progress: [███░░░░░░░] 29%
 
 ## Performance Metrics
 
@@ -48,12 +48,12 @@ Reuse Waves 0–6 and stable GitHub issue IDs. ISA owns acceptance; GSD is the e
 
 ## Blockers and Concerns
 
-PR #1486 formatter repair passes CI at 520e439; #1487 remains stacked. Draft recovery PR #1488 passed its complete 16-job CI run at source 7a5793d and its identical pull-request merge tree. Plans 06–07 and the deep-review fixes changed the candidate after that run, so Phase 2 still needs current-source remote CI after parent reconciliation and push. Ruleset 15597830 requires strict CI Gate on main after explicit user approval and verified readback. The authoritative deep review reported ten Critical and four Warning findings; all are now mapped to tested fixes or explicit disabled mutation paths in `02-REVIEW-FIXES.md`, and the full local gate passes at code source `941e3cfd059831330f7f3adb2f90f526384426c5`. Production mutation still requires durable one-use receipt consumption, Railway post-deploy attestation, atomic service/registry coordination, source-bound image asset attestation, real schema/rollback evidence and Vercel deployment protection, so promotion stays HOLD.
+Draft recovery PR #1488 is open, draft and mergeable at evidence head `ba2d149106345bb9637e1d31fec8160e703c5501`. GitHub run 34046002390 passed all 16 jobs, including strict `CI Gate`; its pull-request merge tree is byte-identical to the branch tree. Ruleset 15597830 requires that strict check on main after explicit user approval and verified readback. The authoritative deep review reported ten Critical and four Warning findings; all have tested fixes or explicit fail-closed dispositions, and five independent rechecks ended with zero findings. Production mutation still requires durable one-use receipt consumption, Railway post-deploy attestation, atomic service/registry coordination, source-bound image asset attestation, real schema/rollback evidence and Vercel deployment protection, so promotion stays HOLD.
 
 ## Session Continuity
 
-Resume from this file, current ISA recovery criteria, `02-REVIEW-FIXES.md` and the phase verification file. Phase 1 recovery is verified. All seven Phase 2 plans are executed, all fourteen deep-review findings have local dispositions, and GATE-05 passes locally through executable registry and fail-closed release-receipt authority. Phase verification remains `gaps_found` because no remote CI run exists for code source `941e3cfd059831330f7f3adb2f90f526384426c5` before parent reconciliation/push. Both production profiles remain disabled until their named external authorities are proven.
+Resume from this file, the current ISA continuation criteria and Phase 3 issue #894. Phases 1 and 2 are verified. Phase 2 has complete local, independent-review and exact-head remote-CI evidence; both production profiles remain disabled until their named external authorities are proven. Begin Phase 3 in a fresh isolated `codex/selemene-contract-convergence` worktree from the verified recovery head, using the user-authorized recommended discussion defaults before research and planning.
 
-Last session: 2026-09-06T13:42:29.000Z
-Stopped At: Phase 02 deep-review fixes complete locally; current-source CI and production authorities pending
+Last session: 2026-09-06T16:50:15.000Z
+Stopped At: Phase 02 verified complete; Phase 03 discussion and research next
 Resume File: None

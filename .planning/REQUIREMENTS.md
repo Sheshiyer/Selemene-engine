@@ -12,7 +12,7 @@ Stable project acceptance IDs live in `ISA.md`. These GSD requirement IDs map ex
 
 ## Phase 2: Reproducible gates and dependency repair
 
-- [ ] **GATE-01**: Make TS formatter/lint/typecheck/tests and the required CI matrix pass.
+- [x] **GATE-01**: Make TS formatter/lint/typecheck/tests and the required CI matrix pass.
 - [x] **GATE-02**: Remove high production dependency findings or record an explicit unresolved compatibility gate.
 - [x] **GATE-03**: Prove clean installs and lockfile/toolchain reproducibility including Python.
 - [x] **GATE-04**: Validate source Railway build/watch and Cloudflare account binding configuration.
