@@ -10,6 +10,7 @@
       "mutations": [
         {"op": "replace", "path": "/receipt_id", "value": "fixture.immutable-image.eligible"},
         {"op": "replace", "path": "/promotion_mode", "value": "immutable-image"},
+        {"op": "replace", "path": "/target/provider_scope", "value": ["github", "ghcr"]},
         {
           "op": "replace",
           "path": "/artifacts/0/deployed/image_digest",

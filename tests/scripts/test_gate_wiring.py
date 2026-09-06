@@ -1,17 +1,27 @@
 from __future__ import annotations
 
+import base64
+import copy
 import json
 import stat
 import subprocess
+import sys
 from pathlib import Path
 
+import yaml
+
 from .conftest import REPO_ROOT, merged_env
+
+
+SYNTHETIC_SOURCE = "1111111111111111111111111111111111111111"
+RELEASE_FIXTURE_ROOT = REPO_ROOT / "contracts/release/v1/fixtures"
 
 
 def test_gate_scripts_runs_contract_validator() -> None:
     scripts = json.loads((REPO_ROOT / "package.json").read_text(encoding="utf-8"))["scripts"]
 
     assert "python3 scripts/validate_contracts.py" in scripts["gate:scripts"]
+    assert "python3 scripts/validate_release_receipt.py --validate-fixtures" in scripts["gate:scripts"]
 
 
 def test_root_gate_runs_cross_language_contract_parity() -> None:
@@ -193,8 +203,241 @@ def test_deployment_and_release_require_both_image_builds() -> None:
     railway = source[source.index("  deploy-railway:") : source.index("  smoke-test:")]
     release = source[source.index("  release:") :]
 
-    assert "needs: [validate-source, build-api, build-ts-engines]" in railway
+    assert "needs: [validate-source, validate-release-receipt, build-api, build-ts-engines]" in railway
     assert "build-ts-engines" in release.split("if: |", maxsplit=1)[0]
     assert "needs.build-ts-engines.result == 'success'" in release
     assert "sha-${{ needs.validate-source.outputs.source-sha }}" in release
     assert "github.ref_name" not in release
+
+
+def load_workflow(name: str) -> dict:
+    path = REPO_ROOT / ".github/workflows" / name
+    document = yaml.safe_load(path.read_text(encoding="utf-8"))
+    assert isinstance(document, dict)
+    return document
+
+
+def job_needs(job: dict) -> set[str]:
+    needs = job.get("needs", [])
+    if isinstance(needs, str):
+        return {needs}
+    return set(needs)
+
+
+def transitively_needs(jobs: dict, job_name: str, required_job: str) -> bool:
+    pending = list(job_needs(jobs[job_name]))
+    visited: set[str] = set()
+    while pending:
+        dependency = pending.pop()
+        if dependency == required_job:
+            return True
+        if dependency in visited or dependency not in jobs:
+            continue
+        visited.add(dependency)
+        pending.extend(job_needs(jobs[dependency]))
+    return False
+
+
+def workflow_mutation_jobs(document: dict) -> set[str]:
+    action_markers = (
+        "docker/build-push-action@",
+        "softprops/action-gh-release@",
+        "stefanzweifel/git-auto-commit-action@",
+    )
+    run_markers = ("railway up ", "kubectl apply -f -")
+    mutations: set[str] = set()
+    for job_name, job in document["jobs"].items():
+        for step in job.get("steps", []):
+            uses = step.get("uses", "")
+            run = step.get("run", "")
+            if any(marker in uses for marker in action_markers) or any(
+                marker in run for marker in run_markers
+            ):
+                mutations.add(job_name)
+    return mutations
+
+
+def workflow_step_by_name(document: dict, job_name: str, step_name: str) -> dict:
+    return next(
+        step
+        for step in document["jobs"][job_name]["steps"]
+        if step.get("name") == step_name
+    )
+
+
+def eligible_receipt(mode: str) -> dict:
+    receipt = json.loads(
+        (RELEASE_FIXTURE_ROOT / "eligible-source-redeploy.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    if mode == "immutable-image":
+        receipt["receipt_id"] = "fixture.immutable-image.workflow"
+        receipt["promotion_mode"] = "immutable-image"
+        receipt["target"]["provider_scope"] = ["github", "ghcr"]
+        for artifact in receipt["artifacts"]:
+            artifact["deployed"]["image_digest"] = copy.deepcopy(
+                artifact["built"]["image_digest"]
+            )
+            artifact["deployed"]["image_digest"]["source"] = (
+                "synthetic mocked workflow readback"
+            )
+    return receipt
+
+
+def mocked_workflow_mutations(
+    workflow_name: str,
+    tmp_path: Path,
+    receipt: dict | None,
+) -> tuple[set[str], str]:
+    document = load_workflow(workflow_name)
+    materialize = workflow_step_by_name(
+        document, "validate-release-receipt", "Materialize candidate release receipt"
+    )["run"]
+    validate = workflow_step_by_name(
+        document, "validate-release-receipt", "Validate source-bound release receipt"
+    )["run"]
+    runner_temp = tmp_path / workflow_name.replace(".", "-")
+    runner_temp.mkdir(exist_ok=True)
+    env = merged_env(
+        {
+            "RUNNER_TEMP": str(runner_temp),
+            "GITHUB_SHA": SYNTHETIC_SOURCE,
+        }
+    )
+    if receipt is None:
+        env.pop("RELEASE_RECEIPT_B64", None)
+    else:
+        encoded = base64.b64encode(json.dumps(receipt).encode("utf-8")).decode("ascii")
+        env["RELEASE_RECEIPT_B64"] = encoded
+
+    materialized = subprocess.run(
+        ["bash", "-c", materialize],
+        cwd=REPO_ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
+        env=env,
+    )
+    output = f"{materialized.stdout}{materialized.stderr}"
+    if materialized.returncode != 0:
+        return set(), output
+
+    validated = subprocess.run(
+        ["bash", "-c", validate],
+        cwd=REPO_ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
+        env=env,
+    )
+    output += f"{validated.stdout}{validated.stderr}"
+    if validated.returncode != 0:
+        return set(), output
+    return workflow_mutation_jobs(document), output
+
+
+def test_every_release_mutation_depends_on_receipt_validation() -> None:
+    expected = {
+        "deploy.yaml": {
+            "build-api",
+            "build-ts-engines",
+            "deploy",
+            "deploy-railway",
+            "release",
+        },
+        "release.yml": {
+            "create-release",
+            "build-docker",
+            "build-binaries",
+            "update-changelog",
+        },
+    }
+    for workflow_name, expected_mutations in expected.items():
+        document = load_workflow(workflow_name)
+        jobs = document["jobs"]
+        mutations = workflow_mutation_jobs(document)
+        assert mutations == expected_mutations
+        assert "if" not in jobs["validate-release-receipt"]
+        for mutation_job in mutations:
+            assert transitively_needs(jobs, mutation_job, "validate-release-receipt")
+
+
+def test_workflow_dispatch_cannot_bypass_receipt_validation() -> None:
+    source = (REPO_ROOT / ".github/workflows/deploy.yaml").read_text(encoding="utf-8")
+    document = load_workflow("deploy.yaml")
+    receipt_job = document["jobs"]["validate-release-receipt"]
+
+    assert "workflow_dispatch:" in source
+    assert receipt_job["needs"] == "validate-source"
+    assert receipt_job["env"]["RELEASE_RECEIPT_B64"] == "${{ vars.RELEASE_RECEIPT_B64 }}"
+    assert "fixtures/" not in json.dumps(receipt_job)
+
+
+def test_release_workflows_retain_immutable_action_pins() -> None:
+    for workflow_name in ("deploy.yaml", "release.yml"):
+        result = subprocess.run(
+            [
+                sys.executable,
+                str(REPO_ROOT / "scripts/validate_action_pins.py"),
+                "--path",
+                str(REPO_ROOT / ".github/workflows" / workflow_name),
+            ],
+            cwd=REPO_ROOT,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        assert result.returncode == 0, f"{result.stdout}{result.stderr}"
+
+
+def test_mocked_workflows_make_zero_mutations_without_valid_receipt(
+    tmp_path: Path,
+) -> None:
+    workflows = {
+        "deploy.yaml": "source-redeploy",
+        "release.yml": "immutable-image",
+    }
+    for workflow_name, mode in workflows.items():
+        mutations, output = mocked_workflow_mutations(
+            workflow_name, tmp_path, None
+        )
+        assert mutations == set()
+        assert "Release receipt missing" in output
+
+        mismatched = eligible_receipt(mode)
+        mismatched["source"]["revision"]["value"] = (
+            "2222222222222222222222222222222222222222"
+        )
+        mismatched["source"]["validated_revision"]["value"] = (
+            "2222222222222222222222222222222222222222"
+        )
+        mutations, output = mocked_workflow_mutations(
+            workflow_name, tmp_path, mismatched
+        )
+        assert mutations == set()
+        assert "does not match expected source" in output
+
+
+def test_correct_receipts_reach_only_mocked_mutation_graph(tmp_path: Path) -> None:
+    expected = {
+        "deploy.yaml": {
+            "build-api",
+            "build-ts-engines",
+            "deploy",
+            "deploy-railway",
+            "release",
+        },
+        "release.yml": {
+            "create-release",
+            "build-docker",
+            "build-binaries",
+            "update-changelog",
+        },
+    }
+    modes = {"deploy.yaml": "source-redeploy", "release.yml": "immutable-image"}
+    for workflow_name, expected_mutations in expected.items():
+        mutations, output = mocked_workflow_mutations(
+            workflow_name, tmp_path, eligible_receipt(modes[workflow_name])
+        )
+        assert mutations == expected_mutations, output
