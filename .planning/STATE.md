@@ -2,10 +2,10 @@
 gsd_state_version: 1.0
 milestone: v1.0-continuation
 milestone_name: Existing Selemene wave completion
-status: ready
-stopped_at: Phase 02 verified complete; Phase 03 discussion and research next
-last_updated: "2026-09-06T16:50:15.000Z"
-last_activity: 2026-09-06 — Exact-head 16-job CI passed and Phase 02 verification closed
+status: verifying
+stopped_at: Phase 03 context gathered
+last_updated: "2026-09-06T17:10:45.559Z"
+last_activity: 2026-09-06 — GitHub run 34046002390 passed all 16 jobs at exact evidence head ba2d149
 progress:
   total_phases: 7
   completed_phases: 2
@@ -54,6 +54,6 @@ Draft recovery PR #1488 is open, draft and mergeable at evidence head `ba2d14910
 
 Resume from this file, the current ISA continuation criteria and Phase 3 issue #894. Phases 1 and 2 are verified. Phase 2 has complete local, independent-review and exact-head remote-CI evidence; both production profiles remain disabled until their named external authorities are proven. Begin Phase 3 in a fresh isolated `codex/selemene-contract-convergence` worktree from the verified recovery head, using the user-authorized recommended discussion defaults before research and planning.
 
-Last session: 2026-09-06T16:50:15.000Z
-Stopped At: Phase 02 verified complete; Phase 03 discussion and research next
-Resume File: None
+Last session: 2026-09-06T17:10:45.548Z
+Stopped At: Phase 03 context gathered
+Resume File: .planning/phases/03-capability-and-contract-closure/03-CONTEXT.md
