@@ -6,8 +6,12 @@ on:
       - 'v*.*.*'
 
 permissions:
-  contents: write
-  packages: write
+  contents: read
+  packages: read
+
+concurrency:
+  group: production-release
+  cancel-in-progress: false
 
 env:
   REGISTRY: ghcr.io
@@ -118,102 +122,20 @@ jobs:
             --expected-artifact-digest "typescript-engines=${EXPECTED_TS_DIGEST}" \
             --operational
 
-  # Promote the exact source-tag descriptors validated above. No Dockerfile is
-  # rebuilt on the tag path.
-  promote-images:
-    name: Promote immutable image digests
+  # The repository cannot prove atomic alias movement across both GHCR
+  # repositories or compensate a later GitHub-release failure. Keep the
+  # production mutation absent until the manifest's required authority exists.
+  release-result:
+    name: Production Release Hold
     runs-on: ubuntu-latest
     needs: [validate-release-receipt, resolve-release-artifacts]
+    if: always()
     permissions:
       contents: read
-      packages: write
-    env:
-      API_DIGEST: ${{ needs.resolve-release-artifacts.outputs.api-digest }}
-      TS_DIGEST: ${{ needs.resolve-release-artifacts.outputs.ts-digest }}
     steps:
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
-
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
-        with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Promote validated digests
+      - name: Enforce atomic promotion hold
         shell: bash
         run: |
           set -euo pipefail
-          version="${GITHUB_REF_NAME#v}"
-          if [[ ! "${version}" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-            echo "::error title=Invalid release tag::Expected vMAJOR.MINOR.PATCH, got ${GITHUB_REF_NAME}."
-            exit 1
-          fi
-          minor="${version%.*}"
-          major="${version%%.*}"
-          promote() {
-            local repository="$1"
-            local digest="$2"
-            docker buildx imagetools create --prefer-index=false \
-              --tag "${repository}:${version}" \
-              --tag "${repository}:${minor}" \
-              --tag "${repository}:${major}" \
-              --tag "${repository}:latest" \
-              "${repository}@${digest}"
-          }
-          promote "${REGISTRY}/${IMAGE_NAME_API}" "${API_DIGEST}"
-          promote "${REGISTRY}/${IMAGE_NAME_TS}" "${TS_DIGEST}"
-
-  create-release:
-    needs: [validate-release-receipt, resolve-release-artifacts, promote-images]
-    runs-on: ubuntu-latest
-    env:
-      API_DIGEST: ${{ needs.resolve-release-artifacts.outputs.api-digest }}
-      TS_DIGEST: ${{ needs.resolve-release-artifacts.outputs.ts-digest }}
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
-        with:
-          fetch-depth: 0
-
-      - name: Extract version from tag
-        id: version
-        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
-
-      - name: Check if release notes exist
-        id: check_notes
-        run: |
-          if [ -f "RELEASE_NOTES_${{ steps.version.outputs.VERSION }}.md" ]; then
-            echo "EXISTS=true" >> $GITHUB_OUTPUT
-          else
-            echo "EXISTS=false" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Prepare source-bound release body
-        shell: bash
-        run: |
-          set -euo pipefail
-          if [[ "${{ steps.check_notes.outputs.EXISTS }}" == "true" ]]; then
-            cp "RELEASE_NOTES_${{ steps.version.outputs.VERSION }}.md" release-body.md
-          else
-            cp CHANGELOG.md release-body.md
-          fi
-          printf '\n## Immutable container artifacts\n\n' >> release-body.md
-          printf -- '- API: `%s/%s@%s`\n' "${REGISTRY}" "${IMAGE_NAME_API}" "${API_DIGEST}" >> release-body.md
-          printf -- '- TypeScript engines: `%s/%s@%s`\n' "${REGISTRY}" "${IMAGE_NAME_TS}" "${TS_DIGEST}" >> release-body.md
-
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@de2c0eb89ae2a093876385947365aca7b0e5f844 # v1
-        with:
-          tag_name: ${{ steps.version.outputs.VERSION }}
-          name: Release ${{ steps.version.outputs.VERSION }}
-          body_path: release-body.md
-          draft: false
-          prerelease: false
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  # Release receipt v1 authorizes container-image identity only. Native binary
-  # publication stays disabled until a later receipt version records each
-  # platform build and digest before the GitHub release is mutated.
+          echo "::error title=Production release held::No aliases or GitHub release were changed. Authorization requires durable one-use receipt consumption and atomic multi-registry alias promotion with compensation."
+          exit 1

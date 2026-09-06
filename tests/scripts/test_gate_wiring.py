@@ -402,10 +402,7 @@ def test_every_release_mutation_depends_on_receipt_validation() -> None:
             "deploy",
             "deploy-railway",
         },
-        "release.yml": {
-            "create-release",
-            "promote-images",
-        },
+        "release.yml": set(),
     }
     for workflow_name, expected_mutations in expected.items():
         document = load_workflow(workflow_name)
@@ -450,7 +447,32 @@ def test_semver_tags_have_one_authoritative_publication_workflow() -> None:
     assert "tags:" not in deploy_trigger
     assert "tags:" in release_trigger
     assert "softprops/action-gh-release@" not in deploy_source
-    assert release_source.count("name: Create GitHub Release") == 1
+    assert "name: Create GitHub Release" not in release_source
+
+
+def test_release_mutation_is_absent_until_atomic_authority_exists() -> None:
+    release = load_workflow("release.yml")
+    source = (REPO_ROOT / ".github/workflows/release.yml").read_text(encoding="utf-8")
+
+    assert release["permissions"] == {"contents": "read", "packages": "read"}
+    assert release["concurrency"] == {
+        "group": "production-release",
+        "cancel-in-progress": False,
+    }
+    assert workflow_mutation_jobs(release) == set()
+    assert "docker buildx imagetools create" not in source
+    assert "softprops/action-gh-release@" not in source
+    result_job = release["jobs"]["release-result"]
+    assert result_job["if"] == "always()"
+    assert set(job_needs(result_job)) == {
+        "validate-release-receipt",
+        "resolve-release-artifacts",
+    }
+    hold_step = workflow_step_by_name(
+        release, "release-result", "Enforce atomic promotion hold"
+    )["run"]
+    assert "atomic multi-registry alias promotion with compensation" in hold_step
+    assert "exit 1" in hold_step
 
 
 def test_prepublication_builds_and_registry_reads_feed_exact_digest_gate() -> None:
@@ -497,7 +519,6 @@ def test_prepublication_builds_and_registry_reads_feed_exact_digest_gate() -> No
     )
     assert "docker/build-push-action@" not in release_source
     assert "docker buildx imagetools inspect" in release_source
-    assert '"${repository}@${digest}"' in release_source
     assert "--target-profile release-production" in release_source
     assert '--expected-release-tag "$GITHUB_REF_NAME"' in release_source
     assert "--expected-operation-id" in release_source
