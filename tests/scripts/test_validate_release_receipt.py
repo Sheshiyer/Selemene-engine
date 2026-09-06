@@ -4,6 +4,7 @@ import importlib.util
 import json
 import subprocess
 import sys
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 import pytest
@@ -43,6 +44,21 @@ def materialize_case(case_id: str) -> dict:
     case = next(item for item in cases["cases"] if item["id"] == case_id)
     for mutation in case["mutations"]:
         apply_json_pointer(receipt, mutation)
+    return receipt
+
+
+def operational_receipt(*, workflow: str = ".github/workflows/deploy.yaml") -> dict:
+    receipt = load_json(ELIGIBLE_SOURCE)
+    receipt.pop("test_fixture")
+    now = datetime.now(timezone.utc).replace(microsecond=0)
+    receipt["issued_at"] = (now - timedelta(seconds=30)).strftime("%Y-%m-%dT%H:%M:%SZ")
+    receipt["expires_at"] = (now + timedelta(minutes=10)).strftime("%Y-%m-%dT%H:%M:%SZ")
+    receipt["operation"] = {
+        "id": "github-run-90000000001-attempt-1",
+        "workflow": workflow,
+        "run_id": "90000000001",
+        "run_attempt": 1,
+    }
     return receipt
 
 
@@ -195,8 +211,7 @@ def test_operational_validation_rejects_synthetic_test_receipt() -> None:
 
 
 def test_operational_validation_requires_expected_source(tmp_path: Path) -> None:
-    receipt = load_json(ELIGIBLE_SOURCE)
-    receipt.pop("test_fixture")
+    receipt = operational_receipt()
     receipt["target"]["environment"] = "production"
     receipt_path = tmp_path / "operational.json"
     receipt_path.write_text(json.dumps(receipt), encoding="utf-8")
@@ -206,6 +221,12 @@ def test_operational_validation_requires_expected_source(tmp_path: Path) -> None
         "--operational",
         "--target-profile",
         "deploy-production",
+        "--expected-operation-id",
+        "github-run-90000000001-attempt-1",
+        "--expected-workflow",
+        ".github/workflows/deploy.yaml",
+        "--now",
+        datetime.now(timezone.utc).replace(microsecond=0).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "--expected-artifact-digest",
         "api=sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
         "--expected-artifact-digest",
@@ -252,8 +273,7 @@ def test_service_target_identity_is_bound_to_manifest_authority() -> None:
 def test_operational_validation_emits_only_manifest_bound_deploy_selector(
     tmp_path: Path,
 ) -> None:
-    receipt = load_json(ELIGIBLE_SOURCE)
-    receipt.pop("test_fixture")
+    receipt = operational_receipt()
     receipt["target"]["environment"] = "production"
     receipt_path = tmp_path / "operational.json"
     output_path = tmp_path / "github-output"
@@ -267,6 +287,12 @@ def test_operational_validation_emits_only_manifest_bound_deploy_selector(
         "source-redeploy",
         "--target-profile",
         "deploy-production",
+        "--expected-operation-id",
+        "github-run-90000000001-attempt-1",
+        "--expected-workflow",
+        ".github/workflows/deploy.yaml",
+        "--now",
+        datetime.now(timezone.utc).replace(microsecond=0).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "--expected-artifact-digest",
         "api=sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
         "--expected-artifact-digest",
@@ -285,8 +311,7 @@ def test_operational_validation_emits_only_manifest_bound_deploy_selector(
 
 
 def test_operational_validation_binds_every_actual_artifact_digest() -> None:
-    receipt = load_json(ELIGIBLE_SOURCE)
-    receipt.pop("test_fixture")
+    receipt = operational_receipt()
     receipt["target"] = {
         "environment": "production",
         "provider_scope": ["ghcr", "railway"],
@@ -299,6 +324,9 @@ def test_operational_validation_binds_every_actual_artifact_digest() -> None:
         expected_artifact_digests={
             "api": "sha256:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
         },
+        expected_operation_id="github-run-90000000001-attempt-1",
+        expected_workflow=".github/workflows/deploy.yaml",
+        now=datetime.now(timezone.utc).replace(microsecond=0),
         operational=True,
     )
 
@@ -306,6 +334,75 @@ def test_operational_validation_binds_every_actual_artifact_digest() -> None:
     assert (
         "artifacts.api.built.image_digest does not match workflow artifact" in errors
     )
+
+
+def test_operational_receipt_rejects_expiry_boundary_and_replayed_attempt() -> None:
+    receipt = operational_receipt()
+    receipt["target"]["environment"] = "production"
+    expiry = datetime.fromisoformat(receipt["expires_at"].replace("Z", "+00:00"))
+    common = {
+        "expected_source": SYNTHETIC_SOURCE,
+        "target_profile": "deploy-production",
+        "expected_artifact_digests": {
+            "api": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "typescript-engines": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        },
+        "expected_workflow": ".github/workflows/deploy.yaml",
+        "operational": True,
+    }
+
+    before_expiry = validate_release_receipt(
+        receipt,
+        REPO_ROOT,
+        expected_operation_id="github-run-90000000001-attempt-1",
+        now=expiry - timedelta(seconds=1),
+        **common,
+    )
+    at_expiry = validate_release_receipt(
+        receipt,
+        REPO_ROOT,
+        expected_operation_id="github-run-90000000001-attempt-1",
+        now=expiry,
+        **common,
+    )
+    replayed_attempt = validate_release_receipt(
+        receipt,
+        REPO_ROOT,
+        expected_operation_id="github-run-90000000001-attempt-2",
+        now=expiry - timedelta(seconds=1),
+        **common,
+    )
+
+    assert before_expiry == []
+    assert "release authorization is expired" in at_expiry
+    assert any("operation.id does not match expected workflow operation" in error for error in replayed_attempt)
+
+
+def test_operational_receipt_rejects_stale_authorization_and_rollback() -> None:
+    receipt = operational_receipt()
+    receipt["target"]["environment"] = "production"
+    receipt["issued_at"] = "2000-01-01T00:00:00Z"
+    receipt["expires_at"] = "2000-01-01T00:15:00Z"
+    receipt["rollback"]["tested_at"]["value"] = "2000-01-01T00:00:00Z"
+
+    errors = validate_release_receipt(
+        receipt,
+        REPO_ROOT,
+        expected_source=SYNTHETIC_SOURCE,
+        target_profile="deploy-production",
+        expected_artifact_digests={
+            "api": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "typescript-engines": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        },
+        expected_operation_id="github-run-90000000001-attempt-1",
+        expected_workflow=".github/workflows/deploy.yaml",
+        now=datetime(2026, 9, 6, tzinfo=timezone.utc),
+        operational=True,
+    )
+
+    assert "release authorization is stale" in errors
+    assert "release authorization is expired" in errors
+    assert "rollback rehearsal is stale" in errors
 
 
 @pytest.mark.parametrize(

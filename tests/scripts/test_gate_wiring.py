@@ -6,6 +6,7 @@ import json
 import stat
 import subprocess
 import sys
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 import yaml
@@ -281,6 +282,15 @@ def eligible_receipt(workflow_name: str) -> dict:
     )
     receipt.pop("test_fixture")
     receipt["receipt_id"] = f"mock.{workflow_name.replace('.', '-')}.operational"
+    now = datetime.now(timezone.utc).replace(microsecond=0)
+    receipt["issued_at"] = (now - timedelta(seconds=30)).strftime("%Y-%m-%dT%H:%M:%SZ")
+    receipt["expires_at"] = (now + timedelta(minutes=10)).strftime("%Y-%m-%dT%H:%M:%SZ")
+    receipt["operation"] = {
+        "id": "github-run-90000000001-attempt-1",
+        "workflow": f".github/workflows/{workflow_name}",
+        "run_id": "90000000001",
+        "run_attempt": 1,
+    }
     receipt["target"]["environment"] = "production"
     expected_digests = {"api": API_DIGEST, "typescript-engines": TS_DIGEST}
     for artifact in receipt["artifacts"]:
@@ -348,6 +358,8 @@ def mocked_workflow_mutations(
             "RUNNER_TEMP": str(runner_temp),
             "GITHUB_SHA": SYNTHETIC_SOURCE,
             "GITHUB_REF_NAME": "v1.2.3",
+            "GITHUB_RUN_ID": "90000000001",
+            "GITHUB_RUN_ATTEMPT": "1",
             "REQUESTED_ENVIRONMENT": "production",
             "ENABLE_K8S_DEPLOY": "false",
             "EXPECTED_API_DIGEST": API_DIGEST,
@@ -495,6 +507,8 @@ def test_prepublication_builds_and_registry_reads_feed_exact_digest_gate() -> No
     assert '"${repository}@${digest}"' in release_source
     assert "--target-profile release-production" in release_source
     assert '--expected-release-tag "$GITHUB_REF_NAME"' in release_source
+    assert "--expected-operation-id" in release_source
+    assert "--expected-workflow .github/workflows/release.yml" in release_source
     assert "update-changelog:" not in release_source
     assert "ref: main" not in release_source
     assert "build-binaries:" not in release_source

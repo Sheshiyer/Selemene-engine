@@ -2,7 +2,14 @@
   "$schema": "https://schemas.selemene.dev/release/v1/receipt.schema.json",
   "receipt_version": "v1",
   "receipt_id": "fixture.current-production.incomplete",
-  "generated_at": "2026-09-05T10:32:24Z",
+  "issued_at": "2026-09-05T10:32:24Z",
+  "expires_at": "2026-09-05T10:47:24Z",
+  "operation": {
+    "id": "github-run-33973728459-attempt-1",
+    "workflow": ".github/workflows/deploy.yaml",
+    "run_id": "33973728459",
+    "run_attempt": 1
+  },
   "release": {
     "tag": null
   },

@@ -14,6 +14,12 @@
     "sha256": "sha256:857f35af41c8f60e98acff63c3dbf02fe065c46d7114fbe85915b10a9f1b534c",
     "head": "037"
   },
+  "receipt_policy": {
+    "max_authorization_age_seconds": 900,
+    "max_rollback_age_seconds": 86400,
+    "max_clock_skew_seconds": 60,
+    "one_use_consumption_required": true
+  },
   "required_artifact_roles": [
     "api",
     "typescript-engines"
@@ -45,6 +51,7 @@
   },
   "workflow_targets": {
     "deploy-production": {
+      "workflow": ".github/workflows/deploy.yaml",
       "promotion_mode": "source-redeploy",
       "environment": "production",
       "provider_scope": [
@@ -54,6 +61,7 @@
       "deployment_service_role": "api"
     },
     "release-production": {
+      "workflow": ".github/workflows/release.yml",
       "promotion_mode": "immutable-image",
       "environment": "production",
       "provider_scope": [

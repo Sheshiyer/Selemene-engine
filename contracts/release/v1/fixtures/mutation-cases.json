@@ -9,6 +9,7 @@
       "expected_error": null,
       "mutations": [
         {"op": "replace", "path": "/receipt_id", "value": "fixture.immutable-image.eligible"},
+        {"op": "replace", "path": "/operation/workflow", "value": ".github/workflows/release.yml"},
         {"op": "replace", "path": "/release/tag", "value": "v1.2.3"},
         {"op": "replace", "path": "/promotion_mode", "value": "immutable-image"},
         {"op": "replace", "path": "/target/provider_scope", "value": ["github", "ghcr"]},

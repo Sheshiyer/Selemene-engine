@@ -190,6 +190,9 @@ jobs:
           python3 scripts/validate_release_receipt.py \
             "$RUNNER_TEMP/selemene-release-receipt.json" \
             --expected-source "$GITHUB_SHA" \
+            --expected-operation-id "github-run-${GITHUB_RUN_ID}-attempt-${GITHUB_RUN_ATTEMPT}" \
+            --expected-workflow .github/workflows/deploy.yaml \
+            --now "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
             --required-promotion-mode source-redeploy \
             --target-profile deploy-production \
             --expected-artifact-digest "api=${EXPECTED_API_DIGEST}" \

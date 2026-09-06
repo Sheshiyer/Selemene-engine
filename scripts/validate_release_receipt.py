@@ -9,7 +9,7 @@ import hashlib
 import json
 import re
 import sys
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -88,11 +88,16 @@ def set_difference_error(
         errors.append(f"unknown {label}: {sorted(unknown)}")
 
 
-def validate_timestamp(value: str, label: str, errors: list[str]) -> None:
+def validate_timestamp(value: str, label: str, errors: list[str]) -> datetime | None:
     try:
-        datetime.fromisoformat(value.removesuffix("Z") + "+00:00")
+        parsed = datetime.fromisoformat(value.removesuffix("Z") + "+00:00")
     except ValueError:
         errors.append(f"{label} must be a valid UTC RFC3339 timestamp")
+        return None
+    if parsed.tzinfo is None or parsed.utcoffset() != timezone.utc.utcoffset(parsed):
+        errors.append(f"{label} must be a valid UTC RFC3339 timestamp")
+        return None
+    return parsed
 
 
 def schema_errors(receipt: Any, schema: dict[str, Any]) -> list[str]:
@@ -120,6 +125,9 @@ def validate_release_receipt(
     target_profile: str | None = None,
     expected_artifact_digests: dict[str, str] | None = None,
     expected_release_tag: str | None = None,
+    expected_operation_id: str | None = None,
+    expected_workflow: str | None = None,
+    now: datetime | None = None,
     operational: bool = False,
 ) -> list[str]:
     """Return every eligibility error; an empty list means eligible."""
@@ -130,7 +138,41 @@ def validate_release_receipt(
     errors = schema_errors(receipt, schema)
     if errors:
         return errors
-    validate_timestamp(receipt["generated_at"], "generated_at", errors)
+    issued_at = validate_timestamp(receipt["issued_at"], "issued_at", errors)
+    expires_at = validate_timestamp(receipt["expires_at"], "expires_at", errors)
+    policy = manifest["receipt_policy"]
+    if issued_at is not None and expires_at is not None:
+        lifetime = (expires_at - issued_at).total_seconds()
+        if lifetime <= 0:
+            errors.append("expires_at must be later than issued_at")
+        if lifetime > policy["max_authorization_age_seconds"]:
+            errors.append("receipt authorization lifetime exceeds release policy")
+    if now is not None and issued_at is not None and expires_at is not None:
+        skew = policy["max_clock_skew_seconds"]
+        age = (now - issued_at).total_seconds()
+        if age < -skew:
+            errors.append("issued_at is too far in the future")
+        if age > policy["max_authorization_age_seconds"]:
+            errors.append("release authorization is stale")
+        if now >= expires_at:
+            errors.append("release authorization is expired")
+
+    operation = receipt["operation"]
+    canonical_operation_id = (
+        f"github-run-{operation['run_id']}-attempt-{operation['run_attempt']}"
+    )
+    if operation["id"] != canonical_operation_id:
+        errors.append("operation.id does not match run_id and run_attempt")
+    if expected_operation_id is not None and operation["id"] != expected_operation_id:
+        errors.append(
+            "operation.id does not match expected workflow operation: "
+            f"required={expected_operation_id} actual={operation['id']}"
+        )
+    if expected_workflow is not None and operation["workflow"] != expected_workflow:
+        errors.append(
+            "operation.workflow does not match expected workflow: "
+            f"required={expected_workflow} actual={operation['workflow']}"
+        )
 
     authority = receipt["authority"]
     if authority["contract_id"] != manifest["contract_id"]:
@@ -158,6 +200,12 @@ def validate_release_receipt(
         errors.append("operational validation requires a target profile")
     if operational and expected_source is None:
         errors.append("operational validation requires an expected source revision")
+    if operational and expected_operation_id is None:
+        errors.append("operational validation requires an expected operation ID")
+    if operational and expected_workflow is None:
+        errors.append("operational validation requires an expected workflow")
+    if operational and now is None:
+        errors.append("operational validation requires an explicit UTC clock")
 
     profile = None
     if target_profile is not None:
@@ -175,6 +223,8 @@ def validate_release_receipt(
             set_difference_error(
                 "target providers", expected_providers, actual_providers, errors
             )
+            if operation["workflow"] != profile["workflow"]:
+                errors.append("operation.workflow does not match target profile")
 
     source = receipt["source"]
     if source["repository"] != manifest["repository"]:
@@ -468,8 +518,15 @@ def validate_release_receipt(
         rollback["schema_restore"], "rollback.schema_restore", errors
     )
     tested_at = evidence_value(rollback["tested_at"], "rollback.tested_at", errors)
+    tested_at_value = None
     if tested_at is not None:
-        validate_timestamp(tested_at, "rollback.tested_at", errors)
+        tested_at_value = validate_timestamp(tested_at, "rollback.tested_at", errors)
+    if now is not None and tested_at_value is not None:
+        rollback_age = (now - tested_at_value).total_seconds()
+        if rollback_age < -policy["max_clock_skew_seconds"]:
+            errors.append("rollback.tested_at is too far in the future")
+        if rollback_age > policy["max_rollback_age_seconds"]:
+            errors.append("rollback rehearsal is stale")
     if source_revision is not None and previous_source == source_revision:
         errors.append("rollback.previous_source_revision must differ from source.revision")
     if (
@@ -630,6 +687,18 @@ def parse_args() -> argparse.Namespace:
         help="exact canonical vMAJOR.MINOR.PATCH tag authorized by the receipt",
     )
     parser.add_argument(
+        "--expected-operation-id",
+        help="short-lived GitHub run/attempt identity authorized by the receipt",
+    )
+    parser.add_argument(
+        "--expected-workflow",
+        choices=(".github/workflows/deploy.yaml", ".github/workflows/release.yml"),
+    )
+    parser.add_argument(
+        "--now",
+        help="explicit UTC RFC3339 validation clock used for freshness checks",
+    )
+    parser.add_argument(
         "--target-profile",
         help="manifest workflow target profile that the receipt must match exactly",
     )
@@ -685,6 +754,12 @@ def main() -> int:
         expected_artifact_digests = parse_role_values(
             args.expected_artifact_digest, "expected artifact digest"
         )
+        now = None
+        if args.now is not None:
+            timestamp_errors: list[str] = []
+            now = validate_timestamp(args.now, "--now", timestamp_errors)
+            if timestamp_errors or now is None:
+                raise ReleaseReceiptError("; ".join(timestamp_errors))
         errors = validate_release_receipt(
             receipt,
             repo_root,
@@ -693,6 +768,9 @@ def main() -> int:
             target_profile=args.target_profile,
             expected_artifact_digests=expected_artifact_digests,
             expected_release_tag=args.expected_release_tag,
+            expected_operation_id=args.expected_operation_id,
+            expected_workflow=args.expected_workflow,
+            now=now,
             operational=args.operational,
         )
     except ReleaseReceiptError as error:
