@@ -299,11 +299,16 @@ def evaluate_provider_job_condition(
     )
 
 
-def write_recording_shim(path: Path, body: str = "") -> None:
+def write_recording_shim(
+    path: Path,
+    body: str = "",
+    *,
+    log_variable: str = "CALL_LOG",
+) -> None:
     path.write_text(
         "#!/usr/bin/env bash\n"
         "set -euo pipefail\n"
-        "{ printf '%s' \"$PWD\"; printf '\\t%s' \"$@\"; printf '\\n'; } >> \"$CALL_LOG\"\n"
+        f"{{ printf '%s' \"$PWD\"; printf '\\t%s' \"$@\"; printf '\\n'; }} >> \"${{{log_variable}}}\"\n"
         f"{body}",
         encoding="utf-8",
     )
@@ -842,13 +847,25 @@ def test_actual_docker_and_kubernetes_scripts_record_exact_argv(tmp_path: Path) 
     fake_bin = tmp_path / "bin"
     fake_bin.mkdir()
     call_log = tmp_path / "calls.tsv"
+    kustomize_log = tmp_path / "kustomize-calls.tsv"
+    kubectl_log = tmp_path / "kubectl-calls.tsv"
     write_recording_shim(fake_bin / "docker")
-    write_recording_shim(fake_bin / "kustomize", "printf '%s\n' 'apiVersion: v1'\n")
-    write_recording_shim(fake_bin / "kubectl", "cat >/dev/null\n")
+    write_recording_shim(
+        fake_bin / "kustomize",
+        "printf '%s\n' 'apiVersion: v1'\n",
+        log_variable="KUSTOMIZE_CALL_LOG",
+    )
+    write_recording_shim(
+        fake_bin / "kubectl",
+        "cat >/dev/null\n",
+        log_variable="KUBECTL_CALL_LOG",
+    )
     env = merged_env(
         {
             "PATH": f"{fake_bin}:/usr/bin:/bin",
             "CALL_LOG": str(call_log),
+            "KUSTOMIZE_CALL_LOG": str(kustomize_log),
+            "KUBECTL_CALL_LOG": str(kubectl_log),
             "IMAGE_TAGS": "ghcr.io/sheshiyer/selemene-engine:sha-1111111111111111111111111111111111111111",
         }
     )
@@ -907,12 +924,13 @@ def test_actual_docker_and_kubernetes_scripts_record_exact_argv(tmp_path: Path) 
             "ghcr.io/sheshiyer/selemene-ts-engines:sha-1111111111111111111111111111111111111111",
         ],
     ]
-    assert sorted(calls[2:]) == sorted(
-        [
-            [str(REPO_ROOT / "k8s"), "build", "."],
-            [str(REPO_ROOT / "k8s"), "apply", "-f", "-"],
-        ]
-    )
+    assert calls[2:] == []
+    assert read_recorded_calls(kustomize_log) == [
+        [str(REPO_ROOT / "k8s"), "build", "."]
+    ]
+    assert read_recorded_calls(kubectl_log) == [
+        [str(REPO_ROOT / "k8s"), "apply", "-f", "-"]
+    ]
 
 
 def test_actual_health_script_requires_both_bound_source_markers(tmp_path: Path) -> None:
