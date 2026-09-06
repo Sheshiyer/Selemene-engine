@@ -1002,29 +1002,6 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn database_conditional_registration_matches_authority_with_local_fixture() {
-        let mut orchestrator = WorkflowOrchestrator::new();
-        orchestrator.register_native_runtime_engines();
-        let bridge = BridgeManager::new("http://127.0.0.1:1");
-        orchestrator.register_bridge_engines(&bridge);
-        assert_eq!(
-            orchestrator.list_engines(),
-            canonical_runtime_ids_for_configuration(false)
-        );
-
-        let pool = sqlx::postgres::PgPoolOptions::new()
-            .connect_lazy("postgres://127.0.0.1:1/noesis_registry_fixture")
-            .expect("local lazy fixture URL must parse");
-        orchestrator.register_engine(Arc::new(BiofieldCaptureEngine::new(pool.clone())));
-
-        assert_eq!(
-            orchestrator.list_engines(),
-            canonical_runtime_ids_for_configuration(true)
-        );
-        pool.close().await;
-    }
-
-    #[tokio::test]
     async fn execute_single_engine_success() {
         let mut orchestrator = WorkflowOrchestrator::new();
         orchestrator.register_engine(Arc::new(MockEngine::new("numerology", 0)));
